@@ -34,23 +34,44 @@ function Resolve-BlenderPath {
   throw "Blender 4.2+ was not found. Pass -BlenderPath 'C:\Path\To\blender.exe'."
 }
 
+function Copy-LatestBlenderCrash {
+  if (-not $script:ResolvedOutput) { return }
+  $latest = Get-ChildItem $env:TEMP -Filter "*.crash.txt" -File -ErrorAction SilentlyContinue |
+    Sort-Object LastWriteTime -Descending |
+    Select-Object -First 1
+  if (-not $latest) { return }
+  $destination = Join-Path $script:ResolvedOutput "blender-last-crash.txt"
+  Copy-Item $latest.FullName $destination -Force
+  Write-Host "Blender crash report copied to: $destination" -ForegroundColor Yellow
+}
+
 function Invoke-BlenderStep {
   param(
     [string]$Label,
     [string[]]$Arguments
   )
   Write-Host "`n== $Label ==" -ForegroundColor Cyan
-  & $script:Blender @Arguments
-  if ($LASTEXITCODE -ne 0) { throw "$Label failed with exit code $LASTEXITCODE" }
+  $allArguments = @($script:SafeBlenderArgs) + @($Arguments)
+  & $script:Blender @allArguments
+  if ($LASTEXITCODE -ne 0) {
+    Copy-LatestBlenderCrash
+    throw "$Label failed with exit code $LASTEXITCODE"
+  }
 }
 
 $Blender = Resolve-BlenderPath $BlenderPath
+$SafeBlenderArgs = @(
+  "--factory-startup",
+  "--gpu-backend", "opengl",
+  "--debug-gpu-force-workarounds"
+)
 $ResolvedOutput = Join-Path $RepoRoot $OutputDir
 $BlendPath = Join-Path $ResolvedOutput "dawn_whiteflame_model.blend"
 $Manifest = Join-Path $RepoRoot "tools/blender/manifests/dawn_whiteflame.sprite.json"
 $Builder = Join-Path $RepoRoot "tools/blender/dndnext_dawn_model_builder.py"
 $Prepare = Join-Path $RepoRoot "tools/blender/dndnext_dawn_prepare_scene.py"
 $Exporter = Join-Path $RepoRoot "tools/blender/dndnext_sprite_export.py"
+$ProbePrefix = Join-Path $ResolvedOutput "render-probe-"
 
 New-Item -ItemType Directory -Path $ResolvedOutput -Force | Out-Null
 
@@ -61,7 +82,7 @@ Invoke-BlenderStep "Build rigged Dawn prototype" @(
   "--output", $BlendPath
 )
 
-Invoke-BlenderStep "Prepare orthographic sprite scene" @(
+Invoke-BlenderStep "Prepare Cycles CPU sprite scene" @(
   "--background", $BlendPath,
   "--python", $Prepare,
   "--",
@@ -79,6 +100,16 @@ Invoke-BlenderStep "Validate exporter hierarchy" @(
 )
 
 if (-not $SkipRender) {
+  Invoke-BlenderStep "Probe first Cycles CPU frame" @(
+    "--background", $BlendPath,
+    "--render-output", $ProbePrefix,
+    "--render-format", "PNG",
+    "--render-frame", "1"
+  )
+
+  Get-ChildItem $ResolvedOutput -Filter "render-probe-*.png" -File -ErrorAction SilentlyContinue |
+    Remove-Item -Force -ErrorAction SilentlyContinue
+
   Invoke-BlenderStep "Render 32 frames and assemble atlas" @(
     "--background", $BlendPath,
     "--python", $Exporter,
