@@ -1,0 +1,31 @@
+name: Validate NPC sheet cache once
+on:
+  push:
+    branches: [agent/npc-sheet-snapshot-cache]
+    paths:
+      - .github/workflows/validate-npc-sheet-cache-once.yml
+permissions:
+  contents: write
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/npc-sheet-snapshot-cache
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node scripts/validate_npc_sheet_selection_reconciliation.mjs
+      - run: npm run build
+      - name: Remove one-use workflow
+        run: |
+          rm .github/workflows/validate-npc-sheet-cache-once.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add .github/workflows/validate-npc-sheet-cache-once.yml
+          git commit -m "Confirm NPC sheet cache production build"
+          git push
