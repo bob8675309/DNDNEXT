@@ -6,7 +6,8 @@ This directory contains the project's living handoff, roadmap, architecture, and
 
 - [`DNDNext_Current_Handoff_Prompt.md`](./DNDNext_Current_Handoff_Prompt.md) — **copy-ready prompt for a new ChatGPT/Codex session.** It defines the required inspection workflow, protected boundaries, current Dawn focus, document precedence, and a map of the major subsystem references.
 - [`Current_Development_Status_and_Roadmap.md`](./Current_Development_Status_and_Roadmap.md) — current production baseline, work in flight, completed foundations, remaining roadmap, and protected subsystem boundaries.
-- [`Dawn_High_Quality_Prototype_Plan.md`](./Dawn_High_Quality_Prototype_Plan.md) — **active visual-production plan.** The primitive Dawn model is rejected as final art; this document defines the high-quality South-facing idle/walk prototype, external tool evaluation, reference hierarchy, body-family reuse, and the gate before another full atlas.
+- [`Unified_Character_Forge_Status.md`](./Unified_Character_Forge_Status.md) — **current user-testing interruption and acceptance ledger.** Covers the Rinshin test evidence, shared NPC/player Forge consolidation, responsive reachability, multiple player characters, levels 1–20, guarded v2 ownership RPCs, and the remaining starting spell-selection parity gap.
+- [`Dawn_High_Quality_Prototype_Plan.md`](./Dawn_High_Quality_Prototype_Plan.md) — **active visual-production plan after the Character Forge testing slice.** The primitive Dawn model is rejected as final art; this document defines the high-quality South-facing idle/walk prototype, external tool evaluation, reference hierarchy, body-family reuse, and the gate before another full atlas.
 - [`Sprite_Production_Work_Map.md`](./Sprite_Production_Work_Map.md) — authoritative sprite status, completed pipeline infrastructure, current blocker, acceptance gates, remaining sequence, and the requested post-Dawn UI interruption.
 - [`Sprite_Production_Art_Bible.md`](./Sprite_Production_Art_Bible.md) — canonical atlas, direction, animation, source-quality, tool, no-frame-shifting, visual approval, and runtime-readability rules.
 - [`Sprite_Production_Run_Log.md`](./Sprite_Production_Run_Log.md) — real Dawn render and review evidence, including rejected approaches and the successful isolated-render pipeline.
@@ -17,7 +18,7 @@ This directory contains the project's living handoff, roadmap, architecture, and
 
 ## Active sprite-production documents
 
-- [`Dawn_High_Quality_Prototype_Plan.md`](./Dawn_High_Quality_Prototype_Plan.md) — controlling next milestone and quality-source pivot.
+- [`Dawn_High_Quality_Prototype_Plan.md`](./Dawn_High_Quality_Prototype_Plan.md) — controlling next milestone and quality-source pivot after the Character Forge interruption is accepted.
 - [`Sprite_Production_Work_Map.md`](./Sprite_Production_Work_Map.md) — current implementation map and acceptance sequence.
 - [`Sprite_Production_Art_Bible.md`](./Sprite_Production_Art_Bible.md) — binding visual and technical production contract.
 - [`Sprite_Production_Run_Log.md`](./Sprite_Production_Run_Log.md) — attempt evidence and rejected-path history.
@@ -49,10 +50,11 @@ Current decision: preserve the proven isolated renderer, atlas, QA, and publishi
 
 ## Current subsystem handoffs
 
+- [`Unified_Character_Forge_Status.md`](./Unified_Character_Forge_Status.md) — shared player/NPC Forge, multi-character ownership, responsive testing, and follow-up spell-selection work.
 - [`NPC_Profile_Inventory_Equipment_Reference.md`](./NPC_Profile_Inventory_Equipment_Reference.md) — profile, inventory workbench, equipment diagram, item-card, transfer, and sheet presentation reference. Use it together with the shared pipeline document for equipment-derived rules.
 - [`Town_Crafter_Current_Status.md`](./Town_Crafter_Current_Status.md) — current town crafter/profile-panel state and guardrails.
 - [`Source_Patch_Pipeline_Audit.md`](./Source_Patch_Pipeline_Audit.md) — source-bake / validator / retired patch-pipeline handoff.
-- [`Deferred_UI_Polish_Backlog.md`](./Deferred_UI_Polish_Backlog.md) — deferred UI and presentation work. Consult before the requested post-Dawn UI interruption.
+- [`Deferred_UI_Polish_Backlog.md`](./Deferred_UI_Polish_Backlog.md) — deferred UI and presentation work.
 
 ## Historical exports and archived runbooks
 
