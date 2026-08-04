@@ -265,9 +265,9 @@ expect(!navbar.includes('createClient'),
   "AppNavbar must not instantiate a second GoTrueClient under the shared storage key");
 
 for (const subscriber of [
-  { label: "AppNavbar", source: navbar, scheduleCall: "scheduleSessionWork(session);" },
-  { label: "AdminBuildBadge", source: adminBuildBadge, scheduleCall: "scheduleAdminCheck(session);" },
-  { label: "PlayerCharacterProfilePanel", source: playerProfile, scheduleCall: "scheduleSessionWork(session);" },
+  { label: "AppNavbar", source: navbar, scheduleCall: "scheduleSessionWork(session)" },
+  { label: "AdminBuildBadge", source: adminBuildBadge, scheduleCall: "scheduleAdminCheck(session)" },
+  { label: "PlayerCharacterProfilePanel", source: playerProfile, scheduleCall: "scheduleSessionWork(session)" },
 ]) {
   const callbackBody = extractAuthCallbackBody(subscriber.source, subscriber.label);
   expect(callbackBody.includes(subscriber.scheduleCall),
