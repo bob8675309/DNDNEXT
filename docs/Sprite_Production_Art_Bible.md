@@ -106,6 +106,22 @@ Automatic gates:
 - alpha remains within cell-edge tolerances
 - baseline, pivot, height, and width drift remain within the manifest limits
 
+### Bounded baseline normalization
+
+Projection and pixel rounding can produce a small baseline discrepancy even when the rigged walk is otherwise valid. A bounded baseline normalizer is permitted only under all of these conditions:
+
+- the full render completed all 32 cells;
+- the generated QA report failed exclusively on baseline drift;
+- affected cells are aligned to their own direction row's idle-frame baseline;
+- no frame moves more than the manifest safety cap, currently `4px`;
+- no correction violates cell-edge margins;
+- the final strict baseline gate remains `2px` and is not relaxed;
+- every metric and static-row check is rerun after normalization;
+- every pixel shift is written to QA and metadata JSON;
+- the normalized result receives the same visual and in-site review as an unshifted render.
+
+This is deterministic frame registration, not manual repainting. Non-baseline QA errors, large corrections, clipping risk, or remaining failures must still stop publication.
+
 Manual gates:
 
 - idle column reads S, SW, W, NW, N, NE, E, SE
@@ -114,7 +130,7 @@ Manual gates:
 - readable silhouette at 1× runtime size
 - clean six-step loop
 - consistent handedness and equipment
-- no blur, detail flicker, frame crop, or glow bleed
+- no blur, detail flicker, frame crop, glow bleed, or visible foot sliding
 
 Only a sheet that passes every gate should be uploaded through `/admin/sprite-assets`.
 
@@ -128,28 +144,33 @@ Only a sheet that passes every gate should be uploaded through `/admin/sprite-as
 6. Rotate the character or camera to the eight canonical headings.
 7. Render all 32 frames with identical lighting, scale, pivot, and transparent background.
 8. Reject any direction row with fewer than three unique rendered images.
-9. Assemble the atlas in the canonical South-first row order.
-10. Inspect and animate it in Sprite Production Lab.
-11. Register the approved sheet in Sprite Library.
-12. Test it at both overworld and tactical scales before permanent assignment.
+9. Apply bounded idle-anchored baseline normalization only when the completed QA failure is baseline-only and within the manifest cap.
+10. Rerun all automatic checks and assemble the atlas in canonical South-first order.
+11. Inspect and animate it in Sprite Production Lab.
+12. Register the approved sheet in Sprite Library.
+13. Test it at both overworld and tactical scales before permanent assignment.
 
 ## Dawn procedural prototype
 
 The first real model stage is source-controlled and repeatable:
 
 - `tools/blender/dndnext_dawn_model_builder.py` creates the stylized Dawn geometry, materials, 18-bone rig, right-hand staff, divine flame, editable four-pose `Dawn_Walk` Action, and deterministic tactical pose library.
+- `tools/blender/dndnext_dawn_visual_refinement_v2.py` improves scale, pose readability, boots, robe, materials, and staff stability.
+- `tools/blender/dndnext_dawn_baseline_correction_v2_1.py` preserves the editable model while reducing large procedural root-height excursion.
 - `tools/blender/dndnext_dawn_prepare_scene.py` creates and saves the orthographic camera and three-light Cycles CPU sprite scene.
 - `tools/blender/dndnext_sprite_export.py` applies deterministic poses when present, falls back to Action sampling for generic models, renders all cells, rejects static rows, assembles the atlas, and generates QA output.
-- `tools/blender/build_dawn_whiteflame.ps1` runs model creation, scene preparation, dry-run validation, render probe, the 32-frame render, atlas assembly, crash capture, and QA generation in one Windows command.
+- `tools/blender/dndnext_sprite_baseline_normalize.py` performs the bounded, report-driven baseline-only fallback and regenerates all artifacts and QA.
+- `tools/blender/build_dawn_whiteflame.ps1` runs the complete Windows pipeline, including native-crash retry and bounded QA fallback.
 - `tools/blender/DAWN_PROCEDURAL_MODEL.md` is the operator and refinement handoff.
 
-This generated model is intentionally a functional tactical blockout. It proves silhouette, handedness, rig, pose timing, camera, lighting, and exporter compatibility. Later sculpting, topology, texture, hair, robe, and armor refinements should preserve the established object names, bone names, action, root, pose-library schema, manifest, and exporter contract.
+This generated model is intentionally a functional tactical blockout. It proves silhouette, handedness, rig, pose timing, camera, lighting, exporter compatibility, and deterministic frame registration. Later sculpting, topology, texture, hair, robe, and armor refinements should preserve the established object names, bone names, action, root, pose-library schema, manifest, and exporter contract.
 
 ## Blender export kit
 
 - `tools/blender/dndnext_sprite_scene_setup.py` creates the standard root, orthographic camera, and three-light rig around an existing model.
 - `tools/blender/dndnext_sprite_export.py` renders the 32 frames, assembles the atlas, measures alpha bounds, proves pose/frame uniqueness, and writes the animated QA report.
-- `tools/blender/manifests/dawn_whiteflame.sprite.json` locks Dawn's South-first yaws, scene object names, pose frames, Cycles CPU settings, minimum unique-frame threshold, and QA tolerances.
+- `tools/blender/dndnext_sprite_baseline_normalize.py` permits only bounded, documented, baseline-only frame registration and reruns full QA.
+- `tools/blender/manifests/dawn_whiteflame.sprite.json` locks Dawn's South-first yaws, scene object names, pose frames, Cycles CPU settings, minimum unique-frame threshold, strict QA tolerances, and normalization cap.
 - `tools/blender/README.md` contains the generic operator workflow for imported or manually sculpted models.
 
 ## Production sequence after Dawn
@@ -164,7 +185,7 @@ Approved order:
 4. reusable class/species model families
 5. broader NPC batches
 
-Every character is produced and approved independently. Shared tooling does not waive per-character direction, motion, silhouette, or handedness review.
+Every character is produced and approved independently. Shared tooling does not waive per-character direction, motion, silhouette, handedness, or normalization review.
 
 ## Protected boundaries
 
