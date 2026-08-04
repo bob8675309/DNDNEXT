@@ -102,14 +102,15 @@ for (const bone of [
 for (const token of [
   "def ensure_camera(", "def ensure_area_light(", "def ensure_root(", "def configure_scene(",
   'camera.data.type = "ORTHO"', 'scene.render.film_transparent = True',
-  'scene.render.image_settings.color_mode = "RGBA"', 'scene.cycles.device = "CPU"',
+  'scene.render.image_settings.color_mode = "RGBA"',
+  'scene.cycles.device = str(config.get("device", "CPU")).upper()',
   'bpy.ops.wm.save_as_mainfile', '"DNDNext_Key"', '"DNDNext_Fill"', '"DNDNext_Rim"',
 ]) {
   assert(prepare.includes(token), `Dawn scene preparation is missing ${token}`);
 }
 
 for (const token of [
-  "Resolve-BlenderPath", "Build rigged Dawn prototype", "Prepare orthographic sprite scene",
+  "Resolve-BlenderPath", "Build rigged Dawn prototype", "Prepare Cycles CPU sprite scene",
   "Validate exporter hierarchy", "Probe first Cycles CPU frame", "Render 32 frames and assemble atlas",
   "dndnext_dawn_model_builder.py", "dndnext_dawn_prepare_scene.py", "dndnext_sprite_export.py",
   "dawn_whiteflame_model.blend", "dawn-whiteflame.qa.html", "--dry-run", "--keep-frames",
