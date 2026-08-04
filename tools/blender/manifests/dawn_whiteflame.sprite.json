@@ -3,7 +3,7 @@
   "character_name": "Dawn Whiteflame",
   "character_slug": "dawn-whiteflame",
   "sprite_format": "eight_direction_idle_walk_v1",
-  "visual_refinement_version": "dawn_grounded_walk_v2",
+  "visual_refinement_version": "dawn_grounded_walk_v2_1_baseline",
   "frame_width": 64,
   "frame_height": 64,
   "columns": 4,
@@ -66,6 +66,6 @@
     "signature_equipment": "tall gold staff with compact white-gold flame",
     "handedness_rule": "staff remains in the same hand in every direction",
     "effects_rule": "no bloom or particles may touch a 64px cell edge",
-    "refinement_goal": "larger in-cell presence, visible boots, grounded contact poses, and stronger value separation"
+    "refinement_goal": "larger in-cell presence, visible boots, grounded contact poses, stronger value separation, and no more than two pixels of baseline drift"
   }
 }
