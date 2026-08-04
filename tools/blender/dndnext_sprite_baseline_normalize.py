@@ -106,6 +106,7 @@ def _shift_png_vertical(path: Path, shift_y: int) -> None:
                 source_start : source_start + row_span
             ]
         image.pixels.foreach_set(shifted)
+        image.update()
         image.file_format = "PNG"
         image.filepath_raw = str(path)
         image.save()
@@ -230,7 +231,7 @@ def main() -> int:
         manifest = _read_json(manifest_path)
         _normalize(core, manifest, output_dir)
         return 0
-    except (NormalizationError, core.ExportError if "core" in locals() else RuntimeError) as exc:
+    except (RuntimeError, OSError, ValueError) as exc:
         print(f"DNDNext baseline normalization failed: {exc}", file=sys.stderr)
         return 2
 
