@@ -97,6 +97,11 @@ $Prepare = Join-Path $RepoRoot "tools/blender/dndnext_dawn_prepare_scene.py"
 $ExporterCore = Join-Path $RepoRoot "tools/blender/dndnext_sprite_export.py"
 $Exporter = Join-Path $RepoRoot "tools/blender/dndnext_sprite_export_runner.py"
 $ProbePrefix = Join-Path $ResolvedOutput "render-probe-"
+$FramesDir = Join-Path $ResolvedOutput "frames"
+$AtlasPath = Join-Path $ResolvedOutput "dawn-whiteflame.png"
+$QaReportPath = Join-Path $ResolvedOutput "dawn-whiteflame.qa.json"
+$QaPreviewPath = Join-Path $ResolvedOutput "dawn-whiteflame.qa.html"
+$MetadataPath = Join-Path $ResolvedOutput "dawn-whiteflame.metadata.json"
 
 New-Item -ItemType Directory -Path $ResolvedOutput -Force | Out-Null
 
@@ -148,6 +153,11 @@ if (-not $SkipRender) {
 
   Get-ChildItem $ResolvedOutput -Filter "render-probe-*.png" -File -ErrorAction SilentlyContinue |
     Remove-Item -Force -ErrorAction SilentlyContinue
+
+  if (Test-Path $FramesDir) { Remove-Item $FramesDir -Recurse -Force }
+  foreach ($generatedArtifact in @($AtlasPath, $QaReportPath, $QaPreviewPath, $MetadataPath)) {
+    Remove-Item $generatedArtifact -Force -ErrorAction SilentlyContinue
+  }
 
   $BatchArguments = @(
     "--background", $BlendPath,
