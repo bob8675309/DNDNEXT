@@ -67,7 +67,7 @@ for (const token of [
   'Path(__file__).with_name("dndnext_sprite_export.py")',
   "core._assign_action = assign_action_without_render_override",
   "armature.animation_data.action = None",
-  "skip_pose_preflight=not args.dry_run",
+  "skip_duplicate_pose_preflight",
   "Detached Blender Action for deterministic pose rendering.",
 ]) {
   assert(exporterRunner.includes(token), `deterministic exporter runner is missing ${token}`);
