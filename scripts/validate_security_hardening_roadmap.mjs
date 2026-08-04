@@ -9,7 +9,9 @@ const helperMigrationPath = "sql/20260724_03_anonymous_helper_rpc_cleanup.sql";
 const helperMigration = fs.readFileSync(helperMigrationPath, "utf8");
 const walletHook = fs.readFileSync("utils/useWallet.js", "utf8");
 const merchantPanel = fs.readFileSync("components/MerchantPanel.js", "utf8");
-const playerCreator = fs.readFileSync("components/PlayerCharacterCreatorV2.js", "utf8");
+const playerCreatorAdapter = fs.readFileSync("components/PlayerCharacterCreatorV2.js", "utf8");
+const sharedForgeAdapter = fs.readFileSync("components/NewNpcModalV3.js", "utf8");
+const sharedForge = fs.readFileSync("components/NewNpcModalV3Refined.js", "utf8");
 
 function includesAll(text, values, label) {
   for (const value of values) {
@@ -91,13 +93,28 @@ includesAll(merchantPanel, [
   "refreshWallet()",
 ], "merchant purchase flow");
 
-includesAll(playerCreator, [
-  "backgroundFeatChoice: originFeat || null",
-  "backgroundExpandedSpells",
-  "backgroundSpellList",
-  "selectedBackgroundFeat",
+includesAll(playerCreatorAdapter, [
+  'import NewNpcModalV3 from "./NewNpcModalV3";',
+  'mode="player"',
+], "player creator shared-Forge adapter");
+
+includesAll(sharedForgeAdapter, [
+  "function playerPayload(payload = {})",
+  "...payload,",
+  "...sheet,",
+  'invokeOriginal("create_player_character_v2"',
+  "p_payload: playerPayload(args?.p_payload || {})",
+], "guarded player payload forwarding");
+
+includesAll(sharedForge, [
   "resolveBackgroundFeatOptions",
-  "spellMatchesExpandedList",
-], "player character background persistence");
+  "const selectedBackgroundFeat = useMemo",
+  "const backgroundSpellList = selectedBackground?.spellList || []",
+  "const backgroundExpandedSpellNames = selectedBackground?.expandedSpellNames || []",
+  "originFeat: selectedBackgroundFeat?.name || null",
+  "backgroundFeatChoice: selectedBackgroundFeat?.name || null",
+  "backgroundExpandedSpells: backgroundExpandedSpellNames",
+  "backgroundSpellList",
+], "shared Character Forge background persistence");
 
 console.log("Security hardening roadmap source contracts validated.");
