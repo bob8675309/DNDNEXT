@@ -1,0 +1,208 @@
+/* Shared NPC/player Character Forge viewport and control reachability. */
+.npc-forge-backdrop {
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+}
+
+.npc-forge-modal-v2 {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 24px);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.npc-forge-modal-v2 .npc-forge-header,
+.npc-forge-modal-v2 .npc-forge-steps,
+.npc-forge-modal-v2 .npc-forge-footer,
+.npc-forge-modal-v2 .npc-forge-error {
+  flex: 0 0 auto;
+}
+
+.npc-forge-modal-v2 .npc-forge-header > div,
+.npc-forge-modal-v2 .npc-forge-body,
+.npc-forge-modal-v2 .npc-forge-workspace,
+.npc-forge-modal-v2 .npc-forge-preview,
+.npc-forge-modal-v2 .npc-forge-context-card {
+  min-width: 0;
+  min-height: 0;
+}
+
+.npc-forge-modal-v2 .npc-forge-steps {
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x proximity;
+}
+
+.npc-forge-modal-v2 .npc-forge-steps button {
+  flex: 0 0 auto;
+  min-width: max-content;
+  scroll-snap-align: start;
+}
+
+.npc-forge-modal-v2 .npc-forge-body {
+  flex: 1 1 auto;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.npc-forge-modal-v2 .npc-forge-workspace,
+.npc-forge-modal-v2 .npc-forge-preview {
+  overflow: visible;
+}
+
+.npc-forge-modal-v2 .npc-forge-footer {
+  position: sticky;
+  z-index: 20;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, rgba(10, 12, 20, .96), rgba(7, 9, 15, .995));
+  box-shadow: 0 -12px 26px rgba(0, 0, 0, .34);
+}
+
+.npc-forge-modal-v2 .npc-forge-footer > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.npc-forge-modal-v2 .npc-forge-footer button {
+  min-height: 42px;
+  white-space: normal;
+}
+
+.unified-player-character-forge {
+  width: 100%;
+  min-width: 0;
+}
+
+.unified-player-character-forge .npc-forge-modal-v2 {
+  max-height: calc(100dvh - 56px);
+}
+
+.player-character-forge-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 12px 16px 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(168, 108, 255, .28);
+  border-radius: 10px;
+  background: rgba(24, 18, 39, .92);
+}
+
+.player-character-forge-toolbar label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: rgba(255, 255, 255, .72);
+  font-size: .78rem;
+  font-weight: 700;
+}
+
+.player-character-forge-toolbar select {
+  min-width: min(320px, 48vw);
+  max-width: 100%;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, .18);
+  border-radius: 8px;
+  color: #fff;
+  background: #111522;
+}
+
+@media (max-width: 980px) {
+  .npc-forge-modal-v2 .npc-forge-body {
+    display: block;
+  }
+
+  .npc-forge-modal-v2 .npc-forge-preview {
+    border-top: 1px solid rgba(255, 255, 255, .1);
+  }
+
+  .npc-forge-context-card {
+    position: static;
+  }
+}
+
+@media (max-width: 720px) {
+  .npc-forge-backdrop {
+    align-items: stretch;
+    justify-content: stretch;
+    padding: 0;
+  }
+
+  .npc-forge-modal-v2,
+  .unified-player-character-forge .npc-forge-modal-v2 {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+  }
+
+  .npc-forge-modal-v2 .npc-forge-header {
+    align-items: flex-start;
+    gap: 8px;
+    padding: 14px;
+  }
+
+  .npc-forge-modal-v2 .npc-forge-header h2 {
+    font-size: 1.15rem;
+  }
+
+  .npc-forge-modal-v2 .npc-forge-header p {
+    font-size: .7rem;
+  }
+
+  .npc-forge-modal-v2 .npc-forge-workspace,
+  .npc-forge-modal-v2 .npc-forge-preview {
+    padding: 14px;
+  }
+
+  .npc-forge-modal-v2 .npc-forge-footer {
+    align-items: stretch;
+    padding: 10px 12px max(10px, env(safe-area-inset-bottom));
+  }
+
+  .npc-forge-modal-v2 .npc-forge-footer,
+  .npc-forge-modal-v2 .npc-forge-footer > div {
+    width: 100%;
+  }
+
+  .npc-forge-modal-v2 .npc-forge-footer > div {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .npc-forge-modal-v2 .npc-forge-footer > button,
+  .npc-forge-modal-v2 .npc-forge-footer > div button {
+    width: 100%;
+  }
+
+  .player-character-forge-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+    margin: 10px;
+  }
+
+  .player-character-forge-toolbar label {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .player-character-forge-toolbar select {
+    width: 100%;
+    min-width: 0;
+  }
+}
