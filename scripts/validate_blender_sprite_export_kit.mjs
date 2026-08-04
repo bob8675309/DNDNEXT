@@ -46,6 +46,11 @@ assert(manifest.camera_object === "DNDNext_OrthoCamera", "orthographic camera na
 assert(manifest.armature_object === "Dawn_Rig", "Dawn armature name changed");
 assert(manifest.action_name === "Dawn_Walk", "Dawn walk action name changed");
 assert(manifest.atlas_filename === "dawn-whiteflame.png", "Dawn atlas filename changed");
+assert(manifest.render_engine === "CYCLES", "Dawn production renderer must use Cycles");
+assert(manifest.cycles?.device === "CPU", "Dawn production renderer must use CPU for deterministic safety");
+assert(manifest.cycles?.samples === 32, "Dawn Cycles sample count changed");
+assert(manifest.cycles?.use_denoising === false, "Dawn safe render must keep denoising disabled");
+assert(manifest.cycles?.use_adaptive_sampling === false, "Dawn safe render must keep adaptive sampling disabled");
 
 for (const token of [
   'DIRECTIONS = (',
@@ -154,11 +159,17 @@ for (const token of [
   "def ensure_camera(",
   "def ensure_area_light(",
   "def ensure_root(",
+  "def configure_cycles(",
   "def configure_scene(",
   "def validate_hierarchy(",
   'camera.data.type = "ORTHO"',
   'scene.render.film_transparent = True',
   'scene.render.image_settings.color_mode = "RGBA"',
+  'scene.render.engine = engine',
+  'scene.cycles.device = str(config.get("device", "CPU")).upper()',
+  'scene.cycles.samples = int(config.get("samples", 32))',
+  'scene.cycles.use_denoising = bool(config.get("use_denoising", False))',
+  'scene.render.use_persistent_data = False',
   'bpy.ops.wm.save_as_mainfile',
   '"DNDNext_Key"',
   '"DNDNext_Fill"',
@@ -169,10 +180,17 @@ for (const token of [
 
 for (const token of [
   "Resolve-BlenderPath",
+  "Copy-LatestBlenderCrash",
   "Build rigged Dawn prototype",
-  "Prepare orthographic sprite scene",
+  "Prepare Cycles CPU sprite scene",
   "Validate exporter hierarchy",
+  "Probe first Cycles CPU frame",
   "Render 32 frames and assemble atlas",
+  '"--factory-startup"',
+  '"--gpu-backend", "opengl"',
+  '"--debug-gpu-force-workarounds"',
+  '"--render-frame", "1"',
+  "blender-last-crash.txt",
   "dndnext_dawn_model_builder.py",
   "dndnext_dawn_prepare_scene.py",
   "dndnext_sprite_export.py",
