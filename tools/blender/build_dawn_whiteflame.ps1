@@ -70,7 +70,8 @@ $BlendPath = Join-Path $ResolvedOutput "dawn_whiteflame_model.blend"
 $Manifest = Join-Path $RepoRoot "tools/blender/manifests/dawn_whiteflame.sprite.json"
 $Builder = Join-Path $RepoRoot "tools/blender/dndnext_dawn_model_builder.py"
 $Prepare = Join-Path $RepoRoot "tools/blender/dndnext_dawn_prepare_scene.py"
-$Exporter = Join-Path $RepoRoot "tools/blender/dndnext_sprite_export.py"
+$ExporterCore = Join-Path $RepoRoot "tools/blender/dndnext_sprite_export.py"
+$Exporter = Join-Path $RepoRoot "tools/blender/dndnext_sprite_export_runner.py"
 $ProbePrefix = Join-Path $ResolvedOutput "render-probe-"
 
 New-Item -ItemType Directory -Path $ResolvedOutput -Force | Out-Null

@@ -10,6 +10,7 @@ function assert(condition, message) {
 }
 
 const exporter = read("tools/blender/dndnext_sprite_export.py");
+const exporterRunner = read("tools/blender/dndnext_sprite_export_runner.py");
 const setup = read("tools/blender/dndnext_sprite_scene_setup.py");
 const builder = read("tools/blender/dndnext_dawn_model_builder.py");
 const prepare = read("tools/blender/dndnext_dawn_prepare_scene.py");
@@ -59,6 +60,15 @@ for (const token of [
   assert(exporter.includes(token), `exporter is missing ${token}`);
 }
 
+for (const token of [
+  'Path(__file__).with_name("dndnext_sprite_export.py")',
+  "core._assign_action = assign_action_without_render_override",
+  "armature.animation_data.action = None",
+  "Detached Blender Action for deterministic pose rendering.",
+]) {
+  assert(exporterRunner.includes(token), `deterministic exporter runner is missing ${token}`);
+}
+
 for (const [key, label] of [
   ["down", "South"], ["down-left", "Southwest"], ["left", "West"], ["up-left", "Northwest"],
   ["up", "North"], ["up-right", "Northeast"], ["right", "East"], ["down-right", "Southeast"],
@@ -102,8 +112,7 @@ for (const bone of [
 for (const token of [
   "def ensure_camera(", "def ensure_area_light(", "def ensure_root(", "def configure_scene(",
   'camera.data.type = "ORTHO"', 'scene.render.film_transparent = True',
-  'scene.render.image_settings.color_mode = "RGBA"',
-  'scene.cycles.device = str(config.get("device", "CPU")).upper()',
+  'scene.render.image_settings.color_mode = "RGBA"', 'scene.cycles.device = str(config.get("device", "CPU")).upper()',
   'bpy.ops.wm.save_as_mainfile', '"DNDNext_Key"', '"DNDNext_Fill"', '"DNDNext_Rim"',
 ]) {
   assert(prepare.includes(token), `Dawn scene preparation is missing ${token}`);
@@ -113,6 +122,7 @@ for (const token of [
   "Resolve-BlenderPath", "Build rigged Dawn prototype", "Prepare Cycles CPU sprite scene",
   "Validate exporter hierarchy", "Probe first Cycles CPU frame", "Render 32 frames and assemble atlas",
   "dndnext_dawn_model_builder.py", "dndnext_dawn_prepare_scene.py", "dndnext_sprite_export.py",
+  "dndnext_sprite_export_runner.py",
   "dawn_whiteflame_model.blend", "dawn-whiteflame.qa.html", "--dry-run", "--keep-frames",
   "--gpu-backend", "opengl", "--debug-gpu-force-workarounds", "blender-last-crash.txt", "/admin/sprite-lab",
 ]) {
@@ -139,7 +149,7 @@ for (const [source, token] of [
   assert(source.includes(token), `documentation is missing ${token}`);
 }
 
-for (const source of [exporter, setup, builder, prepare]) {
+for (const source of [exporter, exporterRunner, setup, builder, prepare]) {
   for (const forbidden of ["MapPageClient", "map_routes", "encounter_", "supabase", "requests.", "urllib.request", "subprocess.run", "os.system"]) {
     assert(!source.includes(forbidden), `offline Blender tooling crossed a protected/network boundary: ${forbidden}`);
   }
@@ -151,6 +161,7 @@ const syntax = spawnSync(python, ["-m", "py_compile",
   "tools/blender/dndnext_dawn_prepare_scene.py",
   "tools/blender/dndnext_sprite_scene_setup.py",
   "tools/blender/dndnext_sprite_export.py",
+  "tools/blender/dndnext_sprite_export_runner.py",
 ], { encoding: "utf8" });
 if (!syntax.error) assert(syntax.status === 0, `Python syntax validation failed: ${syntax.stderr || syntax.stdout}`);
 else if (syntax.error.code !== "ENOENT") throw syntax.error;
