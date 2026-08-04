@@ -1,6 +1,6 @@
 # NPC Character Sheet Selection Reconciliation
 
-Updated: 2026-08-02  
+Updated: 2026-08-04  
 Status: required reading before changing `/npcs` selection, character-sheet loading, equipped-item loading, notes loading, `CharacterSheetPanel` identity behavior, app-shell Supabase client creation, or app-shell auth-state subscribers.
 
 ## Ownership boundary
@@ -16,7 +16,7 @@ Status: required reading before changing `/npcs` selection, character-sheet load
 
 `utils/supabaseClient.js` owns the browser Supabase singleton. Always-mounted app-shell components such as `components/AppNavbar.js` must import that client rather than calling `createClient` again. Multiple `GoTrueClient` instances under the same storage key generate warnings and can create unstable concurrent auth/session behavior.
 
-The `onAuthStateChange` callbacks in `components/AppNavbar.js`, `components/AdminBuildBadge.js`, and `components/PlayerCharacterProfilePanel.js` must remain synchronous. They may accept the supplied session and schedule work, but they must not call Supabase Auth, PostgREST, or RPC APIs until a later macrotask has begun.
+The `onAuthStateChange` callbacks in `components/AppNavbar.js`, `components/AdminBuildBadge.js`, and `components/PlayerCharacterProfilePanelUnified.js` must remain synchronous. They may accept the supplied session and schedule work, but they must not call Supabase Auth, PostgREST, or RPC APIs until a later macrotask has begun. `components/PlayerCharacterProfilePanel.js` is only the compatibility entry that exports the unified implementation; it does not own profile state or auth work.
 
 ## Failure modes this prevents
 
@@ -81,14 +81,10 @@ Do not call `setSelectedKey` elsewhere. The validator requires a single internal
 
 Sheet loading is independent from notes loading. A notes-table availability change or notes callback recreation must never restart or supersede the active sheet request.
 
-Each active sheet request:
+Each explicit sheet refresh request:
 
-- receives its own `AbortController`;
-- aborts any superseded sheet request;
-- is wrapped by `settleWithDeadline` with an eight-second deadline;
-- races the database request against a timeout result that resolves independently of the network request;
-- aborts the underlying request on timeout as best-effort cleanup;
-- clears the loading state when the deadline result returns, even when the aborted network promise never settles;
+- receives identity and request-ID guards;
+- races the database request against a timeout result that resolves independently of the network request where the explicit refresh path requires a deadline;
 - produces an explicit error and **Retry sheet** action rather than an endless loading placeholder.
 
 Do not implement a deadline by only calling `abort()` and waiting for the original promise's `catch` or `finally`. The timeout promise itself must settle the loader.
@@ -113,7 +109,7 @@ When a current request times out or fails, render the error and retry action. Th
 
 ## Tab suspension
 
-A background tab may delay a request, but the request/identity guards reject it if a newer selection has occurred. Superseded sheet requests are actively aborted. Returning to the tab must not make an old response current again.
+A background tab may delay a request, but the request/identity guards reject it if a newer selection has occurred. Returning to the tab must not make an old response current again.
 
 Tab restoration may also trigger `TOKEN_REFRESHED`. App-shell auth callbacks must release the Supabase auth lock before starting another client request so that the refreshed session cannot block sheet, equipment, notes, or Admin reads.
 
@@ -129,7 +125,7 @@ For each always-mounted app-shell subscriber:
 
 Do not make the callback `async`, return a Supabase promise from it, or directly call `supabase.*`, `getSession`, `rpc`, `from`, `loadLinkedCharacter`, or another function that starts Supabase work.
 
-This boundary is regression-enforced for `AppNavbar`, `AdminBuildBadge`, and `PlayerCharacterProfilePanel`. `MapPageClient` was deliberately excluded from PR #136 because world-map behavior is protected; any change there requires a separate explicitly authorized world-map pass.
+This boundary is regression-enforced for `AppNavbar`, `AdminBuildBadge`, and the active `PlayerCharacterProfilePanelUnified` implementation. The compatibility entry is separately checked to ensure it continues to delegate to that implementation. `MapPageClient` remains deliberately excluded because world-map behavior is protected; any change there requires a separate explicitly authorized world-map pass.
 
 ## Accepted production baseline
 
@@ -137,8 +133,11 @@ This boundary is regression-enforced for `AppNavbar`, `AdminBuildBadge`, and `Pl
 - PR #136 removed the app-shell auth-lock deadlock and added callback-boundary validation.
 - PR #136 exact-head and merged-production Vercel deployments passed.
 - PRs #137-#147 preserved the selection/auth-lock boundary while adding linked-profile stale-result guards, encounter controller setup, shared Sheet & Rolls action parity, and the canonical enchanting source bake.
+- PR #167 replaced ordinary roster sheet fetches with identity-keyed cached snapshots while retaining guarded explicit refresh, equipment, and notes reads.
+- PR #168 moved the player profile implementation into `PlayerCharacterProfilePanelUnified` and left `PlayerCharacterProfilePanel` as a compatibility export.
+- PR #169 reconciles this validator and documentation with that ownership transfer; exact-head validation must remain green before merge.
 - The campaign owner tested rapid character switching plus tab-away/tab-return on the preview and reported that the failure no longer reproduced.
-- Direct `/npcs` and the shared Profile panel now keep portraits inside the Description content layout without changing sheet-selection ownership.
+- Direct `/npcs` and the shared Profile panel keep portraits inside the Description content layout without changing sheet-selection ownership.
 - The exact current production anchor is recorded in `Current_Development_Status_and_Roadmap.md`.
 
 ## Regression gate
@@ -158,7 +157,10 @@ This boundary is regression-enforced for `AppNavbar`, `AdminBuildBadge`, and `Pl
 - raw JSON remains hidden during loading/failure;
 - the navbar consumes the shared Supabase singleton rather than creating another `GoTrueClient`;
 - all three always-mounted app-shell auth callbacks only schedule post-lock work;
+- block-bodied and expression-bodied auth callbacks are validated by behavior rather than punctuation;
 - each app-shell subscriber uses a macrotask handoff and cancels deferred work during supersession and cleanup;
+- the player profile compatibility entry delegates to `PlayerCharacterProfilePanelUnified`;
+- the active unified profile preserves stale-load request and user-identity guards;
 - the shared Profile panel keeps the portrait inside Description and does not duplicate the Description field in supplemental lore;
 - the pinned sheet Description remains top-aligned and readable.
 
@@ -173,7 +175,6 @@ This reconciliation layer must not:
 - rewrite active encounter participants;
 - change tactical combat RPCs;
 - touch world-map routes, travel, weather, or town/city-map behavior.
-
 
 ## Snapshot-cache amendment (2026-08-04)
 
