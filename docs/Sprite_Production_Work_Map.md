@@ -60,7 +60,7 @@ The user does not edit frames. Source adjustments are made in the repository; th
 
 ### Dawn visual refinement v2 — source prepared
 
-The bundled refinement pass now adds `tools/blender/dndnext_dawn_visual_refinement_v2.py` between procedural model creation and scene preparation. It:
+The bundled refinement pass adds `tools/blender/dndnext_dawn_visual_refinement_v2.py` between procedural model creation and scene preparation. It:
 
 - shortens and narrows the robe and cape to expose the lower legs;
 - enlarges and separates the boots and shins;
@@ -72,15 +72,27 @@ The bundled refinement pass now adds `tools/blender/dndnext_dawn_visual_refineme
 
 No rendered frame is manually edited.
 
+### Batch crash hardening — source prepared
+
+The first v2 render attempt passed model build, refinement, scene preparation, exporter dry run, and native Cycles probe, then Blender 4.5 exited with `EXCEPTION_ACCESS_VIOLATION` before the first batch cell.
+
+The batch path now:
+
+- keeps the dry run as the authoritative transform-level distinct-pose preflight;
+- skips only the duplicate preflight inside the full-render process;
+- retains rendered-frame hashing and static-row rejection;
+- retries native Blender exit code `11` once in a fresh process;
+- preserves crash-report capture if both attempts fail.
+
 ## Current blocking work
 
-Dawn visual refinement v2 is source-complete but requires one real Windows Blender render and artifact publication.
+Dawn visual refinement v2 and the batch-crash hardening are source-complete but require one successful Windows Blender render and artifact publication.
 
 Current gate:
 
-1. pull the merged v2 source;
+1. pull the merged hardening source;
 2. run the one-line build/publish command;
-3. confirm automatic QA still passes with the larger framing and stronger poses;
+3. confirm automatic QA passes with the larger framing and stronger poses;
 4. inspect the published `.blend`, atlas, 32 frames, QA JSON, and HTML preview;
 5. approve the visual result or make one further procedural pass;
 6. run `/admin/sprite-lab` and in-site scale checks.
@@ -106,7 +118,7 @@ Dawn is complete only after all of the following:
 
 ### Phase A — finish Dawn
 
-1. Render and publish visual refinement v2.
+1. Render and publish visual refinement v2 through the hardened batch path.
 2. Inspect the artifact branch directly.
 3. Make another procedural pass only where the actual render demonstrates a deficiency.
 4. Run Sprite Production Lab and in-site preview checks.
@@ -145,7 +157,7 @@ Cycles CPU render + static-row QA
         ↓
 Automated artifact publishing
         ↓
-Dawn visual refinement v2 render       ← CURRENT
+Dawn v2 hardened batch render           ← CURRENT
         ↓
 Sprite Lab + site preview approval
         ↓
