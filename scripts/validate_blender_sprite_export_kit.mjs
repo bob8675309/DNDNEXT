@@ -74,11 +74,16 @@ for (const token of [
 
 for (const token of [
   "Prepare one deterministic DNDNext sprite cell as a pose-frozen blend",
+  "preserves intentional render visibility",
   "Isolated cell preparation requires a deterministic pose library.",
+  "obj.name not in renderable_names",
+  "not obj.hide_render",
+  "Render collection has no intentionally visible geometry.",
   "armature.animation_data.action = None",
   "core._apply_pose_snapshot",
   'scene["dndnext_isolated_sprite_cell"]',
   '"renderStrategy"',
+  '"visibleRenderableCount"',
   "scene.frame_start = 1",
   "scene.frame_end = 1",
   "bpy.ops.wm.save_as_mainfile",
