@@ -23,6 +23,12 @@ function Invoke-Git {
   return $LASTEXITCODE
 }
 
+$TrackedChanges = (& git -C $RepoRoot status --porcelain --untracked-files=no)
+if ($LASTEXITCODE -ne 0) { throw "Could not verify repository status." }
+if ($TrackedChanges) {
+  throw "Tracked local changes are present. Commit, stash, or discard them before publishing so the artifact source commit remains trustworthy."
+}
+
 if (-not $SkipBuild) {
   & $BuildScript -BlenderPath $BlenderPath -OutputDir $OutputDir
   if ($LASTEXITCODE -ne 0) { throw "Dawn build failed with exit code $LASTEXITCODE" }
@@ -49,16 +55,13 @@ if (Test-Path $Worktree) {
   Invoke-Git @("worktree", "remove", "--force", $Worktree) -AllowFailure | Out-Null
   if (Test-Path $Worktree) { Remove-Item $Worktree -Recurse -Force }
 }
+Invoke-Git @("worktree", "prune") | Out-Null
 
 try {
   Invoke-Git @("fetch", "origin") | Out-Null
   & git -C $RepoRoot show-ref --verify --quiet "refs/remotes/origin/$ArtifactBranch"
-  $RemoteExists = $LASTEXITCODE -eq 0
-  if ($RemoteExists) {
-    Invoke-Git @("worktree", "add", "--force", "-B", $ArtifactBranch, $Worktree, "origin/$ArtifactBranch") | Out-Null
-  } else {
-    Invoke-Git @("worktree", "add", "--force", "-b", $ArtifactBranch, $Worktree, "HEAD") | Out-Null
-  }
+  $BaseRef = if ($LASTEXITCODE -eq 0) { "origin/$ArtifactBranch" } else { "HEAD" }
+  Invoke-Git @("worktree", "add", "--force", "-B", $ArtifactBranch, $Worktree, $BaseRef) | Out-Null
 
   if (Test-Path $ReviewTarget) { Remove-Item $ReviewTarget -Recurse -Force }
   New-Item -ItemType Directory -Path $ReviewTarget -Force | Out-Null
@@ -97,4 +100,5 @@ try {
   if (Test-Path $Worktree) {
     Invoke-Git @("worktree", "remove", "--force", $Worktree) -AllowFailure | Out-Null
   }
+  Invoke-Git @("worktree", "prune") -AllowFailure | Out-Null
 }
