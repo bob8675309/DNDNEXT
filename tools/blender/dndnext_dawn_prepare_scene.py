@@ -1,7 +1,8 @@
 """Finalize the procedural Dawn model for the DNDNext sprite exporter.
 
 This script opens the generated blend, creates or updates the canonical camera and light
-rig, validates the Dawn armature/action hierarchy, and saves the prepared blend in place.
+rig, validates the Dawn armature/action hierarchy, configures a deterministic render
+engine, and saves the prepared blend in place.
 """
 
 from __future__ import annotations
@@ -113,6 +114,25 @@ def ensure_root(name: str, collection: bpy.types.Collection) -> bpy.types.Object
     return root
 
 
+def configure_cycles(scene: bpy.types.Scene, manifest: dict) -> None:
+    config = manifest.get("cycles") or {}
+    if not isinstance(config, dict):
+        raise PrepareError("Manifest cycles field must be an object")
+    scene.cycles.device = str(config.get("device", "CPU")).upper()
+    scene.cycles.samples = int(config.get("samples", 32))
+    scene.cycles.preview_samples = int(config.get("preview_samples", 8))
+    scene.cycles.use_adaptive_sampling = bool(config.get("use_adaptive_sampling", False))
+    scene.cycles.use_denoising = bool(config.get("use_denoising", False))
+    scene.cycles.max_bounces = int(config.get("max_bounces", 4))
+    scene.cycles.transparent_max_bounces = int(config.get("transparent_max_bounces", 2))
+    scene.render.use_persistent_data = False
+    print(
+        "Configured Cycles safe render: "
+        f"device={scene.cycles.device}, samples={scene.cycles.samples}, "
+        f"denoising={scene.cycles.use_denoising}"
+    )
+
+
 def configure_scene(manifest: dict) -> None:
     scene = bpy.context.scene
     scene.render.resolution_x = int(manifest.get("frame_width", 64))
@@ -121,11 +141,15 @@ def configure_scene(manifest: dict) -> None:
     scene.render.film_transparent = True
     scene.render.image_settings.file_format = "PNG"
     scene.render.image_settings.color_mode = "RGBA"
+    scene.render.image_settings.color_depth = "8"
     scene.render.image_settings.compression = int(manifest.get("png_compression", 15))
+    engine = str(manifest.get("render_engine", "CYCLES")).strip().upper()
     try:
-        scene.render.engine = str(manifest.get("render_engine", "BLENDER_EEVEE_NEXT"))
-    except TypeError:
-        scene.render.engine = "BLENDER_EEVEE_NEXT"
+        scene.render.engine = engine
+    except TypeError as exc:
+        raise PrepareError(f"Unsupported Blender render engine {engine!r}") from exc
+    if engine == "CYCLES":
+        configure_cycles(scene, manifest)
     if scene.world:
         scene.world.color = (0.012, 0.010, 0.018)
     color = manifest.get("color_management") or {}
