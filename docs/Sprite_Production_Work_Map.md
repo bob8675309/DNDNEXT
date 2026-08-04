@@ -58,7 +58,7 @@ This proves the model-generation, animation-sampling, rendering, atlas, and QA p
 
 The user does not edit frames. Source adjustments are made in the repository; the local Windows machine only executes the one-line build/publish command. Generated output remains off `main` until final approval.
 
-## Current gate: Dawn visual refinement
+## Current blocking work
 
 Dawn is technically valid but not yet the final visual standard.
 
@@ -72,7 +72,7 @@ The current candidate needs:
 
 All adjustments must be made procedurally in `tools/blender/dndnext_dawn_model_builder.py` or shared render configuration. No manual frame editing is part of the production workflow.
 
-## Dawn acceptance gates
+## Acceptance gates
 
 Dawn is complete only after all of the following:
 
@@ -87,7 +87,7 @@ Dawn is complete only after all of the following:
 9. final source, accepted artifacts, settings, failures, and fixes are documented;
 10. the approved atlas is registered and assigned in a reversible test context.
 
-## Remaining sequence
+## Remaining work
 
 ### Phase A — finish Dawn
 
