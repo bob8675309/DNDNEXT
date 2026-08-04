@@ -83,6 +83,7 @@ $BlendPath = Join-Path $ResolvedOutput "dawn_whiteflame_model.blend"
 $Manifest = Join-Path $RepoRoot "tools/blender/manifests/dawn_whiteflame.sprite.json"
 $Builder = Join-Path $RepoRoot "tools/blender/dndnext_dawn_model_builder.py"
 $Refinement = Join-Path $RepoRoot "tools/blender/dndnext_dawn_visual_refinement_v2.py"
+$BaselineCorrection = Join-Path $RepoRoot "tools/blender/dndnext_dawn_baseline_correction_v2_1.py"
 $Prepare = Join-Path $RepoRoot "tools/blender/dndnext_dawn_prepare_scene.py"
 $ExporterCore = Join-Path $RepoRoot "tools/blender/dndnext_sprite_export.py"
 $Exporter = Join-Path $RepoRoot "tools/blender/dndnext_sprite_export_runner.py"
@@ -100,6 +101,13 @@ Invoke-BlenderStep "Build rigged Dawn prototype" @(
 Invoke-BlenderStep "Apply Dawn visual refinement v2" @(
   "--background", $BlendPath,
   "--python", $Refinement,
+  "--",
+  "--output", $BlendPath
+)
+
+Invoke-BlenderStep "Normalize Dawn diagonal baseline v2.1" @(
+  "--background", $BlendPath,
+  "--python", $BaselineCorrection,
   "--",
   "--output", $BlendPath
 )

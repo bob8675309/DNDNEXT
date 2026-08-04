@@ -72,11 +72,11 @@ The bundled refinement pass adds `tools/blender/dndnext_dawn_visual_refinement_v
 
 No rendered frame is manually edited.
 
-### Batch crash hardening — source prepared
+### Batch crash hardening — verified
 
 The first v2 render attempt passed model build, refinement, scene preparation, exporter dry run, and native Cycles probe, then Blender 4.5 exited with `EXCEPTION_ACCESS_VIOLATION` before the first batch cell.
 
-The batch path now:
+The hardened batch path now:
 
 - keeps the dry run as the authoritative transform-level distinct-pose preflight;
 - skips only the duplicate preflight inside the full-render process;
@@ -84,17 +84,34 @@ The batch path now:
 - retries native Blender exit code `11` once in a fresh process;
 - preserves crash-report capture if both attempts fail.
 
+The following run rendered all 32 cells and reached automatic QA, proving that the crash hardening works.
+
+### Dawn baseline correction v2.1 — source prepared
+
+The successful v2 render failed only two strict baseline checks:
+
+- Southwest (`down-left`) drifted `4.00px` against a `2.00px` limit;
+- Northeast (`up-right`) drifted `3.00px` against a `2.00px` limit.
+
+The QA limit remains unchanged. `tools/blender/dndnext_dawn_baseline_correction_v2_1.py` now normalizes only the procedural root-height excursion:
+
+- idle frame 1: `0.000`;
+- contact frames 7 and 19: `-0.020` instead of `-0.060`;
+- passing frame 13: `0.018` instead of `0.038`.
+
+The stronger leg, knee, foot, robe, boot, scale, material, staff, and directional refinements remain intact. The correction updates both the editable Action and deterministic pose library before scene preparation.
+
 ## Current blocking work
 
-Dawn visual refinement v2 and the batch-crash hardening are source-complete but require one successful Windows Blender render and artifact publication.
+Dawn visual refinement v2 plus baseline correction v2.1 requires one rerender and automatic publication.
 
 Current gate:
 
-1. pull the merged hardening source;
+1. pull the merged baseline-correction source;
 2. run the one-line build/publish command;
-3. confirm automatic QA passes with the larger framing and stronger poses;
-4. inspect the published `.blend`, atlas, 32 frames, QA JSON, and HTML preview;
-5. approve the visual result or make one further procedural pass;
+3. confirm all 32 cells render and automatic QA passes without relaxing the two-pixel baseline limit;
+4. inspect the published `.blend`, atlas, frames, QA JSON, and HTML preview;
+5. approve the visual result or make one final evidence-driven procedural adjustment;
 6. run `/admin/sprite-lab` and in-site scale checks.
 
 Dawn remains unregistered and unassigned until these gates pass.
@@ -118,7 +135,7 @@ Dawn is complete only after all of the following:
 
 ### Phase A — finish Dawn
 
-1. Render and publish visual refinement v2 through the hardened batch path.
+1. Render and publish refinement v2 with baseline correction v2.1.
 2. Inspect the artifact branch directly.
 3. Make another procedural pass only where the actual render demonstrates a deficiency.
 4. Run Sprite Production Lab and in-site preview checks.
@@ -157,7 +174,7 @@ Cycles CPU render + static-row QA
         ↓
 Automated artifact publishing
         ↓
-Dawn v2 hardened batch render           ← CURRENT
+Dawn baseline correction v2.1 rerender    ← CURRENT
         ↓
 Sprite Lab + site preview approval
         ↓

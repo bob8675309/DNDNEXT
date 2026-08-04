@@ -66,7 +66,7 @@ Going forward:
 
 ## Source pass 4 — Dawn visual refinement v2 prepared
 
-A bundled procedural refinement is ready for the next real render:
+A bundled procedural refinement was prepared with:
 
 - orthographic scale reduced from `4.4` to `4.0` for about 10% more in-cell presence;
 - robe and cape shortened and narrowed to expose the lower legs;
@@ -77,8 +77,6 @@ A bundled procedural refinement is ready for the next real render:
 - staff-side arm motion kept restrained;
 - material values separated more strongly for ivory, gold, silver hair, armor, and boots;
 - refinement version recorded as `dawn_grounded_walk_v2`.
-
-This is source status, not render evidence. It must not be described as visually successful until the Windows Blender run publishes a passing candidate.
 
 ## Run 4 — refinement v2 batch process crashed before frame 1
 
@@ -92,7 +90,7 @@ The v2 local run completed:
 
 The separate 32-frame Blender process then exited with Windows `EXCEPTION_ACCESS_VIOLATION`, reported to PowerShell as exit code `11`, immediately after detaching the Action and before rendering the first batch cell. No QA result or review artifact was published.
 
-This failure occurred in the duplicate transform-level pose preflight that the dry run had already completed successfully. The batch path is therefore hardened to:
+The batch path was hardened to:
 
 - keep the dry run as the authoritative distinct-pose preflight;
 - skip only the duplicate preflight inside the full-render process;
@@ -100,6 +98,33 @@ This failure occurred in the duplicate transform-level pose preflight that the d
 - retry native Blender exit code `11` once in a fresh process;
 - preserve crash-report capture if both attempts fail.
 
+## Run 5 — refinement v2 completed all frames; baseline QA blocked publication
+
+The next local run proved the crash hardening:
+
+- all 32 cells rendered successfully;
+- rendered-frame uniqueness checks completed;
+- atlas assembly reached automatic QA;
+- no native Blender crash occurred.
+
+Automatic QA correctly blocked publication for only two errors:
+
+- Southwest (`down-left`) baseline drift: `4.00px`, limit `2.00px`;
+- Northeast (`up-right`) baseline drift: `3.00px`, limit `2.00px`.
+
+No static-row, crop, width, pivot, hierarchy, or render-completion error was reported in the terminal output. The larger v2 poses therefore work structurally, but their root-height excursion is too large in two opposite diagonal projections.
+
+## Source pass 5 — baseline correction v2.1 prepared
+
+The QA tolerance remains at two pixels. A new procedural pass, `dndnext_dawn_baseline_correction_v2_1.py`, corrects only root-height excursion after the v2 visual refinement:
+
+- frame 1 idle: `0.000`;
+- frame 7 contact: `-0.020` instead of `-0.060`;
+- frame 13 passing: `0.018` instead of `0.038`;
+- frame 19 contact: `-0.020` instead of `-0.060`.
+
+The script updates both the editable `Dawn_Walk` Action and the deterministic pose library, records `dawn_grounded_walk_v2_1_baseline`, and saves the corrected `.blend` before scene preparation. Strong leg articulation and the v2 geometry/material improvements are preserved.
+
 ## Next run
 
-Pull the batch-crash hardening and rerun the one-line build/publish command. Automatic QA must pass before artifacts are published. Review then determines whether v2 is final or whether one more procedural adjustment is required. Dawn remains unregistered and unassigned until visual and site-level gates pass.
+Pull the baseline-correction source and rerun the one-line build/publish command. Automatic QA must pass before artifacts are published. After publication, inspect the generated candidate directly and determine whether Dawn is visually final or needs one last evidence-driven procedural adjustment.

@@ -13,6 +13,8 @@ const exporter = read("tools/blender/dndnext_sprite_export.py");
 const exporterRunner = read("tools/blender/dndnext_sprite_export_runner.py");
 const setup = read("tools/blender/dndnext_sprite_scene_setup.py");
 const builder = read("tools/blender/dndnext_dawn_model_builder.py");
+const refinement = read("tools/blender/dndnext_dawn_visual_refinement_v2.py");
+const baselineCorrection = read("tools/blender/dndnext_dawn_baseline_correction_v2_1.py");
 const prepare = read("tools/blender/dndnext_dawn_prepare_scene.py");
 const windowsBuild = read("tools/blender/build_dawn_whiteflame.ps1");
 const manifest = JSON.parse(read("tools/blender/manifests/dawn_whiteflame.sprite.json"));
@@ -36,6 +38,7 @@ assert(JSON.stringify(manifest.walk_sequence) === JSON.stringify([0, 1, 2, 3, 2,
 assert(manifest.render_engine === "CYCLES" && manifest.cycles?.device === "CPU", "Windows-safe Cycles CPU contract changed");
 assert(manifest.cycles?.samples === 32 && manifest.cycles?.use_denoising === false, "deterministic Cycles settings changed");
 assert(manifest.qa?.minimum_unique_rendered_frames_per_row === 3, "static-row rejection threshold must remain three frames");
+assert(manifest.qa?.max_baseline_delta_px === 2, "strict two-pixel baseline QA must remain enabled");
 assert(manifest.render_collection === "DawnWhiteflame_Sprite", "render collection changed");
 assert(manifest.rotation_root === "DNDNext_SpriteRoot", "rotation root changed");
 assert(manifest.camera_object === "DNDNext_OrthoCamera", "camera name changed");
@@ -64,6 +67,7 @@ for (const token of [
   'Path(__file__).with_name("dndnext_sprite_export.py")',
   "core._assign_action = assign_action_without_render_override",
   "armature.animation_data.action = None",
+  "skip_duplicate_pose_preflight",
   "Detached Blender Action for deterministic pose rendering.",
 ]) {
   assert(exporterRunner.includes(token), `deterministic exporter runner is missing ${token}`);
@@ -110,6 +114,28 @@ for (const bone of [
 }
 
 for (const token of [
+  'REFINEMENT_VERSION = "dawn_grounded_walk_v2"',
+  "REFINED_POSES = {",
+  '"root_location": (0.0, 0.0, -0.060)',
+  "_apply_geometry_refinement",
+]) {
+  assert(refinement.includes(token), `Dawn visual refinement is missing ${token}`);
+}
+
+for (const token of [
+  'CORRECTION_VERSION = "dawn_grounded_walk_v2_1_baseline"',
+  "ROOT_HEIGHTS = {",
+  "7: -0.020",
+  "13: 0.018",
+  "19: -0.020",
+  "diagonal baseline QA drift",
+  "root.keyframe_insert",
+  "maxAllowedPixels",
+]) {
+  assert(baselineCorrection.includes(token), `Dawn baseline correction is missing ${token}`);
+}
+
+for (const token of [
   "def ensure_camera(", "def ensure_area_light(", "def ensure_root(", "def configure_scene(",
   'camera.data.type = "ORTHO"', 'scene.render.film_transparent = True',
   'scene.render.image_settings.color_mode = "RGBA"', 'scene.cycles.device = str(config.get("device", "CPU")).upper()',
@@ -119,10 +145,12 @@ for (const token of [
 }
 
 for (const token of [
-  "Resolve-BlenderPath", "Build rigged Dawn prototype", "Prepare Cycles CPU sprite scene",
+  "Resolve-BlenderPath", "Build rigged Dawn prototype", "Apply Dawn visual refinement v2",
+  "Normalize Dawn diagonal baseline v2.1", "Prepare Cycles CPU sprite scene",
   "Validate exporter hierarchy", "Probe first Cycles CPU frame", "Render 32 frames and assemble atlas",
-  "dndnext_dawn_model_builder.py", "dndnext_dawn_prepare_scene.py", "dndnext_sprite_export.py",
-  "dndnext_sprite_export_runner.py",
+  "dndnext_dawn_model_builder.py", "dndnext_dawn_visual_refinement_v2.py",
+  "dndnext_dawn_baseline_correction_v2_1.py", "dndnext_dawn_prepare_scene.py", "dndnext_sprite_export.py",
+  "dndnext_sprite_export_runner.py", "-MaxAttempts 2", "-RetryExitCodes @(11)",
   "dawn_whiteflame_model.blend", "dawn-whiteflame.qa.html", "--dry-run", "--keep-frames",
   "--gpu-backend", "opengl", "--debug-gpu-force-workarounds", "blender-last-crash.txt", "/admin/sprite-lab",
 ]) {
@@ -145,11 +173,12 @@ for (const [source, token] of [
   [workMap, "Current blocking work"],
   [workMap, "Remaining work"],
   [workMap, "Acceptance gates"],
+  [workMap, "baseline correction v2.1"],
 ]) {
   assert(source.includes(token), `documentation is missing ${token}`);
 }
 
-for (const source of [exporter, exporterRunner, setup, builder, prepare]) {
+for (const source of [exporter, exporterRunner, setup, builder, refinement, baselineCorrection, prepare]) {
   for (const forbidden of ["MapPageClient", "map_routes", "encounter_", "supabase", "requests.", "urllib.request", "subprocess.run", "os.system"]) {
     assert(!source.includes(forbidden), `offline Blender tooling crossed a protected/network boundary: ${forbidden}`);
   }
@@ -158,6 +187,8 @@ for (const source of [exporter, exporterRunner, setup, builder, prepare]) {
 const python = process.platform === "win32" ? "python" : "python3";
 const syntax = spawnSync(python, ["-m", "py_compile",
   "tools/blender/dndnext_dawn_model_builder.py",
+  "tools/blender/dndnext_dawn_visual_refinement_v2.py",
+  "tools/blender/dndnext_dawn_baseline_correction_v2_1.py",
   "tools/blender/dndnext_dawn_prepare_scene.py",
   "tools/blender/dndnext_sprite_scene_setup.py",
   "tools/blender/dndnext_sprite_export.py",
