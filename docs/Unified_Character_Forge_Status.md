@@ -149,3 +149,13 @@ After this slice passes user testing and documentation is reconciled, return to:
 1. `docs/Dawn_High_Quality_Prototype_Plan.md`;
 2. one high-quality South-facing Dawn idle/walk prototype;
 3. no new full 32-cell Dawn atlas until the South prototype is visually approved.
+
+## PR A — resilience and player presentation
+
+- Closing the Forge preserves the mounted in-memory draft; a hard refresh or auth reset clears it.
+- Reset is explicit, confirmed, and creates a fresh Forge request state.
+- Player creation uses an explicit submit callback instead of replacing the shared Supabase client RPC method.
+- Player tabs use content-driven proportions; Identity, Story, and Review become full-width.
+- Player-facing tag and placement controls are hidden. Class, species, background, and trained-profession tags are derived by database authority.
+- All obsolete SVG portrait records and repository files are deleted and blocked from reintroduction.
+- Future player-assigned minions remain NPCs and should use a dedicated controller/assignment relationship rather than the `player-character` tag.

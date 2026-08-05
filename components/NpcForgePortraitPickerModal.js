@@ -103,7 +103,7 @@ export default function NpcForgePortraitPickerModal({
         setError(portraitRes.error.message || "Could not load portrait library.");
         setPortraits([]);
       } else {
-        setPortraits(portraitRes.data || []);
+        setPortraits((portraitRes.data || []).filter((row) => !/\.svg(?:$|[?#])/i.test(portraitUrl(row))));
       }
       setAssets(assetRes.error ? [] : assetRes.data || []);
       setSuggestions(suggestionRes.error ? [] : suggestionRes.data || []);

@@ -131,3 +131,5 @@ npx next build
 - No merchant stock changes.
 - No inventory consumption changes.
 - Do not direct-write large source files through the connector. Use local patch scripts or narrow verified source-bake steps for `pages/npcs.js`, `pages/items.js`, `pages/town/[id].js`, `components/TownSheet.js`, and `components/MapPageClient.js`.
+
+- `scripts/validate_character_forge_resilience.mjs` — Character Forge resilience and player-authority guard; it does not alter town/city-map or world-map behavior.

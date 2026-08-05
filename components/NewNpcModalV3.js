@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import NewNpcModalV3Refined from "./NewNpcModalV3Refined";
 import {
@@ -45,14 +45,28 @@ async function persistSpeciesChoices(created, choiceState) {
   if (updateError) throw updateError;
 }
 
+function tagSlug(value = "") {
+  return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
 function playerPayload(payload = {}) {
-  const tags = Array.isArray(payload.tags) ? payload.tags : [];
   const sheet = payload.sheet && typeof payload.sheet === "object" ? payload.sheet : {};
+  const meta = sheet.meta && typeof sheet.meta === "object" ? sheet.meta : {};
+  const professions = sheet.professions && typeof sheet.professions === "object" ? sheet.professions : {};
+  const tags = [
+    "player-character",
+    tagSlug(meta.speciesKey || sheet.species || sheet.race) ? `species:${tagSlug(meta.speciesKey || sheet.species || sheet.race)}` : "",
+    tagSlug(meta.classKey || sheet.classKey || sheet.className || sheet.class) ? `class:${tagSlug(meta.classKey || sheet.classKey || sheet.className || sheet.class)}` : "",
+    tagSlug(meta.backgroundKey || sheet.background) ? `background:${tagSlug(meta.backgroundKey || sheet.background)}` : "",
+    ...Object.entries(professions)
+      .filter(([, entry]) => Number(entry?.rank || 0) > 0)
+      .map(([key]) => `profession:${tagSlug(key)}`),
+  ].filter(Boolean);
   const casting = Boolean(sheet.spellcasting?.ability || sheet.spellcasting?.abilityLabel);
   return {
     ...payload,
     kind: "npc",
-    tags: [...new Set([...tags, "player-character"])],
+    tags: [...new Set(tags)],
     storefront_enabled: false,
     storefront_title: null,
     storefront_tagline: null,
@@ -72,38 +86,9 @@ function playerPayload(payload = {}) {
   };
 }
 
-function setText(node, value) {
-  if (node && node.textContent !== value) node.textContent = value;
-}
-
-function adaptPlayerForge(root) {
-  if (!root) return;
-  root.classList.add("is-player-character-forge");
-  const heading = root.querySelector("#npc-forge-title, #player-forge-title");
-  if (heading) {
-    if (heading.id !== "player-forge-title") heading.id = "player-forge-title";
-    setText(heading, "Player Character Forge");
-  }
-  setText(root.querySelector(".npc-forge-header p"), "Build a player-owned character with the shared canonical Forge. Starting level may be set from 1 to 20.");
-  const nav = root.querySelector(".npc-forge-steps");
-  if (nav?.getAttribute("aria-label") !== "Player character creation steps") nav?.setAttribute("aria-label", "Player character creation steps");
-  root.querySelectorAll("button").forEach((button) => {
-    const label = button.textContent?.trim() || "";
-    if (label === "Create NPC" || label === "Create Merchant") setText(button, "Create Player Character");
-    if (label === "Generate NPC story & world fit") setText(button, "Generate character story & world fit");
-  });
-  root.querySelectorAll(".npc-forge-section-heading p, .npc-forge-story-actions p, .npc-forge-review-grid p").forEach((node) => {
-    const current = node.textContent || "";
-    const next = current.replace(/\bNPC\b/g, "character");
-    if (next !== current) node.textContent = next;
-  });
-}
-
 export default function NewNpcModalV3(props) {
   const show = Boolean(props?.show);
   const playerMode = props?.mode === "player";
-  const rootRef = useRef(null);
-  const originalRpcRef = useRef(null);
   const [speciesChoiceState, setSpeciesChoiceState] = useState(() => ({ speciesId: "", speciesName: "", rules: [], selections: {} }));
   const choiceStateRef = useRef(speciesChoiceState);
   useEffect(() => { choiceStateRef.current = speciesChoiceState; }, [speciesChoiceState]);
@@ -119,6 +104,13 @@ export default function NewNpcModalV3(props) {
     }));
   }, []);
   const contextValue = useMemo(() => ({ state: speciesChoiceState, registerSpecies, selectChoice }), [registerSpecies, selectChoice, speciesChoiceState]);
+  const createCharacter = useCallback((payload) => {
+    if (!playerMode) return supabase.rpc("create_character_v1", { p_payload: payload });
+    return supabase.rpc("create_player_character_v2", {
+      p_payload: playerPayload(payload),
+      p_spell_choices: [],
+    });
+  }, [playerMode]);
 
   useEffect(() => {
     if (!show || typeof document === "undefined") return undefined;
@@ -138,34 +130,6 @@ export default function NewNpcModalV3(props) {
     return () => document.removeEventListener("click", blockIncompleteSpeciesChoice, true);
   }, [show]);
 
-  useEffect(() => {
-    if (!show || !playerMode) return undefined;
-    const originalMethod = supabase.rpc;
-    originalRpcRef.current = originalMethod;
-    const invokeOriginal = (functionName, args, options) => originalMethod.call(supabase, functionName, args, options);
-    supabase.rpc = (functionName, args, options) => {
-      if (functionName !== "create_character_v1") return invokeOriginal(functionName, args, options);
-      return invokeOriginal("create_player_character_v2", {
-        p_payload: playerPayload(args?.p_payload || {}),
-        p_spell_choices: [],
-      }, options);
-    };
-    return () => {
-      if (originalRpcRef.current) supabase.rpc = originalRpcRef.current;
-      originalRpcRef.current = null;
-    };
-  }, [playerMode, show]);
-
-  useEffect(() => {
-    if (!show || !playerMode || typeof MutationObserver === "undefined") return undefined;
-    const container = rootRef.current;
-    const apply = () => adaptPlayerForge(container?.querySelector(".npc-forge-modal-v2"));
-    apply();
-    const observer = new MutationObserver(apply);
-    if (container) observer.observe(container, { childList: true, subtree: true });
-    return () => observer.disconnect();
-  }, [playerMode, show]);
-
   async function handleCreated(created) {
     const snapshot = choiceStateRef.current;
     setSpeciesChoiceState({ speciesId: "", speciesName: "", rules: [], selections: {} });
@@ -178,8 +142,14 @@ export default function NewNpcModalV3(props) {
 
   return (
     <NpcForgeSpeciesChoiceContext.Provider value={contextValue}>
-      <div ref={rootRef} className={playerMode ? "unified-player-character-forge" : undefined}>
-        <NewNpcModalV3Refined {...props} onCreated={handleCreated} />
+      <div className={playerMode ? "unified-player-character-forge" : undefined}>
+        <NewNpcModalV3Refined
+          {...props}
+          mode={playerMode ? "player" : "npc"}
+          createCharacter={createCharacter}
+          onReset={() => setSpeciesChoiceState({ speciesId: "", speciesName: "", rules: [], selections: {} })}
+          onCreated={handleCreated}
+        />
       </div>
       <style jsx global>{`
         .npc-forge-context-row-details{width:100%!important;min-width:0!important;grid-template-columns:minmax(0,1fr)!important}
@@ -192,7 +162,7 @@ export default function NewNpcModalV3(props) {
         .npc-forge-background-spell-body>div{grid-template-columns:92px minmax(0,1fr)!important}
         .unified-player-character-forge .npc-forge-backdrop{position:static!important;inset:auto!important;display:block!important;width:100%!important;height:auto!important;min-height:0!important;padding:0!important;background:none!important;backdrop-filter:none!important}
         .unified-player-character-forge .npc-forge-modal-v2{width:100%!important;max-width:none!important}
-        .unified-player-character-forge .npc-forge-choice-grid.two,.unified-player-character-forge .npc-forge-profession-list,.unified-player-character-forge .npc-forge-merchant-box{display:none!important}
+        .unified-player-character-forge .npc-forge-choice-grid.two,.unified-player-character-forge .npc-forge-merchant-box{display:none!important}
         .unified-player-character-forge .npc-forge-service-toggle{display:none!important}
         @media(max-width:720px){.npc-forge-background-spell-body>div{grid-template-columns:1fr!important}}
       `}</style>

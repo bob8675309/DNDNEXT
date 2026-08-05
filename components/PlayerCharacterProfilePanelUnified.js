@@ -71,7 +71,6 @@ export default function PlayerCharacterProfilePanelUnified() {
 
   const closePanel = useCallback(() => {
     setOpen(false);
-    setCreatingCharacter(false);
     if (!router?.isReady || router.query?.characterProfile !== "1") return;
     const nextQuery = { ...(router.query || {}) };
     delete nextQuery.characterProfile;
@@ -183,13 +182,8 @@ export default function PlayerCharacterProfilePanelUnified() {
   }, []);
 
   const cancelCreator = useCallback(() => {
-    if (characters.length) {
-      setCreatingCharacter(false);
-      setMessage("");
-      return;
-    }
     closePanel();
-  }, [characters.length, closePanel]);
+  }, [closePanel]);
 
   useEffect(() => {
     let active = true;
@@ -304,10 +298,11 @@ export default function PlayerCharacterProfilePanelUnified() {
     );
   }, [beginAdditionalCharacter, cancelCreator, character, characters, closePanel, creatingCharacter, handleCharacterCreated, isAdmin, loading, locations, message, playerName]);
 
-  if (!isLoggedIn || !open) return null;
+  const keepCreatorMounted = creatingCharacter || !character;
+  if (!isLoggedIn || (!open && !keepCreatorMounted)) return null;
   return (
-    <div className="npc-page-profile-panel-backdrop" onMouseDown={(event) => event.target === event.currentTarget ? closePanel() : null}>
-      <div className={`npc-page-profile-panel-shell ${creatingCharacter || !character ? "is-player-character-forge" : ""}`}>{panelContent}</div>
+    <div className={`npc-page-profile-panel-backdrop ${!open ? "is-forge-suspended" : ""}`} onMouseDown={(event) => open && event.target === event.currentTarget ? closePanel() : null} aria-hidden={!open}>
+      <div className={`npc-page-profile-panel-shell ${keepCreatorMounted ? "is-player-character-forge" : ""}`}>{panelContent}</div>
     </div>
   );
 }
