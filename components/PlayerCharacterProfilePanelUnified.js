@@ -1,6 +1,6 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import { shouldAutoOpenPlayerCharacterPanel } from "../utils/playerCharacterForgeGuard";
 
@@ -182,6 +182,7 @@ export default function PlayerCharacterProfilePanelUnified() {
   }, []);
 
   const cancelCreator = useCallback(() => {
+    setCreatingCharacter(false);
     closePanel();
   }, [closePanel]);
 
@@ -267,42 +268,44 @@ export default function PlayerCharacterProfilePanelUnified() {
     return () => document.removeEventListener("keydown", onKeyDown, true);
   }, [closePanel, isLoggedIn, open, openPanel]);
 
-  const panelContent = useMemo(() => {
-    if (loading && !character && !creatingCharacter) {
-      return <div className="npc-card m-3"><div className="text-muted">Loading linked character profiles…</div></div>;
-    }
-    if (creatingCharacter || !character) {
-      return (
-        <div className="p-3 player-character-forge-host">
-          {message ? <div className="alert alert-secondary py-2">{message}</div> : null}
-          <PlayerCharacterCreator defaultName={character ? "" : playerName} onCreated={handleCharacterCreated} onCancel={cancelCreator} />
-        </div>
-      );
-    }
-    return (
-      <>
-        <div className="player-character-forge-toolbar">
-          <label>
-            <span>Active character</span>
-            <select value={String(character.id)} onChange={(event) => {
-              const next = characters.find((row) => String(row.id) === event.target.value);
-              if (next) setCharacter(next);
-            }}>
-              {characters.map((row) => <option key={row.id} value={String(row.id)}>{playerCharacterLabel(row)}</option>)}
-            </select>
-          </label>
-          <button type="button" className="btn btn-sm btn-outline-light" onClick={beginAdditionalCharacter}>Create another character</button>
-        </div>
-        <CharacterInteractionPanel key={character.id} character={character} isAdmin={isAdmin} locations={locations} onClose={closePanel} initialView="profile" />
-      </>
-    );
-  }, [beginAdditionalCharacter, cancelCreator, character, characters, closePanel, creatingCharacter, handleCharacterCreated, isAdmin, loading, locations, message, playerName]);
+  if (!isLoggedIn) return null;
 
-  const keepCreatorMounted = creatingCharacter || !character;
-  if (!isLoggedIn || (!open && !keepCreatorMounted)) return null;
+  const showCreator = creatingCharacter || !character;
+  const showLoading = loading && !character && !creatingCharacter;
+
   return (
     <div className={`npc-page-profile-panel-backdrop ${!open ? "is-forge-suspended" : ""}`} onMouseDown={(event) => open && event.target === event.currentTarget ? closePanel() : null} aria-hidden={!open}>
-      <div className={`npc-page-profile-panel-shell ${keepCreatorMounted ? "is-player-character-forge" : ""}`}>{panelContent}</div>
+      <div className={`npc-page-profile-panel-shell ${showCreator ? "is-player-character-forge" : ""}`}>
+        {showLoading ? <div className="npc-card m-3"><div className="text-muted">Loading linked character profiles…</div></div> : null}
+
+        <div className={`persistent-player-character-forge ${showCreator && !showLoading ? "" : "is-hidden"}`} aria-hidden={!showCreator || showLoading}>
+          <div className="p-3 player-character-forge-host">
+            {message ? <div className="alert alert-secondary py-2">{message}</div> : null}
+            <PlayerCharacterCreator key={sessionUser.id} defaultName={character ? "" : playerName} onCreated={handleCharacterCreated} onCancel={cancelCreator} />
+          </div>
+        </div>
+
+        <div className={`persistent-player-character-profile ${!showCreator && character && !showLoading ? "" : "is-hidden"}`} aria-hidden={showCreator || !character || showLoading}>
+          {character ? <>
+            <div className="player-character-forge-toolbar">
+              <label>
+                <span>Active character</span>
+                <select value={String(character.id)} onChange={(event) => {
+                  const next = characters.find((row) => String(row.id) === event.target.value);
+                  if (next) setCharacter(next);
+                }}>
+                  {characters.map((row) => <option key={row.id} value={String(row.id)}>{playerCharacterLabel(row)}</option>)}
+                </select>
+              </label>
+              <button type="button" className="btn btn-sm btn-outline-light" onClick={beginAdditionalCharacter}>Create another character</button>
+            </div>
+            <CharacterInteractionPanel key={character.id} character={character} isAdmin={isAdmin} locations={locations} onClose={closePanel} initialView="profile" />
+          </> : null}
+        </div>
+      </div>
+      <style jsx global>{`
+        .persistent-player-character-forge.is-hidden,.persistent-player-character-profile.is-hidden{display:none!important}
+      `}</style>
     </div>
   );
 }
