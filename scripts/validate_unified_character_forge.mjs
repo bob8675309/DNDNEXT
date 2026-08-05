@@ -9,6 +9,11 @@ function requireTokens(source, label, tokens) {
     if (!source.includes(token)) throw new Error(`Unified Character Forge validation failed: ${label} missing ${token}`);
   }
 }
+function forbidTokens(source, label, tokens) {
+  for (const token of tokens) {
+    if (source.includes(token)) throw new Error(`Unified Character Forge validation failed: ${label} still contains retired contract ${token}`);
+  }
+}
 
 const playerCreator = read("components/PlayerCharacterCreatorV2.js");
 const sharedForge = read("components/NewNpcModalV3.js");
@@ -33,20 +38,27 @@ if (/^import\s+.*PlayerCharacterForgeView/m.test(playerCreator) || /<PlayerChara
 
 requireTokens(sharedForge, "shared Forge player mode", [
   'props?.mode === "player"',
-  'functionName !== "create_character_v1"',
-  'invokeOriginal("create_player_character_v2"',
+  "const createCharacter = useCallback",
+  'supabase.rpc("create_player_character_v2"',
   "p_spell_choices: []",
   'creator: "shared_character_forge_player_v2"',
   "startingSpellSelectionPending",
-  "Player Character Forge",
-  "Starting level may be set from 1 to 20.",
+  "createCharacter={createCharacter}",
+]);
+forbidTokens(sharedForge, "shared Forge player mode", [
+  "supabase.rpc =",
+  "MutationObserver",
   "originalRpcRef.current",
-  "supabase.rpc = originalRpcRef.current",
+  'functionName !== "create_character_v1"',
 ]);
 requireTokens(refinedForge, "canonical shared Forge", [
   'const STEP_LABELS = Object.freeze(["Species", "Background", "Class", "Abilities", "Training", "Identity", "Story", "Review"]);',
   'type="number" min="1" max="20"',
+  'mode = "npc"',
+  "createCharacter ? createCharacter(createPayload)",
   'supabase.rpc("create_character_v1"',
+  "Player Character Forge",
+  "Starting level may be set from 1 to 20.",
   "NpcForgeContextPanel",
   "NpcForgePortraitPickerModal",
 ]);
@@ -62,6 +74,8 @@ requireTokens(profile, "multi-character profile", [
   "player-character-forge-toolbar",
   "preferredCharacterId",
   "handleCharacterCreated",
+  "keepCreatorMounted",
+  "is-forge-suspended",
   'document.addEventListener("keydown", onKeyDown, true)',
 ]);
 
@@ -75,6 +89,9 @@ requireTokens(responsive, "responsive Forge CSS", [
   "@media (max-width: 720px)",
   "height: 100dvh",
   ".player-character-forge-toolbar",
+  "npc-forge-step-0",
+  "npc-forge-step-3",
+  "npc-forge-step-7",
 ]);
 if (!app.includes('import "../styles/character-forge-responsive.css";')) {
   throw new Error("Unified Character Forge validation failed: responsive stylesheet is not loaded by the app shell.");
@@ -118,4 +135,4 @@ for (const source of [playerCreator, sharedForge, profile, responsive, migration
   }
 }
 
-console.log("Unified NPC/player Character Forge, multi-character ownership, responsive reachability, and trigger-safe progression contracts validated.");
+console.log("Unified NPC/player Character Forge, explicit player submission, multi-character ownership, responsive reachability, and trigger-safe progression contracts validated.");
