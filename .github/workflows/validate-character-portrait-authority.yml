@@ -15,6 +15,7 @@ on:
       - "sql/20260804_03_character_forge_resilience_and_tags.sql"
       - "public/npc-portraits/defaults/**"
       - "public/npc-portraits/library/**"
+      - "docs/Character_Forge_PR_A_Deployment_Evidence.md"
       - ".github/workflows/validate-character-portrait-authority.yml"
   workflow_dispatch:
 
