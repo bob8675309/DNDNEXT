@@ -171,11 +171,11 @@ export default function NewNpcModalV3(props) {
   const speciesContextValue = useMemo(() => ({ state: speciesChoiceState, registerSpecies, selectChoice }), [registerSpecies, selectChoice, speciesChoiceState]);
   const classContextValue = useMemo(() => ({ state: classChoiceState, registerClass, selectSubclass }), [classChoiceState, registerClass, selectSubclass]);
 
-  const createCharacter = useCallback((payload) => {
-    const enrichedPayload = payloadWithSubclass(payload, classChoiceStateRef.current);
-    if (!playerMode) return supabase.rpc("create_character_v1", { p_payload: enrichedPayload });
+  const createCharacter = useCallback((originalPayload) => {
+    const payload = payloadWithSubclass(originalPayload, classChoiceStateRef.current);
+    if (!playerMode) return supabase.rpc("create_character_v1", { p_payload: payload });
     return supabase.rpc("create_player_character_v2", {
-      p_payload: playerPayload(enrichedPayload),
+      p_payload: playerPayload(payload),
       p_spell_choices: [],
     });
   }, [playerMode]);

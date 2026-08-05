@@ -268,7 +268,8 @@ export default function PlayerCharacterProfilePanelUnified() {
     return () => document.removeEventListener("keydown", onKeyDown, true);
   }, [closePanel, isLoggedIn, open, openPanel]);
 
-  if (!isLoggedIn) return null;
+  const keepCreatorMounted = isLoggedIn;
+  if (!keepCreatorMounted) return null;
 
   const showCreator = creatingCharacter || !character;
   const showLoading = loading && !character && !creatingCharacter;

@@ -16,6 +16,9 @@ const migration = read("sql/20260804_03_character_forge_resilience_and_tags.sql"
 const subclassMigration = read("sql/20260805_01_character_forge_subclass_choice.sql");
 const classContext = read("components/NpcForgeClassChoiceContext.js");
 const classGuide = read("components/NpcForgeClassGuide.js");
+const classGuideModel = read("components/NpcForgeClassGuideModel.js");
+const classGuideSource = `${classGuide}
+${classGuideModel}`;
 const contextPanel = read("components/NpcForgeContextPanel.js");
 
 requireToken(forge, 'mode = "npc"', "canonical Forge");
@@ -42,8 +45,8 @@ forbidToken(profile, "if (!isLoggedIn || (!open && !keepCreatorMounted))", "prof
 
 requireToken(classContext, "classChoiceStateComplete", "class choice context");
 requireToken(classContext, "eligibleSubclassOptions", "class choice context");
-requireToken(classGuide, 'from("class_level_progression")', "class guide");
-requireToken(classGuide, 'from("class_feature_catalog")', "class guide");
+requireToken(classGuideSource, 'from("class_level_progression")', "class guide and model");
+requireToken(classGuideSource, 'from("class_feature_catalog")', "class guide and model");
 requireToken(classGuide, "Compare all", "class guide");
 requireToken(classGuide, "Detailed Guide", "class guide");
 requireToken(classGuide, "Choose subclass", "class guide");
