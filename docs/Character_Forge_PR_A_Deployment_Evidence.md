@@ -76,9 +76,11 @@ The migration was first executed inside an explicit transaction and rolled back.
 
 ## Preview deployment
 
-The earlier Vercel attempts were blocked by `api-deployments-free-per-day`. The hourly retry watcher was disabled before a single controlled documentation-only retry commit was pushed, preventing duplicate attempts.
+The earlier Vercel attempts were blocked by `api-deployments-free-per-day`. The hourly retry watcher was disabled before retrying to prevent concurrent attempts.
 
-Vercel accepted final retry head `5d8e8af0d4442b7a95e952813eabd9689fbdfc87` and marked the PR preview **Ready** on 2026-08-05. No application behavior was changed by the retry commit.
+Vercel accepted the controlled retry and marked the PR preview **Ready** on 2026-08-05. A follow-up documentation-only evidence commit also deployed successfully. No application behavior changed in either retry commit.
+
+Final preview-ready head: `0f0abba87f756d314db2717ca020ab73f949d8d8`.
 
 ## Remaining acceptance gate
 
