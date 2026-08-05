@@ -5,42 +5,226 @@ on:
     branches:
       - main
     paths:
+      - "components/NewNpcModal.js"
+      - "components/NewNpcModalV2.js"
+      - "components/NewNpcModalV2Refined.js"
+      - "components/NewNpcModalV3.js"
+      - "components/NewNpcModalV3Refined.js"
+      - "components/NpcForgePortraitPickerModal.js"
+      - "components/PlayerCharacterCreatorV2.js"
+      - "components/PlayerCharacterProfilePanel.js"
+      - "components/PlayerCharacterProfilePanelUnified.js"
+      - "components/AppNavbar.js"
+      - "components/AdminBuildBadge.js"
+      - "components/NpcForgeContextPanel.js"
+      - "components/NpcForgeContextPanelRefined.js"
+      - "components/TownSheet.js"
+      - "pages/npcs.js"
+      - "pages/town/[id].js"
+      - "pages/_app.js"
+      - "styles/globals.scss"
+      - "styles/npc-forge.scss"
+      - "styles/npc-forge-v2.css"
+      - "styles/character-forge-responsive.css"
+      - "utils/npcForgeCatalog.js"
+      - "utils/npcForgeCatalogRefined.js"
+      - "utils/backgroundMechanics.js"
+      - "utils/backgroundMechanicsRefined.js"
+      - "utils/playerFacingText.js"
+      - "utils/speciesArtwork.js"
+      - "utils/speciesPresentation.js"
+      - "utils/npcSelectionGuard.js"
+      - "utils/playerCharacterForgeGuard.js"
+      - "public/media/species/**"
+      - "public/npc-portraits/defaults/**"
+      - "public/npc-portraits/library/**"
+      - "styles/crafter-counter-shop.css"
+      - "utils/characterCreation.js"
+      - "utils/craftingProfessions.js"
+      - "scripts/node_relative_js_loader.mjs"
+      - "scripts/test_character_creation.mjs"
+      - "scripts/test_npc_forge_character_creation.mjs"
+      - "scripts/test_player_facing_text.mjs"
+      - "scripts/validate_npc_forge_v2.mjs"
+      - "scripts/validate_npc_forge_v2_refined.mjs"
+      - "scripts/validate_unified_character_forge.mjs"
+      - "scripts/validate_character_forge_resilience.mjs"
+      - "scripts/validate_npc_sheet_selection_reconciliation.mjs"
+      - "scripts/validate_security_hardening_roadmap.mjs"
+      - "scripts/validate_tactical_spell_suite.mjs"
+      - "scripts/vercel_build_v2.mjs"
+      - "scripts/validate_handoff_docs_runner_alignment.mjs"
+      - "scripts/validate_large_file_source_bake_readiness.mjs"
+      - "scripts/import_5etools_character_options.mjs"
+      - "scripts/import_5etools_character_options_refined.mjs"
+      - "scripts/patch_character_creation_import.mjs"
+      - "scripts/patch_npc_forge_page.mjs"
+      - "scripts/patch_professions_canonical_crafting.mjs"
+      - "scripts/validate_source_patch_pipeline_cleanup.mjs"
+      - "scripts/validate_town_crafter_handoff_pipeline.mjs"
+      - "scripts/validate_town_merchant_storefront_handoff.mjs"
+      - "scripts/validate_crafter_shop_presentation_handoff.mjs"
+      - "sql/20260617_02_npc_forge_foundation_v1.sql"
+      - "sql/20260724_04_resolve_background_copy_catalog.sql"
+      - "sql/20260804_01_multi_player_character_forge_v2.sql"
+      - "sql/20260804_02_player_forge_progression_upsert.sql"
+      - "sql/20260804_03_character_forge_resilience_and_tags.sql"
+      - "docs/NPC_Character_Sheet_Selection_Reconciliation.md"
+      - "docs/Security_Hardening_Roadmap_Status.md"
+      - "docs/Source_Patch_Pipeline_Audit.md"
+      - "docs/Sprite_Production_Art_Bible.md"
+      - "docs/Town_Crafter_Current_Status.md"
+      - "docs/Unified_Character_Forge_Status.md"
+      - "package.json"
       - ".github/workflows/validate-npc-forge.yml"
-      - "tools/apply_character_forge_pr_a.py"
   workflow_dispatch:
 
 permissions:
-  contents: write
-  pull-requests: read
+  contents: read
 
 jobs:
-  apply-character-forge-pr-a:
-    if: github.head_ref == 'agent/character-forge-resilience-presentation'
+  validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
-      - name: Check out patch branch
+      - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
         with:
-          ref: agent/character-forge-resilience-presentation
-          fetch-depth: 0
+          node-version: 22
+          cache: npm
 
-      - name: Restore canonical validator workflow for asserted editing
-        run: git checkout origin/main -- .github/workflows/validate-npc-forge.yml
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Apply asserted patch
-        run: python tools/apply_character_forge_pr_a.py
-
-      - name: Exclude workflow policy from generated commit
+      - name: Validate JavaScript syntax
         run: |
-          git checkout HEAD -- .github/workflows/validate-npc-forge.yml
-          rm -f tools/apply_character_forge_pr_a.py
+          node --check utils/characterCreation.js
+          node --check utils/craftingProfessions.js
+          node --check scripts/node_relative_js_loader.mjs
+          node --check scripts/test_character_creation.mjs
+          node --check scripts/test_npc_forge_character_creation.mjs
+          node --check scripts/test_player_facing_text.mjs
+          node --check scripts/validate_npc_forge_v2.mjs
+          node --check scripts/validate_npc_forge_v2_refined.mjs
+          node --check scripts/validate_unified_character_forge.mjs
+          node --check scripts/validate_character_forge_resilience.mjs
+          node --check scripts/validate_npc_sheet_selection_reconciliation.mjs
+          node --check scripts/validate_security_hardening_roadmap.mjs
+          node --check scripts/import_5etools_character_options.mjs
+          node --check scripts/import_5etools_character_options_refined.mjs
+          node --check scripts/patch_character_creation_import.mjs
+          node --check scripts/patch_npc_forge_page.mjs
+          node --check scripts/patch_professions_canonical_crafting.mjs
+          node --check scripts/validate_source_patch_pipeline_cleanup.mjs
+          node --check scripts/validate_town_crafter_handoff_pipeline.mjs
+          node --check scripts/validate_town_merchant_storefront_handoff.mjs
+          node --check scripts/validate_crafter_shop_presentation_handoff.mjs
 
-      - name: Commit application, migration, documentation, and validation changes
+      - name: Validate source patch cleanup guard
+        run: node scripts/validate_source_patch_pipeline_cleanup.mjs
+
+      - name: Validate crafter shop presentation handoff
+        run: node scripts/validate_crafter_shop_presentation_handoff.mjs
+
+      - name: Validate town crafter handoff pipeline
+        run: node scripts/validate_town_crafter_handoff_pipeline.mjs
+
+      - name: Validate unified NPC and player Character Forge
+        run: node scripts/validate_unified_character_forge.mjs
+
+      - name: Validate Character Forge resilience and player authority
+        run: node scripts/validate_character_forge_resilience.mjs
+
+      - name: Validate canonical NPC Forge detail source markers
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A -- . ':(exclude).github/workflows'
-          git diff --cached --check
-          git commit -m "Refine Character Forge resilience and player presentation"
-          git push origin HEAD:agent/character-forge-resilience-presentation
+          grep -Fq "export const ALIGNMENT_OPTIONS" utils/characterCreation.js
+          grep -Fq "export const SIZE_OPTIONS" utils/characterCreation.js
+          grep -Fq "function normalizeAlignment" utils/characterCreation.js
+          grep -Fq "function normalizeCharacterSize" utils/characterCreation.js
+          grep -Fq "function normalizeLanguages" utils/characterCreation.js
+          grep -Fq "appearance: cleanText(draft.appearance)" utils/characterCreation.js
+          grep -Fq "equipment: cleanText(draft.equipment)" utils/characterCreation.js
+          grep -Fq "treasure: cleanText(draft.treasure)" utils/characterCreation.js
+          grep -Fq "offersService: professionData[key].offersService" utils/characterCreation.js
+          grep -Fq "ALIGNMENT_OPTIONS," components/NewNpcModal.js
+          grep -Fq "SIZE_OPTIONS," components/NewNpcModal.js
+          grep -Fq "size: \"\"" components/NewNpcModal.js
+          grep -Fq "alignment: \"N\"" components/NewNpcModal.js
+          grep -Fq "languagesText: \"Common\"" components/NewNpcModal.js
+          grep -Fq "appearance: \"\"" components/NewNpcModal.js
+          grep -Fq "equipment: \"\"" components/NewNpcModal.js
+          grep -Fq "treasure: \"\"" components/NewNpcModal.js
+          grep -Fq "<span>Size</span><select value={draft.size}" components/NewNpcModal.js
+          grep -Fq "<span>Alignment</span><select value={draft.alignment}" components/NewNpcModal.js
+          grep -Fq "<span>Languages</span><input value={draft.languagesText}" components/NewNpcModal.js
+          grep -Fq "<span>Appearance</span><textarea" components/NewNpcModal.js
+          grep -Fq "<span>Equipment</span><textarea" components/NewNpcModal.js
+          grep -Fq "<span>Treasure / coin</span><input value={draft.treasure}" components/NewNpcModal.js
+
+      - name: Validate strict provider source markers
+        run: |
+          grep -Fq "function collectExplicitProviderText" utils/craftingProfessions.js
+          grep -Fq "function professionServicesFromSheet" utils/craftingProfessions.js
+          grep -Fq "Name, role, affiliation, and storefront copy must not create workshop access." utils/craftingProfessions.js
+          grep -Fq "offers_service: resolved.offersService" utils/craftingProfessions.js
+          ! grep -Fq "character.role," utils/craftingProfessions.js
+          ! grep -Fq "character.affiliation," utils/craftingProfessions.js
+          grep -Fq "availableProfessionsForCharacter(crafter)" components/TownSheet.js
+          grep -Fq "PROFESSION_TO_CRAFT_TYPE" components/TownSheet.js
+          grep -Fq "activeMerchant" components/TownSheet.js
+          node scripts/validate_town_merchant_storefront_handoff.mjs
+
+      - name: Run character creation model tests
+        shell: bash
+        run: |
+          set +e
+          node --loader ./scripts/node_relative_js_loader.mjs scripts/test_character_creation.mjs > npc-forge-model-test.log 2>&1
+          status=$?
+          cat npc-forge-model-test.log
+          exit $status
+
+      - name: Run NPC Forge detail model tests
+        run: |
+          node --loader ./scripts/node_relative_js_loader.mjs scripts/test_npc_forge_character_creation.mjs
+          node --loader ./scripts/node_relative_js_loader.mjs scripts/test_player_facing_text.mjs
+          node --loader ./scripts/node_relative_js_loader.mjs scripts/validate_npc_forge_v2.mjs
+
+      - name: Upload model test diagnostic
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: npc-forge-model-test
+          path: npc-forge-model-test.log
+
+      - name: Validate migration safety markers
+        run: |
+          grep -Fq "create_character_v1" sql/20260617_02_npc_forge_foundation_v1.sql
+          grep -Fq "delete_character_v1" sql/20260617_02_npc_forge_foundation_v1.sql
+          grep -Fq "protect_mog_delete_v1" sql/20260617_02_npc_forge_foundation_v1.sql
+          grep -Fq "owner_id = p_character_id::text" sql/20260617_02_npc_forge_foundation_v1.sql
+          grep -Fq "character_sheets" sql/20260617_02_npc_forge_foundation_v1.sql
+
+      - name: Validate NPC page integration markers
+        run: |
+          grep -Fq 'supabase.rpc("delete_character_v1"' pages/npcs.js
+          grep -Fq 'locations={locations}' pages/npcs.js
+          grep -Fq 'New NPC' pages/npcs.js
+          ! grep -Fq 'setErrorMessage(' pages/npcs.js
+          ! grep -Fq 'selectedNpc' pages/npcs.js
+          ! grep -Fq 'setSelectedNpc' pages/npcs.js
+
+      - name: Validate Town Sheet workshop provider markers
+        run: |
+          grep -Fq 'from "../utils/craftingProfessions"' components/TownSheet.js
+          grep -Fq "availableProfessionsForCharacter(crafter)" components/TownSheet.js
+          grep -Fq "PROFESSION_TO_CRAFT_TYPE" components/TownSheet.js
+          ! grep -Fq '["blacksmith", "alchemist", "enchanter", "scribe", "jeweler"]' components/TownSheet.js
+
+      - name: Build production application through Vercel runner
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: validation-placeholder
+        run: npm run build:vercel
