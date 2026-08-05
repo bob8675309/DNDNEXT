@@ -1,0 +1,241 @@
+/* Character Forge final acceptance polish: species, class, training, spells, and review. */
+
+/* Species should read as one illustrated rules spread, not a picture above detached rows. */
+.npc-forge-context-card.is-species .npc-forge-species-hero {
+  grid-template-columns: minmax(330px, 46%) minmax(0, 1fr) !important;
+  min-height: 410px !important;
+  border-color: rgba(184, 132, 255, 0.42) !important;
+  background:
+    radial-gradient(circle at 16% 20%, rgba(132, 74, 214, 0.26), transparent 52%),
+    linear-gradient(125deg, rgba(25, 18, 38, 0.98), rgba(10, 20, 29, 0.98)) !important;
+}
+
+.npc-forge-context-card.is-species .npc-forge-species-artwork {
+  min-height: 410px !important;
+}
+
+.npc-forge-context-card.is-species .npc-forge-species-artwork img {
+  object-fit: cover !important;
+  object-position: center top !important;
+}
+
+.npc-forge-context-card.is-species .npc-forge-species-hero__copy {
+  justify-content: flex-start !important;
+  padding: clamp(1.35rem, 3vw, 2.5rem) !important;
+}
+
+.npc-forge-context-card.is-species .npc-forge-species-hero__copy > p {
+  color: rgba(255, 255, 255, 0.88) !important;
+  font-size: 0.93rem !important;
+  line-height: 1.75 !important;
+}
+
+.npc-forge-context-card.is-species .npc-forge-species-facts {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem !important;
+  margin-top: auto;
+}
+
+.npc-forge-context-card.is-species .npc-forge-species-facts > div {
+  min-height: 54px;
+  align-content: center;
+  border-color: rgba(168, 108, 255, 0.28) !important;
+  background: linear-gradient(135deg, rgba(126, 72, 199, 0.13), rgba(88, 214, 199, 0.045)) !important;
+}
+
+.npc-forge-context-card.is-species .npc-forge-species-features {
+  margin-top: 0.25rem;
+}
+
+.npc-forge-context-card.is-species .npc-forge-species-feature-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.npc-forge-context-card.is-species .npc-forge-species-feature-list details {
+  min-width: 0;
+  border-color: rgba(168, 108, 255, 0.42) !important;
+  background: linear-gradient(115deg, rgba(126, 72, 199, 0.18), rgba(34, 21, 50, 0.82)) !important;
+}
+
+/* The Forge class guide should follow the profile panel's visual hierarchy. */
+.npc-forge-class-guide__view-header {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+}
+
+.npc-forge-class-guide__book-hero {
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 42%) !important;
+  min-height: 360px !important;
+}
+
+.npc-forge-class-guide__book-hero img {
+  min-height: 360px !important;
+}
+
+.npc-forge-class-guide__book-hero h2 {
+  font-size: clamp(2.35rem, 5vw, 4rem) !important;
+}
+
+.npc-forge-class-guide__book-hero p,
+.npc-forge-class-guide .class-book-guide__feature p,
+.npc-forge-class-guide__detail p,
+.npc-forge-class-guide__subclass-intro p {
+  color: rgba(255, 255, 255, 0.88) !important;
+  font-size: 0.93rem !important;
+  line-height: 1.78 !important;
+}
+
+.npc-forge-class-guide__detailed-controls,
+.npc-forge-class-guide__overview-body > .npc-forge-class-guide__subclasses {
+  margin-top: 0 !important;
+}
+
+.npc-forge-class-guide__subclasses {
+  border-color: rgba(168, 108, 255, 0.38) !important;
+  background: linear-gradient(135deg, rgba(126, 72, 199, 0.13), rgba(88, 214, 199, 0.045)) !important;
+}
+
+.npc-forge-class-guide__compare:not(.is-all) {
+  display: none !important;
+}
+
+.npc-forge-class-guide .class-book-guide__subclass-intro {
+  border-color: rgba(64, 197, 228, 0.48) !important;
+  background: linear-gradient(135deg, rgba(26, 120, 143, 0.18), rgba(27, 18, 40, 0.72)) !important;
+}
+
+.npc-forge-class-guide__level-heading {
+  margin: 0 0 1rem !important;
+  padding: 0.9rem 1rem !important;
+  border: 1px solid rgba(184, 132, 255, 0.52) !important;
+  border-radius: 0.85rem !important;
+  background: linear-gradient(90deg, rgba(126, 72, 199, 0.2), rgba(88, 214, 199, 0.05)) !important;
+  box-shadow: inset 4px 0 rgba(169, 112, 255, 0.9);
+}
+
+.npc-forge-class-guide__level-heading h3 {
+  color: #fff !important;
+  font-size: 1.45rem !important;
+}
+
+.npc-forge-class-guide .class-book-guide__feature {
+  padding: 0.95rem 0 !important;
+}
+
+.npc-forge-class-guide .class-book-guide__feature h4 {
+  color: #fff !important;
+  font-size: 1.04rem !important;
+}
+
+/* Training direction should be impossible to miss. */
+.npc-forge-training-explainer {
+  margin-bottom: 0.75rem !important;
+}
+
+.npc-forge-training-explainer > div {
+  min-height: 108px;
+  border-color: rgba(168, 108, 255, 0.22) !important;
+  background: linear-gradient(145deg, rgba(31, 24, 43, 0.9), rgba(12, 15, 24, 0.95)) !important;
+}
+
+.npc-forge-training-explainer strong {
+  color: #f7edff !important;
+  font-size: 0.82rem !important;
+}
+
+.npc-forge-training-explainer span,
+.npc-forge-crafting-house-rule p {
+  color: rgba(255, 255, 255, 0.78) !important;
+  font-size: 0.76rem !important;
+  line-height: 1.58 !important;
+}
+
+.unified-player-character-forge .npc-forge-training-step > .npc-forge-subheading:has(+ .npc-forge-chip-row) {
+  display: none;
+}
+
+/* Spell selection is a first-class Forge step. */
+.npc-forge-spell-summary {
+  border-color: rgba(168, 108, 255, 0.44) !important;
+  background: linear-gradient(125deg, rgba(66, 35, 100, 0.72), rgba(9, 25, 37, 0.94)) !important;
+}
+
+.npc-forge-spell-summary p,
+.npc-forge-spell-card__details p {
+  color: rgba(255, 255, 255, 0.82) !important;
+  line-height: 1.68 !important;
+}
+
+.npc-forge-spell-card {
+  border-color: rgba(255, 255, 255, 0.11) !important;
+  background: linear-gradient(145deg, rgba(27, 22, 38, 0.92), rgba(10, 14, 22, 0.98)) !important;
+}
+
+.npc-forge-spell-card.is-selected {
+  border-color: rgba(88, 214, 199, 0.68) !important;
+  box-shadow: inset 4px 0 #58d6c7;
+}
+
+/* Review should read as a final character dossier rather than a form receipt. */
+.npc-forge-review-banner {
+  grid-template-columns: 165px minmax(0, 1fr) !important;
+  min-height: 220px;
+  padding: 1.25rem !important;
+  background:
+    radial-gradient(circle at 12% 16%, rgba(137, 78, 221, 0.26), transparent 45%),
+    linear-gradient(110deg, rgba(62, 31, 95, 0.78), rgba(12, 29, 39, 0.92)) !important;
+}
+
+.npc-forge-review-banner img,
+.npc-forge-review-banner__empty {
+  width: 165px !important;
+  height: 210px !important;
+}
+
+.npc-forge-review-dossier__grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+.npc-forge-review-section {
+  min-height: 190px;
+  border-color: rgba(168, 108, 255, 0.2) !important;
+  background: linear-gradient(145deg, rgba(31, 24, 43, 0.93), rgba(10, 14, 22, 0.98)) !important;
+}
+
+.npc-forge-review-section dd,
+.npc-forge-review-copy p,
+.npc-forge-review-note {
+  color: rgba(255, 255, 255, 0.8) !important;
+  line-height: 1.55 !important;
+}
+
+@media (max-width: 1100px) {
+  .npc-forge-context-card.is-species .npc-forge-species-hero {
+    grid-template-columns: minmax(280px, 42%) minmax(0, 1fr) !important;
+  }
+
+  .npc-forge-review-dossier__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 850px) {
+  .npc-forge-context-card.is-species .npc-forge-species-hero,
+  .npc-forge-class-guide__book-hero {
+    grid-template-columns: 1fr !important;
+  }
+
+  .npc-forge-context-card.is-species .npc-forge-species-feature-list,
+  .npc-forge-context-card.is-species .npc-forge-species-facts,
+  .npc-forge-review-dossier__grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .npc-forge-review-banner {
+    grid-template-columns: 1fr !important;
+  }
+}

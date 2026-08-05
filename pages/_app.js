@@ -6,6 +6,7 @@ import "../styles/npc-forge-background-info.css";
 import "../styles/npc-forge-background-info-grid-fix.css";
 import "../styles/npc-forge-species-info.css";
 import "../styles/character-forge-responsive.css";
+import "../styles/character-forge-final-polish.css";
 import "../styles/card-compact.css";
 import "../styles/npc-profile-panel.css";
 import "../styles/player-profile-scroll-fix.css";
