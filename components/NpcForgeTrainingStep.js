@@ -47,5 +47,5 @@ export default function NpcForgeTrainingStep({
     <style jsx global>{`
       .npc-forge-training-explainer{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-bottom:4px}.npc-forge-training-explainer>div{display:grid;gap:5px;padding:11px;border:1px solid rgba(255,255,255,.09);border-radius:10px;background:rgba(255,255,255,.025)}.npc-forge-training-explainer strong{color:#fff;font-size:.75rem}.npc-forge-training-explainer span{color:rgba(255,255,255,.62);font-size:.69rem;line-height:1.45}.npc-forge-crafting-house-rule{margin-bottom:10px;padding:12px 14px;border-left:3px solid #58d6c7;border-radius:9px;background:rgba(88,214,199,.075)}.npc-forge-crafting-house-rule strong{color:#bffbf3}.npc-forge-crafting-house-rule p{margin:5px 0 0;color:rgba(255,255,255,.72);font-size:.75rem;line-height:1.58}@media(max-width:900px){.npc-forge-training-explainer{grid-template-columns:1fr}}
     `}</style>
-  </div;
+  </div>;
 }
