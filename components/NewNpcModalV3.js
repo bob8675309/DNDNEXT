@@ -182,7 +182,7 @@ export default function NewNpcModalV3(props) {
 
   useEffect(() => {
     if (!show || typeof document === "undefined") return undefined;
-    function blockIncompleteRequiredChoice(event) {
+    function blockIncompleteSpeciesChoice(event) {
       const button = event.target?.closest?.("button");
       if (!button || button.textContent?.trim() !== "Continue") return;
       const modal = button.closest(".npc-forge-modal-v2");
@@ -206,8 +206,8 @@ export default function NewNpcModalV3(props) {
         target?.scrollIntoView?.({ behavior: "smooth", block: "center" });
       }
     }
-    document.addEventListener("click", blockIncompleteRequiredChoice, true);
-    return () => document.removeEventListener("click", blockIncompleteRequiredChoice, true);
+    document.addEventListener("click", blockIncompleteSpeciesChoice, true);
+    return () => document.removeEventListener("click", blockIncompleteSpeciesChoice, true);
   }, [playerMode, show]);
 
   async function handleCreated(created) {
