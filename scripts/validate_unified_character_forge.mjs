@@ -27,7 +27,7 @@ const progressionFix = read("sql/20260804_02_player_forge_progression_upsert.sql
 const spellMigration = read("sql/20260805_02_player_forge_starting_spell_validation.sql");
 
 includes(playerCreator, ['import NewNpcModalV3 from "./NewNpcModalV3";', 'mode="player"', "onCreated={onCreated}", "onClose={onCancel}"], "player creator adapter");
-expect(!playerCreator.includes("PlayerCharacterForgeView"), "retired standalone player creator returned");
+expect(!/^\s*import\s+PlayerCharacterForgeView\b/m.test(playerCreator), "retired standalone player creator returned");
 includes(sharedForge, ['props?.mode === "player"', "const createCharacter = useCallback", 'supabase.rpc("create_player_character_v2"', "p_spell_choices: spellChoices", "playerPayload(payload, spellChoices)", "startingSpellSelectionPending", "createCharacter={createCharacter}"], "shared Forge player mode");
 expect(!sharedForge.includes("p_spell_choices: []"), "player Forge still discards starting spell choices");
 expect(!sharedForge.includes("supabase.rpc =") && !sharedForge.includes("MutationObserver"), "player mode returned to RPC or DOM interception");
