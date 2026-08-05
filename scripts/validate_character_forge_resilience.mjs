@@ -10,6 +10,7 @@ const forge = read("components/NewNpcModalV3Refined.js");
 const adapter = read("components/NewNpcModalV3.js");
 const profile = read("components/PlayerCharacterProfilePanelUnified.js");
 const portraits = read("components/NpcForgePortraitPickerModal.js");
+const portraitUtils = read("utils/characterPortraits.js");
 const css = read("styles/character-forge-responsive.css");
 const migration = read("sql/20260804_03_character_forge_resilience_and_tags.sql");
 
@@ -19,6 +20,7 @@ requireToken(forge, "function handleReset()", "canonical Forge");
 requireToken(forge, "function handleClose() { if (creating) return; onClose?.(); }", "canonical Forge");
 forbidToken(forge, "function handleClose() { if (creating) return; resetForm();", "canonical Forge");
 requireToken(forge, "Create Player Character", "canonical Forge");
+requireToken(adapter, "useRef", "shared player adapter");
 requireToken(adapter, 'supabase.rpc("create_player_character_v2"', "shared player adapter");
 requireToken(adapter, "profession:", "shared player adapter");
 forbidToken(adapter, "supabase.rpc =", "shared player adapter");
@@ -26,6 +28,8 @@ forbidToken(adapter, "MutationObserver", "shared player adapter");
 requireToken(profile, "keepCreatorMounted", "profile host");
 requireToken(profile, "is-forge-suspended", "profile host");
 requireToken(portraits, "/\\.svg(?:$|[?#])/i", "portrait picker");
+requireToken(portraitUtils, "defaultPortraitUrlForCharacter", "portrait fallback utility");
+forbidToken(portraitUtils, ".svg", "portrait fallback utility");
 requireToken(css, "Character Forge PR A: content-driven player layouts", "responsive stylesheet");
 requireToken(css, "npc-forge-step-0", "responsive stylesheet");
 requireToken(css, "npc-forge-step-3", "responsive stylesheet");
@@ -51,5 +55,8 @@ const deletedSvgPaths = [
 for (const rel of deletedSvgPaths) {
   if (fs.existsSync(path.join(root, rel))) throw new Error(`Character Forge resilience: obsolete SVG portrait still exists: ${rel}`);
 }
+if (fs.existsSync(path.join(root, "scripts/generate_npc_portrait_pack.mjs"))) {
+  throw new Error("Character Forge resilience: obsolete SVG portrait generator still exists");
+}
 
-console.log("Character Forge resilience, player authority, layout, and SVG cleanup markers validated.");
+console.log("Character Forge resilience, player authority, layout, and raster-only portrait markers validated.");
