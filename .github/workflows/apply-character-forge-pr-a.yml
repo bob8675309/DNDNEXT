@@ -1,17 +1,20 @@
 name: Apply Character Forge PR A
 
 on:
-  push:
+  pull_request:
     branches:
-      - agent/character-forge-resilience-presentation
+      - main
     paths:
       - "tools/apply_character_forge_pr_a.py"
+      - ".github/workflows/apply-character-forge-pr-a.yml"
 
 permissions:
   contents: write
+  pull-requests: read
 
 jobs:
   apply:
+    if: github.head_ref == 'agent/character-forge-resilience-presentation'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
