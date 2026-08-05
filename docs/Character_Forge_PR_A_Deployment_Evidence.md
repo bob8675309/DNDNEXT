@@ -1,6 +1,6 @@
 # Character Forge PR A Deployment Evidence
 
-Status date: 2026-08-04
+Status date: 2026-08-05
 
 This document records the implementation, database, validation, and acceptance state for PR #170, **Refine Character Forge resilience and player presentation**. Read it with `Unified_Character_Forge_Status.md`.
 
@@ -74,9 +74,11 @@ Exact PR head `3d81f4bd9ae572cbbd4a0fbbcfd21d703008c8bc` passed:
 
 The migration was first executed inside an explicit transaction and rolled back. The same migration was then applied successfully to production and verified read-only.
 
-## Deployment limitation
+## Deployment limitation and controlled retry
 
-Vercel did not create a PR preview because the account exceeded the free-plan daily deployment allowance: `api-deployments-free-per-day`, more than 100 deployments. This is a platform capacity failure. The same repository production runner completed successfully in GitHub Actions.
+Vercel did not create the earlier PR preview because the account exceeded the free-plan daily deployment allowance: `api-deployments-free-per-day`, more than 100 deployments. This is a platform capacity failure. The same repository production runner completed successfully in GitHub Actions.
+
+A single documentation-only retry commit was pushed at approximately 11:15 AM Central on 2026-08-05 to request one new PR preview without changing application behavior. The hourly retry watcher was disabled before this push to prevent duplicate deployment attempts.
 
 ## Remaining acceptance gate
 
