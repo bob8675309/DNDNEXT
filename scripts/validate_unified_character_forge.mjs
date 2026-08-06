@@ -11,9 +11,10 @@ const playerCreator = read("components/PlayerCharacterCreatorV2.js");
 const sharedForge = read("components/NewNpcModalV3.js");
 const forge = read("components/NewNpcModalV3Refined.js");
 const forgeController = read("components/useNpcForgeController.js");
+const forgeDerived = read("components/useNpcForgeDerivedModel.js");
 const forgeSteps = read("components/NpcForgeStepContent.js");
 const forgeCore = read("components/NpcForgeCoreSupport.js");
-const forgeSource = `${forge}\n${forgeController}\n${forgeSteps}\n${forgeCore}`;
+const forgeSource = `${forge}\n${forgeController}\n${forgeDerived}\n${forgeSteps}\n${forgeCore}`;
 const abilityStep = read("components/NpcForgeAbilityStep.js");
 const trainingStep = read("components/NpcForgeTrainingStep.js");
 const spellStep = read("components/NpcForgeSpellStep.js");
@@ -26,6 +27,7 @@ const app = read("pages/_app.js");
 const migration = read("sql/20260804_01_multi_player_character_forge_v2.sql");
 const progressionFix = read("sql/20260804_02_player_forge_progression_upsert.sql");
 const spellMigration = read("sql/20260805_02_player_forge_starting_spell_validation.sql");
+const authorityMigration = read("sql/20260805_03_player_character_authority_hardening.sql");
 
 includes(playerCreator, ['import NewNpcModalV3 from "./NewNpcModalV3";', 'mode="player"', "onCreated={onCreated}", "onClose={onCancel}"], "player creator adapter");
 expect(!/^\s*import\s+PlayerCharacterForgeView\b/m.test(playerCreator), "retired standalone player creator returned");
@@ -33,9 +35,10 @@ includes(sharedForge, ['props?.mode === "player"', "const createCharacter = useC
 expect(!sharedForge.includes("p_spell_choices: []"), "player Forge still discards starting spell choices");
 expect(!sharedForge.includes("supabase.rpc =") && !sharedForge.includes("MutationObserver"), "player mode returned to RPC or DOM interception");
 
-includes(forgeSource, ["NPC_STEP_LABELS", "PLAYER_STEP_LABELS", '"Spells"', 'type="number" min="1" max="20"', 'mode = "npc"', "NpcForgeAbilityStep", "NpcForgeTrainingStep", "NpcForgeSpellStep", "NpcForgeReviewPanel", "NpcForgeContextPanel", "NpcForgePortraitPickerModal", "spellChoicesForRpc", "Create Player Character", "Starting level may be set from 1 to 20."], "canonical shared Forge");
+includes(forgeSource, ["NPC_STEP_LABELS", "PLAYER_STEP_LABELS", '"Spells"', 'type="number" min="1" max="20"', 'mode = "npc"', "NpcForgeAbilityStep", "NpcForgeTrainingStep", "NpcForgeSpellStep", "NpcForgeReviewPanel", "NpcForgeContextPanel", "NpcForgePortraitPickerModal", "spellChoicesForRpc", "Create Player Character", "Starting level may be set from 1 to 20.", "playerMode ? [] : draft.additionalFeats || []"], "canonical shared Forge");
 includes(abilityStep, ["Ability Score Generation Method", "Standard 3d6", "4d6 drop lowest die", "Point Buy", "Standard Class Array", "Manual Assign", "Reroll All Six", "Species Bonus", "Choose a feat"], "ability step");
-includes(trainingStep, ["Background grants", "Class choices", "Expertise is not self-assigned", "Campaign crafting house rule", "Short or Long Rest", "physical work site"], "training step");
+includes(trainingStep, ["Background grants", "Training choices", "each uses one Training choice", "Campaign crafting house rule", "Short or Long Rest", "physical work site", "successful DC check"], "training step");
+expect(!trainingStep.includes("Expertise is not self-assigned during creation"), "player Training still shows the redundant Expertise denial");
 includes(spellStep, ['from("class_level_progression")', 'from("spells_catalog")', "Known spells", "Spellbook", "Prepared", "Highest spell level"], "spell step");
 includes(review, ["Confirm your player character", "Class Progression", "Ability Scores", "Training & Professions", "Starting Magic", "Story & Campaign Hooks", "Campaign Status", "Edit"], "review dossier");
 includes(rules, ["POINT_BUY_BUDGET = 27", "POINT_BUY_MIN = 8", "POINT_BUY_MAX = 15", "startingSpellSelectionModel", "validateStartingSpellSelections", "spellChoicesForRpc"], "player Forge rules");
@@ -48,9 +51,10 @@ expect(app.includes('import "../styles/character-forge-responsive.css";'), "resp
 includes(migration, ["get_my_player_characters_v2", "create_player_character_v2", "creation_request_id", "character_permissions", "character_progression", "startingSpellSelectionPending"], "guarded player creation");
 includes(progressionFix, ["on conflict (character_id) do update", "class_level = excluded.class_level"], "progression upsert");
 includes(spellMigration, ["validate_player_forge_starting_spells_v1", "character_progression_validate_player_forge_spells_v1", "deferrable initially deferred", "v_cantrips_required", "v_leveled_required", "v_prepared_required", "v_maximum_spell_level"], "starting spell authority migration");
+includes(authorityMigration, ["guard_direct_character_authority_mutation_v1", "character_spells_direct_authority_guard_v1", "character_option_grants_direct_authority_guard_v1", "character_sheets_authority_fields_guard_v1", "validate_player_forge_authority_payload_v1", "character_progression_validate_player_forge_authority_v1"], "player feat and spell authority migration");
 
-for (const source of [playerCreator, sharedForge, forgeSource, abilityStep, trainingStep, spellStep, review, rules, profile, responsive, migration, progressionFix, spellMigration]) {
+for (const source of [playerCreator, sharedForge, forgeSource, abilityStep, trainingStep, spellStep, review, rules, profile, responsive, migration, progressionFix, spellMigration, authorityMigration]) {
   for (const forbidden of ["MapPageClient", "map_routes", "advance_all_characters", "weather", "route_segment_progress"]) expect(!source.includes(forbidden), `crossed protected world-map boundary ${forbidden}`);
 }
 
-console.log("Unified Character Forge, restored starting spells, ability methods, training guidance, review dossier, and protected boundaries validated.");
+console.log("Unified Character Forge, restored starting spells, shared Training choices, player feat/spell authority, review dossier, and protected boundaries validated.");
