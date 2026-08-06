@@ -1,161 +1,83 @@
 # Unified NPC and Player Character Forge Status
 
-Status date: 2026-08-04
+Status date: 2026-08-05
 
-This document controls the temporary user-testing interruption requested after the Dawn sprite pipeline handoff. When this slice is accepted, active development returns to `Dawn_High_Quality_Prototype_Plan.md`.
+This document records the current testing state of the shared NPC/player Character Forge in PR #170. Development returns to the Dawn sprite prototype after this Forge slice is accepted and merged.
 
-## Test evidence
+## Canonical architecture
 
-A real external tester, referred to as **Rinshin**, created an account and attempted the player Character Forge. Read-only production inspection confirmed:
+DNDNext uses one shared Forge implementation for NPCs and player-owned characters. Player mode is an explicit adapter around the shared component and submits through `create_player_character_v2`; NPC/admin creation continues through `create_character_v1`.
 
-- the Auth account exists;
-- the corresponding `players` row exists;
-- no `character_permissions` row was created for the account;
-- no new character was created by the attempted Forge session.
-
-The tester also reported panels with broken formatting and controls reaching the viewport edge or becoming unreachable. This is therefore both a responsive-UI defect and a player-character creation/linking failure.
-
-The tester's email address is intentionally not stored in repository documentation.
-
-## Architecture decision
-
-DNDNext now uses **one shared Forge** for NPC and player-character creation.
-
-`NewNpcModalV3Refined` remains the canonical visual and rules-entry implementation because it contains the stronger flow:
+Player steps are:
 
 1. Species
 2. Background
 3. Class
 4. Abilities
 5. Training
-6. Identity
-7. Story
-8. Review
+6. Spells
+7. Identity
+8. Story
+9. Review
 
-The former `PlayerCharacterCreatorV2` controller is reduced to a thin player-mode adapter around the shared Forge. It no longer renders a separate near-duplicate `PlayerCharacterForgeView`.
+The player Forge remains mounted for the signed-in account so Close/Reopen and client-side Pages Router navigation preserve the in-memory draft. Reset, successful creation, sign-out, account change, or hard refresh clears it.
 
-The shared adapter redirects only the final `create_character_v1` request while player mode is mounted. NPC/admin creation continues to use `create_character_v1`; player mode uses the guarded `create_player_character_v2` authority.
+## Current player experience
 
-## Player-mode differences
+Implemented behavior includes:
 
-Player mode deliberately differs from NPC mode only where ownership or NPC-only capabilities require it:
+- responsive Species artwork and **In the World** lore;
+- independent expandable Species features and source-backed hover help for species-granted cantrips;
+- profile-style Class Overview and Detailed Guide modes;
+- level 1–20 progression, subclass preview/selection, and current-level emphasis;
+- a persistent class-feature description dock;
+- structured class-feature text that preserves source paragraphs and headings;
+- compact expandable presentation for exceptionally long option lists without removing rules text;
+- no redundant Primary Abilities tile in the class hero; Hit Die, level, saving throws, and spellcasting remain;
+- Standard 3d6, 4d6 drop lowest, Point Buy, Standard Class Array, and Manual Assign;
+- a right-column Species Bonus chooser;
+- one shared Training-choice pool for class skills and crafting professions;
+- level-aware starting spell selection;
+- a full Review dossier;
+- scrolling throughout all profile-panel tabs.
 
-- adds the `player-character` tag;
-- creates an editable/inventory permission for the signed-in user;
-- disables storefront and world placement;
-- hides merchant and workshop-provider controls;
-- requires an adventuring class;
-- permits campaign-approved starting levels 1–20;
-- creates canonical progression at the selected level;
-- permits more than one player character per account;
-- keeps portrait/species-choice persistence and the shared review flow.
+## Player authority
 
-## Profile behavior
+Players cannot assign arbitrary tags, map placement, Expertise, extra feats, boons, or post-creation spells through player surfaces. Background/species feat choices and starting spells are validated through the Forge and database authority. Direct non-admin mutation guards protect authoritative feat, boon, spell, and sheet fields.
 
-The profile panel now loads all editable player-owned characters through `get_my_player_characters_v2` and provides:
-
-- an Active Character selector;
-- immediate switching without changing ownership;
-- a **Create another character** action;
-- automatic selection of the newly created character;
-- the existing Backspace toggle, explicit close behavior, auth-lock deferral, and stale-request guards.
-
-The legacy `get_my_player_character_v1` function remains available for compatibility but is no longer the controlling multi-character read path.
-
-## Responsive reachability
-
-`styles/character-forge-responsive.css` establishes the shared viewport contract:
-
-- the Forge never exceeds the dynamic viewport height;
-- the main body owns scrolling;
-- the step rail scrolls horizontally instead of forcing the modal wider;
-- the footer remains sticky and reachable;
-- footer actions wrap on constrained widths;
-- safe-area insets are respected;
-- mobile presentation uses the full dynamic viewport;
-- player-character selection controls stack on narrow screens.
-
-These rules apply to both NPC and player creation because both use the same component.
+Future player-controlled minions remain NPCs and require a dedicated assignment/controller relationship rather than the `player-character` tag.
 
 ## Database authority
 
-`sql/20260804_01_multi_player_character_forge_v2.sql` adds:
+Production migrations applied for this slice:
 
-- `get_my_player_characters_v2()`;
-- `create_player_character_v2(jsonb, jsonb)`.
+- `character_forge_resilience_and_tags`
+- `character_forge_subclass_choice`
+- `player_forge_starting_spell_validation`
+- `player_character_authority_hardening`
 
-`sql/20260804_02_player_forge_progression_upsert.sql` makes progression initialization compatible with the existing `character_sheets` progression trigger. The trigger may create the progression row before the creation command reaches its final progression step, so the v2 command uses a deterministic upsert rather than attempting a duplicate insert.
+These migrations provide controlled tags, subclass persistence, deferred starting-spell validation, and server-side feat/spell mutation protection. Existing character, progression, spell, and option-grant rows were not rewritten by the authority hardening migration.
 
-The v2 creation command is authenticated, idempotent through `creation_request_id`, validates the selected class and level, creates character/sheet/permission/progression/event rows transactionally, and preserves portrait/sprite metadata. The original v1 entry point remains unchanged.
+## Protected boundaries
 
-### Rollback-only live-schema evidence
-
-The deployed functions were tested against the live schema inside transactions that were explicitly rolled back:
-
-1. A level-6 Fighter request was submitted twice with the same `creation_request_id`.
-   - both calls returned the same character UUID;
-   - progression resolved to level 6 and 14,000 XP;
-   - `can_edit` and `can_inventory` were true.
-2. Two distinct requests were submitted for the same account.
-   - one created a level-3 Fighter;
-   - one created a level-8 Wizard;
-   - `get_my_player_characters_v2()` returned both characters;
-   - the progression levels were `[3, 8]`.
-
-After rollback verification:
-
-- no validation character remained;
-- Rinshin still had zero character permissions;
-- the live character count remained seven.
-
-## Deployment state
-
-PR #168 merged into `main` as `c36555780951f9796818b8a8b33cf90f41ac9906`. Its first Vercel deployments stopped before `next build` because older exact-text validators had drifted behind the current sprite documentation and consolidated Character Forge ownership.
-
-PR #169 is the bounded deployment-repair follow-up. Exact-head commit `d7f0c45c4baec15c9c62f2a20a7e8e7aa833c352` passed GitHub Actions run 230 and the Vercel deployment check. The production runner completed every source, Character Forge, profile-selection, sheet, crafting, security, tactical, and documentation validator before reaching `npx next build`. Next.js 16.1.6 compiled successfully and generated all 27 static pages.
-
-The repair also makes `validate_unified_character_forge.mjs` part of the production build runner and gives the NPC Forge workflow an inspectable `npm run build:vercel` gate. Source and database readiness are therefore green. Authenticated browser acceptance remains pending and no checklist item below is complete until Rinshin performs the real production test.
-
-## Known limitation: starting spell-selection parity
-
-The old level-one player creator included a dedicated canonical starting-spell picker. The richer NPC Forge currently exposes spell notes rather than the same source-backed player selection workflow.
-
-For this testing-unblock slice:
-
-- caster characters may be created without canonical starting spell assignments;
-- their sheet is marked `startingSpellSelectionPending`;
-- spells can be granted through the existing Spellbook/Admin surfaces;
-- the shared Forge must receive source-backed class-and-level spell selection before this consolidation is considered fully complete.
-
-This limitation must not be hidden or described as complete parity.
+This Forge slice does not modify world-map, town/city-map, route, movement, weather, encounter, combat, or unrelated crafting runtime behavior. `components/MapPageClient.js` remains outside the patch.
 
 ## Acceptance checklist
 
-- [ ] Rinshin can reopen the player Forge and reach every step/footer control.
-- [ ] A first player-owned character can be created and linked.
-- [ ] Starting level can be selected from 1 through 20.
-- [ ] A player with one character can choose **Create another character**.
-- [ ] The selector switches between owned characters without stale sheet state.
-- [ ] NPC Forge still creates NPCs/merchants through its original guarded RPC.
-- [ ] NPC-only storefront/workshop controls do not appear in player mode.
-- [ ] Portrait and required species choices persist.
-- [ ] No world-map, town-map, encounter, crafting, or unrelated data changes occur.
-- [ ] Starting spell-selection parity remains tracked until implemented.
+- [ ] Close/Reopen preserves the exact player draft and current tab.
+- [ ] Client-side navigation away and back preserves the draft.
+- [ ] Hard refresh and Reset clear the draft.
+- [ ] Species artwork, lore, feature cards, and cantrip hover help remain usable.
+- [ ] Class Overview and Detailed Guide are readable at desktop and narrow widths.
+- [ ] Long Artificer and other dense feature entries render as paragraphs, headings, and expandable lists rather than walls of text.
+- [ ] Class hero omits Primary Abilities while preserving Hit Die, level, saves, and spellcasting.
+- [ ] Eligible subclasses are required and persist.
+- [ ] Starting spell counts and class legality are enforced.
+- [ ] Selecting a crafting profession consumes one Training choice.
+- [ ] A player cannot self-grant feats or spells.
+- [ ] Authorized GM/admin grant management remains functional.
+- [ ] NPC Forge behavior remains intact.
 
 ## Return to Dawn
 
-After this slice passes user testing and documentation is reconciled, return to:
-
-1. `docs/Dawn_High_Quality_Prototype_Plan.md`;
-2. one high-quality South-facing Dawn idle/walk prototype;
-3. no new full 32-cell Dawn atlas until the South prototype is visually approved.
-
-## PR A — resilience and player presentation
-
-- Closing the Forge preserves the mounted in-memory draft; a hard refresh or auth reset clears it.
-- Reset is explicit, confirmed, and creates a fresh Forge request state.
-- Player creation uses an explicit submit callback instead of replacing the shared Supabase client RPC method.
-- Player tabs use content-driven proportions; Identity, Story, and Review become full-width.
-- Player-facing tag and placement controls are hidden. Class, species, background, and trained-profession tags are derived by database authority.
-- All obsolete SVG portrait records and repository files are deleted and blocked from reintroduction.
-- Future player-assigned minions remain NPCs and should use a dedicated controller/assignment relationship rather than the `player-character` tag.
+After PR #170 passes authenticated browser testing and is merged, return to `docs/Dawn_High_Quality_Prototype_Plan.md` and produce one high-quality South-facing Dawn idle/walk prototype before expanding to a complete atlas.

@@ -25,6 +25,7 @@ const classContext = read("components/NpcForgeClassChoiceContext.js");
 const classGuide = read("components/NpcForgeClassGuide.js");
 const classGuideModel = read("components/NpcForgeClassGuideModel.js");
 const classDock = read("components/NpcForgeClassFeatureDock.js");
+const classFeatureText = read("components/ClassFeatureText.js");
 const context = read("components/NpcForgeContextPanelRefined.js");
 const spellMigration = read("sql/20260805_02_player_forge_starting_spell_validation.sql");
 const authorityMigration = read("sql/20260805_03_player_character_authority_hardening.sql");
@@ -59,8 +60,10 @@ requireToken(profile, "is-forge-suspended", "profile host");
 requireToken(classContext, "classChoiceStateComplete", "class choice context");
 requireToken(classContext, "eligibleSubclassOptions", "class choice context");
 requireToken(`${classGuide}\n${classGuideModel}`, 'from("class_level_progression")', "class guide model");
-for (const token of ["ForgeSubclassSelection", "cleanPlayerCopy", "npc-forge-class-guide__level-heading", "npc-forge-class-guide__hero-facts", "onFeatureDetail"]) requireToken(classGuide, token, "class guide");
-for (const token of ["Class Feature", "Subclass Feature", "npc-forge-class-feature-dock"]) requireToken(classDock, token, "class feature card dock");
+for (const token of ["ForgeSubclassSelection", "cleanPlayerCopy", "npc-forge-class-guide__level-heading", "npc-forge-class-guide__hero-facts", "onFeatureDetail", "ClassFeatureText"]) requireToken(classGuide, token, "class guide");
+forbidToken(classGuide, '"Primary Abilities"', "class hero redundant primary-ability tile");
+for (const token of ["normalizeClassFeatureText", "classFeatureSections", "class-feature-text__long-list", "LEVEL_BOILERPLATE"]) requireToken(classFeatureText, token, "structured class feature text");
+for (const token of ["Class Feature", "Subclass Feature", "npc-forge-class-feature-dock", "ClassFeatureText"]) requireToken(classDock, token, "class feature card dock");
 requireToken(forgeSteps, "NpcForgeClassFeatureDock", "class feature dock placement");
 requireToken(forgeSteps, "NpcForgeSpeciesBonusPanel", "ability Species Bonus placement");
 requireToken(context, "npc-forge-species-hero", "species hero composition");
@@ -96,4 +99,4 @@ requireToken(finalPolish, ".npc-forge-review-dossier__grid", "review presentatio
 requireToken(app, 'import "../styles/character-forge-final-polish.css";', "application stylesheet import");
 requireToken(app, 'import "../styles/player-profile-scroll-fix.css";', "profile scroll stylesheet preservation");
 
-console.log("Character Forge persistence, species/class cards, ability/training rules, starting spells, review dossier, player authority, and raster authority validated.");
+console.log("Character Forge persistence, structured class text, species/class cards, ability/training rules, starting spells, review dossier, player authority, and raster authority validated.");

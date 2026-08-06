@@ -2,97 +2,54 @@
 
 Status date: 2026-08-05
 
-This document records the implementation, database, validation, and acceptance state for PR #170, **Refine Character Forge resilience and player presentation**. Read it with `Unified_Character_Forge_Status.md`.
+This document records the current implementation and acceptance evidence for PR #170, **Refine Character Forge resilience, presentation, spells, and player authority**. Read it with `Unified_Character_Forge_Status.md`.
 
 ## Implemented boundary
 
-PR A changes the shared NPC/player Character Forge without changing world-map, town/city-map, route, movement, weather, combat, or unrelated crafting behavior.
+PR #170 consolidates player creation into the shared Forge and adds draft resilience, responsive layouts, raster-only portraits, class/subclass guidance, ability generation, Training choices, starting spells, Review dossier presentation, profile scrolling, and player feat/spell authority.
 
-Implemented behavior:
+The final class-readability pass:
 
-- Closing the player Forge preserves the mounted in-memory draft.
-- Reopening resumes the same tab and entered selections.
-- A hard refresh or authentication reset clears the in-memory draft naturally.
-- Reset is a separate confirmed action and creates fresh Forge request state.
-- Player creation uses an explicit `createCharacter` callback rather than replacing `supabase.rpc` or mutating rendered DOM text.
-- Species, Background, and Class favor the information panel; Abilities and Training favor the workspace; Identity, Story, and Review use the full width.
-- Player-facing roster tags and world placement controls are not available.
-- Player tags are derived from validated species, class, background, and trained professions by database authority.
-- Future GM campaign tags are preserved during sheet-driven system-tag reconciliation.
-- Future player-assigned minions remain NPCs and require a dedicated controller/assignment relationship.
+- preserves imported paragraph breaks and source headings;
+- removes redundant `1st-level ... feature` boilerplate already represented by the level header;
+- removes isolated internal ability-code artifacts such as `int`;
+- deduplicates repeated adjacent text blocks;
+- presents long item/plan lists as multi-column lists;
+- folds exceptionally long lists behind an explicit **View N listed options** control while retaining every listed rule entry;
+- applies the same structured rendering to the detailed guide and left feature-description dock;
+- removes the Primary Abilities tile from the Forge class hero.
 
-## Raster-only portrait cleanup
+## Database evidence
 
-Twelve obsolete SVG portrait records were audited before deletion. None was referenced by a character, visual asset, or portrait-to-sprite suggestion.
+Production migrations for controlled tags, subclass choice, starting-spell validation, and player feat/spell authority are active. The most recent authority migration was rollback-tested before production application. An authenticated-player mutation test against an owned character was blocked as intended, and authoritative row counts remained unchanged.
 
-PR A removes:
+This readability pass requires no database migration and does not rewrite imported class text.
 
-- all twelve SVG portrait files from the repository;
-- all matching live `npc_portrait_library` records;
-- SVG fallback URLs;
-- the retired SVG portrait generator.
+## Validation requirements
 
-The database now enforces `npc_portrait_library_no_svg_v1`, and the picker also rejects a resolved SVG URL defensively.
+The exact final PR head must pass:
 
-Post-migration state:
+- `Validate NPC Forge foundation`;
+- `Validate character portrait authority`;
+- Character Forge resilience and player-authority validators;
+- source/model/security regression suites;
+- exact `npm run build:vercel`;
+- Next.js production compilation and static generation;
+- Vercel preview deployment.
 
-- SVG portrait rows: **0**
-- active raster portrait rows: **185**
-- character references requiring migration: **0**
+The regression contract now requires the structured class-feature render and forbids reintroducing the Primary Abilities hero tile.
 
-## Player-tag authority
+## Protected boundaries
 
-Migration `character_forge_resilience_and_tags` installs:
-
-- `private.derive_player_character_tags_v1`;
-- `character_sheets_sync_player_tags_v1`;
-- `characters_guard_player_tags_v1`.
-
-Controlled tags use these namespaces:
-
-- `player-character`
-- `species:<key>`
-- `class:<key>`
-- `background:<key>`
-- `profession:<key>` for trained professions
-
-Players cannot directly award themselves campaign, faction, guild, reputation, moral, quest, or alliance tags. Existing non-system campaign tags were preserved when the three current player characters were reconciled.
-
-Rinshin still has zero linked player characters after the migration.
-
-## Validation evidence
-
-The implementation head passed:
-
-- GitHub Actions `Validate NPC Forge foundation`, run 254;
-- GitHub Actions `Validate character portrait authority`, run 3;
-- all Character Forge, security, profile-selection, crafting, sheet, tactical, source-pipeline, and documentation validators;
-- character creation model tests;
-- NPC Forge detail model tests;
-- the exact `npm run build:vercel` production runner;
-- Next.js production compilation and static page generation.
-
-The migration was first executed inside an explicit transaction and rolled back. The same migration was then applied successfully to production and verified read-only.
-
-## Preview deployment
-
-The earlier Vercel attempts were blocked by `api-deployments-free-per-day`. The hourly retry watcher was disabled before retrying to prevent concurrent attempts.
-
-Vercel accepted the controlled retry and marked the PR preview **Ready** on 2026-08-05. A follow-up documentation-only evidence commit also deployed successfully. No application behavior changed in either retry commit.
-
-Final preview-ready head: `0f0abba87f756d314db2717ca020ab73f949d8d8`.
+No world-map, town/city-map, route, movement, weather, combat, encounter, or unrelated crafting runtime files belong to this pass.
 
 ## Remaining acceptance gate
 
-Do not mark PR A accepted until an authenticated browser deployment confirms:
+Do not merge until authenticated browser testing confirms:
 
-- Close and Reopen preserve the complete draft;
-- Reset clears it;
-- hard refresh clears it;
-- the revised proportions remain usable at desktop and narrow widths;
-- Identity, Story, and Review are full-width;
-- player tags and starting location are absent;
-- no SVG portrait appears;
-- NPC/admin Forge behavior remains intact.
-
-Point Buy, the expanded ability-generation methods, Training rule changes, richer class-choice guidance, and canonical starting-spell selection remain separate follow-up PRs.
+- Artificer Spellcasting, Tinker's Magic, Replicate Magic Item, and similarly dense entries are materially easier to scan;
+- no mechanics or option entries are missing;
+- long lists expand and collapse correctly;
+- hover/focus/click still updates the left feature card;
+- the class hero contains Hit Die, level, saving throws, and spellcasting but no Primary Abilities tile;
+- existing Forge persistence, spell selection, player authority, profile scrolling, and NPC creation remain intact.

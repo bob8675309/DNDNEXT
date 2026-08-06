@@ -1,3 +1,4 @@
+import ClassFeatureText from "./ClassFeatureText";
 import { formatPlayerFacingText } from "../utils/playerFacingText";
 
 function safeText(value) {
@@ -31,7 +32,7 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
         {selectedClass?.class_name ? <span>{selectedClass.class_name}</span> : null}
         {feature?.type === "subclass" && detail?.subclassName ? <span>{detail.subclassName}</span> : null}
       </div>
-      <p>{description}</p>
+      <ClassFeatureText text={description} compact />
       {!feature ? <small>Feature descriptions will appear here as you move through the progression table or detailed guide.</small> : null}
     </section>
   );
