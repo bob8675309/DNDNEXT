@@ -8,6 +8,6 @@ export default function NpcForgeContextPanel(props) {
       ? props?.selectedClass
       : null;
   return activeClass
-    ? <NpcForgeClassGuide selectedClass={activeClass} level={props?.draft?.level || 1} />
+    ? <NpcForgeClassGuide selectedClass={activeClass} level={props?.draft?.level || 1} onFeatureDetail={props?.onFeatureDetail} />
     : <NpcForgeContextPanelRefined {...props} />;
 }

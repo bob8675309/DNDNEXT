@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { PROFESSION_DEFINITIONS, PROFESSION_KEYS } from "../utils/craftingProfessions";
-import { ABILITY_KEYS, ABILITY_LABELS, CLASS_DEFINITIONS, FEAT_OPTIONS, SKILL_DEFINITIONS, SPECIES_DEFINITIONS, buildCharacterCreatePayload } from "../utils/characterCreation";
+import { ABILITY_KEYS, ABILITY_LABELS, CLASS_DEFINITIONS, FEAT_OPTIONS, SKILL_DEFINITIONS, buildCharacterCreatePayload } from "../utils/characterCreation";
 import { FALLBACK_SKILL_DESCRIPTIONS, abilityScoresFromRollAllocation, flexibleAbilityBoosts } from "../utils/characterCreationGuidance";
 import { extractClassSkillConfiguration, mergePreferredBackgrounds, mergePreferredClasses, mergePreferredSpecies, normalizeSkillKey, optionMatchesQuery, safeText, slug, uniqueText } from "../utils/npcForgeCatalog";
 import { spellChoicesForRpc } from "../utils/playerForgeRules";
@@ -30,7 +30,18 @@ const backgroundExpandedSpellNames = selectedBackground?.expandedSpellNames || [
 const backgroundSkillChoiceGroups = selectedBackground?.skillRule?.choiceGroups || [];
 const selectedBackgroundChoiceSkills = useMemo(() => backgroundSkillChoiceGroups.flatMap((group) => draft.backgroundSkillChoices?.[group.id] || []), [backgroundSkillChoiceGroups, draft.backgroundSkillChoices]);
 const backgroundSkills = uniqueText([...(selectedBackground?.backgroundSkills || []), ...selectedBackgroundChoiceSkills]);
-const classSkillConfig = useMemo(() => extractClassSkillConfiguration(selectedClass), [selectedClass]);
+const selectedTrainedProfessions = PROFESSION_KEYS.filter((key) => Number(draft.professions?.[key]?.rank || 0) > 0);
+const baseClassSkillConfig = useMemo(() => extractClassSkillConfiguration(selectedClass), [selectedClass]);
+const classSkillConfig = useMemo(() => {
+  const totalCount = Number(baseClassSkillConfig?.count || 0);
+  const professionChoices = playerMode ? selectedTrainedProfessions.length : 0;
+  return {
+    ...baseClassSkillConfig,
+    totalCount,
+    professionChoices,
+    count: Math.max(0, totalCount - professionChoices),
+  };
+}, [baseClassSkillConfig, playerMode, selectedTrainedProfessions.length]);
 const skillInfo = useMemo(() => {
   const map = new Map();
   optionRows.filter((row) => row.option_type === "skill").forEach((row) => { const key = normalizeSkillKey(row.name); if (key) map.set(key, { key, label: row.name, ability: row.metadata?.ability || row.category, description: row.description, source: row.source }); });
@@ -50,7 +61,6 @@ const classHitDie = Number(selectedClass?.hit_die || CLASS_DEFINITIONS[draft.cla
 const dynamicHp = maximumHitPoints(classHitDie, draft.level, finalAbilities.con);
 const selectedSkillKeys = uniqueText([...backgroundSkills, ...(draft.selectedClassSkills || [])]);
 const selectedProfessionServices = PROFESSION_KEYS.filter((key) => draft.professions?.[key]?.offersService);
-const selectedTrainedProfessions = PROFESSION_KEYS.filter((key) => Number(draft.professions?.[key]?.rank || 0) > 0);
 const storyWorldLocation = generatedStoryLocationLabel(locations, draft.locationId);
 
 const backgroundMechanicDetails = useMemo(() => {
@@ -67,7 +77,7 @@ const createPayload = useMemo(() => {
   const classKey = selectedClass?.class_key || base.sheet.classKey;
   const classSource = selectedClass?.source || "CAMPAIGN";
   const pb = proficiencyBonus(draft.level);
-  const feats = uniqueText([selectedBackgroundFeat?.name, speciesBonusFeat?.name, ...(draft.additionalFeats || [])]);
+  const feats = uniqueText([selectedBackgroundFeat?.name, speciesBonusFeat?.name, ...(playerMode ? [] : draft.additionalFeats || [])]);
   const saves = selectedClass?.saving_throws || [];
   const tools = selectedBackground?.tools || [];
   const spellChoices = spellChoicesForRpc(spellRows, draft.spellSelections);
