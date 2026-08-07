@@ -139,10 +139,9 @@ function addGroup(output, candidate) {
   if (!duplicate) output.push(candidate);
 }
 
-function invocationFollowups(output, baseGroups, catalogRows, spells, selectedClass) {
+function invocationFollowups(output, baseGroups, catalogRows, spells) {
   const invocationGroup = baseGroups.find((entry) => entry.kind === "eldritch-invocation");
   if (!invocationGroup) return;
-  const source = selectedClass?.source || "XPHB";
   const warlockDamageCantrips = spellOptions(spells, { level: 0, classes: ["Warlock"], damageOnly: true });
   for (const invocation of ["Agonizing Blast", "Eldritch Spear", "Repelling Blast"]) {
     addGroup(output, group({
@@ -159,19 +158,6 @@ function invocationFollowups(output, baseGroups, catalogRows, spells, selectedCl
     helper: "Choose the Origin feat granted by Lessons of the First Ones. Normal feat prerequisites still apply.",
     activeWhen: { optionNames: ["Lessons of the First Ones"] }, constraints: { featCategory: "O" },
   }));
-  addGroup(output, group({
-    id: "warlock-pact-tome-cantrips", label: "Pact of the Tome: cantrips", level: 1, count: 3, kind: "spell",
-    row: { name: "Pact of the Tome" }, options: spellOptions(spells, { level: 0 }),
-    helper: "Choose three cantrips for the Book of Shadows. These cantrips may come from any class list.",
-    activeWhen: { optionNames: ["Pact of the Tome"] }, constraints: { spellLevel: 0 },
-  }));
-  addGroup(output, group({
-    id: "warlock-pact-tome-rituals", label: "Pact of the Tome: level 1 rituals", level: 1, count: 2, kind: "spell",
-    row: { name: "Pact of the Tome" }, options: spellOptions(spells, { level: 1, ritual: true }),
-    helper: "Choose two level 1 Ritual spells for the Book of Shadows.",
-    activeWhen: { optionNames: ["Pact of the Tome"] }, constraints: { spellLevel: 1, ritual: true },
-  }));
-  void source;
 }
 
 export function buildExplicitClassFeatureGroups({ rows = [], selectedClass, level = 1, catalogRows = [], spells = [], baseGroups = [] } = {}) {
@@ -181,10 +167,7 @@ export function buildExplicitClassFeatureGroups({ rows = [], selectedClass, leve
   const skills = catalogOptions(catalogRows, "skill");
   const languages = ALL_LANGUAGES.map((name) => staticOption(name, "XPHB", "language", "A language from the Player's Handbook language tables."));
 
-  invocationFollowups(output, baseGroups, catalogRows, spells, selectedClass);
-
-  const armorModel = findRow(rows, "Armor Model", "Armorer");
-  if (armorModel) addGroup(output, group({ id: "artificer-armorer-model", label: "Arcane Armor model", row: armorModel, kind: "class-feature", options: ["Dreadnaught", "Guardian", "Infiltrator"].map((name) => staticOption(name, source, "class-feature")) }));
+  invocationFollowups(output, baseGroups, catalogRows, spells);
 
   const magicalDiscoveries = findRow(rows, "Magical Discoveries", "Lore");
   if (magicalDiscoveries) addGroup(output, group({
@@ -203,10 +186,7 @@ export function buildExplicitClassFeatureGroups({ rows = [], selectedClass, leve
   if (blessedStrikes) addGroup(output, group({ id: "cleric-blessed-strikes", label: "Blessed Strikes", row: blessedStrikes, options: ["Divine Strike", "Potent Spellcasting"].map((name) => staticOption(name, source, "class-feature")) }));
 
   const knightlyEnvoy = findRow(rows, "Knightly Envoy", "Banneret");
-  if (knightlyEnvoy) {
-    addGroup(output, group({ id: "fighter-banneret-language", label: "Knightly Envoy language", row: knightlyEnvoy, kind: "language", options: languages }));
-    addGroup(output, group({ id: "fighter-banneret-skill", label: "Knightly Envoy skill", row: knightlyEnvoy, kind: "skill-choice", options: skills.filter((option) => ["insight", "intimidation", "persuasion", "performance"].includes(normalized(option.name))) }));
-  }
+  if (knightlyEnvoy) addGroup(output, group({ id: "fighter-banneret-skill", label: "Knightly Envoy skill", row: knightlyEnvoy, kind: "skill-choice", options: skills.filter((option) => ["insight", "intimidation", "persuasion", "performance"].includes(normalized(option.name))) }));
 
   const deftExplorer = findRow(rows, "Deft Explorer");
   if (deftExplorer) addGroup(output, group({ id: "ranger-deft-explorer-languages", label: "Deft Explorer languages", row: deftExplorer, count: 2, kind: "language", options: languages }));
@@ -236,14 +216,6 @@ export function buildExplicitClassFeatureGroups({ rows = [], selectedClass, leve
     }));
   }
 
-  const spellMastery = findRow(rows, "Spell Mastery");
-  if (spellMastery) {
-    for (const spellLevel of [1, 2]) addGroup(output, group({
-      id: `wizard-spell-mastery-${spellLevel}`, label: `Spell Mastery: level ${spellLevel} spell`, row: spellMastery, kind: "spell",
-      options: spellOptions(spells, { level: spellLevel, classes: ["Wizard"], castingTimeIncludes: "action" }),
-      constraints: { spellLevel, spellClasses: ["Wizard"], castingTimeIncludes: "action" },
-    }));
-  }
   const signature = findRow(rows, "Signature Spells");
   if (signature) addGroup(output, group({ id: "wizard-signature-spells", label: "Signature Spells", row: signature, count: 2, kind: "spell", options: spellOptions(spells, { level: 3, classes: ["Wizard"] }), constraints: { spellLevel: 3, spellClasses: ["Wizard"] } }));
 
