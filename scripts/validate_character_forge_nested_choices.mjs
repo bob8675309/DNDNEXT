@@ -9,6 +9,8 @@ const forbidToken = (text, token, label) => { if (text.includes(token)) throw ne
 const extensions = read("utils/classFeatureChoiceExtensions.js");
 const parsing = read("utils/classFeatureChoiceParsing.js");
 const rules = read("utils/classFeatureChoices.js");
+const playerFacing = read("utils/playerFacingText.js");
+const featureText = read("components/ClassFeatureText.js");
 const context = read("components/NpcForgeClassChoiceContext.js");
 const guideModel = read("components/NpcForgeClassGuideModel.js");
 const choices = read("components/NpcForgeClassFeatureChoices.js");
@@ -32,7 +34,16 @@ for (const token of ["spells = []", "mergeChoiceGroups", "classFeatureGroupIsAct
 forbidToken(rules, "-weapon-mastery`", "creation-time class choices");
 for (const token of ["classStepChoiceStateComplete", "trainingClassChoiceStateComplete", "activeClassFeatureGroups", "classFeatureGroupsComplete"]) requireToken(context, token, "placement-aware completion guard");
 for (const token of ['from("spells_catalog")', "damage_types", "spells,"]) requireToken(guideModel, token, "class guide spell source");
-for (const token of ["SpellChoiceCard", "Spell details", "Dependent choices open", "activeClassFeatureGroups", "compactSingle", 'placement = "class"', "eligibleOptionNames"]) requireToken(choices, token, "nested choice UI");
+for (const token of [
+  "SpellChoiceCard", "Spell details", "Dependent choices open", "activeClassFeatureGroups", "CompactChoicePicker",
+  "conciseChoiceHelper", 'placement = "class"', "eligibleOptionNames", "availableOptions.length > 8",
+  "Number(option.minLevel || 1) <= Number(level || 1)",
+]) requireToken(choices, token, "nested choice UI");
+for (const token of ["COMPACT_VISIBLE_SECTIONS", "Full feature rules", "class-feature-text__compact-more"]) requireToken(featureText, token, "compact feature presentation");
+for (const token of [
+  "isSourceCode(penultimate) && isFeatureLevel(last)",
+  "isFeatureLevel(penultimate) && isSourceCode(last)",
+]) requireToken(playerFacing, token, "internal source-reference sanitizer");
 for (const token of ["useNpcForgeClassChoice", 'placement="training"', "eligibleExpertiseNames", "Assign Expertise after proficiency is established"]) requireToken(training, token, "Training-stage Expertise routing");
 
 for (const token of ["druid-land-type", "ranger-primal-companion-form", "rogue-dread-allegiance"]) forbidToken(extensions, token, "rest-reconfigurable creation groups");
@@ -42,4 +53,4 @@ for (const token of [
   "deferrable initially deferred", "spellClasses", "castingTimeIncludes", "Dependent class choice group",
 ]) requireToken(migration, token, "nested choice authority migration");
 
-console.log("Source-backed Player Forge choices validated with creation/rest/use cadence separation and Training-stage Expertise.");
+console.log("Source-backed Player Forge choices validated with cadence separation, compact presentation, source-reference cleanup, and Training-stage Expertise.");
