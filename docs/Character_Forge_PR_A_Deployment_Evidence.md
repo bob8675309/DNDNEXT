@@ -1,81 +1,103 @@
-# Character Forge PR A Deployment Evidence
+# Character Forge PR A — Deployment Evidence
 
-Status date: 2026-08-07
+## Current acceptance state
 
-This document records the current implementation and acceptance evidence for PR #170, **Refine Character Forge resilience, presentation, spells, and player authority**. Read it with `Unified_Character_Forge_Status.md`.
+PR #170 remains **open and unmerged**. Do not treat CI success alone as browser acceptance.
 
-## Implemented boundary
+The current branch includes the source-backed Character Forge, player authority hardening, responsive presentation, choice-cadence cleanup, compact class-choice presentation, and the August 7 top-to-bottom audit corrections described below.
 
-PR #170 consolidates player creation into the shared Forge and adds draft resilience, responsive layouts, raster-only portraits, class/subclass guidance, ability generation, Training choices, starting spells, Review dossier presentation, profile scrolling, and player feat/spell authority.
+## August 7 top-to-bottom audit
 
-The class-readability pass:
+The audit rechecked the live Supabase catalogue and authority functions against the Forge from Species through Review instead of relying on screenshots or source shape alone.
 
-- preserves imported paragraph breaks and source headings;
-- removes redundant `1st-level ... feature` boilerplate already represented by the level header;
-- removes isolated internal ability-code artifacts such as `int`;
-- deduplicates repeated adjacent text blocks;
-- presents long item/plan lists as multi-column lists;
-- folds exceptionally long lists behind an explicit **View N listed options** control while retaining every listed rule entry;
-- applies the same structured rendering to the detailed guide and left feature-description dock;
-- removes the Primary Abilities tile from the Forge class hero.
+### Corrected during the audit
 
-The creation-choice semantic pass adds a stricter distinction between a feature that contains options and a choice that belongs in character creation:
+- **Weapon Mastery** remains runtime/rest configuration rather than permanent creation state.
+- **Circle of the Land** terrain, **Primal Companion** form, **Fiendish Resilience**, **Dread Allegiance**, **Steps of the Fey**, and similar rest/per-use selections remain outside permanent creator state.
+- **Armorer — Armor Model** is no longer serialized as a permanent creation choice because the source allows changing models after a Short or Long Rest.
+- **Wizard — Spell Mastery** is no longer serialized as permanent creation state because a mastered spell can be replaced after a Long Rest.
+- **Banneret — Knightly Envoy** keeps the permanent Well Spoken skill choice, but the Polyglot language is no longer locked at creation because it can be replaced after a Long Rest.
+- **Pact of the Tome** remains a persistent invocation choice, but its Book of Shadows cantrips/rituals are no longer permanent child selections. They are chosen when the book is conjured after a Short or Long Rest.
+- The live deferred nested-choice validator was updated by `player_forge_runtime_choice_cadence` so it no longer requires permanent Pact of the Tome child groups. Agonizing Blast, Eldritch Spear, Repelling Blast, and Lessons of the First Ones still require their persistent dependent selections.
+- Legacy subclass Fighting Style choices now respect the options actually named by the source feature instead of automatically exposing the entire modern Fighting Style feat catalogue. This is important for compatibility subclasses such as College of Swords.
+- Expertise progression now distinguishes the preferred 2024 base-class progression from legacy base-class progressions.
+- The Abilities main workspace no longer duplicates the full **Species Bonus** controls. Those controls remain in the right contextual information panel.
+- Regression validators were updated to protect the cadence cleanup instead of demanding the old, incorrect UI/state model.
 
-- source `options` nodes no longer become Forge choices merely because they contain a `count` field;
-- permanent acquisition choices remain in the Class step;
-- Expertise and Wizard Scholar are persistent acquisition choices but are routed to **Training**, after skill proficiency is established;
-- Weapon Mastery is no longer locked at character creation because the source feature allows weapon choices to be changed after a Long Rest;
-- Circle of the Land terrain, Primal Companion form, Dread Allegiance, Fiendish Resilience, and comparable rest-reconfigurable selections are treated as runtime/rest choices rather than permanent creator state;
-- Steps of the Fey and Tinker's Magic style per-use selections remain feature instructions rather than creation fields;
-- Spellcasting is informational and remains reference text; ordinary class spell selection remains owned by the Spells step;
-- small single-option groups use compact selectors with an expandable selected-option detail instead of a grid of large cards;
-- large or nested choice families such as Invocations, Maneuvers, Metamagic, Magic Item Plans, and spell-backed choices retain searchable expandable catalogues.
+### Verified as already correct
 
-The rule model now carries both **cadence** (`creation`, `long-rest`, `short-rest`, `per-use`, `informational`) and **placement** (`class`, `training`) so UI location is not confused with persistence semantics.
+- The player Training pool intentionally shares the class skill allotment with trained crafting professions. `useNpcForgeDerivedModel` subtracts trained professions from the remaining class-skill count, and the controller validates that derived count.
+- Class-step completion ignores Training-placement Expertise groups; Training validates them separately; final creation validates all persistent groups.
+- Starting spell validation continues to use the canonical spell catalogue and class progression.
+- No world-map, town/city-map, route, movement, weather, encounter, combat, or unrelated crafting runtime file was touched by this audit.
 
-## Database evidence
+## Remaining acceptance blockers found by the audit
 
-Production migrations for controlled tags, subclass choice, starting-spell validation, player feat/spell authority, source-choice validation, and nested-choice validation are active. The most recent authority migration was rollback-tested before production application. An authenticated-player mutation test against an owned character was blocked as intended, and authoritative row counts remained unchanged.
+The following are now explicitly tracked as blockers rather than being silently treated as complete.
 
-The cadence/placement pass requires no new database migration. Existing deferred nested-choice validation still validates every serialized persistent class-feature group; removing runtime-only groups is legal because the server validates submitted persistent groups rather than requiring those runtime features to exist as creation choices.
+### 1. Species permanent-choice coverage is incomplete
 
-## Validation requirements
+The current Species choice engine is strong for Human Skillful/Versatile and Astral Fire-style cantrip choices, and correctly avoids Astral Trance-style rest-time state. It is not yet a general source-backed Species choice engine.
 
-The exact final PR head must pass:
+Live preferred Species data contains additional permanent selections that need structured capture, including examples such as:
 
-- `Validate NPC Forge foundation`;
-- `Validate character portrait authority`;
-- `Validate Character Forge nested choices`;
-- Character Forge resilience and player-authority validators;
-- source/model/security regression suites;
-- exact `npm run build:vercel`;
-- Next.js production compilation and static generation;
-- Vercel preview deployment.
+- Dragonborn Draconic Ancestry
+- Elf lineage and its spellcasting-ability choice
+- Gnome lineage and its spellcasting-ability choice
+- Tiefling Fiendish Legacy and its spellcasting-ability choice
+- Goliath Giant Ancestry
+- Shifter Shifting subtype
+- Simic Hybrid Animal Enhancement, including the second level-5 selection
+- Kobold Legacy and its conditional Craftiness/Draconic Sorcery child choices
+- Reborn Strange Endurance resistance and skill
+- Custom Lineage feat and Variable Trait
+- direct species skill, tool, language, and fixed-innate-magic ability choices across several imported species
 
-The nested-choice regression contract now specifically requires:
+These must be modeled without turning runtime choices such as Astral Trance, Astral Knowledge, Eladrin seasonal trance state, breath-weapon shape/effect choices, or other per-use/rest selections into permanent character state.
 
-- an explicit choice-cadence classifier;
-- no unconditional `options + count = creation choice` rule;
-- no creation groups for Weapon Mastery, Circle of the Land terrain, Primal Companion form, or Dread Allegiance;
-- Training placement for Expertise;
-- compact controls for small single-choice groups;
-- continued server validation for serialized persistent groups and nested dependencies.
+### 2. Species size selection is not yet source-constrained
+
+The Species workspace currently offers the global Small/Medium/Large size list. Imported Species metadata already supplies each species' legal size set. The selector and Species-step validation need to constrain choices to that source set and require a choice when the source permits more than one size.
+
+### 3. Artificer wildcard Magic Item Plans need a deeper nested-selection model
+
+The presentation problem from the earlier screenshots is fixed: the giant Replicate Magic Item table is no longer dumped into the choice UI and future-level plan rows are filtered.
+
+However, EFA also contains wildcard plan rows such as a qualifying common/uncommon/rare item category whose footnote allows that plan to be learned multiple times by selecting a different concrete item each time. Treating the wildcard row itself as a complete plan does not fully model that source rule. This needs a nested concrete-item selection and matching authority validation before Replicate Magic Item can be considered exhaustive.
+
+## Database authority
+
+Production migrations currently include the existing Character Forge authority stack plus:
+
+- `player_forge_runtime_choice_cadence`
+
+The live `private.validate_player_forge_nested_choice_payload_v1()` function now requires persistent children for:
+
+- Agonizing Blast
+- Eldritch Spear
+- Repelling Blast
+- Lessons of the First Ones
+
+It deliberately does **not** require Pact of the Tome cantrip/ritual children because those are reselected when the Book of Shadows is conjured after a rest.
+
+## Validation status
+
+For the current audit head, the required automated checks are expected to remain:
+
+- Validate NPC Forge foundation
+- Validate character portrait authority
+- Validate Character Forge nested choices
+- exact Vercel production build
+
+Automated checks are regression guards, not substitutes for the remaining Species and Artificer semantic work above.
 
 ## Protected boundaries
 
-No world-map, town/city-map, route, movement, weather, combat, encounter, or unrelated crafting runtime files belong to this pass.
+- no world-map files or behavior changed
+- no town/city-map files or behavior changed
+- no route, movement, weather, encounter, combat, or unrelated crafting runtime behavior changed
+- `components/MapPageClient.js` remains untouched
 
-## Remaining acceptance gate
+## Browser acceptance gate
 
-Do not merge until authenticated browser testing confirms:
-
-- Artificer Spellcasting and Tinker's Magic read as information/instructions rather than false creation choices;
-- Weapon Mastery, Circle of the Land terrain, Primal Companion form, Dread Allegiance, Fiendish Resilience, and similar rest choices are absent from permanent Class creation choices;
-- Expertise appears on Training and only offers skills in which the character is already proficient;
-- Astral Fire remains a persistent Species choice while Astral Trance remains a rest-time feature rather than locked creator state;
-- small permanent groups use compact selectors and selected-option details cleanly;
-- large permanent catalogues remain searchable and preserve all mechanics;
-- no mechanics or option entries are missing from source-backed guide text;
-- hover/focus/click still updates the left feature card;
-- the class hero contains Hit Die, level, saving throws, and spellcasting but no Primary Abilities tile;
-- existing Forge persistence, subclass selection, spell selection, player authority, profile scrolling, and NPC creation remain intact.
+Do not merge PR #170 until the remaining Species and Artificer choice-model blockers are resolved and authenticated browser review confirms the resulting source-backed choices, Training placement, class presentation, draft persistence, starting spells, Review output, and final character sheet persistence.
