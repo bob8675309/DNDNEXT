@@ -1,4 +1,10 @@
 import { createContext, useContext } from "react";
+import {
+  classFeatureGroupsComplete,
+  normalizeClassFeatureSelections,
+  selectedClassFeatureOptions,
+  serializeClassFeatureChoices,
+} from "../utils/classFeatureChoices";
 
 export const EMPTY_CLASS_CHOICE_STATE = Object.freeze({
   classId: "",
@@ -9,32 +15,51 @@ export const EMPTY_CLASS_CHOICE_STATE = Object.freeze({
   options: Object.freeze([]),
   catalogReady: false,
   selectedKey: "",
+  featureGroups: Object.freeze([]),
+  featureSelections: Object.freeze({}),
+  featureCatalogReady: false,
 });
 
 export function eligibleSubclassOptions(state = EMPTY_CLASS_CHOICE_STATE) {
-  const level = Math.max(1, Math.min(20, Number(state.level || 1)));
-  return (state.options || []).filter((option) => Number(option.firstLevel || 1) <= level);
+  return (state.options || []).filter((option) => Number(option.firstLevel || 1) <= Number(state.level || 1));
 }
 
 export function selectedSubclassOption(state = EMPTY_CLASS_CHOICE_STATE) {
-  const selected = (state.options || []).find((option) => option.key === state.selectedKey) || null;
-  if (!selected) return null;
-  return Number(selected.firstLevel || 1) <= Math.max(1, Math.min(20, Number(state.level || 1))) ? selected : null;
+  return (state.options || []).find((option) => option.key === state.selectedKey) || null;
 }
 
 export function classChoiceStateRequiresSelection(state = EMPTY_CLASS_CHOICE_STATE) {
   return eligibleSubclassOptions(state).length > 0;
 }
 
+export function classFeatureChoiceStateRequiresSelection(state = EMPTY_CLASS_CHOICE_STATE) {
+  return (state.featureGroups || []).some((group) => group.required && Number(group.count || 0) > 0);
+}
+
 export function classChoiceStateComplete(state = EMPTY_CLASS_CHOICE_STATE) {
-  if (state.classId && !state.catalogReady) return false;
-  return !classChoiceStateRequiresSelection(state) || Boolean(selectedSubclassOption(state));
+  if (!state.catalogReady || !state.featureCatalogReady) return false;
+  const subclassComplete = !classChoiceStateRequiresSelection(state) || Boolean(selectedSubclassOption(state));
+  return subclassComplete && classFeatureGroupsComplete(state.featureGroups || [], state.featureSelections || {});
+}
+
+export function classChoiceSelectionSummary(state = EMPTY_CLASS_CHOICE_STATE) {
+  return selectedClassFeatureOptions(state.featureGroups || [], state.featureSelections || {});
+}
+
+export function serializeClassChoiceState(state = EMPTY_CLASS_CHOICE_STATE) {
+  return serializeClassFeatureChoices(state.featureGroups || [], state.featureSelections || {});
+}
+
+export function normalizedClassFeatureChoiceState(groups = [], selections = {}) {
+  return normalizeClassFeatureSelections(groups, selections);
 }
 
 export const NpcForgeClassChoiceContext = createContext({
   state: EMPTY_CLASS_CHOICE_STATE,
   registerClass: () => {},
   selectSubclass: () => {},
+  registerFeatureGroups: () => {},
+  toggleFeatureOption: () => {},
 });
 
 export function useNpcForgeClassChoice() {

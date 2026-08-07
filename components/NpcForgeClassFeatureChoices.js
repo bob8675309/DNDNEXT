@@ -1,0 +1,67 @@
+import { useMemo, useState } from "react";
+
+const normalized = (value) => String(value ?? "").trim().toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+
+function selectedNames(groups, selections) {
+  return new Set(groups.flatMap((group) => (selections?.[group.id] || []).map((key) => group.options.find((option) => option.key === key)?.name)).filter(Boolean).map(normalized));
+}
+
+function ClassChoiceOption({ option, selected, eligible, requirement, onToggle }) {
+  return (
+    <article className={`npc-forge-class-choice-option ${selected ? "is-selected" : ""} ${eligible ? "" : "is-locked"}`}>
+      <div className="npc-forge-class-choice-option__head">
+        <div><strong>{option.name}</strong><small>{option.source || "Campaign"}{Number(option.minLevel || 1) > 1 ? ` • level ${option.minLevel}+` : ""}</small></div>
+        <button type="button" disabled={!eligible} onClick={onToggle}>{selected ? "Selected" : eligible ? "Choose" : "Locked"}</button>
+      </div>
+      <details>
+        <summary>Read option</summary>
+        <p>{option.description}</p>
+        {requirement ? <small className="npc-forge-class-choice-option__requirement">Requires {requirement}.</small> : null}
+        {option.followup ? <small className="npc-forge-class-choice-option__followup">Follow-up: {option.followup}</small> : null}
+      </details>
+    </article>
+  );
+}
+
+export default function NpcForgeClassFeatureChoices({ groups = [], selections = {}, level = 1, onToggle }) {
+  const [queries, setQueries] = useState({});
+  const chosenNames = useMemo(() => selectedNames(groups, selections), [groups, selections]);
+  if (!groups.length) return null;
+
+  return (
+    <section className="npc-forge-class-choices" aria-label="Required class feature choices">
+      <header><div><span>Class feature choices</span><h3>Complete permanent choices granted by this starting level</h3></div><p>Only choices earned by the selected class, subclass, and level appear here.</p></header>
+      <div className="npc-forge-class-choices__groups">
+        {groups.map((group) => {
+          const selected = selections?.[group.id] || [];
+          const query = queries[group.id] || "";
+          const filtered = group.options.filter((option) => !query || `${option.name} ${option.description}`.toLowerCase().includes(query.toLowerCase()));
+          const complete = selected.length === Number(group.count || 0);
+          return (
+            <details key={group.id} className={`npc-forge-class-choice-group ${complete ? "is-complete" : "is-required"}`} open={!complete}>
+              <summary><div><span>Level {group.level} • {group.sourceFeature || group.label}</span><strong>{group.label}</strong></div><em>{selected.length}/{group.count} selected</em></summary>
+              <div className="npc-forge-class-choice-group__body">
+                {group.helper ? <p>{group.helper}</p> : null}
+                {group.options.length > 8 ? <input value={query} onChange={(event) => setQueries((current) => ({ ...current, [group.id]: event.target.value }))} placeholder={`Search ${group.label.toLowerCase()}…`} /> : null}
+                <div className="npc-forge-class-choice-group__options">
+                  {filtered.map((option) => {
+                    const isSelected = selected.includes(option.key);
+                    const levelEligible = Number(option.minLevel || 1) <= Number(level || 1);
+                    const dependencyEligible = !option.requires || chosenNames.has(normalized(option.requires)) || isSelected;
+                    const uniqueEligible = group.allowRepeatAcrossGroups || !chosenNames.has(normalized(option.name)) || isSelected;
+                    const requirement = !dependencyEligible ? option.requires : !uniqueEligible ? "already selected in another choice group" : "";
+                    return <ClassChoiceOption key={option.key} option={option} selected={isSelected} eligible={levelEligible && dependencyEligible && uniqueEligible} requirement={requirement} onToggle={() => onToggle?.(group.id, option.key)} />;
+                  })}
+                </div>
+                {!filtered.length ? <div className="npc-forge-class-choice-group__empty">No options match this search.</div> : null}
+              </div>
+            </details>
+          );
+        })}
+      </div>
+      <style jsx global>{`
+        .npc-forge-class-choices{display:grid;gap:12px;margin:16px 0;padding:15px;border:1px solid rgba(88,214,199,.32);border-radius:14px;background:linear-gradient(145deg,rgba(13,28,36,.9),rgba(27,18,40,.92))}.npc-forge-class-choices>header{display:flex;justify-content:space-between;gap:18px;align-items:end}.npc-forge-class-choices>header span{color:#8df5e7;font-size:.62rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase}.npc-forge-class-choices>header h3{margin:3px 0 0;color:#fff;font-size:1rem}.npc-forge-class-choices>header p{max-width:420px;margin:0;color:rgba(255,255,255,.62);font-size:.7rem;line-height:1.45}.npc-forge-class-choices__groups{display:grid;gap:9px}.npc-forge-class-choice-group{border:1px solid rgba(168,108,255,.34);border-radius:11px;background:rgba(15,16,27,.8);overflow:hidden}.npc-forge-class-choice-group.is-required{border-color:rgba(255,143,122,.6)}.npc-forge-class-choice-group.is-complete{border-color:rgba(88,214,199,.5)}.npc-forge-class-choice-group>summary{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:11px 13px;cursor:pointer;list-style:none}.npc-forge-class-choice-group>summary::-webkit-details-marker{display:none}.npc-forge-class-choice-group>summary div{display:grid;gap:2px}.npc-forge-class-choice-group>summary span{color:rgba(255,255,255,.5);font-size:.57rem;text-transform:uppercase}.npc-forge-class-choice-group>summary strong{color:#fff;font-size:.82rem}.npc-forge-class-choice-group>summary em{padding:4px 8px;border-radius:999px;background:rgba(168,108,255,.16);color:#eadfff;font-size:.62rem;font-style:normal}.npc-forge-class-choice-group.is-complete>summary em{background:rgba(88,214,199,.15);color:#c9fff7}.npc-forge-class-choice-group__body{display:grid;gap:10px;padding:0 12px 12px}.npc-forge-class-choice-group__body>p{margin:0;color:rgba(255,255,255,.68);font-size:.72rem;line-height:1.55}.npc-forge-class-choice-group__body>input{width:100%;padding:8px 10px;border:1px solid rgba(255,255,255,.13);border-radius:8px;color:#fff;background:#0c0e17}.npc-forge-class-choice-group__options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.npc-forge-class-choice-option{display:grid;gap:7px;padding:10px;border:1px solid rgba(255,255,255,.1);border-radius:9px;background:rgba(255,255,255,.025)}.npc-forge-class-choice-option.is-selected{border-color:#a86cff;background:rgba(126,72,199,.16)}.npc-forge-class-choice-option.is-locked{opacity:.58}.npc-forge-class-choice-option__head{display:flex;justify-content:space-between;gap:9px;align-items:start}.npc-forge-class-choice-option__head>div{display:grid;gap:2px}.npc-forge-class-choice-option__head strong{color:#fff;font-size:.74rem}.npc-forge-class-choice-option__head small{color:rgba(255,255,255,.47);font-size:.57rem}.npc-forge-class-choice-option__head button{padding:4px 8px;border:1px solid rgba(168,108,255,.55);border-radius:7px;color:#fff;background:rgba(126,72,199,.22);font-size:.6rem}.npc-forge-class-choice-option.is-selected .npc-forge-class-choice-option__head button{border-color:#58d6c7;background:rgba(88,214,199,.16);color:#d5fff9}.npc-forge-class-choice-option details{border-top:1px solid rgba(255,255,255,.07);padding-top:6px}.npc-forge-class-choice-option summary{cursor:pointer;color:#d7bfff;font-size:.62rem}.npc-forge-class-choice-option p{margin:6px 0 0;color:rgba(255,255,255,.75);font-size:.68rem;line-height:1.5}.npc-forge-class-choice-option__requirement,.npc-forge-class-choice-option__followup{display:block;margin-top:6px;color:#ffd38a;font-size:.61rem;line-height:1.45}.npc-forge-class-choice-group__empty{padding:12px;color:rgba(255,255,255,.5);text-align:center}@media(max-width:900px){.npc-forge-class-choice-group__options{grid-template-columns:1fr}.npc-forge-class-choices>header{align-items:start;flex-direction:column}}
+      `}</style>
+    </section>
+  );
+}

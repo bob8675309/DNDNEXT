@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
+import { buildClassFeatureChoiceGroups } from "../utils/classFeatureChoices";
 import { guideSubclassFeatures, resolveSubclassCatalog, subclassIntroduction } from "../utils/classes/subclassCompatibility";
 import { formatPlayerFacingText } from "../utils/playerFacingText";
 import { useNpcForgeClassChoice } from "./NpcForgeClassChoiceContext";
@@ -46,31 +47,39 @@ export function useNpcForgeClassGuideModel(selectedClass, level) {
   const [previewKey, setPreviewKey] = useState("");
   const [levels, setLevels] = useState([]);
   const [features, setFeatures] = useState([]);
+  const [choiceCatalog, setChoiceCatalog] = useState([]);
+  const [items, setItems] = useState([]);
   const [loadedId, setLoadedId] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [pinned, setPinned] = useState(null);
-  const { state, registerClass, selectSubclass } = useNpcForgeClassChoice();
+  const { state, registerClass, selectSubclass, registerFeatureGroups, toggleFeatureOption } = useNpcForgeClassChoice();
   const currentLevel = Math.max(1, Math.min(20, Number(level || 1)));
 
   useEffect(() => {
     if (!selectedClass?.id || !selectedClass?.class_key) {
-      setLevels([]); setFeatures([]); setLoadedId(""); setLoading(false); setError("");
+      setLevels([]); setFeatures([]); setChoiceCatalog([]); setItems([]); setLoadedId(""); setLoading(false); setError("");
       return;
     }
     let active = true;
-    setLoading(true); setLoadedId(""); setLevels([]); setFeatures([]); setError("");
+    setLoading(true); setLoadedId(""); setLevels([]); setFeatures([]); setChoiceCatalog([]); setItems([]); setError("");
     Promise.all([
       supabase.from("class_level_progression")
         .select("class_level,proficiency_bonus,cantrips_known,spells_known,spell_slots,features")
         .eq("class_id", selectedClass.id).order("class_level", { ascending: true }),
       supabase.from("class_feature_catalog")
-        .select("feature_type,name,source,class_source,subclass_name,subclass_short_name,level,description,raw_payload")
+        .select("id,feature_type,name,source,class_source,subclass_name,subclass_short_name,level,description,entries,raw_payload")
         .eq("class_key", selectedClass.class_key).order("level", { ascending: true }).order("name", { ascending: true }).limit(5000),
-    ]).then(([levelResult, featureResult]) => {
+      supabase.from("character_option_catalog_preferred")
+        .select("id,option_key,option_type,name,source,category,description,prerequisite_text,tags,metadata")
+        .in("option_type", ["feat", "skill"]).order("option_type", { ascending: true }).order("name", { ascending: true }).limit(5000),
+      supabase.from("items_catalog")
+        .select("item_key,item_name,item_type,item_rarity,payload")
+        .eq("item_rarity", "mundane").limit(5000),
+    ]).then(([levelResult, featureResult, optionResult, itemResult]) => {
       if (!active) return;
-      const failed = levelResult.error || featureResult.error;
-      setLevels(levelResult.data || []); setFeatures(featureResult.data || []);
+      const failed = levelResult.error || featureResult.error || optionResult.error || itemResult.error;
+      setLevels(levelResult.data || []); setFeatures(featureResult.data || []); setChoiceCatalog(optionResult.data || []); setItems(itemResult.data || []);
       setLoadedId(failed ? "" : String(selectedClass.id));
       setError(failed?.message || ""); setLoading(false);
     }).catch((cause) => {
@@ -101,6 +110,19 @@ export function useNpcForgeClassGuideModel(selectedClass, level) {
   const eligible = options.filter((option) => Number(option.firstLevel || 1) <= currentLevel);
   const entryLevel = options.length ? Math.min(...options.map((option) => Number(option.firstLevel || 20))) : null;
   const previewEligible = Boolean(preview && Number(preview.firstLevel || 1) <= currentLevel);
+  const choiceGroups = useMemo(() => buildClassFeatureChoiceGroups({
+    selectedClass,
+    level: currentLevel,
+    features,
+    selectedSubclass: selected,
+    catalogRows: choiceCatalog,
+    items,
+  }), [choiceCatalog, currentLevel, features, items, selected, selectedClass]);
+
+  useEffect(() => {
+    registerFeatureGroups(selectedClass, choiceGroups, currentLevel, loadedId === String(selectedClass?.id || ""));
+  }, [choiceGroups, currentLevel, loadedId, registerFeatureGroups, selectedClass]);
+
   const rows = useMemo(() => levels.map((row) => {
     const baseNames = (Array.isArray(row.features) ? row.features : []).map(classFeatureName).filter(Boolean).filter((name) => !(preview && genericSubclassFeature(name)));
     const subclassRows = preview ? guideSubclassFeatures(preview).filter((feature) => Number(feature.level) === Number(row.class_level)).map((feature) => ({ name: feature.name, source: preview.source, type: "subclass", description: formatPlayerFacingText(feature.description, "No imported description is available.") })) : [];
@@ -111,5 +133,6 @@ export function useNpcForgeClassGuideModel(selectedClass, level) {
     view, setView, compareAll, setCompareAll, previewKey, setPreviewKey,
     loading, error, pinned, setPinned, currentLevel, options, preview, selected,
     eligible, entryLevel, previewEligible, rows, intro: subclassIntroduction(preview), selectSubclass,
+    choiceGroups, choiceSelections: state.featureSelections || {}, toggleFeatureOption,
   };
 }

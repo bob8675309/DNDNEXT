@@ -71,53 +71,19 @@ export function startingSpellSelectionModel(classRow = null, levelRow = null, ch
   const classKey = String(classRow?.class_key || "").toLowerCase();
   const spellcasting = Boolean(classRow?.spellcasting_ability);
   if (!spellcasting) {
-    return {
-      classKey,
-      mode: "none",
-      cantrips: 0,
-      leveled: 0,
-      prepared: 0,
-      maximumSpellLevel: 0,
-      spellSlots: [],
-      required: false,
-    };
+    return { classKey, mode: "none", cantrips: 0, leveled: 0, prepared: 0, maximumSpellLevel: 0, spellSlots: [], required: false };
   }
-
   const level = Math.max(1, Math.min(20, Number(characterLevel || levelRow?.class_level || 1)));
   const cantrips = Math.max(0, Number(levelRow?.cantrips_known || 0));
   const progressionCount = Math.max(0, Number(levelRow?.spells_known || 0));
   const maximumSpellLevel = Math.max(1, maximumSpellLevelFromSlots(levelRow?.spell_slots));
   const spellSlots = Array.isArray(levelRow?.spell_slots) ? levelRow.spell_slots : [];
-
   if (classKey === "wizard") {
     const spellbook = 6 + Math.max(0, level - 1) * 2;
-    return {
-      classKey,
-      mode: "spellbook",
-      cantrips,
-      leveled: spellbook,
-      prepared: Math.min(spellbook, progressionCount),
-      maximumSpellLevel,
-      spellSlots,
-      required: cantrips + spellbook > 0,
-    };
+    return { classKey, mode: "spellbook", cantrips, leveled: spellbook, prepared: Math.min(spellbook, progressionCount), maximumSpellLevel, spellSlots, required: cantrips + spellbook > 0 };
   }
-
-  const mode = PREPARED_LIST_CLASSES.has(classKey)
-    ? "prepared"
-    : KNOWN_LIST_CLASSES.has(classKey)
-      ? "known"
-      : "known";
-  return {
-    classKey,
-    mode,
-    cantrips,
-    leveled: progressionCount,
-    prepared: progressionCount,
-    maximumSpellLevel,
-    spellSlots,
-    required: cantrips + progressionCount > 0,
-  };
+  const mode = PREPARED_LIST_CLASSES.has(classKey) ? "prepared" : KNOWN_LIST_CLASSES.has(classKey) ? "known" : "known";
+  return { classKey, mode, cantrips, leveled: progressionCount, prepared: progressionCount, maximumSpellLevel, spellSlots, required: cantrips + progressionCount > 0 };
 }
 
 export function countStartingSpellSelections(spells = [], selections = {}) {
@@ -144,43 +110,40 @@ export function validateStartingSpellSelections(model, spells = [], selections =
   if (!model || model.mode === "none") return [];
   const counts = countStartingSpellSelections(spells, selections);
   const errors = [];
-  if (counts.cantrips !== model.cantrips) {
-    errors.push(`Choose exactly ${model.cantrips} cantrip${model.cantrips === 1 ? "" : "s"}.`);
-  }
+  if (counts.cantrips !== model.cantrips) errors.push(`Choose exactly ${model.cantrips} cantrip${model.cantrips === 1 ? "" : "s"}.`);
   if (counts.leveled !== model.leveled) {
     const label = model.mode === "spellbook" ? "spellbook spell" : model.mode === "prepared" ? "prepared spell" : "known spell";
     errors.push(`Choose exactly ${model.leveled} ${label}${model.leveled === 1 ? "" : "s"}.`);
   }
-  if (model.mode === "spellbook" && counts.prepared !== model.prepared + model.cantrips) {
-    errors.push(`Prepare exactly ${model.prepared} leveled spell${model.prepared === 1 ? "" : "s"} from the spellbook.`);
-  }
+  if (model.mode === "spellbook" && counts.prepared !== model.prepared + model.cantrips) errors.push(`Prepare exactly ${model.prepared} leveled spell${model.prepared === 1 ? "" : "s"} from the spellbook.`);
   return errors;
 }
 
 export function spellChoicesForRpc(spells = [], selections = {}) {
   return (Array.isArray(spells) ? spells : [])
     .filter((spell) => selections?.[spell.id])
-    .map((spell) => ({
-      spell_id: spell.id,
-      prepared: Number(spell.level || 0) === 0 ? true : Boolean(selections[spell.id]?.prepared),
-    }));
+    .map((spell) => ({ spell_id: spell.id, prepared: Number(spell.level || 0) === 0 ? true : Boolean(selections[spell.id]?.prepared) }));
 }
 
 export function normalizedSpellName(value = "") {
   return String(value || "").toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 }
 
+function spellRowCompleteness(row = {}) {
+  return [row.description, row.casting_time, row.range_text, row.duration_text, row.school, row.components_text]
+    .reduce((score, value) => score + (String(value || "").trim() ? 1 : 0), 0);
+}
+
 export function preferSpellRows(rows = []) {
   const preferred = new Map();
   const sourceRank = (source) => source === "XPHB" ? 0 : source === "PHB" ? 1 : 2;
   for (const row of Array.isArray(rows) ? rows : []) {
-    const key = String(row?.spell_key || row?.slug || normalizedSpellName(row?.name));
+    const key = normalizedSpellName(row?.name);
     if (!key) continue;
     const current = preferred.get(key);
-    if (!current || sourceRank(row.source) < sourceRank(current.source)) preferred.set(key, row);
+    const nextRank = sourceRank(row?.source);
+    const currentRank = sourceRank(current?.source);
+    if (!current || nextRank < currentRank || (nextRank === currentRank && spellRowCompleteness(row) > spellRowCompleteness(current))) preferred.set(key, row);
   }
-  return [...preferred.values()].sort((a, b) =>
-    Number(a.level || 0) - Number(b.level || 0)
-    || String(a.name || "").localeCompare(String(b.name || ""))
-  );
+  return [...preferred.values()].sort((a, b) => Number(a.level || 0) - Number(b.level || 0) || String(a.name || "").localeCompare(String(b.name || "")));
 }

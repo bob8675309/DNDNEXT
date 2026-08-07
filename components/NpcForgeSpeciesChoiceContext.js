@@ -24,6 +24,32 @@ export function serializeSpeciesChoiceState(state = EMPTY_SPECIES_CHOICE_STATE) 
   return output;
 }
 
+function selectedValuesByKind(state, kind) {
+  const values = [];
+  for (const rule of state.rules || []) {
+    const selected = state.selections?.[rule.id] || {};
+    for (const field of rule.fields || []) {
+      if (field.kind !== kind || !selected[field.id]) continue;
+      const option = (field.options || []).find((candidate) => candidate.value === selected[field.id]);
+      values.push({
+        value: selected[field.id],
+        label: option?.label || selected[field.id],
+        source: option?.source || "XPHB",
+        trait: rule.traitName,
+      });
+    }
+  }
+  return values;
+}
+
+export function speciesSkillChoicesFromState(state = EMPTY_SPECIES_CHOICE_STATE) {
+  return selectedValuesByKind(state, "skill");
+}
+
+export function speciesFeatChoicesFromState(state = EMPTY_SPECIES_CHOICE_STATE) {
+  return selectedValuesByKind(state, "origin-feat");
+}
+
 export function speciesSpellcastingFromChoiceState(state = EMPTY_SPECIES_CHOICE_STATE) {
   const spells = [];
   for (const rule of state.rules || []) {
