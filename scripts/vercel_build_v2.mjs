@@ -35,7 +35,6 @@ const steps = [
   ["node", ["scripts/validate_npc_forge_v2.mjs"]],
   ["node", ["scripts/validate_unified_character_forge.mjs"]],
   ["node", ["scripts/validate_character_forge_resilience.mjs"]],
-  ["node", ["scripts/validate_character_forge_nested_choices.mjs"]],
   ["node", ["scripts/validate_character_class_progression.mjs"]],
   ["node", ["scripts/test_player_facing_text.mjs"]],
   ["node", ["scripts/validate_character_craft_handoff.mjs"]],

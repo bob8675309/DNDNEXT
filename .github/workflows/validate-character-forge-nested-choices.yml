@@ -1,0 +1,37 @@
+name: Validate Character Forge nested choices
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "components/NpcForgeClassChoiceContext.js"
+      - "components/NpcForgeClassFeatureChoices.js"
+      - "components/NpcForgeClassGuideModel.js"
+      - "utils/classFeatureChoiceExtensions.js"
+      - "utils/classFeatureChoices.js"
+      - "scripts/validate_character_forge_nested_choices.mjs"
+      - "sql/20260806_03_player_forge_nested_choice_validation.sql"
+      - ".github/workflows/validate-character-forge-nested-choices.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate nested Forge choice contract
+        run: |
+          node --check scripts/validate_character_forge_nested_choices.mjs
+          node scripts/validate_character_forge_nested_choices.mjs
