@@ -5,10 +5,14 @@ on:
     branches:
       - main
     paths:
+      - "components/NewNpcModalV3.js"
       - "components/NpcForgeClassChoiceContext.js"
       - "components/NpcForgeClassFeatureChoices.js"
+      - "components/NpcForgeClassGuide.js"
       - "components/NpcForgeClassGuideModel.js"
+      - "components/NpcForgeTrainingStep.js"
       - "utils/classFeatureChoiceExtensions.js"
+      - "utils/classFeatureChoiceParsing.js"
       - "utils/classFeatureChoices.js"
       - "scripts/validate_character_forge_nested_choices.mjs"
       - "sql/20260806_03_player_forge_nested_choice_validation.sql"

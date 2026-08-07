@@ -49,6 +49,11 @@ export function optionNodes(entries) {
 }
 
 const COUNT_WORDS = Object.freeze({ one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10 });
+const REST_RECONFIGURABLE_FEATURES = new Set([
+  "weapon mastery", "circle of the land spells", "primal companion", "fiendish resilience", "dread allegiance",
+]);
+const PER_USE_FEATURES = new Set(["steps of the fey", "tinker's magic"]);
+const INFORMATIONAL_FEATURES = new Set(["spellcasting"]);
 
 export function textChoiceCount(description = "", fallback = 1) {
   const match = safeText(description).match(/(?:choose|select|learn|gain)\s+(?:any\s+)?(one|two|three|four|five|six|seven|eight|nine|ten|\d+)\b/i);
@@ -56,10 +61,39 @@ export function textChoiceCount(description = "", fallback = 1) {
   return Number(COUNT_WORDS[match[1].toLowerCase()] || match[1] || fallback);
 }
 
+function restReconfigurableText(description = "") {
+  const text = normalized(description);
+  if (!text) return false;
+  const rest = text.includes("long rest") || text.includes("short rest");
+  if (!rest) return false;
+  const changesAtRest = /(whenever|when|after) you finish (?:a |your )?(?:short rest|long rest|short or long rest|short rest or long rest)/.test(text)
+    && /\b(choose|change|replace|different|switch)\b/.test(text);
+  const retainedUntilRest = /retain|retains|until you finish your next long rest|until you choose a different/.test(text)
+    && /\b(choose|choice|proficiency|resistance|weapon|land|form|allegiance)\b/.test(text);
+  return changesAtRest || retainedUntilRest;
+}
+
+function perUseChoiceText(description = "") {
+  const text = normalized(description);
+  if (!text) return false;
+  return [
+    "when you do so choose", "as a bonus action choose", "as an action choose", "can use one of the following", "use one of the following",
+    "powers below", "following powers", "choose the option each time", "choose an option each time", "each time you cast", "each time you use",
+    "each time you transform", "when you cast this spell choose", "when you use this feature choose", "based on the environment you chose",
+  ].some((phrase) => text.includes(phrase));
+}
+
+export function classFeatureChoiceCadence(row = {}) {
+  const name = normalized(row?.name);
+  const description = safeText(row?.description);
+  if (INFORMATIONAL_FEATURES.has(name)) return "informational";
+  if (REST_RECONFIGURABLE_FEATURES.has(name) || restReconfigurableText(description)) return description.toLowerCase().includes("short rest") ? "short-rest" : "long-rest";
+  if (PER_USE_FEATURES.has(name) || perUseChoiceText(description)) return "per-use";
+  return "creation";
+}
+
 function runtimeOnlyChoice(row) {
-  const description = normalized(row?.description);
-  if (!description) return false;
-  return ["when you do so choose", "as a bonus action choose", "as an action choose", "can use one of the following", "use one of the following", "powers below", "following powers", "gain the following benefits", "based on the environment you chose"].some((phrase) => description.includes(phrase));
+  return classFeatureChoiceCadence(row) !== "creation";
 }
 
 export function permanentChoiceText(row) {
@@ -98,8 +132,8 @@ export function namedEntryOptions(entries) {
 }
 
 export function optionNodeCreatesChoice(row, node, kind) {
+  if (classFeatureChoiceCadence(row) !== "creation") return false;
   if (["eldritch-invocation", "battle-master-maneuver", "metamagic", "arcane-shot", "rune", "elemental-discipline"].includes(kind)) return true;
-  if (node && Object.prototype.hasOwnProperty.call(node, "count")) return true;
   if (normalized(row?.name) === "storm aura") return true;
   return permanentChoiceText(row);
 }

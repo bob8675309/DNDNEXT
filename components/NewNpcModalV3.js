@@ -3,7 +3,7 @@ import { supabase } from "../utils/supabaseClient";
 import { toggleClassFeatureSelection } from "../utils/classFeatureChoices";
 import NewNpcModalV3Refined from "./NewNpcModalV3Refined";
 import { EMPTY_SPECIES_CHOICE_STATE, NpcForgeSpeciesChoiceContext, serializeSpeciesChoiceState, speciesChoiceStateComplete, speciesFeatChoicesFromState, speciesSkillChoicesFromState, speciesSpellcastingFromChoiceState } from "./NpcForgeSpeciesChoiceContext";
-import { classChoiceSelectionSummary, classChoiceStateComplete, classChoiceStateRequiresSelection, classFeatureChoiceStateRequiresSelection, EMPTY_CLASS_CHOICE_STATE, normalizedClassFeatureChoiceState, NpcForgeClassChoiceContext, selectedSubclassOption, serializeClassChoiceState } from "./NpcForgeClassChoiceContext";
+import { classChoiceSelectionSummary, classChoiceStateComplete, classChoiceStateRequiresSelection, classFeatureChoiceStateRequiresSelection, classStepChoiceStateComplete, EMPTY_CLASS_CHOICE_STATE, normalizedClassFeatureChoiceState, NpcForgeClassChoiceContext, selectedSubclassOption, serializeClassChoiceState, trainingClassChoiceStateComplete } from "./NpcForgeClassChoiceContext";
 
 const uniqueText = (values = []) => [...new Set((Array.isArray(values) ? values : []).map((value) => String(value ?? "").trim()).filter(Boolean))];
 function normalizeSpeciesChoiceState(species, rules = [], previous = EMPTY_SPECIES_CHOICE_STATE) {
@@ -114,7 +114,7 @@ export default function NewNpcModalV3(props) {
   const classContextValue = useMemo(() => ({ state: classChoiceState, registerClass, selectSubclass, registerFeatureGroups, toggleFeatureOption }), [classChoiceState, registerClass, registerFeatureGroups, selectSubclass, toggleFeatureOption]);
   const createCharacter = useCallback((originalPayload, spellChoices = []) => {
     if (playerMode && !speciesChoiceStateComplete(choiceStateRef.current)) return Promise.resolve({ data: null, error: { message: "Complete every required Species choice before creating the character." } });
-    if (playerMode && !classChoiceStateComplete(classChoiceStateRef.current)) return Promise.resolve({ data: null, error: { message: "Complete the subclass and every required Class feature choice before creating the character." } });
+    if (playerMode && !classChoiceStateComplete(classChoiceStateRef.current)) return Promise.resolve({ data: null, error: { message: "Complete the subclass and every required Class or Training feature choice before creating the character." } });
     const subclassPayload = payloadWithSubclass(originalPayload, classChoiceStateRef.current);
     const payload = payloadWithSourceChoices(subclassPayload, choiceStateRef.current, classChoiceStateRef.current);
     if (!playerMode) return supabase.rpc("create_character_v1", { p_payload: payload });
@@ -135,10 +135,15 @@ export default function NewNpcModalV3(props) {
         return;
       }
       const classState = classChoiceStateRef.current;
-      if (playerMode && /Class/i.test(currentStep) && classState.classId && !classChoiceStateComplete(classState)) {
+      if (playerMode && /Class/i.test(currentStep) && classState.classId && !classStepChoiceStateComplete(classState)) {
         event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation?.();
-        const target = classChoiceStateRequiresSelection(classState) && !selectedSubclassOption(classState) ? modal?.querySelector(".npc-forge-class-guide__subclasses.is-required") : classFeatureChoiceStateRequiresSelection(classState) ? modal?.querySelector(".npc-forge-class-choice-group.is-required") : modal?.querySelector(".npc-forge-class-guide");
+        const target = classChoiceStateRequiresSelection(classState) && !selectedSubclassOption(classState) ? modal?.querySelector(".npc-forge-class-guide__subclasses.is-required") : classFeatureChoiceStateRequiresSelection(classState, "class") ? modal?.querySelector(".npc-forge-class-choice-group.is-required") : modal?.querySelector(".npc-forge-class-guide");
         target?.scrollIntoView?.({ behavior: "smooth", block: "center" });
+        return;
+      }
+      if (playerMode && /Training/i.test(currentStep) && classState.classId && !trainingClassChoiceStateComplete(classState)) {
+        event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation?.();
+        modal?.querySelector(".npc-forge-class-choices.is-placement-training .npc-forge-class-choice-group.is-required")?.scrollIntoView?.({ behavior: "smooth", block: "center" });
       }
     }
     document.addEventListener("click", blockIncompleteSpeciesChoice, true);

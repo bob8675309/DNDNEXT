@@ -96,11 +96,11 @@ function findRow(rows, name, subclass = "") {
     && (!subclass || [row.subclass_name, row.subclass_short_name].some((value) => normalized(value) === normalized(subclass))));
 }
 
-function group({ id, label, row, level, count = 1, kind = "class-feature", options = [], helper = "", activeWhen = null, constraints = null }) {
+function group({ id, label, row, level, count = 1, kind = "class-feature", options = [], helper = "", activeWhen = null, constraints = null, placement = "class", cadence = "creation" }) {
   return {
     id, label, level: Number(level || row?.level || 1), count: Number(count || 1), kind, required: true,
     sourceFeature: row?.name || label, subclassName: row?.subclass_name || "", helper: helper || formatPlayerFacingText(row?.description, "Complete the choice granted by this feature."),
-    options, activeWhen, constraints,
+    options, activeWhen, constraints, placement, cadence,
   };
 }
 
@@ -202,9 +202,6 @@ export function buildExplicitClassFeatureGroups({ rows = [], selectedClass, leve
   const blessedStrikes = findRow(rows, "Blessed Strikes");
   if (blessedStrikes) addGroup(output, group({ id: "cleric-blessed-strikes", label: "Blessed Strikes", row: blessedStrikes, options: ["Divine Strike", "Potent Spellcasting"].map((name) => staticOption(name, source, "class-feature")) }));
 
-  const landSpells = findRow(rows, "Circle of the Land Spells", "Land");
-  if (landSpells) addGroup(output, group({ id: "druid-land-type", label: "Initial land type", row: landSpells, options: ["Arid", "Polar", "Temperate", "Tropical"].map((name) => staticOption(name, source, "class-feature")), helper: `${formatPlayerFacingText(landSpells.description)}\n\nThis records the initial prepared land list; it can change after a Long Rest.` }));
-
   const knightlyEnvoy = findRow(rows, "Knightly Envoy", "Banneret");
   if (knightlyEnvoy) {
     addGroup(output, group({ id: "fighter-banneret-language", label: "Knightly Envoy language", row: knightlyEnvoy, kind: "language", options: languages }));
@@ -214,14 +211,8 @@ export function buildExplicitClassFeatureGroups({ rows = [], selectedClass, leve
   const deftExplorer = findRow(rows, "Deft Explorer");
   if (deftExplorer) addGroup(output, group({ id: "ranger-deft-explorer-languages", label: "Deft Explorer languages", row: deftExplorer, count: 2, kind: "language", options: languages }));
 
-  const primalCompanion = findRow(rows, "Primal Companion", "Beast Master");
-  if (primalCompanion) addGroup(output, group({ id: "ranger-primal-companion-form", label: "Initial primal companion form", row: primalCompanion, options: ["Beast of the Land", "Beast of the Sea", "Beast of the Sky"].map((name) => staticOption(name, source, "class-feature")), helper: `${formatPlayerFacingText(primalCompanion.description)}\n\nThis records the initial form; the feature can choose a different form after a Long Rest.` }));
-
   const thievesCant = findRow(rows, "Thieves' Cant");
   if (thievesCant) addGroup(output, group({ id: "rogue-thieves-cant-language", label: "Thieves' Cant additional language", row: thievesCant, kind: "language", options: languages.filter((option) => normalized(option.name) !== "thieves cant") }));
-
-  const dreadAllegiance = findRow(rows, "Dread Allegiance", "Scion of the Three");
-  if (dreadAllegiance) addGroup(output, group({ id: "rogue-dread-allegiance", label: "Dread Allegiance", row: dreadAllegiance, options: ["Bane", "Bhaal", "Myrkul"].map((name) => staticOption(name, source, "class-feature")), helper: `${formatPlayerFacingText(dreadAllegiance.description)}\n\nThis records the initial allegiance; it can change after a Long Rest.` }));
 
   const affinity = findRow(rows, "Elemental Affinity", "Draconic");
   if (affinity) addGroup(output, group({ id: "sorcerer-draconic-affinity", label: "Elemental Affinity", row: affinity, kind: "damage-type", options: DAMAGE_TYPES.map((name) => staticOption(name, source, "damage-type")) }));
@@ -259,7 +250,7 @@ export function buildExplicitClassFeatureGroups({ rows = [], selectedClass, leve
   if (classKey === "expert-sidekick") {
     const expertiseRow = findRow(rows, "Expertise");
     const count = Number(level) >= 15 ? 4 : Number(level) >= 3 ? 2 : 0;
-    if (expertiseRow && count) addGroup(output, group({ id: "expert-sidekick-expertise", label: "Expertise", row: expertiseRow, count, kind: "expertise", options: skills }));
+    if (expertiseRow && count) addGroup(output, group({ id: "expert-sidekick-expertise", label: "Expertise", row: expertiseRow, count, kind: "expertise", placement: "training", options: skills }));
   }
   const martialRole = findRow(rows, "Martial Role");
   if (martialRole) addGroup(output, group({ id: "warrior-sidekick-role", label: "Martial Role", row: martialRole, options: ["Attacker", "Defender"].map((name) => staticOption(name, source, "class-feature")) }));

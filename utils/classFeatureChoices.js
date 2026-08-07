@@ -25,10 +25,6 @@ function skillOptions(catalogRows, allowedNames = null) {
   const allowed = allowedNames ? new Set(allowedNames.map(normalized)) : null;
   return (Array.isArray(catalogRows) ? catalogRows : []).filter((row) => row.option_type === "skill" && (!allowed || allowed.has(normalized(row.name)))).map((row) => ({ name: row.name, source: row.source || "XPHB", referenceType: "skill", raw: row }));
 }
-function weaponMasteryCount(classKey, level) {
-  const progressions = { barbarian: [[1, 2], [4, 3], [10, 4]], fighter: [[1, 3], [4, 4], [10, 5], [16, 6]], paladin: [[1, 2]], ranger: [[1, 2]], rogue: [[1, 2]] };
-  return (progressions[classKey] || []).reduce((count, [entryLevel, value]) => Number(level) >= entryLevel ? value : count, 0);
-}
 function expertiseCount(classKey, level) {
   const progressions = { bard: [[2, 2], [9, 4]], ranger: [[2, 1], [9, 3]], rogue: [[1, 2], [6, 4]], wizard: [[2, 1]] };
   return (progressions[classKey] || []).reduce((count, [entryLevel, value]) => Number(level) >= entryLevel ? value : count, 0);
@@ -65,26 +61,24 @@ function customGroups(rows, selectedClass, level, catalogRows, items, features) 
     const categories = new Set(["FS", ...(classKey === "paladin" ? ["FS:P"] : []), ...(classKey === "ranger" ? ["FS:R"] : [])]);
     output.push({
       id: `${classKey}-fighting-style`, label: "Fighting Style", level: rows.find((row) => normalized(row.name) === "fighting style")?.level || 1,
-      count: 1, kind: "fighting-style", required: true, sourceFeature: "Fighting Style",
+      count: 1, kind: "fighting-style", required: true, sourceFeature: "Fighting Style", placement: "class", cadence: "creation",
       options: enrichOptions(featOptions(catalogRows, (row) => categories.has(row.category)), features, "fighting-style"),
     });
   }
-  const masteryCount = weaponMasteryCount(classKey, level);
-  if (masteryCount && classHasFeature(rows, "Weapon Mastery")) output.push({ id: `${classKey}-weapon-mastery`, label: "Weapon Mastery", level: 1, count: masteryCount, kind: "weapon-mastery", required: true, sourceFeature: "Weapon Mastery", options: enrichOptions(weaponOptions(items), features, "weapon-mastery") });
   const expertise = expertiseCount(classKey, level);
   if (expertise) {
     const wizardSkills = classKey === "wizard" ? ["Arcana", "History", "Investigation", "Medicine", "Nature", "Religion"] : null;
     output.push({
       id: `${classKey}-expertise`, label: classKey === "wizard" ? "Scholar Expertise" : "Expertise", level: classKey === "rogue" ? 1 : 2,
-      count: expertise, kind: "expertise", required: true, sourceFeature: classKey === "wizard" ? "Scholar" : "Expertise",
-      helper: "Choose skills in which the character is or will be proficient. Training validation checks this at creation.",
+      count: expertise, kind: "expertise", required: true, sourceFeature: classKey === "wizard" ? "Scholar" : "Expertise", placement: "training", cadence: "creation",
+      helper: "Choose from skills the character is already proficient in. Expertise is part of Training because proficiency must be established first.",
       options: enrichOptions(skillOptions(catalogRows, wizardSkills), features, "expertise"),
     });
   }
   const kenseiCount = kenseiWeaponCount(level);
   if (kenseiCount && classHasFeature(rows, "Path of the Kensei")) output.push({
     id: `${classKey}-kensei-weapons`, label: "Kensei Weapons", level: 3, count: kenseiCount, kind: "kensei-weapon", required: true,
-    sourceFeature: "Path of the Kensei", helper: "Choose the weapon types mastered by the Kensei feature. Heavy and Special weapons are excluded, except the Longbow remains eligible.",
+    sourceFeature: "Path of the Kensei", placement: "class", cadence: "creation", helper: "Choose the weapon types mastered by the Kensei feature. Heavy and Special weapons are excluded, except the Longbow remains eligible.",
     options: enrichOptions(kenseiWeaponOptions(items), features, "kensei-weapon"),
   });
   return output;
@@ -164,7 +158,7 @@ export function buildClassFeatureChoiceGroups({ selectedClass, level = 1, featur
       groups.push({
         id: `${slug(selectedClass.class_key)}-${slug(selectedClass.source)}-${slug(row.subclass_name || "base")}-${Number(row.level || 1)}-${slug(row.name)}-${index}`,
         label: safeText(row.name).replace(/\s+Options$/i, ""), level: Number(row.level || 1), count: Math.max(1, Number(node.count || textChoiceCount(row.description, 1))),
-        kind, required: true, sourceFeature: row.name, subclassName: row.subclass_name || "", allowRepeatAcrossGroups: permitsCrossGroupRepeat(row.name),
+        kind, required: true, sourceFeature: row.name, subclassName: row.subclass_name || "", allowRepeatAcrossGroups: permitsCrossGroupRepeat(row.name), placement: "class", cadence: "creation",
         helper: formatPlayerFacingText(row.description, "Select the required options granted by this feature."), options: enrichOptions(references, features, kind),
       });
       addedChoiceGroup = true;
@@ -174,17 +168,17 @@ export function buildClassFeatureChoiceGroups({ selectedClass, level = 1, featur
       if (directOptions.length) groups.push({
         id: `${slug(selectedClass.class_key)}-${slug(selectedClass.source)}-${slug(row.subclass_name || "base")}-${Number(row.level || 1)}-${slug(row.name)}-named`,
         label: safeText(row.name), level: Number(row.level || 1), count: Math.max(1, textChoiceCount(row.description, 1)), kind, required: true,
-        sourceFeature: row.name, subclassName: row.subclass_name || "", allowRepeatAcrossGroups: permitsCrossGroupRepeat(row.name),
+        sourceFeature: row.name, subclassName: row.subclass_name || "", allowRepeatAcrossGroups: permitsCrossGroupRepeat(row.name), placement: "class", cadence: "creation",
         helper: formatPlayerFacingText(row.description, "Select the required option granted by this feature."), options: enrichOptions(directOptions, features, kind),
       });
     }
     if (normalized(row.name) === "replicate magic item") {
       const plans = tablePlanOptions(row.entries);
-      if (plans.length) groups.push({ id: `${slug(selectedClass.class_key)}-magic-item-plans`, label: "Magic Item Plans", level: 2, count: ARTIFICER_PLAN_PROGRESSION_EFA[Math.max(0, Math.min(19, Number(level) - 1))], kind: "artificer-plan", required: true, sourceFeature: row.name, helper: formatPlayerFacingText(row.description), options: enrichOptions(plans, features, "artificer-plan") });
+      if (plans.length) groups.push({ id: `${slug(selectedClass.class_key)}-magic-item-plans`, label: "Magic Item Plans", level: 2, count: ARTIFICER_PLAN_PROGRESSION_EFA[Math.max(0, Math.min(19, Number(level) - 1))], kind: "artificer-plan", required: true, sourceFeature: row.name, placement: "class", cadence: "creation", helper: formatPlayerFacingText(row.description), options: enrichOptions(plans, features, "artificer-plan") });
     }
   });
   const merged = mergeProgressionGroups(groups, selectedClass, level);
-  const withCustom = merged.map((entry) => ({ ...entry, options: [...(entry.options || [])] }));
+  const withCustom = merged.map((entry) => ({ ...entry, placement: entry.placement || "class", cadence: entry.cadence || "creation", options: [...(entry.options || [])] }));
   for (const customGroup of customGroups(rows, selectedClass, level, catalogRows, items, features)) {
     const existing = withCustom.find((entry) => entry.kind === customGroup.kind
       && normalized(entry.sourceFeature) === normalized(customGroup.sourceFeature)
@@ -197,10 +191,13 @@ export function buildClassFeatureChoiceGroups({ selectedClass, level = 1, featur
     (customGroup.options || []).forEach((option) => { if (!byKey.has(option.key)) byKey.set(option.key, option); });
     existing.options = [...byKey.values()];
     existing.count = Math.max(Number(existing.count || 0), Number(customGroup.count || 0));
+    existing.placement = customGroup.placement || existing.placement || "class";
+    existing.cadence = customGroup.cadence || existing.cadence || "creation";
   }
   const explicit = buildExplicitClassFeatureGroups({ rows, selectedClass, level, catalogRows, spells, baseGroups: withCustom });
   return expandWizardSavantGroups(mergeChoiceGroups(withCustom, explicit), selectedClass, level, spells)
-    .filter((group) => group.count > 0 && group.options.length >= group.count)
+    .map((group) => ({ ...group, placement: group.placement || "class", cadence: group.cadence || "creation" }))
+    .filter((group) => group.cadence === "creation" && group.count > 0 && group.options.length >= group.count)
     .sort((a, b) => Number(a.level) - Number(b.level) || a.label.localeCompare(b.label));
 }
 
@@ -212,8 +209,10 @@ export function normalizeClassFeatureSelections(groups = [], selections = {}) {
   }
   return output;
 }
-export function classFeatureGroupsComplete(groups = [], selections = {}) {
-  return activeClassFeatureGroups(groups, selections).every((group) => !group.required || unique(selections?.[group.id] || []).length === Number(group.count || 0));
+export function classFeatureGroupsComplete(groups = [], selections = {}, placement = null) {
+  return activeClassFeatureGroups(groups, selections)
+    .filter((group) => !placement || (group.placement || "class") === placement)
+    .every((group) => !group.required || unique(selections?.[group.id] || []).length === Number(group.count || 0));
 }
 export function toggleClassFeatureSelection(groups = [], selections = {}, groupId, optionKey) {
   const group = groups.find((candidate) => candidate.id === groupId);
@@ -233,7 +232,7 @@ export function toggleClassFeatureSelection(groups = [], selections = {}, groupI
 }
 export function selectedClassFeatureOptions(groups = [], selections = {}) {
   return flattenActiveClassChoiceSelections(groups, selections).map(({ group, option }) => ({
-    groupId: group.id, groupLabel: group.label, groupKind: group.kind, level: group.level,
+    groupId: group.id, groupLabel: group.label, groupKind: group.kind, level: group.level, placement: group.placement || "class", cadence: group.cadence || "creation",
     key: option.key, name: option.name, source: option.source, kind: option.kind,
     description: option.description, minLevel: option.minLevel, requires: option.requires || "", followup: option.followup || "",
     cardType: option.cardType || null, spell: option.spell || null,
@@ -242,7 +241,7 @@ export function selectedClassFeatureOptions(groups = [], selections = {}) {
 export function serializeClassFeatureChoices(groups = [], selections = {}) {
   return Object.fromEntries(activeClassFeatureGroups(groups, selections).map((group) => [group.id, {
     label: group.label, kind: group.kind, level: group.level, count: group.count, sourceFeature: group.sourceFeature || group.label,
-    subclassName: group.subclassName || null, allowRepeatAcrossGroups: Boolean(group.allowRepeatAcrossGroups),
+    subclassName: group.subclassName || null, allowRepeatAcrossGroups: Boolean(group.allowRepeatAcrossGroups), placement: group.placement || "class", cadence: group.cadence || "creation",
     activeWhen: group.activeWhen || null, constraints: group.constraints || null,
     selections: (selections?.[group.id] || []).map((key) => {
       const option = group.options.find((candidate) => candidate.key === key);

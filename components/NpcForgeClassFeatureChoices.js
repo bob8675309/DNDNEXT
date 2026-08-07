@@ -24,6 +24,11 @@ function SpellChoiceCard({ option }) {
   );
 }
 
+function ChoiceDetails({ option }) {
+  if (!option) return null;
+  return <details className="npc-forge-class-choice-selected-detail"><summary>{option.cardType === "spell" ? "Spell details" : "Read selected option"}</summary>{option.cardType === "spell" ? <SpellChoiceCard option={option} /> : null}<p>{option.description}</p>{option.followup ? <small className="npc-forge-class-choice-option__followup">Follow-up: {option.followup}</small> : null}</details>;
+}
+
 function ClassChoiceOption({ option, selected, eligible, requirement, onToggle }) {
   return (
     <article className={`npc-forge-class-choice-option ${selected ? "is-selected" : ""} ${eligible ? "" : "is-locked"}`}>
@@ -42,48 +47,61 @@ function ClassChoiceOption({ option, selected, eligible, requirement, onToggle }
   );
 }
 
-export default function NpcForgeClassFeatureChoices({ groups = [], selections = {}, level = 1, onToggle }) {
+export default function NpcForgeClassFeatureChoices({
+  groups = [], selections = {}, level = 1, onToggle, placement = "class", eligibleOptionNames = null,
+  heading = "Complete permanent choices granted by this starting level",
+  description = "Only choices earned by the selected class, subclass, and level appear here. Dependent choices open after their parent feature is selected.",
+}) {
   const [queries, setQueries] = useState({});
-  const visibleGroups = useMemo(() => activeClassFeatureGroups(groups, selections), [groups, selections]);
+  const visibleGroups = useMemo(() => activeClassFeatureGroups(groups, selections).filter((group) => (group.placement || "class") === placement), [groups, placement, selections]);
   const chosenNames = useMemo(() => selectedNames(groups, selections), [groups, selections]);
+  const eligibleNames = useMemo(() => eligibleOptionNames ? new Set(eligibleOptionNames.map(normalized)) : null, [eligibleOptionNames]);
   if (!visibleGroups.length) return null;
 
   return (
-    <section className="npc-forge-class-choices" aria-label="Required class feature choices">
+    <section className={`npc-forge-class-choices is-placement-${placement}`} aria-label={placement === "training" ? "Required Training feature choices" : "Required class feature choices"}>
       <header>
-        <div><span>Class feature choices</span><h3>Complete permanent choices granted by this starting level</h3></div>
-        <p>Only choices earned by the selected class, subclass, and level appear here. Dependent choices open after their parent feature is selected.</p>
+        <div><span>{placement === "training" ? "Training feature choices" : "Class feature choices"}</span><h3>{heading}</h3></div>
+        <p>{description}</p>
       </header>
       <div className="npc-forge-class-choices__groups">
         {visibleGroups.map((group) => {
           const selected = selections?.[group.id] || [];
           const query = queries[group.id] || "";
-          const filtered = group.options.filter((option) => !query || `${option.name} ${option.description} ${option.spell?.school || ""}`.toLowerCase().includes(query.toLowerCase()));
+          const proficiencyEligible = (option) => group.kind !== "expertise" || !eligibleNames || eligibleNames.has(normalized(option.name)) || selected.includes(option.key);
+          const availableOptions = group.options.filter(proficiencyEligible);
+          const filtered = availableOptions.filter((option) => !query || `${option.name} ${option.description} ${option.spell?.school || ""}`.toLowerCase().includes(query.toLowerCase()));
           const complete = selected.length === Number(group.count || 0);
+          const compactSingle = Number(group.count || 0) === 1 && availableOptions.length <= 8;
+          const selectedOption = group.options.find((option) => option.key === selected[0]) || null;
           return (
             <details key={group.id} className={`npc-forge-class-choice-group ${complete ? "is-complete" : "is-required"}`} open={!complete}>
               <summary><div><span>Level {group.level} • {group.sourceFeature || group.label}</span><strong>{group.label}</strong></div><em>{selected.length}/{group.count} selected</em></summary>
               <div className="npc-forge-class-choice-group__body">
                 {group.helper ? <p>{group.helper}</p> : null}
-                {group.options.length > 8 ? <input value={query} onChange={(event) => setQueries((current) => ({ ...current, [group.id]: event.target.value }))} placeholder={`Search ${group.label.toLowerCase()}…`} /> : null}
-                <div className="npc-forge-class-choice-group__options">
-                  {filtered.map((option) => {
-                    const isSelected = selected.includes(option.key);
-                    const levelEligible = Number(option.minLevel || 1) <= Number(level || 1);
-                    const dependencyEligible = !option.requires || chosenNames.has(normalized(option.requires)) || isSelected;
-                    const uniqueEligible = group.allowRepeatAcrossGroups || !chosenNames.has(normalized(option.name)) || isSelected;
-                    const requirement = !dependencyEligible ? option.requires : !uniqueEligible ? "already selected in another choice group" : "";
-                    return <ClassChoiceOption key={option.key} option={option} selected={isSelected} eligible={levelEligible && dependencyEligible && uniqueEligible} requirement={requirement} onToggle={() => onToggle?.(group.id, option.key)} />;
-                  })}
-                </div>
-                {!filtered.length ? <div className="npc-forge-class-choice-group__empty">No options match this search.</div> : null}
+                {group.kind === "expertise" && eligibleNames ? <div className="npc-forge-class-choice-training-note">Only skills already granted by your Background or selected from your class Training pool are eligible for Expertise.</div> : null}
+                {compactSingle ? <div className="npc-forge-class-choice-compact"><label><span>Choose {group.label}</span><select value={selected[0] || ""} onChange={(event) => { const next = event.target.value; if (!next && selected[0]) onToggle?.(group.id, selected[0]); else if (next && next !== selected[0]) onToggle?.(group.id, next); }}><option value="">Choose…</option>{availableOptions.map((option) => <option key={option.key} value={option.key}>{option.name}{option.source ? ` • ${option.source}` : ""}</option>)}</select></label><ChoiceDetails option={selectedOption} /></div> : <>
+                  {group.options.length > 8 ? <input value={query} onChange={(event) => setQueries((current) => ({ ...current, [group.id]: event.target.value }))} placeholder={`Search ${group.label.toLowerCase()}…`} /> : null}
+                  <div className="npc-forge-class-choice-group__options">
+                    {filtered.map((option) => {
+                      const isSelected = selected.includes(option.key);
+                      const levelEligible = Number(option.minLevel || 1) <= Number(level || 1);
+                      const dependencyEligible = !option.requires || chosenNames.has(normalized(option.requires)) || isSelected;
+                      const uniqueEligible = group.allowRepeatAcrossGroups || !chosenNames.has(normalized(option.name)) || isSelected;
+                      const trainingEligible = proficiencyEligible(option);
+                      const requirement = !trainingEligible ? "proficiency in this skill" : !dependencyEligible ? option.requires : !uniqueEligible ? "already selected in another choice group" : "";
+                      return <ClassChoiceOption key={option.key} option={option} selected={isSelected} eligible={levelEligible && dependencyEligible && uniqueEligible && trainingEligible} requirement={requirement} onToggle={() => onToggle?.(group.id, option.key)} />;
+                    })}
+                  </div>
+                  {!filtered.length ? <div className="npc-forge-class-choice-group__empty">{group.kind === "expertise" ? "Choose your skill proficiencies above before assigning Expertise." : "No options match this search."}</div> : null}
+                </>}
               </div>
             </details>
           );
         })}
       </div>
       <style jsx global>{`
-        .npc-forge-class-choices{display:grid;gap:12px;margin:16px 0;padding:15px;border:1px solid rgba(88,214,199,.32);border-radius:14px;background:linear-gradient(145deg,rgba(13,28,36,.9),rgba(27,18,40,.92))}.npc-forge-class-choices>header{display:flex;justify-content:space-between;gap:18px;align-items:end}.npc-forge-class-choices>header span{color:#8df5e7;font-size:.62rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase}.npc-forge-class-choices>header h3{margin:3px 0 0;color:#fff;font-size:1rem}.npc-forge-class-choices>header p{max-width:460px;margin:0;color:rgba(255,255,255,.7);font-size:.72rem;line-height:1.5}.npc-forge-class-choices__groups{display:grid;gap:9px}.npc-forge-class-choice-group{border:1px solid rgba(168,108,255,.34);border-radius:11px;background:rgba(15,16,27,.8);overflow:hidden}.npc-forge-class-choice-group.is-required{border-color:rgba(255,143,122,.6)}.npc-forge-class-choice-group.is-complete{border-color:rgba(88,214,199,.5)}.npc-forge-class-choice-group>summary{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:11px 13px;cursor:pointer;list-style:none}.npc-forge-class-choice-group>summary::-webkit-details-marker{display:none}.npc-forge-class-choice-group>summary div{display:grid;gap:2px}.npc-forge-class-choice-group>summary span{color:rgba(255,255,255,.5);font-size:.57rem;text-transform:uppercase}.npc-forge-class-choice-group>summary strong{color:#fff;font-size:.82rem}.npc-forge-class-choice-group>summary em{padding:4px 8px;border-radius:999px;background:rgba(168,108,255,.16);color:#eadfff;font-size:.62rem;font-style:normal}.npc-forge-class-choice-group.is-complete>summary em{background:rgba(88,214,199,.15);color:#c9fff7}.npc-forge-class-choice-group__body{display:grid;gap:10px;padding:0 12px 12px}.npc-forge-class-choice-group__body>p{margin:0;color:rgba(255,255,255,.76);font-size:.74rem;line-height:1.58;white-space:pre-line}.npc-forge-class-choice-group__body>input{width:100%;padding:8px 10px;border:1px solid rgba(255,255,255,.13);border-radius:8px;color:#fff;background:#0c0e17}.npc-forge-class-choice-group__options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.npc-forge-class-choice-option{display:grid;gap:7px;padding:10px;border:1px solid rgba(255,255,255,.1);border-radius:9px;background:rgba(255,255,255,.025)}.npc-forge-class-choice-option.is-selected{border-color:#a86cff;background:rgba(126,72,199,.16)}.npc-forge-class-choice-option.is-locked{opacity:.58}.npc-forge-class-choice-option__head{display:flex;justify-content:space-between;gap:9px;align-items:start}.npc-forge-class-choice-option__head>div{display:grid;gap:2px}.npc-forge-class-choice-option__head strong{color:#fff;font-size:.76rem}.npc-forge-class-choice-option__head small{color:rgba(255,255,255,.5);font-size:.58rem}.npc-forge-class-choice-option__head button{padding:4px 8px;border:1px solid rgba(168,108,255,.55);border-radius:7px;color:#fff;background:rgba(126,72,199,.22);font-size:.6rem}.npc-forge-class-choice-option.is-selected .npc-forge-class-choice-option__head button{border-color:#58d6c7;background:rgba(88,214,199,.16);color:#d5fff9}.npc-forge-class-choice-option details{border-top:1px solid rgba(255,255,255,.07);padding-top:6px}.npc-forge-class-choice-option summary{cursor:pointer;color:#d7bfff;font-size:.64rem}.npc-forge-class-choice-option p{margin:7px 0 0;color:rgba(255,255,255,.8);font-size:.7rem;line-height:1.55}.npc-forge-class-choice-option__requirement,.npc-forge-class-choice-option__followup{display:block;margin-top:6px;color:#ffd38a;font-size:.62rem;line-height:1.45}.npc-forge-class-choice-spellcard{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px}.npc-forge-class-choice-spellcard>div{display:grid;gap:2px;padding:6px 7px;border:1px solid rgba(255,255,255,.09);border-radius:7px;background:rgba(9,12,22,.62)}.npc-forge-class-choice-spellcard span{color:#9fd7ff;font-size:.52rem;font-weight:800;text-transform:uppercase}.npc-forge-class-choice-spellcard strong{color:#fff;font-size:.64rem}.npc-forge-class-choice-spellcard em{padding:4px 7px;border-radius:999px;background:rgba(88,214,199,.12);color:#bffdf4;font-size:.56rem;font-style:normal;text-align:center}.npc-forge-class-choice-group__empty{padding:12px;color:rgba(255,255,255,.5);text-align:center}@media(max-width:900px){.npc-forge-class-choice-group__options{grid-template-columns:1fr}.npc-forge-class-choices>header{align-items:start;flex-direction:column}.npc-forge-class-choice-spellcard{grid-template-columns:repeat(2,minmax(0,1fr))}}
+        .npc-forge-class-choices{display:grid;gap:12px;margin:16px 0;padding:15px;border:1px solid rgba(88,214,199,.32);border-radius:14px;background:linear-gradient(145deg,rgba(13,28,36,.9),rgba(27,18,40,.92))}.npc-forge-class-choices>header{display:flex;justify-content:space-between;gap:18px;align-items:end}.npc-forge-class-choices>header span{color:#8df5e7;font-size:.62rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase}.npc-forge-class-choices>header h3{margin:3px 0 0;color:#fff;font-size:1rem}.npc-forge-class-choices>header p{max-width:460px;margin:0;color:rgba(255,255,255,.7);font-size:.72rem;line-height:1.5}.npc-forge-class-choices__groups{display:grid;gap:9px}.npc-forge-class-choice-group{border:1px solid rgba(168,108,255,.34);border-radius:11px;background:rgba(15,16,27,.8);overflow:hidden}.npc-forge-class-choice-group.is-required{border-color:rgba(255,143,122,.6)}.npc-forge-class-choice-group.is-complete{border-color:rgba(88,214,199,.5)}.npc-forge-class-choice-group>summary{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:11px 13px;cursor:pointer;list-style:none}.npc-forge-class-choice-group>summary::-webkit-details-marker{display:none}.npc-forge-class-choice-group>summary div{display:grid;gap:2px}.npc-forge-class-choice-group>summary span{color:rgba(255,255,255,.5);font-size:.57rem;text-transform:uppercase}.npc-forge-class-choice-group>summary strong{color:#fff;font-size:.82rem}.npc-forge-class-choice-group>summary em{padding:4px 8px;border-radius:999px;background:rgba(168,108,255,.16);color:#eadfff;font-size:.62rem;font-style:normal}.npc-forge-class-choice-group.is-complete>summary em{background:rgba(88,214,199,.15);color:#c9fff7}.npc-forge-class-choice-group__body{display:grid;gap:10px;padding:0 12px 12px}.npc-forge-class-choice-group__body>p{margin:0;color:rgba(255,255,255,.76);font-size:.74rem;line-height:1.58;white-space:pre-line}.npc-forge-class-choice-group__body>input{width:100%;padding:8px 10px;border:1px solid rgba(255,255,255,.13);border-radius:8px;color:#fff;background:#0c0e17}.npc-forge-class-choice-training-note{padding:8px 10px;border-left:3px solid #58d6c7;border-radius:7px;background:rgba(88,214,199,.07);color:rgba(255,255,255,.72);font-size:.69rem;line-height:1.5}.npc-forge-class-choice-compact{display:grid;gap:8px}.npc-forge-class-choice-compact label{display:grid;gap:5px}.npc-forge-class-choice-compact label>span{color:rgba(255,255,255,.62);font-size:.62rem;font-weight:800;text-transform:uppercase}.npc-forge-class-choice-compact select{width:100%;padding:9px 10px;border:1px solid rgba(168,108,255,.45);border-radius:8px;color:#fff;background:#0c0e17}.npc-forge-class-choice-selected-detail{padding:7px 9px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:rgba(255,255,255,.02)}.npc-forge-class-choice-selected-detail summary{cursor:pointer;color:#d7bfff;font-size:.64rem}.npc-forge-class-choice-selected-detail p{margin:7px 0 0;color:rgba(255,255,255,.8);font-size:.7rem;line-height:1.55}.npc-forge-class-choice-group__options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.npc-forge-class-choice-option{display:grid;gap:7px;padding:10px;border:1px solid rgba(255,255,255,.1);border-radius:9px;background:rgba(255,255,255,.025)}.npc-forge-class-choice-option.is-selected{border-color:#a86cff;background:rgba(126,72,199,.16)}.npc-forge-class-choice-option.is-locked{opacity:.58}.npc-forge-class-choice-option__head{display:flex;justify-content:space-between;gap:9px;align-items:start}.npc-forge-class-choice-option__head>div{display:grid;gap:2px}.npc-forge-class-choice-option__head strong{color:#fff;font-size:.76rem}.npc-forge-class-choice-option__head small{color:rgba(255,255,255,.5);font-size:.58rem}.npc-forge-class-choice-option__head button{padding:4px 8px;border:1px solid rgba(168,108,255,.55);border-radius:7px;color:#fff;background:rgba(126,72,199,.22);font-size:.6rem}.npc-forge-class-choice-option.is-selected .npc-forge-class-choice-option__head button{border-color:#58d6c7;background:rgba(88,214,199,.16);color:#d5fff9}.npc-forge-class-choice-option details{border-top:1px solid rgba(255,255,255,.07);padding-top:6px}.npc-forge-class-choice-option summary{cursor:pointer;color:#d7bfff;font-size:.64rem}.npc-forge-class-choice-option p{margin:7px 0 0;color:rgba(255,255,255,.8);font-size:.7rem;line-height:1.55}.npc-forge-class-choice-option__requirement,.npc-forge-class-choice-option__followup{display:block;margin-top:6px;color:#ffd38a;font-size:.62rem;line-height:1.45}.npc-forge-class-choice-spellcard{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px}.npc-forge-class-choice-spellcard>div{display:grid;gap:2px;padding:6px 7px;border:1px solid rgba(255,255,255,.09);border-radius:7px;background:rgba(9,12,22,.62)}.npc-forge-class-choice-spellcard span{color:#9fd7ff;font-size:.52rem;font-weight:800;text-transform:uppercase}.npc-forge-class-choice-spellcard strong{color:#fff;font-size:.64rem}.npc-forge-class-choice-spellcard em{padding:4px 7px;border-radius:999px;background:rgba(88,214,199,.12);color:#bffdf4;font-size:.56rem;font-style:normal;text-align:center}.npc-forge-class-choice-group__empty{padding:12px;color:rgba(255,255,255,.5);text-align:center}@media(max-width:900px){.npc-forge-class-choice-group__options{grid-template-columns:1fr}.npc-forge-class-choices>header{align-items:start;flex-direction:column}.npc-forge-class-choice-spellcard{grid-template-columns:repeat(2,minmax(0,1fr))}}
       `}</style>
     </section>
   );

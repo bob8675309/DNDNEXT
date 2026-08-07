@@ -1,5 +1,10 @@
+import { useEffect, useMemo } from "react";
 import { ABILITY_LABELS } from "../utils/characterCreation";
 import { PROFESSION_DEFINITIONS, PROFESSION_KEYS } from "../utils/craftingProfessions";
+import NpcForgeClassFeatureChoices from "./NpcForgeClassFeatureChoices";
+import { useNpcForgeClassChoice } from "./NpcForgeClassChoiceContext";
+
+const normalized = (value) => String(value ?? "").trim().toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 
 export default function NpcForgeTrainingStep({
   playerMode,
@@ -15,14 +20,46 @@ export default function NpcForgeTrainingStep({
   onSetProfession,
   onDetail,
 }) {
+  const { state: classChoiceState, toggleFeatureOption } = useNpcForgeClassChoice();
   const selectedSkillKeys = [...new Set([...backgroundSkills, ...selectedClassSkills])];
+  const eligibleExpertiseNames = selectedSkillKeys.map((key) => titleForSkill(key));
+  const eligibleExpertiseKey = eligibleExpertiseNames.map(normalized).join("|");
+  const eligibleExpertiseSet = useMemo(() => new Set(eligibleExpertiseNames.map(normalized)), [eligibleExpertiseKey]);
+  const trainingChoiceGroups = useMemo(() => (classChoiceState.featureGroups || []).filter((group) => (group.placement || "class") === "training"), [classChoiceState.featureGroups]);
   const trainedProfessionCount = PROFESSION_KEYS.filter((key) => Number(professions?.[key]?.rank || 0) > 0).length;
   const totalTrainingChoices = Number(classSkillConfig?.totalCount ?? classSkillConfig?.count ?? 0);
   const usedTrainingChoices = selectedClassSkills.length + (playerMode ? trainedProfessionCount : 0);
   const remainingTrainingChoices = Math.max(0, totalTrainingChoices - usedTrainingChoices);
 
+  useEffect(() => {
+    if (!playerMode) return;
+    for (const group of trainingChoiceGroups) {
+      if (group.kind !== "expertise") continue;
+      for (const key of classChoiceState.featureSelections?.[group.id] || []) {
+        const option = group.options?.find((candidate) => candidate.key === key);
+        if (option && !eligibleExpertiseSet.has(normalized(option.name))) toggleFeatureOption(group.id, key);
+      }
+    }
+  }, [classChoiceState.featureSelections, eligibleExpertiseKey, eligibleExpertiseSet, playerMode, toggleFeatureOption, trainingChoiceGroups]);
+
+  useEffect(() => {
+    if (!playerMode || !trainingChoiceGroups.length || typeof document === "undefined") return undefined;
+    function blockIncompleteTrainingChoice(event) {
+      const button = event.target?.closest?.("button");
+      if (!button || button.textContent?.trim() !== "Continue") return;
+      const incomplete = trainingChoiceGroups.some((group) => group.required && (classChoiceState.featureSelections?.[group.id] || []).length !== Number(group.count || 0));
+      if (!incomplete) return;
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation?.();
+      button.closest(".npc-forge-modal-v2")?.querySelector(".npc-forge-class-choices.is-placement-training .npc-forge-class-choice-group.is-required")?.scrollIntoView?.({ behavior: "smooth", block: "center" });
+    }
+    document.addEventListener("click", blockIncompleteTrainingChoice, true);
+    return () => document.removeEventListener("click", blockIncompleteTrainingChoice, true);
+  }, [classChoiceState.featureSelections, playerMode, trainingChoiceGroups]);
+
   return <div className="npc-forge-section npc-forge-training-step">
-    <div className="npc-forge-section-heading"><div><span>Training</span><h3>Skills and crafting professions</h3></div><p>Background grants are automatic. Class skills and crafting professions share the remaining Training choices.</p></div>
+    <div className="npc-forge-section-heading"><div><span>Training</span><h3>Skills, Expertise, and crafting professions</h3></div><p>Background grants are automatic. Class skills and crafting professions establish proficiency first; Expertise is assigned afterward.</p></div>
     <div className={`npc-forge-training-explainer ${playerMode ? "is-player" : ""}`}>
       <div><strong>Background grants</strong><span>{backgroundSkills.length ? `${backgroundSkills.length} skill${backgroundSkills.length === 1 ? "" : "s"} are already trained by the selected background. These do not use a Training choice.` : "This background does not list fixed skills."}</span></div>
       <div><strong>Training choices</strong><span>Choose exactly {totalTrainingChoices} total option{totalTrainingChoices === 1 ? "" : "s"} from the {selectedClass?.class_name || "class"} skill pool and crafting professions. {usedTrainingChoices}/{totalTrainingChoices} used.</span></div>
@@ -39,6 +76,8 @@ export default function NpcForgeTrainingStep({
       const disabled = playerMode && !selected && !backgroundGranted && remainingTrainingChoices <= 0;
       return <button key={key} type="button" disabled={disabled} className={`${selected ? "is-active" : ""} ${backgroundGranted ? "is-background" : ""}`} onClick={() => backgroundGranted ? onDetail({ type: "skill", key }) : onToggleClassSkill(key)}><span>{titleForSkill(key)}</span><small>{backgroundGranted ? "Already granted by Background" : selected ? "Training choice selected" : disabled ? "No Training choices remaining" : "Available from class pool"}</small></button>;
     })}</div>
+
+    {playerMode && trainingChoiceGroups.length ? <NpcForgeClassFeatureChoices groups={classChoiceState.featureGroups || []} selections={classChoiceState.featureSelections || {}} level={classChoiceState.level || 1} onToggle={toggleFeatureOption} placement="training" eligibleOptionNames={eligibleExpertiseNames} heading="Assign Expertise after proficiency is established" description="Only persistent Training-stage choices appear here. Expertise can be assigned only to a skill the character is already proficient in." /> : null}
 
     {!playerMode ? <><div className="npc-forge-subheading mt-4">Expertise <small>NPC-only direct assignment</small></div><div className="npc-forge-chip-row">{selectedSkillKeys.map((key) => <button key={key} type="button" className={expertiseSkills.includes(key) ? "is-active" : ""} onClick={() => onToggleExpertise(key)}>{titleForSkill(key)}</button>)}</div></> : null}
 

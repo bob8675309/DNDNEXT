@@ -33,9 +33,21 @@ export function classChoiceStateRequiresSelection(state = EMPTY_CLASS_CHOICE_STA
   return eligibleSubclassOptions(state).length > 0;
 }
 
-export function classFeatureChoiceStateRequiresSelection(state = EMPTY_CLASS_CHOICE_STATE) {
+export function classFeatureChoiceStateRequiresSelection(state = EMPTY_CLASS_CHOICE_STATE, placement = "class") {
   return activeClassFeatureGroups(state.featureGroups || [], state.featureSelections || {})
+    .filter((group) => (group.placement || "class") === placement)
     .some((group) => group.required && Number(group.count || 0) > 0);
+}
+
+export function classStepChoiceStateComplete(state = EMPTY_CLASS_CHOICE_STATE) {
+  if (!state.catalogReady || !state.featureCatalogReady) return false;
+  const subclassComplete = !classChoiceStateRequiresSelection(state) || Boolean(selectedSubclassOption(state));
+  return subclassComplete && classFeatureGroupsComplete(state.featureGroups || [], state.featureSelections || {}, "class");
+}
+
+export function trainingClassChoiceStateComplete(state = EMPTY_CLASS_CHOICE_STATE) {
+  if (!state.featureCatalogReady) return false;
+  return classFeatureGroupsComplete(state.featureGroups || [], state.featureSelections || {}, "training");
 }
 
 export function classChoiceStateComplete(state = EMPTY_CLASS_CHOICE_STATE) {
