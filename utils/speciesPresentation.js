@@ -171,15 +171,25 @@ export function speciesTraitChoiceRuleComplete(rule = {}, selections = {}) {
 }
 
 const CHARACTER_SIZE_BY_SOURCE_CODE = Object.freeze({
+  T: "Tiny",
   S: "Small",
   M: "Medium",
   L: "Large",
+  H: "Huge",
+  G: "Gargantuan",
 });
 
+export function speciesCharacterSizeOptions(option = {}) {
+  return uniqueText(option.size).flatMap((value) => {
+    const raw = String(value || "").trim();
+    const label = CHARACTER_SIZE_BY_SOURCE_CODE[raw.toUpperCase()] || Object.values(CHARACTER_SIZE_BY_SOURCE_CODE).find((candidate) => candidate.toLowerCase() === raw.toLowerCase()) || "";
+    return label ? [{ key: label, label }] : [];
+  });
+}
+
 export function speciesDefaultCharacterSize(option = {}) {
-  const sourceSizes = uniqueText(option.size);
-  if (sourceSizes.length !== 1) return "";
-  return CHARACTER_SIZE_BY_SOURCE_CODE[sourceSizes[0].toUpperCase()] || "";
+  const options = speciesCharacterSizeOptions(option);
+  return options.length === 1 ? options[0].key : "";
 }
 
 const MOVEMENT_LABELS = Object.freeze({
