@@ -25,9 +25,22 @@ function skillOptions(catalogRows, allowedNames = null) {
   const allowed = allowedNames ? new Set(allowedNames.map(normalized)) : null;
   return (Array.isArray(catalogRows) ? catalogRows : []).filter((row) => row.option_type === "skill" && (!allowed || allowed.has(normalized(row.name)))).map((row) => ({ name: row.name, source: row.source || "XPHB", referenceType: "skill", raw: row }));
 }
-function expertiseCount(classKey, level) {
-  const progressions = { bard: [[2, 2], [9, 4]], ranger: [[2, 1], [9, 3]], rogue: [[1, 2], [6, 4]], wizard: [[2, 1]] };
-  return (progressions[classKey] || []).reduce((count, [entryLevel, value]) => Number(level) >= entryLevel ? value : count, 0);
+function fightingStyleOptions(rows, selectedClass, catalogRows) {
+  const classKey = normalized(selectedClass?.class_key).replace(/\s/g, "-");
+  const feature = rows.find((row) => normalized(row.name) === "fighting style");
+  const categories = new Set(["FS", ...(classKey === "paladin" ? ["FS:P"] : []), ...(classKey === "ranger" ? ["FS:R"] : [])]);
+  const available = featOptions(catalogRows, (row) => categories.has(row.category));
+  if (!feature) return available;
+  const description = normalized(feature.description);
+  if (/fighting style feat of your choice/.test(description)) return available;
+  const explicitlyNamed = available.filter((option) => description.includes(normalized(option.name)));
+  return explicitlyNamed.length ? explicitlyNamed : available;
+}
+function expertiseCount(classKey, level, source = "XPHB") {
+  const modern = { bard: [[2, 2], [9, 4]], ranger: [[2, 1], [9, 3]], rogue: [[1, 2], [6, 4]], wizard: [[2, 1]] };
+  const legacy = { bard: [[3, 2], [10, 4]], rogue: [[1, 2], [6, 4]] };
+  const progression = (safeText(source).toUpperCase() === "XPHB" ? modern : legacy)[classKey] || [];
+  return progression.reduce((count, [entryLevel, value]) => Number(level) >= entryLevel ? value : count, 0);
 }
 function weaponOptions(items = []) {
   const preferred = new Map();
@@ -58,14 +71,14 @@ function customGroups(rows, selectedClass, level, catalogRows, items, features) 
   const output = [];
   const classKey = normalized(selectedClass?.class_key).replace(/\s/g, "-");
   if (classHasFeature(rows, "Fighting Style")) {
-    const categories = new Set(["FS", ...(classKey === "paladin" ? ["FS:P"] : []), ...(classKey === "ranger" ? ["FS:R"] : [])]);
+    const feature = rows.find((row) => normalized(row.name) === "fighting style");
     output.push({
-      id: `${classKey}-fighting-style`, label: "Fighting Style", level: rows.find((row) => normalized(row.name) === "fighting style")?.level || 1,
-      count: 1, kind: "fighting-style", required: true, sourceFeature: "Fighting Style", placement: "class", cadence: "creation",
-      options: enrichOptions(featOptions(catalogRows, (row) => categories.has(row.category)), features, "fighting-style"),
+      id: `${classKey}-fighting-style`, label: "Fighting Style", level: feature?.level || 1,
+      count: 1, kind: "fighting-style", required: true, sourceFeature: "Fighting Style", subclassName: feature?.subclass_name || "", placement: "class", cadence: "creation",
+      options: enrichOptions(fightingStyleOptions(rows, selectedClass, catalogRows), features, "fighting-style"),
     });
   }
-  const expertise = expertiseCount(classKey, level);
+  const expertise = expertiseCount(classKey, level, selectedClass?.source);
   if (expertise) {
     const wizardSkills = classKey === "wizard" ? ["Arcana", "History", "Investigation", "Medicine", "Nature", "Religion"] : null;
     output.push({
