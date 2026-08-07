@@ -104,7 +104,7 @@ export default function NpcForgeClassFeatureChoices({
             const uniqueEligible = group.allowRepeatAcrossGroups || !chosenNames.has(normalized(option.name)) || isSelected;
             return levelEligible && dependencyEligible && uniqueEligible && proficiencyEligible(option);
           };
-          const availableOptions = group.options.filter(proficiencyEligible);
+          const availableOptions = group.options.filter((option) => proficiencyEligible(option) && (Number(option.minLevel || 1) <= Number(level || 1) || selected.includes(option.key)));
           const pickerOptions = availableOptions.filter(optionEligible);
           const filtered = availableOptions.filter((option) => !query || `${option.name} ${option.description} ${option.spell?.school || ""}`.toLowerCase().includes(query.toLowerCase()));
           const complete = selected.length === Number(group.count || 0);
@@ -117,7 +117,7 @@ export default function NpcForgeClassFeatureChoices({
                 {helperCopy ? <p>{helperCopy}</p> : null}
                 {group.kind === "expertise" && eligibleNames ? <div className="npc-forge-class-choice-training-note">Only skills already granted by your Background or selected from your class Training pool are eligible for Expertise.</div> : null}
                 {compactPicker ? <CompactChoicePicker group={group} selected={selected} options={pickerOptions} onToggle={onToggle} /> : <>
-                  {group.options.length > 8 ? <input value={query} onChange={(event) => setQueries((current) => ({ ...current, [group.id]: event.target.value }))} placeholder={`Search ${group.label.toLowerCase()}…`} /> : null}
+                  {availableOptions.length > 8 ? <input value={query} onChange={(event) => setQueries((current) => ({ ...current, [group.id]: event.target.value }))} placeholder={`Search ${group.label.toLowerCase()}…`} /> : null}
                   <div className="npc-forge-class-choice-group__options">
                     {filtered.map((option) => {
                       const isSelected = selected.includes(option.key);
