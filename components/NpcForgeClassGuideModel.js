@@ -49,6 +49,7 @@ export function useNpcForgeClassGuideModel(selectedClass, level) {
   const [features, setFeatures] = useState([]);
   const [choiceCatalog, setChoiceCatalog] = useState([]);
   const [items, setItems] = useState([]);
+  const [spells, setSpells] = useState([]);
   const [loadedId, setLoadedId] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -58,11 +59,11 @@ export function useNpcForgeClassGuideModel(selectedClass, level) {
 
   useEffect(() => {
     if (!selectedClass?.id || !selectedClass?.class_key) {
-      setLevels([]); setFeatures([]); setChoiceCatalog([]); setItems([]); setLoadedId(""); setLoading(false); setError("");
+      setLevels([]); setFeatures([]); setChoiceCatalog([]); setItems([]); setSpells([]); setLoadedId(""); setLoading(false); setError("");
       return;
     }
     let active = true;
-    setLoading(true); setLoadedId(""); setLevels([]); setFeatures([]); setChoiceCatalog([]); setItems([]); setError("");
+    setLoading(true); setLoadedId(""); setLevels([]); setFeatures([]); setChoiceCatalog([]); setItems([]); setSpells([]); setError("");
     Promise.all([
       supabase.from("class_level_progression")
         .select("class_level,proficiency_bonus,cantrips_known,spells_known,spell_slots,features")
@@ -76,10 +77,13 @@ export function useNpcForgeClassGuideModel(selectedClass, level) {
       supabase.from("items_catalog")
         .select("item_key,item_name,item_type,item_rarity,payload")
         .eq("item_rarity", "mundane").limit(5000),
-    ]).then(([levelResult, featureResult, optionResult, itemResult]) => {
+      supabase.from("spells_catalog")
+        .select("id,spell_key,name,source,level,school_code,school,classes,ritual,concentration,casting_time,range_text,components_v,components_s,components_m,duration_text,damage_dice,damage_types,description")
+        .order("level", { ascending: true }).order("name", { ascending: true }).limit(5000),
+    ]).then(([levelResult, featureResult, optionResult, itemResult, spellResult]) => {
       if (!active) return;
-      const failed = levelResult.error || featureResult.error || optionResult.error || itemResult.error;
-      setLevels(levelResult.data || []); setFeatures(featureResult.data || []); setChoiceCatalog(optionResult.data || []); setItems(itemResult.data || []);
+      const failed = levelResult.error || featureResult.error || optionResult.error || itemResult.error || spellResult.error;
+      setLevels(levelResult.data || []); setFeatures(featureResult.data || []); setChoiceCatalog(optionResult.data || []); setItems(itemResult.data || []); setSpells(spellResult.data || []);
       setLoadedId(failed ? "" : String(selectedClass.id));
       setError(failed?.message || ""); setLoading(false);
     }).catch((cause) => {
@@ -117,7 +121,8 @@ export function useNpcForgeClassGuideModel(selectedClass, level) {
     selectedSubclass: selected,
     catalogRows: choiceCatalog,
     items,
-  }), [choiceCatalog, currentLevel, features, items, selected, selectedClass]);
+    spells,
+  }), [choiceCatalog, currentLevel, features, items, selected, selectedClass, spells]);
 
   useEffect(() => {
     registerFeatureGroups(selectedClass, choiceGroups, currentLevel, loadedId === String(selectedClass?.id || ""));

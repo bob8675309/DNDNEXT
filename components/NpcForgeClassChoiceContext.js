@@ -1,5 +1,6 @@
 import { createContext, useContext } from "react";
 import {
+  activeClassFeatureGroups,
   classFeatureGroupsComplete,
   normalizeClassFeatureSelections,
   selectedClassFeatureOptions,
@@ -33,7 +34,8 @@ export function classChoiceStateRequiresSelection(state = EMPTY_CLASS_CHOICE_STA
 }
 
 export function classFeatureChoiceStateRequiresSelection(state = EMPTY_CLASS_CHOICE_STATE) {
-  return (state.featureGroups || []).some((group) => group.required && Number(group.count || 0) > 0);
+  return activeClassFeatureGroups(state.featureGroups || [], state.featureSelections || {})
+    .some((group) => group.required && Number(group.count || 0) > 0);
 }
 
 export function classChoiceStateComplete(state = EMPTY_CLASS_CHOICE_STATE) {
