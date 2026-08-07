@@ -9,6 +9,7 @@ const forbidToken = (text, token, label) => { if (text.includes(token)) throw ne
 const extensions = read("utils/classFeatureChoiceExtensions.js");
 const parsing = read("utils/classFeatureChoiceParsing.js");
 const rules = read("utils/classFeatureChoices.js");
+const speciesPresentation = read("utils/speciesPresentation.js");
 const playerFacing = read("utils/playerFacingText.js");
 const featureText = read("components/ClassFeatureText.js");
 const abilityStep = read("components/NpcForgeAbilityStep.js");
@@ -56,6 +57,7 @@ for (const token of [
 ]) requireToken(playerFacing, token, "internal source-reference sanitizer");
 for (const token of ["useNpcForgeClassChoice", 'placement="training"', "eligibleExpertiseNames", "Assign Expertise after proficiency is established"]) requireToken(training, token, "Training-stage Expertise routing");
 forbidToken(abilityStep, "npc-forge-species-bonus mt-4", "Abilities main-workspace Species Bonus duplication");
+for (const token of ["speciesCharacterSizeOptions", 'T: "Tiny"', 'S: "Small"', 'M: "Medium"', 'L: "Large"']) requireToken(speciesPresentation, token, "species source-size normalization");
 
 for (const token of ["druid-land-type", "ranger-primal-companion-form", "rogue-dread-allegiance"]) forbidToken(extensions, token, "rest-reconfigurable creation groups");
 
@@ -69,4 +71,4 @@ for (const token of [
 ]) requireToken(cadenceMigration, token, "runtime cadence authority migration");
 forbidToken(cadenceMigration, "'Pact of the Tome']", "runtime cadence authority migration");
 
-console.log("Source-backed Player Forge choices validated with cadence separation, compact presentation, source-reference cleanup, rest-time authority alignment, and Training-stage Expertise.");
+console.log("Source-backed Player Forge choices validated with cadence separation, compact presentation, source-reference cleanup, source-size normalization, rest-time authority alignment, and Training-stage Expertise.");
