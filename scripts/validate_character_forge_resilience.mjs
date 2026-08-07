@@ -68,7 +68,7 @@ for (const token of ["Skillful", "Versatile", "Choose skill proficiency", "Choos
 for (const token of ["speciesSkillChoicesFromState", "speciesFeatChoicesFromState", "speciesSpellcastingFromChoiceState"]) requireToken(speciesContext, token, "Species choice persistence");
 
 for (const token of ["classChoiceStateComplete", "eligibleSubclassOptions", "featureGroups", "featureSelections", "registerFeatureGroups", "toggleFeatureOption"]) requireToken(classContext, token, "class choice context");
-for (const token of ["Eldritch Invocation", "battle-master-maneuver", "metamagic", "weapon-mastery", "fighting-style", "expertise", "refSubclassFeature", "permanentChoiceText", "serializeClassFeatureChoices"]) requireToken(classRuleSource, token, "class feature choice rules");
+for (const token of ["WARLOCK_INVOCATION_PROGRESSION_XPHB", "battle-master-maneuver", "metamagic", "weapon-mastery", "fighting-style", "expertise", "refSubclassFeature", "permanentChoiceText", "serializeClassFeatureChoices"]) requireToken(classRuleSource, token, "class feature choice rules");
 for (const token of ["buildClassFeatureChoiceGroups", "serializeClassFeatureChoices"]) requireToken(classRules, token, "class feature choice orchestration");
 for (const token of ["Class feature choices", "Complete permanent choices", "Read option", "is-required"]) requireToken(classChoices, token, "class feature choice UI");
 requireToken(`${classGuide}\n${classGuideModel}`, 'from("class_level_progression")', "class guide model");
