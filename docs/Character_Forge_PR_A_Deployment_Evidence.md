@@ -55,15 +55,39 @@ Live preferred Species data contains additional permanent selections that need s
 
 These must be modeled without turning runtime choices such as Astral Trance, Astral Knowledge, Eladrin seasonal trance state, breath-weapon shape/effect choices, or other per-use/rest selections into permanent character state.
 
-### 2. Species size selection is not yet source-constrained
+### 2. Species size selection is not yet fully wired to source constraints
 
-The Species workspace currently offers the global Small/Medium/Large size list. Imported Species metadata already supplies each species' legal size set. The selector and Species-step validation need to constrain choices to that source set and require a choice when the source permits more than one size.
+Imported Species metadata already supplies each species' legal size set, and `speciesCharacterSizeOptions()` now normalizes the source size codes as groundwork. The Species selector and Species-step validation still need to consume that source set, auto-lock a single legal size, and require one of the allowed values when the source permits multiple sizes.
 
-### 3. Artificer wildcard Magic Item Plans need a deeper nested-selection model
+### 3. Background tool and language choices are under-modeled
+
+The Background engine already captures fixed skills, source-backed skill choice groups, and background feat selection. It does not yet serialize every source-defined tool/language selection as a required structured choice.
+
+The live preferred Background catalogue contains nine backgrounds with explicit tool-choice structures and at least one explicit language-choice structure in the canonical metadata, with additional imported backgrounds expressing comparable choices in source text. Examples include gaming-set, artisan-tool, musical-instrument, and language selections. A free text Languages field is not a substitute for source-constrained Background choice authority.
+
+### 4. Feats that contain their own permanent choices are currently treated as leaf selections
+
+The Forge can grant a feat from Human Versatile, a Background, or a class feature, but selecting the feat name does not yet open and serialize all required child choices.
+
+This affects important level-1 examples in the live catalogue:
+
+- **Magic Initiate** — spell list, two cantrips, one level-1 spell from the same list, and Intelligence/Wisdom/Charisma spellcasting ability
+- **Crafter** — three different Artisan's Tools
+- **Musician** — three Musical Instruments
+- **Skilled** — any combination of three skills or tools
+- Fighting Style feats such as **Blessed Warrior** and **Druidic Warrior** — two class-list cantrips
+
+The correct fix is a reusable nested feat-choice model with server validation, not one-off UI fields on Human, Background, or Class.
+
+### 5. Artificer wildcard Magic Item Plans need a deeper nested-selection model
 
 The presentation problem from the earlier screenshots is fixed: the giant Replicate Magic Item table is no longer dumped into the choice UI and future-level plan rows are filtered.
 
 However, EFA also contains wildcard plan rows such as a qualifying common/uncommon/rare item category whose footnote allows that plan to be learned multiple times by selecting a different concrete item each time. Treating the wildcard row itself as a complete plan does not fully model that source rule. This needs a nested concrete-item selection and matching authority validation before Replicate Magic Item can be considered exhaustive.
+
+### 6. Review placement should follow choice ownership
+
+The serialized class-feature choice summary already records `placement`. The Review screen currently lists all class-feature choices under Class Progression, including Training-owned Expertise. Review should display `placement: class` choices under Class Progression and `placement: training` choices under Training & Professions.
 
 ## Database authority
 
@@ -80,16 +104,18 @@ The live `private.validate_player_forge_nested_choice_payload_v1()` function now
 
 It deliberately does **not** require Pact of the Tome cantrip/ritual children because those are reselected when the Book of Shadows is conjured after a rest.
 
+The audit also ran Supabase security and performance advisors after the function migration. Existing project-wide advisory items remain, including older RLS/performance and index findings outside the Character Forge patch boundary. No map/combat/crafting advisory was changed as part of this Forge audit.
+
 ## Validation status
 
-For the current audit head, the required automated checks are expected to remain:
+The last code head before the documentation-only blocker update passed:
 
 - Validate NPC Forge foundation
 - Validate character portrait authority
 - Validate Character Forge nested choices
 - exact Vercel production build
 
-Automated checks are regression guards, not substitutes for the remaining Species and Artificer semantic work above.
+Automated checks are regression guards, not substitutes for the remaining Species, Background, nested-feat, and Artificer semantic work above.
 
 ## Protected boundaries
 
@@ -100,4 +126,4 @@ Automated checks are regression guards, not substitutes for the remaining Specie
 
 ## Browser acceptance gate
 
-Do not merge PR #170 until the remaining Species and Artificer choice-model blockers are resolved and authenticated browser review confirms the resulting source-backed choices, Training placement, class presentation, draft persistence, starting spells, Review output, and final character sheet persistence.
+Do not merge PR #170 and do not ask for final authenticated browser acceptance until the remaining source-choice blockers above are resolved. Once they are addressed, browser review should confirm Species, Background, nested feat choices, Training placement, class presentation, draft persistence, starting spells, Review output, and final character sheet persistence.
