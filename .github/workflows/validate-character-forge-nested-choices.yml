@@ -6,14 +6,17 @@ on:
       - main
     paths:
       - "components/NewNpcModalV3.js"
+      - "components/ClassFeatureText.js"
       - "components/NpcForgeClassChoiceContext.js"
       - "components/NpcForgeClassFeatureChoices.js"
       - "components/NpcForgeClassGuide.js"
       - "components/NpcForgeClassGuideModel.js"
       - "components/NpcForgeTrainingStep.js"
+      - "utils/playerFacingText.js"
       - "utils/classFeatureChoiceExtensions.js"
       - "utils/classFeatureChoiceParsing.js"
       - "utils/classFeatureChoices.js"
+      - "scripts/test_player_facing_text.mjs"
       - "scripts/validate_character_forge_nested_choices.mjs"
       - "sql/20260806_03_player_forge_nested_choice_validation.sql"
       - ".github/workflows/validate-character-forge-nested-choices.yml"
@@ -39,3 +42,4 @@ jobs:
         run: |
           node --check scripts/validate_character_forge_nested_choices.mjs
           node scripts/validate_character_forge_nested_choices.mjs
+          node scripts/test_player_facing_text.mjs
