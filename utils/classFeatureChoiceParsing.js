@@ -51,6 +51,7 @@ export function optionNodes(entries) {
 const COUNT_WORDS = Object.freeze({ one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10 });
 const REST_RECONFIGURABLE_FEATURES = new Set([
   "weapon mastery", "circle of the land spells", "primal companion", "fiendish resilience", "dread allegiance",
+  "armor model", "spell mastery",
 ]);
 const PER_USE_FEATURES = new Set(["steps of the fey", "tinker's magic"]);
 const INFORMATIONAL_FEATURES = new Set(["spellcasting"]);
