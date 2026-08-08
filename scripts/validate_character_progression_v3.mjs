@@ -66,6 +66,34 @@ for (const token of [
 ]) requireToken(spellAccess, token, "source-aware earned spell access");
 forbidToken(spellAccess, "Magical Secrets spell access", "current persistent-choice gap list");
 
+const optionCatalog = read("sql/20260808_20_class_feature_option_catalog.sql");
+for (const token of [
+  "class_feature_option_catalog",
+  "import_class_feature_option_batch_v1",
+  "eldritch-invocation",
+  "Devouring Blade",
+  "Thirsting Blade",
+  "Visions of Distant Realms",
+  '"minClassLevel":9',
+  "origin-feat",
+  "warlock-damage-cantrip",
+  "warlock-attack-cantrip",
+  "book-of-shadows-spells",
+  "short-or-long-rest",
+]) requireToken(optionCatalog, token, "canonical optional class-feature catalogue");
+
+const optionImporter = read("scripts/import_5etools_optional_features.mjs");
+for (const token of [
+  "optionalfeatures.json",
+  "class_feature_option_batch",
+  "eldritch-invocation",
+  "battle-master-maneuver",
+  "arcane-shot",
+  "metamagic",
+  "raw_payload: raw",
+  "Preview/batch generation complete. No database writes were performed.",
+]) requireToken(optionImporter, token, "optional class-feature importer");
+
 const delta = read("utils/characterClassChoiceDeltaPlan.js");
 for (const token of [
   "buildClassChoiceLevelDeltaPlan",
@@ -78,4 +106,4 @@ for (const token of [
   "mystic arcanum",
 ]) requireToken(delta, token, "shared class-choice delta planner");
 
-console.log("Progression v3 class choices, source-aware spell access, delta planning, and fail-closed complex-choice boundary validated.");
+console.log("Progression v3 class choices, source-aware spell access, canonical optional-feature authority, delta planning, and fail-closed complex-choice boundary validated.");
