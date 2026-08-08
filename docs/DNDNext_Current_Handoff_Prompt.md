@@ -1,8 +1,8 @@
 # DNDNext Current Handoff Prompt
 
-Status: copy-ready project handoff, 2026-08-04
+Status: copy-ready project handoff, reconciled 2026-08-08
 
-Use the prompt below when starting a new ChatGPT/Codex work session. It directs the new session to the living documentation instead of relying on an incomplete conversation summary.
+Use the prompt below when starting a new ChatGPT/Codex work session. It directs the new session to live state and the current subsystem documentation instead of relying on an incomplete conversation summary.
 
 ---
 
@@ -16,220 +16,234 @@ DNDNext is a Next.js Pages Router + Supabase D&D campaign platform. Styling uses
 
 Before changing anything:
 
-1. Inspect the current GitHub `main` branch and recent relevant PRs.
+1. Inspect current `main`, open PRs, recent commits, and exact CI/deployment status.
 2. Inspect the live Supabase project read-only when the task depends on schema, functions, RLS, or data.
-3. Read `docs/README.md`; it is the living documentation index and explains which subsystem document controls each area.
-4. Read `docs/Current_Development_Status_and_Roadmap.md` for the high-level production baseline, completed systems, active milestones, remaining roadmap, and protected boundaries.
-5. Read the documents listed under **Current focus** below before proposing sprite work.
-6. Reconcile documentation against source and live state. Update the relevant documents whenever a milestone, failure, architecture decision, or acceptance status changes.
+3. Read `docs/README.md` and `docs/Documentation_Refresh_Manifest.md` first.
+4. For Character Forge/progression work, read in order:
+   - `docs/Unified_Character_Forge_Status.md`
+   - `docs/Character_Progression_Foundation.md`
+   - `docs/Character_Progression_and_Higher_Level_Forge.md`
+   - `docs/Character_Forge_PR_A_Deployment_Evidence.md`
+5. Reconcile those documents against current source and live Supabase. The active PR #170 documents supersede older Character Forge/progression text in the platform-wide roadmap until that roadmap is fully reconciled.
+6. Update the relevant documents whenever a milestone, failure, architecture decision, migration, acceptance result, or protected boundary changes.
 
-Do not make changes first and explain later. Inspect, identify the authority boundaries, provide a concise safe patch plan, then implement after the plan is accepted or when the user explicitly says to proceed.
+Do not make changes first and explain later. Inspect, identify the authority boundaries, provide a concise safe patch plan, then implement after the plan is accepted or when the user has already said to proceed.
 
 ### Non-negotiable project boundaries
 
 - Do not mix world-map behavior with town/city-map behavior.
-- Do not touch the world map or `components/MapPageClient.js` unless the user explicitly asks for world-map work.
+- Do not touch the world map or `components/MapPageClient.js` unless the user explicitly requests world-map work.
 - Tactical encounter state must remain isolated from routes, travel, weather, camps, world clock, and location simulation.
 - Smiths handle physical gear. Enchanters handle magical A/B/C slots by item tier.
 - Generic NPCs must not become crafters without an appropriate role.
 - Canonical database state remains authoritative for characters, sheets, inventory, equipment, spells, progression, encounters, and guarded commands.
 - Browser state may preview actions but must not bypass guarded Supabase authority.
 - Realtime is a synchronization signal, not the source of truth.
-- Preserve existing working systems and avoid broad rewrites.
-- Before returning a patch, verify that every helper, hook, state variable, memoized value, RPC argument, and prop is defined and passed at every use site.
-- Keep unrelated changes out of the branch.
-- Never register, assign, or describe an asset as approved until the user has visually approved it and the documented gates have passed.
+- Preserve working systems and avoid broad rewrites.
+- Before returning a patch, verify every helper, hook, state variable, memoized value, RPC argument, and prop is defined and passed at every use site.
+- Keep unrelated changes out of the active branch.
+- Never register, assign, or describe a visual asset as approved until the user has visually approved it and documented gates have passed.
 
 ### Repository and delivery workflow
 
-- Use a bounded branch and PR for meaningful source or documentation work.
+- Use a bounded branch and PR for meaningful source/documentation work.
 - Review the exact PR head and changed-file boundary before merge.
-- Check Vercel when available, but the account may currently be at its deployment limit. Immediate Vercel failure without build evidence can be the known cap rather than a code failure.
-- Conserve Vercel runs by batching coherent changes instead of pushing many tiny commits.
-- Offline Blender/document-only work may be validated through source contracts and the user’s local Blender execution when Vercel is capped.
-- Never claim a local Blender result passed until actual terminal output or published artifacts have been inspected.
+- Check Vercel when available, but distinguish an account build-rate-limit failure from an application compile failure.
+- Conserve hosted builds by batching coherent changes.
+- A successful repository `npm run build:vercel` in CI is valid build evidence, but it is not the same as a successful hosted Vercel deployment.
+- Never claim a local Blender result passed until actual output/artifacts have been inspected.
 - The user prefers all PowerShell commands on one line.
 - Do not require the user to manually edit individual sprite frames.
-- Keep progress updates brief and continue working without unnecessary clarification.
+- Keep progress updates brief and continue without unnecessary clarification once permission to proceed has been given.
 
-## Current focus: Dawn Whiteflame quality pivot
+## Current focus: Character Forge / progression PR #170
 
-The immediate project focus is **not** another full 32-cell procedural atlas.
+PR #170 (`agent/character-forge-resilience-presentation`) is the active implementation branch and remains **open and unmerged**. Do not restart the earlier NPC/player Forge consolidation or the explicit choice-cadence audit; those foundations are already present.
 
-The technical sprite pipeline is working, but the primitive procedural Dawn source model is rejected as final art. The last isolated run rendered all 32 cells, passed automatic QA, and published correctly, proving the reliability pipeline. Direct visual review showed that the character still looked like a crude generic mannequin and remained far below the user’s supplied concept sheet and chibi tactical sprite reference.
+### Governing parity rule
 
-Read these documents in order:
+For permanent character decisions, a character created directly at level N and a character that earns level N through XP should converge on equivalent authoritative state.
+
+This does **not** mean every source-text choice becomes permanent Forge state.
+
+Current cadence/placement model:
+
+- permanent creation/attained-level choice → authoritative creation/progression state;
+- proficiency-dependent choice such as Expertise → Training placement;
+- permanent spellbook-dependent choice such as Wizard Signature Spells → Spells placement;
+- Long/Short-Rest configurable choice → guarded runtime configuration;
+- per-use choice → action/runtime UI;
+- informational feature → display only.
+
+Weapon Mastery and Wizard Spell Mastery are not one-time Forge locks.
+
+### Current progression authority
+
+The active level-up UI completes through `public.complete_character_level_up_v5`.
+
+Connected persistent families include:
+
+- General feat / Epic Boon advancement;
+- persistent simple class choices;
+- Bard Magical Secrets;
+- Lore Magical Discoveries;
+- Draconic Elemental Affinity;
+- Champion Additional Fighting Style;
+- Sorcerer Metamagic acquisition/replacement;
+- Warlock Mystic Arcanum acquisition/replacement;
+- Magic Initiate per-instance spell replacement;
+- Eldritch Invocation acquisition/replacement, prerequisites, dependent choices, repeatability, and Lessons of the First Ones;
+- Battle Master maneuver acquisition/replacement;
+- XPHB Wizard Savant spellbook chronology;
+- XPHB Wizard Signature Spells.
+
+Authenticated v3/v4 completion is revoked. Legacy v1/v2 completion grants remain an explicit cleanup item. Do not route the UI back to them.
+
+### Wizard state — live through migration 42
+
+Live migrations include:
+
+- `wizard_savant_spellbook_progression`
+- `wizard_savant_forge_chronology`
+- `wizard_signature_spells_authority`
+
+#### Savant
+
+Savant is complete across earned progression and higher-level Forge for Abjurer, Diviner, Evoker, and Illusionist.
+
+Savant rows use `source_type='class-feature'` plus `raw_payload.wizardSpellbook=true`; they are level-1+ Wizard spellbook membership but not ordinary base Wizard rows. Cantrips are separate.
+
+Historical acquisition chronology is 3/3/5/7/9/11/13/15/17 for nine total Savant spell rows on a level-17+ qualifying Wizard.
+
+#### Signature Spells
+
+Migration 42 connects the permanent Wizard-20 selection of two level-3 spells already in the **final normalized Wizard spellbook**.
+
+- Direct Forge displays Signature on the Spells step and restricts options to the draft spellbook.
+- Earned 19→20 progression applies ordinary level-20 Wizard spell acquisition first, then validates/applies Signature against the resulting spellbook.
+- A level-3 Savant spell can be one of the Signature Spells.
+- Signature overlays the existing `character_spells` row; it does not create duplicate membership or replace original source provenance.
+- Each Signature Spell is prepared/always available and has one tracked `short_rest` free use restored by the existing Short/Long Rest authority.
+- This establishes character-sheet/rest resource state only; no new tactical battle-board free-cast adapter is claimed by this migration.
+
+Production rollback proofs cover successful overlay/rest recovery, invalid-choice rejection, full level-20 Abjurer higher-level Forge chronology with a Savant-granted Signature Spell, and authenticated Wizard 19→20 v5 completion using same-level learned Signature Spells.
+
+The final production integrity checkpoint after those rollback proofs remained:
+
+- 7 characters
+- 7 character sheets
+- 30 character-spell assignments
+- 7 progression rows
+- 0 open level-up sessions
+- 0 synthetic proof residue
+- protected world baseline 20 locations / 4 routes / 9 route points
+
+Runtime source head `9740d66a45b215805a6c988c25874a01d1e35e55` passed all five PR GitHub Actions workflows and the repository's exact `npm run build:vercel` production build. Hosted Vercel itself was blocked by the account build-rate limit and is not claimed green for that checkpoint.
+
+### Immediate next Wizard slice
+
+Wizard **Spell Mastery** is the remaining Wizard-specific progression/runtime item.
+
+Do not implement Spell Mastery as a permanent level-18 Forge or level-up choice. The selected spells can change after a Long Rest, so the feature belongs in guarded runtime Long-Rest configuration with spellbook-derived eligibility and separate free-cast/resource semantics.
+
+Read the imported/source rule before implementing and preserve the distinction between:
+
+- spellbook membership;
+- current Spell Mastery configuration;
+- preparation/availability;
+- free-cast resource state;
+- tactical battle-board execution.
+
+### Other remaining PR #170 blockers
+
+After/beside Spell Mastery:
+
+1. complete guarded multi-source starting-magic frontend integration where still incomplete;
+2. add source-backed starting equipment packages and higher-level starting wealth/equipment;
+3. add character-scoped starting currency for multi-character accounts;
+4. resolve Artificer wildcard Magic Item Plan choices into concrete item instances;
+5. finish preferred Species / Background / Class / Feat / Subclass persistent-choice coverage and conditional-choice UI polish;
+6. audit/revoke obsolete authenticated progression RPC generations when confirmed unused;
+7. run final authenticated browser acceptance across representative low/high-level, martial/caster, nested-feat, subclass, and rest-configuration cases;
+8. only then merge PR #170.
+
+## After PR #170: resume Dawn quality pivot
+
+The sprite-production pipeline is technically proven, but the primitive procedural Dawn source model is rejected as final art. Once the current Character Forge interruption is accepted, resume from:
 
 1. `docs/Dawn_High_Quality_Prototype_Plan.md`
-   - controlling plan for the active pivot;
-   - explains why the primitive model is retired as final art;
-   - defines the concept-sheet and chibi-reference quality target;
-   - defines the South-facing idle/walk prototype gate;
-   - records external free-tool or Blender-plug-in evaluation requirements;
-   - defines body-family reuse and completion criteria.
 2. `docs/Sprite_Production_Work_Map.md`
-   - authoritative sprite status and sequence;
-   - separates completed infrastructure from the current blocker;
-   - lists acceptance gates, remaining work, dependencies, and the post-Dawn UI interruption.
 3. `docs/Sprite_Production_Art_Bible.md`
-   - canonical atlas and row order;
-   - visual quality standard;
-   - animation, handedness, direction, QA, and no-frame-shifting rules;
-   - source-asset and external-tool policy.
 4. `docs/Sprite_Production_Run_Log.md`
-   - real evidence from every Dawn attempt;
-   - records static frames, Action override, native crashes, baseline experiments, isolated rendering, and visual rejections;
-   - prevents repeating failed approaches.
 5. `tools/blender/DAWN_PROCEDURAL_MODEL.md`
-   - current operator and historical R&D handoff;
-   - explains what the procedural model proved, what is rejected, and which rendering/QA infrastructure remains reusable.
 6. `docs/Tactical_Encounter_Phase0_Status.md`
-   - runtime sprite/portrait independence and unified 8-direction runtime context.
 
-### Current verified sprite state
+The next sprite milestone remains one high-quality South-facing Dawn idle/walk prototype before another full 32-cell atlas. Preserve the working isolated renderer, atlas assembly, QA, review-publishing, and unified eight-direction runtime.
 
-- PR #165 merged as `f91949006ebbee994ca5fc532f4210eeaddf6d40`.
-- `isolated_prepared_blend_per_cell_v1` works end to end.
-- All 32 cells rendered through fresh Blender processes.
-- Atlas assembly and automatic QA passed.
-- Review artifacts published to `sprite-review/dawn-whiteflame`.
-- The primitive Dawn v3 visual candidate is rejected despite technical success.
-- Dawn is not registered, assigned, or complete.
-- The working exporter, isolated renderer, exact-frame assembler, metadata, QA, and review publisher must be retained.
+## Document map for other subsystems
 
-### Active next milestone
+Always begin with `docs/README.md`.
 
-Create and approve one **high-quality South-facing Dawn prototype** before expanding to eight directions.
+### High-level status
 
-The prototype must include:
+- `docs/Current_Development_Status_and_Roadmap.md` — platform-wide baseline and roadmap; active Character Forge/progression text can lag PR #170, so apply `Documentation_Refresh_Manifest.md` precedence.
+- `docs/Deferred_UI_Polish_Backlog.md` — deferred presentation/usability work.
 
-- one South-facing idle frame;
-- three compatible South-facing walk frames;
-- a six-step animated preview;
-- concept-faithful silver hair, face, layered ivory/gold/dark outfit, cape, boots, staff, and divine flame;
-- crisp chibi tactical readability at gameplay size;
-- no whole-sprite twitch, gliding, frame shifting, or unstable staff.
-
-Do not spend another full 32-cell render on a source asset that has not passed the South-facing visual gate.
-
-### Source-tool evaluation requirement
-
-Blender remains the rigging, animation, camera, and render host because the DNDNext pipeline already works there. The visual source does not need to be created from Blender primitives.
-
-Evaluate a better source workflow when useful, including free or acceptably licensed character tools and Blender plug-ins. Before selecting one, verify current availability, licensing, Blender export, riggability, consistent multi-angle identity, source reproducibility, and reuse across later character families. Do not silently commit the project to a tool without this evaluation.
-
-Krita, LibreSprite, or local AI tooling may assist controlled concept, texture, paintover, downsampling, or cleanup work. They must not turn the process into manual editing of 32 final cells by the user.
-
-The user supplied three important visual references in the preceding chat:
-
-- the current low-quality QA preview;
-- a detailed multi-view Dawn Whiteflame concept sheet;
-- a small high-quality chibi tactical sprite sample.
-
-Those images are not currently stored in the repository. Ask the user to reattach them when direct comparison is required.
-
-### Sequence after the South prototype
-
-1. Approve the high-quality South idle/walk prototype.
-2. Expand the approved source asset to all eight canonical directions.
-3. Run the retained isolated renderer, atlas assembly, automatic QA, Sprite Production Lab, and in-site scale checks.
-4. Register and assign Dawn reversibly only after explicit approval.
-5. Finish the start-to-finish documentation.
-6. Pause sprite production for the user’s requested quick UI fix.
-7. Return to sprites for Leso Varen and Varges using reusable body-family conventions.
-
-## Document map for the rest of DNDNext
-
-Always begin with `docs/README.md`; it is the canonical index. The following map explains the most important documents so you can load detail only when the task requires it.
-
-### High-level status and roadmap
-
-- `docs/Current_Development_Status_and_Roadmap.md`
-  - current production baseline;
-  - completed platform foundations;
-  - tactical encounter state;
-  - current milestones and parallel backlog;
-  - protected world/town boundaries.
-- `docs/Deferred_UI_Polish_Backlog.md`
-  - deferred presentation and usability work;
-  - consult when the user returns to UI cleanup so completed behavior is not mistaken for active scope.
-
-### Character sheets, equipment, crafting, and tactical snapshots
+### Character sheets, equipment, crafting, tactical snapshots
 
 - `docs/Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md`
-  - controlling authority flow from item catalogue through craft plan, completion, inventory, equip, sheet overlays, encounter participant snapshots, and tactical weapon profiles;
-  - required before changing Smithing completion or equipment-derived combat rules.
 - `docs/Character_Sheet_Formula_Reference.md`
-  - ability modifiers, saves, skills, AC, Initiative, Passive Perception, equipment overlays, and encounter snapshot boundaries;
-  - required before changing sheet formulas.
 - `docs/NPC_Character_Sheet_Selection_Reconciliation.md`
-  - NPC selection ownership, identity clearing, controlled drafts, request-ID guards, sheet/equipment/notes loading, and stale-response regression rules.
 - `docs/NPC_Profile_Inventory_Equipment_Reference.md`
-  - profile panel, inventory workbench, equipment diagram, item cards, transfers, and NPC sheet presentation.
 
-### Tactical encounter and combat
+Do not alter sheet formulas, inventory/equipment authority, crafting completion, or encounter snapshots without reading the matching handoff.
+
+### Tactical encounter / combat
 
 - `docs/Tactical_Encounter_Combat_Roadmap_Blueprint.md`
-  - long-term encounter, dungeon, multiplayer turns, combat automation, GM tools, sprite strategy, and delivery phases.
 - `docs/Tactical_Encounter_Phase0_Status.md`
-  - portrait/sprite independence and unified 8-direction runtime amendments.
 - `docs/Tactical_Encounter_Phase1_Foundation_Status.md`
-  - board, sessions, staging, movement, and player turn foundations.
-- `docs/Tactical_Encounter_Phase1E_Core_Combat_Status.md` through the later Phase 1 ledgers
-  - reviewed incremental server-authoritative combat and spell adapters;
-  - use the ledger matching the action, spell, reaction, targeting shape, or effect being changed.
+- matching Phase 1 spell/action/effect ledger
 - `docs/Tactical_Encounter_Milestone2_Durable_Start_Status.md`
-  - staged encounter startup, lifecycle compatibility, smoke helper, and remaining authenticated multi-client acceptance matrix.
 
-Do not recreate existing tactical primitives. Inspect the matching phase ledger and guarded RPCs first.
+Do not recreate existing tactical primitives. Existing tactical state remains separate from world/town simulation.
 
-### Towns, merchants, crafters, and world separation
+### Towns / merchants / crafters
 
 - `docs/Town_Crafter_Current_Status.md`
-  - current town crafter/profile-panel state, known-recipe behavior, player/admin boundaries, and guardrails.
-- `docs/Town_Handoff_Bake_Next_Steps.md`
-  - historical/operational town handoff evidence; reconcile against current source before acting.
 - `docs/Source_Patch_Pipeline_Audit.md`
-  - retired source-mutating patch/bake pipeline, validators, and source-ownership transition.
 
-World and town systems are protected dependencies. Do not infer permission to alter world travel or `MapPageClient` from a town, profile, tactical, sprite, or crafting request.
+World and town systems are protected dependencies. A town/profile/crafting task does not authorize world-route or `MapPageClient` changes.
 
-### Security and database
+### Security / database
 
 - `docs/Security_Hardening_Roadmap_Status.md`
-  - completed and deferred RLS, RPC, and security/database hardening work.
-- migrations under `sql/` and live Supabase schema/functions
-  - authoritative implementation evidence;
-  - old raw exports are historical and must not override the live database.
+- current migrations and live functions/RLS
 
-Do not blanket-revoke authenticated `SECURITY DEFINER` RPCs. Many are intentional guarded command boundaries.
+Do not blanket-revoke authenticated `SECURITY DEFINER` functions; many are intentional guarded command boundaries. Audit each by its internal authorization contract.
 
 ### Documentation precedence
 
-When sources disagree, use this order:
+When sources disagree, use:
 
-1. live Supabase schema, migrations, functions, and protected data state;
+1. live Supabase schema/migrations/functions/protected state;
 2. current repository source and validators;
-3. `docs/Current_Development_Status_and_Roadmap.md` and the active subsystem status/plan;
-4. active phase ledgers and controlling references;
-5. historical exports, dated runbooks, and old handoffs only as provenance.
+3. `docs/Documentation_Refresh_Manifest.md` plus the active subsystem status/evidence documents;
+4. platform-wide roadmap and phase ledgers;
+5. historical exports/runbooks only as provenance.
 
-Record a discrepancy instead of silently reconciling it from memory.
+Record discrepancies instead of silently reconciling them from memory.
 
 ## Working style
 
-- Be concise in user-facing status updates, but thorough in repository inspection.
+- Be concise in user-facing updates but thorough in inspection.
 - Proceed when the user says “proceed”; do not repeatedly ask for permission already granted.
-- Do not claim GitHub, Supabase, Blender, Vercel, or build limitations until an actual tool attempt supports the claim.
-- Keep documentation synchronized as work progresses.
-- Prefer one meaningful patch over many tiny pushes, especially while Vercel is capped.
+- Do not claim GitHub, Supabase, Blender, Vercel, or build limitations until an actual attempt supports the claim.
+- Keep documentation synchronized with implementation/evidence.
+- Prefer coherent patches over wasteful push churn.
 - Show evidence for pass/fail decisions.
-- Preserve rejected experiments in the run log so they are not repeated.
+- Preserve rejected experiments in the relevant run log so they are not repeated.
 
-Begin by reading the required documents, verifying current `main`, and proposing the shortest safe route to a high-quality South-facing Dawn prototype. Do not continue polishing the rejected primitive model as though it can become the final asset through minor adjustments.
+Begin by verifying PR #170 and live Supabase against the four active Character Forge/progression documents. If migration 42 and its evidence are still current, continue from guarded Wizard Spell Mastery runtime Long-Rest configuration rather than reopening Savant/Signature/cadence work.
 
 ## End copy
-
-### Character Forge PR A authority
-
-The shared Forge now preserves accidental-close progress in mounted memory, exposes a confirmed Reset action, renders player mode explicitly, and uses content-driven tab layouts. Player tags are not self-assigned: the database derives `player-character`, species, class, background, and trained-profession tags while preserving later GM campaign tags. SVG portraits were deleted and are prohibited. Future minions assigned to players remain NPCs linked through a dedicated assignment model; do not convert them into player characters.
