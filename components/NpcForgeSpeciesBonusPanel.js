@@ -1,4 +1,5 @@
 import { ABILITY_KEYS, ABILITY_LABELS } from "../utils/characterCreation";
+import NpcForgeSourceChoiceFields from "./NpcForgeSourceChoiceFields";
 
 export default function NpcForgeSpeciesBonusPanel({
   draft,
@@ -81,16 +82,19 @@ export default function NpcForgeSpeciesBonusPanel({
       ) : null}
 
       {speciesBonus.mode === "feat" ? (
-        <label className="npc-forge-species-feat-select mt-2">
-          <span>Species bonus feat</span>
-          <select value={speciesBonus.featId || ""} onChange={(event) => onSetSpeciesBonus({ featId: event.target.value })}>
-            <option value="">Choose feat</option>
-            {featOptions.map((feat) => (
-              <option key={feat.id} value={feat.id}>{feat.name} • {feat.category || feat.source || "Feat"}</option>
-            ))}
-          </select>
-          <small>Origin feats are included. Normal prerequisites still apply.</small>
-        </label>
+        <>
+          <label className="npc-forge-species-feat-select mt-2">
+            <span>Species bonus feat</span>
+            <select value={speciesBonus.featId || ""} onChange={(event) => onSetSpeciesBonus({ featId: event.target.value })}>
+              <option value="">Choose feat</option>
+              {featOptions.map((feat) => (
+                <option key={feat.id} value={feat.id}>{feat.name} • {feat.category || feat.source || "Feat"}</option>
+              ))}
+            </select>
+            <small>Origin feats are included. Normal prerequisites still apply.</small>
+          </label>
+          <NpcForgeSourceChoiceFields placement="abilities" ownerType="feat" title="Complete this feat's owned choices" />
+        </>
       ) : null}
     </section>
   );
