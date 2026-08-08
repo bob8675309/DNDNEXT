@@ -90,24 +90,28 @@ export default function NpcForgeClassFeatureChoices({
 
   return (
     <>
-    <section className={`npc-forge-class-choices is-placement-${placement}`} aria-label={placement === "training" ? "Required Training feature choices" : "Required class feature choices"}>
+    <section className={`npc-forge-class-choices is-placement-${placement}`} aria-label={placement === "training" ? "Required Training feature choices" : placement === "spells" ? "Required spellbook feature choices" : "Required class feature choices"}>
       <header>
-        <div><span>{placement === "training" ? "Training feature choices" : "Class feature choices"}</span><h3>{heading}</h3></div>
+        <div><span>{placement === "training" ? "Training feature choices" : placement === "spells" ? "Spellbook feature choices" : "Class feature choices"}</span><h3>{heading}</h3></div>
         <p>{description}</p>
       </header>
       <div className="npc-forge-class-choices__groups">
         {visibleGroups.map((group) => {
           const selected = selections?.[group.id] || [];
           const query = queries[group.id] || "";
-          const proficiencyEligible = (option) => group.kind !== "expertise" || !eligibleNames || eligibleNames.has(normalized(option.name)) || selected.includes(option.key);
+          const scopedEligible = (option) => {
+            if (!eligibleNames) return true;
+            if (group.kind !== "expertise" && placement !== "spells") return true;
+            return eligibleNames.has(normalized(option.name)) || selected.includes(option.key);
+          };
           const optionEligible = (option) => {
             const isSelected = selected.includes(option.key);
             const levelEligible = Number(option.minLevel || 1) <= Number(level || 1);
             const dependencyEligible = !option.requires || chosenNames.has(normalized(option.requires)) || isSelected;
             const uniqueEligible = group.allowRepeatAcrossGroups || !chosenNames.has(normalized(option.name)) || isSelected;
-            return levelEligible && dependencyEligible && uniqueEligible && proficiencyEligible(option);
+            return levelEligible && dependencyEligible && uniqueEligible && scopedEligible(option);
           };
-          const availableOptions = group.options.filter((option) => proficiencyEligible(option) && (Number(option.minLevel || 1) <= Number(level || 1) || selected.includes(option.key)));
+          const availableOptions = group.options.filter((option) => scopedEligible(option) && (Number(option.minLevel || 1) <= Number(level || 1) || selected.includes(option.key)));
           const pickerOptions = availableOptions.filter(optionEligible);
           const filtered = availableOptions.filter((option) => !query || `${option.name} ${option.description} ${option.spell?.school || ""}`.toLowerCase().includes(query.toLowerCase()));
           const complete = selected.length === Number(group.count || 0);
@@ -119,6 +123,7 @@ export default function NpcForgeClassFeatureChoices({
               <div className="npc-forge-class-choice-group__body">
                 {helperCopy ? <p>{helperCopy}</p> : null}
                 {group.kind === "expertise" && eligibleNames ? <div className="npc-forge-class-choice-training-note">Only skills already granted by your Background or selected from your class Training pool are eligible for Expertise.</div> : null}
+                {placement === "spells" && eligibleNames ? <div className="npc-forge-class-choice-training-note">Only spells already selected into this character's final spellbook are eligible here. If you remove a qualifying spell above, the dependent feature choice is cleared.</div> : null}
                 {compactPicker ? <CompactChoicePicker group={group} selected={selected} options={pickerOptions} onToggle={onToggle} /> : <>
                   {availableOptions.length > 8 ? <input value={query} onChange={(event) => setQueries((current) => ({ ...current, [group.id]: event.target.value }))} placeholder={`Search ${group.label.toLowerCase()}…`} /> : null}
                   <div className="npc-forge-class-choice-group__options">
@@ -126,13 +131,13 @@ export default function NpcForgeClassFeatureChoices({
                       const isSelected = selected.includes(option.key);
                       const dependencyEligible = !option.requires || chosenNames.has(normalized(option.requires)) || isSelected;
                       const uniqueEligible = group.allowRepeatAcrossGroups || !chosenNames.has(normalized(option.name)) || isSelected;
-                      const trainingEligible = proficiencyEligible(option);
+                      const scopeEligible = scopedEligible(option);
                       const levelEligible = Number(option.minLevel || 1) <= Number(level || 1);
-                      const requirement = !trainingEligible ? "proficiency in this skill" : !dependencyEligible ? option.requires : !uniqueEligible ? "already selected in another choice group" : "";
-                      return <ClassChoiceOption key={option.key} option={option} selected={isSelected} eligible={levelEligible && dependencyEligible && uniqueEligible && trainingEligible} requirement={requirement} onToggle={() => onToggle?.(group.id, option.key)} />;
+                      const requirement = !scopeEligible ? (placement === "spells" ? "this spell in the final spellbook" : "proficiency in this skill") : !dependencyEligible ? option.requires : !uniqueEligible ? "already selected in another choice group" : "";
+                      return <ClassChoiceOption key={option.key} option={option} selected={isSelected} eligible={levelEligible && dependencyEligible && uniqueEligible && scopeEligible} requirement={requirement} onToggle={() => onToggle?.(group.id, option.key)} />;
                     })}
                   </div>
-                  {!filtered.length ? <div className="npc-forge-class-choice-group__empty">{group.kind === "expertise" ? "Choose your skill proficiencies above before assigning Expertise." : "No options match this search."}</div> : null}
+                  {!filtered.length ? <div className="npc-forge-class-choice-group__empty">{group.kind === "expertise" ? "Choose your skill proficiencies above before assigning Expertise." : placement === "spells" ? "Choose qualifying spells above before assigning this feature." : "No options match this search."}</div> : null}
                 </>}
               </div>
             </details>
