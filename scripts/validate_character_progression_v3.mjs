@@ -7,6 +7,9 @@ const read = (rel) => fs.readFileSync(path.join(root, rel), "utf8");
 const requireToken = (source, token, label) => {
   if (!source.includes(token)) throw new Error(`Progression v3: ${label} is missing ${token}`);
 };
+const forbidToken = (source, token, label) => {
+  if (source.includes(token)) throw new Error(`Progression v3: ${label} must not contain ${token}`);
+};
 
 execFileSync(process.execPath, [path.join(root, "scripts/validate_character_class_progression.mjs")], { stdio: "inherit" });
 
@@ -19,7 +22,11 @@ for (const token of [
   "class_choice_selections",
   'kicker="Class progression"',
   "loadingClassChoices",
-]) requireToken(ui, token, "earned level-up class-choice UI");
+  "spellMatchesLevelClassAccess",
+  "magicalSecretsAccess",
+  "Magical Secrets expands these new Bard spell choices",
+  '["bard", "cleric", "druid", "wizard"]',
+]) requireToken(ui, token, "earned level-up source-choice and spell-access UI");
 
 const simple = read("sql/20260808_16_simple_class_choice_delta_authority.sql");
 for (const token of [
@@ -43,11 +50,21 @@ for (const token of [
   "complete_character_level_up_v3",
   "class_choice_selections",
   "class_choice_delta",
-  "Metamagic +",
   "Eldritch Invocations +",
-  "Mystic Arcanum level",
-  "Magical Secrets spell access",
-]) requireToken(enable, token, "v3 class-choice enablement and fail-closed remainder");
+]) requireToken(enable, token, "v3 class-choice enablement and historical fail-closed boundary");
+
+const spellAccess = read("sql/20260808_19_source_aware_level_up_spell_access.sql");
+for (const token of [
+  "level_up_spell_access_v1",
+  "magical-secrets",
+  "background-expanded",
+  "complete_character_level_up_base_v3",
+  "complete_character_level_up_v3",
+  "accessType",
+  "Bard, Cleric, Druid, and Wizard",
+  "Eldritch Invocations +",
+]) requireToken(spellAccess, token, "source-aware earned spell access");
+forbidToken(spellAccess, "Magical Secrets spell access", "current persistent-choice gap list");
 
 const delta = read("utils/characterClassChoiceDeltaPlan.js");
 for (const token of [
@@ -61,4 +78,4 @@ for (const token of [
   "mystic arcanum",
 ]) requireToken(delta, token, "shared class-choice delta planner");
 
-console.log("Progression v3 class-choice UI, authority, delta planning, and fail-closed complex-choice boundary validated.");
+console.log("Progression v3 class choices, source-aware spell access, delta planning, and fail-closed complex-choice boundary validated.");
