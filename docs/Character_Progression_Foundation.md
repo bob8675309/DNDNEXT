@@ -68,7 +68,7 @@ Connected families currently include:
 - Warlock Mystic Arcanum
 - Warlock Eldritch Invocations
 - Battle Master maneuvers
-- Wizard XPHB Savant earned spellbook additions
+- XPHB Wizard Savant spellbook additions in earned progression and higher-level Forge creation
 
 ### Safe replacements
 
@@ -111,17 +111,17 @@ Cumulative maneuver counts:
 
 The level-7/10/15 increases require two new maneuvers and permit one optional replacement. Replacement updates the normalized option occupying that slot but preserves the slot's original acquisition level.
 
-Higher-level Forge creation already serializes the cumulative Battle Master choices and the deferred Forge trigger materializes them into normalized maneuver instances. Earned progression uses the same instance family.
+Higher-level Forge creation serializes the cumulative Battle Master choices and the deferred Forge trigger materializes them into normalized maneuver instances. Earned progression uses the same instance family.
 
 ## Wizard spellbook authority
 
 There is no separate public spellbook table. `character_spells` assignments are the practical spellbook/known/prepared authority, with `prepared` independent from membership.
 
-Ordinary Wizard Forge validation deliberately requires an exact number of base `source_type='class'` spell rows. Therefore feature-granted spellbook additions must not be inserted as ordinary base-Wizard rows.
+Ordinary Wizard Forge validation deliberately requires an exact number of base `source_type='class'` spell rows. Feature-granted spellbook additions therefore must not be inserted as ordinary base-Wizard rows.
 
 ### Savant
 
-Migration 40 adds earned XPHB Savant authority for:
+Migrations 40-41 provide XPHB Savant authority for:
 
 - Abjurer → Abjuration Savant
 - Diviner → Divination Savant
@@ -137,15 +137,36 @@ Savant assignments use:
 - `always_available=false`
 - `raw_payload.wizardSpellbook=true`
 
-At Wizard 3, the selected Savant subclass requires two matching-school Wizard spells no higher than level 2. On later levels, one additional matching-school Wizard spell is required only when the maximum Wizard spell-slot level increases.
+Wizard Spellcasting defines the spellbook as level 1+ spells; cantrips remain separate. Savant therefore never grants a level-0 spellbook entry.
 
-A deferred uniqueness trigger treats ordinary Wizard `class` rows and `class-feature` rows marked `wizardSpellbook=true` as one spellbook membership set. A spell therefore cannot be selected once through normal Wizard progression and again through Savant.
+Persistent acquisition chronology is replayed at the levels where a new Wizard spell-slot level first becomes available:
 
-Rollback proof covers authenticated 2→3 and 4→5 v5 transactions, mismatched-school rejection, duplicate-provenance rejection, the 5→6 no-grant cadence, session/history projections, and cleanup.
+| Wizard level | New Savant choices | Maximum spell level |
+| ---: | ---: | ---: |
+| 3 | 2 | 2 |
+| 5 | 1 | 3 |
+| 7 | 1 | 4 |
+| 9 | 1 | 5 |
+| 11 | 1 | 6 |
+| 13 | 1 | 7 |
+| 15 | 1 | 8 |
+| 17 | 1 | 9 |
 
-### Wizard Forge parity still open
+Each spell must be a Wizard spell from the subclass's Savant school and must have been legal at that historical acquisition point.
 
-The direct Forge already exposes the initial level-3 Savant choice group, but higher-level direct creation does not yet emit/materialize every recurring Savant free spell gained when a new spell-slot level becomes available. This remains a parity blocker.
+A deferred uniqueness trigger treats ordinary level-1+ Wizard `class` rows and `class-feature` rows marked `wizardSpellbook=true` as one spellbook membership set. A spell therefore cannot be selected once through normal Wizard progression and again through Savant.
+
+Higher-level Forge uses separate Savant groups for levels 3/5/7/9/11/13/15/17 rather than one cumulative current-level bucket. A deferred progression trigger materializes those validated groups after the creation transaction rebuilds starting spell assignments. The normal Wizard Spells step excludes already-selected Savant spell IDs so the player cannot accidentally spend one of the ordinary Wizard spellbook picks on the same spell.
+
+Production evidence after migration 41:
+
+- level-3 review: count 2, minimum spell level 1, maximum 2, zero cantrips;
+- simulated Abjurer level-5 review: exactly one school-correct option at level 1-3;
+- valid level-3 materialization: two unprepared class-feature rows and unchanged ordinary Wizard class-spell count;
+- wrong-school submission: atomic rejection;
+- duplicate ordinary-Wizard + Savant provenance: deferred rejection;
+- higher-level Forge level-5 replay: acquisition levels 3/3/5 with no level-0 rows;
+- rollback residue sweep: original test Wizard level/subclass/creator restored and zero Forge-Savant rows remain.
 
 ### Spell Mastery
 
@@ -180,11 +201,12 @@ Every new progression family should have all of the following before it is consi
 7. production residue/integrity sweep;
 8. documentation reconciliation.
 
-The progression workflow now watches migrations through migration 40 and runs focused contracts for Invocation replacement, reversible Origin-feat effects, Battle Master maneuvers, and Wizard Savant spellbook progression in addition to the earlier foundation checks.
+The progression workflow now watches migrations through migration 41 and runs focused contracts for Invocation replacement, reversible Origin-feat effects, Battle Master maneuvers, Wizard Savant earned progression, and higher-level Forge Savant chronology in addition to the earlier foundation checks.
+
+The syntax-corrected migration-41 source head `057b22ece3aeb084bbbd02dde9779378d1e4e7e6` passed all five PR workflows and Vercel before production DDL was retried successfully.
 
 ## Remaining progression / Forge blockers
 
-- higher-level Forge recurring Savant choices + class-feature spellbook materialization
 - Wizard Signature Spells and its rest-recharging free-cast resources
 - runtime Long-Rest configuration for Spell Mastery and other rest-reconfigurable families
 - source-backed starting equipment packages and higher-level starting wealth/equipment
