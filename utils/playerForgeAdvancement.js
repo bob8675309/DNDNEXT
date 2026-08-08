@@ -1,4 +1,4 @@
-import { eligibleAdvancementOptions, evaluateFeatPrerequisites, progressionState } from "./characterProgressionResolver";
+import { applyFeatToProgressionState, eligibleAdvancementOptions, evaluateFeatPrerequisites, progressionState } from "./characterProgressionResolver";
 
 const text = (value) => String(value ?? "").trim();
 const norm = (value) => text(value).toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
@@ -37,6 +37,29 @@ function advancementFeatOptions(options = [], acquisitionLevel = 4, epic = false
   });
 }
 
+function resolveSelectedAdvancement(choice, options = []) {
+  if (!choice) return null;
+  const wantedId = text(choice.feat?.id || choice.optionId || choice.key || choice.value);
+  const wantedName = norm(choice.feat?.name || choice.label || choice.name);
+  const wantedSource = text(choice.feat?.source || choice.source);
+  return array(options).find((candidate) => wantedId && [candidate.id, candidate.option_key].map(text).includes(wantedId))
+    || array(options).find((candidate) => wantedName && norm(candidate.name) === wantedName && (!wantedSource || candidate.source === wantedSource))
+    || null;
+}
+
+function stateBeforeLevel(baseState, acquisitionLevel, selectedAdvancementChoices, options) {
+  let state = { ...baseState, level: acquisitionLevel };
+  const priorChoices = array(selectedAdvancementChoices)
+    .filter((choice) => Number(choice.level || choice.acquisitionLevel || 1) < Number(acquisitionLevel || 1))
+    .sort((a, b) => Number(a.level || a.acquisitionLevel || 1) - Number(b.level || b.acquisitionLevel || 1));
+  for (const choice of priorChoices) {
+    const feat = resolveSelectedAdvancement(choice, options);
+    if (!feat) continue;
+    state = applyFeatToProgressionState(state, feat, choice.selectedAbilityKeys || choice.abilityKeys || []);
+  }
+  return { ...state, level: acquisitionLevel };
+}
+
 export function buildAdvancementSourceChoiceGroups({
   selectedClass = null,
   selectedSpecies = null,
@@ -46,6 +69,7 @@ export function buildAdvancementSourceChoiceGroups({
   featOptions = [],
   abilities = {},
   knownFeats = [],
+  selectedAdvancementChoices = [],
   armorProficiencies = [],
   weaponProficiencies = [],
   campaigns = [],
@@ -73,10 +97,10 @@ export function buildAdvancementSourceChoiceGroups({
     if (row.class_source && source && row.class_source !== source) return false;
     if (row.class_name && className && norm(row.class_name) !== norm(className)) return false;
     return ["ability score improvement", "epic boon"].includes(norm(row.name));
-  }).map((row) => {
+  }).sort((a, b) => Number(a.level || 1) - Number(b.level || 1)).map((row) => {
     const acquisitionLevel = Number(row.level || 1);
     const epic = norm(row.name) === "epic boon";
-    const stateAtAcquisition = { ...baseState, level: acquisitionLevel };
+    const stateAtAcquisition = stateBeforeLevel(baseState, acquisitionLevel, selectedAdvancementChoices, featOptions);
     const options = advancementFeatOptions(featOptions, acquisitionLevel, epic, stateAtAcquisition);
     return {
       id: `advancement-${slug(selectedClass.id || selectedClass.class_key || className)}-${acquisitionLevel}-${epic ? "epic-boon" : "feat"}`,
