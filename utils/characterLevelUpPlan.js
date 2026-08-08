@@ -5,6 +5,8 @@ import {
   sourceChoiceGroupsComplete,
 } from "./playerForgeSourceChoices";
 
+export const LEVEL_UP_ADVANCEMENT_PAYLOAD_KEY = "advancement_instance";
+
 const text = (value) => String(value ?? "").trim();
 const norm = (value) => text(value).toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 const slug = (value) => norm(value).replace(/\s+/g, "-");
