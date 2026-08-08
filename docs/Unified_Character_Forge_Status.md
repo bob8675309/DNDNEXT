@@ -1,83 +1,101 @@
 # Unified NPC and Player Character Forge Status
 
-Status date: 2026-08-05
+Status date: 2026-08-08
+PR: #170 (`agent/character-forge-resilience-presentation`)
 
-This document records the current testing state of the shared NPC/player Character Forge in PR #170. Development returns to the Dawn sprite prototype after this Forge slice is accepted and merged.
+## Current state
 
-## Canonical architecture
+The shared Character Forge remains the intended creation surface for NPCs and player-owned characters. PR #170 is still open and unmerged. Automated validation is not final browser acceptance.
 
-DNDNext uses one shared Forge implementation for NPCs and player-owned characters. Player mode is an explicit adapter around the shared component and submits through `create_player_character_v2`; NPC/admin creation continues through `create_character_v1`.
+The governing parity rule is: a character created directly at level N and a character that earns level N through XP should resolve the same persistent source-owned decisions. Rest-configurable, per-use, and informational features must not be converted into permanent Forge choices.
 
-Player steps are:
+## Choice semantics
 
-1. Species
-2. Background
-3. Class
-4. Abilities
-5. Training
-6. Spells
-7. Identity
-8. Story
-9. Review
+Persistent choice groups now distinguish cadence and placement rather than treating every imported `options`/`count` structure as a permanent creator decision.
 
-The player Forge remains mounted for the signed-in account so Close/Reopen and client-side Pages Router navigation preserve the in-memory draft. Reset, successful creation, sign-out, account change, or hard refresh clears it.
+- `creation` / persistent level choices belong in authoritative Forge/progression state.
+- `training` placement is used where a decision depends on established proficiency, such as Expertise.
+- Long-Rest, Short-Rest, per-use, and informational features are not permanent Forge locks.
+- Weapon Mastery is runtime/Long-Rest configuration, not a one-time creator choice.
+- Spell Mastery is also Long-Rest configurable and must not be permanently locked at Wizard 18.
 
-## Current player experience
+## Player creation authority
 
-Implemented behavior includes:
+Player creation is server-authoritative. Current live creation RPC generations include `create_player_character_v1`, `v2`, and `v3`; the current Forge work uses the newer guarded creation path where source-owned spell/magic payloads require it.
 
-- responsive Species artwork and **In the World** lore;
-- independent expandable Species features and source-backed hover help for species-granted cantrips;
-- profile-style Class Overview and Detailed Guide modes;
-- level 1–20 progression, subclass preview/selection, and current-level emphasis;
-- a persistent class-feature description dock;
-- structured class-feature text that preserves source paragraphs and headings;
-- compact expandable presentation for exceptionally long option lists without removing rules text;
-- no redundant Primary Abilities tile in the class hero; Hit Die, level, saving throws, and spellcasting remain;
-- Standard 3d6, 4d6 drop lowest, Point Buy, Standard Class Array, and Manual Assign;
-- a right-column Species Bonus chooser;
-- one shared Training-choice pool for class skills and crafting professions;
-- level-aware starting spell selection;
-- a full Review dossier;
-- scrolling throughout all profile-panel tabs.
+Protected player-owned state includes feats/boons, class/species/source choices, authoritative spells, weapon mastery state, Expertise, and related source metadata. Direct authenticated mutation of those sheet fields is blocked by server guards.
 
-## Player authority
+## Earned progression authority
 
-Players cannot assign arbitrary tags, map placement, Expertise, extra feats, boons, or post-creation spells through player surfaces. Background/species feat choices and starting spells are validated through the Forge and database authority. Direct non-admin mutation guards protect authoritative feat, boon, spell, and sheet fields.
+The current level-up UI submits to `complete_character_level_up_v5`. v5 composes the reviewed v4 level transition with source-owned replacement/acquisition logic in one transaction.
 
-Future player-controlled minions remain NPCs and require a dedicated assignment/controller relationship rather than the `player-character` tag.
+Connected persistent families include:
 
-## Database authority
+- General feat / Epic Boon advancement
+- persistent simple class choices
+- Bard Magical Secrets spell-list expansion
+- Lore Magical Discoveries
+- Draconic Elemental Affinity
+- Champion Additional Fighting Style
+- Sorcerer Metamagic acquisition/replacement
+- Warlock Mystic Arcanum acquisition/replacement
+- Magic Initiate per-instance spell replacement
+- Warlock Eldritch Invocation acquisition/replacement, prerequisites, repeatability, dependent choices, and Lessons of the First Ones
+- Battle Master maneuver acquisition/replacement
+- Wizard XPHB Savant spellbook additions on earned progression
 
-Production migrations applied for this slice:
+Direct authenticated v3/v4 completion is revoked. Legacy `complete_character_level_up_v1/v2` still retain authenticated execute grants and remain an explicit authority-cleanup item; current UI code does not use them as its completion path.
 
-- `character_forge_resilience_and_tags`
-- `character_forge_subclass_choice`
-- `player_forge_starting_spell_validation`
-- `player_character_authority_hardening`
+## Eldritch Invocation / Lessons status
 
-These migrations provide controlled tags, subclass persistence, deferred starting-spell validation, and server-side feat/spell mutation protection. Existing character, progression, spell, and option-grant rows were not rewritten by the authority hardening migration.
+Invocation slots use normalized `character_class_option_grant_instances` authority. Replacement validates against the new current Warlock level while preserving original slot acquisition chronology and recording `lastReplacementLevel`.
+
+`Lessons of the First Ones` owns a canonical Origin-feat instance and reversible effects. Removal preserves benefits that predated the feat or remain claimed by another normalized source, and it fails closed when removal would invalidate Expertise. Tough, Magic Initiate, Skilled, Crafter, Tavern Brawler, and empty-effect Origin-feat shapes have rollback coverage.
+
+## Battle Master status
+
+Live migrations 38-39 normalize the 20 XPHB maneuver identities directly from imported `Maneuver Options` and use generic class-option instances as authority.
+
+Cumulative maneuver counts are 3 / 5 / 7 / 9 at Fighter levels 3 / 7 / 10 / 15. At the later gain levels, two new maneuvers are required and one existing maneuver may optionally be replaced. Replacement preserves the original maneuver-slot acquisition level.
+
+Rollback coverage includes higher-level Forge normalization, Fighter 2→3 Battle Master entry, Fighter 6→7 acquisition plus replacement, non-Battle-Master Fighter progression, and incomplete-selection rejection.
+
+Known UI polish debt: at Fighter 3 the generic level-up renderer currently shows a clearly labeled Battle-Master-only group before the pending subclass choice is resolved. The server only requires it when Battle Master is actually selected.
+
+## Wizard Savant status
+
+Live migration 40 connects **earned** XPHB Savant spellbook additions for Abjurer, Diviner, Evoker, and Illusionist.
+
+- Wizard 2→3: selecting one of those subclasses requires two source-legal Wizard spells from the matching school, no higher than level 2.
+- Later Wizard levels: whenever the maximum Wizard spell-slot level increases, Savant requires one additional Wizard spell from that school at a level for which the Wizard has slots.
+- Savant spells use `source_type='class-feature'` with `wizardSpellbook=true`; they do not inflate the exact base-Wizard `source_type='class'` spell count.
+- A deferred uniqueness invariant prevents the same spell from appearing twice in the Wizard spellbook through ordinary Wizard progression plus Savant provenance.
+- Savant entries are not auto-prepared and are not marked always available.
+
+Production rollback proofs cover level-3 entry, level-5 recurring acquisition, school mismatch rejection, duplicate-provenance rejection, no-grant cadence at Wizard 6, session/history recording, and cleanup.
+
+**Forge parity is not complete yet.** The Forge already exposes the initial level-3 Savant selector, but higher-level direct creation still needs recurring Savant groups/materialization for each newly available spell-slot level. Do not mark the Wizard family complete until that side is connected and rollback/browser tested.
+
+## Wizard features still pending
+
+- Higher-level Forge recurring Savant additions and Forge materialization into `character_spells`
+- Signature Spells at Wizard 20, restricted to level-3 spells already in that Wizard's spellbook; free-cast/rest state must be modeled separately from spellbook membership
+- Spell Mastery runtime Long-Rest configuration; it is intentionally excluded from permanent Forge/level-up lock-in
+
+## Other remaining Forge blockers
+
+- source-backed starting equipment packages and higher-level starting wealth/equipment
+- character-scoped starting currency for multi-character accounts
+- complete frontend use of guarded multi-source starting-magic authority where still incomplete
+- Artificer wildcard Magic Item Plan concrete-item instances
+- final preferred Species / Background / Class / Feat / Subclass coverage audit
+- final conditional-choice UI polish, including pending-subclass groups
+- authenticated browser acceptance
 
 ## Protected boundaries
 
-This Forge slice does not modify world-map, town/city-map, route, movement, weather, encounter, combat, or unrelated crafting runtime behavior. `components/MapPageClient.js` remains outside the patch.
+This work does not change world-map, town/city-map, route/travel/weather, encounter/combat, or unrelated crafting runtime behavior. `components/MapPageClient.js` remains outside this Forge/progression work.
 
-## Acceptance checklist
+## Acceptance gate
 
-- [ ] Close/Reopen preserves the exact player draft and current tab.
-- [ ] Client-side navigation away and back preserves the draft.
-- [ ] Hard refresh and Reset clear the draft.
-- [ ] Species artwork, lore, feature cards, and cantrip hover help remain usable.
-- [ ] Class Overview and Detailed Guide are readable at desktop and narrow widths.
-- [ ] Long Artificer and other dense feature entries render as paragraphs, headings, and expandable lists rather than walls of text.
-- [ ] Class hero omits Primary Abilities while preserving Hit Die, level, saves, and spellcasting.
-- [ ] Eligible subclasses are required and persist.
-- [ ] Starting spell counts and class legality are enforced.
-- [ ] Selecting a crafting profession consumes one Training choice.
-- [ ] A player cannot self-grant feats or spells.
-- [ ] Authorized GM/admin grant management remains functional.
-- [ ] NPC Forge behavior remains intact.
-
-## Return to Dawn
-
-After PR #170 passes authenticated browser testing and is merged, return to `docs/Dawn_High_Quality_Prototype_Plan.md` and produce one high-quality South-facing Dawn idle/walk prototype before expanding to a complete atlas.
+Do not merge PR #170 yet. Finish the remaining creation/progression parity blockers, reconcile legacy RPC grants, require exact CI/Vercel success, then run authenticated browser acceptance across representative low-level, higher-level, spellcaster, martial, nested-feat, and subclass-choice cases.
