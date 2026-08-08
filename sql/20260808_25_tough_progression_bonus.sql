@@ -16,7 +16,7 @@ declare
   v_hp integer:=0;
   v_max integer:=0;
 begin
-  select min(gi.acquired_level) into v_tough_acquired
+  select min(gi.acquisition_level) into v_tough_acquired
   from public.character_option_grant_instances gi
   where gi.character_id=p_character_id
     and private.normalize_player_choice_name_v1(gi.option_name)='tough';
