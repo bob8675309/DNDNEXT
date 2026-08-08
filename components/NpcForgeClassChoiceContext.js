@@ -50,6 +50,11 @@ export function trainingClassChoiceStateComplete(state = EMPTY_CLASS_CHOICE_STAT
   return classFeatureGroupsComplete(state.featureGroups || [], state.featureSelections || {}, "training");
 }
 
+export function spellsClassChoiceStateComplete(state = EMPTY_CLASS_CHOICE_STATE) {
+  if (!state.featureCatalogReady) return false;
+  return classFeatureGroupsComplete(state.featureGroups || [], state.featureSelections || {}, "spells");
+}
+
 export function classChoiceStateComplete(state = EMPTY_CLASS_CHOICE_STATE) {
   if (!state.catalogReady || !state.featureCatalogReady) return false;
   const subclassComplete = !classChoiceStateRequiresSelection(state) || Boolean(selectedSubclassOption(state));
