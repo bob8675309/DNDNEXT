@@ -61,7 +61,7 @@ for (const token of [
   "complete_character_level_up_base_v3",
   "complete_character_level_up_v3",
   "accessType",
-  "Bard, Cleric, Druid, and Wizard",
+  "lower(listed) in ('bard', 'cleric', 'druid', 'wizard')",
   "Eldritch Invocations +",
 ]) requireToken(spellAccess, token, "source-aware earned spell access");
 forbidToken(spellAccess, "Magical Secrets spell access", "current persistent-choice gap list");
