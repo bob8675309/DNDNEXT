@@ -4,11 +4,15 @@ on:
   push:
     paths:
       - "components/CharacterLevelUpChoices.js"
+      - "components/CharacterInvocationRecovery.js"
       - "components/SourceChoiceFields.js"
       - "utils/characterProgressionResolver.js"
       - "utils/characterLevelUpPlan.js"
       - "utils/characterClassChoiceDeltaPlan.js"
       - "utils/classFeatureChoices.js"
+      - "utils/classFeatureChoiceExtensions.js"
+      - "utils/playerForgeFeatChoices.js"
+      - "utils/warlockInvocationChoices.js"
       - "sql/20260808_06_character_progression_option_eligibility.sql"
       - "sql/20260808_08_character_spell_source_identity.sql"
       - "sql/20260808_09_level_up_advancement_authority_helpers.sql"
@@ -20,17 +24,36 @@ on:
       - "sql/20260808_15_level_up_review_fail_closed_choice_deltas.sql"
       - "sql/20260808_16_simple_class_choice_delta_authority.sql"
       - "sql/20260808_17_enable_simple_class_choice_level_up.sql"
+      - "sql/20260808_18_metamagic_mystic_arcanum_progression.sql"
+      - "sql/20260808_19_source_aware_level_up_spell_access.sql"
+      - "sql/20260808_20_class_feature_option_catalog.sql"
+      - "sql/20260808_21_player_forge_class_option_instance_authority.sql"
+      - "sql/20260808_22_tighten_player_forge_class_option_legacy_gate.sql"
+      - "sql/20260808_23_fix_player_forge_spell_slot_json_validation.sql"
+      - "sql/20260808_24_source_owned_origin_feat_authority.sql"
+      - "sql/20260808_25_tough_progression_bonus.sql"
+      - "sql/20260808_26_earned_warlock_invocation_progression.sql"
+      - "sql/20260808_27_earned_subclass_choice_progression.sql"
+      - "sql/20260808_28_legacy_warlock_invocation_recovery.sql"
+      - "sql/20260808_29_normalize_xphb_metamagic_options.sql"
+      - "sql/20260808_30_safe_level_up_replacements.sql"
+      - "sql/20260808_31_fix_tough_progression_acquisition_level.sql"
       - "scripts/validate_character_class_progression.mjs"
       - "scripts/validate_character_progression_v3.mjs"
+      - "scripts/validate_tough_progression.mjs"
       - ".github/workflows/validate-character-progression-v3.yml"
   pull_request:
     paths:
       - "components/CharacterLevelUpChoices.js"
+      - "components/CharacterInvocationRecovery.js"
       - "components/SourceChoiceFields.js"
       - "utils/characterProgressionResolver.js"
       - "utils/characterLevelUpPlan.js"
       - "utils/characterClassChoiceDeltaPlan.js"
       - "utils/classFeatureChoices.js"
+      - "utils/classFeatureChoiceExtensions.js"
+      - "utils/playerForgeFeatChoices.js"
+      - "utils/warlockInvocationChoices.js"
       - "sql/20260808_06_character_progression_option_eligibility.sql"
       - "sql/20260808_08_character_spell_source_identity.sql"
       - "sql/20260808_09_level_up_advancement_authority_helpers.sql"
@@ -42,8 +65,23 @@ on:
       - "sql/20260808_15_level_up_review_fail_closed_choice_deltas.sql"
       - "sql/20260808_16_simple_class_choice_delta_authority.sql"
       - "sql/20260808_17_enable_simple_class_choice_level_up.sql"
+      - "sql/20260808_18_metamagic_mystic_arcanum_progression.sql"
+      - "sql/20260808_19_source_aware_level_up_spell_access.sql"
+      - "sql/20260808_20_class_feature_option_catalog.sql"
+      - "sql/20260808_21_player_forge_class_option_instance_authority.sql"
+      - "sql/20260808_22_tighten_player_forge_class_option_legacy_gate.sql"
+      - "sql/20260808_23_fix_player_forge_spell_slot_json_validation.sql"
+      - "sql/20260808_24_source_owned_origin_feat_authority.sql"
+      - "sql/20260808_25_tough_progression_bonus.sql"
+      - "sql/20260808_26_earned_warlock_invocation_progression.sql"
+      - "sql/20260808_27_earned_subclass_choice_progression.sql"
+      - "sql/20260808_28_legacy_warlock_invocation_recovery.sql"
+      - "sql/20260808_29_normalize_xphb_metamagic_options.sql"
+      - "sql/20260808_30_safe_level_up_replacements.sql"
+      - "sql/20260808_31_fix_tough_progression_acquisition_level.sql"
       - "scripts/validate_character_class_progression.mjs"
       - "scripts/validate_character_progression_v3.mjs"
+      - "scripts/validate_tough_progression.mjs"
       - ".github/workflows/validate-character-progression-v3.yml"
 
 jobs:
@@ -54,5 +92,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Validate progression v3 contracts
-        run: node scripts/validate_character_progression_v3.mjs
+      - name: Validate progression v5 contracts
+        run: |
+          node scripts/validate_character_progression_v3.mjs
+          node scripts/validate_tough_progression.mjs
