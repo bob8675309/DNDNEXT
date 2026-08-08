@@ -33,7 +33,7 @@ for (const token of [
   "v_target.acquired_level",
   "if jsonb_typeof(v_sheet->'sourceChoices')<>'object' then",
   "v_sheet:=jsonb_set(v_sheet,'{sourceChoices}','{}'::jsonb,true)",
-  "v_forward_class:=v_all_class-'warlock-invocation-replacement'",
+  "v_forward_class jsonb:=v_all_class-'warlock-invocation-replacement'",
   "v_result:=public.complete_character_level_up_v4",
   "v_invocation_summary:=private.apply_level_up_warlock_invocation_replacement_v1",
   "v_summary:=coalesce(v_invocation_summary,'[]'::jsonb)||coalesce(v_standard_summary,'[]'::jsonb)",
