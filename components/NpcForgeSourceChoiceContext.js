@@ -6,7 +6,7 @@ import {
   sourceChoiceGroupsComplete,
 } from "../utils/playerForgeSourceChoices";
 
-export const EMPTY_SOURCE_CHOICE_STATE = Object.freeze({ groups: [], selections: {}, catalogReady: false });
+export const EMPTY_SOURCE_CHOICE_STATE = Object.freeze({ groups: [], selections: {}, catalogReady: false, scopes: {} });
 
 export const NpcForgeSourceChoiceContext = createContext({
   state: EMPTY_SOURCE_CHOICE_STATE,
@@ -19,12 +19,19 @@ export function useNpcForgeSourceChoices() {
   return useContext(NpcForgeSourceChoiceContext);
 }
 
-export function normalizeSourceChoiceState(groups = [], catalogReady = true, previous = EMPTY_SOURCE_CHOICE_STATE) {
+export function normalizeSourceChoiceState(groups = [], catalogReady = true, previous = EMPTY_SOURCE_CHOICE_STATE, scope = "foundation") {
   const validGroups = Array.isArray(groups) ? groups : [];
+  const previousScopes = previous?.scopes && typeof previous.scopes === "object" ? previous.scopes : {};
+  const scopes = {
+    ...previousScopes,
+    [scope || "foundation"]: { groups: validGroups, catalogReady: Boolean(catalogReady) },
+  };
+  const combinedGroups = Object.values(scopes).flatMap((entry) => Array.isArray(entry?.groups) ? entry.groups : []);
   return {
-    groups: validGroups,
-    selections: normalizeSourceChoiceSelections(validGroups, previous?.selections || {}),
-    catalogReady: Boolean(catalogReady),
+    scopes,
+    groups: combinedGroups,
+    selections: normalizeSourceChoiceSelections(combinedGroups, previous?.selections || {}),
+    catalogReady: Object.values(scopes).every((entry) => Boolean(entry?.catalogReady)),
   };
 }
 
