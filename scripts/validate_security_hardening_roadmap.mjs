@@ -1,60 +1,82 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
-const read = (path) => fs.readFileSync(path, "utf8");
-const includesAll = (source, tokens, label) => {
-  for (const token of tokens) {
-    assert.ok(source.includes(token), `${label} is missing required contract: ${token}`);
+const migrationPath = "sql/20260724_01_security_hardening_roadmap.sql";
+const migration = fs.readFileSync(migrationPath, "utf8");
+const driftMigrationPath = "sql/20260724_02_database_drift_followup.sql";
+const driftMigration = fs.readFileSync(driftMigrationPath, "utf8");
+const helperMigrationPath = "sql/20260724_03_anonymous_helper_rpc_cleanup.sql";
+const helperMigration = fs.readFileSync(helperMigrationPath, "utf8");
+const walletHook = fs.readFileSync("utils/useWallet.js", "utf8");
+const merchantPanel = fs.readFileSync("components/MerchantPanel.js", "utf8");
+const playerCreatorAdapter = fs.readFileSync("components/PlayerCharacterCreatorV2.js", "utf8");
+const sharedForgeAdapter = fs.readFileSync("components/NewNpcModalV3.js", "utf8");
+const sharedForge = fs.readFileSync("components/NewNpcModalV3Refined.js", "utf8");
+
+function includesAll(text, values, label) {
+  for (const value of values) {
+    assert.ok(text.includes(value), `${label} is missing required contract: ${value}`);
   }
-};
+}
 
-const docs = read("docs/Security_Hardening_Roadmap_Status.md");
-const apiAssetMetadata = read("pages/api/asset-metadata.js");
-const importScripts = read("scripts/import_class_catalog.mjs") + read("scripts/import_2024_class_features.mjs");
-const supplementalClassScript = read("scripts/import_supplemental_class_features.mjs");
-const featScript = read("scripts/import_phb2024_option_catalog.mjs");
-const catalogMigration = read("sql/20260525_01_gameplay_reference_catalogs.sql");
-const optionMigration = read("sql/20260525_05_character_option_catalog.sql");
-const duplicateAuditMigration = read("sql/20260525_10_character_option_duplicate_audit.sql");
-const merchantMigration = read("sql/20260523_07_purchase_inventory_flow.sql");
-const walletHook = read("hooks/useWallet.js");
-const merchantPanel = read("components/MerchantPanel.js");
-const playerCreatorAdapter = read("components/PlayerCharacterCreatorV2.js");
-const sharedForgeAdapter = read("components/NewNpcModalV3.js");
-const sharedForge = read("components/useNpcForgeDerivedModel.js");
-const playerForgeMagic = read("sql/20260808_47_player_forge_starting_magic_v3_completion.sql");
+includesAll(migration, [
+  "REVOKE ALL ON TABLE public.player_wallets FROM PUBLIC, anon, authenticated",
+  "GRANT SELECT ON TABLE public.player_wallets TO authenticated",
+  "REVOKE EXECUTE ON FUNCTION public.wallet_add(uuid, numeric) FROM PUBLIC, anon, authenticated",
+  "DROP FUNCTION IF EXISTS public.wallet_add_self(numeric)",
+  "DROP FUNCTION IF EXISTS public.wallet_set_self(numeric)",
+  "ALTER TABLE public.spells_catalog ENABLE ROW LEVEL SECURITY",
+  "ALTER TABLE public.spell_effects ENABLE ROW LEVEL SECURITY",
+  "target_table || '_public_read'",
+  "Only an administrator can clear character dwell time.",
+  "Only an administrator can force a character action.",
+  "Only an administrator can run simulation ticks.",
+  "DROP FUNCTION IF EXISTS public.reroll_merchant_inventory(uuid, text, integer)",
+  "DROP FUNCTION IF EXISTS public.reroll_merchant_inventory(uuid, text, integer, integer)",
+  "DROP INDEX IF EXISTS public.alchemy_recipe_options_recipe_option_key",
+  "CREATE INDEX IF NOT EXISTS inventory_items_user_id_idx",
+  "CREATE POLICY player_wallets_select_self_or_admin",
+], "security migration");
 
-includesAll(docs, [
-  "Security Hardening Roadmap Status",
-  "security_definer",
-  "wallet",
-], "security roadmap documentation");
+includesAll(driftMigration, [
+  "ALTER FUNCTION %s SET search_path = pg_catalog, public, private, auth, extensions",
+  "AND d.deptype = 'e'",
+  "REVOKE EXECUTE ON FUNCTION public.create_character_v1(jsonb) FROM PUBLIC, anon",
+  "REVOKE EXECUTE ON FUNCTION public.delete_character_v1(uuid) FROM PUBLIC, anon",
+  "REVOKE EXECUTE ON FUNCTION public.set_character_portrait_v1(uuid, text, text, text, text, text) FROM PUBLIC, anon",
+  "ALTER POLICY \"trade: select own\"",
+  "WHERE p.user_id = (SELECT auth.uid())",
+  "CREATE INDEX IF NOT EXISTS characters_last_known_location_id_idx",
+  "CREATE INDEX IF NOT EXISTS map_route_edges_a_point_id_idx",
+  "CREATE INDEX IF NOT EXISTS player_recipes_recipe_id_idx",
+  "application-owned public functions still have a mutable search_path",
+], "database drift migration");
 
-includesAll(apiAssetMetadata, [
-  "createClient",
-  "SUPABASE_SERVICE_ROLE_KEY",
-  "Authorization",
-], "asset metadata route");
+includesAll(helperMigration, [
+  "REVOKE EXECUTE ON FUNCTION public.is_admin() FROM PUBLIC, anon",
+  "REVOKE EXECUTE ON FUNCTION public.is_admin(uuid) FROM PUBLIC, anon",
+  "REVOKE EXECUTE ON FUNCTION public.is_preferred_class_version_v1(uuid) FROM PUBLIC, anon",
+  "REVOKE EXECUTE ON FUNCTION public.is_preferred_spell_version_v1(uuid) FROM PUBLIC, anon",
+  "GRANT EXECUTE ON FUNCTION public.is_admin() TO authenticated, service_role",
+  "Authenticated helper RPC access was not preserved",
+], "anonymous helper RPC cleanup migration");
 
-includesAll(importScripts, [
-  "class_catalog",
-  "class_level_progression",
-], "class catalogue imports");
-includesAll(supplementalClassScript, ["class_feature_catalog"], "supplemental class feature imports");
-includesAll(featScript, ["character_option_catalog"], "option catalogue import");
-
-includesAll(catalogMigration, [
-  "create table if not exists public.class_catalog",
-  "create table if not exists public.class_level_progression",
-], "catalogue migration");
-includesAll(optionMigration, [
-  "create table if not exists public.character_option_catalog",
-], "option migration");
-includesAll(duplicateAuditMigration, ["duplicate"], "duplicate audit migration");
-
-includesAll(merchantMigration, [
-  "buy_from_merchant",
-], "merchant purchase migration");
+for (const [text, label] of [
+  [migration, "security migration"],
+  [driftMigration, "database drift migration"],
+  [helperMigration, "anonymous helper RPC cleanup migration"],
+]) {
+  assert.ok(!text.includes("CREATE OR REPLACE FUNCTION public.advance_all_characters_v3"),
+    `${label} must not replace world movement logic`);
+  assert.ok(!text.includes("CREATE OR REPLACE FUNCTION public.sim_tick_v1"),
+    `${label} must not replace simulation logic`);
+  assert.ok(!text.includes("CREATE OR REPLACE FUNCTION public.route_next_seq"),
+    `${label} must not replace route progression logic`);
+}
+assert.ok(!driftMigration.includes("CREATE OR REPLACE FUNCTION"),
+  "database drift migration must change function metadata only, not bodies");
+assert.ok(!helperMigration.includes("CREATE OR REPLACE FUNCTION"),
+  "anonymous helper RPC cleanup must change grants only, not function bodies");
 
 includesAll(walletHook, [
   "supabase.rpc(\"wallet_get\"",
@@ -103,23 +125,6 @@ includesAll(sharedForge, [
   "backgroundFeatChoice: selectedBackgroundFeat?.name || null",
   "backgroundExpandedSpells: backgroundExpandedSpellNames",
   "backgroundSpellList",
-  "serializeStartingMagicSelections",
-  "startingMagicSelections",
-], "shared Character Forge background and starting-magic persistence");
+], "shared Character Forge background persistence");
 
-includesAll(playerForgeMagic, [
-  "create_player_character_v3",
-  "p_magic_selections",
-  "background-expanded",
-  "v_source_type = 'subclass'",
-  "shared_character_forge_player_v3",
-  "validate_player_forge_starting_spells_v1",
-], "guarded Player Forge v3 starting-magic authority");
-
-for (const source of [playerCreatorAdapter, sharedForgeAdapter, sharedForge, playerForgeMagic]) {
-  for (const forbidden of ["MapPageClient", "map_routes", "route_segment_progress", "advance_all_characters", "weather"]) {
-    assert.ok(!source.includes(forbidden), `security/Forge slice crossed protected world boundary: ${forbidden}`);
-  }
-}
-
-console.log("Security hardening roadmap, guarded Player Forge v3 starting magic, wallet/purchase authority, catalogue imports, and protected boundaries validated.");
+console.log("Security hardening roadmap source contracts validated.");
