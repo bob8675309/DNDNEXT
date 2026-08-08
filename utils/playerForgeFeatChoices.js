@@ -245,7 +245,6 @@ export function buildFeatSourceChoiceGroups({ featInstances = [], toolRows = [],
       if (!byId.has(candidate.id)) byId.set(candidate.id, candidate);
     }
     const resolvedFields = [...byId.values()];
-    if (!resolvedFields.length && !ability.fixedEffects.length && !fixedSpellTokens.length) continue;
     groups.push(group(instance, resolvedFields, { fixedEffects: ability.fixedEffects, fixedSpellTokens }));
   }
   return groups;
