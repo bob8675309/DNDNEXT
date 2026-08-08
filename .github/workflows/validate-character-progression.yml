@@ -1,0 +1,64 @@
+name: Validate character progression authority
+
+on:
+  push:
+    paths:
+      - "components/CharacterClassPanel.js"
+      - "components/CharacterLevelUpChoices.js"
+      - "components/SourceChoiceFields.js"
+      - "utils/characterProgressionResolver.js"
+      - "utils/characterLevelUpPlan.js"
+      - "utils/characterClassChoiceDeltaPlan.js"
+      - "utils/playerForgeAdvancement.js"
+      - "utils/classFeatureChoices.js"
+      - "sql/20260710_02_character_progression_foundation.sql"
+      - "sql/20260710_04_character_xp_level_up_review.sql"
+      - "sql/20260710_07_transactional_level_up_completion.sql"
+      - "sql/20260720_01_subclass_compatibility_and_selection.sql"
+      - "sql/20260808_06_character_progression_option_eligibility.sql"
+      - "sql/20260808_08_character_spell_source_identity.sql"
+      - "sql/20260808_09_level_up_advancement_authority_helpers.sql"
+      - "sql/20260808_10_level_up_advancement_effects.sql"
+      - "sql/20260808_11_character_level_up_v3.sql"
+      - "sql/20260808_12_level_up_review_progression_authority.sql"
+      - "sql/20260808_13_level_up_persistent_choice_gap_guard.sql"
+      - "sql/20260808_14_level_up_v3_review_guard.sql"
+      - "sql/20260808_15_level_up_review_fail_closed_choice_deltas.sql"
+      - "scripts/validate_character_class_progression.mjs"
+      - ".github/workflows/validate-character-progression.yml"
+  pull_request:
+    paths:
+      - "components/CharacterClassPanel.js"
+      - "components/CharacterLevelUpChoices.js"
+      - "components/SourceChoiceFields.js"
+      - "utils/characterProgressionResolver.js"
+      - "utils/characterLevelUpPlan.js"
+      - "utils/characterClassChoiceDeltaPlan.js"
+      - "utils/playerForgeAdvancement.js"
+      - "utils/classFeatureChoices.js"
+      - "sql/20260710_02_character_progression_foundation.sql"
+      - "sql/20260710_04_character_xp_level_up_review.sql"
+      - "sql/20260710_07_transactional_level_up_completion.sql"
+      - "sql/20260720_01_subclass_compatibility_and_selection.sql"
+      - "sql/20260808_06_character_progression_option_eligibility.sql"
+      - "sql/20260808_08_character_spell_source_identity.sql"
+      - "sql/20260808_09_level_up_advancement_authority_helpers.sql"
+      - "sql/20260808_10_level_up_advancement_effects.sql"
+      - "sql/20260808_11_character_level_up_v3.sql"
+      - "sql/20260808_12_level_up_review_progression_authority.sql"
+      - "sql/20260808_13_level_up_persistent_choice_gap_guard.sql"
+      - "sql/20260808_14_level_up_v3_review_guard.sql"
+      - "sql/20260808_15_level_up_review_fail_closed_choice_deltas.sql"
+      - "scripts/validate_character_class_progression.mjs"
+      - ".github/workflows/validate-character-progression.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate progression contracts
+        run: node scripts/validate_character_class_progression.mjs
