@@ -5,13 +5,13 @@ PR: #170 (`agent/character-forge-resilience-presentation`)
 
 ## Current state
 
-The shared Character Forge remains the intended creation surface for NPCs and player-owned characters. PR #170 is still open and unmerged. Automated validation is not final browser acceptance.
+The shared Character Forge remains the intended creation surface for NPCs and player-owned characters. PR #170 is still open and unmerged. Automated validation and rollback SQL are not final browser acceptance.
 
 The governing parity rule is: a character created directly at level N and a character that earns level N through XP should resolve the same persistent source-owned decisions. Rest-configurable, per-use, and informational features must not be converted into permanent Forge choices.
 
 ## Choice semantics
 
-Persistent choice groups now distinguish cadence and placement rather than treating every imported `options`/`count` structure as a permanent creator decision.
+Persistent choice groups distinguish cadence and placement rather than treating every imported `options`/`count` structure as a permanent creator decision.
 
 - `creation` / persistent level choices belong in authoritative Forge/progression state.
 - `training` placement is used where a decision depends on established proficiency, such as Expertise.
@@ -42,7 +42,7 @@ Connected persistent families include:
 - Magic Initiate per-instance spell replacement
 - Warlock Eldritch Invocation acquisition/replacement, prerequisites, repeatability, dependent choices, and Lessons of the First Ones
 - Battle Master maneuver acquisition/replacement
-- Wizard XPHB Savant spellbook additions on earned progression
+- XPHB Wizard Savant spellbook additions in earned progression and higher-level Forge creation
 
 Direct authenticated v3/v4 completion is revoked. Legacy `complete_character_level_up_v1/v2` still retain authenticated execute grants and remain an explicit authority-cleanup item; current UI code does not use them as its completion path.
 
@@ -64,23 +64,45 @@ Known UI polish debt: at Fighter 3 the generic level-up renderer currently shows
 
 ## Wizard Savant status
 
-Live migration 40 connects **earned** XPHB Savant spellbook additions for Abjurer, Diviner, Evoker, and Illusionist.
+Live migrations 40-41 connect XPHB Savant spellbook additions for Abjurer, Diviner, Evoker, and Illusionist across both earned progression and higher-level direct Forge creation.
 
-- Wizard 2→3: selecting one of those subclasses requires two source-legal Wizard spells from the matching school, no higher than level 2.
-- Later Wizard levels: whenever the maximum Wizard spell-slot level increases, Savant requires one additional Wizard spell from that school at a level for which the Wizard has slots.
-- Savant spells use `source_type='class-feature'` with `wizardSpellbook=true`; they do not inflate the exact base-Wizard `source_type='class'` spell count.
-- A deferred uniqueness invariant prevents the same spell from appearing twice in the Wizard spellbook through ordinary Wizard progression plus Savant provenance.
-- Savant entries are not auto-prepared and are not marked always available.
+### Spellbook representation
 
-Production rollback proofs cover level-3 entry, level-5 recurring acquisition, school mismatch rejection, duplicate-provenance rejection, no-grant cadence at Wizard 6, session/history recording, and cleanup.
+Savant spells are not ordinary base-Wizard `source_type='class'` rows. They use `source_type='class-feature'` plus `raw_payload.wizardSpellbook=true`, so the exact base Wizard spell-count validator remains intact while the Spellbook panel still sees the feature-granted spell.
 
-**Forge parity is not complete yet.** The Forge already exposes the initial level-3 Savant selector, but higher-level direct creation still needs recurring Savant groups/materialization for each newly available spell-slot level. Do not mark the Wizard family complete until that side is connected and rollback/browser tested.
+Savant rows are `known=true`, `prepared=false`, and `always_available=false`. A deferred uniqueness invariant treats ordinary level-1+ Wizard class rows and Savant `wizardSpellbook` rows as one spellbook membership set.
+
+### Acquisition chronology
+
+Wizard spellbook additions are level 1+ spells; cantrips remain separate Wizard Spellcasting choices.
+
+- Wizard 3: choose two matching-school Wizard spells, each level 1 or 2.
+- Wizard 5: choose one matching-school Wizard spell at level 1-3.
+- Wizard 7: one at level 1-4.
+- Wizard 9: one at level 1-5.
+- Wizard 11: one at level 1-6.
+- Wizard 13: one at level 1-7.
+- Wizard 15: one at level 1-8.
+- Wizard 17: one at level 1-9.
+
+Higher-level Forge now replays those acquisitions as separate historical groups rather than one cumulative current-level bucket. The normal Wizard Spells step excludes spells already selected through a Savant group, preventing a duplicate choice before the server guard is reached.
+
+### Production evidence
+
+Migration 41 corrected the migration-40 level-3 cantrip leak before browser acceptance and added the deferred Forge materializer. Production rollback/read-only checks verified:
+
+- level-3 Savant review requires 2 choices with option levels 1-2 and zero cantrips;
+- a simulated Abjurer level-5 review exposes one Abjuration choice at level 1-3;
+- a valid level-3 Savant application creates two unprepared class-feature spellbook rows without changing the ordinary Wizard class-spell count;
+- a mismatched-school selection is rejected atomically;
+- the deferred spellbook invariant rejects duplicate ordinary-Wizard + Savant provenance;
+- a level-5 higher-level Forge replay materializes exactly two level-3 Savant grants and one level-5 grant, with no level-0 spells;
+- rollback fixtures left the live test Wizard at the original level/subclass/creator with zero Forge-Savant residue.
 
 ## Wizard features still pending
 
-- Higher-level Forge recurring Savant additions and Forge materialization into `character_spells`
-- Signature Spells at Wizard 20, restricted to level-3 spells already in that Wizard's spellbook; free-cast/rest state must be modeled separately from spellbook membership
-- Spell Mastery runtime Long-Rest configuration; it is intentionally excluded from permanent Forge/level-up lock-in
+- Signature Spells at Wizard 20, restricted to level-3 spells already in that Wizard's normalized spellbook; free-cast/rest state must be modeled separately from spellbook membership.
+- Spell Mastery runtime Long-Rest configuration; it is intentionally excluded from permanent Forge/level-up lock-in.
 
 ## Other remaining Forge blockers
 
@@ -90,7 +112,14 @@ Production rollback proofs cover level-3 entry, level-5 recurring acquisition, s
 - Artificer wildcard Magic Item Plan concrete-item instances
 - final preferred Species / Background / Class / Feat / Subclass coverage audit
 - final conditional-choice UI polish, including pending-subclass groups
+- audit/revoke obsolete authenticated level-up completion RPC generations when confirmed unused
 - authenticated browser acceptance
+
+## Validation checkpoint
+
+The syntax-corrected Savant chronology head `057b22ece3aeb084bbbd02dde9779378d1e4e7e6` passed all five PR workflows and Vercel before migration 41 was applied. Migration 41 then compiled successfully in production and the rollback/read-only proofs above passed.
+
+Documentation commits after that checkpoint do not change runtime semantics; exact-head checks should be repeated after the next runtime change.
 
 ## Protected boundaries
 
