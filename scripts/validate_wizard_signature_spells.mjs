@@ -17,6 +17,7 @@ const forbid = (source, token, label = token) => {
 for (const token of [
   'id: "wizard-signature-spells"',
   'placement: "spells"',
+  'allowRepeatAcrossGroups: true',
   'spellOptions(spells, { level: 3, classes: ["Wizard"] })',
   'wizardSpellbookRequired: true',
   'recharge: "short_rest"',
@@ -90,4 +91,4 @@ for (const token of [
   "set uses_remaining=uses_max",
 ]) need(rest, token);
 
-console.log("Wizard Signature Spells Forge placement, final-spellbook eligibility, earned progression ordering, preserved membership provenance, and Short/Long Rest free-cast recovery contracts validated.");
+console.log("Wizard Signature Spells Forge placement, final-spellbook eligibility including Savant provenance, earned progression ordering, preserved membership provenance, and Short/Long Rest free-cast recovery contracts validated.");
