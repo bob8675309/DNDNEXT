@@ -140,13 +140,23 @@ function payloadWithSourceChoices(payload = {}, speciesChoiceState = EMPTY_SPECI
   const featAdjusted = applyFeatAbilityAuthority(sheet, featAuthority.abilityEffects);
   return { ...payload, sheet: { ...sheet, ...featAdjusted, size: structuredSize, languages: structuredLanguages, tools: structuredTools, feats: selectedFeatNames, featsTraits: mergedFeatureText(sheet.featsTraits, [...speciesChoiceLines, ...classChoiceLines, ...sourceChoiceLines]), speciesTraitChoices, speciesSkillChoices, speciesChoiceFeats, speciesSpells, speciesSpellcasting: speciesSpells.length ? { source: "species", spells: speciesSpells } : sheet.speciesSpellcasting || null, classFeatureChoices, classFeatureChoiceSummary, classChoiceFeats: classChoiceFeats.map((entry) => ({ name: entry.name, source: entry.source, feature: entry.groupLabel })), sourceChoices, sourceChoiceSummary, featGrantInstances: featAuthority.instances, featSpellChoices: featAuthority.spells, weaponMasteries: uniqueText([...(Array.isArray(sheet.weaponMasteries) ? sheet.weaponMasteries : []), ...classWeaponMasteries]), expertiseSkills: uniqueText([...(Array.isArray(sheet.expertiseSkills) ? sheet.expertiseSkills : []), ...expertiseKeys]), proficiencies: { ...proficiencies, saves: mergeSaveAuthority(proficiencies.saves, featAuthority.savingThrowKeys), skills: mergeSkillAuthority(proficiencies.skills, proficientSkillKeys, expertiseKeys) }, meta: { ...meta, size: structuredSize, languages: structuredLanguages, speciesTraitChoices, speciesSkillChoices, speciesChoiceFeats, speciesChoiceFeat: speciesChoiceFeats[0]?.label || null, classFeatureChoices, classFeatureChoiceSummary, classChoiceFeats: classChoiceFeats.map((entry) => entry.name), sourceChoices, sourceChoiceSummary, featGrantInstances: featAuthority.instances, featSpellChoices: featAuthority.spells, weaponMasteries: classWeaponMasteries, expertiseSkills: expertiseKeys } } };
 }
-function playerPayload(payload = {}, spellChoices = []) {
+function playerForgeProxySpellChoices(spellChoices = [], magicSelections = []) {
+  const fallback = Array.isArray(spellChoices) ? spellChoices : [];
+  const magic = Array.isArray(magicSelections) ? magicSelections : [];
+  if (!magic.length) return fallback;
+  return magic
+    .filter((entry) => String(entry?.source_type || "class") === "class" && String(entry?.access_type || "class-list") !== "background-expanded")
+    .map((entry) => ({ spell_id: entry.spell_id, prepared: Boolean(entry.prepared) }));
+}
+function playerPayload(payload = {}, spellChoices = [], magicSelections = []) {
   const sheet = payload.sheet && typeof payload.sheet === "object" ? payload.sheet : {};
   const meta = sheet.meta && typeof sheet.meta === "object" ? sheet.meta : {};
   const professions = sheet.professions && typeof sheet.professions === "object" ? sheet.professions : {};
   const tags = ["player-character", tagSlug(meta.speciesKey || sheet.species || sheet.race) ? `species:${tagSlug(meta.speciesKey || sheet.species || sheet.race)}` : "", tagSlug(meta.classKey || sheet.classKey || sheet.className || sheet.class) ? `class:${tagSlug(meta.classKey || sheet.classKey || sheet.className || sheet.class)}` : "", tagSlug(meta.backgroundKey || sheet.background) ? `background:${tagSlug(meta.backgroundKey || sheet.background)}` : "", ...Object.entries(professions).filter(([, entry]) => Number(entry?.rank || 0) > 0).map(([key]) => `profession:${tagSlug(key)}`)].filter(Boolean);
   const casting = Boolean(sheet.spellcasting?.ability || sheet.spellcasting?.abilityLabel);
-  return { ...payload, kind: "npc", tags: [...new Set(tags)], storefront_enabled: false, storefront_title: null, storefront_tagline: null, location_id: null, home_location_id: null, is_hidden: true, state: "resting", role: String(payload.role || sheet.className || sheet.class || "Adventurer").trim() || "Adventurer", sheet: { ...sheet, meta: { ...(sheet.meta || {}), creator: "shared_character_forge_player_v2", startingSpellSelectionPending: casting && !(spellChoices || []).length } } };
+  const startingMagicSelections = Array.isArray(magicSelections) ? magicSelections : [];
+  const hasStartingMagic = startingMagicSelections.length > 0 || (Array.isArray(spellChoices) && spellChoices.length > 0);
+  return { ...payload, kind: "npc", tags: [...new Set(tags)], storefront_enabled: false, storefront_title: null, storefront_tagline: null, location_id: null, home_location_id: null, is_hidden: true, state: "resting", role: String(payload.role || sheet.className || sheet.class || "Adventurer").trim() || "Adventurer", sheet: { ...sheet, startingMagicSelections, meta: { ...(sheet.meta || {}), creator: "shared_character_forge_player_v2", startingSpellSelectionPending: casting && !hasStartingMagic } } };
 }
 
 export default function NewNpcModalV3(props) {
@@ -189,7 +199,13 @@ export default function NewNpcModalV3(props) {
     const subclassPayload = payloadWithSubclass(originalPayload, classChoiceStateRef.current);
     const payload = payloadWithSourceChoices(subclassPayload, choiceStateRef.current, classChoiceStateRef.current, sourceChoiceStateRef.current);
     if (!playerMode) return supabase.rpc("create_character_v1", { p_payload: payload });
-    return supabase.rpc("create_player_character_v2", { p_payload: playerPayload(payload, spellChoices), p_spell_choices: spellChoices });
+    const magicSelections = Array.isArray(payload?.sheet?.startingMagicSelections) ? payload.sheet.startingMagicSelections : [];
+    const proxySpellChoices = playerForgeProxySpellChoices(spellChoices, magicSelections);
+    return supabase.rpc("create_player_character_v3", {
+      p_payload: playerPayload(payload, proxySpellChoices, magicSelections),
+      p_spell_choices: proxySpellChoices,
+      p_magic_selections: magicSelections,
+    });
   }, [playerMode]);
   useEffect(() => {
     if (!show || typeof document === "undefined") return undefined;
