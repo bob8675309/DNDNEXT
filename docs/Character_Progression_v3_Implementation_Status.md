@@ -1,0 +1,1 @@
+This path probe should fail if the status document does not already exist.
