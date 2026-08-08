@@ -4,7 +4,10 @@ import { supabase } from "../utils/supabaseClient";
 import { spellLevelLabel, spellMatchesClass } from "../utils/spells/classSpellbookRules";
 import { spellMatchesExpandedList } from "../utils/backgroundMechanics";
 import { buildRuntimeAdvancementChoiceModel } from "../utils/characterLevelUpPlan";
+import { buildFeatSourceChoiceGroups, featInstanceSummaries } from "../utils/playerForgeFeatChoices";
+import { normalizeFeatSourceChoiceGroups } from "../utils/featSourceChoiceNormalization";
 import {
+  normalizeSourceChoiceSelections,
   setSourceChoiceSelection,
   sourceChoiceGroupsComplete,
   toggleSourceChoiceSelection,
@@ -49,6 +52,49 @@ function spellMatchesLevelClassAccess(spell, classKey, toLevel) {
     .some((listedClass) => magicalSecretsLists.has(safeText(listedClass).toLowerCase()));
 }
 
+function rpcUnavailable(error, functionName) {
+  const message = safeText(error?.message).toLowerCase();
+  const code = safeText(error?.code).toUpperCase();
+  return code === "PGRST202" || code === "42883"
+    || (message.includes("function") && message.includes(functionName.toLowerCase()) && (message.includes("not found") || message.includes("could not find") || message.includes("does not exist")));
+}
+
+function classOptionFeatInstances(groups = [], selections = {}, toLevel = 1) {
+  const output = [];
+  for (const group of Array.isArray(groups) ? groups : []) {
+    if (group?.ownerType !== "class-option") continue;
+    for (const field of Array.isArray(group?.fields) ? group.fields : []) {
+      if (field?.kind !== "feat") continue;
+      const selectedKeys = Array.isArray(selections?.[group.id]?.[field.id]) ? selections[group.id][field.id] : [];
+      for (const selectedKey of selectedKeys) {
+        const option = (field.options || []).find((candidate) => candidate.key === selectedKey);
+        if (!option) continue;
+        const optionId = option.metadata?.optionId || option.value || option.key;
+        output.push({
+          instanceId: `level-${Number(toLevel || 1)}-${group.id}-${field.id}`,
+          ownerType: "class-option",
+          ownerKey: group.id,
+          placement: "class",
+          level: Number(toLevel || 1),
+          acquisitionLabel: `${group.label}: ${option.label}`,
+          feat: {
+            id: optionId,
+            option_key: option.metadata?.optionKey || null,
+            option_type: "feat",
+            name: option.label,
+            source: option.source || group.source || "XPHB",
+            category: option.metadata?.category || "O",
+            description: option.description || "",
+            metadata: option.metadata?.featMetadata || {},
+            raw_payload: option.metadata?.rawPayload || {},
+          },
+        });
+      }
+    }
+  }
+  return output;
+}
+
 export default function CharacterLevelUpChoices({ character = null, review = null, onCompleted = null }) {
   const characterId = character?.id || null;
   const preview = review?.preview || {};
@@ -76,6 +122,7 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
   const [sourceSelections, setSourceSelections] = useState({});
   const [classChoiceGroups, setClassChoiceGroups] = useState([]);
   const [classChoiceSelections, setClassChoiceSelections] = useState({});
+  const [classOptionFeatSelections, setClassOptionFeatSelections] = useState({});
   const [loadingClassChoices, setLoadingClassChoices] = useState(false);
   const [classChoiceError, setClassChoiceError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -121,6 +168,28 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
     spells: catalogSpells,
   }), [advancement, catalogSpells, preview?.classKey, preview?.toLevel, sourceSelections, toolRows]);
 
+  const classOptionFeatInstanceRows = useMemo(
+    () => classOptionFeatInstances(classChoiceGroups, classChoiceSelections, Number(preview?.toLevel || 1)),
+    [classChoiceGroups, classChoiceSelections, preview?.toLevel]
+  );
+  const classOptionFeatGroups = useMemo(
+    () => normalizeFeatSourceChoiceGroups(buildFeatSourceChoiceGroups({
+      featInstances: classOptionFeatInstanceRows,
+      toolRows,
+      spells: catalogSpells,
+      level: Number(preview?.toLevel || 1),
+    })),
+    [catalogSpells, classOptionFeatInstanceRows, preview?.toLevel, toolRows]
+  );
+  const classOptionFeatsComplete = useMemo(
+    () => sourceChoiceGroupsComplete(classOptionFeatGroups, classOptionFeatSelections),
+    [classOptionFeatGroups, classOptionFeatSelections]
+  );
+  const classOptionFeatPayload = useMemo(
+    () => featInstanceSummaries(classOptionFeatGroups, classOptionFeatSelections),
+    [classOptionFeatGroups, classOptionFeatSelections]
+  );
+
   useEffect(() => {
     setHpMethod("fixed");
     setSubclassOptionKey("");
@@ -132,9 +201,14 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
     setSourceSelections({});
     setClassChoiceGroups([]);
     setClassChoiceSelections({});
+    setClassOptionFeatSelections({});
     setClassChoiceError("");
     setError("");
   }, [review?.session?.id]);
+
+  useEffect(() => {
+    setClassOptionFeatSelections((current) => normalizeSourceChoiceSelections(classOptionFeatGroups, current));
+  }, [classOptionFeatGroups]);
 
   useEffect(() => {
     if (!subclassChoice || !subclassOptions.length) return;
@@ -179,16 +253,21 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
       }
       setLoadingClassChoices(true);
       setClassChoiceError("");
-      const { data, error: loadError } = await supabase.rpc("get_character_level_class_choice_options_v1", {
+      let result = await supabase.rpc("get_character_level_class_choice_options_v2", {
         p_character_id: characterId,
       });
+      if (result.error && rpcUnavailable(result.error, "get_character_level_class_choice_options_v2")) {
+        result = await supabase.rpc("get_character_level_class_choice_options_v1", {
+          p_character_id: characterId,
+        });
+      }
       if (!active) return;
-      if (loadError) {
+      if (result.error) {
         setClassChoiceGroups([]);
         setClassChoiceSelections({});
-        setClassChoiceError(loadError.message || "Could not load source-legal class choices for this level.");
+        setClassChoiceError(result.error.message || "Could not load source-legal class choices for this level.");
       } else {
-        setClassChoiceGroups(Array.isArray(data?.groups) ? data.groups : []);
+        setClassChoiceGroups(Array.isArray(result.data?.groups) ? result.data.groups : []);
         setClassChoiceSelections({});
       }
       setLoadingClassChoices(false);
@@ -200,8 +279,7 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
   useEffect(() => {
     let active = true;
     async function loadChoiceCatalogs() {
-      const needsCatalogs = Boolean(metadataReady && characterId && (advancementChoice || requiredCantrips || requiredLeveled));
-      if (!needsCatalogs) {
+      if (!metadataReady || !characterId) {
         setCatalogSpells([]);
         setAssignedClassSpellIds(new Set());
         setToolRows([]);
@@ -250,7 +328,7 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
     }
     loadChoiceCatalogs();
     return () => { active = false; };
-  }, [advancementChoice, characterId, metadataReady, requiredCantrips, requiredLeveled, review?.session?.id]);
+  }, [characterId, metadataReady, review?.session?.id]);
 
   function toggleAdvancementChoice(groupId, fieldId, optionKey) {
     setSourceSelections((current) => toggleSourceChoiceSelection(advancementModel.groups, current, groupId, fieldId, optionKey));
@@ -269,6 +347,16 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
 
   function setClassChoice(groupId, fieldId, optionKeys) {
     setClassChoiceSelections((current) => setSourceChoiceSelection(classChoiceGroups, current, groupId, fieldId, optionKeys));
+    setError("");
+  }
+
+  function toggleClassOptionFeatChoice(groupId, fieldId, optionKey) {
+    setClassOptionFeatSelections((current) => toggleSourceChoiceSelection(classOptionFeatGroups, current, groupId, fieldId, optionKey));
+    setError("");
+  }
+
+  function setClassOptionFeatChoice(groupId, fieldId, optionKeys) {
+    setClassOptionFeatSelections((current) => setSourceChoiceSelection(classOptionFeatGroups, current, groupId, fieldId, optionKeys));
     setError("");
   }
 
@@ -301,7 +389,7 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
     if (subclassChoice && loadingSubclasses) return "Wait for the source-backed subclass list to finish loading.";
     if (subclassChoice && subclassError) return subclassError;
     if (subclassChoice && !selectedSubclass) return "Choose a source-backed subclass.";
-    if ((advancementChoice || requiredCantrips || requiredLeveled) && loadingCatalogs) return "Wait for the source catalogues to finish loading.";
+    if (loadingCatalogs) return "Wait for the source catalogues to finish loading.";
     if (advancementChoice && loadingAdvancement) return "Wait for server-validated advancement options to finish loading.";
     if (advancementChoice && advancementError) return advancementError;
     if (advancementChoice && !advancement?.required) return "The server did not return the required advancement options for this level.";
@@ -310,6 +398,7 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
     if (loadingClassChoices) return "Wait for source-backed class choices to finish loading.";
     if (classChoiceError) return classChoiceError;
     if (classChoiceGroups.length && !classChoicesComplete) return "Complete every permanent class choice gained at this level.";
+    if (classOptionFeatGroups.length && !classOptionFeatsComplete) return "Complete every choice owned by the Origin feat granted through this class feature.";
     if (counts.cantrips !== requiredCantrips) return `Choose exactly ${requiredCantrips} new cantrip${requiredCantrips === 1 ? "" : "s"}.`;
     if (counts.leveled !== requiredLeveled) return `Choose exactly ${requiredLeveled} new leveled spell${requiredLeveled === 1 ? "" : "s"}.`;
     return "";
@@ -336,17 +425,26 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
       subclass_source: subclassChoice ? selectedSubclass?.source || null : null,
       spell_choices: spellChoices,
       class_choice_selections: classChoiceSelections,
+      class_option_feat_instances: classOptionFeatPayload,
       ...(advancementChoice ? { advancement_instance: advancementModel.instance } : {}),
     };
 
-    const { data, error: completeError } = await supabase.rpc("complete_character_level_up_v3", {
+    let result = await supabase.rpc("complete_character_level_up_v4", {
       p_character_id: characterId,
       p_selections: selections,
     });
-    if (completeError) {
-      setError(completeError.message || "Could not apply this level.");
+    if (result.error && rpcUnavailable(result.error, "complete_character_level_up_v4")) {
+      const fallbackSelections = { ...selections };
+      delete fallbackSelections.class_option_feat_instances;
+      result = await supabase.rpc("complete_character_level_up_v3", {
+        p_character_id: characterId,
+        p_selections: fallbackSelections,
+      });
+    }
+    if (result.error) {
+      setError(result.error.message || "Could not apply this level.");
     } else {
-      await onCompleted?.(data || null);
+      await onCompleted?.(result.data || null);
     }
     setBusy(false);
   }
@@ -393,6 +491,19 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
               title="Permanent choices gained at this level"
               onToggle={toggleClassChoice}
               onSet={setClassChoice}
+            />
+          </div>
+        ) : null}
+
+        {classOptionFeatGroups.length ? (
+          <div className="col-12">
+            <SourceChoiceFields
+              groups={classOptionFeatGroups}
+              selections={classOptionFeatSelections}
+              kicker="Granted Origin feat"
+              title="Complete the feat granted by this class feature"
+              onToggle={toggleClassOptionFeatChoice}
+              onSet={setClassOptionFeatChoice}
             />
           </div>
         ) : null}
