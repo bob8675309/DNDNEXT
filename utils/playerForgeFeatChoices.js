@@ -1,5 +1,5 @@
 import { ABILITY_LABELS, SKILL_DEFINITIONS, proficiencyBonusForLevel } from "./characterCreation";
-import { buildToolOptionCatalog } from "./playerForgeSourceChoices";
+import { buildToolOptionCatalog, sourceChoiceFieldIsActive } from "./playerForgeSourceChoices";
 
 const text = (value) => String(value ?? "").trim();
 const norm = (value) => text(value).toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
@@ -38,8 +38,8 @@ function spellOptions(spells = [], filters = {}) {
   }).map(spellOption).sort((a, b) => Number(a.metadata.level) - Number(b.metadata.level) || a.label.localeCompare(b.label));
 }
 
-function field({ id, label, kind, count = 1, options = [], placement = null, cadence = "creation", replacementCadence = null, activeWhen = null, helper = "", metadata = null }) {
-  return { id, label, kind, count: Math.max(1, Number(count || 1)), required: true, options, placement, cadence, replacementCadence, activeWhen, helper, metadata };
+function field({ id, label, kind, count = 1, options = [], placement = null, cadence = "creation", replacementCadence = null, activeWhen = null, helper = "", metadata = null, distinctFromFieldId = null }) {
+  return { id, label, kind, count: Math.max(1, Number(count || 1)), required: true, options, placement, cadence, replacementCadence, activeWhen, helper, metadata, distinctFromFieldId };
 }
 function group(instance, fields, metadata = {}) {
   const feat = instance.feat || {};
@@ -89,6 +89,18 @@ function abilityFields(feat = {}) {
     }
   });
   return { fields: output, fixedEffects };
+}
+
+function abilityScoreImprovementFields(instance) {
+  if (norm(instance?.feat?.name) !== "ability score improvement") return [];
+  const groupId = `feat-${slug(instance.instanceId)}`;
+  const two = ABILITY_OPTIONS.map((option) => ({ ...option, metadata: { ...(option.metadata || {}), effect: "ability-increase", amount: 2 } }));
+  const ones = ABILITY_OPTIONS.map((option) => ({ ...option, metadata: { ...(option.metadata || {}), effect: "ability-increase", amount: 1 } }));
+  return [
+    field({ id: "asi-mode", label: "Ability Score Improvement", kind: "enum", options: [{ key: "plus-two", value: "plus-two", label: "+2 to one ability", kind: "enum", source: instance.feat.source || "XPHB" }, { key: "split", value: "split", label: "+1 to two different abilities", kind: "enum", source: instance.feat.source || "XPHB" }] }),
+    field({ id: "asi-plus-two", label: "Increase one ability by 2", kind: "ability", options: two, activeWhen: { groupId, fieldId: "asi-mode", values: ["plus-two"] }, metadata: { effect: "ability-increase", amount: 2 } }),
+    field({ id: "asi-plus-ones", label: "Increase two different abilities by 1", kind: "ability", count: 2, options: ones, activeWhen: { groupId, fieldId: "asi-mode", values: ["split"] }, metadata: { effect: "ability-increase", amount: 1 } }),
+  ];
 }
 
 function skillFields(feat = {}) {
@@ -183,6 +195,7 @@ function specialFields(instance, spells, toolRows) {
   const feat = instance.feat || {};
   const name = norm(feat.name);
   const output = [];
+  if (name === "ability score improvement") return abilityScoreImprovementFields(instance);
   if (name === "magic initiate") {
     const decorated = { ...feat, __instanceId: instance.instanceId };
     return magicInitiateFields(decorated, spells);
@@ -193,6 +206,11 @@ function specialFields(instance, spells, toolRows) {
     output.push(field({ id: "skills-or-tools", label: "Choose three skills or tools", kind: "skill-or-tool", count: 3, options: [...SKILL_OPTIONS, ...tools] }));
   }
   if (name === "skill expert") output.push(field({ id: "expertise", label: "Choose a proficient skill for Expertise", kind: "expertise", options: SKILL_OPTIONS, metadata: { requiresExistingOrGrantedProficiency: true } }));
+  if (name === "resilient") {
+    const ability = array(feat.metadata?.ability)?.[0]?.choose;
+    const options = array(ability?.from).map((key) => ABILITY_OPTIONS.find((candidate) => candidate.value === key)).filter(Boolean).map((candidate) => ({ ...candidate, metadata: { effect: "ability-increase", amount: 1, secondaryEffect: "saving-throw-proficiency" } }));
+    if (options.length) return [field({ id: "resilient-ability", label: "Choose an ability without saving throw proficiency", kind: "ability", options, metadata: { effect: "ability-increase", amount: 1, secondaryEffect: "saving-throw-proficiency" } })];
+  }
   return output;
 }
 
@@ -204,13 +222,16 @@ function ritualCasterFields(feat, spells, level) {
 function featHasSpecialSpellShape(feat) {
   return ["magic initiate", "ritual caster"].includes(norm(feat.name));
 }
+function featUsesSpecialAbilityShape(feat) {
+  return ["ability score improvement", "resilient"].includes(norm(feat.name));
+}
 
 export function buildFeatSourceChoiceGroups({ featInstances = [], toolRows = [], spells = [], level = 1 } = {}) {
   const groups = [];
   for (const instance of array(featInstances)) {
     const feat = instance.feat;
     if (!feat?.name) continue;
-    const ability = abilityFields(feat);
+    const ability = featUsesSpecialAbilityShape(feat) ? { fields: [], fixedEffects: [] } : abilityFields(feat);
     const fields = [...ability.fields, ...skillFields(feat), ...toolFields(feat, toolRows), ...specialFields(instance, spells, toolRows), ...ritualCasterFields(feat, spells, level)];
     let fixedSpellTokens = [];
     if (!featHasSpecialSpellShape(feat)) {
@@ -266,9 +287,9 @@ export function featInstanceSummaries(groups = [], selections = {}) {
     acquisitionLevel: Number(group.metadata?.acquisitionLevel || group.level || 1),
     fixedEffects: array(group.metadata?.fixedEffects),
     fixedSpellTokens: array(group.metadata?.fixedSpellTokens),
-    choices: Object.fromEntries(array(group.fields).map((fieldRow) => [fieldRow.id, array(selections?.[group.id]?.[fieldRow.id]).map((key) => {
+    choices: Object.fromEntries(array(group.fields).map((fieldRow) => [fieldRow.id, sourceChoiceFieldIsActive(fieldRow, selections) ? array(selections?.[group.id]?.[fieldRow.id]).map((key) => {
       const option = fieldRow.options.find((candidate) => candidate.key === key);
       return option ? { key: option.key, value: option.value, label: option.label, kind: option.kind || fieldRow.kind, source: option.source || group.source, metadata: option.metadata || null } : null;
-    }).filter(Boolean)])),
+    }).filter(Boolean) : []])),
   }));
 }
