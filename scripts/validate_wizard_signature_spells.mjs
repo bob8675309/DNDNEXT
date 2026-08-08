@@ -65,6 +65,9 @@ for (const token of [
   "uses_remaining=1",
   "recharge='short_rest'",
   "'signatureSpell',true",
+  "from jsonb_array_elements(v_existing_summary) as e(item)",
+  "from jsonb_array_elements(v_serialized) as e(entry)",
+  "coalesce(jsonb_typeof(v_group->'selections'),'')<>'array'",
   'materialize_player_forge_wizard_signature_for_character_v1',
   'materialize_player_forge_wizard_savant_for_character_v1(new.character_id)',
   'materialize_player_forge_wizard_signature_for_character_v1(new.character_id)',
@@ -81,9 +84,10 @@ forbid(migration, "insert into public.character_spells", "duplicate Signature Sp
 forbid(migration, "source_type='signature'", "Signature feature replacing spellbook provenance");
 
 for (const token of [
-  "recharge='short_rest'",
-  "uses_remaining=uses_max",
-  "p_rest_type in ('short_rest','long_rest')",
+  "v_rest_type not in ('short_rest','long_rest')",
+  "lower(replace(replace(coalesce(recharge,''),' ','_'),'-','_'))='short_rest'",
+  "when v_rest_type='long_rest' then lower(replace(replace(coalesce(recharge,''),' ','_'),'-','_')) in ('short_rest','long_rest')",
+  "set uses_remaining=uses_max",
 ]) need(rest, token);
 
 console.log("Wizard Signature Spells Forge placement, final-spellbook eligibility, earned progression ordering, preserved membership provenance, and Short/Long Rest free-cast recovery contracts validated.");
