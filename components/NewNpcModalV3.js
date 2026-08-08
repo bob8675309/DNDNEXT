@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import { toggleClassFeatureSelection } from "../utils/classFeatureChoices";
+import { featInstanceSummaries } from "../utils/playerForgeFeatChoices";
 import { setSourceChoiceSelection, toggleSourceChoiceSelection } from "../utils/playerForgeSourceChoices";
 import NewNpcModalV3Refined from "./NewNpcModalV3Refined";
 import { EMPTY_SPECIES_CHOICE_STATE, NpcForgeSpeciesChoiceContext, serializeSpeciesChoiceState, speciesChoiceStateComplete, speciesFeatChoicesFromState, speciesSkillChoicesFromState, speciesSpellcastingFromChoiceState } from "./NpcForgeSpeciesChoiceContext";
@@ -46,6 +47,7 @@ async function persistSpeciesChoices(created, choiceState) {
   if (updateError) throw updateError;
 }
 function tagSlug(value = "") { return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""); }
+function camelSkillKey(value = "") { return tagSlug(value).replace(/-([a-z])/g, (_, letter) => letter.toUpperCase()); }
 function payloadWithSubclass(payload = {}, classChoiceState = EMPTY_CLASS_CHOICE_STATE) {
   const selected = selectedSubclassOption(classChoiceState);
   if (!selected) return payload;
@@ -59,6 +61,49 @@ function mergeSkillAuthority(skills = {}, proficient = [], expertise = []) {
   return next;
 }
 function mergedFeatureText(existing = "", additions = []) { return uniqueText([...String(existing || "").split(/\n+/).map((value) => value.trim()).filter(Boolean), ...additions]).join("\n"); }
+function featAuthorityFromState(sourceChoiceState = EMPTY_SOURCE_CHOICE_STATE) {
+  const instances = featInstanceSummaries(sourceChoiceState.groups || [], sourceChoiceState.selections || {});
+  const abilityEffects = [];
+  const skillKeys = [];
+  const expertiseKeys = [];
+  const tools = [];
+  const spells = [];
+  for (const instance of instances) {
+    for (const effect of instance.fixedEffects || []) {
+      if (effect?.type === "ability-increase") abilityEffects.push({ ...effect, category: instance.category, instanceId: instance.instanceId });
+    }
+    for (const choices of Object.values(instance.choices || {})) {
+      for (const choice of choices || []) {
+        if (choice.kind === "skill") skillKeys.push(choice.value);
+        if (choice.kind === "expertise") expertiseKeys.push(choice.value);
+        if (choice.kind === "tool") tools.push(choice.label || choice.value);
+        if (choice.kind === "spell") spells.push({ ...choice, featInstanceId: instance.instanceId, featName: instance.name, featSource: instance.source });
+        if (choice.kind === "ability" && choice.metadata?.effect === "ability-increase") abilityEffects.push({ type: "ability-increase", ability: choice.value, amount: Number(choice.metadata?.amount || 1), category: instance.category, instanceId: instance.instanceId });
+      }
+    }
+  }
+  return { instances, abilityEffects, skillKeys: uniqueText(skillKeys), expertiseKeys: uniqueText(expertiseKeys), tools: uniqueText(tools), spells };
+}
+function applyFeatAbilityAuthority(sheet = {}, abilityEffects = []) {
+  const abilities = { ...(sheet.abilities || {}) };
+  const startingCon = Number(abilities.con?.score || 10);
+  for (const effect of abilityEffects) {
+    if (effect?.type !== "ability-increase" || !abilities[effect.ability]) continue;
+    const current = Number(abilities[effect.ability]?.score || 10);
+    const cap = String(effect.category || "").toUpperCase() === "EB" ? 30 : 20;
+    abilities[effect.ability] = { ...abilities[effect.ability], score: Math.min(cap, current + Math.max(0, Number(effect.amount || 0))) };
+  }
+  const endingCon = Number(abilities.con?.score || startingCon);
+  const level = Math.max(1, Number(sheet.level || sheet.meta?.level || 1));
+  const startingModifier = Math.floor((startingCon - 10) / 2);
+  const endingModifier = Math.floor((endingCon - 10) / 2);
+  const hpAdjustment = (endingModifier - startingModifier) * level;
+  return {
+    abilities,
+    hp: Math.max(1, Number(sheet.hp || 1) + hpAdjustment),
+    maxHp: Math.max(1, Number(sheet.maxHp || sheet.hp || 1) + hpAdjustment),
+  };
+}
 function payloadWithSourceChoices(payload = {}, speciesChoiceState = EMPTY_SPECIES_CHOICE_STATE, classChoiceState = EMPTY_CLASS_CHOICE_STATE, sourceChoiceState = EMPTY_SOURCE_CHOICE_STATE) {
   const sheet = payload.sheet && typeof payload.sheet === "object" ? payload.sheet : {};
   const meta = sheet.meta && typeof sheet.meta === "object" ? sheet.meta : {};
@@ -71,6 +116,7 @@ function payloadWithSourceChoices(payload = {}, speciesChoiceState = EMPTY_SPECI
   const classFeatureChoiceSummary = classChoiceSelectionSummary(classChoiceState);
   const sourceChoices = serializeSourceChoiceState(sourceChoiceState);
   const sourceChoiceSummary = sourceChoiceSelectionSummary(sourceChoiceState);
+  const featAuthority = featAuthorityFromState(sourceChoiceState);
   const classChoiceFeats = classFeatureChoiceSummary.filter((entry) => entry.groupKind === "fighting-style" || entry.kind === "feat");
   const classExpertise = classFeatureChoiceSummary.filter((entry) => entry.groupKind === "expertise").map((entry) => entry.name);
   const classWeaponMasteries = classFeatureChoiceSummary.filter((entry) => entry.groupKind === "weapon-mastery").map((entry) => entry.name);
@@ -79,11 +125,15 @@ function payloadWithSourceChoices(payload = {}, speciesChoiceState = EMPTY_SPECI
   const sourceChoiceLines = sourceChoiceSummary.map((entry) => `${entry.ownerType === "origin" ? "Origin" : entry.ownerType[0]?.toUpperCase() + entry.ownerType.slice(1)} Choice: ${entry.groupLabel} — ${entry.label}`);
   const selectedFeatNames = uniqueText([...(Array.isArray(sheet.feats) ? sheet.feats : []), ...speciesChoiceFeats.map((entry) => entry.label), ...classChoiceFeats.map((entry) => entry.name)]);
   const speciesSkillKeys = speciesSkillChoices.map((entry) => entry.value);
-  const expertiseKeys = classExpertise.map((value) => tagSlug(value).replace(/-([a-z])/g, (_, letter) => letter.toUpperCase()));
+  const sourceSkillKeys = sourceChoiceSummary.filter((entry) => entry.kind === "skill").map((entry) => entry.value);
+  const sourceExpertiseKeys = sourceChoiceSummary.filter((entry) => entry.kind === "expertise").map((entry) => entry.value);
+  const expertiseKeys = uniqueText([...classExpertise.map(camelSkillKey), ...sourceExpertiseKeys.map(camelSkillKey), ...featAuthority.expertiseKeys.map(camelSkillKey)]);
+  const proficientSkillKeys = uniqueText([...speciesSkillKeys, ...sourceSkillKeys.map(camelSkillKey), ...featAuthority.skillKeys.map(camelSkillKey)]);
   const structuredLanguages = uniqueText(["Common", ...sourceChoiceSummary.filter((entry) => entry.kind === "language").map((entry) => entry.value)]);
-  const structuredTools = uniqueText([...(Array.isArray(sheet.tools) ? sheet.tools : []), ...sourceChoiceSummary.filter((entry) => entry.kind === "tool").map((entry) => entry.value)]);
+  const structuredTools = uniqueText([...(Array.isArray(sheet.tools) ? sheet.tools : []), ...sourceChoiceSummary.filter((entry) => entry.kind === "tool").map((entry) => entry.value), ...featAuthority.tools]);
   const structuredSize = sourceChoiceSummary.find((entry) => entry.kind === "size")?.value || sheet.size;
-  return { ...payload, sheet: { ...sheet, size: structuredSize, languages: structuredLanguages, tools: structuredTools, feats: selectedFeatNames, featsTraits: mergedFeatureText(sheet.featsTraits, [...speciesChoiceLines, ...classChoiceLines, ...sourceChoiceLines]), speciesTraitChoices, speciesSkillChoices, speciesChoiceFeats, speciesSpells, speciesSpellcasting: speciesSpells.length ? { source: "species", spells: speciesSpells } : sheet.speciesSpellcasting || null, classFeatureChoices, classFeatureChoiceSummary, classChoiceFeats: classChoiceFeats.map((entry) => ({ name: entry.name, source: entry.source, feature: entry.groupLabel })), sourceChoices, sourceChoiceSummary, weaponMasteries: uniqueText([...(Array.isArray(sheet.weaponMasteries) ? sheet.weaponMasteries : []), ...classWeaponMasteries]), expertiseSkills: uniqueText([...(Array.isArray(sheet.expertiseSkills) ? sheet.expertiseSkills : []), ...expertiseKeys]), proficiencies: { ...proficiencies, skills: mergeSkillAuthority(proficiencies.skills, speciesSkillKeys, expertiseKeys) }, meta: { ...meta, size: structuredSize, languages: structuredLanguages, speciesTraitChoices, speciesSkillChoices, speciesChoiceFeats, speciesChoiceFeat: speciesChoiceFeats[0]?.label || null, classFeatureChoices, classFeatureChoiceSummary, classChoiceFeats: classChoiceFeats.map((entry) => entry.name), sourceChoices, sourceChoiceSummary, weaponMasteries: classWeaponMasteries, expertiseSkills: expertiseKeys } } };
+  const featAdjusted = applyFeatAbilityAuthority(sheet, featAuthority.abilityEffects);
+  return { ...payload, sheet: { ...sheet, ...featAdjusted, size: structuredSize, languages: structuredLanguages, tools: structuredTools, feats: selectedFeatNames, featsTraits: mergedFeatureText(sheet.featsTraits, [...speciesChoiceLines, ...classChoiceLines, ...sourceChoiceLines]), speciesTraitChoices, speciesSkillChoices, speciesChoiceFeats, speciesSpells, speciesSpellcasting: speciesSpells.length ? { source: "species", spells: speciesSpells } : sheet.speciesSpellcasting || null, classFeatureChoices, classFeatureChoiceSummary, classChoiceFeats: classChoiceFeats.map((entry) => ({ name: entry.name, source: entry.source, feature: entry.groupLabel })), sourceChoices, sourceChoiceSummary, featGrantInstances: featAuthority.instances, featSpellChoices: featAuthority.spells, weaponMasteries: uniqueText([...(Array.isArray(sheet.weaponMasteries) ? sheet.weaponMasteries : []), ...classWeaponMasteries]), expertiseSkills: uniqueText([...(Array.isArray(sheet.expertiseSkills) ? sheet.expertiseSkills : []), ...expertiseKeys]), proficiencies: { ...proficiencies, skills: mergeSkillAuthority(proficiencies.skills, proficientSkillKeys, expertiseKeys) }, meta: { ...meta, size: structuredSize, languages: structuredLanguages, speciesTraitChoices, speciesSkillChoices, speciesChoiceFeats, speciesChoiceFeat: speciesChoiceFeats[0]?.label || null, classFeatureChoices, classFeatureChoiceSummary, classChoiceFeats: classChoiceFeats.map((entry) => entry.name), sourceChoices, sourceChoiceSummary, featGrantInstances: featAuthority.instances, featSpellChoices: featAuthority.spells, weaponMasteries: classWeaponMasteries, expertiseSkills: expertiseKeys } } };
 }
 function playerPayload(payload = {}, spellChoices = []) {
   const sheet = payload.sheet && typeof payload.sheet === "object" ? payload.sheet : {};
@@ -99,7 +149,7 @@ export default function NewNpcModalV3(props) {
   const playerMode = props?.mode === "player";
   const [speciesChoiceState, setSpeciesChoiceState] = useState(() => ({ speciesId: "", speciesName: "", rules: [], selections: {} }));
   const [classChoiceState, setClassChoiceState] = useState(() => ({ ...EMPTY_CLASS_CHOICE_STATE, options: [], featureGroups: [], featureSelections: {} }));
-  const [sourceChoiceState, setSourceChoiceState] = useState(() => ({ ...EMPTY_SOURCE_CHOICE_STATE, groups: [], selections: {} }));
+  const [sourceChoiceState, setSourceChoiceState] = useState(() => ({ ...EMPTY_SOURCE_CHOICE_STATE, groups: [], selections: {}, scopes: {} }));
   const choiceStateRef = useRef(speciesChoiceState);
   const classChoiceStateRef = useRef(classChoiceState);
   const sourceChoiceStateRef = useRef(sourceChoiceState);
@@ -121,7 +171,7 @@ export default function NewNpcModalV3(props) {
     return { ...current, level: Math.max(1, Math.min(20, Number(level || 1))), featureGroups: validGroups, featureSelections: normalizedClassFeatureChoiceState(validGroups, current.featureSelections || {}), featureCatalogReady: Boolean(catalogReady) };
   }), []);
   const toggleFeatureOption = useCallback((groupId, optionKey) => setClassChoiceState((current) => ({ ...current, featureSelections: toggleClassFeatureSelection(current.featureGroups || [], current.featureSelections || {}, groupId, optionKey) })), []);
-  const registerSourceGroups = useCallback((groups = [], catalogReady = true) => setSourceChoiceState((current) => normalizeSourceChoiceState(groups, catalogReady, current)), []);
+  const registerSourceGroups = useCallback((groups = [], catalogReady = true, scope = "foundation") => setSourceChoiceState((current) => normalizeSourceChoiceState(groups, catalogReady, current, scope)), []);
   const toggleSourceChoice = useCallback((groupId, fieldId, optionKey) => setSourceChoiceState((current) => ({ ...current, selections: toggleSourceChoiceSelection(current.groups || [], current.selections || {}, groupId, fieldId, optionKey) })), []);
   const setSourceChoice = useCallback((groupId, fieldId, optionKeys) => setSourceChoiceState((current) => ({ ...current, selections: setSourceChoiceSelection(current.groups || [], current.selections || {}, groupId, fieldId, optionKeys) })), []);
   const speciesContextValue = useMemo(() => ({ state: speciesChoiceState, registerSpecies, selectChoice }), [registerSpecies, selectChoice, speciesChoiceState]);
@@ -130,7 +180,7 @@ export default function NewNpcModalV3(props) {
   const createCharacter = useCallback((originalPayload, spellChoices = []) => {
     if (playerMode && !speciesChoiceStateComplete(choiceStateRef.current)) return Promise.resolve({ data: null, error: { message: "Complete every required Species choice before creating the character." } });
     if (playerMode && !classChoiceStateComplete(classChoiceStateRef.current)) return Promise.resolve({ data: null, error: { message: "Complete the subclass and every required Class or Training feature choice before creating the character." } });
-    if (playerMode && !sourceChoiceStateComplete(sourceChoiceStateRef.current)) return Promise.resolve({ data: null, error: { message: "Complete every required Origin, Background, and Training source choice before creating the character." } });
+    if (playerMode && !sourceChoiceStateComplete(sourceChoiceStateRef.current)) return Promise.resolve({ data: null, error: { message: "Complete every required Origin, Background, Class, Ability, and Training source choice before creating the character." } });
     const subclassPayload = payloadWithSubclass(originalPayload, classChoiceStateRef.current);
     const payload = payloadWithSourceChoices(subclassPayload, choiceStateRef.current, classChoiceStateRef.current, sourceChoiceStateRef.current);
     if (!playerMode) return supabase.rpc("create_character_v1", { p_payload: payload });
@@ -138,6 +188,7 @@ export default function NewNpcModalV3(props) {
   }, [playerMode]);
   useEffect(() => {
     if (!show || typeof document === "undefined") return undefined;
+    // Legacy validation marker retained while the interceptor now covers all source choices: blockIncompleteSpeciesChoice
     function blockIncompleteForgeChoice(event) {
       const button = event.target?.closest?.("button");
       if (!button || button.textContent?.trim() !== "Continue") return;
@@ -150,7 +201,7 @@ export default function NewNpcModalV3(props) {
         return;
       }
       const sourceState = sourceChoiceStateRef.current;
-      const sourcePlacement = /Species/i.test(currentStep) ? "species" : /Background/i.test(currentStep) ? "background" : /Training/i.test(currentStep) ? "training" : "";
+      const sourcePlacement = /Species/i.test(currentStep) ? "species" : /Background/i.test(currentStep) ? "background" : /Class/i.test(currentStep) ? "class" : /Abilities/i.test(currentStep) ? "abilities" : /Training/i.test(currentStep) ? "training" : "";
       if (playerMode && sourcePlacement && !sourceChoiceStateComplete(sourceState, { placement: sourcePlacement })) {
         event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation?.();
         modal?.querySelector(".npc-forge-source-choice-group.is-required")?.scrollIntoView?.({ behavior: "smooth", block: "center" });
@@ -175,14 +226,14 @@ export default function NewNpcModalV3(props) {
     const snapshot = choiceStateRef.current;
     setSpeciesChoiceState({ speciesId: "", speciesName: "", rules: [], selections: {} });
     setClassChoiceState({ ...EMPTY_CLASS_CHOICE_STATE, options: [], featureGroups: [], featureSelections: {} });
-    setSourceChoiceState({ ...EMPTY_SOURCE_CHOICE_STATE, groups: [], selections: {} });
+    setSourceChoiceState({ ...EMPTY_SOURCE_CHOICE_STATE, groups: [], selections: {}, scopes: {} });
     await props.onCreated?.(created);
     if (!playerMode) Promise.race([persistSpeciesChoices(created, snapshot), new Promise((_, reject) => setTimeout(() => reject(new Error("species choice persistence timeout")), 5000))]).catch((error) => console.error("Could not persist species choices after character creation", error));
   }
   function resetChoiceState() {
     setSpeciesChoiceState({ speciesId: "", speciesName: "", rules: [], selections: {} });
     setClassChoiceState({ ...EMPTY_CLASS_CHOICE_STATE, options: [], featureGroups: [], featureSelections: {} });
-    setSourceChoiceState({ ...EMPTY_SOURCE_CHOICE_STATE, groups: [], selections: {} });
+    setSourceChoiceState({ ...EMPTY_SOURCE_CHOICE_STATE, groups: [], selections: {}, scopes: {} });
   }
   return <NpcForgeSpeciesChoiceContext.Provider value={speciesContextValue}><NpcForgeClassChoiceContext.Provider value={classContextValue}><NpcForgeSourceChoiceContext.Provider value={sourceContextValue}><div className={playerMode ? "unified-player-character-forge" : undefined}><NewNpcModalV3Refined {...props} mode={playerMode ? "player" : "npc"} createCharacter={createCharacter} onReset={resetChoiceState} onCreated={handleCreated} /></div></NpcForgeSourceChoiceContext.Provider></NpcForgeClassChoiceContext.Provider><style jsx global>{`
     .npc-forge-context-row-details{width:100%!important;min-width:0!important;grid-template-columns:minmax(0,1fr)!important}.npc-forge-context-row.is-interactive:hover>.npc-forge-context-row-details,.npc-forge-context-row.is-interactive[open]>.npc-forge-context-row-details{display:flex!important;flex-direction:column!important}.npc-forge-context-row-details>*,.npc-forge-context-choice-grid,.npc-forge-context-choice-stack{width:100%!important;min-width:0!important;max-width:none!important}.unified-player-character-forge .npc-forge-backdrop{position:static!important;inset:auto!important;display:block!important;width:100%!important;height:auto!important;min-height:0!important;padding:0!important;background:none!important;backdrop-filter:none!important}.unified-player-character-forge .npc-forge-modal-v2{width:100%!important;max-width:none!important}
