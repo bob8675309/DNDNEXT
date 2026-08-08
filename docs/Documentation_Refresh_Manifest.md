@@ -4,7 +4,7 @@ Updated: 2026-08-08
 
 ## Purpose
 
-This manifest identifies the current documentation authority for DNDNext while active subsystem branches continue to move faster than the older platform-wide roadmap. It changes documentation only.
+This manifest identifies the current documentation authority for DNDNext while active subsystem branches move faster than the older platform-wide roadmap. Current repository source and live Supabase remain higher-trust than historical prose.
 
 ## Authoritative starting points
 
@@ -16,56 +16,86 @@ For general platform/tactical history:
 4. current repository source and validators
 5. live Supabase schema and migration history
 
-For active Character Forge / progression PR #170, use these branch-specific documents **before** the older platform-wide roadmap:
+For active Character Forge / progression PR #170, read these branch documents before older platform-wide Forge text:
 
-1. `Unified_Character_Forge_Status.md` — shared NPC/player Forge state, explicit choice cadence/placement, live Wizard parity, remaining blockers, and protected boundaries.
-2. `Character_Progression_Foundation.md` — creation/progression parity architecture, v5 transaction model, normalized class-option authority, Wizard spellbook/Savant/Signature authority, and rollback policy.
-3. `Character_Forge_PR_A_Deployment_Evidence.md` — exact migration, CI/build, rollback, production-integrity, and acceptance evidence.
-4. `Character_Progression_and_Higher_Level_Forge.md` — current architectural handoff for permanent higher-level replay and earned-progression convergence. Older v3-only language has been retired from this document.
+1. `Unified_Character_Forge_Status.md` — current shared NPC/player Forge state and remaining blockers.
+2. `Character_Progression_Foundation.md` — creation/progression architecture and normalized authority boundaries.
+3. `Character_Forge_PR_A_Deployment_Evidence.md` — migration/build/rollback evidence.
+4. `Character_Progression_and_Higher_Level_Forge.md` — higher-level replay / earned-progression convergence.
+5. `Wizard_Spell_Mastery_Runtime_Status.md` — detailed migration-44 runtime evidence.
+6. `Player_Forge_Starting_Magic_v3_Status.md` — detailed migrations-47/48 Spell-step authority and rollback evidence.
+7. `DNDNext_Current_Handoff_Prompt.md` — copy-ready takeover prompt after reconciliation.
 
-Where the Character Forge/progression section of `Current_Development_Status_and_Roadmap.md` conflicts with these PR #170 documents, the PR #170 documents control until the broader roadmap receives a full cross-system reconciliation. Historical exports and archived deployment runbooks are evidence only.
+If those documents conflict with the Character Forge/progression section of `Current_Development_Status_and_Roadmap.md`, the PR #170 documents control until the broader roadmap receives a full cross-system rewrite.
 
 ## August 8 Character Forge / progression checkpoint
 
-Production now includes normalized progression authority through:
+Production now includes:
 
-- XPHB Battle Master maneuver source normalization and earned/Forge progression;
-- XPHB Wizard Savant earned progression;
-- Wizard Savant level-1+ spellbook correction and higher-level Forge acquisition chronology/materialization;
-- XPHB Wizard Signature Spells in direct level-20 Forge creation and earned Wizard 19→20 progression.
+- Battle Master normalized maneuver authority and earned/Forge progression — migrations 38-39;
+- Wizard Savant earned progression and higher-level Forge chronology — 40-41;
+- Wizard Signature Spells and explicit free-cast resource labels — 42-43;
+- Wizard Spell Mastery Long-Rest runtime configuration — 44;
+- class-granted Weapon Mastery Long-Rest runtime authority — 45;
+- per-instance Weapon Master feat runtime weapon authority and combined mastery projection — 46;
+- guarded multi-source Player Forge starting-magic v3 completion — 47;
+- authenticated-only Player Forge v3 ACL cleanup — 48.
 
-### Wizard spellbook state
+### Creation / progression / runtime split
 
-Wizard Savant is acquisition-based rather than one cumulative current-level bucket: Wizard level 3 grants two matching-school level-1/2 Wizard spells; Wizard levels 5/7/9/11/13/15/17 each add one matching-school Wizard spell legal at that historical slot level. Cantrips are not Wizard spellbook entries.
+Persistent decisions still follow creation/progression parity. Rest-configurable features are not frozen into Forge state.
 
-Signature Spells is a permanent Wizard-20 choice of two level-3 spells already in the final normalized spellbook. It is placed on the Forge **Spells** step because eligibility depends on actual spellbook membership. Signature overlays the existing spell row rather than adding duplicate membership, preserves source provenance, and adds one `short_rest` free-use resource restored by the existing Short/Long Rest authority.
+Current examples:
 
-Direct level-20 Forge materializes Savant before Signature; earned 19→20 progression materializes ordinary level-20 Wizard spells before Signature. Both directions are rollback-proven.
+- Savant / Signature → persistent spellbook/progression state;
+- Spell Mastery → runtime Long-Rest state;
+- class Weapon Mastery → runtime Long-Rest state;
+- Weapon Master feat current weapon → per-grant runtime Long-Rest state;
+- Player Forge Spell-step starting magic → server-authoritative creation state through v3.
 
-Spell Mastery remains Long-Rest runtime configuration and is intentionally not a permanent Forge/level-up lock. It is the next Wizard-specific runtime slice.
+### Starting-magic checkpoint
 
-### Migration / validation checkpoint
+The shared Player Forge now calls `create_player_character_v3` and serializes exact `startingMagicSelections` for:
 
-Live production migrations now include:
+- native class-list spells;
+- Background-expanded class access;
+- Eldritch Knight subclass spells;
+- Arcane Trickster subclass spells including fixed Mage Hand.
 
-- `wizard_savant_spellbook_progression`
-- `wizard_savant_forge_chronology`
-- `wizard_signature_spells_authority`
+Species/feat/class-feature grants remain separate source-owned systems.
 
-Runtime source head `9740d66a45b215805a6c988c25874a01d1e35e55` passed all five PR GitHub Actions workflows and the repository's exact `npm run build:vercel` production build inside CI. Hosted Vercel itself was blocked by the account build-rate limit and is not claimed successful for this checkpoint.
+Migration-47 rollback proofs used the real authenticated public v3 RPC for native Wizard, a non-native Background-expanded Wizard spell (Entangle), Eldritch Knight, and Arcane Trickster. Invalid expansion, invalid fixed spell, and duplicate exact selection were rejected atomically with no residue.
 
-Migration 42 rollback proofs covered successful resource overlay/rest recovery, fail-closed invalid submissions, a full level-20 Abjurer higher-level Forge replay using a Savant-granted Signature Spell, and an authenticated Wizard 19→20 v5 transition using same-level learned Signature Spells. Final integrity remained 7 characters / 7 sheets / 30 spell assignments / 7 progression rows, with zero synthetic proof residue and world baseline 20 locations / 4 routes / 9 route points unchanged.
+Migration 48 removed the stale explicit anonymous execute grant from v3; v1/v2/v3 now expose the same authenticated/service-role execution surface.
 
-## Earlier July 30 corrections retained
+### Current CI / integrity checkpoint
 
-- records tactical foundations and reviewed adapters through Phase 1Z;
-- records the completed Lightning Bolt server/client production gates and protected post-deploy baseline;
-- marks older Shocking Grasp and Mind Sliver gates complete;
-- replaces obsolete town bake/retry instructions with source-owned handoffs;
-- updates loading, progression, spell, visual-runtime, and UI-polish backlogs;
-- marks raw database/function exports as historical and non-executable;
-- preserves strict separation between world, town/city, and tactical behavior.
+The exact PR head that introduced the migration-48 contract passed the dedicated Player Forge v3 semantic validator and full repository production build gate. Broader Forge/progression workflows also remained green at the implementation checkpoint.
+
+Final live integrity after rollback proofs and migrations 47-48:
+
+- 7 characters;
+- 7 sheets;
+- 30 character-spell assignments;
+- 7 progression rows;
+- 0 open level-up sessions;
+- 0 synthetic `__v3_*` characters;
+- 0 QA starting-magic rows;
+- world baseline 20 locations / 4 routes / 9 route points.
+
+## Remaining active PR #170 work
+
+The guarded multi-source starting-magic blocker is closed. Remaining major work:
+
+1. remaining runtime cadence families such as Astral Trance, Circle-of-the-Land choices, Primal Companion, Dread Allegiance, Fiendish Resilience, and per-use Steps of the Fey;
+2. source-backed starting equipment packages and higher-level starting wealth/equipment;
+3. character-scoped starting currency;
+4. Artificer wildcard Magic Item Plan concrete-item instances;
+5. remaining persistent/conditional source-choice audit;
+6. obsolete authenticated progression RPC cleanup;
+7. authenticated browser acceptance;
+8. merge PR #170 only after those gates close.
 
 ## Protected boundaries
 
-Character Forge/progression documentation changes do not authorize changes to world-map, town/city-map, route/travel/weather, encounter/combat, or unrelated crafting runtime behavior. Those systems retain their own controlling handoffs and acceptance history.
+Character Forge/progression documentation does not authorize world-map, town/city-map, route/travel/weather, encounter/combat, or unrelated crafting changes. Those systems retain their own controlling handoffs and acceptance history.
