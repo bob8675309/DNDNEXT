@@ -20,6 +20,7 @@ const abilityStep = read("components/NpcForgeAbilityStep.js");
 const context = read("components/NpcForgeClassChoiceContext.js");
 const sourceContext = read("components/NpcForgeSourceChoiceContext.js");
 const sourceFields = read("components/NpcForgeSourceChoiceFields.js");
+const sharedSourceFields = read("components/SourceChoiceFields.js");
 const featRegistrar = read("components/NpcForgeFeatChoiceRegistrar.js");
 const guideModel = read("components/NpcForgeClassGuideModel.js");
 const choices = read("components/NpcForgeClassFeatureChoices.js");
@@ -66,7 +67,8 @@ for (const token of [
   "sourceChoiceFieldIsActive", "distinctFromFieldId", "normalizeSourceChoiceSelections", "serializeSourceChoices", "metadata: group.metadata",
 ]) requireToken(sourceChoices, token, "shared source-choice foundation");
 for (const token of ["scopes", "normalizeSourceChoiceState", "sourceChoiceStateComplete"]) requireToken(sourceContext, token, "scoped source-choice context");
-for (const token of ["DropdownField", "ButtonField", "blocked", "distinctFromFieldId"]) requireToken(sourceFields, token, "compact source-choice controls");
+for (const token of ["SourceChoiceFields", "sourceChoiceGroupsForPlacement", "toggleChoice", "setChoice"]) requireToken(sourceFields, token, "Forge source-choice context adapter");
+for (const token of ["DropdownField", "ButtonField", "blocked", "distinctFromFieldId", "sourceChoiceFieldComplete"]) requireToken(sharedSourceFields, token, "shared compact source-choice controls");
 for (const token of ["buildSpeciesSourceChoiceGroups", "draconic ancestry", "elven lineage", "fiendish legacy", "kobold legacy", "animal enhancement", "astral trance", "distinctFromFieldId"]) requireToken(speciesChoices, token, "persistent Species choice engine");
 for (const token of [
   "buildFeatSourceChoiceGroups", "featGrantInstancesFromSelections", "featInstanceSummaries", "abilityScoreImprovementFields", "magicInitiateFields", "ritualCasterFields",
