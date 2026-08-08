@@ -40,6 +40,15 @@ function uniqueText(values = []) {
   return [...new Set((Array.isArray(values) ? values : []).map(safeText).filter(Boolean))];
 }
 
+function spellMatchesLevelClassAccess(spell, classKey, toLevel) {
+  if (spellMatchesClass(spell, classKey)) return true;
+  const key = safeText(classKey).toLowerCase();
+  if (key !== "bard" || Number(toLevel || 1) < 10) return false;
+  const magicalSecretsLists = new Set(["bard", "cleric", "druid", "wizard"]);
+  return (Array.isArray(spell?.classes) ? spell.classes : [])
+    .some((listedClass) => magicalSecretsLists.has(safeText(listedClass).toLowerCase()));
+}
+
 export default function CharacterLevelUpChoices({ character = null, review = null, onCompleted = null }) {
   const characterId = character?.id || null;
   const preview = review?.preview || {};
@@ -50,6 +59,7 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
   const requiredCantrips = Number(spellChoice?.cantrips || preview?.newCantrips || 0);
   const requiredLeveled = Number(spellChoice?.leveled || preview?.newLeveledSpells || 0);
   const highestSpellLevel = Number(spellChoice?.highestSpellLevel || preview?.highestSpellLevel || 0);
+  const magicalSecretsAccess = safeText(preview?.classKey).toLowerCase() === "bard" && Number(preview?.toLevel || 1) >= 10;
 
   const [hpMethod, setHpMethod] = useState("fixed");
   const [subclassOptionKey, setSubclassOptionKey] = useState("");
@@ -92,14 +102,15 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
   );
 
   const eligibleSpells = useMemo(() => classSpellCatalog
-    .filter((spell) => spellMatchesClass(spell, preview?.classKey) || spellMatchesExpandedList(spell, backgroundExpandedSpells))
+    .filter((spell) => spellMatchesLevelClassAccess(spell, preview?.classKey, preview?.toLevel)
+      || spellMatchesExpandedList(spell, backgroundExpandedSpells))
     .filter((spell) => Number(spell.level || 0) === 0 || Number(spell.level || 0) <= highestSpellLevel)
     .filter((spell) => {
       const q = safeText(spellQuery).toLowerCase();
       if (!q) return true;
       return [spell.name, spell.school, spell.description, spell.source].filter(Boolean).join(" ").toLowerCase().includes(q);
     })
-    .sort(sortSpells), [backgroundExpandedSpells, classSpellCatalog, highestSpellLevel, preview?.classKey, spellQuery]);
+    .sort(sortSpells), [backgroundExpandedSpells, classSpellCatalog, highestSpellLevel, preview?.classKey, preview?.toLevel, spellQuery]);
 
   const advancementModel = useMemo(() => buildRuntimeAdvancementChoiceModel({
     classKey: preview?.classKey || "class",
@@ -406,6 +417,7 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
               <div>
                 <label className="form-label small fw-semibold mb-0">New Class Spells</label>
                 <div className="small text-muted">{counts.cantrips}/{requiredCantrips} cantrips • {counts.leveled}/{requiredLeveled} leveled spells • up to level {highestSpellLevel}</div>
+                {magicalSecretsAccess ? <div className="small text-info mt-1">Magical Secrets expands these new Bard spell choices to the Bard, Cleric, Druid, and Wizard spell lists.</div> : null}
               </div>
               <input className="form-control form-control-sm level-up-spell-search" value={spellQuery} onChange={(event) => setSpellQuery(event.target.value)} placeholder="Search eligible spells…" />
             </div>
