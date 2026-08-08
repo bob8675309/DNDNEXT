@@ -86,7 +86,7 @@ for (const token of [
   "currently controls spell resources",
   "character_spell_slots",
   'table: "encounters"',
-  "updateSpellRows(root, liveProfile)",
+  "updateSpellRows(root, resolvedProfile)",
   "locked={encounterLocked}",
 ]) {
   assert(tracker.includes(token), `Sheet resource tracker bridge is missing: ${token}`);
