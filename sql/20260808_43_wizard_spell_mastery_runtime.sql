@@ -152,7 +152,7 @@ begin
   select * into v_mastery from private.character_spell_mastery where character_id=p_character_id;
   select max(completed_at) into v_latest_long_rest from public.character_rest_log where character_id=p_character_id and rest_type='long_rest';
 
-  if found then
+  if v_mastery.character_id is not null then
     select jsonb_build_object('id',s.id,'name',s.name,'source',s.source,'level',s.level,'school',s.school,'castingTime',s.casting_time)
     into v_level1 from public.spells_catalog s where s.id=v_mastery.level1_spell_id;
     select jsonb_build_object('id',s.id,'name',s.name,'source',s.source,'level',s.level,'school',s.school,'castingTime',s.casting_time)
