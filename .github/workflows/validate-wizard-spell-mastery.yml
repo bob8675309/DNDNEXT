@@ -1,0 +1,34 @@
+name: Validate Wizard Spell Mastery runtime
+
+on:
+  push:
+    paths:
+      - "components/CharacterSheetResourceTracker.js"
+      - "styles/CharacterSheetResourceTracker.module.css"
+      - "utils/classFeatureChoiceExtensions.js"
+      - "utils/classFeatureChoices.js"
+      - "sql/20260808_44_wizard_spell_mastery_runtime.sql"
+      - "scripts/validate_wizard_spell_mastery_runtime.mjs"
+      - ".github/workflows/validate-wizard-spell-mastery.yml"
+  pull_request:
+    paths:
+      - "components/CharacterSheetResourceTracker.js"
+      - "styles/CharacterSheetResourceTracker.module.css"
+      - "utils/classFeatureChoiceExtensions.js"
+      - "utils/classFeatureChoices.js"
+      - "sql/20260808_44_wizard_spell_mastery_runtime.sql"
+      - "scripts/validate_wizard_spell_mastery_runtime.mjs"
+      - ".github/workflows/validate-wizard-spell-mastery.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate Spell Mastery runtime contracts
+        run: node scripts/validate_wizard_spell_mastery_runtime.mjs
+      - name: Run production build gate
+        run: npm run build:vercel
