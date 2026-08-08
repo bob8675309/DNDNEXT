@@ -44,6 +44,9 @@ on:
       - "sql/20260808_35_eldritch_invocation_level_replacement.sql"
       - "sql/20260808_36_fix_invocation_replacement_source_choices_parent.sql"
       - "sql/20260808_37_sync_eldritch_invocation_sheet_projection.sql"
+      - "sql/20260808_38_normalize_battle_master_maneuvers_and_guard_gaps.sql"
+      - "sql/20260808_39_battle_master_maneuver_progression.sql"
+      - "sql/20260808_40_wizard_savant_spellbook_progression.sql"
       - "scripts/validate_character_class_progression.mjs"
       - "scripts/validate_character_progression_v3.mjs"
       - "scripts/validate_tough_progression.mjs"
@@ -51,6 +54,8 @@ on:
       - "scripts/validate_magic_initiate_replacement.mjs"
       - "scripts/validate_reversible_source_owned_origin_feats.mjs"
       - "scripts/validate_eldritch_invocation_replacement.mjs"
+      - "scripts/validate_battle_master_progression.mjs"
+      - "scripts/validate_wizard_savant_progression.mjs"
       - ".github/workflows/validate-character-progression-v3.yml"
   pull_request:
     paths:
@@ -95,6 +100,9 @@ on:
       - "sql/20260808_35_eldritch_invocation_level_replacement.sql"
       - "sql/20260808_36_fix_invocation_replacement_source_choices_parent.sql"
       - "sql/20260808_37_sync_eldritch_invocation_sheet_projection.sql"
+      - "sql/20260808_38_normalize_battle_master_maneuvers_and_guard_gaps.sql"
+      - "sql/20260808_39_battle_master_maneuver_progression.sql"
+      - "sql/20260808_40_wizard_savant_spellbook_progression.sql"
       - "scripts/validate_character_class_progression.mjs"
       - "scripts/validate_character_progression_v3.mjs"
       - "scripts/validate_tough_progression.mjs"
@@ -102,6 +110,8 @@ on:
       - "scripts/validate_magic_initiate_replacement.mjs"
       - "scripts/validate_reversible_source_owned_origin_feats.mjs"
       - "scripts/validate_eldritch_invocation_replacement.mjs"
+      - "scripts/validate_battle_master_progression.mjs"
+      - "scripts/validate_wizard_savant_progression.mjs"
       - ".github/workflows/validate-character-progression-v3.yml"
 
 jobs:
@@ -120,3 +130,5 @@ jobs:
           node scripts/validate_magic_initiate_replacement.mjs
           node scripts/validate_reversible_source_owned_origin_feats.mjs
           node scripts/validate_eldritch_invocation_replacement.mjs
+          node scripts/validate_battle_master_progression.mjs
+          node scripts/validate_wizard_savant_progression.mjs
