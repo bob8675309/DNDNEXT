@@ -188,6 +188,12 @@ export function buildExplicitClassFeatureGroups({ rows = [], selectedClass, leve
   const knightlyEnvoy = findRow(rows, "Knightly Envoy", "Banneret");
   if (knightlyEnvoy) addGroup(output, group({ id: "fighter-banneret-skill", label: "Knightly Envoy skill", row: knightlyEnvoy, kind: "skill-choice", options: skills.filter((option) => ["insight", "intimidation", "persuasion", "performance"].includes(normalized(option.name))) }));
 
+  const championStyle = findRow(rows, "Additional Fighting Style", "Champion");
+  if (championStyle) addGroup(output, group({
+    id: "fighter-champion-additional-fighting-style", label: "Additional Fighting Style", row: championStyle, kind: "fighting-style",
+    options: catalogOptions(catalogRows, "feat", (row) => row.category === "FS"), constraints: { featCategory: "FS" },
+  }));
+
   const deftExplorer = findRow(rows, "Deft Explorer");
   if (deftExplorer) addGroup(output, group({ id: "ranger-deft-explorer-languages", label: "Deft Explorer languages", row: deftExplorer, count: 2, kind: "language", options: languages }));
 
