@@ -38,9 +38,11 @@ on:
       - "sql/20260808_29_normalize_xphb_metamagic_options.sql"
       - "sql/20260808_30_safe_level_up_replacements.sql"
       - "sql/20260808_31_fix_tough_progression_acquisition_level.sql"
+      - "sql/20260808_32_repair_source_owned_origin_feat_grant_schema.sql"
       - "scripts/validate_character_class_progression.mjs"
       - "scripts/validate_character_progression_v3.mjs"
       - "scripts/validate_tough_progression.mjs"
+      - "scripts/validate_source_owned_origin_feat_schema.mjs"
       - ".github/workflows/validate-character-progression-v3.yml"
   pull_request:
     paths:
@@ -79,9 +81,11 @@ on:
       - "sql/20260808_29_normalize_xphb_metamagic_options.sql"
       - "sql/20260808_30_safe_level_up_replacements.sql"
       - "sql/20260808_31_fix_tough_progression_acquisition_level.sql"
+      - "sql/20260808_32_repair_source_owned_origin_feat_grant_schema.sql"
       - "scripts/validate_character_class_progression.mjs"
       - "scripts/validate_character_progression_v3.mjs"
       - "scripts/validate_tough_progression.mjs"
+      - "scripts/validate_source_owned_origin_feat_schema.mjs"
       - ".github/workflows/validate-character-progression-v3.yml"
 
 jobs:
@@ -96,3 +100,4 @@ jobs:
         run: |
           node scripts/validate_character_progression_v3.mjs
           node scripts/validate_tough_progression.mjs
+          node scripts/validate_source_owned_origin_feat_schema.mjs
