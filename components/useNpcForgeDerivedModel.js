@@ -4,6 +4,7 @@ import { ABILITY_KEYS, ABILITY_LABELS, CLASS_DEFINITIONS, FEAT_OPTIONS, SKILL_DE
 import { FALLBACK_SKILL_DESCRIPTIONS, abilityScoresFromRollAllocation, flexibleAbilityBoosts } from "../utils/characterCreationGuidance";
 import { extractClassSkillConfiguration, mergePreferredBackgrounds, mergePreferredClasses, mergePreferredSpecies, normalizeSkillKey, optionMatchesQuery, safeText, slug, uniqueText } from "../utils/npcForgeCatalog";
 import { spellChoicesForRpc } from "../utils/playerForgeRules";
+import { serializeStartingMagicSelections } from "../utils/playerForgeSpellSources";
 import { backgroundFeatRule as getBackgroundFeatRule, backgroundFeatSummary, resolveBackgroundFeatOptions } from "../utils/backgroundMechanics";
 import { generatedStoryLocationLabel } from "../utils/npcStoryGenerator";
 import { titleForSkill, abilityModifier, proficiencyBonus, maximumHitPoints, sourceLabel, standardScoresForClass, speciesTraits, optionId, toolProficiencyDescription } from "./NpcForgeCoreSupport";
@@ -81,6 +82,7 @@ const createPayload = useMemo(() => {
   const saves = selectedClass?.saving_throws || [];
   const tools = selectedBackground?.tools || [];
   const spellChoices = spellChoicesForRpc(spellRows, draft.spellSelections);
+  const startingMagicSelections = serializeStartingMagicSelections(spellRows, draft.spellSelections, spellModel);
   const spellNames = spellRows.filter((spell) => draft.spellSelections?.[spell.id]).map((spell) => spell.name);
   const proficiencies = { saves: Object.fromEntries(ABILITY_KEYS.map((key) => [key, { proficient: saves.includes(key) }])), skills: Object.fromEntries(SKILL_DEFINITIONS.map((skill) => [skill.key, { proficient: selectedSkillKeys.includes(skill.key), expertise: !playerMode && (draft.expertiseSkills || []).includes(skill.key) }])) };
   const castingAbility = selectedClass?.spellcasting_ability || null;
@@ -92,12 +94,12 @@ const createPayload = useMemo(() => {
     speed: Number(selectedSpecies?.speed || base.sheet.speed || 30), abilities: Object.fromEntries(ABILITY_KEYS.map((key) => [key, { score: finalAbilities[key] }])), proficiencies, proficiencyBonus: pb,
     hp: dynamicHp, maxHp: dynamicHp, hitDice: `${Number(draft.level || 1)}d${classHitDie}`, feats, speciesTraits: speciesTraits(selectedSpecies), professions: draft.professions,
     featsTraits: [...feats.map((feat) => `Feat: ${feat}`), ...speciesTraits(selectedSpecies).map((trait) => `Species: ${trait}`), ...(draft.extraTraits || [])].join("\n"),
-    tools: uniqueText([...tools, ...(draft.additionalTools || [])]), spellcasting, spells: spellNames, startingSpellChoices: spellChoices, backgroundExpandedSpells: backgroundExpandedSpellNames, backgroundSpellList,
+    tools: uniqueText([...tools, ...(draft.additionalTools || [])]), spellcasting, spells: spellNames, startingSpellChoices: spellChoices, startingMagicSelections, backgroundExpandedSpells: backgroundExpandedSpellNames, backgroundSpellList,
     portrait: draft.portraitLibraryId ? { libraryId: draft.portraitLibraryId, url: draft.portraitUrl, storagePath: draft.portraitStoragePath, thumbUrl: draft.portraitThumbUrl, shopUrl: draft.portraitShopUrl, source: draft.portraitSource || "library", recommendedMasterSize: "1536x2048", aspectRatio: "3:4" } : base.sheet.portrait,
     visualAsset: draft.visualAssetId ? { id: draft.visualAssetId, ...(draft.spriteAsset || {}) } : null,
   };
   return { ...base, name: safeText(draft.name), race: speciesName, role: safeText(draft.role) || (draft.kind === "merchant" ? "Merchant" : className), affiliation: safeText(draft.affiliation) || null, creation_request_id: draft.creationRequestId, portrait_library_id: draft.portraitLibraryId || null, visual_asset_id: draft.visualAssetId || null, portrait_url: draft.portraitUrl || null, portrait_storage_path: draft.portraitStoragePath || null, portrait_thumb_url: draft.portraitThumbUrl || null, portrait_shop_url: draft.portraitShopUrl || null, portrait_source: draft.portraitSource || (draft.portraitLibraryId ? "library" : "default"), image_url: draft.portraitUrl || null, sprite_key: draft.spriteKey || null, sprite_path: draft.spritePath || null, sprite_scale: Number(draft.spriteScale || 0.7), sheet };
-}, [appliedBonus, backgroundExpandedSpellNames, backgroundSpellList, baseAbilities, classHitDie, draft, dynamicHp, finalAbilities, playerMode, selectedBackground, selectedBackgroundFeat, selectedClass, selectedSkillKeys, selectedSpecies, speciesBonusFeat, spellModel?.mode, spellRows]);
+}, [appliedBonus, backgroundExpandedSpellNames, backgroundSpellList, baseAbilities, classHitDie, draft, dynamicHp, finalAbilities, playerMode, selectedBackground, selectedBackgroundFeat, selectedClass, selectedSkillKeys, selectedSpecies, speciesBonusFeat, spellModel, spellRows]);
   return {
     speciesOptions, backgroundOptions, classOptions, featOptions, selectedSpecies, selectedBackground, selectedClass, selectedBackgroundFeatRule,
     backgroundFeatOptions, selectedBackgroundFeat, speciesBonusFeat, backgroundSpellList, backgroundExpandedSpellNames,
