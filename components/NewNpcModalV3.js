@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
-import { toggleClassFeatureSelection } from "../utils/classFeatureChoices";
+import { classFeatureGroupsComplete, toggleClassFeatureSelection } from "../utils/classFeatureChoices";
 import { normalizeSkillKey } from "../utils/npcForgeCatalog";
 import { featInstanceSummaries } from "../utils/playerForgeFeatChoices";
 import { setSourceChoiceSelection, toggleSourceChoiceSelection } from "../utils/playerForgeSourceChoices";
@@ -184,7 +184,7 @@ export default function NewNpcModalV3(props) {
   const sourceContextValue = useMemo(() => ({ state: sourceChoiceState, registerGroups: registerSourceGroups, toggleChoice: toggleSourceChoice, setChoice: setSourceChoice }), [registerSourceGroups, setSourceChoice, sourceChoiceState, toggleSourceChoice]);
   const createCharacter = useCallback((originalPayload, spellChoices = []) => {
     if (playerMode && !speciesChoiceStateComplete(choiceStateRef.current)) return Promise.resolve({ data: null, error: { message: "Complete every required Species choice before creating the character." } });
-    if (playerMode && !classChoiceStateComplete(classChoiceStateRef.current)) return Promise.resolve({ data: null, error: { message: "Complete the subclass and every required Class or Training feature choice before creating the character." } });
+    if (playerMode && !classChoiceStateComplete(classChoiceStateRef.current)) return Promise.resolve({ data: null, error: { message: "Complete the subclass and every required Class, Training, or spellbook-dependent feature choice before creating the character." } });
     if (playerMode && !sourceChoiceStateComplete(sourceChoiceStateRef.current)) return Promise.resolve({ data: null, error: { message: "Complete every required Origin, Background, Class, Ability, Advancement, and Training source choice before creating the character." } });
     const subclassPayload = payloadWithSubclass(originalPayload, classChoiceStateRef.current);
     const payload = payloadWithSourceChoices(subclassPayload, choiceStateRef.current, classChoiceStateRef.current, sourceChoiceStateRef.current);
@@ -223,6 +223,11 @@ export default function NewNpcModalV3(props) {
       if (playerMode && /Training/i.test(currentStep) && classState.classId && !trainingClassChoiceStateComplete(classState)) {
         event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation?.();
         modal?.querySelector(".npc-forge-class-choices.is-placement-training .npc-forge-class-choice-group.is-required")?.scrollIntoView?.({ behavior: "smooth", block: "center" });
+        return;
+      }
+      if (playerMode && /Spells/i.test(currentStep) && classState.classId && !classFeatureGroupsComplete(classState.featureGroups || [], classState.featureSelections || {}, "spells")) {
+        event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation?.();
+        modal?.querySelector(".npc-forge-class-choices.is-placement-spells .npc-forge-class-choice-group.is-required")?.scrollIntoView?.({ behavior: "smooth", block: "center" });
       }
     }
     document.addEventListener("click", blockIncompleteForgeChoice, true);
