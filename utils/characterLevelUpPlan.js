@@ -1,3 +1,4 @@
+import { normalizeFeatSourceChoiceGroups } from "./featSourceChoiceNormalization";
 import { buildFeatSourceChoiceGroups, featInstanceSummaries } from "./playerForgeFeatChoices";
 import {
   normalizeSourceChoiceSelections,
@@ -94,7 +95,7 @@ export function buildRuntimeAdvancementChoiceModel({
     acquisitionLabel: advancement.kind === "epic-boon" ? `Level ${Number(toLevel || 1)} Epic Boon` : `Level ${Number(toLevel || 1)} feat`,
     feat: selectedOption,
   } : null;
-  const nestedGroups = instance ? buildFeatSourceChoiceGroups({ featInstances: [instance], toolRows, spells, level: Number(toLevel || 1) }) : [];
+  const nestedGroups = instance ? normalizeFeatSourceChoiceGroups(buildFeatSourceChoiceGroups({ featInstances: [instance], toolRows, spells, level: Number(toLevel || 1) })) : [];
   const groups = [mainGroup, ...nestedGroups];
   const normalizedSelections = normalizeSourceChoiceSelections(groups, selections);
   const summaries = featInstanceSummaries(groups, normalizedSelections);
