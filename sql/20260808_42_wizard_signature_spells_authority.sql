@@ -179,6 +179,7 @@ begin
   end loop;
 
   select coalesce(sheet,'{}'::jsonb) into v_sheet from public.character_sheets where character_id=p_character_id for update;
+  v_sheet:=jsonb_set(v_sheet,'{meta}',case when jsonb_typeof(v_sheet->'meta')='object' then v_sheet->'meta' else '{}'::jsonb end,true);
   v_choices:=case when jsonb_typeof(v_sheet->'classFeatureChoices')='object' then v_sheet->'classFeatureChoices' else '{}'::jsonb end;
   v_choices:=jsonb_set(v_choices,array['wizard-signature-spells'],jsonb_build_object(
     'label','Signature Spells',
@@ -195,9 +196,9 @@ begin
   ),true);
 
   v_existing_summary:=case when jsonb_typeof(v_sheet->'classFeatureChoiceSummary')='array' then v_sheet->'classFeatureChoiceSummary' else '[]'::jsonb end;
-  select coalesce(jsonb_agg(item),'[]'::jsonb) into v_choice_summary
-  from jsonb_array_elements(v_existing_summary) item
-  where coalesce(item->>'groupId','')<>'wizard-signature-spells';
+  select coalesce(jsonb_agg(e.item),'[]'::jsonb) into v_choice_summary
+  from jsonb_array_elements(v_existing_summary) as e(item)
+  where coalesce(e.item->>'groupId','')<>'wizard-signature-spells';
   v_choice_summary:=v_choice_summary||(
     select coalesce(jsonb_agg(jsonb_build_object(
       'groupId','wizard-signature-spells',
@@ -206,12 +207,12 @@ begin
       'level',20,
       'placement','spells',
       'cadence',coalesce(nullif(btrim(p_cadence),''),'level-up'),
-      'key',entry->>'key',
-      'name',entry->>'name',
-      'source',entry->>'source',
+      'key',e.entry->>'key',
+      'name',e.entry->>'name',
+      'source',e.entry->>'source',
       'kind','spell'
     )),'[]'::jsonb)
-    from jsonb_array_elements(v_serialized) entry
+    from jsonb_array_elements(v_serialized) as e(entry)
   );
 
   v_sheet:=jsonb_set(v_sheet,'{classFeatureChoices}',v_choices,true);
@@ -287,7 +288,7 @@ begin
   v_group:=v_choices->'wizard-signature-spells';
   if v_group is null then
     select entry.value into v_group
-    from jsonb_each(v_choices) entry
+    from jsonb_each(v_choices) as entry
     where private.normalize_player_choice_name_v1(coalesce(entry.value->>'sourceFeature',''))='signaturespells'
     order by entry.key
     limit 1;
@@ -296,7 +297,7 @@ begin
   if coalesce((v_group->>'level')::integer,0)<>20 or coalesce((v_group->>'count')::integer,0)<>2 or coalesce(v_group->>'placement','')<>'spells' then
     raise exception 'The Player Forge Signature Spells choice group has an invalid level, count, or placement.';
   end if;
-  if jsonb_typeof(v_group->'selections')<>'array' or jsonb_array_length(v_group->'selections')<>2 then
+  if coalesce(jsonb_typeof(v_group->'selections'),'')<>'array' or jsonb_array_length(v_group->'selections')<>2 then
     raise exception 'A level-20 Wizard created in Player Forge must choose exactly two Signature Spells.';
   end if;
 
