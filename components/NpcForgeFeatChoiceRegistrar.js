@@ -9,6 +9,36 @@ import { speciesFeatChoicesFromState, useNpcForgeSpeciesChoices } from "./NpcFor
 const norm = (value) => String(value ?? "").trim().toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 const slug = (value) => norm(value).replace(/\s+/g, "-");
 
+function emptyFeatGroup(instance) {
+  const feat = instance.feat || {};
+  return {
+    id: `feat-${slug(instance.instanceId)}`,
+    ownerType: "feat",
+    ownerKey: instance.instanceId,
+    label: feat.name || "Feat",
+    source: feat.source || "XPHB",
+    placement: instance.placement || "class",
+    level: Math.max(1, Number(instance.level || 1)),
+    fields: [],
+    helper: "This feat has no additional permanent child choice in the current source data.",
+    metadata: {
+      featInstanceId: instance.instanceId,
+      featOptionId: feat.id || null,
+      featOptionKey: feat.option_key || null,
+      featName: feat.name || "",
+      featSource: feat.source || "XPHB",
+      featCategory: feat.category || null,
+      repeatable: Boolean(feat.metadata?.repeatable),
+      acquisitionOwnerType: instance.ownerType || null,
+      acquisitionOwnerKey: instance.ownerKey || null,
+      acquisitionLabel: instance.acquisitionLabel || null,
+      acquisitionLevel: Math.max(1, Number(instance.level || 1)),
+      fixedEffects: [],
+      fixedSpellTokens: [],
+    },
+  };
+}
+
 export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, controller = null }) {
   const { state: speciesState } = useNpcForgeSpeciesChoices();
   const { state: classState } = useNpcForgeClassChoice();
@@ -77,12 +107,11 @@ export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, contro
     featOptions: controller?.featOptions || [],
   }), [classChoiceFeats, controller?.featOptions, controller?.selectedBackgroundFeat, controller?.speciesBonusFeat, speciesChoiceFeats]);
   const featInstances = useMemo(() => [...baseFeatInstances, ...sourceFeatInstances], [baseFeatInstances, sourceFeatInstances]);
-  const featGroups = useMemo(() => buildFeatSourceChoiceGroups({
-    featInstances,
-    toolRows: controller?.toolRows || [],
-    spells,
-    level: controller?.draft?.level || 1,
-  }), [controller?.draft?.level, controller?.toolRows, featInstances, spells]);
+  const featGroups = useMemo(() => {
+    const nested = buildFeatSourceChoiceGroups({ featInstances, toolRows: controller?.toolRows || [], spells, level: controller?.draft?.level || 1 });
+    const byInstance = new Map(nested.map((entry) => [entry.metadata?.featInstanceId || entry.ownerKey, entry]));
+    return featInstances.map((instance) => byInstance.get(instance.instanceId) || emptyFeatGroup(instance));
+  }, [controller?.draft?.level, controller?.toolRows, featInstances, spells]);
 
   useEffect(() => {
     registerGroups(playerMode ? featGroups : [], !playerMode || catalogReady, "feats");
