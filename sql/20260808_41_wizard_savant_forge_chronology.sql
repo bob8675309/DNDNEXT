@@ -366,7 +366,7 @@ begin
       select * into v_spell from public.spells_catalog where id=v_spell_id;
       if not found then raise exception '% contains an unavailable spellbook selection.',v_feature; end if;
       if v_spell.level<1
-         or v_spell.level>case when v_level_gate=3 then 2 else least(9,ceil(v_level_gate/2.0)::integer) end
+         or v_spell.level>(case when v_level_gate=3 then 2 else least(9,ceil(v_level_gate/2.0)::integer) end)
          or v_spell.school<>v_school
          or not exists(select 1 from unnest(coalesce(v_spell.classes,'{}'::text[])) c where lower(c)='wizard') then
         raise exception '% is not a legal % selection for the Wizard level % Savant acquisition.',v_spell.name,v_feature,v_level_gate;
