@@ -4,7 +4,7 @@ import { ABILITY_KEYS, CLASS_DEFINITIONS, FEAT_OPTIONS, SIZE_OPTIONS, SKILL_DEFI
 import { safeText, slug, uniqueText } from "../utils/npcForgeCatalog";
 
 export const NPC_STEP_LABELS = Object.freeze(["Species", "Background", "Class", "Abilities", "Training", "Identity", "Story", "Review"]);
-export const PLAYER_STEP_LABELS = Object.freeze(["Species", "Background", "Class", "Abilities", "Training", "Spells", "Identity", "Story", "Review"]);
+export const PLAYER_STEP_LABELS = Object.freeze(["Species", "Background", "Class", "Abilities", "Training", "Spells", "Equipment", "Identity", "Story", "Review"]);
 // Legacy NPC step-order source markers: step === 5 Identity; step === 6 Story
 // const STEP_LABELS = Object.freeze(["Species", "Background", "Class", "Abilities", "Training", "Identity", "Story", "Review"]);
 // Historical contract retained for handoff readers: "Species", "Background", "Class", "Abilities", "Training", "Identity", "Story", "Review"
@@ -33,7 +33,7 @@ export function initialDraft() {
     baseAbilities: standardAbilityScores("civilian"),
     speciesBonus: { mode: "twoOne", plusTwo: "", plusOne: "", plusOnes: [], featId: "" },
     selectedClassSkills: [], expertiseSkills: [], professions: JSON.parse(JSON.stringify(EMPTY_PROFESSIONS)),
-    spellSelections: {}, additionalFeats: [], extraTraits: [], preparedSpellsText: "", attacks: "", equipment: "",
+    spellSelections: {}, startingEquipment: {}, additionalFeats: [], extraTraits: [], preparedSpellsText: "", attacks: "", equipment: "",
     treasure: "", description: "", backgroundNarrative: "", motivation: "", personalityTraits: "",
     ideals: "", bonds: "", flaws: "", quirk: "", mannerism: "", voice: "", secret: "",
     tags: [], locationId: "", storefrontEnabled: true, storefrontTitle: "", storefrontTagline: "",
