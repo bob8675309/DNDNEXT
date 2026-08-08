@@ -73,7 +73,7 @@ export default function useNpcSheetActionData({
 
       const assignmentResult = await supabase
         .from("character_spells")
-        .select("id,spell_id,prepared,always_available,casting_stat,save_dc_override,attack_bonus_override,uses_max,uses_remaining,recharge")
+        .select("id,spell_id,prepared,always_available,casting_stat,save_dc_override,attack_bonus_override,uses_max,uses_remaining,recharge,raw_payload")
         .eq("character_id", id);
       if (!isCurrent()) return;
 
