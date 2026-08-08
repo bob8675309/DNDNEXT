@@ -101,7 +101,8 @@ function savantSpellOptions(spells = [], school = "", maximumLevel = 2) {
   const preferred = new Map();
   const rank = (source) => source === "XPHB" ? 0 : source === "PHB" ? 1 : 2;
   for (const row of Array.isArray(spells) ? spells : []) {
-    if (Number(row.level || 0) > maximumLevel || normalized(row.school || row.school_code) !== normalized(school)) continue;
+    const spellLevel = Number(row.level || 0);
+    if (spellLevel < 1 || spellLevel > maximumLevel || normalized(row.school || row.school_code) !== normalized(school)) continue;
     if (!(row.classes || []).some((entry) => normalized(entry) === "wizard")) continue;
     const key = normalized(row.name);
     const current = preferred.get(key);
@@ -135,20 +136,33 @@ function savantSpellOptions(spells = [], school = "", maximumLevel = 2) {
 }
 function expandWizardSavantGroups(groups = [], selectedClass, level = 1, spells = []) {
   if (normalized(selectedClass?.class_key) !== "wizard") return groups;
-  const maximumLevel = Math.max(2, Math.min(9, Math.ceil(Number(level || 1) / 2)));
-  return groups.map((group) => {
+  const startingLevel = Number(level || 1);
+  const acquisitions = [
+    { level: 3, count: 2, maxSpellLevel: 2 },
+    { level: 5, count: 1, maxSpellLevel: 3 },
+    { level: 7, count: 1, maxSpellLevel: 4 },
+    { level: 9, count: 1, maxSpellLevel: 5 },
+    { level: 11, count: 1, maxSpellLevel: 6 },
+    { level: 13, count: 1, maxSpellLevel: 7 },
+    { level: 15, count: 1, maxSpellLevel: 8 },
+    { level: 17, count: 1, maxSpellLevel: 9 },
+  ].filter((entry) => entry.level <= startingLevel);
+  return groups.flatMap((group) => {
     const match = safeText(group.label).match(/^(.+?) Savant spellbook additions$/i);
-    if (!match) return group;
+    if (!match) return [group];
     const school = match[1];
-    const options = savantSpellOptions(spells, school, maximumLevel);
-    if (options.length < maximumLevel) return group;
-    return {
+    return acquisitions.map((acquisition) => ({
       ...group,
-      count: maximumLevel,
-      options,
-      constraints: { maxSpellLevel: maximumLevel, spellClasses: ["Wizard"], schools: [school] },
-      helper: `${group.helper || ""}\n\nChoose the two spells granted at level 3 plus one additional spell for each higher spell-slot level this starting Wizard has reached.`.trim(),
-    };
+      id: acquisition.level === 3 ? group.id : `${group.id}-level-${acquisition.level}`,
+      label: acquisition.level === 3 ? `${school} Savant spellbook additions` : `${school} Savant: level ${acquisition.level} spellbook addition`,
+      level: acquisition.level,
+      count: acquisition.count,
+      options: savantSpellOptions(spells, school, acquisition.maxSpellLevel),
+      constraints: { minSpellLevel: 1, maxSpellLevel: acquisition.maxSpellLevel, spellClasses: ["Wizard"], schools: [school], wizardSpellbook: true },
+      helper: acquisition.level === 3
+        ? "Choose the two level 1+ Wizard spells from this school that the Savant feature added to the spellbook at Wizard level 3. Each must be level 1 or 2."
+        : `Choose the free level 1+ ${school} Wizard spell added when this Wizard first gained level ${acquisition.maxSpellLevel} spell slots at Wizard level ${acquisition.level}.`,
+    }));
   });
 }
 const EXPLICIT_PROSE_FEATURES = new Set([
