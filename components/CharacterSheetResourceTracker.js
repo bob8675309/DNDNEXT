@@ -56,7 +56,9 @@ function updateSpellRows(root, profile) {
         const maximum = safeNumber(limited.max);
         const remaining = safeNumber(limited.remaining, maximum);
         const recharge = safeText(limited.recharge).toLowerCase().replace(/[_-]+/g, " ");
-        const replacement = `${remaining}/${maximum} uses${recharge ? ` • ${recharge}` : ""}`;
+        const resourceLabel = safeText(limited.resourceLabel);
+        const useText = `${remaining}/${maximum} uses${recharge ? ` • ${recharge}` : ""}`;
+        const replacement = [resourceLabel, useText].filter(Boolean).join(" • ");
         nextText = nextText.replace(/\b\d+\/\d+\s+uses(?:\s*•\s*(?:short|long)\s+rest)?/i, replacement);
       } else if (pactSlot && groupName === "prepared spells") {
         const maximum = safeNumber(pactSlot.max);
@@ -265,11 +267,13 @@ export default function CharacterSheetResourceTracker({
                 const assignmentId = String(entry?.assignmentId || "");
                 const maximum = safeNumber(entry?.max);
                 const remaining = safeNumber(entry?.remaining, maximum);
+                const resourceLabel = safeText(entry?.resourceLabel) || safeText(entry?.name) || "Spell";
+                const featureLabel = safeText(entry?.resourceFeature);
                 return (
                   <div className={styles.resourceRow} key={assignmentId || `${entry?.name}-${entry?.level}`}>
                     <div className={styles.resourceIdentity}>
-                      <strong>{entry?.name || "Spell"}</strong>
-                      <span>{rechargeLabel(entry?.recharge)}</span>
+                      <strong>{resourceLabel}</strong>
+                      <span>{[featureLabel && featureLabel !== resourceLabel ? featureLabel : "", rechargeLabel(entry?.recharge)].filter(Boolean).join(" • ")}</span>
                     </div>
                     <ResourcePips maximum={maximum} remaining={remaining} />
                     <span className={styles.count}>{remaining}/{maximum}</span>
@@ -278,7 +282,7 @@ export default function CharacterSheetResourceTracker({
                       locked={encounterLocked}
                       remaining={remaining}
                       maximum={maximum}
-                      label={`${entry?.name || "spell"} use`}
+                      label={`${resourceLabel} use`}
                       onUse={() => onSpellUseOperation?.(entry, "use")}
                       onRestore={() => onSpellUseOperation?.(entry, "restore")}
                     />
