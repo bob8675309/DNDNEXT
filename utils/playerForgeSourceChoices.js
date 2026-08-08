@@ -24,15 +24,15 @@ function choiceOption(value, overrides = {}) {
   return { key, value: text(overrides.value || label), label, source: overrides.source || "XPHB", kind: overrides.kind || "enum", ...overrides };
 }
 
-function sourceField({ id, label, kind, count = 1, required = true, options = [], cadence = "creation", replacementCadence = null, activeWhen = null, helper = "" }) {
+function sourceField({ id, label, kind, count = 1, required = true, options = [], cadence = "creation", replacementCadence = null, activeWhen = null, helper = "", metadata = null, distinctFromFieldId = null }) {
   return {
     id: text(id), label: text(label), kind: text(kind || "enum"), count: Math.max(1, Number(count || 1)), required: Boolean(required),
-    options: array(options), cadence: SOURCE_CHOICE_CADENCES.includes(cadence) ? cadence : "creation", replacementCadence, activeWhen, helper: text(helper),
+    options: array(options), cadence: SOURCE_CHOICE_CADENCES.includes(cadence) ? cadence : "creation", replacementCadence, activeWhen, helper: text(helper), metadata, distinctFromFieldId,
   };
 }
 
-function sourceGroup({ id, ownerType, ownerKey, label, source = "XPHB", placement = "origin", level = 1, fields = [], helper = "" }) {
-  return { id: text(id), ownerType: text(ownerType), ownerKey: text(ownerKey), label: text(label), source: text(source || "XPHB"), placement: text(placement || "origin"), level: Math.max(1, Number(level || 1)), fields: array(fields), helper: text(helper) };
+function sourceGroup({ id, ownerType, ownerKey, label, source = "XPHB", placement = "origin", level = 1, fields = [], helper = "", metadata = null }) {
+  return { id: text(id), ownerType: text(ownerType), ownerKey: text(ownerKey), label: text(label), source: text(source || "XPHB"), placement: text(placement || "origin"), level: Math.max(1, Number(level || 1)), fields: array(fields), helper: text(helper), metadata };
 }
 
 function selectedFor(selections = {}, groupId, fieldId) {
@@ -51,6 +51,11 @@ export function sourceChoiceFieldIsActive(field, selections = {}) {
   return activeRuleSatisfied(field?.activeWhen, selections);
 }
 
+function distinctBlockedKeys(field, group, selections = {}) {
+  if (!field?.distinctFromFieldId) return new Set();
+  return new Set(selectedFor(selections, group.id, field.distinctFromFieldId));
+}
+
 export function normalizeSourceChoiceSelections(groups = [], selections = {}) {
   const output = {};
   for (const group of array(groups)) {
@@ -60,13 +65,26 @@ export function normalizeSourceChoiceSelections(groups = [], selections = {}) {
       output[group.id][field.id] = selectedFor(selections, group.id, field.id).filter((key) => allowed.has(key)).slice(0, Number(field.count || 1));
     }
   }
+  for (const group of array(groups)) {
+    for (const field of array(group.fields)) {
+      if (!sourceChoiceFieldIsActive(field, output)) {
+        output[group.id][field.id] = [];
+        continue;
+      }
+      const blocked = distinctBlockedKeys(field, group, output);
+      if (blocked.size) output[group.id][field.id] = selectedFor(output, group.id, field.id).filter((key) => !blocked.has(key)).slice(0, Number(field.count || 1));
+    }
+  }
   return output;
 }
 
 export function sourceChoiceFieldComplete(group, field, selections = {}) {
   if (!sourceChoiceFieldIsActive(field, selections)) return true;
   if (!field?.required) return true;
-  return selectedFor(selections, group.id, field.id).length === Number(field.count || 1);
+  const selected = selectedFor(selections, group.id, field.id);
+  if (selected.length !== Number(field.count || 1)) return false;
+  const blocked = distinctBlockedKeys(field, group, selections);
+  return !selected.some((key) => blocked.has(key));
 }
 
 export function sourceChoiceGroupComplete(group, selections = {}) {
@@ -87,13 +105,16 @@ export function toggleSourceChoiceSelection(groups = [], selections = {}, groupI
   const field = group?.fields?.find((entry) => entry.id === fieldId);
   if (!group || !field || !sourceChoiceFieldIsActive(field, selections)) return selections;
   if (!field.options.some((option) => option.key === optionKey)) return selections;
+  const blocked = distinctBlockedKeys(field, group, selections);
+  if (blocked.has(optionKey)) return selections;
   const selected = selectedFor(selections, groupId, fieldId);
   const next = selected.includes(optionKey)
     ? selected.filter((key) => key !== optionKey)
     : selected.length < Number(field.count || 1)
       ? [...selected, optionKey]
       : Number(field.count || 1) === 1 ? [optionKey] : selected;
-  return { ...selections, [groupId]: { ...(selections?.[groupId] || {}), [fieldId]: next } };
+  const candidate = { ...selections, [groupId]: { ...(selections?.[groupId] || {}), [fieldId]: next } };
+  return normalizeSourceChoiceSelections(groups, candidate);
 }
 
 export function setSourceChoiceSelection(groups = [], selections = {}, groupId, fieldId, optionKeys = []) {
@@ -101,8 +122,10 @@ export function setSourceChoiceSelection(groups = [], selections = {}, groupId, 
   const field = group?.fields?.find((entry) => entry.id === fieldId);
   if (!group || !field || !sourceChoiceFieldIsActive(field, selections)) return selections;
   const allowed = new Set(field.options.map((option) => option.key));
-  const next = unique(optionKeys).filter((key) => allowed.has(key)).slice(0, Number(field.count || 1));
-  return { ...selections, [groupId]: { ...(selections?.[groupId] || {}), [fieldId]: next } };
+  const blocked = distinctBlockedKeys(field, group, selections);
+  const next = unique(optionKeys).filter((key) => allowed.has(key) && !blocked.has(key)).slice(0, Number(field.count || 1));
+  const candidate = { ...selections, [groupId]: { ...(selections?.[groupId] || {}), [fieldId]: next } };
+  return normalizeSourceChoiceSelections(groups, candidate);
 }
 
 export function selectedSourceChoiceOptions(groups = [], selections = {}, filters = {}) {
@@ -115,7 +138,7 @@ export function selectedSourceChoiceOptions(groups = [], selections = {}, filter
       for (const key of selectedFor(selections, group.id, field.id)) {
         const option = field.options.find((entry) => entry.key === key);
         if (!option) continue;
-        output.push({ groupId: group.id, groupLabel: group.label, ownerType: group.ownerType, ownerKey: group.ownerKey, source: group.source, placement: group.placement, level: group.level, fieldId: field.id, fieldLabel: field.label, fieldKind: field.kind, cadence: field.cadence, replacementCadence: field.replacementCadence, ...option });
+        output.push({ groupId: group.id, groupLabel: group.label, groupMetadata: group.metadata || null, ownerType: group.ownerType, ownerKey: group.ownerKey, source: group.source, placement: group.placement, level: group.level, fieldId: field.id, fieldLabel: field.label, fieldKind: field.kind, fieldMetadata: field.metadata || null, cadence: field.cadence, replacementCadence: field.replacementCadence, ...option });
       }
     }
   }
@@ -130,17 +153,22 @@ export function serializeSourceChoices(groups = [], selections = {}) {
     source: group.source,
     placement: group.placement,
     level: group.level,
+    helper: group.helper || null,
+    metadata: group.metadata || null,
     fields: Object.fromEntries(array(group.fields).map((field) => [field.id, {
       label: field.label,
       kind: field.kind,
       count: field.count,
+      required: Boolean(field.required),
       cadence: field.cadence,
       replacementCadence: field.replacementCadence || null,
       activeWhen: field.activeWhen || null,
-      selections: selectedFor(selections, group.id, field.id).map((key) => {
+      distinctFromFieldId: field.distinctFromFieldId || null,
+      metadata: field.metadata || null,
+      selections: sourceChoiceFieldIsActive(field, selections) ? selectedFor(selections, group.id, field.id).map((key) => {
         const option = field.options.find((entry) => entry.key === key);
         return option ? { key: option.key, value: option.value, label: option.label, source: option.source || group.source, kind: option.kind || field.kind, metadata: option.metadata || null } : null;
-      }).filter(Boolean),
+      }).filter(Boolean) : [],
     }])),
   }]));
 }
@@ -281,6 +309,6 @@ export function buildFoundationSourceChoiceGroups({ selectedSpecies = null, sele
 
 export function foundationChoiceSummary(groups = [], selections = {}) {
   return selectedSourceChoiceOptions(groups, selections).map((entry) => ({
-    ownerType: entry.ownerType, ownerKey: entry.ownerKey, groupId: entry.groupId, groupLabel: entry.groupLabel, fieldId: entry.fieldId, fieldLabel: entry.fieldLabel, kind: entry.fieldKind, value: entry.value, label: entry.label, key: entry.key, source: entry.source, placement: entry.placement, cadence: entry.cadence,
+    ownerType: entry.ownerType, ownerKey: entry.ownerKey, groupId: entry.groupId, groupLabel: entry.groupLabel, groupMetadata: entry.groupMetadata || null, fieldId: entry.fieldId, fieldLabel: entry.fieldLabel, fieldMetadata: entry.fieldMetadata || null, kind: entry.fieldKind, value: entry.value, label: entry.label, key: entry.key, source: entry.source, placement: entry.placement, level: entry.level, cadence: entry.cadence, replacementCadence: entry.replacementCadence || null, metadata: entry.metadata || null,
   }));
 }
