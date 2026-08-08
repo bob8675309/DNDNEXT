@@ -4,7 +4,11 @@ import { supabase } from "../utils/supabaseClient";
 import { spellLevelLabel, spellMatchesClass } from "../utils/spells/classSpellbookRules";
 import { spellMatchesExpandedList } from "../utils/backgroundMechanics";
 import { buildRuntimeAdvancementChoiceModel } from "../utils/characterLevelUpPlan";
-import { setSourceChoiceSelection, toggleSourceChoiceSelection } from "../utils/playerForgeSourceChoices";
+import {
+  setSourceChoiceSelection,
+  sourceChoiceGroupsComplete,
+  toggleSourceChoiceSelection,
+} from "../utils/playerForgeSourceChoices";
 import SourceChoiceFields from "./SourceChoiceFields";
 
 function safeText(value) {
@@ -60,6 +64,10 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
   const [loadingAdvancement, setLoadingAdvancement] = useState(false);
   const [advancementError, setAdvancementError] = useState("");
   const [sourceSelections, setSourceSelections] = useState({});
+  const [classChoiceGroups, setClassChoiceGroups] = useState([]);
+  const [classChoiceSelections, setClassChoiceSelections] = useState({});
+  const [loadingClassChoices, setLoadingClassChoices] = useState(false);
+  const [classChoiceError, setClassChoiceError] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -78,6 +86,10 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
     [assignedClassSpellIds, catalogSpells]
   );
   const counts = useMemo(() => selectionCounts(classSpellCatalog, selectedSpells), [classSpellCatalog, selectedSpells]);
+  const classChoicesComplete = useMemo(
+    () => sourceChoiceGroupsComplete(classChoiceGroups, classChoiceSelections),
+    [classChoiceGroups, classChoiceSelections]
+  );
 
   const eligibleSpells = useMemo(() => classSpellCatalog
     .filter((spell) => spellMatchesClass(spell, preview?.classKey) || spellMatchesExpandedList(spell, backgroundExpandedSpells))
@@ -107,6 +119,9 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
     setAdvancement(null);
     setAdvancementError("");
     setSourceSelections({});
+    setClassChoiceGroups([]);
+    setClassChoiceSelections({});
+    setClassChoiceError("");
     setError("");
   }, [review?.session?.id]);
 
@@ -141,6 +156,35 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
     loadAdvancement();
     return () => { active = false; };
   }, [advancementChoice, characterId, metadataReady, review?.session?.id]);
+
+  useEffect(() => {
+    let active = true;
+    async function loadClassChoices() {
+      if (!metadataReady || !characterId) {
+        setClassChoiceGroups([]);
+        setClassChoiceSelections({});
+        setClassChoiceError("");
+        return;
+      }
+      setLoadingClassChoices(true);
+      setClassChoiceError("");
+      const { data, error: loadError } = await supabase.rpc("get_character_level_class_choice_options_v1", {
+        p_character_id: characterId,
+      });
+      if (!active) return;
+      if (loadError) {
+        setClassChoiceGroups([]);
+        setClassChoiceSelections({});
+        setClassChoiceError(loadError.message || "Could not load source-legal class choices for this level.");
+      } else {
+        setClassChoiceGroups(Array.isArray(data?.groups) ? data.groups : []);
+        setClassChoiceSelections({});
+      }
+      setLoadingClassChoices(false);
+    }
+    loadClassChoices();
+    return () => { active = false; };
+  }, [characterId, metadataReady, review?.session?.id]);
 
   useEffect(() => {
     let active = true;
@@ -207,6 +251,16 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
     setError("");
   }
 
+  function toggleClassChoice(groupId, fieldId, optionKey) {
+    setClassChoiceSelections((current) => toggleSourceChoiceSelection(classChoiceGroups, current, groupId, fieldId, optionKey));
+    setError("");
+  }
+
+  function setClassChoice(groupId, fieldId, optionKeys) {
+    setClassChoiceSelections((current) => setSourceChoiceSelection(classChoiceGroups, current, groupId, fieldId, optionKeys));
+    setError("");
+  }
+
   function toggleSpell(spell) {
     setSelectedSpells((current) => {
       if (current[spell.id]) {
@@ -242,6 +296,9 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
     if (advancementChoice && !advancement?.required) return "The server did not return the required advancement options for this level.";
     if (advancementChoice && !advancementModel.complete) return "Complete every source-owned feat or Epic Boon choice for this level.";
     if (advancementChoice && !advancementModel.instance) return "Choose the feat or Epic Boon gained at this level.";
+    if (loadingClassChoices) return "Wait for source-backed class choices to finish loading.";
+    if (classChoiceError) return classChoiceError;
+    if (classChoiceGroups.length && !classChoicesComplete) return "Complete every permanent class choice gained at this level.";
     if (counts.cantrips !== requiredCantrips) return `Choose exactly ${requiredCantrips} new cantrip${requiredCantrips === 1 ? "" : "s"}.`;
     if (counts.leveled !== requiredLeveled) return `Choose exactly ${requiredLeveled} new leveled spell${requiredLeveled === 1 ? "" : "s"}.`;
     return "";
@@ -267,6 +324,7 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
       subclass_name: subclassChoice ? selectedSubclass?.name || null : null,
       subclass_source: subclassChoice ? selectedSubclass?.source || null : null,
       spell_choices: spellChoices,
+      class_choice_selections: classChoiceSelections,
       ...(advancementChoice ? { advancement_instance: advancementModel.instance } : {}),
     };
 
@@ -290,6 +348,7 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
     <div className="level-up-choice-form">
       {error ? <div className="alert alert-danger py-2">{error}</div> : null}
       {advancementError ? <div className="alert alert-danger py-2">{advancementError}</div> : null}
+      {classChoiceError ? <div className="alert alert-danger py-2">{classChoiceError}</div> : null}
 
       <div className="row g-3">
         <div className="col-12 col-md-6">
@@ -310,6 +369,20 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
             </select>
             {selectedSubclass?.isLegacyCompatibility ? <div className="small text-muted mt-1">Published supplemental features will be aligned to the 2024 subclass entry level where needed.</div> : null}
             {subclassError ? <div className="small text-danger mt-1">{subclassError}</div> : null}
+          </div>
+        ) : null}
+
+        {classChoiceGroups.length || loadingClassChoices ? (
+          <div className="col-12">
+            {loadingClassChoices ? <div className="small text-muted mb-2">Loading source-legal class choices…</div> : null}
+            <SourceChoiceFields
+              groups={classChoiceGroups}
+              selections={classChoiceSelections}
+              kicker="Class progression"
+              title="Permanent choices gained at this level"
+              onToggle={toggleClassChoice}
+              onSet={setClassChoice}
+            />
           </div>
         ) : null}
 
@@ -361,7 +434,7 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
         ) : null}
       </div>
 
-      <button type="button" className="btn btn-warning btn-sm mt-3" disabled={busy || loadingCatalogs || loadingAdvancement} onClick={applyLevel}>{busy ? "Applying level…" : `Apply Level ${preview?.toLevel || ""}`}</button>
+      <button type="button" className="btn btn-warning btn-sm mt-3" disabled={busy || loadingCatalogs || loadingAdvancement || loadingClassChoices} onClick={applyLevel}>{busy ? "Applying level…" : `Apply Level ${preview?.toLevel || ""}`}</button>
       <div className="small text-muted mt-2">XP unlocks this one level. HP, source-owned choices, spell grants, sheet values, and progression history are committed together or not at all. If the character still has enough XP afterward, the next level opens as a separate review against the newly updated character.</div>
 
       <style jsx>{`
