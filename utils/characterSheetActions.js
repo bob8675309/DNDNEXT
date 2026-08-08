@@ -336,13 +336,15 @@ function spellAction(row, sheet, abilityModifiers, proficiencyBonus) {
   const usesRemaining = Number(row?.uses_remaining);
   const hasLimitedUses = row?.uses_max !== null && row?.uses_max !== undefined && Number.isFinite(usesMax) && usesMax > 0;
   const recharge = safeText(row?.recharge).replace(/_/g, " ");
+  const resourceLabel = safeText(row?.raw_payload?.resourceLabel);
   const pactSlots = Number(sheet?.spellcasting?.pactSlots);
   const pactSlotLevel = Number(sheet?.spellcasting?.pactSlotLevel);
   const pactSlotText = level > 0 && Number.isFinite(pactSlots) && pactSlots > 0
     ? `${pactSlots} level-${Number.isFinite(pactSlotLevel) && pactSlotLevel > 0 ? pactSlotLevel : level} pact slots`
     : "";
+  const limitedUseText = `${Number.isFinite(usesRemaining) ? usesRemaining : usesMax}/${usesMax} uses${recharge ? ` • ${recharge}` : ""}`;
   const resourceText = hasLimitedUses
-    ? `${Number.isFinite(usesRemaining) ? usesRemaining : usesMax}/${usesMax} uses${recharge ? ` • ${recharge}` : ""}`
+    ? [resourceLabel, limitedUseText].filter(Boolean).join(" • ")
     : pactSlotText;
   const kind = isAttack ? "spell-attack" : saveAbilities.length ? "spell-save" : healingDice ? "spell-healing" : "spell-effect";
   const resolution = isAttack
