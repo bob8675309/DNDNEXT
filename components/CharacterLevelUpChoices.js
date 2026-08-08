@@ -96,6 +96,10 @@ function classOptionFeatInstances(groups = [], selections = {}, toLevel = 1) {
   return output;
 }
 
+function sourceChoiceSpellId(option) {
+  return safeText(option?.metadata?.spellId || option?.value || option?.key);
+}
+
 export default function CharacterLevelUpChoices({ character = null, review = null, onCompleted = null }) {
   const characterId = character?.id || null;
   const preview = review?.preview || {};
@@ -149,9 +153,31 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
     [assignedClassSpellIds, catalogSpells]
   );
   const counts = useMemo(() => selectionCounts(classSpellCatalog, selectedSpells), [classSpellCatalog, selectedSpells]);
+  const wizardSignatureEligibleSpellIds = useMemo(() => {
+    const ids = new Set();
+    if (safeText(preview?.classKey).toLowerCase() !== "wizard" || Number(preview?.toLevel || 0) !== 20) return ids;
+    const spellById = new Map(catalogSpells.map((spell) => [String(spell.id), spell]));
+    for (const spellId of assignedClassSpellIds) {
+      if (Number(spellById.get(String(spellId))?.level || 0) === 3) ids.add(String(spellId));
+    }
+    for (const spellId of Object.keys(selectedSpells || {})) {
+      if (Number(spellById.get(String(spellId))?.level || 0) === 3) ids.add(String(spellId));
+    }
+    return ids;
+  }, [assignedClassSpellIds, catalogSpells, preview?.classKey, preview?.toLevel, selectedSpells]);
+  const resolvedClassChoiceGroups = useMemo(() => classChoiceGroups.map((group) => {
+    if (group?.id !== "wizard-signature-spells") return group;
+    return {
+      ...group,
+      fields: (group.fields || []).map((field) => field.id !== "spells" ? field : {
+        ...field,
+        options: (field.options || []).filter((option) => wizardSignatureEligibleSpellIds.has(sourceChoiceSpellId(option))),
+      }),
+    };
+  }), [classChoiceGroups, wizardSignatureEligibleSpellIds]);
   const classChoicesComplete = useMemo(
-    () => sourceChoiceGroupsComplete(classChoiceGroups, classChoiceSelections),
-    [classChoiceGroups, classChoiceSelections]
+    () => sourceChoiceGroupsComplete(resolvedClassChoiceGroups, classChoiceSelections),
+    [classChoiceSelections, resolvedClassChoiceGroups]
   );
   const replacementsComplete = useMemo(
     () => sourceChoiceGroupsComplete(replacementGroups, replacementSelections),
@@ -179,8 +205,8 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
   }), [advancement, catalogSpells, preview?.classKey, preview?.toLevel, sourceSelections, toolRows]);
 
   const classOptionFeatInstanceRows = useMemo(
-    () => classOptionFeatInstances(classChoiceGroups, classChoiceSelections, Number(preview?.toLevel || 1)),
-    [classChoiceGroups, classChoiceSelections, preview?.toLevel]
+    () => classOptionFeatInstances(resolvedClassChoiceGroups, classChoiceSelections, Number(preview?.toLevel || 1)),
+    [classChoiceSelections, preview?.toLevel, resolvedClassChoiceGroups]
   );
   const classOptionFeatGroups = useMemo(
     () => normalizeFeatSourceChoiceGroups(buildFeatSourceChoiceGroups({
@@ -222,6 +248,10 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
   useEffect(() => {
     setClassOptionFeatSelections((current) => normalizeSourceChoiceSelections(classOptionFeatGroups, current));
   }, [classOptionFeatGroups]);
+
+  useEffect(() => {
+    setClassChoiceSelections((current) => normalizeSourceChoiceSelections(resolvedClassChoiceGroups, current));
+  }, [resolvedClassChoiceGroups]);
 
   useEffect(() => {
     if (!subclassChoice || !subclassOptions.length) return;
@@ -343,7 +373,7 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
           .order("level", { ascending: true })
           .order("name", { ascending: true })
           .limit(5000),
-        supabase.from("character_spells").select("spell_id,source_type").eq("character_id", characterId),
+        supabase.from("character_spells").select("spell_id,source_type,raw_payload").eq("character_id", characterId),
         supabase.from("character_sheets").select("sheet").eq("character_id", characterId).maybeSingle(),
         supabase
           .from("items_catalog")
@@ -363,7 +393,8 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
         setBackgroundExpandedSpells([]);
       } else {
         setCatalogSpells(catalogResult.data || []);
-        setAssignedClassSpellIds(new Set((assignmentResult.data || []).filter((row) => row.source_type === "class").map((row) => row.spell_id)));
+        const wizard = safeText(preview?.classKey).toLowerCase() === "wizard";
+        setAssignedClassSpellIds(new Set((assignmentResult.data || []).filter((row) => row.source_type === "class" || (wizard && row.source_type === "class-feature" && Boolean(row.raw_payload?.wizardSpellbook))).map((row) => row.spell_id)));
         setToolRows(toolsResult.data || []);
         const sheet = sheetResult.data?.sheet || {};
         const meta = sheet?.meta || {};
@@ -377,7 +408,7 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
     }
     loadChoiceCatalogs();
     return () => { active = false; };
-  }, [characterId, metadataReady, review?.session?.id]);
+  }, [characterId, metadataReady, preview?.classKey, review?.session?.id]);
 
   function toggleAdvancementChoice(groupId, fieldId, optionKey) {
     setSourceSelections((current) => toggleSourceChoiceSelection(advancementModel.groups, current, groupId, fieldId, optionKey));
@@ -390,12 +421,12 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
   }
 
   function toggleClassChoice(groupId, fieldId, optionKey) {
-    setClassChoiceSelections((current) => toggleSourceChoiceSelection(classChoiceGroups, current, groupId, fieldId, optionKey));
+    setClassChoiceSelections((current) => toggleSourceChoiceSelection(resolvedClassChoiceGroups, current, groupId, fieldId, optionKey));
     setError("");
   }
 
   function setClassChoice(groupId, fieldId, optionKeys) {
-    setClassChoiceSelections((current) => setSourceChoiceSelection(classChoiceGroups, current, groupId, fieldId, optionKeys));
+    setClassChoiceSelections((current) => setSourceChoiceSelection(resolvedClassChoiceGroups, current, groupId, fieldId, optionKeys));
     setError("");
   }
 
@@ -456,7 +487,7 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
     if (advancementChoice && !advancementModel.instance) return "Choose the feat or Epic Boon gained at this level.";
     if (loadingClassChoices) return "Wait for source-backed class choices to finish loading.";
     if (classChoiceError) return classChoiceError;
-    if (classChoiceGroups.length && !classChoicesComplete) return "Complete every permanent class choice gained at this level.";
+    if (resolvedClassChoiceGroups.length && !classChoicesComplete) return "Complete every permanent class choice gained at this level.";
     if (classOptionFeatGroups.length && !classOptionFeatsComplete) return "Complete every choice owned by the Origin feat granted through this class feature.";
     if (loadingReplacements) return "Wait for optional source-owned replacements to finish loading.";
     if (replacementError) return replacementError;
@@ -561,17 +592,18 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
           </div>
         ) : null}
 
-        {classChoiceGroups.length || loadingClassChoices ? (
+        {resolvedClassChoiceGroups.length || loadingClassChoices ? (
           <div className="col-12">
             {loadingClassChoices ? <div className="small text-muted mb-2">Loading source-legal class choices…</div> : null}
             <SourceChoiceFields
-              groups={classChoiceGroups}
+              groups={resolvedClassChoiceGroups}
               selections={classChoiceSelections}
               kicker="Class progression"
               title="Permanent choices gained at this level"
               onToggle={toggleClassChoice}
               onSet={setClassChoice}
             />
+            {resolvedClassChoiceGroups.some((group) => group.id === "wizard-signature-spells") ? <div className="small text-info mt-2">Signature Spells are restricted to level-3 spells already in the Wizard spellbook plus any level-3 Wizard spell selected as part of this same level gain.</div> : null}
           </div>
         ) : null}
 
