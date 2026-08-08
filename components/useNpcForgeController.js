@@ -24,6 +24,7 @@ export default function useNpcForgeController({ show, onClose, onCreated, locati
   const [error, setError] = useState("");
   const [classRows, setClassRows] = useState([]);
   const [optionRows, setOptionRows] = useState([]);
+  const [toolRows, setToolRows] = useState([]);
   const [speciesQuery, setSpeciesQuery] = useState("");
   const [backgroundQuery, setBackgroundQuery] = useState("");
   const [classQuery, setClassQuery] = useState("");
@@ -48,11 +49,12 @@ export default function useNpcForgeController({ show, onClose, onCreated, locati
     Promise.all([
       supabase.from("class_catalog_preferred").select("id,class_key,class_name,source,ruleset,edition,hit_die,primary_abilities,saving_throws,spellcasting_ability,caster_progression,summary,raw_payload").order("class_name", { ascending: true }),
       supabase.from("character_option_catalog_preferred").select("id,option_key,option_type,name,source,category,description,prerequisite_text,tags,metadata,raw_payload").in("option_type", ["species", "background", "skill", "feat"]).order("option_type", { ascending: true }).order("name", { ascending: true }).limit(5000),
-    ]).then(([classesResult, optionsResult]) => {
+      supabase.from("items_catalog").select("item_name,item_key,item_type,item_rarity,payload").eq("item_rarity", "mundane").in("item_type", ["Tools", "Instrument"]).order("item_name", { ascending: true }).limit(2000),
+    ]).then(([classesResult, optionsResult, toolsResult]) => {
       if (!active) return;
-      const firstError = classesResult.error || optionsResult.error;
+      const firstError = classesResult.error || optionsResult.error || toolsResult.error;
       if (firstError) setCatalogError(firstError.message || "Could not load the preferred character catalogs.");
-      setClassRows(classesResult.data || []); setOptionRows(optionsResult.data || []); setLoadingCatalogs(false);
+      setClassRows(classesResult.data || []); setOptionRows(optionsResult.data || []); setToolRows(toolsResult.data || []); setLoadingCatalogs(false);
     });
     return () => { active = false; };
   }, [show]);
@@ -93,7 +95,7 @@ export default function useNpcForgeController({ show, onClose, onCreated, locati
   const stepKey = STEP_LABELS[step]?.toLowerCase();
   function stepErrors(key) {
     const errors = [];
-    if (key === "species") { if (!selectedSpecies) errors.push("Choose a species."); if (!safeText(draft.languagesText)) errors.push("Add at least one language."); }
+    if (key === "species") { if (!selectedSpecies) errors.push("Choose a species."); }
     if (key === "background") { if (!selectedBackground) errors.push("Choose a background."); if (selectedBackgroundFeatRule.requiresChoice && !selectedBackgroundFeat) errors.push("Choose the feat granted by this background."); backgroundSkillChoiceGroups.forEach((group) => { if (uniqueText(draft.backgroundSkillChoices?.[group.id] || []).length !== group.count) errors.push(`Choose ${group.count} background skill${group.count === 1 ? "" : "s"}.`); }); }
     if (key === "class") { if (!selectedClass) errors.push("Choose a class or No Adventuring Class."); if (Number(draft.level) < 1 || Number(draft.level) > 20) errors.push("Level must be between 1 and 20."); }
     if (key === "abilities") {
@@ -123,7 +125,6 @@ export default function useNpcForgeController({ show, onClose, onCreated, locati
     try {
       let timedOut = false;
       const timeout = new Promise((resolve) => setTimeout(() => { timedOut = true; resolve({ timeout: true }); }, 12000));
-      // Historical submission marker: createCharacter ? createCharacter(createPayload)
       const rpcPromise = createCharacter ? createCharacter(createPayload, spellChoices) : supabase.rpc("create_character_v1", { p_payload: createPayload });
       const result = await Promise.race([rpcPromise, timeout]);
       let createdRow = null;
@@ -136,12 +137,11 @@ export default function useNpcForgeController({ show, onClose, onCreated, locati
     } catch (cause) { setCreating(false); setError(String(cause?.message || cause || "Failed to create character.")); }
   }
 
-
   return {
     playerMode, STEP_LABELS, step, setStep, draft, setDraft, creating, loadingCatalogs, catalogError, error, setError,
     speciesQuery, setSpeciesQuery, backgroundQuery, setBackgroundQuery, classQuery, setClassQuery, featQuery, setFeatQuery,
     featToAdd, setFeatToAdd, tagInput, setTagInput, rolls, allocation, selectedRollId, setSelectedRollId, detail, setDetail,
-    portraitPickerOpen, setPortraitPickerOpen, spellModel, setSpellModel, spellRows, setSpellRows, speciesOptions, backgroundOptions,
+    portraitPickerOpen, setPortraitPickerOpen, spellModel, setSpellModel, spellRows, setSpellRows, toolRows, speciesOptions, backgroundOptions,
     classOptions, featOptions, selectedSpecies, selectedBackground, selectedClass, selectedSubclass, backgroundFeatOptions, selectedBackgroundFeat, speciesBonusFeat,
     backgroundSpellList, backgroundExpandedSpellNames, backgroundSkillChoiceGroups, backgroundSkills, classSkillConfig, skillInfo,
     selectedSkill, selectedProfession, filteredSpecies, filteredBackgrounds, filteredClasses, filteredFeats, baseAbilities, finalAbilities,
