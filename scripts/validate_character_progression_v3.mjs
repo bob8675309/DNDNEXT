@@ -28,6 +28,47 @@ for (const token of [
   '["bard", "cleric", "druid", "wizard"]',
 ]) requireToken(ui, token, "earned level-up source-choice and spell-access UI");
 
+const sourceFields = read("components/SourceChoiceFields.js");
+for (const token of ["sourceChoiceFieldIsActive", "activeFields", "replacementCadence"]) requireToken(sourceFields, token, "dependent source-choice renderer");
+
+const invocationBuilder = read("utils/warlockInvocationChoices.js");
+for (const token of [
+  "XPHB_INVOCATION_SLOT_LEVELS",
+  "buildWarlockInvocationSourceGroups",
+  "warlockInvocationSelections",
+  'ownerType: "class-option"',
+  'family: "eldritch-invocation"',
+  "warlock-damage-cantrip",
+  "warlock-attack-cantrip",
+  "origin-feat",
+  "distinctPerRepeat",
+  'replacementCadence: "level-up"',
+]) requireToken(invocationBuilder, token, "Warlock Invocation source instances");
+
+const registrar = read("components/NpcForgeFeatChoiceRegistrar.js");
+for (const token of [
+  "buildWarlockInvocationSourceGroups",
+  'from("class_feature_option_catalog")',
+  '"class-options"',
+  "classOptionReady",
+  "warlock-invocation-slot-",
+]) requireToken(registrar, token, "Forge Invocation registrar");
+
+const guideModel = read("components/NpcForgeClassGuideModel.js");
+for (const token of [
+  "applyClassFeatureOptionAuthority",
+  'from("class_feature_option_catalog")',
+  "invocationSourceActive",
+  'group.kind === "eldritch-invocation"',
+]) requireToken(guideModel, token, "canonical optional-feature class guide");
+
+const classChoicesUi = read("components/NpcForgeClassFeatureChoices.js");
+for (const token of [
+  "NpcForgeSourceChoiceFields",
+  'ownerType="class-option"',
+  'title="Source-owned class option instances"',
+]) requireToken(classChoicesUi, token, "source-owned Class workspace");
+
 const simple = read("sql/20260808_16_simple_class_choice_delta_authority.sql");
 for (const token of [
   "simple_level_class_choice_groups_v1",
@@ -82,6 +123,33 @@ for (const token of [
   "short-or-long-rest",
 ]) requireToken(optionCatalog, token, "canonical optional class-feature catalogue");
 
+const classOptionAuthority = read("sql/20260808_21_player_forge_class_option_instance_authority.sql");
+for (const token of [
+  "character_class_option_grant_instances",
+  "validate_and_materialize_player_forge_class_options_v1",
+  "get_character_class_option_grants_v1",
+  "xphb_warlock_invocation_count_v1",
+  "xphb_warlock_invocation_slot_level_v1",
+  "Repeated % instances must use different dependent choices",
+  "Lessons of the First Ones feat instance must match its Invocation source choice",
+]) requireToken(classOptionAuthority, token, "normalized Player Forge class-option authority");
+
+const legacyGate = read("sql/20260808_22_tighten_player_forge_class_option_legacy_gate.sql");
+for (const token of [
+  "reject_unmarked_legacy_warlock_invocations_v1",
+  "player_forge_source_choice_legacy_v1",
+  "New XPHB Warlocks must use source-owned Eldritch Invocation instances",
+]) requireToken(legacyGate, token, "server-owned legacy gate");
+
+const spellSlotFix = read("sql/20260808_23_fix_player_forge_spell_slot_json_validation.sql");
+for (const token of [
+  "validate_player_forge_starting_spells_v1",
+  "v_spell_slots jsonb",
+  "coalesce(p.spell_slots, '[]'::jsonb)",
+  "jsonb_array_elements(v_spell_slots)",
+  "pactSlotLevel",
+]) requireToken(spellSlotFix, token, "shared Forge spell-slot JSON validation");
+
 const optionImporter = read("scripts/import_5etools_optional_features.mjs");
 for (const token of [
   "optionalfeatures.json",
@@ -106,4 +174,4 @@ for (const token of [
   "mystic arcanum",
 ]) requireToken(delta, token, "shared class-choice delta planner");
 
-console.log("Progression v3 class choices, source-aware spell access, canonical optional-feature authority, delta planning, and fail-closed complex-choice boundary validated.");
+console.log("Progression v3 class choices, source-aware spell access, normalized Invocation authority, optional-feature catalogue, and fail-closed complex-choice boundary validated.");
