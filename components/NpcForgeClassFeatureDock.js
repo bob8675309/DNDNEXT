@@ -1,5 +1,6 @@
 import ClassFeatureText from "./ClassFeatureText";
 import { formatPlayerFacingText } from "../utils/playerFacingText";
+import NpcForgeSourceChoiceFields from "./NpcForgeSourceChoiceFields";
 
 function safeText(value) {
   return String(value ?? "").trim();
@@ -34,6 +35,7 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
       </div>
       <ClassFeatureText text={description} compact />
       {!feature ? <small>Feature descriptions will appear here as you move through the progression table or detailed guide.</small> : null}
+      <NpcForgeSourceChoiceFields placement="class" title="Nested class and Fighting Style feat choices" />
     </section>
   );
 }
