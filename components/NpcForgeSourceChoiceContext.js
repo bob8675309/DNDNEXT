@@ -1,4 +1,5 @@
 import { createContext, useContext } from "react";
+import { normalizeFeatSourceChoiceGroups } from "../utils/featSourceChoiceNormalization";
 import {
   foundationChoiceSummary,
   normalizeSourceChoiceSelections,
@@ -20,13 +21,13 @@ export function useNpcForgeSourceChoices() {
 }
 
 export function normalizeSourceChoiceState(groups = [], catalogReady = true, previous = EMPTY_SOURCE_CHOICE_STATE, scope = "foundation") {
-  const validGroups = Array.isArray(groups) ? groups : [];
+  const validGroups = normalizeFeatSourceChoiceGroups(Array.isArray(groups) ? groups : []);
   const previousScopes = previous?.scopes && typeof previous.scopes === "object" ? previous.scopes : {};
   const scopes = {
     ...previousScopes,
     [scope || "foundation"]: { groups: validGroups, catalogReady: Boolean(catalogReady) },
   };
-  const combinedGroups = Object.values(scopes).flatMap((entry) => Array.isArray(entry?.groups) ? entry.groups : []);
+  const combinedGroups = normalizeFeatSourceChoiceGroups(Object.values(scopes).flatMap((entry) => Array.isArray(entry?.groups) ? entry.groups : []));
   return {
     scopes,
     groups: combinedGroups,
