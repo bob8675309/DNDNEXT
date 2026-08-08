@@ -1,6 +1,7 @@
 -- Normalize XPHB Battle Master maneuver identities from the imported Maneuver Options
--- source feature, then fail closed on earned levels that add maneuvers until the
--- progression materializer resolves those deltas explicitly.
+-- source feature. The historical filename mentions gap guarding, but subclass-specific
+-- progression gating is intentionally NOT added to the class-only gap function here;
+-- earned Battle Master authority is connected at a character/subclass-aware layer.
 
 with source_feature as (
   select id,feature_key,entries,raw_payload
@@ -109,45 +110,6 @@ as $$
     when greatest(1,least(20,coalesce(p_level,1)))>=7 then 5
     when greatest(1,least(20,coalesce(p_level,1)))>=3 then 3
     else 0 end;
-$$;
-
-create or replace function private.level_up_persistent_choice_gaps_base_v1(
-  p_class_key text,
-  p_class_source text,
-  p_from_level integer,
-  p_to_level integer
-)
-returns jsonb
-language plpgsql
-immutable
-set search_path=pg_catalog,private
-as $$
-declare
-  v_class text:=lower(btrim(coalesce(p_class_key,'')));
-  v_source text:=upper(btrim(coalesce(p_class_source,'')));
-  v_from integer:=greatest(1,coalesce(p_from_level,1));
-  v_to integer:=greatest(1,coalesce(p_to_level,1));
-  v_out jsonb:='[]'::jsonb;
-  v_before integer:=0;
-  v_after integer:=0;
-begin
-  if v_source<>'XPHB' or v_to<>v_from+1 then return v_out; end if;
-
-  if v_class='warlock' then
-    v_before:=private.xphb_warlock_invocation_count_v1(v_from);
-    v_after:=private.xphb_warlock_invocation_count_v1(v_to);
-    if v_after>v_before then
-      v_out:=v_out||jsonb_build_array('Eldritch Invocations +'||(v_after-v_before)::text);
-    end if;
-  elsif v_class='fighter' then
-    v_before:=private.battle_master_maneuver_count_v1(v_from);
-    v_after:=private.battle_master_maneuver_count_v1(v_to);
-    if v_after>v_before then
-      v_out:=v_out||jsonb_build_array('Battle Master Maneuvers +'||(v_after-v_before)::text);
-    end if;
-  end if;
-  return v_out;
-end;
 $$;
 
 revoke all on function private.battle_master_maneuver_count_v1(integer) from public,anon,authenticated;
