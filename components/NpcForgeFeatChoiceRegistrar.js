@@ -3,6 +3,7 @@ import { supabase } from "../utils/supabaseClient";
 import { buildAdvancementSourceChoiceGroups } from "../utils/playerForgeAdvancement";
 import { buildFeatSourceChoiceGroups, featGrantInstancesFromSelections } from "../utils/playerForgeFeatChoices";
 import { buildSpeciesSourceChoiceGroups } from "../utils/playerForgeSpeciesChoices";
+import { buildWarlockInvocationSourceGroups } from "../utils/warlockInvocationChoices";
 import { classChoiceSelectionSummary, useNpcForgeClassChoice } from "./NpcForgeClassChoiceContext";
 import { sourceChoiceSelectionSummary, useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
 import { speciesFeatChoicesFromState, useNpcForgeSpeciesChoices } from "./NpcForgeSpeciesChoiceContext";
@@ -59,6 +60,8 @@ export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, contro
   const [advancementRows, setAdvancementRows] = useState([]);
   const [boonRows, setBoonRows] = useState([]);
   const [advancementReady, setAdvancementReady] = useState(false);
+  const [classOptionRows, setClassOptionRows] = useState([]);
+  const [classOptionReady, setClassOptionReady] = useState(false);
   const [catalogError, setCatalogError] = useState("");
 
   useEffect(() => {
@@ -72,7 +75,7 @@ export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, contro
     setSpellCatalogReady(false);
     setCatalogError("");
     supabase.from("spells_catalog")
-      .select("id,spell_key,name,source,level,school,school_code,classes,ritual,casting_time,range_text,duration_text,description,components_v,components_s,components_m,damage_dice,damage_types")
+      .select("id,spell_key,name,source,level,school,school_code,classes,ritual,casting_time,range_text,range_distance,range_unit,attack_type,duration_text,description,components_v,components_s,components_m,damage_dice,damage_types")
       .order("level", { ascending: true })
       .order("name", { ascending: true })
       .limit(10000)
@@ -89,6 +92,36 @@ export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, contro
       });
     return () => { active = false; };
   }, [playerMode]);
+
+  useEffect(() => {
+    const selectedClass = controller?.selectedClass;
+    const needsInvocations = Boolean(playerMode && norm(selectedClass?.class_key) === "warlock" && String(selectedClass?.source || "").toUpperCase() === "XPHB");
+    if (!needsInvocations) {
+      setClassOptionRows([]);
+      setClassOptionReady(true);
+      return undefined;
+    }
+    let active = true;
+    setClassOptionReady(false);
+    supabase.from("class_feature_option_catalog")
+      .select("id,option_key,option_type,name,source,class_key,feature_types,page,description,prerequisites,additional_spells,repeatable,choice_schema,metadata")
+      .eq("option_type", "eldritch-invocation")
+      .eq("source", "XPHB")
+      .eq("class_key", "warlock")
+      .order("name", { ascending: true })
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error) {
+          setCatalogError(error.message || "Could not load canonical Warlock Invocation options.");
+          setClassOptionRows([]);
+          setClassOptionReady(false);
+          return;
+        }
+        setClassOptionRows(data || []);
+        setClassOptionReady(true);
+      });
+    return () => { active = false; };
+  }, [controller?.selectedClass, playerMode]);
 
   useEffect(() => {
     const selectedClass = controller?.selectedClass;
@@ -142,6 +175,22 @@ export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, contro
   useEffect(() => {
     registerGroups(playerMode ? speciesGroups : [], !playerMode || spellCatalogReady, "species-extra");
   }, [playerMode, registerGroups, speciesGroups, spellCatalogReady]);
+
+  const invocationSelectionSignature = JSON.stringify(Object.entries(sourceState.selections || {})
+    .filter(([groupId]) => groupId.startsWith("warlock-invocation-slot-"))
+    .sort(([a], [b]) => a.localeCompare(b)));
+  const invocationGroups = useMemo(() => buildWarlockInvocationSourceGroups({
+    selectedClass: controller?.selectedClass || null,
+    level: controller?.draft?.level || 1,
+    optionRows: classOptionRows,
+    spells,
+    featOptions: controller?.featOptions || [],
+    selections: sourceState.selections || {},
+  }), [classOptionRows, controller?.draft?.level, controller?.featOptions, controller?.selectedClass, invocationSelectionSignature, spells]);
+
+  useEffect(() => {
+    registerGroups(playerMode ? invocationGroups : [], !playerMode || (classOptionReady && spellCatalogReady), "class-options");
+  }, [classOptionReady, invocationGroups, playerMode, registerGroups, spellCatalogReady]);
 
   const speciesChoiceFeats = useMemo(() => speciesFeatChoicesFromState(speciesState), [speciesState]);
   const classChoices = useMemo(() => classChoiceSelectionSummary(classState), [classState]);
