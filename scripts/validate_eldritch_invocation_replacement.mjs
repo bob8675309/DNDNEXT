@@ -53,7 +53,8 @@ for (const token of [
 
 for (const token of [
   "sync_character_eldritch_invocations_v1",
-  "join public.character_class_option_grant_instances",
+  "from public.character_class_option_grant_instances g",
+  "join public.class_feature_option_catalog o on o.id=g.option_catalog_id",
   "g.option_type='eldritch-invocation'",
   "jsonb_agg(o.name order by g.instance_key)",
   "v_sheet:=jsonb_set(v_sheet,'{eldritchInvocations}',v_names,true)",
