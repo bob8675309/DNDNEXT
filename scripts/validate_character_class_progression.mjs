@@ -13,9 +13,16 @@ const requiredFiles = [
   "sql/20260712_01_profile_sheet_class_refinements.sql",
   "sql/20260720_01_subclass_compatibility_and_selection.sql",
   "sql/20260720_02_subclass_sheet_sync.sql",
+  "sql/20260808_06_character_progression_option_eligibility.sql",
+  "sql/20260808_08_character_spell_source_identity.sql",
+  "sql/20260808_09_level_up_advancement_authority_helpers.sql",
+  "sql/20260808_10_level_up_advancement_effects.sql",
+  "sql/20260808_11_character_level_up_v3.sql",
+  "sql/20260808_12_level_up_review_progression_authority.sql",
   "components/CharacterClassPanel.js",
   "components/CharacterClassWorkspace.js",
   "components/CharacterLevelUpChoices.js",
+  "components/SourceChoiceFields.js",
   "components/CharacterFeaturesPanel.js",
   "components/CharacterSheetEnhancements.js",
   "components/CharacterSheetPanel.js",
@@ -24,6 +31,8 @@ const requiredFiles = [
   "components/CharacterForgeControls.js",
   "components/PlayerCharacterProfilePanel.js",
   "utils/playerCharacterForgeGuard.js",
+  "utils/characterProgressionResolver.js",
+  "utils/characterLevelUpPlan.js",
   "components/character/CharacterInteractionContext.js",
   "components/character/CharacterInteractionPanel.js",
   "pages/admin/spells.js",
@@ -174,6 +183,44 @@ for (const contract of [
   if (!subclassSheetSyncMigration.includes(contract)) throw new Error(`Subclass sheet sync validation failed: missing ${contract}`);
 }
 
+const progressionEligibilityMigration = fs.readFileSync(path.join(process.cwd(), "sql/20260808_06_character_progression_option_eligibility.sql"), "utf8");
+for (const contract of ["character_option_prerequisites_met_v1", "get_character_level_advancement_options_v1", "option_type='boon'", "character_option_grant_instances"]) {
+  if (!progressionEligibilityMigration.includes(contract)) throw new Error(`Progression option eligibility validation failed: missing ${contract}`);
+}
+
+const spellIdentityMigration = fs.readFileSync(path.join(process.cwd(), "sql/20260808_08_character_spell_source_identity.sql"), "utf8");
+for (const contract of ["source_key", "known boolean", "character_spells_source_identity_uidx"]) {
+  if (!spellIdentityMigration.includes(contract)) throw new Error(`Character spell source identity validation failed: missing ${contract}`);
+}
+
+const advancementEffectMigration = fs.readFileSync(path.join(process.cwd(), "sql/20260808_10_level_up_advancement_effects.sql"), "utf8");
+for (const contract of [
+  "apply_character_level_advancement_v1",
+  "materialize_level_up_advancement_spells_v1",
+  "constitution-hit-points",
+  "saving-throw-proficiency",
+  "Elemental Adept must choose a different damage type each time",
+  "character_option_grant_instances",
+]) {
+  if (!advancementEffectMigration.includes(contract)) throw new Error(`Level-up advancement effect validation failed: missing ${contract}`);
+}
+
+const levelUpV3Migration = fs.readFileSync(path.join(process.cwd(), "sql/20260808_11_character_level_up_v3.sql"), "utf8");
+for (const contract of [
+  "sync_player_forge_class_spell_summary_v1",
+  "complete_epic_level_up_base_v1",
+  "complete_character_level_up_v3",
+  "advancement_instance",
+  "pending_level_up",
+]) {
+  if (!levelUpV3Migration.includes(contract)) throw new Error(`Progression v3 transaction validation failed: missing ${contract}`);
+}
+
+const levelUpReviewAuthorityMigration = fs.readFileSync(path.join(process.cwd(), "sql/20260808_12_level_up_review_progression_authority.sql"), "utf8");
+for (const contract of ["begin_character_level_up_v1", "epic_boon_or_feat", "Ability Score Improvement or Feat", "unsupportedChoices"]) {
+  if (!levelUpReviewAuthorityMigration.includes(contract)) throw new Error(`Progression v3 review validation failed: missing ${contract}`);
+}
+
 const classPanel = fs.readFileSync(path.join(process.cwd(), "components/CharacterClassPanel.js"), "utf8");
 for (const token of [
   "CharacterLevelUpChoices",
@@ -235,17 +282,34 @@ for (const token of [
   if (!classWorkspaceStyle.includes(token)) throw new Error(`Class guide styling validation failed: missing ${token}`);
 }
 
+const progressionResolverSource = fs.readFileSync(path.join(process.cwd(), "utils/characterProgressionResolver.js"), "utf8");
+for (const token of ["progressionState", "evaluateFeatPrerequisites", "eligibleAdvancementOptions", "applyFeatToProgressionState", "classChoiceDeltaGroups", "progressionLevels"]) {
+  if (!progressionResolverSource.includes(token)) throw new Error(`Shared progression resolver validation failed: missing ${token}`);
+}
+
+const levelUpPlanSource = fs.readFileSync(path.join(process.cwd(), "utils/characterLevelUpPlan.js"), "utf8");
+for (const token of ["buildRuntimeAdvancementChoiceModel", "buildRuntimeAdvancementGroup", "featInstanceSummaries", "boon-or-feat", "advancement_instance"]) {
+  if (!levelUpPlanSource.includes(token)) throw new Error(`Runtime level-up plan validation failed: missing ${token}`);
+}
+
 const levelChoiceSource = fs.readFileSync(path.join(process.cwd(), "components/CharacterLevelUpChoices.js"), "utf8");
 for (const token of [
-  "Ability Score Improvement or Feat",
   "useSubclassCatalog",
   'from("spells_catalog_preferred")',
-  'supabase.rpc("complete_character_level_up_v2"',
+  'supabase.rpc("get_character_level_advancement_options_v1"',
+  'supabase.rpc("complete_character_level_up_v3"',
+  "buildRuntimeAdvancementChoiceModel",
+  "SourceChoiceFields",
   "subclass_source",
   "Apply Level",
   "spell_choices",
+  "advancement_instance",
+  "XP unlocks this one level",
 ]) {
   if (!levelChoiceSource.includes(token)) throw new Error(`Level-up choice form validation failed: missing ${token}`);
+}
+if (levelChoiceSource.includes('supabase.rpc("complete_character_level_up_v2"')) {
+  throw new Error("Level-up choice validation failed: earned progression must use the v3 shared advancement authority.");
 }
 if (/placeholder="Enter the chosen subclass"/.test(levelChoiceSource)) {
   throw new Error("Level-up choice validation failed: subclasses must be selected from the source-backed catalog, not entered as free text.");
@@ -377,11 +441,9 @@ if (featureSource.includes("sourceFilter") || /<span>Source<\/span><select/.test
 if (featureSource.lastIndexOf("{renderFilters(") > featureSource.lastIndexOf('<div className="profile-catalogue-workspace">')) {
   throw new Error("Character feat and boon validation failed: the filter toolbar must remain above the list/detail workspace.");
 }
-
 if (featureSource.includes('setView("admin")') || featureSource.includes('view === "admin"')) {
   throw new Error("Character feat and boon validation failed: admin actions must remain integrated into Catalogue.");
 }
-
 if (/const\s+(CatalogList|KnownList)\s*=|function\s+(CatalogList|KnownList)\s*\(/.test(featureSource)) {
   throw new Error("Character feat and boon search focus validation failed: render helpers must not be nested React component types.");
 }
@@ -440,4 +502,4 @@ for (const token of ["findProgressionColumn", "prepared\\s+spells", "spells_know
   if (!metadataSource.includes(token)) throw new Error(`Spell progression parser validation failed: missing ${token}`);
 }
 
-console.log("Canonical character creation, Known/Catalogue workspaces with integrated admin actions, pinned descriptions, quick HP, class guide, progression, and spell selection contracts validated.");
+console.log("Canonical character creation, shared Forge/earned advancement authority, Known/Catalogue workspaces, pinned descriptions, quick HP, class guide, progression, and spell selection contracts validated.");

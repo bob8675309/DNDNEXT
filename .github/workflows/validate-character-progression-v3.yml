@@ -1,0 +1,122 @@
+name: Validate character progression v3
+
+on:
+  push:
+    paths:
+      - "components/CharacterLevelUpChoices.js"
+      - "components/CharacterInvocationRecovery.js"
+      - "components/SourceChoiceFields.js"
+      - "utils/characterProgressionResolver.js"
+      - "utils/characterLevelUpPlan.js"
+      - "utils/characterClassChoiceDeltaPlan.js"
+      - "utils/classFeatureChoices.js"
+      - "utils/classFeatureChoiceExtensions.js"
+      - "utils/playerForgeFeatChoices.js"
+      - "utils/warlockInvocationChoices.js"
+      - "sql/20260808_06_character_progression_option_eligibility.sql"
+      - "sql/20260808_08_character_spell_source_identity.sql"
+      - "sql/20260808_09_level_up_advancement_authority_helpers.sql"
+      - "sql/20260808_10_level_up_advancement_effects.sql"
+      - "sql/20260808_11_character_level_up_v3.sql"
+      - "sql/20260808_12_level_up_review_progression_authority.sql"
+      - "sql/20260808_13_level_up_persistent_choice_gap_guard.sql"
+      - "sql/20260808_14_level_up_v3_review_guard.sql"
+      - "sql/20260808_15_level_up_review_fail_closed_choice_deltas.sql"
+      - "sql/20260808_16_simple_class_choice_delta_authority.sql"
+      - "sql/20260808_17_enable_simple_class_choice_level_up.sql"
+      - "sql/20260808_18_metamagic_mystic_arcanum_progression.sql"
+      - "sql/20260808_19_source_aware_level_up_spell_access.sql"
+      - "sql/20260808_20_class_feature_option_catalog.sql"
+      - "sql/20260808_21_player_forge_class_option_instance_authority.sql"
+      - "sql/20260808_22_tighten_player_forge_class_option_legacy_gate.sql"
+      - "sql/20260808_23_fix_player_forge_spell_slot_json_validation.sql"
+      - "sql/20260808_24_source_owned_origin_feat_authority.sql"
+      - "sql/20260808_25_tough_progression_bonus.sql"
+      - "sql/20260808_26_earned_warlock_invocation_progression.sql"
+      - "sql/20260808_27_earned_subclass_choice_progression.sql"
+      - "sql/20260808_28_legacy_warlock_invocation_recovery.sql"
+      - "sql/20260808_29_normalize_xphb_metamagic_options.sql"
+      - "sql/20260808_30_safe_level_up_replacements.sql"
+      - "sql/20260808_31_fix_tough_progression_acquisition_level.sql"
+      - "sql/20260808_32_repair_source_owned_origin_feat_grant_schema.sql"
+      - "sql/20260808_33_magic_initiate_level_replacement.sql"
+      - "sql/20260808_34_reversible_source_owned_origin_feats.sql"
+      - "sql/20260808_35_eldritch_invocation_level_replacement.sql"
+      - "sql/20260808_36_fix_invocation_replacement_source_choices_parent.sql"
+      - "sql/20260808_37_sync_eldritch_invocation_sheet_projection.sql"
+      - "scripts/validate_character_class_progression.mjs"
+      - "scripts/validate_character_progression_v3.mjs"
+      - "scripts/validate_tough_progression.mjs"
+      - "scripts/validate_source_owned_origin_feat_schema.mjs"
+      - "scripts/validate_magic_initiate_replacement.mjs"
+      - "scripts/validate_reversible_source_owned_origin_feats.mjs"
+      - "scripts/validate_eldritch_invocation_replacement.mjs"
+      - ".github/workflows/validate-character-progression-v3.yml"
+  pull_request:
+    paths:
+      - "components/CharacterLevelUpChoices.js"
+      - "components/CharacterInvocationRecovery.js"
+      - "components/SourceChoiceFields.js"
+      - "utils/characterProgressionResolver.js"
+      - "utils/characterLevelUpPlan.js"
+      - "utils/characterClassChoiceDeltaPlan.js"
+      - "utils/classFeatureChoices.js"
+      - "utils/classFeatureChoiceExtensions.js"
+      - "utils/playerForgeFeatChoices.js"
+      - "utils/warlockInvocationChoices.js"
+      - "sql/20260808_06_character_progression_option_eligibility.sql"
+      - "sql/20260808_08_character_spell_source_identity.sql"
+      - "sql/20260808_09_level_up_advancement_authority_helpers.sql"
+      - "sql/20260808_10_level_up_advancement_effects.sql"
+      - "sql/20260808_11_character_level_up_v3.sql"
+      - "sql/20260808_12_level_up_review_progression_authority.sql"
+      - "sql/20260808_13_level_up_persistent_choice_gap_guard.sql"
+      - "sql/20260808_14_level_up_v3_review_guard.sql"
+      - "sql/20260808_15_level_up_review_fail_closed_choice_deltas.sql"
+      - "sql/20260808_16_simple_class_choice_delta_authority.sql"
+      - "sql/20260808_17_enable_simple_class_choice_level_up.sql"
+      - "sql/20260808_18_metamagic_mystic_arcanum_progression.sql"
+      - "sql/20260808_19_source_aware_level_up_spell_access.sql"
+      - "sql/20260808_20_class_feature_option_catalog.sql"
+      - "sql/20260808_21_player_forge_class_option_instance_authority.sql"
+      - "sql/20260808_22_tighten_player_forge_class_option_legacy_gate.sql"
+      - "sql/20260808_23_fix_player_forge_spell_slot_json_validation.sql"
+      - "sql/20260808_24_source_owned_origin_feat_authority.sql"
+      - "sql/20260808_25_tough_progression_bonus.sql"
+      - "sql/20260808_26_earned_warlock_invocation_progression.sql"
+      - "sql/20260808_27_earned_subclass_choice_progression.sql"
+      - "sql/20260808_28_legacy_warlock_invocation_recovery.sql"
+      - "sql/20260808_29_normalize_xphb_metamagic_options.sql"
+      - "sql/20260808_30_safe_level_up_replacements.sql"
+      - "sql/20260808_31_fix_tough_progression_acquisition_level.sql"
+      - "sql/20260808_32_repair_source_owned_origin_feat_grant_schema.sql"
+      - "sql/20260808_33_magic_initiate_level_replacement.sql"
+      - "sql/20260808_34_reversible_source_owned_origin_feats.sql"
+      - "sql/20260808_35_eldritch_invocation_level_replacement.sql"
+      - "sql/20260808_36_fix_invocation_replacement_source_choices_parent.sql"
+      - "sql/20260808_37_sync_eldritch_invocation_sheet_projection.sql"
+      - "scripts/validate_character_class_progression.mjs"
+      - "scripts/validate_character_progression_v3.mjs"
+      - "scripts/validate_tough_progression.mjs"
+      - "scripts/validate_source_owned_origin_feat_schema.mjs"
+      - "scripts/validate_magic_initiate_replacement.mjs"
+      - "scripts/validate_reversible_source_owned_origin_feats.mjs"
+      - "scripts/validate_eldritch_invocation_replacement.mjs"
+      - ".github/workflows/validate-character-progression-v3.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate progression v5 contracts
+        run: |
+          node scripts/validate_character_progression_v3.mjs
+          node scripts/validate_tough_progression.mjs
+          node scripts/validate_source_owned_origin_feat_schema.mjs
+          node scripts/validate_magic_initiate_replacement.mjs
+          node scripts/validate_reversible_source_owned_origin_feats.mjs
+          node scripts/validate_eldritch_invocation_replacement.mjs

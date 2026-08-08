@@ -1,0 +1,65 @@
+name: Validate Character Forge nested choices
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "components/NewNpcModalV3.js"
+      - "components/NewNpcModalV3Refined.js"
+      - "components/ClassFeatureText.js"
+      - "components/NpcForgeAbilityStep.js"
+      - "components/NpcForgeClassChoiceContext.js"
+      - "components/NpcForgeClassFeatureChoices.js"
+      - "components/NpcForgeClassFeatureDock.js"
+      - "components/NpcForgeClassGuide.js"
+      - "components/NpcForgeClassGuideModel.js"
+      - "components/NpcForgeContextPanelRefined.js"
+      - "components/NpcForgeFeatChoiceRegistrar.js"
+      - "components/NpcForgeReviewPanel.js"
+      - "components/NpcForgeSourceChoiceContext.js"
+      - "components/NpcForgeSourceChoiceFields.js"
+      - "components/NpcForgeSpeciesBonusPanel.js"
+      - "components/NpcForgeSpeciesChoiceContext.js"
+      - "components/NpcForgeStepContent.js"
+      - "components/NpcForgeTrainingStep.js"
+      - "utils/playerFacingText.js"
+      - "utils/speciesPresentation.js"
+      - "utils/classFeatureChoiceExtensions.js"
+      - "utils/classFeatureChoiceParsing.js"
+      - "utils/classFeatureChoices.js"
+      - "utils/playerForgeAdvancement.js"
+      - "utils/playerForgeFeatChoices.js"
+      - "utils/playerForgeSourceChoices.js"
+      - "utils/playerForgeSpeciesChoices.js"
+      - "scripts/test_player_facing_text.mjs"
+      - "scripts/validate_character_forge_nested_choices.mjs"
+      - "sql/20260806_03_player_forge_nested_choice_validation.sql"
+      - "sql/20260807_01_player_forge_runtime_choice_cadence.sql"
+      - "sql/20260808_01_character_option_grant_instances.sql"
+      - "sql/20260808_02_player_forge_feat_instance_authority.sql"
+      - "sql/20260808_03_player_forge_feat_instance_validation.sql"
+      - ".github/workflows/validate-character-forge-nested-choices.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate nested Forge choice contract
+        run: |
+          node --check scripts/validate_character_forge_nested_choices.mjs
+          node scripts/validate_character_forge_nested_choices.mjs
+          node scripts/test_player_facing_text.mjs

@@ -1,0 +1,60 @@
+/* Player profile modal: preserve a bounded flex height so every interaction view can scroll. */
+.npc-page-profile-panel-backdrop {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.npc-page-profile-panel-shell {
+  height: calc(100dvh - 2rem);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.npc-page-profile-panel-shell > .persistent-player-character-profile,
+.npc-page-profile-panel-shell > .persistent-player-character-forge {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.npc-page-profile-panel-shell > .persistent-player-character-profile {
+  display: flex;
+  flex-direction: column;
+}
+
+.npc-page-profile-panel-shell > .persistent-player-character-profile > .player-character-forge-toolbar {
+  flex: 0 0 auto;
+}
+
+.npc-page-profile-panel-shell > .persistent-player-character-profile > .npc-panel-inner,
+.npc-page-profile-panel-shell > .persistent-player-character-profile > div > .npc-panel-inner {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  height: 100%;
+}
+
+.npc-page-profile-panel-shell .npc-panel-body,
+.npc-page-profile-panel-shell .npc-panel-body.d-block {
+  min-height: 0;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: auto;
+}
+
+.npc-page-profile-panel-shell .character-class-shell,
+.npc-page-profile-panel-shell .character-features-shell,
+.npc-page-profile-panel-shell .character-spellbook-shell {
+  min-height: 0;
+  height: 100%;
+}
+
+@media (max-width: 980px) {
+  .npc-page-profile-panel-shell {
+    height: calc(100dvh - 1rem);
+  }
+}

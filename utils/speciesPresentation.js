@@ -50,6 +50,27 @@ const SPELLCASTING_ABILITY_OPTIONS = Object.freeze([
   Object.freeze({ value: "cha", label: "Charisma" }),
 ]);
 
+const SKILL_OPTIONS = Object.freeze([
+  ["acrobatics", "Acrobatics"], ["animalHandling", "Animal Handling"], ["arcana", "Arcana"], ["athletics", "Athletics"],
+  ["deception", "Deception"], ["history", "History"], ["insight", "Insight"], ["intimidation", "Intimidation"],
+  ["investigation", "Investigation"], ["medicine", "Medicine"], ["nature", "Nature"], ["perception", "Perception"],
+  ["performance", "Performance"], ["persuasion", "Persuasion"], ["religion", "Religion"], ["sleightOfHand", "Sleight of Hand"],
+  ["stealth", "Stealth"], ["survival", "Survival"],
+].map(([value, label]) => Object.freeze({ value, label, description: `Gain proficiency in ${label}.`, source: "XPHB" })));
+
+const ORIGIN_FEAT_OPTIONS = Object.freeze([
+  ["Alert", "Add Proficiency to Initiative and swap Initiative with a willing ally after rolling."],
+  ["Crafter", "Gain three Artisan's Tool proficiencies, receive nonmagical purchase discounts, and make temporary gear after a Long Rest."],
+  ["Healer", "Use a Healer's Kit to restore Hit Points and reroll healing dice that roll a 1."],
+  ["Lucky", "Gain Luck Points that can grant your rolls Advantage or impose Disadvantage on attacks against you."],
+  ["Magic Initiate", "Learn two cantrips and one level-1 spell from the Cleric, Druid, or Wizard list."],
+  ["Musician", "Gain three instrument proficiencies and grant Heroic Inspiration after rests by performing."],
+  ["Savage Attacker", "Once per turn, roll a weapon's damage dice twice and use either result."],
+  ["Skilled", "Gain proficiency in any combination of three skills or tools."],
+  ["Tavern Brawler", "Improve Unarmed Strikes, improvised weapons, damage rerolls, and pushing with an Unarmed Strike."],
+  ["Tough", "Increase maximum Hit Points by twice your level and gain 2 more with every later level."],
+].map(([label, description]) => Object.freeze({ value: label, label, description, source: "XPHB" })));
+
 function cantripOptionsFromDescription(description = "") {
   const match = String(description).match(/one of the following cantrips(?: of your choice)?\s*:\s*([^.]*)\./i);
   if (!match) return [];
@@ -82,12 +103,37 @@ export function extractSpeciesTraitDetails(metadata = {}) {
   }).filter(Boolean);
 }
 
+function humanChoiceRule(detail) {
+  const name = slug(detail.name);
+  const description = String(detail.description || "");
+  if (name === "skillful" || /gain proficiency in one skill/i.test(description)) {
+    return {
+      id: slug(detail.name || "skillful"),
+      traitName: detail.name || "Skillful",
+      required: true,
+      fields: [{ id: "skill", label: "Choose skill proficiency", kind: "skill", required: true, options: SKILL_OPTIONS }],
+    };
+  }
+  if (name === "versatile" || /gain an origin feat/i.test(description)) {
+    return {
+      id: slug(detail.name || "versatile"),
+      traitName: detail.name || "Versatile",
+      required: true,
+      fields: [{ id: "feat", label: "Choose Origin feat", kind: "origin-feat", required: true, options: ORIGIN_FEAT_OPTIONS }],
+    };
+  }
+  return null;
+}
+
 export function extractSpeciesTraitChoiceRules(option = {}) {
   const details = Array.isArray(option.traitDetails) && option.traitDetails.length
     ? option.traitDetails
     : extractSpeciesTraitDetails(option.metadata || {});
 
   return details.flatMap((detail) => {
+    const humanRule = humanChoiceRule(detail);
+    if (humanRule) return [humanRule];
+
     const cantripOptions = cantripOptionsFromDescription(detail.description);
     if (cantripOptions.length < 2) return [];
 
@@ -125,15 +171,25 @@ export function speciesTraitChoiceRuleComplete(rule = {}, selections = {}) {
 }
 
 const CHARACTER_SIZE_BY_SOURCE_CODE = Object.freeze({
+  T: "Tiny",
   S: "Small",
   M: "Medium",
   L: "Large",
+  H: "Huge",
+  G: "Gargantuan",
 });
 
+export function speciesCharacterSizeOptions(option = {}) {
+  return uniqueText(option.size).flatMap((value) => {
+    const raw = String(value || "").trim();
+    const label = CHARACTER_SIZE_BY_SOURCE_CODE[raw.toUpperCase()] || Object.values(CHARACTER_SIZE_BY_SOURCE_CODE).find((candidate) => candidate.toLowerCase() === raw.toLowerCase()) || "";
+    return label ? [{ key: label, label }] : [];
+  });
+}
+
 export function speciesDefaultCharacterSize(option = {}) {
-  const sourceSizes = uniqueText(option.size);
-  if (sourceSizes.length !== 1) return "";
-  return CHARACTER_SIZE_BY_SOURCE_CODE[sourceSizes[0].toUpperCase()] || "";
+  const options = speciesCharacterSizeOptions(option);
+  return options.length === 1 ? options[0].key : "";
 }
 
 const MOVEMENT_LABELS = Object.freeze({

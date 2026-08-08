@@ -229,3 +229,7 @@ Record a discrepancy instead of silently reconciling it from memory.
 Begin by reading the required documents, verifying current `main`, and proposing the shortest safe route to a high-quality South-facing Dawn prototype. Do not continue polishing the rejected primitive model as though it can become the final asset through minor adjustments.
 
 ## End copy
+
+### Character Forge PR A authority
+
+The shared Forge now preserves accidental-close progress in mounted memory, exposes a confirmed Reset action, renders player mode explicitly, and uses content-driven tab layouts. Player tags are not self-assigned: the database derives `player-character`, species, class, background, and trained-profession tags while preserving later GM campaign tags. SVG portraits were deleted and are prohibited. Future minions assigned to players remain NPCs linked through a dedicated assignment model; do not convert them into player characters.

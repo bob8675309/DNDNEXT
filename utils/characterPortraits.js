@@ -3,28 +3,20 @@ export const NPC_PORTRAIT_RECOMMENDED_SIZE = "1536×2048 px";
 export const NPC_PORTRAIT_MINIMUM_SIZE = "768×1024 px";
 export const NPC_PORTRAIT_ASPECT_RATIO = "3:4";
 
-const PROFESSION_DEFAULT_PATHS = Object.freeze({
-  smithing: "defaults/smithing.svg",
-  alchemy: "defaults/alchemy.svg",
-  enchanting: "defaults/enchanting.svg",
-  scribe: "defaults/scribe.svg",
+const PROFESSION_DEFAULT_URLS = Object.freeze({
+  smithing: "/parchment.jpg",
+  alchemy: "/parchment.jpg",
+  enchanting: "/parchment3.jpg",
+  scribe: "/parchment3.jpg",
 });
 
-// These default storage paths are persisted in the database. Prefer the painterly
-// realistic JPGs that already live in /public, and keep the generated SVGs as
-// last-resort placeholders for categories that do not have finished art yet.
-const LOCAL_DEFAULT_URLS = Object.freeze({
-  "defaults/smithing.svg": "/parchment.jpg",
-  "defaults/alchemy.svg": "/parchment.jpg",
-  "defaults/enchanting.svg": "/npc-portraits/defaults/enchanting.svg",
-  "defaults/scribe.svg": "/npc-portraits/defaults/scribe.svg",
-  "defaults/merchant.svg": "/parchment3.jpg",
-  "defaults/npc.svg": "/parchment3.jpg",
+const GENERIC_DEFAULT_URLS = Object.freeze({
+  merchant: "/parchment3.jpg",
+  npc: "/parchment3.jpg",
 });
 
 export function publicPortraitUrl(supabase, storagePath, bucket = NPC_PORTRAIT_BUCKET) {
   if (!storagePath) return "";
-  if (LOCAL_DEFAULT_URLS[storagePath]) return LOCAL_DEFAULT_URLS[storagePath];
   if (!supabase?.storage?.from) return "";
   try {
     return supabase.storage.from(bucket).getPublicUrl(storagePath).data?.publicUrl || "";
@@ -54,11 +46,17 @@ export function offeredProfessionKey(character = {}) {
   return "";
 }
 
-export function defaultPortraitPathForCharacter(character = {}) {
+export function defaultPortraitUrlForCharacter(character = {}) {
   const profession = offeredProfessionKey(character);
-  if (profession && PROFESSION_DEFAULT_PATHS[profession]) return PROFESSION_DEFAULT_PATHS[profession];
-  if (String(character.kind || "").toLowerCase() === "merchant") return "defaults/merchant.svg";
-  return "defaults/npc.svg";
+  if (profession && PROFESSION_DEFAULT_URLS[profession]) return PROFESSION_DEFAULT_URLS[profession];
+  if (String(character.kind || "").toLowerCase() === "merchant") return GENERIC_DEFAULT_URLS.merchant;
+  return GENERIC_DEFAULT_URLS.npc;
+}
+
+// Retained as a compatibility export for callers that only understand storage-backed
+// portraits. Raster fallbacks are local URLs and intentionally have no fake storage path.
+export function defaultPortraitPathForCharacter() {
+  return "";
 }
 
 export function resolveCharacterPortrait(character = {}, supabase, options = {}) {
@@ -82,9 +80,11 @@ export function resolveCharacterPortrait(character = {}, supabase, options = {})
   if (storageUrl) return { url: storageUrl, source: character.portrait_source || portrait.source || "storage", storagePath };
 
   if (options.includeDefault === false) return { url: "", source: "none", storagePath: "" };
-  const defaultPath = defaultPortraitPathForCharacter(character);
-  const defaultUrl = publicPortraitUrl(supabase, defaultPath);
-  return { url: defaultUrl || options.fallbackUrl || "", source: "default", storagePath: defaultPath };
+  return {
+    url: defaultPortraitUrlForCharacter(character) || options.fallbackUrl || "",
+    source: "default",
+    storagePath: "",
+  };
 }
 
 export function slugifyPortraitName(value = "portrait") {
