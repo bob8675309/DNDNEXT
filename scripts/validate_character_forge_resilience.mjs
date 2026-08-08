@@ -48,13 +48,16 @@ requireToken(forgeSource, "PLAYER_STEP_LABELS", "canonical Forge");
 requireToken(forgeSource, "NpcForgeSpellStep", "canonical Forge");
 requireToken(forgeSource, "NpcForgeReviewPanel", "canonical Forge");
 requireToken(forgeSource, "spellChoicesForRpc", "canonical Forge");
+requireToken(forgeSource, "serializeStartingMagicSelections", "canonical Forge v3 starting magic");
+requireToken(forgeSource, "startingMagicSelections", "canonical Forge v3 starting magic");
 requireToken(forgeSource, "Create Player Character", "canonical Forge");
 requireToken(forgeSource, "playerMode ? [] : draft.additionalFeats || []", "player additional-feat authority");
 requireToken(forgeSteps, "playerSpeciesRows", "player Species filtering");
 requireToken(forgeSteps, "!/^human\\s*\\(/i", "campaign Human variant filtering");
 forbidToken(forgeSource, "function handleClose() { if (creating) return; resetForm();", "canonical Forge");
 
-for (const token of ["useRef", 'supabase.rpc("create_player_character_v2"', "p_spell_choices: spellChoices", "payloadWithSubclass", "payloadWithSourceChoices", "speciesTraitChoices", "classFeatureChoices", "classFeatureChoiceSummary", "NpcForgeClassChoiceContext.Provider"]) requireToken(adapter, token, "shared player adapter");
+for (const token of ["useRef", 'supabase.rpc("create_player_character_v3"', "playerForgeProxySpellChoices", "p_spell_choices: proxySpellChoices", "p_magic_selections: magicSelections", "payloadWithSubclass", "payloadWithSourceChoices", "speciesTraitChoices", "classFeatureChoices", "classFeatureChoiceSummary", "NpcForgeClassChoiceContext.Provider"]) requireToken(adapter, token, "shared player adapter");
+forbidToken(adapter, 'supabase.rpc("create_player_character_v2"', "shared player adapter");
 forbidToken(adapter, "p_spell_choices: []", "shared player adapter");
 forbidToken(adapter, "supabase.rpc =", "shared player adapter");
 forbidToken(adapter, "MutationObserver", "shared player adapter");
@@ -120,4 +123,4 @@ requireToken(finalPolish, ".npc-forge-review-dossier__grid", "review presentatio
 requireToken(app, 'import "../styles/character-forge-final-polish.css";', "application stylesheet import");
 requireToken(app, 'import "../styles/player-profile-scroll-fix.css";', "profile scroll stylesheet preservation");
 
-console.log("Character Forge persistence, structured class text, contextual Species Bonus, Human choices, source-backed class feature choices, 2024-first spells, review dossier, player authority, and raster authority validated.");
+console.log("Character Forge persistence, structured class text, contextual Species Bonus, Human choices, source-backed class feature choices, guarded v3 multi-source starting magic, 2024-first spells, review dossier, player authority, and raster authority validated.");
