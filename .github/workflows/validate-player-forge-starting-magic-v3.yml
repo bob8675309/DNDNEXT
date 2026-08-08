@@ -10,6 +10,7 @@ on:
       - "scripts/validate_unified_character_forge.mjs"
       - "scripts/validate_player_forge_starting_magic_v3.mjs"
       - "sql/20260808_47_player_forge_starting_magic_v3_completion.sql"
+      - "sql/20260808_48_player_forge_v3_acl_cleanup.sql"
       - ".github/workflows/validate-player-forge-starting-magic-v3.yml"
   pull_request:
     paths:
@@ -20,6 +21,7 @@ on:
       - "scripts/validate_unified_character_forge.mjs"
       - "scripts/validate_player_forge_starting_magic_v3.mjs"
       - "sql/20260808_47_player_forge_starting_magic_v3_completion.sql"
+      - "sql/20260808_48_player_forge_v3_acl_cleanup.sql"
       - ".github/workflows/validate-player-forge-starting-magic-v3.yml"
 
 jobs:
