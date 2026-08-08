@@ -1,0 +1,58 @@
+name: Validate character progression v3
+
+on:
+  push:
+    paths:
+      - "components/CharacterLevelUpChoices.js"
+      - "components/SourceChoiceFields.js"
+      - "utils/characterProgressionResolver.js"
+      - "utils/characterLevelUpPlan.js"
+      - "utils/characterClassChoiceDeltaPlan.js"
+      - "utils/classFeatureChoices.js"
+      - "sql/20260808_06_character_progression_option_eligibility.sql"
+      - "sql/20260808_08_character_spell_source_identity.sql"
+      - "sql/20260808_09_level_up_advancement_authority_helpers.sql"
+      - "sql/20260808_10_level_up_advancement_effects.sql"
+      - "sql/20260808_11_character_level_up_v3.sql"
+      - "sql/20260808_12_level_up_review_progression_authority.sql"
+      - "sql/20260808_13_level_up_persistent_choice_gap_guard.sql"
+      - "sql/20260808_14_level_up_v3_review_guard.sql"
+      - "sql/20260808_15_level_up_review_fail_closed_choice_deltas.sql"
+      - "sql/20260808_16_simple_class_choice_delta_authority.sql"
+      - "sql/20260808_17_enable_simple_class_choice_level_up.sql"
+      - "scripts/validate_character_class_progression.mjs"
+      - "scripts/validate_character_progression_v3.mjs"
+      - ".github/workflows/validate-character-progression-v3.yml"
+  pull_request:
+    paths:
+      - "components/CharacterLevelUpChoices.js"
+      - "components/SourceChoiceFields.js"
+      - "utils/characterProgressionResolver.js"
+      - "utils/characterLevelUpPlan.js"
+      - "utils/characterClassChoiceDeltaPlan.js"
+      - "utils/classFeatureChoices.js"
+      - "sql/20260808_06_character_progression_option_eligibility.sql"
+      - "sql/20260808_08_character_spell_source_identity.sql"
+      - "sql/20260808_09_level_up_advancement_authority_helpers.sql"
+      - "sql/20260808_10_level_up_advancement_effects.sql"
+      - "sql/20260808_11_character_level_up_v3.sql"
+      - "sql/20260808_12_level_up_review_progression_authority.sql"
+      - "sql/20260808_13_level_up_persistent_choice_gap_guard.sql"
+      - "sql/20260808_14_level_up_v3_review_guard.sql"
+      - "sql/20260808_15_level_up_review_fail_closed_choice_deltas.sql"
+      - "sql/20260808_16_simple_class_choice_delta_authority.sql"
+      - "sql/20260808_17_enable_simple_class_choice_level_up.sql"
+      - "scripts/validate_character_class_progression.mjs"
+      - "scripts/validate_character_progression_v3.mjs"
+      - ".github/workflows/validate-character-progression-v3.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate progression v3 contracts
+        run: node scripts/validate_character_progression_v3.mjs
