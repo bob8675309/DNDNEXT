@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import { countStartingSpellSelections, preferSpellRows, startingSpellSelectionModel, validateStartingSpellSelections } from "../utils/playerForgeRules";
 import { spellAllowedForStartingModel, startingSpellSourceForRow, subclassStartingSpellSelectionModel } from "../utils/playerForgeSpellSources";
+import { useNpcForgeClassChoice } from "./NpcForgeClassChoiceContext";
 
 function groupByLevel(spells = []) {
   const groups = new Map();
@@ -17,6 +18,7 @@ function levelLabel(level) { return Number(level) === 0 ? "Cantrips" : `Level ${
 function safeText(value) { return String(value ?? "").trim(); }
 
 export default function NpcForgeSpellStep({ selectedClass, selectedSubclass = null, level = 1, selections = {}, expandedSpellNames = [], onChange, onModelChange, onSpellRowsChange }) {
+  const { state: classChoiceState } = useNpcForgeClassChoice();
   const [levelRow, setLevelRow] = useState(null);
   const [spells, setSpells] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -26,6 +28,17 @@ export default function NpcForgeSpellStep({ selectedClass, selectedSubclass = nu
   const [openSpellId, setOpenSpellId] = useState("");
   const subclassModel = useMemo(() => subclassStartingSpellSelectionModel(selectedClass, selectedSubclass, level), [level, selectedClass, selectedSubclass]);
   const model = useMemo(() => subclassModel || startingSpellSelectionModel(selectedClass, levelRow, level), [level, levelRow, selectedClass, subclassModel]);
+  const savantSpellIds = useMemo(() => {
+    const ids = new Set();
+    for (const group of classChoiceState?.featureGroups || []) {
+      if (!/ savant$/i.test(safeText(group?.sourceFeature))) continue;
+      for (const key of classChoiceState?.featureSelections?.[group.id] || []) {
+        const option = (group.options || []).find((candidate) => candidate.key === key);
+        if (option?.spell?.id) ids.add(String(option.spell.id));
+      }
+    }
+    return ids;
+  }, [classChoiceState?.featureGroups, classChoiceState?.featureSelections]);
 
   useEffect(() => { onModelChange?.(model); }, [model, onModelChange]);
   useEffect(() => { onSpellRowsChange?.(spells); }, [onSpellRowsChange, spells]);
@@ -66,13 +79,22 @@ export default function NpcForgeSpellStep({ selectedClass, selectedSubclass = nu
     return () => { active = false; };
   }, [expandedSpellNames, model, selectedClass?.class_name]);
 
-  const counts = countStartingSpellSelections(spells, selections);
-  const validation = model.mode === "none" ? [] : validateStartingSpellSelections(model, spells, selections);
-  const groups = useMemo(() => groupByLevel(spells.filter((spell) => {
+  useEffect(() => {
+    const duplicates = Object.keys(selections || {}).filter((spellId) => savantSpellIds.has(String(spellId)));
+    if (!duplicates.length) return;
+    const next = { ...(selections || {}) };
+    duplicates.forEach((spellId) => { delete next[spellId]; });
+    onChange?.(next);
+  }, [onChange, savantSpellIds, selections]);
+
+  const selectableSpells = useMemo(() => spells.filter((spell) => !savantSpellIds.has(String(spell.id))), [savantSpellIds, spells]);
+  const counts = countStartingSpellSelections(selectableSpells, selections);
+  const validation = model.mode === "none" ? [] : validateStartingSpellSelections(model, selectableSpells, selections);
+  const groups = useMemo(() => groupByLevel(selectableSpells.filter((spell) => {
     if (selectedOnly && !selections?.[spell.id]) return false;
     const needle = query.trim().toLowerCase();
     return !needle || [spell.name, spell.school, spell.description, ...(spell.classes || [])].filter(Boolean).join(" ").toLowerCase().includes(needle);
-  })), [query, selectedOnly, selections, spells]);
+  })), [query, selectableSpells, selectedOnly, selections]);
 
   function toggleSpell(spell) {
     const next = { ...(selections || {}) };
@@ -94,10 +116,11 @@ export default function NpcForgeSpellStep({ selectedClass, selectedSubclass = nu
 
   const sourceLabel = model.sourceLabel || `${selectedClass.class_name} spellcasting`;
   return <div className="npc-forge-section npc-forge-spell-step">
-    <div className="npc-forge-section-heading"><div><span>Spells</span><h3>{sourceLabel}</h3></div><p>{loading ? "Loading canonical spell catalogue…" : `${spells.length} eligible spells • highest spell level ${model.maximumSpellLevel}`}</p></div>
+    <div className="npc-forge-section-heading"><div><span>Spells</span><h3>{sourceLabel}</h3></div><p>{loading ? "Loading canonical spell catalogue…" : `${selectableSpells.length} eligible spells • highest spell level ${model.maximumSpellLevel}`}</p></div>
     {error ? <div className="npc-forge-catalog-warning">{error}</div> : null}
     <div className="npc-forge-spell-summary"><div><span>Cantrips</span><strong>{counts.cantrips}/{model.cantrips}</strong></div><div><span>{model.mode === "spellbook" ? "Spellbook" : model.mode === "prepared" ? "Prepared" : "Known spells"}</span><strong>{counts.leveled}/{model.leveled}</strong></div>{model.mode === "spellbook" ? <div><span>Prepared leveled</span><strong>{Math.max(0, counts.prepared - counts.cantrips)}/{model.prepared}</strong></div> : null}<div><span>Highest spell level</span><strong>{model.maximumSpellLevel}</strong></div></div>
     {model.fixedSpells?.length ? <div className="npc-forge-spell-fixed"><strong>Automatic from {sourceLabel}</strong><span>{model.fixedSpells.map((spell) => spell.name).join(", ")}</span></div> : null}
+    {savantSpellIds.size ? <div className="npc-forge-spell-access-note"><strong>Savant spellbook additions</strong><span>{savantSpellIds.size} source-owned spell{savantSpellIds.size === 1 ? "" : "s"} already added through the Class step.</span><small>Those free Savant additions are kept separate from the Wizard's normal spellbook choices and cannot be selected twice.</small></div> : null}
     {expandedSpellNames?.length && model.sourceType !== "subclass" ? <div className="npc-forge-spell-access-note"><strong>Background-expanded access</strong><span>{expandedSpellNames.join(", ")}</span><small>These spells join the selected class list; they are not automatically known or prepared.</small></div> : null}
     <div className="npc-forge-spell-toolbar"><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search spell name, school, class, or rules text…" /><button type="button" className={selectedOnly ? "is-active" : ""} onClick={() => setSelectedOnly((value) => !value)}>Selected only</button></div>
     <div className="npc-forge-spell-groups">{groups.map(([spellLevel, rows]) => <section key={spellLevel}><header><strong>{levelLabel(spellLevel)}</strong><span>{rows.length}</span></header><div className="npc-forge-spell-list">{rows.map((spell) => {
