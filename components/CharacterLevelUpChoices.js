@@ -12,6 +12,7 @@ import {
   sourceChoiceGroupsComplete,
   toggleSourceChoiceSelection,
 } from "../utils/playerForgeSourceChoices";
+import CharacterInvocationRecovery from "./CharacterInvocationRecovery";
 import SourceChoiceFields from "./SourceChoiceFields";
 
 function safeText(value) {
@@ -125,6 +126,7 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
   const [classOptionFeatSelections, setClassOptionFeatSelections] = useState({});
   const [loadingClassChoices, setLoadingClassChoices] = useState(false);
   const [classChoiceError, setClassChoiceError] = useState("");
+  const [recoveryVersion, setRecoveryVersion] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -265,7 +267,8 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
       if (result.error) {
         setClassChoiceGroups([]);
         setClassChoiceSelections({});
-        setClassChoiceError(result.error.message || "Could not load source-legal class choices for this level.");
+        const message = result.error.message || "Could not load source-legal class choices for this level.";
+        setClassChoiceError(/normalized Invocation instance/i.test(message) ? "" : message);
       } else {
         setClassChoiceGroups(Array.isArray(result.data?.groups) ? result.data.groups : []);
         setClassChoiceSelections({});
@@ -274,7 +277,7 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
     }
     loadClassChoices();
     return () => { active = false; };
-  }, [characterId, metadataReady, review?.session?.id]);
+  }, [characterId, metadataReady, recoveryVersion, review?.session?.id]);
 
   useEffect(() => {
     let active = true;
@@ -458,6 +461,14 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
       {error ? <div className="alert alert-danger py-2">{error}</div> : null}
       {advancementError ? <div className="alert alert-danger py-2">{advancementError}</div> : null}
       {classChoiceError ? <div className="alert alert-danger py-2">{classChoiceError}</div> : null}
+
+      <CharacterInvocationRecovery
+        characterId={characterId}
+        onRecovered={() => {
+          setClassChoiceError("");
+          setRecoveryVersion((value) => value + 1);
+        }}
+      />
 
       <div className="row g-3">
         <div className="col-12 col-md-6">
