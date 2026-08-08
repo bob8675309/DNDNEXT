@@ -1,14 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import { buildFeatSourceChoiceGroups, featGrantInstancesFromSelections } from "../utils/playerForgeFeatChoices";
+import { buildSpeciesSourceChoiceGroups } from "../utils/playerForgeSpeciesChoices";
 import { classChoiceSelectionSummary, useNpcForgeClassChoice } from "./NpcForgeClassChoiceContext";
-import { useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
+import { sourceChoiceSelectionSummary, useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
 import { speciesFeatChoicesFromState, useNpcForgeSpeciesChoices } from "./NpcForgeSpeciesChoiceContext";
+
+const norm = (value) => String(value ?? "").trim().toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+const slug = (value) => norm(value).replace(/\s+/g, "-");
 
 export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, controller = null }) {
   const { state: speciesState } = useNpcForgeSpeciesChoices();
   const { state: classState } = useNpcForgeClassChoice();
-  const { registerGroups } = useNpcForgeSourceChoices();
+  const { state: sourceState, registerGroups } = useNpcForgeSourceChoices();
   const [spells, setSpells] = useState([]);
   const [catalogReady, setCatalogReady] = useState(false);
   const [catalogError, setCatalogError] = useState("");
@@ -31,7 +35,7 @@ export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, contro
       .then(({ data, error }) => {
         if (!active) return;
         if (error) {
-          setCatalogError(error.message || "Could not load the canonical spell catalogue for feat choices.");
+          setCatalogError(error.message || "Could not load the canonical spell catalogue for source choices.");
           setSpells([]);
           setCatalogReady(false);
           return;
@@ -42,16 +46,37 @@ export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, contro
     return () => { active = false; };
   }, [playerMode]);
 
+  const excludedSpeciesTraits = useMemo(() => (speciesState.rules || []).map((rule) => rule.traitName).filter(Boolean), [speciesState.rules]);
+  const speciesGroups = useMemo(() => buildSpeciesSourceChoiceGroups({
+    species: controller?.selectedSpecies || null,
+    level: controller?.draft?.level || 1,
+    spells,
+    featOptions: controller?.featOptions || [],
+    excludedTraitNames: excludedSpeciesTraits,
+  }), [controller?.draft?.level, controller?.featOptions, controller?.selectedSpecies, excludedSpeciesTraits, spells]);
+
+  useEffect(() => {
+    registerGroups(playerMode ? speciesGroups : [], !playerMode || catalogReady, "species-extra");
+  }, [catalogReady, playerMode, registerGroups, speciesGroups]);
+
   const speciesChoiceFeats = useMemo(() => speciesFeatChoicesFromState(speciesState), [speciesState]);
   const classChoices = useMemo(() => classChoiceSelectionSummary(classState), [classState]);
   const classChoiceFeats = useMemo(() => classChoices.filter((entry) => entry.groupKind === "fighting-style" || entry.kind === "feat"), [classChoices]);
-  const featInstances = useMemo(() => featGrantInstancesFromSelections({
+  const sourceFeatChoices = sourceChoiceSelectionSummary(sourceState).filter((entry) => entry.ownerType === "species" && entry.kind === "feat");
+  const sourceFeatSignature = JSON.stringify(sourceFeatChoices.map((entry) => [entry.groupId, entry.key, entry.label, entry.source]));
+  const sourceFeatInstances = useMemo(() => sourceFeatChoices.flatMap((entry, index) => {
+    const feat = (controller?.featOptions || []).find((candidate) => String(candidate.id || "") === String(entry.key || "") || String(candidate.option_key || "") === String(entry.key || "") || (norm(candidate.name) === norm(entry.label) && (!entry.source || candidate.source === entry.source)))
+      || (controller?.featOptions || []).find((candidate) => norm(candidate.name) === norm(entry.label));
+    return feat ? [{ instanceId: `source-${slug(entry.groupId)}-feat-${index + 1}`, ownerType: entry.ownerType, ownerKey: entry.groupId, placement: entry.placement || "species", level: Number(entry.level || 1), acquisitionLabel: entry.groupLabel || "Species feat", feat }] : [];
+  }), [controller?.featOptions, sourceFeatSignature]);
+  const baseFeatInstances = useMemo(() => featGrantInstancesFromSelections({
     selectedBackgroundFeat: controller?.selectedBackgroundFeat || null,
     speciesBonusFeat: controller?.speciesBonusFeat || null,
     speciesChoiceFeats,
     classChoiceFeats,
     featOptions: controller?.featOptions || [],
   }), [classChoiceFeats, controller?.featOptions, controller?.selectedBackgroundFeat, controller?.speciesBonusFeat, speciesChoiceFeats]);
+  const featInstances = useMemo(() => [...baseFeatInstances, ...sourceFeatInstances], [baseFeatInstances, sourceFeatInstances]);
   const featGroups = useMemo(() => buildFeatSourceChoiceGroups({
     featInstances,
     toolRows: controller?.toolRows || [],
