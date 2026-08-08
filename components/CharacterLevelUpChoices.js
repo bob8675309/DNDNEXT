@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import useSubclassCatalog from "../hooks/useSubclassCatalog";
-import { ABILITY_KEYS, ABILITY_LABELS, FEAT_OPTIONS } from "../utils/characterCreation";
 import { supabase } from "../utils/supabaseClient";
 import { spellLevelLabel, spellMatchesClass } from "../utils/spells/classSpellbookRules";
 import { spellMatchesExpandedList } from "../utils/backgroundMechanics";
+import { buildRuntimeAdvancementChoiceModel } from "../utils/characterLevelUpPlan";
+import { setSourceChoiceSelection, toggleSourceChoiceSelection } from "../utils/playerForgeSourceChoices";
+import SourceChoiceFields from "./SourceChoiceFields";
 
 function safeText(value) {
   return String(value ?? "").trim();
@@ -30,6 +32,10 @@ function selectionCounts(spells, selected) {
   return { cantrips, leveled };
 }
 
+function uniqueText(values = []) {
+  return [...new Set((Array.isArray(values) ? values : []).map(safeText).filter(Boolean))];
+}
+
 export default function CharacterLevelUpChoices({ character = null, review = null, onCompleted = null }) {
   const characterId = character?.id || null;
   const preview = review?.preview || {};
@@ -43,16 +49,20 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
 
   const [hpMethod, setHpMethod] = useState("fixed");
   const [subclassOptionKey, setSubclassOptionKey] = useState("");
-  const [advancementType, setAdvancementType] = useState("asi");
-  const [abilityIncreases, setAbilityIncreases] = useState({});
-  const [featName, setFeatName] = useState("");
-  const [spells, setSpells] = useState([]);
+  const [catalogSpells, setCatalogSpells] = useState([]);
+  const [assignedClassSpellIds, setAssignedClassSpellIds] = useState(() => new Set());
+  const [toolRows, setToolRows] = useState([]);
   const [backgroundExpandedSpells, setBackgroundExpandedSpells] = useState([]);
   const [selectedSpells, setSelectedSpells] = useState({});
   const [spellQuery, setSpellQuery] = useState("");
-  const [loadingSpells, setLoadingSpells] = useState(false);
+  const [loadingCatalogs, setLoadingCatalogs] = useState(false);
+  const [advancement, setAdvancement] = useState(null);
+  const [loadingAdvancement, setLoadingAdvancement] = useState(false);
+  const [advancementError, setAdvancementError] = useState("");
+  const [sourceSelections, setSourceSelections] = useState({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+
   const { options: subclassOptions, loading: loadingSubclasses, error: subclassError } = useSubclassCatalog(
     preview?.classKey,
     preview?.source || "XPHB",
@@ -63,17 +73,13 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
     [subclassOptionKey, subclassOptions]
   );
 
-  const generalFeats = useMemo(() => FEAT_OPTIONS
-    .filter((feat) => feat.category === "General" && safeText(feat.name) !== "Ability Score Improvement")
-    .map((feat) => feat.name), []);
-
-  const counts = useMemo(() => selectionCounts(spells, selectedSpells), [selectedSpells, spells]);
-  const totalAbilityIncrease = useMemo(
-    () => Object.values(abilityIncreases).reduce((total, value) => total + Number(value || 0), 0),
-    [abilityIncreases]
+  const classSpellCatalog = useMemo(
+    () => catalogSpells.filter((spell) => !assignedClassSpellIds.has(spell.id)),
+    [assignedClassSpellIds, catalogSpells]
   );
+  const counts = useMemo(() => selectionCounts(classSpellCatalog, selectedSpells), [classSpellCatalog, selectedSpells]);
 
-  const eligibleSpells = useMemo(() => spells
+  const eligibleSpells = useMemo(() => classSpellCatalog
     .filter((spell) => spellMatchesClass(spell, preview?.classKey) || spellMatchesExpandedList(spell, backgroundExpandedSpells))
     .filter((spell) => Number(spell.level || 0) === 0 || Number(spell.level || 0) <= highestSpellLevel)
     .filter((spell) => {
@@ -81,19 +87,28 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
       if (!q) return true;
       return [spell.name, spell.school, spell.description, spell.source].filter(Boolean).join(" ").toLowerCase().includes(q);
     })
-    .sort(sortSpells), [backgroundExpandedSpells, highestSpellLevel, preview?.classKey, spellQuery, spells]);
+    .sort(sortSpells), [backgroundExpandedSpells, classSpellCatalog, highestSpellLevel, preview?.classKey, spellQuery]);
+
+  const advancementModel = useMemo(() => buildRuntimeAdvancementChoiceModel({
+    classKey: preview?.classKey || "class",
+    toLevel: Number(preview?.toLevel || 1),
+    advancement,
+    selections: sourceSelections,
+    toolRows,
+    spells: catalogSpells,
+  }), [advancement, catalogSpells, preview?.classKey, preview?.toLevel, sourceSelections, toolRows]);
 
   useEffect(() => {
     setHpMethod("fixed");
     setSubclassOptionKey("");
-    setAdvancementType("asi");
-    setAbilityIncreases({});
-    setFeatName(generalFeats[0] || "");
     setSelectedSpells({});
     setBackgroundExpandedSpells([]);
     setSpellQuery("");
+    setAdvancement(null);
+    setAdvancementError("");
+    setSourceSelections({});
     setError("");
-  }, [generalFeats, review?.session?.id]);
+  }, [review?.session?.id]);
 
   useEffect(() => {
     if (!subclassChoice || !subclassOptions.length) return;
@@ -103,54 +118,92 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
 
   useEffect(() => {
     let active = true;
-    async function loadEligibleSpells() {
-      if (!metadataReady || !characterId || (!requiredCantrips && !requiredLeveled)) {
-        setSpells([]);
+    async function loadAdvancement() {
+      if (!metadataReady || !characterId || !advancementChoice) {
+        setAdvancement(null);
+        setAdvancementError("");
+        return;
+      }
+      setLoadingAdvancement(true);
+      setAdvancementError("");
+      const { data, error: loadError } = await supabase.rpc("get_character_level_advancement_options_v1", {
+        p_character_id: characterId,
+      });
+      if (!active) return;
+      if (loadError) {
+        setAdvancement(null);
+        setAdvancementError(loadError.message || "Could not load source-legal advancement options.");
+      } else {
+        setAdvancement(data || null);
+      }
+      setLoadingAdvancement(false);
+    }
+    loadAdvancement();
+    return () => { active = false; };
+  }, [advancementChoice, characterId, metadataReady, review?.session?.id]);
+
+  useEffect(() => {
+    let active = true;
+    async function loadChoiceCatalogs() {
+      const needsCatalogs = Boolean(metadataReady && characterId && (advancementChoice || requiredCantrips || requiredLeveled));
+      if (!needsCatalogs) {
+        setCatalogSpells([]);
+        setAssignedClassSpellIds(new Set());
+        setToolRows([]);
         setBackgroundExpandedSpells([]);
         return;
       }
-      setLoadingSpells(true);
-      const [catalogResult, assignmentResult, sheetResult] = await Promise.all([
+      setLoadingCatalogs(true);
+      const [catalogResult, assignmentResult, sheetResult, toolsResult] = await Promise.all([
         supabase
           .from("spells_catalog_preferred")
-          .select("id,name,source,level,school,classes,description")
-          .lte("level", Math.max(0, highestSpellLevel))
+          .select("id,spell_key,name,source,level,school,school_code,classes,ritual,casting_time,description")
           .order("level", { ascending: true })
           .order("name", { ascending: true })
-          .limit(2000),
-        supabase.from("character_spells").select("spell_id").eq("character_id", characterId),
+          .limit(5000),
+        supabase.from("character_spells").select("spell_id,source_type").eq("character_id", characterId),
         supabase.from("character_sheets").select("sheet").eq("character_id", characterId).maybeSingle(),
+        supabase
+          .from("items_catalog")
+          .select("item_name,item_key,item_type,item_rarity,payload")
+          .eq("item_rarity", "mundane")
+          .in("item_type", ["Tools", "Instrument"])
+          .order("item_name", { ascending: true })
+          .limit(2000),
       ]);
       if (!active) return;
-      if (catalogResult.error || assignmentResult.error || sheetResult.error) {
-        setError(catalogResult.error?.message || assignmentResult.error?.message || sheetResult.error?.message || "Could not load level-up spells.");
-        setSpells([]);
+      const loadError = catalogResult.error || assignmentResult.error || sheetResult.error || toolsResult.error;
+      if (loadError) {
+        setError(loadError.message || "Could not load level-up choice catalogues.");
+        setCatalogSpells([]);
+        setAssignedClassSpellIds(new Set());
+        setToolRows([]);
         setBackgroundExpandedSpells([]);
       } else {
-        const assignedIds = new Set((assignmentResult.data || []).map((row) => row.spell_id));
-        setSpells((catalogResult.data || []).filter((spell) => !assignedIds.has(spell.id)));
+        setCatalogSpells(catalogResult.data || []);
+        setAssignedClassSpellIds(new Set((assignmentResult.data || []).filter((row) => row.source_type === "class").map((row) => row.spell_id)));
+        setToolRows(toolsResult.data || []);
         const sheet = sheetResult.data?.sheet || {};
         const meta = sheet?.meta || {};
-        setBackgroundExpandedSpells([
+        setBackgroundExpandedSpells(uniqueText([
           ...(Array.isArray(sheet.backgroundExpandedSpells) ? sheet.backgroundExpandedSpells : []),
           ...(Array.isArray(sheet?.spellcasting?.backgroundExpandedSpells) ? sheet.spellcasting.backgroundExpandedSpells : []),
           ...(Array.isArray(meta.backgroundExpandedSpells) ? meta.backgroundExpandedSpells : []),
-        ]);
+        ]));
       }
-      setLoadingSpells(false);
+      setLoadingCatalogs(false);
     }
-    loadEligibleSpells();
+    loadChoiceCatalogs();
     return () => { active = false; };
-  }, [characterId, highestSpellLevel, metadataReady, requiredCantrips, requiredLeveled, review?.session?.id]);
+  }, [advancementChoice, characterId, metadataReady, requiredCantrips, requiredLeveled, review?.session?.id]);
 
-  function setAbilityIncrease(key, value) {
-    const numeric = Number(value || 0);
-    setAbilityIncreases((current) => {
-      const next = { ...current };
-      if (!numeric) delete next[key];
-      else next[key] = numeric;
-      return next;
-    });
+  function toggleAdvancementChoice(groupId, fieldId, optionKey) {
+    setSourceSelections((current) => toggleSourceChoiceSelection(advancementModel.groups, current, groupId, fieldId, optionKey));
+    setError("");
+  }
+
+  function setAdvancementChoice(groupId, fieldId, optionKeys) {
+    setSourceSelections((current) => setSourceChoiceSelection(advancementModel.groups, current, groupId, fieldId, optionKeys));
     setError("");
   }
 
@@ -183,10 +236,12 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
     if (subclassChoice && loadingSubclasses) return "Wait for the source-backed subclass list to finish loading.";
     if (subclassChoice && subclassError) return subclassError;
     if (subclassChoice && !selectedSubclass) return "Choose a source-backed subclass.";
-    if (advancementChoice) {
-      if (advancementType === "asi" && totalAbilityIncrease !== 2) return "Assign exactly two Ability Score Improvement points.";
-      if (advancementType === "feat" && !safeText(featName)) return "Choose a feat.";
-    }
+    if ((advancementChoice || requiredCantrips || requiredLeveled) && loadingCatalogs) return "Wait for the source catalogues to finish loading.";
+    if (advancementChoice && loadingAdvancement) return "Wait for server-validated advancement options to finish loading.";
+    if (advancementChoice && advancementError) return advancementError;
+    if (advancementChoice && !advancement?.required) return "The server did not return the required advancement options for this level.";
+    if (advancementChoice && !advancementModel.complete) return "Complete every source-owned feat or Epic Boon choice for this level.";
+    if (advancementChoice && !advancementModel.instance) return "Choose the feat or Epic Boon gained at this level.";
     if (counts.cantrips !== requiredCantrips) return `Choose exactly ${requiredCantrips} new cantrip${requiredCantrips === 1 ? "" : "s"}.`;
     if (counts.leveled !== requiredLeveled) return `Choose exactly ${requiredLeveled} new leveled spell${requiredLeveled === 1 ? "" : "s"}.`;
     return "";
@@ -201,7 +256,7 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
 
     setBusy(true);
     setError("");
-    const spellChoices = spells
+    const spellChoices = classSpellCatalog
       .filter((spell) => selectedSpells[spell.id])
       .map((spell) => ({
         spell_id: spell.id,
@@ -211,13 +266,11 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
       hp_method: hpMethod,
       subclass_name: subclassChoice ? selectedSubclass?.name || null : null,
       subclass_source: subclassChoice ? selectedSubclass?.source || null : null,
-      advancement_type: advancementChoice ? advancementType : null,
-      ability_increases: advancementChoice && advancementType === "asi" ? abilityIncreases : {},
-      feat_name: advancementChoice && advancementType === "feat" ? featName : null,
       spell_choices: spellChoices,
+      ...(advancementChoice ? { advancement_instance: advancementModel.instance } : {}),
     };
 
-    const { data, error: completeError } = await supabase.rpc("complete_character_level_up_v2", {
+    const { data, error: completeError } = await supabase.rpc("complete_character_level_up_v3", {
       p_character_id: characterId,
       p_selections: selections,
     });
@@ -236,6 +289,7 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
   return (
     <div className="level-up-choice-form">
       {error ? <div className="alert alert-danger py-2">{error}</div> : null}
+      {advancementError ? <div className="alert alert-danger py-2">{advancementError}</div> : null}
 
       <div className="row g-3">
         <div className="col-12 col-md-6">
@@ -261,30 +315,15 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
 
         {advancementChoice ? (
           <div className="col-12">
-            <label className="form-label small fw-semibold">Ability Score Improvement or Feat</label>
-            <div className="d-flex gap-2 flex-wrap mb-2">
-              <button type="button" className={`btn btn-sm ${advancementType === "asi" ? "btn-warning" : "btn-outline-light"}`} onClick={() => setAdvancementType("asi")}>Ability scores</button>
-              <button type="button" className={`btn btn-sm ${advancementType === "feat" ? "btn-warning" : "btn-outline-light"}`} onClick={() => setAdvancementType("feat")}>General feat</button>
-            </div>
-            {advancementType === "asi" ? (
-              <div className="level-up-ability-grid">
-                {ABILITY_KEYS.map((key) => (
-                  <label key={key}>
-                    <span>{ABILITY_LABELS[key]}</span>
-                    <select className="form-select form-select-sm" value={abilityIncreases[key] || 0} onChange={(event) => setAbilityIncrease(key, event.target.value)}>
-                      <option value="0">+0</option>
-                      <option value="1">+1</option>
-                      <option value="2">+2</option>
-                    </select>
-                  </label>
-                ))}
-                <div className={`level-up-ability-total ${totalAbilityIncrease === 2 ? "ready" : ""}`}>{totalAbilityIncrease}/2 points</div>
-              </div>
-            ) : (
-              <select className="form-select form-select-sm" value={featName} onChange={(event) => setFeatName(event.target.value)}>
-                {generalFeats.map((feat) => <option key={feat} value={feat}>{feat}</option>)}
-              </select>
-            )}
+            {loadingAdvancement || loadingCatalogs ? <div className="small text-muted mb-2">Loading source-legal advancement choices…</div> : null}
+            <SourceChoiceFields
+              groups={advancementModel.groups}
+              selections={advancementModel.selections}
+              kicker="Level advancement"
+              title={advancement?.kind === "epic-boon" ? "Epic Boon or qualifying General feat" : "Ability Score Improvement or qualifying General feat"}
+              onToggle={toggleAdvancementChoice}
+              onSet={setAdvancementChoice}
+            />
           </div>
         ) : null}
 
@@ -297,7 +336,7 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
               </div>
               <input className="form-control form-control-sm level-up-spell-search" value={spellQuery} onChange={(event) => setSpellQuery(event.target.value)} placeholder="Search eligible spells…" />
             </div>
-            {loadingSpells ? <div className="text-muted">Loading eligible spells from all sources…</div> : null}
+            {loadingCatalogs ? <div className="text-muted">Loading eligible spells from all sources…</div> : null}
             <div className="level-up-spell-list">
               {eligibleSpells.map((spell) => {
                 const selected = selectedSpells[spell.id];
@@ -322,22 +361,17 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
         ) : null}
       </div>
 
-      <button type="button" className="btn btn-warning btn-sm mt-3" disabled={busy} onClick={applyLevel}>{busy ? "Applying level…" : `Apply Level ${preview?.toLevel || ""}`}</button>
-      <div className="small text-muted mt-2">The level, HP, class choices, sheet values, spellbook, and progression history are committed together or not at all.</div>
+      <button type="button" className="btn btn-warning btn-sm mt-3" disabled={busy || loadingCatalogs || loadingAdvancement} onClick={applyLevel}>{busy ? "Applying level…" : `Apply Level ${preview?.toLevel || ""}`}</button>
+      <div className="small text-muted mt-2">XP unlocks this one level. HP, source-owned choices, spell grants, sheet values, and progression history are committed together or not at all. If the character still has enough XP afterward, the next level opens as a separate review against the newly updated character.</div>
 
       <style jsx>{`
-        .level-up-ability-grid { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:.45rem; align-items:end; }
-        .level-up-ability-grid label { display:grid; gap:.2rem; }
-        .level-up-ability-grid label span { color:rgba(255,255,255,.6); font-size:.72rem; }
-        .level-up-ability-total { padding:.45rem .55rem; border-radius:.55rem; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); text-align:center; }
-        .level-up-ability-total.ready { border-color:rgba(50,190,100,.6); color:#b8e6c3; }
         .level-up-spell-search { max-width:260px; }
         .level-up-spell-list { display:grid; gap:.4rem; max-height:38vh; overflow:auto; padding-right:.2rem; }
         .level-up-spell-row { display:flex; align-items:center; justify-content:space-between; gap:.55rem; padding:.5rem .6rem; border-radius:.65rem; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.035); }
         .level-up-spell-row.selected { border-color:rgba(245,190,75,.65); background:rgba(245,190,75,.1); }
         .level-up-spell-main { flex:1; min-width:0; display:grid; border:0; background:transparent; color:inherit; text-align:left; padding:0; }
         .level-up-spell-main small { color:rgba(255,255,255,.6); }
-        @media (max-width:800px) { .level-up-ability-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .level-up-spell-search { max-width:none; width:100%; } }
+        @media (max-width:800px) { .level-up-spell-search { max-width:none; width:100%; } }
       `}</style>
     </div>
   );
