@@ -29,6 +29,7 @@ function emptyFeatGroup(instance) {
       featName: feat.name || "",
       featSource: feat.source || "XPHB",
       featCategory: feat.category || null,
+      featOptionType: feat.option_type || "feat",
       repeatable: Boolean(feat.metadata?.repeatable),
       acquisitionOwnerType: instance.ownerType || null,
       acquisitionOwnerKey: instance.ownerKey || null,
@@ -40,6 +41,15 @@ function emptyFeatGroup(instance) {
   };
 }
 
+function resolveOption(entry, options = []) {
+  const key = String(entry?.key || entry?.value || "");
+  const label = norm(entry?.label || entry?.name);
+  const source = String(entry?.source || "");
+  return options.find((candidate) => key && [candidate.id, candidate.option_key].map(String).includes(key))
+    || options.find((candidate) => label && norm(candidate.name) === label && (!source || candidate.source === source))
+    || null;
+}
+
 export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, controller = null }) {
   const { state: speciesState } = useNpcForgeSpeciesChoices();
   const { state: classState } = useNpcForgeClassChoice();
@@ -47,6 +57,7 @@ export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, contro
   const [spells, setSpells] = useState([]);
   const [spellCatalogReady, setSpellCatalogReady] = useState(false);
   const [advancementRows, setAdvancementRows] = useState([]);
+  const [boonRows, setBoonRows] = useState([]);
   const [advancementReady, setAdvancementReady] = useState(false);
   const [catalogError, setCatalogError] = useState("");
 
@@ -83,29 +94,39 @@ export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, contro
     const selectedClass = controller?.selectedClass;
     if (!playerMode || !selectedClass?.class_name || Number(controller?.draft?.level || 1) < 4) {
       setAdvancementRows([]);
+      setBoonRows([]);
       setAdvancementReady(true);
       return undefined;
     }
     let active = true;
     setAdvancementReady(false);
-    supabase.from("class_feature_catalog")
-      .select("id,class_name,class_source,name,source,level,description")
-      .eq("class_name", selectedClass.class_name)
-      .eq("class_source", selectedClass.source)
-      .in("name", ["Ability Score Improvement", "Epic Boon"])
-      .lte("level", Number(controller?.draft?.level || 1))
-      .order("level", { ascending: true })
-      .then(({ data, error }) => {
-        if (!active) return;
-        if (error) {
-          setCatalogError(error.message || "Could not load higher-level advancement features.");
-          setAdvancementRows([]);
-          setAdvancementReady(false);
-          return;
-        }
-        setAdvancementRows(data || []);
-        setAdvancementReady(true);
-      });
+    Promise.all([
+      supabase.from("class_feature_catalog")
+        .select("id,class_name,class_source,name,source,level,description")
+        .eq("class_name", selectedClass.class_name)
+        .eq("class_source", selectedClass.source)
+        .in("name", ["Ability Score Improvement", "Epic Boon"])
+        .lte("level", Number(controller?.draft?.level || 1))
+        .order("level", { ascending: true }),
+      supabase.from("character_option_catalog_preferred")
+        .select("id,option_key,option_type,name,source,category,description,prerequisite_text,tags,metadata,raw_payload")
+        .eq("option_type", "boon")
+        .order("name", { ascending: true })
+        .limit(500),
+    ]).then(([featureResult, boonResult]) => {
+      if (!active) return;
+      const error = featureResult.error || boonResult.error;
+      if (error) {
+        setCatalogError(error.message || "Could not load higher-level advancement features.");
+        setAdvancementRows([]);
+        setBoonRows([]);
+        setAdvancementReady(false);
+        return;
+      }
+      setAdvancementRows(featureResult.data || []);
+      setBoonRows(boonResult.data || []);
+      setAdvancementReady(true);
+    });
     return () => { active = false; };
   }, [controller?.draft?.level, controller?.selectedClass, playerMode]);
 
@@ -117,30 +138,52 @@ export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, contro
     featOptions: controller?.featOptions || [],
     excludedTraitNames: excludedSpeciesTraits,
   }), [controller?.draft?.level, controller?.featOptions, controller?.selectedSpecies, excludedSpeciesTraits, spells]);
-  const advancementGroups = useMemo(() => buildAdvancementSourceChoiceGroups({
-    selectedClass: controller?.selectedClass || null,
-    level: controller?.draft?.level || 1,
-    classFeatureRows: advancementRows,
-    featOptions: controller?.featOptions || [],
-  }), [advancementRows, controller?.draft?.level, controller?.featOptions, controller?.selectedClass]);
 
   useEffect(() => {
     registerGroups(playerMode ? speciesGroups : [], !playerMode || spellCatalogReady, "species-extra");
   }, [playerMode, registerGroups, speciesGroups, spellCatalogReady]);
-  useEffect(() => {
-    registerGroups(playerMode ? advancementGroups : [], !playerMode || advancementReady, "advancement");
-  }, [advancementGroups, advancementReady, playerMode, registerGroups]);
 
   const speciesChoiceFeats = useMemo(() => speciesFeatChoicesFromState(speciesState), [speciesState]);
   const classChoices = useMemo(() => classChoiceSelectionSummary(classState), [classState]);
   const classChoiceFeats = useMemo(() => classChoices.filter((entry) => entry.groupKind === "fighting-style" || entry.kind === "feat"), [classChoices]);
-  const sourceFeatChoices = sourceChoiceSelectionSummary(sourceState).filter((entry) => entry.ownerType !== "feat" && entry.kind === "feat");
+  const sourceSummary = sourceChoiceSelectionSummary(sourceState);
+  const advancementOptions = useMemo(() => [...(controller?.featOptions || []), ...boonRows], [boonRows, controller?.featOptions]);
+  const selectedAdvancementChoices = useMemo(() => sourceSummary
+    .filter((entry) => entry.ownerType === "advancement" && ["feat", "boon", "boon-or-feat"].includes(entry.kind))
+    .flatMap((entry) => {
+      const feat = resolveOption(entry, advancementOptions);
+      return feat ? [{ ...entry, feat, acquisitionLevel: Number(entry.level || 1) }] : [];
+    }), [advancementOptions, sourceSummary]);
+  const knownFeatsForProgression = useMemo(() => [
+    controller?.selectedBackgroundFeat,
+    controller?.speciesBonusFeat,
+    ...speciesChoiceFeats.map((entry) => entry.feat || entry),
+    ...classChoiceFeats.map((entry) => entry.option || entry),
+  ].filter(Boolean), [classChoiceFeats, controller?.selectedBackgroundFeat, controller?.speciesBonusFeat, speciesChoiceFeats]);
+
+  const advancementGroups = useMemo(() => buildAdvancementSourceChoiceGroups({
+    selectedClass: controller?.selectedClass || null,
+    selectedSpecies: controller?.selectedSpecies || null,
+    selectedBackground: controller?.selectedBackground || null,
+    level: controller?.draft?.level || 1,
+    classFeatureRows: advancementRows,
+    featOptions: advancementOptions,
+    abilities: controller?.finalAbilities || {},
+    knownFeats: knownFeatsForProgression,
+    selectedAdvancementChoices,
+    spellcasting: Boolean(controller?.selectedClass?.spellcasting_ability || /pact/i.test(String(controller?.selectedClass?.caster_progression || ""))),
+  }), [advancementOptions, advancementRows, controller?.draft?.level, controller?.finalAbilities, controller?.selectedBackground, controller?.selectedClass, controller?.selectedSpecies, knownFeatsForProgression, selectedAdvancementChoices]);
+
+  useEffect(() => {
+    registerGroups(playerMode ? advancementGroups : [], !playerMode || advancementReady, "advancement");
+  }, [advancementGroups, advancementReady, playerMode, registerGroups]);
+
+  const sourceFeatChoices = sourceSummary.filter((entry) => entry.ownerType !== "feat" && ["feat", "boon", "boon-or-feat"].includes(entry.kind));
   const sourceFeatSignature = JSON.stringify(sourceFeatChoices.map((entry) => [entry.ownerType, entry.groupId, entry.key, entry.label, entry.source, entry.level, entry.placement]));
   const sourceFeatInstances = useMemo(() => sourceFeatChoices.flatMap((entry, index) => {
-    const feat = (controller?.featOptions || []).find((candidate) => String(candidate.id || "") === String(entry.key || "") || String(candidate.option_key || "") === String(entry.key || "") || (norm(candidate.name) === norm(entry.label) && (!entry.source || candidate.source === entry.source)))
-      || (controller?.featOptions || []).find((candidate) => norm(candidate.name) === norm(entry.label));
+    const feat = resolveOption(entry, advancementOptions);
     return feat ? [{ instanceId: `source-${slug(entry.ownerType)}-${slug(entry.groupId)}-feat-${index + 1}`, ownerType: entry.ownerType, ownerKey: entry.groupId, placement: entry.placement || "species", level: Number(entry.level || 1), acquisitionLabel: entry.groupLabel || `${entry.ownerType} feat`, feat }] : [];
-  }), [controller?.featOptions, sourceFeatSignature]);
+  }), [advancementOptions, sourceFeatSignature]);
   const baseFeatInstances = useMemo(() => featGrantInstancesFromSelections({
     selectedBackgroundFeat: controller?.selectedBackgroundFeat || null,
     speciesBonusFeat: controller?.speciesBonusFeat || null,
