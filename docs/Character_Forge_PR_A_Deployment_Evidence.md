@@ -1,236 +1,159 @@
 # Character Forge PR A — Deployment Evidence
 
+Status date: 2026-08-08
+PR: #170 (`agent/character-forge-resilience-presentation`)
+
 ## Current acceptance state
 
-PR #170 remains **open and unmerged**. Automated checks being green is not browser acceptance.
+PR #170 remains **open and unmerged**. Automated checks and rollback SQL proofs are not final authenticated browser acceptance.
 
-The August 7 audit was deliberately expanded beyond screenshots and UI shape. It rechecked the live preferred Species, Background, Feat, Class, class-feature, spell, inventory, wallet, progression, and authority data against the complete player-character creation lifecycle, including higher-level starts.
+The active acceptance rule is creation/progression parity for persistent source-owned choices. Runtime/rest/per-use configuration is kept separate rather than being frozen into Character Forge state.
 
-## Corrections already made in this audit slice
+## Current production progression boundary
 
-- Rest/per-use configuration is no longer confused with permanent creation state for Weapon Mastery, Circle of the Land, Primal Companion, Fiendish Resilience, Dread Allegiance, Steps of the Fey, Armorer Armor Model, Wizard Spell Mastery, Banneret Polyglot, and Pact of the Tome Book of Shadows selections.
-- Pact of the Tome remains a persistent invocation, but its Book of Shadows spells are selected when the book is conjured after a Short or Long Rest.
-- Production Supabase includes `player_forge_runtime_choice_cadence`, aligning the deferred nested-choice validator with that rule.
-- Legacy subclass Fighting Style choices respect the source feature rather than inheriting the entire modern Fighting Style catalogue.
-- Expertise progression distinguishes preferred 2024 base-class progression from legacy progression and is routed to Training after proficiency is established.
-- The Abilities workspace no longer duplicates the Species Bonus controls that already live in the contextual right panel.
-- Species size source codes now have a normalized helper as groundwork for source-constrained size selection.
-- Regression validation now protects the rest-time cadence corrections rather than demanding the old incorrect state model.
+The current Level Up UI submits to `complete_character_level_up_v5`. v5 wraps the reviewed v4 transition with the normalized source-owned acquisition/replacement work that must occur transactionally around it.
 
-## Final top-to-bottom audit blockers
+Current production progression includes:
 
-The remaining work is broader than six isolated controls. The Forge needs a single source-choice/grant model that can serve creation, Training, higher-level starts, and later level-up without duplicating rules.
+- one-level-at-a-time XP advancement
+- fixed/rolled HP
+- subclass entry
+- class spell additions
+- General feat / Epic Boon advancement
+- persistent simple class choices
+- Bard Magical Secrets access
+- Lore Magical Discoveries
+- Draconic Elemental Affinity
+- Champion Additional Fighting Style
+- Metamagic acquisition/replacement
+- Mystic Arcanum acquisition/replacement
+- Magic Initiate spell replacement
+- Eldritch Invocation acquisition/replacement
+- Lessons of the First Ones Origin-feat ownership/reversal
+- Battle Master maneuver acquisition/replacement
+- earned XPHB Wizard Savant spellbook additions
 
-### 1. Core Origin languages are not authoritative
+Direct authenticated v3/v4 completion is revoked. Legacy v1/v2 completion RPCs still retain authenticated execute and are tracked as an authority-cleanup item; the current level-up component does not use them as its normal completion path.
 
-The current draft starts with free-text `languagesText: "Common"`, and the Species step only checks that the text is nonempty.
+## Invocation and Lessons evidence
 
-For the standard 2024 origin flow, the Forge needs Common plus two source-legal Standard-language choices, with additional feature-granted languages tracked separately. Free text cannot enforce count, eligibility, duplicate prevention, or source ownership.
+Production rollback coverage includes:
 
-### 2. Species permanent choices remain incomplete
+- simple and repeatable Invocation acquisition
+- dependent cantrip selections
+- nonrepeatable duplicate rejection
+- prerequisite-protected replacement rejection
+- same-level prerequisite resolution
+- current-level replacement eligibility while preserving original acquisition chronology
+- final `sheet.eldritchInvocations` projection after replacement plus a newly gained slot
+- legacy Invocation recovery
+- Lessons acquisition and removal for Alert, Tough, Magic Initiate, Skilled, Crafter, and Tavern Brawler effect shapes
+- preservation of pre-existing/other-source proficiencies
+- Expertise-blocked removal with full transaction rollback
 
-The current Species engine handles Human Skillful/Versatile and Astral Fire-style choices and correctly excludes Astral Trance-style rest configuration. It still needs general source-backed handling for persistent selections such as:
+## Battle Master evidence
 
-- Dragonborn Draconic Ancestry
-- Elf lineage and spellcasting ability
-- Gnome lineage and spellcasting ability
-- Tiefling Fiendish Legacy and spellcasting ability
-- Goliath Giant Ancestry
-- Shifter subtype
-- Simic Hybrid Animal Enhancement, including later unlocked enhancement choices
-- Kobold Legacy and conditional children
-- Reborn resistance/skill choices
-- Custom Lineage feat/trait choices
-- imported species skill, tool, language, and innate-magic ability choices
+### Source normalization
 
-The implementation must preserve mixed cadence inside one feature: a lineage can be permanent while one spell attached to it can be replaceable after a Long Rest.
+Migration 38 derives the XPHB Battle Master maneuver catalogue from imported `Maneuver Options` references rather than maintaining a second hard-coded maneuver list.
 
-### 3. Species size is normalized but not wired
+Verified live:
 
-`speciesCharacterSizeOptions()` now maps imported source codes to legal character sizes. The Species UI and Continue validation still need to consume that set, auto-lock a single legal size, and require one of the allowed values when more than one size is legal.
+- 20 canonical XPHB maneuver identities
+- identity-only normalized rows
+- cumulative maneuver count helper: 3 / 5 / 7 / 9 at Fighter 3 / 7 / 10 / 15
 
-### 4. Background tool/language choices are incomplete
+### Shared authority
 
-Background skills and background feat selection are modeled, but source-defined gaming-set, Artisan's Tool, Musical Instrument, and language choices are not all structured, persisted, and server-validated. The live preferred Background catalogue contains explicit choice structures that cannot safely be reduced to display text.
+Migration 39 uses `character_class_option_grant_instances` for Battle Master maneuver instances in both higher-level Forge and earned progression.
 
-### 5. Class starting proficiency choices are incomplete
+Rollback proofs:
 
-The Training step understands class skill choices, but the preferred class catalogue also contains persistent starting tool/instrument choices, including:
+- level-7 Forge-created Battle Master → five normalized instances at acquisition levels 3/3/3/7/7
+- Fighter 2→3 Battle Master + exactly three maneuvers succeeds
+- incomplete Fighter 2→3 Battle Master selection fails atomically
+- Champion 2→3 succeeds without maneuver state
+- Battle Master 6→7 learns two maneuvers and optionally replaces one
+- replacement keeps the original slot acquisition level and records `lastReplacementLevel`
+- normalized rows, sheet projection, and progression history agree
 
-- Artificer — one Artisan's Tool in addition to fixed Thieves' Tools and Tinker's Tools
-- Bard — three Musical Instruments
-- Monk — one Artisan's Tool or Musical Instrument
+Known presentation debt: Fighter-3 pending-subclass UI still displays a clearly labeled Battle-Master-only group before subclass selection is resolved. Server enforcement is correct; conditional hide/require polish remains for browser acceptance.
 
-Fixed armor/weapon proficiency can continue to derive from canonical class metadata where the runtime already does so, but player-selected starting proficiencies must be serialized as character authority.
+## Wizard Savant evidence
 
-### 6. Feats need grant instances, nested choices, and effects
+Migration 40 is live and connects earned XPHB Savant spellbook additions for Abjurer, Diviner, Evoker, and Illusionist.
 
-A selected feat is currently mostly treated as a unique string. That is insufficient for both creation and higher-level starts.
+### Storage contract
 
-Required nested examples include:
+Savant spells are **not** ordinary base-Wizard `source_type='class'` rows because Forge validates the exact normal Wizard spell count. They are stored as:
 
-- Magic Initiate — spell list, two cantrips, one level-1 spell from the same list, spellcasting ability
-- Crafter — three Artisan's Tools
-- Musician — three Musical Instruments
-- Skilled — three skills/tools in any combination
-- Blessed Warrior / Druidic Warrior — two class-list cantrips
-- Elemental Adept — damage type
-- Fey-Touched / Shadow-Touched — chosen level-1 spell
-- Keen Mind / Observant — skill
-- Ritual Caster — PB-scaled ritual spells
-- Skill Expert — skill proficiency and Expertise
+- `source_type='class-feature'`
+- `raw_payload.wizardSpellbook=true`
+- known, but not auto-prepared
+- not always-available
+- source key tied to the Savant acquisition level/group
 
-General and Epic Boon feats also carry built-in ability-score increases or other owned choices that must be applied, not merely named.
+The Spellbook panel reads all `character_spells` assignments, so these rows appear in the character spellbook without corrupting the base Wizard count.
 
-Repeatable feats make a unique-name representation fundamentally wrong. Magic Initiate, Skilled, Elemental Adept, and other repeatable feats need separate grant instances with independent child selections. The existing `character_option_grants` uniqueness on `(character_id, option_id)` cannot represent multiple instances by itself, so it must be extended or complemented by an instance table.
+### Duplicate authority
 
-### 7. Prose-only class choices still need a source resolver
+A deferred uniqueness trigger treats both normal Wizard class rows and Savant rows marked `wizardSpellbook=true` as one spellbook membership set. A normal Wizard spell therefore cannot be selected again as a Savant spell, or vice versa.
 
-Not every permanent class choice arrives as a neat imported `options` node. Live examples include Primal Knowledge, Lore Bard Bonus Proficiencies, Student of War, Cavalier/Samurai proficiencies, Draconic Disciple language, Otherworldly Glamour skill, Master of Intrigue languages/gaming set, Draconic Ancestor, Bladesinging weapon choice, and compatibility-class choices.
+### Rollback proofs
 
-These should resolve through declarative source descriptors for skills, languages, tools, weapons, spells, damage types, and finite enums. Do not add a long list of feature-name UI exceptions.
-
-### 8. Choice cadence must exist at field/grant level
-
-A feature can contain both persistent and runtime choices. The shared model needs cadence on each field or grant, not merely on the enclosing feature:
-
-- `creation`
-- `level-up`
-- `training`
-- `long-rest`
-- `short-rest`
-- `per-use`
-- `informational`
-
-A selection replaceable when a character gains a level remains persistent current state with a level-up replacement route. A selection made after a Long Rest is runtime configuration and must not be locked in the creator.
-
-### 9. Subclass and non-class spell authority is incomplete
-
-The current Spells step only receives the base class. A base noncaster with a spellcasting subclass therefore has no starting-spell selection flow. This affects cases such as Eldritch Knight Fighter and Arcane Trickster Rogue.
-
-The current creation RPC also records only base-class `p_spell_choices` in `character_spells`. Starting spells can additionally originate from:
-
-- subclass
-- species
-- feat
-- class feature
-- background-expanded class lists
-
-Species spells are currently sheet metadata rather than canonical spell grants, and the current authority validator compares the sheet spell summary only against `character_spells` rows with `source_type = 'class'`.
-
-The spell model must become grant/access based: source type, source label, spell id, casting ability, prepared/always-available state, free-use/recharge metadata where applicable, and list-access changes must all be explicit.
-
-### 10. Background-expanded spell lists are displayed but not usable
-
-The Forge carries `backgroundExpandedSpellNames`, but `NpcForgeSpellStep` filters the catalogue strictly to the selected base class. A background that adds spells to the class list can therefore explain the rule without allowing those spells to be selected. This belongs in the generalized spell-access model above.
-
-### 11. Higher-level creation does not replay level advancement
-
-The Forge accepts levels 1–20, but a level-8 or level-19 starting character is not simply a level-1 character with a larger feature table. Higher-level creation must replay the permanent decisions and effects gained on the path to the starting level.
-
-Missing or incomplete examples include:
-
-- Ability Score Improvement / General Feat advancement
-- built-in feat ability increases and nested feat choices
-- Epic Boon selection where applicable
-- persistent class/subclass choices gained at intermediate levels
-- PB-scaled grants that unlock along the way
-- source-backed spell and replacement choices
-
-The existing live level-up system already identifies several unsupported feature families. The Forge and level-up system should converge on the same source-choice engine rather than maintaining two partial implementations.
-
-### 12. Existing level-up feat handling is too shallow to reuse unchanged
-
-`complete_character_level_up_v1` can currently accept an ASI or a feat name, but its feat branch is a hard-coded name allowlist. It does not generically apply the feat's built-in ability increase, nested choices, source prerequisites, repeatable instances, or derived grants.
-
-The new feat-grant engine must serve both Character Forge higher-level replay and ordinary future level-up.
-
-### 13. Higher-level HP currently silently chooses fixed values
-
-The shared Forge computes level-1 maximum Hit Points correctly and then silently applies fixed average gains for every later starting level. Fixed HP is legal, but the user is never told that the choice was made.
-
-Higher-level creation should explicitly use fixed or rolled advancement. More importantly, if an intermediate ASI or feat changes Constitution, maximum HP must include the retroactive Constitution-modifier effect across attained levels. That cannot be correct until higher-level advancement choices are modeled.
-
-### 14. Starting equipment is missing from player creation
-
-The standard player flow currently has no Equipment step and the player creation RPC creates no starting inventory.
-
-The Background catalogue already retains source starting-equipment A/B packages. Preferred Class data currently does not retain equivalent class starting-equipment metadata, so the class import/catalog must be extended before the Forge can be authoritative.
-
-Required implementation:
-
-- preserve/import class starting equipment
-- background equipment A/B choice
-- class equipment/package choice
-- dependent choices such as a Gaming Set matching a prior tool choice
-- canonical item-catalog resolution
-- per-character inventory grants
-- starting coin grant
-- Review summary and server validation
-
-Higher-level optional extra money/magic items remain DM policy; normal starting equipment is the required baseline.
-
-### 15. Multi-character currency is currently account-scoped
-
-The new player flow supports multiple characters per account, but `player_wallets` and all current wallet RPCs are keyed only by `user_id`. That means two player characters on one account necessarily share one GP balance.
-
-Character inventory is already capable of character ownership. Starting GP cannot be made character-correct until currency has a character-scoped authority path or the campaign explicitly decides money is account-wide. The safe migration path is a character-scoped wallet authority with legacy compatibility rather than casually rewriting merchant economy calls inside this PR.
-
-### 16. Artificer wildcard Magic Item Plans still need concrete item instances
-
-The giant source table is no longer dumped into the Class UI, but wildcard plan rows are not complete plans by themselves. When a wildcard category can be learned more than once for different concrete items, the grant needs a concrete item child selection and an instance identity, with corresponding server validation.
-
-### 17. Review ownership needs correction
-
-The class-feature choice summary records `placement`. Review still lists every class-feature choice under Class Progression. `placement: training` selections such as Expertise should appear under Training & Professions.
-
-## Scope decisions that must not be silently changed
-
-### Campaign Species Bonus / level-1 bonus feat policy
-
-The current campaign UI offers a Species Bonus package of +2/+1, +1/+1/+1, or a feat instead of the ability increases. Older compatibility text also references a campaign bonus feat. These are not automatically assumed to be the same policy. Preserve the current accepted Species Bonus behavior during the source-choice rewrite; any separate GM-enabled bonus-feat policy should be reconciled deliberately rather than inferred.
-
-### Multiclassing
-
-The rules support multiclassing, including higher-level starts. The current Forge is single-class. Multiclassing is recorded as a separate scope decision rather than being silently added to PR #170 unless the campaign owner asks to include it in this acceptance slice.
-
-## Target architecture
-
-The next implementation pass should establish one normalized source-choice/grant model with:
-
-- owning source: origin / species / background / class / subclass / feat / equipment
-- source option/feature identifiers
-- field kinds: enum / ability / skill / tool / language / spell / feat / item / weapon / damage type / ancestry / lineage
-- required count and legal source query
-- placement
-- field-level cadence
-- dependencies (`activeWhen`)
-- prerequisite descriptors
-- repeatable grant-instance identity
-- replacement cadence
-- derived grants/effects
-- serialization and completion validation
-
-Existing Species and Class contexts should be adapted to that schema before they are retired, reducing regression risk.
-
-## Production database state
-
-Production currently includes the existing Forge authority stack plus `player_forge_runtime_choice_cadence`. That migration deliberately requires persistent children for Agonizing Blast, Eldritch Spear, Repelling Blast, and Lessons of the First Ones while excluding Pact of the Tome rest-time Book of Shadows children.
-
-The audit also ran Supabase security/performance advisors. Existing project-wide advisories remain outside this Forge patch boundary and were not modified.
+- pending Wizard 2→3 review returns the Savant entry group with two choices
+- school mapping is Abjurer→Abjuration, Diviner→Divination, Evoker→Evocation, Illusionist→Illusion
+- simulated Abjurer 4→5 returns exactly one Savant choice because maximum slot level rises 2→3
+- Wizard 5→6 returns no Savant group because maximum slot level remains 3
+- duplicate normal-Wizard + Savant spellbook provenance is rejected by the deferred trigger
+- direct successful Abjuration Savant materialization stores two source-owned, unprepared spellbook rows
+- mismatched-school submission is rejected
+- authenticated v5 Wizard 2→3 transaction completed in rollback with:
+  - Abjurer subclass
+  - fixed HP 12→16
+  - two ordinary Wizard spell rows
+  - two Savant spellbook rows (Alarm, Mage Armor)
+  - two-entry Savant class-choice projection
+  - completed review
+  - level-history record
+- authenticated v5 Wizard 4→5 transaction completed in rollback with:
+  - fixed HP 20→24
+  - Counterspell as one Abjuration Savant spellbook addition
+  - one-entry Savant class-choice projection
+  - `wizard_savant_delta` in level history
+  - completed review
+- integrity sweep after tests: zero synthetic characters, zero synthetic Savant rows, Pip unchanged at Wizard 2 with no subclass/Savant rows
+
+### Remaining Wizard parity gap
+
+Earned Savant progression is live, but direct higher-level Forge parity is **not yet complete**. Forge already has the initial level-3 Savant selector; it still needs recurring Savant groups/materialization for later starting levels where a new Wizard spell-slot level would have been reached.
+
+Spell Mastery remains intentionally excluded from permanent progression because it is Long-Rest reconfigurable. Signature Spells remains pending and must select from the character's actual level-3 Wizard spellbook entries before its Short/Long Rest free-cast resource is modeled.
+
+## CI evidence
+
+At the migration-40 checkpoint, the progression workflow was corrected to watch migrations 38-40 and execute both:
+
+- `scripts/validate_battle_master_progression.mjs`
+- `scripts/validate_wizard_savant_progression.mjs`
+
+The exact migration-40 source head `90c20b56305b7f606693a91c749ddb67edb4caad` completed all five PR workflows successfully and Vercel reported success before migration 40 was applied.
+
+Subsequent documentation commits intentionally do not change runtime code. Re-run exact-head checks after the next code/migration change before applying production DDL.
+
+## Remaining acceptance blockers
+
+1. Complete higher-level Forge recurring Savant materialization.
+2. Implement Wizard Signature Spells using normalized spellbook membership.
+3. Implement runtime Long-Rest configuration for Spell Mastery and other rest-reconfigurable features instead of Forge lock-in.
+4. Complete guarded multi-source starting-magic frontend use where still incomplete.
+5. Finish source-backed starting equipment packages and higher-level starting wealth/equipment.
+6. Finish character-scoped starting currency.
+7. Resolve Artificer wildcard Magic Item Plan concrete-item instances.
+8. Finish remaining persistent subclass/cumulative choice audit.
+9. Audit/revoke obsolete authenticated level-up completion RPC generations when confirmed unused.
+10. Run authenticated browser acceptance after exact CI/Vercel is green.
 
 ## Protected boundaries
 
-- no world-map behavior
-- no town/city-map behavior
-- no travel/routes/weather/camps/clock simulation
-- no tactical encounter behavior
-- no unrelated crafting runtime behavior
-
-Character inventory, spell grants, progression, feats, and a minimal character-scoped currency compatibility layer are in scope only where required to make a newly created character authoritative.
-
-## Acceptance gate
-
-Do not merge PR #170 and do not ask for final browser acceptance until the source-choice foundation, Origin choices, feat instances/effects, higher-level advancement, spell grants/access, starting equipment/currency, Artificer wildcard plans, and Review ownership are implemented and the exact PR head is green.
-
-After that implementation, run authenticated browser acceptance across representative level-1, level-3, level-4, level-8, level-19, and level-20 characters before merge.
+This work has not modified world-map, town/city-map, route/travel/weather, encounter/combat, or unrelated crafting runtime behavior. `components/MapPageClient.js` remains outside this PR slice.
