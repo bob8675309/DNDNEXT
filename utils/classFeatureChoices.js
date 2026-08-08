@@ -165,6 +165,19 @@ function expandWizardSavantGroups(groups = [], selectedClass, level = 1, spells 
     }));
   });
 }
+function configureWizardSignatureGroups(groups = [], selectedClass) {
+  if (normalized(selectedClass?.class_key) !== "wizard" || safeText(selectedClass?.source).toUpperCase() !== "XPHB") return groups;
+  return groups.map((group) => normalized(group.sourceFeature) === "signature spells" || group.id === "wizard-signature-spells"
+    ? {
+      ...group,
+      id: "wizard-signature-spells",
+      placement: "spells",
+      allowRepeatAcrossGroups: true,
+      constraints: { ...(group.constraints || {}), spellLevel: 3, spellClasses: ["Wizard"], requiresWizardSpellbook: true },
+      helper: "Choose two level-3 Wizard spells that are in this character's final spellbook. A level-3 spell selected as one of the normal Wizard spellbook additions on the Spells step can qualify.",
+    }
+    : group);
+}
 const EXPLICIT_PROSE_FEATURES = new Set([
   "blessed strikes", "knightly envoy", "deft explorer", "primal companion", "martial role",
 ]);
@@ -222,7 +235,10 @@ export function buildClassFeatureChoiceGroups({ selectedClass, level = 1, featur
     existing.cadence = customGroup.cadence || existing.cadence || "creation";
   }
   const explicit = buildExplicitClassFeatureGroups({ rows, selectedClass, level, catalogRows, spells, baseGroups: withCustom });
-  return expandWizardSavantGroups(mergeChoiceGroups(withCustom, explicit), selectedClass, level, spells)
+  return configureWizardSignatureGroups(
+    expandWizardSavantGroups(mergeChoiceGroups(withCustom, explicit), selectedClass, level, spells),
+    selectedClass
+  )
     .map((group) => ({ ...group, placement: group.placement || "class", cadence: group.cadence || "creation" }))
     .filter((group) => group.cadence === "creation" && group.count > 0 && group.options.length >= group.count)
     .sort((a, b) => Number(a.level) - Number(b.level) || a.label.localeCompare(b.label));
