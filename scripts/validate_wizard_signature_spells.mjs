@@ -1,10 +1,15 @@
 import fs from "node:fs";
 
 const extensions = fs.readFileSync("utils/classFeatureChoiceExtensions.js", "utf8");
+const classChoices = fs.readFileSync("utils/classFeatureChoices.js", "utf8");
 const forgeSpells = fs.readFileSync("components/NpcForgeSpellStep.js", "utf8");
 const forgeShell = fs.readFileSync("components/NewNpcModalV3.js", "utf8");
 const levelUp = fs.readFileSync("components/CharacterLevelUpChoices.js", "utf8");
+const resourceTracker = fs.readFileSync("components/CharacterSheetResourceTracker.js", "utf8");
+const sheetActionData = fs.readFileSync("hooks/useNpcSheetActionData.js", "utf8");
+const sheetActions = fs.readFileSync("utils/characterSheetActions.js", "utf8");
 const migration = fs.readFileSync("sql/20260808_42_wizard_signature_spells_authority.sql", "utf8");
+const resourceMigration = fs.readFileSync("sql/20260808_43_wizard_signature_resource_labels.sql", "utf8");
 const rest = fs.readFileSync("sql/20260802_03_character_sheet_spell_resources.sql", "utf8");
 
 const need = (source, token, label = token) => {
@@ -22,6 +27,14 @@ for (const token of [
   'wizardSpellbookRequired: true',
   'recharge: "short_rest"',
 ]) need(extensions, token);
+
+for (const token of [
+  'function configureWizardSignatureGroups',
+  'id: "wizard-signature-spells"',
+  'placement: "spells"',
+  'allowRepeatAcrossGroups: true',
+  'requiresWizardSpellbook: true',
+]) need(classChoices, token);
 
 for (const token of [
   'NpcForgeClassFeatureChoices',
@@ -83,6 +96,33 @@ for (const token of [
 ]) need(migration, token);
 forbid(migration, "insert into public.character_spells", "duplicate Signature Spell membership insertion");
 forbid(migration, "source_type='signature'", "Signature feature replacing spellbook provenance");
+const baseTransitionIndex = migration.indexOf('v_result:=public.complete_character_level_up_v4');
+const signatureIndex = migration.indexOf('v_signature_summary:=private.apply_level_up_wizard_signature_spells_v1');
+if (baseTransitionIndex < 0 || signatureIndex < 0 || signatureIndex <= baseTransitionIndex) throw new Error("Signature Spells must validate after delegated v4 commits the final level-20 Wizard spellbook.");
+
+for (const token of [
+  'guard_signature_spell_resource_overlay_v1',
+  'v_becoming_signature',
+  'coalesce(old.uses_max,0)>0',
+  'Signature Spells cannot overwrite another limited-use resource',
+  "'resourceLabel','Signature Spell'",
+  "'resourceFeature','Signature Spells'",
+  "'signatureSpellRecharge','short_rest_or_long_rest'",
+  'character_spells_guard_signature_spell_resource_overlay_v1',
+  "'resourceLabel',coalesce(nullif(cs.raw_payload->>'resourceLabel',''),sp.name)",
+  "'resourceFeature',nullif(cs.raw_payload->>'resourceFeature','')",
+]) need(resourceMigration, token);
+
+need(sheetActionData, 'uses_max,uses_remaining,recharge,raw_payload');
+for (const token of [
+  'row?.raw_payload?.resourceLabel',
+  '[resourceLabel, limitedUseText].filter(Boolean).join(" • ")',
+]) need(sheetActions, token);
+for (const token of [
+  'entry?.resourceLabel',
+  'entry?.resourceFeature',
+  'resourceLabel',
+]) need(resourceTracker, token);
 
 for (const token of [
   "v_rest_type not in ('short_rest','long_rest')",
@@ -91,4 +131,4 @@ for (const token of [
   "set uses_remaining=uses_max",
 ]) need(rest, token);
 
-console.log("Wizard Signature Spells Forge placement, final-spellbook eligibility including Savant provenance, earned progression ordering, preserved membership provenance, and Short/Long Rest free-cast recovery contracts validated.");
+console.log("Wizard Signature Spells Forge placement, final-spellbook eligibility including Savant provenance, post-v4 earned ordering, preserved membership provenance, protected/labeled free-cast resources, and Short/Long Rest recovery contracts validated.");
