@@ -384,7 +384,7 @@ begin
   for v_pending_group in select key from jsonb_each(coalesce(p_all_class_selections,'{}'::jsonb)) where key like 'warlock-invocation-slot-%'
   loop
     if jsonb_array_length(coalesce(p_all_class_selections#>array[v_pending_group,'invocation'],'[]'::jsonb))=1 then
-      v_pending_key:=p_all_class_selections#>array[v_pending_group,'invocation']->>0;
+      v_pending_key:=(p_all_class_selections#>array[v_pending_group,'invocation'])->>0;
       select name into v_pending_name from public.class_feature_option_catalog
       where option_key=v_pending_key and option_type='eldritch-invocation' and source='XPHB' and lower(coalesce(class_key,''))='warlock';
       if found then v_available_names:=array_append(v_available_names,private.normalize_player_choice_name_v1(v_pending_name)); end if;
@@ -503,6 +503,9 @@ begin
   );
 
   select coalesce(sheet,'{}'::jsonb) into v_sheet from public.character_sheets where character_id=p_character_id for update;
+  if jsonb_typeof(v_sheet->'sourceChoices')<>'object' then
+    v_sheet:=jsonb_set(v_sheet,'{sourceChoices}','{}'::jsonb,true);
+  end if;
   v_sheet:=jsonb_set(v_sheet,array['sourceChoices',v_target_key],v_source_group,true);
   select coalesce(jsonb_agg(entry.value order by entry.ord),'[]'::jsonb) into v_existing_summary
   from jsonb_array_elements(case when jsonb_typeof(v_sheet->'sourceChoiceSummary')='array' then v_sheet->'sourceChoiceSummary' else '[]'::jsonb end) with ordinality entry(value,ord)
