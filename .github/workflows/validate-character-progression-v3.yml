@@ -41,12 +41,14 @@ on:
       - "sql/20260808_32_repair_source_owned_origin_feat_grant_schema.sql"
       - "sql/20260808_33_magic_initiate_level_replacement.sql"
       - "sql/20260808_34_reversible_source_owned_origin_feats.sql"
+      - "sql/20260808_35_eldritch_invocation_level_replacement.sql"
       - "scripts/validate_character_class_progression.mjs"
       - "scripts/validate_character_progression_v3.mjs"
       - "scripts/validate_tough_progression.mjs"
       - "scripts/validate_source_owned_origin_feat_schema.mjs"
       - "scripts/validate_magic_initiate_replacement.mjs"
       - "scripts/validate_reversible_source_owned_origin_feats.mjs"
+      - "scripts/validate_eldritch_invocation_replacement.mjs"
       - ".github/workflows/validate-character-progression-v3.yml"
   pull_request:
     paths:
@@ -88,12 +90,14 @@ on:
       - "sql/20260808_32_repair_source_owned_origin_feat_grant_schema.sql"
       - "sql/20260808_33_magic_initiate_level_replacement.sql"
       - "sql/20260808_34_reversible_source_owned_origin_feats.sql"
+      - "sql/20260808_35_eldritch_invocation_level_replacement.sql"
       - "scripts/validate_character_class_progression.mjs"
       - "scripts/validate_character_progression_v3.mjs"
       - "scripts/validate_tough_progression.mjs"
       - "scripts/validate_source_owned_origin_feat_schema.mjs"
       - "scripts/validate_magic_initiate_replacement.mjs"
       - "scripts/validate_reversible_source_owned_origin_feats.mjs"
+      - "scripts/validate_eldritch_invocation_replacement.mjs"
       - ".github/workflows/validate-character-progression-v3.yml"
 
 jobs:
@@ -111,3 +115,4 @@ jobs:
           node scripts/validate_source_owned_origin_feat_schema.mjs
           node scripts/validate_magic_initiate_replacement.mjs
           node scripts/validate_reversible_source_owned_origin_feats.mjs
+          node scripts/validate_eldritch_invocation_replacement.mjs
