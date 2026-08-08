@@ -126,6 +126,10 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
   const [classOptionFeatSelections, setClassOptionFeatSelections] = useState({});
   const [loadingClassChoices, setLoadingClassChoices] = useState(false);
   const [classChoiceError, setClassChoiceError] = useState("");
+  const [replacementGroups, setReplacementGroups] = useState([]);
+  const [replacementSelections, setReplacementSelections] = useState({});
+  const [loadingReplacements, setLoadingReplacements] = useState(false);
+  const [replacementError, setReplacementError] = useState("");
   const [recoveryVersion, setRecoveryVersion] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -148,6 +152,10 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
   const classChoicesComplete = useMemo(
     () => sourceChoiceGroupsComplete(classChoiceGroups, classChoiceSelections),
     [classChoiceGroups, classChoiceSelections]
+  );
+  const replacementsComplete = useMemo(
+    () => sourceChoiceGroupsComplete(replacementGroups, replacementSelections),
+    [replacementGroups, replacementSelections]
   );
 
   const eligibleSpells = useMemo(() => classSpellCatalog
@@ -205,6 +213,9 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
     setClassChoiceSelections({});
     setClassOptionFeatSelections({});
     setClassChoiceError("");
+    setReplacementGroups([]);
+    setReplacementSelections({});
+    setReplacementError("");
     setError("");
   }, [review?.session?.id]);
 
@@ -278,6 +289,41 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
     loadClassChoices();
     return () => { active = false; };
   }, [characterId, metadataReady, recoveryVersion, review?.session?.id]);
+
+  useEffect(() => {
+    let active = true;
+    async function loadReplacements() {
+      if (!metadataReady || !characterId) {
+        setReplacementGroups([]);
+        setReplacementSelections({});
+        setReplacementError("");
+        return;
+      }
+      setLoadingReplacements(true);
+      setReplacementError("");
+      const result = await supabase.rpc("get_character_level_replacement_options_v1", {
+        p_character_id: characterId,
+      });
+      if (!active) return;
+      if (result.error) {
+        if (rpcUnavailable(result.error, "get_character_level_replacement_options_v1")) {
+          setReplacementGroups([]);
+          setReplacementSelections({});
+        } else {
+          setReplacementGroups([]);
+          setReplacementSelections({});
+          setReplacementError(result.error.message || "Could not load optional source-owned replacements.");
+        }
+      } else {
+        const groups = Array.isArray(result.data?.groups) ? result.data.groups : [];
+        setReplacementGroups(groups);
+        setReplacementSelections(normalizeSourceChoiceSelections(groups, {}));
+      }
+      setLoadingReplacements(false);
+    }
+    loadReplacements();
+    return () => { active = false; };
+  }, [characterId, metadataReady, review?.session?.id]);
 
   useEffect(() => {
     let active = true;
@@ -363,6 +409,16 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
     setError("");
   }
 
+  function toggleReplacement(groupId, fieldId, optionKey) {
+    setReplacementSelections((current) => toggleSourceChoiceSelection(replacementGroups, current, groupId, fieldId, optionKey));
+    setError("");
+  }
+
+  function setReplacement(groupId, fieldId, optionKeys) {
+    setReplacementSelections((current) => setSourceChoiceSelection(replacementGroups, current, groupId, fieldId, optionKeys));
+    setError("");
+  }
+
   function toggleSpell(spell) {
     setSelectedSpells((current) => {
       if (current[spell.id]) {
@@ -402,6 +458,9 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
     if (classChoiceError) return classChoiceError;
     if (classChoiceGroups.length && !classChoicesComplete) return "Complete every permanent class choice gained at this level.";
     if (classOptionFeatGroups.length && !classOptionFeatsComplete) return "Complete every choice owned by the Origin feat granted through this class feature.";
+    if (loadingReplacements) return "Wait for optional source-owned replacements to finish loading.";
+    if (replacementError) return replacementError;
+    if (replacementGroups.length && !replacementsComplete) return "Finish the replacement you started, or clear the replacement choice.";
     if (counts.cantrips !== requiredCantrips) return `Choose exactly ${requiredCantrips} new cantrip${requiredCantrips === 1 ? "" : "s"}.`;
     if (counts.leveled !== requiredLeveled) return `Choose exactly ${requiredLeveled} new leveled spell${requiredLeveled === 1 ? "" : "s"}.`;
     return "";
@@ -429,20 +488,29 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
       spell_choices: spellChoices,
       class_choice_selections: classChoiceSelections,
       class_option_feat_instances: classOptionFeatPayload,
+      replacement_selections: replacementSelections,
       ...(advancementChoice ? { advancement_instance: advancementModel.instance } : {}),
     };
 
-    let result = await supabase.rpc("complete_character_level_up_v4", {
+    let result = await supabase.rpc("complete_character_level_up_v5", {
       p_character_id: characterId,
       p_selections: selections,
     });
-    if (result.error && rpcUnavailable(result.error, "complete_character_level_up_v4")) {
-      const fallbackSelections = { ...selections };
-      delete fallbackSelections.class_option_feat_instances;
-      result = await supabase.rpc("complete_character_level_up_v3", {
+    if (result.error && rpcUnavailable(result.error, "complete_character_level_up_v5")) {
+      const v4Selections = { ...selections };
+      delete v4Selections.replacement_selections;
+      result = await supabase.rpc("complete_character_level_up_v4", {
         p_character_id: characterId,
-        p_selections: fallbackSelections,
+        p_selections: v4Selections,
       });
+      if (result.error && rpcUnavailable(result.error, "complete_character_level_up_v4")) {
+        const fallbackSelections = { ...v4Selections };
+        delete fallbackSelections.class_option_feat_instances;
+        result = await supabase.rpc("complete_character_level_up_v3", {
+          p_character_id: characterId,
+          p_selections: fallbackSelections,
+        });
+      }
     }
     if (result.error) {
       setError(result.error.message || "Could not apply this level.");
@@ -461,6 +529,7 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
       {error ? <div className="alert alert-danger py-2">{error}</div> : null}
       {advancementError ? <div className="alert alert-danger py-2">{advancementError}</div> : null}
       {classChoiceError ? <div className="alert alert-danger py-2">{classChoiceError}</div> : null}
+      {replacementError ? <div className="alert alert-danger py-2">{replacementError}</div> : null}
 
       <CharacterInvocationRecovery
         characterId={characterId}
@@ -519,6 +588,21 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
           </div>
         ) : null}
 
+        {replacementGroups.length || loadingReplacements ? (
+          <div className="col-12">
+            {loadingReplacements ? <div className="small text-muted mb-2">Loading optional source-owned replacements…</div> : null}
+            <SourceChoiceFields
+              groups={replacementGroups}
+              selections={replacementSelections}
+              kicker="Optional retraining"
+              title="Replace a choice allowed by this level gain"
+              onToggle={toggleReplacement}
+              onSet={setReplacement}
+            />
+            {replacementGroups.length ? <div className="small text-muted mt-2">Replacement is optional. Leave the replacement selector empty to keep the character's current choices.</div> : null}
+          </div>
+        ) : null}
+
         {advancementChoice ? (
           <div className="col-12">
             {loadingAdvancement || loadingCatalogs ? <div className="small text-muted mb-2">Loading source-legal advancement choices…</div> : null}
@@ -568,8 +652,8 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
         ) : null}
       </div>
 
-      <button type="button" className="btn btn-warning btn-sm mt-3" disabled={busy || loadingCatalogs || loadingAdvancement || loadingClassChoices} onClick={applyLevel}>{busy ? "Applying level…" : `Apply Level ${preview?.toLevel || ""}`}</button>
-      <div className="small text-muted mt-2">XP unlocks this one level. HP, source-owned choices, spell grants, sheet values, and progression history are committed together or not at all. If the character still has enough XP afterward, the next level opens as a separate review against the newly updated character.</div>
+      <button type="button" className="btn btn-warning btn-sm mt-3" disabled={busy || loadingCatalogs || loadingAdvancement || loadingClassChoices || loadingReplacements} onClick={applyLevel}>{busy ? "Applying level…" : `Apply Level ${preview?.toLevel || ""}`}</button>
+      <div className="small text-muted mt-2">XP unlocks this one level. HP, source-owned choices, optional replacements, spell grants, sheet values, and progression history are committed together or not at all. If the character still has enough XP afterward, the next level opens as a separate review against the newly updated character.</div>
 
       <style jsx>{`
         .level-up-spell-search { max-width:260px; }
