@@ -3,11 +3,12 @@ import path from "node:path";
 
 const root = process.cwd();
 const source = fs.readFileSync(path.join(root, "sql/20260808_35_eldritch_invocation_level_replacement.sql"), "utf8");
-const need = (token, label = token) => {
-  if (!source.includes(token)) throw new Error(`Eldritch Invocation replacement is missing ${label}.`);
+const repair = fs.readFileSync(path.join(root, "sql/20260808_36_fix_invocation_replacement_source_choices_parent.sql"), "utf8");
+const need = (haystack, token, label = token) => {
+  if (!haystack.includes(token)) throw new Error(`Eldritch Invocation replacement is missing ${label}.`);
 };
-const forbid = (token, label = token) => {
-  if (source.includes(token)) throw new Error(`Eldritch Invocation replacement must not contain ${label}.`);
+const forbid = (haystack, token, label = token) => {
+  if (haystack.includes(token)) throw new Error(`Eldritch Invocation replacement must not contain ${label}.`);
 };
 
 for (const token of [
@@ -31,18 +32,27 @@ for (const token of [
   "lastReplacementLevel",
   "previousOptionKey",
   "v_target.acquired_level",
-  "if jsonb_typeof(v_sheet->'sourceChoices')<>'object' then",
-  "v_sheet:=jsonb_set(v_sheet,'{sourceChoices}','{}'::jsonb,true)",
   "v_forward_class jsonb:=v_all_class-'warlock-invocation-replacement'",
   "v_result:=public.complete_character_level_up_v4",
-  "v_invocation_summary:=private.apply_level_up_warlock_invocation_replacement_v1",
   "v_summary:=coalesce(v_invocation_summary,'[]'::jsonb)||coalesce(v_standard_summary,'[]'::jsonb)",
   "invocation_replacement_selection",
   "grant execute on function public.complete_character_level_up_v5",
-]) need(token);
+]) need(source, token);
 
-forbid("v_pending_key:=p_all_class_selections#>array[v_pending_group,'invocation']->>0", "unparenthesized pending Invocation JSON extraction");
-forbid("set option_catalog_id=v_new.id,\n      acquired_level=", "replacement rewriting the original acquisition level");
-forbid("grant execute on function public.complete_character_level_up_v4(uuid,jsonb) to authenticated", "authenticated v4 completion bypass");
+for (const token of [
+  "ensure_character_source_choices_v1",
+  "jsonb_typeof(v_sheet->'sourceChoices') is distinct from 'object'",
+  "v_sheet:=jsonb_set(v_sheet,'{sourceChoices}','{}'::jsonb,true)",
+  "apply_level_up_warlock_invocation_replacement_v2",
+  "perform private.ensure_character_source_choices_v1(p_character_id)",
+  "return private.apply_level_up_warlock_invocation_replacement_v1",
+  "v_invocation_summary:=private.apply_level_up_warlock_invocation_replacement_v2",
+  "revoke all on function private.apply_level_up_warlock_invocation_replacement_v1(uuid,integer,jsonb,jsonb,jsonb) from service_role",
+]) need(repair, token, `effective legacy-parent repair token ${token}`);
 
-console.log("Safe Eldritch Invocation replacement, current-state validation, Lessons reversal, and v5 transaction contracts validated.");
+forbid(source, "v_pending_key:=p_all_class_selections#>array[v_pending_group,'invocation']->>0", "unparenthesized pending Invocation JSON extraction");
+forbid(source, "set option_catalog_id=v_new.id,\n      acquired_level=", "replacement rewriting the original acquisition level");
+forbid(source, "grant execute on function public.complete_character_level_up_v4(uuid,jsonb) to authenticated", "authenticated v4 completion bypass");
+forbid(repair, "jsonb_typeof(v_sheet->'sourceChoices')<>'object'", "NULL-unsafe sourceChoices parent check");
+
+console.log("Safe Eldritch Invocation replacement, current-state validation, reversible Lessons ownership, legacy sourceChoices repair, and v5 transaction contracts validated.");
