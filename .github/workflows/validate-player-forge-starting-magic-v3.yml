@@ -1,0 +1,38 @@
+name: Validate Player Forge v3 starting magic
+
+on:
+  push:
+    paths:
+      - "components/NewNpcModalV3.js"
+      - "components/useNpcForgeDerivedModel.js"
+      - "components/NpcForgeSpellStep.js"
+      - "utils/playerForgeSpellSources.js"
+      - "scripts/validate_unified_character_forge.mjs"
+      - "scripts/validate_player_forge_starting_magic_v3.mjs"
+      - "sql/20260808_47_player_forge_starting_magic_v3_completion.sql"
+      - ".github/workflows/validate-player-forge-starting-magic-v3.yml"
+  pull_request:
+    paths:
+      - "components/NewNpcModalV3.js"
+      - "components/useNpcForgeDerivedModel.js"
+      - "components/NpcForgeSpellStep.js"
+      - "utils/playerForgeSpellSources.js"
+      - "scripts/validate_unified_character_forge.mjs"
+      - "scripts/validate_player_forge_starting_magic_v3.mjs"
+      - "sql/20260808_47_player_forge_starting_magic_v3_completion.sql"
+      - ".github/workflows/validate-player-forge-starting-magic-v3.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate guarded starting magic
+        run: |
+          node scripts/validate_player_forge_starting_magic_v3.mjs
+          node scripts/validate_unified_character_forge.mjs
+      - name: Run production build gate
+        run: npm run build:vercel
