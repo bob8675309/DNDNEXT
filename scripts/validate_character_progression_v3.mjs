@@ -15,18 +15,24 @@ execFileSync(process.execPath, [path.join(root, "scripts/validate_character_clas
 
 const ui = read("components/CharacterLevelUpChoices.js");
 for (const token of [
-  'supabase.rpc("get_character_level_class_choice_options_v1"',
+  'supabase.rpc("get_character_level_class_choice_options_v2"',
+  'supabase.rpc("complete_character_level_up_v4"',
+  "rpcUnavailable",
   "classChoiceGroups",
   "classChoiceSelections",
   "sourceChoiceGroupsComplete",
   "class_choice_selections",
+  "class_option_feat_instances",
+  "buildFeatSourceChoiceGroups",
+  "featInstanceSummaries",
   'kicker="Class progression"',
+  'kicker="Granted Origin feat"',
   "loadingClassChoices",
   "spellMatchesLevelClassAccess",
   "magicalSecretsAccess",
   "Magical Secrets expands these new Bard spell choices",
   '["bard", "cleric", "druid", "wizard"]',
-]) requireToken(ui, token, "earned level-up source-choice and spell-access UI");
+]) requireToken(ui, token, "earned level-up v4 source-choice and spell-access UI");
 
 const sourceFields = read("components/SourceChoiceFields.js");
 for (const token of ["sourceChoiceFieldIsActive", "activeFields", "replacementCadence"]) requireToken(sourceFields, token, "dependent source-choice renderer");
@@ -44,6 +50,14 @@ for (const token of [
   "distinctPerRepeat",
   'replacementCadence: "level-up"',
 ]) requireToken(invocationBuilder, token, "Warlock Invocation source instances");
+
+const featChoices = read("utils/playerForgeFeatChoices.js");
+for (const token of [
+  "buildFeatSourceChoiceGroups",
+  "groups.push(group(instance, resolvedFields",
+  "featInstanceSummaries",
+]) requireToken(featChoices, token, "shared feat-instance authority including empty child groups");
+forbidToken(featChoices, "if (!resolvedFields.length && !ability.fixedEffects.length && !fixedSpellTokens.length) continue;", "shared feat-instance builder");
 
 const registrar = read("components/NpcForgeFeatChoiceRegistrar.js");
 for (const token of [
@@ -150,6 +164,33 @@ for (const token of [
   "pactSlotLevel",
 ]) requireToken(spellSlotFix, token, "shared Forge spell-slot JSON validation");
 
+const v4 = read("sql/20260808_27_earned_subclass_choice_progression.sql");
+for (const token of [
+  "level_up_persistent_choice_gaps_base_v1",
+  "current_setting('dndnext.resolved_invocation_gap'",
+  "begin_character_level_up_v4",
+  "complete_character_level_up_v4",
+  "get_character_level_class_choice_options_v2",
+  "apply_level_up_subclass_choices_v1",
+  "bard-lore-magical-discoveries",
+  "sorcerer-draconic-affinity",
+  "fighter-champion-additional-fighting-style",
+  "revoke all on function public.complete_character_level_up_v3",
+]) requireToken(v4, token, "effective v4 gap and subclass authority");
+forbidToken(v4, "Required XPHB Warlock Invocation gains are handled by progression v4 using normalized instance authority.\n  return '[]'::jsonb;", "effective persistent-choice gap authority");
+
+const recovery = read("sql/20260808_28_legacy_warlock_invocation_recovery.sql");
+for (const token of [
+  "get_character_invocation_recovery_v1",
+  "recover_character_invocations_v1",
+  "recoveredCurrentState",
+  "historicalOrderUnknown",
+  "Invocation recovery must preserve the current Invocation names already recorded on the legacy sheet",
+  "Lessons of the First Ones requires GM reconciliation",
+  "warlock-invocation-recovery-",
+  "Repeated % instances must use different affected cantrips",
+]) requireToken(recovery, token, "one-time legacy Warlock Invocation recovery");
+
 const optionImporter = read("scripts/import_5etools_optional_features.mjs");
 for (const token of [
   "optionalfeatures.json",
@@ -174,4 +215,4 @@ for (const token of [
   "mystic arcanum",
 ]) requireToken(delta, token, "shared class-choice delta planner");
 
-console.log("Progression v3 class choices, source-aware spell access, normalized Invocation authority, optional-feature catalogue, and fail-closed complex-choice boundary validated.");
+console.log("Progression v4 class choices, source-aware spell access, normalized Invocation authority, subclass parity, legacy recovery, optional-feature catalogue, and fail-closed complex-choice boundary validated.");
