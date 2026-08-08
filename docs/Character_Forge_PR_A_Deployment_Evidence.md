@@ -5,13 +5,13 @@ PR: #170 (`agent/character-forge-resilience-presentation`)
 
 ## Current acceptance state
 
-PR #170 remains **open and unmerged**. Automated checks and rollback SQL proofs are not final authenticated browser acceptance.
+PR #170 remains **open and unmerged**. Automated checks, production builds, and rollback SQL proofs are not final authenticated browser acceptance.
 
 The active acceptance rule is creation/progression parity for persistent source-owned choices. Runtime/rest/per-use configuration is kept separate rather than being frozen into Character Forge state.
 
 ## Current production progression boundary
 
-The current Level Up UI submits to `complete_character_level_up_v5`. v5 wraps the reviewed v4 transition with the normalized source-owned acquisition/replacement work that must occur transactionally around it.
+The current Level Up UI submits to `complete_character_level_up_v5`. v5 wraps the reviewed v4 transition with normalized source-owned acquisition/replacement work that must occur transactionally around it, and it now also applies Wizard Signature Spells after the base level-20 spellbook transition.
 
 Current production progression includes:
 
@@ -32,6 +32,7 @@ Current production progression includes:
 - Lessons of the First Ones Origin-feat ownership/reversal
 - Battle Master maneuver acquisition/replacement
 - XPHB Wizard Savant spellbook additions in earned progression and higher-level Forge creation
+- XPHB Wizard Signature Spells in earned progression and level-20 Forge creation
 
 Direct authenticated v3/v4 completion is revoked. Legacy v1/v2 completion RPCs still retain authenticated execute and are tracked as an authority-cleanup item; the current level-up component does not use them as its normal completion path.
 
@@ -53,29 +54,11 @@ Production rollback coverage includes:
 
 ## Battle Master evidence
 
-### Source normalization
+Migrations 38-39 derive the 20 XPHB Battle Master maneuver identities from imported `Maneuver Options` and use `character_class_option_grant_instances` for shared higher-level Forge / earned-progression authority.
 
-Migration 38 derives the XPHB Battle Master maneuver catalogue from imported `Maneuver Options` references rather than maintaining a second hard-coded maneuver list.
+Verified cumulative counts are 3 / 5 / 7 / 9 at Fighter levels 3 / 7 / 10 / 15. Later gains require two new maneuvers and permit one optional replacement while preserving the original maneuver-slot acquisition level.
 
-Verified live:
-
-- 20 canonical XPHB maneuver identities
-- identity-only normalized rows
-- cumulative maneuver count helper: 3 / 5 / 7 / 9 at Fighter 3 / 7 / 10 / 15
-
-### Shared authority
-
-Migration 39 uses `character_class_option_grant_instances` for Battle Master maneuver instances in both higher-level Forge and earned progression.
-
-Rollback proofs:
-
-- level-7 Forge-created Battle Master → five normalized instances at acquisition levels 3/3/3/7/7
-- Fighter 2→3 Battle Master + exactly three maneuvers succeeds
-- incomplete Fighter 2→3 Battle Master selection fails atomically
-- Champion 2→3 succeeds without maneuver state
-- Battle Master 6→7 learns two maneuvers and optionally replaces one
-- replacement keeps the original slot acquisition level and records `lastReplacementLevel`
-- normalized rows, sheet projection, and progression history agree
+Rollback proofs cover higher-level Forge normalization, Fighter 2→3 Battle Master entry, incomplete-selection rejection, non-Battle-Master progression, Fighter 6→7 acquisition plus replacement, and normalized sheet/history agreement.
 
 Known presentation debt: Fighter-3 pending-subclass UI still displays a clearly labeled Battle-Master-only group before subclass selection is resolved. Server enforcement is correct; conditional hide/require polish remains for browser acceptance.
 
@@ -83,94 +66,140 @@ Known presentation debt: Fighter-3 pending-subclass UI still displays a clearly 
 
 Migrations 40 and 41 are live.
 
-Migration 40 connected the earned XPHB Savant path for Abjurer, Diviner, Evoker, and Illusionist. Migration 41 corrected the spellbook-level boundary and completed direct higher-level Forge chronology/materialization.
+Migration 40 connected earned XPHB Savant progression for Abjurer, Diviner, Evoker, and Illusionist. Migration 41 corrected the level-1+ spellbook boundary and completed direct higher-level Forge chronology/materialization.
 
-### Storage contract
-
-Savant spells are **not** ordinary base-Wizard `source_type='class'` rows because Forge validates the exact normal Wizard spell count. They are stored as:
+Savant spells preserve their feature provenance rather than becoming ordinary base Wizard rows:
 
 - `source_type='class-feature'`
 - `raw_payload.wizardSpellbook=true`
 - known, but not auto-prepared
-- not always-available
-- source key tied to the Savant acquisition level/group
+- not always available
+- source key tied to the acquisition level/group
 
-The Spellbook panel reads all `character_spells` assignments, so these rows appear in the character spellbook without corrupting the base Wizard count.
+Wizard Spellcasting defines the spellbook as level 1+ spells, so cantrips are excluded. Higher-level Forge serializes historical acquisitions at 3/5/7/9/11/13/15/17, while a deferred uniqueness rule treats ordinary Wizard level-1+ rows and Savant `wizardSpellbook` rows as one membership set.
 
-### Level-1+ spellbook boundary
+Migration-41 production proofs include correct level-3/5 option ranges, school enforcement, no cantrip leakage, no ordinary-count inflation, duplicate-provenance rejection, higher-level Forge replay, and zero-residue rollback cleanup.
 
-The resumed production audit caught a migration-40 bug before browser acceptance: the level-3 Savant option query allowed level-0 spells. Wizard Spellcasting defines the spellbook as level 1+ spells, so cantrips were not legal Savant spellbook additions.
+## Wizard Signature Spells evidence
 
-Migration 41 corrected both earned progression and Forge authority:
+Migration 42 is live as `wizard_signature_spells_authority` (`20260808213723`).
 
-- Wizard 3 Savant choices: two spells, each level 1-2;
-- Wizard 5 / 7 / 9 / 11 / 13 / 15 / 17: one additional spell at maximum spell levels 3 / 4 / 5 / 6 / 7 / 8 / 9 respectively;
-- every choice must be a Wizard spell from the matching Savant school;
-- higher-level Forge serializes each historical acquisition as its own group rather than one cumulative current-level bucket;
-- the ordinary Wizard Spells step excludes spells already selected by Savant.
+### Source / UI contract
 
-### Duplicate authority
+The source rule is a permanent Wizard-20 selection of exactly two level-3 Wizard spells already in the character's spellbook. Because eligibility depends on spellbook membership, the shared Forge group is placed on the **Spells** step rather than the Class step.
 
-A deferred uniqueness trigger treats normal level-1+ Wizard class rows and Savant rows marked `wizardSpellbook=true` as one spellbook membership set. A normal Wizard spell therefore cannot be selected again as a Savant spell, or vice versa. Ordinary Wizard cantrips are not treated as spellbook membership.
+The direct Forge UI limits Signature choices to level-3 spell IDs actually present in the draft spellbook through either:
 
-### Migration / CI evidence
+- ordinary Wizard starting spellbook selections; or
+- Savant selections already made in the shared class-choice state.
 
-The first migration-41 apply attempt failed safely during PL/pgSQL compilation; no DDL committed. The parser issue was isolated to a `CASE` expression in a comparison, corrected on the branch, and parser-proven directly before retry.
+If an underlying spell leaves the draft spellbook, the stale Signature selection is removed. The Spells step cannot advance while its required Signature group is incomplete.
 
-The corrected source head `057b22ece3aeb084bbbd02dde9779378d1e4e7e6` then passed all five PR workflows and Vercel. Migration 41 compiled successfully afterward and is recorded in production as `wizard_savant_forge_chronology`.
+The shared class-choice engine marks Signature Spells `allowRepeatAcrossGroups=true` so a spell selected earlier by the different Savant feature can legitimately be selected again as a Signature Spell. This does not allow duplicate spellbook membership.
 
-Production migration records now include:
+Earned level-up loads ordinary Wizard rows plus Savant `wizardSpellbook` rows as existing spellbook membership, preventing Savant spells from reappearing as ordinary new-spell candidates. At Wizard 19→20, Signature eligibility also includes level-3 Wizard spells selected as the two ordinary new spells in that same transition.
 
-- `wizard_savant_spellbook_progression`
-- `wizard_savant_forge_chronology`
+### Storage / resource contract
 
-### Production proofs after migration 41
+Signature Spells overlays the existing `character_spells` row rather than inserting another membership row. The original `source_type` and `source_key` remain unchanged.
 
-Read-only / rollback tests verified:
+Each selected row becomes:
 
-- pending Wizard 2→3 Savant group requires exactly two choices;
-- level-3 option minimum = 1, maximum = 2, cantrip count = 0;
-- simulated Abjurer 4→5 returns exactly one Abjuration choice and every option is level 1-3;
-- direct valid Abjuration Savant materialization creates two class-feature spellbook rows, both unprepared/not always available, while the ordinary Wizard class-spell count is unchanged;
-- mismatched-school submission is rejected atomically;
-- deferred uniqueness rejects the same spell as both ordinary Wizard progression and Savant provenance;
-- higher-level Forge level-5 replay materializes exactly three feature-granted spellbook rows at acquisition levels 3/3/5 with zero level-0 spells;
-- the higher-level Forge test initially appeared to normalize level 5 back to 2 because the fixture edited progression before sheet state; inspection showed the existing sheet/progression synchronization projected the sheet's old level back into progression. Reordering the rollback fixture to sheet first, progression second produced the expected Savant proof without changing runtime synchronization behavior;
-- final residue sweep restored the live test Wizard to the original level 2, no subclass, original creator marker, and zero Forge-Savant rows.
+- `prepared=true`
+- `always_available=true`
+- `uses_max=1`
+- `uses_remaining=1`
+- `recharge='short_rest'`
+- `raw_payload.signatureSpell=true` with level/feature/resource provenance
+
+The existing `complete_character_rest_v1` authority restores `short_rest` spell-use resources on both a Short Rest and Long Rest. The existing character-sheet limited-use spell control can consume/restore those free uses. This migration does not claim a new tactical battle-board free-cast adapter.
+
+### Transaction ordering
+
+Earned Wizard 19→20 progression applies ordinary v4/v3 class spell acquisition first, then validates/applies Signature Spells against the resulting final spellbook. This permits a level-3 Wizard spell learned at level 20 to become a Signature Spell in the same atomic transaction.
+
+Higher-level Forge uses a deferred Wizard finalizer that runs Savant chronology first and Signature materialization second, allowing a level-3 Savant spell to qualify at Wizard 20.
+
+### CI / build evidence
+
+Runtime source head `9740d66a45b215805a6c988c25874a01d1e35e55` passed all five PR GitHub Actions workflows:
+
+- Validate character progression v3
+- Validate character progression authority
+- Validate Character Forge nested choices
+- Validate NPC Forge foundation
+- Validate character portrait authority
+
+The NPC Forge workflow also completed the repository's exact `npm run build:vercel` production build successfully. Hosted Vercel itself was blocked by the account build-rate limit; this checkpoint therefore claims a successful repository production build, not a successful hosted Vercel deployment.
+
+The dedicated Signature validator covers Forge placement, final-spellbook eligibility, Savant-to-Signature reuse, earned progression ordering, source-provenance preservation, and Short/Long Rest recharge behavior.
+
+### Production migration / rollback proofs
+
+Migration 42 compiled successfully and replaced the Savant-only deferred progression insert trigger with `character_progression_materialize_player_forge_wizard_final_v1`.
+
+Rollback-only production evidence:
+
+1. **Shared overlay/resource proof**
+   - two existing level-3 Wizard class spellbook rows were selected;
+   - spellbook row count remained exactly two;
+   - original class source identity remained intact;
+   - both became prepared/always available with one `short_rest` free use;
+   - after setting both uses to zero, `complete_character_rest_v1(..., 'short_rest')` restored exactly two uses;
+   - rollback returned production to 7 characters / 30 spell assignments.
+
+2. **Fail-closed proof**
+   - duplicate Signature selections rejected;
+   - a level-2 Wizard spell rejected;
+   - a level-3 Wizard spell absent from the spellbook rejected;
+   - all three attempts left zero Signature overlay residue.
+
+3. **Direct level-20 Forge chronology proof**
+   - synthetic Abjurer replayed nine Savant spellbook additions at acquisition levels `3/3/5/7/9/11/13/15/17`;
+   - no Savant cantrip was materialized;
+   - Savant-granted Counterspell successfully became one Signature Spell;
+   - ordinary-spellbook Bestow Curse became the other;
+   - Counterspell retained `source_type='class-feature'` / Savant provenance;
+   - Bestow Curse retained its original `source_type='class'` provenance;
+   - total spellbook rows were 10 (1 ordinary + 9 Savant), proving Signature added zero membership rows;
+   - rollback left zero synthetic rows.
+
+4. **Authenticated earned Wizard 19→20 proof**
+   - `begin_character_level_up_v4` returned a metadata-ready review requiring the ordinary two new Wizard spells;
+   - `get_character_level_class_choice_options_v2` exposed exactly one level-20 Signature group;
+   - Animate Dead and Bestow Curse were learned as the two ordinary level-20 Wizard spellbook additions;
+   - `complete_character_level_up_v5` then made both Signature Spells, proving same-transaction final-spellbook eligibility;
+   - progression reached level 20 inside the rollback transaction;
+   - the completed session, level event, and `character_progression.level_choices` each recorded two Signature deltas;
+   - rollback restored the production baseline.
+
+Final integrity after every proof:
+
+- 7 characters
+- 7 character sheets
+- 30 character-spell assignments
+- 7 progression rows
+- 0 open level-up sessions
+- 0 production Signature rows from the rollback fixtures
+- 0 synthetic proof characters
+- protected world baseline unchanged at 20 locations / 4 routes / 9 route points
 
 ## Wizard work still pending
-
-### Signature Spells
-
-Signature Spells is persistent and must choose two level-3 Wizard spells already present in the normalized Wizard spellbook. Its free-cast uses/recharge are runtime resource state and must not be conflated with spellbook membership.
 
 ### Spell Mastery
 
 Spell Mastery remains intentionally excluded from permanent Forge/level-up choice authority because its selected spells can be changed after a Long Rest. It belongs in guarded runtime Long-Rest configuration.
 
-## CI evidence
-
-The progression workflow now watches migrations 38-41 plus the relevant Forge spell/class-choice files and executes dedicated contracts for:
-
-- Battle Master progression
-- Wizard Savant earned progression
-- higher-level Player Forge Wizard Savant chronology/materialization
-
-These run alongside the existing progression, Invocation, feat-instance, replacement, and reversible-effect validators.
-
-Documentation-only commits after the `057b22ec…` runtime checkpoint do not alter deployed semantics. Re-run exact-head checks after the next runtime change.
-
 ## Remaining acceptance blockers
 
-1. Implement Wizard Signature Spells using normalized spellbook membership.
-2. Implement runtime Long-Rest configuration for Spell Mastery and other rest-reconfigurable features instead of Forge lock-in.
-3. Complete guarded multi-source starting-magic frontend use where still incomplete.
-4. Finish source-backed starting equipment packages and higher-level starting wealth/equipment.
-5. Finish character-scoped starting currency.
-6. Resolve Artificer wildcard Magic Item Plan concrete-item instances.
-7. Finish remaining persistent subclass/cumulative choice audit.
-8. Audit/revoke obsolete authenticated level-up completion RPC generations when confirmed unused.
-9. Run authenticated browser acceptance after exact CI/Vercel is green.
+1. Implement guarded runtime Long-Rest configuration for Wizard Spell Mastery and other rest-reconfigurable features instead of Forge lock-in.
+2. Complete guarded multi-source starting-magic frontend use where still incomplete.
+3. Finish source-backed starting equipment packages and higher-level starting wealth/equipment.
+4. Finish character-scoped starting currency.
+5. Resolve Artificer wildcard Magic Item Plan concrete-item instances.
+6. Finish remaining persistent subclass/cumulative choice audit and conditional-choice polish.
+7. Audit/revoke obsolete authenticated level-up completion RPC generations when confirmed unused.
+8. Run authenticated browser acceptance after the remaining blockers and applicable build/deployment gates are complete.
 
 ## Protected boundaries
 
