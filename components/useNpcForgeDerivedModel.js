@@ -83,7 +83,7 @@ const createPayload = useMemo(() => {
   const tools = selectedBackground?.tools || [];
   const spellChoices = spellChoicesForRpc(spellRows, draft.spellSelections);
   const startingMagicSelections = serializeStartingMagicSelections(spellRows, draft.spellSelections, spellModel);
-  const spellNames = spellRows.filter((spell) => draft.spellSelections?.[spell.id]).map((spell) => spell.name);
+  const spellNames = startingMagicSelections.filter((entry) => String(entry?.source_type || "class") === "class").map((entry) => entry.name).filter(Boolean);
   const proficiencies = { saves: Object.fromEntries(ABILITY_KEYS.map((key) => [key, { proficient: saves.includes(key) }])), skills: Object.fromEntries(SKILL_DEFINITIONS.map((skill) => [skill.key, { proficient: selectedSkillKeys.includes(skill.key), expertise: !playerMode && (draft.expertiseSkills || []).includes(skill.key) }])) };
   const castingAbility = selectedClass?.spellcasting_ability || null;
   const spellcasting = castingAbility ? { ability: castingAbility, abilityLabel: ABILITY_LABELS[castingAbility] || castingAbility, spellSaveDc: 8 + pb + abilityModifier(finalAbilities[castingAbility]), spellAttackBonus: pb + abilityModifier(finalAbilities[castingAbility]), catalogStatus: "preferred_all_sources", backgroundExpandedSpells: backgroundExpandedSpellNames, selectionMode: spellModel?.mode || null } : null;
