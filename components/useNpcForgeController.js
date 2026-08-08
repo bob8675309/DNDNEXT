@@ -5,6 +5,7 @@ import { ABILITY_KEYS, ABILITY_LABELS, CLASS_DEFINITIONS, FEAT_OPTIONS, SKILL_DE
 import { FALLBACK_SKILL_DESCRIPTIONS, abilityScoresFromRollAllocation, defaultRollAllocation, flexibleAbilityBoosts } from "../utils/characterCreationGuidance";
 import { extractClassSkillConfiguration, mergePreferredBackgrounds, mergePreferredClasses, mergePreferredSpecies, normalizeSkillKey, optionMatchesQuery, safeText, slug, uniqueText } from "../utils/npcForgeCatalog";
 import { emptyPointBuyScores, pointBuyRemaining, rollAbilityPoolForMethod, spellChoicesForRpc, validateStartingSpellSelections } from "../utils/playerForgeRules";
+import { normalizeStartingEquipmentSelection, startingEquipmentSelectionComplete } from "../utils/playerForgeStartingEquipment";
 import { speciesDefaultCharacterSize } from "../utils/speciesPresentation";
 import { generateNpcName } from "../utils/npcNameGenerator";
 import { generateNpcStory, generatedStoryLocationLabel } from "../utils/npcStoryGenerator";
@@ -38,6 +39,7 @@ export default function useNpcForgeController({ show, onClose, onCreated, locati
   const [portraitPickerOpen, setPortraitPickerOpen] = useState(false);
   const [spellModel, setSpellModel] = useState(null);
   const [spellRows, setSpellRows] = useState([]);
+  const [equipmentModel, setEquipmentModel] = useState(null);
   const { state: classChoiceState } = useNpcForgeClassChoice();
   const selectedSubclass = selectedSubclassOption(classChoiceState);
 
@@ -67,15 +69,44 @@ export default function useNpcForgeController({ show, onClose, onCreated, locati
     baseAbilities, appliedBonus, finalAbilities, classHitDie, dynamicHp, selectedSkillKeys, selectedProfessionServices, selectedTrainedProfessions,
     storyWorldLocation, backgroundMechanicDetails, createPayload,
   } = derived;
+
+  useEffect(() => {
+    if (!show || !playerMode || !selectedClass?.id || !selectedBackground?.id) {
+      setEquipmentModel(null);
+      return undefined;
+    }
+    let active = true;
+    setEquipmentModel({ catalogReady: false, loading: true, level: Number(draft.level || 1) });
+    supabase.rpc("get_player_forge_starting_equipment_v1", {
+      p_class_id: selectedClass.id,
+      p_background_id: selectedBackground.id,
+      p_level: Number(draft.level || 1),
+    }).then(({ data, error: equipmentError }) => {
+      if (!active) return;
+      const model = equipmentError ? { catalogReady: false, loading: false, error: equipmentError.message || "Could not load source-backed starting equipment.", level: Number(draft.level || 1) } : { ...(data || {}), loading: false };
+      setEquipmentModel(model);
+      if (!equipmentError) {
+        setDraft((current) => ({
+          ...current,
+          startingEquipment: {
+            ...normalizeStartingEquipmentSelection(model, current.startingEquipment || {}),
+            backgroundId: selectedBackground.id,
+          },
+        }));
+      }
+    });
+    return () => { active = false; };
+  }, [show, playerMode, selectedClass?.id, selectedBackground?.id, draft.level]);
+
   function patch(values) { setDraft((current) => ({ ...current, ...values })); setError(""); }
   function resetForm() {
-    setStep(0); setDraft(initialDraft()); setCreating(false); setCatalogError(""); setError(""); setSpeciesQuery(""); setBackgroundQuery(""); setClassQuery(""); setFeatQuery(""); setFeatToAdd(""); setTagInput(""); setRolls(rollAbilityPoolForMethod("4d6")); setAllocation({}); setSelectedRollId(""); setDetail(null); setPortraitPickerOpen(false); setSpellModel(null); setSpellRows([]); onReset?.();
+    setStep(0); setDraft(initialDraft()); setCreating(false); setCatalogError(""); setError(""); setSpeciesQuery(""); setBackgroundQuery(""); setClassQuery(""); setFeatQuery(""); setFeatToAdd(""); setTagInput(""); setRolls(rollAbilityPoolForMethod("4d6")); setAllocation({}); setSelectedRollId(""); setDetail(null); setPortraitPickerOpen(false); setSpellModel(null); setSpellRows([]); setEquipmentModel(null); onReset?.();
   }
   function handleClose() { if (creating) return; onClose?.(); }
   function handleReset() { if (creating) return; if (typeof window === "undefined" || window.confirm("Reset this Character Forge draft? All entries and selections will be cleared.")) resetForm(); }
   function chooseSpecies(option) { const staticKey = SPECIES_DEFINITIONS[option.key] ? option.key : "custom"; patch({ speciesOptionId: option.id, speciesKey: staticKey, customSpecies: staticKey === "custom" ? option.name : "", lineage: "", size: speciesDefaultCharacterSize(option) }); setDetail({ type: "species", option }); }
-  function chooseBackground(option) { const featRule = getBackgroundFeatRule(option); const choices = resolveBackgroundFeatOptions(option, featOptions); patch({ backgroundOptionId: option.id, backgroundKey: "custom", customBackground: option.name, backgroundFeatId: !featRule.requiresChoice && choices.length === 1 ? optionId(choices[0]) : "", backgroundSkillChoices: Object.fromEntries((option.skillRule?.choiceGroups || []).map((group) => [group.id, []])) }); setDetail({ type: "background", option }); }
-  function chooseClass(option) { const staticKey = CLASS_DEFINITIONS[option.class_key] ? option.class_key : "civilian"; patch({ classOptionId: option.id, classKey: staticKey, selectedClassSkills: [], expertiseSkills: [], baseAbilities: standardScoresForClass(option), spellSelections: {} }); setSpellModel(null); setSpellRows([]); setDetail({ type: "class", option }); }
+  function chooseBackground(option) { const featRule = getBackgroundFeatRule(option); const choices = resolveBackgroundFeatOptions(option, featOptions); patch({ backgroundOptionId: option.id, backgroundKey: "custom", customBackground: option.name, backgroundFeatId: !featRule.requiresChoice && choices.length === 1 ? optionId(choices[0]) : "", backgroundSkillChoices: Object.fromEntries((option.skillRule?.choiceGroups || []).map((group) => [group.id, []])), startingEquipment: {} }); setEquipmentModel(null); setDetail({ type: "background", option }); }
+  function chooseClass(option) { const staticKey = CLASS_DEFINITIONS[option.class_key] ? option.class_key : "civilian"; patch({ classOptionId: option.id, classKey: staticKey, selectedClassSkills: [], expertiseSkills: [], baseAbilities: standardScoresForClass(option), spellSelections: {}, startingEquipment: {} }); setSpellModel(null); setSpellRows([]); setEquipmentModel(null); setDetail({ type: "class", option }); }
   function setAbilityMethod(method) { const values = { abilityMethod: method }; if (method === "standard") values.baseAbilities = standardScoresForClass(selectedClass); if (method === "pointBuy") values.baseAbilities = emptyPointBuyScores(); if (method === "3d6" || method === "4d6") { setRolls(rollAbilityPoolForMethod(method)); setAllocation({}); setSelectedRollId(""); } patch(values); }
   function rerollScores() { setRolls(rollAbilityPoolForMethod(draft.abilityMethod)); setAllocation({}); setSelectedRollId(""); }
   function allocateRoll(ability, rollId) { if (!rollId) { setDetail({ type: "ability", key: ability }); return; } setAllocation((current) => { const next = { ...current }; const prior = next[ability]; const other = ABILITY_KEYS.find((key) => key !== ability && next[key] === rollId); next[ability] = rollId; if (other) next[other] = prior; return next; }); setSelectedRollId(""); setError(""); }
@@ -108,6 +139,7 @@ export default function useNpcForgeController({ show, onClose, onCreated, locati
     }
     if (key === "training") { if ((draft.selectedClassSkills || []).length !== classSkillConfig.count) errors.push(`Choose exactly ${classSkillConfig.count} class skill${classSkillConfig.count === 1 ? "" : "s"}.`); if (!playerMode) PROFESSION_KEYS.forEach((professionKey) => { const profession = draft.professions?.[professionKey] || {}; if (profession.offersService && Number(profession.rank || 0) === 0) errors.push(`${PROFESSION_DEFINITIONS[professionKey].label} must be trained before offering service.`); }); }
     if (key === "spells" && playerMode) { if (!spellModel?.catalogReady) errors.push(spellModel?.error || "Wait for the canonical spell catalogue and class progression to finish loading."); else errors.push(...validateStartingSpellSelections(spellModel, spellRows, draft.spellSelections)); }
+    if (key === "equipment" && playerMode) { if (!equipmentModel?.catalogReady) errors.push(equipmentModel?.error || "Wait for source-backed starting equipment to finish loading."); else if (!startingEquipmentSelectionComplete(equipmentModel,draft.startingEquipment || {})) errors.push("Complete the class package, Background package, equipment-category choices, and higher-level wealth roll."); }
     if (key === "identity") { if (!safeText(draft.name)) errors.push("Enter or generate a name."); if (!safeText(draft.role)) errors.push("Enter a role or title."); if (!draft.portraitLibraryId) errors.push("Choose a portrait for this character."); }
     return errors;
   }
@@ -141,7 +173,7 @@ export default function useNpcForgeController({ show, onClose, onCreated, locati
     playerMode, STEP_LABELS, step, setStep, draft, setDraft, creating, loadingCatalogs, catalogError, error, setError,
     speciesQuery, setSpeciesQuery, backgroundQuery, setBackgroundQuery, classQuery, setClassQuery, featQuery, setFeatQuery,
     featToAdd, setFeatToAdd, tagInput, setTagInput, rolls, allocation, selectedRollId, setSelectedRollId, detail, setDetail,
-    portraitPickerOpen, setPortraitPickerOpen, spellModel, setSpellModel, spellRows, setSpellRows, toolRows, speciesOptions, backgroundOptions,
+    portraitPickerOpen, setPortraitPickerOpen, spellModel, setSpellModel, spellRows, setSpellRows, equipmentModel, toolRows, speciesOptions, backgroundOptions,
     classOptions, featOptions, selectedSpecies, selectedBackground, selectedClass, selectedSubclass, backgroundFeatOptions, selectedBackgroundFeat, speciesBonusFeat,
     backgroundSpellList, backgroundExpandedSpellNames, backgroundSkillChoiceGroups, backgroundSkills, classSkillConfig, skillInfo,
     selectedSkill, selectedProfession, filteredSpecies, filteredBackgrounds, filteredClasses, filteredFeats, baseAbilities, finalAbilities,
