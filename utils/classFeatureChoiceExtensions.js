@@ -223,7 +223,17 @@ export function buildExplicitClassFeatureGroups({ rows = [], selectedClass, leve
   }
 
   const signature = findRow(rows, "Signature Spells");
-  if (signature) addGroup(output, group({ id: "wizard-signature-spells", label: "Signature Spells", row: signature, count: 2, kind: "spell", options: spellOptions(spells, { level: 3, classes: ["Wizard"] }), constraints: { spellLevel: 3, spellClasses: ["Wizard"] } }));
+  if (signature) addGroup(output, group({
+    id: "wizard-signature-spells",
+    label: "Signature Spells",
+    row: signature,
+    count: 2,
+    kind: "spell",
+    placement: "spells",
+    helper: "Choose two level 3 spells that are actually in this Wizard's finished spellbook. The Spells step limits this list to normal Wizard spellbook selections plus source-owned Savant additions.",
+    options: spellOptions(spells, { level: 3, classes: ["Wizard"] }),
+    constraints: { spellLevel: 3, spellClasses: ["Wizard"], wizardSpellbookRequired: true, freeCastUses: 1, recharge: "short_rest" },
+  }));
 
   if (classKey === "expert-sidekick") {
     const expertiseRow = findRow(rows, "Expertise");
