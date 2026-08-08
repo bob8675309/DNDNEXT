@@ -6,6 +6,7 @@ const derived = read("components/useNpcForgeDerivedModel.js");
 const spellStep = read("components/NpcForgeSpellStep.js");
 const spellSources = read("utils/playerForgeSpellSources.js");
 const migration = read("sql/20260808_47_player_forge_starting_magic_v3_completion.sql");
+const aclMigration = read("sql/20260808_48_player_forge_v3_acl_cleanup.sql");
 
 const need = (source, token, label = token) => {
   if (!source.includes(token)) throw new Error(`Missing ${label}: ${token}`);
@@ -75,11 +76,16 @@ for (const token of [
   "coalesce((cs.raw_payload->>'startingMagic')::boolean,false)",
 ]) need(migration, token);
 
+for (const token of [
+  "revoke execute on function public.create_player_character_v3(jsonb,jsonb,jsonb) from public, anon;",
+  "grant execute on function public.create_player_character_v3(jsonb,jsonb,jsonb) to authenticated, service_role;",
+]) need(aclMigration, token);
+
 forbid(migration, "delete from public.character_spells where character_id = v_character_id;", "broad deletion of all spell sources");
 forbid(migration, "v_source_type = 'species'", "species spells routed through v3 Spell-step authority");
 forbid(migration, "v_source_type = 'feat'", "feat spells routed through v3 Spell-step authority");
-forbid(migration, "MapPageClient", "world-map crossover");
-forbid(migration, "map_routes", "world-route crossover");
-forbid(migration, "weather", "world-weather crossover");
+forbid(`${migration}\n${aclMigration}`, "MapPageClient", "world-map crossover");
+forbid(`${migration}\n${aclMigration}`, "map_routes", "world-route crossover");
+forbid(`${migration}\n${aclMigration}`, "weather", "world-weather crossover");
 
-console.log("Player Forge v3 native-class, Background-expanded, subclass, fixed-spell, proxy-compatibility, exactness, and protected-boundary contracts validated.");
+console.log("Player Forge v3 native-class, Background-expanded, subclass, fixed-spell, proxy-compatibility, exactness, authenticated-only ACL, and protected-boundary contracts validated.");
