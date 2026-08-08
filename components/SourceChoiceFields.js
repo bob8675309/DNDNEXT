@@ -1,4 +1,4 @@
-import { sourceChoiceFieldComplete } from "../utils/playerForgeSourceChoices";
+import { sourceChoiceFieldComplete, sourceChoiceFieldIsActive } from "../utils/playerForgeSourceChoices";
 
 function selectedKeys(selections, groupId, fieldId) {
   return Array.isArray(selections?.[groupId]?.[fieldId]) ? selections[groupId][fieldId] : [];
@@ -29,7 +29,8 @@ export default function SourceChoiceFields({
   if (!groups.length) return empty;
   return <div className="npc-forge-source-choices"><div className="npc-forge-source-choices__heading"><span>{kicker}</span><strong>{title}</strong></div>{groups.map((group) => {
     const complete = (group.fields || []).every((field) => sourceChoiceFieldComplete(group, field, selections));
-    return <section key={group.id} className={`npc-forge-source-choice-group ${complete ? "is-complete" : "is-required"}`}><header><div><strong>{group.label}</strong><small>{group.source || "Campaign"}{group.helper ? ` • ${group.helper}` : ""}</small></div><em>{complete ? "Complete" : "Required"}</em></header>{(group.fields || []).map((field) => {
+    const activeFields = (group.fields || []).filter((field) => sourceChoiceFieldIsActive(field, selections));
+    return <section key={group.id} className={`npc-forge-source-choice-group ${complete ? "is-complete" : "is-required"}`}><header><div><strong>{group.label}</strong><small>{group.source || "Campaign"}{group.helper ? ` • ${group.helper}` : ""}</small></div><em>{complete ? "Complete" : "Required"}</em></header>{activeFields.map((field) => {
       const selected = selectedKeys(selections, group.id, field.id);
       const blocked = field.distinctFromFieldId ? selectedKeys(selections, group.id, field.distinctFromFieldId) : [];
       const useDropdowns = ["tool", "language", "spell", "item", "weapon", "feat", "boon", "boon-or-feat"].includes(field.kind) || (field.options || []).length > 8 || Number(field.count || 1) > 1;
