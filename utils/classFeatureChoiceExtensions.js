@@ -96,11 +96,11 @@ function findRow(rows, name, subclass = "") {
     && (!subclass || [row.subclass_name, row.subclass_short_name].some((value) => normalized(value) === normalized(subclass))));
 }
 
-function group({ id, label, row, level, count = 1, kind = "class-feature", options = [], helper = "", activeWhen = null, constraints = null, placement = "class", cadence = "creation" }) {
+function group({ id, label, row, level, count = 1, kind = "class-feature", options = [], helper = "", activeWhen = null, constraints = null, placement = "class", cadence = "creation", allowRepeatAcrossGroups = false }) {
   return {
     id, label, level: Number(level || row?.level || 1), count: Number(count || 1), kind, required: true,
     sourceFeature: row?.name || label, subclassName: row?.subclass_name || "", helper: helper || formatPlayerFacingText(row?.description, "Complete the choice granted by this feature."),
-    options, activeWhen, constraints, placement, cadence,
+    options, activeWhen, constraints, placement, cadence, allowRepeatAcrossGroups: Boolean(allowRepeatAcrossGroups),
   };
 }
 
@@ -230,6 +230,7 @@ export function buildExplicitClassFeatureGroups({ rows = [], selectedClass, leve
     count: 2,
     kind: "spell",
     placement: "spells",
+    allowRepeatAcrossGroups: true,
     helper: "Choose two level 3 spells that are actually in this Wizard's finished spellbook. The Spells step limits this list to normal Wizard spellbook selections plus source-owned Savant additions.",
     options: spellOptions(spells, { level: 3, classes: ["Wizard"] }),
     constraints: { spellLevel: 3, spellClasses: ["Wizard"], wizardSpellbookRequired: true, freeCastUses: 1, recharge: "short_rest" },
