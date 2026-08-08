@@ -5,6 +5,7 @@ import { applyClassFeatureOptionAuthority } from "../utils/classFeatureOptionAut
 import { guideSubclassFeatures, resolveSubclassCatalog, subclassIntroduction } from "../utils/classes/subclassCompatibility";
 import { formatPlayerFacingText } from "../utils/playerFacingText";
 import { useNpcForgeClassChoice } from "./NpcForgeClassChoiceContext";
+import { useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
 
 const text = (value) => String(value ?? "").trim();
 const normalized = (value) => text(value).toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
@@ -57,6 +58,7 @@ export function useNpcForgeClassGuideModel(selectedClass, level) {
   const [error, setError] = useState("");
   const [pinned, setPinned] = useState(null);
   const { state, registerClass, selectSubclass, registerFeatureGroups, toggleFeatureOption } = useNpcForgeClassChoice();
+  const { state: sourceChoiceState } = useNpcForgeSourceChoices();
   const currentLevel = Math.max(1, Math.min(20, Number(level || 1)));
 
   useEffect(() => {
@@ -129,9 +131,11 @@ export function useNpcForgeClassGuideModel(selectedClass, level) {
     items,
     spells,
   }), [choiceCatalog, currentLevel, features, items, selected, selectedClass, spells]);
+  const invocationSourceActive = useMemo(() => (sourceChoiceState.groups || []).some((group) => group.ownerType === "class-option" && group.metadata?.family === "eldritch-invocation"), [sourceChoiceState.groups]);
   const choiceGroups = useMemo(
-    () => applyClassFeatureOptionAuthority(rawChoiceGroups, optionalFeatureCatalog, selectedClass),
-    [optionalFeatureCatalog, rawChoiceGroups, selectedClass]
+    () => applyClassFeatureOptionAuthority(rawChoiceGroups, optionalFeatureCatalog, selectedClass)
+      .filter((group) => !(invocationSourceActive && group.kind === "eldritch-invocation")),
+    [invocationSourceActive, optionalFeatureCatalog, rawChoiceGroups, selectedClass]
   );
 
   useEffect(() => {
