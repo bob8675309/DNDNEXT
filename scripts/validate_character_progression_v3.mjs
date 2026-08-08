@@ -16,23 +16,42 @@ execFileSync(process.execPath, [path.join(root, "scripts/validate_character_clas
 const ui = read("components/CharacterLevelUpChoices.js");
 for (const token of [
   'supabase.rpc("get_character_level_class_choice_options_v2"',
+  'supabase.rpc("get_character_level_replacement_options_v1"',
+  'supabase.rpc("complete_character_level_up_v5"',
   'supabase.rpc("complete_character_level_up_v4"',
   "rpcUnavailable",
   "classChoiceGroups",
   "classChoiceSelections",
+  "replacementGroups",
+  "replacementSelections",
+  "replacementsComplete",
   "sourceChoiceGroupsComplete",
   "class_choice_selections",
   "class_option_feat_instances",
+  "replacement_selections",
   "buildFeatSourceChoiceGroups",
   "featInstanceSummaries",
   'kicker="Class progression"',
   'kicker="Granted Origin feat"',
+  'kicker="Optional retraining"',
+  'title="Replace a choice allowed by this level gain"',
+  "Replacement is optional. Leave the replacement selector empty",
   "loadingClassChoices",
+  "loadingReplacements",
   "spellMatchesLevelClassAccess",
   "magicalSecretsAccess",
   "Magical Secrets expands these new Bard spell choices",
   '["bard", "cleric", "druid", "wizard"]',
-]) requireToken(ui, token, "earned level-up v4 source-choice and spell-access UI");
+]) requireToken(ui, token, "earned level-up v5 source-choice, replacement, and spell-access UI");
+
+const recoveryUi = read("components/CharacterInvocationRecovery.js");
+for (const token of [
+  'supabase.rpc("get_character_invocation_recovery_v1"',
+  'supabase.rpc("recover_character_invocations_v1"',
+  "initialSelections",
+  'title="Confirm current Eldritch Invocations"',
+  "This records current state only; it does not retrain or replace an Invocation.",
+]) requireToken(recoveryUi, token, "legacy Invocation recovery UI");
 
 const sourceFields = read("components/SourceChoiceFields.js");
 for (const token of ["sourceChoiceFieldIsActive", "activeFields", "replacementCadence"]) requireToken(sourceFields, token, "dependent source-choice renderer");
@@ -82,6 +101,14 @@ for (const token of [
   'ownerType="class-option"',
   'title="Source-owned class option instances"',
 ]) requireToken(classChoicesUi, token, "source-owned Class workspace");
+
+const classExtensions = read("utils/classFeatureChoiceExtensions.js");
+for (const token of [
+  'id: "bard-lore-magical-discoveries"',
+  'id: "sorcerer-draconic-affinity"',
+  'id: "fighter-champion-additional-fighting-style"',
+  'findRow(rows, "Additional Fighting Style", "Champion")',
+]) requireToken(classExtensions, token, "higher-level Forge subclass parity");
 
 const simple = read("sql/20260808_16_simple_class_choice_delta_authority.sql");
 for (const token of [
@@ -191,6 +218,40 @@ for (const token of [
   "Repeated % instances must use different affected cantrips",
 ]) requireToken(recovery, token, "one-time legacy Warlock Invocation recovery");
 
+const metamagicCatalog = read("sql/20260808_29_normalize_xphb_metamagic_options.sql");
+for (const token of [
+  "Metamagic Options",
+  "option_type",
+  "'metamagic'",
+  "array['MM']::text[]",
+  "identityOnly",
+  "Expected 10 canonical XPHB Metamagic options",
+]) requireToken(metamagicCatalog, token, "canonical Metamagic option identities");
+forbidToken(metamagicCatalog, "Careful Spell", "Metamagic identity migration hard-coded names");
+forbidToken(metamagicCatalog, "Quickened Spell", "Metamagic identity migration hard-coded names");
+
+const replacements = read("sql/20260808_30_safe_level_up_replacements.sql");
+for (const token of [
+  "level_up_metamagic_replacement_group_v1",
+  "level_up_mystic_arcanum_replacement_group_v1",
+  "level_up_lore_discoveries_replacement_group_v1",
+  "level_up_replacement_groups_v1",
+  "get_character_level_replacement_options_v1",
+  "apply_level_up_replacements_v1",
+  "complete_character_level_up_v5",
+  "replacement_selections",
+  "replacement-sorcerer-metamagic",
+  "replacement-warlock-mystic-arcanum",
+  "replacement-bard-lore-magical-discoveries",
+  "whenever you gain a sorcerer level",
+  "whenever you gain a warlock level",
+  "whenever you gain a bard level",
+  "revoke all on function public.complete_character_level_up_v4",
+  "grant execute on function public.complete_character_level_up_v5",
+  "Eldritch Invocation replacement is intentionally excluded",
+]) requireToken(replacements, token, "safe optional replace-on-level-up authority");
+forbidToken(replacements, "replacement-warlock-eldritch-invocation", "safe replacement scope");
+
 const optionImporter = read("scripts/import_5etools_optional_features.mjs");
 for (const token of [
   "optionalfeatures.json",
@@ -215,4 +276,4 @@ for (const token of [
   "mystic arcanum",
 ]) requireToken(delta, token, "shared class-choice delta planner");
 
-console.log("Progression v4 class choices, source-aware spell access, normalized Invocation authority, subclass parity, legacy recovery, optional-feature catalogue, and fail-closed complex-choice boundary validated.");
+console.log("Progression v5 class choices, source-aware spell access, normalized Invocation and Metamagic authority, subclass parity, legacy recovery, safe optional replacements, and fail-closed complex-choice boundary validated.");
