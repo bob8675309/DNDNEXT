@@ -73,10 +73,11 @@ for (const token of [
 
 for (const token of [
   "astralTranceRuntimeState",
-  "runtimeProficiency: \"astral-trance\"",
+  'applyRuntimeSkill(next, astral.skillKey, "astral-trance")',
+  "runtimeProficiency: marker",
   "projectCharacterSheetRuntimeProficiencies",
   "hasRuntimeWeaponProficiency",
-  "state.trainingKind !== \"weapon\"",
+  'trainingMatches(astralTranceRuntimeState(sheet), "weapon", weaponName)',
 ]) need(runtime, token);
 
 for (const token of [
@@ -99,4 +100,4 @@ for (const source of [migration, skillCorrection, speciesCorrection, panel, shee
   }
 }
 
-console.log("Astral Trance source eligibility, complete skill mapping, compact Astral Elf identity, Long-Rest expiry/configuration, non-destructive skill/weapon overlays, runtime UI, Forge exclusion, firearm exclusion, and protected boundaries validated.");
+console.log("Astral Trance source eligibility, complete skill mapping, compact Astral Elf identity, Long-Rest expiry/configuration, non-destructive additive skill/weapon overlays, runtime UI, Forge exclusion, firearm exclusion, and protected boundaries validated.");
