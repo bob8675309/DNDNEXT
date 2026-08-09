@@ -1,205 +1,211 @@
 # DNDNext Current Handoff Prompt
 
-Status: copy-ready project handoff, reconciled 2026-08-09
+Updated: 2026-08-09
+
+Use this prompt when a new ChatGPT/Codex thread takes over PR #170.
 
 ---
 
-## Copy from here
+You are taking over the DNDNext repository as a senior developer and technical advisor.
 
-You are taking over `bob8675309/DNDNEXT` as senior developer, technical advisor, and implementation owner.
+Repository: `bob8675309/DNDNEXT`
 
-DNDNext is a Next.js Pages Router + Supabase D&D campaign platform using Bootstrap/SCSS. Treat current GitHub state, live Supabase schema/functions/data, source validators, and living `docs/` handoffs as the evidence base. Do not trust old conversation summaries when current state can be inspected.
+Active PR: **#170 — Refine Character Forge resilience, source choices, spells, and player authority**
 
-### Required first actions
+Active branch: `agent/character-forge-resilience-presentation`
+
+Stack: Next.js Pages Router + Supabase/Postgres.
+
+## Mandatory first actions
 
 Before changing anything:
 
-1. Inspect current `main`, PR #170, branch head, changed-file boundary, and exact CI status.
-2. Inspect live Supabase read-only for schema/function/RLS/data questions.
-3. Read `docs/Documentation_Refresh_Manifest.md`.
-4. For Character Forge/progression/runtime work, read the status documents listed there, especially:
-   - `Unified_Character_Forge_Status.md`
-   - `Player_Forge_Starting_Magic_v3_Status.md`
-   - `Player_Forge_Starting_Equipment_Status.md`
-   - `Astral_Trance_Runtime_Status.md`
-   - `Species_Rest_Proficiency_Runtime_Status.md`
-   - `Primal_Companion_Runtime_Status.md`
-   - `Dread_Allegiance_Runtime_Status.md`
-   - `Fiendish_Resilience_Runtime_Status.md`
-   - `Circle_of_the_Land_Runtime_Status.md`
-   - `Artificer_Magic_Item_Plans_Status.md`
-5. Reconcile docs against current source/live Supabase before assuming a blocker is still open.
+1. inspect current `main`, PR #170 head, changed files, and exact-head CI/Vercel status;
+2. inspect live Supabase migrations/schema/data relevant to the requested slice;
+3. read `docs/README.md` and `docs/Documentation_Refresh_Manifest.md`;
+4. read the dedicated status ledger for the feature being continued;
+5. reconcile source, live DB, and docs before proposing a patch;
+6. verify every new helper, hook, state variable, prop, and RPC argument is actually defined and passed.
 
-### Non-negotiable boundaries
+Do not assume the previous chat's last prose is newer than GitHub/Supabase. GitHub/Supabase are the source of truth.
 
-- Do not mix world-map behavior with town/city-map behavior.
-- Do not touch world-map behavior or `components/MapPageClient.js` unless explicitly requested.
-- Do not modify encounter/combat/tactical snapshot/damage authority unless that subsystem is explicitly brought into scope.
-- Smiths handle physical gear; Enchanters handle magical A/B/C slots.
-- Generic NPCs do not become crafters without an appropriate role.
-- Supabase normalized state remains authoritative.
-- Browser state previews/collects choices but does not bypass guarded database authority.
-- Realtime is synchronization, not authority.
-- Preserve working systems; avoid broad rewrites.
-- Verify every helper/hook/state/prop/RPC argument is defined and passed at every use site.
-- Keep unrelated changes out of the active branch.
+## Protected boundaries
 
-### Delivery workflow
+These rules are mandatory:
 
-For each bounded database/runtime slice:
+- Do **not** mix world-map behavior with town/city-map behavior.
+- Do **not** touch the world map unless the user explicitly asks.
+- `components/MapPageClient.js` is outside the current Character Forge/progression/runtime work.
+- Do not modify route/travel/weather systems as part of Forge/progression work.
+- Do not change crafting/inventory or tactical action execution unless the current slice explicitly requires it.
+- Preserve normalized Supabase authority; the browser previews/collects choices but guarded database functions enforce rules.
+- Prefer additive compatibility migrations over editing already-deployed migration history.
+- Test risky database behavior in rollback fixtures and prove zero residue afterward.
 
-1. inspect exact imported/live source;
-2. stage migration + client;
-3. add semantic/build gates;
-4. compile/execute against live schema inside rollback;
-5. require exact-head CI/build;
-6. apply migration;
-7. run public/helper rollback behavior proofs;
-8. verify zero residue/integrity/ACLs;
-9. reconcile docs and PR.
+## Current production checkpoint
 
-Proceed when the user says “proceed”; do not repeatedly request confirmation already given.
+Live Supabase now includes Character Forge/progression/runtime work **through migration 76**.
 
-## Active PR
+Most recent normalized runtime sequence:
 
-PR #170 (`agent/character-forge-resilience-presentation`) remains **open and unmerged**.
+- 68 — Eladrin seasonal Trance runtime;
+- 69-70 — Boon of Energy Resistance;
+- 71 — feat runtime Expertise / Echoing Soul / Zhentarim lifecycle;
+- 72-73 — Cartomancer runtime + deterministic state correction;
+- 74 — Wizard Memorize Spell runtime;
+- 75 — Wizard Memorize Spell deterministic getter-state correction;
+- 76 — shared Wizard runtime helper repair.
 
-Do not restart completed Forge consolidation, starting magic/equipment/currency, Wizard/Weapon-Mastery runtime, Astral Trance, Primal Companion, Dread Allegiance, Fiendish Resilience, Circle of the Land, Artificer Magic Item Plans, or the Githyanki/Khoravar proficiency runtime slice unless current source/live evidence contradicts the recorded acceptance state.
+Migration 76 is live as `wizard_runtime_helper_repair`.
 
-## Governing parity/cadence model
+## Memorize Spell is CLOSED / ACCEPTED
 
-Persistent direct level-N creation and earned level-N progression should converge.
+Read `docs/Wizard_Memorize_Spell_Runtime_Status.md` before touching this area.
 
-- persistent creation/attained-level choice → authoritative Forge/progression state;
-- proficiency-dependent permanent choice → Training placement;
-- permanent spellbook-dependent choice → Spells placement;
-- Long-/Short-Rest configurable choice → guarded runtime state;
-- per-use choice → spell/action resolver;
-- informational feature → display only.
+Accepted behavior:
 
-## Live migration checkpoint through 66
+- XPHB Wizard Memorize Spell resolves at level 5 from source data;
+- it is Short-Rest runtime state, not a permanent Forge choice;
+- after a qualifying Short Rest, one currently prepared level-1+ Wizard spell may be exchanged for one unprepared level-1+ spell already in the actual Wizard spellbook;
+- `always_available` spells cannot be selected as the spell being unprepared;
+- spellbook membership/source identity never changes;
+- only the existing `prepared` flags change;
+- one qualifying Short Rest authorizes at most one completed swap;
+- active encounters block configuration;
+- runtime receipt is `character_runtime_feature_choices.feature_key='wizard-memorize-spell'`;
+- sheet projection is `runtimeFeatures.wizardMemorizeSpell`;
+- the UI panel is mounted downstream from `CharacterCurrencyBadge` and must remain reachable even when the character has no currency balance.
 
-### 38-46 — progression/Wizard/Weapon authority
+### Why migration 76 exists
 
-Battle Master, Wizard Savant, Signature Spells, Spell Mastery, class Weapon Mastery, and Weapon Master feat runtime authority are live and documented.
+The deployed 74-75 audit found two referenced private helpers were absent live:
 
-### 47-51 — Player Forge creation authority
+- `private.can_manage_character_spell_resources_v1(uuid)`;
+- `private.character_class_feature_acquired_at_v1(uuid,text,text,integer)`.
 
-`create_player_character_v3` is shared Player Forge creation authority. Native class-list spells, Background-expanded access, Eldritch Knight, and Arcane Trickster starting magic are server-authoritative.
+Migration 76 adds them compatibly.
 
-Starter gear becomes character-owned canonical inventory and starts unequipped. Character money is `character_currency` copper, not `player_wallets`. Higher-level magic-item quantities remain DM guidance only. `CharacterCurrencyBadge` is character-scoped.
+`can_manage_character_spell_resources_v1` delegates to the existing canonical edit rule `can_manage_character_progression_v1` and also repairs the same missing dependency used by Wizard Spell Mastery.
 
-### 52-59 — established runtime cadence
+`character_class_feature_acquired_at_v1` uses:
 
-- Astral Trance: post-Long-Rest skill + weapon/tool pair; expires next Long Rest.
-- Primal Companion: current beast persists; newer Long Rest opens replacement.
-- Dread Allegiance: linked allegiance/resistance/cantrip persists; newer Long Rest opens replacement.
-- Fiendish Resilience: first choice after qualifying Short/Long Rest; later qualifying rest opens replacement.
-- Circle of the Land: land spell package expires automatically at next Long Rest and must be chosen again.
+1. the first `character_level_events` crossing for earned progression;
+2. `character_progression.created_at` for direct higher-level creation.
 
-Steps of the Fey is source-classified as per-Misty-Step action state and remains outside this non-combat slice.
+Do **not** change that fallback to `characters.created_at`; the live `characters` table has no such column.
 
-### Runtime panel composition
+## Acceptance evidence through migration 76
 
-The corrected sheet chain remains:
+At the source head used for deployment acceptance:
 
-`CharacterSheetPanel → CharacterAstralTrancePanel → CharacterDreadAllegiancePanel → CharacterFiendishResiliencePanel → CharacterCircleLandPanel → CharacterCurrencyBadge`
+- all 24 relevant GitHub Actions workflows passed;
+- dedicated Memorize semantic validation passed;
+- dedicated Memorize production build gate passed;
+- Wizard Spell Mastery semantic/build gate passed with the repaired shared helper;
+- Vercel passed.
 
-`CharacterPrimalCompanionPanel` and `CharacterSpeciesRestProficiencyPanel` are separate direct mounts.
+After migration 76 was applied, a rolled-back synthetic level-5 Wizard lifecycle proved:
 
-Each chained parent must render its downstream child even when its own feature is ineligible.
+- direct-created acquisition anchor;
+- public Short Rest unlock;
+- first swap success;
+- same-rest second-swap rejection;
+- always-prepared rejection;
+- active-encounter rejection;
+- newer-rest one-swap reauthorization;
+- second same-rest rejection;
+- spellbook membership/source identity preservation;
+- sheet projection sync;
+- public/private ACLs.
 
-### 60-62 — EFA Artificer Magic Item Plans
+A separate rolled-back level-18 Wizard fixture proved `configure_character_spell_mastery_v1` now executes through the repaired shared authorization helper and still preserves spellbook row count.
 
-EFA `Replicate Magic Item` is normalized persistent class-option authority.
-
-- 56 source-derived plans;
-- capacity 4/5/6/7/8 at Artificer 2/6/10/14/18;
-- direct higher-level slot chronology `[2,2,2,2,6,10,14,18]`;
-- one optional replacement whenever an Artificer gains an Artificer level;
-- wildcard plans bind a canonical item identity but never create inventory.
-
-Final wildcard pools are 105 Common / 173 Uncommon Wondrous / 200 Rare Wondrous.
-
-See `docs/Artificer_Magic_Item_Plans_Status.md`.
-
-### 63-66 — Species rest proficiency authority
-
-#### MPMM Githyanki — Astral Knowledge
-
-Astral Knowledge is not a permanent Forge choice. After a completed Long Rest, choose one skill + one source-legal PHB weapon/tool proficiency. The pair expires automatically when the next Long Rest finishes.
-
-#### EFA Khoravar — Skill Versatility
-
-Player Forge collects one initial skill-or-tool choice, but a deferred progression trigger materializes it as runtime state rather than permanent proficiency data. The current choice persists until replaced after a newer Long Rest.
-
-#### Correction sequence
-
-- 63 — runtime foundation;
-- 64 — explicit anonymous public-RPC EXECUTE cleanup;
-- 65 — canonical DNDNext rest key correction to `long_rest`;
-- 66 — missing `runtimeProficiencies` parent compatibility fix.
-
-No real Githyanki/Khoravar runtime row existed while the correction migrations were applied.
-
-Deployed rollback proofs passed for both Species families, including actual `complete_character_rest_v1(..., 'long_rest')`, direct shared-Forge Khoravar materialization, automatic Githyanki expiry, replacement timing, invalid-option rejection, non-destructive permanent proficiencies, and zero residue.
-
-See `docs/Species_Rest_Proficiency_Runtime_Status.md`.
-
-## Current integrity checkpoint
-
-After migration 66 and rollback fixtures:
+Post-rollback integrity remained:
 
 - 7 characters;
-- 7 character sheets;
-- 30 character-spell rows;
+- 7 sheets;
+- 30 character spell rows;
 - 7 progression rows;
 - 18 inventory rows;
-- 0 live Githyanki/Khoravar Species runtime rows;
-- 0 Species QA proof characters;
+- 0 live Memorize runtime rows;
 - 20 locations;
 - 4 routes;
 - 9 route points.
 
-The final migration-66 source candidate passed all 18 relevant GitHub workflows, including the dedicated Species semantic gate and production build.
+## Runtime/creation modeling rule
 
-Vercel is currently blocked by the account build-rate limit rather than a code build failure.
+Do not treat every source feature as a one-time creator choice.
 
-`get_character_level_class_choice_options_v2` still has a pre-existing anonymous execute grant. Include it in the progression RPC/ACL cleanup before PR closure.
+Classify each source choice by cadence:
 
-## Immediate remaining PR #170 work
+- permanent acquisition choice → Forge/progression authority;
+- permanent proficiency choice → Training placement;
+- permanent spellbook-dependent choice → Spells placement;
+- Short-/Long-Rest configurable choice → runtime authority;
+- per-use/per-cast choice → action/spell resolver;
+- informational feature → display only.
 
-Do **not** reopen completed migration 38-66 slices without contradictory evidence.
+Examples already normalized:
 
-Current blockers:
+- Astral Trance / Astral Knowledge → rest runtime;
+- Weapon Master feat mastery → Long-Rest runtime;
+- Fiendish Resilience → Short/Long-Rest runtime;
+- Circle Spells land selection → Long-Rest package runtime;
+- Eladrin season → Trance runtime;
+- Boon of Energy Resistance → Long-Rest replacement runtime;
+- Cartomancer Hidden Ace → temporary eight-hour runtime spell access;
+- Memorize Spell → one preparation replacement per qualifying Short Rest;
+- Spell Mastery → persistent at-will overlay with Long-Rest replacement;
+- Steps of the Fey → per-cast and still deferred to action-layer integration.
 
-1. continue the final source-choice coverage audit:
-   - XPHB High Elf replaceable Wizard cantrip;
-   - EFA Khoravar Fey Gift replaceable cantrip;
-   - Eladrin season/trance choices;
-   - Boon of Energy Resistance;
-   - Echoing Soul / Zhentarim Tactics Long-Rest Expertise;
-   - Cartomancer Hidden Ace;
-   - remaining class/subclass runtime families already excluded from permanent Forge state;
-2. confirm/correct Echoing Soul's separate permanent acquisition count if the imported/source audit proves it under-modeled;
-3. obsolete/authenticated progression RPC + ACL cleanup, including the anonymous class-choice getter;
-4. final authenticated browser acceptance;
-5. Steps of the Fey per-cast integration only when spell/combat execution is explicitly in scope;
-6. tactical consumption of canonical runtime damage resistance only when encounter/combat is explicitly in scope;
-7. merge PR #170 only after closure gates are satisfied.
+## Immediate next slice
 
-### Recommended next implementation slice
+The next bounded item is **Cantrip Formulas**.
 
-Continue the final source-choice coverage audit read-only first. The next likely bounded Species slice is the Long-Rest replaceable cantrip family: XPHB High Elf and EFA Khoravar Fey Gift. Inspect current source/Forge/spell authority before designing storage so the permanent spellcasting-ability choice is not accidentally conflated with the replaceable cantrip.
+Before implementing it:
 
-After source-choice coverage closes, perform progression RPC/ACL cleanup and authenticated browser acceptance.
+1. inspect the imported source record(s), current Forge/progression presentation, current runtime tables/helpers, and any existing validator/docs;
+2. determine the exact source cadence and whether it belongs to creation, progression, rest runtime, or action-layer execution;
+3. propose a safe patch plan before changing code or DB;
+4. keep the patch narrowly scoped;
+5. compile candidate DDL against live schema inside rollback;
+6. run semantic/build gates and exact-head CI;
+7. apply only after gates pass;
+8. run public/helper rollback behavior proofs;
+9. run zero-residue integrity/ACL checks;
+10. update docs/PR ledger before moving to the next family.
 
-## Documentation precedence
+After Cantrip Formulas, continue remaining class/subclass runtime families one bounded slice at a time.
 
-1. live Supabase schema/functions/protected data;
-2. current repository source/validators;
-3. `Documentation_Refresh_Manifest.md` + detailed PR #170 status documents;
-4. platform-wide roadmap/tactical ledgers;
-5. historical exports only as provenance.
+## Remaining broader PR #170 closure work
 
-## End copy
+Still open after the runtime-family sweep:
+
+- obsolete/authenticated progression RPC and ACL cleanup where live grants still prove a gap;
+- authenticated browser acceptance for final Forge/progression flows;
+- action-layer-only integrations explicitly deferred from runtime storage;
+- final PR ledger/document reconciliation;
+- merge only after exact-head closure gates pass.
+
+## Delivery discipline
+
+For each slice:
+
+1. inspect source + live DB;
+2. state the bounded patch plan before writes;
+3. patch source/migration/client together;
+4. verify helpers/hooks/state/props/RPC args;
+5. run semantic validators and production build gate;
+6. compile live schema in rollback;
+7. require exact-head CI/Vercel where relevant;
+8. apply migration;
+9. run rollback lifecycle proof;
+10. prove zero residue and ACLs;
+11. update docs and PR body;
+12. only then advance to the next slice.
+
+Never claim a migration/runtime family is accepted merely because DDL applied. Acceptance requires the deployed behavior proof and zero-residue check.
+
+---
+
+End handoff prompt.
