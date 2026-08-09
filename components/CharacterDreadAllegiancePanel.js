@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
+import CharacterFiendishResiliencePanel from "./CharacterFiendishResiliencePanel";
 
 function safeText(value) {
   return String(value ?? "").trim();
@@ -67,9 +68,8 @@ export default function CharacterDreadAllegiancePanel({ characterId, sheet = {},
     setBusy(false);
   }
 
-  if (!potentiallyAvailable || (!loading && profile?.available === false) || (!loading && !profile && !error)) return null;
-
-  return <section className="character-runtime-choice character-runtime-choice--dread" aria-label="Dread Allegiance configuration">
+  const visible = potentiallyAvailable && (loading || profile?.available !== false) && (loading || profile || error);
+  const dreadPanel = !visible ? null : <section className="character-runtime-choice character-runtime-choice--dread" aria-label="Dread Allegiance configuration">
     <div className="character-runtime-choice__head">
       <div><span>Long-Rest replacement</span><strong>Dread Allegiance</strong></div>
       <button type="button" className="character-runtime-choice__refresh" onClick={loadProfile} disabled={loading || busy}>Refresh</button>
@@ -93,4 +93,6 @@ export default function CharacterDreadAllegiancePanel({ characterId, sheet = {},
       .character-runtime-choice--dread{border-color:rgba(225,87,130,.3);background:rgba(155,47,83,.07)}.character-runtime-choice--dread .character-runtime-choice__save,.character-runtime-choice--dread .character-runtime-choice__refresh{border-color:rgba(225,87,130,.42);background:rgba(155,47,83,.13);color:#ffd5e3}.character-runtime-choice__selectors--one{grid-template-columns:1fr}.character-runtime-choice--dread .character-runtime-choice__current{grid-template-columns:repeat(3,minmax(0,1fr))}@media(max-width:800px){.character-runtime-choice--dread .character-runtime-choice__current{grid-template-columns:1fr}}
     `}</style>
   </section>;
+
+  return <>{dreadPanel}<CharacterFiendishResiliencePanel characterId={characterId} sheet={sheet} onSheetUpdated={onSheetUpdated} /></>;
 }
