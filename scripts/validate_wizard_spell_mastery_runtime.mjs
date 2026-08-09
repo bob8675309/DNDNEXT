@@ -1,6 +1,7 @@
 import fs from "node:fs";
 
 const migration = fs.readFileSync("sql/20260808_44_wizard_spell_mastery_runtime.sql", "utf8");
+const helperRepair = fs.readFileSync("sql/20260809_76_wizard_runtime_helper_repair.sql", "utf8");
 const tracker = fs.readFileSync("components/CharacterSheetResourceTracker.js", "utf8");
 const classExtensions = fs.readFileSync("utils/classFeatureChoiceExtensions.js", "utf8");
 const classChoices = fs.readFileSync("utils/classFeatureChoices.js", "utf8");
@@ -42,6 +43,12 @@ for (const token of [
   "'spellMastery',v_mastery",
 ]) need(migration, token);
 
+for (const token of [
+  "create or replace function private.can_manage_character_spell_resources_v1",
+  "select private.can_manage_character_progression_v1(p_character_id)",
+  "revoke all on function private.can_manage_character_spell_resources_v1(uuid) from public,anon,authenticated",
+]) need(helperRepair, token, "shared spell-resource authorization repair");
+
 forbid(migration, "insert into public.character_spells", "duplicate Spell Mastery spellbook membership insertion");
 forbid(migration, "uses_max=", "finite Spell Mastery at-will use counter");
 forbid(migration, "uses_remaining=", "finite Spell Mastery at-will use counter");
@@ -71,4 +78,4 @@ for (const token of [
   "rest_type='long_rest'",
 ]) need(rest, token);
 
-console.log("Wizard Spell Mastery runtime eligibility, at-will overlay, Long-Rest one-spell replacement, encounter lock, sheet UI, and non-Forge cadence contracts validated.");
+console.log("Wizard Spell Mastery runtime eligibility, shared authorization dependency, at-will overlay, Long-Rest one-spell replacement, encounter lock, sheet UI, and non-Forge cadence contracts validated.");
