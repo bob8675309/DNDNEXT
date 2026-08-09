@@ -15,6 +15,12 @@ on:
       - "utils/playerForgeSpeciesRuntimeChoices.js"
       - "utils/characterRuntimeProficiencies.js"
       - "scripts/validate_species_rest_proficiency_runtime.mjs"
+      - "docs/Species_Rest_Proficiency_Runtime_Status.md"
+      - "docs/Documentation_Refresh_Manifest.md"
+      - "docs/Unified_Character_Forge_Status.md"
+      - "docs/DNDNext_Current_Handoff_Prompt.md"
+      - "docs/Character_Forge_PR_A_Deployment_Evidence.md"
+      - "docs/README.md"
       - ".github/workflows/validate-species-rest-proficiency-runtime.yml"
   pull_request:
     paths:
@@ -28,6 +34,12 @@ on:
       - "utils/playerForgeSpeciesRuntimeChoices.js"
       - "utils/characterRuntimeProficiencies.js"
       - "scripts/validate_species_rest_proficiency_runtime.mjs"
+      - "docs/Species_Rest_Proficiency_Runtime_Status.md"
+      - "docs/Documentation_Refresh_Manifest.md"
+      - "docs/Unified_Character_Forge_Status.md"
+      - "docs/DNDNext_Current_Handoff_Prompt.md"
+      - "docs/Character_Forge_PR_A_Deployment_Evidence.md"
+      - "docs/README.md"
       - ".github/workflows/validate-species-rest-proficiency-runtime.yml"
 
 jobs:
