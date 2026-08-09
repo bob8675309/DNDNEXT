@@ -11,6 +11,7 @@ on:
       - "utils/classFeatureChoices.js"
       - "scripts/validate_bestial_soul_runtime.mjs"
       - "sql/20260809_79_bestial_soul_runtime.sql"
+      - "sql/20260809_80_bestial_soul_option_resolver_fix.sql"
       - ".github/workflows/validate-bestial-soul.yml"
   pull_request:
     paths:
@@ -20,6 +21,7 @@ on:
       - "utils/classFeatureChoices.js"
       - "scripts/validate_bestial_soul_runtime.mjs"
       - "sql/20260809_79_bestial_soul_runtime.sql"
+      - "sql/20260809_80_bestial_soul_option_resolver_fix.sql"
       - ".github/workflows/validate-bestial-soul.yml"
 
 jobs:
