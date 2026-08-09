@@ -16,7 +16,7 @@ for (const token of [
   "character_has_smiths_tools_v1",
   "public.inventory_items",
   "character_permissions",
-  "Smith''s Tools",
+  "Smith's Tools",
   "armorer_armor_model_options_v1",
   "jsonb_path_query",
   'refSubclassFeature',
@@ -37,7 +37,7 @@ for (const token of [
   "configuredBy','initial_selection'",
   "configuredBy','rest_replacement'",
   "Finish a newer Short Rest or Long Rest before changing Armor Model.",
-  "Smith''s Tools must be in this character''s inventory before configuring Armor Model.",
+  "inventory before configuring Armor Model.",
   "revoke all on function public.get_character_armorer_armor_model_v1(uuid) from public,anon",
   "revoke all on function public.configure_character_armorer_armor_model_v1(uuid,text) from public,anon",
 ]) need(migration, token);
