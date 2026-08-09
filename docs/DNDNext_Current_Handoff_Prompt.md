@@ -44,7 +44,7 @@ These rules are mandatory:
 
 ## Current production checkpoint
 
-Live Supabase now includes Character Forge/progression/runtime work **through migration 76**.
+Live Supabase now includes Character Forge/progression/runtime work **through migration 77**.
 
 Most recent normalized runtime sequence:
 
@@ -54,9 +54,10 @@ Most recent normalized runtime sequence:
 - 72-73 — Cartomancer runtime + deterministic state correction;
 - 74 — Wizard Memorize Spell runtime;
 - 75 — Wizard Memorize Spell deterministic getter-state correction;
-- 76 — shared Wizard runtime helper repair.
+- 76 — shared Wizard runtime helper repair;
+- 77 — TCE Cantrip Formulas Long-Rest runtime for PHB Wizard.
 
-Migration 76 is live as `wizard_runtime_helper_repair`.
+Latest live migration: `wizard_cantrip_formulas_runtime` (`20260809213738`).
 
 ## Memorize Spell is CLOSED / ACCEPTED
 
@@ -72,53 +73,71 @@ Accepted behavior:
 - only the existing `prepared` flags change;
 - one qualifying Short Rest authorizes at most one completed swap;
 - active encounters block configuration;
-- runtime receipt is `character_runtime_feature_choices.feature_key='wizard-memorize-spell'`;
-- sheet projection is `runtimeFeatures.wizardMemorizeSpell`;
-- the UI panel is mounted downstream from `CharacterCurrencyBadge` and must remain reachable even when the character has no currency balance.
+- runtime receipt is `wizard-memorize-spell`;
+- sheet projection is `runtimeFeatures.wizardMemorizeSpell`.
 
-### Why migration 76 exists
-
-The deployed 74-75 audit found two referenced private helpers were absent live:
+Migration 76 supplies the shared helper contracts required by Memorize Spell and Spell Mastery:
 
 - `private.can_manage_character_spell_resources_v1(uuid)`;
 - `private.character_class_feature_acquired_at_v1(uuid,text,text,integer)`.
 
-Migration 76 adds them compatibly.
+The acquisition fallback is `character_progression.created_at`; do **not** change it to `characters.created_at`, which does not exist live.
 
-`can_manage_character_spell_resources_v1` delegates to the existing canonical edit rule `can_manage_character_progression_v1` and also repairs the same missing dependency used by Wizard Spell Mastery.
+## Cantrip Formulas is CLOSED / ACCEPTED
 
-`character_class_feature_acquired_at_v1` uses:
+Read `docs/Wizard_Cantrip_Formulas_Runtime_Status.md` before touching this area.
 
-1. the first `character_level_events` crossing for earned progression;
-2. `character_progression.created_at` for direct higher-level creation.
+Source authority:
 
-Do **not** change that fallback to `characters.created_at`; the live `characters` table has no such column.
+- feature source `TCE`;
+- class `Wizard`;
+- class source `PHB`;
+- level 3;
+- imported `isClassFeatureVariant=true`;
+- Long-Rest replacement cadence.
 
-## Acceptance evidence through migration 76
+Accepted behavior:
 
-At the source head used for deployment acceptance:
+- PHB Wizard 3+ only;
+- XPHB Wizard is ineligible;
+- first replacement requires a Long Rest strictly newer than feature acquisition;
+- one successful replacement per qualifying Long Rest;
+- outgoing choice must be an actual known class-owned Wizard cantrip;
+- replacement must be a preferred level-0 Wizard-list spell not already known by the character from any source;
+- the selected `character_spells` row is updated **in place**;
+- assignment ID, `source_type='class'`, `source_key='wizard'`, casting stat, and row count remain unchanged;
+- no `character_spells` insert/delete occurs;
+- active encounters block configuration;
+- runtime receipt is `wizard-cantrip-formulas`;
+- sheet projection is `runtimeFeatures.wizardCantripFormulas`;
+- UI panel is mounted after Memorize Spell in the always-reachable runtime chain.
 
-- all 24 relevant GitHub Actions workflows passed;
-- dedicated Memorize semantic validation passed;
-- dedicated Memorize production build gate passed;
-- Wizard Spell Mastery semantic/build gate passed with the repaired shared helper;
+Accepted source commit:
+
+`1e9a9b59306a1e38c8a04bb484aa602f01a817d3` — `Model PHB Wizard Cantrip Formulas runtime`.
+
+At that head:
+
+- all 25 relevant GitHub Actions workflows passed;
+- the dedicated Cantrip Formulas semantic validator passed;
+- its production build gate passed;
 - Vercel passed.
 
-After migration 76 was applied, a rolled-back synthetic level-5 Wizard lifecycle proved:
+After migration 77 was applied, a rolled-back synthetic PHB Wizard 3 + XPHB Wizard 3 control proved:
 
-- direct-created acquisition anchor;
-- public Short Rest unlock;
-- first swap success;
-- same-rest second-swap rejection;
-- always-prepared rejection;
+- PHB eligible / XPHB ineligible;
+- pre-rest rejection;
+- actual public Long Rest unlock;
+- Acid Splash → Fire Bolt replacement;
+- exact assignment ID/source/casting-stat preservation;
+- stable cantrip row count;
+- same-rest rejection;
+- already-known replacement rejection;
 - active-encounter rejection;
-- newer-rest one-swap reauthorization;
+- newer-rest Fire Bolt → Booming Blade replacement;
 - second same-rest rejection;
-- spellbook membership/source identity preservation;
-- sheet projection sync;
-- public/private ACLs.
-
-A separate rolled-back level-18 Wizard fixture proved `configure_character_spell_mastery_v1` now executes through the repaired shared authorization helper and still preserves spellbook row count.
+- runtime receipt and sheet projection;
+- public/private ACL expectations.
 
 Post-rollback integrity remained:
 
@@ -127,7 +146,7 @@ Post-rollback integrity remained:
 - 30 character spell rows;
 - 7 progression rows;
 - 18 inventory rows;
-- 0 live Memorize runtime rows;
+- 0 live Cantrip Formulas runtime rows;
 - 20 locations;
 - 4 routes;
 - 9 route points.
@@ -155,27 +174,37 @@ Examples already normalized:
 - Boon of Energy Resistance → Long-Rest replacement runtime;
 - Cartomancer Hidden Ace → temporary eight-hour runtime spell access;
 - Memorize Spell → one preparation replacement per qualifying Short Rest;
+- Cantrip Formulas → one class-owned cantrip assignment replacement per qualifying Long Rest;
 - Spell Mastery → persistent at-will overlay with Long-Rest replacement;
 - Steps of the Fey → per-cast and still deferred to action-layer integration.
 
 ## Immediate next slice
 
-The next bounded item is **Cantrip Formulas**.
+Continue the remaining class/subclass family audit one bounded feature at a time.
 
-Before implementing it:
+Known queue candidates include:
 
-1. inspect the imported source record(s), current Forge/progression presentation, current runtime tables/helpers, and any existing validator/docs;
-2. determine the exact source cadence and whether it belongs to creation, progression, rest runtime, or action-layer execution;
-3. propose a safe patch plan before changing code or DB;
-4. keep the patch narrowly scoped;
-5. compile candidate DDL against live schema inside rollback;
-6. run semantic/build gates and exact-head CI;
-7. apply only after gates pass;
-8. run public/helper rollback behavior proofs;
-9. run zero-residue integrity/ACL checks;
-10. update docs/PR ledger before moving to the next family.
+- Armorer Armor Model;
+- Beast Bestial Soul;
+- Wild Heart Aspect of the Wilds;
+- Hunter's Prey / Defensive Tactics;
+- Phantom Whispers of the Dead.
 
-After Cantrip Formulas, continue remaining class/subclass runtime families one bounded slice at a time.
+Do **not** assume those are all rest-runtime choices. For the next family:
+
+1. inspect the imported source record(s), source/class/subclass edition, level, choice text, and cadence;
+2. inspect current Forge/progression/runtime presentation and any existing stored state;
+3. classify it as permanent creation/progression, rest runtime, per-use action state, or informational display;
+4. state a safe bounded patch plan before writing;
+5. compile candidate DDL against live schema in rollback;
+6. run a synthetic rollback lifecycle against candidate authority;
+7. patch migration/client/validator/workflow together;
+8. verify every helper/state/prop/RPC argument;
+9. require exact-head CI + production build + Vercel;
+10. apply only after gates pass;
+11. rerun the lifecycle against deployed functions;
+12. prove zero residue and ACLs;
+13. update docs and PR body before moving on.
 
 ## Remaining broader PR #170 closure work
 
@@ -189,22 +218,7 @@ Still open after the runtime-family sweep:
 
 ## Delivery discipline
 
-For each slice:
-
-1. inspect source + live DB;
-2. state the bounded patch plan before writes;
-3. patch source/migration/client together;
-4. verify helpers/hooks/state/props/RPC args;
-5. run semantic validators and production build gate;
-6. compile live schema in rollback;
-7. require exact-head CI/Vercel where relevant;
-8. apply migration;
-9. run rollback lifecycle proof;
-10. prove zero residue and ACLs;
-11. update docs and PR body;
-12. only then advance to the next slice.
-
-Never claim a migration/runtime family is accepted merely because DDL applied. Acceptance requires the deployed behavior proof and zero-residue check.
+Never claim a migration/runtime family is accepted merely because DDL applied. Acceptance requires source verification, exact-head gates, deployed behavior proof, ACL checks, and zero-residue integrity.
 
 ---
 

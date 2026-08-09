@@ -25,23 +25,24 @@ For active Character Forge / progression / runtime-choice work, read:
 4. `Character_Progression_and_Higher_Level_Forge.md`
 5. `Wizard_Spell_Mastery_Runtime_Status.md`
 6. `Wizard_Memorize_Spell_Runtime_Status.md`
-7. `Player_Forge_Starting_Magic_v3_Status.md`
-8. `Player_Forge_Starting_Equipment_Status.md`
-9. `Astral_Trance_Runtime_Status.md`
-10. `Species_Rest_Proficiency_Runtime_Status.md`
-11. `Species_Replaceable_Cantrip_Runtime_Status.md`
-12. `Eladrin_Runtime_Status.md`
-13. `Primal_Companion_Runtime_Status.md`
-14. `Dread_Allegiance_Runtime_Status.md`
-15. `Fiendish_Resilience_Runtime_Status.md`
-16. `Circle_of_the_Land_Runtime_Status.md`
-17. `Artificer_Magic_Item_Plans_Status.md`
-18. `Boon_Energy_Resistance_Runtime_Status.md`
-19. `Feat_Runtime_Expertise_Status.md`
-20. `Cartomancer_Runtime_Status.md`
-21. `DNDNext_Current_Handoff_Prompt.md`
+7. `Wizard_Cantrip_Formulas_Runtime_Status.md`
+8. `Player_Forge_Starting_Magic_v3_Status.md`
+9. `Player_Forge_Starting_Equipment_Status.md`
+10. `Astral_Trance_Runtime_Status.md`
+11. `Species_Rest_Proficiency_Runtime_Status.md`
+12. `Species_Replaceable_Cantrip_Runtime_Status.md`
+13. `Eladrin_Runtime_Status.md`
+14. `Primal_Companion_Runtime_Status.md`
+15. `Dread_Allegiance_Runtime_Status.md`
+16. `Fiendish_Resilience_Runtime_Status.md`
+17. `Circle_of_the_Land_Runtime_Status.md`
+18. `Artificer_Magic_Item_Plans_Status.md`
+19. `Boon_Energy_Resistance_Runtime_Status.md`
+20. `Feat_Runtime_Expertise_Status.md`
+21. `Cartomancer_Runtime_Status.md`
+22. `DNDNext_Current_Handoff_Prompt.md`
 
-## Live Character Forge / progression checkpoint through migration 76
+## Live Character Forge / progression checkpoint through migration 77
 
 Production includes the normalized runtime/progression slices below:
 
@@ -66,9 +67,10 @@ Production includes the normalized runtime/progression slices below:
 - 71 — Echoing Soul / Zhentarim expertise runtime normalization;
 - 72-73 — Cartomancer runtime + deterministic state fix;
 - 74-75 — Wizard Memorize Spell Short-Rest preparation runtime + deterministic state fix;
-- 76 — shared Wizard runtime helper repair for Memorize Spell and Spell Mastery.
+- 76 — shared Wizard runtime helper repair for Memorize Spell and Spell Mastery;
+- 77 — TCE Cantrip Formulas Long-Rest runtime for the PHB Wizard.
 
-Migration 76 is registered live as `wizard_runtime_helper_repair`.
+Latest registered migration: `wizard_cantrip_formulas_runtime` (`20260809213738`).
 
 ## Creation / progression / runtime split
 
@@ -88,6 +90,7 @@ Representative examples:
 - Wizard Savant / Signature Spells → persistent spellbook/progression state;
 - Spell Mastery → at-will overlay with Long-Rest replacement;
 - Memorize Spell → one prepared-spell replacement per qualifying Short Rest;
+- Cantrip Formulas → one class-owned PHB Wizard cantrip assignment replaced in place per qualifying Long Rest;
 - Weapon Mastery → rest-configurable runtime state;
 - Astral Trance → runtime pair that expires at the next Long Rest;
 - Githyanki Astral Knowledge → skill + PHB weapon/tool pair after Long Rest, expiring next Long Rest;
@@ -104,31 +107,38 @@ Representative examples:
 - Zhentarim Tactics → rest-limited Expertise that expires at the next Long Rest;
 - Cartomancer Hidden Ace → temporary eight-hour spell access, never permanent spell membership.
 
-## Wizard Memorize Spell / helper repair acceptance
+## Wizard Memorize Spell / shared helper repair acceptance
 
-Migrations 74-75 model Memorize Spell correctly but the deployed lifecycle audit found two referenced private helpers absent from production:
+Migrations 74-75 model Memorize Spell as Short-Rest preparation state. Migration 76 adds the shared private helper contracts the deployed audit found missing:
 
 - `private.can_manage_character_spell_resources_v1(uuid)`;
 - `private.character_class_feature_acquired_at_v1(uuid,text,text,integer)`.
 
-Migration 76 adds those helpers without rewriting deployed migration history.
+Direct higher-level acquisition falls back to `character_progression.created_at`, not nonexistent `characters.created_at`.
 
-Important correction: direct higher-level class-feature acquisition falls back to `character_progression.created_at`, not `characters.created_at`; the live `characters` table has no `created_at` column.
+Deployed rollback proofs cover Memorize Spell and shared Spell Mastery compatibility. See `Wizard_Memorize_Spell_Runtime_Status.md`.
 
-Post-deployment rollback proofs passed:
+## Wizard Cantrip Formulas acceptance
 
-- direct Wizard 5 acquisition anchoring;
-- actual public Short Rest unlock;
-- one Memorize swap per rest;
-- always-prepared protection;
-- active-encounter lock;
-- spellbook/source identity preservation;
-- deterministic runtime receipt and sheet projection;
-- newer-rest replacement;
-- public/private ACL expectations;
-- Spell Mastery compatibility through the shared repaired authorization helper.
+Migration 77 models the imported TCE Cantrip Formulas record exactly as a PHB Wizard level-3 Long-Rest runtime feature.
 
-See `Wizard_Memorize_Spell_Runtime_Status.md`.
+Important boundaries:
+
+- PHB Wizard 3+ only; XPHB Wizard is ineligible;
+- first use requires a Long Rest strictly newer than feature acquisition;
+- one successful cantrip replacement per qualifying Long Rest;
+- the outgoing row must be a known class-owned Wizard cantrip;
+- the replacement comes from `spells_catalog_preferred`, is level 0, is on the Wizard list, and is not already known from any source;
+- `character_spells.spell_id` is updated in place;
+- assignment ID, class source identity, casting stat, and row count are preserved;
+- no spell row is inserted or deleted;
+- active encounters block configuration;
+- normalized receipt key: `wizard-cantrip-formulas`;
+- sheet projection: `runtimeFeatures.wizardCantripFormulas`.
+
+Pre-deploy compile/rollback proof, all 25 exact-head GitHub Actions, Vercel, deployed rollback lifecycle, ACL checks, and zero-residue integrity all passed.
+
+See `Wizard_Cantrip_Formulas_Runtime_Status.md`.
 
 ## Starting magic / equipment / currency
 
@@ -144,26 +154,26 @@ Starting equipment is source-backed for XPHB core classes plus EFA Artificer. Co
 
 The established downstream sheet chain now includes:
 
-`CharacterSheetPanel → ... → CharacterCurrencyBadge → Boon Energy Resistance → feat runtime Expertise → Cartomancer → Wizard Memorize Spell`
+`CharacterSheetPanel → ... → CharacterCurrencyBadge → Boon Energy Resistance → feat runtime Expertise → Cartomancer → Wizard Memorize Spell → Wizard Cantrip Formulas`
 
 Other runtime panels retain their existing direct/indirect mounts. One eligibility check must never hide unrelated downstream runtime panels.
 
 ## Current production integrity checkpoint
 
-After migration 76 and all Memorize/Spell-Mastery rollback fixtures:
+After migration 77 and all rollback-only Cantrip Formulas acceptance fixtures:
 
 - 7 characters;
 - 7 character sheets;
 - 30 character-spell assignments;
 - 7 progression rows;
 - 18 inventory rows;
-- 0 live Memorize Spell runtime rows;
-- 0 Memorize QA characters;
+- 0 live Cantrip Formulas runtime rows;
+- 0 Cantrip Formulas QA characters;
 - 20 world locations;
 - 4 map routes;
 - 9 map route points.
 
-The exact source head used for migration-76 acceptance passed all 24 relevant GitHub Actions workflows, including the Memorize and Spell Mastery production build gates. Vercel also reported success.
+The source head used for migration-77 acceptance (`1e9a9b59306a1e38c8a04bb484aa602f01a817d3`) passed all 25 relevant GitHub Actions workflows, including the Cantrip Formulas semantic validator and production build gate. Vercel also passed.
 
 ## Remaining active PR #170 work
 
@@ -171,13 +181,14 @@ Completed slices should not be reopened without contradictory source/live eviden
 
 Immediate next work:
 
-1. audit and normalize **Cantrip Formulas** as the next bounded source-choice/runtime family;
-2. continue remaining class/subclass runtime families after that;
-3. finish obsolete/authenticated progression RPC + ACL cleanup, including any pre-existing anonymous grants still confirmed live;
-4. final authenticated browser acceptance;
-5. keep Steps of the Fey per-cast integration deferred until spell/action execution is explicitly in scope;
-6. keep tactical consumption of runtime damage resistance deferred until encounter/combat is explicitly in scope;
-7. merge PR #170 only after closure gates are satisfied.
+1. continue the remaining class/subclass source-choice/runtime families one bounded slice at a time, inspecting source cadence before deciding implementation;
+2. finish obsolete/authenticated progression RPC + ACL cleanup, including any pre-existing anonymous grants still confirmed live;
+3. final authenticated browser acceptance;
+4. keep Steps of the Fey per-cast integration deferred until spell/action execution is explicitly in scope;
+5. keep tactical consumption of runtime damage resistance deferred until encounter/combat is explicitly in scope;
+6. merge PR #170 only after closure gates are satisfied.
+
+Known remaining family candidates from the PR ledger include Armorer Armor Model, Beast Bestial Soul, Wild Heart Aspect of the Wilds, Hunter's Prey / Defensive Tactics, and Phantom Whispers of the Dead. Treat that list as an audit queue, not as a pre-decided runtime model.
 
 ## Protected boundaries
 
