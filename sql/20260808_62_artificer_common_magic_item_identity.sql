@@ -38,11 +38,12 @@ begin
   v_rarity:=lower(btrim(coalesce(v_item.item_rarity,v_item.payload->>'rarity','')));
   v_source:=upper(btrim(coalesce(v_item.payload->>'source','')));
   v_is_magic_item:=nullif(btrim(coalesce(v_item.payload->>'type','')),'') is not null
-    or lower(coalesce(v_item.payload->>'wondrous','false'))='true';
+    or lower(coalesce(v_item.payload->>'wondrous','false'))='true'
+    or v_type='wondrous item';
 
-  -- Canonical item rows must positively identify as magic. In the current catalogue,
-  -- imported magic weapons/armor/etc. carry payload.type and Wondrous Items carry
-  -- wondrous=true. Alchemy, recipe, and other non-magic rows carry neither.
+  -- Canonical rows must positively identify as magic. Imported magic weapons/armor/etc.
+  -- carry payload.type; Wondrous Items use wondrous=true or the canonical Wondrous Item type.
+  -- Alchemy, recipe, and other non-magic rows carry none of these markers.
   if not v_is_magic_item then return false; end if;
 
   if nullif(v_schema->>'rarity','') is not null and v_rarity<>lower(v_schema->>'rarity') then return false; end if;
