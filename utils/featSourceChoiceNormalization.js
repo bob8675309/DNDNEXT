@@ -1,6 +1,7 @@
 const text = (value) => String(value ?? "").trim();
 const norm = (value) => text(value).toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 const array = (value) => Array.isArray(value) ? value : [];
+const unique = (values = []) => [...new Set(array(values).map(text).filter(Boolean))];
 
 const BOON_ENERGY_RESISTANCE_OPTIONS = Object.freeze([
   "Acid",
@@ -173,6 +174,18 @@ export function normalizeFeatSourceChoiceGroups(groups = []) {
         metadata: {
           ...(group.metadata || {}),
           normalizedChoiceShape: "echoing-soul-two-skills-language-runtime-expertise",
+        },
+      };
+    }
+
+    if (featName === "cartomancer") {
+      return {
+        ...group,
+        metadata: {
+          ...(group.metadata || {}),
+          fixedSpellTokens: unique([...(group.metadata?.fixedSpellTokens || []), "Prestidigitation|XPHB"]),
+          normalizedChoiceShape: "cartomancer-fixed-prestidigitation-runtime-hidden-ace",
+          runtimeFeature: "cartomancer-hidden-ace",
         },
       };
     }
