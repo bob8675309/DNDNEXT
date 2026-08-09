@@ -4,6 +4,7 @@ import CharacterBoonEnergyResistancePanel from "./CharacterBoonEnergyResistanceP
 import CharacterFeatRuntimeExpertisePanel from "./CharacterFeatRuntimeExpertisePanel";
 import CharacterCartomancerPanel from "./CharacterCartomancerPanel";
 import CharacterWizardMemorizeSpellPanel from "./CharacterWizardMemorizeSpellPanel";
+import CharacterWizardCantripFormulasPanel from "./CharacterWizardCantripFormulasPanel";
 
 export default function CharacterCurrencyBadge({ characterId }) {
   const [currency, setCurrency] = useState(null);
@@ -53,6 +54,7 @@ export default function CharacterCurrencyBadge({ characterId }) {
     <CharacterFeatRuntimeExpertisePanel characterId={characterId} />
     <CharacterCartomancerPanel characterId={characterId} />
     <CharacterWizardMemorizeSpellPanel characterId={characterId} />
+    <CharacterWizardCantripFormulasPanel characterId={characterId} />
     {showCurrency ? <section className="character-currency-badge" aria-label="Character currency" title={title}>
       <div>
         <span>Character Coin</span>
