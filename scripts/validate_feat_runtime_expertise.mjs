@@ -37,7 +37,7 @@ for (const token of [
   "materialize_feat_runtime_expertise_instance_v1",
   "Zhentarim Tactics does not grant Expertise until a Long Rest is completed.",
   "Echoing Soul requires exactly two skill proficiency choices.",
-  "Echoing Soul requires one additional Player's Handbook language.",
+  "Echoing Soul requires one additional Player''s Handbook language.",
   "Echoing Soul requires one initial Expertise choice.",
   "character_rest_log_expire_zhentarim_tactics_expertise_v1",
   "new.rest_type<>'long_rest'",
@@ -73,7 +73,6 @@ for (const token of [
   '<CharacterFeatRuntimeExpertisePanel characterId={characterId} />',
 ]) need(host, token);
 
-// The new source-specific child kinds must not replace established generic kinds.
 need(normalization, 'kind: "energy-resistance"');
 forbid(normalization, 'kind: "damage-type", count: 2');
 forbid(normalization, 'kind: "expertise", count: 1, required: true, options: skillOptions');
