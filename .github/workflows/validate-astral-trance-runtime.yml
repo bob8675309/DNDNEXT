@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "sql/20260808_52_astral_trance_runtime.sql"
+      - "sql/20260808_53_astral_trance_skill_key_correction.sql"
       - "components/CharacterAstralTrancePanel.js"
       - "components/CharacterSheetPanel.js"
       - "utils/characterRuntimeProficiencies.js"
@@ -13,6 +14,7 @@ on:
   pull_request:
     paths:
       - "sql/20260808_52_astral_trance_runtime.sql"
+      - "sql/20260808_53_astral_trance_skill_key_correction.sql"
       - "components/CharacterAstralTrancePanel.js"
       - "components/CharacterSheetPanel.js"
       - "utils/characterRuntimeProficiencies.js"
