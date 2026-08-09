@@ -45,6 +45,14 @@ export function khoravarSkillVersatilityRuntimeState(sheet = {}) {
   return { ...state, kind, skillKey, trainingName, proficiency };
 }
 
+export function eladrinTranceRuntimeState(sheet = {}) {
+  const state = sheet?.runtimeProficiencies?.eladrinTrance;
+  if (!state || typeof state !== "object" || Array.isArray(state) || state.configured === false) return null;
+  const trainings = Array.isArray(state.trainings) ? state.trainings.filter((entry) => entry && typeof entry === "object" && !Array.isArray(entry)) : [];
+  if (trainings.length !== 2) return null;
+  return { ...state, trainings };
+}
+
 function applyRuntimeSkill(next, skillKey, marker) {
   if (!skillKey) return;
   next.proficiencies = next.proficiencies && typeof next.proficiencies === "object" ? next.proficiencies : {};
@@ -83,14 +91,25 @@ function trainingMatches(state, kind, name) {
   return safeText(state.trainingName).toLowerCase() === safeText(name).toLowerCase();
 }
 
+function eladrinTrainingMatches(sheet = {}, kind = "", name = "") {
+  const state = eladrinTranceRuntimeState(sheet);
+  if (!state) return false;
+  const wantedKind = safeText(kind).toLowerCase();
+  const wantedName = safeText(name).toLowerCase();
+  return state.trainings.some((training) => safeText(training.kind).toLowerCase() === wantedKind
+    && safeText(training.name).toLowerCase() === wantedName);
+}
+
 export function hasRuntimeWeaponProficiency(sheet = {}, weaponName = "") {
   return trainingMatches(astralTranceRuntimeState(sheet), "weapon", weaponName)
-    || trainingMatches(githyankiAstralKnowledgeRuntimeState(sheet), "weapon", weaponName);
+    || trainingMatches(githyankiAstralKnowledgeRuntimeState(sheet), "weapon", weaponName)
+    || eladrinTrainingMatches(sheet, "weapon", weaponName);
 }
 
 export function hasRuntimeToolProficiency(sheet = {}, toolName = "") {
   if (trainingMatches(astralTranceRuntimeState(sheet), "tool", toolName)) return true;
   if (trainingMatches(githyankiAstralKnowledgeRuntimeState(sheet), "tool", toolName)) return true;
+  if (eladrinTrainingMatches(sheet, "tool", toolName)) return true;
   const khoravar = khoravarSkillVersatilityRuntimeState(sheet);
   return Boolean(khoravar?.kind === "tool" && safeText(khoravar.trainingName).toLowerCase() === safeText(toolName).toLowerCase());
 }
