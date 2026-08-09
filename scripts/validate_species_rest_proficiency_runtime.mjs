@@ -14,6 +14,7 @@ const forbidText = (content, needle, label) => {
 const migration = read("sql/20260808_63_species_rest_proficiency_runtime.sql");
 const aclCleanup = read("sql/20260808_64_species_rest_proficiency_acl_cleanup.sql");
 const restKeyCorrection = read("sql/20260808_65_species_rest_proficiency_rest_key_correction.sql");
+const projectionParentFix = read("sql/20260808_66_species_runtime_projection_parent_fix.sql");
 const forgeHelper = read("utils/playerForgeSpeciesRuntimeChoices.js");
 const registrar = read("components/NpcForgeFeatChoiceRegistrar.js");
 const runtimePanel = read("components/CharacterSpeciesRestProficiencyPanel.js");
@@ -48,6 +49,10 @@ requireText(restKeyCorrection, "if new.rest_type<>'long_rest' then return new; e
 forbidText(restKeyCorrection, "rest_type='long'", "noncanonical Long Rest key");
 forbidText(restKeyCorrection, "new.rest_type<>'long'", "noncanonical Githyanki expiry key");
 
+requireText(projectionParentFix, "coalesce(jsonb_typeof(v_sheet->'runtimeProficiencies'),'')<>'object'", "missing runtimeProficiencies parent guard");
+requireText(projectionParentFix, "jsonb_set(v_sheet,'{runtimeProficiencies}','{}'::jsonb,true)", "runtimeProficiencies parent creation");
+requireText(projectionParentFix, "jsonb_set(v_sheet,array['runtimeProficiencies',p_projection_key],p_state,true)", "runtime Species projection write");
+
 requireText(forgeHelper, "import { SKILL_DEFINITIONS }", "canonical skill-key source");
 requireText(forgeHelper, "buildToolOptionCatalog(toolRows).all.map", "Khoravar tool catalogue");
 requireText(forgeHelper, "identity.name === \"githyanki\" && identity.source === \"MPMM\" && trait === \"astral knowledge\"", "Githyanki persistent-choice suppression");
@@ -74,4 +79,4 @@ requireText(projection, "hasRuntimeWeaponProficiency", "runtime weapon proficien
 requireText(projection, "hasRuntimeToolProficiency", "runtime tool proficiency helper");
 requireText(projection, "metadata?.skillKey", "canonical Khoravar skill key projection");
 
-console.log("Species rest proficiency runtime, canonical Long Rest keys, and explicit anonymous ACL cleanup validation passed.");
+console.log("Species rest proficiency runtime, canonical Long Rest keys, projection-parent compatibility, and explicit anonymous ACL cleanup validation passed.");
