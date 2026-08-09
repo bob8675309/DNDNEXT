@@ -19,16 +19,17 @@ For active Character Forge / progression / runtime-choice work, read:
 7. `Player_Forge_Starting_Equipment_Status.md`
 8. `Astral_Trance_Runtime_Status.md`
 9. `Species_Rest_Proficiency_Runtime_Status.md`
-10. `Primal_Companion_Runtime_Status.md`
-11. `Dread_Allegiance_Runtime_Status.md`
-12. `Fiendish_Resilience_Runtime_Status.md`
-13. `Circle_of_the_Land_Runtime_Status.md`
-14. `Artificer_Magic_Item_Plans_Status.md`
-15. `DNDNext_Current_Handoff_Prompt.md`
+10. `Species_Replaceable_Cantrip_Runtime_Status.md`
+11. `Primal_Companion_Runtime_Status.md`
+12. `Dread_Allegiance_Runtime_Status.md`
+13. `Fiendish_Resilience_Runtime_Status.md`
+14. `Circle_of_the_Land_Runtime_Status.md`
+15. `Artificer_Magic_Item_Plans_Status.md`
+16. `DNDNext_Current_Handoff_Prompt.md`
 
-If these documents conflict with older Character Forge/progression prose, these PR #170 documents control until the broader roadmap is rewritten.
+If these documents conflict with older Character Forge/progression prose, the newest dedicated PR #170 status ledger plus live repository/database state controls until the broader roadmap is consolidated.
 
-## Live Character Forge / progression checkpoint through migration 66
+## Live Character Forge / progression checkpoint through migration 67
 
 Production includes:
 
@@ -45,15 +46,11 @@ Production includes:
 - 56 — Dread Allegiance runtime + feature-cantrip authority;
 - 57 — Fiendish Resilience Short/Long-Rest runtime authority;
 - 58-59 — Circle of the Land source-derived Circle Spell packages + parser correction;
-- 60 — source-derived EFA Artificer Magic Item Plan instances for direct Forge + earned progression;
-- 61 — Artificer legacy-sheet projection parent guard;
-- 62 — positive canonical magic-item identity for wildcard Artificer plans;
-- 63 — MPMM Githyanki Astral Knowledge + EFA Khoravar Skill Versatility runtime authority;
-- 64 — explicit anonymous Species-RPC ACL cleanup;
-- 65 — canonical `long_rest` correction for Species runtime timing/expiry;
-- 66 — missing `runtimeProficiencies` parent compatibility correction.
+- 60-62 — source-derived EFA Artificer Magic Item Plans + wildcard corrections;
+- 63-66 — Githyanki Astral Knowledge / Khoravar Skill Versatility runtime authority + ACL/rest-key/projection corrections;
+- 67 — XPHB High Elf and EFA Khoravar source-fixed/Long-Rest-replaceable Species cantrip authority.
 
-Character currency post-create presentation is complete through `CharacterCurrencyBadge`, which reads character-scoped currency only and never falls back to `player_wallets`.
+Character currency post-create presentation remains complete through `CharacterCurrencyBadge`, which reads character-scoped currency only and never falls back to `player_wallets`.
 
 ## Creation / progression / runtime split
 
@@ -75,6 +72,8 @@ Examples:
 - Astral Trance → runtime pair that expires at the next Long Rest;
 - Githyanki Astral Knowledge → post-Long-Rest skill + PHB weapon/tool pair that expires at the next Long Rest;
 - Khoravar Skill Versatility → initial runtime skill/tool choice that persists until replaced after a newer Long Rest;
+- High Elf Elven Lineage → permanent lineage/casting ability, source-fixed Prestidigitation, cantrip replaceable after newer Long Rest;
+- Khoravar Fey Gift → permanent casting ability, source-fixed Friends, cantrip replaceable after newer Long Rest;
 - Primal Companion → current beast persists until explicitly replaced after a newer Long Rest;
 - Dread Allegiance → linked allegiance/resistance/cantrip package persists until replaced after a newer Long Rest;
 - Fiendish Resilience → first choice requires a post-acquisition Short/Long Rest; current resistance persists until a later Short/Long-Rest replacement;
@@ -86,7 +85,7 @@ Examples:
 
 `create_player_character_v3` remains shared Player Forge creation authority.
 
-Starting magic covers native class-list spells, Background-expanded access, Eldritch Knight, and Arcane Trickster including fixed Mage Hand.
+Starting magic covers native class-list spells, Background-expanded access, Eldritch Knight, and Arcane Trickster including fixed Mage Hand. Species-owned replaceable cantrips are now separately normalized by migration 67 and do not inflate class starting-magic counts.
 
 Starting equipment is source-backed for the XPHB core classes plus EFA Artificer. Concrete starter gear becomes character-owned inventory and starts unequipped. Character cash is stored in `character_currency` as copper. Higher-level magic-item quantities remain a DM guide only and are not auto-granted.
 
@@ -94,7 +93,7 @@ The character-sheet currency badge reads only `get_character_currency_v1(charact
 
 See `Player_Forge_Starting_Magic_v3_Status.md` and `Player_Forge_Starting_Equipment_Status.md`.
 
-## Runtime cadence authority through 66
+## Runtime cadence authority through 67
 
 Detailed source/lifecycle evidence is recorded in the dedicated status documents.
 
@@ -103,6 +102,8 @@ Important final semantics:
 - Astral Trance: expires at next Long Rest;
 - Githyanki Astral Knowledge: no Forge lock; choose one skill + one PHB weapon/tool after Long Rest; expires next Long Rest;
 - Khoravar Skill Versatility: one initial skill/tool runtime choice; persists until a newer Long Rest permits replacement;
+- High Elf cantrip: fixed Prestidigitation initially; Wizard-cantrip replacement after newer Long Rest; permanent lineage casting ability unchanged;
+- Khoravar Fey Gift cantrip: fixed Friends initially; Cleric/Druid/Wizard-cantrip replacement after newer Long Rest; permanent Fey Gift casting ability unchanged;
 - Primal Companion: persists until changed; newer Long Rest opens one replacement;
 - Dread Allegiance: persists until changed; newer Long Rest opens one linked replacement;
 - Fiendish Resilience: persists until changed; newer Short or Long Rest opens replacement;
@@ -111,18 +112,31 @@ Important final semantics:
 
 Runtime damage resistance from Dread + Fiendish is canonical through `private.character_runtime_damage_resistances_v1`. Tactical encounter snapshot/damage consumption remains deliberately deferred until combat work is explicitly in scope.
 
-### Species proficiency correction evidence
+### Species proficiency correction evidence — migrations 63-66
 
-The Species slice caught and corrected four defects before any real Githyanki/Khoravar runtime state existed:
+The Species proficiency slice caught and corrected four defects before any real Githyanki/Khoravar runtime state existed:
 
 1. Khoravar source identity and encounter-column wiring were corrected to EFA / `is_defeated` before migration 63 deployment.
 2. Supabase default `anon` EXECUTE was explicitly removed in migration 64.
 3. DNDNext's canonical rest key `long_rest` replaced the prose shorthand `long` in migration 65.
 4. Missing `runtimeProficiencies` parents are now created safely by migration 66.
 
-Rollback lifecycle proofs passed for both Githyanki and Khoravar on deployed migrations 63-66. Permanent proficiency objects remained unchanged and all synthetic rows rolled back.
+Rollback lifecycle proofs passed for both Githyanki and Khoravar. Permanent proficiency objects remained unchanged and all synthetic rows rolled back.
 
 See `Species_Rest_Proficiency_Runtime_Status.md`.
+
+### Species replaceable cantrip evidence — migration 67
+
+Migration 67 separates the permanent spellcasting-ability decision from the replaceable cantrip:
+
+- High Elf: fixed initial Prestidigitation, 31 legal Wizard-cantrip options after a newer Long Rest;
+- Khoravar Fey Gift: fixed initial Friends, 44 legal Cleric/Druid/Wizard options after a newer Long Rest.
+
+The fixed initial cantrip is deferred-materialized after shared Player Forge creation into one `character_spells` row with `source_type='species'`. Replacement preserves the stable Species source key and casting stat.
+
+Exact-head CI was green across all 19 relevant workflows before deployment. Deployed rollback proofs passed fixed initial materialization, real canonical Long-Rest unlock, same-cantrip rejection, illegal-list rejection, valid replacement, projection update, permanent source-choice preservation, and zero residue for both Species families.
+
+See `Species_Replaceable_Cantrip_Runtime_Status.md`.
 
 ## Runtime panel composition
 
@@ -130,7 +144,7 @@ The established sheet chain remains exact-head CI-proven:
 
 `CharacterSheetPanel → CharacterAstralTrancePanel → CharacterDreadAllegiancePanel → CharacterFiendishResiliencePanel → CharacterCircleLandPanel → CharacterCurrencyBadge`
 
-`CharacterPrimalCompanionPanel` and `CharacterSpeciesRestProficiencyPanel` are separate direct sheet mounts.
+`CharacterPrimalCompanionPanel` and `CharacterSpeciesRestProficiencyPanel` are separate direct sheet mounts. `CharacterSpeciesReplaceableCantripPanel` is an always-reachable downstream child of the Species rest-proficiency panel, so High Elf can reach cantrip controls without having a proficiency-runtime family and Khoravar can render both Species runtime families.
 
 One class/species eligibility check must never hide unrelated downstream runtime panels.
 
@@ -158,22 +172,24 @@ See `Artificer_Magic_Item_Plans_Status.md`.
 
 ## Current production integrity checkpoint
 
-After migrations 63-66 and all rollback fixtures:
+After migration 67 and all rollback fixtures:
 
 - 7 characters;
 - 7 character sheets;
 - 30 character-spell assignments;
 - 7 progression rows;
 - 18 inventory rows;
-- 0 live Githyanki/Khoravar Species runtime rows;
-- 0 Species QA proof characters;
+- 0 live High Elf/Khoravar replaceable-cantrip runtime rows;
+- 0 live High Elf/Khoravar replaceable-cantrip Species spell rows;
+- 0 cantrip QA characters;
+- 0 live Githyanki/Khoravar proficiency runtime rows;
 - 56 EFA Artificer plan options;
 - 3 Artificer wildcard families;
 - 20 world locations;
 - 4 map routes;
 - 9 map route points.
 
-The final migration-66 source candidate passed all 18 relevant GitHub workflows, including the dedicated Species semantic gate and production build.
+Migration 67 is registered live. The pre-deployment migration-67 candidate passed all 19 relevant GitHub workflows including the dedicated cantrip semantic gate and production build.
 
 Vercel remains blocked by the account build-rate limit rather than an application build failure.
 
@@ -185,7 +201,7 @@ Completed work should not be reopened without contradictory source/live evidence
 
 Remaining major work:
 
-1. continue the final source-choice coverage audit, including replaceable Species cantrips/Eladrin and remaining feat/class/subclass runtime families;
+1. continue the final source-choice coverage audit, now focusing on Eladrin and remaining feat/class/subclass runtime families;
 2. correct Echoing Soul's separate permanent-acquisition under-modeling if confirmed by the imported/source audit;
 3. obsolete/authenticated progression RPC + ACL cleanup, including the anonymous class-choice getter grant;
 4. final authenticated browser acceptance;
