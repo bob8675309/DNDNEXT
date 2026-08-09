@@ -66,7 +66,7 @@ for (const token of [
 ]) need(runtime, token);
 
 for (const token of [
-  'import { hasRuntimeWeaponProficiency } from "./characterRuntimeProficiencies";',
+  'import { hasRuntimeWeaponProficiency } from "./characterRuntimeProficiencies.js";',
   "if (hasRuntimeWeaponProficiency(sheet, name)) return true;",
 ]) need(actions, token);
 
