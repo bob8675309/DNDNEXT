@@ -1,0 +1,35 @@
+name: Validate Artificer Magic Item Plans
+
+on:
+  pull_request:
+    paths:
+      - "utils/artificerPlanChoices.js"
+      - "components/NpcForgeFeatChoiceRegistrar.js"
+      - "components/NpcForgeClassGuideModel.js"
+      - "components/CharacterLevelUpChoices.js"
+      - "sql/20260808_60_artificer_magic_item_plan_instances.sql"
+      - "sql/20260808_61_artificer_plan_projection_parent_fix.sql"
+      - "scripts/validate_artificer_magic_item_plans.mjs"
+      - ".github/workflows/validate-artificer-magic-item-plans.yml"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: validation-anon-key
+      SUPABASE_SERVICE_ROLE_KEY: validation-service-role-key
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Validate Artificer plan semantics
+        run: node scripts/validate_artificer_magic_item_plans.mjs
+      - name: Validate unified Character Forge
+        run: node scripts/validate_unified_character_forge.mjs
+      - name: Production build
+        run: npm run build:vercel
