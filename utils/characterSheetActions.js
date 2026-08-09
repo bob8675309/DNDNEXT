@@ -1,3 +1,5 @@
+import { hasRuntimeWeaponProficiency } from "./characterRuntimeProficiencies";
+
 const DAMAGE_TYPE_LABELS = Object.freeze({
   A: "acid",
   B: "bludgeoning",
@@ -96,6 +98,8 @@ function explicitWeaponProficiencies(sheet = {}) {
 }
 
 function isWeaponProficient({ sheet, category, name, properties }) {
+  if (hasRuntimeWeaponProficiency(sheet, name)) return true;
+
   const explicit = explicitWeaponProficiencies(sheet);
   if (explicit.length) {
     const normalizedName = safeText(name).toLowerCase();
