@@ -9,35 +9,7 @@ PR #170 remains **open and unmerged**. CI/build success plus rollback-only produ
 
 The active design rule is creation/progression parity for persistent source-owned decisions, with rest/per-use/informational choices modeled separately as runtime state.
 
-## Current production authority summary
-
-### Earned progression
-
-The active Level Up UI completes through `complete_character_level_up_v5`.
-
-Connected persistent families include General feats/Epic Boons, simple class choices, Bard Magical Secrets, Lore Magical Discoveries, Draconic Elemental Affinity, Champion Fighting Style, Metamagic, Mystic Arcanum, Magic Initiate replacement, Eldritch Invocations/Lessons, Battle Master maneuvers, Wizard Savant, and Wizard Signature Spells.
-
-Direct authenticated v3/v4 level-up completion is revoked. Legacy v1/v2 execute grants remain a tracked cleanup item after confirmed nonuse.
-
-### Runtime cadence
-
-Live runtime-cadence migrations include:
-
-- 44 — Wizard Spell Mastery;
-- 45 — class-granted Weapon Mastery;
-- 46 — per-instance Weapon Master feat current weapon + combined mastery projection.
-
-These keep permanent acquisition history separate from current Long-Rest-reconfigurable state.
-
-### Player creation / starting magic
-
-Live migrations 47-48 complete the shared Player Forge Spell-step boundary.
-
-The browser now calls `create_player_character_v3` rather than stopping at v2. v3 owns exact native class-list, Background-expanded, Eldritch Knight, and Arcane Trickster starting magic. Species/feat/class-feature spell grants remain separate source-owned systems.
-
-Migration 48 removes the stale explicit `anon` execute grant from v3.
-
-## Major live migrations in this PR checkpoint
+## Live migration checkpoint through 54
 
 - 38-39 — Battle Master maneuver normalization/progression;
 - 40-41 — Wizard Savant progression + higher-level Forge chronology;
@@ -47,157 +19,103 @@ Migration 48 removes the stale explicit `anon` execute grant from v3.
 - 45 — class Weapon Mastery runtime;
 - 46 — Weapon Master feat runtime and combined projection;
 - 47 — Player Forge v3 multi-source starting-magic completion;
-- 48 — Player Forge v3 authenticated-only ACL cleanup.
+- 48 — Player Forge v3 authenticated-only ACL cleanup;
+- 49 — source-backed Player Forge starting equipment + character currency;
+- 50 — starting-equipment Background/d10 tamper guard + currency RLS;
+- 51 — character-scoped starter-equipment projection correction;
+- 52 — Astral Trance Long-Rest runtime authority;
+- 53 — Astral Trance multiword skill-key correction;
+- 54 — Astral Elf normalized eligibility correction.
 
-## Wizard evidence
+## Player Forge starting magic
 
-### Savant
+The shared Player Forge calls `create_player_character_v3`. Exact Spell-step authority covers native class-list, Background-expanded, Eldritch Knight, and Arcane Trickster starting magic.
 
-Savant spellbook additions remain `class-feature` provenance with `wizardSpellbook=true`. Higher-level Forge replays historical acquisitions at 3/3/5/7/9/11/13/15/17; earned progression uses the same spellbook boundary; cantrips are excluded; cross-provenance duplicates fail closed.
+Rollback proofs established native Wizard, Background-expanded Entangle, Eldritch Knight, Arcane Trickster fixed Mage Hand, and fail-closed invalid submissions with no residue.
 
-### Signature Spells
+## Starting equipment / character currency
 
-Signature is two level-3 spells from the final normalized spellbook. It overlays existing assignments, preserves provenance, and supplies one `short_rest` free cast per spell.
+Player mode includes an Equipment step between Spells and Identity. NPC step order is unchanged.
 
-Rollback evidence includes:
+Structured source packages cover the 12 XPHB core classes plus EFA Artificer and the existing XPHB Background equipment metadata.
 
-- existing-row overlay without membership inflation;
-- Short Rest restoring spent Signature uses;
-- duplicate/wrong-level/non-spellbook rejection;
-- direct level-20 Abjurer Forge chronology using Savant-granted Counterspell as Signature;
-- authenticated Wizard 19→20 v5 progression using spells learned in that same transition as Signature;
-- matching session/event/progression history.
+Concrete starter items become canonical character-owned inventory rows and begin unequipped. Character money is stored as copper in `character_currency`, not `player_wallets`.
 
-### Spell Mastery
+Rollback proofs cover concrete gear, cash-only packages, generic tool/instrument selectors, Wizard Spellbook resolution, higher-level d10 cash, DM-only magic-item allowance, and fail-closed tampering.
 
-Migration 44 models Spell Mastery as runtime Long-Rest configuration.
+See `Player_Forge_Starting_Equipment_Status.md`.
 
-Rollback evidence includes:
+## Astral Trance runtime — migrations 52-54
 
-- one eligible level-1 + one level-2 Action spell from the actual spellbook;
-- always-prepared/at-will overlay with no finite use counter;
-- no replacement before a new Long Rest;
-- exactly one same-level replacement after a new Long Rest;
-- restoration of the old spell's prior prepared/availability state;
-- rejection of two-at-once, wrong-level, non-Action, non-spellbook, and active-encounter changes.
+AAG Astral Elf Astral Trance is implemented as runtime cadence state and is excluded from Character Forge persistent choices.
 
-See `Wizard_Spell_Mastery_Runtime_Status.md`.
+After a completed Long Rest, the character chooses one skill and one source-legal PHB-equivalent weapon/tool proficiency. The current pair is stored in `character_runtime_feature_choices` and projected under `sheet.runtimeProficiencies.astralTrance`.
 
-## Weapon Mastery evidence
+The pair expires automatically when the **next Long Rest finishes**. Short Rest leaves it active. Same-rest second configuration is rejected.
 
-Migration 45 provides class-granted runtime mastery capacity and one-change-per-new-Long-Rest semantics.
+Permanent skill/tool/weapon proficiency fields are not rewritten. Normal sheet view receives a cloned skill overlay; edit mode uses the permanent draft. Weapon actions check the exact runtime weapon before normal class/explicit fallback rules.
 
-Migration 46 gives each Weapon Master feat instance an independent runtime current weapon and computes `sheet.weaponMasteries` as the union of class + feat runtime sources without rewriting permanent feat acquisition history.
+Preferred XPHB catalogue rows represent the PHB equipment list. Musket and Pistol remain excluded by campaign policy.
 
-Production rollback evidence covers immediate initial configuration, no-op preservation, Short-Rest rejection, one Long-Rest replacement, same-rest lockout, immutable acquisition history, and combined projection preservation.
+### Correction evidence
 
-## Player Forge v3 starting-magic evidence
+Migration 52 originally exposed only 16 skills because the shared name normalizer strips spaces. Migration 53 corrects Animal Handling and Sleight of Hand, restoring all 18 skills.
 
-### Source/build gate
+The first behavior fixture then exposed that `Astral Elf` normalizes to `astralelf`. Migration 54 corrects eligibility.
 
-The implementation introduced a dedicated `Validate Player Forge v3 starting magic` workflow.
+Both defects failed closed and were corrected before the slice was accepted.
 
-The exact implementation head before migration 47 passed:
+### CI / compile gate
 
-- dedicated v3 starting-magic semantic assertions;
-- unified Character Forge assertions;
-- security-hardening Forge endpoint assertions;
-- Character Forge resilience assertions;
-- tactical resource-bridge regression assertions;
-- the repository production `npm run build:vercel` gate after `npm ci` with validation Supabase environment placeholders;
-- broader NPC Forge / progression workflows at the same implementation checkpoint.
+The dedicated Astral workflow validates source identity, cadence/expiry, full skill mappings, compact species eligibility, firearm exclusion, sheet UI, non-destructive skill/weapon overlays, explicit Forge exclusion, and protected world boundaries.
 
-Migration 47's replacement functions were compiled against live production schema inside an explicit transaction and rolled back before deployment.
+Before the final correction deployment, the exact candidate head was green across all eleven relevant workflows, including Astral Trance, starting magic/equipment, Spell Mastery, NPC Forge, progression, portrait, and nested-choice validators.
 
-### Native Wizard proof
+Migration 52 compiled against live production schema in rollback. Migrations 53 and 54 were each compiled/tested in rollback before application.
 
-A real authenticated call to `create_player_character_v3` created a synthetic level-1 Wizard in a rollback transaction with:
+### Final deployed rollback proof
 
-- 3 cantrips;
-- 6 level-1 Wizard spells;
-- exactly 4 prepared leveled spells.
+Using real public `complete_character_rest_v1`, `get_character_astral_trance_v1`, and `configure_character_astral_trance_v1`, the deployed migrations proved:
 
-Verified 9 exact v3 starting-magic rows, Intelligence casting, no surviving v2 proxy rows, and correct cantrip/preparation state.
+- no configure before first Long Rest;
+- configure Arcana + Longsword after Long Rest;
+- no permanent Arcana/tool/weapon mutation;
+- same-rest second configure rejected;
+- Short Rest preserves the active pair;
+- next Long Rest automatically removes the pair and reopens configuration;
+- direct Pistol id rejected;
+- second-rest Animal Handling + a legal tool succeeds;
+- Human/XPHB reports unavailable and configure is rejected;
+- zero synthetic/runtime residue after rollback.
 
-### Background-expanded proof
-
-A level-1 Wizard used **Entangle** as one of the six spellbook selections.
-
-Entangle's preferred row is Druid/Ranger, not Wizard, proving actual Background-expanded access.
-
-Verified:
-
-- normal Wizard spell-count slot consumption;
-- temporary native v2 proxy removed;
-- exact Entangle row stored as class-source Wizard casting with `accessType='background-expanded'`;
-- prepared count still exact.
-
-### Eldritch Knight proof
-
-A level-3 Fighter / Eldritch Knight created through v3 produced:
-
-- 2 subclass-source Wizard cantrips;
-- 3 prepared subclass-source level-1 Wizard spells;
-- Intelligence casting;
-- no class-source proxy residue.
-
-### Arcane Trickster proof
-
-A level-3 Rogue / Arcane Trickster created through v3 produced:
-
-- fixed Mage Hand exactly once;
-- 2 additional subclass-source Wizard cantrips;
-- 3 prepared subclass-source level-1 Wizard spells;
-- Intelligence casting.
-
-### Fail-closed proof
-
-The real v3 RPC rejected atomically:
-
-- an undeclared Background-expanded spell;
-- an invalid Arcane Trickster fixed spell;
-- duplicate exact starting-magic selection.
-
-Each rejection left no temporary v2 character/spell residue.
-
-### ACL proof
-
-After migration 47, an audit detected a stale explicit `anon` grant on v3. The function already rejected `auth.uid() IS NULL`, but migration 48 removed the grant so ACLs match v1/v2.
-
-Current creation execute surfaces:
-
-- v1: authenticated + service_role;
-- v2: authenticated + service_role;
-- v3: authenticated + service_role;
-- no v3 anonymous execute grant.
+The final live catalogue exposes 18 skills and 74 legal training options with firearms absent.
 
 ## Final production integrity checkpoint
 
-After migrations 47-48 and all rollback fixtures:
+After migrations 52-54 and rollback fixtures:
 
 - 7 characters;
 - 7 character sheets;
 - 30 character-spell assignments;
-- 7 character-progression rows;
+- 7 progression rows;
 - 0 open level-up sessions;
-- 0 QA `startingMagic=true` rows;
-- 0 synthetic `__v3_*` characters;
+- 0 QA Astral runtime rows;
+- 0 synthetic Astral proof characters;
 - 20 locations;
 - 4 map routes;
 - 9 map route points.
 
-No world-map, town/city-map, route/travel/weather, tactical combat, or crafting runtime behavior changed in the starting-magic slice.
+Astral public getter/configure ACLs are authenticated + service_role. Private Astral helpers/trigger functions are service-role-only.
 
 ## Remaining acceptance blockers
 
-1. Remaining runtime cadence families such as Astral Trance, Circle-of-the-Land choices, Primal Companion, Dread Allegiance, Fiendish Resilience, and per-use Steps of the Fey.
-2. Source-backed starting equipment packages and higher-level starting wealth/equipment.
-3. Character-scoped starting currency.
-4. Artificer wildcard Magic Item Plan concrete-item instances.
-5. Remaining persistent Species / Background / Class / Feat / Subclass coverage and conditional-choice UI audit.
-6. Audit/revoke obsolete authenticated level-up completion RPC generations when confirmed unused.
-7. Final authenticated browser acceptance.
-8. Merge PR #170 only after those gates close.
+1. Remaining runtime cadence families: Circle-of-the-Land choices, Primal Companion, Dread Allegiance, Fiendish Resilience, and per-use Steps of the Fey.
+2. Compact post-create character-currency display.
+3. Artificer wildcard Magic Item Plan concrete-item instances.
+4. Remaining persistent source-choice / conditional-choice UI audit.
+5. Audit/revoke obsolete authenticated level-up completion RPC generations when confirmed unused.
+6. Final authenticated browser acceptance.
+7. Merge PR #170 only after those gates close.
 
 ## Protected boundaries
 
