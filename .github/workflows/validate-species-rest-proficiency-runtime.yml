@@ -7,6 +7,7 @@ on:
     paths:
       - "sql/20260808_63_species_rest_proficiency_runtime.sql"
       - "sql/20260808_64_species_rest_proficiency_acl_cleanup.sql"
+      - "sql/20260808_65_species_rest_proficiency_rest_key_correction.sql"
       - "components/CharacterSpeciesRestProficiencyPanel.js"
       - "components/CharacterSheetPanel.js"
       - "components/NpcForgeFeatChoiceRegistrar.js"
@@ -18,6 +19,7 @@ on:
     paths:
       - "sql/20260808_63_species_rest_proficiency_runtime.sql"
       - "sql/20260808_64_species_rest_proficiency_acl_cleanup.sql"
+      - "sql/20260808_65_species_rest_proficiency_rest_key_correction.sql"
       - "components/CharacterSpeciesRestProficiencyPanel.js"
       - "components/CharacterSheetPanel.js"
       - "components/NpcForgeFeatChoiceRegistrar.js"
