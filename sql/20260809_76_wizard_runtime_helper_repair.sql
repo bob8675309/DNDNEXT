@@ -72,9 +72,12 @@ begin
     return v_event_at;
   end if;
 
-  select created_at into v_created_at
-  from public.characters
-  where id=p_character_id;
+  select cp.created_at into v_created_at
+  from public.character_progression cp
+  join public.class_catalog c on c.id=cp.class_id
+  where cp.character_id=p_character_id
+    and lower(btrim(coalesce(c.class_key,'')))=lower(btrim(p_class_key))
+    and upper(btrim(coalesce(c.source,'')))=upper(btrim(p_class_source));
 
   return v_created_at;
 end;
