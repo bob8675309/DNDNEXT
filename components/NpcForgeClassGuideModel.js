@@ -131,11 +131,15 @@ export function useNpcForgeClassGuideModel(selectedClass, level) {
     items,
     spells,
   }), [choiceCatalog, currentLevel, features, items, selected, selectedClass, spells]);
-  const invocationSourceActive = useMemo(() => (sourceChoiceState.groups || []).some((group) => group.ownerType === "class-option" && group.metadata?.family === "eldritch-invocation"), [sourceChoiceState.groups]);
+  const normalizedClassOptionFamilies = useMemo(() => new Set((sourceChoiceState.groups || [])
+    .filter((group) => group.ownerType === "class-option")
+    .map((group) => group.metadata?.family)
+    .filter(Boolean)), [sourceChoiceState.groups]);
   const choiceGroups = useMemo(
     () => applyClassFeatureOptionAuthority(rawChoiceGroups, optionalFeatureCatalog, selectedClass)
-      .filter((group) => !(invocationSourceActive && group.kind === "eldritch-invocation")),
-    [invocationSourceActive, optionalFeatureCatalog, rawChoiceGroups, selectedClass]
+      .filter((group) => !(normalizedClassOptionFamilies.has("eldritch-invocation") && group.kind === "eldritch-invocation"))
+      .filter((group) => !(normalizedClassOptionFamilies.has("artificer-plan") && group.kind === "artificer-plan")),
+    [normalizedClassOptionFamilies, optionalFeatureCatalog, rawChoiceGroups, selectedClass]
   );
 
   useEffect(() => {
