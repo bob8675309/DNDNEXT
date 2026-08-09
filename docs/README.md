@@ -21,11 +21,13 @@ This directory contains the project's living handoff, roadmap, architecture, and
 - `Astral_Trance_Runtime_Status.md` — AAG Astral Elf Long-Rest skill + weapon/tool runtime proficiency authority.
 - `Species_Rest_Proficiency_Runtime_Status.md` — MPMM Githyanki Astral Knowledge and EFA Khoravar Skill Versatility Long-Rest proficiency authority, migrations 63-66, ACL corrections, and rollback acceptance.
 - `Species_Replaceable_Cantrip_Runtime_Status.md` — XPHB High Elf and EFA Khoravar fixed-initial / Long-Rest-replaceable Species cantrip authority, migration 67, normalized Species spell ownership, and rollback acceptance.
+- `Eladrin_Season_Trance_Runtime_Status.md` — MPMM Eladrin persistent Season plus two-choice post-Long-Rest Trance weapon/tool authority, migration 68, and rollback acceptance.
 - `Primal_Companion_Runtime_Status.md` — Beast Master current-companion and Long-Rest replacement authority.
 - `Dread_Allegiance_Runtime_Status.md` — linked allegiance/resistance/cantrip runtime authority.
 - `Fiendish_Resilience_Runtime_Status.md` — Short/Long-Rest resistance runtime authority.
 - `Circle_of_the_Land_Runtime_Status.md` — source-derived Long-Rest Circle Spell package authority.
 - `Artificer_Magic_Item_Plans_Status.md` — EFA learned-plan instances, wildcard concrete-item identity, and progression/Forge parity.
+- `Boon_Energy_Resistance_Runtime_Status.md` — XPHB Boon of Energy Resistance per-feat-instance acquisition pair, Long-Rest replacement, runtime resistance projection, migrations 69-70, and rollback acceptance.
 
 Current cadence rule: persistent source-owned decisions belong to Forge/progression authority; Long-/Short-Rest decisions belong to runtime configuration; per-use choices belong to action UI. Do not turn runtime choices back into permanent Forge locks.
 
