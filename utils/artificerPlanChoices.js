@@ -30,13 +30,18 @@ function cursed(row) {
   return value === true || text(value).toLowerCase() === "true";
 }
 
+function isMagicItem(row) {
+  return Boolean(text(row?.payload?.type)) || row?.payload?.wondrous === true || text(row?.payload?.wondrous).toLowerCase() === "true";
+}
+
 function itemMatchesSchema(row, schema = {}) {
   const rarity = norm(row?.item_rarity || row?.payload?.rarity);
   const type = norm(row?.item_type || row?.payload?.uiType);
+  if (schema.kind === "magic-item" && !isMagicItem(row)) return false;
   if (schema.rarity && rarity !== norm(schema.rarity)) return false;
   if (schema.excludeCursed && cursed(row)) return false;
   if (schema.itemType) {
-    const wondrous = row?.payload?.wondrous === true || type === norm(schema.itemType);
+    const wondrous = row?.payload?.wondrous === true || text(row?.payload?.wondrous).toLowerCase() === "true" || type === norm(schema.itemType);
     if (norm(schema.itemType) === "wondrous item" ? !wondrous : type !== norm(schema.itemType)) return false;
   }
   for (const excluded of array(schema.excludeTypes)) {
