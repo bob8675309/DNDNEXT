@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
+import CharacterSpeciesReplaceableCantripPanel from "./CharacterSpeciesReplaceableCantripPanel";
 
 const safeText = (value) => String(value ?? "").trim();
 const compact = (value) => safeText(value).toLowerCase().replace(/[^a-z0-9]+/g, "");
@@ -105,12 +106,14 @@ export default function CharacterSpeciesRestProficiencyPanel({ characterId, shee
     setBusy(false);
   }
 
-  if (!mode || (!loading && !profile && !error)) return null;
+  const cantripPanel = <CharacterSpeciesReplaceableCantripPanel characterId={characterId} sheet={sheet} onSheetUpdated={onSheetUpdated} />;
+
+  if (!mode || (!loading && !profile && !error)) return cantripPanel;
 
   if (mode === "githyanki") {
     const configured = Boolean(profile?.configured);
     const state = profile?.state || null;
-    return <section className="character-runtime-choice character-runtime-choice--species-proficiency" aria-label="Githyanki Astral Knowledge configuration">
+    return <><section className="character-runtime-choice character-runtime-choice--species-proficiency" aria-label="Githyanki Astral Knowledge configuration">
       <div className="character-runtime-choice__head">
         <div><span>Long-Rest choice</span><strong>Astral Knowledge</strong></div>
         <button type="button" className="character-runtime-choice__refresh" onClick={loadProfile} disabled={loading || busy}>Refresh</button>
@@ -129,13 +132,13 @@ export default function CharacterSpeciesRestProficiencyPanel({ characterId, shee
         </div>
         <button type="button" className="character-runtime-choice__save" onClick={saveGithyanki} disabled={busy || !skillKey || !trainingId}>{busy ? "Applying…" : "Choose for this Long Rest"}</button>
       </> : <p>Finish a Long Rest to choose one skill and one Player’s Handbook weapon or tool proficiency.</p>}
-    </section>;
+    </section>{cantripPanel}</>;
   }
 
   const configured = Boolean(profile?.configured);
   const state = profile?.state || null;
   const canChoose = Boolean(profile?.canConfigure || profile?.canReplace);
-  return <section className="character-runtime-choice character-runtime-choice--species-proficiency" aria-label="Khoravar Skill Versatility configuration">
+  return <><section className="character-runtime-choice character-runtime-choice--species-proficiency" aria-label="Khoravar Skill Versatility configuration">
     <div className="character-runtime-choice__head">
       <div><span>Long-Rest replacement</span><strong>Skill Versatility</strong></div>
       <button type="button" className="character-runtime-choice__refresh" onClick={loadProfile} disabled={loading || busy}>Refresh</button>
@@ -151,5 +154,5 @@ export default function CharacterSpeciesRestProficiencyPanel({ characterId, shee
       </> : configured ? <p>Your current proficiency persists. Finish a newer Long Rest before replacing it.</p> : null}
       <p>This runtime choice adds proficiency without rewriting permanent Species, class, Background, or feat training.</p>
     </>}
-  </section>;
+  </section>{cantripPanel}</>;
 }
