@@ -1,0 +1,46 @@
+name: Validate Wild Heart Aspect runtime
+
+on:
+  push:
+    branches:
+      - agent/character-forge-resilience-presentation
+    paths:
+      - "components/CharacterWildHeartAspectPanel.js"
+      - "components/CharacterCurrencyBadge.js"
+      - "utils/classFeatureChoiceParsing.js"
+      - "utils/classFeatureChoices.js"
+      - "scripts/validate_wild_heart_aspect_runtime.mjs"
+      - "sql/20260809_81_wild_heart_aspect_runtime.sql"
+      - ".github/workflows/validate-wild-heart-aspect.yml"
+  pull_request:
+    paths:
+      - "components/CharacterWildHeartAspectPanel.js"
+      - "components/CharacterCurrencyBadge.js"
+      - "utils/classFeatureChoiceParsing.js"
+      - "utils/classFeatureChoices.js"
+      - "scripts/validate_wild_heart_aspect_runtime.mjs"
+      - "sql/20260809_81_wild_heart_aspect_runtime.sql"
+      - ".github/workflows/validate-wild-heart-aspect.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Validate Wild Heart Aspect runtime contracts
+        run: |
+          node scripts/validate_wild_heart_aspect_runtime.mjs
+          node scripts/validate_unified_character_forge.mjs
+          node scripts/validate_character_progression_v3.mjs
+      - name: Run production build gate
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: validation-placeholder
+        run: npm run build:vercel
