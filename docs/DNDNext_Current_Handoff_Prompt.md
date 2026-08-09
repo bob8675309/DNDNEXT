@@ -17,15 +17,17 @@ Before changing anything:
 1. Inspect current `main`, PR #170, recent commits, changed-file boundary, and exact CI status.
 2. Inspect live Supabase read-only for schema/function/RLS/data questions before making DB changes.
 3. Read `docs/README.md` and `docs/Documentation_Refresh_Manifest.md`.
-4. For Character Forge/progression, read:
+4. For Character Forge/progression/runtime cadence, read:
    - `docs/Unified_Character_Forge_Status.md`
    - `docs/Character_Progression_Foundation.md`
    - `docs/Character_Forge_PR_A_Deployment_Evidence.md`
    - `docs/Character_Progression_and_Higher_Level_Forge.md`
    - `docs/Wizard_Spell_Mastery_Runtime_Status.md`
    - `docs/Player_Forge_Starting_Magic_v3_Status.md`
+   - `docs/Player_Forge_Starting_Equipment_Status.md`
+   - `docs/Astral_Trance_Runtime_Status.md`
 5. Reconcile docs against current source/live Supabase before assuming a listed blocker is still open.
-6. Update the relevant handoffs whenever a migration, architecture boundary, validation result, or acceptance state changes.
+6. Update relevant handoffs whenever a migration, architecture boundary, validation result, or acceptance state changes.
 
 ### Non-negotiable boundaries
 
@@ -34,7 +36,7 @@ Before changing anything:
 - Tactical encounter state stays isolated from routes, travel, weather, camps, and world clock.
 - Smiths handle physical gear; Enchanters handle magical A/B/C slots by item tier.
 - Generic NPCs do not become crafters without an appropriate role.
-- Supabase normalized state remains authoritative for characters, sheets, inventory, equipment, spells, progression, and guarded commands.
+- Supabase normalized state remains authoritative for characters, sheets, inventory, equipment, spells, progression, runtime feature choices, and guarded commands.
 - Browser state previews/collects choices but does not bypass guarded database authority.
 - Realtime is synchronization, not authority.
 - Preserve working systems and avoid broad rewrites.
@@ -46,17 +48,17 @@ Before changing anything:
 
 - Use bounded branch/PR changes.
 - Review the exact PR head and CI after each meaningful slice.
-- Distinguish a hosted Vercel account/rate-limit failure from an application build failure.
-- A successful repository `npm run build:vercel` is valid compile/build evidence but is not the same as a hosted Vercel deployment.
+- Distinguish hosted Vercel account/rate-limit failures from application build failures.
+- A successful repository `npm run build:vercel` is compile/build evidence but is not the same as a hosted Vercel deployment.
 - Batch coherent changes to conserve hosted builds.
-- For Supabase changes: source contract → static/build gates → compile against live schema when useful → migration → rollback-only behavior proofs → integrity sweep → docs.
+- For Supabase changes: source contract → static/build gates → live-schema rollback compile → migration → rollback-only behavior proofs → integrity sweep → docs.
 - Proceed when the user says “proceed”; do not repeatedly request confirmation already given.
 
 ## Active focus: Character Forge / progression PR #170
 
 PR #170 (`agent/character-forge-resilience-presentation`) remains **open and unmerged**.
 
-Do not restart completed Forge consolidation, Savant/Signature/Spell Mastery, Weapon Mastery cadence, or guarded multi-source starting-magic work.
+Do not restart completed Forge consolidation, Savant/Signature/Spell Mastery, Weapon Mastery cadence, guarded multi-source starting magic, starting-equipment/currency authority, or Astral Trance runtime work.
 
 ### Governing parity/cadence model
 
@@ -65,21 +67,13 @@ Persistent decisions made by direct level-N Forge creation and earned level-N pr
 Current cadence model:
 
 - persistent creation/attained-level choice → authoritative Forge/progression state;
-- proficiency-dependent choice → Training placement;
+- proficiency-dependent permanent choice → Training placement;
 - permanent spellbook-dependent choice → Spells placement;
 - Long-/Short-Rest configurable choice → guarded runtime state;
 - per-use choice → runtime/action UI;
 - informational feature → display only.
 
-### Earned progression authority
-
-The active Level Up UI completes through `public.complete_character_level_up_v5`.
-
-Connected persistent families include General feat/Epic Boon advancement, simple class choices, Bard Magical Secrets, Lore Magical Discoveries, Draconic Elemental Affinity, Champion Additional Fighting Style, Sorcerer Metamagic, Warlock Mystic Arcanum, Magic Initiate replacement, Eldritch Invocations/Lessons, Battle Master maneuvers, Wizard Savant, and Wizard Signature Spells.
-
-Authenticated v3/v4 level-up completion is revoked. Legacy v1/v2 level-up completion grants remain a cleanup item once confirmed unused.
-
-## Live migration checkpoint through 48
+## Live migration checkpoint through 54
 
 ### 38-39 — Battle Master
 
@@ -91,15 +85,15 @@ Savant additions are class-feature spellbook membership with `wizardSpellbook=tr
 
 ### 42-43 — Wizard Signature Spells
 
-Two level-3 spells from the final normalized Wizard spellbook. Signature overlays existing membership, preserves source provenance, and adds one `short_rest` free cast. Direct Forge and earned 19→20 ordering are rollback-proven. Migration 43 provides explicit resource labels/protection.
+Two level-3 spells from the final normalized Wizard spellbook. Signature overlays existing membership, preserves provenance, and adds one `short_rest` free cast. Direct Forge and earned 19→20 ordering are rollback-proven.
 
 ### 44 — Wizard Spell Mastery runtime
 
-Spell Mastery is **not** a permanent Forge choice. XPHB Wizard 18+ chooses one level-1 and one level-2 Action spell from the actual spellbook. Both are at-will at lowest level. A newer Long Rest allows exactly one same-level replacement. Active encounter state blocks configuration.
+Spell Mastery is not a permanent Forge choice. XPHB Wizard 18+ configures one level-1 and one level-2 Action spell from the actual spellbook. A later replacement requires a newer Long Rest and may change only one same-level mastered spell. Active encounter state blocks configuration.
 
 ### 45 — class Weapon Mastery runtime
 
-Class-granted Weapon Mastery is Long-Rest runtime state. Capacity is canonical class/level-driven. Initial/new capacity is immediate; replacing existing active mastery requires a newer Long Rest.
+Class-granted Weapon Mastery is Long-Rest runtime state. Capacity is canonical class/level-driven. New capacity is immediate; replacing an existing active mastery requires a newer Long Rest.
 
 ### 46 — Weapon Master feat runtime
 
@@ -107,87 +101,98 @@ Each permanent Weapon Master feat instance owns an independent runtime weapon. P
 
 ### 47-48 — Player Forge v3 starting magic
 
-The shared Player Forge now calls `create_player_character_v3`, not v2.
+The shared Player Forge calls `create_player_character_v3`, not v2.
 
-`sheet.startingMagicSelections` is exact Spell-step authority for:
+`sheet.startingMagicSelections` is exact Spell-step authority for native class-list spells, Background-expanded class access, Eldritch Knight spellcasting, and Arcane Trickster spellcasting including fixed Mage Hand.
 
-- native class-list spells;
-- Background-expanded class access;
-- XPHB Eldritch Knight spellcasting;
-- XPHB Arcane Trickster spellcasting, including fixed Mage Hand.
+Migration 48 removes the stale anonymous execute grant inherited by v3.
 
-Species/feat/class-feature spell grants remain separate source-owned systems.
+### 49-51 — starting equipment / character currency
 
-v3 delegates common creation to v2 but only gives v2 native-class-compatible proxy spell choices. Background-expanded spells receive a temporary same-level native proxy solely for v2 count validation; v3 removes only v2-created temporary/base spell rows and writes exact v3 assignments afterward. Subclass spells never masquerade as Fighter/Rogue native class spells.
+Player mode includes an Equipment step between Spells and Identity; NPC step order is unchanged.
 
-Rollback proofs through the real authenticated v3 RPC passed for:
+Source packages are restored for the 12 XPHB core classes plus EFA Artificer and read from existing XPHB Background equipment metadata.
 
-- level-1 native Wizard;
-- level-1 Wizard with non-native Background-expanded **Entangle**;
-- level-3 Eldritch Knight;
-- level-3 Arcane Trickster with fixed Mage Hand exactly once;
-- rejection of undeclared Background expansion;
-- rejection of invalid fixed subclass spell;
-- rejection of duplicate exact starting magic.
+Concrete starter items are canonical character-owned inventory rows and begin unequipped. Character cash is stored in `character_currency` as copper. Do not use `player_wallets` for character starting currency.
 
-Migration 48 removes the stale explicit anonymous execute grant inherited by v3. v1/v2/v3 creation RPCs now expose the same authenticated/service-role execution surface.
+Normal class + Background equipment remains the base at every starting level. Higher-level cash is additive. Higher-level magic-item quantities are a **DM guide only** and must not be randomly/automatically granted.
 
-Final live integrity after all rollback fixtures:
+Migration 50 binds the submitted Background package to the actual sheet Background and enforces the higher-level d10 rule. Migration 51 removes the legacy account-wide sheet mirror; final starter-equipment projection is character-scoped only.
 
-- 7 characters;
-- 7 character sheets;
-- 30 character-spell rows;
-- 7 progression rows;
-- 0 open level-up sessions;
-- 0 synthetic v3 proof characters;
+### 52-54 — Astral Trance runtime
+
+AAG Astral Elf Astral Trance is **not a Character Forge choice**.
+
+After a completed Long Rest, the character can choose:
+
+- one of all 18 skills; and
+- one source-legal PHB-equivalent weapon or tool proficiency.
+
+The pair is stored in generic runtime feature state and projected under `sheet.runtimeProficiencies.astralTrance`. Permanent `proficiencies.skills`, `tools`, and `weaponProficiencies` are not rewritten.
+
+The pair expires automatically when the **next Long Rest finishes**. Short Rest leaves it active. Same-rest second configuration is rejected.
+
+The runtime weapon overlay adds exact-weapon proficiency before normal class/explicit fallback logic. The skill overlay is applied only in normal sheet display; edit mode uses the underlying permanent sheet to prevent accidental persistence.
+
+Preferred XPHB catalogue rows represent the PHB equipment list. Musket and Pistol are excluded by campaign policy.
+
+Migration 53 corrects compact normalization for Animal Handling and Sleight of Hand. Migration 54 corrects normalized Astral Elf identity to `astralelf`. Both bugs failed closed and were fixed before acceptance.
+
+Final deployed rollback proof passed:
+
+- unavailable before first Long Rest;
+- configure after Long Rest;
+- same-rest lockout;
+- Short-Rest persistence;
+- next-Long-Rest automatic expiry/reopen;
+- second-rest Animal Handling + tool selection;
+- direct firearm rejection;
+- non-Astral Elf rejection;
+- no permanent skill/tool/weapon mutation;
+- zero QA residue after rollback.
+
+Final live Astral checkpoint:
+
+- migrations 52/53/54 registered;
+- 18 skills;
+- 74 legal training options;
+- firearms present: false;
+- 0 live QA Astral runtime rows;
+- 7 characters / 7 sheets / 30 spell rows / 7 progression rows;
 - 20 locations / 4 routes / 9 route points.
+
+See `docs/Astral_Trance_Runtime_Status.md` for detailed evidence.
 
 ## Immediate remaining PR #170 work
 
-Do **not** reopen guarded multi-source starting magic; it is complete.
+Do **not** reopen starting magic, starting equipment/currency authority, or Astral Trance.
 
-Current blockers are:
+Current blockers:
 
-1. remaining runtime cadence families such as Astral Trance, Circle-of-the-Land choices, Primal Companion, Dread Allegiance, Fiendish Resilience, and per-use Steps of the Fey;
-2. source-backed starting equipment packages and higher-level starting wealth/equipment;
-3. character-scoped starting currency for multi-character accounts;
-4. Artificer wildcard Magic Item Plan concrete-item instances;
-5. remaining persistent Species / Background / Class / Feat / Subclass coverage and conditional-choice UI audit;
-6. obsolete authenticated level-up completion RPC cleanup;
-7. final authenticated browser acceptance;
-8. merge PR #170 only after those gates close.
+1. remaining runtime cadence families:
+   - Circle-of-the-Land choices — inspect exact source cadence before implementation;
+   - Primal Companion — Long-Rest beast replacement;
+   - Dread Allegiance — current choice persists until changed after a Long Rest;
+   - Fiendish Resilience — current damage type persists until changed after a Short or Long Rest;
+   - Steps of the Fey — per-use Misty Step effect choice, not rest-stored state;
+2. compact post-create character-currency display in inventory/profile UI;
+3. Artificer wildcard Magic Item Plan concrete-item instances;
+4. remaining persistent Species / Background / Class / Feat / Subclass coverage and conditional-choice UI audit;
+5. obsolete authenticated level-up completion RPC cleanup;
+6. final authenticated browser acceptance;
+7. merge PR #170 only after those gates close.
 
 ### Recommended next implementation slice
 
-Unless current source/live state shows a newer higher-priority blocker, continue with **source-backed starting equipment and higher-level starting wealth/equipment**. Before changing it, inspect the existing item catalogue, inventory/equipment authority, Forge Review payload, and the crafting/equipment handoff docs so creation-time inventory does not bypass canonical inventory/equip state.
+Continue the runtime cadence audit with **Primal Companion or Dread Allegiance** as an isolated source-backed runtime slice. Do not combine features with different expiry/replacement semantics into one generic write rule merely because they all mention Long Rest.
 
-Character-scoped starting currency should be designed alongside that equipment slice but must not reuse account-wide wallet state as character inventory currency without an explicit authority model.
+Before implementing Circle of the Land, inspect the exact XPHB source row(s) and determine whether each choice is persistent, Long-Rest configurable, or per-use.
 
-## After PR #170
+Steps of the Fey belongs in per-cast/action UI rather than `character_runtime_feature_choices` rest state.
 
-Resume the Dawn high-quality sprite prototype work only after the current Character Forge interruption is accepted. Start with:
+The character-currency badge is a bounded UI follow-up and can be batched with a later inventory/profile presentation pass.
 
-- `docs/Dawn_High_Quality_Prototype_Plan.md`
-- `docs/Sprite_Production_Work_Map.md`
-- `docs/Sprite_Production_Art_Bible.md`
-- `docs/Sprite_Production_Run_Log.md`
-
-## Other subsystem handoffs
-
-Always begin with `docs/README.md` and the matching active subsystem ledger.
-
-For character sheet/equipment/crafting/tactical snapshot work, read:
-
-- `docs/Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md`
-- `docs/Character_Sheet_Formula_Reference.md`
-- `docs/NPC_Character_Sheet_Selection_Reconciliation.md`
-- `docs/NPC_Profile_Inventory_Equipment_Reference.md`
-
-For tactical work, use the tactical roadmap plus the current phase ledger. Do not recreate existing tactical primitives.
-
-For security/database changes, read `docs/Security_Hardening_Roadmap_Status.md` and inspect live grants/functions. Do not blanket-revoke guarded `SECURITY DEFINER` functions; evaluate the internal authorization contract individually.
-
-### Documentation precedence
+## Documentation precedence
 
 When sources disagree:
 
@@ -197,6 +202,6 @@ When sources disagree:
 4. platform-wide roadmap / tactical ledgers;
 5. historical exports/runbooks only as provenance.
 
-Begin by verifying PR #170 and the live database. If migrations 47-48 and the zero-residue checkpoint are still current, continue from source-backed starting equipment / higher-level starting wealth rather than reopening Player Forge starting magic.
+Begin by verifying PR #170 and live Supabase. If migrations 52-54 and the zero-residue Astral checkpoint are current, continue with the remaining cadence families rather than reopening Astral Trance.
 
 ## End copy
