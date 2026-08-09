@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
+import CharacterDreadAllegiancePanel from "./CharacterDreadAllegiancePanel";
 
 function safeText(value) {
   return String(value ?? "").trim();
@@ -77,9 +78,8 @@ export default function CharacterAstralTrancePanel({ characterId, sheet = {}, on
     setBusy(false);
   }
 
-  if (!potentiallyAvailable || (!loading && profile?.available === false) || (!loading && !profile && !error)) return null;
-
-  return <section className="character-runtime-choice character-runtime-choice--astral" aria-label="Astral Trance configuration">
+  const visible = potentiallyAvailable && (loading || profile?.available !== false) && (loading || profile || error);
+  const astralPanel = !visible ? null : <section className="character-runtime-choice character-runtime-choice--astral" aria-label="Astral Trance configuration">
     <div className="character-runtime-choice__head">
       <div><span>Long-Rest choice</span><strong>Astral Trance</strong></div>
       <button type="button" className="character-runtime-choice__refresh" onClick={loadProfile} disabled={loading || busy} title="Refresh after completing a Long Rest">Refresh</button>
@@ -103,4 +103,6 @@ export default function CharacterAstralTrancePanel({ characterId, sheet = {}, on
       .character-runtime-choice{margin:10px 12px;padding:11px 13px;border:1px solid rgba(168,108,255,.28);border-radius:10px;background:rgba(126,72,199,.07);color:#fff}.character-runtime-choice__head{display:flex;align-items:center;justify-content:space-between;gap:10px}.character-runtime-choice__head>div{display:grid;gap:2px}.character-runtime-choice__head span,.character-runtime-choice__current span,.character-runtime-choice__selectors label>span{font-size:.61rem;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.5);font-weight:800}.character-runtime-choice__head strong{font-size:.82rem}.character-runtime-choice__refresh,.character-runtime-choice__save{border:1px solid rgba(168,108,255,.44);border-radius:8px;background:rgba(126,72,199,.13);color:#eadfff;padding:6px 9px;font-size:.68rem;font-weight:750}.character-runtime-choice__current{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:9px}.character-runtime-choice__current>div{display:grid;gap:3px;padding:8px;border-radius:8px;background:rgba(0,0,0,.16)}.character-runtime-choice__current strong{font-size:.72rem}.character-runtime-choice__selectors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:9px 0}.character-runtime-choice__selectors label{display:grid;gap:4px}.character-runtime-choice__selectors select{width:100%;padding:6px 7px;border:1px solid rgba(255,255,255,.14);border-radius:7px;background:#10131d;color:#fff;font-size:.68rem}.character-runtime-choice p{margin:8px 0 0;color:rgba(255,255,255,.58);font-size:.64rem;line-height:1.45}.character-runtime-choice__error{margin-top:7px;color:#ffb9b9;font-size:.68rem}@media(max-width:720px){.character-runtime-choice__current,.character-runtime-choice__selectors{grid-template-columns:1fr}}
     `}</style>
   </section>;
+
+  return <>{astralPanel}<CharacterDreadAllegiancePanel characterId={characterId} sheet={sheet} onSheetUpdated={onSheetUpdated} /></>;
 }
