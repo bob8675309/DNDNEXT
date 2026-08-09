@@ -8,6 +8,7 @@ on:
       - "utils/classFeatureChoiceExtensions.js"
       - "utils/classFeatureChoices.js"
       - "sql/20260808_44_wizard_spell_mastery_runtime.sql"
+      - "sql/20260809_76_wizard_runtime_helper_repair.sql"
       - "scripts/validate_wizard_spell_mastery_runtime.mjs"
       - ".github/workflows/validate-wizard-spell-mastery.yml"
   pull_request:
@@ -17,6 +18,7 @@ on:
       - "utils/classFeatureChoiceExtensions.js"
       - "utils/classFeatureChoices.js"
       - "sql/20260808_44_wizard_spell_mastery_runtime.sql"
+      - "sql/20260809_76_wizard_runtime_helper_repair.sql"
       - "scripts/validate_wizard_spell_mastery_runtime.mjs"
       - ".github/workflows/validate-wizard-spell-mastery.yml"
 
