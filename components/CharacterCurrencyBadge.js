@@ -24,7 +24,12 @@ export default function CharacterCurrencyBadge({ characterId }) {
     setLoading(false);
   }
 
-  useEffect(() => { loadCurrency(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [characterId]);
+  useEffect(() => {
+    loadCurrency();
+    // Character switches must never retain another character's balance.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [characterId]);
+
   if (!characterId) return null;
 
   const showCurrency = loading || error || currency?.hasBalance;
