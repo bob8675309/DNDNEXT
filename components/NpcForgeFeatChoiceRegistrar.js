@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
+import { buildArtificerPlanSourceGroups } from "../utils/artificerPlanChoices";
 import { buildAdvancementSourceChoiceGroups } from "../utils/playerForgeAdvancement";
 import { buildFeatSourceChoiceGroups, featGrantInstancesFromSelections } from "../utils/playerForgeFeatChoices";
 import { buildSpeciesSourceChoiceGroups } from "../utils/playerForgeSpeciesChoices";
@@ -62,7 +63,12 @@ export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, contro
   const [advancementReady, setAdvancementReady] = useState(false);
   const [classOptionRows, setClassOptionRows] = useState([]);
   const [classOptionReady, setClassOptionReady] = useState(false);
+  const [magicItemRows, setMagicItemRows] = useState([]);
+  const [magicItemCatalogReady, setMagicItemCatalogReady] = useState(true);
   const [catalogError, setCatalogError] = useState("");
+  const selectedClass = controller?.selectedClass;
+  const needsInvocations = Boolean(playerMode && norm(selectedClass?.class_key) === "warlock" && String(selectedClass?.source || "").toUpperCase() === "XPHB");
+  const needsArtificerPlans = Boolean(playerMode && norm(selectedClass?.class_key) === "artificer" && String(selectedClass?.source || "").toUpperCase() === "EFA");
 
   useEffect(() => {
     if (!playerMode) {
@@ -94,38 +100,64 @@ export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, contro
   }, [playerMode]);
 
   useEffect(() => {
-    const selectedClass = controller?.selectedClass;
-    const needsInvocations = Boolean(playerMode && norm(selectedClass?.class_key) === "warlock" && String(selectedClass?.source || "").toUpperCase() === "XPHB");
-    if (!needsInvocations) {
+    if (!needsInvocations && !needsArtificerPlans) {
       setClassOptionRows([]);
       setClassOptionReady(true);
       return undefined;
     }
     let active = true;
     setClassOptionReady(false);
-    supabase.from("class_feature_option_catalog")
-      .select("id,option_key,option_type,name,source,class_key,feature_types,page,description,prerequisites,additional_spells,repeatable,choice_schema,metadata")
-      .eq("option_type", "eldritch-invocation")
-      .eq("source", "XPHB")
-      .eq("class_key", "warlock")
-      .order("name", { ascending: true })
+    const query = needsInvocations
+      ? supabase.from("class_feature_option_catalog")
+        .select("id,option_key,option_type,name,source,class_key,feature_types,page,description,prerequisites,additional_spells,repeatable,choice_schema,metadata")
+        .eq("option_type", "eldritch-invocation").eq("source", "XPHB").eq("class_key", "warlock")
+      : supabase.from("class_feature_option_catalog")
+        .select("id,option_key,option_type,name,source,class_key,feature_types,page,description,prerequisites,additional_spells,repeatable,choice_schema,metadata")
+        .eq("option_type", "artificer-plan").eq("source", "EFA").eq("class_key", "artificer");
+    query.order("name", { ascending: true }).then(({ data, error }) => {
+      if (!active) return;
+      if (error) {
+        setCatalogError(error.message || `Could not load canonical ${needsInvocations ? "Warlock Invocation" : "Artificer Magic Item Plan"} options.`);
+        setClassOptionRows([]);
+        setClassOptionReady(false);
+        return;
+      }
+      setClassOptionRows(data || []);
+      setClassOptionReady(true);
+    });
+    return () => { active = false; };
+  }, [needsArtificerPlans, needsInvocations]);
+
+  useEffect(() => {
+    if (!needsArtificerPlans) {
+      setMagicItemRows([]);
+      setMagicItemCatalogReady(true);
+      return undefined;
+    }
+    let active = true;
+    setMagicItemCatalogReady(false);
+    supabase.from("items_catalog")
+      .select("id,item_name,item_key,item_type,item_rarity,payload")
+      .in("item_rarity", ["common", "uncommon", "rare"])
+      .order("item_name", { ascending: true })
+      .limit(5000)
       .then(({ data, error }) => {
         if (!active) return;
         if (error) {
-          setCatalogError(error.message || "Could not load canonical Warlock Invocation options.");
-          setClassOptionRows([]);
-          setClassOptionReady(false);
+          setCatalogError(error.message || "Could not load canonical magic items for Artificer plan choices.");
+          setMagicItemRows([]);
+          setMagicItemCatalogReady(false);
           return;
         }
-        setClassOptionRows(data || []);
-        setClassOptionReady(true);
+        setMagicItemRows(data || []);
+        setMagicItemCatalogReady(true);
       });
     return () => { active = false; };
-  }, [controller?.selectedClass, playerMode]);
+  }, [needsArtificerPlans]);
 
   useEffect(() => {
-    const selectedClass = controller?.selectedClass;
-    if (!playerMode || !selectedClass?.class_name || Number(controller?.draft?.level || 1) < 4) {
+    const selected = controller?.selectedClass;
+    if (!playerMode || !selected?.class_name || Number(controller?.draft?.level || 1) < 4) {
       setAdvancementRows([]);
       setBoonRows([]);
       setAdvancementReady(true);
@@ -136,8 +168,8 @@ export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, contro
     Promise.all([
       supabase.from("class_feature_catalog")
         .select("id,class_name,class_source,name,source,level,description")
-        .eq("class_name", selectedClass.class_name)
-        .eq("class_source", selectedClass.source)
+        .eq("class_name", selected.class_name)
+        .eq("class_source", selected.source)
         .in("name", ["Ability Score Improvement", "Epic Boon"])
         .lte("level", Number(controller?.draft?.level || 1))
         .order("level", { ascending: true }),
@@ -182,15 +214,31 @@ export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, contro
   const invocationGroups = useMemo(() => buildWarlockInvocationSourceGroups({
     selectedClass: controller?.selectedClass || null,
     level: controller?.draft?.level || 1,
-    optionRows: classOptionRows,
+    optionRows: needsInvocations ? classOptionRows : [],
     spells,
     featOptions: controller?.featOptions || [],
     selections: sourceState.selections || {},
-  }), [classOptionRows, controller?.draft?.level, controller?.featOptions, controller?.selectedClass, invocationSelectionSignature, spells]);
+  }), [classOptionRows, controller?.draft?.level, controller?.featOptions, controller?.selectedClass, invocationSelectionSignature, needsInvocations, spells, sourceState.selections]);
+
+  const artificerSelectionSignature = JSON.stringify(Object.entries(sourceState.selections || {})
+    .filter(([groupId]) => groupId.startsWith("artificer-plan-slot-"))
+    .sort(([a], [b]) => a.localeCompare(b)));
+  const artificerPlanGroups = useMemo(() => buildArtificerPlanSourceGroups({
+    selectedClass: controller?.selectedClass || null,
+    level: controller?.draft?.level || 1,
+    optionRows: needsArtificerPlans ? classOptionRows : [],
+    itemRows: magicItemRows,
+    selections: sourceState.selections || {},
+  }), [artificerSelectionSignature, classOptionRows, controller?.draft?.level, controller?.selectedClass, magicItemRows, needsArtificerPlans, sourceState.selections]);
+
+  const normalizedClassOptionGroups = useMemo(() => [...invocationGroups, ...artificerPlanGroups], [artificerPlanGroups, invocationGroups]);
+  const normalizedClassOptionReady = !playerMode || (classOptionReady
+    && (!needsInvocations || spellCatalogReady)
+    && (!needsArtificerPlans || magicItemCatalogReady));
 
   useEffect(() => {
-    registerGroups(playerMode ? invocationGroups : [], !playerMode || (classOptionReady && spellCatalogReady), "class-options");
-  }, [classOptionReady, invocationGroups, playerMode, registerGroups, spellCatalogReady]);
+    registerGroups(playerMode ? normalizedClassOptionGroups : [], normalizedClassOptionReady, "class-options");
+  }, [normalizedClassOptionGroups, normalizedClassOptionReady, playerMode, registerGroups]);
 
   const speciesChoiceFeats = useMemo(() => speciesFeatChoicesFromState(speciesState), [speciesState]);
   const classChoices = useMemo(() => classChoiceSelectionSummary(classState), [classState]);
