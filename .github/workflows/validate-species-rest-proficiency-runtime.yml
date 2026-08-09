@@ -6,6 +6,7 @@ on:
       - agent/character-forge-resilience-presentation
     paths:
       - "sql/20260808_63_species_rest_proficiency_runtime.sql"
+      - "sql/20260808_64_species_rest_proficiency_acl_cleanup.sql"
       - "components/CharacterSpeciesRestProficiencyPanel.js"
       - "components/CharacterSheetPanel.js"
       - "components/NpcForgeFeatChoiceRegistrar.js"
@@ -16,6 +17,7 @@ on:
   pull_request:
     paths:
       - "sql/20260808_63_species_rest_proficiency_runtime.sql"
+      - "sql/20260808_64_species_rest_proficiency_acl_cleanup.sql"
       - "components/CharacterSpeciesRestProficiencyPanel.js"
       - "components/CharacterSheetPanel.js"
       - "components/NpcForgeFeatChoiceRegistrar.js"
