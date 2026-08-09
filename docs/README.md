@@ -20,6 +20,7 @@ This directory contains the project's living handoff, roadmap, architecture, and
 - `Player_Forge_Starting_Equipment_Status.md` — source-backed starting equipment, higher-level wealth, and character-scoped currency authority.
 - `Astral_Trance_Runtime_Status.md` — AAG Astral Elf Long-Rest skill + weapon/tool runtime proficiency authority.
 - `Species_Rest_Proficiency_Runtime_Status.md` — MPMM Githyanki Astral Knowledge and EFA Khoravar Skill Versatility Long-Rest proficiency authority, migrations 63-66, ACL corrections, and rollback acceptance.
+- `Species_Replaceable_Cantrip_Runtime_Status.md` — XPHB High Elf and EFA Khoravar fixed-initial / Long-Rest-replaceable Species cantrip authority, migration 67, normalized Species spell ownership, and rollback acceptance.
 - `Primal_Companion_Runtime_Status.md` — Beast Master current-companion and Long-Rest replacement authority.
 - `Dread_Allegiance_Runtime_Status.md` — linked allegiance/resistance/cantrip runtime authority.
 - `Fiendish_Resilience_Runtime_Status.md` — Short/Long-Rest resistance runtime authority.
