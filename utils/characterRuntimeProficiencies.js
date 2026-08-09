@@ -53,6 +53,17 @@ export function eladrinTranceRuntimeState(sheet = {}) {
   return { ...state, trainings };
 }
 
+export function featRuntimeExpertiseStates(sheet = {}) {
+  const source = sheet?.runtimeProficiencies?.featExpertise;
+  if (!source || typeof source !== "object" || Array.isArray(source)) return [];
+  return Object.entries(source).flatMap(([featureKey, state]) => {
+    if (!state || typeof state !== "object" || Array.isArray(state) || state.configured === false) return [];
+    const skillKey = safeText(state?.skill?.key);
+    if (!skillKey) return [];
+    return [{ ...state, featureKey, skillKey }];
+  });
+}
+
 function applyRuntimeSkill(next, skillKey, marker) {
   if (!skillKey) return;
   next.proficiencies = next.proficiencies && typeof next.proficiencies === "object" ? next.proficiencies : {};
@@ -73,16 +84,40 @@ function applyRuntimeSkill(next, skillKey, marker) {
   };
 }
 
+function applyRuntimeExpertise(next, skillKey, marker) {
+  if (!skillKey) return;
+  const current = next?.proficiencies?.skills?.[skillKey];
+  // Expertise never creates proficiency by itself. If a temporary proficiency that
+  // qualified the choice later expires, the stored runtime Expertise remains but
+  // contributes no sheet Expertise until proficiency exists again.
+  if (!current || current.proficient !== true) return;
+  const priorMarkers = Array.isArray(current.runtimeExpertiseSources)
+    ? current.runtimeExpertiseSources
+    : current.runtimeExpertise
+      ? [current.runtimeExpertise]
+      : [];
+  next.proficiencies.skills[skillKey] = {
+    ...current,
+    expertise: true,
+    runtimeExpertise: marker,
+    runtimeExpertiseSources: [...new Set([...priorMarkers, marker])],
+  };
+  const expertiseSkills = Array.isArray(next.expertiseSkills) ? next.expertiseSkills : [];
+  next.expertiseSkills = [...new Set([...expertiseSkills, skillKey])];
+}
+
 export function projectCharacterSheetRuntimeProficiencies(sheet = {}) {
   const astral = astralTranceRuntimeState(sheet);
   const githyanki = githyankiAstralKnowledgeRuntimeState(sheet);
   const khoravar = khoravarSkillVersatilityRuntimeState(sheet);
-  if (!astral && !githyanki && !khoravar) return sheet || {};
+  const expertise = featRuntimeExpertiseStates(sheet);
+  if (!astral && !githyanki && !khoravar && !expertise.length) return sheet || {};
 
   const next = deepClone(sheet || {});
   if (astral) applyRuntimeSkill(next, astral.skillKey, "astral-trance");
   if (githyanki) applyRuntimeSkill(next, githyanki.skillKey, "githyanki-astral-knowledge");
   if (khoravar?.kind === "skill") applyRuntimeSkill(next, khoravar.skillKey, "khoravar-skill-versatility");
+  expertise.forEach((state) => applyRuntimeExpertise(next, state.skillKey, state.featureKey));
   return next;
 }
 
