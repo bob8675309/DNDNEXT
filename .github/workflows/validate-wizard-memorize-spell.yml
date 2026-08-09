@@ -9,6 +9,8 @@ on:
       - "components/CharacterCurrencyBadge.js"
       - "scripts/validate_wizard_memorize_spell_runtime.mjs"
       - "sql/20260809_74_wizard_memorize_spell_runtime.sql"
+      - "sql/20260809_75_wizard_memorize_spell_state_fix.sql"
+      - "sql/20260809_76_wizard_runtime_helper_repair.sql"
       - ".github/workflows/validate-wizard-memorize-spell.yml"
   pull_request:
     paths:
@@ -16,6 +18,8 @@ on:
       - "components/CharacterCurrencyBadge.js"
       - "scripts/validate_wizard_memorize_spell_runtime.mjs"
       - "sql/20260809_74_wizard_memorize_spell_runtime.sql"
+      - "sql/20260809_75_wizard_memorize_spell_state_fix.sql"
+      - "sql/20260809_76_wizard_runtime_helper_repair.sql"
       - ".github/workflows/validate-wizard-memorize-spell.yml"
 
 jobs:
