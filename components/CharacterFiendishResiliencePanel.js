@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
+import CharacterCircleLandPanel from "./CharacterCircleLandPanel";
 
 function safeText(value) {
   return String(value ?? "").trim();
@@ -67,9 +68,8 @@ export default function CharacterFiendishResiliencePanel({ characterId, sheet = 
     setBusy(false);
   }
 
-  if (!potentiallyAvailable || (!loading && profile?.available === false) || (!loading && !profile && !error)) return null;
-
-  return <section className="character-runtime-choice character-runtime-choice--fiendish" aria-label="Fiendish Resilience configuration">
+  const visible = potentiallyAvailable && (loading || profile?.available !== false) && (loading || profile || error);
+  const fiendishPanel = !visible ? null : <section className="character-runtime-choice character-runtime-choice--fiendish" aria-label="Fiendish Resilience configuration">
     <div className="character-runtime-choice__head">
       <div><span>Short / Long Rest choice</span><strong>Fiendish Resilience</strong></div>
       <button type="button" className="character-runtime-choice__refresh" onClick={loadProfile} disabled={loading || busy}>Refresh</button>
@@ -83,10 +83,12 @@ export default function CharacterFiendishResiliencePanel({ characterId, sheet = 
         </div>
         <button type="button" className="character-runtime-choice__save" onClick={save} disabled={busy || !choice}>{busy ? "Applying…" : configured ? "Change Resistance" : "Choose Resistance"}</button>
       </> : configured ? <p>Your current resistance persists. Finish a newer Short or Long Rest before changing it.</p> : <p>Finish a Short or Long Rest after gaining Fiendish Resilience before choosing your first resistance.</p>}
-      <p>Choose one damage type other than Force. The resistance remains active until you replace it after a later Short or Long Rest.</p>
+      <p>Choose one damage type other than Force. The current resistance persists until you replace it after a later Short or Long Rest.</p>
     </>}
     <style jsx global>{`
       .character-runtime-choice--fiendish{border-color:rgba(242,135,54,.32);background:rgba(151,72,21,.08)}.character-runtime-choice--fiendish .character-runtime-choice__save,.character-runtime-choice--fiendish .character-runtime-choice__refresh{border-color:rgba(242,135,54,.46);background:rgba(151,72,21,.14);color:#ffe0c6}.character-runtime-choice--fiendish .character-runtime-choice__current{grid-template-columns:1fr}
     `}</style>
   </section>;
+
+  return <>{fiendishPanel}<CharacterCircleLandPanel characterId={characterId} sheet={sheet} onSheetUpdated={onSheetUpdated} /></>;
 }
