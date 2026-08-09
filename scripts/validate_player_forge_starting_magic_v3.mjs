@@ -30,7 +30,8 @@ for (const token of [
   'import { serializeStartingMagicSelections } from "../utils/playerForgeSpellSources";',
   "const startingMagicSelections = serializeStartingMagicSelections",
   'String(entry?.source_type || "class") === "class"',
-  "startingMagicSelections, backgroundExpandedSpells",
+  "startingMagicSelections",
+  "backgroundExpandedSpells",
 ]) need(derived, token);
 
 for (const token of [
