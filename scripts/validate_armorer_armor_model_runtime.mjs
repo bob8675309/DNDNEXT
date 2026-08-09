@@ -1,3 +1,4 @@
+// Exact-head CI rerun marker: semantic contract unchanged.
 import fs from "node:fs";
 
 const migration = fs.readFileSync("sql/20260809_78_armorer_armor_model_runtime.sql", "utf8");
