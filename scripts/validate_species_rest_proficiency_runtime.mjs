@@ -12,6 +12,7 @@ const forbidText = (content, needle, label) => {
 };
 
 const migration = read("sql/20260808_63_species_rest_proficiency_runtime.sql");
+const aclCleanup = read("sql/20260808_64_species_rest_proficiency_acl_cleanup.sql");
 const forgeHelper = read("utils/playerForgeSpeciesRuntimeChoices.js");
 const registrar = read("components/NpcForgeFeatChoiceRegistrar.js");
 const runtimePanel = read("components/CharacterSpeciesRestProficiencyPanel.js");
@@ -28,6 +29,18 @@ requireText(migration, "character_rest_log_expire_githyanki_astral_knowledge_v1"
 requireText(migration, "character_progression_materialize_player_forge_khoravar_skill_versatility_v1", "Khoravar deferred Forge materializer");
 requireText(migration, "grant execute on function public.get_character_githyanki_astral_knowledge_v1(uuid) to authenticated,service_role", "Githyanki getter ACL");
 requireText(migration, "grant execute on function public.configure_character_khoravar_skill_versatility_v1(uuid,text) to authenticated,service_role", "Khoravar configure ACL");
+
+for (const signature of [
+  "public.get_character_githyanki_astral_knowledge_v1(uuid)",
+  "public.configure_character_githyanki_astral_knowledge_v1(uuid,text,uuid)",
+  "public.get_character_khoravar_skill_versatility_v1(uuid)",
+  "public.configure_character_khoravar_skill_versatility_v1(uuid,text)",
+]) {
+  requireText(aclCleanup, `revoke all on function ${signature} from anon;`, `explicit anon revoke ${signature}`);
+  requireText(aclCleanup, `revoke all on function ${signature} from public;`, `PUBLIC revoke ${signature}`);
+}
+requireText(aclCleanup, "grant execute on function public.get_character_githyanki_astral_knowledge_v1(uuid) to authenticated,service_role", "authenticated Githyanki getter grant");
+requireText(aclCleanup, "grant execute on function public.configure_character_khoravar_skill_versatility_v1(uuid,text) to authenticated,service_role", "authenticated Khoravar configure grant");
 
 requireText(forgeHelper, "import { SKILL_DEFINITIONS }", "canonical skill-key source");
 requireText(forgeHelper, "buildToolOptionCatalog(toolRows).all.map", "Khoravar tool catalogue");
@@ -55,4 +68,4 @@ requireText(projection, "hasRuntimeWeaponProficiency", "runtime weapon proficien
 requireText(projection, "hasRuntimeToolProficiency", "runtime tool proficiency helper");
 requireText(projection, "metadata?.skillKey", "canonical Khoravar skill key projection");
 
-console.log("Species rest proficiency runtime validation passed.");
+console.log("Species rest proficiency runtime and explicit anonymous ACL cleanup validation passed.");
