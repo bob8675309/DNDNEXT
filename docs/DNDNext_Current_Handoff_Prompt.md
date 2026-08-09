@@ -1,6 +1,6 @@
 # DNDNext Current Handoff Prompt
 
-Status: copy-ready project handoff, reconciled 2026-08-08
+Status: copy-ready project handoff, reconciled 2026-08-09
 
 ---
 
@@ -18,9 +18,11 @@ Before changing anything:
 2. Inspect live Supabase read-only for schema/function/RLS/data questions.
 3. Read `docs/Documentation_Refresh_Manifest.md`.
 4. For Character Forge/progression/runtime work, read the status documents listed there, especially:
+   - `Unified_Character_Forge_Status.md`
    - `Player_Forge_Starting_Magic_v3_Status.md`
    - `Player_Forge_Starting_Equipment_Status.md`
    - `Astral_Trance_Runtime_Status.md`
+   - `Species_Rest_Proficiency_Runtime_Status.md`
    - `Primal_Companion_Runtime_Status.md`
    - `Dread_Allegiance_Runtime_Status.md`
    - `Fiendish_Resilience_Runtime_Status.md`
@@ -62,7 +64,7 @@ Proceed when the user says “proceed”; do not repeatedly request confirmation
 
 PR #170 (`agent/character-forge-resilience-presentation`) remains **open and unmerged**.
 
-Do not restart completed Forge consolidation, starting magic/equipment/currency, Wizard/Weapon-Mastery runtime, Astral Trance, Primal Companion, Dread Allegiance, Fiendish Resilience, Circle of the Land, or Artificer Magic Item Plan work unless current source/live evidence contradicts the recorded acceptance state.
+Do not restart completed Forge consolidation, starting magic/equipment/currency, Wizard/Weapon-Mastery runtime, Astral Trance, Primal Companion, Dread Allegiance, Fiendish Resilience, Circle of the Land, Artificer Magic Item Plans, or the Githyanki/Khoravar proficiency runtime slice unless current source/live evidence contradicts the recorded acceptance state.
 
 ## Governing parity/cadence model
 
@@ -75,170 +77,122 @@ Persistent direct level-N creation and earned level-N progression should converg
 - per-use choice → spell/action resolver;
 - informational feature → display only.
 
-## Live migration checkpoint through 62
+## Live migration checkpoint through 66
 
-### 38-46
+### 38-46 — progression/Wizard/Weapon authority
 
 Battle Master, Wizard Savant, Signature Spells, Spell Mastery, class Weapon Mastery, and Weapon Master feat runtime authority are live and documented.
 
-### 47-48 — Player Forge starting magic
+### 47-51 — Player Forge creation authority
 
-`create_player_character_v3` is shared Player Forge creation authority. Native class-list spells, Background-expanded access, Eldritch Knight, and Arcane Trickster starting magic are server-authoritative. v3 is authenticated/service-role only.
+`create_player_character_v3` is shared Player Forge creation authority. Native class-list spells, Background-expanded access, Eldritch Knight, and Arcane Trickster starting magic are server-authoritative.
 
-### 49-51 — starting equipment / currency
+Starter gear becomes character-owned canonical inventory and starts unequipped. Character money is `character_currency` copper, not `player_wallets`. Higher-level magic-item quantities remain DM guidance only. `CharacterCurrencyBadge` is character-scoped.
 
-Player mode includes source-backed Equipment. Starter gear becomes character-owned canonical inventory and starts unequipped. Character money is `character_currency` copper, not `player_wallets`. Higher-level magic-item quantities are DM guidance only.
+### 52-59 — established runtime cadence
 
-The post-create `CharacterCurrencyBadge` is also complete and character-scoped.
+- Astral Trance: post-Long-Rest skill + weapon/tool pair; expires next Long Rest.
+- Primal Companion: current beast persists; newer Long Rest opens replacement.
+- Dread Allegiance: linked allegiance/resistance/cantrip persists; newer Long Rest opens replacement.
+- Fiendish Resilience: first choice after qualifying Short/Long Rest; later qualifying rest opens replacement.
+- Circle of the Land: land spell package expires automatically at next Long Rest and must be chosen again.
 
-### 52-54 — Astral Trance
-
-AAG Astral Elf runtime choice. After Long Rest choose one skill + one legal weapon/tool proficiency. Pair expires at next Long Rest. Short Rest persists. Permanent proficiency state is not rewritten.
-
-### 55 — Primal Companion
-
-XPHB Ranger / Beast Master runtime identity. Initial Land/Sea/Sky + appearance is immediate. Current beast persists until changed; a newer Long Rest opens one replacement. Active encounter blocks change. No companion-statblock/minion DB was invented.
-
-### 56 — Dread Allegiance
-
-XPHB Rogue / Scion of the Three. Initial choice immediate; newer Long Rest permits one linked-package replacement:
-
-- Bane → Psychic + Minor Illusion;
-- Bhaal → Poison + Blade Ward;
-- Myrkul → Necrotic + Chill Touch.
-
-Cantrip authority is exactly one Intelligence-based `class-feature` spell row. Runtime resistance is exposed through `private.character_runtime_damage_resistances_v1`.
-
-### 57 — Fiendish Resilience
-
-XPHB Fiend Patron Warlock. First choice requires a Short or Long Rest after feature acquisition. Current resistance persists; each later Short or Long Rest permits one replacement. Force is excluded.
-
-### 58-59 — Circle of the Land
-
-Circle spell packages are parsed directly from imported XPHB `Circle Spells` source tables. Four lands resolve: Arid, Polar, Temperate, Tropical.
-
-A qualifying Long Rest opens one land choice for that rest cycle. The current-level package materializes as Wisdom `class-feature` spells, always prepared. At the next Long Rest the old package is automatically removed and configuration reopens. Short Rest preserves it.
+Steps of the Fey is source-classified as per-Misty-Step action state and remains outside this non-combat slice.
 
 ### Runtime panel composition
 
-During the Artificer gate, exact-head validators revealed a real reachability regression caused by later full-file updates overwriting earlier imports.
-
-The corrected sheet chain is:
+The corrected sheet chain remains:
 
 `CharacterSheetPanel → CharacterAstralTrancePanel → CharacterDreadAllegiancePanel → CharacterFiendishResiliencePanel → CharacterCircleLandPanel → CharacterCurrencyBadge`
 
-`CharacterPrimalCompanionPanel` remains directly mounted separately.
+`CharacterPrimalCompanionPanel` and `CharacterSpeciesRestProficiencyPanel` are separate direct mounts.
 
-Each chained parent always renders its downstream child even when its own feature is ineligible. This prevents one class/species filter from hiding later runtime panels.
+Each chained parent must render its downstream child even when its own feature is ineligible.
 
-The restored chain passed all exact-head subsystem/build gates before Artificer deployment.
+### 60-62 — EFA Artificer Magic Item Plans
 
-### 60-62 — Artificer Magic Item Plans
+EFA `Replicate Magic Item` is normalized persistent class-option authority.
 
-EFA `Replicate Magic Item` is now normalized persistent class-option authority.
+- 56 source-derived plans;
+- capacity 4/5/6/7/8 at Artificer 2/6/10/14/18;
+- direct higher-level slot chronology `[2,2,2,2,6,10,14,18]`;
+- one optional replacement whenever an Artificer gains an Artificer level;
+- wildcard plans bind a canonical item identity but never create inventory.
 
-Migration 60 derives **56** plans directly from imported EFA source tables and materializes each learned plan as one `character_class_option_grant_instances` row.
-
-Plan capacity:
-
-- level 2 → 4;
-- level 6 → 5;
-- level 10 → 6;
-- level 14 → 7;
-- level 18 → 8.
-
-Direct higher-level Forge slot chronology is `[2,2,2,2,6,10,14,18]`.
-
-Whenever an Artificer gains an Artificer level, one existing plan may optionally be replaced.
-
-Three wildcard families bind a concrete canonical `items_catalog.id` under the plan instance:
-
-1. Common magic item except Potion/Scroll/cursed;
-2. Uncommon non-cursed Wondrous Item;
-3. Rare non-cursed Wondrous Item.
-
-Each repeat of the same wildcard must select a different concrete item.
-
-**Learning a plan never creates inventory.** Plans are knowledge. Inventory/crafting is a separate downstream system.
-
-Migration 61 adds a defensive legacy-sheet projection parent guard.
-
-Migration 62 corrects the first live catalogue audit: rarity alone had allowed an alchemy reagent to appear as a Common wildcard candidate. No user plan existed at the time. Final magic-item identity requires imported item type, Wondrous marker, or canonical Wondrous Item type.
-
-Final wildcard pools:
-
-- Common: 105;
-- Uncommon Wondrous: 173;
-- Rare Wondrous: 200.
-
-Deployed rollback proofs passed:
-
-- direct EFA Artificer 2 with four plan slots;
-- same Common wildcard learned twice using two different concrete items;
-- normalized four-plan sheet projection;
-- no inventory delta;
-- Artificer 5→6 exposes exactly one new slot + optional replacement;
-- one new plan + one replacement gives five total instances;
-- replacement preserves instance key;
-- no inventory delta;
-- alchemy reagent rejection;
-- wildcard-without-child rejection;
-- fixed-plan-with-child rejection;
-- same wildcard/same concrete item repeat rejection;
-- non-Artificer payload rejection;
-- zero QA residue.
+Final wildcard pools are 105 Common / 173 Uncommon Wondrous / 200 Rare Wondrous.
 
 See `docs/Artificer_Magic_Item_Plans_Status.md`.
 
-## Steps of the Fey classification
+### 63-66 — Species rest proficiency authority
 
-The imported XPHB source ties Steps of the Fey choices to **each Misty Step cast**. It is per-use spell/action state.
+#### MPMM Githyanki — Astral Knowledge
 
-Do not add it to Character Forge or `character_runtime_feature_choices`.
+Astral Knowledge is not a permanent Forge choice. After a completed Long Rest, choose one skill + one source-legal PHB weapon/tool proficiency. The pair expires automatically when the next Long Rest finishes.
 
-Actual Step-effect execution belongs in the Misty Step action resolver and remains deferred until spell/combat action work is explicitly in scope.
+#### EFA Khoravar — Skill Versatility
+
+Player Forge collects one initial skill-or-tool choice, but a deferred progression trigger materializes it as runtime state rather than permanent proficiency data. The current choice persists until replaced after a newer Long Rest.
+
+#### Correction sequence
+
+- 63 — runtime foundation;
+- 64 — explicit anonymous public-RPC EXECUTE cleanup;
+- 65 — canonical DNDNext rest key correction to `long_rest`;
+- 66 — missing `runtimeProficiencies` parent compatibility fix.
+
+No real Githyanki/Khoravar runtime row existed while the correction migrations were applied.
+
+Deployed rollback proofs passed for both Species families, including actual `complete_character_rest_v1(..., 'long_rest')`, direct shared-Forge Khoravar materialization, automatic Githyanki expiry, replacement timing, invalid-option rejection, non-destructive permanent proficiencies, and zero residue.
+
+See `docs/Species_Rest_Proficiency_Runtime_Status.md`.
 
 ## Current integrity checkpoint
 
-After migration 62 and rollback fixtures:
+After migration 66 and rollback fixtures:
 
 - 7 characters;
 - 7 character sheets;
 - 30 character-spell rows;
 - 7 progression rows;
-- 0 open level-up sessions;
 - 18 inventory rows;
-- 0 live Artificer plan instances;
-- 0 QA proof characters;
-- 56 normalized EFA plans;
+- 0 live Githyanki/Khoravar Species runtime rows;
+- 0 Species QA proof characters;
 - 20 locations;
 - 4 routes;
 - 9 route points.
 
-Private Artificer helpers are service-role only. `complete_character_level_up_v5` is authenticated/service-role only.
+The final migration-66 source candidate passed all 18 relevant GitHub workflows, including the dedicated Species semantic gate and production build.
 
-`get_character_level_class_choice_options_v2` still has a pre-existing anonymous execute grant. Migrations 60-62 did not create it; include it in progression RPC/ACL cleanup.
+Vercel is currently blocked by the account build-rate limit rather than a code build failure.
+
+`get_character_level_class_choice_options_v2` still has a pre-existing anonymous execute grant. Include it in the progression RPC/ACL cleanup before PR closure.
 
 ## Immediate remaining PR #170 work
 
-Do **not** reopen completed migration 38-62 slices without contradictory evidence.
+Do **not** reopen completed migration 38-66 slices without contradictory evidence.
 
 Current blockers:
 
-1. final persistent/conditional Species / Background / Class / Feat / Subclass coverage and UI audit;
-2. obsolete/authenticated progression RPC + ACL cleanup, including the anonymous class-choice getter grant;
-3. final authenticated browser acceptance;
-4. Steps of the Fey per-cast integration only when spell/combat execution is explicitly in scope;
-5. tactical consumption of `character_runtime_damage_resistances_v1` only when encounter/combat is explicitly in scope;
-6. merge PR #170 only after closure gates are satisfied.
+1. continue the final source-choice coverage audit:
+   - XPHB High Elf replaceable Wizard cantrip;
+   - EFA Khoravar Fey Gift replaceable cantrip;
+   - Eladrin season/trance choices;
+   - Boon of Energy Resistance;
+   - Echoing Soul / Zhentarim Tactics Long-Rest Expertise;
+   - Cartomancer Hidden Ace;
+   - remaining class/subclass runtime families already excluded from permanent Forge state;
+2. confirm/correct Echoing Soul's separate permanent acquisition count if the imported/source audit proves it under-modeled;
+3. obsolete/authenticated progression RPC + ACL cleanup, including the anonymous class-choice getter;
+4. final authenticated browser acceptance;
+5. Steps of the Fey per-cast integration only when spell/combat execution is explicitly in scope;
+6. tactical consumption of canonical runtime damage resistance only when encounter/combat is explicitly in scope;
+7. merge PR #170 only after closure gates are satisfied.
 
 ### Recommended next implementation slice
 
-Run the **final persistent/conditional source-choice coverage audit** across Species, Background, Class, Feat, and Subclass. Classify every source-owned choice as persistent, rest-configurable, per-use, or informational and compare direct higher-level Forge against earned progression.
+Continue the final source-choice coverage audit read-only first. The next likely bounded Species slice is the Long-Rest replaceable cantrip family: XPHB High Elf and EFA Khoravar Fey Gift. Inspect current source/Forge/spell authority before designing storage so the permanent spellcasting-ability choice is not accidentally conflated with the replaceable cantrip.
 
-Keep that audit read-only first. Only patch uncovered gaps that are source-backed and within the non-combat Character Forge/progression boundary.
-
-After coverage closes, perform the progression RPC/ACL cleanup and authenticated browser acceptance.
+After source-choice coverage closes, perform progression RPC/ACL cleanup and authenticated browser acceptance.
 
 ## Documentation precedence
 
