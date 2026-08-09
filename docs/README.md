@@ -4,88 +4,70 @@ This directory contains the project's living handoff, roadmap, architecture, and
 
 ## Start here
 
-- [`DNDNext_Current_Handoff_Prompt.md`](./DNDNext_Current_Handoff_Prompt.md) — **copy-ready prompt for a new ChatGPT/Codex session.** It defines the required inspection workflow, protected boundaries, document precedence, and a map of the major subsystem references. For active Character Forge/progression work, reconcile it with the PR #170 documents below before acting.
-- [`Current_Development_Status_and_Roadmap.md`](./Current_Development_Status_and_Roadmap.md) — platform-wide production baseline, completed foundations, remaining roadmap, and protected subsystem boundaries. Its Character Forge/progression section can lag PR #170; see `Documentation_Refresh_Manifest.md` for precedence.
-- [`Documentation_Refresh_Manifest.md`](./Documentation_Refresh_Manifest.md) — **current documentation-precedence overlay.** Identifies which PR #170 documents supersede older platform-wide Forge/progression text and records the current Wizard Savant/Signature checkpoint.
-- [`Unified_Character_Forge_Status.md`](./Unified_Character_Forge_Status.md) — **current Character Forge acceptance ledger.** Covers the shared NPC/player Forge, explicit choice cadence/placement, levels 1–20, normalized persistent-choice authority, Wizard Savant chronology, live Wizard Signature Spells parity, remaining blockers, and browser-acceptance gate.
-- [`Character_Progression_Foundation.md`](./Character_Progression_Foundation.md) — **required reading before progression or higher-level Forge changes.** Defines v5 transaction authority, normalized feats/class options, spell-source identity, Wizard spellbook membership, Savant/Signature behavior, validation policy, and protected boundaries.
-- [`Character_Progression_and_Higher_Level_Forge.md`](./Character_Progression_and_Higher_Level_Forge.md) — current architecture handoff for creation/progression parity and higher-level replay. Older v3-only blocker language has been retired.
-- [`Character_Forge_PR_A_Deployment_Evidence.md`](./Character_Forge_PR_A_Deployment_Evidence.md) — exact live migrations, CI/build checkpoints, rollback proofs, integrity sweeps, and remaining acceptance blockers for PR #170.
-- [`Dawn_High_Quality_Prototype_Plan.md`](./Dawn_High_Quality_Prototype_Plan.md) — visual-production plan to resume after the current Character Forge interruption is accepted. The primitive Dawn model is rejected as final art; this document defines the high-quality South-facing prototype gate.
-- [`Sprite_Production_Work_Map.md`](./Sprite_Production_Work_Map.md) — authoritative sprite status, completed pipeline infrastructure, current blocker, acceptance gates, and remaining sequence.
-- [`Sprite_Production_Art_Bible.md`](./Sprite_Production_Art_Bible.md) — canonical atlas, direction, animation, source-quality, tool, no-frame-shifting, visual approval, and runtime-readability rules.
-- [`Sprite_Production_Run_Log.md`](./Sprite_Production_Run_Log.md) — real Dawn render and review evidence, including rejected approaches and the successful isolated-render pipeline.
-- [`Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md`](./Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md) — **required reading before changing Smithing completion, canonical inventory/equip state, character-sheet item bonuses, encounter participant snapshots, or tactical weapon profiles.** Explains the full item-catalogue → craft plan → attempt → completion → inventory → equip → sheet/tactical authority pipeline and its snapshot boundaries.
-- [`Character_Sheet_Formula_Reference.md`](./Character_Sheet_Formula_Reference.md) — **required reading before changing ability modifiers, saves, skills, AC, Initiative, Passive Perception, or sheet roll formulas.** Defines the formulas, equipment overlay boundary, active-encounter snapshot rule, regression examples, and safe-change checklist.
-- [`NPC_Character_Sheet_Selection_Reconciliation.md`](./NPC_Character_Sheet_Selection_Reconciliation.md) — **required reading before changing NPC roster selection, sheet/equipment/notes loading, controlled sheet drafts, or character identity synchronization.** Defines the `/npcs` ownership boundary, immediate clearing transaction, request-ID guards, and stale-response regression gate.
-- The status ledgers below provide implementation evidence for individual phases. Older exports and one-time deployment notes are historical evidence, not current instructions.
+- `DNDNext_Current_Handoff_Prompt.md` — copy-ready prompt for a new development session. It defines the required inspection workflow, protected boundaries, document precedence, and current continuation point.
+- `Documentation_Refresh_Manifest.md` — current documentation-precedence overlay and active PR #170 checkpoint.
+- `Current_Development_Status_and_Roadmap.md` — broad platform roadmap/history. Active subsystem ledgers below supersede older subsystem sections when newer.
+- `Unified_Character_Forge_Status.md` — controlling Character Forge/progression/runtime acceptance ledger for PR #170.
 
-## Active Character Forge / progression documents
+## Active Character Forge / progression / runtime documents
 
-- [`Documentation_Refresh_Manifest.md`](./Documentation_Refresh_Manifest.md) — precedence and current PR #170 checkpoint.
-- [`Unified_Character_Forge_Status.md`](./Unified_Character_Forge_Status.md) — user-facing subsystem status, current blockers, and acceptance gate.
-- [`Character_Progression_Foundation.md`](./Character_Progression_Foundation.md) — current server-authoritative architecture and Wizard spellbook authority.
-- [`Character_Progression_and_Higher_Level_Forge.md`](./Character_Progression_and_Higher_Level_Forge.md) — higher-level replay / earned-progression convergence.
-- [`Character_Forge_PR_A_Deployment_Evidence.md`](./Character_Forge_PR_A_Deployment_Evidence.md) — source/build/migration/rollback evidence.
+- `Unified_Character_Forge_Status.md` — shared NPC/player Forge state, runtime cadence boundary, and remaining blockers.
+- `Character_Progression_Foundation.md` — server-authoritative creation/progression architecture and normalized source ownership.
+- `Character_Progression_and_Higher_Level_Forge.md` — direct higher-level creation vs earned-progression convergence.
+- `Character_Forge_PR_A_Deployment_Evidence.md` — migration/build/rollback evidence.
+- `Wizard_Spell_Mastery_Runtime_Status.md` — Wizard Spell Mastery Long-Rest runtime authority.
+- `Player_Forge_Starting_Magic_v3_Status.md` — native class, Background-expanded, Eldritch Knight, and Arcane Trickster starting-magic authority.
+- `Player_Forge_Starting_Equipment_Status.md` — source-backed starting equipment, higher-level wealth, and character-scoped currency authority.
+- `Astral_Trance_Runtime_Status.md` — AAG Astral Elf Long-Rest skill + weapon/tool runtime proficiency authority.
 
-Current Wizard progression decision: Savant and Signature Spells are live and rollback-proven across direct higher-level Forge and earned progression. Spell Mastery remains a guarded Long-Rest runtime configuration problem and must not be turned into a one-time Forge choice.
+Current cadence rule: persistent source-owned decisions belong to Forge/progression authority; Long-/Short-Rest decisions belong to runtime configuration; per-use choices belong to action UI. Do not turn runtime choices back into permanent Forge locks.
 
-## Active sprite-production documents
+## Character sheet / inventory / crafting
 
-- [`Dawn_High_Quality_Prototype_Plan.md`](./Dawn_High_Quality_Prototype_Plan.md) — controlling quality-source pivot to resume after the Character Forge interruption is accepted.
-- [`Sprite_Production_Work_Map.md`](./Sprite_Production_Work_Map.md) — current implementation map and acceptance sequence.
-- [`Sprite_Production_Art_Bible.md`](./Sprite_Production_Art_Bible.md) — binding visual and technical production contract.
-- [`Sprite_Production_Run_Log.md`](./Sprite_Production_Run_Log.md) — attempt evidence and rejected-path history.
-- [`../tools/blender/DAWN_PROCEDURAL_MODEL.md`](../tools/blender/DAWN_PROCEDURAL_MODEL.md) — procedural R&D/operator handoff explaining what remains reusable and what is no longer the active art path.
-- [`Tactical_Encounter_Phase0_Status.md`](./Tactical_Encounter_Phase0_Status.md) — runtime sprite/portrait independence and unified eight-direction context.
+- `Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md` — required before changing canonical item/inventory/equip/sheet/tactical authority.
+- `Character_Sheet_Formula_Reference.md` — required before changing ability/save/skill/AC/initiative/passive formulas.
+- `NPC_Character_Sheet_Selection_Reconciliation.md` — selection and stale-response ownership boundary.
+- `NPC_Profile_Inventory_Equipment_Reference.md` — profile, inventory workbench, equipment diagram, transfers, and presentation.
+- `Town_Crafter_Current_Status.md` — town crafter/profile-panel state and guardrails.
+- `Source_Patch_Pipeline_Audit.md` — source-bake / validator / retired patch-pipeline handoff.
+- `Deferred_UI_Polish_Backlog.md` — deferred presentation work.
 
-Current sprite decision: preserve the proven isolated renderer, atlas, QA, and publishing systems; replace the primitive source-asset approach; approve one high-quality South idle/walk prototype before producing another 32-cell sheet.
+## Tactical encounter roadmap and active ledgers
 
-## Long-term roadmaps
+- `Tactical_Encounter_Combat_Roadmap_Blueprint.md` — master encounter-system roadmap.
+- `Tactical_Encounter_Phase0_Status.md` — portrait/sprite independence and eight-direction runtime.
+- `Tactical_Encounter_Phase1_Foundation_Status.md` — board/session/movement foundation.
+- `Tactical_Encounter_Phase1E_Core_Combat_Status.md` through the later Phase 1 spell/action ledgers — incremental server-authoritative combat adapters.
+- `Tactical_Encounter_Milestone2_Durable_Start_Status.md` — active durable-start / lifecycle checkpoint.
 
-- [`Tactical_Encounter_Combat_Roadmap_Blueprint.md`](./Tactical_Encounter_Combat_Roadmap_Blueprint.md) — master roadmap for the future hex-grid encounter/dungeon system, multiplayer turn engine, D&D 5e combat automation, portrait/sprite strategy, GM tools, and phased delivery plan.
-- [`Tactical_Encounter_Phase0_Status.md`](./Tactical_Encounter_Phase0_Status.md) — Phase 0 ledger for portrait/sprite independence, the unified 8-direction sprite runtime, renderer migration, and first production sprite batches. **Its explicit Phase 0 amendments supersede older master-roadmap statements about retaining the retired 4-direction sprite format.**
-- [`Tactical_Encounter_Phase1_Foundation_Status.md`](./Tactical_Encounter_Phase1_Foundation_Status.md) — Phase 1 board/session/movement foundation through authoritative player turn movement.
-- [`Tactical_Encounter_Phase1E_Core_Combat_Status.md`](./Tactical_Encounter_Phase1E_Core_Combat_Status.md) — first server-authoritative action economy, Unarmed Strike, HP/AC encounter state, and Realtime combat log.
-- [`Tactical_Encounter_Phase1F_Weapon_Combat_Status.md`](./Tactical_Encounter_Phase1F_Weapon_Combat_Status.md) — canonical equipped weapon profiles plus melee/thrown/ranged attack and typed weapon-damage foundations.
-- [`Tactical_Encounter_Phase1G_LOS_Cover_Saves_Damage_Status.md`](./Tactical_Encounter_Phase1G_LOS_Cover_Saves_Damage_Status.md) — deterministic LOS, cover, server saves, generic typed damage, and damage-affinity foundations.
-- [`Tactical_Encounter_Phase1H_Reactions_Effects_Status.md`](./Tactical_Encounter_Phase1H_Reactions_Effects_Status.md) — opportunity-reaction timing, Disengage suppression, healing, generic effects, and structured-condition foundations.
-- [`Tactical_Encounter_Phase1I_Spell_Foundation_Status.md`](./Tactical_Encounter_Phase1I_Spell_Foundation_Status.md) — canonical caster profiles and encounter-local spell-slot snapshots before guarded casting RPCs.
-- [`Tactical_Encounter_Phase1J_Save_Spells_Status.md`](./Tactical_Encounter_Phase1J_Save_Spells_Status.md) through [`Tactical_Encounter_Phase1S_Word_of_Radiance_Status.md`](./Tactical_Encounter_Phase1S_Word_of_Radiance_Status.md) — incremental reviewed cantrip, leveled-spell, attack, save, healing, effect, and multi-target tactical adapters.
-- [`Tactical_Encounter_Phase1T_Guiding_Bolt_Status.md`](./Tactical_Encounter_Phase1T_Guiding_Bolt_Status.md) — shared one-shot attack-roll modifier authority plus Guiding Bolt.
-- [`Tactical_Encounter_Phase1U_Vicious_Mockery_Status.md`](./Tactical_Encounter_Phase1U_Vicious_Mockery_Status.md) — Vicious Mockery and next-attack Disadvantage consumption.
-- [`Tactical_Encounter_Phase1V_Healing_Word_Status.md`](./Tactical_Encounter_Phase1V_Healing_Word_Status.md) — Healing Word, Bonus Action casting, and the 2024 one-slotted-spell-per-turn authority rule.
-- [`Tactical_Encounter_Phase1W_Acid_Splash_Status.md`](./Tactical_Encounter_Phase1W_Acid_Splash_Status.md) — point-targeted Sphere authority and server-derived Acid Splash membership.
-- [`Tactical_Encounter_Phase1X_Magic_Missile_Status.md`](./Tactical_Encounter_Phase1X_Magic_Missile_Status.md) — allocated multi-target dart authority for Magic Missile.
-- [`Tactical_Encounter_Phase1Y_Burning_Hands_Status.md`](./Tactical_Encounter_Phase1Y_Burning_Hands_Status.md) — directional 15-foot Cone authority for Burning Hands.
-- [`Tactical_Encounter_Phase1Z_Lightning_Bolt_Status.md`](./Tactical_Encounter_Phase1Z_Lightning_Bolt_Status.md) — production-deployed directional 100-foot Line authority and isolated Lightning Bolt client presentation.
-- [`Tactical_Encounter_Milestone2_Durable_Start_Status.md`](./Tactical_Encounter_Milestone2_Durable_Start_Status.md) — active Milestone 2 ledger covering atomic staged startup, lifecycle compatibility, the production `/encounters/smoke` preparation helper, validation, and authenticated smoke acceptance work.
-- [`Security_Hardening_Roadmap_Status.md`](./Security_Hardening_Roadmap_Status.md) — completed and deferred security/database hardening work.
+Use the specific phase ledger matching the subsystem before modifying combat behavior. Do not recreate existing tactical primitives.
 
-## Current subsystem handoffs
+## Sprite production
 
-- [`Unified_Character_Forge_Status.md`](./Unified_Character_Forge_Status.md) — shared player/NPC Forge, levels 1–20, normalized creation/progression parity, and follow-up runtime/browser work.
-- [`NPC_Profile_Inventory_Equipment_Reference.md`](./NPC_Profile_Inventory_Equipment_Reference.md) — profile, inventory workbench, equipment diagram, item cards, transfers, and NPC sheet presentation. Use it together with the shared pipeline document for equipment-derived rules.
-- [`Town_Crafter_Current_Status.md`](./Town_Crafter_Current_Status.md) — current town crafter/profile-panel state and guardrails.
-- [`Source_Patch_Pipeline_Audit.md`](./Source_Patch_Pipeline_Audit.md) — source-bake / validator / retired patch-pipeline handoff.
-- [`Deferred_UI_Polish_Backlog.md`](./Deferred_UI_Polish_Backlog.md) — deferred UI and presentation work.
+- `Dawn_High_Quality_Prototype_Plan.md` — quality-source pivot to resume after the current Character Forge interruption is accepted.
+- `Sprite_Production_Work_Map.md` — current sprite implementation map and acceptance sequence.
+- `Sprite_Production_Art_Bible.md` — canonical atlas/direction/animation/source-quality contract.
+- `Sprite_Production_Run_Log.md` — render/review evidence and rejected-path history.
+- `../tools/blender/DAWN_PROCEDURAL_MODEL.md` — procedural R&D/operator handoff; useful infrastructure, not final art direction.
+
+## Security / database
+
+- `Security_Hardening_Roadmap_Status.md` — completed and deferred security/database hardening work.
+
+Always inspect live grants/functions before changing authenticated `SECURITY DEFINER` surfaces. Do not blanket-revoke guarded RPCs without checking their internal authorization contract.
 
 ## Historical exports and archived runbooks
 
 Files containing raw table/function exports, dated SQL snapshots, or completed retry/bake instructions are retained for provenance. They must not override:
 
-1. the live Supabase schema and migration history;
+1. live Supabase schema and migration history;
 2. current repository source and validators;
-3. the current status document and active subsystem plan or phase ledger.
+3. `Documentation_Refresh_Manifest.md` plus the current subsystem status/evidence document;
+4. broader roadmap/phase ledgers;
+5. historical exports/runbooks.
 
-Never execute a historical SQL export or restore a retired patch pipeline without first reconciling it against the live database and source.
+Never execute a historical SQL export or restore a retired patch pipeline without reconciling it against the live database and current source first.
 
-## Tactical encounter roadmap rule
+## Protected-boundary rule
 
-`Tactical_Encounter_Combat_Roadmap_Blueprint.md` is the source of truth for the encounter system's end goals. The linked active phase ledger may explicitly amend implementation decisions for its phase; when it does, the amendment takes precedence until the master roadmap is synchronized. As implementation progresses:
-
-1. update phase/task checkboxes or the linked active phase ledger;
-2. record meaningful commits/migrations in its Progress Ledger or active phase ledger;
-3. record major architecture choices in its Decision Log or active phase amendment;
-4. add unresolved decisions to Open Design Decisions instead of silently deciding them inside unrelated patches;
-5. preserve the roadmap's world-map separation and server-authority guardrails unless those guardrails are explicitly revised.
+Character Forge/progression/runtime work does not authorize changes to the world map, town/city-map behavior, route/travel/weather simulation, tactical encounter behavior, or unrelated crafting systems. Read the matching subsystem handoff before crossing those boundaries.
