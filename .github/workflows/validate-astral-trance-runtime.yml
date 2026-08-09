@@ -1,0 +1,43 @@
+name: Validate Astral Trance runtime
+
+on:
+  push:
+    paths:
+      - "sql/20260808_52_astral_trance_runtime.sql"
+      - "components/CharacterAstralTrancePanel.js"
+      - "components/CharacterSheetPanel.js"
+      - "utils/characterRuntimeProficiencies.js"
+      - "utils/characterSheetActions.js"
+      - "scripts/validate_astral_trance_runtime.mjs"
+      - ".github/workflows/validate-astral-trance-runtime.yml"
+  pull_request:
+    paths:
+      - "sql/20260808_52_astral_trance_runtime.sql"
+      - "components/CharacterAstralTrancePanel.js"
+      - "components/CharacterSheetPanel.js"
+      - "utils/characterRuntimeProficiencies.js"
+      - "utils/characterSheetActions.js"
+      - "scripts/validate_astral_trance_runtime.mjs"
+      - ".github/workflows/validate-astral-trance-runtime.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Validate Astral Trance runtime authority
+        run: |
+          node scripts/validate_astral_trance_runtime.mjs
+          node scripts/validate_unified_character_forge.mjs
+      - name: Run production build gate
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: validation-placeholder
+        run: npm run build:vercel
