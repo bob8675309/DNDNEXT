@@ -2,6 +2,7 @@ import fs from "node:fs";
 
 const read = (path) => fs.readFileSync(path, "utf8");
 const migration = read("sql/20260808_52_astral_trance_runtime.sql");
+const skillCorrection = read("sql/20260808_53_astral_trance_skill_key_correction.sql");
 const panel = read("components/CharacterAstralTrancePanel.js");
 const sheetPanel = read("components/CharacterSheetPanel.js");
 const runtime = read("utils/characterRuntimeProficiencies.js");
@@ -38,6 +39,12 @@ for (const token of [
   "v_sheet:=v_sheet #- array['runtimeProficiencies','astralTrance']",
   "Both expire at the next Long Rest",
 ]) need(migration, token);
+
+for (const token of [
+  "create or replace function private.astral_trance_skill_key_v1",
+  "when 'animalhandling' then 'animalHandling'",
+  "when 'sleightofhand' then 'sleightOfHand'",
+]) need(skillCorrection, token);
 
 for (const token of [
   "get_character_astral_trance_v1",
@@ -80,10 +87,10 @@ forbid(migration, "speciesChoiceFeats", "permanent species-choice mutation");
 forbid(migration, "classFeatureChoices", "permanent class-choice mutation");
 forbid(migration, "update public.players", "account-wide sheet projection");
 
-for (const source of [migration, panel, sheetPanel, runtime, actions]) {
+for (const source of [migration, skillCorrection, panel, sheetPanel, runtime, actions]) {
   for (const token of ["MapPageClient", "map_routes", "advance_all_characters", "weather"]) {
     forbid(source, token, `protected world boundary ${token}`);
   }
 }
 
-console.log("Astral Trance source eligibility, Long-Rest expiry/configuration, non-destructive skill/weapon overlays, runtime UI, Forge exclusion, firearm exclusion, and protected boundaries validated.");
+console.log("Astral Trance source eligibility, complete skill mapping, Long-Rest expiry/configuration, non-destructive skill/weapon overlays, runtime UI, Forge exclusion, firearm exclusion, and protected boundaries validated.");
