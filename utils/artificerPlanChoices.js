@@ -31,7 +31,11 @@ function cursed(row) {
 }
 
 function isMagicItem(row) {
-  return Boolean(text(row?.payload?.type)) || row?.payload?.wondrous === true || text(row?.payload?.wondrous).toLowerCase() === "true";
+  const canonicalType = norm(row?.item_type || row?.payload?.uiType);
+  return Boolean(text(row?.payload?.type))
+    || row?.payload?.wondrous === true
+    || text(row?.payload?.wondrous).toLowerCase() === "true"
+    || canonicalType === "wondrous item";
 }
 
 function itemMatchesSchema(row, schema = {}) {
