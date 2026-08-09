@@ -15,7 +15,7 @@ export default function CharacterSpeciesRestProficiencyPanel({ characterId, shee
   const identity = speciesIdentity(sheet);
   const mode = identity.name === "githyanki" && identity.source === "MPMM"
     ? "githyanki"
-    : identity.name === "khoravar" && identity.source === "MPMM"
+    : identity.name === "khoravar" && identity.source === "EFA"
       ? "khoravar"
       : "";
   const [profile, setProfile] = useState(null);
