@@ -1,6 +1,8 @@
 import fs from "node:fs";
 
 const migration = fs.readFileSync("sql/20260809_74_wizard_memorize_spell_runtime.sql", "utf8");
+const stateFix = fs.readFileSync("sql/20260809_75_wizard_memorize_spell_state_fix.sql", "utf8");
+const helperRepair = fs.readFileSync("sql/20260809_76_wizard_runtime_helper_repair.sql", "utf8");
 const panel = fs.readFileSync("components/CharacterWizardMemorizeSpellPanel.js", "utf8");
 const host = fs.readFileSync("components/CharacterCurrencyBadge.js", "utf8");
 
@@ -32,6 +34,24 @@ for (const token of [
 ]) need(migration, token);
 
 for (const token of [
+  "v_had_runtime boolean:=false",
+  "v_had_runtime:=found",
+  "not v_had_runtime or v_latest_short_rest>v_runtime.replacement_anchor_at",
+  "case when v_had_runtime then v_runtime.state else '{}'::jsonb end",
+]) need(stateFix, token);
+
+for (const token of [
+  "create or replace function private.can_manage_character_spell_resources_v1",
+  "select private.can_manage_character_progression_v1(p_character_id)",
+  "create or replace function private.character_class_feature_acquired_at_v1",
+  "public.character_level_events",
+  "cp.class_level>=p_feature_level",
+  "from public.characters",
+  "revoke all on function private.can_manage_character_spell_resources_v1(uuid) from public,anon,authenticated",
+  "revoke all on function private.character_class_feature_acquired_at_v1(uuid,text,text,integer) from public,anon,authenticated",
+]) need(helperRepair, token);
+
+for (const token of [
   "get_character_wizard_memorize_spell_v1",
   "configure_character_wizard_memorize_spell_v1",
   "Unprepare",
@@ -45,7 +65,7 @@ for (const token of [
   '<CharacterWizardMemorizeSpellPanel characterId={characterId} />',
 ]) need(host, token);
 
-for (const source of [migration, panel, host]) {
+for (const source of [migration, stateFix, helperRepair, panel, host]) {
   for (const token of ["MapPageClient", "map_routes", "advance_all_characters", "player_wallets"]) forbid(source, token);
 }
 for (const token of [
@@ -57,4 +77,4 @@ for (const token of [
   "insert into public.encounter_participants",
 ]) forbid(migration, token);
 
-console.log("Wizard Memorize Spell Short-Rest prepared-spell replacement, spellbook immutability, active-encounter lock, ACLs, and protected boundaries validated.");
+console.log("Wizard Memorize Spell Short-Rest prepared-spell replacement, deterministic state, helper dependencies, spellbook immutability, active-encounter lock, ACLs, host wiring, and protected boundaries validated.");
