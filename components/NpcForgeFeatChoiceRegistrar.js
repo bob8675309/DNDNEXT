@@ -138,9 +138,9 @@ export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, contro
     setMagicItemCatalogReady(false);
     supabase.from("items_catalog")
       .select("id,item_name,item_key,item_type,item_rarity,payload")
-      .in("item_rarity", ["common", "uncommon", "rare"])
+      .in("item_rarity", ["common", "uncommon", "rare", "Common", "Uncommon", "Rare"])
       .order("item_name", { ascending: true })
-      .limit(5000)
+      .limit(10000)
       .then(({ data, error }) => {
         if (!active) return;
         if (error) {
