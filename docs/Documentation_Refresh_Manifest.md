@@ -15,7 +15,7 @@ If prose conflicts with live source/database state, live authority wins until do
 
 ## Current PR #170 runtime checkpoint
 
-Production is accepted through **migration 81**.
+Production is accepted through **migration 82**.
 
 Recent sequence:
 
@@ -25,9 +25,10 @@ Recent sequence:
 - 78 — Armorer Armor Model + shared `short_or_long_rest` cadence repair;
 - 79 — Bestial Soul runtime;
 - 80 — Bestial Soul list-item option resolver fix;
-- 81 — XPHB Wild Heart Aspect of the Wilds runtime.
+- 81 — XPHB Wild Heart Aspect of the Wilds runtime;
+- 82 — XPHB Hunter's Prey runtime while PHB Hunter's Prey remains permanent Forge authority.
 
-Latest registered migration: `wild_heart_aspect_runtime` (`20260809232923`).
+Latest registered migration: `hunter_prey_runtime` (`20260809234244`).
 
 ## Authoritative recent ledgers
 
@@ -38,6 +39,7 @@ Read before modifying these areas:
 - `Armorer_Armor_Model_Runtime_Status.md`
 - `Bestial_Soul_Runtime_Status.md`
 - `Wild_Heart_Aspect_Runtime_Status.md`
+- `Hunters_Prey_Runtime_Status.md`
 - `Boon_Energy_Resistance_Runtime_Status.md`
 - `Feat_Runtime_Expertise_Status.md`
 - `Cartomancer_Runtime_Status.md`
@@ -57,30 +59,31 @@ Accepted contrasts:
 
 - Armor Model: immediate initial choice; Short/Long-Rest replacement; persists until changed.
 - Bestial Soul: first choice after a qualifying Short/Long Rest; expires at the next qualifying rest.
-- Aspect of the Wilds: immediate initial choice; **Long-Rest-only** replacement; persists through rests until changed.
+- Aspect of the Wilds: immediate initial choice; Long-Rest-only replacement; persists until changed.
+- Hunter's Prey: PHB edition remains permanent acquisition choice; XPHB edition is immediate runtime choice with Short/Long-Rest replacement and persistence until changed.
 
 ## Current production integrity
 
-After migration 81 and rollback-only acceptance:
+After migration 82 and rollback-only acceptance:
 
 - 7 characters;
 - 7 character sheets;
 - 30 character-spell assignments;
 - 7 progression rows;
 - 18 inventory rows;
-- 0 live Aspect runtime rows;
-- 0 Aspect QA characters;
+- 0 live Hunter's Prey runtime rows;
+- 0 Hunter QA characters;
 - 20 locations;
 - 4 map routes;
 - 9 map route points.
 
-Migration-81 candidate head `0c51a7ab905a623106f9d1a77b71912a0a2b0508` passed all 28 PR workflows and Vercel before deployment.
+Migration-82 candidate head `173b593679942e0813c484f138a9a41f14081da3` passed all 29 PR workflows and Vercel before deployment.
 
 ## Next bounded audit
 
-Next source family: **Hunter's Prey**. Do not infer its lifecycle from Wild Heart/Bestial; inspect exact class/subclass source, level, option shape, acquisition choice, and rest replacement language first.
+Next source family: **Defensive Tactics**. Inspect exact class/subclass edition, level, source option structure, acquisition timing, and rest-replacement language before deciding an implementation model.
 
-After that, known queue candidates include Defensive Tactics and Phantom Whispers of the Dead.
+After that, Phantom Whispers of the Dead remains in the known queue.
 
 ## Remaining PR closure work
 

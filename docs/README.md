@@ -20,6 +20,7 @@ This directory contains the project's living handoff, roadmap, architecture, and
 - `Armorer_Armor_Model_Runtime_Status.md` — EFA/TCE Armorer model authority and migration-78 cadence repair.
 - `Bestial_Soul_Runtime_Status.md` — PHB/TCE Beast Bestial Soul rest-created, next-rest-expiring adaptation authority through migrations 79-80.
 - `Wild_Heart_Aspect_Runtime_Status.md` — XPHB Wild Heart Aspect of the Wilds immediate choice plus Long-Rest replacement authority through migration 81.
+- `Hunters_Prey_Runtime_Status.md` — PHB permanent vs XPHB Short/Long-Rest Hunter's Prey authority through migration 82.
 - `Player_Forge_Starting_Magic_v3_Status.md` — starting-magic authority.
 - `Player_Forge_Starting_Equipment_Status.md` — starting equipment, wealth, currency.
 - `Astral_Trance_Runtime_Status.md` — Astral Trance runtime.

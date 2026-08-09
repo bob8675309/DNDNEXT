@@ -33,14 +33,15 @@ GitHub/Supabase outrank prior-chat prose.
 
 ## Current live checkpoint
 
-Supabase is accepted through **migration 81**.
+Supabase is accepted through **migration 82**.
 
 Latest migrations:
 
 - 78 `armorer_armor_model_runtime` — `20260809220732`;
 - 79 `bestial_soul_runtime` — `20260809231431`;
 - 80 `bestial_soul_option_resolver_fix` — `20260809231912`;
-- 81 `wild_heart_aspect_runtime` — `20260809232923`.
+- 81 `wild_heart_aspect_runtime` — `20260809232923`;
+- 82 `hunter_prey_runtime` — `20260809234244`.
 
 ## Closed/accepted recent slices
 
@@ -48,8 +49,7 @@ Latest migrations:
 
 Read `Armorer_Armor_Model_Runtime_Status.md`.
 
-- EFA: Dreadnaught / Guardian / Infiltrator.
-- TCE: Guardian / Infiltrator.
+- EFA/TCE source-specific model sets.
 - Initial choice immediate.
 - Smith's Tools possession is current-schema proxy for “tools in hand.”
 - Later change after newer Short or Long Rest.
@@ -60,10 +60,9 @@ Read `Armorer_Armor_Model_Runtime_Status.md`.
 Read `Bestial_Soul_Runtime_Status.md`.
 
 - PHB Barbarian / TCE Beast / level 6+ only.
-- Adaptations: Swimming / Climbing / Jumping.
+- Swimming / Climbing / Jumping.
 - First choice requires post-acquisition Short/Long Rest.
 - Choice expires at next Short/Long Rest.
-- Migration 80 corrects the imported source's list-item shape additively.
 - No movement fields are mutated.
 
 ### Aspect of the Wilds
@@ -71,16 +70,35 @@ Read `Bestial_Soul_Runtime_Status.md`.
 Read `Wild_Heart_Aspect_Runtime_Status.md`.
 
 - XPHB Barbarian / XPHB Wild Heart / level 6+ only.
-- Options: Owl / Panther / Salmon.
+- Owl / Panther / Salmon.
 - Initial choice immediate.
 - Short Rest does not authorize change.
-- A newer Long Rest authorizes one optional change.
-- Current aspect does **not** expire at a Long Rest; it remains active until changed.
-- Runtime key: `barbarian-wild-heart-aspect-of-the-wilds`.
-- Projection: `runtimeFeatures.wildHeartAspectOfTheWilds`.
-- No Darkvision/speed/world-travel/tactical movement mutation in this slice.
+- Newer Long Rest authorizes one optional change.
+- Current aspect persists until changed.
+- No Darkvision/speed/world-travel/tactical movement mutation.
 
-Migration-81 source head `0c51a7ab905a623106f9d1a77b71912a0a2b0508` passed all 28 PR workflows and Vercel before deployment. Deployed rollback proof passed source gating, Owl initial selection, Short-Rest no-op, Long-Rest preservation/replacement, encounter lock, Owl → Panther → Salmon, ACLs, and zero residue.
+### Hunter's Prey
+
+Read `Hunters_Prey_Runtime_Status.md`.
+
+This feature has an edition split:
+
+- **PHB Ranger / PHB Hunter / level 3:** permanent acquisition choice among Colossus Slayer, Giant Killer, Horde Breaker. This remains Forge/progression authority.
+- **XPHB Ranger / XPHB Hunter / level 3:** immediate choice between Colossus Slayer and Horde Breaker; a newer Short Rest or Long Rest can replace the current option with the other one.
+
+Accepted XPHB runtime behavior:
+
+- initial choice immediate;
+- current option persists until changed;
+- newer Short/Long Rest authorizes one optional replacement;
+- one rest cannot be reused;
+- active encounter blocks configuration;
+- PHB Hunter remains runtime-ineligible;
+- runtime key `ranger-hunter-hunters-prey`;
+- projection `runtimeFeatures.huntersPrey`;
+- no Colossus Slayer damage / Horde Breaker extra-attack combat implementation in this slice.
+
+Migration-82 candidate head `173b593679942e0813c484f138a9a41f14081da3` passed all 29 PR workflows and Vercel before deployment. Deployed rollback proof passed edition/source gating, immediate Colossus Slayer, Short-Rest Horde Breaker replacement, Long-Rest Colossus Slayer replacement, same-rest/encounter guards, ACLs, projection, and unchanged combat fields.
 
 Current protected baseline after rollback acceptance:
 
@@ -95,13 +113,13 @@ Current protected baseline after rollback acceptance:
 
 ## Immediate next slice
 
-Audit **Hunter's Prey** next.
+Audit **Defensive Tactics** next.
 
 Before writing:
 
 1. inspect exact `class_feature_catalog` source record(s), class/subclass edition, level, option structure, and cadence text;
 2. inspect current Forge parser/presentation/runtime storage;
-3. classify initial acquisition versus rest replacement/expiry from source;
+3. classify permanent acquisition versus rest replacement/expiry from source;
 4. state a bounded patch plan before writes;
 5. compile candidate DDL in rollback;
 6. run synthetic candidate lifecycle;
@@ -113,7 +131,7 @@ Before writing:
 12. prove ACLs and zero residue;
 13. update docs/PR only after acceptance.
 
-Known queue after Hunter's Prey: Defensive Tactics, Phantom Whispers of the Dead.
+Known queue after Defensive Tactics: Phantom Whispers of the Dead.
 
 ## Delivery discipline
 
