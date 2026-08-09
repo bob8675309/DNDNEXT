@@ -1,7 +1,8 @@
 # Character Forge PR A — Deployment Evidence
 
-Status date: 2026-08-08
+Status date: 2026-08-09
 PR: #170 (`agent/character-forge-resilience-presentation`)
+Live migration checkpoint: 66
 
 ## Acceptance state
 
@@ -9,113 +10,206 @@ PR #170 remains **open and unmerged**. CI/build success plus rollback-only produ
 
 The active design rule is creation/progression parity for persistent source-owned decisions, with rest/per-use/informational choices modeled separately as runtime state.
 
-## Live migration checkpoint through 54
+## Live migration checkpoint
 
 - 38-39 — Battle Master maneuver normalization/progression;
 - 40-41 — Wizard Savant progression + higher-level Forge chronology;
-- 42 — Wizard Signature Spells authority;
-- 43 — Signature free-cast resource labels;
+- 42-43 — Wizard Signature Spells + free-cast resource authority;
 - 44 — Wizard Spell Mastery runtime;
 - 45 — class Weapon Mastery runtime;
 - 46 — Weapon Master feat runtime and combined projection;
-- 47 — Player Forge v3 multi-source starting-magic completion;
-- 48 — Player Forge v3 authenticated-only ACL cleanup;
-- 49 — source-backed Player Forge starting equipment + character currency;
-- 50 — starting-equipment Background/d10 tamper guard + currency RLS;
-- 51 — character-scoped starter-equipment projection correction;
-- 52 — Astral Trance Long-Rest runtime authority;
-- 53 — Astral Trance multiword skill-key correction;
-- 54 — Astral Elf normalized eligibility correction.
+- 47-48 — Player Forge v3 multi-source starting magic + ACL cleanup;
+- 49-51 — source-backed starting equipment, higher-level wealth, character currency, and character-scoped projection;
+- 52-54 — Astral Trance runtime + normalization corrections;
+- 55 — Primal Companion runtime;
+- 56 — Dread Allegiance runtime;
+- 57 — Fiendish Resilience runtime;
+- 58-59 — Circle of the Land source-derived runtime packages;
+- 60-62 — EFA Artificer Magic Item Plan authority + wildcard eligibility corrections;
+- 63 — Githyanki Astral Knowledge + Khoravar Skill Versatility runtime authority;
+- 64 — explicit anonymous Species-RPC ACL cleanup;
+- 65 — canonical `long_rest` key correction;
+- 66 — Species runtime projection parent compatibility fix.
 
-## Player Forge starting magic
+Detailed subsystem evidence lives in the dedicated status documents indexed by `Documentation_Refresh_Manifest.md`.
 
-The shared Player Forge calls `create_player_character_v3`. Exact Spell-step authority covers native class-list, Background-expanded, Eldritch Knight, and Arcane Trickster starting magic.
+## Player Forge creation evidence
 
-Rollback proofs established native Wizard, Background-expanded Entangle, Eldritch Knight, Arcane Trickster fixed Mage Hand, and fail-closed invalid submissions with no residue.
+The shared Player Forge calls `create_player_character_v3`.
 
-## Starting equipment / character currency
+Starting-magic rollback proofs established native class-list, Background-expanded, Eldritch Knight, Arcane Trickster fixed Mage Hand, and fail-closed invalid submissions.
 
-Player mode includes an Equipment step between Spells and Identity. NPC step order is unchanged.
+Starting-equipment rollback proofs cover concrete gear, cash-only packages, generic tool/instrument selectors, Wizard Spellbook resolution, higher-level d10 cash, DM-only magic-item allowance, and fail-closed tampering. Starter inventory begins unequipped and currency is character-scoped copper.
 
-Structured source packages cover the 12 XPHB core classes plus EFA Artificer and the existing XPHB Background equipment metadata.
+## Runtime cadence evidence through migration 59
 
-Concrete starter items become canonical character-owned inventory rows and begin unequipped. Character money is stored as copper in `character_currency`, not `player_wallets`.
+### Astral Trance — 52-54
 
-Rollback proofs cover concrete gear, cash-only packages, generic tool/instrument selectors, Wizard Spellbook resolution, higher-level d10 cash, DM-only magic-item allowance, and fail-closed tampering.
+Deployed rollback proof verified:
 
-See `Player_Forge_Starting_Equipment_Status.md`.
+- no configuration before first Long Rest;
+- configuration after Long Rest;
+- same-rest second configuration rejection;
+- Short-Rest persistence;
+- automatic expiry/reopen at next Long Rest;
+- all 18 skills and 74 legal PHB-equivalent weapon/tool choices;
+- firearm rejection;
+- non-Astral-Elf rejection;
+- no permanent proficiency mutation;
+- zero synthetic/runtime residue.
 
-## Astral Trance runtime — migrations 52-54
+### Primal Companion / Dread Allegiance / Fiendish Resilience / Circle Land — 55-59
 
-AAG Astral Elf Astral Trance is implemented as runtime cadence state and is excluded from Character Forge persistent choices.
+Dedicated workflows, rollback proofs, and status ledgers verify their source-specific acquisition/replacement/expiry semantics. These remain separate from permanent Forge state.
 
-After a completed Long Rest, the character chooses one skill and one source-legal PHB-equivalent weapon/tool proficiency. The current pair is stored in `character_runtime_feature_choices` and projected under `sheet.runtimeProficiencies.astralTrance`.
+The runtime sheet composition regression found during later Artificer work was repaired before Artificer deployment. The accepted chain is:
 
-The pair expires automatically when the **next Long Rest finishes**. Short Rest leaves it active. Same-rest second configuration is rejected.
+`CharacterSheetPanel → CharacterAstralTrancePanel → CharacterDreadAllegiancePanel → CharacterFiendishResiliencePanel → CharacterCircleLandPanel → CharacterCurrencyBadge`
 
-Permanent skill/tool/weapon proficiency fields are not rewritten. Normal sheet view receives a cloned skill overlay; edit mode uses the permanent draft. Weapon actions check the exact runtime weapon before normal class/explicit fallback rules.
+Primal Companion and Species rest proficiency controls are separate direct mounts.
 
-Preferred XPHB catalogue rows represent the PHB equipment list. Musket and Pistol remain excluded by campaign policy.
+## Artificer Magic Item Plans — migrations 60-62
 
-### Correction evidence
+EFA `Replicate Magic Item` source data produces 56 normalized learned-plan options.
 
-Migration 52 originally exposed only 16 skills because the shared name normalizer strips spaces. Migration 53 corrects Animal Handling and Sleight of Hand, restoring all 18 skills.
+Rollback acceptance verified:
 
-The first behavior fixture then exposed that `Astral Elf` normalizes to `astralelf`. Migration 54 corrects eligibility.
+- direct EFA Artificer 2 four-plan materialization;
+- direct higher-level slot chronology;
+- same Common wildcard repeated with different concrete items;
+- no inventory creation;
+- Artificer 5→6 one new plan slot + optional replacement;
+- replacement preserves instance key;
+- alchemy/recipe/non-magic Common rows rejected;
+- wildcard-without-child rejected;
+- fixed-plan-with-child rejected;
+- duplicate wildcard/concrete-item pair rejected;
+- non-Artificer payload rejected;
+- zero QA residue.
 
-Both defects failed closed and were corrected before the slice was accepted.
+Final wildcard pools remain 105 Common / 173 Uncommon Wondrous / 200 Rare Wondrous.
 
-### CI / compile gate
+See `Artificer_Magic_Item_Plans_Status.md`.
 
-The dedicated Astral workflow validates source identity, cadence/expiry, full skill mappings, compact species eligibility, firearm exclusion, sheet UI, non-destructive skill/weapon overlays, explicit Forge exclusion, and protected world boundaries.
+## Species rest proficiency authority — migrations 63-66
 
-Before the final correction deployment, the exact candidate head was green across all eleven relevant workflows, including Astral Trance, starting magic/equipment, Spell Mastery, NPC Forge, progression, portrait, and nested-choice validators.
+### Source/client correction before migration 63 deployment
 
-Migration 52 compiled against live production schema in rollback. Migrations 53 and 54 were each compiled/tested in rollback before application.
+Review of the staged migration/client caught source and integration defects before production state existed:
 
-### Final deployed rollback proof
+- Khoravar is EFA, not MPMM;
+- encounter participants use `is_defeated`;
+- `NpcForgeFeatChoiceRegistrar` must invoke the Species runtime-choice post-processor;
+- `CharacterSheetPanel` must mount the Species runtime panel;
+- the runtime proficiency utility must add Githyanki/Khoravar state without replacing Astral behavior.
 
-Using real public `complete_character_rest_v1`, `get_character_astral_trance_v1`, and `configure_character_astral_trance_v1`, the deployed migrations proved:
+A dedicated push/pull-request workflow was added to prevent regression.
 
-- no configure before first Long Rest;
-- configure Arcana + Longsword after Long Rest;
-- no permanent Arcana/tool/weapon mutation;
-- same-rest second configure rejected;
-- Short Rest preserves the active pair;
-- next Long Rest automatically removes the pair and reopens configuration;
-- direct Pistol id rejected;
-- second-rest Animal Handling + a legal tool succeeds;
-- Human/XPHB reports unavailable and configure is rejected;
-- zero synthetic/runtime residue after rollback.
+### Migration 63
 
-The final live catalogue exposes 18 skills and 74 legal training options with firearms absent.
+Installed runtime authority for:
 
-## Final production integrity checkpoint
+- MPMM Githyanki Astral Knowledge;
+- EFA Khoravar Skill Versatility.
 
-After migrations 52-54 and rollback fixtures:
+Githyanki is absent from creation-time permanent proficiency choices. Khoravar's initial Forge skill/tool choice is deferred-materialized as runtime state rather than permanent training.
+
+### Migration 64 — ACL correction
+
+Post-deploy ACL inspection showed Supabase public-schema defaults had left explicit anonymous EXECUTE on the four new public RPCs even though PostgreSQL `PUBLIC` was revoked.
+
+Migration 64 explicitly removed `anon` and restored only authenticated/service-role command access.
+
+Live verification:
+
+- anonymous EXECUTE count: 0;
+- authenticated EXECUTE count: 4.
+
+### Migration 65 — canonical rest key
+
+Inspection of `complete_character_rest_v1` and existing runtime adapters established that the canonical rest-log key is `long_rest`, not `long`.
+
+Migration 65 corrected both the Species latest-rest helper and Githyanki automatic-expiry trigger before any real Species runtime row existed.
+
+### Migration 66 — projection parent compatibility
+
+The first deployed lifecycle proof found that a clean sheet without `runtimeProficiencies` created the runtime row but not the sheet projection.
+
+Cause: `jsonb_typeof(missing_key)` returns SQL NULL, so migration 63's direct comparison did not enter the parent-creation branch.
+
+Migration 66 normalizes the NULL and creates the missing parent before writing the nested runtime state.
+
+### Exact-head CI evidence
+
+The final migration-66 source candidate passed all **18 relevant GitHub workflows**, including:
+
+- dedicated Species rest proficiency semantic validation;
+- Astral Trance regression validation;
+- unified Character Forge validation;
+- production build gate;
+- progression authority/v3;
+- nested choices;
+- NPC Forge;
+- starting magic/equipment/currency;
+- Wizard Spell Mastery;
+- Primal/Dread/Fiendish/Circle;
+- Artificer.
+
+Vercel remains separately blocked by the account build-rate limit; the application production build itself is green in GitHub Actions.
+
+### Final deployed Githyanki rollback proof
+
+Using actual `complete_character_rest_v1(..., 'long_rest')` and the public Species RPCs:
+
+- pre-rest configuration rejected;
+- canonical Long Rest unlocks configuration;
+- runtime row created;
+- clean-sheet `runtimeProficiencies.githyankiAstralKnowledge` projection created;
+- permanent `sheet.proficiencies` unchanged;
+- next canonical Long Rest removes runtime row;
+- next canonical Long Rest removes projection;
+- transaction rolled back.
+
+### Final deployed Khoravar rollback proof
+
+Using the shared Player Forge source-choice payload and deferred materializer:
+
+- initial `skill:acrobatics` materialized as runtime state;
+- sheet runtime projection created;
+- immediate replacement rejected;
+- invalid option rejected;
+- newer canonical Long Rest unlocks replacement;
+- replacement from skill to canonical tool succeeds;
+- permanent `sheet.proficiencies` unchanged;
+- transaction rolled back.
+
+### Zero-residue checkpoint
+
+After the deployed rollback proofs:
 
 - 7 characters;
 - 7 character sheets;
 - 30 character-spell assignments;
 - 7 progression rows;
-- 0 open level-up sessions;
-- 0 QA Astral runtime rows;
-- 0 synthetic Astral proof characters;
+- 18 inventory rows;
+- 0 live Githyanki/Khoravar runtime rows;
+- 0 Species QA proof characters;
 - 20 locations;
 - 4 map routes;
 - 9 map route points.
 
-Astral public getter/configure ACLs are authenticated + service_role. Private Astral helpers/trigger functions are service-role-only.
+Migrations 63, 64, 65, and 66 are registered live.
+
+See `Species_Rest_Proficiency_Runtime_Status.md`.
 
 ## Remaining acceptance blockers
 
-1. Remaining runtime cadence families: Circle-of-the-Land choices, Primal Companion, Dread Allegiance, Fiendish Resilience, and per-use Steps of the Fey.
-2. Compact post-create character-currency display.
-3. Artificer wildcard Magic Item Plan concrete-item instances.
-4. Remaining persistent source-choice / conditional-choice UI audit.
-5. Audit/revoke obsolete authenticated level-up completion RPC generations when confirmed unused.
-6. Final authenticated browser acceptance.
-7. Merge PR #170 only after those gates close.
+1. continue final source-choice coverage: High Elf/Khoravar replaceable cantrips, Eladrin, remaining feat/class/subclass runtime families, and any confirmed persistent acquisition gaps;
+2. progression RPC/ACL cleanup, including the pre-existing anonymous `get_character_level_class_choice_options_v2` grant and legacy level-up completion generations when confirmed unused;
+3. final authenticated browser acceptance;
+4. Steps of the Fey per-cast integration only when spell/combat execution is explicitly in scope;
+5. tactical consumption of runtime damage resistance only when encounter/combat is explicitly in scope;
+6. merge PR #170 only after those gates close.
 
 ## Protected boundaries
 
