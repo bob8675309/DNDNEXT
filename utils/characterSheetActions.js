@@ -1,4 +1,4 @@
-import { hasRuntimeWeaponProficiency } from "./characterRuntimeProficiencies";
+import { hasRuntimeWeaponProficiency } from "./characterRuntimeProficiencies.js";
 
 const DAMAGE_TYPE_LABELS = Object.freeze({
   A: "acid",
