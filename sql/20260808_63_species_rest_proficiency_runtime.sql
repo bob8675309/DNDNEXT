@@ -50,7 +50,7 @@ as $$
     join public.encounters e on e.id=ep.encounter_id
     where ep.character_id=p_character_id
       and lower(coalesce(e.status,'')) in ('active','paused')
-      and coalesce(ep.defeated,false)=false
+      and coalesce(ep.is_defeated,false)=false
   );
 $$;
 
@@ -269,7 +269,7 @@ declare
   v_can_replace boolean:=false;
 begin
   if not private.can_manage_character_progression_v1(p_character_id) then raise exception 'You do not have permission to review Skill Versatility.' using errcode='42501'; end if;
-  v_available:=private.character_has_species_source_v1(p_character_id,'Khoravar','MPMM');
+  v_available:=private.character_has_species_source_v1(p_character_id,'Khoravar','EFA');
   if not v_available then return jsonb_build_object('available',false); end if;
   select * into v_row from public.character_runtime_feature_choices where character_id=p_character_id and feature_key='khoravar-skill-versatility';
   v_latest:=private.species_runtime_latest_long_rest_v1(p_character_id);
@@ -303,7 +303,7 @@ declare
   v_state jsonb;
 begin
   if not private.can_manage_character_progression_v1(p_character_id) then raise exception 'You do not have permission to configure Skill Versatility.' using errcode='42501'; end if;
-  if not private.character_has_species_source_v1(p_character_id,'Khoravar','MPMM') then raise exception 'Skill Versatility is unavailable for this character.'; end if;
+  if not private.character_has_species_source_v1(p_character_id,'Khoravar','EFA') then raise exception 'Skill Versatility is unavailable for this character.'; end if;
   if private.species_runtime_active_encounter_v1(p_character_id) then raise exception 'Skill Versatility cannot be changed during an active encounter.'; end if;
   v_option:=private.resolve_khoravar_skill_versatility_v1(p_option_key);
   if v_option is null then raise exception 'The selected Skill Versatility proficiency is invalid.'; end if;
@@ -317,7 +317,7 @@ begin
   end if;
   v_state:=jsonb_build_object('proficiency',v_option,'configuredAt',now(),'configuredRestAt',case when found then v_latest else null end);
   insert into public.character_runtime_feature_choices(character_id,feature_key,feature_name,source,cadence,state,replacement_anchor_at,updated_at)
-  values(p_character_id,'khoravar-skill-versatility','Skill Versatility','MPMM','long_rest',v_state,v_anchor,now())
+  values(p_character_id,'khoravar-skill-versatility','Skill Versatility','EFA','long_rest',v_state,v_anchor,now())
   on conflict(character_id,feature_key) do update set state=excluded.state,replacement_anchor_at=excluded.replacement_anchor_at,updated_at=now();
   perform private.set_species_runtime_projection_v1(p_character_id,'khoravarSkillVersatility',v_state);
   return public.get_character_khoravar_skill_versatility_v1(p_character_id);
@@ -339,7 +339,7 @@ declare
 begin
   select coalesce(sheet,'{}'::jsonb) into v_sheet from public.character_sheets where character_id=new.character_id;
   if coalesce(v_sheet #>> '{meta,creator}','')<>'shared_character_forge_player_v2' then return new; end if;
-  if not private.character_has_species_source_v1(new.character_id,'Khoravar','MPMM') then return new; end if;
+  if not private.character_has_species_source_v1(new.character_id,'Khoravar','EFA') then return new; end if;
   v_selection:=v_sheet #> '{sourceChoices,species-runtime-khoravar-skill-versatility,fields,proficiency,selections}';
   if jsonb_typeof(v_selection)<>'array' or jsonb_array_length(v_selection)<>1 then raise exception 'Khoravar Skill Versatility requires exactly one skill or tool proficiency.'; end if;
   v_key:=v_selection->0->>'key';
@@ -347,7 +347,7 @@ begin
   if v_option is null then raise exception 'Khoravar Skill Versatility references an invalid skill or tool.'; end if;
   v_state:=jsonb_build_object('proficiency',v_option,'configuredAt',now(),'configuredRestAt',null);
   insert into public.character_runtime_feature_choices(character_id,feature_key,feature_name,source,cadence,state,replacement_anchor_at,updated_at)
-  values(new.character_id,'khoravar-skill-versatility','Skill Versatility','MPMM','long_rest',v_state,now(),now())
+  values(new.character_id,'khoravar-skill-versatility','Skill Versatility','EFA','long_rest',v_state,now(),now())
   on conflict(character_id,feature_key) do update set state=excluded.state,replacement_anchor_at=excluded.replacement_anchor_at,updated_at=now();
   perform private.set_species_runtime_projection_v1(new.character_id,'khoravarSkillVersatility',v_state);
   return new;
