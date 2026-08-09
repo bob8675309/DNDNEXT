@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
+import CharacterCurrencyBadge from "./CharacterCurrencyBadge";
 
 function safeText(value) {
   return String(value ?? "").trim();
@@ -66,11 +67,9 @@ export default function CharacterCircleLandPanel({ characterId, sheet = {}, onSh
     setBusy(false);
   }
 
-  if (!potentiallyAvailable || (!loading && profile?.available === false) || (!loading && !profile && !error)) return null;
-
+  const visible = potentiallyAvailable && (loading || profile?.available !== false) && (loading || profile || error);
   const currentSpells = Array.isArray(state?.spellNames) ? state.spellNames : [];
-
-  return <section className="character-runtime-choice character-runtime-choice--land" aria-label="Circle of the Land spell configuration">
+  const circlePanel = !visible ? null : <section className="character-runtime-choice character-runtime-choice--land" aria-label="Circle of the Land spell configuration">
     <div className="character-runtime-choice__head">
       <div><span>Long-Rest choice</span><strong>Circle Spells</strong></div>
       <button type="button" className="character-runtime-choice__refresh" onClick={loadProfile} disabled={loading || busy}>Refresh</button>
@@ -96,4 +95,6 @@ export default function CharacterCircleLandPanel({ characterId, sheet = {}, onSh
       .character-runtime-choice--land{border-color:rgba(112,194,96,.3);background:rgba(59,123,50,.08)}.character-runtime-choice--land .character-runtime-choice__save,.character-runtime-choice--land .character-runtime-choice__refresh{border-color:rgba(112,194,96,.44);background:rgba(59,123,50,.14);color:#d9ffd1}.character-runtime-choice__current--land{grid-template-columns:minmax(150px,.35fr) minmax(0,1fr)}.circle-land-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:9px 0}.circle-land-options button{display:grid;gap:4px;padding:9px;border:1px solid rgba(255,255,255,.11);border-radius:8px;background:rgba(0,0,0,.14);color:#fff;text-align:left}.circle-land-options button.is-active{border-color:rgba(112,194,96,.7);background:rgba(69,139,58,.18)}.circle-land-options strong{font-size:.72rem}.circle-land-options span{color:rgba(255,255,255,.58);font-size:.62rem;line-height:1.4}@media(max-width:760px){.circle-land-options,.character-runtime-choice__current--land{grid-template-columns:1fr}}
     `}</style>
   </section>;
+
+  return <>{circlePanel}<CharacterCurrencyBadge characterId={characterId} /></>;
 }
