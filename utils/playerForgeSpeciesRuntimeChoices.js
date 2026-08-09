@@ -1,14 +1,8 @@
+import { SKILL_DEFINITIONS } from "./characterCreation";
 import { buildToolOptionCatalog } from "./playerForgeSourceChoices";
 
 const text = (value) => String(value ?? "").trim();
 const norm = (value) => text(value).toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
-const slug = (value) => norm(value).replace(/\s+/g, "-");
-
-const SKILLS = Object.freeze([
-  "Acrobatics", "Animal Handling", "Arcana", "Athletics", "Deception", "History",
-  "Insight", "Intimidation", "Investigation", "Medicine", "Nature", "Perception",
-  "Performance", "Persuasion", "Religion", "Sleight of Hand", "Stealth", "Survival",
-]);
 
 function speciesIdentity(species = null) {
   return {
@@ -18,23 +12,23 @@ function speciesIdentity(species = null) {
 }
 
 function skillOptions() {
-  return SKILLS.map((name) => ({
-    key: `skill:${slug(name)}`,
-    value: `skill:${slug(name)}`,
-    label: name,
+  return SKILL_DEFINITIONS.map((skill) => ({
+    key: `skill:${skill.key}`,
+    value: `skill:${skill.key}`,
+    label: skill.label,
     source: "D&D",
     kind: "skill",
-    metadata: { kind: "skill", skillKey: slug(name), name },
+    metadata: { kind: "skill", skillKey: skill.key, name: skill.label, ability: skill.ability },
   }));
 }
 
 function khoravarOptions(toolRows = []) {
-  const tools = buildToolOptionCatalog(toolRows).map((option) => ({
+  const tools = buildToolOptionCatalog(toolRows).all.map((option) => ({
     ...option,
     key: `tool:${option.key}`,
     value: `tool:${option.key}`,
     kind: "tool",
-    metadata: { ...(option.metadata || {}), kind: "tool", toolKey: option.key },
+    metadata: { ...(option.metadata || {}), kind: "tool", toolKey: option.key, name: option.label },
   }));
   return [...skillOptions(), ...tools].sort((a, b) => a.label.localeCompare(b.label) || a.kind.localeCompare(b.kind));
 }
@@ -43,20 +37,21 @@ export function applySpeciesRuntimeChoiceAuthority({ groups = [], species = null
   const identity = speciesIdentity(species);
   const next = Array.isArray(groups) ? [...groups] : [];
 
-  // These source traits are Long-Rest runtime authority, not permanent Forge skill choices.
+  // These source traits are rest-configurable runtime authority, not permanent Forge proficiency choices.
   const filtered = next.filter((group) => {
-    if (identity.name === "githyanki" && identity.source === "MPMM" && group.id === "species-trait-astral-knowledge-skill") return false;
-    if (identity.name === "khoravar" && identity.source === "MPMM" && group.id === "species-trait-skill-versatility-skill") return false;
+    const trait = norm(group?.label);
+    if (identity.name === "githyanki" && identity.source === "MPMM" && trait === "astral knowledge") return false;
+    if (identity.name === "khoravar" && identity.source === "EFA" && trait === "skill versatility") return false;
     return true;
   });
 
-  if (identity.name === "khoravar" && identity.source === "MPMM") {
+  if (identity.name === "khoravar" && identity.source === "EFA") {
     filtered.push({
       id: "species-runtime-khoravar-skill-versatility",
       ownerType: "species-runtime",
       ownerKey: "khoravar-skill-versatility",
       label: "Skill Versatility",
-      source: "MPMM",
+      source: "EFA",
       placement: "training",
       level: 1,
       helper: "Choose one skill or tool proficiency. This is the initial runtime choice; after a Long Rest, you can replace it with another skill or tool.",
