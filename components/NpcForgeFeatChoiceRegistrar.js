@@ -4,6 +4,7 @@ import { buildArtificerPlanSourceGroups } from "../utils/artificerPlanChoices";
 import { buildAdvancementSourceChoiceGroups } from "../utils/playerForgeAdvancement";
 import { buildFeatSourceChoiceGroups, featGrantInstancesFromSelections } from "../utils/playerForgeFeatChoices";
 import { buildSpeciesSourceChoiceGroups } from "../utils/playerForgeSpeciesChoices";
+import { applySpeciesRuntimeChoiceAuthority } from "../utils/playerForgeSpeciesRuntimeChoices";
 import { buildWarlockInvocationSourceGroups } from "../utils/warlockInvocationChoices";
 import { classChoiceSelectionSummary, useNpcForgeClassChoice } from "./NpcForgeClassChoiceContext";
 import { sourceChoiceSelectionSummary, useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
@@ -196,13 +197,18 @@ export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, contro
   }, [controller?.draft?.level, controller?.selectedClass, playerMode]);
 
   const excludedSpeciesTraits = useMemo(() => (speciesState.rules || []).map((rule) => rule.traitName).filter(Boolean), [speciesState.rules]);
-  const speciesGroups = useMemo(() => buildSpeciesSourceChoiceGroups({
+  const baseSpeciesGroups = useMemo(() => buildSpeciesSourceChoiceGroups({
     species: controller?.selectedSpecies || null,
     level: controller?.draft?.level || 1,
     spells,
     featOptions: controller?.featOptions || [],
     excludedTraitNames: excludedSpeciesTraits,
   }), [controller?.draft?.level, controller?.featOptions, controller?.selectedSpecies, excludedSpeciesTraits, spells]);
+  const speciesGroups = useMemo(() => applySpeciesRuntimeChoiceAuthority({
+    groups: baseSpeciesGroups,
+    species: controller?.selectedSpecies || null,
+    toolRows: controller?.toolRows || [],
+  }), [baseSpeciesGroups, controller?.selectedSpecies, controller?.toolRows]);
 
   useEffect(() => {
     registerGroups(playerMode ? speciesGroups : [], !playerMode || spellCatalogReady, "species-extra");
