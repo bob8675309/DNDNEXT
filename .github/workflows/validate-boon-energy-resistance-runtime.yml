@@ -10,6 +10,7 @@ on:
       - "components/CharacterCurrencyBadge.js"
       - "scripts/validate_boon_energy_resistance_runtime.mjs"
       - "sql/20260809_69_boon_energy_resistance_runtime.sql"
+      - "sql/20260809_70_boon_energy_resistance_provenance_fix.sql"
       - ".github/workflows/validate-boon-energy-resistance-runtime.yml"
   pull_request:
     paths:
@@ -18,6 +19,7 @@ on:
       - "components/CharacterCurrencyBadge.js"
       - "scripts/validate_boon_energy_resistance_runtime.mjs"
       - "sql/20260809_69_boon_energy_resistance_runtime.sql"
+      - "sql/20260809_70_boon_energy_resistance_provenance_fix.sql"
       - ".github/workflows/validate-boon-energy-resistance-runtime.yml"
 
 jobs:
