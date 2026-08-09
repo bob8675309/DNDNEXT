@@ -46,10 +46,12 @@ for (const token of [
   "create or replace function private.character_class_feature_acquired_at_v1",
   "public.character_level_events",
   "cp.class_level>=p_feature_level",
-  "from public.characters",
+  "select cp.created_at into v_created_at",
+  "from public.character_progression cp",
   "revoke all on function private.can_manage_character_spell_resources_v1(uuid) from public,anon,authenticated",
   "revoke all on function private.character_class_feature_acquired_at_v1(uuid,text,text,integer) from public,anon,authenticated",
 ]) need(helperRepair, token);
+forbid(helperRepair, "from public.characters", "nonexistent characters.created_at acquisition fallback");
 
 for (const token of [
   "get_character_wizard_memorize_spell_v1",
@@ -77,4 +79,4 @@ for (const token of [
   "insert into public.encounter_participants",
 ]) forbid(migration, token);
 
-console.log("Wizard Memorize Spell Short-Rest prepared-spell replacement, deterministic state, helper dependencies, spellbook immutability, active-encounter lock, ACLs, host wiring, and protected boundaries validated.");
+console.log("Wizard Memorize Spell Short-Rest prepared-spell replacement, deterministic state, helper dependencies, direct-progression acquisition fallback, spellbook immutability, active-encounter lock, ACLs, host wiring, and protected boundaries validated.");
