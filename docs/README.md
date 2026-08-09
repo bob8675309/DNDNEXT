@@ -19,6 +19,12 @@ This directory contains the project's living handoff, roadmap, architecture, and
 - `Player_Forge_Starting_Magic_v3_Status.md` — native class, Background-expanded, Eldritch Knight, and Arcane Trickster starting-magic authority.
 - `Player_Forge_Starting_Equipment_Status.md` — source-backed starting equipment, higher-level wealth, and character-scoped currency authority.
 - `Astral_Trance_Runtime_Status.md` — AAG Astral Elf Long-Rest skill + weapon/tool runtime proficiency authority.
+- `Species_Rest_Proficiency_Runtime_Status.md` — MPMM Githyanki Astral Knowledge and EFA Khoravar Skill Versatility Long-Rest proficiency authority, migrations 63-66, ACL corrections, and rollback acceptance.
+- `Primal_Companion_Runtime_Status.md` — Beast Master current-companion and Long-Rest replacement authority.
+- `Dread_Allegiance_Runtime_Status.md` — linked allegiance/resistance/cantrip runtime authority.
+- `Fiendish_Resilience_Runtime_Status.md` — Short/Long-Rest resistance runtime authority.
+- `Circle_of_the_Land_Runtime_Status.md` — source-derived Long-Rest Circle Spell package authority.
+- `Artificer_Magic_Item_Plans_Status.md` — EFA learned-plan instances, wildcard concrete-item identity, and progression/Forge parity.
 
 Current cadence rule: persistent source-owned decisions belong to Forge/progression authority; Long-/Short-Rest decisions belong to runtime configuration; per-use choices belong to action UI. Do not turn runtime choices back into permanent Forge locks.
 
