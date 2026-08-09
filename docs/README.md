@@ -28,6 +28,7 @@ This directory contains the project's living handoff, roadmap, architecture, and
 - `Circle_of_the_Land_Runtime_Status.md` — source-derived Long-Rest Circle Spell package authority.
 - `Artificer_Magic_Item_Plans_Status.md` — EFA learned-plan instances, wildcard concrete-item identity, and progression/Forge parity.
 - `Boon_Energy_Resistance_Runtime_Status.md` — XPHB Boon of Energy Resistance per-feat-instance acquisition pair, Long-Rest replacement, runtime resistance projection, migrations 69-70, and rollback acceptance.
+- `Feat_Runtime_Expertise_Status.md` — RHW Echoing Soul permanent two-skill/language acquisition plus Long-Rest-replaceable Expertise, and FRHoF Zhentarim Tactics post-rest/next-rest-expiring Expertise, migration 71 and rollback acceptance.
 
 Current cadence rule: persistent source-owned decisions belong to Forge/progression authority; Long-/Short-Rest decisions belong to runtime configuration; per-use choices belong to action UI. Do not turn runtime choices back into permanent Forge locks.
 
