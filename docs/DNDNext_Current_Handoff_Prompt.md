@@ -8,7 +8,7 @@ Status: copy-ready project handoff, reconciled 2026-08-08
 
 You are taking over the `bob8675309/DNDNEXT` repository as a senior developer, technical advisor, and implementation owner.
 
-DNDNext is a Next.js Pages Router + Supabase D&D campaign platform. Styling uses Bootstrap and SCSS. Treat current GitHub state, live Supabase schema/migrations/functions/data, source validators, and the living `docs/` handoffs as the evidence base. Do not trust old conversation summaries when current state can be inspected.
+DNDNext is a Next.js Pages Router + Supabase D&D campaign platform. Styling uses Bootstrap and SCSS. Treat current GitHub state, live Supabase schema/migrations/functions/data, source validators, and living `docs/` handoffs as the evidence base. Do not trust old conversation summaries when current state can be inspected.
 
 ### Required first actions
 
@@ -26,6 +26,7 @@ Before changing anything:
    - `docs/Player_Forge_Starting_Magic_v3_Status.md`
    - `docs/Player_Forge_Starting_Equipment_Status.md`
    - `docs/Astral_Trance_Runtime_Status.md`
+   - `docs/Primal_Companion_Runtime_Status.md`
 5. Reconcile docs against current source/live Supabase before assuming a listed blocker is still open.
 6. Update relevant handoffs whenever a migration, architecture boundary, validation result, or acceptance state changes.
 
@@ -58,7 +59,7 @@ Before changing anything:
 
 PR #170 (`agent/character-forge-resilience-presentation`) remains **open and unmerged**.
 
-Do not restart completed Forge consolidation, Savant/Signature/Spell Mastery, Weapon Mastery cadence, guarded multi-source starting magic, starting-equipment/currency authority, or Astral Trance runtime work.
+Do not restart completed Forge consolidation, Savant/Signature/Spell Mastery, Weapon Mastery cadence, guarded multi-source starting magic, starting-equipment/currency authority, Astral Trance, or Primal Companion runtime work.
 
 ### Governing parity/cadence model
 
@@ -73,7 +74,7 @@ Current cadence model:
 - per-use choice → runtime/action UI;
 - informational feature → display only.
 
-## Live migration checkpoint through 54
+## Live migration checkpoint through 55
 
 ### 38-39 — Battle Master
 
@@ -101,11 +102,7 @@ Each permanent Weapon Master feat instance owns an independent runtime weapon. P
 
 ### 47-48 — Player Forge v3 starting magic
 
-The shared Player Forge calls `create_player_character_v3`, not v2.
-
-`sheet.startingMagicSelections` is exact Spell-step authority for native class-list spells, Background-expanded class access, Eldritch Knight spellcasting, and Arcane Trickster spellcasting including fixed Mage Hand.
-
-Migration 48 removes the stale anonymous execute grant inherited by v3.
+The shared Player Forge calls `create_player_character_v3`, not v2. `sheet.startingMagicSelections` is exact Spell-step authority for native class-list spells, Background-expanded class access, Eldritch Knight, and Arcane Trickster including fixed Mage Hand. Migration 48 removes the stale anonymous execute grant inherited by v3.
 
 ### 49-51 — starting equipment / character currency
 
@@ -117,61 +114,75 @@ Concrete starter items are canonical character-owned inventory rows and begin un
 
 Normal class + Background equipment remains the base at every starting level. Higher-level cash is additive. Higher-level magic-item quantities are a **DM guide only** and must not be randomly/automatically granted.
 
-Migration 50 binds the submitted Background package to the actual sheet Background and enforces the higher-level d10 rule. Migration 51 removes the legacy account-wide sheet mirror; final starter-equipment projection is character-scoped only.
+Migration 50 binds submitted Background equipment to the actual sheet Background and enforces the higher-level d10 rule. Migration 51 removes the legacy account-wide sheet mirror; final starter-equipment projection is character-scoped only.
 
 ### 52-54 — Astral Trance runtime
 
 AAG Astral Elf Astral Trance is **not a Character Forge choice**.
 
-After a completed Long Rest, the character can choose:
-
-- one of all 18 skills; and
-- one source-legal PHB-equivalent weapon or tool proficiency.
-
-The pair is stored in generic runtime feature state and projected under `sheet.runtimeProficiencies.astralTrance`. Permanent `proficiencies.skills`, `tools`, and `weaponProficiencies` are not rewritten.
+After a completed Long Rest, the character chooses one of all 18 skills plus one source-legal PHB-equivalent weapon/tool proficiency. The pair is stored in runtime state and projected under `sheet.runtimeProficiencies.astralTrance` without rewriting permanent skill/tool/weapon proficiency fields.
 
 The pair expires automatically when the **next Long Rest finishes**. Short Rest leaves it active. Same-rest second configuration is rejected.
 
-The runtime weapon overlay adds exact-weapon proficiency before normal class/explicit fallback logic. The skill overlay is applied only in normal sheet display; edit mode uses the underlying permanent sheet to prevent accidental persistence.
+Preferred XPHB catalogue rows represent the PHB equipment list. Musket and Pistol are excluded by campaign policy. Migrations 53-54 correct compact skill/species normalization. Final deployed rollback proof passed the full lifecycle with zero QA residue.
 
-Preferred XPHB catalogue rows represent the PHB equipment list. Musket and Pistol are excluded by campaign policy.
+See `docs/Astral_Trance_Runtime_Status.md`.
 
-Migration 53 corrects compact normalization for Animal Handling and Sleight of Hand. Migration 54 corrects normalized Astral Elf identity to `astralelf`. Both bugs failed closed and were fixed before acceptance.
+### 55 — Primal Companion runtime
 
-Final deployed rollback proof passed:
+XPHB Ranger 3+ / Beast Master Primal Companion is **not a permanent Forge Land/Sea/Sky choice**.
 
-- unavailable before first Long Rest;
-- configure after Long Rest;
-- same-rest lockout;
-- Short-Rest persistence;
-- next-Long-Rest automatic expiry/reopen;
-- second-rest Animal Handling + tool selection;
-- direct firearm rejection;
-- non-Astral Elf rejection;
-- no permanent skill/tool/weapon mutation;
-- zero QA residue after rollback.
+The initial companion can be configured immediately when the feature exists:
 
-Final live Astral checkpoint:
+- Beast of the Land;
+- Beast of the Sea;
+- Beast of the Sky;
+- plus a 1-80 character animal appearance.
 
-- migrations 52/53/54 registered;
-- 18 skills;
-- 74 legal training options;
-- firearms present: false;
-- 0 live QA Astral runtime rows;
+The current beast persists until changed. Short Rest does nothing. Long Rest does **not** dismiss or auto-expire it.
+
+A **newer completed Long Rest** opens one replacement opportunity. Once the player replaces the beast, that same rest cannot be used for another replacement. Failed invalid submissions do not consume the opportunity.
+
+Runtime identity lives in `character_runtime_feature_choices` and `sheet.runtimeCompanions.primalCompanion`. No `classFeatureChoices` entry is created.
+
+Replacement is blocked while the character is a non-defeated participant in an active encounter.
+
+The production schema currently has no normalized creature/bestiary table, so migration 55 intentionally owns only the source form + appearance state. It does not invent a duplicate companion-statblock table or controlled minion entity. Future companion/minion/tactical work should consume this state.
+
+Final rollback proof passed:
+
+- immediate Land / `gray wolf` initial summon;
+- immediate replacement rejected;
+- Short Rest preserves current beast and does not unlock replacement;
+- newer Long Rest preserves current beast and opens replacement;
+- invalid form and overlong appearance rejected without consuming the opportunity;
+- Land → Sea / `giant otter` replacement succeeds and records previous companion;
+- same-rest second replacement rejected;
+- second newer Long Rest preserves Sea and reopens replacement;
+- active encounter blocks replacement;
+- replacement succeeds after encounter resolution to Sky / `red-tailed hawk`;
+- XPHB Ranger 3 / Hunter is unavailable and cannot configure;
+- zero runtime/synthetic residue after rollback.
+
+Final Primal checkpoint:
+
+- migration 55 registered;
+- 3 source forms;
+- 0 live QA `primal-companion` rows;
+- 0 synthetic Primal proof characters;
 - 7 characters / 7 sheets / 30 spell rows / 7 progression rows;
 - 20 locations / 4 routes / 9 route points.
 
-See `docs/Astral_Trance_Runtime_Status.md` for detailed evidence.
+See `docs/Primal_Companion_Runtime_Status.md`.
 
 ## Immediate remaining PR #170 work
 
-Do **not** reopen starting magic, starting equipment/currency authority, or Astral Trance.
+Do **not** reopen starting magic, starting equipment/currency authority, Astral Trance, or Primal Companion.
 
 Current blockers:
 
 1. remaining runtime cadence families:
    - Circle-of-the-Land choices — inspect exact source cadence before implementation;
-   - Primal Companion — Long-Rest beast replacement;
    - Dread Allegiance — current choice persists until changed after a Long Rest;
    - Fiendish Resilience — current damage type persists until changed after a Short or Long Rest;
    - Steps of the Fey — per-use Misty Step effect choice, not rest-stored state;
@@ -184,13 +195,13 @@ Current blockers:
 
 ### Recommended next implementation slice
 
-Continue the runtime cadence audit with **Primal Companion or Dread Allegiance** as an isolated source-backed runtime slice. Do not combine features with different expiry/replacement semantics into one generic write rule merely because they all mention Long Rest.
+Continue with **Dread Allegiance** as an isolated source-backed runtime slice. Its current allegiance should persist until changed, and a newer Long Rest should authorize one change. Do not give it Astral Trance auto-expiry semantics.
 
-Before implementing Circle of the Land, inspect the exact XPHB source row(s) and determine whether each choice is persistent, Long-Rest configurable, or per-use.
+Before implementing Circle of the Land, inspect the exact XPHB source row(s) and determine whether each choice is persistent, rest-configurable, or per-use.
 
-Steps of the Fey belongs in per-cast/action UI rather than `character_runtime_feature_choices` rest state.
+Steps of the Fey belongs in per-cast/action UI rather than rest-stored `character_runtime_feature_choices` state.
 
-The character-currency badge is a bounded UI follow-up and can be batched with a later inventory/profile presentation pass.
+The character-currency badge remains a bounded UI follow-up that can be batched with a later inventory/profile presentation pass.
 
 ## Documentation precedence
 
@@ -202,6 +213,6 @@ When sources disagree:
 4. platform-wide roadmap / tactical ledgers;
 5. historical exports/runbooks only as provenance.
 
-Begin by verifying PR #170 and live Supabase. If migrations 52-54 and the zero-residue Astral checkpoint are current, continue with the remaining cadence families rather than reopening Astral Trance.
+Begin by verifying PR #170 and live Supabase. If migration 55 and the zero-residue Primal checkpoint are current, continue with Dread Allegiance rather than reopening Primal Companion.
 
 ## End copy
