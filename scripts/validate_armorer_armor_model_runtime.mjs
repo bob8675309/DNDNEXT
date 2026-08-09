@@ -67,7 +67,7 @@ for (const token of [
 
 need(parser, '"armor model"', "rest-configurable Forge suppression");
 need(parser, "REST_RECONFIGURABLE_FEATURES", "rest-configurable feature set");
-need(parser, 'return "short-rest";', "rest cadence classification");
+need(parser, 'return "long-rest";', "Forge rest cadence classification");
 need(choices, '.filter((group) => group.cadence === "creation"', "creation-only permanent class-choice output");
 
 for (const source of [migration, panel, host]) {
