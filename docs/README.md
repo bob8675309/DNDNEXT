@@ -1,83 +1,61 @@
 # DNDNext Living Documentation Index
 
-This directory contains the project's living handoff, roadmap, architecture, and evidence documents. When starting a new work session, use the document matching the subsystem being changed and update it when a milestone, failure, acceptance decision, or architecture boundary changes.
+This directory contains the project's living handoff, roadmap, architecture, and evidence documents. For active work, live Supabase + current repository source/validators outrank prose if they conflict.
 
 ## Start here
 
-- `DNDNext_Current_Handoff_Prompt.md` — copy-ready prompt for a new development session. It defines the required inspection workflow, protected boundaries, document precedence, and current continuation point.
-- `Documentation_Refresh_Manifest.md` — current documentation-precedence overlay and active PR #170 checkpoint.
-- `Current_Development_Status_and_Roadmap.md` — broad platform roadmap/history. Active subsystem ledgers below supersede older subsystem sections when newer.
-- `Unified_Character_Forge_Status.md` — controlling Character Forge/progression/runtime acceptance ledger for PR #170.
+- `DNDNext_Current_Handoff_Prompt.md` — copy-ready continuation prompt and protected boundaries.
+- `Documentation_Refresh_Manifest.md` — documentation precedence and current PR #170 checkpoint.
+- `Current_Development_Status_and_Roadmap.md` — broad platform roadmap/history; newer subsystem ledgers supersede older sections.
+- `Unified_Character_Forge_Status.md` — controlling Forge/progression/runtime ledger.
 
 ## Active Character Forge / progression / runtime documents
 
-- `Unified_Character_Forge_Status.md` — shared NPC/player Forge state, runtime cadence boundary, and remaining blockers.
-- `Character_Progression_Foundation.md` — server-authoritative creation/progression architecture and normalized source ownership.
-- `Character_Progression_and_Higher_Level_Forge.md` — direct higher-level creation vs earned-progression convergence.
+- `Character_Progression_Foundation.md` — normalized creation/progression architecture.
+- `Character_Progression_and_Higher_Level_Forge.md` — direct higher-level creation vs earned progression.
 - `Character_Forge_PR_A_Deployment_Evidence.md` — migration/build/rollback evidence.
-- `Wizard_Spell_Mastery_Runtime_Status.md` — Wizard Spell Mastery Long-Rest runtime authority.
-- `Player_Forge_Starting_Magic_v3_Status.md` — native class, Background-expanded, Eldritch Knight, and Arcane Trickster starting-magic authority.
-- `Player_Forge_Starting_Equipment_Status.md` — source-backed starting equipment, higher-level wealth, and character-scoped currency authority.
-- `Astral_Trance_Runtime_Status.md` — AAG Astral Elf Long-Rest skill + weapon/tool runtime proficiency authority.
-- `Species_Rest_Proficiency_Runtime_Status.md` — MPMM Githyanki Astral Knowledge and EFA Khoravar Skill Versatility Long-Rest proficiency authority, migrations 63-66, ACL corrections, and rollback acceptance.
-- `Species_Replaceable_Cantrip_Runtime_Status.md` — XPHB High Elf and EFA Khoravar fixed-initial / Long-Rest-replaceable Species cantrip authority, migration 67, normalized Species spell ownership, and rollback acceptance.
-- `Eladrin_Season_Trance_Runtime_Status.md` — MPMM Eladrin persistent Season plus two-choice post-Long-Rest Trance weapon/tool authority, migration 68, and rollback acceptance.
-- `Primal_Companion_Runtime_Status.md` — Beast Master current-companion and Long-Rest replacement authority.
-- `Dread_Allegiance_Runtime_Status.md` — linked allegiance/resistance/cantrip runtime authority.
-- `Fiendish_Resilience_Runtime_Status.md` — Short/Long-Rest resistance runtime authority.
-- `Circle_of_the_Land_Runtime_Status.md` — source-derived Long-Rest Circle Spell package authority.
-- `Artificer_Magic_Item_Plans_Status.md` — EFA learned-plan instances, wildcard concrete-item identity, and progression/Forge parity.
-- `Boon_Energy_Resistance_Runtime_Status.md` — XPHB Boon of Energy Resistance per-feat-instance acquisition pair, Long-Rest replacement, runtime resistance projection, migrations 69-70, and rollback acceptance.
-- `Feat_Runtime_Expertise_Status.md` — RHW Echoing Soul permanent two-skill/language acquisition plus Long-Rest-replaceable Expertise, and FRHoF Zhentarim Tactics post-rest/next-rest-expiring Expertise, migration 71 and rollback acceptance.
+- `Wizard_Spell_Mastery_Runtime_Status.md` — Spell Mastery runtime.
+- `Wizard_Memorize_Spell_Runtime_Status.md` — Short-Rest prepared-spell replacement.
+- `Wizard_Cantrip_Formulas_Runtime_Status.md` — PHB Wizard TCE Cantrip Formulas Long-Rest replacement.
+- `Armorer_Armor_Model_Runtime_Status.md` — EFA/TCE Armorer model authority and migration-78 cadence repair.
+- `Bestial_Soul_Runtime_Status.md` — PHB/TCE Beast Bestial Soul rest-created, next-rest-expiring adaptation authority through migrations 79-80.
+- `Player_Forge_Starting_Magic_v3_Status.md` — starting-magic authority.
+- `Player_Forge_Starting_Equipment_Status.md` — starting equipment, wealth, currency.
+- `Astral_Trance_Runtime_Status.md` — Astral Trance runtime.
+- `Species_Rest_Proficiency_Runtime_Status.md` — Astral Knowledge / Skill Versatility.
+- `Species_Replaceable_Cantrip_Runtime_Status.md` — replaceable Species cantrips.
+- `Eladrin_Season_Trance_Runtime_Status.md` — Eladrin season/Trance runtime.
+- `Primal_Companion_Runtime_Status.md` — Beast Master companion runtime.
+- `Dread_Allegiance_Runtime_Status.md` — linked allegiance/resistance/cantrip runtime.
+- `Fiendish_Resilience_Runtime_Status.md` — Short/Long-Rest resistance runtime.
+- `Circle_of_the_Land_Runtime_Status.md` — Circle Spell package runtime.
+- `Artificer_Magic_Item_Plans_Status.md` — EFA learned-plan authority.
+- `Boon_Energy_Resistance_Runtime_Status.md` — Boon runtime resistance choices.
+- `Feat_Runtime_Expertise_Status.md` — Echoing Soul / Zhentarim Expertise lifecycle.
+- `Cartomancer_Runtime_Status.md` — Hidden Ace temporary access.
 
-Current cadence rule: persistent source-owned decisions belong to Forge/progression authority; Long-/Short-Rest decisions belong to runtime configuration; per-use choices belong to action UI. Do not turn runtime choices back into permanent Forge locks.
+Current cadence rule: persistent source-owned decisions belong to Forge/progression; rest decisions belong to runtime; per-use choices belong to action UI. Do not turn runtime choices into permanent Forge locks.
 
 ## Character sheet / inventory / crafting
 
-- `Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md` — required before changing canonical item/inventory/equip/sheet/tactical authority.
-- `Character_Sheet_Formula_Reference.md` — required before changing ability/save/skill/AC/initiative/passive formulas.
-- `NPC_Character_Sheet_Selection_Reconciliation.md` — selection and stale-response ownership boundary.
-- `NPC_Profile_Inventory_Equipment_Reference.md` — profile, inventory workbench, equipment diagram, transfers, and presentation.
-- `Town_Crafter_Current_Status.md` — town crafter/profile-panel state and guardrails.
-- `Source_Patch_Pipeline_Audit.md` — source-bake / validator / retired patch-pipeline handoff.
-- `Deferred_UI_Polish_Backlog.md` — deferred presentation work.
+- `Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md` — canonical item/inventory/equip/sheet/tactical authority.
+- `Character_Sheet_Formula_Reference.md` — ability/save/skill/AC/initiative/passive formulas.
+- `NPC_Character_Sheet_Selection_Reconciliation.md` — selection/stale-response ownership.
+- `NPC_Profile_Inventory_Equipment_Reference.md` — profile/inventory/equipment presentation.
+- `Town_Crafter_Current_Status.md` — town crafter/profile state.
+- `Source_Patch_Pipeline_Audit.md` — source-bake / validator pipeline.
+- `Deferred_UI_Polish_Backlog.md` — deferred UI work.
 
-## Tactical encounter roadmap and active ledgers
+## Tactical encounter / sprites / security
 
-- `Tactical_Encounter_Combat_Roadmap_Blueprint.md` — master encounter-system roadmap.
-- `Tactical_Encounter_Phase0_Status.md` — portrait/sprite independence and eight-direction runtime.
-- `Tactical_Encounter_Phase1_Foundation_Status.md` — board/session/movement foundation.
-- `Tactical_Encounter_Phase1E_Core_Combat_Status.md` through the later Phase 1 spell/action ledgers — incremental server-authoritative combat adapters.
-- `Tactical_Encounter_Milestone2_Durable_Start_Status.md` — active durable-start / lifecycle checkpoint.
+Use the specific tactical phase ledger before changing encounter behavior; do not recreate existing tactical primitives.
 
-Use the specific phase ledger matching the subsystem before modifying combat behavior. Do not recreate existing tactical primitives.
+- `Tactical_Encounter_Combat_Roadmap_Blueprint.md` and phase ledgers — combat roadmap/status.
+- `Dawn_High_Quality_Prototype_Plan.md`, `Sprite_Production_Work_Map.md`, `Sprite_Production_Art_Bible.md`, `Sprite_Production_Run_Log.md` — sprite work.
+- `Security_Hardening_Roadmap_Status.md` — security/database hardening.
 
-## Sprite production
-
-- `Dawn_High_Quality_Prototype_Plan.md` — quality-source pivot to resume after the current Character Forge interruption is accepted.
-- `Sprite_Production_Work_Map.md` — current sprite implementation map and acceptance sequence.
-- `Sprite_Production_Art_Bible.md` — canonical atlas/direction/animation/source-quality contract.
-- `Sprite_Production_Run_Log.md` — render/review evidence and rejected-path history.
-- `../tools/blender/DAWN_PROCEDURAL_MODEL.md` — procedural R&D/operator handoff; useful infrastructure, not final art direction.
-
-## Security / database
-
-- `Security_Hardening_Roadmap_Status.md` — completed and deferred security/database hardening work.
-
-Always inspect live grants/functions before changing authenticated `SECURITY DEFINER` surfaces. Do not blanket-revoke guarded RPCs without checking their internal authorization contract.
-
-## Historical exports and archived runbooks
-
-Files containing raw table/function exports, dated SQL snapshots, or completed retry/bake instructions are retained for provenance. They must not override:
-
-1. live Supabase schema and migration history;
-2. current repository source and validators;
-3. `Documentation_Refresh_Manifest.md` plus the current subsystem status/evidence document;
-4. broader roadmap/phase ledgers;
-5. historical exports/runbooks.
-
-Never execute a historical SQL export or restore a retired patch pipeline without reconciling it against the live database and current source first.
+Always inspect live grants/functions before modifying authenticated `SECURITY DEFINER` surfaces.
 
 ## Protected-boundary rule
 
-Character Forge/progression/runtime work does not authorize changes to the world map, town/city-map behavior, route/travel/weather simulation, tactical encounter behavior, or unrelated crafting systems. Read the matching subsystem handoff before crossing those boundaries.
+Character Forge/progression/runtime work does not authorize changes to world-map, town/city-map behavior, route/travel/weather simulation, tactical encounter behavior, or unrelated crafting systems. `components/MapPageClient.js` remains outside current scope unless explicitly requested.
