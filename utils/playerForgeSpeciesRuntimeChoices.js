@@ -33,6 +33,15 @@ function khoravarOptions(toolRows = []) {
   return [...skillOptions(), ...tools].sort((a, b) => a.label.localeCompare(b.label) || a.kind.localeCompare(b.kind));
 }
 
+function eladrinSeasonOptions() {
+  return [
+    { key: "autumn", value: "autumn", label: "Autumn", source: "MPMM", kind: "season", metadata: { feyStepEffect: "charm" } },
+    { key: "winter", value: "winter", label: "Winter", source: "MPMM", kind: "season", metadata: { feyStepEffect: "frighten" } },
+    { key: "spring", value: "spring", label: "Spring", source: "MPMM", kind: "season", metadata: { feyStepEffect: "ally-teleport" } },
+    { key: "summer", value: "summer", label: "Summer", source: "MPMM", kind: "season", metadata: { feyStepEffect: "fire-damage" } },
+  ];
+}
+
 export function applySpeciesRuntimeChoiceAuthority({ groups = [], species = null, toolRows = [] } = {}) {
   const identity = speciesIdentity(species);
   const next = Array.isArray(groups) ? [...groups] : [];
@@ -74,15 +83,53 @@ export function applySpeciesRuntimeChoiceAuthority({ groups = [], species = null
     });
   }
 
+  if (identity.name === "eladrin" && identity.source === "MPMM") {
+    filtered.push({
+      id: "species-runtime-eladrin-season",
+      ownerType: "species-runtime",
+      ownerKey: "eladrin-season",
+      label: "Eladrin Season",
+      source: "MPMM",
+      placement: "species",
+      level: 1,
+      helper: "Choose your current Eladrin season. It remains current until you change it after a newer Long Rest; at level 3+, it determines the extra Fey Step effect.",
+      fields: [{
+        id: "season",
+        label: "Current season",
+        kind: "season",
+        count: 1,
+        required: true,
+        options: eladrinSeasonOptions(),
+        cadence: "acquisition",
+        replacementCadence: "long-rest",
+      }],
+      metadata: {
+        family: "eladrin-season",
+        cadence: "long-rest",
+        runtimeInitial: true,
+        sourceTrait: "Fey Step / Season",
+        feyStepLevel: 3,
+      },
+    });
+  }
+
   return filtered;
 }
 
 export function speciesRuntimeSelectionSummary(groups = [], selections = {}) {
   return (Array.isArray(groups) ? groups : []).flatMap((group) => {
-    if (group.metadata?.family !== "khoravar-skill-versatility") return [];
-    const key = Array.isArray(selections?.[group.id]?.proficiency) ? selections[group.id].proficiency[0] : null;
-    if (!key) return [];
-    const option = group.fields?.[0]?.options?.find((entry) => entry.key === key);
-    return option ? [{ groupId: group.id, featureKey: "khoravar-skill-versatility", option }] : [];
+    if (group.metadata?.family === "khoravar-skill-versatility") {
+      const key = Array.isArray(selections?.[group.id]?.proficiency) ? selections[group.id].proficiency[0] : null;
+      if (!key) return [];
+      const option = group.fields?.[0]?.options?.find((entry) => entry.key === key);
+      return option ? [{ groupId: group.id, featureKey: "khoravar-skill-versatility", option }] : [];
+    }
+    if (group.metadata?.family === "eladrin-season") {
+      const key = Array.isArray(selections?.[group.id]?.season) ? selections[group.id].season[0] : null;
+      if (!key) return [];
+      const option = group.fields?.[0]?.options?.find((entry) => entry.key === key);
+      return option ? [{ groupId: group.id, featureKey: "eladrin-season", option }] : [];
+    }
+    return [];
   });
 }
