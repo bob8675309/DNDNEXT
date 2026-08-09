@@ -2,6 +2,24 @@ const text = (value) => String(value ?? "").trim();
 const norm = (value) => text(value).toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 const array = (value) => Array.isArray(value) ? value : [];
 
+const BOON_ENERGY_RESISTANCE_OPTIONS = Object.freeze([
+  "Acid",
+  "Cold",
+  "Fire",
+  "Lightning",
+  "Necrotic",
+  "Poison",
+  "Psychic",
+  "Radiant",
+  "Thunder",
+].map((label) => ({
+  key: label.toLowerCase(),
+  value: label.toLowerCase(),
+  label,
+  source: "XPHB",
+  kind: "energy-resistance",
+})));
+
 export function normalizeFeatSourceChoiceGroups(groups = []) {
   return array(groups).map((group) => {
     if (group?.ownerType !== "feat") return group;
@@ -26,6 +44,37 @@ export function normalizeFeatSourceChoiceGroups(groups = []) {
         metadata: {
           ...(group.metadata || {}),
           normalizedChoiceShape: "resilient-single-ability",
+        },
+      };
+    }
+
+    if (featName === "boon of energy resistance") {
+      const withoutLegacyResistanceFields = fields.filter((field) => field?.id !== "energy-resistances");
+      return {
+        ...group,
+        fields: [
+          ...withoutLegacyResistanceFields,
+          {
+            id: "energy-resistances",
+            label: "Choose two Energy Resistances",
+            kind: "energy-resistance",
+            count: 2,
+            required: true,
+            options: BOON_ENERGY_RESISTANCE_OPTIONS,
+            placement: group.placement || "advancement",
+            cadence: "acquisition",
+            replacementCadence: "long_rest",
+            helper: "Choose two damage types for the Boon's initial resistances. After a Long Rest, both choices may be changed through the character sheet.",
+            metadata: {
+              runtimeFeature: "boon-energy-resistance",
+              runtimeInitial: true,
+              distinct: true,
+            },
+          },
+        ],
+        metadata: {
+          ...(group.metadata || {}),
+          normalizedChoiceShape: "boon-energy-resistance-runtime-pair",
         },
       };
     }
