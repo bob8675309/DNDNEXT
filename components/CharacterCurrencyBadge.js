@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import CharacterBoonEnergyResistancePanel from "./CharacterBoonEnergyResistancePanel";
 import CharacterFeatRuntimeExpertisePanel from "./CharacterFeatRuntimeExpertisePanel";
+import CharacterCartomancerPanel from "./CharacterCartomancerPanel";
 
 export default function CharacterCurrencyBadge({ characterId }) {
   const [currency, setCurrency] = useState(null);
@@ -49,6 +50,7 @@ export default function CharacterCurrencyBadge({ characterId }) {
   return <>
     <CharacterBoonEnergyResistancePanel characterId={characterId} />
     <CharacterFeatRuntimeExpertisePanel characterId={characterId} />
+    <CharacterCartomancerPanel characterId={characterId} />
     {showCurrency ? <section className="character-currency-badge" aria-label="Character currency" title={title}>
       <div>
         <span>Character Coin</span>
