@@ -3,6 +3,7 @@ import fs from "node:fs";
 const read = (path) => fs.readFileSync(path, "utf8");
 const migration = read("sql/20260808_52_astral_trance_runtime.sql");
 const skillCorrection = read("sql/20260808_53_astral_trance_skill_key_correction.sql");
+const speciesCorrection = read("sql/20260808_54_astral_trance_species_key_correction.sql");
 const panel = read("components/CharacterAstralTrancePanel.js");
 const sheetPanel = read("components/CharacterSheetPanel.js");
 const runtime = read("utils/characterRuntimeProficiencies.js");
@@ -47,6 +48,12 @@ for (const token of [
 ]) need(skillCorrection, token);
 
 for (const token of [
+  "create or replace function private.character_has_astral_trance_v1",
+  "v_species='astralelf'",
+  "v_source='AAG'",
+]) need(speciesCorrection, token);
+
+for (const token of [
   "get_character_astral_trance_v1",
   "configure_character_astral_trance_v1",
   "Long-Rest choice",
@@ -77,7 +84,6 @@ for (const token of [
   "if (hasRuntimeWeaponProficiency(sheet, name)) return true;",
 ]) need(actions, token);
 
-// Astral Trance is explicitly runtime-only: do not add it to Forge choice state.
 for (const source of [forgeCore, forgeController, forgeDerived]) {
   forbid(source, "astralTrance", "Forge Astral Trance state");
   forbid(source, "Astral Trance", "Forge Astral Trance choice");
@@ -87,10 +93,10 @@ forbid(migration, "speciesChoiceFeats", "permanent species-choice mutation");
 forbid(migration, "classFeatureChoices", "permanent class-choice mutation");
 forbid(migration, "update public.players", "account-wide sheet projection");
 
-for (const source of [migration, skillCorrection, panel, sheetPanel, runtime, actions]) {
+for (const source of [migration, skillCorrection, speciesCorrection, panel, sheetPanel, runtime, actions]) {
   for (const token of ["MapPageClient", "map_routes", "advance_all_characters", "weather"]) {
     forbid(source, token, `protected world boundary ${token}`);
   }
 }
 
-console.log("Astral Trance source eligibility, complete skill mapping, Long-Rest expiry/configuration, non-destructive skill/weapon overlays, runtime UI, Forge exclusion, firearm exclusion, and protected boundaries validated.");
+console.log("Astral Trance source eligibility, complete skill mapping, compact Astral Elf identity, Long-Rest expiry/configuration, non-destructive skill/weapon overlays, runtime UI, Forge exclusion, firearm exclusion, and protected boundaries validated.");
