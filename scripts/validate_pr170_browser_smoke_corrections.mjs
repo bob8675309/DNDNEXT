@@ -17,7 +17,11 @@ const classFeatureDock = read("components/NpcForgeClassFeatureDock.js");
 const context = read("components/NpcForgeContextPanelRefined.js");
 const planHelperText = read("utils/artificerPlanChoices.js");
 const sourceChoices = read("components/SourceChoiceFields.js");
+const sourceChoiceDock = read("components/NpcForgeSourceChoiceFields.js");
 const actionHook = read("hooks/useNpcSheetActionData.js");
+const restSyncBridge = read("components/CharacterSheetRestSyncBridge.js");
+const astralPanel = read("components/CharacterAstralTrancePanel.js");
+const login = read("pages/login.js");
 const app = read("pages/_app.js");
 const css = read("styles/character-forge-smoke-fixes.css");
 
@@ -34,6 +38,7 @@ assert.ok(!/insert\s+into\s+public\.encounter/i.test(migration), "migration 90 m
 assert.ok(!/MapPageClient|map_routes|map_route_points|advance_all_characters|weather|route_segment_progress/.test(migration), "migration 90 crossed protected map/travel boundaries");
 
 for (const token of ["identity.name === \"deep gnome\"", "trait === \"gift of the svirfneblin\"", "!hasSpellField && onlyCastingAbility"]) assert.ok(speciesRuntimeText.includes(token), `Deep Gnome smoke guard missing ${token}`);
+for (const token of ["identity.name === \"astral elf\"", "identity.source === \"AAG\"", "trait === \"astral trance\""]) assert.ok(speciesRuntimeText.includes(token), `Astral Trance Forge exclusion missing ${token}`);
 assert.ok(!speciesBonus.includes('placement="abilities" ownerType="feat"'), "Abilities must not resolve feat-owned nested source choices");
 for (const token of ["Selected:", "Training → Feats & Class Abilities"]) assert.ok(speciesBonus.includes(token), `Species Bonus acknowledgement missing ${token}`);
 for (const token of ["acquisitionOwnerType !== \"species-bonus\"", 'placement: "class"', 'resolverPlacement: "training"']) assert.ok(featRouting.includes(token), `Species Bonus feat routing missing ${token}`);
@@ -48,12 +53,21 @@ for (const token of ["backgroundFeatureTextForDisplay", "Consider customizing yo
 for (const token of ["catalogueSummary", "futureUnlocks", "availableCount", "full canonical item text", "canonicalPoolCount"]) assert.ok(planHelperText.includes(token), `Artificer plan availability/detail model missing ${token}`);
 for (const token of ["ArtificerPlanCatalogueStatus", "plans available at Artificer level", "Locked plans are shown here for progression planning only", "canonical items in this legal pool"]) assert.ok(sourceChoices.includes(token), `Artificer plan presentation missing ${token}`);
 
+for (const token of ["createPortal", "currentForgePreview", ".npc-forge-preview", "previewTarget ? createPortal(fields, previewTarget) : fields"]) assert.ok(sourceChoiceDock.includes(token), `right-rail source-choice routing missing ${token}`);
+
 for (const token of ["character_sheets", "updated_at", "2500", "without broadening realtime database exposure"]) assert.ok(actionHook.includes(token), `Transient sheet refresh missing ${token}`);
 assert.ok(!actionHook.includes("postgres_changes"), "sheet action refresh must not depend on an unpublished Realtime table");
+for (const token of ['[aria-label="Spell resources and rests"]', 'label === "Short Rest" || label === "Long Rest"', "[200, 650, 1300, 2400]", 'from("character_sheets")', 'select("sheet,updated_at")', "onSheetUpdatedRef.current?.(data.sheet)"]) assert.ok(restSyncBridge.includes(token), `bounded post-Rest sheet sync missing ${token}`);
+for (const forbidden of ["setInterval", "postgres_changes", "MapPageClient", "map_routes", "map_route_points", "advance_all_characters", "route_segment_progress"]) assert.ok(!restSyncBridge.includes(forbidden), `post-Rest bridge must not use ${forbidden}`);
+for (const token of ['import CharacterSheetRestSyncBridge from "./CharacterSheetRestSyncBridge";', "<CharacterSheetRestSyncBridge characterId={characterId} onSheetUpdated={onSheetUpdated} />"]) assert.ok(astralPanel.includes(token), `always-mounted Rest sync bridge missing ${token}`);
+
+for (const token of ['import { supabase } from "../utils/supabaseClient";', "resolveAdminAfterLogin", "Promise.race", "timeoutResult(1500)", "timeoutResult(1000)", 'void router.replace(isAdmin ? "/admin" : "/profile")']) assert.ok(login.includes(token), `login resilience missing ${token}`);
+assert.ok(!login.includes("createClient("), "login page must use the shared Supabase singleton");
+
 assert.ok(app.includes('import "../styles/character-forge-smoke-fixes.css";'), "smoke correction stylesheet is not loaded");
 for (const token of ["npc-forge-class-feature-dock", "position: sticky", "rgba(255, 255, 255, .82)", "npc-forge-background-spell-name"]) assert.ok(css.includes(token), `smoke correction CSS missing ${token}`);
 
-for (const protectedSource of [classFeatureText, classGuide, classGuideModel, classFeatureDock, context, planHelperText, sourceChoices, actionHook, css]) {
+for (const protectedSource of [classFeatureText, classGuide, classGuideModel, classFeatureDock, context, planHelperText, sourceChoices, sourceChoiceDock, actionHook, restSyncBridge, astralPanel, login, css]) {
   assert.ok(!/MapPageClient|map_routes|map_route_points|advance_all_characters|route_segment_progress/.test(protectedSource), "smoke correction crossed protected map/travel boundaries");
 }
 
@@ -68,6 +82,11 @@ const activeDeepGnome = applySpeciesRuntimeChoiceAuthority({
   groups: [{ id: "gift", label: "Gift of the Svirfneblin", fields: [{ id: "spell", kind: "spell", options: [{ key: "disguise-self" }] }, { id: "ability", kind: "ability", options: [{ key: "int" }] }] }],
 });
 assert.equal(activeDeepGnome.length, 1, "Deep Gnome source group must remain available once a real spell grant is active");
+const astralTranceForgeGroups = applySpeciesRuntimeChoiceAuthority({
+  species: { name: "Astral Elf", source: "AAG" },
+  groups: [{ id: "trance", label: "Astral Trance", fields: [{ id: "skill", kind: "skill", options: [{ key: "athletics" }] }] }],
+});
+assert.equal(astralTranceForgeGroups.length, 0, "Astral Trance must remain a post-Long-Rest runtime choice, never a Forge acquisition choice");
 
 const { resolveSubclassCatalog } = await import(pathToFileURL(path.join(root, "utils/classes/subclassCompatibility.js")).href);
 const duplicateSubclasses = resolveSubclassCatalog([
@@ -91,4 +110,4 @@ assert.equal(level2Plans[0].metadata.catalogueSummary.totalCount, 2, "availabili
 assert.equal(level2Plans[0].metadata.catalogueSummary.futureUnlocks[0].unlockLevel, 10, "future plan must be disclosed at its actual unlock level");
 assert.ok(level2Plans.every((group) => !group.fields[0].options.some((option) => option.key === "p2")), "future plan must remain non-selectable");
 
-console.log("PR #170 signed-in browser smoke corrections, including list-to-detail-rail routing, validated.");
+console.log("PR #170 signed-in browser smoke corrections, including login completion, immediate Rest repaint, runtime-only Astral Trance, right-rail source choices, and list-to-detail routing, validated.");
