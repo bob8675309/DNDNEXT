@@ -41,13 +41,13 @@ export function classFeatureChoiceStateRequiresSelection(state = EMPTY_CLASS_CHO
 
 export function classStepChoiceStateComplete(state = EMPTY_CLASS_CHOICE_STATE) {
   if (!state.catalogReady || !state.featureCatalogReady) return false;
-  const subclassComplete = !classChoiceStateRequiresSelection(state) || Boolean(selectedSubclassOption(state));
-  return subclassComplete && classFeatureGroupsComplete(state.featureGroups || [], state.featureSelections || {}, "class");
+  return !classChoiceStateRequiresSelection(state) || Boolean(selectedSubclassOption(state));
 }
 
 export function trainingClassChoiceStateComplete(state = EMPTY_CLASS_CHOICE_STATE) {
   if (!state.featureCatalogReady) return false;
-  return classFeatureGroupsComplete(state.featureGroups || [], state.featureSelections || {}, "training");
+  return classFeatureGroupsComplete(state.featureGroups || [], state.featureSelections || {}, "training")
+    && classFeatureGroupsComplete(state.featureGroups || [], state.featureSelections || {}, "class");
 }
 
 export function spellsClassChoiceStateComplete(state = EMPTY_CLASS_CHOICE_STATE) {
