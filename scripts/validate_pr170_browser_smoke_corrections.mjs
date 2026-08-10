@@ -11,6 +11,9 @@ const speciesBonus = read("components/NpcForgeSpeciesBonusPanel.js");
 const featRouting = read("utils/playerForgeFeatChoiceRouting.js");
 const subclassesText = read("utils/classes/subclassCompatibility.js");
 const classFeatureText = read("components/ClassFeatureText.js");
+const classGuide = read("components/NpcForgeClassGuide.js");
+const classGuideModel = read("components/NpcForgeClassGuideModel.js");
+const classFeatureDock = read("components/NpcForgeClassFeatureDock.js");
 const context = read("components/NpcForgeContextPanelRefined.js");
 const planHelperText = read("utils/artificerPlanChoices.js");
 const sourceChoices = read("components/SourceChoiceFields.js");
@@ -36,7 +39,10 @@ for (const token of ["Selected:", "Training → Feats & Class Abilities"]) asser
 for (const token of ["acquisitionOwnerType !== \"species-bonus\"", 'placement: "class"', 'resolverPlacement: "training"']) assert.ok(featRouting.includes(token), `Species Bonus feat routing missing ${token}`);
 
 for (const token of ["SOURCE_PUBLICATION_ORDER", "EFA: 20251209", "TCE: 20201117", "const identity = normalizeSubclassName(group.name)"]) assert.ok(subclassesText.includes(token), `Subclass newest-source dedupe missing ${token}`);
-for (const token of ["keepNestedDisclosureLocal", "onClick={keepNestedDisclosureLocal}", "onKeyDown={keepNestedDisclosureLocal}"]) assert.ok(classFeatureText.includes(token), `Nested class list collapse guard missing ${token}`);
+for (const token of ["keepNestedDisclosureLocal", "onClick={keepNestedDisclosureLocal}", "onKeyDown={keepNestedDisclosureLocal}", "onListItemDetail", "listedItemClick", "class-feature-text__listed-option"]) assert.ok(classFeatureText.includes(token), `Class-list disclosure/detail routing missing ${token}`);
+for (const token of ["publishListedOption", "model.resolveListedDetail", "onListItemDetail", "known plans/items use their canonical catalogue descriptions"]) assert.ok(classGuide.includes(token), `Class-guide listed-option detail routing missing ${token}`);
+for (const token of ["detailItems", "listedDetailCatalog", "canonicalItemDescription", "resolveListedDetail", 'from("items_catalog")']) assert.ok(classGuideModel.includes(token), `Class-guide canonical listed-detail model missing ${token}`);
+for (const token of ["Listed Option", "parentFeatureName", "normalized class-option or canonical item catalogue"]) assert.ok(classFeatureDock.includes(token), `Class detail dock listed-option presentation missing ${token}`);
 for (const token of ["backgroundFeatureTextForDisplay", "Consider customizing your spells", "ExpandedSpellList", 'from("spells_catalog")', "npc-forge-background-spell-name"]) assert.ok(context.includes(token), `Background smoke correction missing ${token}`);
 
 for (const token of ["catalogueSummary", "futureUnlocks", "availableCount", "full canonical item text", "canonicalPoolCount"]) assert.ok(planHelperText.includes(token), `Artificer plan availability/detail model missing ${token}`);
@@ -46,6 +52,10 @@ for (const token of ["character_sheets", "updated_at", "2500", "without broadeni
 assert.ok(!actionHook.includes("postgres_changes"), "sheet action refresh must not depend on an unpublished Realtime table");
 assert.ok(app.includes('import "../styles/character-forge-smoke-fixes.css";'), "smoke correction stylesheet is not loaded");
 for (const token of ["npc-forge-class-feature-dock", "position: sticky", "rgba(255, 255, 255, .82)", "npc-forge-background-spell-name"]) assert.ok(css.includes(token), `smoke correction CSS missing ${token}`);
+
+for (const protectedSource of [classFeatureText, classGuide, classGuideModel, classFeatureDock, context, planHelperText, sourceChoices, actionHook, css]) {
+  assert.ok(!/MapPageClient|map_routes|map_route_points|advance_all_characters|route_segment_progress/.test(protectedSource), "smoke correction crossed protected map/travel boundaries");
+}
 
 const { applySpeciesRuntimeChoiceAuthority } = await import(pathToFileURL(path.join(root, "utils/playerForgeSpeciesRuntimeChoices.js")).href);
 const prematureDeepGnome = applySpeciesRuntimeChoiceAuthority({
@@ -81,4 +91,4 @@ assert.equal(level2Plans[0].metadata.catalogueSummary.totalCount, 2, "availabili
 assert.equal(level2Plans[0].metadata.catalogueSummary.futureUnlocks[0].unlockLevel, 10, "future plan must be disclosed at its actual unlock level");
 assert.ok(level2Plans.every((group) => !group.fields[0].options.some((option) => option.key === "p2")), "future plan must remain non-selectable");
 
-console.log("PR #170 signed-in browser smoke corrections validated.");
+console.log("PR #170 signed-in browser smoke corrections, including list-to-detail-rail routing, validated.");
