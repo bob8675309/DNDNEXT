@@ -5,14 +5,18 @@ on:
     branches:
       - main
     paths:
+      - "components/CharacterAstralTrancePanel.js"
+      - "components/CharacterSheetRestSyncBridge.js"
       - "components/ClassFeatureText.js"
       - "components/NpcForgeClassFeatureDock.js"
       - "components/NpcForgeClassGuide.js"
       - "components/NpcForgeClassGuideModel.js"
       - "components/NpcForgeContextPanelRefined.js"
+      - "components/NpcForgeSourceChoiceFields.js"
       - "components/NpcForgeSpeciesBonusPanel.js"
       - "components/SourceChoiceFields.js"
       - "hooks/useNpcSheetActionData.js"
+      - "pages/login.js"
       - "pages/_app.js"
       - "styles/character-forge-smoke-fixes.css"
       - "utils/artificerPlanChoices.js"
@@ -27,14 +31,18 @@ on:
     branches:
       - "agent/character-forge-resilience-presentation"
     paths:
+      - "components/CharacterAstralTrancePanel.js"
+      - "components/CharacterSheetRestSyncBridge.js"
       - "components/ClassFeatureText.js"
       - "components/NpcForgeClassFeatureDock.js"
       - "components/NpcForgeClassGuide.js"
       - "components/NpcForgeClassGuideModel.js"
       - "components/NpcForgeContextPanelRefined.js"
+      - "components/NpcForgeSourceChoiceFields.js"
       - "components/NpcForgeSpeciesBonusPanel.js"
       - "components/SourceChoiceFields.js"
       - "hooks/useNpcSheetActionData.js"
+      - "pages/login.js"
       - "pages/_app.js"
       - "styles/character-forge-smoke-fixes.css"
       - "utils/artificerPlanChoices.js"
