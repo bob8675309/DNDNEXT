@@ -47,10 +47,20 @@ export function applySpeciesRuntimeChoiceAuthority({ groups = [], species = null
   const next = Array.isArray(groups) ? [...groups] : [];
 
   // These source traits are rest-configurable runtime authority, not permanent Forge proficiency choices.
+  // Deep Gnome Gift of the Svirfneblin is spell-routed. Before its first spell grant level,
+  // the generic parser can otherwise leave behind only an INT/WIS/CHA feature-ability field.
+  // The campaign resolves that spellcasting ability automatically when the spell grant is active,
+  // so a standalone pre-level-3 ability prompt must never be shown.
   const filtered = next.filter((group) => {
     const trait = norm(group?.label);
     if (identity.name === "githyanki" && identity.source === "MPMM" && trait === "astral knowledge") return false;
     if (identity.name === "khoravar" && identity.source === "EFA" && trait === "skill versatility") return false;
+    if (identity.name === "deep gnome" && identity.source === "MPMM" && trait === "gift of the svirfneblin") {
+      const fields = Array.isArray(group?.fields) ? group.fields : [];
+      const hasSpellField = fields.some((field) => field?.kind === "spell");
+      const onlyCastingAbility = fields.length > 0 && fields.every((field) => field?.kind === "ability");
+      if (!hasSpellField && onlyCastingAbility) return false;
+    }
     return true;
   });
 
