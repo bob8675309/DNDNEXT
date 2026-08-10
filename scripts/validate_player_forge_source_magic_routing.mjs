@@ -51,8 +51,8 @@ for (const token of [
   "upsert_player_forge_source_magic_spell_v1",
   "materialize_player_forge_source_magic_v1",
   "character_progression_materialize_player_forge_source_magic_v1",
-  "source_type,'species'",
-  "source_type,'feat'",
+  "new.character_id,v_spell.id,'species'",
+  "new.character_id,v_spell.id,'feat'",
 ]) required(m86.replace(/\s+/g, " "), token.replace(/\s+/g, " "), "Migration 86 source authority");
 required(m87, "'^[0-9]+$'", "Migration 87 level parser correction");
 required(m87, "[[:space:]]+", "Migration 87 choice parser correction");
