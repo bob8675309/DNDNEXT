@@ -63,18 +63,21 @@ function itemOption(row) {
     label: text(row?.item_name || row?.payload?.name),
     source,
     kind: "item",
-    description: text(row?.payload?.rulesShort || row?.payload?.item_description || row?.payload?.description),
+    // Prefer the full canonical item text. rulesShort remains only a final fallback.
+    description: text(row?.payload?.item_description || row?.payload?.description || row?.payload?.entriesText || row?.payload?.rulesShort),
     metadata: {
       itemId: row?.id || null,
       itemKey: row?.item_key || row?.payload?.item_key || null,
       itemType: row?.item_type || row?.payload?.uiType || null,
       rarity: row?.item_rarity || row?.payload?.rarity || null,
+      attunement: row?.payload?.reqAttune || row?.payload?.attunement || null,
       source,
     },
   };
 }
 
 function planOption(row) {
+  const minimumLevel = Math.max(1, Number(row?.prerequisites?.minClassLevel || 1));
   return {
     key: row.option_key,
     value: row.option_key,
@@ -87,6 +90,7 @@ function planOption(row) {
       optionKey: row.option_key,
       repeatable: Boolean(row.repeatable),
       prerequisites: row.prerequisites || {},
+      minClassLevel: minimumLevel,
       choiceSchema: row.choice_schema || {},
     },
   };
@@ -140,7 +144,25 @@ function childField({ groupId, plan, itemRows, priorItems }) {
     options,
     cadence: "creation",
     activeWhen: { groupId, fieldId: "plan", values: [plan.key] },
-    metadata: { planOptionKey: plan.key, choiceSchema: schema },
+    metadata: { planOptionKey: plan.key, choiceSchema: schema, canonicalPoolCount: options.length },
+  };
+}
+
+function catalogueSummary(catalogue = [], targetLevel = 1) {
+  const ordered = [...catalogue].sort((a, b) => Number(a?.prerequisites?.minClassLevel || 1) - Number(b?.prerequisites?.minClassLevel || 1) || text(a?.name).localeCompare(text(b?.name)));
+  const available = ordered.filter((row) => Math.max(1, Number(row?.prerequisites?.minClassLevel || 1)) <= targetLevel);
+  const future = new Map();
+  for (const row of ordered) {
+    const unlockLevel = Math.max(1, Number(row?.prerequisites?.minClassLevel || 1));
+    if (unlockLevel <= targetLevel) continue;
+    if (!future.has(unlockLevel)) future.set(unlockLevel, []);
+    future.get(unlockLevel).push(text(row.name));
+  }
+  return {
+    totalCount: ordered.length,
+    availableCount: available.length,
+    startingLevel: targetLevel,
+    futureUnlocks: [...future.entries()].map(([unlockLevel, names]) => ({ unlockLevel, count: names.length, names })),
   };
 }
 
@@ -150,6 +172,7 @@ export function buildArtificerPlanSourceGroups({ selectedClass = null, level = 1
   const slotLevels = EFA_ARTIFICER_PLAN_SLOT_LEVELS.filter((entryLevel) => entryLevel <= targetLevel);
   const catalogue = array(optionRows).filter((row) => row.option_type === "artificer-plan" && row.source === "EFA" && norm(row.class_key) === "artificer");
   if (!slotLevels.length || !catalogue.length) return [];
+  const summary = catalogueSummary(catalogue, targetLevel);
 
   const groups = [];
   for (let index = 0; index < slotLevels.length; index += 1) {
@@ -162,7 +185,7 @@ export function buildArtificerPlanSourceGroups({ selectedClass = null, level = 1
       if (minimum > targetLevel && row.option_key !== currentPlanKey) return false;
       if (!row.repeatable && prior.planNames.has(norm(row.name)) && row.option_key !== currentPlanKey) return false;
       return true;
-    }).map(planOption).sort((a, b) => Number(a.metadata?.prerequisites?.minClassLevel || 1) - Number(b.metadata?.prerequisites?.minClassLevel || 1) || a.label.localeCompare(b.label));
+    }).map(planOption).sort((a, b) => Number(a.metadata?.minClassLevel || 1) - Number(b.metadata?.minClassLevel || 1) || a.label.localeCompare(b.label));
 
     const selectedPlan = options.find((option) => option.key === currentPlanKey) || null;
     const fields = [{
@@ -193,7 +216,15 @@ export function buildArtificerPlanSourceGroups({ selectedClass = null, level = 1
       level: slotLevel,
       helper: `Plan slot originally gained at Artificer level ${slotLevel}. The selected plan must be legal for this starting level; wildcard plans also require one concrete canonical magic item.`,
       fields,
-      metadata: { family: "artificer-plan", slot: index + 1, acquisitionLevel: slotLevel, startingLevel: targetLevel },
+      metadata: {
+        family: "artificer-plan",
+        slot: index + 1,
+        acquisitionLevel: slotLevel,
+        startingLevel: targetLevel,
+        // Render once above the first plan selector. Future plans remain informational only
+        // and never enter field.options until the starting level actually qualifies.
+        catalogueSummary: index === 0 ? summary : null,
+      },
     });
   }
   return groups;
