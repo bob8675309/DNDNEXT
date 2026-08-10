@@ -4,7 +4,7 @@ import { ABILITY_DESCRIPTIONS } from "../utils/characterCreationGuidance";
 import { formatPlayerFacingText } from "../utils/playerFacingText";
 import { hasDedicatedSpeciesArtwork, handleSpeciesArtworkError, speciesArtworkFor } from "../utils/speciesArtwork";
 import { speciesFlavorLore } from "../utils/speciesLore";
-import { extractSpeciesTraitChoiceRules, formatSpeciesMovement, speciesTraitChoiceRuleComplete } from "../utils/speciesPresentation";
+import { extractSpeciesTraitChoiceRules, formatSpeciesMovement, speciesFixedLanguages, speciesTraitChoiceRuleComplete } from "../utils/speciesPresentation";
 import { backgroundStoryDescription } from "../utils/backgroundPresentation";
 import { supabase } from "../utils/supabaseClient";
 import { useNpcForgeSpeciesChoices } from "./NpcForgeSpeciesChoiceContext";
@@ -61,7 +61,7 @@ function BackgroundFeatChooser({ options = [], selectedFeat, onSelect }) { retur
 function BackgroundFeatureList({ features = [] }) { return features.length ? <div className="npc-forge-context-section npc-forge-background-features"><span>Background feature{features.length === 1 ? "" : "s"}</span><div>{features.map((feature, index) => <details key={`${feature.name}-${index}`} defaultOpen={features.length === 1}><summary>{feature.name}</summary><p>{formatPlayerFacingText(feature.description)}</p></details>)}</div></div> : null; }
 function ExpandedSpellList({ groups = [] }) { return groups.length ? <details className="npc-forge-context-section npc-forge-background-spells"><summary><span>Expanded spell list</span><em>Info</em></summary><div className="npc-forge-background-spell-body"><p>These spells join the class list when a class grants Spellcasting or Pact Magic; they are not automatically known or prepared.</p>{groups.map((group) => <div key={group.level}><strong>{group.label}</strong><span>{group.spells.join(", ")}</span></div>)}</div></details> : null; }
 
-export default function NpcForgeContextPanel({ step = 0, stepKey = "", detail = null, selectedSpecies = null, selectedBackground = null, backgroundMechanicDetails = null, selectedBackgroundFeat = null, backgroundFeatOptions = [], backgroundSkillSelections = {}, onToggleBackgroundSkill = null, onSelectBackgroundFeat = null, selectedClass = null, selectedSkill = null, selectedProfession = null, rolls = [], allocation = {}, finalAbilities = {}, draft = {} }) {
+export default function NpcForgeContextPanel({ playerMode = false, step = 0, stepKey = "", detail = null, selectedSpecies = null, selectedBackground = null, backgroundMechanicDetails = null, selectedBackgroundFeat = null, backgroundFeatOptions = [], backgroundSkillSelections = {}, onToggleBackgroundSkill = null, onSelectBackgroundFeat = null, selectedClass = null, selectedSkill = null, selectedProfession = null, rolls = [], allocation = {}, finalAbilities = {}, draft = {} }) {
   const activeSpecies = detail?.type === "species" && detail.option ? detail.option : stepKey === "species" || step === 0 ? selectedSpecies : null;
   const activeBackground = detail?.type === "background" && detail.option ? detail.option : stepKey === "background" || step === 1 ? selectedBackground : null;
   const { state: speciesChoiceState, registerSpecies, selectChoice } = useNpcForgeSpeciesChoices();
@@ -97,13 +97,14 @@ export default function NpcForgeContextPanel({ step = 0, stepKey = "", detail = 
 
   if (activeSpecies) {
     const option = activeSpecies;
+    const fixedLanguages = speciesFixedLanguages(option);
     const facts = [
       ["Speed", formatSpeciesMovement(option.metadata?.speed ?? option.speed)],
       ["Size", labelList(option.size, SIZE_LABELS) || "Source default"],
       ["Creature", labelList(option.creatureTypes) || "Humanoid"],
       ["Darkvision", option.darkvision ? `${option.darkvision} ft.` : null],
-      ["Lineage", labelList(option.lineages) || "None required"],
-      ["Languages", labelList(option.languages) || safeText(draft.languagesText) || null],
+      ...(!playerMode ? [["Lineage", labelList(option.lineages) || "None required"]] : []),
+      ["Languages", fixedLanguages.length ? fixedLanguages.join(", ") : labelList(option.languages) || safeText(draft.languagesText) || null],
     ].filter(([, value]) => value && value !== "Not listed");
     return <div className="npc-forge-context-card is-origin is-species"><section className="npc-forge-species-hero"><figure className="npc-forge-species-artwork"><img src={speciesArtworkFor(option.name)} onError={handleSpeciesArtworkError} alt={`Original ${option.name} species reference artwork`} /><figcaption><span>{option.name} reference</span>{!hasDedicatedSpeciesArtwork(option.name) ? <small>Neutral reference art</small> : null}</figcaption></figure><div className="npc-forge-species-hero__copy"><span>In the world</span><p>{speciesFlavorLore(option)}</p><div className="npc-forge-species-facts">{facts.map(([label, value]) => <div key={label}><small>{label}</small><strong>{value}</strong></div>)}</div></div></section><SpeciesTraitDetails details={option.traitDetails} traits={option.traits} choiceRules={speciesChoiceRules} selections={speciesChoiceSelections} onSelectChoice={selectChoice} spellHelp={speciesSpellHelp} /><div className="npc-forge-context-note">Open the purple feature cards for complete rules. Required species choices appear inside their owning feature.</div><style jsx global>{`
       .npc-forge-context-card.is-species{display:grid!important;grid-template-columns:1fr!important}.npc-forge-species-hero{display:grid;grid-template-columns:minmax(280px,42%) minmax(0,1fr);min-height:360px;overflow:hidden;border:1px solid rgba(168,108,255,.34);border-radius:15px;background:radial-gradient(circle at 20% 20%,rgba(126,72,199,.2),transparent 55%),rgba(10,12,20,.92)}.npc-forge-species-hero .npc-forge-species-artwork{height:100%;min-height:360px;aspect-ratio:auto;border:0;border-radius:0}.npc-forge-species-hero .npc-forge-species-artwork img{object-fit:cover;object-position:center top}.npc-forge-species-hero__copy{display:flex;flex-direction:column;justify-content:center;gap:14px;padding:clamp(18px,3vw,34px)}.npc-forge-species-hero__copy>span{color:#d7bfff;font-size:.68rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase}.npc-forge-species-hero__copy>p{margin:0;color:rgba(255,255,255,.82);font-size:.88rem;line-height:1.72}.npc-forge-species-facts{display:flex;flex-wrap:wrap;gap:7px}.npc-forge-species-facts>div{display:grid;gap:1px;padding:6px 9px;border:1px solid rgba(88,214,199,.25);border-radius:8px;background:rgba(88,214,199,.07)}.npc-forge-species-facts small{color:rgba(255,255,255,.48);font-size:.52rem;text-transform:uppercase}.npc-forge-species-facts strong{color:#d8fff9;font-size:.66rem}.npc-forge-species-feature-list{align-items:start}.npc-forge-species-feature-list details{align-self:start;border-color:rgba(168,108,255,.34)!important;background:linear-gradient(90deg,rgba(126,72,199,.15),rgba(88,214,199,.035))!important}@media(max-width:850px){.npc-forge-species-hero{grid-template-columns:1fr}.npc-forge-species-hero .npc-forge-species-artwork{min-height:420px}.npc-forge-species-hero__copy{justify-content:start}}
@@ -126,7 +127,7 @@ export default function NpcForgeContextPanel({ step = 0, stepKey = "", detail = 
     background: ["Background", "Choose a background", "Select a background to read its history, skills, tools, feat, and expanded spells."],
     class: ["Class", selectedClass?.class_name || "Choose a class", "Choose a class to inspect its full progression and subclasses."],
     abilities: ["Ability Scores", "Choose a generation method", "Generate or assign the six base scores, then choose one Species Bonus package."],
-    training: ["Training", "Skills and professions", "Background grants are automatic. Class skills and crafting professions share the remaining Training choices."],
+    training: ["Training", "Skills, feats, and class abilities", "Use Skills & Proficiencies for training, then Feats & Class Abilities for persistent progression choices."],
     spells: ["Starting Magic", "Choose legal class spells", "The class and starting level determine cantrip, known, spellbook, prepared, and spell-level limits."],
   };
   const fallback = fallbacks[stepKey] || ["Character", "Continue building", "Complete this section, then review the finished character dossier."];
