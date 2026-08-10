@@ -6,7 +6,8 @@ This directory contains the project's living handoff, roadmap, architecture, and
 
 - `DNDNext_Current_Handoff_Prompt.md` — copy-ready continuation prompt and protected boundaries.
 - `Documentation_Refresh_Manifest.md` — documentation precedence and current PR #170 checkpoint.
-- `PR170_Final_Acceptance_Status.md` — current migration/build/database/authenticated acceptance and remaining browser-only gap.
+- `PR170_Final_Acceptance_Status.md` — current migration/build/database/authenticated acceptance and remaining focused browser re-smoke.
+- `PR170_Browser_Smoke_Corrections_Status.md` — real signed-in browser findings, migration 90 Rage restoration, Forge presentation corrections, and re-smoke targets.
 - `Current_Development_Status_and_Roadmap.md` — broad platform roadmap/history; newer subsystem ledgers supersede older sections.
 - `Unified_Character_Forge_Status.md` — controlling Forge/progression/runtime ledger.
 
@@ -37,12 +38,12 @@ This directory contains the project's living handoff, roadmap, architecture, and
 - `Dread_Allegiance_Runtime_Status.md` — linked allegiance/resistance/cantrip runtime.
 - `Fiendish_Resilience_Runtime_Status.md` — Short/Long-Rest resistance runtime.
 - `Circle_of_the_Land_Runtime_Status.md` — Circle Spell package runtime.
-- `Artificer_Magic_Item_Plans_Status.md` — EFA learned-plan authority.
+- `Artificer_Magic_Item_Plans_Status.md` — EFA learned-plan authority and canonical wildcard item pools.
 - `Boon_Energy_Resistance_Runtime_Status.md` — Boon runtime resistance choices.
 - `Feat_Runtime_Expertise_Status.md` — Echoing Soul / Zhentarim Expertise lifecycle.
 - `Cartomancer_Runtime_Status.md` — Hidden Ace temporary access.
 
-Current cadence rule: persistent source-owned decisions belong to Forge/progression; rest decisions belong to runtime; per-use choices belong to action UI. Do not turn runtime choices into permanent Forge locks. A post-rest replacement opportunity is not automatically a missing choice: migration 89 distinguishes an inactive rest-cycle benefit from a still-active persistent selection.
+Current cadence rule: persistent source-owned decisions belong to Forge/progression; rest decisions belong to runtime; per-use choices belong to action UI. Do not turn runtime choices into permanent Forge locks. A post-rest replacement opportunity is not automatically a missing choice: migration 89 distinguishes an inactive rest-cycle benefit from a still-active persistent selection. Migration 90 adds source-aware standalone Rest restoration for the sheet-side Rage action state without altering tactical combat state.
 
 ## Character sheet / inventory / crafting
 
