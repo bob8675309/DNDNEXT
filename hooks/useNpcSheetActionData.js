@@ -48,9 +48,12 @@ export default function useNpcSheetActionData({
   const id = safeText(characterId);
   const requestRef = useRef(0);
   const activeIdRef = useRef("");
+  const sheetUpdatedRef = useRef(onSheetUpdated);
   const [snapshot, setSnapshot] = useState(() => emptySnapshot());
   const [busyKey, setBusyKey] = useState("");
   const featureSignature = useMemo(() => sheetFeatureSignature(sheet || {}), [sheet]);
+
+  useEffect(() => { sheetUpdatedRef.current = onSheetUpdated; }, [onSheetUpdated]);
 
   useEffect(() => {
     const requestId = ++requestRef.current;
@@ -154,6 +157,30 @@ export default function useNpcSheetActionData({
     // The signature intentionally excludes transient actionState changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, featureSignature, id]);
+
+  // Rest/class-resource RPCs update character_sheets outside this hook. Listen for that row so
+  // transient actionState (for example Rage uses) refreshes immediately without reloading the page.
+  // The callback lives in a ref so parent callback identity changes do not rebuild the channel.
+  useEffect(() => {
+    if (!id || !enabled) return undefined;
+    let active = true;
+    const channel = supabase.channel(`character-sheet-action-state-${id}`)
+      .on("postgres_changes", {
+        event: "UPDATE",
+        schema: "public",
+        table: "character_sheets",
+        filter: `character_id=eq.${id}`,
+      }, (payload) => {
+        if (!active || activeIdRef.current !== id) return;
+        const nextSheet = payload?.new?.sheet;
+        if (nextSheet && typeof nextSheet === "object") sheetUpdatedRef.current?.(nextSheet);
+      })
+      .subscribe();
+    return () => {
+      active = false;
+      supabase.removeChannel(channel);
+    };
+  }, [enabled, id]);
 
   const handleActionCommand = useCallback(async (action, operation) => {
     const activeId = safeText(characterId);
