@@ -20,6 +20,18 @@ export function useNpcForgeSourceChoices() {
   return useContext(NpcForgeSourceChoiceContext);
 }
 
+function applyAutomaticSourceSelections(groups = [], selections = {}) {
+  const next = { ...(selections || {}) };
+  for (const group of groups || []) {
+    for (const field of group?.fields || []) {
+      if (!field?.autoSelect) continue;
+      const keys = (field.options || []).map((option) => option.key).filter(Boolean).slice(0, Number(field.count || 1));
+      next[group.id] = { ...(next[group.id] || {}), [field.id]: keys };
+    }
+  }
+  return normalizeSourceChoiceSelections(groups, next);
+}
+
 export function normalizeSourceChoiceState(groups = [], catalogReady = true, previous = EMPTY_SOURCE_CHOICE_STATE, scope = "foundation") {
   const validGroups = normalizeFeatSourceChoiceGroups(Array.isArray(groups) ? groups : []);
   const previousScopes = previous?.scopes && typeof previous.scopes === "object" ? previous.scopes : {};
@@ -28,10 +40,11 @@ export function normalizeSourceChoiceState(groups = [], catalogReady = true, pre
     [scope || "foundation"]: { groups: validGroups, catalogReady: Boolean(catalogReady) },
   };
   const combinedGroups = normalizeFeatSourceChoiceGroups(Object.values(scopes).flatMap((entry) => Array.isArray(entry?.groups) ? entry.groups : []));
+  const normalizedSelections = normalizeSourceChoiceSelections(combinedGroups, previous?.selections || {});
   return {
     scopes,
     groups: combinedGroups,
-    selections: normalizeSourceChoiceSelections(combinedGroups, previous?.selections || {}),
+    selections: applyAutomaticSourceSelections(combinedGroups, normalizedSelections),
     catalogReady: Object.values(scopes).every((entry) => Boolean(entry?.catalogReady)),
   };
 }
