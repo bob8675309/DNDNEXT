@@ -144,12 +144,26 @@ function humanChoiceRule(detail) {
   return null;
 }
 
+function runtimeOwnedTraitChoice(option = {}, detail = {}) {
+  const species = slug(option.name || option.species_name || option.option_name);
+  const source = String(option.source || option.metadata?.source || "").trim().toUpperCase();
+  const trait = slug(detail.name);
+  if (species === "astral-elf" && source === "AAG" && trait === "astral-trance") return true;
+  if (species === "githyanki" && source === "MPMM" && trait === "astral-knowledge") return true;
+  if (species === "khoravar" && source === "EFA" && trait === "skill-versatility") return true;
+  return false;
+}
+
 export function extractSpeciesTraitChoiceRules(option = {}) {
   const details = Array.isArray(option.traitDetails) && option.traitDetails.length
     ? option.traitDetails
     : extractSpeciesTraitDetails(option.metadata || {});
 
   return details.flatMap((detail) => {
+    // These traits are displayed here for rules reference, but their mutable proficiency state belongs
+    // to dedicated runtime authority rather than the permanent Species acquisition surface.
+    if (runtimeOwnedTraitChoice(option, detail)) return [];
+
     const humanRule = humanChoiceRule(detail);
     if (humanRule) return [humanRule];
 
