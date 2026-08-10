@@ -16,7 +16,7 @@ Before changing anything:
 
 1. inspect current PR head and exact-head GitHub/Vercel status;
 2. inspect live Supabase migrations/schema/data/grants for the requested slice;
-3. read `docs/README.md`, `docs/Documentation_Refresh_Manifest.md`, `docs/PR170_Final_Acceptance_Status.md`, and the relevant dedicated ledger;
+3. read `docs/README.md`, `docs/Documentation_Refresh_Manifest.md`, `docs/PR170_Final_Acceptance_Status.md`, `docs/PR170_Browser_Smoke_Corrections_Status.md`, and the relevant dedicated ledger;
 4. reconcile source, live DB, and docs before writing;
 5. state a bounded safe patch plan before implementation;
 6. verify every helper, hook, state variable, prop, and RPC argument is defined and passed;
@@ -29,13 +29,13 @@ GitHub/Supabase outrank prior-chat prose.
 - Do not mix world-map behavior with town/city-map behavior.
 - Do not touch the world map unless explicitly requested.
 - `components/MapPageClient.js` is outside current Forge/progression/runtime scope.
-- Do not alter route/travel/weather, unrelated crafting/inventory, or tactical action execution.
+- Do not alter route/travel/weather, unrelated crafting/inventory execution, or tactical action execution.
 - Prefer additive migrations over rewriting deployed history.
 - Do not merge PR #170 without explicit user approval.
 
 ## Current live checkpoint
 
-Supabase is accepted through **migration 89**.
+Supabase is accepted through **migration 90**.
 
 Latest migrations:
 
@@ -45,9 +45,42 @@ Latest migrations:
 - 86 `player_forge_source_magic_materialization` — `20260810075628`;
 - 87 `source_magic_level_parser_fix` — `20260810075645`;
 - 88 `source_magic_feat_name_normalization_fix` — `20260810075724`;
-- 89 `pending_rest_runtime_choices` — `20260810181530`.
+- 89 `pending_rest_runtime_choices` — `20260810181530`;
+- 90 `rest_class_feature_restoration` — `20260810205646`.
 
 During migration-89 startup, production was found ahead of source control for migrations 83-85. Their exact behavioral source plus Defensive Tactics/Whispers reachable panels were restored to the PR branch. Do **not** re-apply 83-85 to production.
+
+## Real browser smoke checkpoint
+
+The user performed a real signed-in browser smoke after migration 89. It exposed concrete defects and therefore replaced the previous “browser not yet tested” state with a **tested-but-corrections-required** state.
+
+The correction pass is documented in `PR170_Browser_Smoke_Corrections_Status.md`.
+
+The corrected build still needs the user to re-smoke the affected cases before PR #170 can claim final browser acceptance.
+
+## Migration 90 — Rage/rest restoration
+
+Read `PR170_Browser_Smoke_Corrections_Status.md`.
+
+The standalone sheet Rest RPC previously restored spell slots/limited spell uses but did not restore sheet-side class action state. Migration 90 adds a narrow source-aware helper for the class action currently persisted by the sheet: Barbarian Rage.
+
+Accepted behavior:
+
+- XPHB Rage: +1 spent use on Short Rest, all spent uses on Long Rest;
+- PHB Rage: no Short-Rest restoration, all spent uses on Long Rest;
+- rest clears the sheet-side active Rage flag;
+- `complete_character_rest_v1` returns the updated `sheet` plus `restResult.restoredClassFeatureUses`;
+- the existing active-encounter rest guard remains transactional authority;
+- no tactical/encounter state is changed.
+
+Deployed rollback tests proved XPHB Short/Long and PHB Short/Long behavior plus an authenticated owner-facing Long Rest from 2/3 -> returned 3/3. All QA rolled back.
+
+Important live state: Varges remains **2/3 Rage** because QA deliberately did not repair a valued character. His next normal qualifying rest should exercise the deployed behavior. There are **2 legitimate user rest-log rows** from browser smoke; do not treat them as QA residue.
+
+Migration-90 ACL:
+
+- public Rest RPC: anon false; authenticated/service true;
+- private Rage restoration helper: anon/authenticated false; service true.
 
 ## Current Forge architecture
 
@@ -55,18 +88,28 @@ The shared NPC/player Character Forge is the creation surface. The player-facing
 
 - **Species** — identity, lore, feature explanation; fixed source languages remain source authority;
 - **Background** — background identity and fixed source grants;
-- **Class** — class/subclass explanation and progression preview, not a dumping ground for persistent selectors;
-- **Abilities** — score generation/allocation;
+- **Class** — class/subclass explanation and progression preview;
+- **Abilities** — score generation/allocation plus Species Bonus package selection only;
 - **Training → Skills & Proficiencies** — skills, tools, Expertise/training decisions;
-- **Training → Feats & Class Abilities** — higher-level feats, Invocations, Artificer plans, and other persistent feature catalogues;
+- **Training → Feats & Class Abilities** — higher-level feats, Invocations, Artificer plans, Species-Bonus-feat owned non-spell choices, and other persistent feature catalogues;
 - **Spells** — class spells plus spell-centric Species/Feat/Background/Class-feature choices, including noncasters with source-owned magic;
 - **Review** — manual choices plus automatic source-policy resolutions.
 
-Read `Player_Forge_Choice_Routing_and_Source_Magic_Status.md`.
+### Browser-smoke presentation corrections
 
-### Source magic — migrations 86-88
+- Deep Gnome Gift of the Svirfneblin no longer leaves a standalone INT/WIS/CHA prompt before an actual level-gated spell grant.
+- SCC/Witherbloom display removes trailing non-mechanical spell-customization flavor without rewriting imported source data.
+- Background expanded spell names load descriptions/casting/range/duration from `spells_catalog` for hover/focus help.
+- Player Forge secondary copy has higher contrast.
+- Nested long Class lists stop propagation so native disclosures open and close independently.
+- The desktop Class feature dock stays sticky through tall guide content; responsive layout returns it to static flow.
+- Species Bonus feat selection is acknowledged on Abilities; owned follow-up choices resolve later in the appropriate Training/Spells category.
+- Same-name subclass reprints collapse to one option: complete definitions beat placeholders; among complete definitions, newest known publication wins.
+- Artificer plan selectors now disclose current catalogue availability and later unlocks while keeping future plans non-selectable. Wildcard items use canonical item detail.
 
-Server authority now materializes validated routed Species/Feat magic into `character_spells` with provenance.
+## Source magic — migrations 86-88
+
+Server authority materializes validated routed Species/Feat magic into `character_spells` with provenance.
 
 Rollback acceptance covers:
 
@@ -103,67 +146,43 @@ Read `Pending_Rest_Runtime_Choices_Status.md`.
 2. `optionalChanges` — current persistent benefit remains active; quiet/collapsed;
 3. `availableActions` — optional post-rest actions; quiet/collapsed.
 
-Rollback acceptance directly proved:
-
-- Astral Trance after Long Rest → `hasAttention=true`, one temporary `needsSelection`;
-- Wild Heart Owl after newer Long Rest → Owl remains active, `hasAttention=false`, one optional persistent replacement.
-
-The notice respects reduced-motion and refreshes through focus/visibility/runtime-choice events plus a short polling fallback.
-
-## Progression ACL checkpoint
-
-Migration 85 retained `get_character_level_class_choice_options_v2` because current client compatibility code still references v1/v2/v3. It revoked anonymous execute from v2 while retaining authenticated/service-role compatibility. Authenticated rollback acceptance invoked the live v2 signature successfully.
-
-Do not use this bounded cleanup as justification to alter unrelated SECURITY DEFINER surfaces. Current Supabase advisor findings elsewhere remain separate audit backlog.
+Rollback acceptance directly proved Astral Trance as attention-required and Wild Heart as quiet optional replacement.
 
 ## Exact-head and production evidence
 
-Before migration 89 deployment, exact head `a05c4b03f9a36cbf9021108aa07856cfab474fd1` passed **31/31 PR-triggered workflows** and Vercel.
+Immediately before migration 90 deployment, exact code head `98b55355ed92d3d3309c09b8c534095d13859089` passed **32/32 PR-triggered GitHub workflows** and Vercel.
 
-After migration 89 rollback QA, production remains:
+After deployed migration-90 rollback QA, production remains:
 
 - 7 characters;
 - 7 character sheets;
 - 30 character-spell rows;
 - 7 progression rows;
 - 18 inventory rows;
-- 0 runtime rows;
-- 0 rest-log rows;
-- 0 migration-89 QA residue;
+- 2 legitimate user rest-log rows;
+- Varges Rage 2/3, unchanged by QA;
 - 20 locations;
 - 4 map routes;
 - 9 map route points.
 
-Documentation-only commits after this checkpoint must be exact-head gated again.
+Documentation commits after that code checkpoint move the branch head and must be exact-head gated again.
 
 ## Immediate next step
 
-Do **not** start another rules-family implementation by default. PR #170 is at closure state.
+Do **not** start another broad rules-family implementation by default. The immediate task is user re-smoke of the corrected cases.
 
-Next actions:
+### Focused re-smoke targets
 
-1. reconcile final docs/PR body;
-2. require exact-head CI/Vercel after that docs commit;
-3. perform a real signed-in browser smoke if the user wants that final external presentation proof;
-4. immediately before an explicitly approved merge, re-check PR head/status, live migration list, ACLs, and zero residue;
-5. merge only with explicit user approval.
+1. XPHB Barbarian spent Rage + Short/Long Rest restoration; normal Long Rest from Varges's current 2/3 should return 3/3.
+2. Deep Gnome level 1 has no meaningless casting-ability prompt; levels 3/5 still resolve source magic.
+3. Witherbloom trailing flavor is gone, secondary text is readable, expanded spell names expose descriptions on hover/focus.
+4. Long Class option lists can expand and collapse normally.
+5. Class feature detail dock follows the tall guide on desktop and returns to normal placement at the top.
+6. Species Bonus feat is acknowledged on Abilities; feat-owned decisions resolve later.
+7. Duplicate same-name subclasses are absent while a complete definition remains available.
+8. Artificer Magic Item Plans show current availability, later unlocks, and canonical wildcard item detail without allowing future plans early.
 
-### Browser smoke targets
-
-- Aven fixed languages;
-- Deep Gnome levels 3/5 source magic;
-- Astral Fire routing to Spells;
-- Witherbloom-only Strixhaven choices;
-- Warlock Invocation selection in Training;
-- higher-level feat catalogue in Training;
-- noncaster source-owned Spells;
-- responsive Continue/Back and scrolling;
-- Review / Known Spellbook persistence;
-- Astral-Trance-style post-rest attention;
-- Wild-Heart-style persistent optional replacement staying quiet;
-- resolving a runtime choice clears/reclassifies the notice.
-
-The connected toolset cannot claim this real interactive signed-in browser smoke on its own.
+After the user reports those results, fix any remaining concrete browser defect or, if all pass, perform the final live/head/residue check and await explicit merge approval.
 
 ## Delivery discipline
 
