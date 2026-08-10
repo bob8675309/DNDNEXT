@@ -3,6 +3,7 @@ import { supabase } from "../utils/supabaseClient";
 import { buildArtificerPlanSourceGroups } from "../utils/artificerPlanChoices";
 import { buildAdvancementSourceChoiceGroups } from "../utils/playerForgeAdvancement";
 import { buildFeatSourceChoiceGroups, featGrantInstancesFromSelections } from "../utils/playerForgeFeatChoices";
+import { routeFeatSourceChoiceGroups } from "../utils/playerForgeFeatChoiceRouting";
 import { buildSpeciesSourceChoiceGroups } from "../utils/playerForgeSpeciesChoices";
 import { applySpeciesRuntimeChoiceAuthority } from "../utils/playerForgeSpeciesRuntimeChoices";
 import { buildWarlockInvocationSourceGroups } from "../utils/warlockInvocationChoices";
@@ -297,9 +298,10 @@ export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, contro
   const featInstances = useMemo(() => [...baseFeatInstances, ...sourceFeatInstances], [baseFeatInstances, sourceFeatInstances]);
   const featGroups = useMemo(() => {
     const nested = buildFeatSourceChoiceGroups({ featInstances, toolRows: controller?.toolRows || [], spells, level: controller?.draft?.level || 1 });
-    const byInstance = new Map(nested.map((entry) => [entry.metadata?.featInstanceId || entry.ownerKey, entry]));
+    const routed = routeFeatSourceChoiceGroups({ groups: nested, selectedBackground: controller?.selectedBackground || null, spells });
+    const byInstance = new Map(routed.map((entry) => [entry.metadata?.featInstanceId || entry.ownerKey, entry]));
     return featInstances.map((instance) => byInstance.get(instance.instanceId) || emptyFeatGroup(instance));
-  }, [controller?.draft?.level, controller?.toolRows, featInstances, spells]);
+  }, [controller?.draft?.level, controller?.selectedBackground, controller?.toolRows, featInstances, spells]);
 
   useEffect(() => {
     registerGroups(playerMode ? featGroups : [], !playerMode || spellCatalogReady, "feats");
