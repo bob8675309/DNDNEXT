@@ -103,6 +103,25 @@ export function extractSpeciesTraitDetails(metadata = {}) {
   }).filter(Boolean);
 }
 
+export function speciesFixedLanguages(option = {}) {
+  const details = Array.isArray(option.traitDetails) && option.traitDetails.length
+    ? option.traitDetails
+    : extractSpeciesTraitDetails(option.metadata || {});
+  const languageTrait = details.find((detail) => /^languages?$/i.test(String(detail?.name || "").trim()));
+  const description = String(languageTrait?.description || "").replace(/\s+/g, " ").trim();
+  if (!description || /\b(?:choose|choice|of your choice|additional language)\b/i.test(description)) return [];
+  const match = description.match(/(?:speak\s*,?\s*read\s*,?\s*(?:and\s+)?write|speak\s*,?\s*read\s+and\s+write)\s+([^.;]+)/i);
+  if (!match) return [];
+  return uniqueText(
+    match[1]
+      .replace(/\s+or\s+/gi, ",")
+      .replace(/\s+and\s+/gi, ",")
+      .split(",")
+      .map((value) => value.trim().replace(/^(?:the\s+)?/i, "").replace(/\s+language$/i, ""))
+      .filter((value) => /^[A-Za-z][A-Za-z' -]*$/.test(value)),
+  );
+}
+
 function humanChoiceRule(detail) {
   const name = slug(detail.name);
   const description = String(detail.description || "");
