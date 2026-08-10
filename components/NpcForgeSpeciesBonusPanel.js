@@ -1,5 +1,4 @@
 import { ABILITY_KEYS, ABILITY_LABELS } from "../utils/characterCreation";
-import NpcForgeSourceChoiceFields from "./NpcForgeSourceChoiceFields";
 
 export default function NpcForgeSpeciesBonusPanel({
   draft,
@@ -15,6 +14,7 @@ export default function NpcForgeSpeciesBonusPanel({
     plusOnes: [],
     featId: "",
   };
+  const selectedFeat = featOptions.find((feat) => String(feat?.id || "") === String(speciesBonus.featId || "")) || null;
 
   return (
     <section className="npc-forge-species-bonus npc-forge-species-bonus--context">
@@ -93,9 +93,12 @@ export default function NpcForgeSpeciesBonusPanel({
             </select>
             <small>Origin feats are included. Normal prerequisites still apply.</small>
           </label>
-          <NpcForgeSourceChoiceFields placement="abilities" ownerType="feat" title="Complete this feat's owned choices" />
+          {selectedFeat ? <div className="npc-forge-species-feat-routing-note"><strong>Selected: {selectedFeat.name}</strong><span>The feat is acknowledged here. Any choices owned by the feat are completed later in <b>Training → Feats & Class Abilities</b>.</span></div> : null}
         </>
       ) : null}
+      <style jsx global>{`
+        .npc-forge-species-feat-routing-note{display:grid;gap:4px;margin-top:8px;padding:9px 10px;border-left:3px solid #58d6c7;border-radius:8px;background:rgba(88,214,199,.075)}.npc-forge-species-feat-routing-note strong{color:#d8fff9;font-size:.68rem}.npc-forge-species-feat-routing-note span{color:rgba(255,255,255,.82);font-size:.63rem;line-height:1.45}.npc-forge-species-feat-routing-note b{color:#fff}
+      `}</style>
     </section>
   );
 }
