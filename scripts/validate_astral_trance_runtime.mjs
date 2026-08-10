@@ -13,6 +13,7 @@ const forgeCore = read("components/NpcForgeCoreSupport.js");
 const forgeController = read("components/useNpcForgeController.js");
 const forgeDerived = read("components/useNpcForgeDerivedModel.js");
 const forgeSpeciesRuntime = read("utils/playerForgeSpeciesRuntimeChoices.js");
+const speciesPresentation = read("utils/speciesPresentation.js");
 
 const need = (source, token, label = token) => {
   if (!source.includes(token)) throw new Error(`Missing Astral Trance contract ${label}: ${token}`);
@@ -109,15 +110,22 @@ for (const token of [
   'trait === "astral trance"',
   "return false",
 ]) need(forgeSpeciesRuntime, token, `generic Forge exclusion ${token}`);
+for (const token of [
+  "runtimeOwnedTraitChoice",
+  'species === "astral-elf"',
+  'source === "AAG"',
+  'trait === "astral-trance"',
+  "if (runtimeOwnedTraitChoice(option, detail)) return []",
+]) need(speciesPresentation, token, `embedded Forge exclusion ${token}`);
 forbid(migration, "speciesTraitChoices", "permanent species-choice mutation");
 forbid(migration, "speciesChoiceFeats", "permanent species-choice mutation");
 forbid(migration, "classFeatureChoices", "permanent class-choice mutation");
 forbid(migration, "update public.players", "account-wide sheet projection");
 
-for (const source of [migration, skillCorrection, speciesCorrection, panel, restSyncBridge, sheetPanel, runtime, actions, forgeSpeciesRuntime]) {
+for (const source of [migration, skillCorrection, speciesCorrection, panel, restSyncBridge, sheetPanel, runtime, actions, forgeSpeciesRuntime, speciesPresentation]) {
   for (const token of ["MapPageClient", "map_routes", "advance_all_characters", "weather"]) {
     forbid(source, token, `protected world boundary ${token}`);
   }
 }
 
-console.log("Astral Trance source eligibility, complete skill mapping, compact Astral Elf identity, Long-Rest expiry/configuration, runtime-only Forge exclusion, bounded post-Rest sheet sync, non-destructive additive skill/weapon overlays, firearm exclusion, and protected boundaries validated.");
+console.log("Astral Trance source eligibility, complete skill mapping, compact Astral Elf identity, Long-Rest expiry/configuration, runtime-only exclusion from both generic and embedded Forge paths, bounded post-Rest sheet sync, non-destructive additive skill/weapon overlays, firearm exclusion, and protected boundaries validated.");
