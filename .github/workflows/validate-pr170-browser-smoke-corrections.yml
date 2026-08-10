@@ -6,6 +6,9 @@ on:
       - main
     paths:
       - "components/ClassFeatureText.js"
+      - "components/NpcForgeClassFeatureDock.js"
+      - "components/NpcForgeClassGuide.js"
+      - "components/NpcForgeClassGuideModel.js"
       - "components/NpcForgeContextPanelRefined.js"
       - "components/NpcForgeSpeciesBonusPanel.js"
       - "components/SourceChoiceFields.js"
@@ -25,6 +28,9 @@ on:
       - "agent/character-forge-resilience-presentation"
     paths:
       - "components/ClassFeatureText.js"
+      - "components/NpcForgeClassFeatureDock.js"
+      - "components/NpcForgeClassGuide.js"
+      - "components/NpcForgeClassGuideModel.js"
       - "components/NpcForgeContextPanelRefined.js"
       - "components/NpcForgeSpeciesBonusPanel.js"
       - "components/SourceChoiceFields.js"
