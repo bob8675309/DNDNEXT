@@ -93,7 +93,8 @@ requireToken(forgeSteps, "NpcForgeClassFeatureDock", "class feature dock placeme
 requireToken(forgeSteps, "NpcForgeSpeciesBonusPanel", "ability Species Bonus placement");
 requireToken(forgeSteps, "speciesFixedLanguages", "source-defined player languages");
 requireToken(forgeSteps, "autoSelect: true", "fixed player languages");
-forbidToken(forgeSteps, "playerMode && selectedSpecies?.lineages?.length", "player-facing catalog lineage");
+requireToken(forgeSteps, "!playerMode && selectedSpecies?.lineages?.length", "NPC-only catalog lineage presentation");
+forbidToken(forgeSteps, "{playerMode && selectedSpecies?.lineages?.length ?", "player-facing catalog lineage");
 requireToken(context, "npc-forge-species-hero", "species hero composition");
 requireToken(context, "npc-forge-species-facts", "species compact facts");
 requireToken(context, "npc-forge-species-feature-list", "species expandable rules");
