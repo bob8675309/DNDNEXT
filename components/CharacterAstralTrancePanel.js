@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import CharacterDreadAllegiancePanel from "./CharacterDreadAllegiancePanel";
+import CharacterSheetRestSyncBridge from "./CharacterSheetRestSyncBridge";
 
 function safeText(value) {
   return String(value ?? "").trim();
@@ -104,5 +105,5 @@ export default function CharacterAstralTrancePanel({ characterId, sheet = {}, on
     `}</style>
   </section>;
 
-  return <>{astralPanel}<CharacterDreadAllegiancePanel characterId={characterId} sheet={sheet} onSheetUpdated={onSheetUpdated} /></>;
+  return <><CharacterSheetRestSyncBridge characterId={characterId} onSheetUpdated={onSheetUpdated} />{astralPanel}<CharacterDreadAllegiancePanel characterId={characterId} sheet={sheet} onSheetUpdated={onSheetUpdated} /></>;
 }
