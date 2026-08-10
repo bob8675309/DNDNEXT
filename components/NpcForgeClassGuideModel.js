@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import { buildClassFeatureChoiceGroups } from "../utils/classFeatureChoices";
 import { applyClassFeatureOptionAuthority } from "../utils/classFeatureOptionAuthority";
@@ -43,6 +43,64 @@ function genericSubclassFeature(name) {
   return key === "subclass" || key === "subclass feature" || key.endsWith(" subclass feature");
 }
 
+function itemSourceRank(source = "") {
+  const key = text(source).toUpperCase();
+  if (key === "XDMG") return 0;
+  if (key === "EFA") return 1;
+  if (key === "DMG") return 2;
+  return 3;
+}
+
+function canonicalItemDescription(row = {}) {
+  return text(
+    row?.payload?.item_description
+    || row?.payload?.description
+    || row?.payload?.entriesText
+    || row?.payload?.rulesShort,
+  );
+}
+
+function listedDetailCatalog(optionalRows = [], itemRows = []) {
+  const map = new Map();
+  for (const row of optionalRows) {
+    const key = normalized(row?.name);
+    if (!key || !text(row?.description)) continue;
+    map.set(key, {
+      name: text(row.name),
+      source: text(row.source || "Campaign"),
+      description: formatPlayerFacingText(row.description),
+      detailKind: row.option_type || "class-option",
+      prerequisites: row.prerequisites || null,
+      metadata: row.metadata || null,
+    });
+  }
+
+  const preferredItems = new Map();
+  for (const row of itemRows) {
+    const key = normalized(row?.item_name || row?.payload?.name);
+    const description = canonicalItemDescription(row);
+    if (!key || !description) continue;
+    const source = text(row?.payload?.source || row?.source || "Campaign");
+    const current = preferredItems.get(key);
+    if (!current || itemSourceRank(source) < itemSourceRank(current.source)) {
+      preferredItems.set(key, {
+        name: text(row?.item_name || row?.payload?.name),
+        source,
+        description: formatPlayerFacingText(description),
+        detailKind: "item",
+        metadata: {
+          itemKey: row?.item_key || row?.payload?.item_key || null,
+          itemType: row?.item_type || row?.payload?.uiType || null,
+          rarity: row?.item_rarity || row?.payload?.rarity || null,
+          attunement: row?.payload?.reqAttune || row?.payload?.attunement || null,
+        },
+      });
+    }
+  }
+  for (const [key, item] of preferredItems) map.set(key, item);
+  return map;
+}
+
 export function useNpcForgeClassGuideModel(selectedClass, level) {
   const [view, setView] = useState("overview");
   const [compareAll, setCompareAll] = useState(false);
@@ -52,6 +110,7 @@ export function useNpcForgeClassGuideModel(selectedClass, level) {
   const [choiceCatalog, setChoiceCatalog] = useState([]);
   const [optionalFeatureCatalog, setOptionalFeatureCatalog] = useState([]);
   const [items, setItems] = useState([]);
+  const [detailItems, setDetailItems] = useState([]);
   const [spells, setSpells] = useState([]);
   const [loadedId, setLoadedId] = useState("");
   const [loading, setLoading] = useState(false);
@@ -63,11 +122,11 @@ export function useNpcForgeClassGuideModel(selectedClass, level) {
 
   useEffect(() => {
     if (!selectedClass?.id || !selectedClass?.class_key) {
-      setLevels([]); setFeatures([]); setChoiceCatalog([]); setOptionalFeatureCatalog([]); setItems([]); setSpells([]); setLoadedId(""); setLoading(false); setError("");
+      setLevels([]); setFeatures([]); setChoiceCatalog([]); setOptionalFeatureCatalog([]); setItems([]); setDetailItems([]); setSpells([]); setLoadedId(""); setLoading(false); setError("");
       return;
     }
     let active = true;
-    setLoading(true); setLoadedId(""); setLevels([]); setFeatures([]); setChoiceCatalog([]); setOptionalFeatureCatalog([]); setItems([]); setSpells([]); setError("");
+    setLoading(true); setLoadedId(""); setLevels([]); setFeatures([]); setChoiceCatalog([]); setOptionalFeatureCatalog([]); setItems([]); setDetailItems([]); setSpells([]); setError("");
     Promise.all([
       supabase.from("class_level_progression")
         .select("class_level,proficiency_bonus,cantrips_known,spells_known,spell_slots,features")
@@ -85,13 +144,16 @@ export function useNpcForgeClassGuideModel(selectedClass, level) {
       supabase.from("items_catalog")
         .select("item_key,item_name,item_type,item_rarity,payload")
         .eq("item_rarity", "mundane").limit(5000),
+      supabase.from("items_catalog")
+        .select("item_key,item_name,item_type,item_rarity,payload")
+        .limit(5000),
       supabase.from("spells_catalog")
         .select("id,spell_key,name,source,level,school_code,school,classes,ritual,concentration,casting_time,range_text,components_v,components_s,components_m,duration_text,damage_dice,damage_types,description")
         .order("level", { ascending: true }).order("name", { ascending: true }).limit(5000),
-    ]).then(([levelResult, featureResult, optionResult, optionalFeatureResult, itemResult, spellResult]) => {
+    ]).then(([levelResult, featureResult, optionResult, optionalFeatureResult, itemResult, detailItemResult, spellResult]) => {
       if (!active) return;
-      const failed = levelResult.error || featureResult.error || optionResult.error || optionalFeatureResult.error || itemResult.error || spellResult.error;
-      setLevels(levelResult.data || []); setFeatures(featureResult.data || []); setChoiceCatalog(optionResult.data || []); setOptionalFeatureCatalog(optionalFeatureResult.data || []); setItems(itemResult.data || []); setSpells(spellResult.data || []);
+      const failed = levelResult.error || featureResult.error || optionResult.error || optionalFeatureResult.error || itemResult.error || detailItemResult.error || spellResult.error;
+      setLevels(levelResult.data || []); setFeatures(featureResult.data || []); setChoiceCatalog(optionResult.data || []); setOptionalFeatureCatalog(optionalFeatureResult.data || []); setItems(itemResult.data || []); setDetailItems(detailItemResult.data || []); setSpells(spellResult.data || []);
       setLoadedId(failed ? "" : String(selectedClass.id));
       setError(failed?.message || ""); setLoading(false);
     }).catch((cause) => {
@@ -104,6 +166,7 @@ export function useNpcForgeClassGuideModel(selectedClass, level) {
   const baseRows = useMemo(() => features.filter((row) => row.feature_type === "class" && row.class_source === selectedClass?.source), [features, selectedClass?.source]);
   const options = useMemo(() => resolveSubclassCatalog(features, selectedClass?.source), [features, selectedClass?.source]);
   const lookup = useMemo(() => featureLookup(baseRows), [baseRows]);
+  const listDetailLookup = useMemo(() => listedDetailCatalog(optionalFeatureCatalog, detailItems), [detailItems, optionalFeatureCatalog]);
 
   useEffect(() => {
     registerClass(selectedClass, options, currentLevel, loadedId === String(selectedClass?.id || ""));
@@ -154,10 +217,28 @@ export function useNpcForgeClassGuideModel(selectedClass, level) {
     return { ...row, guideFeatures: [...baseNames.map((name) => ({ name, source: selectedClass?.source, type: "class", description: featureDescription(name, row.class_level, lookup) })), ...subclassRows] };
   }), [levels, lookup, preview, selectedClass?.source]);
 
+  const resolveListedDetail = useCallback((label, parentFeature = null, levelOverride = null) => {
+    const name = text(label);
+    const matched = listDetailLookup.get(normalized(name)) || null;
+    const parentName = text(parentFeature?.name || "class feature");
+    return {
+      name,
+      source: matched?.source || text(parentFeature?.source || selectedClass?.source || "Campaign"),
+      type: "listed-option",
+      level: Number(levelOverride || parentFeature?.level || 0),
+      description: matched?.description || `This option is listed under ${parentName}. No separate canonical description is available in the currently loaded catalogues; use the parent feature rules for its mechanical context.`,
+      parentFeatureName: parentName,
+      detailKind: matched?.detailKind || "listed-option",
+      prerequisites: matched?.prerequisites || null,
+      metadata: matched?.metadata || null,
+    };
+  }, [listDetailLookup, selectedClass?.source]);
+
   return {
     view, setView, compareAll, setCompareAll, previewKey, setPreviewKey,
     loading, error, pinned, setPinned, currentLevel, options, preview, selected,
     eligible, entryLevel, previewEligible, rows, intro: subclassIntroduction(preview), selectSubclass,
     choiceGroups, choiceSelections: state.featureSelections || {}, toggleFeatureOption,
+    resolveListedDetail,
   };
 }
