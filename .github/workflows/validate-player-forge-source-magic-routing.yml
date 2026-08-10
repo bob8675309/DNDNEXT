@@ -1,0 +1,39 @@
+name: Player Forge Source Magic Routing
+
+on:
+  pull_request:
+    paths:
+      - "components/NpcForgeStepContent.js"
+      - "components/NpcForgeTrainingStep.js"
+      - "components/NpcForgeAbilityStep.js"
+      - "components/NpcForgeClassGuide.js"
+      - "components/NpcForgeClassFeatureDock.js"
+      - "components/NpcForgeContextPanelRefined.js"
+      - "components/SourceChoiceFields.js"
+      - "components/NpcForgeSourceChoiceContext.js"
+      - "components/NpcForgeSpellStep.js"
+      - "components/NpcForgeReviewPanel.js"
+      - "components/NpcForgeFeatChoiceRegistrar.js"
+      - "utils/speciesPresentation.js"
+      - "utils/playerForgeSpeciesChoices.js"
+      - "utils/playerForgeFeatChoiceRouting.js"
+      - "utils/playerForgeAutomaticCasting.js"
+      - "sql/20260810_86_player_forge_source_magic_materialization.sql"
+      - "sql/20260810_87_source_magic_level_parser_fix.sql"
+      - "sql/20260810_88_source_magic_feat_name_normalization_fix.sql"
+      - "scripts/validate_player_forge_source_magic_routing.mjs"
+      - ".github/workflows/validate-player-forge-source-magic-routing.yml"
+  push:
+    branches:
+      - "agent/character-forge-resilience-presentation"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Validate Forge source magic routing
+        run: node scripts/validate_player_forge_source_magic_routing.mjs
