@@ -12,19 +12,21 @@ on:
       - "utils/characterRuntimeProficiencies.js"
       - "utils/characterSheetActions.js"
       - "utils/playerForgeSpeciesRuntimeChoices.js"
+      - "utils/speciesPresentation.js"
       - "scripts/validate_astral_trance_runtime.mjs"
       - ".github/workflows/validate-astral-trance-runtime.yml"
   pull_request:
     paths:
       - "sql/20260808_52_astral_trance_runtime.sql"
       - "sql/20260808_53_astral_trance_skill_key_correction.sql"
-      - "sql/20260808_54_astral_trance_species_key_correction.sql"
+      - "sql/20260808_54_asal_trance_species_key_correction.sql"
       - "components/CharacterAstralTrancePanel.js"
       - "components/CharacterSheetRestSyncBridge.js"
       - "components/CharacterSheetPanel.js"
       - "utils/characterRuntimeProficiencies.js"
       - "utils/characterSheetActions.js"
       - "utils/playerForgeSpeciesRuntimeChoices.js"
+      - "utils/speciesPresentation.js"
       - "scripts/validate_astral_trance_runtime.mjs"
       - ".github/workflows/validate-astral-trance-runtime.yml"
 
