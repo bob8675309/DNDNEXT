@@ -298,10 +298,16 @@ export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, contro
   const featInstances = useMemo(() => [...baseFeatInstances, ...sourceFeatInstances], [baseFeatInstances, sourceFeatInstances]);
   const featGroups = useMemo(() => {
     const nested = buildFeatSourceChoiceGroups({ featInstances, toolRows: controller?.toolRows || [], spells, level: controller?.draft?.level || 1 });
-    const routed = routeFeatSourceChoiceGroups({ groups: nested, selectedBackground: controller?.selectedBackground || null, spells });
+    const routed = routeFeatSourceChoiceGroups({
+      groups: nested,
+      selectedBackground: controller?.selectedBackground || null,
+      spells,
+      finalAbilities: controller?.finalAbilities || {},
+      selectedClass: controller?.selectedClass || null,
+    });
     const byInstance = new Map(routed.map((entry) => [entry.metadata?.featInstanceId || entry.ownerKey, entry]));
     return featInstances.map((instance) => byInstance.get(instance.instanceId) || emptyFeatGroup(instance));
-  }, [controller?.draft?.level, controller?.selectedBackground, controller?.toolRows, featInstances, spells]);
+  }, [controller?.draft?.level, controller?.finalAbilities, controller?.selectedBackground, controller?.selectedClass, controller?.toolRows, featInstances, spells]);
 
   useEffect(() => {
     registerGroups(playerMode ? featGroups : [], !playerMode || spellCatalogReady, "feats");
