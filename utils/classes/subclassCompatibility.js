@@ -14,6 +14,21 @@ function sourceKey(value) {
   return safeText(value).toUpperCase();
 }
 
+// Publication order is used only when two imported subclasses have the same normalized name.
+// Known campaign sources are explicit so the Forge does not show duplicate reprints.
+const SOURCE_PUBLICATION_ORDER = Object.freeze({
+  EFA: 20251209,
+  XDMG: 20241112,
+  XPHB: 20240917,
+  TCE: 20201117,
+  DMG: 20141209,
+  PHB: 20140819,
+});
+
+function sourcePublicationOrder(value) {
+  return Number(SOURCE_PUBLICATION_ORDER[sourceKey(value)] || 0);
+}
+
 export function subclassOptionKey(name, source) {
   return `${sourceKey(source)}:${normalizeSubclassName(name).replace(/\s+/g, "-")}`;
 }
@@ -52,6 +67,16 @@ function candidateScore(group, targetClassSource) {
   const exactClass = sourceKey(group.classSource) === sourceKey(targetClassSource) ? 1 : 0;
   const complete = group.describedFeatureCount > 1 ? 1 : 0;
   return (complete * 100000) + (group.describedFeatureCount * 1000) + (group.features.length * 10) + exactClass;
+}
+
+function preferDuplicateSubclass(candidate, current, targetClassSource) {
+  const candidatePublished = sourcePublicationOrder(candidate.source);
+  const currentPublished = sourcePublicationOrder(current.source);
+  if (candidatePublished !== currentPublished) return candidatePublished > currentPublished;
+  const candidateClassPublished = sourcePublicationOrder(candidate.classSource);
+  const currentClassPublished = sourcePublicationOrder(current.classSource);
+  if (candidateClassPublished !== currentClassPublished) return candidateClassPublished > currentClassPublished;
+  return candidateScore(candidate, targetClassSource) > candidateScore(current, targetClassSource);
 }
 
 export function resolveSubclassCatalog(featureRows = [], targetClassSource = "XPHB") {
@@ -101,11 +126,13 @@ export function resolveSubclassCatalog(featureRows = [], targetClassSource = "XP
     group.firstLevel = Math.min(...group.features.map((feature) => Number(feature.level || 20)));
   }
 
+  // Same-name reprints are one player-facing choice. Keep the newest known source first;
+  // only use completeness/target-source compatibility as a tie-break when publication order is unknown/equal.
   const preferredByIdentity = new Map();
   for (const group of rawGroups.values()) {
-    const identity = `${normalizeSubclassName(group.name)}|${sourceKey(group.source)}`;
+    const identity = normalizeSubclassName(group.name);
     const current = preferredByIdentity.get(identity);
-    if (!current || candidateScore(group, targetClassSource) > candidateScore(current, targetClassSource)) preferredByIdentity.set(identity, group);
+    if (!current || preferDuplicateSubclass(group, current, targetClassSource)) preferredByIdentity.set(identity, group);
   }
 
   const candidates = [...preferredByIdentity.values()];
@@ -124,7 +151,7 @@ export function resolveSubclassCatalog(featureRows = [], targetClassSource = "XP
         return shared >= 0.5 && Math.min(featureNames(modern).size, featureNames(group).size) >= 2;
       });
     })
-    .sort((a, b) => safeText(a.name).localeCompare(safeText(b.name)) || safeText(a.source).localeCompare(safeText(b.source)));
+    .sort((a, b) => safeText(a.name).localeCompare(safeText(b.name)) || sourcePublicationOrder(b.source) - sourcePublicationOrder(a.source) || safeText(a.source).localeCompare(safeText(b.source)));
 }
 
 export function findSubclassOption(options = [], name = "", source = "") {
