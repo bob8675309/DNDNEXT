@@ -10,6 +10,7 @@ const unique = (values = []) => [...new Set(array(values).map(text).filter(Boole
 const ABILITY_OPTIONS = Object.freeze(["int", "wis", "cha"].map((value) => ({ key: value, value, label: ABILITY_LABELS[value], kind: "ability", source: "XPHB" })));
 const SKILL_OPTIONS = Object.freeze(SKILL_DEFINITIONS.map((skill) => ({ key: skill.key, value: skill.key, label: skill.label, kind: "skill", source: "XPHB", metadata: { ability: skill.ability } })));
 const DAMAGE_OPTIONS = Object.freeze(["Acid", "Cold", "Fire", "Lightning", "Necrotic", "Poison", "Psychic", "Radiant", "Thunder"].map((label) => ({ key: slug(label), value: label, label, kind: "damage-type", source: "XPHB" })));
+const AUTO_CASTING_ABILITIES = Object.freeze(["int", "wis", "cha"]);
 
 function sourceRank(source = "") { return source === "XPHB" ? 0 : source === "PHB" ? 1 : 2; }
 function preferredSpellRows(spells = []) {
@@ -25,16 +26,17 @@ function preferredSpellRows(spells = []) {
 function spellOptions(spells = [], filters = {}) {
   return preferredSpellRows(spells).filter((spell) => {
     if (filters.level != null && Number(spell.level || 0) !== Number(filters.level)) return false;
+    if (filters.names?.length && !filters.names.some((wanted) => norm(wanted) === norm(spell.name))) return false;
     if (filters.classes?.length && !filters.classes.some((wanted) => array(spell.classes).some((value) => norm(value) === norm(wanted)))) return false;
     return true;
-  }).map((spell) => ({ key: text(spell.id || spell.spell_key || `${slug(spell.name)}|${spell.source || "XPHB"}`), value: text(spell.id || spell.spell_key || spell.name), label: spell.name, kind: "spell", source: spell.source || "XPHB", description: text(spell.description), metadata: { spellId: spell.id || null, spellKey: spell.spell_key || null, level: Number(spell.level || 0), classes: array(spell.classes) } })).sort((a, b) => a.label.localeCompare(b.label));
+  }).map((spell) => ({ key: text(spell.id || spell.spell_key || `${slug(spell.name)}|${spell.source || "XPHB"}`), value: text(spell.id || spell.spell_key || spell.name), label: spell.name, kind: "spell", source: spell.source || "XPHB", description: text(spell.description), metadata: { spellId: spell.id || null, spellKey: spell.spell_key || null, level: Number(spell.level || 0), classes: array(spell.classes), school: spell.school || spell.school_code || "", castingTime: spell.casting_time || null, rangeText: spell.range_text || null, durationText: spell.duration_text || null, damageDice: spell.damage_dice || null, damageTypes: array(spell.damage_types) } })).sort((a, b) => a.label.localeCompare(b.label));
 }
 function option(label, kind = "enum", metadata = null, source = "XPHB") { return { key: slug(label), value: label, label, kind, source, metadata }; }
-function field({ id, label, kind, count = 1, options = [], cadence = "creation", replacementCadence = null, activeWhen = null, helper = "", distinctFromFieldId = null }) {
-  return { id, label, kind, count: Math.max(1, Number(count || 1)), required: true, options, cadence, replacementCadence, activeWhen, helper, distinctFromFieldId };
+function field({ id, label, kind, count = 1, options = [], cadence = "creation", replacementCadence = null, activeWhen = null, helper = "", distinctFromFieldId = null, autoSelect = false, metadata = null }) {
+  return { id, label, kind, count: Math.max(1, Number(count || 1)), required: true, options, cadence, replacementCadence, activeWhen, helper, distinctFromFieldId, autoSelect, metadata };
 }
-function group(species, traitName, fields, level = 1, helper = "") {
-  return { id: `species-${slug(species.id || species.name)}-${slug(traitName)}`, ownerType: "species", ownerKey: text(species.id || species.name), label: traitName, source: species.source || "XPHB", placement: "species", level: Math.max(1, Number(level || 1)), fields, helper };
+function group(species, traitNameValue, fields, level = 1, helper = "", placement = "species", metadata = null) {
+  return { id: `species-${slug(species.id || species.name)}-${slug(traitNameValue)}`, ownerType: "species", ownerKey: text(species.id || species.name), label: traitNameValue, source: species.source || "XPHB", placement, level: Math.max(1, Number(level || 1)), fields, helper, metadata };
 }
 function rawTraits(species) { return array(species?.metadata?.traits).filter((entry) => entry && typeof entry === "object"); }
 function traitName(trait) { return text(trait?.name || trait?.title || "Species Feature"); }
@@ -75,15 +77,28 @@ function namedSkills(raw = "") {
   }
   return [...new Map(output.map((entry) => [entry.key, entry])).values()];
 }
+function namedSpells(trait) {
+  const output = [];
+  for (const match of JSON.stringify(trait || {}).matchAll(/\{@spell\s+([^}|]+)(?:\|[^}]*)?}/gi)) output.push(text(match[1]));
+  return unique(output);
+}
 function choiceCount(raw = "", fallback = 1) {
   const match = String(raw).match(/(?:gain proficiency (?:with|in)|choose)\s+(one|two|three|four|\d+)\s+(?:of the following\s+)?skills?/i)
     || String(raw).match(/proficiency (?:with|in)\s+(one|two|three|four|\d+)\s+skills?/i);
   const words = { one: 1, two: 2, three: 3, four: 4 };
   return Math.max(1, Number(words[match?.[1]?.toLowerCase()] || match?.[1] || fallback));
 }
+function spellChoiceCount(raw = "") {
+  const match = String(raw).match(/(?:know|learn|choose)\s+(one|two|three|four|\d+)\s+(?:of the following\s+)?cantrips?/i);
+  const words = { one: 1, two: 2, three: 3, four: 4 };
+  return Math.max(1, Number(words[match?.[1]?.toLowerCase()] || match?.[1] || 1));
+}
 function abilityChoiceNeeded(raw = "") {
   const value = norm(raw);
-  return value.includes("intelligence wisdom or charisma") && (value.includes("choose when you select") || value.includes("choose the ability when you select"));
+  return value.includes("intelligence wisdom or charisma") && (value.includes("choose when you select") || value.includes("choose the ability when you select") || value.includes("spellcasting ability"));
+}
+function automaticCastingMetadata(raw = "", sourceFeature = "") {
+  return abilityChoiceNeeded(raw) ? { autoCastingAbility: true, allowedCastingAbilities: AUTO_CASTING_ABILITIES, sourceFeature } : { sourceFeature };
 }
 function skillChoiceFromTrait(species, trait, raw) {
   if (!/proficiency/i.test(raw) || !/skill/i.test(raw) || !/(choice|choose)/i.test(raw)) return null;
@@ -97,6 +112,28 @@ function damageChoiceFromTrait(species, trait, raw) {
   if (!/resistance/i.test(raw) || !/(choice|choose)/i.test(raw)) return null;
   const options = DAMAGE_OPTIONS.filter((entry) => new RegExp(`\\b${entry.label}\\b`, "i").test(raw));
   return options.length > 1 ? field({ id: "damage-type", label: "Choose damage resistance", kind: "damage-type", options: options.map((entry) => ({ ...entry, source: species.source || entry.source })) }) : null;
+}
+function directCantripChoiceField(species, trait, raw, spells) {
+  if (!/cantrip/i.test(raw) || !/(of your choice|choose)/i.test(raw)) return null;
+  const names = namedSpells(trait);
+  const options = spellOptions(spells, { level: 0, names });
+  if (options.length < 2) return null;
+  const count = Math.min(spellChoiceCount(raw), options.length);
+  return field({ id: "spell", label: count === 1 ? "Choose cantrip" : `Choose ${count} cantrips`, kind: "spell", count, options, metadata: automaticCastingMetadata(raw, traitName(trait)) });
+}
+function fixedSpeciesSpellFields(species, trait, raw, spells, characterLevel) {
+  if (/(?:spell|cantrip)[^.]{0,70}(?:of your choice|choose)/i.test(raw) || /one of the following cantrips/i.test(raw)) return [];
+  const names = namedSpells(trait);
+  if (!names.length) return [];
+  return names.flatMap((name, index) => {
+    const optionRows = spellOptions(spells, { names: [name] });
+    if (optionRows.length !== 1) return [];
+    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const levelMatch = raw.match(new RegExp(`(?:starting\\s+at|at)\\s+(\\d+)(?:st|nd|rd|th)?\\s+level[^.]{0,180}?${escaped}`, "i"));
+    const acquisitionLevel = Math.max(1, Number(levelMatch?.[1] || 1));
+    if (Number(characterLevel || 1) < acquisitionLevel) return [];
+    return [field({ id: `fixed-spell-${index + 1}`, label: `${name} — automatic species spell`, kind: "spell", count: 1, options: optionRows, autoSelect: true, metadata: { ...automaticCastingMetadata(raw, traitName(trait)), acquisitionLevel, fixedGrant: true } })];
+  });
 }
 function ancestryTableField(species, trait, label, kind) {
   const table = collectTables(trait)[0];
@@ -119,7 +156,7 @@ function explicitTraitGroups(species, trait, level, spells, featOptions) {
   const key = norm(name);
   const raw = traitText(trait);
   const output = [];
-  const add = (fields, entryLevel = 1, helper = raw) => { const valid = array(fields).filter(Boolean); if (valid.length) output.push(group(species, name, valid, entryLevel, helper)); };
+  const add = (fields, entryLevel = 1, helper = raw, placement = "species", metadata = null) => { const valid = array(fields).filter(Boolean); if (valid.length) output.push(group(species, name, valid, entryLevel, helper, placement, metadata)); };
 
   if (key === "draconic ancestry") add([ancestryTableField(species, trait, "Choose Draconic Ancestor", "ancestry")]);
   else if (key === "elven lineage") add([ancestryTableField(species, trait, "Choose Elven Lineage", "lineage"), lineageAbilityField(species)]);
@@ -153,10 +190,16 @@ function explicitTraitGroups(species, trait, level, spells, featOptions) {
       field({ id: "skill", label: "Choose skill proficiency", kind: "skill", options: SKILL_OPTIONS.map((entry) => ({ ...entry, source: species.source || entry.source })), activeWhen: { groupId, fieldId: "trait", values: ["Skill Proficiency"] } }),
     ]);
   } else {
-    const skill = skillChoiceFromTrait(species, trait, raw);
-    const damage = damageChoiceFromTrait(species, trait, raw);
-    const ability = abilityChoiceNeeded(raw) ? lineageAbilityField(species, "feature-ability") : null;
-    add([skill, damage, ability]);
+    const spellChoice = directCantripChoiceField(species, trait, raw, spells);
+    const fixedSpells = spellChoice ? [] : fixedSpeciesSpellFields(species, trait, raw, spells, level);
+    if (spellChoice || fixedSpells.length) {
+      add([spellChoice, ...fixedSpells], 1, `${raw} Spell choices for this feature are completed on the Spells step. The Forge automatically uses the highest eligible spellcasting ability after final ability scores are known.`, "spells", automaticCastingMetadata(raw, name));
+    } else {
+      const skill = skillChoiceFromTrait(species, trait, raw);
+      const damage = damageChoiceFromTrait(species, trait, raw);
+      const ability = abilityChoiceNeeded(raw) ? lineageAbilityField(species, "feature-ability") : null;
+      add([skill, damage, ability]);
+    }
   }
   return output;
 }
@@ -175,7 +218,7 @@ function speciesLanguageGroups(species) {
       const options = labels.map((label) => option(label.replace(/^./, (letter) => letter.toUpperCase()), "language", null, species.source || "XPHB"));
       if (options.length) fields.push(field({ id: "language-choice", label: "Choose species language", kind: "language", count: Number(choose.count || 1), options }));
     }
-    if (fields.length) output.push({ id: `species-${slug(species.id || species.name)}-languages-${index + 1}`, ownerType: "species", ownerKey: text(species.id || species.name), label: "Species languages", source: species.source || "XPHB", placement: "species", level: 1, fields, helper: "This language is granted by the selected species in addition to the campaign's Origin languages." });
+    if (fields.length) output.push({ id: `species-${slug(species.id || species.name)}-languages-${index + 1}`, ownerType: "species", ownerKey: text(species.id || species.name), label: "Species languages", source: species.source || "XPHB", placement: "species", level: 1, fields, helper: "This language is granted by the selected species in addition to any source-defined fixed languages." });
   });
   return output;
 }
