@@ -7,6 +7,7 @@ const root = process.cwd();
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 const migration = read("sql/20260810_90_rest_class_feature_restoration.sql");
 const speciesRuntimeText = read("utils/playerForgeSpeciesRuntimeChoices.js");
+const speciesPresentationText = read("utils/speciesPresentation.js");
 const speciesBonus = read("components/NpcForgeSpeciesBonusPanel.js");
 const featRouting = read("utils/playerForgeFeatChoiceRouting.js");
 const subclassesText = read("utils/classes/subclassCompatibility.js");
@@ -38,7 +39,8 @@ assert.ok(!/insert\s+into\s+public\.encounter/i.test(migration), "migration 90 m
 assert.ok(!/MapPageClient|map_routes|map_route_points|advance_all_characters|weather|route_segment_progress/.test(migration), "migration 90 crossed protected map/travel boundaries");
 
 for (const token of ["identity.name === \"deep gnome\"", "trait === \"gift of the svirfneblin\"", "!hasSpellField && onlyCastingAbility"]) assert.ok(speciesRuntimeText.includes(token), `Deep Gnome smoke guard missing ${token}`);
-for (const token of ["identity.name === \"astral elf\"", "identity.source === \"AAG\"", "trait === \"astral trance\""]) assert.ok(speciesRuntimeText.includes(token), `Astral Trance Forge exclusion missing ${token}`);
+for (const token of ["identity.name === \"astral elf\"", "identity.source === \"AAG\"", "trait === \"astral trance\""]) assert.ok(speciesRuntimeText.includes(token), `Astral Trance generic Forge exclusion missing ${token}`);
+for (const token of ["runtimeOwnedTraitChoice", 'species === "astral-elf"', 'source === "AAG"', 'trait === "astral-trance"', "if (runtimeOwnedTraitChoice(option, detail)) return []"]) assert.ok(speciesPresentationText.includes(token), `embedded Astral Trance choice exclusion missing ${token}`);
 assert.ok(!speciesBonus.includes('placement="abilities" ownerType="feat"'), "Abilities must not resolve feat-owned nested source choices");
 for (const token of ["Selected:", "Training → Feats & Class Abilities"]) assert.ok(speciesBonus.includes(token), `Species Bonus acknowledgement missing ${token}`);
 for (const token of ["acquisitionOwnerType !== \"species-bonus\"", 'placement: "class"', 'resolverPlacement: "training"']) assert.ok(featRouting.includes(token), `Species Bonus feat routing missing ${token}`);
@@ -67,7 +69,7 @@ assert.ok(!login.includes("createClient("), "login page must use the shared Supa
 assert.ok(app.includes('import "../styles/character-forge-smoke-fixes.css";'), "smoke correction stylesheet is not loaded");
 for (const token of ["npc-forge-class-feature-dock", "position: sticky", "rgba(255, 255, 255, .82)", "npc-forge-background-spell-name"]) assert.ok(css.includes(token), `smoke correction CSS missing ${token}`);
 
-for (const protectedSource of [classFeatureText, classGuide, classGuideModel, classFeatureDock, context, planHelperText, sourceChoices, sourceChoiceDock, actionHook, restSyncBridge, astralPanel, login, css]) {
+for (const protectedSource of [classFeatureText, classGuide, classGuideModel, classFeatureDock, context, planHelperText, sourceChoices, sourceChoiceDock, actionHook, restSyncBridge, astralPanel, login, speciesPresentationText, css]) {
   assert.ok(!/MapPageClient|map_routes|map_route_points|advance_all_characters|route_segment_progress/.test(protectedSource), "smoke correction crossed protected map/travel boundaries");
 }
 
@@ -86,7 +88,15 @@ const astralTranceForgeGroups = applySpeciesRuntimeChoiceAuthority({
   species: { name: "Astral Elf", source: "AAG" },
   groups: [{ id: "trance", label: "Astral Trance", fields: [{ id: "skill", kind: "skill", options: [{ key: "athletics" }] }] }],
 });
-assert.equal(astralTranceForgeGroups.length, 0, "Astral Trance must remain a post-Long-Rest runtime choice, never a Forge acquisition choice");
+assert.equal(astralTranceForgeGroups.length, 0, "Astral Trance must remain a post-Long-Rest runtime choice, never a generic Forge source choice");
+
+const { extractSpeciesTraitChoiceRules } = await import(pathToFileURL(path.join(root, "utils/speciesPresentation.js")).href);
+const embeddedAstralTranceRules = extractSpeciesTraitChoiceRules({
+  name: "Astral Elf",
+  source: "AAG",
+  traitDetails: [{ name: "Astral Trance", description: "Whenever you finish this trance, you gain proficiency in one skill of your choice and retain it until your next long rest." }],
+});
+assert.equal(embeddedAstralTranceRules.length, 0, "Astral Trance must not render an embedded CHOOSE control on the Species feature card");
 
 const { resolveSubclassCatalog } = await import(pathToFileURL(path.join(root, "utils/classes/subclassCompatibility.js")).href);
 const duplicateSubclasses = resolveSubclassCatalog([
@@ -110,4 +120,4 @@ assert.equal(level2Plans[0].metadata.catalogueSummary.totalCount, 2, "availabili
 assert.equal(level2Plans[0].metadata.catalogueSummary.futureUnlocks[0].unlockLevel, 10, "future plan must be disclosed at its actual unlock level");
 assert.ok(level2Plans.every((group) => !group.fields[0].options.some((option) => option.key === "p2")), "future plan must remain non-selectable");
 
-console.log("PR #170 signed-in browser smoke corrections, including login completion, immediate Rest repaint, runtime-only Astral Trance, right-rail source choices, and list-to-detail routing, validated.");
+console.log("PR #170 signed-in browser smoke corrections, including login completion, immediate Rest repaint, runtime-only Astral Trance in both generic and embedded Species paths, right-rail source choices, and list-to-detail routing, validated.");
