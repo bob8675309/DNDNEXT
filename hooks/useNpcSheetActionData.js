@@ -158,27 +158,43 @@ export default function useNpcSheetActionData({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, featureSignature, id]);
 
-  // Rest/class-resource RPCs update character_sheets outside this hook. Listen for that row so
-  // transient actionState (for example Rage uses) refreshes immediately without reloading the page.
-  // The callback lives in a ref so parent callback identity changes do not rebuild the channel.
+  // character_sheets is intentionally not in the Supabase Realtime publication. Poll only the
+  // current character's row while its sheet actions are visible so a sheet-side Rest RPC can
+  // repaint transient actionState (Rage uses) without broadening realtime database exposure.
   useEffect(() => {
     if (!id || !enabled) return undefined;
     let active = true;
-    const channel = supabase.channel(`character-sheet-action-state-${id}`)
-      .on("postgres_changes", {
-        event: "UPDATE",
-        schema: "public",
-        table: "character_sheets",
-        filter: `character_id=eq.${id}`,
-      }, (payload) => {
-        if (!active || activeIdRef.current !== id) return;
-        const nextSheet = payload?.new?.sheet;
-        if (nextSheet && typeof nextSheet === "object") sheetUpdatedRef.current?.(nextSheet);
-      })
-      .subscribe();
+    let lastUpdatedAt = "";
+    let inFlight = false;
+
+    async function refreshTransientSheet() {
+      if (!active || inFlight || activeIdRef.current !== id) return;
+      inFlight = true;
+      try {
+        const { data, error } = await supabase
+          .from("character_sheets")
+          .select("sheet,updated_at")
+          .eq("character_id", id)
+          .maybeSingle();
+        if (!active || activeIdRef.current !== id || error || !data) return;
+        const nextUpdatedAt = safeText(data.updated_at);
+        if (nextUpdatedAt && nextUpdatedAt !== lastUpdatedAt) {
+          lastUpdatedAt = nextUpdatedAt;
+          if (data.sheet && typeof data.sheet === "object") sheetUpdatedRef.current?.(data.sheet);
+        }
+      } finally {
+        inFlight = false;
+      }
+    }
+
+    void refreshTransientSheet();
+    const timer = typeof window !== "undefined" ? window.setInterval(refreshTransientSheet, 2500) : null;
+    const onFocus = () => { void refreshTransientSheet(); };
+    if (typeof window !== "undefined") window.addEventListener("focus", onFocus);
     return () => {
       active = false;
-      supabase.removeChannel(channel);
+      if (timer) window.clearInterval(timer);
+      if (typeof window !== "undefined") window.removeEventListener("focus", onFocus);
     };
   }, [enabled, id]);
 
