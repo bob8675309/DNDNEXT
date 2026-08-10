@@ -160,8 +160,19 @@ function routeMagicInitiate(group, finalAbilities = {}, selectedClass = null) {
   };
 }
 
+function routeAcquisitionPlacement(group) {
+  if (group?.metadata?.acquisitionOwnerType !== "species-bonus") return group;
+  return {
+    ...group,
+    placement: "class",
+    resolverPlacement: "training",
+    helper: `${group.metadata?.featName || group.label || "This feat"} was selected as the Species Bonus. Complete any non-spell choices it owns in Training → Feats & Class Abilities.`,
+  };
+}
+
 export function routeFeatSourceChoiceGroups({ groups = [], selectedBackground = null, spells = [], finalAbilities = {}, selectedClass = null } = {}) {
-  return array(groups).map((group) => {
+  return array(groups).map((rawGroup) => {
+    const group = routeAcquisitionPlacement(rawGroup);
     const name = norm(group.metadata?.featName || group.label);
     if (name === "strixhaven initiate") return routeStrixhaven(group, selectedBackground, spells);
     if (name === "magic initiate") return routeMagicInitiate(group, finalAbilities, selectedClass);
