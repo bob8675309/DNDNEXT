@@ -14,6 +14,7 @@ A real signed-in browser smoke exposed concrete issues in the player sheet and P
 - background expanded-spell names did not expose spell descriptions;
 - long Class feature option lists could open but ancestor click handling made them difficult/impossible to collapse;
 - the Class feature detail dock did not remain useful through a very tall guide;
+- individual listed entries inside Class features did not drive the left description dock;
 - Species Bonus feat selection was being mixed with feat-owned nested decisions on Abilities;
 - same-name subclass reprints could appear more than once;
 - Artificer Magic Item Plan availability and wildcard item detail needed clearer player-facing presentation.
@@ -81,6 +82,16 @@ Nested long-list `<details>` disclosures stop click/key propagation so opening o
 
 The Player Forge Class workspace is stretched through the tall guide and the Class feature dock is sticky within the desktop layout. Responsive layouts restore normal static placement.
 
+Whole Class/subclass feature cards already publish their rules to that dock. Individual entries inside structured Class feature lists now do the same:
+
+- list entries are explicit keyboard-accessible detail targets;
+- matching normalized `class_feature_option_catalog` rows use their source-backed option descriptions;
+- matching canonical `items_catalog` names use the preferred canonical item description and metadata;
+- Artificer plan/item names therefore reuse the same normalized plan/item authority already used elsewhere rather than duplicating handwritten rules;
+- if a listed name has no separate canonical catalogue record, the dock identifies the option and its parent feature and explicitly leaves mechanical authority with the parent feature instead of inventing a description.
+
+This detail-routing enhancement is informational only. It does not make a listed option selectable in the Class guide and does not bypass Training/Spells ownership of actual decisions.
+
 ### Species Bonus feat routing
 
 Abilities owns the Species Bonus package selection itself. When the player chooses the feat package, Abilities acknowledges the selected feat and tells the player that feat-owned follow-up choices are completed in **Training → Feats & Class Abilities**.
@@ -107,7 +118,8 @@ The EFA Artificer catalogue currently contains 56 normalized plans. The Forge ke
 - future plans remain non-selectable until their minimum level is actually met;
 - wildcard plans retain their canonical `items_catalog` eligibility filters;
 - wildcard item detail prefers the full canonical item description and shows rarity/type/attunement where present;
-- the rich choice view displays the size of the current canonical legal item pool.
+- the rich choice view displays the size of the current canonical legal item pool;
+- listed plan/item names inside Class feature text can publish the matching canonical description into the sticky left Class detail dock when clicked.
 
 Live catalogue distribution at this checkpoint is 16 plans available from Artificer 2, 22 additional plans at 6, 11 additional plans at 10, and 7 additional plans at 14. The current canonical wildcard pools remain 105 Common, 173 Uncommon Wondrous, and 200 Rare Wondrous eligible items.
 
@@ -115,7 +127,9 @@ Live catalogue distribution at this checkpoint is 16 plans available from Artifi
 
 Code head `98b55355ed92d3d3309c09b8c534095d13859089` completed **32/32 PR-triggered GitHub workflows successfully** and Vercel reported success before migration 90 deployment.
 
-The dedicated smoke validator covers migration markers, Deep Gnome suppression, Species Bonus feat routing, same-name subclass reprint behavior, Artificer future-plan non-selectability, sticky/contrast/hover presentation markers, and the protected-map boundary.
+The dedicated smoke validator covers migration markers, Deep Gnome suppression, Species Bonus feat routing, same-name subclass reprint behavior, Artificer future-plan non-selectability, sticky/contrast/hover presentation markers, list-to-detail-rail routing, canonical listed-option lookup, and the protected-map boundary.
+
+The additional list-to-detail-rail refinement moves the branch head beyond that earlier gate. The exact final head must be re-gated before handoff.
 
 ## Production integrity after deployed rollback acceptance
 
@@ -141,6 +155,7 @@ The corrected build still needs user confirmation for:
 - Witherbloom flavor cleanup, higher contrast, and spell description hover/focus;
 - long Class option lists open and close normally;
 - the Class feature detail dock remains available while scrolling a tall guide;
+- clicking a Class feature or an individual listed option places its description in the sticky left dock; known plans/items use canonical catalogue descriptions;
 - Species Bonus feat is acknowledged on Abilities while feat-owned decisions resolve later;
 - duplicate same-name subclasses are gone and the best/newest complete definition is retained;
 - Artificer plans show current availability, later unlocks, and canonical item detail without unlocking future plans early.
