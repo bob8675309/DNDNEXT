@@ -71,12 +71,16 @@ export function classFeatureSections(value, fallback = "") {
   return sections;
 }
 
+function keepNestedDisclosureLocal(event) {
+  event.stopPropagation();
+}
+
 function renderSection(section, index) {
   if (section.type === "heading") return <h5 key={`${section.type}-${index}`}>{section.text}</h5>;
   if (section.type === "list") {
     const list = <ul>{section.items.map((item) => <li key={item}>{item}</li>)}</ul>;
     return section.items.length > 12 ? (
-      <details key={`${section.type}-${index}`} className="class-feature-text__long-list">
+      <details key={`${section.type}-${index}`} className="class-feature-text__long-list" onClick={keepNestedDisclosureLocal} onKeyDown={keepNestedDisclosureLocal}>
         <summary>View {section.items.length} listed options</summary>
         {list}
       </details>
@@ -94,7 +98,7 @@ export default function ClassFeatureText({ text = "", fallback = "", compact = f
     <div className={`class-feature-text ${compact ? "is-compact" : ""}`}>
       {visibleSections.map(renderSection)}
       {hiddenSections.length ? (
-        <details className="class-feature-text__compact-more">
+        <details className="class-feature-text__compact-more" onClick={keepNestedDisclosureLocal} onKeyDown={keepNestedDisclosureLocal}>
           <summary>Full feature rules</summary>
           <div>{hiddenSections.map((section, index) => renderSection(section, index + COMPACT_VISIBLE_SECTIONS))}</div>
         </details>
