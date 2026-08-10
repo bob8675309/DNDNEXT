@@ -1,176 +1,115 @@
 # Player Forge Choice Routing and Source Magic — Status
 
-Status: implemented on PR #170 branch; migrations 86-88 deployed and rollback-accepted; interactive browser smoke still required before merge.
+Status: **implemented; migrations 86-88 deployed and rollback-accepted; post-rest presentation follow-up completed by migration 89.** Interactive signed-in browser smoke remains the external acceptance gap before merge.
 
-## Why this pass exists
+## Player-facing routing model
 
-The August 9 Forge smoke showed that the rules engine often knew **what** a choice was, but the UI did not consistently distinguish **where the feature should be explained** from **where the decision should be resolved**. That produced noisy Species/Class pages, context-poor dropdowns, and spell/feat decisions appearing on mechanically unrelated steps.
+The Forge distinguishes where a feature is explained from where its mechanical decision is resolved:
 
-This pass establishes the following player-facing routing model:
-
-- **Species** — species identity, lore, and feature explanations;
+- **Species** — identity, lore, and feature explanations;
 - **Background** — formative history and source-owned grants;
 - **Class** — class/subclass explanation and progression preview;
 - **Abilities** — score generation and allocation only;
 - **Training / Skills & Proficiencies** — skills, Expertise, tools, professions, and similar training;
 - **Training / Feats & Class Abilities** — feats, Invocations, Artificer plans, and persistent class/feature option families;
 - **Spells** — class spells plus spell-centric Species/Feat/Background/Class-feature decisions;
-- **Review** — both manual decisions and automatic source-policy resolutions.
+- **Review** — manual decisions and automatic source-policy resolutions.
 
 ## Species behavior
 
 ### Fixed languages
 
-Species-provided fixed languages are read from source rather than overwritten by the generic XPHB origin-language rule.
+Species-provided fixed languages are source authority rather than being overwritten by the generic XPHB origin-language rule. Aven is the regression fixture: Common + Aven stays fixed and the player does not receive a generic additional two-language picker.
 
-Regression fixture: **Aven**.
+### Catalog lineage vs rules choices
 
-- PSA/PSD Aven source grants Common and Aven.
-- The player Forge does not add the generic `Common + choose two Standard languages` rule to that source version.
-- Fixed languages are represented as source-owned, automatically selected authority.
-
-### Catalog lineage vs. rules choices
-
-The generic imported `Lineage / ancestry` selector is no longer player-facing. It remains available to NPC mode where needed for administrative/catalog purposes.
-
-This does **not** remove real rules-bearing choices such as a feature that explicitly asks the character to choose an ancestry, lineage, legacy, etc. Those remain owned by their actual feature.
+The generic imported `Lineage / ancestry` selector is not player-facing. Genuine rules-bearing ancestry/lineage/legacy choices remain owned by their actual features.
 
 ### Species magic
 
-The Species feature card explains the feature. Spell/cantrip selection is routed to Spells.
+The Species page explains the feature; spell/cantrip decisions resolve in Spells.
 
-Regression fixtures:
+- **Astral Elf / Astral Fire** — Dancing Lights, Light, or Sacred Flame; best final permitted INT/WIS/CHA is resolved automatically.
+- **Deep Gnome / Gift of the Svirfneblin** — Disguise Self at level 3 and Nondetection at level 5; best permitted final casting ability is automatic.
 
-- **Astral Elf / Astral Fire** — choose Dancing Lights, Light, or Sacred Flame in Spells; allowed casting ability is INT/WIS/CHA and the Forge automatically resolves the best final eligible ability.
-- **Deep Gnome / Gift of the Svirfneblin** — no meaningless INT/WIS/CHA button choice. Disguise Self becomes available at level 3; Nondetection at level 5; the highest eligible final ability is used automatically.
-
-Astral Trance is not treated as creation-time Species spell state. Its temporary proficiency choice remains in the existing guarded Long-Rest runtime system.
+Astral Trance remains Long-Rest runtime authority rather than creation-time Species spell state.
 
 ## Background / Strixhaven behavior
 
-A Strixhaven Student background fixes its college for Strixhaven Initiate.
+A Strixhaven Student background fixes its college for Strixhaven Initiate. Witherbloom Student therefore exposes only Witherbloom source choices:
 
-Example: **Witherbloom Student**.
+- two cantrips from Chill Touch, Druidcraft, and Spare the Dying;
+- one level-1 Druid or Wizard spell;
+- automatic best permitted INT/WIS/CHA casting ability.
 
-- Background explanation is Witherbloom-specific.
-- Other colleges are not presented as candidate decisions.
-- The actual two-cantrip + one-level-1-spell decision is completed in Spells.
-- Witherbloom cantrips are limited to Chill Touch, Druidcraft, and Spare the Dying.
-- The level-1 spell must come from the Druid or Wizard list.
-- The feat's INT/WIS/CHA casting ability is resolved automatically from final scores.
-- The separate Witherbloom expanded spell list remains expanded access, not automatic knowledge/preparation.
+The Witherbloom expanded spell list is access, not automatic knowledge/preparation.
 
 ## Training behavior
 
-Training now separates:
+Training is split into:
 
 1. **Skills & Proficiencies**
 2. **Feats & Class Abilities**
 
-Persistent class/source option families route into the second tab. The Class step remains primarily explanatory.
+Persistent option families such as higher-level advancement feats, Warlock Invocations, Artificer Magic Item Plans, Fighting Styles, Maneuvers, and Metamagic route into the second tab. The Class step remains primarily explanatory. Higher-level feat replay no longer appears on Abilities.
 
-Current intended families include higher-level advancement feats, Warlock Invocations, Artificer Magic Item Plans, Fighting Styles, Maneuvers, Metamagic, and similar permanent decision catalogues. Existing source/prerequisite/acquisition authority is preserved.
-
-Higher-level feat replay no longer appears as a context-poor dropdown on Abilities.
-
-## Rich choice presentation
-
-Content-heavy option kinds use a search/list/detail pattern rather than a bare select when practical. The Feats & Boons and Spellbook Profile panels are the interaction reference: the player can inspect name, source, description, prerequisites or structured spell details before choosing.
+Content-heavy option families use searchable description-first presentation instead of context-poor dropdowns where practical.
 
 ## Unified Spells step
 
-Spells is no longer useful only when the base class has a normal starting spell model.
-
-A noncaster can still receive and resolve:
-
-- Species magic;
-- feat magic;
-- background-feature magic;
-- class/subclass feature magic.
-
-Class spell selection and source-owned magic remain separate authorities with distinct provenance.
+Spells is useful even when the base class is a noncaster. It can resolve source-owned Species, feat, Background-feature, and class/subclass-feature magic while preserving distinct provenance from ordinary class spell selection.
 
 ## Automatic casting ability policy
 
-For source text that permits a choice among abilities and where picking the weaker stat provides no gameplay benefit, the Forge uses a deterministic campaign usability policy:
+When source text permits multiple casting abilities but choosing a weaker permitted stat provides no gameplay benefit, the Forge uses:
 
 1. highest modifier;
-2. if tied, prefer the character's class spellcasting ability when it is permitted;
-3. if still tied, highest raw score;
-4. stable final tie order: INT, WIS, CHA, STR, DEX, CON.
+2. tied permitted class spellcasting ability;
+3. highest raw score;
+4. stable final tie order INT, WIS, CHA, STR, DEX, CON.
 
-This automation does not rewrite imported source text. Review shows the automatic result.
+Imported source text is not rewritten; Review exposes the automatic result.
 
 ## Live source-magic authority
 
 ### Migration 86 — `player_forge_source_magic_materialization`
 
-Adds private canonical helpers and a deferred progression trigger that materializes routed source magic into `character_spells` after the character's source-owned feat instances/progression authority exists.
-
-Server checks include:
-
-- exact Species owner and source;
-- exact canonical Species feature;
-- preferred spell identity;
-- spell must actually be named by the Species source feature;
-- source-level grant gating;
-- exact choice count for choice-based Species magic;
-- all currently eligible fixed Species spells for fixed grants;
-- canonical feat grant instance for feat magic;
-- existing Magic Initiate source validator;
-- Strixhaven college-specific cantrip/list validation;
-- source provenance in `character_spells`;
-- Long-Rest free-cast/resource metadata where applicable.
-
-Private helpers are not direct anon/authenticated RPC surfaces.
+Materializes routed source magic into `character_spells` after source-owned feat/progression authority exists. Server checks canonical Species/feat ownership, source identity, preferred spell identity, source level, exact choice counts, legal spell lists, provenance, and recharge/free-use metadata.
 
 ### Migration 87 — `source_magic_level_parser_fix`
 
-Rollback QA caught two parser details before acceptance:
-
-- JSON numeric level keys needed PostgreSQL-safe numeric matching;
-- choice-count whitespace matching needed PostgreSQL-safe POSIX character classes.
-
-The additive correction resolves Deep Gnome grant levels as 3 and 5 and Astral Fire choice count as exactly one.
+Additively corrects PostgreSQL-safe numeric level matching and choice-count whitespace parsing discovered by rollback QA.
 
 ### Migration 88 — `source_magic_feat_name_normalization_fix`
 
-Rollback QA also confirmed the existing canonical name normalizer returns `magic initiate` and `strixhaven initiate` with spaces. Migration 88 additively replaces the trigger function with those live canonical comparison keys.
+Additively aligns Magic Initiate and Strixhaven Initiate comparisons with the live canonical normalizer keys `magic initiate` and `strixhaven initiate`.
 
 ## Deployed rollback acceptance
 
-After deployment, rollback-only fixtures proved:
+Rollback-only fixtures proved:
 
-- Astral Elf level 1: Sacred Flame, Species source, best eligible casting stat;
-- Deep Gnome level 3: exactly Disguise Self, grant level 3, Long Rest recharge;
-- Deep Gnome level 5: Disguise Self + Nondetection, grant levels 3/5, Long Rest recharge;
-- Witherbloom Student: two valid Witherbloom cantrips + one valid level-1 Druid/Wizard spell, automatic best stat, level-1 free cast recharge;
-- Magic Initiate: source validator passes canonical Wizard-list choices, two cantrips + one level-1 spell, automatic permitted casting ability retained in the server-required choice state, level-1 free cast recharge.
+- Astral Elf level 1 Sacred Flame with Species provenance and deterministic casting stat;
+- Deep Gnome level 3 Disguise Self with grant level 3 and Long-Rest recharge;
+- Deep Gnome level 5 Disguise Self + Nondetection with grant levels 3/5;
+- Witherbloom Student with exactly two legal college cantrips + one legal level-1 Druid/Wizard spell and automatic casting stat;
+- Magic Initiate with canonical spell-list validation, two cantrips + one level-1 spell, automatic permitted casting ability retained in server-required state, and Long-Rest free-cast recharge.
 
-All fixtures rolled back.
+All fixtures rolled back. Protected production counts remained 7 characters, 7 sheets, 30 character-spell rows, 7 progression rows, 18 inventory rows, 20 locations, 4 routes, and 9 route points.
 
-## Production integrity after acceptance
+## Post-rest follow-up — completed
 
-- characters: 7
-- character_sheets: 7
-- character_spells: 30
-- character_progression: 7
-- inventory_items: 18
-- locations: 20
-- map_routes: 4
-- map_route_points: 9
-- QA86 residue: 0
+Migration 89 and `CharacterRestChoiceNotice` now provide the generic post-rest affordance requested after the routing pass. It is driven by unresolved runtime state rather than by a generic rest event:
+
+- inactive/current-cycle choices such as Astral Trance can pulse for attention;
+- persistent selections such as Wild Heart remain active and only appear as quiet optional replacements;
+- optional post-rest actions are quiet/collapsed.
+
+Rollback acceptance directly proved Astral Trance attention versus Wild Heart non-flashing persistence. Read `Pending_Rest_Runtime_Choices_Status.md`.
 
 ## Protected boundaries
 
 No world-map, town/city-map, route/travel/weather, unrelated crafting/inventory, or tactical combat execution behavior is part of this slice.
 
-## Remaining presentation follow-up
-
-A generic **pending runtime choice after rest** affordance is still desirable. It must be driven by actual unresolved runtime state rather than by a generic rest event.
-
-It should notify/flash for features whose prior temporary state genuinely expires (for example Astral Trance and Bestial Soul) while avoiding false prompts for persistent-across-rest families such as Wild Heart Aspect, Hunter runtime choices, and Whispers of the Dead.
-
 ## Remaining acceptance
 
-A real signed-in browser smoke is still required before merge. PR #170 remains open and must not be merged without explicit user approval.
+A real signed-in browser smoke remains required if final manual presentation proof is desired before merge. PR #170 remains open and must not be merged without explicit user approval.

@@ -1,6 +1,6 @@
 # DNDNext Current Handoff Prompt
 
-Updated: 2026-08-09
+Updated: 2026-08-10
 
 Repository: `bob8675309/DNDNEXT`
 
@@ -14,11 +14,13 @@ Stack: Next.js Pages Router + Supabase/Postgres.
 
 Before changing anything:
 
-1. inspect current PR head and exact-head CI/Vercel;
+1. inspect current PR head and exact-head GitHub/Vercel status;
 2. inspect live Supabase migrations/schema/data/grants for the requested slice;
-3. read `docs/README.md`, `docs/Documentation_Refresh_Manifest.md`, and the relevant dedicated ledger;
-4. reconcile source, live DB, and docs;
-5. verify every helper, hook, state variable, prop, and RPC argument is defined and passed.
+3. read `docs/README.md`, `docs/Documentation_Refresh_Manifest.md`, `docs/PR170_Final_Acceptance_Status.md`, and the relevant dedicated ledger;
+4. reconcile source, live DB, and docs before writing;
+5. state a bounded safe patch plan before implementation;
+6. verify every helper, hook, state variable, prop, and RPC argument is defined and passed;
+7. use rollback fixtures for risky database behavior and prove zero residue.
 
 GitHub/Supabase outrank prior-chat prose.
 
@@ -29,110 +31,140 @@ GitHub/Supabase outrank prior-chat prose.
 - `components/MapPageClient.js` is outside current Forge/progression/runtime scope.
 - Do not alter route/travel/weather, unrelated crafting/inventory, or tactical action execution.
 - Prefer additive migrations over rewriting deployed history.
-- Test risky DB work in rollback and prove zero residue.
+- Do not merge PR #170 without explicit user approval.
 
 ## Current live checkpoint
 
-Supabase is accepted through **migration 82**.
+Supabase is accepted through **migration 89**.
 
 Latest migrations:
 
-- 78 `armorer_armor_model_runtime` — `20260809220732`;
-- 79 `bestial_soul_runtime` — `20260809231431`;
-- 80 `bestial_soul_option_resolver_fix` — `20260809231912`;
-- 81 `wild_heart_aspect_runtime` — `20260809232923`;
-- 82 `hunter_prey_runtime` — `20260809234244`.
+- 83 `defensive_tactics_runtime` — `20260809235754`;
+- 84 `whispers_of_the_dead_runtime` — `20260810001351`;
+- 85 `progression_rpc_acl_cleanup` — `20260810002421`;
+- 86 `player_forge_source_magic_materialization` — `20260810075628`;
+- 87 `source_magic_level_parser_fix` — `20260810075645`;
+- 88 `source_magic_feat_name_normalization_fix` — `20260810075724`;
+- 89 `pending_rest_runtime_choices` — `20260810181530`.
 
-## Closed/accepted recent slices
+During migration-89 startup, production was found ahead of source control for migrations 83-85. Their exact behavioral source plus Defensive Tactics/Whispers reachable panels were restored to the PR branch. Do **not** re-apply 83-85 to production.
 
-### Armor Model
+## Current Forge architecture
 
-Read `Armorer_Armor_Model_Runtime_Status.md`.
+The shared NPC/player Character Forge is the creation surface. The player-facing resolution model is:
 
-- EFA/TCE source-specific model sets.
-- Initial choice immediate.
-- Smith's Tools possession is current-schema proxy for “tools in hand.”
-- Later change after newer Short or Long Rest.
-- State only; no armor/AC/combat mutation.
+- **Species** — identity, lore, feature explanation; fixed source languages remain source authority;
+- **Background** — background identity and fixed source grants;
+- **Class** — class/subclass explanation and progression preview, not a dumping ground for persistent selectors;
+- **Abilities** — score generation/allocation;
+- **Training → Skills & Proficiencies** — skills, tools, Expertise/training decisions;
+- **Training → Feats & Class Abilities** — higher-level feats, Invocations, Artificer plans, and other persistent feature catalogues;
+- **Spells** — class spells plus spell-centric Species/Feat/Background/Class-feature choices, including noncasters with source-owned magic;
+- **Review** — manual choices plus automatic source-policy resolutions.
 
-### Bestial Soul
+Read `Player_Forge_Choice_Routing_and_Source_Magic_Status.md`.
 
-Read `Bestial_Soul_Runtime_Status.md`.
+### Source magic — migrations 86-88
 
-- PHB Barbarian / TCE Beast / level 6+ only.
-- Swimming / Climbing / Jumping.
-- First choice requires post-acquisition Short/Long Rest.
-- Choice expires at next Short/Long Rest.
-- No movement fields are mutated.
+Server authority now materializes validated routed Species/Feat magic into `character_spells` with provenance.
 
-### Aspect of the Wilds
+Rollback acceptance covers:
 
-Read `Wild_Heart_Aspect_Runtime_Status.md`.
+- Astral Elf Astral Fire;
+- Deep Gnome Gift of the Svirfneblin at levels 3 and 5;
+- Witherbloom Student / fixed Strixhaven college;
+- Magic Initiate;
+- deterministic best eligible casting ability;
+- Long-Rest free-use metadata where source rules require it.
 
-- XPHB Barbarian / XPHB Wild Heart / level 6+ only.
-- Owl / Panther / Salmon.
-- Initial choice immediate.
-- Short Rest does not authorize change.
-- Newer Long Rest authorizes one optional change.
-- Current aspect persists until changed.
-- No Darkvision/speed/world-travel/tactical movement mutation.
+## Runtime-family sweep
 
-### Hunter's Prey
+The bounded class/subclass runtime queue is closed through Whispers of the Dead.
 
-Read `Hunters_Prey_Runtime_Status.md`.
+Key contrasts:
 
-This feature has an edition split:
+- **Astral Trance** — Long-Rest-cycle proficiencies expire at next Long Rest; a new current-cycle choice is needed.
+- **Bestial Soul** — current adaptation expires at next Short/Long Rest.
+- **Aspect of the Wilds** — current aspect persists; Long Rest only unlocks optional replacement.
+- **Hunter's Prey** — PHB permanent Forge choice; XPHB persistent runtime choice with Short/Long-Rest replacement.
+- **Defensive Tactics** — PHB permanent Forge choice; XPHB persistent runtime choice with Short/Long-Rest replacement.
+- **Whispers of the Dead** — first selection requires a qualifying rest; borrowed proficiency persists until later replacement.
+- **Fiendish Resilience** — first resistance needs a qualifying rest; once selected it persists and later rests only unlock replacement.
 
-- **PHB Ranger / PHB Hunter / level 3:** permanent acquisition choice among Colossus Slayer, Giant Killer, Horde Breaker. This remains Forge/progression authority.
-- **XPHB Ranger / XPHB Hunter / level 3:** immediate choice between Colossus Slayer and Horde Breaker; a newer Short Rest or Long Rest can replace the current option with the other one.
+Read the dedicated runtime ledgers before reopening an accepted family.
 
-Accepted XPHB runtime behavior:
+## Pending post-rest choice presentation — migration 89
 
-- initial choice immediate;
-- current option persists until changed;
-- newer Short/Long Rest authorizes one optional replacement;
-- one rest cannot be reused;
-- active encounter blocks configuration;
-- PHB Hunter remains runtime-ineligible;
-- runtime key `ranger-hunter-hunters-prey`;
-- projection `runtimeFeatures.huntersPrey`;
-- no Colossus Slayer damage / Horde Breaker extra-attack combat implementation in this slice.
+Read `Pending_Rest_Runtime_Choices_Status.md`.
 
-Migration-82 candidate head `173b593679942e0813c484f138a9a41f14081da3` passed all 29 PR workflows and Vercel before deployment. Deployed rollback proof passed edition/source gating, immediate Colossus Slayer, Short-Rest Horde Breaker replacement, Long-Rest Colossus Slayer replacement, same-rest/encounter guards, ACLs, projection, and unchanged combat fields.
+`public.get_character_pending_rest_choices_v1(uuid)` is a read-only authenticated aggregate over feature-specific runtime getters. `CharacterRestChoiceNotice` classifies:
 
-Current protected baseline after rollback acceptance:
+1. `needsSelection` — attention/pulse because no current benefit is active or the first rest-backed choice is waiting;
+2. `optionalChanges` — current persistent benefit remains active; quiet/collapsed;
+3. `availableActions` — optional post-rest actions; quiet/collapsed.
+
+Rollback acceptance directly proved:
+
+- Astral Trance after Long Rest → `hasAttention=true`, one temporary `needsSelection`;
+- Wild Heart Owl after newer Long Rest → Owl remains active, `hasAttention=false`, one optional persistent replacement.
+
+The notice respects reduced-motion and refreshes through focus/visibility/runtime-choice events plus a short polling fallback.
+
+## Progression ACL checkpoint
+
+Migration 85 retained `get_character_level_class_choice_options_v2` because current client compatibility code still references v1/v2/v3. It revoked anonymous execute from v2 while retaining authenticated/service-role compatibility. Authenticated rollback acceptance invoked the live v2 signature successfully.
+
+Do not use this bounded cleanup as justification to alter unrelated SECURITY DEFINER surfaces. Current Supabase advisor findings elsewhere remain separate audit backlog.
+
+## Exact-head and production evidence
+
+Before migration 89 deployment, exact head `a05c4b03f9a36cbf9021108aa07856cfab474fd1` passed **31/31 PR-triggered workflows** and Vercel.
+
+After migration 89 rollback QA, production remains:
 
 - 7 characters;
-- 7 sheets;
+- 7 character sheets;
 - 30 character-spell rows;
 - 7 progression rows;
 - 18 inventory rows;
+- 0 runtime rows;
+- 0 rest-log rows;
+- 0 migration-89 QA residue;
 - 20 locations;
-- 4 routes;
-- 9 route points.
+- 4 map routes;
+- 9 map route points.
 
-## Immediate next slice
+Documentation-only commits after this checkpoint must be exact-head gated again.
 
-Audit **Defensive Tactics** next.
+## Immediate next step
 
-Before writing:
+Do **not** start another rules-family implementation by default. PR #170 is at closure state.
 
-1. inspect exact `class_feature_catalog` source record(s), class/subclass edition, level, option structure, and cadence text;
-2. inspect current Forge parser/presentation/runtime storage;
-3. classify permanent acquisition versus rest replacement/expiry from source;
-4. state a bounded patch plan before writes;
-5. compile candidate DDL in rollback;
-6. run synthetic candidate lifecycle;
-7. patch migration/client/validator/workflow together;
-8. verify helpers/hooks/state/props/RPC args;
-9. require exact-head CI/build/Vercel;
-10. deploy only after green gates;
-11. rerun against deployed functions;
-12. prove ACLs and zero residue;
-13. update docs/PR only after acceptance.
+Next actions:
 
-Known queue after Defensive Tactics: Phantom Whispers of the Dead.
+1. reconcile final docs/PR body;
+2. require exact-head CI/Vercel after that docs commit;
+3. perform a real signed-in browser smoke if the user wants that final external presentation proof;
+4. immediately before an explicitly approved merge, re-check PR head/status, live migration list, ACLs, and zero residue;
+5. merge only with explicit user approval.
+
+### Browser smoke targets
+
+- Aven fixed languages;
+- Deep Gnome levels 3/5 source magic;
+- Astral Fire routing to Spells;
+- Witherbloom-only Strixhaven choices;
+- Warlock Invocation selection in Training;
+- higher-level feat catalogue in Training;
+- noncaster source-owned Spells;
+- responsive Continue/Back and scrolling;
+- Review / Known Spellbook persistence;
+- Astral-Trance-style post-rest attention;
+- Wild-Heart-style persistent optional replacement staying quiet;
+- resolving a runtime choice clears/reclassifies the notice.
+
+The connected toolset cannot claim this real interactive signed-in browser smoke on its own.
 
 ## Delivery discipline
 
-Never call a runtime slice accepted merely because DDL applied. Acceptance requires source verification, exact-head gates, deployed behavior proof, ACL checks, and zero-residue integrity.
+Never call a slice accepted merely because DDL applied. Acceptance requires source verification, exact-head gates, deployed behavior proof, ACL checks, and zero-residue integrity. Do not weaken working mechanics to satisfy stale validators; update a validator only when source/live authority proves its contract is obsolete.

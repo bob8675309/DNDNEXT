@@ -6,6 +6,7 @@ This directory contains the project's living handoff, roadmap, architecture, and
 
 - `DNDNext_Current_Handoff_Prompt.md` — copy-ready continuation prompt and protected boundaries.
 - `Documentation_Refresh_Manifest.md` — documentation precedence and current PR #170 checkpoint.
+- `PR170_Final_Acceptance_Status.md` — current migration/build/database/authenticated acceptance and remaining browser-only gap.
 - `Current_Development_Status_and_Roadmap.md` — broad platform roadmap/history; newer subsystem ledgers supersede older sections.
 - `Unified_Character_Forge_Status.md` — controlling Forge/progression/runtime ledger.
 
@@ -14,6 +15,9 @@ This directory contains the project's living handoff, roadmap, architecture, and
 - `Character_Progression_Foundation.md` — normalized creation/progression architecture.
 - `Character_Progression_and_Higher_Level_Forge.md` — direct higher-level creation vs earned progression.
 - `Character_Forge_PR_A_Deployment_Evidence.md` — migration/build/rollback evidence.
+- `Player_Forge_Choice_Routing_and_Source_Magic_Status.md` — current player-facing choice placement plus migrations 86-88 source-magic authority.
+- `Pending_Rest_Runtime_Choices_Status.md` — migration 89 post-rest attention vs persistent optional-replacement classification.
+- `Progression_RPC_ACL_Cleanup_Status.md` — migration 85 bounded v2 compatibility getter ACL hardening.
 - `Wizard_Spell_Mastery_Runtime_Status.md` — Spell Mastery runtime.
 - `Wizard_Memorize_Spell_Runtime_Status.md` — Short-Rest prepared-spell replacement.
 - `Wizard_Cantrip_Formulas_Runtime_Status.md` — PHB Wizard TCE Cantrip Formulas Long-Rest replacement.
@@ -21,6 +25,8 @@ This directory contains the project's living handoff, roadmap, architecture, and
 - `Bestial_Soul_Runtime_Status.md` — PHB/TCE Beast Bestial Soul rest-created, next-rest-expiring adaptation authority through migrations 79-80.
 - `Wild_Heart_Aspect_Runtime_Status.md` — XPHB Wild Heart Aspect of the Wilds immediate choice plus Long-Rest replacement authority through migration 81.
 - `Hunters_Prey_Runtime_Status.md` — PHB permanent vs XPHB Short/Long-Rest Hunter's Prey authority through migration 82.
+- `Defensive_Tactics_Runtime_Status.md` — PHB permanent vs XPHB Short/Long-Rest Defensive Tactics authority through migration 83.
+- `Whispers_of_the_Dead_Runtime_Status.md` — TCE Phantom persistent borrowed proficiency authority through migration 84.
 - `Player_Forge_Starting_Magic_v3_Status.md` — starting-magic authority.
 - `Player_Forge_Starting_Equipment_Status.md` — starting equipment, wealth, currency.
 - `Astral_Trance_Runtime_Status.md` — Astral Trance runtime.
@@ -36,7 +42,7 @@ This directory contains the project's living handoff, roadmap, architecture, and
 - `Feat_Runtime_Expertise_Status.md` — Echoing Soul / Zhentarim Expertise lifecycle.
 - `Cartomancer_Runtime_Status.md` — Hidden Ace temporary access.
 
-Current cadence rule: persistent source-owned decisions belong to Forge/progression; rest decisions belong to runtime; per-use choices belong to action UI. Do not turn runtime choices into permanent Forge locks.
+Current cadence rule: persistent source-owned decisions belong to Forge/progression; rest decisions belong to runtime; per-use choices belong to action UI. Do not turn runtime choices into permanent Forge locks. A post-rest replacement opportunity is not automatically a missing choice: migration 89 distinguishes an inactive rest-cycle benefit from a still-active persistent selection.
 
 ## Character sheet / inventory / crafting
 
@@ -56,7 +62,7 @@ Use the specific tactical phase ledger before changing encounter behavior; do no
 - `Dawn_High_Quality_Prototype_Plan.md`, `Sprite_Production_Work_Map.md`, `Sprite_Production_Art_Bible.md`, `Sprite_Production_Run_Log.md` — sprite work.
 - `Security_Hardening_Roadmap_Status.md` — security/database hardening.
 
-Always inspect live grants/functions before modifying authenticated `SECURITY DEFINER` surfaces.
+Always inspect live grants/functions before modifying authenticated `SECURITY DEFINER` surfaces. Supabase advisor warnings outside the current audited slice are separate security backlog, not permission to scope-creep a Forge/runtime patch.
 
 ## Protected-boundary rule
 

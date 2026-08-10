@@ -1,6 +1,6 @@
 # Pending Rest Runtime Choices — Status
 
-Status: implementation prepared for PR #170; migration 83-85 source-control parity restored; migration 89 adds read-only post-rest choice aggregation.
+Status: **migration 89 deployed and rollback-accepted** on PR #170. Migration 83-85 source-control parity is restored. Interactive browser smoke remains external acceptance.
 
 ## Purpose
 
@@ -29,23 +29,27 @@ Persistent families such as Aspect of the Wilds, Hunter's Prey, Defensive Tactic
 
 ## Server authority
 
-Migration 89 adds:
+Migration 89 `pending_rest_runtime_choices` (`20260810181530`) adds:
 
 - `private.safe_character_runtime_profile_v1(text, uuid)` — an allow-listed internal adapter so one source-specific getter that is unavailable for an unrelated character cannot break the aggregate notice;
 - `public.get_character_pending_rest_choices_v1(uuid)` — authenticated read-only aggregation of existing runtime getters.
 
 The aggregate function does not mutate character state. Actual choices remain owned by their existing feature-specific configure RPCs.
 
+The safe adapter was added after rollback candidate QA showed that a direct aggregate call could be aborted by an unrelated source getter before that getter reached its eligibility return. The adapter isolates those incompatible getter paths without weakening any feature's own configure authority.
+
 ## UI
 
 `CharacterRestChoiceNotice`:
 
 - is mounted in the always-reachable character runtime/currency chain;
-- reloads on character change, browser focus, explicit refresh, runtime-choice events, and a short polling fallback so the notice reacts to a rest even when the surrounding profile component does not rerender;
+- reloads on character change, browser focus, explicit refresh, runtime-choice events, and a four-second polling fallback so a completed rest can be noticed even when the surrounding profile component does not rerender;
 - pulses only when `needsSelection` is non-empty;
 - disables animation for `prefers-reduced-motion`;
 - keeps optional replacements and post-rest actions collapsed;
 - does not duplicate any feature selection logic.
+
+`CharacterDefensiveTacticsPanel` and `CharacterWhispersOfTheDeadPanel` were also restored to the reachable chain when live/repository parity was repaired.
 
 ## Source-control parity repair
 
@@ -57,17 +61,65 @@ The live database already contained migrations 83-85 while the PR branch had los
 - `CharacterDefensiveTacticsPanel`;
 - `CharacterWhispersOfTheDeadPanel`.
 
-Migrations 83-85 must not be re-applied to production; they are restored to source control so a fresh environment can reproduce the current live schema.
+Migrations 83-85 were **not** re-applied to production. They were restored to source control so a fresh environment can reproduce current live authority.
+
+## Exact-head gate before deployment
+
+Head `a05c4b03f9a36cbf9021108aa07856cfab474fd1` passed **31/31 PR-triggered GitHub workflows** and Vercel before migration 89 deployment.
+
+The gate also exposed and corrected two stale validators: source-magic markers were aligned to the actual migration-86 helper calls, and the nested-choice validator was aligned to the intentional Training placement for higher-level feat decisions.
+
+## Deployed rollback acceptance
+
+### Temporary/rest-cycle classification
+
+A rollback-only authenticated fixture temporarily gave an editable, non-encounter character AAG Astral Elf authority and completed a Long Rest. The aggregate returned:
+
+- `hasAttention = true`;
+- exactly one `needsSelection` item;
+- Astral Trance classified as `temporary` / `long_rest`;
+- no optional persistent replacement.
+
+An earlier attempt against a character currently controlled by an active encounter was correctly rejected by the existing rest guard; that failed transaction left no residue.
+
+### Persistent replacement classification
+
+A separate rollback-only fixture temporarily aligned the editable character to XPHB Barbarian 6 / Wild Heart, seeded active Owl authority, and completed a newer Long Rest. The source getter reported Owl still active with replacement available. The aggregate returned:
+
+- `hasAttention = false`;
+- zero `needsSelection` items;
+- exactly one `optionalChanges` item for Aspect of the Wilds.
+
+This directly proves the notice does not nag for a persistent choice that remains mechanically active.
+
+### ACLs
+
+- anon public getter execute: false;
+- authenticated public getter execute: true;
+- service-role public getter execute: true;
+- anon/authenticated private adapter execute: false;
+- service-role private adapter execute: true.
+
+### Zero residue / integrity
+
+After rollback QA:
+
+- 7 characters;
+- 7 character sheets;
+- 30 character-spell rows;
+- 7 progression rows;
+- 18 inventory rows;
+- 20 locations;
+- 4 map routes;
+- 9 map route points;
+- 0 runtime rows;
+- 0 rest-log rows;
+- 0 migration-89 QA residue.
 
 ## Protected boundaries
 
 This slice does not touch `components/MapPageClient.js`, world-map behavior, town/city-map behavior, route/travel/weather, unrelated crafting/inventory, or tactical combat execution.
 
-## Acceptance
+## Remaining acceptance
 
-Before merge:
-
-- exact-head semantic validation and Vercel/build must be green;
-- migration 89 must pass rollback-only database classification tests and ACL checks;
-- deployed migration 89 must leave production counts and QA residue unchanged;
-- a real signed-in browser smoke should confirm the notice appears after a qualifying rest and that persistent choices do not falsely flash.
+The only presentation proof not available through the connected toolset is a real signed-in browser smoke. It should confirm the attention pulse after a qualifying rest for an inactive rest-cycle feature, quiet/collapsed persistent replacement opportunities, notice refresh after resolving the choice, and responsive/reduced-motion behavior.
