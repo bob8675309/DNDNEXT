@@ -1,6 +1,5 @@
 import ClassFeatureText from "./ClassFeatureText";
 import { formatPlayerFacingText } from "../utils/playerFacingText";
-import NpcForgeSourceChoiceFields from "./NpcForgeSourceChoiceFields";
 
 function safeText(value) {
   return String(value ?? "").trim();
@@ -35,7 +34,10 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
       </div>
       <ClassFeatureText text={description} compact />
       {!feature ? <small>Feature descriptions will appear here as you move through the progression table or detailed guide.</small> : null}
-      <NpcForgeSourceChoiceFields placement="class" title="Nested class and Fighting Style feat choices" />
+      {selectedClass ? <div className="npc-forge-class-feature-dock__routing-note">Read feature rules here. Persistent selections such as Invocations, Fighting Styles, maneuvers, plans, and higher-level feats are completed in <strong>Training → Feats & Class Abilities</strong>; spell-specific selections are completed in <strong>Spells</strong>.</div> : null}
+      <style jsx global>{`
+        .npc-forge-class-feature-dock__routing-note{margin-top:10px;padding:9px 11px;border-left:3px solid #58d6c7;border-radius:8px;color:rgba(255,255,255,.7);background:rgba(88,214,199,.065);font-size:.68rem;line-height:1.5}.npc-forge-class-feature-dock__routing-note strong{color:#d8fff9}
+      `}</style>
     </section>
   );
 }
