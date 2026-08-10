@@ -1,0 +1,39 @@
+name: Validate pending rest runtime choices
+
+on:
+  pull_request:
+    paths:
+      - "components/CharacterRestChoiceNotice.js"
+      - "components/CharacterDefensiveTacticsPanel.js"
+      - "components/CharacterWhispersOfTheDeadPanel.js"
+      - "components/CharacterCurrencyBadge.js"
+      - "sql/20260809_83_defensive_tactics_runtime.sql"
+      - "sql/20260810_84_whispers_of_the_dead_runtime.sql"
+      - "sql/20260810_85_progression_rpc_acl_cleanup.sql"
+      - "sql/20260810_89_pending_rest_runtime_choices.sql"
+      - "scripts/validate_pending_rest_runtime_choices.mjs"
+      - ".github/workflows/validate-pending-rest-runtime-choices.yml"
+  push:
+    branches:
+      - "agent/character-forge-resilience-presentation"
+    paths:
+      - "components/CharacterRestChoiceNotice.js"
+      - "components/CharacterDefensiveTacticsPanel.js"
+      - "components/CharacterWhispersOfTheDeadPanel.js"
+      - "components/CharacterCurrencyBadge.js"
+      - "sql/20260809_83_defensive_tactics_runtime.sql"
+      - "sql/20260810_84_whispers_of_the_dead_runtime.sql"
+      - "sql/20260810_85_progression_rpc_acl_cleanup.sql"
+      - "sql/20260810_89_pending_rest_runtime_choices.sql"
+      - "scripts/validate_pending_rest_runtime_choices.mjs"
+      - ".github/workflows/validate-pending-rest-runtime-choices.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node scripts/validate_pending_rest_runtime_choices.mjs
