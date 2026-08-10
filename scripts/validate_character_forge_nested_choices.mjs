@@ -60,7 +60,8 @@ for (const token of ["isSourceCode(penultimate) && isFeatureLevel(last)", "isFea
 for (const token of ["useNpcForgeClassChoice", 'placement="training"', "eligibleExpertiseNames", "Assign Expertise after proficiency is established"]) requireToken(training, token, "Training-stage Expertise routing");
 forbidToken(abilityStep, "npc-forge-species-bonus mt-4", "Abilities main-workspace Species Bonus duplication");
 for (const token of ["speciesCharacterSizeOptions", 'T: "Tiny"', 'S: "Small"', 'M: "Medium"', 'L: "Large"']) requireToken(speciesPresentation, token, "species source-size normalization");
-for (const token of ["NpcForgeSourceChoiceFields", 'placement="advancement"', "Starting above level 1"]) requireToken(abilityStep, token, "higher-level advancement UI");
+forbidToken(abilityStep, "NpcForgeSourceChoiceFields", "higher-level advancement routing");
+for (const token of ["NpcForgeSourceChoiceFields", 'placement="advancement"', "Higher-level feat and Epic Boon decisions", "Feats & Class Abilities"]) requireToken(training, token, "higher-level advancement Training UI");
 
 for (const token of [
   "SOURCE_CHOICE_CADENCES", "buildOriginLanguageGroup", "buildSpeciesSizeGroup", "buildBackgroundSourceChoiceGroups", "buildClassStartingSourceChoiceGroups",
@@ -90,4 +91,4 @@ for (const token of ["character_option_grant_instances", "instance_key", "valida
 for (const token of ["materialize_player_forge_feat_instances_v1", "character_progression_materialize_player_forge_feat_instances_v1", "character_option_grant_instances_direct_authority_guard_v1", "featGrantInstances"]) requireToken(featMaterializeMigration, token, "feat-instance materialization authority");
 for (const token of ["validate_player_forge_authority_payload_v1", "featGrantInstances", "validate_player_forge_feat_instances_v1", "sourceChoices", "sourceChoiceSummary", "validated source-owned feat grants"]) requireToken(featValidationMigration, token, "feat-instance deferred validation");
 
-console.log("Source-backed Player Forge choices validated with field-level cadence, scoped source choices, Species/source-size authority, nested feat instances, higher-level advancement, rest-time authority alignment, and Training-stage Expertise.");
+console.log("Source-backed Player Forge choices validated with field-level cadence, scoped source choices, Species/source-size authority, nested feat instances, Training-routed higher-level advancement, rest-time authority alignment, and Training-stage Expertise.");
