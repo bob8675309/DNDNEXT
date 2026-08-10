@@ -6,7 +6,6 @@ import {
   canSetPointBuyScore,
   pointBuyRemaining,
 } from "../utils/playerForgeRules";
-import NpcForgeSourceChoiceFields from "./NpcForgeSourceChoiceFields";
 
 function modifier(score) {
   const value = Math.floor((Number(score || 10) - 10) / 2);
@@ -15,8 +14,6 @@ function modifier(score) {
 
 export default function NpcForgeAbilityStep({
   draft,
-  selectedClass,
-  selectedSpecies,
   rolls,
   allocation,
   selectedRollId,
@@ -31,12 +28,11 @@ export default function NpcForgeAbilityStep({
   const rolled = draft.abilityMethod === "3d6" || draft.abilityMethod === "4d6";
   const pointBuy = draft.abilityMethod === "pointBuy";
   const remaining = pointBuy ? pointBuyRemaining(draft.baseAbilities) : null;
-  const higherLevelStart = Number(draft.level || 1) >= 4;
 
   return <div className="npc-forge-section npc-forge-abilities-step">
     <div className="npc-forge-section-heading">
       <div><span>Abilities</span><h3>Generate and allocate ability scores</h3></div>
-      <p>Choose a generation method, then assign the six base scores. The Species Bonus stays in the right information panel so this workspace remains focused on score generation.</p>
+      <p>Choose a generation method, then assign the six base scores. The Species Bonus stays in the right information panel. Feats and persistent class choices are completed later in Training.</p>
     </div>
 
     <div className="npc-forge-subheading ability-method-heading">Ability Score Generation Method</div>
@@ -80,10 +76,8 @@ export default function NpcForgeAbilityStep({
       </div>
     </>}
 
-    {higherLevelStart ? <div className="npc-forge-advancement-block"><div className="npc-forge-subheading">Starting above level 1</div><p className="npc-forge-advancement-copy">Replay every feat or Epic Boon decision the character would already have gained on the path to level {draft.level}. These are separate from the level-1 Species Bonus.</p><NpcForgeSourceChoiceFields placement="advancement" title="Higher-level advancement feats" /></div> : null}
-
     <style jsx global>{`
-      .npc-forge-ability-methods{flex-wrap:wrap}.npc-forge-ability-methods button{flex:1 1 150px}.ability-method-heading{margin-top:2px}.npc-forge-roll-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding:10px 12px;border:1px solid rgba(168,108,255,.25);border-radius:10px;background:rgba(126,72,199,.08)}.npc-forge-roll-toolbar>div{display:grid}.npc-forge-roll-toolbar strong{color:#fff}.npc-forge-roll-toolbar span{color:rgba(255,255,255,.6);font-size:.7rem}.npc-forge-roll-toolbar button{padding:7px 11px;border:1px solid rgba(168,108,255,.55);border-radius:8px;color:#fff;background:rgba(126,72,199,.2)}.npc-forge-point-buy-budget{display:flex;justify-content:space-between;gap:16px;margin-top:14px;padding:12px 14px;border:1px solid rgba(88,214,199,.3);border-radius:10px;background:rgba(88,214,199,.07)}.npc-forge-point-buy-budget div{display:grid}.npc-forge-point-buy-budget span{color:#9cece2;font-size:.64rem;text-transform:uppercase}.npc-forge-point-buy-budget strong{color:#fff;font-size:1rem}.npc-forge-point-buy-budget p{margin:0;color:rgba(255,255,255,.65);font-size:.72rem}.npc-forge-advancement-block{margin-top:18px;padding-top:16px;border-top:1px solid rgba(255,255,255,.09)}.npc-forge-advancement-copy{margin:4px 0 0;color:rgba(255,255,255,.63);font-size:.72rem;line-height:1.5}@media(max-width:720px){.npc-forge-roll-toolbar,.npc-forge-point-buy-budget{align-items:stretch;flex-direction:column}}
+      .npc-forge-ability-methods{flex-wrap:wrap}.npc-forge-ability-methods button{flex:1 1 150px}.ability-method-heading{margin-top:2px}.npc-forge-roll-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding:10px 12px;border:1px solid rgba(168,108,255,.25);border-radius:10px;background:rgba(126,72,199,.08)}.npc-forge-roll-toolbar>div{display:grid}.npc-forge-roll-toolbar strong{color:#fff}.npc-forge-roll-toolbar span{color:rgba(255,255,255,.6);font-size:.7rem}.npc-forge-roll-toolbar button{padding:7px 11px;border:1px solid rgba(168,108,255,.55);border-radius:8px;color:#fff;background:rgba(126,72,199,.2)}.npc-forge-point-buy-budget{display:flex;justify-content:space-between;gap:16px;margin-top:14px;padding:12px 14px;border:1px solid rgba(88,214,199,.3);border-radius:10px;background:rgba(88,214,199,.07)}.npc-forge-point-buy-budget div{display:grid}.npc-forge-point-buy-budget span{color:#9cece2;font-size:.64rem;text-transform:uppercase}.npc-forge-point-buy-budget strong{color:#fff;font-size:1rem}.npc-forge-point-buy-budget p{margin:0;color:rgba(255,255,255,.65);font-size:.72rem}@media(max-width:720px){.npc-forge-roll-toolbar,.npc-forge-point-buy-budget{align-items:stretch;flex-direction:column}}
     `}</style>
   </div>;
 }
