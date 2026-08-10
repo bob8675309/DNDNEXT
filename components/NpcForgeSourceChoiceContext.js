@@ -32,6 +32,13 @@ function applyAutomaticSourceSelections(groups = [], selections = {}) {
   return normalizeSourceChoiceSelections(groups, next);
 }
 
+function resolverPlacement(group = {}) {
+  const explicit = String(group.resolverPlacement || group.metadata?.resolverPlacement || "").trim();
+  if (explicit) return explicit;
+  if (["class", "advancement"].includes(group.placement)) return "training";
+  return group.placement || "";
+}
+
 export function normalizeSourceChoiceState(groups = [], catalogReady = true, previous = EMPTY_SOURCE_CHOICE_STATE, scope = "foundation") {
   const validGroups = normalizeFeatSourceChoiceGroups(Array.isArray(groups) ? groups : []);
   const previousScopes = previous?.scopes && typeof previous.scopes === "object" ? previous.scopes : {};
@@ -51,6 +58,10 @@ export function normalizeSourceChoiceState(groups = [], catalogReady = true, pre
 
 export function sourceChoiceStateComplete(state = EMPTY_SOURCE_CHOICE_STATE, filters = {}) {
   if (!state.catalogReady) return false;
+  if (filters?.placement) {
+    const groups = (state.groups || []).filter((group) => resolverPlacement(group) === filters.placement);
+    return sourceChoiceGroupsComplete(groups, state.selections || {}, { ...filters, placement: undefined });
+  }
   return sourceChoiceGroupsComplete(state.groups || [], state.selections || {}, filters);
 }
 
