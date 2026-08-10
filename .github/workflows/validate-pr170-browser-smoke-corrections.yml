@@ -17,6 +17,7 @@ on:
       - "utils/playerForgeFeatChoiceRouting.js"
       - "utils/playerForgeSpeciesRuntimeChoices.js"
       - "sql/20260810_90_rest_class_feature_restoration.sql"
+      - "scripts/node_relative_js_loader.mjs"
       - "scripts/validate_pr170_browser_smoke_corrections.mjs"
       - ".github/workflows/validate-pr170-browser-smoke-corrections.yml"
   push:
@@ -35,6 +36,7 @@ on:
       - "utils/playerForgeFeatChoiceRouting.js"
       - "utils/playerForgeSpeciesRuntimeChoices.js"
       - "sql/20260810_90_rest_class_feature_restoration.sql"
+      - "scripts/node_relative_js_loader.mjs"
       - "scripts/validate_pr170_browser_smoke_corrections.mjs"
       - ".github/workflows/validate-pr170-browser-smoke-corrections.yml"
   workflow_dispatch:
@@ -60,7 +62,7 @@ jobs:
         run: npm ci
 
       - name: Validate smoke correction contracts
-        run: node scripts/validate_pr170_browser_smoke_corrections.mjs
+        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_pr170_browser_smoke_corrections.mjs
 
       - name: Run production build gate
         run: node scripts/vercel_build_v2.mjs
