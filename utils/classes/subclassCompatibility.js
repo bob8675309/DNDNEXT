@@ -70,6 +70,11 @@ function candidateScore(group, targetClassSource) {
 }
 
 function preferDuplicateSubclass(candidate, current, targetClassSource) {
+  // Never let a newer but incomplete placeholder hide a complete supplemental definition.
+  // Once both candidates are usable definitions, publication order decides the reprint.
+  const candidateComplete = candidate.describedFeatureCount > 1;
+  const currentComplete = current.describedFeatureCount > 1;
+  if (candidateComplete !== currentComplete) return candidateComplete;
   const candidatePublished = sourcePublicationOrder(candidate.source);
   const currentPublished = sourcePublicationOrder(current.source);
   if (candidatePublished !== currentPublished) return candidatePublished > currentPublished;
@@ -126,8 +131,8 @@ export function resolveSubclassCatalog(featureRows = [], targetClassSource = "XP
     group.firstLevel = Math.min(...group.features.map((feature) => Number(feature.level || 20)));
   }
 
-  // Same-name reprints are one player-facing choice. Keep the newest known source first;
-  // only use completeness/target-source compatibility as a tie-break when publication order is unknown/equal.
+  // Same-name reprints are one player-facing choice. Complete definitions beat placeholders;
+  // among complete definitions, keep the newest known source.
   const preferredByIdentity = new Map();
   for (const group of rawGroups.values()) {
     const identity = normalizeSubclassName(group.name);
