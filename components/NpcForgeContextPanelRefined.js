@@ -66,8 +66,48 @@ function SpeciesTraitDetails({ playerMode = false, details = [], traits = [], ch
 
 function BackgroundSkillChooser({ groups = [], selections = {}, onToggle }) { return <div className="npc-forge-context-choice-stack">{groups.map((group) => { const selected = selections[group.id] || []; return <section key={group.id}><div className="npc-forge-context-choice-head"><b>Choose {group.count} skill{group.count === 1 ? "" : "s"}</b><small>{selected.length}/{group.count} selected</small></div><div className="npc-forge-context-choice-grid">{group.options.map((option) => <button key={option.key} type="button" className={selected.includes(option.key) ? "is-selected" : ""} onClick={() => onToggle?.(group.id, option.key, group.count)}><strong>{option.label}</strong><span>{option.description}</span></button>)}</div></section>; })}</div>; }
 function BackgroundFeatChooser({ options = [], selectedFeat, onSelect }) { return <div className="npc-forge-context-choice-grid feats">{options.map((feat) => <button key={feat.id} type="button" className={selectedFeat?.id === feat.id ? "is-selected" : ""} onClick={() => onSelect?.(feat.id)}><strong>{feat.name}</strong><small>{sourceLabel(feat.source)}</small><span>{formatPlayerFacingText(feat.description, "This feat is granted by the background.")}</span></button>)}</div>; }
-function BackgroundFeatureList({ features = [] }) { return features.length ? <div className="npc-forge-context-section npc-forge-background-features"><span>Background feature{features.length === 1 ? "" : "s"}</span><div>{features.map((feature, index) => <details key={`${feature.name}-${index}`} defaultOpen={features.length === 1}><summary>{feature.name}</summary><p>{formatPlayerFacingText(feature.description)}</p></details>)}</div></div> : null; }
-function ExpandedSpellList({ groups = [] }) { return groups.length ? <details className="npc-forge-context-section npc-forge-background-spells"><summary><span>Expanded spell list</span><em>Info</em></summary><div className="npc-forge-background-spell-body"><p>These spells join the class list when a class grants Spellcasting or Pact Magic; they are not automatically known or prepared.</p>{groups.map((group) => <div key={group.level}><strong>{group.label}</strong><span>{group.spells.join(", ")}</span></div>)}</div></details> : null; }
+
+function backgroundFeatureTextForDisplay(background, value) {
+  const formatted = formatPlayerFacingText(value);
+  if (safeText(background?.source).toUpperCase() !== "SCC") return formatted;
+  return formatted
+    .replace(/\s*Consider customizing your spells[\s\S]*$/i, "")
+    .replace(/\s*(?:Lorehold|Prismari|Quandrix|Silverquill|Witherbloom) spells might[\s\S]*$/i, "")
+    .trim();
+}
+
+function BackgroundFeatureList({ background = null, features = [] }) { return features.length ? <div className="npc-forge-context-section npc-forge-background-features"><span>Background feature{features.length === 1 ? "" : "s"}</span><div>{features.map((feature, index) => <details key={`${feature.name}-${index}`} defaultOpen={features.length === 1}><summary>{feature.name}</summary><p>{backgroundFeatureTextForDisplay(background, feature.description)}</p></details>)}</div></div> : null; }
+
+function ExpandedSpellList({ groups = [] }) {
+  const [spellHelp, setSpellHelp] = useState({});
+  const spellNames = useMemo(() => [...new Set((Array.isArray(groups) ? groups : []).flatMap((group) => Array.isArray(group?.spells) ? group.spells : []).map(safeText).filter(Boolean))], [groups]);
+  useEffect(() => {
+    let active = true;
+    if (!spellNames.length) { setSpellHelp({}); return () => { active = false; }; }
+    supabase.from("spells_catalog")
+      .select("name,source,casting_time,range_text,duration_text,description")
+      .in("name", spellNames)
+      .then(({ data, error }) => {
+        if (!active || error) return;
+        const preferred = new Map();
+        for (const spell of data || []) {
+          const key = normalizeName(spell.name);
+          const current = preferred.get(key);
+          const nextRank = Number(SPELL_SOURCE_PRIORITY[spell.source] ?? 9);
+          const currentRank = Number(SPELL_SOURCE_PRIORITY[current?.source] ?? 9);
+          if (!current || nextRank < currentRank) preferred.set(key, spell);
+        }
+        setSpellHelp(Object.fromEntries(preferred));
+      });
+    return () => { active = false; };
+  }, [spellNames]);
+
+  return groups.length ? <details className="npc-forge-context-section npc-forge-background-spells"><summary><span>Expanded spell list</span><em>Info</em></summary><div className="npc-forge-background-spell-body"><p>These spells join the class list when a class grants Spellcasting or Pact Magic; they are not automatically known or prepared.</p>{groups.map((group) => <div key={group.level}><strong>{group.label}</strong><span className="npc-forge-background-spell-names">{group.spells.map((name, index) => {
+    const help = spellHelp[normalizeName(name)];
+    return <span key={name} className={`npc-forge-background-spell-name ${help ? "has-spell-help" : ""}`} tabIndex={help ? 0 : undefined}>{name}<SpellChoiceHelp spell={help} />{index < group.spells.length - 1 ? <i>, </i> : null}</span>;
+  })}</span></div>)}</div></details> : null;
+}
+
 function strixhavenCollegeForBackground(background = null) {
   const name = normalizeName(background?.name || background?.sourceName || "");
   return Object.entries(STRIXHAVEN_COLLEGES).find(([key]) => name.includes(key))?.[1] || null;
@@ -140,7 +180,7 @@ export default function NpcForgeContextPanel({ playerMode = false, step = 0, ste
     const skills = backgroundMechanicDetails?.skills || [];
     const originFeatDetails = backgroundFeatDetailsForDisplay(option, backgroundMechanicDetails?.originFeat || []);
     const selectedChoiceLabels = (backgroundMechanicDetails?.skillChoices || []).flatMap((group) => (backgroundSkillSelections[group.id] || []).map((key) => group.options.find((row) => row.key === key)?.label || key));
-    return <div className="npc-forge-context-card is-origin"><DetailHeader eyebrow="Background" title={option.name} source={option.source} /><div className="npc-forge-background-story"><span>Before adventuring</span>{backgroundStoryDescription(option).split(/\n\s*\n/).map((paragraph, index) => <p key={index}>{paragraph}</p>)}</div><BackgroundFeatureList features={option.features || []} /><InfoRows wideDetails rows={[{ label: "Skills", value: labelList([...skills.map((entry) => entry.label), ...selectedChoiceLabels]) || "Choice required", details: skills, control: <BackgroundSkillChooser groups={backgroundMechanicDetails?.skillChoices || []} selections={backgroundSkillSelections} onToggle={onToggleBackgroundSkill} />, actionLabel: backgroundMechanicDetails?.skillChoices?.length ? "Choose" : "Info", defaultOpen: Boolean(backgroundMechanicDetails?.skillChoices?.length) }, { label: "Tools", value: labelList(option.tools) || "None listed", details: backgroundMechanicDetails?.tools }, { label: "Origin feat", value: backgroundMechanicDetails?.originFeatValue || selectedBackgroundFeat?.name || "None listed", details: originFeatDetails, control: backgroundMechanicDetails?.featRequiresChoice ? <BackgroundFeatChooser options={backgroundFeatOptions} selectedFeat={selectedBackgroundFeat} onSelect={onSelectBackgroundFeat} /> : null, actionLabel: backgroundMechanicDetails?.featRequiresChoice ? "Choose" : "Info", defaultOpen: Boolean(backgroundMechanicDetails?.featRequiresChoice) }]} /><ExpandedSpellList groups={backgroundMechanicDetails?.spellList || []} /><div className="npc-forge-context-note">Use this history to choose former allies, obligations, rivals, and unfinished business that can matter during play. Spell choices granted by a fixed feat are resolved on the Spells step.</div></div>;
+    return <div className="npc-forge-context-card is-origin"><DetailHeader eyebrow="Background" title={option.name} source={option.source} /><div className="npc-forge-background-story"><span>Before adventuring</span>{backgroundStoryDescription(option).split(/\n\s*\n/).map((paragraph, index) => <p key={index}>{paragraph}</p>)}</div><BackgroundFeatureList background={option} features={option.features || []} /><InfoRows wideDetails rows={[{ label: "Skills", value: labelList([...skills.map((entry) => entry.label), ...selectedChoiceLabels]) || "Choice required", details: skills, control: <BackgroundSkillChooser groups={backgroundMechanicDetails?.skillChoices || []} selections={backgroundSkillSelections} onToggle={onToggleBackgroundSkill} />, actionLabel: backgroundMechanicDetails?.skillChoices?.length ? "Choose" : "Info", defaultOpen: Boolean(backgroundMechanicDetails?.skillChoices?.length) }, { label: "Tools", value: labelList(option.tools) || "None listed", details: backgroundMechanicDetails?.tools }, { label: "Origin feat", value: backgroundMechanicDetails?.originFeatValue || selectedBackgroundFeat?.name || "None listed", details: originFeatDetails, control: backgroundMechanicDetails?.featRequiresChoice ? <BackgroundFeatChooser options={backgroundFeatOptions} selectedFeat={selectedBackgroundFeat} onSelect={onSelectBackgroundFeat} /> : null, actionLabel: backgroundMechanicDetails?.featRequiresChoice ? "Choose" : "Info", defaultOpen: Boolean(backgroundMechanicDetails?.featRequiresChoice) }]} /><ExpandedSpellList groups={backgroundMechanicDetails?.spellList || []} /><div className="npc-forge-context-note">Use this history to choose former allies, obligations, rivals, and unfinished business that can matter during play. Spell choices granted by a fixed feat are resolved on the Spells step.</div></div>;
   }
 
   if (detail?.type === "ability" && detail.key) return <div className="npc-forge-context-card is-ability"><DetailHeader eyebrow="Ability" title={ABILITY_LABELS[detail.key]} /><p>{ABILITY_DESCRIPTIONS[detail.key]}</p><InfoRows rows={[{ label: "Base score", value: draft.baseAbilities?.[detail.key] ?? 10 }, { label: "Final score", value: finalAbilities?.[detail.key] ?? 10 }, { label: "Assigned roll", value: allocation?.[detail.key] ? rolls.find((roll) => roll.id === allocation[detail.key])?.total : "Not assigned" }]} /><div className="npc-forge-context-note">A score of 10–11 is average. Every 2 points above or below 10 changes the modifier by 1.</div></div>;
