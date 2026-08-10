@@ -1,0 +1,147 @@
+/* PR #170 signed-in smoke corrections: contrast, sticky class detail rail, and spell help. */
+
+/* The Class guide can be far taller than the catalogue column. Stretch the left column to
+   the grid row so its sticky feature dock remains eligible for the full scroll range. */
+.unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 > .npc-forge-workspace {
+  align-self: stretch;
+  height: 100%;
+}
+
+.unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-selection {
+  align-content: start;
+  height: 100%;
+  min-height: 100%;
+}
+
+.unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-feature-dock {
+  position: sticky;
+  top: 12px;
+  z-index: 6;
+  max-height: calc(100dvh - 185px);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+/* The smoke test showed that secondary copy was too dim on the dark Forge surface.
+   Keep hierarchy, but move player-facing rules/help text into a comfortably readable range. */
+.unified-player-character-forge .npc-forge-section-heading p,
+.unified-player-character-forge .npc-forge-workspace-note,
+.unified-player-character-forge .npc-forge-context-note,
+.unified-player-character-forge .npc-forge-context-card > p,
+.unified-player-character-forge .npc-forge-context-row-details p,
+.unified-player-character-forge .npc-forge-background-story p,
+.unified-player-character-forge .npc-forge-background-features p,
+.unified-player-character-forge .npc-forge-background-spell-body p,
+.unified-player-character-forge .npc-forge-species-feature-list p,
+.unified-player-character-forge .npc-forge-class-guide p,
+.unified-player-character-forge .npc-forge-class-feature-dock p,
+.unified-player-character-forge .npc-forge-source-choice-group > header small,
+.unified-player-character-forge .npc-forge-source-choice-buttons small,
+.unified-player-character-forge .npc-forge-source-choice-note,
+.unified-player-character-forge .npc-forge-source-choice-fixed small,
+.unified-player-character-forge .npc-forge-rich-choice__list small,
+.unified-player-character-forge .npc-forge-rich-choice__detail header small {
+  color: rgba(255, 255, 255, .82) !important;
+}
+
+.unified-player-character-forge .npc-forge-context-card small,
+.unified-player-character-forge .npc-forge-section small,
+.unified-player-character-forge .npc-forge-context-row > span,
+.unified-player-character-forge .npc-forge-rich-choice__head span,
+.unified-player-character-forge .npc-forge-source-choice-field > span,
+.unified-player-character-forge .npc-forge-source-choice-slots label > span {
+  color: rgba(255, 255, 255, .72) !important;
+}
+
+.unified-player-character-forge .npc-forge-background-features summary,
+.unified-player-character-forge .npc-forge-background-spell-body strong,
+.unified-player-character-forge .npc-forge-context-row-details b {
+  color: #fff !important;
+  font-weight: 800;
+}
+
+/* Background expanded-spell names now carry the same source-backed hover card used by
+   species spell options. Keyboard focus exposes the same information. */
+.unified-player-character-forge .npc-forge-background-spell-names {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  min-width: 0;
+}
+
+.unified-player-character-forge .npc-forge-background-spell-name {
+  position: relative;
+  display: inline-block;
+  color: #fff;
+  font-weight: 700;
+  cursor: help;
+  outline: none;
+}
+
+.unified-player-character-forge .npc-forge-background-spell-name > i {
+  color: rgba(255, 255, 255, .78);
+  font-style: normal;
+  white-space: pre;
+}
+
+.unified-player-character-forge .npc-forge-background-spell-name .npc-forge-species-spell-help {
+  display: none;
+  position: absolute;
+  z-index: 80;
+  left: 0;
+  top: calc(100% + 7px);
+  width: min(360px, 70vw);
+  padding: 10px 11px;
+  border: 1px solid rgba(88, 214, 199, .42);
+  border-radius: 9px;
+  background: rgba(9, 12, 20, .985);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .46);
+  color: #fff;
+  text-align: left;
+  white-space: normal;
+}
+
+.unified-player-character-forge .npc-forge-background-spell-name:hover .npc-forge-species-spell-help,
+.unified-player-character-forge .npc-forge-background-spell-name:focus .npc-forge-species-spell-help,
+.unified-player-character-forge .npc-forge-background-spell-name:focus-within .npc-forge-species-spell-help {
+  display: grid;
+  gap: 6px;
+}
+
+.unified-player-character-forge .npc-forge-background-spell-name .npc-forge-species-spell-help > span {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.unified-player-character-forge .npc-forge-background-spell-name .npc-forge-species-spell-help strong {
+  color: #fff;
+}
+
+.unified-player-character-forge .npc-forge-background-spell-name .npc-forge-species-spell-help em {
+  color: #9cece2;
+  font-size: .62rem;
+  font-style: normal;
+}
+
+.unified-player-character-forge .npc-forge-background-spell-name .npc-forge-species-spell-help small,
+.unified-player-character-forge .npc-forge-background-spell-name .npc-forge-species-spell-help p {
+  margin: 0;
+  color: rgba(255, 255, 255, .86) !important;
+  font-size: .66rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 980px) {
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 > .npc-forge-workspace,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-selection {
+    height: auto;
+    min-height: 0;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-feature-dock {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+}
