@@ -19,6 +19,8 @@ const ability = read("components/NpcForgeAbilityStep.js");
 const speciesBonus = read("components/NpcForgeSpeciesBonusPanel.js");
 const speciesRules = read("utils/speciesPresentation.js");
 const speciesContext = read("components/NpcForgeSpeciesChoiceContext.js");
+const sourceChoiceContext = read("components/NpcForgeSourceChoiceContext.js");
+const sourceChoiceUi = read("components/SourceChoiceFields.js");
 const training = read("components/NpcForgeTrainingStep.js");
 const spells = read("components/NpcForgeSpellStep.js");
 const review = read("components/NpcForgeReviewPanel.js");
@@ -67,8 +69,10 @@ requireToken(profile, "persistent-player-character-profile", "profile host");
 requireToken(profile, "key={sessionUser.id}", "profile host account isolation");
 requireToken(profile, "is-forge-suspended", "profile host");
 
-for (const token of ["Skillful", "Versatile", "Choose skill proficiency", "Choose Origin feat", "ORIGIN_FEAT_OPTIONS"]) requireToken(speciesRules, token, "Human Species choices");
+for (const token of ["Skillful", "Versatile", "Choose skill proficiency", "Choose Origin feat", "ORIGIN_FEAT_OPTIONS", "speciesFixedLanguages"]) requireToken(speciesRules, token, "Human and fixed-language Species choices");
 for (const token of ["speciesSkillChoicesFromState", "speciesFeatChoicesFromState", "speciesSpellcastingFromChoiceState"]) requireToken(speciesContext, token, "Species choice persistence");
+for (const token of ["applyAutomaticSourceSelections", "field?.autoSelect"]) requireToken(sourceChoiceContext, token, "fixed source choice authority");
+for (const token of ["RichField", "npc-forge-rich-choice", "eldritch-invocation", "artificer-plan", "FixedField"]) requireToken(sourceChoiceUi, token, "rich source choice catalogue");
 
 for (const token of ["classChoiceStateComplete", "eligibleSubclassOptions", "featureGroups", "featureSelections", "registerFeatureGroups", "toggleFeatureOption"]) requireToken(classContext, token, "class choice context");
 for (const token of ["WARLOCK_INVOCATION_PROGRESSION_XPHB", "battle-master-maneuver", "metamagic", "weapon-mastery", "fighting-style", "expertise", "refSubclassFeature", "permanentChoiceText", "serializeClassFeatureChoices"]) requireToken(classRuleSource, token, "class feature choice rules");
@@ -79,12 +83,17 @@ requireToken(classGuideModel, 'from("class_feature_catalog")', "class choice sou
 requireToken(classGuideModel, 'from("character_option_catalog_preferred")', "class feat/skill source");
 requireToken(classGuideModel, 'from("items_catalog")', "weapon mastery source");
 forbidToken(classGuideModel, "subclass_source", "class feature catalog query");
-for (const token of ["ForgeSubclassSelection", "RequiredClassChoices", "cleanPlayerCopy", "npc-forge-class-guide__level-heading", "npc-forge-class-guide__hero-facts", "onFeatureDetail", "ClassFeatureText"]) requireToken(classGuide, token, "class guide");
+for (const token of ["ForgeSubclassSelection", "ChoiceRoutingNote", "cleanPlayerCopy", "npc-forge-class-guide__level-heading", "npc-forge-class-guide__hero-facts", "onFeatureDetail", "ClassFeatureText"]) requireToken(classGuide, token, "class guide");
+forbidToken(classGuide, "NpcForgeClassFeatureChoices", "class guide decision routing");
 forbidToken(classGuide, '"Primary Abilities"', "class hero redundant primary-ability tile");
 for (const token of ["normalizeClassFeatureText", "classFeatureSections", "class-feature-text__long-list", "LEVEL_BOILERPLATE"]) requireToken(classFeatureText, token, "structured class feature text");
-for (const token of ["Class Feature", "Subclass Feature", "npc-forge-class-feature-dock", "ClassFeatureText"]) requireToken(classDock, token, "class feature card dock");
+for (const token of ["Class Feature", "Subclass Feature", "npc-forge-class-feature-dock", "ClassFeatureText", "Training → Feats & Class Abilities"]) requireToken(classDock, token, "class feature card dock");
+forbidToken(classDock, "NpcForgeSourceChoiceFields", "class feature card dock decision routing");
 requireToken(forgeSteps, "NpcForgeClassFeatureDock", "class feature dock placement");
 requireToken(forgeSteps, "NpcForgeSpeciesBonusPanel", "ability Species Bonus placement");
+requireToken(forgeSteps, "speciesFixedLanguages", "source-defined player languages");
+requireToken(forgeSteps, "autoSelect: true", "fixed player languages");
+forbidToken(forgeSteps, "playerMode && selectedSpecies?.lineages?.length", "player-facing catalog lineage");
 requireToken(context, "npc-forge-species-hero", "species hero composition");
 requireToken(context, "npc-forge-species-facts", "species compact facts");
 requireToken(context, "npc-forge-species-feature-list", "species expandable rules");
@@ -93,9 +102,10 @@ requireToken(context, 'from("spells_catalog")', "species spell hover source");
 forbidToken(context, 'label: "Speed"', "species redundant flat rows");
 
 for (const token of ["Ability Score Generation Method", "Standard 3d6", "4d6 drop lowest die", "Point Buy", "Standard Class Array", "Manual Assign", "Reroll All Six", "Species Bonus stays in the right information panel"]) requireToken(ability, token, "ability rules");
+forbidToken(ability, "NpcForgeSourceChoiceFields", "advancement choices on Abilities");
 forbidToken(ability, "npc-forge-species-bonus mt-4", "ability main-workspace Species Bonus duplication");
 for (const token of ["npc-forge-species-bonus--context", "Species Bonus", "Choose a feat"]) requireToken(speciesBonus, token, "right-column Species Bonus");
-for (const token of ["Background grants", "Training choices", "each uses one Training choice", "Campaign crafting house rule", "successful DC check", "properly deployed caravan workshop"]) requireToken(training, token, "training rules");
+for (const token of ["Background grants", "Training choices", "each uses one Training choice", "Campaign crafting house rule", "successful DC check", "properly deployed caravan workshop", "Skills & Proficiencies", "Feats & Class Abilities", 'placement="advancement"']) requireToken(training, token, "training rules and routed choices");
 forbidToken(training, "Expertise is not self-assigned during creation", "player Training explanation");
 for (const token of ['from("spells_catalog")', 'from("class_level_progression")', "validateStartingSpellSelections", "Selected only", "Prepared", "Starting spell requirements complete."]) requireToken(spells, token, "starting spells");
 requireToken(rules, "const key = normalizedSpellName(row?.name);", "2024-first spell deduplication");
@@ -123,4 +133,4 @@ requireToken(finalPolish, ".npc-forge-review-dossier__grid", "review presentatio
 requireToken(app, 'import "../styles/character-forge-final-polish.css";', "application stylesheet import");
 requireToken(app, 'import "../styles/player-profile-scroll-fix.css";', "profile scroll stylesheet preservation");
 
-console.log("Character Forge persistence, structured class text, contextual Species Bonus, Human choices, source-backed class feature choices, guarded v3 multi-source starting magic, 2024-first spells, review dossier, player authority, and raster authority validated.");
+console.log("Character Forge persistence, routed class decisions, rich source catalogues, source-defined fixed languages, structured class text, contextual Species Bonus, guarded v3 multi-source starting magic, 2024-first spells, review dossier, player authority, and raster authority validated.");
