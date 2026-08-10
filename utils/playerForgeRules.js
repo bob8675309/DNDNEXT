@@ -71,7 +71,7 @@ export function startingSpellSelectionModel(classRow = null, levelRow = null, ch
   const classKey = String(classRow?.class_key || "").toLowerCase();
   const spellcasting = Boolean(classRow?.spellcasting_ability);
   if (!spellcasting) {
-    return { classKey, mode: "none", cantrips: 0, leveled: 0, prepared: 0, maximumSpellLevel: 0, spellSlots: [], required: false };
+    return { classKey, mode: "none", cantrips: 0, leveled: 0, prepared: 0, maximumSpellLevel: 0, spellSlots: [], required: false, catalogReady: true };
   }
   const level = Math.max(1, Math.min(20, Number(characterLevel || levelRow?.class_level || 1)));
   const cantrips = Math.max(0, Number(levelRow?.cantrips_known || 0));
@@ -80,10 +80,10 @@ export function startingSpellSelectionModel(classRow = null, levelRow = null, ch
   const spellSlots = Array.isArray(levelRow?.spell_slots) ? levelRow.spell_slots : [];
   if (classKey === "wizard") {
     const spellbook = 6 + Math.max(0, level - 1) * 2;
-    return { classKey, mode: "spellbook", cantrips, leveled: spellbook, prepared: Math.min(spellbook, progressionCount), maximumSpellLevel, spellSlots, required: cantrips + spellbook > 0 };
+    return { classKey, mode: "spellbook", cantrips, leveled: spellbook, prepared: Math.min(spellbook, progressionCount), maximumSpellLevel, spellSlots, required: cantrips + spellbook > 0, catalogReady: true };
   }
   const mode = PREPARED_LIST_CLASSES.has(classKey) ? "prepared" : KNOWN_LIST_CLASSES.has(classKey) ? "known" : "known";
-  return { classKey, mode, cantrips, leveled: progressionCount, prepared: progressionCount, maximumSpellLevel, spellSlots, required: cantrips + progressionCount > 0 };
+  return { classKey, mode, cantrips, leveled: progressionCount, prepared: progressionCount, maximumSpellLevel, spellSlots, required: cantrips + progressionCount > 0, catalogReady: true };
 }
 
 export function countStartingSpellSelections(spells = [], selections = {}) {
