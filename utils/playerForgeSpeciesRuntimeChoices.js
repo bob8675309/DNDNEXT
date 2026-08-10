@@ -46,13 +46,15 @@ export function applySpeciesRuntimeChoiceAuthority({ groups = [], species = null
   const identity = speciesIdentity(species);
   const next = Array.isArray(groups) ? [...groups] : [];
 
-  // These source traits are rest-configurable runtime authority, not permanent Forge proficiency choices.
+  // Rest-cycle traits belong to runtime authority, not permanent Forge choices.
+  // Astral Trance expires at every Long Rest and therefore has no acquisition-time Forge selection.
   // Deep Gnome Gift of the Svirfneblin is spell-routed. Before its first spell grant level,
   // the generic parser can otherwise leave behind only an INT/WIS/CHA feature-ability field.
   // The campaign resolves that spellcasting ability automatically when the spell grant is active,
   // so a standalone pre-level-3 ability prompt must never be shown.
   const filtered = next.filter((group) => {
     const trait = norm(group?.label);
+    if (identity.name === "astral elf" && identity.source === "AAG" && trait === "astral trance") return false;
     if (identity.name === "githyanki" && identity.source === "MPMM" && trait === "astral knowledge") return false;
     if (identity.name === "khoravar" && identity.source === "EFA" && trait === "skill versatility") return false;
     if (identity.name === "deep gnome" && identity.source === "MPMM" && trait === "gift of the svirfneblin") {
