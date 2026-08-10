@@ -1,3 +1,5 @@
+import { bestEligibleCastingAbility } from "./playerForgeAutomaticCasting";
+
 const text = (value) => String(value ?? "").trim();
 const norm = (value) => text(value).toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 const slug = (value) => norm(value).replace(/\s+/g, "-");
@@ -132,13 +134,23 @@ function routeStrixhaven(group, selectedBackground, spells) {
   };
 }
 
-function routeMagicInitiate(group) {
+function routeMagicInitiate(group, finalAbilities = {}, selectedClass = null) {
+  const abilityField = (group.fields || []).find((field) => field.id === "spellcasting-ability");
+  const allowed = (abilityField?.options || []).map((option) => option.value || option.key).filter((value) => AUTO_CASTING_ABILITIES.includes(String(value).toLowerCase()));
+  const resolved = bestEligibleCastingAbility(finalAbilities, allowed.length ? allowed : AUTO_CASTING_ABILITIES, selectedClass?.spellcasting_ability || "");
+  const resolvedOption = abilityField?.options?.find((option) => String(option.value || option.key).toLowerCase() === resolved?.key) || null;
+  const fields = (group.fields || []).map((field) => field.id !== "spellcasting-ability" ? field : {
+    ...field,
+    autoSelect: true,
+    options: resolvedOption ? [resolvedOption] : field.options,
+    metadata: { ...(field.metadata || {}), autoCastingAbility: true, allowedCastingAbilities: AUTO_CASTING_ABILITIES },
+  });
   return {
     ...group,
     placement: "spells",
     resolverPlacement: "spells",
     helper: "Choose the spell list and granted spells here. The Forge automatically uses the highest eligible Intelligence, Wisdom, or Charisma score for this feat's spells.",
-    fields: (group.fields || []).filter((field) => field.id !== "spellcasting-ability"),
+    fields,
     metadata: {
       ...(group.metadata || {}),
       sourceMagicFamily: "magic-initiate",
@@ -148,22 +160,11 @@ function routeMagicInitiate(group) {
   };
 }
 
-function routeRitualCaster(group) {
-  return {
-    ...group,
-    placement: "spells",
-    resolverPlacement: "spells",
-    helper: "Choose the ritual spells granted by this feat using the spell catalogue.",
-    metadata: { ...(group.metadata || {}), sourceMagicFamily: "ritual-caster" },
-  };
-}
-
-export function routeFeatSourceChoiceGroups({ groups = [], selectedBackground = null, spells = [] } = {}) {
+export function routeFeatSourceChoiceGroups({ groups = [], selectedBackground = null, spells = [], finalAbilities = {}, selectedClass = null } = {}) {
   return array(groups).map((group) => {
     const name = norm(group.metadata?.featName || group.label);
     if (name === "strixhaven initiate") return routeStrixhaven(group, selectedBackground, spells);
-    if (name === "magic initiate") return routeMagicInitiate(group);
-    if (name === "ritual caster") return routeRitualCaster(group);
+    if (name === "magic initiate") return routeMagicInitiate(group, finalAbilities, selectedClass);
     return group;
   }).filter((group) => (group.fields || []).every((field) => !field.required || (field.options || []).length >= Number(field.count || 1)));
 }
