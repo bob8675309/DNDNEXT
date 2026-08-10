@@ -8,14 +8,14 @@ For active PR #170 work, trust sources in this order:
 
 1. live Supabase schema/migrations/grants/data;
 2. current PR source and exact-head CI/Vercel;
-3. dedicated runtime/progression ledgers;
+3. dedicated runtime/progression/browser-smoke ledgers;
 4. broader roadmap/history prose.
 
 If prose conflicts with live source/database state, live authority wins until docs are corrected.
 
 ## Current PR #170 checkpoint
 
-Production is accepted through **migration 89**.
+Production is accepted through **migration 90**.
 
 Recent sequence:
 
@@ -32,9 +32,10 @@ Recent sequence:
 - 86 — Player Forge source-magic materialization;
 - 87 — source-magic level/choice parser correction;
 - 88 — source-magic feat-name normalization correction;
-- 89 — read-only post-rest runtime-choice aggregation and attention classification.
+- 89 — read-only post-rest runtime-choice aggregation and attention classification;
+- 90 — source-aware standalone Rest restoration for sheet-side Barbarian Rage action state.
 
-Latest registered migration: `pending_rest_runtime_choices` (`20260810181530`).
+Latest registered migration: `rest_class_feature_restoration` (`20260810205646`).
 
 ## Source-control parity note
 
@@ -44,12 +45,13 @@ During the migration-89 startup audit, live Supabase contained migrations 83-85 
 
 Read before modifying these areas:
 
+- `PR170_Browser_Smoke_Corrections_Status.md`
+- `PR170_Final_Acceptance_Status.md`
 - `Player_Forge_Choice_Routing_and_Source_Magic_Status.md`
 - `Pending_Rest_Runtime_Choices_Status.md`
 - `Defensive_Tactics_Runtime_Status.md`
 - `Whispers_of_the_Dead_Runtime_Status.md`
 - `Progression_RPC_ACL_Cleanup_Status.md`
-- `PR170_Final_Acceptance_Status.md`
 - `Wizard_Memorize_Spell_Runtime_Status.md`
 - `Wizard_Cantrip_Formulas_Runtime_Status.md`
 - `Armorer_Armor_Model_Runtime_Status.md`
@@ -69,6 +71,7 @@ Older runtime ledgers remain authoritative for their accepted slices unless cont
 - rest-configurable persistent choice → runtime authority whose current selection remains active until changed;
 - next-rest-expiring choice → rest-anchored runtime state whose getter treats stale state as inactive;
 - first choice unlocked only by a rest → attention only while no benefit is active;
+- class action with source-defined recovery → action-state authority restored by the appropriate standalone Rest RPC without rewriting tactical state;
 - per-use/per-cast choice → action/spell resolver;
 - informational/always-on feature → display/consumer logic.
 
@@ -80,17 +83,36 @@ Accepted contrasts:
 - Hunter's Prey / Defensive Tactics: PHB editions remain permanent acquisition choices; XPHB editions are persistent runtime choices with Short/Long-Rest replacement.
 - Whispers of the Dead: first choice requires a qualifying rest; borrowed proficiency persists until replaced after a later qualifying rest.
 - Astral Trance: current Long-Rest-cycle proficiencies expire at the next Long Rest and therefore require a new current-cycle choice.
+- Rage: XPHB regains one spent use on Short Rest and all on Long Rest; PHB remains Long-Rest-only.
+
+## Browser-smoke correction pass
+
+The user completed a real signed-in browser smoke. The pass exposed and then drove corrections for Rage rest restoration, Deep Gnome premature casting-ability presentation, Witherbloom flavor/contrast/spell help, Class-list collapse behavior, sticky Class detail presentation, Species Bonus feat routing, duplicate subclass reprints, and Artificer plan catalogue presentation.
+
+Read `PR170_Browser_Smoke_Corrections_Status.md` for exact findings and evidence.
+
+The corrected build still requires focused user re-smoke. Do not describe PR #170 as having final browser acceptance yet.
 
 ## Forge choice-routing/source-magic pass
 
-The player Forge now separates explanation from resolution:
+The player Forge separates explanation from resolution:
 
 - Species/Class surfaces explain rules;
+- Abilities owns score generation/allocation and Species Bonus package selection;
 - Training resolves skills/proficiencies plus Feats & Class Abilities;
 - Spells resolves spell-centric Species/Feat/Background/Class-feature decisions;
-- Abilities is score generation/allocation rather than a higher-level feat decision surface;
 - fixed source languages and fixed Strixhaven college identity are automatic source authority;
 - allowed casting ability is automatically resolved where choosing a weaker permitted stat has no gameplay benefit.
+
+Corrections from browser smoke add:
+
+- no Deep Gnome standalone ability prompt before an actual level-gated spell grant;
+- Species Bonus feat acknowledged on Abilities with owned decisions routed later;
+- same-name subclass dedupe with complete-definition-first, then newest-source preference among complete reprints;
+- brighter Player Forge rules/help text;
+- hover/focus help for expanded background spells;
+- independently collapsible long Class lists and a sticky desktop Class detail dock;
+- Artificer plan availability/future unlock information without making future plans selectable.
 
 Migrations 86-88 materialize validated source-owned Species/Feat magic into `character_spells`. Rollback acceptance covers Astral Elf, Deep Gnome levels 3/5, Witherbloom Student, and Magic Initiate.
 
@@ -104,31 +126,43 @@ Migration 89 and `CharacterRestChoiceNotice` divide post-rest state into:
 
 Rollback acceptance directly proved Astral Trance as attention and Wild Heart Aspect as a non-flashing optional persistent replacement.
 
+## Migration 90 proof
+
+Deployed rollback acceptance proves:
+
+- XPHB Rage Short Rest +1, capped at max;
+- XPHB Rage Long Rest full restoration;
+- PHB Rage Short Rest no restoration;
+- PHB Rage Long Rest full restoration;
+- authenticated public Rest RPC returns updated sheet/action state;
+- private helper remains service-only while the public Rest RPC remains authenticated/service callable and anonymous-blocked.
+
+The existing active-encounter rest guard remains transactional and migration 90 does not modify encounter/tactical state.
+
 ## Current production integrity
 
-After migration 89 and rollback-only acceptance:
+After migration 90 and deployed rollback-only acceptance:
 
 - 7 characters;
 - 7 character sheets;
 - 30 character-spell assignments;
 - 7 progression rows;
 - 18 inventory rows;
-- 0 runtime rows;
-- 0 rest-log rows;
-- 0 migration-89 QA residue;
+- 2 legitimate browser-smoke rest-log rows;
+- Varges Rage 2/3, intentionally unchanged by QA;
 - 20 locations;
 - 4 map routes;
 - 9 map route points.
 
-Exact head `a05c4b03f9a36cbf9021108aa07856cfab474fd1` passed 31/31 PR-triggered workflows and Vercel immediately before migration 89 deployment. Documentation-only closure commits must be gated again after they move the head.
+Code head `98b55355ed92d3d3309c09b8c534095d13859089` passed 32/32 PR-triggered workflows and Vercel immediately before migration 90 deployment. Documentation reconciliation moves the head and must be exact-head gated again.
 
 ## Remaining PR closure work
 
+- focused user re-smoke of the corrected cases listed in `PR170_Browser_Smoke_Corrections_Status.md`;
 - re-run exact-head CI/Vercel after final documentation reconciliation;
-- real interactive signed-in browser smoke across representative Forge/source-magic/runtime-rest cases;
 - keep unrelated Supabase security-advisor findings as separately audited backlog rather than scope-creeping this PR;
 - merge only after explicit user approval and a final live/head/residue check.
 
 ## Protected boundaries
 
-This work does not authorize changes to world-map, town/city-map, route/travel/weather, unrelated crafting/inventory, or tactical action execution. `components/MapPageClient.js` remains outside current scope unless explicitly requested.
+This work does not authorize changes to world-map, town/city-map, route/travel/weather, unrelated crafting/inventory execution, or tactical action execution. `components/MapPageClient.js` remains outside current scope unless explicitly requested.
