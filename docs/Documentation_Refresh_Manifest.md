@@ -1,6 +1,6 @@
 # Documentation Refresh Manifest
 
-Updated: 2026-08-10
+Updated: 2026-08-11
 
 ## Trust order
 
@@ -8,14 +8,14 @@ For active PR #170 work, trust sources in this order:
 
 1. live Supabase schema/migrations/grants/data;
 2. current PR source and exact-head CI/Vercel;
-3. dedicated runtime/progression/browser-smoke ledgers;
+3. dedicated runtime/progression/browser-smoke/source-presentation ledgers;
 4. broader roadmap/history prose.
 
 If prose conflicts with live source/database state, live authority wins until docs are corrected.
 
 ## Current PR #170 checkpoint
 
-Production is accepted through **migration 90**.
+Production is accepted through **migration 91**.
 
 Recent sequence:
 
@@ -33,18 +33,16 @@ Recent sequence:
 - 87 — source-magic level/choice parser correction;
 - 88 — source-magic feat-name normalization correction;
 - 89 — read-only post-rest runtime-choice aggregation and attention classification;
-- 90 — source-aware standalone Rest restoration for sheet-side Barbarian Rage action state.
+- 90 — source-aware standalone Rest restoration for sheet-side Barbarian Rage action state;
+- 91 — catalogue-only MPMM Genasi subrace backfill supporting the unified Elemental Lineage Species selector.
 
-Latest registered migration: `rest_class_feature_restoration` (`20260810205646`).
-
-## Source-control parity note
-
-During the migration-89 startup audit, live Supabase contained migrations 83-85 while their SQL files and the Defensive Tactics/Whispers reachable panels were missing from the PR branch. The missing source was restored. Migrations 83-85 were **not** re-applied to production.
+Latest registered migration: `genasi_subrace_catalog` (`20260811062025`).
 
 ## Authoritative recent ledgers
 
 Read before modifying these areas:
 
+- `Forge_Source_Presentation_and_Species_Variants_Status.md`
 - `PR170_Browser_Smoke_Corrections_Status.md`
 - `PR170_Final_Acceptance_Status.md`
 - `Player_Forge_Choice_Routing_and_Source_Magic_Status.md`
@@ -85,83 +83,84 @@ Accepted contrasts:
 - Astral Trance: current Long-Rest-cycle proficiencies expire at the next Long Rest and therefore require a new current-cycle choice.
 - Rage: XPHB regains one spent use on Short Rest and all on Long Rest; PHB remains Long-Rest-only.
 
-## Browser-smoke correction pass
+## Current Forge source-presentation model
 
-The user completed a real signed-in browser smoke. The pass exposed and then drove corrections for Rage rest restoration, Deep Gnome premature casting-ability presentation, Witherbloom flavor/contrast/spell help, Class-list collapse behavior, sticky Class detail presentation, Species Bonus feat routing, duplicate subclass reprints, and Artificer plan catalogue presentation.
+The Player Forge now treats source structure as data rather than flattening every imported rule into prose.
 
-Read `PR170_Browser_Smoke_Corrections_Status.md` for exact findings and evidence.
+- `SourceRuleContent` renders source paragraphs, named sections, lists, and tables.
+- detailed Class features preserve `class_feature_catalog.entries` and use the shared structured renderer;
+- Background feature presentation keeps mechanical source table/list structure while intentionally suppressing random/optional flavor tables such as `roll on this table` guidance;
+- structured persistent Species decisions use their source-owned selector as the detailed comparison surface instead of repeating the entire option table/list in the feature prose.
 
-The corrected build still requires focused user re-smoke. Do not describe PR #170 as having final browser acceptance yet.
+Source-structure audit at this checkpoint found:
 
-## Forge choice-routing/source-magic pass
+- Species: 160 rows before migration 91; 8 table-bearing source payloads, 20 list-bearing payloads, 17 version-bearing payloads;
+- Background: 161 rows; 88 table-bearing source payloads and list structures across the imported set;
+- Class features: 2,118 rows; 122 with source tables, 91 with source lists, 187 with nested named-entry blocks.
 
-The player Forge separates explanation from resolution:
+Read `Forge_Source_Presentation_and_Species_Variants_Status.md` for implementation details and browser re-smoke targets.
 
-- Species/Class surfaces explain rules;
-- Abilities owns score generation/allocation and Species Bonus package selection;
-- Training resolves skills/proficiencies plus Feats & Class Abilities;
-- Spells resolves spell-centric Species/Feat/Background/Class-feature decisions;
-- fixed source languages and fixed Strixhaven college identity are automatic source authority;
-- allowed casting ability is automatically resolved where choosing a weaker permitted stat has no gameplay benefit.
+## Species variant-family model
 
-Corrections from browser smoke add:
+Deep Species branches should normally be represented as a parent Species plus a source-owned nested selector when the source family can be modeled without losing edition/rule identity.
 
-- no Deep Gnome standalone ability prompt before an actual level-gated spell grant;
-- Species Bonus feat acknowledged on Abilities with owned decisions routed later;
-- same-name subclass dedupe with complete-definition-first, then newest-source preference among complete reprints;
-- brighter Player Forge rules/help text;
-- hover/focus help for expanded background spells;
-- independently collapsible long Class lists and a sticky desktop Class detail dock;
-- Artificer plan availability/future unlock information without making future plans selectable.
+Current families:
 
-Migrations 86-88 materialize validated source-owned Species/Feat magic into `character_spells`. Rollback acceptance covers Astral Elf, Deep Gnome levels 3/5, Witherbloom Student, and Magic Initiate.
+- **Genasi (MPMM):** one Genasi parent + Air/Earth/Fire/Water Elemental Lineage options. Migration 91 restored the four child catalogue records omitted by the old importer. The importer now reads `races.json.subrace[]` so future reviewed imports reproduce the model.
+- **Dragonborn:** the XPHB parent owns the ten standard Draconic Ancestry colors; the five FTD Gem ancestries are exposed in the same creation selector but are explicitly marked as the FTD Gem rule family and retain Gem-specific trait summaries. FTD source-family mechanics are not silently blended into XPHB rules.
+- **Tiefling Fiendish Legacy / Goliath Giant Ancestry:** source tables/lists feed coherent selector choices with row/item-specific mechanics rather than prose walls.
 
-## Post-rest presentation pass
+Species skill proficiency choices remain routed to Training; Species magic remains routed to Spells; runtime-only rest choices remain outside permanent Forge authority.
 
-Migration 89 and `CharacterRestChoiceNotice` divide post-rest state into:
+## Migration 91 proof
 
-- `needsSelection` — flashes/pulses because a current benefit is inactive or the initial rest-backed choice is waiting;
-- `optionalChanges` — current persistent benefit remains active; quiet/collapsed;
-- `availableActions` — optional post-rest actions; quiet/collapsed.
+`sql/20260811_91_genasi_subrace_catalog.sql` was tested in a rollback transaction first. The fixture produced all four MPMM child rows and then rolled back to zero residue.
 
-Rollback acceptance directly proved Astral Trance as attention and Wild Heart Aspect as a non-flashing optional persistent replacement.
+After repository production-build gates passed, migration 91 was applied live as `20260811062025 genasi_subrace_catalog`.
 
-## Migration 90 proof
+Post-deploy verification:
 
-Deployed rollback acceptance proves:
+- Genasi (Air), (Earth), (Fire), and (Water) rows exist with parent/variant identity;
+- movement, resistance, and additional-spell metadata are present;
+- Species catalogue count changed 160 → 164 as expected;
+- characters 7;
+- character_sheets 7;
+- character_spells 30;
+- character_progression 7;
+- inventory_items 18;
+- locations 20;
+- map_routes 4;
+- map_route_points 9.
 
-- XPHB Rage Short Rest +1, capped at max;
-- XPHB Rage Long Rest full restoration;
-- PHB Rage Short Rest no restoration;
-- PHB Rage Long Rest full restoration;
-- authenticated public Rest RPC returns updated sheet/action state;
-- private helper remains service-only while the public Rest RPC remains authenticated/service callable and anonymous-blocked.
+No campaign/runtime/map rows changed.
 
-The existing active-encounter rest guard remains transactional and migration 90 does not modify encounter/tactical state.
+## Exact-head gate before documentation reconciliation
 
-## Current production integrity
+Code head `dec7a45241bbe471978d0c0607a175b91327844c` completed **33/33 PR-triggered GitHub workflows successfully**.
 
-After migration 90 and deployed rollback-only acceptance:
+Notable passing gates:
 
-- 7 characters;
-- 7 character sheets;
-- 30 character-spell assignments;
-- 7 progression rows;
-- 18 inventory rows;
-- 2 legitimate browser-smoke rest-log rows;
-- Varges Rage 2/3, intentionally unchanged by QA;
-- 20 locations;
-- 4 map routes;
-- 9 map route points.
+- `Validate Forge source presentation` including its production build;
+- `Validate PR170 browser smoke corrections` including its production build;
+- NPC Forge foundation;
+- Character Forge nested choices;
+- Player Forge source magic;
+- starting magic/equipment;
+- Artificer Magic Item Plans;
+- progression/runtime/portrait/currency checks.
 
-Code head `98b55355ed92d3d3309c09b8c534095d13859089` passed 32/32 PR-triggered workflows and Vercel immediately before migration 90 deployment. Documentation reconciliation moves the head and must be exact-head gated again.
+Vercel reported a failure marker only because the account hit the Vercel build-rate limit. The repository production build succeeded twice on the same exact code head. Do not describe the Vercel marker as an application compilation failure.
+
+Documentation commits move the branch head beyond `dec7a452...`; exact-head GitHub gates must be checked again after documentation reconciliation.
 
 ## Remaining PR closure work
 
-- focused user re-smoke of the corrected cases listed in `PR170_Browser_Smoke_Corrections_Status.md`;
-- re-run exact-head CI/Vercel after final documentation reconciliation;
-- keep unrelated Supabase security-advisor findings as separately audited backlog rather than scope-creeping this PR;
-- merge only after explicit user approval and a final live/head/residue check.
+- focused user signed-in browser re-smoke of the Species cases listed in `Forge_Source_Presentation_and_Species_Variants_Status.md`;
+- continue the user's Background/Class browser pass tomorrow and feed any malformed source structures back into the shared renderer rather than patching one entry at a time;
+- exact-head CI check after documentation reconciliation;
+- Vercel may remain externally rate-limited until its build allowance resets;
+- final live migration/ACL/residue check immediately before any approved merge;
+- merge only after explicit user approval.
 
 ## Protected boundaries
 
