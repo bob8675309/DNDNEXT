@@ -40,9 +40,9 @@ for (const token of [
 assert.ok(!/insert\s+into\s+public\.encounter/i.test(migration), "migration 90 must not mutate encounter state");
 assert.ok(!/MapPageClient|map_routes|map_route_points|advance_all_characters|weather|route_segment_progress/.test(migration), "migration 90 crossed protected map/travel boundaries");
 
-for (const token of ["identity.name === \"deep gnome\"", "trait === \"gift of the svirfneblin\"", "!hasSpellField && onlyCastingAbility"]) assert.ok(speciesRuntimeText.includes(token), `Deep Gnome smoke guard missing ${token}`);
+for (const token of ["CASTING_ABILITY_KEYS", "castingAbilityField", "routeSpeciesCreationGroup", '"training"', '"spells"', "allowedCastingAbilities", "highest eligible final Intelligence, Wisdom, or Charisma"]) assert.ok(speciesRuntimeText.includes(token), `generic species choice routing missing ${token}`);
 for (const token of ["identity.name === \"astral elf\"", "identity.source === \"AAG\"", "trait === \"astral trance\""]) assert.ok(speciesRuntimeText.includes(token), `Astral Trance generic Forge exclusion missing ${token}`);
-for (const token of ["runtimeOwnedTraitChoice", 'species === "astral-elf"', 'source === "AAG"', 'trait === "astral-trance"', "if (runtimeOwnedTraitChoice(option, detail)) return []"]) assert.ok(speciesPresentationText.includes(token), `embedded Astral Trance choice exclusion missing ${token}`);
+for (const token of ["runtimeOwnedTraitChoice", 'species === "astral-elf"', 'source === "AAG"', 'trait === "astral-trance"', "if (runtimeOwnedTraitChoice(option, detail)) return []", 'value.type === "item"', "value.name"]) assert.ok(speciesPresentationText.includes(token), `species presentation source-preservation guard missing ${token}`);
 assert.ok(!speciesBonus.includes('placement="abilities" ownerType="feat"'), "Abilities must not resolve feat-owned nested source choices");
 for (const token of ["Selected:", "Training → Feats & Class Abilities"]) assert.ok(speciesBonus.includes(token), `Species Bonus acknowledgement missing ${token}`);
 for (const token of ["acquisitionOwnerType !== \"species-bonus\"", 'placement: "class"', 'resolverPlacement: "training"']) assert.ok(featRouting.includes(token), `Species Bonus feat routing missing ${token}`);
@@ -56,7 +56,7 @@ for (const token of ['import ItemCard from "./ItemCard";', "canonicalItem", "fea
 for (const token of ["Listed Option", "parentFeatureName", "normalized class-option or canonical item catalogue"]) assert.ok(classFeatureDock.includes(token), `Class detail dock listed-option presentation missing ${token}`);
 
 for (const token of ["backgroundFeatureTextForDisplay", "Consider customizing your spells", "ExpandedSpellList", 'from("spells_catalog")', "npc-forge-background-spell-name", "RuleCopy", 'label: "Languages"', "BackgroundSourceFallback", "featGroups", "toolGroups"]) assert.ok(context.includes(token), `Background integrated-choice/readability correction missing ${token}`);
-for (const token of ["NpcForgeEmbeddedSourceChoices", "sourceChoiceGroupsForPlacement", "sourceChoiceGroupsNeedInput", "sourceGroupMatchesTrait", "source-owned creation choices are resolved inside the purple feature"]) assert.ok(context.includes(token), `Species embedded source-choice integration missing ${token}`);
+for (const token of ["NpcForgeEmbeddedSourceChoices", "sourceChoiceGroupsForPlacement", "sourceChoiceGroupsNeedInput", "sourceGroupMatchesTrait", "trainingGroups", "spellGroups", "Resolved in Training", "Resolved in Spells", "<h2>{option.name}</h2>", 'field.kind === "spell" || field.kind === "skill"']) assert.ok(context.includes(token), `Species step ownership/routing presentation missing ${token}`);
 for (const token of ["sourceChoiceGroupsHaveChoices", "sourceChoiceGroupsNeedInput", "sourceChoiceDisplayValue", "DropdownField", "ButtonField", "is-compact"]) assert.ok(embeddedSourceChoices.includes(token), `embedded source-choice renderer missing ${token}`);
 for (const token of ["embeddedPlacement", 'placement === "species" || placement === "background"', "if (embeddedPlacement) return null", "second yellow panel"]) assert.ok(sourceChoiceDock.includes(token), `duplicate source-choice panel suppression missing ${token}`);
 for (const token of ["supplementalBackgroundDetails", "flattenSupplementalText", 'entry.type !== "entries"', "normalized.push(detail)"]) assert.ok(backgroundMechanicsText.includes(token), `supplemental background detail extraction missing ${token}`);
@@ -75,37 +75,68 @@ for (const token of ['import { supabase } from "../utils/supabaseClient";', "res
 assert.ok(!login.includes("createClient("), "login page must use the shared Supabase singleton");
 
 assert.ok(app.includes('import "../styles/character-forge-smoke-fixes.css";'), "smoke correction stylesheet is not loaded");
-for (const token of ["npc-forge-class-feature-dock", "position: sticky", "height: auto", "npc-forge-rule-copy", "npc-forge-source-choice-group.is-required", "rgba(255, 255, 255, .82)", "npc-forge-background-spell-name"]) assert.ok(css.includes(token), `smoke correction CSS missing ${token}`);
+for (const token of ["npc-forge-body.is-player-mode.npc-forge-step-2", "overflow-y: auto", "npc-forge-class-feature-dock", "position: sticky", "height: auto", "npc-forge-rule-copy", "npc-forge-source-choice-group.is-required", "rgba(255, 255, 255, .82)", "npc-forge-background-spell-name", "#090c14", "z-index: 120"]) assert.ok(css.includes(token), `smoke correction CSS missing ${token}`);
 assert.ok(!css.includes("npc-forge-step-2 > .npc-forge-workspace {\n  align-self: stretch;\n  height: 100%;"), "Class workspace must not cap sticky range at viewport height");
 
-for (const protectedSource of [classFeatureText, classGuide, classGuideModel, classFeatureDock, context, embeddedSourceChoices, backgroundMechanicsText, planHelperText, sourceChoices, sourceChoiceDock, actionHook, restSyncBridge, astralPanel, login, speciesPresentationText, css]) {
+for (const protectedSource of [classFeatureText, classGuide, classGuideModel, classFeatureDock, context, embeddedSourceChoices, backgroundMechanicsText, planHelperText, sourceChoices, sourceChoiceDock, actionHook, restSyncBridge, astralPanel, login, speciesPresentationText, speciesRuntimeText, css]) {
   assert.ok(!/MapPageClient|map_routes|map_route_points|advance_all_characters|route_segment_progress/.test(protectedSource), "smoke correction crossed protected map/travel boundaries");
 }
 
 const { applySpeciesRuntimeChoiceAuthority } = await import(pathToFileURL(path.join(root, "utils/playerForgeSpeciesRuntimeChoices.js")).href);
+const prematureAarakocra = applySpeciesRuntimeChoiceAuthority({
+  species: { name: "Aarakocra", source: "MPMM" },
+  groups: [{ id: "wind", ownerType: "species", label: "Wind Caller", placement: "species", fields: [{ id: "feature-ability", kind: "ability", options: [{ key: "int" }, { key: "wis" }, { key: "cha" }] }] }],
+});
+assert.equal(prematureAarakocra.length, 0, "Aarakocra must not show a standalone casting-ability prompt before Gust of Wind is level-eligible");
+const activeFairyMagic = applySpeciesRuntimeChoiceAuthority({
+  species: { name: "Fairy", source: "MPMM" },
+  groups: [{ id: "fairy-magic", ownerType: "species", label: "Fairy Magic", placement: "species", fields: [{ id: "fixed-spell", kind: "spell", options: [{ key: "druidcraft" }] }, { id: "feature-ability", kind: "ability", options: [{ key: "int" }, { key: "wis" }, { key: "cha" }] }] }],
+});
+assert.equal(activeFairyMagic.length, 1, "Fairy Magic should remain available once a real spell grant is active");
+assert.equal(activeFairyMagic[0].placement, "spells", "Fairy Magic spell resolution belongs on Spells");
+assert.ok(!activeFairyMagic[0].fields.some((field) => field.kind === "ability"), "Fairy Magic must not retain a manual casting-stat field");
+assert.deepEqual(activeFairyMagic[0].metadata.allowedCastingAbilities, ["int", "wis", "cha"], "Fairy Magic must carry the automatic flexible casting pool to Spells");
+const centaurAffinity = applySpeciesRuntimeChoiceAuthority({
+  species: { name: "Centaur", source: "MPMM" },
+  groups: [{ id: "affinity", ownerType: "species", label: "Natural Affinity", placement: "species", fields: [{ id: "skills", kind: "skill", count: 1, options: [{ key: "nature" }, { key: "survival" }] }] }],
+});
+assert.equal(centaurAffinity.length, 1, "Centaur Natural Affinity must remain a required source choice");
+assert.equal(centaurAffinity[0].placement, "training", "species skill proficiency choices belong in Training");
+assert.equal(centaurAffinity[0].fields[0].kind, "skill", "Training-routed species proficiency must retain its skill identity");
+const goliathAncestry = applySpeciesRuntimeChoiceAuthority({
+  species: { name: "Goliath", source: "XPHB" },
+  groups: [{ id: "giant", ownerType: "species", label: "Giant Ancestry", placement: "species", fields: [{ id: "ancestry", kind: "ancestry", options: [{ key: "cloud" }, { key: "fire" }] }] }],
+});
+assert.equal(goliathAncestry[0].placement, "species", "true ancestry decisions must remain on the Species step");
 const prematureDeepGnome = applySpeciesRuntimeChoiceAuthority({
   species: { name: "Deep Gnome", source: "MPMM" },
-  groups: [{ id: "gift", label: "Gift of the Svirfneblin", fields: [{ id: "ability", kind: "ability", options: [{ key: "int" }, { key: "wis" }, { key: "cha" }] }] }],
+  groups: [{ id: "gift", ownerType: "species", label: "Gift of the Svirfneblin", placement: "species", fields: [{ id: "ability", kind: "ability", options: [{ key: "int" }, { key: "wis" }, { key: "cha" }] }] }],
 });
 assert.equal(prematureDeepGnome.length, 0, "Deep Gnome must not show a standalone casting-ability prompt before its spell grant is active");
 const activeDeepGnome = applySpeciesRuntimeChoiceAuthority({
   species: { name: "Deep Gnome", source: "MPMM" },
-  groups: [{ id: "gift", label: "Gift of the Svirfneblin", fields: [{ id: "spell", kind: "spell", options: [{ key: "disguise-self" }] }, { id: "ability", kind: "ability", options: [{ key: "int" }] }] }],
+  groups: [{ id: "gift", ownerType: "species", label: "Gift of the Svirfneblin", placement: "species", fields: [{ id: "spell", kind: "spell", options: [{ key: "disguise-self" }] }, { id: "ability", kind: "ability", options: [{ key: "int" }] }] }],
 });
 assert.equal(activeDeepGnome.length, 1, "Deep Gnome source group must remain available once a real spell grant is active");
+assert.equal(activeDeepGnome[0].placement, "spells", "active Deep Gnome magic belongs on the Spells step");
 const astralTranceForgeGroups = applySpeciesRuntimeChoiceAuthority({
   species: { name: "Astral Elf", source: "AAG" },
   groups: [{ id: "trance", label: "Astral Trance", fields: [{ id: "skill", kind: "skill", options: [{ key: "athletics" }] }] }],
 });
 assert.equal(astralTranceForgeGroups.length, 0, "Astral Trance must remain a post-Long-Rest runtime choice, never a generic Forge source choice");
 
-const { extractSpeciesTraitChoiceRules } = await import(pathToFileURL(path.join(root, "utils/speciesPresentation.js")).href);
+const { extractSpeciesTraitChoiceRules, extractSpeciesTraitDetails } = await import(pathToFileURL(path.join(root, "utils/speciesPresentation.js")).href);
 const embeddedAstralTranceRules = extractSpeciesTraitChoiceRules({
   name: "Astral Elf",
   source: "AAG",
   traitDetails: [{ name: "Astral Trance", description: "Whenever you finish this trance, you gain proficiency in one skill of your choice and retain it until your next long rest." }],
 });
 assert.equal(embeddedAstralTranceRules.length, 0, "Astral Trance must not render an embedded CHOOSE control on the Species feature card");
+const giantAncestryDetails = extractSpeciesTraitDetails({
+  traits: [{ name: "Giant Ancestry", type: "entries", entries: [{ type: "list", items: [{ name: "Cloud's Jaunt (Cloud Giant)", type: "item", entries: ["As a Bonus Action, teleport up to 30 feet."] }, { name: "Stone's Endurance (Stone Giant)", type: "item", entries: ["As a Reaction, reduce damage."] }] }] }],
+});
+assert.match(giantAncestryDetails[0].description, /Cloud's Jaunt \(Cloud Giant\)/, "Goliath source option names must survive flattened presentation");
+assert.match(giantAncestryDetails[0].description, /Stone's Endurance \(Stone Giant\)/, "Goliath ancestry effects must remain labeled");
 
 const { backgroundFeatureDetails } = await import(pathToFileURL(path.join(root, "utils/backgroundMechanics.js")).href);
 const astralDrifterDetails = backgroundFeatureDetails({
@@ -156,4 +187,4 @@ assert.equal(level2Plans[0].metadata.catalogueSummary.totalCount, 2, "availabili
 assert.equal(level2Plans[0].metadata.catalogueSummary.futureUnlocks[0].unlockLevel, 10, "future plan must be disclosed at its actual unlock level");
 assert.ok(level2Plans.every((group) => !group.fields[0].options.some((option) => option.key === "p2")), "future plan must remain non-selectable");
 
-console.log("PR #170 signed-in browser smoke corrections, including integrated purple source choices, supplemental background details, collapsible class levels, sticky class-detail range, canonical Artificer item cards, login completion, immediate Rest repaint, runtime-only Astral Trance, and protected-boundary checks, validated.");
+console.log("PR #170 signed-in browser smoke corrections, including generic species skill/spell routing, automatic flexible casting, labeled ancestry mechanics, shared Class scrolling, opaque background spell help, integrated purple choices, canonical Artificer item cards, login completion, immediate Rest repaint, runtime-only Astral Trance, and protected-boundary checks, validated.");
