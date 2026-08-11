@@ -1,5 +1,6 @@
 import { ABILITY_LABELS, SKILL_DEFINITIONS } from "./characterCreation";
 import { STANDARD_LANGUAGE_OPTIONS } from "./playerForgeSourceChoices";
+import { speciesVariantChoice } from "./speciesVariantFamilies";
 
 const text = (value) => String(value ?? "").trim();
 const norm = (value) => text(value).toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
@@ -31,7 +32,7 @@ function spellOptions(spells = [], filters = {}) {
     return true;
   }).map((spell) => ({ key: text(spell.id || spell.spell_key || `${slug(spell.name)}|${spell.source || "XPHB"}`), value: text(spell.id || spell.spell_key || spell.name), label: spell.name, kind: "spell", source: spell.source || "XPHB", description: text(spell.description), metadata: { spellId: spell.id || null, spellKey: spell.spell_key || null, level: Number(spell.level || 0), classes: array(spell.classes), school: spell.school || spell.school_code || "", castingTime: spell.casting_time || null, rangeText: spell.range_text || null, durationText: spell.duration_text || null, damageDice: spell.damage_dice || null, damageTypes: array(spell.damage_types) } })).sort((a, b) => a.label.localeCompare(b.label));
 }
-function option(label, kind = "enum", metadata = null, source = "XPHB") { return { key: slug(label), value: label, label, kind, source, metadata }; }
+function option(label, kind = "enum", metadata = null, source = "XPHB", description = "") { return { key: slug(label), value: label, label, kind, source, metadata, description: text(description) }; }
 function field({ id, label, kind, count = 1, options = [], cadence = "creation", replacementCadence = null, activeWhen = null, helper = "", distinctFromFieldId = null, autoSelect = false, metadata = null }) {
   return { id, label, kind, count: Math.max(1, Number(count || 1)), required: true, options, cadence, replacementCadence, activeWhen, helper, distinctFromFieldId, autoSelect, metadata };
 }
@@ -68,6 +69,16 @@ function collectTables(node, output = []) {
 }
 function listNames(items = []) { return array(items).map((item) => text(typeof item === "string" ? item : item?.name || item?.entry)).filter(Boolean); }
 function tableFirstColumn(table) { return array(table?.rows).map((row) => text(array(row)[0])).filter(Boolean); }
+function cleanChoiceText(value = "") { return traitText({ entries: [value] }); }
+function tableOptionDescription(table, row = []) {
+  const labels = array(table?.colLabels).map(cleanChoiceText);
+  const values = array(row).map(cleanChoiceText);
+  return values.slice(1).map((value, index) => value ? `${labels[index + 1] || `Detail ${index + 1}`}: ${value}` : "").filter(Boolean).join(" • ");
+}
+function listOptionDescription(item) {
+  if (typeof item === "string") return cleanChoiceText(item);
+  return traitText({ entries: item?.entries || [item?.entry].filter(Boolean) });
+}
 function namedSkills(raw = "") {
   const output = [];
   for (const match of String(raw).matchAll(/\{@skill\s+([^}|]+)(?:\|[^}]*)?}/gi)) {
@@ -135,19 +146,27 @@ function fixedSpeciesSpellFields(species, trait, raw, spells, characterLevel) {
     return [field({ id: `fixed-spell-${index + 1}`, label: `${name} — automatic species spell`, kind: "spell", count: 1, options: optionRows, autoSelect: true, metadata: { ...automaticCastingMetadata(raw, traitName(trait)), acquisitionLevel, fixedGrant: true } })];
   });
 }
+function variantChoiceField(species, choice) {
+  if (!choice?.options?.length) return null;
+  return field({ id: choice.kind || "variant", label: `Choose ${choice.label}`, kind: choice.kind || "variant", options: choice.options.map((entry) => ({ ...entry, source: entry.source || species.source })) });
+}
 function ancestryTableField(species, trait, label, kind) {
   const table = collectTables(trait)[0];
   const names = tableFirstColumn(table);
   if (!names.length) return null;
-  const options = names.map((name, index) => option(name, kind, { row: array(table.rows)[index] || null }, species.source || "XPHB"));
+  const options = names.map((name, index) => {
+    const row = array(table.rows)[index] || [];
+    return option(name, kind, { row, columns: array(table.colLabels), caption: table.caption || traitName(trait) }, species.source || "XPHB", tableOptionDescription(table, row));
+  });
   return field({ id: kind, label, kind, options });
 }
 function lineageAbilityField(species, id = "spellcasting-ability") {
   return field({ id, label: "Spellcasting ability", kind: "ability", options: ABILITY_OPTIONS.map((entry) => ({ ...entry, source: species.source || entry.source })) });
 }
 function persistentListField(species, trait, id, label, kind = "enum") {
-  const names = listNames(collectLists(trait)[0]);
-  return names.length > 1 ? field({ id, label, kind, options: names.map((name) => option(name, kind, null, species.source || "XPHB")) }) : null;
+  const items = collectLists(trait)[0] || [];
+  const names = listNames(items);
+  return names.length > 1 ? field({ id, label, kind, options: names.map((name, index) => option(name, kind, { sourceItem: array(items)[index] || null }, species.source || "XPHB", listOptionDescription(array(items)[index]))) }) : null;
 }
 function sorcererCantrips(species, spells) { return spellOptions(spells, { level: 0, classes: ["Sorcerer"] }).map((entry) => ({ ...entry, source: entry.source || species.source })); }
 
@@ -157,8 +176,9 @@ function explicitTraitGroups(species, trait, level, spells, featOptions) {
   const raw = traitText(trait);
   const output = [];
   const add = (fields, entryLevel = 1, helper = raw, placement = "species", metadata = null) => { const valid = array(fields).filter(Boolean); if (valid.length) output.push(group(species, name, valid, entryLevel, helper, placement, metadata)); };
+  const familyChoice = speciesVariantChoice(species);
 
-  if (key === "draconic ancestry") add([ancestryTableField(species, trait, "Choose Draconic Ancestor", "ancestry")]);
+  if (key === "draconic ancestry") add([familyChoice?.id === "dragonborn-ancestry" ? variantChoiceField(species, familyChoice) : ancestryTableField(species, trait, "Choose Draconic Ancestor", "ancestry")], 1, familyChoice?.helper || raw);
   else if (key === "elven lineage") add([ancestryTableField(species, trait, "Choose Elven Lineage", "lineage"), lineageAbilityField(species)]);
   else if (key === "gnomish lineage") add([persistentListField(species, trait, "lineage", "Choose Gnomish Lineage", "lineage"), lineageAbilityField(species)]);
   else if (key === "fiendish legacy") add([ancestryTableField(species, trait, "Choose Fiendish Legacy", "legacy"), lineageAbilityField(species)]);
@@ -223,10 +243,19 @@ function speciesLanguageGroups(species) {
   return output;
 }
 
+function standaloneSpeciesVariantGroup(species) {
+  const choice = speciesVariantChoice(species);
+  if (!choice || choice.id === "dragonborn-ancestry") return null;
+  const choiceField = variantChoiceField(species, choice);
+  return choiceField ? group(species, choice.label, [choiceField], 1, choice.helper, "species", { family: choice.id, speciesVariant: true }) : null;
+}
+
 export function buildSpeciesSourceChoiceGroups({ species = null, level = 1, spells = [], featOptions = [], excludedTraitNames = [] } = {}) {
   if (!species) return [];
   const excluded = new Set(array(excludedTraitNames).map(norm));
   const groups = [];
+  const familyGroup = standaloneSpeciesVariantGroup(species);
+  if (familyGroup) groups.push(familyGroup);
   for (const trait of rawTraits(species)) {
     const name = traitName(trait);
     if (!name || excluded.has(norm(name))) continue;
