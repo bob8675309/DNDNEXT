@@ -10,6 +10,7 @@ const protectedPattern = /MapPageClient|map_routes|map_route_points|advance_all_
 const variantSource = read("utils/speciesVariantFamilies.js");
 const speciesChoicesSource = read("utils/playerForgeSpeciesChoices.js");
 const speciesPresentationSource = read("utils/speciesPresentation.js");
+const backgroundSource = read("utils/backgroundMechanics.js");
 const embeddedSource = read("components/NpcForgeEmbeddedSourceChoices.js");
 const structuredRenderer = read("components/SourceRuleContent.js");
 const classTextSource = read("components/ClassFeatureText.js");
@@ -21,18 +22,20 @@ const migration = read("sql/20260811_91_genasi_subrace_catalog.sql");
 for (const token of ["mergeSpeciesVariantFamilies", "genasi-elemental-lineage", "dragonborn-ancestry", "FTD Gem Dragonborn", "movementFact"]) assert.ok(variantSource.includes(token), `species family model missing ${token}`);
 for (const token of ["variantChoiceField", "tableOptionDescription", "listOptionDescription", "speciesVariantChoice", "standaloneSpeciesVariantGroup"]) assert.ok(speciesChoicesSource.includes(token), `species source-choice detail model missing ${token}`);
 for (const token of ["STRUCTURED_PERSISTENT_CHOICE_TRAITS", "omitChoiceCollections", "fiendish-legacy", "giant-ancestry"]) assert.ok(speciesPresentationSource.includes(token), `species presentation structure guard missing ${token}`);
+for (const token of ["structuredRuleText", "tableLooksOptional", "structuredFeatureDescription", "structuredSource"]) assert.ok(backgroundSource.includes(token), `background structured-rule presentation missing ${token}`);
 for (const token of ["SelectedOptionDetail", "npc-forge-embedded-choice__selected", "metadata.damageType", "metadata.traits"]) assert.ok(embeddedSource.includes(token), `embedded selector detail presentation missing ${token}`);
 for (const token of ["SourceTable", "SourceList", "NamedEntries", "sourceRuleStructureSummary"]) assert.ok(structuredRenderer.includes(token), `shared structured source renderer missing ${token}`);
 for (const token of ['import SourceRuleContent from "./SourceRuleContent"', "entries = null", "hasStructuredEntries"]) assert.ok(classTextSource.includes(token), `ClassFeatureText structured source bridge missing ${token}`);
 for (const token of ["featureSource", "entries: exact?.entries", 'select("id,feature_type,name,source,class_source,subclass_name,subclass_short_name,level,description,entries,raw_payload")']) assert.ok(classModelSource.includes(token), `class model source-entry preservation missing ${token}`);
 assert.ok(classGuideSource.includes("entries={feature.entries || null}"), "detailed Class guide must pass source entries into structured renderer");
-for (const token of ["files.races.subrace", "mergeSubraces", "sourceDerivedSubrace", "parentSpecies", "backgrounds-species-and-subraces"]) assert.ok(importerSource.includes(token), `canonical importer subrace support missing ${token}`);
+for (const token of ["files.races.subrace", "mergeSubraces", "sourceDerivedSubrace", "parentSpecies", "backgrounds-species-and-subraces", "legacy_copy_resolution"]) assert.ok(importerSource.includes(token), `canonical importer subrace support missing ${token}`);
 for (const token of ["species:genasi-air|MPMM", "species:genasi-earth|MPMM", "species:genasi-fire|MPMM", "species:genasi-water|MPMM", "sourceDerivedSubrace"]) assert.ok(migration.includes(token), `Genasi migration missing ${token}`);
 assert.ok(/where not exists/i.test(migration), "Genasi migration must be idempotent");
 
 const { mergeSpeciesVariantFamilies } = await import(pathToFileURL(path.join(root, "utils/speciesVariantFamilies.js")).href);
 const { buildSpeciesSourceChoiceGroups } = await import(pathToFileURL(path.join(root, "utils/playerForgeSpeciesChoices.js")).href);
 const { extractSpeciesTraitDetails } = await import(pathToFileURL(path.join(root, "utils/speciesPresentation.js")).href);
+const { backgroundFeatureDetails } = await import(pathToFileURL(path.join(root, "utils/backgroundMechanics.js")).href);
 
 const genasiRows = [
   { id: "genasi-parent", name: "Genasi", source: "MPMM", speed: 30, darkvision: 60, metadata: { speed: 30, traits: [] }, traitDetails: [] },
@@ -99,8 +102,33 @@ assert.ok(giant.fields[0].options.every((option) => option.description.length > 
 const goliathDetails = extractSpeciesTraitDetails(goliath.metadata);
 assert.ok(!/Cloud's Jaunt[\s\S]*Storm's Thunder/.test(goliathDetails[0].description), "Giant Ancestry option list must not also appear as one prose wall");
 
-for (const source of [variantSource, speciesChoicesSource, speciesPresentationSource, embeddedSource, structuredRenderer, classTextSource, classModelSource, classGuideSource, importerSource, migration]) {
+const structuredBackground = backgroundFeatureDetails({
+  name: "Table Test",
+  source: "TEST",
+  rawPayload: { entries: [{
+    type: "entries", name: "Feature: Structured Benefit", data: { isFeature: true }, entries: [
+      "Choose a benefit from the table below.",
+      { type: "table", caption: "Benefits", colLabels: ["Option", "Benefit"], rows: [["A", "First benefit"], ["B", "Second benefit"]] },
+    ],
+  }] },
+});
+assert.ok(structuredBackground.some((feature) => feature.structuredSource && /Option: A/.test(feature.description) && /Benefit: Second benefit/.test(feature.description)), "mechanical background tables must survive as organized rule rows");
+const optionalBackground = backgroundFeatureDetails({
+  name: "Optional Table Test",
+  source: "TEST",
+  rawPayload: { entries: [{
+    type: "entries", name: "Feature: Optional Contact", data: { isFeature: true }, entries: [
+      "You gain a useful contact.",
+      "Roll on the Contact table to determine who you met, or choose with your GM.",
+      { type: "table", caption: "Contact", colLabels: ["d4", "Contact"], rows: [["1", "A merchant"], ["2", "A sailor"]] },
+    ],
+  }] },
+});
+const optionalContact = optionalBackground.find((feature) => /Optional Contact/i.test(feature.name));
+assert.ok(optionalContact && !/A merchant|A sailor/.test(optionalContact.description), "optional/random background tables must stay out of mechanical Forge prose");
+
+for (const source of [variantSource, speciesChoicesSource, speciesPresentationSource, backgroundSource, embeddedSource, structuredRenderer, classTextSource, classModelSource, classGuideSource, importerSource, migration]) {
   assert.ok(!protectedPattern.test(source), "Forge source-presentation work crossed a protected map/travel boundary");
 }
 
-console.log("Forge source presentation validated: structured Species selectors, Genasi/Dragonborn families, Class source tables/lists, subrace import support, and protected boundaries are intact.");
+console.log("Forge source presentation validated: structured Species selectors, Genasi/Dragonborn families, Background rule rows, Class source tables/lists, subrace import support, and protected boundaries are intact.");
