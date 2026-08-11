@@ -16,6 +16,8 @@ const classGuide = read("components/NpcForgeClassGuide.js");
 const classGuideModel = read("components/NpcForgeClassGuideModel.js");
 const classFeatureDock = read("components/NpcForgeClassFeatureDock.js");
 const context = read("components/NpcForgeContextPanelRefined.js");
+const embeddedSourceChoices = read("components/NpcForgeEmbeddedSourceChoices.js");
+const backgroundMechanicsText = read("utils/backgroundMechanics.js");
 const planHelperText = read("utils/artificerPlanChoices.js");
 const sourceChoices = read("components/SourceChoiceFields.js");
 const sourceChoiceDock = read("components/NpcForgeSourceChoiceFields.js");
@@ -47,15 +49,21 @@ for (const token of ["acquisitionOwnerType !== \"species-bonus\"", 'placement: "
 
 for (const token of ["SOURCE_PUBLICATION_ORDER", "EFA: 20251209", "TCE: 20201117", "const identity = normalizeSubclassName(group.name)"]) assert.ok(subclassesText.includes(token), `Subclass newest-source dedupe missing ${token}`);
 for (const token of ["keepNestedDisclosureLocal", "onClick={keepNestedDisclosureLocal}", "onKeyDown={keepNestedDisclosureLocal}", "onListItemDetail", "listedItemClick", "class-feature-text__listed-option"]) assert.ok(classFeatureText.includes(token), `Class-list disclosure/detail routing missing ${token}`);
-for (const token of ["publishListedOption", "model.resolveListedDetail", "onListItemDetail", "known plans/items use their canonical catalogue descriptions"]) assert.ok(classGuide.includes(token), `Class-guide listed-option detail routing missing ${token}`);
-for (const token of ["detailItems", "listedDetailCatalog", "canonicalItemDescription", "resolveListedDetail", 'from("items_catalog")']) assert.ok(classGuideModel.includes(token), `Class-guide canonical listed-detail model missing ${token}`);
+for (const token of ["publishListedOption", "model.resolveListedDetail", "onListItemDetail", "Detailed Guide levels can be opened and closed independently", "canonical catalogue descriptions and item cards"]) assert.ok(classGuide.includes(token), `Class-guide collapse/listed-option routing missing ${token}`);
+for (const token of ["<details key={row.class_level}", "npc-forge-class-guide__level", "defaultOpen={Number(row.class_level) === model.currentLevel}", "npc-forge-class-guide__level-content"]) assert.ok(classGuide.includes(token), `independent class-level disclosure missing ${token}`);
+for (const token of ["detailItems", "listedDetailCatalog", "canonicalItemDescription", "resolveListedDetail", 'from("items_catalog")', "listedLookupKeys", "strippedAvailability", "itemCard"]) assert.ok(classGuideModel.includes(token), `Class-guide canonical listed-detail model missing ${token}`);
+for (const token of ['import ItemCard from "./ItemCard";', "canonicalItem", "feature?.metadata?.itemCard", "<ItemCard item={canonicalItem} />"]) assert.ok(classFeatureDock.includes(token), `canonical item-card presentation missing ${token}`);
 for (const token of ["Listed Option", "parentFeatureName", "normalized class-option or canonical item catalogue"]) assert.ok(classFeatureDock.includes(token), `Class detail dock listed-option presentation missing ${token}`);
-for (const token of ["backgroundFeatureTextForDisplay", "Consider customizing your spells", "ExpandedSpellList", 'from("spells_catalog")', "npc-forge-background-spell-name"]) assert.ok(context.includes(token), `Background smoke correction missing ${token}`);
+
+for (const token of ["backgroundFeatureTextForDisplay", "Consider customizing your spells", "ExpandedSpellList", 'from("spells_catalog")', "npc-forge-background-spell-name", "RuleCopy", 'label: "Languages"', "BackgroundSourceFallback", "featGroups", "toolGroups"]) assert.ok(context.includes(token), `Background integrated-choice/readability correction missing ${token}`);
+for (const token of ["NpcForgeEmbeddedSourceChoices", "sourceChoiceGroupsForPlacement", "sourceChoiceGroupsNeedInput", "sourceGroupMatchesTrait", "source-owned creation choices are resolved inside the purple feature"]) assert.ok(context.includes(token), `Species embedded source-choice integration missing ${token}`);
+for (const token of ["sourceChoiceGroupsHaveChoices", "sourceChoiceGroupsNeedInput", "sourceChoiceDisplayValue", "DropdownField", "ButtonField", "is-compact"]) assert.ok(embeddedSourceChoices.includes(token), `embedded source-choice renderer missing ${token}`);
+for (const token of ["embeddedPlacement", 'placement === "species" || placement === "background"', "if (embeddedPlacement) return null", "second yellow panel"]) assert.ok(sourceChoiceDock.includes(token), `duplicate source-choice panel suppression missing ${token}`);
+for (const token of ["supplementalBackgroundDetails", "flattenSupplementalText", 'entry.type !== "entries"', "normalized.push(detail)"]) assert.ok(backgroundMechanicsText.includes(token), `supplemental background detail extraction missing ${token}`);
 
 for (const token of ["catalogueSummary", "futureUnlocks", "availableCount", "full canonical item text", "canonicalPoolCount"]) assert.ok(planHelperText.includes(token), `Artificer plan availability/detail model missing ${token}`);
 for (const token of ["ArtificerPlanCatalogueStatus", "plans available at Artificer level", "Locked plans are shown here for progression planning only", "canonical items in this legal pool"]) assert.ok(sourceChoices.includes(token), `Artificer plan presentation missing ${token}`);
-
-for (const token of ["createPortal", "currentForgePreview", ".npc-forge-preview", "previewTarget ? createPortal(fields, previewTarget) : fields"]) assert.ok(sourceChoiceDock.includes(token), `right-rail source-choice routing missing ${token}`);
+for (const token of ["createPortal", "currentForgePreview", ".npc-forge-preview", "previewTarget ? createPortal(fields, previewTarget) : fields"]) assert.ok(sourceChoiceDock.includes(token), `later-step right-rail source-choice routing missing ${token}`);
 
 for (const token of ["character_sheets", "updated_at", "2500", "without broadening realtime database exposure"]) assert.ok(actionHook.includes(token), `Transient sheet refresh missing ${token}`);
 assert.ok(!actionHook.includes("postgres_changes"), "sheet action refresh must not depend on an unpublished Realtime table");
@@ -67,9 +75,10 @@ for (const token of ['import { supabase } from "../utils/supabaseClient";', "res
 assert.ok(!login.includes("createClient("), "login page must use the shared Supabase singleton");
 
 assert.ok(app.includes('import "../styles/character-forge-smoke-fixes.css";'), "smoke correction stylesheet is not loaded");
-for (const token of ["npc-forge-class-feature-dock", "position: sticky", "rgba(255, 255, 255, .82)", "npc-forge-background-spell-name"]) assert.ok(css.includes(token), `smoke correction CSS missing ${token}`);
+for (const token of ["npc-forge-class-feature-dock", "position: sticky", "height: auto", "npc-forge-rule-copy", "npc-forge-source-choice-group.is-required", "rgba(255, 255, 255, .82)", "npc-forge-background-spell-name"]) assert.ok(css.includes(token), `smoke correction CSS missing ${token}`);
+assert.ok(!css.includes("npc-forge-step-2 > .npc-forge-workspace {\n  align-self: stretch;\n  height: 100%;"), "Class workspace must not cap sticky range at viewport height");
 
-for (const protectedSource of [classFeatureText, classGuide, classGuideModel, classFeatureDock, context, planHelperText, sourceChoices, sourceChoiceDock, actionHook, restSyncBridge, astralPanel, login, speciesPresentationText, css]) {
+for (const protectedSource of [classFeatureText, classGuide, classGuideModel, classFeatureDock, context, embeddedSourceChoices, backgroundMechanicsText, planHelperText, sourceChoices, sourceChoiceDock, actionHook, restSyncBridge, astralPanel, login, speciesPresentationText, css]) {
   assert.ok(!/MapPageClient|map_routes|map_route_points|advance_all_characters|route_segment_progress/.test(protectedSource), "smoke correction crossed protected map/travel boundaries");
 }
 
@@ -98,6 +107,33 @@ const embeddedAstralTranceRules = extractSpeciesTraitChoiceRules({
 });
 assert.equal(embeddedAstralTranceRules.length, 0, "Astral Trance must not render an embedded CHOOSE control on the Species feature card");
 
+const { backgroundFeatureDetails } = await import(pathToFileURL(path.join(root, "utils/backgroundMechanics.js")).href);
+const astralDrifterDetails = backgroundFeatureDetails({
+  name: "Astral Drifter",
+  source: "AAG",
+  rawPayload: {
+    entries: [
+      { type: "entries", name: "Longevity", entries: ["You are 20d6 years older than you look, because you have spent that much time in the Astral Sea without aging."] },
+      { type: "entries", name: "Feature: Divine Contact", data: { isFeature: true }, entries: ["You gain the Magic Initiate feat.", { type: "table", rows: [[1, "A deity"]] }] },
+    ],
+  },
+});
+assert.ok(astralDrifterDetails.some((entry) => entry.name === "Longevity" && /20d6 years older/.test(entry.description)), "Astral Drifter Longevity must survive Forge presentation");
+assert.ok(!astralDrifterDetails.some((entry) => /A deity/.test(entry.description)), "optional Divine Contact deity table must remain omitted from Forge prose");
+
+const { buildBackgroundSourceChoiceGroups } = await import(pathToFileURL(path.join(root, "utils/playerForgeSourceChoices.js")).href);
+const toolRows = [
+  { item_name: "Smith's Tools", item_key: "smith-tools", item_type: "Tool", payload: { name: "Smith's Tools", source: "XPHB", type: "AT" } },
+  { item_name: "Tinker's Tools", item_key: "tinker-tools", item_type: "Tool", payload: { name: "Tinker's Tools", source: "XPHB", type: "AT" } },
+];
+const artisanSourceGroups = buildBackgroundSourceChoiceGroups({ id: "artisan", name: "Artisan", source: "XPHB", metadata: { tools: [{ anyArtisansTool: 1 }] } }, toolRows);
+assert.equal(artisanSourceGroups.length, 1, "Artisan should expose one background-owned Artisan's Tool choice group");
+assert.equal(artisanSourceGroups[0].fields[0].kind, "tool", "Artisan background choice must remain a tool selection");
+const astralLanguageGroups = buildBackgroundSourceChoiceGroups({ id: "astral-drifter", name: "Astral Drifter", source: "AAG", metadata: { tools: [], languages: [{ anyStandard: 2 }] } }, toolRows);
+assert.equal(astralLanguageGroups.length, 1, "Astral Drifter should expose its two language choices from source data");
+assert.equal(astralLanguageGroups[0].fields[0].kind, "language", "Astral Drifter source choice must remain language-owned");
+assert.equal(astralLanguageGroups[0].fields[0].count, 2, "Astral Drifter must choose two languages");
+
 const { resolveSubclassCatalog } = await import(pathToFileURL(path.join(root, "utils/classes/subclassCompatibility.js")).href);
 const duplicateSubclasses = resolveSubclassCatalog([
   { feature_type: "subclass", subclass_name: "Armorer", subclass_short_name: "Armorer", source: "TCE", class_source: "TCE", name: "Armorer", level: 3, description: "TCE intro", raw_payload: {} },
@@ -120,4 +156,4 @@ assert.equal(level2Plans[0].metadata.catalogueSummary.totalCount, 2, "availabili
 assert.equal(level2Plans[0].metadata.catalogueSummary.futureUnlocks[0].unlockLevel, 10, "future plan must be disclosed at its actual unlock level");
 assert.ok(level2Plans.every((group) => !group.fields[0].options.some((option) => option.key === "p2")), "future plan must remain non-selectable");
 
-console.log("PR #170 signed-in browser smoke corrections, including login completion, immediate Rest repaint, runtime-only Astral Trance in both generic and embedded Species paths, right-rail source choices, and list-to-detail routing, validated.");
+console.log("PR #170 signed-in browser smoke corrections, including integrated purple source choices, supplemental background details, collapsible class levels, sticky class-detail range, canonical Artificer item cards, login completion, immediate Rest repaint, runtime-only Astral Trance, and protected-boundary checks, validated.");
