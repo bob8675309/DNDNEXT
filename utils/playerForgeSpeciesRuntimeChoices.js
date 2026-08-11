@@ -190,6 +190,7 @@ export function applySpeciesRuntimeChoiceAuthority({ groups = [], species = null
         cadence: "long-rest",
         runtimeInitial: true,
         sourceTrait: "Fey Step / Season",
+        feyStepLevel: 3,
       },
     });
   }
