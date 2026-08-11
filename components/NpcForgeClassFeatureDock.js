@@ -39,7 +39,7 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
         {feature?.type === "subclass" && detail?.subclassName ? <span>{detail.subclassName}</span> : null}
         {isListedOption && parentFeatureName ? <span>From {parentFeatureName}</span> : null}
       </div>
-      <ClassFeatureText text={description} compact />
+      <ClassFeatureText text={description} entries={feature?.entries || null} compact />
       {canonicalItem ? <div className="npc-forge-class-feature-dock__item-card" aria-label={`${title} canonical item card`}><ItemCard item={canonicalItem} /></div> : null}
       {!feature ? <small>Feature descriptions will appear here as you move through the progression table or detailed guide.</small> : null}
       {isListedOption ? <div className="npc-forge-class-feature-dock__listed-note">This is a listed option inside <strong>{parentFeatureName || "the selected feature"}</strong>. The description comes from the normalized class-option or canonical item catalogue when a matching entry exists; otherwise the parent feature remains the mechanical authority.</div> : null}
