@@ -2,234 +2,215 @@
 
 Status date: 2026-08-11
 PR: #170 (`agent/character-forge-resilience-presentation`)
-Database authority: migration 91 (`genasi_subrace_catalog`) deployed.
-Browser status: implementation/build/database accepted; focused signed-in browser re-smoke still required.
+Validated code head: `6106eea26f5de0f43b435a1d41563b8549daeb95`
+Database authority: `20260811062025 genasi_subrace_catalog` (migration 91) deployed.
+Database changes in this continuation pass: none.
+Merge status: open/unmerged; merge only after explicit user approval.
 
-## Why this pass exists
+## Scope
 
-The latest Player Character Forge smoke showed a repeated presentation problem rather than isolated bad entries:
+This continuation is limited to Character Forge source presentation across Species, Background, and Class. It does not modify or authorize world-map, town/city-map, route/travel/weather, tactical combat, crafting, inventory, merchant, or unrelated NPC runtime behavior. `components/MapPageClient.js` remains protected and untouched.
 
-- imported Species rules with source tables/lists were being flattened into prose walls;
-- Tiefling Fiendish Legacy mixed three legacy packages into one long paragraph plus a weak selector;
-- Goliath Giant Ancestry had become identifiable but still repeated all six option rules as one dense block;
-- Genasi had only a generic parent row even though its current source family has Air/Earth/Fire/Water variants;
-- Dragonborn source families were exposed as separate top-level species rows rather than one ancestry-oriented creation flow;
-- the same flattening risk exists in Background and Class source records.
+## Live catalogue audit before implementation
 
-The correction therefore targets source structure generically instead of adding screenshot-specific text patches.
+The live Supabase catalogue was re-audited before patching instead of assuming the previous handoff prose was complete.
 
-## Source-structure audit
+### Species
 
-Read-only live catalogue inspection found substantial structured source content:
+- 164 live Species rows.
+- Zero blank descriptions.
+- Five stored descriptions contain raw 5etools markup: four MPMM Genasi child rows plus Custom Lineage.
+- The four Genasi child rows are intentionally grouped beneath the parent in the Forge.
+- Custom Lineage exposed a shared formatter defect: `{@5etools feat|feats.html}` used an alphanumeric tag name while the fallback formatter recognized alphabetic tag names only.
 
-- Species catalogue: 160 rows before migration 91; 8 source payloads contain tables, 20 contain lists, and 17 contain version structures;
-- Background catalogue: 161 rows; 88 source payloads contain tables and all 161 contain list structures somewhere in the payload;
-- Class feature catalogue: 2,118 rows; 122 contain source tables, 91 contain source lists, and 187 contain nested named entry blocks.
+`utils/playerFacingText.js` now accepts alphanumeric source tag names and removes pipe-delimited internal targets, so that example renders as ordinary `feat` text rather than source syntax.
 
-This is why flattening everything to plain text is not a sustainable renderer.
+### Background
 
-## Shared structured source renderer
+- 161 live Background rows.
+- Zero blank descriptions.
+- Zero raw 5etools markup tokens in stored descriptions.
+- Live raw Background source structures use the existing `entries`, `section`, `inset`, `list`, `item`, and `table` families.
 
-`components/SourceRuleContent.js` is the reusable source-rule renderer for information that is already structured in canonical source payloads.
+No Background-specific database or one-off content patch was justified. Existing presentation continues to keep mechanical source table/list rows organized while suppressing optional/random flavor-generation tables.
 
-Supported forms include:
+### Class
 
-- ordinary paragraphs;
-- named rule sections;
+- 30 live Class rows.
+- 2,118 live Class feature rows.
+- 75 Class feature rows have a blank flattened `description`, but all 75 retain structured `entries`; zero rows are both blank and structureless.
+- The five blank class summaries are legacy/sidekick/UA catalogue records: EFA Artificer, Expert Sidekick, Spellcaster Sidekick, Warrior Sidekick, and Mystic.
+
+Recursive live `class_feature_catalog.entries` contain:
+
+- `entries` — 1,178;
+- `refSubclassFeature` — 1,052;
+- `refOptionalfeature` — 306;
+- `table` — 284;
+- `list` — 184;
+- `item` — 118;
+- `options` — 76;
+- `refClassFeature` — 64;
+- `abilityDc` — 32;
+- `abilityAttackMod` — 26;
+- `inset` — 20;
+- `quote` — 10;
+- `refFeat` — 4;
+- `statblock` — 2.
+
+This identified the remaining shared Class presentation gap: detailed Class features already preserved exact source `entries`, but reference/formula/options/quote/statblock nodes could render incompletely despite valid source data.
+
+## Shared Class/source renderer correction
+
+`components/SourceRuleContent.js` remains the single shared source renderer. It now explicitly handles:
+
+- paragraphs;
+- named sections;
+- `item` and `itemSpell`;
 - nested entries/insets;
-- lists rendered as readable cards;
-- tables with captions, column headers, rows, and footnotes.
+- lists;
+- tables with captions/headers/rows/footnotes;
+- `refClassFeature`;
+- `refSubclassFeature`;
+- `refOptionalfeature`;
+- `refFeat`;
+- `statblock` references;
+- `abilityDc` formulas;
+- `abilityAttackMod` formulas;
+- source `options` and their choose count;
+- source `quote` blocks.
 
-`ClassFeatureText` accepts exact `entries` in addition to its legacy text fallback. The detailed Class guide preserves `class_feature_catalog.entries` and passes that structured data into the renderer instead of reconstructing tables/lists from flattened prose.
+When the Class guide supplies its existing detail callback, reference labels route into the established canonical/fallback detail resolver. No second Class rules authority was created. `ClassFeatureText` and `NpcForgeClassGuide` continue to pass exact `class_feature_catalog.entries`.
 
-The compact sticky Class detail dock intentionally remains concise so a very large source table cannot make the dock itself taller than the usable scroll area.
+## Compact persistent Species choices
 
-## Background structure policy
+`components/NpcForgeEmbeddedSourceChoices.js` no longer repeats long rich option descriptions inside every choice button when the same mechanics are already available in selected detail metadata. The initial button stays compact; `SelectedOptionDetail` remains the full comparison/result surface after selection.
 
-Background feature presentation now preserves mechanical source structure while maintaining the existing player-facing exclusions.
+This improves Tiefling Fiendish Legacy, Goliath Giant Ancestry, Genasi Elemental Lineage, and Dragonborn ancestry choices without changing their stored option keys/descriptions/metadata.
 
-Mechanical tables/lists that are part of a feature are presented as organized rule rows instead of collapsed text. Tables that are explicitly introduced as random/optional guidance — for example, `roll on this table`, `roll or choose`, or similar flavor generation — are not promoted into required Forge mechanics.
+### Tiefling — Fiendish Legacy
 
-This preserves the earlier Astral Drifter policy: Longevity remains visible, Divine Contact's mechanical feat remains visible, but the optional deity-roll table is not dumped into the creation UI.
+The XPHB source still produces Abyssal, Chthonic, and Infernal packages with their row-specific resistance and level 1/3/5 spells. Buttons are concise, while the selected package retains the full source row.
 
-Suggested Characteristics remain excluded from the mechanical Forge presentation.
+### Goliath — Giant Ancestry
 
-## Species persistent-choice presentation
+All six XPHB options remain source-owned: Cloud's Jaunt, Fire's Burn, Frost's Chill, Hill's Tumble, Stone's Endurance, and Storm's Thunder. Their full mechanics remain available after selection without making the initial six-button grid a wall of text.
 
-For structured persistent Species choices, the explanatory feature text no longer repeats the entire table/list and then presents a second selector. The feature keeps its concise rule introduction, while the source-owned selector carries the individual options and their specific mechanics.
+## Genasi — selected lineage presentation projection
 
-The current structured choice families include:
+The existing family remains one MPMM Genasi parent plus Air/Earth/Fire/Water child rows restored by migration 91.
 
-- Draconic Ancestry;
-- Elven Lineage;
-- Gnomish Lineage;
-- Fiendish Legacy;
-- Giant Ancestry;
-- Shifting;
-- Kobold Legacy;
-- Animal Enhancement;
-- Variable Trait.
+The continuation adds a **display-only projection** from the currently selected source-choice option into the right-hand Species information panel. It may update displayed movement, size, darkvision, creature type, and child-specific trait cards from the selected child row.
 
-This is presentation/routing work only. Runtime-only choices such as Astral Trance remain owned by their established runtime authority.
+It does not replace or rewrite:
 
-## Tiefling — Fiendish Legacy
+- the persisted parent Species ID/name/source;
+- the source-choice key;
+- the save payload;
+- Species magic authority.
 
-XPHB Fiendish Legacy is presented as three coherent legacy packages rather than one flattened wall:
+Example: Water Genasi keeps the parent Genasi identity while the information panel shows Water movement/traits, including swimming movement, rather than generic or Air-lineage detail.
 
-- Abyssal — Poison resistance; Poison Spray; Ray of Sickness; Hold Person;
-- Chthonic — Necrotic resistance; Chill Touch; False Life; Ray of Enfeeblement;
-- Infernal — Fire resistance; Fire Bolt; Hellish Rebuke; Darkness.
+Species-granted magic remains owned by the Spells step/source-magic system.
 
-The selector retains the source table's row-specific mechanics so the player can compare the package before selecting it.
+## Dragonborn — FTD Gem projection without XPHB leakage
 
-The separate flexible spellcasting ability question is still resolved by the established Forge rule: where the source permits Intelligence, Wisdom, or Charisma and there is no gameplay benefit to intentionally choosing a weaker one, the Forge uses the highest eligible final ability.
+The creation flow remains one XPHB Dragonborn parent selector with ten standard XPHB colors plus five explicitly labeled FTD Gem choices.
 
-## Goliath — Giant Ancestry
+The audit found a real presentation mismatch: selecting an FTD Gem option could show the Gem selected-detail card while the surrounding Species panel still showed XPHB-only Dragonborn cards such as XPHB Damage Resistance, Darkvision, and Draconic Flight.
 
-Giant Ancestry now uses a structured selector whose options retain both the source name and the individual effect:
+The same display-only projection bridge now uses the FTD Gem family presentation for an FTD Gem selection while retaining the unified parent identity and Draconic Ancestry selector.
 
-- Cloud's Jaunt (Cloud Giant);
-- Fire's Burn (Fire Giant);
-- Frost's Chill (Frost Giant);
-- Hill's Tumble (Hill Giant);
-- Stone's Endurance (Stone Giant);
-- Storm's Thunder (Storm Giant).
+For a Gem selection the surrounding panel can show the FTD Gem source traits, including Draconic Resistance, Psionic Mind, Gem Flight, and the Gem-family Breath Weapon, while removing incompatible XPHB-only Damage Resistance/Draconic Flight/Darkvision presentation when the FTD family does not provide them.
 
-The full six-option rules list is no longer duplicated into a long prose wall above the selector.
+Standard XPHB color selections do not use the Gem projection and retain the ordinary XPHB parent presentation.
 
-## Genasi — parent plus elemental lineage
+This is presentation grouping only, not a rules merge or persistence rewrite.
 
-### Source-pipeline gap
+## Other potential Species families
 
-The existing 5etools character-option importer read `races.json.race[]` but did not read `races.json.subrace[]`. As a result, the live MPMM catalogue contained only generic `Genasi`; Air, Earth, Fire, and Water variant records were missing from Supabase.
+The live catalogue was checked for other parenthetical/subtype rows. Remaining candidates are largely setting/source-specific variants such as Kaladesh/Zendikar/Ixalan/Innistrad rows, plus Deep Gnome and Dankwood Goblin. They were intentionally **not** collapsed into generic parents because that would blur distinct source/setting rules rather than clarify a true nested ancestry decision.
 
-The importer now resolves and composes `subrace[]` records with their parent species. Imported child rows retain:
-
-- parent species/source;
-- variant name;
-- inherited parent traits;
-- child-specific traits;
-- speed/darkvision information;
-- resistances;
-- additional source spells;
-- source-derived-subrace provenance.
-
-Future reviewed source imports therefore reproduce the same model instead of relying on a one-time database patch.
-
-### Migration 91
-
-`sql/20260811_91_genasi_subrace_catalog.sql` additively backfills the four currently missing MPMM rows:
-
-- `species:genasi-air|MPMM`;
-- `species:genasi-earth|MPMM`;
-- `species:genasi-fire|MPMM`;
-- `species:genasi-water|MPMM`.
-
-Rollback QA inserted all four rows inside a transaction and then rolled back; post-rollback residue was zero.
-
-Migration 91 was then deployed as:
-
-- `20260811062025 genasi_subrace_catalog`.
-
-Post-deploy verification confirmed all four rows with their parent/variant identity, movement/resistance data, and source spell metadata.
-
-Production integrity after deployment:
-
-- characters: 7;
-- character_sheets: 7;
-- character_spells: 30;
-- character_progression: 7;
-- inventory_items: 18;
-- locations: 20;
-- map_routes: 4;
-- map_route_points: 9;
-- Species catalogue: 160 -> 164, exactly the four intended Genasi catalogue rows.
-
-No character, inventory, map, route, encounter, or campaign-state rows were changed by migration 91.
-
-### Player-facing model
-
-When the MPMM Genasi parent and all four child records are available, the Forge exposes one player-facing `Genasi` entry with an `Elemental Lineage` choice:
-
-- Air Genasi;
-- Earth Genasi;
-- Fire Genasi;
-- Water Genasi.
-
-The selected lineage publishes its child-specific rule summary and facts into the Species choice card. Water Genasi movement is explicitly formatted as walking movement plus swimming equal to walking speed rather than coercing the movement object into a numeric value.
-
-Species magic remains owned by the Spells step / existing source-magic authority rather than creating a second spell resolver inside Species.
-
-## Dragonborn — one ancestry-oriented parent flow
-
-The Forge groups the current player-facing Dragonborn family around the XPHB Dragonborn parent.
-
-Standard XPHB ancestries are represented by the ten Draconic Ancestry rows:
-
-- Black — Acid;
-- Blue — Lightning;
-- Brass — Fire;
-- Bronze — Lightning;
-- Copper — Acid;
-- Gold — Fire;
-- Green — Poison;
-- Red — Fire;
-- Silver — Cold;
-- White — Cold.
-
-The five FTD Gem ancestries are added to that creation selector with explicit Gem/source labeling:
-
-- Amethyst — Force;
-- Crystal — Radiant;
-- Emerald — Psychic;
-- Sapphire — Thunder;
-- Topaz — Necrotic.
-
-The Gem choices retain their FTD rule-family marker and Gem-specific trait summaries instead of silently treating them as XPHB color rows.
-
-The FTD Chromatic/Gem/Metallic top-level rows are hidden only when the family can be represented under the unified parent. This is a presentation grouping, not permission to blend incompatible source mechanics.
+Existing source-owned choices such as Elven Lineage and Gnomish Lineage continue through their established structured-choice path.
 
 ## Validation
 
-A dedicated workflow, `Validate Forge source presentation`, checks:
+`scripts/validate_forge_source_presentation.mjs` now checks:
 
-- Genasi parent + four lineage grouping;
-- Water Genasi movement formatting;
-- Dragonborn ten XPHB + five explicitly FTD Gem ancestry options;
-- Fiendish Legacy three-row package preservation;
-- Goliath six-option selector with individual descriptions and no duplicated prose wall;
-- Background mechanical tables preserved;
-- optional/random Background tables omitted;
-- Class source `entries` retained through the detailed guide;
-- importer `subrace[]` support;
-- migration 91 idempotent markers;
-- protected world-map/travel boundaries.
+- explicit renderer coverage for the live Class source-node families;
+- compact rich-choice buttons with full selected detail preserved;
+- alphanumeric `5etools` tag cleanup;
+- Water Genasi selected presentation;
+- unchanged persisted Genasi parent identity;
+- no cross-lineage Genasi trait leakage;
+- FTD Gem Dragonborn selected presentation;
+- no XPHB Damage Resistance/Draconic Flight/Darkvision leakage into the FTD Gem presentation;
+- ordinary XPHB Dragonborn presentation for standard colors;
+- existing Background mechanical/random-table policy;
+- Genasi importer/migration guards;
+- protected map/travel boundaries.
 
-At the pre-documentation code head `dec7a45241bbe471978d0c0607a175b91327844c`:
+The Forge workflow now watches `NpcForgeContextPanel.js` and `playerFacingText.js` in addition to the existing source-presentation files.
 
-- 33/33 PR-triggered GitHub workflows completed successfully;
-- `Validate Forge source presentation` passed its focused checks and production build;
-- `Validate PR170 browser smoke corrections` passed its updated structured-selector contract and production build;
-- NPC Forge, nested choices, source magic, Artificer plans, progression, runtime, equipment, portrait, and currency workflows were green.
+## Validated code checkpoint
 
-Vercel's status at this checkpoint is `failure` only because the account hit the Vercel build-rate limit; GitHub's production build gates for the same exact code head succeeded. Do not describe that Vercel marker as an application compilation failure.
+Code commit:
 
-Documentation commits move the exact head beyond that checkpoint and must be re-gated before any merge.
+`6106eea26f5de0f43b435a1d41563b8549daeb95` — `Tighten Forge source and species variant presentation`
 
-## Focused browser re-smoke
+It is one fast-forward commit from the previous accepted head and changes exactly seven files:
 
-The next signed-in Species pass should verify:
+- `.github/workflows/validate-forge-source-presentation.yml`;
+- `components/NpcForgeContextPanel.js`;
+- `components/NpcForgeEmbeddedSourceChoices.js`;
+- `components/SourceRuleContent.js`;
+- `scripts/validate_forge_source_presentation.mjs`;
+- `utils/playerFacingText.js`;
+- `utils/speciesVariantFamilies.js`.
 
-1. Tiefling Fiendish Legacy is a coherent three-package selector with each package's resistance/spells grouped together.
-2. Goliath Giant Ancestry uses compact option cards/selector detail and no longer repeats all six mechanics as a wall of text.
-3. Genasi appears as one parent entry and exposes Air/Earth/Fire/Water Elemental Lineage options; changing the option updates the shown lineage detail immediately.
-4. Water Genasi displays its swimming movement correctly.
-5. Dragonborn appears as one parent creation entry with the ten standard XPHB ancestries and five clearly labeled FTD Gem choices; selecting a Gem option surfaces its distinct Gem traits rather than generic Dragonborn-only text.
-6. Existing species skill/spell routing remains intact: skill choices resolve in Training and species magic resolves in Spells.
-7. Continue checking the remaining Species catalogue for malformed source structures; the shared renderer/selector should now catch the same table/list patterns generically.
+No SQL/migration/map/combat/crafting/inventory file changed.
 
-When the user reaches Background and Class tomorrow, specifically verify source tables/lists are organized rather than flattened and report any source node type the shared renderer still does not handle cleanly.
+### Exact-head CI result
 
-## Protected boundaries
+For `6106eea26f5de0f43b435a1d41563b8549daeb95`:
 
-This pass does not modify or authorize changes to `components/MapPageClient.js`, world-map behavior, town/city-map behavior, route/travel/weather simulation, tactical combat execution, or unrelated crafting/inventory execution.
+- **33/33 PR-triggered GitHub workflows completed successfully**;
+- `Validate Forge source presentation` passed its focused contract and production build;
+- `Validate PR170 browser smoke corrections` passed its contract and production build;
+- NPC Forge, nested choices, source magic, equipment, progression, runtime, portrait, currency, Artificer, and related PR gates all completed successfully.
+
+The documentation reconciliation commit that follows this tested code head is prose-only. The tested code checkpoint remains `6106eea...`.
+
+## Live database state
+
+No Supabase write was necessary for this continuation. Live authority remains:
+
+`20260811062025 genasi_subrace_catalog`
+
+Migration 91 remains the latest production migration. This pass did not change characters, sheets, spells, progression, inventory, locations, routes, encounters, maps, or campaign state.
+
+## Focused signed-in browser re-smoke
+
+On a deployment containing `6106eea...` or a later code-identical descendant, verify:
+
+1. Tiefling Fiendish Legacy uses compact Abyssal/Chthonic/Infernal choices and selected detail shows the coherent resistance + level 1/3/5 package.
+2. Goliath Giant Ancestry keeps six compact choices and selected detail shows the full chosen mechanic.
+3. Genasi appears once with Air/Earth/Fire/Water Elemental Lineage options.
+4. Changing Genasi lineage updates the surrounding Species information cards/facts immediately.
+5. Water Genasi shows swimming movement correctly.
+6. Dragonborn exposes ten XPHB colors plus five clearly labeled FTD Gem options.
+7. Selecting an FTD Gem option shows the FTD Gem-family surrounding mechanics and leaves no XPHB-only Darkvision/Damage Resistance/Draconic Flight cards behind.
+8. Returning to a standard XPHB color retains/restores normal XPHB Dragonborn information.
+9. Custom Lineage Feat text contains no visible `{@5etools ...}` or `|feats.html` syntax.
+10. Representative Class features containing references, source options, ability DC/attack formulas, quotes, and statblock references display readable content rather than empty headings.
+11. Background mechanical tables/lists remain organized and optional/random flavor-generation tables remain excluded.
+12. Existing Species skill routing remains in Training and Species magic remains in Spells.
+
+## Merge rule
+
+PR #170 remains open. Before merge:
+
+- confirm a deployment containing the validated code;
+- complete the focused signed-in browser re-smoke;
+- perform final live migration/ACL/residue checks;
+- obtain explicit user approval to merge.

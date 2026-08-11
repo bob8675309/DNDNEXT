@@ -7,7 +7,7 @@ Updated: 2026-08-11
 For active PR #170 work, trust sources in this order:
 
 1. live Supabase schema/migrations/grants/data;
-2. current PR source and exact-head CI/Vercel;
+2. current PR source and exact-head CI/deployment state;
 3. dedicated runtime/progression/browser-smoke/source-presentation ledgers;
 4. broader roadmap/history prose.
 
@@ -15,55 +15,55 @@ If prose conflicts with live source/database state, live authority wins until do
 
 ## Current PR #170 checkpoint
 
-Production is accepted through **migration 91**.
+PR #170 remains open and unmerged on `agent/character-forge-resilience-presentation`.
 
-Recent sequence:
+Production database authority is accepted through migration 91:
 
-- 74-75 — Wizard Memorize Spell;
-- 76 — shared Wizard runtime helper repair;
-- 77 — PHB Wizard Cantrip Formulas;
-- 78 — Armorer Armor Model + shared `short_or_long_rest` cadence repair;
-- 79-80 — Bestial Soul runtime + source-list resolver fix;
-- 81 — XPHB Wild Heart Aspect of the Wilds;
-- 82 — XPHB Hunter's Prey while PHB Hunter's Prey remains permanent Forge authority;
-- 83 — XPHB Defensive Tactics while PHB Defensive Tactics remains permanent Forge authority;
-- 84 — TCE Phantom Whispers of the Dead persistent borrowed proficiency runtime;
-- 85 — bounded progression v2 compatibility RPC ACL cleanup;
-- 86 — Player Forge source-magic materialization;
-- 87 — source-magic level/choice parser correction;
-- 88 — source-magic feat-name normalization correction;
-- 89 — read-only post-rest runtime-choice aggregation and attention classification;
-- 90 — source-aware standalone Rest restoration for sheet-side Barbarian Rage action state;
-- 91 — catalogue-only MPMM Genasi subrace backfill supporting the unified Elemental Lineage Species selector.
+`20260811062025 genasi_subrace_catalog`
 
-Latest registered migration: `genasi_subrace_catalog` (`20260811062025`).
+Latest validated source-presentation code head:
+
+`6106eea26f5de0f43b435a1d41563b8549daeb95` — `Tighten Forge source and species variant presentation`
+
+No new migration or Supabase write was required by that continuation patch.
+
+## Exact-head validation
+
+For code head `6106eea26f5de0f43b435a1d41563b8549daeb95`:
+
+- **33/33 PR-triggered GitHub workflows succeeded**;
+- `Validate Forge source presentation` passed its focused contract and production build;
+- `Validate PR170 browser smoke corrections` passed its contract and production build;
+- the broader NPC Forge, Character Forge nested-choice, source-magic, equipment, progression, runtime, portrait, currency, Artificer, and related regression gates all succeeded.
+
+A later documentation-only descendant does not supersede this tested code checkpoint; use `6106eea...` when referring to the exact code that received the full 33/33 gate.
 
 ## Authoritative recent ledgers
 
 Read before modifying these areas:
 
-- `Forge_Source_Presentation_and_Species_Variants_Status.md`
-- `PR170_Browser_Smoke_Corrections_Status.md`
-- `PR170_Final_Acceptance_Status.md`
-- `Player_Forge_Choice_Routing_and_Source_Magic_Status.md`
-- `Pending_Rest_Runtime_Choices_Status.md`
-- `Defensive_Tactics_Runtime_Status.md`
-- `Whispers_of_the_Dead_Runtime_Status.md`
-- `Progression_RPC_ACL_Cleanup_Status.md`
-- `Wizard_Memorize_Spell_Runtime_Status.md`
-- `Wizard_Cantrip_Formulas_Runtime_Status.md`
-- `Armorer_Armor_Model_Runtime_Status.md`
-- `Bestial_Soul_Runtime_Status.md`
-- `Wild_Heart_Aspect_Runtime_Status.md`
-- `Hunters_Prey_Runtime_Status.md`
-- `Boon_Energy_Resistance_Runtime_Status.md`
-- `Feat_Runtime_Expertise_Status.md`
-- `Cartomancer_Runtime_Status.md`
-- `DNDNext_Current_Handoff_Prompt.md`
+- `Forge_Source_Presentation_and_Species_Variants_Status.md`;
+- `PR170_Browser_Smoke_Corrections_Status.md`;
+- `PR170_Final_Acceptance_Status.md`;
+- `Player_Forge_Choice_Routing_and_Source_Magic_Status.md`;
+- `Pending_Rest_Runtime_Choices_Status.md`;
+- `Defensive_Tactics_Runtime_Status.md`;
+- `Whispers_of_the_Dead_Runtime_Status.md`;
+- `Progression_RPC_ACL_Cleanup_Status.md`;
+- `Wizard_Memorize_Spell_Runtime_Status.md`;
+- `Wizard_Cantrip_Formulas_Runtime_Status.md`;
+- `Armorer_Armor_Model_Runtime_Status.md`;
+- `Bestial_Soul_Runtime_Status.md`;
+- `Wild_Heart_Aspect_Runtime_Status.md`;
+- `Hunters_Prey_Runtime_Status.md`;
+- `Boon_Energy_Resistance_Runtime_Status.md`;
+- `Feat_Runtime_Expertise_Status.md`;
+- `Cartomancer_Runtime_Status.md`;
+- `DNDNext_Current_Handoff_Prompt.md`.
 
 Older runtime ledgers remain authoritative for their accepted slices unless contradictory live evidence exists.
 
-## Modeling rule
+## Core modeling rule
 
 - permanent source-owned acquisition → Forge/progression authority;
 - rest-configurable persistent choice → runtime authority whose current selection remains active until changed;
@@ -73,95 +73,53 @@ Older runtime ledgers remain authoritative for their accepted slices unless cont
 - per-use/per-cast choice → action/spell resolver;
 - informational/always-on feature → display/consumer logic.
 
-Accepted contrasts:
-
-- Armor Model: immediate initial choice; Short/Long-Rest replacement; persists until changed.
-- Bestial Soul: first choice after a qualifying Short/Long Rest; expires at the next qualifying rest.
-- Aspect of the Wilds: immediate initial choice; Long-Rest-only replacement; persists until changed.
-- Hunter's Prey / Defensive Tactics: PHB editions remain permanent acquisition choices; XPHB editions are persistent runtime choices with Short/Long-Rest replacement.
-- Whispers of the Dead: first choice requires a qualifying rest; borrowed proficiency persists until replaced after a later qualifying rest.
-- Astral Trance: current Long-Rest-cycle proficiencies expire at the next Long Rest and therefore require a new current-cycle choice.
-- Rage: XPHB regains one spent use on Short Rest and all on Long Rest; PHB remains Long-Rest-only.
+Accepted cadence contrasts remain unchanged, including Armor Model, Bestial Soul, Aspect of the Wilds, Hunter's Prey/Defensive Tactics source differences, Whispers of the Dead, Astral Trance, and Rage.
 
 ## Current Forge source-presentation model
 
-The Player Forge now treats source structure as data rather than flattening every imported rule into prose.
+### Class
 
-- `SourceRuleContent` renders source paragraphs, named sections, lists, and tables.
-- detailed Class features preserve `class_feature_catalog.entries` and use the shared structured renderer;
-- Background feature presentation keeps mechanical source table/list structure while intentionally suppressing random/optional flavor tables such as `roll on this table` guidance;
-- structured persistent Species decisions use their source-owned selector as the detailed comparison surface instead of repeating the entire option table/list in the feature prose.
+`SourceRuleContent` is the shared structured source renderer. The current detailed Class path covers paragraphs/named sections, item/itemSpell, lists/tables, class/subclass/optional-feature/feat references, statblock references, source options, ability DC/attack modifier formulas, and quotes.
 
-Source-structure audit at this checkpoint found:
+The live audit found 2,118 Class feature rows. Seventy-five have blank flattened descriptions but all 75 retain structured `entries`; zero are blank and structureless. The detailed guide therefore continues to preserve `class_feature_catalog.entries` as the richer source authority.
 
-- Species: 160 rows before migration 91; 8 table-bearing source payloads, 20 list-bearing payloads, 17 version-bearing payloads;
-- Background: 161 rows; 88 table-bearing source payloads and list structures across the imported set;
-- Class features: 2,118 rows; 122 with source tables, 91 with source lists, 187 with nested named-entry blocks.
+### Background
 
-Read `Forge_Source_Presentation_and_Species_Variants_Status.md` for implementation details and browser re-smoke targets.
+All 161 live Background rows have nonblank stored descriptions and no raw 5etools markup. Existing structured Background presentation keeps mechanical source rows organized and suppresses explicitly optional/random flavor-generation tables.
 
-## Species variant-family model
+### Species
 
-Deep Species branches should normally be represented as a parent Species plus a source-owned nested selector when the source family can be modeled without losing edition/rule identity.
+All 164 live Species rows have nonblank descriptions. The shared player-facing formatter now handles alphanumeric source tag names, fixing the Custom Lineage `{@5etools feat|feats.html}` leak without mutating catalogue data.
 
-Current families:
+Rich persistent Species choices use compact initial buttons and full selected detail.
 
-- **Genasi (MPMM):** one Genasi parent + Air/Earth/Fire/Water Elemental Lineage options. Migration 91 restored the four child catalogue records omitted by the old importer. The importer now reads `races.json.subrace[]` so future reviewed imports reproduce the model.
-- **Dragonborn:** the XPHB parent owns the ten standard Draconic Ancestry colors; the five FTD Gem ancestries are exposed in the same creation selector but are explicitly marked as the FTD Gem rule family and retain Gem-specific trait summaries. FTD source-family mechanics are not silently blended into XPHB rules.
-- **Tiefling Fiendish Legacy / Goliath Giant Ancestry:** source tables/lists feed coherent selector choices with row/item-specific mechanics rather than prose walls.
+Current deep-family behavior:
 
-Species skill proficiency choices remain routed to Training; Species magic remains routed to Spells; runtime-only rest choices remain outside permanent Forge authority.
+- **Genasi (MPMM):** one parent + Air/Earth/Fire/Water Elemental Lineage. Selected child facts/traits project into the right-side information panel without changing persisted parent identity or spell authority.
+- **Dragonborn:** one XPHB parent selector with ten standard XPHB ancestries + five explicitly FTD Gem choices. An FTD Gem selection projects the FTD Gem source presentation and removes incompatible XPHB-only surrounding cards for that selected rule family.
+- **Tiefling Fiendish Legacy:** compact three-package selector; row-specific resistance/spell mechanics remain intact in selected detail.
+- **Goliath Giant Ancestry:** compact six-choice selector; item-specific mechanics remain intact in selected detail.
 
-## Migration 91 proof
+Other parenthetical live Species entries are mostly distinct setting/source variants and were intentionally not collapsed into generic parent selectors.
 
-`sql/20260811_91_genasi_subrace_catalog.sql` was tested in a rollback transaction first. The fixture produced all four MPMM child rows and then rolled back to zero residue.
+Species skill choices remain routed to Training; Species magic remains routed to Spells; runtime-only rest choices remain outside permanent Forge authority.
 
-After repository production-build gates passed, migration 91 was applied live as `20260811062025 genasi_subrace_catalog`.
+## Migration 91 remains authoritative
 
-Post-deploy verification:
+`sql/20260811_91_genasi_subrace_catalog.sql` was rollback-tested before deployment and applied live as `20260811062025 genasi_subrace_catalog`.
 
-- Genasi (Air), (Earth), (Fire), and (Water) rows exist with parent/variant identity;
-- movement, resistance, and additional-spell metadata are present;
-- Species catalogue count changed 160 → 164 as expected;
-- characters 7;
-- character_sheets 7;
-- character_spells 30;
-- character_progression 7;
-- inventory_items 18;
-- locations 20;
-- map_routes 4;
-- map_route_points 9.
+The four MPMM Genasi child rows exist with parent/variant identity and source-derived metadata. Species catalogue count changed 160 → 164 as expected. No campaign/runtime/map rows were changed by migration 91.
 
-No campaign/runtime/map rows changed.
-
-## Exact-head gate before documentation reconciliation
-
-Code head `dec7a45241bbe471978d0c0607a175b91327844c` completed **33/33 PR-triggered GitHub workflows successfully**.
-
-Notable passing gates:
-
-- `Validate Forge source presentation` including its production build;
-- `Validate PR170 browser smoke corrections` including its production build;
-- NPC Forge foundation;
-- Character Forge nested choices;
-- Player Forge source magic;
-- starting magic/equipment;
-- Artificer Magic Item Plans;
-- progression/runtime/portrait/currency checks.
-
-Vercel reported a failure marker only because the account hit the Vercel build-rate limit. The repository production build succeeded twice on the same exact code head. Do not describe the Vercel marker as an application compilation failure.
-
-Documentation commits move the branch head beyond `dec7a452...`; exact-head GitHub gates must be checked again after documentation reconciliation.
-
-## Remaining PR closure work
-
-- focused user signed-in browser re-smoke of the Species cases listed in `Forge_Source_Presentation_and_Species_Variants_Status.md`;
-- continue the user's Background/Class browser pass tomorrow and feed any malformed source structures back into the shared renderer rather than patching one entry at a time;
-- exact-head CI check after documentation reconciliation;
-- Vercel may remain externally rate-limited until its build allowance resets;
-- final live migration/ACL/residue check immediately before any approved merge;
-- merge only after explicit user approval.
+The 2026-08-11 continuation patch made no database changes.
 
 ## Protected boundaries
 
-This work does not authorize changes to world-map, town/city-map, route/travel/weather, unrelated crafting/inventory execution, or tactical action execution. `components/MapPageClient.js` remains outside current scope unless explicitly requested.
+Current Forge work does not authorize world-map, town/city-map, route/travel/weather, unrelated crafting/inventory execution, or tactical action execution. `components/MapPageClient.js` remains outside scope unless explicitly requested.
+
+## Remaining PR closure work
+
+- confirm a deployment containing validated code head `6106eea...` or a code-identical descendant;
+- focused signed-in browser re-smoke of Tiefling, Goliath, Genasi, Dragonborn, Custom Lineage, representative Class source-node examples, and Background structured rules;
+- continue any remaining Background/Class visual QA through shared presentation fixes rather than entry-specific patches;
+- final live migration/ACL/residue check immediately before any approved merge;
+- merge only after explicit user approval.
