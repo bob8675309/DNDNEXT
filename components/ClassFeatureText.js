@@ -97,16 +97,17 @@ function renderSection(section, index, onListItemDetail) {
 
 export default function ClassFeatureText({ text = "", entries = null, fallback = "", compact = false, onListItemDetail = null }) {
   const hasStructuredEntries = entries != null && (Array.isArray(entries) ? entries.length > 0 : true);
-  const sections = useMemo(() => hasStructuredEntries ? [] : classFeatureSections(text, fallback), [fallback, hasStructuredEntries, text]);
+  const useStructuredEntries = hasStructuredEntries && !compact;
+  const sections = useMemo(() => useStructuredEntries ? [] : classFeatureSections(text, fallback), [fallback, text, useStructuredEntries]);
   const visibleSections = compact ? sections.slice(0, COMPACT_VISIBLE_SECTIONS) : sections;
   const hiddenSections = compact ? sections.slice(COMPACT_VISIBLE_SECTIONS) : [];
 
-  if (hasStructuredEntries && !compact) return <SourceRuleContent entries={entries} text={text} fallback={fallback} onListItemDetail={onListItemDetail} />;
+  if (useStructuredEntries) return <SourceRuleContent entries={entries} text={text} fallback={fallback} onListItemDetail={onListItemDetail} />;
 
   return (
     <div className={`class-feature-text ${compact ? "is-compact" : ""}`}>
-      {hasStructuredEntries ? <SourceRuleContent entries={entries} text={text} fallback={fallback} onListItemDetail={onListItemDetail} /> : visibleSections.map((section, index) => renderSection(section, index, onListItemDetail))}
-      {!hasStructuredEntries && hiddenSections.length ? (
+      {visibleSections.map((section, index) => renderSection(section, index, onListItemDetail))}
+      {hiddenSections.length ? (
         <details className="class-feature-text__compact-more" onClick={keepNestedDisclosureLocal} onKeyDown={keepNestedDisclosureLocal}>
           <summary>Full feature rules</summary>
           <div>{hiddenSections.map((section, index) => renderSection(section, index + COMPACT_VISIBLE_SECTIONS, onListItemDetail))}</div>
