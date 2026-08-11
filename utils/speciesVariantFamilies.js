@@ -58,12 +58,26 @@ function variantFacts(species) {
   return output;
 }
 
+function presentationMetadata(species, { selectorTraitName = "", selectorDescription = "", replaceParentTraits = false } = {}) {
+  return {
+    speed: species?.metadata?.speed ?? species?.speed ?? null,
+    size: array(species?.size).length ? array(species.size) : array(species?.metadata?.size),
+    darkvision: species?.darkvision ?? species?.metadata?.darkvision ?? null,
+    creatureTypes: array(species?.creatureTypes).length ? array(species.creatureTypes) : array(species?.metadata?.creatureTypes),
+    traits: traitSummaries(species, selectorTraitName === "Draconic Ancestry" ? ["Gem Ancestry"] : ["Size", "Darkvision"]),
+    selectorTraitName,
+    selectorDescription,
+    replaceParentTraits,
+  };
+}
+
 function genasiFamily(rows) {
   const parent = rows.find((row) => norm(row.name) === "genasi" && text(row.source).toUpperCase() === "MPMM");
   if (!parent) return null;
   const names = ["Air", "Earth", "Fire", "Water"];
   const children = names.map((lineage) => rows.find((row) => norm(row.name) === norm(`Genasi (${lineage})`) && text(row.source).toUpperCase() === "MPMM")).filter(Boolean);
   if (children.length !== names.length) return null;
+  const helper = "Choose the elemental lineage your Genasi takes after. The selected lineage changes the source traits shown for this character; species magic is resolved in Spells.";
   return {
     parent,
     consumedIds: new Set(children.map((row) => String(row.id))),
@@ -71,7 +85,7 @@ function genasiFamily(rows) {
       id: "genasi-elemental-lineage",
       label: "Elemental Lineage",
       kind: "lineage",
-      helper: "Choose the elemental lineage your Genasi takes after. The selected lineage changes the source traits shown for this character; species magic is resolved in Spells.",
+      helper,
       options: children.map((row) => {
         const lineage = text(row.name).match(/\(([^)]+)\)/)?.[1] || row.name;
         return {
@@ -90,6 +104,7 @@ function genasiFamily(rows) {
             variantSource: row.source,
             facts: variantFacts(row),
             traits: traitSummaries(row, ["Size", "Darkvision"]),
+            presentation: presentationMetadata(row, { selectorTraitName: "Elemental Lineage", selectorDescription: helper, replaceParentTraits: true }),
           },
         };
       }),
@@ -132,6 +147,7 @@ function dragonbornFamily(rows) {
   const gem = rows.find((row) => norm(row.name) === "dragonborn gem" && text(row.source).toUpperCase() === "FTD");
   const related = rows.filter((row) => ["dragonborn chromatic", "dragonborn gem", "dragonborn metallic"].includes(norm(row.name)) && text(row.source).toUpperCase() === "FTD");
   const standard = tableOptions(parent, "Draconic Ancestry", "dragonborn-ancestry", "dragonborn-");
+  const helper = "Choose one draconic ancestry. Standard chromatic and metallic colors use the 2024 Player's Handbook Dragonborn rules; Gem ancestries use their Fizban's Treasury of Dragons traits and are labeled separately.";
   const gemOptions = gem ? tableOptions(gem, "Gem Ancestry", "dragonborn-ancestry", "dragonborn-gem-").map((option) => ({
     ...option,
     label: `${option.label} (Gem)`,
@@ -143,6 +159,7 @@ function dragonbornFamily(rows) {
       familySpeciesId: gem.id,
       traits: traitSummaries(gem, ["Gem Ancestry"]),
       facts: variantFacts(gem),
+      presentation: presentationMetadata(gem, { selectorTraitName: "Draconic Ancestry", selectorDescription: helper, replaceParentTraits: true }),
     },
   })) : [];
   if (!standard.length) return null;
@@ -153,7 +170,7 @@ function dragonbornFamily(rows) {
       id: "dragonborn-ancestry",
       label: "Draconic Ancestry",
       kind: "ancestry",
-      helper: "Choose one draconic ancestry. Standard chromatic and metallic colors use the 2024 Player's Handbook Dragonborn rules; Gem ancestries use their Fizban's Treasury of Dragons traits and are labeled separately.",
+      helper,
       options: [...standard, ...gemOptions],
     },
   };
@@ -179,4 +196,60 @@ export function mergeSpeciesVariantFamilies(rows = []) {
 
 export function speciesVariantChoice(species = null) {
   return species?.speciesVariantChoice || null;
+}
+
+export function resolveSelectedSpeciesVariant(species = null, groups = [], selections = {}) {
+  const choice = speciesVariantChoice(species);
+  if (!choice?.options?.length || !species) return null;
+  const ownerKey = String(species.id || species.name || "");
+  const validKeys = new Set(choice.options.map((option) => option.key));
+  for (const group of array(groups)) {
+    if (group.ownerType !== "species" || String(group.ownerKey || "") !== ownerKey) continue;
+    for (const field of array(group.fields)) {
+      const fieldOptions = array(field.options);
+      if (!fieldOptions.some((option) => validKeys.has(option.key) || option.metadata?.family === choice.id)) continue;
+      const selectedKeys = array(selections?.[group.id]?.[field.id]);
+      const selected = fieldOptions.find((option) => selectedKeys.includes(option.key) && (validKeys.has(option.key) || option.metadata?.family === choice.id));
+      if (selected) return selected;
+    }
+  }
+  return null;
+}
+
+export function projectSpeciesVariantPresentation(species = null, selectedVariant = null) {
+  const presentation = selectedVariant?.metadata?.presentation;
+  if (!species || !presentation || !presentation.replaceParentTraits) return species;
+  const selectorName = text(presentation.selectorTraitName || species.speciesVariantChoice?.label || "Variant");
+  const existingSelector = array(species.traitDetails).find((detail) => norm(detail?.name) === norm(selectorName));
+  const selectorDetail = existingSelector || {
+    name: selectorName,
+    description: text(presentation.selectorDescription || species.speciesVariantChoice?.helper || "Choose the source-backed variant for this species."),
+    structuredChoice: true,
+  };
+  const projectedDetails = [selectorDetail, ...array(presentation.traits).filter((detail) => norm(detail?.name) !== norm(selectorName))];
+  return {
+    ...species,
+    speed: presentation.speed ?? species.speed,
+    size: array(presentation.size).length ? array(presentation.size) : species.size,
+    darkvision: presentation.darkvision ?? null,
+    creatureTypes: array(presentation.creatureTypes).length ? array(presentation.creatureTypes) : species.creatureTypes,
+    traits: projectedDetails.map((detail) => detail.name).filter(Boolean),
+    traitDetails: projectedDetails,
+    metadata: {
+      ...(species.metadata || {}),
+      speed: presentation.speed ?? species.metadata?.speed ?? species.speed,
+      size: array(presentation.size).length ? array(presentation.size) : species.metadata?.size,
+      darkvision: presentation.darkvision ?? null,
+      selectedVariantPresentation: {
+        label: selectedVariant.label,
+        source: selectedVariant.source,
+        family: selectedVariant.metadata?.family || null,
+        ruleFamily: selectedVariant.metadata?.ruleFamily || null,
+      },
+    },
+  };
+}
+
+export function projectSelectedSpeciesVariant(species = null, groups = [], selections = {}) {
+  return projectSpeciesVariantPresentation(species, resolveSelectedSpeciesVariant(species, groups, selections));
 }

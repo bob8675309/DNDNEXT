@@ -10,39 +10,56 @@ const protectedPattern = /MapPageClient|map_routes|map_route_points|advance_all_
 const variantSource = read("utils/speciesVariantFamilies.js");
 const speciesChoicesSource = read("utils/playerForgeSpeciesChoices.js");
 const speciesPresentationSource = read("utils/speciesPresentation.js");
+const playerFacingSource = read("utils/playerFacingText.js");
 const backgroundSource = read("utils/backgroundMechanics.js");
 const embeddedSource = read("components/NpcForgeEmbeddedSourceChoices.js");
 const structuredRenderer = read("components/SourceRuleContent.js");
 const classTextSource = read("components/ClassFeatureText.js");
 const classModelSource = read("components/NpcForgeClassGuideModel.js");
 const classGuideSource = read("components/NpcForgeClassGuide.js");
+const contextPanelSource = read("components/NpcForgeContextPanel.js");
 const importerSource = read("scripts/import_5etools_character_options_refined.mjs");
 const migration = read("sql/20260811_91_genasi_subrace_catalog.sql");
 
-for (const token of ["mergeSpeciesVariantFamilies", "genasi-elemental-lineage", "dragonborn-ancestry", "FTD Gem Dragonborn", "movementFact"]) assert.ok(variantSource.includes(token), `species family model missing ${token}`);
+for (const token of ["mergeSpeciesVariantFamilies", "genasi-elemental-lineage", "dragonborn-ancestry", "FTD Gem Dragonborn", "movementFact", "resolveSelectedSpeciesVariant", "projectSpeciesVariantPresentation", "projectSelectedSpeciesVariant"]) assert.ok(variantSource.includes(token), `species family model missing ${token}`);
 for (const token of ["variantChoiceField", "tableOptionDescription", "listOptionDescription", "speciesVariantChoice", "standaloneSpeciesVariantGroup"]) assert.ok(speciesChoicesSource.includes(token), `species source-choice detail model missing ${token}`);
 for (const token of ["STRUCTURED_PERSISTENT_CHOICE_TRAITS", "omitChoiceCollections", "fiendish-legacy", "giant-ancestry"]) assert.ok(speciesPresentationSource.includes(token), `species presentation structure guard missing ${token}`);
+assert.ok(playerFacingSource.includes("[a-zA-Z0-9]+"), "player-facing formatter must strip alphanumeric 5etools tag names");
 for (const token of ["structuredRuleText", "tableLooksOptional", "structuredFeatureDescription", "structuredSource"]) assert.ok(backgroundSource.includes(token), `background structured-rule presentation missing ${token}`);
-for (const token of ["SelectedOptionDetail", "npc-forge-embedded-choice__selected", "metadata.damageType", "metadata.traits"]) assert.ok(embeddedSource.includes(token), `embedded selector detail presentation missing ${token}`);
-for (const token of ["SourceTable", "SourceList", "NamedEntries", "sourceRuleStructureSummary"]) assert.ok(structuredRenderer.includes(token), `shared structured source renderer missing ${token}`);
+for (const token of ["SelectedOptionDetail", "choiceButtonSummary", "hasRichOptionDetail", "npc-forge-embedded-choice__selected", "metadata.damageType", "metadata.traits"]) assert.ok(embeddedSource.includes(token), `embedded selector detail presentation missing ${token}`);
+for (const token of ["SourceTable", "SourceList", "NamedEntries", "SourceReference", "SourceFormula", "SourceOptions", "SourceQuote", "sourceRuleStructureSummary", "refClassFeature", "refSubclassFeature", "refOptionalfeature", "refFeat", "abilityDc", "abilityAttackMod", "itemSpell", "statblock"]) assert.ok(structuredRenderer.includes(token), `shared structured source renderer missing ${token}`);
 for (const token of ['import SourceRuleContent from "./SourceRuleContent"', "entries = null", "hasStructuredEntries"]) assert.ok(classTextSource.includes(token), `ClassFeatureText structured source bridge missing ${token}`);
 for (const token of ["featureSource", "entries: exact?.entries", 'select("id,feature_type,name,source,class_source,subclass_name,subclass_short_name,level,description,entries,raw_payload")']) assert.ok(classModelSource.includes(token), `class model source-entry preservation missing ${token}`);
 assert.ok(classGuideSource.includes("entries={feature.entries || null}"), "detailed Class guide must pass source entries into structured renderer");
+for (const token of ["useNpcForgeSourceChoices", "projectSelectedSpeciesVariant", "projectedSelectedSpecies", "projectedDetail"]) assert.ok(contextPanelSource.includes(token), `Species selected-variant presentation bridge missing ${token}`);
 for (const token of ["files.races.subrace", "mergeSubraces", "sourceDerivedSubrace", "parentSpecies", "backgrounds-species-and-subraces", "legacy_copy_resolution"]) assert.ok(importerSource.includes(token), `canonical importer subrace support missing ${token}`);
 for (const token of ["species:genasi-air|MPMM", "species:genasi-earth|MPMM", "species:genasi-fire|MPMM", "species:genasi-water|MPMM", "sourceDerivedSubrace"]) assert.ok(migration.includes(token), `Genasi migration missing ${token}`);
 assert.ok(/where not exists/i.test(migration), "Genasi migration must be idempotent");
 
-const { mergeSpeciesVariantFamilies } = await import(pathToFileURL(path.join(root, "utils/speciesVariantFamilies.js")).href);
+const { mergeSpeciesVariantFamilies, projectSelectedSpeciesVariant } = await import(pathToFileURL(path.join(root, "utils/speciesVariantFamilies.js")).href);
 const { buildSpeciesSourceChoiceGroups } = await import(pathToFileURL(path.join(root, "utils/playerForgeSpeciesChoices.js")).href);
 const { extractSpeciesTraitDetails } = await import(pathToFileURL(path.join(root, "utils/speciesPresentation.js")).href);
+const { formatPlayerFacingInline } = await import(pathToFileURL(path.join(root, "utils/playerFacingText.js")).href);
 const { backgroundFeatureDetails } = await import(pathToFileURL(path.join(root, "utils/backgroundMechanics.js")).href);
 
+assert.equal(formatPlayerFacingInline("You gain one {@5etools feat|feats.html} of your choice."), "You gain one feat of your choice.", "alphanumeric 5etools tags must not leak their braces/tag marker or internal link target into player-facing copy");
+
+function selectVariant(species, groups, optionValue) {
+  const group = groups.find((entry) => entry.ownerType === "species" && String(entry.ownerKey || "") === String(species.id));
+  assert.ok(group, `source-choice group missing for ${species.name}`);
+  const field = group.fields.find((entry) => entry.options?.some((option) => option.value === optionValue || option.label === optionValue));
+  assert.ok(field, `source-choice field missing ${optionValue}`);
+  const option = field.options.find((entry) => entry.value === optionValue || entry.label === optionValue);
+  assert.ok(option, `source-choice option missing ${optionValue}`);
+  return { option, selections: { [group.id]: { [field.id]: [option.key] } } };
+}
+
 const genasiRows = [
-  { id: "genasi-parent", name: "Genasi", source: "MPMM", speed: 30, darkvision: 60, metadata: { speed: 30, traits: [] }, traitDetails: [] },
-  { id: "genasi-air", name: "Genasi (Air)", source: "MPMM", speed: 35, darkvision: 60, metadata: { speed: 35, traits: [] }, traitDetails: [{ name: "Unending Breath", description: "Hold your breath indefinitely." }, { name: "Lightning Resistance", description: "Resistance to lightning damage." }] },
-  { id: "genasi-earth", name: "Genasi (Earth)", source: "MPMM", speed: 30, darkvision: 60, metadata: { speed: 30, traits: [] }, traitDetails: [{ name: "Earth Walk", description: "Ignore ground-based difficult terrain." }] },
-  { id: "genasi-fire", name: "Genasi (Fire)", source: "MPMM", speed: 30, darkvision: 60, metadata: { speed: 30, traits: [] }, traitDetails: [{ name: "Fire Resistance", description: "Resistance to fire damage." }] },
-  { id: "genasi-water", name: "Genasi (Water)", source: "MPMM", speed: { walk: 30, swim: true }, darkvision: 60, metadata: { speed: { walk: 30, swim: true }, traits: [] }, traitDetails: [{ name: "Amphibious", description: "Breathe air and water." }] },
+  { id: "genasi-parent", name: "Genasi", source: "MPMM", speed: 30, darkvision: 60, creatureTypes: ["Humanoid"], size: ["M", "S"], metadata: { speed: 30, traits: [] }, traitDetails: [] },
+  { id: "genasi-air", name: "Genasi (Air)", source: "MPMM", speed: 35, darkvision: 60, creatureTypes: ["Humanoid"], size: ["M", "S"], metadata: { speed: 35, traits: [] }, traitDetails: [{ name: "Unending Breath", description: "Hold your breath indefinitely." }, { name: "Lightning Resistance", description: "Resistance to lightning damage." }] },
+  { id: "genasi-earth", name: "Genasi (Earth)", source: "MPMM", speed: 30, darkvision: 60, creatureTypes: ["Humanoid"], size: ["M", "S"], metadata: { speed: 30, traits: [] }, traitDetails: [{ name: "Earth Walk", description: "Ignore ground-based difficult terrain." }] },
+  { id: "genasi-fire", name: "Genasi (Fire)", source: "MPMM", speed: 30, darkvision: 60, creatureTypes: ["Humanoid"], size: ["M", "S"], metadata: { speed: 30, traits: [] }, traitDetails: [{ name: "Fire Resistance", description: "Resistance to fire damage." }] },
+  { id: "genasi-water", name: "Genasi (Water)", source: "MPMM", speed: { walk: 30, swim: true }, darkvision: 60, creatureTypes: ["Humanoid"], size: ["M", "S"], metadata: { speed: { walk: 30, swim: true }, traits: [] }, traitDetails: [{ name: "Amphibious", description: "Breathe air and water." }, { name: "Acid Resistance", description: "Resistance to acid damage." }] },
 ];
 const groupedGenasi = mergeSpeciesVariantFamilies(genasiRows);
 assert.equal(groupedGenasi.length, 1, "Genasi elemental child rows must collapse under the MPMM parent");
@@ -52,16 +69,24 @@ assert.ok(water.metadata.facts.some((fact) => /swimming equal to walking speed/i
 const genasiGroups = buildSpeciesSourceChoiceGroups({ species: groupedGenasi[0], level: 1, spells: [] });
 assert.equal(genasiGroups[0].label, "Elemental Lineage", "Genasi lineage selector must be a source-owned Species choice");
 assert.equal(genasiGroups[0].fields[0].options.length, 4, "Genasi selector must retain four source-backed options");
+const selectedWater = selectVariant(groupedGenasi[0], genasiGroups, "Water");
+const waterPresentation = projectSelectedSpeciesVariant(groupedGenasi[0], genasiGroups, selectedWater.selections);
+assert.equal(waterPresentation.id, groupedGenasi[0].id, "selected Genasi lineage must not replace the persisted parent Species identity");
+assert.deepEqual(waterPresentation.speed, { walk: 30, swim: true }, "Water Genasi selected presentation must publish swimming movement");
+assert.ok(waterPresentation.traitDetails.some((entry) => entry.name === "Amphibious"), "Water Genasi selected presentation must publish child traits");
+assert.ok(!waterPresentation.traitDetails.some((entry) => entry.name === "Unending Breath"), "Water Genasi selected presentation must not leak another lineage's traits");
 
 const dragonbornRows = [
   {
-    id: "dragonborn-xphb", name: "Dragonborn", source: "XPHB", metadata: { traits: [{ name: "Draconic Ancestry", type: "entries", entries: [{ type: "table", caption: "Draconic Ancestors", colLabels: ["Dragon", "Damage Type"], rows: [["Black", "Acid"], ["Blue", "Lightning"], ["Brass", "Fire"], ["Bronze", "Lightning"], ["Copper", "Acid"], ["Gold", "Fire"], ["Green", "Poison"], ["Red", "Fire"], ["Silver", "Cold"], ["White", "Cold"]] }] }] }, traitDetails: [],
+    id: "dragonborn-xphb", name: "Dragonborn", source: "XPHB", speed: 30, darkvision: 60, creatureTypes: ["Humanoid"], size: ["M"],
+    metadata: { speed: 30, traits: [{ name: "Draconic Ancestry", type: "entries", entries: [{ type: "table", caption: "Draconic Ancestors", colLabels: ["Dragon", "Damage Type"], rows: [["Black", "Acid"], ["Blue", "Lightning"], ["Brass", "Fire"], ["Bronze", "Lightning"], ["Copper", "Acid"], ["Gold", "Fire"], ["Green", "Poison"], ["Red", "Fire"], ["Silver", "Cold"], ["White", "Cold"]] }] }] },
+    traitDetails: [{ name: "Draconic Ancestry", description: "Choose your draconic ancestor.", structuredChoice: true }, { name: "Breath Weapon", description: "Replace one attack with an elemental exhalation." }, { name: "Damage Resistance", description: "You resist your ancestry's damage type." }, { name: "Darkvision", description: "See in darkness." }, { name: "Draconic Flight", description: "At level 5, manifest spectral wings." }],
   },
   { id: "dragonborn-chromatic", name: "Dragonborn (Chromatic)", source: "FTD", metadata: { traits: [] }, traitDetails: [] },
   {
-    id: "dragonborn-gem", name: "Dragonborn (Gem)", source: "FTD", speed: 30, darkvision: 60,
+    id: "dragonborn-gem", name: "Dragonborn (Gem)", source: "FTD", speed: 30, darkvision: null, creatureTypes: ["Humanoid"], size: ["M"],
     metadata: { speed: 30, traits: [{ name: "Gem Ancestry", type: "entries", entries: [{ type: "table", caption: "Gem Ancestry", colLabels: ["Dragon", "Damage Type"], rows: [["Amethyst", "Force"], ["Crystal", "Radiant"], ["Emerald", "Psychic"], ["Sapphire", "Thunder"], ["Topaz", "Necrotic"]] }] }] },
-    traitDetails: [{ name: "Psionic Mind", description: "Telepathic communication." }, { name: "Gem Flight", description: "Manifest spectral wings." }],
+    traitDetails: [{ name: "Gem Ancestry", description: "Choose your gem ancestry." }, { name: "Breath Weapon", description: "Exhale destructive gem energy." }, { name: "Draconic Resistance", description: "You resist your ancestry's damage type." }, { name: "Psionic Mind", description: "Telepathic communication." }, { name: "Gem Flight", description: "Manifest spectral wings temporarily." }],
   },
   { id: "dragonborn-metallic", name: "Dragonborn (Metallic)", source: "FTD", metadata: { traits: [] }, traitDetails: [] },
 ];
@@ -72,6 +97,17 @@ assert.equal(groupedDragonborn[0].speciesVariantChoice.options.filter((option) =
 const dragonbornGroups = buildSpeciesSourceChoiceGroups({ species: groupedDragonborn[0], level: 1, spells: [] });
 const ancestryGroup = dragonbornGroups.find((group) => group.label === "Draconic Ancestry");
 assert.equal(ancestryGroup?.fields?.[0]?.options?.length, 15, "Dragonborn Draconic Ancestry source group must use the unified family selector");
+const selectedGem = selectVariant(groupedDragonborn[0], dragonbornGroups, "Amethyst (Gem)");
+const gemPresentation = projectSelectedSpeciesVariant(groupedDragonborn[0], dragonbornGroups, selectedGem.selections);
+assert.equal(gemPresentation.id, groupedDragonborn[0].id, "Gem ancestry presentation must not replace the persisted XPHB parent Species identity");
+assert.ok(gemPresentation.traitDetails.some((entry) => entry.name === "Psionic Mind"), "Gem selection must publish FTD Gem-specific traits");
+assert.ok(gemPresentation.traitDetails.some((entry) => entry.name === "Gem Flight"), "Gem selection must publish FTD Gem Flight");
+assert.ok(gemPresentation.traitDetails.some((entry) => entry.name === "Draconic Resistance"), "Gem selection must publish the FTD resistance rule");
+assert.ok(!gemPresentation.traitDetails.some((entry) => entry.name === "Damage Resistance"), "Gem selection must not leave the XPHB Damage Resistance card in the projected panel");
+assert.ok(!gemPresentation.traitDetails.some((entry) => entry.name === "Draconic Flight"), "Gem selection must not leave the XPHB Draconic Flight card in the projected panel");
+assert.equal(gemPresentation.darkvision, null, "Gem selection must not inherit XPHB Darkvision when the FTD family does not provide it");
+const selectedStandard = selectVariant(groupedDragonborn[0], dragonbornGroups, "Black");
+assert.equal(projectSelectedSpeciesVariant(groupedDragonborn[0], dragonbornGroups, selectedStandard.selections), groupedDragonborn[0], "standard XPHB ancestry selection must retain the ordinary XPHB parent presentation object");
 
 const tiefling = {
   id: "tiefling", name: "Tiefling", source: "XPHB",
@@ -127,8 +163,8 @@ const optionalBackground = backgroundFeatureDetails({
 const optionalContact = optionalBackground.find((feature) => /Optional Contact/i.test(feature.name));
 assert.ok(optionalContact && !/A merchant|A sailor/.test(optionalContact.description), "optional/random background tables must stay out of mechanical Forge prose");
 
-for (const source of [variantSource, speciesChoicesSource, speciesPresentationSource, backgroundSource, embeddedSource, structuredRenderer, classTextSource, classModelSource, classGuideSource, importerSource, migration]) {
+for (const source of [variantSource, speciesChoicesSource, speciesPresentationSource, playerFacingSource, backgroundSource, embeddedSource, structuredRenderer, classTextSource, classModelSource, classGuideSource, contextPanelSource, importerSource, migration]) {
   assert.ok(!protectedPattern.test(source), "Forge source-presentation work crossed a protected map/travel boundary");
 }
 
-console.log("Forge source presentation validated: structured Species selectors, Genasi/Dragonborn families, Background rule rows, Class source tables/lists, subrace import support, and protected boundaries are intact.");
+console.log("Forge source presentation validated: compact persistent Species choices, selected Genasi/Gem projection, cleaned player-facing source tags, Background rule rows, expanded Class source-node coverage, subrace import support, and protected boundaries are intact.");

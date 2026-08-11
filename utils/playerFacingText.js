@@ -26,7 +26,7 @@ function cleanInlineMarkup(value) {
     .replace(/\{@(?:damage|dice|hit|chance)\s+([^}|]+)(?:\|[^}]*)?}/gi, "$1")
     .replace(/\{@(?:spell|item|creature|condition|skill|action|sense|language|race|class|subclass|feat|filter|book|adventure|variantrule)\s+([^}|]+)(?:\|[^}]*)?}/gi, "$1")
     .replace(/\{@(?:b|i|u|note|atk|h|dc)\s+([^}]*)}/gi, "$1")
-    .replace(/\{@[a-zA-Z]+\s+([^}]*)}/g, "$1")
+    .replace(/\{@[a-zA-Z0-9]+\s+([^}|]+)(?:\|[^}]*)?}/g, "$1")
     .replace(/\s+([,.;:!?])/g, "$1")
     .replace(/[ \t]+/g, " ")
     .trim();
