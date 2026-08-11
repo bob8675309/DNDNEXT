@@ -35,9 +35,25 @@ function traitSummaries(species, excluded = []) {
     .map((entry) => ({ name: entry.name, description: text(entry.description) }));
 }
 
+function movementFact(speed) {
+  if (speed == null || speed === "") return "";
+  if (Number.isFinite(Number(speed))) return `${Number(speed)} ft.`;
+  if (typeof speed !== "object") return "";
+  const walk = Number(speed.walk || 0);
+  const parts = [];
+  if (walk) parts.push(`${walk} ft. walking`);
+  for (const [key, label] of [["swim", "swimming"], ["fly", "flying"], ["climb", "climbing"], ["burrow", "burrowing"]]) {
+    const value = speed[key];
+    if (value === true && walk) parts.push(`${label} equal to walking speed`);
+    else if (Number.isFinite(Number(value)) && Number(value) > 0) parts.push(`${Number(value)} ft. ${label}`);
+  }
+  return parts.join(" • ");
+}
+
 function variantFacts(species) {
   const output = [];
-  if (species?.speed) output.push({ label: "Speed", value: `${Number(species.speed)} ft.` });
+  const movement = movementFact(species?.metadata?.speed ?? species?.speed);
+  if (movement) output.push({ label: "Speed", value: movement });
   if (species?.darkvision) output.push({ label: "Darkvision", value: `${Number(species.darkvision)} ft.` });
   return output;
 }
