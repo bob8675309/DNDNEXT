@@ -4,7 +4,11 @@ function uniqueText(values = []) {
   return [...new Set((Array.isArray(values) ? values : []).map((value) => String(value ?? "").trim()).filter(Boolean))];
 }
 
-function flattenEntryText(node) {
+const STRUCTURED_PERSISTENT_CHOICE_TRAITS = new Set([
+  "draconic-ancestry", "elven-lineage", "gnomish-lineage", "fiendish-legacy", "giant-ancestry", "shifting", "kobold-legacy", "animal-enhancement", "variable-trait",
+]);
+
+function flattenEntryText(node, { omitChoiceCollections = false } = {}) {
   const output = [];
   function walk(value) {
     if (value == null) return;
@@ -18,9 +22,7 @@ function flattenEntryText(node) {
       return;
     }
     if (typeof value !== "object") return;
-    // 5etools hanging-list entries carry the option identity in `name` and the rules in
-    // `entries`. Preserve that name before walking the rules so choices such as Goliath
-    // Giant Ancestry remain understandable instead of becoming an unlabeled wall of effects.
+    if (omitChoiceCollections && (value.type === "table" || value.type === "list")) return;
     if (value.type === "item" && value.name) {
       const itemName = formatPlayerFacingInline(value.name);
       if (itemName) output.push(`${itemName}.`);
@@ -105,8 +107,9 @@ export function extractSpeciesTraitDetails(metadata = {}) {
     }
     if (!entry || typeof entry !== "object") return null;
     const name = formatPlayerFacingInline(entry.name || entry.title || "Species Feature");
-    const description = formatPlayerFacingText(flattenEntryText(entry));
-    return name || description ? { name: name || "Species Feature", description } : null;
+    const structuredChoice = STRUCTURED_PERSISTENT_CHOICE_TRAITS.has(slug(name));
+    const description = formatPlayerFacingText(flattenEntryText(entry, { omitChoiceCollections: structuredChoice }));
+    return name || description ? { name: name || "Species Feature", description, structuredChoice } : null;
   }).filter(Boolean);
 }
 
@@ -167,8 +170,6 @@ export function extractSpeciesTraitChoiceRules(option = {}) {
     : extractSpeciesTraitDetails(option.metadata || {});
 
   return details.flatMap((detail) => {
-    // These traits are displayed here for rules reference, but their mutable proficiency state belongs
-    // to dedicated runtime authority rather than the permanent Species acquisition surface.
     if (runtimeOwnedTraitChoice(option, detail)) return [];
 
     const humanRule = humanChoiceRule(detail);
