@@ -1,21 +1,27 @@
 /* PR #170 signed-in smoke corrections: contrast, sticky class detail rail, and spell help. */
 
-/* The Class guide can be far taller than the catalogue column. Stretch the left column to
-   the grid row so its sticky feature dock remains eligible for the full scroll range. */
+/* The Class guide can be far taller than the catalogue column. Stretch the left grid item to
+   the full row height, but do not force height:100%: that resolves against the viewport-sized
+   scroll box and prematurely ends the sticky range. */
 .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 > .npc-forge-workspace {
   align-self: stretch;
-  height: 100%;
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
 }
 
 .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-selection {
   align-content: start;
-  height: 100%;
+  align-self: stretch;
+  height: auto;
   min-height: 100%;
+  overflow: visible;
 }
 
 .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-feature-dock {
   position: sticky;
   top: 12px;
+  align-self: start;
   z-index: 6;
   max-height: calc(100dvh - 185px);
   overflow: auto;
@@ -58,6 +64,77 @@
 .unified-player-character-forge .npc-forge-context-row-details b {
   color: #fff !important;
   font-weight: 800;
+}
+
+/* Source prose is easier to scan when named benefits remain separate paragraphs instead of
+   one dense imported block. The React formatter supplies the paragraph boundaries; these
+   rules keep the measure and vertical rhythm readable throughout purple rule cards. */
+.unified-player-character-forge .npc-forge-rule-copy {
+  display: grid;
+  gap: .58rem;
+  max-width: 78ch;
+  margin-top: .48rem;
+}
+
+.unified-player-character-forge .npc-forge-rule-copy > p {
+  max-width: 78ch;
+  margin: 0;
+  color: rgba(255, 255, 255, .84) !important;
+  font-size: .76rem;
+  line-height: 1.68;
+  text-wrap: pretty;
+}
+
+.unified-player-character-forge .npc-forge-context-row-details article {
+  display: grid;
+  gap: .35rem;
+}
+
+.unified-player-character-forge .npc-forge-context-row-details article + article {
+  margin-top: .65rem;
+  padding-top: .65rem;
+  border-top: 1px solid rgba(255, 255, 255, .07);
+}
+
+.unified-player-character-forge .npc-forge-background-row-controls {
+  display: grid;
+  gap: .65rem;
+}
+
+.unified-player-character-forge .npc-forge-background-source-fallback > div {
+  display: grid;
+  gap: .48rem;
+}
+
+.unified-player-character-forge .npc-forge-background-source-fallback details {
+  border: 1px solid rgba(168, 108, 255, .34);
+  border-radius: 9px;
+  background: linear-gradient(90deg, rgba(126, 72, 199, .13), rgba(88, 214, 199, .035));
+  padding: .55rem .65rem;
+}
+
+.unified-player-character-forge .npc-forge-background-source-fallback summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  cursor: pointer;
+  list-style: none;
+  color: #fff;
+  font-size: .7rem;
+  font-weight: 800;
+}
+
+/* Any resolver-only source panel that remains on later Forge steps uses the same purple
+   language as the owning feature cards instead of the old yellow warning treatment. */
+.unified-player-character-forge .npc-forge-source-choice-group.is-required {
+  border-color: rgba(168, 108, 255, .48) !important;
+  background: linear-gradient(120deg, rgba(126, 72, 199, .12), rgba(88, 214, 199, .035)) !important;
+}
+
+.unified-player-character-forge .npc-forge-source-choice-group.is-required > header em {
+  color: #eadfff !important;
+  background: rgba(126, 72, 199, .18) !important;
 }
 
 /* Background expanded-spell names now carry the same source-backed hover card used by
