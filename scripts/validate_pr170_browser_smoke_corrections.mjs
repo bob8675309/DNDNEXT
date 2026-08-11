@@ -42,7 +42,7 @@ assert.ok(!/MapPageClient|map_routes|map_route_points|advance_all_characters|wea
 
 for (const token of ["CASTING_ABILITY_KEYS", "castingAbilityField", "routeSpeciesCreationGroup", '"training"', '"spells"', "allowedCastingAbilities", "highest eligible final Intelligence, Wisdom, or Charisma"]) assert.ok(speciesRuntimeText.includes(token), `generic species choice routing missing ${token}`);
 for (const token of ["identity.name === \"astral elf\"", "identity.source === \"AAG\"", "trait === \"astral trance\""]) assert.ok(speciesRuntimeText.includes(token), `Astral Trance generic Forge exclusion missing ${token}`);
-for (const token of ["runtimeOwnedTraitChoice", 'species === "astral-elf"', 'source === "AAG"', 'trait === "astral-trance"', "if (runtimeOwnedTraitChoice(option, detail)) return []", 'value.type === "item"', "value.name"]) assert.ok(speciesPresentationText.includes(token), `species presentation source-preservation guard missing ${token}`);
+for (const token of ["runtimeOwnedTraitChoice", 'species === "astral-elf"', 'source === "AAG"', 'trait === "astral-trance"', "if (runtimeOwnedTraitChoice(option, detail)) return []", "STRUCTURED_PERSISTENT_CHOICE_TRAITS", "omitChoiceCollections"]) assert.ok(speciesPresentationText.includes(token), `species presentation source-preservation guard missing ${token}`);
 assert.ok(!speciesBonus.includes('placement="abilities" ownerType="feat"'), "Abilities must not resolve feat-owned nested source choices");
 for (const token of ["Selected:", "Training → Feats & Class Abilities"]) assert.ok(speciesBonus.includes(token), `Species Bonus acknowledgement missing ${token}`);
 for (const token of ["acquisitionOwnerType !== \"species-bonus\"", 'placement: "class"', 'resolverPlacement: "training"']) assert.ok(featRouting.includes(token), `Species Bonus feat routing missing ${token}`);
@@ -57,9 +57,9 @@ for (const token of ["Listed Option", "parentFeatureName", "normalized class-opt
 
 for (const token of ["backgroundFeatureTextForDisplay", "Consider customizing your spells", "ExpandedSpellList", 'from("spells_catalog")', "npc-forge-background-spell-name", "RuleCopy", 'label: "Languages"', "BackgroundSourceFallback", "featGroups", "toolGroups"]) assert.ok(context.includes(token), `Background integrated-choice/readability correction missing ${token}`);
 for (const token of ["NpcForgeEmbeddedSourceChoices", "sourceChoiceGroupsForPlacement", "sourceChoiceGroupsNeedInput", "sourceGroupMatchesTrait", "trainingGroups", "spellGroups", "Resolved in Training", "Resolved in Spells", "<h2>{option.name}</h2>", 'field.kind === "spell" || field.kind === "skill"']) assert.ok(context.includes(token), `Species step ownership/routing presentation missing ${token}`);
-for (const token of ["sourceChoiceGroupsHaveChoices", "sourceChoiceGroupsNeedInput", "sourceChoiceDisplayValue", "DropdownField", "ButtonField", "is-compact"]) assert.ok(embeddedSourceChoices.includes(token), `embedded source-choice renderer missing ${token}`);
+for (const token of ["sourceChoiceGroupsHaveChoices", "sourceChoiceGroupsNeedInput", "sourceChoiceDisplayValue", "DropdownField", "ButtonField", "SelectedOptionDetail", "is-compact"]) assert.ok(embeddedSourceChoices.includes(token), `embedded source-choice renderer missing ${token}`);
 for (const token of ["embeddedPlacement", 'placement === "species" || placement === "background"', "if (embeddedPlacement) return null", "second yellow panel"]) assert.ok(sourceChoiceDock.includes(token), `duplicate source-choice panel suppression missing ${token}`);
-for (const token of ["supplementalBackgroundDetails", "flattenSupplementalText", 'entry.type !== "entries"', "normalized.push(detail)"]) assert.ok(backgroundMechanicsText.includes(token), `supplemental background detail extraction missing ${token}`);
+for (const token of ["supplementalBackgroundDetails", "flattenSupplementalText", "structuredRuleText", "tableLooksOptional", "normalized.push(detail)"]) assert.ok(backgroundMechanicsText.includes(token), `supplemental background detail extraction missing ${token}`);
 
 for (const token of ["catalogueSummary", "futureUnlocks", "availableCount", "full canonical item text", "canonicalPoolCount"]) assert.ok(planHelperText.includes(token), `Artificer plan availability/detail model missing ${token}`);
 for (const token of ["ArtificerPlanCatalogueStatus", "plans available at Artificer level", "Locked plans are shown here for progression planning only", "canonical items in this legal pool"]) assert.ok(sourceChoices.includes(token), `Artificer plan presentation missing ${token}`);
@@ -127,17 +127,39 @@ const astralTranceForgeGroups = applySpeciesRuntimeChoiceAuthority({
 assert.equal(astralTranceForgeGroups.length, 0, "Astral Trance must remain a post-Long-Rest runtime choice, never a generic Forge source choice");
 
 const { extractSpeciesTraitChoiceRules, extractSpeciesTraitDetails } = await import(pathToFileURL(path.join(root, "utils/speciesPresentation.js")).href);
+const { buildSpeciesSourceChoiceGroups } = await import(pathToFileURL(path.join(root, "utils/playerForgeSpeciesChoices.js")).href);
 const embeddedAstralTranceRules = extractSpeciesTraitChoiceRules({
   name: "Astral Elf",
   source: "AAG",
   traitDetails: [{ name: "Astral Trance", description: "Whenever you finish this trance, you gain proficiency in one skill of your choice and retain it until your next long rest." }],
 });
 assert.equal(embeddedAstralTranceRules.length, 0, "Astral Trance must not render an embedded CHOOSE control on the Species feature card");
-const giantAncestryDetails = extractSpeciesTraitDetails({
-  traits: [{ name: "Giant Ancestry", type: "entries", entries: [{ type: "list", items: [{ name: "Cloud's Jaunt (Cloud Giant)", type: "item", entries: ["As a Bonus Action, teleport up to 30 feet."] }, { name: "Stone's Endurance (Stone Giant)", type: "item", entries: ["As a Reaction, reduce damage."] }] }] }],
-});
-assert.match(giantAncestryDetails[0].description, /Cloud's Jaunt \(Cloud Giant\)/, "Goliath source option names must survive flattened presentation");
-assert.match(giantAncestryDetails[0].description, /Stone's Endurance \(Stone Giant\)/, "Goliath ancestry effects must remain labeled");
+const giantAncestryFixture = {
+  id: "goliath-fixture",
+  name: "Goliath",
+  source: "XPHB",
+  metadata: {
+    traits: [{
+      name: "Giant Ancestry",
+      type: "entries",
+      entries: [{
+        type: "list",
+        items: [
+          { name: "Cloud's Jaunt (Cloud Giant)", type: "item", entries: ["As a Bonus Action, teleport up to 30 feet."] },
+          { name: "Stone's Endurance (Stone Giant)", type: "item", entries: ["As a Reaction, reduce damage."] },
+        ],
+      }],
+    }],
+  },
+};
+const giantAncestryDetails = extractSpeciesTraitDetails(giantAncestryFixture.metadata);
+assert.ok(!/Cloud's Jaunt|Stone's Endurance/.test(giantAncestryDetails[0].description), "Goliath selector options must not be duplicated into a flattened prose wall");
+const giantAncestryGroups = buildSpeciesSourceChoiceGroups({ species: giantAncestryFixture, level: 1, spells: [] });
+const giantAncestryGroup = giantAncestryGroups.find((group) => group.label === "Giant Ancestry");
+assert.equal(giantAncestryGroup?.fields?.[0]?.options?.length, 2, "Goliath fixture must expose its structured ancestry choices");
+assert.equal(giantAncestryGroup.fields[0].options[0].label, "Cloud's Jaunt (Cloud Giant)", "Goliath source option names must survive in the structured selector");
+assert.match(giantAncestryGroup.fields[0].options[0].description, /teleport up to 30 feet/i, "Goliath selector must preserve each option's rule summary");
+assert.equal(giantAncestryGroup.fields[0].options[1].label, "Stone's Endurance (Stone Giant)", "Goliath ancestry effects must remain individually labeled");
 
 const { backgroundFeatureDetails } = await import(pathToFileURL(path.join(root, "utils/backgroundMechanics.js")).href);
 const astralDrifterDetails = backgroundFeatureDetails({
@@ -146,7 +168,7 @@ const astralDrifterDetails = backgroundFeatureDetails({
   rawPayload: {
     entries: [
       { type: "entries", name: "Longevity", entries: ["You are 20d6 years older than you look, because you have spent that much time in the Astral Sea without aging."] },
-      { type: "entries", name: "Feature: Divine Contact", data: { isFeature: true }, entries: ["You gain the Magic Initiate feat.", { type: "table", rows: [[1, "A deity"]] }] },
+      { type: "entries", name: "Feature: Divine Contact", data: { isFeature: true }, entries: ["You gain the Magic Initiate feat.", "Roll on the Divine Contact table to determine which deity you encountered, or choose one with your GM.", { type: "table", caption: "Divine Contact", rows: [[1, "A deity"]] }] },
     ],
   },
 });
@@ -188,4 +210,4 @@ assert.equal(level2Plans[0].metadata.catalogueSummary.totalCount, 2, "availabili
 assert.equal(level2Plans[0].metadata.catalogueSummary.futureUnlocks[0].unlockLevel, 10, "future plan must be disclosed at its actual unlock level");
 assert.ok(level2Plans.every((group) => !group.fields[0].options.some((option) => option.key === "p2")), "future plan must remain non-selectable");
 
-console.log("PR #170 signed-in browser smoke corrections, including generic species skill/spell routing, automatic flexible casting, labeled ancestry mechanics, shared Class scrolling, opaque background spell help, integrated purple choices, canonical Artificer item cards, login completion, immediate Rest repaint, runtime-only Astral Trance, and protected-boundary checks, validated.");
+console.log("PR #170 signed-in browser smoke corrections, including generic species skill/spell routing, structured ancestry selectors, automatic flexible casting, shared Class scrolling, opaque background spell help, integrated purple choices, canonical Artificer item cards, login completion, immediate Rest repaint, runtime-only Astral Trance, and protected-boundary checks, validated.");
