@@ -8,6 +8,7 @@ This directory contains the project's living handoff, roadmap, architecture, and
 - `Documentation_Refresh_Manifest.md` — documentation precedence and current PR #170 checkpoint.
 - `PR170_Final_Acceptance_Status.md` — current migration/build/database/authenticated acceptance and remaining focused browser re-smoke.
 - `PR170_Browser_Smoke_Corrections_Status.md` — real signed-in browser findings, migration 90 Rage restoration, Forge presentation corrections, and re-smoke targets.
+- `Forge_Source_Presentation_and_Species_Variants_Status.md` — migration 91 Genasi subrace backfill, Genasi/Dragonborn parent-variant selectors, structured Species/Background/Class source rendering, and current re-smoke targets.
 - `Current_Development_Status_and_Roadmap.md` — broad platform roadmap/history; newer subsystem ledgers supersede older sections.
 - `Unified_Character_Forge_Status.md` — controlling Forge/progression/runtime ledger.
 
@@ -43,7 +44,7 @@ This directory contains the project's living handoff, roadmap, architecture, and
 - `Feat_Runtime_Expertise_Status.md` — Echoing Soul / Zhentarim Expertise lifecycle.
 - `Cartomancer_Runtime_Status.md` — Hidden Ace temporary access.
 
-Current cadence rule: persistent source-owned decisions belong to Forge/progression; rest decisions belong to runtime; per-use choices belong to action UI. Do not turn runtime choices into permanent Forge locks. A post-rest replacement opportunity is not automatically a missing choice: migration 89 distinguishes an inactive rest-cycle benefit from a still-active persistent selection. Migration 90 adds source-aware standalone Rest restoration for the sheet-side Rage action state without altering tactical combat state.
+Current cadence rule: persistent source-owned decisions belong to Forge/progression; rest decisions belong to runtime; per-use choices belong to action UI. Do not turn runtime choices into permanent Forge locks. A post-rest replacement opportunity is not automatically a missing choice: migration 89 distinguishes an inactive rest-cycle benefit from a still-active persistent selection. Migration 90 adds source-aware standalone Rest restoration for the sheet-side Rage action state without altering tactical combat state. Migration 91 is catalogue-only and restores missing MPMM Genasi subrace source rows for the unified Species variant presentation.
 
 ## Character sheet / inventory / crafting
 
