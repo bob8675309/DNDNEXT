@@ -32,10 +32,14 @@ function featureLookup(rows) {
   return map;
 }
 
-function featureDescription(name, level, lookup) {
+function featureSource(name, level, lookup) {
   const rows = lookup.get(normalized(name)) || [];
-  const exact = rows.find((row) => Number(row.level) === Number(level));
-  return formatPlayerFacingText(exact?.description || rows[0]?.description, "No imported description is available for this feature yet.");
+  const exact = rows.find((row) => Number(row.level) === Number(level)) || rows[0] || null;
+  return {
+    description: formatPlayerFacingText(exact?.description, "No imported description is available for this feature yet."),
+    entries: exact?.entries ?? null,
+    rawPayload: exact?.raw_payload ?? null,
+  };
 }
 
 function genericSubclassFeature(name) {
@@ -232,8 +236,14 @@ export function useNpcForgeClassGuideModel(selectedClass, level) {
 
   const rows = useMemo(() => levels.map((row) => {
     const baseNames = (Array.isArray(row.features) ? row.features : []).map(classFeatureName).filter(Boolean).filter((name) => !(preview && genericSubclassFeature(name)));
-    const subclassRows = preview ? guideSubclassFeatures(preview).filter((feature) => Number(feature.level) === Number(row.class_level)).map((feature) => ({ name: feature.name, source: preview.source, type: "subclass", description: formatPlayerFacingText(feature.description, "No imported description is available.") })) : [];
-    return { ...row, guideFeatures: [...baseNames.map((name) => ({ name, source: selectedClass?.source, type: "class", description: featureDescription(name, row.class_level, lookup) })), ...subclassRows] };
+    const subclassRows = preview ? guideSubclassFeatures(preview).filter((feature) => Number(feature.level) === Number(row.class_level)).map((feature) => ({ name: feature.name, source: preview.source, type: "subclass", description: formatPlayerFacingText(feature.description, "No imported description is available."), entries: feature.entries || null })) : [];
+    return {
+      ...row,
+      guideFeatures: [
+        ...baseNames.map((name) => ({ name, source: selectedClass?.source, type: "class", ...featureSource(name, row.class_level, lookup) })),
+        ...subclassRows,
+      ],
+    };
   }), [levels, lookup, preview, selectedClass?.source]);
 
   const resolveListedDetail = useCallback((label, parentFeature = null, levelOverride = null) => {
