@@ -18,6 +18,13 @@ function flattenEntryText(node) {
       return;
     }
     if (typeof value !== "object") return;
+    // 5etools hanging-list entries carry the option identity in `name` and the rules in
+    // `entries`. Preserve that name before walking the rules so choices such as Goliath
+    // Giant Ancestry remain understandable instead of becoming an unlabeled wall of effects.
+    if (value.type === "item" && value.name) {
+      const itemName = formatPlayerFacingInline(value.name);
+      if (itemName) output.push(`${itemName}.`);
+    }
     if (value.entry) walk(value.entry);
     if (value.entries) walk(value.entries);
     if (value.items) walk(value.items);
