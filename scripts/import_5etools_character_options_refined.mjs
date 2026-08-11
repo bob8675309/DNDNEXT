@@ -247,7 +247,7 @@ function summary(rows = []) {
   rows.forEach((row) => { byType[row.option_type] = (byType[row.option_type] || 0) + 1; bySource[row.source] = (bySource[row.source] || 0) + 1; });
   return { options: rows.length, byType, bySource };
 }
-function payload(rows, extra = {}) { return { summary: summary(rows), meta: { generated_at: new Date().toISOString(), importer: "scripts/import_5etools_character_options.mjs", copy_resolution: "backgrounds-species-and-subraces", ...extra }, rows }; }
+function payload(rows, extra = {}) { return { summary: summary(rows), meta: { generated_at: new Date().toISOString(), importer: "scripts/import_5etools_character_options.mjs", copy_resolution: "backgrounds-species-and-subraces", legacy_copy_resolution: "backgrounds-and-species", ...extra }, rows }; }
 function writeJson(filePath, value) { fs.mkdirSync(path.dirname(filePath), { recursive: true }); fs.writeFileSync(filePath, JSON.stringify(value, null, 2), "utf8"); console.log(`Wrote ${filePath}`); }
 function writeBatches(rows, outDir, chunkSize, source) {
   const resolved = path.resolve(process.cwd(), outDir); const label = String(source || "all-sources").toLowerCase().replace(/[^a-z0-9_-]+/g, "-"); let count = 0;
