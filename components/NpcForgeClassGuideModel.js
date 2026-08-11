@@ -60,6 +60,15 @@ function canonicalItemDescription(row = {}) {
   );
 }
 
+function listedLookupKeys(value = "") {
+  const raw = text(value);
+  const strippedAvailability = raw
+    .replace(/\s+[—–-]\s+(?:yes|no|available|unavailable|eligible|ineligible|locked|unlocked)\s*$/i, "")
+    .replace(/\s+\((?:yes|no|available|unavailable|eligible|ineligible|locked|unlocked)\)\s*$/i, "")
+    .trim();
+  return [...new Set([normalized(raw), normalized(strippedAvailability)].filter(Boolean))];
+}
+
 function listedDetailCatalog(optionalRows = [], itemRows = []) {
   const map = new Map();
   for (const row of optionalRows) {
@@ -83,16 +92,26 @@ function listedDetailCatalog(optionalRows = [], itemRows = []) {
     const source = text(row?.payload?.source || row?.source || "Campaign");
     const current = preferredItems.get(key);
     if (!current || itemSourceRank(source) < itemSourceRank(current.source)) {
+      const itemCard = {
+        ...(row?.payload && typeof row.payload === "object" ? row.payload : {}),
+        item_key: row?.item_key || row?.payload?.item_key || null,
+        item_name: text(row?.item_name || row?.payload?.name),
+        item_type: row?.item_type || row?.payload?.uiType || row?.payload?.type || null,
+        item_rarity: row?.item_rarity || row?.payload?.rarity || null,
+        item_description: description,
+        source,
+      };
       preferredItems.set(key, {
-        name: text(row?.item_name || row?.payload?.name),
+        name: itemCard.item_name,
         source,
         description: formatPlayerFacingText(description),
         detailKind: "item",
         metadata: {
-          itemKey: row?.item_key || row?.payload?.item_key || null,
-          itemType: row?.item_type || row?.payload?.uiType || null,
-          rarity: row?.item_rarity || row?.payload?.rarity || null,
+          itemKey: itemCard.item_key,
+          itemType: itemCard.item_type,
+          rarity: itemCard.item_rarity,
           attunement: row?.payload?.reqAttune || row?.payload?.attunement || null,
+          itemCard,
         },
       });
     }
@@ -219,10 +238,10 @@ export function useNpcForgeClassGuideModel(selectedClass, level) {
 
   const resolveListedDetail = useCallback((label, parentFeature = null, levelOverride = null) => {
     const name = text(label);
-    const matched = listDetailLookup.get(normalized(name)) || null;
+    const matched = listedLookupKeys(name).map((key) => listDetailLookup.get(key)).find(Boolean) || null;
     const parentName = text(parentFeature?.name || "class feature");
     return {
-      name,
+      name: matched?.name || name,
       source: matched?.source || text(parentFeature?.source || selectedClass?.source || "Campaign"),
       type: "listed-option",
       level: Number(levelOverride || parentFeature?.level || 0),
