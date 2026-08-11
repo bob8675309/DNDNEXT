@@ -1,10 +1,12 @@
 import {
   mergePreferredBackgrounds as refinedMergePreferredBackgrounds,
+  mergePreferredSpecies as refinedMergePreferredSpecies,
   normalizeBackgroundOption as refinedNormalizeBackgroundOption,
   optionMatchesQuery as refinedOptionMatchesQuery,
   slug,
 } from "./npcForgeCatalogRefined.js";
 import { playerFacingBackgroundName } from "./backgroundNeutralization.js";
+import { mergeSpeciesVariantFamilies } from "./speciesVariantFamilies.js";
 
 export * from "./npcForgeCatalogRefined.js";
 
@@ -25,6 +27,10 @@ export function normalizeBackgroundOption(row = {}) {
 
 export function mergePreferredBackgrounds(rows = []) {
   return refinedMergePreferredBackgrounds(rows).map(presentBackground);
+}
+
+export function mergePreferredSpecies(rows = []) {
+  return mergeSpeciesVariantFamilies(refinedMergePreferredSpecies(rows));
 }
 
 export function optionMatchesQuery(option = {}, query = "") {
