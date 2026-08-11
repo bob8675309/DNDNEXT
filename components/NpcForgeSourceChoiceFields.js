@@ -14,10 +14,16 @@ export default function NpcForgeSourceChoiceFields({ placement, ownerType = "", 
   const { state, toggleChoice, setChoice } = useNpcForgeSourceChoices();
   const [previewTarget, setPreviewTarget] = useState(null);
   const groups = sourceChoiceGroupsForPlacement(state, placement).filter((group) => !ownerType || group.ownerType === ownerType);
+  const embeddedPlacement = placement === "species" || placement === "background";
 
   useEffect(() => {
     setPreviewTarget(currentForgePreview());
   }, [placement, ownerType, groups.length]);
+
+  // Species and Background choices are rendered inside their owning purple rule cards by
+  // NpcForgeContextPanelRefined. Keeping this wrapper mounted preserves registration and
+  // completion authority without repeating the same decisions in a second yellow panel.
+  if (embeddedPlacement) return null;
 
   const fields = <SourceChoiceFields
     groups={groups}
@@ -28,7 +34,7 @@ export default function NpcForgeSourceChoiceFields({ placement, ownerType = "", 
     onSet={setChoice}
   />;
 
-  // Player Forge keeps source-owned decision panels in the right information rail.
+  // Resolver-only source groups on later steps still belong in the right information rail.
   // Falling back inline preserves standalone/test rendering when no Forge preview exists.
   return previewTarget ? createPortal(fields, previewTarget) : fields;
 }
