@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { formatPlayerFacingText } from "../utils/playerFacingText";
+import SourceRuleContent from "./SourceRuleContent";
 
 const LEVEL_BOILERPLATE = /^\d+(?:st|nd|rd|th)-level\s+[a-z][a-z\s'-]*\s+feature$/i;
 const INTERNAL_ABILITY_CODE = /^(?:str|dex|con|int|wis|cha)$/i;
@@ -94,15 +95,18 @@ function renderSection(section, index, onListItemDetail) {
   return <p key={`${section.type}-${index}`}>{section.text}</p>;
 }
 
-export default function ClassFeatureText({ text = "", fallback = "", compact = false, onListItemDetail = null }) {
-  const sections = useMemo(() => classFeatureSections(text, fallback), [fallback, text]);
+export default function ClassFeatureText({ text = "", entries = null, fallback = "", compact = false, onListItemDetail = null }) {
+  const hasStructuredEntries = entries != null && (Array.isArray(entries) ? entries.length > 0 : true);
+  const sections = useMemo(() => hasStructuredEntries ? [] : classFeatureSections(text, fallback), [fallback, hasStructuredEntries, text]);
   const visibleSections = compact ? sections.slice(0, COMPACT_VISIBLE_SECTIONS) : sections;
   const hiddenSections = compact ? sections.slice(COMPACT_VISIBLE_SECTIONS) : [];
 
+  if (hasStructuredEntries && !compact) return <SourceRuleContent entries={entries} text={text} fallback={fallback} onListItemDetail={onListItemDetail} />;
+
   return (
     <div className={`class-feature-text ${compact ? "is-compact" : ""}`}>
-      {visibleSections.map((section, index) => renderSection(section, index, onListItemDetail))}
-      {hiddenSections.length ? (
+      {hasStructuredEntries ? <SourceRuleContent entries={entries} text={text} fallback={fallback} onListItemDetail={onListItemDetail} /> : visibleSections.map((section, index) => renderSection(section, index, onListItemDetail))}
+      {!hasStructuredEntries && hiddenSections.length ? (
         <details className="class-feature-text__compact-more" onClick={keepNestedDisclosureLocal} onKeyDown={keepNestedDisclosureLocal}>
           <summary>Full feature rules</summary>
           <div>{hiddenSections.map((section, index) => renderSection(section, index + COMPACT_VISIBLE_SECTIONS, onListItemDetail))}</div>
