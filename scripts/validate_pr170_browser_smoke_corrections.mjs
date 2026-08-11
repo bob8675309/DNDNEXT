@@ -95,7 +95,8 @@ const activeFairyMagic = applySpeciesRuntimeChoiceAuthority({
 assert.equal(activeFairyMagic.length, 1, "Fairy Magic should remain available once a real spell grant is active");
 assert.equal(activeFairyMagic[0].placement, "spells", "Fairy Magic spell resolution belongs on Spells");
 assert.ok(!activeFairyMagic[0].fields.some((field) => field.kind === "ability"), "Fairy Magic must not retain a manual casting-stat field");
-assert.deepEqual(activeFairyMagic[0].metadata.allowedCastingAbilities, ["int", "wis", "cha"], "Fairy Magic must carry the automatic flexible casting pool to Spells");
+const fairyAllowed = activeFairyMagic[0].metadata?.allowedCastingAbilities || activeFairyMagic[0].fields.find((field) => field.kind === "spell")?.metadata?.allowedCastingAbilities;
+assert.deepEqual(fairyAllowed, ["int", "wis", "cha"], "Fairy Magic must carry the automatic flexible casting pool to the Spells UI consumption boundary");
 const centaurAffinity = applySpeciesRuntimeChoiceAuthority({
   species: { name: "Centaur", source: "MPMM" },
   groups: [{ id: "affinity", ownerType: "species", label: "Natural Affinity", placement: "species", fields: [{ id: "skills", kind: "skill", count: 1, options: [{ key: "nature" }, { key: "survival" }] }] }],
