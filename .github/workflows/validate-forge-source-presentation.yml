@@ -1,0 +1,66 @@
+name: Validate Forge source presentation
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "components/ClassFeatureText.js"
+      - "components/NpcForgeClassFeatureDock.js"
+      - "components/NpcForgeClassGuide.js"
+      - "components/NpcForgeClassGuideModel.js"
+      - "components/NpcForgeEmbeddedSourceChoices.js"
+      - "components/SourceRuleContent.js"
+      - "scripts/import_5etools_character_options_refined.mjs"
+      - "scripts/validate_forge_source_presentation.mjs"
+      - "sql/20260811_91_genasi_subrace_catalog.sql"
+      - "utils/npcForgeCatalog.js"
+      - "utils/playerForgeSpeciesChoices.js"
+      - "utils/speciesPresentation.js"
+      - "utils/speciesVariantFamilies.js"
+      - ".github/workflows/validate-forge-source-presentation.yml"
+  push:
+    branches:
+      - "agent/character-forge-resilience-presentation"
+    paths:
+      - "components/ClassFeatureText.js"
+      - "components/NpcForgeClassFeatureDock.js"
+      - "components/NpcForgeClassGuide.js"
+      - "components/NpcForgeClassGuideModel.js"
+      - "components/NpcForgeEmbeddedSourceChoices.js"
+      - "components/SourceRuleContent.js"
+      - "scripts/import_5etools_character_options_refined.mjs"
+      - "scripts/validate_forge_source_presentation.mjs"
+      - "sql/20260811_91_genasi_subrace_catalog.sql"
+      - "utils/npcForgeCatalog.js"
+      - "utils/playerForgeSpeciesChoices.js"
+      - "utils/speciesPresentation.js"
+      - "utils/speciesVariantFamilies.js"
+      - ".github/workflows/validate-forge-source-presentation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate structured source presentation
+        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_source_presentation.mjs
+
+      - name: Run production build gate
+        run: node scripts/vercel_build_v2.mjs
