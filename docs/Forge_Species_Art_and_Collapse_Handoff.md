@@ -4,6 +4,7 @@ Status date: 2026-08-12
 PR: #170 (`agent/character-forge-resilience-presentation`)
 Merge status: OPEN / UNMERGED — merge only after explicit user approval
 Database authority: migration 93 — `20260812042950 aven_subrace_catalog`
+Validated code/art checkpoint: `249a1e1993d8c4b3c74f9d1bc6775e5fc8da294b` — 33/33 PR-triggered workflows green
 
 ## Protected scope
 
@@ -90,7 +91,7 @@ An original full-body Fire Genasi illustration was generated and extracted local
 
 Do **not** treat Fire Genasi as completed artwork yet.
 
-The corrupt/truncated `public/media/species/fire-genasi.webp` is being removed from the branch, and Fire Genasi returns to the explicit temporary Genasi-family portrait treatment until a reliable complete binary can be committed.
+The corrupt/truncated `public/media/species/fire-genasi.webp` was removed from the branch in `249a1e1993d8c4b3c74f9d1bc6775e5fc8da294b`, and Fire Genasi now uses the explicit temporary Genasi-family portrait treatment until a reliable complete binary can be committed.
 
 Do not weaken the file-size/art validator to accept a truncated image.
 
@@ -179,7 +180,11 @@ The first binary repair attempt was:
 
 `f25fb004c7df6ccc011fd0018ac6a04f328628f2`
 
-The focused validator proved Gold was viable but Fire remained truncated; resume from the current PR head rather than assuming either SHA above is still current.
+The corrected validated checkpoint is:
+
+`249a1e1993d8c4b3c74f9d1bc6775e5fc8da294b` — `Keep unfinished Species art explicit`
+
+That checkpoint keeps Gold Dragonborn as the only newly dedicated child file, removes the truncated Fire Genasi file, and leaves unfinished child art explicitly on the temporary family-art treatment.
 
 ## Validation authority
 
@@ -195,7 +200,16 @@ Required validators:
 - `scripts/validate_forge_species_catalog_portraits.mjs`;
 - production build gate.
 
-The portrait/collapse validator must prove:
+For exact checkpoint `249a1e1993d8c4b3c74f9d1bc6775e5fc8da294b`:
+
+- original structured source presentation passed;
+- established Species catalogue family validator passed;
+- expanded Species family validator passed;
+- Species catalogue portrait/collapse validator passed;
+- focused production build passed;
+- all 33 PR-triggered workflows completed successfully, including NPC Forge, nested choices, source magic, progression, equipment, portrait, runtime-choice, Artificer, and Primal Companion gates.
+
+The portrait/collapse validator proves:
 
 - expansion state is independent from selected state;
 - parent selection can open a list without making expansion the choice authority;
@@ -216,7 +230,7 @@ Supabase remains through migration 93:
 
 `20260812042950 aven_subrace_catalog`
 
-Last verified production counts:
+Re-verified after the validated Species presentation checkpoint:
 
 - raw Species: 166
 - preferred Species: 102
@@ -229,7 +243,7 @@ Last verified production counts:
 - map_routes: 4
 - map_route_points: 9
 
-Do not create a migration to store Forge art or expand/collapse state.
+No database counts changed during the chevron/description/artwork work.
 
 ## Browser re-smoke checklist
 
