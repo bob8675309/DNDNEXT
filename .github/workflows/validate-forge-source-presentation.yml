@@ -86,10 +86,11 @@ jobs:
         shell: bash
         run: |
           set +e
-          node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_species_catalog_families.mjs 2> >(tee /tmp/species-family-error >&2)
+          output=$(node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_species_catalog_families.mjs 2>&1)
           status=$?
+          printf '%s\n' "$output"
           if [ "$status" -ne 0 ]; then
-            message=$(tr '\n' ' ' < /tmp/species-family-error | tail -c 1800)
+            message=$(printf '%s' "$output" | tr '\n' ' ' | tail -c 2400)
             echo "::error title=Established Species family validator::${message}"
             exit "$status"
           fi
