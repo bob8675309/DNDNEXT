@@ -72,17 +72,16 @@ Always inspect live grants/functions before modifying authenticated `SECURITY DE
 
 PR #170 remains open and unmerged on `agent/character-forge-resilience-presentation`.
 
-Last fully validated pre-artwork runtime/source checkpoint:
+Exact validated Species presentation/artwork checkpoint:
 
-`d2b64bd1128a0457393283a463fddd71cc7c9094` — `Preserve canonical Species family labels`
+`7e69443a13058e2e9399a9c26922b2b82253f898` — `Promote Fire Genasi dedicated Forge artwork`
 
-That exact head completed 33/33 PR-triggered workflows successfully.
+That exact head completed **33/33 PR-triggered workflows successfully** and Vercel deployment succeeded. It preserves the established family/chevron behavior, keeps canonical artwork resolution stable outside the Forge, and has two newly committed dedicated child assets:
 
-Active Species presentation/artwork work is documented in `Forge_Species_Art_and_Collapse_Handoff.md`. The first dedicated generated child-art commit is:
+- `public/media/species/fire-genasi.webp`
+- `public/media/species/gold-dragonborn.webp`
 
-`a6fe9843ee4f5b5bb085ef6d4ff1d088d5032c59` — `Add first dedicated Species child artwork batch`
-
-At the time this index entry was written, that newer head was entering CI and therefore does **not** supersede `d2b64bd...` as the last fully validated runtime/source checkpoint until its workflows complete. Always re-fetch PR #170 and CI before continuing.
+The active continuation ledger is `Forge_Species_Art_and_Collapse_Handoff.md`. It records the Fire Genasi binary-upload recovery, exact Git-blob integrity check, remaining art queue, validation contracts, database boundary, and browser re-smoke checklist. Documentation-only descendants do not supersede `7e69443...` as the exact tested runtime/source/art tree.
 
 Live database authority remains migration 93:
 
