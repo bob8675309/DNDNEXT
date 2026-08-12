@@ -68,24 +68,31 @@ for (const token of [
 const goldArtworkPath = path.join(root, "public/media/species/gold-dragonborn.webp");
 assert.ok(fs.existsSync(goldArtworkPath), "dedicated generated Species artwork missing public/media/species/gold-dragonborn.webp");
 assert.ok(fs.statSync(goldArtworkPath).size > 20000, "Gold Dragonborn must contain a real generated image rather than a placeholder");
-assert.ok(!fs.existsSync(path.join(root, "public/media/species/fire-genasi.webp")), "Fire Genasi must not claim a dedicated file until the full binary is committed reliably");
+
+const fireArtworkPath = path.join(root, "public/media/species/fire-genasi.webp");
+assert.ok(fs.existsSync(fireArtworkPath), "dedicated generated Species artwork missing public/media/species/fire-genasi.webp");
+assert.ok(fs.statSync(fireArtworkPath).size > 12000, "Fire Genasi must contain a real generated image rather than a placeholder");
+const fireArtwork = fs.readFileSync(fireArtworkPath);
+assert.equal(fireArtwork.subarray(0, 4).toString("ascii"), "RIFF", "Fire Genasi dedicated asset must be a valid RIFF WebP container");
+assert.equal(fireArtwork.subarray(8, 12).toString("ascii"), "WEBP", "Fire Genasi dedicated asset must be a valid WebP image");
 
 const { speciesArtworkFor, speciesPortraitArtworkFor, hasDedicatedSpeciesArtwork, hasSpeciesPortraitArtwork } = await import(pathToFileURL(path.join(root, "utils/speciesArtwork.js")).href);
 const { speciesFlavorLore, speciesCatalogSummary } = await import(pathToFileURL(path.join(root, "utils/speciesLore.js")).href);
 
 // Existing canonical artwork contracts remain stable for non-Forge consumers.
 assert.equal(speciesArtworkFor("Water Genasi"), "/media/species/genasi.webp", "canonical Water Genasi source artwork must remain the shared Genasi image");
+assert.equal(speciesArtworkFor("Fire Genasi"), "/media/species/genasi.webp", "canonical Fire Genasi source artwork must remain the shared Genasi image outside the Forge");
 assert.equal(speciesArtworkFor("Gold Dragonborn"), "/media/species/dragonborn-metallic.webp", "canonical Gold Dragonborn source artwork must remain the metallic family image outside the Forge");
 assert.equal(speciesArtworkFor("Amethyst Gem Dragonborn"), "/media/species/dragonborn-gem.webp", "canonical Gem Dragonborn source artwork must remain the Gem family image");
 assert.equal(hasDedicatedSpeciesArtwork("Water Genasi"), true, "canonical shared aliases must remain recognized as intentional artwork");
 
 // Dedicated generated files win in the Forge as soon as they are committed.
+assert.equal(speciesPortraitArtworkFor("Fire Genasi"), "/media/species/fire-genasi.webp", "Fire Genasi must use its generated dedicated portrait");
 assert.equal(speciesPortraitArtworkFor("Gold Dragonborn"), "/media/species/gold-dragonborn.webp", "Gold Dragonborn must use its generated dedicated portrait");
 
 const portraitCases = [
   ["Air Genasi", "genasi.webp?portrait=air-genasi"],
   ["Earth Genasi", "genasi.webp?portrait=earth-genasi"],
-  ["Fire Genasi", "genasi.webp?portrait=fire-genasi"],
   ["Water Genasi", "genasi.webp?portrait=water-genasi"],
   ["Amethyst Gem Dragonborn", "dragonborn-gem.webp?portrait=amethyst-gem-dragonborn"],
   ["Hawk-Headed Aven", "aven.webp?portrait=hawk-headed-aven"],
@@ -107,7 +114,9 @@ for (const [name, expected] of portraitCases) {
   assert.ok(summary.length >= 30 && summary.length <= 109, `${name} must have a compact catalogue summary`);
 }
 
+assert.equal(hasSpeciesPortraitArtwork("Fire Genasi"), true, "Fire Genasi dedicated generated art must count as Forge portrait coverage");
 assert.equal(hasSpeciesPortraitArtwork("Gold Dragonborn"), true, "Gold Dragonborn dedicated generated art must count as Forge portrait coverage");
+assert.ok(speciesFlavorLore("Fire Genasi").length >= 70, "Fire Genasi must retain unique lore while dedicated artwork rolls out");
 assert.ok(speciesFlavorLore("Gold Dragonborn").length >= 70, "Gold Dragonborn must retain unique lore while dedicated artwork rolls out");
 assert.equal(speciesPortraitArtworkFor("Human (Innistrad)"), "/media/species/human-innistrad.webp", "existing dedicated setting artwork must remain authoritative in the Forge");
 assert.match(speciesFlavorLore("Water Genasi"), /breathe both air and water/i, "Water Genasi description must remain lineage-specific");
