@@ -92,8 +92,8 @@ const SPECIES_ARTWORK = new Set([
 ]);
 
 // Canonical source-book artwork aliases. These are consumed outside the Forge,
-// so they intentionally remain stable even when the catalogue applies a more
-// distinctive presentation-only crop/tone treatment.
+// so they intentionally remain stable even while the catalogue rolls out
+// dedicated child/variant artwork incrementally.
 const SPECIES_ARTWORK_ALIASES = {
   "dwarf-kaladesh": "dwarf",
   faerie: "fairy",
@@ -140,6 +140,15 @@ const SPECIES_ARTWORK_ALIASES = {
   "shadowmoor-kithkin": "kithkin",
 };
 
+// Approved final-art policy: fixed-appearance child Species should eventually
+// own a real generated asset. This set tracks files that have actually been
+// created and committed. Remaining child entries keep the temporary Forge-only
+// portrait treatment until their dedicated file is ready.
+const SPECIES_DEDICATED_VARIANT_ARTWORK = new Set([
+  "fire-genasi",
+  "gold-dragonborn",
+]);
+
 const SPECIES_VARIANT_PORTRAITS = new Set([
   "air-genasi", "earth-genasi", "fire-genasi", "water-genasi",
   "black-dragonborn", "blue-dragonborn", "green-dragonborn", "red-dragonborn", "white-dragonborn",
@@ -171,6 +180,7 @@ export function speciesArtworkFor(species = "") {
 
 export function speciesPortraitArtworkFor(species = "") {
   const key = normalizeSpeciesArtworkKey(species);
+  if (SPECIES_DEDICATED_VARIANT_ARTWORK.has(key)) return `/media/species/${key}.webp`;
   const canonical = speciesArtworkFor(species);
   return SPECIES_VARIANT_PORTRAITS.has(key)
     ? `${canonical}?portrait=${encodeURIComponent(key)}`
@@ -184,7 +194,9 @@ export function hasDedicatedSpeciesArtwork(species = "") {
 
 export function hasSpeciesPortraitArtwork(species = "") {
   const key = normalizeSpeciesArtworkKey(species);
-  return hasDedicatedSpeciesArtwork(species) || SPECIES_VARIANT_PORTRAITS.has(key);
+  return hasDedicatedSpeciesArtwork(species)
+    || SPECIES_DEDICATED_VARIANT_ARTWORK.has(key)
+    || SPECIES_VARIANT_PORTRAITS.has(key);
 }
 
 export function handleSpeciesArtworkError(event) {

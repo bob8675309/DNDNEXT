@@ -31,10 +31,12 @@ assert.ok(coreSource.includes("expanded && parentSelected && family"), "family c
 assert.ok(coreSource.includes("expanded && sourceVariants.length"), "setting children must render from independent expanded state");
 
 for (const token of [
+  "SPECIES_DEDICATED_VARIANT_ARTWORK",
   "SPECIES_VARIANT_PORTRAITS",
   "speciesPortraitArtworkFor",
-  "air-genasi",
+  "fire-genasi",
   "gold-dragonborn",
+  "air-genasi",
   "hawk-headed-aven",
   "drow",
   "forest-gnome",
@@ -63,18 +65,28 @@ for (const token of [
   "speciesCatalogSummary",
 ]) assert.ok(loreSource.includes(token), `Species catalogue lore coverage missing ${token}`);
 
+for (const file of ["public/media/species/fire-genasi.webp", "public/media/species/gold-dragonborn.webp"]) {
+  assert.ok(fs.existsSync(path.join(root, file)), `dedicated generated Species artwork missing ${file}`);
+  assert.ok(fs.statSync(path.join(root, file)).size > 20000, `${file} must contain a real generated image rather than a placeholder`);
+}
+
 const { speciesArtworkFor, speciesPortraitArtworkFor, hasDedicatedSpeciesArtwork, hasSpeciesPortraitArtwork } = await import(pathToFileURL(path.join(root, "utils/speciesArtwork.js")).href);
 const { speciesFlavorLore, speciesCatalogSummary } = await import(pathToFileURL(path.join(root, "utils/speciesLore.js")).href);
 
-// Existing canonical artwork contracts remain stable for all non-Forge consumers.
+// Existing canonical artwork contracts remain stable for non-Forge consumers.
 assert.equal(speciesArtworkFor("Water Genasi"), "/media/species/genasi.webp", "canonical Water Genasi source artwork must remain the shared Genasi image");
-assert.equal(speciesArtworkFor("Gold Dragonborn"), "/media/species/dragonborn-metallic.webp", "canonical Gold Dragonborn source artwork must remain the metallic family image");
+assert.equal(speciesArtworkFor("Gold Dragonborn"), "/media/species/dragonborn-metallic.webp", "canonical Gold Dragonborn source artwork must remain the metallic family image outside the Forge");
 assert.equal(speciesArtworkFor("Amethyst Gem Dragonborn"), "/media/species/dragonborn-gem.webp", "canonical Gem Dragonborn source artwork must remain the Gem family image");
 assert.equal(hasDedicatedSpeciesArtwork("Water Genasi"), true, "canonical shared aliases must remain recognized as intentional artwork");
 
+// Dedicated generated files win in the Forge as soon as they are committed.
+assert.equal(speciesPortraitArtworkFor("Fire Genasi"), "/media/species/fire-genasi.webp", "Fire Genasi must use its generated dedicated portrait");
+assert.equal(speciesPortraitArtworkFor("Gold Dragonborn"), "/media/species/gold-dragonborn.webp", "Gold Dragonborn must use its generated dedicated portrait");
+
 const portraitCases = [
   ["Air Genasi", "genasi.webp?portrait=air-genasi"],
-  ["Gold Dragonborn", "dragonborn-metallic.webp?portrait=gold-dragonborn"],
+  ["Earth Genasi", "genasi.webp?portrait=earth-genasi"],
+  ["Water Genasi", "genasi.webp?portrait=water-genasi"],
   ["Amethyst Gem Dragonborn", "dragonborn-gem.webp?portrait=amethyst-gem-dragonborn"],
   ["Hawk-Headed Aven", "aven.webp?portrait=hawk-headed-aven"],
   ["Drow", "elf.webp?portrait=drow"],
@@ -87,12 +99,17 @@ const portraitCases = [
   ["Orc (Ixalan)", "orc.webp?portrait=orc-ixalan"],
 ];
 for (const [name, expected] of portraitCases) {
-  assert.ok(speciesPortraitArtworkFor(name).endsWith(expected), `${name} must resolve a child-specific Forge portrait presentation`);
-  assert.equal(hasSpeciesPortraitArtwork(name), true, `${name} must be recognized as having an intentional Forge portrait presentation`);
+  assert.ok(speciesPortraitArtworkFor(name).endsWith(expected), `${name} must retain an explicit temporary Forge portrait presentation until dedicated art is committed`);
+  assert.equal(hasSpeciesPortraitArtwork(name), true, `${name} must be recognized as having intentional Forge portrait coverage`);
   const lore = speciesFlavorLore(name);
   assert.ok(lore.length >= 70, `${name} must have a meaningful unique description`);
   const summary = speciesCatalogSummary(name);
   assert.ok(summary.length >= 30 && summary.length <= 109, `${name} must have a compact catalogue summary`);
+}
+
+for (const name of ["Fire Genasi", "Gold Dragonborn"]) {
+  assert.equal(hasSpeciesPortraitArtwork(name), true, `${name} dedicated generated art must count as Forge portrait coverage`);
+  assert.ok(speciesFlavorLore(name).length >= 70, `${name} must retain unique lore while dedicated artwork rolls out`);
 }
 
 assert.equal(speciesPortraitArtworkFor("Human (Innistrad)"), "/media/species/human-innistrad.webp", "existing dedicated setting artwork must remain authoritative in the Forge");
@@ -103,4 +120,4 @@ assert.doesNotMatch(speciesFlavorLore("Hawk-Headed Aven"), /Naktamun|Hekma|God-P
 
 for (const source of [coreSource, artworkSource, loreSource]) assert.ok(!protectedPattern.test(source), "Species portrait/catalogue work crossed a protected map/travel boundary");
 
-console.log("Forge Species catalogue portraits validated: expandable parents have independent chevrons, parent/child rows carry portraits and concise lore, canonical artwork remains stable, child visual treatments are presentation-only, campaign-specific Aven plot text is excluded, and protected map/travel boundaries remain untouched.");
+console.log("Forge Species catalogue portraits validated: expandable parents have independent chevrons, parent/child rows carry concise unique lore, canonical artwork remains stable outside the Forge, dedicated generated child files win when present, temporary family-image treatments remain explicit for unfinished art, and protected map/travel boundaries remain untouched.");
