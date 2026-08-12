@@ -107,6 +107,8 @@ function genasiFamily(rows) {
             variantSpeciesId: row.id,
             variantSource: row.source,
             catalogLabel: displayName,
+            catalogDisplayName: displayName,
+            catalogArtworkName: "Genasi",
             facts: variantFacts(row),
             traits: traitSummaries(row, ["Size", "Darkvision"]),
             presentation: presentationMetadata(row, { selectorTraitName: "Elemental Lineage", selectorDescription: helper, replaceParentTraits: true, displayName, artworkName: "Genasi" }),
@@ -159,15 +161,17 @@ function dragonbornFamily(rows) {
   const helper = "Choose one draconic ancestry. Standard chromatic and metallic colors use the 2024 Player's Handbook Dragonborn rules; Gem ancestries use their Fizban's Treasury of Dragons traits and are labeled separately.";
   const standard = tableOptions(parent, "Draconic Ancestry", "dragonborn-ancestry", "dragonborn-").map((option) => {
     const displayName = `${option.value} Dragonborn`;
+    const artworkName = standardDragonbornArtwork(option.value);
     return {
       ...option,
       metadata: {
         ...(option.metadata || {}),
         catalogLabel: displayName,
+        catalogDisplayName: displayName,
+        catalogArtworkName: artworkName,
         ruleFamily: "XPHB Dragonborn",
         facts: variantFacts(parent),
         traits: traitSummaries(parent, ["Draconic Ancestry"]),
-        presentation: presentationMetadata(parent, { selectorTraitName: "Draconic Ancestry", selectorDescription: helper, replaceParentTraits: true, displayName, artworkName: standardDragonbornArtwork(option.value) }),
       },
     };
   });
@@ -180,6 +184,8 @@ function dragonbornFamily(rows) {
       metadata: {
         ...(option.metadata || {}),
         catalogLabel: displayName,
+        catalogDisplayName: displayName,
+        catalogArtworkName: "Dragonborn (Gem)",
         ruleFamily: "FTD Gem Dragonborn",
         familySpeciesName: gem.name,
         familySpeciesId: gem.id,

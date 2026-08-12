@@ -86,16 +86,21 @@ export function projectCatalogSpeciesFamilySelection(projectedSpecies = null, so
   const nextDetails = selectorIndex >= 0
     ? details.map((detail, index) => index === selectorIndex ? summary : detail)
     : [summary, ...details];
+  const displayName = text(binding.selected.metadata?.catalogDisplayName || binding.selected.metadata?.catalogLabel);
+  const artworkName = text(binding.selected.metadata?.catalogArtworkName || projectedSpecies.metadata?.presentationArtworkName);
 
   return {
     ...projectedSpecies,
+    name: displayName || projectedSpecies.name,
     traits: mergeTraitNames(nextDetails, projectedSpecies.traits),
     traitDetails: nextDetails,
     metadata: {
       ...(projectedSpecies.metadata || {}),
+      ...(artworkName ? { presentationArtworkName: artworkName } : {}),
       selectedCatalogSpeciesFamily: {
         family: text(binding.choice.id),
         label: text(binding.selected.label),
+        displayName: displayName || null,
         source: text(binding.selected.source),
         ruleFamily: text(binding.selected.metadata?.ruleFamily) || null,
       },

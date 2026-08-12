@@ -17,8 +17,8 @@ const genasiRestoreSql = read("sql/20260811_92_genasi_source_detail_restore.sql"
 for (const token of ["SpeciesCatalogFamilySubmenu", "speciesVariantChoiceBinding", "speciesVariantUsesCatalogSubmenu", "setChoice(group.id, field.id, [option.key])", "npc-forge-catalog-family-option", "option.metadata?.catalogLabel || option.label", "setChoice(binding.group.id, binding.field.id, [])"]) assert.ok(coreSource.includes(token), `left Species family submenu missing ${token}`);
 assert.ok(!coreSource.includes("<select value={selectedKey}"), "Species family submenu must use indented catalogue rows, not a dropdown");
 for (const token of ["NpcForgeSourceChoiceContext.Provider", "sourceChoiceGroupUsesCatalogSpeciesFamily", "projectSelectedSpeciesVariant", "projectCatalogSpeciesFamilySelection", "groups: (sourceChoiceState.groups || []).filter"]) assert.ok(panelSource.includes(token), `right Species presentation filtering missing ${token}`);
-for (const token of ["genasi-elemental-lineage", "dragonborn-ancestry", "speciesVariantChoiceBinding", "selectedCatalogSpeciesFamily", "projectCatalogSpeciesFamilySelection"]) assert.ok(familySource.includes(token), `catalogue Species family helper missing ${token}`);
-for (const token of ["displayName", "catalogLabel", "presentationArtworkName", "Dragonborn (Chromatic)", "Dragonborn (Metallic)", "Dragonborn (Gem)"]) assert.ok(variantSource.includes(token), `selected Species family presentation missing ${token}`);
+for (const token of ["genasi-elemental-lineage", "dragonborn-ancestry", "speciesVariantChoiceBinding", "selectedCatalogSpeciesFamily", "projectCatalogSpeciesFamilySelection", "catalogDisplayName", "catalogArtworkName"]) assert.ok(familySource.includes(token) || variantSource.includes(token), `catalogue Species family helper missing ${token}`);
+for (const token of ["displayName", "catalogLabel", "catalogDisplayName", "catalogArtworkName", "presentationArtworkName", "Dragonborn (Chromatic)", "Dragonborn (Metallic)", "Dragonborn (Gem)"]) assert.ok(variantSource.includes(token) || familySource.includes(token), `selected Species family presentation missing ${token}`);
 for (const token of ["air-genasi", "water-genasi", "black-dragonborn", "gold-dragonborn", "amethyst-gem-dragonborn"]) assert.ok(artworkSource.includes(token), `selected Species artwork alias missing ${token}`);
 for (const token of ["without requiring a material component", "using any spell slots", "sourceAudit", "5etools MPMM source audit"]) assert.ok(genasiRestoreSql.includes(token), `Genasi source-detail restore migration missing ${token}`);
 assert.ok(!familySource.includes("giant-ancestry"), "Goliath Giant Ancestry must not be promoted into the catalogue family submenu");
@@ -88,9 +88,10 @@ const black = dragonbornBinding.field.options.find((option) => option.value === 
 assert.equal(black?.label, "Black", "standard Dragonborn canonical source-choice label must remain stable");
 assert.equal(black?.metadata?.catalogLabel, "Black Dragonborn", "standard Dragonborn child row may use a richer catalogue-only label");
 const blackSelections = { [dragonbornBinding.group.id]: { [dragonbornBinding.field.id]: [black.key] } };
+assert.equal(projectSelectedSpeciesVariant(dragonborn, dragonbornGroups, blackSelections), dragonborn, "standard XPHB ancestry must retain the ordinary XPHB parent rules projection");
 const projectedBlack = projectCatalogSpeciesFamilySelection(projectSelectedSpeciesVariant(dragonborn, dragonbornGroups, blackSelections), dragonborn, dragonbornGroups, blackSelections);
-assert.equal(projectedBlack.name, "Black Dragonborn", "standard Dragonborn selection must change the right-hand display identity");
-assert.equal(projectedBlack.metadata?.presentationArtworkName, "Dragonborn (Chromatic)", "standard chromatic ancestry must switch to chromatic family artwork");
+assert.equal(projectedBlack.name, "Black Dragonborn", "standard Dragonborn selection must change only the catalogue-facing display identity");
+assert.equal(projectedBlack.metadata?.presentationArtworkName, "Dragonborn (Chromatic)", "standard chromatic ancestry must switch to chromatic family artwork in the catalogue-facing presentation");
 assert.equal(speciesArtworkFor(projectedBlack.name), "/media/species/dragonborn-chromatic.webp", "Black Dragonborn display must resolve to chromatic family artwork");
 assert.ok(projectedBlack.traitDetails.some((detail) => detail.name === "Damage Resistance"), "standard XPHB Dragonborn selection must retain XPHB parent mechanics");
 assert.match(projectedBlack.traitDetails.find((detail) => detail.name === "Draconic Ancestry")?.description || "", /Selected ancestry: Black.*Acid/i, "right panel must identify the selected standard Dragonborn ancestry and affinity");
@@ -115,4 +116,4 @@ assert.equal(sourceChoiceGroupUsesCatalogSpeciesFamily({ ownerType: "species", l
 
 for (const source of [coreSource, panelSource, familySource, variantSource, artworkSource]) assert.ok(!protectedPattern.test(source), "Species catalogue family work crossed a protected map/travel boundary");
 
-console.log("Forge Species catalogue families validated: Genasi and Dragonborn expand to indented child rows, parent-first display is preserved, canonical source-choice labels stay stable, selected child identity/artwork/rules project on the right, Goliath/Tiefling stay inline, and protected boundaries remain intact.");
+console.log("Forge Species catalogue families validated: Genasi and Dragonborn expand to indented child rows, parent-first display is preserved, canonical source-choice/rule projections stay stable, selected child identity/artwork projects on the right, Goliath/Tiefling stay inline, and protected boundaries remain intact.");
