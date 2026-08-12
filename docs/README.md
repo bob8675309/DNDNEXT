@@ -8,7 +8,7 @@ This directory contains the project's living handoff, roadmap, architecture, and
 - `Documentation_Refresh_Manifest.md` — documentation precedence and current PR #170 checkpoint.
 - `PR170_Final_Acceptance_Status.md` — current migration/build/database/authenticated acceptance and remaining focused browser re-smoke.
 - `PR170_Browser_Smoke_Corrections_Status.md` — real signed-in browser findings, migration 90 Rage restoration, Forge presentation corrections, and re-smoke targets.
-- `Forge_Species_Art_and_Collapse_Handoff.md` — **active Species presentation/artwork handoff**: independent chevrons/collapse state, parent/child descriptions, dedicated generated child-art rollout, exact recovery commits, current asset queue, validation contracts, and protected boundaries.
+- `Forge_Species_Art_and_Collapse_Handoff.md` — **active Species presentation/artwork handoff**: independent chevrons/collapse state, parent/child descriptions, dedicated generated child-art rollout, exact binary verification, current asset queue, validation contracts, and protected boundaries.
 - `Forge_Species_Family_Submenu_Status.md` — controlling Species family/setting-variant rules/persistence ledger through migrations 91-93, including Genasi, Dragonborn, Aven, Elf, Gnome, Shifter, Fairy, Kithkin, and grouped setting variants.
 - `Forge_Source_Presentation_and_Species_Variants_Status.md` — earlier source-presentation history, structured Species/Background/Class rendering, and the migration-91 Genasi source-catalog foundation.
 - `Current_Development_Status_and_Roadmap.md` — broad platform roadmap/history; newer subsystem ledgers supersede older sections.
@@ -74,14 +74,22 @@ PR #170 remains open and unmerged on `agent/character-forge-resilience-presentat
 
 Exact validated Species presentation/artwork checkpoint:
 
-`7e69443a13058e2e9399a9c26922b2b82253f898` — `Promote Fire Genasi dedicated Forge artwork`
+`086128e9617fedf8410943a4c230bc466f2f9d11` — `Complete dedicated Genasi Forge artwork`
 
-That exact head completed **33/33 PR-triggered workflows successfully** and Vercel deployment succeeded. It preserves the established family/chevron behavior, keeps canonical artwork resolution stable outside the Forge, and has two newly committed dedicated child assets:
+That exact head completed **33/33 PR-triggered workflows successfully** and Vercel deployment succeeded. It preserves the established family/chevron behavior and canonical artwork resolution outside the Forge.
 
+The complete Genasi family now has dedicated Forge assets:
+
+- `public/media/species/air-genasi.webp`
+- `public/media/species/earth-genasi.webp`
 - `public/media/species/fire-genasi.webp`
+- `public/media/species/water-genasi.webp`
+
+Gold Dragonborn also remains dedicated:
+
 - `public/media/species/gold-dragonborn.webp`
 
-The active continuation ledger is `Forge_Species_Art_and_Collapse_Handoff.md`. It records the Fire Genasi binary-upload recovery, exact Git-blob integrity check, remaining art queue, validation contracts, database boundary, and browser re-smoke checklist. Documentation-only descendants do not supersede `7e69443...` as the exact tested runtime/source/art tree.
+The active continuation ledger is `Forge_Species_Art_and_Collapse_Handoff.md`. It records the exact Git-blob integrity workflow, completed Genasi family, remaining Dragonborn/Aven/Elf/Gnome/Shifter/Fairy/Kithkin/setting-art queue, validation contracts, database boundary, and browser re-smoke checklist. Documentation-only descendants do not supersede `086128e...` as the exact tested runtime/source/art tree.
 
 Live database authority remains migration 93:
 
