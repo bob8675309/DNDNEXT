@@ -4,7 +4,7 @@ Status date: 2026-08-12
 PR: #170 (`agent/character-forge-resilience-presentation`)
 Merge status: OPEN / UNMERGED — merge only after explicit user approval
 Database authority: migration 93 — `20260812042950 aven_subrace_catalog`
-Validated code/art checkpoint: `249a1e1993d8c4b3c74f9d1bc6775e5fc8da294b` — 33/33 PR-triggered workflows green
+Validated code/art checkpoint: `7e69443a13058e2e9399a9c26922b2b82253f898` — 33/33 PR-triggered workflows green; Vercel successful
 
 ## Protected scope
 
@@ -81,26 +81,28 @@ Do not call a CSS hue shift/crop or a shared parent image "final artwork." Tempo
 
 ### Successfully committed dedicated child artwork
 
+- `public/media/species/fire-genasi.webp`
 - `public/media/species/gold-dragonborn.webp`
 
-Gold Dragonborn is the first dedicated child file that successfully survived the GitHub binary upload and is wired through the Forge-specific dedicated-variant resolver.
+Both files are now wired only through the Forge-specific dedicated-variant resolver. Their canonical non-Forge aliases remain unchanged: Fire Genasi still canonically resolves through shared Genasi art outside the Forge, and Gold Dragonborn still resolves through Metallic Dragonborn art outside the Forge.
 
-### Fire Genasi binary-upload incident
+### Fire Genasi binary-upload incident — resolved
 
-An original full-body Fire Genasi illustration was generated and extracted locally, but the GitHub connector truncated the binary payload during upload. The focused validator correctly rejected the truncated file.
+The first Fire Genasi upload was truncated by the GitHub connector and was correctly rejected by the focused validator. That corrupt file was removed in `249a1e1993d8c4b3c74f9d1bc6775e5fc8da294b` rather than weakening the validation contract.
 
-Do **not** treat Fire Genasi as completed artwork yet.
+The original generated Fire Genasi art was then optimized to a smaller WebP for reliable connector transport. Before it was attached to the branch, the local Git blob SHA and GitHub-created blob SHA were compared and matched exactly:
 
-The corrupt/truncated `public/media/species/fire-genasi.webp` was removed from the branch in `249a1e1993d8c4b3c74f9d1bc6775e5fc8da294b`, and Fire Genasi now uses the explicit temporary Genasi-family portrait treatment until a reliable complete binary can be committed.
+`3269a1693ffee9ccd179f76dc0469f4f7ca6bab2`
 
-Do not weaken the file-size/art validator to accept a truncated image.
+Commit `7e69443a13058e2e9399a9c26922b2b82253f898` adds that verified binary, promotes only `fire-genasi` into `SPECIES_DEDICATED_VARIANT_ARTWORK`, and extends the focused validator to prove the file exists, is nontrivial, has RIFF/WEBP container headers, wins only in the Forge portrait resolver, and leaves canonical Fire Genasi artwork unchanged outside the Forge.
+
+The full 33-workflow PR regression matrix and Vercel deployment succeeded on that exact checkpoint.
 
 ## Remaining dedicated-art queue
 
 Genasi:
 - Air
 - Earth
-- Fire
 - Water
 
 Dragonborn:
@@ -180,11 +182,17 @@ The first binary repair attempt was:
 
 `f25fb004c7df6ccc011fd0018ac6a04f328628f2`
 
-The corrected validated checkpoint is:
+The conservative recovery checkpoint was:
 
 `249a1e1993d8c4b3c74f9d1bc6775e5fc8da294b` — `Keep unfinished Species art explicit`
 
-That checkpoint keeps Gold Dragonborn as the only newly dedicated child file, removes the truncated Fire Genasi file, and leaves unfinished child art explicitly on the temporary family-art treatment.
+It kept Gold Dragonborn as the only dedicated child file and removed the truncated Fire asset.
+
+Current validated code/art checkpoint:
+
+`7e69443a13058e2e9399a9c26922b2b82253f898` — `Promote Fire Genasi dedicated Forge artwork`
+
+It adds the verified Fire Genasi binary and makes Fire the second newly dedicated child artwork.
 
 ## Validation authority
 
@@ -200,14 +208,16 @@ Required validators:
 - `scripts/validate_forge_species_catalog_portraits.mjs`;
 - production build gate.
 
-For exact checkpoint `249a1e1993d8c4b3c74f9d1bc6775e5fc8da294b`:
+For exact checkpoint `7e69443a13058e2e9399a9c26922b2b82253f898`:
 
 - original structured source presentation passed;
 - established Species catalogue family validator passed;
 - expanded Species family validator passed;
 - Species catalogue portrait/collapse validator passed;
+- Fire Genasi dedicated WebP integrity and Forge-only resolver assertions passed;
 - focused production build passed;
-- all 33 PR-triggered workflows completed successfully, including NPC Forge, nested choices, source magic, progression, equipment, portrait, runtime-choice, Artificer, and Primal Companion gates.
+- all 33 PR-triggered workflows completed successfully, including NPC Forge, nested choices, source magic, progression, equipment, portrait, runtime-choice, Artificer, Primal Companion, and Fiendish Resilience gates;
+- Vercel deployment succeeded.
 
 The portrait/collapse validator proves:
 
@@ -230,7 +240,7 @@ Supabase remains through migration 93:
 
 `20260812042950 aven_subrace_catalog`
 
-Re-verified after the validated Species presentation checkpoint:
+Re-verified immediately before the Fire Genasi recovery pass:
 
 - raw Species: 166
 - preferred Species: 102
@@ -254,15 +264,15 @@ After a green code/art batch, verify:
 3. selecting a parent opens the list and shows parent-specific right-panel lore/art;
 4. selecting a child changes child identity/lore/mechanics/portrait;
 5. collapsing the list does not erase the selected child choice;
-6. committed dedicated child art uses its real file and no temporary CSS treatment;
+6. Fire Genasi and Gold Dragonborn use their real dedicated files and no temporary CSS treatment;
 7. unfinished child art still renders safely through the explicit temporary treatment;
 8. setting/source child uses its real Species row/rules rather than modern-parent rules;
 9. Goliath/Tiefling remain inline.
 
 ## Next steps
 
-1. Finish the dedicated generated artwork queue in coherent family batches.
-2. Use a reliable binary upload path; verify Git blob/file integrity before calling a child art-complete.
+1. Continue the Genasi dedicated-art family with Air, Earth, and Water.
+2. Use the now-proven optimized-WebP upload path and verify each Git blob SHA before attaching it to the branch.
 3. For each real committed file, add only that key to the dedicated-variant artwork authority and extend the validator.
 4. Remove temporary CSS treatments only when the corresponding dedicated family art is complete.
 5. Run focused workflow + full PR regression matrix after coherent batches.
