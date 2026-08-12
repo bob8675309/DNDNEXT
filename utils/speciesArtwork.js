@@ -149,6 +149,11 @@ const SPECIES_DEDICATED_VARIANT_ARTWORK = new Set([
   "earth-genasi",
   "fire-genasi",
   "water-genasi",
+  "black-dragonborn",
+  "blue-dragonborn",
+  "green-dragonborn",
+  "red-dragonborn",
+  "white-dragonborn",
   "gold-dragonborn",
 ]);
 
