@@ -106,6 +106,7 @@ function genasiFamily(rows) {
             variantSpeciesName: row.name,
             variantSpeciesId: row.id,
             variantSource: row.source,
+            catalogLabel: displayName,
             facts: variantFacts(row),
             traits: traitSummaries(row, ["Size", "Darkvision"]),
             presentation: presentationMetadata(row, { selectorTraitName: "Elemental Lineage", selectorDescription: helper, replaceParentTraits: true, displayName, artworkName: "Genasi" }),
@@ -160,9 +161,9 @@ function dragonbornFamily(rows) {
     const displayName = `${option.value} Dragonborn`;
     return {
       ...option,
-      label: displayName,
       metadata: {
         ...(option.metadata || {}),
+        catalogLabel: displayName,
         ruleFamily: "XPHB Dragonborn",
         facts: variantFacts(parent),
         traits: traitSummaries(parent, ["Draconic Ancestry"]),
@@ -174,10 +175,11 @@ function dragonbornFamily(rows) {
     const displayName = `${option.value} Gem Dragonborn`;
     return {
       ...option,
-      label: displayName,
+      label: `${option.label} (Gem)`,
       description: `${option.metadata?.damageType || "Gem"} affinity • Fizban's Treasury of Dragons`,
       metadata: {
         ...(option.metadata || {}),
+        catalogLabel: displayName,
         ruleFamily: "FTD Gem Dragonborn",
         familySpeciesName: gem.name,
         familySpeciesId: gem.id,
