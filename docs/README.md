@@ -8,7 +8,8 @@ This directory contains the project's living handoff, roadmap, architecture, and
 - `Documentation_Refresh_Manifest.md` — documentation precedence and current PR #170 checkpoint.
 - `PR170_Final_Acceptance_Status.md` — current migration/build/database/authenticated acceptance and remaining focused browser re-smoke.
 - `PR170_Browser_Smoke_Corrections_Status.md` — real signed-in browser findings, migration 90 Rage restoration, Forge presentation corrections, and re-smoke targets.
-- `Forge_Source_Presentation_and_Species_Variants_Status.md` — migration 91 Genasi subrace backfill, Genasi/Dragonborn parent-variant selectors, structured Species/Background/Class source rendering, and current re-smoke targets.
+- `Forge_Species_Family_Submenu_Status.md` — controlling Species family/setting-variant presentation ledger through migrations 91-93, including Genasi, Dragonborn, Aven, Elf, Gnome, Shifter, Fairy, Kithkin, and grouped setting variants.
+- `Forge_Source_Presentation_and_Species_Variants_Status.md` — earlier source-presentation history, structured Species/Background/Class rendering, and the migration-91 Genasi source-catalog foundation.
 - `Current_Development_Status_and_Roadmap.md` — broad platform roadmap/history; newer subsystem ledgers supersede older sections.
 - `Unified_Character_Forge_Status.md` — controlling Forge/progression/runtime ledger.
 
@@ -44,7 +45,7 @@ This directory contains the project's living handoff, roadmap, architecture, and
 - `Feat_Runtime_Expertise_Status.md` — Echoing Soul / Zhentarim Expertise lifecycle.
 - `Cartomancer_Runtime_Status.md` — Hidden Ace temporary access.
 
-Current cadence rule: persistent source-owned decisions belong to Forge/progression; rest decisions belong to runtime; per-use choices belong to action UI. Do not turn runtime choices into permanent Forge locks. A post-rest replacement opportunity is not automatically a missing choice: migration 89 distinguishes an inactive rest-cycle benefit from a still-active persistent selection. Migration 90 adds source-aware standalone Rest restoration for the sheet-side Rage action state without altering tactical combat state. Migration 91 is catalogue-only and restores missing MPMM Genasi subrace source rows for the unified Species variant presentation.
+Current cadence rule: persistent source-owned decisions belong to Forge/progression; rest decisions belong to runtime; per-use choices belong to action UI. Do not turn runtime choices into permanent Forge locks. A post-rest replacement opportunity is not automatically a missing choice: migration 89 distinguishes an inactive rest-cycle benefit from a still-active persistent selection. Migration 90 adds source-aware standalone Rest restoration for the sheet-side Rage action state without altering tactical combat state. Migrations 91-93 are catalogue/source-presentation work: Genasi subrace restoration, Genasi source-detail restoration, and Aven subrace restoration. They do not authorize unrelated runtime changes.
 
 ## Character sheet / inventory / crafting
 
@@ -65,6 +66,22 @@ Use the specific tactical phase ledger before changing encounter behavior; do no
 - `Security_Hardening_Roadmap_Status.md` — security/database hardening.
 
 Always inspect live grants/functions before modifying authenticated `SECURITY DEFINER` surfaces. Supabase advisor warnings outside the current audited slice are separate security backlog, not permission to scope-creep a Forge/runtime patch.
+
+## Current exact Forge checkpoint
+
+PR #170 remains open and unmerged on `agent/character-forge-resilience-presentation`.
+
+Exact validated runtime/source code head:
+
+`d2b64bd1128a0457393283a463fddd71cc7c9094` — `Preserve canonical Species family labels`
+
+All 33/33 PR-triggered GitHub workflows succeeded on that exact head. The focused Forge source-presentation workflow passed its original structured-source validator, the established Genasi/Dragonborn family validator, the expanded Species-family validator, and the production build gate.
+
+Live database authority is migration 93:
+
+`20260812042950 aven_subrace_catalog`
+
+Production Species counts are 166 raw / 102 preferred. Protected campaign/runtime/map counts remain 7 characters, 7 sheets, 30 character-spell rows, 7 progression rows, 18 inventory rows, 20 locations, 4 map routes, and 9 route points.
 
 ## Protected-boundary rule
 

@@ -1,98 +1,178 @@
 # Forge Species Family Submenus — Status
 
-Status date: 2026-08-11
+Status date: 2026-08-11/12
 PR: #170 (`agent/character-forge-resilience-presentation`)
-Validated code head: `4a7a18b7bb578e88d7a2c6405222061797cf8ac0`
-Database authority: `20260811062025 genasi_subrace_catalog` (migration 91)
-Database changes for this pass: none
+Validated code head: `d2b64bd1128a0457393283a463fddd71cc7c9094`
+Database authority: `20260812042950 aven_subrace_catalog` (migration 93)
 Merge status: open/unmerged; merge only after explicit user approval
 
 ## Purpose
 
-The Species browser review showed that not every source-owned Species choice belongs in the same UI pattern.
+The Species browser review established that the Forge needs to distinguish three different concepts:
 
-A choice that substantially changes the species presentation should behave like a Species-family/subspecies selection near the catalogue entry. A narrower trait choice should remain inside the selected Species feature panel.
+1. a persistent lineage/subrace/family choice that substantially changes one Species presentation;
+2. a full alternate Species row from another setting/source that should be visually grouped under a familiar parent without losing its own rules identity;
+3. a narrower trait-level choice that belongs inside the Species feature panel.
 
-This pass therefore introduces two distinct presentation classes without changing persistence or rules authority.
+The current implementation supports all three without creating a parallel Forge state system.
 
-## Catalogue-level Species families
+## Parent-persisted family choices
 
-### Genasi
+These choices are shown as indented child rows under the selected parent Species and write through existing source-choice authority.
 
-Selecting the MPMM `Genasi` parent in the left Species catalogue now reveals a compact `Elemental Lineage` submenu directly beneath that catalogue row.
+### Genasi — MPMM
 
-The submenu uses the existing source-backed choices:
+`Genasi` exposes `Elemental Lineage` with Air, Earth, Fire, and Water. The Genasi parent Species remains the persisted identity while the selected lineage projects its own movement and traits into the right information panel. Water retains swimming movement. Species-granted magic remains owned by the Spells step.
 
-- Air Genasi;
-- Earth Genasi;
-- Fire Genasi;
-- Water Genasi.
+Migration 92, `20260812033649 genasi_source_detail_restore`, restored source details that had been over-condensed in the original import, including material-component exceptions, alternate spell-slot casting, complete spell cadence, and source spellcasting-ability information.
 
-The submenu writes through the existing `NpcForgeSourceChoiceContext.setChoice` authority. It does not create a second lineage state and does not replace the persisted Genasi parent Species ID/name/source.
+### Dragonborn — XPHB + explicit FTD Gem options
 
-Changing the submenu selection updates the right-hand Species presentation through the established selected-variant projection. Movement and lineage-specific traits therefore follow the selected lineage; Water Genasi continues to show its swimming movement correctly. Species-granted magic remains owned by the Spells step.
+`Dragonborn` exposes `Draconic Ancestry` with ten standard XPHB ancestries plus five explicitly labeled FTD Gem ancestries.
 
-### Dragonborn
+Standard ancestries retain the ordinary XPHB Dragonborn rules projection. FTD Gem selections project the FTD Gem family rules, including `Psionic Mind`, `Gem Flight`, and the Gem resistance/breath package, without leaking incompatible XPHB-only presentation. Canonical source-choice labels remain unchanged even when richer catalogue-facing child names are shown.
 
-Selecting the XPHB `Dragonborn` parent in the left Species catalogue now reveals a compact `Draconic Ancestry` submenu.
+### Aven — PSA
 
-It retains the existing unified source-backed ancestry set:
+`Aven` exposes `Aven Subrace` with:
 
-- ten XPHB standard ancestries/colors;
-- five explicitly labeled FTD Gem ancestries.
+- Hawk-Headed;
+- Ibis-Headed.
 
-The dropdown includes the ancestry's damage affinity for quick comparison. Standard XPHB selections retain XPHB Dragonborn presentation. FTD Gem selections continue to project their Gem-family presentation so `Psionic Mind`, `Gem Flight`, and Gem-family resistance/breath rules can appear without leaving incompatible XPHB-only `Damage Resistance`, `Darkvision`, or `Draconic Flight` presentation behind.
+The live catalogue originally contained only the PSA Aven parent. Migration 93, `20260812042950 aven_subrace_catalog`, restored the two reviewed source-derived subrace rows so the Forge can group them under Aven without hardcoding their mechanics in React.
 
-This remains a presentation grouping. The persisted parent Species and existing source-choice key/save authority are unchanged.
+The two child source rows are internal family records; the Forge presents one Aven parent and persists the parent plus the existing source-choice selection.
+
+## Existing trait choices promoted to the catalogue family UI
+
+These families reuse source choices that already existed in the Species mechanics model. The catalogue UI relocates the relevant choice without changing its serialization key.
+
+### Elf — XPHB
+
+`Elven Lineage` now appears beneath Elf with Drow, High Elf, and Wood Elf. The existing `lineage` field remains authoritative. The separate Elf spellcasting-ability choice remains present in the right-side source-choice panel rather than being accidentally hidden with the promoted lineage field.
+
+Drow projects its 120-foot Darkvision. Wood Elf projects its 35-foot Speed. The selected lineage retains its level 1, 3, and 5 source benefits.
+
+### Gnome — XPHB
+
+`Gnomish Lineage` now appears beneath Gnome with Forest Gnome and Rock Gnome. It reuses the existing `lineage` source field; no second Gnome lineage state was introduced.
+
+### Shifter — MPMM
+
+`Shifting Form` now appears beneath Shifter with Beasthide, Longtooth, Swiftstride, and Wildhunt. It reuses the existing `shifting` field.
+
+### Fairy / Faerie — LFL
+
+`Faerie Lineage` now presents Lorwyn and Shadowmoor as family choices. The source parser did not previously create a dedicated lineage field for this source structure, so the existing standalone Species-variant source-choice bridge is used. Shadowmoor projects the source-specific 120-foot Darkvision; the neutral parent does not preselect that benefit.
+
+### Kithkin — LFL
+
+`Kithkin Lineage` likewise presents Lorwyn and Shadowmoor through one standalone source-choice family. Shadowmoor projects 120-foot Darkvision; the neutral parent does not silently inherit it before a lineage is selected.
+
+## Setting/source variants folded under a parent
+
+Setting variants are deliberately handled differently from the families above. They remain real catalogue Species rows with their own database ID, source, mechanics, source-choice groups, and save identity. The Forge only nests them visually beneath the semantic parent.
+
+This prevents a setting variant from inheriting the modern parent's required choices or rules by accident.
+
+Current visual groupings:
+
+- Human (XPHB parent)
+  - Human (Innistrad) — PSI
+  - Human (Ixalan) — PSX
+  - Human (Kaladesh) — PSK
+  - Human (Zendikar) — PSZ
+- Dwarf (XPHB parent)
+  - Dwarf (Kaladesh) — PSK
+- Elf (XPHB parent)
+  - Elf (Kaladesh) — PSK
+  - Elf (Zendikar) — PSZ
+- Orc (XPHB parent)
+  - Orc (Ixalan) — PSX
+- Minotaur (MPMM parent)
+  - Minotaur (Amonkhet) — PSA
+- Goblin (MPMM parent)
+  - Goblin (Dankwood) — AWM
+
+Selecting one of these nested setting rows calls the established Species selector with that real child row. The child therefore keeps its own source authority instead of being projected as if it were a 2024 parent choice.
+
+Search aliases allow a nested setting/source child to still lead the player to its parent catalogue group.
+
+## Species intentionally kept independent
+
+Name similarity alone is not sufficient reason to collapse a Species. Distinct rows such as Sea Elf, Astral Elf, Eladrin, Shadar-kai, Duergar, Deep Gnome, and similar independently published Species remain top-level entries unless their source data explicitly models them as a parent variant.
 
 ## Inline Species trait choices
 
 ### Goliath
 
-`Giant Ancestry` remains inside the Goliath Species feature panel. Its six source-owned supernatural boons are trait-level choices rather than a separate Species-family identity, so the existing inline selector is the correct presentation.
+`Giant Ancestry` remains inside the Goliath Species feature panel. Its six supernatural boons are trait-level choices within one Goliath rules identity.
 
 ### Tiefling
 
-`Fiendish Legacy` remains inside the Tiefling Species feature panel. Abyssal, Chthonic, and Infernal are retained as coherent trait packages with their resistance and level-granted spells; they are not promoted into the left catalogue family submenu.
+`Fiendish Legacy` remains inside the Tiefling Species feature panel. Abyssal, Chthonic, and Infernal remain coherent trait packages with their resistance and level-granted spells.
 
-## Implementation boundary
+### Other non-family choices
 
-The code pass adds a catalogue-family helper and a compact submenu to the shared NPC/player Forge catalogue. The right information panel receives a presentation-filtered source-choice context so Genasi/Dragonborn family controls are not duplicated there, while the real source-choice state remains intact for completion validation and serialization.
+Aasimar transformation choices are per-use rather than persistent subtype identity. Custom Lineage, Simic Hybrid adaptations, and similar configurable traits remain inline or in their existing lifecycle-specific authority rather than becoming catalogue children.
 
-The established `projectSelectedSpeciesVariant` bridge remains explicit in `NpcForgeContextPanel`. The catalogue-family helper augments that projected result; it does not replace the existing projection authority.
+## Implementation authority
 
-No changes were made to `chooseSpecies`, parent Species persistence, source-choice serialization, SQL/migrations, world-map behavior, town/city-map behavior, route/travel/weather, combat, crafting, inventory, or unrelated runtime systems.
+The family expansion is centralized in `utils/speciesCatalogExpansion.js` and the existing `utils/speciesCatalogFamilyMenu.js` presentation bridge.
+
+Key invariants:
+
+- `NpcForgeSourceChoiceContext` remains the source of truth for parent-persisted family selections;
+- existing Elf/Gnome/Shifter field IDs remain unchanged;
+- Fairy/Kithkin use the existing standalone Species-variant source-choice bridge;
+- setting children remain real Species rows and use the existing `onSelect` / `chooseSpecies` path;
+- the right information panel filters only the family field promoted into the left catalogue, preserving sibling source choices;
+- `projectSelectedSpeciesVariant` remains part of the established selected-variant projection path;
+- no new controller state, save payload, creation RPC, progression authority, or runtime-choice authority was introduced.
+
+No changes were made to world-map behavior, town/city-map behavior, route/travel/weather, tactical combat, crafting, inventory, merchants, or unrelated runtime systems.
 
 ## Validation
 
-A focused validator, `scripts/validate_forge_species_catalog_families.mjs`, proves:
+The focused source-presentation workflow now runs three semantic validators separately before its production build:
 
-- Genasi and Dragonborn alone use the new catalogue family submenu in this pass;
-- the submenu writes through existing `setChoice(group.id, field.id, ...)` state;
-- Genasi keeps its parent identity while Water selection projects Water traits and does not leak Air traits;
-- Dragonborn keeps all ten XPHB plus five FTD Gem ancestry options;
-- standard XPHB ancestry retains XPHB mechanics;
-- FTD Gem ancestry projects Gem-family mechanics without XPHB-only trait leakage;
-- Goliath Giant Ancestry stays inline;
-- Tiefling Fiendish Legacy stays inline;
+- `scripts/validate_forge_source_presentation.mjs`;
+- `scripts/validate_forge_species_catalog_families.mjs`;
+- `scripts/validate_forge_species_family_expansion.mjs`.
+
+The expanded-family validator proves, among other invariants:
+
+- Elf reuses the existing `lineage` field while retaining its sibling spellcasting-ability choice;
+- Gnome reuses its existing lineage field;
+- Shifter reuses its existing `shifting` field;
+- Fairy and Kithkin create exactly one standalone family source group and do not preselect Shadowmoor Darkvision;
+- Aven collapses its two restored source rows under one parent family;
+- setting children remain independent real Species rows with their original sources;
+- Sea Elf and Astral Elf remain independent;
+- Genasi/Dragonborn behavior remains compatible with the previously accepted contract;
 - protected map/travel boundaries remain untouched.
 
-For code head `4a7a18b7bb578e88d7a2c6405222061797cf8ac0`:
+For exact code head `d2b64bd1128a0457393283a463fddd71cc7c9094`:
 
-- 33/33 PR-triggered GitHub workflows completed successfully;
-- `Validate Forge source presentation` passed the existing source-presentation contract, the new Species-family contract, and its production build gate;
+- **33/33 PR-triggered GitHub workflows completed successfully**;
+- `Validate Forge source presentation` passed all three semantic validators and its production build gate;
 - `Validate PR170 browser smoke corrections` passed its contract and production build;
-- Vercel deployment completed successfully.
+- NPC Forge, nested choices, source magic, starting equipment/magic, progression, runtime choices, portrait, currency, Artificer, and related regression gates all passed.
 
 ## Live database verification
 
-No Supabase write was required.
+Production is registered through:
 
-Final read-only verification showed:
+- migration 91 — `20260811062025 genasi_subrace_catalog`;
+- migration 92 — `20260812033649 genasi_source_detail_restore`;
+- migration 93 — `20260812042950 aven_subrace_catalog`.
 
-- latest migration: `20260811062025 genasi_subrace_catalog`;
-- raw Species catalogue: 164 rows;
-- preferred Species view: 100 rows;
+Migration 93 was transaction-tested with an explicit rollback before deployment. After deployment, both Aven rows were verified with `restored-after-5etools-review` source-audit metadata.
+
+Current production counts:
+
+- raw Species catalogue: 166 rows;
+- preferred Species view: 102 rows;
 - characters: 7;
 - character_sheets: 7;
 - character_spells: 30;
@@ -102,17 +182,21 @@ Final read-only verification showed:
 - map_routes: 4;
 - map_route_points: 9.
 
-## Browser re-smoke
+The only count changes in this pass are the two intended Aven Species rows. Campaign/runtime/map counts are unchanged.
 
-On a deployment containing `4a7a18b7...` or a code-identical descendant:
+## Focused browser re-smoke
 
-1. Select Genasi in the left Species catalogue and verify `Elemental Lineage` appears immediately beneath the selected row.
-2. Switch Air/Earth/Fire/Water and verify the right-hand Species information changes immediately, including Water swimming movement.
-3. Confirm the old large Genasi family selector is no longer duplicated in the right feature stack.
-4. Select Dragonborn and verify `Draconic Ancestry` appears beneath the selected row with ten XPHB and five FTD Gem choices.
-5. Switch between a standard ancestry and an FTD Gem ancestry and verify the right-hand mechanics follow the appropriate rule family.
-6. Confirm the old large Dragonborn ancestry selector is no longer duplicated in the right feature stack.
-7. Confirm Goliath Giant Ancestry remains inline in the Goliath feature panel.
-8. Confirm Tiefling Fiendish Legacy remains inline in the Tiefling feature panel.
+On a deployment containing `d2b64bd...` or a code-identical descendant:
+
+1. Recheck Genasi and Dragonborn parent/child behavior.
+2. Select Aven and switch Hawk-Headed / Ibis-Headed; confirm source-specific traits change on the right while Aven remains the parent family.
+3. Select Elf and switch Drow / High Elf / Wood Elf; verify Drow Darkvision, Wood Elf Speed, tiered lineage benefits, and the separate spellcasting-ability choice.
+4. Select Gnome and switch Forest / Rock.
+5. Select Shifter and verify all four forms.
+6. Select Fairy and Kithkin; switch Lorwyn / Shadowmoor and confirm Shadowmoor Darkvision only appears after that selection.
+7. Open Human and verify its four setting variants appear as nested source rows. Select each representative child and verify its own source/rules drive the panel.
+8. Repeat the source-row check for Dwarf (Kaladesh), Elf (Kaladesh/Zendikar), Orc (Ixalan), Minotaur (Amonkhet), and Goblin (Dankwood).
+9. Confirm Sea Elf, Astral Elf, Eladrin, Shadar-kai, Duergar, and Deep Gnome remain independent catalogue Species.
+10. Confirm Goliath Giant Ancestry and Tiefling Fiendish Legacy remain inline.
 
 PR #170 remains open and must not be merged until the user explicitly approves the merge.

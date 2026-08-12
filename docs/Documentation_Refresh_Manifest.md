@@ -1,6 +1,6 @@
 # Documentation Refresh Manifest
 
-Updated: 2026-08-11
+Updated: 2026-08-11/12
 
 ## Trust order
 
@@ -17,32 +17,37 @@ If prose conflicts with live source/database state, live authority wins until do
 
 PR #170 remains open and unmerged on `agent/character-forge-resilience-presentation`.
 
-Production database authority is accepted through migration 91:
+Exact validated source/runtime code head:
 
-`20260811062025 genasi_subrace_catalog`
+`d2b64bd1128a0457393283a463fddd71cc7c9094` — `Preserve canonical Species family labels`
 
-Latest validated source-presentation code head:
+Production database authority is accepted through migration 93:
 
-`6106eea26f5de0f43b435a1d41563b8549daeb95` — `Tighten Forge source and species variant presentation`
+`20260812042950 aven_subrace_catalog`
 
-No new migration or Supabase write was required by that continuation patch.
+Recent catalogue/source migrations:
+
+- 91 — `20260811062025 genasi_subrace_catalog`;
+- 92 — `20260812033649 genasi_source_detail_restore`;
+- 93 — `20260812042950 aven_subrace_catalog`.
 
 ## Exact-head validation
 
-For code head `6106eea26f5de0f43b435a1d41563b8549daeb95`:
+For code head `d2b64bd1128a0457393283a463fddd71cc7c9094`:
 
 - **33/33 PR-triggered GitHub workflows succeeded**;
-- `Validate Forge source presentation` passed its focused contract and production build;
+- `Validate Forge source presentation` passed the original structured-source contract, the established Genasi/Dragonborn family contract, the expanded Species-family contract, and its production build;
 - `Validate PR170 browser smoke corrections` passed its contract and production build;
-- the broader NPC Forge, Character Forge nested-choice, source-magic, equipment, progression, runtime, portrait, currency, Artificer, and related regression gates all succeeded.
+- NPC Forge, Character Forge nested-choice, source-magic, equipment, progression, runtime, portrait, currency, Artificer, and related regression gates all succeeded.
 
-A later documentation-only descendant does not supersede this tested code checkpoint; use `6106eea...` when referring to the exact code that received the full 33/33 gate.
+A later documentation-only descendant does not supersede this tested code checkpoint. Use `d2b64bd...` when referring to the exact runtime/source tree that received the full 33/33 gate.
 
 ## Authoritative recent ledgers
 
 Read before modifying these areas:
 
-- `Forge_Source_Presentation_and_Species_Variants_Status.md`;
+- `Forge_Species_Family_Submenu_Status.md` — controlling Species family/setting-variant presentation ledger through migrations 91-93;
+- `Forge_Source_Presentation_and_Species_Variants_Status.md` — earlier structured source-presentation foundation/history;
 - `PR170_Browser_Smoke_Corrections_Status.md`;
 - `PR170_Final_Acceptance_Status.md`;
 - `Player_Forge_Choice_Routing_and_Source_Magic_Status.md`;
@@ -79,38 +84,44 @@ Accepted cadence contrasts remain unchanged, including Armor Model, Bestial Soul
 
 ### Class
 
-`SourceRuleContent` is the shared structured source renderer. The current detailed Class path covers paragraphs/named sections, item/itemSpell, lists/tables, class/subclass/optional-feature/feat references, statblock references, source options, ability DC/attack modifier formulas, and quotes.
-
-The live audit found 2,118 Class feature rows. Seventy-five have blank flattened descriptions but all 75 retain structured `entries`; zero are blank and structureless. The detailed guide therefore continues to preserve `class_feature_catalog.entries` as the richer source authority.
+`SourceRuleContent` remains the shared structured source renderer. The detailed Class path preserves structured `entries` rather than depending only on flattened descriptions.
 
 ### Background
 
-All 161 live Background rows have nonblank stored descriptions and no raw 5etools markup. Existing structured Background presentation keeps mechanical source rows organized and suppresses explicitly optional/random flavor-generation tables.
+Mechanical source rows remain organized while optional/random flavor-generation tables are suppressed where appropriate. Background presentation work should continue through shared rendering rather than per-entry hacks.
 
 ### Species
 
-All 164 live Species rows have nonblank descriptions. The shared player-facing formatter now handles alphanumeric source tag names, fixing the Custom Lineage `{@5etools feat|feats.html}` leak without mutating catalogue data.
+The current Species model has three presentation classes:
 
-Rich persistent Species choices use compact initial buttons and full selected detail.
+1. **parent-persisted family choices** — Genasi, Dragonborn, Aven, and source-owned lineage/subtype choices promoted for Elf, Gnome, Shifter, Fairy, and Kithkin;
+2. **real setting/source Species rows visually nested beneath a semantic parent** — Human variants from Innistrad/Ixalan/Kaladesh/Zendikar, Dwarf (Kaladesh), Elf (Kaladesh/Zendikar), Orc (Ixalan), Minotaur (Amonkhet), Goblin (Dankwood);
+3. **inline trait choices** — Goliath Giant Ancestry, Tiefling Fiendish Legacy, and other choices whose lifecycle or semantics do not define a catalogue child Species identity.
 
-Current deep-family behavior:
+Setting children keep their real catalogue ID/source/rules and save identity. They are not projected through the modern parent ruleset.
 
-- **Genasi (MPMM):** one parent + Air/Earth/Fire/Water Elemental Lineage. Selected child facts/traits project into the right-side information panel without changing persisted parent identity or spell authority.
-- **Dragonborn:** one XPHB parent selector with ten standard XPHB ancestries + five explicitly FTD Gem choices. An FTD Gem selection projects the FTD Gem source presentation and removes incompatible XPHB-only surrounding cards for that selected rule family.
-- **Tiefling Fiendish Legacy:** compact three-package selector; row-specific resistance/spell mechanics remain intact in selected detail.
-- **Goliath Giant Ancestry:** compact six-choice selector; item-specific mechanics remain intact in selected detail.
-
-Other parenthetical live Species entries are mostly distinct setting/source variants and were intentionally not collapsed into generic parent selectors.
+Distinct species such as Sea Elf, Astral Elf, Eladrin, Shadar-kai, Duergar, and Deep Gnome remain independent unless their source explicitly defines a parent relationship.
 
 Species skill choices remain routed to Training; Species magic remains routed to Spells; runtime-only rest choices remain outside permanent Forge authority.
 
-## Migration 91 remains authoritative
+## Live database verification
 
-`sql/20260811_91_genasi_subrace_catalog.sql` was rollback-tested before deployment and applied live as `20260811062025 genasi_subrace_catalog`.
+Migration 93 was transaction-tested with rollback before deployment and then applied live.
 
-The four MPMM Genasi child rows exist with parent/variant identity and source-derived metadata. Species catalogue count changed 160 → 164 as expected. No campaign/runtime/map rows were changed by migration 91.
+Current production counts:
 
-The 2026-08-11 continuation patch made no database changes.
+- raw Species catalogue: 166;
+- preferred Species view: 102;
+- characters: 7;
+- character_sheets: 7;
+- character_spells: 30;
+- character_progression: 7;
+- inventory_items: 18;
+- locations: 20;
+- map_routes: 4;
+- map_route_points: 9.
+
+The only count change from the pre-migration-93 baseline is the two intended Aven source rows.
 
 ## Protected boundaries
 
@@ -118,8 +129,7 @@ Current Forge work does not authorize world-map, town/city-map, route/travel/wea
 
 ## Remaining PR closure work
 
-- confirm a deployment containing validated code head `6106eea...` or a code-identical descendant;
-- focused signed-in browser re-smoke of Tiefling, Goliath, Genasi, Dragonborn, Custom Lineage, representative Class source-node examples, and Background structured rules;
-- continue any remaining Background/Class visual QA through shared presentation fixes rather than entry-specific patches;
-- final live migration/ACL/residue check immediately before any approved merge;
+- deploy/re-smoke the expanded Species family presentation in a real signed-in browser;
+- continue remaining Background/Class visual QA through shared presentation fixes;
+- perform final live migration/ACL/residue and exact-head checks immediately before any approved merge;
 - merge only after explicit user approval.

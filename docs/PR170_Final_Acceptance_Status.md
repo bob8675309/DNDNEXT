@@ -1,130 +1,107 @@
 # PR #170 Final Acceptance — Current Status
 
-Status date: 2026-08-10
+Status date: 2026-08-11/12
 PR: #170 (`agent/character-forge-resilience-presentation`)
 Status: **open and unmerged**.
+Validated code head: `d2b64bd1128a0457393283a463fddd71cc7c9094`
+Live database authority: `20260812042950 aven_subrace_catalog` (migration 93)
 
-## Current live checkpoint
+## Current acceptance checkpoint
 
-Production is registered through migration 90:
+PR #170 has progressed beyond the earlier migration-90 browser-correction checkpoint. Production is now registered through migrations 91-93 for the current Species source/presentation slice:
 
-- 83 `defensive_tactics_runtime` — `20260809235754`
-- 84 `whispers_of_the_dead_runtime` — `20260810001351`
-- 85 `progression_rpc_acl_cleanup` — `20260810002421`
-- 86 `player_forge_source_magic_materialization` — `20260810075628`
-- 87 `source_magic_level_parser_fix` — `20260810075645`
-- 88 `source_magic_feat_name_normalization_fix` — `20260810075724`
-- 89 `pending_rest_runtime_choices` — `20260810181530`
-- 90 `rest_class_feature_restoration` — `20260810205646`
+- 91 — `20260811062025 genasi_subrace_catalog`;
+- 92 — `20260812033649 genasi_source_detail_restore`;
+- 93 — `20260812042950 aven_subrace_catalog`.
 
-Migrations 83-85 were already live when their source files were discovered missing from the PR branch. Their source and reachable Defensive Tactics/Whispers panels were restored to GitHub without reapplying the migrations.
+Earlier runtime/progression migrations and their accepted lifecycle behavior remain authoritative for their respective systems; this continuation did not rewrite them.
 
-## Real signed-in browser smoke
+## Exact-head repository gate
 
-The user completed a real signed-in browser smoke after migration 89. This is stronger presentation evidence than the previous server/API-only state, but it exposed several concrete defects that required a correction pass. The pre-fix browser findings included:
+For exact code head `d2b64bd1128a0457393283a463fddd71cc7c9094`:
 
-- XPHB Barbarian Rage did not recover through the standalone sheet Rest RPC;
-- Deep Gnome could still receive an isolated casting-ability prompt before its level-gated spell grant;
-- Witherbloom/Strixhaven background display had non-mechanical flavor copy, low-contrast secondary text, and no expanded-spell description hover;
-- long Class feature option lists could open but were difficult/impossible to collapse;
-- the Class detail dock was not useful through a very tall guide;
-- Species Bonus feat follow-up decisions were appearing on Abilities instead of being acknowledged there and resolved later;
-- same-name subclass reprints could appear more than once;
-- Artificer Magic Item Plan availability and canonical item detail needed clearer presentation.
+- **33/33 PR-triggered GitHub workflows completed successfully**;
+- `Validate Forge source presentation` passed the existing structured-source validator, established Genasi/Dragonborn family validator, expanded Species-family validator, and production build gate;
+- `Validate PR170 browser smoke corrections` passed its contract and production build;
+- NPC Forge foundation, Character Forge nested choices, Player Forge source magic, starting equipment/magic, progression, runtime choices, portrait, currency, Artificer, and related regression gates all passed.
 
-Those findings are documented in `PR170_Browser_Smoke_Corrections_Status.md`.
+This exact code head is the runtime/source acceptance checkpoint. Later documentation-only commits do not supersede it.
 
-The corrected build has not yet been re-smoked by the user, so this PR does **not** claim final browser acceptance yet.
+## Species family / source acceptance
 
-## Migration 89 deployed acceptance
+The current Forge Species presentation supports:
 
-`get_character_pending_rest_choices_v1` separates post-rest state into:
+- Genasi parent with Air/Earth/Fire/Water Elemental Lineage;
+- Dragonborn parent with ten XPHB ancestries plus five explicitly FTD Gem ancestries;
+- Aven parent with restored Hawk-Headed/Ibis-Headed PSA subrace choices;
+- XPHB Elf Drow/High Elf/Wood Elf lineage choices;
+- XPHB Gnome Forest/Rock lineage choices;
+- MPMM Shifter Beasthide/Longtooth/Swiftstride/Wildhunt choices;
+- LFL Fairy Lorwyn/Shadowmoor lineage choices;
+- LFL Kithkin Lorwyn/Shadowmoor lineage choices.
 
-- `needsSelection` — current rest-cycle benefit is inactive or the first rest-backed choice is now required;
-- `optionalChanges` — current persistent benefit remains active and a rest only unlocked replacement;
-- `availableActions` — optional post-rest action windows.
+The implementation reuses existing source-choice keys/state rather than creating a second character-creation authority.
 
-Rollback-only authenticated fixtures proved Astral Trance as an attention-required current-cycle case and Wild Heart Aspect as a quiet persistent optional replacement.
+Setting/source variants are visually nested but remain their own real Species rows and keep their own ID/source/rules/save identity:
 
-## Migration 90 — deployed Rage/rest acceptance
+- Human (Innistrad/Ixalan/Kaladesh/Zendikar);
+- Dwarf (Kaladesh);
+- Elf (Kaladesh/Zendikar);
+- Orc (Ixalan);
+- Minotaur (Amonkhet);
+- Goblin (Dankwood).
 
-Migration 90 extends the existing standalone character-sheet Rest authority to the class action state the sheet currently persists: Barbarian Rage.
+This distinction prevents older/setting variants from inheriting unrelated 2024 parent choices.
 
-Accepted behavior:
+Goliath Giant Ancestry and Tiefling Fiendish Legacy remain inline. Distinct Species such as Sea Elf, Astral Elf, Eladrin, Shadar-kai, Duergar, and Deep Gnome remain independent.
 
-- XPHB Rage regains one spent use on a Short Rest and all spent uses on a Long Rest;
-- PHB Rage remains Long-Rest-only;
-- a qualifying rest clears the sheet-side active Rage flag;
-- the public Rest RPC returns the updated sheet and `restoredClassFeatureUses`;
-- no encounter/tactical state is mutated;
-- the existing active-encounter rest-log guard remains transactional authority.
+## Migration 93 acceptance
 
-Rollback-only tests against the **deployed** migration-90 functions proved:
+Migration 93 restores the two missing PSA Aven source-derived subrace rows:
 
-- XPHB 1/3 + Short -> 2/3, restored 1, inactive;
-- second XPHB Short -> 3/3, restored 1;
-- Short at maximum -> remains 3/3, restored 0;
-- XPHB 1/3 + Long -> 3/3, restored 2;
-- PHB 1/3 + Short -> remains 1/3, restored 0;
-- PHB 1/3 + Long -> 3/3, restored 2;
-- an authenticated Varges-owner fixture from 2/3 + Long returned `restoredClassFeatureUses=1` and a returned sheet containing 3/3 Rage.
+- `species:aven-hawk-headed|PSA`;
+- `species:aven-ibis-headed|PSA`.
 
-All fixtures rolled back. Varges's real sheet remains 2/3 until a normal user rest is performed; QA did not silently repair the valued character.
-
-### Migration 90 ACL
-
-- anon execute on `public.complete_character_rest_v1(uuid,text)` — false
-- authenticated execute — true
-- service_role execute — true
-- anon/authenticated execute on `private.restore_character_rest_action_state_v1(uuid,text)` — false
-- service_role execute on the private helper — true
-
-## Browser-correction repository gate
-
-Before migration 90 deployment, exact code head `98b55355ed92d3d3309c09b8c534095d13859089` completed **32/32 PR-triggered GitHub workflows successfully**, including the dedicated browser-smoke correction validator and production build gate. Vercel also reported success on that exact code head.
-
-The subclass compatibility gate caught and preserved an important existing rule: a complete older/supplemental definition must not be hidden by a newer incomplete placeholder. Final same-name deduplication therefore uses complete-definition-first, then newest-source ordering among complete reprints.
-
-The smoke workflow uses the repository's existing relative-JS Node loader so its semantic fixtures execute under the same extensionless import convention as the project.
+The migration was transaction-tested with an explicit rollback before deployment. After live deployment, both rows were verified with the expected `restored-after-5etools-review` source-audit metadata.
 
 ## Current production integrity
 
-After migration 90 deployed acceptance and rollback-only lifecycle tests:
+After migration 93:
 
-- characters: 7
-- character_sheets: 7
-- character_spells: 30
-- character_progression: 7
-- inventory_items: 18
-- character_rest_log: 2 legitimate user-created browser-smoke rows
-- Varges Rage: 2/3, unchanged by QA
-- locations: 20
-- map_routes: 4
-- map_route_points: 9
+- raw Species catalogue: 166;
+- preferred Species view: 102;
+- characters: 7;
+- character_sheets: 7;
+- character_spells: 30;
+- character_progression: 7;
+- inventory_items: 18;
+- locations: 20;
+- map_routes: 4;
+- map_route_points: 9.
 
-The two rest rows are real browser-smoke actions and are intentionally retained. Migration-90 QA added no persistent rest rows.
+The two intended Aven catalogue rows are the only count changes from the pre-migration-93 baseline. Campaign/runtime/map counts remain unchanged.
 
-## Previous authenticated server/API acceptance
+## Browser acceptance status
 
-Rollback-only acceptance under a real PostgreSQL `authenticated` role plus JWT claims has also exercised Hunter's Prey, Defensive Tactics, Whispers of the Dead, character currency, the retained v2 class-choice compatibility getter, pending-rest aggregation, and the migration-90 Rest RPC. Those fixtures rolled back completely.
+The previous real signed-in browser smoke remains valid evidence for the areas it exercised, but the newly expanded Species family presentation still needs a focused browser re-smoke before final merge acceptance.
 
-## Remaining external acceptance
+Recommended re-smoke:
 
-The remaining browser work is a focused **re-smoke of the corrected cases**, not a repeat of the entire PR:
-
-- Varges or another XPHB Barbarian: spent Rage + Short/Long Rest restoration;
-- Deep Gnome low-level no-op prompt removal and level 3/5 source magic;
-- Witherbloom flavor cleanup, higher text contrast, and spell-description hover/focus;
-- long Class list open/collapse behavior;
-- sticky Class feature detail dock on tall guides;
-- Species Bonus feat acknowledgement on Abilities with owned follow-up decisions later;
-- same-name subclass deduplication retaining the best/newest complete definition;
-- Artificer plan availability/future unlock presentation and canonical item detail.
+- Genasi and Dragonborn regression check;
+- Aven Hawk/Ibis;
+- Elf Drow/High/Wood including sibling spellcasting-ability choice;
+- Gnome Forest/Rock;
+- Shifter four forms;
+- Fairy/Kithkin Lorwyn/Shadowmoor;
+- Human setting children and representative Dwarf/Elf/Orc/Minotaur/Goblin setting children;
+- verify distinct Species remain top-level;
+- verify Goliath/Tiefling remain inline;
+- continue remaining Background/Class visual QA as needed.
 
 ## Merge rule
 
-Do not merge PR #170 without explicit user approval. Re-check the exact current PR head, GitHub/Vercel status, live migration list, ACLs, and production residue immediately before any approved merge.
+Do not merge PR #170 without explicit user approval. Immediately before any approved merge, re-check the exact PR head, current CI/deployment status, live migration list, relevant ACLs, and production residue.
 
 ## Protected boundaries
 
-No work in this closure authorizes changes to `components/MapPageClient.js`, world-map behavior, town/city-map behavior, route/travel/weather, unrelated crafting/inventory execution, or tactical combat execution.
+No work in this acceptance slice authorizes changes to `components/MapPageClient.js`, world-map behavior, town/city-map behavior, route/travel/weather, unrelated crafting/inventory execution, or tactical combat execution.
