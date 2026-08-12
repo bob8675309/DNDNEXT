@@ -3,6 +3,7 @@
 Status date: 2026-08-11/12
 PR: #170 (`agent/character-forge-resilience-presentation`)
 Validated code head: `d2b64bd1128a0457393283a463fddd71cc7c9094`
+Documentation-only descendant: `1c372bf7a09b12f138d2bc21b831466d5223024e`
 Database authority: `20260812042950 aven_subrace_catalog` (migration 93)
 Merge status: open/unmerged; merge only after explicit user approval
 
