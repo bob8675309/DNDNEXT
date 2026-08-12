@@ -91,19 +91,11 @@ const SPECIES_ARTWORK = new Set([
   "zombie",
 ]);
 
-// Source-book variants share the same ancestry reference until they receive a
-// distinct illustration. This is intentionally preferable to showing the
-// unrelated neutral adventurer for an otherwise recognisable species family.
-const SPECIES_ARTWORK_ALIASES = {
-  "dwarf-kaladesh": "dwarf",
-  faerie: "fairy",
-  githyanki: "gith",
-  githzerai: "gith",
-  "gnome-deep": "deep-gnome",
-  "goblin-dankwood": "goblin",
-  "half-orc": "orc",
-  "lorwyn-changeling": "changeling",
-  "orc-ixalan": "orc",
+// These entries intentionally use the repository's existing source-family art
+// as their base image, but receive a child-specific query key. The Forge CSS
+// uses that key for a distinct crop/tone treatment, giving each catalogue child
+// its own portrait presentation without inventing false source-art provenance.
+const SPECIES_VARIANT_PORTRAITS = Object.freeze({
   "air-genasi": "genasi",
   "earth-genasi": "genasi",
   "fire-genasi": "genasi",
@@ -123,6 +115,33 @@ const SPECIES_ARTWORK_ALIASES = {
   "emerald-gem-dragonborn": "dragonborn-gem",
   "sapphire-gem-dragonborn": "dragonborn-gem",
   "topaz-gem-dragonborn": "dragonborn-gem",
+  "hawk-headed-aven": "aven",
+  "ibis-headed-aven": "aven",
+  drow: "elf",
+  "high-elf": "elf",
+  "wood-elf": "elf",
+  "forest-gnome": "gnome",
+  "rock-gnome": "gnome",
+  "beasthide-shifter": "shifter",
+  "longtooth-shifter": "shifter",
+  "swiftstride-shifter": "shifter",
+  "wildhunt-shifter": "shifter",
+  "lorwyn-fairy": "fairy",
+  "shadowmoor-fairy": "fairy",
+  "lorwyn-kithkin": "kithkin",
+  "shadowmoor-kithkin": "kithkin",
+  "dwarf-kaladesh": "dwarf",
+  "goblin-dankwood": "goblin",
+  "orc-ixalan": "orc",
+});
+
+const SPECIES_ARTWORK_ALIASES = {
+  faerie: "fairy",
+  githyanki: "gith",
+  githzerai: "gith",
+  "gnome-deep": "deep-gnome",
+  "half-orc": "orc",
+  "lorwyn-changeling": "changeling",
 };
 
 export function normalizeSpeciesArtworkKey(value = "") {
@@ -136,15 +155,20 @@ export function normalizeSpeciesArtworkKey(value = "") {
 
 export function speciesArtworkFor(species = "") {
   const key = normalizeSpeciesArtworkKey(species);
-  const artworkKey = SPECIES_ARTWORK.has(key) ? key : SPECIES_ARTWORK_ALIASES[key];
-  return artworkKey
-    ? `/media/species/${artworkKey}.webp`
-    : "/media/species/adventurer.webp";
+  if (SPECIES_ARTWORK.has(key)) return `/media/species/${key}.webp`;
+  const portraitBase = SPECIES_VARIANT_PORTRAITS[key];
+  if (portraitBase) return `/media/species/${portraitBase}.webp?portrait=${encodeURIComponent(key)}`;
+  const artworkKey = SPECIES_ARTWORK_ALIASES[key];
+  return artworkKey ? `/media/species/${artworkKey}.webp` : "/media/species/adventurer.webp";
 }
 
 export function hasDedicatedSpeciesArtwork(species = "") {
   const key = normalizeSpeciesArtworkKey(species);
-  return SPECIES_ARTWORK.has(key) || Boolean(SPECIES_ARTWORK_ALIASES[key]);
+  return SPECIES_ARTWORK.has(key) || Boolean(SPECIES_VARIANT_PORTRAITS[key]) || Boolean(SPECIES_ARTWORK_ALIASES[key]);
+}
+
+export function isSpeciesVariantPortrait(species = "") {
+  return Boolean(SPECIES_VARIANT_PORTRAITS[normalizeSpeciesArtworkKey(species)]);
 }
 
 export function handleSpeciesArtworkError(event) {

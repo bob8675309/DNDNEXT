@@ -1,8 +1,10 @@
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import { PROFESSION_DEFINITIONS, PROFESSION_KEYS } from "../utils/craftingProfessions";
 import { ABILITY_KEYS, CLASS_DEFINITIONS, FEAT_OPTIONS, SIZE_OPTIONS, SKILL_DEFINITIONS, SPECIES_DEFINITIONS, standardAbilityScores } from "../utils/characterCreation";
 import { safeText, slug, uniqueText } from "../utils/npcForgeCatalog";
+import { handleSpeciesArtworkError, speciesArtworkFor } from "../utils/speciesArtwork";
+import { speciesCatalogSummary } from "../utils/speciesLore";
 import { speciesVariantChoiceBinding, speciesVariantUsesCatalogSubmenu } from "../utils/speciesCatalogFamilyMenu";
 import { useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
 
@@ -91,6 +93,14 @@ function catalogFamilyOptionMeta(option = {}) {
   return bits.filter(Boolean).join(" • ");
 }
 
+function SpeciesCatalogPortrait({ name }) {
+  return <span className="npc-forge-catalog-portrait" aria-hidden="true"><img src={speciesArtworkFor(name)} alt="" onError={handleSpeciesArtworkError} /></span>;
+}
+
+function SpeciesCatalogCopy({ name, source, species }) {
+  return <span className="npc-forge-catalog-species-copy"><strong>{name}</strong><small className="npc-forge-catalog-species-summary">{speciesCatalogSummary(species || name)}</small><em>{sourceLabel(source)}</em></span>;
+}
+
 function SpeciesCatalogFamilySubmenu({ species }) {
   const { state, setChoice } = useNpcForgeSourceChoices();
   if (!speciesVariantUsesCatalogSubmenu(species)) return null;
@@ -99,34 +109,65 @@ function SpeciesCatalogFamilySubmenu({ species }) {
   const { choice, group, field, selectedKey } = binding;
   return <div className="npc-forge-catalog-family-submenu" role="group" aria-label={`${choice.label} for ${species.name}`}><span className="npc-forge-catalog-family-submenu__label">{choice.label}</span><div className="npc-forge-catalog-family-submenu__rows">{(field.options || []).map((option) => {
     const canonical = (choice.options || []).find((entry) => entry.key === option.key) || option;
-    return <button key={option.key} type="button" className={`npc-forge-catalog-family-option${selectedKey === option.key ? " is-active" : ""}`} onClick={() => setChoice(group.id, field.id, [option.key])}><span><strong>{canonical.metadata?.catalogLabel || option.metadata?.catalogLabel || option.label}</strong><small>{catalogFamilyOptionMeta(canonical)}</small></span><b>›</b></button>;
-  })}</div><style jsx global>{`
-    .npc-forge-catalog-family-submenu{display:grid;gap:4px;margin:-4px 0 7px 13px;padding:7px 0 3px 10px;border-left:1px solid rgba(168,108,255,.42)}.npc-forge-catalog-family-submenu__label{padding:0 6px 2px;color:#cdb7ef;font-size:.57rem;font-weight:900;letter-spacing:.055em;text-transform:uppercase}.npc-forge-catalog-family-submenu__rows{display:grid;gap:3px}.npc-forge-catalog-family-option{display:flex!important;align-items:center!important;justify-content:space-between!important;width:100%!important;min-height:39px!important;padding:7px 9px!important;border:1px solid rgba(168,108,255,.2)!important;border-radius:7px!important;background:rgba(13,16,27,.76)!important;text-align:left!important}.npc-forge-catalog-family-option:hover{border-color:rgba(168,108,255,.5)!important;background:rgba(126,72,199,.1)!important}.npc-forge-catalog-family-option.is-active{border-color:#a86cff!important;background:linear-gradient(90deg,rgba(126,72,199,.2),rgba(88,214,199,.05))!important;box-shadow:inset 2px 0 0 #a86cff}.npc-forge-catalog-family-option>span{display:grid;gap:2px;min-width:0}.npc-forge-catalog-family-option strong{color:#fff;font-size:.64rem;line-height:1.2}.npc-forge-catalog-family-option small{color:rgba(255,255,255,.5);font-size:.52rem;line-height:1.2}.npc-forge-catalog-family-option>b{color:rgba(255,255,255,.45);font-size:.82rem}
-  `}</style></div>;
+    const displayName = canonical.metadata?.catalogDisplayName || canonical.metadata?.catalogLabel || option.metadata?.catalogLabel || option.label;
+    return <button key={option.key} type="button" className={`npc-forge-catalog-family-option${selectedKey === option.key ? " is-active" : ""}`} onClick={() => setChoice(group.id, field.id, [option.key])}><SpeciesCatalogPortrait name={displayName} /><span className="npc-forge-catalog-family-option__copy"><strong>{displayName}</strong><small>{speciesCatalogSummary(displayName)}</small><em>{catalogFamilyOptionMeta(canonical)}</em></span>{selectedKey === option.key ? <b className="npc-forge-catalog-child-check" aria-label="Selected">✓</b> : null}</button>;
+  })}</div></div>;
 }
 
 function SpeciesCatalogSourceVariants({ species, selectedId, onSelect }) {
   const variants = Array.isArray(species?.catalogSourceVariants) ? species.catalogSourceVariants : [];
   if (!variants.length) return null;
-  return <div className="npc-forge-catalog-family-submenu npc-forge-catalog-source-variants" role="group" aria-label={`Source variants for ${species.name}`}><span className="npc-forge-catalog-family-submenu__label">Setting / source variants</span><div className="npc-forge-catalog-family-submenu__rows">{variants.map((variant) => <button key={variant.id} type="button" className={`npc-forge-catalog-family-option${String(selectedId) === String(variant.id) ? " is-active" : ""}`} onClick={() => onSelect?.(variant)}><span><strong>{variant.name}</strong><small>{sourceLabel(variant.source)}</small></span><b>›</b></button>)}</div></div>;
+  return <div className="npc-forge-catalog-family-submenu npc-forge-catalog-source-variants" role="group" aria-label={`Source variants for ${species.name}`}><span className="npc-forge-catalog-family-submenu__label">Setting / source variants</span><div className="npc-forge-catalog-family-submenu__rows">{variants.map((variant) => <button key={variant.id} type="button" className={`npc-forge-catalog-family-option${String(selectedId) === String(variant.id) ? " is-active" : ""}`} onClick={() => onSelect?.(variant)}><SpeciesCatalogPortrait name={variant.name} /><SpeciesCatalogCopy name={variant.name} source={variant.source} species={variant} />{String(selectedId) === String(variant.id) ? <b className="npc-forge-catalog-child-check" aria-label="Selected">✓</b> : null}</button>)}</div></div>;
+}
+
+function familyRowCanExpand(row) {
+  return speciesVariantUsesCatalogSubmenu(row) || (Array.isArray(row?.catalogSourceVariants) && row.catalogSourceVariants.length > 0);
 }
 
 export function CatalogList({ label, query, onQuery, rows, selectedId, onSelect, emptyText }) {
   const { state: sourceChoiceState, setChoice } = useNpcForgeSourceChoices();
+  const [expandedSpeciesRows, setExpandedSpeciesRows] = useState(() => new Set());
+  const speciesMode = String(label || "").toLowerCase() === "species";
   const visibleRows = (rows || []).filter((row) => !row?.catalogHidden);
+  const setRowExpanded = (row, expanded) => {
+    const key = String(row?.id || row?.name || "");
+    if (!key) return;
+    setExpandedSpeciesRows((current) => {
+      const next = new Set(current);
+      if (expanded) next.add(key); else next.delete(key);
+      return next;
+    });
+  };
   const selectCatalogRow = (row) => {
     const binding = speciesVariantChoiceBinding(row, sourceChoiceState?.groups || [], sourceChoiceState?.selections || {});
     if (binding) setChoice(binding.group.id, binding.field.id, []);
     onSelect(row);
+    if (speciesMode && familyRowCanExpand(row)) setRowExpanded(row, true);
+  };
+  const toggleRowExpansion = (event, row, expanded) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setRowExpanded(row, !expanded);
+  };
+  const onChevronKeyDown = (event, row, expanded) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    toggleRowExpansion(event, row, expanded);
   };
   return <div className="npc-forge-catalog"><div className="npc-forge-catalog-head"><span>{label}</span><strong>{visibleRows.length}</strong></div><input className="npc-forge-search" value={query} onChange={(event) => onQuery(event.target.value)} placeholder={`Search ${label.toLowerCase()}…`} /><div className="npc-forge-catalog-list">{visibleRows.map((row) => {
     const sourceVariants = Array.isArray(row.catalogSourceVariants) ? row.catalogSourceVariants : [];
     const selectedSourceVariant = sourceVariants.some((variant) => String(variant.id) === String(selectedId));
     const active = String(selectedId) === String(row.id) || selectedSourceVariant;
     const parentSelected = String(selectedId) === String(row.id);
-    const family = speciesVariantUsesCatalogSubmenu(row);
-    return <Fragment key={row.id}><button type="button" className={active ? "is-active" : ""} onClick={() => selectCatalogRow(row)}><span><strong>{row.name || row.class_name}</strong><small>{sourceLabel(row.source)}</small></span><b>{active && (family || sourceVariants.length) ? "⌄" : "›"}</b></button>{active && parentSelected && family ? <SpeciesCatalogFamilySubmenu species={row} /> : null}{active && sourceVariants.length ? <SpeciesCatalogSourceVariants species={row} selectedId={selectedId} onSelect={onSelect} /> : null}</Fragment>;
-  })}{!visibleRows.length ? <div className="npc-forge-empty-list">{emptyText}</div> : null}</div></div>;
+    const family = speciesMode && speciesVariantUsesCatalogSubmenu(row);
+    const expandable = speciesMode && (family || sourceVariants.length > 0);
+    const expanded = expandable && expandedSpeciesRows.has(String(row.id));
+    return <Fragment key={row.id}><button type="button" className={`${active ? "is-active" : ""}${speciesMode ? " npc-forge-species-catalog-row" : ""}`} onClick={() => selectCatalogRow(row)}>{speciesMode ? <SpeciesCatalogPortrait name={row.name} /> : null}<span>{speciesMode ? <><strong>{row.name || row.class_name}</strong><small className="npc-forge-catalog-species-summary">{speciesCatalogSummary(row)}</small><em>{sourceLabel(row.source)}</em></> : <><strong>{row.name || row.class_name}</strong><small>{sourceLabel(row.source)}</small></>}</span>{expandable ? <b className="npc-forge-catalog-expand-toggle" role="button" tabIndex={0} aria-label={`${expanded ? "Collapse" : "Expand"} ${row.name} options`} aria-expanded={expanded} onClick={(event) => toggleRowExpansion(event, row, expanded)} onKeyDown={(event) => onChevronKeyDown(event, row, expanded)}>{expanded ? "⌄" : "›"}</b> : null}</button>{expanded && parentSelected && family ? <SpeciesCatalogFamilySubmenu species={row} /> : null}{expanded && sourceVariants.length ? <SpeciesCatalogSourceVariants species={row} selectedId={selectedId} onSelect={onSelect} /> : null}</Fragment>;
+  })}{!visibleRows.length ? <div className="npc-forge-empty-list">{emptyText}</div> : null}</div><style jsx global>{`
+    .npc-forge-species-catalog-row{display:grid!important;grid-template-columns:40px minmax(0,1fr) auto!important;align-items:center!important;gap:8px!important;min-height:54px!important;padding:6px 8px!important}.npc-forge-catalog-portrait{display:block;position:relative;width:38px;height:42px;border:1px solid rgba(168,108,255,.28);border-radius:6px;overflow:hidden;background:#111522;flex:0 0 auto}.npc-forge-catalog-portrait img{width:100%;height:100%;object-fit:cover;object-position:center 22%;display:block}.npc-forge-species-catalog-row>span:not(.npc-forge-catalog-portrait),.npc-forge-catalog-species-copy,.npc-forge-catalog-family-option__copy{display:grid!important;gap:1px!important;min-width:0!important}.npc-forge-catalog-species-summary{display:-webkit-box!important;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:rgba(255,255,255,.62)!important;font-size:.52rem!important;line-height:1.28!important;font-weight:500!important}.npc-forge-species-catalog-row em,.npc-forge-catalog-species-copy em,.npc-forge-catalog-family-option__copy em{color:rgba(119,225,211,.68);font-size:.46rem;font-style:normal;font-weight:800;letter-spacing:.035em}.npc-forge-catalog-expand-toggle{display:grid;place-items:center;width:24px;height:24px;margin-left:3px;border:1px solid rgba(168,108,255,.28);border-radius:50%;color:#e8dfff!important;background:rgba(126,72,199,.08);font-size:.88rem!important;line-height:1;cursor:pointer;transition:background .15s ease,border-color .15s ease,transform .15s ease}.npc-forge-catalog-expand-toggle:hover,.npc-forge-catalog-expand-toggle:focus{border-color:#a86cff;background:rgba(126,72,199,.22);outline:none}.npc-forge-catalog-family-submenu{display:grid;gap:4px;margin:-4px 0 7px 14px;padding:7px 0 3px 10px;border-left:1px solid rgba(168,108,255,.42)}.npc-forge-catalog-family-submenu__label{padding:0 6px 2px;color:#cdb7ef;font-size:.57rem;font-weight:900;letter-spacing:.055em;text-transform:uppercase}.npc-forge-catalog-family-submenu__rows{display:grid;gap:3px}.npc-forge-catalog-family-option{display:grid!important;grid-template-columns:34px minmax(0,1fr) auto!important;align-items:center!important;gap:7px!important;width:100%!important;min-height:48px!important;padding:5px 7px!important;border:1px solid rgba(168,108,255,.2)!important;border-radius:7px!important;background:rgba(13,16,27,.76)!important;text-align:left!important}.npc-forge-catalog-family-option .npc-forge-catalog-portrait{width:32px;height:36px;border-radius:5px}.npc-forge-catalog-family-option:hover{border-color:rgba(168,108,255,.5)!important;background:rgba(126,72,199,.1)!important}.npc-forge-catalog-family-option.is-active{border-color:#a86cff!important;background:linear-gradient(90deg,rgba(126,72,199,.2),rgba(88,214,199,.05))!important;box-shadow:inset 2px 0 0 #a86cff}.npc-forge-catalog-family-option strong{color:#fff;font-size:.62rem;line-height:1.2}.npc-forge-catalog-family-option small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:rgba(255,255,255,.6);font-size:.49rem;line-height:1.22}.npc-forge-catalog-child-check{display:grid;place-items:center;width:19px;height:19px;border:1px solid #a86cff;border-radius:50%;color:#fff!important;font-size:.6rem!important;background:rgba(126,72,199,.35)}
+    img[src*="portrait=air-genasi"]{filter:saturate(.7) hue-rotate(155deg) brightness(1.16);object-position:35% 20%!important}img[src*="portrait=earth-genasi"]{filter:saturate(.72) sepia(.42) hue-rotate(335deg) brightness(.88);object-position:63% 24%!important}img[src*="portrait=fire-genasi"]{filter:saturate(1.38) sepia(.28) hue-rotate(328deg) brightness(1.05);object-position:48% 18%!important}img[src*="portrait=water-genasi"]{filter:saturate(1.08) hue-rotate(170deg) brightness(.95);object-position:72% 22%!important}
+    img[src*="portrait=black-dragonborn"]{filter:saturate(.45) brightness(.58) contrast(1.22)}img[src*="portrait=blue-dragonborn"]{filter:hue-rotate(170deg) saturate(1.25) brightness(.9)}img[src*="portrait=green-dragonborn"]{filter:hue-rotate(70deg) saturate(1.12) brightness(.83)}img[src*="portrait=red-dragonborn"]{filter:hue-rotate(325deg) saturate(1.45) brightness(.92)}img[src*="portrait=white-dragonborn"]{filter:saturate(.18) brightness(1.38) contrast(.88)}img[src*="portrait=brass-dragonborn"]{filter:sepia(.28) saturate(1.25) brightness(1.05)}img[src*="portrait=bronze-dragonborn"]{filter:sepia(.52) hue-rotate(338deg) saturate(1.2) brightness(.83)}img[src*="portrait=copper-dragonborn"]{filter:sepia(.62) hue-rotate(320deg) saturate(1.45) brightness(.9)}img[src*="portrait=gold-dragonborn"]{filter:sepia(.5) saturate(1.7) brightness(1.16)}img[src*="portrait=silver-dragonborn"]{filter:saturate(.15) brightness(1.22) contrast(1.02)}img[src*="portrait=amethyst-gem-dragonborn"]{filter:hue-rotate(268deg) saturate(1.4)}img[src*="portrait=crystal-gem-dragonborn"]{filter:saturate(.3) brightness(1.3)}img[src*="portrait=emerald-gem-dragonborn"]{filter:hue-rotate(72deg) saturate(1.35)}img[src*="portrait=sapphire-gem-dragonborn"]{filter:hue-rotate(188deg) saturate(1.35)}img[src*="portrait=topaz-gem-dragonborn"]{filter:sepia(.5) hue-rotate(342deg) saturate(1.4) brightness(1.05)}
+    img[src*="portrait=hawk-headed-aven"]{filter:saturate(1.18) sepia(.18) contrast(1.08);object-position:34% 18%!important}img[src*="portrait=ibis-headed-aven"]{filter:hue-rotate(18deg) saturate(.78) brightness(1.12);object-position:72% 18%!important}img[src*="portrait=drow"]{filter:hue-rotate(195deg) saturate(.62) brightness(.72);object-position:40% 18%!important}img[src*="portrait=high-elf"]{filter:saturate(.72) brightness(1.13);object-position:55% 16%!important}img[src*="portrait=wood-elf"]{filter:hue-rotate(58deg) saturate(.92) brightness(.9);object-position:68% 20%!important}img[src*="portrait=forest-gnome"]{filter:hue-rotate(52deg) saturate(1.04);object-position:38% 18%!important}img[src*="portrait=rock-gnome"]{filter:sepia(.25) saturate(.86) contrast(1.08);object-position:67% 20%!important}img[src*="portrait=beasthide-shifter"]{filter:sepia(.35) saturate(.68) contrast(1.12);object-position:32% 18%!important}img[src*="portrait=longtooth-shifter"]{filter:sepia(.15) saturate(1.15) brightness(.88);object-position:48% 18%!important}img[src*="portrait=swiftstride-shifter"]{filter:hue-rotate(18deg) saturate(.9) brightness(1.12);object-position:66% 18%!important}img[src*="portrait=wildhunt-shifter"]{filter:hue-rotate(75deg) saturate(.72) brightness(.94);object-position:78% 18%!important}img[src*="portrait=lorwyn-fairy"]{filter:saturate(1.25) brightness(1.12);object-position:35% 15%!important}img[src*="portrait=shadowmoor-fairy"]{filter:hue-rotate(220deg) saturate(.72) brightness(.68);object-position:68% 17%!important}img[src*="portrait=lorwyn-kithkin"]{filter:sepia(.14) saturate(1.08) brightness(1.08);object-position:36% 18%!important}img[src*="portrait=shadowmoor-kithkin"]{filter:hue-rotate(205deg) saturate(.58) brightness(.68);object-position:68% 18%!important}img[src*="portrait=dwarf-kaladesh"]{filter:sepia(.3) hue-rotate(338deg) saturate(1.05);object-position:62% 18%!important}img[src*="portrait=goblin-dankwood"]{filter:hue-rotate(42deg) saturate(1.08) brightness(1.08);object-position:65% 18%!important}img[src*="portrait=orc-ixalan"]{filter:hue-rotate(155deg) saturate(.78) brightness(.9);object-position:60% 18%!important}
+  `}</style></div>;
 }
 export async function recoverCreatedCharacter(requestId) {
   if (!requestId) return null;
