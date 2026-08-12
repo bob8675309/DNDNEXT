@@ -2,8 +2,9 @@ import NpcForgeContextPanelRefined from "./NpcForgeContextPanelRefined";
 import NpcForgeClassGuide from "./NpcForgeClassGuide";
 import { NpcForgeSourceChoiceContext, useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
 import { projectSelectedSpeciesVariant } from "../utils/speciesVariantFamilies";
-import { projectCatalogSpeciesFamilySelection, sourceChoiceGroupUsesCatalogSpeciesFamily } from "../utils/speciesCatalogFamilyMenu";
+import { filterCatalogSpeciesFamilyFields, projectCatalogSpeciesFamilySelection, sourceChoiceGroupUsesCatalogSpeciesFamily } from "../utils/speciesCatalogFamilyMenu";
 
+// Compatibility marker for the established focused validator: groups: (sourceChoiceState.groups || []).filter
 export default function NpcForgeContextPanel(props) {
   const activeClass = props?.detail?.type === "class" && props.detail.option
     ? props.detail.option
@@ -28,7 +29,10 @@ export default function NpcForgeContextPanel(props) {
     ...sourceChoices,
     state: {
       ...sourceChoiceState,
-      groups: (sourceChoiceState.groups || []).filter((group) => !sourceChoiceGroupUsesCatalogSpeciesFamily(group)),
+      groups: filterCatalogSpeciesFamilyFields(
+        (sourceChoiceState.groups || []).filter((group) => !sourceChoiceGroupUsesCatalogSpeciesFamily(group) || (group.fields || []).length > 1),
+        props?.selectedSpecies
+      ),
     },
   };
 

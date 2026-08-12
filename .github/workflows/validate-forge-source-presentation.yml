@@ -16,12 +16,15 @@ on:
       - "scripts/import_5etools_character_options_refined.mjs"
       - "scripts/validate_forge_source_presentation.mjs"
       - "scripts/validate_forge_species_catalog_families.mjs"
+      - "scripts/validate_forge_species_family_expansion.mjs"
       - "sql/20260811_91_genasi_subrace_catalog.sql"
       - "sql/20260811_92_genasi_source_detail_restore.sql"
+      - "sql/20260812_93_aven_subrace_catalog.sql"
       - "utils/npcForgeCatalog.js"
       - "utils/playerFacingText.js"
       - "utils/playerForgeSpeciesChoices.js"
       - "utils/speciesArtwork.js"
+      - "utils/speciesCatalogExpansion.js"
       - "utils/speciesCatalogFamilyMenu.js"
       - "utils/speciesPresentation.js"
       - "utils/speciesVariantFamilies.js"
@@ -41,12 +44,15 @@ on:
       - "scripts/import_5etools_character_options_refined.mjs"
       - "scripts/validate_forge_source_presentation.mjs"
       - "scripts/validate_forge_species_catalog_families.mjs"
+      - "scripts/validate_forge_species_family_expansion.mjs"
       - "sql/20260811_91_genasi_subrace_catalog.sql"
       - "sql/20260811_92_genasi_source_detail_restore.sql"
+      - "sql/20260812_93_aven_subrace_catalog.sql"
       - "utils/npcForgeCatalog.js"
       - "utils/playerFacingText.js"
       - "utils/playerForgeSpeciesChoices.js"
       - "utils/speciesArtwork.js"
+      - "utils/speciesCatalogExpansion.js"
       - "utils/speciesCatalogFamilyMenu.js"
       - "utils/speciesPresentation.js"
       - "utils/speciesVariantFamilies.js"
@@ -77,6 +83,7 @@ jobs:
         run: |
           node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_source_presentation.mjs
           node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_species_catalog_families.mjs
+          node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_species_family_expansion.mjs
 
       - name: Run production build gate
         run: node scripts/vercel_build_v2.mjs
