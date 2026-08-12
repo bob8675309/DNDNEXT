@@ -91,11 +91,19 @@ const SPECIES_ARTWORK = new Set([
   "zombie",
 ]);
 
-// These entries intentionally use the repository's existing source-family art
-// as their base image, but receive a child-specific query key. The Forge CSS
-// uses that key for a distinct crop/tone treatment, giving each catalogue child
-// its own portrait presentation without inventing false source-art provenance.
-const SPECIES_VARIANT_PORTRAITS = Object.freeze({
+// Canonical source-book artwork aliases. These are consumed outside the Forge,
+// so they intentionally remain stable even when the catalogue applies a more
+// distinctive presentation-only crop/tone treatment.
+const SPECIES_ARTWORK_ALIASES = {
+  "dwarf-kaladesh": "dwarf",
+  faerie: "fairy",
+  githyanki: "gith",
+  githzerai: "gith",
+  "gnome-deep": "deep-gnome",
+  "goblin-dankwood": "goblin",
+  "half-orc": "orc",
+  "lorwyn-changeling": "changeling",
+  "orc-ixalan": "orc",
   "air-genasi": "genasi",
   "earth-genasi": "genasi",
   "fire-genasi": "genasi",
@@ -130,19 +138,19 @@ const SPECIES_VARIANT_PORTRAITS = Object.freeze({
   "shadowmoor-fairy": "fairy",
   "lorwyn-kithkin": "kithkin",
   "shadowmoor-kithkin": "kithkin",
-  "dwarf-kaladesh": "dwarf",
-  "goblin-dankwood": "goblin",
-  "orc-ixalan": "orc",
-});
-
-const SPECIES_ARTWORK_ALIASES = {
-  faerie: "fairy",
-  githyanki: "gith",
-  githzerai: "gith",
-  "gnome-deep": "deep-gnome",
-  "half-orc": "orc",
-  "lorwyn-changeling": "changeling",
 };
+
+const SPECIES_VARIANT_PORTRAITS = new Set([
+  "air-genasi", "earth-genasi", "fire-genasi", "water-genasi",
+  "black-dragonborn", "blue-dragonborn", "green-dragonborn", "red-dragonborn", "white-dragonborn",
+  "brass-dragonborn", "bronze-dragonborn", "copper-dragonborn", "gold-dragonborn", "silver-dragonborn",
+  "amethyst-gem-dragonborn", "crystal-gem-dragonborn", "emerald-gem-dragonborn", "sapphire-gem-dragonborn", "topaz-gem-dragonborn",
+  "hawk-headed-aven", "ibis-headed-aven",
+  "drow", "high-elf", "wood-elf", "forest-gnome", "rock-gnome",
+  "beasthide-shifter", "longtooth-shifter", "swiftstride-shifter", "wildhunt-shifter",
+  "lorwyn-fairy", "shadowmoor-fairy", "lorwyn-kithkin", "shadowmoor-kithkin",
+  "dwarf-kaladesh", "goblin-dankwood", "orc-ixalan",
+]);
 
 export function normalizeSpeciesArtworkKey(value = "") {
   return String(value || "")
@@ -155,20 +163,28 @@ export function normalizeSpeciesArtworkKey(value = "") {
 
 export function speciesArtworkFor(species = "") {
   const key = normalizeSpeciesArtworkKey(species);
-  if (SPECIES_ARTWORK.has(key)) return `/media/species/${key}.webp`;
-  const portraitBase = SPECIES_VARIANT_PORTRAITS[key];
-  if (portraitBase) return `/media/species/${portraitBase}.webp?portrait=${encodeURIComponent(key)}`;
-  const artworkKey = SPECIES_ARTWORK_ALIASES[key];
-  return artworkKey ? `/media/species/${artworkKey}.webp` : "/media/species/adventurer.webp";
+  const artworkKey = SPECIES_ARTWORK.has(key) ? key : SPECIES_ARTWORK_ALIASES[key];
+  return artworkKey
+    ? `/media/species/${artworkKey}.webp`
+    : "/media/species/adventurer.webp";
+}
+
+export function speciesPortraitArtworkFor(species = "") {
+  const key = normalizeSpeciesArtworkKey(species);
+  const canonical = speciesArtworkFor(species);
+  return SPECIES_VARIANT_PORTRAITS.has(key)
+    ? `${canonical}?portrait=${encodeURIComponent(key)}`
+    : canonical;
 }
 
 export function hasDedicatedSpeciesArtwork(species = "") {
   const key = normalizeSpeciesArtworkKey(species);
-  return SPECIES_ARTWORK.has(key) || Boolean(SPECIES_VARIANT_PORTRAITS[key]) || Boolean(SPECIES_ARTWORK_ALIASES[key]);
+  return SPECIES_ARTWORK.has(key) || Boolean(SPECIES_ARTWORK_ALIASES[key]);
 }
 
-export function isSpeciesVariantPortrait(species = "") {
-  return Boolean(SPECIES_VARIANT_PORTRAITS[normalizeSpeciesArtworkKey(species)]);
+export function hasSpeciesPortraitArtwork(species = "") {
+  const key = normalizeSpeciesArtworkKey(species);
+  return hasDedicatedSpeciesArtwork(species) || SPECIES_VARIANT_PORTRAITS.has(key);
 }
 
 export function handleSpeciesArtworkError(event) {
