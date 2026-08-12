@@ -80,10 +80,13 @@ jobs:
         run: npm ci
 
       - name: Validate structured source presentation
-        run: |
-          node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_source_presentation.mjs
-          node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_species_catalog_families.mjs
-          node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_species_family_expansion.mjs
+        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_source_presentation.mjs
+
+      - name: Validate established Species catalogue families
+        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_species_catalog_families.mjs
+
+      - name: Validate expanded Species catalogue families
+        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_species_family_expansion.mjs
 
       - name: Run production build gate
         run: node scripts/vercel_build_v2.mjs
