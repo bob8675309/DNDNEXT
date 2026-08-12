@@ -3,7 +3,6 @@
 Status date: 2026-08-11/12
 PR: #170 (`agent/character-forge-resilience-presentation`)
 Validated code head: `d2b64bd1128a0457393283a463fddd71cc7c9094`
-Documentation-only descendant: `1c372bf7a09b12f138d2bc21b831466d5223024e`
 Database authority: `20260812042950 aven_subrace_catalog` (migration 93)
 Merge status: open/unmerged; merge only after explicit user approval
 
@@ -199,5 +198,7 @@ On a deployment containing `d2b64bd...` or a code-identical descendant:
 8. Repeat the source-row check for Dwarf (Kaladesh), Elf (Kaladesh/Zendikar), Orc (Ixalan), Minotaur (Amonkhet), and Goblin (Dankwood).
 9. Confirm Sea Elf, Astral Elf, Eladrin, Shadar-kai, Duergar, and Deep Gnome remain independent catalogue Species.
 10. Confirm Goliath Giant Ancestry and Tiefling Fiendish Legacy remain inline.
+
+Later documentation-only descendants do not supersede the validated runtime/source checkpoint above.
 
 PR #170 remains open and must not be merged until the user explicitly approves the merge.
