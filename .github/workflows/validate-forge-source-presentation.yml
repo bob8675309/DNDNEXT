@@ -83,7 +83,16 @@ jobs:
         run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_source_presentation.mjs
 
       - name: Validate established Species catalogue families
-        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_species_catalog_families.mjs
+        shell: bash
+        run: |
+          set +e
+          node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_species_catalog_families.mjs 2> >(tee /tmp/species-family-error >&2)
+          status=$?
+          if [ "$status" -ne 0 ]; then
+            message=$(tr '\n' ' ' < /tmp/species-family-error | tail -c 1800)
+            echo "::error title=Established Species family validator::${message}"
+            exit "$status"
+          fi
 
       - name: Validate expanded Species catalogue families
         run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_species_family_expansion.mjs
