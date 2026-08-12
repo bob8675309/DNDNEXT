@@ -84,9 +84,11 @@ export function toolProficiencyDescription(toolName = "") {
   return `${name} represents specialized practical training. Add the character's proficiency bonus when that training is relevant to the check.`;
 }
 
-function catalogFamilyOptionLabel(option = {}) {
+function catalogFamilyOptionMeta(option = {}) {
+  const bits = [sourceLabel(option?.source)];
   const damageType = safeText(option?.metadata?.damageType);
-  return damageType ? `${option.label} — ${damageType}` : option.label;
+  if (damageType) bits.push(damageType);
+  return bits.filter(Boolean).join(" • ");
 }
 
 function SpeciesCatalogFamilySubmenu({ species }) {
@@ -95,13 +97,19 @@ function SpeciesCatalogFamilySubmenu({ species }) {
   const binding = speciesVariantChoiceBinding(species, state?.groups || [], state?.selections || {});
   if (!binding) return null;
   const { choice, group, field, selectedKey } = binding;
-  return <div className="npc-forge-catalog-family-submenu" role="group" aria-label={`${choice.label} for ${species.name}`}><label><span>{choice.label}</span><select value={selectedKey} onChange={(event) => setChoice(group.id, field.id, event.target.value ? [event.target.value] : [])}><option value="">Choose {choice.label.toLowerCase()}…</option>{(field.options || []).map((option) => <option key={option.key} value={option.key}>{catalogFamilyOptionLabel(option)}</option>)}</select></label><small>Selecting an option updates the Species information on the right.</small><style jsx global>{`
-    .npc-forge-catalog-family-submenu{display:grid;gap:5px;margin:-4px 0 6px 8px;padding:8px 9px;border:1px solid rgba(168,108,255,.34);border-top:0;border-radius:0 0 8px 8px;background:linear-gradient(120deg,rgba(126,72,199,.14),rgba(88,214,199,.04))}.npc-forge-catalog-family-submenu label{display:grid;gap:4px}.npc-forge-catalog-family-submenu label>span{color:#eadfff;font-size:.62rem;font-weight:900;letter-spacing:.035em}.npc-forge-catalog-family-submenu select{width:100%;min-width:0;padding:7px 8px;border:1px solid rgba(168,108,255,.38);border-radius:7px;color:#fff;background:#111522;font-size:.64rem}.npc-forge-catalog-family-submenu>small{color:rgba(255,255,255,.6);font-size:.54rem;line-height:1.35}
+  return <div className="npc-forge-catalog-family-submenu" role="group" aria-label={`${choice.label} for ${species.name}`}><span className="npc-forge-catalog-family-submenu__label">{choice.label}</span><div className="npc-forge-catalog-family-submenu__rows">{(field.options || []).map((option) => <button key={option.key} type="button" className={`npc-forge-catalog-family-option${selectedKey === option.key ? " is-active" : ""}`} onClick={() => setChoice(group.id, field.id, [option.key])}><span><strong>{option.label}</strong><small>{catalogFamilyOptionMeta(option)}</small></span><b>›</b></button>)}</div><style jsx global>{`
+    .npc-forge-catalog-family-submenu{display:grid;gap:4px;margin:-4px 0 7px 13px;padding:7px 0 3px 10px;border-left:1px solid rgba(168,108,255,.42)}.npc-forge-catalog-family-submenu__label{padding:0 6px 2px;color:#cdb7ef;font-size:.57rem;font-weight:900;letter-spacing:.055em;text-transform:uppercase}.npc-forge-catalog-family-submenu__rows{display:grid;gap:3px}.npc-forge-catalog-family-option{display:flex!important;align-items:center!important;justify-content:space-between!important;width:100%!important;min-height:39px!important;padding:7px 9px!important;border:1px solid rgba(168,108,255,.2)!important;border-radius:7px!important;background:rgba(13,16,27,.76)!important;text-align:left!important}.npc-forge-catalog-family-option:hover{border-color:rgba(168,108,255,.5)!important;background:rgba(126,72,199,.1)!important}.npc-forge-catalog-family-option.is-active{border-color:#a86cff!important;background:linear-gradient(90deg,rgba(126,72,199,.2),rgba(88,214,199,.05))!important;box-shadow:inset 2px 0 0 #a86cff}.npc-forge-catalog-family-option>span{display:grid;gap:2px;min-width:0}.npc-forge-catalog-family-option strong{color:#fff;font-size:.64rem;line-height:1.2}.npc-forge-catalog-family-option small{color:rgba(255,255,255,.5);font-size:.52rem;line-height:1.2}.npc-forge-catalog-family-option>b{color:rgba(255,255,255,.45);font-size:.82rem}
   `}</style></div>;
 }
 
 export function CatalogList({ label, query, onQuery, rows, selectedId, onSelect, emptyText }) {
-  return <div className="npc-forge-catalog"><div className="npc-forge-catalog-head"><span>{label}</span><strong>{rows.length}</strong></div><input className="npc-forge-search" value={query} onChange={(event) => onQuery(event.target.value)} placeholder={`Search ${label.toLowerCase()}…`} /><div className="npc-forge-catalog-list">{rows.map((row) => <Fragment key={row.id}><button type="button" className={selectedId === row.id ? "is-active" : ""} onClick={() => onSelect(row)}><span><strong>{row.name || row.class_name}</strong><small>{sourceLabel(row.source)}</small></span><b>›</b></button>{selectedId === row.id ? <SpeciesCatalogFamilySubmenu species={row} /> : null}</Fragment>)}{!rows.length ? <div className="npc-forge-empty-list">{emptyText}</div> : null}</div></div>;
+  const { state: sourceChoiceState, setChoice } = useNpcForgeSourceChoices();
+  const selectCatalogRow = (row) => {
+    const binding = speciesVariantChoiceBinding(row, sourceChoiceState?.groups || [], sourceChoiceState?.selections || {});
+    if (binding) setChoice(binding.group.id, binding.field.id, []);
+    onSelect(row);
+  };
+  return <div className="npc-forge-catalog"><div className="npc-forge-catalog-head"><span>{label}</span><strong>{rows.length}</strong></div><input className="npc-forge-search" value={query} onChange={(event) => onQuery(event.target.value)} placeholder={`Search ${label.toLowerCase()}…`} /><div className="npc-forge-catalog-list">{rows.map((row) => { const active = selectedId === row.id; const family = speciesVariantUsesCatalogSubmenu(row); return <Fragment key={row.id}><button type="button" className={active ? "is-active" : ""} onClick={() => selectCatalogRow(row)}><span><strong>{row.name || row.class_name}</strong><small>{sourceLabel(row.source)}</small></span><b>{active && family ? "⌄" : "›"}</b></button>{active && family ? <SpeciesCatalogFamilySubmenu species={row} /> : null}</Fragment>; })}{!rows.length ? <div className="npc-forge-empty-list">{emptyText}</div> : null}</div></div>;
 }
 export async function recoverCreatedCharacter(requestId) {
   if (!requestId) return null;

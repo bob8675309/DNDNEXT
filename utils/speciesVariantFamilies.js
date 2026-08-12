@@ -58,7 +58,8 @@ function variantFacts(species) {
   return output;
 }
 
-function presentationMetadata(species, { selectorTraitName = "", selectorDescription = "", replaceParentTraits = false } = {}) {
+function presentationMetadata(species, { selectorTraitName = "", selectorDescription = "", replaceParentTraits = false, displayName = "", artworkName = "" } = {}) {
+  const resolvedDisplayName = text(displayName || species?.name);
   return {
     speed: species?.metadata?.speed ?? species?.speed ?? null,
     size: array(species?.size).length ? array(species.size) : array(species?.metadata?.size),
@@ -68,6 +69,8 @@ function presentationMetadata(species, { selectorTraitName = "", selectorDescrip
     selectorTraitName,
     selectorDescription,
     replaceParentTraits,
+    displayName: resolvedDisplayName,
+    artworkName: text(artworkName || resolvedDisplayName),
   };
 }
 
@@ -88,10 +91,11 @@ function genasiFamily(rows) {
       helper,
       options: children.map((row) => {
         const lineage = text(row.name).match(/\(([^)]+)\)/)?.[1] || row.name;
+        const displayName = `${lineage} Genasi`;
         return {
           key: `genasi-${slug(lineage)}-mpmm`,
           value: lineage,
-          label: `${lineage} Genasi`,
+          label: displayName,
           source: row.source,
           kind: "lineage",
           description: traitSummaries(row, ["Size", "Darkvision"]).map((entry) => `${entry.name}: ${entry.description}`).join(" "),
@@ -104,7 +108,7 @@ function genasiFamily(rows) {
             variantSource: row.source,
             facts: variantFacts(row),
             traits: traitSummaries(row, ["Size", "Darkvision"]),
-            presentation: presentationMetadata(row, { selectorTraitName: "Elemental Lineage", selectorDescription: helper, replaceParentTraits: true }),
+            presentation: presentationMetadata(row, { selectorTraitName: "Elemental Lineage", selectorDescription: helper, replaceParentTraits: true, displayName, artworkName: "Genasi" }),
           },
         };
       }),
@@ -141,27 +145,48 @@ function tableOptions(species, traitName, family, prefix = "") {
   });
 }
 
+const CHROMATIC_DRAGONBORN = new Set(["Black", "Blue", "Green", "Red", "White"]);
+function standardDragonbornArtwork(ancestry) {
+  return CHROMATIC_DRAGONBORN.has(text(ancestry)) ? "Dragonborn (Chromatic)" : "Dragonborn (Metallic)";
+}
+
 function dragonbornFamily(rows) {
   const parent = rows.find((row) => norm(row.name) === "dragonborn" && text(row.source).toUpperCase() === "XPHB");
   if (!parent) return null;
   const gem = rows.find((row) => norm(row.name) === "dragonborn gem" && text(row.source).toUpperCase() === "FTD");
   const related = rows.filter((row) => ["dragonborn chromatic", "dragonborn gem", "dragonborn metallic"].includes(norm(row.name)) && text(row.source).toUpperCase() === "FTD");
-  const standard = tableOptions(parent, "Draconic Ancestry", "dragonborn-ancestry", "dragonborn-");
   const helper = "Choose one draconic ancestry. Standard chromatic and metallic colors use the 2024 Player's Handbook Dragonborn rules; Gem ancestries use their Fizban's Treasury of Dragons traits and are labeled separately.";
-  const gemOptions = gem ? tableOptions(gem, "Gem Ancestry", "dragonborn-ancestry", "dragonborn-gem-").map((option) => ({
-    ...option,
-    label: `${option.label} (Gem)`,
-    description: `${option.metadata?.damageType || "Gem"} affinity • Fizban's Treasury of Dragons`,
-    metadata: {
-      ...(option.metadata || {}),
-      ruleFamily: "FTD Gem Dragonborn",
-      familySpeciesName: gem.name,
-      familySpeciesId: gem.id,
-      traits: traitSummaries(gem, ["Gem Ancestry"]),
-      facts: variantFacts(gem),
-      presentation: presentationMetadata(gem, { selectorTraitName: "Draconic Ancestry", selectorDescription: helper, replaceParentTraits: true }),
-    },
-  })) : [];
+  const standard = tableOptions(parent, "Draconic Ancestry", "dragonborn-ancestry", "dragonborn-").map((option) => {
+    const displayName = `${option.value} Dragonborn`;
+    return {
+      ...option,
+      label: displayName,
+      metadata: {
+        ...(option.metadata || {}),
+        ruleFamily: "XPHB Dragonborn",
+        facts: variantFacts(parent),
+        traits: traitSummaries(parent, ["Draconic Ancestry"]),
+        presentation: presentationMetadata(parent, { selectorTraitName: "Draconic Ancestry", selectorDescription: helper, replaceParentTraits: true, displayName, artworkName: standardDragonbornArtwork(option.value) }),
+      },
+    };
+  });
+  const gemOptions = gem ? tableOptions(gem, "Gem Ancestry", "dragonborn-ancestry", "dragonborn-gem-").map((option) => {
+    const displayName = `${option.value} Gem Dragonborn`;
+    return {
+      ...option,
+      label: displayName,
+      description: `${option.metadata?.damageType || "Gem"} affinity • Fizban's Treasury of Dragons`,
+      metadata: {
+        ...(option.metadata || {}),
+        ruleFamily: "FTD Gem Dragonborn",
+        familySpeciesName: gem.name,
+        familySpeciesId: gem.id,
+        traits: traitSummaries(gem, ["Gem Ancestry"]),
+        facts: variantFacts(gem),
+        presentation: presentationMetadata(gem, { selectorTraitName: "Draconic Ancestry", selectorDescription: helper, replaceParentTraits: true, displayName, artworkName: "Dragonborn (Gem)" }),
+      },
+    };
+  }) : [];
   if (!standard.length) return null;
   return {
     parent,
@@ -229,6 +254,8 @@ export function projectSpeciesVariantPresentation(species = null, selectedVarian
   const projectedDetails = [selectorDetail, ...array(presentation.traits).filter((detail) => norm(detail?.name) !== norm(selectorName))];
   return {
     ...species,
+    name: text(presentation.displayName) || species.name,
+    source: selectedVariant.source || species.source,
     speed: presentation.speed ?? species.speed,
     size: array(presentation.size).length ? array(presentation.size) : species.size,
     darkvision: presentation.darkvision ?? null,
@@ -240,8 +267,10 @@ export function projectSpeciesVariantPresentation(species = null, selectedVarian
       speed: presentation.speed ?? species.metadata?.speed ?? species.speed,
       size: array(presentation.size).length ? array(presentation.size) : species.metadata?.size,
       darkvision: presentation.darkvision ?? null,
+      presentationArtworkName: text(presentation.artworkName) || text(presentation.displayName) || species.name,
       selectedVariantPresentation: {
         label: selectedVariant.label,
+        variantName: selectedVariant.metadata?.variantName || selectedVariant.value || null,
         source: selectedVariant.source,
         family: selectedVariant.metadata?.family || null,
         ruleFamily: selectedVariant.metadata?.ruleFamily || null,
