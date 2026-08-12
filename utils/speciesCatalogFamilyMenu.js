@@ -1,4 +1,4 @@
-import { projectSelectedSpeciesVariant, speciesVariantChoice } from "./speciesVariantFamilies";
+import { speciesVariantChoice } from "./speciesVariantFamilies";
 
 const text = (value) => String(value ?? "").trim();
 const norm = (value) => text(value).toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
@@ -76,24 +76,23 @@ function mergeTraitNames(details = [], existing = []) {
   return output;
 }
 
-export function projectCatalogSpeciesFamilyPresentation(species = null, groups = [], selections = {}) {
-  const projected = projectSelectedSpeciesVariant(species, groups, selections);
-  const binding = speciesVariantChoiceBinding(species, groups, selections);
-  if (!projected || !binding?.selected) return projected;
+export function projectCatalogSpeciesFamilySelection(projectedSpecies = null, sourceSpecies = null, groups = [], selections = {}) {
+  const binding = speciesVariantChoiceBinding(sourceSpecies, groups, selections);
+  if (!projectedSpecies || !binding?.selected) return projectedSpecies;
 
   const summary = selectedFamilySummary(binding.choice, binding.selected);
-  const details = array(projected.traitDetails);
+  const details = array(projectedSpecies.traitDetails);
   const selectorIndex = details.findIndex((detail) => norm(detail?.name) === norm(summary.name));
   const nextDetails = selectorIndex >= 0
     ? details.map((detail, index) => index === selectorIndex ? summary : detail)
     : [summary, ...details];
 
   return {
-    ...projected,
-    traits: mergeTraitNames(nextDetails, projected.traits),
+    ...projectedSpecies,
+    traits: mergeTraitNames(nextDetails, projectedSpecies.traits),
     traitDetails: nextDetails,
     metadata: {
-      ...(projected.metadata || {}),
+      ...(projectedSpecies.metadata || {}),
       selectedCatalogSpeciesFamily: {
         family: text(binding.choice.id),
         label: text(binding.selected.label),

@@ -12,15 +12,15 @@ const panelSource = read("components/NpcForgeContextPanel.js");
 const familySource = read("utils/speciesCatalogFamilyMenu.js");
 
 for (const token of ["SpeciesCatalogFamilySubmenu", "speciesVariantChoiceBinding", "speciesVariantUsesCatalogSubmenu", "setChoice(group.id, field.id", "<select", "Selecting an option updates the Species information on the right"]) assert.ok(coreSource.includes(token), `left Species family submenu missing ${token}`);
-for (const token of ["NpcForgeSourceChoiceContext.Provider", "sourceChoiceGroupUsesCatalogSpeciesFamily", "projectCatalogSpeciesFamilyPresentation", "groups: (sourceChoiceState.groups || []).filter"]) assert.ok(panelSource.includes(token), `right Species presentation filtering missing ${token}`);
-for (const token of ["genasi-elemental-lineage", "dragonborn-ancestry", "speciesVariantChoiceBinding", "selectedCatalogSpeciesFamily", "projectSelectedSpeciesVariant"]) assert.ok(familySource.includes(token), `catalogue Species family helper missing ${token}`);
+for (const token of ["NpcForgeSourceChoiceContext.Provider", "sourceChoiceGroupUsesCatalogSpeciesFamily", "projectSelectedSpeciesVariant", "projectCatalogSpeciesFamilySelection", "groups: (sourceChoiceState.groups || []).filter"]) assert.ok(panelSource.includes(token), `right Species presentation filtering missing ${token}`);
+for (const token of ["genasi-elemental-lineage", "dragonborn-ancestry", "speciesVariantChoiceBinding", "selectedCatalogSpeciesFamily", "projectCatalogSpeciesFamilySelection"]) assert.ok(familySource.includes(token), `catalogue Species family helper missing ${token}`);
 assert.ok(!familySource.includes("giant-ancestry"), "Goliath Giant Ancestry must not be promoted into the catalogue family submenu");
 assert.ok(!familySource.includes("fiendish-legacy"), "Tiefling Fiendish Legacy must not be promoted into the catalogue family submenu");
 
-const { mergeSpeciesVariantFamilies } = await import(pathToFileURL(path.join(root, "utils/speciesVariantFamilies.js")).href);
+const { mergeSpeciesVariantFamilies, projectSelectedSpeciesVariant } = await import(pathToFileURL(path.join(root, "utils/speciesVariantFamilies.js")).href);
 const { buildSpeciesSourceChoiceGroups } = await import(pathToFileURL(path.join(root, "utils/playerForgeSpeciesChoices.js")).href);
 const {
-  projectCatalogSpeciesFamilyPresentation,
+  projectCatalogSpeciesFamilySelection,
   sourceChoiceGroupUsesCatalogSpeciesFamily,
   speciesVariantChoiceBinding,
   speciesVariantUsesCatalogSubmenu,
@@ -42,7 +42,7 @@ assert.equal(sourceChoiceGroupUsesCatalogSpeciesFamily(genasiBinding.group), tru
 const water = genasiBinding.field.options.find((option) => option.value === "Water");
 assert.ok(water, "Water Genasi source option missing");
 const waterSelections = { [genasiBinding.group.id]: { [genasiBinding.field.id]: [water.key] } };
-const projectedWater = projectCatalogSpeciesFamilyPresentation(genasi, genasiGroups, waterSelections);
+const projectedWater = projectCatalogSpeciesFamilySelection(projectSelectedSpeciesVariant(genasi, genasiGroups, waterSelections), genasi, genasiGroups, waterSelections);
 assert.equal(projectedWater.id, genasi.id, "Genasi submenu selection must not replace the persisted parent Species ID");
 assert.equal(projectedWater.name, "Genasi", "Genasi submenu selection must not replace the persisted parent Species name");
 assert.ok(projectedWater.traitDetails.some((detail) => detail.name === "Amphibious"), "Water selection must project Water lineage traits into the right panel");
@@ -71,12 +71,12 @@ assert.ok(dragonbornBinding?.field?.options?.length === 15, "Dragonborn submenu 
 assert.equal(sourceChoiceGroupUsesCatalogSpeciesFamily(dragonbornBinding.group), true, "Dragonborn ancestry group must be filtered only from right-side choice controls");
 const black = dragonbornBinding.field.options.find((option) => option.label === "Black");
 const blackSelections = { [dragonbornBinding.group.id]: { [dragonbornBinding.field.id]: [black.key] } };
-const projectedBlack = projectCatalogSpeciesFamilyPresentation(dragonborn, dragonbornGroups, blackSelections);
+const projectedBlack = projectCatalogSpeciesFamilySelection(projectSelectedSpeciesVariant(dragonborn, dragonbornGroups, blackSelections), dragonborn, dragonbornGroups, blackSelections);
 assert.ok(projectedBlack.traitDetails.some((detail) => detail.name === "Damage Resistance"), "standard XPHB Dragonborn selection must retain XPHB parent mechanics");
 assert.match(projectedBlack.traitDetails.find((detail) => detail.name === "Draconic Ancestry")?.description || "", /Selected ancestry: Black.*Acid/i, "right panel must identify the selected standard Dragonborn ancestry and affinity");
 const amethyst = dragonbornBinding.field.options.find((option) => /Amethyst/.test(option.label));
 const gemSelections = { [dragonbornBinding.group.id]: { [dragonbornBinding.field.id]: [amethyst.key] } };
-const projectedGem = projectCatalogSpeciesFamilyPresentation(dragonborn, dragonbornGroups, gemSelections);
+const projectedGem = projectCatalogSpeciesFamilySelection(projectSelectedSpeciesVariant(dragonborn, dragonbornGroups, gemSelections), dragonborn, dragonbornGroups, gemSelections);
 assert.ok(projectedGem.traitDetails.some((detail) => detail.name === "Psionic Mind"), "FTD Gem selection must project Gem-family traits");
 assert.ok(projectedGem.traitDetails.some((detail) => detail.name === "Gem Flight"), "FTD Gem selection must project Gem Flight");
 assert.ok(!projectedGem.traitDetails.some((detail) => detail.name === "Damage Resistance"), "FTD Gem selection must not retain XPHB-only Damage Resistance presentation");
