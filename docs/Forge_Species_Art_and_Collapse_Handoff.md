@@ -4,31 +4,29 @@ Status date: 2026-08-12
 PR: #170 (`agent/character-forge-resilience-presentation`)
 Merge status: OPEN / UNMERGED — merge only after explicit user approval
 Database authority: migration 93 — `20260812042950 aven_subrace_catalog`
-Validated code/art checkpoint: `7e69443a13058e2e9399a9c26922b2b82253f898` — 33/33 PR-triggered workflows green; Vercel successful
+Validated code/art checkpoint: `086128e9617fedf8410943a4c230bc466f2f9d11` — 33/33 PR-triggered workflows green; Vercel successful
 
 ## Protected scope
 
-This is Character Forge Species presentation work only. Do not touch world-map, town/city-map, route/travel/weather, tactical combat, crafting, inventory, merchants, or unrelated runtime systems for this work.
+This is Character Forge Species presentation/artwork work only. Do not touch world-map, town/city-map, route/travel/weather, tactical combat, crafting, inventory, merchants, or unrelated runtime systems for this work.
 
 ## User-approved Species browser behavior
 
-The user approved the family model, then requested the following presentation refinement:
+1. Expandable parent Species show a small chevron/arrow at a glance.
+2. Child lists independently expand/collapse.
+3. Row click selects the Species; chevron click only toggles the list.
+4. Selecting an expandable parent also opens its list.
+5. Collapsing a list must not clear the selected lineage/subrace/source child.
+6. The parent remains a valid selectable presentation before a child is chosen.
+7. Every parent and visible child/sub-species has a concise description.
+8. Selecting a child updates the right-side displayed identity, description, mechanics, and portrait as appropriate.
+9. Every fixed-appearance parent/child should ultimately have its own dedicated Species portrait/reference artwork.
 
-1. expandable parent Species must show a small chevron/arrow at a glance;
-2. the child list must independently expand/collapse;
-3. row click selects the Species; chevron click only toggles the list;
-4. selecting an expandable parent also opens its list;
-5. collapsing a list must not clear the selected lineage/subrace/source child;
-6. the parent remains a valid selectable presentation before a child is chosen;
-7. every parent and visible child/sub-species should have its own concise description;
-8. selecting a child should update the right-side displayed identity, description, mechanics, and portrait as appropriate;
-9. every fixed-appearance parent/child should ultimately have its own dedicated Species portrait/reference artwork.
-
-The final artwork should be newly created DNDNext art in the established realistic full-body Species-reference style. 5etools/source illustrations may be used as visual guidance for anatomy, coloration, and distinguishing features, but should not be copied as the final artwork.
+Final artwork should be newly created DNDNext art in the established realistic full-body Species-reference style. 5etools/source illustrations may guide anatomy, coloration, and distinguishing features, but should not be copied as final artwork.
 
 ## Persistence / rules boundary
 
-Parent-persisted families continue to use the existing source-choice authority:
+Parent-persisted families continue to use existing source-choice authority:
 
 - Genasi — Air, Earth, Fire, Water;
 - Dragonborn — ten XPHB ancestries plus explicit FTD Gem ancestries;
@@ -43,25 +41,20 @@ Do not add parallel subrace state, a new controller field, or a new save payload
 
 Setting/source variants nested under Human/Dwarf/Elf/Orc/Minotaur/Goblin remain real Species rows with their own ID, source, mechanics, source-choice groups, and persisted identity. They are nested visually only.
 
-Goliath Giant Ancestry and Tiefling Fiendish Legacy remain inline trait-level choices. Aasimar's transformation choice remains runtime/per-use.
+Goliath Giant Ancestry and Tiefling Fiendish Legacy remain inline trait-level choices. Aasimar transformation remains runtime/per-use.
 
 ## Description policy
 
 `utils/speciesLore.js` contains concise source-grounded descriptions for promoted child entries.
 
-Use 5etools/source material to distinguish physical identity and mechanics, but omit campaign-/adventure-specific plot and faction language unless it is required to explain the Species itself.
+Use 5etools/source material to distinguish physical identity and mechanics, but omit campaign-/adventure-specific plot and faction language unless required to explain the Species itself.
 
-`speciesCatalogSummary(...)` should shorten catalogue display copy. Do not shorten canonical lore itself just to fit a card.
+`speciesCatalogSummary(...)` shortens catalogue display copy. Do not shorten canonical lore itself just to fit a card.
 
-Existing tests caught and restored two canonical player-facing phrases that the first cleanup accidentally shortened:
+Existing regression contracts preserve:
 
-- Fairy must retain `two to three feet tall` and `four gossamer wings`;
-- Kithkin must retain its distinctive stout legs, long arms, empathic web, and betrayal language.
-
-Recovery commits for those corrections:
-
-- `e661fbf6a6b09a75d44408b37723cddf6fe1cd96` — Fairy wording restored;
-- `59d91292637dd5202a81443a892b2ddbf6188797` — Kithkin wording restored.
+- Fairy: `two to three feet tall` and `four gossamer wings`;
+- Kithkin: stout legs, long arms, empathic web, and betrayal language.
 
 ## Artwork resolver policy
 
@@ -75,76 +68,101 @@ Forge priority:
 2. otherwise the explicit temporary family-image portrait treatment;
 3. otherwise canonical Species art/fallback.
 
-Do not call a CSS hue shift/crop or a shared parent image "final artwork." Temporary portrait treatments are only placeholders while the dedicated generated-art queue is completed.
+Do not call a CSS hue shift/crop or shared parent image final artwork. Temporary portrait treatments are placeholders only.
 
-## Current generated-art status
+## Completed dedicated child artwork
 
-### Successfully committed dedicated child artwork
+### Genasi family — COMPLETE
 
+- `public/media/species/air-genasi.webp`
+- `public/media/species/earth-genasi.webp`
 - `public/media/species/fire-genasi.webp`
+- `public/media/species/water-genasi.webp`
+
+All four Genasi lineages now have dedicated original Forge portrait assets while their canonical non-Forge aliases deliberately remain `genasi.webp`.
+
+The three-file completion batch was committed in:
+
+`086128e9617fedf8410943a4c230bc466f2f9d11` — `Complete dedicated Genasi Forge artwork`
+
+Exact Git blob verification before branch attachment:
+
+- Air: `49d9719a4087fddde9b9d565eaa8b21ed504d7a7`
+- Earth: `5505920d2418943f27850e5bd610596076d04c8e`
+- Water: `f12ccefdaa4ba8207bed6e8806a4c90ba9e97ef7`
+- Fire (earlier recovered asset): `3269a1693ffee9ccd179f76dc0469f4f7ca6bab2`
+
+The validator checks each Genasi file for existence, nontrivial size, RIFF/WEBP headers, Forge-only dedicated resolution, and unchanged canonical source artwork outside the Forge.
+
+### Dragonborn completed
+
 - `public/media/species/gold-dragonborn.webp`
 
-Both files are now wired only through the Forge-specific dedicated-variant resolver. Their canonical non-Forge aliases remain unchanged: Fire Genasi still canonically resolves through shared Genasi art outside the Forge, and Gold Dragonborn still resolves through Metallic Dragonborn art outside the Forge.
+Gold Dragonborn remains the first dedicated Dragonborn child. Canonical non-Forge resolution remains Metallic Dragonborn art.
 
-### Fire Genasi binary-upload incident — resolved
+## Fire Genasi upload incident — resolved
 
-The first Fire Genasi upload was truncated by the GitHub connector and was correctly rejected by the focused validator. That corrupt file was removed in `249a1e1993d8c4b3c74f9d1bc6775e5fc8da294b` rather than weakening the validation contract.
+The first Fire Genasi upload was truncated by the GitHub connector and correctly rejected by the focused validator. The bad file was removed rather than weakening the validator.
 
-The original generated Fire Genasi art was then optimized to a smaller WebP for reliable connector transport. Before it was attached to the branch, the local Git blob SHA and GitHub-created blob SHA were compared and matched exactly:
+The recovery established the binary workflow now used for the rest of the art queue:
 
-`3269a1693ffee9ccd179f76dc0469f4f7ca6bab2`
-
-Commit `7e69443a13058e2e9399a9c26922b2b82253f898` adds that verified binary, promotes only `fire-genasi` into `SPECIES_DEDICATED_VARIANT_ARTWORK`, and extends the focused validator to prove the file exists, is nontrivial, has RIFF/WEBP container headers, wins only in the Forge portrait resolver, and leaves canonical Fire Genasi artwork unchanged outside the Forge.
-
-The full 33-workflow PR regression matrix and Vercel deployment succeeded on that exact checkpoint.
+1. optimize generated artwork to a compact WebP;
+2. compute the local Git blob SHA;
+3. upload the base64 binary to GitHub object storage;
+4. require the returned Git blob SHA to match exactly;
+5. only then attach the blob to the branch and add its key to dedicated artwork authority;
+6. CI validates the file and resolver boundary.
 
 ## Remaining dedicated-art queue
 
-Genasi:
-- Air
-- Earth
-- Water
+### Dragonborn — next batch
 
-Dragonborn:
+Chromatic:
 - Black
 - Blue
 - Green
 - Red
 - White
+
+Metallic:
 - Brass
 - Bronze
 - Copper
 - Silver
-- Amethyst Gem
-- Crystal Gem
-- Emerald Gem
-- Sapphire Gem
-- Topaz Gem
 
-Aven:
+Gem:
+- Amethyst
+- Crystal
+- Emerald
+- Sapphire
+- Topaz
+
+Gold is already complete.
+
+### Aven
 - Hawk-Headed
 - Ibis-Headed
 
-Elf/Gnome:
+### Elf / Gnome
 - Drow
 - High Elf
 - Wood Elf
 - Forest Gnome
 - Rock Gnome
 
-Shifter:
+### Shifter
 - Beasthide
 - Longtooth
 - Swiftstride
 - Wildhunt
 
-Lorwyn/Shadowmoor:
+### Lorwyn / Shadowmoor
 - Lorwyn Fairy
 - Shadowmoor Fairy
 - Lorwyn Kithkin
 - Shadowmoor Kithkin
 
-Setting/source aliases still needing dedicated art:
+### Setting/source aliases still needing dedicated art
 - Dwarf (Kaladesh)
 - Goblin (Dankwood)
 - Orc (Ixalan)
@@ -153,46 +171,15 @@ Existing dedicated Human setting art, Elf Kaladesh/Zendikar art, and Amonkhet Mi
 
 ## Expand/collapse implementation history
 
-First implementation:
+`622d8577a03b327aceb01851430db1fd75fd8a51` — introduced independent `expandedSpeciesRows`, visible parent chevrons, row-select/open behavior, chevron-only toggle behavior, parent/child portrait-summary rows, and selected-child right-panel metadata.
 
-`622d8577a03b327aceb01851430db1fd75fd8a51` — `Polish expandable Species catalogue portraits`
+`f7ab80059ec9d7e85f989d11e0f40bc16398a6ff` — restored canonical artwork authority outside the Forge after the first presentation pass overloaded `speciesArtworkFor(...)`.
 
-It introduced:
+`249a1e1993d8c4b3c74f9d1bc6775e5fc8da294b` — conservative checkpoint that retained Gold Dragonborn and removed the first truncated Fire asset.
 
-- independent `expandedSpeciesRows` state;
-- parent chevrons visible independently of selection;
-- row click selects and opens;
-- chevron click toggles without selecting;
-- parent/child thumbnail + concise description rows;
-- selected-child presentation metadata for the right panel.
+`7e69443a13058e2e9399a9c26922b2b82253f898` — promoted the recovered Fire Genasi asset.
 
-That first pass incorrectly overloaded the canonical artwork resolver. Existing tests caught Water Genasi changing away from canonical `/media/species/genasi.webp` outside the Forge.
-
-Compatibility repair:
-
-`f7ab80059ec9d7e85f989d11e0f40bc16398a6ff`
-
-This restored canonical artwork authority and separated the Forge portrait path.
-
-The first dedicated-art tree started at:
-
-`a6fe9843ee4f5b5bb085ef6d4ff1d088d5032c59`
-
-The first binary repair attempt was:
-
-`f25fb004c7df6ccc011fd0018ac6a04f328628f2`
-
-The conservative recovery checkpoint was:
-
-`249a1e1993d8c4b3c74f9d1bc6775e5fc8da294b` — `Keep unfinished Species art explicit`
-
-It kept Gold Dragonborn as the only dedicated child file and removed the truncated Fire asset.
-
-Current validated code/art checkpoint:
-
-`7e69443a13058e2e9399a9c26922b2b82253f898` — `Promote Fire Genasi dedicated Forge artwork`
-
-It adds the verified Fire Genasi binary and makes Fire the second newly dedicated child artwork.
+`086128e9617fedf8410943a4c230bc466f2f9d11` — completed Air, Earth, and Water; the Genasi dedicated-art family is now complete.
 
 ## Validation authority
 
@@ -208,27 +195,16 @@ Required validators:
 - `scripts/validate_forge_species_catalog_portraits.mjs`;
 - production build gate.
 
-For exact checkpoint `7e69443a13058e2e9399a9c26922b2b82253f898`:
+For exact checkpoint `086128e9617fedf8410943a4c230bc466f2f9d11`:
 
 - original structured source presentation passed;
 - established Species catalogue family validator passed;
 - expanded Species family validator passed;
 - Species catalogue portrait/collapse validator passed;
-- Fire Genasi dedicated WebP integrity and Forge-only resolver assertions passed;
+- all four Genasi dedicated WebP integrity + Forge-only resolver assertions passed;
 - focused production build passed;
-- all 33 PR-triggered workflows completed successfully, including NPC Forge, nested choices, source magic, progression, equipment, portrait, runtime-choice, Artificer, Primal Companion, and Fiendish Resilience gates;
+- all 33 PR-triggered workflows completed successfully;
 - Vercel deployment succeeded.
-
-The portrait/collapse validator proves:
-
-- expansion state is independent from selected state;
-- parent selection can open a list without making expansion the choice authority;
-- parent/child entries have meaningful concise descriptions;
-- canonical artwork aliases remain stable outside the Forge;
-- a dedicated generated child file wins in the Forge only when the file truly exists;
-- unfinished variants remain explicit temporary portrait treatments;
-- committed generated image files are real/non-placeholder binaries;
-- protected map/travel boundaries are untouched.
 
 Do not weaken older validators to make a new implementation pass.
 
@@ -240,7 +216,7 @@ Supabase remains through migration 93:
 
 `20260812042950 aven_subrace_catalog`
 
-Re-verified immediately before the Fire Genasi recovery pass:
+Re-verified after the completed Genasi artwork batch:
 
 - raw Species: 166
 - preferred Species: 102
@@ -253,28 +229,28 @@ Re-verified immediately before the Fire Genasi recovery pass:
 - map_routes: 4
 - map_route_points: 9
 
-No database counts changed during the chevron/description/artwork work.
+No database counts changed during the artwork work.
 
 ## Browser re-smoke checklist
 
-After a green code/art batch, verify:
+After each green art batch, verify:
 
 1. collapsed parent visibly has a chevron;
 2. chevron expands/collapses without changing selection;
 3. selecting a parent opens the list and shows parent-specific right-panel lore/art;
 4. selecting a child changes child identity/lore/mechanics/portrait;
 5. collapsing the list does not erase the selected child choice;
-6. Fire Genasi and Gold Dragonborn use their real dedicated files and no temporary CSS treatment;
+6. Air/Earth/Fire/Water Genasi and Gold Dragonborn use their real dedicated files in the Forge;
 7. unfinished child art still renders safely through the explicit temporary treatment;
 8. setting/source child uses its real Species row/rules rather than modern-parent rules;
 9. Goliath/Tiefling remain inline.
 
 ## Next steps
 
-1. Continue the Genasi dedicated-art family with Air, Earth, and Water.
-2. Use the now-proven optimized-WebP upload path and verify each Git blob SHA before attaching it to the branch.
-3. For each real committed file, add only that key to the dedicated-variant artwork authority and extend the validator.
-4. Remove temporary CSS treatments only when the corresponding dedicated family art is complete.
+1. Start the dedicated Dragonborn batch, using Gold as the established style anchor.
+2. Prefer coherent family batches: Chromatic, Metallic, then Gem.
+3. Use the verified optimized-WebP + exact Git-blob workflow for every asset.
+4. Add a child key to dedicated artwork authority only when its real binary is committed.
 5. Run focused workflow + full PR regression matrix after coherent batches.
 6. Update this ledger and PR #170 body after green checkpoints.
 7. Complete signed-in visual re-smoke.
