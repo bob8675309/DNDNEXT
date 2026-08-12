@@ -145,7 +145,6 @@ const SPECIES_ARTWORK_ALIASES = {
 // created and committed. Remaining child entries keep the temporary Forge-only
 // portrait treatment until their dedicated file is ready.
 const SPECIES_DEDICATED_VARIANT_ARTWORK = new Set([
-  "fire-genasi",
   "gold-dragonborn",
 ]);
 

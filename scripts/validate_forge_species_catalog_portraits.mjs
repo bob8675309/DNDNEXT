@@ -34,8 +34,8 @@ for (const token of [
   "SPECIES_DEDICATED_VARIANT_ARTWORK",
   "SPECIES_VARIANT_PORTRAITS",
   "speciesPortraitArtworkFor",
-  "fire-genasi",
   "gold-dragonborn",
+  "fire-genasi",
   "air-genasi",
   "hawk-headed-aven",
   "drow",
@@ -65,10 +65,10 @@ for (const token of [
   "speciesCatalogSummary",
 ]) assert.ok(loreSource.includes(token), `Species catalogue lore coverage missing ${token}`);
 
-for (const file of ["public/media/species/fire-genasi.webp", "public/media/species/gold-dragonborn.webp"]) {
-  assert.ok(fs.existsSync(path.join(root, file)), `dedicated generated Species artwork missing ${file}`);
-  assert.ok(fs.statSync(path.join(root, file)).size > 20000, `${file} must contain a real generated image rather than a placeholder`);
-}
+const goldArtworkPath = path.join(root, "public/media/species/gold-dragonborn.webp");
+assert.ok(fs.existsSync(goldArtworkPath), "dedicated generated Species artwork missing public/media/species/gold-dragonborn.webp");
+assert.ok(fs.statSync(goldArtworkPath).size > 20000, "Gold Dragonborn must contain a real generated image rather than a placeholder");
+assert.ok(!fs.existsSync(path.join(root, "public/media/species/fire-genasi.webp")), "Fire Genasi must not claim a dedicated file until the full binary is committed reliably");
 
 const { speciesArtworkFor, speciesPortraitArtworkFor, hasDedicatedSpeciesArtwork, hasSpeciesPortraitArtwork } = await import(pathToFileURL(path.join(root, "utils/speciesArtwork.js")).href);
 const { speciesFlavorLore, speciesCatalogSummary } = await import(pathToFileURL(path.join(root, "utils/speciesLore.js")).href);
@@ -80,12 +80,12 @@ assert.equal(speciesArtworkFor("Amethyst Gem Dragonborn"), "/media/species/drago
 assert.equal(hasDedicatedSpeciesArtwork("Water Genasi"), true, "canonical shared aliases must remain recognized as intentional artwork");
 
 // Dedicated generated files win in the Forge as soon as they are committed.
-assert.equal(speciesPortraitArtworkFor("Fire Genasi"), "/media/species/fire-genasi.webp", "Fire Genasi must use its generated dedicated portrait");
 assert.equal(speciesPortraitArtworkFor("Gold Dragonborn"), "/media/species/gold-dragonborn.webp", "Gold Dragonborn must use its generated dedicated portrait");
 
 const portraitCases = [
   ["Air Genasi", "genasi.webp?portrait=air-genasi"],
   ["Earth Genasi", "genasi.webp?portrait=earth-genasi"],
+  ["Fire Genasi", "genasi.webp?portrait=fire-genasi"],
   ["Water Genasi", "genasi.webp?portrait=water-genasi"],
   ["Amethyst Gem Dragonborn", "dragonborn-gem.webp?portrait=amethyst-gem-dragonborn"],
   ["Hawk-Headed Aven", "aven.webp?portrait=hawk-headed-aven"],
@@ -107,11 +107,8 @@ for (const [name, expected] of portraitCases) {
   assert.ok(summary.length >= 30 && summary.length <= 109, `${name} must have a compact catalogue summary`);
 }
 
-for (const name of ["Fire Genasi", "Gold Dragonborn"]) {
-  assert.equal(hasSpeciesPortraitArtwork(name), true, `${name} dedicated generated art must count as Forge portrait coverage`);
-  assert.ok(speciesFlavorLore(name).length >= 70, `${name} must retain unique lore while dedicated artwork rolls out`);
-}
-
+assert.equal(hasSpeciesPortraitArtwork("Gold Dragonborn"), true, "Gold Dragonborn dedicated generated art must count as Forge portrait coverage");
+assert.ok(speciesFlavorLore("Gold Dragonborn").length >= 70, "Gold Dragonborn must retain unique lore while dedicated artwork rolls out");
 assert.equal(speciesPortraitArtworkFor("Human (Innistrad)"), "/media/species/human-innistrad.webp", "existing dedicated setting artwork must remain authoritative in the Forge");
 assert.match(speciesFlavorLore("Water Genasi"), /breathe both air and water/i, "Water Genasi description must remain lineage-specific");
 assert.match(speciesFlavorLore("Ibis-Headed Aven"), /broad, angular wings|disciplined thought/i, "Ibis-Headed Aven description must preserve non-campaign-specific source identity");
@@ -120,4 +117,4 @@ assert.doesNotMatch(speciesFlavorLore("Hawk-Headed Aven"), /Naktamun|Hekma|God-P
 
 for (const source of [coreSource, artworkSource, loreSource]) assert.ok(!protectedPattern.test(source), "Species portrait/catalogue work crossed a protected map/travel boundary");
 
-console.log("Forge Species catalogue portraits validated: expandable parents have independent chevrons, parent/child rows carry concise unique lore, canonical artwork remains stable outside the Forge, dedicated generated child files win when present, temporary family-image treatments remain explicit for unfinished art, and protected map/travel boundaries remain untouched.");
+console.log("Forge Species catalogue portraits validated: expandable parents have independent chevrons, parent/child rows carry concise unique lore, canonical artwork remains stable outside the Forge, committed dedicated child files win when present, unfinished variants remain explicit temporary family-art treatments, and protected map/travel boundaries remain untouched.");
