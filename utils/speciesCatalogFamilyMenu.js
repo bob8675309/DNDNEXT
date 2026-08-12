@@ -82,7 +82,7 @@ export function filterCatalogSpeciesFamilyFields(groups = [], species = null) {
 
 function selectedFamilySummary(choice, selected) {
   const kind = text(choice?.kind || "variant").replace(/-/g, " ");
-  const parts = [`Selected ${kind}: ${text(selected?.metadata?.catalogLabel || selected?.label || selected?.value || "Selected option")}.`];
+  const parts = [`Selected ${kind}: ${text(selected?.label || selected?.value || selected?.metadata?.catalogLabel || "Selected option")}.`];
   const damageType = text(selected?.metadata?.damageType);
   const ruleFamily = text(selected?.metadata?.ruleFamily);
   const selectedDescription = text(selected?.metadata?.selectedDescription || selected?.description);
