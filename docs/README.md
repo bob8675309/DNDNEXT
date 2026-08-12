@@ -74,22 +74,30 @@ PR #170 remains open and unmerged on `agent/character-forge-resilience-presentat
 
 Exact validated Species presentation/artwork checkpoint:
 
-`086128e9617fedf8410943a4c230bc466f2f9d11` — `Complete dedicated Genasi Forge artwork`
+`46306a44e698d907225d54d1e57d5df14656a9b5` — `Complete Chromatic Dragonborn Forge artwork`
 
-That exact head completed **33/33 PR-triggered workflows successfully** and Vercel deployment succeeded. It preserves the established family/chevron behavior and canonical artwork resolution outside the Forge.
+That exact head completed **33/33 PR-triggered workflows successfully** and Vercel deployment succeeded. It preserves the established family/chevron behavior, canonical artwork resolution outside the Forge, and the complete Genasi + Chromatic Dragonborn dedicated-art families.
 
-The complete Genasi family now has dedicated Forge assets:
+Complete Genasi family:
 
 - `public/media/species/air-genasi.webp`
 - `public/media/species/earth-genasi.webp`
 - `public/media/species/fire-genasi.webp`
 - `public/media/species/water-genasi.webp`
 
+Complete Chromatic Dragonborn family:
+
+- `public/media/species/black-dragonborn.webp`
+- `public/media/species/blue-dragonborn.webp`
+- `public/media/species/green-dragonborn.webp`
+- `public/media/species/red-dragonborn.webp`
+- `public/media/species/white-dragonborn.webp`
+
 Gold Dragonborn also remains dedicated:
 
 - `public/media/species/gold-dragonborn.webp`
 
-The active continuation ledger is `Forge_Species_Art_and_Collapse_Handoff.md`. It records the exact Git-blob integrity workflow, completed Genasi family, remaining Dragonborn/Aven/Elf/Gnome/Shifter/Fairy/Kithkin/setting-art queue, validation contracts, database boundary, and browser re-smoke checklist. Documentation-only descendants do not supersede `086128e...` as the exact tested runtime/source/art tree.
+The active continuation ledger is `Forge_Species_Art_and_Collapse_Handoff.md`. It records the exact Git-blob workflow, completed Genasi/Chromatic families, remaining Metallic/Gem/Aven/Elf/Gnome/Shifter/Fairy/Kithkin/setting-art queue, validator contracts, database boundary, and browser re-smoke checklist. Documentation-only descendants do not supersede `46306a44...` as the exact tested runtime/source/art tree.
 
 Live database authority remains migration 93:
 
