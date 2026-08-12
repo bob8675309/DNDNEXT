@@ -1,7 +1,10 @@
+import { Fragment } from "react";
 import { supabase } from "../utils/supabaseClient";
 import { PROFESSION_DEFINITIONS, PROFESSION_KEYS } from "../utils/craftingProfessions";
 import { ABILITY_KEYS, CLASS_DEFINITIONS, FEAT_OPTIONS, SIZE_OPTIONS, SKILL_DEFINITIONS, SPECIES_DEFINITIONS, standardAbilityScores } from "../utils/characterCreation";
 import { safeText, slug, uniqueText } from "../utils/npcForgeCatalog";
+import { speciesVariantChoiceBinding, speciesVariantUsesCatalogSubmenu } from "../utils/speciesCatalogFamilyMenu";
+import { useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
 
 export const NPC_STEP_LABELS = Object.freeze(["Species", "Background", "Class", "Abilities", "Training", "Identity", "Story", "Review"]);
 export const PLAYER_STEP_LABELS = Object.freeze(["Species", "Background", "Class", "Abilities", "Training", "Spells", "Equipment", "Identity", "Story", "Review"]);
@@ -80,8 +83,25 @@ export function toolProficiencyDescription(toolName = "") {
   const name = safeText(toolName);
   return `${name} represents specialized practical training. Add the character's proficiency bonus when that training is relevant to the check.`;
 }
+
+function catalogFamilyOptionLabel(option = {}) {
+  const damageType = safeText(option?.metadata?.damageType);
+  return damageType ? `${option.label} — ${damageType}` : option.label;
+}
+
+function SpeciesCatalogFamilySubmenu({ species }) {
+  const { state, setChoice } = useNpcForgeSourceChoices();
+  if (!speciesVariantUsesCatalogSubmenu(species)) return null;
+  const binding = speciesVariantChoiceBinding(species, state?.groups || [], state?.selections || {});
+  if (!binding) return null;
+  const { choice, group, field, selectedKey } = binding;
+  return <div className="npc-forge-catalog-family-submenu" role="group" aria-label={`${choice.label} for ${species.name}`}><label><span>{choice.label}</span><select value={selectedKey} onChange={(event) => setChoice(group.id, field.id, event.target.value ? [event.target.value] : [])}><option value="">Choose {choice.label.toLowerCase()}…</option>{(field.options || []).map((option) => <option key={option.key} value={option.key}>{catalogFamilyOptionLabel(option)}</option>)}</select></label><small>Selecting an option updates the Species information on the right.</small><style jsx global>{`
+    .npc-forge-catalog-family-submenu{display:grid;gap:5px;margin:-4px 0 6px 8px;padding:8px 9px;border:1px solid rgba(168,108,255,.34);border-top:0;border-radius:0 0 8px 8px;background:linear-gradient(120deg,rgba(126,72,199,.14),rgba(88,214,199,.04))}.npc-forge-catalog-family-submenu label{display:grid;gap:4px}.npc-forge-catalog-family-submenu label>span{color:#eadfff;font-size:.62rem;font-weight:900;letter-spacing:.035em}.npc-forge-catalog-family-submenu select{width:100%;min-width:0;padding:7px 8px;border:1px solid rgba(168,108,255,.38);border-radius:7px;color:#fff;background:#111522;font-size:.64rem}.npc-forge-catalog-family-submenu>small{color:rgba(255,255,255,.6);font-size:.54rem;line-height:1.35}
+  `}</style></div>;
+}
+
 export function CatalogList({ label, query, onQuery, rows, selectedId, onSelect, emptyText }) {
-  return <div className="npc-forge-catalog"><div className="npc-forge-catalog-head"><span>{label}</span><strong>{rows.length}</strong></div><input className="npc-forge-search" value={query} onChange={(event) => onQuery(event.target.value)} placeholder={`Search ${label.toLowerCase()}…`} /><div className="npc-forge-catalog-list">{rows.map((row) => <button key={row.id} type="button" className={selectedId === row.id ? "is-active" : ""} onClick={() => onSelect(row)}><span><strong>{row.name || row.class_name}</strong><small>{sourceLabel(row.source)}</small></span><b>›</b></button>)}{!rows.length ? <div className="npc-forge-empty-list">{emptyText}</div> : null}</div></div>;
+  return <div className="npc-forge-catalog"><div className="npc-forge-catalog-head"><span>{label}</span><strong>{rows.length}</strong></div><input className="npc-forge-search" value={query} onChange={(event) => onQuery(event.target.value)} placeholder={`Search ${label.toLowerCase()}…`} /><div className="npc-forge-catalog-list">{rows.map((row) => <Fragment key={row.id}><button type="button" className={selectedId === row.id ? "is-active" : ""} onClick={() => onSelect(row)}><span><strong>{row.name || row.class_name}</strong><small>{sourceLabel(row.source)}</small></span><b>›</b></button>{selectedId === row.id ? <SpeciesCatalogFamilySubmenu species={row} /> : null}</Fragment>)}{!rows.length ? <div className="npc-forge-empty-list">{emptyText}</div> : null}</div></div>;
 }
 export async function recoverCreatedCharacter(requestId) {
   if (!requestId) return null;
