@@ -5,11 +5,12 @@ This directory contains the project's living handoff, roadmap, architecture, and
 ## Start here
 
 - `DNDNext_Current_Handoff_Prompt.md` — copy-ready continuation prompt and protected boundaries.
-- `Documentation_Refresh_Manifest.md` — documentation precedence and current PR #170 checkpoint.
-- `PR170_Final_Acceptance_Status.md` — current migration/build/database/authenticated acceptance and remaining focused browser re-smoke.
-- `PR170_Browser_Smoke_Corrections_Status.md` — real signed-in browser findings, migration 90 Rage restoration, Forge presentation corrections, and re-smoke targets.
-- `Forge_Species_Art_and_Collapse_Handoff.md` — **active Species presentation/artwork handoff**: independent chevrons/collapse state, parent/child descriptions, dedicated generated child-art rollout, exact binary verification, current asset queue, validation contracts, and protected boundaries.
+- `Forge_Post170_Species_Artwork_Status.md` — **active Species artwork continuation authority after the PR #170 merge**: PR #171, completed Genasi/Dragonborn/Aven artwork, exact validation checkpoint, binary-write procedure, remaining queue, and protected boundaries.
+- `Forge_Species_Art_and_Collapse_Handoff.md` — **historical PR #170 Species-art handoff; superseded**. It now points to the post-#170 ledger and must not be treated as current status.
 - `CHATGPT_REPO_WRITE_PROCEDURE.md` — **connector write authority and safe procedure**: GitHub/Supabase are directly writable from ChatGPT; use `create_blob → create_tree → create_commit → race-check → update_ref(force=false)` for coherent repo changes.
+- `Documentation_Refresh_Manifest.md` — broader documentation precedence/history; newer focused ledgers supersede stale PR #170 status text.
+- `PR170_Final_Acceptance_Status.md` — historical migration/build/database/authenticated acceptance evidence for the long-lived #170 work.
+- `PR170_Browser_Smoke_Corrections_Status.md` — historical signed-in browser findings and corrections from the #170 cycle.
 - `Forge_Species_Family_Submenu_Status.md` — controlling Species family/setting-variant rules/persistence ledger through migrations 91-93, including Genasi, Dragonborn, Aven, Elf, Gnome, Shifter, Fairy, Kithkin, and grouped setting variants.
 - `Forge_Source_Presentation_and_Species_Variants_Status.md` — earlier source-presentation history, structured Species/Background/Class rendering, and the migration-91 Genasi source-catalog foundation.
 - `Current_Development_Status_and_Roadmap.md` — broad platform roadmap/history; newer subsystem ledgers supersede older sections.
@@ -69,24 +70,48 @@ Use the specific tactical phase ledger before changing encounter behavior; do no
 
 Always inspect live grants/functions before modifying authenticated `SECURITY DEFINER` surfaces. Supabase advisor warnings outside the current audited slice are separate security backlog, not permission to scope-creep a Forge/runtime patch.
 
-## Current exact Forge checkpoint
+## Current exact Forge artwork checkpoint
 
-PR #170 remains open and unmerged on `agent/character-forge-resilience-presentation`.
+### Main / historical PR #170
 
-Exact validated Species presentation/artwork checkpoint:
+PR #170 is **merged**, not open. GitHub merge commit:
 
-`2e5031a71f05f8705b64dbbef30aa402dd42c58f` — `Preserve Chromatic validator after Metallic rollout`
+`599c4de7397ba6e4bbbb0a061d551d80c3570be7`
 
-That exact head completed **33/33 PR-triggered workflows successfully** and Vercel deployment succeeded. It preserves the established family/chevron behavior and canonical artwork authority while completing dedicated Genasi, Chromatic Dragonborn, and Metallic Dragonborn Forge artwork.
+The merge occurred through an accidental connector invocation while branch-integration tooling was being searched for. No automatic revert was attempted because a blind revert could remove a large body of valid previously tested work.
 
-Complete Genasi family:
+### Active continuation / PR #171
+
+Branch:
+
+`agent/species-art-post170`
+
+PR #171 is **OPEN / UNMERGED** and must not be merged without explicit user approval.
+
+Exact validated code/art checkpoint:
+
+`dd335d69af7bebdfc2b4590c34f15e621d93adc5` — `Align Gem artwork validators with source wording`
+
+For that exact code/art head:
+
+- focused Forge source/art push workflow passed;
+- PR `Validate Forge source presentation` passed;
+- PR `Validate NPC Forge foundation` passed;
+- production builds passed;
+- Vercel deployment succeeded.
+
+Because PR #171 changes only nine Species-art/resolver/validator files, GitHub path filters correctly trigger two relevant PR workflows rather than the 33-workflow matrix associated with the old long-lived #170 diff.
+
+### Complete dedicated Genasi family
 
 - `public/media/species/air-genasi.webp`
 - `public/media/species/earth-genasi.webp`
 - `public/media/species/fire-genasi.webp`
 - `public/media/species/water-genasi.webp`
 
-Complete Chromatic Dragonborn family:
+### Complete Dragonborn child artwork — all 15
+
+Chromatic:
 
 - `public/media/species/black-dragonborn.webp`
 - `public/media/species/blue-dragonborn.webp`
@@ -94,7 +119,7 @@ Complete Chromatic Dragonborn family:
 - `public/media/species/red-dragonborn.webp`
 - `public/media/species/white-dragonborn.webp`
 
-Complete Metallic Dragonborn family:
+Metallic:
 
 - `public/media/species/brass-dragonborn.webp`
 - `public/media/species/bronze-dragonborn.webp`
@@ -102,14 +127,70 @@ Complete Metallic Dragonborn family:
 - `public/media/species/gold-dragonborn.webp`
 - `public/media/species/silver-dragonborn.webp`
 
-The active continuation ledger is `Forge_Species_Art_and_Collapse_Handoff.md`. It records the exact Git-blob workflow, completed Genasi/Chromatic/Metallic families, remaining Gem/Aven/Elf/Gnome/Shifter/Fairy/Kithkin/setting-art queue, validator contracts, database boundary, and browser re-smoke checklist. Documentation-only descendants do not supersede `2e5031a7...` as the exact tested runtime/source/art tree.
+Gem:
 
-Live database authority remains migration 93:
+- `public/media/species/amethyst-gem-dragonborn.webp`
+- `public/media/species/crystal-gem-dragonborn.webp`
+- `public/media/species/emerald-gem-dragonborn.webp`
+- `public/media/species/sapphire-gem-dragonborn.webp`
+- `public/media/species/topaz-gem-dragonborn.webp`
+
+### Complete Aven child artwork on PR #171
+
+- `public/media/species/hawk-headed-aven.webp`
+- `public/media/species/ibis-headed-aven.webp`
+
+Canonical non-Forge Aven still resolves through `aven.webp`; canonical non-Forge Dragonborn children still resolve through the appropriate shared Chromatic/Metallic/Gem family art. Dedicated child files are Forge presentation only.
+
+The active continuation ledger is `Forge_Post170_Species_Artwork_Status.md`.
+
+## Remaining dedicated-art queue
+
+Next:
+
+- Drow
+- High Elf
+- Wood Elf
+- Forest Gnome
+- Rock Gnome
+
+Then:
+
+- Beasthide Shifter
+- Longtooth Shifter
+- Swiftstride Shifter
+- Wildhunt Shifter
+- Lorwyn Fairy
+- Shadowmoor Fairy
+- Lorwyn Kithkin
+- Shadowmoor Kithkin
+- Dwarf (Kaladesh)
+- Goblin (Dankwood)
+- Orc (Ixalan)
+
+Retain existing dedicated Human setting art, Elf Kaladesh/Zendikar art, and Amonkhet Minotaur art unless there is a specific reason to replace them.
+
+## Live database authority
+
+Migration 93 remains current for this Species artwork phase:
 
 `20260812042950 aven_subrace_catalog`
 
-Production Species counts are 166 raw / 102 preferred. Protected campaign/runtime/map counts remain 7 characters, 7 sheets, 30 character-spell rows, 7 progression rows, 18 inventory rows, 20 locations, 4 map routes, and 9 route points.
+Latest verified production counts:
+
+- raw Species: 166
+- preferred Species: 102
+- characters: 7
+- character_sheets: 7
+- character_spells: 30
+- character_progression: 7
+- inventory_items: 18
+- locations: 20
+- map_routes: 4
+- map_route_points: 9
+
+No SQL write or migration was made for the Gem/Aven artwork continuation.
 
 ## Protected-boundary rule
 
-Character Forge/progression/runtime work does not authorize changes to world-map, town/city-map behavior, route/travel/weather simulation, tactical encounter behavior, or unrelated crafting systems. `components/MapPageClient.js` remains outside current scope unless explicitly requested.
+Character Forge/progression/runtime work does not authorize changes to world-map, town/city-map behavior, route/travel/weather simulation, tactical encounter behavior, crafting, inventory, merchants, or unrelated runtime systems. `components/MapPageClient.js` remains outside current scope unless explicitly requested.
