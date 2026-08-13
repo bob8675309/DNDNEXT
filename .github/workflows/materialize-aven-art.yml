@@ -1,0 +1,58 @@
+name: Materialize Aven Forge artwork
+
+on:
+  push:
+    branches:
+      - agent/aven-art-materialize
+    paths:
+      - '.github/workflows/materialize-aven-art.yml'
+      - '.tmp/aven/**'
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/aven-art-materialize
+          fetch-depth: 1
+
+      - name: Reconstruct verified Aven WebPs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/media/species
+          cat .tmp/aven/hawk.part*.b64 | tr -d '\n\r' | base64 --decode > public/media/species/hawk-headed-aven.webp
+          cat .tmp/aven/ibis.part*.b64 | tr -d '\n\r' | base64 --decode > public/media/species/ibis-headed-aven.webp
+
+          test "$(wc -c < public/media/species/hawk-headed-aven.webp)" -eq 25336
+          test "$(wc -c < public/media/species/ibis-headed-aven.webp)" -eq 24678
+          echo 'b9834467aa379c25db57f52199db5cf26d9b0d62e3fd58646731ce5d43286b24  public/media/species/hawk-headed-aven.webp' | sha256sum -c -
+          echo '8613dd26438b2f7de62befed329d4fff1aab1953b2ba3fe28403414cb5f375fd  public/media/species/ibis-headed-aven.webp' | sha256sum -c -
+
+          python - <<'PY'
+          from pathlib import Path
+          for path in [Path('public/media/species/hawk-headed-aven.webp'), Path('public/media/species/ibis-headed-aven.webp')]:
+              data = path.read_bytes()
+              assert data[:4] == b'RIFF', f'{path}: missing RIFF header'
+              assert data[8:12] == b'WEBP', f'{path}: missing WEBP signature'
+          print('Aven WebP headers verified.')
+          PY
+
+      - name: Commit materialized binaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/media/species/hawk-headed-aven.webp public/media/species/ibis-headed-aven.webp
+          if git diff --cached --quiet; then
+            echo 'Aven binaries already materialized.'
+            exit 0
+          fi
+          git commit -m 'Materialize dedicated Aven Forge artwork'
+          git push origin HEAD:agent/aven-art-materialize
