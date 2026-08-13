@@ -1,0 +1,204 @@
+name: Prepare Elf and Gnome Forge patch blobs
+
+on:
+  push:
+    branches:
+      - agent/materialize-elf-gnome-art
+    paths:
+      - ".github/workflows/prepare-elf-gnome-patch.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out staging branch
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Apply narrow checked text patches
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_exact(path, old, new, count=None):
+              p = Path(path)
+              text = p.read_text()
+              actual = text.count(old)
+              expected = count if count is not None else 1
+              if actual != expected:
+                  raise SystemExit(f"{path}: expected {expected} occurrences, found {actual}: {old!r}")
+              p.write_text(text.replace(old, new))
+
+          # Resolver: promote only the five files that now physically exist.
+          replace_exact(
+              "utils/speciesArtwork.js",
+              '  "hawk-headed-aven",\n  "ibis-headed-aven",\n]);',
+              '  "hawk-headed-aven",\n  "ibis-headed-aven",\n  "drow",\n  "high-elf",\n  "wood-elf",\n  "forest-gnome",\n  "rock-gnome",\n]);',
+          )
+
+          validator = Path("scripts/validate_forge_species_catalog_portraits_v2.mjs")
+          text = validator.read_text()
+          marker = 'const { speciesArtworkFor, speciesPortraitArtworkFor, hasDedicatedSpeciesArtwork, hasSpeciesPortraitArtwork } = await import(pathToFileURL(path.join(root, "utils/speciesArtwork.js")).href);'
+          if text.count(marker) != 1:
+              raise SystemExit("portrait-v2: import marker mismatch")
+          dedicated = '''const dedicatedElfGnomeCases = [
+            ["Drow", "drow.webp", 10000, "elf"],
+            ["High Elf", "high-elf.webp", 12000, "elf"],
+            ["Wood Elf", "wood-elf.webp", 10000, "elf"],
+            ["Forest Gnome", "forest-gnome.webp", 11000, "gnome"],
+            ["Rock Gnome", "rock-gnome.webp", 11000, "gnome"],
+          ];
+          for (const [name, fileName, minimumBytes] of dedicatedElfGnomeCases) {
+            const artworkPath = path.join(root, "public/media/species", fileName);
+            assert.ok(fs.existsSync(artworkPath), `dedicated Elf/Gnome Species artwork missing public/media/species/${fileName}`);
+            assert.ok(fs.statSync(artworkPath).size > minimumBytes, `${name} must contain a real generated image rather than a placeholder`);
+            const artwork = fs.readFileSync(artworkPath);
+            assert.equal(artwork.subarray(0, 4).toString("ascii"), "RIFF", `${name} dedicated asset must be a valid RIFF WebP container`);
+            assert.equal(artwork.subarray(8, 12).toString("ascii"), "WEBP", `${name} dedicated asset must be a valid WebP image`);
+          }
+
+          '''
+          text = text.replace(marker, dedicated + marker)
+
+          canonical_marker = 'assert.equal(hasDedicatedSpeciesArtwork("Water Genasi"), true, "canonical shared aliases must remain recognized as intentional artwork");'
+          if text.count(canonical_marker) != 1:
+              raise SystemExit("portrait-v2: canonical marker mismatch")
+          canonical = '''for (const [name, , , parentKey] of dedicatedElfGnomeCases) {
+            assert.equal(speciesArtworkFor(name), `/media/species/${parentKey}.webp`, `canonical ${name} source artwork must remain the shared ${parentKey} image outside the Forge`);
+          }
+          '''
+          text = text.replace(canonical_marker, canonical + canonical_marker)
+
+          portrait_marker = 'const portraitCases = ['
+          if text.count(portrait_marker) != 1:
+              raise SystemExit("portrait-v2: portrait marker mismatch")
+          portrait_checks = '''for (const [name, fileName] of dedicatedElfGnomeCases) {
+            assert.equal(speciesPortraitArtworkFor(name), `/media/species/${fileName}`, `${name} must use its generated dedicated portrait`);
+            assert.equal(hasSpeciesPortraitArtwork(name), true, `${name} dedicated generated art must count as Forge portrait coverage`);
+            assert.ok(speciesFlavorLore(name).length >= 70, `${name} must retain unique lore with dedicated artwork`);
+          }
+
+          '''
+          text = text.replace(portrait_marker, portrait_checks + portrait_marker)
+          text = text.replace('  ["Drow", "elf.webp?portrait=drow"],\n', '')
+          text = text.replace('  ["Forest Gnome", "gnome.webp?portrait=forest-gnome"],\n', '')
+          text = text.replace(
+              'Genasi plus completed Dragonborn and Aven families use real dedicated Forge assets',
+              'Genasi plus completed Dragonborn, Aven, Elf, and Gnome families use real dedicated Forge assets',
+          )
+          validator.write_text(text)
+
+          # Focused workflow: watch and validate this family batch.
+          workflow = Path(".github/workflows/validate-forge-source-presentation.yml")
+          text = workflow.read_text()
+          old_path = '      - "public/media/species/*-aven.webp"\n'
+          if text.count(old_path) != 2:
+              raise SystemExit("workflow: Aven path marker mismatch")
+          text = text.replace(
+              old_path,
+              old_path
+              + '      - "public/media/species/drow.webp"\n'
+              + '      - "public/media/species/*-elf.webp"\n'
+              + '      - "public/media/species/*-gnome.webp"\n',
+          )
+          old_validator_path = '      - "scripts/validate_forge_aven_art.mjs"\n'
+          if text.count(old_validator_path) != 2:
+              raise SystemExit("workflow: Aven validator path marker mismatch")
+          text = text.replace(
+              old_validator_path,
+              old_validator_path + '      - "scripts/validate_forge_elf_gnome_art.mjs"\n',
+          )
+          step = '''      - name: Validate Aven dedicated artwork
+                  run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_aven_art.mjs
+          '''
+          if text.count(step) != 1:
+              raise SystemExit("workflow: Aven step marker mismatch")
+          text = text.replace(
+              step,
+              step + '''
+                - name: Validate Elf and Gnome dedicated artwork
+                  run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_elf_gnome_art.mjs
+          ''',
+          )
+          workflow.write_text(text)
+
+          Path("scripts/validate_forge_elf_gnome_art.mjs").write_text(r'''import assert from "node:assert/strict";
+          import fs from "node:fs";
+          import path from "node:path";
+          import { pathToFileURL } from "node:url";
+
+          const root = process.cwd();
+          const protectedPattern = /MapPageClient|map_routes|map_route_points|advance_all_characters|route_segment_progress/;
+          const artworkSource = fs.readFileSync(path.join(root, "utils/speciesArtwork.js"), "utf8");
+
+          const cases = [
+            ["Drow", "drow.webp", 10000, "elf", /exceptional Darkvision|shadow-and-faerie/i],
+            ["High Elf", "high-elf.webp", 12000, "elf", /arcane tradition|flexible cantrip|teleportation/i],
+            ["Wood Elf", "wood-elf.webp", 10000, "elf", /swift-footed|wilderness magic|increased speed/i],
+            ["Forest Gnome", "forest-gnome.webp", 11000, "gnome", /subtle illusion|small animals|woodland/i],
+            ["Rock Gnome", "rock-gnome.webp", 11000, "gnome", /practical invention|mending|mechanical devices/i],
+          ];
+
+          for (const [name, fileName, minimumBytes] of cases) {
+            const artworkPath = path.join(root, "public/media/species", fileName);
+            assert.ok(fs.existsSync(artworkPath), `dedicated Elf/Gnome artwork missing ${fileName}`);
+            assert.ok(fs.statSync(artworkPath).size > minimumBytes, `${name} must contain a real generated image rather than a placeholder`);
+            const artwork = fs.readFileSync(artworkPath);
+            assert.equal(artwork.subarray(0, 4).toString("ascii"), "RIFF", `${name} must be a valid RIFF WebP container`);
+            assert.equal(artwork.subarray(8, 12).toString("ascii"), "WEBP", `${name} must be a valid WebP image`);
+          }
+
+          const { speciesArtworkFor, speciesPortraitArtworkFor, hasSpeciesPortraitArtwork } = await import(pathToFileURL(path.join(root, "utils/speciesArtwork.js")).href);
+          const { speciesFlavorLore } = await import(pathToFileURL(path.join(root, "utils/speciesLore.js")).href);
+
+          for (const [name, fileName, , parentKey, lorePattern] of cases) {
+            assert.equal(speciesArtworkFor(name), `/media/species/${parentKey}.webp`, `canonical ${name} artwork must stay on the shared ${parentKey} image outside the Forge`);
+            assert.equal(speciesPortraitArtworkFor(name), `/media/species/${fileName}`, `${name} must use its dedicated generated artwork in the Forge`);
+            assert.equal(hasSpeciesPortraitArtwork(name), true, `${name} must count as intentional Forge portrait coverage`);
+            const lore = speciesFlavorLore(name);
+            assert.ok(lore.length >= 70, `${name} must retain a meaningful lineage-specific description`);
+            assert.match(lore, lorePattern, `${name} lore must preserve its lineage identity`);
+          }
+
+          assert.equal(speciesPortraitArtworkFor("Hawk-Headed Aven"), "/media/species/hawk-headed-aven.webp", "completed Aven artwork must remain intact");
+          assert.equal(speciesPortraitArtworkFor("Amethyst Gem Dragonborn"), "/media/species/amethyst-gem-dragonborn.webp", "completed Gem Dragonborn artwork must remain intact");
+          assert.ok(!protectedPattern.test(artworkSource), "Elf/Gnome artwork work crossed a protected map/travel boundary");
+
+          console.log("Elf/Gnome Forge artwork validated: Drow, High Elf, Wood Elf, Forest Gnome, and Rock Gnome use real dedicated WebP assets in the Forge; canonical shared Elf/Gnome artwork remains stable outside the Forge; completed Aven/Gem artwork remains intact; lineage lore stays distinct; and protected map/travel boundaries remain untouched.");
+          ''')
+          PY
+
+      - name: Validate patched portrait contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_species_catalog_portraits_v2.mjs
+          node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_elf_gnome_art.mjs
+
+      - name: Commit verified patch blobs to staging branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add utils/speciesArtwork.js \
+                  scripts/validate_forge_species_catalog_portraits_v2.mjs \
+                  scripts/validate_forge_elf_gnome_art.mjs \
+                  .github/workflows/validate-forge-source-presentation.yml
+          if git diff --cached --quiet; then
+            echo "No patch changes to commit."
+            exit 0
+          fi
+          git commit -m "Prepare Elf and Gnome Forge artwork patch blobs"
+          git push origin HEAD:agent/materialize-elf-gnome-art
