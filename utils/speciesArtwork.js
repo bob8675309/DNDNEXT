@@ -179,6 +179,9 @@ const SPECIES_DEDICATED_VARIANT_ARTWORK = new Set([
   "shadowmoor-fairy",
   "lorwyn-kithkin",
   "shadowmoor-kithkin",
+  "dwarf-kaladesh",
+  "goblin-dankwood",
+  "orc-ixalan",
 ]);
 
 const SPECIES_VARIANT_PORTRAITS = new Set([
@@ -190,7 +193,6 @@ const SPECIES_VARIANT_PORTRAITS = new Set([
   "drow", "high-elf", "wood-elf", "forest-gnome", "rock-gnome",
   "beasthide-shifter", "longtooth-shifter", "swiftstride-shifter", "wildhunt-shifter",
   "lorwyn-fairy", "shadowmoor-fairy", "lorwyn-kithkin", "shadowmoor-kithkin",
-  "dwarf-kaladesh", "goblin-dankwood", "orc-ixalan",
 ]);
 
 export function normalizeSpeciesArtworkKey(value = "") {
