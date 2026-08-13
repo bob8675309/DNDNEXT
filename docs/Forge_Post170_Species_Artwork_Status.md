@@ -1,11 +1,11 @@
 # Forge Species Artwork — Post-PR #170 Active Status
 
-Status date: 2026-08-12
+Status date: 2026-08-13
 Active branch: `agent/species-art-post170`
 Active PR: #171 — OPEN / UNMERGED
 Merge rule: **do not merge PR #171 without explicit user approval**
 Database authority: migration 93 — `20260812042950 aven_subrace_catalog`
-Exact validated code/art checkpoint: `dd335d69af7bebdfc2b4590c34f15e621d93adc5`
+Exact validated code/art checkpoint: `d7ec6db5e428403849daabfa1751ab4c9a68e7f7`
 
 ## Why this ledger exists
 
@@ -121,16 +121,34 @@ Verified source identity:
 
 Canonical non-Forge Hawk/Ibis resolution remains `aven.webp`; only the Forge uses the dedicated files.
 
+### Elf / Gnome — COMPLETE ON PR #171
+
+- `public/media/species/drow.webp`
+- `public/media/species/high-elf.webp`
+- `public/media/species/wood-elf.webp`
+- `public/media/species/forest-gnome.webp`
+- `public/media/species/rock-gnome.webp`
+
+All five are production WebP portraits at 1536 × 2048 (true 3:4). The dedicated validator checks real RIFF/WEBP/VP8 headers, exact dimensions, Forge routing, canonical non-Forge aliases, lineage-specific lore, completed Aven/Gem routing, and protected map/travel boundaries.
+
+Canonical non-Forge Drow/High Elf/Wood Elf resolution remains `elf.webp`; canonical non-Forge Forest/Rock Gnome resolution remains `gnome.webp`. Only the Forge uses the dedicated lineage files.
+
 ## Exact PR #171 code/art checkpoint
 
-`dd335d69af7bebdfc2b4590c34f15e621d93adc5` — `Align Gem artwork validators with source wording`
+`d7ec6db5e428403849daabfa1751ab4c9a68e7f7` — `Add high-resolution Elf and Gnome lineage artwork`
 
-Net code/art scope relative to merged `main` is nine files:
+Net code/art scope relative to merged `main` is fifteen files; the complete PR has eighteen changed files after the three documentation files are included:
 
 - `.github/workflows/validate-forge-source-presentation.yml`
 - `public/media/species/hawk-headed-aven.webp`
 - `public/media/species/ibis-headed-aven.webp`
+- `public/media/species/drow.webp`
+- `public/media/species/high-elf.webp`
+- `public/media/species/wood-elf.webp`
+- `public/media/species/forest-gnome.webp`
+- `public/media/species/rock-gnome.webp`
 - `scripts/validate_forge_aven_art.mjs`
+- `scripts/validate_forge_elf_gnome_art.mjs`
 - `scripts/validate_forge_chromatic_dragonborn_art.mjs`
 - `scripts/validate_forge_gem_dragonborn_art.mjs`
 - `scripts/validate_forge_metallic_dragonborn_art.mjs`
@@ -155,9 +173,10 @@ Current required checks include:
 - Metallic Dragonborn artwork;
 - Gem Dragonborn artwork;
 - Aven artwork;
+- Elf/Gnome artwork, including exact 1536 × 2048 dimensions;
 - production build.
 
-For exact code/art head `dd335d69...`:
+For exact code/art head `d7ec6db5...`:
 
 - focused push workflow: SUCCESS;
 - PR `Validate Forge source presentation`: SUCCESS;
@@ -165,13 +184,13 @@ For exact code/art head `dd335d69...`:
 - production builds: SUCCESS;
 - Vercel deployment: SUCCESS.
 
-Because PR #171 has a tightly scoped nine-file diff, GitHub path filters correctly triggered two relevant PR workflows rather than the 33-workflow matrix associated with the old long-lived #170 diff.
+At `d7ec6db5...`, all four triggered GitHub validator jobs passed and Vercel deployment succeeded. GitHub compare confirms the Elf/Gnome continuation commit changes exactly nine files and no controller, persistence, database, map, combat, crafting, inventory, or merchant file.
 
 The first focused run on `3ef24c85...` correctly failed on a validator phrase mismatch: source lore says `force-linked gem ancestry`, while the assertion required `force-linked ancestry`. The implementation was not changed to satisfy the test. The validators were corrected to require the actual source wording while still enforcing each Gem ancestry's correct damage affinity.
 
 ## Live database boundary
 
-No SQL write or migration was made for the Aven/Gem artwork reconciliation.
+No SQL write or migration was made for the Aven/Gem/Elf/Gnome artwork reconciliation.
 
 Latest verified production counts remain:
 
@@ -189,16 +208,6 @@ Latest verified production counts remain:
 ## Remaining dedicated-art queue
 
 Next coherent batch:
-
-### Elf / Gnome
-
-- Drow
-- High Elf
-- Wood Elf
-- Forest Gnome
-- Rock Gnome
-
-Then:
 
 ### Shifter
 
@@ -224,4 +233,4 @@ Retain existing dedicated Human setting art, Elf Kaladesh/Zendikar art, and Amon
 
 ## Next action
 
-Continue with the Elf/Gnome batch on PR #171, using the same dedicated-file / canonical-alias boundary and validator-first process. Do not merge PR #171 until the user explicitly approves it.
+Continue with the Shifter batch on PR #171, using the same dedicated-file / canonical-alias boundary and validator-first process. Do not merge PR #171 until the user explicitly approves it.

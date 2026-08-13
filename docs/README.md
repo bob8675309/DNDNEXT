@@ -5,7 +5,7 @@ This directory contains the project's living handoff, roadmap, architecture, and
 ## Start here
 
 - `DNDNext_Current_Handoff_Prompt.md` — copy-ready continuation prompt and protected boundaries.
-- `Forge_Post170_Species_Artwork_Status.md` — **active Species artwork continuation authority after the PR #170 merge**: PR #171, completed Genasi/Dragonborn/Aven artwork, exact validation checkpoint, binary-write procedure, remaining queue, and protected boundaries.
+- `Forge_Post170_Species_Artwork_Status.md` — **active Species artwork continuation authority after the PR #170 merge**: PR #171, completed Genasi/Dragonborn/Aven/Elf/Gnome artwork, exact validation checkpoint, binary-write procedure, remaining queue, and protected boundaries.
 - `Forge_Species_Art_and_Collapse_Handoff.md` — **historical PR #170 Species-art handoff; superseded**. It now points to the post-#170 ledger and must not be treated as current status.
 - `CHATGPT_REPO_WRITE_PROCEDURE.md` — **connector write authority and safe procedure**: GitHub/Supabase are directly writable from ChatGPT; use `create_blob → create_tree → create_commit → race-check → update_ref(force=false)` for coherent repo changes.
 - `Documentation_Refresh_Manifest.md` — broader documentation precedence/history; newer focused ledgers supersede stale PR #170 status text.
@@ -90,7 +90,7 @@ PR #171 is **OPEN / UNMERGED** and must not be merged without explicit user appr
 
 Exact validated code/art checkpoint:
 
-`dd335d69af7bebdfc2b4590c34f15e621d93adc5` — `Align Gem artwork validators with source wording`
+`d7ec6db5e428403849daabfa1751ab4c9a68e7f7` — `Add high-resolution Elf and Gnome lineage artwork`
 
 For that exact code/art head:
 
@@ -100,7 +100,7 @@ For that exact code/art head:
 - production builds passed;
 - Vercel deployment succeeded.
 
-Because PR #171 changes only nine Species-art/resolver/validator files, GitHub path filters correctly trigger two relevant PR workflows rather than the 33-workflow matrix associated with the old long-lived #170 diff.
+Because PR #171 remains tightly scoped to Species art/resolvers/validators and active status docs, GitHub path filters trigger only the relevant validation jobs rather than the 33-workflow matrix associated with the old long-lived #170 diff.
 
 ### Complete dedicated Genasi family
 
@@ -142,19 +142,21 @@ Gem:
 
 Canonical non-Forge Aven still resolves through `aven.webp`; canonical non-Forge Dragonborn children still resolve through the appropriate shared Chromatic/Metallic/Gem family art. Dedicated child files are Forge presentation only.
 
+### Complete Elf / Gnome lineage artwork on PR #171
+
+- `public/media/species/drow.webp`
+- `public/media/species/high-elf.webp`
+- `public/media/species/wood-elf.webp`
+- `public/media/species/forest-gnome.webp`
+- `public/media/species/rock-gnome.webp`
+
+All five are validated 1536 × 2048 WebP portraits. Canonical non-Forge Elf/Gnome children still resolve through `elf.webp` / `gnome.webp`; only the Forge uses these dedicated lineage files.
+
 The active continuation ledger is `Forge_Post170_Species_Artwork_Status.md`.
 
 ## Remaining dedicated-art queue
 
 Next:
-
-- Drow
-- High Elf
-- Wood Elf
-- Forest Gnome
-- Rock Gnome
-
-Then:
 
 - Beasthide Shifter
 - Longtooth Shifter
@@ -189,7 +191,7 @@ Latest verified production counts:
 - map_routes: 4
 - map_route_points: 9
 
-No SQL write or migration was made for the Gem/Aven artwork continuation.
+No SQL write or migration was made for the Gem/Aven/Elf/Gnome artwork continuation.
 
 ## Protected-boundary rule
 
