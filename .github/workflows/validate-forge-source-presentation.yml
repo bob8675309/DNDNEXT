@@ -10,6 +10,7 @@ on:
       - "components/NpcForgeClassGuide.js"
       - "components/NpcForgeClassGuideModel.js"
       - "components/NpcForgeContextPanel.js"
+      - "components/NpcForgeContextPanelRefined.js"
       - "components/NpcForgeCoreSupport.js"
       - "components/NpcForgeEmbeddedSourceChoices.js"
       - "components/SourceRuleContent.js"
@@ -31,6 +32,7 @@ on:
       - "scripts/validate_forge_species_family_expansion.mjs"
       - "scripts/validate_forge_species_catalog_portraits.mjs"
       - "scripts/validate_forge_species_catalog_portraits_v2.mjs"
+      - "scripts/validate_forge_species_portrait_integrity.mjs"
       - "scripts/validate_forge_chromatic_dragonborn_art.mjs"
       - "scripts/validate_forge_metallic_dragonborn_art.mjs"
       - "scripts/validate_forge_gem_dragonborn_art.mjs"
@@ -61,6 +63,7 @@ on:
       - "components/NpcForgeClassGuide.js"
       - "components/NpcForgeClassGuideModel.js"
       - "components/NpcForgeContextPanel.js"
+      - "components/NpcForgeContextPanelRefined.js"
       - "components/NpcForgeCoreSupport.js"
       - "components/NpcForgeEmbeddedSourceChoices.js"
       - "components/SourceRuleContent.js"
@@ -82,6 +85,7 @@ on:
       - "scripts/validate_forge_species_family_expansion.mjs"
       - "scripts/validate_forge_species_catalog_portraits.mjs"
       - "scripts/validate_forge_species_catalog_portraits_v2.mjs"
+      - "scripts/validate_forge_species_portrait_integrity.mjs"
       - "scripts/validate_forge_chromatic_dragonborn_art.mjs"
       - "scripts/validate_forge_metallic_dragonborn_art.mjs"
       - "scripts/validate_forge_gem_dragonborn_art.mjs"
@@ -146,6 +150,9 @@ jobs:
 
       - name: Validate Species catalogue portraits and collapse state
         run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_species_catalog_portraits_v2.mjs
+
+      - name: Validate regenerated Species portrait integrity
+        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_species_portrait_integrity.mjs
 
       - name: Validate Chromatic Dragonborn dedicated artwork
         run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_chromatic_dragonborn_art.mjs

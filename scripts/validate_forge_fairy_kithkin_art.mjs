@@ -65,7 +65,7 @@ for (const token of [
 ]) assert.ok(expansionSource.includes(token), `Fairy/Kithkin must retain the source-owned parent choice model: missing ${token}`);
 
 assert.equal(
-  (expansionSource.match(/optionOverrides: \{ lorwyn: \{ darkvision: null \}, shadowmoor: \{ darkvision: 120 \} \}/g) || []).length,
+  (expansionSource.match(/lorwyn: \{ artworkName: "Lorwyn (?:Fairy|Kithkin)", darkvision: null \}, shadowmoor: \{ artworkName: "Shadowmoor (?:Fairy|Kithkin)", darkvision: 120 \}/g) || []).length,
   2,
   "Fairy and Kithkin must keep neutral Lorwyn presentation and project 120-foot Darkvision only for Shadowmoor",
 );

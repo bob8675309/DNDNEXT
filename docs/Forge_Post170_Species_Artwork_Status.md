@@ -5,7 +5,17 @@ Active branch: `agent/species-art-post170`
 Active PR: #171 — OPEN / UNMERGED
 Merge rule: **do not merge PR #171 without explicit user approval**
 Database authority: migration 93 — `20260812042950 aven_subrace_catalog`
-Exact validated code/art checkpoint: `f8f31534c157c9778f873e726551ac20cfdfd823`
+Previous validated code/art checkpoint: `f8f31534c157c9778f873e726551ac20cfdfd823`
+
+## 2026-08-13 final portrait-quality continuation
+
+The current local continuation, pending one coherent PR commit, replaces all 21 legacy Genasi, Dragonborn, and Aven child files with unique high-resolution 1536 × 2048 (3:4) artwork. The five Gem Dragonborn are no longer alternate treatments of one composition, Bronze Dragonborn is no longer duplicated, and the Aven pair now uses distinct full-body Hawk and Ibis compositions.
+
+The large right-hand Forge Species hero now calls `speciesPortraitArtworkFor(...)`, matching the child rows in the left catalogue. Selected family metadata carries the dedicated child artwork name through the existing source-choice projection; no hook, state variable, prop, controller field, save payload, or database field was added.
+
+Legacy CSS hue shifts and body-level crop/filter stand-ins were removed. `scripts/validate_forge_species_portrait_integrity.mjs` now enforces complete VP8 WebPs, exact dimensions, byte-level uniqueness across the 21 regenerated portraits, raw parenthetical Genasi/Aven alias routing, the large-hero resolver, removal of the recolor fallbacks, full Species importer descriptions, preview-only database behavior, and protected map/travel boundaries.
+
+The character-option importer now retains the full flattened Species description instead of truncating it at 900 characters. A read-only dry run against all 166 live raw Species records produced 166 rows, zero blank descriptions, 102 descriptions over 900 characters, and a maximum length of 3,216 characters. Three exact-description pairs remain and are source-data reprints or intentional shared mechanics: Elf LFL/XPHB, Boggart LFL versus Goblin MPMM, and Harengon MPMM/WBtW. No Supabase write or migration was made.
 
 ## Why this ledger exists
 

@@ -8,6 +8,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 const protectedPattern = /MapPageClient|map_routes|map_route_points|advance_all_characters|route_segment_progress/;
 
 const coreSource = read("components/NpcForgeCoreSupport.js");
+const contextPanelSource = read("components/NpcForgeContextPanelRefined.js");
 const artworkSource = read("utils/speciesArtwork.js");
 const loreSource = read("utils/speciesLore.js");
 
@@ -24,15 +25,16 @@ for (const token of [
   "npc-forge-catalog-species-summary",
   "npc-forge-catalog-child-check",
   "data-selected-portrait",
-  "body:has([data-selected-portrait=",
 ]) assert.ok(coreSource.includes(token), `Species catalogue portrait/collapse UI missing ${token}`);
+assert.ok(contextPanelSource.includes("speciesPortraitArtworkFor(option.name)"), "large Forge Species hero must use the Forge portrait resolver");
+assert.ok(!contextPanelSource.includes("speciesArtworkFor(option.name)"), "large Forge Species hero must not bypass dedicated child portraits");
+assert.ok(!/hue-rotate|body:has\(\[data-selected-portrait/.test(coreSource), "obsolete CSS recoloring/crop stand-ins must remain removed");
 assert.ok(!coreSource.includes("active && (family || sourceVariants.length) ? \"⌄\" : \"›\""), "expand/collapse must no longer be coupled to active selection state");
 assert.ok(coreSource.includes("expanded && parentSelected && family"), "family children must render from independent expanded state");
 assert.ok(coreSource.includes("expanded && sourceVariants.length"), "setting children must render from independent expanded state");
 
 for (const token of [
   "SPECIES_DEDICATED_VARIANT_ARTWORK",
-  "SPECIES_VARIANT_PORTRAITS",
   "speciesPortraitArtworkFor",
   "gold-dragonborn",
   "fire-genasi",
@@ -48,7 +50,6 @@ for (const token of [
   "dwarf-kaladesh",
   "goblin-dankwood",
   "orc-ixalan",
-  "?portrait=",
 ]) assert.ok(artworkSource.includes(token), `Species variant portrait authority missing ${token}`);
 
 for (const token of [
@@ -106,19 +107,19 @@ for (const [name, fileName] of dedicatedGenasiCases) {
 assert.equal(speciesPortraitArtworkFor("Gold Dragonborn"), "/media/species/gold-dragonborn.webp", "Gold Dragonborn must use its generated dedicated portrait");
 
 const portraitCases = [
-  ["Amethyst Gem Dragonborn", "dragonborn-gem.webp?portrait=amethyst-gem-dragonborn"],
-  ["Hawk-Headed Aven", "aven.webp?portrait=hawk-headed-aven"],
-  ["Drow", "elf.webp?portrait=drow"],
-  ["Forest Gnome", "gnome.webp?portrait=forest-gnome"],
-  ["Wildhunt Shifter", "shifter.webp?portrait=wildhunt-shifter"],
-  ["Shadowmoor Fairy", "fairy.webp?portrait=shadowmoor-fairy"],
-  ["Lorwyn Kithkin", "kithkin.webp?portrait=lorwyn-kithkin"],
-  ["Dwarf (Kaladesh)", "dwarf.webp?portrait=dwarf-kaladesh"],
-  ["Goblin (Dankwood)", "goblin.webp?portrait=goblin-dankwood"],
-  ["Orc (Ixalan)", "orc.webp?portrait=orc-ixalan"],
+  ["Amethyst Gem Dragonborn", "amethyst-gem-dragonborn.webp"],
+  ["Hawk-Headed Aven", "hawk-headed-aven.webp"],
+  ["Drow", "drow.webp"],
+  ["Forest Gnome", "forest-gnome.webp"],
+  ["Wildhunt Shifter", "wildhunt-shifter.webp"],
+  ["Shadowmoor Fairy", "shadowmoor-fairy.webp"],
+  ["Lorwyn Kithkin", "lorwyn-kithkin.webp"],
+  ["Dwarf (Kaladesh)", "dwarf-kaladesh.webp"],
+  ["Goblin (Dankwood)", "goblin-dankwood.webp"],
+  ["Orc (Ixalan)", "orc-ixalan.webp"],
 ];
 for (const [name, expected] of portraitCases) {
-  assert.ok(speciesPortraitArtworkFor(name).endsWith(expected), `${name} must retain an explicit temporary Forge portrait presentation until dedicated art is committed`);
+  assert.ok(speciesPortraitArtworkFor(name).endsWith(expected), `${name} must retain its dedicated Forge portrait presentation`);
   assert.equal(hasSpeciesPortraitArtwork(name), true, `${name} must be recognized as having intentional Forge portrait coverage`);
   const lore = speciesFlavorLore(name);
   assert.ok(lore.length >= 70, `${name} must have a meaningful unique description`);
@@ -136,4 +137,4 @@ assert.doesNotMatch(speciesFlavorLore("Hawk-Headed Aven"), /Naktamun|Hekma|God-P
 
 for (const source of [coreSource, artworkSource, loreSource]) assert.ok(!protectedPattern.test(source), "Species portrait/catalogue work crossed a protected map/travel boundary");
 
-console.log("Forge Species catalogue portraits validated: expandable parents have independent chevrons, parent/child rows carry concise unique lore, canonical artwork remains stable outside the Forge, the complete Genasi family and committed Dragonborn child use real dedicated Forge assets, unfinished variants remain explicit temporary family-art treatments, and protected map/travel boundaries remain untouched.");
+console.log("Forge Species catalogue portraits validated: expandable parents have independent chevrons, parent/child rows carry concise unique lore, canonical artwork remains stable outside the Forge, completed variants use real dedicated Forge assets without temporary recolor stand-ins, and protected map/travel boundaries remain untouched.");

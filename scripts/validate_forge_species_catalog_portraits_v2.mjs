@@ -8,6 +8,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 const protectedPattern = /MapPageClient|map_routes|map_route_points|advance_all_characters|route_segment_progress/;
 
 const coreSource = read("components/NpcForgeCoreSupport.js");
+const contextPanelSource = read("components/NpcForgeContextPanelRefined.js");
 const artworkSource = read("utils/speciesArtwork.js");
 const loreSource = read("utils/speciesLore.js");
 
@@ -24,15 +25,17 @@ for (const token of [
   "npc-forge-catalog-species-summary",
   "npc-forge-catalog-child-check",
   "data-selected-portrait",
-  "body:has([data-selected-portrait=",
 ]) assert.ok(coreSource.includes(token), `Species catalogue portrait/collapse UI missing ${token}`);
+assert.ok(contextPanelSource.includes("speciesPortraitArtworkFor(option.name)"), "large Forge Species hero must use the Forge portrait resolver");
+assert.ok(contextPanelSource.includes("hasSpeciesPortraitArtwork(option.name)"), "large Forge Species hero fallback label must use Forge portrait coverage");
+assert.ok(!contextPanelSource.includes("speciesArtworkFor(option.name)"), "large Forge Species hero must not bypass dedicated child portraits with the canonical resolver");
+assert.ok(!/hue-rotate|body:has\(\[data-selected-portrait/.test(coreSource), "obsolete CSS recoloring/crop stand-ins must be removed after dedicated portraits exist");
 assert.ok(!coreSource.includes("active && (family || sourceVariants.length) ? \"⌄\" : \"›\""), "expand/collapse must no longer be coupled to active selection state");
 assert.ok(coreSource.includes("expanded && parentSelected && family"), "family children must render from independent expanded state");
 assert.ok(coreSource.includes("expanded && sourceVariants.length"), "setting children must render from independent expanded state");
 
 for (const token of [
   "SPECIES_DEDICATED_VARIANT_ARTWORK",
-  "SPECIES_VARIANT_PORTRAITS",
   "speciesPortraitArtworkFor",
   "gold-dragonborn",
   "fire-genasi",
@@ -57,8 +60,8 @@ for (const token of [
   "dwarf-kaladesh",
   "goblin-dankwood",
   "orc-ixalan",
-  "?portrait=",
 ]) assert.ok(artworkSource.includes(token), `Species variant portrait authority missing ${token}`);
+assert.ok(!artworkSource.includes("?portrait="), "completed dedicated portrait coverage must not retain query-string family-art stand-ins");
 
 for (const token of [
   "Air genasi",

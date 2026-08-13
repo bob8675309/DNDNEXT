@@ -18,7 +18,7 @@ for (const token of ["SpeciesCatalogFamilySubmenu", "speciesVariantChoiceBinding
 assert.ok(!coreSource.includes("<select value={selectedKey}"), "Species family submenu must use indented catalogue rows, not a dropdown");
 for (const token of ["NpcForgeSourceChoiceContext.Provider", "sourceChoiceGroupUsesCatalogSpeciesFamily", "projectSelectedSpeciesVariant", "projectCatalogSpeciesFamilySelection", "groups: (sourceChoiceState.groups || []).filter"]) assert.ok(panelSource.includes(token), `right Species presentation filtering missing ${token}`);
 for (const token of ["genasi-elemental-lineage", "dragonborn-ancestry", "speciesVariantChoiceBinding", "selectedCatalogSpeciesFamily", "projectCatalogSpeciesFamilySelection", "catalogDisplayName", "catalogArtworkName"]) assert.ok(familySource.includes(token) || variantSource.includes(token), `catalogue Species family helper missing ${token}`);
-for (const token of ["displayName", "catalogLabel", "catalogDisplayName", "catalogArtworkName", "presentationArtworkName", "Dragonborn (Chromatic)", "Dragonborn (Metallic)", "Dragonborn (Gem)"]) assert.ok(variantSource.includes(token) || familySource.includes(token), `selected Species family presentation missing ${token}`);
+for (const token of ["displayName", "catalogLabel", "catalogDisplayName", "catalogArtworkName", "presentationArtworkName", "Black Dragonborn", "Gold Dragonborn", "Amethyst Gem Dragonborn"]) assert.ok(variantSource.includes(token) || familySource.includes(token) || artworkSource.includes(token.toLowerCase().replaceAll(" ", "-")), `selected Species family presentation missing ${token}`);
 for (const token of ["air-genasi", "water-genasi", "black-dragonborn", "gold-dragonborn", "amethyst-gem-dragonborn"]) assert.ok(artworkSource.includes(token), `selected Species artwork alias missing ${token}`);
 for (const token of ["without requiring a material component", "using any spell slots", "sourceAudit", "5etools MPMM source audit"]) assert.ok(genasiRestoreSql.includes(token), `Genasi source-detail restore migration missing ${token}`);
 assert.ok(!familySource.includes("giant-ancestry"), "Goliath Giant Ancestry must not be promoted into the catalogue family submenu");
@@ -56,7 +56,7 @@ const waterSelections = { [genasiBinding.group.id]: { [genasiBinding.field.id]: 
 const projectedWater = projectCatalogSpeciesFamilySelection(projectSelectedSpeciesVariant(genasi, genasiGroups, waterSelections), genasi, genasiGroups, waterSelections);
 assert.equal(projectedWater.id, genasi.id, "Genasi submenu selection must not replace the persisted parent Species ID");
 assert.equal(projectedWater.name, "Water Genasi", "selected Genasi lineage must change the right-hand display identity");
-assert.equal(projectedWater.metadata?.presentationArtworkName, "Genasi", "MPMM supplies one shared Genasi reference image, so lineage display must retain the family artwork rather than invent a false source image");
+assert.equal(projectedWater.metadata?.presentationArtworkName, "Water Genasi", "selected Genasi lineage must route the Forge hero to its dedicated portrait");
 assert.ok(projectedWater.traitDetails.some((detail) => detail.name === "Amphibious"), "Water selection must project Water lineage traits into the right panel");
 assert.ok(!projectedWater.traitDetails.some((detail) => detail.name === "Unending Breath"), "Water selection must not leak Air lineage traits into the right panel");
 assert.match(projectedWater.traitDetails.find((detail) => detail.name === "Elemental Lineage")?.description || "", /Selected lineage: Water Genasi/i, "right panel must identify the selected Genasi lineage");
@@ -91,7 +91,7 @@ const blackSelections = { [dragonbornBinding.group.id]: { [dragonbornBinding.fie
 assert.equal(projectSelectedSpeciesVariant(dragonborn, dragonbornGroups, blackSelections), dragonborn, "standard XPHB ancestry must retain the ordinary XPHB parent rules projection");
 const projectedBlack = projectCatalogSpeciesFamilySelection(projectSelectedSpeciesVariant(dragonborn, dragonbornGroups, blackSelections), dragonborn, dragonbornGroups, blackSelections);
 assert.equal(projectedBlack.name, "Black Dragonborn", "standard Dragonborn selection must change only the catalogue-facing display identity");
-assert.equal(projectedBlack.metadata?.presentationArtworkName, "Dragonborn (Chromatic)", "standard chromatic ancestry must switch to chromatic family artwork in the catalogue-facing presentation");
+assert.equal(projectedBlack.metadata?.presentationArtworkName, "Black Dragonborn", "standard chromatic ancestry must switch to its dedicated Forge portrait");
 assert.equal(speciesArtworkFor(projectedBlack.name), "/media/species/dragonborn-chromatic.webp", "Black Dragonborn display must resolve to chromatic family artwork");
 assert.ok(projectedBlack.traitDetails.some((detail) => detail.name === "Damage Resistance"), "standard XPHB Dragonborn selection must retain XPHB parent mechanics");
 assert.match(projectedBlack.traitDetails.find((detail) => detail.name === "Draconic Ancestry")?.description || "", /Selected ancestry: Black.*Acid/i, "right panel must identify the selected standard Dragonborn ancestry and affinity");
@@ -101,7 +101,7 @@ assert.equal(amethyst?.metadata?.catalogLabel, "Amethyst Gem Dragonborn", "Gem D
 const gemSelections = { [dragonbornBinding.group.id]: { [dragonbornBinding.field.id]: [amethyst.key] } };
 const projectedGem = projectCatalogSpeciesFamilySelection(projectSelectedSpeciesVariant(dragonborn, dragonbornGroups, gemSelections), dragonborn, dragonbornGroups, gemSelections);
 assert.equal(projectedGem.name, "Amethyst Gem Dragonborn", "Gem ancestry must change the right-hand display identity");
-assert.equal(projectedGem.metadata?.presentationArtworkName, "Dragonborn (Gem)", "Gem ancestry must switch to Gem family artwork");
+assert.equal(projectedGem.metadata?.presentationArtworkName, "Amethyst Gem Dragonborn", "Gem ancestry must switch to its dedicated Forge portrait");
 assert.equal(speciesArtworkFor(projectedGem.name), "/media/species/dragonborn-gem.webp", "Gem Dragonborn display must resolve to Gem family artwork");
 assert.ok(projectedGem.traitDetails.some((detail) => detail.name === "Psionic Mind"), "FTD Gem selection must project Gem-family traits");
 assert.ok(projectedGem.traitDetails.some((detail) => detail.name === "Gem Flight"), "FTD Gem selection must project Gem Flight");
