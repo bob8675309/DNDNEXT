@@ -166,6 +166,11 @@ const SPECIES_DEDICATED_VARIANT_ARTWORK = new Set([
   "topaz-gem-dragonborn",
   "hawk-headed-aven",
   "ibis-headed-aven",
+  "drow",
+  "high-elf",
+  "wood-elf",
+  "forest-gnome",
+  "rock-gnome",
 ]);
 
 const SPECIES_VARIANT_PORTRAITS = new Set([
