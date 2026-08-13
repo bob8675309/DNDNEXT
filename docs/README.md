@@ -90,13 +90,14 @@ PR #171 is **OPEN / UNMERGED** and must not be merged without explicit user appr
 
 Exact validated code/art checkpoint:
 
-`d7ec6db5e428403849daabfa1751ab4c9a68e7f7` — `Add high-resolution Elf and Gnome lineage artwork`
+`7d212dcb930aff6e7ec8dc445d614d00a74cb579` — `Add high-resolution Shifter form artwork`
 
 For that exact code/art head:
 
 - focused Forge source/art push workflow passed;
 - PR `Validate Forge source presentation` passed;
 - PR `Validate NPC Forge foundation` passed;
+- PR `Validate Species rest proficiency runtime` passed;
 - production builds passed;
 - Vercel deployment succeeded.
 
@@ -152,16 +153,21 @@ Canonical non-Forge Aven still resolves through `aven.webp`; canonical non-Forge
 
 All five are validated 1536 × 2048 WebP portraits. Canonical non-Forge Elf/Gnome children still resolve through `elf.webp` / `gnome.webp`; only the Forge uses these dedicated lineage files.
 
+### Complete Shifter form artwork on PR #171
+
+- `public/media/species/beasthide-shifter.webp`
+- `public/media/species/longtooth-shifter.webp`
+- `public/media/species/swiftstride-shifter.webp`
+- `public/media/species/wildhunt-shifter.webp`
+
+All four are validated 1536 × 2048 WebP portraits. Canonical non-Forge Shifter forms still resolve through `shifter.webp`; only the Forge uses these dedicated files. The source-owned form choice remains on the existing parent `shifting` field.
+
 The active continuation ledger is `Forge_Post170_Species_Artwork_Status.md`.
 
 ## Remaining dedicated-art queue
 
 Next:
 
-- Beasthide Shifter
-- Longtooth Shifter
-- Swiftstride Shifter
-- Wildhunt Shifter
 - Lorwyn Fairy
 - Shadowmoor Fairy
 - Lorwyn Kithkin
@@ -191,7 +197,7 @@ Latest verified production counts:
 - map_routes: 4
 - map_route_points: 9
 
-No SQL write or migration was made for the Gem/Aven/Elf/Gnome artwork continuation.
+No SQL write or migration was made for the Gem/Aven/Elf/Gnome/Shifter artwork continuation.
 
 ## Protected-boundary rule
 
