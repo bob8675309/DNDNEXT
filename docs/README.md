@@ -90,7 +90,7 @@ PR #171 is **OPEN / UNMERGED** and must not be merged without explicit user appr
 
 Exact validated code/art checkpoint:
 
-`7d212dcb930aff6e7ec8dc445d614d00a74cb579` — `Add high-resolution Shifter form artwork`
+`43807110d10f2c9e22f540373919ef90eaca3ec2` — `Add high-resolution Fairy and Kithkin lineage artwork`
 
 For that exact code/art head:
 
@@ -162,16 +162,21 @@ All five are validated 1536 × 2048 WebP portraits. Canonical non-Forge Elf/Gnom
 
 All four are validated 1536 × 2048 WebP portraits. Canonical non-Forge Shifter forms still resolve through `shifter.webp`; only the Forge uses these dedicated files. The source-owned form choice remains on the existing parent `shifting` field.
 
+### Complete Fairy / Kithkin lineage artwork on PR #171
+
+- `public/media/species/lorwyn-fairy.webp`
+- `public/media/species/shadowmoor-fairy.webp`
+- `public/media/species/lorwyn-kithkin.webp`
+- `public/media/species/shadowmoor-kithkin.webp`
+
+All four are validated 1536 × 2048 WebP portraits. Canonical non-Forge Fairy/Kithkin children still resolve through `fairy.webp` / `kithkin.webp`; only the Forge uses these dedicated lineage files. The source-owned choices remain on the existing `faerie-lineage` and `kithkin-lineage` fields, with 120-foot Darkvision projected only for Shadowmoor.
+
 The active continuation ledger is `Forge_Post170_Species_Artwork_Status.md`.
 
 ## Remaining dedicated-art queue
 
 Next:
 
-- Lorwyn Fairy
-- Shadowmoor Fairy
-- Lorwyn Kithkin
-- Shadowmoor Kithkin
 - Dwarf (Kaladesh)
 - Goblin (Dankwood)
 - Orc (Ixalan)
