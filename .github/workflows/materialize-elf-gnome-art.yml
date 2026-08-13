@@ -1,0 +1,75 @@
+name: Materialize Elf and Gnome artwork
+
+on:
+  push:
+    branches:
+      - agent/materialize-elf-gnome-art
+    paths:
+      - ".tmp/elf-gnome-art/**"
+      - ".github/workflows/materialize-elf-gnome-art.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out staging branch
+        uses: actions/checkout@v4
+
+      - name: Reconstruct and verify WebP assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/media/species
+
+          cat .tmp/elf-gnome-art/drow.part* | base64 --decode > public/media/species/drow.webp
+          cat .tmp/elf-gnome-art/high-elf.part* | base64 --decode > public/media/species/high-elf.webp
+          cat .tmp/elf-gnome-art/wood-elf.part* | base64 --decode > public/media/species/wood-elf.webp
+          cat .tmp/elf-gnome-art/forest-gnome.part* | base64 --decode > public/media/species/forest-gnome.webp
+          cat .tmp/elf-gnome-art/rock-gnome.part* | base64 --decode > public/media/species/rock-gnome.webp
+
+          echo "b88e61d5395602cfc213baa4e74ab4234492efe69e5f760821dee908c29217f2  public/media/species/drow.webp" | sha256sum --check --strict
+          echo "50dd027af2000c3fa2d655477f35032c67546e9e08c52fe99e0f73b1fc41f253  public/media/species/high-elf.webp" | sha256sum --check --strict
+          echo "1e6e595a3af071bb302f8cea26867daa9270cc17416df359444757487a2423da  public/media/species/wood-elf.webp" | sha256sum --check --strict
+          echo "99a0509b5051910a843a86eec6e69b61b44ab2c58b67af9d596bb2f0e1bd758f  public/media/species/forest-gnome.webp" | sha256sum --check --strict
+          echo "dff07716e2ede4c9a75aa347b6e97070274ce1795cc9fd3041b5f2a53f91462a  public/media/species/rock-gnome.webp" | sha256sum --check --strict
+
+          python3 - <<'PY'
+          from pathlib import Path
+          expected = {
+              "drow.webp": 11292,
+              "high-elf.webp": 15818,
+              "wood-elf.webp": 12664,
+              "forest-gnome.webp": 13540,
+              "rock-gnome.webp": 13024,
+          }
+          root = Path("public/media/species")
+          for name, size in expected.items():
+              data = (root / name).read_bytes()
+              assert len(data) == size, f"{name}: expected {size} bytes, got {len(data)}"
+              assert data[:4] == b"RIFF", f"{name}: missing RIFF header"
+              assert data[8:12] == b"WEBP", f"{name}: missing WEBP signature"
+          print("All five Elf/Gnome WebP assets match exact source bytes and headers.")
+          PY
+
+      - name: Commit materialized binaries to staging branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/media/species/drow.webp \
+                  public/media/species/high-elf.webp \
+                  public/media/species/wood-elf.webp \
+                  public/media/species/forest-gnome.webp \
+                  public/media/species/rock-gnome.webp
+          if git diff --cached --quiet; then
+            echo "No binary changes to commit."
+            exit 0
+          fi
+          git commit -m "Materialize dedicated Elf and Gnome Forge artwork"
+          git push origin HEAD:agent/materialize-elf-gnome-art
