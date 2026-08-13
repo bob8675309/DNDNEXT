@@ -171,6 +171,10 @@ const SPECIES_DEDICATED_VARIANT_ARTWORK = new Set([
   "wood-elf",
   "forest-gnome",
   "rock-gnome",
+  "beasthide-shifter",
+  "longtooth-shifter",
+  "swiftstride-shifter",
+  "wildhunt-shifter",
 ]);
 
 const SPECIES_VARIANT_PORTRAITS = new Set([
