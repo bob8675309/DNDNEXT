@@ -36,7 +36,7 @@ for (const [name, fileName] of cases) {
 
 assert.equal(speciesPortraitArtworkFor("Gold Dragonborn"), "/media/species/gold-dragonborn.webp", "Gold Dragonborn dedicated Forge artwork must remain intact");
 assert.equal(speciesPortraitArtworkFor("Brass Dragonborn"), "/media/species/brass-dragonborn.webp", "completed Metallic Dragonborn artwork must remain dedicated after the Chromatic pass");
-assert.ok(speciesPortraitArtworkFor("Amethyst Gem Dragonborn").endsWith("dragonborn-gem.webp?portrait=amethyst-gem-dragonborn"), "unfinished Gem Dragonborn must remain explicit temporary Forge portrait treatment");
+assert.equal(speciesPortraitArtworkFor("Amethyst Gem Dragonborn"), "/media/species/amethyst-gem-dragonborn.webp", "completed Gem Dragonborn artwork must remain dedicated after the Chromatic pass");
 assert.ok(!protectedPattern.test(artworkSource), "Chromatic Dragonborn artwork work crossed a protected map/travel boundary");
 
-console.log("Chromatic Dragonborn Forge artwork validated: Black, Blue, Green, Red, and White use real dedicated WebP assets in the Forge, canonical shared artwork stays stable outside the Forge, completed Metallic artwork remains compatible, unfinished Gem variants remain explicit temporary treatments, and protected map/travel boundaries remain untouched.");
+console.log("Chromatic Dragonborn Forge artwork validated: Black, Blue, Green, Red, and White use real dedicated WebP assets in the Forge, canonical shared artwork stays stable outside the Forge, completed Metallic/Gem artwork remains compatible, and protected map/travel boundaries remain untouched.");
