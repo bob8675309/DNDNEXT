@@ -9,6 +9,7 @@ This directory contains the project's living handoff, roadmap, architecture, and
 - `PR170_Final_Acceptance_Status.md` — current migration/build/database/authenticated acceptance and remaining focused browser re-smoke.
 - `PR170_Browser_Smoke_Corrections_Status.md` — real signed-in browser findings, migration 90 Rage restoration, Forge presentation corrections, and re-smoke targets.
 - `Forge_Species_Art_and_Collapse_Handoff.md` — **active Species presentation/artwork handoff**: independent chevrons/collapse state, parent/child descriptions, dedicated generated child-art rollout, exact binary verification, current asset queue, validation contracts, and protected boundaries.
+- `CHATGPT_REPO_WRITE_PROCEDURE.md` — **connector write authority and safe procedure**: GitHub/Supabase are directly writable from ChatGPT; use `create_blob → create_tree → create_commit → race-check → update_ref(force=false)` for coherent repo changes.
 - `Forge_Species_Family_Submenu_Status.md` — controlling Species family/setting-variant rules/persistence ledger through migrations 91-93, including Genasi, Dragonborn, Aven, Elf, Gnome, Shifter, Fairy, Kithkin, and grouped setting variants.
 - `Forge_Source_Presentation_and_Species_Variants_Status.md` — earlier source-presentation history, structured Species/Background/Class rendering, and the migration-91 Genasi source-catalog foundation.
 - `Current_Development_Status_and_Roadmap.md` — broad platform roadmap/history; newer subsystem ledgers supersede older sections.
@@ -74,9 +75,9 @@ PR #170 remains open and unmerged on `agent/character-forge-resilience-presentat
 
 Exact validated Species presentation/artwork checkpoint:
 
-`46306a44e698d907225d54d1e57d5df14656a9b5` — `Complete Chromatic Dragonborn Forge artwork`
+`2e5031a71f05f8705b64dbbef30aa402dd42c58f` — `Preserve Chromatic validator after Metallic rollout`
 
-That exact head completed **33/33 PR-triggered workflows successfully** and Vercel deployment succeeded. It preserves the established family/chevron behavior, canonical artwork resolution outside the Forge, and the complete Genasi + Chromatic Dragonborn dedicated-art families.
+That exact head completed **33/33 PR-triggered workflows successfully** and Vercel deployment succeeded. It preserves the established family/chevron behavior and canonical artwork authority while completing dedicated Genasi, Chromatic Dragonborn, and Metallic Dragonborn Forge artwork.
 
 Complete Genasi family:
 
@@ -93,11 +94,15 @@ Complete Chromatic Dragonborn family:
 - `public/media/species/red-dragonborn.webp`
 - `public/media/species/white-dragonborn.webp`
 
-Gold Dragonborn also remains dedicated:
+Complete Metallic Dragonborn family:
 
+- `public/media/species/brass-dragonborn.webp`
+- `public/media/species/bronze-dragonborn.webp`
+- `public/media/species/copper-dragonborn.webp`
 - `public/media/species/gold-dragonborn.webp`
+- `public/media/species/silver-dragonborn.webp`
 
-The active continuation ledger is `Forge_Species_Art_and_Collapse_Handoff.md`. It records the exact Git-blob workflow, completed Genasi/Chromatic families, remaining Metallic/Gem/Aven/Elf/Gnome/Shifter/Fairy/Kithkin/setting-art queue, validator contracts, database boundary, and browser re-smoke checklist. Documentation-only descendants do not supersede `46306a44...` as the exact tested runtime/source/art tree.
+The active continuation ledger is `Forge_Species_Art_and_Collapse_Handoff.md`. It records the exact Git-blob workflow, completed Genasi/Chromatic/Metallic families, remaining Gem/Aven/Elf/Gnome/Shifter/Fairy/Kithkin/setting-art queue, validator contracts, database boundary, and browser re-smoke checklist. Documentation-only descendants do not supersede `2e5031a7...` as the exact tested runtime/source/art tree.
 
 Live database authority remains migration 93:
 

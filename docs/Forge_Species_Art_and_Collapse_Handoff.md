@@ -4,7 +4,21 @@ Status date: 2026-08-12
 PR: #170 (`agent/character-forge-resilience-presentation`)
 Merge status: OPEN / UNMERGED — merge only after explicit user approval
 Database authority: migration 93 — `20260812042950 aven_subrace_catalog`
-Validated code/art checkpoint: `46306a44e698d907225d54d1e57d5df14656a9b5` — 33/33 PR-triggered workflows green; Vercel successful
+Validated code/art checkpoint: `2e5031a71f05f8705b64dbbef30aa402dd42c58f` — 33/33 PR-triggered workflows green; Vercel successful
+
+## Read this before writing
+
+ChatGPT can write directly to this repository and to Supabase through the installed connectors. Do not tell the user a separate repo-connected environment is required unless an actual connector write fails.
+
+Controlling write procedure:
+
+- `docs/CHATGPT_REPO_WRITE_PROCEDURE.md`
+
+Preferred coherent GitHub write path:
+
+`create_blob → create_tree → create_commit → race-check → update_ref(force=false) → compare → CI`
+
+For binary artwork, the connector-returned Git blob SHA is authoritative. Never substitute a guessed/local SHA for a GitHub-returned blob SHA.
 
 ## Protected scope
 
@@ -45,7 +59,7 @@ Goliath Giant Ancestry and Tiefling Fiendish Legacy remain inline trait-level ch
 
 ## Description policy
 
-`utils/speciesLore.js` contains concise source-grounded descriptions for promoted child entries. Use 5etools/source material to distinguish physical identity and mechanics, but omit campaign-/adventure-specific plot and faction language unless required to explain the Species itself.
+`utils/speciesLore.js` contains concise source-grounded descriptions for promoted child entries. Use source material to distinguish physical identity and mechanics, but omit campaign-/adventure-specific plot and faction language unless required to explain the Species itself.
 
 `speciesCatalogSummary(...)` shortens catalogue display copy. Do not shorten canonical lore itself just to fit a card.
 
@@ -80,22 +94,19 @@ Validated completion checkpoint:
 
 `086128e9617fedf8410943a4c230bc466f2f9d11` — `Complete dedicated Genasi Forge artwork`
 
-### Dragonborn — Chromatic COMPLETE; Gold COMPLETE
-
-Dedicated files:
+### Dragonborn — Chromatic COMPLETE
 
 - `public/media/species/black-dragonborn.webp`
 - `public/media/species/blue-dragonborn.webp`
 - `public/media/species/green-dragonborn.webp`
 - `public/media/species/red-dragonborn.webp`
 - `public/media/species/white-dragonborn.webp`
-- `public/media/species/gold-dragonborn.webp`
 
-Chromatic completion checkpoint:
+Validated completion checkpoint:
 
 `46306a44e698d907225d54d1e57d5df14656a9b5` — `Complete Chromatic Dragonborn Forge artwork`
 
-The five Chromatic files were uploaded as actual Git blobs before branch attachment. Connector-returned blob SHAs used by the committed tree:
+Connector-returned Chromatic blob SHAs used by the committed tree:
 
 - Black: `4411ec2f01f407d940d90d57d763df3dccb17f1a`
 - Blue: `f26642356e71be8e40a938798160977273440cbc`
@@ -103,34 +114,54 @@ The five Chromatic files were uploaded as actual Git blobs before branch attachm
 - Red: `8e171c5c87b28ed7a06bbb9bb696e3ea394c2712`
 - White: `5cb50176c5da58cd2c06023ec60156036055eeb4`
 
-Canonical non-Forge Black/Blue/Green/Red/White resolution remains `dragonborn-chromatic.webp`. Gold remains canonical `dragonborn-metallic.webp` outside the Forge.
+Canonical non-Forge Black/Blue/Green/Red/White resolution remains `dragonborn-chromatic.webp`.
+
+### Dragonborn — Metallic COMPLETE
+
+Dedicated files:
+
+- `public/media/species/brass-dragonborn.webp`
+- `public/media/species/bronze-dragonborn.webp`
+- `public/media/species/copper-dragonborn.webp`
+- `public/media/species/gold-dragonborn.webp`
+- `public/media/species/silver-dragonborn.webp`
+
+Metallic rollout code/art commit:
+
+`f706f773b807de77fd4239f5454c62efbe07d65b` — `Complete Metallic Dragonborn Forge artwork`
+
+Validator-compatibility descendant and exact validated checkpoint:
+
+`2e5031a71f05f8705b64dbbef30aa402dd42c58f` — `Preserve Chromatic validator after Metallic rollout`
+
+Connector-returned Metallic blob SHAs used by the committed tree:
+
+- Brass: `d3e822a26174b5bd919281a4d018b1ebd7cd1677`
+- Bronze: `74926ded21cf8f57c799c37dc414fb288dedfbca`
+- Copper: `c422af42d225b73398d79591589b6cb6c853f24c`
+- Silver: `a69719f592ab0284b9ad24f680912b24c6bafdb8`
+
+Gold was already dedicated before this batch.
+
+Canonical non-Forge Brass/Bronze/Copper/Gold/Silver resolution remains `dragonborn-metallic.webp`.
 
 ## Binary-art safety workflow
 
 The earlier Fire Genasi truncation incident established the mandatory process:
 
 1. generate and crop/optimize a real Species portrait to WebP;
-2. upload the base64 binary through GitHub object storage;
+2. upload the base64 binary with `GitHub.create_blob`;
 3. use the **connector-returned Git blob SHA** as tree authority;
 4. never substitute a guessed/local SHA for a GitHub blob SHA;
 5. attach real blobs and resolver changes in one coherent code/art commit;
 6. CI verifies file presence, meaningful size, RIFF/WEBP headers, Forge-only dedicated routing, and canonical resolver stability.
 
-During the Chromatic pass an unreferenced candidate tree contained a copied text typo (`drow` unquoted in the portrait set). It was caught before any commit/ref update. The branch only received the corrected tree `6b26b621ba54995f090d040a128cb44c012ac709` through commit `46306a44...`.
+During the Metallic pass the first CI run correctly failed because the older Chromatic validator still asserted that Brass was unfinished. That validator was not weakened: all Chromatic checks remain, while the stale Brass expectation was updated to require the new dedicated Brass file. The new Metallic validator owns the full Brass/Bronze/Copper/Silver contract.
 
 ## Remaining dedicated-art queue
 
-### Dragonborn — NEXT
+### Dragonborn — NEXT: Gem
 
-Metallic:
-- Brass
-- Bronze
-- Copper
-- Silver
-
-Gold is complete.
-
-Gem:
 - Amethyst
 - Crystal
 - Emerald
@@ -167,7 +198,7 @@ Gem:
 
 Existing dedicated Human setting art, Elf Kaladesh/Zendikar art, and Amonkhet Minotaur art should be retained rather than regenerated without a reason.
 
-## Expand/collapse implementation history
+## Key implementation history
 
 - `622d8577a03b327aceb01851430db1fd75fd8a51` — independent expansion state, visible chevrons, catalogue portraits/summaries.
 - `f7ab80059ec9d7e85f989d11e0f40bc16398a6ff` — restored canonical artwork authority outside the Forge.
@@ -175,6 +206,9 @@ Existing dedicated Human setting art, Elf Kaladesh/Zendikar art, and Amonkhet Mi
 - `7e69443a13058e2e9399a9c26922b2b82253f898` — recovered Fire Genasi.
 - `086128e9617fedf8410943a4c230bc466f2f9d11` — completed Genasi family.
 - `46306a44e698d907225d54d1e57d5df14656a9b5` — completed Chromatic Dragonborn family.
+- `ba6368087b170a298d1af16900fa7e0c852dd45c` — added permanent ChatGPT repo-write procedure.
+- `f706f773b807de77fd4239f5454c62efbe07d65b` — completed Metallic Dragonborn files/routing/validator.
+- `2e5031a71f05f8705b64dbbef30aa402dd42c58f` — reconciled older Chromatic compatibility contract; exact green checkpoint.
 
 ## Validation authority
 
@@ -189,20 +223,22 @@ Required validators now include:
 - `scripts/validate_forge_species_family_expansion.mjs`;
 - `scripts/validate_forge_species_catalog_portraits.mjs`;
 - `scripts/validate_forge_chromatic_dragonborn_art.mjs`;
+- `scripts/validate_forge_metallic_dragonborn_art.mjs`;
 - production build gate.
 
-For exact checkpoint `46306a44e698d907225d54d1e57d5df14656a9b5`:
+For exact checkpoint `2e5031a71f05f8705b64dbbef30aa402dd42c58f`:
 
 - structured source presentation passed;
 - established Species family validator passed;
 - expanded Species family validator passed;
 - Species portrait/collapse validator passed;
-- new Chromatic Dragonborn dedicated-art validator passed;
+- Chromatic Dragonborn dedicated-art validator passed;
+- Metallic Dragonborn dedicated-art validator passed;
 - focused production build passed;
 - all **33/33 PR-triggered workflows** completed successfully;
 - Vercel deployment succeeded.
 
-The Chromatic validator proves all five committed files are real WebPs, Forge routing uses each dedicated file, canonical routing remains the shared Chromatic image outside the Forge, Gold remains dedicated, unfinished Metallic/Gem children remain explicit temporary treatments, ancestry-specific lore remains present, and protected map/travel boundaries are untouched.
+The Metallic validator proves Brass/Bronze/Copper/Silver files are real WebPs, Forge routing uses each dedicated file, canonical routing remains the shared Metallic image outside the Forge, Gold remains dedicated, Gem children remain explicit temporary treatments, ancestry-specific lore preserves Fire/Lightning/Acid/Cold affinities, and protected map/travel boundaries are untouched.
 
 Do not weaken older validators to make a new implementation pass.
 
@@ -214,7 +250,7 @@ Supabase remains through migration 93:
 
 `20260812042950 aven_subrace_catalog`
 
-Re-verified after the Chromatic Dragonborn checkpoint:
+Re-verified after the Metallic Dragonborn checkpoint:
 
 - raw Species: 166
 - preferred Species: 102
@@ -238,18 +274,17 @@ After each green art batch, verify:
 3. selecting a parent opens the list and shows parent-specific right-panel lore/art;
 4. selecting a child changes child identity/lore/mechanics/portrait;
 5. collapsing the list does not erase the selected child choice;
-6. all four Genasi, Black/Blue/Green/Red/White Dragonborn, and Gold Dragonborn use real dedicated Forge files;
-7. unfinished Metallic/Gem Dragonborn still render safely through explicit temporary treatment;
+6. all Genasi and all Chromatic/Metallic Dragonborn use real dedicated Forge files;
+7. unfinished Gem Dragonborn still render safely through explicit temporary treatment;
 8. setting/source child uses its real Species row/rules rather than modern-parent rules;
 9. Goliath/Tiefling remain inline.
 
 ## Next steps
 
-1. Generate and commit the remaining Metallic Dragonborn: Brass, Bronze, Copper, Silver.
-2. Then complete Gem Dragonborn: Amethyst, Crystal, Emerald, Sapphire, Topaz.
-3. Continue Aven, Elf/Gnome, Shifter, Lorwyn/Shadowmoor, then remaining setting/source aliases.
-4. Use verified GitHub blob SHAs for every binary attachment.
-5. Run focused workflow + full PR regression matrix after coherent family batches.
-6. Update this ledger and PR #170 body after green checkpoints.
-7. Complete signed-in visual re-smoke.
-8. Do not merge PR #170 until the user explicitly approves the merge.
+1. Generate and commit Gem Dragonborn: Amethyst, Crystal, Emerald, Sapphire, Topaz.
+2. Continue Aven, Elf/Gnome, Shifter, Lorwyn/Shadowmoor, then remaining setting/source aliases.
+3. Use connector-returned GitHub blob SHAs for every binary attachment.
+4. Run focused workflow + full PR regression matrix after coherent family batches.
+5. Update this ledger and PR #170 body after green checkpoints.
+6. Complete signed-in visual re-smoke.
+7. Do not merge PR #170 until the user explicitly approves the merge.
