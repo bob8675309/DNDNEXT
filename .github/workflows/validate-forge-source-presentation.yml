@@ -19,6 +19,8 @@ on:
       - "public/media/species/*-elf.webp"
       - "public/media/species/*-gnome.webp"
       - "public/media/species/*-shifter.webp"
+      - "public/media/species/*-fairy.webp"
+      - "public/media/species/*-kithkin.webp"
       - "scripts/import_5etools_character_options_refined.mjs"
       - "scripts/materialize_gem_dragonborn_art.py"
       - "scripts/validate_forge_source_presentation.mjs"
@@ -32,6 +34,7 @@ on:
       - "scripts/validate_forge_aven_art.mjs"
       - "scripts/validate_forge_elf_gnome_art.mjs"
       - "scripts/validate_forge_shifter_art.mjs"
+      - "scripts/validate_forge_fairy_kithkin_art.mjs"
       - "sql/20260811_91_genasi_subrace_catalog.sql"
       - "sql/20260811_92_genasi_source_detail_restore.sql"
       - "sql/20260812_93_aven_subrace_catalog.sql"
@@ -63,6 +66,8 @@ on:
       - "public/media/species/*-elf.webp"
       - "public/media/species/*-gnome.webp"
       - "public/media/species/*-shifter.webp"
+      - "public/media/species/*-fairy.webp"
+      - "public/media/species/*-kithkin.webp"
       - "scripts/import_5etools_character_options_refined.mjs"
       - "scripts/materialize_gem_dragonborn_art.py"
       - "scripts/validate_forge_source_presentation.mjs"
@@ -76,6 +81,7 @@ on:
       - "scripts/validate_forge_aven_art.mjs"
       - "scripts/validate_forge_elf_gnome_art.mjs"
       - "scripts/validate_forge_shifter_art.mjs"
+      - "scripts/validate_forge_fairy_kithkin_art.mjs"
       - "sql/20260811_91_genasi_subrace_catalog.sql"
       - "sql/20260811_92_genasi_source_detail_restore.sql"
       - "sql/20260812_93_aven_subrace_catalog.sql"
@@ -150,6 +156,9 @@ jobs:
 
       - name: Validate Shifter dedicated artwork
         run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_shifter_art.mjs
+
+      - name: Validate Fairy and Kithkin dedicated artwork
+        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_fairy_kithkin_art.mjs
 
       - name: Run production build gate
         run: node scripts/vercel_build_v2.mjs

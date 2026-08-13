@@ -175,6 +175,10 @@ const SPECIES_DEDICATED_VARIANT_ARTWORK = new Set([
   "longtooth-shifter",
   "swiftstride-shifter",
   "wildhunt-shifter",
+  "lorwyn-fairy",
+  "shadowmoor-fairy",
+  "lorwyn-kithkin",
+  "shadowmoor-kithkin",
 ]);
 
 const SPECIES_VARIANT_PORTRAITS = new Set([

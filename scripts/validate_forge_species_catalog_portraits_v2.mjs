@@ -157,6 +157,21 @@ for (const [name, fileName, minimumBytes] of dedicatedShifterCases) {
   assert.equal(artwork.subarray(8, 12).toString("ascii"), "WEBP", `${name} dedicated asset must be a valid WebP image`);
 }
 
+const dedicatedFairyKithkinCases = [
+  ["Lorwyn Fairy", "lorwyn-fairy.webp", "fairy"],
+  ["Shadowmoor Fairy", "shadowmoor-fairy.webp", "fairy"],
+  ["Lorwyn Kithkin", "lorwyn-kithkin.webp", "kithkin"],
+  ["Shadowmoor Kithkin", "shadowmoor-kithkin.webp", "kithkin"],
+];
+for (const [name, fileName] of dedicatedFairyKithkinCases) {
+  const artworkPath = path.join(root, "public/media/species", fileName);
+  assert.ok(fs.existsSync(artworkPath), `dedicated Fairy/Kithkin Species artwork missing public/media/species/${fileName}`);
+  assert.ok(fs.statSync(artworkPath).size > 20000, `${name} must contain a real generated image rather than a placeholder`);
+  const artwork = fs.readFileSync(artworkPath);
+  assert.equal(artwork.subarray(0, 4).toString("ascii"), "RIFF", `${name} dedicated asset must be a valid RIFF WebP container`);
+  assert.equal(artwork.subarray(8, 12).toString("ascii"), "WEBP", `${name} dedicated asset must be a valid WebP image`);
+}
+
 const { speciesArtworkFor, speciesPortraitArtworkFor, hasDedicatedSpeciesArtwork, hasSpeciesPortraitArtwork } = await import(pathToFileURL(path.join(root, "utils/speciesArtwork.js")).href);
 const { speciesFlavorLore, speciesCatalogSummary } = await import(pathToFileURL(path.join(root, "utils/speciesLore.js")).href);
 
@@ -175,6 +190,9 @@ for (const [name, , , parentKey] of dedicatedElfGnomeCases) {
 }
 for (const [name] of dedicatedShifterCases) {
   assert.equal(speciesArtworkFor(name), "/media/species/shifter.webp", `canonical ${name} source artwork must remain the shared Shifter image outside the Forge`);
+}
+for (const [name, , parentKey] of dedicatedFairyKithkinCases) {
+  assert.equal(speciesArtworkFor(name), `/media/species/${parentKey}.webp`, `canonical ${name} source artwork must remain the shared ${parentKey} image outside the Forge`);
 }
 assert.equal(hasDedicatedSpeciesArtwork("Water Genasi"), true, "canonical shared aliases must remain recognized as intentional artwork");
 
@@ -207,9 +225,13 @@ for (const [name, fileName] of dedicatedShifterCases) {
   assert.ok(speciesFlavorLore(name).length >= 70, `${name} must retain unique lore with dedicated artwork`);
 }
 
+for (const [name, fileName] of dedicatedFairyKithkinCases) {
+  assert.equal(speciesPortraitArtworkFor(name), `/media/species/${fileName}`, `${name} must use its generated dedicated portrait`);
+  assert.equal(hasSpeciesPortraitArtwork(name), true, `${name} dedicated generated art must count as Forge portrait coverage`);
+  assert.ok(speciesFlavorLore(name).length >= 70, `${name} must retain unique lore with dedicated artwork`);
+}
+
 const portraitCases = [
-  ["Shadowmoor Fairy", "fairy.webp?portrait=shadowmoor-fairy"],
-  ["Lorwyn Kithkin", "kithkin.webp?portrait=lorwyn-kithkin"],
   ["Dwarf (Kaladesh)", "dwarf.webp?portrait=dwarf-kaladesh"],
   ["Goblin (Dankwood)", "goblin.webp?portrait=goblin-dankwood"],
   ["Orc (Ixalan)", "orc.webp?portrait=orc-ixalan"],
@@ -235,4 +257,4 @@ assert.doesNotMatch(speciesFlavorLore("Hawk-Headed Aven"), /Naktamun|Hekma|God-P
 
 for (const source of [coreSource, artworkSource, loreSource]) assert.ok(!protectedPattern.test(source), "Species portrait/catalogue work crossed a protected map/travel boundary");
 
-console.log("Forge Species catalogue portraits validated: expandable parents have independent chevrons, parent/child rows carry concise unique lore, canonical artwork remains stable outside the Forge, Genasi plus completed Dragonborn, Aven, Elf, Gnome, and Shifter families use real dedicated Forge assets, unfinished variants remain explicit temporary family-art treatments, and protected map/travel boundaries remain untouched.");
+console.log("Forge Species catalogue portraits validated: expandable parents have independent chevrons, parent/child rows carry concise unique lore, canonical artwork remains stable outside the Forge, Genasi plus completed Dragonborn, Aven, Elf, Gnome, Shifter, Fairy, and Kithkin families use real dedicated Forge assets, unfinished variants remain explicit temporary family-art treatments, and protected map/travel boundaries remain untouched.");
