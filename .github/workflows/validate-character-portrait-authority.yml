@@ -1,0 +1,42 @@
+name: Validate character portrait authority
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "components/NewNpcModalV3.js"
+      - "components/NewNpcModalV3Refined.js"
+      - "components/NpcForgePortraitPickerModal.js"
+      - "components/PlayerCharacterProfilePanelUnified.js"
+      - "utils/characterPortraits.js"
+      - "scripts/generate_npc_portrait_pack.mjs"
+      - "scripts/validate_character_forge_resilience.mjs"
+      - "sql/20260804_03_character_forge_resilience_and_tags.sql"
+      - "public/npc-portraits/defaults/**"
+      - "public/npc-portraits/library/**"
+      - "docs/Character_Forge_PR_A_Deployment_Evidence.md"
+      - ".github/workflows/validate-character-portrait-authority.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate raster-only portrait and Forge authority
+        run: |
+          node --check utils/characterPortraits.js
+          node --check scripts/validate_character_forge_resilience.mjs
+          node scripts/validate_character_forge_resilience.mjs

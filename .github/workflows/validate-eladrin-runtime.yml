@@ -1,0 +1,47 @@
+name: Validate Eladrin runtime
+
+on:
+  push:
+    branches:
+      - agent/character-forge-resilience-presentation
+    paths:
+      - "sql/20260809_68_eladrin_season_trance_runtime.sql"
+      - "utils/playerForgeSpeciesRuntimeChoices.js"
+      - "utils/characterRuntimeProficiencies.js"
+      - "components/CharacterEladrinRuntimePanel.js"
+      - "components/CharacterSpeciesReplaceableCantripPanel.js"
+      - "scripts/validate_eladrin_runtime.mjs"
+      - ".github/workflows/validate-eladrin-runtime.yml"
+  pull_request:
+    paths:
+      - "sql/20260809_68_eladrin_season_trance_runtime.sql"
+      - "utils/playerForgeSpeciesRuntimeChoices.js"
+      - "utils/characterRuntimeProficiencies.js"
+      - "components/CharacterEladrinRuntimePanel.js"
+      - "components/CharacterSpeciesReplaceableCantripPanel.js"
+      - "scripts/validate_eladrin_runtime.mjs"
+      - ".github/workflows/validate-eladrin-runtime.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Validate Eladrin runtime authority
+        run: |
+          node scripts/validate_eladrin_runtime.mjs
+          node scripts/validate_species_rest_proficiency_runtime.mjs
+          node scripts/validate_species_replaceable_cantrip_runtime.mjs
+          node scripts/validate_unified_character_forge.mjs
+      - name: Run production build gate
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: validation-placeholder
+        run: npm run build:vercel

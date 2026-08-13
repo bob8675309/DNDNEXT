@@ -48,9 +48,12 @@ export default function useNpcSheetActionData({
   const id = safeText(characterId);
   const requestRef = useRef(0);
   const activeIdRef = useRef("");
+  const sheetUpdatedRef = useRef(onSheetUpdated);
   const [snapshot, setSnapshot] = useState(() => emptySnapshot());
   const [busyKey, setBusyKey] = useState("");
   const featureSignature = useMemo(() => sheetFeatureSignature(sheet || {}), [sheet]);
+
+  useEffect(() => { sheetUpdatedRef.current = onSheetUpdated; }, [onSheetUpdated]);
 
   useEffect(() => {
     const requestId = ++requestRef.current;
@@ -73,7 +76,7 @@ export default function useNpcSheetActionData({
 
       const assignmentResult = await supabase
         .from("character_spells")
-        .select("id,spell_id,prepared,always_available,casting_stat,save_dc_override,attack_bonus_override,uses_max,uses_remaining,recharge")
+        .select("id,spell_id,prepared,always_available,casting_stat,save_dc_override,attack_bonus_override,uses_max,uses_remaining,recharge,raw_payload")
         .eq("character_id", id);
       if (!isCurrent()) return;
 
@@ -154,6 +157,46 @@ export default function useNpcSheetActionData({
     // The signature intentionally excludes transient actionState changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, featureSignature, id]);
+
+  // character_sheets is intentionally not in the Supabase Realtime publication. Poll only the
+  // current character's row while its sheet actions are visible so a sheet-side Rest RPC can
+  // repaint transient actionState (Rage uses) without broadening realtime database exposure.
+  useEffect(() => {
+    if (!id || !enabled) return undefined;
+    let active = true;
+    let lastUpdatedAt = "";
+    let inFlight = false;
+
+    async function refreshTransientSheet() {
+      if (!active || inFlight || activeIdRef.current !== id) return;
+      inFlight = true;
+      try {
+        const { data, error } = await supabase
+          .from("character_sheets")
+          .select("sheet,updated_at")
+          .eq("character_id", id)
+          .maybeSingle();
+        if (!active || activeIdRef.current !== id || error || !data) return;
+        const nextUpdatedAt = safeText(data.updated_at);
+        if (nextUpdatedAt && nextUpdatedAt !== lastUpdatedAt) {
+          lastUpdatedAt = nextUpdatedAt;
+          if (data.sheet && typeof data.sheet === "object") sheetUpdatedRef.current?.(data.sheet);
+        }
+      } finally {
+        inFlight = false;
+      }
+    }
+
+    void refreshTransientSheet();
+    const timer = typeof window !== "undefined" ? window.setInterval(refreshTransientSheet, 2500) : null;
+    const onFocus = () => { void refreshTransientSheet(); };
+    if (typeof window !== "undefined") window.addEventListener("focus", onFocus);
+    return () => {
+      active = false;
+      if (timer) window.clearInterval(timer);
+      if (typeof window !== "undefined") window.removeEventListener("focus", onFocus);
+    };
+  }, [enabled, id]);
 
   const handleActionCommand = useCallback(async (action, operation) => {
     const activeId = safeText(characterId);

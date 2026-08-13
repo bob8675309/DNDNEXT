@@ -1,0 +1,39 @@
+name: Validate Fiendish Resilience runtime
+
+on:
+  push:
+    paths:
+      - "sql/20260808_57_fiendish_resilience_runtime.sql"
+      - "components/CharacterFiendishResiliencePanel.js"
+      - "components/CharacterDreadAllegiancePanel.js"
+      - "scripts/validate_fiendish_resilience_runtime.mjs"
+      - ".github/workflows/validate-fiendish-resilience-runtime.yml"
+  pull_request:
+    paths:
+      - "sql/20260808_57_fiendish_resilience_runtime.sql"
+      - "components/CharacterFiendishResiliencePanel.js"
+      - "components/CharacterDreadAllegiancePanel.js"
+      - "scripts/validate_fiendish_resilience_runtime.mjs"
+      - ".github/workflows/validate-fiendish-resilience-runtime.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Validate Fiendish Resilience runtime authority
+        run: |
+          node scripts/validate_fiendish_resilience_runtime.mjs
+          node scripts/validate_unified_character_forge.mjs
+      - name: Run production build gate
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: validation-placeholder
+        run: npm run build:vercel

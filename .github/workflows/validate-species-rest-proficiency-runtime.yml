@@ -1,0 +1,66 @@
+name: Validate Species rest proficiency runtime
+
+on:
+  push:
+    branches:
+      - agent/character-forge-resilience-presentation
+    paths:
+      - "sql/20260808_63_species_rest_proficiency_runtime.sql"
+      - "sql/20260808_64_species_rest_proficiency_acl_cleanup.sql"
+      - "sql/20260808_65_species_rest_proficiency_rest_key_correction.sql"
+      - "sql/20260808_66_species_runtime_projection_parent_fix.sql"
+      - "components/CharacterSpeciesRestProficiencyPanel.js"
+      - "components/CharacterSheetPanel.js"
+      - "components/NpcForgeFeatChoiceRegistrar.js"
+      - "utils/playerForgeSpeciesRuntimeChoices.js"
+      - "utils/characterRuntimeProficiencies.js"
+      - "scripts/validate_species_rest_proficiency_runtime.mjs"
+      - "docs/Species_Rest_Proficiency_Runtime_Status.md"
+      - "docs/Documentation_Refresh_Manifest.md"
+      - "docs/Unified_Character_Forge_Status.md"
+      - "docs/DNDNext_Current_Handoff_Prompt.md"
+      - "docs/Character_Forge_PR_A_Deployment_Evidence.md"
+      - "docs/README.md"
+      - ".github/workflows/validate-species-rest-proficiency-runtime.yml"
+  pull_request:
+    paths:
+      - "sql/20260808_63_species_rest_proficiency_runtime.sql"
+      - "sql/20260808_64_species_rest_proficiency_acl_cleanup.sql"
+      - "sql/20260808_65_species_rest_proficiency_rest_key_correction.sql"
+      - "sql/20260808_66_species_runtime_projection_parent_fix.sql"
+      - "components/CharacterSpeciesRestProficiencyPanel.js"
+      - "components/CharacterSheetPanel.js"
+      - "components/NpcForgeFeatChoiceRegistrar.js"
+      - "utils/playerForgeSpeciesRuntimeChoices.js"
+      - "utils/characterRuntimeProficiencies.js"
+      - "scripts/validate_species_rest_proficiency_runtime.mjs"
+      - "docs/Species_Rest_Proficiency_Runtime_Status.md"
+      - "docs/Documentation_Refresh_Manifest.md"
+      - "docs/Unified_Character_Forge_Status.md"
+      - "docs/DNDNext_Current_Handoff_Prompt.md"
+      - "docs/Character_Forge_PR_A_Deployment_Evidence.md"
+      - "docs/README.md"
+      - ".github/workflows/validate-species-rest-proficiency-runtime.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Validate Species rest proficiency authority
+        run: |
+          node scripts/validate_species_rest_proficiency_runtime.mjs
+          node scripts/validate_astral_trance_runtime.mjs
+          node scripts/validate_unified_character_forge.mjs
+      - name: Run production build gate
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: validation-placeholder
+        run: npm run build:vercel

@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import CharacterSheet5e from "./CharacterSheet5e";
 import CharacterSheetEnhancements from "./CharacterSheetEnhancements";
+import CharacterAstralTrancePanel from "./CharacterAstralTrancePanel";
+import CharacterPrimalCompanionPanel from "./CharacterPrimalCompanionPanel";
+import CharacterSpeciesRestProficiencyPanel from "./CharacterSpeciesRestProficiencyPanel";
 import { supabase } from "../utils/supabaseClient";
+import { projectCharacterSheetRuntimeProficiencies } from "../utils/characterRuntimeProficiencies";
 import {
   authoritativeEffectsRevision,
   characterIdFromEffectsKey,
@@ -172,6 +176,10 @@ export default function CharacterSheetPanel({
   }, [draft, sheet]);
 
   const dirty = sheetDirty || !!extraDirty;
+  const runtimeDisplayDraft = useMemo(
+    () => editMode ? (draft || {}) : projectCharacterSheetRuntimeProficiencies(draft || {}),
+    [draft, editMode]
+  );
 
   const saveState = saving ? "Saving…" : dirty ? "Unsaved" : "Saved";
 
@@ -358,9 +366,12 @@ export default function CharacterSheetPanel({
       </div>
 
       {saveErr ? <div className="alert alert-danger py-2 m-2">{saveErr}</div> : null}
+      <CharacterAstralTrancePanel characterId={characterId} sheet={draft || {}} onSheetUpdated={(nextSheet) => nextSheet ? setDraft(deepClone(nextSheet)) : null} />
+      <CharacterSpeciesRestProficiencyPanel characterId={characterId} sheet={draft || {}} onSheetUpdated={(nextSheet) => nextSheet ? setDraft(deepClone(nextSheet)) : null} />
+      <CharacterPrimalCompanionPanel characterId={characterId} sheet={draft || {}} onSheetUpdated={(nextSheet) => nextSheet ? setDraft(deepClone(nextSheet)) : null} />
 
       <CharacterSheet5e
-        sheet={draft || {}}
+        sheet={runtimeDisplayDraft}
         onChange={setDraft}
         editable={editMode && editable}
         onRoll={onRoll}

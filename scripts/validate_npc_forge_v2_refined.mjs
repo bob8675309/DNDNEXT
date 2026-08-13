@@ -57,7 +57,7 @@ requireTokens(forgeV3, [
   "recoverCreatedCharacter",
   "You can safely retry",
   "Choose a portrait for this character.",
-  "Generate NPC story &amp; world fit",
+  "Generate NPC story & world fit",
   "identity: { name: draft.name, role: draft.role, affiliation: draft.affiliation",
   "spriteAsset: selection.spriteAsset || null",
   'supabase.rpc("create_character_v1"',

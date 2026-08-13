@@ -1,272 +1,239 @@
 # Character Progression and Creation
 
-Updated: 2026-07-30
+Updated: 2026-08-08
+PR: #170 (`agent/character-forge-resilience-presentation`)
 
 ## Scope
 
-This system provides account-linked player creation, class progression, spellbooks, feats, Epic Boons, XP, transactional level-ups, descriptive sheet interactions, and quick HP management without changing world-map, town-map, crafting, merchant-stock, travel, or inventory-consumption behavior.
+This document describes the current server-authoritative character creation, earned progression, source-owned spell assignment, and runtime-cadence boundaries used by PR #170. It intentionally excludes world-map, town/city-map, route/travel/weather, tactical combat, merchant/crafting, and unrelated inventory behavior.
 
-The shared profile tab order is:
+## Governing rule: creation/progression parity
 
-`Profile | Class | Feats & Boons | Sheet & Rolls | Inventory | Spellbook | Shop | Craft`
+For **persistent** character decisions, directly creating a character at level N and earning level N through XP should converge on equivalent authoritative state.
 
-## Source policy
+That rule does not make every source-text choice permanent. Long-Rest, Short-Rest, per-use, and informational decisions stay runtime-configurable.
 
-All imported source records remain stored. The application displays one preferred record when the same spell, class, feat, boon, background, species, skill, or class feature name appears in multiple sources.
+## Core data authority
 
-Current source priority is:
+Primary normalized sources include:
 
-1. `XPHB` — 2024 Player's Handbook
-2. `EFA` — Eberron: Forge of the Artificer
-3. `TCE` — Tasha's Cauldron of Everything
-4. `PHB` — 2014 Player's Handbook
-5. other campaign or supplemental sources
+- `character_progression` — class/subclass level, XP, pending state, level-choice history;
+- `character_level_up_sessions` — reviewed open/completed level-up transaction state;
+- `character_level_events` — progression audit trail;
+- `character_spells` — spell source identity, known/prepared/availability, and limited-use resources;
+- `character_option_grants` / `character_option_grant_instances` — feat/boon grants and per-instance choices;
+- `class_feature_option_catalog` — canonical optional class-feature identities;
+- `character_class_option_grant_instances` — normalized class options such as Invocations and Battle Master maneuvers;
+- runtime feature tables introduced by the cadence work — current rest-configurable state without rewriting permanent acquisition history;
+- `character_sheets.sheet` — validated player-facing projection and source-choice summaries.
 
-This means a 2024 spell replaces its 2014 presentation when both exist, but a spell found only in a supplemental source remains available. Source-specific rows are not deleted or silently merged.
+Protected authority fields must change through guarded creation/progression/runtime RPCs rather than arbitrary authenticated JSON mutation.
 
-The canonical views are:
+## Level-up authority
 
-- `spells_catalog_preferred`
-- `class_catalog_preferred`
-- `character_option_catalog_preferred`
+The active Level Up UI completes through `public.complete_character_level_up_v5`.
 
-The secure creation and level-up RPCs verify that submitted class and spell IDs are the preferred version before committing them.
+High-level transaction order:
 
-## Player character creator
+1. open/review the next one-level transition;
+2. validate HP, subclass, advancement, spell, and persistent source-choice requirements;
+3. apply source-owned normalized changes that must precede the base transition;
+4. perform the reviewed v4/v3 class-level transition;
+5. apply final-state-dependent persistent choices such as Wizard Signature Spells;
+6. synchronize projections;
+7. write progression/session/event history;
+8. commit all or roll back all.
 
-When a signed-in account has no linked player character, the global Profile panel opens `PlayerCharacterCreatorV2`.
+Direct authenticated v3/v4 completion is revoked. Legacy v1/v2 completion functions still retain authenticated execute and remain a cleanup item after confirmed nonuse.
 
-The creator collects:
+## Connected persistent progression families
 
-1. identity, appearance, and alignment
-2. species and background with descriptions
-3. preferred class and class-skill choices with descriptions
-4. six ability rolls using 4d6 and dropping the lowest die from each roll
-5. allocation of those six totals to Strength, Dexterity, Constitution, Intelligence, Wisdom, and Charisma
-6. background ability increases
-7. the Human Versatile Origin feat when applicable
-8. one campaign bonus feat at level 1
-9. exact class-appropriate starting spells
-10. final review and atomic account linking
+Current connected families include:
 
-### Ability generation
+- General feat / Epic Boon advancement;
+- persistent simple class choices;
+- Bard Magical Secrets;
+- Lore Magical Discoveries;
+- Draconic Elemental Affinity;
+- Champion Additional Fighting Style;
+- Sorcerer Metamagic acquisition/replacement;
+- Warlock Mystic Arcanum acquisition/replacement;
+- Magic Initiate per-instance spell replacement;
+- Eldritch Invocation acquisition/replacement, prerequisites, repeatability, dependent choices, and Lessons of the First Ones;
+- Battle Master maneuver acquisition/replacement;
+- Wizard Savant spellbook additions;
+- Wizard Signature Spells.
 
-Each of the six score rolls records all four d6 results, identifies the dropped die, and totals the other three. Each total can be allocated to only one ability. Selecting a total already assigned to another ability swaps the two assignments rather than duplicating a roll.
+## Eldritch Invocation / Origin feat authority
 
-Every ability includes an explanation of its common game uses. Final scores and modifiers update after background increases.
+Invocations use normalized `character_class_option_grant_instances`. Current state is validated for source legality, Warlock level, prerequisites, repeatability, child-choice dependencies, and repeated-child distinctness.
 
-### Background increases
+Replacement checks the **current/new Warlock level**, preserves original acquisition chronology, and records later replacement level. The final sheet projection is rebuilt from normalized instances.
 
-Imported backgrounds still display their source-recommended three abilities. This campaign permits the player to assign either `+2/+1` or three `+1` increases among any of the six abilities. This avoids presenting a recommendation as an unexplained hard restriction.
+`Lessons of the First Ones` owns a normalized Origin-feat instance. Reversal preserves pre-existing/other-source benefits and fails closed if removal would invalidate Expertise.
 
-### Feats at level 1
+## Battle Master authority
 
-A background's Origin feat is preserved. A Human also selects the extra Origin feat granted by Versatile. The campaign creator then grants one additional Game Master-approved bonus feat at level 1.
+Migrations 38-39 normalize all 20 XPHB Battle Master maneuvers.
 
-The reviewed character-option import supplies the full feat descriptions and prerequisites. A fallback list keeps the creator and admin grant panel usable before that import; imported preferred entries automatically replace the fallback display.
+Cumulative counts are 3 / 5 / 7 / 9 at Fighter 3 / 7 / 10 / 15. Later gains require two new maneuvers and allow one optional replacement while preserving the original slot acquisition level.
 
-## Atomic player creation
+Higher-level Forge and earned progression use the same normalized option-instance family.
 
-`create_player_character_v1(payload, spell_choices)` validates and creates together:
+## Wizard spellbook authority
 
-- character row
-- character sheet
-- account ownership permission
-- preferred class progression
-- progression audit event
-- starting spellbook
-- player profile mirror
+There is no separate public Wizard spellbook table. Normalized Wizard spellbook membership is represented by `character_spells`.
 
-A failed validation leaves none of those records behind. An account that already has a linked player character cannot create a second one through this workflow.
+`private.wizard_spellbook_has_spell_v1(...)` recognizes:
 
-Player characters remain hidden from map systems and receive no movement, route, shop, or crafting side effects from creation.
+- ordinary level-1+ Wizard `source_type='class'` rows; and
+- source-owned `class-feature` rows explicitly marked `wizardSpellbook=true`, currently Savant.
 
-## Spell catalog
+Cantrips are not Wizard spellbook entries.
 
-`spells_catalog` stores every source version under its source-specific spell key. `spells_catalog_preferred` displays one record per normalized spell name.
+### Savant — migrations 40-41
 
-The all-source generator is:
+Abjurer, Diviner, Evoker, and Illusionist Savant additions are live across earned progression and direct higher-level Forge.
 
-```bat
-node scripts\import_5etools_spells.mjs "C:\DnD\5etools-src-2.32.0\data\spells" --out-dir spell-batches-all --chunk-size 250
-```
+Savant rows are class-feature provenance, known but not automatically prepared/always available, and do not inflate the exact base-Wizard class spell count.
 
-Omitting `--source` is intentional. It scans every spell source JSON file. The generated reviewed batches are imported in numeric order through `/admin/spells`.
+Historical acquisition chronology is 3/3/5/7/9/11/13/15/17. Cross-provenance duplicate spellbook membership is rejected.
 
-Character creation and level-up spell selectors query the preferred view. They therefore expose supplemental-only spells while choosing XPHB whenever the same spell also has a 2014 PHB version.
+### Signature Spells — migrations 42-43
 
-## Character option catalog
+Signature Spells is a persistent Wizard-20 selection of exactly two level-3 spells already in the **final** normalized spellbook.
 
-`character_option_catalog` stores source-specific records for:
+Earned Wizard 19→20 applies normal level-20 spellbook acquisition first, then Signature validation. Direct higher-level Forge materializes Savant history first, then Signature.
 
-- feats
-- Epic Boons
-- backgrounds
-- species
-- skills
+Signature overlays the existing assignment, preserves source provenance, marks the spell prepared/always available, and adds one `short_rest` free level-3 cast. Migration 43 provides explicit resource labels/protection.
 
-Generate reviewed all-source option batches with:
+### Spell Mastery — migration 44
 
-```bat
-node scripts\import_5etools_character_options.mjs "C:\DnD\5etools-src-2.32.0\data" --out-dir character-option-batches --chunk-size 500
-```
+Spell Mastery is runtime Long-Rest configuration, not a persistent level-18 Forge choice.
 
-Import the generated files in numeric order through `/admin/character-options`.
+An XPHB Wizard 18+ configures one level-1 and one level-2 Action spell from the actual spellbook. The mastered spells are always prepared and at-will at their lowest level without a finite-use counter.
 
-The generator reads:
+A later same-level replacement requires a newer Long Rest and can change only one mastered spell. The old assignment's prior prepared/availability state is restored.
 
-- `feats.json`
-- `backgrounds.json`
-- `races.json`
-- `skills.json`
+## Weapon Mastery runtime authority
 
-It never writes directly to Supabase. The admin page validates each reviewed JSON batch and calls `import_character_option_batch_v1`.
+### Class-granted Weapon Mastery — migration 45
 
-## Feats & Boons profile tab
+Class-granted XPHB Weapon Mastery is rest-configurable runtime state. Capacity is derived from canonical class/level progression and weapon eligibility from XPHB mundane item metadata.
 
-The shared profile includes `CharacterFeaturesPanel` but labels the player-facing surface **Feats & Boons**.
+New capacity can be filled immediately. Replacing an existing active mastery requires a newer Long Rest. No-op preserves the opportunity; more than one replacement or a second replacement on the same rest fails closed.
 
-Players can review:
+### Weapon Master feat — migration 46
 
-- creation and level feats stored on their sheet
-- Game Master-granted feats
-- Game Master-granted Epic Boons
-- source, description, prerequisites, and grant notes
+Each permanent XPHB Weapon Master feat instance owns an independent runtime current weapon. The permanent feat grant and its original nested acquisition choices remain immutable history.
 
-The searchable preferred catalog appears on the left. Acquired feats and boons appear in the upper-right, and the selected feat or boon description remains in the lower-right.
+The derived `sheet.weaponMasteries` projection is the union of class-granted runtime selections plus active Weapon Master feat-instance selections.
 
-Admins can search the preferred catalog, grant a feat or boon, record an optional reason, and remove a prior grant. The controlled RPCs are:
+## Player creation / starting magic authority
 
-- `get_character_option_grants_v1(character_id)`
-- `grant_character_option_v1(character_id, option_id, notes)`
-- `remove_character_option_grant_v1(grant_id)`
+### Frontend endpoint
 
-Grant and removal operations update the durable grant table and the character-sheet/player mirror together. Direct authenticated writes to the grant table are not allowed.
+The shared Player Forge now creates player characters through:
 
-## Descriptive character sheet
+`public.create_player_character_v3(p_payload, p_spell_choices, p_magic_selections)`
 
-The shared Sheet & Rolls view preserves clickable rolls while changing hover help from calculation formulas to game-purpose descriptions.
+It no longer stops at v2.
 
-- Ability scores explain what the ability governs.
-- Skills use the preferred imported skill description.
-- Saving throws explain the kind of effect the ability resists.
-- Feats and species traits render as distinct hoverable rows rather than one undifferentiated text block.
-- Imported class-feature descriptions are used when the sheet contains a matching feature name.
+The Forge serializes exact Spell-step authority in `sheet.startingMagicSelections`.
 
-The calculation details remain documented below the sheet; hover help is reserved for understanding the targeted rule or trait.
+### v3 source families — migration 47
 
-## Quick hit point changes
+v3 owns only Spell-step starting magic:
 
-Authorized players and admins may click the read-only HP display and record damage, healing, or temporary HP without entering full sheet-edit mode.
+- native class list → `source_type='class'`, `accessType='class-list'`;
+- Background-expanded class access → `source_type='class'`, `accessType='background-expanded'`;
+- Eldritch Knight / Arcane Trickster → `source_type='subclass'`, `accessType='subclass'` or `fixed`.
 
-`adjust_character_hit_points_v1(character_id, amount, temp_hp)` applies the change transactionally:
+Species, feat, and unrelated class-feature spell grants remain separate source-owned systems.
 
-- negative amounts deal damage
-- temporary HP absorbs damage first
-- positive amounts heal up to maximum HP
-- temporary HP may be set independently
-- the canonical character sheet and linked player mirror update together
+### v2 compatibility inside v3
 
-Anonymous execution is denied. The same character-management permission used by XP and leveling controls access.
+v3 delegates common creation mechanics to v2. The browser supplies v2-compatible choices only for ordinary native class-list spells.
 
-## Canonical progression data
+Background-expanded selections still consume ordinary class spell-count slots, so v3 temporarily adds a same-level native class proxy for v2's historical count validation. It then deletes **only** v2-created temporary/base spell rows and inserts the exact v3 assignments.
 
-### `class_catalog`
+Subclass-source spells never masquerade as Fighter/Rogue class-list spells in v2.
 
-One row per class and source. Source versions remain separate.
+### Background-expanded validation
 
-### `class_level_progression`
+A Background-expanded spell must be explicitly listed in `sheet.backgroundExpandedSpells`. It may legitimately be absent from the native class list.
 
-One row per class source and level 1–20, including XP threshold, proficiency bonus, spell progression, slots, features, and imported choice metadata.
+Production rollback proof used Entangle on a level-1 Wizard; Entangle's preferred row is Druid/Ranger, proving true expanded access.
 
-### `class_feature_catalog`
+### Eldritch Knight / Arcane Trickster validation
 
-One row per source-backed class or subclass feature, including full description text and the level where it is gained. It is populated from 5etools `classFeature` and `subclassFeature` records through reviewed batches.
+Fighter/Rogue base classes remain noncasters. The deferred starting-spell validator specializes only for canonical XPHB Eldritch Knight / Arcane Trickster state.
 
-Generate those batches with:
+At level 3:
 
-```bat
-node scripts\import_5etools_class_features.mjs "C:\DnD\5etools-src-2.32.0\data" --out-dir class-feature-batches --chunk-size 500
-```
+- Eldritch Knight → 2 Wizard cantrips + 3 prepared level-1 Wizard spells;
+- Arcane Trickster → fixed Mage Hand exactly once + 2 additional Wizard cantrips + 3 prepared level-1 Wizard spells.
 
-Import them in numeric order through `/admin/class-features`.
+Subclass spellcasting uses Intelligence and the validator models cumulative cantrip/spell/max-level progression through level 20.
 
-### `character_progression`
+### Exactness and ACL — migrations 47-48
 
-The current class source, subclass, level, XP, pending-level state, and completed choices for one character.
+Every v3 Spell-step row is marked `startingMagic=true` with exact source/access metadata and creation level. Existing exactness authority compares submitted `startingMagicSelections` to materialized rows.
 
-### `character_level_events`
+Migration 48 removes the stale explicit anonymous execute grant inherited by v3. `create_player_character_v1/v2/v3` now expose owner/postgres plus `authenticated` and `service_role`, with no `anon` execute.
 
-Append-only audit history for creation, XP changes, review sessions, and completed levels.
+See `Player_Forge_Starting_Magic_v3_Status.md` for detailed CI and rollback evidence.
 
-### `character_level_up_sessions`
+## Forge cadence model
 
-A durable review snapshot. Only one open review may exist per character. An obsolete review is cancelled when XP falls below the threshold or the level changes.
+Current semantics:
 
-## Class profile views
+- persistent creation/level-up choice → normalized acquisition/progression authority;
+- proficiency-dependent choice → Training;
+- permanent spellbook-dependent choice → Spells placement;
+- Long-/Short-Rest choice → runtime configuration;
+- per-use choice → runtime/action UI;
+- informational feature → display only.
 
-The Class tab has two internal views:
+Do not reintroduce Spell Mastery or Weapon Mastery as permanent Forge locks.
 
-- **Class Overview** retains the compact in-play cover with current level, XP, current level features, next-level summary, spellcasting, and progression history.
-- **Level 1–20 Guide** shows proficiency bonus, class features, spell progression, and slot progression for every level.
+## Validation policy
 
-Feature names are hoverable and selectable. Their imported description appears in the guide detail panel. When a subclass is selected, the guide includes only that subclass's feature rows; it does not display competing subclass options.
+A source-authority slice is not considered complete until it has, as applicable:
 
-The phrase **Current Level Features** remains correct here because these are class features, not selectable feats.
+1. source-grounded rules;
+2. static regression assertions;
+3. exact CI/build gate;
+4. migration compilation against live schema before deployment;
+5. live migration success;
+6. rollback-only success and fail-closed fixtures;
+7. zero-residue integrity sweep;
+8. documentation reconciliation.
 
-## Level-up workflow
+Migrations 47-48 satisfied that sequence, including real authenticated public-v3 rollback creation for native Wizard, Background-expanded Wizard, Eldritch Knight, Arcane Trickster, and invalid submissions.
 
-An authorized player or admin can:
+## Current protected production checkpoint
 
-1. add XP and a reason
-2. open Review Level Up after reaching the next threshold
-3. inspect new features and progression
-4. choose fixed or rolled HP
-5. choose a subclass when required
-6. choose an Ability Score Improvement or supported general feat
-7. choose exact newly gained preferred-source spells
-8. apply the level transactionally or cancel without changes
+After migrations 47-48 and rollback fixtures:
 
-A successful completion updates level, HP, maximum HP, Hit Dice, proficiency bonus, subclass, ability scores or feat, spellbook, sheet JSON, player mirror, choice history, review state, and audit event together.
+- 7 characters;
+- 7 sheets;
+- 30 character-spell rows;
+- 7 progression rows;
+- 0 open level-up sessions;
+- 0 synthetic v3 characters;
+- world baseline 20 locations / 4 routes / 9 route points.
 
-## Safety boundary for class-specific choices
+## Remaining PR #170 work
 
-A level remains review-only when it contains a class-specific choice the engine cannot yet validate, including Weapon Mastery, Fighting Style, Expertise, Divine Order, Primal Order, Scholar, Primal Knowledge, Metamagic, Eldritch Invocations, Magical Secrets, Epic Boons, Blessed Strikes, or Elemental Fury.
+- remaining runtime cadence families such as Astral Trance, Circle-of-the-Land choices, Primal Companion, Dread Allegiance, Fiendish Resilience, and per-use Steps of the Fey;
+- source-backed starting equipment and higher-level starting wealth/equipment;
+- character-scoped starting currency;
+- Artificer wildcard Magic Item Plan concrete-item instances;
+- remaining persistent/conditional source-choice audit and UI polish;
+- obsolete authenticated level-up RPC cleanup;
+- authenticated browser acceptance before merge.
 
-The blocking feature names are shown. XP and the current level remain unchanged until that choice family receives a source-backed selector and validator.
+## Protected boundaries
 
-## Profile keyboard shortcut
-
-Backspace toggles the linked player profile when focus is not inside an input, textarea, select, or editable field. The listener runs during capture so route-level handlers cannot silently consume the shortcut first. Modifier-key combinations and held-key repeats are ignored.
-
-## Current boundary
-
-Current live catalog checkpoint:
-
-- 30 class-source rows;
-- 600 class-level progression rows;
-- 2,118 class/subclass feature rows;
-- 697 character-option rows;
-- 936 spell rows.
-
-The import foundation is populated. Small metadata/content gaps remain and should be repaired through reviewed source batches rather than destructive replacement.
-
-Active:
-
-- preferred all-source class and spell selection
-- descriptive account-linked creation
-- 4d6-drop-lowest roll allocation
-- flexible campaign background increases
-- Human and campaign bonus feat selection
-- starting spell validation
-- XP and supported transactional level-ups
-- admin feat and Epic Boon grants
-- descriptive sheet hover help and quick HP controls
-- Class Overview and Level 1–20 Guide
-- reviewed character-option and class-feature batch generation/import
-
-Remaining progression work:
-
-- fill the remaining missing class summaries, class-feature descriptions, and spell class metadata through reviewed batches
-- add source-backed selectors for blocked class-specific choices
-- add automatic class-and-level-appropriate NPC spell loadouts
+Do not mix this work with world-map or town/city-map behavior. Forge/progression migrations remain isolated from world routes, travel/weather simulation, tactical combat, and unrelated crafting systems unless the user explicitly requests those systems.

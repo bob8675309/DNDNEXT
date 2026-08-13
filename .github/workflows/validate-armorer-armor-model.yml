@@ -1,0 +1,48 @@
+name: Validate Armorer Armor Model runtime
+
+on:
+  push:
+    branches:
+      - agent/character-forge-resilience-presentation
+    paths:
+      - "components/CharacterArmorerArmorModelPanel.js"
+      - "components/CharacterCurrencyBadge.js"
+      - "utils/classFeatureChoiceParsing.js"
+      - "utils/classFeatureChoices.js"
+      - "scripts/validate_armorer_armor_model_runtime.mjs"
+      - "sql/20260808_57_fiendish_resilience_runtime.sql"
+      - "sql/20260809_78_armorer_armor_model_runtime.sql"
+      - ".github/workflows/validate-armorer-armor-model.yml"
+  pull_request:
+    paths:
+      - "components/CharacterArmorerArmorModelPanel.js"
+      - "components/CharacterCurrencyBadge.js"
+      - "utils/classFeatureChoiceParsing.js"
+      - "utils/classFeatureChoices.js"
+      - "scripts/validate_armorer_armor_model_runtime.mjs"
+      - "sql/20260808_57_fiendish_resilience_runtime.sql"
+      - "sql/20260809_78_armorer_armor_model_runtime.sql"
+      - ".github/workflows/validate-armorer-armor-model.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Validate Armor Model runtime contracts
+        run: |
+          node scripts/validate_armorer_armor_model_runtime.mjs
+          node scripts/validate_unified_character_forge.mjs
+          node scripts/validate_character_progression_v3.mjs
+      - name: Run production build gate
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: validation-placeholder
+        run: npm run build:vercel

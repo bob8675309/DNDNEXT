@@ -1,0 +1,57 @@
+name: Validate Player Forge character-scoped equipment
+
+on:
+  push:
+    paths:
+      - "sql/20260808_49_player_forge_starting_equipment_currency.sql"
+      - "sql/20260808_50_player_forge_starting_equipment_guard.sql"
+      - "sql/20260808_51_player_forge_character_scoped_equipment_projection.sql"
+      - "scripts/validate_player_forge_starting_equipment.mjs"
+      - "scripts/validate_player_forge_starting_equipment_guard.mjs"
+      - "scripts/validate_player_forge_character_scoped_equipment_projection.mjs"
+      - "components/NpcForgeCoreSupport.js"
+      - "components/NpcForgeEquipmentStep.js"
+      - "components/NewNpcModalV3Refined.js"
+      - "components/useNpcForgeController.js"
+      - "components/useNpcForgeDerivedModel.js"
+      - "utils/playerForgeStartingEquipment.js"
+      - ".github/workflows/validate-player-forge-character-scoped-equipment.yml"
+  pull_request:
+    paths:
+      - "sql/20260808_49_player_forge_starting_equipment_currency.sql"
+      - "sql/20260808_50_player_forge_starting_equipment_guard.sql"
+      - "sql/20260808_51_player_forge_character_scoped_equipment_projection.sql"
+      - "scripts/validate_player_forge_starting_equipment.mjs"
+      - "scripts/validate_player_forge_starting_equipment_guard.mjs"
+      - "scripts/validate_player_forge_character_scoped_equipment_projection.mjs"
+      - "components/NpcForgeCoreSupport.js"
+      - "components/NpcForgeEquipmentStep.js"
+      - "components/NewNpcModalV3Refined.js"
+      - "components/useNpcForgeController.js"
+      - "components/useNpcForgeDerivedModel.js"
+      - "utils/playerForgeStartingEquipment.js"
+      - ".github/workflows/validate-player-forge-character-scoped-equipment.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Validate character-scoped equipment authority
+        run: |
+          node scripts/validate_player_forge_starting_equipment.mjs
+          node scripts/validate_player_forge_starting_equipment_guard.mjs
+          node scripts/validate_player_forge_character_scoped_equipment_projection.mjs
+          node scripts/validate_unified_character_forge.mjs
+      - name: Run production build gate
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: validation-placeholder
+        run: npm run build:vercel

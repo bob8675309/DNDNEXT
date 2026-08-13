@@ -99,12 +99,22 @@ includesAll(playerCreatorAdapter, [
 ], "player creator shared-Forge adapter");
 
 includesAll(sharedForgeAdapter, [
-  "function playerPayload(payload = {})",
+  "function playerPayload(payload = {}, spellChoices = [], magicSelections = [])",
   "...payload,",
   "...sheet,",
-  'invokeOriginal("create_player_character_v2"',
-  "p_payload: playerPayload(args?.p_payload || {})",
-], "guarded player payload forwarding");
+  "playerForgeProxySpellChoices",
+  "const createCharacter = useCallback",
+  'supabase.rpc("create_player_character_v3"',
+  "p_payload: playerPayload(payload, proxySpellChoices, magicSelections)",
+  "p_spell_choices: proxySpellChoices",
+  "p_magic_selections: magicSelections",
+], "guarded player payload and multi-source starting-magic forwarding");
+assert.ok(!sharedForgeAdapter.includes('supabase.rpc("create_player_character_v2"'),
+  "shared Forge must not stop at the legacy v2 starting-magic boundary");
+assert.ok(!sharedForgeAdapter.includes("supabase.rpc ="),
+  "guarded player payload forwarding must not replace the shared Supabase client method");
+assert.ok(!sharedForgeAdapter.includes("MutationObserver"),
+  "player-mode presentation must not depend on post-render DOM mutation");
 
 includesAll(sharedForge, [
   "resolveBackgroundFeatOptions",

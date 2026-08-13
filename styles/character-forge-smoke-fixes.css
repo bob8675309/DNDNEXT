@@ -1,0 +1,259 @@
+/* PR #170 signed-in smoke corrections: contrast, shared class scrolling, sticky detail rail, and spell help. */
+
+/* Class is a two-column guide, but it must have ONE scroll owner. If the workspace and preview
+   each scroll independently, the level guide can move while the descriptive card is stranded.
+   Let the class body own scrolling and stretch both columns through the same grid row. */
+.unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 {
+  align-items: start;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 > .npc-forge-workspace,
+.unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 > .npc-forge-preview {
+  align-self: stretch;
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
+}
+
+.unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-selection {
+  align-content: start;
+  align-self: stretch;
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
+}
+
+.unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-feature-dock {
+  position: sticky;
+  top: 12px;
+  align-self: start;
+  z-index: 6;
+  max-height: calc(100dvh - 185px);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+/* The smoke test showed that secondary copy was too dim on the dark Forge surface.
+   Keep hierarchy, but move player-facing rules/help text into a comfortably readable range. */
+.unified-player-character-forge .npc-forge-section-heading p,
+.unified-player-character-forge .npc-forge-workspace-note,
+.unified-player-character-forge .npc-forge-context-note,
+.unified-player-character-forge .npc-forge-context-card > p,
+.unified-player-character-forge .npc-forge-context-row-details p,
+.unified-player-character-forge .npc-forge-background-story p,
+.unified-player-character-forge .npc-forge-background-features p,
+.unified-player-character-forge .npc-forge-background-spell-body p,
+.unified-player-character-forge .npc-forge-species-feature-list p,
+.unified-player-character-forge .npc-forge-class-guide p,
+.unified-player-character-forge .npc-forge-class-feature-dock p,
+.unified-player-character-forge .npc-forge-source-choice-group > header small,
+.unified-player-character-forge .npc-forge-source-choice-buttons small,
+.unified-player-character-forge .npc-forge-source-choice-note,
+.unified-player-character-forge .npc-forge-source-choice-fixed small,
+.unified-player-character-forge .npc-forge-rich-choice__list small,
+.unified-player-character-forge .npc-forge-rich-choice__detail header small {
+  color: rgba(255, 255, 255, .82) !important;
+}
+
+.unified-player-character-forge .npc-forge-context-card small,
+.unified-player-character-forge .npc-forge-section small,
+.unified-player-character-forge .npc-forge-context-row > span,
+.unified-player-character-forge .npc-forge-rich-choice__head span,
+.unified-player-character-forge .npc-forge-source-choice-field > span,
+.unified-player-character-forge .npc-forge-source-choice-slots label > span {
+  color: rgba(255, 255, 255, .72) !important;
+}
+
+.unified-player-character-forge .npc-forge-background-features summary,
+.unified-player-character-forge .npc-forge-background-spell-body strong,
+.unified-player-character-forge .npc-forge-context-row-details b {
+  color: #fff !important;
+  font-weight: 800;
+}
+
+/* Source prose is easier to scan when named benefits remain separate paragraphs instead of
+   one dense imported block. The React formatter supplies the paragraph boundaries; these
+   rules keep the measure and vertical rhythm readable throughout purple rule cards. */
+.unified-player-character-forge .npc-forge-rule-copy {
+  display: grid;
+  gap: .58rem;
+  max-width: 78ch;
+  margin-top: .48rem;
+}
+
+.unified-player-character-forge .npc-forge-rule-copy > p {
+  max-width: 78ch;
+  margin: 0;
+  color: rgba(255, 255, 255, .84) !important;
+  font-size: .76rem;
+  line-height: 1.68;
+  text-wrap: pretty;
+}
+
+.unified-player-character-forge .npc-forge-context-row-details article {
+  display: grid;
+  gap: .35rem;
+}
+
+.unified-player-character-forge .npc-forge-context-row-details article + article {
+  margin-top: .65rem;
+  padding-top: .65rem;
+  border-top: 1px solid rgba(255, 255, 255, .07);
+}
+
+.unified-player-character-forge .npc-forge-background-row-controls {
+  display: grid;
+  gap: .65rem;
+}
+
+.unified-player-character-forge .npc-forge-background-source-fallback > div {
+  display: grid;
+  gap: .48rem;
+}
+
+.unified-player-character-forge .npc-forge-background-source-fallback details {
+  padding: .55rem .65rem;
+  border: 1px solid rgba(168, 108, 255, .34);
+  border-radius: 9px;
+  background: linear-gradient(90deg, rgba(126, 72, 199, .13), rgba(88, 214, 199, .035));
+}
+
+.unified-player-character-forge .npc-forge-background-source-fallback summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  cursor: pointer;
+  list-style: none;
+  color: #fff;
+  font-size: .7rem;
+  font-weight: 800;
+}
+
+/* Any resolver-only source panel that remains on later Forge steps uses the same purple
+   language as the owning feature cards instead of the old yellow warning treatment. */
+.unified-player-character-forge .npc-forge-source-choice-group.is-required {
+  border-color: rgba(168, 108, 255, .48) !important;
+  background: linear-gradient(120deg, rgba(126, 72, 199, .12), rgba(88, 214, 199, .035)) !important;
+}
+
+.unified-player-character-forge .npc-forge-source-choice-group.is-required > header em {
+  color: #eadfff !important;
+  background: rgba(126, 72, 199, .18) !important;
+}
+
+/* Background expanded-spell names use an opaque source-backed hover card. Keep every ancestor
+   overflow-visible and lift the hovered spell above neighboring level rows so Witherbloom and
+   similar lists cannot visually bleed the tooltip into the text behind it. */
+.unified-player-character-forge .npc-forge-background-spells,
+.unified-player-character-forge .npc-forge-background-spell-body,
+.unified-player-character-forge .npc-forge-background-spell-body > div,
+.unified-player-character-forge .npc-forge-background-spell-names {
+  overflow: visible !important;
+}
+
+.unified-player-character-forge .npc-forge-background-spell-body > div,
+.unified-player-character-forge .npc-forge-background-spell-names {
+  position: relative;
+}
+
+.unified-player-character-forge .npc-forge-background-spell-names {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  min-width: 0;
+}
+
+.unified-player-character-forge .npc-forge-background-spell-name {
+  position: relative;
+  display: inline-block;
+  color: #fff;
+  font-weight: 700;
+  cursor: help;
+  outline: none;
+}
+
+.unified-player-character-forge .npc-forge-background-spell-name:hover,
+.unified-player-character-forge .npc-forge-background-spell-name:focus,
+.unified-player-character-forge .npc-forge-background-spell-name:focus-within {
+  z-index: 100;
+}
+
+.unified-player-character-forge .npc-forge-background-spell-name > i {
+  color: rgba(255, 255, 255, .78);
+  font-style: normal;
+  white-space: pre;
+}
+
+.unified-player-character-forge .npc-forge-background-spell-name .npc-forge-species-spell-help {
+  display: none !important;
+  position: absolute !important;
+  z-index: 120 !important;
+  left: 0;
+  top: calc(100% + 7px);
+  isolation: isolate;
+  width: min(360px, 70vw);
+  max-height: min(360px, 55vh);
+  overflow: auto;
+  padding: 10px 11px;
+  border: 1px solid rgba(88, 214, 199, .52) !important;
+  border-radius: 9px;
+  background: #090c14 !important;
+  background-image: none !important;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, .72) !important;
+  color: #fff !important;
+  opacity: 1 !important;
+  backdrop-filter: none !important;
+  text-align: left;
+  white-space: normal;
+}
+
+.unified-player-character-forge .npc-forge-background-spell-name:hover .npc-forge-species-spell-help,
+.unified-player-character-forge .npc-forge-background-spell-name:focus .npc-forge-species-spell-help,
+.unified-player-character-forge .npc-forge-background-spell-name:focus-within .npc-forge-species-spell-help {
+  display: grid !important;
+  gap: 6px;
+}
+
+.unified-player-character-forge .npc-forge-background-spell-name .npc-forge-species-spell-help > span {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.unified-player-character-forge .npc-forge-background-spell-name .npc-forge-species-spell-help strong {
+  color: #fff;
+}
+
+.unified-player-character-forge .npc-forge-background-spell-name .npc-forge-species-spell-help em {
+  color: #9cece2;
+  font-size: .62rem;
+  font-style: normal;
+}
+
+.unified-player-character-forge .npc-forge-background-spell-name .npc-forge-species-spell-help small,
+.unified-player-character-forge .npc-forge-background-spell-name .npc-forge-species-spell-help p {
+  margin: 0;
+  color: rgba(255, 255, 255, .9) !important;
+  font-size: .66rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 980px) {
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 > .npc-forge-workspace,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 > .npc-forge-preview,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-selection {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-feature-dock {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+}

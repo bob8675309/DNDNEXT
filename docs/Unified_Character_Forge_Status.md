@@ -1,151 +1,158 @@
 # Unified NPC and Player Character Forge Status
 
-Status date: 2026-08-04
+Status date: 2026-08-10
+PR: #170 (`agent/character-forge-resilience-presentation`)
+Live migration checkpoint: **89**
+PR state: **open and unmerged**
 
-This document controls the temporary user-testing interruption requested after the Dawn sprite pipeline handoff. When this slice is accepted, active development returns to `Dawn_High_Quality_Prototype_Plan.md`.
+## Governing architecture
 
-## Test evidence
+The shared Character Forge is the intended creation surface for NPCs and player-owned characters. Persistent source-owned state should converge between direct creation at level N and earned progression to level N.
 
-A real external tester, referred to as **Rinshin**, created an account and attempted the player Character Forge. Read-only production inspection confirmed:
+That parity rule does **not** convert every source choice into permanent creation state:
 
-- the Auth account exists;
-- the corresponding `players` row exists;
-- no `character_permissions` row was created for the account;
-- no new character was created by the attempted Forge session.
+- persistent acquisition/attained-level choices → Forge/progression authority;
+- proficiency-dependent permanent choices → Training authority;
+- spellbook-dependent permanent choices → Spells/progression authority;
+- rest-configurable persistent choices → runtime authority;
+- next-rest-expiring choices → rest-cycle runtime authority;
+- per-use/per-cast choices → action/spell resolver;
+- informational features → display/consumer logic.
 
-The tester also reported panels with broken formatting and controls reaching the viewport edge or becoming unreachable. This is therefore both a responsive-UI defect and a player-character creation/linking failure.
+## Player-facing Forge routing
 
-The tester's email address is intentionally not stored in repository documentation.
+Current player steps separate explanation from decision resolution:
 
-## Architecture decision
+- Species — identity/lore/features; fixed source languages stay fixed;
+- Background — background identity/source grants;
+- Class — class/subclass explanation and progression preview;
+- Abilities — score generation/allocation;
+- Training → Skills & Proficiencies;
+- Training → Feats & Class Abilities;
+- Spells — class magic plus spell-centric Species/Feat/Background/Class-feature decisions;
+- Review — manual choices plus automatic source-policy outcomes.
 
-DNDNext now uses **one shared Forge** for NPC and player-character creation.
+Higher-level feats no longer resolve on Abilities. Warlock Invocations, Artificer plans, and similar persistent catalogues resolve in Training with richer description-first UI. Noncasters can still use Spells for source-owned magic.
 
-`NewNpcModalV3Refined` remains the canonical visual and rules-entry implementation because it contains the stronger flow:
+Read `Player_Forge_Choice_Routing_and_Source_Magic_Status.md`.
 
-1. Species
-2. Background
-3. Class
-4. Abilities
-5. Training
-6. Identity
-7. Story
-8. Review
+## Starting/player creation authority
 
-The former `PlayerCharacterCreatorV2` controller is reduced to a thin player-mode adapter around the shared Forge. It no longer renders a separate near-duplicate `PlayerCharacterForgeView`.
+Player creation remains server-authoritative through `create_player_character_v3`.
 
-The shared adapter redirects only the final `create_character_v1` request while player mode is mounted. NPC/admin creation continues to use `create_character_v1`; player mode uses the guarded `create_player_character_v2` authority.
+Established creation systems include:
 
-## Player-mode differences
+- exact starting class/subclass spell selection and fixed/expanded access;
+- source-owned feat/species/background magic with distinct provenance;
+- starting equipment and character-scoped currency;
+- source choice/feat-instance authority;
+- higher-level direct creation with persistent attained-level choices;
+- portrait choice and multi-character account support.
 
-Player mode deliberately differs from NPC mode only where ownership or NPC-only capabilities require it:
+## Earned progression authority
 
-- adds the `player-character` tag;
-- creates an editable/inventory permission for the signed-in user;
-- disables storefront and world placement;
-- hides merchant and workshop-provider controls;
-- requires an adventuring class;
-- permits campaign-approved starting levels 1–20;
-- creates canonical progression at the selected level;
-- permits more than one player character per account;
-- keeps portrait/species-choice persistence and the shared review flow.
+The active Level Up path composes source-owned persistent acquisition/replacement work transactionally. Established families include feats/boons, subclass entry, class spells, Metamagic, Mystic Arcanum, Eldritch Invocations, Battle Master maneuvers, Wizard Savant chronology, Wizard Signature Spells, and Artificer Magic Item Plans.
 
-## Profile behavior
+Migration 85 retained `get_character_level_class_choice_options_v2` as an authenticated compatibility fallback while revoking anonymous execute in the bounded v1/v2/v3 class-choice getter family. Read `Progression_RPC_ACL_Cleanup_Status.md`.
 
-The profile panel now loads all editable player-owned characters through `get_my_player_characters_v2` and provides:
+## Source-owned magic — migrations 86-88
 
-- an Active Character selector;
-- immediate switching without changing ownership;
-- a **Create another character** action;
-- automatic selection of the newly created character;
-- the existing Backspace toggle, explicit close behavior, auth-lock deferral, and stale-request guards.
+The Forge now routes spell-centric Species/Feat decisions to Spells and materializes validated source magic into `character_spells`.
 
-The legacy `get_my_player_character_v1` function remains available for compatibility but is no longer the controlling multi-character read path.
+Accepted regression families:
 
-## Responsive reachability
+- Astral Elf / Astral Fire;
+- Deep Gnome / Gift of the Svirfneblin at levels 3/5;
+- Witherbloom Student / Strixhaven Initiate;
+- Magic Initiate;
+- deterministic best eligible casting ability.
 
-`styles/character-forge-responsive.css` establishes the shared viewport contract:
+Migrations 87-88 are additive parser/name-normalization corrections discovered by rollback QA. Read `Player_Forge_Choice_Routing_and_Source_Magic_Status.md`.
 
-- the Forge never exceeds the dynamic viewport height;
-- the main body owns scrolling;
-- the step rail scrolls horizontally instead of forcing the modal wider;
-- the footer remains sticky and reachable;
-- footer actions wrap on constrained widths;
-- safe-area insets are respected;
-- mobile presentation uses the full dynamic viewport;
-- player-character selection controls stack on narrow screens.
+## Runtime authority checkpoint
 
-These rules apply to both NPC and player creation because both use the same component.
+The bounded runtime-family sweep is complete through Whispers of the Dead.
 
-## Database authority
+Representative semantics:
 
-`sql/20260804_01_multi_player_character_forge_v2.sql` adds:
+- Wizard Spell Mastery — immediate initial configuration; Long-Rest optional replacement;
+- Weapon Mastery / Weapon Master — current mastery persists; Long-Rest replacement authority;
+- Astral Trance — temporary Long-Rest-cycle skill + weapon/tool pair; expires next Long Rest;
+- Githyanki Astral Knowledge — temporary Long-Rest-cycle skill + weapon/tool pair;
+- Khoravar Skill Versatility — persistent runtime proficiency with Long-Rest replacement;
+- Primal Companion — persistent companion with Long-Rest replacement;
+- Dread Allegiance — persistent linked package with Long-Rest replacement;
+- Fiendish Resilience — first choice after Short/Long Rest; then persistent until later replacement;
+- Circle Spells — current land package expires at next Long Rest;
+- Armorer Armor Model — immediate initial choice; Short/Long-Rest optional replacement;
+- Bestial Soul — first choice after qualifying rest; expires next Short/Long Rest;
+- Wild Heart Aspect — immediate initial choice; persistent; Long-Rest replacement;
+- Hunter's Prey — PHB permanent Forge choice / XPHB persistent Short/Long-Rest runtime choice;
+- Defensive Tactics — PHB permanent Forge choice / XPHB persistent Short/Long-Rest runtime choice;
+- Whispers of the Dead — first choice after qualifying rest; borrowed proficiency persists until later replacement.
 
-- `get_my_player_characters_v2()`;
-- `create_player_character_v2(jsonb, jsonb)`.
+## Post-rest pending choice presentation — migration 89
 
-`sql/20260804_02_player_forge_progression_upsert.sql` makes progression initialization compatible with the existing `character_sheets` progression trigger. The trigger may create the progression row before the creation command reaches its final progression step, so the v2 command uses a deterministic upsert rather than attempting a duplicate insert.
+`CharacterRestChoiceNotice` is mounted in the always-reachable runtime/currency chain. Its server aggregate separates:
 
-The v2 creation command is authenticated, idempotent through `creation_request_id`, validates the selected class and level, creates character/sheet/permission/progression/event rows transactionally, and preserves portrait/sprite metadata. The original v1 entry point remains unchanged.
+- `needsSelection` — a current rest-cycle benefit is inactive or first rest-backed selection is waiting; attention pulse;
+- `optionalChanges` — current persistent benefit remains active; quiet/collapsed;
+- `availableActions` — optional post-rest actions; quiet/collapsed.
 
-### Rollback-only live-schema evidence
+Rollback acceptance proved:
 
-The deployed functions were tested against the live schema inside transactions that were explicitly rolled back:
+- Astral Trance after Long Rest → attention true, one temporary pending choice;
+- Wild Heart Owl after newer Long Rest → Owl remains active, attention false, one optional persistent replacement.
 
-1. A level-6 Fighter request was submitted twice with the same `creation_request_id`.
-   - both calls returned the same character UUID;
-   - progression resolved to level 6 and 14,000 XP;
-   - `can_edit` and `can_inventory` were true.
-2. Two distinct requests were submitted for the same account.
-   - one created a level-3 Fighter;
-   - one created a level-8 Wizard;
-   - `get_my_player_characters_v2()` returned both characters;
-   - the progression levels were `[3, 8]`.
+Read `Pending_Rest_Runtime_Choices_Status.md`.
 
-After rollback verification:
+## Always-reachable runtime presentation
 
-- no validation character remained;
-- Rinshin still had zero character permissions;
-- the live character count remained seven.
+The current character sheet/runtime presentation includes the established species/class/feat runtime panels plus:
 
-## Deployment state
+- Defensive Tactics;
+- Whispers of the Dead;
+- pending post-rest choice notice;
+- character-scoped currency.
 
-PR #168 merged into `main` as `c36555780951f9796818b8a8b33cf90f41ac9906`. Its first Vercel deployments stopped before `next build` because older exact-text validators had drifted behind the current sprite documentation and consolidated Character Forge ownership.
+Eligibility in one panel must never hide unrelated downstream controls. Every feature-specific RPC argument is passed explicitly.
 
-PR #169 is the bounded deployment-repair follow-up. Exact-head commit `d7f0c45c4baec15c9c62f2a20a7e8e7aa833c352` passed GitHub Actions run 230 and the Vercel deployment check. The production runner completed every source, Character Forge, profile-selection, sheet, crafting, security, tactical, and documentation validator before reaching `npx next build`. Next.js 16.1.6 compiled successfully and generated all 27 static pages.
+## Source-control parity repair
 
-The repair also makes `validate_unified_character_forge.mjs` part of the production build runner and gives the NPC Forge workflow an inspectable `npm run build:vercel` gate. Source and database readiness are therefore green. Authenticated browser acceptance remains pending and no checklist item below is complete until Rinshin performs the real production test.
+Migration-89 startup found production migrations 83-85 present while their SQL files and two reachable runtime panels were absent from the PR branch. Source was restored without reapplying those already-live migrations.
 
-## Known limitation: starting spell-selection parity
+A fresh checkout must now contain migrations 83-89 in sequence.
 
-The old level-one player creator included a dedicated canonical starting-spell picker. The richer NPC Forge currently exposes spell notes rather than the same source-backed player selection workflow.
+## Current production integrity
 
-For this testing-unblock slice:
+After migration 89 and all rollback fixtures:
 
-- caster characters may be created without canonical starting spell assignments;
-- their sheet is marked `startingSpellSelectionPending`;
-- spells can be granted through the existing Spellbook/Admin surfaces;
-- the shared Forge must receive source-backed class-and-level spell selection before this consolidation is considered fully complete.
+- 7 characters;
+- 7 character sheets;
+- 30 character-spell assignments;
+- 7 progression rows;
+- 18 inventory rows;
+- 0 runtime rows;
+- 0 rest-log rows;
+- 0 migration-89 QA residue;
+- 20 world locations;
+- 4 map routes;
+- 9 map route points.
 
-This limitation must not be hidden or described as complete parity.
+Before migration 89 deployment, exact head `a05c4b03f9a36cbf9021108aa07856cfab474fd1` passed 31/31 PR-triggered GitHub workflows and Vercel. Final documentation commits must be exact-head gated again.
 
-## Acceptance checklist
+## Remaining PR #170 closure
 
-- [ ] Rinshin can reopen the player Forge and reach every step/footer control.
-- [ ] A first player-owned character can be created and linked.
-- [ ] Starting level can be selected from 1 through 20.
-- [ ] A player with one character can choose **Create another character**.
-- [ ] The selector switches between owned characters without stale sheet state.
-- [ ] NPC Forge still creates NPCs/merchants through its original guarded RPC.
-- [ ] NPC-only storefront/workshop controls do not appear in player mode.
-- [ ] Portrait and required species choices persist.
-- [ ] No world-map, town-map, encounter, crafting, or unrelated data changes occur.
-- [ ] Starting spell-selection parity remains tracked until implemented.
+No additional source-family implementation should begin by default. Remaining closure work is:
 
-## Return to Dawn
+1. final documentation/PR reconciliation;
+2. exact-head GitHub/Vercel gate after that reconciliation;
+3. optional real signed-in interactive browser smoke for final presentation proof;
+4. immediately before any explicitly approved merge, re-check head/status, live migrations, ACLs, and zero residue;
+5. merge only with explicit user approval.
 
-After this slice passes user testing and documentation is reconciled, return to:
+The browser smoke should cover representative Forge routing/source magic plus post-rest attention versus persistent optional replacement behavior.
 
-1. `docs/Dawn_High_Quality_Prototype_Plan.md`;
-2. one high-quality South-facing Dawn idle/walk prototype;
-3. no new full 32-cell Dawn atlas until the South prototype is visually approved.
+## Protected boundaries
+
+This work does not authorize changes to world-map, town/city-map, route/travel/weather, tactical encounter/combat execution, or unrelated crafting behavior. `components/MapPageClient.js` remains outside PR #170 Forge/progression/runtime work.

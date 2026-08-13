@@ -29,8 +29,8 @@ function usage() {
   node scripts/import_5etools_character_options.mjs <path-to-5etools-data> --out-dir character-option-batches
   node scripts/import_5etools_character_options.mjs <path-to-5etools-data> --source XPHB --preview-json character-options-xphb.json
 
-Reads feats.json, backgrounds.json, fluff-backgrounds.json, races.json, fluff-races.json, and skills.json.
-All source versions are retained. Background and species _copy records are resolved before the reviewed batch is produced.
+Reads feats.json, backgrounds.json, fluff-backgrounds.json, races.json (race[] and subrace[]), fluff-races.json, and skills.json.
+All source versions are retained. Background, species, and subrace _copy records are resolved before the reviewed batch is produced.
 This command never writes directly to Supabase.`);
 }
 function readJson(filePath) { return fs.existsSync(filePath) ? JSON.parse(fs.readFileSync(filePath, "utf8")) : {}; }
@@ -167,6 +167,38 @@ function resolveCopies(rows = [], label = "record") {
   return rows.map(resolve);
 }
 
+function mergeSubraces(resolvedRaces = [], resolvedSubraces = []) {
+  const raceByKey = new Map(resolvedRaces.map((race) => [fluffKey(race.name, race.source), race]));
+  return resolvedSubraces.flatMap((subrace) => {
+    const raceName = subrace.raceName;
+    const raceSource = subrace.raceSource;
+    const parent = raceByKey.get(fluffKey(raceName, raceSource));
+    if (!parent || !raceName) return [];
+    const variantName = subrace.name || "Variant";
+    const merged = {
+      ...cloneJson(parent),
+      ...cloneJson(subrace),
+      name: `${raceName} (${variantName})`,
+      displayName: `${raceName} (${variantName})`,
+      source: subrace.source || parent.source,
+      parentSpecies: raceName,
+      parentSource: raceSource || parent.source,
+      variantName,
+      raceName,
+      raceSource: raceSource || parent.source,
+      size: subrace.size ?? parent.size ?? [],
+      speed: subrace.speed ?? parent.speed ?? null,
+      creatureTypes: subrace.creatureTypes ?? parent.creatureTypes ?? [],
+      languageProficiencies: subrace.languageProficiencies ?? parent.languageProficiencies ?? [],
+      darkvision: subrace.darkvision ?? parent.darkvision ?? null,
+      lineage: subrace.lineage ?? parent.lineage ?? null,
+      entries: [...asArray(parent.entries), ...asArray(subrace.entries)],
+      sourceDerivedSubrace: true,
+    };
+    return [merged];
+  });
+}
+
 function featType(row = {}) { const category = String(row.category || "").toUpperCase(); return category === "EB" || /^boon of\b/i.test(String(row.name || "")) ? "boon" : "feat"; }
 function featRow(row = {}) {
   const optionType = featType(row);
@@ -177,14 +209,26 @@ function backgroundRow(row = {}, fluffIndex) {
   return { option_key: optionKey("background", row.name, row.source), option_type: "background", name: row.name || "Unknown Background", source: row.source || "UNK", category: null, description: shortDescription(row.entries || []), prerequisite_text: "", tags: [], metadata: { abilities: row.ability || [], feats: row.feats || [], skills: row.skillProficiencies || [], tools: row.toolProficiencies || [], languages: row.languageProficiencies || [], equipment: row.startingEquipment || [], lore: lore.lore, loreSource: lore.loreSource, page: row.page ?? null }, raw_payload: row };
 }
 function speciesRow(row = {}, fluffIndex) {
-  const name = row.name || row.raceName || "Unknown Species"; const fluff = fluffFor(row, fluffIndex); const lore = SPECIES_LORE_OVERRIDES[slugify(name)] || firstLoreParagraph(fluff?.entries || []);
-  return { option_key: optionKey("species", name, row.source), option_type: "species", name, source: row.source || "UNK", category: row.lineage || row.creatureTypes?.join(", ") || null, description: shortDescription(row.entries || []), prerequisite_text: "", tags: [row.size ? `size:${clean5eText(row.size)}` : null].filter(Boolean), metadata: { speed: row.speed || null, size: row.size || [], creatureTypes: row.creatureTypes || [], languages: row.languageProficiencies || [], darkvision: row.darkvision ?? null, lineage: row.lineage || null, traits: row.entries || [], lore, loreSource: fluff?.source || null, page: row.page ?? null }, raw_payload: row };
+  const name = row.displayName || row.name || row.raceName || "Unknown Species";
+  const loreSubject = row.parentSpecies || name;
+  const fluff = row.parentSpecies ? fluffFor({ name: row.parentSpecies, source: row.parentSource }, fluffIndex) : fluffFor(row, fluffIndex);
+  const lore = SPECIES_LORE_OVERRIDES[slugify(loreSubject)] || firstLoreParagraph(fluff?.entries || []);
+  return {
+    option_key: optionKey("species", name, row.source), option_type: "species", name, source: row.source || "UNK", category: row.lineage || row.creatureTypes?.join(", ") || null, description: shortDescription(row.entries || []), prerequisite_text: "", tags: [row.size ? `size:${clean5eText(row.size)}` : null].filter(Boolean),
+    metadata: {
+      speed: row.speed || null, size: row.size || [], creatureTypes: row.creatureTypes || [], languages: row.languageProficiencies || [], darkvision: row.darkvision ?? null, lineage: row.lineage || null, traits: row.entries || [], lore, loreSource: fluff?.source || null, page: row.page ?? null,
+      parentSpecies: row.parentSpecies || null, parentSource: row.parentSource || null, variantName: row.variantName || null, sourceDerivedSubrace: Boolean(row.sourceDerivedSubrace),
+      additionalSpells: row.additionalSpells || [], resist: row.resist || [], traitTags: row.traitTags || [],
+    }, raw_payload: row,
+  };
 }
 function skillRow(row = {}) { return { option_key: optionKey("skill", row.name, row.source), option_type: "skill", name: row.name || "Unknown Skill", source: row.source || "UNK", category: row.ability || null, description: shortDescription(row.entries || []), prerequisite_text: "", tags: row.ability ? [`ability:${row.ability}`] : [], metadata: { ability: row.ability || null, page: row.page ?? null }, raw_payload: row }; }
 
 function collectRows(dataDir, source) {
   const files = { feats: readJson(path.join(dataDir, "feats.json")), backgrounds: readJson(path.join(dataDir, "backgrounds.json")), backgroundFluff: readJson(path.join(dataDir, "fluff-backgrounds.json")), races: readJson(path.join(dataDir, "races.json")), raceFluff: readJson(path.join(dataDir, "fluff-races.json")), skills: readJson(path.join(dataDir, "skills.json")) };
   const resolvedRaces = resolveCopies(files.races.race || [], "race");
+  const resolvedSubraces = resolveCopies(files.races.subrace || [], "subrace");
+  const mergedSubraces = mergeSubraces(resolvedRaces, resolvedSubraces);
   const resolvedBackgrounds = resolveCopies(files.backgrounds.background || [], "background");
   const raceFluffIndex = buildFluffIndex(resolveCopies(files.raceFluff.raceFluff || [], "race fluff"));
   const backgroundFluffIndex = buildFluffIndex(resolveCopies(files.backgroundFluff.backgroundFluff || [], "background fluff"));
@@ -192,6 +236,7 @@ function collectRows(dataDir, source) {
     ...(files.feats.feat || []).filter((row) => sourceMatches(row, source)).map(featRow),
     ...resolvedBackgrounds.filter((row) => sourceMatches(row, source)).map((row) => backgroundRow(row, backgroundFluffIndex)),
     ...resolvedRaces.filter((row) => sourceMatches(row, source)).map((row) => speciesRow(row, raceFluffIndex)),
+    ...mergedSubraces.filter((row) => sourceMatches(row, source)).map((row) => speciesRow(row, raceFluffIndex)),
     ...(files.skills.skill || []).filter((row) => sourceMatches(row, source)).map(skillRow),
   ];
   const unique = new Map(); rows.forEach((row) => unique.set(row.option_key, row));
@@ -202,7 +247,7 @@ function summary(rows = []) {
   rows.forEach((row) => { byType[row.option_type] = (byType[row.option_type] || 0) + 1; bySource[row.source] = (bySource[row.source] || 0) + 1; });
   return { options: rows.length, byType, bySource };
 }
-function payload(rows, extra = {}) { return { summary: summary(rows), meta: { generated_at: new Date().toISOString(), importer: "scripts/import_5etools_character_options.mjs", copy_resolution: "backgrounds-and-species", ...extra }, rows }; }
+function payload(rows, extra = {}) { return { summary: summary(rows), meta: { generated_at: new Date().toISOString(), importer: "scripts/import_5etools_character_options.mjs", copy_resolution: "backgrounds-species-and-subraces", legacy_copy_resolution: "backgrounds-and-species", ...extra }, rows }; }
 function writeJson(filePath, value) { fs.mkdirSync(path.dirname(filePath), { recursive: true }); fs.writeFileSync(filePath, JSON.stringify(value, null, 2), "utf8"); console.log(`Wrote ${filePath}`); }
 function writeBatches(rows, outDir, chunkSize, source) {
   const resolved = path.resolve(process.cwd(), outDir); const label = String(source || "all-sources").toLowerCase().replace(/[^a-z0-9_-]+/g, "-"); let count = 0;

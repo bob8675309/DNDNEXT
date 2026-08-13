@@ -4,7 +4,11 @@ function uniqueText(values = []) {
   return [...new Set((Array.isArray(values) ? values : []).map((value) => String(value ?? "").trim()).filter(Boolean))];
 }
 
-function flattenEntryText(node) {
+const STRUCTURED_PERSISTENT_CHOICE_TRAITS = new Set([
+  "draconic-ancestry", "elven-lineage", "gnomish-lineage", "fiendish-legacy", "giant-ancestry", "shifting", "kobold-legacy", "animal-enhancement", "variable-trait",
+]);
+
+function flattenEntryText(node, { omitChoiceCollections = false } = {}) {
   const output = [];
   function walk(value) {
     if (value == null) return;
@@ -18,6 +22,11 @@ function flattenEntryText(node) {
       return;
     }
     if (typeof value !== "object") return;
+    if (omitChoiceCollections && (value.type === "table" || value.type === "list")) return;
+    if (value.type === "item" && value.name) {
+      const itemName = formatPlayerFacingInline(value.name);
+      if (itemName) output.push(`${itemName}.`);
+    }
     if (value.entry) walk(value.entry);
     if (value.entries) walk(value.entries);
     if (value.items) walk(value.items);
@@ -50,6 +59,27 @@ const SPELLCASTING_ABILITY_OPTIONS = Object.freeze([
   Object.freeze({ value: "cha", label: "Charisma" }),
 ]);
 
+const SKILL_OPTIONS = Object.freeze([
+  ["acrobatics", "Acrobatics"], ["animalHandling", "Animal Handling"], ["arcana", "Arcana"], ["athletics", "Athletics"],
+  ["deception", "Deception"], ["history", "History"], ["insight", "Insight"], ["intimidation", "Intimidation"],
+  ["investigation", "Investigation"], ["medicine", "Medicine"], ["nature", "Nature"], ["perception", "Perception"],
+  ["performance", "Performance"], ["persuasion", "Persuasion"], ["religion", "Religion"], ["sleightOfHand", "Sleight of Hand"],
+  ["stealth", "Stealth"], ["survival", "Survival"],
+].map(([value, label]) => Object.freeze({ value, label, description: `Gain proficiency in ${label}.`, source: "XPHB" })));
+
+const ORIGIN_FEAT_OPTIONS = Object.freeze([
+  ["Alert", "Add Proficiency to Initiative and swap Initiative with a willing ally after rolling."],
+  ["Crafter", "Gain three Artisan's Tool proficiencies, receive nonmagical purchase discounts, and make temporary gear after a Long Rest."],
+  ["Healer", "Use a Healer's Kit to restore Hit Points and reroll healing dice that roll a 1."],
+  ["Lucky", "Gain Luck Points that can grant your rolls Advantage or impose Disadvantage on attacks against you."],
+  ["Magic Initiate", "Learn two cantrips and one level-1 spell from the Cleric, Druid, or Wizard list."],
+  ["Musician", "Gain three instrument proficiencies and grant Heroic Inspiration after rests by performing."],
+  ["Savage Attacker", "Once per turn, roll a weapon's damage dice twice and use either result."],
+  ["Skilled", "Gain proficiency in any combination of three skills or tools."],
+  ["Tavern Brawler", "Improve Unarmed Strikes, improvised weapons, damage rerolls, and pushing with an Unarmed Strike."],
+  ["Tough", "Increase maximum Hit Points by twice your level and gain 2 more with every later level."],
+].map(([label, description]) => Object.freeze({ value: label, label, description, source: "XPHB" })));
+
 function cantripOptionsFromDescription(description = "") {
   const match = String(description).match(/one of the following cantrips(?: of your choice)?\s*:\s*([^.]*)\./i);
   if (!match) return [];
@@ -77,9 +107,61 @@ export function extractSpeciesTraitDetails(metadata = {}) {
     }
     if (!entry || typeof entry !== "object") return null;
     const name = formatPlayerFacingInline(entry.name || entry.title || "Species Feature");
-    const description = formatPlayerFacingText(flattenEntryText(entry));
-    return name || description ? { name: name || "Species Feature", description } : null;
+    const structuredChoice = STRUCTURED_PERSISTENT_CHOICE_TRAITS.has(slug(name));
+    const description = formatPlayerFacingText(flattenEntryText(entry, { omitChoiceCollections: structuredChoice }));
+    return name || description ? { name: name || "Species Feature", description, structuredChoice } : null;
   }).filter(Boolean);
+}
+
+export function speciesFixedLanguages(option = {}) {
+  const details = Array.isArray(option.traitDetails) && option.traitDetails.length
+    ? option.traitDetails
+    : extractSpeciesTraitDetails(option.metadata || {});
+  const languageTrait = details.find((detail) => /^languages?$/i.test(String(detail?.name || "").trim()));
+  const description = String(languageTrait?.description || "").replace(/\s+/g, " ").trim();
+  if (!description || /\b(?:choose|choice|of your choice|additional language)\b/i.test(description)) return [];
+  const match = description.match(/(?:speak\s*,?\s*read\s*,?\s*(?:and\s+)?write|speak\s*,?\s*read\s+and\s+write)\s+([^.;]+)/i);
+  if (!match) return [];
+  return uniqueText(
+    match[1]
+      .replace(/\s+or\s+/gi, ",")
+      .replace(/\s+and\s+/gi, ",")
+      .split(",")
+      .map((value) => value.trim().replace(/^(?:the\s+)?/i, "").replace(/\s+language$/i, ""))
+      .filter((value) => /^[A-Za-z][A-Za-z' -]*$/.test(value)),
+  );
+}
+
+function humanChoiceRule(detail) {
+  const name = slug(detail.name);
+  const description = String(detail.description || "");
+  if (name === "skillful" || /gain proficiency in one skill/i.test(description)) {
+    return {
+      id: slug(detail.name || "skillful"),
+      traitName: detail.name || "Skillful",
+      required: true,
+      fields: [{ id: "skill", label: "Choose skill proficiency", kind: "skill", required: true, options: SKILL_OPTIONS }],
+    };
+  }
+  if (name === "versatile" || /gain an origin feat/i.test(description)) {
+    return {
+      id: slug(detail.name || "versatile"),
+      traitName: detail.name || "Versatile",
+      required: true,
+      fields: [{ id: "feat", label: "Choose Origin feat", kind: "origin-feat", required: true, options: ORIGIN_FEAT_OPTIONS }],
+    };
+  }
+  return null;
+}
+
+function runtimeOwnedTraitChoice(option = {}, detail = {}) {
+  const species = slug(option.name || option.species_name || option.option_name);
+  const source = String(option.source || option.metadata?.source || "").trim().toUpperCase();
+  const trait = slug(detail.name);
+  if (species === "astral-elf" && source === "AAG" && trait === "astral-trance") return true;
+  if (species === "githyanki" && source === "MPMM" && trait === "astral-knowledge") return true;
+  if (species === "khoravar" && source === "EFA" && trait === "skill-versatility") return true;
+  return false;
 }
 
 export function extractSpeciesTraitChoiceRules(option = {}) {
@@ -88,6 +170,11 @@ export function extractSpeciesTraitChoiceRules(option = {}) {
     : extractSpeciesTraitDetails(option.metadata || {});
 
   return details.flatMap((detail) => {
+    if (runtimeOwnedTraitChoice(option, detail)) return [];
+
+    const humanRule = humanChoiceRule(detail);
+    if (humanRule) return [humanRule];
+
     const cantripOptions = cantripOptionsFromDescription(detail.description);
     if (cantripOptions.length < 2) return [];
 
@@ -125,15 +212,25 @@ export function speciesTraitChoiceRuleComplete(rule = {}, selections = {}) {
 }
 
 const CHARACTER_SIZE_BY_SOURCE_CODE = Object.freeze({
+  T: "Tiny",
   S: "Small",
   M: "Medium",
   L: "Large",
+  H: "Huge",
+  G: "Gargantuan",
 });
 
+export function speciesCharacterSizeOptions(option = {}) {
+  return uniqueText(option.size).flatMap((value) => {
+    const raw = String(value || "").trim();
+    const label = CHARACTER_SIZE_BY_SOURCE_CODE[raw.toUpperCase()] || Object.values(CHARACTER_SIZE_BY_SOURCE_CODE).find((candidate) => candidate.toLowerCase() === raw.toLowerCase()) || "";
+    return label ? [{ key: label, label }] : [];
+  });
+}
+
 export function speciesDefaultCharacterSize(option = {}) {
-  const sourceSizes = uniqueText(option.size);
-  if (sourceSizes.length !== 1) return "";
-  return CHARACTER_SIZE_BY_SOURCE_CODE[sourceSizes[0].toUpperCase()] || "";
+  const options = speciesCharacterSizeOptions(option);
+  return options.length === 1 ? options[0].key : "";
 }
 
 const MOVEMENT_LABELS = Object.freeze({

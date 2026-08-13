@@ -1,17 +1,46 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+import { supabase } from "../utils/supabaseClient";
 
 function safeLocalPath(value) {
   if (typeof value !== "string") return null;
   if (!value.startsWith("/") || value.startsWith("//")) return null;
   return value;
+}
+
+function timeoutResult(ms) {
+  return new Promise((resolve) => {
+    window.setTimeout(() => resolve({ timedOut: true }), ms);
+  });
+}
+
+async function resolveAdminAfterLogin(userId) {
+  try {
+    const adminResult = await Promise.race([
+      supabase.rpc("is_admin"),
+      timeoutResult(1500),
+    ]);
+    if (!adminResult?.timedOut && !adminResult?.error) return Boolean(adminResult?.data);
+  } catch {
+    // A successful authentication must not be held on the login page by secondary role routing.
+  }
+
+  if (!userId) return false;
+  try {
+    const profileResult = await Promise.race([
+      supabase
+        .from("user_profiles")
+        .select("role")
+        .eq("id", userId)
+        .maybeSingle(),
+      timeoutResult(1000),
+    ]);
+    if (profileResult?.timedOut || profileResult?.error) return false;
+    return (profileResult?.data?.role || "player") !== "player";
+  } catch {
+    return false;
+  }
 }
 
 export default function LoginPage() {
@@ -23,44 +52,37 @@ export default function LoginPage() {
 
   async function onSubmit(event) {
     event.preventDefault();
+    if (loading) return;
     setError("");
     setLoading(true);
 
-    const { data, error: loginError } = await supabase.auth.signInWithPassword({
-      email: email.trim().toLowerCase(),
-      password,
-    });
-
-    if (loginError) {
-      setLoading(false);
-      setError(loginError.message || "Login failed.");
-      return;
-    }
-
-    const requestedPath = safeLocalPath(router.query.next);
-    if (requestedPath) {
-      router.replace(requestedPath);
-      return;
-    }
-
-    let isAdmin = false;
     try {
-      const { data: adminResult, error: adminError } = await supabase.rpc("is_admin");
-      if (adminError) throw adminError;
-      isAdmin = Boolean(adminResult);
-    } catch {
-      const userId = data?.user?.id || data?.session?.user?.id;
-      if (userId) {
-        const { data: profile } = await supabase
-          .from("user_profiles")
-          .select("role")
-          .eq("id", userId)
-          .maybeSingle();
-        isAdmin = (profile?.role || "player") !== "player";
-      }
-    }
+      const { data, error: loginError } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
+      });
 
-    router.replace(isAdmin ? "/admin" : "/profile");
+      if (loginError) {
+        setError(loginError.message || "Login failed.");
+        return;
+      }
+
+      const requestedPath = safeLocalPath(router.query.next);
+      if (requestedPath) {
+        setLoading(false);
+        void router.replace(requestedPath);
+        return;
+      }
+
+      const userId = data?.user?.id || data?.session?.user?.id || "";
+      const isAdmin = await resolveAdminAfterLogin(userId);
+      setLoading(false);
+      void router.replace(isAdmin ? "/admin" : "/profile");
+    } catch (cause) {
+      setError(cause?.message || "Login could not be completed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

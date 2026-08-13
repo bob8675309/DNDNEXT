@@ -1,231 +1,189 @@
 # DNDNext Current Handoff Prompt
 
-Status: copy-ready project handoff, 2026-08-04
+Updated: 2026-08-10
 
-Use the prompt below when starting a new ChatGPT/Codex work session. It directs the new session to the living documentation instead of relying on an incomplete conversation summary.
+Repository: `bob8675309/DNDNEXT`
 
----
+Active PR: **#170 — Refine Character Forge resilience, source choices, spells, and player authority**
 
-## Copy from here
+Active branch: `agent/character-forge-resilience-presentation`
 
-You are taking over the `bob8675309/DNDNEXT` repository as a senior developer, technical advisor, and implementation owner.
+Stack: Next.js Pages Router + Supabase/Postgres.
 
-DNDNext is a Next.js Pages Router + Supabase D&D campaign platform. Styling uses Bootstrap and SCSS. Treat current GitHub `main`, live Supabase state, migrations, source validators, and the living documents under `docs/` as the evidence base. Do not trust old conversation assumptions when source or deployed state can be inspected.
-
-### Required first actions
+## Mandatory startup
 
 Before changing anything:
 
-1. Inspect the current GitHub `main` branch and recent relevant PRs.
-2. Inspect the live Supabase project read-only when the task depends on schema, functions, RLS, or data.
-3. Read `docs/README.md`; it is the living documentation index and explains which subsystem document controls each area.
-4. Read `docs/Current_Development_Status_and_Roadmap.md` for the high-level production baseline, completed systems, active milestones, remaining roadmap, and protected boundaries.
-5. Read the documents listed under **Current focus** below before proposing sprite work.
-6. Reconcile documentation against source and live state. Update the relevant documents whenever a milestone, failure, architecture decision, or acceptance status changes.
+1. inspect current PR head and exact-head GitHub/Vercel status;
+2. inspect live Supabase migrations/schema/data/grants for the requested slice;
+3. read `docs/README.md`, `docs/Documentation_Refresh_Manifest.md`, `docs/PR170_Final_Acceptance_Status.md`, `docs/PR170_Browser_Smoke_Corrections_Status.md`, and the relevant dedicated ledger;
+4. reconcile source, live DB, and docs before writing;
+5. state a bounded safe patch plan before implementation;
+6. verify every helper, hook, state variable, prop, and RPC argument is defined and passed;
+7. use rollback fixtures for risky database behavior and prove zero residue.
 
-Do not make changes first and explain later. Inspect, identify the authority boundaries, provide a concise safe patch plan, then implement after the plan is accepted or when the user explicitly says to proceed.
+GitHub/Supabase outrank prior-chat prose.
 
-### Non-negotiable project boundaries
+## Protected boundaries
 
 - Do not mix world-map behavior with town/city-map behavior.
-- Do not touch the world map or `components/MapPageClient.js` unless the user explicitly asks for world-map work.
-- Tactical encounter state must remain isolated from routes, travel, weather, camps, world clock, and location simulation.
-- Smiths handle physical gear. Enchanters handle magical A/B/C slots by item tier.
-- Generic NPCs must not become crafters without an appropriate role.
-- Canonical database state remains authoritative for characters, sheets, inventory, equipment, spells, progression, encounters, and guarded commands.
-- Browser state may preview actions but must not bypass guarded Supabase authority.
-- Realtime is a synchronization signal, not the source of truth.
-- Preserve existing working systems and avoid broad rewrites.
-- Before returning a patch, verify that every helper, hook, state variable, memoized value, RPC argument, and prop is defined and passed at every use site.
-- Keep unrelated changes out of the branch.
-- Never register, assign, or describe an asset as approved until the user has visually approved it and the documented gates have passed.
+- Do not touch the world map unless explicitly requested.
+- `components/MapPageClient.js` is outside current Forge/progression/runtime scope.
+- Do not alter route/travel/weather, unrelated crafting/inventory execution, or tactical action execution.
+- Prefer additive migrations over rewriting deployed history.
+- Do not merge PR #170 without explicit user approval.
 
-### Repository and delivery workflow
+## Current live checkpoint
 
-- Use a bounded branch and PR for meaningful source or documentation work.
-- Review the exact PR head and changed-file boundary before merge.
-- Check Vercel when available, but the account may currently be at its deployment limit. Immediate Vercel failure without build evidence can be the known cap rather than a code failure.
-- Conserve Vercel runs by batching coherent changes instead of pushing many tiny commits.
-- Offline Blender/document-only work may be validated through source contracts and the user’s local Blender execution when Vercel is capped.
-- Never claim a local Blender result passed until actual terminal output or published artifacts have been inspected.
-- The user prefers all PowerShell commands on one line.
-- Do not require the user to manually edit individual sprite frames.
-- Keep progress updates brief and continue working without unnecessary clarification.
+Supabase is accepted through **migration 90**.
 
-## Current focus: Dawn Whiteflame quality pivot
+Latest migrations:
 
-The immediate project focus is **not** another full 32-cell procedural atlas.
+- 83 `defensive_tactics_runtime` — `20260809235754`;
+- 84 `whispers_of_the_dead_runtime` — `20260810001351`;
+- 85 `progression_rpc_acl_cleanup` — `20260810002421`;
+- 86 `player_forge_source_magic_materialization` — `20260810075628`;
+- 87 `source_magic_level_parser_fix` — `20260810075645`;
+- 88 `source_magic_feat_name_normalization_fix` — `20260810075724`;
+- 89 `pending_rest_runtime_choices` — `20260810181530`;
+- 90 `rest_class_feature_restoration` — `20260810205646`.
 
-The technical sprite pipeline is working, but the primitive procedural Dawn source model is rejected as final art. The last isolated run rendered all 32 cells, passed automatic QA, and published correctly, proving the reliability pipeline. Direct visual review showed that the character still looked like a crude generic mannequin and remained far below the user’s supplied concept sheet and chibi tactical sprite reference.
+During migration-89 startup, production was found ahead of source control for migrations 83-85. Their exact behavioral source plus Defensive Tactics/Whispers reachable panels were restored to the PR branch. Do **not** re-apply 83-85 to production.
 
-Read these documents in order:
+## Real browser smoke checkpoint
 
-1. `docs/Dawn_High_Quality_Prototype_Plan.md`
-   - controlling plan for the active pivot;
-   - explains why the primitive model is retired as final art;
-   - defines the concept-sheet and chibi-reference quality target;
-   - defines the South-facing idle/walk prototype gate;
-   - records external free-tool or Blender-plug-in evaluation requirements;
-   - defines body-family reuse and completion criteria.
-2. `docs/Sprite_Production_Work_Map.md`
-   - authoritative sprite status and sequence;
-   - separates completed infrastructure from the current blocker;
-   - lists acceptance gates, remaining work, dependencies, and the post-Dawn UI interruption.
-3. `docs/Sprite_Production_Art_Bible.md`
-   - canonical atlas and row order;
-   - visual quality standard;
-   - animation, handedness, direction, QA, and no-frame-shifting rules;
-   - source-asset and external-tool policy.
-4. `docs/Sprite_Production_Run_Log.md`
-   - real evidence from every Dawn attempt;
-   - records static frames, Action override, native crashes, baseline experiments, isolated rendering, and visual rejections;
-   - prevents repeating failed approaches.
-5. `tools/blender/DAWN_PROCEDURAL_MODEL.md`
-   - current operator and historical R&D handoff;
-   - explains what the procedural model proved, what is rejected, and which rendering/QA infrastructure remains reusable.
-6. `docs/Tactical_Encounter_Phase0_Status.md`
-   - runtime sprite/portrait independence and unified 8-direction runtime context.
+The user performed a real signed-in browser smoke after migration 89. It exposed concrete defects and therefore replaced the previous “browser not yet tested” state with a **tested-but-corrections-required** state.
 
-### Current verified sprite state
+The correction pass is documented in `PR170_Browser_Smoke_Corrections_Status.md`.
 
-- PR #165 merged as `f91949006ebbee994ca5fc532f4210eeaddf6d40`.
-- `isolated_prepared_blend_per_cell_v1` works end to end.
-- All 32 cells rendered through fresh Blender processes.
-- Atlas assembly and automatic QA passed.
-- Review artifacts published to `sprite-review/dawn-whiteflame`.
-- The primitive Dawn v3 visual candidate is rejected despite technical success.
-- Dawn is not registered, assigned, or complete.
-- The working exporter, isolated renderer, exact-frame assembler, metadata, QA, and review publisher must be retained.
+The corrected build still needs the user to re-smoke the affected cases before PR #170 can claim final browser acceptance.
 
-### Active next milestone
+## Migration 90 — Rage/rest restoration
 
-Create and approve one **high-quality South-facing Dawn prototype** before expanding to eight directions.
+Read `PR170_Browser_Smoke_Corrections_Status.md`.
 
-The prototype must include:
+The standalone sheet Rest RPC previously restored spell slots/limited spell uses but did not restore sheet-side class action state. Migration 90 adds a narrow source-aware helper for the class action currently persisted by the sheet: Barbarian Rage.
 
-- one South-facing idle frame;
-- three compatible South-facing walk frames;
-- a six-step animated preview;
-- concept-faithful silver hair, face, layered ivory/gold/dark outfit, cape, boots, staff, and divine flame;
-- crisp chibi tactical readability at gameplay size;
-- no whole-sprite twitch, gliding, frame shifting, or unstable staff.
+Accepted behavior:
 
-Do not spend another full 32-cell render on a source asset that has not passed the South-facing visual gate.
+- XPHB Rage: +1 spent use on Short Rest, all spent uses on Long Rest;
+- PHB Rage: no Short-Rest restoration, all spent uses on Long Rest;
+- rest clears the sheet-side active Rage flag;
+- `complete_character_rest_v1` returns the updated `sheet` plus `restResult.restoredClassFeatureUses`;
+- the existing active-encounter rest guard remains transactional authority;
+- no tactical/encounter state is changed.
 
-### Source-tool evaluation requirement
+Deployed rollback tests proved XPHB Short/Long and PHB Short/Long behavior plus an authenticated owner-facing Long Rest from 2/3 -> returned 3/3. All QA rolled back.
 
-Blender remains the rigging, animation, camera, and render host because the DNDNext pipeline already works there. The visual source does not need to be created from Blender primitives.
+Important live state: Varges remains **2/3 Rage** because QA deliberately did not repair a valued character. His next normal qualifying rest should exercise the deployed behavior. There are **2 legitimate user rest-log rows** from browser smoke; do not treat them as QA residue.
 
-Evaluate a better source workflow when useful, including free or acceptably licensed character tools and Blender plug-ins. Before selecting one, verify current availability, licensing, Blender export, riggability, consistent multi-angle identity, source reproducibility, and reuse across later character families. Do not silently commit the project to a tool without this evaluation.
+Migration-90 ACL:
 
-Krita, LibreSprite, or local AI tooling may assist controlled concept, texture, paintover, downsampling, or cleanup work. They must not turn the process into manual editing of 32 final cells by the user.
+- public Rest RPC: anon false; authenticated/service true;
+- private Rage restoration helper: anon/authenticated false; service true.
 
-The user supplied three important visual references in the preceding chat:
+## Current Forge architecture
 
-- the current low-quality QA preview;
-- a detailed multi-view Dawn Whiteflame concept sheet;
-- a small high-quality chibi tactical sprite sample.
+The shared NPC/player Character Forge is the creation surface. The player-facing resolution model is:
 
-Those images are not currently stored in the repository. Ask the user to reattach them when direct comparison is required.
+- **Species** — identity, lore, feature explanation; fixed source languages remain source authority;
+- **Background** — background identity and fixed source grants;
+- **Class** — class/subclass explanation and progression preview;
+- **Abilities** — score generation/allocation plus Species Bonus package selection only;
+- **Training → Skills & Proficiencies** — skills, tools, Expertise/training decisions;
+- **Training → Feats & Class Abilities** — higher-level feats, Invocations, Artificer plans, Species-Bonus-feat owned non-spell choices, and other persistent feature catalogues;
+- **Spells** — class spells plus spell-centric Species/Feat/Background/Class-feature choices, including noncasters with source-owned magic;
+- **Review** — manual choices plus automatic source-policy resolutions.
 
-### Sequence after the South prototype
+### Browser-smoke presentation corrections
 
-1. Approve the high-quality South idle/walk prototype.
-2. Expand the approved source asset to all eight canonical directions.
-3. Run the retained isolated renderer, atlas assembly, automatic QA, Sprite Production Lab, and in-site scale checks.
-4. Register and assign Dawn reversibly only after explicit approval.
-5. Finish the start-to-finish documentation.
-6. Pause sprite production for the user’s requested quick UI fix.
-7. Return to sprites for Leso Varen and Varges using reusable body-family conventions.
+- Deep Gnome Gift of the Svirfneblin no longer leaves a standalone INT/WIS/CHA prompt before an actual level-gated spell grant.
+- SCC/Witherbloom display removes trailing non-mechanical spell-customization flavor without rewriting imported source data.
+- Background expanded spell names load descriptions/casting/range/duration from `spells_catalog` for hover/focus help.
+- Player Forge secondary copy has higher contrast.
+- Nested long Class lists stop propagation so native disclosures open and close independently.
+- The desktop Class feature dock stays sticky through tall guide content; responsive layout returns it to static flow.
+- Species Bonus feat selection is acknowledged on Abilities; owned follow-up choices resolve later in the appropriate Training/Spells category.
+- Same-name subclass reprints collapse to one option: complete definitions beat placeholders; among complete definitions, newest known publication wins.
+- Artificer plan selectors now disclose current catalogue availability and later unlocks while keeping future plans non-selectable. Wildcard items use canonical item detail.
 
-## Document map for the rest of DNDNext
+## Source magic — migrations 86-88
 
-Always begin with `docs/README.md`; it is the canonical index. The following map explains the most important documents so you can load detail only when the task requires it.
+Server authority materializes validated routed Species/Feat magic into `character_spells` with provenance.
 
-### High-level status and roadmap
+Rollback acceptance covers:
 
-- `docs/Current_Development_Status_and_Roadmap.md`
-  - current production baseline;
-  - completed platform foundations;
-  - tactical encounter state;
-  - current milestones and parallel backlog;
-  - protected world/town boundaries.
-- `docs/Deferred_UI_Polish_Backlog.md`
-  - deferred presentation and usability work;
-  - consult when the user returns to UI cleanup so completed behavior is not mistaken for active scope.
+- Astral Elf Astral Fire;
+- Deep Gnome Gift of the Svirfneblin at levels 3 and 5;
+- Witherbloom Student / fixed Strixhaven college;
+- Magic Initiate;
+- deterministic best eligible casting ability;
+- Long-Rest free-use metadata where source rules require it.
 
-### Character sheets, equipment, crafting, and tactical snapshots
+## Runtime-family sweep
 
-- `docs/Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md`
-  - controlling authority flow from item catalogue through craft plan, completion, inventory, equip, sheet overlays, encounter participant snapshots, and tactical weapon profiles;
-  - required before changing Smithing completion or equipment-derived combat rules.
-- `docs/Character_Sheet_Formula_Reference.md`
-  - ability modifiers, saves, skills, AC, Initiative, Passive Perception, equipment overlays, and encounter snapshot boundaries;
-  - required before changing sheet formulas.
-- `docs/NPC_Character_Sheet_Selection_Reconciliation.md`
-  - NPC selection ownership, identity clearing, controlled drafts, request-ID guards, sheet/equipment/notes loading, and stale-response regression rules.
-- `docs/NPC_Profile_Inventory_Equipment_Reference.md`
-  - profile panel, inventory workbench, equipment diagram, item cards, transfers, and NPC sheet presentation.
+The bounded class/subclass runtime queue is closed through Whispers of the Dead.
 
-### Tactical encounter and combat
+Key contrasts:
 
-- `docs/Tactical_Encounter_Combat_Roadmap_Blueprint.md`
-  - long-term encounter, dungeon, multiplayer turns, combat automation, GM tools, sprite strategy, and delivery phases.
-- `docs/Tactical_Encounter_Phase0_Status.md`
-  - portrait/sprite independence and unified 8-direction runtime amendments.
-- `docs/Tactical_Encounter_Phase1_Foundation_Status.md`
-  - board, sessions, staging, movement, and player turn foundations.
-- `docs/Tactical_Encounter_Phase1E_Core_Combat_Status.md` through the later Phase 1 ledgers
-  - reviewed incremental server-authoritative combat and spell adapters;
-  - use the ledger matching the action, spell, reaction, targeting shape, or effect being changed.
-- `docs/Tactical_Encounter_Milestone2_Durable_Start_Status.md`
-  - staged encounter startup, lifecycle compatibility, smoke helper, and remaining authenticated multi-client acceptance matrix.
+- **Astral Trance** — Long-Rest-cycle proficiencies expire at next Long Rest; a new current-cycle choice is needed.
+- **Bestial Soul** — current adaptation expires at next Short/Long Rest.
+- **Aspect of the Wilds** — current aspect persists; Long Rest only unlocks optional replacement.
+- **Hunter's Prey** — PHB permanent Forge choice; XPHB persistent runtime choice with Short/Long-Rest replacement.
+- **Defensive Tactics** — PHB permanent Forge choice; XPHB persistent runtime choice with Short/Long-Rest replacement.
+- **Whispers of the Dead** — first selection requires a qualifying rest; borrowed proficiency persists until later replacement.
+- **Fiendish Resilience** — first resistance needs a qualifying rest; once selected it persists and later rests only unlock replacement.
 
-Do not recreate existing tactical primitives. Inspect the matching phase ledger and guarded RPCs first.
+Read the dedicated runtime ledgers before reopening an accepted family.
 
-### Towns, merchants, crafters, and world separation
+## Pending post-rest choice presentation — migration 89
 
-- `docs/Town_Crafter_Current_Status.md`
-  - current town crafter/profile-panel state, known-recipe behavior, player/admin boundaries, and guardrails.
-- `docs/Town_Handoff_Bake_Next_Steps.md`
-  - historical/operational town handoff evidence; reconcile against current source before acting.
-- `docs/Source_Patch_Pipeline_Audit.md`
-  - retired source-mutating patch/bake pipeline, validators, and source-ownership transition.
+Read `Pending_Rest_Runtime_Choices_Status.md`.
 
-World and town systems are protected dependencies. Do not infer permission to alter world travel or `MapPageClient` from a town, profile, tactical, sprite, or crafting request.
+`public.get_character_pending_rest_choices_v1(uuid)` is a read-only authenticated aggregate over feature-specific runtime getters. `CharacterRestChoiceNotice` classifies:
 
-### Security and database
+1. `needsSelection` — attention/pulse because no current benefit is active or the first rest-backed choice is waiting;
+2. `optionalChanges` — current persistent benefit remains active; quiet/collapsed;
+3. `availableActions` — optional post-rest actions; quiet/collapsed.
 
-- `docs/Security_Hardening_Roadmap_Status.md`
-  - completed and deferred RLS, RPC, and security/database hardening work.
-- migrations under `sql/` and live Supabase schema/functions
-  - authoritative implementation evidence;
-  - old raw exports are historical and must not override the live database.
+Rollback acceptance directly proved Astral Trance as attention-required and Wild Heart as quiet optional replacement.
 
-Do not blanket-revoke authenticated `SECURITY DEFINER` RPCs. Many are intentional guarded command boundaries.
+## Exact-head and production evidence
 
-### Documentation precedence
+Immediately before migration 90 deployment, exact code head `98b55355ed92d3d3309c09b8c534095d13859089` passed **32/32 PR-triggered GitHub workflows** and Vercel.
 
-When sources disagree, use this order:
+After deployed migration-90 rollback QA, production remains:
 
-1. live Supabase schema, migrations, functions, and protected data state;
-2. current repository source and validators;
-3. `docs/Current_Development_Status_and_Roadmap.md` and the active subsystem status/plan;
-4. active phase ledgers and controlling references;
-5. historical exports, dated runbooks, and old handoffs only as provenance.
+- 7 characters;
+- 7 character sheets;
+- 30 character-spell rows;
+- 7 progression rows;
+- 18 inventory rows;
+- 2 legitimate user rest-log rows;
+- Varges Rage 2/3, unchanged by QA;
+- 20 locations;
+- 4 map routes;
+- 9 map route points.
 
-Record a discrepancy instead of silently reconciling it from memory.
+Documentation commits after that code checkpoint move the branch head and must be exact-head gated again.
 
-## Working style
+## Immediate next step
 
-- Be concise in user-facing status updates, but thorough in repository inspection.
-- Proceed when the user says “proceed”; do not repeatedly ask for permission already granted.
-- Do not claim GitHub, Supabase, Blender, Vercel, or build limitations until an actual tool attempt supports the claim.
-- Keep documentation synchronized as work progresses.
-- Prefer one meaningful patch over many tiny pushes, especially while Vercel is capped.
-- Show evidence for pass/fail decisions.
-- Preserve rejected experiments in the run log so they are not repeated.
+Do **not** start another broad rules-family implementation by default. The immediate task is user re-smoke of the corrected cases.
 
-Begin by reading the required documents, verifying current `main`, and proposing the shortest safe route to a high-quality South-facing Dawn prototype. Do not continue polishing the rejected primitive model as though it can become the final asset through minor adjustments.
+### Focused re-smoke targets
 
-## End copy
+1. XPHB Barbarian spent Rage + Short/Long Rest restoration; normal Long Rest from Varges's current 2/3 should return 3/3.
+2. Deep Gnome level 1 has no meaningless casting-ability prompt; levels 3/5 still resolve source magic.
+3. Witherbloom trailing flavor is gone, secondary text is readable, expanded spell names expose descriptions on hover/focus.
+4. Long Class option lists can expand and collapse normally.
+5. Class feature detail dock follows the tall guide on desktop and returns to normal placement at the top.
+6. Species Bonus feat is acknowledged on Abilities; feat-owned decisions resolve later.
+7. Duplicate same-name subclasses are absent while a complete definition remains available.
+8. Artificer Magic Item Plans show current availability, later unlocks, and canonical wildcard item detail without allowing future plans early.
+
+After the user reports those results, fix any remaining concrete browser defect or, if all pass, perform the final live/head/residue check and await explicit merge approval.
+
+## Delivery discipline
+
+Never call a slice accepted merely because DDL applied. Acceptance requires source verification, exact-head gates, deployed behavior proof, ACL checks, and zero-residue integrity. Do not weaken working mechanics to satisfy stale validators; update a validator only when source/live authority proves its contract is obsolete.

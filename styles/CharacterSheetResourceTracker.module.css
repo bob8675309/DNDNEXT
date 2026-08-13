@@ -43,7 +43,8 @@
 }
 
 .restButtons button,
-.rowActions button {
+.rowActions button,
+.masteryFooter button {
   border: 1px solid rgba(255, 255, 255, 0.32);
   border-radius: 999px;
   background: rgba(16, 11, 25, 0.72);
@@ -55,13 +56,16 @@
 }
 
 .restButtons button:hover:not(:disabled),
-.rowActions button:hover:not(:disabled) {
+.rowActions button:hover:not(:disabled),
+.masteryFooter button:hover:not(:disabled) {
   border-color: rgba(214, 189, 255, 0.86);
   background: rgba(101, 64, 147, 0.56);
 }
 
 .restButtons button:disabled,
-.rowActions button:disabled {
+.rowActions button:disabled,
+.masteryFooter button:disabled,
+.masteryField select:disabled {
   opacity: 0.42;
   cursor: not-allowed;
 }
@@ -154,6 +158,90 @@
   font-weight: 800;
 }
 
+.masteryPanel {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.55rem;
+  padding: 0.58rem;
+  border: 1px solid rgba(183, 145, 255, 0.34);
+  border-radius: 0.58rem;
+  background: rgba(14, 10, 22, 0.38);
+}
+
+.masteryHeading,
+.masteryFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.masteryHeading > div {
+  display: grid;
+  gap: 0.05rem;
+}
+
+.masteryHeading strong {
+  color: rgba(255, 232, 165, 0.94);
+  font-size: 0.78rem;
+}
+
+.masteryHeading span,
+.masteryFooter span {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.64rem;
+}
+
+.masteryState {
+  padding: 0.24rem 0.42rem;
+  border: 1px solid rgba(183, 145, 255, 0.34);
+  border-radius: 999px;
+  background: rgba(101, 64, 147, 0.2);
+  color: rgba(235, 218, 255, 0.94) !important;
+  font-size: 0.59rem !important;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.masteryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.masteryField {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.masteryField span {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.63rem;
+  font-weight: 700;
+}
+
+.masteryField select {
+  width: 100%;
+  min-width: 0;
+  padding: 0.38rem 0.45rem;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 0.45rem;
+  background: rgba(16, 11, 25, 0.82);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.68rem;
+}
+
+.masteryFooter span {
+  flex: 1 1 18rem;
+  line-height: 1.4;
+}
+
+.masteryFooter button {
+  border-color: rgba(183, 145, 255, 0.46);
+}
+
 .restHistory {
   display: flex;
   flex-wrap: wrap;
@@ -201,5 +289,13 @@
   .rowActions {
     grid-column: 1 / -1;
     justify-content: flex-end;
+  }
+
+  .masteryGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .masteryFooter button {
+    width: 100%;
   }
 }

@@ -206,3 +206,38 @@
     min-width: 0;
   }
 }
+
+/* Character Forge PR A: content-driven player layouts */
+.npc-forge-header-actions{display:flex;align-items:center;justify-content:flex-end;gap:.55rem;flex-wrap:wrap}
+.npc-page-profile-panel-backdrop.is-forge-suspended{display:none!important}
+.npc-forge-body.is-player-mode.npc-forge-step-0,
+.npc-forge-body.is-player-mode.npc-forge-step-1,
+.npc-forge-body.is-player-mode.npc-forge-step-2{grid-template-columns:minmax(250px,30fr) minmax(0,70fr)!important}
+.npc-forge-body.is-player-mode.npc-forge-step-3{grid-template-columns:minmax(0,72fr) minmax(270px,28fr)!important}
+.npc-forge-body.is-player-mode.npc-forge-step-4{grid-template-columns:minmax(0,64fr) minmax(310px,36fr)!important}
+.npc-forge-body.is-player-mode.npc-forge-step-5,
+.npc-forge-body.is-player-mode.npc-forge-step-6,
+.npc-forge-body.is-player-mode.npc-forge-step-7{grid-template-columns:minmax(0,1fr)!important}
+.npc-forge-body.is-player-mode.npc-forge-step-5>.npc-forge-context-panel,
+.npc-forge-body.is-player-mode.npc-forge-step-6>.npc-forge-context-panel,
+.npc-forge-body.is-player-mode.npc-forge-step-7>.npc-forge-context-panel{display:none!important}
+.npc-forge-body.is-player-mode.npc-forge-step-5 .npc-forge-add-row,
+.npc-forge-body.is-player-mode.npc-forge-step-5 .npc-forge-add-row+.npc-forge-chip-row,
+.npc-forge-body.is-player-mode.npc-forge-step-5 .npc-forge-subheading:has(+.npc-forge-add-row),
+.npc-forge-body.is-player-mode.npc-forge-step-5 .npc-forge-subheading:has(+.npc-forge-form-grid),
+.npc-forge-body.is-player-mode.npc-forge-step-5 .npc-forge-subheading:has(+.npc-forge-form-grid)+.npc-forge-form-grid,
+.npc-forge-body.is-player-mode.npc-forge-step-5 .npc-forge-merchant-box{display:none!important}
+.npc-forge-body.is-player-mode.npc-forge-step-5 .npc-forge-workspace,
+.npc-forge-body.is-player-mode.npc-forge-step-6 .npc-forge-workspace,
+.npc-forge-body.is-player-mode.npc-forge-step-7 .npc-forge-workspace{max-width:none!important;width:100%!important}
+.npc-forge-body.is-player-mode.npc-forge-step-7 .npc-forge-review-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.npc-forge-body.is-player-mode.npc-forge-step-7 .npc-forge-review-hero{padding:1.35rem 1.5rem!important}
+@media(max-width:980px){
+  .npc-forge-body.is-player-mode{grid-template-columns:minmax(0,1fr)!important}
+  .npc-forge-body.is-player-mode>.npc-forge-context-panel{min-height:0!important}
+  .npc-forge-body.is-player-mode.npc-forge-step-7 .npc-forge-review-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:640px){
+  .npc-forge-header-actions{width:100%;justify-content:flex-start}
+  .npc-forge-body.is-player-mode.npc-forge-step-7 .npc-forge-review-grid{grid-template-columns:minmax(0,1fr)!important}
+}

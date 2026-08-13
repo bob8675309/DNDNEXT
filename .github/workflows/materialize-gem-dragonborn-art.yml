@@ -1,0 +1,53 @@
+name: Materialize Gem Dragonborn artwork
+
+on:
+  push:
+    branches:
+      - agent/character-forge-resilience-presentation
+    paths:
+      - "scripts/materialize_gem_dragonborn_art.py"
+      - ".github/workflows/materialize-gem-dragonborn-art.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/character-forge-resilience-presentation
+          fetch-depth: 0
+
+      - name: Use Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install image dependency
+        run: python -m pip install --disable-pip-version-check pillow==11.3.0
+
+      - name: Generate and verify Gem Dragonborn WebPs
+        run: python scripts/materialize_gem_dragonborn_art.py
+
+      - name: Commit generated assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/media/species/amethyst-gem-dragonborn.webp \
+                  public/media/species/crystal-gem-dragonborn.webp \
+                  public/media/species/emerald-gem-dragonborn.webp \
+                  public/media/species/sapphire-gem-dragonborn.webp \
+                  public/media/species/topaz-gem-dragonborn.webp
+          if git diff --cached --quiet; then
+            echo "Gem Dragonborn assets already match the deterministic generator."
+            exit 0
+          fi
+          git commit -m "Materialize Gem Dragonborn Forge artwork"
+          git push origin HEAD:agent/character-forge-resilience-presentation

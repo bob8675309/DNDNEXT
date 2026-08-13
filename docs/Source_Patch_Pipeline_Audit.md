@@ -200,3 +200,5 @@ Before removing any remaining source-mutating build script:
 5. Check Vercel status after each bounded cleanup batch.
 6. Do not remove unrelated patch scripts in a bulk commit.
 7. Do not direct-write large source files through the connector. Use local patch scripts or narrow verified source-bake steps for `pages/npcs.js`, `pages/items.js`, `pages/town/[id].js`, `components/TownSheet.js`, and `components/MapPageClient.js`.
+
+- `scripts/validate_character_forge_resilience.mjs` — protects non-destructive Forge close/reset behavior, explicit player submission, content-driven layouts, server-authoritative player tags, and complete SVG portrait removal.
