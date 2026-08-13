@@ -20,6 +20,7 @@ on:
       - "scripts/validate_forge_species_family_expansion.mjs"
       - "scripts/validate_forge_species_catalog_portraits.mjs"
       - "scripts/validate_forge_chromatic_dragonborn_art.mjs"
+      - "scripts/validate_forge_metallic_dragonborn_art.mjs"
       - "sql/20260811_91_genasi_subrace_catalog.sql"
       - "sql/20260811_92_genasi_source_detail_restore.sql"
       - "sql/20260812_93_aven_subrace_catalog.sql"
@@ -52,6 +53,7 @@ on:
       - "scripts/validate_forge_species_family_expansion.mjs"
       - "scripts/validate_forge_species_catalog_portraits.mjs"
       - "scripts/validate_forge_chromatic_dragonborn_art.mjs"
+      - "scripts/validate_forge_metallic_dragonborn_art.mjs"
       - "sql/20260811_91_genasi_subrace_catalog.sql"
       - "sql/20260811_92_genasi_source_detail_restore.sql"
       - "sql/20260812_93_aven_subrace_catalog.sql"
@@ -111,6 +113,9 @@ jobs:
 
       - name: Validate Chromatic Dragonborn dedicated artwork
         run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_chromatic_dragonborn_art.mjs
+
+      - name: Validate Metallic Dragonborn dedicated artwork
+        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_metallic_dragonborn_art.mjs
 
       - name: Run production build gate
         run: node scripts/vercel_build_v2.mjs

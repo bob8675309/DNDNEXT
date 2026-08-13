@@ -154,7 +154,11 @@ const SPECIES_DEDICATED_VARIANT_ARTWORK = new Set([
   "green-dragonborn",
   "red-dragonborn",
   "white-dragonborn",
+  "brass-dragonborn",
+  "bronze-dragonborn",
+  "copper-dragonborn",
   "gold-dragonborn",
+  "silver-dragonborn",
 ]);
 
 const SPECIES_VARIANT_PORTRAITS = new Set([
