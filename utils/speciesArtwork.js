@@ -159,6 +159,13 @@ const SPECIES_DEDICATED_VARIANT_ARTWORK = new Set([
   "copper-dragonborn",
   "gold-dragonborn",
   "silver-dragonborn",
+  "amethyst-gem-dragonborn",
+  "crystal-gem-dragonborn",
+  "emerald-gem-dragonborn",
+  "sapphire-gem-dragonborn",
+  "topaz-gem-dragonborn",
+  "hawk-headed-aven",
+  "ibis-headed-aven",
 ]);
 
 const SPECIES_VARIANT_PORTRAITS = new Set([

@@ -37,7 +37,7 @@ for (const [name, fileName, , lorePattern] of cases) {
 
 assert.equal(speciesArtworkFor("Gold Dragonborn"), "/media/species/dragonborn-metallic.webp", "canonical Gold Dragonborn artwork must remain the shared Metallic source image outside the Forge");
 assert.equal(speciesPortraitArtworkFor("Gold Dragonborn"), "/media/species/gold-dragonborn.webp", "Gold Dragonborn dedicated Forge artwork must remain intact");
-assert.ok(speciesPortraitArtworkFor("Amethyst Gem Dragonborn").endsWith("dragonborn-gem.webp?portrait=amethyst-gem-dragonborn"), "unfinished Gem Dragonborn must remain explicit temporary Forge portrait treatment");
+assert.equal(speciesPortraitArtworkFor("Amethyst Gem Dragonborn"), "/media/species/amethyst-gem-dragonborn.webp", "completed Gem Dragonborn artwork must remain dedicated after the Metallic pass");
 assert.ok(!protectedPattern.test(artworkSource), "Metallic Dragonborn artwork work crossed a protected map/travel boundary");
 
-console.log("Metallic Dragonborn Forge artwork validated: Brass, Bronze, Copper, Gold, and Silver use dedicated Forge artwork while canonical shared Metallic artwork remains stable outside the Forge; unfinished Gem variants remain explicit temporary treatments; ancestry lore stays distinct; and protected map/travel boundaries remain untouched.");
+console.log("Metallic Dragonborn Forge artwork validated: Brass, Bronze, Copper, Gold, and Silver use dedicated Forge artwork while canonical shared Metallic artwork remains stable outside the Forge; completed Gem artwork remains compatible; ancestry lore stays distinct; and protected map/travel boundaries remain untouched.");
