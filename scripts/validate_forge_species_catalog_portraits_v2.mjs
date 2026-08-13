@@ -123,6 +123,22 @@ for (const [name, fileName, minimumBytes] of dedicatedAvenCases) {
   assert.equal(artwork.subarray(8, 12).toString("ascii"), "WEBP", `${name} dedicated asset must be a valid WebP image`);
 }
 
+const dedicatedElfGnomeCases = [
+  ["Drow", "drow.webp", 10000, "elf"],
+  ["High Elf", "high-elf.webp", 12000, "elf"],
+  ["Wood Elf", "wood-elf.webp", 10000, "elf"],
+  ["Forest Gnome", "forest-gnome.webp", 11000, "gnome"],
+  ["Rock Gnome", "rock-gnome.webp", 11000, "gnome"],
+];
+for (const [name, fileName, minimumBytes] of dedicatedElfGnomeCases) {
+  const artworkPath = path.join(root, "public/media/species", fileName);
+  assert.ok(fs.existsSync(artworkPath), `dedicated Elf/Gnome Species artwork missing public/media/species/${fileName}`);
+  assert.ok(fs.statSync(artworkPath).size > minimumBytes, `${name} must contain a real generated image rather than a placeholder`);
+  const artwork = fs.readFileSync(artworkPath);
+  assert.equal(artwork.subarray(0, 4).toString("ascii"), "RIFF", `${name} dedicated asset must be a valid RIFF WebP container`);
+  assert.equal(artwork.subarray(8, 12).toString("ascii"), "WEBP", `${name} dedicated asset must be a valid WebP image`);
+}
+
 const { speciesArtworkFor, speciesPortraitArtworkFor, hasDedicatedSpeciesArtwork, hasSpeciesPortraitArtwork } = await import(pathToFileURL(path.join(root, "utils/speciesArtwork.js")).href);
 const { speciesFlavorLore, speciesCatalogSummary } = await import(pathToFileURL(path.join(root, "utils/speciesLore.js")).href);
 
@@ -135,6 +151,9 @@ for (const [name] of dedicatedGemCases) {
 }
 for (const [name] of dedicatedAvenCases) {
   assert.equal(speciesArtworkFor(name), "/media/species/aven.webp", `canonical ${name} source artwork must remain the shared Aven image outside the Forge`);
+}
+for (const [name, , , parentKey] of dedicatedElfGnomeCases) {
+  assert.equal(speciesArtworkFor(name), `/media/species/${parentKey}.webp`, `canonical ${name} source artwork must remain the shared ${parentKey} image outside the Forge`);
 }
 assert.equal(hasDedicatedSpeciesArtwork("Water Genasi"), true, "canonical shared aliases must remain recognized as intentional artwork");
 
@@ -155,9 +174,13 @@ for (const [name, fileName] of dedicatedAvenCases) {
   assert.ok(speciesFlavorLore(name).length >= 70, `${name} must retain unique lore with dedicated artwork`);
 }
 
+for (const [name, fileName] of dedicatedElfGnomeCases) {
+  assert.equal(speciesPortraitArtworkFor(name), `/media/species/${fileName}`, `${name} must use its generated dedicated portrait`);
+  assert.equal(hasSpeciesPortraitArtwork(name), true, `${name} dedicated generated art must count as Forge portrait coverage`);
+  assert.ok(speciesFlavorLore(name).length >= 70, `${name} must retain unique lore with dedicated artwork`);
+}
+
 const portraitCases = [
-  ["Drow", "elf.webp?portrait=drow"],
-  ["Forest Gnome", "gnome.webp?portrait=forest-gnome"],
   ["Wildhunt Shifter", "shifter.webp?portrait=wildhunt-shifter"],
   ["Shadowmoor Fairy", "fairy.webp?portrait=shadowmoor-fairy"],
   ["Lorwyn Kithkin", "kithkin.webp?portrait=lorwyn-kithkin"],
@@ -186,4 +209,4 @@ assert.doesNotMatch(speciesFlavorLore("Hawk-Headed Aven"), /Naktamun|Hekma|God-P
 
 for (const source of [coreSource, artworkSource, loreSource]) assert.ok(!protectedPattern.test(source), "Species portrait/catalogue work crossed a protected map/travel boundary");
 
-console.log("Forge Species catalogue portraits validated: expandable parents have independent chevrons, parent/child rows carry concise unique lore, canonical artwork remains stable outside the Forge, Genasi plus completed Dragonborn and Aven families use real dedicated Forge assets, unfinished non-Dragonborn variants remain explicit temporary family-art treatments, and protected map/travel boundaries remain untouched.");
+console.log("Forge Species catalogue portraits validated: expandable parents have independent chevrons, parent/child rows carry concise unique lore, canonical artwork remains stable outside the Forge, Genasi plus completed Dragonborn, Aven, Elf, and Gnome families use real dedicated Forge assets, unfinished non-Dragonborn variants remain explicit temporary family-art treatments, and protected map/travel boundaries remain untouched.");
