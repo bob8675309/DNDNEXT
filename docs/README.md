@@ -90,7 +90,7 @@ PR #171 is **OPEN / UNMERGED** and must not be merged without explicit user appr
 
 Exact validated code/art checkpoint:
 
-`43807110d10f2c9e22f540373919ef90eaca3ec2` — `Add high-resolution Fairy and Kithkin lineage artwork`
+`f8f31534c157c9778f873e726551ac20cfdfd823` — `Add high-resolution setting variant artwork`
 
 For that exact code/art head:
 
@@ -173,9 +173,15 @@ All four are validated 1536 × 2048 WebP portraits. Canonical non-Forge Fairy/Ki
 
 The active continuation ledger is `Forge_Post170_Species_Artwork_Status.md`.
 
-## Remaining dedicated-art queue
+### Complete setting/source-alias artwork on PR #171
 
-Next:
+- `public/media/species/dwarf-kaladesh.webp`
+- `public/media/species/goblin-dankwood.webp`
+- `public/media/species/orc-ixalan.webp`
+
+All three are validated 1536 × 2048 WebP portraits. Canonical non-Forge setting aliases remain on `dwarf.webp`, `goblin.webp`, and `orc.webp`; only the Forge uses the dedicated files. The existing catalogue-source grouping remains authoritative, with no new persistence state.
+
+## Planned post-#170 dedicated-art queue — COMPLETE
 
 - Dwarf (Kaladesh)
 - Goblin (Dankwood)
@@ -202,7 +208,7 @@ Latest verified production counts:
 - map_routes: 4
 - map_route_points: 9
 
-No SQL write or migration was made for the Gem/Aven/Elf/Gnome/Shifter artwork continuation.
+No SQL write or migration was made for the Gem/Aven/Elf/Gnome/Shifter/Fairy/Kithkin/setting-variant artwork continuation.
 
 ## Protected-boundary rule
 

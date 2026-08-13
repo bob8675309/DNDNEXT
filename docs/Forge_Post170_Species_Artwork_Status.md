@@ -5,7 +5,7 @@ Active branch: `agent/species-art-post170`
 Active PR: #171 — OPEN / UNMERGED
 Merge rule: **do not merge PR #171 without explicit user approval**
 Database authority: migration 93 — `20260812042950 aven_subrace_catalog`
-Exact validated code/art checkpoint: `43807110d10f2c9e22f540373919ef90eaca3ec2`
+Exact validated code/art checkpoint: `f8f31534c157c9778f873e726551ac20cfdfd823`
 
 ## Why this ledger exists
 
@@ -155,11 +155,21 @@ All four are production WebP portraits at 1536 × 2048 (true 3:4). The dedicated
 
 Canonical non-Forge Lorwyn/Shadowmoor Fairy resolution remains `fairy.webp`; canonical non-Forge Lorwyn/Shadowmoor Kithkin resolution remains `kithkin.webp`. Only the Forge uses the dedicated lineage files. Fairy and Kithkin remain single LFL parent Species records and reuse the existing `faerie-lineage` and `kithkin-lineage` source choices; no parallel persistence was added.
 
+### Setting/source aliases — COMPLETE ON PR #171
+
+- `public/media/species/dwarf-kaladesh.webp`
+- `public/media/species/goblin-dankwood.webp`
+- `public/media/species/orc-ixalan.webp`
+
+All three are production WebP portraits at 1536 × 2048 (true 3:4). The focused setting-alias validator checks complete RIFF/WEBP/VP8 payloads, exact dimensions, dedicated Forge routing, source-setting lore, the existing catalogue-source grouping model, prior completed artwork, and protected map/travel boundaries.
+
+Canonical non-Forge Dwarf (Kaladesh), Goblin (Dankwood), and Orc (Ixalan) resolution remains `dwarf.webp`, `goblin.webp`, and `orc.webp`, respectively. Only the Forge uses the dedicated setting files. The existing real source records remain nested through `catalogSourceVariants`; no parallel selection or persistence state was added.
+
 ## Exact PR #171 code/art checkpoint
 
-`43807110d10f2c9e22f540373919ef90eaca3ec2` — `Add high-resolution Fairy and Kithkin lineage artwork`
+`f8f31534c157c9778f873e726551ac20cfdfd823` — `Add high-resolution setting variant artwork`
 
-Net code/art scope relative to merged `main` is twenty-five files; the complete PR has twenty-eight changed files after the three documentation files are included:
+Net code/art scope relative to merged `main` is twenty-nine files; the complete PR has thirty-three changed files after the four documentation files are included:
 
 - `.github/workflows/validate-forge-source-presentation.yml`
 - `public/media/species/hawk-headed-aven.webp`
@@ -177,6 +187,9 @@ Net code/art scope relative to merged `main` is twenty-five files; the complete 
 - `public/media/species/shadowmoor-fairy.webp`
 - `public/media/species/lorwyn-kithkin.webp`
 - `public/media/species/shadowmoor-kithkin.webp`
+- `public/media/species/dwarf-kaladesh.webp`
+- `public/media/species/goblin-dankwood.webp`
+- `public/media/species/orc-ixalan.webp`
 - `scripts/validate_forge_aven_art.mjs`
 - `scripts/validate_forge_elf_gnome_art.mjs`
 - `scripts/validate_forge_chromatic_dragonborn_art.mjs`
@@ -184,6 +197,7 @@ Net code/art scope relative to merged `main` is twenty-five files; the complete 
 - `scripts/validate_forge_metallic_dragonborn_art.mjs`
 - `scripts/validate_forge_shifter_art.mjs`
 - `scripts/validate_forge_fairy_kithkin_art.mjs`
+- `scripts/validate_forge_setting_alias_art.mjs`
 - `scripts/validate_forge_species_catalog_portraits_v2.mjs`
 - `utils/speciesArtwork.js`
 
@@ -208,9 +222,10 @@ Current required checks include:
 - Elf/Gnome artwork, including exact 1536 × 2048 dimensions;
 - Shifter artwork, including exact 1536 × 2048 dimensions and the parent-persisted `shifting` boundary;
 - Fairy/Kithkin artwork, including complete WebP payloads, exact 1536 × 2048 dimensions, source-owned lineage choices, and Shadowmoor-only Darkvision;
+- setting/source-alias artwork, including complete WebP payloads, exact 1536 × 2048 dimensions, stable canonical parent aliases, and unchanged catalogue-source grouping;
 - production build.
 
-For exact code/art head `43807110...`:
+For exact code/art head `f8f31534...`:
 
 - focused push workflow: SUCCESS;
 - PR `Validate Forge source presentation`: SUCCESS;
@@ -219,7 +234,7 @@ For exact code/art head `43807110...`:
 - production builds: SUCCESS;
 - Vercel deployment: SUCCESS.
 
-At `43807110...`, the focused push workflow and all three PR workflows passed, the production build succeeded, and Vercel deployment succeeded. GitHub compare confirms the Fairy/Kithkin continuation commit changes exactly eight files and no controller, persistence, database, map, combat, crafting, inventory, or merchant file.
+At `f8f31534...`, all three triggered GitHub workflow runs passed, the production build succeeded, and Vercel deployment succeeded. GitHub compare confirms the setting-variant continuation commit changes exactly seven files and no component, controller, persistence, database, map, combat, crafting, inventory, or merchant file.
 
 A legacy one-shot town-crafter patch workflow still appears as a failing push run because its workflow-level trigger configuration is malformed; the same unrelated failure predates this Fairy/Kithkin commit. Its workflow and town-crafter targets are outside this diff. The required PR checks, focused push workflow, production builds, and Vercel deployment all passed.
 
@@ -227,7 +242,7 @@ The first focused run on `3ef24c85...` correctly failed on a validator phrase mi
 
 ## Live database boundary
 
-No SQL write or migration was made for the Aven/Gem/Elf/Gnome/Shifter/Fairy/Kithkin artwork reconciliation.
+No SQL write or migration was made for the Aven/Gem/Elf/Gnome/Shifter/Fairy/Kithkin/setting-variant artwork reconciliation.
 
 Latest verified production counts remain:
 
@@ -242,9 +257,7 @@ Latest verified production counts remain:
 - map_routes: 4
 - map_route_points: 9
 
-## Remaining dedicated-art queue
-
-Next coherent batch of remaining setting/source aliases:
+## Planned post-#170 dedicated-art queue — COMPLETE
 
 - Dwarf (Kaladesh)
 - Goblin (Dankwood)
@@ -254,4 +267,4 @@ Retain existing dedicated Human setting art, Elf Kaladesh/Zendikar art, and Amon
 
 ## Next action
 
-Continue with Dwarf (Kaladesh), Goblin (Dankwood), and Orc (Ixalan) on PR #171, using the same dedicated-file / canonical-alias boundary and validator-first process. Do not merge PR #171 until the user explicitly approves it.
+Review the completed PR #171 artwork pass and perform any desired in-Forge visual QA. Keep PR #171 open and unmerged until the user explicitly approves the merge.
