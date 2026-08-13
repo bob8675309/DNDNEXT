@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "components/ClassFeatureText.js"
+      - "components/ForgeSemanticIcon.js"
       - "components/NpcForgeClassFeatureDock.js"
       - "components/NpcForgeClassGuide.js"
       - "components/NpcForgeClassGuideModel.js"
@@ -33,6 +34,7 @@ on:
       - "scripts/validate_forge_species_catalog_portraits.mjs"
       - "scripts/validate_forge_species_catalog_portraits_v2.mjs"
       - "scripts/validate_forge_species_portrait_integrity.mjs"
+      - "scripts/validate_forge_species_semantic_icons.mjs"
       - "scripts/validate_forge_chromatic_dragonborn_art.mjs"
       - "scripts/validate_forge_metallic_dragonborn_art.mjs"
       - "scripts/validate_forge_gem_dragonborn_art.mjs"
@@ -53,12 +55,14 @@ on:
       - "utils/speciesLore.js"
       - "utils/speciesPresentation.js"
       - "utils/speciesVariantFamilies.js"
+      - "styles/character-forge-final-polish.css"
       - ".github/workflows/validate-forge-source-presentation.yml"
   push:
     branches:
       - "agent/species-art-post170"
     paths:
       - "components/ClassFeatureText.js"
+      - "components/ForgeSemanticIcon.js"
       - "components/NpcForgeClassFeatureDock.js"
       - "components/NpcForgeClassGuide.js"
       - "components/NpcForgeClassGuideModel.js"
@@ -86,6 +90,7 @@ on:
       - "scripts/validate_forge_species_catalog_portraits.mjs"
       - "scripts/validate_forge_species_catalog_portraits_v2.mjs"
       - "scripts/validate_forge_species_portrait_integrity.mjs"
+      - "scripts/validate_forge_species_semantic_icons.mjs"
       - "scripts/validate_forge_chromatic_dragonborn_art.mjs"
       - "scripts/validate_forge_metallic_dragonborn_art.mjs"
       - "scripts/validate_forge_gem_dragonborn_art.mjs"
@@ -106,6 +111,7 @@ on:
       - "utils/speciesLore.js"
       - "utils/speciesPresentation.js"
       - "utils/speciesVariantFamilies.js"
+      - "styles/character-forge-final-polish.css"
       - ".github/workflows/validate-forge-source-presentation.yml"
   workflow_dispatch:
 
@@ -153,6 +159,9 @@ jobs:
 
       - name: Validate regenerated Species portrait integrity
         run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_species_portrait_integrity.mjs
+
+      - name: Validate Species catalogue layout and semantic icon vocabulary
+        run: node scripts/validate_forge_species_semantic_icons.mjs
 
       - name: Validate Chromatic Dragonborn dedicated artwork
         run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_chromatic_dragonborn_art.mjs
