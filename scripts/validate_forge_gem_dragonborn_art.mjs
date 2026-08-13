@@ -8,11 +8,11 @@ const protectedPattern = /MapPageClient|map_routes|map_route_points|advance_all_
 const artworkSource = fs.readFileSync(path.join(root, "utils/speciesArtwork.js"), "utf8");
 
 const cases = [
-  ["Amethyst Gem Dragonborn", "amethyst-gem-dragonborn.webp", /force-linked ancestry/i],
-  ["Crystal Gem Dragonborn", "crystal-gem-dragonborn.webp", /radiant-linked ancestry/i],
-  ["Emerald Gem Dragonborn", "emerald-gem-dragonborn.webp", /psychic-linked ancestry/i],
-  ["Sapphire Gem Dragonborn", "sapphire-gem-dragonborn.webp", /thunder-linked ancestry/i],
-  ["Topaz Gem Dragonborn", "topaz-gem-dragonborn.webp", /necrotic-linked ancestry/i],
+  ["Amethyst Gem Dragonborn", "amethyst-gem-dragonborn.webp", /force-linked (?:gem )?ancestry/i],
+  ["Crystal Gem Dragonborn", "crystal-gem-dragonborn.webp", /radiant-linked (?:gem )?ancestry/i],
+  ["Emerald Gem Dragonborn", "emerald-gem-dragonborn.webp", /psychic-linked (?:gem )?ancestry/i],
+  ["Sapphire Gem Dragonborn", "sapphire-gem-dragonborn.webp", /thunder-linked (?:gem )?ancestry/i],
+  ["Topaz Gem Dragonborn", "topaz-gem-dragonborn.webp", /necrotic-linked (?:gem )?ancestry/i],
 ];
 
 for (const [name, fileName] of cases) {

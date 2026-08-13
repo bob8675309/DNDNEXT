@@ -181,7 +181,7 @@ assert.match(speciesFlavorLore("Water Genasi"), /breathe both air and water/i, "
 assert.match(speciesFlavorLore("Hawk-Headed Aven"), /hawks|birds of prey|quick, controlled flight/i, "Hawk-Headed Aven description must preserve source-backed physical identity");
 assert.match(speciesFlavorLore("Ibis-Headed Aven"), /broad, angular wings|disciplined thought/i, "Ibis-Headed Aven description must preserve non-campaign-specific source identity");
 assert.match(speciesFlavorLore("Gold Dragonborn"), /fire-linked ancestry/i, "Gold Dragonborn description must be ancestry-specific without personality stereotyping");
-assert.match(speciesFlavorLore("Amethyst Gem Dragonborn"), /force-linked ancestry/i, "Amethyst Gem Dragonborn description must remain ancestry-specific");
+assert.match(speciesFlavorLore("Amethyst Gem Dragonborn"), /force-linked (?:gem )?ancestry/i, "Amethyst Gem Dragonborn description must remain ancestry-specific");
 assert.doesNotMatch(speciesFlavorLore("Hawk-Headed Aven"), /Naktamun|Hekma|God-Pharaoh/i, "Aven catalogue lore must omit campaign-specific plot language");
 
 for (const source of [coreSource, artworkSource, loreSource]) assert.ok(!protectedPattern.test(source), "Species portrait/catalogue work crossed a protected map/travel boundary");
