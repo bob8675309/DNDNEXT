@@ -42,6 +42,30 @@ const goldFeatures = presentation.speciesFeaturePresentation(gold).details;
 assert.match(goldFeatures.find((entry) => entry.name === "Breath Weapon")?.description || "", /gold draconic ancestry[\s\S]*searing fire[\s\S]*Fire damage/i, "Gold Breath Weapon copy must resolve Fire and retain ancestry flavor");
 assert.match(goldFeatures.find((entry) => entry.name === "Damage Resistance")?.description || "", /gold draconic ancestry[\s\S]*Resistance to Fire damage/i, "Gold Damage Resistance copy must resolve Fire");
 
+const aasimar = {
+  name: "Aasimar",
+  source: "MPMM",
+  traits: ["Celestial Revelation"],
+  traitDetails: [{ name: "Celestial Revelation", description: "At level 3, transform using one of the options described below. Necrotic Shroud. Frighten nearby creatures. Radiant Consumption. Shed damaging light. Radiant Soul. Grow luminous wings." }],
+  metadata: {
+    traits: [{
+      name: "Celestial Revelation",
+      entries: [
+        "When you reach level 3, you can transform as a Bonus Action using one of the options described below.",
+        { type: "list", items: [
+          { type: "item", name: "Necrotic Shroud", entries: ["Your eyes briefly become pools of darkness, and nearby creatures can become Frightened."] },
+          { type: "item", name: "Radiant Consumption", entries: ["Searing light radiates from you and damages nearby creatures."] },
+          { type: "item", name: "Radiant Soul", entries: ["Luminous wings sprout from your back and grant a Fly Speed."] },
+        ] },
+      ],
+    }],
+  },
+};
+const aasimarRevelation = presentation.speciesFeaturePresentation(aasimar).details.find((entry) => entry.name === "Celestial Revelation");
+assert.equal(aasimarRevelation?.optionCardsLabel, "Revelation forms", "Aasimar transformations must use a concise structured option-card label");
+assert.deepEqual(aasimarRevelation?.optionCards?.map((entry) => entry.name), ["Necrotic Shroud", "Radiant Consumption", "Radiant Soul"], "Aasimar transformation names must remain source-backed and independently scannable");
+assert.doesNotMatch(aasimarRevelation?.description || "", /Necrotic Shroud|Radiant Consumption|Radiant Soul/, "Aasimar option text must not remain duplicated in the feature preamble");
+
 const eladrin = {
   name: "Eladrin",
   source: "MPMM",
@@ -66,6 +90,8 @@ for (const token of [
   "speciesCreatureTypeLabel(option)",
   "speciesVisionExplanation(option)",
   "speciesFeaturePresentation(option)",
+  "SpeciesFeatureOptionCards",
+  "!hasEmbeddedChoice && !rule",
   'group.metadata?.family === "eladrin-season"',
 ]) assert.ok(contextSource.includes(token), `Species fact presentation is missing ${token}`);
 assert.ok(contextSource.includes("(?<=[.!?])"), "rule paragraph splitting must require preceding punctuation so 'You are a Humanoid' stays intact");
@@ -73,10 +99,10 @@ assert.ok(stepSource.includes('group.id !== "origin-standard-languages" || (!fix
 assert.ok(!stepSource.includes('String(selectedSpecies.source || "").toUpperCase() === "XPHB" && !fixedLanguages.length'), "origin language availability must not be limited to XPHB Species");
 assert.ok(variantSource.includes("damageType: selectedVariant.metadata?.damageType || null"), "selected variant metadata must project its damage type");
 assert.ok(catalogFamilySource.includes("damageType: text(binding.selected.metadata?.damageType) || null"), "catalog family metadata must project its damage type");
-for (const token of ["npc-forge-species-fact-choice", "npc-forge-species-fact-tooltip", "grid-column: 1 / -1"]) assert.ok(polishSource.includes(token), `Species fact interaction styling is missing ${token}`);
+for (const token of ["npc-forge-species-fact-choice", "npc-forge-species-fact-tooltip", "npc-forge-species-option-cards", "grid-column: 1 / -1", "overflow-wrap: break-word", "word-break: normal", "width: 48px", "height: 52px"]) assert.ok(polishSource.includes(token), `Species fact interaction styling is missing ${token}`);
 
 for (const source of [contextSource, stepSource, variantSource, catalogFamilySource, polishSource]) {
   assert.doesNotMatch(source, /MapPageClient|map_routes|map_route_points|advance_all_characters|route_segment_progress/, "Species fact work crossed a protected map/travel boundary");
 }
 
-console.log("Forge Species fact choices validated: Common remains implicit, origin languages and variable Size reuse canonical source-choice state, promoted facts are not duplicated, Astral Elf creature identity and Darkvision guidance are clear, Dragonborn damage affinity reaches feature copy, Eladrin seasons are combined without changing initial/runtime authority, and map/travel boundaries remain untouched.");
+console.log("Forge Species fact choices validated: Common remains implicit, origin languages and variable Size reuse canonical source-choice state, promoted facts are not duplicated, Astral Elf creature identity and Darkvision guidance are clear, Dragonborn damage affinity reaches feature copy, Aasimar revelation forms are source-backed and scannable without inventing creator state, Eladrin seasons are combined without changing initial/runtime authority, and map/travel boundaries remain untouched.");

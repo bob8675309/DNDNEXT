@@ -25,13 +25,19 @@ for (const token of [
   "npc-forge-catalog-species-summary",
   "npc-forge-catalog-child-check",
   "data-selected-portrait",
+  "catalogSearchQuery",
+  "searchRevealsFamily",
+  "searchRevealsSources",
+  "catalogFamilyOptionMatchesQuery",
+  "catalogSourceVariantMatchesQuery",
 ]) assert.ok(coreSource.includes(token), `Species catalogue portrait/collapse UI missing ${token}`);
 assert.ok(contextPanelSource.includes("speciesPortraitArtworkFor(option.name)"), "large Forge Species hero must use the Forge portrait resolver");
 assert.ok(!contextPanelSource.includes("speciesArtworkFor(option.name)"), "large Forge Species hero must not bypass dedicated child portraits");
 assert.ok(!/hue-rotate|body:has\(\[data-selected-portrait/.test(coreSource), "obsolete CSS recoloring/crop stand-ins must remain removed");
 assert.ok(!coreSource.includes("active && (family || sourceVariants.length) ? \"⌄\" : \"›\""), "expand/collapse must no longer be coupled to active selection state");
-assert.ok(coreSource.includes("expanded && parentSelected && family"), "family children must render from independent expanded state");
-assert.ok(coreSource.includes("expanded && sourceVariants.length"), "setting children must render from independent expanded state");
+assert.ok(coreSource.includes("expanded && (parentSelected || searchRevealsFamily) && family"), "family children must render from independent manual or search-derived expanded state");
+assert.ok(coreSource.includes("searchRevealsSources || !catalogSearchQuery"), "setting children must render from independent manual or search-derived expanded state");
+assert.ok(coreSource.includes('const childQuery = parentMatchesSearch ? "" : catalogSearchQuery'), "parent searches must reveal all children while child searches narrow the revealed submenu");
 
 for (const token of [
   "SPECIES_DEDICATED_VARIANT_ARTWORK",

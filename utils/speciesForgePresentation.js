@@ -1,3 +1,5 @@
+import { formatPlayerFacingInline, formatPlayerFacingText } from "./playerFacingText.js";
+
 const text = (value) => String(value ?? "").trim();
 const array = (value) => Array.isArray(value) ? value : [];
 const norm = (value) => text(value).toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
@@ -15,6 +17,72 @@ function unique(values = []) {
 
 function titleCase(value = "") {
   return text(value).replace(/\b[a-z]/g, (letter) => letter.toUpperCase());
+}
+
+function rawTraitFor(option = {}, entry = {}) {
+  const traitName = norm(entry.name);
+  return array(option.metadata?.traits).find((trait) => trait && typeof trait === "object" && norm(trait.name || trait.title) === traitName) || null;
+}
+
+function flattenRuleStrings(node, { omitChoiceCollections = false } = {}) {
+  const output = [];
+  const walk = (value) => {
+    if (value == null) return;
+    if (typeof value === "string") {
+      const cleaned = formatPlayerFacingText(value);
+      if (cleaned) output.push(cleaned);
+      return;
+    }
+    if (Array.isArray(value)) {
+      value.forEach(walk);
+      return;
+    }
+    if (typeof value !== "object") return;
+    if (omitChoiceCollections && (value.type === "list" || value.type === "table")) return;
+    if (value.entry) walk(value.entry);
+    if (value.entries) walk(value.entries);
+    if (value.items) walk(value.items);
+    if (value.rows) walk(value.rows);
+  };
+  walk(node);
+  return unique(output).join("\n\n");
+}
+
+function collectNamedListItems(node) {
+  const cards = [];
+  const walk = (value) => {
+    if (value == null) return;
+    if (Array.isArray(value)) {
+      value.forEach(walk);
+      return;
+    }
+    if (typeof value !== "object") return;
+    if (value.type === "item" && value.name) {
+      const name = formatPlayerFacingInline(value.name).replace(/[.:]+$/, "");
+      const description = flattenRuleStrings(value.entries || value.entry || value.items || []);
+      if (name && description) cards.push({ name, description });
+      return;
+    }
+    if (value.entries) walk(value.entries);
+    if (value.items) walk(value.items);
+  };
+  walk(node);
+  return cards.filter((card, index) => cards.findIndex((candidate) => norm(candidate.name) === norm(card.name)) === index);
+}
+
+export function speciesStructuredFeatureOptions(option = {}, entry = {}) {
+  const rawTrait = rawTraitFor(option, entry);
+  if (!rawTrait) return null;
+  const optionCards = collectNamedListItems(rawTrait);
+  if (optionCards.length < 2) return null;
+  const preamble = flattenRuleStrings(rawTrait, { omitChoiceCollections: true });
+  const choiceLanguage = `${entry.name || ""} ${preamble}`;
+  if (!/(?:choose|one of (?:the )?(?:following )?options|options described below|forms?|transform)/i.test(choiceLanguage)) return null;
+  return {
+    description: preamble || text(entry.description),
+    optionCards,
+    optionCardsLabel: /revelation/i.test(text(entry.name)) ? "Revelation forms" : "Available options",
+  };
 }
 
 export function speciesPromotedFactTrait(name = "") {
@@ -117,7 +185,11 @@ export function speciesFeaturePresentation(option = {}) {
   const promoted = (name) => speciesPromotedFactTrait(name);
   let details = array(option.traitDetails)
     .filter((entry) => entry?.name && !promoted(entry.name))
-    .map((entry) => ({ ...entry, description: speciesTraitDescriptionForDisplay(option, entry) }));
+    .map((entry) => {
+      const structured = speciesStructuredFeatureOptions(option, entry);
+      const presented = structured ? { ...entry, ...structured } : entry;
+      return { ...presented, description: speciesTraitDescriptionForDisplay(option, presented) };
+    });
   let traits = array(option.traits).filter((trait) => trait && !promoted(trait));
 
   if (isEladrin(option)) {

@@ -293,3 +293,14 @@ Retain existing dedicated Human setting art, Elf Kaladesh/Zendikar art, and Amon
 ## Next action
 
 Review the completed PR #171 artwork pass and perform any desired in-Forge visual QA. Keep PR #171 open and unmerged until the user explicitly approves the merge.
+
+## Search reveal and compact feature-option continuation
+
+- Searching for a nested Species lineage or setting/source variant now reveals its canonical parent and the matching child row together. Parent-name searches reveal the complete child group; child-name searches keep that group focused on matching children.
+- Search-derived expansion is presentation-only and reuses the existing catalogue query. It adds no duplicate selection state and does not change the canonical Species/source-choice persistence path.
+- Species fact-choice summaries span their complete fact card and use normal word wrapping, preventing Size and Origin-language prompts from collapsing into a one-character column.
+- Aasimar Celestial Revelation uses source-backed informational option cards for its three transformation forms. This breaks up the imported wall of text without turning the per-use transformation into a new character-creation choice.
+- Goliath Giant Ancestry remains the model for actual persistent Species choices and continues to use the existing canonical embedded choice state.
+- Species catalogue chrome is denser, while parent and child portrait thumbnails are larger and keep their existing dedicated-art resolver.
+
+This continuation makes no Supabase write or migration and touches no world-map, town/city-map, travel, combat, crafting, inventory, or merchant system.
