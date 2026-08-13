@@ -140,6 +140,7 @@ function applyCatalogPresentation(projectedSpecies, choice, selected) {
         source: selected.source,
         family: selected.metadata?.family || choice?.id || null,
         ruleFamily: selected.metadata?.ruleFamily || null,
+        damageType: selected.metadata?.damageType || null,
       },
     },
   };
@@ -173,6 +174,7 @@ export function projectCatalogSpeciesFamilySelection(projectedSpecies = null, so
         displayName: displayName || null,
         source: text(binding.selected.source),
         ruleFamily: text(binding.selected.metadata?.ruleFamily) || null,
+        damageType: text(binding.selected.metadata?.damageType) || null,
       },
     },
   };

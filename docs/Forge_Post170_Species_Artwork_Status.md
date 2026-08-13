@@ -6,6 +6,21 @@ Active PR: #171 — OPEN / UNMERGED
 Merge rule: **do not merge PR #171 without explicit user approval**
 Database authority: migration 93 — `20260812042950 aven_subrace_catalog`
 Previous validated code/art checkpoint: `f8f31534c157c9778f873e726551ac20cfdfd823`
+Species layout/icon baseline: `6957ecd5c2653dc580d423c6859ecd3728379a06`
+
+## 2026-08-13 promoted Species facts and source-choice continuation
+
+The Player Forge portrait facts now own Creature Type, Size, Darkvision, and Languages presentation. Variable Size and language decisions reuse the registered `NpcForgeSourceChoiceContext` groups and the established `setChoice(groupId, fieldId, keys)` path; they do not introduce a second selection state or save payload. Exact duplicate Creature Type, Darkvision, Size, and Languages feature cards are suppressed after those facts are promoted.
+
+Common remains automatic and is omitted from the visible language summary. A Species with another fixed language shows only the notable language; a fixed-language source that does not know Common says so explicitly. The generic pair of 2024 Origin languages is available to Species with no fixed or selectable source-language rule, while Aven and other source-language-bearing Species retain their established fixed/choice counts.
+
+Astral Elf now presents `Humanoid, Elf` in the Creature Type fact without splitting `You are a Humanoid` across paragraphs. Darkvision remains in the portrait facts and exposes its dim-light, darkness, and grayscale behavior on hover/focus.
+
+Selected Dragonborn family metadata now projects the actual damage type into the right panel. Breath Weapon and Damage/Draconic Resistance copy therefore names the chosen affinity (for example, Gold → Fire) and adds ancestry-specific flavor without changing the imported mechanics.
+
+Eladrin's duplicated season explanation and choice presentation are combined into one `Eladrin Seasons` feature card. The card distinguishes the required initial current season from the later Long-Rest replacement opportunity and summarizes Autumn, Winter, Spring, and Summer. Migration 68 still requires exactly one initial season and remains unchanged; removing that initial selection would otherwise break Player Forge creation.
+
+No Supabase write or migration was made. No world-map, town/city-map, route/travel/weather, combat, crafting, inventory, merchant, or unrelated runtime file is part of this continuation.
 
 ## 2026-08-13 final portrait-quality continuation
 

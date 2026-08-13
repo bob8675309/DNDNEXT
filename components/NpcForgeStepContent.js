@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { ALIGNMENT_OPTIONS, SIZE_OPTIONS } from "../utils/characterCreation";
 import { buildFoundationSourceChoiceGroups } from "../utils/playerForgeSourceChoices";
-import { speciesFixedLanguages } from "../utils/speciesPresentation";
+import { speciesFixedLanguages, speciesHasSourceLanguageRule } from "../utils/speciesPresentation";
 import NpcForgeAbilityStep from "./NpcForgeAbilityStep";
 import NpcForgeClassFeatureDock from "./NpcForgeClassFeatureDock";
 import NpcForgeContextPanel from "./NpcForgeContextPanel";
@@ -25,8 +25,9 @@ function choiceSlug(value = "") {
 function playerFoundationGroups({ selectedSpecies, selectedBackground, selectedClass, toolRows }) {
   if (!selectedSpecies) return [];
   const fixedLanguages = speciesFixedLanguages(selectedSpecies);
+  const hasSourceLanguageRule = speciesHasSourceLanguageRule(selectedSpecies);
   const groups = buildFoundationSourceChoiceGroups({ selectedSpecies, selectedBackground, selectedClass, toolRows })
-    .filter((group) => group.id !== "origin-standard-languages" || (String(selectedSpecies.source || "").toUpperCase() === "XPHB" && !fixedLanguages.length));
+    .filter((group) => group.id !== "origin-standard-languages" || (!fixedLanguages.length && !hasSourceLanguageRule));
   if (!fixedLanguages.length) return groups;
   return [{
     id: `species-fixed-languages-${choiceSlug(selectedSpecies.id || selectedSpecies.name)}`,

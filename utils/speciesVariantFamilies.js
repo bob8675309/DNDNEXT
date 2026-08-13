@@ -281,6 +281,7 @@ export function projectSpeciesVariantPresentation(species = null, selectedVarian
         source: selectedVariant.source,
         family: selectedVariant.metadata?.family || null,
         ruleFamily: selectedVariant.metadata?.ruleFamily || null,
+        damageType: selectedVariant.metadata?.damageType || null,
       },
     },
   };

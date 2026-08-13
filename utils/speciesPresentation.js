@@ -132,6 +132,14 @@ export function speciesFixedLanguages(option = {}) {
   );
 }
 
+export function speciesHasSourceLanguageRule(option = {}) {
+  const details = Array.isArray(option.traitDetails) && option.traitDetails.length
+    ? option.traitDetails
+    : extractSpeciesTraitDetails(option.metadata || {});
+  if (details.some((detail) => /^languages?$/i.test(String(detail?.name || "").trim()))) return true;
+  return (Array.isArray(option.metadata?.languages) ? option.metadata.languages : []).some((entry) => entry && typeof entry === "object" && Object.keys(entry).length > 0);
+}
+
 function humanChoiceRule(detail) {
   const name = slug(detail.name);
   const description = String(detail.description || "");
