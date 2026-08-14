@@ -36,10 +36,10 @@ function khoravarOptions(toolRows = []) {
 
 function eladrinSeasonOptions() {
   return [
-    { key: "autumn", value: "autumn", label: "Autumn", source: "MPMM", kind: "season", metadata: { feyStepEffect: "charm" } },
-    { key: "winter", value: "winter", label: "Winter", source: "MPMM", kind: "season", metadata: { feyStepEffect: "frighten" } },
-    { key: "spring", value: "spring", label: "Spring", source: "MPMM", kind: "season", metadata: { feyStepEffect: "ally-teleport" } },
-    { key: "summer", value: "summer", label: "Summer", source: "MPMM", kind: "season", metadata: { feyStepEffect: "fire-damage" } },
+    { key: "autumn", value: "autumn", label: "Autumn", description: "Peace and goodwill; after Fey Step, nearby creatures can be Charmed.", source: "MPMM", kind: "season", metadata: { feyStepEffect: "charm" } },
+    { key: "winter", value: "winter", label: "Winter", description: "Sorrow and dread; Fey Step can Frighten one nearby creature.", source: "MPMM", kind: "season", metadata: { feyStepEffect: "frighten" } },
+    { key: "spring", value: "spring", label: "Spring", description: "Joy and renewal; Fey Step can teleport a willing nearby creature instead of you.", source: "MPMM", kind: "season", metadata: { feyStepEffect: "ally-teleport" } },
+    { key: "summer", value: "summer", label: "Summer", description: "Bold heat and fury; after Fey Step, nearby creatures take Fire damage equal to your Proficiency Bonus.", source: "MPMM", kind: "season", metadata: { feyStepEffect: "fire-damage" } },
   ];
 }
 
@@ -181,6 +181,7 @@ export function applySpeciesRuntimeChoiceAuthority({ groups = [], species = null
         kind: "season",
         count: 1,
         required: true,
+        presentation: "descriptive-options",
         options: eladrinSeasonOptions(),
         cadence: "acquisition",
         replacementCadence: "long-rest",

@@ -109,6 +109,14 @@ const goliathAncestry = applySpeciesRuntimeChoiceAuthority({
   groups: [{ id: "giant", ownerType: "species", label: "Giant Ancestry", placement: "species", fields: [{ id: "ancestry", kind: "ancestry", options: [{ key: "cloud" }, { key: "fire" }] }] }],
 });
 assert.equal(goliathAncestry[0].placement, "species", "true ancestry decisions must remain on the Species step");
+const eladrinSeasonGroups = applySpeciesRuntimeChoiceAuthority({
+  species: { name: "Eladrin", source: "MPMM" },
+  groups: [],
+});
+const eladrinSeasonField = eladrinSeasonGroups.find((group) => group.id === "species-runtime-eladrin-season")?.fields?.find((field) => field.id === "season");
+assert.equal(eladrinSeasonField?.presentation, "descriptive-options", "Eladrin initial season must render its descriptions as the selectable options");
+assert.deepEqual(eladrinSeasonField?.options?.map((option) => option.key), ["autumn", "winter", "spring", "summer"], "Eladrin season storage keys must remain unchanged");
+assert.ok(eladrinSeasonField?.options?.every((option) => option.description?.length > 40), "each Eladrin season button must carry its readable seasonal effect");
 const prematureDeepGnome = applySpeciesRuntimeChoiceAuthority({
   species: { name: "Deep Gnome", source: "MPMM" },
   groups: [{ id: "gift", ownerType: "species", label: "Gift of the Svirfneblin", placement: "species", fields: [{ id: "ability", kind: "ability", options: [{ key: "int" }, { key: "wis" }, { key: "cha" }] }] }],

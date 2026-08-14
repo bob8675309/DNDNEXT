@@ -176,7 +176,7 @@ function isEladrin(option = {}) {
 function eladrinSeasonDetail() {
   return {
     name: "Eladrin Seasons",
-    description: "Choose your current season when you create the character. After you finish a Long Rest, you may change to a different season. At character level 3 and higher, the current season changes Fey Step.\n\nAutumn. Peace and goodwill; after Fey Step, nearby creatures can be Charmed.\n\nWinter. Sorrow and dread; Fey Step can Frighten one nearby creature.\n\nSpring. Joy and renewal; Fey Step can teleport a willing nearby creature instead of you.\n\nSummer. Bold heat and fury; after Fey Step, nearby creatures take Fire damage equal to your Proficiency Bonus.",
+    description: "Choose your current season when you create the character. After you finish a Long Rest, you may change to a different season. At character level 3 and higher, the current season changes Fey Step. Select a season below to see and choose its effect.",
     runtimeChoice: true,
   };
 }
@@ -193,7 +193,7 @@ export function speciesFeaturePresentation(option = {}) {
   let traits = array(option.traits).filter((trait) => trait && !promoted(trait));
 
   if (isEladrin(option)) {
-    const seasonLike = (value) => /choose your eladrin s season|^eladrin seasons?$/.test(norm(value));
+    const seasonLike = (value) => /(?:^| )choose your eladrins? season\b|^eladrin seasons?$/.test(norm(value));
     details = details.filter((entry) => !seasonLike(entry.name));
     traits = traits.filter((trait) => !seasonLike(trait));
     const season = eladrinSeasonDetail();
