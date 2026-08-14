@@ -1,8 +1,22 @@
 # DNDNext Current Development Status and Roadmap
 
-Last reconciled: 2026-08-02
+Last reconciled: 2026-08-14
 
 This is the current high-level handoff for DNDNext. It reconciles the living roadmap, phase ledgers, repository source, GitHub state, and deployed Supabase state. Historical phase ledgers remain useful implementation records, but this document controls current status when an older status header or unchecked master-roadmap task conflicts with deployed evidence.
+
+## 2026-08-14 active-work override
+
+The detailed tactical and platform roadmap below remains valid history, but the active development line has moved forward:
+
+- PR #170 is merged at `599c4de7397ba6e4bbbb0a061d551d80c3570be7`;
+- active branch `agent/species-art-post170` is PR #171, open and unmerged;
+- latest validated code head is `39a263e034db4023ed7d1a4950a185a832c08867`;
+- all 14 workflows triggered for that head and Vercel completed successfully;
+- Supabase remains healthy through migration 93, with 166 raw / 102 preferred Species rows;
+- no database write or migration was made for the PR #171 artwork/layout/presentation continuation;
+- Paul considers the shared Player/NPC Forge Species tab nearly perfect.
+
+The current transition authority is `DNDNext_Current_Handoff_Prompt.md`; the detailed active Species ledger is `Forge_Post170_Species_Artwork_Status.md`. Unless a concrete Species regression is reproduced, the next Forge work should move to Background, Class, or the next tab Paul selects as a separate bounded pass.
 
 ## Non-negotiable boundaries
 
@@ -251,8 +265,9 @@ Complete accessibility, keyboard targeting, mobile/tablet behavior, colorblind-s
 
 Use documents in this order:
 
-1. this current-status handoff;
-2. the active phase ledger for the subsystem being changed;
-3. `Tactical_Encounter_Combat_Roadmap_Blueprint.md` for end-state architecture;
-4. historical phase/build notes for implementation evidence only;
-5. raw SQL/text exports only as historical snapshots—never as authoritative live schema or executable migrations.
+1. `DNDNext_Current_Handoff_Prompt.md` and `Documentation_Refresh_Manifest.md` for current GitHub/Supabase/transition authority;
+2. the active dedicated ledger for the subsystem being changed;
+3. this broad roadmap for platform direction;
+4. `Tactical_Encounter_Combat_Roadmap_Blueprint.md` for tactical end-state architecture;
+5. historical phase/build notes for implementation evidence only;
+6. raw SQL/text exports only as historical snapshots—never as authoritative live schema or executable migrations.

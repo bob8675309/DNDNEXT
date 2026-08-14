@@ -4,7 +4,7 @@ This directory contains the project's living handoff, roadmap, architecture, and
 
 ## Start here
 
-- `DNDNext_Current_Handoff_Prompt.md` — copy-ready continuation prompt and protected boundaries.
+- `DNDNext_Current_Handoff_Prompt.md` — **copy-ready next-chat brief**: current PR/Supabase checkpoint, site architecture, Character Forge/Species data flow, protected boundaries, validators, and publishing procedure.
 - `Forge_Post170_Species_Artwork_Status.md` — **active Species artwork continuation authority after the PR #170 merge**: PR #171, completed Genasi/Dragonborn/Aven/Elf/Gnome artwork, exact validation checkpoint, binary-write procedure, remaining queue, and protected boundaries.
 - `Forge_Species_Art_and_Collapse_Handoff.md` — **historical PR #170 Species-art handoff; superseded**. It now points to the post-#170 ledger and must not be treated as current status.
 - `CHATGPT_REPO_WRITE_PROCEDURE.md` — **connector write authority and safe procedure**: GitHub/Supabase are directly writable from ChatGPT; use `create_blob → create_tree → create_commit → race-check → update_ref(force=false)` for coherent repo changes.
@@ -38,7 +38,7 @@ This directory contains the project's living handoff, roadmap, architecture, and
 - `Astral_Trance_Runtime_Status.md` — Astral Trance runtime.
 - `Species_Rest_Proficiency_Runtime_Status.md` — Astral Knowledge / Skill Versatility.
 - `Species_Replaceable_Cantrip_Runtime_Status.md` — replaceable Species cantrips.
-- `Eladrin_Season_Trance_Runtime_Status.md` — Eladrin season/Trance runtime.
+- `Eladrin_Runtime_Status.md` — Eladrin initial season, post-Long-Rest replacement, Trance runtime, and current descriptive-season presentation.
 - `Primal_Companion_Runtime_Status.md` — Beast Master companion runtime.
 - `Dread_Allegiance_Runtime_Status.md` — linked allegiance/resistance/cantrip runtime.
 - `Fiendish_Resilience_Runtime_Status.md` — Short/Long-Rest resistance runtime.
@@ -88,20 +88,19 @@ Branch:
 
 PR #171 is **OPEN / UNMERGED** and must not be merged without explicit user approval.
 
-Exact validated code/art checkpoint:
+Latest validated code checkpoint:
 
-`f8f31534c157c9778f873e726551ac20cfdfd823` — `Add high-resolution setting variant artwork`
+`39a263e034db4023ed7d1a4950a185a832c08867` — `Polish Eladrin season selection`
 
-For that exact code/art head:
+For that exact head:
 
-- focused Forge source/art push workflow passed;
-- PR `Validate Forge source presentation` passed;
-- PR `Validate NPC Forge foundation` passed;
-- PR `Validate Species rest proficiency runtime` passed;
-- production builds passed;
-- Vercel deployment succeeded.
+- all 14 triggered GitHub workflows completed successfully;
+- `Validate Forge source presentation`, `Validate NPC Forge foundation`, `Validate Character Forge nested choices`, `Validate Eladrin runtime`, and the related progression/equipment/runtime gates passed;
+- workflow production builds passed;
+- Vercel deployment succeeded;
+- the preceding-head compare is exactly one fast-forward commit with six scoped files and no protected-system file.
 
-Because PR #171 remains tightly scoped to Species art/resolvers/validators and active status docs, GitHub path filters trigger only the relevant validation jobs rather than the 33-workflow matrix associated with the old long-lived #170 diff.
+The earlier artwork-only checkpoint remains `f8f31534c157c9778f873e726551ac20cfdfd823`. Later Species layout/presentation commits preserve the same artwork and persistence boundaries while improving the shared Player/NPC Forge UI.
 
 ### Complete dedicated Genasi family
 

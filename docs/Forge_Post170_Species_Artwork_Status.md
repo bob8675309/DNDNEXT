@@ -1,12 +1,21 @@
 # Forge Species Artwork — Post-PR #170 Active Status
 
-Status date: 2026-08-13
+Status date: 2026-08-14
 Active branch: `agent/species-art-post170`
 Active PR: #171 — OPEN / UNMERGED
 Merge rule: **do not merge PR #171 without explicit user approval**
 Database authority: migration 93 — `20260812042950 aven_subrace_catalog`
-Previous validated code/art checkpoint: `f8f31534c157c9778f873e726551ac20cfdfd823`
+Latest validated code checkpoint: `39a263e034db4023ed7d1a4950a185a832c08867`
+Artwork-only checkpoint: `f8f31534c157c9778f873e726551ac20cfdfd823`
 Species layout/icon baseline: `6957ecd5c2653dc580d423c6859ecd3728379a06`
+
+## 2026-08-14 near-final Species tab checkpoint
+
+Paul considers the shared Player/NPC Forge Species tab nearly perfect. The latest accepted pass includes the full-height desktop catalog, wider/larger parent and child rows, search-driven parent/child reveal, semantic portrait facts, compact `Gender & Alignment`, guided missing-choice focus, concise Aasimar option cards, canonical Goliath choice cards, and one Eladrin season card whose four descriptions are the selectable buttons.
+
+The exact head `39a263e...` passed all 14 triggered GitHub workflows and Vercel. The Eladrin correction preserves the four stored season keys, initial required selection, runtime materialization, and post-Long-Rest replacement authority. No hook, state variable, prop, controller field, creation payload, RPC, migration, or database row was added.
+
+Do not begin another broad Species redesign without a concrete browser reproduction. After final user visual confirmation, continue with Background, Class, or whichever Forge tab Paul selects as a separate bounded pass.
 
 ## 2026-08-13 promoted Species facts and source-choice continuation
 
@@ -24,7 +33,7 @@ No Supabase write or migration was made. No world-map, town/city-map, route/trav
 
 ## 2026-08-13 final portrait-quality continuation
 
-The current local continuation, pending one coherent PR commit, replaces all 21 legacy Genasi, Dragonborn, and Aven child files with unique high-resolution 1536 × 2048 (3:4) artwork. The five Gem Dragonborn are no longer alternate treatments of one composition, Bronze Dragonborn is no longer duplicated, and the Aven pair now uses distinct full-body Hawk and Ibis compositions.
+The PR #171 continuation replaced all 21 legacy Genasi, Dragonborn, and Aven child files with unique high-resolution 1536 × 2048 (3:4) artwork. The five Gem Dragonborn are no longer alternate treatments of one composition, Bronze Dragonborn is no longer duplicated, and the Aven pair now uses distinct full-body Hawk and Ibis compositions.
 
 The large right-hand Forge Species hero now calls `speciesPortraitArtworkFor(...)`, matching the child rows in the left catalogue. Selected family metadata carries the dedicated child artwork name through the existing source-choice projection; no hook, state variable, prop, controller field, save payload, or database field was added.
 
@@ -292,7 +301,7 @@ Retain existing dedicated Human setting art, Elf Kaladesh/Zendikar art, and Amon
 
 ## Next action
 
-Review the completed PR #171 artwork pass and perform any desired in-Forge visual QA. Keep PR #171 open and unmerged until the user explicitly approves the merge.
+Perform only the final user visual confirmation of the near-finished Species tab unless a concrete defect is reported. Then move the Forge review to the next requested tab as a separate scope. Keep PR #171 open and unmerged until the user explicitly approves the merge.
 
 ## Search reveal and compact feature-option continuation
 
@@ -307,10 +316,25 @@ This continuation makes no Supabase write or migration and touches no world-map,
 
 ## Species layout, Elf grouping, and guided-validation continuation
 
-- The Player/NPC shared Species panel now owns Gender Presentation and Alignment beside the portrait facts in one expandable `Presentation & alignment` card. Both selectors patch the established `draft.gender` and `draft.alignment` fields; no parallel state or persistence path was added.
+- The Player/NPC shared Species panel now owns Gender and Alignment beside the portrait facts in one expandable `Gender & Alignment` card. Both selectors patch the established `draft.gender` and `draft.alignment` fields; no parallel state or persistence path was added. Its collapsed state occupies the same single fact-grid cell as the other portrait facts.
 - The left Species workspace moves the ancestry helper and available count beside the search input, widens the desktop catalogue from 30% to 34%, and proportionally enlarges parent and child portrait rows. Background and Class layouts remain unchanged.
 - The live preferred catalogue still contains independent canonical rows for `Elf` (XPHB), `Elf (Kaladesh)` (PSK), and `Elf (Zendikar)` (PSZ). The Forge now presents Kaladesh inside the main `Elven Lineage` submenu with Drow, High Elf, and Wood Elf. Zendikar is presentation-excluded from the Forge only; its database row and existing artwork remain untouched for historical sheets or other consumers.
 - Clicking Continue with missing data now preserves the established validator message while scrolling to, focusing, outlining, and labeling the first incomplete control with a red directional marker. Source-owned Species, Background, Class, Training, and Spell choices continue to use their existing canonical validators.
 - An unselected expandable Species family can now accept a child click in one action: the parent is selected first, then the requested existing source-choice key is applied as soon as its canonical group registers.
 
 The continuation adds no Supabase migration or write and does not touch world-map, town/city-map, travel, combat, crafting, inventory, or merchant behavior. PR #171 remains open and unmerged pending explicit user approval.
+
+## Full-height catalogue and Eladrin finish
+
+- The desktop Species body uses a content-sized grid row so the right detail panel establishes the shared row height; the left catalog stretches toward the footer while keeping its own scrolling list.
+- Tablet/mobile retain the established bounded single-column behavior.
+- The raw source sentence beginning `Choose your eladrin's season` is normalized and suppressed, removing the redundant OPEN feature bubble.
+- Autumn, Winter, Spring, and Summer carry their flavor/Fey Step summary directly in the selectable buttons. The selected border and `aria-pressed` state replace a redundant second selected-detail box for this opt-in presentation mode.
+- Goliath and every other embedded source choice retain their existing presentation behavior.
+
+Exact-head evidence for `39a263e034db4023ed7d1a4950a185a832c08867`:
+
+- 14/14 triggered GitHub workflows succeeded;
+- Vercel succeeded;
+- focused Species fact, family, portrait, source-presentation, semantic-icon, nested-choice, resilience, unified-Forge, and Eladrin runtime validators passed;
+- the remote compare was one fast-forward commit with six scoped files and no protected-system file.

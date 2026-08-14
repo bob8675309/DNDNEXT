@@ -1,6 +1,6 @@
 # Player Forge Choice Routing and Source Magic — Status
 
-Status: **implemented; migrations 86-88 deployed and rollback-accepted; post-rest presentation follow-up completed by migration 89.** Interactive signed-in browser smoke remains the external acceptance gap before merge.
+Status: **implemented; migrations 86-88 deployed and rollback-accepted; post-rest presentation follow-up completed by migration 89.** PR #170 is historical/merged; current interactive follow-up belongs to PR #171 or a later dedicated continuation.
 
 ## Player-facing routing model
 
@@ -110,6 +110,6 @@ Rollback acceptance directly proved Astral Trance attention versus Wild Heart no
 
 No world-map, town/city-map, route/travel/weather, unrelated crafting/inventory, or tactical combat execution behavior is part of this slice.
 
-## Remaining acceptance
+## Current continuation
 
-A real signed-in browser smoke remains required if final manual presentation proof is desired before merge. PR #170 remains open and must not be merged without explicit user approval.
+PR #170 is historical and merged. This routing/source-magic authority remains active beneath PR #171. Any new browser defect should be reproduced against the current PR #171 deployment; PR #171 remains open and must not be merged without explicit user approval.
