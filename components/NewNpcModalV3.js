@@ -4,6 +4,7 @@ import { classFeatureGroupsComplete, toggleClassFeatureSelection } from "../util
 import { normalizeSkillKey } from "../utils/npcForgeCatalog";
 import { featInstanceSummaries } from "../utils/playerForgeFeatChoices";
 import { setSourceChoiceSelection, toggleSourceChoiceSelection } from "../utils/playerForgeSourceChoices";
+import { clearForgeValidationGuidance, showForgeValidationGuidance } from "../utils/forgeValidationGuidance";
 import NewNpcModalV3Refined from "./NewNpcModalV3Refined";
 import { EMPTY_SPECIES_CHOICE_STATE, NpcForgeSpeciesChoiceContext, serializeSpeciesChoiceState, speciesChoiceStateComplete, speciesFeatChoicesFromState, speciesSkillChoicesFromState, speciesSpellcastingFromChoiceState } from "./NpcForgeSpeciesChoiceContext";
 import { classChoiceSelectionSummary, classChoiceStateComplete, classChoiceStateRequiresSelection, classFeatureChoiceStateRequiresSelection, classStepChoiceStateComplete, EMPTY_CLASS_CHOICE_STATE, normalizedClassFeatureChoiceState, NpcForgeClassChoiceContext, selectedSubclassOption, serializeClassChoiceState, trainingClassChoiceStateComplete } from "./NpcForgeClassChoiceContext";
@@ -212,13 +213,16 @@ export default function NewNpcModalV3(props) {
     // Legacy validation marker retained while the interceptor now covers all source choices: blockIncompleteSpeciesChoice
     function blockIncompleteForgeChoice(event) {
       const button = event.target?.closest?.("button");
-      if (!button || button.textContent?.trim() !== "Continue") return;
-      const modal = button.closest(".npc-forge-modal-v2");
+      const modal = event.target?.closest?.(".npc-forge-modal-v2");
+      if (!button || button.textContent?.trim() !== "Continue") {
+        if (modal) clearForgeValidationGuidance(modal);
+        return;
+      }
       const currentStep = modal?.querySelector(".npc-forge-steps button.is-current")?.textContent || "";
       const speciesState = choiceStateRef.current;
       if (/Species/i.test(currentStep) && (speciesState.rules || []).length && !speciesChoiceStateComplete(speciesState)) {
         event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation?.();
-        modal?.querySelector(".npc-forge-species-choice.is-required")?.scrollIntoView?.({ behavior: "smooth", block: "center" });
+        showForgeValidationGuidance("Choose every required Species feature option.", [".npc-forge-species-choice.is-required", ".npc-forge-species-feature-list .is-required"], modal);
         return;
       }
       const sourceState = sourceChoiceStateRef.current;
@@ -226,24 +230,31 @@ export default function NewNpcModalV3(props) {
       const incompleteSourcePlacement = sourcePlacements.find((placement) => !sourceChoiceStateComplete(sourceState, { placement }));
       if (playerMode && incompleteSourcePlacement) {
         event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation?.();
-        modal?.querySelector(".npc-forge-source-choice-group.is-required")?.scrollIntoView?.({ behavior: "smooth", block: "center" });
+        const selectors = incompleteSourcePlacement === "species"
+          ? [".npc-forge-species-fact-choice.is-required", ".npc-forge-species-feature-list .is-required", ".npc-forge-source-choice-group.is-required"]
+          : [".npc-forge-source-choice-group.is-required", ".npc-forge-context-row.is-interactive", ".npc-forge-workspace"];
+        showForgeValidationGuidance(`Complete the required ${incompleteSourcePlacement} selection.`, selectors, modal);
         return;
       }
       const classState = classChoiceStateRef.current;
       if (playerMode && /Class/i.test(currentStep) && classState.classId && !classStepChoiceStateComplete(classState)) {
         event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation?.();
-        const target = classChoiceStateRequiresSelection(classState) && !selectedSubclassOption(classState) ? modal?.querySelector(".npc-forge-class-guide__subclasses.is-required") : classFeatureChoiceStateRequiresSelection(classState, "class") ? modal?.querySelector(".npc-forge-class-choice-group.is-required") : modal?.querySelector(".npc-forge-class-guide");
-        target?.scrollIntoView?.({ behavior: "smooth", block: "center" });
+        const selectors = classChoiceStateRequiresSelection(classState) && !selectedSubclassOption(classState)
+          ? [".npc-forge-class-guide__subclasses.is-required", ".npc-forge-class-guide"]
+          : classFeatureChoiceStateRequiresSelection(classState, "class")
+            ? [".npc-forge-class-choice-group.is-required", ".npc-forge-class-guide"]
+            : [".npc-forge-class-guide"];
+        showForgeValidationGuidance("Complete the required Class selection.", selectors, modal);
         return;
       }
       if (playerMode && /Training/i.test(currentStep) && classState.classId && !trainingClassChoiceStateComplete(classState)) {
         event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation?.();
-        modal?.querySelector(".npc-forge-class-choices.is-placement-training .npc-forge-class-choice-group.is-required")?.scrollIntoView?.({ behavior: "smooth", block: "center" });
+        showForgeValidationGuidance("Complete the required Training selection.", [".npc-forge-class-choices.is-placement-training .npc-forge-class-choice-group.is-required", ".npc-forge-workspace"], modal);
         return;
       }
       if (playerMode && /Spells/i.test(currentStep) && classState.classId && !classFeatureGroupsComplete(classState.featureGroups || [], classState.featureSelections || {}, "spells")) {
         event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation?.();
-        modal?.querySelector(".npc-forge-class-choices.is-placement-spells .npc-forge-class-choice-group.is-required")?.scrollIntoView?.({ behavior: "smooth", block: "center" });
+        showForgeValidationGuidance("Complete the required spell selection.", [".npc-forge-class-choices.is-placement-spells .npc-forge-class-choice-group.is-required", ".npc-forge-spell-validation.is-incomplete", ".npc-forge-workspace"], modal);
       }
     }
     document.addEventListener("click", blockIncompleteForgeChoice, true);

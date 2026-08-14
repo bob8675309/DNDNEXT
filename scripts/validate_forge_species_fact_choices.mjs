@@ -91,6 +91,11 @@ for (const token of [
   "speciesVisionExplanation(option)",
   "speciesFeaturePresentation(option)",
   "SpeciesFeatureOptionCards",
+  "SpeciesIdentityFact",
+  "GENDER_PRESENTATION_OPTIONS",
+  "ALIGNMENT_OPTIONS",
+  "onPatch?.({ gender:",
+  "onPatch?.({ alignment:",
   "!hasEmbeddedChoice && !rule",
   'group.metadata?.family === "eladrin-season"',
 ]) assert.ok(contextSource.includes(token), `Species fact presentation is missing ${token}`);
@@ -99,7 +104,7 @@ assert.ok(stepSource.includes('group.id !== "origin-standard-languages" || (!fix
 assert.ok(!stepSource.includes('String(selectedSpecies.source || "").toUpperCase() === "XPHB" && !fixedLanguages.length'), "origin language availability must not be limited to XPHB Species");
 assert.ok(variantSource.includes("damageType: selectedVariant.metadata?.damageType || null"), "selected variant metadata must project its damage type");
 assert.ok(catalogFamilySource.includes("damageType: text(binding.selected.metadata?.damageType) || null"), "catalog family metadata must project its damage type");
-for (const token of ["npc-forge-species-fact-choice", "npc-forge-species-fact-tooltip", "npc-forge-species-option-cards", "grid-column: 1 / -1", "overflow-wrap: break-word", "word-break: normal", "width: 48px", "height: 52px"]) assert.ok(polishSource.includes(token), `Species fact interaction styling is missing ${token}`);
+for (const token of ["npc-forge-species-fact-choice", "npc-forge-species-fact-tooltip", "npc-forge-species-option-cards", "npc-forge-species-identity-controls", "grid-column: 1 / -1", "overflow-wrap: break-word", "word-break: normal", "width: 56px", "height: 62px"]) assert.ok(polishSource.includes(token), `Species fact interaction styling is missing ${token}`);
 
 for (const source of [contextSource, stepSource, variantSource, catalogFamilySource, polishSource]) {
   assert.doesNotMatch(source, /MapPageClient|map_routes|map_route_points|advance_all_characters|route_segment_progress/, "Species fact work crossed a protected map/travel boundary");

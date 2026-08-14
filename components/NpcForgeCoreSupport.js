@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import { PROFESSION_DEFINITIONS, PROFESSION_KEYS } from "../utils/craftingProfessions";
 import { ABILITY_KEYS, CLASS_DEFINITIONS, FEAT_OPTIONS, SIZE_OPTIONS, SKILL_DEFINITIONS, SPECIES_DEFINITIONS, standardAbilityScores } from "../utils/characterCreation";
@@ -129,7 +129,7 @@ function catalogParentMatchesQuery(row = {}, query = "") {
   return catalogTextMatchesQuery([row.name, row.class_name, row.source, speciesCatalogSummary(row)], query);
 }
 
-function SpeciesCatalogFamilySubmenu({ species, query = "", onSelectParent = null }) {
+function SpeciesCatalogFamilySubmenu({ species, query = "", selectedId = "", sourceVariants = [], onSelectFamilyOption = null, onSelectSourceVariant = null }) {
   const { state, setChoice } = useNpcForgeSourceChoices();
   if (!speciesVariantUsesCatalogSubmenu(species)) return null;
   const binding = speciesVariantChoiceBinding(species, state?.groups || [], state?.selections || {});
@@ -139,13 +139,14 @@ function SpeciesCatalogFamilySubmenu({ species, query = "", onSelectParent = nul
   const selectedKey = binding?.selectedKey || "";
   if (!choice?.options?.length) return null;
   const options = (field?.options || choice.options).filter((option) => !query || catalogFamilyOptionMatchesQuery(choice, option, query));
-  if (!options.length) return null;
+  const visibleSourceVariants = sourceVariants.filter((variant) => !query || catalogSourceVariantMatchesQuery(variant, query));
+  if (!options.length && !visibleSourceVariants.length) return null;
   return <div className="npc-forge-catalog-family-submenu" role="group" aria-label={`${choice.label} for ${species.name}`}><span className="npc-forge-catalog-family-submenu__label">{choice.label}</span><div className="npc-forge-catalog-family-submenu__rows">{options.map((option) => {
     const canonical = (choice.options || []).find((entry) => entry.key === option.key) || option;
     const displayName = catalogFamilyDisplayName(choice, canonical);
-    const selectFamilyOption = () => binding ? setChoice(group.id, field.id, [option.key]) : onSelectParent?.(species);
+    const selectFamilyOption = () => binding ? setChoice(group.id, field.id, [option.key]) : onSelectFamilyOption?.(species, option.key);
     return <button key={option.key} type="button" className={`npc-forge-catalog-family-option${selectedKey === option.key ? " is-active" : ""}`} onClick={selectFamilyOption}><SpeciesCatalogPortrait name={displayName} /><span className="npc-forge-catalog-family-option__copy"><strong>{displayName}</strong><small>{speciesCatalogSummary(displayName)}</small><em>{catalogFamilyOptionMeta(canonical)}</em></span>{selectedKey === option.key ? <b className="npc-forge-catalog-child-check" aria-label="Selected">✓</b> : null}</button>;
-  })}</div></div>;
+  })}{visibleSourceVariants.map((variant) => <button key={variant.id} type="button" className={`npc-forge-catalog-family-option${String(selectedId) === String(variant.id) ? " is-active" : ""}`} onClick={() => onSelectSourceVariant?.(variant)}><SpeciesCatalogPortrait name={variant.name} /><SpeciesCatalogCopy name={variant.name} source={variant.source} species={variant} />{String(selectedId) === String(variant.id) ? <b className="npc-forge-catalog-child-check" aria-label="Selected">✓</b> : null}</button>)}</div></div>;
 }
 
 function SpeciesCatalogSourceVariants({ species, selectedId, onSelect, query = "" }) {
@@ -159,12 +160,23 @@ function familyRowCanExpand(row) {
   return speciesVariantUsesCatalogSubmenu(row) || (Array.isArray(row?.catalogSourceVariants) && row.catalogSourceVariants.length > 0);
 }
 
-export function CatalogList({ label, query, onQuery, rows, selectedId, onSelect, emptyText }) {
+export function CatalogList({ label, query, onQuery, rows, selectedId, onSelect, emptyText, helperText = "", availabilityText = "" }) {
   const { state: sourceChoiceState, setChoice } = useNpcForgeSourceChoices();
   const [expandedSpeciesRows, setExpandedSpeciesRows] = useState(() => new Set());
+  const [pendingFamilySelection, setPendingFamilySelection] = useState(null);
   const speciesMode = String(label || "").toLowerCase() === "species";
   const catalogSearchQuery = speciesMode ? normalizedCatalogSearch(query) : "";
   const visibleRows = (rows || []).filter((row) => !row?.catalogHidden);
+  useEffect(() => {
+    if (!pendingFamilySelection) return;
+    const species = (rows || []).find((row) => String(row?.id) === pendingFamilySelection.speciesId);
+    if (!species) { setPendingFamilySelection(null); return; }
+    const binding = speciesVariantChoiceBinding(species, sourceChoiceState?.groups || [], sourceChoiceState?.selections || {});
+    if (!binding) return;
+    const available = (binding.field?.options || binding.choice?.options || []).some((option) => option.key === pendingFamilySelection.optionKey);
+    if (available) setChoice(binding.group.id, binding.field.id, [pendingFamilySelection.optionKey]);
+    setPendingFamilySelection(null);
+  }, [pendingFamilySelection, rows, setChoice, sourceChoiceState]);
   const setRowExpanded = (row, expanded) => {
     const key = String(row?.id || row?.name || "");
     if (!key) return;
@@ -180,6 +192,15 @@ export function CatalogList({ label, query, onQuery, rows, selectedId, onSelect,
     onSelect(row);
     if (speciesMode && familyRowCanExpand(row)) setRowExpanded(row, true);
   };
+  const selectCatalogFamilyOption = (row, optionKey) => {
+    const binding = speciesVariantChoiceBinding(row, sourceChoiceState?.groups || [], sourceChoiceState?.selections || {});
+    if (binding) {
+      setChoice(binding.group.id, binding.field.id, [optionKey]);
+      return;
+    }
+    setPendingFamilySelection({ speciesId: String(row?.id || ""), optionKey });
+    selectCatalogRow(row);
+  };
   const toggleRowExpansion = (event, row, expanded) => {
     event.preventDefault();
     event.stopPropagation();
@@ -189,12 +210,14 @@ export function CatalogList({ label, query, onQuery, rows, selectedId, onSelect,
     if (event.key !== "Enter" && event.key !== " ") return;
     toggleRowExpansion(event, row, expanded);
   };
-  return <div className="npc-forge-catalog"><div className="npc-forge-catalog-head"><span>{label}</span><strong>{visibleRows.length}</strong></div><input className="npc-forge-search" value={query} onChange={(event) => onQuery(event.target.value)} placeholder={`Search ${label.toLowerCase()}…`} /><div className="npc-forge-catalog-list">{visibleRows.map((row) => {
+  return <div className="npc-forge-catalog">{helperText ? <div className="npc-forge-catalog-toolbar"><input className="npc-forge-search" value={query} onChange={(event) => onQuery(event.target.value)} placeholder={`Search ${label.toLowerCase()}…`} /><div><strong>{helperText}</strong><span>{availabilityText || `${visibleRows.length} available`}</span></div></div> : <><div className="npc-forge-catalog-head"><span>{label}</span><strong>{visibleRows.length}</strong></div><input className="npc-forge-search" value={query} onChange={(event) => onQuery(event.target.value)} placeholder={`Search ${label.toLowerCase()}…`} /></>}<div className="npc-forge-catalog-list">{visibleRows.map((row) => {
     const sourceVariants = Array.isArray(row.catalogSourceVariants) ? row.catalogSourceVariants : [];
+    const family = speciesMode && speciesVariantUsesCatalogSubmenu(row);
+    const mergeSourceVariants = Boolean(row.catalogMergeSourceVariants && family);
+    const familySourceVariants = mergeSourceVariants ? sourceVariants : [];
+    const separateSourceVariants = mergeSourceVariants ? [] : sourceVariants;
     const selectedSourceVariant = sourceVariants.some((variant) => String(variant.id) === String(selectedId));
     const active = String(selectedId) === String(row.id) || selectedSourceVariant;
-    const parentSelected = String(selectedId) === String(row.id);
-    const family = speciesMode && speciesVariantUsesCatalogSubmenu(row);
     const familyChoice = family ? catalogSpeciesFamilyChoice(row) : null;
     const familyBinding = family ? speciesVariantChoiceBinding(row, sourceChoiceState?.groups || [], sourceChoiceState?.selections || {}) : null;
     const selectedFamilyName = familyBinding?.selected?.metadata?.catalogDisplayName || familyBinding?.selected?.metadata?.catalogLabel || familyBinding?.selected?.label || "";
@@ -209,7 +232,8 @@ export function CatalogList({ label, query, onQuery, rows, selectedId, onSelect,
     const searchRevealsSources = canRevealFromSearch && sourceVariants.length > 0 && (parentMatchesSearch || sourceSearchMatches);
     const expanded = expandable && (expandedSpeciesRows.has(String(row.id)) || searchRevealsFamily || searchRevealsSources);
     const childQuery = parentMatchesSearch ? "" : catalogSearchQuery;
-    return <Fragment key={row.id}><button type="button" data-selected-portrait={selectedPortraitKey || undefined} className={`${active ? "is-active" : ""}${speciesMode ? " npc-forge-species-catalog-row" : ""}`} onClick={() => selectCatalogRow(row)}>{speciesMode ? <SpeciesCatalogPortrait name={row.name} /> : null}<span>{speciesMode ? <><strong>{row.name || row.class_name}</strong><small className="npc-forge-catalog-species-summary">{speciesCatalogSummary(row)}</small><em>{sourceLabel(row.source)}</em></> : <><strong>{row.name || row.class_name}</strong><small>{sourceLabel(row.source)}</small></>}</span>{expandable ? <b className="npc-forge-catalog-expand-toggle" role="button" tabIndex={0} aria-label={`${expanded ? "Collapse" : "Expand"} ${row.name} options`} aria-expanded={expanded} onClick={(event) => toggleRowExpansion(event, row, expanded)} onKeyDown={(event) => onChevronKeyDown(event, row, expanded)}>{expanded ? "⌄" : "›"}</b> : null}</button>{expanded && (parentSelected || searchRevealsFamily) && family ? <SpeciesCatalogFamilySubmenu species={row} query={childQuery} onSelectParent={selectCatalogRow} /> : null}{expanded && (parentMatchesSearch || searchRevealsSources || !catalogSearchQuery) && sourceVariants.length ? <SpeciesCatalogSourceVariants species={row} selectedId={selectedId} onSelect={onSelect} query={childQuery} /> : null}</Fragment>;
+    const showFamilySubmenu = expanded && family;
+    return <Fragment key={row.id}><button type="button" data-selected-portrait={selectedPortraitKey || undefined} className={`${active ? "is-active" : ""}${speciesMode ? " npc-forge-species-catalog-row" : ""}`} onClick={() => selectCatalogRow(row)}>{speciesMode ? <SpeciesCatalogPortrait name={row.name} /> : null}<span>{speciesMode ? <><strong>{row.name || row.class_name}</strong><small className="npc-forge-catalog-species-summary">{speciesCatalogSummary(row)}</small><em>{sourceLabel(row.source)}</em></> : <><strong>{row.name || row.class_name}</strong><small>{sourceLabel(row.source)}</small></>}</span>{expandable ? <b className="npc-forge-catalog-expand-toggle" role="button" tabIndex={0} aria-label={`${expanded ? "Collapse" : "Expand"} ${row.name} options`} aria-expanded={expanded} onClick={(event) => toggleRowExpansion(event, row, expanded)} onKeyDown={(event) => onChevronKeyDown(event, row, expanded)}>{expanded ? "⌄" : "›"}</b> : null}</button>{showFamilySubmenu ? <SpeciesCatalogFamilySubmenu species={row} query={childQuery} selectedId={selectedId} sourceVariants={familySourceVariants} onSelectFamilyOption={selectCatalogFamilyOption} onSelectSourceVariant={onSelect} /> : null}{expanded && (parentMatchesSearch || searchRevealsSources || !catalogSearchQuery) && separateSourceVariants.length ? <SpeciesCatalogSourceVariants species={{ ...row, catalogSourceVariants: separateSourceVariants }} selectedId={selectedId} onSelect={onSelect} query={childQuery} /> : null}</Fragment>;
   })}{!visibleRows.length ? <div className="npc-forge-empty-list">{emptyText}</div> : null}</div><style jsx global>{`
     .npc-forge-species-catalog-row{display:grid!important;grid-template-columns:40px minmax(0,1fr) auto!important;align-items:center!important;gap:8px!important;min-height:54px!important;padding:6px 8px!important}.npc-forge-catalog-portrait{display:block;position:relative;width:38px;height:42px;border:1px solid rgba(168,108,255,.28);border-radius:6px;overflow:hidden;background:#111522;flex:0 0 auto}.npc-forge-catalog-portrait img{width:100%;height:100%;object-fit:cover;object-position:center 22%;display:block}.npc-forge-species-catalog-row>span:not(.npc-forge-catalog-portrait),.npc-forge-catalog-species-copy,.npc-forge-catalog-family-option__copy{display:grid!important;gap:1px!important;min-width:0!important}.npc-forge-catalog-species-summary{display:-webkit-box!important;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:rgba(255,255,255,.62)!important;font-size:.52rem!important;line-height:1.28!important;font-weight:500!important}.npc-forge-species-catalog-row em,.npc-forge-catalog-species-copy em,.npc-forge-catalog-family-option__copy em{color:rgba(119,225,211,.68);font-size:.46rem;font-style:normal;font-weight:800;letter-spacing:.035em}.npc-forge-catalog-expand-toggle{display:grid;place-items:center;width:24px;height:24px;margin-left:3px;border:1px solid rgba(168,108,255,.28);border-radius:50%;color:#e8dfff!important;background:rgba(126,72,199,.08);font-size:.88rem!important;line-height:1;cursor:pointer;transition:background .15s ease,border-color .15s ease,transform .15s ease}.npc-forge-catalog-expand-toggle:hover,.npc-forge-catalog-expand-toggle:focus{border-color:#a86cff;background:rgba(126,72,199,.22);outline:none}.npc-forge-catalog-family-submenu{display:grid;gap:4px;margin:-4px 0 7px 14px;padding:7px 0 3px 10px;border-left:1px solid rgba(168,108,255,.42)}.npc-forge-catalog-family-submenu__label{padding:0 6px 2px;color:#cdb7ef;font-size:.57rem;font-weight:900;letter-spacing:.055em;text-transform:uppercase}.npc-forge-catalog-family-submenu__rows{display:grid;gap:3px}.npc-forge-catalog-family-option{display:grid!important;grid-template-columns:34px minmax(0,1fr) auto!important;align-items:center!important;gap:7px!important;width:100%!important;min-height:48px!important;padding:5px 7px!important;border:1px solid rgba(168,108,255,.2)!important;border-radius:7px!important;background:rgba(13,16,27,.76)!important;text-align:left!important}.npc-forge-catalog-family-option .npc-forge-catalog-portrait{width:32px;height:36px;border-radius:5px}.npc-forge-catalog-family-option:hover{border-color:rgba(168,108,255,.5)!important;background:rgba(126,72,199,.1)!important}.npc-forge-catalog-family-option.is-active{border-color:#a86cff!important;background:linear-gradient(90deg,rgba(126,72,199,.2),rgba(88,214,199,.05))!important;box-shadow:inset 2px 0 0 #a86cff}.npc-forge-catalog-family-option strong{color:#fff;font-size:.62rem;line-height:1.2}.npc-forge-catalog-family-option small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:rgba(255,255,255,.6);font-size:.49rem;line-height:1.22}.npc-forge-catalog-child-check{display:grid;place-items:center;width:19px;height:19px;border:1px solid #a86cff;border-radius:50%;color:#fff!important;font-size:.6rem!important;background:rgba(126,72,199,.35)}
   `}</style></div>;

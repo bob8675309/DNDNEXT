@@ -270,7 +270,13 @@ const TRAIT_FAMILIES = [
 const SETTING_FAMILIES = [
   { parentName: "Human", parentSource: "XPHB", children: [["Human (Innistrad)", "PSI"], ["Human (Ixalan)", "PSX"], ["Human (Kaladesh)", "PSK"], ["Human (Zendikar)", "PSZ"]] },
   { parentName: "Dwarf", parentSource: "XPHB", children: [["Dwarf (Kaladesh)", "PSK"]] },
-  { parentName: "Elf", parentSource: "XPHB", children: [["Elf (Kaladesh)", "PSK"], ["Elf (Zendikar)", "PSZ"]] },
+  {
+    parentName: "Elf",
+    parentSource: "XPHB",
+    children: [["Elf (Kaladesh)", "PSK"]],
+    excludedChildren: [["Elf (Zendikar)", "PSZ"]],
+    mergeWithLineage: true,
+  },
   { parentName: "Orc", parentSource: "XPHB", children: [["Orc (Ixalan)", "PSX"]] },
   { parentName: "Minotaur", parentSource: "MPMM", children: [["Minotaur (Amonkhet)", "PSA"]] },
   { parentName: "Goblin", parentSource: "MPMM", children: [["Goblin (Dankwood)", "AWM"]] },
@@ -279,6 +285,10 @@ const SETTING_FAMILIES = [
 function attachSettingFamilies(rows) {
   const byId = new Map(rows.map((row) => [String(row.id), row]));
   for (const config of SETTING_FAMILIES) {
+    for (const [name, source] of config.excludedChildren || []) {
+      const excluded = rows.find((candidate) => norm(candidate.name) === norm(name) && text(candidate.source).toUpperCase() === source);
+      if (excluded) byId.set(String(excluded.id), { ...excluded, catalogHidden: true, catalogExcluded: true });
+    }
     const parent = rows.find((row) => norm(row.name) === norm(config.parentName) && text(row.source).toUpperCase() === config.parentSource);
     if (!parent) continue;
     const children = config.children.flatMap(([name, source]) => {
@@ -290,6 +300,7 @@ function attachSettingFamilies(rows) {
       ...byId.get(String(parent.id)),
       catalogSourceVariants: children.map((child) => ({ ...child, catalogHidden: true, catalogParentId: parent.id, catalogParentName: parent.name })),
       catalogSearchAliases: children.flatMap((child) => [child.name, child.source]),
+      catalogMergeSourceVariants: Boolean(config.mergeWithLineage),
     });
     for (const child of children) byId.set(String(child.id), { ...child, catalogHidden: true, catalogParentId: parent.id, catalogParentName: parent.name });
   }

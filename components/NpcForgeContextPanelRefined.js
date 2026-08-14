@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ABILITY_KEYS, ABILITY_LABELS } from "../utils/characterCreation";
+import { ABILITY_KEYS, ABILITY_LABELS, ALIGNMENT_OPTIONS } from "../utils/characterCreation";
 import { ABILITY_DESCRIPTIONS } from "../utils/characterCreationGuidance";
 import { STRIXHAVEN_COLLEGES } from "../utils/playerForgeFeatChoiceRouting";
 import { formatPlayerFacingText } from "../utils/playerFacingText";
@@ -26,6 +26,11 @@ import { sourceChoiceGroupsForPlacement, useNpcForgeSourceChoices } from "./NpcF
 import { useNpcForgeSpeciesChoices } from "./NpcForgeSpeciesChoiceContext";
 
 const SIZE_LABELS = { T: "Tiny", S: "Small", M: "Medium", L: "Large", H: "Huge", G: "Gargantuan", V: "Variable" };
+const GENDER_PRESENTATION_OPTIONS = Object.freeze([
+  { key: "female", label: "Female" },
+  { key: "male", label: "Male" },
+  { key: "neutral", label: "Nonbinary / neutral" },
+]);
 const SPELL_SOURCE_PRIORITY = { XPHB: 0, PHB: 1 };
 const safeText = (value) => String(value ?? "").trim();
 function sourceLabel(source = "") { if (source === "XPHB") return "2024 Player's Handbook"; if (source === "PHB") return "2014 Player's Handbook"; if (source === "CAMPAIGN") return "Campaign"; return source || "Source unknown"; }
@@ -154,6 +159,13 @@ function SpeciesChoiceFact({ kind, title, groups = [], selections = {}, onToggle
   return <details className={`npc-forge-species-fact-choice${needsInput ? " is-required" : " is-complete"}`} data-icon-kind={iconKind}><summary><ForgeSemanticIcon kind={iconKind} /><span className="npc-forge-species-fact-copy"><small>{title}</small><strong>{value}</strong></span></summary><div className="npc-forge-species-fact-choice__body"><p>{helper}</p><NpcForgeEmbeddedSourceChoices groups={presentationGroups} selections={selections} onToggle={onToggle} onSet={onSet} compact /></div></details>;
 }
 
+function SpeciesIdentityFact({ gender = "neutral", alignment = "N", onPatch = null }) {
+  const genderLabel = GENDER_PRESENTATION_OPTIONS.find((option) => option.key === gender)?.label || "Nonbinary / neutral";
+  const alignmentKey = String(alignment || "N").toUpperCase();
+  const alignmentLabel = ALIGNMENT_OPTIONS.find((option) => option.key === alignmentKey)?.label || "Neutral";
+  return <details className="npc-forge-species-fact-choice npc-forge-species-identity-fact is-complete" data-icon-kind="identity"><summary><ForgeSemanticIcon kind="identity" /><span className="npc-forge-species-fact-copy"><small>Presentation &amp; alignment</small><strong>{genderLabel} • {alignmentLabel}</strong></span></summary><div className="npc-forge-species-fact-choice__body"><p>These character details do not change the selected Species rules.</p><div className="npc-forge-species-identity-controls"><label><span>Gender presentation</span><select value={gender} onChange={(event) => onPatch?.({ gender: event.target.value })}>{GENDER_PRESENTATION_OPTIONS.map((option) => <option key={option.key} value={option.key}>{option.label}</option>)}</select></label><label><span>Alignment</span><select value={alignmentKey} onChange={(event) => onPatch?.({ alignment: event.target.value })}>{ALIGNMENT_OPTIONS.map((option) => <option key={option.key} value={option.key}>{option.label}</option>)}</select></label></div></div></details>;
+}
+
 function SpeciesFeatureOptionCards({ label = "Available options", options = [] }) {
   if (!options.length) return null;
   return <section className="npc-forge-species-option-cards" aria-label={label}><span>{label}</span><div>{options.map((option) => <article key={option.name}><strong>{option.name}</strong><RuleCopy text={option.description} /></article>)}</div></section>;
@@ -259,7 +271,7 @@ function BackgroundSourceFallback({ groups = [], selections = {}, onToggle = nul
   })}</div></div>;
 }
 
-export default function NpcForgeContextPanel({ playerMode = false, step = 0, stepKey = "", detail = null, selectedSpecies = null, selectedBackground = null, backgroundMechanicDetails = null, selectedBackgroundFeat = null, backgroundFeatOptions = [], backgroundSkillSelections = {}, onToggleBackgroundSkill = null, onSelectBackgroundFeat = null, selectedClass = null, selectedSkill = null, selectedProfession = null, rolls = [], allocation = {}, finalAbilities = {}, draft = {} }) {
+export default function NpcForgeContextPanel({ playerMode = false, step = 0, stepKey = "", detail = null, selectedSpecies = null, selectedBackground = null, backgroundMechanicDetails = null, selectedBackgroundFeat = null, backgroundFeatOptions = [], backgroundSkillSelections = {}, onToggleBackgroundSkill = null, onSelectBackgroundFeat = null, selectedClass = null, selectedSkill = null, selectedProfession = null, rolls = [], allocation = {}, finalAbilities = {}, draft = {}, onPatch = null }) {
   const activeSpecies = detail?.type === "species" && detail.option ? detail.option : stepKey === "species" || step === 0 ? selectedSpecies : null;
   const activeBackground = detail?.type === "background" && detail.option ? detail.option : stepKey === "background" || step === 1 ? selectedBackground : null;
   const { state: speciesChoiceState, registerSpecies, selectChoice } = useNpcForgeSpeciesChoices();
@@ -328,6 +340,7 @@ export default function NpcForgeContextPanel({ playerMode = false, step = 0, ste
       staticFactByKind.vision ? <SpeciesStaticFact key="vision" {...staticFactByKind.vision} /> : null,
       staticFactByKind.ancestry ? <SpeciesStaticFact key="ancestry" {...staticFactByKind.ancestry} /> : null,
       languageGroups.length ? <SpeciesChoiceFact key="languages" kind="language" title="Languages" groups={languageGroups} selections={sourceSelections} onToggle={toggleSourceChoice} onSet={setSourceChoice} prefixValue={fixedLanguageValue} /> : staticFactByKind.languages ? <SpeciesStaticFact key="languages" {...staticFactByKind.languages} /> : null,
+      <SpeciesIdentityFact key="identity" gender={draft.gender} alignment={draft.alignment} onPatch={onPatch} />,
     ].filter(Boolean);
     const trainingGroups = playerMode ? eligibleSourceGroups("training").filter((group) => String(group.ownerType || "").startsWith("species")) : [];
     const spellGroups = playerMode ? eligibleSourceGroups("spells").filter((group) => String(group.ownerType || "").startsWith("species")) : [];

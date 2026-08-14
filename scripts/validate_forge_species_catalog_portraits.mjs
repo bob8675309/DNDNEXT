@@ -35,7 +35,8 @@ assert.ok(contextPanelSource.includes("speciesPortraitArtworkFor(option.name)"),
 assert.ok(!contextPanelSource.includes("speciesArtworkFor(option.name)"), "large Forge Species hero must not bypass dedicated child portraits");
 assert.ok(!/hue-rotate|body:has\(\[data-selected-portrait/.test(coreSource), "obsolete CSS recoloring/crop stand-ins must remain removed");
 assert.ok(!coreSource.includes("active && (family || sourceVariants.length) ? \"⌄\" : \"›\""), "expand/collapse must no longer be coupled to active selection state");
-assert.ok(coreSource.includes("expanded && (parentSelected || searchRevealsFamily) && family"), "family children must render from independent manual or search-derived expanded state");
+assert.ok(coreSource.includes("const showFamilySubmenu = expanded && family"), "family children must render from independent manual, selected-source, or search-derived expanded state");
+assert.ok(coreSource.includes("const selectCatalogFamilyOption"), "an unselected parent must support one-click child selection after its canonical source group registers");
 assert.ok(coreSource.includes("searchRevealsSources || !catalogSearchQuery"), "setting children must render from independent manual or search-derived expanded state");
 assert.ok(coreSource.includes('const childQuery = parentMatchesSearch ? "" : catalogSearchQuery'), "parent searches must reveal all children while child searches narrow the revealed submenu");
 

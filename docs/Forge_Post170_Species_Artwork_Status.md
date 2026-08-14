@@ -304,3 +304,13 @@ Review the completed PR #171 artwork pass and perform any desired in-Forge visua
 - Species catalogue chrome is denser, while parent and child portrait thumbnails are larger and keep their existing dedicated-art resolver.
 
 This continuation makes no Supabase write or migration and touches no world-map, town/city-map, travel, combat, crafting, inventory, or merchant system.
+
+## Species layout, Elf grouping, and guided-validation continuation
+
+- The Player/NPC shared Species panel now owns Gender Presentation and Alignment beside the portrait facts in one expandable `Presentation & alignment` card. Both selectors patch the established `draft.gender` and `draft.alignment` fields; no parallel state or persistence path was added.
+- The left Species workspace moves the ancestry helper and available count beside the search input, widens the desktop catalogue from 30% to 34%, and proportionally enlarges parent and child portrait rows. Background and Class layouts remain unchanged.
+- The live preferred catalogue still contains independent canonical rows for `Elf` (XPHB), `Elf (Kaladesh)` (PSK), and `Elf (Zendikar)` (PSZ). The Forge now presents Kaladesh inside the main `Elven Lineage` submenu with Drow, High Elf, and Wood Elf. Zendikar is presentation-excluded from the Forge only; its database row and existing artwork remain untouched for historical sheets or other consumers.
+- Clicking Continue with missing data now preserves the established validator message while scrolling to, focusing, outlining, and labeling the first incomplete control with a red directional marker. Source-owned Species, Background, Class, Training, and Spell choices continue to use their existing canonical validators.
+- An unselected expandable Species family can now accept a child click in one action: the parent is selected first, then the requested existing source-choice key is applied as soon as its canonical group registers.
+
+The continuation adds no Supabase migration or write and does not touch world-map, town/city-map, travel, combat, crafting, inventory, or merchant behavior. PR #171 remains open and unmerged pending explicit user approval.

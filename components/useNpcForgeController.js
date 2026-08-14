@@ -7,6 +7,7 @@ import { extractClassSkillConfiguration, mergePreferredBackgrounds, mergePreferr
 import { emptyPointBuyScores, pointBuyRemaining, rollAbilityPoolForMethod, spellChoicesForRpc, validateStartingSpellSelections } from "../utils/playerForgeRules";
 import { normalizeStartingEquipmentSelection, startingEquipmentSelectionComplete } from "../utils/playerForgeStartingEquipment";
 import { speciesDefaultCharacterSize } from "../utils/speciesPresentation";
+import { clearForgeValidationGuidance, forgeStepGuidanceSelectors, showForgeValidationGuidance } from "../utils/forgeValidationGuidance";
 import { generateNpcName } from "../utils/npcNameGenerator";
 import { generateNpcStory, generatedStoryLocationLabel } from "../utils/npcStoryGenerator";
 import { backgroundFeatRule as getBackgroundFeatRule, backgroundFeatSummary, resolveBackgroundFeatOptions } from "../utils/backgroundMechanics";
@@ -98,9 +99,9 @@ export default function useNpcForgeController({ show, onClose, onCreated, locati
     return () => { active = false; };
   }, [show, playerMode, selectedClass?.id, selectedBackground?.id, draft.level]);
 
-  function patch(values) { setDraft((current) => ({ ...current, ...values })); setError(""); }
+  function patch(values) { setDraft((current) => ({ ...current, ...values })); setError(""); clearForgeValidationGuidance(); }
   function resetForm() {
-    setStep(0); setDraft(initialDraft()); setCreating(false); setCatalogError(""); setError(""); setSpeciesQuery(""); setBackgroundQuery(""); setClassQuery(""); setFeatQuery(""); setFeatToAdd(""); setTagInput(""); setRolls(rollAbilityPoolForMethod("4d6")); setAllocation({}); setSelectedRollId(""); setDetail(null); setPortraitPickerOpen(false); setSpellModel(null); setSpellRows([]); setEquipmentModel(null); onReset?.();
+    clearForgeValidationGuidance(); setStep(0); setDraft(initialDraft()); setCreating(false); setCatalogError(""); setError(""); setSpeciesQuery(""); setBackgroundQuery(""); setClassQuery(""); setFeatQuery(""); setFeatToAdd(""); setTagInput(""); setRolls(rollAbilityPoolForMethod("4d6")); setAllocation({}); setSelectedRollId(""); setDetail(null); setPortraitPickerOpen(false); setSpellModel(null); setSpellRows([]); setEquipmentModel(null); onReset?.();
   }
   function handleClose() { if (creating) return; onClose?.(); }
   function handleReset() { if (creating) return; if (typeof window === "undefined" || window.confirm("Reset this Character Forge draft? All entries and selections will be cleared.")) resetForm(); }
@@ -143,9 +144,9 @@ export default function useNpcForgeController({ show, onClose, onCreated, locati
     if (key === "identity") { if (!safeText(draft.name)) errors.push("Enter or generate a name."); if (!safeText(draft.role)) errors.push("Enter a role or title."); if (!draft.portraitLibraryId) errors.push("Choose a portrait for this character."); }
     return errors;
   }
-  function handleNext() { const errors = stepErrors(stepKey); if (errors.length) return setError(errors.join(" ")); setStep((current) => Math.min(STEP_LABELS.length - 1, current + 1)); setDetail(null); }
-  function handleBack() { setError(""); setStep((current) => Math.max(0, current - 1)); setDetail(null); }
-  function editStep(key) { const index = STEP_LABELS.findIndex((label) => label.toLowerCase() === key); if (index >= 0) { setStep(index); setDetail(null); setError(""); } }
+  function handleNext() { const errors = stepErrors(stepKey); if (errors.length) { const message = errors.join(" "); setError(message); showForgeValidationGuidance(errors[0], forgeStepGuidanceSelectors(stepKey, errors[0])); return; } clearForgeValidationGuidance(); setStep((current) => Math.min(STEP_LABELS.length - 1, current + 1)); setDetail(null); }
+  function handleBack() { clearForgeValidationGuidance(); setError(""); setStep((current) => Math.max(0, current - 1)); setDetail(null); }
+  function editStep(key) { const index = STEP_LABELS.findIndex((label) => label.toLowerCase() === key); if (index >= 0) { clearForgeValidationGuidance(); setStep(index); setDetail(null); setError(""); } }
 
   async function handleCreate() {
     if (creating) return;
