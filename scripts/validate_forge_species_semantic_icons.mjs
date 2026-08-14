@@ -52,6 +52,8 @@ for (const token of [
 
 for (const token of [
   "npc-forge-step-species > .npc-forge-workspace",
+  "grid-template-rows: max-content",
+  "align-content: start",
   "flex: 1 1 0",
   "max-height: none !important",
   '[data-icon-kind="languages"]',

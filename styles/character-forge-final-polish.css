@@ -462,6 +462,11 @@
 }
 
 @media (min-width: 981px) {
+  .npc-forge-body.is-player-mode.npc-forge-step-species {
+    grid-template-rows: max-content;
+    align-content: start;
+  }
+
   .npc-forge-body.is-player-mode.npc-forge-step-species > .npc-forge-workspace {
     display: flex;
     align-self: stretch;
