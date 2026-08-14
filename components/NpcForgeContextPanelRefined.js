@@ -26,10 +26,10 @@ import { sourceChoiceGroupsForPlacement, useNpcForgeSourceChoices } from "./NpcF
 import { useNpcForgeSpeciesChoices } from "./NpcForgeSpeciesChoiceContext";
 
 const SIZE_LABELS = { T: "Tiny", S: "Small", M: "Medium", L: "Large", H: "Huge", G: "Gargantuan", V: "Variable" };
-const GENDER_PRESENTATION_OPTIONS = Object.freeze([
+const GENDER_OPTIONS = Object.freeze([
   { key: "female", label: "Female" },
   { key: "male", label: "Male" },
-  { key: "neutral", label: "Nonbinary / neutral" },
+  { key: "neutral", label: "Nonbinary" },
 ]);
 const SPELL_SOURCE_PRIORITY = { XPHB: 0, PHB: 1 };
 const safeText = (value) => String(value ?? "").trim();
@@ -160,10 +160,10 @@ function SpeciesChoiceFact({ kind, title, groups = [], selections = {}, onToggle
 }
 
 function SpeciesIdentityFact({ gender = "neutral", alignment = "N", onPatch = null }) {
-  const genderLabel = GENDER_PRESENTATION_OPTIONS.find((option) => option.key === gender)?.label || "Nonbinary / neutral";
+  const genderLabel = GENDER_OPTIONS.find((option) => option.key === gender)?.label || "Nonbinary";
   const alignmentKey = String(alignment || "N").toUpperCase();
   const alignmentLabel = ALIGNMENT_OPTIONS.find((option) => option.key === alignmentKey)?.label || "Neutral";
-  return <details className="npc-forge-species-fact-choice npc-forge-species-identity-fact is-complete" data-icon-kind="identity"><summary><ForgeSemanticIcon kind="identity" /><span className="npc-forge-species-fact-copy"><small>Presentation &amp; alignment</small><strong>{genderLabel} • {alignmentLabel}</strong></span></summary><div className="npc-forge-species-fact-choice__body"><p>These character details do not change the selected Species rules.</p><div className="npc-forge-species-identity-controls"><label><span>Gender presentation</span><select value={gender} onChange={(event) => onPatch?.({ gender: event.target.value })}>{GENDER_PRESENTATION_OPTIONS.map((option) => <option key={option.key} value={option.key}>{option.label}</option>)}</select></label><label><span>Alignment</span><select value={alignmentKey} onChange={(event) => onPatch?.({ alignment: event.target.value })}>{ALIGNMENT_OPTIONS.map((option) => <option key={option.key} value={option.key}>{option.label}</option>)}</select></label></div></div></details>;
+  return <details className="npc-forge-species-fact-choice npc-forge-species-identity-fact is-complete" data-icon-kind="identity"><summary><ForgeSemanticIcon kind="identity" /><span className="npc-forge-species-fact-copy"><small>Gender &amp; Alignment</small><strong>{genderLabel} • {alignmentLabel}</strong></span></summary><div className="npc-forge-species-fact-choice__body"><p>Choose gender and alignment.</p><div className="npc-forge-species-identity-controls"><label><span>Gender</span><select value={gender} onChange={(event) => onPatch?.({ gender: event.target.value })}>{GENDER_OPTIONS.map((option) => <option key={option.key} value={option.key}>{option.label}</option>)}</select></label><label><span>Alignment</span><select value={alignmentKey} onChange={(event) => onPatch?.({ alignment: event.target.value })}>{ALIGNMENT_OPTIONS.map((option) => <option key={option.key} value={option.key}>{option.label}</option>)}</select></label></div></div></details>;
 }
 
 function SpeciesFeatureOptionCards({ label = "Available options", options = [] }) {

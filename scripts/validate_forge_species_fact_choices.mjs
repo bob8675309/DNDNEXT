@@ -92,19 +92,26 @@ for (const token of [
   "speciesFeaturePresentation(option)",
   "SpeciesFeatureOptionCards",
   "SpeciesIdentityFact",
-  "GENDER_PRESENTATION_OPTIONS",
+  "GENDER_OPTIONS",
   "ALIGNMENT_OPTIONS",
+  "Gender &amp; Alignment",
+  "<span>Gender</span>",
+  '{ key: "neutral", label: "Nonbinary" }',
   "onPatch?.({ gender:",
   "onPatch?.({ alignment:",
   "!hasEmbeddedChoice && !rule",
   'group.metadata?.family === "eladrin-season"',
 ]) assert.ok(contextSource.includes(token), `Species fact presentation is missing ${token}`);
+assert.ok(!contextSource.includes("Presentation &amp; alignment"), "the identity fact must use Gender wording");
+assert.ok(!contextSource.includes("Gender presentation"), "the identity selector label must be Gender");
 assert.ok(contextSource.includes("(?<=[.!?])"), "rule paragraph splitting must require preceding punctuation so 'You are a Humanoid' stays intact");
 assert.ok(stepSource.includes('group.id !== "origin-standard-languages" || (!fixedLanguages.length && !hasSourceLanguageRule)'), "origin languages must apply only when neither fixed nor selectable source languages exist");
 assert.ok(!stepSource.includes('String(selectedSpecies.source || "").toUpperCase() === "XPHB" && !fixedLanguages.length'), "origin language availability must not be limited to XPHB Species");
 assert.ok(variantSource.includes("damageType: selectedVariant.metadata?.damageType || null"), "selected variant metadata must project its damage type");
 assert.ok(catalogFamilySource.includes("damageType: text(binding.selected.metadata?.damageType) || null"), "catalog family metadata must project its damage type");
 for (const token of ["npc-forge-species-fact-choice", "npc-forge-species-fact-tooltip", "npc-forge-species-option-cards", "npc-forge-species-identity-controls", "grid-column: 1 / -1", "overflow-wrap: break-word", "word-break: normal", "width: 56px", "height: 62px"]) assert.ok(polishSource.includes(token), `Species fact interaction styling is missing ${token}`);
+assert.ok(polishSource.includes(".npc-forge-species-identity-fact[open]"), "the expanded identity fact needs a stable full-width layout");
+assert.ok(!polishSource.includes(".npc-forge-species-identity-fact {\n  grid-column: 1 / -1;"), "the collapsed identity fact must remain the same size as the other fact cards");
 
 for (const source of [contextSource, stepSource, variantSource, catalogFamilySource, polishSource]) {
   assert.doesNotMatch(source, /MapPageClient|map_routes|map_route_points|advance_all_characters|route_segment_progress/, "Species fact work crossed a protected map/travel boundary");

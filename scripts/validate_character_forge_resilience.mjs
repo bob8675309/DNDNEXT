@@ -102,7 +102,7 @@ requireToken(context, "npc-forge-species-feature-list", "species expandable rule
 requireToken(context, "npc-forge-species-spell-help", "species spell hover details");
 requireToken(context, 'from("spells_catalog")', "species spell hover source");
 forbidToken(context, 'label: "Speed"', "species redundant flat rows");
-for (const token of ["SpeciesIdentityFact", "GENDER_PRESENTATION_OPTIONS", "ALIGNMENT_OPTIONS", "onPatch={patch}"]) requireToken(`${context}\n${forgeSteps}`, token, "Species identity controls");
+for (const token of ["SpeciesIdentityFact", "GENDER_OPTIONS", "ALIGNMENT_OPTIONS", "onPatch={patch}"]) requireToken(`${context}\n${forgeSteps}`, token, "Species identity controls");
 for (const token of ["clearForgeValidationGuidance", "showForgeValidationGuidance", "forgeStepGuidanceSelectors", "data-forge-validation-message", "aria-invalid"]) requireToken(`${adapter}\n${forgeController}\n${validationGuidance}`, token, "targeted Continue guidance");
 for (const token of [".is-forge-validation-target", 'content: "↓ " attr(data-forge-validation-message)', "forge-validation-pulse"]) requireToken(finalPolish, token, "targeted Continue guidance styling");
 
