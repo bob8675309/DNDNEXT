@@ -8,6 +8,7 @@ import useNpcForgeController from "./useNpcForgeController";
 // Compatibility/source ownership markers for the shared Forge validators:
 // const STEP_LABELS = Object.freeze(["Species", "Background", "Class", "Abilities", "Training", "Identity", "Story", "Review"]);
 // step === 5 Identity; step === 6 Story
+// Starting level may be set from 1 to 20.
 // portraitLibraryId visualAssetId creationRequestId creation_request_id recoverCreatedCharacter
 // You can safely retry. Choose a portrait for this character. Generate NPC story & world fit
 // identity: { name: draft.name, role: draft.role, affiliation: draft.affiliation
