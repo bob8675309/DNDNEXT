@@ -1,7 +1,22 @@
 import { useEffect } from "react";
 
-const PANEL_SELECTOR = ".npc-page-profile-panel-shell";
-const HANDLE_SELECTOR = ".npc-panel-header, .player-character-forge-toolbar";
+const PANEL_SELECTOR = [
+  ".npc-page-profile-panel-shell",
+  ".npc-forge-modal",
+  ".portrait-picker-modal",
+  ".sprite-picker-modal",
+  "[data-app-window-panel='true']",
+].join(",");
+
+const HANDLE_SELECTOR = [
+  ".npc-panel-header",
+  ".player-character-forge-toolbar",
+  ".npc-forge-header",
+  ".portrait-picker-head",
+  ".sprite-picker-head",
+  "[data-app-window-handle='true']",
+].join(",");
+
 const INTERACTIVE_SELECTOR = [
   "button",
   "a",
@@ -10,72 +25,207 @@ const INTERACTIVE_SELECTOR = [
   "select",
   "option",
   "label",
+  "summary",
   "[role='button']",
   "[contenteditable='true']",
   "[contenteditable='']",
   "[data-profile-panel-no-drag]",
+  "[data-app-window-no-drag]",
 ].join(",");
 
 const DESKTOP_MIN_WIDTH = 981;
 const EDGE_GAP = 8;
+const CORNER_HIT_SIZE = 16;
 const MIN_VISIBLE_X = 180;
 const MIN_VISIBLE_HEADER = 48;
+const RESIZE_DIRECTIONS = ["nw", "ne", "sw", "se"];
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
-function readOffset(shell) {
-  return {
-    x: Number(shell?.dataset?.profileDragX || 0) || 0,
-    y: Number(shell?.dataset?.profileDragY || 0) || 0,
-  };
+function numericPx(value, fallback = 0) {
+  const parsed = Number.parseFloat(String(value || ""));
+  return Number.isFinite(parsed) ? parsed : fallback;
 }
 
-function writeOffset(shell, next = { x: 0, y: 0 }) {
+function panelMinimums(shell) {
+  if (shell?.matches?.(".npc-forge-modal")) return { width: 760, height: 460 };
+  if (shell?.matches?.(".npc-page-profile-panel-shell")) return { width: 680, height: 430 };
+  if (shell?.matches?.(".portrait-picker-modal, .sprite-picker-modal")) return { width: 520, height: 380 };
+  return { width: 480, height: 340 };
+}
+
+function isEligibleShell(shell) {
+  return shell instanceof HTMLElement;
+}
+
+function shellForTarget(target) {
+  const shell = target?.closest?.(PANEL_SELECTOR) || null;
+  return isEligibleShell(shell) ? shell : null;
+}
+
+function handleForShell(target, shell) {
+  const handle = target?.closest?.(HANDLE_SELECTOR) || null;
+  if (!handle || !shell?.contains(handle)) return null;
+  return handle.closest(PANEL_SELECTOR) === shell ? handle : null;
+}
+
+function clearLegacyDragState(shell) {
   if (!shell) return;
-  const x = Number(next.x || 0) || 0;
-  const y = Number(next.y || 0) || 0;
-  shell.dataset.profileDragX = String(x);
-  shell.dataset.profileDragY = String(y);
-  shell.style.setProperty("--profile-panel-drag-x", `${x}px`);
-  shell.style.setProperty("--profile-panel-drag-y", `${y}px`);
+  delete shell.dataset.profileDragX;
+  delete shell.dataset.profileDragY;
+  shell.style.removeProperty("--profile-panel-drag-x");
+  shell.style.removeProperty("--profile-panel-drag-y");
 }
 
-function dragBounds(shell, offset) {
+function promoteToDesktopWindow(shell) {
+  if (!isEligibleShell(shell) || window.innerWidth < DESKTOP_MIN_WIDTH) return null;
+  if (shell.classList.contains("is-app-windowed")) return shell.getBoundingClientRect();
+
   const rect = shell.getBoundingClientRect();
-  const handle = shell.querySelector(HANDLE_SELECTOR);
-  const handleRect = handle?.getBoundingClientRect?.() || rect;
-  const baseLeft = rect.left - offset.x;
-  const baseRight = rect.right - offset.x;
-  const baseHeaderTop = handleRect.top - offset.y;
-
-  return {
-    minX: MIN_VISIBLE_X - baseRight,
-    maxX: window.innerWidth - MIN_VISIBLE_X - baseLeft,
-    minY: EDGE_GAP - baseHeaderTop,
-    maxY: window.innerHeight - MIN_VISIBLE_HEADER - baseHeaderTop,
-  };
+  clearLegacyDragState(shell);
+  shell.classList.add("is-app-windowed");
+  shell.dataset.appWindowed = "true";
+  shell.style.left = `${rect.left}px`;
+  shell.style.top = `${rect.top}px`;
+  shell.style.width = `${rect.width}px`;
+  shell.style.height = `${rect.height}px`;
+  shell.style.maxWidth = "none";
+  shell.style.maxHeight = "none";
+  shell.style.right = "auto";
+  shell.style.bottom = "auto";
+  shell.style.transform = "none";
+  return shell.getBoundingClientRect();
 }
 
-function eligibleShell(shell) {
-  return shell instanceof HTMLElement && !shell.classList.contains("is-player-character-forge");
+function resetDesktopWindow(shell) {
+  if (!isEligibleShell(shell)) return;
+  clearLegacyDragState(shell);
+  shell.classList.remove("is-app-windowed", "is-app-window-dragging", "is-app-window-resizing");
+  delete shell.dataset.appWindowed;
+  for (const property of ["left", "top", "width", "height", "maxWidth", "maxHeight", "right", "bottom", "transform"]) {
+    shell.style[property] = "";
+  }
+}
+
+function cornerDirection(shell, clientX, clientY, target = null) {
+  if (!isEligibleShell(shell) || window.innerWidth < DESKTOP_MIN_WIDTH) return "";
+  if (target?.closest?.(INTERACTIVE_SELECTOR)) return "";
+
+  const rect = shell.getBoundingClientRect();
+  const withinX = clientX >= rect.left - 1 && clientX <= rect.right + 1;
+  const withinY = clientY >= rect.top - 1 && clientY <= rect.bottom + 1;
+  if (!withinX || !withinY) return "";
+
+  const left = clientX - rect.left <= CORNER_HIT_SIZE;
+  const right = rect.right - clientX <= CORNER_HIT_SIZE;
+  const top = clientY - rect.top <= CORNER_HIT_SIZE;
+  const bottom = rect.bottom - clientY <= CORNER_HIT_SIZE;
+
+  if (left && top) return "nw";
+  if (right && top) return "ne";
+  if (left && bottom) return "sw";
+  if (right && bottom) return "se";
+  return "";
+}
+
+function setResizeHover(direction = "") {
+  for (const value of RESIZE_DIRECTIONS) document.body?.classList.remove(`is-app-window-resize-hover-${value}`);
+  if (direction) document.body?.classList.add(`is-app-window-resize-hover-${direction}`);
+}
+
+function clearInteractionClasses() {
+  document.body?.classList.remove("is-app-window-drag-active", "is-app-window-resize-active");
+  setResizeHover("");
+}
+
+function dragPosition(shell, startRect, dx, dy) {
+  const minLeft = MIN_VISIBLE_X - startRect.width;
+  const maxLeft = window.innerWidth - MIN_VISIBLE_X;
+  const minTop = EDGE_GAP;
+  const maxTop = Math.max(minTop, window.innerHeight - MIN_VISIBLE_HEADER);
+  shell.style.left = `${clamp(startRect.left + dx, minLeft, maxLeft)}px`;
+  shell.style.top = `${clamp(startRect.top + dy, minTop, maxTop)}px`;
+}
+
+function resizeGeometry(shell, direction, startRect, dx, dy) {
+  const minimums = panelMinimums(shell);
+  const minWidth = Math.min(minimums.width, Math.max(320, window.innerWidth - EDGE_GAP * 2));
+  const minHeight = Math.min(minimums.height, Math.max(260, window.innerHeight - EDGE_GAP * 2));
+  const maxViewportWidth = Math.max(minWidth, window.innerWidth - EDGE_GAP * 2);
+  const maxViewportHeight = Math.max(minHeight, window.innerHeight - EDGE_GAP * 2);
+
+  let left = startRect.left;
+  let top = startRect.top;
+  let width = startRect.width;
+  let height = startRect.height;
+
+  if (direction.includes("e")) {
+    const maxWidth = Math.max(minWidth, window.innerWidth - EDGE_GAP - startRect.left);
+    width = clamp(startRect.width + dx, minWidth, Math.min(maxViewportWidth, maxWidth));
+  }
+
+  if (direction.includes("w")) {
+    const right = startRect.right;
+    const maxWidth = Math.max(minWidth, right - EDGE_GAP);
+    width = clamp(startRect.width - dx, minWidth, Math.min(maxViewportWidth, maxWidth));
+    left = right - width;
+  }
+
+  if (direction.includes("s")) {
+    const maxHeight = Math.max(minHeight, window.innerHeight - EDGE_GAP - startRect.top);
+    height = clamp(startRect.height + dy, minHeight, Math.min(maxViewportHeight, maxHeight));
+  }
+
+  if (direction.includes("n")) {
+    const bottom = startRect.bottom;
+    const maxHeight = Math.max(minHeight, bottom - EDGE_GAP);
+    height = clamp(startRect.height - dy, minHeight, Math.min(maxViewportHeight, maxHeight));
+    top = bottom - height;
+  }
+
+  shell.style.left = `${left}px`;
+  shell.style.top = `${top}px`;
+  shell.style.width = `${width}px`;
+  shell.style.height = `${height}px`;
+}
+
+function reclampWindow(shell) {
+  if (!isEligibleShell(shell) || !shell.classList.contains("is-app-windowed")) return;
+  const rect = shell.getBoundingClientRect();
+  const minimums = panelMinimums(shell);
+  const maxWidth = Math.max(320, window.innerWidth - EDGE_GAP * 2);
+  const maxHeight = Math.max(260, window.innerHeight - EDGE_GAP * 2);
+  const width = clamp(rect.width, Math.min(minimums.width, maxWidth), maxWidth);
+  const height = clamp(rect.height, Math.min(minimums.height, maxHeight), maxHeight);
+  const left = clamp(numericPx(shell.style.left, rect.left), MIN_VISIBLE_X - width, window.innerWidth - MIN_VISIBLE_X);
+  const top = clamp(numericPx(shell.style.top, rect.top), EDGE_GAP, Math.max(EDGE_GAP, window.innerHeight - MIN_VISIBLE_HEADER));
+
+  shell.style.width = `${width}px`;
+  shell.style.height = `${height}px`;
+  shell.style.left = `${left}px`;
+  shell.style.top = `${top}px`;
 }
 
 export default function ProfilePanelDragController() {
   useEffect(() => {
-    let drag = null;
+    let interaction = null;
 
-    function finishDrag(pointerId = null) {
-      if (!drag) return;
-      if (pointerId != null && pointerId !== drag.pointerId) return;
-      const { shell, pointerId: activePointerId } = drag;
-      shell.classList.remove("is-profile-panel-dragging");
-      document.body?.classList.remove("is-profile-panel-drag-active");
+    function finishInteraction(pointerId = null) {
+      if (!interaction) {
+        clearInteractionClasses();
+        return;
+      }
+      if (pointerId != null && pointerId !== interaction.pointerId) return;
+
+      const { shell, pointerId: activePointerId } = interaction;
+      shell.classList.remove("is-app-window-dragging", "is-app-window-resizing");
       try {
         shell.releasePointerCapture?.(activePointerId);
       } catch {}
-      drag = null;
+      interaction = null;
+      clearInteractionClasses();
     }
 
     function onPointerDown(event) {
@@ -83,71 +233,82 @@ export default function ProfilePanelDragController() {
       const target = event.target instanceof Element ? event.target : null;
       if (!target) return;
 
-      const shell = target.closest(PANEL_SELECTOR);
-      if (!eligibleShell(shell)) return;
+      const shell = shellForTarget(target);
+      if (!shell) return;
 
-      const handle = target.closest(HANDLE_SELECTOR);
-      if (!handle && target !== shell) return;
-      if (target.closest(INTERACTIVE_SELECTOR)) return;
+      const direction = cornerDirection(shell, event.clientX, event.clientY, target);
+      if (direction) {
+        const rect = promoteToDesktopWindow(shell);
+        if (!rect) return;
+        interaction = {
+          type: "resize",
+          shell,
+          direction,
+          pointerId: event.pointerId,
+          startX: event.clientX,
+          startY: event.clientY,
+          startRect: shell.getBoundingClientRect(),
+        };
+        shell.classList.add("is-app-window-resizing");
+        document.body?.classList.add("is-app-window-resize-active");
+        setResizeHover(direction);
+      } else {
+        const handle = handleForShell(target, shell);
+        if (!handle || target.closest(INTERACTIVE_SELECTOR)) return;
+        promoteToDesktopWindow(shell);
+        interaction = {
+          type: "drag",
+          shell,
+          pointerId: event.pointerId,
+          startX: event.clientX,
+          startY: event.clientY,
+          startRect: shell.getBoundingClientRect(),
+        };
+        shell.classList.add("is-app-window-dragging");
+        document.body?.classList.add("is-app-window-drag-active");
+      }
 
-      const offset = readOffset(shell);
-      drag = {
-        shell,
-        pointerId: event.pointerId,
-        startX: event.clientX,
-        startY: event.clientY,
-        startOffset: offset,
-        bounds: dragBounds(shell, offset),
-      };
-
-      shell.classList.add("is-profile-panel-dragging");
-      document.body?.classList.add("is-profile-panel-drag-active");
       try {
         shell.setPointerCapture?.(event.pointerId);
       } catch {}
       event.preventDefault();
+      event.stopPropagation();
     }
 
     function onPointerMove(event) {
-      if (!drag || event.pointerId !== drag.pointerId) return;
-      const next = {
-        x: clamp(
-          drag.startOffset.x + event.clientX - drag.startX,
-          drag.bounds.minX,
-          drag.bounds.maxX
-        ),
-        y: clamp(
-          drag.startOffset.y + event.clientY - drag.startY,
-          drag.bounds.minY,
-          drag.bounds.maxY
-        ),
-      };
-      writeOffset(drag.shell, next);
+      if (interaction && event.pointerId === interaction.pointerId) {
+        const dx = event.clientX - interaction.startX;
+        const dy = event.clientY - interaction.startY;
+        if (interaction.type === "resize") resizeGeometry(interaction.shell, interaction.direction, interaction.startRect, dx, dy);
+        else dragPosition(interaction.shell, interaction.startRect, dx, dy);
+        event.preventDefault();
+        return;
+      }
+
+      if (window.innerWidth < DESKTOP_MIN_WIDTH) {
+        setResizeHover("");
+        return;
+      }
+      const target = event.target instanceof Element ? event.target : null;
+      const shell = target ? shellForTarget(target) : null;
+      setResizeHover(shell ? cornerDirection(shell, event.clientX, event.clientY, target) : "");
     }
 
     function onPointerEnd(event) {
-      finishDrag(event.pointerId);
+      finishInteraction(event.pointerId);
+    }
+
+    function onWindowBlur() {
+      finishInteraction();
     }
 
     function onResize() {
       if (window.innerWidth < DESKTOP_MIN_WIDTH) {
-        document.querySelectorAll(PANEL_SELECTOR).forEach((shell) => {
-          writeOffset(shell, { x: 0, y: 0 });
-          shell.classList.remove("is-profile-panel-dragging");
-        });
-        finishDrag();
+        document.querySelectorAll(PANEL_SELECTOR).forEach(resetDesktopWindow);
+        finishInteraction();
         return;
       }
-
-      document.querySelectorAll(PANEL_SELECTOR).forEach((shell) => {
-        if (!eligibleShell(shell)) return;
-        const offset = readOffset(shell);
-        const bounds = dragBounds(shell, offset);
-        writeOffset(shell, {
-          x: clamp(offset.x, bounds.minX, bounds.maxX),
-          y: clamp(offset.y, bounds.minY, bounds.maxY),
-        });
-      });
+      document.querySelectorAll(PANEL_SELECTOR).forEach(reclampWindow);
     }
 
     document.addEventListener("pointerdown", onPointerDown, true);
@@ -155,16 +316,16 @@ export default function ProfilePanelDragController() {
     document.addEventListener("pointerup", onPointerEnd, true);
     document.addEventListener("pointercancel", onPointerEnd, true);
     window.addEventListener("resize", onResize);
-    window.addEventListener("blur", finishDrag);
+    window.addEventListener("blur", onWindowBlur);
 
     return () => {
-      finishDrag();
+      finishInteraction();
       document.removeEventListener("pointerdown", onPointerDown, true);
       document.removeEventListener("pointermove", onPointerMove, true);
       document.removeEventListener("pointerup", onPointerEnd, true);
       document.removeEventListener("pointercancel", onPointerEnd, true);
       window.removeEventListener("resize", onResize);
-      window.removeEventListener("blur", finishDrag);
+      window.removeEventListener("blur", onWindowBlur);
     };
   }, []);
 

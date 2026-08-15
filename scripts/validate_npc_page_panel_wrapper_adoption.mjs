@@ -4,9 +4,12 @@ import path from "node:path";
 const read = (...parts) => fs.readFileSync(path.join(process.cwd(), ...parts), "utf8");
 const source = read("pages", "npcs.js");
 const appSource = read("pages", "_app.js");
-const dragSource = read("components", "ProfilePanelDragController.js");
-const dragStyles = read("styles", "profile-panel-drag.css");
+const windowSource = read("components", "ProfilePanelDragController.js");
+const windowStyles = read("styles", "profile-panel-drag.css");
 const playerProfileSource = read("components", "PlayerCharacterProfilePanelUnified.js");
+const forgeSource = read("components", "NewNpcModalV3Refined.js");
+const portraitPickerSource = read("components", "PortraitPickerModal.js");
+const spritePickerSource = read("components", "SpritePickerModal.js");
 
 function requireExact(token, label = token) {
   const count = source.split(token).length - 1;
@@ -40,46 +43,71 @@ for (const token of forbidden) {
   }
 }
 
-requireContains(appSource, 'import ProfilePanelDragController from "../components/ProfilePanelDragController";', "global drag-controller import");
-requireContains(appSource, '<ProfilePanelDragController />', "global drag-controller mount");
-requireContains(appSource, 'import "../styles/profile-panel-drag.css";', "profile drag stylesheet import");
+requireContains(appSource, 'import ProfilePanelDragController from "../components/ProfilePanelDragController";', "global window-controller import");
+requireContains(appSource, '<ProfilePanelDragController />', "global window-controller mount");
+requireContains(appSource, 'import "../styles/profile-panel-drag.css";', "desktop window stylesheet import");
 
 for (const token of [
-  'const PANEL_SELECTOR = ".npc-page-profile-panel-shell";',
-  'const HANDLE_SELECTOR = ".npc-panel-header, .player-character-forge-toolbar";',
+  '".npc-page-profile-panel-shell"',
+  '".npc-forge-modal"',
+  '".portrait-picker-modal"',
+  '".sprite-picker-modal"',
+  '"[data-app-window-panel=\'true\']"',
+  '".npc-panel-header"',
+  '".npc-forge-header"',
+  '".portrait-picker-head"',
+  '".sprite-picker-head"',
   "INTERACTIVE_SELECTOR",
   "DESKTOP_MIN_WIDTH = 981",
+  "CORNER_HIT_SIZE = 16",
   "MIN_VISIBLE_X = 180",
   "MIN_VISIBLE_HEADER = 48",
-  'shell.classList.contains("is-player-character-forge")',
+  "function promoteToDesktopWindow(shell)",
+  "function resizeGeometry(shell, direction, startRect, dx, dy)",
+  "function resetDesktopWindow(shell)",
+  'interaction.type === "resize"',
+  'type: "drag"',
   'document.addEventListener("pointerdown", onPointerDown, true)',
   'document.addEventListener("pointermove", onPointerMove, true)',
   'document.addEventListener("pointerup", onPointerEnd, true)',
   'document.addEventListener("pointercancel", onPointerEnd, true)',
   "shell.setPointerCapture?.(event.pointerId)",
   "shell.releasePointerCapture?.(activePointerId)",
-  'writeOffset(shell, { x: 0, y: 0 })',
-]) requireContains(dragSource, token, `drag controller token ${token}`);
+  "document.querySelectorAll(PANEL_SELECTOR).forEach(resetDesktopWindow)",
+]) requireContains(windowSource, token, `desktop window controller token ${token}`);
 
 for (const token of [
-  ".npc-page-profile-panel-shell",
-  "left: var(--profile-panel-drag-x, 0px)",
-  "top: var(--profile-panel-drag-y, 0px)",
-  ".npc-page-profile-panel-shell:not(.is-player-character-forge) .npc-panel-header",
-  ".npc-page-profile-panel-shell.is-player-character-forge",
+  ".is-app-windowed",
+  "position: fixed !important",
+  ".npc-page-profile-panel-shell .npc-panel-header",
+  ".npc-forge-modal > .npc-forge-header",
+  ".portrait-picker-modal > .portrait-picker-head",
+  ".sprite-picker-modal > .sprite-picker-head",
   "cursor: grab",
   "cursor: grabbing",
+  "nwse-resize",
+  "nesw-resize",
   "@media (max-width: 980px)",
-]) requireContains(dragStyles, token, `drag style token ${token}`);
+]) requireContains(windowStyles, token, `desktop window style token ${token}`);
 
 requireContains(playerProfileSource, "npc-page-profile-panel-shell", "player profile shared shell");
-requireContains(playerProfileSource, "is-player-character-forge", "player Forge drag opt-out class");
+requireContains(playerProfileSource, "is-player-character-forge", "player Forge shared-shell mode class");
+requireContains(forgeSource, 'className={`npc-forge-modal npc-forge-modal-v2', "shared Forge modal shell");
+requireContains(forgeSource, 'className="npc-forge-header"', "shared Forge drag handle");
+requireContains(portraitPickerSource, 'className="portrait-picker-modal"', "portrait picker window shell");
+requireContains(portraitPickerSource, 'className="portrait-picker-head"', "portrait picker drag handle");
+requireContains(spritePickerSource, 'className="sprite-picker-modal"', "sprite picker window shell");
+requireContains(spritePickerSource, "sprite-picker-head", "sprite picker drag handle");
 
-const protectedBoundaryText = [dragSource, dragStyles].join("\n");
+if (windowSource.includes('shell.classList.contains("is-player-character-forge")')) {
+  throw new Error("Character Forge is still excluded from the shared desktop window controller.");
+}
+
+const protectedBoundaryText = [windowSource, windowStyles].join("\n");
 for (const token of ["MapPageClient", "map_routes", "advance_all_characters", "town-map", "world-map", "TownSheet"]) {
   if (protectedBoundaryText.includes(token)) {
-    throw new Error(`Profile panel drag patch crossed a protected map boundary: ${token}`);
+    throw new Error(`Desktop window patch crossed a protected map boundary: ${token}`);
   }
 }
 
-console.log("NPC/player profile panel wrapper adoption and draggable-shell behavior validated.");
+console.log("NPC/player profile, Character Forge, and visual picker desktop drag/resize behavior validated.");

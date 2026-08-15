@@ -1,41 +1,78 @@
-/* Shared Player/NPC profile panel drag affordance. Profile windows move as one unit; Forge creation stays fixed. */
-.npc-page-profile-panel-shell {
-  position: relative;
-  left: var(--profile-panel-drag-x, 0px);
-  top: var(--profile-panel-drag-y, 0px);
-}
-
+/* Shared desktop window behavior for the Character Forge, character profile, and large visual picker panels. */
 @media (min-width: 981px) {
-  .npc-page-profile-panel-shell:not(.is-player-character-forge) .npc-panel-header,
-  .npc-page-profile-panel-shell:not(.is-player-character-forge) .player-character-forge-toolbar {
-    cursor: grab;
-  }
-
-  .npc-page-profile-panel-shell.is-profile-panel-dragging .npc-panel-header,
-  .npc-page-profile-panel-shell.is-profile-panel-dragging .player-character-forge-toolbar,
-  body.is-profile-panel-drag-active {
-    cursor: grabbing;
-  }
-
-  body.is-profile-panel-drag-active {
-    user-select: none;
-  }
-}
-
-/* Character creation remains anchored even if the persistent player shell was previously repositioned as a profile. */
-.npc-page-profile-panel-shell.is-player-character-forge {
-  left: 0 !important;
-  top: 0 !important;
-}
-
-@media (max-width: 980px) {
-  .npc-page-profile-panel-shell {
-    left: 0 !important;
-    top: 0 !important;
+  .is-app-windowed {
+    position: fixed !important;
+    margin: 0 !important;
+    box-sizing: border-box;
   }
 
   .npc-page-profile-panel-shell .npc-panel-header,
-  .npc-page-profile-panel-shell .player-character-forge-toolbar {
+  .npc-page-profile-panel-shell .player-character-forge-toolbar,
+  .npc-forge-modal > .npc-forge-header,
+  .portrait-picker-modal > .portrait-picker-head,
+  .sprite-picker-modal > .sprite-picker-head,
+  [data-app-window-panel='true'] [data-app-window-handle='true'] {
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .is-app-window-dragging,
+  .is-app-window-resizing {
+    will-change: left, top, width, height;
+  }
+
+  body.is-app-window-drag-active,
+  body.is-app-window-resize-active {
+    user-select: none;
+  }
+
+  body.is-app-window-drag-active,
+  body.is-app-window-drag-active * {
+    cursor: grabbing !important;
+  }
+
+  body.is-app-window-resize-hover-nw,
+  body.is-app-window-resize-hover-nw *,
+  body.is-app-window-resize-hover-se,
+  body.is-app-window-resize-hover-se *,
+  body.is-app-window-resize-active.is-app-window-resize-hover-nw,
+  body.is-app-window-resize-active.is-app-window-resize-hover-se {
+    cursor: nwse-resize !important;
+  }
+
+  body.is-app-window-resize-hover-ne,
+  body.is-app-window-resize-hover-ne *,
+  body.is-app-window-resize-hover-sw,
+  body.is-app-window-resize-hover-sw *,
+  body.is-app-window-resize-active.is-app-window-resize-hover-ne,
+  body.is-app-window-resize-active.is-app-window-resize-hover-sw {
+    cursor: nesw-resize !important;
+  }
+}
+
+/* Mobile/tablet remains the established anchored responsive layout. */
+@media (max-width: 980px) {
+  .is-app-windowed {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: none;
+    max-height: none;
+    transform: none !important;
+    margin: initial !important;
+  }
+
+  .npc-page-profile-panel-shell .npc-panel-header,
+  .npc-page-profile-panel-shell .player-character-forge-toolbar,
+  .npc-forge-modal > .npc-forge-header,
+  .portrait-picker-modal > .portrait-picker-head,
+  .sprite-picker-modal > .sprite-picker-head,
+  [data-app-window-panel='true'] [data-app-window-handle='true'] {
     cursor: auto;
+    touch-action: auto;
   }
 }
