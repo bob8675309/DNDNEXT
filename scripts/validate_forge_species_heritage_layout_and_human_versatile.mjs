@@ -20,13 +20,14 @@ assert.match(picker, /SourceChoiceFields/);
 
 assert.match(panel, /Versatile — Feat Selection/);
 assert.match(panel, /full imported Origin-feat catalogue/);
-assert.match(panel, /Instead of choosing one of the game's races/);
-assert.match(panel, /Your race is considered to be a Custom Lineage/);
+assert.match(panel, /instead of choosing one of the games races/i);
+assert.match(panel, /your race is considered to be a custom lineage/i);
 
 assert.match(registrar, /String\(feat\?\.category \|\| ""\)\.toUpperCase\(\) === "O"/);
 assert.match(registrar, /surfaceWithFeatChoices:\s*true/);
 assert.match(registrar, /ownerType:\s*"advancement"/);
 assert.match(registrar, /placement:\s*"class"/);
+assert.match(registrar, /resolverPlacement:\s*"training"/);
 assert.match(registrar, /evaluateFeatPrerequisites/);
 assert.match(sourceFields, /surfaceWithFeatChoices/);
 assert.match(modal, /NpcForgeHumanVersatileRegistrar/);
