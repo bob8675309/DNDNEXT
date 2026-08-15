@@ -1,4 +1,6 @@
+import { formatPlayerFacingText } from "../utils/playerFacingText";
 import { sourceChoiceFieldComplete, sourceChoiceFieldIsActive } from "../utils/playerForgeSourceChoices";
+import NpcForgeHeritageTraitPicker from "./NpcForgeHeritageTraitPicker";
 
 const safeText = (value) => String(value ?? "").trim();
 
@@ -62,12 +64,12 @@ function hasRichOptionDetail(option = {}) {
 
 function choiceButtonSummary(option = {}) {
   const metadata = option.metadata || {};
-  if (!hasRichOptionDetail(option)) return safeText(option.description || option.source);
-  if (metadata.damageType) return [metadata.damageType, metadata.ruleFamily || option.source].filter(Boolean).join(" • ");
-  if (/fiendish legac/i.test(safeText(metadata.caption))) return [option.source, "View level 1 / 3 / 5 benefits"].filter(Boolean).join(" • ");
+  if (!hasRichOptionDetail(option)) return formatPlayerFacingText(option.description || (metadata.hideSource ? "" : option.source));
+  if (metadata.damageType) return [metadata.damageType, metadata.ruleFamily || (metadata.hideSource ? "" : option.source)].filter(Boolean).join(" • ");
+  if (/fiendish legac/i.test(safeText(metadata.caption))) return [metadata.hideSource ? "" : option.source, "View level 1 / 3 / 5 benefits"].filter(Boolean).join(" • ");
   if (metadata.ruleFamily) return metadata.ruleFamily;
-  if (metadata.speciesVariant) return [option.source, "Select to view lineage traits"].filter(Boolean).join(" • ");
-  return [option.source, "Select to view benefits"].filter(Boolean).join(" • ");
+  if (metadata.speciesVariant) return [metadata.hideSource ? "" : option.source, "Select to view lineage traits"].filter(Boolean).join(" • ");
+  return [metadata.hideSource ? "" : option.source, "Select to view benefits"].filter(Boolean).join(" • ");
 }
 
 function SelectedOptionDetail({ group, field, selections }) {
@@ -80,7 +82,7 @@ function SelectedOptionDetail({ group, field, selections }) {
     const facts = Array.isArray(metadata.facts) ? metadata.facts : [];
     const traits = Array.isArray(metadata.traits) ? metadata.traits : [];
     const structuredCells = row.slice(1).map((value, index) => ({ label: safeText(columns[index + 1]) || `Detail ${index + 1}`, value: safeText(value) })).filter((entry) => entry.value);
-    return <article key={option.key}><div className="npc-forge-embedded-choice__selected-head"><div><strong>{option.label}</strong>{metadata.ruleFamily ? <small>{metadata.ruleFamily}</small> : option.source ? <small>{option.source}</small> : null}</div>{metadata.damageType ? <em>{metadata.damageType}</em> : null}</div>{facts.length ? <div className="npc-forge-embedded-choice__facts">{facts.map((fact) => <span key={`${option.key}-${fact.label}`}><small>{fact.label}</small><b>{fact.value}</b></span>)}</div> : null}{structuredCells.length ? <div className="npc-forge-embedded-choice__details">{structuredCells.map((entry) => <div key={`${option.key}-${entry.label}`}><small>{entry.label}</small><span>{entry.value}</span></div>)}</div> : option.description ? <p>{option.description}</p> : null}{traits.length ? <div className="npc-forge-embedded-choice__traits">{traits.map((trait) => <div key={`${option.key}-${trait.name}`}><strong>{trait.name}</strong><p>{trait.description}</p></div>)}</div> : null}</article>;
+    return <article key={option.key}><div className="npc-forge-embedded-choice__selected-head"><div><strong>{option.label}</strong>{metadata.ruleFamily ? <small>{metadata.ruleFamily}</small> : option.source && !metadata.hideSource ? <small>{option.source}</small> : null}</div>{metadata.damageType ? <em>{metadata.damageType}</em> : null}</div>{facts.length ? <div className="npc-forge-embedded-choice__facts">{facts.map((fact) => <span key={`${option.key}-${fact.label}`}><small>{fact.label}</small><b>{fact.value}</b></span>)}</div> : null}{structuredCells.length ? <div className="npc-forge-embedded-choice__details">{structuredCells.map((entry) => <div key={`${option.key}-${entry.label}`}><small>{entry.label}</small><span>{entry.value}</span></div>)}</div> : option.description ? <p>{formatPlayerFacingText(option.description)}</p> : null}{traits.length ? <div className="npc-forge-embedded-choice__traits">{traits.map((trait) => <div key={`${option.key}-${trait.name}`}><strong>{trait.name}</strong><p>{formatPlayerFacingText(trait.description)}</p></div>)}</div> : null}</article>;
   })}</div>;
 }
 
@@ -121,6 +123,7 @@ export default function NpcForgeEmbeddedSourceChoices({ groups = [], selections 
   const visibleGroups = (groups || []).filter((group) => activeChoiceFields(group, selections).length > 0);
   if (!visibleGroups.length) return null;
   return <div className={`npc-forge-embedded-choice${compact ? " is-compact" : ""}`}>{visibleGroups.map((group) => {
+    if (group?.metadata?.heritageTraitGroup) return <NpcForgeHeritageTraitPicker key={group.id} group={group} selections={selections} onSet={onSet} />;
     const complete = activeChoiceFields(group, selections).every((field) => sourceChoiceFieldComplete(group, field, selections));
     return <section key={group.id} className={complete ? "is-complete" : "is-required"}>{!compact ? <header><div><strong>{group.label}</strong>{group.helper ? <small>{group.helper}</small> : null}</div><em>{complete ? "Selected" : "Required"}</em></header> : null}{activeChoiceFields(group, selections).map((field) => <EmbeddedField key={field.id} group={group} field={field} selections={selections} onToggle={onToggle} onSet={onSet} />)}</section>;
   })}<style jsx global>{`

@@ -36,10 +36,10 @@ function khoravarOptions(toolRows = []) {
 
 function eladrinSeasonOptions() {
   return [
-    { key: "autumn", value: "autumn", label: "Autumn", description: "Peace and goodwill; after Fey Step, nearby creatures can be Charmed.", source: "MPMM", kind: "season", metadata: { feyStepEffect: "charm" } },
-    { key: "winter", value: "winter", label: "Winter", description: "Sorrow and dread; Fey Step can Frighten one nearby creature.", source: "MPMM", kind: "season", metadata: { feyStepEffect: "frighten" } },
-    { key: "spring", value: "spring", label: "Spring", description: "Joy and renewal; Fey Step can teleport a willing nearby creature instead of you.", source: "MPMM", kind: "season", metadata: { feyStepEffect: "ally-teleport" } },
-    { key: "summer", value: "summer", label: "Summer", description: "Bold heat and fury; after Fey Step, nearby creatures take Fire damage equal to your Proficiency Bonus.", source: "MPMM", kind: "season", metadata: { feyStepEffect: "fire-damage" } },
+    { key: "autumn", value: "autumn", label: "Autumn", description: "Peace and goodwill. Starting at character level 3, after you use Fey Step, up to two creatures of your choice that you can see within 10 feet of you must succeed on a Wisdom saving throw or be Charmed by you for 1 minute. The effect ends early if you or your companions deal damage to that creature.", source: "MPMM", kind: "season", metadata: { feyStepEffect: "charm" } },
+    { key: "winter", value: "winter", label: "Winter", description: "Sorrow and dread. Starting at character level 3, immediately before you use Fey Step, one creature of your choice that you can see within 5 feet of you must succeed on a Wisdom saving throw or be Frightened of you until the end of your next turn.", source: "MPMM", kind: "season", metadata: { feyStepEffect: "frighten" } },
+    { key: "spring", value: "spring", label: "Spring", description: "Joy and renewal. Starting at character level 3, when you use Fey Step, you can touch one willing creature within 5 feet of you. That creature teleports instead of you, appearing in an unoccupied space of your choice that you can see within 30 feet of you.", source: "MPMM", kind: "season", metadata: { feyStepEffect: "ally-teleport" } },
+    { key: "summer", value: "summer", label: "Summer", description: "Boldness and fury. Starting at character level 3, immediately after you use Fey Step, each creature of your choice that you can see within 5 feet of you takes Fire damage equal to your Proficiency Bonus.", source: "MPMM", kind: "season", metadata: { feyStepEffect: "fire-damage" } },
   ];
 }
 
@@ -170,14 +170,14 @@ export function applySpeciesRuntimeChoiceAuthority({ groups = [], species = null
       id: "species-runtime-eladrin-season",
       ownerType: "species-runtime",
       ownerKey: "eladrin-season",
-      label: "Eladrin Season",
+      label: "Seasonal Fey Step",
       source: "MPMM",
       placement: "species",
       level: 1,
-      helper: "Choose your current Eladrin season. It remains current until you change it after a newer Long Rest; at level 3+, it determines the extra Fey Step effect.",
+      helper: "Choose the season your Eladrin begins with. After each Long Rest, you may change to another season. Starting at character level 3, the current season adds the listed effect to Fey Step.",
       fields: [{
         id: "season",
-        label: "Current season",
+        label: "Starting season",
         kind: "season",
         count: 1,
         required: true,
@@ -190,7 +190,7 @@ export function applySpeciesRuntimeChoiceAuthority({ groups = [], species = null
         family: "eladrin-season",
         cadence: "long-rest",
         runtimeInitial: true,
-        sourceTrait: "Fey Step / Season",
+        sourceTrait: "Seasonal Fey Step",
         feyStepLevel: 3,
       },
     });
