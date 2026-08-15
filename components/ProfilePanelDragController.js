@@ -49,6 +49,11 @@ function numericPx(value, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function setImportantPx(shell, property, value) {
+  if (!shell) return;
+  shell.style.setProperty(property, `${Number(value || 0)}px`, "important");
+}
+
 function panelMinimums(shell) {
   if (shell?.matches?.(".npc-forge-modal")) return { width: 760, height: 460 };
   if (shell?.matches?.(".npc-page-profile-panel-shell")) return { width: 680, height: 430 };
@@ -87,15 +92,15 @@ function promoteToDesktopWindow(shell) {
   clearLegacyDragState(shell);
   shell.classList.add("is-app-windowed");
   shell.dataset.appWindowed = "true";
-  shell.style.left = `${rect.left}px`;
-  shell.style.top = `${rect.top}px`;
-  shell.style.width = `${rect.width}px`;
-  shell.style.height = `${rect.height}px`;
-  shell.style.maxWidth = "none";
-  shell.style.maxHeight = "none";
-  shell.style.right = "auto";
-  shell.style.bottom = "auto";
-  shell.style.transform = "none";
+  setImportantPx(shell, "left", rect.left);
+  setImportantPx(shell, "top", rect.top);
+  setImportantPx(shell, "width", rect.width);
+  setImportantPx(shell, "height", rect.height);
+  shell.style.setProperty("max-width", "none", "important");
+  shell.style.setProperty("max-height", "none", "important");
+  shell.style.setProperty("right", "auto", "important");
+  shell.style.setProperty("bottom", "auto", "important");
+  shell.style.setProperty("transform", "none", "important");
   return shell.getBoundingClientRect();
 }
 
@@ -104,8 +109,8 @@ function resetDesktopWindow(shell) {
   clearLegacyDragState(shell);
   shell.classList.remove("is-app-windowed", "is-app-window-dragging", "is-app-window-resizing");
   delete shell.dataset.appWindowed;
-  for (const property of ["left", "top", "width", "height", "maxWidth", "maxHeight", "right", "bottom", "transform"]) {
-    shell.style[property] = "";
+  for (const property of ["left", "top", "width", "height", "max-width", "max-height", "right", "bottom", "transform"]) {
+    shell.style.removeProperty(property);
   }
 }
 
@@ -150,8 +155,8 @@ function dragPosition(shell, startRect, dx, dy) {
   const maxLeft = window.innerWidth - MIN_VISIBLE_X;
   const minTop = EDGE_GAP;
   const maxTop = Math.max(minTop, window.innerHeight - MIN_VISIBLE_HEADER);
-  shell.style.left = `${clamp(startRect.left + dx, minLeft, maxLeft)}px`;
-  shell.style.top = `${clamp(startRect.top + dy, minTop, maxTop)}px`;
+  setImportantPx(shell, "left", clamp(startRect.left + dx, minLeft, maxLeft));
+  setImportantPx(shell, "top", clamp(startRect.top + dy, minTop, maxTop));
 }
 
 function resizeGeometry(shell, direction, startRect, dx, dy) {
@@ -190,10 +195,10 @@ function resizeGeometry(shell, direction, startRect, dx, dy) {
     top = bottom - height;
   }
 
-  shell.style.left = `${left}px`;
-  shell.style.top = `${top}px`;
-  shell.style.width = `${width}px`;
-  shell.style.height = `${height}px`;
+  setImportantPx(shell, "left", left);
+  setImportantPx(shell, "top", top);
+  setImportantPx(shell, "width", width);
+  setImportantPx(shell, "height", height);
 }
 
 function reclampWindow(shell) {
@@ -207,10 +212,10 @@ function reclampWindow(shell) {
   const left = clamp(numericPx(shell.style.left, rect.left), MIN_VISIBLE_X - width, window.innerWidth - MIN_VISIBLE_X);
   const top = clamp(numericPx(shell.style.top, rect.top), EDGE_GAP, Math.max(EDGE_GAP, window.innerHeight - MIN_VISIBLE_HEADER));
 
-  shell.style.width = `${width}px`;
-  shell.style.height = `${height}px`;
-  shell.style.left = `${left}px`;
-  shell.style.top = `${top}px`;
+  setImportantPx(shell, "width", width);
+  setImportantPx(shell, "height", height);
+  setImportantPx(shell, "left", left);
+  setImportantPx(shell, "top", top);
 }
 
 export default function ProfilePanelDragController() {
