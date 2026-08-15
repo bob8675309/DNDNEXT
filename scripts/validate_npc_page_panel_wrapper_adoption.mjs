@@ -48,7 +48,7 @@ requireContains(appSource, '<ProfilePanelDragController />', "global window-cont
 requireContains(appSource, 'import "../styles/profile-panel-drag.css";', "desktop window stylesheet import");
 
 for (const token of [
-  '".npc-page-profile-panel-shell"',
+  '".npc-page-profile-panel-shell:not(.is-player-character-forge)"',
   '".npc-forge-modal"',
   '".portrait-picker-modal"',
   '".sprite-picker-modal"',
@@ -65,6 +65,7 @@ for (const token of [
   "function promoteToDesktopWindow(shell)",
   "function resizeGeometry(shell, direction, startRect, dx, dy)",
   "function resetDesktopWindow(shell)",
+  "function resetForgeHostWindow(target = null)",
   'interaction.type === "resize"',
   'type: "drag"',
   'document.addEventListener("pointerdown", onPointerDown, true)',
@@ -73,13 +74,20 @@ for (const token of [
   'document.addEventListener("pointercancel", onPointerEnd, true)',
   "shell.setPointerCapture?.(event.pointerId)",
   "shell.releasePointerCapture?.(activePointerId)",
+  'document.querySelectorAll(".npc-page-profile-panel-shell.is-player-character-forge.is-app-windowed").forEach(resetDesktopWindow)',
   "document.querySelectorAll(PANEL_SELECTOR).forEach(resetDesktopWindow)",
 ]) requireContains(windowSource, token, `desktop window controller token ${token}`);
 
 for (const token of [
   ".is-app-windowed",
   "position: fixed !important",
-  ".npc-page-profile-panel-shell .npc-panel-header",
+  ".npc-page-profile-panel-shell.is-player-character-forge",
+  ".npc-page-profile-panel-shell.is-player-character-forge > .persistent-player-character-forge",
+  ".npc-page-profile-panel-shell:not(.is-player-character-forge) .npc-panel-header",
+  ".npc-forge-modal.is-app-windowed",
+  "container-name: forge-window",
+  "@container forge-window (max-width: 980px)",
+  "grid-template-columns: minmax(0, 1fr) !important",
   ".npc-forge-modal > .npc-forge-header",
   ".portrait-picker-modal > .portrait-picker-head",
   ".sprite-picker-modal > .sprite-picker-head",
@@ -103,6 +111,10 @@ if (windowSource.includes('shell.classList.contains("is-player-character-forge")
   throw new Error("Character Forge is still excluded from the shared desktop window controller.");
 }
 
+if (windowSource.includes('".npc-page-profile-panel-shell",\n  ".npc-forge-modal"')) {
+  throw new Error("Character Forge host shell is still independently draggable/resizable around the Forge modal.");
+}
+
 const protectedBoundaryText = [windowSource, windowStyles].join("\n");
 for (const token of ["MapPageClient", "map_routes", "advance_all_characters", "town-map", "world-map", "TownSheet"]) {
   if (protectedBoundaryText.includes(token)) {
@@ -110,4 +122,4 @@ for (const token of ["MapPageClient", "map_routes", "advance_all_characters", "t
   }
 }
 
-console.log("NPC/player profile, Character Forge, and visual picker desktop drag/resize behavior validated.");
+console.log("NPC/player profile, Character Forge, and visual picker desktop drag/resize behavior validated, including Forge host isolation and container-width reflow.");

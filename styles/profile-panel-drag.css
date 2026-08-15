@@ -6,8 +6,36 @@
     box-sizing: border-box;
   }
 
-  .npc-page-profile-panel-shell .npc-panel-header,
-  .npc-page-profile-panel-shell .player-character-forge-toolbar,
+  /* The persistent player shell is only a host while Character Forge is open. Keep it inert so
+     the actual Forge modal, not its parent shell, owns drag/resize geometry. */
+  .npc-page-profile-panel-shell.is-player-character-forge {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: min(1180px, calc(100vw - 2rem)) !important;
+    height: calc(100dvh - 2rem) !important;
+    max-width: none !important;
+    max-height: calc(100vh - 2rem) !important;
+    transform: none !important;
+    overflow: visible !important;
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .npc-page-profile-panel-shell.is-player-character-forge > .persistent-player-character-forge {
+    overflow: visible !important;
+  }
+
+  .npc-forge-modal.is-app-windowed {
+    container-type: inline-size;
+    container-name: forge-window;
+  }
+
+  .npc-page-profile-panel-shell:not(.is-player-character-forge) .npc-panel-header,
+  .npc-page-profile-panel-shell:not(.is-player-character-forge) .player-character-forge-toolbar,
   .npc-forge-modal > .npc-forge-header,
   .portrait-picker-modal > .portrait-picker-head,
   .sprite-picker-modal > .sprite-picker-head,
@@ -47,6 +75,43 @@
   body.is-app-window-resize-active.is-app-window-resize-hover-ne,
   body.is-app-window-resize-active.is-app-window-resize-hover-sw {
     cursor: nesw-resize !important;
+  }
+}
+
+/* Once the Forge itself is narrower than its normal desktop composition, respond to the Forge
+   window width instead of the browser viewport. This keeps the resized window readable and stops
+   the two-column desktop grids from overflowing a smaller Forge. */
+@container forge-window (max-width: 980px) {
+  .npc-forge-modal.is-app-windowed .npc-forge-body,
+  .npc-forge-modal.is-app-windowed .npc-forge-body.is-player-mode,
+  .npc-forge-modal.is-app-windowed .npc-forge-body.npc-forge-step-abilities,
+  .npc-forge-modal.is-app-windowed .npc-forge-body.npc-forge-step-spells,
+  .npc-forge-modal.is-app-windowed .npc-forge-body.npc-forge-step-equipment {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .npc-forge-modal.is-app-windowed .npc-forge-preview,
+  .npc-forge-modal.is-app-windowed .npc-forge-context-panel {
+    min-width: 0 !important;
+    border-left: 0 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .npc-forge-modal.is-app-windowed .npc-forge-workspace,
+  .npc-forge-modal.is-app-windowed .npc-forge-preview,
+  .npc-forge-modal.is-app-windowed .npc-forge-context-panel {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}
+
+@container forge-window (max-width: 820px) {
+  .npc-forge-modal.is-app-windowed .npc-forge-ability-drop-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .npc-forge-modal.is-app-windowed .npc-forge-review-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
 
