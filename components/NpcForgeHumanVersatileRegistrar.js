@@ -66,6 +66,7 @@ export default function NpcForgeHumanVersatileRegistrar({ playerMode = false, co
         sourceTrait: "Versatile",
         primaryFeatGrant: true,
         surfaceWithFeatChoices: true,
+        resolverPlacement: "training",
         acquisitionOwnerType: "species",
         acquisitionLevel: 1,
         canonicalPoolCount: originFeats.length,
