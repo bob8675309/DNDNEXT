@@ -11,6 +11,7 @@ import "../styles/character-forge-smoke-fixes.css";
 import "../styles/card-compact.css";
 import "../styles/npc-profile-panel.css";
 import "../styles/player-profile-scroll-fix.css";
+import "../styles/profile-panel-drag.css";
 import "../styles/npc-page-controls.css";
 import "../styles/npc-shop-embedded.css";
 import "../styles/npc-shop-embedded-fill.css";
@@ -37,6 +38,7 @@ import AppRouteReloadGuard from "../components/AppRouteReloadGuard";
 import AdminBuildBadge from "../components/AdminBuildBadge";
 import CharacterSheetSpellDetailsBridge from "../components/CharacterSheetSpellDetailsBridge";
 import PlayerCharacterProfilePanel from "../components/PlayerCharacterProfilePanel";
+import ProfilePanelDragController from "../components/ProfilePanelDragController";
 import TacticalCharacterResourceBridge from "../components/TacticalCharacterResourceBridge";
 import TacticalCoreActionGuide from "../components/TacticalCoreActionGuide";
 import TacticalAttackResultPanel from "../components/TacticalAttackResultPanel";
@@ -54,6 +56,7 @@ export default function App({ Component, pageProps }) {
       </Head>
       <Script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" strategy="afterInteractive" />
       <AppRouteReloadGuard />
+      <ProfilePanelDragController />
       <AppNavbar />
       <Component {...pageProps} />
       <CharacterSheetSpellDetailsBridge />
