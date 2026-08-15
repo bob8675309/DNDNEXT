@@ -17,6 +17,9 @@ assert.match(picker, /npc-forge-heritage-picker__list/);
 assert.match(picker, /npc-forge-heritage-picker__detail/);
 assert.match(picker, /grid-column:\s*1\s*\/\s*-1/);
 assert.match(picker, /SourceChoiceFields/);
+assert.match(picker, /npc-forge-heritage-picker__selected-remove/);
+assert.match(picker, /aria-label={`Remove one \$\{option\.label\} Heritage Trait pick`}/);
+assert.match(picker, /onClick=\{\(\) => removeTrait\(option\.key\)\}/);
 
 assert.match(panel, /Versatile — Feat Selection/);
 assert.match(panel, /full imported Origin-feat catalogue/);
@@ -31,6 +34,12 @@ assert.match(registrar, /resolverPlacement:\s*"training"/);
 assert.match(registrar, /evaluateFeatPrerequisites/);
 assert.match(sourceFields, /surfaceWithFeatChoices/);
 assert.match(modal, /NpcForgeHumanVersatileRegistrar/);
+assert.match(modal, /playerMode \? <h2>Character Forge<\/h2>/);
+assert.doesNotMatch(modal, /Build a player-owned character with the shared canonical Forge/);
+assert.doesNotMatch(modal, /playerMode \? "Player Character Forge"/);
+assert.match(modal, /npc-forge-modal-v2\.is-player-mode \.npc-forge-header\{align-items:center;padding:10px 14px\}/);
+assert.match(modal, /npc-forge-modal-v2\.is-player-mode \.npc-forge-workspace\{padding:14px\}/);
+assert.match(modal, /npc-forge-modal-v2\.is-player-mode \.npc-forge-preview\{padding:12px 14px\}/);
 
 assert.match(migration, /"walk":\s*20/);
 assert.match(migration, /"swim":\s*40/);
@@ -41,4 +50,4 @@ for (const protectedPath of ["MapPageClient", "map_routes", "advance_all_charact
   assert.doesNotMatch([picker, panel, sourceFields, registrar, modal, migration].join("\n"), new RegExp(protectedPath, "i"));
 }
 
-console.log("Forge Heritage layout, Merfolk speed, and Human Versatile routing validation passed.");
+console.log("Forge Heritage layout, compact Player header, Merfolk speed, and Human Versatile routing validation passed.");
