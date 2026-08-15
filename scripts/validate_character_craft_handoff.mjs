@@ -10,7 +10,7 @@ const panel = fs.readFileSync(panelPath, "utf8");
 const wrapperRequired = [
   'const CraftingWorkspace = dynamic(() => import("../CraftingWorkspace"), { ssr: false });',
   'const hasCraftCapability = !!craftProfession && craftProfession !== "Scribe";',
-  '() => buildCharacterInteractionTabs({ hasCraftCapability, hasShopCapability })',
+  '() => buildCharacterInteractionTabs({ hasCraftCapability, hasShopCapability, hasAccountCapability })',
   'const safeInitialView = interactionTabs.includes(requestedView) ? requestedView : "profile";',
   'const safeView = interactionTabs.includes(normalized) ? normalized : "profile";',
   'renderInteractionTabs',
