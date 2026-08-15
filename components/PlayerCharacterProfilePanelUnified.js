@@ -1,11 +1,12 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import { shouldAutoOpenPlayerCharacterPanel } from "../utils/playerCharacterForgeGuard";
 
 const CharacterInteractionPanel = dynamic(() => import("./character/CharacterInteractionPanel"), { ssr: false });
 const PlayerCharacterCreator = dynamic(() => import("./PlayerCharacterCreatorV2"), { ssr: false });
+const PlayerAccountPanel = dynamic(() => import("./PlayerAccountPanel"), { ssr: false });
 
 function isEditableTarget(target) {
   if (!target) return false;
@@ -74,7 +75,7 @@ export default function PlayerCharacterProfilePanelUnified() {
     if (!router?.isReady || router.query?.characterProfile !== "1") return;
     const nextQuery = { ...(router.query || {}) };
     delete nextQuery.characterProfile;
-    router.replace({ pathname: router.pathname, query: nextQuery }, undefined, { shallow: true }).catch(() => {});
+    router.replace({ pathname: router.pathname, query: nextQuery }, undefined, { shallow: true, scroll: false }).catch(() => {});
   }, [router]);
 
   const loadLinkedCharacters = useCallback(async (user, preferredCharacterId = null) => {
@@ -268,11 +269,11 @@ export default function PlayerCharacterProfilePanelUnified() {
     return () => document.removeEventListener("keydown", onKeyDown, true);
   }, [closePanel, isLoggedIn, open, openPanel]);
 
-  const keepCreatorMounted = isLoggedIn;
-  if (!keepCreatorMounted) return null;
+  if (!isLoggedIn) return null;
 
   const showCreator = creatingCharacter || !character;
   const showLoading = loading && !character && !creatingCharacter;
+  const accountContent = sessionUser ? <PlayerAccountPanel sessionUser={sessionUser} onNameSaved={setPlayerName} /> : null;
 
   return (
     <div className={`npc-page-profile-panel-backdrop ${!open ? "is-forge-suspended" : ""}`} onMouseDown={(event) => open && event.target === event.currentTarget ? closePanel() : null} aria-hidden={!open}>
@@ -298,9 +299,20 @@ export default function PlayerCharacterProfilePanelUnified() {
                   {characters.map((row) => <option key={row.id} value={String(row.id)}>{playerCharacterLabel(row)}</option>)}
                 </select>
               </label>
-              <button type="button" className="btn btn-sm btn-outline-light" onClick={beginAdditionalCharacter}>Create another character</button>
+              <div className="player-character-forge-toolbar__actions">
+                <button type="button" className="btn btn-sm btn-outline-light" onClick={beginAdditionalCharacter}>Create another character</button>
+                <button type="button" className="btn btn-sm btn-outline-light player-character-forge-toolbar__close" onClick={closePanel} aria-label="Close profile panel" title="Close">✕</button>
+              </div>
             </div>
-            <CharacterInteractionPanel key={character.id} character={character} isAdmin={isAdmin} locations={locations} onClose={closePanel} initialView="profile" />
+            <CharacterInteractionPanel
+              key={character.id}
+              character={character}
+              isAdmin={isAdmin}
+              locations={locations}
+              onClose={closePanel}
+              initialView="profile"
+              accountContent={accountContent}
+            />
           </> : null}
         </div>
       </div>

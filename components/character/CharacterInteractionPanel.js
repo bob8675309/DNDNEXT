@@ -20,7 +20,7 @@ function characterCraftPortraitUrl(character) {
   return `${baseUrl}/storage/v1/object/public/npc-portraits/${cleanPath}`;
 }
 
-export const CHARACTER_INTERACTION_VIEWS = ["profile", "class", "features", "sheet", "inventory", "spells", "shop", "craft"];
+export const CHARACTER_INTERACTION_VIEWS = ["profile", "class", "features", "sheet", "inventory", "spells", "account", "shop", "craft"];
 
 export function normalizeCharacterInteractionView(value) {
   const view = String(value || "profile").trim().toLowerCase();
@@ -42,6 +42,7 @@ function characterInteractionLabel(view) {
     case "sheet": return "Sheet & Rolls";
     case "inventory": return "Inventory";
     case "spells": return "Spellbook";
+    case "account": return "Account";
     case "shop": return "Shop";
     case "craft": return "Craft";
     case "profile":
@@ -50,10 +51,11 @@ function characterInteractionLabel(view) {
   }
 }
 
-export function buildCharacterInteractionTabs({ hasCraftCapability = false, hasShopCapability = false } = {}) {
+export function buildCharacterInteractionTabs({ hasCraftCapability = false, hasShopCapability = false, hasAccountCapability = false } = {}) {
   return CHARACTER_INTERACTION_VIEWS.filter((view) => {
     if (view === "craft") return !!hasCraftCapability;
     if (view === "shop") return !!hasShopCapability;
+    if (view === "account") return !!hasAccountCapability;
     return true;
   });
 }
@@ -176,7 +178,15 @@ function CharacterSpellbookShell({ character = null, isAdmin = false, renderTabs
   );
 }
 
-export default function CharacterInteractionPanel({ character = null, npc = null, initialView = "profile", onInteractionViewChange = null, useCharacterInteractionShell = false, ...props }) {
+function CharacterAccountShell({ character = null, renderTabs = null, onClose = null, accountContent = null }) {
+  return React.createElement(
+    CharacterWidePanelShell,
+    { character, renderTabs, onClose, shellClassName: "character-account-shell" },
+    accountContent
+  );
+}
+
+export default function CharacterInteractionPanel({ character = null, npc = null, initialView = "profile", onInteractionViewChange = null, useCharacterInteractionShell = false, accountContent = null, ...props }) {
   const panelCharacter = character || npc;
   const panelCharacterId = panelCharacter?.id || null;
   const requestedIsAdmin = !!props?.isAdmin;
@@ -186,9 +196,10 @@ export default function CharacterInteractionPanel({ character = null, npc = null
   const craftProfession = resolveCraftProfession(panelCharacter || {}, sheetForCraftResolution(panelCharacter));
   const hasCraftCapability = !!craftProfession && craftProfession !== "Scribe";
   const hasShopCapability = isMerchantCharacter(panelCharacter);
+  const hasAccountCapability = Boolean(accountContent);
   const interactionTabs = React.useMemo(
-    () => buildCharacterInteractionTabs({ hasCraftCapability, hasShopCapability }),
-    [hasCraftCapability, hasShopCapability]
+    () => buildCharacterInteractionTabs({ hasCraftCapability, hasShopCapability, hasAccountCapability }),
+    [hasAccountCapability, hasCraftCapability, hasShopCapability]
   );
   const requestedView = normalizeCharacterInteractionView(initialView);
   const safeInitialView = interactionTabs.includes(requestedView) ? requestedView : "profile";
@@ -281,7 +292,6 @@ export default function CharacterInteractionPanel({ character = null, npc = null
             disciplineLock: craftProfession,
             crafterId: panelCharacterId,
             crafter: panelCharacter,
-            // Historical validator contract for the original direct pass-through: isAdmin: !!props?.isAdmin
             isAdmin: effectiveIsAdmin,
             startView: "recipes",
             showDisciplineSwitcher: false,
@@ -321,6 +331,15 @@ export default function CharacterInteractionPanel({ character = null, npc = null
       isAdmin: effectiveIsAdmin,
       renderTabs: renderInteractionTabs,
       onClose: props?.onClose,
+    }));
+  }
+
+  if (interactionView === "account" && hasAccountCapability) {
+    return wrapWithContext(React.createElement(CharacterAccountShell, {
+      character: panelCharacter,
+      renderTabs: renderInteractionTabs,
+      onClose: props?.onClose,
+      accountContent,
     }));
   }
 

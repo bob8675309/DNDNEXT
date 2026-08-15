@@ -12,6 +12,7 @@ import "../styles/card-compact.css";
 import "../styles/npc-profile-panel.css";
 import "../styles/player-profile-scroll-fix.css";
 import "../styles/profile-panel-drag.css";
+import "../styles/player-account-panel.css";
 import "../styles/npc-page-controls.css";
 import "../styles/npc-shop-embedded.css";
 import "../styles/npc-shop-embedded-fill.css";
