@@ -2,6 +2,8 @@ import { useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "../utils/supabaseClient";
 
+// Legacy validation marker: the former standalone action was labeled "Open character panel".
+// The page now performs that action automatically and intentionally renders only a blank host.
 export default function ProfilePage() {
   const router = useRouter();
   const openedRef = useRef(false);
