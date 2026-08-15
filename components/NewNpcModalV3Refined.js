@@ -1,5 +1,6 @@
 import NpcForgeEquipmentStep from "./NpcForgeEquipmentStep";
 import NpcForgeFeatChoiceRegistrar from "./NpcForgeFeatChoiceRegistrar";
+import NpcForgeHumanVersatileRegistrar from "./NpcForgeHumanVersatileRegistrar";
 import NpcForgePortraitPickerModal from "./NpcForgePortraitPickerModal";
 import NpcForgeStepContent from "./NpcForgeStepContent";
 import useNpcForgeController from "./useNpcForgeController";
@@ -21,6 +22,7 @@ export default function NewNpcModalV3Refined({ show, onClose, onCreated, locatio
   if (!show) return null;
   return <div className="npc-forge-backdrop" role="presentation"><div className={`npc-forge-modal npc-forge-modal-v2 ${playerMode ? "is-player-mode" : "is-npc-mode"}`} role="dialog" aria-modal="true">
     <NpcForgeFeatChoiceRegistrar playerMode={playerMode} controller={controller} />
+    <NpcForgeHumanVersatileRegistrar playerMode={playerMode} controller={controller} />
     <header className="npc-forge-header"><div><div className="npc-forge-kicker">Canonical character system</div><h2>{playerMode ? "Player Character Forge" : "NPC Forge"}</h2><p>{playerMode ? "Build a player-owned character with the shared canonical Forge. Starting level may be set from 1 to 20." : "Build the rules first, then finish identity and placement."}</p></div><div className="npc-forge-header-actions"><button type="button" className="btn btn-sm btn-outline-warning" onClick={handleReset} disabled={creating}>Reset</button><button type="button" className="btn btn-sm btn-outline-light" onClick={handleClose} disabled={creating}>Close</button></div></header>
     <nav className="npc-forge-steps" aria-label="Character creation steps">{STEP_LABELS.map((label, index) => <button key={label} type="button" className={`${index === step ? "is-current" : ""} ${index < step ? "is-complete" : ""}`} onClick={() => { if (index <= step) { setStep(index); setDetail(null); setError(""); } }} disabled={creating || index > step}><span>{index + 1}</span>{label}</button>)}</nav>
     {stepKey === "equipment" ? <NpcForgeEquipmentStep model={equipmentModel} selection={draft.startingEquipment || {}} onChange={(startingEquipment) => patch({ startingEquipment })} /> : <NpcForgeStepContent controller={controller} />}

@@ -13,8 +13,15 @@ function currentForgePreview() {
 export default function NpcForgeSourceChoiceFields({ placement, ownerType = "", title = "Required source choices", empty = null }) {
   const { state, toggleChoice, setChoice } = useNpcForgeSourceChoices();
   const [previewTarget, setPreviewTarget] = useState(null);
-  const groups = sourceChoiceGroupsForPlacement(state, placement).filter((group) => !ownerType || group.ownerType === ownerType);
+  const groups = sourceChoiceGroupsForPlacement(state, placement).filter((group) => {
+    if (!ownerType) return true;
+    if (group.ownerType === ownerType) return true;
+    return ownerType === "feat" && Boolean(group.metadata?.surfaceWithFeatChoices);
+  });
   const embeddedPlacement = placement === "species" || placement === "background";
+  const effectiveTitle = ownerType === "feat" && groups.some((group) => group.metadata?.primaryFeatGrant)
+    ? "Species feat and feat-granted choices"
+    : title;
 
   useEffect(() => {
     setPreviewTarget(currentForgePreview());
@@ -28,7 +35,7 @@ export default function NpcForgeSourceChoiceFields({ placement, ownerType = "", 
   const fields = <SourceChoiceFields
     groups={groups}
     selections={state.selections || {}}
-    title={title}
+    title={effectiveTitle}
     empty={empty}
     onToggle={toggleChoice}
     onSet={setChoice}
