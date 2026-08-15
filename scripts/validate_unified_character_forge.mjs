@@ -63,7 +63,7 @@ includes(rules, ["POINT_BUY_BUDGET = 27", "POINT_BUY_MIN = 8", "POINT_BUY_MAX = 
 includes(spellSources, ["subclassStartingSpellSelectionModel", "startingSpellSourceForRow", "serializeStartingMagicSelections", "model?.fixedSpells", 'source_type: choice.sourceType || model?.sourceType || "class"', 'access_type: choice.accessType || null', 'access_type: "fixed"'], "multi-source starting magic serialization");
 
 includes(profileEntry, ['import PlayerCharacterProfilePanelUnified from "./PlayerCharacterProfilePanelUnified";', "export default PlayerCharacterProfilePanelUnified;"], "profile entry");
-includes(profile, ['supabase.rpc("get_my_player_characters_v2")', "const [characters, setCharacters] = useState([]);", "Create another character", "keepCreatorMounted", "is-forge-suspended"], "multi-character profile");
+includes(profile, ['supabase.rpc("get_my_player_characters_v2")', "const [characters, setCharacters] = useState([]);", "Create another character", "const isLoggedIn = !!sessionUser;", "if (!isLoggedIn) return null;", "is-forge-suspended"], "multi-character profile");
 includes(responsive, ["max-height: calc(100dvh - 24px)", ".npc-forge-modal-v2 .npc-forge-body", "overflow-x: auto", ".npc-forge-modal-v2 .npc-forge-footer", "position: sticky", "@media (max-width: 720px)"], "responsive Forge CSS");
 expect(app.includes('import "../styles/character-forge-responsive.css";'), "responsive stylesheet is not loaded");
 
