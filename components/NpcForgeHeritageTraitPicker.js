@@ -16,6 +16,8 @@ function selectedKeys(selections = {}, groupId = "", fieldId = "") {
 function heritageText(value = "") {
   return formatPlayerFacingText(value)
     .replace(/\s*\(This is an? (?:Combat|Exploration|Roleplaying) trait\.\)/gi, "")
+    .replace(/\s*\(see[^)]*page\s+\d+\)\.?/gi, "")
+    .replace(/\bGM's\b/g, "Game Master's")
     .replace(/\bEtharis\b/g, "the world")
     .replace(/\n{3,}/g, "\n\n")
     .trim();

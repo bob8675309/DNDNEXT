@@ -73,11 +73,11 @@ const eladrin = {
   traitDetails: [{ name: "Choose your eladrin's season: autumn, winter, spring, or summer.", description: "" }, { name: "Fey Step", description: "Teleport up to 30 feet." }],
 };
 const eladrinFeatures = presentation.speciesFeaturePresentation(eladrin);
-const seasonCards = eladrinFeatures.details.filter((entry) => /eladrin seasons?/i.test(entry.name));
-assert.equal(seasonCards.length, 1, "Eladrin season presentation must collapse into one feature card");
-assert.deepEqual(eladrinFeatures.traits, ["Fey Step", "Eladrin Seasons"], "the raw Eladrin season prompt must not survive as a redundant feature bubble");
-for (const token of ["Long Rest", "current season", "Select a season below"]) assert.match(seasonCards[0].description, new RegExp(token, "i"), `Eladrin season explanation missing ${token}`);
-for (const token of ["Autumn", "Winter", "Spring", "Summer"]) assert.doesNotMatch(seasonCards[0].description, new RegExp(`${token}\\.`, "i"), `Eladrin ${token} details belong in its selectable option, not duplicated prose`);
+const seasonalFeyStepCards = eladrinFeatures.details.filter((entry) => entry.name === "Seasonal Fey Step");
+assert.equal(seasonalFeyStepCards.length, 1, "Eladrin season and Fey Step presentation must collapse into one Seasonal Fey Step feature card");
+assert.deepEqual(eladrinFeatures.traits, ["Seasonal Fey Step"], "the raw Eladrin season prompt and standalone Fey Step name must not survive as redundant feature bubbles");
+for (const token of ["Long Rest", "current season", "initial season", "Autumn", "Winter", "Spring", "Summer"]) assert.match(seasonalFeyStepCards[0].description, new RegExp(token, "i"), `Seasonal Fey Step explanation missing ${token}`);
+assert.match(seasonalFeyStepCards[0].description, /level 3/i, "Seasonal Fey Step must explain when seasonal rider effects begin");
 
 const contextSource = read("components/NpcForgeContextPanelRefined.js");
 const stepSource = read("components/NpcForgeStepContent.js");
@@ -116,12 +116,14 @@ assert.ok(catalogFamilySource.includes("damageType: text(binding.selected.metada
 for (const token of ["npc-forge-species-fact-choice", "npc-forge-species-fact-tooltip", "npc-forge-species-option-cards", "npc-forge-species-identity-controls", "grid-column: 1 / -1", "overflow-wrap: break-word", "word-break: normal", "width: 56px", "height: 62px"]) assert.ok(polishSource.includes(token), `Species fact interaction styling is missing ${token}`);
 assert.ok(polishSource.includes(".npc-forge-species-identity-fact[open]"), "the expanded identity fact needs a stable full-width layout");
 assert.ok(!polishSource.includes(".npc-forge-species-identity-fact {\n  grid-column: 1 / -1;"), "the collapsed identity fact must remain the same size as the other fact cards");
+assert.ok(runtimeChoiceSource.includes('label: "Seasonal Fey Step"'), "Eladrin creation/runtime choice must use the combined Seasonal Fey Step name");
+assert.ok(runtimeChoiceSource.includes('label: "Starting season"'), "Eladrin creation must require an initial season");
 assert.ok(runtimeChoiceSource.includes('presentation: "descriptive-options"'), "Eladrin season choices must request descriptive option buttons");
-for (const token of ["Peace and goodwill", "Sorrow and dread", "Joy and renewal", "Bold heat and fury"]) assert.ok(runtimeChoiceSource.includes(token), `Eladrin selectable season copy is missing ${token}`);
+for (const token of ["Peace and goodwill", "Sorrow and dread", "Joy and renewal", "Boldness and fury"]) assert.ok(runtimeChoiceSource.includes(token), `Eladrin selectable season copy is missing ${token}`);
 for (const token of ['field.presentation === "descriptive-options"', 'aria-pressed={isSelected}', "descriptiveOptions ? null : <SelectedOptionDetail"]) assert.ok(embeddedChoiceSource.includes(token), `descriptive season option rendering is missing ${token}`);
 
 for (const source of [contextSource, stepSource, variantSource, catalogFamilySource, polishSource, embeddedChoiceSource, runtimeChoiceSource]) {
   assert.doesNotMatch(source, /MapPageClient|map_routes|map_route_points|advance_all_characters|route_segment_progress/, "Species fact work crossed a protected map/travel boundary");
 }
 
-console.log("Forge Species fact choices validated: Common remains implicit, origin languages and variable Size reuse canonical source-choice state, promoted facts are not duplicated, Astral Elf creature identity and Darkvision guidance are clear, Dragonborn damage affinity reaches feature copy, Aasimar revelation forms are source-backed and scannable without inventing creator state, Eladrin seasons are combined without changing initial/runtime authority, and map/travel boundaries remain untouched.");
+console.log("Forge Species fact choices validated: Common remains implicit, origin languages and variable Size reuse canonical source-choice state, promoted facts are not duplicated, Astral Elf creature identity and Darkvision guidance are clear, Dragonborn damage affinity reaches feature copy, Aasimar revelation forms are source-backed and scannable without inventing creator state, Seasonal Fey Step combines Eladrin season/Fey Step guidance while preserving initial and Long-Rest runtime authority, and map/travel boundaries remain untouched.");

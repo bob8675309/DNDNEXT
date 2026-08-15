@@ -28,8 +28,11 @@ assert(presentation.includes('name: "Seasonal Fey Step"'), "Eladrin presentation
 assert(!presentation.includes('name: "Eladrin Seasons"'), "Redundant Eladrin Seasons presentation must be removed.");
 
 assert(embedded.includes("NpcForgeHeritageTraitPicker"), "Heritage Trait picker is not wired into the canonical embedded source-choice renderer.");
+assert(embedded.includes("metadata.hideSource"), "Nested Heritage choices must suppress internal source codes in player-facing summaries.");
 assert(picker.includes('const CATEGORY_ORDER = ["C", "E", "R"]'), "Heritage Trait categories are not organized as Combat/Exploration/Roleplaying.");
 assert(picker.includes("formatPlayerFacingText"), "Heritage Trait player-facing text sanitizer is not wired.");
+assert(picker.includes("Game Master's"), "Heritage Trait GM references are not expanded into player-facing wording.");
+assert(picker.includes("page\\s+\\d+"), "Heritage Trait editorial page references are not stripped from player-facing text.");
 assert(picker.includes("buildHeritageTraitSubchoiceGroups"), "Heritage acquisition subchoices are not registered from the Heritage picker.");
 
 for (const trait of [
@@ -48,8 +51,9 @@ for (const trait of [
 ]) {
   assert(subchoices.includes(`norm(traitName) === "${trait}"`) || subchoices.includes(`["environmental awareness", "natural camouflage", "natural movement"].includes(norm(traitName))`), `Missing Heritage subchoice coverage for ${trait}.`);
 }
-assert(subchoices.includes("pistol|musket|firearm"), "Campaign firearm exclusion must remain in Heritage Weapon Aptitude choices.");
+assert(subchoices.includes("psychic blade|pistol|musket|firearm"), "Campaign-invalid or nonstandard weapon options must stay out of Heritage Weapon Aptitude choices.");
+assert(subchoices.includes("hideSource: true"), "Heritage subchoices must retain canonical source metadata without exposing source codes in the picker.");
 assert(subchoices.includes("Your first Magical Savvy pick must be a cantrip."), "Magical Savvy first-pick rule is missing.");
 assert(subchoices.includes("priorLists.includes(classKey)"), "Magical Savvy level-1 spell-list dependency is missing.");
 
-console.log("Heritage Custom Lineage and Seasonal Fey Step static validation passed.");
+console.log("Heritage Custom Lineage, player-facing trait copy, required Heritage subchoices, and Seasonal Fey Step static validation passed.");

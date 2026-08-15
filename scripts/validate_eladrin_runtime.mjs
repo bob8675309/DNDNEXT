@@ -43,8 +43,10 @@ for (const token of [
   'identity.name === "eladrin" && identity.source === "MPMM"',
   'id: "species-runtime-eladrin-season"',
   'ownerKey: "eladrin-season"',
-  'label: "Eladrin Season"',
+  'label: "Seasonal Fey Step"',
+  'label: "Starting season"',
   'replacementCadence: "long-rest"',
+  'sourceTrait: "Seasonal Fey Step"',
   'feyStepLevel: 3',
 ]) need(forge, token);
 forbid(forge, "eladrin-trance-training", "Eladrin Trance incorrectly added as creation-time Forge choice");
@@ -77,4 +79,4 @@ for (const source of [migration, forge, panel, host, runtime]) {
   for (const token of ["MapPageClient", "map_routes", "advance_all_characters", "weather"]) forbid(source, token, `protected world boundary ${token}`);
 }
 
-console.log("Eladrin initial/replacement season authority, post-Long-Rest two-choice Trance training, additive weapon/tool projection, downstream runtime reachability, explicit ACLs, and protected boundaries validated.");
+console.log("Eladrin Seasonal Fey Step initial/replacement season authority, post-Long-Rest two-choice Trance training, additive weapon/tool projection, downstream runtime reachability, explicit ACLs, and protected boundaries validated.");

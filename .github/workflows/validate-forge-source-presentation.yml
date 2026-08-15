@@ -14,6 +14,7 @@ on:
       - "components/NpcForgeContextPanelRefined.js"
       - "components/NpcForgeCoreSupport.js"
       - "components/NpcForgeEmbeddedSourceChoices.js"
+      - "components/NpcForgeHeritageTraitPicker.js"
       - "components/SourceRuleContent.js"
       - "public/media/species/*-dragonborn.webp"
       - "public/media/species/*-aven.webp"
@@ -36,6 +37,7 @@ on:
       - "scripts/validate_forge_species_portrait_integrity.mjs"
       - "scripts/validate_forge_species_semantic_icons.mjs"
       - "scripts/validate_forge_species_fact_choices.mjs"
+      - "scripts/validate_forge_heritage_custom_lineage.mjs"
       - "scripts/validate_forge_chromatic_dragonborn_art.mjs"
       - "scripts/validate_forge_metallic_dragonborn_art.mjs"
       - "scripts/validate_forge_gem_dragonborn_art.mjs"
@@ -47,8 +49,10 @@ on:
       - "sql/20260811_91_genasi_subrace_catalog.sql"
       - "sql/20260811_92_genasi_source_detail_restore.sql"
       - "sql/20260812_93_aven_subrace_catalog.sql"
+      - "sql/20260814_01_custom_lineage_heritage_only.sql"
       - "utils/npcForgeCatalog.js"
       - "utils/playerFacingText.js"
+      - "utils/playerForgeHeritageSubchoices.js"
       - "utils/playerForgeSpeciesChoices.js"
       - "utils/speciesArtwork.js"
       - "utils/speciesCatalogExpansion.js"
@@ -72,6 +76,7 @@ on:
       - "components/NpcForgeContextPanelRefined.js"
       - "components/NpcForgeCoreSupport.js"
       - "components/NpcForgeEmbeddedSourceChoices.js"
+      - "components/NpcForgeHeritageTraitPicker.js"
       - "components/SourceRuleContent.js"
       - "public/media/species/*-dragonborn.webp"
       - "public/media/species/*-aven.webp"
@@ -94,6 +99,7 @@ on:
       - "scripts/validate_forge_species_portrait_integrity.mjs"
       - "scripts/validate_forge_species_semantic_icons.mjs"
       - "scripts/validate_forge_species_fact_choices.mjs"
+      - "scripts/validate_forge_heritage_custom_lineage.mjs"
       - "scripts/validate_forge_chromatic_dragonborn_art.mjs"
       - "scripts/validate_forge_metallic_dragonborn_art.mjs"
       - "scripts/validate_forge_gem_dragonborn_art.mjs"
@@ -105,8 +111,10 @@ on:
       - "sql/20260811_91_genasi_subrace_catalog.sql"
       - "sql/20260811_92_genasi_source_detail_restore.sql"
       - "sql/20260812_93_aven_subrace_catalog.sql"
+      - "sql/20260814_01_custom_lineage_heritage_only.sql"
       - "utils/npcForgeCatalog.js"
       - "utils/playerFacingText.js"
+      - "utils/playerForgeHeritageSubchoices.js"
       - "utils/playerForgeSpeciesChoices.js"
       - "utils/speciesArtwork.js"
       - "utils/speciesCatalogExpansion.js"
@@ -169,6 +177,9 @@ jobs:
 
       - name: Validate promoted Species facts and canonical fact choices
         run: node scripts/validate_forge_species_fact_choices.mjs
+
+      - name: Validate Heritage Custom Lineage and Seasonal Fey Step
+        run: node scripts/validate_forge_heritage_custom_lineage.mjs
 
       - name: Validate Chromatic Dragonborn dedicated artwork
         run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_chromatic_dragonborn_art.mjs
