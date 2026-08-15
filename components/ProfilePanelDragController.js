@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
 const PANEL_SELECTOR = [
-  ".npc-page-profile-panel-shell",
+  ".npc-page-profile-panel-shell:not(.is-player-character-forge)",
   ".npc-forge-modal",
   ".portrait-picker-modal",
   ".sprite-picker-modal",
@@ -107,6 +107,11 @@ function resetDesktopWindow(shell) {
   for (const property of ["left", "top", "width", "height", "maxWidth", "maxHeight", "right", "bottom", "transform"]) {
     shell.style[property] = "";
   }
+}
+
+function resetForgeHostWindow(target = null) {
+  const host = target?.closest?.(".npc-page-profile-panel-shell.is-player-character-forge") || null;
+  if (host?.classList?.contains("is-app-windowed")) resetDesktopWindow(host);
 }
 
 function cornerDirection(shell, clientX, clientY, target = null) {
@@ -233,6 +238,7 @@ export default function ProfilePanelDragController() {
       const target = event.target instanceof Element ? event.target : null;
       if (!target) return;
 
+      resetForgeHostWindow(target);
       const shell = shellForTarget(target);
       if (!shell) return;
 
@@ -290,6 +296,7 @@ export default function ProfilePanelDragController() {
         return;
       }
       const target = event.target instanceof Element ? event.target : null;
+      resetForgeHostWindow(target);
       const shell = target ? shellForTarget(target) : null;
       setResizeHover(shell ? cornerDirection(shell, event.clientX, event.clientY, target) : "");
     }
@@ -303,6 +310,7 @@ export default function ProfilePanelDragController() {
     }
 
     function onResize() {
+      document.querySelectorAll(".npc-page-profile-panel-shell.is-player-character-forge.is-app-windowed").forEach(resetDesktopWindow);
       if (window.innerWidth < DESKTOP_MIN_WIDTH) {
         document.querySelectorAll(PANEL_SELECTOR).forEach(resetDesktopWindow);
         finishInteraction();
