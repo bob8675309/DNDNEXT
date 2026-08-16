@@ -9,40 +9,6 @@ function safeLocalPath(value) {
   return value;
 }
 
-function timeoutResult(ms) {
-  return new Promise((resolve) => {
-    window.setTimeout(() => resolve({ timedOut: true }), ms);
-  });
-}
-
-async function resolveAdminAfterLogin(userId) {
-  try {
-    const adminResult = await Promise.race([
-      supabase.rpc("is_admin"),
-      timeoutResult(1500),
-    ]);
-    if (!adminResult?.timedOut && !adminResult?.error) return Boolean(adminResult?.data);
-  } catch {
-    // A successful authentication must not be held on the login page by secondary role routing.
-  }
-
-  if (!userId) return false;
-  try {
-    const profileResult = await Promise.race([
-      supabase
-        .from("user_profiles")
-        .select("role")
-        .eq("id", userId)
-        .maybeSingle(),
-      timeoutResult(1000),
-    ]);
-    if (profileResult?.timedOut || profileResult?.error) return false;
-    return (profileResult?.data?.role || "player") !== "player";
-  } catch {
-    return false;
-  }
-}
-
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -57,7 +23,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const { data, error: loginError } = await supabase.auth.signInWithPassword({
+      const { error: loginError } = await supabase.auth.signInWithPassword({
         email: email.trim().toLowerCase(),
         password,
       });
@@ -74,10 +40,12 @@ export default function LoginPage() {
         return;
       }
 
-      const userId = data?.user?.id || data?.session?.user?.id || "";
-      const isAdmin = await resolveAdminAfterLogin(userId);
+      // Successful sign-in always enters through the shared Profile host. The
+      // characterProfile query is the same authority used by the navbar and
+      // causes PlayerCharacterProfilePanelUnified to open immediately for both
+      // players and administrators.
       setLoading(false);
-      void router.replace(isAdmin ? "/admin" : "/profile");
+      void router.replace("/profile?characterProfile=1");
     } catch (cause) {
       setError(cause?.message || "Login could not be completed. Please try again.");
     } finally {
