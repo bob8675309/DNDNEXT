@@ -12,6 +12,9 @@ const normalized = (value) => String(value ?? "").trim().toLowerCase().replace(/
 export default function NpcForgeTrainingStep({
   playerMode,
   backgroundSkills = [],
+  backgroundSkillChoices = [],
+  backgroundSkillSelections = {},
+  onToggleBackgroundSkill = null,
   classSkillConfig,
   selectedClass,
   selectedClassSkills = [],
@@ -36,6 +39,7 @@ export default function NpcForgeTrainingStep({
   const totalTrainingChoices = Number(classSkillConfig?.totalCount ?? classSkillConfig?.count ?? 0);
   const usedTrainingChoices = selectedClassSkills.length + (playerMode ? trainedProfessionCount : 0);
   const remainingTrainingChoices = Math.max(0, totalTrainingChoices - usedTrainingChoices);
+  const incompleteBackgroundSkills = backgroundSkillChoices.some((group) => (backgroundSkillSelections?.[group.id] || []).length !== Number(group.count || 1));
 
   const incompleteTrainingFeature = trainingChoiceGroups.some((group) => group.required && (classChoiceState.featureSelections?.[group.id] || []).length !== Number(group.count || 0));
   const incompleteClassAbility = classAbilityGroups.some((group) => group.required && (classChoiceState.featureSelections?.[group.id] || []).length !== Number(group.count || 0));
@@ -60,7 +64,7 @@ export default function NpcForgeTrainingStep({
     function blockIncompleteTrainingChoice(event) {
       const button = event.target?.closest?.("button");
       if (!button || button.textContent?.trim() !== "Continue") return;
-      const needsSkillsTab = incompleteTrainingFeature || incompleteSourceTraining;
+      const needsSkillsTab = incompleteBackgroundSkills || incompleteTrainingFeature || incompleteSourceTraining;
       const needsAbilitiesTab = incompleteClassAbility || incompleteSourceClassAbility;
       if (!needsSkillsTab && !needsAbilitiesTab) return;
       event.preventDefault();
@@ -71,17 +75,28 @@ export default function NpcForgeTrainingStep({
     }
     document.addEventListener("click", blockIncompleteTrainingChoice, true);
     return () => document.removeEventListener("click", blockIncompleteTrainingChoice, true);
-  }, [incompleteClassAbility, incompleteSourceClassAbility, incompleteSourceTraining, incompleteTrainingFeature, playerMode]);
+  }, [incompleteBackgroundSkills, incompleteClassAbility, incompleteSourceClassAbility, incompleteSourceTraining, incompleteTrainingFeature, playerMode]);
+
+  const backgroundSkillChoicePanel = backgroundSkillChoices.length ? <div className="npc-forge-background-skill-choices">
+    <div className="npc-forge-subheading mt-3">Background skill choices <small>Granted by the Background • do not use class Training choices</small></div>
+    {backgroundSkillChoices.map((group) => {
+      const selected = backgroundSkillSelections?.[group.id] || [];
+      const complete = selected.length === Number(group.count || 1);
+      return <section key={group.id} className={complete ? "is-complete" : "is-required"}><div className="npc-forge-context-choice-head"><b>Choose {group.count} skill{group.count === 1 ? "" : "s"}</b><small>{selected.length}/{group.count} selected</small></div><div className="npc-forge-context-choice-grid">{(group.options || []).map((option) => <button key={option.key} type="button" className={selected.includes(option.key) ? "is-selected" : ""} onClick={() => onToggleBackgroundSkill?.(group.id, option.key, group.count)} onMouseEnter={() => onDetail?.({ type: "skill", key: option.key })}><strong>{option.label}</strong><span>{option.description}</span></button>)}</div></section>;
+    })}
+  </div> : null;
 
   const skillsAndProficiencies = <>
     <div className={`npc-forge-training-explainer ${playerMode ? "is-player" : ""}`}>
-      <div><strong>Background grants</strong><span>{backgroundSkills.length ? `${backgroundSkills.length} skill${backgroundSkills.length === 1 ? "" : "s"} are already trained by the selected background. These do not use a Training choice.` : "This background does not list fixed skills."}</span></div>
+      <div><strong>Background grants</strong><span>{backgroundSkills.length ? `${backgroundSkills.length} skill${backgroundSkills.length === 1 ? "" : "s"} are already trained by the selected background. These do not use a Training choice.` : backgroundSkillChoices.length ? "Complete the Background skill choice below. The resulting proficiency does not use a class Training choice." : "This background does not list skill proficiencies."}</span></div>
       <div><strong>Training choices</strong><span>Choose exactly {totalTrainingChoices} total option{totalTrainingChoices === 1 ? "" : "s"} from the {selectedClass?.class_name || "class"} skill pool and crafting professions. {usedTrainingChoices}/{totalTrainingChoices} used.</span></div>
       {!playerMode ? <div><strong>Expertise</strong><span>NPC expertise can be assigned directly when building a bespoke NPC.</span></div> : null}
     </div>
 
-    <div className="npc-forge-subheading mt-3">Background skills</div>
-    <div className="npc-forge-chip-row">{backgroundSkills.length ? backgroundSkills.map((key) => <button key={key} type="button" className="is-fixed" onClick={() => onDetail({ type: "skill", key })}>{titleForSkill(key)}</button>) : <span className="is-fixed">No fixed background skills</span>}</div>
+    {playerMode ? backgroundSkillChoicePanel : null}
+
+    <div className="npc-forge-subheading mt-3">Background-granted skills</div>
+    <div className="npc-forge-chip-row">{backgroundSkills.length ? backgroundSkills.map((key) => <button key={key} type="button" className="is-fixed" onClick={() => onDetail({ type: "skill", key })}>{titleForSkill(key)}</button>) : <span className="is-fixed">{backgroundSkillChoices.length ? "Complete the Background skill choice above" : "No Background skill proficiencies"}</span>}</div>
 
     <div className="npc-forge-subheading mt-4">Class skills <small>{usedTrainingChoices}/{totalTrainingChoices} Training choices used • {selectedClassSkills.length} class skill{selectedClassSkills.length === 1 ? "" : "s"}</small></div>
     <div className="npc-forge-skill-grid">{classSkillConfig.options.map((key) => {
@@ -115,12 +130,12 @@ export default function NpcForgeTrainingStep({
   </>;
 
   return <div className="npc-forge-section npc-forge-training-step">
-    <div className="npc-forge-section-heading"><div><span>Training</span><h3>{playerMode ? "Skills, feats, and class abilities" : "Skills, Expertise, and crafting professions"}</h3></div><p>{playerMode ? "Resolve proficiencies first, then make persistent feat and class-feature decisions with full context." : "Background grants are automatic. Class skills and crafting professions establish proficiency first; Expertise is assigned afterward."}</p></div>
-    {playerMode ? <div className="npc-forge-training-tabs" role="tablist" aria-label="Training sections"><button type="button" role="tab" aria-selected={playerTab === "skills"} className={playerTab === "skills" ? "is-active" : ""} onClick={() => setPlayerTab("skills")}>Skills & Proficiencies{(incompleteTrainingFeature || incompleteSourceTraining) ? <em>Required</em> : null}</button><button type="button" role="tab" aria-selected={playerTab === "abilities"} className={playerTab === "abilities" ? "is-active" : ""} onClick={() => setPlayerTab("abilities")}>Feats & Class Abilities{(incompleteClassAbility || incompleteSourceClassAbility) ? <em>Required</em> : null}</button></div> : null}
+    <div className="npc-forge-section-heading"><div><span>Training</span><h3>{playerMode ? "Skills, feats, and class abilities" : "Skills, Expertise, and crafting professions"}</h3></div><p>{playerMode ? "Resolve Background skill grants and proficiencies first, then make persistent feat and class-feature decisions with full context." : "Background grants are automatic. Class skills and crafting professions establish proficiency first; Expertise is assigned afterward."}</p></div>
+    {playerMode ? <div className="npc-forge-training-tabs" role="tablist" aria-label="Training sections"><button type="button" role="tab" aria-selected={playerTab === "skills"} className={playerTab === "skills" ? "is-active" : ""} onClick={() => setPlayerTab("skills")}>Skills & Proficiencies{(incompleteBackgroundSkills || incompleteTrainingFeature || incompleteSourceTraining) ? <em>Required</em> : null}</button><button type="button" role="tab" aria-selected={playerTab === "abilities"} className={playerTab === "abilities" ? "is-active" : ""} onClick={() => setPlayerTab("abilities")}>Feats & Class Abilities{(incompleteClassAbility || incompleteSourceClassAbility) ? <em>Required</em> : null}</button></div> : null}
     {!playerMode || playerTab === "skills" ? skillsAndProficiencies : featsAndClassAbilities}
 
     <style jsx global>{`
-      .npc-forge-training-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:14px;padding:5px;border:1px solid rgba(168,108,255,.22);border-radius:11px;background:rgba(126,72,199,.055)}.npc-forge-training-tabs button{display:flex;align-items:center;justify-content:center;gap:8px;padding:9px 11px;border:1px solid transparent;border-radius:8px;color:rgba(255,255,255,.7);background:transparent;font-weight:800}.npc-forge-training-tabs button.is-active{border-color:rgba(168,108,255,.48);color:#fff;background:rgba(126,72,199,.17)}.npc-forge-training-tabs em{padding:2px 6px;border-radius:999px;color:#ffe0a0;background:rgba(246,190,90,.12);font-size:.54rem;font-style:normal;text-transform:uppercase}.npc-forge-training-decision-intro{margin-bottom:12px;padding:12px 14px;border-left:3px solid #a86cff;border-radius:9px;background:rgba(126,72,199,.08)}.npc-forge-training-decision-intro strong{color:#eadfff}.npc-forge-training-decision-intro p{margin:5px 0 0;color:rgba(255,255,255,.72);font-size:.74rem;line-height:1.55}.npc-forge-training-explainer{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-bottom:4px}.npc-forge-training-explainer.is-player{grid-template-columns:repeat(2,minmax(0,1fr))}.npc-forge-training-explainer>div{display:grid;gap:5px;padding:11px;border:1px solid rgba(255,255,255,.09);border-radius:10px;background:rgba(255,255,255,.025)}.npc-forge-training-explainer strong{color:#fff;font-size:.75rem}.npc-forge-training-explainer span{color:rgba(255,255,255,.62);font-size:.69rem;line-height:1.45}.npc-forge-crafting-house-rule{margin-bottom:10px;padding:12px 14px;border-left:3px solid #58d6c7;border-radius:9px;background:rgba(88,214,199,.075)}.npc-forge-crafting-house-rule strong{color:#bffbf3}.npc-forge-crafting-house-rule p{margin:5px 0 0;color:rgba(255,255,255,.72);font-size:.75rem;line-height:1.58}@media(max-width:900px){.npc-forge-training-tabs,.npc-forge-training-explainer,.npc-forge-training-explainer.is-player{grid-template-columns:1fr}}
+      .npc-forge-training-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:14px;padding:5px;border:1px solid rgba(168,108,255,.22);border-radius:11px;background:rgba(126,72,199,.055)}.npc-forge-training-tabs button{display:flex;align-items:center;justify-content:center;gap:8px;padding:9px 11px;border:1px solid transparent;border-radius:8px;color:rgba(255,255,255,.7);background:transparent;font-weight:800}.npc-forge-training-tabs button.is-active{border-color:rgba(168,108,255,.48);color:#fff;background:rgba(126,72,199,.17)}.npc-forge-training-tabs em{padding:2px 6px;border-radius:999px;color:#ffe0a0;background:rgba(246,190,90,.12);font-size:.54rem;font-style:normal;text-transform:uppercase}.npc-forge-training-decision-intro{margin-bottom:12px;padding:12px 14px;border-left:3px solid #a86cff;border-radius:9px;background:rgba(126,72,199,.08)}.npc-forge-training-decision-intro strong{color:#eadfff}.npc-forge-training-decision-intro p{margin:5px 0 0;color:rgba(255,255,255,.72);font-size:.74rem;line-height:1.55}.npc-forge-training-explainer{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-bottom:4px}.npc-forge-training-explainer.is-player{grid-template-columns:repeat(2,minmax(0,1fr))}.npc-forge-training-explainer>div{display:grid;gap:5px;padding:11px;border:1px solid rgba(255,255,255,.09);border-radius:10px;background:rgba(255,255,255,.025)}.npc-forge-training-explainer strong{color:#fff;font-size:.75rem}.npc-forge-training-explainer span{color:rgba(255,255,255,.62);font-size:.69rem;line-height:1.45}.npc-forge-background-skill-choices{display:grid;gap:9px}.npc-forge-background-skill-choices>section{display:grid;gap:8px;padding:10px 11px;border:1px solid rgba(88,214,199,.26);border-radius:10px;background:rgba(88,214,199,.045)}.npc-forge-background-skill-choices>section.is-required{border-color:rgba(243,191,99,.52);box-shadow:inset 3px 0 rgba(243,191,99,.8)}.npc-forge-background-skill-choices>section.is-complete{box-shadow:inset 3px 0 rgba(88,214,199,.72)}.npc-forge-background-skill-choices .npc-forge-context-choice-grid button span{display:block;margin-top:4px;color:rgba(255,255,255,.66);font-size:.66rem;line-height:1.45}.npc-forge-crafting-house-rule{margin-bottom:10px;padding:12px 14px;border-left:3px solid #58d6c7;border-radius:9px;background:rgba(88,214,199,.075)}.npc-forge-crafting-house-rule strong{color:#bffbf3}.npc-forge-crafting-house-rule p{margin:5px 0 0;color:rgba(255,255,255,.72);font-size:.75rem;line-height:1.58}@media(max-width:900px){.npc-forge-training-tabs,.npc-forge-training-explainer,.npc-forge-training-explainer.is-player{grid-template-columns:1fr}}
     `}</style>
   </div>;
 }
