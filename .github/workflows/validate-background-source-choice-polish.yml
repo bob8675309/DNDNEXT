@@ -1,0 +1,36 @@
+name: Validate Background source-choice polish
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "utils/playerForgeSourceChoices.js"
+      - "components/NpcForgeEmbeddedSourceChoices.js"
+      - "components/NpcForgeContextPanelRefined.js"
+      - "scripts/validate_background_source_choice_polish.mjs"
+      - ".github/workflows/validate-background-source-choice-polish.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate Background source-choice polish
+        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_background_source_choice_polish.mjs
