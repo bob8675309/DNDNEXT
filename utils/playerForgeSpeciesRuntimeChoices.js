@@ -181,6 +181,7 @@ export function applySpeciesRuntimeChoiceAuthority({ groups = [], species = null
         kind: "season",
         count: 1,
         required: true,
+        presentation: "descriptive-options",
         options: eladrinSeasonOptions(),
         cadence: "acquisition",
         replacementCadence: "long-rest",
