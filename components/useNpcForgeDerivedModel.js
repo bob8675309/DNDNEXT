@@ -3,11 +3,45 @@ import { PROFESSION_DEFINITIONS, PROFESSION_KEYS } from "../utils/craftingProfes
 import { ABILITY_KEYS, ABILITY_LABELS, CLASS_DEFINITIONS, FEAT_OPTIONS, SKILL_DEFINITIONS, buildCharacterCreatePayload } from "../utils/characterCreation";
 import { FALLBACK_SKILL_DESCRIPTIONS, abilityScoresFromRollAllocation, flexibleAbilityBoosts } from "../utils/characterCreationGuidance";
 import { extractClassSkillConfiguration, mergePreferredBackgrounds, mergePreferredClasses, mergePreferredSpecies, normalizeSkillKey, optionMatchesQuery, safeText, slug, uniqueText } from "../utils/npcForgeCatalog";
+import { formatPlayerFacingText } from "../utils/playerFacingText";
 import { spellChoicesForRpc } from "../utils/playerForgeRules";
 import { serializeStartingMagicSelections } from "../utils/playerForgeSpellSources";
 import { backgroundFeatRule as getBackgroundFeatRule, backgroundFeatSummary, resolveBackgroundFeatOptions } from "../utils/backgroundMechanics";
 import { generatedStoryLocationLabel } from "../utils/npcStoryGenerator";
 import { titleForSkill, abilityModifier, proficiencyBonus, maximumHitPoints, sourceLabel, standardScoresForClass, speciesTraits, optionId, toolProficiencyDescription } from "./NpcForgeCoreSupport";
+
+function cleanSourceRuleString(value = "") {
+  return formatPlayerFacingText(String(value || "")
+    .replace(/\{@table\s+[^;|}]+;\s*([^|}]+)(?:\|[^}]*)?}/gi, "$1")
+    .replace(/\{@itemProperty\s+[^|}]+\|[^|}]+\|([^}]+)}/gi, "$1"));
+}
+
+function flattenSourceRuleEntries(node, output = []) {
+  if (node == null) return output;
+  if (typeof node === "string") {
+    const value = cleanSourceRuleString(node);
+    if (value) output.push(value);
+    return output;
+  }
+  if (Array.isArray(node)) {
+    node.forEach((entry) => flattenSourceRuleEntries(entry, output));
+    return output;
+  }
+  if (typeof node !== "object") return output;
+  if (node.type === "table" || node.rows) return output;
+  const heading = safeText(node.name);
+  if (heading && node.type === "entries") output.push(`${heading.replace(/[.:]+$/g, "")}.`);
+  if (node.entry) flattenSourceRuleEntries(node.entry, output);
+  if (node.entries) flattenSourceRuleEntries(node.entries, output);
+  if (node.items) flattenSourceRuleEntries(node.items, output);
+  return output;
+}
+
+function featDescriptionForBackground(feat = {}) {
+  const rawEntries = feat.raw_payload?.entries || feat.rawPayload?.entries;
+  const sourceText = rawEntries ? flattenSourceRuleEntries(rawEntries, []).join("\n\n") : "";
+  return sourceText || formatPlayerFacingText(feat.description, "This feat is granted by the selected background.");
+}
 
 export default function useNpcForgeDerivedModel({
   optionRows, classRows, draft, speciesQuery, backgroundQuery, classQuery, featQuery, rolls, allocation, detail, playerMode, spellModel, spellRows, locations,
@@ -65,10 +99,29 @@ const selectedProfessionServices = PROFESSION_KEYS.filter((key) => draft.profess
 const storyWorldLocation = generatedStoryLocationLabel(locations, draft.locationId);
 
 const backgroundMechanicDetails = useMemo(() => {
-  const skills = (selectedBackground?.backgroundSkills || []).map((key) => ({ label: skillInfo.get(key)?.label || titleForSkill(key), description: skillInfo.get(key)?.description || FALLBACK_SKILL_DESCRIPTIONS[key], source: skillInfo.get(key)?.source || "XPHB" }));
+  const fixedSkills = (selectedBackground?.backgroundSkills || []).map((key) => ({ label: skillInfo.get(key)?.label || titleForSkill(key), description: skillInfo.get(key)?.description || FALLBACK_SKILL_DESCRIPTIONS[key], source: skillInfo.get(key)?.source || "XPHB" }));
   const skillChoices = backgroundSkillChoiceGroups.map((group) => ({ ...group, options: group.from.map((key) => ({ key, label: skillInfo.get(key)?.label || titleForSkill(key), description: skillInfo.get(key)?.description || FALLBACK_SKILL_DESCRIPTIONS[key], source: skillInfo.get(key)?.source || "XPHB" })) }));
-  return { skills, skillChoices, tools: (selectedBackground?.tools || []).map((name) => ({ label: name, description: toolProficiencyDescription(name) })), originFeat: backgroundFeatOptions.map((feat) => ({ label: feat.name, description: feat.description, prerequisite: feat.prerequisite_text, source: feat.source })), originFeatValue: backgroundFeatSummary(selectedBackground || {}, featOptions, selectedBackgroundFeat), featRequiresChoice: selectedBackgroundFeatRule.requiresChoice, spellList: backgroundSpellList };
-}, [backgroundFeatOptions, backgroundSkillChoiceGroups, backgroundSpellList, featOptions, selectedBackground, selectedBackgroundFeat, selectedBackgroundFeatRule.requiresChoice, skillInfo]);
+  const skillChoiceSummaries = skillChoices.map((group) => {
+    const selected = draft.backgroundSkillChoices?.[group.id] || [];
+    const selectedLabels = selected.map((key) => group.options.find((option) => option.key === key)?.label).filter(Boolean);
+    const complete = selectedLabels.length === Number(group.count || 1);
+    return {
+      label: complete ? selectedLabels.join(", ") : `Choose ${group.count} skill${group.count === 1 ? "" : "s"} in Training`,
+      description: `This background grants ${group.count} skill proficienc${group.count === 1 ? "y" : "ies"} chosen from ${group.options.map((option) => option.label).join(", ")}. Complete this choice in Training → Skills & Proficiencies. It does not use a class Training choice.`,
+      source: selectedBackground?.source || "Source",
+      routed: "training",
+    };
+  });
+  return {
+    skills: [...fixedSkills, ...skillChoiceSummaries],
+    skillChoices,
+    tools: (selectedBackground?.tools || []).map((name) => ({ label: name, description: toolProficiencyDescription(name) })),
+    originFeat: backgroundFeatOptions.map((feat) => ({ label: feat.name, description: featDescriptionForBackground(feat), prerequisite: feat.prerequisite_text, source: feat.source })),
+    originFeatValue: backgroundFeatSummary(selectedBackground || {}, featOptions, selectedBackgroundFeat),
+    featRequiresChoice: selectedBackgroundFeatRule.requiresChoice,
+    spellList: backgroundSpellList,
+  };
+}, [backgroundFeatOptions, backgroundSkillChoiceGroups, backgroundSpellList, draft.backgroundSkillChoices, featOptions, selectedBackground, selectedBackgroundFeat, selectedBackgroundFeatRule.requiresChoice, skillInfo]);
 
 const createPayload = useMemo(() => {
   const base = buildCharacterCreatePayload({ ...draft, backgroundBoosts: appliedBonus, baseAbilities });
