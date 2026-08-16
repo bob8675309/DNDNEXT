@@ -101,7 +101,7 @@ function DropdownField({ group, field, selections, onSet }) {
 function ButtonField({ group, field, selections, onToggle }) {
   const selected = selectedKeys(selections, group.id, field.id);
   const distinctFrom = field.distinctFromFieldId ? selectedKeys(selections, group.id, field.distinctFromFieldId) : [];
-  const descriptiveOptions = field.presentation === "descriptive-options";
+  const descriptiveOptions = field.presentation === "descriptive-options" && !(field.options || []).every((option) => hasRichOptionDetail(option));
   return <><div className={`npc-forge-embedded-choice__buttons${descriptiveOptions ? " is-descriptive" : ""}`}>{(field.options || []).filter((option) => selected.includes(option.key) || !distinctFrom.includes(option.key)).map((option) => {
     const summary = choiceButtonSummary(option);
     const isSelected = selected.includes(option.key);
