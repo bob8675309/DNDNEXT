@@ -1,0 +1,26 @@
+name: Validate Forge Species Heritage layout and Human Versatile
+
+on:
+  push:
+    branches:
+      - agent/species-art-post170
+  pull_request:
+    paths:
+      - 'components/NpcForgeHeritageTraitPicker.js'
+      - 'components/NpcForgeContextPanel.js'
+      - 'components/NpcForgeSourceChoiceFields.js'
+      - 'components/NpcForgeHumanVersatileRegistrar.js'
+      - 'components/NewNpcModalV3Refined.js'
+      - 'sql/20260815_01_merfolk_playable_speed_override.sql'
+      - 'scripts/validate_forge_species_heritage_layout_and_human_versatile.mjs'
+      - '.github/workflows/validate-forge-species-heritage-layout-and-human-versatile.yml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/validate_forge_species_heritage_layout_and_human_versatile.mjs

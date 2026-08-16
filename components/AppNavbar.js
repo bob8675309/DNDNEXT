@@ -1,12 +1,16 @@
 // components/AppNavbar.js
 import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import { supabase } from "../utils/supabaseClient";
+
+const OPEN_PLAYER_PROFILE_EVENT = "dndnext:open-player-profile";
 
 function NavAnchor({ href, className, children }) {
   return <a className={className} href={href}>{children}</a>;
 }
 
 export default function AppNavbar() {
+  const router = useRouter();
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -38,7 +42,6 @@ export default function AppNavbar() {
       if (!active) return;
       const requestId = ++sessionRequestId;
       if (deferredAuthTimer !== null) clearTimeout(deferredAuthTimer);
-      // Supabase invokes auth callbacks while holding an exclusive cross-tab lock.
       deferredAuthTimer = setTimeout(() => {
         deferredAuthTimer = null;
         void applySession(session, requestId);
@@ -63,6 +66,21 @@ export default function AppNavbar() {
   async function signOut() {
     await supabase.auth.signOut();
     window.location.href = "/login";
+  }
+
+  function openProfilePanel() {
+    if (typeof window !== "undefined") {
+      const openEvent = new CustomEvent(OPEN_PLAYER_PROFILE_EVENT, { cancelable: true });
+      if (!window.dispatchEvent(openEvent)) return;
+    }
+
+    if (!router?.isReady) {
+      window.location.href = "/profile?characterProfile=1";
+      return;
+    }
+    const nextQuery = { ...(router.query || {}), characterProfile: "1" };
+    router.replace({ pathname: router.pathname, query: nextQuery }, undefined, { shallow: true, scroll: false })
+      .catch(() => { window.location.href = "/profile?characterProfile=1"; });
   }
 
   return (
@@ -93,7 +111,7 @@ export default function AppNavbar() {
                 </> : null}
               </ul>
             </li>}
-            {user && <li className="nav-item"><NavAnchor className="nav-link" href="/profile?characterProfile=1">Profile</NavAnchor></li>}
+            {user && <li className="nav-item"><button type="button" className="nav-link" onClick={openProfilePanel}>Profile</button></li>}
             {isAdmin && <li className="nav-item"><NavAnchor className="nav-link" href="/admin/spells">Magic</NavAnchor></li>}
             {isAdmin && <li className="nav-item"><NavAnchor className="nav-link" href="/admin">Admin</NavAnchor></li>}
           </ul>

@@ -1,27 +1,57 @@
 # Documentation Refresh Manifest
 
-Updated: 2026-08-11/12
+Updated: 2026-08-14
 
 ## Trust order
 
-For active PR #170 work, trust sources in this order:
+For current work, trust sources in this order:
 
-1. live Supabase schema/migrations/grants/data;
-2. current PR source and exact-head CI/deployment state;
-3. dedicated runtime/progression/browser-smoke/source-presentation ledgers;
-4. broader roadmap/history prose.
+1. live Supabase schema, migrations, grants, and relevant data;
+2. current GitHub PR source, remote head, exact-head CI, and deployment state;
+3. `DNDNext_Current_Handoff_Prompt.md` and the active dedicated subsystem ledger;
+4. broader roadmap/history prose;
+5. raw SQL/text exports as historical snapshots only.
 
-If prose conflicts with live source/database state, live authority wins until docs are corrected.
+If prose conflicts with live source/database state, live authority wins until the documentation is corrected.
 
-## Current PR #170 checkpoint
+## Current GitHub checkpoint
 
-PR #170 remains open and unmerged on `agent/character-forge-resilience-presentation`.
+### Historical base — PR #170
 
-Exact validated source/runtime code head:
+PR #170 is merged. Merge commit:
 
-`d2b64bd1128a0457393283a463fddd71cc7c9094` — `Preserve canonical Species family labels`
+`599c4de7397ba6e4bbbb0a061d551d80c3570be7`
 
-Production database authority is accepted through migration 93:
+The merge happened through an accidental connector action while branch-integration tooling was being searched for. Do not describe PR #170 as open, do not blindly revert it, and do not use a merge operation merely to move branch content.
+
+Older ledgers may retain “PR #170 open” or “before merge” language because they are contemporaneous evidence. Treat those statements as historical, not current instructions.
+
+### Active continuation — PR #171
+
+Branch: `agent/species-art-post170`
+
+PR #171 is **open and unmerged**. Merge only after Paul explicitly approves it.
+
+Latest validated code head:
+
+`39a263e034db4023ed7d1a4950a185a832c08867` — `Polish Eladrin season selection`
+
+Exact-head evidence:
+
+- all 14 triggered GitHub workflows succeeded;
+- Vercel succeeded;
+- focused Species facts, family expansion, artwork, source presentation, nested choices, unified Forge, and Eladrin runtime validators passed;
+- syntax, symbol/prop, diff, and protected-boundary checks passed.
+
+The earlier full PR #170 source/runtime checkpoint remains useful historical evidence, but current changes and merge control belong to PR #171.
+
+## Live database checkpoint
+
+Supabase project: `DnDWeb` / `ucggczovhmauhshvhusx`.
+
+Status: `ACTIVE_HEALTHY`, PostgreSQL 17.4.1.
+
+Database authority remains migration 93:
 
 `20260812042950 aven_subrace_catalog`
 
@@ -31,105 +61,69 @@ Recent catalogue/source migrations:
 - 92 — `20260812033649 genasi_source_detail_restore`;
 - 93 — `20260812042950 aven_subrace_catalog`.
 
-## Exact-head validation
+Current verified Species counts:
 
-For code head `d2b64bd1128a0457393283a463fddd71cc7c9094`:
+- raw Species catalogue: 166;
+- preferred Species view: 102;
+- Eladrin runtime-choice rows: 0.
 
-- **33/33 PR-triggered GitHub workflows succeeded**;
-- `Validate Forge source presentation` passed the original structured-source contract, the established Genasi/Dragonborn family contract, the expanded Species-family contract, and its production build;
-- `Validate PR170 browser smoke corrections` passed its contract and production build;
-- NPC Forge, Character Forge nested-choice, source-magic, equipment, progression, runtime, portrait, currency, Artificer, and related regression gates all succeeded.
+The PR #171 artwork, layout, facts, semantic icons, search reveal, guided validation, and Eladrin presentation passes made no Supabase write or migration.
 
-A later documentation-only descendant does not supersede this tested code checkpoint. Use `d2b64bd...` when referring to the exact runtime/source tree that received the full 33/33 gate.
-
-## Authoritative recent ledgers
+## Controlling current documents
 
 Read before modifying these areas:
 
-- `Forge_Species_Family_Submenu_Status.md` — controlling Species family/setting-variant presentation ledger through migrations 91-93;
-- `Forge_Source_Presentation_and_Species_Variants_Status.md` — earlier structured source-presentation foundation/history;
-- `PR170_Browser_Smoke_Corrections_Status.md`;
-- `PR170_Final_Acceptance_Status.md`;
-- `Player_Forge_Choice_Routing_and_Source_Magic_Status.md`;
-- `Pending_Rest_Runtime_Choices_Status.md`;
-- `Defensive_Tactics_Runtime_Status.md`;
-- `Whispers_of_the_Dead_Runtime_Status.md`;
-- `Progression_RPC_ACL_Cleanup_Status.md`;
-- `Wizard_Memorize_Spell_Runtime_Status.md`;
-- `Wizard_Cantrip_Formulas_Runtime_Status.md`;
-- `Armorer_Armor_Model_Runtime_Status.md`;
-- `Bestial_Soul_Runtime_Status.md`;
-- `Wild_Heart_Aspect_Runtime_Status.md`;
-- `Hunters_Prey_Runtime_Status.md`;
-- `Boon_Energy_Resistance_Runtime_Status.md`;
-- `Feat_Runtime_Expertise_Status.md`;
-- `Cartomancer_Runtime_Status.md`;
-- `DNDNext_Current_Handoff_Prompt.md`.
-
-Older runtime ledgers remain authoritative for their accepted slices unless contradictory live evidence exists.
+- `DNDNext_Current_Handoff_Prompt.md` — copy-ready next-chat brief and site architecture;
+- `Forge_Post170_Species_Artwork_Status.md` — active PR #171 Species continuation;
+- `Forge_Species_Family_Submenu_Status.md` — Species identity/family/persistence rules;
+- `Forge_Source_Presentation_and_Species_Variants_Status.md` — structured source-rendering foundation/history;
+- `Unified_Character_Forge_Status.md` — shared creation/progression/runtime architecture;
+- `Eladrin_Runtime_Status.md` — Eladrin creation/runtime lifecycle;
+- `PR170_Final_Acceptance_Status.md` — historical PR #170 acceptance evidence;
+- `PR170_Browser_Smoke_Corrections_Status.md` — historical signed-in findings/corrections;
+- `Player_Forge_Choice_Routing_and_Source_Magic_Status.md` — placement and source-magic authority;
+- `Pending_Rest_Runtime_Choices_Status.md` and matching `*_Runtime_Status.md` ledgers — runtime cadence;
+- `Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md` — item/equipment/crafting boundaries;
+- `Tactical_Encounter_Combat_Roadmap_Blueprint.md` plus the latest tactical phase ledger — tactical authority;
+- `CHATGPT_REPO_WRITE_PROCEDURE.md` — coherent GitHub/Supabase write procedure.
 
 ## Core modeling rule
 
 - permanent source-owned acquisition → Forge/progression authority;
+- proficiency-dependent permanent choice → Training;
+- spell-centric permanent choice → Spells;
 - rest-configurable persistent choice → runtime authority whose current selection remains active until changed;
-- next-rest-expiring choice → rest-anchored runtime state whose getter treats stale state as inactive;
+- next-rest-expiring choice → rest-cycle runtime state;
 - first choice unlocked only by a rest → attention only while no benefit is active;
-- class action with source-defined recovery → action-state authority restored by the appropriate standalone Rest RPC without rewriting tactical state;
 - per-use/per-cast choice → action/spell resolver;
-- informational/always-on feature → display/consumer logic.
+- informational/always-on feature → presentation/consumer logic.
 
-Accepted cadence contrasts remain unchanged, including Armor Model, Bestial Soul, Aspect of the Wilds, Hunter's Prey/Defensive Tactics source differences, Whispers of the Dead, Astral Trance, and Rage.
+Do not use visual similarity as permission to merge different lifecycles or persistence identities.
 
-## Current Forge source-presentation model
+## Current Species presentation model
 
-### Class
+The Species browser has three presentation classes:
 
-`SourceRuleContent` remains the shared structured source renderer. The detailed Class path preserves structured `entries` rather than depending only on flattened descriptions.
+1. **parent-persisted family choices** — Genasi, Dragonborn, Aven, Elf, Gnome, Shifter, Fairy, and Kithkin;
+2. **real setting/source Species rows nested visually** — Human setting variants, Dwarf (Kaladesh), Elf (Kaladesh), Orc (Ixalan), Minotaur (Amonkhet), and Goblin (Dankwood); Elf (Zendikar) remains canonical data but is Forge-presentation-excluded;
+3. **inline trait choices** — Goliath Giant Ancestry, Tiefling Fiendish Legacy, and other non-child lifecycle decisions.
 
-### Background
+Setting children keep their real catalogue ID/source/rules/save identity. Distinct Species such as Sea Elf, Astral Elf, Eladrin, Shadar-kai, Duergar, and Deep Gnome remain independent.
 
-Mechanical source rows remain organized while optional/random flavor-generation tables are suppressed where appropriate. Background presentation work should continue through shared rendering rather than per-entry hacks.
+Species skill choices route to Training. Species magic routes to Spells. Runtime-only rest choices remain outside permanent Forge authority.
 
-### Species
+The current UI also promotes concise portrait facts, semantic icons, canonical Size/Languages choices, Gender & Alignment, guided incomplete-choice focus, search-driven parent reveal, full-height desktop catalog behavior, and the single descriptive-button `Eladrin Seasons` card.
 
-The current Species model has three presentation classes:
-
-1. **parent-persisted family choices** — Genasi, Dragonborn, Aven, and source-owned lineage/subtype choices promoted for Elf, Gnome, Shifter, Fairy, and Kithkin;
-2. **real setting/source Species rows visually nested beneath a semantic parent** — Human variants from Innistrad/Ixalan/Kaladesh/Zendikar, Dwarf (Kaladesh), Elf (Kaladesh/Zendikar), Orc (Ixalan), Minotaur (Amonkhet), Goblin (Dankwood);
-3. **inline trait choices** — Goliath Giant Ancestry, Tiefling Fiendish Legacy, and other choices whose lifecycle or semantics do not define a catalogue child Species identity.
-
-Setting children keep their real catalogue ID/source/rules and save identity. They are not projected through the modern parent ruleset.
-
-Distinct species such as Sea Elf, Astral Elf, Eladrin, Shadar-kai, Duergar, and Deep Gnome remain independent unless their source explicitly defines a parent relationship.
-
-Species skill choices remain routed to Training; Species magic remains routed to Spells; runtime-only rest choices remain outside permanent Forge authority.
-
-## Live database verification
-
-Migration 93 was transaction-tested with rollback before deployment and then applied live.
-
-Current production counts:
-
-- raw Species catalogue: 166;
-- preferred Species view: 102;
-- characters: 7;
-- character_sheets: 7;
-- character_spells: 30;
-- character_progression: 7;
-- inventory_items: 18;
-- locations: 20;
-- map_routes: 4;
-- map_route_points: 9.
-
-The only count change from the pre-migration-93 baseline is the two intended Aven source rows.
+Paul considers the Species tab nearly perfect. Preserve it as the current baseline unless a specific regression is reproduced.
 
 ## Protected boundaries
 
-Current Forge work does not authorize world-map, town/city-map, route/travel/weather, unrelated crafting/inventory execution, or tactical action execution. `components/MapPageClient.js` remains outside scope unless explicitly requested.
+Current Forge work does not authorize world-map, town/city-map, route/travel/weather, tactical action execution, crafting/inventory execution, merchants, or unrelated runtime changes. `components/MapPageClient.js` remains outside scope unless Paul explicitly requests world-map work.
 
-## Remaining PR closure work
+## Remaining active work
 
-- deploy/re-smoke the expanded Species family presentation in a real signed-in browser;
-- continue remaining Background/Class visual QA through shared presentation fixes;
-- perform final live migration/ACL/residue and exact-head checks immediately before any approved merge;
+- final user visual confirmation of the near-finished Species tab;
+- move to Background, Class, or another Forge tab as a separate bounded review when Paul chooses;
+- continue exact-head CI/Vercel and protected-path checks for every PR #171 commit;
+- immediately before any explicitly approved merge, recheck remote head, PR state, live migration authority, relevant ACL/residue, and deployment state;
 - merge only after explicit user approval.

@@ -1,12 +1,12 @@
 # Wizard Spell Mastery Runtime Status
 
-Status date: 2026-08-08
-PR: #170 (`agent/character-forge-resilience-presentation`)
+Status date: 2026-08-14 historical reconciliation
+Historical implementation PR: #170 (`agent/character-forge-resilience-presentation`) — merged at `599c4de7397ba6e4bbbb0a061d551d80c3570be7`
 Live migration: `wizard_spell_mastery_runtime` (`sql/20260808_44_wizard_spell_mastery_runtime.sql`)
 
 ## Authority / precedence
 
-This document is the current controlling evidence for XPHB Wizard **Spell Mastery** on PR #170. Any older PR #170 document that still says Spell Mastery is pending predates migration 44 and should be read as historical until that line is reconciled.
+This document remains the controlling evidence for XPHB Wizard **Spell Mastery** established during PR #170. Any older document that says Spell Mastery is pending predates migration 44 and should be read as historical.
 
 This slice does not change the governing creation/progression parity rule: Spell Mastery is **not** a permanent level-18 Forge or level-up lock because the selected spells can change after a Long Rest.
 
@@ -202,7 +202,7 @@ The Wizard-specific parity/runtime sequence is now:
 
 Spell Mastery must remain runtime-configurable. Do not reintroduce it as a permanent Forge or level-up choice.
 
-## Remaining PR #170 blockers
+## Historical broader-PR blockers at this checkpoint
 
 Wizard-specific feature parity is no longer the leading blocker. Remaining PR #170 work continues with the broader Forge closure items already tracked by the Character Forge status documents:
 
@@ -212,4 +212,4 @@ Wizard-specific feature parity is no longer the leading blocker. Remaining PR #1
 4. Artificer wildcard Magic Item Plan concrete-item instances;
 5. final preferred Species / Background / Class / Feat / Subclass persistent-choice coverage audit and conditional-choice UI polish;
 6. audit/revoke obsolete authenticated progression RPC generations once confirmed unused;
-7. final authenticated browser acceptance before merging PR #170.
+7. final authenticated browser acceptance was still pending at this historical checkpoint; use the current handoff for present status.

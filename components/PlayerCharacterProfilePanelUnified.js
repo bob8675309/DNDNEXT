@@ -6,6 +6,15 @@ import { shouldAutoOpenPlayerCharacterPanel } from "../utils/playerCharacterForg
 
 const CharacterInteractionPanel = dynamic(() => import("./character/CharacterInteractionPanel"), { ssr: false });
 const PlayerCharacterCreator = dynamic(() => import("./PlayerCharacterCreatorV2"), { ssr: false });
+const PlayerAccountPanel = dynamic(() => import("./PlayerAccountPanel"), { ssr: false });
+
+const OPEN_PLAYER_PROFILE_EVENT = "dndnext:open-player-profile";
+const RESET_APP_WINDOW_EVENT = "dndnext:reset-app-window";
+
+function requestAppWindowReset(scope = "all") {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(RESET_APP_WINDOW_EVENT, { detail: { scope } }));
+}
 
 function isEditableTarget(target) {
   if (!target) return false;
@@ -62,6 +71,7 @@ export default function PlayerCharacterProfilePanelUnified() {
   const activeProfileUserIdRef = useRef(null);
   const profileLoadRequestRef = useRef(0);
   const selectedCharacterIdRef = useRef(null);
+  const pendingOpenRequestRef = useRef(false);
 
   const isLoggedIn = !!sessionUser;
 
@@ -70,11 +80,12 @@ export default function PlayerCharacterProfilePanelUnified() {
   }, [character?.id]);
 
   const closePanel = useCallback(() => {
+    pendingOpenRequestRef.current = false;
     setOpen(false);
     if (!router?.isReady || router.query?.characterProfile !== "1") return;
     const nextQuery = { ...(router.query || {}) };
     delete nextQuery.characterProfile;
-    router.replace({ pathname: router.pathname, query: nextQuery }, undefined, { shallow: true }).catch(() => {});
+    router.replace({ pathname: router.pathname, query: nextQuery }, undefined, { shallow: true, scroll: false }).catch(() => {});
   }, [router]);
 
   const loadLinkedCharacters = useCallback(async (user, preferredCharacterId = null) => {
@@ -159,7 +170,13 @@ export default function PlayerCharacterProfilePanelUnified() {
   }, []);
 
   const openPanel = useCallback(async () => {
-    if (!sessionUser) return;
+    if (!sessionUser) {
+      pendingOpenRequestRef.current = true;
+      return;
+    }
+    pendingOpenRequestRef.current = false;
+    requestAppWindowReset("profile");
+    requestAppWindowReset("forge");
     if (!characters.length) await loadLinkedCharacters(sessionUser);
     setOpen(true);
   }, [characters.length, loadLinkedCharacters, sessionUser]);
@@ -171,11 +188,13 @@ export default function PlayerCharacterProfilePanelUnified() {
       setNeedsCharacter(false);
       setCreatingCharacter(false);
       setMessage("");
+      requestAppWindowReset("profile");
       setOpen(true);
     }
   }, [loadLinkedCharacters, sessionUser]);
 
   const beginAdditionalCharacter = useCallback(() => {
+    requestAppWindowReset("forge");
     setCreatingCharacter(true);
     setMessage("");
     setOpen(true);
@@ -244,6 +263,20 @@ export default function PlayerCharacterProfilePanelUnified() {
   }, [isLoggedIn, openPanel, router.isReady, router.query?.characterProfile]);
 
   useEffect(() => {
+    function onProfileOpenRequest(event) {
+      event?.preventDefault?.();
+      pendingOpenRequestRef.current = true;
+      void openPanel();
+    }
+    window.addEventListener(OPEN_PLAYER_PROFILE_EVENT, onProfileOpenRequest);
+    return () => window.removeEventListener(OPEN_PLAYER_PROFILE_EVENT, onProfileOpenRequest);
+  }, [openPanel]);
+
+  useEffect(() => {
+    if (isLoggedIn && pendingOpenRequestRef.current) void openPanel();
+  }, [isLoggedIn, openPanel]);
+
+  useEffect(() => {
     if (shouldAutoOpenPlayerCharacterPanel({
       routerReady: router.isReady,
       pathname: router.pathname,
@@ -251,11 +284,31 @@ export default function PlayerCharacterProfilePanelUnified() {
       loading,
       hasCharacter: Boolean(character),
       needsCharacter,
-    })) setOpen(true);
-  }, [character, isLoggedIn, loading, needsCharacter, router.isReady, router.pathname]);
+    })) openPanel();
+  }, [character, isLoggedIn, loading, needsCharacter, openPanel, router.isReady, router.pathname]);
+
+  useEffect(() => {
+    const routeEvents = router?.events;
+    if (!routeEvents?.on || !routeEvents?.off) return undefined;
+    function onRouteChangeStart() {
+      pendingOpenRequestRef.current = false;
+      setOpen(false);
+    }
+    routeEvents.on("routeChangeStart", onRouteChangeStart);
+    return () => routeEvents.off("routeChangeStart", onRouteChangeStart);
+  }, [router?.events]);
 
   useEffect(() => {
     function onKeyDown(event) {
+      const isEscape = event.key === "Escape" || event.code === "Escape" || event.keyCode === 27;
+      if (isEscape) {
+        if (!open) return;
+        event.preventDefault();
+        event.stopPropagation();
+        closePanel();
+        return;
+      }
+
       const isBackspace = event.key === "Backspace" || event.code === "Backspace" || event.keyCode === 8;
       if (!isBackspace || event.repeat || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
       if (isEditableTarget(event.target) || !isLoggedIn) return;
@@ -273,9 +326,10 @@ export default function PlayerCharacterProfilePanelUnified() {
 
   const showCreator = creatingCharacter || !character;
   const showLoading = loading && !character && !creatingCharacter;
+  const accountContent = sessionUser ? <PlayerAccountPanel sessionUser={sessionUser} onNameSaved={setPlayerName} /> : null;
 
   return (
-    <div className={`npc-page-profile-panel-backdrop ${!open ? "is-forge-suspended" : ""}`} onMouseDown={(event) => open && event.target === event.currentTarget ? closePanel() : null} aria-hidden={!open}>
+    <div className={`npc-page-profile-panel-backdrop ${!open ? "is-forge-suspended" : ""}`} aria-hidden={!open}>
       <div className={`npc-page-profile-panel-shell ${showCreator ? "is-player-character-forge" : ""}`}>
         {showLoading ? <div className="npc-card m-3"><div className="text-muted">Loading linked character profiles…</div></div> : null}
 
@@ -298,9 +352,20 @@ export default function PlayerCharacterProfilePanelUnified() {
                   {characters.map((row) => <option key={row.id} value={String(row.id)}>{playerCharacterLabel(row)}</option>)}
                 </select>
               </label>
-              <button type="button" className="btn btn-sm btn-outline-light" onClick={beginAdditionalCharacter}>Create another character</button>
+              <div className="player-character-forge-toolbar__actions">
+                <button type="button" className="btn btn-sm btn-outline-light" onClick={beginAdditionalCharacter}>Create another character</button>
+                <button type="button" className="btn btn-sm btn-outline-light player-character-forge-toolbar__close" onClick={closePanel} aria-label="Close profile panel" title="Close">✕</button>
+              </div>
             </div>
-            <CharacterInteractionPanel key={character.id} character={character} isAdmin={isAdmin} locations={locations} onClose={closePanel} initialView="profile" />
+            <CharacterInteractionPanel
+              key={character.id}
+              character={character}
+              isAdmin={isAdmin}
+              locations={locations}
+              onClose={closePanel}
+              initialView="profile"
+              accountContent={accountContent}
+            />
           </> : null}
         </div>
       </div>

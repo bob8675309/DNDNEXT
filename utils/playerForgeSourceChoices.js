@@ -56,6 +56,31 @@ function distinctBlockedKeys(field, group, selections = {}) {
   return new Set(selectedFor(selections, group.id, field.distinctFromFieldId));
 }
 
+function groupRepeatLimits(group) {
+  const raw = group?.metadata?.repeatLimits;
+  return raw && typeof raw === "object" && !Array.isArray(raw) ? raw : null;
+}
+
+function selectedCountInGroup(group, selections, optionKey, exceptFieldId = "") {
+  let count = 0;
+  for (const field of array(group?.fields)) {
+    if (field.id === exceptFieldId || !sourceChoiceFieldIsActive(field, selections)) continue;
+    count += selectedFor(selections, group.id, field.id).filter((key) => key === optionKey).length;
+  }
+  return count;
+}
+
+function groupRepeatLimitsSatisfied(group, selections = {}) {
+  const limits = groupRepeatLimits(group);
+  if (!limits) return true;
+  const counts = new Map();
+  for (const field of array(group?.fields)) {
+    if (!sourceChoiceFieldIsActive(field, selections)) continue;
+    for (const key of selectedFor(selections, group.id, field.id)) counts.set(key, Number(counts.get(key) || 0) + 1);
+  }
+  return [...counts.entries()].every(([key, count]) => count <= Math.max(1, Number(limits[key] || 1)));
+}
+
 export function normalizeSourceChoiceSelections(groups = [], selections = {}) {
   const output = {};
   for (const group of array(groups)) {
@@ -88,7 +113,8 @@ export function sourceChoiceFieldComplete(group, field, selections = {}) {
 }
 
 export function sourceChoiceGroupComplete(group, selections = {}) {
-  return array(group?.fields).every((field) => sourceChoiceFieldComplete(group, field, selections));
+  return array(group?.fields).every((field) => sourceChoiceFieldComplete(group, field, selections))
+    && groupRepeatLimitsSatisfied(group, selections);
 }
 
 export function sourceChoiceGroupsComplete(groups = [], selections = {}, filters = {}) {
@@ -108,6 +134,11 @@ export function toggleSourceChoiceSelection(groups = [], selections = {}, groupI
   const blocked = distinctBlockedKeys(field, group, selections);
   if (blocked.has(optionKey)) return selections;
   const selected = selectedFor(selections, groupId, fieldId);
+  const repeatLimits = groupRepeatLimits(group);
+  if (!selected.includes(optionKey) && repeatLimits) {
+    const limit = Math.max(1, Number(repeatLimits[optionKey] || 1));
+    if (selectedCountInGroup(group, selections, optionKey, fieldId) >= limit) return selections;
+  }
   const next = selected.includes(optionKey)
     ? selected.filter((key) => key !== optionKey)
     : selected.length < Number(field.count || 1)
@@ -123,7 +154,13 @@ export function setSourceChoiceSelection(groups = [], selections = {}, groupId, 
   if (!group || !field || !sourceChoiceFieldIsActive(field, selections)) return selections;
   const allowed = new Set(field.options.map((option) => option.key));
   const blocked = distinctBlockedKeys(field, group, selections);
-  const next = unique(optionKeys).filter((key) => allowed.has(key) && !blocked.has(key)).slice(0, Number(field.count || 1));
+  const repeatLimits = groupRepeatLimits(group);
+  const next = unique(optionKeys).filter((key) => {
+    if (!allowed.has(key) || blocked.has(key)) return false;
+    if (!repeatLimits) return true;
+    const limit = Math.max(1, Number(repeatLimits[key] || 1));
+    return selectedCountInGroup(group, selections, key, fieldId) < limit;
+  }).slice(0, Number(field.count || 1));
   const candidate = { ...selections, [groupId]: { ...(selections?.[groupId] || {}), [fieldId]: next } };
   return normalizeSourceChoiceSelections(groups, candidate);
 }

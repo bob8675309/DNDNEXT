@@ -159,27 +159,51 @@ const SPECIES_DEDICATED_VARIANT_ARTWORK = new Set([
   "copper-dragonborn",
   "gold-dragonborn",
   "silver-dragonborn",
+  "amethyst-gem-dragonborn",
+  "crystal-gem-dragonborn",
+  "emerald-gem-dragonborn",
+  "sapphire-gem-dragonborn",
+  "topaz-gem-dragonborn",
+  "hawk-headed-aven",
+  "ibis-headed-aven",
+  "drow",
+  "high-elf",
+  "wood-elf",
+  "forest-gnome",
+  "rock-gnome",
+  "beasthide-shifter",
+  "longtooth-shifter",
+  "swiftstride-shifter",
+  "wildhunt-shifter",
+  "lorwyn-fairy",
+  "shadowmoor-fairy",
+  "lorwyn-kithkin",
+  "shadowmoor-kithkin",
+  "dwarf-kaladesh",
+  "goblin-dankwood",
+  "orc-ixalan",
 ]);
 
-const SPECIES_VARIANT_PORTRAITS = new Set([
-  "air-genasi", "earth-genasi", "fire-genasi", "water-genasi",
-  "black-dragonborn", "blue-dragonborn", "green-dragonborn", "red-dragonborn", "white-dragonborn",
-  "brass-dragonborn", "bronze-dragonborn", "copper-dragonborn", "gold-dragonborn", "silver-dragonborn",
-  "amethyst-gem-dragonborn", "crystal-gem-dragonborn", "emerald-gem-dragonborn", "sapphire-gem-dragonborn", "topaz-gem-dragonborn",
-  "hawk-headed-aven", "ibis-headed-aven",
-  "drow", "high-elf", "wood-elf", "forest-gnome", "rock-gnome",
-  "beasthide-shifter", "longtooth-shifter", "swiftstride-shifter", "wildhunt-shifter",
-  "lorwyn-fairy", "shadowmoor-fairy", "lorwyn-kithkin", "shadowmoor-kithkin",
-  "dwarf-kaladesh", "goblin-dankwood", "orc-ixalan",
-]);
+// Raw catalogue rows retain the upstream parenthetical naming convention.
+// Normalize those names onto the same dedicated keys used by projected Forge
+// child selections, without changing canonical non-Forge family resolution.
+const SPECIES_RAW_NAME_ALIASES = {
+  "genasi-air": "air-genasi",
+  "genasi-earth": "earth-genasi",
+  "genasi-fire": "fire-genasi",
+  "genasi-water": "water-genasi",
+  "aven-hawk-headed": "hawk-headed-aven",
+  "aven-ibis-headed": "ibis-headed-aven",
+};
 
 export function normalizeSpeciesArtworkKey(value = "") {
-  return String(value || "")
+  const key = String(value || "")
     .trim()
     .toLowerCase()
     .replace(/[’']/g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+  return SPECIES_RAW_NAME_ALIASES[key] || key;
 }
 
 export function speciesArtworkFor(species = "") {
@@ -193,10 +217,7 @@ export function speciesArtworkFor(species = "") {
 export function speciesPortraitArtworkFor(species = "") {
   const key = normalizeSpeciesArtworkKey(species);
   if (SPECIES_DEDICATED_VARIANT_ARTWORK.has(key)) return `/media/species/${key}.webp`;
-  const canonical = speciesArtworkFor(species);
-  return SPECIES_VARIANT_PORTRAITS.has(key)
-    ? `${canonical}?portrait=${encodeURIComponent(key)}`
-    : canonical;
+  return speciesArtworkFor(species);
 }
 
 export function hasDedicatedSpeciesArtwork(species = "") {
@@ -207,8 +228,7 @@ export function hasDedicatedSpeciesArtwork(species = "") {
 export function hasSpeciesPortraitArtwork(species = "") {
   const key = normalizeSpeciesArtworkKey(species);
   return hasDedicatedSpeciesArtwork(species)
-    || SPECIES_DEDICATED_VARIANT_ARTWORK.has(key)
-    || SPECIES_VARIANT_PORTRAITS.has(key);
+    || SPECIES_DEDICATED_VARIANT_ARTWORK.has(key);
 }
 
 export function handleSpeciesArtworkError(event) {

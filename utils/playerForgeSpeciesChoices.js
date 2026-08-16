@@ -1,4 +1,5 @@
 import { ABILITY_LABELS, SKILL_DEFINITIONS } from "./characterCreation";
+import { formatPlayerFacingText } from "./playerFacingText.js";
 import { STANDARD_LANGUAGE_OPTIONS } from "./playerForgeSourceChoices";
 import { speciesVariantChoice } from "./speciesVariantFamilies";
 
@@ -12,6 +13,8 @@ const ABILITY_OPTIONS = Object.freeze(["int", "wis", "cha"].map((value) => ({ ke
 const SKILL_OPTIONS = Object.freeze(SKILL_DEFINITIONS.map((skill) => ({ key: skill.key, value: skill.key, label: skill.label, kind: "skill", source: "XPHB", metadata: { ability: skill.ability } })));
 const DAMAGE_OPTIONS = Object.freeze(["Acid", "Cold", "Fire", "Lightning", "Necrotic", "Poison", "Psychic", "Radiant", "Thunder"].map((label) => ({ key: slug(label), value: label, label, kind: "damage-type", source: "XPHB" })));
 const AUTO_CASTING_ABILITIES = Object.freeze(["int", "wis", "cha"]);
+const HERITAGE_CATEGORY_ORDER = Object.freeze({ C: 0, E: 1, R: 2 });
+const HERITAGE_CATEGORY_LABELS = Object.freeze({ C: "Combat", E: "Exploration", R: "Roleplaying" });
 
 function sourceRank(source = "") { return source === "XPHB" ? 0 : source === "PHB" ? 1 : 2; }
 function preferredSpellRows(spells = []) {
@@ -41,6 +44,53 @@ function group(species, traitNameValue, fields, level = 1, helper = "", placemen
 }
 function rawTraits(species) { return array(species?.metadata?.traits).filter((entry) => entry && typeof entry === "object"); }
 function traitName(trait) { return text(trait?.name || trait?.title || "Species Feature"); }
+function isCustomLineage(species) { return norm(species?.name) === "custom lineage" && String(species?.source || "").toUpperCase() === "TCE"; }
+function heritagePlayerText(value = "") {
+  return formatPlayerFacingText(value)
+    .replace(/\s*\(This is an? (?:Combat|Exploration|Roleplaying) trait\.\)/gi, "")
+    .replace(/\bEtharis\b/g, "the world")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+function customLineageHeritageGroups(species) {
+  if (!isCustomLineage(species)) return [];
+  const catalog = array(species?.metadata?.heritageTraitCatalog).filter((entry) => entry?.key && entry?.name);
+  if (!catalog.length) return [];
+  const heritageOptions = catalog.map((entry) => {
+    const category = String(entry.category || "R").toUpperCase();
+    return {
+      key: text(entry.key),
+      value: text(entry.key),
+      label: entry.name,
+      kind: "heritage-trait",
+      source: "GrimHollowPG24",
+      description: heritagePlayerText(entry.description),
+      metadata: {
+        optionKey: entry.key,
+        category,
+        categoryLabel: HERITAGE_CATEGORY_LABELS[category] || "Roleplaying",
+        improvedName: entry.improvedName || null,
+        repeatLimit: Math.max(1, Number(entry.repeatLimit || 2)),
+      },
+    };
+  }).sort((a, b) => {
+    const categoryDelta = Number(HERITAGE_CATEGORY_ORDER[a.metadata.category] ?? 9) - Number(HERITAGE_CATEGORY_ORDER[b.metadata.category] ?? 9);
+    return categoryDelta || a.label.localeCompare(b.label);
+  });
+  const repeatLimits = Object.fromEntries(heritageOptions.map((entry) => [entry.key, Math.max(1, Number(entry.metadata?.repeatLimit || 2))]));
+  const fields = Array.from({ length: 8 }, (_, index) => field({
+    id: `heritage-${index + 1}`,
+    label: `Heritage Trait ${index + 1} of 8`,
+    kind: "heritage-trait",
+    options: heritageOptions,
+    helper: "Select a trait again only when that trait allows an improved or repeated benefit.",
+    metadata: { pickNumber: index + 1, system: "GrimHollowPG24" },
+  }));
+  const heritageGroup = group(species, "Heritage Traits", fields, 1,
+    "Choose exactly eight Heritage Trait picks. Combat, Exploration, and Roleplaying organize the catalogue but do not impose quotas.",
+    "species", { system: "GrimHollowPG24", totalPicks: 8, repeatLimits, heritageTraitGroup: true });
+  return [heritageGroup];
+}
 function flattenStrings(node, output = []) {
   if (node == null) return output;
   if (typeof node === "string") { output.push(node); return output; }
@@ -174,6 +224,7 @@ function explicitTraitGroups(species, trait, level, spells, featOptions) {
   const name = traitName(trait);
   const key = norm(name);
   const raw = traitText(trait);
+  if (isCustomLineage(species) && ["feat", "variable trait"].includes(key)) return [];
   const output = [];
   const add = (fields, entryLevel = 1, helper = raw, placement = "species", metadata = null) => { const valid = array(fields).filter(Boolean); if (valid.length) output.push(group(species, name, valid, entryLevel, helper, placement, metadata)); };
   const familyChoice = speciesVariantChoice(species);
@@ -256,12 +307,13 @@ export function buildSpeciesSourceChoiceGroups({ species = null, level = 1, spel
   const groups = [];
   const familyGroup = standaloneSpeciesVariantGroup(species);
   if (familyGroup) groups.push(familyGroup);
+  groups.push(...customLineageHeritageGroups(species));
   for (const trait of rawTraits(species)) {
     const name = traitName(trait);
     if (!name || excluded.has(norm(name))) continue;
     if (["astral trance"].includes(norm(name))) continue;
     groups.push(...explicitTraitGroups(species, trait, level, spells, featOptions));
   }
-  groups.push(...speciesLanguageGroups(species));
+  if (!isCustomLineage(species)) groups.push(...speciesLanguageGroups(species));
   return groups.filter((candidate) => candidate.fields.some((fieldRow) => fieldRow.options?.length >= fieldRow.count));
 }

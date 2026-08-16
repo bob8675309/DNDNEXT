@@ -1,11 +1,11 @@
 # Character Progression and Creation
 
-Updated: 2026-08-08
-PR: #170 (`agent/character-forge-resilience-presentation`)
+Updated: 2026-08-14 historical reconciliation
+Historical implementation PR: #170 (`agent/character-forge-resilience-presentation`) — merged at `599c4de7397ba6e4bbbb0a061d551d80c3570be7`
 
 ## Scope
 
-This document describes the current server-authoritative character creation, earned progression, source-owned spell assignment, and runtime-cadence boundaries used by PR #170. It intentionally excludes world-map, town/city-map, route/travel/weather, tactical combat, merchant/crafting, and unrelated inventory behavior.
+This document describes the server-authoritative character creation, earned progression, source-owned spell assignment, and runtime-cadence boundaries established during PR #170 and preserved by current continuations. It intentionally excludes world-map, town/city-map, route/travel/weather, tactical combat, merchant/crafting, and unrelated inventory behavior.
 
 ## Governing rule: creation/progression parity
 
@@ -224,7 +224,7 @@ After migrations 47-48 and rollback fixtures:
 - 0 synthetic v3 characters;
 - world baseline 20 locations / 4 routes / 9 route points.
 
-## Remaining PR #170 work
+## Historical remaining-work snapshot from PR #170
 
 - remaining runtime cadence families such as Astral Trance, Circle-of-the-Land choices, Primal Companion, Dread Allegiance, Fiendish Resilience, and per-use Steps of the Fey;
 - source-backed starting equipment and higher-level starting wealth/equipment;
@@ -232,7 +232,7 @@ After migrations 47-48 and rollback fixtures:
 - Artificer wildcard Magic Item Plan concrete-item instances;
 - remaining persistent/conditional source-choice audit and UI polish;
 - obsolete authenticated level-up RPC cleanup;
-- authenticated browser acceptance before merge.
+- authenticated browser acceptance was still pending at this historical checkpoint; current transition state is tracked in `DNDNext_Current_Handoff_Prompt.md`.
 
 ## Protected boundaries
 

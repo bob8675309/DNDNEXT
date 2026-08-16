@@ -1,0 +1,37 @@
+name: Validate Species Heritage profiles
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "sql/20260814_02_species_heritage_profiles.sql"
+      - "scripts/validate_forge_species_heritage_profiles.mjs"
+      - ".github/workflows/validate-species-heritage-profiles.yml"
+  push:
+    branches:
+      - "agent/species-art-post170"
+    paths:
+      - "sql/20260814_02_species_heritage_profiles.sql"
+      - "scripts/validate_forge_species_heritage_profiles.mjs"
+      - ".github/workflows/validate-species-heritage-profiles.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate approved Heritage replacements
+        run: node scripts/validate_forge_species_heritage_profiles.mjs

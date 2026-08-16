@@ -210,7 +210,7 @@
 /* Character Forge PR A: content-driven player layouts */
 .npc-forge-header-actions{display:flex;align-items:center;justify-content:flex-end;gap:.55rem;flex-wrap:wrap}
 .npc-page-profile-panel-backdrop.is-forge-suspended{display:none!important}
-.npc-forge-body.is-player-mode.npc-forge-step-0,
+.npc-forge-body.is-player-mode.npc-forge-step-0{grid-template-columns:minmax(360px,34fr) minmax(0,66fr)!important}
 .npc-forge-body.is-player-mode.npc-forge-step-1,
 .npc-forge-body.is-player-mode.npc-forge-step-2{grid-template-columns:minmax(250px,30fr) minmax(0,70fr)!important}
 .npc-forge-body.is-player-mode.npc-forge-step-3{grid-template-columns:minmax(0,72fr) minmax(270px,28fr)!important}

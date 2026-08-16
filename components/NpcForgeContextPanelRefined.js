@@ -1,13 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
-import { ABILITY_KEYS, ABILITY_LABELS } from "../utils/characterCreation";
+import { ABILITY_KEYS, ABILITY_LABELS, ALIGNMENT_OPTIONS } from "../utils/characterCreation";
 import { ABILITY_DESCRIPTIONS } from "../utils/characterCreationGuidance";
 import { STRIXHAVEN_COLLEGES } from "../utils/playerForgeFeatChoiceRouting";
 import { formatPlayerFacingText } from "../utils/playerFacingText";
-import { hasDedicatedSpeciesArtwork, handleSpeciesArtworkError, speciesArtworkFor } from "../utils/speciesArtwork";
+import { handleSpeciesArtworkError, hasSpeciesPortraitArtwork, speciesPortraitArtworkFor } from "../utils/speciesArtwork";
 import { speciesFlavorLore } from "../utils/speciesLore";
 import { extractSpeciesTraitChoiceRules, formatSpeciesMovement, speciesFixedLanguages, speciesTraitChoiceRuleComplete } from "../utils/speciesPresentation";
+import { sourceChoiceFieldIsActive } from "../utils/playerForgeSourceChoices";
+import {
+  speciesCreatureTypeLabel,
+  speciesFeaturePresentation,
+  speciesFixedLanguageFact,
+  speciesVisionExplanation,
+} from "../utils/speciesForgePresentation";
 import { backgroundStoryDescription } from "../utils/backgroundPresentation";
 import { supabase } from "../utils/supabaseClient";
+import ForgeSemanticIcon, { speciesFeatureIconKind } from "./ForgeSemanticIcon";
 import NpcForgeEmbeddedSourceChoices, {
   sourceChoiceDisplayValue,
   sourceChoiceGroupHasKind,
@@ -18,6 +26,11 @@ import { sourceChoiceGroupsForPlacement, useNpcForgeSourceChoices } from "./NpcF
 import { useNpcForgeSpeciesChoices } from "./NpcForgeSpeciesChoiceContext";
 
 const SIZE_LABELS = { T: "Tiny", S: "Small", M: "Medium", L: "Large", H: "Huge", G: "Gargantuan", V: "Variable" };
+const GENDER_OPTIONS = Object.freeze([
+  { key: "female", label: "Female" },
+  { key: "male", label: "Male" },
+  { key: "neutral", label: "Nonbinary" },
+]);
 const SPELL_SOURCE_PRIORITY = { XPHB: 0, PHB: 1 };
 const safeText = (value) => String(value ?? "").trim();
 function sourceLabel(source = "") { if (source === "XPHB") return "2024 Player's Handbook"; if (source === "PHB") return "2014 Player's Handbook"; if (source === "CAMPAIGN") return "Campaign"; return source || "Source unknown"; }
@@ -28,7 +41,7 @@ function DetailHeader({ eyebrow, title, source }) { return <div className="npc-f
 function readableRuleParagraphs(value, fallback = "") {
   const formatted = formatPlayerFacingText(value, fallback);
   if (!formatted) return [];
-  const sectioned = formatted.replace(/\s+(?=[A-Z][A-Za-z'’/-]*(?:\s+[A-Z][A-Za-z'’/-]*){0,3}\.\s+(?:You|Your|When|Whenever|While|If|Choose|Increase|As|The)\b)/g, "\n\n");
+  const sectioned = formatted.replace(/(?<=[.!?])\s+(?=[A-Z][A-Za-z'’/-]*(?:\s+[A-Z][A-Za-z'’/-]*){0,3}\.\s+(?:You|Your|When|Whenever|While|If|Choose|Increase|As|The)\b)/g, "\n\n");
   return sectioned.split(/\n\s*\n/).map((paragraph) => paragraph.trim()).filter(Boolean);
 }
 
@@ -78,6 +91,7 @@ function sourceGroupMatchesTrait(group = {}, traitName = "") {
   const fields = group.fields || [];
   if (/\blanguages?\b/.test(trait) && fields.some((field) => field.kind === "language")) return true;
   if (trait === "size" && fields.some((field) => field.kind === "size")) return true;
+  if (trait === "eladrin seasons" && group.metadata?.family === "eladrin-season") return true;
   return false;
 }
 
@@ -86,6 +100,75 @@ function routedBadge(training, spells) {
   if (training) return "Training";
   if (spells) return "Spells";
   return "Open";
+}
+
+function SpeciesFeatureTitle({ label }) {
+  const iconKind = speciesFeatureIconKind(label);
+  return <span className="npc-forge-species-feature-title"><ForgeSemanticIcon kind={iconKind} /><span>{label}</span></span>;
+}
+
+function sourceFactGroups(groups = [], kind = "", selections = {}) {
+  return groups.filter((group) => (group.fields || []).some((field) => field.kind === kind && !field.autoSelect && sourceChoiceFieldIsActive(field, selections)));
+}
+
+function selectedSourceFactLabels(groups = [], kind = "", selections = {}) {
+  const labels = [];
+  for (const group of groups) {
+    for (const field of group.fields || []) {
+      if (field.kind !== kind || field.autoSelect || !sourceChoiceFieldIsActive(field, selections)) continue;
+      for (const key of selections?.[group.id]?.[field.id] || []) {
+        const label = (field.options || []).find((option) => option.key === key)?.label;
+        if (label && normalizeName(label) !== "common" && !labels.includes(label)) labels.push(label);
+      }
+    }
+  }
+  return labels;
+}
+
+function factChoicePresentationGroups(groups = [], kind = "", selections = {}) {
+  return groups.map((group) => ({
+    ...group,
+    fields: (group.fields || []).filter((field) => field.kind === kind && !field.autoSelect && sourceChoiceFieldIsActive(field, selections)).map((field) => ({
+      ...field,
+      label: kind === "language" ? "Origin language" : field.label,
+      helper: "",
+      options: kind === "language" ? (field.options || []).filter((option) => normalizeName(option.label) !== "common") : field.options,
+    })),
+  })).filter((group) => group.fields.length);
+}
+
+function SpeciesStaticFact({ kind, title, value, tooltip = "" }) {
+  const tooltipId = tooltip ? `species-${kind}-explanation` : undefined;
+  return <div data-icon-kind={kind} className={tooltip ? "has-fact-tooltip" : ""} tabIndex={tooltip ? 0 : undefined} aria-describedby={tooltipId}><ForgeSemanticIcon kind={kind} /><span className="npc-forge-species-fact-copy"><small>{title}</small><strong>{value}</strong></span>{tooltip ? <span id={tooltipId} className="npc-forge-species-fact-tooltip" role="tooltip">{tooltip}</span> : null}</div>;
+}
+
+function SpeciesChoiceFact({ kind, title, groups = [], selections = {}, onToggle = null, onSet = null, prefixValue = "" }) {
+  const iconKind = kind === "language" ? "languages" : kind;
+  const presentationGroups = factChoicePresentationGroups(groups, kind, selections);
+  const count = groups.reduce((total, group) => total + (group.fields || []).filter((field) => field.kind === kind && !field.autoSelect && sourceChoiceFieldIsActive(field, selections)).reduce((sum, field) => sum + Number(field.count || 1), 0), 0);
+  const selected = selectedSourceFactLabels(groups, kind, selections);
+  const needsInput = sourceChoiceGroupsNeedInput(presentationGroups, selections);
+  const originLanguages = kind === "language" && groups.some((group) => group.id === "origin-standard-languages");
+  const prompt = originLanguages && count === 2
+    ? "Click here to select two Origin languages"
+    : `Click here to select ${count > 1 ? `${count} ${title}` : `a ${title.toLowerCase()}`}`;
+  const value = needsInput ? prompt : [prefixValue, ...selected].filter(Boolean).join(", ");
+  const helper = originLanguages
+    ? "Select two Origin languages (besides Common). Common is automatic for player characters."
+    : `Select ${count > 1 ? count : "a"} ${title.toLowerCase()}.`;
+  return <details className={`npc-forge-species-fact-choice${needsInput ? " is-required" : " is-complete"}`} data-icon-kind={iconKind}><summary><ForgeSemanticIcon kind={iconKind} /><span className="npc-forge-species-fact-copy"><small>{title}</small><strong>{value}</strong></span></summary><div className="npc-forge-species-fact-choice__body"><p>{helper}</p><NpcForgeEmbeddedSourceChoices groups={presentationGroups} selections={selections} onToggle={onToggle} onSet={onSet} compact /></div></details>;
+}
+
+function SpeciesIdentityFact({ gender = "neutral", alignment = "N", onPatch = null }) {
+  const genderLabel = GENDER_OPTIONS.find((option) => option.key === gender)?.label || "Nonbinary";
+  const alignmentKey = String(alignment || "N").toUpperCase();
+  const alignmentLabel = ALIGNMENT_OPTIONS.find((option) => option.key === alignmentKey)?.label || "Neutral";
+  return <details className="npc-forge-species-fact-choice npc-forge-species-identity-fact is-complete" data-icon-kind="identity"><summary><ForgeSemanticIcon kind="identity" /><span className="npc-forge-species-fact-copy"><small>Gender &amp; Alignment</small><strong>{genderLabel} • {alignmentLabel}</strong></span></summary><div className="npc-forge-species-fact-choice__body"><p>Choose gender and alignment.</p><div className="npc-forge-species-identity-controls"><label><span>Gender</span><select value={gender} onChange={(event) => onPatch?.({ gender: event.target.value })}>{GENDER_OPTIONS.map((option) => <option key={option.key} value={option.key}>{option.label}</option>)}</select></label><label><span>Alignment</span><select value={alignmentKey} onChange={(event) => onPatch?.({ alignment: event.target.value })}>{ALIGNMENT_OPTIONS.map((option) => <option key={option.key} value={option.key}>{option.label}</option>)}</select></label></div></div></details>;
+}
+
+function SpeciesFeatureOptionCards({ label = "Available options", options = [] }) {
+  if (!options.length) return null;
+  return <section className="npc-forge-species-option-cards" aria-label={label}><span>{label}</span><div>{options.map((option) => <article key={option.name}><strong>{option.name}</strong><RuleCopy text={option.description} /></article>)}</div></section>;
 }
 
 function SpeciesTraitDetails({ playerMode = false, details = [], traits = [], choiceRules = [], selections = {}, onSelectChoice, spellHelp = {}, sourceGroups = [], trainingGroups = [], spellGroups = [], sourceSelections = {}, onToggleSource = null, onSetSource = null }) {
@@ -104,7 +187,7 @@ function SpeciesTraitDetails({ playerMode = false, details = [], traits = [], ch
     const routedTraining = playerMode && trainingGroups.some((group) => sourceGroupMatchesTrait(group, entry.name));
     const routedSpells = playerMode && (spellGroups.some((group) => sourceGroupMatchesTrait(group, entry.name)) || (!rule && !hasEmbeddedChoice && playerSpellFeature(entry)));
     const hasChoice = Boolean(rule || hasEmbeddedChoice);
-    return <details key={`${entry.name}-${index}`} defaultOpen={Boolean((hasChoice && !complete) || sourceNeedsInput)}><summary><span>{entry.name}</span>{hasChoice ? <em className={complete ? "is-complete" : "is-required"}>{complete ? "Selected" : "Choose"}</em> : routedTraining || routedSpells ? <em className="is-routed">{routedBadge(routedTraining, routedSpells)}</em> : <em>Open</em>}</summary><RuleCopy text={entry.description} />{routedTraining ? <div className="npc-forge-species-spell-route is-training"><strong>Resolved in Training</strong><span>Choose this species-granted proficiency in Training → Skills & Proficiencies, where the skill descriptions and the character's other proficiencies are visible.</span></div> : null}{routedSpells ? <div className="npc-forge-species-spell-route"><strong>Resolved in Spells</strong><span>Any spell or cantrip selection for this feature is completed on the Spells step. When the source allows Intelligence, Wisdom, or Charisma, the Forge automatically uses the highest eligible final ability instead of asking for a separate casting-stat choice.</span></div> : null}{rule ? <SpeciesTraitChoiceControl rule={rule} selections={selections} onSelect={onSelectChoice} spellHelp={spellHelp} /> : null}<NpcForgeEmbeddedSourceChoices groups={ownedGroups} selections={sourceSelections} onToggle={onToggleSource} onSet={onSetSource} compact /></details>;
+    return <details key={`${entry.name}-${index}`} data-feature-kind={speciesFeatureIconKind(entry.name)} defaultOpen={Boolean((hasChoice && !complete) || sourceNeedsInput)}><summary><SpeciesFeatureTitle label={entry.name} />{hasChoice ? <em className={complete ? "is-complete" : "is-required"}>{complete ? "Selected" : "Choose"}</em> : routedTraining || routedSpells ? <em className="is-routed">{routedBadge(routedTraining, routedSpells)}</em> : <em>Open</em>}</summary><RuleCopy text={entry.description} />{!hasEmbeddedChoice && !rule ? <SpeciesFeatureOptionCards label={entry.optionCardsLabel} options={entry.optionCards || []} /> : null}{routedTraining ? <div className="npc-forge-species-spell-route is-training"><strong>Resolved in Training</strong><span>Choose this species-granted proficiency in Training → Skills & Proficiencies, where the skill descriptions and the character's other proficiencies are visible.</span></div> : null}{routedSpells ? <div className="npc-forge-species-spell-route"><strong>Resolved in Spells</strong><span>Any spell or cantrip selection for this feature is completed on the Spells step. When the source allows Intelligence, Wisdom, or Charisma, the Forge automatically uses the highest eligible final ability instead of asking for a separate casting-stat choice.</span></div> : null}{rule ? <SpeciesTraitChoiceControl rule={rule} selections={selections} onSelect={onSelectChoice} spellHelp={spellHelp} /> : null}<NpcForgeEmbeddedSourceChoices groups={ownedGroups} selections={sourceSelections} onToggle={onToggleSource} onSet={onSetSource} compact /></details>;
   });
   const conciseCards = concise.map((trait) => {
     const ownedGroups = takeGroups(trait);
@@ -112,12 +195,12 @@ function SpeciesTraitDetails({ playerMode = false, details = [], traits = [], ch
     const needsInput = sourceChoiceGroupsNeedInput(ownedGroups, sourceSelections);
     const routedTraining = playerMode && trainingGroups.some((group) => sourceGroupMatchesTrait(group, trait));
     const routedSpells = playerMode && spellGroups.some((group) => sourceGroupMatchesTrait(group, trait));
-    return <details key={trait} defaultOpen={needsInput}><summary><span>{trait}</span>{hasEmbeddedChoice ? <em className={needsInput ? "is-required" : "is-complete"}>{needsInput ? "Choose" : "Selected"}</em> : routedTraining || routedSpells ? <em className="is-routed">{routedBadge(routedTraining, routedSpells)}</em> : <em>Open</em>}</summary><p>This source feature is listed for the selected species. Its complete imported description will appear here when available.</p>{routedTraining ? <div className="npc-forge-species-spell-route is-training"><strong>Resolved in Training</strong><span>Choose this species-granted proficiency in Training → Skills & Proficiencies.</span></div> : null}{routedSpells ? <div className="npc-forge-species-spell-route"><strong>Resolved in Spells</strong><span>Species magic is completed on the Spells step; flexible casting ability is derived from final ability scores.</span></div> : null}<NpcForgeEmbeddedSourceChoices groups={ownedGroups} selections={sourceSelections} onToggle={onToggleSource} onSet={onSetSource} compact /></details>;
+    return <details key={trait} data-feature-kind={speciesFeatureIconKind(trait)} defaultOpen={needsInput}><summary><SpeciesFeatureTitle label={trait} />{hasEmbeddedChoice ? <em className={needsInput ? "is-required" : "is-complete"}>{needsInput ? "Choose" : "Selected"}</em> : routedTraining || routedSpells ? <em className="is-routed">{routedBadge(routedTraining, routedSpells)}</em> : <em>Open</em>}</summary><p>This source feature is listed for the selected species. Its complete imported description will appear here when available.</p>{routedTraining ? <div className="npc-forge-species-spell-route is-training"><strong>Resolved in Training</strong><span>Choose this species-granted proficiency in Training → Skills & Proficiencies.</span></div> : null}{routedSpells ? <div className="npc-forge-species-spell-route"><strong>Resolved in Spells</strong><span>Species magic is completed on the Spells step; flexible casting ability is derived from final ability scores.</span></div> : null}<NpcForgeEmbeddedSourceChoices groups={ownedGroups} selections={sourceSelections} onToggle={onToggleSource} onSet={onSetSource} compact /></details>;
   });
   const unmatched = sourceGroups.filter((group) => !consumed.has(group.id) && sourceChoiceGroupsHaveChoices([group], sourceSelections));
   const fallbackCards = unmatched.map((group) => {
     const needsInput = sourceChoiceGroupsNeedInput([group], sourceSelections);
-    return <details key={`source-${group.id}`} className="npc-forge-species-source-fallback" defaultOpen={needsInput}><summary><span>{group.label}</span><em className={needsInput ? "is-required" : "is-complete"}>{needsInput ? "Choose" : "Selected"}</em></summary><NpcForgeEmbeddedSourceChoices groups={[group]} selections={sourceSelections} onToggle={onToggleSource} onSet={onSetSource} compact /></details>;
+    return <details key={`source-${group.id}`} className="npc-forge-species-source-fallback" data-feature-kind={speciesFeatureIconKind(group.label)} defaultOpen={needsInput}><summary><SpeciesFeatureTitle label={group.label} /><em className={needsInput ? "is-required" : "is-complete"}>{needsInput ? "Choose" : "Selected"}</em></summary><NpcForgeEmbeddedSourceChoices groups={[group]} selections={sourceSelections} onToggle={onToggleSource} onSet={onSetSource} compact /></details>;
   });
   return <div className="npc-forge-context-section npc-forge-species-features"><span>Species features</span><div className="npc-forge-species-feature-list">{describedCards}{conciseCards}{fallbackCards}</div></div>;
 }
@@ -188,7 +271,7 @@ function BackgroundSourceFallback({ groups = [], selections = {}, onToggle = nul
   })}</div></div>;
 }
 
-export default function NpcForgeContextPanel({ playerMode = false, step = 0, stepKey = "", detail = null, selectedSpecies = null, selectedBackground = null, backgroundMechanicDetails = null, selectedBackgroundFeat = null, backgroundFeatOptions = [], backgroundSkillSelections = {}, onToggleBackgroundSkill = null, onSelectBackgroundFeat = null, selectedClass = null, selectedSkill = null, selectedProfession = null, rolls = [], allocation = {}, finalAbilities = {}, draft = {} }) {
+export default function NpcForgeContextPanel({ playerMode = false, step = 0, stepKey = "", detail = null, selectedSpecies = null, selectedBackground = null, backgroundMechanicDetails = null, selectedBackgroundFeat = null, backgroundFeatOptions = [], backgroundSkillSelections = {}, onToggleBackgroundSkill = null, onSelectBackgroundFeat = null, selectedClass = null, selectedSkill = null, selectedProfession = null, rolls = [], allocation = {}, finalAbilities = {}, draft = {}, onPatch = null }) {
   const activeSpecies = detail?.type === "species" && detail.option ? detail.option : stepKey === "species" || step === 0 ? selectedSpecies : null;
   const activeBackground = detail?.type === "background" && detail.option ? detail.option : stepKey === "background" || step === 1 ? selectedBackground : null;
   const { state: speciesChoiceState, registerSpecies, selectChoice } = useNpcForgeSpeciesChoices();
@@ -231,18 +314,37 @@ export default function NpcForgeContextPanel({ playerMode = false, step = 0, ste
   if (activeSpecies) {
     const option = activeSpecies;
     const fixedLanguages = speciesFixedLanguages(option);
-    const facts = [
-      ["Speed", formatSpeciesMovement(option.metadata?.speed ?? option.speed)],
-      ["Size", labelList(option.size, SIZE_LABELS) || "Source default"],
-      ["Creature", labelList(option.creatureTypes) || "Humanoid"],
-      ["Darkvision", option.darkvision ? `${option.darkvision} ft.` : null],
-      ...(!playerMode ? [["Lineage", labelList(option.lineages) || "None required"]] : []),
-      ["Languages", fixedLanguages.length ? fixedLanguages.join(", ") : labelList(option.languages) || safeText(draft.languagesText) || null],
-    ].filter(([, value]) => value && value !== "Not listed");
     const sourceGroups = playerMode ? eligibleSourceGroups("species") : [];
+    const sourceSelections = sourceChoiceState.selections || {};
+    const languageGroups = sourceFactGroups(sourceGroups, "language", sourceSelections);
+    const sizeGroups = sourceFactGroups(sourceGroups, "size", sourceSelections);
+    const featureSourceGroups = sourceGroups.flatMap((group) => {
+      const fields = (group.fields || []).filter((field) => field.kind !== "language" && field.kind !== "size");
+      return fields.length ? [{ ...group, fields }] : [];
+    });
+    const featurePresentation = speciesFeaturePresentation(option);
+    const fixedLanguageValue = speciesFixedLanguageFact(fixedLanguages);
+    const staticFacts = [
+      { kind: "speed", title: "Speed", value: formatSpeciesMovement(option.metadata?.speed ?? option.speed) },
+      ...(!sizeGroups.length ? [{ kind: "size", title: "Size", value: labelList(option.size, SIZE_LABELS) || "Source default" }] : []),
+      { kind: "creature", title: "Creature type", value: speciesCreatureTypeLabel(option) },
+      { kind: "vision", title: "Darkvision", value: option.darkvision ? `${option.darkvision} ft.` : null, tooltip: speciesVisionExplanation(option) },
+      ...(!playerMode ? [{ kind: "ancestry", title: "Lineage", value: labelList(option.lineages) || "None required" }] : []),
+      ...(!languageGroups.length ? [{ kind: "languages", title: "Languages", value: fixedLanguages.length ? fixedLanguageValue : labelList(option.languages) || safeText(draft.languagesText) || null }] : []),
+    ].filter(({ value }) => value && value !== "Not listed");
+    const staticFactByKind = Object.fromEntries(staticFacts.map((fact) => [fact.kind, fact]));
+    const factElements = [
+      staticFactByKind.speed ? <SpeciesStaticFact key="speed" {...staticFactByKind.speed} /> : null,
+      sizeGroups.length ? <SpeciesChoiceFact key="size" kind="size" title="Size" groups={sizeGroups} selections={sourceSelections} onToggle={toggleSourceChoice} onSet={setSourceChoice} /> : staticFactByKind.size ? <SpeciesStaticFact key="size" {...staticFactByKind.size} /> : null,
+      staticFactByKind.creature ? <SpeciesStaticFact key="creature" {...staticFactByKind.creature} /> : null,
+      staticFactByKind.vision ? <SpeciesStaticFact key="vision" {...staticFactByKind.vision} /> : null,
+      staticFactByKind.ancestry ? <SpeciesStaticFact key="ancestry" {...staticFactByKind.ancestry} /> : null,
+      languageGroups.length ? <SpeciesChoiceFact key="languages" kind="language" title="Languages" groups={languageGroups} selections={sourceSelections} onToggle={toggleSourceChoice} onSet={setSourceChoice} prefixValue={fixedLanguageValue} /> : staticFactByKind.languages ? <SpeciesStaticFact key="languages" {...staticFactByKind.languages} /> : null,
+      <SpeciesIdentityFact key="identity" gender={draft.gender} alignment={draft.alignment} onPatch={onPatch} />,
+    ].filter(Boolean);
     const trainingGroups = playerMode ? eligibleSourceGroups("training").filter((group) => String(group.ownerType || "").startsWith("species")) : [];
     const spellGroups = playerMode ? eligibleSourceGroups("spells").filter((group) => String(group.ownerType || "").startsWith("species")) : [];
-    return <div className="npc-forge-context-card is-origin is-species"><section className="npc-forge-species-hero"><figure className="npc-forge-species-artwork"><img src={speciesArtworkFor(option.name)} onError={handleSpeciesArtworkError} alt={`Original ${option.name} species reference artwork`} /><figcaption><span>{option.name} reference</span>{!hasDedicatedSpeciesArtwork(option.name) ? <small>Neutral reference art</small> : null}</figcaption></figure><div className="npc-forge-species-hero__copy"><h2>{option.name}</h2><span>In the world</span><p>{speciesFlavorLore(option)}</p><div className="npc-forge-species-facts">{facts.map(([label, value]) => <div key={label}><small>{label}</small><strong>{value}</strong></div>)}</div></div></section><SpeciesTraitDetails playerMode={playerMode} details={option.traitDetails} traits={option.traits} choiceRules={speciesChoiceRules} selections={speciesChoiceSelections} onSelectChoice={selectChoice} spellHelp={speciesSpellHelp} sourceGroups={sourceGroups} trainingGroups={trainingGroups} spellGroups={spellGroups} sourceSelections={sourceChoiceState.selections || {}} onToggleSource={toggleSourceChoice} onSetSource={setSourceChoice} /><div className="npc-forge-context-note">Open the purple feature cards for complete rules. Languages and true ancestry/lineage decisions stay with Species. Species-granted skill proficiencies are resolved in Training, while species magic is resolved in Spells; flexible Intelligence/Wisdom/Charisma casting uses the highest eligible final ability automatically.</div><style jsx global>{`
+    return <div className="npc-forge-context-card is-origin is-species"><section className="npc-forge-species-hero"><figure className="npc-forge-species-artwork"><img src={speciesPortraitArtworkFor(option.name)} onError={handleSpeciesArtworkError} alt={`${option.name} species reference artwork`} /><figcaption><span>{option.name} reference</span>{!hasSpeciesPortraitArtwork(option.name) ? <small>Neutral reference art</small> : null}</figcaption></figure><div className="npc-forge-species-hero__copy"><h2>{option.name}</h2><span>In the world</span><p>{speciesFlavorLore(option)}</p><div className="npc-forge-species-facts">{factElements}</div></div></section><SpeciesTraitDetails playerMode={playerMode} details={featurePresentation.details} traits={featurePresentation.traits} choiceRules={speciesChoiceRules} selections={speciesChoiceSelections} onSelectChoice={selectChoice} spellHelp={speciesSpellHelp} sourceGroups={featureSourceGroups} trainingGroups={trainingGroups} spellGroups={spellGroups} sourceSelections={sourceSelections} onToggleSource={toggleSourceChoice} onSetSource={setSourceChoice} /><div className="npc-forge-context-note">Required species choices are made inside the relevant feature above, or directly in the promoted Size and Languages facts. Common is automatic for player characters. Species-granted skill proficiencies are resolved in Training, while species magic is resolved in Spells; flexible Intelligence/Wisdom/Charisma casting uses the highest eligible final ability automatically.</div><style jsx global>{`
       .npc-forge-context-card.is-species{display:grid!important;grid-template-columns:1fr!important}.npc-forge-species-hero{display:grid;grid-template-columns:minmax(280px,42%) minmax(0,1fr);min-height:360px;overflow:hidden;border:1px solid rgba(168,108,255,.34);border-radius:15px;background:radial-gradient(circle at 20% 20%,rgba(126,72,199,.2),transparent 55%),rgba(10,12,20,.92)}.npc-forge-species-hero .npc-forge-species-artwork{height:100%;min-height:360px;aspect-ratio:auto;border:0;border-radius:0}.npc-forge-species-hero .npc-forge-species-artwork img{object-fit:cover;object-position:center top}.npc-forge-species-hero__copy{display:flex;flex-direction:column;justify-content:center;gap:12px;padding:clamp(18px,3vw,34px)}.npc-forge-species-hero__copy>h2{margin:0 0 2px;color:#fff;font-size:clamp(1.2rem,2vw,1.65rem);line-height:1.15}.npc-forge-species-hero__copy>span{color:#d7bfff;font-size:.68rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase}.npc-forge-species-hero__copy>p{margin:0;color:rgba(255,255,255,.82);font-size:.88rem;line-height:1.72}.npc-forge-species-facts{display:flex;flex-wrap:wrap;gap:7px}.npc-forge-species-facts>div{display:grid;gap:1px;padding:6px 9px;border:1px solid rgba(88,214,199,.25);border-radius:8px;background:rgba(88,214,199,.07)}.npc-forge-species-facts small{color:rgba(255,255,255,.48);font-size:.52rem;text-transform:uppercase}.npc-forge-species-facts strong{color:#d8fff9;font-size:.66rem}.npc-forge-species-feature-list{align-items:start}.npc-forge-species-feature-list details{align-self:start;border-color:rgba(168,108,255,.34)!important;background:linear-gradient(90deg,rgba(126,72,199,.15),rgba(88,214,199,.035))!important}.npc-forge-species-feature-list em.is-routed{color:#9cece2!important}.npc-forge-species-spell-route{display:grid;gap:3px;margin-top:8px;padding:8px 10px;border-left:3px solid #58d6c7;border-radius:7px;background:rgba(88,214,199,.07)}.npc-forge-species-spell-route.is-training{border-left-color:#a86cff;background:rgba(126,72,199,.075)}.npc-forge-species-spell-route strong{color:#c9fff7;font-size:.64rem}.npc-forge-species-spell-route.is-training strong{color:#eadfff}.npc-forge-species-spell-route span{color:rgba(255,255,255,.72);font-size:.65rem;line-height:1.45}@media(max-width:850px){.npc-forge-species-hero{grid-template-columns:1fr}.npc-forge-species-hero .npc-forge-species-artwork{min-height:420px}.npc-forge-species-hero__copy{justify-content:start}}
     `}</style></div>;
   }

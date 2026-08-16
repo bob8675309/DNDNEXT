@@ -41,6 +41,7 @@ const authorityMigration = read("sql/20260805_03_player_character_authority_hard
 const sourceChoiceFoundation = read("sql/20260806_00_player_forge_source_choice_foundation.sql");
 const sourceChoiceMigration = read("sql/20260806_01_player_forge_source_choice_validation.sql");
 const finalPolish = read("styles/character-forge-final-polish.css");
+const validationGuidance = read("utils/forgeValidationGuidance.js");
 const app = read("pages/_app.js");
 
 requireToken(forgeSource, 'mode = "npc"', "canonical Forge");
@@ -101,6 +102,9 @@ requireToken(context, "npc-forge-species-feature-list", "species expandable rule
 requireToken(context, "npc-forge-species-spell-help", "species spell hover details");
 requireToken(context, 'from("spells_catalog")', "species spell hover source");
 forbidToken(context, 'label: "Speed"', "species redundant flat rows");
+for (const token of ["SpeciesIdentityFact", "GENDER_OPTIONS", "ALIGNMENT_OPTIONS", "onPatch={patch}"]) requireToken(`${context}\n${forgeSteps}`, token, "Species identity controls");
+for (const token of ["clearForgeValidationGuidance", "showForgeValidationGuidance", "forgeStepGuidanceSelectors", "data-forge-validation-message", "aria-invalid"]) requireToken(`${adapter}\n${forgeController}\n${validationGuidance}`, token, "targeted Continue guidance");
+for (const token of [".is-forge-validation-target", 'content: "↓ " attr(data-forge-validation-message)', "forge-validation-pulse"]) requireToken(finalPolish, token, "targeted Continue guidance styling");
 
 for (const token of ["Ability Score Generation Method", "Standard 3d6", "4d6 drop lowest die", "Point Buy", "Standard Class Array", "Manual Assign", "Reroll All Six", "Species Bonus stays in the right information panel"]) requireToken(ability, token, "ability rules");
 forbidToken(ability, "NpcForgeSourceChoiceFields", "advancement choices on Abilities");

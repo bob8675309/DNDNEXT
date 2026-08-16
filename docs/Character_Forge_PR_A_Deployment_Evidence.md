@@ -1,12 +1,12 @@
 # Character Forge PR A — Deployment Evidence
 
-Status date: 2026-08-09
-PR: #170 (`agent/character-forge-resilience-presentation`)
+Status date: 2026-08-14 historical reconciliation
+PR: #170 (`agent/character-forge-resilience-presentation`) — merged at `599c4de7397ba6e4bbbb0a061d551d80c3570be7`
 Live migration checkpoint: 66
 
 ## Acceptance state
 
-PR #170 remains **open and unmerged**. CI/build success plus rollback-only production proofs are regression/authority evidence, not final authenticated browser acceptance.
+This is historical deployment evidence from the PR #170 cycle. CI/build success plus rollback-only production proofs remain regression/authority evidence, but current PR and transition state is controlled by `DNDNext_Current_Handoff_Prompt.md`.
 
 The active design rule is creation/progression parity for persistent source-owned decisions, with rest/per-use/informational choices modeled separately as runtime state.
 

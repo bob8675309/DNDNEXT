@@ -1,7 +1,8 @@
 # Eladrin Runtime Status
 
-Status date: 2026-08-09
-PR: #170 (`agent/character-forge-resilience-presentation`)
+Status date: 2026-08-14
+Historical runtime PR: #170 (`agent/character-forge-resilience-presentation`) — merged at `599c4de7397ba6e4bbbb0a061d551d80c3570be7`
+Current presentation continuation: PR #171 (`agent/species-art-post170`) — open/unmerged; latest validated code head `39a263e034db4023ed7d1a4950a185a832c08867`
 Live migration: 68
 
 ## Purpose
@@ -23,6 +24,8 @@ Shared Player Forge collects exactly one initial season:
 - Winter;
 - Spring;
 - Summer.
+
+In the Species step, each season's flavor and level-3 Fey Step effect are presented directly inside its selectable option. The raw source prompt is suppressed from the surrounding feature list, so `Eladrin Seasons` remains the single creation-time season card. This is presentation only: the four stored keys and the source-owned selection path are unchanged.
 
 That selection is serialized as source-owned runtime-initial state (`species-runtime-eladrin-season`) and deferred-materialized after Player Forge creation into `character_runtime_feature_choices`. It is projected under `sheet.runtimeFeatures.eladrinSeason`.
 

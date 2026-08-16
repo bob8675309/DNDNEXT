@@ -5,10 +5,11 @@ This project is directly writable from ChatGPT through the GitHub connector. Do 
 ## Repository authority
 
 - Repository: `bob8675309/DNDNEXT`
-- Active long-lived PR branch for the current Forge work: `agent/character-forge-resilience-presentation`
-- PR: #170
+- Active continuation branch for the current Forge Species artwork work: `agent/species-art-post170`
+- Active PR: #171 — open and unmerged
+- Historical PR #170 is merged at `599c4de7397ba6e4bbbb0a061d551d80c3570be7`; do not use it as the active continuation PR.
 - `main` remains production authority.
-- Do not merge PR #170 without explicit user approval.
+- Do not merge PR #171 without explicit user approval.
 
 ## Preferred safe write path
 
@@ -46,6 +47,6 @@ Supabase is also directly accessible through its connector. Before any DB change
 - Do not mix world-map behavior with town/city-map behavior.
 - Verify every new helper, hook, state variable, and prop is defined and correctly passed.
 - Preserve working systems and existing validators rather than weakening contracts to make a patch pass.
-- Do not merge PR #170 without explicit user approval.
+- Do not merge PR #171 without explicit user approval.
 
 This file exists specifically so future ChatGPT handoffs do not repeatedly forget that the repo and Supabase are writable through connectors.

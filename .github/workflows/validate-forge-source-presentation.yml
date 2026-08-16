@@ -6,66 +6,124 @@ on:
       - main
     paths:
       - "components/ClassFeatureText.js"
+      - "components/ForgeSemanticIcon.js"
       - "components/NpcForgeClassFeatureDock.js"
       - "components/NpcForgeClassGuide.js"
       - "components/NpcForgeClassGuideModel.js"
       - "components/NpcForgeContextPanel.js"
+      - "components/NpcForgeContextPanelRefined.js"
       - "components/NpcForgeCoreSupport.js"
       - "components/NpcForgeEmbeddedSourceChoices.js"
+      - "components/NpcForgeHeritageTraitPicker.js"
       - "components/SourceRuleContent.js"
       - "public/media/species/*-dragonborn.webp"
+      - "public/media/species/*-aven.webp"
+      - "public/media/species/drow.webp"
+      - "public/media/species/*-elf.webp"
+      - "public/media/species/*-gnome.webp"
+      - "public/media/species/*-shifter.webp"
+      - "public/media/species/*-fairy.webp"
+      - "public/media/species/*-kithkin.webp"
+      - "public/media/species/dwarf-kaladesh.webp"
+      - "public/media/species/goblin-dankwood.webp"
+      - "public/media/species/orc-ixalan.webp"
       - "scripts/import_5etools_character_options_refined.mjs"
+      - "scripts/materialize_gem_dragonborn_art.py"
       - "scripts/validate_forge_source_presentation.mjs"
       - "scripts/validate_forge_species_catalog_families.mjs"
       - "scripts/validate_forge_species_family_expansion.mjs"
       - "scripts/validate_forge_species_catalog_portraits.mjs"
+      - "scripts/validate_forge_species_catalog_portraits_v2.mjs"
+      - "scripts/validate_forge_species_portrait_integrity.mjs"
+      - "scripts/validate_forge_species_semantic_icons.mjs"
+      - "scripts/validate_forge_species_fact_choices.mjs"
+      - "scripts/validate_forge_heritage_custom_lineage.mjs"
       - "scripts/validate_forge_chromatic_dragonborn_art.mjs"
       - "scripts/validate_forge_metallic_dragonborn_art.mjs"
+      - "scripts/validate_forge_gem_dragonborn_art.mjs"
+      - "scripts/validate_forge_aven_art.mjs"
+      - "scripts/validate_forge_elf_gnome_art.mjs"
+      - "scripts/validate_forge_shifter_art.mjs"
+      - "scripts/validate_forge_fairy_kithkin_art.mjs"
+      - "scripts/validate_forge_setting_alias_art.mjs"
       - "sql/20260811_91_genasi_subrace_catalog.sql"
       - "sql/20260811_92_genasi_source_detail_restore.sql"
       - "sql/20260812_93_aven_subrace_catalog.sql"
+      - "sql/20260814_01_custom_lineage_heritage_only.sql"
       - "utils/npcForgeCatalog.js"
       - "utils/playerFacingText.js"
+      - "utils/playerForgeHeritageSubchoices.js"
       - "utils/playerForgeSpeciesChoices.js"
       - "utils/speciesArtwork.js"
       - "utils/speciesCatalogExpansion.js"
       - "utils/speciesCatalogFamilyMenu.js"
       - "utils/speciesLore.js"
       - "utils/speciesPresentation.js"
+      - "utils/speciesForgePresentation.js"
       - "utils/speciesVariantFamilies.js"
+      - "styles/character-forge-final-polish.css"
       - ".github/workflows/validate-forge-source-presentation.yml"
   push:
     branches:
-      - "agent/character-forge-resilience-presentation"
+      - "agent/species-art-post170"
     paths:
       - "components/ClassFeatureText.js"
+      - "components/ForgeSemanticIcon.js"
       - "components/NpcForgeClassFeatureDock.js"
       - "components/NpcForgeClassGuide.js"
       - "components/NpcForgeClassGuideModel.js"
       - "components/NpcForgeContextPanel.js"
+      - "components/NpcForgeContextPanelRefined.js"
       - "components/NpcForgeCoreSupport.js"
       - "components/NpcForgeEmbeddedSourceChoices.js"
+      - "components/NpcForgeHeritageTraitPicker.js"
       - "components/SourceRuleContent.js"
       - "public/media/species/*-dragonborn.webp"
+      - "public/media/species/*-aven.webp"
+      - "public/media/species/drow.webp"
+      - "public/media/species/*-elf.webp"
+      - "public/media/species/*-gnome.webp"
+      - "public/media/species/*-shifter.webp"
+      - "public/media/species/*-fairy.webp"
+      - "public/media/species/*-kithkin.webp"
+      - "public/media/species/dwarf-kaladesh.webp"
+      - "public/media/species/goblin-dankwood.webp"
+      - "public/media/species/orc-ixalan.webp"
       - "scripts/import_5etools_character_options_refined.mjs"
+      - "scripts/materialize_gem_dragonborn_art.py"
       - "scripts/validate_forge_source_presentation.mjs"
       - "scripts/validate_forge_species_catalog_families.mjs"
       - "scripts/validate_forge_species_family_expansion.mjs"
       - "scripts/validate_forge_species_catalog_portraits.mjs"
+      - "scripts/validate_forge_species_catalog_portraits_v2.mjs"
+      - "scripts/validate_forge_species_portrait_integrity.mjs"
+      - "scripts/validate_forge_species_semantic_icons.mjs"
+      - "scripts/validate_forge_species_fact_choices.mjs"
+      - "scripts/validate_forge_heritage_custom_lineage.mjs"
       - "scripts/validate_forge_chromatic_dragonborn_art.mjs"
       - "scripts/validate_forge_metallic_dragonborn_art.mjs"
+      - "scripts/validate_forge_gem_dragonborn_art.mjs"
+      - "scripts/validate_forge_aven_art.mjs"
+      - "scripts/validate_forge_elf_gnome_art.mjs"
+      - "scripts/validate_forge_shifter_art.mjs"
+      - "scripts/validate_forge_fairy_kithkin_art.mjs"
+      - "scripts/validate_forge_setting_alias_art.mjs"
       - "sql/20260811_91_genasi_subrace_catalog.sql"
       - "sql/20260811_92_genasi_source_detail_restore.sql"
       - "sql/20260812_93_aven_subrace_catalog.sql"
+      - "sql/20260814_01_custom_lineage_heritage_only.sql"
       - "utils/npcForgeCatalog.js"
       - "utils/playerFacingText.js"
+      - "utils/playerForgeHeritageSubchoices.js"
       - "utils/playerForgeSpeciesChoices.js"
       - "utils/speciesArtwork.js"
       - "utils/speciesCatalogExpansion.js"
       - "utils/speciesCatalogFamilyMenu.js"
       - "utils/speciesLore.js"
       - "utils/speciesPresentation.js"
+      - "utils/speciesForgePresentation.js"
       - "utils/speciesVariantFamilies.js"
+      - "styles/character-forge-final-polish.css"
       - ".github/workflows/validate-forge-source-presentation.yml"
   workflow_dispatch:
 
@@ -109,13 +167,43 @@ jobs:
         run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_species_family_expansion.mjs
 
       - name: Validate Species catalogue portraits and collapse state
-        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_species_catalog_portraits.mjs
+        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_species_catalog_portraits_v2.mjs
+
+      - name: Validate regenerated Species portrait integrity
+        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_species_portrait_integrity.mjs
+
+      - name: Validate Species catalogue layout and semantic icon vocabulary
+        run: node scripts/validate_forge_species_semantic_icons.mjs
+
+      - name: Validate promoted Species facts and canonical fact choices
+        run: node scripts/validate_forge_species_fact_choices.mjs
+
+      - name: Validate Heritage Custom Lineage and Seasonal Fey Step
+        run: node scripts/validate_forge_heritage_custom_lineage.mjs
 
       - name: Validate Chromatic Dragonborn dedicated artwork
         run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_chromatic_dragonborn_art.mjs
 
       - name: Validate Metallic Dragonborn dedicated artwork
         run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_metallic_dragonborn_art.mjs
+
+      - name: Validate Gem Dragonborn dedicated artwork
+        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_gem_dragonborn_art.mjs
+
+      - name: Validate Aven dedicated artwork
+        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_aven_art.mjs
+
+      - name: Validate Elf and Gnome dedicated artwork
+        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_elf_gnome_art.mjs
+
+      - name: Validate Shifter dedicated artwork
+        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_shifter_art.mjs
+
+      - name: Validate Fairy and Kithkin dedicated artwork
+        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_fairy_kithkin_art.mjs
+
+      - name: Validate setting-variant dedicated artwork
+        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_setting_alias_art.mjs
 
       - name: Run production build gate
         run: node scripts/vercel_build_v2.mjs

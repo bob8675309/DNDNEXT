@@ -17,7 +17,7 @@ const migrationSource = read("sql/20260812_93_aven_subrace_catalog.sql");
 for (const token of ["elf-lineage", "gnome-lineage", "shifter-subtype", "faerie-lineage", "kithkin-lineage", "aven-subrace", "catalogSourceVariants", "catalogHidden"]) assert.ok(expansionSource.includes(token) || catalogSource.includes(token), `expanded Species family model missing ${token}`);
 for (const token of ["Human (Innistrad)", "Human (Ixalan)", "Human (Kaladesh)", "Human (Zendikar)", "Dwarf (Kaladesh)", "Elf (Kaladesh)", "Elf (Zendikar)", "Orc (Ixalan)", "Minotaur (Amonkhet)", "Goblin (Dankwood)"]) assert.ok(expansionSource.includes(token), `setting Species nesting missing ${token}`);
 for (const token of ["filterCatalogSpeciesFamilyFields", "catalogSpeciesFamilyChoice", "selectedDescription", "applyCatalogPresentation"]) assert.ok(familySource.includes(token), `catalogue family projection missing ${token}`);
-for (const token of ["SpeciesCatalogSourceVariants", "catalogHidden", "onSelect?.(variant)", "selectedSourceVariant", "parentSelected"]) assert.ok(coreSource.includes(token), `real setting-variant catalogue nesting missing ${token}`);
+for (const token of ["SpeciesCatalogSourceVariants", "catalogHidden", "onSelect?.(variant)", "selectedSourceVariant", "catalogMergeSourceVariants", "selectCatalogFamilyOption"]) assert.ok(coreSource.includes(token), `real setting-variant catalogue nesting missing ${token}`);
 assert.ok(panelSource.includes("filterCatalogSpeciesFamilyFields"), "right panel must filter only the promoted family field while retaining sibling source choices");
 for (const token of ["species:aven-hawk-headed|PSA", "species:aven-ibis-headed|PSA", "Hawkeyed", "Kefnet''s Blessing", "does not already include your proficiency bonus", "sourceAudit"]) assert.ok(migrationSource.includes(token), `Aven source restoration migration missing ${token}`);
 
@@ -55,7 +55,9 @@ speciesRow({ id: "elf-zendikar", name: "Elf (Zendikar)", source: "PSZ", traits: 
 const elfCatalog = mergePreferredSpecies(elfRows);
 const elf = elfCatalog.find((row) => row.id === "elf-xphb");
 assert.equal(speciesVariantUsesCatalogSubmenu(elf), true, "2024 Elf must use the catalogue lineage submenu");
-assert.deepEqual(elf.catalogSourceVariants.map((row) => row.id), ["elf-kaladesh", "elf-zendikar"], "setting Elf variants must nest beneath the parent");
+assert.deepEqual(elf.catalogSourceVariants.map((row) => row.id), ["elf-kaladesh"], "Kaladesh Elf must nest in the parent lineage list");
+assert.equal(elf.catalogMergeSourceVariants, true, "Kaladesh Elf must share the main Elven Lineage submenu");
+assert.equal(elfCatalog.find((row) => row.id === "elf-zendikar")?.catalogExcluded, true, "Zendikar Elf must stay hidden from the Forge without deleting its canonical source row");
 assert.equal(elfCatalog.find((row) => row.id === "elf-kaladesh")?.catalogHidden, true, "setting child must remain in the internal catalogue but be hidden at top level");
 assert.equal(elfCatalog.find((row) => row.id === "elf-kaladesh")?.source, "PSK", "setting child must keep its real source authority");
 const elfGroups = buildSpeciesSourceChoiceGroups({ species: elf, level: 1, spells: [] });

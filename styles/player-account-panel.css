@@ -1,0 +1,120 @@
+.profile-panel-host-page {
+  min-height: calc(100dvh - 58px);
+  background:
+    radial-gradient(circle at 50% 16%, rgba(79, 52, 118, 0.12), transparent 42%),
+    #100b18;
+}
+
+.player-account-panel {
+  width: 100%;
+  min-width: 0;
+  padding: 0.45rem;
+  color: #f7f1ff;
+}
+
+.player-account-panel__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 0.25rem 0.25rem 0;
+}
+
+.player-account-panel__kicker {
+  color: rgba(203, 179, 255, 0.78);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.player-account-panel__heading h2,
+.player-account-panel__card h3 {
+  margin: 0;
+  color: #fff7e6;
+}
+
+.player-account-panel__heading h2 {
+  margin-top: 0.15rem;
+  font-size: 1.25rem;
+}
+
+.player-account-panel__heading p,
+.player-account-panel__card > p {
+  margin: 0.35rem 0 0;
+  color: rgba(229, 219, 255, 0.76);
+}
+
+.player-account-panel__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.player-account-panel__card {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid rgba(176, 137, 255, 0.22);
+  border-radius: 12px;
+  background: rgba(21, 16, 33, 0.86);
+}
+
+.player-account-panel__card h3 {
+  margin-bottom: 0.8rem;
+  font-size: 1rem;
+}
+
+.player-account-panel .form-label,
+.player-account-panel .form-check-label {
+  color: #f7f1ff;
+}
+
+.player-account-panel .form-control {
+  color: #fff;
+  border-color: rgba(185, 155, 255, 0.24);
+  background: rgba(11, 13, 23, 0.88);
+}
+
+.player-account-panel .form-control:disabled {
+  color: rgba(245, 239, 255, 0.72);
+  background: rgba(9, 10, 18, 0.72);
+  opacity: 1;
+}
+
+.player-character-forge-toolbar__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+
+.player-character-forge-toolbar__close {
+  width: 34px;
+  min-width: 34px;
+  padding-left: 0;
+  padding-right: 0;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* The unified player panel owns one close control in its top toolbar. */
+.persistent-player-character-profile .npc-panel-header button[aria-label="Close"] {
+  display: none !important;
+}
+
+@media (max-width: 860px) {
+  .player-account-panel__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .player-character-forge-toolbar__actions {
+    width: 100%;
+    justify-content: flex-end;
+    margin-left: 0;
+  }
+}

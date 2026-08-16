@@ -1,9 +1,10 @@
 # Unified NPC and Player Character Forge Status
 
-Status date: 2026-08-10
-PR: #170 (`agent/character-forge-resilience-presentation`)
-Live migration checkpoint: **89**
-PR state: **open and unmerged**
+Status date: 2026-08-14
+Historical base PR: #170 (`agent/character-forge-resilience-presentation`) — merged at `599c4de7397ba6e4bbbb0a061d551d80c3570be7`
+Active continuation: PR #171 (`agent/species-art-post170`) — open/unmerged
+Runtime checkpoint documented here: **89**
+Current live database checkpoint: **93**
 
 ## Governing architecture
 
@@ -141,18 +142,17 @@ After migration 89 and all rollback fixtures:
 
 Before migration 89 deployment, exact head `a05c4b03f9a36cbf9021108aa07856cfab474fd1` passed 31/31 PR-triggered GitHub workflows and Vercel. Final documentation commits must be exact-head gated again.
 
-## Remaining PR #170 closure
+## Current continuation
 
-No additional source-family implementation should begin by default. Remaining closure work is:
+PR #170 is historical and merged. PR #171 preserves this unified creation/progression/runtime architecture while refining the shared Species presentation. Paul considers the Species tab nearly perfect; further broad Species changes should require a concrete reproduction.
 
-1. final documentation/PR reconciliation;
-2. exact-head GitHub/Vercel gate after that reconciliation;
-3. optional real signed-in interactive browser smoke for final presentation proof;
-4. immediately before any explicitly approved merge, re-check head/status, live migrations, ACLs, and zero residue;
-5. merge only with explicit user approval.
+Current continuation discipline:
 
-The browser smoke should cover representative Forge routing/source magic plus post-rest attention versus persistent optional replacement behavior.
+1. keep PR #171 exact-head GitHub/Vercel gated;
+2. review the next requested Forge tab as a separate bounded slice;
+3. immediately before any explicitly approved merge, re-check head/status, live migrations, ACLs, and zero residue;
+4. merge only with explicit user approval.
 
 ## Protected boundaries
 
-This work does not authorize changes to world-map, town/city-map, route/travel/weather, tactical encounter/combat execution, or unrelated crafting behavior. `components/MapPageClient.js` remains outside PR #170 Forge/progression/runtime work.
+This work does not authorize changes to world-map, town/city-map, route/travel/weather, tactical encounter/combat execution, or unrelated crafting behavior. `components/MapPageClient.js` remains outside Forge/progression/runtime work.

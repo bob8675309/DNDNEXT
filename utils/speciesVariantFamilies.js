@@ -108,10 +108,10 @@ function genasiFamily(rows) {
             variantSource: row.source,
             catalogLabel: displayName,
             catalogDisplayName: displayName,
-            catalogArtworkName: "Genasi",
+            catalogArtworkName: displayName,
             facts: variantFacts(row),
             traits: traitSummaries(row, ["Size", "Darkvision"]),
-            presentation: presentationMetadata(row, { selectorTraitName: "Elemental Lineage", selectorDescription: helper, replaceParentTraits: true, displayName, artworkName: "Genasi" }),
+            presentation: presentationMetadata(row, { selectorTraitName: "Elemental Lineage", selectorDescription: helper, replaceParentTraits: true, displayName, artworkName: displayName }),
           },
         };
       }),
@@ -148,9 +148,8 @@ function tableOptions(species, traitName, family, prefix = "") {
   });
 }
 
-const CHROMATIC_DRAGONBORN = new Set(["Black", "Blue", "Green", "Red", "White"]);
 function standardDragonbornArtwork(ancestry) {
-  return CHROMATIC_DRAGONBORN.has(text(ancestry)) ? "Dragonborn (Chromatic)" : "Dragonborn (Metallic)";
+  return `${text(ancestry)} Dragonborn`;
 }
 
 function dragonbornFamily(rows) {
@@ -185,13 +184,13 @@ function dragonbornFamily(rows) {
         ...(option.metadata || {}),
         catalogLabel: displayName,
         catalogDisplayName: displayName,
-        catalogArtworkName: "Dragonborn (Gem)",
+        catalogArtworkName: displayName,
         ruleFamily: "FTD Gem Dragonborn",
         familySpeciesName: gem.name,
         familySpeciesId: gem.id,
         traits: traitSummaries(gem, ["Gem Ancestry"]),
         facts: variantFacts(gem),
-        presentation: presentationMetadata(gem, { selectorTraitName: "Draconic Ancestry", selectorDescription: helper, replaceParentTraits: true, displayName, artworkName: "Dragonborn (Gem)" }),
+        presentation: presentationMetadata(gem, { selectorTraitName: "Draconic Ancestry", selectorDescription: helper, replaceParentTraits: true, displayName, artworkName: displayName }),
       },
     };
   }) : [];
@@ -282,6 +281,7 @@ export function projectSpeciesVariantPresentation(species = null, selectedVarian
         source: selectedVariant.source,
         family: selectedVariant.metadata?.family || null,
         ruleFamily: selectedVariant.metadata?.ruleFamily || null,
+        damageType: selectedVariant.metadata?.damageType || null,
       },
     },
   };

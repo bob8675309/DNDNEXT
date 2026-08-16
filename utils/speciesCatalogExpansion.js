@@ -101,7 +101,8 @@ function tableFamily(species, config) {
     const overrides = config.optionOverrides?.[norm(label)] || {};
     const displayName = overrides.displayName || config.displayName?.(label) || label;
     const selectedDescription = row.slice(1).map((value, index) => value ? `${columns[index + 1] || `Detail ${index + 1}`}: ${value}` : "").filter(Boolean).join(" • ");
-    const presentation = basePresentation(species, config.traitName, config.helper, displayName, config.artworkName, overrides);
+    const artworkName = overrides.artworkName || config.artworkName;
+    const presentation = basePresentation(species, config.traitName, config.helper, displayName, artworkName, overrides);
     return [{
       key: slug(label), value: label, label, source: species.source, kind: config.kind,
       description: selectedDescription,
@@ -112,7 +113,7 @@ function tableFamily(species, config) {
         variantSource: species.source,
         catalogLabel: displayName,
         catalogDisplayName: displayName,
-        catalogArtworkName: config.artworkName,
+        catalogArtworkName: artworkName,
         selectedDescription,
         row,
         columns,
@@ -138,7 +139,8 @@ function listFamily(species, config) {
     const overrides = config.optionOverrides?.[norm(label)] || {};
     const displayName = overrides.displayName || config.displayName?.(label) || label;
     const selectedDescription = flattenStrings(typeof item === "string" ? item : item?.entries || item?.entry || []).join(" ");
-    const presentation = basePresentation(species, config.traitName, config.helper, displayName, config.artworkName, overrides);
+    const artworkName = overrides.artworkName || config.artworkName;
+    const presentation = basePresentation(species, config.traitName, config.helper, displayName, artworkName, overrides);
     return [{
       key: slug(label), value: label, label, source: species.source, kind: config.kind,
       description: selectedDescription,
@@ -149,7 +151,7 @@ function listFamily(species, config) {
         variantSource: species.source,
         catalogLabel: displayName,
         catalogDisplayName: displayName,
-        catalogArtworkName: config.artworkName,
+        catalogArtworkName: artworkName,
         selectedDescription,
         sourceItem: item,
         facts: factsFor(presentation),
@@ -192,7 +194,7 @@ function avenFamily(rows) {
           selectorDescription: helper,
           replaceParentTraits: true,
           displayName,
-          artworkName: "Aven",
+          artworkName: displayName,
         };
         const uniqueTrait = array(row.traitDetails).find((detail) => !array(parent.traitDetails).some((base) => norm(base?.name) === norm(detail?.name)));
         return {
@@ -207,7 +209,7 @@ function avenFamily(rows) {
             variantSource: row.source,
             catalogLabel: displayName,
             catalogDisplayName: displayName,
-            catalogArtworkName: "Aven",
+            catalogArtworkName: displayName,
             selectedDescription: uniqueTrait ? `${uniqueTrait.name}: ${uniqueTrait.description}` : row.description,
             facts: factsFor(presentation),
             presentation,
@@ -224,41 +226,57 @@ const TRAIT_FAMILIES = [
     helper: "Choose the 2024 Elven Lineage. The selected lineage changes its innate level 1 benefit and its level 3 and 5 species spells; spellcasting ability remains a separate source-owned choice.",
     displayName: (label) => label,
     optionOverrides: {
-      drow: { displayName: "Drow", darkvision: 120 },
-      "high elf": { displayName: "High Elf" },
-      "wood elf": { displayName: "Wood Elf", speed: 35 },
+      drow: { displayName: "Drow", artworkName: "Drow", darkvision: 120 },
+      "high elf": { displayName: "High Elf", artworkName: "High Elf" },
+      "wood elf": { displayName: "Wood Elf", artworkName: "Wood Elf", speed: 35 },
     },
   },
   {
     parentName: "Gnome", source: "XPHB", mode: "list", id: "gnome-lineage", label: "Gnomish Lineage", kind: "lineage", traitName: "Gnomish Lineage", artworkName: "Gnome",
     helper: "Choose the 2024 Gnomish Lineage. Forest and Rock Gnomes keep the same Gnome parent identity while presenting their source-specific lineage benefits.",
     displayName: (label) => label,
+    optionOverrides: {
+      "forest gnome": { artworkName: "Forest Gnome" },
+      "rock gnome": { artworkName: "Rock Gnome" },
+    },
   },
   {
     parentName: "Shifter", source: "MPMM", mode: "list", id: "shifter-subtype", label: "Shifting Form", kind: "subtype", traitName: "Shifting", artworkName: "Shifter",
     helper: "Choose the bestial Shifting form this Shifter manifests: Beasthide, Longtooth, Swiftstride, or Wildhunt.",
     displayName: (label) => `${label} Shifter`,
+    optionOverrides: {
+      beasthide: { artworkName: "Beasthide Shifter" },
+      longtooth: { artworkName: "Longtooth Shifter" },
+      swiftstride: { artworkName: "Swiftstride Shifter" },
+      wildhunt: { artworkName: "Wildhunt Shifter" },
+    },
   },
   {
     parentName: "Fairy", source: "LFL", mode: "list", id: "faerie-lineage", label: "Faerie Lineage", kind: "lineage", traitName: "Faerie Lineage", artworkName: "Fairy",
     helper: "Choose whether this Faerie is native to Lorwyn or Shadowmoor. Shadowmoor Faeries gain their source-specific Darkvision benefit.",
     displayName: (label) => `${label} Fairy`,
     neutralDarkvision: null,
-    optionOverrides: { lorwyn: { darkvision: null }, shadowmoor: { darkvision: 120 } },
+    optionOverrides: { lorwyn: { artworkName: "Lorwyn Fairy", darkvision: null }, shadowmoor: { artworkName: "Shadowmoor Fairy", darkvision: 120 } },
   },
   {
     parentName: "Kithkin", source: "LFL", mode: "list", id: "kithkin-lineage", label: "Kithkin Lineage", kind: "lineage", traitName: "Kithkin Lineage", artworkName: "Kithkin",
     helper: "Choose whether this Kithkin is native to Lorwyn or Shadowmoor. Shadowmoor Kithkin gain their source-specific Darkvision benefit.",
     displayName: (label) => `${label} Kithkin`,
     neutralDarkvision: null,
-    optionOverrides: { lorwyn: { darkvision: null }, shadowmoor: { darkvision: 120 } },
+    optionOverrides: { lorwyn: { artworkName: "Lorwyn Kithkin", darkvision: null }, shadowmoor: { artworkName: "Shadowmoor Kithkin", darkvision: 120 } },
   },
 ];
 
 const SETTING_FAMILIES = [
   { parentName: "Human", parentSource: "XPHB", children: [["Human (Innistrad)", "PSI"], ["Human (Ixalan)", "PSX"], ["Human (Kaladesh)", "PSK"], ["Human (Zendikar)", "PSZ"]] },
   { parentName: "Dwarf", parentSource: "XPHB", children: [["Dwarf (Kaladesh)", "PSK"]] },
-  { parentName: "Elf", parentSource: "XPHB", children: [["Elf (Kaladesh)", "PSK"], ["Elf (Zendikar)", "PSZ"]] },
+  {
+    parentName: "Elf",
+    parentSource: "XPHB",
+    children: [["Elf (Kaladesh)", "PSK"]],
+    excludedChildren: [["Elf (Zendikar)", "PSZ"]],
+    mergeWithLineage: true,
+  },
   { parentName: "Orc", parentSource: "XPHB", children: [["Orc (Ixalan)", "PSX"]] },
   { parentName: "Minotaur", parentSource: "MPMM", children: [["Minotaur (Amonkhet)", "PSA"]] },
   { parentName: "Goblin", parentSource: "MPMM", children: [["Goblin (Dankwood)", "AWM"]] },
@@ -267,6 +285,10 @@ const SETTING_FAMILIES = [
 function attachSettingFamilies(rows) {
   const byId = new Map(rows.map((row) => [String(row.id), row]));
   for (const config of SETTING_FAMILIES) {
+    for (const [name, source] of config.excludedChildren || []) {
+      const excluded = rows.find((candidate) => norm(candidate.name) === norm(name) && text(candidate.source).toUpperCase() === source);
+      if (excluded) byId.set(String(excluded.id), { ...excluded, catalogHidden: true, catalogExcluded: true });
+    }
     const parent = rows.find((row) => norm(row.name) === norm(config.parentName) && text(row.source).toUpperCase() === config.parentSource);
     if (!parent) continue;
     const children = config.children.flatMap(([name, source]) => {
@@ -278,6 +300,7 @@ function attachSettingFamilies(rows) {
       ...byId.get(String(parent.id)),
       catalogSourceVariants: children.map((child) => ({ ...child, catalogHidden: true, catalogParentId: parent.id, catalogParentName: parent.name })),
       catalogSearchAliases: children.flatMap((child) => [child.name, child.source]),
+      catalogMergeSourceVariants: Boolean(config.mergeWithLineage),
     });
     for (const child of children) byId.set(String(child.id), { ...child, catalogHidden: true, catalogParentId: parent.id, catalogParentName: parent.name });
   }

@@ -4,12 +4,13 @@ This directory contains the project's living handoff, roadmap, architecture, and
 
 ## Start here
 
-- `DNDNext_Current_Handoff_Prompt.md` — copy-ready continuation prompt and protected boundaries.
-- `Documentation_Refresh_Manifest.md` — documentation precedence and current PR #170 checkpoint.
-- `PR170_Final_Acceptance_Status.md` — current migration/build/database/authenticated acceptance and remaining focused browser re-smoke.
-- `PR170_Browser_Smoke_Corrections_Status.md` — real signed-in browser findings, migration 90 Rage restoration, Forge presentation corrections, and re-smoke targets.
-- `Forge_Species_Art_and_Collapse_Handoff.md` — **active Species presentation/artwork handoff**: independent chevrons/collapse state, parent/child descriptions, dedicated generated child-art rollout, exact binary verification, current asset queue, validation contracts, and protected boundaries.
+- `DNDNext_Current_Handoff_Prompt.md` — **copy-ready next-chat brief**: current PR/Supabase checkpoint, site architecture, Character Forge/Species data flow, protected boundaries, validators, and publishing procedure.
+- `Forge_Post170_Species_Artwork_Status.md` — **active Species artwork continuation authority after the PR #170 merge**: PR #171, completed Genasi/Dragonborn/Aven/Elf/Gnome artwork, exact validation checkpoint, binary-write procedure, remaining queue, and protected boundaries.
+- `Forge_Species_Art_and_Collapse_Handoff.md` — **historical PR #170 Species-art handoff; superseded**. It now points to the post-#170 ledger and must not be treated as current status.
 - `CHATGPT_REPO_WRITE_PROCEDURE.md` — **connector write authority and safe procedure**: GitHub/Supabase are directly writable from ChatGPT; use `create_blob → create_tree → create_commit → race-check → update_ref(force=false)` for coherent repo changes.
+- `Documentation_Refresh_Manifest.md` — broader documentation precedence/history; newer focused ledgers supersede stale PR #170 status text.
+- `PR170_Final_Acceptance_Status.md` — historical migration/build/database/authenticated acceptance evidence for the long-lived #170 work.
+- `PR170_Browser_Smoke_Corrections_Status.md` — historical signed-in browser findings and corrections from the #170 cycle.
 - `Forge_Species_Family_Submenu_Status.md` — controlling Species family/setting-variant rules/persistence ledger through migrations 91-93, including Genasi, Dragonborn, Aven, Elf, Gnome, Shifter, Fairy, Kithkin, and grouped setting variants.
 - `Forge_Source_Presentation_and_Species_Variants_Status.md` — earlier source-presentation history, structured Species/Background/Class rendering, and the migration-91 Genasi source-catalog foundation.
 - `Current_Development_Status_and_Roadmap.md` — broad platform roadmap/history; newer subsystem ledgers supersede older sections.
@@ -37,7 +38,7 @@ This directory contains the project's living handoff, roadmap, architecture, and
 - `Astral_Trance_Runtime_Status.md` — Astral Trance runtime.
 - `Species_Rest_Proficiency_Runtime_Status.md` — Astral Knowledge / Skill Versatility.
 - `Species_Replaceable_Cantrip_Runtime_Status.md` — replaceable Species cantrips.
-- `Eladrin_Season_Trance_Runtime_Status.md` — Eladrin season/Trance runtime.
+- `Eladrin_Runtime_Status.md` — Eladrin initial season, post-Long-Rest replacement, Trance runtime, and current descriptive-season presentation.
 - `Primal_Companion_Runtime_Status.md` — Beast Master companion runtime.
 - `Dread_Allegiance_Runtime_Status.md` — linked allegiance/resistance/cantrip runtime.
 - `Fiendish_Resilience_Runtime_Status.md` — Short/Long-Rest resistance runtime.
@@ -69,24 +70,48 @@ Use the specific tactical phase ledger before changing encounter behavior; do no
 
 Always inspect live grants/functions before modifying authenticated `SECURITY DEFINER` surfaces. Supabase advisor warnings outside the current audited slice are separate security backlog, not permission to scope-creep a Forge/runtime patch.
 
-## Current exact Forge checkpoint
+## Current exact Forge artwork checkpoint
 
-PR #170 remains open and unmerged on `agent/character-forge-resilience-presentation`.
+### Main / historical PR #170
 
-Exact validated Species presentation/artwork checkpoint:
+PR #170 is **merged**, not open. GitHub merge commit:
 
-`2e5031a71f05f8705b64dbbef30aa402dd42c58f` — `Preserve Chromatic validator after Metallic rollout`
+`599c4de7397ba6e4bbbb0a061d551d80c3570be7`
 
-That exact head completed **33/33 PR-triggered workflows successfully** and Vercel deployment succeeded. It preserves the established family/chevron behavior and canonical artwork authority while completing dedicated Genasi, Chromatic Dragonborn, and Metallic Dragonborn Forge artwork.
+The merge occurred through an accidental connector invocation while branch-integration tooling was being searched for. No automatic revert was attempted because a blind revert could remove a large body of valid previously tested work.
 
-Complete Genasi family:
+### Active continuation / PR #171
+
+Branch:
+
+`agent/species-art-post170`
+
+PR #171 is **OPEN / UNMERGED** and must not be merged without explicit user approval.
+
+Latest validated code checkpoint:
+
+`39a263e034db4023ed7d1a4950a185a832c08867` — `Polish Eladrin season selection`
+
+For that exact head:
+
+- all 14 triggered GitHub workflows completed successfully;
+- `Validate Forge source presentation`, `Validate NPC Forge foundation`, `Validate Character Forge nested choices`, `Validate Eladrin runtime`, and the related progression/equipment/runtime gates passed;
+- workflow production builds passed;
+- Vercel deployment succeeded;
+- the preceding-head compare is exactly one fast-forward commit with six scoped files and no protected-system file.
+
+The earlier artwork-only checkpoint remains `f8f31534c157c9778f873e726551ac20cfdfd823`. Later Species layout/presentation commits preserve the same artwork and persistence boundaries while improving the shared Player/NPC Forge UI.
+
+### Complete dedicated Genasi family
 
 - `public/media/species/air-genasi.webp`
 - `public/media/species/earth-genasi.webp`
 - `public/media/species/fire-genasi.webp`
 - `public/media/species/water-genasi.webp`
 
-Complete Chromatic Dragonborn family:
+### Complete Dragonborn child artwork — all 15
+
+Chromatic:
 
 - `public/media/species/black-dragonborn.webp`
 - `public/media/species/blue-dragonborn.webp`
@@ -94,7 +119,7 @@ Complete Chromatic Dragonborn family:
 - `public/media/species/red-dragonborn.webp`
 - `public/media/species/white-dragonborn.webp`
 
-Complete Metallic Dragonborn family:
+Metallic:
 
 - `public/media/species/brass-dragonborn.webp`
 - `public/media/species/bronze-dragonborn.webp`
@@ -102,14 +127,88 @@ Complete Metallic Dragonborn family:
 - `public/media/species/gold-dragonborn.webp`
 - `public/media/species/silver-dragonborn.webp`
 
-The active continuation ledger is `Forge_Species_Art_and_Collapse_Handoff.md`. It records the exact Git-blob workflow, completed Genasi/Chromatic/Metallic families, remaining Gem/Aven/Elf/Gnome/Shifter/Fairy/Kithkin/setting-art queue, validator contracts, database boundary, and browser re-smoke checklist. Documentation-only descendants do not supersede `2e5031a7...` as the exact tested runtime/source/art tree.
+Gem:
 
-Live database authority remains migration 93:
+- `public/media/species/amethyst-gem-dragonborn.webp`
+- `public/media/species/crystal-gem-dragonborn.webp`
+- `public/media/species/emerald-gem-dragonborn.webp`
+- `public/media/species/sapphire-gem-dragonborn.webp`
+- `public/media/species/topaz-gem-dragonborn.webp`
+
+### Complete Aven child artwork on PR #171
+
+- `public/media/species/hawk-headed-aven.webp`
+- `public/media/species/ibis-headed-aven.webp`
+
+Canonical non-Forge Aven still resolves through `aven.webp`; canonical non-Forge Dragonborn children still resolve through the appropriate shared Chromatic/Metallic/Gem family art. Dedicated child files are Forge presentation only.
+
+### Complete Elf / Gnome lineage artwork on PR #171
+
+- `public/media/species/drow.webp`
+- `public/media/species/high-elf.webp`
+- `public/media/species/wood-elf.webp`
+- `public/media/species/forest-gnome.webp`
+- `public/media/species/rock-gnome.webp`
+
+All five are validated 1536 × 2048 WebP portraits. Canonical non-Forge Elf/Gnome children still resolve through `elf.webp` / `gnome.webp`; only the Forge uses these dedicated lineage files.
+
+### Complete Shifter form artwork on PR #171
+
+- `public/media/species/beasthide-shifter.webp`
+- `public/media/species/longtooth-shifter.webp`
+- `public/media/species/swiftstride-shifter.webp`
+- `public/media/species/wildhunt-shifter.webp`
+
+All four are validated 1536 × 2048 WebP portraits. Canonical non-Forge Shifter forms still resolve through `shifter.webp`; only the Forge uses these dedicated files. The source-owned form choice remains on the existing parent `shifting` field.
+
+### Complete Fairy / Kithkin lineage artwork on PR #171
+
+- `public/media/species/lorwyn-fairy.webp`
+- `public/media/species/shadowmoor-fairy.webp`
+- `public/media/species/lorwyn-kithkin.webp`
+- `public/media/species/shadowmoor-kithkin.webp`
+
+All four are validated 1536 × 2048 WebP portraits. Canonical non-Forge Fairy/Kithkin children still resolve through `fairy.webp` / `kithkin.webp`; only the Forge uses these dedicated lineage files. The source-owned choices remain on the existing `faerie-lineage` and `kithkin-lineage` fields, with 120-foot Darkvision projected only for Shadowmoor.
+
+The active continuation ledger is `Forge_Post170_Species_Artwork_Status.md`.
+
+### Complete setting/source-alias artwork on PR #171
+
+- `public/media/species/dwarf-kaladesh.webp`
+- `public/media/species/goblin-dankwood.webp`
+- `public/media/species/orc-ixalan.webp`
+
+All three are validated 1536 × 2048 WebP portraits. Canonical non-Forge setting aliases remain on `dwarf.webp`, `goblin.webp`, and `orc.webp`; only the Forge uses the dedicated files. The existing catalogue-source grouping remains authoritative, with no new persistence state.
+
+## Planned post-#170 dedicated-art queue — COMPLETE
+
+- Dwarf (Kaladesh)
+- Goblin (Dankwood)
+- Orc (Ixalan)
+
+Retain existing dedicated Human setting art, Elf Kaladesh/Zendikar art, and Amonkhet Minotaur art unless there is a specific reason to replace them.
+
+## Live database authority
+
+Migration 93 remains current for this Species artwork phase:
 
 `20260812042950 aven_subrace_catalog`
 
-Production Species counts are 166 raw / 102 preferred. Protected campaign/runtime/map counts remain 7 characters, 7 sheets, 30 character-spell rows, 7 progression rows, 18 inventory rows, 20 locations, 4 map routes, and 9 route points.
+Latest verified production counts:
+
+- raw Species: 166
+- preferred Species: 102
+- characters: 7
+- character_sheets: 7
+- character_spells: 30
+- character_progression: 7
+- inventory_items: 18
+- locations: 20
+- map_routes: 4
+- map_route_points: 9
+
+No SQL write or migration was made for the Gem/Aven/Elf/Gnome/Shifter/Fairy/Kithkin/setting-variant artwork continuation.
 
 ## Protected-boundary rule
 
-Character Forge/progression/runtime work does not authorize changes to world-map, town/city-map behavior, route/travel/weather simulation, tactical encounter behavior, or unrelated crafting systems. `components/MapPageClient.js` remains outside current scope unless explicitly requested.
+Character Forge/progression/runtime work does not authorize changes to world-map, town/city-map behavior, route/travel/weather simulation, tactical encounter behavior, crafting, inventory, merchants, or unrelated runtime systems. `components/MapPageClient.js` remains outside current scope unless explicitly requested.

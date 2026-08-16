@@ -62,6 +62,7 @@ function flattenEntries(entries = []) {
   return output.filter(Boolean).join("\n\n");
 }
 function shortDescription(entries = []) { const text = flattenEntries(entries); return text.length <= 900 ? text : `${text.slice(0, 897).trimEnd()}…`; }
+function fullDescription(entries = []) { return flattenEntries(entries); }
 function firstLoreParagraph(entries = []) {
   const candidates = [];
   function walk(node) {
@@ -214,7 +215,7 @@ function speciesRow(row = {}, fluffIndex) {
   const fluff = row.parentSpecies ? fluffFor({ name: row.parentSpecies, source: row.parentSource }, fluffIndex) : fluffFor(row, fluffIndex);
   const lore = SPECIES_LORE_OVERRIDES[slugify(loreSubject)] || firstLoreParagraph(fluff?.entries || []);
   return {
-    option_key: optionKey("species", name, row.source), option_type: "species", name, source: row.source || "UNK", category: row.lineage || row.creatureTypes?.join(", ") || null, description: shortDescription(row.entries || []), prerequisite_text: "", tags: [row.size ? `size:${clean5eText(row.size)}` : null].filter(Boolean),
+    option_key: optionKey("species", name, row.source), option_type: "species", name, source: row.source || "UNK", category: row.lineage || row.creatureTypes?.join(", ") || null, description: fullDescription(row.entries || []), prerequisite_text: "", tags: [row.size ? `size:${clean5eText(row.size)}` : null].filter(Boolean),
     metadata: {
       speed: row.speed || null, size: row.size || [], creatureTypes: row.creatureTypes || [], languages: row.languageProficiencies || [], darkvision: row.darkvision ?? null, lineage: row.lineage || null, traits: row.entries || [], lore, loreSource: fluff?.source || null, page: row.page ?? null,
       parentSpecies: row.parentSpecies || null, parentSource: row.parentSource || null, variantName: row.variantName || null, sourceDerivedSubrace: Boolean(row.sourceDerivedSubrace),

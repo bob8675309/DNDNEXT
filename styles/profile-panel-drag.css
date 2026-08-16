@@ -1,0 +1,184 @@
+/* Shared desktop window behavior for the Character Forge, character profile, and large visual picker panels. */
+@media (min-width: 981px) {
+  :root {
+    --dndnext-window-nav-offset: 58px;
+  }
+
+  /* Keep the global character windows centered in the usable space below the sticky navbar.
+     The navbar itself remains uncovered so navigating away remains an explicit close path. */
+  .npc-page-profile-panel-backdrop,
+  .npc-forge-backdrop {
+    top: var(--dndnext-window-nav-offset) !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    padding: 14px 18px 18px !important;
+  }
+
+  .npc-page-profile-panel-shell:not(.is-player-character-forge),
+  .npc-forge-modal:not(.is-app-windowed) {
+    margin: 0 auto !important;
+    max-height: calc(100dvh - var(--dndnext-window-nav-offset) - 32px) !important;
+  }
+
+  .is-app-windowed {
+    position: fixed !important;
+    margin: 0 !important;
+    box-sizing: border-box;
+  }
+
+  /* The persistent player shell is only a host while Character Forge is open. Keep it inert so
+     the actual Forge modal, not its parent shell, owns drag/resize geometry. */
+  .npc-page-profile-panel-shell.is-player-character-forge {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: min(1180px, calc(100vw - 2rem)) !important;
+    height: calc(100dvh - var(--dndnext-window-nav-offset) - 2rem) !important;
+    max-width: none !important;
+    max-height: calc(100dvh - var(--dndnext-window-nav-offset) - 2rem) !important;
+    transform: none !important;
+    overflow: visible !important;
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .npc-page-profile-panel-shell.is-player-character-forge > .persistent-player-character-forge {
+    overflow: visible !important;
+  }
+
+  .npc-forge-modal.is-app-windowed {
+    container-type: inline-size;
+    container-name: forge-window;
+  }
+
+  .npc-page-profile-panel-shell:not(.is-player-character-forge) .npc-panel-header,
+  .npc-page-profile-panel-shell:not(.is-player-character-forge) .player-character-forge-toolbar,
+  .npc-forge-modal > .npc-forge-header,
+  .portrait-picker-modal > .portrait-picker-head,
+  .sprite-picker-modal > .sprite-picker-head,
+  [data-app-window-panel='true'] [data-app-window-handle='true'] {
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .is-app-window-dragging,
+  .is-app-window-resizing {
+    will-change: left, top, width, height;
+  }
+
+  body.is-app-window-drag-active,
+  body.is-app-window-resize-active {
+    user-select: none;
+  }
+
+  body.is-app-window-drag-active,
+  body.is-app-window-drag-active * {
+    cursor: grabbing !important;
+  }
+
+  body.is-app-window-resize-hover-n,
+  body.is-app-window-resize-hover-n *,
+  body.is-app-window-resize-hover-s,
+  body.is-app-window-resize-hover-s *,
+  body.is-app-window-resize-active.is-app-window-resize-hover-n,
+  body.is-app-window-resize-active.is-app-window-resize-hover-s {
+    cursor: ns-resize !important;
+  }
+
+  body.is-app-window-resize-hover-e,
+  body.is-app-window-resize-hover-e *,
+  body.is-app-window-resize-hover-w,
+  body.is-app-window-resize-hover-w *,
+  body.is-app-window-resize-active.is-app-window-resize-hover-e,
+  body.is-app-window-resize-active.is-app-window-resize-hover-w {
+    cursor: ew-resize !important;
+  }
+
+  body.is-app-window-resize-hover-nw,
+  body.is-app-window-resize-hover-nw *,
+  body.is-app-window-resize-hover-se,
+  body.is-app-window-resize-hover-se *,
+  body.is-app-window-resize-active.is-app-window-resize-hover-nw,
+  body.is-app-window-resize-active.is-app-window-resize-hover-se {
+    cursor: nwse-resize !important;
+  }
+
+  body.is-app-window-resize-hover-ne,
+  body.is-app-window-resize-hover-ne *,
+  body.is-app-window-resize-hover-sw,
+  body.is-app-window-resize-hover-sw *,
+  body.is-app-window-resize-active.is-app-window-resize-hover-ne,
+  body.is-app-window-resize-active.is-app-window-resize-hover-sw {
+    cursor: nesw-resize !important;
+  }
+}
+
+/* Once the Forge itself is narrower than its normal desktop composition, respond to the Forge
+   window width instead of the browser viewport. This keeps the resized window readable and stops
+   the two-column desktop grids from overflowing a smaller Forge. */
+@container forge-window (max-width: 980px) {
+  .npc-forge-modal.is-app-windowed .npc-forge-body,
+  .npc-forge-modal.is-app-windowed .npc-forge-body.is-player-mode,
+  .npc-forge-modal.is-app-windowed .npc-forge-body.npc-forge-step-abilities,
+  .npc-forge-modal.is-app-windowed .npc-forge-body.npc-forge-step-spells,
+  .npc-forge-modal.is-app-windowed .npc-forge-body.npc-forge-step-equipment {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .npc-forge-modal.is-app-windowed .npc-forge-preview,
+  .npc-forge-modal.is-app-windowed .npc-forge-context-panel {
+    min-width: 0 !important;
+    border-left: 0 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .npc-forge-modal.is-app-windowed .npc-forge-workspace,
+  .npc-forge-modal.is-app-windowed .npc-forge-preview,
+  .npc-forge-modal.is-app-windowed .npc-forge-context-panel {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}
+
+@container forge-window (max-width: 820px) {
+  .npc-forge-modal.is-app-windowed .npc-forge-ability-drop-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .npc-forge-modal.is-app-windowed .npc-forge-review-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Mobile/tablet remains the established anchored responsive layout. */
+@media (max-width: 980px) {
+  .is-app-windowed {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: none;
+    max-height: none;
+    transform: none !important;
+    margin: initial !important;
+  }
+
+  .npc-page-profile-panel-shell .npc-panel-header,
+  .npc-page-profile-panel-shell .player-character-forge-toolbar,
+  .npc-forge-modal > .npc-forge-header,
+  .portrait-picker-modal > .portrait-picker-head,
+  .sprite-picker-modal > .sprite-picker-head,
+  [data-app-window-panel='true'] [data-app-window-handle='true'] {
+    cursor: auto;
+    touch-action: auto;
+  }
+}
