@@ -104,14 +104,18 @@ const derivedSource = read("components/useNpcForgeDerivedModel.js");
 for (const token of ["featDescriptionForBackground", "flattenSourceRuleEntries", "Choose ${group.count} skill", "Training → Skills & Proficiencies"]) assert.ok(derivedSource.includes(token), `Background description/routing model missing ${token}`);
 
 const loginSource = read("pages/login.js");
-assert.ok(loginSource.includes('router.replace("/profile?characterProfile=1")'), "successful login must open the shared Profile panel for players and administrators");
-assert.ok(!loginSource.includes('router.replace(isAdmin ? "/admin" : "/profile")'), "login must not route administrators away from the shared Profile entry point");
+assert.ok(loginSource.includes('router.replace("/profile?characterProfile=1")'), "normal successful login must open the shared Profile panel for players and administrators");
+assert.ok(loginSource.includes('router.query.legacyRoleRoute === "1"'), "legacy role routing must be explicitly opt-in rather than the default login path");
+assert.ok(loginSource.indexOf('router.replace("/profile?characterProfile=1")') > loginSource.indexOf('router.query.legacyRoleRoute === "1"'), "the Profile-panel route must remain the normal post-login destination after the guarded compatibility branch");
 
 const modalSource = read("components/NewNpcModalV3Refined.js");
 for (const token of ["resetForgeWindowElement", "requestAnimationFrame", "closeCompletedChoiceOnOutsidePointer", "npc-forge-species-fact-choice.is-complete[open]"]) assert.ok(modalSource.includes(token), `Forge geometry/choice-collapse correction missing ${token}`);
 
-for (const source of [read("utils/playerForgeSourceChoices.js"), embeddedSource, contextSource, controllerSource, trainingSource, contextWrapper, derivedSource, loginSource, modalSource]) {
+const smokeCss = read("styles/character-forge-smoke-fixes.css");
+for (const token of ["source-neutral heraldic ornament", ".npc-forge-background-story::after", 'content: "✦"']) assert.ok(smokeCss.includes(token), `Background visual polish missing ${token}`);
+
+for (const source of [read("utils/playerForgeSourceChoices.js"), embeddedSource, contextSource, controllerSource, trainingSource, contextWrapper, derivedSource, loginSource, modalSource, smokeCss]) {
   assert.doesNotMatch(source, /MapPageClient|map_routes|map_route_points|advance_all_characters|route_segment_progress/, "Background work crossed protected map/travel boundaries");
 }
 
-console.log("Background source-choice polish validated: fixed languages/tools remain automatic, Background skills normalize to canonical keys and route through Training, source feat copy is cleaned from raw entries, completed Species fact choices collapse on outside click, login enters the Profile panel, Forge geometry resets consistently, Strixhaven spell tables are not duplicated, and protected map/travel boundaries remain untouched.");
+console.log("Background source-choice polish validated: fixed languages/tools remain automatic, Background skills normalize to canonical keys and route through Training, source feat copy is cleaned from raw entries, completed Species fact choices collapse on outside click, normal login enters the Profile panel, Forge geometry resets consistently, Background dossiers receive restrained visual identity, Strixhaven spell tables are not duplicated, and protected map/travel boundaries remain untouched.");
