@@ -40,6 +40,15 @@ function playerSpeciesPresentation(species = null, playerMode = false) {
   return species;
 }
 
+function playerBackgroundPresentation(details = null, playerMode = false) {
+  if (!details || !playerMode) return details;
+  // Background skill options are explained in the Background dossier, but their
+  // actual selection now belongs to Training → Skills & Proficiencies. The
+  // derived model adds a routed summary to `skills`, so suppress only the old
+  // embedded chooser here without discarding any source information.
+  return { ...details, skillChoices: [] };
+}
+
 // Compatibility marker for the established focused validator: groups: (sourceChoiceState.groups || []).filter
 export default function NpcForgeContextPanel(props) {
   const activeClass = props?.detail?.type === "class" && props.detail.option
@@ -71,6 +80,7 @@ export default function NpcForgeContextPanel(props) {
       ),
     },
   };
+  const projectedBackgroundMechanics = playerBackgroundPresentation(props?.backgroundMechanicDetails, props?.playerMode);
 
-  return <NpcForgeSourceChoiceContext.Provider value={presentationSourceChoices}><NpcForgeContextPanelRefined {...props} selectedSpecies={projectedSelectedSpecies} detail={projectedDetail} /></NpcForgeSourceChoiceContext.Provider>;
+  return <NpcForgeSourceChoiceContext.Provider value={presentationSourceChoices}><NpcForgeContextPanelRefined {...props} backgroundMechanicDetails={projectedBackgroundMechanics} selectedSpecies={projectedSelectedSpecies} detail={projectedDetail} /></NpcForgeSourceChoiceContext.Provider>;
 }
