@@ -247,10 +247,15 @@ function explicitTraitGroups(species, trait, level, spells, featOptions) {
     ]);
   } else if (key === "animal enhancement") {
     const lists = collectLists(trait);
-    const first = listNames(lists[0]);
-    const later = listNames(lists[1]);
-    const fields = [field({ id: "level-1-enhancement", label: "Level 1 Animal Enhancement", kind: "enhancement", options: first.map((value) => option(value, "enhancement", null, species.source || "XPHB")) })];
-    if (Number(level || 1) >= 5) fields.push(field({ id: "level-5-enhancement", label: "Level 5 Animal Enhancement", kind: "enhancement", options: unique([...first, ...later]).map((value) => option(value, "enhancement", null, species.source || "XPHB")), distinctFromFieldId: "level-1-enhancement" }));
+    const sourceOption = (item) => {
+      const label = text(typeof item === "string" ? item : item?.name || item?.entry);
+      return label ? option(label, "enhancement", { sourceItem: item }, species.source || "XPHB", listOptionDescription(item)) : null;
+    };
+    const first = array(lists[0]).map(sourceOption).filter(Boolean);
+    const later = array(lists[1]).map(sourceOption).filter(Boolean);
+    const all = [...first, ...later].filter((entry, index, rows) => rows.findIndex((candidate) => candidate.key === entry.key) === index);
+    const fields = [field({ id: "level-1-enhancement", label: "Level 1 Animal Enhancement", kind: "enhancement", options: first })];
+    if (Number(level || 1) >= 5) fields.push(field({ id: "level-5-enhancement", label: "Level 5 Animal Enhancement", kind: "enhancement", options: all, distinctFromFieldId: "level-1-enhancement" }));
     add(fields);
   } else if (key === "feat" && /feat.*choice/i.test(raw)) {
     add([field({ id: "feat", label: "Choose qualifying feat", kind: "feat", options: array(featOptions).map((feat) => ({ key: text(feat.id || feat.option_key || `${slug(feat.name)}|${feat.source || "XPHB"}`), value: text(feat.id || feat.option_key || feat.name), label: feat.name, kind: "feat", source: feat.source || "XPHB", description: text(feat.description), metadata: { optionId: feat.id || null, optionKey: feat.option_key || null, category: feat.category || null } })) })]);
