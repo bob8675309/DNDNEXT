@@ -159,9 +159,14 @@ for (const token of [
 ]) requireContains(accountStyles, token, `Account/profile toolbar style ${token}`);
 
 for (const token of [
+  ".persistent-player-character-profile .npc-panel-body:not(.d-block) .npc-left",
+  "display: contents !important;",
+  ".persistent-player-character-profile .npc-profile-description-card",
+  "grid-column: 2 / 3 !important;",
   ".persistent-player-character-profile .npc-profile-description-thumb",
+  "width: 56% !important;",
   ".persistent-player-character-profile .npc-profile-description-thumb::after",
-  "rgba(5,5,12,0.62) 64%",
+  "rgba(5,5,12,0.48) 88%",
   ".merchant-market-shell .merchant-scene",
   ".merchant-market-shell .merchant-scene::after",
   ".merchant-market-shell .merchant-stock-workspace",
