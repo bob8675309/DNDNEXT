@@ -74,6 +74,38 @@
   font-weight: 800;
 }
 
+/* Give every Background dossier a small, source-neutral heraldic ornament. It adds visual
+   identity without introducing a second portrait/art-asset pipeline or implying setting art. */
+.unified-player-character-forge .npc-forge-context-card.is-origin:not(.is-species) .npc-forge-background-story {
+  position: relative;
+  overflow: hidden;
+  padding-right: 5.25rem;
+  background:
+    radial-gradient(circle at calc(100% - 2.4rem) 50%, rgba(168, 108, 255, .12), transparent 3.25rem),
+    rgba(88, 214, 199, .035);
+}
+
+.unified-player-character-forge .npc-forge-context-card.is-origin:not(.is-species) .npc-forge-background-story::after {
+  content: "✦";
+  position: absolute;
+  right: 1.15rem;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 2.9rem;
+  height: 2.9rem;
+  transform: translateY(-50%) rotate(45deg);
+  border: 1px solid rgba(168, 108, 255, .34);
+  border-radius: .62rem;
+  background: linear-gradient(135deg, rgba(126, 72, 199, .18), rgba(88, 214, 199, .07));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .025), 0 8px 22px rgba(0, 0, 0, .18);
+  color: rgba(216, 255, 249, .78);
+  font-size: 1rem;
+  line-height: 1;
+  text-shadow: 0 0 14px rgba(88, 214, 199, .28);
+  pointer-events: none;
+}
+
 /* Source prose is easier to scan when named benefits remain separate paragraphs instead of
    one dense imported block. The React formatter supplies the paragraph boundaries; these
    rules keep the measure and vertical rhythm readable throughout purple rule cards. */
@@ -255,5 +287,13 @@
     position: static;
     max-height: none;
     overflow: visible;
+  }
+
+  .unified-player-character-forge .npc-forge-context-card.is-origin:not(.is-species) .npc-forge-background-story {
+    padding-right: 1rem;
+  }
+
+  .unified-player-character-forge .npc-forge-context-card.is-origin:not(.is-species) .npc-forge-background-story::after {
+    display: none;
   }
 }
