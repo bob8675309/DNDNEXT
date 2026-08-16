@@ -6,8 +6,16 @@ on:
       - main
     paths:
       - "utils/playerForgeSourceChoices.js"
+      - "utils/npcForgeCatalogRefined.js"
       - "components/NpcForgeEmbeddedSourceChoices.js"
+      - "components/NpcForgeContextPanel.js"
       - "components/NpcForgeContextPanelRefined.js"
+      - "components/NpcForgeStepContent.js"
+      - "components/NpcForgeTrainingStep.js"
+      - "components/NewNpcModalV3Refined.js"
+      - "components/useNpcForgeController.js"
+      - "components/useNpcForgeDerivedModel.js"
+      - "pages/login.js"
       - "scripts/validate_background_source_choice_polish.mjs"
       - ".github/workflows/validate-background-source-choice-polish.yml"
   workflow_dispatch:
