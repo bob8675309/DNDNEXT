@@ -77,11 +77,17 @@ export function speciesStructuredFeatureOptions(option = {}, entry = {}) {
   if (optionCards.length < 2) return null;
   const preamble = flattenRuleStrings(rawTrait, { omitChoiceCollections: true });
   const choiceLanguage = `${entry.name || ""} ${preamble}`;
-  if (!/(?:choose|one of (?:the )?(?:following )?options|options described below|forms?|transform)/i.test(choiceLanguage)) return null;
+  const presentsChoice = /(?:choose|one of (?:the )?(?:following )?options|options described below|forms?|transform)/i.test(choiceLanguage);
+  const presentsBenefits = /\bfollowing benefits\b/i.test(choiceLanguage);
+  if (!presentsChoice && !presentsBenefits) return null;
   return {
     description: preamble || text(entry.description),
     optionCards,
-    optionCardsLabel: /revelation/i.test(text(entry.name)) ? "Revelation forms" : "Available options",
+    optionCardsLabel: /revelation/i.test(text(entry.name))
+      ? "Revelation forms"
+      : presentsBenefits && !presentsChoice
+        ? "Benefits"
+        : "Available options",
   };
 }
 
@@ -177,10 +183,6 @@ function isCustomLineage(option = {}) {
   return norm(option.name) === "custom lineage" && text(option.source).toUpperCase() === "TCE";
 }
 
-function seasonalFeyStepDescription() {
-  return "As a Bonus Action, you can magically teleport up to 30 feet to an unoccupied space you can see. You can use Fey Step a number of times equal to your Proficiency Bonus, regaining all uses when you finish a Long Rest. Choose an initial season when you create the character, and after each Long Rest you may change to a different season. Starting at character level 3, your current season adds an effect to Fey Step: Autumn can Charm up to two creatures you can see within 10 feet after you teleport; Winter can Frighten one creature you can see within 5 feet before you teleport; Spring can teleport one willing creature you touch within 5 feet instead of you; and Summer deals Fire damage equal to your Proficiency Bonus to each creature of your choice you can see within 5 feet after you teleport. The season selector below sets your starting season and remains changeable after a Long Rest.";
-}
-
 function customLineageHeritageDetail() {
   return {
     name: "Heritage Traits",
@@ -204,7 +206,7 @@ export function speciesFeaturePresentation(option = {}) {
     details = details.filter((entry) => !seasonLike(entry.name)).map((entry) => {
       if (norm(entry.name) !== "fey step") return entry;
       const { optionCards, optionCardsLabel, runtimeChoice, ...rest } = entry;
-      return { ...rest, name: "Seasonal Fey Step", description: seasonalFeyStepDescription(), runtimeChoice: true };
+      return { ...rest, name: "Seasonal Fey Step", runtimeChoice: true };
     });
     traits = traits.filter((trait) => !seasonLike(trait)).map((trait) => norm(trait) === "fey step" ? "Seasonal Fey Step" : trait);
   }
