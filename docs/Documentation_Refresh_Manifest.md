@@ -1,91 +1,77 @@
 # Documentation Refresh Manifest
 
-Updated: 2026-08-14
+Updated: 2026-08-16
 
 ## Trust order
 
 For current work, trust sources in this order:
 
-1. live Supabase schema, migrations, grants, and relevant data;
-2. current GitHub PR source, remote head, exact-head CI, and deployment state;
-3. `DNDNext_Current_Handoff_Prompt.md` and the active dedicated subsystem ledger;
+1. live Supabase schema, migration ledger, grants, RPC definitions, and relevant data;
+2. current GitHub `main`/active PR source, exact remote head, exact-head CI, and Vercel state;
+3. `DNDNext_Current_Handoff_Prompt.md` and the dedicated ledger for the subsystem being changed;
 4. broader roadmap/history prose;
-5. raw SQL/text exports as historical snapshots only.
+5. raw SQL/text exports and old PR ledgers as historical snapshots only.
 
 If prose conflicts with live source/database state, live authority wins until the documentation is corrected.
 
 ## Current GitHub checkpoint
 
-### Historical base — PR #170
+Accepted runtime/code baseline:
 
-PR #170 is merged. Merge commit:
+`8c37e30063d2523a5f488073d3ea60c5571c7182` — merge of PR #173.
 
-`599c4de7397ba6e4bbbb0a061d551d80c3570be7`
+A later documentation-only merge may advance `main` without changing runtime behavior; always inspect the current ref before starting implementation.
 
-The merge happened through an accidental connector action while branch-integration tooling was being searched for. Do not describe PR #170 as open, do not blindly revert it, and do not use a merge operation merely to move branch content.
+Recent merged sequence:
 
-Older ledgers may retain “PR #170 open” or “before merge” language because they are contemporaneous evidence. Treat those statements as historical, not current instructions.
+- PR #170 — merged `599c4de7397ba6e4bbbb0a061d551d80c3570be7`;
+- PR #171 — merged `ed93331b946dffee1e63183e969f115d0c8a1a18`;
+- PR #172 — merged `8b62e38cc4de490dd4a02b57b0e9448baff3e5ef`;
+- PR #173 — merged `8c37e30063d2523a5f488073d3ea60c5571c7182`.
 
-### Active continuation — PR #171
+Do not describe #170–#173 as open. Older ledgers that do so are historical evidence only.
 
-Branch: `agent/species-art-post170`
-
-PR #171 is **open and unmerged**. Merge only after Paul explicitly approves it.
-
-Latest validated code head:
-
-`39a263e034db4023ed7d1a4950a185a832c08867` — `Polish Eladrin season selection`
-
-Exact-head evidence:
-
-- all 14 triggered GitHub workflows succeeded;
-- Vercel succeeded;
-- focused Species facts, family expansion, artwork, source presentation, nested choices, unified Forge, and Eladrin runtime validators passed;
-- syntax, symbol/prop, diff, and protected-boundary checks passed.
-
-The earlier full PR #170 source/runtime checkpoint remains useful historical evidence, but current changes and merge control belong to PR #171.
+PR #173 restored source-backed descriptions for Simic Hybrid Animal Enhancement while preserving the existing option keys, level-1/level-5 pools, and distinct second-pick rule. Its five triggered GitHub workflows succeeded, including the full Forge source-presentation production-build gate and the focused Simic regression. No Supabase write or migration was needed.
 
 ## Live database checkpoint
 
 Supabase project: `DnDWeb` / `ucggczovhmauhshvhusx`.
 
-Status: `ACTIVE_HEALTHY`, PostgreSQL 17.4.1.
+At this refresh, `supabase_migrations.schema_migrations` contains 214 records. Latest registered migration:
 
-Database authority remains migration 93:
+`20260814161314 grim_hollow_heritage_catalog_support`
 
-`20260812042950 aven_subrace_catalog`
+Recent registered entries:
 
-Recent catalogue/source migrations:
+- `20260814161314 grim_hollow_heritage_catalog_support`;
+- `20260814160725 enable_http_for_grim_hollow_pg24_import`;
+- `20260812042950 aven_subrace_catalog`;
+- `20260812033649 genasi_source_detail_restore`;
+- `20260811062025 genasi_subrace_catalog`;
+- `20260810205646 rest_class_feature_restoration`;
+- `20260810181530 pending_rest_runtime_choices`.
 
-- 91 — `20260811062025 genasi_subrace_catalog`;
-- 92 — `20260812033649 genasi_source_detail_restore`;
-- 93 — `20260812042950 aven_subrace_catalog`.
+The old statement that migration 93 is the current live authority is obsolete.
 
-Current verified Species counts:
-
-- raw Species catalogue: 166;
-- preferred Species view: 102;
-- Eladrin runtime-choice rows: 0.
-
-The PR #171 artwork, layout, facts, semantic icons, search reveal, guided validation, and Eladrin presentation passes made no Supabase write or migration.
+Some repository SQL introduced after the numbered 91–93 sequence has live effects but is not represented in the Supabase migration ledger under the same repository filename. Treat that as **traceability drift**, not proof that the live effect is missing. Do not re-run already-correct production SQL just to make names line up.
 
 ## Controlling current documents
 
 Read before modifying these areas:
 
-- `DNDNext_Current_Handoff_Prompt.md` — copy-ready next-chat brief and site architecture;
-- `Forge_Post170_Species_Artwork_Status.md` — active PR #171 Species continuation;
+- `DNDNext_Current_Handoff_Prompt.md` — current copy-ready takeover brief, accepted baseline, and next priority;
+- `Forge_Post170_Species_Artwork_Status.md` — accepted/frozen Species presentation and artwork baseline;
 - `Forge_Species_Family_Submenu_Status.md` — Species identity/family/persistence rules;
 - `Forge_Source_Presentation_and_Species_Variants_Status.md` — structured source-rendering foundation/history;
 - `Unified_Character_Forge_Status.md` — shared creation/progression/runtime architecture;
 - `Eladrin_Runtime_Status.md` — Eladrin creation/runtime lifecycle;
-- `PR170_Final_Acceptance_Status.md` — historical PR #170 acceptance evidence;
-- `PR170_Browser_Smoke_Corrections_Status.md` — historical signed-in findings/corrections;
 - `Player_Forge_Choice_Routing_and_Source_Magic_Status.md` — placement and source-magic authority;
 - `Pending_Rest_Runtime_Choices_Status.md` and matching `*_Runtime_Status.md` ledgers — runtime cadence;
 - `Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md` — item/equipment/crafting boundaries;
 - `Tactical_Encounter_Combat_Roadmap_Blueprint.md` plus the latest tactical phase ledger — tactical authority;
 - `CHATGPT_REPO_WRITE_PROCEDURE.md` — coherent GitHub/Supabase write procedure.
+
+Historical PR #170/#171 ledgers remain useful for provenance but must not override current GitHub state.
 
 ## Core modeling rule
 
@@ -96,34 +82,41 @@ Read before modifying these areas:
 - next-rest-expiring choice → rest-cycle runtime state;
 - first choice unlocked only by a rest → attention only while no benefit is active;
 - per-use/per-cast choice → action/spell resolver;
-- informational/always-on feature → presentation/consumer logic.
+- informational/always-on feature → presentation/consumer logic;
+- future narrative unlocks → quest/dialogue authority when that subsystem exists, not improvised permanent Forge state.
 
 Do not use visual similarity as permission to merge different lifecycles or persistence identities.
 
-## Current Species presentation model
+## Accepted Species presentation model
 
-The Species browser has three presentation classes:
+The Species tab is an accepted baseline after PRs #171–#173. Broad redesign is no longer an active task.
+
+Current presentation classes remain:
 
 1. **parent-persisted family choices** — Genasi, Dragonborn, Aven, Elf, Gnome, Shifter, Fairy, and Kithkin;
-2. **real setting/source Species rows nested visually** — Human setting variants, Dwarf (Kaladesh), Elf (Kaladesh), Orc (Ixalan), Minotaur (Amonkhet), and Goblin (Dankwood); Elf (Zendikar) remains canonical data but is Forge-presentation-excluded;
-3. **inline trait choices** — Goliath Giant Ancestry, Tiefling Fiendish Legacy, and other non-child lifecycle decisions.
-
-Setting children keep their real catalogue ID/source/rules/save identity. Distinct Species such as Sea Elf, Astral Elf, Eladrin, Shadar-kai, Duergar, and Deep Gnome remain independent.
+2. **real setting/source Species rows nested visually** — setting/source-specific rows keep their true catalogue identity;
+3. **inline trait choices** — Goliath Giant Ancestry, Tiefling Fiendish Legacy, Simic Animal Enhancement, and similar trait-level decisions.
 
 Species skill choices route to Training. Species magic routes to Spells. Runtime-only rest choices remain outside permanent Forge authority.
 
-The current UI also promotes concise portrait facts, semantic icons, canonical Size/Languages choices, Gender & Alignment, guided incomplete-choice focus, search-driven parent reveal, full-height desktop catalog behavior, and the single descriptive-button `Eladrin Seasons` card.
+Accepted presentation includes the full-height catalogue, search-driven parent reveal, high-resolution Forge artwork, semantic portrait facts, canonical Size/Languages and Gender/Alignment controls, Darkvision guidance, affinity-aware Dragonborn copy, readable Aasimar/Hexblood structures, compact Goliath/Eladrin selected-detail choices, and source-backed Simic Animal Enhancement descriptions.
 
-Paul considers the Species tab nearly perfect. Preserve it as the current baseline unless a specific regression is reproduced.
+### Aetherborn future rule
+
+`Gift of the Aetherborn` remains present and unchanged for now. Future acquisition/unlock authority belongs to quest/NPC dialogue progression. The Game Master decides what research, NPC, quest, payment, item, sacrifice, or other narrative prerequisite unlocks the dark Gift. Do not invent a universal requirement before the quest/dialogue system is designed.
 
 ## Protected boundaries
 
-Current Forge work does not authorize world-map, town/city-map, route/travel/weather, tactical action execution, crafting/inventory execution, merchants, or unrelated runtime changes. `components/MapPageClient.js` remains outside scope unless Paul explicitly requests world-map work.
+Forge work does not authorize world-map, town/city-map, route/travel/weather, tactical action execution, crafting/inventory execution, merchants, or unrelated runtime changes. `components/MapPageClient.js` remains outside scope unless Paul explicitly requests world-map work.
 
-## Remaining active work
+## Current work queue
 
-- final user visual confirmation of the near-finished Species tab;
-- move to Background, Class, or another Forge tab as a separate bounded review when Paul chooses;
-- continue exact-head CI/Vercel and protected-path checks for every PR #171 commit;
-- immediately before any explicitly approved merge, recheck remote head, PR state, live migration authority, relevant ACL/residue, and deployment state;
-- merge only after explicit user approval.
+Priority order after this documentation refresh:
+
+1. **Background tab audit and bounded correction pass.** Inspect current source and live background data before changes.
+2. **Class tab audit**, then continue Abilities → Training → Spells → Equipment → Identity → Story → Review as separate slices.
+3. **Crafting issue #76** — simplify player-facing crafting/material cards and the smithing quality model without losing internal metadata or silently altering formulas/consumption.
+4. **Repository housekeeping** — inspect stale issue #5 and old open PRs individually, then close or complete only with evidence; do not mass-close by age.
+5. **Quest/NPC dialogue system** — when this work begins, include narrative unlock authority for Aetherborn's dark Gift.
+
+A concrete production regression can supersede this queue, but otherwise keep each subsystem change isolated and exact-head validated.

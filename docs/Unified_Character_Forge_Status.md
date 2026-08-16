@@ -1,16 +1,23 @@
 # Unified NPC and Player Character Forge Status
 
-Status date: 2026-08-14
-Historical base PR: #170 (`agent/character-forge-resilience-presentation`) — merged at `599c4de7397ba6e4bbbb0a061d551d80c3570be7`
-Active continuation: PR #171 (`agent/species-art-post170`) — open/unmerged
-Runtime checkpoint documented here: **89**
-Current live database checkpoint: **93**
+Status date: 2026-08-16
+
+Accepted runtime/code baseline: `8c37e30063d2523a5f488073d3ea60c5571c7182`
+
+Merged continuation chain:
+
+- PR #170 — unified Character Forge/progression/runtime foundation — `599c4de7397ba6e4bbbb0a061d551d80c3570be7`;
+- PR #171 — Species/Profile/Forge continuation — `ed93331b946dffee1e63183e969f115d0c8a1a18`;
+- PR #172 — Species readability refinements — `8b62e38cc4de490dd4a02b57b0e9448baff3e5ef`;
+- PR #173 — Simic Animal Enhancement source descriptions — `8c37e30063d2523a5f488073d3ea60c5571c7182`.
+
+Latest registered live migration at this status refresh: `20260814161314 grim_hollow_heritage_catalog_support`.
 
 ## Governing architecture
 
 The shared Character Forge is the intended creation surface for NPCs and player-owned characters. Persistent source-owned state should converge between direct creation at level N and earned progression to level N.
 
-That parity rule does **not** convert every source choice into permanent creation state:
+That parity rule does **not** convert every source decision into permanent creation state:
 
 - persistent acquisition/attained-level choices → Forge/progression authority;
 - proficiency-dependent permanent choices → Training authority;
@@ -18,141 +25,174 @@ That parity rule does **not** convert every source choice into permanent creatio
 - rest-configurable persistent choices → runtime authority;
 - next-rest-expiring choices → rest-cycle runtime authority;
 - per-use/per-cast choices → action/spell resolver;
-- informational features → display/consumer logic.
+- narrative unlocks that depend on campaign events → quest/dialogue authority when that subsystem exists;
+- informational/always-on features → presentation/consumer logic.
 
-## Player-facing Forge routing
+## Shared Forge entry points
 
-Current player steps separate explanation from decision resolution:
+The active architecture is shared rather than maintaining two competing creator implementations.
 
-- Species — identity/lore/features; fixed source languages stay fixed;
-- Background — background identity/source grants;
+Primary files include:
+
+- `components/NewNpcModalV3.js` — controller/state/orchestration;
+- `components/NewNpcModalV3Refined.js` — shared presentation shell;
+- `components/NpcForgeStepContent.js` — step-specific left/workspace UI;
+- `components/NpcForgeContextPanelRefined.js` — right-side explanation and embedded source choices;
+- `components/NpcForgeSourceChoiceFields.js` / `NpcForgeEmbeddedSourceChoices.js` — canonical source-choice rendering;
+- `components/NpcForgeSpeciesChoiceContext.js`, `NpcForgeClassChoiceContext.js`, `NpcForgeSourceChoiceContext.js` — existing choice authorities;
+- player creation RPC `create_player_character_v3`;
+- NPC creation RPC `create_character_v1`.
+
+Do not add a second save path because a new control looks different.
+
+## Player Forge steps
+
+1. Species;
+2. Background;
+3. Class;
+4. Abilities;
+5. Training;
+6. Spells;
+7. Equipment;
+8. Identity;
+9. Story;
+10. Review.
+
+Current placement rules:
+
+- Species — identity, lore, fixed facts, ancestry/lineage and other permanent Species choices;
+- Background — background identity/source grants and readable Feature content;
 - Class — class/subclass explanation and progression preview;
-- Abilities — score generation/allocation;
-- Training → Skills & Proficiencies;
-- Training → Feats & Class Abilities;
-- Spells — class magic plus spell-centric Species/Feat/Background/Class-feature decisions;
-- Review — manual choices plus automatic source-policy outcomes.
+- Abilities — score generation/allocation only;
+- Training → Skills & Proficiencies — skill/tool/expertise-type permanent choices;
+- Training → Feats & Class Abilities — feat/class-feature acquisition decisions;
+- Spells — class magic plus spell-centric Species/Feat/Background/Class decisions;
+- Equipment — starting equipment/currency and legal item decisions;
+- Identity/Story — character-facing identity and narrative fields;
+- Review — final unresolved-choice validation and creation summary.
 
-Higher-level feats no longer resolve on Abilities. Warlock Invocations, Artificer plans, and similar persistent catalogues resolve in Training with richer description-first UI. Noncasters can still use Spells for source-owned magic.
-
-Read `Player_Forge_Choice_Routing_and_Source_Magic_Status.md`.
-
-## Starting/player creation authority
+## Creation authority
 
 Player creation remains server-authoritative through `create_player_character_v3`.
 
 Established creation systems include:
 
 - exact starting class/subclass spell selection and fixed/expanded access;
-- source-owned feat/species/background magic with distinct provenance;
+- source-owned feat/species/background magic with provenance;
 - starting equipment and character-scoped currency;
-- source choice/feat-instance authority;
-- higher-level direct creation with persistent attained-level choices;
-- portrait choice and multi-character account support.
+- source-choice / feat-instance persistence;
+- higher-level direct creation with attained-level choices;
+- portrait choice and multi-character account support;
+- canonical validation of unresolved required choices before creation.
+
+NPC creation remains routed through `create_character_v1` and shares the presentation/choice architecture where lifecycle semantics match.
 
 ## Earned progression authority
 
-The active Level Up path composes source-owned persistent acquisition/replacement work transactionally. Established families include feats/boons, subclass entry, class spells, Metamagic, Mystic Arcanum, Eldritch Invocations, Battle Master maneuvers, Wizard Savant chronology, Wizard Signature Spells, and Artificer Magic Item Plans.
+The Level Up path composes source-owned persistent acquisition/replacement work transactionally. Established families include feats/boons, subclass entry, class spells, Metamagic, Mystic Arcanum, Eldritch Invocations, Battle Master maneuvers, Wizard Savant chronology, Wizard Signature Spells, Artificer Magic Item Plans, and other source-owned attained-level choices.
 
-Migration 85 retained `get_character_level_class_choice_options_v2` as an authenticated compatibility fallback while revoking anonymous execute in the bounded v1/v2/v3 class-choice getter family. Read `Progression_RPC_ACL_Cleanup_Status.md`.
+Direct creation at level N and progression to level N should converge on equivalent persistent source state rather than maintaining separate rule implementations.
 
-## Source-owned magic — migrations 86-88
+## Source-owned magic
 
-The Forge now routes spell-centric Species/Feat decisions to Spells and materializes validated source magic into `character_spells`.
+Species/Feat/Background spell decisions route through the Spells step and materialize through existing source-magic authority rather than custom component state.
 
-Accepted regression families:
+Accepted regression families include:
 
 - Astral Elf / Astral Fire;
-- Deep Gnome / Gift of the Svirfneblin at levels 3/5;
+- Deep Gnome / Gift of the Svirfneblin;
 - Witherbloom Student / Strixhaven Initiate;
 - Magic Initiate;
-- deterministic best eligible casting ability.
+- deterministic highest eligible casting ability where the source allows Intelligence/Wisdom/Charisma.
 
-Migrations 87-88 are additive parser/name-normalization corrections discovered by rollback QA. Read `Player_Forge_Choice_Routing_and_Source_Magic_Status.md`.
+## Runtime authority
 
-## Runtime authority checkpoint
+Rest-cycle and replaceable choices remain outside permanent Forge authority when the source lifecycle requires it.
 
-The bounded runtime-family sweep is complete through Whispers of the Dead.
+Representative established families include:
 
-Representative semantics:
-
-- Wizard Spell Mastery — immediate initial configuration; Long-Rest optional replacement;
-- Weapon Mastery / Weapon Master — current mastery persists; Long-Rest replacement authority;
-- Astral Trance — temporary Long-Rest-cycle skill + weapon/tool pair; expires next Long Rest;
-- Githyanki Astral Knowledge — temporary Long-Rest-cycle skill + weapon/tool pair;
-- Khoravar Skill Versatility — persistent runtime proficiency with Long-Rest replacement;
-- Primal Companion — persistent companion with Long-Rest replacement;
-- Dread Allegiance — persistent linked package with Long-Rest replacement;
-- Fiendish Resilience — first choice after Short/Long Rest; then persistent until later replacement;
-- Circle Spells — current land package expires at next Long Rest;
-- Armorer Armor Model — immediate initial choice; Short/Long-Rest optional replacement;
-- Bestial Soul — first choice after qualifying rest; expires next Short/Long Rest;
-- Wild Heart Aspect — immediate initial choice; persistent; Long-Rest replacement;
-- Hunter's Prey — PHB permanent Forge choice / XPHB persistent Short/Long-Rest runtime choice;
-- Defensive Tactics — PHB permanent Forge choice / XPHB persistent Short/Long-Rest runtime choice;
-- Whispers of the Dead — first choice after qualifying rest; borrowed proficiency persists until later replacement.
-
-## Post-rest pending choice presentation — migration 89
-
-`CharacterRestChoiceNotice` is mounted in the always-reachable runtime/currency chain. Its server aggregate separates:
-
-- `needsSelection` — a current rest-cycle benefit is inactive or first rest-backed selection is waiting; attention pulse;
-- `optionalChanges` — current persistent benefit remains active; quiet/collapsed;
-- `availableActions` — optional post-rest actions; quiet/collapsed.
-
-Rollback acceptance proved:
-
-- Astral Trance after Long Rest → attention true, one temporary pending choice;
-- Wild Heart Owl after newer Long Rest → Owl remains active, attention false, one optional persistent replacement.
-
-Read `Pending_Rest_Runtime_Choices_Status.md`.
-
-## Always-reachable runtime presentation
-
-The current character sheet/runtime presentation includes the established species/class/feat runtime panels plus:
-
+- Wizard Spell Mastery;
+- Weapon Mastery / Weapon Master;
+- Astral Trance;
+- Githyanki Astral Knowledge;
+- Khoravar Skill Versatility;
+- Primal Companion;
+- Dread Allegiance;
+- Fiendish Resilience;
+- Circle Spells;
+- Armorer Armor Model;
+- Bestial Soul;
+- Wild Heart Aspect;
+- Hunter's Prey;
 - Defensive Tactics;
 - Whispers of the Dead;
-- pending post-rest choice notice;
-- character-scoped currency.
+- Eladrin starting/current season and Long-Rest replacement authority.
 
-Eligibility in one panel must never hide unrelated downstream controls. Every feature-specific RPC argument is passed explicitly.
+The always-reachable sheet/runtime chain must keep unrelated runtime panels reachable even if one feature is ineligible. Every feature-specific RPC argument must be passed explicitly.
 
-## Source-control parity repair
+## Accepted Species checkpoint
 
-Migration-89 startup found production migrations 83-85 present while their SQL files and two reachable runtime panels were absent from the PR branch. Source was restored without reapplying those already-live migrations.
+Species is no longer the active broad redesign surface. PRs #171–#173 establish the accepted baseline.
 
-A fresh checkout must now contain migrations 83-89 in sequence.
+Key accepted behavior:
 
-## Current production integrity
+- parent/child catalogue presentation does not replace canonical species identity;
+- high-resolution Forge-only portraits coexist with stable non-Forge artwork aliases;
+- semantic facts promote Speed, Size, Creature Type, Vision, Languages, and Gender & Alignment;
+- source Size/Language/lineage choices reuse existing source-choice state;
+- Dragonborn damage affinity reaches player-facing rule copy;
+- Aasimar transformations are readable information, not false permanent locks;
+- Goliath Giant Ancestry uses compact options with selected detail;
+- Eladrin Seasonal Fey Step avoids duplicated season walls of text and preserves starting/Long-Rest runtime authority;
+- Hexblood Eerie Token exposes its simultaneous benefits as structured information;
+- Simic Hybrid Animal Enhancement options now retain canonical source descriptions at levels 1 and 5 without changing their keys or second-pick distinctness;
+- Profile portrait framing/bleed and Character Forge/Profile window behavior were browser-accepted.
 
-After migration 89 and all rollback fixtures:
+Do not perform another broad Species redesign without a concrete defect.
 
-- 7 characters;
-- 7 character sheets;
-- 30 character-spell assignments;
-- 7 progression rows;
-- 18 inventory rows;
-- 0 runtime rows;
-- 0 rest-log rows;
-- 0 migration-89 QA residue;
-- 20 world locations;
-- 4 map routes;
-- 9 map route points.
+### Aetherborn Gift decision
 
-Before migration 89 deployment, exact head `a05c4b03f9a36cbf9021108aa07856cfab474fd1` passed 31/31 PR-triggered GitHub workflows and Vercel. Final documentation commits must be exact-head gated again.
+`Gift of the Aetherborn` remains present and unchanged for now. Its eventual **unlock** should be campaign-driven through future quest/NPC dialogue systems. The Game Master decides the actual research, quest, NPC, payment, item, sacrifice, or other narrative condition. Do not hardcode a universal acquisition requirement or create a parallel Forge persistence model before the narrative system exists.
+
+## Current live database checkpoint
+
+Supabase project: `DnDWeb` / `ucggczovhmauhshvhusx`.
+
+At this refresh:
+
+- `supabase_migrations.schema_migrations` contains 214 rows;
+- latest registered migration is `20260814161314 grim_hollow_heritage_catalog_support`.
+
+Do not infer deployment state from old numbered repo migrations alone. Inspect live functions, grants, RLS, catalogue rows, and migration records relevant to the requested subsystem.
+
+Some later repository SQL effects are already live even when the exact repo filename is not the migration-ledger name. Do not reapply live-correct SQL merely to repair naming provenance.
 
 ## Current continuation
 
-PR #170 is historical and merged. PR #171 preserves this unified creation/progression/runtime architecture while refining the shared Species presentation. Paul considers the Species tab nearly perfect; further broad Species changes should require a concrete reproduction.
+The next active Forge review should be **Background**, on a fresh branch from the exact current `main` head.
 
-Current continuation discipline:
+Background review should begin with:
 
-1. keep PR #171 exact-head GitHub/Vercel gated;
-2. review the next requested Forge tab as a separate bounded slice;
-3. immediately before any explicitly approved merge, re-check head/status, live migrations, ACLs, and zero residue;
-4. merge only with explicit user approval.
+- live preferred background catalogue/source data;
+- `NpcForgeStepContent.js`;
+- `NpcForgeContextPanelRefined.js`;
+- `utils/backgroundMechanics.js`;
+- shared source-choice rendering/placement;
+- existing background validators and production-build gates.
+
+Preserve the current Background policy: setting-specific options may be hidden by campaign/admin policy rather than destructively removed; `Feature:` content remains meaningful; Suggested Characteristics stay out of the player-facing Forge; permanent skills/feats/spells resolve in their proper lifecycle steps rather than creating duplicate controls.
+
+After Background, continue Class → Abilities → Training → Spells → Equipment → Identity → Story → Review as separate bounded slices unless a higher-priority production defect intervenes.
 
 ## Protected boundaries
 
-This work does not authorize changes to world-map, town/city-map, route/travel/weather, tactical encounter/combat execution, or unrelated crafting behavior. `components/MapPageClient.js` remains outside Forge/progression/runtime work.
+This work does not authorize changes to:
+
+- world-map behavior;
+- town/city-map behavior;
+- `components/MapPageClient.js`;
+- route/travel/weather/camp/clock logic;
+- tactical encounter/combat execution;
+- unrelated crafting/inventory/merchant behavior.
+
+A Forge patch must remain inside the Forge/source/runtime authority actually required by the request.
