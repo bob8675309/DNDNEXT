@@ -1,4 +1,4 @@
-/* Profile portrait bleed overrides v5
+/* Profile portrait bleed overrides v6
    Character profile and merchant art should read as part of the workspace rather than a boxed thumbnail. */
 
 .npc-page-profile-panel-shell .character-craft-workspace-frame,
@@ -118,6 +118,18 @@
     object-fit: cover !important;
     object-position: center top !important;
     image-rendering: auto;
+  }
+
+  /* Composition-specific framing for the currently assigned portraits. These intentionally key off
+     the artwork filename so replacing a portrait also removes its old framing override. */
+  .persistent-player-character-profile .npc-profile-description-thumb img[src*="human-muscular-mercenary-046.png"] {
+    object-position: 61% top !important;
+    transform: scale(1.055);
+    transform-origin: 61% top;
+  }
+
+  .persistent-player-character-profile .npc-profile-description-thumb img[src*="bugbear-city-guard-001.png"] {
+    object-position: 54% top !important;
   }
 
   .persistent-player-character-profile .npc-profile-description-card .npc-card-title,
