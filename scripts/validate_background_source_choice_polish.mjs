@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 
 const root = process.cwd();
 const { buildBackgroundSourceChoiceGroups } = await import(pathToFileURL(path.join(root, "utils/playerForgeSourceChoices.js")).href);
+const { normalizeBackgroundOption } = await import(pathToFileURL(path.join(root, "utils/npcForgeCatalogRefined.js")).href);
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 
 const toolRows = [
@@ -59,6 +60,26 @@ const folkTools = fieldsOfKind(folkHero, "tool");
 assert.ok(folkTools.some((field) => field.autoSelect && field.options.some((option) => option.label === "Vehicles (Land)")), "Folk Hero must retain fixed land-vehicle proficiency");
 assert.ok(folkTools.some((field) => !field.autoSelect && field.options.some((option) => option.label === "Smith's Tools")), "Folk Hero must retain its Artisan's Tool choice");
 
+const charlatan = normalizeBackgroundOption({
+  id: "charlatan|XPHB",
+  name: "Charlatan",
+  source: "XPHB",
+  description: "Charlatan.",
+  metadata: { lore: "A practiced deceiver." },
+  raw_payload: { skillProficiencies: [{ deception: true, "sleight of hand": true }], entries: [] },
+});
+assert.deepEqual(charlatan.backgroundSkills, ["deception", "sleightOfHand"], "Background skills must use canonical Forge skill keys so Sleight of Hand resolves its description");
+
+const variableSkills = normalizeBackgroundOption({
+  id: "variable|TEST",
+  name: "Variable Skill Background",
+  source: "TEST",
+  description: "Variable skills.",
+  metadata: { lore: "A test background." },
+  raw_payload: { skillProficiencies: [{ choose: { from: ["arcana", "sleight of hand", "animal handling"], count: 2 } }], entries: [] },
+});
+assert.deepEqual(variableSkills.skillRule.choiceGroups[0].from, ["arcana", "sleightOfHand", "animalHandling"], "Background skill-choice pools must normalize to canonical Forge keys");
+
 const embeddedSource = read("components/NpcForgeEmbeddedSourceChoices.js");
 for (const token of ["sourceChoicePrompt", "incompleteFields", "field.autoSelect", 'join(" • ")']) assert.ok(embeddedSource.includes(token), `fixed + unresolved summary handling missing ${token}`);
 
@@ -66,8 +87,31 @@ const contextSource = read("components/NpcForgeContextPanelRefined.js");
 for (const token of ["toolHasChoices", "languageHasChoices", "backgroundFeatureTextForDisplay", "Spell Level:", "ExpandedSpellList"]) assert.ok(contextSource.includes(token), `Background presentation correction missing ${token}`);
 assert.match(contextSource, /filter\(\(paragraph\) => !\/\^Spell Level:/, "Strixhaven feature copy must remove duplicated structured spell-table rows");
 
-for (const source of [read("utils/playerForgeSourceChoices.js"), embeddedSource, contextSource]) {
+const controllerSource = read("components/useNpcForgeController.js");
+const backgroundValidation = controllerSource.match(/if \(key === "background"\) \{([^\n]+)\}/)?.[1] || "";
+assert.ok(backgroundValidation.includes("Choose a background"), "Background step validation must still require a Background");
+assert.ok(!backgroundValidation.includes("backgroundSkillChoiceGroups"), "variable Background skills must not block the Background step");
+assert.match(controllerSource, /if \(key === "training"\)[\s\S]*?backgroundSkillChoiceGroups\.forEach/, "variable Background skill choices must be validated in Training");
+
+const trainingSource = read("components/NpcForgeTrainingStep.js");
+for (const token of ["Background skill choices", "onToggleBackgroundSkill", "do not use class Training choices", "incompleteBackgroundSkills"]) assert.ok(trainingSource.includes(token), `Training routing missing ${token}`);
+
+const contextWrapper = read("components/NpcForgeContextPanel.js");
+assert.ok(contextWrapper.includes("playerBackgroundPresentation"), "Background context wrapper must own the Training routing projection");
+assert.ok(contextWrapper.includes("skillChoices: []"), "Background page must not render the old variable skill chooser");
+
+const derivedSource = read("components/useNpcForgeDerivedModel.js");
+for (const token of ["featDescriptionForBackground", "flattenSourceRuleEntries", "Choose ${group.count} skill", "Training → Skills & Proficiencies"]) assert.ok(derivedSource.includes(token), `Background description/routing model missing ${token}`);
+
+const loginSource = read("pages/login.js");
+assert.ok(loginSource.includes('router.replace("/profile?characterProfile=1")'), "successful login must open the shared Profile panel for players and administrators");
+assert.ok(!loginSource.includes('router.replace(isAdmin ? "/admin" : "/profile")'), "login must not route administrators away from the shared Profile entry point");
+
+const modalSource = read("components/NewNpcModalV3Refined.js");
+for (const token of ["resetForgeWindowElement", "requestAnimationFrame", "closeCompletedChoiceOnOutsidePointer", "npc-forge-species-fact-choice.is-complete[open]"]) assert.ok(modalSource.includes(token), `Forge geometry/choice-collapse correction missing ${token}`);
+
+for (const source of [read("utils/playerForgeSourceChoices.js"), embeddedSource, contextSource, controllerSource, trainingSource, contextWrapper, derivedSource, loginSource, modalSource]) {
   assert.doesNotMatch(source, /MapPageClient|map_routes|map_route_points|advance_all_characters|route_segment_progress/, "Background work crossed protected map/travel boundaries");
 }
 
-console.log("Background source-choice polish validated: fixed languages/tools remain automatic, choose.from tool rules use canonical source-choice state, mixed grants stay visible, Strixhaven spell tables are not duplicated, and protected map/travel boundaries remain untouched.");
+console.log("Background source-choice polish validated: fixed languages/tools remain automatic, Background skills normalize to canonical keys and route through Training, source feat copy is cleaned from raw entries, completed Species fact choices collapse on outside click, login enters the Profile panel, Forge geometry resets consistently, Strixhaven spell tables are not duplicated, and protected map/travel boundaries remain untouched.");
