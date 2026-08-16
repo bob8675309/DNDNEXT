@@ -7,10 +7,17 @@ import NpcForgeStepContent from "./NpcForgeStepContent";
 import useNpcForgeController from "./useNpcForgeController";
 
 const RESET_APP_WINDOW_EVENT = "dndnext:reset-app-window";
+const FORGE_WINDOW_STYLE_PROPERTIES = ["position", "left", "top", "width", "height", "max-width", "max-height", "transform"];
 
 function requestForgeWindowReset() {
   if (typeof window === "undefined") return;
   window.dispatchEvent(new CustomEvent(RESET_APP_WINDOW_EVENT, { detail: { scope: "forge" } }));
+}
+
+function resetForgeWindowElement(modal) {
+  if (!modal) return;
+  modal.classList.remove("is-app-windowed");
+  FORGE_WINDOW_STYLE_PROPERTIES.forEach((property) => modal.style.removeProperty(property));
 }
 
 // Compatibility/source ownership markers for the shared Forge validators:
@@ -29,11 +36,36 @@ export default function NewNpcModalV3Refined({ show, onClose, onCreated, locatio
   const controller = useNpcForgeController({ show, onClose, onCreated, locations, mode, createCharacter, onReset });
   const { playerMode, STEP_LABELS, step, setStep, setDetail, setError, stepKey, creating, loadingCatalogs, error, handleClose, handleReset, handleBack, handleNext, handleCreate, draft, equipmentModel, patch, portraitPickerOpen, setPortraitPickerOpen, choosePortrait, speciesOptions, chooseSpecies } = controller;
   const catalogLoadSeenRef = useRef(false);
+  const modalRef = useRef(null);
 
   useEffect(() => {
-    if (!show) return undefined;
-    requestForgeWindowReset();
-    return undefined;
+    if (!show || typeof window === "undefined") return undefined;
+    let secondFrame = 0;
+    const firstFrame = window.requestAnimationFrame(() => {
+      resetForgeWindowElement(modalRef.current);
+      requestForgeWindowReset();
+      secondFrame = window.requestAnimationFrame(() => {
+        resetForgeWindowElement(modalRef.current);
+        requestForgeWindowReset();
+      });
+    });
+    return () => {
+      window.cancelAnimationFrame(firstFrame);
+      if (secondFrame) window.cancelAnimationFrame(secondFrame);
+    };
+  }, [show]);
+
+  useEffect(() => {
+    if (!show || typeof document === "undefined") return undefined;
+    function closeCompletedChoiceOnOutsidePointer(event) {
+      const modal = modalRef.current;
+      if (!modal) return;
+      modal.querySelectorAll("details.npc-forge-species-fact-choice.is-complete[open]").forEach((details) => {
+        if (!details.contains(event.target)) details.open = false;
+      });
+    }
+    document.addEventListener("pointerdown", closeCompletedChoiceOnOutsidePointer, true);
+    return () => document.removeEventListener("pointerdown", closeCompletedChoiceOnOutsidePointer, true);
   }, [show]);
 
   useEffect(() => {
@@ -64,7 +96,7 @@ export default function NewNpcModalV3Refined({ show, onClose, onCreated, locatio
   }, [show, creating, handleClose]);
 
   if (!show) return null;
-  return <div className="npc-forge-backdrop" role="presentation"><div className={`npc-forge-modal npc-forge-modal-v2 ${playerMode ? "is-player-mode" : "is-npc-mode"}`} role="dialog" aria-modal="true">
+  return <div className="npc-forge-backdrop" role="presentation"><div ref={modalRef} className={`npc-forge-modal npc-forge-modal-v2 ${playerMode ? "is-player-mode" : "is-npc-mode"}`} role="dialog" aria-modal="true">
     <NpcForgeFeatChoiceRegistrar playerMode={playerMode} controller={controller} />
     <NpcForgeHumanVersatileRegistrar playerMode={playerMode} controller={controller} />
     <header className="npc-forge-header"><div>{playerMode ? <h2>Character Forge</h2> : <><div className="npc-forge-kicker">Canonical character system</div><h2>NPC Forge</h2><p>Build the rules first, then finish identity and placement.</p></>}</div><div className="npc-forge-header-actions"><button type="button" className="btn btn-sm btn-outline-warning" onClick={handleReset} disabled={creating}>Reset</button><button type="button" className="btn btn-sm btn-outline-light" onClick={handleClose} disabled={creating}>Close</button></div></header>
@@ -74,7 +106,7 @@ export default function NewNpcModalV3Refined({ show, onClose, onCreated, locatio
     <footer className="npc-forge-footer"><button type="button" className="btn btn-outline-light" onClick={handleClose} disabled={creating}>Cancel</button><div>{step > 0 ? <button type="button" className="btn btn-outline-light" onClick={handleBack} disabled={creating}>Back</button> : null}{step < STEP_LABELS.length - 1 ? <button type="button" className="btn btn-primary" onClick={handleNext} disabled={creating || loadingCatalogs}>Continue</button> : <button type="button" className="btn btn-success" onClick={handleCreate} disabled={creating}>{creating ? "Forging Character..." : playerMode ? "Create Player Character" : `Create ${draft.kind === "merchant" ? "Merchant" : "NPC"}`}</button>}</div></footer>
     <NpcForgePortraitPickerModal show={portraitPickerOpen} currentPortraitId={draft.portraitLibraryId} onClose={() => setPortraitPickerOpen(false)} onSelect={choosePortrait} />
     <style jsx global>{`
-      .npc-forge-modal-v2 .npc-forge-body{grid-template-columns:minmax(0,57fr) minmax(470px,43fr)}.npc-forge-body.npc-forge-step-abilities{grid-template-columns:minmax(0,75fr) minmax(320px,25fr)}.npc-forge-body.npc-forge-step-spells{grid-template-columns:minmax(0,72fr) minmax(300px,28fr)}.npc-forge-body.npc-forge-step-identity,.npc-forge-body.npc-forge-step-story,.npc-forge-body.npc-forge-step-review{grid-template-columns:1fr}.npc-forge-body.npc-forge-step-identity .npc-forge-preview,.npc-forge-body.npc-forge-step-story .npc-forge-preview,.npc-forge-body.npc-forge-step-review .npc-forge-preview{display:none}.npc-forge-modal-v2.is-player-mode{border-radius:13px}.npc-forge-modal-v2.is-player-mode .npc-forge-header{align-items:center;padding:10px 14px}.npc-forge-modal-v2.is-player-mode .npc-forge-header>div:first-child{display:flex;align-items:center;min-height:32px}.npc-forge-modal-v2.is-player-mode .npc-forge-header h2{margin:0}.npc-forge-modal-v2.is-player-mode .npc-forge-steps{padding-inline:14px}.npc-forge-modal-v2.is-player-mode .npc-forge-workspace{padding:14px}.npc-forge-modal-v2.is-player-mode .npc-forge-preview{padding:12px 14px}.npc-forge-modal-v2.is-player-mode .npc-forge-footer{padding:10px 14px max(10px,env(safe-area-inset-bottom))}.npc-forge-workspace-note{padding:11px 13px;border-left:3px solid #58d6c7;border-radius:8px;color:rgba(255,255,255,.66);background:rgba(88,214,199,.07);font-size:.76rem;line-height:1.5}.npc-forge-roll-card.refined{appearance:none;width:100%;cursor:grab;text-align:center}.npc-forge-roll-card.refined.is-selected{border-color:#a86cff;box-shadow:0 0 0 3px rgba(168,108,255,.18)}.npc-forge-allocation-instruction{margin:12px 0 8px;padding:9px 11px;border-radius:8px;color:#d9c5fa;background:rgba(126,72,199,.1);font-size:.72rem}.npc-forge-ability-drop-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.npc-forge-ability-drop-grid button{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 10px;min-height:82px;padding:12px;border:1px solid rgba(255,255,255,.1);border-radius:11px;color:rgba(255,255,255,.72);background:rgba(255,255,255,.026);text-align:left}.npc-forge-ability-drop-grid strong{grid-row:1/3;grid-column:2;color:#fff3ce;font-size:1.45rem}.npc-forge-ability-drop-grid em{grid-column:1/-1;font-size:.65rem;font-style:normal}.npc-forge-story-actions button{padding:7px 11px;border:1px solid rgba(88,214,199,.44);border-radius:8px;color:#c9fff7;background:rgba(42,136,124,.12)}.npc-forge-identity-art{display:grid;grid-template-columns:110px minmax(0,1fr);gap:14px;align-items:center;padding:12px;border:1px solid rgba(168,108,255,.28);border-radius:11px;background:rgba(126,72,199,.07)}.npc-forge-identity-art>img,.npc-forge-identity-art-empty{width:110px;height:145px;border-radius:8px;object-fit:cover;border:1px solid rgba(255,255,255,.12)}.npc-forge-identity-art>div{display:grid;gap:6px}.npc-forge-identity-art button{justify-self:start}@media(max-width:1220px){.npc-forge-modal-v2 .npc-forge-body{grid-template-columns:minmax(0,3fr) minmax(380px,2fr)}}@media(max-width:980px){.npc-forge-modal-v2 .npc-forge-body,.npc-forge-body.npc-forge-step-abilities,.npc-forge-body.npc-forge-step-spells,.npc-forge-body.npc-forge-step-equipment{grid-template-columns:1fr}.npc-forge-ability-drop-grid{grid-template-columns:repeat(2,minmax(0,1fr)}}@media(max-width:720px){.npc-forge-ability-drop-grid{grid-template-columns:1fr}.npc-forge-identity-art{grid-template-columns:1fr}}
+      .npc-forge-modal-v2 .npc-forge-body{grid-template-columns:minmax(0,57fr) minmax(470px,43fr)}.npc-forge-body.npc-forge-step-abilities{grid-template-columns:minmax(0,75fr) minmax(320px,25fr)}.npc-forge-body.npc-forge-step-spells{grid-template-columns:minmax(0,72fr) minmax(300px,28fr)}.npc-forge-body.npc-forge-step-identity,.npc-forge-body.npc-forge-step-story,.npc-forge-body.npc-forge-step-review{grid-template-columns:1fr}.npc-forge-body.npc-forge-step-identity .npc-forge-preview,.npc-forge-body.npc-forge-step-story .npc-forge-preview,.npc-forge-body.npc-forge-step-review .npc-forge-preview{display:none}.npc-forge-modal-v2.is-player-mode:not(.is-app-windowed){width:min(1540px,calc(100vw - 40px));max-width:none}.npc-forge-modal-v2.is-player-mode{border-radius:13px}.npc-forge-modal-v2.is-player-mode .npc-forge-header{align-items:center;padding:10px 14px}.npc-forge-modal-v2.is-player-mode .npc-forge-header>div:first-child{display:flex;align-items:center;min-height:32px}.npc-forge-modal-v2.is-player-mode .npc-forge-header h2{margin:0}.npc-forge-modal-v2.is-player-mode .npc-forge-steps{padding-inline:14px}.npc-forge-modal-v2.is-player-mode .npc-forge-workspace{padding:14px}.npc-forge-modal-v2.is-player-mode .npc-forge-preview{padding:12px 14px}.npc-forge-modal-v2.is-player-mode .npc-forge-footer{padding:10px 14px max(10px,env(safe-area-inset-bottom))}.npc-forge-workspace-note{padding:11px 13px;border-left:3px solid #58d6c7;border-radius:8px;color:rgba(255,255,255,.66);background:rgba(88,214,199,.07);font-size:.76rem;line-height:1.5}.npc-forge-roll-card.refined{appearance:none;width:100%;cursor:grab;text-align:center}.npc-forge-roll-card.refined.is-selected{border-color:#a86cff;box-shadow:0 0 0 3px rgba(168,108,255,.18)}.npc-forge-allocation-instruction{margin:12px 0 8px;padding:9px 11px;border-radius:8px;color:#d9c5fa;background:rgba(126,72,199,.1);font-size:.72rem}.npc-forge-ability-drop-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.npc-forge-ability-drop-grid button{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 10px;min-height:82px;padding:12px;border:1px solid rgba(255,255,255,.1);border-radius:11px;color:rgba(255,255,255,.72);background:rgba(255,255,255,.026);text-align:left}.npc-forge-ability-drop-grid strong{grid-row:1/3;grid-column:2;color:#fff3ce;font-size:1.45rem}.npc-forge-ability-drop-grid em{grid-column:1/-1;font-size:.65rem;font-style:normal}.npc-forge-story-actions button{padding:7px 11px;border:1px solid rgba(88,214,199,.44);border-radius:8px;color:#c9fff7;background:rgba(42,136,124,.12)}.npc-forge-identity-art{display:grid;grid-template-columns:110px minmax(0,1fr);gap:14px;align-items:center;padding:12px;border:1px solid rgba(168,108,255,.28);border-radius:11px;background:rgba(126,72,199,.07)}.npc-forge-identity-art>img,.npc-forge-identity-art-empty{width:110px;height:145px;border-radius:8px;object-fit:cover;border:1px solid rgba(255,255,255,.12)}.npc-forge-identity-art>div{display:grid;gap:6px}.npc-forge-identity-art button{justify-self:start}@media(max-width:1220px){.npc-forge-modal-v2 .npc-forge-body{grid-template-columns:minmax(0,3fr) minmax(380px,2fr)}}@media(max-width:980px){.npc-forge-modal-v2 .npc-forge-body,.npc-forge-body.npc-forge-step-abilities,.npc-forge-body.npc-forge-step-spells,.npc-forge-body.npc-forge-step-equipment{grid-template-columns:1fr}.npc-forge-ability-drop-grid{grid-template-columns:repeat(2,minmax(0,1fr)}}@media(max-width:720px){.npc-forge-ability-drop-grid{grid-template-columns:1fr}.npc-forge-identity-art{grid-template-columns:1fr}}
     `}</style>
   </div></div>;
 }
