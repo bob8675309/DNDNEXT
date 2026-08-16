@@ -1,4 +1,4 @@
-/* Profile portrait bleed overrides v3
+/* Profile portrait bleed overrides v4
    Character profile and merchant art should read as part of the workspace rather than a boxed thumbnail. */
 
 .npc-page-profile-panel-shell .character-craft-workspace-frame,
@@ -24,7 +24,7 @@
 #npcPanel .character-craft-crafter-card::after {
   background:
     linear-gradient(90deg, rgba(5,5,12,0) 56%, rgba(5,5,12,0.16) 72%, rgba(5,5,12,0.76) 100%),
-    linear-gradient(180deg, rgba(5,5,12,0) 68%, rgba(5,5,12,0.88) 100%);
+    linear-gradient(180deg, rgba(5,5,12,0) 82%, rgba(5,5,12,0.18) 92%, rgba(5,5,12,0.88) 100%);
 }
 
 .npc-page-profile-panel-shell .character-craft-crafter-card__image,
@@ -35,8 +35,9 @@
   border-radius: 10px;
 }
 
-/* Player profile: stretch the existing editable portrait through the left rail and fade it
-   into the panel around the lower 60% rather than rendering a small boxed thumbnail. */
+/* Player profile: use the existing full-resolution portrait as a full-height left-side background.
+   The artwork now runs to the bottom of the profile workspace; only its right edge and final lower
+   edge fade into the panel so the portrait no longer appears to stop around the middle. */
 @media (min-width: 981px) {
   .persistent-player-character-profile .npc-panel-body:not(.d-block) {
     position: relative;
@@ -73,13 +74,15 @@
     position: absolute !important;
     z-index: 0;
     top: -0.75rem;
+    right: -0.75rem;
+    bottom: -2rem;
     left: -0.75rem;
     float: none !important;
-    width: calc(100% + 1.5rem) !important;
+    width: auto !important;
     min-width: 0 !important;
     max-width: none !important;
-    height: min(72vh, 690px) !important;
-    min-height: 470px;
+    height: auto !important;
+    min-height: 0 !important;
     aspect-ratio: auto !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -99,17 +102,16 @@
       linear-gradient(90deg,
         rgba(5,5,12,0) 0%,
         rgba(5,5,12,0) 46%,
-        rgba(5,5,12,0.14) 60%,
-        rgba(5,5,12,0.62) 82%,
+        rgba(5,5,12,0.14) 58%,
+        rgba(5,5,12,0.62) 64%,
+        rgba(5,5,12,0.86) 82%,
         rgba(5,5,12,0.98) 100%),
       linear-gradient(180deg,
         rgba(5,5,12,0) 0%,
-        rgba(5,5,12,0) 44%,
-        rgba(5,5,12,0.18) 54%,
-        rgba(5,5,12,0.62) 64%,
-        rgba(5,5,12,0.92) 72%,
-        rgba(5,5,12,1) 82%,
-        rgba(5,5,12,1) 100%);
+        rgba(5,5,12,0) 82%,
+        rgba(5,5,12,0.08) 90%,
+        rgba(5,5,12,0.30) 96%,
+        rgba(5,5,12,0.88) 100%);
   }
 
   .persistent-player-character-profile .npc-profile-description-thumb img {
@@ -117,6 +119,7 @@
     height: 100% !important;
     object-fit: cover !important;
     object-position: center top !important;
+    image-rendering: auto;
   }
 
   .persistent-player-character-profile .npc-profile-description-card .npc-card-title,
@@ -164,20 +167,20 @@
     background:
       linear-gradient(90deg,
         rgba(5,5,12,0) 0%,
-        rgba(5,5,12,0) 46%,
-        rgba(5,5,12,0.15) 60%,
-        rgba(5,5,12,0.58) 78%,
+        rgba(5,5,12,0) 50%,
+        rgba(5,5,12,0.10) 66%,
+        rgba(5,5,12,0.46) 84%,
         rgba(5,5,12,0.98) 100%),
       linear-gradient(180deg,
         rgba(5,5,12,0) 0%,
-        rgba(5,5,12,0.05) 56%,
-        rgba(5,5,12,0.80) 88%,
-        rgba(5,5,12,0.98) 100%);
+        rgba(5,5,12,0) 86%,
+        rgba(5,5,12,0.18) 94%,
+        rgba(5,5,12,0.82) 100%);
   }
 
   .merchant-market-shell .merchant-scene-scrim {
     z-index: 1;
-    background: linear-gradient(180deg, rgba(5,5,12,0.03), rgba(5,5,12,0.22) 66%, rgba(5,5,12,0.68)) !important;
+    background: linear-gradient(180deg, rgba(5,5,12,0.02), rgba(5,5,12,0.05) 76%, rgba(5,5,12,0.54) 100%) !important;
   }
 
   .merchant-market-shell .merchant-scene-copy {
@@ -219,4 +222,3 @@
     grid-template-columns: clamp(240px, 23%, 360px) minmax(0, 1fr);
   }
 }
-

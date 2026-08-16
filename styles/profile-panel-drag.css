@@ -1,5 +1,28 @@
 /* Shared desktop window behavior for the Character Forge, character profile, and large visual picker panels. */
 @media (min-width: 981px) {
+  :root {
+    --dndnext-window-nav-offset: 58px;
+  }
+
+  /* Keep the global character windows centered in the usable space below the sticky navbar.
+     The navbar itself remains uncovered so navigating away remains an explicit close path. */
+  .npc-page-profile-panel-backdrop,
+  .npc-forge-backdrop {
+    top: var(--dndnext-window-nav-offset) !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    padding: 14px 18px 18px !important;
+  }
+
+  .npc-page-profile-panel-shell:not(.is-player-character-forge),
+  .npc-forge-modal:not(.is-app-windowed) {
+    margin: 0 auto !important;
+    max-height: calc(100dvh - var(--dndnext-window-nav-offset) - 32px) !important;
+  }
+
   .is-app-windowed {
     position: fixed !important;
     margin: 0 !important;
@@ -15,9 +38,9 @@
     right: auto !important;
     bottom: auto !important;
     width: min(1180px, calc(100vw - 2rem)) !important;
-    height: calc(100dvh - 2rem) !important;
+    height: calc(100dvh - var(--dndnext-window-nav-offset) - 2rem) !important;
     max-width: none !important;
-    max-height: calc(100vh - 2rem) !important;
+    max-height: calc(100dvh - var(--dndnext-window-nav-offset) - 2rem) !important;
     transform: none !important;
     overflow: visible !important;
     background: transparent !important;
@@ -57,6 +80,24 @@
   body.is-app-window-drag-active,
   body.is-app-window-drag-active * {
     cursor: grabbing !important;
+  }
+
+  body.is-app-window-resize-hover-n,
+  body.is-app-window-resize-hover-n *,
+  body.is-app-window-resize-hover-s,
+  body.is-app-window-resize-hover-s *,
+  body.is-app-window-resize-active.is-app-window-resize-hover-n,
+  body.is-app-window-resize-active.is-app-window-resize-hover-s {
+    cursor: ns-resize !important;
+  }
+
+  body.is-app-window-resize-hover-e,
+  body.is-app-window-resize-hover-e *,
+  body.is-app-window-resize-hover-w,
+  body.is-app-window-resize-hover-w *,
+  body.is-app-window-resize-active.is-app-window-resize-hover-e,
+  body.is-app-window-resize-active.is-app-window-resize-hover-w {
+    cursor: ew-resize !important;
   }
 
   body.is-app-window-resize-hover-nw,

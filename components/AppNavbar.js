@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "../utils/supabaseClient";
 
+const OPEN_PLAYER_PROFILE_EVENT = "dndnext:open-player-profile";
+
 function NavAnchor({ href, className, children }) {
   return <a className={className} href={href}>{children}</a>;
 }
@@ -67,6 +69,11 @@ export default function AppNavbar() {
   }
 
   function openProfilePanel() {
+    if (typeof window !== "undefined") {
+      const openEvent = new CustomEvent(OPEN_PLAYER_PROFILE_EVENT, { cancelable: true });
+      if (!window.dispatchEvent(openEvent)) return;
+    }
+
     if (!router?.isReady) {
       window.location.href = "/profile?characterProfile=1";
       return;

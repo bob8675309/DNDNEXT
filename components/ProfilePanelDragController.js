@@ -33,12 +33,13 @@ const INTERACTIVE_SELECTOR = [
   "[data-app-window-no-drag]",
 ].join(",");
 
+const RESET_APP_WINDOW_EVENT = "dndnext:reset-app-window";
 const DESKTOP_MIN_WIDTH = 981;
 const EDGE_GAP = 8;
 const CORNER_HIT_SIZE = 16;
 const MIN_VISIBLE_X = 180;
 const MIN_VISIBLE_HEADER = 48;
-const RESIZE_DIRECTIONS = ["nw", "ne", "sw", "se"];
+const RESIZE_DIRECTIONS = ["n", "s", "e", "w", "nw", "ne", "sw", "se"];
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
@@ -137,6 +138,10 @@ function cornerDirection(shell, clientX, clientY, target = null) {
   if (right && top) return "ne";
   if (left && bottom) return "sw";
   if (right && bottom) return "se";
+  if (top) return "n";
+  if (bottom) return "s";
+  if (left) return "w";
+  if (right) return "e";
   return "";
 }
 
@@ -216,6 +221,12 @@ function reclampWindow(shell) {
   setImportantPx(shell, "height", height);
   setImportantPx(shell, "left", left);
   setImportantPx(shell, "top", top);
+}
+
+function selectorForResetScope(scope = "all") {
+  if (scope === "profile") return ".npc-page-profile-panel-shell:not(.is-player-character-forge)";
+  if (scope === "forge") return ".npc-forge-modal";
+  return PANEL_SELECTOR;
 }
 
 export default function ProfilePanelDragController() {
@@ -314,6 +325,12 @@ export default function ProfilePanelDragController() {
       finishInteraction();
     }
 
+    function onResetWindow(event) {
+      finishInteraction();
+      const scope = String(event?.detail?.scope || "all");
+      document.querySelectorAll(selectorForResetScope(scope)).forEach(resetDesktopWindow);
+    }
+
     function onResize() {
       document.querySelectorAll(".npc-page-profile-panel-shell.is-player-character-forge.is-app-windowed").forEach(resetDesktopWindow);
       if (window.innerWidth < DESKTOP_MIN_WIDTH) {
@@ -328,6 +345,7 @@ export default function ProfilePanelDragController() {
     document.addEventListener("pointermove", onPointerMove, true);
     document.addEventListener("pointerup", onPointerEnd, true);
     document.addEventListener("pointercancel", onPointerEnd, true);
+    window.addEventListener(RESET_APP_WINDOW_EVENT, onResetWindow);
     window.addEventListener("resize", onResize);
     window.addEventListener("blur", onWindowBlur);
 
@@ -337,6 +355,7 @@ export default function ProfilePanelDragController() {
       document.removeEventListener("pointermove", onPointerMove, true);
       document.removeEventListener("pointerup", onPointerEnd, true);
       document.removeEventListener("pointercancel", onPointerEnd, true);
+      window.removeEventListener(RESET_APP_WINDOW_EVENT, onResetWindow);
       window.removeEventListener("resize", onResize);
       window.removeEventListener("blur", onWindowBlur);
     };

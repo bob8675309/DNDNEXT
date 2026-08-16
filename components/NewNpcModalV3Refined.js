@@ -1,9 +1,17 @@
+import { useEffect, useRef } from "react";
 import NpcForgeEquipmentStep from "./NpcForgeEquipmentStep";
 import NpcForgeFeatChoiceRegistrar from "./NpcForgeFeatChoiceRegistrar";
 import NpcForgeHumanVersatileRegistrar from "./NpcForgeHumanVersatileRegistrar";
 import NpcForgePortraitPickerModal from "./NpcForgePortraitPickerModal";
 import NpcForgeStepContent from "./NpcForgeStepContent";
 import useNpcForgeController from "./useNpcForgeController";
+
+const RESET_APP_WINDOW_EVENT = "dndnext:reset-app-window";
+
+function requestForgeWindowReset() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(RESET_APP_WINDOW_EVENT, { detail: { scope: "forge" } }));
+}
 
 // Compatibility/source ownership markers for the shared Forge validators:
 // const STEP_LABELS = Object.freeze(["Species", "Background", "Class", "Abilities", "Training", "Identity", "Story", "Review"]);
@@ -19,7 +27,42 @@ import useNpcForgeController from "./useNpcForgeController";
 
 export default function NewNpcModalV3Refined({ show, onClose, onCreated, locations = [], mode = "npc", createCharacter = null, onReset = null }) {
   const controller = useNpcForgeController({ show, onClose, onCreated, locations, mode, createCharacter, onReset });
-  const { playerMode, STEP_LABELS, step, setStep, setDetail, setError, stepKey, creating, loadingCatalogs, error, handleClose, handleReset, handleBack, handleNext, handleCreate, draft, equipmentModel, patch, portraitPickerOpen, setPortraitPickerOpen, choosePortrait } = controller;
+  const { playerMode, STEP_LABELS, step, setStep, setDetail, setError, stepKey, creating, loadingCatalogs, error, handleClose, handleReset, handleBack, handleNext, handleCreate, draft, equipmentModel, patch, portraitPickerOpen, setPortraitPickerOpen, choosePortrait, speciesOptions, chooseSpecies } = controller;
+  const catalogLoadSeenRef = useRef(false);
+
+  useEffect(() => {
+    if (!show) return undefined;
+    requestForgeWindowReset();
+    return undefined;
+  }, [show]);
+
+  useEffect(() => {
+    if (!show) {
+      catalogLoadSeenRef.current = false;
+      return;
+    }
+    if (loadingCatalogs) {
+      catalogLoadSeenRef.current = true;
+      return;
+    }
+    if (!catalogLoadSeenRef.current || draft.speciesOptionId) return;
+    const initialSpecies = (speciesOptions || []).find((option) => !playerMode || !/^human\s*\(/i.test(String(option?.name || "").trim()));
+    if (initialSpecies) chooseSpecies(initialSpecies);
+  }, [show, loadingCatalogs, draft.speciesOptionId, speciesOptions, playerMode, chooseSpecies]);
+
+  useEffect(() => {
+    if (!show) return undefined;
+    function onEscape(event) {
+      if ((event.key !== "Escape" && event.code !== "Escape" && event.keyCode !== 27) || creating) return;
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation?.();
+      handleClose();
+    }
+    document.addEventListener("keydown", onEscape, true);
+    return () => document.removeEventListener("keydown", onEscape, true);
+  }, [show, creating, handleClose]);
+
   if (!show) return null;
   return <div className="npc-forge-backdrop" role="presentation"><div className={`npc-forge-modal npc-forge-modal-v2 ${playerMode ? "is-player-mode" : "is-npc-mode"}`} role="dialog" aria-modal="true">
     <NpcForgeFeatChoiceRegistrar playerMode={playerMode} controller={controller} />
