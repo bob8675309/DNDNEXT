@@ -1,4 +1,4 @@
-/* Profile portrait bleed overrides v4
+/* Profile portrait bleed overrides v5
    Character profile and merchant art should read as part of the workspace rather than a boxed thumbnail. */
 
 .npc-page-profile-panel-shell .character-craft-workspace-frame,
@@ -35,9 +35,10 @@
   border-radius: 10px;
 }
 
-/* Player profile: use the existing full-resolution portrait as a full-height left-side background.
-   The artwork now runs to the bottom of the profile workspace; only its right edge and final lower
-   edge fade into the panel so the portrait no longer appears to stop around the middle. */
+/* Player profile: keep the portrait full-height, but widen its background stage so portrait-oriented
+   artwork is not zoomed into a narrow column. The artwork extends beneath the information rail to
+   roughly the middle of the workspace and fades out there. Description participates in the same
+   right-hand card stack as Talk, Details, and Known Lore instead of sitting over the portrait. */
 @media (min-width: 981px) {
   .persistent-player-character-profile .npc-panel-body:not(.d-block) {
     position: relative;
@@ -45,40 +46,37 @@
   }
 
   .persistent-player-character-profile .npc-panel-body:not(.d-block) .npc-left {
-    position: relative;
-    z-index: 1;
-    align-self: stretch !important;
+    display: contents !important;
+    position: static !important;
+    z-index: auto;
     max-width: none !important;
-    min-height: 100%;
+    min-height: 0;
     overflow: visible;
   }
 
-  .persistent-player-character-profile .npc-panel-body:not(.d-block) .npc-right,
-  .persistent-player-character-profile .npc-panel-body:not(.d-block) > .npc-card:last-child {
-    position: relative;
-    z-index: 3;
-  }
-
   .persistent-player-character-profile .npc-profile-description-card {
+    grid-column: 2 / 3 !important;
+    position: static !important;
+    z-index: auto;
     overflow: visible !important;
-    border-color: transparent !important;
-    background: transparent !important;
-    box-shadow: none !important;
+    border-color: rgba(255, 255, 255, 0.14) !important;
+    background: rgba(20, 17, 27, 0.94) !important;
   }
 
   .persistent-player-character-profile .npc-profile-description-with-portrait {
     position: static !important;
+    display: block;
   }
 
   .persistent-player-character-profile .npc-profile-description-thumb {
     position: absolute !important;
-    z-index: 0;
+    z-index: -1;
     top: -0.75rem;
-    right: -0.75rem;
+    right: auto;
     bottom: -2rem;
     left: -0.75rem;
     float: none !important;
-    width: auto !important;
+    width: 56% !important;
     min-width: 0 !important;
     max-width: none !important;
     height: auto !important;
@@ -101,17 +99,17 @@
     background:
       linear-gradient(90deg,
         rgba(5,5,12,0) 0%,
-        rgba(5,5,12,0) 46%,
-        rgba(5,5,12,0.14) 58%,
-        rgba(5,5,12,0.62) 64%,
-        rgba(5,5,12,0.86) 82%,
+        rgba(5,5,12,0) 68%,
+        rgba(5,5,12,0.12) 78%,
+        rgba(5,5,12,0.48) 88%,
+        rgba(5,5,12,0.88) 96%,
         rgba(5,5,12,0.98) 100%),
       linear-gradient(180deg,
         rgba(5,5,12,0) 0%,
-        rgba(5,5,12,0) 82%,
-        rgba(5,5,12,0.08) 90%,
-        rgba(5,5,12,0.30) 96%,
-        rgba(5,5,12,0.88) 100%);
+        rgba(5,5,12,0) 90%,
+        rgba(5,5,12,0.10) 95%,
+        rgba(5,5,12,0.46) 98%,
+        rgba(5,5,12,0.90) 100%);
   }
 
   .persistent-player-character-profile .npc-profile-description-thumb img {
@@ -124,14 +122,12 @@
 
   .persistent-player-character-profile .npc-profile-description-card .npc-card-title,
   .persistent-player-character-profile .npc-profile-description-text {
-    position: relative;
-    z-index: 2;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.88);
+    text-shadow: none;
   }
 
   .persistent-player-character-profile .npc-profile-description-text {
-    max-width: 94%;
-    min-height: 9rem;
+    max-width: none;
+    min-height: 0 !important;
   }
 }
 
