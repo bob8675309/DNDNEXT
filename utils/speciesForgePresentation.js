@@ -183,6 +183,10 @@ function isCustomLineage(option = {}) {
   return norm(option.name) === "custom lineage" && text(option.source).toUpperCase() === "TCE";
 }
 
+function seasonalFeyStepFallbackDescription() {
+  return "As a Bonus Action, you can magically teleport up to 30 feet to an unoccupied space you can see. You can use Fey Step a number of times equal to your Proficiency Bonus, regaining all uses when you finish a Long Rest. Choose an initial season when you create the character, and after each Long Rest you may change to a different season. Starting at character level 3, your current season adds an effect to Fey Step: Autumn can Charm up to two creatures you can see within 10 feet after you teleport; Winter can Frighten one creature you can see within 5 feet before you teleport; Spring can teleport one willing creature you touch within 5 feet instead of you; and Summer deals Fire damage equal to your Proficiency Bonus to each creature of your choice you can see within 5 feet after you teleport. The season selector below sets your starting season and remains changeable after a Long Rest.";
+}
+
 function customLineageHeritageDetail() {
   return {
     name: "Heritage Traits",
@@ -205,8 +209,14 @@ export function speciesFeaturePresentation(option = {}) {
     const seasonLike = (value) => /(?:^| )choose your eladrins? season\b|^eladrin seasons?$/.test(norm(value));
     details = details.filter((entry) => !seasonLike(entry.name)).map((entry) => {
       if (norm(entry.name) !== "fey step") return entry;
+      const hasSourceSeasonCards = array(entry.optionCards).length > 0;
       const { optionCards, optionCardsLabel, runtimeChoice, ...rest } = entry;
-      return { ...rest, name: "Seasonal Fey Step", runtimeChoice: true };
+      return {
+        ...rest,
+        name: "Seasonal Fey Step",
+        description: hasSourceSeasonCards ? rest.description : seasonalFeyStepFallbackDescription(),
+        runtimeChoice: true,
+      };
     });
     traits = traits.filter((trait) => !seasonLike(trait)).map((trait) => norm(trait) === "fey step" ? "Seasonal Fey Step" : trait);
   }
