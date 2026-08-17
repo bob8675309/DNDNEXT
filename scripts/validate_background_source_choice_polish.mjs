@@ -5,6 +5,8 @@ import { pathToFileURL } from "node:url";
 
 const root = process.cwd();
 const { buildBackgroundSourceChoiceGroups } = await import(pathToFileURL(path.join(root, "utils/playerForgeSourceChoices.js")).href);
+const { routeFeatSourceChoiceGroups } = await import(pathToFileURL(path.join(root, "utils/playerForgeFeatChoiceRouting.js")).href);
+const { backgroundFeatureDetails } = await import(pathToFileURL(path.join(root, "utils/backgroundMechanics.js")).href);
 const { normalizeBackgroundOption } = await import(pathToFileURL(path.join(root, "utils/npcForgeCatalogRefined.js")).href);
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 
@@ -27,6 +29,12 @@ const runeLanguage = fieldsOfKind(runeCarver, "language");
 assert.equal(runeLanguage.length, 1, "Rune Carver must publish its fixed Giant language");
 assert.equal(runeLanguage[0].autoSelect, true, "fixed Background languages must be automatic rather than false creator choices");
 assert.deepEqual(runeLanguage[0].options.map((option) => option.label), ["Giant"]);
+const runeStyleGroup = runeCarver.find((group) => group.label === "Rune Styles");
+assert.ok(runeStyleGroup, "Rune Carver must promote Rune Styles to a persisted Background choice");
+assert.equal(runeStyleGroup.placement, "background");
+assert.equal(runeStyleGroup.fields?.[0]?.kind, "enum");
+assert.equal(runeStyleGroup.fields?.[0]?.options?.length, 6, "Rune Styles must expose all six source media/styles");
+for (const phrase of ["Wax or clay", "Carved wood", "Glass beads", "Stitched clothing", "Animal bones", "Carved candles"]) assert.ok(runeStyleGroup.fields[0].options.some((option) => option.label === phrase), `Rune Styles is missing ${phrase}`);
 
 const giantFoundling = groupsFor("Giant Foundling", "BGG", { languages: [{ giant: true, anyStandard: 1 }] });
 const giantLanguageFields = fieldsOfKind(giantFoundling, "language");
@@ -36,9 +44,12 @@ const giantStandard = giantLanguageFields.find((field) => !field.autoSelect);
 assert.equal(giantStandard.count, 1);
 assert.ok(!giantStandard.options.some((option) => option.label === "Giant"), "the selectable Standard language must not duplicate fixed Giant");
 
-const clanCrafter = groupsFor("Clan Crafter", "SCAG", { languages: [{ dwarvish: true }, { anyStandard: 1 }] });
+const clanCrafter = groupsFor("Clan Crafter", "SCAG", { languages: [{ dwarvish: true }, { anyStandard: 1 }], tools: [{ anyArtisansTool: 1 }] });
 const clanLanguages = fieldsOfKind(clanCrafter, "language");
 assert.ok(clanLanguages.some((field) => field.autoSelect && field.options.some((option) => option.label === "Dwarvish")), "Clan Crafter must publish fixed Dwarvish");
+const clanCraftGroup = clanCrafter.find((group) => group.metadata?.craftExpertise);
+assert.ok(clanCraftGroup, "Clan Crafter selected artisan tool must carry the DnDNext Craft Expertise marker");
+assert.equal(clanCraftGroup.metadata.campaignRule, "clan-crafter-craft-expertise");
 
 const inheritor = groupsFor("Inheritor", "SCAG", { tools: [{ choose: { from: ["musical instrument", "gaming set"] } }] });
 const inheritorTool = fieldsOfKind(inheritor, "tool").find((field) => !field.autoSelect);
@@ -80,6 +91,31 @@ const variableSkills = normalizeBackgroundOption({
 });
 assert.deepEqual(variableSkills.skillRule.choiceGroups[0].from, ["arcana", "sleightOfHand", "animalHandling"], "Background skill-choice pools must normalize to canonical Forge keys");
 
+const routedProficiencyFeats = routeFeatSourceChoiceGroups({ groups: [
+  { id: "skilled", label: "Skilled", placement: "background", fields: [{ id: "profs", kind: "skill", count: 3, required: true, options: [{ key: "a" }, { key: "b" }, { key: "c" }] }], metadata: { featName: "Skilled", acquisitionLabel: "Charlatan" } },
+  { id: "crafter", label: "Crafter", placement: "background", fields: [{ id: "tools", kind: "tool", count: 3, required: true, options: [{ key: "a" }, { key: "b" }, { key: "c" }] }], metadata: { featName: "Crafter", acquisitionLabel: "Artisan" } },
+  { id: "musician", label: "Musician", placement: "background", fields: [{ id: "instruments", kind: "tool", count: 3, required: true, options: [{ key: "a" }, { key: "b" }, { key: "c" }] }], metadata: { featName: "Musician", acquisitionLabel: "Entertainer" } },
+] });
+assert.equal(routedProficiencyFeats.length, 3);
+assert.ok(routedProficiencyFeats.every((group) => group.placement === "training" && group.resolverPlacement === "training"), "Skilled/Crafter/Musician follow-up proficiencies belong in Training");
+assert.ok(routedProficiencyFeats.every((group) => group.metadata?.trainingSection === "skills-proficiencies"), "proficiency feats must identify the Skills & Proficiencies Training section");
+
+const runeBackgroundFeatures = backgroundFeatureDetails({
+  name: "Rune Carver",
+  source: "BGG",
+  raw_payload: { entries: [
+    { type: "entries", name: "Feature: Rune Shaper", data: { isFeature: true }, entries: ["You gain the Rune Shaper feat."] },
+    { type: "entries", name: "Rune Styles", entries: ["Choose a favored style."] },
+    { type: "entries", name: "Building a Rune Carver Character", entries: ["Boilerplate build advice."] },
+  ] },
+});
+assert.ok(runeBackgroundFeatures.some((feature) => /Rune Shaper/i.test(feature.name)), "Rune Carver must retain its actual feature");
+assert.ok(!runeBackgroundFeatures.some((feature) => /^Rune Styles$/i.test(feature.name)), "Rune Styles prose must be replaced by the structured dropdown");
+assert.ok(!runeBackgroundFeatures.some((feature) => /^Building a .* Character$/i.test(feature.name)), "source character-building boilerplate must not render as a Background feature");
+
+const clanFeatures = backgroundFeatureDetails({ name: "Clan Crafter", source: "SCAG", raw_payload: { entries: [] } });
+assert.ok(clanFeatures.some((feature) => feature.campaignRule && /Craft Expertise/i.test(feature.name)), "Clan Crafter must explain the DnDNext Craft Expertise house rule");
+
 const embeddedSource = read("components/NpcForgeEmbeddedSourceChoices.js");
 for (const token of ["sourceChoicePrompt", "incompleteFields", "field.autoSelect", 'join(" • ")']) assert.ok(embeddedSource.includes(token), `fixed + unresolved summary handling missing ${token}`);
 
@@ -94,28 +130,33 @@ assert.ok(!backgroundValidation.includes("backgroundSkillChoiceGroups"), "variab
 assert.match(controllerSource, /if \(key === "training"\)[\s\S]*?backgroundSkillChoiceGroups\.forEach/, "variable Background skill choices must be validated in Training");
 
 const trainingSource = read("components/NpcForgeTrainingStep.js");
-for (const token of ["Background skill choices", "onToggleBackgroundSkill", "do not use class Training choices", "incompleteBackgroundSkills"]) assert.ok(trainingSource.includes(token), `Training routing missing ${token}`);
+for (const token of ["Background skill choices", "onToggleBackgroundSkill", "do not use class Training choices", "incompleteBackgroundSkills", 'placement="training"']) assert.ok(trainingSource.includes(token), `Training routing missing ${token}`);
 
 const contextWrapper = read("components/NpcForgeContextPanel.js");
 assert.ok(contextWrapper.includes("playerBackgroundPresentation"), "Background context wrapper must own the Training routing projection");
 assert.ok(contextWrapper.includes("skillChoices: []"), "Background page must not render the old variable skill chooser");
 
 const derivedSource = read("components/useNpcForgeDerivedModel.js");
-for (const token of ["featDescriptionForBackground", "flattenSourceRuleEntries", "Choose ${group.count} skill", "Training → Skills & Proficiencies"]) assert.ok(derivedSource.includes(token), `Background description/routing model missing ${token}`);
+for (const token of ["featDescriptionForBackground", "flattenSourceRuleEntries", "Rune Spells", "Training → Skills & Proficiencies", "TOOL_GUIDANCE", "Typical uses", "cleanPrerequisite"]) assert.ok(derivedSource.includes(token), `Background description/routing model missing ${token}`);
+assert.ok(!derivedSource.includes("toolProficiencyDescription(name)"), "Background tools must not use the old generic one-line proficiency copy");
+
+const sourceChoiceSource = read("utils/playerForgeSourceChoices.js");
+for (const token of ["toolRuleFacts", "Rune Styles", "RUNE_STYLE_OPTIONS", "clan-crafter-craft-expertise", "craftExpertise"]) assert.ok(sourceChoiceSource.includes(token), `Background source-choice enrichment missing ${token}`);
 
 const loginSource = read("pages/login.js");
-assert.ok(loginSource.includes('router.replace("/profile?characterProfile=1")'), "normal successful login must open the shared Profile panel for players and administrators");
-assert.ok(loginSource.includes('router.query.legacyRoleRoute === "1"'), "legacy role routing must be explicitly opt-in rather than the default login path");
-assert.ok(loginSource.indexOf('router.replace("/profile?characterProfile=1")') > loginSource.indexOf('router.query.legacyRoleRoute === "1"'), "the Profile-panel route must remain the normal post-login destination after the guarded compatibility branch");
+assert.ok(loginSource.includes('router.replace("/profile?characterProfile=1")'), "successful login must open the shared Profile panel for players and administrators");
+assert.ok(!loginSource.includes('router.replace(isAdmin ? "/admin" : "/profile")'), "login must not route administrators away from the shared Profile entry point");
 
 const modalSource = read("components/NewNpcModalV3Refined.js");
 for (const token of ["resetForgeWindowElement", "requestAnimationFrame", "closeCompletedChoiceOnOutsidePointer", "npc-forge-species-fact-choice.is-complete[open]"]) assert.ok(modalSource.includes(token), `Forge geometry/choice-collapse correction missing ${token}`);
 
-const smokeCss = read("styles/character-forge-smoke-fixes.css");
-for (const token of ["source-neutral heraldic ornament", ".npc-forge-background-story::after", 'content: "✦"']) assert.ok(smokeCss.includes(token), `Background visual polish missing ${token}`);
+const appSource = read("pages/_app.js");
+assert.ok(appSource.includes('import "../styles/character-forge-background-polish.css";'), "Background contrast/readability stylesheet must load after the Forge smoke fixes");
+const backgroundCss = read("styles/character-forge-background-polish.css");
+for (const token of ["npc-forge-context-choice-grid.feats button", "background: #111522", "grid-template-columns: minmax(0, 1fr)", "column-count: 1", "color-scheme: dark"]) assert.ok(backgroundCss.includes(token), `Background contrast/readability CSS missing ${token}`);
 
-for (const source of [read("utils/playerForgeSourceChoices.js"), embeddedSource, contextSource, controllerSource, trainingSource, contextWrapper, derivedSource, loginSource, modalSource, smokeCss]) {
+for (const source of [read("utils/playerForgeSourceChoices.js"), read("utils/playerForgeFeatChoiceRouting.js"), read("utils/backgroundMechanics.js"), embeddedSource, contextSource, controllerSource, trainingSource, contextWrapper, derivedSource, loginSource, modalSource, backgroundCss]) {
   assert.doesNotMatch(source, /MapPageClient|map_routes|map_route_points|advance_all_characters|route_segment_progress/, "Background work crossed protected map/travel boundaries");
 }
 
-console.log("Background source-choice polish validated: fixed languages/tools remain automatic, Background skills normalize to canonical keys and route through Training, source feat copy is cleaned from raw entries, completed Species fact choices collapse on outside click, normal login enters the Profile panel, Forge geometry resets consistently, Background dossiers receive restrained visual identity, Strixhaven spell tables are not duplicated, and protected map/travel boundaries remain untouched.");
+console.log("Background source-choice polish validated: fixed languages/tools remain automatic, Background skills and proficiency-feat choices route through Training, source feat copy is structured, Rune Styles is a persisted dropdown, Clan Crafter carries Craft Expertise metadata, tool choices explain source-backed uses/crafts, Background boilerplate is pruned, choice surfaces keep dark readable contrast, completed Species fact choices collapse on outside click, login enters the Profile panel, Forge geometry resets consistently, Strixhaven spell tables are not duplicated, and protected map/travel boundaries remain untouched.");
