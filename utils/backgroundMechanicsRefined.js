@@ -52,6 +52,7 @@ export function cleanRuleReference(value = "") {
   return safeText(value)
     .replace(/#c$/i, "")
     .split("|")[0]
+    .split(";")[0]
     .trim();
 }
 
@@ -75,6 +76,16 @@ function backgroundFeatEntries(background = {}) {
   const payload = backgroundPayload(background);
   if (Array.isArray(payload.feats)) return payload.feats;
   return Array.isArray(background.metadata?.feats) ? background.metadata.feats : [];
+}
+
+function fixedMagicInitiateList(background = {}) {
+  const name = normalizedRuleName(background.name || background.sourceName || background.key || "");
+  const source = safeText(background.source).toUpperCase();
+  if (source !== "XPHB") return "";
+  if (name === "acolyte") return "Cleric";
+  if (name === "guide") return "Druid";
+  if (name === "sage") return "Wizard";
+  return "";
 }
 
 export function backgroundFeatRule(background = {}) {
@@ -156,9 +167,10 @@ export function resolveBackgroundFeatOptions(background = {}, featCatalog = []) 
 }
 
 export function backgroundFeatSummary(background = {}, featCatalog = [], selectedFeat = null) {
+  const fixedList = fixedMagicInitiateList(background);
+  if (selectedFeat?.name) return fixedList && normalizedRuleName(selectedFeat.name) === "magic initiate" ? `Magic Initiate (${fixedList})` : selectedFeat.name;
   const rule = backgroundFeatRule(background);
-  if (selectedFeat?.name) return selectedFeat.name;
-  if (rule.fixedName) return titleCaseReference(rule.fixedName);
+  if (rule.fixedName) return fixedList && normalizedRuleName(rule.fixedName) === "magic initiate" ? `Magic Initiate (${fixedList})` : titleCaseReference(rule.fixedName);
   const options = resolveBackgroundFeatOptions(background, featCatalog);
   if (options.length) return `Choose one: ${options.map((feat) => feat.name).join(", ")}`;
   if (rule.categoryCodes.length) {
@@ -192,9 +204,14 @@ export function backgroundSkillRule(background = {}) {
     }
     if (!entry || typeof entry !== "object") return;
     Object.entries(entry).forEach(([key, value]) => {
-      if (key === "choose") return;
+      if (key === "choose" || key === "any") return;
       if (value === true || Number(value) > 0) addFixed(key);
     });
+    const anyCount = Math.max(0, Number(entry.any || 0));
+    if (anyCount > 0) {
+      choiceGroups.push({ id: `background-skill-choice-${entryIndex}`, count: Math.min(SKILL_KEYS.length, anyCount), from: [...SKILL_KEYS] });
+      return;
+    }
     const choose = entry.choose || (Array.isArray(entry.from) ? entry : null);
     if (!choose) return;
     const from = [...new Set((Array.isArray(choose.from) ? choose.from : [])
