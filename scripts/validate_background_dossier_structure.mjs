@@ -31,7 +31,7 @@ assert.equal(highSorcery.fields.find((field) => field.id === "spellcasting-abili
 const strike = routeFeatSourceChoiceGroups({ groups: [{ id: "feat-strike", label: "Strike of the Giants", source: "BGG", placement: "background", fields: [], metadata: { featName: "Strike of the Giants" } }] })[0];
 const strikeField = strike?.fields?.find((field) => field.id === "giant-strike");
 assert.equal(strike?.placement, "background");
-assert.equal(strikeField?.options?.length, 6, "Strike of the Giants must be one persisted six-option choice");
+assert.equal(strikeField?.options?.length, 6, "Strike of the Giants must remain one persisted six-option choice");
 for (const label of ["Cloud Strike", "Fire Strike", "Frost Strike", "Hill Strike", "Stone Strike", "Storm Strike"]) assert.ok(strikeField.options.some((option) => option.label === label), `missing ${label}`);
 
 const scion = routeFeatSourceChoiceGroups({
@@ -54,29 +54,21 @@ const rune = backgroundFeatPresentation({
     ] },
   ] },
 });
-assert.equal(rune.sections.length, 2, "Rune Shaper list items must become named readable sections");
-assert.equal(rune.sections.find((section) => section.title === "Rune Magic")?.tables?.[0]?.title, "Rune Spells", "Rune spell mapping must render as a structured table instead of an inline wall");
-assert.ok(backgroundFeatRouteNote({ name: "Skilled" }).includes("Training → Skills & Proficiencies"), "Skilled route note must be player-facing");
+assert.equal(rune.sections.length, 2, "Rune Shaper source structure must stay available to presentation helpers");
+assert.equal(rune.sections.find((section) => section.title === "Rune Magic")?.tables?.[0]?.title, "Rune Spells", "Rune spell mapping must remain structurally recoverable");
+assert.ok(backgroundFeatRouteNote({ name: "Skilled" }).includes("Training → Skills & Proficiencies"), "Skilled route note must remain player-facing");
 assert.ok(backgroundFeatRouteNote({ name: "Initiate of High Sorcery" }).includes("Spells step"));
 assert.equal(featSectionsAreChoiceOptions("Strike of the Giants"), true);
 assert.equal(featSectionsAreChoiceOptions("Scion of the Outer Planes"), true);
 
-const guide = read("components/NpcForgeBackgroundGuide.js");
-for (const token of ["CompactFeatChooser", "BackgroundFeatDetail", "npc-forge-bg-grant-grid", "Rune style &amp; medium", "sourceListItems", "ExpandedSpellList"]) assert.ok(guide.includes(token), `structured Background guide missing ${token}`);
-assert.ok(!guide.includes("Prerequisite:"), "player Background dossier must not print source prerequisite JSON");
-assert.ok(!guide.includes("Forge routing."), "player Background dossier must not expose internal routing language");
-assert.match(guide, /options\.length > 4/, "large feat pools such as Dark Gifts must collapse to a compact selector rather than render every description");
-assert.match(guide, /grantOnly/, "feature rows that only repeat an already-present Origin feat grant must be suppressed");
-
 const wrapper = read("components/NpcForgeContextPanel.js");
-assert.ok(wrapper.includes("NpcForgeBackgroundGuide"), "player Background step must use the structured dossier guide");
-assert.ok(wrapper.includes("props?.playerMode && activeBackground"), "NPC Forge Background behavior must remain separate from the player-only dossier pass");
+assert.ok(wrapper.includes("NpcForgeContextPanelRefined"), "Background must render through the established refined context panel");
+assert.ok(wrapper.includes("projectedBackgroundMechanics"), "Background mechanics projection must remain intact after visual rollback");
+assert.ok(!wrapper.includes("NpcForgeBackgroundGuide"), "the rejected Class-style Background dossier must not be active");
+assert.ok(!wrapper.includes("props?.playerMode && activeBackground"), "player Backgrounds must not bypass the established refined context panel");
 
-const css = read("styles/character-forge-background-polish.css");
-for (const token of ["npc-forge-background-guide", "npc-forge-bg-grant-grid", "grid-template-columns: repeat(2, minmax(0, 1fr))", "npc-forge-bg-feat-table", "npc-forge-bg-mini-cards"]) assert.ok(css.includes(token), `Background dossier CSS missing ${token}`);
-
-for (const source of [read("utils/backgroundFeatPresentation.js"), read("utils/playerForgeFeatChoiceRouting.js"), guide, wrapper, css]) {
-  assert.doesNotMatch(source, /MapPageClient|map_routes|map_route_points|advance_all_characters|route_segment_progress/, "Background formatting audit crossed protected map/travel boundaries");
+for (const source of [read("utils/backgroundFeatPresentation.js"), read("utils/playerForgeFeatChoiceRouting.js"), wrapper]) {
+  assert.doesNotMatch(source, /MapPageClient|map_routes|map_route_points|advance_all_characters|route_segment_progress/, "Background rollback crossed protected map/travel boundaries");
 }
 
-console.log("Background dossier structure validated: dense feat rules are sectioned, High Sorcery routes to Spells, Giant Strike and planar packages are real persisted choices, large feat pools stay compact, raw prerequisite JSON/internal routing copy is hidden, repeated grant-only feature rows are removed, and protected map/travel boundaries remain untouched.");
+console.log("Background rollback validated: the established refined Background presentation is restored while High Sorcery, Giant Strike, planar package, Rune structure, and source-choice routing fixes remain intact; protected map/travel boundaries remain untouched.");
