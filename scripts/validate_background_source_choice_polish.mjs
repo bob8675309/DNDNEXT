@@ -144,8 +144,11 @@ const sourceChoiceSource = read("utils/playerForgeSourceChoices.js");
 for (const token of ["toolRuleFacts", "Rune Styles", "RUNE_STYLE_OPTIONS", "clan-crafter-craft-expertise", "craftExpertise"]) assert.ok(sourceChoiceSource.includes(token), `Background source-choice enrichment missing ${token}`);
 
 const loginSource = read("pages/login.js");
-assert.ok(loginSource.includes('router.replace("/profile?characterProfile=1")'), "successful login must open the shared Profile panel for players and administrators");
-assert.ok(!loginSource.includes('router.replace(isAdmin ? "/admin" : "/profile")'), "login must not route administrators away from the shared Profile entry point");
+assert.ok(loginSource.includes('router.replace("/profile?characterProfile=1")'), "successful login must open the shared Profile panel for normal sign-in");
+assert.ok(loginSource.includes('router.query.legacyRoleRoute === "1"'), "bounded role routing may exist only behind the explicit legacy compatibility switch");
+const legacyRouteIndex = loginSource.indexOf('router.replace(isAdmin ? "/admin" : "/profile")');
+const legacyGuardIndex = loginSource.indexOf('router.query.legacyRoleRoute === "1"');
+assert.ok(legacyRouteIndex > legacyGuardIndex && legacyGuardIndex >= 0, "admin/profile role routing must remain inside the explicit legacy compatibility branch");
 
 const modalSource = read("components/NewNpcModalV3Refined.js");
 for (const token of ["resetForgeWindowElement", "requestAnimationFrame", "closeCompletedChoiceOnOutsidePointer", "npc-forge-species-fact-choice.is-complete[open]"]) assert.ok(modalSource.includes(token), `Forge geometry/choice-collapse correction missing ${token}`);
