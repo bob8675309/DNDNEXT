@@ -7,9 +7,11 @@ on:
     paths:
       - "utils/playerForgeSourceChoices.js"
       - "utils/playerForgeFeatChoiceRouting.js"
+      - "utils/backgroundFeatPresentation.js"
       - "utils/backgroundMechanics.js"
       - "utils/backgroundMechanicsRefined.js"
       - "utils/npcForgeCatalogRefined.js"
+      - "components/NpcForgeBackgroundGuide.js"
       - "components/NpcForgeEmbeddedSourceChoices.js"
       - "components/NpcForgeContextPanel.js"
       - "components/NpcForgeContextPanelRefined.js"
@@ -22,6 +24,7 @@ on:
       - "styles/character-forge-background-polish.css"
       - "scripts/validate_background_source_choice_polish.mjs"
       - "scripts/validate_background_catalogue_readability.mjs"
+      - "scripts/validate_background_dossier_structure.mjs"
       - ".github/workflows/validate-background-source-choice-polish.yml"
   workflow_dispatch:
 
@@ -50,3 +53,6 @@ jobs:
 
       - name: Validate Background catalogue readability
         run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_background_catalogue_readability.mjs
+
+      - name: Validate Background dossier structure
+        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_background_dossier_structure.mjs
