@@ -1,0 +1,122 @@
+/* Background Forge readability pass.
+ * Scope all corrections to the unified player Forge so NPC/profile surfaces keep
+ * their established presentation. These rules intentionally load after the
+ * earlier background and smoke-fix stylesheets.
+ */
+
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-context-choice-grid button,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-context-choice-grid.feats button,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-embedded-choice__buttons button {
+  border-color: rgba(168, 108, 255, .34) !important;
+  color: #fff !important;
+  background: #111522 !important;
+  background-image: none !important;
+  opacity: 1 !important;
+  box-shadow: none;
+}
+
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-context-choice-grid button:hover,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-context-choice-grid.feats button:hover,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-embedded-choice__buttons button:hover {
+  border-color: rgba(168, 108, 255, .7) !important;
+  background: #171529 !important;
+}
+
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-context-choice-grid button.is-selected,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-context-choice-grid.feats button.is-selected,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-embedded-choice__buttons button.is-selected {
+  border-color: #a86cff !important;
+  background: #20183a !important;
+  box-shadow: inset 3px 0 #a86cff !important;
+}
+
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-context-choice-grid button > strong,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-context-choice-grid button > span,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-context-choice-grid button > small,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-embedded-choice__buttons button > strong,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-embedded-choice__buttons button > small {
+  background: transparent !important;
+  opacity: 1 !important;
+}
+
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-context-choice-grid button > strong,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-embedded-choice__buttons button > strong {
+  color: #fff !important;
+}
+
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-context-choice-grid button > span,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-context-choice-grid button > small,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-embedded-choice__buttons button > small {
+  color: rgba(255, 255, 255, .8) !important;
+}
+
+.unified-player-character-forge .npc-forge-context-card.is-origin select,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-embedded-choice__slots select {
+  color: #fff !important;
+  background: #0f1320 !important;
+  border-color: rgba(168, 108, 255, .42) !important;
+  color-scheme: dark;
+}
+
+.unified-player-character-forge .npc-forge-context-card.is-origin select option,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-embedded-choice__slots select option {
+  color: #fff !important;
+  background: #0f1320 !important;
+}
+
+/* Imported source text must always read top-to-bottom. Older compact-row rules
+ * can otherwise turn each paragraph into a narrow grid column, which made Rune
+ * Shaper and several legacy Backgrounds effectively unreadable. */
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-background-features details,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-background-features details[open],
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-background-info-rows .npc-forge-context-row-details,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-background-info-rows .npc-forge-context-row-details article,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-rule-copy {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-background-features details[open] > .npc-forge-rule-copy,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-background-info-rows .npc-forge-context-row-details article > .npc-forge-rule-copy,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-background-detail-copy.npc-forge-rule-copy {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-auto-flow: row !important;
+  gap: .58rem !important;
+  width: 100% !important;
+}
+
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-rule-copy > p,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-background-detail-copy,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-context-row-details article p {
+  display: block !important;
+  width: 100% !important;
+  max-width: 88ch !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  color: rgba(255, 255, 255, .86) !important;
+  font-size: .74rem !important;
+  line-height: 1.65 !important;
+  white-space: normal !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+  columns: auto !important;
+  column-count: 1 !important;
+}
+
+.unified-player-character-forge .npc-forge-background-source-fallback,
+.unified-player-character-forge .npc-forge-background-source-fallback > div,
+.unified-player-character-forge .npc-forge-background-source-fallback details {
+  min-width: 0;
+  width: 100%;
+}
+
+.unified-player-character-forge .npc-forge-background-source-fallback details > .npc-forge-embedded-choice {
+  margin-top: .65rem;
+}
+
+/* Empty parser artifacts such as `Prerequisite: []` should never reserve space
+ * even if a stale catalogue row reaches the presentation layer. */
+.unified-player-character-forge .npc-forge-background-detail-prerequisite:empty {
+  display: none !important;
+}
