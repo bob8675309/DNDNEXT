@@ -28,6 +28,14 @@ function backgroundPayload(background = {}) {
     || {};
 }
 
+function containsStructuredTable(node) {
+  if (!node) return false;
+  if (Array.isArray(node)) return node.some(containsStructuredTable);
+  if (typeof node !== "object") return false;
+  if (node.type === "table" || Array.isArray(node.rows)) return true;
+  return [node.entry, node.entries, node.items].some(containsStructuredTable);
+}
+
 function flattenSupplementalText(node, output = []) {
   if (node == null) return output;
   if (typeof node === "string") {
@@ -145,6 +153,12 @@ function supplementalBackgroundDetails(background = {}) {
     if (entry.data?.isFeature || /(?:^|\s)Feature\s*:/i.test(rawName)) return [];
     if (entry.type === "table" || entry.rows || entry.type === "list") return [];
     if (entry.type && entry.type !== "entries") return [];
+    // Optional flavor sections such as Specialty, Favored Event, Fishing Tale, Origin Stories,
+    // trinkets, and similar random tables are not creator requirements. Showing their lead-in
+    // prose after dropping the table leaves orphaned instructions and creates the loose text
+    // seen in browser review, so omit the whole supplemental section unless it is promoted to
+    // a real persisted choice (Rune Styles above).
+    if (containsStructuredTable(entry)) return [];
     const description = flattenSupplementalText(entry.entries || entry.entry || []).join("\n\n").trim();
     if (!description) return [];
     const name = formatPlayerFacingInline(rawName);
