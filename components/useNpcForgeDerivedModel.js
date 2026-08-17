@@ -8,7 +8,10 @@ import { spellChoicesForRpc } from "../utils/playerForgeRules";
 import { serializeStartingMagicSelections } from "../utils/playerForgeSpellSources";
 import { backgroundFeatRule as getBackgroundFeatRule, backgroundFeatSummary, resolveBackgroundFeatOptions } from "../utils/backgroundMechanics";
 import { generatedStoryLocationLabel } from "../utils/npcStoryGenerator";
-import { titleForSkill, abilityModifier, proficiencyBonus, maximumHitPoints, sourceLabel, standardScoresForClass, speciesTraits, optionId, toolProficiencyDescription } from "./NpcForgeCoreSupport";
+import { titleForSkill, abilityModifier, proficiencyBonus, maximumHitPoints, sourceLabel, standardScoresForClass, speciesTraits, optionId } from "./NpcForgeCoreSupport";
+
+const normalizeDisplayName = (value = "") => safeText(value).toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+const TRAINING_PROFICIENCY_FEATS = new Set(["skilled", "crafter", "musician"]);
 
 function cleanSourceRuleString(value = "") {
   return formatPlayerFacingText(String(value || "")
@@ -16,9 +19,25 @@ function cleanSourceRuleString(value = "") {
     .replace(/\{@itemProperty\s+[^|}]+\|[^|}]+\|([^}]+)}/gi, "$1"));
 }
 
+function sourceTableParagraph(node = {}) {
+  const rows = Array.isArray(node.rows) ? node.rows : [];
+  if (!rows.length) return "";
+  const labels = Array.isArray(node.colLabels) ? node.colLabels.map(cleanSourceRuleString) : [];
+  const pairs = rows.map((row) => {
+    const cells = (Array.isArray(row) ? row : [row]).map(cleanSourceRuleString).filter(Boolean);
+    if (!cells.length) return "";
+    if (cells.length === 2) return `${cells[0]} — ${cells[1]}`;
+    return cells.map((cell, index) => labels[index] ? `${labels[index]}: ${cell}` : cell).join(" • ");
+  }).filter(Boolean);
+  if (!pairs.length) return "";
+  const title = cleanSourceRuleString(node.caption || (normalizeDisplayName(labels[0]) === "rune" && normalizeDisplayName(labels[1]) === "spell" ? "Rune Spells" : "Options"));
+  return `${title}. ${pairs.join("; ")}`;
+}
+
 function flattenSourceRuleEntries(node, output = []) {
   if (node == null) return output;
   if (typeof node === "string") {
+    if (/^\s*\{@note\b/i.test(node)) return output;
     const value = cleanSourceRuleString(node);
     if (value) output.push(value);
     return output;
@@ -28,9 +47,28 @@ function flattenSourceRuleEntries(node, output = []) {
     return output;
   }
   if (typeof node !== "object") return output;
-  if (node.type === "table" || node.rows) return output;
+  if (node.type === "table" || node.rows) {
+    const tableText = sourceTableParagraph(node);
+    if (tableText) output.push(tableText);
+    return output;
+  }
+  if (node.type === "list" && Array.isArray(node.items)) {
+    for (const item of node.items) {
+      if (typeof item === "string") {
+        flattenSourceRuleEntries(item, output);
+        continue;
+      }
+      if (!item || typeof item !== "object") continue;
+      const heading = cleanSourceRuleString(item.name || "").replace(/[.:]+$/g, "");
+      const body = [];
+      flattenSourceRuleEntries(item.entries || item.entry || [], body);
+      if (heading && body.length) output.push(`${heading}. ${body.join(" ")}`);
+      else if (body.length) output.push(...body);
+    }
+    return output;
+  }
   const heading = safeText(node.name);
-  if (heading && node.type === "entries") output.push(`${heading.replace(/[.:]+$/g, "")}.`);
+  if (heading && node.type === "entries") output.push(`${cleanSourceRuleString(heading).replace(/[.:]+$/g, "")}.`);
   if (node.entry) flattenSourceRuleEntries(node.entry, output);
   if (node.entries) flattenSourceRuleEntries(node.entries, output);
   if (node.items) flattenSourceRuleEntries(node.items, output);
@@ -40,7 +78,63 @@ function flattenSourceRuleEntries(node, output = []) {
 function featDescriptionForBackground(feat = {}) {
   const rawEntries = feat.raw_payload?.entries || feat.rawPayload?.entries;
   const sourceText = rawEntries ? flattenSourceRuleEntries(rawEntries, []).join("\n\n") : "";
-  return sourceText || formatPlayerFacingText(feat.description, "This feat is granted by the selected background.");
+  const base = sourceText || formatPlayerFacingText(feat.description, "This feat is granted by the selected background.");
+  const name = normalizeDisplayName(feat.name);
+  if (!TRAINING_PROFICIENCY_FEATS.has(name)) return base;
+  const route = name === "skilled"
+    ? "Forge routing. Skilled grants any combination of three skill or tool proficiencies. Choose all three later in Training → Skills & Proficiencies; they do not consume the class Training-choice allowance."
+    : name === "crafter"
+      ? "Forge routing. Crafter grants three Artisan's Tool proficiencies. Choose those tools later in Training → Skills & Proficiencies."
+      : "Forge routing. Musician grants three Musical Instrument proficiencies. Choose those instruments later in Training → Skills & Proficiencies.";
+  return `${base}\n\n${route}`;
+}
+
+function cleanPrerequisite(value = "") {
+  const cleaned = formatPlayerFacingText(value, "").trim();
+  if (!cleaned || cleaned === "[]" || cleaned === "{}" || /^none$/i.test(cleaned)) return "";
+  return cleaned;
+}
+
+const TOOL_GUIDANCE = Object.freeze({
+  "alchemists supplies": "Typical uses: identify substances or start a fire. Source crafting examples include acid, alchemist's fire, oil, paper, perfume, and component pouches.",
+  "brewers supplies": "Typical uses: identify alcohol or detect a poisoned drink. The 2024 tool rules also list antitoxin as a craftable item.",
+  "calligraphers supplies": "Typical uses: produce ornate writing designed to resist forgery. Source crafting examples include ink and spell scrolls.",
+  "carpenters tools": "Typical uses: build, repair, seal, or pry wooden doors and containers. Source crafting includes clubs, staves, barrels, chests, ladders, portable rams, and torches.",
+  "cartographers tools": "Typical uses: draft maps and record routes or terrain. The source tool rules explicitly support crafting maps.",
+  "cobblers tools": "Typical uses: make or modify footwear; the 2024 rules can prepare footwear to aid an Acrobatics check. Source crafting includes climber's kits.",
+  "cooks utensils": "Typical uses: improve food, identify spoiled or poisoned food, and prepare travel fare. Source crafting includes rations.",
+  "glassblowers tools": "Typical uses: work and inspect glass. Source crafting includes bottles, vials, magnifying glasses, and spyglasses.",
+  "jewelers tools": "Typical uses: appraise gems and perform fine setting or metalwork. Source crafting includes arcane focuses and holy symbols.",
+  "leatherworkers tools": "Typical uses: decorate, cut, stitch, and shape leather. Source crafting includes leather armor, hide armor, whips, slings, pouches, quivers, cases, backpacks, and waterskins.",
+  "masons tools": "Typical uses: cut, mark, or bore stone and perform masonry work. The source rules include chiseling symbols or holes into stone.",
+  "painters supplies": "Typical uses: paint recognizable images and decorative work. Source crafting includes certain druidic focuses and holy symbols.",
+  "potters tools": "Typical uses: shape and inspect ceramic objects. Source crafting includes jugs and lamps.",
+  "smiths tools": "Typical uses: forge and work metal, including prying or reshaping metalwork. Source crafting includes most melee weapons, medium and heavy armor, chains, caltrops, grappling hooks, iron pots, and other metal gear.",
+  "tinkers tools": "Typical uses: assemble or repair small mechanisms and scrap-built devices. Source crafting includes locks, lanterns, traps, manacles, mirrors, shovels, whistles, and tinderboxes.",
+  "weavers tools": "Typical uses: mend or decorate cloth and weave textile goods. Source crafting includes padded armor, clothing, bedrolls, blankets, nets, rope, sacks, and tents.",
+  "woodcarvers tools": "Typical uses: carve patterns and shape wooden equipment. Source crafting includes clubs, staves, many ranged weapons, ammunition, focuses, pens, and needles.",
+  "disguise kit": "Typical uses: alter someone's visible appearance with makeup, hair, and costume work. Source crafting includes costumes.",
+  "forgery kit": "Typical uses: imitate handwriting and duplicate identifying marks such as wax seals, supporting forged or altered documents.",
+  "herbalism kit": "Typical uses: identify plants and prepare herbal goods. Source crafting includes antitoxin, healer's kits, candles, and potions of healing.",
+  "navigators tools": "Typical uses: plot a course and determine position from landmarks or the stars.",
+  "poisoners kit": "Typical uses: detect poison and prepare poison safely. The 2024 tool rules list basic poison as a craftable item.",
+  "thieves tools": "Typical uses: pick locks and disarm traps.",
+  "dice set": "Typical uses: play games of chance, recognize cheating, and judge play at the table.",
+  "dragonchess set": "Typical uses: play the game, recognize cheating, and use your familiarity with the rules and strategies during play.",
+  "playing cards": "Typical uses: play card games, recognize cheating, and judge play at the table.",
+  "three dragon ante set": "Typical uses: play the game, recognize cheating, and judge play at the table.",
+  "vehicles land": "Typical uses: drive, handle, and maneuver land vehicles when a check is required.",
+  "vehicles water": "Typical uses: pilot, handle, and maneuver water vehicles when a check is required.",
+});
+
+function backgroundToolDescription(toolName = "") {
+  const name = safeText(toolName);
+  const key = normalizeDisplayName(name);
+  if (TOOL_GUIDANCE[key]) return TOOL_GUIDANCE[key];
+  if (/instrument|lute|flute|drum|horn|lyre|viol|shawm|pipes/.test(key)) return "Typical uses: perform a known tune, improvise music, accompany a performance, and demonstrate trained musicianship when an instrument check is called for.";
+  if (/gaming|game|cards|dice|dragonchess/.test(key)) return "Typical uses: play the game competently, recognize cheating, and apply trained knowledge of its rules and strategies.";
+  if (/artisan/.test(key)) return "Artisan's Tools represent a specific practiced craft. The selected tool determines the materials you can work, the practical tasks you can attempt, and the mundane items you can make with that craft.";
+  return `${name} represents specialized practical training. Its proficiency applies when the character uses that tool for a task it was designed to accomplish; source-specific Utilize and Craft options are shown when the catalogue provides them.`;
 }
 
 export default function useNpcForgeDerivedModel({
@@ -115,8 +209,8 @@ const backgroundMechanicDetails = useMemo(() => {
   return {
     skills: [...fixedSkills, ...skillChoiceSummaries],
     skillChoices,
-    tools: (selectedBackground?.tools || []).map((name) => ({ label: name, description: toolProficiencyDescription(name) })),
-    originFeat: backgroundFeatOptions.map((feat) => ({ label: feat.name, description: featDescriptionForBackground(feat), prerequisite: feat.prerequisite_text, source: feat.source })),
+    tools: (selectedBackground?.tools || []).map((name) => ({ label: name, description: backgroundToolDescription(name) })),
+    originFeat: backgroundFeatOptions.map((feat) => ({ label: feat.name, description: featDescriptionForBackground(feat), prerequisite: cleanPrerequisite(feat.prerequisite_text), source: feat.source })),
     originFeatValue: backgroundFeatSummary(selectedBackground || {}, featOptions, selectedBackgroundFeat),
     featRequiresChoice: selectedBackgroundFeatRule.requiresChoice,
     spellList: backgroundSpellList,
