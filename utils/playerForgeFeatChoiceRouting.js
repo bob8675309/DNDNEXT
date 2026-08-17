@@ -71,6 +71,15 @@ function fixedCollegeForBackground(background = null) {
   return Object.entries(STRIXHAVEN_COLLEGES).find(([key]) => name.includes(key))?.[0] || "";
 }
 
+function fixedMagicInitiateListForBackground(background = null) {
+  if (String(background?.source || "").toUpperCase() !== "XPHB") return "";
+  const name = norm(background?.name || background?.sourceName || "");
+  if (name === "acolyte") return "Cleric";
+  if (name === "guide") return "Druid";
+  if (name === "sage") return "Wizard";
+  return "";
+}
+
 function strixhavenFields(group, spells, fixedCollege = "") {
   const groupId = group.id;
   const collegeField = fixedCollege ? [] : [{
@@ -135,26 +144,41 @@ function routeStrixhaven(group, selectedBackground, spells) {
   };
 }
 
-function routeMagicInitiate(group, finalAbilities = {}, selectedClass = null) {
+function routeMagicInitiate(group, selectedBackground, finalAbilities = {}, selectedClass = null) {
   const abilityField = (group.fields || []).find((field) => field.id === "spellcasting-ability");
   const allowed = (abilityField?.options || []).map((option) => option.value || option.key).filter((value) => AUTO_CASTING_ABILITIES.includes(String(value).toLowerCase()));
   const resolved = bestEligibleCastingAbility(finalAbilities, allowed.length ? allowed : AUTO_CASTING_ABILITIES, selectedClass?.spellcasting_ability || "");
   const resolvedOption = abilityField?.options?.find((option) => String(option.value || option.key).toLowerCase() === resolved?.key) || null;
-  const fields = (group.fields || []).map((field) => field.id !== "spellcasting-ability" ? field : {
-    ...field,
-    autoSelect: true,
-    options: resolvedOption ? [resolvedOption] : field.options,
-    metadata: { ...(field.metadata || {}), autoCastingAbility: true, allowedCastingAbilities: AUTO_CASTING_ABILITIES },
+  const fixedList = fixedMagicInitiateListForBackground(selectedBackground);
+  const fields = (group.fields || []).map((field) => {
+    if (field.id === "spellcasting-ability") return {
+      ...field,
+      autoSelect: true,
+      options: resolvedOption ? [resolvedOption] : field.options,
+      metadata: { ...(field.metadata || {}), autoCastingAbility: true, allowedCastingAbilities: AUTO_CASTING_ABILITIES },
+    };
+    if (field.id === "spell-list" && fixedList) {
+      const option = (field.options || []).find((candidate) => norm(candidate.value || candidate.label || candidate.key) === norm(fixedList));
+      return { ...field, autoSelect: true, options: option ? [option] : field.options, metadata: { ...(field.metadata || {}), fixedByBackground: true, fixedList } };
+    }
+    if (fixedList && /^cantrips-|^level-1-/.test(field.id)) {
+      const ownsList = field.id.endsWith(`-${slug(fixedList)}`);
+      return ownsList ? { ...field, activeWhen: null } : { ...field, required: false, activeWhen: { groupId: group.id, fieldId: "spell-list", values: [`__inactive-${slug(fixedList)}`] } };
+    }
+    return field;
   });
   return {
     ...group,
     placement: "spells",
     resolverPlacement: "spells",
-    helper: "Choose the spell list and granted spells here. The Forge automatically uses the highest eligible Intelligence, Wisdom, or Charisma score for this feat's spells.",
+    helper: fixedList
+      ? `${selectedBackground?.name || "This background"} fixes Magic Initiate to the ${fixedList} spell list. Choose only its two cantrips and one level 1 spell here. The Forge automatically uses the highest eligible Intelligence, Wisdom, or Charisma score for these spells.`
+      : "Choose the spell list and granted spells here. The Forge automatically uses the highest eligible Intelligence, Wisdom, or Charisma score for this feat's spells.",
     fields,
     metadata: {
       ...(group.metadata || {}),
       sourceMagicFamily: "magic-initiate",
+      fixedSpellList: fixedList || null,
       autoCastingAbility: true,
       allowedCastingAbilities: AUTO_CASTING_ABILITIES,
     },
@@ -193,7 +217,7 @@ export function routeFeatSourceChoiceGroups({ groups = [], selectedBackground = 
     const group = routeAcquisitionPlacement(rawGroup);
     const name = norm(group.metadata?.featName || group.label);
     if (name === "strixhaven initiate") return routeStrixhaven(group, selectedBackground, spells);
-    if (name === "magic initiate") return routeMagicInitiate(group, finalAbilities, selectedClass);
+    if (name === "magic initiate") return routeMagicInitiate(group, selectedBackground, finalAbilities, selectedClass);
     if (TRAINING_PROFICIENCY_FEATS.has(name)) return routeTrainingProficiencyFeat(group);
     return group;
   }).filter((group) => (group.fields || []).every((field) => !field.required || (field.options || []).length >= Number(field.count || 1)));
