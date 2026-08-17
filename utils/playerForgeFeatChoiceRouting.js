@@ -6,6 +6,7 @@ const slug = (value) => norm(value).replace(/\s+/g, "-");
 const array = (value) => Array.isArray(value) ? value : [];
 
 const AUTO_CASTING_ABILITIES = Object.freeze(["int", "wis", "cha"]);
+const TRAINING_PROFICIENCY_FEATS = new Set(["skilled", "crafter", "musician"]);
 const STRIXHAVEN_COLLEGES = Object.freeze({
   lorehold: Object.freeze({ label: "Lorehold", cantrips: ["Light", "Sacred Flame", "Thaumaturgy"], classes: ["Cleric", "Wizard"] }),
   prismari: Object.freeze({ label: "Prismari", cantrips: ["Fire Bolt", "Prestidigitation", "Ray of Frost"], classes: ["Bard", "Sorcerer"] }),
@@ -160,6 +161,23 @@ function routeMagicInitiate(group, finalAbilities = {}, selectedClass = null) {
   };
 }
 
+function routeTrainingProficiencyFeat(group) {
+  const featName = text(group.metadata?.featName || group.label || "This feat");
+  const acquisition = text(group.metadata?.acquisitionLabel || "");
+  return {
+    ...group,
+    placement: "training",
+    resolverPlacement: "training",
+    helper: `${featName} is already granted${acquisition ? ` by ${acquisition}` : ""}. Complete its skill, tool, or instrument proficiencies in Training → Skills & Proficiencies; these feat-granted proficiencies do not consume the class Training-choice allowance.`,
+    metadata: {
+      ...(group.metadata || {}),
+      resolverPlacement: "training",
+      trainingSection: "skills-proficiencies",
+      proficiencyFeat: true,
+    },
+  };
+}
+
 function routeAcquisitionPlacement(group) {
   if (group?.metadata?.acquisitionOwnerType !== "species-bonus") return group;
   return {
@@ -176,6 +194,7 @@ export function routeFeatSourceChoiceGroups({ groups = [], selectedBackground = 
     const name = norm(group.metadata?.featName || group.label);
     if (name === "strixhaven initiate") return routeStrixhaven(group, selectedBackground, spells);
     if (name === "magic initiate") return routeMagicInitiate(group, finalAbilities, selectedClass);
+    if (TRAINING_PROFICIENCY_FEATS.has(name)) return routeTrainingProficiencyFeat(group);
     return group;
   }).filter((group) => (group.fields || []).every((field) => !field.required || (field.options || []).length >= Number(field.count || 1)));
 }
