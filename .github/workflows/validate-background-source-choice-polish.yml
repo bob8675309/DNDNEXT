@@ -6,6 +6,9 @@ on:
       - main
     paths:
       - "utils/playerForgeSourceChoices.js"
+      - "utils/playerForgeFeatChoiceRouting.js"
+      - "utils/backgroundMechanics.js"
+      - "utils/backgroundMechanicsRefined.js"
       - "utils/npcForgeCatalogRefined.js"
       - "components/NpcForgeEmbeddedSourceChoices.js"
       - "components/NpcForgeContextPanel.js"
@@ -16,7 +19,9 @@ on:
       - "components/useNpcForgeController.js"
       - "components/useNpcForgeDerivedModel.js"
       - "pages/login.js"
+      - "styles/character-forge-background-polish.css"
       - "scripts/validate_background_source_choice_polish.mjs"
+      - "scripts/validate_background_catalogue_readability.mjs"
       - ".github/workflows/validate-background-source-choice-polish.yml"
   workflow_dispatch:
 
@@ -42,3 +47,6 @@ jobs:
 
       - name: Validate Background source-choice polish
         run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_background_source_choice_polish.mjs
+
+      - name: Validate Background catalogue readability
+        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_background_catalogue_readability.mjs
