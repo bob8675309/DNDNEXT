@@ -77,7 +77,7 @@ assert.ok(!runeFeatures.some((feature) => /^Rune Styles$/i.test(feature.name)), 
 assert.ok(!runeFeatures.some((feature) => /^Building a Rune Carver Character$/i.test(feature.name)), "Rune Carver build boilerplate must stay removed");
 
 const mechanicsSource = read("utils/backgroundMechanics.js");
-for (const token of ["containsStructuredTable", "Building a .+ Character", "optional flavor sections", "Craft Expertise"]) {
+for (const token of ["containsStructuredTable", "Building a .+ Character", "Optional flavor sections", "Craft Expertise"]) {
   assert.ok(mechanicsSource.includes(token), `catalogue-wide Background prose guard missing ${token}`);
 }
 
