@@ -1,6 +1,5 @@
 import NpcForgeContextPanelRefined from "./NpcForgeContextPanelRefined";
 import NpcForgeClassGuide from "./NpcForgeClassGuide";
-import NpcForgeBackgroundGuide from "./NpcForgeBackgroundGuide";
 import { NpcForgeSourceChoiceContext, useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
 import { projectSelectedSpeciesVariant } from "../utils/speciesVariantFamilies";
 import { filterCatalogSpeciesFamilyFields, projectCatalogSpeciesFamilySelection, sourceChoiceGroupUsesCatalogSpeciesFamily } from "../utils/speciesCatalogFamilyMenu";
@@ -57,24 +56,9 @@ export default function NpcForgeContextPanel(props) {
     : props?.stepKey === "class" || Number(props?.step) === 2
       ? props?.selectedClass
       : null;
-  const activeBackground = props?.detail?.type === "background" && props.detail.option
-    ? props.detail.option
-    : props?.stepKey === "background" || Number(props?.step) === 1
-      ? props?.selectedBackground
-      : null;
   const sourceChoices = useNpcForgeSourceChoices();
   const sourceChoiceState = sourceChoices.state || {};
-  const projectedBackgroundMechanics = playerBackgroundPresentation(props?.backgroundMechanicDetails, props?.playerMode);
-
   if (activeClass) return <NpcForgeClassGuide selectedClass={activeClass} level={props?.draft?.level || 1} onFeatureDetail={props?.onFeatureDetail} />;
-  if (props?.playerMode && activeBackground) return <NpcForgeBackgroundGuide
-    selectedBackground={activeBackground}
-    backgroundMechanicDetails={projectedBackgroundMechanics}
-    selectedBackgroundFeat={props?.selectedBackgroundFeat}
-    backgroundFeatOptions={props?.backgroundFeatOptions || []}
-    onSelectBackgroundFeat={props?.onSelectBackgroundFeat}
-    draft={props?.draft || {}}
-  />;
 
   const projectSpecies = (species) => playerSpeciesPresentation(projectCatalogSpeciesFamilySelection(
     projectSelectedSpeciesVariant(species, sourceChoiceState.groups || [], sourceChoiceState.selections || {}),
@@ -96,6 +80,7 @@ export default function NpcForgeContextPanel(props) {
       ),
     },
   };
+  const projectedBackgroundMechanics = playerBackgroundPresentation(props?.backgroundMechanicDetails, props?.playerMode);
 
   return <NpcForgeSourceChoiceContext.Provider value={presentationSourceChoices}><NpcForgeContextPanelRefined {...props} backgroundMechanicDetails={projectedBackgroundMechanics} selectedSpecies={projectedSelectedSpecies} detail={projectedDetail} /></NpcForgeSourceChoiceContext.Provider>;
 }
