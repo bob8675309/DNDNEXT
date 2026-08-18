@@ -81,7 +81,7 @@ for (const token of [
   "BackgroundInteractiveCard",
   "CompactFeatChooser",
   "BackgroundFeatDetail",
-  "Rune style & medium",
+  "Rune style &amp; medium",
   "ExpandedSpellList",
 ]) assert.ok(guide.includes(token), `mockup-one Background showcase missing ${token}`);
 assert.ok(guide.includes("grid-template-columns:minmax(0,1.08fr) minmax(260px,.92fr)"), "approved mockup-one composition must keep a large Skills card beside the compact right-hand stack");
