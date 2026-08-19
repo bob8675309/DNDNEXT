@@ -1,22 +1,27 @@
-# Character Forge Training Art Inventory
+# Character Forge Training asset inventory
 
-Target: approved compact Training mockup (all selections left, focused context right).
+These assets belong to the player Character Forge Training step and are intentionally small UI illustrations rather than character portraits.
 
-## Shared status icons
+## Summary strip
 - `summary-background.svg` — Background grants
-- `summary-skills.svg` — class/skill selections
-- `summary-training.svg` — Training-choice budget
-- `summary-feat.svg` — feat/class feature choices
+- `summary-skills.svg` — selected/class skills
+- `summary-training.svg` — Training/source choices
+- `summary-feat.svg` — feat/class choices
 
-## Training choice icons
-- `choice-tool.svg` — tool proficiency
-- `choice-instrument.svg` — musical instrument proficiency
-- `choice-language.svg` — language proficiency
+## Source-choice families
+- `choice-tool.svg` — tool proficiency/source choices
+- `choice-instrument.svg` — instrument proficiency/source choices
+- `choice-language.svg` — language proficiency/source choices
 
-## Crafting profession icons
+## Crafting professions
 - `profession-alchemy.svg`
 - `profession-smithing.svg`
 - `profession-scribe.svg`
 - `profession-enchanting.svg`
 
-These SVGs are intentionally lightweight and repo-owned so they remain crisp at small UI sizes. The failed generated-raster art pass can be retried later and swapped into these same semantic slots without changing Training behavior.
+## Integration contract
+- All Training decisions render in the left **Training Picks** pane.
+- The right pane is reserved for the focused **Current Selection** explanation and must not receive Training resolver forms through a portal.
+- The Training modal targets the approved mockup proportions: approximately 43% selection workspace / 57% contextual information at desktop sizes.
+- NPC Forge continues to use the preserved legacy Training implementation.
+- These SVGs can be replaced one-for-one with richer art later without changing choice authority or component behavior.
