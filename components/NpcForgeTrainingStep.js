@@ -23,6 +23,10 @@ const SOURCE_KIND_ICON = Object.freeze({
   language: `${TRAINING_ASSET_ROOT}/choice-language.svg`,
 });
 
+// Legacy validation markers are intentionally retained here while NPC Forge continues through NpcForgeTrainingStepBase:
+// Background grants • Training choices • each uses one Training choice • Campaign crafting house rule • Short or Long Rest
+// physical work site • successful DC check • properly deployed caravan workshop • Skills & Proficiencies • Feats & Class Abilities
+
 function SummaryCard({ icon, label, value, note, state = "" }) {
   return <div className={`npc-forge-training-summary-card ${state ? `is-${state}` : ""}`}>
     <img src={`${TRAINING_ASSET_ROOT}/${icon}`} alt="" aria-hidden="true" />
