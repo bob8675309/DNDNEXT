@@ -20,26 +20,35 @@ export function sourceChoiceGroupsNeedInput(groups = [], selections = {}) {
   return (groups || []).some((group) => activeChoiceFields(group, selections).some((field) => !sourceChoiceFieldComplete(group, field, selections)));
 }
 
-export function sourceChoiceDisplayValue(groups = [], selections = {}, fallback = "Choice required") {
-  const labels = [];
-  const activeFields = [];
-  for (const group of groups || []) {
-    for (const field of activeChoiceFields(group, selections)) {
-      activeFields.push(field);
-      for (const key of selectedKeys(selections, group.id, field.id)) {
-        const option = (field.options || []).find((entry) => entry.key === key);
-        if (option?.label && !labels.includes(option.label)) labels.push(option.label);
-      }
-    }
-  }
-  if (labels.length) return labels.join(", ");
-  if (!activeFields.length) return fallback;
-  const total = activeFields.reduce((sum, field) => sum + Number(field.count || 1), 0);
-  const kinds = new Set(activeFields.map((field) => field.kind));
+function sourceChoicePrompt(fields = []) {
+  const total = fields.reduce((sum, field) => sum + Number(field.count || 1), 0);
+  const kinds = new Set(fields.map((field) => field.kind));
   if (kinds.size === 1 && kinds.has("language")) return `Choose ${total === 1 ? "a language" : `${total} languages`}`;
   if (kinds.size === 1 && kinds.has("tool")) return `Choose ${total === 1 ? "a tool" : `${total} tools`}`;
   if (total === 1) return "Choose an option";
   return `Choose ${total} options`;
+}
+
+export function sourceChoiceDisplayValue(groups = [], selections = {}, fallback = "Choice required") {
+  const labels = [];
+  const manualFields = [];
+  const incompleteFields = [];
+  for (const group of groups || []) {
+    for (const field of group.fields || []) {
+      if (!sourceChoiceFieldIsActive(field, selections)) continue;
+      for (const key of selectedKeys(selections, group.id, field.id)) {
+        const option = (field.options || []).find((entry) => entry.key === key);
+        if (option?.label && !labels.includes(option.label)) labels.push(option.label);
+      }
+      if (field.autoSelect) continue;
+      manualFields.push(field);
+      if (!sourceChoiceFieldComplete(group, field, selections)) incompleteFields.push(field);
+    }
+  }
+  if (incompleteFields.length) return [...labels, sourceChoicePrompt(incompleteFields)].filter(Boolean).join(" • ");
+  if (labels.length) return labels.join(", ");
+  if (!manualFields.length) return fallback;
+  return sourceChoicePrompt(manualFields);
 }
 
 export function sourceChoiceGroupHasKind(group = {}, kind = "") {

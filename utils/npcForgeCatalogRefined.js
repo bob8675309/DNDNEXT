@@ -73,7 +73,7 @@ export function extractAbilityChoices(metadata = {}) {
 }
 
 export function extractBackgroundSkills(metadata = {}) {
-  return backgroundSkillRule({ metadata }).fixedKeys;
+  return backgroundSkillRule({ metadata }).fixedKeys.map(normalizeSkillKey).filter(Boolean);
 }
 
 export function extractBackgroundFeat(metadata = {}) {
@@ -211,6 +211,16 @@ export function normalizeSpeciesOption(row = {}) {
   };
 }
 
+function canonicalBackgroundSkillRule(rule = {}) {
+  return {
+    fixedKeys: uniqueText((rule.fixedKeys || []).map(normalizeSkillKey).filter(Boolean)),
+    choiceGroups: (rule.choiceGroups || []).map((group) => ({
+      ...group,
+      from: uniqueText((group.from || []).map(normalizeSkillKey).filter(Boolean)),
+    })).filter((group) => group.from.length),
+  };
+}
+
 export function normalizeBackgroundOption(row = {}) {
   const metadata = row.metadata || {};
   const rawPayload = row.raw_payload || metadata.rawPayload || metadata.raw_payload || {};
@@ -223,7 +233,7 @@ export function normalizeBackgroundOption(row = {}) {
     rawPayload,
   };
   const featRule = backgroundFeatRule(normalized);
-  const skillRule = backgroundSkillRule(normalized);
+  const skillRule = canonicalBackgroundSkillRule(backgroundSkillRule(normalized));
   const spellList = extractBackgroundSpellList(normalized);
   return {
     id: row.id,

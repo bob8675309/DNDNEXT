@@ -24,10 +24,10 @@ function choiceOption(value, overrides = {}) {
   return { key, value: text(overrides.value || label), label, source: overrides.source || "XPHB", kind: overrides.kind || "enum", ...overrides };
 }
 
-function sourceField({ id, label, kind, count = 1, required = true, options = [], cadence = "creation", replacementCadence = null, activeWhen = null, helper = "", metadata = null, distinctFromFieldId = null }) {
+function sourceField({ id, label, kind, count = 1, required = true, options = [], cadence = "creation", replacementCadence = null, activeWhen = null, helper = "", metadata = null, distinctFromFieldId = null, autoSelect = false }) {
   return {
     id: text(id), label: text(label), kind: text(kind || "enum"), count: Math.max(1, Number(count || 1)), required: Boolean(required),
-    options: array(options), cadence: SOURCE_CHOICE_CADENCES.includes(cadence) ? cadence : "creation", replacementCadence, activeWhen, helper: text(helper), metadata, distinctFromFieldId,
+    options: array(options), cadence: SOURCE_CHOICE_CADENCES.includes(cadence) ? cadence : "creation", replacementCadence, activeWhen, helper: text(helper), metadata, distinctFromFieldId, autoSelect: Boolean(autoSelect),
   };
 }
 
@@ -253,9 +253,43 @@ function preferredToolRows(rows = []) {
   return [...byName.values()];
 }
 
+function cleanToolRuleText(value = "") {
+  return text(value)
+    .replace(/\{@dc\s+([^}]+)}/gi, "DC $1")
+    .replace(/\{@(?:item|skill|action|condition|variantrule|language)\s+([^|}]+)(?:\|[^}]*)?}/gi, "$1")
+    .replace(/\{@[^\s}]+\s+([^|}]+)(?:\|[^}]*)?}/g, "$1")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function toolRuleFacts(row = {}) {
+  const entries = array(row.payload?.entries);
+  const items = entries.flatMap((entry) => entry?.type === "list" ? array(entry.items) : []);
+  return items.flatMap((item) => {
+    const label = cleanToolRuleText(item?.name || "").replace(/:+$/g, "");
+    const value = array(item?.entries).map(cleanToolRuleText).filter(Boolean).join(" ");
+    return label && value ? [{ label, value }] : [];
+  });
+}
+
 export function buildToolOptionCatalog(rows = []) {
   const preferred = preferredToolRows(rows);
-  const optionFromRow = (row) => choiceOption(row.item_name || row.payload?.name, { key: text(row.item_key || row.payload?.item_key || `${slug(row.item_name || row.payload?.name)}|${row.payload?.source || "XPHB"}`), source: row.payload?.source || "XPHB", kind: "tool", metadata: { itemKey: row.item_key || row.payload?.item_key || null, itemType: row.item_type || row.payload?.uiType || null, sourceType: row.payload?.type || null } });
+  const optionFromRow = (row) => {
+    const facts = toolRuleFacts(row);
+    const useful = facts.filter((fact) => ["utilize", "craft"].includes(norm(fact.label)));
+    return choiceOption(row.item_name || row.payload?.name, {
+      key: text(row.item_key || row.payload?.item_key || `${slug(row.item_name || row.payload?.name)}|${row.payload?.source || "XPHB"}`),
+      source: row.payload?.source || "XPHB",
+      kind: "tool",
+      description: useful.map((fact) => `${fact.label}: ${fact.value}`).join(" • "),
+      metadata: {
+        itemKey: row.item_key || row.payload?.item_key || null,
+        itemType: row.item_type || row.payload?.uiType || null,
+        sourceType: row.payload?.type || null,
+        facts,
+      },
+    });
+  };
   const all = preferred.map(optionFromRow).sort((a, b) => a.label.localeCompare(b.label));
   const artisan = all.filter((option) => /^AT(?:\||$)/i.test(text(option.metadata?.sourceType)));
   const instruments = all.filter((option) => /^INS(?:\||$)/i.test(text(option.metadata?.sourceType)) || norm(option.metadata?.itemType) === "instrument");
@@ -271,41 +305,126 @@ function toolChoiceDescriptor(key, value, catalog) {
   return null;
 }
 
+function toolReferenceOptions(reference, catalog) {
+  const raw = text(reference);
+  const compact = norm(raw).replace(/\s+/g, "");
+  if (["anyartisanstool", "anyartisantool", "artisantools", "artisantool"].includes(compact)) return catalog.artisan;
+  if (["anymusicalinstrument", "musicalinstrument", "musicalinstruments"].includes(compact)) return catalog.instruments;
+  if (["anygamingset", "gamingset", "gamingsets"].includes(compact)) return catalog.gaming;
+  const exact = catalog.all.find((option) => norm(option.label) === norm(raw));
+  return exact ? [exact] : [];
+}
+
+function dedupeToolOptions(options = []) {
+  return [...new Map(array(options).map((option) => [option.key, option])).values()];
+}
+
+function fallbackToolOption(reference, source = "XPHB") {
+  const raw = text(reference);
+  if (!raw) return null;
+  return choiceOption(raw.replace(/^./, (letter) => letter.toUpperCase()), { kind: "tool", source });
+}
+
+function fixedLanguageOptions(entry = {}, source = "XPHB") {
+  return Object.entries(entry).flatMap(([key, value]) => {
+    if (key === "choose" || key === "anyStandard" || key === "anyExotic" || !(value === true || Number(value) > 0)) return [];
+    const option = LANGUAGE_BY_NORM.get(norm(key));
+    return option ? [{ ...option, source: source || option.source }] : [];
+  });
+}
+
+const RUNE_STYLE_OPTIONS = Object.freeze([
+  ["wax-clay", "Wax or clay", "Inscribe runes in wax or clay with a fine metal needle."],
+  ["carved-wood", "Carved wood", "Whittle wood into small figurines and mark them with runes."],
+  ["glass-beads", "Glass beads", "Engrave runes on glass beads and thread them into necklaces or bracelets."],
+  ["stitched-cloth", "Stitched clothing", "Stitch runes into the hems of clothing."],
+  ["animal-bones", "Animal bones", "Carve runes on animal bones and cast the bones in meaningful formations."],
+  ["carved-candles", "Carved candles", "Draw runes into candles, then melt wax to smooth the engravings."],
+].map(([key, label, description]) => Object.freeze(choiceOption(label, { key, value: label, source: "BGG", kind: "enum", description }))));
+
 export function buildBackgroundSourceChoiceGroups(background = null, toolRows = []) {
   if (!background) return [];
   const groups = [];
+  const backgroundKey = slug(background.id || background.name);
+  const backgroundSource = background.source || "XPHB";
+  const clanCrafter = norm(background.name || background.sourceName) === "clan crafter";
   const catalog = buildToolOptionCatalog(toolRows);
   const toolEntries = array(background.metadata?.tools || background.rawPayload?.toolProficiencies || background.raw_payload?.toolProficiencies);
   const descriptors = [];
+  const fixedTools = [];
   for (const entry of toolEntries) {
     if (!entry || typeof entry !== "object") continue;
     for (const [key, value] of Object.entries(entry)) {
+      if (key === "choose") continue;
       const descriptor = toolChoiceDescriptor(key, value, catalog);
-      if (descriptor) descriptors.push(descriptor);
+      if (descriptor) {
+        descriptors.push(descriptor);
+        continue;
+      }
+      if (!(value === true || Number(value) > 0)) continue;
+      const resolved = toolReferenceOptions(key, catalog);
+      fixedTools.push(...(resolved.length ? resolved : [fallbackToolOption(key, backgroundSource)].filter(Boolean)));
+    }
+    const choose = entry.choose && typeof entry.choose === "object" ? entry.choose : null;
+    if (choose) {
+      const options = dedupeToolOptions(array(choose.from).flatMap((reference) => toolReferenceOptions(reference, catalog)));
+      const count = Math.max(1, Math.min(options.length || 1, Number(choose.count || 1)));
+      if (options.length) descriptors.push({ count, label: count === 1 ? "Choose a tool proficiency" : `Choose ${count} tool proficiencies`, options });
     }
   }
+  const craftExpertiseMetadata = clanCrafter ? { campaignRule: "clan-crafter-craft-expertise", craftExpertise: true } : null;
+  const uniqueFixedTools = dedupeToolOptions(fixedTools);
+  if (uniqueFixedTools.length) groups.push(sourceGroup({
+    id: `background-${backgroundKey}-fixed-tools`, ownerType: "background", ownerKey: text(background.id || background.name), label: "Background fixed tool proficiency", source: backgroundSource, placement: "background",
+    helper: clanCrafter ? "This tool is granted by Clan Crafter and counts as Expertise on DnDNext crafting checks made with it." : "These tool proficiencies are granted directly by the selected background.",
+    metadata: craftExpertiseMetadata,
+    fields: [sourceField({ id: "fixed-tools", label: "Granted tools", kind: "tool", count: uniqueFixedTools.length, options: uniqueFixedTools, autoSelect: true })],
+  }));
   descriptors.forEach((descriptor, index) => {
     if (!descriptor.options.length) return;
     groups.push(sourceGroup({
-      id: `background-${slug(background.id || background.name)}-tool-${index + 1}`, ownerType: "background", ownerKey: text(background.id || background.name), label: "Background tool proficiency", source: background.source || "XPHB", placement: "background",
-      helper: "This tool proficiency is granted by the selected background and is separate from campaign crafting-profession training.",
+      id: `background-${backgroundKey}-tool-${index + 1}`, ownerType: "background", ownerKey: text(background.id || background.name), label: "Background tool proficiency", source: backgroundSource, placement: "background",
+      helper: clanCrafter ? "Choose your Clan Crafter artisan's tool. DnDNext treats this selected craft as Expertise for crafting checks." : "This tool proficiency is granted by the selected background and is separate from campaign crafting-profession training.",
+      metadata: craftExpertiseMetadata,
       fields: [sourceField({ id: "tools", label: descriptor.label, kind: "tool", count: descriptor.count, options: descriptor.options })],
     }));
   });
 
+  if (norm(background.name || background.sourceName) === "rune carver") groups.push(sourceGroup({
+    id: `background-${backgroundKey}-rune-style`,
+    ownerType: "background",
+    ownerKey: text(background.id || background.name),
+    label: "Rune Styles",
+    source: backgroundSource || "BGG",
+    placement: "background",
+    helper: "Choose the physical medium and style your character normally uses to make runes. This is a persistent roleplaying choice, not a limitation on Rune Shaper magic.",
+    metadata: { flavorChoice: true, family: "rune-style" },
+    fields: [sourceField({ id: "rune-style", label: "Rune style and medium", kind: "enum", options: RUNE_STYLE_OPTIONS })],
+  }));
+
   const languageEntries = array(background.metadata?.languages || background.rawPayload?.languageProficiencies || background.raw_payload?.languageProficiencies);
   languageEntries.forEach((entry, index) => {
     if (!entry || typeof entry !== "object") return;
+    const fixed = fixedLanguageOptions(entry, backgroundSource);
+    const fixedKeys = new Set(fixed.map((option) => option.key));
+    if (fixed.length) groups.push(sourceGroup({
+      id: `background-${backgroundKey}-fixed-language-${index + 1}`, ownerType: "background", ownerKey: text(background.id || background.name), label: "Background fixed language", source: backgroundSource, placement: "background",
+      helper: "These languages are granted directly by the selected background source.",
+      fields: [sourceField({ id: "fixed-languages", label: "Granted languages", kind: "language", count: fixed.length, options: fixed, autoSelect: true })],
+    }));
     const choose = entry.choose && typeof entry.choose === "object" ? entry.choose : null;
-    const explicit = array(choose?.from).map((name) => LANGUAGE_BY_NORM.get(norm(name))).filter(Boolean);
+    const explicit = array(choose?.from).map((name) => LANGUAGE_BY_NORM.get(norm(name))).filter((option) => option && !fixedKeys.has(option.key));
     if (explicit.length) groups.push(sourceGroup({
-      id: `background-${slug(background.id || background.name)}-language-${index + 1}`, ownerType: "background", ownerKey: text(background.id || background.name), label: "Background language", source: background.source || "XPHB", placement: "background",
-      fields: [sourceField({ id: "languages", label: "Choose language", kind: "language", count: Number(choose?.count || 1), options: explicit })],
+      id: `background-${backgroundKey}-language-${index + 1}`, ownerType: "background", ownerKey: text(background.id || background.name), label: "Background language", source: backgroundSource, placement: "background",
+      fields: [sourceField({ id: "languages", label: "Choose language", kind: "language", count: Math.max(1, Math.min(explicit.length, Number(choose?.count || 1))), options: explicit })],
     }));
-    if (Number(entry.anyStandard || 0) > 0) groups.push(sourceGroup({
-      id: `background-${slug(background.id || background.name)}-standard-language-${index + 1}`, ownerType: "background", ownerKey: text(background.id || background.name), label: "Background Standard language", source: background.source || "XPHB", placement: "background",
-      fields: [sourceField({ id: "languages", label: "Choose Standard language", kind: "language", count: Number(entry.anyStandard || 1), options: STANDARD_LANGUAGE_OPTIONS })],
-    }));
+    if (Number(entry.anyStandard || 0) > 0) {
+      const standardOptions = STANDARD_LANGUAGE_OPTIONS.filter((option) => !fixedKeys.has(option.key));
+      groups.push(sourceGroup({
+        id: `background-${backgroundKey}-standard-language-${index + 1}`, ownerType: "background", ownerKey: text(background.id || background.name), label: "Background Standard language", source: backgroundSource, placement: "background",
+        fields: [sourceField({ id: "languages", label: "Choose Standard language", kind: "language", count: Math.max(1, Math.min(standardOptions.length, Number(entry.anyStandard || 1))), options: standardOptions })],
+      }));
+    }
   });
   return groups;
 }

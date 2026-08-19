@@ -1,0 +1,58 @@
+name: Validate Background source-choice polish
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "utils/playerForgeSourceChoices.js"
+      - "utils/playerForgeFeatChoiceRouting.js"
+      - "utils/backgroundFeatPresentation.js"
+      - "utils/backgroundMechanics.js"
+      - "utils/backgroundMechanicsRefined.js"
+      - "utils/npcForgeCatalogRefined.js"
+      - "components/NpcForgeBackgroundGuide.js"
+      - "components/NpcForgeEmbeddedSourceChoices.js"
+      - "components/NpcForgeContextPanel.js"
+      - "components/NpcForgeContextPanelRefined.js"
+      - "components/NpcForgeStepContent.js"
+      - "components/NpcForgeTrainingStep.js"
+      - "components/NewNpcModalV3Refined.js"
+      - "components/useNpcForgeController.js"
+      - "components/useNpcForgeDerivedModel.js"
+      - "pages/login.js"
+      - "styles/character-forge-background-polish.css"
+      - "scripts/validate_background_source_choice_polish.mjs"
+      - "scripts/validate_background_catalogue_readability.mjs"
+      - "scripts/validate_background_dossier_structure.mjs"
+      - ".github/workflows/validate-background-source-choice-polish.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate Background source-choice polish
+        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_background_source_choice_polish.mjs
+
+      - name: Validate Background catalogue readability
+        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_background_catalogue_readability.mjs
+
+      - name: Validate Background dossier structure
+        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_background_dossier_structure.mjs

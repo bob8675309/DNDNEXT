@@ -1,5 +1,6 @@
 import NpcForgeContextPanelRefined from "./NpcForgeContextPanelRefined";
 import NpcForgeClassGuide from "./NpcForgeClassGuide";
+import NpcForgeBackgroundGuide from "./NpcForgeBackgroundGuide";
 import { NpcForgeSourceChoiceContext, useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
 import { projectSelectedSpeciesVariant } from "../utils/speciesVariantFamilies";
 import { filterCatalogSpeciesFamilyFields, projectCatalogSpeciesFamilySelection, sourceChoiceGroupUsesCatalogSpeciesFamily } from "../utils/speciesCatalogFamilyMenu";
@@ -40,6 +41,14 @@ function playerSpeciesPresentation(species = null, playerMode = false) {
   return species;
 }
 
+function playerBackgroundPresentation(details = null, playerMode = false) {
+  if (!details || !playerMode) return details;
+  // Background skill options are explained in the Background presentation, but their
+  // actual selection belongs to Training → Skills & Proficiencies. The derived model
+  // adds a routed summary to `skills`, so suppress only the old embedded chooser here.
+  return { ...details, skillChoices: [] };
+}
+
 // Compatibility marker for the established focused validator: groups: (sourceChoiceState.groups || []).filter
 export default function NpcForgeContextPanel(props) {
   const activeClass = props?.detail?.type === "class" && props.detail.option
@@ -47,9 +56,24 @@ export default function NpcForgeContextPanel(props) {
     : props?.stepKey === "class" || Number(props?.step) === 2
       ? props?.selectedClass
       : null;
+  const activeBackground = props?.detail?.type === "background" && props.detail.option
+    ? props.detail.option
+    : props?.stepKey === "background" || Number(props?.step) === 1
+      ? props?.selectedBackground
+      : null;
   const sourceChoices = useNpcForgeSourceChoices();
   const sourceChoiceState = sourceChoices.state || {};
+  const projectedBackgroundMechanics = playerBackgroundPresentation(props?.backgroundMechanicDetails, props?.playerMode);
+
   if (activeClass) return <NpcForgeClassGuide selectedClass={activeClass} level={props?.draft?.level || 1} onFeatureDetail={props?.onFeatureDetail} />;
+  if (props?.playerMode && activeBackground) return <NpcForgeBackgroundGuide
+    selectedBackground={activeBackground}
+    backgroundMechanicDetails={projectedBackgroundMechanics}
+    selectedBackgroundFeat={props?.selectedBackgroundFeat}
+    backgroundFeatOptions={props?.backgroundFeatOptions || []}
+    onSelectBackgroundFeat={props?.onSelectBackgroundFeat}
+    draft={props?.draft || {}}
+  />;
 
   const projectSpecies = (species) => playerSpeciesPresentation(projectCatalogSpeciesFamilySelection(
     projectSelectedSpeciesVariant(species, sourceChoiceState.groups || [], sourceChoiceState.selections || {}),
@@ -72,5 +96,5 @@ export default function NpcForgeContextPanel(props) {
     },
   };
 
-  return <NpcForgeSourceChoiceContext.Provider value={presentationSourceChoices}><NpcForgeContextPanelRefined {...props} selectedSpecies={projectedSelectedSpecies} detail={projectedDetail} /></NpcForgeSourceChoiceContext.Provider>;
+  return <NpcForgeSourceChoiceContext.Provider value={presentationSourceChoices}><NpcForgeContextPanelRefined {...props} backgroundMechanicDetails={projectedBackgroundMechanics} selectedSpecies={projectedSelectedSpecies} detail={projectedDetail} /></NpcForgeSourceChoiceContext.Provider>;
 }

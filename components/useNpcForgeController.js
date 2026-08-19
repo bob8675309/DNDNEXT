@@ -128,7 +128,7 @@ export default function useNpcForgeController({ show, onClose, onCreated, locati
   function stepErrors(key) {
     const errors = [];
     if (key === "species") { if (!selectedSpecies) errors.push("Choose a species."); }
-    if (key === "background") { if (!selectedBackground) errors.push("Choose a background."); if (selectedBackgroundFeatRule.requiresChoice && !selectedBackgroundFeat) errors.push("Choose the feat granted by this background."); backgroundSkillChoiceGroups.forEach((group) => { if (uniqueText(draft.backgroundSkillChoices?.[group.id] || []).length !== group.count) errors.push(`Choose ${group.count} background skill${group.count === 1 ? "" : "s"}.`); }); }
+    if (key === "background") { if (!selectedBackground) errors.push("Choose a background."); if (selectedBackgroundFeatRule.requiresChoice && !selectedBackgroundFeat) errors.push("Choose the feat granted by this background."); }
     if (key === "class") { if (!selectedClass) errors.push("Choose a class or No Adventuring Class."); if (Number(draft.level) < 1 || Number(draft.level) > 20) errors.push("Level must be between 1 and 20."); }
     if (key === "abilities") {
       if ((draft.abilityMethod === "3d6" || draft.abilityMethod === "4d6") && ABILITY_KEYS.some((ability) => !allocation[ability])) errors.push("Assign all six generated totals.");
@@ -138,7 +138,13 @@ export default function useNpcForgeController({ show, onClose, onCreated, locati
       else if (bonus.mode === "three") { if (uniqueText(bonus.plusOnes || []).length !== 3) errors.push("Choose three different +1 abilities."); }
       else if (!ABILITY_KEYS.includes(bonus.plusTwo) || !ABILITY_KEYS.includes(bonus.plusOne) || bonus.plusTwo === bonus.plusOne) errors.push("Choose different abilities for the +2 and +1 Species Bonus.");
     }
-    if (key === "training") { if ((draft.selectedClassSkills || []).length !== classSkillConfig.count) errors.push(`Choose exactly ${classSkillConfig.count} class skill${classSkillConfig.count === 1 ? "" : "s"}.`); if (!playerMode) PROFESSION_KEYS.forEach((professionKey) => { const profession = draft.professions?.[professionKey] || {}; if (profession.offersService && Number(profession.rank || 0) === 0) errors.push(`${PROFESSION_DEFINITIONS[professionKey].label} must be trained before offering service.`); }); }
+    if (key === "training") {
+      backgroundSkillChoiceGroups.forEach((group) => {
+        if (uniqueText(draft.backgroundSkillChoices?.[group.id] || []).length !== group.count) errors.push(`Choose ${group.count} background skill${group.count === 1 ? "" : "s"} in Training.`);
+      });
+      if ((draft.selectedClassSkills || []).length !== classSkillConfig.count) errors.push(`Choose exactly ${classSkillConfig.count} class skill${classSkillConfig.count === 1 ? "" : "s"}.`);
+      if (!playerMode) PROFESSION_KEYS.forEach((professionKey) => { const profession = draft.professions?.[professionKey] || {}; if (profession.offersService && Number(profession.rank || 0) === 0) errors.push(`${PROFESSION_DEFINITIONS[professionKey].label} must be trained before offering service.`); });
+    }
     if (key === "spells" && playerMode) { if (!spellModel?.catalogReady) errors.push(spellModel?.error || "Wait for the canonical spell catalogue and class progression to finish loading."); else errors.push(...validateStartingSpellSelections(spellModel, spellRows, draft.spellSelections)); }
     if (key === "equipment" && playerMode) { if (!equipmentModel?.catalogReady) errors.push(equipmentModel?.error || "Wait for source-backed starting equipment to finish loading."); else if (!startingEquipmentSelectionComplete(equipmentModel,draft.startingEquipment || {})) errors.push("Complete the class package, Background package, equipment-category choices, and higher-level wealth roll."); }
     if (key === "identity") { if (!safeText(draft.name)) errors.push("Enter or generate a name."); if (!safeText(draft.role)) errors.push("Enter a role or title."); if (!draft.portraitLibraryId) errors.push("Choose a portrait for this character."); }

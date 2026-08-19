@@ -208,10 +208,14 @@ function SpeciesTraitDetails({ playerMode = false, details = [], traits = [], ch
 function BackgroundSkillChooser({ groups = [], selections = {}, onToggle }) { return <div className="npc-forge-context-choice-stack">{groups.map((group) => { const selected = selections[group.id] || []; return <section key={group.id}><div className="npc-forge-context-choice-head"><b>Choose {group.count} skill{group.count === 1 ? "" : "s"}</b><small>{selected.length}/{group.count} selected</small></div><div className="npc-forge-context-choice-grid">{group.options.map((option) => <button key={option.key} type="button" className={selected.includes(option.key) ? "is-selected" : ""} onClick={() => onToggle?.(group.id, option.key, group.count)}><strong>{option.label}</strong><span>{option.description}</span></button>)}</div></section>; })}</div>; }
 function BackgroundFeatChooser({ options = [], selectedFeat, onSelect }) { return <div className="npc-forge-context-choice-grid feats">{options.map((feat) => <button key={feat.id} type="button" className={selectedFeat?.id === feat.id ? "is-selected" : ""} onClick={() => onSelect?.(feat.id)}><strong>{feat.name}</strong><small>{sourceLabel(feat.source)}</small><span>{formatPlayerFacingText(feat.description, "This feat is granted by the background.")}</span></button>)}</div>; }
 
-function backgroundFeatureTextForDisplay(background, value) {
+export function backgroundFeatureTextForDisplay(background, value) {
   const formatted = formatPlayerFacingText(value);
   if (safeText(background?.source).toUpperCase() !== "SCC") return formatted;
   return formatted
+    .split(/\n\s*\n/)
+    .filter((paragraph) => !/^(?:Lorehold|Prismari|Quandrix|Silverquill|Witherbloom) Spells$/i.test(paragraph.trim()))
+    .filter((paragraph) => !/^Spell Level:\s*.+?\s+•\s+Spells:/i.test(paragraph.trim()))
+    .join("\n\n")
     .replace(/\s*Consider customizing your spells[\s\S]*$/i, "")
     .replace(/\s*(?:Lorehold|Prismari|Quandrix|Silverquill|Witherbloom) spells might[\s\S]*$/i, "")
     .trim();
@@ -366,6 +370,8 @@ export default function NpcForgeContextPanel({ playerMode = false, step = 0, ste
     skillSourceGroups.forEach((group) => claimed.add(group.id));
     const fallbackGroups = sourceGroups.filter((group) => !claimed.has(group.id));
     const sourceSelections = sourceChoiceState.selections || {};
+    const toolHasChoices = sourceChoiceGroupsHaveChoices(toolGroups, sourceSelections);
+    const languageHasChoices = sourceChoiceGroupsHaveChoices(languageGroups, sourceSelections);
     const backgroundRows = [];
     if (skills.length || selectedChoiceLabels.length || skillSourceGroups.length) backgroundRows.push({
       label: "Skills",
@@ -379,15 +385,15 @@ export default function NpcForgeContextPanel({ playerMode = false, step = 0, ste
       label: "Tools",
       value: sourceChoiceDisplayValue(toolGroups, sourceSelections, labelList(option.tools) || "Choice required"),
       details: backgroundMechanicDetails?.tools,
-      control: toolGroups.length ? <NpcForgeEmbeddedSourceChoices groups={toolGroups} selections={sourceSelections} onToggle={toggleSourceChoice} onSet={setSourceChoice} compact /> : null,
-      actionLabel: toolGroups.length ? "Choose" : "Info",
+      control: toolHasChoices ? <NpcForgeEmbeddedSourceChoices groups={toolGroups} selections={sourceSelections} onToggle={toggleSourceChoice} onSet={setSourceChoice} compact /> : null,
+      actionLabel: toolHasChoices ? "Choose" : "Info",
       defaultOpen: sourceChoiceGroupsNeedInput(toolGroups, sourceSelections),
     });
     if (languageGroups.length) backgroundRows.push({
       label: "Languages",
       value: sourceChoiceDisplayValue(languageGroups, sourceSelections, "Choice required"),
-      control: <NpcForgeEmbeddedSourceChoices groups={languageGroups} selections={sourceSelections} onToggle={toggleSourceChoice} onSet={setSourceChoice} compact />,
-      actionLabel: "Choose",
+      control: languageHasChoices ? <NpcForgeEmbeddedSourceChoices groups={languageGroups} selections={sourceSelections} onToggle={toggleSourceChoice} onSet={setSourceChoice} compact /> : null,
+      actionLabel: languageHasChoices ? "Choose" : "Info",
       defaultOpen: sourceChoiceGroupsNeedInput(languageGroups, sourceSelections),
     });
     const originFeatValue = backgroundMechanicDetails?.originFeatValue || selectedBackgroundFeat?.name || "";

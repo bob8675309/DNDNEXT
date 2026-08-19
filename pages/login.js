@@ -74,10 +74,19 @@ export default function LoginPage() {
         return;
       }
 
-      const userId = data?.user?.id || data?.session?.user?.id || "";
-      const isAdmin = await resolveAdminAfterLogin(userId);
+      // Keep the old bounded role-routing path available only for explicit
+      // compatibility links. Normal sign-in now enters the shared Profile host
+      // for everyone so PlayerCharacterProfilePanelUnified opens immediately.
+      if (router.query.legacyRoleRoute === "1") {
+        const userId = data?.user?.id || data?.session?.user?.id || "";
+        const isAdmin = await resolveAdminAfterLogin(userId);
+        setLoading(false);
+        void router.replace(isAdmin ? "/admin" : "/profile");
+        return;
+      }
+
       setLoading(false);
-      void router.replace(isAdmin ? "/admin" : "/profile");
+      void router.replace("/profile?characterProfile=1");
     } catch (cause) {
       setError(cause?.message || "Login could not be completed. Please try again.");
     } finally {

@@ -28,6 +28,14 @@ function backgroundPayload(background = {}) {
     || {};
 }
 
+function containsStructuredTable(node) {
+  if (!node) return false;
+  if (Array.isArray(node)) return node.some(containsStructuredTable);
+  if (typeof node !== "object") return false;
+  if (node.type === "table" || Array.isArray(node.rows)) return true;
+  return [node.entry, node.entries, node.items].some(containsStructuredTable);
+}
+
 function flattenSupplementalText(node, output = []) {
   if (node == null) return output;
   if (typeof node === "string") {
@@ -137,9 +145,20 @@ function supplementalBackgroundDetails(background = {}) {
     if (!entry || typeof entry !== "object" || Array.isArray(entry)) return [];
     const rawName = safeText(entry.name);
     if (!rawName || /^Suggested Characteristics$/i.test(rawName)) return [];
+    // Source books often repeat character-building advice after the actual rules.
+    // That prose is useful in the book, but it becomes a redundant wall of text in the Forge.
+    if (/^Building a .+ Character$/i.test(rawName)) return [];
+    // Rune Styles is promoted to a real persisted Background choice by the source-choice layer.
+    if (/^Rune Styles$/i.test(rawName) && normalizedName(sourceName) === "rune carver") return [];
     if (entry.data?.isFeature || /(?:^|\s)Feature\s*:/i.test(rawName)) return [];
     if (entry.type === "table" || entry.rows || entry.type === "list") return [];
     if (entry.type && entry.type !== "entries") return [];
+    // Optional flavor sections such as Specialty, Favored Event, Fishing Tale, Origin Stories,
+    // trinkets, and similar random tables are not creator requirements. Showing their lead-in
+    // prose after dropping the table leaves orphaned instructions and creates the loose text
+    // seen in browser review, so omit the whole supplemental section unless it is promoted to
+    // a real persisted choice (Rune Styles above).
+    if (containsStructuredTable(entry)) return [];
     const description = flattenSupplementalText(entry.entries || entry.entry || []).join("\n\n").trim();
     if (!description) return [];
     const name = formatPlayerFacingInline(rawName);
@@ -149,6 +168,16 @@ function supplementalBackgroundDetails(background = {}) {
       supplemental: true,
     }];
   });
+}
+
+function clanCrafterHouseRule(sourceName = "") {
+  if (normalizedName(sourceName) !== "clan crafter") return null;
+  return {
+    name: "DnDNext House Rule: Craft Expertise",
+    description: "Your chosen Clan Crafter artisan's tool counts as Expertise when the check is specifically part of crafting with that tool. This does not double proficiency on unrelated checks that merely happen to use the same tool. The selected tool is persisted with a Craft Expertise marker so the campaign Crafting engine can consume it during the upcoming crafting-system pass.",
+    supplemental: true,
+    campaignRule: true,
+  };
 }
 
 export function backgroundFeatureDetails(background = {}) {
@@ -174,6 +203,11 @@ export function backgroundFeatureDetails(background = {}) {
       seen.add(key);
       normalized.push(detail);
     }
+  }
+  const campaignRule = clanCrafterHouseRule(sourceName);
+  if (campaignRule) {
+    const key = `${safeText(campaignRule.name).toLowerCase()}|${safeText(campaignRule.description).toLowerCase()}`;
+    if (!seen.has(key)) normalized.push(campaignRule);
   }
   return normalized;
 }

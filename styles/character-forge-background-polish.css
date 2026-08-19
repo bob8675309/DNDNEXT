@@ -1,0 +1,582 @@
+/* Background Forge readability pass.
+ * Scope all corrections to the unified player Forge so NPC/profile surfaces keep
+ * their established presentation. These rules intentionally load after the
+ * earlier background and smoke-fix stylesheets.
+ */
+
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-context-choice-grid button,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-context-choice-grid.feats button,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-embedded-choice__buttons button {
+  border-color: rgba(168, 108, 255, .34) !important;
+  color: #fff !important;
+  background: #111522 !important;
+  background-image: none !important;
+  opacity: 1 !important;
+  box-shadow: none;
+}
+
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-context-choice-grid button:hover,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-context-choice-grid.feats button:hover,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-embedded-choice__buttons button:hover {
+  border-color: rgba(168, 108, 255, .7) !important;
+  background: #171529 !important;
+}
+
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-context-choice-grid button.is-selected,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-context-choice-grid.feats button.is-selected,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-embedded-choice__buttons button.is-selected {
+  border-color: #a86cff !important;
+  background: #20183a !important;
+  box-shadow: inset 3px 0 #a86cff !important;
+}
+
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-context-choice-grid button > strong,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-context-choice-grid button > span,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-context-choice-grid button > small,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-embedded-choice__buttons button > strong,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-embedded-choice__buttons button > small {
+  background: transparent !important;
+  opacity: 1 !important;
+}
+
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-context-choice-grid button > strong,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-embedded-choice__buttons button > strong {
+  color: #fff !important;
+}
+
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-context-choice-grid button > span,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-context-choice-grid button > small,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-embedded-choice__buttons button > small {
+  color: rgba(255, 255, 255, .8) !important;
+}
+
+.unified-player-character-forge .npc-forge-context-card.is-origin select,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-embedded-choice__slots select {
+  color: #fff !important;
+  background: #0f1320 !important;
+  border-color: rgba(168, 108, 255, .42) !important;
+  color-scheme: dark;
+}
+
+.unified-player-character-forge .npc-forge-context-card.is-origin select option,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-embedded-choice__slots select option {
+  color: #fff !important;
+  background: #0f1320 !important;
+}
+
+/* Imported source text must always read top-to-bottom. Older compact-row rules
+ * can otherwise turn each paragraph into a narrow grid column, which made Rune
+ * Shaper and several legacy Backgrounds effectively unreadable. */
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-background-features details,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-background-features details[open],
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-background-info-rows .npc-forge-context-row-details,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-background-info-rows .npc-forge-context-row-details article,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-rule-copy {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-background-features details[open] > .npc-forge-rule-copy,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-background-info-rows .npc-forge-context-row-details article > .npc-forge-rule-copy,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-background-detail-copy.npc-forge-rule-copy {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-auto-flow: row !important;
+  gap: .58rem !important;
+  width: 100% !important;
+}
+
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-rule-copy > p,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-background-detail-copy,
+.unified-player-character-forge .npc-forge-context-card.is-origin .npc-forge-context-row-details article p {
+  display: block !important;
+  width: 100% !important;
+  max-width: 88ch !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  color: rgba(255, 255, 255, .86) !important;
+  font-size: .74rem !important;
+  line-height: 1.65 !important;
+  white-space: normal !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+  columns: auto !important;
+  column-count: 1 !important;
+}
+
+.unified-player-character-forge .npc-forge-background-source-fallback,
+.unified-player-character-forge .npc-forge-background-source-fallback > div,
+.unified-player-character-forge .npc-forge-background-source-fallback details {
+  min-width: 0;
+  width: 100%;
+}
+
+.unified-player-character-forge .npc-forge-background-source-fallback details > .npc-forge-embedded-choice {
+  margin-top: .65rem;
+}
+
+/* Empty parser artifacts such as `Prerequisite: []` should never reserve space
+ * even if a stale catalogue row reaches the presentation layer. */
+.unified-player-character-forge .npc-forge-background-detail-prerequisite:empty {
+  display: none !important;
+}
+
+/* Player Background dossier. This follows the Class guide's summary-first pattern:
+ * grants stay compact, one selected feat is expanded at a time, and dense source
+ * rules become named sections/tables instead of one continuous wall of text. */
+.unified-player-character-forge .npc-forge-background-guide {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  width: 100%;
+  padding: 10px 12px 18px;
+  color: #fff;
+}
+
+.unified-player-character-forge .npc-forge-bg-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: start;
+  padding: 18px 20px;
+  border: 1px solid rgba(88, 214, 199, .24);
+  border-radius: 13px;
+  background: linear-gradient(125deg, rgba(126, 72, 199, .16), rgba(88, 214, 199, .055) 62%, rgba(8, 12, 20, .92));
+}
+
+.unified-player-character-forge .npc-forge-bg-hero > div {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.unified-player-character-forge .npc-forge-bg-hero > div > span,
+.unified-player-character-forge .npc-forge-bg-section > header > span {
+  color: #bfa0ff;
+  font-size: .58rem;
+  font-weight: 900;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.unified-player-character-forge .npc-forge-bg-hero h2 {
+  margin: 0;
+  font-size: 1.18rem;
+  line-height: 1.2;
+}
+
+.unified-player-character-forge .npc-forge-bg-hero p {
+  max-width: 92ch;
+  margin: 2px 0 0;
+  color: rgba(255, 255, 255, .82);
+  font-size: .76rem;
+  line-height: 1.65;
+  white-space: pre-line;
+}
+
+.unified-player-character-forge .npc-forge-bg-hero > em {
+  padding: 5px 9px;
+  border: 1px solid rgba(88, 214, 199, .32);
+  border-radius: 999px;
+  color: #bff9f1;
+  background: rgba(88, 214, 199, .07);
+  font-size: .56rem;
+  font-style: normal;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.unified-player-character-forge .npc-forge-bg-section,
+.unified-player-character-forge .npc-forge-bg-spells {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+  padding: 12px 13px;
+  border: 1px solid rgba(168, 108, 255, .22);
+  border-radius: 11px;
+  background: rgba(12, 15, 24, .82);
+}
+
+.unified-player-character-forge .npc-forge-bg-section > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.unified-player-character-forge .npc-forge-bg-section > header > small {
+  color: rgba(255, 255, 255, .55);
+  font-size: .56rem;
+}
+
+.unified-player-character-forge .npc-forge-bg-grant-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.unified-player-character-forge .npc-forge-bg-grant-card {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  min-width: 0;
+  padding: 10px 11px;
+  border: 1px solid rgba(255, 255, 255, .09);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, .025);
+}
+
+.unified-player-character-forge .npc-forge-bg-grant-card.is-required {
+  border-color: rgba(168, 108, 255, .55);
+  box-shadow: inset 3px 0 #a86cff;
+  background: rgba(126, 72, 199, .075);
+}
+
+.unified-player-character-forge .npc-forge-bg-grant-card > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.unified-player-character-forge .npc-forge-bg-grant-card > header > span {
+  color: rgba(255, 255, 255, .5);
+  font-size: .54rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.unified-player-character-forge .npc-forge-bg-grant-card > header > em {
+  padding: 2px 6px;
+  border-radius: 999px;
+  color: #bff9f1;
+  background: rgba(88, 214, 199, .08);
+  font-size: .51rem;
+  font-style: normal;
+}
+
+.unified-player-character-forge .npc-forge-bg-grant-card > strong {
+  color: #fff;
+  font-size: .71rem;
+  line-height: 1.45;
+}
+
+.unified-player-character-forge .npc-forge-bg-grant-card details > summary,
+.unified-player-character-forge .npc-forge-bg-feat-disclosure > summary {
+  cursor: pointer;
+  color: #d9c7ff;
+  font-size: .58rem;
+  font-weight: 800;
+  list-style: none;
+}
+
+.unified-player-character-forge .npc-forge-bg-grant-card details > summary::-webkit-details-marker,
+.unified-player-character-forge .npc-forge-bg-feat-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+
+.unified-player-character-forge .npc-forge-bg-info-list {
+  display: grid;
+  gap: 7px;
+  margin-top: 7px;
+}
+
+.unified-player-character-forge .npc-forge-bg-info-list article {
+  display: grid;
+  gap: 3px;
+  padding: 7px 8px;
+  border-left: 2px solid rgba(88, 214, 199, .45);
+  background: rgba(88, 214, 199, .035);
+}
+
+.unified-player-character-forge .npc-forge-bg-info-list article > strong {
+  font-size: .62rem;
+}
+
+.unified-player-character-forge .npc-forge-bg-rule-copy {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.unified-player-character-forge .npc-forge-bg-rule-copy p,
+.unified-player-character-forge .npc-forge-bg-feature-body > p,
+.unified-player-character-forge .npc-forge-bg-feat-detail p,
+.unified-player-character-forge .npc-forge-bg-signature-choice > p,
+.unified-player-character-forge .npc-forge-bg-spells p {
+  max-width: 88ch;
+  margin: 0;
+  color: rgba(255, 255, 255, .8);
+  font-size: .66rem;
+  line-height: 1.6;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.unified-player-character-forge .npc-forge-bg-feat-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 6px;
+}
+
+.unified-player-character-forge .npc-forge-bg-feat-buttons button {
+  display: grid;
+  gap: 2px;
+  padding: 8px 9px;
+  border: 1px solid rgba(168, 108, 255, .3);
+  border-radius: 7px;
+  color: #fff;
+  background: #111522;
+  text-align: left;
+}
+
+.unified-player-character-forge .npc-forge-bg-feat-buttons button.is-selected {
+  border-color: #a86cff;
+  background: #20183a;
+  box-shadow: inset 3px 0 #a86cff;
+}
+
+.unified-player-character-forge .npc-forge-bg-feat-buttons strong { font-size: .63rem; }
+.unified-player-character-forge .npc-forge-bg-feat-buttons small { color: rgba(255,255,255,.56); font-size: .51rem; }
+
+.unified-player-character-forge .npc-forge-bg-feat-select {
+  display: grid;
+  gap: 4px;
+}
+
+.unified-player-character-forge .npc-forge-bg-feat-select > span {
+  color: #d9c7ff;
+  font-size: .57rem;
+  font-weight: 800;
+}
+
+.unified-player-character-forge .npc-forge-bg-feat-select select,
+.unified-player-character-forge .npc-forge-background-guide select {
+  width: 100%;
+  min-width: 0;
+  padding: 7px 8px;
+  border: 1px solid rgba(168, 108, 255, .38);
+  border-radius: 7px;
+  color: #fff;
+  background: #0f1320;
+  color-scheme: dark;
+}
+
+.unified-player-character-forge .npc-forge-background-guide select option {
+  color: #fff;
+  background: #0f1320;
+}
+
+.unified-player-character-forge .npc-forge-bg-feat-disclosure[open] {
+  margin-top: 3px;
+}
+
+.unified-player-character-forge .npc-forge-bg-feat-detail {
+  display: grid;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 10px;
+  border: 1px solid rgba(168, 108, 255, .22);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, .16);
+}
+
+.unified-player-character-forge .npc-forge-bg-feat-detail > header {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: start;
+}
+
+.unified-player-character-forge .npc-forge-bg-feat-detail > header > div {
+  display: grid;
+  gap: 2px;
+}
+
+.unified-player-character-forge .npc-forge-bg-feat-detail > header span {
+  color: #bfa0ff;
+  font-size: .5rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.unified-player-character-forge .npc-forge-bg-feat-detail > header strong { font-size: .72rem; }
+.unified-player-character-forge .npc-forge-bg-feat-detail > header small { color: rgba(255,255,255,.55); font-size: .52rem; }
+
+.unified-player-character-forge .npc-forge-bg-feat-intro,
+.unified-player-character-forge .npc-forge-bg-feat-sections {
+  display: grid;
+  gap: 8px;
+}
+
+.unified-player-character-forge .npc-forge-bg-feat-sections > section {
+  display: grid;
+  gap: 5px;
+  padding: 8px 9px;
+  border-left: 2px solid rgba(168, 108, 255, .58);
+  border-radius: 0 7px 7px 0;
+  background: rgba(126, 72, 199, .055);
+}
+
+.unified-player-character-forge .npc-forge-bg-feat-sections > section > strong,
+.unified-player-character-forge .npc-forge-bg-feat-table > strong {
+  color: #eadfff;
+  font-size: .63rem;
+}
+
+.unified-player-character-forge .npc-forge-bg-feat-table {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.unified-player-character-forge .npc-forge-bg-feat-table__row {
+  display: grid;
+  grid-auto-columns: minmax(130px, 1fr);
+  grid-auto-flow: column;
+  min-width: max-content;
+  border: 1px solid rgba(255, 255, 255, .07);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, .02);
+}
+
+.unified-player-character-forge .npc-forge-bg-feat-table__row.is-head {
+  border-color: rgba(88, 214, 199, .18);
+  background: rgba(88, 214, 199, .045);
+}
+
+.unified-player-character-forge .npc-forge-bg-feat-table__row > span {
+  padding: 6px 7px;
+  color: rgba(255, 255, 255, .78);
+  font-size: .58rem;
+  line-height: 1.45;
+}
+
+.unified-player-character-forge .npc-forge-bg-feat-table__row.is-head > span {
+  color: #bff9f1;
+  font-weight: 800;
+}
+
+.unified-player-character-forge .npc-forge-bg-route-note,
+.unified-player-character-forge .npc-forge-bg-footer-note {
+  padding: 8px 10px;
+  border-left: 3px solid #58d6c7;
+  border-radius: 7px;
+  color: rgba(255, 255, 255, .76);
+  background: rgba(88, 214, 199, .055);
+  font-size: .6rem;
+  line-height: 1.5;
+}
+
+.unified-player-character-forge .npc-forge-bg-signature-choice {
+  border-color: rgba(88, 214, 199, .27);
+  background: linear-gradient(120deg, rgba(88, 214, 199, .055), rgba(126, 72, 199, .055));
+}
+
+.unified-player-character-forge .npc-forge-bg-features > div {
+  display: grid;
+  gap: 7px;
+}
+
+.unified-player-character-forge .npc-forge-bg-features details {
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .02);
+}
+
+.unified-player-character-forge .npc-forge-bg-features summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.unified-player-character-forge .npc-forge-bg-features summary::-webkit-details-marker { display: none; }
+.unified-player-character-forge .npc-forge-bg-features summary strong { font-size: .65rem; }
+.unified-player-character-forge .npc-forge-bg-features summary em { color: #bfa0ff; font-size: .52rem; font-style: normal; }
+.unified-player-character-forge .npc-forge-bg-feature-body { display: grid; gap: 9px; padding: 0 10px 10px; }
+
+.unified-player-character-forge .npc-forge-bg-mini-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 6px;
+}
+
+.unified-player-character-forge .npc-forge-bg-mini-cards article {
+  display: grid;
+  gap: 3px;
+  padding: 7px 8px;
+  border: 1px solid rgba(168, 108, 255, .16);
+  border-radius: 7px;
+  background: rgba(126, 72, 199, .04);
+}
+
+.unified-player-character-forge .npc-forge-bg-mini-cards article strong { color: #eadfff; font-size: .6rem; }
+.unified-player-character-forge .npc-forge-bg-mini-cards article p { margin: 0; color: rgba(255,255,255,.72); font-size: .57rem; line-height: 1.45; }
+
+.unified-player-character-forge .npc-forge-bg-spells > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.unified-player-character-forge .npc-forge-bg-spells > summary::-webkit-details-marker { display: none; }
+.unified-player-character-forge .npc-forge-bg-spells > summary strong { font-size: .66rem; }
+.unified-player-character-forge .npc-forge-bg-spells > summary em { color: #9cece2; font-size: .52rem; font-style: normal; }
+.unified-player-character-forge .npc-forge-bg-spells > div { display: grid; gap: 8px; }
+.unified-player-character-forge .npc-forge-bg-spells section { display: grid; gap: 5px; }
+.unified-player-character-forge .npc-forge-bg-spells section > strong { color: #d9c7ff; font-size: .6rem; }
+.unified-player-character-forge .npc-forge-bg-spells section > div { display: flex; flex-wrap: wrap; gap: 5px; }
+
+.unified-player-character-forge .npc-forge-bg-spell-chip {
+  position: relative;
+  padding: 4px 7px;
+  border: 1px solid rgba(88, 214, 199, .18);
+  border-radius: 999px;
+  color: #d8fff9;
+  background: rgba(88, 214, 199, .055);
+  font-size: .55rem;
+}
+
+.unified-player-character-forge .npc-forge-bg-spell-chip > span[role="tooltip"] {
+  display: none;
+  position: absolute;
+  z-index: 30;
+  left: 0;
+  bottom: calc(100% + 7px);
+  width: min(360px, 70vw);
+  padding: 9px;
+  border: 1px solid rgba(88, 214, 199, .3);
+  border-radius: 8px;
+  color: #fff;
+  background: #0c1019;
+  box-shadow: 0 10px 30px rgba(0,0,0,.45);
+}
+
+.unified-player-character-forge .npc-forge-bg-spell-chip:hover > span[role="tooltip"],
+.unified-player-character-forge .npc-forge-bg-spell-chip:focus > span[role="tooltip"] { display: grid; gap: 5px; }
+.unified-player-character-forge .npc-forge-bg-spell-chip > span[role="tooltip"] strong { font-size: .64rem; }
+.unified-player-character-forge .npc-forge-bg-spell-chip > span[role="tooltip"] small { color: #9cece2; font-size: .52rem; }
+.unified-player-character-forge .npc-forge-bg-spell-chip > span[role="tooltip"] p { font-size: .57rem; line-height: 1.5; }
+
+.unified-player-character-forge .npc-forge-background-guide .npc-forge-embedded-choice {
+  margin-top: 2px;
+}
+
+.unified-player-character-forge .npc-forge-background-guide .npc-forge-embedded-choice > section {
+  background: rgba(126, 72, 199, .055);
+}
+
+@media (max-width: 760px) {
+  .unified-player-character-forge .npc-forge-bg-grant-grid { grid-template-columns: minmax(0, 1fr); }
+  .unified-player-character-forge .npc-forge-bg-hero { grid-template-columns: minmax(0, 1fr); }
+  .unified-player-character-forge .npc-forge-bg-hero > em { justify-self: start; }
+}
