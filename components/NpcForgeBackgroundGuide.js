@@ -9,14 +9,15 @@ function backgroundArtFamily(background = {}) {
   const source = String(background?.source || "").toUpperCase();
 
   if (/giant foundling|giant/.test(name)) return { banner: "giant", crest: "giant" };
-  if (/haunted|ruined|spirit medium|reborn|dark gift/.test(name)) return { banner: "haunted", crest: "haunted" };
-  if (/clan crafter|guild artisan|artisan|crafter|smith|shipwright|failed merchant/.test(name)) return { banner: "craft", crest: "craft" };
-  if (/noble|courtier/.test(name)) return { banner: "intrigue", crest: "noble-court" };
+  if (/haunted|ruined|spirit medium|reborn|dark gift|vampire|mist wanderer|shadowmoor/.test(name)) return { banner: "haunted", crest: "haunted" };
+  if (/clan crafter|guild artisan|artisan|crafter|smith|shipwright|failed merchant|merchant/.test(name)) return { banner: "craft", crest: "craft" };
+  if (/noble|courtier|inheritor/.test(name)) return { banner: "intrigue", crest: "noble-court" };
   if (/acolyte|priest|temple|religious|faith/.test(name)) return { banner: "faith", crest: "faith" };
-  if (/charlatan|criminal|gambler|inquisitor|investigator|spy|smuggler|urban bounty|faceless|rewarded/.test(name)) return { banner: "intrigue", crest: "intrigue" };
-  if (/sailor|guide|outlander|far traveler|wander|wayfarer|explorer|gate warden|hermit/.test(name)) return { banner: "travel", crest: "travel" };
-  if (/sage|scribe|student|scholar|mage|rune carver|planar philosopher|astral drifter|cloistered|lorehold|prismari|quandrix|silverquill|witherbloom/.test(name) || source === "SCC" || source === "DSOTDQ") return { banner: "arcane", crest: "arcane" };
-  if (/guard|watch|soldier|knight|mercenary|marine|gladiator|athlete|warrior/.test(name)) return { banner: "martial", crest: "martial" };
+  if (/gladiator/.test(name)) return { banner: "martial", crest: "martial" };
+  if (/charlatan|criminal|gambler|carouser|inquisitor|investigator|spy|smuggler|urban bounty|faceless|rewarded|faction agent|entertainer|urchin|witchlight/.test(name)) return { banner: "intrigue", crest: "intrigue" };
+  if (/sailor|guide|outlander|far traveler|wander|wayfarer|explorer|gate warden|hermit|anthropologist|farmer|fisher|folk hero|uthgardt|wildspacer|lorwyn/.test(name)) return { banner: "travel", crest: "travel" };
+  if (/sage|scribe|student|scholar|mage|rune carver|planar philosopher|astral drifter|cloistered|lorehold|prismari|quandrix|silverquill|witherbloom|feylost/.test(name) || source === "SCC" || source === "DSOTDQ") return { banner: "arcane", crest: "arcane" };
+  if (/guard|watch|soldier|knight|mercenary|marine|athlete|warrior/.test(name)) return { banner: "martial", crest: "martial" };
   return { banner: "travel", crest: "travel" };
 }
 
