@@ -1,0 +1,40 @@
+name: Validate Training tab redesign
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "components/NpcForgeTrainingStep.js"
+      - "components/NpcForgeTrainingStepBase.js"
+      - "components/NpcForgeContextPanelRefined.js"
+      - "public/ui/forge/training/**"
+      - "scripts/validate_training_tab_redesign.mjs"
+      - ".github/workflows/validate-training-tab-redesign.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate Training tab redesign
+        run: node scripts/validate_training_tab_redesign.mjs
+
+      - name: Production build
+        run: npm run build
