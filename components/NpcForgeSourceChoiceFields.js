@@ -10,7 +10,7 @@ function currentForgePreview() {
   return activeModal?.querySelector(".npc-forge-preview") || null;
 }
 
-export default function NpcForgeSourceChoiceFields({ placement, ownerType = "", title = "Required source choices", empty = null }) {
+export default function NpcForgeSourceChoiceFields({ placement, ownerType = "", title = "Required source choices", empty = null, inline = false }) {
   const { state, toggleChoice, setChoice } = useNpcForgeSourceChoices();
   const [previewTarget, setPreviewTarget] = useState(null);
   const groups = sourceChoiceGroupsForPlacement(state, placement).filter((group) => {
@@ -24,8 +24,12 @@ export default function NpcForgeSourceChoiceFields({ placement, ownerType = "", 
     : title;
 
   useEffect(() => {
+    if (inline) {
+      setPreviewTarget(null);
+      return;
+    }
     setPreviewTarget(currentForgePreview());
-  }, [placement, ownerType, groups.length]);
+  }, [placement, ownerType, groups.length, inline]);
 
   // Species and Background choices are rendered inside their owning purple rule cards by
   // NpcForgeContextPanelRefined. Keeping this wrapper mounted preserves registration and
@@ -41,7 +45,10 @@ export default function NpcForgeSourceChoiceFields({ placement, ownerType = "", 
     onSet={setChoice}
   />;
 
-  // Resolver-only source groups on later steps still belong in the right information rail.
-  // Falling back inline preserves standalone/test rendering when no Forge preview exists.
+  // Training deliberately opts out of the historical preview-rail portal: the Character
+  // Forge Training contract keeps every decision in the left selection pane and reserves
+  // the right pane for contextual explanation. Other resolver surfaces keep the legacy
+  // portal behavior unless they opt into inline rendering explicitly.
+  if (inline) return fields;
   return previewTarget ? createPortal(fields, previewTarget) : fields;
 }
