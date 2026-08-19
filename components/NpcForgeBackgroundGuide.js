@@ -28,10 +28,33 @@ function applyArtFamily(host, background) {
   guide.dataset.backgroundCrest = art.crest;
 }
 
+function applyCatalogueArt(host) {
+  const body = host?.closest?.(".npc-forge-body");
+  const rows = body?.querySelectorAll?.(".npc-forge-step-background.is-player-mode .npc-forge-catalog-list > button") || [];
+  rows.forEach((row) => {
+    const name = row.querySelector("strong")?.textContent || "";
+    const source = row.querySelector("small")?.textContent || "";
+    const art = backgroundArtFamily({ name, source });
+    row.classList.add("npc-forge-background-catalog-row");
+    row.dataset.backgroundArt = art.banner;
+    row.dataset.backgroundCrest = art.crest;
+    row.style.setProperty("--bg-row-banner", `url("${ART_ROOT}/banners/bg-banner-${art.banner}.webp")`);
+    row.style.setProperty("--bg-row-crest", `url("${ART_ROOT}/crests/bg-crest-${art.crest}.webp")`);
+  });
+}
+
 export default function NpcForgeBackgroundGuide(props) {
   const hostRef = useRef(null);
   useEffect(() => {
-    applyArtFamily(hostRef.current, props?.selectedBackground);
+    const host = hostRef.current;
+    applyArtFamily(host, props?.selectedBackground);
+    applyCatalogueArt(host);
+
+    const workspace = host?.closest?.(".npc-forge-body")?.querySelector?.(".npc-forge-workspace");
+    if (!workspace || typeof MutationObserver === "undefined") return undefined;
+    const observer = new MutationObserver(() => applyCatalogueArt(host));
+    observer.observe(workspace, { childList: true, subtree: true });
+    return () => observer.disconnect();
   }, [props?.selectedBackground?.id, props?.selectedBackground?.name, props?.selectedBackground?.source]);
 
   return <div ref={hostRef} className="npc-forge-bg-art-bridge">
@@ -77,6 +100,18 @@ export default function NpcForgeBackgroundGuide(props) {
 
       .unified-player-character-forge .npc-forge-bg-art-bridge .npc-forge-bg-showcase-hero-copy h2{text-shadow:0 2px 10px rgba(0,0,0,.85)}
       .unified-player-character-forge .npc-forge-bg-art-bridge .npc-forge-bg-showcase-hero-copy p,.unified-player-character-forge .npc-forge-bg-art-bridge .npc-forge-bg-showcase-story p{text-shadow:0 1px 6px rgba(0,0,0,.85)}
+
+      .unified-player-character-forge .npc-forge-step-background.is-player-mode .npc-forge-catalog-list{gap:3px!important}
+      .unified-player-character-forge .npc-forge-step-background.is-player-mode .npc-forge-catalog-list>button.npc-forge-background-catalog-row{position:relative;isolation:isolate;overflow:hidden;grid-template-columns:32px minmax(0,1fr)!important;gap:7px!important;min-height:43px!important;padding:4px 7px!important}
+      .unified-player-character-forge .npc-forge-step-background.is-player-mode .npc-forge-catalog-list>button.npc-forge-background-catalog-row::before{content:""!important;position:relative;z-index:2;display:block!important;width:28px!important;height:33px!important;border:0!important;border-radius:0!important;color:transparent!important;background:var(--bg-row-crest) center/contain no-repeat!important;filter:drop-shadow(0 4px 5px rgba(0,0,0,.42));opacity:.88}
+      .unified-player-character-forge .npc-forge-step-background.is-player-mode .npc-forge-catalog-list>button.npc-forge-background-catalog-row::after{content:"";position:absolute;z-index:0;inset:0 0 0 auto;width:46%;background-image:linear-gradient(90deg,rgba(13,18,29,0),rgba(13,18,29,.38)),var(--bg-row-banner);background-position:center right;background-size:cover;opacity:.075;pointer-events:none;transition:opacity .15s ease}
+      .unified-player-character-forge .npc-forge-step-background.is-player-mode .npc-forge-catalog-list>button.npc-forge-background-catalog-row:hover::after{opacity:.12}
+      .unified-player-character-forge .npc-forge-step-background.is-player-mode .npc-forge-catalog-list>button.npc-forge-background-catalog-row.is-active::after{opacity:.17}
+      .unified-player-character-forge .npc-forge-step-background.is-player-mode .npc-forge-catalog-list>button.npc-forge-background-catalog-row.is-active::before{opacity:1;filter:drop-shadow(0 4px 7px rgba(168,108,255,.32)) drop-shadow(0 3px 4px rgba(0,0,0,.45))}
+      .unified-player-character-forge .npc-forge-step-background.is-player-mode .npc-forge-catalog-list>button.npc-forge-background-catalog-row>span{position:relative;z-index:2;display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;gap:2px 7px!important;min-width:0}
+      .unified-player-character-forge .npc-forge-step-background.is-player-mode .npc-forge-catalog-list>button.npc-forge-background-catalog-row>span>strong{grid-column:1;color:#fff!important;font-size:.64rem!important;line-height:1.15!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .unified-player-character-forge .npc-forge-step-background.is-player-mode .npc-forge-catalog-list>button.npc-forge-background-catalog-row>span>small{grid-column:2;grid-row:1;justify-self:end;max-width:84px;padding:1px 5px!important;border:1px solid rgba(119,225,211,.12);border-radius:999px;color:rgba(219,255,250,.68)!important;background:rgba(36,108,103,.13)!important;font-size:.45rem!important;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .unified-player-character-forge .npc-forge-step-background.is-player-mode .npc-forge-catalog-list>button.npc-forge-background-catalog-row.is-active>span>small{border-color:rgba(168,108,255,.22);color:#eadfff!important;background:rgba(126,72,199,.15)!important}
     `}</style>
   </div>;
 }
