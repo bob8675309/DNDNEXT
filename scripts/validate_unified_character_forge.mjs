@@ -55,7 +55,7 @@ includes(forgeSource, ["NPC_STEP_LABELS", "PLAYER_STEP_LABELS", '"Spells"', 'typ
 includes(abilityStep, ["Ability Score Generation Method", "Standard 3d6", "4d6 drop lowest die", "Point Buy", "Standard Class Array", "Manual Assign", "Reroll All Six", "Species Bonus stays in the right information panel"], "ability step");
 includes(speciesBonus, ["Species Bonus", "+2 in one stat and +1 in a different stat", "+1 in three different stats", "Choose a feat"], "contextual Species Bonus");
 expect(!abilityStep.includes("npc-forge-species-bonus mt-4"), "Species Bonus controls returned to the Abilities main workspace");
-includes(trainingStep, ["Background grants", "Training choices", "each uses one Training choice", "Campaign crafting house rule", "Short or Long Rest", "physical work site", "successful DC check"], "training step");
+includes(trainingStep, ["Background Grants", "Class Skills", "Training Choices", "Crafting Professions", "Feat &amp; Class Choices", "each uses one Training choice", "Recipe-specific work sites and crafting times", "NpcForgeTrainingStepBase", "NpcForgeSourceChoiceFields"], "training step");
 expect(!trainingStep.includes("Expertise is not self-assigned during creation"), "player Training still shows the redundant Expertise denial");
 includes(spellStep, ['from("class_level_progression")', 'from("spells_catalog")', "startingSpellSourceForRow", "Known spells", "Spellbook", "Prepared", "Highest spell level", "Background-expanded access"], "spell step");
 includes(review, ["Confirm your player character", "Class Progression", "Ability Scores", "Training & Professions", "Starting Magic", "Story & Campaign Hooks", "Campaign Status", "Edit"], "review dossier");
