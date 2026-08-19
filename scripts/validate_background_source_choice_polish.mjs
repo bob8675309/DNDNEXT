@@ -130,7 +130,7 @@ assert.ok(!backgroundValidation.includes("backgroundSkillChoiceGroups"), "variab
 assert.match(controllerSource, /if \(key === "training"\)[\s\S]*?backgroundSkillChoiceGroups\.forEach/, "variable Background skill choices must be validated in Training");
 
 const trainingSource = read("components/NpcForgeTrainingStep.js");
-for (const token of ["Background skill choices", "onToggleBackgroundSkill", "do not use class Training choices", "incompleteBackgroundSkills", 'placement="training"']) assert.ok(trainingSource.includes(token), `Training routing missing ${token}`);
+for (const token of ["Background skill choice", "onToggleBackgroundSkill", "do not silently become class-skill picks", "incompleteBackgroundSkills", 'placement="training"']) assert.ok(trainingSource.includes(token), `Training routing missing ${token}`);
 
 const contextWrapper = read("components/NpcForgeContextPanel.js");
 assert.ok(contextWrapper.includes("playerBackgroundPresentation"), "Background context wrapper must own the Training routing projection");
