@@ -21,9 +21,18 @@
 - haunted
 - noble / court
 
+## Complete: section icons
+- skills
+- tools
+- languages
+- origin feat
+- background feature
+- before adventuring
+- special choice
+- lore / info
+
 ## Still to finish
-- section icon set
 - narrative strips
 - helper strip variants
-- wire assets into the Background Forge presentation
+- wire banners, crests, and icons into the Background Forge presentation
 - special background-specific art only after the shared kit is live
