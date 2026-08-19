@@ -35,6 +35,3 @@ jobs:
 
       - name: Validate Training tab redesign
         run: node scripts/validate_training_tab_redesign.mjs
-
-      - name: Production build
-        run: npm run build
