@@ -1,6 +1,6 @@
 # Background Forge Art Asset Inventory
 
-Reusable family banner batch committed previously:
+## Complete: reusable family banners
 - martial
 - arcane
 - travel
@@ -10,18 +10,18 @@ Reusable family banner batch committed previously:
 - giant
 - haunted
 
-Reusable crest batch in this commit:
+## Complete: reusable family crests
 - martial
 - arcane
 - travel
+- intrigue / rogue
 - craft
 - faith
 - giant
 - haunted
+- noble / court
 
-Still to finish:
-- intrigue crest
-- noble/court crest
+## Still to finish
 - section icon set
 - narrative strips
 - helper strip variants
