@@ -7,6 +7,9 @@ on:
     paths:
       - "components/NpcForgeTrainingStep.js"
       - "components/NpcForgeTrainingStepBase.js"
+      - "components/NpcForgeTrainingContextCard.js"
+      - "components/NpcForgeSourceChoiceFields.js"
+      - "components/NpcForgeContextPanel.js"
       - "components/NpcForgeContextPanelRefined.js"
       - "public/ui/forge/training/**"
       - "scripts/validate_training_tab_redesign.mjs"
