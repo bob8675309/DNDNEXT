@@ -53,3 +53,7 @@ Separate raster art for every Before Adventuring strip and footer/help strip is 
 ## Future unique art
 
 Only add background-specific art when browser review shows a shared family is not distinctive enough. Do **not** create one-off art for all 75 Backgrounds by default. The approved strategy is shared families first, unique art only for important/special exceptions.
+
+## Current visual checkpoint
+
+The shared-art system, selected-background hero, and catalogue family treatment are ready for browser review. If that review is accepted, no additional generic Background artwork is required before the tab can be merged; future art should be exception-driven rather than generated speculatively.
