@@ -3,7 +3,6 @@ import { ABILITY_KEYS, ABILITY_LABELS } from "../utils/characterCreation";
 export default function NpcForgeSpeciesBonusPanel({
   draft,
   selectedSpecies,
-  featOptions = [],
   onSetSpeciesBonus,
   onToggleSpeciesPlusOne,
 }) {
@@ -14,14 +13,13 @@ export default function NpcForgeSpeciesBonusPanel({
     plusOnes: [],
     featId: "",
   };
-  const selectedFeat = featOptions.find((feat) => String(feat?.id || "") === String(speciesBonus.featId || "")) || null;
 
   return (
     <section className="npc-forge-species-bonus npc-forge-species-bonus--context">
       <div className="npc-forge-subheading">
         Species Bonus <small>{selectedSpecies?.name || "Selected species"}</small>
       </div>
-      <p>Choose one bonus package. A feat replaces the ability increases rather than stacking with them.</p>
+      <p>Choose one bonus package. If you take the Bonus Feat package, the specific feat is chosen later in Training.</p>
       <div className="npc-forge-segmented compact">
         <button
           type="button"
@@ -40,9 +38,9 @@ export default function NpcForgeSpeciesBonusPanel({
         <button
           type="button"
           className={speciesBonus.mode === "feat" ? "is-active" : ""}
-          onClick={() => onSetSpeciesBonus({ mode: "feat", plusTwo: "", plusOne: "", plusOnes: [] })}
+          onClick={() => onSetSpeciesBonus({ mode: "feat", plusTwo: "", plusOne: "", plusOnes: [], featId: "" })}
         >
-          Choose a feat
+          Bonus feat
         </button>
       </div>
 
@@ -82,19 +80,10 @@ export default function NpcForgeSpeciesBonusPanel({
       ) : null}
 
       {speciesBonus.mode === "feat" ? (
-        <>
-          <label className="npc-forge-species-feat-select mt-2">
-            <span>Species bonus feat</span>
-            <select value={speciesBonus.featId || ""} onChange={(event) => onSetSpeciesBonus({ featId: event.target.value })}>
-              <option value="">Choose feat</option>
-              {featOptions.map((feat) => (
-                <option key={feat.id} value={feat.id}>{feat.name} • {feat.category || feat.source || "Feat"}</option>
-              ))}
-            </select>
-            <small>Origin feats are included. Normal prerequisites still apply.</small>
-          </label>
-          {selectedFeat ? <div className="npc-forge-species-feat-routing-note"><strong>Selected: {selectedFeat.name}</strong><span>The feat is acknowledged here. Any choices owned by the feat are completed later in <b>Training → Feats & Class Abilities</b>.</span></div> : null}
-        </>
+        <div className="npc-forge-species-feat-routing-note">
+          <strong>Bonus Feat selected</strong>
+          <span>The actual feat choice is resolved in <b>Training → Feat Choices</b>, where its prerequisites and any feat-owned follow-up choices can be handled together.</span>
+        </div>
       ) : null}
       <style jsx global>{`
         .npc-forge-species-feat-routing-note{display:grid;gap:4px;margin-top:8px;padding:9px 10px;border-left:3px solid #58d6c7;border-radius:8px;background:rgba(88,214,199,.075)}.npc-forge-species-feat-routing-note strong{color:#d8fff9;font-size:.68rem}.npc-forge-species-feat-routing-note span{color:rgba(255,255,255,.82);font-size:.63rem;line-height:1.45}.npc-forge-species-feat-routing-note b{color:#fff}
