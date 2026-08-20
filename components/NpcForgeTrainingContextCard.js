@@ -40,10 +40,10 @@ const SKILL_USES = Object.freeze({
 });
 
 const PROFESSION_USES = Object.freeze({
-  alchemy: ["Brew campaign alchemical recipes when you know the recipe", "Identify and process ingredients used by alchemical formulas", "Work with an Alchemist's Kit during supported crafting checks"],
-  smithing: ["Forge and repair mundane metal weapons and armor", "Work metals and smithing materials during campaign crafting", "Use Smith's Tools for supported forge and reforge work"],
-  scribe: ["Prepare written magical or technical works supported by campaign recipes", "Produce precise inscriptions, diagrams, and formal records", "Use Calligrapher's Supplies for supported scribing work"],
-  enchanting: ["Apply supported magical imbuements to eligible equipment", "Work with magical components at an enchanting station or equivalent site", "Use Enchanter's Tools for campaign enchanting checks"],
+  alchemy: ["Brew campaign alchemical recipes when you know the recipe", "Identify and process ingredients used by alchemical formulas", "Use Alchemist's Supplies for ordinary tool work as well as supported alchemy checks"],
+  smithing: ["Forge and repair mundane metal weapons and armor", "Work metals and smithing materials during campaign crafting", "Use Smith's Tools for ordinary tool work as well as supported forge and reforge checks"],
+  scribe: ["Prepare written magical or technical works supported by campaign recipes", "Produce precise inscriptions, diagrams, and formal records", "Use Calligrapher's Supplies for ordinary tool work as well as supported scribing checks"],
+  enchanting: ["Apply supported magical imbuements to eligible equipment", "Work with magical components at an enchanting station or equivalent site", "Use Enchanter's Tools for ordinary tool work as well as campaign enchanting checks"],
 });
 
 const PROFESSION_ICON = Object.freeze({
@@ -58,7 +58,7 @@ function SkillIcon({ skillKey }) {
   return <Icon aria-hidden="true" focusable="false" />;
 }
 
-function ContextShell({ icon, iconIsImage = false, eyebrow, title, badge, selected, description, children }) {
+function ContextShell({ icon, iconIsImage = false, title, badge, selected, description, children }) {
   return <div className="npc-forge-training-context-dossier">
     <h3>Current Selection</h3>
     <div className="npc-forge-training-context-hero">
@@ -81,8 +81,8 @@ export default function NpcForgeTrainingContextCard({ detail = null, selectedSki
     const profession = draft.professions?.[key] || {};
     const selected = Number(profession.rank || 0) > 0;
     const abilities = (selectedProfession.abilities || []).map((ability) => ABILITY_LABELS[ability] || ability).join(" or ");
-    return <ContextShell icon={PROFESSION_ICON[key] || `${TRAINING_ASSET_ROOT}/choice-tool.svg`} iconIsImage eyebrow="Profession" title={selectedProfession.label} badge="Crafting Profession" selected={selected} description={`Professional training using ${selectedProfession.tool}.`}>
-      <section className="npc-forge-training-context-section"><h4>Typical Uses</h4><ul>{(PROFESSION_USES[key] || ["Apply this trained profession when a supported campaign crafting or professional task calls for it."]).map((use) => <li key={use}>{use}</li>)}</ul><div className="npc-forge-training-context-facts"><span><small>Tool</small><b>{selectedProfession.tool}</b></span><span><small>Ability</small><b>{selected && profession.ability ? ABILITY_LABELS[profession.ability] || profession.ability : abilities}</b></span></div></section>
+    return <ContextShell icon={PROFESSION_ICON[key] || `${TRAINING_ASSET_ROOT}/choice-tool.svg`} iconIsImage title={selectedProfession.label} badge="Trade Skill" selected={selected} description={`${selectedProfession.label} is a campaign Trade Skill. Training it includes proficiency with ${selectedProfession.tool}; proficiency with the tool by itself does not unlock the Trade Skill.`}>
+      <section className="npc-forge-training-context-section"><h4>Typical Uses</h4><ul>{(PROFESSION_USES[key] || ["Apply this Trade Skill when a supported campaign crafting or professional task calls for it."]).map((use) => <li key={use}>{use}</li>)}</ul><div className="npc-forge-training-context-facts"><span><small>Included Tool Proficiency</small><b>{selectedProfession.tool}</b></span><span><small>Crafting Ability</small><b>{selected && profession.ability ? ABILITY_LABELS[profession.ability] || profession.ability : abilities}</b></span></div></section>
     </ContextShell>;
   }
 
@@ -90,10 +90,10 @@ export default function NpcForgeTrainingContextCard({ detail = null, selectedSki
     const key = selectedSkill.key;
     const selected = (draft.selectedClassSkills || []).includes(key);
     const availableFromClass = Boolean(selectedClass);
-    return <ContextShell icon={<SkillIcon skillKey={key} />} eyebrow="Skill" title={selectedSkill.label} badge={availableFromClass ? "Class Skill" : "Skill"} selected={selected} description={selectedSkill.description || "Use this skill when its governing ability and trained application are relevant."}>
+    return <ContextShell icon={<SkillIcon skillKey={key} />} title={selectedSkill.label} badge={availableFromClass ? "Class Skill" : "Skill"} selected={selected} description={selectedSkill.description || "Use this skill when its governing ability and trained application are relevant."}>
       <section className="npc-forge-training-context-section"><h4>Typical Uses</h4><ul>{(SKILL_USES[key] || ["Apply this skill when the Game Master calls for a check involving its trained area of expertise."]).map((use) => <li key={use}>{use}</li>)}</ul><div className="npc-forge-training-context-facts"><span><small>Governing Ability</small><b>{ABILITY_LABELS[selectedSkill.ability] || selectedSkill.ability || "Varies"}</b></span></div></section>
     </ContextShell>;
   }
 
-  return <div className="npc-forge-training-context-dossier"><h3>Current Selection</h3><p>Hover, focus, or select a skill or crafting profession to see its details here.</p></div>;
+  return <div className="npc-forge-training-context-dossier"><h3>Current Selection</h3><p>Hover, focus, or select a Skill or Trade Skill to see its details here.</p></div>;
 }
