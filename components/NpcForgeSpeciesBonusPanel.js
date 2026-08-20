@@ -82,7 +82,7 @@ export default function NpcForgeSpeciesBonusPanel({
       {speciesBonus.mode === "feat" ? (
         <div className="npc-forge-species-feat-routing-note">
           <strong>Selected: Bonus Feat package</strong>
-          <span>The actual feat choice is resolved in <b>Training → Feats &amp; Class Abilities</b>, where its prerequisites and any feat-owned follow-up choices can be handled together.</span>
+          <span>The actual feat choice is resolved in <b>{"Training → Feats & Class Abilities"}</b>, where its prerequisites and any feat-owned follow-up choices can be handled together.</span>
         </div>
       ) : null}
       <style jsx global>{`
