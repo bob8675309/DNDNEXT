@@ -2,20 +2,38 @@
 
 Updated: 2026-08-20
 
-Status: active implementation on PR #176 (`agent/training-tab-redesign`). Do not merge until browser-reviewed against the approved compact Training mockup and the remaining checklist below is either complete or explicitly deferred.
+Status: implementation is substantially complete on PR #176 (`agent/training-tab-redesign`). The exact code checkpoint `4cfa889d36df465d0ee6e892991e5cfa816b3aeb` passed every triggered GitHub workflow and has an exact Vercel deployment in `READY` state. Do not merge until Paul browser-reviews the preview and the remaining browser/feat-audit items below are either complete or explicitly deferred.
 
 ## Current accepted Forge baseline
 
 - Species is accepted/frozen unless a concrete regression is reproduced.
-- Background is accepted and merged to `main` in commit `a2aecdd354346926afdf33efb1af320581563b68` (PR #175). Its shared banner/crest/icon art system is now part of the baseline.
+- Background is accepted and merged to `main` in commit `a2aecdd354346926afdf33efb1af320581563b68` (PR #175). Its shared banner/crest/icon art system is part of the baseline.
 - Training is the active slice. PR #176 is the only intended work branch for this redesign.
-- NPC Forge continues through the preserved legacy Training implementation; the new player Training surface must not silently alter NPC creation behavior.
+- NPC Forge continues through the preserved legacy Training implementation in `NpcForgeTrainingStepBase.js`; the new player Training surface must not silently alter NPC creation behavior.
+- No world-map, town/city-map, travel, crafting-runtime, inventory, merchant, or economy behavior is authorized by this Training work.
+
+## Current exact-head checkpoint
+
+Code checkpoint validated on 2026-08-20:
+
+- `main`: `a2aecdd354346926afdf33efb1af320581563b68` — accepted Background merge;
+- PR: #176 — `agent/training-tab-redesign`;
+- validated code head: `4cfa889d36df465d0ee6e892991e5cfa816b3aeb`;
+- all **15** workflows triggered for that exact head completed successfully;
+- exact Vercel deployment: `dpl_BYdVTAAjWzfbKmaRurXZ2PgJq62T`;
+- deployment state: `READY`;
+- preview host: `dndnext-b7wcjb4un-pauls-projects-2016aa54.vercel.app`;
+- branch alias: `dndnext-git-agent-training-tab-redesign-pauls-projects-2016aa54.vercel.app`.
+
+The green exact-head workflow set includes Training redesign, Background source choices, unified Forge production-build gates, Character Forge nested choices, NPC Forge foundation, profession crafting source, starting equipment, character-scoped equipment, starting-equipment guard, starting magic, source-magic routing, Forge source presentation, Species/Human checks, Species rest proficiency runtime, portrait authority, and PR170 browser-smoke contracts.
+
+Later documentation-only commits may advance the PR head. Re-read the remote PR head and deployment metadata before merge; use the code checkpoint above when determining whether runtime code changed after validation.
 
 ## User-approved Training visual contract
 
 The approved layout is deliberately quieter than the earlier dashboard-style attempts:
 
-1. a compact top progress/tally strip;
+1. one compact expandable top tally rather than four independent dashboard cards;
 2. one left-side `Training Picks` surface containing every decision;
 3. one right-side `Current Selection` surface used only for explanation/context;
 4. no decision controls portaled into the right rail;
@@ -23,13 +41,12 @@ The approved layout is deliberately quieter than the earlier dashboard-style att
 6. subtle use of the repo-owned Training asset kit under `public/ui/forge/training/`;
 7. responsive collapse without changing ownership or persistence.
 
-Current player selection order is intended to read roughly as:
+Current player selection flow is:
 
-- Background grants / unresolved Background proficiency choices;
-- Class Skills;
-- Training Choices;
-- Trade Skills / craft skills;
-- Feat Choices and feat-owned follow-ups.
+- Background fixed grants and unresolved Background proficiency choices;
+- shared Class Skill / Trade Skill allowance;
+- source/feature Training choices;
+- Feat & Class choices, including the Bonus Feat catalogue and source-owned follow-ups.
 
 ## Locked modeling decisions
 
@@ -37,74 +54,91 @@ Current player selection order is intended to read roughly as:
 
 - Abilities chooses only the **Bonus Feat package** as an alternative to the ability-score bonus packages.
 - The actual feat is resolved in **Training**.
-- Training must count an unresolved Bonus Feat in its completion state and block Continue until the feat is chosen.
-- Feat-owned nested choices remain source-owned and must reuse existing class/source-choice authority rather than parallel state.
+- Training counts an unresolved Bonus Feat in completion state and blocks Continue until it is chosen.
+- The giant native `<select>` was replaced by `NpcForgeTrainingFeatPicker`: searchable, category-filterable, compact, and connected to `Current Selection` for prerequisite/source/rule detail.
+- Feat-owned nested choices remain source-owned and reuse existing class/source-choice authority rather than parallel state.
 
-### Tool proficiency and craft/trade skill
+### Tool proficiency and Trade Skill
 
-The user has now chosen a stronger unification rule than the earlier PR text:
-
-- a proficiency with a crafting tool is intended to grant the corresponding campaign **Craft/Trade Skill**;
-- a Craft/Trade Skill and its associated tool proficiency should not require two separate player picks;
-- Backgrounds/classes/feats that grant or allow a tool choice should route that unresolved proficiency choice to Training, where the corresponding craft/trade proficiency is resolved with the other Training choices;
-- this is a player-facing ownership/routing change first; do **not** rewrite crafting recipes, material consumption, merchant/economy behavior, or world/town systems as part of the Training patch.
-
-Current campaign craft families already represented in the UI are:
+For the four currently modeled campaign crafting disciplines, the canonical tool proficiency and Trade Skill are **one campaign proficiency**:
 
 - Alchemy ↔ Alchemist's Supplies;
 - Smithing ↔ Smith's Tools;
-- Scribe/Scribing ↔ Calligrapher's Supplies;
+- Scribe ↔ Calligrapher's Supplies;
 - Enchanting ↔ Enchanter's Tools.
 
-Longer-term design goal: every meaningful crafting tool could eventually become its own craft skill with recipes/progression. That is desirable but is a large crafting-system project and is **not required to finish the Training tab**.
+Rules implemented in PR #176:
 
-## Background source audit rule
+- selecting a Trade Skill with the shared Training allowance includes its associated tool proficiency;
+- a Background/class/feat/source grant of one of the mapped tools grants the matching Trade Skill without requiring a second Training pick;
+- mapped source-granted Trade Skills are excluded from the paid Training-choice count, preventing double-spend;
+- unmapped tools such as Carpenter's Tools remain ordinary tool proficiencies and do not invent a campaign Trade Skill;
+- `utils/craftingToolProfessions.js` derives the mapping from `PROFESSION_DEFINITIONS`, avoiding a second hand-maintained mapping list;
+- `professionModifierFromSheet` recognizes a persisted canonical tool as rank-1 proficiency while preserving explicit higher rank, chosen ability, and service flags;
+- workshop/storefront provider discovery is unchanged: proficiency alone does **not** make an NPC a service provider or town crafter.
 
-Do not rebalance Backgrounds by intuition while fixing Training routing. First compare the preferred live catalogue row to its imported `raw_payload` / source metadata.
+Longer-term design goal: every meaningful crafting tool could eventually become its own craft skill with recipes/progression. That is a larger crafting-system project and is **not required to finish this Training tab**.
 
-Confirmed live examples on 2026-08-20:
+## Background ownership and Training routing
 
-- **Athlete (MOT)** really does contain `Languages: One of your choice` plus `Vehicles (land)` in its source payload. The language is not currently evidence of an import bug.
-- **Mist Wanderer (RHW)** really does grant `Choose one kind of Artisan's Tools` in its source payload.
-- **Clan Crafter (SCAG)** really does grant one artisan-tool proficiency plus its language rule.
-- **Rune Carver (BGG)** really does grant one artisan-tool proficiency and Giant.
+Variable Background tool choices keep `ownerType: "background"` and their source provenance, but `NpcForgeSourceChoiceContext` normalizes their resolver placement to Training. Metadata preserves the original Background placement.
 
-Therefore: audit all 75 preferred Backgrounds for omissions, incorrect parsing, duplicate presentation, and wrong choice placement, but do not silently normalize their relative power. Any house-rule balance pass must be a separate explicit decision.
+The Background presentation bridge in `NpcForgeContextPanel`:
 
-## Training top tally redesign
+- suppresses the old variable tool chooser from the Background decision surface;
+- projects `Choose in Training` when a Background has only a routed variable tool choice;
+- when fixed and variable tools coexist, keeps the fixed grant visible and injects a `Resolved in Training` explanation for the remaining source-owned choice;
+- explains that the Background grant does not consume the Class Skill / Trade Skill allowance.
 
-The current four independent counters are hard to parse. Replace them with one primary completion tally that can be expanded/clicked to show provenance.
+Fixed Background tool/language grants remain automatic. Non-crafting tools, vehicles, gaming sets, and instruments remain source proficiencies and are not coerced into the four campaign craft families.
 
-Target concept:
+## Live 75-Background audit checkpoint
 
-`Skill & Training Selections — X / Y resolved`
+Live Supabase project: `DnDWeb` / `ucggczovhmauhshvhusx`.
 
-Expanded breakdown should identify where grants/required choices come from, for example:
+Read-only audit on 2026-08-20 compared all 75 preferred Background rows in `character_option_catalog_preferred`:
 
-- Background fixed skill grants;
-- Background unresolved proficiency choices;
-- Class skill allowance;
-- source/feature Training choices;
-- Craft/Trade Skill grants or choices;
-- Bonus/Origin/other feat choice requirements.
+- Background rows: **75**;
+- `metadata.skills` vs `raw_payload.skillProficiencies`: **0 mismatches**;
+- `metadata.tools` vs `raw_payload.toolProficiencies`: **0 mismatches**;
+- `metadata.languages` vs `raw_payload.languageProficiencies`: **0 mismatches**;
+- Backgrounds with skills: **75**;
+- Backgrounds with source skill choices: **7**;
+- Backgrounds with tools: **60**;
+- Backgrounds with source tool choices: **34**;
+- Backgrounds with at least one fixed tool entry: **31**;
+- Backgrounds with languages: **38**;
+- Backgrounds with source language choices: **37**;
+- Backgrounds with at least one fixed language entry: **3**;
+- Backgrounds with a non-empty raw feat grant structure: **39**.
 
-Important: the total must be computed from existing authorities, not by inventing a second counter state. The breakdown must distinguish **granted** proficiencies from **player selections still required**.
+The seven source skill-choice Backgrounds are: Cloistered Scholar, Custom Background, Faction Agent, Inheritor, Knight of the Order, Planar Philosopher, and Urban Bounty Hunter.
 
-## Feat chooser redesign
+The 34 source tool-choice Backgrounds are: Artisan, Clan Crafter, Entertainer, Failed Merchant, Far Traveler, Feylost, Folk Hero, Gambler, Guard, Guild Artisan, Haunted One, Inheritor, Inquisitor, Knight of the Order, Mercenary Veteran, Mist Wanderer, Noble, Outlander, Prismari Student, Quandrix Student, Rewarded, Ruined, Rune Carver, Soldier, Spirit Medium, Urban Bounty Hunter, Uthgardt Tribe Member, Variant Criminal (Spy), Variant Entertainer (Gladiator), Variant Guild Artisan (Guild Merchant), Variant Noble (Knight), Variant Noble (Retainers), Waterdhavian Noble, and Witchlight Hand.
 
-The raw browser `<select>` is not acceptable as the final presentation for large feat pools.
+Confirmed source oddities remain source truth rather than importer defects:
 
-Reuse the interaction language already established in the Profile panel `Feats & Boons Catalogue`:
+- **Athlete (MOT)** contains one Standard-language choice plus Vehicles (land).
+- **Mist Wanderer (RHW)** contains an Artisan's Tool choice.
+- **Clan Crafter (SCAG)** contains an Artisan's Tool choice, Dwarvish, and another Standard-language choice.
+- **Rune Carver (BGG)** contains an Artisan's Tool choice and Giant.
 
-- searchable compact feat list/catalogue;
-- source/category tags;
-- selected feat detail on the right/current-selection surface;
-- prerequisites and benefit text clearly formatted;
-- only eligible/relevant feat pools for the owning grant when possible;
-- feat-owned follow-up decisions remain below/with the selected feat and preserve existing source-choice authority;
-- no giant native dropdown containing the entire feat catalogue.
+This establishes strong parity for skill/tool/language imports. It does **not** yet close the all-75 feat-grant audit because feat structures use separate normalization/routing logic; do not mark feat ownership complete solely from the `39` raw-feat count.
 
-The Training tab may share helper/model code with the Profile catalogue where safe, but should not duplicate player-owned grant/remove controls or Profile-only admin behavior.
+## Unified Skill & Training tally
+
+Implemented as one expandable primary completion tally:
+
+`Skill & Training Selections — X / Y`
+
+Its breakdown derives from existing authorities and shows:
+
+- Background fixed/variable grant provenance;
+- shared Class Skill / paid Trade Skill allowance;
+- source-owned Training choices;
+- Feat & Class choices, including Bonus Feat completion.
+
+Fixed/free grants do not consume paid allowance. Outstanding Background/source/feat choices still contribute to unresolved completion.
 
 ## Implementation checklist
 
@@ -112,79 +146,74 @@ The Training tab may share helper/model code with the Profile catalogue where sa
 
 - [x] Record accepted Background merge and Training PR #176 as the active slice.
 - [x] Record Bonus Feat ownership: package in Abilities, specific feat in Training.
-- [x] Record tool/craft unification direction and the longer-term granular crafting-tool goal.
-- [x] Record source-audit rule and confirmed Athlete/Mist Wanderer examples.
-- [x] Update `DNDNext_Current_Handoff_Prompt.md`, `docs/README.md`, and `Documentation_Refresh_Manifest.md` to point here.
-- [x] Mark `Character_Forge_Background_Audit.md` as accepted/merged rather than active.
+- [x] Record tool/Trade Skill unification and the longer-term granular crafting-tool goal.
+- [x] Record source-audit rule and confirmed Athlete/Mist Wanderer/Clan Crafter/Rune Carver examples.
+- [x] Update `DNDNext_Current_Handoff_Prompt.md`, `docs/README.md`, and `Documentation_Refresh_Manifest.md` to point to this ledger.
+- [x] Record exact-head CI and Vercel checkpoint here.
+- [ ] Optional historical cleanup: `Character_Forge_Background_Audit.md` still identifies PR #175 as the active formatting pass in its opening status line. Its audit content is accepted/merged history; update that one historical line when that large document is next edited.
 
 ### B. Background proficiency routing into Training
 
-- [ ] Inventory every preferred Background's fixed and variable `skills`, `tools`, and `languages` from the live preferred catalogue.
-- [ ] Distinguish fixed grants from unresolved choices without changing source data.
-- [ ] Remove player-facing tool dropdowns from Background where the choice is intended to resolve in Training; Background should acknowledge the grant/required Training choice instead.
-- [ ] Preserve fixed tools as grants and make them visible in Training provenance.
-- [ ] Map crafting-tool grants/choices to the corresponding Craft/Trade Skill when a canonical mapping exists.
-- [ ] Preserve non-crafting tool proficiencies and vehicle/instrument cases without forcing them into the four current craft families.
-- [ ] Add focused regression coverage for Background → Training proficiency ownership.
+- [x] Inventory all 75 preferred Background skill/tool/language source structures from the live preferred catalogue.
+- [x] Verify normalized metadata parity against raw source payload for skills, tools, and languages: zero mismatches.
+- [x] Distinguish fixed grants from unresolved choices without changing source data.
+- [x] Remove player-facing variable Background tool dropdowns from Background decision ownership and acknowledge their Training resolver.
+- [x] Preserve fixed tools as source-owned automatic grants.
+- [x] Map canonical crafting-tool grants/choices to the corresponding Trade Skill.
+- [x] Preserve non-crafting tool, vehicle, instrument, and gaming-set proficiencies without forcing them into the four craft families.
+- [x] Add focused regression coverage for Background → Training proficiency ownership.
+- [ ] Browser-confirm mixed fixed+variable Background tool presentation (for example Folk Hero) is visually clear; mechanically it is already routed/persisted.
 
 ### C. Unified Skill & Training tally
 
-- [ ] Replace the four confusing headline counters with one primary resolved/required tally.
-- [ ] Make the tally clickable/expandable to show provenance by Background/Class/Feature/Craft/Feat.
-- [ ] Ensure fixed grants do not consume selectable allowance.
-- [ ] Ensure unresolved variable Background grants do count as outstanding work.
-- [ ] Ensure Bonus Feat contributes to unresolved Training completion when selected in Abilities.
-- [ ] Keep Continue guidance pointed at the first unresolved required choice.
+- [x] Replace the four confusing headline counters with one primary resolved/required tally.
+- [x] Make the tally expandable to show provenance by Background/Class/Feature/Craft/Feat.
+- [x] Ensure fixed/free grants do not consume selectable allowance.
+- [x] Ensure unresolved variable Background/source grants count as outstanding work.
+- [x] Ensure Bonus Feat contributes to unresolved Training completion.
+- [x] Keep Continue guidance pointed at unresolved required work.
 
-### D. Trade/Craft Skill presentation and authority
+### D. Trade Skill presentation and authority
 
-- [ ] Rename/present the subsection consistently as `Trade Skills` or `Craft Skills` (choose one label and use it consistently).
-- [ ] Keep it visually parallel to Class Skills instead of a separate oversized crafting dashboard.
-- [ ] Make a canonical tool ↔ craft mapping helper rather than scattering string comparisons through JSX.
-- [ ] Treat a mapped crafting-tool proficiency grant as the corresponding craft proficiency for player creation.
-- [ ] Prevent double-spending when both the tool and craft would otherwise be selected.
-- [ ] Do not change recipe tables, crafting material formulas, attempt RPCs, merchants, or economy in this PR.
+- [x] Use `Trade Skills` consistently for the campaign crafting subsection.
+- [x] Keep it visually parallel to Class Skills rather than a separate oversized crafting dashboard.
+- [x] Add canonical tool ↔ Trade Skill helper derived from `PROFESSION_DEFINITIONS`.
+- [x] Treat mapped crafting-tool source grants as matching Trade Skill proficiency.
+- [x] Prevent double-spending when the source tool grant and craft proficiency are the same mapped proficiency.
+- [x] Preserve explicit service/provider authority so proficiency does not create storefront access.
+- [x] Do not change recipe tables, material formulas, crafting attempt RPCs, merchants, inventory, or economy.
 
 ### E. Feat selection presentation
 
-- [ ] Replace giant native feat dropdown with compact catalogue/list-detail chooser.
-- [ ] Reuse Profile Feats & Boons catalogue styling/model helpers where safe.
-- [ ] Add search and useful source/category information.
-- [ ] Show prerequisites and selected-feat rules in `Current Selection`.
-- [ ] Preserve owner-specific eligibility and nested feat choices.
-- [ ] Verify Bonus Feat, Origin feat, background feat, and class/feature feat cases independently.
+- [x] Replace the giant native Bonus Feat dropdown with a compact catalogue/list-detail chooser.
+- [x] Add search and category filtering.
+- [x] Show source/category/prerequisite information.
+- [x] Publish selected/hovered feat rules to `Current Selection`.
+- [x] Preserve nested feat-owned source-choice authority rather than duplicating state.
+- [x] Keep Profile-only admin grant/remove behavior out of the Training picker.
+- [ ] Browser-verify Bonus Feat selection plus nested follow-up choices end to end.
+- [ ] Independently verify Origin/background/class-feature feat routing cases during browser acceptance.
 
 ### F. Source audit / balance verification
 
-- [ ] Audit all 75 preferred Backgrounds against `metadata` and `raw_payload` for skill/tool/language/feat omissions.
-- [ ] Record actual source oddities (such as Athlete's language) rather than "fixing" them by feel.
-- [ ] Correct only verified source/import/presentation/routing errors in this pass.
-- [ ] Keep any campaign rebalance proposals in a separate documented backlog.
+- [x] Audit all 75 preferred Backgrounds for skill/tool/language metadata-vs-raw source parity.
+- [x] Record actual source oddities rather than "fixing" them by feel.
+- [x] Make no balancing/data rewrite based solely on uneven Background power.
+- [ ] Complete the all-75 **feat grant/choice** normalization and routing audit separately; raw feat presence is not sufficient proof of correct downstream ownership.
+- [x] Keep any campaign rebalance proposals in a separate documented backlog.
 
 ### G. Validation / acceptance
 
-- [ ] Verify all new helpers, hooks, props, callbacks, and state references are defined and passed.
-- [ ] Run Training redesign validator.
-- [ ] Run nested Character Forge choice validator.
-- [ ] Run Background source-choice validator.
-- [ ] Run unified Forge/browser-smoke validators.
-- [ ] Run Species/Human, starting-equipment, starting-magic, portrait, source-magic, and NPC Forge regression gates triggered by the branch.
-- [ ] Verify Vercel exact-head deployment is READY.
-- [ ] Browser-test at minimum: Athlete, Mist Wanderer, Clan Crafter, Rune Carver, Charlatan/Skilled, an ordinary class, Artificer/crafting-heavy case, and Bonus Feat flow.
-- [ ] Confirm no world-map, town/city-map, travel, tactical, crafting-runtime, inventory, merchant, or economy files were changed accidentally.
-- [ ] Do not merge PR #176 until user visual/behavior review is accepted.
-
-## Current branch / deployment checkpoint
-
-At the time this ledger was created:
-
-- `main`: `a2aecdd354346926afdf33efb1af320581563b68` — accepted Background merge;
-- active PR: #176 — `agent/training-tab-redesign`;
-- documented head before this ledger commit: `4e2c93d77fd3e1f7c0d3b08ef7a75051203bc368`;
-- exact Vercel deployment for that head was READY;
-- all 13 triggered Forge regression workflows were green after stale copy-based assertions were updated to the new Bonus Feat routing contract.
-
-Always re-read the current PR head before continuing; later commits in this checklist will advance it.
+- [x] Verify new helpers, hooks, props, callbacks, and state references through focused and production-build validation gates.
+- [x] Training redesign validator green on exact code head.
+- [x] Nested Character Forge choice validator green.
+- [x] Background source-choice validator green.
+- [x] Unified Forge / PR170 browser-smoke build gates green.
+- [x] Species/Human, starting-equipment, starting-magic, portrait, source-magic, profession, source-presentation, rest-runtime, and NPC Forge regression gates green.
+- [x] Exact code-head Vercel deployment is `READY`.
+- [ ] Browser-test at minimum: Athlete, Mist Wanderer, Clan Crafter, Rune Carver, Folk Hero mixed fixed+choice tools, Charlatan/Skilled, an ordinary class, Artificer/crafting-heavy case, and Bonus Feat flow.
+- [x] Confirm PR changed-file scope contains no world-map, town/city-map, travel, tactical, crafting-runtime, inventory, merchant, or economy implementation files.
+- [x] Keep PR #176 unmerged pending user visual/behavior acceptance.
 
 ## Protected boundaries
 
