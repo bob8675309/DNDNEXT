@@ -130,7 +130,10 @@ assert.ok(!backgroundValidation.includes("backgroundSkillChoiceGroups"), "variab
 assert.match(controllerSource, /if \(key === "training"\)[\s\S]*?backgroundSkillChoiceGroups\.forEach/, "variable Background skill choices must be validated in Training");
 
 const trainingSource = read("components/NpcForgeTrainingStep.js");
-for (const token of ["Background skill choice", "onToggleBackgroundSkill", "do not silently become class-skill picks", "incompleteBackgroundSkills", 'placement="training"']) assert.ok(trainingSource.includes(token), `Training routing missing ${token}`);
+for (const token of ["Background skill choice", "onToggleBackgroundSkill", "do not consume the Class Skill / Trade Skill allowance", "incompleteBackgroundSkills", 'placement="training"', "NpcForgeTrainingFeatPicker", "Skill &amp; Training Selections"]) assert.ok(trainingSource.includes(token), `Training routing missing ${token}`);
+
+const sourceChoiceContext = read("components/NpcForgeSourceChoiceContext.js");
+for (const token of ["backgroundToolChoiceResolvesInTraining", "normalizeBackgroundToolPlacement", 'placement: "training"', 'sourcePlacement: group.placement || "background"']) assert.ok(sourceChoiceContext.includes(token), `Background tool Training resolver missing ${token}`);
 
 const contextWrapper = read("components/NpcForgeContextPanel.js");
 assert.ok(contextWrapper.includes("playerBackgroundPresentation"), "Background context wrapper must own the Training routing projection");
@@ -158,8 +161,8 @@ assert.ok(appSource.includes('import "../styles/character-forge-background-polis
 const backgroundCss = read("styles/character-forge-background-polish.css");
 for (const token of ["npc-forge-context-choice-grid.feats button", "background: #111522", "grid-template-columns: minmax(0, 1fr)", "column-count: 1", "color-scheme: dark"]) assert.ok(backgroundCss.includes(token), `Background contrast/readability CSS missing ${token}`);
 
-for (const source of [read("utils/playerForgeSourceChoices.js"), read("utils/playerForgeFeatChoiceRouting.js"), read("utils/backgroundMechanics.js"), embeddedSource, contextSource, controllerSource, trainingSource, contextWrapper, derivedSource, loginSource, modalSource, backgroundCss]) {
+for (const source of [read("utils/playerForgeSourceChoices.js"), read("utils/playerForgeFeatChoiceRouting.js"), read("utils/backgroundMechanics.js"), embeddedSource, contextSource, controllerSource, trainingSource, sourceChoiceContext, contextWrapper, derivedSource, loginSource, modalSource, backgroundCss]) {
   assert.doesNotMatch(source, /MapPageClient|map_routes|map_route_points|advance_all_characters|route_segment_progress/, "Background work crossed protected map/travel boundaries");
 }
 
-console.log("Background source-choice polish validated: fixed languages/tools remain automatic, Background skills and proficiency-feat choices route through Training, source feat copy is structured, Rune Styles is a persisted dropdown, Clan Crafter carries Craft Expertise metadata, tool choices explain source-backed uses/crafts, Background boilerplate is pruned, choice surfaces keep dark readable contrast, completed Species fact choices collapse on outside click, login enters the Profile panel, Forge geometry resets consistently, Strixhaven spell tables are not duplicated, and protected map/travel boundaries remain untouched.");
+console.log("Background source-choice polish validated: fixed languages/tools remain automatic, Background skills and source-granted tool/proficiency choices resolve through Training without consuming the class allowance, source feat copy is structured, Rune Styles is a persisted dropdown, Clan Crafter carries Craft Expertise metadata, tool choices explain source-backed uses/crafts, Background boilerplate is pruned, choice surfaces keep dark readable contrast, completed Species fact choices collapse on outside click, login enters the Profile panel, Forge geometry resets consistently, Strixhaven spell tables are not duplicated, and protected map/travel boundaries remain untouched.");
