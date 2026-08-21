@@ -4,28 +4,69 @@ export const PROFESSION_DEFINITIONS = Object.freeze({
     label: "Alchemy",
     tool: "Alchemist's Supplies",
     abilities: Object.freeze(["int", "wis"]),
+    runtimeEnabled: true,
   }),
   smithing: Object.freeze({
     key: "smithing",
     label: "Smithing",
     tool: "Smith's Tools",
     abilities: Object.freeze(["str", "int"]),
+    runtimeEnabled: true,
   }),
   scribe: Object.freeze({
     key: "scribe",
     label: "Scribe",
     tool: "Calligrapher's Supplies",
     abilities: Object.freeze(["int", "wis"]),
+    runtimeEnabled: true,
   }),
   enchanting: Object.freeze({
     key: "enchanting",
     label: "Enchanting",
     tool: "Enchanter's Tools",
     abilities: Object.freeze(["int", "cha"]),
+    runtimeEnabled: true,
+  }),
+  cooking: Object.freeze({
+    key: "cooking",
+    label: "Cooking",
+    tool: "Cook's Utensils",
+    abilities: Object.freeze(["wis", "int"]),
+    runtimeEnabled: false,
+  }),
+  tinkering: Object.freeze({
+    key: "tinkering",
+    label: "Tinkering",
+    tool: "Tinker's Tools",
+    abilities: Object.freeze(["int", "dex"]),
+    runtimeEnabled: false,
+  }),
+  jewelcraft: Object.freeze({
+    key: "jewelcraft",
+    label: "Jewelcraft",
+    tool: "Jeweler's Tools",
+    abilities: Object.freeze(["dex", "int"]),
+    runtimeEnabled: false,
+  }),
+  brewing: Object.freeze({
+    key: "brewing",
+    label: "Brewing",
+    tool: "Brewer's Supplies",
+    abilities: Object.freeze(["wis", "int"]),
+    runtimeEnabled: false,
   }),
 });
 
-export const PROFESSION_KEYS = Object.freeze(Object.keys(PROFESSION_DEFINITIONS));
+// Player-facing campaign proficiency catalogue. The final four are deliberately
+// future-facing: they can be selected/persisted in Character Forge, but they do
+// not activate unfinished recipe/workshop/service runtime.
+export const TRADE_SKILL_KEYS = Object.freeze(Object.keys(PROFESSION_DEFINITIONS));
+
+// Existing crafting runtime/service authority remains intentionally limited to
+// the four implemented disciplines. Keep this export stable for legacy callers,
+// NPC Forge, workshop discovery, recipes, merchants, and crafting RPCs.
+export const PROFESSION_KEYS = Object.freeze(["alchemy", "smithing", "scribe", "enchanting"]);
+export const CRAFTING_RUNTIME_PROFESSION_KEYS = PROFESSION_KEYS;
 
 export const ABILITY_LABELS = Object.freeze({
   str: "Strength",
@@ -75,7 +116,11 @@ export function normalizeProfessionKey(value = "") {
   if (token === "smith" || token === "blacksmith" || token === "smithing") return "smithing";
   if (token === "scribe" || token === "scribing" || token === "inscription") return "scribe";
   if (token === "enchanter" || token === "enchanting" || token === "enchantment") return "enchanting";
-  return PROFESSION_KEYS.includes(token) ? token : "";
+  if (token === "cook" || token === "cooking") return "cooking";
+  if (token === "tinker" || token === "tinkering") return "tinkering";
+  if (["jewelcraft", "jewelcrafting", "jeweler", "jeweller"].includes(token)) return "jewelcraft";
+  if (token === "brewer" || token === "brewing") return "brewing";
+  return TRADE_SKILL_KEYS.includes(token) ? token : "";
 }
 
 export function professionForDiscipline(value = "") {
@@ -131,7 +176,7 @@ export function normalizeProfessionEntry(value, professionKey) {
 
 export function normalizeProfessions(value = {}) {
   const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
-  return Object.fromEntries(PROFESSION_KEYS.map((key) => [key, normalizeProfessionEntry(source[key], key)]));
+  return Object.fromEntries(TRADE_SKILL_KEYS.map((key) => [key, normalizeProfessionEntry(source[key], key)]));
 }
 
 export function abilityModifier(score) {
@@ -191,6 +236,7 @@ export function professionModifierFromSheet(sheet = {}, professionKey) {
     totalModifier: abilityMod + proficiencyContribution,
     configured: (explicitlyConfigured && profession.rank > 0) || toolGranted,
     proficiencySource: profession.rank > 0 ? "profession" : toolGranted ? "tool" : "none",
+    runtimeEnabled: Boolean(definition.runtimeEnabled),
   };
 }
 
@@ -272,7 +318,7 @@ export function availableProfessionsForCharacter(character = {}, sheetOverride =
 
 export function providerOffersProfession(character, professionKey, sheetOverride = null) {
   const key = normalizeProfessionKey(professionKey);
-  return Boolean(key && availableProfessionsForCharacter(character, sheetOverride).includes(key));
+  return Boolean(key && PROFESSION_KEYS.includes(key) && availableProfessionsForCharacter(character, sheetOverride).includes(key));
 }
 
 export function buildCrafterProfessionSnapshot(character, sheet, professionKey) {
