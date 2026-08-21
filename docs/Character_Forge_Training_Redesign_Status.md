@@ -2,7 +2,7 @@
 
 Updated: 2026-08-20
 
-Status: implementation is substantially complete on PR #176 (`agent/training-tab-redesign`). The exact code checkpoint `4cfa889d36df465d0ee6e892991e5cfa816b3aeb` passed every triggered GitHub workflow and has an exact Vercel deployment in `READY` state. Do not merge until Paul browser-reviews the preview and the remaining browser/feat-audit items below are either complete or explicitly deferred.
+Status: implementation is substantially complete on PR #176 (`agent/training-tab-redesign`). The exact runtime code checkpoint `4cfa889d36df465d0ee6e892991e5cfa816b3aeb` passed every triggered GitHub workflow and has an exact Vercel deployment in `READY` state. Later commits in this file are documentation-only. Do not merge until Paul browser-reviews the preview and the remaining browser acceptance items below are complete or explicitly deferred.
 
 ## Current accepted Forge baseline
 
@@ -14,20 +14,22 @@ Status: implementation is substantially complete on PR #176 (`agent/training-tab
 
 ## Current exact-head checkpoint
 
-Code checkpoint validated on 2026-08-20:
+Runtime code checkpoint validated on 2026-08-20:
 
 - `main`: `a2aecdd354346926afdf33efb1af320581563b68` — accepted Background merge;
 - PR: #176 — `agent/training-tab-redesign`;
-- validated code head: `4cfa889d36df465d0ee6e892991e5cfa816b3aeb`;
-- all **15** workflows triggered for that exact head completed successfully;
-- exact Vercel deployment: `dpl_BYdVTAAjWzfbKmaRurXZ2PgJq62T`;
-- deployment state: `READY`;
-- preview host: `dndnext-b7wcjb4un-pauls-projects-2016aa54.vercel.app`;
+- validated runtime code head: `4cfa889d36df465d0ee6e892991e5cfa816b3aeb`;
+- all **15** workflows triggered for that exact code head completed successfully;
+- exact code-head Vercel deployment: `dpl_BYdVTAAjWzfbKmaRurXZ2PgJq62T`;
+- code-head deployment state: `READY`;
+- code-head preview host: `dndnext-b7wcjb4un-pauls-projects-2016aa54.vercel.app`;
 - branch alias: `dndnext-git-agent-training-tab-redesign-pauls-projects-2016aa54.vercel.app`.
+
+The first handoff refresh commit after that code checkpoint, `69072dc46a1a3925c9cf249803eb3500dd7a31b1`, was documentation-only and also deployed `READY` as `dpl_8WKv2dubyTLqoQy8NZ6WmxfboeMu`. This feat-audit documentation commit advances the branch again without changing runtime source.
 
 The green exact-head workflow set includes Training redesign, Background source choices, unified Forge production-build gates, Character Forge nested choices, NPC Forge foundation, profession crafting source, starting equipment, character-scoped equipment, starting-equipment guard, starting magic, source-magic routing, Forge source presentation, Species/Human checks, Species rest proficiency runtime, portrait authority, and PR170 browser-smoke contracts.
 
-Later documentation-only commits may advance the PR head. Re-read the remote PR head and deployment metadata before merge; use the code checkpoint above when determining whether runtime code changed after validation.
+Re-read the remote PR head and deployment metadata before merge. If later commits are documentation-only, use the validated runtime code checkpoint above when deciding whether runtime behavior changed after the green build.
 
 ## User-approved Training visual contract
 
@@ -102,6 +104,7 @@ Read-only audit on 2026-08-20 compared all 75 preferred Background rows in `char
 - `metadata.skills` vs `raw_payload.skillProficiencies`: **0 mismatches**;
 - `metadata.tools` vs `raw_payload.toolProficiencies`: **0 mismatches**;
 - `metadata.languages` vs `raw_payload.languageProficiencies`: **0 mismatches**;
+- `metadata.feats` vs `raw_payload.feats`: **0 mismatches**;
 - Backgrounds with skills: **75**;
 - Backgrounds with source skill choices: **7**;
 - Backgrounds with tools: **60**;
@@ -110,20 +113,39 @@ Read-only audit on 2026-08-20 compared all 75 preferred Background rows in `char
 - Backgrounds with languages: **38**;
 - Backgrounds with source language choices: **37**;
 - Backgrounds with at least one fixed language entry: **3**;
-- Backgrounds with a non-empty raw feat grant structure: **39**.
+- Backgrounds with a non-empty feat grant structure: **39**;
+- every direct Background feat reference resolves to an imported preferred feat: **0 missing direct feat names**.
+
+Feat distribution across the 75 preferred Backgrounds:
+
+- **36** have no feat grant structure;
+- **33** have one fixed direct feat;
+- **2** have a direct one-of feat pool: Rewarded and Ruined;
+- **4** have a category-driven Dark Gift pool: Haunted One, Investigator, Mist Wanderer, and Spirit Medium;
+- the preferred `DG` catalogue currently contains **9** eligible Dark Gift feats.
+
+The complex source rules were checked against their actual source text rather than inferred from JSON shape:
+
+- **Haunted One (RHW):** explicitly `Survivor` **or** a Dark Gift feat of your choice. The resolver's unioned choice pool is correct.
+- **Investigator (RHW):** explicitly `Sharp Eye` **or** a Dark Gift feat of your choice. The resolver's unioned choice pool is correct.
+- **Mist Wanderer (RHW):** a Dark Gift feat of your choice; Mist Walker is only recommended, not forced.
+- **Spirit Medium (RHW):** a Dark Gift feat of your choice; Gathered Whispers is only recommended, not forced.
+- **Rewarded (BMT):** source feature text explicitly grants Lucky, Magic Initiate, **or** Skilled, player's choice.
+- **Ruined (BMT):** source feature text explicitly grants Alert, Skilled, **or** Tough, player's choice.
+- **Acolyte/Guide/Sage (XPHB):** their Magic Initiate list is explicitly fixed to Cleric/Druid/Wizard respectively; the Background resolver preserves those fixed list labels while spell choices route to Spells.
 
 The seven source skill-choice Backgrounds are: Cloistered Scholar, Custom Background, Faction Agent, Inheritor, Knight of the Order, Planar Philosopher, and Urban Bounty Hunter.
 
 The 34 source tool-choice Backgrounds are: Artisan, Clan Crafter, Entertainer, Failed Merchant, Far Traveler, Feylost, Folk Hero, Gambler, Guard, Guild Artisan, Haunted One, Inheritor, Inquisitor, Knight of the Order, Mercenary Veteran, Mist Wanderer, Noble, Outlander, Prismari Student, Quandrix Student, Rewarded, Ruined, Rune Carver, Soldier, Spirit Medium, Urban Bounty Hunter, Uthgardt Tribe Member, Variant Criminal (Spy), Variant Entertainer (Gladiator), Variant Guild Artisan (Guild Merchant), Variant Noble (Knight), Variant Noble (Retainers), Waterdhavian Noble, and Witchlight Hand.
 
-Confirmed source oddities remain source truth rather than importer defects:
+Other confirmed source oddities remain source truth rather than importer defects:
 
 - **Athlete (MOT)** contains one Standard-language choice plus Vehicles (land).
 - **Mist Wanderer (RHW)** contains an Artisan's Tool choice.
 - **Clan Crafter (SCAG)** contains an Artisan's Tool choice, Dwarvish, and another Standard-language choice.
 - **Rune Carver (BGG)** contains an Artisan's Tool choice and Giant.
 
-This establishes strong parity for skill/tool/language imports. It does **not** yet close the all-75 feat-grant audit because feat structures use separate normalization/routing logic; do not mark feat ownership complete solely from the `39` raw-feat count.
+Result: the all-75 Background source audit is complete for skill, tool, language, and feat grant structures at the import/catalogue-resolution level. Remaining acceptance work is browser behavior/presentation, not a known catalogue-loss issue.
 
 ## Unified Skill & Training tally
 
@@ -147,7 +169,7 @@ Fixed/free grants do not consume paid allowance. Outstanding Background/source/f
 - [x] Record accepted Background merge and Training PR #176 as the active slice.
 - [x] Record Bonus Feat ownership: package in Abilities, specific feat in Training.
 - [x] Record tool/Trade Skill unification and the longer-term granular crafting-tool goal.
-- [x] Record source-audit rule and confirmed Athlete/Mist Wanderer/Clan Crafter/Rune Carver examples.
+- [x] Record source-audit rule and confirmed source oddities.
 - [x] Update `DNDNext_Current_Handoff_Prompt.md`, `docs/README.md`, and `Documentation_Refresh_Manifest.md` to point to this ledger.
 - [x] Record exact-head CI and Vercel checkpoint here.
 - [ ] Optional historical cleanup: `Character_Forge_Background_Audit.md` still identifies PR #175 as the active formatting pass in its opening status line. Its audit content is accepted/merged history; update that one historical line when that large document is next edited.
@@ -191,27 +213,30 @@ Fixed/free grants do not consume paid allowance. Outstanding Background/source/f
 - [x] Publish selected/hovered feat rules to `Current Selection`.
 - [x] Preserve nested feat-owned source-choice authority rather than duplicating state.
 - [x] Keep Profile-only admin grant/remove behavior out of the Training picker.
+- [x] Audit all preferred Background feat references/pools against live source structures and preferred feat catalogue resolution.
 - [ ] Browser-verify Bonus Feat selection plus nested follow-up choices end to end.
-- [ ] Independently verify Origin/background/class-feature feat routing cases during browser acceptance.
+- [ ] Independently browser-verify Origin/background/class-feature feat routing cases during acceptance.
 
 ### F. Source audit / balance verification
 
-- [x] Audit all 75 preferred Backgrounds for skill/tool/language metadata-vs-raw source parity.
+- [x] Audit all 75 preferred Backgrounds for skill/tool/language/feat metadata-vs-raw source parity.
+- [x] Verify all direct Background feat references resolve to preferred feat catalogue entries.
+- [x] Verify category-driven Dark Gift pools resolve to populated eligible catalogues.
+- [x] Verify complex feat-choice source text for Haunted One, Investigator, Mist Wanderer, Spirit Medium, Rewarded, and Ruined.
 - [x] Record actual source oddities rather than "fixing" them by feel.
 - [x] Make no balancing/data rewrite based solely on uneven Background power.
-- [ ] Complete the all-75 **feat grant/choice** normalization and routing audit separately; raw feat presence is not sufficient proof of correct downstream ownership.
 - [x] Keep any campaign rebalance proposals in a separate documented backlog.
 
 ### G. Validation / acceptance
 
 - [x] Verify new helpers, hooks, props, callbacks, and state references through focused and production-build validation gates.
-- [x] Training redesign validator green on exact code head.
+- [x] Training redesign validator green on exact runtime code head.
 - [x] Nested Character Forge choice validator green.
 - [x] Background source-choice validator green.
 - [x] Unified Forge / PR170 browser-smoke build gates green.
 - [x] Species/Human, starting-equipment, starting-magic, portrait, source-magic, profession, source-presentation, rest-runtime, and NPC Forge regression gates green.
-- [x] Exact code-head Vercel deployment is `READY`.
-- [ ] Browser-test at minimum: Athlete, Mist Wanderer, Clan Crafter, Rune Carver, Folk Hero mixed fixed+choice tools, Charlatan/Skilled, an ordinary class, Artificer/crafting-heavy case, and Bonus Feat flow.
+- [x] Exact runtime code-head Vercel deployment is `READY`.
+- [ ] Browser-test at minimum: Athlete, Mist Wanderer, Clan Crafter, Rune Carver, Folk Hero mixed fixed+choice tools, Charlatan/Skilled, Haunted One/Investigator Dark Gift choice, Rewarded/Ruined feat choice, an ordinary class, Artificer/crafting-heavy case, and Bonus Feat flow.
 - [x] Confirm PR changed-file scope contains no world-map, town/city-map, travel, tactical, crafting-runtime, inventory, merchant, or economy implementation files.
 - [x] Keep PR #176 unmerged pending user visual/behavior acceptance.
 
