@@ -45,6 +45,10 @@ const PROFESSION_USES = Object.freeze({
   smithing: ["Forge and repair mundane metal weapons and armor", "Work metals and smithing materials during campaign crafting", "Use Smith's Tools for ordinary tool work and campaign Smithing checks"],
   scribe: ["Prepare written magical or technical works supported by campaign recipes", "Produce precise inscriptions, diagrams, and formal records", "Use Calligrapher's Supplies for ordinary tool work and campaign Scribing checks"],
   enchanting: ["Apply supported magical imbuements to eligible equipment", "Work with magical components at an enchanting station or equivalent site", "Use Enchanter's Tools for ordinary tool work and campaign Enchanting checks"],
+  cooking: ["Prepare meals, rations, and other food with trained Cook's Utensils technique", "Judge ingredients, spoilage, seasoning, and food preparation", "Use Cooking as the campaign proficiency when future dedicated cooking recipes call for it"],
+  tinkering: ["Build, repair, or diagnose small mechanisms and practical devices", "Work precisely with Tinker's Tools on compact mechanical assemblies", "Use Tinkering as the campaign proficiency when future dedicated tinkering recipes call for it"],
+  jewelcraft: ["Appraise, cut, set, repair, or fashion gems and fine decorative work", "Perform precision work with Jeweler's Tools and valuable small materials", "Use Jewelcraft as the campaign proficiency when future dedicated jewelcraft recipes call for it"],
+  brewing: ["Prepare and evaluate brewed drinks and fermentation processes", "Use Brewer's Supplies to control ingredients, sanitation, and flavor", "Use Brewing as the campaign proficiency when future dedicated brewing recipes call for it"],
 });
 
 const PROFESSION_ICON = Object.freeze({
@@ -91,8 +95,11 @@ export default function NpcForgeTrainingContextCard({ detail = null, selectedSki
     const profession = draft.professions?.[key] || {};
     const selected = Boolean(detail?.granted) || Number(profession.rank || 0) > 0;
     const abilities = (selectedProfession.abilities || []).map((ability) => ABILITY_LABELS[ability] || ability).join(" or ");
-    return <ContextShell icon={PROFESSION_ICON[key] || `${TRAINING_ASSET_ROOT}/choice-tool.svg`} iconIsImage title={selectedProfession.label} badge="Trade Skill" selected={selected} description={`${selectedProfession.tool} proficiency and the ${selectedProfession.label} Trade Skill are the same campaign proficiency. A source that grants the tool grants this Trade Skill without requiring a second Training pick.`}>
-      <section className="npc-forge-training-context-section"><h4>Typical Uses</h4><ul>{(PROFESSION_USES[key] || ["Apply this Trade Skill when a supported campaign crafting or professional task calls for it."]).map((use) => <li key={use}>{use}</li>)}</ul><div className="npc-forge-training-context-facts"><span><small>Associated Tool</small><b>{selectedProfession.tool}</b></span><span><small>Crafting Ability</small><b>{profession.ability ? ABILITY_LABELS[profession.ability] || profession.ability : abilities}</b></span>{detail?.grantSource ? <span><small>Granted By</small><b>{detail.grantSource}</b></span> : null}</div></section>
+    const runtimeNote = selectedProfession.runtimeEnabled === false
+      ? " This proficiency is available in Character Forge now; its dedicated recipe/progression system is intentionally deferred."
+      : "";
+    return <ContextShell icon={PROFESSION_ICON[key] || `${TRAINING_ASSET_ROOT}/choice-tool.svg`} iconIsImage title={selectedProfession.label} badge="Trade Skill" selected={selected} description={`${selectedProfession.tool} proficiency and the ${selectedProfession.label} Trade Skill are the same campaign proficiency. A source that grants the tool grants this Trade Skill without requiring a second Training pick.${runtimeNote}`}>
+      <section className="npc-forge-training-context-section"><h4>Typical Uses</h4><ul>{(PROFESSION_USES[key] || ["Apply this Trade Skill when a supported campaign crafting or professional task calls for it."]).map((use) => <li key={use}>{use}</li>)}</ul><div className="npc-forge-training-context-facts"><span><small>Associated Tool</small><b>{selectedProfession.tool}</b></span><span><small>Crafting Ability</small><b>{profession.ability ? ABILITY_LABELS[profession.ability] || profession.ability : abilities}</b></span><span><small>Campaign Support</small><b>{selectedProfession.runtimeEnabled === false ? "Proficiency now • recipes later" : "Crafting runtime active"}</b></span>{detail?.grantSource ? <span><small>Granted By</small><b>{detail.grantSource}</b></span> : null}</div></section>
     </ContextShell>;
   }
 
