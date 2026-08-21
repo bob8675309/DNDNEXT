@@ -10,10 +10,13 @@ function currentForgePreview() {
   return activeModal?.querySelector(".npc-forge-preview") || null;
 }
 
-export default function NpcForgeSourceChoiceFields({ placement, ownerType = "", title = "Required source choices", empty = null, inline = false }) {
+export default function NpcForgeSourceChoiceFields({ placement, ownerType = "", title = "Required source choices", empty = null, inline = false, groupsOverride = null }) {
   const { state, toggleChoice, setChoice } = useNpcForgeSourceChoices();
   const [previewTarget, setPreviewTarget] = useState(null);
-  const groups = sourceChoiceGroupsForPlacement(state, placement).filter((group) => {
+  const sourceGroups = Array.isArray(groupsOverride)
+    ? groupsOverride
+    : sourceChoiceGroupsForPlacement(state, placement);
+  const groups = sourceGroups.filter((group) => {
     if (!ownerType) return true;
     if (group.ownerType === ownerType) return true;
     return ownerType === "feat" && Boolean(group.metadata?.surfaceWithFeatChoices);
@@ -47,8 +50,8 @@ export default function NpcForgeSourceChoiceFields({ placement, ownerType = "", 
 
   // Training deliberately opts out of the historical preview-rail portal: the Character
   // Forge Training contract keeps every decision in the left selection pane and reserves
-  // the right pane for contextual explanation. Other resolver surfaces keep the legacy
-  // portal behavior unless they opt into inline rendering explicitly.
+  // the right pane for contextual explanation. A groupsOverride narrows only presentation;
+  // canonical state/selection authority remains the SourceChoice context above.
   if (inline) return fields;
   return previewTarget ? createPortal(fields, previewTarget) : fields;
 }
