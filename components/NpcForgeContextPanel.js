@@ -42,12 +42,21 @@ function playerSpeciesPresentation(species = null, playerMode = false) {
   return species;
 }
 
-function playerBackgroundPresentation(details = null, playerMode = false) {
+function playerBackgroundPresentation(details = null, playerMode = false, hasRoutedToolChoice = false) {
   if (!details || !playerMode) return details;
   // Background skill options are explained in the Background presentation, but their
   // actual selection belongs to Training → Skills & Proficiencies. The derived model
   // adds a routed summary to `skills`, so suppress only the old embedded chooser here.
-  return { ...details, skillChoices: [] };
+  const tools = Array.isArray(details.tools) ? [...details.tools] : [];
+  if (hasRoutedToolChoice) tools.unshift({
+    label: "Resolved in Training",
+    description: "This background grants a tool or craft proficiency choice. Make that source-owned choice on the Training tab with the other proficiency selections. It is a grant from the background and does not consume the Class Skill / Trade Skill allowance.",
+  });
+  return { ...details, skillChoices: [], tools };
+}
+
+function groupHasTool(group = {}) {
+  return (group.fields || []).some((field) => field?.kind === "tool");
 }
 
 // Compatibility marker for the established focused validator: groups: (sourceChoiceState.groups || []).filter
@@ -64,11 +73,17 @@ export default function NpcForgeContextPanel(props) {
       : null;
   const sourceChoices = useNpcForgeSourceChoices();
   const sourceChoiceState = sourceChoices.state || {};
-  const projectedBackgroundMechanics = playerBackgroundPresentation(props?.backgroundMechanicDetails, props?.playerMode);
+  const routedBackgroundToolGroups = (sourceChoiceState.groups || []).filter((group) => group.ownerType === "background" && group.placement === "training" && group.metadata?.backgroundToolChoice && groupHasTool(group));
+  const fixedBackgroundToolGroups = (sourceChoiceState.groups || []).filter((group) => group.ownerType === "background" && group.placement === "background" && groupHasTool(group));
+  const hasRoutedBackgroundToolChoice = routedBackgroundToolGroups.length > 0;
+  const projectedBackgroundMechanics = playerBackgroundPresentation(props?.backgroundMechanicDetails, props?.playerMode, hasRoutedBackgroundToolChoice);
+  const projectedBackground = props?.playerMode && activeBackground && hasRoutedBackgroundToolChoice && !fixedBackgroundToolGroups.length
+    ? { ...activeBackground, tools: ["Choose in Training"] }
+    : activeBackground;
 
   if (activeClass) return <NpcForgeClassGuide selectedClass={activeClass} level={props?.draft?.level || 1} onFeatureDetail={props?.onFeatureDetail} />;
   if (props?.playerMode && activeBackground) return <NpcForgeBackgroundGuide
-    selectedBackground={activeBackground}
+    selectedBackground={projectedBackground}
     backgroundMechanicDetails={projectedBackgroundMechanics}
     selectedBackgroundFeat={props?.selectedBackgroundFeat}
     backgroundFeatOptions={props?.backgroundFeatOptions || []}
