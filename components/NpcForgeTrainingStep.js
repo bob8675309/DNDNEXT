@@ -9,8 +9,8 @@ import NpcForgeTrainingStepPlayer from "./NpcForgeTrainingStepPlayer";
  * Legacy static-validator routing contract (implementation moved to
  * NpcForgeTrainingStepPlayer.js):
  * - Skills & Proficiencies -> Skills
- * - Feats & Class Abilities -> Feat & Class Choices
- * - Skill & Training Selections / Training Choices / Trade Skills
+ * - Feats & Class Abilities -> Feat &amp; Class Choices
+ * - Skill &amp; Training Selections / Training Choices / Trade Skills
  * - Background skill choice; onToggleBackgroundSkill; incompleteBackgroundSkills
  * - Background choices do not consume the Class Skill / Trade Skill allowance
  * - useNpcForgeClassChoice; eligibleExpertiseNames; Feature-granted Training choices
@@ -19,7 +19,7 @@ import NpcForgeTrainingStepPlayer from "./NpcForgeTrainingStepPlayer";
  * - NpcForgeSourceChoiceFields placement="advancement" inline
  * - Higher-level feat and Epic Boon decisions
  * - NpcForgeTrainingFeatPicker; Bonus Feat
- * - mapped crafting-tool proficiency
+ * - mapped crafting-tool proficiency; sourceGrantedProfessionKeys
  * - Source-granted tools train the matching Trade Skill for free
  *
  * These markers intentionally preserve older cross-feature validation while
