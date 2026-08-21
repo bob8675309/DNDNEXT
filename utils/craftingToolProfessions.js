@@ -1,4 +1,4 @@
-import { PROFESSION_DEFINITIONS, PROFESSION_KEYS } from "./craftingProfessions";
+import { PROFESSION_DEFINITIONS, TRADE_SKILL_KEYS } from "./craftingProfessions";
 
 const normalize = (value = "") => String(value ?? "")
   .toLowerCase()
@@ -7,7 +7,7 @@ const normalize = (value = "") => String(value ?? "")
   .trim();
 
 const TOOL_TO_PROFESSION = Object.freeze(Object.fromEntries(
-  PROFESSION_KEYS.flatMap((key) => {
+  TRADE_SKILL_KEYS.flatMap((key) => {
     const definition = PROFESSION_DEFINITIONS[key];
     const tool = normalize(definition?.tool);
     return tool ? [[tool, key]] : [];
@@ -15,9 +15,9 @@ const TOOL_TO_PROFESSION = Object.freeze(Object.fromEntries(
 ));
 
 /**
- * Return the campaign Trade Skill key represented by a concrete crafting tool.
- * The mapping is derived from PROFESSION_DEFINITIONS so the Forge does not keep
- * a second hand-maintained list of Alchemy/Smithing/Scribe/Enchanting tools.
+ * Return the player-facing campaign Trade Skill key represented by a concrete
+ * crafting tool. The mapping is derived from PROFESSION_DEFINITIONS so Forge
+ * never needs a second hand-maintained Alchemy/Smithing/etc. tool list.
  */
 export function professionKeyForTool(value = "") {
   return TOOL_TO_PROFESSION[normalize(value)] || "";
@@ -37,10 +37,9 @@ export function isCraftingProfessionTool(value = "") {
 }
 
 /**
- * Merge source-granted crafting-tool proficiencies into the persisted campaign
- * profession map. A source tool grant supplies proficiency (rank 1) in the
- * corresponding Trade Skill, while preserving an explicitly selected ability,
- * higher rank, or service flag already present on the sheet.
+ * Merge source-granted mapped tool proficiencies into a persisted Trade Skill
+ * map. This supports all eight Character Forge Trade Skills. The separate
+ * crafting runtime/service authority remains limited by PROFESSION_KEYS.
  */
 export function mergeToolGrantedProfessions(professions = {}, toolValues = []) {
   const next = { ...(professions && typeof professions === "object" ? professions : {}) };
