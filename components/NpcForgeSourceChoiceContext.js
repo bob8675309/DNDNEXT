@@ -32,9 +32,25 @@ function applyAutomaticSourceSelections(groups = [], selections = {}) {
   return normalizeSourceChoiceSelections(groups, next);
 }
 
-function resolverPlacement(group = {}) {
+function backgroundToolChoiceResolvesInTraining(group = {}) {
+  if (String(group.ownerType || "") !== "background") return false;
+  return (group.fields || []).some((field) => (
+    String(field?.kind || "") === "tool"
+    && !field?.autoSelect
+    && field?.required !== false
+  ));
+}
+
+/**
+ * Placement answers where the player resolves a source-owned choice, which is
+ * deliberately separate from who owns/persists that choice. Background tool
+ * choices remain Background-owned in serialization but are resolved alongside
+ * the rest of the character's proficiency choices in Training.
+ */
+export function sourceChoiceResolverPlacement(group = {}) {
   const explicit = String(group.resolverPlacement || group.metadata?.resolverPlacement || "").trim();
   if (explicit) return explicit;
+  if (backgroundToolChoiceResolvesInTraining(group)) return "training";
   if (["class", "advancement"].includes(group.placement)) return "training";
   return group.placement || "";
 }
@@ -59,7 +75,7 @@ export function normalizeSourceChoiceState(groups = [], catalogReady = true, pre
 export function sourceChoiceStateComplete(state = EMPTY_SOURCE_CHOICE_STATE, filters = {}) {
   if (!state.catalogReady) return false;
   if (filters?.placement) {
-    const groups = (state.groups || []).filter((group) => resolverPlacement(group) === filters.placement);
+    const groups = (state.groups || []).filter((group) => sourceChoiceResolverPlacement(group) === filters.placement);
     return sourceChoiceGroupsComplete(groups, state.selections || {}, { ...filters, placement: undefined });
   }
   return sourceChoiceGroupsComplete(state.groups || [], state.selections || {}, filters);
@@ -74,5 +90,5 @@ export function sourceChoiceSelectionSummary(state = EMPTY_SOURCE_CHOICE_STATE) 
 }
 
 export function sourceChoiceGroupsForPlacement(state = EMPTY_SOURCE_CHOICE_STATE, placement = "") {
-  return (state.groups || []).filter((group) => !placement || group.placement === placement);
+  return (state.groups || []).filter((group) => !placement || sourceChoiceResolverPlacement(group) === placement);
 }
