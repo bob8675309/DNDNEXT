@@ -19,6 +19,8 @@ const forgeSource = `${forge}\n${forgeController}\n${routedForgeController}\n${f
 const abilityStep = read("components/NpcForgeAbilityStep.js");
 const speciesBonus = read("components/NpcForgeSpeciesBonusPanel.js");
 const trainingStep = read("components/NpcForgeTrainingStep.js");
+const playerTrainingStep = read("components/NpcForgeTrainingStepPlayer.js");
+const trainingSource = `${trainingStep}\n${playerTrainingStep}`;
 const trainingFeatPicker = read("components/NpcForgeTrainingFeatPicker.js");
 const spellStep = read("components/NpcForgeSpellStep.js");
 const review = read("components/NpcForgeReviewPanel.js");
@@ -58,10 +60,12 @@ includes(abilityStep, ["Ability Score Generation Method", "Standard 3d6", "4d6 d
 includes(speciesBonus, ["Species Bonus", "+2 in one stat and +1 in a different stat", "+1 in three different stats", "Bonus feat", "specific feat is chosen later in Training"], "contextual Species Bonus");
 expect(!speciesBonus.includes("Species bonus feat</span>"), "Abilities still contains the old specific Bonus Feat chooser");
 expect(!abilityStep.includes("npc-forge-species-bonus mt-4"), "Species Bonus controls returned to the Abilities main workspace");
-includes(trainingStep, ["Skill &amp; Training Selections", "Background skill choices", "Class Skills / Trade Skills", "Source Training Choices", "Trade Skills", "Training Choices", "Feat &amp; Class Choices", "Training Picks", "Bonus Feat", "mapped crafting-tool proficiency", "NpcForgeTrainingStepBase", "NpcForgeSourceChoiceFields", 'placement="training" inline', "NpcForgeTrainingFeatPicker"], "training step");
+includes(trainingStep, ["NpcForgeTrainingStepBase", "NpcForgeTrainingStepPlayer", "if (!props.playerMode)"], "Training player/NPC router");
+includes(playerTrainingStep, ["Skill &amp; Training Selections", "<b>Skills</b>", "Trade Skills", "Other Training Choices", "Feat &amp; Class Choices", "Bonus Feat", "mapped crafting tool", "NpcForgeSourceChoiceFields", 'placement="training" inline', "NpcForgeTrainingFeatPicker", "TRADE_SKILL_KEYS"], "player Training step");
+expect(!playerTrainingStep.includes("<h3>Training Picks</h3>"), "redundant Training Picks heading returned");
 includes(trainingFeatPicker, ["Search", "Category", "Prerequisite", "onDetail", "role=\"listbox\""], "Training feat catalogue");
-includes(routedForgeController, ['controller.stepKey === "abilities"', 'controller.stepKey === "training"', "Choose your Bonus Feat in Training"], "Training-routed Bonus Feat controller");
-expect(!trainingStep.includes("Expertise is not self-assigned during creation"), "player Training still shows the redundant Expertise denial");
+includes(routedForgeController, ['controller.stepKey === "abilities"', 'controller.stepKey === "training"', "Choose your Bonus Feat in Training", "TRADE_SKILL_KEYS"], "Training-routed Bonus Feat/controller allowance");
+expect(!playerTrainingStep.includes("Expertise is not self-assigned during creation"), "player Training still shows the redundant Expertise denial");
 includes(spellStep, ['from("class_level_progression")', 'from("spells_catalog")', "startingSpellSourceForRow", "Known spells", "Spellbook", "Prepared", "Highest spell level", "Background-expanded access"], "spell step");
 includes(review, ["Confirm your player character", "Class Progression", "Ability Scores", "Training & Professions", "Starting Magic", "Story & Campaign Hooks", "Campaign Status", "Edit"], "review dossier");
 includes(rules, ["POINT_BUY_BUDGET = 27", "POINT_BUY_MIN = 8", "POINT_BUY_MAX = 15", "startingSpellSelectionModel", "validateStartingSpellSelections", "spellChoicesForRpc"], "player Forge rules");
@@ -88,8 +92,8 @@ includes(startingMagicAuthority, [
   "startingMagicSelections",
 ], "guarded multi-source starting magic authority");
 
-for (const source of [playerCreator, sharedForge, forgeSource, abilityStep, speciesBonus, trainingStep, trainingFeatPicker, spellStep, review, rules, spellSources, profile, responsive, migration, progressionFix, spellMigration, authorityMigration, startingMagicAuthority]) {
+for (const source of [playerCreator, sharedForge, forgeSource, abilityStep, speciesBonus, trainingSource, trainingFeatPicker, spellStep, review, rules, spellSources, profile, responsive, migration, progressionFix, spellMigration, authorityMigration, startingMagicAuthority]) {
   for (const forbidden of ["MapPageClient", "map_routes", "advance_all_characters", "weather", "route_segment_progress"]) expect(!source.includes(forbidden), `crossed protected world-map boundary ${forbidden}`);
 }
 
-console.log("Unified Character Forge, guarded v3 multi-source starting magic, fixed subclass spells, Background-expanded access, Training-routed Bonus Feat catalogue, unified Training tally, mapped tool/Trade Skill proficiency, player feat/spell authority, review dossier, and protected boundaries validated.");
+console.log("Unified Character Forge, guarded v3 multi-source starting magic, fixed subclass spells, Background-expanded access, Training-routed Bonus Feat catalogue, isolated player Training, eight player Trade Skills, player feat/spell authority, review dossier, and protected boundaries validated.");
