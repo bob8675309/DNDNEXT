@@ -1,10 +1,14 @@
 import { ABILITY_KEYS } from "../utils/characterCreation";
 import { TRADE_SKILL_KEYS } from "../utils/craftingProfessions";
+import { professionKeysForTools } from "../utils/craftingToolProfessions";
 import { pointBuyRemaining } from "../utils/playerForgeRules";
+import { selectedSourceChoiceOptions } from "../utils/playerForgeSourceChoices";
+import { useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
 import useNpcForgeController from "./useNpcForgeController";
 
 export default function useNpcForgeTrainingRoutedController(args) {
   const controller = useNpcForgeController(args);
+  const { state: sourceChoiceState } = useNpcForgeSourceChoices();
   const baseHandleNext = controller.handleNext;
   const baseHandleCreate = controller.handleCreate;
 
@@ -12,15 +16,24 @@ export default function useNpcForgeTrainingRoutedController(args) {
   // implemented crafting-runtime/NPC-service disciplines. Character Forge has a
   // broader eight-Trade-Skill proficiency catalogue, so adjust the shared player
   // allowance on the returned model without widening legacy crafting authority.
-  // The controller handlers close over this same classSkillConfig object, so the
-  // corrected count is also used by toggleClassSkill() and stepErrors().
+  // Source-granted mapped tools are free grants even if a player had previously
+  // paid for that same Trade Skill before navigating back and changing sources.
   const trainedTradeSkillKeys = controller.playerMode
     ? TRADE_SKILL_KEYS.filter((key) => Number(controller.draft?.professions?.[key]?.rank || 0) > 0)
     : controller.selectedTrainedProfessions || [];
+  const sourceGrantedTradeSkillKeys = controller.playerMode
+    ? new Set(professionKeysForTools(selectedSourceChoiceOptions(sourceChoiceState.groups || [], sourceChoiceState.selections || {})
+      .filter((entry) => entry.kind === "tool" || entry.fieldKind === "tool" || entry.fieldKind === "skill-or-tool")
+      .map((entry) => entry.value || entry.label)))
+    : new Set();
+  const paidTradeSkillKeys = trainedTradeSkillKeys.filter((key) => !sourceGrantedTradeSkillKeys.has(key));
+
+  // The controller handlers close over this same classSkillConfig object, so the
+  // corrected count is also used by toggleClassSkill() and stepErrors().
   if (controller.playerMode && controller.classSkillConfig) {
     const totalCount = Number(controller.classSkillConfig.totalCount ?? controller.classSkillConfig.count ?? 0);
-    controller.classSkillConfig.professionChoices = trainedTradeSkillKeys.length;
-    controller.classSkillConfig.count = Math.max(0, totalCount - trainedTradeSkillKeys.length);
+    controller.classSkillConfig.professionChoices = paidTradeSkillKeys.length;
+    controller.classSkillConfig.count = Math.max(0, totalCount - paidTradeSkillKeys.length);
   }
 
   const bonusFeatPending = Boolean(
