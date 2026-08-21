@@ -42,10 +42,10 @@ function backgroundToolChoiceResolvesInTraining(group = {}) {
 }
 
 /**
- * Placement answers where the player resolves a source-owned choice, which is
- * deliberately separate from who owns/persists that choice. Background tool
- * choices remain Background-owned in serialization but are resolved alongside
- * the rest of the character's proficiency choices in Training.
+ * Step-level resolver placement is distinct from source ownership. Class and
+ * advancement groups already resolve on the Training step but retain their
+ * subsection placement. Background tool choices are the one case normalized
+ * into the Training choice surface itself.
  */
 export function sourceChoiceResolverPlacement(group = {}) {
   const explicit = String(group.resolverPlacement || group.metadata?.resolverPlacement || "").trim();
@@ -55,8 +55,22 @@ export function sourceChoiceResolverPlacement(group = {}) {
   return group.placement || "";
 }
 
+function normalizeBackgroundToolPlacement(group = {}) {
+  if (!backgroundToolChoiceResolvesInTraining(group)) return group;
+  return {
+    ...group,
+    placement: "training",
+    metadata: {
+      ...(group.metadata || {}),
+      sourcePlacement: group.placement || "background",
+      resolverPlacement: "training",
+      backgroundToolChoice: true,
+    },
+  };
+}
+
 export function normalizeSourceChoiceState(groups = [], catalogReady = true, previous = EMPTY_SOURCE_CHOICE_STATE, scope = "foundation") {
-  const validGroups = normalizeFeatSourceChoiceGroups(Array.isArray(groups) ? groups : []);
+  const validGroups = normalizeFeatSourceChoiceGroups(Array.isArray(groups) ? groups : []).map(normalizeBackgroundToolPlacement);
   const previousScopes = previous?.scopes && typeof previous.scopes === "object" ? previous.scopes : {};
   const scopes = {
     ...previousScopes,
@@ -90,5 +104,5 @@ export function sourceChoiceSelectionSummary(state = EMPTY_SOURCE_CHOICE_STATE) 
 }
 
 export function sourceChoiceGroupsForPlacement(state = EMPTY_SOURCE_CHOICE_STATE, placement = "") {
-  return (state.groups || []).filter((group) => !placement || sourceChoiceResolverPlacement(group) === placement);
+  return (state.groups || []).filter((group) => !placement || group.placement === placement);
 }
