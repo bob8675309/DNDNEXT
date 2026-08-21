@@ -55,7 +55,9 @@ const SERVICE_TO_PROFESSION = Object.freeze({
 function normalizedToken(value = "") {
   return String(value || "")
     .toLowerCase()
+    .replace(/[’']/g, "")
     .replace(/[_-]+/g, " ")
+    .replace(/[^a-z0-9 ]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -137,6 +139,26 @@ export function abilityModifier(score) {
   return Math.floor(((Number.isFinite(numeric) ? numeric : 10) - 10) / 2);
 }
 
+function sheetToolValues(sheet = {}) {
+  const values = [];
+  const push = (value) => {
+    if (!value) return;
+    if (Array.isArray(value)) return value.forEach(push);
+    if (typeof value === "object") return Object.values(value).forEach(push);
+    values.push(String(value));
+  };
+  push(sheet.tools);
+  push(sheet.toolProficiencies);
+  push(sheet.tool_proficiencies);
+  push(sheet.proficiencies?.tools);
+  return values;
+}
+
+function sheetHasProfessionTool(sheet = {}, definition = null) {
+  const expected = normalizedToken(definition?.tool);
+  return Boolean(expected && sheetToolValues(sheet).some((value) => normalizedToken(value) === expected));
+}
+
 export function professionModifierFromSheet(sheet = {}, professionKey) {
   const key = normalizeProfessionKey(professionKey);
   const definition = PROFESSION_DEFINITIONS[key];
@@ -145,10 +167,12 @@ export function professionModifierFromSheet(sheet = {}, professionKey) {
   const rawProfessions = sheet?.professions && typeof sheet.professions === "object" ? sheet.professions : {};
   const explicitlyConfigured = Object.prototype.hasOwnProperty.call(rawProfessions, key);
   const profession = normalizeProfessionEntry(rawProfessions[key], key);
+  const toolGranted = sheetHasProfessionTool(sheet, definition);
+  const effectiveRank = Math.max(profession.rank, toolGranted ? 1 : 0);
   const abilityScore = Number(sheet?.abilities?.[profession.ability]?.score ?? 10);
   const abilityMod = abilityModifier(abilityScore);
   const proficiencyBonus = Number(sheet?.proficiencyBonus ?? sheet?.proficiency_bonus ?? 2) || 0;
-  const proficiencyContribution = proficiencyBonus * profession.rank;
+  const proficiencyContribution = proficiencyBonus * effectiveRank;
 
   return {
     key,
@@ -160,12 +184,13 @@ export function professionModifierFromSheet(sheet = {}, professionKey) {
     abilityScore: Number.isFinite(abilityScore) ? abilityScore : 10,
     abilityModifier: abilityMod,
     proficiencyBonus,
-    rank: profession.rank,
-    rankLabel: profession.rank === 2 ? "Expertise" : profession.rank === 1 ? "Proficient" : "Untrained",
+    rank: effectiveRank,
+    rankLabel: effectiveRank === 2 ? "Expertise" : effectiveRank === 1 ? "Proficient" : "Untrained",
     offersService: profession.offersService,
     proficiencyContribution,
     totalModifier: abilityMod + proficiencyContribution,
-    configured: explicitlyConfigured && profession.rank > 0,
+    configured: (explicitlyConfigured && profession.rank > 0) || toolGranted,
+    proficiencySource: profession.rank > 0 ? "profession" : toolGranted ? "tool" : "none",
   };
 }
 
