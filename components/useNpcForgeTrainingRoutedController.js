@@ -1,4 +1,5 @@
 import { ABILITY_KEYS } from "../utils/characterCreation";
+import { TRADE_SKILL_KEYS } from "../utils/craftingProfessions";
 import { pointBuyRemaining } from "../utils/playerForgeRules";
 import useNpcForgeController from "./useNpcForgeController";
 
@@ -6,6 +7,21 @@ export default function useNpcForgeTrainingRoutedController(args) {
   const controller = useNpcForgeController(args);
   const baseHandleNext = controller.handleNext;
   const baseHandleCreate = controller.handleCreate;
+
+  // useNpcForgeController intentionally keeps PROFESSION_KEYS scoped to the four
+  // implemented crafting-runtime/NPC-service disciplines. Character Forge has a
+  // broader eight-Trade-Skill proficiency catalogue, so adjust the shared player
+  // allowance on the returned model without widening legacy crafting authority.
+  // The controller handlers close over this same classSkillConfig object, so the
+  // corrected count is also used by toggleClassSkill() and stepErrors().
+  const trainedTradeSkillKeys = controller.playerMode
+    ? TRADE_SKILL_KEYS.filter((key) => Number(controller.draft?.professions?.[key]?.rank || 0) > 0)
+    : controller.selectedTrainedProfessions || [];
+  if (controller.playerMode && controller.classSkillConfig) {
+    const totalCount = Number(controller.classSkillConfig.totalCount ?? controller.classSkillConfig.count ?? 0);
+    controller.classSkillConfig.professionChoices = trainedTradeSkillKeys.length;
+    controller.classSkillConfig.count = Math.max(0, totalCount - trainedTradeSkillKeys.length);
+  }
 
   const bonusFeatPending = Boolean(
     controller.playerMode
@@ -59,6 +75,7 @@ export default function useNpcForgeTrainingRoutedController(args) {
 
   return {
     ...controller,
+    selectedTrainedProfessions: trainedTradeSkillKeys,
     bonusFeatPending,
     handleNext,
     handleCreate,
