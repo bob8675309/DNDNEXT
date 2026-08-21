@@ -24,6 +24,7 @@ const SOURCE_KIND_ICON = Object.freeze({
   tool: `${TRAINING_ASSET_ROOT}/choice-tool.svg`,
   instrument: `${TRAINING_ASSET_ROOT}/choice-instrument.svg`,
   language: `${TRAINING_ASSET_ROOT}/choice-language.svg`,
+  "skill-or-tool": `${TRAINING_ASSET_ROOT}/summary-training.svg`,
 });
 const SKILL_ICON = Object.freeze({
   arcana: FaMagic,
@@ -70,10 +71,23 @@ function isArtisanOption(option = {}) {
   return /^AT(?:\||$)/i.test(String(option?.metadata?.sourceType || ""));
 }
 
-function mappedTradeFields(groups = [], selections = {}) {
+function skillKeyForOption(option = {}) {
+  const raw = normalized(option.value || option.label || option.key);
+  if (!raw) return "";
+  return SKILL_DEFINITIONS.find((skill) => normalized(skill.key) === raw || normalized(skill.label) === raw)?.key || "";
+}
+
+function sourceFieldsFor(groups = [], selections = {}, kind = "skill") {
   return groups.flatMap((group) => (group.fields || []).flatMap((field) => {
-    if (field?.kind !== "tool" || field?.autoSelect || !sourceChoiceFieldIsActive(field, selections)) return [];
+    if (field?.autoSelect || !sourceChoiceFieldIsActive(field, selections)) return [];
+    const supportsSkill = field.kind === "skill" || field.kind === "skill-or-tool";
+    const supportsTool = field.kind === "tool" || field.kind === "skill-or-tool";
+    if ((kind === "skill" && !supportsSkill) || (kind === "tool" && !supportsTool)) return [];
     const mappedOptions = (field.options || []).flatMap((option) => {
+      if (kind === "skill") {
+        const skillKey = skillKeyForOption(option);
+        return skillKey ? [{ ...option, skillKey }] : [];
+      }
       const professionKey = professionKeyForTool(option.value || option.label);
       return professionKey ? [{ ...option, professionKey }] : [];
     });
@@ -90,19 +104,34 @@ function mappedTradeFields(groups = [], selections = {}) {
 function presentationSourceGroups(groups = [], selections = {}) {
   return groups.flatMap((group) => {
     const fields = (group.fields || []).flatMap((field) => {
-      if (field?.kind !== "tool" || field?.autoSelect || !sourceChoiceFieldIsActive(field, selections)) return [field];
-      const mapped = (field.options || []).filter((option) => professionKeyForTool(option.value || option.label));
-      if (!mapped.length) return [field];
+      if (field?.autoSelect || !sourceChoiceFieldIsActive(field, selections)) return [field];
+      if (!["tool", "skill", "skill-or-tool"].includes(field.kind)) return [field];
+      const hasMappedTrade = (field.options || []).some((option) => professionKeyForTool(option.value || option.label));
       const hasArtisanPool = /artisan/i.test(String(field.label || "")) || (field.options || []).some(isArtisanOption);
       const options = (field.options || []).filter((option) => {
+        if (skillKeyForOption(option)) return false;
         if (professionKeyForTool(option.value || option.label)) return false;
-        if (hasArtisanPool && isArtisanOption(option)) return false;
+        // Hide unsupported artisan choices only when this same source field can be
+        // satisfied by one of the eight mapped Trade Skills. If a source requires
+        // only unsupported artisan tools, keep it resolvable rather than deadlock.
+        if (hasArtisanPool && hasMappedTrade && isArtisanOption(option)) return false;
         return true;
       });
       return options.length ? [{ ...field, options }] : [];
     });
     return fields.length ? [{ ...group, fields }] : [];
   });
+}
+
+function sourceGrantMap(entries = [], mapper) {
+  const map = new Map();
+  for (const entry of entries) {
+    const key = mapper(entry);
+    if (!key || map.has(key)) continue;
+    const owner = entry.ownerType ? `${entry.ownerType[0]?.toUpperCase() || ""}${entry.ownerType.slice(1)}` : "Source";
+    map.set(key, `${owner}: ${entry.groupLabel || entry.label}`);
+  }
+  return map;
 }
 
 export default function NpcForgeTrainingStepPlayer({
@@ -129,41 +158,50 @@ export default function NpcForgeTrainingStepPlayer({
   const featOptions = controller.featOptions || [];
   const classSkillOptions = Array.isArray(classSkillConfig?.options) ? classSkillConfig.options : [];
 
+  const selectedSourceOptions = useMemo(
+    () => selectedSourceChoiceOptions(sourceChoiceState.groups || [], sourceChoiceState.selections || {}),
+    [sourceChoiceState.groups, sourceChoiceState.selections]
+  );
+  const sourceGrantedSkillKeys = useMemo(() => new Set(selectedSourceOptions.map(skillKeyForOption).filter(Boolean)), [selectedSourceOptions]);
+  const selectedSourceToolEntries = useMemo(
+    () => selectedSourceOptions.filter((entry) => entry.kind === "tool" || entry.fieldKind === "tool" || entry.fieldKind === "skill-or-tool"),
+    [selectedSourceOptions]
+  );
+  const sourceGrantedProfessionKeys = useMemo(
+    () => new Set(professionKeysForTools(selectedSourceToolEntries.map((entry) => entry.value || entry.label))),
+    [selectedSourceToolEntries]
+  );
+  const skillGrantSource = useMemo(() => sourceGrantMap(selectedSourceOptions, skillKeyForOption), [selectedSourceOptions]);
+  const professionGrantSource = useMemo(() => sourceGrantMap(selectedSourceToolEntries, (entry) => professionKeyForTool(entry.value || entry.label)), [selectedSourceToolEntries]);
+
   const backgroundChoiceSelectedKeys = useMemo(() => new Set(backgroundSkillChoices.flatMap((group) => backgroundSkillSelections?.[group.id] || [])), [backgroundSkillChoices, backgroundSkillSelections]);
   const backgroundGrantedSkillKeys = useMemo(() => new Set([...backgroundSkills, ...backgroundChoiceSelectedKeys]), [backgroundSkills, backgroundChoiceSelectedKeys]);
-  const skillDisplayKeys = useMemo(() => [...new Set([
-    ...classSkillOptions,
-    ...backgroundSkills,
-    ...backgroundSkillChoices.flatMap((group) => (group.options || []).map((option) => option.key)),
-  ])], [backgroundSkills, backgroundSkillChoices, classSkillOptions]);
-  const selectedSkillKeys = useMemo(() => [...new Set([...backgroundGrantedSkillKeys, ...selectedClassSkills])], [backgroundGrantedSkillKeys, selectedClassSkills]);
-  const eligibleExpertiseNames = selectedSkillKeys.map((key) => titleForSkill(key));
-  const eligibleExpertiseKey = eligibleExpertiseNames.map(normalized).join("|");
-  const eligibleExpertiseSet = useMemo(() => new Set(eligibleExpertiseNames.map(normalized)), [eligibleExpertiseKey]);
+  const effectiveGrantedSkillKeys = useMemo(() => new Set([...backgroundGrantedSkillKeys, ...sourceGrantedSkillKeys]), [backgroundGrantedSkillKeys, sourceGrantedSkillKeys]);
 
   const trainingChoiceGroups = useMemo(() => (classChoiceState.featureGroups || []).filter((group) => (group.placement || "class") === "training"), [classChoiceState.featureGroups]);
   const classAbilityGroups = useMemo(() => (classChoiceState.featureGroups || []).filter((group) => (group.placement || "class") === "class"), [classChoiceState.featureGroups]);
   const sourceTrainingGroups = useMemo(() => (sourceChoiceState.groups || []).filter((group) => group.placement === "training"), [sourceChoiceState.groups]);
   const sourceClassAbilityGroups = useMemo(() => (sourceChoiceState.groups || []).filter((group) => ["class", "advancement"].includes(group.placement)), [sourceChoiceState.groups]);
-  const sourceTradeFields = useMemo(() => mappedTradeFields(sourceTrainingGroups, sourceChoiceState.selections || {}), [sourceTrainingGroups, sourceChoiceState.selections]);
+  const sourceSkillFields = useMemo(() => sourceFieldsFor(sourceTrainingGroups, sourceChoiceState.selections || {}, "skill"), [sourceTrainingGroups, sourceChoiceState.selections]);
+  const sourceTradeFields = useMemo(() => sourceFieldsFor(sourceTrainingGroups, sourceChoiceState.selections || {}, "tool"), [sourceTrainingGroups, sourceChoiceState.selections]);
   const genericSourceTrainingGroups = useMemo(() => presentationSourceGroups(sourceTrainingGroups, sourceChoiceState.selections || {}), [sourceTrainingGroups, sourceChoiceState.selections]);
 
-  const selectedSourceOptions = useMemo(() => selectedSourceChoiceOptions(sourceChoiceState.groups || [], sourceChoiceState.selections || {}), [sourceChoiceState.groups, sourceChoiceState.selections]);
-  const selectedSourceToolEntries = useMemo(() => selectedSourceOptions.filter((entry) => entry.kind === "tool" || entry.fieldKind === "tool"), [selectedSourceOptions]);
-  const sourceGrantedProfessionKeys = useMemo(() => new Set(professionKeysForTools(selectedSourceToolEntries.map((entry) => entry.value || entry.label))), [selectedSourceToolEntries]);
-  const professionGrantSource = useMemo(() => {
-    const map = new Map();
-    for (const entry of selectedSourceToolEntries) {
-      const professionKey = professionKeyForTool(entry.value || entry.label);
-      if (!professionKey || map.has(professionKey)) continue;
-      map.set(professionKey, `${entry.ownerType ? `${entry.ownerType[0].toUpperCase()}${entry.ownerType.slice(1)}` : "Source"}: ${entry.groupLabel || entry.label}`);
-    }
-    return map;
-  }, [selectedSourceToolEntries]);
+  const sourceSkillOptionKeys = useMemo(() => sourceSkillFields.flatMap((entry) => entry.mappedOptions.map((option) => option.skillKey)), [sourceSkillFields]);
+  const skillDisplayKeys = useMemo(() => [...new Set([
+    ...classSkillOptions,
+    ...backgroundSkills,
+    ...backgroundSkillChoices.flatMap((group) => (group.options || []).map((option) => option.key)),
+    ...sourceSkillOptionKeys,
+    ...sourceGrantedSkillKeys,
+  ])], [backgroundSkills, backgroundSkillChoices, classSkillOptions, sourceGrantedSkillKeys, sourceSkillOptionKeys]);
+
+  const selectedSkillKeys = useMemo(() => [...new Set([...effectiveGrantedSkillKeys, ...selectedClassSkills])], [effectiveGrantedSkillKeys, selectedClassSkills]);
+  const eligibleExpertiseNames = selectedSkillKeys.map((key) => titleForSkill(key));
+  const eligibleExpertiseKey = eligibleExpertiseNames.map(normalized).join("|");
+  const eligibleExpertiseSet = useMemo(() => new Set(eligibleExpertiseNames.map(normalized)), [eligibleExpertiseKey]);
 
   const explicitlyTrainedProfessionKeys = TRADE_SKILL_KEYS.filter((key) => Number(professions?.[key]?.rank || 0) > 0);
   const paidProfessionKeys = explicitlyTrainedProfessionKeys.filter((key) => !sourceGrantedProfessionKeys.has(key));
-  const effectiveProfessionKeys = [...new Set([...explicitlyTrainedProfessionKeys, ...sourceGrantedProfessionKeys])];
   const paidProfessionCount = paidProfessionKeys.length;
   const totalTrainingChoices = Number(classSkillConfig?.totalCount ?? classSkillConfig?.count ?? 0);
   const usedTrainingChoices = selectedClassSkills.length + paidProfessionCount;
@@ -207,19 +245,19 @@ export default function NpcForgeTrainingStepPlayer({
   }, [classChoiceState.featureSelections, eligibleExpertiseKey, eligibleExpertiseSet, toggleFeatureOption, trainingChoiceGroups]);
 
   useEffect(() => {
-    for (const key of backgroundGrantedSkillKeys) {
+    for (const key of effectiveGrantedSkillKeys) {
       if (selectedClassSkills.includes(key)) onToggleClassSkill?.(key);
     }
-  }, [backgroundGrantedSkillKeys, onToggleClassSkill, selectedClassSkills]);
+  }, [effectiveGrantedSkillKeys, onToggleClassSkill, selectedClassSkills]);
 
   useEffect(() => {
     if (initialDetailSet.current) return;
-    const key = selectedClassSkills[0] || [...backgroundGrantedSkillKeys][0] || classSkillOptions[0];
+    const key = selectedClassSkills[0] || [...effectiveGrantedSkillKeys][0] || classSkillOptions[0];
     if (!key) return;
     initialDetailSet.current = true;
-    const granted = backgroundGrantedSkillKeys.has(key);
-    onDetail?.({ type: "skill", key, granted, grantSource: granted ? "Background" : "" });
-  }, [backgroundGrantedSkillKeys, classSkillOptions, onDetail, selectedClassSkills]);
+    const granted = effectiveGrantedSkillKeys.has(key);
+    onDetail?.({ type: "skill", key, granted, grantSource: backgroundGrantedSkillKeys.has(key) ? "Background" : skillGrantSource.get(key) || "" });
+  }, [backgroundGrantedSkillKeys, classSkillOptions, effectiveGrantedSkillKeys, onDetail, selectedClassSkills, skillGrantSource]);
 
   useEffect(() => {
     if (typeof document === "undefined") return undefined;
@@ -250,15 +288,13 @@ export default function NpcForgeTrainingStepPlayer({
     return backgroundSkillChoices.find((group) => (group.options || []).some((option) => option.key === key) && (backgroundSkillSelections?.[group.id] || []).length < Number(group.count || 1)) || null;
   }
 
-  function sourceTradeFieldForKey(key) {
-    const matching = sourceTradeFields.filter((entry) => entry.mappedOptions.some((option) => option.professionKey === key));
+  function sourceFieldForKey(refs, key, mappedKey) {
+    const matching = refs.filter((entry) => entry.mappedOptions.some((option) => option[mappedKey] === key));
     return matching.find((entry) => entry.selectedKeys.length < Number(entry.field.count || 1)) || matching[0] || null;
   }
 
-  function chooseSourceTrade(key, ref) {
-    if (!ref || typeof setSourceChoice !== "function") return false;
-    const option = ref.mappedOptions.find((candidate) => candidate.professionKey === key);
-    if (!option) return false;
+  function chooseSourceMappedOption(ref, option) {
+    if (!ref || !option || typeof setSourceChoice !== "function") return false;
     const count = Math.max(1, Number(ref.field.count || 1));
     const current = [...ref.selectedKeys];
     let next = current;
@@ -274,35 +310,40 @@ export default function NpcForgeTrainingStepPlayer({
     <details className={`npc-forge-training-summary npc-forge-training-summary--unified ${allSelectionsResolved ? "is-complete" : "is-required"}`}>
       <summary>
         <img src={`${TRAINING_ASSET_ROOT}/summary-training.svg`} alt="" aria-hidden="true" />
-        <span><strong>Skill &amp; Training Selections</strong><small>Open for a breakdown of where every required choice comes from.</small></span>
+        <span><strong>Skill &amp; Training Selections</strong><small>Open for a compact source/provenance breakdown.</small></span>
         <b>{totalSelectionTarget ? `${totalSelectionDone}/${totalSelectionTarget}` : "Complete"}</b>
         <em>{allSelectionsResolved ? "Resolved" : `${Math.max(0, totalSelectionTarget - totalSelectionDone)} left`}</em>
       </summary>
       <div className="npc-forge-training-summary-breakdown">
         <div><span><img src={`${TRAINING_ASSET_ROOT}/summary-background.svg`} alt="" /><b>Background</b><small>Fixed and variable source grants</small></span><strong>{backgroundChoiceTarget ? `${backgroundChoiceDone}/${backgroundChoiceTarget}` : "Granted"}</strong></div>
-        <div><span><img src={`${TRAINING_ASSET_ROOT}/summary-skills.svg`} alt="" /><b>Class Skills / Trade Skills</b><small>Shared paid allowance</small></span><strong>{usedTrainingChoices}/{totalTrainingChoices}</strong></div>
-        <div><span><img src={`${TRAINING_ASSET_ROOT}/summary-training.svg`} alt="" /><b>Source Training Choices</b><small>Languages, instruments, Expertise, and source grants</small></span><strong>{trainingStageProgress.target ? `${trainingStageProgress.done}/${trainingStageProgress.target}` : "None"}</strong></div>
-        <div><span><img src={`${TRAINING_ASSET_ROOT}/summary-feat.svg`} alt="" /><b>Feat &amp; Class Choices</b><small>{bonusFeatRequired ? "Includes your Bonus Feat" : "Permanent feature choices"}</small></span><strong>{featChoiceTarget ? `${featChoiceDone}/${featChoiceTarget}` : "None"}</strong></div>
+        <div><span><img src={`${TRAINING_ASSET_ROOT}/summary-skills.svg`} alt="" /><b>Paid Skills / Trade Skills</b><small>Shared class allowance</small></span><strong>{usedTrainingChoices}/{totalTrainingChoices}</strong></div>
+        <div><span><img src={`${TRAINING_ASSET_ROOT}/summary-training.svg`} alt="" /><b>Source Training</b><small>Inline grants plus remaining source choices</small></span><strong>{trainingStageProgress.target ? `${trainingStageProgress.done}/${trainingStageProgress.target}` : "None"}</strong></div>
+        <div><span><img src={`${TRAINING_ASSET_ROOT}/summary-feat.svg`} alt="" /><b>Feat &amp; Class</b><small>{bonusFeatRequired ? "Includes your Bonus Feat" : "Permanent feature choices"}</small></span><strong>{featChoiceTarget ? `${featChoiceDone}/${featChoiceTarget}` : "None"}</strong></div>
       </div>
     </details>
 
     <div className="npc-forge-training-picks">
       <section className={`npc-forge-training-pick-group npc-forge-training-class-skills ${(incompleteTrainingAllowance || incompleteBackgroundSkills) ? "is-required" : ""}`}>
-        <div className="npc-forge-training-group-head"><span><img src={`${TRAINING_ASSET_ROOT}/summary-skills.svg`} alt="" aria-hidden="true" /><b>Skills</b></span><small>{backgroundGrantedSkillKeys.size} granted • {selectedClassSkills.length} selected</small></div>
+        <div className="npc-forge-training-group-head"><span><img src={`${TRAINING_ASSET_ROOT}/summary-skills.svg`} alt="" aria-hidden="true" /><b>Skills</b></span><small>{effectiveGrantedSkillKeys.size} granted • {selectedClassSkills.length} paid{backgroundChoiceTarget ? ` • Background ${backgroundChoiceDone}/${backgroundChoiceTarget}` : ""}</small></div>
         <div className="npc-forge-training-skill-list">{skillDisplayKeys.map((key) => {
           const fixedBackgroundGranted = backgroundSkills.includes(key);
           const selectedBackgroundChoice = backgroundChoiceSelectedKeys.has(key);
           const backgroundGroup = backgroundChoiceForSkill(key);
           const pendingBackgroundChoice = Boolean(backgroundGroup && !fixedBackgroundGranted && !selectedBackgroundChoice);
           const backgroundGranted = fixedBackgroundGranted || selectedBackgroundChoice;
+          const sourceGranted = sourceGrantedSkillKeys.has(key);
+          const sourceRef = sourceFieldForKey(sourceSkillFields, key, "skillKey");
+          const sourceAvailable = Boolean(sourceRef && !sourceGranted);
           const classAvailable = classSkillOptions.includes(key);
           const classSelected = selectedClassSkills.includes(key);
-          const selected = backgroundGranted || classSelected;
-          const disabled = backgroundGranted || (!pendingBackgroundChoice && (!classAvailable || (!classSelected && remainingTrainingChoices <= 0)));
+          const granted = backgroundGranted || sourceGranted;
+          const selected = granted || classSelected;
+          const disabled = granted || (!pendingBackgroundChoice && !sourceAvailable && (!classAvailable || (!classSelected && remainingTrainingChoices <= 0)));
           const definition = SKILL_BY_KEY[key];
-          const provenance = backgroundGranted ? "Granted by Background" : pendingBackgroundChoice ? "Background choice" : classSelected ? "Class skill choice" : ABILITY_LABELS[definition?.ability] || "Skill";
-          return <button key={key} type="button" disabled={disabled} className={`${selected ? "is-selected" : ""} ${backgroundGranted ? "is-granted" : ""} ${pendingBackgroundChoice ? "is-source-option" : ""}`} onMouseEnter={() => onDetail?.({ type: "skill", key, granted: backgroundGranted, grantSource: backgroundGranted ? "Background" : pendingBackgroundChoice ? "Background choice" : classSelected ? "Class Skill" : "" })} onFocus={() => onDetail?.({ type: "skill", key, granted: backgroundGranted, grantSource: backgroundGranted ? "Background" : pendingBackgroundChoice ? "Background choice" : classSelected ? "Class Skill" : "" })} onClick={() => {
-            if (fixedBackgroundGranted) return;
+          const grantSource = backgroundGranted ? "Background" : sourceGranted ? skillGrantSource.get(key) || "Source" : sourceAvailable ? `${ownerLabel(sourceRef.group)}: ${sourceRef.group.label}` : "";
+          const provenance = backgroundGranted ? "Granted by Background" : sourceGranted ? `Granted by ${grantSource}` : pendingBackgroundChoice ? "Background choice" : sourceAvailable ? `Available from ${grantSource}` : classSelected ? "Class skill choice" : ABILITY_LABELS[definition?.ability] || "Skill";
+          return <button key={key} type="button" disabled={disabled} className={`${selected ? "is-selected" : ""} ${granted ? "is-granted" : ""} ${(pendingBackgroundChoice || sourceAvailable) && !granted ? "is-source-option" : ""}`} onMouseEnter={() => onDetail?.({ type: "skill", key, granted, grantSource })} onFocus={() => onDetail?.({ type: "skill", key, granted, grantSource })} onClick={() => {
+            if (fixedBackgroundGranted || sourceGranted) return;
             if (selectedBackgroundChoice && backgroundGroup) {
               onToggleBackgroundSkill?.(backgroundGroup.id, key, backgroundGroup.count);
               return;
@@ -313,34 +354,44 @@ export default function NpcForgeTrainingStepPlayer({
               onDetail?.({ type: "skill", key, granted: true, grantSource: "Background" });
               return;
             }
+            if (sourceAvailable) {
+              const option = sourceRef.mappedOptions.find((candidate) => candidate.skillKey === key);
+              if (classSelected) onToggleClassSkill?.(key);
+              chooseSourceMappedOption(sourceRef, option);
+              onDetail?.({ type: "skill", key, granted: true, grantSource });
+              return;
+            }
             if (classAvailable) onToggleClassSkill?.(key);
-          }}><SkillGlyph skillKey={key} /><span><b>{titleForSkill(key)}</b><small>{provenance}</small></span><em>{backgroundGranted ? "G" : classSelected ? "✓" : pendingBackgroundChoice ? "+" : "○"}</em></button>;
+          }}><SkillGlyph skillKey={key} /><span><b>{titleForSkill(key)}</b><small>{provenance}</small></span><em>{granted ? "G" : classSelected ? "✓" : (pendingBackgroundChoice || sourceAvailable) ? "+" : "○"}</em></button>;
         })}</div>
       </section>
 
       <section className={`npc-forge-training-pick-group npc-forge-training-trade-skills ${incompleteTrainingAllowance ? "is-required" : ""}`}>
-        <div className="npc-forge-training-group-head"><span><img src={`${TRAINING_ASSET_ROOT}/choice-tool.svg`} alt="" aria-hidden="true" /><b>Trade Skills</b></span><small>{sourceGrantedProfessionKeys.size} granted • {paidProfessionCount} selected</small></div>
-        <p className="npc-forge-training-group-copy">A mapped crafting tool and its Trade Skill are one proficiency. Source-granted craft tools are selected here for free; paid Trade Skills share the Class Skill / Trade Skill allowance.</p>
+        <div className="npc-forge-training-group-head"><span><img src={`${TRAINING_ASSET_ROOT}/choice-tool.svg`} alt="" aria-hidden="true" /><b>Trade Skills</b></span><small>{sourceGrantedProfessionKeys.size} granted • {paidProfessionCount} paid • {remainingTrainingChoices} shared left</small></div>
+        <p className="npc-forge-training-group-copy">A mapped crafting tool and its Trade Skill are one proficiency. Source-granted craft tools resolve here for free; paid Trade Skills share the Class Skill / Trade Skill allowance. Cooking, Tinkering, Jewelcraft, and Brewing are proficiency-ready now but their dedicated recipe systems remain deferred.</p>
         <div className="npc-forge-training-trade-list">{TRADE_SKILL_KEYS.map((key) => {
           const definition = PROFESSION_DEFINITIONS[key];
           const profession = professions?.[key] || { rank: 0, ability: definition.abilities[0], offersService: false };
           const sourceGranted = sourceGrantedProfessionKeys.has(key);
           const paidTrained = Number(profession.rank || 0) > 0 && !sourceGranted;
           const trained = sourceGranted || paidTrained;
-          const sourceRef = sourceTradeFieldForKey(key);
-          const sourceAvailable = Boolean(sourceRef);
+          const sourceRef = sourceFieldForKey(sourceTradeFields, key, "professionKey");
+          const sourceAvailable = Boolean(sourceRef && !sourceGranted);
           const cannotTrain = !trained && !sourceAvailable && remainingTrainingChoices <= 0;
           const grantSource = professionGrantSource.get(key) || (sourceAvailable ? `${ownerLabel(sourceRef.group)}: ${sourceRef.group.label}` : "Training choice");
           return <article key={key} className={`${trained ? "is-selected" : ""} ${sourceGranted ? "is-granted" : ""} ${sourceAvailable && !sourceGranted ? "is-source-option" : ""}`} onMouseEnter={() => onDetail?.({ type: "profession", key, granted: sourceGranted, grantSource: sourceGranted || sourceAvailable ? grantSource : "" })}>
             <button type="button" className="npc-forge-training-trade-main" disabled={cannotTrain} onFocus={() => onDetail?.({ type: "profession", key, granted: sourceGranted, grantSource: sourceGranted || sourceAvailable ? grantSource : "" })} onClick={() => {
               onDetail?.({ type: "profession", key, granted: sourceGranted || sourceAvailable || !paidTrained, grantSource });
-              if (sourceAvailable && chooseSourceTrade(key, sourceRef)) return;
+              if (sourceAvailable) {
+                const option = sourceRef.mappedOptions.find((candidate) => candidate.professionKey === key);
+                chooseSourceMappedOption(sourceRef, option);
+                return;
+              }
               if (!sourceGranted) onSetProfession?.(key, "rank", paidTrained ? 0 : 1);
             }}><img src={PROFESSION_ICON[key] || `${TRAINING_ASSET_ROOT}/choice-tool.svg`} alt="" aria-hidden="true" /><span><b>{definition.label}</b><small>{sourceGranted ? `Granted by ${grantSource}` : sourceAvailable ? `Available from ${grantSource}` : definition.tool}</small></span><em>{sourceGranted ? "G" : paidTrained ? "✓" : sourceAvailable ? "+" : "○"}</em></button>
             {trained ? <label className="npc-forge-training-trade-ability"><span>Ability</span><select value={profession.ability || definition.abilities[0]} onFocus={() => onDetail?.({ type: "profession", key, granted: sourceGranted, grantSource })} onChange={(event) => onSetProfession?.(key, "ability", event.target.value)}>{definition.abilities.map((ability) => <option key={ability} value={ability}>{ABILITY_LABELS[ability]}</option>)}</select></label> : null}
           </article>;
         })}</div>
-        <small className="npc-forge-training-shared-allowance">Shared paid allowance: {usedTrainingChoices}/{totalTrainingChoices} used • {remainingTrainingChoices} remaining</small>
       </section>
 
       {renderOtherTrainingChoices ? <details className={`npc-forge-training-choice-section npc-forge-training-source-section ${(incompleteTrainingFeature || incompleteSourceTraining) ? "is-required" : ""}`} defaultOpen={incompleteSourceTraining && genericSourceTrainingGroups.length > 0}>
@@ -365,7 +416,7 @@ export default function NpcForgeTrainingStepPlayer({
     <div className="npc-forge-training-help"><span>ⓘ</span><div><strong>Need help?</strong><p>Hover any Skill, Trade Skill, or feat to inspect it in Current Selection. Open the top tally for source provenance.</p></div></div>
 
     <style jsx global>{`
-      .npc-forge-modal-v2:has(.npc-forge-training-player-layout){width:min(1260px,calc(100vw - 32px))!important;max-width:1260px!important}.npc-forge-body:has(.npc-forge-training-player-layout){grid-template-columns:minmax(450px,43fr) minmax(0,57fr)!important}.npc-forge-body:has(.npc-forge-training-player-layout) .npc-forge-workspace{padding:12px!important;background:linear-gradient(180deg,rgba(126,72,199,.025),transparent 26%)}.npc-forge-body:has(.npc-forge-training-player-layout) .npc-forge-preview{position:relative;align-self:stretch;overflow:visible!important;padding:12px 14px!important;background:radial-gradient(circle at 40% 0,rgba(126,72,199,.055),transparent 44%),#0a0d15}.npc-forge-body:has(.npc-forge-training-player-layout) .npc-forge-context-panel{position:sticky!important;top:10px!important;align-self:start!important;overflow:visible!important;max-height:none!important}.npc-forge-body:has(.npc-forge-training-player-layout) .npc-forge-training-context-dossier{position:sticky;top:10px;min-height:0!important;max-height:calc(100vh - 190px);overflow:auto;padding-right:4px}.npc-forge-training-player-layout{display:grid;gap:9px}.npc-forge-training-summary{border:1px solid rgba(255,255,255,.09);border-radius:9px;background:rgba(255,255,255,.018);overflow:hidden}.npc-forge-training-summary--unified>summary{display:grid;grid-template-columns:30px minmax(0,1fr) auto auto;gap:9px;align-items:center;padding:9px 11px;list-style:none;cursor:pointer;background:linear-gradient(135deg,rgba(255,255,255,.025),rgba(126,72,199,.025))}.npc-forge-training-summary--unified>summary::-webkit-details-marker{display:none}.npc-forge-training-summary--unified>summary>img{width:25px;height:25px}.npc-forge-training-summary--unified>summary>span{display:grid;gap:1px}.npc-forge-training-summary--unified>summary strong{color:#f5f0ff;font-size:.68rem}.npc-forge-training-summary--unified>summary small{color:rgba(255,255,255,.48);font-size:.49rem}.npc-forge-training-summary--unified>summary>b{color:#fff;font-size:.74rem}.npc-forge-training-summary--unified>summary>em{padding:3px 6px;border-radius:999px;color:#ffe0a0;background:rgba(243,191,99,.1);font-size:.46rem;font-style:normal}.npc-forge-training-summary--unified.is-complete>summary>em{color:#9cece2;background:rgba(88,214,199,.1)}.npc-forge-training-summary-breakdown{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;padding:1px;border-top:1px solid rgba(255,255,255,.075);background:rgba(255,255,255,.045)}.npc-forge-training-summary-breakdown>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 9px;background:#0c1019}.npc-forge-training-summary-breakdown>div>span{display:grid;grid-template-columns:20px minmax(0,1fr);gap:1px 6px;align-items:center}.npc-forge-training-summary-breakdown img{grid-row:1/3;width:18px;height:18px}.npc-forge-training-summary-breakdown b{color:#fff;font-size:.56rem}.npc-forge-training-summary-breakdown small{overflow:hidden;color:rgba(255,255,255,.43);font-size:.44rem;white-space:nowrap;text-overflow:ellipsis}.npc-forge-training-summary-breakdown>div>strong{color:#d8c2fb;font-size:.57rem}.npc-forge-training-picks{display:grid;gap:7px;padding:9px 12px 11px;border:1px solid rgba(255,255,255,.1);border-radius:9px;background:linear-gradient(135deg,rgba(255,255,255,.025),rgba(126,72,199,.025))}.npc-forge-training-pick-group,.npc-forge-training-choice-section{border:0;background:transparent}.npc-forge-training-pick-group{padding:2px 0}.npc-forge-training-pick-group.is-required{border-left:2px solid rgba(243,191,99,.38);padding-left:7px}.npc-forge-training-group-head,.npc-forge-training-choice-section>summary{display:flex;align-items:center;justify-content:space-between;gap:10px}.npc-forge-training-group-head{margin-bottom:5px}.npc-forge-training-group-head>span,.npc-forge-training-choice-section>summary>span{display:flex;align-items:center;gap:7px;min-width:0}.npc-forge-training-group-head img,.npc-forge-training-choice-section>summary>span>img{width:17px;height:17px;object-fit:contain}.npc-forge-training-group-head b,.npc-forge-training-choice-section>summary b{color:#ba87ff;font-size:.57rem;text-transform:uppercase;letter-spacing:.055em}.npc-forge-training-group-head small{color:rgba(255,255,255,.58);font-size:.49rem}.npc-forge-training-skill-list,.npc-forge-training-trade-list{display:grid;gap:3px}.npc-forge-training-skill-list>button,.npc-forge-training-trade-list>article{min-height:31px;border:1px solid rgba(255,255,255,.085);border-radius:6px;background:rgba(3,5,10,.3)}.npc-forge-training-skill-list>button{display:grid;grid-template-columns:23px minmax(0,1fr) auto;gap:7px;align-items:center;padding:4px 7px;color:rgba(255,255,255,.78);text-align:left}.npc-forge-training-skill-icon{display:grid;place-items:center;width:21px;height:21px;color:#aa72ff;font-size:.73rem}.npc-forge-training-skill-list>button>span{display:flex;align-items:baseline;gap:7px;min-width:0}.npc-forge-training-skill-list>button b{color:#fff;font-size:.61rem}.npc-forge-training-skill-list>button span small{color:rgba(255,255,255,.42);font-size:.45rem}.npc-forge-training-skill-list>button>em,.npc-forge-training-trade-main>em{display:grid;place-items:center;width:16px;height:16px;border:1px solid rgba(255,255,255,.18);border-radius:50%;color:rgba(255,255,255,.42);font-size:.48rem;font-style:normal}.npc-forge-training-skill-list>button.is-selected{border-color:rgba(168,108,255,.62);background:linear-gradient(90deg,rgba(126,72,199,.15),rgba(126,72,199,.03))}.npc-forge-training-skill-list>button.is-selected>em{border-color:#8d58ff;color:#0b0912;background:#8d58ff}.npc-forge-training-skill-list>button.is-granted{border-color:rgba(88,214,199,.36);background:linear-gradient(90deg,rgba(88,214,199,.075),rgba(126,72,199,.035))}.npc-forge-training-skill-list>button.is-granted>em{border-color:#58d6c7;color:#07110f;background:#58d6c7}.npc-forge-training-skill-list>button.is-source-option,.npc-forge-training-trade-list>article.is-source-option{border-style:dashed;border-color:rgba(243,191,99,.42)}.npc-forge-training-skill-list>button:disabled,.npc-forge-training-trade-main:disabled{opacity:.5}.npc-forge-training-group-copy{margin:-1px 0 5px;color:rgba(255,255,255,.47);font-size:.48rem;line-height:1.4}.npc-forge-training-trade-list>article{display:grid;grid-template-columns:minmax(0,1fr) 112px;gap:7px;align-items:center;padding:4px 7px}.npc-forge-training-trade-list>article.is-selected{border-color:rgba(88,214,199,.48);background:linear-gradient(90deg,rgba(88,214,199,.075),rgba(88,214,199,.02))}.npc-forge-training-trade-list>article.is-granted{border-color:rgba(243,191,99,.42);background:linear-gradient(90deg,rgba(243,191,99,.065),rgba(88,214,199,.035))}.npc-forge-training-trade-main{display:grid;grid-template-columns:23px minmax(0,1fr) auto;gap:7px;align-items:center;min-width:0;padding:0;border:0;color:rgba(255,255,255,.78);background:transparent;text-align:left}.npc-forge-training-trade-main>img{width:21px;height:21px}.npc-forge-training-trade-main>span{display:flex;align-items:baseline;gap:7px;min-width:0}.npc-forge-training-trade-main b{color:#fff;font-size:.61rem}.npc-forge-training-trade-main small{overflow:hidden;color:rgba(255,255,255,.42);font-size:.45rem;white-space:nowrap;text-overflow:ellipsis}.npc-forge-training-trade-list>article.is-selected .npc-forge-training-trade-main>em{border-color:#58d6c7;color:#07110f;background:#58d6c7}.npc-forge-training-trade-list>article.is-granted .npc-forge-training-trade-main>em{border-color:#e1bd6e;color:#171005;background:#e1bd6e}.npc-forge-training-trade-ability{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px;align-items:center}.npc-forge-training-trade-ability>span{color:rgba(255,255,255,.4);font-size:.42rem;text-transform:uppercase}.npc-forge-training-trade-ability select{min-width:0;width:100%;padding:3px 5px;border:1px solid rgba(255,255,255,.12);border-radius:5px;color:#fff;background:#090b12;font-size:.48rem}.npc-forge-training-shared-allowance{display:block;margin-top:5px;color:rgba(255,255,255,.44);font-size:.45rem;text-align:right}.npc-forge-training-choice-section{overflow:hidden;border-top:1px solid rgba(255,255,255,.055)}.npc-forge-training-choice-section>summary{list-style:none;cursor:pointer;padding:7px 0 5px}.npc-forge-training-choice-section>summary::-webkit-details-marker{display:none}.npc-forge-training-choice-section>summary em{padding:2px 6px;border-radius:999px;color:#d8c2fb;background:rgba(126,72,199,.1);font-size:.46rem;font-style:normal}.npc-forge-training-choice-section.is-required>summary em{color:#ffe0a0;background:rgba(243,191,99,.1)}.npc-forge-training-choice-section>summary i{display:flex;gap:3px}.npc-forge-training-choice-section>summary i img{width:13px;height:13px}.npc-forge-training-choice-body{display:grid;gap:7px;padding:6px 0 4px}.npc-forge-training-help{display:flex;gap:8px;align-items:flex-start;padding:7px 9px;border-top:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.5)}.npc-forge-training-help strong{color:#fff;font-size:.59rem}.npc-forge-training-help p{margin:0;font-size:.48rem}.npc-forge-training-player-layout .npc-forge-source-choices{gap:6px;margin-top:0}.npc-forge-training-player-layout .npc-forge-source-choices__heading{display:none}.npc-forge-training-player-layout .npc-forge-source-choice-group{gap:6px;padding:7px 8px}.npc-forge-training-player-layout .npc-forge-source-choice-slots{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}@media(max-width:1180px){.npc-forge-modal-v2:has(.npc-forge-training-player-layout){width:calc(100vw - 24px)!important;max-width:none!important}.npc-forge-body:has(.npc-forge-training-player-layout){grid-template-columns:minmax(400px,47fr) minmax(0,53fr)!important}.npc-forge-training-summary-breakdown{grid-template-columns:1fr}}@media(max-width:900px){.npc-forge-body:has(.npc-forge-training-player-layout){grid-template-columns:1fr!important}.npc-forge-body:has(.npc-forge-training-player-layout) .npc-forge-context-panel,.npc-forge-body:has(.npc-forge-training-player-layout) .npc-forge-training-context-dossier{position:static!important;max-height:none!important;overflow:visible!important}}@media(max-width:720px){.npc-forge-training-summary--unified>summary{grid-template-columns:28px minmax(0,1fr) auto}.npc-forge-training-summary--unified>summary>em{grid-column:2/4;justify-self:start}.npc-forge-training-trade-list>article{grid-template-columns:1fr}.npc-forge-training-trade-ability{padding-left:31px}}
+      .npc-forge-modal-v2:has(.npc-forge-training-player-layout){width:min(1260px,calc(100vw - 32px))!important;max-width:1260px!important}.npc-forge-body:has(.npc-forge-training-player-layout){grid-template-columns:minmax(450px,43fr) minmax(0,57fr)!important;align-items:start}.npc-forge-body:has(.npc-forge-training-player-layout) .npc-forge-workspace{padding:12px!important;background:linear-gradient(180deg,rgba(126,72,199,.025),transparent 26%)}.npc-forge-body:has(.npc-forge-training-player-layout) .npc-forge-preview{position:relative;align-self:stretch;overflow:visible!important;padding:12px 14px!important;background:radial-gradient(circle at 40% 0,rgba(126,72,199,.055),transparent 44%),#0a0d15}.npc-forge-body:has(.npc-forge-training-player-layout) .npc-forge-context-panel{position:sticky!important;top:10px!important;align-self:start!important;overflow:visible!important;max-height:none!important}.npc-forge-body:has(.npc-forge-training-player-layout) .npc-forge-training-context-dossier{min-height:0!important;max-height:calc(100vh - 190px);overflow:auto;padding-right:4px}.npc-forge-training-player-layout{display:grid;gap:9px}.npc-forge-training-summary{border:1px solid rgba(255,255,255,.09);border-radius:9px;background:rgba(255,255,255,.018);overflow:hidden}.npc-forge-training-summary--unified>summary{display:grid;grid-template-columns:30px minmax(0,1fr) auto auto;gap:9px;align-items:center;padding:9px 11px;list-style:none;cursor:pointer;background:linear-gradient(135deg,rgba(255,255,255,.025),rgba(126,72,199,.025))}.npc-forge-training-summary--unified>summary::-webkit-details-marker{display:none}.npc-forge-training-summary--unified>summary>img{width:25px;height:25px}.npc-forge-training-summary--unified>summary>span{display:grid;gap:1px}.npc-forge-training-summary--unified>summary strong{color:#f5f0ff;font-size:.68rem}.npc-forge-training-summary--unified>summary small{color:rgba(255,255,255,.48);font-size:.49rem}.npc-forge-training-summary--unified>summary>b{color:#fff;font-size:.74rem}.npc-forge-training-summary--unified>summary>em{padding:3px 6px;border-radius:999px;color:#ffe0a0;background:rgba(243,191,99,.1);font-size:.46rem;font-style:normal}.npc-forge-training-summary--unified.is-complete>summary>em{color:#9cece2;background:rgba(88,214,199,.1)}.npc-forge-training-summary-breakdown{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;padding:1px;border-top:1px solid rgba(255,255,255,.075);background:rgba(255,255,255,.045)}.npc-forge-training-summary-breakdown>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 9px;background:#0c1019}.npc-forge-training-summary-breakdown>div>span{display:grid;grid-template-columns:20px minmax(0,1fr);gap:1px 6px;align-items:center}.npc-forge-training-summary-breakdown img{grid-row:1/3;width:18px;height:18px}.npc-forge-training-summary-breakdown b{color:#fff;font-size:.56rem}.npc-forge-training-summary-breakdown small{overflow:hidden;color:rgba(255,255,255,.43);font-size:.44rem;white-space:nowrap;text-overflow:ellipsis}.npc-forge-training-summary-breakdown>div>strong{color:#d8c2fb;font-size:.57rem}.npc-forge-training-picks{display:grid;gap:7px;padding:9px 12px 11px;border:1px solid rgba(255,255,255,.1);border-radius:9px;background:linear-gradient(135deg,rgba(255,255,255,.025),rgba(126,72,199,.025))}.npc-forge-training-pick-group,.npc-forge-training-choice-section{border:0;background:transparent}.npc-forge-training-pick-group{padding:2px 0}.npc-forge-training-pick-group.is-required{border-left:2px solid rgba(243,191,99,.38);padding-left:7px}.npc-forge-training-group-head,.npc-forge-training-choice-section>summary{display:flex;align-items:center;justify-content:space-between;gap:10px}.npc-forge-training-group-head{margin-bottom:5px}.npc-forge-training-group-head>span,.npc-forge-training-choice-section>summary>span{display:flex;align-items:center;gap:7px;min-width:0}.npc-forge-training-group-head img,.npc-forge-training-choice-section>summary>span>img{width:17px;height:17px;object-fit:contain}.npc-forge-training-group-head b,.npc-forge-training-choice-section>summary b{color:#ba87ff;font-size:.57rem;text-transform:uppercase;letter-spacing:.055em}.npc-forge-training-group-head small{color:rgba(255,255,255,.58);font-size:.49rem;text-align:right}.npc-forge-training-skill-list,.npc-forge-training-trade-list{display:grid;gap:3px}.npc-forge-training-skill-list>button,.npc-forge-training-trade-list>article{min-height:31px;border:1px solid rgba(255,255,255,.085);border-radius:6px;background:rgba(3,5,10,.3)}.npc-forge-training-skill-list>button{display:grid;grid-template-columns:23px minmax(0,1fr) auto;gap:7px;align-items:center;padding:4px 7px;color:rgba(255,255,255,.78);text-align:left}.npc-forge-training-skill-icon{display:grid;place-items:center;width:21px;height:21px;color:#aa72ff;font-size:.73rem}.npc-forge-training-skill-list>button>span{display:flex;align-items:baseline;gap:7px;min-width:0}.npc-forge-training-skill-list>button b{color:#fff;font-size:.61rem}.npc-forge-training-skill-list>button span small{color:rgba(255,255,255,.42);font-size:.45rem}.npc-forge-training-skill-list>button>em,.npc-forge-training-trade-main>em{display:grid;place-items:center;width:16px;height:16px;border:1px solid rgba(255,255,255,.18);border-radius:50%;color:rgba(255,255,255,.42);font-size:.48rem;font-style:normal}.npc-forge-training-skill-list>button.is-selected{border-color:rgba(168,108,255,.62);background:linear-gradient(90deg,rgba(126,72,199,.15),rgba(126,72,199,.03))}.npc-forge-training-skill-list>button.is-selected>em{border-color:#8d58ff;color:#0b0912;background:#8d58ff}.npc-forge-training-skill-list>button.is-granted{border-color:rgba(88,214,199,.36);background:linear-gradient(90deg,rgba(88,214,199,.075),rgba(126,72,199,.035))}.npc-forge-training-skill-list>button.is-granted>em{border-color:#58d6c7;color:#07110f;background:#58d6c7}.npc-forge-training-skill-list>button.is-source-option,.npc-forge-training-trade-list>article.is-source-option{border-style:dashed;border-color:rgba(243,191,99,.42)}.npc-forge-training-skill-list>button:disabled,.npc-forge-training-trade-main:disabled{opacity:.5}.npc-forge-training-group-copy{margin:-1px 0 5px;color:rgba(255,255,255,.47);font-size:.48rem;line-height:1.4}.npc-forge-training-trade-list>article{display:grid;grid-template-columns:minmax(0,1fr) 112px;gap:7px;align-items:center;padding:4px 7px}.npc-forge-training-trade-list>article.is-selected{border-color:rgba(88,214,199,.48);background:linear-gradient(90deg,rgba(88,214,199,.075),rgba(88,214,199,.02))}.npc-forge-training-trade-list>article.is-granted{border-color:rgba(243,191,99,.42);background:linear-gradient(90deg,rgba(243,191,99,.065),rgba(88,214,199,.035))}.npc-forge-training-trade-main{display:grid;grid-template-columns:23px minmax(0,1fr) auto;gap:7px;align-items:center;min-width:0;padding:0;border:0;color:rgba(255,255,255,.78);background:transparent;text-align:left}.npc-forge-training-trade-main>img{width:21px;height:21px}.npc-forge-training-trade-main>span{display:flex;align-items:baseline;gap:7px;min-width:0}.npc-forge-training-trade-main b{color:#fff;font-size:.61rem}.npc-forge-training-trade-main small{overflow:hidden;color:rgba(255,255,255,.42);font-size:.45rem;white-space:nowrap;text-overflow:ellipsis}.npc-forge-training-trade-list>article.is-selected .npc-forge-training-trade-main>em{border-color:#58d6c7;color:#07110f;background:#58d6c7}.npc-forge-training-trade-list>article.is-granted .npc-forge-training-trade-main>em{border-color:#e1bd6e;color:#171005;background:#e1bd6e}.npc-forge-training-trade-ability{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px;align-items:center}.npc-forge-training-trade-ability>span{color:rgba(255,255,255,.4);font-size:.42rem;text-transform:uppercase}.npc-forge-training-trade-ability select{min-width:0;width:100%;padding:3px 5px;border:1px solid rgba(255,255,255,.12);border-radius:5px;color:#fff;background:#090b12;font-size:.48rem}.npc-forge-training-choice-section{overflow:hidden;border-top:1px solid rgba(255,255,255,.055)}.npc-forge-training-choice-section>summary{list-style:none;cursor:pointer;padding:7px 0 5px}.npc-forge-training-choice-section>summary::-webkit-details-marker{display:none}.npc-forge-training-choice-section>summary em{padding:2px 6px;border-radius:999px;color:#d8c2fb;background:rgba(126,72,199,.1);font-size:.46rem;font-style:normal}.npc-forge-training-choice-section.is-required>summary em{color:#ffe0a0;background:rgba(243,191,99,.1)}.npc-forge-training-choice-section>summary i{display:flex;gap:3px}.npc-forge-training-choice-section>summary i img{width:13px;height:13px}.npc-forge-training-choice-body{display:grid;gap:7px;padding:6px 0 4px}.npc-forge-training-help{display:flex;gap:8px;align-items:flex-start;padding:7px 9px;border-top:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.5)}.npc-forge-training-help strong{color:#fff;font-size:.59rem}.npc-forge-training-help p{margin:0;font-size:.48rem}.npc-forge-training-player-layout .npc-forge-source-choices{gap:6px;margin-top:0}.npc-forge-training-player-layout .npc-forge-source-choices__heading{display:none}.npc-forge-training-player-layout .npc-forge-source-choice-group{gap:6px;padding:7px 8px}.npc-forge-training-player-layout .npc-forge-source-choice-slots{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}@media(max-width:1180px){.npc-forge-modal-v2:has(.npc-forge-training-player-layout){width:calc(100vw - 24px)!important;max-width:none!important}.npc-forge-body:has(.npc-forge-training-player-layout){grid-template-columns:minmax(400px,47fr) minmax(0,53fr)!important}.npc-forge-training-summary-breakdown{grid-template-columns:1fr}}@media(max-width:900px){.npc-forge-body:has(.npc-forge-training-player-layout){grid-template-columns:1fr!important}.npc-forge-body:has(.npc-forge-training-player-layout) .npc-forge-context-panel,.npc-forge-body:has(.npc-forge-training-player-layout) .npc-forge-training-context-dossier{position:static!important;max-height:none!important;overflow:visible!important}}@media(max-width:720px){.npc-forge-training-summary--unified>summary{grid-template-columns:28px minmax(0,1fr) auto}.npc-forge-training-summary--unified>summary>em{grid-column:2/4;justify-self:start}.npc-forge-training-trade-list>article{grid-template-columns:1fr}.npc-forge-training-trade-ability{padding-left:31px}}
     `}</style>
   </div>;
 }
