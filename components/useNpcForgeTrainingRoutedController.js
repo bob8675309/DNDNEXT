@@ -1,6 +1,6 @@
 import { ABILITY_KEYS } from "../utils/characterCreation";
 import { TRADE_SKILL_KEYS } from "../utils/craftingProfessions";
-import { professionKeysForTools } from "../utils/craftingToolProfessions";
+import { professionKeysForTools, toolForProfession } from "../utils/craftingToolProfessions";
 import { pointBuyRemaining } from "../utils/playerForgeRules";
 import { selectedSourceChoiceOptions } from "../utils/playerForgeSourceChoices";
 import { useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
@@ -11,6 +11,7 @@ export default function useNpcForgeTrainingRoutedController(args) {
   const { state: sourceChoiceState } = useNpcForgeSourceChoices();
   const baseHandleNext = controller.handleNext;
   const baseHandleCreate = controller.handleCreate;
+  const baseSetProfession = controller.setProfession;
 
   // useNpcForgeController intentionally keeps PROFESSION_KEYS scoped to the four
   // implemented crafting-runtime/NPC-service disciplines. Character Forge has a
@@ -54,6 +55,19 @@ export default function useNpcForgeTrainingRoutedController(args) {
     return errors;
   }
 
+  function setProfession(key, field, value) {
+    baseSetProfession?.(key, field, value);
+    if (!controller.playerMode || field !== "rank") return;
+
+    const tool = toolForProfession(key);
+    if (!tool) return;
+    const currentTools = Array.isArray(controller.draft?.additionalTools) ? controller.draft.additionalTools : [];
+    const nextTools = Number(value || 0) > 0
+      ? [...new Set([...currentTools, tool])]
+      : currentTools.filter((entry) => String(entry || "").trim().toLowerCase() !== tool.toLowerCase());
+    controller.patch?.({ additionalTools: nextTools });
+  }
+
   function handleNext() {
     if (bonusFeatPending && controller.stepKey === "abilities") {
       const errors = abilitySetupErrors();
@@ -90,6 +104,7 @@ export default function useNpcForgeTrainingRoutedController(args) {
     ...controller,
     selectedTrainedProfessions: trainedTradeSkillKeys,
     bonusFeatPending,
+    setProfession,
     handleNext,
     handleCreate,
   };
