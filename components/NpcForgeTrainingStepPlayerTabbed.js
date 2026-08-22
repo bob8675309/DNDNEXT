@@ -10,11 +10,7 @@ import NpcForgeTrainingStepPlayer from "./NpcForgeTrainingStepPlayer";
 const TRAINING_ASSET_ROOT = "/ui/forge/training";
 
 function classGroupsIncomplete(groups = [], selections = {}) {
-  return groups.some((group) => {
-    if (!group?.required) return false;
-    const count = Math.max(1, Number(group.count || 1));
-    return (selections?.[group.id] || []).length !== count;
-  });
+  return groups.some((group) => group?.required && (selections?.[group.id] || []).length !== Number(group.count || 0));
 }
 
 function ownerToolEntries(entries = []) {
