@@ -6,6 +6,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
 
 const training = read("components/NpcForgeTrainingStep.js");
+const tabbedTraining = read("components/NpcForgeTrainingStepPlayerTabbed.js");
 const playerTraining = read("components/NpcForgeTrainingStepPlayer.js");
 const legacy = read("components/NpcForgeTrainingStepBase.js");
 const sourceFields = read("components/NpcForgeSourceChoiceFields.js");
@@ -36,13 +37,24 @@ for (const asset of assets) {
   assert(fs.existsSync(path.join(root, "public/ui/forge/training", asset)), `Missing Training asset: ${asset}`);
 }
 
-assert(training.includes("NpcForgeTrainingStepBase") && training.includes("NpcForgeTrainingStepPlayer"), "Training wrapper must isolate player redesign from NPC fallback.");
+assert(training.includes("NpcForgeTrainingStepBase") && training.includes("NpcForgeTrainingStepPlayerTabbed"), "Training wrapper must isolate the player redesign from NPC fallback and route players through the Skills/Feats switch.");
 assert(training.includes("if (!props.playerMode) return <NpcForgeTrainingStepBase"), "NPC Forge must remain on the legacy Training presentation.");
-assert(training.includes("return <NpcForgeTrainingStepPlayer"), "Player Character Forge must use the isolated Training redesign.");
+assert(training.includes("return <NpcForgeTrainingStepPlayerTabbed"), "Player Character Forge must use the Skills/Feats Training switch.");
 assert(legacy.includes("Skills & Proficiencies") && legacy.includes("Feats & Class Abilities"), "Legacy NPC Training implementation was not preserved intact enough for fallback use.");
 
-assert(playerTraining.includes("Skill &amp; Training Selections"), "Player Training must retain the compact unified selection tally.");
-assert(playerTraining.includes("npc-forge-training-summary-breakdown"), "Unified tally must expose a provenance breakdown.");
+for (const token of ["npc-forge-training-mode-switch", 'role="tablist"', 'role="tab"', "Skills, Trade Skills &amp; additional training", "Feat catalogue &amp; permanent feat choices", "is-skills", "is-feats"]) {
+  assert(tabbedTraining.includes(token), `Skills/Feats Training switch is missing ${token}`);
+}
+assert(tabbedTraining.includes("npc-forge-training-summary--unified{display:none!important}"), "The rejected aggregate source/provenance tally must be hidden from the player-facing Training header.");
+assert(tabbedTraining.includes("Additional Training") && !tabbedTraining.includes("Source Training"), "Player-facing Training navigation must not expose the unclear Source Training label.");
+assert(tabbedTraining.includes("Needs choice") && tabbedTraining.includes("Complete") && tabbedTraining.includes("No choices"), "Training subviews must use categorical completion guidance rather than a mixed aggregate fraction.");
+assert(tabbedTraining.includes("routeContinueToUnfinishedView") && tabbedTraining.includes('window.addEventListener("click", routeContinueToUnfinishedView, true)'), "Continue must route the player to the internal Training view that still needs work.");
+assert(tabbedTraining.includes('if (incompleteBonusFeat) setActiveView("feats")') && tabbedTraining.includes('else if (skillsIncomplete) setActiveView("skills")'), "Continue routing must prioritize the correct Skills/Feats view.");
+assert(tabbedTraining.includes("sourceChoiceGroupComplete") && tabbedTraining.includes("classGroupsIncomplete"), "Skills/Feats status must derive from existing source/class completion authority.");
+assert(tabbedTraining.includes("NpcForgeTrainingStepPlayer {...props}"), "The Skills/Feats shell must reuse the existing player Training mechanics rather than duplicating selection state.");
+
+assert(playerTraining.includes("Skill &amp; Training Selections"), "The isolated player mechanics module lost its legacy internal tally contract used by older validators.");
+assert(playerTraining.includes("npc-forge-training-summary-breakdown"), "The isolated player mechanics module lost its legacy provenance structure used by older validators.");
 assert(playerTraining.includes("<b>Skills</b>") && playerTraining.includes("<b>Trade Skills</b>") && playerTraining.includes("<b>Feat &amp; Class Choices</b>"), "Local Training subsection headings/tallies are missing.");
 assert(!playerTraining.includes("<h3>Training Picks</h3>"), "Rejected redundant Training Picks heading remains in player Training.");
 assert(playerTraining.includes("Granted by Background") && playerTraining.includes("Granted by ${grantSource}"), "Inline granted-proficiency provenance is missing.");
@@ -103,7 +115,7 @@ assert(modal.includes("isInteractiveHeaderTarget") && modal.includes("HEADER_RES
 assert(modal.includes("requestForgeWindowReset") && modal.includes('detail: { scope: "forge" }'), "Forge reset gesture must reuse the established app-window reset event.");
 assert(modal.includes('npc-forge-species-fact-choice[data-icon-kind="languages"]') && modal.includes("npc-forge-embedded-choice__slots select"), "Species Origin Languages compact browser-review styling is missing.");
 
-const protectedSources = `${training}\n${playerTraining}\n${sourceFields}\n${sourceContext}\n${contextWrapper}\n${trainingContext}\n${featPicker}\n${routedController}\n${craftingToolProfessions}\n${craftingProfessions}\n${modal}`.toLowerCase();
+const protectedSources = `${training}\n${tabbedTraining}\n${playerTraining}\n${sourceFields}\n${sourceContext}\n${contextWrapper}\n${trainingContext}\n${featPicker}\n${routedController}\n${craftingToolProfessions}\n${craftingProfessions}\n${modal}`.toLowerCase();
 for (const token of ["world map", "world-map", "map_routes", "advance_all_characters", "town map", "city map"]) assert(!protectedSources.includes(token), `Training redesign unexpectedly references protected map behavior: ${token}`);
 
-console.log("Training tab redesign validation passed: isolated NPC fallback, inline source grants, eight player Trade Skills with four-discipline runtime isolation, compact Species languages, header geometry reset, sticky Current Selection, and source-owned completion are intact.");
+console.log("Training tab redesign validation passed: Skills/Feats internal views, categorical completion guidance, isolated NPC fallback, inline source grants, eight player Trade Skills with four-discipline runtime isolation, compact Species languages, header geometry reset, sticky Current Selection, and source-owned completion are intact.");
