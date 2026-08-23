@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { ABILITY_KEYS } from "../utils/characterCreation";
 import { TRADE_SKILL_KEYS } from "../utils/craftingProfessions";
 import { professionKeysForTools, toolForProfession } from "../utils/craftingToolProfessions";
@@ -12,6 +13,33 @@ export default function useNpcForgeTrainingRoutedController(args) {
   const baseHandleNext = controller.handleNext;
   const baseHandleCreate = controller.handleCreate;
   const baseSetProfession = controller.setProfession;
+  const previewBackground = controller.playerMode && controller.stepKey === "background" && !controller.loadingCatalogs
+    ? controller.filteredBackgrounds?.[0] || controller.backgroundOptions?.[0] || null
+    : null;
+
+  // The refined Background dossier should be the first presentation a player sees.
+  // Preview the first visible Background without committing it to the draft; clicking
+  // the catalogue row still owns the actual selection. Search changes update only this
+  // uncommitted preview, while a selected Background always remains authoritative.
+  useEffect(() => {
+    if (!controller.playerMode || controller.stepKey !== "background" || controller.loadingCatalogs || controller.selectedBackground || !previewBackground) return;
+    const current = controller.detail;
+    if (current?.type === "background" && !current?.previewOnly) return;
+    const currentId = String(current?.option?.id || "");
+    const previewId = String(previewBackground.id || "");
+    if (current?.type === "background" && current?.previewOnly && currentId === previewId) return;
+    controller.setDetail?.({ type: "background", option: previewBackground, previewOnly: true });
+  }, [
+    controller.playerMode,
+    controller.stepKey,
+    controller.loadingCatalogs,
+    controller.selectedBackground?.id,
+    controller.detail?.type,
+    controller.detail?.previewOnly,
+    controller.detail?.option?.id,
+    previewBackground?.id,
+    controller.setDetail,
+  ]);
 
   // useNpcForgeController intentionally keeps PROFESSION_KEYS scoped to the four
   // implemented crafting-runtime/NPC-service disciplines. Character Forge has a
