@@ -1,6 +1,7 @@
 import NpcForgeContextPanelRefined from "./NpcForgeContextPanelRefined";
 import NpcForgeClassGuide from "./NpcForgeClassGuide";
 import NpcForgeBackgroundGuide from "./NpcForgeBackgroundGuide";
+import NpcForgeBackgroundEmptyState from "./NpcForgeBackgroundEmptyState";
 import NpcForgeTrainingContextCard from "./NpcForgeTrainingContextCard";
 import { NpcForgeSourceChoiceContext, useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
 import { projectSelectedSpeciesVariant } from "../utils/speciesVariantFamilies";
@@ -66,9 +67,10 @@ export default function NpcForgeContextPanel(props) {
     : props?.stepKey === "class" || Number(props?.step) === 2
       ? props?.selectedClass
       : null;
+  const backgroundStepActive = props?.stepKey === "background" || Number(props?.step) === 1;
   const activeBackground = props?.detail?.type === "background" && props.detail.option
     ? props.detail.option
-    : props?.stepKey === "background" || Number(props?.step) === 1
+    : backgroundStepActive
       ? props?.selectedBackground
       : null;
   const sourceChoices = useNpcForgeSourceChoices();
@@ -82,14 +84,17 @@ export default function NpcForgeContextPanel(props) {
     : activeBackground;
 
   if (activeClass) return <NpcForgeClassGuide selectedClass={activeClass} level={props?.draft?.level || 1} onFeatureDetail={props?.onFeatureDetail} />;
-  if (props?.playerMode && activeBackground) return <NpcForgeBackgroundGuide
-    selectedBackground={projectedBackground}
-    backgroundMechanicDetails={projectedBackgroundMechanics}
-    selectedBackgroundFeat={props?.selectedBackgroundFeat}
-    backgroundFeatOptions={props?.backgroundFeatOptions || []}
-    onSelectBackgroundFeat={props?.onSelectBackgroundFeat}
-    draft={props?.draft || {}}
-  />;
+  if (props?.playerMode && backgroundStepActive) {
+    if (!activeBackground) return <NpcForgeBackgroundEmptyState />;
+    return <NpcForgeBackgroundGuide
+      selectedBackground={projectedBackground}
+      backgroundMechanicDetails={projectedBackgroundMechanics}
+      selectedBackgroundFeat={props?.selectedBackgroundFeat}
+      backgroundFeatOptions={props?.backgroundFeatOptions || []}
+      onSelectBackgroundFeat={props?.onSelectBackgroundFeat}
+      draft={props?.draft || {}}
+    />;
+  }
 
   if (props?.playerMode && (props?.stepKey === "training" || Number(props?.step) === 4)) return <NpcForgeTrainingContextCard
     detail={props?.detail}
