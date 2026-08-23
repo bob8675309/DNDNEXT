@@ -7,12 +7,18 @@ on:
     paths:
       - "components/NpcForgeTrainingStep.js"
       - "components/NpcForgeTrainingStepBase.js"
+      - "components/NpcForgeTrainingStepPlayer.js"
+      - "components/NpcForgeTrainingStepPlayerTabbed.js"
       - "components/NpcForgeTrainingContextCard.js"
+      - "components/NpcForgeSourceChoiceContext.js"
       - "components/NpcForgeSourceChoiceFields.js"
       - "components/NpcForgeContextPanel.js"
       - "components/NpcForgeContextPanelRefined.js"
+      - "components/useNpcForgeTrainingRoutedController.js"
+      - "styles/character-forge-responsive.css"
       - "public/ui/forge/training/**"
       - "scripts/validate_training_tab_redesign.mjs"
+      - "scripts/validate_training_browser_acceptance.mjs"
       - ".github/workflows/validate-training-tab-redesign.yml"
   workflow_dispatch:
 
@@ -38,3 +44,6 @@ jobs:
 
       - name: Validate Training tab redesign
         run: node scripts/validate_training_tab_redesign.mjs
+
+      - name: Validate Training browser acceptance
+        run: node scripts/validate_training_browser_acceptance.mjs
