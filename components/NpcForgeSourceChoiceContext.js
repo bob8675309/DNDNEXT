@@ -77,7 +77,7 @@ export function sourceChoiceFieldResolverPlacement(group = {}, field = {}) {
 export function sourceChoiceGroupsForResolverPlacement(state = EMPTY_SOURCE_CHOICE_STATE, placement = "") {
   return (state.groups || []).flatMap((group) => {
     const fields = (group.fields || []).filter((field) => !placement || sourceChoiceFieldResolverPlacement(group, field) === placement);
-    return fields.length ? [{ ...group, fields }] : [];
+    return fields.length ? [{ ...group, resolverPlacement: placement || sourceChoiceResolverPlacement(group), fields }] : [];
   });
 }
 
