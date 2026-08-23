@@ -109,6 +109,22 @@ function normalizeCrafterProfessionChoices(group = {}) {
   };
 }
 
+function normalizeProficiencyFeatDecisionSurface(group = {}) {
+  if (String(group?.ownerType || "") !== "feat" || !group?.metadata?.proficiencyFeat) return group;
+  if (group.metadata?.campaignRule === "crafter-profession-skills") return group;
+  const featName = String(group.metadata?.featName || group.label || "This feat").trim();
+  const acquisition = String(group.metadata?.acquisitionLabel || "").trim();
+  return {
+    ...group,
+    helper: `${featName} is already granted${acquisition ? ` by ${acquisition}` : ""}. Complete its feat-owned skill, tool, or instrument choices beside the feat rules in Training → Feats. These feat-granted proficiencies do not consume the class Skill / Trade Skill allowance.`,
+    metadata: {
+      ...(group.metadata || {}),
+      resolverPlacement: "training",
+      trainingSection: "feats",
+    },
+  };
+}
+
 /**
  * Step-level resolver placement is distinct from source ownership. Class and
  * advancement groups already resolve on the Training step but retain their
@@ -175,7 +191,8 @@ function normalizeBackgroundToolPlacement(group = {}) {
 export function normalizeSourceChoiceState(groups = [], catalogReady = true, previous = EMPTY_SOURCE_CHOICE_STATE, scope = "foundation") {
   const validGroups = normalizeFeatSourceChoiceGroups(Array.isArray(groups) ? groups : [])
     .map(normalizeBackgroundToolPlacement)
-    .map(normalizeCrafterProfessionChoices);
+    .map(normalizeCrafterProfessionChoices)
+    .map(normalizeProficiencyFeatDecisionSurface);
   const previousScopes = previous?.scopes && typeof previous.scopes === "object" ? previous.scopes : {};
   const scopes = {
     ...previousScopes,
