@@ -59,8 +59,9 @@ export function sourceChoiceResolverPlacement(group = {}) {
  * Mixed feat groups can own both permanent non-spell decisions and granted spell
  * choices. Keep one canonical group/selection record, but resolve each field on
  * the step where the player has the right context: feat spell fields in Spells,
- * and the feat's other persistent decisions in Training. Whole groups already
- * routed to Spells (Magic Initiate, Strixhaven, High Sorcery, etc.) stay intact.
+ * and every other feat-owned persistent decision in Training -> Feats.
+ * Whole groups already routed to Spells (Magic Initiate, Strixhaven, High Sorcery,
+ * etc.) stay intact.
  */
 export function sourceChoiceFieldResolverPlacement(group = {}, field = {}) {
   const explicit = String(field?.resolverPlacement || field?.metadata?.resolverPlacement || "").trim();
@@ -77,7 +78,15 @@ export function sourceChoiceFieldResolverPlacement(group = {}, field = {}) {
 export function sourceChoiceGroupsForResolverPlacement(state = EMPTY_SOURCE_CHOICE_STATE, placement = "") {
   return (state.groups || []).flatMap((group) => {
     const fields = (group.fields || []).filter((field) => !placement || sourceChoiceFieldResolverPlacement(group, field) === placement);
-    return fields.length ? [{ ...group, resolverPlacement: placement || sourceChoiceResolverPlacement(group), fields }] : [];
+    if (!fields.length) return [];
+    // The clone is presentation-only. Feat-owned non-spell groups use the existing
+    // "class" subsection marker so every feat-owned decision appears in Feats/Current
+    // Selection, including Skilled/Crafter/Musician proficiency choices. Canonical
+    // placement, ownership, ids, and serialized selections remain untouched in state.
+    const projectedPlacement = placement === "training" && String(group.ownerType || "") === "feat"
+      ? "class"
+      : group.placement;
+    return [{ ...group, placement: projectedPlacement, resolverPlacement: placement || sourceChoiceResolverPlacement(group), fields }];
   });
 }
 
