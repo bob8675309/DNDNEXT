@@ -4,10 +4,11 @@ import { professionKeysForTools } from "../utils/craftingToolProfessions";
 import { selectedSourceChoiceOptions, sourceChoiceGroupComplete } from "../utils/playerForgeSourceChoices";
 import { useNpcForgeClassChoice } from "./NpcForgeClassChoiceContext";
 import { useNpcForgeControllerContext } from "./NpcForgeControllerContext";
-import { useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
+import { sourceChoiceGroupsForResolverPlacement, useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
 import NpcForgeTrainingStepPlayer from "./NpcForgeTrainingStepPlayer";
 
 const TRAINING_ASSET_ROOT = "/ui/forge/training";
+const normalized = (value) => String(value ?? "").trim().toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 
 function classGroupsIncomplete(groups = [], selections = {}) {
   return groups.some((group) => group?.required && (selections?.[group.id] || []).length !== Number(group.count || 0));
@@ -15,6 +16,16 @@ function classGroupsIncomplete(groups = [], selections = {}) {
 
 function ownerToolEntries(entries = []) {
   return entries.filter((entry) => entry.kind === "tool" || entry.fieldKind === "tool" || entry.fieldKind === "skill-or-tool");
+}
+
+function featOptionForGroup(group = {}, options = []) {
+  const optionId = String(group?.metadata?.featOptionId || "");
+  const name = normalized(group?.metadata?.featName || group?.label);
+  const source = String(group?.metadata?.featSource || group?.source || "");
+  return options.find((option) => optionId && String(option?.id || "") === optionId)
+    || options.find((option) => name && normalized(option?.name) === name && (!source || String(option?.source || "") === source))
+    || options.find((option) => name && normalized(option?.name) === name)
+    || null;
 }
 
 export default function NpcForgeTrainingStepPlayerTabbed(props) {
@@ -31,8 +42,15 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
 
   const trainingClassGroups = useMemo(() => classGroups.filter((group) => (group.placement || "class") === "training"), [classGroups]);
   const featClassGroups = useMemo(() => classGroups.filter((group) => (group.placement || "class") === "class"), [classGroups]);
-  const trainingSourceGroups = useMemo(() => sourceGroups.filter((group) => group.placement === "training"), [sourceGroups]);
-  const featSourceGroups = useMemo(() => sourceGroups.filter((group) => ["class", "advancement"].includes(group.placement)), [sourceGroups]);
+  const resolverTrainingGroups = useMemo(() => sourceChoiceGroupsForResolverPlacement(sourceChoiceState, "training"), [sourceChoiceState]);
+  const trainingSourceGroups = useMemo(() => resolverTrainingGroups.filter((group) => (
+    group.placement === "training"
+    && (group.ownerType !== "feat" || Boolean(group.metadata?.proficiencyFeat))
+  )), [resolverTrainingGroups]);
+  const featSourceGroups = useMemo(() => resolverTrainingGroups.filter((group) => (
+    (group.ownerType === "feat" && !group.metadata?.proficiencyFeat)
+    || ["class", "advancement"].includes(group.placement)
+  )), [resolverTrainingGroups]);
 
   const selectedSourceOptions = useMemo(() => selectedSourceChoiceOptions(sourceGroups, sourceSelections), [sourceGroups, sourceSelections]);
   const sourceGrantedTradeSkills = useMemo(() => new Set(professionKeysForTools(ownerToolEntries(selectedSourceOptions).map((entry) => entry.value || entry.label))), [selectedSourceOptions]);
@@ -80,10 +98,22 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
   function selectView(view) {
     setActiveView(view);
     controller.setError?.("");
-    if (view === "feats" && controller.speciesBonusFeat) {
+    if (view !== "feats") return;
+    if (controller.speciesBonusFeat) {
       const option = (controller.featOptions || []).find((feat) => String(feat.id) === String(controller.speciesBonusFeat.id || controller.draft?.speciesBonus?.featId || ""));
-      if (option) props.onDetail?.({ type: "feat", option });
+      if (option) props.onDetail?.({ type: "feat", option, granted: true, featInstanceId: "species-bonus-feat" });
+      return;
     }
+    const firstFeatGroup = featSourceGroups.find((group) => group.ownerType === "feat");
+    if (!firstFeatGroup) return;
+    const option = featOptionForGroup(firstFeatGroup, controller.featOptions || []) || {
+      id: firstFeatGroup.metadata?.featOptionId || firstFeatGroup.ownerKey,
+      name: firstFeatGroup.metadata?.featName || firstFeatGroup.label || "Feat",
+      source: firstFeatGroup.metadata?.featSource || firstFeatGroup.source || "Campaign",
+      category: firstFeatGroup.metadata?.featCategory || "Feat",
+      description: firstFeatGroup.helper || "Complete this feat's required follow-up choices.",
+    };
+    props.onDetail?.({ type: "feat", option, granted: true, featInstanceId: firstFeatGroup.metadata?.featInstanceId || firstFeatGroup.ownerKey });
   }
 
   const skillsStatus = skillsIncomplete ? "Needs choice" : "Complete";
@@ -111,7 +141,7 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
       <span>ⓘ</span>
       <p>{activeView === "skills"
         ? "Choose Skills, Trade Skills, languages, instruments, and other training proficiencies here. Hover a choice to inspect it in Current Selection."
-        : "Choose any feat you have been granted and finish its permanent follow-up choices here. Hover a feat to inspect its rules in Current Selection."}</p>
+        : "Choose granted feats on the left. Any non-spell choice owned by the selected feat is completed beside its rules in Current Selection; feat-granted spell choices continue to the Spells step."}</p>
     </div>
 
     <style jsx global>{`
