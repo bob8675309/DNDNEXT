@@ -1,4 +1,5 @@
 import { createContext, useContext } from "react";
+import { PROFESSION_DEFINITIONS, TRADE_SKILL_KEYS } from "../utils/craftingProfessions";
 import { normalizeFeatSourceChoiceGroups } from "../utils/featSourceChoiceNormalization";
 import {
   foundationChoiceSummary,
@@ -39,6 +40,73 @@ function backgroundToolChoiceResolvesInTraining(group = {}) {
     && !field?.autoSelect
     && field?.required !== false
   ));
+}
+
+function normalizedFeatName(group = {}) {
+  return String(group?.metadata?.featName || group?.label || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[’']/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+/**
+ * DnDNext campaign adaptation for the 2024 Crafter Origin feat.
+ *
+ * The imported source grants three Fast-Crafting artisan-tool proficiencies.
+ * DnDNext treats mapped crafting tools and Trade/Profession Skills as one
+ * campaign proficiency, so Crafter instead grants any three of the eight
+ * player-facing Profession Skills. Each option keeps the canonical mapped tool
+ * as its stored value so existing source-choice serialization, tool projection,
+ * character creation, and crafting proficiency checks continue to agree.
+ */
+function normalizeCrafterProfessionChoices(group = {}) {
+  if (String(group?.ownerType || "") !== "feat" || normalizedFeatName(group) !== "crafter") return group;
+  const source = group.source || group.metadata?.featSource || "XPHB";
+  return {
+    ...group,
+    label: "Crafter — Profession Skills",
+    helper: "DnDNext campaign rule: Crafter grants three additional Profession Skills instead of three raw Fast-Crafting tool picks. Each Profession Skill also grants its mapped tool proficiency, and these feat-granted choices do not consume the class Skill / Trade Skill allowance.",
+    fields: [{
+      id: "profession-skills",
+      label: "Choose profession skill",
+      kind: "tool",
+      count: 3,
+      required: true,
+      cadence: "creation",
+      options: TRADE_SKILL_KEYS.map((key) => {
+        const definition = PROFESSION_DEFINITIONS[key];
+        return {
+          key: `crafter-profession-${key}`,
+          value: definition.tool,
+          label: definition.label,
+          source: "Campaign",
+          kind: "tool",
+          description: `${definition.label} includes proficiency with ${definition.tool}.`,
+          metadata: {
+            professionKey: key,
+            mappedTool: definition.tool,
+            originalFeatSource: source,
+            campaignRule: "crafter-profession-skills",
+          },
+        };
+      }),
+      metadata: {
+        professionChoice: true,
+        campaignRule: "crafter-profession-skills",
+        originalFeatRule: "Choose three different Artisan's Tools from the Fast Crafting table.",
+      },
+    }],
+    metadata: {
+      ...(group.metadata || {}),
+      proficiencyFeat: true,
+      resolverPlacement: "training",
+      trainingSection: "feats",
+      campaignRule: "crafter-profession-skills",
+      originalFeatSource: source,
+    },
+  };
 }
 
 /**
@@ -105,7 +173,9 @@ function normalizeBackgroundToolPlacement(group = {}) {
 }
 
 export function normalizeSourceChoiceState(groups = [], catalogReady = true, previous = EMPTY_SOURCE_CHOICE_STATE, scope = "foundation") {
-  const validGroups = normalizeFeatSourceChoiceGroups(Array.isArray(groups) ? groups : []).map(normalizeBackgroundToolPlacement);
+  const validGroups = normalizeFeatSourceChoiceGroups(Array.isArray(groups) ? groups : [])
+    .map(normalizeBackgroundToolPlacement)
+    .map(normalizeCrafterProfessionChoices);
   const previousScopes = previous?.scopes && typeof previous.scopes === "object" ? previous.scopes : {};
   const scopes = {
     ...previousScopes,
