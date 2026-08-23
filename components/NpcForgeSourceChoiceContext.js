@@ -55,6 +55,32 @@ export function sourceChoiceResolverPlacement(group = {}) {
   return group.placement || "";
 }
 
+/**
+ * Mixed feat groups can own both permanent non-spell decisions and granted spell
+ * choices. Keep one canonical group/selection record, but resolve each field on
+ * the step where the player has the right context: feat spell fields in Spells,
+ * and the feat's other persistent decisions in Training. Whole groups already
+ * routed to Spells (Magic Initiate, Strixhaven, High Sorcery, etc.) stay intact.
+ */
+export function sourceChoiceFieldResolverPlacement(group = {}, field = {}) {
+  const explicit = String(field?.resolverPlacement || field?.metadata?.resolverPlacement || "").trim();
+  if (explicit) return explicit;
+  const groupPlacement = sourceChoiceResolverPlacement(group);
+  if (groupPlacement === "spells") return "spells";
+  if (String(group?.ownerType || "") === "feat") {
+    if (String(field?.kind || "") === "spell") return "spells";
+    return "training";
+  }
+  return groupPlacement;
+}
+
+export function sourceChoiceGroupsForResolverPlacement(state = EMPTY_SOURCE_CHOICE_STATE, placement = "") {
+  return (state.groups || []).flatMap((group) => {
+    const fields = (group.fields || []).filter((field) => !placement || sourceChoiceFieldResolverPlacement(group, field) === placement);
+    return fields.length ? [{ ...group, fields }] : [];
+  });
+}
+
 function normalizeBackgroundToolPlacement(group = {}) {
   if (!backgroundToolChoiceResolvesInTraining(group)) return group;
   return {
@@ -89,7 +115,7 @@ export function normalizeSourceChoiceState(groups = [], catalogReady = true, pre
 export function sourceChoiceStateComplete(state = EMPTY_SOURCE_CHOICE_STATE, filters = {}) {
   if (!state.catalogReady) return false;
   if (filters?.placement) {
-    const groups = (state.groups || []).filter((group) => sourceChoiceResolverPlacement(group) === filters.placement);
+    const groups = sourceChoiceGroupsForResolverPlacement(state, filters.placement);
     return sourceChoiceGroupsComplete(groups, state.selections || {}, { ...filters, placement: undefined });
   }
   return sourceChoiceGroupsComplete(state.groups || [], state.selections || {}, filters);
