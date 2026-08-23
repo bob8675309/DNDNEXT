@@ -48,10 +48,10 @@ export default function NpcForgeSourceChoiceFields({ placement, ownerType = "", 
     onSet={setChoice}
   />;
 
-  // Training deliberately opts out of the historical preview-rail portal: the Character
-  // Forge Training contract keeps every decision in the left selection pane and reserves
-  // the right pane for contextual explanation. A groupsOverride narrows only presentation;
-  // canonical state/selection authority remains the SourceChoice context above.
+  // `groupsOverride` narrows presentation only; canonical groups and selections remain in
+  // SourceChoice context. `inline` lets the owning surface decide where those canonical
+  // controls belong—for example feat-owned non-spell choices in Training's right dossier—
+  // while the default behavior keeps source-owned spell controls in the Forge preview rail.
   if (inline) return fields;
   return previewTarget ? createPortal(fields, previewTarget) : fields;
 }
