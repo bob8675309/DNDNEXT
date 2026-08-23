@@ -14,6 +14,7 @@ const sourceContext = read("components/NpcForgeSourceChoiceContext.js");
 const contextWrapper = read("components/NpcForgeContextPanel.js");
 const trainingContext = read("components/NpcForgeTrainingContextCard.js");
 const featPicker = read("components/NpcForgeTrainingFeatPicker.js");
+const spellStep = read("components/NpcForgeSpellStep.js");
 const speciesBonus = read("components/NpcForgeSpeciesBonusPanel.js");
 const routedController = read("components/useNpcForgeTrainingRoutedController.js");
 const modal = read("components/NewNpcModalV3Refined.js");
@@ -50,8 +51,9 @@ assert(tabbedTraining.includes("Additional Training") && !tabbedTraining.include
 assert(tabbedTraining.includes("Needs choice") && tabbedTraining.includes("Complete") && tabbedTraining.includes("No choices"), "Training subviews must use categorical completion guidance rather than a mixed aggregate fraction.");
 assert(tabbedTraining.includes("routeContinueToUnfinishedView") && tabbedTraining.includes('window.addEventListener("click", routeContinueToUnfinishedView, true)'), "Continue must route the player to the internal Training view that still needs work.");
 assert(tabbedTraining.includes('if (incompleteBonusFeat) setActiveView("feats")') && tabbedTraining.includes('else if (skillsIncomplete) setActiveView("skills")'), "Continue routing must prioritize the correct Skills/Feats view.");
-assert(tabbedTraining.includes("sourceChoiceGroupComplete") && tabbedTraining.includes("classGroupsIncomplete"), "Skills/Feats status must derive from existing source/class completion authority.");
+assert(tabbedTraining.includes("sourceChoiceGroupsForResolverPlacement") && tabbedTraining.includes("sourceChoiceGroupComplete") && tabbedTraining.includes("classGroupsIncomplete"), "Skills/Feats status must derive from resolver-level source/class completion authority.");
 assert(tabbedTraining.includes("NpcForgeTrainingStepPlayer {...props}"), "The Skills/Feats shell must reuse the existing player Training mechanics rather than duplicating selection state.");
+assert(tabbedTraining.includes("non-spell choice owned by the selected feat") && tabbedTraining.includes("feat-granted spell choices continue to the Spells step"), "Feats navigation must explain the right-side decision surface and next-step spell routing.");
 
 assert(playerTraining.includes("Skill &amp; Training Selections"), "The isolated player mechanics module lost its legacy internal tally contract used by older validators.");
 assert(playerTraining.includes("npc-forge-training-summary-breakdown"), "The isolated player mechanics module lost its legacy provenance structure used by older validators.");
@@ -70,13 +72,16 @@ assert(playerTraining.includes("onToggleClassSkill"), "Class skill selection aut
 assert(playerTraining.includes("onSetProfession"), "Paid Trade Skill selection authority must remain wired.");
 assert(playerTraining.includes(".npc-forge-context-panel{position:sticky!important"), "Current Selection must remain sticky during player Training.");
 assert(playerTraining.includes(".npc-forge-modal-v2:has(.npc-forge-training-player-layout)"), "Approved Training modal width contract is missing.");
-assert(playerTraining.includes(".npc-forge-body:has(.npc-forge-training-player-layout)"), "Approved Training/player body proportion rule is missing.");
+assert(playerTraining.includes("width:min(1360px,calc(100vw - 32px))") && playerTraining.includes("grid-template-columns:minmax(390px,2fr) minmax(0,3fr)"), "Training desktop layout must reserve approximately 40% for choices and 60% for Current Selection.");
+assert(playerTraining.includes("grid-template-columns:minmax(360px,2fr) minmax(0,3fr)"), "Training medium-width layout must preserve the 40/60 choice/detail proportion until the one-column breakpoint.");
 
 assert(sourceContext.includes("backgroundToolChoiceResolvesInTraining"), "Background tool routing predicate is missing.");
 assert(sourceContext.includes('placement: "training"') && sourceContext.includes("sourcePlacement") && sourceContext.includes("backgroundToolChoice"), "Background tool choices must preserve ownership provenance while resolving in Training.");
+assert(sourceContext.includes("sourceChoiceFieldResolverPlacement") && sourceContext.includes("sourceChoiceGroupsForResolverPlacement"), "Source-choice authority must support field-level resolver placement without splitting canonical groups.");
+assert(sourceContext.includes('String(field?.kind || "") === "spell"') && sourceContext.includes('return "spells"') && sourceContext.includes('return "training"'), "Mixed feat groups must route spell fields to Spells and non-spell feat fields to Training.");
 assert(contextWrapper.includes("Resolved in Training") && contextWrapper.includes("Choose in Training"), "Background must acknowledge routed tool choices without resolving them there.");
 assert(sourceFields.includes("groupsOverride") && sourceFields.includes("Array.isArray(groupsOverride)"), "Source-choice presentation override is missing.");
-assert(sourceFields.includes("if (inline) return fields"), "Source-choice wrapper must support bypassing the preview portal.");
+assert(sourceFields.includes("if (inline) return fields"), "Source-choice wrapper must support bounded inline rendering in the selected decision surface.");
 
 assert(playerTraining.includes("NpcForgeTrainingFeatPicker"), "Training must use the compact feat catalogue picker.");
 assert(featPicker.includes("Name, prerequisite, description") && featPicker.includes("Category") && featPicker.includes("Current Selection"), "Training feat catalogue is missing search/filter/detail guidance.");
@@ -88,10 +93,13 @@ assert(routedController.includes('controller.stepKey === "abilities"') && routed
 assert(routedController.includes("TRADE_SKILL_KEYS") && routedController.includes("trainedTradeSkillKeys") && routedController.includes("controller.classSkillConfig.count"), "Player allowance must count all eight explicit Trade Skills without widening base runtime keys.");
 assert(routedController.includes("toolForProfession") && routedController.includes("additionalTools") && routedController.includes("setProfession,"), "Paid Trade Skills must persist their mapped tool proficiency without widening crafting runtime authority.");
 assert(modal.includes("NpcForgeControllerProvider") && modal.includes("useNpcForgeTrainingRoutedController"), "Forge must provide the routed controller to Training.");
-assert(playerTraining.includes("NpcForgeSourceChoiceFields placement=\"class\" ownerType=\"feat\" inline"), "Feat-owned follow-up choices must stay inline in Training.");
-assert(playerTraining.includes("NpcForgeSourceChoiceFields placement=\"advancement\" inline"), "Advancement/Epic Boon choices must stay inline in Training.");
+assert(playerTraining.includes("featDecisionGroups") && playerTraining.includes("npc-forge-training-feat-followups") && playerTraining.includes("Spells next"), "Left Feats workspace must use a compact follow-up index instead of expanding feat-owned decision controls there.");
+assert(!playerTraining.includes('ownerType="feat" inline'), "Feat-owned non-spell follow-up controls must not remain duplicated in the left Training workspace.");
+assert(playerTraining.includes("groupsOverride={otherSourceClassAbilityGroups}"), "Non-feat class/advancement source decisions must remain resolvable in the left workspace.");
 assert(contextWrapper.includes("NpcForgeTrainingContextCard"), "Training preview rail must use its dedicated current-selection dossier.");
-for (const token of ["Current Selection", "Typical Uses", "Class Skill", "Trade Skill", "Associated Tool", "Feat Rules", "All choices can be reviewed on the final step", "Cooking", "Tinkering", "Jewelcraft", "Brewing", "Proficiency now • recipes later"]) assert(trainingContext.includes(token), `Training context dossier missing ${token}`);
+for (const token of ["Current Selection", "Typical Uses", "Class Skill", "Trade Skill", "Associated Tool", "Feat Rules", "Required Feat Choices", "Granted spells resolve on the next tab", "groupsOverride={trainingGroups}", "All choices can be reviewed on the final step", "Cooking", "Tinkering", "Jewelcraft", "Brewing", "Proficiency now • recipes later"]) assert(trainingContext.includes(token), `Training context dossier missing ${token}`);
+assert(spellStep.includes("sourceChoiceGroupsForResolverPlacement") && spellStep.includes('sourceChoiceGroupsForResolverPlacement(sourceChoiceState, "spells")'), "Spells must consume field-level source resolver placement so mixed feat spell grants arrive on the correct step.");
+assert(spellStep.includes("groupsOverride={sourceSpellGroups}"), "Spells source-owned magic UI must render the resolver-projected spell fields, not only raw groups whose placement is spells.");
 
 for (const token of [
   'label: "Alchemy"', 'tool: "Alchemist\'s Supplies"',
@@ -116,7 +124,7 @@ assert(modal.includes("isInteractiveHeaderTarget") && modal.includes("HEADER_RES
 assert(modal.includes("requestForgeWindowReset") && modal.includes('detail: { scope: "forge" }'), "Forge reset gesture must reuse the established app-window reset event.");
 assert(modal.includes('npc-forge-species-fact-choice[data-icon-kind="languages"]') && modal.includes("npc-forge-embedded-choice__slots select"), "Species Origin Languages compact browser-review styling is missing.");
 
-const protectedSources = `${training}\n${tabbedTraining}\n${playerTraining}\n${sourceFields}\n${sourceContext}\n${contextWrapper}\n${trainingContext}\n${featPicker}\n${routedController}\n${craftingToolProfessions}\n${craftingProfessions}\n${modal}`.toLowerCase();
+const protectedSources = `${training}\n${tabbedTraining}\n${playerTraining}\n${sourceFields}\n${sourceContext}\n${contextWrapper}\n${trainingContext}\n${featPicker}\n${spellStep}\n${routedController}\n${craftingToolProfessions}\n${craftingProfessions}\n${modal}`.toLowerCase();
 for (const token of ["world map", "world-map", "map_routes", "advance_all_characters", "town map", "city map"]) assert(!protectedSources.includes(token), `Training redesign unexpectedly references protected map behavior: ${token}`);
 
-console.log("Training tab redesign validation passed: Skills/Feats internal views, categorical completion guidance, isolated NPC fallback, inline source grants, eight player Trade Skills with mapped tool persistence and four-discipline runtime isolation, compact Species languages, header geometry reset, sticky Current Selection, and source-owned completion are intact.");
+console.log("Training tab redesign validation passed: Skills/Feats internal views, 40/60 choice-detail layout, categorical completion guidance, right-side feat-owned non-spell decisions, mixed feat spell routing to Spells, isolated NPC fallback, inline source grants, eight player Trade Skills with mapped tool persistence and four-discipline runtime isolation, compact Species languages, header geometry reset, sticky Current Selection, and source-owned completion are intact.");
