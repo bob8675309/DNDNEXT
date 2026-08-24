@@ -66,7 +66,7 @@ assert(!trainingContext.includes('<h4>Feat Rules</h4><p>{feat.description'), "Tr
 for (const token of [
   "npc-forge-training-mode-switch{display:flex",
   "border-radius:999px",
-  "Crafter's Profession grants resolve in Skills",
+  "Crafter's Profession grants are the exception and resolve in Skills",
   "Feat-granted Profession choices such as Crafter also resolve here",
 ]) assert(playerTabbed.includes(token), `Segmented Skills/Feats pill or routing copy is missing ${token}`);
 
