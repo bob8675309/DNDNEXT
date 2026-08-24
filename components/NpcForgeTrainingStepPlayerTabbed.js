@@ -128,7 +128,7 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
       </button>
       <button type="button" role="tab" aria-selected={activeView === "feats"} className={activeView === "feats" ? "is-active" : ""} onClick={() => selectView("feats")}>
         <img src={`${TRAINING_ASSET_ROOT}/summary-feat.svg`} alt="" aria-hidden="true" />
-        <span><strong>Feats</strong><small>Feat catalogue &amp; permanent choices</small></span>
+        <span><strong>Feats</strong><small>Feat catalogue &amp; permanent feat choices</small></span>
         <em className={featsIncomplete ? "is-required" : "is-complete"}>{featsStatus}</em>
       </button>
     </div>
