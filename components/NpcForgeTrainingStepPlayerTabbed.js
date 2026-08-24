@@ -141,7 +141,7 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
       <span>ⓘ</span>
       <p>{activeView === "skills"
         ? "Choose Skills, Trade Skills, languages, instruments, and other training proficiencies here. Feat-granted Profession choices such as Crafter also resolve here and are labeled with their granting source."
-        : "Choose and inspect granted feats here. Most feat-owned non-spell decisions stay beside their rules; Crafter's Profession grants resolve in Skills, while feat-granted spells continue to the Spells step."}</p>
+        : "Choose granted feats on the left. Any non-spell choice owned by the selected feat is completed beside its rules in Current Selection; Crafter's Profession grants are the exception and resolve in Skills; feat-granted spell choices continue to the Spells step."}</p>
     </div>
 
     <style jsx global>{`
