@@ -7,8 +7,8 @@ const assert = (condition, message) => { if (!condition) throw new Error(message
 
 const responsive = read("styles/character-forge-responsive.css");
 const playerTraining = read("components/NpcForgeTrainingStepPlayer.js");
+const playerTabbed = read("components/NpcForgeTrainingStepPlayerTabbed.js");
 const sourceContext = read("components/NpcForgeSourceChoiceContext.js");
-const sourceFields = read("components/SourceChoiceFields.js");
 const trainingContext = read("components/NpcForgeTrainingContextCard.js");
 const routedController = read("components/useNpcForgeTrainingRoutedController.js");
 const contextPanel = read("components/NpcForgeContextPanel.js");
@@ -30,31 +30,45 @@ for (const token of [
   "value: definition.tool",
   "label: definition.label",
   'professionChoice: true',
+  'trainingSection: "skills"',
   'campaignRule: "crafter-profession-skills"',
+  "Training → Skills → Trade Skills",
   "do not consume the class Skill / Trade Skill allowance",
-]) assert(sourceContext.includes(token), `Crafter Profession Skill adaptation is missing ${token}`);
-assert(sourceContext.includes("normalizeProficiencyFeatDecisionSurface") && sourceContext.includes("beside the feat rules in Training → Feats"), "Proficiency-feat helper copy must point players to the right-side Feats decision surface.");
+  "const crafterProfessionSkills",
+  '? crafterProfessionSkills ? "training" : "class"',
+]) assert(sourceContext.includes(token), `Crafter Skills-routed Profession adaptation is missing ${token}`);
+assert(sourceContext.includes("normalizeProficiencyFeatDecisionSurface") && sourceContext.includes("beside the feat rules in Training → Feats"), "Other proficiency-feat helper copy must still point players to the right-side Feats decision surface.");
 
 for (const token of [
-  "function ProfessionChoiceField",
-  "npc-forge-profession-choice__grid",
-  "field.metadata?.professionChoice",
-  "selected.length >= count",
-  "onToggle?.(group.id, field.id, option.key)",
-]) assert(sourceFields.includes(token), `Crafter Profession Skill control is missing ${token}`);
-assert(sourceFields.includes("field.metadata?.professionChoice ? <ProfessionChoiceField"), "Profession choices must bypass the generic multi-tool dropdown renderer.");
+  "const sourceTradeFields",
+  "sourceFieldForKey(sourceTradeFields, key, \"professionKey\")",
+  "sourceAvailable ? `Available from ${grantSource}`",
+  "sourceGranted ? `Granted by ${grantSource}`",
+  "chooseSourceMappedOption(sourceRef, option)",
+]) assert(playerTraining.includes(token), `Trade Skill surface must own source-granted Profession choices: missing ${token}`);
 
 for (const token of [
-  "function featRuleSections",
-  'normalized(feat.name) === "crafter"',
+  "const standaloneHeading",
+  "standaloneHeading && paragraphs[index + 1]",
+  "npc-forge-training-feat-rule-intro",
+  "skillsRoutedGroups",
+  "featTrainingGroups",
+  "Profession choices resolve in Skills",
+  "Skills → Trade Skills",
+  "groupsOverride={featTrainingGroups}",
   'title: "Profession Training"',
-  "Choose any three of Alchemy, Smithing, Scribe, Enchanting, Cooking, Tinkering, Jewelcraft, or Brewing",
   'title: "Discount"',
   'title: "Fast Crafting"',
-  "only the three proficiency selections are replaced by Profession Skills",
-  "<FeatRuleList feat={feat} matchingGroups={matchingGroups} />",
-]) assert(trainingContext.includes(token), `Crafter formatted rule dossier is missing ${token}`);
-assert(!trainingContext.includes('<h4>Feat Rules</h4><p>{feat.description'), "Training must not dump the raw unformatted Crafter/source feat description directly into the dossier.");
+]) assert(trainingContext.includes(token), `Feat dossier cleanup / Crafter routing is missing ${token}`);
+assert(!trainingContext.includes("groupsOverride={trainingGroups}"), "The Feats dossier must not render Skills-routed Crafter Profession controls.");
+assert(!trainingContext.includes('<h4>Feat Rules</h4><p>{feat.description'), "Training must not dump raw unformatted feat descriptions directly into the dossier.");
+
+for (const token of [
+  "npc-forge-training-mode-switch{display:flex",
+  "border-radius:999px",
+  "Crafter's Profession grants resolve in Skills",
+  "Feat-granted Profession choices such as Crafter also resolve here",
+]) assert(playerTabbed.includes(token), `Segmented Skills/Feats pill or routing copy is missing ${token}`);
 
 for (const token of [
   "function initialBackground",
@@ -73,9 +87,9 @@ for (const token of ["Choose a Background", "Your life before adventuring", "His
   assert(backgroundEmpty.includes(token), `Refined Background fallback is missing ${token}`);
 }
 
-const protectedSources = `${responsive}\n${sourceContext}\n${sourceFields}\n${trainingContext}\n${routedController}\n${contextPanel}\n${backgroundEmpty}`.toLowerCase();
+const protectedSources = `${responsive}\n${sourceContext}\n${trainingContext}\n${playerTabbed}\n${routedController}\n${contextPanel}\n${backgroundEmpty}`.toLowerCase();
 for (const token of ["map_routes", "advance_all_characters", "world-map", "town map", "city map"]) {
   assert(!protectedSources.includes(token), `Browser acceptance patch unexpectedly references protected map behavior: ${token}`);
 }
 
-console.log("Training browser acceptance validation passed: authoritative 40/60 layout, Crafter three direct Profession Skill choices with mapped-tool persistence and formatted campaign rules, and first-Background default selection with refined fallback are intact.");
+console.log("Training browser acceptance validation passed: authoritative 40/60 layout, Crafter three free Profession choices routed through Skills/Trade Skills, merged feat heading/body formatting, segmented Training pill, and first-Background default selection are intact.");
