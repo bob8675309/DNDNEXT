@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { ABILITY_KEYS } from "../utils/characterCreation";
 import { TRADE_SKILL_KEYS } from "../utils/craftingProfessions";
 import { professionKeysForTools, toolForProfession } from "../utils/craftingToolProfessions";
@@ -12,6 +13,34 @@ export default function useNpcForgeTrainingRoutedController(args) {
   const baseHandleNext = controller.handleNext;
   const baseHandleCreate = controller.handleCreate;
   const baseSetProfession = controller.setProfession;
+
+  function initialBackground() {
+    return controller.filteredBackgrounds?.[0] || controller.backgroundOptions?.[0] || null;
+  }
+
+  function seedInitialBackground() {
+    if (!controller.playerMode || controller.loadingCatalogs || controller.draft?.backgroundOptionId) return false;
+    const background = initialBackground();
+    if (!background) return false;
+    controller.chooseBackground?.(background);
+    return true;
+  }
+
+  // Background should never sit on a structurally different splash page waiting
+  // for the first click. Normal forward navigation seeds the first catalogue row
+  // before the step changes; this effect is the resume/direct-navigation safety net.
+  useEffect(() => {
+    if (controller.stepKey !== "background" || controller.draft?.backgroundOptionId) return;
+    seedInitialBackground();
+  }, [
+    controller.stepKey,
+    controller.playerMode,
+    controller.loadingCatalogs,
+    controller.draft?.backgroundOptionId,
+    controller.filteredBackgrounds?.[0]?.id,
+    controller.backgroundOptions?.[0]?.id,
+    controller.chooseBackground,
+  ]);
 
   // useNpcForgeController intentionally keeps PROFESSION_KEYS scoped to the four
   // implemented crafting-runtime/NPC-service disciplines. Character Forge has a
@@ -69,6 +98,12 @@ export default function useNpcForgeTrainingRoutedController(args) {
   }
 
   function handleNext() {
+    if (controller.playerMode && controller.stepKey === "species" && !controller.draft?.backgroundOptionId) {
+      // Seed before advancing so the Background dossier is already populated on
+      // its first painted frame instead of changing shape after the user clicks.
+      seedInitialBackground();
+    }
+
     if (bonusFeatPending && controller.stepKey === "abilities") {
       const errors = abilitySetupErrors();
       if (errors.length) {
