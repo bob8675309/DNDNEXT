@@ -8,6 +8,8 @@ const assert = (condition, message) => { if (!condition) throw new Error(message
 const responsive = read("styles/character-forge-responsive.css");
 const playerTraining = read("components/NpcForgeTrainingStepPlayer.js");
 const sourceContext = read("components/NpcForgeSourceChoiceContext.js");
+const sourceFields = read("components/SourceChoiceFields.js");
+const trainingContext = read("components/NpcForgeTrainingContextCard.js");
 const routedController = read("components/useNpcForgeTrainingRoutedController.js");
 const contextPanel = read("components/NpcForgeContextPanel.js");
 const backgroundEmpty = read("components/NpcForgeBackgroundEmptyState.js");
@@ -22,26 +24,58 @@ for (const token of [
   "normalizeCrafterProfessionChoices",
   'label: "Crafter — Profession Skills"',
   'id: "profession-skills"',
-  'label: "Choose profession skill"',
+  'label: "Choose three Profession Skills"',
   "count: 3",
   "TRADE_SKILL_KEYS.map",
   "value: definition.tool",
   "label: definition.label",
+  'professionChoice: true',
   'campaignRule: "crafter-profession-skills"',
   "do not consume the class Skill / Trade Skill allowance",
 ]) assert(sourceContext.includes(token), `Crafter Profession Skill adaptation is missing ${token}`);
 assert(sourceContext.includes("normalizeProficiencyFeatDecisionSurface") && sourceContext.includes("beside the feat rules in Training → Feats"), "Proficiency-feat helper copy must point players to the right-side Feats decision surface.");
 
-assert(contextPanel.includes('import NpcForgeBackgroundEmptyState from "./NpcForgeBackgroundEmptyState"'), "Background context must own the refined empty state component.");
-assert(contextPanel.includes("backgroundStepActive") && contextPanel.includes("if (!activeBackground) return <NpcForgeBackgroundEmptyState />"), "Opening Background with no selection must render the refined Background surface instead of the legacy context panel.");
-for (const token of ["Choose a Background", "Your life before adventuring", "History &amp; grants", "Source-backed rules", "no separate legacy information view"]) {
-  assert(backgroundEmpty.includes(token), `Refined Background empty state is missing ${token}`);
-}
-assert(!routedController.includes("previewBackground") && !routedController.includes("previewOnly: true"), "Background empty-state presentation must not preview or auto-commit a catalogue row.");
+for (const token of [
+  "function ProfessionChoiceField",
+  "npc-forge-profession-choice__grid",
+  "field.metadata?.professionChoice",
+  "selected.length >= count",
+  "onToggle?.(group.id, field.id, option.key)",
+]) assert(sourceFields.includes(token), `Crafter Profession Skill control is missing ${token}`);
+assert(sourceFields.includes("field.metadata?.professionChoice ? <ProfessionChoiceField"), "Profession choices must bypass the generic multi-tool dropdown renderer.");
 
-const protectedSources = `${responsive}\n${sourceContext}\n${routedController}\n${contextPanel}\n${backgroundEmpty}`.toLowerCase();
+for (const token of [
+  "function featRuleSections",
+  'normalized(feat.name) === "crafter"',
+  'title: "Profession Training"',
+  "Choose any three of Alchemy, Smithing, Scribe, Enchanting, Cooking, Tinkering, Jewelcraft, or Brewing",
+  'title: "Discount"',
+  'title: "Fast Crafting"',
+  "only the three proficiency selections are replaced by Profession Skills",
+  "<FeatRuleList feat={feat} matchingGroups={matchingGroups} />",
+]) assert(trainingContext.includes(token), `Crafter formatted rule dossier is missing ${token}`);
+assert(!trainingContext.includes('<h4>Feat Rules</h4><p>{feat.description'), "Training must not dump the raw unformatted Crafter/source feat description directly into the dossier.");
+
+for (const token of [
+  "function initialBackground",
+  "function seedInitialBackground",
+  'controller.stepKey !== "background"',
+  "controller.chooseBackground?.(background)",
+  'controller.stepKey === "species"',
+  "seedInitialBackground();",
+]) assert(routedController.includes(token), `First-Background default selection is missing ${token}`);
+assert(!routedController.includes("previewBackground") && !routedController.includes("previewOnly: true"), "Background initialization must be a real default selection, not a mismatched preview object.");
+
+// Keep the refined empty dossier as a no-catalog/failure fallback only. In the
+// normal player path, seedInitialBackground() fills the real dossier immediately.
+assert(contextPanel.includes('import NpcForgeBackgroundEmptyState from "./NpcForgeBackgroundEmptyState"'), "Background context must retain a refined no-selection fallback.");
+for (const token of ["Choose a Background", "Your life before adventuring", "History &amp; grants", "Source-backed rules"]) {
+  assert(backgroundEmpty.includes(token), `Refined Background fallback is missing ${token}`);
+}
+
+const protectedSources = `${responsive}\n${sourceContext}\n${sourceFields}\n${trainingContext}\n${routedController}\n${contextPanel}\n${backgroundEmpty}`.toLowerCase();
 for (const token of ["map_routes", "advance_all_characters", "world-map", "town map", "city map"]) {
   assert(!protectedSources.includes(token), `Browser acceptance patch unexpectedly references protected map behavior: ${token}`);
 }
 
-console.log("Training browser acceptance validation passed: authoritative 40/60 layout, Crafter three Profession Skill grants with mapped tools, right-side proficiency-feat guidance, and a refined uncommitted Background empty state are intact.");
+console.log("Training browser acceptance validation passed: authoritative 40/60 layout, Crafter three direct Profession Skill choices with mapped-tool persistence and formatted campaign rules, and first-Background default selection with refined fallback are intact.");
