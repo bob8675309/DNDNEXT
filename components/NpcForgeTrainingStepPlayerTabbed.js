@@ -123,7 +123,7 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
     <div className="npc-forge-training-mode-switch" role="tablist" aria-label="Training sections">
       <button type="button" role="tab" aria-selected={activeView === "skills"} className={activeView === "skills" ? "is-active" : ""} onClick={() => selectView("skills")}>
         <img src={`${TRAINING_ASSET_ROOT}/summary-skills.svg`} alt="" aria-hidden="true" />
-        <span><strong>Skills</strong><small>Skills, Trade Skills &amp; source grants</small></span>
+        <span><strong>Skills</strong><small>Skills, Trade Skills &amp; additional training</small></span>
         <em className={skillsIncomplete ? "is-required" : "is-complete"}>{skillsStatus}</em>
       </button>
       <button type="button" role="tab" aria-selected={activeView === "feats"} className={activeView === "feats" ? "is-active" : ""} onClick={() => selectView("feats")}>
