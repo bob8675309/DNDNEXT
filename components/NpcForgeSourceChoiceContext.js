@@ -67,10 +67,10 @@ function normalizeCrafterProfessionChoices(group = {}) {
   return {
     ...group,
     label: "Crafter — Profession Skills",
-    helper: "DnDNext campaign rule: Crafter grants three additional Profession Skills instead of three raw Fast-Crafting tool picks. Each Profession Skill also grants its mapped tool proficiency, and these feat-granted choices do not consume the class Skill / Trade Skill allowance.",
+    helper: "DnDNext campaign rule: Crafter grants three additional Profession Skills. Choose the professions directly below; each also carries its mapped tool proficiency. These feat-granted professions do not consume the class Skill / Trade Skill allowance.",
     fields: [{
       id: "profession-skills",
-      label: "Choose profession skill",
+      label: "Choose three Profession Skills",
       kind: "tool",
       count: 3,
       required: true,
