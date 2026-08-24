@@ -67,7 +67,7 @@ function normalizeCrafterProfessionChoices(group = {}) {
   return {
     ...group,
     label: "Crafter — Profession Skills",
-    helper: "DnDNext campaign rule: Crafter grants three additional Profession Skills. Choose the professions directly below; each also carries its mapped tool proficiency. These feat-granted professions do not consume the class Skill / Trade Skill allowance.",
+    helper: "DnDNext campaign rule: Crafter grants three additional Profession Skills instead of three raw Fast-Crafting tool picks. Choose them in Training → Skills → Trade Skills. Each Profession Skill also grants its mapped tool proficiency, and these feat-granted choices do not consume the class Skill / Trade Skill allowance.",
     fields: [{
       id: "profession-skills",
       label: "Choose three Profession Skills",
@@ -102,7 +102,7 @@ function normalizeCrafterProfessionChoices(group = {}) {
       ...(group.metadata || {}),
       proficiencyFeat: true,
       resolverPlacement: "training",
-      trainingSection: "feats",
+      trainingSection: "skills",
       campaignRule: "crafter-profession-skills",
       originalFeatSource: source,
     },
@@ -128,8 +128,9 @@ function normalizeProficiencyFeatDecisionSurface(group = {}) {
 /**
  * Step-level resolver placement is distinct from source ownership. Class and
  * advancement groups already resolve on the Training step but retain their
- * subsection placement. Background tool choices are the one case normalized
- * into the Training choice surface itself.
+ * subsection placement. Background tool choices are normalized into Training,
+ * and Crafter is the deliberate feat exception whose three Profession choices
+ * resolve in Skills → Trade Skills instead of the Feats dossier.
  */
 export function sourceChoiceResolverPlacement(group = {}) {
   const explicit = String(group.resolverPlacement || group.metadata?.resolverPlacement || "").trim();
@@ -143,9 +144,8 @@ export function sourceChoiceResolverPlacement(group = {}) {
  * Mixed feat groups can own both permanent non-spell decisions and granted spell
  * choices. Keep one canonical group/selection record, but resolve each field on
  * the step where the player has the right context: feat spell fields in Spells,
- * and every other feat-owned persistent decision in Training -> Feats.
- * Whole groups already routed to Spells (Magic Initiate, Strixhaven, High Sorcery,
- * etc.) stay intact.
+ * and other feat-owned persistent decisions in Training. Crafter remains a feat-
+ * owned choice internally but is surfaced in Skills → Trade Skills.
  */
 export function sourceChoiceFieldResolverPlacement(group = {}, field = {}) {
   const explicit = String(field?.resolverPlacement || field?.metadata?.resolverPlacement || "").trim();
@@ -163,12 +163,15 @@ export function sourceChoiceGroupsForResolverPlacement(state = EMPTY_SOURCE_CHOI
   return (state.groups || []).flatMap((group) => {
     const fields = (group.fields || []).filter((field) => !placement || sourceChoiceFieldResolverPlacement(group, field) === placement);
     if (!fields.length) return [];
-    // The clone is presentation-only. Feat-owned non-spell groups use the existing
-    // "class" subsection marker so every feat-owned decision appears in Feats/Current
-    // Selection, including Skilled/Crafter/Musician proficiency choices. Canonical
-    // placement, ownership, ids, and serialized selections remain untouched in state.
+    // The clone is presentation-only. Most feat-owned non-spell groups use the
+    // existing "class" subsection marker so their decisions appear in Feats /
+    // Current Selection. Crafter is the exception: its three mapped Profession
+    // grants use the normal Training marker so the Trade Skill rows become the
+    // decision surface. Canonical ownership, ids, and serialized values stay put.
+    const crafterProfessionSkills = group.metadata?.campaignRule === "crafter-profession-skills"
+      && group.metadata?.trainingSection === "skills";
     const projectedPlacement = placement === "training" && String(group.ownerType || "") === "feat"
-      ? "class"
+      ? crafterProfessionSkills ? "training" : "class"
       : group.placement;
     return [{ ...group, placement: projectedPlacement, resolverPlacement: placement || sourceChoiceResolverPlacement(group), fields }];
   });
