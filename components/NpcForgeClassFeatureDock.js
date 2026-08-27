@@ -1,6 +1,7 @@
 import ClassFeatureText from "./ClassFeatureText";
 import ItemCard from "./ItemCard";
 import { formatPlayerFacingText } from "../utils/playerFacingText";
+import { classPresentationSummary } from "../utils/classes/classPresentation";
 
 function safeText(value) {
   return String(value ?? "").trim();
@@ -12,7 +13,7 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
   const description = feature?.description
     ? formatPlayerFacingText(feature.description)
     : formatPlayerFacingText(
-      selectedClass?.summary,
+      classPresentationSummary(selectedClass),
       "Hover or focus a class or subclass feature to inspect it here without leaving the class catalogue.",
     );
   const source = safeText(feature?.source || selectedClass?.source || "Campaign");
