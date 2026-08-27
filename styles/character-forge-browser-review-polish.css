@@ -1,7 +1,8 @@
 /* Character Forge browser-review polish.
  * This file is intentionally scoped to the unified player Forge. It only adjusts
- * presentation for the accepted Background/Training flow; no choice ownership,
- * persistence, crafting runtime, NPC Forge, map, or database behavior lives here.
+ * presentation for the accepted Background/Training flow plus current Class-tab
+ * browser review; no choice ownership, persistence, crafting runtime, NPC Forge,
+ * map, or database behavior lives here.
  */
 
 /* Background: when source features exist, let them occupy the open space directly
@@ -127,6 +128,47 @@
   display: none !important;
 }
 
+/* Class: the right guide is frequently much taller than the catalogue. The body
+ * remains the single scroll owner; stretch the left workspace through that row,
+ * give the catalogue the flexible middle track, and keep the feature dock as the
+ * last row rather than leaving it stranded halfway up the column. */
+@media (min-width: 901px) {
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 > .npc-forge-workspace {
+    align-self: stretch !important;
+    min-height: 100% !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-selection {
+    display: grid !important;
+    grid-template-rows: auto auto minmax(240px, 1fr) auto !important;
+    align-content: stretch !important;
+    align-self: stretch !important;
+    min-height: 100% !important;
+    height: 100% !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog {
+    min-height: 0 !important;
+    height: 100% !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-list {
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-feature-dock {
+    position: static !important;
+    top: auto !important;
+    align-self: end !important;
+    width: 100% !important;
+    max-height: min(420px, 42dvh) !important;
+    overflow: auto !important;
+    margin-top: 10px !important;
+  }
+}
+
 @media (max-width: 900px) {
   .unified-player-character-forge .npc-forge-body:has(.npc-forge-training-tabbed-shell.is-feats) .npc-forge-context-panel,
   .unified-player-character-forge .npc-forge-body:has(.npc-forge-training-tabbed-shell.is-feats) .npc-forge-training-context-dossier {
@@ -138,5 +180,16 @@
 
   .unified-player-character-forge .npc-forge-training-tabbed-shell.is-feats .npc-forge-training-feat-list {
     max-height: 320px !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-selection {
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-feature-dock {
+    position: static !important;
+    max-height: none !important;
+    overflow: visible !important;
   }
 }
