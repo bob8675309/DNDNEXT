@@ -5,7 +5,9 @@ const root = process.cwd();
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
 
+const app = read("pages/_app.js");
 const responsive = read("styles/character-forge-responsive.css");
+const browserPolish = read("styles/character-forge-browser-review-polish.css");
 const playerTraining = read("components/NpcForgeTrainingStepPlayer.js");
 const playerTabbed = read("components/NpcForgeTrainingStepPlayerTabbed.js");
 const sourceContext = read("components/NpcForgeSourceChoiceContext.js");
@@ -70,6 +72,31 @@ for (const token of [
   "Feat-granted Profession choices such as Crafter also resolve here",
 ]) assert(playerTabbed.includes(token), `Segmented Skills/Feats pill or routing copy is missing ${token}`);
 
+assert(app.includes('import "../styles/character-forge-browser-review-polish.css";'), "Latest Character Forge browser-review stylesheet is not loaded by _app.js.");
+for (const token of [
+  ".npc-forge-background-guide.is-showcase-one:has(> .npc-forge-bg-features)",
+  "> .npc-forge-bg-showcase-grants",
+  "display: contents !important",
+  ".npc-forge-bg-showcase-skills",
+  "grid-row: 3",
+  ".npc-forge-bg-showcase-side",
+  "grid-row: 3 / span 2",
+  "> .npc-forge-bg-features",
+  "grid-row: 4",
+]) assert(browserPolish.includes(token), `Background feature-upflow polish is missing ${token}`);
+
+for (const token of [
+  ".npc-forge-training-feat-rule-list > article + article:not(:has(> strong))",
+  ".npc-forge-training-feat-rule-list > article:first-child:not(:has(> strong))",
+  ".npc-forge-training-feat-help",
+  ".npc-forge-training-tabbed-help",
+  ".npc-forge-training-feat-followups button.has-spells",
+  ".npc-forge-training-feat-list",
+  "max-height: clamp(228px, calc(100dvh - 430px), 500px)",
+  ".npc-forge-training-context-note",
+  "height: calc(100dvh - 190px)",
+]) assert(browserPolish.includes(token), `Latest Feats compaction / continuation polish is missing ${token}`);
+
 for (const token of [
   "function initialBackground",
   "function seedInitialBackground",
@@ -87,9 +114,9 @@ for (const token of ["Choose a Background", "Your life before adventuring", "His
   assert(backgroundEmpty.includes(token), `Refined Background fallback is missing ${token}`);
 }
 
-const protectedSources = `${responsive}\n${sourceContext}\n${trainingContext}\n${playerTabbed}\n${routedController}\n${contextPanel}\n${backgroundEmpty}`.toLowerCase();
+const protectedSources = `${responsive}\n${browserPolish}\n${sourceContext}\n${trainingContext}\n${playerTabbed}\n${routedController}\n${contextPanel}\n${backgroundEmpty}`.toLowerCase();
 for (const token of ["map_routes", "advance_all_characters", "world-map", "town map", "city map"]) {
   assert(!protectedSources.includes(token), `Browser acceptance patch unexpectedly references protected map behavior: ${token}`);
 }
 
-console.log("Training browser acceptance validation passed: authoritative 40/60 layout, Crafter three free Profession choices routed through Skills/Trade Skills, merged feat heading/body formatting, segmented Training pill, and first-Background default selection are intact.");
+console.log("Training browser acceptance validation passed: authoritative 40/60 layout, Crafter three free Profession choices routed through Skills/Trade Skills, Background features lifted under Skills, continuation feat prose visually grouped, redundant Feats helper/spell-only rows removed, full-height Current Selection, segmented Training pill, and first-Background default selection are intact.");
