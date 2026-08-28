@@ -76,10 +76,14 @@ assert.ok(runeFeatures.some((feature) => /Rune Shaper/i.test(feature.name)), "Ru
 assert.ok(!runeFeatures.some((feature) => /^Rune Styles$/i.test(feature.name)), "Rune Styles prose must be owned by the persisted dropdown instead");
 assert.ok(!runeFeatures.some((feature) => /^Building a Rune Carver Character$/i.test(feature.name)), "Rune Carver build boilerplate must stay removed");
 
+const clanFeatures = backgroundFeatureDetails({ name: "Clan Crafter", source: "SCAG", raw_payload: { entries: [] } });
+assert.ok(!clanFeatures.some((feature) => feature.campaignRule || /Craft Expertise/i.test(feature.name)), "Clan Crafter must not recreate the retired Craft Expertise campaign feature");
+
 const mechanicsSource = read("utils/backgroundMechanics.js");
-for (const token of ["containsStructuredTable", "Building a .+ Character", "Optional flavor sections", "Craft Expertise"]) {
+for (const token of ["containsStructuredTable", "Building a .+ Character", "Optional flavor sections"]) {
   assert.ok(mechanicsSource.includes(token), `catalogue-wide Background prose guard missing ${token}`);
 }
+assert.ok(!mechanicsSource.includes("Craft Expertise") && !mechanicsSource.includes("clanCrafterHouseRule"), "retired Clan Crafter Craft Expertise injection must be absent from Background mechanics");
 
 const derivedSource = read("components/useNpcForgeDerivedModel.js");
 for (const token of ["TOOL_GUIDANCE", "Typical uses", "Rune Spells", "cleanPrerequisite", "Training → Skills & Proficiencies"]) {
@@ -87,9 +91,10 @@ for (const token of ["TOOL_GUIDANCE", "Typical uses", "Rune Spells", "cleanPrere
 }
 
 const sourceChoiceSource = read("utils/playerForgeSourceChoices.js");
-for (const token of ["toolRuleFacts", "RUNE_STYLE_OPTIONS", "clan-crafter-craft-expertise", "craftExpertise"]) {
+for (const token of ["toolRuleFacts", "RUNE_STYLE_OPTIONS", "separate from campaign Trade Skill training", "does not grant Expertise"]) {
   assert.ok(sourceChoiceSource.includes(token), `catalogue-wide Background choice model missing ${token}`);
 }
+assert.ok(!sourceChoiceSource.includes("clan-crafter-craft-expertise") && !sourceChoiceSource.includes("craftExpertise"), "retired Clan Crafter Craft Expertise metadata must be absent from source choices");
 
 const featRoutingSource = read("utils/playerForgeFeatChoiceRouting.js");
 for (const token of ["TRAINING_PROFICIENCY_FEATS", "fixedMagicInitiateListForBackground", "trainingSection: \"skills-proficiencies\""]) {
@@ -105,4 +110,4 @@ for (const source of [mechanicsSource, read("utils/backgroundMechanicsRefined.js
   assert.doesNotMatch(source, /MapPageClient|map_routes|map_route_points|advance_all_characters|route_segment_progress/, "Background catalogue audit crossed protected map/travel boundaries");
 }
 
-console.log("Background catalogue readability validated: Custom Background arbitrary skills parse correctly; 2024 fixed Magic Initiate lists stay fixed; optional random-table and build-boilerplate prose is pruned without deleting real features; Rune Styles is structurally owned; tool guidance, Training routing, dark choice contrast, and protected map/travel boundaries remain intact.");
+console.log("Background catalogue readability validated: Custom Background arbitrary skills parse correctly; 2024 fixed Magic Initiate lists stay fixed; optional random-table and build-boilerplate prose is pruned without deleting real features; Rune Styles is structurally owned; mundane tools remain distinct from Trade Skill rank and never grant automatic Expertise; tool guidance, Training routing, dark choice contrast, and protected map/travel boundaries remain intact.");
