@@ -15,9 +15,9 @@ const TOOL_TO_PROFESSION = Object.freeze(Object.fromEntries(
 ));
 
 /**
- * Return the Trade Skill associated with a concrete crafting tool. Association
- * alone is informational/routing data: simply owning a mundane tool does not
- * grant a Trade Skill rank or Expertise.
+ * Return the Trade Skill associated with a concrete crafting tool.
+ * Association alone is informational/routing data: simply owning a mundane tool
+ * does not grant a Trade Skill rank or Expertise.
  */
 export function professionKeyForTool(value = "") {
   return TOOL_TO_PROFESSION[normalize(value)] || "";
