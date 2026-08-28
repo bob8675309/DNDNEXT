@@ -47,9 +47,11 @@ assert.ok(!giantStandard.options.some((option) => option.label === "Giant"), "th
 const clanCrafter = groupsFor("Clan Crafter", "SCAG", { languages: [{ dwarvish: true }, { anyStandard: 1 }], tools: [{ anyArtisansTool: 1 }] });
 const clanLanguages = fieldsOfKind(clanCrafter, "language");
 assert.ok(clanLanguages.some((field) => field.autoSelect && field.options.some((option) => option.label === "Dwarvish")), "Clan Crafter must publish fixed Dwarvish");
-const clanCraftGroup = clanCrafter.find((group) => group.metadata?.craftExpertise);
-assert.ok(clanCraftGroup, "Clan Crafter selected artisan tool must carry the DnDNext Craft Expertise marker");
-assert.equal(clanCraftGroup.metadata.campaignRule, "clan-crafter-craft-expertise");
+const clanCraftGroup = clanCrafter.find((group) => (group.fields || []).some((field) => field.kind === "tool"));
+assert.ok(clanCraftGroup, "Clan Crafter must retain its source artisan-tool selection");
+assert.ok(!clanCraftGroup.metadata?.craftExpertise && clanCraftGroup.metadata?.campaignRule !== "clan-crafter-craft-expertise", "Clan Crafter mundane tool choice must not carry the retired Craft Expertise house-rule marker");
+assert.match(clanCraftGroup.helper, /separate from campaign Trade Skill training/i, "Clan Crafter tool guidance must explain tool/Trade Skill separation");
+assert.match(clanCraftGroup.helper, /does not grant Expertise/i, "Clan Crafter tool guidance must explicitly reject automatic Expertise");
 
 const inheritor = groupsFor("Inheritor", "SCAG", { tools: [{ choose: { from: ["musical instrument", "gaming set"] } }] });
 const inheritorTool = fieldsOfKind(inheritor, "tool").find((field) => !field.autoSelect);
@@ -114,7 +116,7 @@ assert.ok(!runeBackgroundFeatures.some((feature) => /^Rune Styles$/i.test(featur
 assert.ok(!runeBackgroundFeatures.some((feature) => /^Building a .* Character$/i.test(feature.name)), "source character-building boilerplate must not render as a Background feature");
 
 const clanFeatures = backgroundFeatureDetails({ name: "Clan Crafter", source: "SCAG", raw_payload: { entries: [] } });
-assert.ok(clanFeatures.some((feature) => feature.campaignRule && /Craft Expertise/i.test(feature.name)), "Clan Crafter must explain the DnDNext Craft Expertise house rule");
+assert.ok(!clanFeatures.some((feature) => feature.campaignRule || /Craft Expertise/i.test(feature.name)), "Clan Crafter must not inject the retired DnDNext Craft Expertise house-rule card");
 
 const embeddedSource = read("components/NpcForgeEmbeddedSourceChoices.js");
 for (const token of ["sourceChoicePrompt", "incompleteFields", "field.autoSelect", 'join(" • ")']) assert.ok(embeddedSource.includes(token), `fixed + unresolved summary handling missing ${token}`);
@@ -144,7 +146,8 @@ for (const token of ["featDescriptionForBackground", "flattenSourceRuleEntries",
 assert.ok(!derivedSource.includes("toolProficiencyDescription(name)"), "Background tools must not use the old generic one-line proficiency copy");
 
 const sourceChoiceSource = read("utils/playerForgeSourceChoices.js");
-for (const token of ["toolRuleFacts", "Rune Styles", "RUNE_STYLE_OPTIONS", "clan-crafter-craft-expertise", "craftExpertise"]) assert.ok(sourceChoiceSource.includes(token), `Background source-choice enrichment missing ${token}`);
+for (const token of ["toolRuleFacts", "Rune Styles", "RUNE_STYLE_OPTIONS", "separate from campaign Trade Skill training", "does not grant Expertise"]) assert.ok(sourceChoiceSource.includes(token), `Background source-choice enrichment missing ${token}`);
+assert.ok(!sourceChoiceSource.includes("clan-crafter-craft-expertise") && !sourceChoiceSource.includes("craftExpertise"), "Retired Clan Crafter Craft Expertise metadata must not remain in source-choice authority");
 
 const loginSource = read("pages/login.js");
 assert.ok(loginSource.includes('router.replace("/profile?characterProfile=1")'), "successful login must open the shared Profile panel for normal sign-in");
@@ -165,4 +168,4 @@ for (const source of [read("utils/playerForgeSourceChoices.js"), read("utils/pla
   assert.doesNotMatch(source, /MapPageClient|map_routes|map_route_points|advance_all_characters|route_segment_progress/, "Background work crossed protected map/travel boundaries");
 }
 
-console.log("Background source-choice polish validated: fixed languages/tools remain automatic, Background skills and source-granted tool/proficiency choices resolve through Training without consuming the class allowance, source feat copy is structured, Rune Styles is a persisted dropdown, Clan Crafter carries Craft Expertise metadata, tool choices explain source-backed uses/crafts, Background boilerplate is pruned, choice surfaces keep dark readable contrast, completed Species fact choices collapse on outside click, login enters the Profile panel, Forge geometry resets consistently, Strixhaven spell tables are not duplicated, and protected map/travel boundaries remain untouched.");
+console.log("Background source-choice polish validated: fixed languages/tools remain automatic, Background skills and source-granted tool choices resolve through Training, mundane tools remain separate from Trade Skill rank and never grant automatic Expertise, source feat copy is structured, Rune Styles is a persisted dropdown, tool choices explain source-backed uses/crafts, Background boilerplate is pruned, choice surfaces keep dark readable contrast, completed Species fact choices collapse on outside click, login enters the Profile panel, Forge geometry resets consistently, Strixhaven spell tables are not duplicated, and protected map/travel boundaries remain untouched.");
