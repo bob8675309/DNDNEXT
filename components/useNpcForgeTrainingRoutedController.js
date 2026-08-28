@@ -1,18 +1,13 @@
 import { useEffect } from "react";
 import { ABILITY_KEYS } from "../utils/characterCreation";
 import { TRADE_SKILL_KEYS } from "../utils/craftingProfessions";
-import { professionKeysForTools, toolForProfession } from "../utils/craftingToolProfessions";
 import { pointBuyRemaining } from "../utils/playerForgeRules";
-import { selectedSourceChoiceOptions } from "../utils/playerForgeSourceChoices";
-import { useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
 import useNpcForgeController from "./useNpcForgeController";
 
 export default function useNpcForgeTrainingRoutedController(args) {
   const controller = useNpcForgeController(args);
-  const { state: sourceChoiceState } = useNpcForgeSourceChoices();
   const baseHandleNext = controller.handleNext;
   const baseHandleCreate = controller.handleCreate;
-  const baseSetProfession = controller.setProfession;
 
   function initialBackground() {
     return controller.filteredBackgrounds?.[0] || controller.backgroundOptions?.[0] || null;
@@ -46,24 +41,18 @@ export default function useNpcForgeTrainingRoutedController(args) {
   // implemented crafting-runtime/NPC-service disciplines. Character Forge has a
   // broader eight-Trade-Skill proficiency catalogue, so adjust the shared player
   // allowance on the returned model without widening legacy crafting authority.
-  // Source-granted mapped tools are free grants even if a player had previously
-  // paid for that same Trade Skill before navigating back and changing sources.
+  // Mundane tool proficiency is separate: it neither grants a Trade Skill rank nor
+  // reduces the number of paid Skill / Trade Skill selections owed here.
   const trainedTradeSkillKeys = controller.playerMode
     ? TRADE_SKILL_KEYS.filter((key) => Number(controller.draft?.professions?.[key]?.rank || 0) > 0)
     : controller.selectedTrainedProfessions || [];
-  const sourceGrantedTradeSkillKeys = controller.playerMode
-    ? new Set(professionKeysForTools(selectedSourceChoiceOptions(sourceChoiceState.groups || [], sourceChoiceState.selections || {})
-      .filter((entry) => entry.kind === "tool" || entry.fieldKind === "tool" || entry.fieldKind === "skill-or-tool")
-      .map((entry) => entry.value || entry.label)))
-    : new Set();
-  const paidTradeSkillKeys = trainedTradeSkillKeys.filter((key) => !sourceGrantedTradeSkillKeys.has(key));
 
   // The controller handlers close over this same classSkillConfig object, so the
   // corrected count is also used by toggleClassSkill() and stepErrors().
   if (controller.playerMode && controller.classSkillConfig) {
     const totalCount = Number(controller.classSkillConfig.totalCount ?? controller.classSkillConfig.count ?? 0);
-    controller.classSkillConfig.professionChoices = paidTradeSkillKeys.length;
-    controller.classSkillConfig.count = Math.max(0, totalCount - paidTradeSkillKeys.length);
+    controller.classSkillConfig.professionChoices = trainedTradeSkillKeys.length;
+    controller.classSkillConfig.count = Math.max(0, totalCount - trainedTradeSkillKeys.length);
   }
 
   const bonusFeatPending = Boolean(
@@ -82,19 +71,6 @@ export default function useNpcForgeTrainingRoutedController(args) {
       errors.push("Spend the full 27-point Point Buy budget.");
     }
     return errors;
-  }
-
-  function setProfession(key, field, value) {
-    baseSetProfession?.(key, field, value);
-    if (!controller.playerMode || field !== "rank") return;
-
-    const tool = toolForProfession(key);
-    if (!tool) return;
-    const currentTools = Array.isArray(controller.draft?.additionalTools) ? controller.draft.additionalTools : [];
-    const nextTools = Number(value || 0) > 0
-      ? [...new Set([...currentTools, tool])]
-      : currentTools.filter((entry) => String(entry || "").trim().toLowerCase() !== tool.toLowerCase());
-    controller.patch?.({ additionalTools: nextTools });
   }
 
   function handleNext() {
@@ -139,7 +115,6 @@ export default function useNpcForgeTrainingRoutedController(args) {
     ...controller,
     selectedTrainedProfessions: trainedTradeSkillKeys,
     bonusFeatPending,
-    setProfession,
     handleNext,
     handleCreate,
   };
