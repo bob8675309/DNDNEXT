@@ -347,7 +347,6 @@ export function buildBackgroundSourceChoiceGroups(background = null, toolRows = 
   const groups = [];
   const backgroundKey = slug(background.id || background.name);
   const backgroundSource = background.source || "XPHB";
-  const clanCrafter = norm(background.name || background.sourceName) === "clan crafter";
   const catalog = buildToolOptionCatalog(toolRows);
   const toolEntries = array(background.metadata?.tools || background.rawPayload?.toolProficiencies || background.raw_payload?.toolProficiencies);
   const descriptors = [];
@@ -372,20 +371,17 @@ export function buildBackgroundSourceChoiceGroups(background = null, toolRows = 
       if (options.length) descriptors.push({ count, label: count === 1 ? "Choose a tool proficiency" : `Choose ${count} tool proficiencies`, options });
     }
   }
-  const craftExpertiseMetadata = clanCrafter ? { campaignRule: "clan-crafter-craft-expertise", craftExpertise: true } : null;
   const uniqueFixedTools = dedupeToolOptions(fixedTools);
   if (uniqueFixedTools.length) groups.push(sourceGroup({
     id: `background-${backgroundKey}-fixed-tools`, ownerType: "background", ownerKey: text(background.id || background.name), label: "Background fixed tool proficiency", source: backgroundSource, placement: "background",
-    helper: clanCrafter ? "This tool is granted by Clan Crafter and counts as Expertise on DnDNext crafting checks made with it." : "These tool proficiencies are granted directly by the selected background.",
-    metadata: craftExpertiseMetadata,
+    helper: "These tool proficiencies are granted directly by the selected background. Mundane tool proficiency is separate from campaign Trade Skill rank and does not grant Expertise.",
     fields: [sourceField({ id: "fixed-tools", label: "Granted tools", kind: "tool", count: uniqueFixedTools.length, options: uniqueFixedTools, autoSelect: true })],
   }));
   descriptors.forEach((descriptor, index) => {
     if (!descriptor.options.length) return;
     groups.push(sourceGroup({
       id: `background-${backgroundKey}-tool-${index + 1}`, ownerType: "background", ownerKey: text(background.id || background.name), label: "Background tool proficiency", source: backgroundSource, placement: "background",
-      helper: clanCrafter ? "Choose your Clan Crafter artisan's tool. DnDNext treats this selected craft as Expertise for crafting checks." : "This tool proficiency is granted by the selected background and is separate from campaign crafting-profession training.",
-      metadata: craftExpertiseMetadata,
+      helper: "This tool proficiency is granted by the selected background and is separate from campaign Trade Skill training. It does not grant Expertise.",
       fields: [sourceField({ id: "tools", label: descriptor.label, kind: "tool", count: descriptor.count, options: descriptor.options })],
     }));
   });
@@ -449,7 +445,7 @@ export function buildClassStartingSourceChoiceGroups(classRow = null, toolRows =
   }
   return descriptors.flatMap((descriptor, index) => descriptor.options.length ? [sourceGroup({
     id: `class-${slug(classRow.id || classRow.class_key || classRow.class_name)}-starting-tool-${index + 1}`, ownerType: "class", ownerKey: text(classRow.id || classRow.class_key || classRow.class_name), label: "Class starting tool proficiency", source: classRow.source || "XPHB", placement: "training",
-    helper: "Choose the starting tool or instrument proficiency granted by the class.",
+    helper: "Choose the starting tool or instrument proficiency granted by the class. Mundane tool proficiency is separate from Trade Skill rank.",
     fields: [sourceField({ id: "tools", label: descriptor.label, kind: "tool", count: descriptor.count, options: descriptor.options, cadence: "training" })],
   })] : []);
 }
