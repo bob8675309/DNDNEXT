@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { TRADE_SKILL_KEYS } from "../utils/craftingProfessions";
-import { professionKeysForTools } from "../utils/craftingToolProfessions";
-import { selectedSourceChoiceOptions, sourceChoiceGroupComplete } from "../utils/playerForgeSourceChoices";
+import { sourceChoiceGroupComplete } from "../utils/playerForgeSourceChoices";
 import { useNpcForgeClassChoice } from "./NpcForgeClassChoiceContext";
 import { useNpcForgeControllerContext } from "./NpcForgeControllerContext";
 import { sourceChoiceGroupsForResolverPlacement, useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
@@ -12,10 +11,6 @@ const normalized = (value) => String(value ?? "").trim().toLowerCase().replace(/
 
 function classGroupsIncomplete(groups = [], selections = {}) {
   return groups.some((group) => group?.required && (selections?.[group.id] || []).length !== Number(group.count || 0));
-}
-
-function ownerToolEntries(entries = []) {
-  return entries.filter((entry) => entry.kind === "tool" || entry.fieldKind === "tool" || entry.fieldKind === "skill-or-tool");
 }
 
 function featOptionForGroup(group = {}, options = []) {
@@ -37,7 +32,6 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
 
   const classGroups = classChoiceState.featureGroups || [];
   const classSelections = classChoiceState.featureSelections || {};
-  const sourceGroups = sourceChoiceState.groups || [];
   const sourceSelections = sourceChoiceState.selections || {};
 
   const trainingClassGroups = useMemo(() => classGroups.filter((group) => (group.placement || "class") === "training"), [classGroups]);
@@ -52,13 +46,9 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
     || ["class", "advancement"].includes(group.placement)
   )), [resolverTrainingGroups]);
 
-  const selectedSourceOptions = useMemo(() => selectedSourceChoiceOptions(sourceGroups, sourceSelections), [sourceGroups, sourceSelections]);
-  const sourceGrantedTradeSkills = useMemo(() => new Set(professionKeysForTools(ownerToolEntries(selectedSourceOptions).map((entry) => entry.value || entry.label))), [selectedSourceOptions]);
-  const explicitTradeSkills = TRADE_SKILL_KEYS.filter((key) => Number(props.professions?.[key]?.rank || 0) > 0);
-  const paidTradeSkills = explicitTradeSkills.filter((key) => !sourceGrantedTradeSkills.has(key));
-
+  const trainedTradeSkills = TRADE_SKILL_KEYS.filter((key) => Number(props.professions?.[key]?.rank || 0) > 0);
   const sharedChoiceTarget = Number(props.classSkillConfig?.totalCount ?? props.classSkillConfig?.count ?? 0);
-  const sharedChoiceDone = (props.selectedClassSkills || []).length + paidTradeSkills.length;
+  const sharedChoiceDone = (props.selectedClassSkills || []).length + trainedTradeSkills.length;
   const incompleteSharedChoices = sharedChoiceDone !== sharedChoiceTarget;
 
   const backgroundChoiceTarget = (props.backgroundSkillChoices || []).reduce((total, group) => total + Number(group.count || 1), 0);
@@ -140,7 +130,7 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
     <div className="npc-forge-training-tabbed-help">
       <span>ⓘ</span>
       <p>{activeView === "skills"
-        ? "Choose Skills, Trade Skills, languages, instruments, and other training proficiencies here. Feat-granted Profession choices such as Crafter also resolve here and are labeled with their granting source."
+        ? "Choose Skills, Trade Skills, languages, tools, instruments, and other training here. Mundane tool proficiency is separate from Trade Skill training; neither one automatically grants the other."
         : "Choose granted feats on the left. Any non-spell choice owned by the selected feat is completed beside its rules in Current Selection; Crafter's Profession grants are the exception and resolve in Skills; feat-granted spell choices continue to the Spells step."}</p>
     </div>
 
