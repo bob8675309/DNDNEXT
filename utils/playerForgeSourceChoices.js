@@ -371,17 +371,25 @@ export function buildBackgroundSourceChoiceGroups(background = null, toolRows = 
       if (options.length) descriptors.push({ count, label: count === 1 ? "Choose a tool proficiency" : `Choose ${count} tool proficiencies`, options });
     }
   }
+  // Compatibility rule: Background tool proficiency was the old rules expression
+  // of many trade/crafting competencies. Background-owned mapped tools therefore
+  // grant the matching DnDNext Trade Skill at Proficient rank. The metadata keeps
+  // that grant source-bound; simply owning the same mundane tool elsewhere does
+  // not grant a Trade Skill, and no Background tool ever grants Expertise.
+  const backgroundToolMetadata = Object.freeze({ grantsMappedTradeSkill: true, tradeSkillGrantSource: "background-tool" });
   const uniqueFixedTools = dedupeToolOptions(fixedTools);
   if (uniqueFixedTools.length) groups.push(sourceGroup({
     id: `background-${backgroundKey}-fixed-tools`, ownerType: "background", ownerKey: text(background.id || background.name), label: "Background fixed tool proficiency", source: backgroundSource, placement: "background",
-    helper: "These tool proficiencies are granted directly by the selected background. Mundane tool proficiency is separate from campaign Trade Skill rank and does not grant Expertise.",
+    helper: "These tool proficiencies are granted by your Background. If a granted tool maps to a DnDNext Trade Skill, the Background also grants that Trade Skill at Proficient rank. It never grants Expertise.",
+    metadata: backgroundToolMetadata,
     fields: [sourceField({ id: "fixed-tools", label: "Granted tools", kind: "tool", count: uniqueFixedTools.length, options: uniqueFixedTools, autoSelect: true })],
   }));
   descriptors.forEach((descriptor, index) => {
     if (!descriptor.options.length) return;
     groups.push(sourceGroup({
       id: `background-${backgroundKey}-tool-${index + 1}`, ownerType: "background", ownerKey: text(background.id || background.name), label: "Background tool proficiency", source: backgroundSource, placement: "background",
-      helper: "This tool proficiency is granted by the selected background and is separate from campaign Trade Skill training. It does not grant Expertise.",
+      helper: "Choose the tool proficiency granted by your Background. If the chosen tool maps to a DnDNext Trade Skill, the Background also grants that Trade Skill at Proficient rank without spending your Class Skill / Trade Skill allowance. It never grants Expertise.",
+      metadata: backgroundToolMetadata,
       fields: [sourceField({ id: "tools", label: descriptor.label, kind: "tool", count: descriptor.count, options: descriptor.options })],
     }));
   });
@@ -445,7 +453,7 @@ export function buildClassStartingSourceChoiceGroups(classRow = null, toolRows =
   }
   return descriptors.flatMap((descriptor, index) => descriptor.options.length ? [sourceGroup({
     id: `class-${slug(classRow.id || classRow.class_key || classRow.class_name)}-starting-tool-${index + 1}`, ownerType: "class", ownerKey: text(classRow.id || classRow.class_key || classRow.class_name), label: "Class starting tool proficiency", source: classRow.source || "XPHB", placement: "training",
-    helper: "Choose the starting tool or instrument proficiency granted by the class. Mundane tool proficiency is separate from Trade Skill rank.",
+    helper: "Choose the starting tool or instrument proficiency granted by the class. Mundane tool proficiency is separate from Trade Skill rank unless that class feature explicitly says otherwise.",
     fields: [sourceField({ id: "tools", label: descriptor.label, kind: "tool", count: descriptor.count, options: descriptor.options, cadence: "training" })],
   })] : []);
 }
