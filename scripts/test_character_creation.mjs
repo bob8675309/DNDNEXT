@@ -4,6 +4,7 @@ import {
   professionModifierFromSheet,
   providerOffersProfession,
 } from "../utils/craftingProfessions.js";
+import { sourceGrantedTradeSkillKeys } from "../utils/craftingToolProfessions.js";
 import {
   BACKGROUND_DEFINITIONS,
   CLASS_DEFINITIONS,
@@ -72,6 +73,17 @@ assert.equal(toolOnlySmithing.proficiencyContribution, 0, "mundane tools must no
 assert.equal(toolOnlySmithing.totalModifier, 3, "an untrained Smithing check retains only its ability modifier before future site/magic-tool bonuses");
 assert.equal(toolOnlySmithing.hasToolProficiency, true, "tool availability/proficiency remains independently visible to the crafting runtime");
 assert.equal(toolOnlySmithing.toolRequiredForCrafting, true, "the resolver must expose the campaign rule that the associated crafting tool is required");
+
+assert.deepEqual(sourceGrantedTradeSkillKeys([{
+  value: "Smith's Tools",
+  groupMetadata: null,
+  fieldMetadata: null,
+  metadata: null,
+}]), [], "ordinary Smith's Tools must not grant Smithing without an explicit source rule");
+assert.deepEqual(sourceGrantedTradeSkillKeys([{
+  value: "Smith's Tools",
+  groupMetadata: { grantsMappedTradeSkill: true, tradeSkillGrantSource: "background-tool" },
+}]), ["smithing"], "a Background-owned Smith's Tools proficiency must preserve its source power by granting Smithing proficiency");
 
 const draft = {
   name: "Marta Ironroot",
