@@ -130,8 +130,9 @@
 
 /* Class: the right guide is frequently much taller than the catalogue. The body
  * remains the single scroll owner; stretch the left workspace through that row,
- * give the catalogue the flexible middle track, and keep the feature dock as the
- * last row rather than leaving it stranded halfway up the column. */
+ * reserve a useful minimum for the Class catalogue at normal browser zoom, and
+ * cap the overview dock so long summaries scroll inside the dock instead of
+ * covering the selectable class list. */
 @media (min-width: 901px) {
   .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 > .npc-forge-workspace {
     align-self: stretch !important;
@@ -140,7 +141,7 @@
 
   .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-selection {
     display: grid !important;
-    grid-template-rows: auto auto minmax(240px, 1fr) auto !important;
+    grid-template-rows: auto auto minmax(300px, 1fr) auto !important;
     align-content: stretch !important;
     align-self: stretch !important;
     min-height: 100% !important;
@@ -148,7 +149,7 @@
   }
 
   .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog {
-    min-height: 0 !important;
+    min-height: 300px !important;
     height: 100% !important;
   }
 
@@ -163,8 +164,9 @@
     top: auto !important;
     align-self: end !important;
     width: 100% !important;
-    max-height: min(420px, 42dvh) !important;
+    max-height: clamp(170px, 24dvh, 250px) !important;
     overflow: auto !important;
+    overscroll-behavior: contain;
     margin-top: 10px !important;
   }
 }
