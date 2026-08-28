@@ -91,7 +91,7 @@ for (const token of ["TOOL_GUIDANCE", "Typical uses", "Rune Spells", "cleanPrere
 }
 
 const sourceChoiceSource = read("utils/playerForgeSourceChoices.js");
-for (const token of ["toolRuleFacts", "RUNE_STYLE_OPTIONS", "separate from campaign Trade Skill training", "does not grant Expertise"]) {
+for (const token of ["toolRuleFacts", "RUNE_STYLE_OPTIONS", "grantsMappedTradeSkill: true", 'tradeSkillGrantSource: "background-tool"', "also grants that Trade Skill at Proficient rank", "never grants Expertise"]) {
   assert.ok(sourceChoiceSource.includes(token), `catalogue-wide Background choice model missing ${token}`);
 }
 assert.ok(!sourceChoiceSource.includes("clan-crafter-craft-expertise") && !sourceChoiceSource.includes("craftExpertise"), "retired Clan Crafter Craft Expertise metadata must be absent from source choices");
@@ -110,4 +110,4 @@ for (const source of [mechanicsSource, read("utils/backgroundMechanicsRefined.js
   assert.doesNotMatch(source, /MapPageClient|map_routes|map_route_points|advance_all_characters|route_segment_progress/, "Background catalogue audit crossed protected map/travel boundaries");
 }
 
-console.log("Background catalogue readability validated: Custom Background arbitrary skills parse correctly; 2024 fixed Magic Initiate lists stay fixed; optional random-table and build-boilerplate prose is pruned without deleting real features; Rune Styles is structurally owned; mundane tools remain distinct from Trade Skill rank and never grant automatic Expertise; tool guidance, Training routing, dark choice contrast, and protected map/travel boundaries remain intact.");
+console.log("Background catalogue readability validated: Custom Background arbitrary skills parse correctly; 2024 fixed Magic Initiate lists stay fixed; optional random-table and build-boilerplate prose is pruned without deleting real features; Rune Styles is structurally owned; Background tool proficiencies preserve mapped Trade Skill power at Proficient rank without automatic Expertise; ordinary tool possession remains non-authoritative; tool guidance, Training routing, dark choice contrast, and protected map/travel boundaries remain intact.");
