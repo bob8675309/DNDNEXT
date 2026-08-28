@@ -212,8 +212,13 @@ export function professionModifierFromSheet(sheet = {}, professionKey) {
   const rawProfessions = sheet?.professions && typeof sheet.professions === "object" ? sheet.professions : {};
   const explicitlyConfigured = Object.prototype.hasOwnProperty.call(rawProfessions, key);
   const profession = normalizeProfessionEntry(rawProfessions[key], key);
-  const toolGranted = sheetHasProfessionTool(sheet, definition);
-  const effectiveRank = Math.max(profession.rank, toolGranted ? 1 : 0);
+  const hasToolProficiency = sheetHasProfessionTool(sheet, definition);
+
+  // Campaign rule: mundane artisan-tool proficiency and Trade Skill training are
+  // separate facts. A normal tool never promotes the Trade Skill to Proficient or
+  // Expertise. Unique crafting sites and magic tools can add bounded modifiers in
+  // a later crafting-bonus layer without changing the character's persisted rank.
+  const effectiveRank = profession.rank;
   const abilityScore = Number(sheet?.abilities?.[profession.ability]?.score ?? 10);
   const abilityMod = abilityModifier(abilityScore);
   const proficiencyBonus = Number(sheet?.proficiencyBonus ?? sheet?.proficiency_bonus ?? 2) || 0;
@@ -234,8 +239,10 @@ export function professionModifierFromSheet(sheet = {}, professionKey) {
     offersService: profession.offersService,
     proficiencyContribution,
     totalModifier: abilityMod + proficiencyContribution,
-    configured: (explicitlyConfigured && profession.rank > 0) || toolGranted,
-    proficiencySource: profession.rank > 0 ? "profession" : toolGranted ? "tool" : "none",
+    configured: explicitlyConfigured && profession.rank > 0,
+    proficiencySource: profession.rank > 0 ? "trade-skill" : "none",
+    hasToolProficiency,
+    toolRequiredForCrafting: true,
     runtimeEnabled: Boolean(definition.runtimeEnabled),
   };
 }
@@ -340,6 +347,8 @@ export function buildCrafterProfessionSnapshot(character, sheet, professionKey) 
     offers_service: resolved.offersService,
     total_modifier: resolved.totalModifier,
     tool: resolved.tool,
+    has_tool_proficiency: resolved.hasToolProficiency,
+    tool_required_for_crafting: resolved.toolRequiredForCrafting,
     configured: resolved.configured,
   };
 }
