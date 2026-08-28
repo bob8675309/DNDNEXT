@@ -15,9 +15,9 @@ const TOOL_TO_PROFESSION = Object.freeze(Object.fromEntries(
 ));
 
 /**
- * Return the player-facing campaign Trade Skill key represented by a concrete
- * crafting tool. The mapping is derived from PROFESSION_DEFINITIONS so Forge
- * never needs a second hand-maintained Alchemy/Smithing/etc. tool list.
+ * Return the Trade Skill associated with a concrete crafting tool. Association
+ * is informational/routing data only: owning or gaining the mundane tool does
+ * not grant a Trade Skill rank, proficiency, or Expertise.
  */
 export function professionKeyForTool(value = "") {
   return TOOL_TO_PROFESSION[normalize(value)] || "";
@@ -37,27 +37,9 @@ export function isCraftingProfessionTool(value = "") {
 }
 
 /**
- * Merge source-granted mapped tool proficiencies into a persisted Trade Skill
- * map. This supports all eight Character Forge Trade Skills. The separate
- * crafting runtime/service authority remains limited by PROFESSION_KEYS.
+ * Return associated Trade Skill keys without changing character proficiency.
+ * This helper must never be used as authority to promote a Trade Skill rank.
  */
-export function mergeToolGrantedProfessions(professions = {}, toolValues = []) {
-  const next = { ...(professions && typeof professions === "object" ? professions : {}) };
-  for (const value of Array.isArray(toolValues) ? toolValues : []) {
-    const key = professionKeyForTool(value);
-    const definition = PROFESSION_DEFINITIONS[key];
-    if (!key || !definition) continue;
-    const current = next[key] && typeof next[key] === "object" ? next[key] : {};
-    next[key] = {
-      ...current,
-      rank: Math.max(1, Number(current.rank || 0)),
-      ability: definition.abilities.includes(current.ability) ? current.ability : definition.abilities[0],
-      offersService: Boolean(current.offersService),
-    };
-  }
-  return next;
-}
-
 export function professionKeysForTools(toolValues = []) {
   return [...new Set((Array.isArray(toolValues) ? toolValues : [])
     .map(professionKeyForTool)
