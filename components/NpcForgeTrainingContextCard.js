@@ -45,14 +45,14 @@ const SKILL_USES = Object.freeze({
 });
 
 const PROFESSION_USES = Object.freeze({
-  alchemy: ["Brew campaign alchemical recipes when you know the recipe", "Identify and process ingredients used by alchemical formulas", "Use Alchemist's Supplies for ordinary tool work and campaign Alchemy checks"],
-  smithing: ["Forge and repair mundane metal weapons and armor", "Work metals and smithing materials during campaign crafting", "Use Smith's Tools for ordinary tool work and campaign Smithing checks"],
-  scribe: ["Prepare written magical or technical works supported by campaign recipes", "Produce precise inscriptions, diagrams, and formal records", "Use Calligrapher's Supplies for ordinary tool work and campaign Scribing checks"],
-  enchanting: ["Apply supported magical imbuements to eligible equipment", "Work with magical components at an enchanting station or equivalent site", "Use Enchanter's Tools for ordinary tool work and campaign Enchanting checks"],
-  cooking: ["Prepare meals, rations, and other food with trained Cook's Utensils technique", "Judge ingredients, spoilage, seasoning, and food preparation", "Use Cooking as the campaign proficiency when future dedicated cooking recipes call for it"],
-  tinkering: ["Build, repair, or diagnose small mechanisms and practical devices", "Work precisely with Tinker's Tools on compact mechanical assemblies", "Use Tinkering as the campaign proficiency when future dedicated tinkering recipes call for it"],
-  jewelcraft: ["Appraise, cut, set, repair, or fashion gems and fine decorative work", "Perform precision work with Jeweler's Tools and valuable small materials", "Use Jewelcraft as the campaign proficiency when future dedicated jewelcraft recipes call for it"],
-  brewing: ["Prepare and evaluate brewed drinks and fermentation processes", "Use Brewer's Supplies to control ingredients, sanitation, and flavor", "Use Brewing as the campaign proficiency when future dedicated brewing recipes call for it"],
+  alchemy: ["Brew campaign alchemical recipes when you know the recipe and have the required equipment", "Identify and process ingredients used by alchemical formulas", "Use Alchemy as the campaign crafting proficiency; ordinary Alchemist's Supplies do not grant the Trade Skill or Expertise"],
+  smithing: ["Forge and repair mundane metal weapons and armor with the required equipment", "Work metals and smithing materials during campaign crafting", "Use Smithing as the campaign crafting proficiency; ordinary Smith's Tools do not grant the Trade Skill or Expertise"],
+  scribe: ["Prepare written magical or technical works supported by campaign recipes and required equipment", "Produce precise inscriptions, diagrams, and formal records", "Use Scribe as the campaign crafting proficiency; ordinary Calligrapher's Supplies do not grant the Trade Skill or Expertise"],
+  enchanting: ["Apply supported magical imbuements to eligible equipment at an appropriate crafting site", "Work with magical components during campaign enchanting", "Use Enchanting as the campaign crafting proficiency; ordinary Enchanter's Tools do not grant the Trade Skill or Expertise"],
+  cooking: ["Prepare meals, rations, and other food with appropriate cooking equipment", "Judge ingredients, spoilage, seasoning, and food preparation", "Use Cooking as the campaign proficiency when future dedicated cooking recipes call for it"],
+  tinkering: ["Build, repair, or diagnose small mechanisms with appropriate equipment", "Work precisely on compact mechanical assemblies", "Use Tinkering as the campaign proficiency when future dedicated tinkering recipes call for it"],
+  jewelcraft: ["Appraise, cut, set, repair, or fashion gems and fine decorative work with appropriate equipment", "Perform precision work with valuable small materials", "Use Jewelcraft as the campaign proficiency when future dedicated jewelcraft recipes call for it"],
+  brewing: ["Prepare and evaluate brewed drinks and fermentation processes with appropriate equipment", "Control ingredients, sanitation, and flavor", "Use Brewing as the campaign proficiency when future dedicated brewing recipes call for it"],
 });
 
 const PROFESSION_ICON = Object.freeze({
@@ -180,7 +180,7 @@ export default function NpcForgeTrainingContextCard({ detail = null, selectedSki
     const runtimeNote = selectedProfession.runtimeEnabled === false
       ? " This proficiency is available in Character Forge now; its dedicated recipe/progression system is intentionally deferred."
       : "";
-    return <ContextShell icon={PROFESSION_ICON[key] || `${TRAINING_ASSET_ROOT}/choice-tool.svg`} iconIsImage title={selectedProfession.label} badge="Trade Skill" selected={selected} description={`${selectedProfession.tool} proficiency and the ${selectedProfession.label} Trade Skill are the same campaign proficiency. A source that grants the tool grants this Trade Skill without requiring a second Training pick.${runtimeNote}`}>
+    return <ContextShell icon={PROFESSION_ICON[key] || `${TRAINING_ASSET_ROOT}/choice-tool.svg`} iconIsImage title={selectedProfession.label} badge="Trade Skill" selected={selected} description={`${selectedProfession.label} is the character's crafting proficiency. ${selectedProfession.tool} is the associated mundane tool and is handled separately; having or gaining the normal tool does not grant this Trade Skill or Expertise. Mundane tools are normally required to perform the corresponding craft.${runtimeNote}`}>
       <section className="npc-forge-training-context-section"><h4>Typical Uses</h4><ul>{(PROFESSION_USES[key] || ["Apply this Trade Skill when a supported campaign crafting or professional task calls for it."]).map((use) => <li key={use}>{use}</li>)}</ul><div className="npc-forge-training-context-facts"><span><small>Associated Tool</small><b>{selectedProfession.tool}</b></span><span><small>Crafting Ability</small><b>{profession.ability ? ABILITY_LABELS[profession.ability] || profession.ability : abilities}</b></span><span><small>Campaign Support</small><b>{selectedProfession.runtimeEnabled === false ? "Proficiency now • recipes later" : "Crafting runtime active"}</b></span>{detail?.grantSource ? <span><small>Granted By</small><b>{detail.grantSource}</b></span> : null}</div></section>
     </ContextShell>;
   }
