@@ -15,24 +15,25 @@ const CLASS_ARTWORK = new Set([
   "wizard",
 ]);
 
-// These classes do not yet have dedicated paintings in the repository. Give each
-// a deliberate visual identity using an existing class composition instead of
-// allowing every unsupported class to collapse to the same adventurer fallback.
-const CLASS_ARTWORK_ALIASES = Object.freeze({
-  civilian: "adventurer",
-  "monster-hunter": "ranger",
-  mystic: "sorcerer",
-  "expert-sidekick": "rogue",
-  "warrior-sidekick": "fighter",
-  "spellcaster-sidekick": "wizard",
-  sidekick: "adventurer",
+// Core classes keep their dedicated class paintings. Special/non-core catalogue
+// entries use distinct paintings that already exist in the repository so no two
+// selectable classes intentionally share the same portrait. These can later be
+// replaced by purpose-built class paintings without changing the catalogue API.
+const SPECIAL_CLASS_ARTWORK = Object.freeze({
+  civilian: "/media/species/human.webp",
+  "monster-hunter": "/media/species/human-innistrad.webp",
+  mystic: "/media/species/kalashtar.webp",
+  "expert-sidekick": "/media/species/changeling.webp",
+  "warrior-sidekick": "/media/species/human-zendikar.webp",
+  "spellcaster-sidekick": "/media/species/half-elf.webp",
+  sidekick: "/media/species/human-kaladesh.webp",
 });
 
 export function classArtworkFor(classKey = "") {
   const normalized = String(classKey || "").trim().toLowerCase();
-  const artworkKey = CLASS_ARTWORK_ALIASES[normalized] || normalized;
-  return CLASS_ARTWORK.has(artworkKey)
-    ? `/media/classes/${artworkKey}.webp`
+  if (SPECIAL_CLASS_ARTWORK[normalized]) return SPECIAL_CLASS_ARTWORK[normalized];
+  return CLASS_ARTWORK.has(normalized)
+    ? `/media/classes/${normalized}.webp`
     : "/media/classes/adventurer.webp";
 }
 
