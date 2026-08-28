@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef } from "react";
 import { FaBookOpen, FaEye, FaLeaf, FaMagic, FaPlusCircle, FaSearch } from "react-icons/fa";
 import { ABILITY_LABELS, SKILL_DEFINITIONS } from "../utils/characterCreation";
 import { PROFESSION_DEFINITIONS, TRADE_SKILL_KEYS } from "../utils/craftingProfessions";
-import { professionKeyForTool, professionKeysForTools } from "../utils/craftingToolProfessions";
 import { selectedSourceChoiceOptions, sourceChoiceFieldIsActive, sourceChoiceGroupComplete } from "../utils/playerForgeSourceChoices";
 import NpcForgeClassFeatureChoices from "./NpcForgeClassFeatureChoices";
 import NpcForgeSourceChoiceFields from "./NpcForgeSourceChoiceFields";
@@ -67,29 +66,19 @@ function ownerLabel(group = {}) {
   return owner === "background" ? "Background" : owner === "class" ? "Class" : owner === "feat" ? "Feat" : owner === "species" ? "Species" : "Source";
 }
 
-function isArtisanOption(option = {}) {
-  return /^AT(?:\||$)/i.test(String(option?.metadata?.sourceType || ""));
-}
-
 function skillKeyForOption(option = {}) {
   const raw = normalized(option.value || option.label || option.key);
   if (!raw) return "";
   return SKILL_DEFINITIONS.find((skill) => normalized(skill.key) === raw || normalized(skill.label) === raw)?.key || "";
 }
 
-function sourceFieldsFor(groups = [], selections = {}, kind = "skill") {
+function sourceSkillFieldsFor(groups = [], selections = {}) {
   return groups.flatMap((group) => (group.fields || []).flatMap((field) => {
     if (field?.autoSelect || !sourceChoiceFieldIsActive(field, selections)) return [];
-    const supportsSkill = field.kind === "skill" || field.kind === "skill-or-tool";
-    const supportsTool = field.kind === "tool" || field.kind === "skill-or-tool";
-    if ((kind === "skill" && !supportsSkill) || (kind === "tool" && !supportsTool)) return [];
+    if (field.kind !== "skill" && field.kind !== "skill-or-tool") return [];
     const mappedOptions = (field.options || []).flatMap((option) => {
-      if (kind === "skill") {
-        const skillKey = skillKeyForOption(option);
-        return skillKey ? [{ ...option, skillKey }] : [];
-      }
-      const professionKey = professionKeyForTool(option.value || option.label);
-      return professionKey ? [{ ...option, professionKey }] : [];
+      const skillKey = skillKeyForOption(option);
+      return skillKey ? [{ ...option, skillKey }] : [];
     });
     if (!mappedOptions.length) return [];
     return [{
@@ -105,19 +94,14 @@ function presentationSourceGroups(groups = [], selections = {}) {
   return groups.flatMap((group) => {
     const fields = (group.fields || []).flatMap((field) => {
       if (field?.autoSelect || !sourceChoiceFieldIsActive(field, selections)) return [field];
-      if (!["tool", "skill", "skill-or-tool"].includes(field.kind)) return [field];
-      const hasMappedTrade = (field.options || []).some((option) => professionKeyForTool(option.value || option.label));
-      const hasArtisanPool = /artisan/i.test(String(field.label || "")) || (field.options || []).some(isArtisanOption);
-      const options = (field.options || []).filter((option) => {
-        if (skillKeyForOption(option)) return false;
-        if (professionKeyForTool(option.value || option.label)) return false;
-        // Hide unsupported artisan choices only when this same source field can be
-        // satisfied by one of the eight mapped Trade Skills. If a source requires
-        // only unsupported artisan tools, keep it resolvable rather than deadlock.
-        if (hasArtisanPool && hasMappedTrade && isArtisanOption(option)) return false;
-        return true;
-      });
-      return options.length ? [{ ...field, options }] : [];
+      // Skill choices are promoted into the Skills list. Tool choices remain real
+      // tool choices here; they no longer masquerade as or grant Trade Skills.
+      if (field.kind === "skill") return [];
+      if (field.kind === "skill-or-tool") {
+        const options = (field.options || []).filter((option) => !skillKeyForOption(option));
+        return options.length ? [{ ...field, options }] : [];
+      }
+      return [field];
     });
     return fields.length ? [{ ...group, fields }] : [];
   });
@@ -173,16 +157,7 @@ export default function NpcForgeTrainingStepPlayer({
     [sourceChoiceState.groups, sourceChoiceState.selections]
   );
   const sourceGrantedSkillKeys = useMemo(() => new Set(selectedSourceOptions.map(skillKeyForOption).filter(Boolean)), [selectedSourceOptions]);
-  const selectedSourceToolEntries = useMemo(
-    () => selectedSourceOptions.filter((entry) => entry.kind === "tool" || entry.fieldKind === "tool" || entry.fieldKind === "skill-or-tool"),
-    [selectedSourceOptions]
-  );
-  const sourceGrantedProfessionKeys = useMemo(
-    () => new Set(professionKeysForTools(selectedSourceToolEntries.map((entry) => entry.value || entry.label))),
-    [selectedSourceToolEntries]
-  );
   const skillGrantSource = useMemo(() => sourceGrantMap(selectedSourceOptions, skillKeyForOption), [selectedSourceOptions]);
-  const professionGrantSource = useMemo(() => sourceGrantMap(selectedSourceToolEntries, (entry) => professionKeyForTool(entry.value || entry.label)), [selectedSourceToolEntries]);
 
   const backgroundChoiceSelectedKeys = useMemo(() => new Set(backgroundSkillChoices.flatMap((group) => backgroundSkillSelections?.[group.id] || [])), [backgroundSkillChoices, backgroundSkillSelections]);
   const backgroundGrantedSkillKeys = useMemo(() => new Set([...backgroundSkills, ...backgroundChoiceSelectedKeys]), [backgroundSkills, backgroundChoiceSelectedKeys]);
@@ -210,8 +185,7 @@ export default function NpcForgeTrainingStepPlayer({
       spellGroup: featSpellGroups.find((group) => group.id === id) || null,
     })).filter((entry) => entry.group);
   }, [featSpellGroups, featTrainingGroups, sourceChoiceState.groups]);
-  const sourceSkillFields = useMemo(() => sourceFieldsFor(sourceTrainingGroups, sourceChoiceState.selections || {}, "skill"), [sourceTrainingGroups, sourceChoiceState.selections]);
-  const sourceTradeFields = useMemo(() => sourceFieldsFor(sourceTrainingGroups, sourceChoiceState.selections || {}, "tool"), [sourceTrainingGroups, sourceChoiceState.selections]);
+  const sourceSkillFields = useMemo(() => sourceSkillFieldsFor(sourceTrainingGroups, sourceChoiceState.selections || {}), [sourceTrainingGroups, sourceChoiceState.selections]);
   const genericSourceTrainingGroups = useMemo(() => presentationSourceGroups(sourceTrainingGroups, sourceChoiceState.selections || {}), [sourceTrainingGroups, sourceChoiceState.selections]);
 
   const sourceSkillOptionKeys = useMemo(() => sourceSkillFields.flatMap((entry) => entry.mappedOptions.map((option) => option.skillKey)), [sourceSkillFields]);
@@ -229,8 +203,7 @@ export default function NpcForgeTrainingStepPlayer({
   const eligibleExpertiseSet = useMemo(() => new Set(eligibleExpertiseNames.map(normalized)), [eligibleExpertiseKey]);
 
   const explicitlyTrainedProfessionKeys = TRADE_SKILL_KEYS.filter((key) => Number(professions?.[key]?.rank || 0) > 0);
-  const paidProfessionKeys = explicitlyTrainedProfessionKeys.filter((key) => !sourceGrantedProfessionKeys.has(key));
-  const paidProfessionCount = paidProfessionKeys.length;
+  const paidProfessionCount = explicitlyTrainedProfessionKeys.length;
   const totalTrainingChoices = Number(classSkillConfig?.totalCount ?? classSkillConfig?.count ?? 0);
   const usedTrainingChoices = selectedClassSkills.length + paidProfessionCount;
   const remainingTrainingChoices = Math.max(0, totalTrainingChoices - usedTrainingChoices);
@@ -408,29 +381,19 @@ export default function NpcForgeTrainingStepPlayer({
       </section>
 
       <section className={`npc-forge-training-pick-group npc-forge-training-trade-skills ${incompleteTrainingAllowance ? "is-required" : ""}`}>
-        <div className="npc-forge-training-group-head"><span><img src={`${TRAINING_ASSET_ROOT}/choice-tool.svg`} alt="" aria-hidden="true" /><b>Trade Skills</b></span><small>{sourceGrantedProfessionKeys.size} granted • {paidProfessionCount} paid • {remainingTrainingChoices} shared left</small></div>
-        <p className="npc-forge-training-group-copy">A mapped crafting tool and its Trade Skill are one proficiency. Source-granted craft tools resolve here for free; paid Trade Skills share the Class Skill / Trade Skill allowance. Cooking, Tinkering, Jewelcraft, and Brewing are proficiency-ready now but their dedicated recipe systems remain deferred.</p>
+        <div className="npc-forge-training-group-head"><span><img src={`${TRAINING_ASSET_ROOT}/choice-tool.svg`} alt="" aria-hidden="true" /><b>Trade Skills</b></span><small>{paidProfessionCount} trained • {remainingTrainingChoices} shared left</small></div>
+        <p className="npc-forge-training-group-copy">Trade Skills measure crafting proficiency. Mundane artisan tools are separate and normally required to perform their craft; gaining a normal tool or tool proficiency does not grant this Trade Skill or Expertise. Trade Skills share the Class Skill / Trade Skill allowance. Cooking, Tinkering, Jewelcraft, and Brewing remain proficiency-ready while their dedicated recipe systems are deferred.</p>
         <div className="npc-forge-training-trade-list">{TRADE_SKILL_KEYS.map((key) => {
           const definition = PROFESSION_DEFINITIONS[key];
           const profession = professions?.[key] || { rank: 0, ability: definition.abilities[0], offersService: false };
-          const sourceGranted = sourceGrantedProfessionKeys.has(key);
-          const paidTrained = Number(profession.rank || 0) > 0 && !sourceGranted;
-          const trained = sourceGranted || paidTrained;
-          const sourceRef = sourceFieldForKey(sourceTradeFields, key, "professionKey");
-          const sourceAvailable = Boolean(sourceRef && !sourceGranted);
-          const cannotTrain = !trained && !sourceAvailable && remainingTrainingChoices <= 0;
-          const grantSource = professionGrantSource.get(key) || (sourceAvailable ? `${ownerLabel(sourceRef.group)}: ${sourceRef.group.label}` : "Training choice");
-          return <article key={key} className={`${trained ? "is-selected" : ""} ${sourceGranted ? "is-granted" : ""} ${sourceAvailable && !sourceGranted ? "is-source-option" : ""}`} onMouseEnter={() => onDetail?.({ type: "profession", key, granted: sourceGranted, grantSource: sourceGranted || sourceAvailable ? grantSource : "" })}>
-            <button type="button" className="npc-forge-training-trade-main" disabled={cannotTrain} onFocus={() => onDetail?.({ type: "profession", key, granted: sourceGranted, grantSource: sourceGranted || sourceAvailable ? grantSource : "" })} onClick={() => {
-              onDetail?.({ type: "profession", key, granted: sourceGranted || sourceAvailable || !paidTrained, grantSource });
-              if (sourceAvailable) {
-                const option = sourceRef.mappedOptions.find((candidate) => candidate.professionKey === key);
-                chooseSourceMappedOption(sourceRef, option);
-                return;
-              }
-              if (!sourceGranted) onSetProfession?.(key, "rank", paidTrained ? 0 : 1);
-            }}><img src={PROFESSION_ICON[key] || `${TRAINING_ASSET_ROOT}/choice-tool.svg`} alt="" aria-hidden="true" /><span><b>{definition.label}</b><small>{sourceGranted ? `Granted by ${grantSource}` : sourceAvailable ? `Available from ${grantSource}` : definition.tool}</small></span><em>{sourceGranted ? "G" : paidTrained ? "✓" : sourceAvailable ? "+" : "○"}</em></button>
-            {trained ? <label className="npc-forge-training-trade-ability"><span>Ability</span><select value={profession.ability || definition.abilities[0]} onFocus={() => onDetail?.({ type: "profession", key, granted: sourceGranted, grantSource })} onChange={(event) => onSetProfession?.(key, "ability", event.target.value)}>{definition.abilities.map((ability) => <option key={ability} value={ability}>{ABILITY_LABELS[ability]}</option>)}</select></label> : null}
+          const trained = Number(profession.rank || 0) > 0;
+          const cannotTrain = !trained && remainingTrainingChoices <= 0;
+          return <article key={key} className={trained ? "is-selected" : ""} onMouseEnter={() => onDetail?.({ type: "profession", key, granted: false, grantSource: "" })}>
+            <button type="button" className="npc-forge-training-trade-main" disabled={cannotTrain} onFocus={() => onDetail?.({ type: "profession", key, granted: false, grantSource: "" })} onClick={() => {
+              onDetail?.({ type: "profession", key, granted: false, grantSource: "" });
+              onSetProfession?.(key, "rank", trained ? 0 : 1);
+            }}><img src={PROFESSION_ICON[key] || `${TRAINING_ASSET_ROOT}/choice-tool.svg`} alt="" aria-hidden="true" /><span><b>{definition.label}</b><small>{definition.tool}</small></span><em>{trained ? "✓" : "○"}</em></button>
+            {trained ? <label className="npc-forge-training-trade-ability"><span>Ability</span><select value={profession.ability || definition.abilities[0]} onFocus={() => onDetail?.({ type: "profession", key, granted: false, grantSource: "" })} onChange={(event) => onSetProfession?.(key, "ability", event.target.value)}>{definition.abilities.map((ability) => <option key={ability} value={ability}>{ABILITY_LABELS[ability]}</option>)}</select></label> : null}
           </article>;
         })}</div>
       </section>
@@ -439,7 +402,7 @@ export default function NpcForgeTrainingStepPlayer({
         <summary><span><img src={`${TRAINING_ASSET_ROOT}/summary-training.svg`} alt="" aria-hidden="true" /><b>Other Training Choices</b>{sourceTrainingKinds.length ? <i>{sourceTrainingKinds.map((kind) => <img key={kind} src={SOURCE_KIND_ICON[kind]} alt="" aria-hidden="true" />)}</i> : null}</span><em>{trainingStageProgress.target ? `${trainingStageProgress.done}/${trainingStageProgress.target}` : "Open"}</em></summary>
         <div className="npc-forge-training-choice-body">
           {trainingChoiceGroups.length ? <NpcForgeClassFeatureChoices groups={classChoiceState.featureGroups || []} selections={classChoiceState.featureSelections || {}} level={classChoiceState.level || 1} onToggle={toggleFeatureOption} placement="training" eligibleOptionNames={eligibleExpertiseNames} heading="Feature-granted Training choices" description="Expertise and similar feature-owned decisions remain here and do not consume the shared Skill / Trade Skill allowance unless their source says otherwise." /> : null}
-          {genericSourceTrainingGroups.length ? <NpcForgeSourceChoiceFields placement="training" inline groupsOverride={genericSourceTrainingGroups} title="Languages, instruments, and other source-required Training choices" /> : null}
+          {genericSourceTrainingGroups.length ? <NpcForgeSourceChoiceFields placement="training" inline groupsOverride={genericSourceTrainingGroups} title="Languages, tools, instruments, and other source-required Training choices" /> : null}
         </div>
       </details> : null}
 
