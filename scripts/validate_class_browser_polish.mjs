@@ -30,14 +30,20 @@ for (const token of [
 assert(catalog.includes("onClick={() => setSidekicksOpen"), "Sidekick parent must expand/collapse rather than select a synthetic class.");
 assert(catalog.includes("onSelect?.(row)"), "Real Sidekick child rows must keep the existing class-selection callback.");
 
-for (const [key, image] of Object.entries({
-  civilian: "adventurer",
-  "monster-hunter": "ranger",
-  mystic: "sorcerer",
-  "expert-sidekick": "rogue",
-  "warrior-sidekick": "fighter",
-  "spellcaster-sidekick": "wizard",
-})) assert(artwork.includes(`\"${key}\": \"${image}\"`) || artwork.includes(`${key}: \"${image}\"`), `Class artwork mapping missing ${key} → ${image}`);
+const specialArtwork = {
+  civilian: "/media/species/human.webp",
+  "monster-hunter": "/media/species/human-innistrad.webp",
+  mystic: "/media/species/kalashtar.webp",
+  "expert-sidekick": "/media/species/changeling.webp",
+  "warrior-sidekick": "/media/species/human-zendikar.webp",
+  "spellcaster-sidekick": "/media/species/half-elf.webp",
+  sidekick: "/media/species/human-kaladesh.webp",
+};
+for (const [key, image] of Object.entries(specialArtwork)) {
+  assert(artwork.includes(`\"${key}\": \"${image}\"`) || artwork.includes(`${key}: \"${image}\"`), `Class artwork mapping missing ${key} → ${image}`);
+}
+assert(new Set(Object.values(specialArtwork)).size === Object.keys(specialArtwork).length, "Special/non-core Class portraits must be unique rather than aliases of one another.");
+assert(!artwork.includes('"monster-hunter": "ranger"') && !artwork.includes('"expert-sidekick": "rogue"'), "Special classes must not reuse core Class portraits.");
 
 for (const token of [
   '"monster-hunter"',
@@ -73,16 +79,19 @@ for (const token of [
 assert(dock.includes("classPresentationSummary(selectedClass)"), "Bottom Class feature dock must use the richer selected-Class overview copy.");
 
 for (const token of [
-  "grid-template-rows: auto auto minmax(240px, 1fr) auto",
+  "grid-template-rows: auto auto minmax(300px, 1fr) auto",
+  "min-height: 300px !important",
   ".npc-forge-class-catalog-list",
   ".npc-forge-class-feature-dock",
   "position: static !important",
   "align-self: end !important",
-]) assert(polish.includes(token), `Full-height Class workspace layout is missing ${token}`);
+  "max-height: clamp(170px, 24dvh, 250px) !important",
+  "overflow: auto !important",
+]) assert(polish.includes(token), `Normal-zoom Class workspace guard is missing ${token}`);
 
 const protectedSources = `${step}\n${catalog}\n${guide}\n${dock}\n${artwork}\n${presentation}\n${catalogWrapper}\n${polish}`.toLowerCase();
 for (const token of ["map_routes", "advance_all_characters", "mappageclient", "townsheet", "world travel"]) {
   assert(!protectedSources.includes(token), `Class browser patch unexpectedly references protected map/town behavior: ${token}`);
 }
 
-console.log("Class browser polish validation passed: full-height left rail, bottom feature dock, nested Sidekick catalogue, distinct special-Class art, Mystic Intelligence normalization, and source-grounded Mystic/Monster Hunter presentation are intact.");
+console.log("Class browser polish validation passed: normal-zoom catalogue space, bounded scrolling overview, nested Sidekick catalogue, unique special-Class portraits, Mystic Intelligence normalization, and source-grounded Mystic/Monster Hunter presentation are intact.");
