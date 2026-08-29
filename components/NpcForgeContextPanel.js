@@ -3,6 +3,7 @@ import NpcForgeClassGuide from "./NpcForgeClassGuide";
 import NpcForgeBackgroundGuide from "./NpcForgeBackgroundGuide";
 import NpcForgeBackgroundEmptyState from "./NpcForgeBackgroundEmptyState";
 import NpcForgeTrainingContextCard from "./NpcForgeTrainingContextCard";
+import NpcForgeAbilityContextCard from "./NpcForgeAbilityContextCard";
 import { NpcForgeSourceChoiceContext, useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
 import { projectSelectedSpeciesVariant } from "../utils/speciesVariantFamilies";
 import { filterCatalogSpeciesFamilyFields, projectCatalogSpeciesFamilySelection, sourceChoiceGroupUsesCatalogSpeciesFamily } from "../utils/speciesCatalogFamilyMenu";
@@ -95,6 +96,12 @@ export default function NpcForgeContextPanel(props) {
       draft={props?.draft || {}}
     />;
   }
+
+  if (props?.playerMode && (props?.stepKey === "abilities" || Number(props?.step) === 3)) return <NpcForgeAbilityContextCard
+    detail={props?.detail}
+    draft={props?.draft || {}}
+    finalAbilities={props?.finalAbilities || {}}
+  />;
 
   if (props?.playerMode && (props?.stepKey === "training" || Number(props?.step) === 4)) return <NpcForgeTrainingContextCard
     detail={props?.detail}
