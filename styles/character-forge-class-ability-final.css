@@ -1,0 +1,82 @@
+/* Final browser-review overrides for the Class floating overview and Abilities three-stage layout.
+ * This file intentionally loads after the older Forge polish layers so these accepted
+ * presentation contracts do not depend on styled-jsx insertion order. No mechanics live here.
+ */
+
+@media (min-width: 901px) {
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-selection {
+    grid-template-rows: auto minmax(390px, 1fr) auto !important;
+  }
+
+  /* Safe pre-float fallback: never allow the overview to become the full-width strip
+   * seen in browser review. If JS has not established a floating position yet, keep
+   * the approved compact card in the left rail. */
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-feature-dock:not(.is-floating) {
+    position: static !important;
+    justify-self: start !important;
+    align-self: end !important;
+    width: min(380px, 100%) !important;
+    max-width: 380px !important;
+    max-height: min(58dvh, 440px) !important;
+    margin: 8px 0 0 !important;
+    overflow: auto !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-feature-dock:not(.is-floating).is-collapsed {
+    max-height: 54px !important;
+    overflow: hidden !important;
+  }
+
+  /* The real desktop state. The component supplies left/top; this layer owns size and
+   * wins over the retired width:100% / position:static browser-polish rule. */
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-feature-dock.is-floating {
+    position: fixed !important;
+    right: auto !important;
+    bottom: auto !important;
+    z-index: 12550 !important;
+    width: min(380px, calc(100vw - 20px)) !important;
+    max-width: 380px !important;
+    max-height: min(62dvh, calc(100dvh - var(--npc-forge-class-dock-top, 120px) - 10px)) !important;
+    margin: 0 !important;
+    overflow: auto !important;
+    overscroll-behavior: contain;
+    box-shadow: 0 18px 55px rgba(0, 0, 0, .5), 0 0 0 1px rgba(168, 108, 255, .18) !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-feature-dock.is-floating.is-collapsed {
+    max-height: 54px !important;
+    overflow: hidden !important;
+  }
+
+  /* Abilities: retain the established 75/25 Forge split but make both columns share
+   * the same vertical frame so Generate / Assign / Finalize reads as one workspace. */
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-abilities > .npc-forge-workspace,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-abilities > .npc-forge-preview {
+    align-self: stretch !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-abilities > .npc-forge-preview {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-abilities .npc-forge-ability-finalize-card {
+    flex: 0 0 auto;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-abilities .npc-forge-species-bonus {
+    margin-top: 0 !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-feature-dock,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-feature-dock.is-floating {
+    position: static !important;
+    width: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
