@@ -62,6 +62,11 @@ export default function NpcForgeAbilityStep({
     setIsRolling(false);
   }, [draft.abilityMethod]);
 
+  function chooseMethod(method) {
+    if (method === draft.abilityMethod) return;
+    onMethod(method);
+  }
+
   function rollDice() {
     if (!rolled) return;
     if (rollAnimationTimer.current) clearTimeout(rollAnimationTimer.current);
@@ -134,11 +139,11 @@ export default function NpcForgeAbilityStep({
 
         <div className="npc-forge-ability-bench__method-label">Ability Score Generation Method</div>
         <div className="npc-forge-segmented npc-forge-ability-methods" aria-label="Ability Score Generation Method">
-          <button type="button" className={draft.abilityMethod === "3d6" ? "is-active" : ""} onClick={() => onMethod("3d6")}>Standard 3d6</button>
-          <button type="button" className={draft.abilityMethod === "4d6" ? "is-active" : ""} onClick={() => onMethod("4d6")}>4d6 drop lowest</button>
-          <button type="button" className={pointBuy ? "is-active" : ""} onClick={() => onMethod("pointBuy")}>Point Buy</button>
-          <button type="button" className={standard ? "is-active" : ""} onClick={() => onMethod("standard")}>Standard Class Array</button>
-          <button type="button" className={draft.abilityMethod === "manual" ? "is-active" : ""} onClick={() => onMethod("manual")}>Manual Assign</button>
+          <button type="button" className={draft.abilityMethod === "3d6" ? "is-active" : ""} onClick={() => chooseMethod("3d6")}>Standard 3d6</button>
+          <button type="button" className={draft.abilityMethod === "4d6" ? "is-active" : ""} onClick={() => chooseMethod("4d6")}>4d6 drop lowest</button>
+          <button type="button" className={pointBuy ? "is-active" : ""} onClick={() => chooseMethod("pointBuy")}>Point Buy</button>
+          <button type="button" className={standard ? "is-active" : ""} onClick={() => chooseMethod("standard")}>Standard Class Array</button>
+          <button type="button" className={draft.abilityMethod === "manual" ? "is-active" : ""} onClick={() => chooseMethod("manual")}>Manual Assign</button>
         </div>
 
         {rolled ? <section className={`npc-forge-ability-dice-tray${hasRolled ? " has-results" : " is-empty"}${isRolling ? " is-rolling" : ""}`} aria-label="Ability dice tray">
