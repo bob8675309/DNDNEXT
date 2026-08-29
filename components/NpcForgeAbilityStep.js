@@ -34,7 +34,7 @@ export default function NpcForgeAbilityStep({
   const standard = draft.abilityMethod === "standard";
   const remaining = pointBuy ? pointBuyRemaining(draft.baseAbilities) : null;
 
-  // Compatibility contract: Ability Score Generation Method; Species Bonus stays in the right information panel.
+  // Compatibility contract: Ability Score Generation Method; 4d6 drop lowest die; Reroll All Six; Species Bonus stays in the right information panel.
   return <div className="npc-forge-section npc-forge-abilities-step npc-forge-abilities-forge">
     <div className="npc-forge-abilities-forge__layout">
       <aside className="npc-forge-ability-wall" aria-label="Ability score assignment wall">
