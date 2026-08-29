@@ -30,6 +30,37 @@ for (const token of [
 assert(catalog.includes("onClick={() => setSidekicksOpen"), "Sidekick parent must expand/collapse rather than select a synthetic class.");
 assert(catalog.includes("onSelect?.(row)"), "Real Sidekick child rows must keep the existing class-selection callback.");
 
+for (const token of [
+  'aria-label={`Search ${rows.length} classes`}',
+  "grid-template-rows:auto minmax(390px,1fr) 0",
+  "npc-forge-section-heading{display:none!important}",
+  "min-height:46px!important",
+  "width:32px;height:36px",
+  "white-space:nowrap;text-overflow:ellipsis",
+]) assert(catalog.includes(token), `Compact Class catalogue/browser cleanup is missing ${token}`);
+assert(!catalog.includes('className="npc-forge-catalog-head"'), "Redundant player-facing Classes/count heading returned to the Class catalogue.");
+
+for (const token of [
+  'import { useEffect, useRef, useState } from "react"',
+  "const [collapsed, setCollapsed] = useState(true)",
+  "const [floatingPosition, setFloatingPosition] = useState(null)",
+  "boundedDockPosition",
+  "setPointerCapture",
+  "releasePointerCapture",
+  "handleDragStart",
+  "handleDragMove",
+  "handleDragEnd",
+  'aria-expanded={!collapsed}',
+  'className="npc-forge-class-feature-dock__body" hidden={collapsed}',
+  "npc-forge-class-feature-dock.is-floating",
+  "position:fixed!important",
+  "max-height:min(62dvh",
+  "npc-forge-class-feature-dock.is-floating.is-collapsed",
+  "position:static!important",
+]) assert(dock.includes(token), `Floating/collapsible Class description window is missing ${token}`);
+assert(dock.includes("event.target?.closest?.(\"button,a,input,select,textarea,summary\")"), "Class dock drag handle must not steal pointer interaction from controls.");
+assert(dock.includes("window.addEventListener(\"resize\", keepDockVisible)"), "Floating Class description window must stay recoverable after viewport resize.");
+
 const specialArtwork = {
   civilian: "/media/species/human.webp",
   "monster-hunter": "/media/species/human-innistrad.webp",
@@ -76,22 +107,16 @@ for (const token of [
   '"Primary Ability"',
   '"Power System"',
 ]) assert(guide.includes(token), `Class guide presentation is missing ${token}`);
-assert(dock.includes("classPresentationSummary(selectedClass)"), "Bottom Class feature dock must use the richer selected-Class overview copy.");
+assert(dock.includes("classPresentationSummary(selectedClass)"), "Floating Class feature dock must keep the richer selected-Class overview copy.");
 
-for (const token of [
-  "grid-template-rows: auto auto minmax(300px, 1fr) auto",
-  "min-height: 300px !important",
-  ".npc-forge-class-catalog-list",
-  ".npc-forge-class-feature-dock",
-  "position: static !important",
-  "align-self: end !important",
-  "max-height: clamp(170px, 24dvh, 250px) !important",
-  "overflow: auto !important",
-]) assert(polish.includes(token), `Normal-zoom Class workspace guard is missing ${token}`);
+// Older browser-polish rules may still describe the original in-flow fallback.
+// The component-level .is-floating selector is intentionally more specific and
+// owns the desktop floating state; mobile retains the in-flow fallback.
+assert(polish.includes("npc-forge-step-2"), "Class browser polish scope disappeared.");
 
 const protectedSources = `${step}\n${catalog}\n${guide}\n${dock}\n${artwork}\n${presentation}\n${catalogWrapper}\n${polish}`.toLowerCase();
 for (const token of ["map_routes", "advance_all_characters", "mappageclient", "townsheet", "world travel"]) {
   assert(!protectedSources.includes(token), `Class browser patch unexpectedly references protected map/town behavior: ${token}`);
 }
 
-console.log("Class browser polish validation passed: normal-zoom catalogue space, bounded scrolling overview, nested Sidekick catalogue, unique special-Class portraits, Mystic Intelligence normalization, and source-grounded Mystic/Monster Hunter presentation are intact.");
+console.log("Class browser polish validation passed: compact multi-row catalogue, redundant player-facing headings removed, floating/collapsible recoverable feature details, nested Sidekick catalogue, unique special-Class portraits, Mystic Intelligence normalization, and protected map/town boundaries are intact.");
