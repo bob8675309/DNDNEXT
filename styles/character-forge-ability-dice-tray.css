@@ -1,0 +1,364 @@
+/* Abilities dice-tray browser pass.
+ * Loads after the accepted Class/Abilities stylesheet so the tray and nebula treatment
+ * are deterministic without disturbing Character Forge mechanics.
+ */
+
+@media (min-width: 901px) {
+  .unified-player-character-forge .npc-forge-modal-v2 .npc-forge-body.npc-forge-step-abilities.is-player-mode {
+    grid-template-columns: minmax(0, 75fr) minmax(280px, 25fr) !important;
+    background:
+      radial-gradient(ellipse at 43% 17%, rgba(128, 60, 213, .24), transparent 32%),
+      radial-gradient(ellipse at 64% 38%, rgba(86, 38, 174, .22), transparent 37%),
+      radial-gradient(ellipse at 31% 76%, rgba(119, 49, 186, .16), transparent 31%),
+      radial-gradient(ellipse at 86% 68%, rgba(75, 40, 160, .18), transparent 34%),
+      linear-gradient(118deg, #060b19 0%, #090c20 43%, #0b0c22 68%, #070b18 100%) !important;
+  }
+
+  .unified-player-character-forge .npc-forge-modal-v2 .npc-forge-body.npc-forge-step-abilities.is-player-mode::before {
+    opacity: .82 !important;
+    background-image:
+      radial-gradient(circle at 6% 14%, rgba(224, 193, 255, .72) 0 1px, transparent 1.6px),
+      radial-gradient(circle at 17% 32%, rgba(149, 94, 255, .66) 0 1px, transparent 1.6px),
+      radial-gradient(circle at 29% 12%, rgba(255, 255, 255, .34) 0 1px, transparent 1.5px),
+      radial-gradient(circle at 39% 54%, rgba(176, 106, 255, .5) 0 1px, transparent 1.6px),
+      radial-gradient(circle at 51% 21%, rgba(255, 255, 255, .3) 0 1px, transparent 1.5px),
+      radial-gradient(circle at 61% 67%, rgba(142, 78, 255, .54) 0 1px, transparent 1.6px),
+      radial-gradient(circle at 73% 29%, rgba(232, 209, 255, .36) 0 1px, transparent 1.5px),
+      radial-gradient(circle at 84% 18%, rgba(149, 91, 255, .62) 0 1px, transparent 1.6px),
+      radial-gradient(circle at 91% 58%, rgba(255, 255, 255, .27) 0 1px, transparent 1.5px),
+      radial-gradient(circle at 13% 83%, rgba(167, 94, 255, .5) 0 1px, transparent 1.6px),
+      radial-gradient(circle at 48% 88%, rgba(255, 255, 255, .23) 0 1px, transparent 1.4px),
+      radial-gradient(circle at 78% 83%, rgba(142, 78, 255, .5) 0 1px, transparent 1.5px) !important;
+  }
+
+  .unified-player-character-forge .npc-forge-modal-v2 .npc-forge-body.npc-forge-step-abilities.is-player-mode::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: .72;
+    filter: blur(24px);
+    background:
+      radial-gradient(ellipse at 46% 16%, rgba(146, 72, 226, .24), transparent 26%),
+      radial-gradient(ellipse at 60% 44%, rgba(95, 43, 199, .22), transparent 29%),
+      radial-gradient(ellipse at 26% 68%, rgba(126, 56, 192, .16), transparent 25%),
+      radial-gradient(ellipse at 84% 79%, rgba(100, 49, 180, .16), transparent 25%);
+  }
+
+  .unified-player-character-forge .npc-forge-abilities-forge__layout {
+    grid-template-columns: minmax(248px, 33%) minmax(0, 67%) !important;
+    gap: 20px !important;
+  }
+}
+
+.unified-player-character-forge .npc-forge-ability-dice-tray {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(300px, 1fr) auto;
+  gap: 8px;
+  min-height: 382px;
+  margin-top: 3px;
+  padding: 9px;
+  border: 1px solid rgba(169, 102, 255, .42);
+  border-radius: 14px;
+  background: linear-gradient(150deg, rgba(19, 12, 36, .78), rgba(8, 13, 28, .86));
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, .2),
+    inset 0 1px rgba(255, 255, 255, .025),
+    0 0 26px rgba(111, 54, 188, .08);
+}
+
+.unified-player-character-forge .npc-forge-ability-dice-tray__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 2px 4px;
+}
+.unified-player-character-forge .npc-forge-ability-dice-tray__head > div { display: grid; gap: 2px; }
+.unified-player-character-forge .npc-forge-ability-dice-tray__head span {
+  color: #c49aff;
+  font-size: .52rem;
+  font-weight: 900;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+.unified-player-character-forge .npc-forge-ability-dice-tray__head small {
+  color: rgba(255,255,255,.47);
+  font-size: .49rem;
+}
+.unified-player-character-forge .npc-forge-ability-dice-tray__reroll {
+  padding: 6px 10px !important;
+  border: 1px solid rgba(168,108,255,.52) !important;
+  border-radius: 7px !important;
+  color: #efe5ff !important;
+  background: rgba(91, 46, 153, .2) !important;
+  font-size: .5rem !important;
+  font-weight: 700 !important;
+}
+
+.unified-player-character-forge .npc-forge-ability-dice-tray__surface {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 300px;
+  padding: 38px 26px 30px;
+  border: 1px solid rgba(160, 111, 218, .28);
+  border-radius: 12px;
+  overflow: visible;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(102, 44, 178, .18), transparent 31%),
+    radial-gradient(circle at 34% 25%, rgba(148, 79, 218, .12), transparent 28%),
+    radial-gradient(circle at 75% 74%, rgba(80, 54, 178, .12), transparent 27%),
+    linear-gradient(145deg, rgba(12, 9, 28, .88), rgba(6, 12, 25, .92));
+  box-shadow:
+    inset 0 0 0 7px rgba(40, 24, 63, .17),
+    inset 0 15px 28px rgba(0,0,0,.42),
+    inset 0 -10px 30px rgba(57, 31, 92, .16),
+    0 1px rgba(255,255,255,.02);
+}
+.unified-player-character-forge .npc-forge-ability-dice-tray__surface::before {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  z-index: -1;
+  border: 1px dashed rgba(187, 142, 244, .11);
+  border-radius: 9px;
+  pointer-events: none;
+}
+.unified-player-character-forge .npc-forge-ability-dice-tray__surface::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: .62;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255,255,255,.28) 0 1px, transparent 1.3px),
+    radial-gradient(circle at 31% 76%, rgba(168,108,255,.46) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 48% 28%, rgba(255,255,255,.22) 0 1px, transparent 1.3px),
+    radial-gradient(circle at 68% 69%, rgba(168,108,255,.4) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 84% 24%, rgba(255,255,255,.2) 0 1px, transparent 1.3px);
+}
+
+.unified-player-character-forge .npc-forge-ability-dice-tray__sigil {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: -1;
+  width: 190px;
+  height: 190px;
+  border: 1px solid rgba(168,108,255,.09);
+  border-radius: 50%;
+  transform: translate(-50%,-50%);
+  box-shadow: 0 0 0 34px rgba(168,108,255,.025), 0 0 0 68px rgba(168,108,255,.018);
+}
+.unified-player-character-forge .npc-forge-ability-dice-tray__sigil span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  color: rgba(184,125,255,.3);
+  font-size: 4rem;
+  transform: translate(-50%,-52%);
+}
+
+.unified-player-character-forge .npc-forge-ability-dice-tray__empty {
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  max-width: 300px;
+  text-align: center;
+}
+.unified-player-character-forge .npc-forge-ability-dice-tray__empty strong { color: #fff; font-size: .86rem; }
+.unified-player-character-forge .npc-forge-ability-dice-tray__empty span { color: rgba(255,255,255,.5); font-size: .55rem; }
+.unified-player-character-forge .npc-forge-ability-dice-tray__empty button {
+  min-width: 132px;
+  margin-top: 7px;
+  padding: 10px 18px !important;
+  border: 1px solid rgba(183,119,255,.78) !important;
+  border-radius: 9px !important;
+  color: #fff !important;
+  background: linear-gradient(180deg, rgba(124,66,190,.92), rgba(77,39,132,.94)) !important;
+  box-shadow: 0 0 24px rgba(137,72,221,.2), inset 0 1px rgba(255,255,255,.14);
+  font-size: .68rem !important;
+  font-weight: 800 !important;
+  letter-spacing: .02em;
+}
+.unified-player-character-forge .npc-forge-ability-dice-tray__empty button:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 0 30px rgba(151,84,235,.28), inset 0 1px rgba(255,255,255,.17);
+}
+
+.unified-player-character-forge .npc-forge-ability-dice-tray .npc-forge-ability-bench__rolls {
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(60px, 1fr)) !important;
+  align-items: center;
+  gap: 10px !important;
+  width: min(100%, 690px);
+  margin: 0 auto !important;
+  overflow: visible;
+}
+
+.unified-player-character-forge .npc-forge-result-die {
+  --die-rgb: 168,108,255;
+  position: relative;
+  display: grid !important;
+  place-items: center;
+  align-content: center;
+  gap: 2px;
+  min-width: 0 !important;
+  min-height: 94px !important;
+  aspect-ratio: 1 / 1;
+  padding: 8px 5px !important;
+  overflow: visible !important;
+  border: 0 !important;
+  border-radius: 13px !important;
+  color: #fff !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  cursor: grab;
+  isolation: isolate;
+  transform-origin: 50% 60%;
+}
+.unified-player-character-forge .npc-forge-result-die::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  z-index: -1;
+  border: 1px solid rgba(var(--die-rgb), .72);
+  clip-path: polygon(22% 0, 78% 0, 100% 22%, 100% 78%, 78% 100%, 22% 100%, 0 78%, 0 22%);
+  background:
+    linear-gradient(145deg, rgba(var(--die-rgb), .23), rgba(14,14,34,.94) 55%),
+    radial-gradient(circle at 34% 27%, rgba(255,255,255,.12), transparent 34%);
+  box-shadow: inset 0 0 22px rgba(var(--die-rgb), .13), 0 8px 16px rgba(0,0,0,.28);
+}
+.unified-player-character-forge .npc-forge-result-die::after {
+  content: "";
+  position: absolute;
+  inset: 13px;
+  z-index: -1;
+  border: 1px solid rgba(var(--die-rgb), .18);
+  transform: rotate(45deg);
+}
+.unified-player-character-forge .npc-forge-result-die:nth-child(1) { --die-rgb: 255,100,79; --roll-x: -145px; }
+.unified-player-character-forge .npc-forge-result-die:nth-child(2) { --die-rgb: 241,181,56; --roll-x: -95px; }
+.unified-player-character-forge .npc-forge-result-die:nth-child(3) { --die-rgb: 57,211,137; --roll-x: -45px; }
+.unified-player-character-forge .npc-forge-result-die:nth-child(4) { --die-rgb: 72,142,255; --roll-x: 45px; }
+.unified-player-character-forge .npc-forge-result-die:nth-child(5) { --die-rgb: 155,98,239; --roll-x: 95px; }
+.unified-player-character-forge .npc-forge-result-die:nth-child(6) { --die-rgb: 215,79,231; --roll-x: 145px; }
+.unified-player-character-forge .npc-forge-result-die__index {
+  position: absolute;
+  top: 11px;
+  left: 14px;
+  color: rgba(255,255,255,.38);
+  font-size: .42rem;
+  font-weight: 800;
+}
+.unified-player-character-forge .npc-forge-result-die > strong {
+  color: #fff !important;
+  font-size: 1.42rem !important;
+  line-height: 1 !important;
+  text-shadow: 0 0 15px rgba(var(--die-rgb), .28);
+}
+.unified-player-character-forge .npc-forge-result-die__rule {
+  max-width: 72px;
+  overflow: hidden;
+  color: rgba(255,255,255,.45);
+  font-size: .37rem;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.unified-player-character-forge .npc-forge-result-die__drag {
+  color: rgba(var(--die-rgb), .82);
+  font-size: .37rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.unified-player-character-forge .npc-forge-result-die:hover,
+.unified-player-character-forge .npc-forge-result-die:focus-visible,
+.unified-player-character-forge .npc-forge-result-die.is-selected {
+  transform: translateY(-5px) scale(1.045);
+  outline: none;
+}
+.unified-player-character-forge .npc-forge-result-die:hover::before,
+.unified-player-character-forge .npc-forge-result-die:focus-visible::before,
+.unified-player-character-forge .npc-forge-result-die.is-selected::before {
+  border-color: rgba(var(--die-rgb), .98);
+  box-shadow: inset 0 0 28px rgba(var(--die-rgb), .21), 0 0 22px rgba(var(--die-rgb), .2), 0 10px 18px rgba(0,0,0,.34);
+}
+.unified-player-character-forge .npc-forge-result-die.is-assigned { opacity: .64; }
+.unified-player-character-forge .npc-forge-result-die.is-assigned:hover,
+.unified-player-character-forge .npc-forge-result-die.is-assigned:focus-visible { opacity: 1; }
+
+.unified-player-character-forge .npc-forge-result-die__detail {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  z-index: 40;
+  display: none;
+  width: 184px;
+  padding: 9px 10px;
+  border: 1px solid rgba(var(--die-rgb), .5);
+  border-radius: 9px;
+  color: rgba(255,255,255,.73);
+  background: rgba(8, 10, 22, .97);
+  box-shadow: 0 14px 32px rgba(0,0,0,.46), 0 0 18px rgba(var(--die-rgb), .08);
+  transform: translateX(-50%);
+  text-align: left;
+  pointer-events: none;
+}
+.unified-player-character-forge .npc-forge-result-die:hover .npc-forge-result-die__detail,
+.unified-player-character-forge .npc-forge-result-die:focus-visible .npc-forge-result-die__detail { display: grid; gap: 3px; }
+.unified-player-character-forge .npc-forge-result-die__detail b { color: rgb(var(--die-rgb)); font-size: .52rem; }
+.unified-player-character-forge .npc-forge-result-die__detail span { color: rgba(255,255,255,.57); font-size: .48rem; }
+.unified-player-character-forge .npc-forge-result-die__detail strong { color: #fff; font-size: .62rem; }
+.unified-player-character-forge .npc-forge-result-die__detail em { color: rgba(255,255,255,.42); font-size: .45rem; font-style: normal; }
+
+.unified-player-character-forge .npc-forge-ability-dice-tray.is-rolling .npc-forge-result-die {
+  animation: forge-result-die-roll-in .78s cubic-bezier(.18,.76,.23,1.12) both;
+}
+.unified-player-character-forge .npc-forge-ability-dice-tray.is-rolling .npc-forge-result-die:nth-child(1) { animation-delay: .02s; }
+.unified-player-character-forge .npc-forge-ability-dice-tray.is-rolling .npc-forge-result-die:nth-child(2) { animation-delay: .08s; }
+.unified-player-character-forge .npc-forge-ability-dice-tray.is-rolling .npc-forge-result-die:nth-child(3) { animation-delay: .14s; }
+.unified-player-character-forge .npc-forge-ability-dice-tray.is-rolling .npc-forge-result-die:nth-child(4) { animation-delay: .20s; }
+.unified-player-character-forge .npc-forge-ability-dice-tray.is-rolling .npc-forge-result-die:nth-child(5) { animation-delay: .26s; }
+.unified-player-character-forge .npc-forge-ability-dice-tray.is-rolling .npc-forge-result-die:nth-child(6) { animation-delay: .32s; }
+
+@keyframes forge-result-die-roll-in {
+  0% { opacity: 0; transform: translate3d(var(--roll-x), -155px, 0) rotate(-420deg) scale(.46); }
+  58% { opacity: 1; transform: translate3d(calc(var(--roll-x) * .06), 18px, 0) rotate(28deg) scale(1.07); }
+  76% { transform: translate3d(0, -8px, 0) rotate(-10deg) scale(.98); }
+  90% { transform: translate3d(0, 3px, 0) rotate(3deg) scale(1.01); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0) rotate(0) scale(1); }
+}
+
+.unified-player-character-forge .npc-forge-ability-dice-tray__tip {
+  color: rgba(212,190,239,.48);
+  font-size: .47rem;
+  text-align: center;
+}
+
+@media (max-width: 1180px) {
+  .unified-player-character-forge .npc-forge-ability-dice-tray .npc-forge-ability-bench__rolls {
+    grid-template-columns: repeat(3, minmax(72px, 1fr)) !important;
+    width: min(100%, 430px);
+  }
+  .unified-player-character-forge .npc-forge-result-die { min-height: 84px !important; }
+}
+
+@media (max-width: 900px) {
+  .unified-player-character-forge .npc-forge-ability-dice-tray { min-height: 340px; }
+  .unified-player-character-forge .npc-forge-ability-dice-tray__surface { min-height: 260px; }
+}
+
+@media (max-width: 620px) {
+  .unified-player-character-forge .npc-forge-ability-dice-tray .npc-forge-ability-bench__rolls {
+    grid-template-columns: repeat(2, minmax(72px, 1fr)) !important;
+    width: min(100%, 270px);
+  }
+}
