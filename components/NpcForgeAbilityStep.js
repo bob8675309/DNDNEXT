@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { ABILITY_KEYS, ABILITY_LABELS } from "../utils/characterCreation";
 import {
   POINT_BUY_BUDGET,
@@ -14,6 +15,16 @@ function methodHelp(method) {
   if (method === "pointBuy") return `Spend ${POINT_BUY_BUDGET} points across the six abilities before applying Species Bonus.`;
   if (method === "standard") return "Use the class-guided standard array, then review the suggested placement on the left.";
   return "Enter each base score directly in the ability slots on the left.";
+}
+
+function rollDetail(roll = {}) {
+  const dice = Array.isArray(roll.dice) ? roll.dice : [];
+  const droppedIndex = Number.isInteger(roll.droppedIndex) ? roll.droppedIndex : -1;
+  const dropped = droppedIndex >= 0 ? dice[droppedIndex] : null;
+  const kept = dice.filter((_, index) => index !== droppedIndex);
+  const rule = roll.method === "3d6" || droppedIndex < 0 ? "3d6" : "4d6 drop lowest";
+  const equation = `${kept.join(" + ")} = ${Number(roll.total || 0)}`;
+  return { rule, dice, dropped, equation };
 }
 
 export default function NpcForgeAbilityStep({
@@ -33,6 +44,32 @@ export default function NpcForgeAbilityStep({
   const pointBuy = draft.abilityMethod === "pointBuy";
   const standard = draft.abilityMethod === "standard";
   const remaining = pointBuy ? pointBuyRemaining(draft.baseAbilities) : null;
+  const [hasRolled, setHasRolled] = useState(() => rolled && Object.values(allocation || {}).some(Boolean));
+  const [isRolling, setIsRolling] = useState(false);
+  const rollAnimationTimer = useRef(null);
+
+  useEffect(() => () => {
+    if (rollAnimationTimer.current) clearTimeout(rollAnimationTimer.current);
+  }, []);
+
+  useEffect(() => {
+    if (!rolled) {
+      setHasRolled(false);
+      setIsRolling(false);
+      return;
+    }
+    setHasRolled(Object.values(allocation || {}).some(Boolean));
+    setIsRolling(false);
+  }, [draft.abilityMethod]);
+
+  function rollDice() {
+    if (!rolled) return;
+    if (rollAnimationTimer.current) clearTimeout(rollAnimationTimer.current);
+    setIsRolling(true);
+    onReroll();
+    setHasRolled(true);
+    rollAnimationTimer.current = setTimeout(() => setIsRolling(false), 1150);
+  }
 
   // Compatibility contract: Ability Score Generation Method; 4d6 drop lowest die; Reroll All Six; Species Bonus stays in the right information panel.
   return <div className="npc-forge-section npc-forge-abilities-step npc-forge-abilities-forge">
@@ -41,14 +78,14 @@ export default function NpcForgeAbilityStep({
         <div className="npc-forge-ability-wall__eyebrow">Abilities</div>
         <div className="npc-forge-ability-wall__list">
           {ABILITY_KEYS.map((key) => {
-            const roll = rolled ? rolls.find((entry) => entry.id === allocation[key]) : null;
+            const roll = rolled && hasRolled ? rolls.find((entry) => entry.id === allocation[key]) : null;
             const baseValue = Number(draft.baseAbilities?.[key] ?? 10);
             return <div
               key={key}
-              className={`npc-forge-ability-wall__row is-${key}${roll ? " is-filled" : ""}${selectedRollId ? " is-ready" : ""}`}
+              className={`npc-forge-ability-wall__row is-${key}${roll ? " is-filled" : ""}${selectedRollId && hasRolled ? " is-ready" : ""}`}
               onMouseEnter={() => onDetail({ type: "ability", key })}
-              onDragOver={rolled ? (event) => event.preventDefault() : undefined}
-              onDrop={rolled ? (event) => {
+              onDragOver={rolled && hasRolled ? (event) => event.preventDefault() : undefined}
+              onDrop={rolled && hasRolled ? (event) => {
                 event.preventDefault();
                 onAllocate(key, event.dataTransfer.getData("text/npc-forge-roll") || selectedRollId);
               } : undefined}
@@ -61,7 +98,7 @@ export default function NpcForgeAbilityStep({
               {rolled ? <button
                 type="button"
                 className="npc-forge-ability-wall__score"
-                onClick={() => onAllocate(key, selectedRollId)}
+                onClick={() => hasRolled && onAllocate(key, selectedRollId)}
                 aria-label={`Assign selected roll to ${ABILITY_LABELS[key]}`}
               >{roll?.total ?? "—"}</button> : <input
                 className="npc-forge-ability-wall__score"
@@ -79,10 +116,10 @@ export default function NpcForgeAbilityStep({
               <button
                 type="button"
                 className="npc-forge-ability-wall__drop"
-                onClick={rolled ? () => onAllocate(key, selectedRollId) : undefined}
-                disabled={!rolled}
-                tabIndex={rolled ? 0 : -1}
-              >{rolled ? (roll ? "Replace score" : "Drop score here") : (pointBuy ? "Point Buy" : standard ? "Class Array" : "Manual")}</button>
+                onClick={rolled && hasRolled ? () => onAllocate(key, selectedRollId) : undefined}
+                disabled={!rolled || !hasRolled}
+                tabIndex={rolled && hasRolled ? 0 : -1}
+              >{rolled ? (roll ? "Replace score" : hasRolled ? "Drop score here" : "Roll dice first") : (pointBuy ? "Point Buy" : standard ? "Class Array" : "Manual")}</button>
             </div>;
           })}
         </div>
@@ -104,52 +141,64 @@ export default function NpcForgeAbilityStep({
           <button type="button" className={draft.abilityMethod === "manual" ? "is-active" : ""} onClick={() => onMethod("manual")}>Manual Assign</button>
         </div>
 
-        <div className={`npc-forge-ability-drop-stage${rolled ? " is-roll-mode" : " is-static-mode"}`}>
-          <div className="npc-forge-ability-drop-stage__sigil" aria-hidden="true"><span>◇</span></div>
-          {rolled ? <div className="npc-forge-ability-drop-stage__copy">
-            <strong>Drag rolled totals into the ability slots</strong>
-            <span>Each value can be used once.</span>
-          </div> : pointBuy ? <div className="npc-forge-ability-drop-stage__copy">
-            <strong>Build your scores with Point Buy</strong>
-            <span>{Math.max(0, remaining)} of {POINT_BUY_BUDGET} points remaining • scores {POINT_BUY_MIN}–{POINT_BUY_MAX}</span>
-          </div> : <div className="npc-forge-ability-drop-stage__copy">
-            <strong>{standard ? "Class-guided ability spread" : "Manual ability assignment"}</strong>
-            <span>{standard ? "The class array is shown in the six ability slots on the left." : "Enter each base score directly in the six ability slots on the left."}</span>
-          </div>}
-        </div>
+        {rolled ? <section className={`npc-forge-ability-dice-tray${hasRolled ? " has-results" : " is-empty"}${isRolling ? " is-rolling" : ""}`} aria-label="Ability dice tray">
+          <div className="npc-forge-ability-dice-tray__head">
+            <div>
+              <span>Dice Tray</span>
+              <small>{draft.abilityMethod === "3d6" ? "Six 3d6 totals" : "Six 4d6-drop-lowest totals"}</small>
+            </div>
+            {hasRolled ? <button type="button" className="npc-forge-ability-dice-tray__reroll" onClick={rollDice}>↻&nbsp; Roll Again</button> : null}
+          </div>
 
-        {rolled ? <section className="npc-forge-ability-roll-tray" aria-label="Rolled totals">
-          <div className="npc-forge-ability-roll-tray__head">
-            <div><span>Rolled Totals</span><small>Drag each total to an ability slot</small></div>
-            <button type="button" onClick={onReroll}>↻&nbsp; Reroll All</button>
+          <div className="npc-forge-ability-dice-tray__surface">
+            <div className="npc-forge-ability-dice-tray__sigil" aria-hidden="true"><span>◇</span></div>
+            {!hasRolled ? <div className="npc-forge-ability-dice-tray__empty">
+              <strong>Ready your ability dice</strong>
+              <span>No totals are revealed until you roll.</span>
+              <button type="button" onClick={rollDice}>Roll Dice</button>
+            </div> : <div className="npc-forge-roll-pool npc-forge-ability-bench__rolls">
+              {rolls.map((roll, index) => {
+                const assigned = Object.entries(allocation).find(([, id]) => id === roll.id)?.[0];
+                const detail = rollDetail(roll);
+                return <button
+                  key={roll.id}
+                  type="button"
+                  draggable
+                  className={`npc-forge-result-die npc-forge-roll-card refined${selectedRollId === roll.id ? " is-selected" : ""}${assigned ? " is-assigned" : ""}`}
+                  onClick={() => onSelectRoll(selectedRollId === roll.id ? "" : roll.id)}
+                  onDragStart={(event) => {
+                    event.dataTransfer.setData("text/npc-forge-roll", roll.id);
+                    event.dataTransfer.effectAllowed = "move";
+                    onSelectRoll(roll.id);
+                  }}
+                  aria-label={`Rolled total ${roll.total}. ${assigned ? `Assigned to ${ABILITY_LABELS[assigned]}.` : "Unassigned."}`}
+                >
+                  <span className="npc-forge-result-die__index">{index + 1}</span>
+                  <strong>{roll.total}</strong>
+                  <span className="npc-forge-result-die__rule">{detail.rule}</span>
+                  <span className="npc-forge-result-die__drag">Drag</span>
+                  <span className="npc-forge-result-die__detail" role="tooltip">
+                    <b>{detail.rule}</b>
+                    <span>Dice: {detail.dice.join(", ")}</span>
+                    {detail.dropped !== null ? <span>Dropped: {detail.dropped}</span> : null}
+                    <strong>{detail.equation}</strong>
+                    <em>{assigned ? `Assigned to ${ABILITY_LABELS[assigned]}` : "Not assigned yet"}</em>
+                  </span>
+                </button>;
+              })}
+            </div>}
           </div>
-          <div className="npc-forge-roll-pool npc-forge-ability-bench__rolls">
-            {rolls.map((roll) => {
-              const assigned = Object.entries(allocation).find(([, id]) => id === roll.id)?.[0];
-              return <button
-                key={roll.id}
-                type="button"
-                draggable
-                className={`npc-forge-roll-card refined${selectedRollId === roll.id ? " is-selected" : ""}${assigned ? " is-assigned" : ""}`}
-                onClick={() => onSelectRoll(selectedRollId === roll.id ? "" : roll.id)}
-                onDragStart={(event) => {
-                  event.dataTransfer.setData("text/npc-forge-roll", roll.id);
-                  event.dataTransfer.effectAllowed = "move";
-                  onSelectRoll(roll.id);
-                }}
-                title={assigned ? `Assigned to ${ABILITY_LABELS[assigned]}` : "Drag to an ability slot"}
-              >
-                <strong>{roll.total}</strong>
-                <div>{roll.dice.map((die, dieIndex) => <span key={dieIndex} className={dieIndex === roll.droppedIndex ? "is-dropped" : ""}>{die}</span>)}</div>
-                {assigned ? <em>{ABILITY_LABELS[assigned]}</em> : null}
-              </button>;
-            })}
-          </div>
-          <div className="npc-forge-ability-roll-tray__tip">✦&nbsp; Tip: Roll high to maximize your primary abilities.</div>
+          <div className="npc-forge-ability-dice-tray__tip">✦&nbsp; Hover a result die for the dice math. Drag the final total into an ability slot.</div>
         </section> : pointBuy ? <div className={`npc-forge-point-buy-budget${remaining < 0 ? " is-invalid" : ""}`}>
           <div><span>Point Buy Budget</span><strong>{Math.max(0, remaining)} / {POINT_BUY_BUDGET} remaining</strong></div>
           <p>Adjust the six scores in the left column. Species Bonus is applied afterward.</p>
-        </div> : null}
+        </div> : <div className="npc-forge-ability-drop-stage is-static-mode">
+          <div className="npc-forge-ability-drop-stage__sigil" aria-hidden="true"><span>◇</span></div>
+          <div className="npc-forge-ability-drop-stage__copy">
+            <strong>{standard ? "Class-guided ability spread" : "Manual ability assignment"}</strong>
+            <span>{standard ? "The class array is shown in the six ability slots on the left." : "Enter each base score directly in the six ability slots on the left."}</span>
+          </div>
+        </div>}
       </section>
     </div>
   </div>;
