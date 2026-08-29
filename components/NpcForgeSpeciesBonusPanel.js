@@ -40,7 +40,7 @@ export default function NpcForgeSpeciesBonusPanel({
       {ABILITY_KEYS.map((key) => <button key={key} type="button" className={`npc-forge-ability-choice ${plusOnes.includes(key) ? "is-active" : ""}`} onClick={() => onToggleSpeciesPlusOne(key)}><strong>{ABILITY_LABELS[key]}</strong><span>+1</span></button>)}
     </div> : null}
 
-    {speciesBonus.mode === "feat" ? <div className="npc-forge-species-feat-routing-note"><strong>Bonus Feat package selected</strong><span>The specific feat is chosen later in <b>{"Training → Feats & Class Abilities"}</b>.</span></div> : null}
+    {speciesBonus.mode === "feat" ? <div className="npc-forge-species-feat-routing-note"><strong>Selected: Bonus Feat package</strong><span>The specific feat is chosen later in <b>{"Training → Feats & Class Abilities"}</b>.</span></div> : null}
 
     <button type="button" className="npc-forge-ability-bonus-apply" disabled={!ready} onClick={() => onSetSpeciesBonus({})}>▣&nbsp; Add bonuses</button>
 
