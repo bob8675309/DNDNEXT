@@ -30,6 +30,7 @@ expect(physics.includes("groundFriction") && physics.includes("rollingResistance
 expect(!physics.includes("lateDamping"), "dice must not share one synchronized late slowdown");
 expect(physics.includes("settleAfter") && physics.includes("forceAfter") && physics.includes("settleFramesRequired"), "per-die staggered settling controls missing");
 expect(physics.includes("guideToFlatFace") && !physics.includes("Math.round(body.rx / (Math.PI / 2))"), "settling must converge instead of snapping cube rotation");
+expect(physics.includes("setDiceSimulationActiveIds") && physics.includes("body.active === false"), "dice removed from the tray must leave active collision participation");
 expect(physics.includes("wx") && physics.includes("wy") && physics.includes("wz"), "independent angular velocity missing");
 expect(physics.includes("createDiceSimulation") && physics.includes("stepDiceSimulation"), "reusable physics engine API missing");
 
@@ -40,6 +41,7 @@ expect(tray.includes("settledIds") && tray.includes("draggable={Boolean(draggabl
 expect(tray.includes('data-settled={settled ? "true" : "false"}'), "drag/click gating must reflect React settled state");
 expect(!tray.includes('data-settled="false"\n        onClick'), "normal dice must not hard-code rolling state across React rerenders");
 expect(tray.includes("hiddenDieIds") && tray.includes("onTrayDrop"), "assigned dice must be able to leave and return to the physical tray without replaying physics");
+expect(tray.includes("setDiceSimulationActiveIds(simulation") && tray.includes("setDiceSimulationActiveIds(simulationRef.current"), "hidden assigned dice must be removed from tray collisions without rebuilding the roll");
 expect(css.includes("--tray-wall-inset") && css.includes("inset 0 0 0 var(--tray-wall-inset)"), "visual tray walls must match tighter physical inset");
 expect(css.includes("transform-style: preserve-3d"), "cube must render as a 3D object");
 expect(css.includes("face_front") && css.includes("face_top") && css.includes("face_bottom"), "cube face geometry missing");
@@ -68,4 +70,4 @@ for (const source of [tray, adapter, contract, seed, physics]) {
   for (const token of protectedTokens) expect(!source.includes(token), `dice core crossed protected runtime boundary: ${token}`);
 }
 
-console.log("Reusable Realistic Dice core validated: grounded floor/gravity, tighter walls, staggered rolling/settling, authoritative-result contract, independent visual seed, assigned die transfer/return, React-owned drag gating, Forge allocation authority, and protected boundaries.");
+console.log("Reusable Realistic Dice core validated: grounded floor/gravity, tighter walls, staggered rolling/settling, authoritative-result contract, independent visual seed, assigned die transfer/return with collision deactivation, React-owned drag gating, Forge allocation authority, and protected boundaries.");
