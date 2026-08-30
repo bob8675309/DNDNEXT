@@ -34,7 +34,8 @@ assert.match(registrar, /resolverPlacement:\s*"training"/);
 assert.match(registrar, /evaluateFeatPrerequisites/);
 assert.match(sourceFields, /surfaceWithFeatChoices/);
 assert.match(modal, /NpcForgeHumanVersatileRegistrar/);
-assert.match(modal, /playerMode \? <h2>Character Forge<\/h2>/);
+assert.match(modal, /playerMode \? <h2(?:\s+[^>]*)?>Character Forge<\/h2>/);
+assert.match(modal, /Double-click or double-tap this header to restore the Forge window/);
 assert.doesNotMatch(modal, /Build a player-owned character with the shared canonical Forge/);
 assert.doesNotMatch(modal, /playerMode \? "Player Character Forge"/);
 assert.match(modal, /npc-forge-modal-v2\.is-player-mode \.npc-forge-header\{align-items:center;padding:10px 14px\}/);
@@ -50,4 +51,4 @@ for (const protectedPath of ["MapPageClient", "map_routes", "advance_all_charact
   assert.doesNotMatch([picker, panel, sourceFields, registrar, modal, migration].join("\n"), new RegExp(protectedPath, "i"));
 }
 
-console.log("Forge Heritage layout, compact Player header, Merfolk speed, and Human Versatile routing validation passed.");
+console.log("Forge Heritage layout, compact Player header/reset hint, Merfolk speed, and Human Versatile routing validation passed.");

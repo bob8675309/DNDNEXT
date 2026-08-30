@@ -72,7 +72,7 @@ requireToken(profile, "is-forge-suspended", "profile host");
 
 for (const token of ["Skillful", "Versatile", "Choose skill proficiency", "Choose Origin feat", "ORIGIN_FEAT_OPTIONS", "speciesFixedLanguages"]) requireToken(speciesRules, token, "Human and fixed-language Species choices");
 for (const token of ["speciesSkillChoicesFromState", "speciesFeatChoicesFromState", "speciesSpellcastingFromChoiceState"]) requireToken(speciesContext, token, "Species choice persistence");
-for (const token of ["applyAutomaticSourceSelections", "field?.autoSelect"]) requireToken(sourceChoiceContext, token, "fixed source choice authority");
+for (const token of ["applyAutomaticSourceSelections", "field?.autoSelect", "backgroundToolChoiceResolvesInTraining", "sourcePlacement"]) requireToken(sourceChoiceContext, token, "fixed and routed source choice authority");
 for (const token of ["RichField", "npc-forge-rich-choice", "eldritch-invocation", "artificer-plan", "FixedField"]) requireToken(sourceChoiceUi, token, "rich source choice catalogue");
 
 for (const token of ["classChoiceStateComplete", "eligibleSubclassOptions", "featureGroups", "featureSelections", "registerFeatureGroups", "toggleFeatureOption"]) requireToken(classContext, token, "class choice context");
@@ -109,8 +109,10 @@ for (const token of [".is-forge-validation-target", 'content: "↓ " attr(data-f
 for (const token of ["Ability Score Generation Method", "Standard 3d6", "4d6 drop lowest die", "Point Buy", "Standard Class Array", "Manual Assign", "Reroll All Six", "Species Bonus stays in the right information panel"]) requireToken(ability, token, "ability rules");
 forbidToken(ability, "NpcForgeSourceChoiceFields", "advancement choices on Abilities");
 forbidToken(ability, "npc-forge-species-bonus mt-4", "ability main-workspace Species Bonus duplication");
-for (const token of ["npc-forge-species-bonus--context", "Species Bonus", "Choose a feat"]) requireToken(speciesBonus, token, "right-column Species Bonus");
-for (const token of ["Background grants", "Training choices", "each uses one Training choice", "Campaign crafting house rule", "successful DC check", "properly deployed caravan workshop", "Skills & Proficiencies", "Feats & Class Abilities", 'placement="advancement"']) requireToken(training, token, "training rules and routed choices");
+for (const token of ["npc-forge-species-bonus--context", "Species Bonus", "Bonus feat", "specific feat is chosen later in Training"]) requireToken(speciesBonus, token, "right-column Species Bonus");
+forbidToken(speciesBonus, "Species bonus feat</span>", "Abilities specific Bonus Feat chooser");
+for (const token of ["Skill &amp; Training Selections", "Training Choices", "Trade Skills", "sourceGrantedProfessionKeys", "Source-granted tools train the matching Trade Skill for free", "Skills & Proficiencies", "Feat &amp; Class Choices", 'placement="advancement"']) requireToken(training, token, "training rules and routed choices");
+forbidToken(training, "Tool proficiency alone does not unlock the Trade Skill", "rejected tool/Trade Skill split");
 forbidToken(training, "Expertise is not self-assigned during creation", "player Training explanation");
 for (const token of ['from("spells_catalog")', 'from("class_level_progression")', "validateStartingSpellSelections", "Selected only", "Prepared", "Starting spell requirements complete."]) requireToken(spells, token, "starting spells");
 requireToken(rules, "const key = normalizedSpellName(row?.name);", "2024-first spell deduplication");
@@ -138,4 +140,4 @@ requireToken(finalPolish, ".npc-forge-review-dossier__grid", "review presentatio
 requireToken(app, 'import "../styles/character-forge-final-polish.css";', "application stylesheet import");
 requireToken(app, 'import "../styles/player-profile-scroll-fix.css";', "profile scroll stylesheet preservation");
 
-console.log("Character Forge persistence, routed class decisions, rich source catalogues, source-defined fixed languages, structured class text, contextual Species Bonus, guarded v3 multi-source starting magic, 2024-first spells, review dossier, player authority, and raster authority validated.");
+console.log("Character Forge persistence, routed class decisions, rich source catalogues, source-defined fixed languages, structured class text, Training-routed Bonus Feat, unified Training tally, tool/Trade-Skill grants, guarded v3 multi-source starting magic, 2024-first spells, review dossier, player authority, and raster authority validated.");

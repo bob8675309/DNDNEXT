@@ -1,5 +1,6 @@
 import {
   mergePreferredBackgrounds as refinedMergePreferredBackgrounds,
+  mergePreferredClasses as refinedMergePreferredClasses,
   mergePreferredSpecies as refinedMergePreferredSpecies,
   normalizeBackgroundOption as refinedNormalizeBackgroundOption,
   optionMatchesQuery as refinedOptionMatchesQuery,
@@ -8,6 +9,7 @@ import {
 import { playerFacingBackgroundName } from "./backgroundNeutralization.js";
 import { mergeSpeciesVariantFamilies } from "./speciesVariantFamilies.js";
 import { expandSpeciesCatalogFamilies } from "./speciesCatalogExpansion.js";
+import { classPresentationSummary, classPrimaryAbilities } from "./classes/classPresentation.js";
 
 export * from "./npcForgeCatalogRefined.js";
 
@@ -30,6 +32,15 @@ function activateStandaloneCatalogSourceChoice(species = {}) {
   return { ...species, speciesVariantChoice: choice };
 }
 
+function presentClass(option = {}) {
+  const primaryAbilities = classPrimaryAbilities(option);
+  return {
+    ...option,
+    summary: classPresentationSummary(option, option.summary || ""),
+    primary_abilities: primaryAbilities.length ? primaryAbilities : (option.primary_abilities || []),
+  };
+}
+
 export function normalizeBackgroundOption(row = {}) {
   return presentBackground(refinedNormalizeBackgroundOption(row));
 }
@@ -40,6 +51,10 @@ export function mergePreferredBackgrounds(rows = []) {
 
 export function mergePreferredSpecies(rows = []) {
   return expandSpeciesCatalogFamilies(mergeSpeciesVariantFamilies(refinedMergePreferredSpecies(rows))).map(activateStandaloneCatalogSourceChoice);
+}
+
+export function mergePreferredClasses(rows = []) {
+  return refinedMergePreferredClasses(rows).map(presentClass);
 }
 
 export function optionMatchesQuery(option = {}, query = "") {

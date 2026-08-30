@@ -7,7 +7,7 @@ import { sourceChoiceGroupComplete } from "../utils/playerForgeSourceChoices";
 import NpcForgeClassFeatureChoices from "./NpcForgeClassFeatureChoices";
 import NpcForgeSourceChoiceFields from "./NpcForgeSourceChoiceFields";
 import { useNpcForgeClassChoice } from "./NpcForgeClassChoiceContext";
-import { useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
+import { sourceChoiceGroupsForResolverPlacement, useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
 
 function groupByLevel(spells = []) {
   const groups = new Map();
@@ -48,7 +48,7 @@ export default function NpcForgeSpellStep({ selectedClass, selectedSubclass = nu
   const subclassModel = useMemo(() => subclassStartingSpellSelectionModel(selectedClass, selectedSubclass, level), [level, selectedClass, selectedSubclass]);
   const model = useMemo(() => subclassModel || startingSpellSelectionModel(selectedClass, levelRow, level), [level, levelRow, selectedClass, subclassModel]);
   const hasClassSpellSelection = Boolean(selectedClass && model.mode !== "none");
-  const sourceSpellGroups = useMemo(() => (sourceChoiceState.groups || []).filter((group) => group.placement === "spells"), [sourceChoiceState.groups]);
+  const sourceSpellGroups = useMemo(() => sourceChoiceGroupsForResolverPlacement(sourceChoiceState, "spells"), [sourceChoiceState]);
   const incompleteSourceSpellGroups = useMemo(() => sourceSpellGroups.filter((group) => !sourceChoiceGroupComplete(group, sourceChoiceState.selections || {})), [sourceChoiceState.selections, sourceSpellGroups]);
   const automaticCastingGroups = useMemo(() => sourceSpellGroups.map((group) => ({ group, result: automaticCastingForGroup(group, finalAbilities, selectedClass) })).filter((entry) => entry.result), [finalAbilities, selectedClass, sourceSpellGroups]);
   const savantSpellIds = useMemo(() => {
@@ -190,7 +190,7 @@ export default function NpcForgeSpellStep({ selectedClass, selectedSubclass = nu
     <div className="npc-forge-section-heading"><div><span>Spells</span><h3>{classSourceLabel}</h3></div><p>{loading ? "Loading canonical spell catalogue…" : hasClassSpellSelection ? `${selectableSpells.length} eligible class spells • highest spell level ${model.maximumSpellLevel}` : hasAnyMagic ? "Resolve species, feat, background, and class-feature magic below." : "This character has no starting spell decisions at this level."}</p></div>
     {error ? <div className="npc-forge-catalog-warning">{error}</div> : null}
 
-    {sourceSpellGroups.length ? <section className="npc-forge-source-magic"><header><div><span>Source-owned magic</span><h3>Species, feat, and feature spells</h3></div><p>These grants are separate from normal class spell selection and keep their own source provenance.</p></header>{automaticCastingGroups.length ? <div className="npc-forge-auto-casting-list">{automaticCastingGroups.map(({ group, result }) => <div key={group.id}><span>{group.label}</span><strong>{automaticCastingAbilityLabel(result)}</strong><small>Automatically selected from {automaticAbilitiesForGroup(group).map((key) => key.toUpperCase()).join(" / ")} using final ability scores.</small></div>)}</div> : null}<NpcForgeSourceChoiceFields placement="spells" title="Resolve source-owned spell choices" /></section> : null}
+    {sourceSpellGroups.length ? <section className="npc-forge-source-magic"><header><div><span>Source-owned magic</span><h3>Species, feat, and feature spells</h3></div><p>These grants are separate from normal class spell selection and keep their own source provenance.</p></header>{automaticCastingGroups.length ? <div className="npc-forge-auto-casting-list">{automaticCastingGroups.map(({ group, result }) => <div key={group.id}><span>{group.label}</span><strong>{automaticCastingAbilityLabel(result)}</strong><small>Automatically selected from {automaticAbilitiesForGroup(group).map((key) => key.toUpperCase()).join(" / ")} using final ability scores.</small></div>)}</div> : null}<NpcForgeSourceChoiceFields placement="spells" groupsOverride={sourceSpellGroups} title="Resolve source-owned spell choices" /></section> : null}
 
     {hasClassSpellSelection ? <>
       <div className="npc-forge-spell-summary"><div><span>Cantrips</span><strong>{counts.cantrips}/{model.cantrips}</strong></div><div><span>{model.mode === "spellbook" ? "Spellbook" : model.mode === "prepared" ? "Prepared" : "Known spells"}</span><strong>{counts.leveled}/{model.leveled}</strong></div>{model.mode === "spellbook" ? <div><span>Prepared leveled</span><strong>{Math.max(0, counts.prepared - counts.cantrips)}/{model.prepared}</strong></div> : null}<div><span>Highest spell level</span><strong>{model.maximumSpellLevel}</strong></div></div>
