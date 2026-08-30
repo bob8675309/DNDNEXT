@@ -13,10 +13,6 @@ function choose(random, values) {
   return values[Math.floor(random() * values.length) % values.length];
 }
 
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
-}
-
 function speed(body) {
   return Math.hypot(body.vx, body.vy);
 }
@@ -49,7 +45,7 @@ function guideToFlatFace(body, dt, strength = 7) {
 }
 
 function wakeBody(body) {
-  if (!body?.settled) return;
+  if (!body?.settled || body.active === false) return;
   body.settled = false;
   body.settleFrames = 0;
   body.flatTargetX = null;
@@ -57,7 +53,7 @@ function wakeBody(body) {
 }
 
 function addImpactLift(body, impact) {
-  if (body.z > body.radius * 0.4 || impact < 115) return;
+  if (body.active === false || body.z > body.radius * 0.4 || impact < 115) return;
   wakeBody(body);
   body.vz = Math.max(body.vz, Math.min(155, 22 + impact * 0.16));
 }
@@ -125,6 +121,7 @@ function resolveFloor(body) {
 }
 
 function resolveCircleCollision(a, b) {
+  if (a.active === false || b.active === false) return;
   const verticalDistance = Math.abs(a.z - b.z);
   if (verticalDistance > Math.max(a.radius, b.radius) * 1.25) return;
 
@@ -180,7 +177,7 @@ function resolveCircleCollision(a, b) {
 }
 
 function resolveObstacle(body, obstacle) {
-  if (body.z > body.radius * 0.95) return;
+  if (body.active === false || body.z > body.radius * 0.95) return;
   const dx = body.x - obstacle.x;
   const dy = body.y - obstacle.y;
   const minDistance = body.radius + obstacle.radius;
@@ -237,6 +234,7 @@ function spawnBody(die, index, count, width, height, random, size, wallInset) {
   return {
     id: die.id,
     index,
+    active: true,
     x,
     y,
     z: between(random, 12, 48),
@@ -312,13 +310,33 @@ export function resizeDiceSimulation(simulation, width, height) {
   });
 }
 
+export function setDiceSimulationActiveIds(simulation, activeIds = []) {
+  if (!simulation) return;
+  const active = new Set((activeIds || []).map(String));
+  simulation.bodies.forEach((body) => {
+    const nextActive = active.has(String(body.id));
+    if (body.active && !nextActive) {
+      body.vx = 0;
+      body.vy = 0;
+      body.vz = 0;
+      body.wx = 0;
+      body.wy = 0;
+      body.wz = 0;
+      body.z = 0;
+      body.settled = true;
+    }
+    body.active = nextActive;
+  });
+  simulation.complete = simulation.bodies.every((body) => body.active === false || body.settled);
+}
+
 export function stepDiceSimulation(simulation, deltaSeconds) {
   if (!simulation || simulation.complete) return simulation;
   const dt = Math.min(1 / 30, Math.max(1 / 240, deltaSeconds || 1 / 60));
   simulation.elapsed += dt;
 
   for (const body of simulation.bodies) {
-    if (body.settled) continue;
+    if (body.active === false || body.settled) continue;
 
     body.vz -= GRAVITY * dt;
     body.x += body.vx * dt;
@@ -363,7 +381,7 @@ export function stepDiceSimulation(simulation, deltaSeconds) {
   }
 
   for (const body of simulation.bodies) {
-    if (body.settled) continue;
+    if (body.active === false || body.settled) continue;
     const grounded = body.z <= 0.001 && Math.abs(body.vz) < 0.001;
     const planarSpeed = speed(body);
     const spin = angularSpeed(body);
@@ -400,6 +418,6 @@ export function stepDiceSimulation(simulation, deltaSeconds) {
     }
   }
 
-  simulation.complete = simulation.bodies.every((body) => body.settled);
+  simulation.complete = simulation.bodies.every((body) => body.active === false || body.settled);
   return simulation;
 }
