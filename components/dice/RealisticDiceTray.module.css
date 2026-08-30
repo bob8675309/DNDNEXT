@@ -76,6 +76,22 @@
 .settled:active { cursor: grabbing; }
 .settled:hover,
 .settled:focus-visible { z-index: 20; }
+.assigned .face {
+  border-color: rgba(var(--die-accent), .92);
+  box-shadow:
+    inset 0 0 18px rgba(var(--die-accent), .19),
+    0 0 12px rgba(var(--die-accent), .2);
+}
+.assigned .shadow { opacity: .54; }
+.selected { z-index: 12; }
+.selected .face {
+  border-color: rgba(255,255,255,.92);
+  box-shadow:
+    inset 0 0 20px rgba(var(--die-accent), .23),
+    0 0 0 2px rgba(var(--die-accent), .42),
+    0 0 22px rgba(var(--die-accent), .42);
+}
+.selected .shadow { opacity: .64; }
 
 .shadow {
   position: absolute;

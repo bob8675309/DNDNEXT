@@ -27,13 +27,17 @@ expect(physics.includes("wx") && physics.includes("wy") && physics.includes("wz"
 expect(physics.includes("createDiceSimulation") && physics.includes("stepDiceSimulation"), "reusable physics engine API missing");
 expect(tray.includes("requestAnimationFrame"), "runtime physics frame loop missing");
 expect(tray.includes("prefers-reduced-motion"), "reduced-motion fallback missing");
-expect(tray.includes("data-settled"), "drag/click gating must wait until dice settle");
+expect(tray.includes("settledIds") && tray.includes("draggable={settled}"), "settled interaction state must be React-owned and survive rerenders");
+expect(tray.includes('data-settled={settled ? "true" : "false"}'), "drag/click gating must reflect React settled state");
+expect(!tray.includes('data-settled="false"\n        onClick'), "normal dice must not hard-code rolling state across React rerenders");
 expect(css.includes("transform-style: preserve-3d"), "cube must render as a 3D object");
 expect(css.includes("face_front") && css.includes("face_top") && css.includes("face_bottom"), "cube face geometry missing");
 expect(css.includes(".settled:hover .face b") && css.includes("opacity: 0"), "settled result must hide while hover detail is shown");
+expect(css.includes(".selected .face") && css.includes(".assigned .face"), "selected/assigned Forge result feedback missing");
 
 expect(adapter.includes('type: "resultCube"'), "Forge must use aggregate resultCube rather than pretending totals are literal d6 faces");
 expect(adapter.includes("roll.total"), "Forge adapter must consume existing authoritative totals");
+expect(adapter.includes('selected: selectedRollId === roll.id'), "Forge selected result must remain visibly distinguishable");
 expect(adapter.includes('event.dataTransfer.setData("text/npc-forge-roll", die.id)'), "existing Forge drag MIME contract missing");
 expect(adapter.includes("4d6 drop lowest"), "Forge hover math must preserve 4d6-drop-lowest detail");
 expect(ability.includes("<ForgeAbilityDiceTray"), "Abilities step is not wired to reusable dice adapter");
@@ -45,4 +49,4 @@ for (const source of [tray, adapter, contract, seed, physics]) {
   for (const token of protectedTokens) expect(!source.includes(token), `dice core crossed protected runtime boundary: ${token}`);
 }
 
-console.log("Reusable Realistic Dice core validated: authoritative-result contract, independent visual seed, 3D result cubes, wall/die/bumper collisions, settled drag gating, Forge adapter, and protected boundaries.");
+console.log("Reusable Realistic Dice core validated: authoritative-result contract, independent visual seed, 3D result cubes, wall/die/bumper collisions, React-owned settled drag gating, selected/assigned Forge feedback, and protected boundaries.");

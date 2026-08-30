@@ -32,7 +32,11 @@ export default function ForgeAbilityDiceTray({
       result: roll.total,
       accent: ACCENTS[index % ACCENTS.length],
       label: `Rolled total ${roll.total}. ${assigned ? `Assigned to ${ABILITY_LABELS[assigned]}.` : "Unassigned."}`,
-      detail: { ...rollDetail(roll), assigned },
+      detail: {
+        ...rollDetail(roll),
+        assigned,
+        selected: selectedRollId === roll.id,
+      },
     };
   });
 
