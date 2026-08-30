@@ -6,7 +6,7 @@ const GRAVITY = 1120;
 const SIDES = ["left", "right", "top", "bottom"];
 const PHYSICS_HZ = 180;
 const MAX_SUBSTEPS = 6;
-const COLLISION_ITERATIONS = 3;
+const COLLISION_ITERATIONS = 6;
 
 function between(random, min, max) {
   return min + (max - min) * random();
@@ -14,6 +14,15 @@ function between(random, min, max) {
 
 function choose(random, values) {
   return values[Math.floor(random() * values.length) % values.length];
+}
+
+function balancedSpawnSides(count, random) {
+  const sides = Array.from({ length: count }, (_, index) => SIDES[index % SIDES.length]);
+  for (let index = sides.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [sides[index], sides[swapIndex]] = [sides[swapIndex], sides[index]];
+  }
+  return sides;
 }
 
 function clamp(value, min, max) {
@@ -254,12 +263,11 @@ function wallInsetForSize(size) {
   return Math.max(16, size * 0.42);
 }
 
-function spawnBody(die, index, count, width, height, random, size, wallInset) {
+function spawnBody(die, index, count, width, height, random, size, wallInset, side) {
   const halfExtent = size / 2;
   // Slightly conservative footprint so a rotating CSS cube still reads as physically solid.
   const collisionHalf = size * between(random, 0.59, 0.64);
   const collisionSize = collisionHalf * 2;
-  const side = choose(random, SIDES);
   const left = wallInset + collisionHalf;
   const right = Math.max(left, width - wallInset - collisionHalf);
   const top = wallInset + collisionHalf;
@@ -337,7 +345,8 @@ function spawnBody(die, index, count, width, height, random, size, wallInset) {
 export function createDiceSimulation({ dice = [], width, height, seed, dieSize = 44 }) {
   const random = createSeededRandom(seed);
   const wallInset = wallInsetForSize(dieSize);
-  const bodies = dice.map((die, index) => spawnBody(die, index, dice.length, width, height, random, dieSize, wallInset));
+  const spawnSides = balancedSpawnSides(dice.length, random);
+  const bodies = dice.map((die, index) => spawnBody(die, index, dice.length, width, height, random, dieSize, wallInset, spawnSides[index]));
   const obstacleCount = dice.length >= 5 ? 3 : 2;
   const obstacles = Array.from({ length: obstacleCount }, (_, index) => ({
     id: `bumper-${index + 1}`,
