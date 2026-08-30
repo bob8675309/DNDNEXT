@@ -1,52 +1,82 @@
 # ChatGPT Repository Write Procedure
 
-This project is directly writable from ChatGPT through the GitHub connector. Do not claim that repo writes require a separate environment unless an actual connector write attempt fails.
+Updated: 2026-08-30
+
+This project is directly writable from ChatGPT through the GitHub connector and Supabase connector when those actions are available. Do not claim that repo/database writes require a separate environment unless an actual connector/tool attempt fails.
 
 ## Repository authority
 
 - Repository: `bob8675309/DNDNEXT`
-- Active continuation branch for the current Forge Species artwork work: `agent/species-art-post170`
-- Active PR: #171 — open and unmerged
-- Historical PR #170 is merged at `599c4de7397ba6e4bbbb0a061d551d80c3570be7`; do not use it as the active continuation PR.
-- `main` remains production authority.
-- Do not merge PR #171 without explicit user approval.
+- Default/production authority: `main`
+- Accepted current `main` checkpoint: `a2aecdd354346926afdf33efb1af320581563b68` (merged PR #175)
+- Current open continuation branch: `agent/training-tab-redesign`
+- Current open PR: **#176** — Character Forge browser-review continuation, unmerged
+- Immediately before the 2026-08-30 documentation-only handoff updates, PR #176 head was `9447be566f8383e8227c6fccb37a0bde2bdbe078`; documentation commits advance it.
+
+Always re-fetch the remote PR/branch head immediately before a write, validation claim, deployment check, or merge. Do not treat a SHA copied into prose as permanently current.
+
+Do not merge PR #176 without explicit user approval.
 
 ## Preferred safe write path
 
-For coherent multi-file changes, use the GitHub connector in this order:
+For any change:
 
-1. Re-fetch PR/head SHA immediately before writing.
-2. Fetch the current head commit and base tree SHA.
-3. Create every new/updated file as a Git blob with `GitHub.create_blob`.
-   - For binary files, send base64 and use the **connector-returned blob SHA** as authority.
-   - Do not substitute a locally calculated SHA for a GitHub-returned blob SHA.
-4. Build one coherent tree with `GitHub.create_tree`, using the current head tree as `base_tree_sha`.
-5. Create one commit with `GitHub.create_commit`, using the current branch head as `parent_sha`.
-6. Re-fetch the branch/PR head to guard against concurrent movement.
-7. Fast-forward the branch with `GitHub.update_ref(..., force=false)`.
-8. Verify the compare/diff contains only the intended files.
-9. Run the focused workflow and production build, then the full PR regression matrix.
-10. Update handoff docs and the PR body only after the runtime/code checkpoint is green.
+1. Re-fetch the current PR/branch head and confirm the target branch.
+2. Inspect the current target file(s) from that exact branch before writing.
+3. Keep the change bounded to the requested subsystem.
+4. Use non-forced, exact-head-aware GitHub writes.
+5. If the connector exposes grouped Git blob/tree/commit/ref operations, prefer one coherent commit for a coherent multi-file runtime change.
+6. For isolated UTF-8 documentation edits, `GitHub.create_file` / `GitHub.update_file` are acceptable.
+7. Never run sequential update/delete writes against the same path using a stale blob SHA; re-fetch/use the returned content SHA as needed.
+8. Re-fetch the branch/PR after writing and verify only intended files changed.
+9. Run the focused validator(s) and required regressions/protected-boundary checks.
+10. Verify exact-head GitHub checks and Vercel deployment when the change triggers deployment.
+11. Before merge, re-fetch the PR head again and merge only the validated expected head.
 
-## Text-only exceptions
+Never force-push or overwrite concurrent branch movement simply to make a patch apply.
 
-`GitHub.create_file` / `GitHub.update_file` can be used for isolated UTF-8 documentation changes when appropriate, but grouped code/art changes should prefer the blob/tree/commit/ref path above.
+## Branch/scope discipline
+
+PR #176 is already a broad Character Forge browser-review branch. Do not keep widening it indefinitely.
+
+In particular, the planned reusable **Realistic Dice Core** is documented on #176 for handoff purposes, but its actual Three/Rapier implementation should be created on a **new bounded branch/PR from the user-accepted Forge checkpoint**. See `Realistic_Dice_Roller_Architecture_Roadmap.md`.
+
+If the requested work belongs to another subsystem, first decide whether it should be a separate branch rather than attaching it to the current Forge PR.
 
 ## Supabase boundary
 
 Supabase is also directly accessible through its connector. Before any DB change:
 
-1. re-check the live migration/data baseline;
-2. dry-run/data-check when possible;
-3. use `apply_migration` for DDL/migrations and `execute_sql` for read-only verification or approved data updates;
-4. verify protected campaign/runtime/map counts afterward.
+1. re-check the live project/schema/migration/data baseline;
+2. inspect the exact relevant function/table/policy definitions;
+3. use read-only SQL for diagnosis/verification first when possible;
+4. use an approved migration path for DDL/schema changes;
+5. use approved SQL/data actions only for explicitly requested data changes;
+6. verify the resulting live state afterward;
+7. do not re-run SQL merely because a repo filename appears absent from the migration ledger if the live effect already exists.
+
+The planned Realistic Dice Phase 1 should not require any Supabase write.
 
 ## Standing project safety rules
 
 - Do not touch the world map unless explicitly asked.
 - Do not mix world-map behavior with town/city-map behavior.
-- Verify every new helper, hook, state variable, and prop is defined and correctly passed.
+- Character Forge or dice work does not authorize tactical movement/path, crafting, inventory, merchant, or economy changes.
+- Tactical encounter RPC/combat-log results remain rules-authoritative; future dice physics is presentation only.
+- Do not reuse dice rigid-body collision rules as tactical-grid movement/collision authority.
+- Verify every new helper, hook, state variable, prop, callback, RPC argument, physics reference, and data-contract field is defined and correctly passed.
 - Preserve working systems and existing validators rather than weakening contracts to make a patch pass.
-- Do not merge PR #171 without explicit user approval.
+- Prefer additive database migrations; never rewrite already-deployed migration history.
+- Never expose Supabase service-role credentials to browser code.
+- Do not merge an open PR without explicit user approval.
 
-This file exists specifically so future ChatGPT handoffs do not repeatedly forget that the repo and Supabase are writable through connectors.
+## Documentation discipline
+
+After a meaningful runtime checkpoint is accepted:
+
+- update `DNDNext_Current_Handoff_Prompt.md`;
+- update the dedicated subsystem ledger;
+- update `Documentation_Refresh_Manifest.md` / `docs/README.md` if the active queue or trust map changed;
+- include the exact pre-document/current checkpoint but always tell the next model to re-fetch live GitHub state.
+
+This file exists specifically so future ChatGPT handoffs do not repeatedly forget that the repo and Supabase are writable through connectors while still requiring exact-head, bounded, reviewable changes.
