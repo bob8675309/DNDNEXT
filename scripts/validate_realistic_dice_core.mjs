@@ -25,7 +25,9 @@ expect(physics.includes("resolveSolidCubeCollision"), "solid die-to-die cube col
 expect(physics.includes("verticalCubeOverlap") && physics.includes("collisionHalf") && physics.includes("collisionSize"), "solid cube collision volume missing");
 expect(!physics.includes("resolveCircleCollision"), "legacy circular die collision envelope must not remain active");
 expect(physics.includes("PHYSICS_HZ") && physics.includes("MAX_SUBSTEPS") && physics.includes("COLLISION_ITERATIONS"), "high-speed collision substeps/iterations missing");
+expect(physics.includes("const COLLISION_ITERATIONS = 6"), "solid cube collision solver needs enough iterative separation passes");
 expect(physics.includes("resolveAllCubeCollisions") && physics.includes("for (let step = 0; step < substeps; step += 1)"), "multiple collision passes per rendered frame missing");
+expect(physics.includes("balancedSpawnSides") && physics.includes("spawnSides[index]"), "six-die entry sides must be shuffled but balanced to avoid same-wall pileups");
 expect(physics.includes("Deliberately no die-on-die vertical lift"), "die collisions must side-separate instead of permitting stacking");
 expect(physics.includes("resolveObstacle"), "tray obstacle collision resolution missing");
 expect(physics.includes("resolveWall"), "tray-wall collision resolution missing");
@@ -81,4 +83,4 @@ for (const source of [tray, adapter, contract, seed, physics]) {
   for (const token of protectedTokens) expect(!source.includes(token), `dice core crossed protected runtime boundary: ${token}`);
 }
 
-console.log("Reusable Realistic Dice core validated: exponential per-die gravity/contact ramps, conservative solid-cube collision volumes with substeps/iterations and no stacking lift, damped flat-face contact torque, strict settled flatness, authoritative-result contract, assigned die transfer/return with collision deactivation, React-owned drag gating, Forge allocation authority, and protected boundaries.");
+console.log("Reusable Realistic Dice core validated: exponential per-die gravity/contact ramps, conservative solid-cube collision volumes with 180 Hz substeps, six iterative separation passes, balanced randomized spawn sides and no stacking lift, damped flat-face contact torque, strict settled flatness, authoritative-result contract, assigned die transfer/return with collision deactivation, React-owned drag gating, Forge allocation authority, and protected boundaries.");
