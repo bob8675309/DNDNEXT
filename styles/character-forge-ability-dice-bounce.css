@@ -1,0 +1,155 @@
+/* Final Ability result-die face + tray-motion pass.
+ * Presentation only. The existing roll objects remain the RNG/math authority.
+ */
+
+/* A settled result die shows only its final generated total. The underlying rule/math
+ * remains available in the existing hover/focus tooltip. */
+.unified-player-character-forge .npc-forge-result-die {
+  min-height: 86px !important;
+  padding: 5px !important;
+  gap: 0 !important;
+  will-change: transform;
+}
+
+.unified-player-character-forge .npc-forge-result-die > strong {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  min-width: 2.6rem;
+  min-height: 2.6rem;
+  margin: 0 !important;
+  font-size: 1.72rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -.03em;
+}
+
+.unified-player-character-forge .npc-forge-result-die__index,
+.unified-player-character-forge .npc-forge-result-die__rule,
+.unified-player-character-forge .npc-forge-result-die__drag {
+  display: none !important;
+}
+
+/* During the rattle sequence, keep the moving dice inside the recessed tray and
+ * suspend pointer interaction until they settle. */
+.unified-player-character-forge .npc-forge-ability-dice-tray.is-rolling .npc-forge-ability-dice-tray__surface {
+  overflow: hidden !important;
+}
+
+.unified-player-character-forge .npc-forge-ability-dice-tray.is-rolling .npc-forge-result-die {
+  pointer-events: none;
+  animation-name: forge-result-die-rattle !important;
+  animation-duration: var(--roll-duration, 1.65s) !important;
+  animation-delay: var(--roll-delay, 0s) !important;
+  animation-timing-function: cubic-bezier(.18,.72,.22,1) !important;
+  animation-fill-mode: both !important;
+}
+
+/* Each result gets a different route, spin direction, duration, and start delay.
+ * The amplitudes deliberately decay toward zero to read like energy being lost
+ * against the tray walls/floor before the die settles into its final slot. */
+.unified-player-character-forge .npc-forge-result-die:nth-child(1) {
+  --roll-duration: 1.72s; --roll-delay: .00s;
+  --x0: 250px; --y0: -118px; --r0: -620deg;
+  --x1: 112px; --y1: 72px;  --r1: 285deg;
+  --x2: 188px; --y2: -50px; --r2: -190deg;
+  --x3: 58px;  --y3: 40px;  --r3: 104deg;
+  --x4: -26px; --y4: -18px; --r4: -42deg;
+  --x5: 11px;  --y5: 7px;   --r5: 15deg;
+}
+
+.unified-player-character-forge .npc-forge-result-die:nth-child(2) {
+  --roll-duration: 1.58s; --roll-delay: .08s;
+  --x0: -132px; --y0: -142px; --r0: 575deg;
+  --x1: 156px;  --y1: 58px;   --r1: -250deg;
+  --x2: -82px;  --y2: -62px;  --r2: 176deg;
+  --x3: 73px;   --y3: 31px;   --r3: -92deg;
+  --x4: -24px;  --y4: -15px;  --r4: 36deg;
+  --x5: 8px;    --y5: 6px;    --r5: -12deg;
+}
+
+.unified-player-character-forge .npc-forge-result-die:nth-child(3) {
+  --roll-duration: 1.83s; --roll-delay: .03s;
+  --x0: 172px;  --y0: -102px; --r0: -690deg;
+  --x1: -148px; --y1: 78px;   --r1: 318deg;
+  --x2: 96px;   --y2: -54px;  --r2: -205deg;
+  --x3: -61px;  --y3: 37px;   --r3: 113deg;
+  --x4: 22px;   --y4: -17px;  --r4: -46deg;
+  --x5: -7px;   --y5: 6px;    --r5: 14deg;
+}
+
+.unified-player-character-forge .npc-forge-result-die:nth-child(4) {
+  --roll-duration: 1.66s; --roll-delay: .11s;
+  --x0: -184px; --y0: -126px; --r0: 640deg;
+  --x1: 136px;  --y1: 84px;   --r1: -296deg;
+  --x2: -106px; --y2: -43px;  --r2: 184deg;
+  --x3: 49px;   --y3: 39px;   --r3: -96deg;
+  --x4: -18px;  --y4: -19px;  --r4: 39deg;
+  --x5: 6px;    --y5: 7px;    --r5: -13deg;
+}
+
+.unified-player-character-forge .npc-forge-result-die:nth-child(5) {
+  --roll-duration: 1.77s; --roll-delay: .05s;
+  --x0: 116px;  --y0: -150px; --r0: -605deg;
+  --x1: -176px; --y1: 64px;   --r1: 274deg;
+  --x2: 124px;  --y2: -58px;  --r2: -192deg;
+  --x3: -72px;  --y3: 28px;   --r3: 101deg;
+  --x4: 27px;   --y4: -14px;  --r4: -41deg;
+  --x5: -9px;   --y5: 5px;    --r5: 13deg;
+}
+
+.unified-player-character-forge .npc-forge-result-die:nth-child(6) {
+  --roll-duration: 1.61s; --roll-delay: .13s;
+  --x0: -252px; --y0: -110px; --r0: 665deg;
+  --x1: -118px; --y1: 76px;   --r1: -306deg;
+  --x2: -194px; --y2: -47px;  --r2: 198deg;
+  --x3: -55px;  --y3: 35px;   --r3: -108deg;
+  --x4: 24px;   --y4: -16px;  --r4: 43deg;
+  --x5: -10px;  --y5: 6px;    --r5: -14deg;
+}
+
+@keyframes forge-result-die-rattle {
+  0% {
+    opacity: .15;
+    transform: translate3d(var(--x0), var(--y0), 0) rotate(var(--r0)) scale(.72);
+  }
+  15% {
+    opacity: 1;
+    transform: translate3d(var(--x1), var(--y1), 0) rotate(var(--r1)) scale(.93);
+  }
+  31% {
+    transform: translate3d(var(--x2), var(--y2), 0) rotate(var(--r2)) scale(1.03);
+  }
+  47% {
+    transform: translate3d(var(--x3), var(--y3), 0) rotate(var(--r3)) scale(.96);
+  }
+  62% {
+    transform: translate3d(var(--x4), var(--y4), 0) rotate(var(--r4)) scale(1.015);
+  }
+  76% {
+    transform: translate3d(var(--x5), var(--y5), 0) rotate(var(--r5)) scale(.99);
+  }
+  87% {
+    transform: translate3d(-4px, -7px, 0) rotate(-7deg) scale(1.005);
+  }
+  94% {
+    transform: translate3d(2px, 3px, 0) rotate(3deg) scale(.998);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+}
+
+/* The die itself stays visually simple after settling. Hover/focus carries the math. */
+.unified-player-character-forge .npc-forge-result-die:hover > strong,
+.unified-player-character-forge .npc-forge-result-die:focus-visible > strong {
+  text-shadow: 0 0 20px rgba(var(--die-rgb), .52);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .unified-player-character-forge .npc-forge-ability-dice-tray.is-rolling .npc-forge-result-die {
+    animation: none !important;
+    transform: none !important;
+  }
+}
