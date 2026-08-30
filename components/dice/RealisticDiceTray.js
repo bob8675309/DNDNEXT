@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import styles from "./RealisticDiceTray.module.css";
 import { normalizeVisualDice } from "../../utils/dice/diceRollContract";
 import { createDiceVisualSeed } from "../../utils/dice/diceVisualSeed";
@@ -18,8 +18,16 @@ function setDieTransform(element, body) {
   if (!element || !body) return;
   element.style.left = `${body.x}px`;
   element.style.top = `${body.y}px`;
+  element.style.zIndex = String(4 + Math.round(body.y / 52) + Math.round(body.z / 28));
   const cube = element.querySelector(`.${styles.cube}`);
-  if (cube) cube.style.transform = `rotateX(${body.rx}rad) rotateY(${body.ry}rad) rotateZ(${body.rz}rad)`;
+  if (cube) cube.style.transform = `translate3d(0, ${-body.z}px, 0) rotateX(${body.rx}rad) rotateY(${body.ry}rad) rotateZ(${body.rz}rad)`;
+  const shadow = element.querySelector(`.${styles.shadow}`);
+  if (shadow) {
+    const heightRatio = Math.min(1, Math.max(0, body.z / 120));
+    shadow.style.opacity = String(0.5 - heightRatio * 0.32);
+    shadow.style.transform = `translate(-50%, -50%) scale(${1 + heightRatio * 0.42})`;
+    shadow.style.filter = `blur(${6 + heightRatio * 6}px)`;
+  }
 }
 
 function dieStateClasses(die) {
@@ -29,23 +37,48 @@ function dieStateClasses(die) {
   ].filter(Boolean).join(" ");
 }
 
+export const ResultCubeDie = forwardRef(function ResultCubeDie({
+  die,
+  settled = true,
+  staticPlacement = false,
+  className = "",
+  draggable = settled,
+  renderTooltip = null,
+  onClick = null,
+  onDragStart = null,
+  showShadow = true,
+  ariaLabel = null,
+}, ref) {
+  if (!die) return null;
+  return <button
+    ref={ref}
+    type="button"
+    className={`${styles.die} ${styles[`accent_${die.accent}`] || styles.accent_violet} ${settled ? styles.settled : styles.rolling} ${staticPlacement ? styles.staticDie : ""} ${dieStateClasses(die)} ${className}`.trim()}
+    draggable={Boolean(draggable && settled)}
+    data-settled={settled ? "true" : "false"}
+    onClick={onClick || undefined}
+    onDragStart={onDragStart || undefined}
+    aria-label={ariaLabel || die.label}
+  >
+    {showShadow ? <span className={styles.shadow} aria-hidden="true" /> : null}
+    <div className={styles.cube} aria-hidden="true">
+      {FACE_NAMES.map((face) => <span key={face} className={`${styles.face} ${styles[`face_${face}`]}`}><b>{die.result}</b></span>)}
+    </div>
+    {renderTooltip?.(die, styles.detail)}
+  </button>;
+});
+
 function ReducedMotionLayout({ dice, renderTooltip, onDieClick, onDieDragStart }) {
   return <div className={styles.reduced} aria-label="Settled dice results">
-    {dice.map((die) => <button
+    {dice.map((die) => <ResultCubeDie
       key={die.id}
-      type="button"
-      className={`${styles.die} ${styles[`accent_${die.accent}`] || styles.accent_violet} ${styles.settled} ${dieStateClasses(die)}`.trim()}
-      draggable
-      data-settled="true"
+      die={die}
+      settled
+      staticPlacement
       onClick={(event) => onDieClick?.(die, event)}
       onDragStart={(event) => onDieDragStart?.(die, event)}
-      aria-label={die.label}
-    >
-      <div className={styles.cube} aria-hidden="true">
-        {FACE_NAMES.map((face) => <span key={face} className={`${styles.face} ${styles[`face_${face}`]}`}><b>{die.result}</b></span>)}
-      </div>
-      {renderTooltip?.(die, styles.detail)}
-    </button>)}
+      renderTooltip={renderTooltip}
+    />)}
   </div>;
 }
 
@@ -57,13 +90,18 @@ export default function RealisticDiceTray({
   renderTooltip = null,
   onDieClick = null,
   onDieDragStart = null,
+  onTrayDrop = null,
   onSettled = null,
+  hiddenDieIds = [],
   dieSize = 44,
 }) {
   const sourceDice = Array.isArray(diceInput) ? diceInput : [];
   const diceSignature = JSON.stringify(sourceDice.map((die) => [die?.id, die?.type, die?.result, die?.accent, die?.label, die?.detail]));
   const physicsSignature = JSON.stringify(sourceDice.map((die) => [die?.id, die?.type, die?.result, die?.accent]));
   const dice = useMemo(() => normalizeVisualDice(diceInput), [diceSignature]);
+  const hiddenSignature = JSON.stringify(Array.from(new Set((hiddenDieIds || []).map(String))).sort());
+  const hiddenIds = useMemo(() => new Set((hiddenDieIds || []).map(String)), [hiddenSignature]);
+  const visibleDice = dice.filter((die) => !hiddenIds.has(die.id));
   const surfaceRef = useRef(null);
   const dieRefs = useRef(new Map());
   const bumperRefs = useRef([]);
@@ -75,6 +113,16 @@ export default function RealisticDiceTray({
   const [settledIds, setSettledIds] = useState(() => new Set());
   const reducedMotion = prefersReducedMotion();
   const simulationKey = `${rollKey}|${physicsSignature}|${dieSize}`;
+
+  function attachDieRef(dieId, node) {
+    if (!node) {
+      dieRefs.current.delete(dieId);
+      return;
+    }
+    dieRefs.current.set(dieId, node);
+    const body = simulationRef.current?.bodies?.find((entry) => entry.id === dieId);
+    if (body) setDieTransform(node, body);
+  }
 
   useEffect(() => {
     if (reducedMotion || !surfaceRef.current || !dice.length) return undefined;
@@ -88,6 +136,7 @@ export default function RealisticDiceTray({
     simulationKeyRef.current = simulationKey;
     settledIdsRef.current = new Set();
     setSettledIds(new Set());
+    surface.style.setProperty("--tray-wall-inset", `${simulation.wallInset}px`);
 
     simulation.obstacles.forEach((obstacle, index) => {
       const bumper = bumperRefs.current[index];
@@ -109,7 +158,10 @@ export default function RealisticDiceTray({
       for (const body of simulation.bodies) setDieTransform(dieRefs.current.get(body.id), body);
 
       const nextSettledIds = new Set(simulation.bodies.filter((body) => body.settled).map((body) => body.id));
-      if (nextSettledIds.size !== settledIdsRef.current.size) {
+      const currentSettled = settledIdsRef.current;
+      const changed = nextSettledIds.size !== currentSettled.size
+        || [...nextSettledIds].some((id) => !currentSettled.has(id));
+      if (changed) {
         settledIdsRef.current = nextSettledIds;
         setSettledIds(nextSettledIds);
       }
@@ -142,22 +194,28 @@ export default function RealisticDiceTray({
   if (!dice.length) return null;
 
   return <div className={`${styles.tray} ${className}`.trim()} aria-label={ariaLabel}>
-    <div ref={surfaceRef} className={styles.surface}>
+    <div
+      ref={surfaceRef}
+      className={styles.surface}
+      onDragOver={onTrayDrop ? (event) => {
+        if (event.dataTransfer?.types?.includes("text/npc-forge-roll")) event.preventDefault();
+      } : undefined}
+      onDrop={onTrayDrop ? (event) => {
+        if (!event.dataTransfer?.getData("text/npc-forge-roll")) return;
+        event.preventDefault();
+        onTrayDrop(event);
+      } : undefined}
+    >
       <div ref={(node) => { bumperRefs.current[0] = node; }} className={`${styles.bumper} ${styles.bumper_one}`} aria-hidden="true" />
       <div ref={(node) => { bumperRefs.current[1] = node; }} className={`${styles.bumper} ${styles.bumper_two}`} aria-hidden="true" />
       <div ref={(node) => { bumperRefs.current[2] = node; }} className={`${styles.bumper} ${styles.bumper_three}`} aria-hidden="true" />
-      {reducedMotion ? <ReducedMotionLayout dice={dice} renderTooltip={renderTooltip} onDieClick={onDieClick} onDieDragStart={onDieDragStart} /> : dice.map((die) => {
+      {reducedMotion ? <ReducedMotionLayout dice={visibleDice} renderTooltip={renderTooltip} onDieClick={onDieClick} onDieDragStart={onDieDragStart} /> : visibleDice.map((die) => {
         const settled = simulationKeyRef.current === simulationKey && settledIds.has(die.id);
-        return <button
+        return <ResultCubeDie
           key={die.id}
-          ref={(node) => {
-            if (node) dieRefs.current.set(die.id, node);
-            else dieRefs.current.delete(die.id);
-          }}
-          type="button"
-          className={`${styles.die} ${styles[`accent_${die.accent}`] || styles.accent_violet} ${settled ? styles.settled : styles.rolling} ${dieStateClasses(die)}`.trim()}
-          draggable={settled}
-          data-settled={settled ? "true" : "false"}
+          ref={(node) => attachDieRef(die.id, node)}
+          die={die}
+          settled={settled}
           onClick={(event) => {
             if (!settled) return;
             onDieClick?.(die, event);
@@ -169,14 +227,8 @@ export default function RealisticDiceTray({
             }
             onDieDragStart?.(die, event);
           }}
-          aria-label={die.label}
-        >
-          <span className={styles.shadow} aria-hidden="true" />
-          <div className={styles.cube} aria-hidden="true">
-            {FACE_NAMES.map((face) => <span key={face} className={`${styles.face} ${styles[`face_${face}`]}`}><b>{die.result}</b></span>)}
-          </div>
-          {renderTooltip?.(die, styles.detail)}
-        </button>;
+          renderTooltip={renderTooltip}
+        />;
       })}
     </div>
   </div>;
