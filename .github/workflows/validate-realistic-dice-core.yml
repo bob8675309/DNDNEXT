@@ -28,5 +28,7 @@ jobs:
       - run: npm ci
       - name: Validate reusable Realistic Dice core
         run: node scripts/validate_realistic_dice_core.mjs
-      - name: Build application
-        run: npm run build
+      # Do not run a bare `next build` in this workflow: this repository's page-data
+      # collection requires deployment Supabase environment variables that are not
+      # exposed to GitHub Actions. Exact-head production compilation is verified by
+      # the Vercel preview deployment instead; the semantic dice guard runs here.
