@@ -42,9 +42,15 @@ assert(!catalog.includes('className="npc-forge-catalog-head"'), "Redundant playe
 
 for (const token of [
   'import { useEffect, useRef, useState } from "react"',
+  'import { createPortal } from "react-dom"',
   "const [collapsed, setCollapsed] = useState(true)",
   "const [floatingPosition, setFloatingPosition] = useState(null)",
+  "const [portalHost, setPortalHost] = useState(null)",
   "boundedDockPosition",
+  'window.matchMedia("(min-width: 901px)")',
+  "setPortalHost(document.body)",
+  "createPortal(dock, portalHost)",
+  "is-viewport-floating",
   "setPointerCapture",
   "releasePointerCapture",
   "handleDragStart",
@@ -52,14 +58,14 @@ for (const token of [
   "handleDragEnd",
   'aria-expanded={!collapsed}',
   'className="npc-forge-class-feature-dock__body" hidden={collapsed}',
-  "npc-forge-class-feature-dock.is-floating",
   "position:fixed!important",
-  "max-height:min(62dvh",
-  "npc-forge-class-feature-dock.is-floating.is-collapsed",
-  "position:static!important",
-]) assert(dock.includes(token), `Floating/collapsible Class description window is missing ${token}`);
+  "max-height:min(72dvh",
+  "position:sticky",
+]) assert(dock.includes(token), `Viewport-owned/collapsible Class description window is missing ${token}`);
 assert(dock.includes("event.target?.closest?.(\"button,a,input,select,textarea,summary\")"), "Class dock drag handle must not steal pointer interaction from controls.");
 assert(dock.includes("window.addEventListener(\"resize\", keepDockVisible)"), "Floating Class description window must stay recoverable after viewport resize.");
+assert(dock.includes("npc-forge-step-class") && dock.includes("radial-gradient(circle at 76% 16%"), "Scoped Class-tab visual refresh is missing.");
+assert(dock.includes("font-size:.72rem!important;line-height:1.58!important"), "Class feature window summary typography regressed to the tiny browser-review size.");
 
 const specialArtwork = {
   civilian: "/media/species/human.webp",
@@ -110,8 +116,8 @@ for (const token of [
 assert(dock.includes("classPresentationSummary(selectedClass)"), "Floating Class feature dock must keep the richer selected-Class overview copy.");
 
 // Older browser-polish rules may still describe the original in-flow fallback.
-// The component-level .is-floating selector is intentionally more specific and
-// owns the desktop floating state; mobile retains the in-flow fallback.
+// Desktop now portals the description window to document.body so transformed
+// Forge ancestors cannot trap position: fixed. Mobile retains the in-flow fallback.
 assert(polish.includes("npc-forge-step-2"), "Class browser polish scope disappeared.");
 
 const protectedSources = `${step}\n${catalog}\n${guide}\n${dock}\n${artwork}\n${presentation}\n${catalogWrapper}\n${polish}`.toLowerCase();
@@ -119,4 +125,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSources.includes(token), `Class browser patch unexpectedly references protected map/town behavior: ${token}`);
 }
 
-console.log("Class browser polish validation passed: compact multi-row catalogue, redundant player-facing headings removed, floating/collapsible recoverable feature details, nested Sidekick catalogue, unique special-Class portraits, Mystic Intelligence normalization, and protected map/town boundaries are intact.");
+console.log("Class browser polish validation passed: compact multi-row catalogue, viewport-owned draggable/collapsible feature details, readable detail typography, scoped Class visual refresh, nested Sidekick catalogue, unique special-Class portraits, Mystic Intelligence normalization, and protected map/town boundaries are intact.");

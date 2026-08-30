@@ -103,6 +103,9 @@ expect(ability.includes("onReroll();"), "existing Forge roll authority must rema
 expect(ability.includes("showAbilityDetail") && ability.includes("onFocusCapture={showAbilityDetail}"), "ability hover/click/focus detail routing missing");
 expect(ability.includes("modifier={modifierLabel(finalAbilities?.[key] ?? roll.total)}"), "assigned die does not receive its current ability modifier");
 expect(abilityContext.includes("ABILITY_DETAILED_GUIDE") && abilityContext.includes("activeGuide.uses.map"), "focused ability description and use bullets missing");
+expect(abilityContext.includes('activeGuide ? <div className={`npc-forge-ability-guide__focus') && abilityContext.includes(': <div className="npc-forge-ability-guide__placeholder">'), "Ability Guide must render focused detail instead of stacking it above the generic six-ability placeholder.");
+expect(abilityContext.includes('className="npc-forge-ability-guide__list"') && abilityContext.includes("has-focus") && abilityContext.includes("is-placeholder"), "Ability Guide focused/placeholder presentation states missing");
+expect(abilityContext.includes("flex: 1 1 auto") && abilityContext.includes("npc-forge-ability-guide__focus-uses"), "focused Ability Guide must fill the available guide card with readable detail.");
 expect(abilityGlyph.includes("ABILITY_DETAILED_GUIDE") && abilityGlyph.includes("Athletics checks") && abilityGlyph.includes("Persuasion checks"), "six-ability detailed guide content missing");
 expect(!tray.includes("onReroll") && !physics.includes("roll.total"), "reusable visual core must not own Forge RNG/math");
 
@@ -111,4 +114,4 @@ for (const source of [tray, adapter, contract, seed, physics]) {
   for (const token of protectedTokens) expect(!source.includes(token), `dice core crossed protected runtime boundary: ${token}`);
 }
 
-console.log("Reusable Realistic Dice core validated: exponential per-die gravity/contact ramps, rotated corner/edge floor support with gravity righting torque, conservative solid-cube collisions, smoothed shortest-path rendering aligned to the physics rotation convention, strict visual face-flat completion, prompt result reveal, authoritative-result contract, assigned die transfer/return, React-owned drag gating, Forge allocation authority, and protected boundaries.");
+console.log("Reusable Realistic Dice core validated: exponential per-die gravity/contact ramps, rotated corner/edge floor support with gravity righting torque, conservative solid-cube collisions, smoothed shortest-path rendering aligned to the physics rotation convention, strict visual face-flat completion, prompt result reveal, authoritative-result contract, assigned die transfer/return, React-owned drag gating, exclusive focused Ability Guide presentation, Forge allocation authority, and protected boundaries.");
