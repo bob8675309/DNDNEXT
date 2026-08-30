@@ -7,7 +7,7 @@ import {
   canSetPointBuyScore,
   pointBuyRemaining,
 } from "../utils/playerForgeRules";
-import ForgeAbilityDiceTray from "./dice/adapters/ForgeAbilityDiceTray";
+import ForgeAbilityDiceTray, { ForgeAssignedAbilityDie } from "./dice/adapters/ForgeAbilityDiceTray";
 import NpcForgeAbilityGlyph, { ABILITY_WALL_COPY } from "./NpcForgeAbilityGlyph";
 
 function methodHelp(method) {
@@ -66,10 +66,11 @@ export default function NpcForgeAbilityStep({
         <div className="npc-forge-ability-wall__list">
           {ABILITY_KEYS.map((key) => {
             const roll = rolled && hasRolled ? rolls.find((entry) => entry.id === allocation[key]) : null;
+            const rollIndex = roll ? rolls.findIndex((entry) => entry.id === roll.id) : -1;
             const baseValue = Number(draft.baseAbilities?.[key] ?? 10);
             return <div
               key={key}
-              className={`npc-forge-ability-wall__row is-${key}${roll ? " is-filled" : ""}${selectedRollId && hasRolled ? " is-ready" : ""}`}
+              className={`npc-forge-ability-wall__row is-${key}${roll ? " is-filled" : ""}${selectedRollId && hasRolled && !roll ? " is-ready" : ""}`}
               onMouseEnter={() => onDetail({ type: "ability", key })}
               onDragOver={rolled && hasRolled ? (event) => event.preventDefault() : undefined}
               onDrop={rolled && hasRolled ? (event) => {
@@ -82,31 +83,44 @@ export default function NpcForgeAbilityStep({
                 <strong>{ABILITY_LABELS[key]}</strong>
                 <span>{ABILITY_WALL_COPY[key]}</span>
               </div>
-              {rolled ? <button
-                type="button"
-                className="npc-forge-ability-wall__score"
-                onClick={() => hasRolled && onAllocate(key, selectedRollId)}
-                aria-label={`Assign selected roll to ${ABILITY_LABELS[key]}`}
-              >{roll?.total ?? "—"}</button> : <input
-                className="npc-forge-ability-wall__score"
-                type="number"
-                min={pointBuy ? POINT_BUY_MIN : 1}
-                max={pointBuy ? POINT_BUY_MAX : 30}
-                value={baseValue}
-                readOnly={standard}
-                onChange={(event) => {
-                  const value = Number(event.target.value);
-                  if (!pointBuy || canSetPointBuyScore(draft.baseAbilities, key, value)) onSetAbility(key, value);
-                }}
-                aria-label={`${ABILITY_LABELS[key]} base score`}
-              />}
-              <button
+              {rolled ? (roll ? <div style={{ gridColumn: "3 / 5", justifySelf: "center" }}>
+                <ForgeAssignedAbilityDie
+                  roll={roll}
+                  rollIndex={Math.max(0, rollIndex)}
+                  ability={key}
+                  allocation={allocation}
+                  selectedRollId={selectedRollId}
+                  onSelectRoll={onSelectRoll}
+                  onReturnRoll={(ability) => onAllocate(ability, "")}
+                />
+              </div> : <button
                 type="button"
                 className="npc-forge-ability-wall__drop"
-                onClick={rolled && hasRolled ? () => onAllocate(key, selectedRollId) : undefined}
-                disabled={!rolled || !hasRolled}
-                tabIndex={rolled && hasRolled ? 0 : -1}
-              >{rolled ? (roll ? "Replace score" : hasRolled ? "Drop score here" : "Roll dice first") : (pointBuy ? "Point Buy" : standard ? "Class Array" : "Manual")}</button>
+                style={{ gridColumn: "3 / 5", width: "100%" }}
+                onClick={hasRolled ? () => onAllocate(key, selectedRollId) : undefined}
+                disabled={!hasRolled}
+                tabIndex={hasRolled ? 0 : -1}
+              >{hasRolled ? (selectedRollId ? "Place selected die" : "Drop die here") : "Roll dice first"}</button>) : <>
+                <input
+                  className="npc-forge-ability-wall__score"
+                  type="number"
+                  min={pointBuy ? POINT_BUY_MIN : 1}
+                  max={pointBuy ? POINT_BUY_MAX : 30}
+                  value={baseValue}
+                  readOnly={standard}
+                  onChange={(event) => {
+                    const value = Number(event.target.value);
+                    if (!pointBuy || canSetPointBuyScore(draft.baseAbilities, key, value)) onSetAbility(key, value);
+                  }}
+                  aria-label={`${ABILITY_LABELS[key]} base score`}
+                />
+                <button
+                  type="button"
+                  className="npc-forge-ability-wall__drop"
+                  disabled
+                  tabIndex={-1}
+                >{pointBuy ? "Point Buy" : standard ? "Class Array" : "Manual"}</button>
+              </>}
             </div>;
           })}
         </div>
@@ -148,9 +162,10 @@ export default function NpcForgeAbilityStep({
               selectedRollId={selectedRollId}
               rollKey={rollSequence}
               onSelectRoll={onSelectRoll}
+              onReturnRoll={(ability) => onAllocate(ability, "")}
             />}
           </div>
-          <div className="npc-forge-ability-dice-tray__tip">✦&nbsp; Hover a settled result die for the dice math. Drag the final total into an ability slot.</div>
+          <div className="npc-forge-ability-dice-tray__tip">✦&nbsp; Hover a settled die for the dice math. Drag it into an ability slot; drag an assigned die back into the tray to return it.</div>
         </section> : pointBuy ? <div className={`npc-forge-point-buy-budget${remaining < 0 ? " is-invalid" : ""}`}>
           <div><span>Point Buy Budget</span><strong>{Math.max(0, remaining)} / {POINT_BUY_BUDGET} remaining</strong></div>
           <p>Adjust the six scores in the left column. Species Bonus is applied afterward.</p>
