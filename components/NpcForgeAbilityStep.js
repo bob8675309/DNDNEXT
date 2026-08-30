@@ -73,7 +73,7 @@ export default function NpcForgeAbilityStep({
     setIsRolling(true);
     onReroll();
     setHasRolled(true);
-    rollAnimationTimer.current = setTimeout(() => setIsRolling(false), 1150);
+    rollAnimationTimer.current = setTimeout(() => setIsRolling(false), 2250);
   }
 
   // Compatibility contract: Ability Score Generation Method; 4d6 drop lowest die; Reroll All Six; Species Bonus stays in the right information panel.
