@@ -56,9 +56,11 @@ export default function RealisticDiceTray({
   onSettled = null,
   dieSize = 44,
 }) {
-  const dice = useMemo(() => normalizeVisualDice(diceInput), [diceInput]);
+  const diceSignature = JSON.stringify((Array.isArray(diceInput) ? diceInput : []).map((die) => [die?.id, die?.type, die?.result, die?.accent, die?.label, die?.detail]));
+  const dice = useMemo(() => normalizeVisualDice(diceInput), [diceSignature]);
   const surfaceRef = useRef(null);
   const dieRefs = useRef(new Map());
+  const bumperRefs = useRef([]);
   const simulationRef = useRef(null);
   const frameRef = useRef(null);
   const resizeObserverRef = useRef(null);
@@ -73,6 +75,16 @@ export default function RealisticDiceTray({
     const visualSeed = createDiceVisualSeed(`roll-${rollKey}`);
     const simulation = createDiceSimulation({ dice, width, height, seed: visualSeed, dieSize });
     simulationRef.current = simulation;
+
+    simulation.obstacles.forEach((obstacle, index) => {
+      const bumper = bumperRefs.current[index];
+      if (!bumper) return;
+      bumper.style.left = `${obstacle.x}px`;
+      bumper.style.top = `${obstacle.y}px`;
+      bumper.style.width = `${obstacle.radius * 2}px`;
+      bumper.style.marginLeft = `${-obstacle.radius}px`;
+      bumper.style.marginTop = `${-obstacle.radius}px`;
+    });
 
     for (const body of simulation.bodies) setSettledTransform(dieRefs.current.get(body.id), body);
 
@@ -105,15 +117,15 @@ export default function RealisticDiceTray({
       resizeObserverRef.current = null;
       simulationRef.current = null;
     };
-  }, [dice, dieSize, reducedMotion, rollKey, onSettled]);
+  }, [diceSignature, dieSize, reducedMotion, rollKey, onSettled]);
 
   if (!dice.length) return null;
 
   return <div className={`${styles.tray} ${className}`.trim()} aria-label={ariaLabel}>
     <div ref={surfaceRef} className={styles.surface}>
-      <div className={`${styles.bumper} ${styles.bumper_one}`} aria-hidden="true" />
-      <div className={`${styles.bumper} ${styles.bumper_two}`} aria-hidden="true" />
-      <div className={`${styles.bumper} ${styles.bumper_three}`} aria-hidden="true" />
+      <div ref={(node) => { bumperRefs.current[0] = node; }} className={`${styles.bumper} ${styles.bumper_one}`} aria-hidden="true" />
+      <div ref={(node) => { bumperRefs.current[1] = node; }} className={`${styles.bumper} ${styles.bumper_two}`} aria-hidden="true" />
+      <div ref={(node) => { bumperRefs.current[2] = node; }} className={`${styles.bumper} ${styles.bumper_three}`} aria-hidden="true" />
       {reducedMotion ? <ReducedMotionLayout dice={dice} renderTooltip={renderTooltip} onDieClick={onDieClick} onDieDragStart={onDieDragStart} /> : dice.map((die) => <button
         key={die.id}
         ref={(node) => {
