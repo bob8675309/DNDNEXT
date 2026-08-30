@@ -2,7 +2,7 @@ import { createSeededRandom } from "../diceVisualSeed";
 
 const TAU = Math.PI * 2;
 const QUARTER_TURN = Math.PI / 2;
-const GRAVITY = 980;
+const GRAVITY = 1120;
 const SIDES = ["left", "right", "top", "bottom"];
 
 function between(random, min, max) {
@@ -11,6 +11,10 @@ function between(random, min, max) {
 
 function choose(random, values) {
   return values[Math.floor(random() * values.length) % values.length];
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
 }
 
 function speed(body) {
@@ -36,18 +40,35 @@ function faceFlatError(body) {
   );
 }
 
-function guideToFlatFace(body, dt, strength = 7) {
+function effectiveGravity(body, elapsed) {
+  const rampTime = Math.max(0, elapsed - body.gravityRampStart);
+  const scale = Math.min(body.gravityMaxScale, 1 + rampTime * body.gravityRampRate);
+  return GRAVITY * scale;
+}
+
+// Do not rotate the cube directly toward a final pose. Once a slowing die has sustained
+// floor contact, apply a damped angular spring toward the nearest stable face. The actual
+// rx/ry angles continue to be integrated from angular velocity, so the last few degrees
+// visibly tip down rather than snapping into place.
+function guideToFlatFace(body, dt, strength = body.faceSpring, damping = body.faceDamping) {
   if (!Number.isFinite(body.flatTargetX)) body.flatTargetX = nearestQuarterTurn(body.rx);
   if (!Number.isFinite(body.flatTargetY)) body.flatTargetY = nearestQuarterTurn(body.ry);
-  const blend = 1 - Math.exp(-strength * dt);
-  body.rx += shortestAngleDelta(body.rx, body.flatTargetX) * blend;
-  body.ry += shortestAngleDelta(body.ry, body.flatTargetY) * blend;
+
+  const errorX = shortestAngleDelta(body.rx, body.flatTargetX);
+  const errorY = shortestAngleDelta(body.ry, body.flatTargetY);
+  body.wx += errorX * strength * dt;
+  body.wy += errorY * strength * dt;
+
+  const dampingDecay = Math.exp(-damping * dt);
+  body.wx *= dampingDecay;
+  body.wy *= dampingDecay;
 }
 
 function wakeBody(body) {
   if (!body?.settled || body.active === false) return;
   body.settled = false;
   body.settleFrames = 0;
+  body.groundedTime = 0;
   body.flatTargetX = null;
   body.flatTargetY = null;
 }
@@ -55,7 +76,7 @@ function wakeBody(body) {
 function addImpactLift(body, impact) {
   if (body.active === false || body.z > body.radius * 0.4 || impact < 115) return;
   wakeBody(body);
-  body.vz = Math.max(body.vz, Math.min(155, 22 + impact * 0.16));
+  body.vz = Math.max(body.vz, Math.min(150, 18 + impact * 0.15));
 }
 
 function trayBounds(simulation, body) {
@@ -85,6 +106,7 @@ function resolveWall(body, simulation) {
     body.wz -= body.vy * 0.006;
     addImpactLift(body, impact);
   }
+
   if (body.y < bounds.top) {
     const impact = Math.abs(body.vy);
     body.y = bounds.top;
@@ -105,17 +127,20 @@ function resolveWall(body, simulation) {
 function resolveFloor(body) {
   if (body.z > 0) return false;
   body.z = 0;
+
   if (body.vz < -body.floorBounceThreshold) {
     const impact = -body.vz;
     body.vz = impact * body.floorRestitution;
-    body.wx += body.vy / Math.max(12, body.radius) * 0.11;
-    body.wy -= body.vx / Math.max(12, body.radius) * 0.11;
-    body.wz += (body.vx - body.vy) * 0.0018;
+    body.wx += body.vy / Math.max(12, body.radius) * 0.1;
+    body.wy -= body.vx / Math.max(12, body.radius) * 0.1;
+    body.wz += (body.vx - body.vy) * 0.0016;
     body.settleFrames = 0;
+    body.groundedTime = 0;
     body.flatTargetX = null;
     body.flatTargetY = null;
     return false;
   }
+
   body.vz = 0;
   return true;
 }
@@ -170,7 +195,7 @@ function resolveCircleCollision(a, b) {
   b.wz -= (rvx * ny - rvy * nx) * 0.024;
 
   if (impact > 90) {
-    const lift = Math.min(125, 14 + impact * 0.12);
+    const lift = Math.min(118, 12 + impact * 0.11);
     if (a.z < a.radius * 0.45) a.vz = Math.max(a.vz, lift * 0.72);
     if (b.z < b.radius * 0.45) b.vz = Math.max(b.vz, lift);
   }
@@ -216,6 +241,7 @@ function spawnBody(die, index, count, width, height, random, size, wallInset) {
   const edgeDepth = between(random, 0, radius * 0.3);
   let x;
   let y;
+
   if (side === "left") { x = left + edgeDepth; y = between(random, top, bottom); }
   else if (side === "right") { x = right - edgeDepth; y = between(random, top, bottom); }
   else if (side === "top") { x = between(random, left, right); y = top + edgeDepth; }
@@ -237,30 +263,36 @@ function spawnBody(die, index, count, width, height, random, size, wallInset) {
     active: true,
     x,
     y,
-    z: between(random, 12, 48),
+    z: between(random, 12, 44),
     vx: nx * launchSpeed + tx * lateral,
     vy: ny * launchSpeed + ty * lateral,
-    vz: between(random, 70, 175),
+    vz: between(random, 65, 155),
     rx: between(random, -Math.PI, Math.PI),
     ry: between(random, -Math.PI, Math.PI),
     rz: between(random, -Math.PI, Math.PI),
-    wx: between(random, -11, 11) || 6,
-    wy: between(random, -12, 12) || -7,
-    wz: between(random, -5, 5) || 3,
+    wx: between(random, -10.5, 10.5) || 6,
+    wy: between(random, -11.5, 11.5) || -7,
+    wz: between(random, -4.5, 4.5) || 3,
     radius,
     invMass: 1,
-    restitution: between(random, 0.62, 0.82),
-    floorRestitution: between(random, 0.25, 0.39),
-    floorBounceThreshold: between(random, 34, 48),
-    airDamping: between(random, 0.08, 0.16),
-    groundFriction: between(random, 0.62, 1.12),
-    rollingResistance: between(random, 0.42, 0.82),
-    angularAirDamping: between(random, 0.18, 0.34),
-    yawDamping: between(random, 1.15, 2.15),
-    rollCoupling: between(random, 7.5, 12),
-    settleAfter: between(random, 1.35, 2.35),
-    forceAfter: between(random, 4.4, 5.65),
-    settleFramesRequired: Math.round(between(random, 11, 22)),
+    restitution: between(random, 0.6, 0.78),
+    floorRestitution: between(random, 0.2, 0.32),
+    floorBounceThreshold: between(random, 30, 42),
+    airDamping: between(random, 0.1, 0.2),
+    groundFriction: between(random, 0.9, 1.45),
+    rollingResistance: between(random, 0.7, 1.15),
+    angularAirDamping: between(random, 0.28, 0.48),
+    yawDamping: between(random, 1.45, 2.5),
+    rollCoupling: between(random, 8.5, 13.5),
+    gravityRampStart: between(random, 0.12, 0.58),
+    gravityRampRate: between(random, 0.07, 0.115),
+    gravityMaxScale: between(random, 1.25, 1.45),
+    faceSpring: between(random, 17, 24),
+    faceDamping: between(random, 4.6, 6.3),
+    settleAfter: between(random, 1.2, 2.1),
+    forceAfter: between(random, 4.65, 5.9),
+    settleFramesRequired: Math.round(between(random, 14, 24)),
+    groundedTime: 0,
     settled: false,
     settleFrames: 0,
     flatTargetX: null,
@@ -338,13 +370,17 @@ export function stepDiceSimulation(simulation, deltaSeconds) {
   for (const body of simulation.bodies) {
     if (body.active === false || body.settled) continue;
 
-    body.vz -= GRAVITY * dt;
+    body.vz -= effectiveGravity(body, simulation.elapsed) * dt;
     body.x += body.vx * dt;
     body.y += body.vy * dt;
     body.z += body.vz * dt;
 
     const grounded = resolveFloor(body);
-    const planarDamping = grounded ? body.groundFriction : body.airDamping;
+    body.groundedTime = grounded ? body.groundedTime + dt : 0;
+
+    // Grip grows with sustained contact instead of all dice entering one shared slowdown phase.
+    const contactGrip = grounded ? 1 + clamp(body.groundedTime * 0.7, 0, 0.65) : 1;
+    const planarDamping = grounded ? body.groundFriction * contactGrip : body.airDamping;
     const linearDecay = Math.exp(-planarDamping * dt);
     body.vx *= linearDecay;
     body.vy *= linearDecay;
@@ -355,10 +391,10 @@ export function stepDiceSimulation(simulation, deltaSeconds) {
       const rollBlend = 1 - Math.exp(-body.rollCoupling * dt);
       body.wx += (targetWx - body.wx) * rollBlend;
       body.wy += (targetWy - body.wy) * rollBlend;
-      const rollingDecay = Math.exp(-body.rollingResistance * dt);
+      const rollingDecay = Math.exp(-body.rollingResistance * contactGrip * dt);
       body.wx *= rollingDecay;
       body.wy *= rollingDecay;
-      body.wz *= Math.exp(-body.yawDamping * dt);
+      body.wz *= Math.exp(-body.yawDamping * contactGrip * dt);
     } else {
       const angularDecay = Math.exp(-body.angularAirDamping * dt);
       body.wx *= angularDecay;
@@ -382,30 +418,39 @@ export function stepDiceSimulation(simulation, deltaSeconds) {
 
   for (const body of simulation.bodies) {
     if (body.active === false || body.settled) continue;
+
     const grounded = body.z <= 0.001 && Math.abs(body.vz) < 0.001;
     const planarSpeed = speed(body);
     const spin = angularSpeed(body);
     const forceSettle = simulation.elapsed > body.forceAfter;
+    const contactReady = grounded && body.groundedTime > 0.08 && simulation.elapsed > body.settleAfter;
 
-    if (grounded && simulation.elapsed > body.settleAfter && (planarSpeed < 56 || forceSettle)) {
-      guideToFlatFace(body, dt, forceSettle ? 13 : 6.5);
-      const braking = Math.exp(-(forceSettle ? 5.6 : 1.5) * dt);
+    if (contactReady && (planarSpeed < 96 || forceSettle)) {
+      const lowEnergy = clamp(1 - planarSpeed / 100, 0, 1) * clamp(1 - spin / 8, 0.2, 1);
+      const springStrength = body.faceSpring * (0.45 + lowEnergy * 0.9) + (forceSettle ? 8 : 0);
+      const springDamping = body.faceDamping * (0.7 + lowEnergy * 0.65) + (forceSettle ? 1.2 : 0);
+      guideToFlatFace(body, dt, springStrength, springDamping);
+
+      // Increase rolling/contact resistance as each individual die loses energy. This is deliberately
+      // per-die and contact-driven, avoiding the synchronized late-roll lag from the earlier version.
+      const brakingStrength = 0.45 + lowEnergy * 1.65 + (forceSettle ? 1.25 : 0);
+      const braking = Math.exp(-brakingStrength * dt);
       body.vx *= braking;
       body.vy *= braking;
-      body.wx *= braking;
-      body.wy *= braking;
-      body.wz *= Math.exp(-(forceSettle ? 7 : 2.4) * dt);
+      body.wz *= Math.exp(-(1.4 + lowEnergy * 2.2 + (forceSettle ? 1.5 : 0)) * dt);
       if (forceSettle) body.forced = true;
-    } else {
+    } else if (!grounded || planarSpeed > 115) {
       body.flatTargetX = null;
       body.flatTargetY = null;
     }
 
     const quiet = grounded
-      && planarSpeed < 8
-      && spin < 0.55
-      && faceFlatError(body) < 0.035;
+      && body.groundedTime > 0.12
+      && planarSpeed < 5
+      && spin < 0.22
+      && faceFlatError(body) < 0.008;
     body.settleFrames = quiet ? body.settleFrames + 1 : 0;
+
     if (body.settleFrames > body.settleFramesRequired) {
       body.vx = 0;
       body.vy = 0;
