@@ -1,6 +1,8 @@
 import { createSeededRandom } from "../diceVisualSeed";
 
 const TAU = Math.PI * 2;
+const QUARTER_TURN = Math.PI / 2;
+const GRAVITY = 980;
 const SIDES = ["left", "right", "top", "bottom"];
 
 function between(random, min, max) {
@@ -11,6 +13,10 @@ function choose(random, values) {
   return values[Math.floor(random() * values.length) % values.length];
 }
 
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
 function speed(body) {
   return Math.hypot(body.vx, body.vy);
 }
@@ -19,29 +25,109 @@ function angularSpeed(body) {
   return Math.hypot(body.wx, body.wy, body.wz);
 }
 
-function resolveWall(body, width, height) {
-  const r = body.radius;
-  if (body.x < r) {
-    body.x = r;
+function shortestAngleDelta(current, target) {
+  return Math.atan2(Math.sin(target - current), Math.cos(target - current));
+}
+
+function nearestQuarterTurn(value) {
+  return Math.round(value / QUARTER_TURN) * QUARTER_TURN;
+}
+
+function faceFlatError(body) {
+  return Math.max(
+    Math.abs(shortestAngleDelta(body.rx, nearestQuarterTurn(body.rx))),
+    Math.abs(shortestAngleDelta(body.ry, nearestQuarterTurn(body.ry))),
+  );
+}
+
+function guideToFlatFace(body, dt, strength = 7) {
+  if (!Number.isFinite(body.flatTargetX)) body.flatTargetX = nearestQuarterTurn(body.rx);
+  if (!Number.isFinite(body.flatTargetY)) body.flatTargetY = nearestQuarterTurn(body.ry);
+  const blend = 1 - Math.exp(-strength * dt);
+  body.rx += shortestAngleDelta(body.rx, body.flatTargetX) * blend;
+  body.ry += shortestAngleDelta(body.ry, body.flatTargetY) * blend;
+}
+
+function wakeBody(body) {
+  if (!body?.settled) return;
+  body.settled = false;
+  body.settleFrames = 0;
+  body.flatTargetX = null;
+  body.flatTargetY = null;
+}
+
+function addImpactLift(body, impact) {
+  if (body.z > body.radius * 0.4 || impact < 115) return;
+  wakeBody(body);
+  body.vz = Math.max(body.vz, Math.min(155, 22 + impact * 0.16));
+}
+
+function trayBounds(simulation, body) {
+  const inset = simulation.wallInset;
+  return {
+    left: inset + body.radius,
+    right: simulation.width - inset - body.radius,
+    top: inset + body.radius,
+    bottom: simulation.height - inset - body.radius,
+  };
+}
+
+function resolveWall(body, simulation) {
+  const bounds = trayBounds(simulation, body);
+  if (body.x < bounds.left) {
+    const impact = Math.abs(body.vx);
+    body.x = bounds.left;
     body.vx = Math.abs(body.vx) * body.restitution;
-    body.wy *= -0.88;
-  } else if (body.x > width - r) {
-    body.x = width - r;
+    body.wy -= impact / Math.max(12, body.radius) * 0.42;
+    body.wz += body.vy * 0.006;
+    addImpactLift(body, impact);
+  } else if (body.x > bounds.right) {
+    const impact = Math.abs(body.vx);
+    body.x = bounds.right;
     body.vx = -Math.abs(body.vx) * body.restitution;
-    body.wy *= -0.88;
+    body.wy += impact / Math.max(12, body.radius) * 0.42;
+    body.wz -= body.vy * 0.006;
+    addImpactLift(body, impact);
   }
-  if (body.y < r) {
-    body.y = r;
+  if (body.y < bounds.top) {
+    const impact = Math.abs(body.vy);
+    body.y = bounds.top;
     body.vy = Math.abs(body.vy) * body.restitution;
-    body.wx *= -0.88;
-  } else if (body.y > height - r) {
-    body.y = height - r;
+    body.wx += impact / Math.max(12, body.radius) * 0.42;
+    body.wz -= body.vx * 0.006;
+    addImpactLift(body, impact);
+  } else if (body.y > bounds.bottom) {
+    const impact = Math.abs(body.vy);
+    body.y = bounds.bottom;
     body.vy = -Math.abs(body.vy) * body.restitution;
-    body.wx *= -0.88;
+    body.wx -= impact / Math.max(12, body.radius) * 0.42;
+    body.wz += body.vx * 0.006;
+    addImpactLift(body, impact);
   }
 }
 
+function resolveFloor(body) {
+  if (body.z > 0) return false;
+  body.z = 0;
+  if (body.vz < -body.floorBounceThreshold) {
+    const impact = -body.vz;
+    body.vz = impact * body.floorRestitution;
+    body.wx += body.vy / Math.max(12, body.radius) * 0.11;
+    body.wy -= body.vx / Math.max(12, body.radius) * 0.11;
+    body.wz += (body.vx - body.vy) * 0.0018;
+    body.settleFrames = 0;
+    body.flatTargetX = null;
+    body.flatTargetY = null;
+    return false;
+  }
+  body.vz = 0;
+  return true;
+}
+
 function resolveCircleCollision(a, b) {
+  const verticalDistance = Math.abs(a.z - b.z);
+  if (verticalDistance > Math.max(a.radius, b.radius) * 1.25) return;
+
   const dx = b.x - a.x;
   const dy = b.y - a.y;
   const minDistance = a.radius + b.radius;
@@ -63,6 +149,12 @@ function resolveCircleCollision(a, b) {
   const alongNormal = rvx * nx + rvy * ny;
   if (alongNormal > 0) return;
 
+  const impact = Math.abs(alongNormal);
+  if (impact > 22) {
+    wakeBody(a);
+    wakeBody(b);
+  }
+
   const restitution = Math.min(a.restitution, b.restitution);
   const impulse = -(1 + restitution) * alongNormal / totalInvMass;
   const ix = impulse * nx;
@@ -72,16 +164,23 @@ function resolveCircleCollision(a, b) {
   b.vx += ix * b.invMass;
   b.vy += iy * b.invMass;
 
-  const tangentKick = (a.wz - b.wz) * 0.012;
+  const tangentKick = (a.wz - b.wz) * 0.016;
   a.vx -= ny * tangentKick;
   a.vy += nx * tangentKick;
   b.vx += ny * tangentKick;
   b.vy -= nx * tangentKick;
-  a.wz += (rvx * ny - rvy * nx) * 0.018;
-  b.wz -= (rvx * ny - rvy * nx) * 0.018;
+  a.wz += (rvx * ny - rvy * nx) * 0.024;
+  b.wz -= (rvx * ny - rvy * nx) * 0.024;
+
+  if (impact > 90) {
+    const lift = Math.min(125, 14 + impact * 0.12);
+    if (a.z < a.radius * 0.45) a.vz = Math.max(a.vz, lift * 0.72);
+    if (b.z < b.radius * 0.45) b.vz = Math.max(b.vz, lift);
+  }
 }
 
 function resolveObstacle(body, obstacle) {
+  if (body.z > body.radius * 0.95) return;
   const dx = body.x - obstacle.x;
   const dy = body.y - obstacle.y;
   const minDistance = body.radius + obstacle.radius;
@@ -95,31 +194,41 @@ function resolveObstacle(body, obstacle) {
   body.y = obstacle.y + ny * minDistance;
   const alongNormal = body.vx * nx + body.vy * ny;
   if (alongNormal < 0) {
-    const impulse = -(1 + body.restitution * 0.9) * alongNormal;
+    const impact = Math.abs(alongNormal);
+    const impulse = -(1 + body.restitution * 0.88) * alongNormal;
     body.vx += impulse * nx;
     body.vy += impulse * ny;
-    body.wz += (body.vx * ny - body.vy * nx) * 0.02;
+    body.wz += (body.vx * ny - body.vy * nx) * 0.025;
+    addImpactLift(body, impact);
   }
 }
 
-function spawnBody(die, index, count, width, height, random, size) {
+function wallInsetForSize(size) {
+  return Math.max(16, size * 0.42);
+}
+
+function spawnBody(die, index, count, width, height, random, size, wallInset) {
   const radius = size * 0.52;
   const side = choose(random, SIDES);
-  const margin = radius * between(random, 1.2, 2.8);
-  const targetX = between(random, width * 0.2, width * 0.8);
-  const targetY = between(random, height * 0.2, height * 0.8);
+  const left = wallInset + radius;
+  const right = Math.max(left, width - wallInset - radius);
+  const top = wallInset + radius;
+  const bottom = Math.max(top, height - wallInset - radius);
+  const targetX = between(random, width * 0.28, width * 0.72);
+  const targetY = between(random, height * 0.28, height * 0.72);
+  const edgeDepth = between(random, 0, radius * 0.3);
   let x;
   let y;
-  if (side === "left") { x = -margin; y = between(random, radius, height - radius); }
-  else if (side === "right") { x = width + margin; y = between(random, radius, height - radius); }
-  else if (side === "top") { x = between(random, radius, width - radius); y = -margin; }
-  else { x = between(random, radius, width - radius); y = height + margin; }
+  if (side === "left") { x = left + edgeDepth; y = between(random, top, bottom); }
+  else if (side === "right") { x = right - edgeDepth; y = between(random, top, bottom); }
+  else if (side === "top") { x = between(random, left, right); y = top + edgeDepth; }
+  else { x = between(random, left, right); y = bottom - edgeDepth; }
 
   const dx = targetX - x;
   const dy = targetY - y;
   const distance = Math.max(1, Math.hypot(dx, dy));
-  const launchSpeed = between(random, 280, 520) * (count > 8 ? 0.86 : 1);
-  const lateral = between(random, -95, 95);
+  const launchSpeed = between(random, 470, 760) * (count > 8 ? 0.88 : 1);
+  const lateral = between(random, -135, 135);
   const nx = dx / distance;
   const ny = dy / distance;
   const tx = -ny;
@@ -130,40 +239,56 @@ function spawnBody(die, index, count, width, height, random, size) {
     index,
     x,
     y,
+    z: between(random, 12, 48),
     vx: nx * launchSpeed + tx * lateral,
     vy: ny * launchSpeed + ty * lateral,
+    vz: between(random, 70, 175),
     rx: between(random, -Math.PI, Math.PI),
     ry: between(random, -Math.PI, Math.PI),
     rz: between(random, -Math.PI, Math.PI),
-    wx: between(random, -12, 12) || 7,
-    wy: between(random, -13, 13) || -8,
-    wz: between(random, -10, 10) || 6,
+    wx: between(random, -11, 11) || 6,
+    wy: between(random, -12, 12) || -7,
+    wz: between(random, -5, 5) || 3,
     radius,
     invMass: 1,
-    restitution: between(random, 0.58, 0.78),
-    linearDamping: between(random, 0.74, 1.02),
-    angularDamping: between(random, 0.6, 0.92),
+    restitution: between(random, 0.62, 0.82),
+    floorRestitution: between(random, 0.25, 0.39),
+    floorBounceThreshold: between(random, 34, 48),
+    airDamping: between(random, 0.08, 0.16),
+    groundFriction: between(random, 0.62, 1.12),
+    rollingResistance: between(random, 0.42, 0.82),
+    angularAirDamping: between(random, 0.18, 0.34),
+    yawDamping: between(random, 1.15, 2.15),
+    rollCoupling: between(random, 7.5, 12),
+    settleAfter: between(random, 1.35, 2.35),
+    forceAfter: between(random, 4.4, 5.65),
+    settleFramesRequired: Math.round(between(random, 11, 22)),
     settled: false,
     settleFrames: 0,
+    flatTargetX: null,
+    flatTargetY: null,
     forced: false,
   };
 }
 
 export function createDiceSimulation({ dice = [], width, height, seed, dieSize = 44 }) {
   const random = createSeededRandom(seed);
-  const bodies = dice.map((die, index) => spawnBody(die, index, dice.length, width, height, random, dieSize));
+  const wallInset = wallInsetForSize(dieSize);
+  const bodies = dice.map((die, index) => spawnBody(die, index, dice.length, width, height, random, dieSize, wallInset));
   const obstacleCount = dice.length >= 5 ? 3 : 2;
   const obstacles = Array.from({ length: obstacleCount }, (_, index) => ({
     id: `bumper-${index + 1}`,
-    x: between(random, width * 0.27, width * 0.73),
-    y: between(random, height * 0.26, height * 0.74),
-    radius: between(random, dieSize * 0.42, dieSize * 0.7),
+    x: between(random, width * 0.31, width * 0.69),
+    y: between(random, height * 0.3, height * 0.7),
+    radius: between(random, dieSize * 0.38, dieSize * 0.6),
   }));
 
   return {
     seed,
     width,
     height,
+    dieSize,
+    wallInset,
     elapsed: 0,
     bodies,
     obstacles,
@@ -192,23 +317,42 @@ export function stepDiceSimulation(simulation, deltaSeconds) {
   const dt = Math.min(1 / 30, Math.max(1 / 240, deltaSeconds || 1 / 60));
   simulation.elapsed += dt;
 
-  const lateDamping = simulation.elapsed > 2.6 ? 2.5 : 1;
   for (const body of simulation.bodies) {
     if (body.settled) continue;
+
+    body.vz -= GRAVITY * dt;
     body.x += body.vx * dt;
     body.y += body.vy * dt;
+    body.z += body.vz * dt;
+
+    const grounded = resolveFloor(body);
+    const planarDamping = grounded ? body.groundFriction : body.airDamping;
+    const linearDecay = Math.exp(-planarDamping * dt);
+    body.vx *= linearDecay;
+    body.vy *= linearDecay;
+
+    if (grounded) {
+      const targetWx = body.vy / Math.max(12, body.radius);
+      const targetWy = -body.vx / Math.max(12, body.radius);
+      const rollBlend = 1 - Math.exp(-body.rollCoupling * dt);
+      body.wx += (targetWx - body.wx) * rollBlend;
+      body.wy += (targetWy - body.wy) * rollBlend;
+      const rollingDecay = Math.exp(-body.rollingResistance * dt);
+      body.wx *= rollingDecay;
+      body.wy *= rollingDecay;
+      body.wz *= Math.exp(-body.yawDamping * dt);
+    } else {
+      const angularDecay = Math.exp(-body.angularAirDamping * dt);
+      body.wx *= angularDecay;
+      body.wy *= angularDecay;
+      body.wz *= angularDecay;
+    }
+
     body.rx = (body.rx + body.wx * dt) % TAU;
     body.ry = (body.ry + body.wy * dt) % TAU;
     body.rz = (body.rz + body.wz * dt) % TAU;
 
-    const linearDecay = Math.exp(-body.linearDamping * lateDamping * dt);
-    const angularDecay = Math.exp(-body.angularDamping * lateDamping * dt);
-    body.vx *= linearDecay;
-    body.vy *= linearDecay;
-    body.wx *= angularDecay;
-    body.wy *= angularDecay;
-    body.wz *= angularDecay;
-    resolveWall(body, simulation.width, simulation.height);
+    resolveWall(body, simulation);
     for (const obstacle of simulation.obstacles) resolveObstacle(body, obstacle);
   }
 
@@ -220,21 +364,42 @@ export function stepDiceSimulation(simulation, deltaSeconds) {
 
   for (const body of simulation.bodies) {
     if (body.settled) continue;
-    const quiet = speed(body) < 13 && angularSpeed(body) < 1.25;
+    const grounded = body.z <= 0.001 && Math.abs(body.vz) < 0.001;
+    const planarSpeed = speed(body);
+    const spin = angularSpeed(body);
+    const forceSettle = simulation.elapsed > body.forceAfter;
+
+    if (grounded && simulation.elapsed > body.settleAfter && (planarSpeed < 56 || forceSettle)) {
+      guideToFlatFace(body, dt, forceSettle ? 13 : 6.5);
+      const braking = Math.exp(-(forceSettle ? 5.6 : 1.5) * dt);
+      body.vx *= braking;
+      body.vy *= braking;
+      body.wx *= braking;
+      body.wy *= braking;
+      body.wz *= Math.exp(-(forceSettle ? 7 : 2.4) * dt);
+      if (forceSettle) body.forced = true;
+    } else {
+      body.flatTargetX = null;
+      body.flatTargetY = null;
+    }
+
+    const quiet = grounded
+      && planarSpeed < 8
+      && spin < 0.55
+      && faceFlatError(body) < 0.035;
     body.settleFrames = quiet ? body.settleFrames + 1 : 0;
-    if (body.settleFrames > 18 || simulation.elapsed > 5.2) {
+    if (body.settleFrames > body.settleFramesRequired) {
       body.vx = 0;
       body.vy = 0;
+      body.vz = 0;
       body.wx = 0;
       body.wy = 0;
       body.wz = 0;
-      body.rx = Math.round(body.rx / (Math.PI / 2)) * (Math.PI / 2);
-      body.ry = Math.round(body.ry / (Math.PI / 2)) * (Math.PI / 2);
-      body.rz = Math.round(body.rz / (Math.PI / 2)) * (Math.PI / 2);
+      body.z = 0;
       body.settled = true;
-      body.forced = simulation.elapsed > 5.2;
     }
   }
+
   simulation.complete = simulation.bodies.every((body) => body.settled);
   return simulation;
 }
