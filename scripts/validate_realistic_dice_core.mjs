@@ -25,11 +25,16 @@ expect(physics.includes("resolveCircleCollision"), "die-to-die collision resolut
 expect(physics.includes("resolveObstacle"), "tray obstacle collision resolution missing");
 expect(physics.includes("resolveWall"), "tray-wall collision resolution missing");
 expect(physics.includes("resolveFloor") && physics.includes("GRAVITY") && physics.includes("body.vz"), "solid tray-floor gravity/bounce model missing");
+expect(physics.includes("effectiveGravity") && physics.includes("gravityRampStart") && physics.includes("gravityRampRate") && physics.includes("gravityMaxScale"), "per-die gravity ramp missing");
 expect(physics.includes("wallInset") && physics.includes("wallInsetForSize"), "inset physical tray walls missing");
 expect(physics.includes("groundFriction") && physics.includes("rollingResistance") && physics.includes("rollCoupling"), "grounded rolling/contact coupling missing");
+expect(physics.includes("groundedTime") && physics.includes("contactGrip"), "sustained floor-contact friction ramp missing");
 expect(!physics.includes("lateDamping"), "dice must not share one synchronized late slowdown");
 expect(physics.includes("settleAfter") && physics.includes("forceAfter") && physics.includes("settleFramesRequired"), "per-die staggered settling controls missing");
-expect(physics.includes("guideToFlatFace") && !physics.includes("Math.round(body.rx / (Math.PI / 2))"), "settling must converge instead of snapping cube rotation");
+expect(physics.includes("guideToFlatFace") && physics.includes("faceSpring") && physics.includes("faceDamping"), "damped face-seeking contact torque missing");
+expect(physics.includes("body.wx += errorX * strength * dt") && physics.includes("body.wy += errorY * strength * dt"), "flat-face settling must act through angular velocity instead of directly rewriting orientation");
+expect(physics.includes("faceFlatError(body) < 0.008"), "settled face-flat tolerance is too loose for a visibly flush cube");
+expect(!physics.includes("Math.round(body.rx / (Math.PI / 2))"), "settling must converge instead of snapping cube rotation");
 expect(physics.includes("setDiceSimulationActiveIds") && physics.includes("body.active === false"), "dice removed from the tray must leave active collision participation");
 expect(physics.includes("wx") && physics.includes("wy") && physics.includes("wz"), "independent angular velocity missing");
 expect(physics.includes("createDiceSimulation") && physics.includes("stepDiceSimulation"), "reusable physics engine API missing");
@@ -70,4 +75,4 @@ for (const source of [tray, adapter, contract, seed, physics]) {
   for (const token of protectedTokens) expect(!source.includes(token), `dice core crossed protected runtime boundary: ${token}`);
 }
 
-console.log("Reusable Realistic Dice core validated: grounded floor/gravity, tighter walls, staggered rolling/settling, authoritative-result contract, independent visual seed, assigned die transfer/return with collision deactivation, React-owned drag gating, Forge allocation authority, and protected boundaries.");
+console.log("Reusable Realistic Dice core validated: per-die gravity ramp, sustained floor grip, damped flat-face contact torque, strict settled flatness, tighter walls, staggered rolling/settling, authoritative-result contract, assigned die transfer/return with collision deactivation, React-owned drag gating, Forge allocation authority, and protected boundaries.");
