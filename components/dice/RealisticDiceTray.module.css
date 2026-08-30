@@ -5,39 +5,60 @@
 }
 
 .surface {
+  --tray-wall-inset: 18px;
   position: relative;
   width: 100%;
   height: 100%;
   min-height: 260px;
   overflow: hidden;
   perspective: 720px;
-  border: 1px solid rgba(146, 91, 255, .2);
+  border: 1px solid rgba(146, 91, 255, .24);
   border-radius: 16px;
   background:
-    radial-gradient(circle at 50% 48%, rgba(126, 66, 210, .1), transparent 38%),
+    radial-gradient(ellipse at 50% 52%, rgba(126, 66, 210, .11), transparent 40%),
     radial-gradient(circle at 25% 25%, rgba(73, 111, 218, .07), transparent 28%),
-    linear-gradient(145deg, rgba(9, 9, 27, .42), rgba(10, 7, 26, .72));
+    linear-gradient(145deg, rgba(12, 11, 31, .76), rgba(8, 8, 23, .94));
   box-shadow:
-    inset 0 0 0 7px rgba(7, 8, 20, .23),
-    inset 0 0 44px rgba(94, 55, 170, .09);
+    inset 0 0 0 var(--tray-wall-inset) rgba(5, 6, 17, .38),
+    inset 0 0 0 calc(var(--tray-wall-inset) + 2px) rgba(145, 98, 224, .075),
+    inset 0 0 42px rgba(94, 55, 170, .12),
+    0 8px 24px rgba(0,0,0,.2);
+}
+
+.surface::before {
+  content: "";
+  position: absolute;
+  inset: var(--tray-wall-inset);
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 9px;
+  background:
+    radial-gradient(circle at 46% 42%, rgba(154, 111, 226, .055), transparent 38%),
+    linear-gradient(160deg, rgba(255,255,255,.012), rgba(0,0,0,.09));
+  box-shadow: inset 0 7px 18px rgba(0,0,0,.18);
 }
 
 .surface::after {
   content: "";
   position: absolute;
-  inset: 9px;
+  inset: var(--tray-wall-inset);
+  z-index: 1;
   pointer-events: none;
-  border: 1px dashed rgba(154, 120, 228, .08);
-  border-radius: 12px;
+  border: 1px solid rgba(174, 126, 238, .2);
+  border-radius: 9px;
+  box-shadow:
+    inset 0 0 0 1px rgba(0,0,0,.4),
+    0 0 12px rgba(112,70,180,.08);
 }
 
 .bumper {
   position: absolute;
+  z-index: 2;
   width: 38px;
   aspect-ratio: 1;
   border-radius: 50%;
   pointer-events: none;
-  opacity: .16;
+  opacity: .13;
   border: 1px solid rgba(167, 128, 255, .2);
   background: radial-gradient(circle, rgba(111, 76, 171, .14), rgba(38, 24, 71, .03) 62%, transparent 68%);
   box-shadow: 0 4px 10px rgba(0,0,0,.12);
@@ -63,6 +84,16 @@
   cursor: grab;
   transform-style: preserve-3d;
   outline: none;
+}
+
+.staticDie {
+  --die-size: 50px;
+  --die-half: 25px;
+  position: relative;
+  left: auto !important;
+  top: auto !important;
+  z-index: 5 !important;
+  margin: 0;
 }
 
 .accent_crimson { --die-accent: 255, 83, 102; }
@@ -96,13 +127,20 @@
 .shadow {
   position: absolute;
   left: 50%;
-  top: 60%;
+  top: 62%;
   width: 52px;
-  height: 20px;
+  height: 18px;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: rgba(0,0,0,.42);
-  filter: blur(7px);
+  background: rgba(0,0,0,.48);
+  filter: blur(6px);
+  opacity: .5;
+  will-change: transform, opacity, filter;
+}
+.staticDie .shadow {
+  top: 67%;
+  width: 48px;
+  height: 15px;
   opacity: .42;
 }
 
@@ -113,6 +151,7 @@
   transform-origin: 50% 50%;
   will-change: transform;
 }
+.staticDie .cube { transform: rotateX(-18deg) rotateY(28deg) rotateZ(-4deg); }
 
 .face {
   position: absolute;
@@ -174,7 +213,42 @@
 .settled:hover .detail,
 .settled:focus-visible .detail { display: block; }
 
+.slotDieWrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 70px;
+  min-height: 58px;
+  overflow: visible;
+}
+
+.returnButton {
+  position: absolute;
+  right: 0;
+  top: -2px;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0 !important;
+  border: 1px solid rgba(255,255,255,.28) !important;
+  border-radius: 50% !important;
+  color: rgba(255,255,255,.82) !important;
+  background: rgba(10,11,25,.95) !important;
+  box-shadow: 0 3px 10px rgba(0,0,0,.34) !important;
+  font-size: .66rem !important;
+  line-height: 1 !important;
+}
+.returnButton:hover,
+.returnButton:focus-visible {
+  border-color: rgba(var(--die-accent), .72) !important;
+  color: #fff !important;
+}
+
 .reduced {
+  position: relative;
+  z-index: 3;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -190,6 +264,7 @@
   .surface,
   .reduced { min-height: 220px; }
   .die { --die-size: 40px; --die-half: 20px; }
+  .staticDie { --die-size: 46px; --die-half: 23px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
