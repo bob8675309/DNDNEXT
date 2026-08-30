@@ -1,4 +1,4 @@
-import { createSeededRandom } from "../diceVisualSeed";
+import { createSeededRandom } from "../diceVisualSeed.js";
 
 const TAU = Math.PI * 2;
 const QUARTER_TURN = Math.PI / 2;
@@ -128,7 +128,7 @@ function guideToFlatFace(body, dt, strength = body.faceSpring, damping = body.fa
 }
 
 function wakeBody(body) {
-  if (!body?.settled || body.active === false) return;
+  if (!body?.settled || body.active === false || body.dragging) return;
   body.settled = false;
   body.settleFrames = 0;
   body.groundedTime = 0;
@@ -231,7 +231,7 @@ function collisionSign(delta, relativeVelocity) {
 // Vertical overlap is required, but separation is always lateral; dice are not allowed to
 // "solve" penetration by climbing onto one another.
 function resolveSolidCubeCollision(a, b) {
-  if (a.active === false || b.active === false) return false;
+  if (a.active === false || b.active === false || a.dragging || b.dragging) return false;
   if (verticalCubeOverlap(a, b) <= 0) return false;
 
   const dx = b.x - a.x;
@@ -290,7 +290,7 @@ function resolveSolidCubeCollision(a, b) {
 }
 
 function resolveObstacle(body, obstacle) {
-  if (body.active === false || physicalBottom(body) > body.collisionSize * 0.95) return;
+  if (body.active === false || body.dragging || obstacle.active === false || physicalBottom(body) > body.collisionSize * 0.95) return;
   const dx = body.x - obstacle.x;
   const dy = body.y - obstacle.y;
   const obstacleDistance = body.collisionHalf + obstacle.radius;
@@ -311,6 +311,97 @@ function resolveObstacle(body, obstacle) {
     body.wz += (body.vx * ny - body.vy * nx) * 0.018;
     addImpactLift(body, impact);
   }
+}
+
+function resolveTrayConstraints(body, simulation) {
+  for (let iteration = 0; iteration < 4; iteration += 1) {
+    resolveWall(body, simulation);
+    for (const obstacle of simulation.obstacles) resolveObstacle(body, obstacle);
+    // An obstacle can separate a die toward an edge or a neighboring bumper.
+    // Reapply the compact constraint set so the final position satisfies all
+    // bumpers and, last of all, the visible tray boundary.
+    resolveWall(body, simulation);
+  }
+}
+
+function obstacleAxisPosition(random, length, preferredMin, preferredMax, clearance) {
+  const hardMin = Math.min(length / 2, clearance);
+  const hardMax = Math.max(length / 2, length - clearance);
+  const min = Math.max(hardMin, length * preferredMin);
+  const max = Math.min(hardMax, length * preferredMax);
+  if (max > min) return between(random, min, max);
+  return clamp(length / 2, hardMin, hardMax);
+}
+
+function clampObstacleToSafeArea(simulation, obstacle, maxCollisionHalf) {
+  const clearance = simulation.wallInset + maxCollisionHalf + obstacle.radius + 1;
+  obstacle.x = clamp(obstacle.x, Math.min(simulation.width / 2, clearance), Math.max(simulation.width / 2, simulation.width - clearance));
+  obstacle.y = clamp(obstacle.y, Math.min(simulation.height / 2, clearance), Math.max(simulation.height / 2, simulation.height - clearance));
+}
+
+function activeObstacleCountForTray(dieCount, width, height, dieSize) {
+  const maximum = dieCount >= 5 ? 3 : 2;
+  if (height < dieSize * 5.25 || width < dieSize * 8.5) return 1;
+  if (height < dieSize * 6.25 || width < dieSize * 10.5) return Math.min(2, maximum);
+  return maximum;
+}
+
+function bodyAt(simulation, dieId) {
+  return simulation?.bodies?.find((entry) => String(entry.id) === String(dieId)) || null;
+}
+
+function stopBody(body) {
+  body.vx = 0;
+  body.vy = 0;
+  body.vz = 0;
+  body.wx = 0;
+  body.wy = 0;
+  body.wz = 0;
+}
+
+function clampedBodyPosition(simulation, body, x, y) {
+  const bounds = trayBounds(simulation, body);
+  return {
+    x: clamp(Number.isFinite(x) ? x : body.x, Math.min(bounds.left, bounds.right), Math.max(bounds.left, bounds.right)),
+    y: clamp(Number.isFinite(y) ? y : body.y, Math.min(bounds.top, bounds.bottom), Math.max(bounds.top, bounds.bottom)),
+  };
+}
+
+function placementIsOpen(simulation, body, x, y) {
+  for (const other of simulation.bodies) {
+    if (other === body || other.active === false) continue;
+    const overlapX = body.collisionHalf + other.collisionHalf - Math.abs(other.x - x);
+    const overlapY = body.collisionHalf + other.collisionHalf - Math.abs(other.y - y);
+    if (overlapX > 0 && overlapY > 0) return false;
+  }
+  for (const obstacle of simulation.obstacles) {
+    if (obstacle.active === false) continue;
+    if (Math.hypot(x - obstacle.x, y - obstacle.y) < body.collisionHalf + obstacle.radius) return false;
+  }
+  return true;
+}
+
+function nearestOpenBodyPosition(simulation, body, targetX, targetY) {
+  const target = clampedBodyPosition(simulation, body, targetX, targetY);
+  if (placementIsOpen(simulation, body, target.x, target.y)) return target;
+
+  const spacing = Math.max(8, body.collisionHalf * 0.38);
+  const maxRadius = Math.hypot(simulation.width, simulation.height);
+  const angleOffset = (body.index % 12) * (Math.PI / 12);
+  for (let radius = spacing; radius <= maxRadius; radius += spacing) {
+    const samples = Math.max(16, Math.ceil((Math.PI * 2 * radius) / spacing));
+    for (let index = 0; index < samples; index += 1) {
+      const angle = angleOffset + (index / samples) * Math.PI * 2;
+      const candidate = clampedBodyPosition(
+        simulation,
+        body,
+        target.x + Math.cos(angle) * radius,
+        target.y + Math.sin(angle) * radius,
+      );
+      if (placementIsOpen(simulation, body, candidate.x, candidate.y)) return candidate;
+    }
+  }
+  return clampedBodyPosition(simulation, body, body.dragOrigin?.x, body.dragOrigin?.y);
 }
 
 function wallInsetForSize(size) {
@@ -350,6 +441,7 @@ function spawnBody(die, index, count, width, height, random, size, wallInset, si
     id: die.id,
     index,
     active: true,
+    dragging: false,
     x,
     y,
     z: between(random, 10, 38),
@@ -404,12 +496,19 @@ export function createDiceSimulation({ dice = [], width, height, seed, dieSize =
   const spawnSides = balancedSpawnSides(dice.length, random);
   const bodies = dice.map((die, index) => spawnBody(die, index, dice.length, width, height, random, dieSize, wallInset, spawnSides[index]));
   const obstacleCount = dice.length >= 5 ? 3 : 2;
-  const obstacles = Array.from({ length: obstacleCount }, (_, index) => ({
-    id: `bumper-${index + 1}`,
-    x: between(random, width * 0.31, width * 0.69),
-    y: between(random, height * 0.3, height * 0.7),
-    radius: between(random, dieSize * 0.38, dieSize * 0.58),
-  }));
+  const activeObstacleCount = activeObstacleCountForTray(dice.length, width, height, dieSize);
+  const maxCollisionHalf = Math.max(dieSize * 0.64, ...bodies.map((body) => body.collisionHalf));
+  const obstacles = Array.from({ length: obstacleCount }, (_, index) => {
+    const radius = between(random, dieSize * 0.38, dieSize * 0.58);
+    const clearance = wallInset + maxCollisionHalf + radius + 1;
+    return {
+      id: `bumper-${index + 1}`,
+      x: obstacleAxisPosition(random, width, 0.31, 0.69, clearance),
+      y: obstacleAxisPosition(random, height, 0.3, 0.7, clearance),
+      radius,
+      active: index < activeObstacleCount,
+    };
+  });
 
   return {
     seed,
@@ -438,6 +537,47 @@ export function resizeDiceSimulation(simulation, width, height) {
     obstacle.x *= sx;
     obstacle.y *= sy;
   });
+  const maxCollisionHalf = Math.max(simulation.dieSize * 0.64, ...simulation.bodies.map((body) => body.collisionHalf));
+  const activeObstacleCount = activeObstacleCountForTray(simulation.bodies.length, width, height, simulation.dieSize);
+  simulation.obstacles.forEach((obstacle, index) => { obstacle.active = index < activeObstacleCount; });
+  simulation.obstacles.forEach((obstacle) => clampObstacleToSafeArea(simulation, obstacle, maxCollisionHalf));
+  simulation.bodies.forEach((body) => resolveTrayConstraints(body, simulation));
+}
+
+export function beginDiceBodyDrag(simulation, dieId) {
+  const body = bodyAt(simulation, dieId);
+  if (!body || body.active === false || !body.settled) return null;
+  body.dragOrigin = { x: body.x, y: body.y };
+  body.dragging = true;
+  stopBody(body);
+  body.z = cubeSupportClearance(body);
+  return body;
+}
+
+export function moveDiceBodyDrag(simulation, dieId, x, y) {
+  const body = bodyAt(simulation, dieId);
+  if (!body?.dragging) return null;
+  const position = clampedBodyPosition(simulation, body, x, y);
+  body.x = position.x;
+  body.y = position.y;
+  body.z = cubeSupportClearance(body);
+  stopBody(body);
+  return body;
+}
+
+export function endDiceBodyDrag(simulation, dieId) {
+  const body = bodyAt(simulation, dieId);
+  if (!body?.dragging) return null;
+  const position = nearestOpenBodyPosition(simulation, body, body.x, body.y);
+  body.x = position.x;
+  body.y = position.y;
+  body.z = cubeSupportClearance(body);
+  body.dragging = false;
+  delete body.dragOrigin;
+  body.settled = true;
+  stopBody(body);
+  simulation.complete = simulation.bodies.every((entry) => entry.active === false || entry.settled);
+  return body;
 }
 
 export function setDiceSimulationActiveIds(simulation, activeIds = []) {
@@ -446,14 +586,11 @@ export function setDiceSimulationActiveIds(simulation, activeIds = []) {
   simulation.bodies.forEach((body) => {
     const nextActive = active.has(String(body.id));
     if (body.active && !nextActive) {
-      body.vx = 0;
-      body.vy = 0;
-      body.vz = 0;
-      body.wx = 0;
-      body.wy = 0;
-      body.wz = 0;
+      stopBody(body);
       body.z = cubeSupportClearance(body);
       body.settled = true;
+      body.dragging = false;
+      delete body.dragOrigin;
     }
     body.active = nextActive;
   });
@@ -461,7 +598,7 @@ export function setDiceSimulationActiveIds(simulation, activeIds = []) {
 }
 
 function advanceBody(body, simulation, dt) {
-  if (body.active === false || body.settled) return;
+  if (body.active === false || body.settled || body.dragging) return;
 
   const gravity = effectiveGravity(body, simulation.elapsed);
   body.vz -= gravity * dt;
@@ -508,8 +645,7 @@ function advanceBody(body, simulation, dt) {
   const groundedAfterRotation = resolveFloor(body);
   if (!groundedAfterRotation && grounded) body.groundedTime = Math.max(0, body.groundedTime - dt * 0.5);
 
-  resolveWall(body, simulation);
-  for (const obstacle of simulation.obstacles) resolveObstacle(body, obstacle);
+  resolveTrayConstraints(body, simulation);
 
   const planarSpeed = speed(body);
   const spin = angularSpeed(body);
@@ -550,8 +686,7 @@ function resolveAllCubeCollisions(simulation) {
     if (!hadCollision) break;
     for (const body of simulation.bodies) {
       if (body.active === false) continue;
-      resolveWall(body, simulation);
-      for (const obstacle of simulation.obstacles) resolveObstacle(body, obstacle);
+      resolveTrayConstraints(body, simulation);
     }
   }
 }

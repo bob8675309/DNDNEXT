@@ -51,6 +51,26 @@
     0 0 12px rgba(112,70,180,.08);
 }
 
+.artwork {
+  position: absolute;
+  inset: calc(var(--tray-wall-inset) + 6px);
+  z-index: 1;
+  width: calc(100% - (var(--tray-wall-inset) * 2) - 12px);
+  height: calc(100% - (var(--tray-wall-inset) * 2) - 12px);
+  overflow: visible;
+  pointer-events: none;
+  color: rgb(164, 111, 238);
+  opacity: .2;
+  filter: drop-shadow(0 0 10px rgba(129, 74, 213, .12));
+}
+.artworkOrbit,
+.artworkCompass,
+.artworkRunes { fill: none; stroke: currentColor; vector-effect: non-scaling-stroke; }
+.artworkOrbit { stroke-width: 1; stroke-dasharray: 3 8; opacity: .52; }
+.artworkCompass { stroke-width: 1.15; opacity: .46; }
+.artworkRunes { stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; opacity: .72; }
+.artworkRunes circle { fill: currentColor; stroke: none; }
+
 .bumper {
   position: absolute;
   z-index: 2;
@@ -105,6 +125,14 @@
 
 .rolling { pointer-events: none; cursor: default; }
 .settled:active { cursor: grabbing; }
+.dragging {
+  z-index: 40 !important;
+  cursor: grabbing;
+  filter: brightness(1.08);
+}
+.dragging .face b { opacity: 1 !important; }
+.dragging .detail { display: none !important; }
+.dragging .shadow { opacity: .65 !important; }
 .settled:hover,
 .settled:focus-visible { z-index: 20; }
 .assigned .face {
@@ -222,6 +250,26 @@
   overflow: visible;
 }
 
+.modifierBadge {
+  position: absolute;
+  left: -3px;
+  bottom: -3px;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  min-width: 25px;
+  height: 21px;
+  padding: 0 6px;
+  border: 1px solid rgba(var(--die-accent), .68);
+  border-radius: 999px;
+  color: #fff;
+  background: linear-gradient(180deg, rgba(var(--die-accent), .42), rgba(10,11,25,.96));
+  box-shadow: 0 4px 12px rgba(0,0,0,.36), 0 0 10px rgba(var(--die-accent), .18);
+  font-size: .68rem;
+  font-weight: 850;
+  line-height: 1;
+}
+
 .returnButton {
   position: absolute;
   right: 0;
@@ -265,6 +313,7 @@
   .reduced { min-height: 220px; }
   .die { --die-size: 40px; --die-half: 20px; }
   .staticDie { --die-size: 46px; --die-half: 23px; }
+  .artwork { opacity: .15; }
 }
 
 @media (prefers-reduced-motion: reduce) {

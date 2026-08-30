@@ -8,12 +8,15 @@ const expect = (condition, message) => {
 const tray = read("components/dice/RealisticDiceTray.js");
 const adapter = read("components/dice/adapters/ForgeAbilityDiceTray.js");
 const ability = read("components/NpcForgeAbilityStep.js");
+const abilityContext = read("components/NpcForgeAbilityContextCard.js");
+const abilityGlyph = read("components/NpcForgeAbilityGlyph.js");
 const controller = read("components/useNpcForgeController.js");
 const contract = read("utils/dice/diceRollContract.js");
 const types = read("utils/dice/diceTypes.js");
 const seed = read("utils/dice/diceVisualSeed.js");
 const physics = read("utils/dice/physics/dicePhysicsEngine.js");
 const css = read("components/dice/RealisticDiceTray.module.css");
+const trayLayoutCss = read("styles/character-forge-ability-dice-tray.css");
 
 for (const type of ["d6", "d8", "d10", "d12", "d20", "resultCube"]) {
   expect(types.includes(`"${type}"`), `missing reusable die type ${type}`);
@@ -31,6 +34,9 @@ expect(physics.includes("balancedSpawnSides") && physics.includes("spawnSides[in
 expect(physics.includes("Deliberately no die-on-die vertical lift"), "die collisions must side-separate instead of permitting stacking");
 expect(physics.includes("resolveObstacle"), "tray obstacle collision resolution missing");
 expect(physics.includes("resolveWall"), "tray-wall collision resolution missing");
+expect(physics.includes("resolveTrayConstraints") && physics.includes("activeObstacleCountForTray"), "responsive bumper/wall constraint pass missing");
+expect(physics.includes("beginDiceBodyDrag") && physics.includes("moveDiceBodyDrag") && physics.includes("endDiceBodyDrag"), "manual settled-die repositioning API missing");
+expect(physics.includes("placementIsOpen") && physics.includes("nearestOpenBodyPosition"), "manual placement must not displace or overlap neighboring dice");
 expect(physics.includes("resolveFloor") && physics.includes("GRAVITY") && physics.includes("body.vz"), "solid tray-floor gravity/bounce model missing");
 expect(physics.includes("effectiveGravity") && physics.includes("gravityRampStart") && physics.includes("gravityRampRate") && physics.includes("gravityMaxScale"), "per-die gravity ramp missing");
 expect(physics.includes("Math.exp(rampTime * body.gravityRampRate)"), "gravity ramp must increase exponentially rather than linearly");
@@ -66,16 +72,23 @@ expect(tray.includes('data-settled={settled ? "true" : "false"}'), "drag/click g
 expect(!tray.includes('data-settled="false"\n        onClick'), "normal dice must not hard-code rolling state across React rerenders");
 expect(tray.includes("hiddenDieIds") && tray.includes("onTrayDrop"), "assigned dice must be able to leave and return to the physical tray without replaying physics");
 expect(tray.includes("setDiceSimulationActiveIds(simulation") && tray.includes("setDiceSimulationActiveIds(simulationRef.current"), "hidden assigned dice must be removed from tray collisions without rebuilding the roll");
+expect(tray.includes("TrayArtwork") && tray.includes("styles.artwork"), "subtle tray-floor artwork missing");
+expect(tray.includes("beginManualDrag") && tray.includes("moveManualDrag") && tray.includes("endManualDrag"), "tray does not wire settled dice to manual repositioning");
+expect(tray.includes("syncBumperElements") && tray.includes("ResizeObserver"), "responsive bumper presentation must follow resized physics");
 expect(css.includes("--tray-wall-inset") && css.includes("inset 0 0 0 var(--tray-wall-inset)"), "visual tray walls must match tighter physical inset");
+expect(css.includes(".artwork") && css.includes(".dragging"), "tray artwork or manual-drag visual state missing");
 expect(css.includes("transform-style: preserve-3d"), "cube must render as a 3D object");
 expect(css.includes("face_front") && css.includes("face_top") && css.includes("face_bottom"), "cube face geometry missing");
 expect(css.includes(".settled:hover .face b") && css.includes("opacity: 0"), "settled result must hide while hover detail is shown");
 expect(css.includes(".selected .face") && css.includes(".assigned .face"), "selected/assigned Forge result feedback missing");
 expect(css.includes(".staticDie") && css.includes(".returnButton"), "assigned ability-slot die presentation or return control missing");
+expect(css.includes(".modifierBadge"), "assigned ability modifier badge missing");
+expect(trayLayoutCss.includes("padding: 0") && trayLayoutCss.includes("forge-ability-realistic-dice"), "physical tray must expand through the outer Forge shell");
 
 expect(adapter.includes('type: "resultCube"'), "Forge must use aggregate resultCube rather than pretending totals are literal d6 faces");
 expect(adapter.includes("roll.total"), "Forge adapter must consume existing authoritative totals");
 expect(adapter.includes("ForgeAssignedAbilityDie"), "actual colored result die must render inside an assigned ability slot");
+expect(adapter.includes("modifierBadge") && adapter.includes("modifier = \"+0\""), "assigned result die modifier is not defined and rendered");
 expect(adapter.includes("hiddenDieIds={assignedRollIds}"), "assigned result dice must leave the tray");
 expect(adapter.includes("onTrayDrop") && adapter.includes("onReturnRoll"), "assigned result dice must return to the tray when removed");
 expect(adapter.includes('selected: selectedRollId === roll.id'), "Forge selected result must remain visibly distinguishable");
@@ -87,6 +100,10 @@ expect(!ability.includes("Replace score"), "obsolete Replace score column must b
 expect(controller.includes("delete next[ability]"), "allocation authority must support returning an assigned die to the tray");
 expect(controller.includes("if (prior) next[other] = prior") && controller.includes("else delete next[other]"), "moving dice between ability slots must preserve valid allocation swaps");
 expect(ability.includes("onReroll();"), "existing Forge roll authority must remain the source of new totals");
+expect(ability.includes("showAbilityDetail") && ability.includes("onFocusCapture={showAbilityDetail}"), "ability hover/click/focus detail routing missing");
+expect(ability.includes("modifier={modifierLabel(finalAbilities?.[key] ?? roll.total)}"), "assigned die does not receive its current ability modifier");
+expect(abilityContext.includes("ABILITY_DETAILED_GUIDE") && abilityContext.includes("activeGuide.uses.map"), "focused ability description and use bullets missing");
+expect(abilityGlyph.includes("ABILITY_DETAILED_GUIDE") && abilityGlyph.includes("Athletics checks") && abilityGlyph.includes("Persuasion checks"), "six-ability detailed guide content missing");
 expect(!tray.includes("onReroll") && !physics.includes("roll.total"), "reusable visual core must not own Forge RNG/math");
 
 const protectedTokens = ["MapPageClient", "advance_all_characters", "map_routes", "encounter_weapon_attack", "encounter_roll_save", "supabase"];

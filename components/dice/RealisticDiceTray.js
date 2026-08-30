@@ -3,7 +3,10 @@ import styles from "./RealisticDiceTray.module.css";
 import { normalizeVisualDice } from "../../utils/dice/diceRollContract";
 import { createDiceVisualSeed } from "../../utils/dice/diceVisualSeed";
 import {
+  beginDiceBodyDrag,
   createDiceSimulation,
+  endDiceBodyDrag,
+  moveDiceBodyDrag,
   resizeDiceSimulation,
   setDiceSimulationActiveIds,
   stepDiceSimulation,
@@ -102,6 +105,44 @@ function dieStateClasses(die) {
   ].filter(Boolean).join(" ");
 }
 
+function TrayArtwork() {
+  return <svg className={styles.artwork} viewBox="0 0 800 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <g className={styles.artworkOrbit}>
+      <ellipse cx="400" cy="180" rx="238" ry="118" />
+      <ellipse cx="400" cy="180" rx="174" ry="86" transform="rotate(-17 400 180)" />
+      <circle cx="400" cy="180" r="68" />
+      <circle cx="400" cy="180" r="45" />
+    </g>
+    <g className={styles.artworkCompass}>
+      <path d="M400 74 426 151 508 180 426 209 400 286 374 209 292 180 374 151Z" />
+      <path d="m400 123 33 57-33 57-33-57Z" />
+      <path d="M238 180h324M400 47v266" />
+    </g>
+    <g className={styles.artworkRunes}>
+      <path d="m197 134 14-15 10 19 18-8M591 126l11-18 13 17 17-10M207 236l13 15 14-17 17 9M574 245l17 9 11-19 18 7" />
+      <circle cx="156" cy="180" r="4" /><circle cx="644" cy="180" r="4" />
+      <circle cx="400" cy="54" r="3" /><circle cx="400" cy="306" r="3" />
+    </g>
+  </svg>;
+}
+
+function syncBumperElements(simulation, bumperElements) {
+  bumperElements.forEach((bumper, index) => {
+    if (!bumper) return;
+    const obstacle = simulation?.obstacles?.[index];
+    if (!obstacle || obstacle.active === false) {
+      bumper.hidden = true;
+      return;
+    }
+    bumper.hidden = false;
+    bumper.style.left = `${obstacle.x}px`;
+    bumper.style.top = `${obstacle.y}px`;
+    bumper.style.width = `${obstacle.radius * 2}px`;
+    bumper.style.marginLeft = `${-obstacle.radius}px`;
+    bumper.style.marginTop = `${-obstacle.radius}px`;
+  });
+}
+
 export const ResultCubeDie = forwardRef(function ResultCubeDie({
   die,
   settled = true,
@@ -111,18 +152,22 @@ export const ResultCubeDie = forwardRef(function ResultCubeDie({
   renderTooltip = null,
   onClick = null,
   onDragStart = null,
+  onDragEnd = null,
   showShadow = true,
   ariaLabel = null,
+  dragging = false,
 }, ref) {
   if (!die) return null;
   return <button
     ref={ref}
     type="button"
-    className={`${styles.die} ${styles[`accent_${die.accent}`] || styles.accent_violet} ${settled ? styles.settled : styles.rolling} ${staticPlacement ? styles.staticDie : ""} ${dieStateClasses(die)} ${className}`.trim()}
+    className={`${styles.die} ${styles[`accent_${die.accent}`] || styles.accent_violet} ${settled ? styles.settled : styles.rolling} ${staticPlacement ? styles.staticDie : ""} ${dragging ? styles.dragging : ""} ${dieStateClasses(die)} ${className}`.trim()}
     draggable={Boolean(draggable && settled)}
     data-settled={settled ? "true" : "false"}
+    data-dragging={dragging ? "true" : "false"}
     onClick={onClick || undefined}
     onDragStart={onDragStart || undefined}
+    onDragEnd={onDragEnd || undefined}
     aria-label={ariaLabel || die.label}
   >
     {showShadow ? <span className={styles.shadow} aria-hidden="true" /> : null}
@@ -176,7 +221,9 @@ export default function RealisticDiceTray({
   const settledIdsRef = useRef(new Set());
   const frameRef = useRef(null);
   const resizeObserverRef = useRef(null);
+  const dragStateRef = useRef({ dieId: "", offsetX: 0, offsetY: 0 });
   const [settledIds, setSettledIds] = useState(() => new Set());
+  const [draggingDieId, setDraggingDieId] = useState("");
   const reducedMotion = prefersReducedMotion();
   const simulationKey = `${rollKey}|${physicsSignature}|${dieSize}`;
 
@@ -189,6 +236,60 @@ export default function RealisticDiceTray({
     const body = simulationRef.current?.bodies?.find((entry) => entry.id === dieId);
     const renderState = renderStatesRef.current.get(dieId);
     if (body) setDieTransform(node, renderState || body);
+  }
+
+  function renderBodyImmediately(body) {
+    if (!body) return;
+    const state = createRenderState(body);
+    renderStatesRef.current.set(body.id, state);
+    setDieTransform(dieRefs.current.get(body.id), state);
+  }
+
+  function beginManualDrag(die, event) {
+    const simulation = simulationRef.current;
+    const surface = surfaceRef.current;
+    const body = beginDiceBodyDrag(simulation, die.id);
+    if (!body || !surface) return false;
+    const surfaceRect = surface.getBoundingClientRect();
+    const dieRect = event.currentTarget.getBoundingClientRect();
+    dragStateRef.current = {
+      dieId: die.id,
+      offsetX: event.clientX - surfaceRect.left - body.x,
+      offsetY: event.clientY - surfaceRect.top - body.y,
+    };
+    event.dataTransfer?.setDragImage(
+      event.currentTarget,
+      Math.max(0, Math.min(dieRect.width, event.clientX - dieRect.left)),
+      Math.max(0, Math.min(dieRect.height, event.clientY - dieRect.top)),
+    );
+    setDraggingDieId(die.id);
+    renderBodyImmediately(body);
+    return true;
+  }
+
+  function moveManualDrag(event) {
+    const drag = dragStateRef.current;
+    const surface = surfaceRef.current;
+    if (!drag.dieId || !surface || !Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)) return null;
+    const rect = surface.getBoundingClientRect();
+    const body = moveDiceBodyDrag(
+      simulationRef.current,
+      drag.dieId,
+      event.clientX - rect.left - drag.offsetX,
+      event.clientY - rect.top - drag.offsetY,
+    );
+    renderBodyImmediately(body);
+    return body;
+  }
+
+  function endManualDrag() {
+    const dieId = dragStateRef.current.dieId;
+    if (!dieId) return null;
+    const body = endDiceBodyDrag(simulationRef.current, dieId);
+    renderBodyImmediately(body);
+    dragStateRef.current = { dieId: "", offsetX: 0, offsetY: 0 };
+    setDraggingDieId("");
+    return body;
   }
 
   useEffect(() => {
@@ -205,17 +306,10 @@ export default function RealisticDiceTray({
     renderStatesRef.current = new Map(simulation.bodies.map((body) => [body.id, createRenderState(body)]));
     settledIdsRef.current = new Set();
     setSettledIds(new Set());
+    dragStateRef.current = { dieId: "", offsetX: 0, offsetY: 0 };
+    setDraggingDieId("");
     surface.style.setProperty("--tray-wall-inset", `${simulation.wallInset}px`);
-
-    simulation.obstacles.forEach((obstacle, index) => {
-      const bumper = bumperRefs.current[index];
-      if (!bumper) return;
-      bumper.style.left = `${obstacle.x}px`;
-      bumper.style.top = `${obstacle.y}px`;
-      bumper.style.width = `${obstacle.radius * 2}px`;
-      bumper.style.marginLeft = `${-obstacle.radius}px`;
-      bumper.style.marginTop = `${-obstacle.radius}px`;
-    });
+    syncBumperElements(simulation, bumperRefs.current);
 
     for (const body of simulation.bodies) {
       setDieTransform(dieRefs.current.get(body.id), renderStatesRef.current.get(body.id));
@@ -261,6 +355,8 @@ export default function RealisticDiceTray({
     const resizeObserver = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => {
       const next = surface.getBoundingClientRect();
       resizeDiceSimulation(simulation, Math.max(240, next.width), Math.max(170, next.height));
+      syncBumperElements(simulation, bumperRefs.current);
+      simulation.bodies.forEach((body) => renderBodyImmediately(body));
     }) : null;
     resizeObserver?.observe(surface);
     resizeObserverRef.current = resizeObserver;
@@ -272,6 +368,7 @@ export default function RealisticDiceTray({
       resizeObserverRef.current = null;
       simulationRef.current = null;
       renderStatesRef.current = new Map();
+      dragStateRef.current = { dieId: "", offsetX: 0, offsetY: 0 };
     };
   }, [physicsSignature, dieSize, reducedMotion, rollKey, onSettled, simulationKey]);
 
@@ -286,15 +383,23 @@ export default function RealisticDiceTray({
     <div
       ref={surfaceRef}
       className={styles.surface}
-      onDragOver={onTrayDrop ? (event) => {
-        if (Array.from(event.dataTransfer?.types || []).includes("text/npc-forge-roll")) event.preventDefault();
-      } : undefined}
-      onDrop={onTrayDrop ? (event) => {
-        if (!event.dataTransfer?.getData("text/npc-forge-roll")) return;
+      onDragOver={(event) => {
+        const hasForgeRoll = Array.from(event.dataTransfer?.types || []).includes("text/npc-forge-roll");
+        if (!dragStateRef.current.dieId && !(onTrayDrop && hasForgeRoll)) return;
         event.preventDefault();
-        onTrayDrop(event);
-      } : undefined}
+        if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
+        moveManualDrag(event);
+      }}
+      onDrop={(event) => {
+        const rollId = event.dataTransfer?.getData("text/npc-forge-roll");
+        if (!dragStateRef.current.dieId && !(onTrayDrop && rollId)) return;
+        event.preventDefault();
+        moveManualDrag(event);
+        endManualDrag();
+        if (rollId) onTrayDrop?.(event);
+      }}
     >
+      <TrayArtwork />
       <div ref={(node) => { bumperRefs.current[0] = node; }} className={`${styles.bumper} ${styles.bumper_one}`} aria-hidden="true" />
       <div ref={(node) => { bumperRefs.current[1] = node; }} className={`${styles.bumper} ${styles.bumper_two}`} aria-hidden="true" />
       <div ref={(node) => { bumperRefs.current[2] = node; }} className={`${styles.bumper} ${styles.bumper_three}`} aria-hidden="true" />
@@ -305,6 +410,7 @@ export default function RealisticDiceTray({
           ref={(node) => attachDieRef(die.id, node)}
           die={die}
           settled={settled}
+          dragging={draggingDieId === die.id}
           onClick={(event) => {
             if (!settled) return;
             onDieClick?.(die, event);
@@ -315,7 +421,9 @@ export default function RealisticDiceTray({
               return;
             }
             onDieDragStart?.(die, event);
+            beginManualDrag(die, event);
           }}
+          onDragEnd={endManualDrag}
           renderTooltip={renderTooltip}
         />;
       })}

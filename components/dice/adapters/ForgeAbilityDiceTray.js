@@ -55,6 +55,7 @@ export function ForgeAssignedAbilityDie({
   roll,
   rollIndex = 0,
   ability,
+  modifier = "+0",
   allocation = {},
   selectedRollId = "",
   onSelectRoll,
@@ -63,7 +64,7 @@ export function ForgeAssignedAbilityDie({
   const die = forgeAbilityVisualDie(roll, rollIndex, allocation, selectedRollId);
   if (!die) return null;
 
-  return <div className={styles.slotDieWrap} data-forge-assigned-roll={die.id}>
+  return <div className={`${styles.slotDieWrap} ${styles[`accent_${die.accent}`] || styles.accent_violet}`} data-forge-assigned-roll={die.id}>
     <ResultCubeDie
       die={die}
       settled
@@ -77,6 +78,7 @@ export function ForgeAssignedAbilityDie({
       renderTooltip={(tooltipDie, tooltipClassName) => <ForgeRollTooltip die={tooltipDie} tooltipClassName={tooltipClassName} />}
       ariaLabel={`${die.label} Drag to another ability or back to the dice tray.`}
     />
+    <span className={styles.modifierBadge} aria-label={`${ABILITY_LABELS[ability]} modifier ${modifier}`}>{modifier}</span>
     <button
       type="button"
       className={styles.returnButton}

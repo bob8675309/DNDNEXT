@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ABILITY_KEYS, ABILITY_LABELS } from "../utils/characterCreation";
+import { ABILITY_KEYS, ABILITY_LABELS, abilityModifierForScore } from "../utils/characterCreation";
 import {
   POINT_BUY_BUDGET,
   POINT_BUY_MAX,
@@ -16,6 +16,11 @@ function methodHelp(method) {
   if (method === "pointBuy") return `Spend ${POINT_BUY_BUDGET} points across the six abilities before applying Species Bonus.`;
   if (method === "standard") return "Use the class-guided standard array, then review the suggested placement on the left.";
   return "Enter each base score directly in the ability slots on the left.";
+}
+
+function modifierLabel(score) {
+  const modifier = abilityModifierForScore(score);
+  return modifier >= 0 ? `+${modifier}` : String(modifier);
 }
 
 export default function NpcForgeAbilityStep({
@@ -68,10 +73,13 @@ export default function NpcForgeAbilityStep({
             const roll = rolled && hasRolled ? rolls.find((entry) => entry.id === allocation[key]) : null;
             const rollIndex = roll ? rolls.findIndex((entry) => entry.id === roll.id) : -1;
             const baseValue = Number(draft.baseAbilities?.[key] ?? 10);
+            const showAbilityDetail = () => onDetail({ type: "ability", key });
             return <div
               key={key}
               className={`npc-forge-ability-wall__row is-${key}${roll ? " is-filled" : ""}${selectedRollId && hasRolled && !roll ? " is-ready" : ""}`}
-              onMouseEnter={() => onDetail({ type: "ability", key })}
+              onMouseEnter={showAbilityDetail}
+              onClick={showAbilityDetail}
+              onFocusCapture={showAbilityDetail}
               onDragOver={rolled && hasRolled ? (event) => event.preventDefault() : undefined}
               onDrop={rolled && hasRolled ? (event) => {
                 event.preventDefault();
@@ -88,6 +96,7 @@ export default function NpcForgeAbilityStep({
                   roll={roll}
                   rollIndex={Math.max(0, rollIndex)}
                   ability={key}
+                  modifier={modifierLabel(finalAbilities?.[key] ?? roll.total)}
                   allocation={allocation}
                   selectedRollId={selectedRollId}
                   onSelectRoll={onSelectRoll}
@@ -165,7 +174,7 @@ export default function NpcForgeAbilityStep({
               onReturnRoll={(ability) => onAllocate(ability, "")}
             />}
           </div>
-          <div className="npc-forge-ability-dice-tray__tip">✦&nbsp; Hover a settled die for the dice math. Drag it into an ability slot; drag an assigned die back into the tray to return it.</div>
+          <div className="npc-forge-ability-dice-tray__tip">✦&nbsp; Hover for the dice math. Drag a settled die anywhere in the tray to arrange it, or drag it into an ability slot to assign it.</div>
         </section> : pointBuy ? <div className={`npc-forge-point-buy-budget${remaining < 0 ? " is-invalid" : ""}`}>
           <div><span>Point Buy Budget</span><strong>{Math.max(0, remaining)} / {POINT_BUY_BUDGET} remaining</strong></div>
           <p>Adjust the six scores in the left column. Species Bonus is applied afterward.</p>

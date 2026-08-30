@@ -5,8 +5,13 @@ on:
     paths:
       - "components/dice/**"
       - "components/NpcForgeAbilityStep.js"
+      - "components/NpcForgeAbilityContextCard.js"
+      - "components/NpcForgeAbilityGlyph.js"
+      - "styles/character-forge-ability-dice-tray.css"
+      - "styles/character-forge-class-ability-final.css"
       - "utils/dice/**"
       - "scripts/validate_realistic_dice_core.mjs"
+      - "scripts/validate_realistic_dice_physics.mjs"
       - ".github/workflows/validate-realistic-dice-core.yml"
   push:
     branches:
@@ -28,6 +33,8 @@ jobs:
       - run: npm ci
       - name: Validate reusable Realistic Dice core
         run: node scripts/validate_realistic_dice_core.mjs
+      - name: Stress-test responsive dice physics
+        run: node scripts/validate_realistic_dice_physics.mjs
       # Do not run a bare `next build` in this workflow: this repository's page-data
       # collection requires deployment Supabase environment variables that are not
       # exposed to GitHub Actions. Exact-head production compilation is verified by
