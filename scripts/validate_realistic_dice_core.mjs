@@ -34,14 +34,19 @@ expect(physics.includes("resolveWall"), "tray-wall collision resolution missing"
 expect(physics.includes("resolveFloor") && physics.includes("GRAVITY") && physics.includes("body.vz"), "solid tray-floor gravity/bounce model missing");
 expect(physics.includes("effectiveGravity") && physics.includes("gravityRampStart") && physics.includes("gravityRampRate") && physics.includes("gravityMaxScale"), "per-die gravity ramp missing");
 expect(physics.includes("Math.exp(rampTime * body.gravityRampRate)"), "gravity ramp must increase exponentially rather than linearly");
+expect(physics.includes("cubeSupportClearance") && physics.includes("physicalBottom") && physics.includes("FLOOR_CONTACT_SLOP"), "rotated edge/corner tray support-height model missing");
+expect(physics.includes("applyFloorGravityTorque") && physics.includes("gravityRightingComponent"), "gravity-driven edge/corner righting torque missing");
+expect(physics.includes("-Math.sin(4 * angle)"), "floor gravity torque must have stable face equilibria and unstable edge equilibria");
+expect(physics.includes("const groundedAfterRotation = resolveFloor(body)"), "floor contact must be re-evaluated after cube rotation changes its lowest edge/corner");
 expect(physics.includes("wallInset") && physics.includes("wallInsetForSize"), "inset physical tray walls missing");
 expect(physics.includes("groundFriction") && physics.includes("rollingResistance") && physics.includes("rollCoupling"), "grounded rolling/contact coupling missing");
 expect(physics.includes("groundedTime") && physics.includes("contactGrip") && physics.includes("Math.exp(body.groundedTime * body.contactGripRate)"), "exponential sustained floor-contact grip missing");
 expect(!physics.includes("lateDamping"), "dice must not share one synchronized late slowdown");
 expect(physics.includes("settleAfter") && physics.includes("forceAfter") && physics.includes("settleFramesRequired"), "per-die staggered settling controls missing");
-expect(physics.includes("guideToFlatFace") && physics.includes("faceSpring") && physics.includes("faceDamping"), "damped face-seeking contact torque missing");
+expect(physics.includes("Math.round(between(random, 3, 6))"), "settled result reveal must not wait through a long hidden stability counter");
+expect(physics.includes("guideToFlatFace") && physics.includes("faceSpring") && physics.includes("faceDamping"), "damped supplemental face-seeking torque missing");
 expect(physics.includes("body.wx += errorX * strength * dt") && physics.includes("body.wy += errorY * strength * dt"), "flat-face settling must act through angular velocity instead of directly rewriting orientation");
-expect(physics.includes("faceFlatError(body) < 0.008"), "settled face-flat tolerance is too loose for a visibly flush cube");
+expect(physics.includes("faceFlatError(body) < 0.0045"), "settled face-flat tolerance is too loose for a visibly flush cube");
 expect(!physics.includes("Math.round(body.rx / (Math.PI / 2))"), "settling must converge instead of snapping cube rotation");
 expect(physics.includes("setDiceSimulationActiveIds") && physics.includes("body.active === false"), "dice removed from the tray must leave active collision participation");
 expect(physics.includes("wx") && physics.includes("wy") && physics.includes("wz"), "independent angular velocity missing");
@@ -83,4 +88,4 @@ for (const source of [tray, adapter, contract, seed, physics]) {
   for (const token of protectedTokens) expect(!source.includes(token), `dice core crossed protected runtime boundary: ${token}`);
 }
 
-console.log("Reusable Realistic Dice core validated: exponential per-die gravity/contact ramps, conservative solid-cube collision volumes with 180 Hz substeps, six iterative separation passes, balanced randomized spawn sides and no stacking lift, damped flat-face contact torque, strict settled flatness, authoritative-result contract, assigned die transfer/return with collision deactivation, React-owned drag gating, Forge allocation authority, and protected boundaries.");
+console.log("Reusable Realistic Dice core validated: exponential per-die gravity/contact ramps, rotated corner/edge floor support with gravity righting torque, prompt post-rest reveal, conservative solid-cube collisions with substeps/iterations and no stacking lift, damped flat-face settling, authoritative-result contract, assigned die transfer/return with collision deactivation, React-owned drag gating, Forge allocation authority, and protected boundaries.");
