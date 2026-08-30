@@ -10,21 +10,85 @@ import {
 } from "../../utils/dice/physics/dicePhysicsEngine";
 
 const FACE_NAMES = ["front", "back", "right", "left", "top", "bottom"];
+const QUARTER_TURN = Math.PI / 2;
+const VISUAL_FLAT_EPSILON = 0.0025;
+const VISUAL_FLOOR_EPSILON = 0.075;
 
 function prefersReducedMotion() {
   return typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
 }
 
-function setDieTransform(element, body) {
-  if (!element || !body) return;
-  element.style.left = `${body.x}px`;
-  element.style.top = `${body.y}px`;
-  element.style.zIndex = String(4 + Math.round(body.y / 52) + Math.round(body.z / 28));
+function shortestAngleDelta(current, target) {
+  return Math.atan2(Math.sin(target - current), Math.cos(target - current));
+}
+
+function nearestQuarterTurn(value) {
+  return Math.round(value / QUARTER_TURN) * QUARTER_TURN;
+}
+
+function smoothScalar(current, target, rate, dt) {
+  const blend = 1 - Math.exp(-rate * dt);
+  return current + (target - current) * blend;
+}
+
+function smoothAngle(current, target, rate, dt) {
+  const blend = 1 - Math.exp(-rate * dt);
+  return current + shortestAngleDelta(current, target) * blend;
+}
+
+function createRenderState(body) {
+  return {
+    x: body.x,
+    y: body.y,
+    z: body.z,
+    rx: body.rx,
+    ry: body.ry,
+    rz: body.rz,
+  };
+}
+
+function smoothDieState(previous, body, dt) {
+  const state = previous || createRenderState(body);
+  const finishing = Boolean(body.settled);
+  const targetRx = finishing ? nearestQuarterTurn(body.rx) : body.rx;
+  const targetRy = finishing ? nearestQuarterTurn(body.ry) : body.ry;
+  const targetZ = finishing ? 0 : body.z;
+
+  // Physics corrections remain immediate and authoritative. Rendering follows them with
+  // a short critically-damped-style exponential blend so 180 Hz contacts do not appear
+  // as one-frame teleports at a 60/120 Hz paint rate. Position is intentionally stiffer
+  // than rotation so conservative collision envelopes still read as solid.
+  state.x = smoothScalar(state.x, body.x, finishing ? 54 : 62, dt);
+  state.y = smoothScalar(state.y, body.y, finishing ? 54 : 62, dt);
+  state.z = smoothScalar(state.z, targetZ, finishing ? 34 : 46, dt);
+  state.rx = smoothAngle(state.rx, targetRx, finishing ? 32 : 38, dt);
+  state.ry = smoothAngle(state.ry, targetRy, finishing ? 32 : 38, dt);
+  state.rz = smoothAngle(state.rz, body.rz, finishing ? 28 : 36, dt);
+  return state;
+}
+
+function isVisuallyFaceFlat(state, body) {
+  if (!body?.settled || !state) return false;
+  return Math.abs(shortestAngleDelta(state.rx, nearestQuarterTurn(body.rx))) < VISUAL_FLAT_EPSILON
+    && Math.abs(shortestAngleDelta(state.ry, nearestQuarterTurn(body.ry))) < VISUAL_FLAT_EPSILON
+    && Math.abs(state.z) < VISUAL_FLOOR_EPSILON;
+}
+
+function setDieTransform(element, state) {
+  if (!element || !state) return;
+  element.style.left = `${state.x}px`;
+  element.style.top = `${state.y}px`;
+  element.style.zIndex = String(4 + Math.round(state.y / 52) + Math.round(state.z / 28));
   const cube = element.querySelector(`.${styles.cube}`);
-  if (cube) cube.style.transform = `translate3d(0, ${-body.z}px, 0) rotateX(${body.rx}rad) rotateY(${body.ry}rad) rotateZ(${body.rz}rad)`;
+  if (cube) {
+    // CSS transform functions are composed right-to-left. Rx -> Ry -> world-Z yaw is the
+    // same orientation convention used by cubeSupportClearance in the physics engine, so
+    // a physics face-flat result now also renders face-flat instead of retaining a visual tilt.
+    cube.style.transform = `translate3d(0, ${-state.z}px, 0) rotateZ(${state.rz}rad) rotateY(${state.ry}rad) rotateX(${state.rx}rad)`;
+  }
   const shadow = element.querySelector(`.${styles.shadow}`);
   if (shadow) {
-    const heightRatio = Math.min(1, Math.max(0, body.z / 120));
+    const heightRatio = Math.min(1, Math.max(0, state.z / 120));
     shadow.style.opacity = String(0.5 - heightRatio * 0.32);
     shadow.style.transform = `translate(-50%, -50%) scale(${1 + heightRatio * 0.42})`;
     shadow.style.filter = `blur(${6 + heightRatio * 6}px)`;
@@ -108,6 +172,7 @@ export default function RealisticDiceTray({
   const bumperRefs = useRef([]);
   const simulationRef = useRef(null);
   const simulationKeyRef = useRef("");
+  const renderStatesRef = useRef(new Map());
   const settledIdsRef = useRef(new Set());
   const frameRef = useRef(null);
   const resizeObserverRef = useRef(null);
@@ -122,7 +187,8 @@ export default function RealisticDiceTray({
     }
     dieRefs.current.set(dieId, node);
     const body = simulationRef.current?.bodies?.find((entry) => entry.id === dieId);
-    if (body) setDieTransform(node, body);
+    const renderState = renderStatesRef.current.get(dieId);
+    if (body) setDieTransform(node, renderState || body);
   }
 
   useEffect(() => {
@@ -136,6 +202,7 @@ export default function RealisticDiceTray({
     setDiceSimulationActiveIds(simulation, visibleDice.map((die) => die.id));
     simulationRef.current = simulation;
     simulationKeyRef.current = simulationKey;
+    renderStatesRef.current = new Map(simulation.bodies.map((body) => [body.id, createRenderState(body)]));
     settledIdsRef.current = new Set();
     setSettledIds(new Set());
     surface.style.setProperty("--tray-wall-inset", `${simulation.wallInset}px`);
@@ -150,16 +217,30 @@ export default function RealisticDiceTray({
       bumper.style.marginTop = `${-obstacle.radius}px`;
     });
 
-    for (const body of simulation.bodies) setDieTransform(dieRefs.current.get(body.id), body);
+    for (const body of simulation.bodies) {
+      setDieTransform(dieRefs.current.get(body.id), renderStatesRef.current.get(body.id));
+    }
 
     let lastTime = performance.now();
     const animate = (now) => {
       const delta = Math.min(0.05, Math.max(0.001, (now - lastTime) / 1000));
       lastTime = now;
       stepDiceSimulation(simulation, delta);
-      for (const body of simulation.bodies) setDieTransform(dieRefs.current.get(body.id), body);
 
-      const nextSettledIds = new Set(simulation.bodies.filter((body) => body.settled).map((body) => body.id));
+      let allVisualSettled = true;
+      const nextSettledIds = new Set();
+      for (const body of simulation.bodies) {
+        const previous = renderStatesRef.current.get(body.id);
+        const renderState = smoothDieState(previous, body, delta);
+        renderStatesRef.current.set(body.id, renderState);
+        setDieTransform(dieRefs.current.get(body.id), renderState);
+
+        if (body.active === false) continue;
+        const visuallySettled = isVisuallyFaceFlat(renderState, body);
+        if (visuallySettled) nextSettledIds.add(body.id);
+        else allVisualSettled = false;
+      }
+
       const currentSettled = settledIdsRef.current;
       const changed = nextSettledIds.size !== currentSettled.size
         || [...nextSettledIds].some((id) => !currentSettled.has(id));
@@ -168,7 +249,7 @@ export default function RealisticDiceTray({
         setSettledIds(nextSettledIds);
       }
 
-      if (simulation.complete) {
+      if (simulation.complete && allVisualSettled) {
         frameRef.current = null;
         onSettled?.({ seed: simulation.seed, bodies: simulation.bodies.map((body) => ({ ...body })) });
         return;
@@ -190,6 +271,7 @@ export default function RealisticDiceTray({
       resizeObserver?.disconnect();
       resizeObserverRef.current = null;
       simulationRef.current = null;
+      renderStatesRef.current = new Map();
     };
   }, [physicsSignature, dieSize, reducedMotion, rollKey, onSettled, simulationKey]);
 
