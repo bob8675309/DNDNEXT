@@ -53,7 +53,13 @@ expect(physics.includes("wx") && physics.includes("wy") && physics.includes("wz"
 expect(physics.includes("createDiceSimulation") && physics.includes("stepDiceSimulation"), "reusable physics engine API missing");
 
 expect(tray.includes("requestAnimationFrame"), "runtime physics frame loop missing");
-expect(tray.includes("prefers-reduced-motion"), "reduced-motion fallback missing");
+expect(tray.includes("prefersReducedMotion"), "reduced-motion fallback missing");
+expect(tray.includes("renderStatesRef") && tray.includes("smoothDieState") && tray.includes("smoothAngle"), "per-die render interpolation missing");
+expect(tray.includes("shortestAngleDelta") && tray.includes("1 - Math.exp(-rate * dt)"), "frame-rate-independent shortest-path smoothing missing");
+expect(tray.includes("rotateZ(${state.rz}rad) rotateY(${state.ry}rad) rotateX(${state.rx}rad)"), "render transform order must match physics X/Y support convention with world-Z yaw last");
+expect(!tray.includes("rotateX(${body.rx}rad) rotateY(${body.ry}rad) rotateZ(${body.rz}rad)"), "legacy render rotation order can visually tilt a physics-flat cube");
+expect(tray.includes("isVisuallyFaceFlat") && tray.includes("VISUAL_FLAT_EPSILON") && tray.includes("VISUAL_FLOOR_EPSILON"), "visual face-flat acceptance gate missing");
+expect(tray.includes("simulation.complete && allVisualSettled"), "render loop must finish smoothing before stopping on the final pose");
 expect(tray.includes("body.z") && tray.includes("translate3d"), "visible dice height must track floor/bounce physics");
 expect(tray.includes("settledIds") && tray.includes("draggable={Boolean(draggable && settled)}"), "settled interaction state must be React-owned and survive rerenders");
 expect(tray.includes('data-settled={settled ? "true" : "false"}'), "drag/click gating must reflect React settled state");
@@ -88,4 +94,4 @@ for (const source of [tray, adapter, contract, seed, physics]) {
   for (const token of protectedTokens) expect(!source.includes(token), `dice core crossed protected runtime boundary: ${token}`);
 }
 
-console.log("Reusable Realistic Dice core validated: exponential per-die gravity/contact ramps, rotated corner/edge floor support with gravity righting torque, prompt post-rest reveal, conservative solid-cube collisions with substeps/iterations and no stacking lift, damped flat-face settling, authoritative-result contract, assigned die transfer/return with collision deactivation, React-owned drag gating, Forge allocation authority, and protected boundaries.");
+console.log("Reusable Realistic Dice core validated: exponential per-die gravity/contact ramps, rotated corner/edge floor support with gravity righting torque, conservative solid-cube collisions, smoothed shortest-path rendering aligned to the physics rotation convention, strict visual face-flat completion, prompt result reveal, authoritative-result contract, assigned die transfer/return, React-owned drag gating, Forge allocation authority, and protected boundaries.");
