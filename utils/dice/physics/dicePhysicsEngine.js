@@ -4,6 +4,9 @@ const TAU = Math.PI * 2;
 const QUARTER_TURN = Math.PI / 2;
 const GRAVITY = 1120;
 const SIDES = ["left", "right", "top", "bottom"];
+const PHYSICS_HZ = 180;
+const MAX_SUBSTEPS = 6;
+const COLLISION_ITERATIONS = 3;
 
 function between(random, min, max) {
   return min + (max - min) * random();
@@ -42,7 +45,7 @@ function faceFlatError(body) {
 
 function effectiveGravity(body, elapsed) {
   const rampTime = Math.max(0, elapsed - body.gravityRampStart);
-  const scale = Math.min(body.gravityMaxScale, 1 + rampTime * body.gravityRampRate);
+  const scale = Math.min(body.gravityMaxScale, Math.exp(rampTime * body.gravityRampRate));
   return GRAVITY * scale;
 }
 
@@ -74,18 +77,19 @@ function wakeBody(body) {
 }
 
 function addImpactLift(body, impact) {
-  if (body.active === false || body.z > body.radius * 0.4 || impact < 115) return;
+  if (body.active === false || body.z > body.halfExtent * 0.5 || impact < 150) return;
   wakeBody(body);
-  body.vz = Math.max(body.vz, Math.min(150, 18 + impact * 0.15));
+  body.vz = Math.max(body.vz, Math.min(92, 8 + impact * 0.075));
 }
 
 function trayBounds(simulation, body) {
   const inset = simulation.wallInset;
+  const half = body.collisionHalf;
   return {
-    left: inset + body.radius,
-    right: simulation.width - inset - body.radius,
-    top: inset + body.radius,
-    bottom: simulation.height - inset - body.radius,
+    left: inset + half,
+    right: simulation.width - inset - half,
+    top: inset + half,
+    bottom: simulation.height - inset - half,
   };
 }
 
@@ -95,15 +99,15 @@ function resolveWall(body, simulation) {
     const impact = Math.abs(body.vx);
     body.x = bounds.left;
     body.vx = Math.abs(body.vx) * body.restitution;
-    body.wy -= impact / Math.max(12, body.radius) * 0.42;
-    body.wz += body.vy * 0.006;
+    body.wy -= impact / Math.max(12, body.halfExtent) * 0.35;
+    body.wz += body.vy * 0.004;
     addImpactLift(body, impact);
   } else if (body.x > bounds.right) {
     const impact = Math.abs(body.vx);
     body.x = bounds.right;
     body.vx = -Math.abs(body.vx) * body.restitution;
-    body.wy += impact / Math.max(12, body.radius) * 0.42;
-    body.wz -= body.vy * 0.006;
+    body.wy += impact / Math.max(12, body.halfExtent) * 0.35;
+    body.wz -= body.vy * 0.004;
     addImpactLift(body, impact);
   }
 
@@ -111,15 +115,15 @@ function resolveWall(body, simulation) {
     const impact = Math.abs(body.vy);
     body.y = bounds.top;
     body.vy = Math.abs(body.vy) * body.restitution;
-    body.wx += impact / Math.max(12, body.radius) * 0.42;
-    body.wz -= body.vx * 0.006;
+    body.wx += impact / Math.max(12, body.halfExtent) * 0.35;
+    body.wz -= body.vx * 0.004;
     addImpactLift(body, impact);
   } else if (body.y > bounds.bottom) {
     const impact = Math.abs(body.vy);
     body.y = bounds.bottom;
     body.vy = -Math.abs(body.vy) * body.restitution;
-    body.wx -= impact / Math.max(12, body.radius) * 0.42;
-    body.wz += body.vx * 0.006;
+    body.wx -= impact / Math.max(12, body.halfExtent) * 0.35;
+    body.wz += body.vx * 0.004;
     addImpactLift(body, impact);
   }
 }
@@ -131,9 +135,9 @@ function resolveFloor(body) {
   if (body.vz < -body.floorBounceThreshold) {
     const impact = -body.vz;
     body.vz = impact * body.floorRestitution;
-    body.wx += body.vy / Math.max(12, body.radius) * 0.1;
-    body.wy -= body.vx / Math.max(12, body.radius) * 0.1;
-    body.wz += (body.vx - body.vy) * 0.0016;
+    body.wx += body.vy / Math.max(12, body.halfExtent) * 0.08;
+    body.wy -= body.vx / Math.max(12, body.halfExtent) * 0.08;
+    body.wz += (body.vx - body.vy) * 0.0012;
     body.settleFrames = 0;
     body.groundedTime = 0;
     body.flatTargetX = null;
@@ -145,82 +149,103 @@ function resolveFloor(body) {
   return true;
 }
 
-function resolveCircleCollision(a, b) {
-  if (a.active === false || b.active === false) return;
-  const verticalDistance = Math.abs(a.z - b.z);
-  if (verticalDistance > Math.max(a.radius, b.radius) * 1.25) return;
+function verticalCubeOverlap(a, b) {
+  const aBottom = a.z;
+  const aTop = a.z + a.collisionSize;
+  const bBottom = b.z;
+  const bTop = b.z + b.collisionSize;
+  return Math.min(aTop, bTop) - Math.max(aBottom, bBottom);
+}
+
+function collisionSign(delta, relativeVelocity) {
+  if (Math.abs(delta) > 0.0001) return delta > 0 ? 1 : -1;
+  return relativeVelocity >= 0 ? 1 : -1;
+}
+
+// Conservative solid-cube contact envelope. We intentionally use a slightly oversized,
+// axis-aligned footprint so CSS-perspective corners never visibly pass through another die.
+// Vertical overlap is required, but separation is always lateral; dice are not allowed to
+// "solve" penetration by climbing onto one another.
+function resolveSolidCubeCollision(a, b) {
+  if (a.active === false || b.active === false) return false;
+  if (verticalCubeOverlap(a, b) <= 0) return false;
 
   const dx = b.x - a.x;
   const dy = b.y - a.y;
-  const minDistance = a.radius + b.radius;
-  const distanceSquared = dx * dx + dy * dy;
-  if (distanceSquared <= 0 || distanceSquared >= minDistance * minDistance) return;
+  const overlapX = a.collisionHalf + b.collisionHalf - Math.abs(dx);
+  const overlapY = a.collisionHalf + b.collisionHalf - Math.abs(dy);
+  if (overlapX <= 0 || overlapY <= 0) return false;
 
-  const distance = Math.sqrt(distanceSquared);
-  const nx = dx / distance;
-  const ny = dy / distance;
-  const overlap = minDistance - distance;
+  const rvx = b.vx - a.vx;
+  const rvy = b.vy - a.vy;
+  const resolveX = overlapX <= overlapY;
+  const nx = resolveX ? collisionSign(dx, rvx) : 0;
+  const ny = resolveX ? 0 : collisionSign(dy, rvy);
+  const overlap = (resolveX ? overlapX : overlapY) + 0.35;
   const totalInvMass = a.invMass + b.invMass || 1;
+
   a.x -= nx * overlap * (a.invMass / totalInvMass);
   a.y -= ny * overlap * (a.invMass / totalInvMass);
   b.x += nx * overlap * (b.invMass / totalInvMass);
   b.y += ny * overlap * (b.invMass / totalInvMass);
 
-  const rvx = b.vx - a.vx;
-  const rvy = b.vy - a.vy;
   const alongNormal = rvx * nx + rvy * ny;
-  if (alongNormal > 0) return;
-
   const impact = Math.abs(alongNormal);
-  if (impact > 22) {
+  if (impact > 18) {
     wakeBody(a);
     wakeBody(b);
   }
 
-  const restitution = Math.min(a.restitution, b.restitution);
-  const impulse = -(1 + restitution) * alongNormal / totalInvMass;
-  const ix = impulse * nx;
-  const iy = impulse * ny;
-  a.vx -= ix * a.invMass;
-  a.vy -= iy * a.invMass;
-  b.vx += ix * b.invMass;
-  b.vy += iy * b.invMass;
+  if (alongNormal < 0) {
+    const restitution = Math.min(a.restitution, b.restitution) * 0.88;
+    const impulse = -(1 + restitution) * alongNormal / totalInvMass;
+    const ix = impulse * nx;
+    const iy = impulse * ny;
+    a.vx -= ix * a.invMass;
+    a.vy -= iy * a.invMass;
+    b.vx += ix * b.invMass;
+    b.vy += iy * b.invMass;
 
-  const tangentKick = (a.wz - b.wz) * 0.016;
-  a.vx -= ny * tangentKick;
-  a.vy += nx * tangentKick;
-  b.vx += ny * tangentKick;
-  b.vy -= nx * tangentKick;
-  a.wz += (rvx * ny - rvy * nx) * 0.024;
-  b.wz -= (rvx * ny - rvy * nx) * 0.024;
+    // Tangential friction keeps side impacts from looking frictionless while retaining spin.
+    const tx = -ny;
+    const ty = nx;
+    const tangentSpeed = rvx * tx + rvy * ty;
+    const frictionImpulse = clamp(-tangentSpeed * 0.16, -Math.abs(impulse) * 0.24, Math.abs(impulse) * 0.24);
+    a.vx -= tx * frictionImpulse * a.invMass;
+    a.vy -= ty * frictionImpulse * a.invMass;
+    b.vx += tx * frictionImpulse * b.invMass;
+    b.vy += ty * frictionImpulse * b.invMass;
 
-  if (impact > 90) {
-    const lift = Math.min(118, 12 + impact * 0.11);
-    if (a.z < a.radius * 0.45) a.vz = Math.max(a.vz, lift * 0.72);
-    if (b.z < b.radius * 0.45) b.vz = Math.max(b.vz, lift);
+    const spinKick = (rvx * ny - rvy * nx) * 0.014;
+    a.wz += spinKick;
+    b.wz -= spinKick;
   }
+
+  // Deliberately no die-on-die vertical lift. This 2.5D tray model keeps cubes solid and
+  // side-separates them instead of allowing one die to stack on top of another.
+  return true;
 }
 
 function resolveObstacle(body, obstacle) {
-  if (body.active === false || body.z > body.radius * 0.95) return;
+  if (body.active === false || body.z > body.collisionSize * 0.95) return;
   const dx = body.x - obstacle.x;
   const dy = body.y - obstacle.y;
-  const minDistance = body.radius + obstacle.radius;
+  const obstacleDistance = body.collisionHalf + obstacle.radius;
   const distanceSquared = dx * dx + dy * dy;
-  if (distanceSquared <= 0 || distanceSquared >= minDistance * minDistance) return;
+  if (distanceSquared <= 0 || distanceSquared >= obstacleDistance * obstacleDistance) return;
 
   const distance = Math.sqrt(distanceSquared);
   const nx = dx / distance;
   const ny = dy / distance;
-  body.x = obstacle.x + nx * minDistance;
-  body.y = obstacle.y + ny * minDistance;
+  body.x = obstacle.x + nx * obstacleDistance;
+  body.y = obstacle.y + ny * obstacleDistance;
   const alongNormal = body.vx * nx + body.vy * ny;
   if (alongNormal < 0) {
     const impact = Math.abs(alongNormal);
-    const impulse = -(1 + body.restitution * 0.88) * alongNormal;
+    const impulse = -(1 + body.restitution * 0.82) * alongNormal;
     body.vx += impulse * nx;
     body.vy += impulse * ny;
-    body.wz += (body.vx * ny - body.vy * nx) * 0.025;
+    body.wz += (body.vx * ny - body.vy * nx) * 0.018;
     addImpactLift(body, impact);
   }
 }
@@ -230,15 +255,18 @@ function wallInsetForSize(size) {
 }
 
 function spawnBody(die, index, count, width, height, random, size, wallInset) {
-  const radius = size * 0.52;
+  const halfExtent = size / 2;
+  // Slightly conservative footprint so a rotating CSS cube still reads as physically solid.
+  const collisionHalf = size * between(random, 0.59, 0.64);
+  const collisionSize = collisionHalf * 2;
   const side = choose(random, SIDES);
-  const left = wallInset + radius;
-  const right = Math.max(left, width - wallInset - radius);
-  const top = wallInset + radius;
-  const bottom = Math.max(top, height - wallInset - radius);
+  const left = wallInset + collisionHalf;
+  const right = Math.max(left, width - wallInset - collisionHalf);
+  const top = wallInset + collisionHalf;
+  const bottom = Math.max(top, height - wallInset - collisionHalf);
   const targetX = between(random, width * 0.28, width * 0.72);
   const targetY = between(random, height * 0.28, height * 0.72);
-  const edgeDepth = between(random, 0, radius * 0.3);
+  const edgeDepth = between(random, 0, halfExtent * 0.25);
   let x;
   let y;
 
@@ -250,8 +278,8 @@ function spawnBody(die, index, count, width, height, random, size, wallInset) {
   const dx = targetX - x;
   const dy = targetY - y;
   const distance = Math.max(1, Math.hypot(dx, dy));
-  const launchSpeed = between(random, 470, 760) * (count > 8 ? 0.88 : 1);
-  const lateral = between(random, -135, 135);
+  const launchSpeed = between(random, 500, 790) * (count > 8 ? 0.88 : 1);
+  const lateral = between(random, -140, 140);
   const nx = dx / distance;
   const ny = dy / distance;
   const tx = -ny;
@@ -263,34 +291,39 @@ function spawnBody(die, index, count, width, height, random, size, wallInset) {
     active: true,
     x,
     y,
-    z: between(random, 12, 44),
+    z: between(random, 10, 38),
     vx: nx * launchSpeed + tx * lateral,
     vy: ny * launchSpeed + ty * lateral,
-    vz: between(random, 65, 155),
+    vz: between(random, 58, 138),
     rx: between(random, -Math.PI, Math.PI),
     ry: between(random, -Math.PI, Math.PI),
     rz: between(random, -Math.PI, Math.PI),
     wx: between(random, -10.5, 10.5) || 6,
     wy: between(random, -11.5, 11.5) || -7,
     wz: between(random, -4.5, 4.5) || 3,
-    radius,
+    halfExtent,
+    collisionHalf,
+    collisionSize,
+    radius: halfExtent,
     invMass: 1,
-    restitution: between(random, 0.6, 0.78),
-    floorRestitution: between(random, 0.2, 0.32),
-    floorBounceThreshold: between(random, 30, 42),
-    airDamping: between(random, 0.1, 0.2),
-    groundFriction: between(random, 0.9, 1.45),
-    rollingResistance: between(random, 0.7, 1.15),
-    angularAirDamping: between(random, 0.28, 0.48),
-    yawDamping: between(random, 1.45, 2.5),
-    rollCoupling: between(random, 8.5, 13.5),
-    gravityRampStart: between(random, 0.12, 0.58),
-    gravityRampRate: between(random, 0.07, 0.115),
-    gravityMaxScale: between(random, 1.25, 1.45),
-    faceSpring: between(random, 17, 24),
-    faceDamping: between(random, 4.6, 6.3),
-    settleAfter: between(random, 1.2, 2.1),
-    forceAfter: between(random, 4.65, 5.9),
+    restitution: between(random, 0.56, 0.72),
+    floorRestitution: between(random, 0.16, 0.26),
+    floorBounceThreshold: between(random, 28, 38),
+    airDamping: between(random, 0.12, 0.22),
+    groundFriction: between(random, 1.0, 1.6),
+    rollingResistance: between(random, 0.78, 1.28),
+    angularAirDamping: between(random, 0.34, 0.56),
+    yawDamping: between(random, 1.6, 2.7),
+    rollCoupling: between(random, 9, 14),
+    gravityRampStart: between(random, 0.1, 0.5),
+    gravityRampRate: between(random, 0.22, 0.34),
+    gravityMaxScale: between(random, 1.55, 1.85),
+    contactGripRate: between(random, 0.38, 0.58),
+    maxContactGrip: between(random, 1.75, 2.25),
+    faceSpring: between(random, 18, 26),
+    faceDamping: between(random, 4.8, 6.6),
+    settleAfter: between(random, 1.15, 2.0),
+    forceAfter: between(random, 4.7, 5.9),
     settleFramesRequired: Math.round(between(random, 14, 24)),
     groundedTime: 0,
     settled: false,
@@ -310,7 +343,7 @@ export function createDiceSimulation({ dice = [], width, height, seed, dieSize =
     id: `bumper-${index + 1}`,
     x: between(random, width * 0.31, width * 0.69),
     y: between(random, height * 0.3, height * 0.7),
-    radius: between(random, dieSize * 0.38, dieSize * 0.6),
+    radius: between(random, dieSize * 0.38, dieSize * 0.58),
   }));
 
   return {
@@ -362,58 +395,102 @@ export function setDiceSimulationActiveIds(simulation, activeIds = []) {
   simulation.complete = simulation.bodies.every((body) => body.active === false || body.settled);
 }
 
-export function stepDiceSimulation(simulation, deltaSeconds) {
-  if (!simulation || simulation.complete) return simulation;
-  const dt = Math.min(1 / 30, Math.max(1 / 240, deltaSeconds || 1 / 60));
-  simulation.elapsed += dt;
+function advanceBody(body, simulation, dt) {
+  if (body.active === false || body.settled) return;
 
-  for (const body of simulation.bodies) {
-    if (body.active === false || body.settled) continue;
+  body.vz -= effectiveGravity(body, simulation.elapsed) * dt;
+  body.x += body.vx * dt;
+  body.y += body.vy * dt;
+  body.z += body.vz * dt;
 
-    body.vz -= effectiveGravity(body, simulation.elapsed) * dt;
-    body.x += body.vx * dt;
-    body.y += body.vy * dt;
-    body.z += body.vz * dt;
+  const grounded = resolveFloor(body);
+  body.groundedTime = grounded ? body.groundedTime + dt : 0;
 
-    const grounded = resolveFloor(body);
-    body.groundedTime = grounded ? body.groundedTime + dt : 0;
+  // Grip ramps exponentially with sustained contact, independently for every die.
+  const contactGrip = grounded
+    ? Math.min(body.maxContactGrip, Math.exp(body.groundedTime * body.contactGripRate))
+    : 1;
+  const planarDamping = grounded ? body.groundFriction * contactGrip : body.airDamping;
+  const linearDecay = Math.exp(-planarDamping * dt);
+  body.vx *= linearDecay;
+  body.vy *= linearDecay;
 
-    // Grip grows with sustained contact instead of all dice entering one shared slowdown phase.
-    const contactGrip = grounded ? 1 + clamp(body.groundedTime * 0.7, 0, 0.65) : 1;
-    const planarDamping = grounded ? body.groundFriction * contactGrip : body.airDamping;
-    const linearDecay = Math.exp(-planarDamping * dt);
-    body.vx *= linearDecay;
-    body.vy *= linearDecay;
-
-    if (grounded) {
-      const targetWx = body.vy / Math.max(12, body.radius);
-      const targetWy = -body.vx / Math.max(12, body.radius);
-      const rollBlend = 1 - Math.exp(-body.rollCoupling * dt);
-      body.wx += (targetWx - body.wx) * rollBlend;
-      body.wy += (targetWy - body.wy) * rollBlend;
-      const rollingDecay = Math.exp(-body.rollingResistance * contactGrip * dt);
-      body.wx *= rollingDecay;
-      body.wy *= rollingDecay;
-      body.wz *= Math.exp(-body.yawDamping * contactGrip * dt);
-    } else {
-      const angularDecay = Math.exp(-body.angularAirDamping * dt);
-      body.wx *= angularDecay;
-      body.wy *= angularDecay;
-      body.wz *= angularDecay;
-    }
-
-    body.rx = (body.rx + body.wx * dt) % TAU;
-    body.ry = (body.ry + body.wy * dt) % TAU;
-    body.rz = (body.rz + body.wz * dt) % TAU;
-
-    resolveWall(body, simulation);
-    for (const obstacle of simulation.obstacles) resolveObstacle(body, obstacle);
+  if (grounded) {
+    const targetWx = body.vy / Math.max(12, body.halfExtent);
+    const targetWy = -body.vx / Math.max(12, body.halfExtent);
+    const rollBlend = 1 - Math.exp(-body.rollCoupling * dt);
+    body.wx += (targetWx - body.wx) * rollBlend;
+    body.wy += (targetWy - body.wy) * rollBlend;
+    const rollingDecay = Math.exp(-body.rollingResistance * contactGrip * dt);
+    body.wx *= rollingDecay;
+    body.wy *= rollingDecay;
+    body.wz *= Math.exp(-body.yawDamping * contactGrip * dt);
+  } else {
+    const angularDecay = Math.exp(-body.angularAirDamping * dt);
+    body.wx *= angularDecay;
+    body.wy *= angularDecay;
+    body.wz *= angularDecay;
   }
 
-  for (let i = 0; i < simulation.bodies.length; i += 1) {
-    for (let j = i + 1; j < simulation.bodies.length; j += 1) {
-      resolveCircleCollision(simulation.bodies[i], simulation.bodies[j]);
+  body.rx = (body.rx + body.wx * dt) % TAU;
+  body.ry = (body.ry + body.wy * dt) % TAU;
+  body.rz = (body.rz + body.wz * dt) % TAU;
+
+  resolveWall(body, simulation);
+  for (const obstacle of simulation.obstacles) resolveObstacle(body, obstacle);
+
+  const planarSpeed = speed(body);
+  const spin = angularSpeed(body);
+  const forceSettle = simulation.elapsed > body.forceAfter;
+  const contactReady = grounded && body.groundedTime > 0.08 && simulation.elapsed > body.settleAfter;
+
+  if (contactReady && (planarSpeed < 96 || forceSettle)) {
+    const lowEnergy = clamp(1 - planarSpeed / 100, 0, 1) * clamp(1 - spin / 8, 0.2, 1);
+    const springStrength = body.faceSpring * (0.45 + lowEnergy * 0.9) + (forceSettle ? 8 : 0);
+    const springDamping = body.faceDamping * (0.7 + lowEnergy * 0.65) + (forceSettle ? 1.2 : 0);
+    guideToFlatFace(body, dt, springStrength, springDamping);
+
+    const brakingStrength = 0.45 + lowEnergy * 1.65 + (forceSettle ? 1.25 : 0);
+    const braking = Math.exp(-brakingStrength * dt);
+    body.vx *= braking;
+    body.vy *= braking;
+    body.wz *= Math.exp(-(1.4 + lowEnergy * 2.2 + (forceSettle ? 1.5 : 0)) * dt);
+    if (forceSettle) body.forced = true;
+  } else if (!grounded || planarSpeed > 115) {
+    body.flatTargetX = null;
+    body.flatTargetY = null;
+  }
+}
+
+function resolveAllCubeCollisions(simulation) {
+  for (let iteration = 0; iteration < COLLISION_ITERATIONS; iteration += 1) {
+    let hadCollision = false;
+    for (let i = 0; i < simulation.bodies.length; i += 1) {
+      for (let j = i + 1; j < simulation.bodies.length; j += 1) {
+        if (resolveSolidCubeCollision(simulation.bodies[i], simulation.bodies[j])) hadCollision = true;
+      }
     }
+    if (!hadCollision) break;
+    for (const body of simulation.bodies) {
+      if (body.active === false) continue;
+      resolveWall(body, simulation);
+      for (const obstacle of simulation.obstacles) resolveObstacle(body, obstacle);
+    }
+  }
+}
+
+export function stepDiceSimulation(simulation, deltaSeconds) {
+  if (!simulation || simulation.complete) return simulation;
+
+  const frameDt = Math.min(1 / 30, Math.max(1 / 240, deltaSeconds || 1 / 60));
+  const substeps = clamp(Math.ceil(frameDt * PHYSICS_HZ), 2, MAX_SUBSTEPS);
+  const dt = frameDt / substeps;
+
+  for (let step = 0; step < substeps; step += 1) {
+    simulation.elapsed += dt;
+
+    for (const body of simulation.bodies) advanceBody(body, simulation, dt);
+    resolveAllCubeCollisions(simulation);
   }
 
   for (const body of simulation.bodies) {
@@ -422,28 +499,6 @@ export function stepDiceSimulation(simulation, deltaSeconds) {
     const grounded = body.z <= 0.001 && Math.abs(body.vz) < 0.001;
     const planarSpeed = speed(body);
     const spin = angularSpeed(body);
-    const forceSettle = simulation.elapsed > body.forceAfter;
-    const contactReady = grounded && body.groundedTime > 0.08 && simulation.elapsed > body.settleAfter;
-
-    if (contactReady && (planarSpeed < 96 || forceSettle)) {
-      const lowEnergy = clamp(1 - planarSpeed / 100, 0, 1) * clamp(1 - spin / 8, 0.2, 1);
-      const springStrength = body.faceSpring * (0.45 + lowEnergy * 0.9) + (forceSettle ? 8 : 0);
-      const springDamping = body.faceDamping * (0.7 + lowEnergy * 0.65) + (forceSettle ? 1.2 : 0);
-      guideToFlatFace(body, dt, springStrength, springDamping);
-
-      // Increase rolling/contact resistance as each individual die loses energy. This is deliberately
-      // per-die and contact-driven, avoiding the synchronized late-roll lag from the earlier version.
-      const brakingStrength = 0.45 + lowEnergy * 1.65 + (forceSettle ? 1.25 : 0);
-      const braking = Math.exp(-brakingStrength * dt);
-      body.vx *= braking;
-      body.vy *= braking;
-      body.wz *= Math.exp(-(1.4 + lowEnergy * 2.2 + (forceSettle ? 1.5 : 0)) * dt);
-      if (forceSettle) body.forced = true;
-    } else if (!grounded || planarSpeed > 115) {
-      body.flatTargetX = null;
-      body.flatTargetY = null;
-    }
-
     const quiet = grounded
       && body.groundedTime > 0.12
       && planarSpeed < 5
