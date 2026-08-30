@@ -5,6 +5,7 @@ import { createDiceVisualSeed } from "../../utils/dice/diceVisualSeed";
 import {
   createDiceSimulation,
   resizeDiceSimulation,
+  setDiceSimulationActiveIds,
   stepDiceSimulation,
 } from "../../utils/dice/physics/dicePhysicsEngine";
 
@@ -132,6 +133,7 @@ export default function RealisticDiceTray({
     const height = Math.max(170, rect.height);
     const visualSeed = createDiceVisualSeed(`roll-${rollKey}`);
     const simulation = createDiceSimulation({ dice, width, height, seed: visualSeed, dieSize });
+    setDiceSimulationActiveIds(simulation, visibleDice.map((die) => die.id));
     simulationRef.current = simulation;
     simulationKeyRef.current = simulationKey;
     settledIdsRef.current = new Set();
@@ -191,6 +193,11 @@ export default function RealisticDiceTray({
     };
   }, [physicsSignature, dieSize, reducedMotion, rollKey, onSettled, simulationKey]);
 
+  useEffect(() => {
+    if (reducedMotion || !simulationRef.current) return;
+    setDiceSimulationActiveIds(simulationRef.current, visibleDice.map((die) => die.id));
+  }, [hiddenSignature, reducedMotion]);
+
   if (!dice.length) return null;
 
   return <div className={`${styles.tray} ${className}`.trim()} aria-label={ariaLabel}>
@@ -198,7 +205,7 @@ export default function RealisticDiceTray({
       ref={surfaceRef}
       className={styles.surface}
       onDragOver={onTrayDrop ? (event) => {
-        if (event.dataTransfer?.types?.includes("text/npc-forge-roll")) event.preventDefault();
+        if (Array.from(event.dataTransfer?.types || []).includes("text/npc-forge-roll")) event.preventDefault();
       } : undefined}
       onDrop={onTrayDrop ? (event) => {
         if (!event.dataTransfer?.getData("text/npc-forge-roll")) return;
