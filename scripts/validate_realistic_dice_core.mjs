@@ -21,14 +21,20 @@ for (const type of ["d6", "d8", "d10", "d12", "d20", "resultCube"]) {
 expect(contract.includes("normalizeVisualDice"), "missing normalized visual-dice contract");
 expect(seed.includes("crypto.getRandomValues"), "visual randomness must use a separate presentation seed");
 expect(!physics.includes("Math.random"), "physics engine must not create game-result randomness with Math.random");
-expect(physics.includes("resolveCircleCollision"), "die-to-die collision resolution missing");
+expect(physics.includes("resolveSolidCubeCollision"), "solid die-to-die cube collision resolution missing");
+expect(physics.includes("verticalCubeOverlap") && physics.includes("collisionHalf") && physics.includes("collisionSize"), "solid cube collision volume missing");
+expect(!physics.includes("resolveCircleCollision"), "legacy circular die collision envelope must not remain active");
+expect(physics.includes("PHYSICS_HZ") && physics.includes("MAX_SUBSTEPS") && physics.includes("COLLISION_ITERATIONS"), "high-speed collision substeps/iterations missing");
+expect(physics.includes("resolveAllCubeCollisions") && physics.includes("for (let step = 0; step < substeps; step += 1)"), "multiple collision passes per rendered frame missing");
+expect(physics.includes("Deliberately no die-on-die vertical lift"), "die collisions must side-separate instead of permitting stacking");
 expect(physics.includes("resolveObstacle"), "tray obstacle collision resolution missing");
 expect(physics.includes("resolveWall"), "tray-wall collision resolution missing");
 expect(physics.includes("resolveFloor") && physics.includes("GRAVITY") && physics.includes("body.vz"), "solid tray-floor gravity/bounce model missing");
 expect(physics.includes("effectiveGravity") && physics.includes("gravityRampStart") && physics.includes("gravityRampRate") && physics.includes("gravityMaxScale"), "per-die gravity ramp missing");
+expect(physics.includes("Math.exp(rampTime * body.gravityRampRate)"), "gravity ramp must increase exponentially rather than linearly");
 expect(physics.includes("wallInset") && physics.includes("wallInsetForSize"), "inset physical tray walls missing");
 expect(physics.includes("groundFriction") && physics.includes("rollingResistance") && physics.includes("rollCoupling"), "grounded rolling/contact coupling missing");
-expect(physics.includes("groundedTime") && physics.includes("contactGrip"), "sustained floor-contact friction ramp missing");
+expect(physics.includes("groundedTime") && physics.includes("contactGrip") && physics.includes("Math.exp(body.groundedTime * body.contactGripRate)"), "exponential sustained floor-contact grip missing");
 expect(!physics.includes("lateDamping"), "dice must not share one synchronized late slowdown");
 expect(physics.includes("settleAfter") && physics.includes("forceAfter") && physics.includes("settleFramesRequired"), "per-die staggered settling controls missing");
 expect(physics.includes("guideToFlatFace") && physics.includes("faceSpring") && physics.includes("faceDamping"), "damped face-seeking contact torque missing");
@@ -75,4 +81,4 @@ for (const source of [tray, adapter, contract, seed, physics]) {
   for (const token of protectedTokens) expect(!source.includes(token), `dice core crossed protected runtime boundary: ${token}`);
 }
 
-console.log("Reusable Realistic Dice core validated: per-die gravity ramp, sustained floor grip, damped flat-face contact torque, strict settled flatness, tighter walls, staggered rolling/settling, authoritative-result contract, assigned die transfer/return with collision deactivation, React-owned drag gating, Forge allocation authority, and protected boundaries.");
+console.log("Reusable Realistic Dice core validated: exponential per-die gravity/contact ramps, conservative solid-cube collision volumes with substeps/iterations and no stacking lift, damped flat-face contact torque, strict settled flatness, authoritative-result contract, assigned die transfer/return with collision deactivation, React-owned drag gating, Forge allocation authority, and protected boundaries.");
