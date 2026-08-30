@@ -56,7 +56,9 @@ export default function RealisticDiceTray({
   onSettled = null,
   dieSize = 44,
 }) {
-  const diceSignature = JSON.stringify((Array.isArray(diceInput) ? diceInput : []).map((die) => [die?.id, die?.type, die?.result, die?.accent, die?.label, die?.detail]));
+  const sourceDice = Array.isArray(diceInput) ? diceInput : [];
+  const diceSignature = JSON.stringify(sourceDice.map((die) => [die?.id, die?.type, die?.result, die?.accent, die?.label, die?.detail]));
+  const physicsSignature = JSON.stringify(sourceDice.map((die) => [die?.id, die?.type, die?.result, die?.accent]));
   const dice = useMemo(() => normalizeVisualDice(diceInput), [diceSignature]);
   const surfaceRef = useRef(null);
   const dieRefs = useRef(new Map());
@@ -117,7 +119,7 @@ export default function RealisticDiceTray({
       resizeObserverRef.current = null;
       simulationRef.current = null;
     };
-  }, [diceSignature, dieSize, reducedMotion, rollKey, onSettled]);
+  }, [physicsSignature, dieSize, reducedMotion, rollKey, onSettled]);
 
   if (!dice.length) return null;
 
