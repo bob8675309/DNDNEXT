@@ -1,0 +1,32 @@
+name: Validate Realistic Dice core
+
+on:
+  pull_request:
+    paths:
+      - "components/dice/**"
+      - "components/NpcForgeAbilityStep.js"
+      - "utils/dice/**"
+      - "scripts/validate_realistic_dice_core.mjs"
+      - ".github/workflows/validate-realistic-dice-core.yml"
+  push:
+    branches:
+      - agent/realistic-dice-core
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Validate reusable Realistic Dice core
+        run: node scripts/validate_realistic_dice_core.mjs
+      - name: Build application
+        run: npm run build

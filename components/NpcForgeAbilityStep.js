@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { ABILITY_KEYS, ABILITY_LABELS } from "../utils/characterCreation";
 import {
   POINT_BUY_BUDGET,
@@ -7,6 +7,7 @@ import {
   canSetPointBuyScore,
   pointBuyRemaining,
 } from "../utils/playerForgeRules";
+import ForgeAbilityDiceTray from "./dice/adapters/ForgeAbilityDiceTray";
 import NpcForgeAbilityGlyph, { ABILITY_WALL_COPY } from "./NpcForgeAbilityGlyph";
 
 function methodHelp(method) {
@@ -15,16 +16,6 @@ function methodHelp(method) {
   if (method === "pointBuy") return `Spend ${POINT_BUY_BUDGET} points across the six abilities before applying Species Bonus.`;
   if (method === "standard") return "Use the class-guided standard array, then review the suggested placement on the left.";
   return "Enter each base score directly in the ability slots on the left.";
-}
-
-function rollDetail(roll = {}) {
-  const dice = Array.isArray(roll.dice) ? roll.dice : [];
-  const droppedIndex = Number.isInteger(roll.droppedIndex) ? roll.droppedIndex : -1;
-  const dropped = droppedIndex >= 0 ? dice[droppedIndex] : null;
-  const kept = dice.filter((_, index) => index !== droppedIndex);
-  const rule = roll.method === "3d6" || droppedIndex < 0 ? "3d6" : "4d6 drop lowest";
-  const equation = `${kept.join(" + ")} = ${Number(roll.total || 0)}`;
-  return { rule, dice, dropped, equation };
 }
 
 export default function NpcForgeAbilityStep({
@@ -45,21 +36,14 @@ export default function NpcForgeAbilityStep({
   const standard = draft.abilityMethod === "standard";
   const remaining = pointBuy ? pointBuyRemaining(draft.baseAbilities) : null;
   const [hasRolled, setHasRolled] = useState(() => rolled && Object.values(allocation || {}).some(Boolean));
-  const [isRolling, setIsRolling] = useState(false);
-  const rollAnimationTimer = useRef(null);
-
-  useEffect(() => () => {
-    if (rollAnimationTimer.current) clearTimeout(rollAnimationTimer.current);
-  }, []);
+  const [rollSequence, setRollSequence] = useState(0);
 
   useEffect(() => {
     if (!rolled) {
       setHasRolled(false);
-      setIsRolling(false);
       return;
     }
     setHasRolled(Object.values(allocation || {}).some(Boolean));
-    setIsRolling(false);
   }, [draft.abilityMethod]);
 
   function chooseMethod(method) {
@@ -69,11 +53,9 @@ export default function NpcForgeAbilityStep({
 
   function rollDice() {
     if (!rolled) return;
-    if (rollAnimationTimer.current) clearTimeout(rollAnimationTimer.current);
-    setIsRolling(true);
     onReroll();
     setHasRolled(true);
-    rollAnimationTimer.current = setTimeout(() => setIsRolling(false), 2250);
+    setRollSequence((current) => current + 1);
   }
 
   // Compatibility contract: Ability Score Generation Method; 4d6 drop lowest die; Reroll All Six; Species Bonus stays in the right information panel.
@@ -146,7 +128,7 @@ export default function NpcForgeAbilityStep({
           <button type="button" className={draft.abilityMethod === "manual" ? "is-active" : ""} onClick={() => chooseMethod("manual")}>Manual Assign</button>
         </div>
 
-        {rolled ? <section className={`npc-forge-ability-dice-tray${hasRolled ? " has-results" : " is-empty"}${isRolling ? " is-rolling" : ""}`} aria-label="Ability dice tray">
+        {rolled ? <section className={`npc-forge-ability-dice-tray${hasRolled ? " has-results" : " is-empty"}`} aria-label="Ability dice tray">
           <div className="npc-forge-ability-dice-tray__head">
             <div>
               <span>Dice Tray</span>
@@ -156,44 +138,19 @@ export default function NpcForgeAbilityStep({
           </div>
 
           <div className="npc-forge-ability-dice-tray__surface">
-            <div className="npc-forge-ability-dice-tray__sigil" aria-hidden="true"><span>◇</span></div>
             {!hasRolled ? <div className="npc-forge-ability-dice-tray__empty">
               <strong>Ready your ability dice</strong>
               <span>No totals are revealed until you roll.</span>
               <button type="button" onClick={rollDice}>Roll Dice</button>
-            </div> : <div className="npc-forge-roll-pool npc-forge-ability-bench__rolls">
-              {rolls.map((roll, index) => {
-                const assigned = Object.entries(allocation).find(([, id]) => id === roll.id)?.[0];
-                const detail = rollDetail(roll);
-                return <button
-                  key={roll.id}
-                  type="button"
-                  draggable
-                  className={`npc-forge-result-die npc-forge-roll-card refined${selectedRollId === roll.id ? " is-selected" : ""}${assigned ? " is-assigned" : ""}`}
-                  onClick={() => onSelectRoll(selectedRollId === roll.id ? "" : roll.id)}
-                  onDragStart={(event) => {
-                    event.dataTransfer.setData("text/npc-forge-roll", roll.id);
-                    event.dataTransfer.effectAllowed = "move";
-                    onSelectRoll(roll.id);
-                  }}
-                  aria-label={`Rolled total ${roll.total}. ${assigned ? `Assigned to ${ABILITY_LABELS[assigned]}.` : "Unassigned."}`}
-                >
-                  <span className="npc-forge-result-die__index">{index + 1}</span>
-                  <strong>{roll.total}</strong>
-                  <span className="npc-forge-result-die__rule">{detail.rule}</span>
-                  <span className="npc-forge-result-die__drag">Drag</span>
-                  <span className="npc-forge-result-die__detail" role="tooltip">
-                    <b>{detail.rule}</b>
-                    <span>Dice: {detail.dice.join(", ")}</span>
-                    {detail.dropped !== null ? <span>Dropped: {detail.dropped}</span> : null}
-                    <strong>{detail.equation}</strong>
-                    <em>{assigned ? `Assigned to ${ABILITY_LABELS[assigned]}` : "Not assigned yet"}</em>
-                  </span>
-                </button>;
-              })}
-            </div>}
+            </div> : <ForgeAbilityDiceTray
+              rolls={rolls}
+              allocation={allocation}
+              selectedRollId={selectedRollId}
+              rollKey={rollSequence}
+              onSelectRoll={onSelectRoll}
+            />}
           </div>
-          <div className="npc-forge-ability-dice-tray__tip">✦&nbsp; Hover a result die for the dice math. Drag the final total into an ability slot.</div>
+          <div className="npc-forge-ability-dice-tray__tip">✦&nbsp; Hover a settled result die for the dice math. Drag the final total into an ability slot.</div>
         </section> : pointBuy ? <div className={`npc-forge-point-buy-budget${remaining < 0 ? " is-invalid" : ""}`}>
           <div><span>Point Buy Budget</span><strong>{Math.max(0, remaining)} / {POINT_BUY_BUDGET} remaining</strong></div>
           <p>Adjust the six scores in the left column. Species Bonus is applied afterward.</p>
