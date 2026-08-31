@@ -8,6 +8,7 @@ const catalog = read("components/NpcForgeClassCatalog.js");
 const css = read("styles/character-forge-artificer-approved.css");
 const menuCss = read("styles/character-forge-class-menu-approved-art.css");
 const guide = read("components/NpcForgeClassGuide.js");
+const guideModel = read("components/NpcForgeClassGuideModel.js");
 const dock = read("components/NpcForgeClassFeatureDock.js");
 
 assert(app.includes('import "../styles/character-forge-artificer-approved.css"'), "Approved Artificer presentation stylesheet is not loaded globally.");
@@ -59,6 +60,9 @@ for (const token of [
   "previewSubclass(model, onFeatureDetail, option)",
 ]) assert(guide.includes(token), `Artificer presentation patch must preserve existing Class behavior: ${token}`);
 
+assert(guideModel.includes('select("class_level,proficiency_bonus,cantrips_known,spells_known,spell_slots,features")'), "Class progression must remain sourced from the imported progression fields.");
+assert(!guide.includes("Infusions Known") && !guideModel.includes("infusions_known"), "Do not invent an Infusions Known progression column from mockup-only presentation art without source-backed data.");
+
 for (const token of [
   "handleDragStart",
   "handleDragMove",
@@ -72,4 +76,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSource.includes(token), `Approved Artificer presentation crossed a protected boundary: ${token}`);
 }
 
-console.log("Approved Artificer mockup lock validated: compact 24/76 Class layout, hidden redundant stat strip, enlarged menu rows with repository-backed approved menu art, full-bleed Artificer hero, expanded progression surface, preserved subclass/detail mechanics, and protected boundaries intact.");
+console.log("Approved Artificer mockup lock validated: compact 24/76 Class layout, hidden redundant stat strip, enlarged menu rows with repository-backed approved menu art, full-bleed Artificer hero, expanded source-backed progression surface, preserved subclass/detail mechanics, no invented mockup-only progression data, and protected boundaries intact.");
