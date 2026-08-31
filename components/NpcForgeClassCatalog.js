@@ -12,7 +12,7 @@ function ClassPortrait({ classKey, name }) {
 function ClassChoiceRow({ row, selectedId = "", onSelect = null, child = false }) {
   const active = String(selectedId) === String(row?.id || "");
   const name = classNameFor(row);
-  return <button type="button" className={`npc-forge-class-catalog-row${child ? " is-child" : ""}${active ? " is-active" : ""}`} onClick={() => onSelect?.(row)}>
+  return <button type="button" data-class-key={String(row?.class_key || "").trim().toLowerCase()} className={`npc-forge-class-catalog-row${child ? " is-child" : ""}${active ? " is-active" : ""}`} onClick={() => onSelect?.(row)}>
     <ClassPortrait classKey={row?.class_key} name={name} />
     <span className="npc-forge-class-catalog-copy"><strong>{name}</strong><small>{classPresentationSummary(row, "Open the class guide for its complete progression.")}</small><em>{sourceLabel(row?.source)}</em></span>
     {active ? <b className="npc-forge-class-catalog-check" aria-label="Selected">✓</b> : null}
