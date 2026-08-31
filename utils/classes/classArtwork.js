@@ -15,6 +15,14 @@ const CLASS_ARTWORK = new Set([
   "wizard",
 ]);
 
+// Purpose-built class paintings that have been explicitly accepted for the Forge.
+// Keeping the override here makes the approved Artificer composition the shared
+// visual authority for its hero and catalogue portrait without changing the
+// catalogue/guide component contracts.
+const APPROVED_CLASS_ARTWORK = Object.freeze({
+  artificer: "/media/classes/artificer-approved.webp",
+});
+
 // Core classes keep their dedicated class paintings. Special/non-core catalogue
 // entries use distinct paintings that already exist in the repository so no two
 // selectable classes intentionally share the same portrait. These can later be
@@ -31,6 +39,7 @@ const SPECIAL_CLASS_ARTWORK = Object.freeze({
 
 export function classArtworkFor(classKey = "") {
   const normalized = String(classKey || "").trim().toLowerCase();
+  if (APPROVED_CLASS_ARTWORK[normalized]) return APPROVED_CLASS_ARTWORK[normalized];
   if (SPECIAL_CLASS_ARTWORK[normalized]) return SPECIAL_CLASS_ARTWORK[normalized];
   return CLASS_ARTWORK.has(normalized)
     ? `/media/classes/${normalized}.webp`
