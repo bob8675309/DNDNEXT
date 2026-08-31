@@ -53,7 +53,7 @@ function boundedDockPosition(position = {}) {
 export default function NpcForgeClassFeatureDock({ detail = null, selectedClass = null }) {
   const dockRef = useRef(null);
   const dragRef = useRef(null);
-  const [collapsed, setCollapsed] = useState(true);
+  const [closedDetailKey, setClosedDetailKey] = useState("");
   const [floatingPosition, setFloatingPosition] = useState(null);
   const [portalHost, setPortalHost] = useState(null);
   const [dragging, setDragging] = useState(false);
@@ -75,6 +75,10 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
   const canonicalItem = isListedOption && feature?.detailKind === "item" && feature?.metadata?.itemCard
     ? feature.metadata.itemCard
     : null;
+  const classIdentity = safeText(selectedClass?.id || selectedClass?.class_key || selectedClass?.class_name || "unselected");
+  const featureIdentity = feature ? safeText(feature?.id || feature?.key || feature?.name || "feature") : "overview";
+  const currentDetailKey = `${isOverview ? "overview" : "feature"}:${classIdentity}:${featureIdentity}:${level}`;
+  const dismissed = closedDetailKey === currentDetailKey;
 
   useEffect(() => {
     if (typeof window === "undefined" || typeof document === "undefined") return undefined;
@@ -161,7 +165,7 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
   } : undefined;
 
   const dock = (
-    <section ref={dockRef} style={floatingStyle} className={`npc-forge-class-feature-dock${feature ? " has-feature" : " is-placeholder"}${collapsed ? " is-collapsed" : ""}${portalHost ? " is-floating is-viewport-floating" : ""}${dragging ? " is-dragging" : ""}`}>
+    <section ref={dockRef} style={floatingStyle} className={`npc-forge-class-feature-dock${feature ? " has-feature" : " is-placeholder"}${portalHost ? " is-floating is-viewport-floating" : ""}${dragging ? " is-dragging" : ""}`}>
       <div className="npc-forge-class-feature-dock__head" onPointerDown={handleDragStart} onPointerMove={handleDragMove} onPointerUp={handleDragEnd} onPointerCancel={handleDragEnd} title={portalHost ? "Drag to move this description window anywhere in the viewport" : undefined}>
         <div className="npc-forge-class-feature-dock__title-group">
           <span>{type}</span>
@@ -169,10 +173,10 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
         </div>
         <div className="npc-forge-class-feature-dock__head-actions">
           {source ? <em>{source}</em> : null}
-          <button type="button" onClick={() => setCollapsed((value) => !value)} aria-expanded={!collapsed} aria-label={collapsed ? "Expand class feature details" : "Collapse class feature details"} title={collapsed ? "Expand details" : "Collapse details"}>{collapsed ? "Expand" : "Collapse"}</button>
+          <button type="button" onClick={() => setClosedDetailKey(currentDetailKey)} aria-label="Close class feature details" title="Close details">Close</button>
         </div>
       </div>
-      <div className="npc-forge-class-feature-dock__body" hidden={collapsed}>
+      <div className="npc-forge-class-feature-dock__body">
         {isOverview && selectedClass?.class_name ? <span className="npc-forge-class-feature-dock__class-chip">{selectedClass.class_name}</span> : null}
         <div className="npc-forge-class-feature-dock__summary">
           <ClassFeatureText text={description} entries={feature?.entries || null} compact />
@@ -197,18 +201,15 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
         .npc-forge-class-feature-dock{border:1px solid rgba(168,108,255,.72)!important;border-radius:12px!important;background:linear-gradient(155deg,rgba(37,24,55,.985),rgba(17,20,32,.985) 62%,rgba(13,22,31,.985))!important;box-shadow:inset 0 1px rgba(255,255,255,.035),0 14px 36px rgba(0,0,0,.34)!important}
         .npc-forge-class-feature-dock__head{display:flex!important;align-items:flex-start!important;justify-content:space-between!important;gap:12px!important;min-height:58px!important;padding:11px 12px!important;border-bottom:1px solid rgba(168,108,255,.18)!important;user-select:none}
         .npc-forge-class-feature-dock.is-viewport-floating .npc-forge-class-feature-dock__head{position:sticky;top:0;z-index:3;cursor:grab;touch-action:none;background:linear-gradient(155deg,rgba(43,27,63,.995),rgba(18,21,34,.995))!important;box-shadow:0 7px 16px rgba(0,0,0,.18)}
-        .npc-forge-class-feature-dock.is-collapsed .npc-forge-class-feature-dock__head{align-items:center!important;border-bottom:0!important}
         .npc-forge-class-feature-dock.is-dragging .npc-forge-class-feature-dock__head{cursor:grabbing}
         .npc-forge-class-feature-dock__title-group{display:grid;gap:3px;min-width:0}
         .npc-forge-class-feature-dock__title-group>span{color:#d6b9ff!important;font-size:.56rem!important;font-weight:900!important;letter-spacing:.11em!important;text-transform:uppercase}
         .npc-forge-class-feature-dock__title-group>h3{margin:0!important;color:#fff!important;font-size:1rem!important;font-weight:780!important;line-height:1.22!important}
         .npc-forge-class-feature-dock__head-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
         .npc-forge-class-feature-dock__head-actions>em{padding:4px 7px!important;border:1px solid rgba(255,255,255,.14)!important;border-radius:7px!important;color:rgba(255,255,255,.75)!important;background:rgba(255,255,255,.045)!important;font-size:.5rem!important;font-style:normal!important;font-weight:850!important;letter-spacing:.045em!important}
-        .npc-forge-class-feature-dock__head-actions>button{min-width:66px;height:30px;padding:0 9px;border:1px solid rgba(168,108,255,.42);border-radius:7px;color:#f0e8ff;background:rgba(10,12,20,.72);font-size:.56rem;font-weight:800;line-height:1}
+        .npc-forge-class-feature-dock__head-actions>button{min-width:52px;height:30px;padding:0 9px;border:1px solid rgba(168,108,255,.42);border-radius:7px;color:#f0e8ff;background:rgba(10,12,20,.72);font-size:.56rem;font-weight:800;line-height:1}
         .npc-forge-class-feature-dock__head-actions>button:hover{border-color:#a86cff;background:rgba(126,72,199,.26)}
         .npc-forge-class-feature-dock__body{position:relative;display:grid;gap:12px;padding:13px 14px 15px!important}
-        .npc-forge-class-feature-dock__body[hidden]{display:none!important}
-        .npc-forge-class-feature-dock.is-collapsed{min-height:0!important}
         .npc-forge-class-feature-dock__class-chip{justify-self:start;padding:4px 8px;border:1px solid rgba(168,108,255,.35);border-radius:999px;color:#d8c8ff;background:rgba(126,72,199,.12);font-size:.54rem;font-weight:800}
         .npc-forge-class-feature-dock__summary{color:rgba(255,255,255,.84)}
         .npc-forge-class-feature-dock__summary .class-feature-text,.npc-forge-class-feature-dock__summary p{font-size:.72rem!important;line-height:1.58!important}
@@ -230,7 +231,6 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
         .npc-forge-class-feature-dock__item-card .sitem-title{font-size:.9rem}
         .npc-forge-class-feature-dock__item-card .sitem-section{font-size:.72rem;line-height:1.55}
         .npc-forge-class-feature-dock.is-viewport-floating{position:fixed!important;right:auto!important;bottom:auto!important;z-index:14050!important;max-width:calc(100vw - 24px)!important;max-height:min(72dvh,calc(100dvh - var(--npc-forge-class-dock-top,112px) - 12px))!important;margin:0!important;overflow:auto!important;overscroll-behavior:contain;box-shadow:0 22px 68px rgba(0,0,0,.58),0 0 0 1px rgba(168,108,255,.22),0 0 42px rgba(126,72,199,.13)!important}
-        .npc-forge-class-feature-dock.is-viewport-floating.is-collapsed{max-height:60px!important;overflow:hidden!important}
 
         @media(min-width:901px){
           .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class{position:relative;isolation:isolate;background:radial-gradient(circle at 76% 16%,rgba(122,70,206,.16),transparent 30%),radial-gradient(circle at 18% 76%,rgba(67,184,177,.07),transparent 31%),linear-gradient(116deg,rgba(6,11,25,.995),rgba(9,12,28,.985) 50%,rgba(11,13,31,.995))!important}
@@ -256,5 +256,6 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
     </section>
   );
 
+  if (dismissed) return null;
   return portalHost ? createPortal(dock, portalHost) : dock;
 }
