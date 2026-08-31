@@ -6,11 +6,15 @@ const assert = (condition, message) => { if (!condition) throw new Error(message
 const app = read("pages/_app.js");
 const catalog = read("components/NpcForgeClassCatalog.js");
 const css = read("styles/character-forge-artificer-approved.css");
+const menuCss = read("styles/character-forge-class-menu-approved-art.css");
 const guide = read("components/NpcForgeClassGuide.js");
 const dock = read("components/NpcForgeClassFeatureDock.js");
 
 assert(app.includes('import "../styles/character-forge-artificer-approved.css"'), "Approved Artificer presentation stylesheet is not loaded globally.");
+assert(app.includes('import "../styles/character-forge-class-menu-approved-art.css"'), "Approved Class-menu artwork stylesheet is not loaded after the Artificer composition.");
 assert(catalog.includes('data-class-key={String(row?.class_key || "").trim().toLowerCase()}'), "Class catalogue rows must expose their normalized class key for approved menu art.");
+assert(fs.existsSync("public/media/classes/class-menu-approved.webp"), "Approved Class-menu portrait sprite asset is missing.");
+assert(menuCss.includes('background-image: url("/media/classes/class-menu-approved.webp")'), "Class-menu portrait CSS must use the repository artwork asset.");
 
 for (const token of [
   ".npc-forge-level-row { display: none !important; }",
@@ -18,10 +22,6 @@ for (const token of [
   "grid-template-rows: minmax(0,1fr) 0",
   "min-height: 69px !important",
   "width: 54px !important; height: 56px !important",
-  'data:image/webp;base64,',
-  '[data-class-key="artificer"]',
-  '[data-class-key="barbarian"]',
-  '[data-class-key="sorcerer"]',
   ".npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__book-hero",
   "height: 246px !important",
   ".npc-forge-class-guide__hero-art {",
@@ -33,6 +33,22 @@ for (const token of [
   "max-height: 392px !important",
   "min-height: min(610px",
 ]) assert(css.includes(token), `Approved Artificer mockup lock is missing ${token}`);
+
+for (const token of [
+  '[data-class-key="artificer"]',
+  '[data-class-key="barbarian"]',
+  '[data-class-key="bard"]',
+  '[data-class-key="cleric"]',
+  '[data-class-key="druid"]',
+  '[data-class-key="fighter"]',
+  '[data-class-key="monk"]',
+  '[data-class-key="paladin"]',
+  '[data-class-key="ranger"]',
+  '[data-class-key="rogue"]',
+  '[data-class-key="sorcerer"]',
+  "background-size: 100% 1100%",
+  "opacity: 0 !important",
+]) assert(menuCss.includes(token), `Approved Class-menu artwork mapping is missing ${token}`);
 
 for (const token of [
   "ForgeClassHero",
@@ -51,9 +67,9 @@ for (const token of [
   "if (dismissed) return null",
 ]) assert(dock.includes(token), `Artificer presentation patch must preserve feature-card behavior: ${token}`);
 
-const protectedSource = `${css}\n${catalog}\n${guide}\n${dock}`.toLowerCase();
+const protectedSource = `${css}\n${menuCss}\n${catalog}\n${guide}\n${dock}`.toLowerCase();
 for (const token of ["map_routes", "advance_all_characters", "mappageclient", "townsheet", "encounter_weapon_attack", "crafting_recipe"]) {
   assert(!protectedSource.includes(token), `Approved Artificer presentation crossed a protected boundary: ${token}`);
 }
 
-console.log("Approved Artificer mockup lock validated: compact 24/76 Class layout, hidden redundant stat strip, enlarged menu rows with approved menu art, full-bleed Artificer hero, expanded progression surface, preserved subclass/detail mechanics, and protected boundaries intact.");
+console.log("Approved Artificer mockup lock validated: compact 24/76 Class layout, hidden redundant stat strip, enlarged menu rows with repository-backed approved menu art, full-bleed Artificer hero, expanded progression surface, preserved subclass/detail mechanics, and protected boundaries intact.");
