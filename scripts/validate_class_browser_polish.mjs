@@ -35,10 +35,10 @@ for (const token of [
   'aria-label={`Search ${rows.length} classes`}',
   "grid-template-rows:auto minmax(390px,1fr) 0",
   "npc-forge-section-heading{display:none!important}",
-  "min-height:46px!important",
-  "width:32px;height:36px",
-  "white-space:nowrap;text-overflow:ellipsis",
-]) assert(catalog.includes(token), `Compact Class catalogue/browser cleanup is missing ${token}`);
+  "min-height:57px!important",
+  "width:41px;height:47px",
+  "-webkit-line-clamp:2",
+]) assert(catalog.includes(token), `Mockup-aligned Class catalogue cleanup is missing ${token}`);
 assert(!catalog.includes('className="npc-forge-catalog-head"'), "Redundant player-facing Classes/count heading returned to the Class catalogue.");
 
 for (const token of [
@@ -50,6 +50,8 @@ for (const token of [
   "currentDetailKey",
   "const dismissed = closedDetailKey === currentDetailKey",
   "boundedDockPosition",
+  "defaultDockPosition",
+  'document.querySelector(".npc-forge-class-guide__dock-lane")',
   'window.matchMedia("(min-width: 901px)")',
   "setPortalHost(document.body)",
   "createPortal(dock, portalHost)",
@@ -77,24 +79,32 @@ assert(dock.includes("font-size:.72rem!important;line-height:1.58!important"), "
 for (const token of [
   "classThemeKey",
   "is-class-${theme}",
+  "classHeroTagline",
   "npc-forge-class-guide__hero-art",
+  "npc-forge-class-guide__overview-layout",
+  "npc-forge-class-guide__overview-main",
+  "npc-forge-class-guide__dock-lane",
   "npc-forge-class-guide__subclass-grid",
+  "npc-forge-class-guide__subclass-more",
   'aria-label="Available subclasses"',
-  "onMouseEnter={() => previewSubclass(model, option)}",
+  "previewSubclass(model, onFeatureDetail, option)",
   "npc-forge-class-guide__subclass-confirm",
   "Deferred resolutions",
+  "Choices for tools, feats, skills, spells, and other options",
   "Tools, skills, feats, fighting styles, maneuvers, invocations",
   "npc-forge-class-guide__section-title",
+  "npc-forge-class-guide__table-footnote",
   'aria-label={`View ${feature.name} details`}',
-]) assert(guide.includes(token), `Artificer/Class presentation pass is missing ${token}`);
+]) assert(guide.includes(token), `Mockup-aligned Artificer/Class presentation is missing ${token}`);
 assert(!guide.includes("<select value={model.preview?.key"), "Subclass preview must use compact buttons instead of the old dropdown selector.");
 assert(!guide.includes("title={cleanPlayerCopy(feature.description)}"), "Native browser feature tooltips must not compete with the movable detail card.");
 for (const token of [
   ".npc-forge-class-guide.is-class-artificer",
-  "grid-template-columns:repeat(auto-fit,minmax(112px,1fr))",
+  "grid-template-columns:minmax(0,1fr) minmax(300px,34%)",
+  "grid-template-columns:repeat(5,minmax(0,1fr))",
   "body .npc-forge-class-feature-dock::after",
-  "body .npc-forge-class-feature-dock__title-group>h3",
-  "object-position:center 30%",
+  "body .npc-forge-class-feature-dock__title-group",
+  "object-position:center 25%",
   "Class Progression",
 ]) assert(`${guideStyles}\n${guide}`.includes(token), `Approved Artificer visual target is missing ${token}`);
 
@@ -138,13 +148,15 @@ for (const token of [
 ]) assert(catalogWrapper.includes(token), `Forge class normalization is missing ${token}`);
 
 for (const token of [
-  "classMagicPresentation",
   "classPresentationSummary",
   "classPrimaryAbilities",
   '"Primary Ability"',
-  '"Power System"',
+  '"Saving Throws"',
+  '"Hit Die"',
 ]) assert(guide.includes(token), `Class guide presentation is missing ${token}`);
-assert(dock.includes("classPresentationSummary(selectedClass)"), "Floating Class feature dock must keep the richer selected-Class overview copy.");
+assert(!guide.includes('"Power System"'), "Mockup-aligned Class hero should not restore the redundant Power System fact card.");
+assert(!guide.includes('"Starting Level"'), "Mockup-aligned Class hero should not restore the redundant Starting Level fact card.");
+assert(dock.includes("classPresentationSummary(selectedClass)"), "Floating Class feature dock must keep the selected-Class overview copy authority.");
 
 // Older browser-polish rules may still describe the original in-flow fallback.
 // Desktop portals the description window to document.body so transformed Forge
@@ -156,4 +168,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSources.includes(token), `Class browser patch unexpectedly references protected map/town behavior: ${token}`);
 }
 
-console.log("Class browser polish validation passed: compact class catalogue, Artificer-first illustrated class presentation, compact subclass button grid, full progression table, deferred cross-tab choice routing, viewport-owned draggable/dismissible feature details, readable ornate detail styling, nested Sidekick catalogue, unique special-Class portraits, Mystic Intelligence normalization, and protected map/town boundaries are intact.");
+console.log("Class browser polish validation passed: enlarged illustrated Class catalogue, mockup-aligned Artificer overview composition, compact four-plus-more subclass browsing, reserved detail lane, full progression table, deferred cross-tab choice routing, viewport-owned draggable/dismissible feature details, nested Sidekick catalogue, unique special-Class portraits, Mystic Intelligence normalization, and protected map/town boundaries are intact.");
