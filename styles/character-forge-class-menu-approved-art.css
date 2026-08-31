@@ -2,6 +2,29 @@
    This file intentionally loads after the Artificer composition stylesheet so
    the repository asset is authoritative even if older inline portrait rules remain. */
 @media (min-width: 901px) {
+  /* Keep the functional level input without restoring the bulky four-card stat strip.
+     It sits inside the search header footprint and therefore does not consume a row. */
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-selection { position: relative !important; }
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-level-row {
+    display: block !important; position: absolute !important; top: 7px !important; right: 9px !important; z-index: 8 !important;
+    width: 66px !important; height: 31px !important; margin: 0 !important; pointer-events: none;
+  }
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-level-row > div { display: none !important; }
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-level-row > label {
+    pointer-events: auto; display: grid !important; grid-template-columns: 20px 34px !important; align-items: center !important; gap: 3px !important;
+    width: 64px !important; min-height: 30px !important; padding: 3px 4px !important; border: 1px solid rgba(164,100,235,.33) !important;
+    border-radius: 6px !important; background: rgba(10,14,24,.94) !important; box-shadow: 0 2px 9px rgba(0,0,0,.3) !important;
+  }
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-level-row > label > span {
+    overflow: hidden; width: 20px; color: rgba(224,199,246,.72) !important; font-size: 0 !important; letter-spacing: 0 !important;
+  }
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-level-row > label > span::after { content: "Lv"; font-size: .52rem; font-weight: 800; }
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-level-row input {
+    width: 34px !important; min-height: 23px !important; height: 23px !important; padding: 1px 2px !important; border: 0 !important; border-radius: 4px !important;
+    color: #f4e9dc !important; background: rgba(255,255,255,.045) !important; font-size: .62rem !important; text-align: center;
+  }
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog .npc-forge-search { padding-right: 84px !important; }
+
   .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="artificer"] .npc-forge-class-catalog-portrait,
   .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="barbarian"] .npc-forge-class-catalog-portrait,
   .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="bard"] .npc-forge-class-catalog-portrait,
