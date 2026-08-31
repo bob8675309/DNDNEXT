@@ -1,0 +1,46 @@
+/* Approved Class-menu portrait strip from the accepted Artificer mockup.
+   This file intentionally loads after the Artificer composition stylesheet so
+   the repository asset is authoritative even if older inline portrait rules remain. */
+@media (min-width: 901px) {
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="artificer"] .npc-forge-class-catalog-portrait,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="barbarian"] .npc-forge-class-catalog-portrait,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="bard"] .npc-forge-class-catalog-portrait,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="cleric"] .npc-forge-class-catalog-portrait,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="druid"] .npc-forge-class-catalog-portrait,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="fighter"] .npc-forge-class-catalog-portrait,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="monk"] .npc-forge-class-catalog-portrait,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="paladin"] .npc-forge-class-catalog-portrait,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="ranger"] .npc-forge-class-catalog-portrait,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="rogue"] .npc-forge-class-catalog-portrait,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="sorcerer"] .npc-forge-class-catalog-portrait {
+    background-image: url("/media/classes/class-menu-approved.webp") !important;
+    background-repeat: no-repeat !important;
+    background-size: 100% 1100% !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="artificer"] .npc-forge-class-catalog-portrait { background-position: center 0% !important; }
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="barbarian"] .npc-forge-class-catalog-portrait { background-position: center 10% !important; }
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="bard"] .npc-forge-class-catalog-portrait { background-position: center 20% !important; }
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="cleric"] .npc-forge-class-catalog-portrait { background-position: center 30% !important; }
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="druid"] .npc-forge-class-catalog-portrait { background-position: center 40% !important; }
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="fighter"] .npc-forge-class-catalog-portrait { background-position: center 50% !important; }
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="monk"] .npc-forge-class-catalog-portrait { background-position: center 60% !important; }
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="paladin"] .npc-forge-class-catalog-portrait { background-position: center 70% !important; }
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="ranger"] .npc-forge-class-catalog-portrait { background-position: center 80% !important; }
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="rogue"] .npc-forge-class-catalog-portrait { background-position: center 90% !important; }
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="sorcerer"] .npc-forge-class-catalog-portrait { background-position: center 100% !important; }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="artificer"] .npc-forge-class-catalog-portrait img,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="barbarian"] .npc-forge-class-catalog-portrait img,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="bard"] .npc-forge-class-catalog-portrait img,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="cleric"] .npc-forge-class-catalog-portrait img,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="druid"] .npc-forge-class-catalog-portrait img,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="fighter"] .npc-forge-class-catalog-portrait img,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="monk"] .npc-forge-class-catalog-portrait img,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="paladin"] .npc-forge-class-catalog-portrait img,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="ranger"] .npc-forge-class-catalog-portrait img,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="rogue"] .npc-forge-class-catalog-portrait img,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="sorcerer"] .npc-forge-class-catalog-portrait img {
+    opacity: 0 !important;
+  }
+}
