@@ -108,6 +108,9 @@ for (const token of [
   "Class Progression",
 ]) assert(`${guideStyles}\n${guide}`.includes(token), `Approved Artificer visual target is missing ${token}`);
 
+assert(artwork.includes('artificer: "/media/classes/artificer-approved.webp"'), "Approved Artificer Forge artwork mapping is missing.");
+assert(fs.existsSync(path.join(root, "public/media/classes/artificer-approved.webp")), "Approved Artificer Forge artwork asset is missing from public/media/classes.");
+
 const specialArtwork = {
   civilian: "/media/species/human.webp",
   "monster-hunter": "/media/species/human-innistrad.webp",
@@ -168,4 +171,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSources.includes(token), `Class browser patch unexpectedly references protected map/town behavior: ${token}`);
 }
 
-console.log("Class browser polish validation passed: enlarged illustrated Class catalogue, mockup-aligned Artificer overview composition, compact four-plus-more subclass browsing, reserved detail lane, full progression table, deferred cross-tab choice routing, viewport-owned draggable/dismissible feature details, nested Sidekick catalogue, unique special-Class portraits, Mystic Intelligence normalization, and protected map/town boundaries are intact.");
+console.log("Class browser polish validation passed: enlarged illustrated Class catalogue, approved Artificer artwork authority, mockup-aligned Artificer overview composition, compact four-plus-more subclass browsing, reserved detail lane, full progression table, deferred cross-tab choice routing, viewport-owned draggable/dismissible feature details, nested Sidekick catalogue, unique special-Class portraits, Mystic Intelligence normalization, and protected map/town boundaries are intact.");
