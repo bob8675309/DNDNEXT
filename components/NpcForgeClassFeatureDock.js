@@ -6,9 +6,9 @@ import { formatPlayerFacingText } from "../utils/playerFacingText";
 import { classPresentationSummary } from "../utils/classes/classPresentation";
 
 const DOCK_GUTTER = 12;
-const DOCK_MIN_WIDTH = 340;
-const DOCK_DEFAULT_WIDTH = 440;
-const DOCK_MAX_WIDTH = 560;
+const DOCK_MIN_WIDTH = 300;
+const DOCK_DEFAULT_WIDTH = 390;
+const DOCK_MAX_WIDTH = 460;
 const DOCK_VISIBLE_HEADER = 60;
 
 function safeText(value) {
@@ -50,6 +50,22 @@ function boundedDockPosition(position = {}) {
   };
 }
 
+function defaultDockPosition() {
+  if (typeof window === "undefined" || typeof document === "undefined") return { left: DOCK_GUTTER, top: 112, width: DOCK_DEFAULT_WIDTH };
+  const lane = document.querySelector(".npc-forge-class-guide__dock-lane")?.getBoundingClientRect();
+  if (lane?.width > 40 && lane?.height > 40) {
+    const width = Math.min(DOCK_DEFAULT_WIDTH, Math.max(DOCK_MIN_WIDTH, lane.width - 10));
+    return boundedDockPosition({ left: lane.left + Math.max(0, (lane.width - width) / 2), top: lane.top + 4, width });
+  }
+  const forge = document.querySelector(".unified-player-character-forge")?.getBoundingClientRect();
+  const width = Math.min(DOCK_DEFAULT_WIDTH, Math.max(DOCK_MIN_WIDTH, Number(forge?.width || window.innerWidth) * .27));
+  return boundedDockPosition({
+    left: forge ? forge.right - width - 24 : window.innerWidth - width - 24,
+    top: forge ? forge.top + Math.min(210, Math.max(118, forge.height * .2)) : 112,
+    width,
+  });
+}
+
 export default function NpcForgeClassFeatureDock({ detail = null, selectedClass = null }) {
   const dockRef = useRef(null);
   const dragRef = useRef(null);
@@ -64,7 +80,7 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
     ? formatPlayerFacingText(feature.description)
     : formatPlayerFacingText(
       classPresentationSummary(selectedClass),
-      "Hover or focus a class or subclass feature to inspect it here without leaving the class catalogue.",
+      selectedClass ? "Hover, focus, or select a class feature or subclass to inspect its deeper rules here." : "Feature descriptions will appear here as you move through the class guide.",
     );
   const source = feature || selectedClass ? safeText(feature?.source || selectedClass?.source || "Campaign") : "";
   const level = Number(feature?.level || 0);
@@ -94,12 +110,7 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
       }
 
       frame = window.requestAnimationFrame(() => {
-        const rect = dockRef.current?.getBoundingClientRect();
-        setFloatingPosition((current) => current ? boundedDockPosition(current) : boundedDockPosition({
-          left: rect?.left ?? (window.innerWidth - DOCK_DEFAULT_WIDTH - 24),
-          top: rect?.top ?? 112,
-          width: DOCK_DEFAULT_WIDTH,
-        }));
+        setFloatingPosition(defaultDockPosition());
         setPortalHost(document.body);
       });
     }
@@ -110,7 +121,7 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
       if (frame != null) window.cancelAnimationFrame(frame);
       desktop.removeEventListener?.("change", syncDockMode);
     };
-  }, []);
+  }, [selectedClass?.class_key, selectedClass?.id]);
 
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
@@ -178,6 +189,12 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
       </div>
       <div className="npc-forge-class-feature-dock__body">
         {isOverview && selectedClass?.class_name ? <span className="npc-forge-class-feature-dock__class-chip">{selectedClass.class_name}</span> : null}
+        <div className="npc-forge-class-feature-dock__meta">
+          {level ? <span>Level {level}</span> : null}
+          {!isOverview && selectedClass?.class_name ? <span>{selectedClass.class_name}</span> : null}
+          {feature?.type === "subclass" && detail?.subclassName ? <span>{detail.subclassName}</span> : null}
+          {isListedOption && parentFeatureName ? <span>From {parentFeatureName}</span> : null}
+        </div>
         <div className="npc-forge-class-feature-dock__summary">
           <ClassFeatureText text={description} entries={feature?.entries || null} compact />
         </div>
@@ -185,16 +202,10 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
           <strong>Feature Highlights</strong>
           <ul>{overviewHighlights.map((name) => <li key={name}>{name}</li>)}</ul>
         </div> : null}
-        <div className="npc-forge-class-feature-dock__meta">
-          {level ? <span>Level {level}</span> : null}
-          {!isOverview && selectedClass?.class_name ? <span>{selectedClass.class_name}</span> : null}
-          {feature?.type === "subclass" && detail?.subclassName ? <span>{detail.subclassName}</span> : null}
-          {isListedOption && parentFeatureName ? <span>From {parentFeatureName}</span> : null}
-        </div>
         {canonicalItem ? <div className="npc-forge-class-feature-dock__item-card" aria-label={`${title} canonical item card`}><ItemCard item={canonicalItem} /></div> : null}
         {!feature && !selectedClass ? <small>Feature descriptions will appear here as you move through the progression table or detailed guide.</small> : null}
         {isListedOption ? <div className="npc-forge-class-feature-dock__listed-note">This is a listed option inside <strong>{parentFeatureName || "the selected feature"}</strong>. The description comes from the normalized class-option or canonical item catalogue when a matching entry exists; otherwise the parent feature remains the mechanical authority.</div> : null}
-        {selectedClass ? <div className="npc-forge-class-feature-dock__routing-note">Read feature rules here. Persistent selections such as Invocations, Fighting Styles, maneuvers, plans, and higher-level feats are completed in <strong>Training → Feats & Class Abilities</strong>; spell-specific selections are completed in <strong>Spells</strong>.</div> : null}
+        {selectedClass ? <div className="npc-forge-class-feature-dock__routing-note">{feature ? "Hover, focus, or select another feature or subclass to inspect it here." : "Hover, focus, or select a feature or subclass to see more detail here."}</div> : null}
         {portalHost ? <div className="npc-forge-class-feature-dock__drag-cue" aria-hidden="true">Drag header to move <span>✥</span></div> : null}
       </div>
       <style jsx global>{`
@@ -240,11 +251,6 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
           .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class .npc-forge-class-catalog-row,.unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class .npc-forge-class-family-row{border-color:rgba(151,118,201,.18)!important;border-radius:9px!important;background:linear-gradient(96deg,rgba(27,24,42,.94),rgba(11,17,30,.94))!important;box-shadow:inset 0 1px rgba(255,255,255,.018)!important}
           .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class .npc-forge-class-catalog-row:hover,.unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class .npc-forge-class-family-row:hover{border-color:rgba(168,108,255,.58)!important;background:linear-gradient(96deg,rgba(46,31,66,.96),rgba(12,20,33,.95))!important}
           .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class .npc-forge-class-catalog-row.is-active{border-color:rgba(180,126,255,.9)!important;background:linear-gradient(96deg,rgba(115,63,171,.28),rgba(23,39,48,.92))!important;box-shadow:inset 3px 0 #a86cff,0 0 24px rgba(126,72,199,.08)!important}
-          .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class .npc-forge-class-guide__view-header{border:1px solid rgba(168,108,255,.22)!important;border-radius:12px!important;background:linear-gradient(145deg,rgba(34,25,51,.76),rgba(10,16,29,.88))!important;box-shadow:inset 0 1px rgba(255,255,255,.025)!important}
-          .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class .npc-forge-class-guide__tabs button{border-color:rgba(168,108,255,.24)!important;background:rgba(11,15,27,.74)!important}
-          .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class .npc-forge-class-guide__tabs button.is-active{border-color:rgba(174,115,255,.78)!important;background:linear-gradient(180deg,rgba(105,57,166,.72),rgba(55,35,94,.78))!important;box-shadow:0 0 18px rgba(126,72,199,.11)!important}
-          .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class .npc-forge-class-guide__overview-book,.unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class .class-book-guide__content{border-color:rgba(157,119,210,.18)!important;border-radius:13px!important;background:linear-gradient(150deg,rgba(21,23,39,.95),rgba(10,16,28,.96))!important;box-shadow:inset 0 1px rgba(255,255,255,.02),0 16px 42px rgba(0,0,0,.18)!important}
-          .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class .npc-forge-class-guide__book-hero{background:radial-gradient(circle at 78% 30%,rgba(141,83,222,.15),transparent 35%),linear-gradient(108deg,rgba(44,28,62,.7),rgba(12,18,31,.55))!important}
         }
 
         @media(max-width:900px){
