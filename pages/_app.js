@@ -15,6 +15,7 @@ import "../styles/character-forge-ability-dice-tray.css";
 import "../styles/character-forge-ability-dice-bounce.css";
 import "../styles/character-forge-artificer-approved.css";
 import "../styles/character-forge-class-menu-approved-art.css";
+import "../styles/character-forge-class-acceptance-corrections.css";
 import "../styles/card-compact.css";
 import "../styles/npc-profile-panel.css";
 import "../styles/player-profile-scroll-fix.css";
