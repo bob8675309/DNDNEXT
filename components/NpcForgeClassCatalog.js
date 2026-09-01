@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { classArtworkFor, handleClassArtworkError } from "../utils/classes/classArtwork";
+import { classMenuArtworkFor, handleClassArtworkError } from "../utils/classes/classArtwork";
 import { classPresentationSummary, isSidekickClass } from "../utils/classes/classPresentation";
 import { sourceLabel } from "./NpcForgeCoreSupport";
 
 const classNameFor = (row = {}) => String(row.class_name || row.name || "Class").trim();
 
 function ClassPortrait({ classKey, name }) {
-  return <span className="npc-forge-class-catalog-portrait" aria-hidden="true"><img src={classArtworkFor(classKey)} onError={handleClassArtworkError} alt="" /></span>;
+  return <span className="npc-forge-class-catalog-portrait" aria-hidden="true"><img src={classMenuArtworkFor(classKey)} onError={handleClassArtworkError} alt="" /></span>;
 }
 
 function ClassChoiceRow({ row, selectedId = "", onSelect = null, child = false }) {
