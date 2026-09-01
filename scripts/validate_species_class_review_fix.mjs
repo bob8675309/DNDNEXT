@@ -49,14 +49,16 @@ for (const token of [
 
 for (const token of [
   "object-position: center 24% !important",
-  ".npc-forge-class-selection",
-  "grid-template-rows: auto minmax(0, 1fr) 0 !important",
-  ".npc-forge-class-catalog-list",
+  "> .npc-forge-workspace > .npc-forge-section.npc-forge-class-selection",
+  "grid-template-rows: minmax(0, 1fr) !important",
+  "> .npc-forge-class-catalog > .npc-forge-class-catalog-list",
   "height: 100% !important",
   "max-height: none !important",
   "overflow-y: auto !important",
+  "overscroll-behavior: contain !important",
   "scrollbar-gutter: stable !important",
 ]) assert(finalCorrections.includes(token), `Final cinematic correction is missing ${token}`);
+assert(!finalCorrections.includes("grid-template-rows: auto minmax(0, 1fr) 0 !important"), "Class catalogue regression: the first in-flow Class row must not be auto-sized.");
 
 assert(guide.includes("model.options.map((option) => <SubclassButton"), "Every subclass must render directly in the visible subclass grid.");
 assert(!guide.includes("model.options.slice(0, 4)"), "Subclass grid must not collapse after four entries.");
