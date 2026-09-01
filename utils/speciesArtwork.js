@@ -222,12 +222,14 @@ export function speciesArtworkFor(species = "") {
 
 export function speciesPortraitArtworkFor(species = "") {
   const key = normalizeSpeciesArtworkKey(species);
+  if (CINEMATIC_SPECIES_HERO_ARTWORK[key]) return CINEMATIC_SPECIES_HERO_ARTWORK[key];
   if (SPECIES_DEDICATED_VARIANT_ARTWORK.has(key)) return `/media/species/${key}.webp`;
   return speciesArtworkFor(species);
 }
 
-// The cinematic Species hero can use a purpose-built wide composition without
-// changing catalogue thumbnails or any other consumer of the canonical art map.
+// Explicit alias for future Species components that need to distinguish a wide
+// hero from catalogue art. The current Forge portrait call already opts into the
+// cinematic override above, so promoted choices cannot swap the artwork source.
 export function speciesHeroArtworkFor(species = "") {
   const key = normalizeSpeciesArtworkKey(species);
   return CINEMATIC_SPECIES_HERO_ARTWORK[key] || speciesPortraitArtworkFor(species);
@@ -241,7 +243,8 @@ export function hasDedicatedSpeciesArtwork(species = "") {
 export function hasSpeciesPortraitArtwork(species = "") {
   const key = normalizeSpeciesArtworkKey(species);
   return hasDedicatedSpeciesArtwork(species)
-    || SPECIES_DEDICATED_VARIANT_ARTWORK.has(key);
+    || SPECIES_DEDICATED_VARIANT_ARTWORK.has(key)
+    || Boolean(CINEMATIC_SPECIES_HERO_ARTWORK[key]);
 }
 
 export function handleSpeciesArtworkError(event) {
