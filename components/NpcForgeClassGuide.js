@@ -74,8 +74,6 @@ function SubclassButton({ option, model, onFeatureDetail }) {
 }
 function ForgeSubclassSelection({ model, onFeatureDetail, detailed = false }) {
   const required = model.eligible.length > 0;
-  const primary = model.options.slice(0, 4);
-  const more = model.options.slice(4);
   return <section className={`npc-forge-class-guide__subclasses${detailed ? " is-detailed" : " is-compact"}${required && !model.selected ? " is-required" : ""}`}>
     <div className="npc-forge-class-guide__subhead">
       <div><span>Subclass</span><strong>{model.selected ? `${model.selected.name} selected` : required ? "Choose an eligible specialization" : model.entryLevel ? `Available at level ${model.entryLevel}` : "No subclasses listed"}</strong></div>
@@ -86,19 +84,15 @@ function ForgeSubclassSelection({ model, onFeatureDetail, detailed = false }) {
     </div>
     {model.options.length ? <>
       <div className="npc-forge-class-guide__subclass-grid" role="list" aria-label="Available subclasses">
-        {primary.map((option) => <SubclassButton key={option.key} option={option} model={model} onFeatureDetail={onFeatureDetail} />)}
-        {more.length ? <details className="npc-forge-class-guide__subclass-more">
-          <summary><span aria-hidden="true">＋</span><strong>More</strong><small>{more.length} more</small></summary>
-          <div>{more.map((option) => <SubclassButton key={option.key} option={option} model={model} onFeatureDetail={onFeatureDetail} />)}</div>
-        </details> : null}
+        {model.options.map((option) => <SubclassButton key={option.key} option={option} model={model} onFeatureDetail={onFeatureDetail} />)}
       </div>
-      <div className="npc-forge-class-guide__subclass-confirm">
-        <span>{model.preview ? `Hover or select a subclass to inspect ${model.preview.name}.` : "Hover or select a subclass to view its unique features and specialization."}</span>
-        {model.preview ? <button type="button" className="is-primary" disabled={!model.previewEligible || model.selected?.key === model.preview?.key} onClick={() => model.selectSubclass(model.preview)}>{model.selected?.key === model.preview?.key ? "Selected" : model.previewEligible ? "Choose subclass" : `Available at level ${model.preview?.firstLevel || model.entryLevel}`}</button> : null}
-      </div>
+      {model.preview ? <div className="npc-forge-class-guide__subclass-confirm">
+        <span>{model.preview.name}</span>
+        <button type="button" className="is-primary" disabled={!model.previewEligible || model.selected?.key === model.preview?.key} onClick={() => model.selectSubclass(model.preview)}>{model.selected?.key === model.preview?.key ? "Selected" : model.previewEligible ? "Choose subclass" : `Available at level ${model.preview?.firstLevel || model.entryLevel}`}</button>
+      </div> : null}
     </> : <p>No imported subclass catalogue is available for this class.</p>}
-    {required && !model.selected ? <p className="npc-forge-class-guide__requirement">Choose an eligible subclass before continuing. Previewing does not select it.</p> : null}
-    {!required && model.entryLevel ? <p className="npc-forge-class-guide__subclass-level-note">Subclass selection opens at level {model.entryLevel}; previews are available now.</p> : null}
+    {required && !model.selected ? <p className="npc-forge-class-guide__requirement">Choose an eligible subclass before continuing.</p> : null}
+    {!required && model.entryLevel ? <p className="npc-forge-class-guide__subclass-level-note">Subclass selection opens at level {model.entryLevel}.</p> : null}
     {detailed && model.compareAll ? <details className="npc-forge-class-guide__compare-drawer"><summary>Compare subclass summaries</summary><div>{model.options.map((option) => <button key={option.key} type="button" className={model.preview?.key === option.key ? "is-active" : ""} onClick={() => previewSubclass(model, onFeatureDetail, option)}><strong>{option.name}</strong><small>{option.source} • first feature level {option.firstLevel}</small><span>{cleanPlayerCopy(option.features?.find((feature) => feature.isIntroduction)?.description, "Preview this subclass in the guide below.")}</span></button>)}</div></details> : null}
   </section>;
 }
@@ -134,7 +128,6 @@ function ForgeOverview({ selectedClass, model, onFeatureDetail }) {
     <div className="npc-forge-class-guide__overview-layout">
       <div className="npc-forge-class-guide__overview-main">
         <ClassOverviewCopy selectedClass={selectedClass} />
-        <ChoiceRoutingNote model={model} compact />
         <ForgeSubclassSelection model={model} onFeatureDetail={onFeatureDetail} />
         <ProgressionTable selectedClass={selectedClass} model={model} onFeatureDetail={onFeatureDetail} />
       </div>
