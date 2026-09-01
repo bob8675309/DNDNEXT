@@ -85,8 +85,8 @@ for (const token of [
   "npc-forge-class-guide__overview-main",
   "npc-forge-class-guide__dock-lane",
   "npc-forge-class-guide__subclass-grid",
-  "npc-forge-class-guide__subclass-more",
   'aria-label="Available subclasses"',
+  "model.options.map((option) => <SubclassButton",
   "previewSubclass(model, onFeatureDetail, option)",
   "npc-forge-class-guide__subclass-confirm",
   "Deferred resolutions",
@@ -96,6 +96,7 @@ for (const token of [
   "npc-forge-class-guide__table-footnote",
   'aria-label={`View ${feature.name} details`}',
 ]) assert(guide.includes(token), `Mockup-aligned Artificer/Class presentation is missing ${token}`);
+assert(!guide.includes("model.options.slice(0, 4)"), "Subclass catalogue must no longer collapse after four entries.");
 assert(!guide.includes("<select value={model.preview?.key"), "Subclass preview must use compact buttons instead of the old dropdown selector.");
 assert(!guide.includes("title={cleanPlayerCopy(feature.description)}"), "Native browser feature tooltips must not compete with the movable detail card.");
 for (const token of [
@@ -171,4 +172,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSources.includes(token), `Class browser patch unexpectedly references protected map/town behavior: ${token}`);
 }
 
-console.log("Class browser polish validation passed: enlarged illustrated Class catalogue, approved Artificer artwork authority, mockup-aligned Artificer overview composition, compact four-plus-more subclass browsing, reserved detail lane, full progression table, deferred cross-tab choice routing, viewport-owned draggable/dismissible feature details, nested Sidekick catalogue, unique special-Class portraits, Mystic Intelligence normalization, and protected map/town boundaries are intact.");
+console.log("Class browser polish validation passed: enlarged illustrated Class catalogue, approved Artificer artwork authority, visible all-subclass browsing, full progression table, deferred cross-tab choice routing, viewport-owned draggable/dismissible feature details, nested Sidekick catalogue, unique special-Class portraits, Mystic Intelligence normalization, and protected map/town boundaries are intact.");
