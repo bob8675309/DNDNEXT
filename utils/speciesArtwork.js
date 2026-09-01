@@ -1,3 +1,5 @@
+import aarakocraHero from "./forgeGeneratedArt/aarakocraHero";
+
 const SPECIES_ARTWORK = new Set([
   "aarakocra",
   "aasimar",
@@ -184,6 +186,10 @@ const SPECIES_DEDICATED_VARIANT_ARTWORK = new Set([
   "orc-ixalan",
 ]);
 
+const CINEMATIC_SPECIES_HERO_ARTWORK = Object.freeze({
+  aarakocra: aarakocraHero,
+});
+
 // Raw catalogue rows retain the upstream parenthetical naming convention.
 // Normalize those names onto the same dedicated keys used by projected Forge
 // child selections, without changing canonical non-Forge family resolution.
@@ -218,6 +224,13 @@ export function speciesPortraitArtworkFor(species = "") {
   const key = normalizeSpeciesArtworkKey(species);
   if (SPECIES_DEDICATED_VARIANT_ARTWORK.has(key)) return `/media/species/${key}.webp`;
   return speciesArtworkFor(species);
+}
+
+// The cinematic Species hero can use a purpose-built wide composition without
+// changing catalogue thumbnails or any other consumer of the canonical art map.
+export function speciesHeroArtworkFor(species = "") {
+  const key = normalizeSpeciesArtworkKey(species);
+  return CINEMATIC_SPECIES_HERO_ARTWORK[key] || speciesPortraitArtworkFor(species);
 }
 
 export function hasDedicatedSpeciesArtwork(species = "") {
