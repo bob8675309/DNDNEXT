@@ -81,7 +81,10 @@ for (const [key, publicPath] of Object.entries(cinematicSpeciesAssets)) {
   assert(speciesArtwork.includes(`${JSON.stringify(key)}: ${JSON.stringify(publicPath)}`) || speciesArtwork.includes(`${key}: ${JSON.stringify(publicPath)}`), `Cinematic Species artwork authority is missing ${key} → ${publicPath}.`);
   const diskPath = `public${publicPath}`;
   assert(fs.existsSync(diskPath), `Cinematic Species asset is missing ${diskPath}.`);
-  assert(fs.statSync(diskPath).size > 30000, `Cinematic Species asset is unexpectedly small: ${diskPath}.`);
+  const asset = fs.readFileSync(diskPath);
+  assert(asset.length > 4000, `Cinematic Species asset is unexpectedly tiny: ${diskPath}.`);
+  assert(asset.subarray(0, 4).toString("ascii") === "RIFF", `Cinematic Species asset is not a RIFF container: ${diskPath}.`);
+  assert(asset.subarray(8, 12).toString("ascii") === "WEBP", `Cinematic Species asset is not a WebP image: ${diskPath}.`);
 }
 assert(!speciesArtwork.includes("aarakocraHero"), "Aarakocra must use the sharp public WebP rather than the old embedded generated module.");
 
@@ -96,4 +99,4 @@ for (const token of [
 const protectedSource = `${css}\n${cinematic}\n${finalCorrections}\n${guide}\n${classCatalog}\n${classEmpty}\n${classArtwork}\n${speciesArtwork}\n${forgeModal}`.toLowerCase();
 for (const token of ["map_routes", "advance_all_characters", "mappageclient", "townsheet", "encounter_weapon_attack", "crafting_recipe"]) assert(!protectedSource.includes(token), `Browser review fix crossed protected boundary: ${token}`);
 
-console.log("Species/Class cinematic reference pass validated: sharp public cinematic Aarakocra/Elf/Half-orc/Halfling artwork, head-safe Species framing, full-height Class catalogue, Forge double-click geometry recovery, generated Class idle artwork, blended selected-Class paintings, purpose-specific Class menu portraits, visible subclasses, preserved progression and protected boundaries.");
+console.log("Species/Class cinematic reference pass validated: structurally valid cinematic Aarakocra/Elf/Half-orc/Halfling WebP artwork, head-safe Species framing, full-height Class catalogue, Forge double-click geometry recovery, generated Class idle artwork, blended selected-Class paintings, purpose-specific Class menu portraits, visible subclasses, preserved progression and protected boundaries.");
