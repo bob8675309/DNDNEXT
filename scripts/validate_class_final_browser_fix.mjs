@@ -40,11 +40,11 @@ for (const token of ["handleDragStart", "handleDragMove", "handleDragEnd", "setC
   assert(dock.includes(token), `Feature inspector behavior regressed: ${token}`);
 }
 
-assert(catalog.includes("classArtworkFor(classKey)"), "Class catalogue must continue using dedicated class artwork.");
+assert(catalog.includes("classMenuArtworkFor(classKey)"), "Class catalogue must continue using the purpose-specific menu artwork authority.");
 
 const protectedSource = `${css}\n${catalog}\n${guide}\n${dock}`.toLowerCase();
 for (const token of ["map_routes", "advance_all_characters", "mappageclient", "townsheet", "encounter_weapon_attack", "crafting_recipe"]) {
   assert(!protectedSource.includes(token), `Class browser correction crossed protected boundary: ${token}`);
 }
 
-console.log("Final Class browser correction validated: full-height catalogue, real class portraits, contained progression, contextual inspector lifecycle, and preserved Class mechanics.");
+console.log("Final Class browser correction validated: full-height catalogue, purpose-specific class portraits, contained progression, contextual inspector lifecycle, and preserved Class mechanics.");
