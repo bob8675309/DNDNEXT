@@ -1,5 +1,3 @@
-import aarakocraHero from "./forgeGeneratedArt/aarakocraHero.js";
-
 const SPECIES_ARTWORK = new Set([
   "aarakocra",
   "aasimar",
@@ -107,7 +105,12 @@ const SPECIES_DEDICATED_VARIANT_ARTWORK = new Set([
   "air-genasi", "earth-genasi", "fire-genasi", "water-genasi", "black-dragonborn", "blue-dragonborn", "green-dragonborn", "red-dragonborn", "white-dragonborn", "brass-dragonborn", "bronze-dragonborn", "copper-dragonborn", "gold-dragonborn", "silver-dragonborn", "amethyst-gem-dragonborn", "crystal-gem-dragonborn", "emerald-gem-dragonborn", "sapphire-gem-dragonborn", "topaz-gem-dragonborn", "hawk-headed-aven", "ibis-headed-aven", "drow", "high-elf", "wood-elf", "forest-gnome", "rock-gnome", "beasthide-shifter", "longtooth-shifter", "swiftstride-shifter", "wildhunt-shifter", "lorwyn-fairy", "shadowmoor-fairy", "lorwyn-kithkin", "shadowmoor-kithkin", "dwarf-kaladesh", "goblin-dankwood", "orc-ixalan",
 ]);
 
-const CINEMATIC_SPECIES_HERO_ARTWORK = Object.freeze({ aarakocra: aarakocraHero });
+const CINEMATIC_SPECIES_HERO_ARTWORK = Object.freeze({
+  aarakocra: "/media/species/cinematic-aarakocra.webp",
+  elf: "/media/species/cinematic-elf.webp",
+  "half-orc": "/media/species/cinematic-half-orc.webp",
+  halfling: "/media/species/cinematic-halfling.webp",
+});
 const SPECIES_RAW_NAME_ALIASES = { "genasi-air": "air-genasi", "genasi-earth": "earth-genasi", "genasi-fire": "fire-genasi", "genasi-water": "water-genasi", "aven-hawk-headed": "hawk-headed-aven", "aven-ibis-headed": "ibis-headed-aven" };
 
 export function normalizeSpeciesArtworkKey(value = "") {
