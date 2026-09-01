@@ -1,5 +1,5 @@
 import { ABILITY_LABELS } from "../utils/characterCreation";
-import { classArtworkFor, handleClassArtworkError } from "../utils/classes/classArtwork";
+import { classHeroArtworkFor, handleClassArtworkError } from "../utils/classes/classArtwork";
 import { classPresentationSummary, classPrimaryAbilities } from "../utils/classes/classPresentation";
 import ClassFeatureText, { classFeatureInline, normalizeClassFeatureText } from "./ClassFeatureText";
 import { classSlotSummary, classSourceLabel, useNpcForgeClassGuideModel } from "./NpcForgeClassGuideModel";
@@ -57,7 +57,7 @@ function ForgeClassHero({ selectedClass }) {
       <p className="npc-forge-class-guide__hero-tagline">{classHeroTagline(selectedClass)}</p>
       <div className="npc-forge-class-guide__hero-facts">{heroFacts(selectedClass).map(([label, value], index) => <div key={label} className={`is-fact-${index + 1}`}><span>{label}</span><strong>{value}</strong></div>)}</div>
     </div>
-    <div className="npc-forge-class-guide__hero-art" aria-hidden="true"><img src={classArtworkFor(selectedClass.class_key)} onError={handleClassArtworkError} alt="" /></div>
+    <div className="npc-forge-class-guide__hero-art" aria-hidden="true"><img src={classHeroArtworkFor(selectedClass.class_key)} onError={handleClassArtworkError} alt="" /></div>
   </header>;
 }
 function ClassOverviewCopy({ selectedClass }) {
