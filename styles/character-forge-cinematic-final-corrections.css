@@ -14,16 +14,20 @@
     overflow: hidden !important;
   }
 
-  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-selection {
+  /* The section heading is hidden and the compact level control is absolutely positioned,
+     so the catalogue is the first in-flow grid child. Keep exactly one stretch row here.
+     This selector intentionally outranks the older runtime styled-jsx grid declaration. */
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 > .npc-forge-workspace > .npc-forge-section.npc-forge-class-selection {
     display: grid !important;
-    grid-template-rows: auto minmax(0, 1fr) 0 !important;
+    grid-template-rows: minmax(0, 1fr) !important;
     height: 100% !important;
     min-height: 0 !important;
     overflow: hidden !important;
     align-content: stretch !important;
+    align-self: stretch !important;
   }
 
-  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog {
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 > .npc-forge-workspace > .npc-forge-section.npc-forge-class-selection > .npc-forge-class-catalog {
     align-self: stretch !important;
     display: grid !important;
     grid-template-rows: auto minmax(0, 1fr) !important;
@@ -33,13 +37,14 @@
     overflow: hidden !important;
   }
 
-  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-list {
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 > .npc-forge-workspace > .npc-forge-section.npc-forge-class-selection > .npc-forge-class-catalog > .npc-forge-class-catalog-list {
     align-content: start !important;
     height: 100% !important;
     min-height: 0 !important;
     max-height: none !important;
     overflow-x: hidden !important;
     overflow-y: auto !important;
+    overscroll-behavior: contain !important;
     scrollbar-gutter: stable !important;
   }
 }
