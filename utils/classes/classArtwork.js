@@ -1,7 +1,7 @@
-import artificerHero from "../forgeGeneratedArt/artificerHero";
-import barbarianHero from "../forgeGeneratedArt/barbarianHero";
-import artificerMenu from "../forgeGeneratedArt/artificerMenu";
-import barbarianMenu from "../forgeGeneratedArt/barbarianMenu";
+import artificerHero from "../forgeGeneratedArt/artificerHero.js";
+import barbarianHero from "../forgeGeneratedArt/barbarianHero.js";
+import artificerMenu from "../forgeGeneratedArt/artificerMenu.js";
+import barbarianMenu from "../forgeGeneratedArt/barbarianMenu.js";
 
 const CLASS_ARTWORK = new Set([
   "adventurer",
@@ -20,15 +20,10 @@ const CLASS_ARTWORK = new Set([
   "wizard",
 ]);
 
-// Existing accepted repository painting remains as a stable fallback so older
-// consumers and guards do not lose their established artwork authority.
 const APPROVED_CLASS_ARTWORK = Object.freeze({
   artificer: "/media/classes/artificer-approved.webp",
 });
 
-// The cinematic Forge deliberately separates wide hero compositions from tight
-// catalogue crops. A single image cannot serve both jobs without the stretching
-// and poor thumbnail framing seen during browser review.
 const CINEMATIC_CLASS_HERO_ARTWORK = Object.freeze({
   artificer: artificerHero,
   barbarian: barbarianHero,
@@ -39,10 +34,6 @@ const CINEMATIC_CLASS_MENU_ARTWORK = Object.freeze({
   barbarian: barbarianMenu,
 });
 
-// Core classes keep their dedicated class paintings. Special/non-core catalogue
-// entries use distinct paintings that already exist in the repository so no two
-// selectable classes intentionally share the same portrait. These can later be
-// replaced by purpose-built class paintings without changing the catalogue API.
 const SPECIAL_CLASS_ARTWORK = Object.freeze({
   civilian: "/media/species/human.webp",
   "monster-hunter": "/media/species/human-innistrad.webp",
@@ -75,8 +66,6 @@ export function classMenuArtworkFor(classKey = "") {
   return CINEMATIC_CLASS_MENU_ARTWORK[normalized] || fallbackClassArtwork(normalized);
 }
 
-// Backward-compatible default authority for older non-Forge consumers. The Class
-// catalogue and Class guide opt into their purpose-specific functions above.
 export function classArtworkFor(classKey = "") {
   return fallbackClassArtwork(normalizedClassKey(classKey));
 }
