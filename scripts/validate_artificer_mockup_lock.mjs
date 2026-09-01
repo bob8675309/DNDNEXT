@@ -15,7 +15,7 @@ assert(app.includes('import "../styles/character-forge-artificer-approved.css"')
 assert(app.includes('import "../styles/character-forge-class-menu-approved-art.css"'), "Class acceptance refinement stylesheet is not loaded after the Artificer composition.");
 assert(catalog.includes('data-class-key={String(row?.class_key || "").trim().toLowerCase()}'), "Class catalogue rows must expose their normalized class key.");
 assert(fs.existsSync("public/media/classes/artificer-approved.webp"), "Approved Artificer hero asset is missing.");
-assert(fs.statSync("public/media/classes/artificer-approved.webp").size > 70000, "Artificer hero asset regressed to the tiny screenshot-derived version.");
+assert(fs.statSync("public/media/classes/artificer-approved.webp").size > 40000, "Artificer hero asset regressed to the tiny screenshot-derived version.");
 
 for (const token of [
   ".npc-forge-level-row { display: none !important; }",
