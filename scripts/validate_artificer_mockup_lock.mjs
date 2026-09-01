@@ -12,44 +12,37 @@ const guideModel = read("components/NpcForgeClassGuideModel.js");
 const dock = read("components/NpcForgeClassFeatureDock.js");
 
 assert(app.includes('import "../styles/character-forge-artificer-approved.css"'), "Approved Artificer presentation stylesheet is not loaded globally.");
-assert(app.includes('import "../styles/character-forge-class-menu-approved-art.css"'), "Approved Class-menu artwork stylesheet is not loaded after the Artificer composition.");
-assert(catalog.includes('data-class-key={String(row?.class_key || "").trim().toLowerCase()}'), "Class catalogue rows must expose their normalized class key for approved menu art.");
-assert(fs.existsSync("public/media/classes/class-menu-approved.webp"), "Approved Class-menu portrait sprite asset is missing.");
-assert(menuCss.includes('background-image: url("/media/classes/class-menu-approved.webp")'), "Class-menu portrait CSS must use the repository artwork asset.");
+assert(app.includes('import "../styles/character-forge-class-menu-approved-art.css"'), "Class acceptance refinement stylesheet is not loaded after the Artificer composition.");
+assert(catalog.includes('data-class-key={String(row?.class_key || "").trim().toLowerCase()}'), "Class catalogue rows must expose their normalized class key.");
+assert(fs.existsSync("public/media/classes/artificer-approved.webp"), "Approved Artificer hero asset is missing.");
+assert(fs.statSync("public/media/classes/artificer-approved.webp").size > 70000, "Artificer hero asset regressed to the tiny screenshot-derived version.");
 
 for (const token of [
   ".npc-forge-level-row { display: none !important; }",
   "grid-template-columns: minmax(300px, 24fr) minmax(0, 76fr)",
   "grid-template-rows: minmax(0,1fr) 0",
-  "min-height: 69px !important",
-  "width: 54px !important; height: 56px !important",
   ".npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__book-hero",
   "height: 246px !important",
   ".npc-forge-class-guide__hero-art {",
   "position: absolute !important; inset: 0 !important",
-  "object-position: center 45% !important",
   "width: 57% !important",
-  "grid-template-columns: minmax(0,1fr) minmax(355px,38%)",
-  "margin-top: -62px !important",
   "max-height: 392px !important",
-  "min-height: min(610px",
-]) assert(css.includes(token), `Approved Artificer mockup lock is missing ${token}`);
+]) assert(css.includes(token), `Approved Artificer base composition is missing ${token}`);
 
 for (const token of [
-  '[data-class-key="artificer"]',
-  '[data-class-key="barbarian"]',
-  '[data-class-key="bard"]',
-  '[data-class-key="cleric"]',
-  '[data-class-key="druid"]',
-  '[data-class-key="fighter"]',
-  '[data-class-key="monk"]',
-  '[data-class-key="paladin"]',
-  '[data-class-key="ranger"]',
-  '[data-class-key="rogue"]',
-  '[data-class-key="sorcerer"]',
-  "background-size: 100% 1100%",
-  "opacity: 0 !important",
-]) assert(menuCss.includes(token), `Approved Class-menu artwork mapping is missing ${token}`);
+  'background-image: url("/media/classes/artificer.webp")',
+  "opacity: 1 !important",
+  "grid-template-columns: 50px minmax(0,1fr) 22px",
+  "min-height: 64px !important",
+  "grid-template-columns: minmax(0,1fr) minmax(330px,31%)",
+  "grid-template-columns: 40px 42px minmax(138px,2.35fr) 50px 68px minmax(78px,1fr)",
+  "width: min(330px, calc(100vw - 24px))",
+  "max-height: min(520px, 62dvh",
+  "min-height: 0 !important",
+]) assert(menuCss.includes(token), `Class acceptance refinements are missing ${token}`);
+
+assert(!menuCss.includes('background-image: url("/media/classes/class-menu-approved.webp")'), "Do not restore the compressed screenshot-derived Class-menu sprite.");
+assert(!menuCss.includes("background-size: 100% 1100%"), "Do not restore sprite-strip scaling for Class portraits.");
 
 for (const token of [
   "ForgeClassHero",
@@ -69,11 +62,11 @@ for (const token of [
   "handleDragEnd",
   "setClosedDetailKey(currentDetailKey)",
   "if (dismissed) return null",
-]) assert(dock.includes(token), `Artificer presentation patch must preserve feature-card behavior: ${token}`);
+]) assert(dock.includes(token), `Class acceptance patch must preserve feature-card behavior: ${token}`);
 
 const protectedSource = `${css}\n${menuCss}\n${catalog}\n${guide}\n${dock}`.toLowerCase();
 for (const token of ["map_routes", "advance_all_characters", "mappageclient", "townsheet", "encounter_weapon_attack", "crafting_recipe"]) {
   assert(!protectedSource.includes(token), `Approved Artificer presentation crossed a protected boundary: ${token}`);
 }
 
-console.log("Approved Artificer mockup lock validated: compact 24/76 Class layout, hidden redundant stat strip, enlarged menu rows with repository-backed approved menu art, full-bleed Artificer hero, expanded source-backed progression surface, preserved subclass/detail mechanics, no invented mockup-only progression data, and protected boundaries intact.");
+console.log("Artificer acceptance refinements validated: compact level control, real per-class portraits, higher-resolution hero asset, progression columns that fit their pane, smaller movable feature card, preserved subclass/detail mechanics, source-backed progression only, and protected boundaries intact.");
