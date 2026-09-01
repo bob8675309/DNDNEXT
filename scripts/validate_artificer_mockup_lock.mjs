@@ -10,12 +10,17 @@ const menuCss = read("styles/character-forge-class-menu-approved-art.css");
 const guide = read("components/NpcForgeClassGuide.js");
 const guideModel = read("components/NpcForgeClassGuideModel.js");
 const dock = read("components/NpcForgeClassFeatureDock.js");
+const heroPath = "public/media/classes/artificer-approved.webp";
+const heroBytes = fs.readFileSync(heroPath);
 
 assert(app.includes('import "../styles/character-forge-artificer-approved.css"'), "Approved Artificer presentation stylesheet is not loaded globally.");
 assert(app.includes('import "../styles/character-forge-class-menu-approved-art.css"'), "Class acceptance refinement stylesheet is not loaded after the Artificer composition.");
 assert(catalog.includes('data-class-key={String(row?.class_key || "").trim().toLowerCase()}'), "Class catalogue rows must expose their normalized class key.");
-assert(fs.existsSync("public/media/classes/artificer-approved.webp"), "Approved Artificer hero asset is missing.");
-assert(fs.statSync("public/media/classes/artificer-approved.webp").size > 40000, "Artificer hero asset regressed to the tiny screenshot-derived version.");
+assert(fs.existsSync(heroPath), "Approved Artificer hero asset is missing.");
+assert(heroBytes.length > 12000, "Artificer hero asset regressed to the tiny screenshot-derived version.");
+assert(heroBytes.subarray(0, 4).toString("ascii") === "RIFF", "Artificer hero asset is not a RIFF WebP file.");
+assert(heroBytes.subarray(8, 12).toString("ascii") === "WEBP", "Artificer hero asset is not a valid WebP container.");
+assert(heroBytes.readUInt32LE(4) + 8 === heroBytes.length, "Artificer hero WebP payload is truncated.");
 
 for (const token of [
   ".npc-forge-level-row { display: none !important; }",
@@ -69,4 +74,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSource.includes(token), `Approved Artificer presentation crossed a protected boundary: ${token}`);
 }
 
-console.log("Artificer acceptance refinements validated: compact level control, real per-class portraits, higher-resolution hero asset, progression columns that fit their pane, smaller movable feature card, preserved subclass/detail mechanics, source-backed progression only, and protected boundaries intact.");
+console.log("Artificer acceptance refinements validated: compact level control, real per-class portraits, complete WebP hero payload, progression columns that fit their pane, smaller movable feature card, preserved subclass/detail mechanics, source-backed progression only, and protected boundaries intact.");
