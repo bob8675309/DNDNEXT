@@ -18,3 +18,5 @@ jobs:
         run: node scripts/validate_class_browser_polish.mjs
       - name: Validate approved Artificer mockup lock
         run: node scripts/validate_artificer_mockup_lock.mjs
+      - name: Validate final Class browser correction
+        run: node scripts/validate_class_final_browser_fix.mjs
