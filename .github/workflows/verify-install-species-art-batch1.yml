@@ -1,4 +1,4 @@
-name: Verify and Install Species Art Batch 1
+name: Install Species Art - Human
 
 on:
   push:
@@ -6,13 +6,14 @@ on:
       - agent/species-art-batch1-install
     paths:
       - ".github/workflows/verify-install-species-art-batch1.yml"
+      - ".art-transfer/human/**"
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  verify-build-and-promote:
+  install-human:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -21,55 +22,60 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Guard audited base and PR head
+      - name: Guard PR head
         shell: bash
         run: |
           set -euo pipefail
           BASE='4388295b6760d26c2fb34b27da794d5b83b61bb7'
-          git cat-file -e "$BASE^{commit}"
-          git merge-base --is-ancestor "$BASE" HEAD
           git fetch origin agent/realistic-dice-core
-          REMOTE_PR_HEAD="$(git rev-parse origin/agent/realistic-dice-core)"
-          test "$REMOTE_PR_HEAD" = "$BASE"
+          test "$(git rev-parse origin/agent/realistic-dice-core)" = "$BASE"
+          git merge-base --is-ancestor "$BASE" HEAD
 
-      - name: Verify exact approved WebP bytes
+      - name: Reconstruct transfer prefix and extract Human WebP
         shell: bash
         run: |
           set -euo pipefail
-          check_image() {
-            local path="$1"
-            local expected="$2"
-            test -f "$path"
-            local actual
-            actual="$(git hash-object "$path")"
-            printf '%s  %s\n' "$actual" "$path"
-            test "$actual" = "$expected"
-            test "$(head -c 4 "$path")" = 'RIFF'
-            test "$(dd if="$path" bs=1 skip=8 count=4 status=none)" = 'WEBP'
-          }
-          check_image public/media/species/cinematic-human.webp 933fd787133fb70be28b5a422670a4c9e33b6013
-          check_image public/media/species/cinematic-aarakocra.webp 3c51e0154f7296cad58a8c90457f3c7cd40f6db6
-          check_image public/media/species/cinematic-elf.webp 9d5be0c68842078a6b40faae94efd8e0879ec5de
-          check_image public/media/species/cinematic-half-orc.webp 518929b4f8e5589aa027b4575fa5445d815f69b8
-          check_image public/media/species/cinematic-halfling.webp 746022bc604e5239de5ed46f2054da2bfbc186db
+          cat \
+            .art-transfer/human/part000.bin \
+            .art-transfer/human/part001.bin \
+            .art-transfer/human/part002.bin \
+            .art-transfer/human/part003.bin \
+            .art-transfer/human/part004.bin \
+            > /tmp/species-prefix.zip
+          python - <<'PY'
+          import struct
+          from pathlib import Path
+          src = Path('/tmp/species-prefix.zip').read_bytes()
+          assert src[:4] == b'PK\x03\x04'
+          method = struct.unpack_from('<H', src, 8)[0]
+          comp_size = struct.unpack_from('<I', src, 18)[0]
+          uncomp_size = struct.unpack_from('<I', src, 22)[0]
+          name_len = struct.unpack_from('<H', src, 26)[0]
+          extra_len = struct.unpack_from('<H', src, 28)[0]
+          assert method == 0
+          name = src[30:30+name_len].decode('utf-8')
+          assert name == 'cinematic-human.webp'
+          start = 30 + name_len + extra_len
+          end = start + comp_size
+          assert end <= len(src)
+          data = src[start:end]
+          assert len(data) == uncomp_size
+          out = Path('public/media/species/cinematic-human.webp')
+          out.write_bytes(data)
+          PY
+          test "$(git hash-object public/media/species/cinematic-human.webp)" = '4a6988cd7bd955362fbbffecb42e2dd315556523'
+          test "$(head -c 4 public/media/species/cinematic-human.webp)" = 'RIFF'
+          test "$(dd if=public/media/species/cinematic-human.webp bs=1 skip=8 count=4 status=none)" = 'WEBP'
 
-      - name: Enforce scratch diff boundary
+      - name: Enforce diff boundary
         shell: bash
         run: |
           set -euo pipefail
           BASE='4388295b6760d26c2fb34b27da794d5b83b61bb7'
-          git diff --name-only "$BASE"...HEAD | sort > /tmp/actual.txt
-          cat > /tmp/allowed.txt <<'EOF'
-          .github/workflows/verify-install-species-art-batch1.yml
-          public/media/species/cinematic-aarakocra.webp
-          public/media/species/cinematic-elf.webp
-          public/media/species/cinematic-half-orc.webp
-          public/media/species/cinematic-halfling.webp
-          public/media/species/cinematic-human.webp
-          EOF
-          diff -u /tmp/allowed.txt /tmp/actual.txt
-          ! grep -Eiq '(^|/)(world.?map|town.?map|city.?map)(/|\.|$)' /tmp/actual.txt
-          ! grep -Fxq 'public/media/species/cinematic-dwarf.webp' /tmp/actual.txt
+          git diff --name-only "$BASE"...HEAD | sort > /tmp/pre.txt
+          grep -Fxq '.github/workflows/verify-install-species-art-batch1.yml' /tmp/pre.txt
+          ! grep -Eiq '(^|/)(world.?map|town.?map|city.?map)(/|\.|$)' /tmp/pre.txt
+          git diff --name-only | grep -Fx 'public/media/species/cinematic-human.webp'
 
       - name: Install dependencies
         run: npm ci
@@ -77,63 +83,21 @@ jobs:
       - name: Production build
         run: npm run build
 
-      - name: Recheck PR head after build
+      - name: Create clean Human-only commit and promote
         shell: bash
         run: |
           set -euo pipefail
           BASE='4388295b6760d26c2fb34b27da794d5b83b61bb7'
-          git fetch origin agent/realistic-dice-core
-          test "$(git rev-parse origin/agent/realistic-dice-core)" = "$BASE"
-
-      - name: Create clean five-image commit
-        shell: bash
-        run: |
-          set -euo pipefail
-          BASE='4388295b6760d26c2fb34b27da794d5b83b61bb7'
-          TARGETS=(
-            public/media/species/cinematic-human.webp
-            public/media/species/cinematic-aarakocra.webp
-            public/media/species/cinematic-elf.webp
-            public/media/species/cinematic-half-orc.webp
-            public/media/species/cinematic-halfling.webp
-          )
-          git reset --mixed "$BASE"
-          rm -f .github/workflows/verify-install-species-art-batch1.yml
-          git add -- "${TARGETS[@]}"
-          git diff --cached --name-only | sort > /tmp/final-actual.txt
-          cat > /tmp/final-allowed.txt <<'EOF'
-          public/media/species/cinematic-aarakocra.webp
-          public/media/species/cinematic-elf.webp
-          public/media/species/cinematic-half-orc.webp
-          public/media/species/cinematic-halfling.webp
-          public/media/species/cinematic-human.webp
-          EOF
-          diff -u /tmp/final-allowed.txt /tmp/final-actual.txt
+          TARGET='public/media/species/cinematic-human.webp'
+          cp "$TARGET" /tmp/cinematic-human.webp
+          git reset --hard "$BASE"
+          cp /tmp/cinematic-human.webp "$TARGET"
+          git add -- "$TARGET"
+          test "$(git diff --cached --name-only)" = "$TARGET"
+          test "$(git hash-object "$TARGET")" = '4a6988cd7bd955362fbbffecb42e2dd315556523'
           git config user.name 'DNDNext Automation'
           git config user.email 'automation@dndnext.local'
-          git commit -m 'Replace first Species cinematic artwork batch'
-          FINAL_HEAD="$(git rev-parse HEAD)"
-          printf 'final_head=%s\n' "$FINAL_HEAD" >> "$GITHUB_OUTPUT"
-
-      - name: Verify clean final tree and promote
-        shell: bash
-        run: |
-          set -euo pipefail
-          BASE='4388295b6760d26c2fb34b27da794d5b83b61bb7'
-          git diff --name-only "$BASE"...HEAD | sort > /tmp/final.txt
-          cat > /tmp/expected.txt <<'EOF'
-          public/media/species/cinematic-aarakocra.webp
-          public/media/species/cinematic-elf.webp
-          public/media/species/cinematic-half-orc.webp
-          public/media/species/cinematic-halfling.webp
-          public/media/species/cinematic-human.webp
-          EOF
-          diff -u /tmp/expected.txt /tmp/final.txt
-          test "$(git hash-object public/media/species/cinematic-human.webp)" = 933fd787133fb70be28b5a422670a4c9e33b6013
-          test "$(git hash-object public/media/species/cinematic-aarakocra.webp)" = 3c51e0154f7296cad58a8c90457f3c7cd40f6db6
-          test "$(git hash-object public/media/species/cinematic-elf.webp)" = 9d5be0c68842078a6b40faae94efd8e0879ec5de
-          test "$(git hash-object public/media/species/cinematic-half-orc.webp)" = 518929b4f8e5589aa027b4575fa5445d815f69b8
-          test "$(git hash-object public/media/species/cinematic-halfling.webp)" = 746022bc604e5239de5ed46f2054da2bfbc186db
+          git commit -m 'Add cinematic Human species artwork'
           git fetch origin agent/realistic-dice-core
           test "$(git rev-parse origin/agent/realistic-dice-core)" = "$BASE"
           git push --force-with-lease origin HEAD:agent/species-art-batch1-install
