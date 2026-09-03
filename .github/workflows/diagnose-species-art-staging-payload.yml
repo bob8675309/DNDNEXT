@@ -24,7 +24,7 @@ jobs:
       - name: Fetch staging payload branch
         run: git fetch origin agent/species-art-materializer-staging
 
-      - name: Decode and hash staged payload
+      - name: Decode staged payload groups
         shell: bash
         run: |
           set -euo pipefail
@@ -32,26 +32,48 @@ jobs:
           mapfile -t parts < <(git ls-tree -r --name-only "$payload_branch" scripts/species-art-payload | sort)
           printf 'payload_parts=%s\n' "${#parts[@]}"
           test "${#parts[@]}" -gt 0
-          : > /tmp/species-art-payload.b64
+
+          inspect_binary() {
+            local file="$1"
+            local label="$2"
+            printf '\n=== %s ===\n' "$label"
+            file "$file"
+            printf 'bytes=%s git_blob=%s\n' "$(stat -c %s "$file")" "$(git hash-object "$file")"
+            if unzip -t "$file" >/dev/null 2>&1; then
+              local out="/tmp/unpack-${label//[^A-Za-z0-9]/-}"
+              rm -rf "$out"
+              mkdir -p "$out"
+              unzip -q "$file" -d "$out"
+              find "$out" -type f -print0 | sort -z | while IFS= read -r -d '' child; do
+                printf '%s  %s  %s bytes\n' "$(git hash-object "$child")" "${child#"$out"/}" "$(stat -c %s "$child")"
+              done
+            fi
+          }
+
+          # The staging directory contains one multi-part base-set archive (000-004)
+          # and a later independently padded part (005). Inspect both independently.
+          : > /tmp/base-set-main.b64
           for part in "${parts[@]}"; do
-            printf 'part=%s\n' "$part"
-            git show "$payload_branch:$part" >> /tmp/species-art-payload.b64
+            printf 'part=%s size=%s head=%s tail=%s\n' \
+              "$part" \
+              "$(git cat-file -s "$payload_branch:$part")" \
+              "$(git show "$payload_branch:$part" | head -c 12)" \
+              "$(git show "$payload_branch:$part" | tail -c 12)"
+            case "$part" in
+              *part000.b64|*part001.b64|*part002.b64|*part003.b64|*part004.b64)
+                git show "$payload_branch:$part" >> /tmp/base-set-main.b64
+                ;;
+            esac
           done
-          base64 --decode /tmp/species-art-payload.b64 > /tmp/species-art-payload.bin
-          file /tmp/species-art-payload.bin
-          if unzip -t /tmp/species-art-payload.bin >/dev/null 2>&1; then
-            rm -rf /tmp/species-art-unpacked
-            mkdir -p /tmp/species-art-unpacked
-            unzip -q /tmp/species-art-payload.bin -d /tmp/species-art-unpacked
-            find /tmp/species-art-unpacked -type f -print0 | sort -z | while IFS= read -r -d '' file; do
-              printf '%s  %s  %s bytes\n' "$(git hash-object "$file")" "${file#/tmp/species-art-unpacked/}" "$(stat -c %s "$file")"
-            done
-          else
-            printf 'payload_sha=%s\n' "$(git hash-object /tmp/species-art-payload.bin)"
-            printf 'payload_bytes=%s\n' "$(stat -c %s /tmp/species-art-payload.bin)"
+          base64 --decode /tmp/base-set-main.b64 > /tmp/base-set-main.bin
+          inspect_binary /tmp/base-set-main.bin base-set-main
+
+          if git cat-file -e "$payload_branch:scripts/species-art-payload/base-set.part005.b64" 2>/dev/null; then
+            git show "$payload_branch:scripts/species-art-payload/base-set.part005.b64" | base64 --decode > /tmp/base-set-part005.bin
+            inspect_binary /tmp/base-set-part005.bin base-set-part005
           fi
 
-      - name: Compare against approved Checkpoint 1 Git blob SHAs
+      - name: Approved Checkpoint 1 reference hashes
         shell: bash
         run: |
           cat <<'EOF'
