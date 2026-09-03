@@ -1,0 +1,140 @@
+name: Verify and Install Species Art Batch 1
+
+on:
+  push:
+    branches:
+      - agent/species-art-batch1-install
+    paths:
+      - ".github/workflows/verify-install-species-art-batch1.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify-build-and-promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out scratch branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Guard audited base and PR head
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='4388295b6760d26c2fb34b27da794d5b83b61bb7'
+          git cat-file -e "$BASE^{commit}"
+          git merge-base --is-ancestor "$BASE" HEAD
+          git fetch origin agent/realistic-dice-core
+          REMOTE_PR_HEAD="$(git rev-parse origin/agent/realistic-dice-core)"
+          test "$REMOTE_PR_HEAD" = "$BASE"
+
+      - name: Verify exact approved WebP bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          check_image() {
+            local path="$1"
+            local expected="$2"
+            test -f "$path"
+            local actual
+            actual="$(git hash-object "$path")"
+            printf '%s  %s\n' "$actual" "$path"
+            test "$actual" = "$expected"
+            test "$(head -c 4 "$path")" = 'RIFF'
+            test "$(dd if="$path" bs=1 skip=8 count=4 status=none)" = 'WEBP'
+          }
+          check_image public/media/species/cinematic-human.webp 933fd787133fb70be28b5a422670a4c9e33b6013
+          check_image public/media/species/cinematic-aarakocra.webp 3c51e0154f7296cad58a8c90457f3c7cd40f6db6
+          check_image public/media/species/cinematic-elf.webp 9d5be0c68842078a6b40faae94efd8e0879ec5de
+          check_image public/media/species/cinematic-half-orc.webp 518929b4f8e5589aa027b4575fa5445d815f69b8
+          check_image public/media/species/cinematic-halfling.webp 746022bc604e5239de5ed46f2054da2bfbc186db
+
+      - name: Enforce scratch diff boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='4388295b6760d26c2fb34b27da794d5b83b61bb7'
+          git diff --name-only "$BASE"...HEAD | sort > /tmp/actual.txt
+          cat > /tmp/allowed.txt <<'EOF'
+          .github/workflows/verify-install-species-art-batch1.yml
+          public/media/species/cinematic-aarakocra.webp
+          public/media/species/cinematic-elf.webp
+          public/media/species/cinematic-half-orc.webp
+          public/media/species/cinematic-halfling.webp
+          public/media/species/cinematic-human.webp
+          EOF
+          diff -u /tmp/allowed.txt /tmp/actual.txt
+          ! grep -Eiq '(^|/)(world.?map|town.?map|city.?map)(/|\.|$)' /tmp/actual.txt
+          ! grep -Fxq 'public/media/species/cinematic-dwarf.webp' /tmp/actual.txt
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Production build
+        run: npm run build
+
+      - name: Recheck PR head after build
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='4388295b6760d26c2fb34b27da794d5b83b61bb7'
+          git fetch origin agent/realistic-dice-core
+          test "$(git rev-parse origin/agent/realistic-dice-core)" = "$BASE"
+
+      - name: Create clean five-image commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='4388295b6760d26c2fb34b27da794d5b83b61bb7'
+          TARGETS=(
+            public/media/species/cinematic-human.webp
+            public/media/species/cinematic-aarakocra.webp
+            public/media/species/cinematic-elf.webp
+            public/media/species/cinematic-half-orc.webp
+            public/media/species/cinematic-halfling.webp
+          )
+          git reset --mixed "$BASE"
+          rm -f .github/workflows/verify-install-species-art-batch1.yml
+          git add -- "${TARGETS[@]}"
+          git diff --cached --name-only | sort > /tmp/final-actual.txt
+          cat > /tmp/final-allowed.txt <<'EOF'
+          public/media/species/cinematic-aarakocra.webp
+          public/media/species/cinematic-elf.webp
+          public/media/species/cinematic-half-orc.webp
+          public/media/species/cinematic-halfling.webp
+          public/media/species/cinematic-human.webp
+          EOF
+          diff -u /tmp/final-allowed.txt /tmp/final-actual.txt
+          git config user.name 'DNDNext Automation'
+          git config user.email 'automation@dndnext.local'
+          git commit -m 'Replace first Species cinematic artwork batch'
+          FINAL_HEAD="$(git rev-parse HEAD)"
+          printf 'final_head=%s\n' "$FINAL_HEAD" >> "$GITHUB_OUTPUT"
+
+      - name: Verify clean final tree and promote
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='4388295b6760d26c2fb34b27da794d5b83b61bb7'
+          git diff --name-only "$BASE"...HEAD | sort > /tmp/final.txt
+          cat > /tmp/expected.txt <<'EOF'
+          public/media/species/cinematic-aarakocra.webp
+          public/media/species/cinematic-elf.webp
+          public/media/species/cinematic-half-orc.webp
+          public/media/species/cinematic-halfling.webp
+          public/media/species/cinematic-human.webp
+          EOF
+          diff -u /tmp/expected.txt /tmp/final.txt
+          test "$(git hash-object public/media/species/cinematic-human.webp)" = 933fd787133fb70be28b5a422670a4c9e33b6013
+          test "$(git hash-object public/media/species/cinematic-aarakocra.webp)" = 3c51e0154f7296cad58a8c90457f3c7cd40f6db6
+          test "$(git hash-object public/media/species/cinematic-elf.webp)" = 9d5be0c68842078a6b40faae94efd8e0879ec5de
+          test "$(git hash-object public/media/species/cinematic-half-orc.webp)" = 518929b4f8e5589aa027b4575fa5445d815f69b8
+          test "$(git hash-object public/media/species/cinematic-halfling.webp)" = 746022bc604e5239de5ed46f2054da2bfbc186db
+          git fetch origin agent/realistic-dice-core
+          test "$(git rev-parse origin/agent/realistic-dice-core)" = "$BASE"
+          git push --force-with-lease origin HEAD:agent/species-art-batch1-install
+          git push origin HEAD:agent/realistic-dice-core
