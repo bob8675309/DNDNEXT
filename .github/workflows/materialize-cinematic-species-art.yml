@@ -1,0 +1,41 @@
+name: Materialize cinematic Species artwork
+
+on:
+  push:
+    branches:
+      - agent/species-art-staging
+    paths:
+      - ".asset-transfer/cinematic-species/*.ready"
+      - "scripts/materialize_cinematic_species_art.py"
+      - ".github/workflows/materialize-cinematic-species-art.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out staging branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/species-art-staging
+          fetch-depth: 0
+
+      - name: Materialize and verify approved WebPs
+        run: python scripts/materialize_cinematic_species_art.py
+
+      - name: Commit materialized assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/media/species/cinematic-*.webp
+          if git diff --cached --quiet; then
+            echo "No asset changes to commit."
+            exit 0
+          fi
+          git commit -m "Materialize approved cinematic Species artwork"
+          git push origin HEAD:agent/species-art-staging
