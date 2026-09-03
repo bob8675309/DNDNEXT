@@ -1,0 +1,63 @@
+name: Diagnose Species Art Staging Payload
+
+on:
+  push:
+    branches:
+      - agent/species-art-checkpoint1-transfer-v2
+    paths:
+      - ".github/workflows/diagnose-species-art-staging-payload.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out scratch branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch staging payload branch
+        run: git fetch origin agent/species-art-materializer-staging
+
+      - name: Decode and hash staged payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          payload_branch='origin/agent/species-art-materializer-staging'
+          mapfile -t parts < <(git ls-tree -r --name-only "$payload_branch" scripts/species-art-payload | sort)
+          printf 'payload_parts=%s\n' "${#parts[@]}"
+          test "${#parts[@]}" -gt 0
+          : > /tmp/species-art-payload.b64
+          for part in "${parts[@]}"; do
+            printf 'part=%s\n' "$part"
+            git show "$payload_branch:$part" >> /tmp/species-art-payload.b64
+          done
+          base64 --decode /tmp/species-art-payload.b64 > /tmp/species-art-payload.bin
+          file /tmp/species-art-payload.bin
+          if unzip -t /tmp/species-art-payload.bin >/dev/null 2>&1; then
+            rm -rf /tmp/species-art-unpacked
+            mkdir -p /tmp/species-art-unpacked
+            unzip -q /tmp/species-art-payload.bin -d /tmp/species-art-unpacked
+            find /tmp/species-art-unpacked -type f -print0 | sort -z | while IFS= read -r -d '' file; do
+              printf '%s  %s  %s bytes\n' "$(git hash-object "$file")" "${file#/tmp/species-art-unpacked/}" "$(stat -c %s "$file")"
+            done
+          else
+            printf 'payload_sha=%s\n' "$(git hash-object /tmp/species-art-payload.bin)"
+            printf 'payload_bytes=%s\n' "$(stat -c %s /tmp/species-art-payload.bin)"
+          fi
+
+      - name: Compare against approved Checkpoint 1 Git blob SHAs
+        shell: bash
+        run: |
+          cat <<'EOF'
+          expected cinematic-human.webp ce44502cc68d26ec58e3048215035757036fe728
+          expected cinematic-aarakocra.webp 4259126500d3082782981839bbb1421745245334
+          expected cinematic-elf.webp 9ec8cbcd74f329cc1307270a5d93712917be62ec
+          expected cinematic-half-orc.webp 68a522fb7dcbcd3d6fa96f3bb5f579334eab85e6
+          expected cinematic-halfling.webp 6c1e19406f3949971fac26723b32d1c6d5db76b0
+          EOF
