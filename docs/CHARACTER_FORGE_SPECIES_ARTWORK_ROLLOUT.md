@@ -111,6 +111,18 @@ After each checkpoint:
 
 ## Handoff state
 
-At the end of the 2026-09-02 conversation, the first five approved 720×960 WebP exports were prepared locally for Human, Aarakocra, Elf, Half-Orc, and Halfling. The next chat should first verify the branch head and then finish/verify the binary upload before claiming Checkpoint 1 installed.
+At the end of the 2026-09-02 conversation, the first five approved 720×960 WebP exports were prepared for Human, Aarakocra, Elf, Half-Orc, and Halfling and copied into the persistent ChatGPT Library at:
+
+`/DNDNext/Species Artwork Rollout/Checkpoint 1/`
+
+The five persistent filenames are:
+
+- `cinematic-human.webp`
+- `cinematic-aarakocra.webp`
+- `cinematic-elf.webp`
+- `cinematic-half-orc.webp`
+- `cinematic-halfling.webp`
+
+The GitHub connector available in this conversation can create binary Git blobs only from an inline base64 string; it does not expose a byte-preserving local-file upload parameter. An attempted inline transfer did not reproduce the source blob checksum, so that unverified blob was deliberately left unreachable and **no corrupted image was attached to the branch**. The next chat must retrieve the five exact Library files and finish/verify the binary GitHub transfer before claiming Checkpoint 1 installed.
 
 Once Checkpoint 1 is green, continue Checkpoints 2–4 in order. Do not regenerate already approved images merely because a new chat took over; preserve the approved art direction and only revisit an image when browser review identifies a concrete problem.
