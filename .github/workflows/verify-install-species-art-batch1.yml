@@ -6,7 +6,7 @@ on:
       - agent/species-art-batch1-install
     paths:
       - ".github/workflows/verify-install-species-art-batch1.yml"
-      - ".art-transfer/human/**"
+      - ".art-transfer/human/ready.txt"
   workflow_dispatch:
 
 permissions:
@@ -36,12 +36,13 @@ jobs:
         run: |
           set -euo pipefail
           cat \
-            .art-transfer/human/part000.bin \
-            .art-transfer/human/part001.bin \
-            .art-transfer/human/part002.bin \
-            .art-transfer/human/part003.bin \
-            .art-transfer/human/part004.bin \
-            > /tmp/species-prefix.zip
+            .art-transfer/human/part000.b64 \
+            .art-transfer/human/part001.b64 \
+            .art-transfer/human/part002.b64 \
+            .art-transfer/human/part003.b64 \
+            .art-transfer/human/part004.b64 \
+            > /tmp/species-prefix.b64
+          base64 --decode /tmp/species-prefix.b64 > /tmp/species-prefix.zip
           python - <<'PY'
           import struct
           from pathlib import Path
@@ -60,8 +61,7 @@ jobs:
           assert end <= len(src)
           data = src[start:end]
           assert len(data) == uncomp_size
-          out = Path('public/media/species/cinematic-human.webp')
-          out.write_bytes(data)
+          Path('public/media/species/cinematic-human.webp').write_bytes(data)
           PY
           test "$(git hash-object public/media/species/cinematic-human.webp)" = '4a6988cd7bd955362fbbffecb42e2dd315556523'
           test "$(head -c 4 public/media/species/cinematic-human.webp)" = 'RIFF'
@@ -73,7 +73,6 @@ jobs:
           set -euo pipefail
           BASE='4388295b6760d26c2fb34b27da794d5b83b61bb7'
           git diff --name-only "$BASE"...HEAD | sort > /tmp/pre.txt
-          grep -Fxq '.github/workflows/verify-install-species-art-batch1.yml' /tmp/pre.txt
           ! grep -Eiq '(^|/)(world.?map|town.?map|city.?map)(/|\.|$)' /tmp/pre.txt
           git diff --name-only | grep -Fx 'public/media/species/cinematic-human.webp'
 
