@@ -1,0 +1,1 @@
+Testing direct Git tree anchoring of the already-verified Bugbear blob.
