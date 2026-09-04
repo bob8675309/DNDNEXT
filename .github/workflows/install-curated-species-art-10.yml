@@ -1,0 +1,162 @@
+name: Install Curated Species Art 10
+
+on:
+  push:
+    branches:
+      - agent/species-art-curated-10
+    paths:
+      - ".art-transfer/curated-10/READY"
+
+permissions:
+  contents: write
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out curated artwork branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Guard authoritative PR head
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='4388295b6760d26c2fb34b27da794d5b83b61bb7'
+          git fetch origin agent/realistic-dice-core
+          test "$(git rev-parse origin/agent/realistic-dice-core)" = "$BASE"
+          git merge-base --is-ancestor "$BASE" HEAD
+
+      - name: Reconstruct exact approved archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t parts < <(find .art-transfer/curated-10 -maxdepth 1 -type f -name 'part-*.b64' | sort)
+          test "${#parts[@]}" -eq 106
+          cat "${parts[@]}" > /tmp/species-curated-10.b64
+          base64 --decode /tmp/species-curated-10.b64 > /tmp/species-curated-10.zip
+          echo '5de1925683a90d1d3364ec8dcae3b8a9d7e1970220a66e5e241da9a432041df8  /tmp/species-curated-10.zip' | sha256sum -c -
+          unzip -t /tmp/species-curated-10.zip
+          rm -rf /tmp/species-curated-10
+          mkdir -p /tmp/species-curated-10
+          unzip -q /tmp/species-curated-10.zip -d /tmp/species-curated-10
+
+      - name: Verify exact file set, image structure, and Git blobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --quiet Pillow
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          import subprocess
+
+          expected = {
+            'cinematic-aarakocra.webp': '76f8b3a9e55810f19589fdb6f75859d00ab466af',
+            'cinematic-aasimar.webp': 'f3105de6a33536ccb50f2d7665bad6e80d775c65',
+            'cinematic-bugbear.webp': '75be85c85e5c780990fc5f055a96e10049ebcc1b',
+            'cinematic-firbolg.webp': '7acc922b61f2573923924aa561bdb406e49d0c42',
+            'cinematic-goblin.webp': '9f22f30165c04110541d0ef14ead15ca65889575',
+            'cinematic-kenku.webp': '13e79c760f8a6c2f168a5c891890022aa9899eb8',
+            'cinematic-kobold.webp': '9fdbd0ef7381ed6a16fc23140e4a260d491b069f',
+            'cinematic-orc.webp': 'bce8121432a3d8d4c57dca43f9e70b7ce3c238e3',
+            'cinematic-tabaxi.webp': 'f91ea7cf64f80383fbe2c1ca1f9b66e19f1add53',
+            'cinematic-tiefling.webp': '4cb9cfa3831452b9fcba20fb5ce4179dd4536b5d',
+          }
+          root = Path('/tmp/species-curated-10')
+          files = {p.name for p in root.iterdir() if p.is_file()}
+          assert files == set(expected), (sorted(files), sorted(expected))
+          for name, expected_sha in sorted(expected.items()):
+            path = root / name
+            data = path.read_bytes()
+            assert data[:4] == b'RIFF', name
+            assert data[8:12] == b'WEBP', name
+            with Image.open(path) as im:
+              assert im.format == 'WEBP', (name, im.format)
+              assert im.size == (720, 960), (name, im.size)
+            actual_sha = subprocess.check_output(['git', 'hash-object', str(path)], text=True).strip()
+            assert actual_sha == expected_sha, (name, actual_sha, expected_sha)
+            print(name, actual_sha, path.stat().st_size)
+          PY
+
+      - name: Install curated portraits and update hero authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp /tmp/species-curated-10/cinematic-*.webp public/media/species/
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('utils/speciesArtwork.js')
+          text = path.read_text()
+          start = text.index('const CINEMATIC_SPECIES_HERO_ARTWORK = Object.freeze({')
+          end = text.index('});', start) + 3
+          replacement = '''const CINEMATIC_SPECIES_HERO_ARTWORK = Object.freeze({
+            aarakocra: "/media/species/cinematic-aarakocra.webp",
+            aasimar: "/media/species/cinematic-aasimar.webp",
+            bugbear: "/media/species/cinematic-bugbear.webp",
+            elf: "/media/species/cinematic-elf.webp",
+            firbolg: "/media/species/cinematic-firbolg.webp",
+            goblin: "/media/species/cinematic-goblin.webp",
+            "half-orc": "/media/species/cinematic-half-orc.webp",
+            halfling: "/media/species/cinematic-halfling.webp",
+            kenku: "/media/species/cinematic-kenku.webp",
+            kobold: "/media/species/cinematic-kobold.webp",
+            orc: "/media/species/cinematic-orc.webp",
+            tabaxi: "/media/species/cinematic-tabaxi.webp",
+            tiefling: "/media/species/cinematic-tiefling.webp",
+          });'''
+          path.write_text(text[:start] + replacement + text[end:])
+          PY
+
+      - name: Enforce exact change boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only '4388295b6760d26c2fb34b27da794d5b83b61bb7' -- public/media/species utils/speciesArtwork.js | sort > /tmp/actual.txt
+          cat > /tmp/expected.txt <<'EOF'
+          public/media/species/cinematic-aarakocra.webp
+          public/media/species/cinematic-aasimar.webp
+          public/media/species/cinematic-bugbear.webp
+          public/media/species/cinematic-firbolg.webp
+          public/media/species/cinematic-goblin.webp
+          public/media/species/cinematic-kenku.webp
+          public/media/species/cinematic-kobold.webp
+          public/media/species/cinematic-orc.webp
+          public/media/species/cinematic-tabaxi.webp
+          public/media/species/cinematic-tiefling.webp
+          utils/speciesArtwork.js
+          EOF
+          sort -o /tmp/expected.txt /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+          ! git diff --name-only '4388295b6760d26c2fb34b27da794d5b83b61bb7' | grep -Eiq '(^|/)(world.?map|town.?map|city.?map)(/|\.|$)'
+          ! git diff --name-only '4388295b6760d26c2fb34b27da794d5b83b61bb7' | grep -Eq 'public/media/species/(air-genasi|earth-genasi|fire-genasi|water-genasi|black-dragonborn|blue-dragonborn|green-dragonborn|red-dragonborn|white-dragonborn|brass-dragonborn|bronze-dragonborn|copper-dragonborn|gold-dragonborn|silver-dragonborn|amethyst-gem-dragonborn|crystal-gem-dragonborn|emerald-gem-dragonborn|sapphire-gem-dragonborn|topaz-gem-dragonborn|drow|high-elf|wood-elf|forest-gnome|rock-gnome|beasthide-shifter|longtooth-shifter|swiftstride-shifter|wildhunt-shifter)\.webp$'
+
+      - name: Validate Forge and production build
+        run: |
+          npm ci
+          node scripts/validate_species_class_review_fix.mjs
+          node scripts/validate_class_browser_polish.mjs
+          npm run build
+
+      - name: Recheck PR head and create clean curated commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='4388295b6760d26c2fb34b27da794d5b83b61bb7'
+          git fetch origin agent/realistic-dice-core
+          test "$(git rev-parse origin/agent/realistic-dice-core)" = "$BASE"
+          mkdir -p /tmp/final-curated
+          cp /tmp/species-curated-10/cinematic-*.webp /tmp/final-curated/
+          cp utils/speciesArtwork.js /tmp/speciesArtwork.js
+          git reset --hard "$BASE"
+          cp /tmp/final-curated/cinematic-*.webp public/media/species/
+          cp /tmp/speciesArtwork.js utils/speciesArtwork.js
+          git add public/media/species/cinematic-*.webp utils/speciesArtwork.js
+          git diff --cached --name-only | sort > /tmp/final-actual.txt
+          diff -u /tmp/expected.txt /tmp/final-actual.txt
+          git config user.name 'DNDNext Automation'
+          git config user.email 'automation@dndnext.local'
+          git commit -m 'Replace curated Species cinematic artwork'
+          git push --force-with-lease origin HEAD:agent/species-art-curated-10
