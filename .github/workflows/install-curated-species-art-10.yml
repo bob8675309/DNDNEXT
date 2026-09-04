@@ -34,7 +34,7 @@ jobs:
         run: |
           set -euo pipefail
           mapfile -t parts < <(find .art-transfer/curated-10 -maxdepth 1 -type f -name 'part-*.b64' | sort)
-          test "${#parts[@]}" -eq 106
+          test "${#parts[@]}" -eq 37
           cat "${parts[@]}" > /tmp/species-curated-10.b64
           base64 --decode /tmp/species-curated-10.b64 > /tmp/species-curated-10.zip
           echo '5de1925683a90d1d3364ec8dcae3b8a9d7e1970220a66e5e241da9a432041df8  /tmp/species-curated-10.zip' | sha256sum -c -
