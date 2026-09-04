@@ -1,0 +1,1 @@
+Direct blob tree anchoring test; no production changes.
