@@ -1,0 +1,163 @@
+name: Install Approved Species Art 19
+
+on:
+  push:
+    branches:
+      - agent/species-art-batch1-assets
+    paths:
+      - ".art-transfer/species-art-approved-19-url.txt"
+
+permissions:
+  contents: write
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out artwork branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Guard authoritative PR head
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='4388295b6760d26c2fb34b27da794d5b83b61bb7'
+          git fetch origin agent/realistic-dice-core
+          test "$(git rev-parse origin/agent/realistic-dice-core)" = "$BASE"
+          git merge-base --is-ancestor "$BASE" HEAD
+
+      - name: Download approved artwork archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL="$(tr -d '\r\n' < .art-transfer/species-art-approved-19-url.txt)"
+          test -n "$URL"
+          curl --fail --location --retry 3 --output /tmp/species-art.zip "$URL"
+          unzip -t /tmp/species-art.zip
+          rm -rf /tmp/species-art
+          mkdir -p /tmp/species-art
+          unzip -q /tmp/species-art.zip -d /tmp/species-art
+
+      - name: Verify exact approved file set and image structure
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --quiet Pillow
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+
+          expected = {
+              'cinematic-human.webp',
+              'cinematic-aarakocra.webp',
+              'cinematic-elf.webp',
+              'cinematic-half-orc.webp',
+              'cinematic-halfling.webp',
+              'cinematic-dwarf.webp',
+              'cinematic-gnome.webp',
+              'cinematic-dragonborn.webp',
+              'cinematic-tiefling.webp',
+              'cinematic-goliath.webp',
+              'cinematic-aasimar.webp',
+              'cinematic-firbolg.webp',
+              'cinematic-goblin.webp',
+              'cinematic-orc.webp',
+              'cinematic-bugbear.webp',
+              'cinematic-kenku.webp',
+              'cinematic-kobold.webp',
+              'cinematic-lizardfolk.webp',
+              'cinematic-tabaxi.webp',
+          }
+          root = Path('/tmp/species-art')
+          files = {p.name for p in root.iterdir() if p.is_file()}
+          assert files == expected, (sorted(files), sorted(expected))
+          for name in sorted(expected):
+              path = root / name
+              data = path.read_bytes()
+              assert data[:4] == b'RIFF', name
+              assert data[8:12] == b'WEBP', name
+              with Image.open(path) as im:
+                  assert im.format == 'WEBP', (name, im.format)
+                  assert im.size == (720, 960), (name, im.size)
+              print(name, path.stat().st_size)
+          PY
+
+      - name: Install only approved base-species heroes
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp /tmp/species-art/cinematic-*.webp public/media/species/
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('utils/speciesArtwork.js')
+          text = path.read_text()
+          start = text.index('const CINEMATIC_SPECIES_HERO_ARTWORK = Object.freeze({')
+          end = text.index('});', start) + 3
+          replacement = '''const CINEMATIC_SPECIES_HERO_ARTWORK = Object.freeze({
+            human: "/media/species/cinematic-human.webp",
+            aarakocra: "/media/species/cinematic-aarakocra.webp",
+            aasimar: "/media/species/cinematic-aasimar.webp",
+            bugbear: "/media/species/cinematic-bugbear.webp",
+            dragonborn: "/media/species/cinematic-dragonborn.webp",
+            dwarf: "/media/species/cinematic-dwarf.webp",
+            elf: "/media/species/cinematic-elf.webp",
+            firbolg: "/media/species/cinematic-firbolg.webp",
+            gnome: "/media/species/cinematic-gnome.webp",
+            goblin: "/media/species/cinematic-goblin.webp",
+            goliath: "/media/species/cinematic-goliath.webp",
+            "half-orc": "/media/species/cinematic-half-orc.webp",
+            halfling: "/media/species/cinematic-halfling.webp",
+            kenku: "/media/species/cinematic-kenku.webp",
+            kobold: "/media/species/cinematic-kobold.webp",
+            lizardfolk: "/media/species/cinematic-lizardfolk.webp",
+            orc: "/media/species/cinematic-orc.webp",
+            tabaxi: "/media/species/cinematic-tabaxi.webp",
+            tiefling: "/media/species/cinematic-tiefling.webp",
+          });'''
+          path.write_text(text[:start] + replacement + text[end:])
+          PY
+
+      - name: Enforce protected artwork boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! git diff --name-only | grep -Eiq '(^|/)(world.?map|town.?map|city.?map)(/|\.|$)'
+          ! git diff --name-only | grep -Eq 'public/media/species/(air-genasi|earth-genasi|fire-genasi|water-genasi|black-dragonborn|blue-dragonborn|green-dragonborn|red-dragonborn|white-dragonborn|brass-dragonborn|bronze-dragonborn|copper-dragonborn|gold-dragonborn|silver-dragonborn|amethyst-gem-dragonborn|crystal-gem-dragonborn|emerald-gem-dragonborn|sapphire-gem-dragonborn|topaz-gem-dragonborn|drow|high-elf|wood-elf|forest-gnome|rock-gnome|beasthide-shifter|longtooth-shifter|swiftstride-shifter|wildhunt-shifter)\.webp$'
+
+      - name: Install dependencies and run Species checks
+        run: |
+          npm ci
+          node scripts/validate_species_class_review_fix.mjs
+          node scripts/validate_class_browser_polish.mjs
+          npm run build
+
+      - name: Recheck PR head after validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='4388295b6760d26c2fb34b27da794d5b83b61bb7'
+          git fetch origin agent/realistic-dice-core
+          test "$(git rev-parse origin/agent/realistic-dice-core)" = "$BASE"
+
+      - name: Create clean artwork-only branch commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='4388295b6760d26c2fb34b27da794d5b83b61bb7'
+          mkdir -p /tmp/final-species-art
+          cp public/media/species/cinematic-*.webp /tmp/final-species-art/
+          cp utils/speciesArtwork.js /tmp/speciesArtwork.js
+          git reset --hard "$BASE"
+          cp /tmp/final-species-art/cinematic-*.webp public/media/species/
+          cp /tmp/speciesArtwork.js utils/speciesArtwork.js
+          git add public/media/species/cinematic-*.webp utils/speciesArtwork.js
+          git diff --cached --name-only | sort > /tmp/changed.txt
+          test "$(wc -l < /tmp/changed.txt)" -eq 20
+          ! grep -Eiq '(^|/)(world.?map|town.?map|city.?map)(/|\.|$)' /tmp/changed.txt
+          git config user.name 'DNDNext Automation'
+          git config user.email 'automation@dndnext.local'
+          git commit -m 'Replace approved Species cinematic artwork rollout'
+          git push --force-with-lease origin HEAD:agent/species-art-batch1-assets
