@@ -33,9 +33,21 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mapfile -t parts < <(find .art-transfer/curated-10-q60 -maxdepth 1 -type f -name 'part-*.b64' | sort)
-          test "${#parts[@]}" -eq 36
-          cat "${parts[@]}" > /tmp/species-curated-10.b64
+          : > /tmp/species-curated-10.b64
+          for n in $(seq -w 0 35); do
+            whole=".art-transfer/curated-10-q60/part-${n}.b64"
+            a=".art-transfer/curated-10-q60/part-${n}-a.b64"
+            b=".art-transfer/curated-10-q60/part-${n}-b.b64"
+            if [[ -f "$a" || -f "$b" ]]; then
+              test -f "$a"
+              test -f "$b"
+              cat "$a" "$b" >> /tmp/species-curated-10.b64
+            else
+              test -f "$whole"
+              cat "$whole" >> /tmp/species-curated-10.b64
+            fi
+          done
+          test "$(wc -c < /tmp/species-curated-10.b64)" -eq 713500
           base64 --decode /tmp/species-curated-10.b64 > /tmp/species-curated-10.zip
           echo '597993a84bdd45c67f39fb07ccaa7fe3e19b3b9aa0842eac79375006db420d65  /tmp/species-curated-10.zip' | sha256sum -c -
           unzip -t /tmp/species-curated-10.zip
@@ -52,7 +64,6 @@ jobs:
           from pathlib import Path
           from PIL import Image
           import subprocess
-
           expected = {
             'cinematic-aarakocra.webp': '6c630e9f7df6be5bd0a4a09960d1f626a00621c6',
             'cinematic-aasimar.webp': 'ee64b576dde78fa231189f4a97fadc03ecd13043',
@@ -114,7 +125,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git diff --name-only '4388295b6760d26c2fb34b27da794d5b83b61bb7' -- public/media/species utils/speciesArtwork.js | sort > /tmp/actual.txt
+          BASE='4388295b6760d26c2fb34b27da794d5b83b61bb7'
+          git diff --name-only "$BASE" -- public/media/species utils/speciesArtwork.js | sort > /tmp/actual.txt
           cat > /tmp/expected.txt <<'EOF'
           public/media/species/cinematic-aarakocra.webp
           public/media/species/cinematic-aasimar.webp
@@ -131,8 +143,8 @@ jobs:
           sed -i 's/^          //' /tmp/expected.txt
           sort -o /tmp/expected.txt /tmp/expected.txt
           diff -u /tmp/expected.txt /tmp/actual.txt
-          ! git diff --name-only '4388295b6760d26c2fb34b27da794d5b83b61bb7' | grep -Eiq '(^|/)(world.?map|town.?map|city.?map)(/|\.|$)'
-          ! git diff --name-only '4388295b6760d26c2fb34b27da794d5b83b61bb7' | grep -Eq 'public/media/species/(air-genasi|earth-genasi|fire-genasi|water-genasi|black-dragonborn|blue-dragonborn|green-dragonborn|red-dragonborn|white-dragonborn|brass-dragonborn|bronze-dragonborn|copper-dragonborn|gold-dragonborn|silver-dragonborn|amethyst-gem-dragonborn|crystal-gem-dragonborn|emerald-gem-dragonborn|sapphire-gem-dragonborn|topaz-gem-dragonborn|drow|high-elf|wood-elf|forest-gnome|rock-gnome|beasthide-shifter|longtooth-shifter|swiftstride-shifter|wildhunt-shifter)\.webp$'
+          ! git diff --name-only "$BASE" | grep -Eiq '(^|/)(world.?map|town.?map|city.?map)(/|\.|$)'
+          ! git diff --name-only "$BASE" | grep -Eq 'public/media/species/(tortle|lizardfolk|air-genasi|earth-genasi|fire-genasi|water-genasi|black-dragonborn|blue-dragonborn|green-dragonborn|red-dragonborn|white-dragonborn|brass-dragonborn|bronze-dragonborn|copper-dragonborn|gold-dragonborn|silver-dragonborn|amethyst-gem-dragonborn|crystal-gem-dragonborn|emerald-gem-dragonborn|sapphire-gem-dragonborn|topaz-gem-dragonborn|drow|high-elf|wood-elf|forest-gnome|rock-gnome|beasthide-shifter|longtooth-shifter|swiftstride-shifter|wildhunt-shifter)\.webp$'
 
       - name: Validate Forge and production build
         run: |
