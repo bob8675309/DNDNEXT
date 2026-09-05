@@ -1,0 +1,105 @@
+name: Transfer Species corrections 2026-09-05
+
+on:
+  push:
+    branches:
+      - agent/species-corrections-transfer-20260905
+    paths:
+      - ".github/workflows/transfer-species-corrections-20260905.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  transfer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/realistic-dice-core
+          fetch-depth: 0
+
+      - name: Guard expected target head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "46005ab68e2d0cbe91e09635f7100149de03a5fb"
+
+      - name: Download approved correction bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error \
+            'https://ucd2a37908a6e911d899eebd5431.dl.dropboxusercontent.com/cd/0/get/DHnOBHO_sHfRkc7_vdc8vIkX5WpeA5NqeVTPjym-SycfKdzGoAFtJxzREp4Y44HQgk6LZHJrW8kdNSrZU4KXWP5twAKWPjMGlWvDndPQvgUROKUlndUq9go-fLgcizjsyYZsA6e0Ny6mpnvYIUTO8QJIJstQQuJIqCU281cfVxawlA/file?c_luid=c335000c' \
+            --output /tmp/species-corrections.zip
+          echo '4bf4a02eab01009f032b60de31574cd310488c607b3c12c436f520b0256b8c14  /tmp/species-corrections.zip' | sha256sum -c -
+          rm -rf /tmp/species-corrections
+          mkdir -p /tmp/species-corrections
+          unzip -q /tmp/species-corrections.zip -d /tmp/species-corrections
+
+      - name: Verify exact approved WebPs
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/species-corrections
+          cat > /tmp/species-corrections.sha256 <<'EOF'
+          b74596fe70c5adcb47aa219d58c9947f0eb270c5235c5d65c293967572ba6b1c  cinematic-bugbear.webp
+          7f6d66f920a1ced92544c750ed9388404d9439ebff94f8df3984839cad387006  cinematic-kenku.webp
+          1e2cf74992285800c138b484ef5730b98670528cd2356521e2efa2c2657d3136  cinematic-orc.webp
+          EOF
+          sha256sum -c /tmp/species-corrections.sha256
+          for f in cinematic-bugbear.webp cinematic-kenku.webp cinematic-orc.webp; do
+            test "$(file -b --mime-type "$f")" = "image/webp"
+          done
+
+      - name: Verify WebP dimensions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check pillow==11.3.0
+          python - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          names = ["cinematic-bugbear.webp", "cinematic-kenku.webp", "cinematic-orc.webp"]
+          for name in names:
+              path = Path("/tmp/species-corrections") / name
+              with Image.open(path) as image:
+                  assert image.format == "WEBP", (name, image.format)
+                  assert image.size == (720, 960), (name, image.size)
+          print("Verified 3 approved 720x960 WebP Species corrections.")
+          PY
+
+      - name: Materialize approved Species corrections
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp /tmp/species-corrections/cinematic-bugbear.webp public/media/species/cinematic-bugbear.webp
+          cp /tmp/species-corrections/cinematic-kenku.webp public/media/species/cinematic-kenku.webp
+          cp /tmp/species-corrections/cinematic-orc.webp public/media/species/cinematic-orc.webp
+
+      - name: Validate exact diff boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only | sort > /tmp/actual.txt
+          cat > /tmp/expected.txt <<'EOF'
+          public/media/species/cinematic-bugbear.webp
+          public/media/species/cinematic-kenku.webp
+          public/media/species/cinematic-orc.webp
+          EOF
+          sort -o /tmp/expected.txt /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+
+      - name: Commit and push corrections to PR branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/media/species/cinematic-bugbear.webp \
+                  public/media/species/cinematic-kenku.webp \
+                  public/media/species/cinematic-orc.webp
+          git commit -m "Refine Bugbear, Kenku, and Orc cinematic portraits"
+          git push origin HEAD:agent/realistic-dice-core
