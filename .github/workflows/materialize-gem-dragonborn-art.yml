@@ -32,14 +32,14 @@ jobs:
         run: |
           set -euo pipefail
           curl --fail --location --silent --show-error \
-            'https://ucb2cc6fee8a02f0003cdb9c8957.dl.dropboxusercontent.com/cd/0/get/DHnv0pk7ADsxouxN9kqJTrK8ZkytpSARTAl8zBfIOIi5Ua3CbIYcUjmfHnv8xCisURTXgxhwZI_MBrYebbeCvERIvse9MqSfSzd5koUJaR6JJ2I4mPpdRDA2p7eLRykFRSSyoVOqiWN_mEg2k3sn1jvMuh2rufMKN4ym5D4rUaH7sg/file?c_luid=c335000c' \
+            'https://uc2a8c61b188f054912c1179ad55.dl.dropboxusercontent.com/cd/0/get/DHmNRrc1LpdvCoCuPO0KHBlf4lqx9zhtsKecQlrvrkYistVoUNwMsfi3CbXr01j5USsWH7mwzhvaBcCHfxqqqzquzQ1gOVshxUd3VTLmWhnP-tJuwKeZHpgslPKeyvFt73zGg26dnuuwvvnMAJIjtnTt/file?c_luid=c335000c' \
             --output /tmp/species.zip
           echo '4e5dd03eb2f6711ed7ef5b2e05c03c1ed6c7628e629423219fdb59aa23b28045  /tmp/species.zip' | sha256sum -c -
           rm -rf /tmp/species-art
           mkdir -p /tmp/species-art
           unzip -q /tmp/species.zip -d /tmp/species-art
 
-      - name: Verify exact approved WebPs
+      - name: Verify exact approved bundle
         shell: bash
         run: |
           set -euo pipefail
@@ -57,33 +57,27 @@ jobs:
           bed149f6fdb6bf04820c687bb9796c75fef1b1a72f3fdd7c755cefed4bd71bb7  cinematic-human.webp
           EOF
           sha256sum -c /tmp/species.sha256
-          for f in cinematic-*.webp; do
-            test "$(file -b --mime-type "$f")" = "image/webp"
-          done
+          for f in cinematic-*.webp; do test "$(file -b --mime-type "$f")" = "image/webp"; done
 
-      - name: Materialize artwork and approved mapping
+      - name: Materialize artwork and mapping
         shell: bash
         run: |
           set -euo pipefail
           cp /tmp/species-art/cinematic-*.webp public/media/species/
           git show 51bd3195a3e5538097fae64042fba1f7cba72439:utils/speciesArtwork.js > utils/speciesArtwork.js
 
-      - name: Validate exact diff boundary
+      - name: Verify target bytes and exact diff boundary
         shell: bash
         run: |
           set -euo pipefail
+          cd public/media/species
+          sha256sum -c /tmp/species.sha256
+          cd ../../..
           git diff --name-only | sort > /tmp/actual.txt
           cat > /tmp/expected.txt <<'EOF'
-          public/media/species/cinematic-aetherborn.webp
-          public/media/species/cinematic-autognome.webp
-          public/media/species/cinematic-dragonborn.webp
-          public/media/species/cinematic-dwarf.webp
           public/media/species/cinematic-elf.webp
-          public/media/species/cinematic-gnome.webp
-          public/media/species/cinematic-goliath.webp
           public/media/species/cinematic-half-orc.webp
           public/media/species/cinematic-halfling.webp
-          public/media/species/cinematic-human.webp
           utils/speciesArtwork.js
           EOF
           sort -o /tmp/expected.txt /tmp/expected.txt
@@ -95,16 +89,6 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/media/species/cinematic-aetherborn.webp \
-                  public/media/species/cinematic-autognome.webp \
-                  public/media/species/cinematic-dragonborn.webp \
-                  public/media/species/cinematic-dwarf.webp \
-                  public/media/species/cinematic-elf.webp \
-                  public/media/species/cinematic-gnome.webp \
-                  public/media/species/cinematic-goliath.webp \
-                  public/media/species/cinematic-half-orc.webp \
-                  public/media/species/cinematic-halfling.webp \
-                  public/media/species/cinematic-human.webp \
-                  utils/speciesArtwork.js
+          git add public/media/species/cinematic-*.webp utils/speciesArtwork.js
           git commit -m "Add next approved cinematic species portraits"
           git push origin HEAD:agent/realistic-dice-core
