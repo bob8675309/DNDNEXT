@@ -107,9 +107,18 @@ const SPECIES_DEDICATED_VARIANT_ARTWORK = new Set([
 
 const CINEMATIC_SPECIES_HERO_ARTWORK = Object.freeze({
   aarakocra: "/media/species/cinematic-aarakocra.webp",
+  aasimar: "/media/species/cinematic-aasimar.webp",
+  bugbear: "/media/species/cinematic-bugbear.webp",
   elf: "/media/species/cinematic-elf.webp",
+  firbolg: "/media/species/cinematic-firbolg.webp",
+  goblin: "/media/species/cinematic-goblin.webp",
   "half-orc": "/media/species/cinematic-half-orc.webp",
   halfling: "/media/species/cinematic-halfling.webp",
+  kenku: "/media/species/cinematic-kenku.webp",
+  kobold: "/media/species/cinematic-kobold.webp",
+  orc: "/media/species/cinematic-orc.webp",
+  tabaxi: "/media/species/cinematic-tabaxi.webp",
+  tiefling: "/media/species/cinematic-tiefling.webp",
 });
 const SPECIES_RAW_NAME_ALIASES = { "genasi-air": "air-genasi", "genasi-earth": "earth-genasi", "genasi-fire": "fire-genasi", "genasi-water": "water-genasi", "aven-hawk-headed": "hawk-headed-aven", "aven-ibis-headed": "ibis-headed-aven" };
 
