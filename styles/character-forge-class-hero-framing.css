@@ -1,0 +1,28 @@
+/* Character Forge Class hero framing corrections from browser/video review.
+   Presentation only: preserves class selection, subclass, progression, and source-data authority.
+
+   Most legacy/core class paintings are square catalogue-style art. They must not be forced
+   through the wide cinematic hero crop + zoom used by purpose-built wide hero assets. */
+
+/* Square/portrait-backed classes: show the complete painting at the right edge and let the
+   existing dark hero surface/gradient fill the unused width rather than cropping the subject. */
+.unified-player-character-forge .npc-forge-class-guide:not(.is-class-artificer):not(.is-class-barbarian) .npc-forge-class-guide__hero-art {
+  background:
+    linear-gradient(90deg, rgba(8, 11, 19, 0.98), rgba(8, 11, 19, 0.5) 42%, rgba(8, 11, 19, 0.08) 72%),
+    #090d15 !important;
+}
+
+.unified-player-character-forge .npc-forge-class-guide:not(.is-class-artificer):not(.is-class-barbarian) .npc-forge-class-guide__hero-art img {
+  object-fit: contain !important;
+  object-position: right center !important;
+  transform: none !important;
+  transform-origin: right center !important;
+}
+
+/* Artificer and Barbarian own purpose-built wide cinematic hero artwork. Keep those assets
+   filling the hero panel, but do not re-zoom them after the resolver has selected them. */
+.unified-player-character-forge .npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__hero-art img,
+.unified-player-character-forge .npc-forge-class-guide.is-class-barbarian .npc-forge-class-guide__hero-art img {
+  object-fit: cover !important;
+  transform: none !important;
+}
