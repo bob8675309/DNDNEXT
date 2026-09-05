@@ -2,15 +2,11 @@
    Presentation only: preserves existing Species/Class selection and progression authority. */
 
 @media (min-width: 901px) {
-  /* Keep heads safely inside the Species cinematic crop at ordinary 100% browser zoom. */
+  /* Keep heads safely inside the Species cinematic crop at ordinary 100% browser zoom.
+     Species-specific composition corrections should live in the approved artwork itself so
+     old focal overrides do not stack on top of later replacement portraits. */
   .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-0 .npc-forge-species-hero .npc-forge-species-artwork img {
     object-position: center 24% !important;
-  }
-
-  /* Bugbear's approved cinematic art needs a small horizontal focal correction so the
-     character stays visible instead of drifting into the lore overlay. */
-  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-0 .npc-forge-species-hero .npc-forge-species-artwork img[alt^="Bugbear species reference"] {
-    object-position: 60% 24% !important;
   }
 
   /* The Class catalogue owns the full left-hand column rather than an auto-sized strip. */
