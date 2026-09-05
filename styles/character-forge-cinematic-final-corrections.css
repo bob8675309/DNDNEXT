@@ -1,0 +1,61 @@
+/* Final cinematic presentation corrections from signed-in browser review.
+   Presentation only: preserves existing Species/Class selection and progression authority. */
+
+@media (min-width: 901px) {
+  /* Keep heads safely inside the Species cinematic crop at ordinary 100% browser zoom. */
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-0 .npc-forge-species-hero .npc-forge-species-artwork img {
+    object-position: center 24% !important;
+  }
+
+  /* Bugbear's approved cinematic art needs a small horizontal focal correction so the
+     character stays visible instead of drifting into the lore overlay. */
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-0 .npc-forge-species-hero .npc-forge-species-artwork img[alt^="Bugbear species reference"] {
+    object-position: 60% 24% !important;
+  }
+
+  /* The Class catalogue owns the full left-hand column rather than an auto-sized strip. */
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 > .npc-forge-workspace {
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* The section heading is hidden and the compact level control is absolutely positioned,
+     so the catalogue is the first in-flow grid child. Keep exactly one stretch row here.
+     This selector intentionally outranks the older runtime styled-jsx grid declaration. */
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 > .npc-forge-workspace > .npc-forge-section.npc-forge-class-selection {
+    display: grid !important;
+    grid-template-rows: minmax(0, 1fr) !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    align-content: stretch !important;
+    align-self: stretch !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 > .npc-forge-workspace > .npc-forge-section.npc-forge-class-selection > .npc-forge-class-catalog {
+    align-self: stretch !important;
+    display: grid !important;
+    grid-template-rows: auto minmax(0, 1fr) !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: hidden !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 > .npc-forge-workspace > .npc-forge-section.npc-forge-class-selection > .npc-forge-class-catalog > .npc-forge-class-catalog-list {
+    align-content: start !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    scrollbar-gutter: stable !important;
+  }
+}
+
+/* The top bar doubles as the app-window drag surface; its title advertises the recovery gesture. */
+.unified-player-character-forge .npc-forge-header h2[title*="Double-click"] {
+  cursor: default;
+}

@@ -18,9 +18,9 @@ export function classPresentationSummary(classRow = {}, fallback = "") {
 export function classPrimaryAbilities(classRow = {}) {
   const imported = Array.isArray(classRow?.primary_abilities) ? classRow.primary_abilities.filter(Boolean) : [];
   if (imported.length) return imported;
-  // The imported Mystic catalogue has complete psionic rules but its preferred
-  // class row currently omits primary_abilities. Intelligence is the governing
-  // ability throughout the source class and should lead Forge defaults.
+  // Some imported class rows contain the complete source rules but omit the
+  // compact primary_abilities presentation field used by the Forge header.
+  if (keyFor(classRow) === "artificer") return ["int"];
   if (keyFor(classRow) === "mystic") return ["int"];
   return [];
 }

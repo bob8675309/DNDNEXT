@@ -1,5 +1,6 @@
 import NpcForgeContextPanelRefined from "./NpcForgeContextPanelRefined";
 import NpcForgeClassGuide from "./NpcForgeClassGuide";
+import NpcForgeClassEmptyState from "./NpcForgeClassEmptyState";
 import NpcForgeBackgroundGuide from "./NpcForgeBackgroundGuide";
 import NpcForgeBackgroundEmptyState from "./NpcForgeBackgroundEmptyState";
 import NpcForgeTrainingContextCard from "./NpcForgeTrainingContextCard";
@@ -63,9 +64,10 @@ function groupHasTool(group = {}) {
 
 // Compatibility marker for the established focused validator: groups: (sourceChoiceState.groups || []).filter
 export default function NpcForgeContextPanel(props) {
+  const classStepActive = props?.stepKey === "class" || Number(props?.step) === 2;
   const activeClass = props?.detail?.type === "class" && props.detail.option
     ? props.detail.option
-    : props?.stepKey === "class" || Number(props?.step) === 2
+    : classStepActive
       ? props?.selectedClass
       : null;
   const backgroundStepActive = props?.stepKey === "background" || Number(props?.step) === 1;
@@ -84,6 +86,7 @@ export default function NpcForgeContextPanel(props) {
     ? { ...activeBackground, tools: ["Choose in Training"] }
     : activeBackground;
 
+  if (props?.playerMode && classStepActive && !activeClass) return <NpcForgeClassEmptyState />;
   if (activeClass) return <NpcForgeClassGuide selectedClass={activeClass} level={props?.draft?.level || 1} onFeatureDetail={props?.onFeatureDetail} />;
   if (props?.playerMode && backgroundStepActive) {
     if (!activeBackground) return <NpcForgeBackgroundEmptyState />;
