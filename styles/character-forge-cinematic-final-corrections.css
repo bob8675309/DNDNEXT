@@ -7,6 +7,12 @@
     object-position: center 24% !important;
   }
 
+  /* Bugbear's approved cinematic art needs a small horizontal focal correction so the
+     character stays visible instead of drifting into the lore overlay. */
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-0 .npc-forge-species-hero .npc-forge-species-artwork img[alt^="Bugbear species reference"] {
+    object-position: 60% 24% !important;
+  }
+
   /* The Class catalogue owns the full left-hand column rather than an auto-sized strip. */
   .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 > .npc-forge-workspace {
     height: 100% !important;
