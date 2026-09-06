@@ -28,11 +28,16 @@ for (const token of [
 for (const token of [
   'img[src*="/media/classes/cinematic-"]',
   "position: absolute !important",
-  "bottom: 0 !important",
-  "left: 24% !important",
+  "top: 0 !important",
+  "right: 0 !important",
+  "bottom: auto !important",
+  "left: 16% !important",
+  "height: clamp(680px, 72vh, 820px) !important",
   "object-position: right top !important",
+  "grid-template-columns: minmax(0, 1fr) !important",
   "@media (max-width: 900px)",
-]) assert(framing.includes(token), `Mirrored full-height Class cinematic contract is missing ${token}`);
+]) assert(framing.includes(token), `Stable top-right Class cinematic contract is missing ${token}`);
+assert(!framing.includes("bottom: 0 !important;\n    left: 16% !important"), "Cinematic hero must not use the expanding content height as its bottom edge.");
 
 assert(guide.includes("classHeroArtworkFor(selectedClass.class_key)"), "Class hero must keep the centralized artwork resolver.");
 assert(guide.includes("is-class-${theme}"), "Class guide must retain per-class theme hooks used by framing corrections.");
@@ -56,4 +61,4 @@ for (const token of ["mappageclient", "map_routes", "advance_all_characters", "t
   assert(!protectedText.includes(token), `Class hero framing patch unexpectedly references protected map/town behavior: ${token}`);
 }
 
-console.log("Class hero framing validation passed: legacy Class paintings retain non-destructive framing, hero/menu artwork roles stay separate, approved public cinematic paths promote to the mirrored full-height right-side treatment, Artificer/Barbarian generated mappings remain intact, and protected map/town boundaries remain untouched.");
+console.log("Class hero framing validation passed: legacy paintings retain safe framing, public cinematic art is fixed to a stable top-right layer independent of subclass/content height, artwork roles remain separate, and protected boundaries are untouched.");
