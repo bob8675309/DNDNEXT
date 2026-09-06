@@ -31,6 +31,7 @@ jobs:
           import subprocess
           import yaml
 
+          baseline = '2be4a16fd4fdc9b943c2cfee1c8097e3d9589833'
           source = Path('.github/workflows/materialize-class-subclass-browser.yml')
           workflow = yaml.safe_load(source.read_text())
           steps = workflow['jobs']['patch']['steps']
@@ -58,20 +59,44 @@ jobs:
                   )
 
               if name == 'Commit clean scratch result':
-                  run = run.replace(
-                      'rm .github/workflows/materialize-class-subclass-browser.yml',
-                      'rm .github/workflows/materialize-class-subclass-browser.yml\nrm .github/workflows/materialize-class-subclass-browser-v3.yml',
-                  )
-                  run = run.replace(
-                      'scripts/validate_class_browser_polish.mjs\n',
-                      'scripts/validate_class_browser_polish.mjs\nscripts/validate_class_hero_framing.mjs\n',
-                      1,
-                  )
-                  run = run.replace(
-                      "git diff --name-only 2be4a16fd4fdc9b943c2cfee1c8097e3d9589833 | grep -v '^.github/workflows/materialize-class-subclass-browser.yml$' | sort > /tmp/actual.txt",
-                      "(git diff --name-only 2be4a16fd4fdc9b943c2cfee1c8097e3d9589833; git ls-files --others --exclude-standard) | grep -v '^.github/workflows/materialize-class-subclass-browser.yml$' | sort -u > /tmp/actual.txt",
-                      1,
-                  )
+                  run = f'''set -euo pipefail
+          # The Actions token cannot mutate workflow files. The already-validated workflow change is
+          # applied afterward through the connected GitHub API; keep it out of this bot commit.
+          git checkout {baseline} -- .github/workflows/validate-class-browser-polish.yml
+          cat > /tmp/expected.txt <<'EOF'
+          components/ClassSubclassSection.js
+          components/NpcForgeClassGuide.js
+          docs/CHARACTER_FORGE_CLASS_CINEMATIC_ARTWORK_ROLLOUT.md
+          scripts/validate_class_browser_polish.mjs
+          scripts/validate_class_hero_framing.mjs
+          scripts/validate_class_subclass_browser.mjs
+          scripts/validate_species_class_review_fix.mjs
+          styles/character-forge-class-hero-framing.css
+          utils/classes/classPresentation.js
+          EOF
+          (git diff --name-only {baseline}; git ls-files --others --exclude-standard) \
+            | grep -v '^.github/workflows/materialize-class-subclass-browser.yml$' \
+            | grep -v '^.github/workflows/materialize-class-subclass-browser-v3.yml$' \
+            | grep -v '^.github/workflows/validate-class-browser-polish.yml$' \
+            | sort -u > /tmp/actual.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            components/ClassSubclassSection.js \
+            components/NpcForgeClassGuide.js \
+            docs/CHARACTER_FORGE_CLASS_CINEMATIC_ARTWORK_ROLLOUT.md \
+            scripts/validate_class_browser_polish.mjs \
+            scripts/validate_class_hero_framing.mjs \
+            scripts/validate_class_subclass_browser.mjs \
+            scripts/validate_species_class_review_fix.mjs \
+            styles/character-forge-class-hero-framing.css \
+            utils/classes/classPresentation.js
+          git diff --cached --name-only | sort > /tmp/staged.txt
+          diff -u /tmp/expected.txt /tmp/staged.txt
+          git commit -m 'Refine Class hero and subclass browser presentation'
+          git push origin HEAD:agent/class-subclass-browser-20260905
+          '''
 
               print(f'--- running: {name} ---', flush=True)
               subprocess.run(['bash', '-euo', 'pipefail', '-c', run], check=True)
