@@ -82,7 +82,10 @@ for (const token of [
   "class-subclass-two-column__grid",
   "class-subclass-two-column__scroll",
   "grid-template-columns:repeat(2,minmax(0,1fr))",
-  "max-height:min(22vh,164px)",
+  "max-height:min(28vh,205px)",
+  "width:min(66%,760px)",
+  "grid-template-columns:82px minmax(0,1fr) auto 22px",
+  "min-height:48px",
   "class-subclass-selected-row",
   ">Change<",
   'aria-label="Collapse subclass selector"',
@@ -90,7 +93,7 @@ for (const token of [
   "model.setPreviewKey(option.key)",
   'aria-label="Subclass catalogue"',
   "onInspectSubclass?.(option)",
-]) assert(selector.includes(token), `Compact two-column subclass selector is missing ${token}`);
+]) assert(selector.includes(token), `Readable two-column subclass selector is missing ${token}`);
 for (const forbidden of [
   "onMouseEnter",
   "Search subclasses",
@@ -98,7 +101,6 @@ for (const forbidden of [
   "class-subclass-browser__search",
   "class-subclass-browser__sources",
   "grid-template-columns:repeat(6,minmax(0,1fr))",
-  "max-height:min(28vh,245px)",
 ]) assert(!selector.includes(forbidden), `Subclass selector regressed to a bulky/hover-driven presentation: ${forbidden}`);
 assert(!selector.includes("supabase"), "Subclass selector must remain presentation-only.");
 
@@ -115,19 +117,21 @@ for (const token of [
   "grid-template-columns:minmax(0,1fr)!important",
   "min-width:1060px!important",
   "repeat(9,minmax(36px,.34fr))",
-  "min-height:39px!important",
-  "padding:.18rem .4rem!important",
+  "min-height:42px!important",
+  "padding:.2rem .42rem!important",
+  "font-size:.61rem!important",
   "border-radius:999px!important",
   "button.is-subclass",
-]) assert(guide.includes(token), `Compact progression presentation is missing ${token}`);
+]) assert(guide.includes(token), `Balanced progression presentation is missing ${token}`);
 
 for (const token of [
   "bottom: auto !important",
   "left: 20% !important",
-  "height: clamp(760px, 80vh, 940px) !important",
+  "height: clamp(780px, 82vh, 960px) !important",
   "object-position: 100% 0% !important",
-  "min-height: 300px !important",
-]) assert(framing.includes(token), `Higher stable cinematic Class art is missing ${token}`);
+  "min-height: 312px !important",
+  "font-size: .82rem !important",
+]) assert(framing.includes(token), `Open stable cinematic Class art is missing ${token}`);
 
 assert(artwork.includes('artificer: "/media/classes/artificer-approved.webp"'), "Approved Artificer Forge artwork mapping is missing.");
 assert(fs.existsSync(path.join(root, "public/media/classes/artificer-approved.webp")), "Approved Artificer Forge artwork asset is missing.");
@@ -150,4 +154,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSources.includes(token), `Class browser patch unexpectedly references protected behavior: ${token}`);
 }
 
-console.log("Class browser polish validation passed: compact two-column subclass artwork selector, click-only movable Feature-card details, selected-subclass progression bubbles, tighter per-level spell-slot table, stable top-right art, preserved Class authority, and protected boundaries are intact.");
+console.log("Class browser polish validation passed: readable mockup-proportioned subclass artwork selector, click-only movable Feature-card details, selected-subclass progression bubbles, balanced per-level spell-slot table, open stable top-right art, preserved Class authority, and protected boundaries are intact.");
