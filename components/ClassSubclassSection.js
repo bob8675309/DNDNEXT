@@ -1,3 +1,6 @@
+import { useEffect, useMemo, useState } from "react";
+import { classFeatureInline } from "./ClassFeatureText";
+
 const text = (value) => String(value ?? "").trim();
 
 function sourceLabel(source = "") {
@@ -10,6 +13,15 @@ function optionEntryLevel(option = {}) {
   return Math.max(1, Number(option?.firstLevel || 1));
 }
 
+function optionSummary(option = {}) {
+  const features = Array.isArray(option?.features) ? option.features : [];
+  const intro = features.find((feature) => feature?.isIntroduction) || features[0] || null;
+  return classFeatureInline(
+    intro?.description,
+    `Explore the defining features and play style of ${option?.name || "this subclass"}.`,
+  );
+}
+
 export default function ClassSubclassSection({
   model,
   onInspectSubclass = null,
@@ -20,6 +32,21 @@ export default function ClassSubclassSection({
   const currentLevel = Math.max(1, Number(model?.currentLevel || 1));
   const entryLevel = Number(model?.entryLevel || options[0]?.firstLevel || 1);
   const required = (model?.eligible || []).length > 0;
+  const optionSignature = options.map((option) => option.key).join("|");
+  const [expanded, setExpanded] = useState(!selected);
+
+  useEffect(() => {
+    setExpanded(!model?.selected);
+  }, [optionSignature]);
+
+  useEffect(() => {
+    if (!selected) setExpanded(true);
+  }, [selected]);
+
+  const orderedOptions = useMemo(() => {
+    if (!selected) return options;
+    return [selected, ...options.filter((option) => option.key !== selected.key)];
+  }, [options, selected]);
 
   if (!options.length) {
     return (
@@ -31,74 +58,104 @@ export default function ClassSubclassSection({
     );
   }
 
-  function inspect(option) {
-    onInspectSubclass?.(option);
-  }
-
   function choose(option) {
-    inspect(option);
+    onInspectSubclass?.(option);
     if (optionEntryLevel(option) > currentLevel) return;
     model.setPreviewKey(option.key);
     model.selectSubclass(option);
+    setExpanded(false);
   }
 
   function clearSelection() {
     model.selectSubclass(null);
+    setExpanded(true);
   }
 
-  const status = selected
-    ? `Selected: ${selected.name}`
-    : currentLevel >= entryLevel
-      ? "Choose a specialization"
-      : `Selection opens at level ${entryLevel}`;
+  if (selected && !expanded) {
+    return (
+      <section className={`npc-forge-class-guide__subclasses is-compact class-subclass-section is-collapsed${detailed ? " is-detailed" : ""}`}>
+        <div className="class-subclass-selected-row">
+          <button
+            type="button"
+            className="class-subclass-selected-row__summary"
+            onClick={() => onInspectSubclass?.(selected)}
+            aria-label={`Show ${selected.name} details`}
+          >
+            <span className="class-subclass-selected-row__mark" aria-hidden="true">✓</span>
+            <span className="class-subclass-selected-row__copy">
+              <small>Selected subclass · {sourceLabel(selected.source)} · Level {optionEntryLevel(selected)}</small>
+              <strong>{selected.name}</strong>
+              <em>{optionSummary(selected)}</em>
+            </span>
+          </button>
+          <button type="button" className="class-subclass-selected-row__change" onClick={() => setExpanded(true)}>Change Subclass</button>
+        </div>
+
+        <style jsx global>{`
+          .class-subclass-section.is-collapsed{padding:0!important;border:0!important;background:transparent!important}
+          .class-subclass-selected-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:stretch;padding:7px 8px;border:1px solid rgba(var(--class-accent),.22);border-radius:9px;background:linear-gradient(120deg,rgba(var(--class-accent),.1),rgba(7,12,21,.87) 58%,rgba(var(--class-secondary),.045))}
+          .class-subclass-selected-row__summary{display:grid;grid-template-columns:24px minmax(0,1fr);gap:8px;align-items:center;min-width:0;padding:0;border:0;color:inherit;background:transparent;text-align:left}
+          .class-subclass-selected-row__summary:focus-visible{outline:1px solid rgba(var(--class-secondary),.7);outline-offset:3px}
+          .class-subclass-selected-row__mark{display:grid;place-items:center;width:24px;height:24px;border:1px solid rgba(var(--class-secondary),.58);border-radius:50%;color:#d8fff9;background:rgba(var(--class-secondary),.1);font-size:.62rem}
+          .class-subclass-selected-row__copy{display:grid;gap:1px;min-width:0}.class-subclass-selected-row__copy small{color:rgba(255,255,255,.42);font-size:.43rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.class-subclass-selected-row__copy strong{color:#f4ebfa;font-family:Georgia,"Times New Roman",serif;font-size:.72rem;font-weight:650}.class-subclass-selected-row__copy em{overflow:hidden;color:rgba(255,255,255,.6);font-size:.52rem;font-style:normal;line-height:1.3;text-overflow:ellipsis;white-space:nowrap}
+          .class-subclass-selected-row__change{align-self:center;padding:6px 9px;border:1px solid rgba(var(--class-accent),.55);border-radius:7px;color:#fff;background:linear-gradient(180deg,rgba(var(--class-accent),.42),rgba(54,34,90,.72));font-size:.5rem;font-weight:800}.class-subclass-selected-row__change:hover,.class-subclass-selected-row__change:focus-visible{border-color:rgba(var(--class-secondary),.65);outline:none}
+          @media(max-width:760px){.class-subclass-selected-row{grid-template-columns:1fr}.class-subclass-selected-row__change{justify-self:end}}
+        `}</style>
+      </section>
+    );
+  }
 
   return (
-    <section className={`npc-forge-class-guide__subclasses is-compact class-subclass-section is-inline-selector${detailed ? " is-detailed" : ""}${required && !selected ? " is-required" : ""}`}>
-      <div className="npc-forge-class-guide__subhead class-subclass-inline__head">
-        <div><span>Subclass</span><strong>{status}</strong></div>
-        {selected ? <button type="button" className="class-subclass-inline__clear" onClick={clearSelection}>Clear</button> : null}
+    <section className={`npc-forge-class-guide__subclasses is-compact class-subclass-section is-two-column${detailed ? " is-detailed" : ""}${required && !selected ? " is-required" : ""}`}>
+      <div className="class-subclass-two-column__head">
+        <div>
+          <span>Choose your specialization</span>
+          <small>Select a subclass to add its source-backed features to Class Progression. Click a card to show its details in the movable Feature card.</small>
+        </div>
+        <div className="class-subclass-two-column__actions">
+          <strong>{options.length} subclass{options.length === 1 ? "" : "es"}</strong>
+          {selected ? <button type="button" onClick={() => setExpanded(false)}>Collapse</button> : null}
+          {selected ? <button type="button" onClick={clearSelection}>Clear choice</button> : null}
+        </div>
       </div>
 
-      <div className="npc-forge-class-guide__subclass-grid class-subclass-inline__grid" role="list" aria-label="Subclass catalogue">
-        {options.map((option) => {
-          const isSelected = selected?.key === option.key;
-          const eligible = optionEntryLevel(option) <= currentLevel;
-          return (
-            <button
-              key={option.key}
-              type="button"
-              role="listitem"
-              className={`${isSelected ? "is-active is-selected" : ""}${eligible ? " is-eligible" : " is-locked"}`}
-              aria-pressed={isSelected}
-              aria-label={`${option.name}, ${eligible ? "selectable now" : `available at level ${optionEntryLevel(option)}`}`}
-              title={eligible ? `Select ${option.name}` : `${option.name} can be inspected now and selected at level ${optionEntryLevel(option)}`}
-              onMouseEnter={() => inspect(option)}
-              onFocus={() => inspect(option)}
-              onClick={() => choose(option)}
-            >
-              <span className="npc-forge-class-guide__subclass-mark" aria-hidden="true">{isSelected ? "✓" : eligible ? "✦" : "◇"}</span>
-              <span className="npc-forge-class-guide__subclass-label">
-                <strong>{text(option.name) || "Subclass"}</strong>
-                <small>{sourceLabel(option.source)} · L{optionEntryLevel(option)}{isSelected ? " · selected" : eligible ? "" : " · preview"}</small>
-              </span>
-            </button>
-          );
-        })}
+      <div className="class-subclass-two-column__scroll" role="list" aria-label="Subclass catalogue">
+        <div className="class-subclass-two-column__grid">
+          {orderedOptions.map((option) => {
+            const isSelected = selected?.key === option.key;
+            const eligible = optionEntryLevel(option) <= currentLevel;
+            return (
+              <button
+                key={option.key}
+                type="button"
+                role="listitem"
+                className={`class-subclass-two-column__card${isSelected ? " is-selected" : ""}${eligible ? " is-eligible" : " is-locked"}`}
+                aria-pressed={isSelected}
+                aria-label={`${option.name}, ${eligible ? "selectable now" : `available at level ${optionEntryLevel(option)}`}`}
+                onClick={() => choose(option)}
+              >
+                <span className="class-subclass-two-column__art" aria-hidden="true">{isSelected ? "✓" : eligible ? "✦" : "◇"}</span>
+                <span className="class-subclass-two-column__copy">
+                  <strong>{text(option.name) || "Subclass"}</strong>
+                  <small>{optionSummary(option)}</small>
+                </span>
+                <span className="class-subclass-two-column__source">{sourceLabel(option.source)}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {required && !selected ? <p className="npc-forge-class-guide__requirement">Choose an eligible subclass before continuing.</p> : null}
-      {!required && entryLevel ? <p className="npc-forge-class-guide__subclass-level-note">Hover or focus any subclass to inspect it in the movable Feature card. Selection unlocks at level {entryLevel}.</p> : null}
+      {!required && entryLevel ? <p className="npc-forge-class-guide__subclass-level-note">You can review every subclass now. Selection unlocks at level {entryLevel}.</p> : null}
 
       <style jsx global>{`
-        .class-subclass-section.is-inline-selector{display:grid;gap:6px!important;padding:7px 8px 8px!important;border:1px solid rgba(var(--class-accent),.17)!important;border-radius:9px!important;background:linear-gradient(145deg,rgba(20,18,32,.62),rgba(6,12,21,.74))!important}
-        .class-subclass-inline__head{padding-bottom:5px!important}.class-subclass-inline__head>div:first-child{min-width:0}.class-subclass-inline__head strong{max-width:min(520px,55vw)}
-        .class-subclass-inline__clear{padding:4px 7px;border:1px solid rgba(255,255,255,.13);border-radius:6px;color:rgba(255,255,255,.72);background:rgba(255,255,255,.025);font-size:.5rem;font-weight:800}.class-subclass-inline__clear:hover,.class-subclass-inline__clear:focus-visible{border-color:rgba(var(--class-secondary),.48);color:#fff;outline:none}
-        .class-subclass-inline__grid{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:5px!important}
-        .class-subclass-inline__grid>button{min-height:34px!important;padding:5px 6px!important}.class-subclass-inline__grid .npc-forge-class-guide__subclass-mark{width:18px;height:18px;font-size:.5rem}.class-subclass-inline__grid .npc-forge-class-guide__subclass-label strong{font-size:.55rem}.class-subclass-inline__grid .npc-forge-class-guide__subclass-label small{font-size:.39rem}
-        .class-subclass-inline__grid>button.is-locked{opacity:.72}.class-subclass-inline__grid>button.is-locked:hover,.class-subclass-inline__grid>button.is-locked:focus-visible{opacity:1;border-color:rgba(var(--class-secondary),.46);background:linear-gradient(145deg,rgba(14,34,40,.42),rgba(9,14,23,.98))}.class-subclass-inline__grid>button.is-locked .npc-forge-class-guide__subclass-mark{color:rgba(255,255,255,.48);border-color:rgba(255,255,255,.15)}
-        @media(max-width:1280px){.class-subclass-inline__grid{grid-template-columns:repeat(5,minmax(0,1fr))!important}}
-        @media(max-width:1040px){.class-subclass-inline__grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
-        @media(max-width:760px){.class-subclass-inline__grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.class-subclass-inline__head strong{max-width:70vw}}
+        .class-subclass-section.is-two-column{display:grid;gap:6px!important;padding:8px 9px 9px!important;border:1px solid rgba(var(--class-accent),.2)!important;border-radius:9px!important;background:linear-gradient(145deg,rgba(19,17,31,.7),rgba(6,12,21,.8))!important}
+        .class-subclass-two-column__head{display:flex;align-items:end;justify-content:space-between;gap:12px;padding-bottom:6px;border-bottom:1px solid rgba(var(--class-accent),.14)}.class-subclass-two-column__head>div:first-child{display:grid;gap:2px;min-width:0}.class-subclass-two-column__head span{color:#d4a8ff;font-family:Georgia,"Times New Roman",serif;font-size:.76rem;font-weight:650;letter-spacing:.035em}.class-subclass-two-column__head small{max-width:88ch;color:rgba(255,255,255,.52);font-size:.5rem;line-height:1.35}.class-subclass-two-column__actions{display:flex;align-items:center;justify-content:flex-end;gap:5px;flex-wrap:wrap}.class-subclass-two-column__actions strong{color:rgba(255,255,255,.38);font-size:.46rem}.class-subclass-two-column__actions button{padding:4px 7px;border:1px solid rgba(255,255,255,.13);border-radius:6px;color:rgba(255,255,255,.7);background:rgba(255,255,255,.025);font-size:.47rem;font-weight:800}.class-subclass-two-column__actions button:hover,.class-subclass-two-column__actions button:focus-visible{border-color:rgba(var(--class-secondary),.52);color:#fff;outline:none}
+        .class-subclass-two-column__scroll{max-height:min(28vh,245px);overflow-y:auto;overscroll-behavior:contain;padding:1px 4px 1px 1px;scrollbar-gutter:stable}.class-subclass-two-column__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+        .class-subclass-two-column__card{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:7px;align-items:center;min-width:0;min-height:46px;padding:6px 7px;border:1px solid rgba(255,255,255,.1);border-radius:7px;color:rgba(255,255,255,.78);background:linear-gradient(145deg,rgba(14,18,29,.94),rgba(7,11,19,.98));text-align:left;transition:border-color .15s ease,background .15s ease,box-shadow .15s ease}.class-subclass-two-column__card:hover,.class-subclass-two-column__card:focus-visible{border-color:rgba(var(--class-secondary),.44);background:linear-gradient(145deg,rgba(14,33,39,.46),rgba(8,13,22,.98));outline:none}.class-subclass-two-column__card.is-selected{border-color:rgba(var(--class-accent),.82);background:linear-gradient(145deg,rgba(var(--class-accent),.19),rgba(9,15,26,.98));box-shadow:inset 3px 0 rgb(var(--class-secondary)),0 0 14px rgba(var(--class-accent),.07)}.class-subclass-two-column__card.is-locked{opacity:.68}.class-subclass-two-column__card.is-locked:hover,.class-subclass-two-column__card.is-locked:focus-visible{opacity:1}
+        .class-subclass-two-column__art{display:grid;place-items:center;width:28px;height:28px;border:1px solid rgba(var(--class-accent),.34);border-radius:6px;color:rgb(var(--class-secondary));background:radial-gradient(circle,rgba(var(--class-accent),.15),rgba(7,13,22,.7));font-size:.58rem}.class-subclass-two-column__copy{display:grid;gap:2px;min-width:0}.class-subclass-two-column__copy strong{overflow:hidden;color:#f2eaf9;font-family:Georgia,"Times New Roman",serif;font-size:.61rem;font-weight:650;line-height:1.2;text-overflow:ellipsis;white-space:nowrap}.class-subclass-two-column__copy small{overflow:hidden;color:rgba(255,255,255,.48);font-size:.44rem;line-height:1.25;text-overflow:ellipsis;white-space:nowrap}.class-subclass-two-column__source{padding:2px 5px;border:1px solid rgba(var(--class-secondary),.17);border-radius:999px;color:rgba(215,255,249,.7);background:rgba(var(--class-secondary),.045);font-size:.39rem;font-weight:900;white-space:nowrap}
+        @media(max-width:760px){.class-subclass-two-column__head{align-items:stretch;flex-direction:column}.class-subclass-two-column__actions{justify-content:flex-start}.class-subclass-two-column__grid{grid-template-columns:1fr}.class-subclass-two-column__scroll{max-height:min(38vh,320px)}}
       `}</style>
     </section>
   );
