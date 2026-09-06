@@ -45,6 +45,15 @@
     overflow: hidden !important;
   }
 
+  /* Browser-approved outer-edge treatment: the Overview card itself consumes the Class guide
+     top/right padding so the cinematic painting reaches the actual workspace edge. */
+  .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__overview-book:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) {
+    width: calc(100% + 8px) !important;
+    max-width: none !important;
+    margin-top: -8px !important;
+    margin-right: -8px !important;
+  }
+
   .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__book-hero:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) {
     position: static !important;
     grid-template-columns: minmax(0, 56%) minmax(0, 44%) !important;
