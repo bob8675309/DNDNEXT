@@ -47,10 +47,10 @@
 
   .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__book-hero:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) {
     position: static !important;
-    grid-template-columns: minmax(0, 55%) minmax(0, 45%) !important;
-    min-height: 300px !important;
+    grid-template-columns: minmax(0, 56%) minmax(0, 44%) !important;
+    min-height: 312px !important;
     overflow: visible !important;
-    background: linear-gradient(90deg, rgba(5, 8, 15, 0.96), rgba(5, 8, 15, 0.74) 44%, rgba(5, 8, 15, 0.24) 70%, rgba(5, 8, 15, 0.04)) !important;
+    background: linear-gradient(90deg, rgba(5, 8, 15, 0.95), rgba(5, 8, 15, 0.68) 43%, rgba(5, 8, 15, 0.18) 68%, rgba(5, 8, 15, 0.02)) !important;
   }
 
   .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__book-hero:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"])::before,
@@ -61,8 +61,8 @@
   .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__book-hero:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) > .npc-forge-class-guide__hero-copy {
     grid-column: 1 / 2;
     width: 100%;
-    max-width: 760px;
-    min-height: 300px;
+    max-width: 780px;
+    min-height: 312px;
     position: relative !important;
     z-index: 4 !important;
   }
@@ -73,7 +73,7 @@
     right: 0 !important;
     bottom: auto !important;
     left: 20% !important;
-    height: clamp(760px, 80vh, 940px) !important;
+    height: clamp(780px, 82vh, 960px) !important;
     z-index: 0 !important;
     min-width: 0 !important;
     overflow: hidden !important;
@@ -88,8 +88,8 @@
     z-index: 2 !important;
     pointer-events: none;
     background:
-      linear-gradient(90deg, rgba(5, 8, 15, 0.99) 0%, rgba(5, 8, 15, 0.86) 17%, rgba(5, 8, 15, 0.48) 37%, rgba(5, 8, 15, 0.1) 59%, rgba(5, 8, 15, 0) 76%),
-      linear-gradient(0deg, rgba(5, 8, 14, 0.48) 0%, rgba(5, 8, 14, 0.03) 30%, rgba(5, 8, 14, 0.01) 84%, rgba(5, 8, 14, 0.03) 100%) !important;
+      linear-gradient(90deg, rgba(5, 8, 15, 0.98) 0%, rgba(5, 8, 15, 0.78) 16%, rgba(5, 8, 15, 0.34) 34%, rgba(5, 8, 15, 0.06) 56%, rgba(5, 8, 15, 0) 72%),
+      linear-gradient(0deg, rgba(5, 8, 14, 0.4) 0%, rgba(5, 8, 14, 0.02) 30%, rgba(5, 8, 14, 0) 86%, rgba(5, 8, 14, 0.02) 100%) !important;
   }
 
   .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__hero-art:has(img[src*="/media/classes/cinematic-"]) img {
@@ -101,18 +101,22 @@
     object-position: 100% 0% !important;
     transform: none !important;
     transform-origin: right top !important;
-    filter: saturate(0.99) contrast(1.04) brightness(0.96) !important;
+    filter: saturate(1) contrast(1.04) brightness(1) !important;
   }
 
   .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__book-hero:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) > .npc-forge-class-guide__hero-copy {
     align-content: start !important;
-    padding: 38px 24px 24px 28px !important;
+    padding: 40px 26px 24px 30px !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__book-hero:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) h2 {
+    font-size: clamp(2.35rem, 3.35vw, 3.4rem) !important;
   }
 
   .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__book-hero:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__hero-tagline {
-    max-width: 68ch !important;
-    font-size: .76rem !important;
-    line-height: 1.55 !important;
+    max-width: 64ch !important;
+    font-size: .82rem !important;
+    line-height: 1.5 !important;
   }
 
   .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__overview-book:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__overview-layout {
@@ -134,7 +138,7 @@
     inset: 0;
     z-index: 1;
     pointer-events: none;
-    background: linear-gradient(90deg, rgba(4, 7, 13, 0.2) 0%, rgba(4, 7, 13, 0.06) 50%, rgba(4, 7, 13, 0) 100%);
+    background: linear-gradient(90deg, rgba(4, 7, 13, 0.18) 0%, rgba(4, 7, 13, 0.045) 48%, rgba(4, 7, 13, 0) 100%);
   }
 }
 

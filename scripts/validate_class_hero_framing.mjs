@@ -32,12 +32,13 @@ for (const token of [
   "right: 0 !important",
   "bottom: auto !important",
   "left: 20% !important",
-  "height: clamp(760px, 80vh, 940px) !important",
+  "height: clamp(780px, 82vh, 960px) !important",
   "object-position: 100% 0% !important",
-  "min-height: 300px !important",
+  "min-height: 312px !important",
+  "font-size: .82rem !important",
   "grid-template-columns: minmax(0, 1fr) !important",
   "@media (max-width: 900px)",
-]) assert(framing.includes(token), `Higher stable top-right Class cinematic contract is missing ${token}`);
+]) assert(framing.includes(token), `Open stable top-right Class cinematic contract is missing ${token}`);
 assert(!framing.includes("bottom: 0 !important;\n    left: 20% !important"), "Cinematic hero must not use the expanding content height as its bottom edge.");
 
 assert(guide.includes("classHeroArtworkFor(selectedClass.class_key)"), "Class hero must keep the centralized artwork resolver.");
@@ -62,4 +63,4 @@ for (const token of ["mappageclient", "map_routes", "advance_all_characters", "t
   assert(!protectedText.includes(token), `Class hero framing patch unexpectedly references protected map/town behavior: ${token}`);
 }
 
-console.log("Class hero framing validation passed: legacy paintings retain safe framing, public cinematic art is fixed higher in a stable top-right layer independent of subclass/content height, artwork roles remain separate, and protected boundaries are untouched.");
+console.log("Class hero framing validation passed: legacy paintings retain safe framing, public cinematic art is fixed high in a stable brighter top-right layer independent of subclass/content height, artwork roles remain separate, and protected boundaries are untouched.");
