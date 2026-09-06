@@ -12,6 +12,7 @@ const selector = read("components/ClassSubclassSection.js");
 const guideStyles = read("components/NpcForgeClassGuideStyles.js");
 const dock = read("components/NpcForgeClassFeatureDock.js");
 const artwork = read("utils/classes/classArtwork.js");
+const subclassArtwork = read("utils/classes/subclassArtwork.js");
 const presentation = read("utils/classes/classPresentation.js");
 const catalogWrapper = read("utils/npcForgeCatalog.js");
 const polish = read("styles/character-forge-browser-review-polish.css");
@@ -57,6 +58,7 @@ for (const token of [
   "classOverviewSummary(selectedClass)",
   "npc-forge-class-guide__hero-art",
   "ClassSubclassSection",
+  "classKey={selectedClass?.class_key || \"\"}",
   "onInspectSubclass",
   "inspectSubclass(model, onFeatureDetail, option)",
   "selectedRowFeatures",
@@ -76,18 +78,19 @@ assert(!guide.includes("classSlotSummary(row.spell_slots)"), "Progression regres
 
 for (const token of [
   'import { useEffect, useMemo, useState } from "react"',
+  "subclassArtworkFor(classKey, option)",
   "class-subclass-two-column__grid",
   "class-subclass-two-column__scroll",
   "grid-template-columns:repeat(2,minmax(0,1fr))",
-  "max-height:min(28vh,245px)",
+  "max-height:min(22vh,164px)",
   "class-subclass-selected-row",
-  "Change Subclass",
-  "Collapse",
+  ">Change<",
+  'aria-label="Collapse subclass selector"',
   "model.selectSubclass(option)",
   "model.setPreviewKey(option.key)",
   'aria-label="Subclass catalogue"',
   "onInspectSubclass?.(option)",
-]) assert(selector.includes(token), `Two-column collapsible subclass selector is missing ${token}`);
+]) assert(selector.includes(token), `Compact two-column subclass selector is missing ${token}`);
 for (const forbidden of [
   "onMouseEnter",
   "Search subclasses",
@@ -95,16 +98,28 @@ for (const forbidden of [
   "class-subclass-browser__search",
   "class-subclass-browser__sources",
   "grid-template-columns:repeat(6,minmax(0,1fr))",
+  "max-height:min(28vh,245px)",
 ]) assert(!selector.includes(forbidden), `Subclass selector regressed to a bulky/hover-driven presentation: ${forbidden}`);
 assert(!selector.includes("supabase"), "Subclass selector must remain presentation-only.");
 
 for (const token of [
+  'const WIZARD_SUBCLASS_ART_FAMILY',
+  '/media/subclasses/wizard/wizard-${family}.webp',
+  'return classMenuArtworkFor(normalizedClass)',
+]) assert(subclassArtwork.includes(token), `Subclass artwork resolver missing ${token}`);
+for (const family of ["abjuration", "conjuration", "divination", "enchantment", "evocation", "illusion", "necromancy", "transmutation"]) {
+  assert(fs.existsSync(path.join(root, `public/media/subclasses/wizard/wizard-${family}.webp`)), `Wizard subclass selector artwork missing ${family}.`);
+}
+
+for (const token of [
   "grid-template-columns:minmax(0,1fr)!important",
-  "min-width:1120px!important",
-  "repeat(9,minmax(38px,.34fr))",
+  "min-width:1060px!important",
+  "repeat(9,minmax(36px,.34fr))",
+  "min-height:39px!important",
+  "padding:.18rem .4rem!important",
   "border-radius:999px!important",
   "button.is-subclass",
-]) assert(guide.includes(token), `Expanded progression presentation is missing ${token}`);
+]) assert(guide.includes(token), `Compact progression presentation is missing ${token}`);
 
 for (const token of [
   "bottom: auto !important",
@@ -130,9 +145,9 @@ for (const token of [
 assert(polish.includes("npc-forge-step-2"), "Class browser polish scope disappeared.");
 assert(guideStyles.includes("npc-forge-class-guide__table-card") && guideStyles.includes("class-level-guide__row"), "Class progression foundation styling disappeared.");
 
-const protectedSources = `${step}\n${catalog}\n${guide}\n${selector}\n${guideStyles}\n${dock}\n${artwork}\n${presentation}\n${catalogWrapper}\n${polish}\n${framing}`.toLowerCase();
+const protectedSources = `${step}\n${catalog}\n${guide}\n${selector}\n${guideStyles}\n${dock}\n${artwork}\n${subclassArtwork}\n${presentation}\n${catalogWrapper}\n${polish}\n${framing}`.toLowerCase();
 for (const token of ["map_routes", "advance_all_characters", "mappageclient", "townsheet", "world travel", "crafting_recipe"]) {
   assert(!protectedSources.includes(token), `Class browser patch unexpectedly references protected behavior: ${token}`);
 }
 
-console.log("Class browser polish validation passed: two-column scrollable/collapsible subclass selection, click-only movable Feature-card details, selected-subclass progression bubbles, expanded per-level spell-slot table, higher stable top-right art, preserved Class authority, and protected boundaries are intact.");
+console.log("Class browser polish validation passed: compact two-column subclass artwork selector, click-only movable Feature-card details, selected-subclass progression bubbles, tighter per-level spell-slot table, stable top-right art, preserved Class authority, and protected boundaries are intact.");

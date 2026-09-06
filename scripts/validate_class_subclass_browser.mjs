@@ -7,6 +7,7 @@ const assert = (condition, message) => { if (!condition) throw new Error(message
 
 const guide = read("components/NpcForgeClassGuide.js");
 const selector = read("components/ClassSubclassSection.js");
+const subclassArtwork = read("utils/classes/subclassArtwork.js");
 const presentation = read("utils/classes/classPresentation.js");
 const framing = read("styles/character-forge-class-hero-framing.css");
 const model = read("components/NpcForgeClassGuideModel.js");
@@ -15,6 +16,7 @@ const workspaceCss = read("styles/character-class-workspace.css");
 for (const token of [
   'import ClassSubclassSection from "./ClassSubclassSection"',
   '<ClassSubclassSection',
+  'classKey={selectedClass?.class_key || ""}',
   'onInspectSubclass={(option) => inspectSubclass(model, onFeatureDetail, option)}',
   '<p className="npc-forge-class-guide__hero-tagline">{classOverviewSummary(selectedClass)}</p>',
   'function selectedRowFeatures(model, row)',
@@ -34,19 +36,21 @@ assert(!guide.includes('onFocus={() => publishFeature(model, onFeatureDetail'), 
 
 for (const token of [
   'import { useEffect, useMemo, useState } from "react"',
+  'subclassArtworkFor(classKey, option)',
+  'handleSubclassArtworkError(event, classKey)',
   'class-subclass-two-column__grid',
   'grid-template-columns:repeat(2,minmax(0,1fr))',
   'class-subclass-two-column__scroll',
-  'max-height:min(28vh,245px)',
+  'max-height:min(22vh,164px)',
   'class-subclass-selected-row',
-  'Change Subclass',
-  'Collapse',
+  '>Change<',
+  'aria-label="Collapse subclass selector"',
   'model.setPreviewKey(option.key)',
   'model.selectSubclass(option)',
   'optionEntryLevel(option) > currentLevel',
   'aria-label="Subclass catalogue"',
   'onInspectSubclass?.(option)',
-]) assert(selector.includes(token), `Two-column collapsible subclass selector is missing ${token}`);
+]) assert(selector.includes(token), `Compact two-column subclass selector is missing ${token}`);
 
 for (const forbidden of [
   'onMouseEnter',
@@ -55,8 +59,20 @@ for (const forbidden of [
   'class-subclass-browser__search',
   'class-subclass-browser__sources',
   'grid-template-columns:repeat(6,minmax(0,1fr))',
+  'max-height:min(28vh,245px)',
 ]) assert(!selector.includes(forbidden), `Subclass selector regressed to the prior bulky/hover-driven presentation: ${forbidden}`);
 assert(!selector.includes("supabase"), "Subclass selector must remain presentation-only.");
+
+for (const token of [
+  'const WIZARD_SUBCLASS_ART_FAMILY',
+  'evocation: "evocation"',
+  'abjuration: "abjuration"',
+  'necromancy: "necromancy"',
+  'return classMenuArtworkFor(normalizedClass)',
+]) assert(subclassArtwork.includes(token), `Subclass artwork authority is missing ${token}`);
+for (const family of ["abjuration", "conjuration", "divination", "enchantment", "evocation", "illusion", "necromancy", "transmutation"]) {
+  assert(fs.existsSync(path.join(root, `public/media/subclasses/wizard/wizard-${family}.webp`)), `Wizard subclass selector artwork missing ${family}.`);
+}
 
 assert(model.includes("resolveSubclassCatalog") && model.includes("const options = useMemo"), "Canonical subclass catalogue authority moved out of the existing guide model.");
 assert(model.includes("selectSubclass"), "Existing subclass persistence authority disappeared from the guide model.");
@@ -84,13 +100,15 @@ for (const token of [
   'border-radius:999px!important',
   'background:rgba(126,75,202,.14)!important',
   'button.is-subclass',
-  'min-width:1120px!important',
-  'repeat(9,minmax(38px,.34fr))',
-]) assert(guide.includes(token), `Forge progression table did not adopt the target wide feature-pill/spell-slot treatment: ${token}`);
+  'min-width:1060px!important',
+  'repeat(9,minmax(36px,.34fr))',
+  'min-height:39px!important',
+  'padding:.18rem .4rem!important',
+]) assert(guide.includes(token), `Forge progression table did not retain the compact feature-pill/spell-slot treatment: ${token}`);
 
-const protectedSource = `${guide}\n${selector}\n${presentation}\n${framing}`.toLowerCase();
+const protectedSource = `${guide}\n${selector}\n${subclassArtwork}\n${presentation}\n${framing}`.toLowerCase();
 for (const token of ["map_routes", "advance_all_characters", "mappageclient", "townsheet", "encounter_weapon_attack", "crafting_recipe"]) {
   assert(!protectedSource.includes(token), `Class presentation patch crossed protected boundary: ${token}`);
 }
 
-console.log("Class subclass selector validation passed: two-column scrollable/collapsible subclass choices, click-only Feature-card inspection, selected-subclass progression injection, expanded spell-slot table, higher stable cinematic art, and protected boundaries are intact.");
+console.log("Class subclass selector validation passed: mockup-style compact two-column choices with artwork, click-only Feature-card inspection, selected-subclass progression injection, tighter spell-slot table, stable cinematic art, safe artwork fallback, and protected boundaries are intact.");

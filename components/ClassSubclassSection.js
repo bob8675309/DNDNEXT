@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { classFeatureInline } from "./ClassFeatureText";
+import { handleSubclassArtworkError, subclassArtworkFor } from "../utils/classes/subclassArtwork";
 
 const text = (value) => String(value ?? "").trim();
 
@@ -24,6 +25,7 @@ function optionSummary(option = {}) {
 
 export default function ClassSubclassSection({
   model,
+  classKey = "",
   onInspectSubclass = null,
   detailed = false,
 }) {
@@ -81,25 +83,32 @@ export default function ClassSubclassSection({
             onClick={() => onInspectSubclass?.(selected)}
             aria-label={`Show ${selected.name} details`}
           >
-            <span className="class-subclass-selected-row__mark" aria-hidden="true">✓</span>
+            <span className="class-subclass-selected-row__art" aria-hidden="true">
+              <img src={subclassArtworkFor(classKey, selected)} onError={(event) => handleSubclassArtworkError(event, classKey)} alt="" />
+            </span>
             <span className="class-subclass-selected-row__copy">
               <small>Selected subclass · {sourceLabel(selected.source)} · Level {optionEntryLevel(selected)}</small>
               <strong>{selected.name}</strong>
               <em>{optionSummary(selected)}</em>
             </span>
+            <span className="class-subclass-selected-row__mark" aria-hidden="true">✓</span>
           </button>
-          <button type="button" className="class-subclass-selected-row__change" onClick={() => setExpanded(true)}>Change Subclass</button>
+          <div className="class-subclass-selected-row__actions">
+            <button type="button" onClick={() => setExpanded(true)}>Change</button>
+            <button type="button" className="is-muted" onClick={clearSelection}>Clear</button>
+          </div>
         </div>
 
         <style jsx global>{`
           .class-subclass-section.is-collapsed{padding:0!important;border:0!important;background:transparent!important}
-          .class-subclass-selected-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:stretch;padding:7px 8px;border:1px solid rgba(var(--class-accent),.22);border-radius:9px;background:linear-gradient(120deg,rgba(var(--class-accent),.1),rgba(7,12,21,.87) 58%,rgba(var(--class-secondary),.045))}
-          .class-subclass-selected-row__summary{display:grid;grid-template-columns:24px minmax(0,1fr);gap:8px;align-items:center;min-width:0;padding:0;border:0;color:inherit;background:transparent;text-align:left}
-          .class-subclass-selected-row__summary:focus-visible{outline:1px solid rgba(var(--class-secondary),.7);outline-offset:3px}
-          .class-subclass-selected-row__mark{display:grid;place-items:center;width:24px;height:24px;border:1px solid rgba(var(--class-secondary),.58);border-radius:50%;color:#d8fff9;background:rgba(var(--class-secondary),.1);font-size:.62rem}
-          .class-subclass-selected-row__copy{display:grid;gap:1px;min-width:0}.class-subclass-selected-row__copy small{color:rgba(255,255,255,.42);font-size:.43rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.class-subclass-selected-row__copy strong{color:#f4ebfa;font-family:Georgia,"Times New Roman",serif;font-size:.72rem;font-weight:650}.class-subclass-selected-row__copy em{overflow:hidden;color:rgba(255,255,255,.6);font-size:.52rem;font-style:normal;line-height:1.3;text-overflow:ellipsis;white-space:nowrap}
-          .class-subclass-selected-row__change{align-self:center;padding:6px 9px;border:1px solid rgba(var(--class-accent),.55);border-radius:7px;color:#fff;background:linear-gradient(180deg,rgba(var(--class-accent),.42),rgba(54,34,90,.72));font-size:.5rem;font-weight:800}.class-subclass-selected-row__change:hover,.class-subclass-selected-row__change:focus-visible{border-color:rgba(var(--class-secondary),.65);outline:none}
-          @media(max-width:760px){.class-subclass-selected-row{grid-template-columns:1fr}.class-subclass-selected-row__change{justify-self:end}}
+          .class-subclass-selected-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;align-items:stretch;padding:4px 5px;border:1px solid rgba(var(--class-accent),.22);border-radius:7px;background:linear-gradient(120deg,rgba(var(--class-accent),.1),rgba(7,12,21,.87) 58%,rgba(var(--class-secondary),.045))}
+          .class-subclass-selected-row__summary{display:grid;grid-template-columns:58px minmax(0,1fr) 20px;gap:6px;align-items:center;min-width:0;padding:0;border:0;color:inherit;background:transparent;text-align:left}
+          .class-subclass-selected-row__summary:focus-visible{outline:1px solid rgba(var(--class-secondary),.7);outline-offset:2px}
+          .class-subclass-selected-row__art{display:block;width:58px;height:30px;overflow:hidden;border:1px solid rgba(var(--class-accent),.38);border-radius:5px;background:#090d15}.class-subclass-selected-row__art img{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
+          .class-subclass-selected-row__mark{display:grid;place-items:center;width:19px;height:19px;border:1px solid rgba(var(--class-secondary),.58);border-radius:50%;color:#d8fff9;background:rgba(var(--class-secondary),.1);font-size:.52rem}
+          .class-subclass-selected-row__copy{display:grid;gap:0;min-width:0}.class-subclass-selected-row__copy small{color:rgba(255,255,255,.4);font-size:.37rem;font-weight:800;letter-spacing:.035em;text-transform:uppercase}.class-subclass-selected-row__copy strong{color:#f4ebfa;font-family:Georgia,"Times New Roman",serif;font-size:.63rem;font-weight:650;line-height:1.2}.class-subclass-selected-row__copy em{overflow:hidden;color:rgba(255,255,255,.56);font-size:.43rem;font-style:normal;line-height:1.2;text-overflow:ellipsis;white-space:nowrap}
+          .class-subclass-selected-row__actions{display:flex;align-items:center;gap:4px}.class-subclass-selected-row__actions button{padding:4px 7px;border:1px solid rgba(var(--class-accent),.46);border-radius:6px;color:#fff;background:linear-gradient(180deg,rgba(var(--class-accent),.35),rgba(54,34,90,.64));font-size:.43rem;font-weight:800}.class-subclass-selected-row__actions button.is-muted{border-color:rgba(255,255,255,.12);color:rgba(255,255,255,.52);background:rgba(255,255,255,.02)}.class-subclass-selected-row__actions button:hover,.class-subclass-selected-row__actions button:focus-visible{border-color:rgba(var(--class-secondary),.65);outline:none}
+          @media(max-width:760px){.class-subclass-selected-row{grid-template-columns:1fr}.class-subclass-selected-row__actions{justify-content:flex-end}}
         `}</style>
       </section>
     );
@@ -108,15 +117,12 @@ export default function ClassSubclassSection({
   return (
     <section className={`npc-forge-class-guide__subclasses is-compact class-subclass-section is-two-column${detailed ? " is-detailed" : ""}${required && !selected ? " is-required" : ""}`}>
       <div className="class-subclass-two-column__head">
+        <span className="class-subclass-two-column__head-icon" aria-hidden="true">✦</span>
         <div>
-          <span>Choose your specialization</span>
-          <small>Select a subclass to add its source-backed features to Class Progression. Click a card to show its details in the movable Feature card.</small>
+          <span>Choose your subclass</span>
+          <small>Select a subclass to add its features to progression. Click any row to show details in the movable Feature card.</small>
         </div>
-        <div className="class-subclass-two-column__actions">
-          <strong>{options.length} subclass{options.length === 1 ? "" : "es"}</strong>
-          {selected ? <button type="button" onClick={() => setExpanded(false)}>Collapse</button> : null}
-          {selected ? <button type="button" onClick={clearSelection}>Clear choice</button> : null}
-        </div>
+        {selected ? <button type="button" className="class-subclass-two-column__collapse" onClick={() => setExpanded(false)} aria-label="Collapse subclass selector">⌃</button> : null}
       </div>
 
       <div className="class-subclass-two-column__scroll" role="list" aria-label="Subclass catalogue">
@@ -134,12 +140,15 @@ export default function ClassSubclassSection({
                 aria-label={`${option.name}, ${eligible ? "selectable now" : `available at level ${optionEntryLevel(option)}`}`}
                 onClick={() => choose(option)}
               >
-                <span className="class-subclass-two-column__art" aria-hidden="true">{isSelected ? "✓" : eligible ? "✦" : "◇"}</span>
+                <span className="class-subclass-two-column__art" aria-hidden="true">
+                  <img src={subclassArtworkFor(classKey, option)} onError={(event) => handleSubclassArtworkError(event, classKey)} alt="" />
+                </span>
                 <span className="class-subclass-two-column__copy">
                   <strong>{text(option.name) || "Subclass"}</strong>
                   <small>{optionSummary(option)}</small>
                 </span>
                 <span className="class-subclass-two-column__source">{sourceLabel(option.source)}</span>
+                <span className={`class-subclass-two-column__status${isSelected ? " is-selected" : ""}`} aria-hidden="true">{isSelected ? "✓" : eligible ? "" : `L${optionEntryLevel(option)}`}</span>
               </button>
             );
           })}
@@ -150,12 +159,13 @@ export default function ClassSubclassSection({
       {!required && entryLevel ? <p className="npc-forge-class-guide__subclass-level-note">You can review every subclass now. Selection unlocks at level {entryLevel}.</p> : null}
 
       <style jsx global>{`
-        .class-subclass-section.is-two-column{display:grid;gap:6px!important;padding:8px 9px 9px!important;border:1px solid rgba(var(--class-accent),.2)!important;border-radius:9px!important;background:linear-gradient(145deg,rgba(19,17,31,.7),rgba(6,12,21,.8))!important}
-        .class-subclass-two-column__head{display:flex;align-items:end;justify-content:space-between;gap:12px;padding-bottom:6px;border-bottom:1px solid rgba(var(--class-accent),.14)}.class-subclass-two-column__head>div:first-child{display:grid;gap:2px;min-width:0}.class-subclass-two-column__head span{color:#d4a8ff;font-family:Georgia,"Times New Roman",serif;font-size:.76rem;font-weight:650;letter-spacing:.035em}.class-subclass-two-column__head small{max-width:88ch;color:rgba(255,255,255,.52);font-size:.5rem;line-height:1.35}.class-subclass-two-column__actions{display:flex;align-items:center;justify-content:flex-end;gap:5px;flex-wrap:wrap}.class-subclass-two-column__actions strong{color:rgba(255,255,255,.38);font-size:.46rem}.class-subclass-two-column__actions button{padding:4px 7px;border:1px solid rgba(255,255,255,.13);border-radius:6px;color:rgba(255,255,255,.7);background:rgba(255,255,255,.025);font-size:.47rem;font-weight:800}.class-subclass-two-column__actions button:hover,.class-subclass-two-column__actions button:focus-visible{border-color:rgba(var(--class-secondary),.52);color:#fff;outline:none}
-        .class-subclass-two-column__scroll{max-height:min(28vh,245px);overflow-y:auto;overscroll-behavior:contain;padding:1px 4px 1px 1px;scrollbar-gutter:stable}.class-subclass-two-column__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
-        .class-subclass-two-column__card{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:7px;align-items:center;min-width:0;min-height:46px;padding:6px 7px;border:1px solid rgba(255,255,255,.1);border-radius:7px;color:rgba(255,255,255,.78);background:linear-gradient(145deg,rgba(14,18,29,.94),rgba(7,11,19,.98));text-align:left;transition:border-color .15s ease,background .15s ease,box-shadow .15s ease}.class-subclass-two-column__card:hover,.class-subclass-two-column__card:focus-visible{border-color:rgba(var(--class-secondary),.44);background:linear-gradient(145deg,rgba(14,33,39,.46),rgba(8,13,22,.98));outline:none}.class-subclass-two-column__card.is-selected{border-color:rgba(var(--class-accent),.82);background:linear-gradient(145deg,rgba(var(--class-accent),.19),rgba(9,15,26,.98));box-shadow:inset 3px 0 rgb(var(--class-secondary)),0 0 14px rgba(var(--class-accent),.07)}.class-subclass-two-column__card.is-locked{opacity:.68}.class-subclass-two-column__card.is-locked:hover,.class-subclass-two-column__card.is-locked:focus-visible{opacity:1}
-        .class-subclass-two-column__art{display:grid;place-items:center;width:28px;height:28px;border:1px solid rgba(var(--class-accent),.34);border-radius:6px;color:rgb(var(--class-secondary));background:radial-gradient(circle,rgba(var(--class-accent),.15),rgba(7,13,22,.7));font-size:.58rem}.class-subclass-two-column__copy{display:grid;gap:2px;min-width:0}.class-subclass-two-column__copy strong{overflow:hidden;color:#f2eaf9;font-family:Georgia,"Times New Roman",serif;font-size:.61rem;font-weight:650;line-height:1.2;text-overflow:ellipsis;white-space:nowrap}.class-subclass-two-column__copy small{overflow:hidden;color:rgba(255,255,255,.48);font-size:.44rem;line-height:1.25;text-overflow:ellipsis;white-space:nowrap}.class-subclass-two-column__source{padding:2px 5px;border:1px solid rgba(var(--class-secondary),.17);border-radius:999px;color:rgba(215,255,249,.7);background:rgba(var(--class-secondary),.045);font-size:.39rem;font-weight:900;white-space:nowrap}
-        @media(max-width:760px){.class-subclass-two-column__head{align-items:stretch;flex-direction:column}.class-subclass-two-column__actions{justify-content:flex-start}.class-subclass-two-column__grid{grid-template-columns:1fr}.class-subclass-two-column__scroll{max-height:min(38vh,320px)}}
+        .class-subclass-section.is-two-column{display:grid;gap:4px!important;padding:5px 6px 6px!important;border:1px solid rgba(var(--class-accent),.22)!important;border-radius:8px!important;background:linear-gradient(145deg,rgba(19,17,31,.68),rgba(6,12,21,.82))!important}
+        .class-subclass-two-column__head{display:grid;grid-template-columns:24px minmax(0,1fr) auto;align-items:center;gap:6px;padding:0 1px 4px;border-bottom:1px solid rgba(var(--class-accent),.13)}.class-subclass-two-column__head-icon{display:grid!important;place-items:center;width:22px;height:22px;border:1px solid rgba(var(--class-accent),.44);border-radius:5px;color:#d7b4ff!important;background:rgba(var(--class-accent),.08);font-size:.52rem!important}.class-subclass-two-column__head>div{display:grid;gap:0;min-width:0}.class-subclass-two-column__head>div>span{color:#d4a8ff;font-family:Georgia,"Times New Roman",serif;font-size:.67rem;font-weight:650;letter-spacing:.025em;text-transform:uppercase}.class-subclass-two-column__head small{overflow:hidden;color:rgba(255,255,255,.48);font-size:.43rem;line-height:1.25;text-overflow:ellipsis;white-space:nowrap}.class-subclass-two-column__collapse{display:grid;place-items:center;width:22px;height:22px;padding:0;border:1px solid rgba(255,255,255,.12);border-radius:6px;color:rgba(255,255,255,.72);background:rgba(255,255,255,.025);font-size:.62rem;font-weight:900}.class-subclass-two-column__collapse:hover,.class-subclass-two-column__collapse:focus-visible{border-color:rgba(var(--class-secondary),.52);color:#fff;outline:none}
+        .class-subclass-two-column__scroll{max-height:min(22vh,164px);overflow-y:auto;overscroll-behavior:contain;padding:0 3px 0 0;scrollbar-gutter:stable}.class-subclass-two-column__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
+        .class-subclass-two-column__card{display:grid;grid-template-columns:60px minmax(0,1fr) auto 20px;gap:5px;align-items:center;min-width:0;min-height:38px;padding:3px 5px;border:1px solid rgba(255,255,255,.1);border-radius:6px;color:rgba(255,255,255,.78);background:linear-gradient(145deg,rgba(14,18,29,.94),rgba(7,11,19,.98));text-align:left;transition:border-color .15s ease,background .15s ease,box-shadow .15s ease}.class-subclass-two-column__card:hover,.class-subclass-two-column__card:focus-visible{border-color:rgba(var(--class-secondary),.44);background:linear-gradient(145deg,rgba(14,33,39,.46),rgba(8,13,22,.98));outline:none}.class-subclass-two-column__card.is-selected{border-color:rgba(var(--class-accent),.86);background:linear-gradient(145deg,rgba(var(--class-accent),.2),rgba(9,15,26,.98));box-shadow:inset 2px 0 rgb(var(--class-secondary)),0 0 12px rgba(var(--class-accent),.07)}.class-subclass-two-column__card.is-locked{opacity:.64}.class-subclass-two-column__card.is-locked:hover,.class-subclass-two-column__card.is-locked:focus-visible{opacity:1}
+        .class-subclass-two-column__art{display:block;width:60px;height:30px;overflow:hidden;border:1px solid rgba(var(--class-accent),.28);border-radius:4px;background:#080c14}.class-subclass-two-column__art img{display:block;width:100%;height:100%;object-fit:cover;object-position:center;filter:saturate(.95) contrast(1.04)}.class-subclass-two-column__copy{display:grid;gap:0;min-width:0}.class-subclass-two-column__copy strong{overflow:hidden;color:#f2eaf9;font-family:Georgia,"Times New Roman",serif;font-size:.57rem;font-weight:650;line-height:1.15;text-overflow:ellipsis;white-space:nowrap}.class-subclass-two-column__copy small{overflow:hidden;color:rgba(255,255,255,.45);font-size:.39rem;line-height:1.18;text-overflow:ellipsis;white-space:nowrap}.class-subclass-two-column__source{padding:1px 4px;border:1px solid rgba(var(--class-secondary),.17);border-radius:999px;color:rgba(215,255,249,.68);background:rgba(var(--class-secondary),.045);font-size:.34rem;font-weight:900;white-space:nowrap}.class-subclass-two-column__status{display:grid;place-items:center;min-width:18px;height:18px;color:rgba(255,255,255,.35);font-size:.34rem;font-weight:900}.class-subclass-two-column__status.is-selected{border:1px solid rgba(var(--class-secondary),.6);border-radius:50%;color:#d8fff9;background:rgba(var(--class-secondary),.11);font-size:.48rem}
+        .class-subclass-section.is-two-column .npc-forge-class-guide__requirement,.class-subclass-section.is-two-column .npc-forge-class-guide__subclass-level-note{padding:1px 2px 0!important;font-size:.42rem!important}
+        @media(max-width:760px){.class-subclass-two-column__grid{grid-template-columns:1fr}.class-subclass-two-column__scroll{max-height:min(34vh,245px)}.class-subclass-two-column__head small{white-space:normal}.class-subclass-two-column__card{grid-template-columns:62px minmax(0,1fr) auto 20px}}
       `}</style>
     </section>
   );
