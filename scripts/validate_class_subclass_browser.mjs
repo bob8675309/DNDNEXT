@@ -41,7 +41,10 @@ for (const token of [
   'class-subclass-two-column__grid',
   'grid-template-columns:repeat(2,minmax(0,1fr))',
   'class-subclass-two-column__scroll',
-  'max-height:min(22vh,164px)',
+  'max-height:min(28vh,205px)',
+  'width:min(66%,760px)',
+  'grid-template-columns:82px minmax(0,1fr) auto 22px',
+  'min-height:48px',
   'class-subclass-selected-row',
   '>Change<',
   'aria-label="Collapse subclass selector"',
@@ -50,7 +53,7 @@ for (const token of [
   'optionEntryLevel(option) > currentLevel',
   'aria-label="Subclass catalogue"',
   'onInspectSubclass?.(option)',
-]) assert(selector.includes(token), `Compact two-column subclass selector is missing ${token}`);
+]) assert(selector.includes(token), `Readable two-column subclass selector is missing ${token}`);
 
 for (const forbidden of [
   'onMouseEnter',
@@ -59,7 +62,6 @@ for (const forbidden of [
   'class-subclass-browser__search',
   'class-subclass-browser__sources',
   'grid-template-columns:repeat(6,minmax(0,1fr))',
-  'max-height:min(28vh,245px)',
 ]) assert(!selector.includes(forbidden), `Subclass selector regressed to the prior bulky/hover-driven presentation: ${forbidden}`);
 assert(!selector.includes("supabase"), "Subclass selector must remain presentation-only.");
 
@@ -85,10 +87,11 @@ assert(presentation.includes("imported.length >= 180"), "Long imported/campaign 
 for (const token of [
   'bottom: auto !important',
   'left: 20% !important',
-  'height: clamp(760px, 80vh, 940px) !important',
+  'height: clamp(780px, 82vh, 960px) !important',
   'object-position: 100% 0% !important',
   'grid-template-columns: minmax(0, 1fr) !important',
-]) assert(framing.includes(token), `Stable higher top-right cinematic framing missing ${token}`);
+  'font-size: .82rem !important',
+]) assert(framing.includes(token), `Stable open top-right cinematic framing missing ${token}`);
 assert(!framing.includes('bottom: 0 !important;\n    left: 20% !important'), "Cinematic art is still content-height-coupled.");
 
 for (const token of [
@@ -102,13 +105,14 @@ for (const token of [
   'button.is-subclass',
   'min-width:1060px!important',
   'repeat(9,minmax(36px,.34fr))',
-  'min-height:39px!important',
-  'padding:.18rem .4rem!important',
-]) assert(guide.includes(token), `Forge progression table did not retain the compact feature-pill/spell-slot treatment: ${token}`);
+  'min-height:42px!important',
+  'padding:.2rem .42rem!important',
+  'font-size:.61rem!important',
+]) assert(guide.includes(token), `Forge progression table did not retain the balanced feature-pill/spell-slot treatment: ${token}`);
 
 const protectedSource = `${guide}\n${selector}\n${subclassArtwork}\n${presentation}\n${framing}`.toLowerCase();
 for (const token of ["map_routes", "advance_all_characters", "mappageclient", "townsheet", "encounter_weapon_attack", "crafting_recipe"]) {
   assert(!protectedSource.includes(token), `Class presentation patch crossed protected boundary: ${token}`);
 }
 
-console.log("Class subclass selector validation passed: mockup-style compact two-column choices with artwork, click-only Feature-card inspection, selected-subclass progression injection, tighter spell-slot table, stable cinematic art, safe artwork fallback, and protected boundaries are intact.");
+console.log("Class subclass selector validation passed: mockup-proportioned two-column choices with readable artwork, click-only Feature-card inspection, selected-subclass progression injection, balanced spell-slot table, stable cinematic art, safe artwork fallback, and protected boundaries are intact.");
