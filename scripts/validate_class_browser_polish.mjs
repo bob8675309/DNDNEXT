@@ -8,13 +8,14 @@ const assert = (condition, message) => { if (!condition) throw new Error(message
 const step = read("components/NpcForgeStepContent.js");
 const catalog = read("components/NpcForgeClassCatalog.js");
 const guide = read("components/NpcForgeClassGuide.js");
-const subclassBrowser = read("components/ClassSubclassSection.js");
+const subclassSelector = read("components/ClassSubclassSection.js");
 const guideStyles = read("components/NpcForgeClassGuideStyles.js");
 const dock = read("components/NpcForgeClassFeatureDock.js");
 const artwork = read("utils/classes/classArtwork.js");
 const presentation = read("utils/classes/classPresentation.js");
 const catalogWrapper = read("utils/npcForgeCatalog.js");
 const polish = read("styles/character-forge-browser-review-polish.css");
+const framing = read("styles/character-forge-class-hero-framing.css");
 
 assert(step.includes('import NpcForgeClassCatalog from "./NpcForgeClassCatalog"'), "Class step must use the dedicated Class catalogue.");
 assert(step.includes("<NpcForgeClassCatalog query={classQuery}"), "Class step does not render the dedicated Class catalogue.");
@@ -84,11 +85,10 @@ for (const token of [
   "npc-forge-class-guide__hero-art",
   "npc-forge-class-guide__overview-layout",
   "npc-forge-class-guide__overview-main",
-  "npc-forge-class-guide__dock-lane",
   "ClassSubclassSection",
-  "onPreviewSubclass",
+  "onInspectSubclass",
   "model={model}",
-  "previewSubclass(model, onFeatureDetail, option)",
+  "inspectSubclass(model, onFeatureDetail, option)",
   "ForgeSubclassSelection",
   "Deferred resolutions",
   "Choices for tools, feats, skills, spells, and other options",
@@ -96,11 +96,30 @@ for (const token of [
   "npc-forge-class-guide__section-title",
   "npc-forge-class-guide__table-footnote",
   'aria-label={`View ${feature.name} details`}',
-]) assert(guide.includes(token), `Mockup-aligned Artificer/Class presentation is missing ${token}`);
+  "selectedRowFeatures",
+  "model.selected",
+  "Selected subclass features join the table automatically",
+]) assert(guide.includes(token), `Mockup-aligned Class presentation is missing ${token}`);
+assert(!guide.includes('<aside className="npc-forge-class-guide__dock-lane"'), "Class overview still wastes width on an in-flow dock lane even though the Feature card is viewport-owned.");
 assert(!guide.includes("model.options.slice(0, 4)"), "Subclass catalogue must no longer collapse after four entries.");
-for (const token of ["Browse Subclasses", "Search subclasses", "model.selectSubclass(option)", 'aria-label="Subclass catalogue"']) assert(subclassBrowser.includes(token), `Compact subclass browser is missing ${token}`);
-assert(!guide.includes("<select value={model.preview?.key"), "Subclass preview must use compact buttons instead of the old dropdown selector.");
+assert(!guide.includes("<select value={model.preview?.key"), "Subclass selection must use visible compact buttons instead of the old dropdown selector.");
 assert(!guide.includes("title={cleanPlayerCopy(feature.description)}"), "Native browser feature tooltips must not compete with the movable detail card.");
+
+for (const token of [
+  "class-subclass-inline__grid",
+  "model.selectSubclass(option)",
+  "model.setPreviewKey(option.key)",
+  'aria-label="Subclass catalogue"',
+  "onInspectSubclass",
+  "is-locked",
+  "is-selected",
+  "grid-template-columns:repeat(6,minmax(0,1fr))",
+]) assert(subclassSelector.includes(token), `Compact always-visible subclass selector is missing ${token}`);
+for (const forbidden of ["Browse Subclasses", "Search subclasses", "browserOpen", "class-subclass-browser__search", "class-subclass-browser__sources"]) {
+  assert(!subclassSelector.includes(forbidden), `Bulky subclass browser returned: ${forbidden}`);
+}
+assert(!subclassSelector.includes("supabase"), "Subclass selector must remain presentation-only.");
+
 for (const token of [
   ".npc-forge-class-guide.is-class-artificer",
   "grid-template-columns:minmax(0,1fr) minmax(300px,34%)",
@@ -109,7 +128,21 @@ for (const token of [
   "body .npc-forge-class-feature-dock__title-group",
   "object-position:center 25%",
   "Class Progression",
-]) assert(`${guideStyles}\n${guide}`.includes(token), `Approved Artificer visual target is missing ${token}`);
+]) assert(`${guideStyles}\n${guide}`.includes(token), `Approved Class visual foundation is missing ${token}`);
+
+for (const token of [
+  "grid-template-columns:minmax(0,1fr)!important",
+  "min-width:900px!important",
+  "border-radius:999px!important",
+  "button.is-subclass",
+]) assert(guide.includes(token), `Profile-style expanded progression presentation is missing ${token}`);
+
+for (const token of [
+  "bottom: auto !important",
+  "left: 16% !important",
+  "height: clamp(680px, 72vh, 820px) !important",
+  "object-position: right top !important",
+]) assert(framing.includes(token), `Stable cinematic Class art is missing ${token}`);
 
 assert(artwork.includes('artificer: "/media/classes/artificer-approved.webp"'), "Approved Artificer Forge artwork mapping is missing.");
 assert(fs.existsSync(path.join(root, "public/media/classes/artificer-approved.webp")), "Approved Artificer Forge artwork asset is missing from public/media/classes.");
@@ -160,18 +193,14 @@ for (const token of [
   '"Saving Throws"',
   '"Hit Die"',
 ]) assert(guide.includes(token), `Class guide presentation is missing ${token}`);
-assert(!guide.includes('"Power System"'), "Mockup-aligned Class hero should not restore the redundant Power System fact card.");
-assert(!guide.includes('"Starting Level"'), "Mockup-aligned Class hero should not restore the redundant Starting Level fact card.");
+assert(!guide.includes('"Power System"'), "Class hero should not restore the redundant Power System fact card.");
+assert(!guide.includes('"Starting Level"'), "Class hero should not restore the redundant Starting Level fact card.");
 assert(dock.includes("classPresentationSummary(selectedClass)"), "Floating Class feature dock must keep the selected-Class overview copy authority.");
-
-// Older browser-polish rules may still describe the original in-flow fallback.
-// Desktop portals the description window to document.body so transformed Forge
-// ancestors cannot trap position: fixed. Mobile retains the in-flow fallback.
 assert(polish.includes("npc-forge-step-2"), "Class browser polish scope disappeared.");
 
-const protectedSources = `${step}\n${catalog}\n${guide}\n${subclassBrowser}\n${guideStyles}\n${dock}\n${artwork}\n${presentation}\n${catalogWrapper}\n${polish}`.toLowerCase();
+const protectedSources = `${step}\n${catalog}\n${guide}\n${subclassSelector}\n${guideStyles}\n${dock}\n${artwork}\n${presentation}\n${catalogWrapper}\n${polish}\n${framing}`.toLowerCase();
 for (const token of ["map_routes", "advance_all_characters", "mappageclient", "townsheet", "world travel"]) {
   assert(!protectedSources.includes(token), `Class browser patch unexpectedly references protected map/town behavior: ${token}`);
 }
 
-console.log("Class browser polish validation passed: enlarged illustrated Class catalogue, approved Artificer artwork authority, visible all-subclass browsing, full progression table, deferred cross-tab choice routing, viewport-owned draggable/dismissible feature details, nested Sidekick catalogue, unique special-Class portraits, Mystic Intelligence normalization, and protected map/town boundaries are intact.");
+console.log("Class browser polish validation passed: compact always-visible subclass selection, movable Feature-card inspection, selected-subclass progression bubbles, stable top-right artwork, full-width progression, viewport-owned details, Sidekick grouping, special Class presentation, and protected boundaries are intact.");
