@@ -32,7 +32,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          curl --fail --location --retry 2 --output /tmp/class-art.zip 'https://uc3f40be50cf15dba514e41c9734.dl.dropboxusercontent.com/cd/0/get/DHn0Xrivxpt_12xN9K33gaIPvUB2rb71TrQGXHZh7w39e6Ug4CemQUIW_7b8MJCm9mqzT1pGAchP0KwQs5bLuFg5H6lZlKSHXTe_5EWB_1GzJzvlDHUi8ZxKNG3utJ0kB-YMc2pYKnU05yHdfKvBWa_x/file?c_luid=c335000c'
+          curl --fail --location --retry 2 --output /tmp/class-art.zip 'https://uc11ad58573ee88b8d3fa985ca80.dl.dropboxusercontent.com/cd/0/get/DHmRI6bX2efU92em_tjWfEcgTV48LlwqRhRqLjawV8FjDqNNKj87yHtPK3wiJVulLyzRBoHK0zOsya-cGucWOk_8eJfbs-JLjkPrl5NAiQS7ufC2GTH420YhdI9DEjePYsg-osoo8mldosnV8Yfj7l1Y56IcFr0B6kCelf4M8lkwrQ/file?c_luid=c335000c'
           echo '80f89a942794c24611666f89cc93e1bf01d0913a0e3751f1ed54d0b3c06e7771  /tmp/class-art.zip' | sha256sum -c -
           rm -rf /tmp/class-art
           mkdir -p /tmp/class-art
@@ -81,6 +81,7 @@ jobs:
           public/media/classes/cinematic-rogue.webp
           public/media/classes/cinematic-wizard.webp
           EOF
+          git add -N public/media/classes/cinematic-fighter.webp public/media/classes/cinematic-wizard.webp public/media/classes/cinematic-rogue.webp public/media/classes/cinematic-cleric.webp public/media/classes/cinematic-ranger.webp
           git diff --name-only | sort > /tmp/actual.txt
           diff -u /tmp/expected.txt /tmp/actual.txt
 
