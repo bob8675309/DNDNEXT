@@ -24,12 +24,21 @@ const APPROVED_CLASS_ARTWORK = Object.freeze({
   artificer: "/media/classes/artificer-approved.webp",
 });
 
-const CINEMATIC_CLASS_HERO_ARTWORK = Object.freeze({
+/*
+ * Public cinematic hero/menu maps are intentionally separate. New Class artwork is
+ * promoted here only after browser approval and binary validation. Hero images are
+ * composed for the full-height right-side Class presentation; menu images are compact
+ * catalogue portraits and must not be destructive crops of the hero asset.
+ */
+const PUBLIC_CINEMATIC_CLASS_HERO_ARTWORK = Object.freeze({});
+const PUBLIC_CINEMATIC_CLASS_MENU_ARTWORK = Object.freeze({});
+
+const GENERATED_CINEMATIC_CLASS_HERO_ARTWORK = Object.freeze({
   artificer: artificerHero,
   barbarian: barbarianHero,
 });
 
-const CINEMATIC_CLASS_MENU_ARTWORK = Object.freeze({
+const GENERATED_CINEMATIC_CLASS_MENU_ARTWORK = Object.freeze({
   artificer: artificerMenu,
   barbarian: barbarianMenu,
 });
@@ -58,12 +67,20 @@ function fallbackClassArtwork(normalized = "") {
 
 export function classHeroArtworkFor(classKey = "") {
   const normalized = normalizedClassKey(classKey);
-  return CINEMATIC_CLASS_HERO_ARTWORK[normalized] || fallbackClassArtwork(normalized);
+  return PUBLIC_CINEMATIC_CLASS_HERO_ARTWORK[normalized]
+    || GENERATED_CINEMATIC_CLASS_HERO_ARTWORK[normalized]
+    || fallbackClassArtwork(normalized);
 }
 
 export function classMenuArtworkFor(classKey = "") {
   const normalized = normalizedClassKey(classKey);
-  return CINEMATIC_CLASS_MENU_ARTWORK[normalized] || fallbackClassArtwork(normalized);
+  return PUBLIC_CINEMATIC_CLASS_MENU_ARTWORK[normalized]
+    || GENERATED_CINEMATIC_CLASS_MENU_ARTWORK[normalized]
+    || fallbackClassArtwork(normalized);
+}
+
+export function classHasPublicCinematicHero(classKey = "") {
+  return Boolean(PUBLIC_CINEMATIC_CLASS_HERO_ARTWORK[normalizedClassKey(classKey)]);
 }
 
 export function classArtworkFor(classKey = "") {
