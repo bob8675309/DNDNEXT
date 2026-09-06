@@ -8,6 +8,7 @@ const assert = (condition, message) => { if (!condition) throw new Error(message
 const app = read("pages/_app.js");
 const framing = read("styles/character-forge-class-hero-framing.css");
 const guide = read("components/NpcForgeClassGuide.js");
+const catalog = read("components/NpcForgeClassCatalog.js");
 const artwork = read("utils/classes/classArtwork.js");
 const speciesCorrection = read("styles/character-forge-cinematic-final-corrections.css");
 
@@ -24,16 +25,35 @@ for (const token of [
   "object-fit: cover !important",
 ]) assert(framing.includes(token), `Class hero framing correction is missing ${token}`);
 
+for (const token of [
+  'img[src*="/media/classes/cinematic-"]',
+  "position: absolute !important",
+  "bottom: 0 !important",
+  "left: 30% !important",
+  "object-position: right center !important",
+  "@media (max-width: 900px)",
+]) assert(framing.includes(token), `Mirrored full-height Class cinematic contract is missing ${token}`);
+
 assert(guide.includes("classHeroArtworkFor(selectedClass.class_key)"), "Class hero must keep the centralized artwork resolver.");
 assert(guide.includes("is-class-${theme}"), "Class guide must retain per-class theme hooks used by framing corrections.");
-assert(artwork.includes("CINEMATIC_CLASS_HERO_ARTWORK"), "Purpose-built cinematic Class hero authority is missing.");
-assert(artwork.includes("artificer: artificerHero") && artwork.includes("barbarian: barbarianHero"), "Artificer/Barbarian wide cinematic hero mappings must remain intact.");
+assert(catalog.includes("classMenuArtworkFor(classKey)"), "Class catalogue must keep a separately resolved menu-art role.");
 
+for (const token of [
+  "PUBLIC_CINEMATIC_CLASS_HERO_ARTWORK",
+  "PUBLIC_CINEMATIC_CLASS_MENU_ARTWORK",
+  "GENERATED_CINEMATIC_CLASS_HERO_ARTWORK",
+  "GENERATED_CINEMATIC_CLASS_MENU_ARTWORK",
+  "classHeroArtworkFor",
+  "classMenuArtworkFor",
+]) assert(artwork.includes(token), `Class artwork authority is missing ${token}`);
+
+assert(artwork.includes("artificer: artificerHero") && artwork.includes("barbarian: barbarianHero"), "Artificer/Barbarian generated cinematic hero mappings must remain intact.");
+assert(artwork.includes("artificer: artificerMenu") && artwork.includes("barbarian: barbarianMenu"), "Artificer/Barbarian menu-art mappings must remain intact.");
 assert(!speciesCorrection.includes('img[alt^="Bugbear species reference"]'), "Obsolete Bugbear crop override would stack on top of the newly approved Bugbear composition.");
 
-const protectedText = `${framing}\n${guide}\n${artwork}\n${speciesCorrection}`.toLowerCase();
+const protectedText = `${framing}\n${guide}\n${catalog}\n${artwork}\n${speciesCorrection}`.toLowerCase();
 for (const token of ["mappageclient", "map_routes", "advance_all_characters", "townsheet", "world travel"]) {
   assert(!protectedText.includes(token), `Class hero framing patch unexpectedly references protected map/town behavior: ${token}`);
 }
 
-console.log("Class hero framing validation passed: square legacy Class paintings fit without destructive zoom/crop, purpose-built Artificer/Barbarian cinematic heroes retain cover behavior, obsolete Bugbear focal override is removed, and protected map/town boundaries remain untouched.");
+console.log("Class hero framing validation passed: legacy Class paintings retain non-destructive framing, hero/menu artwork roles stay separate, approved public cinematic paths promote to the mirrored full-height right-side treatment, Artificer/Barbarian generated mappings remain intact, and protected map/town boundaries remain untouched.");
