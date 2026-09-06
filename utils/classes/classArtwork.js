@@ -30,7 +30,13 @@ const APPROVED_CLASS_ARTWORK = Object.freeze({
  * composed for the full-height right-side Class presentation; menu images are compact
  * catalogue portraits and must not be destructive crops of the hero asset.
  */
-const PUBLIC_CINEMATIC_CLASS_HERO_ARTWORK = Object.freeze({});
+const PUBLIC_CINEMATIC_CLASS_HERO_ARTWORK = Object.freeze({
+  fighter: "/media/classes/cinematic-fighter.webp",
+  wizard: "/media/classes/cinematic-wizard.webp",
+  rogue: "/media/classes/cinematic-rogue.webp",
+  cleric: "/media/classes/cinematic-cleric.webp",
+  ranger: "/media/classes/cinematic-ranger.webp",
+});
 const PUBLIC_CINEMATIC_CLASS_MENU_ARTWORK = Object.freeze({});
 
 const GENERATED_CINEMATIC_CLASS_HERO_ARTWORK = Object.freeze({
