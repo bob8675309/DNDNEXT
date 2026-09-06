@@ -1,0 +1,65 @@
+name: Materialize Class subclass browser polish v3
+
+on:
+  push:
+    branches:
+      - agent/class-subclass-browser-20260905
+    paths:
+      - .github/workflows/materialize-class-subclass-browser-v3.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact scratch branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/class-subclass-browser-20260905
+          fetch-depth: 0
+
+      - name: Guard baseline and execute corrected materializer
+        shell: bash
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor 2be4a16fd4fdc9b943c2cfee1c8097e3d9589833 HEAD
+          python -m pip install --disable-pip-version-check --quiet pyyaml
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+          import yaml
+
+          source = Path('.github/workflows/materialize-class-subclass-browser.yml')
+          workflow = yaml.safe_load(source.read_text())
+          steps = workflow['jobs']['patch']['steps']
+          wanted = [
+              'Patch Class guide and presentation',
+              'Refine public cinematic hero framing',
+              'Add subclass-browser regression coverage',
+              'Update rollout documentation',
+              'Validate scoped patch',
+              'Commit clean scratch result',
+          ]
+          by_name = {step.get('name'): step for step in steps}
+          for name in wanted:
+              assert name in by_name and 'run' in by_name[name], name
+              run = by_name[name]['run']
+              if name == 'Refine public cinematic hero framing':
+                  run = run.replace(
+                      "assert css.count('min-height: 218px !important;') >= 2",
+                      "assert css.count('min-height: 218px !important;') >= 1\nassert css.count('min-height: 218px;') >= 1",
+                  )
+                  run = run.replace(
+                      "css = css.replace('min-height: 218px !important;', 'min-height: 286px !important;', 2)",
+                      "css = css.replace('min-height: 218px !important;', 'min-height: 286px !important;', 1)\ncss = css.replace('min-height: 218px;', 'min-height: 286px;', 1)",
+                  )
+              if name == 'Commit clean scratch result':
+                  run = run.replace(
+                      'rm .github/workflows/materialize-class-subclass-browser.yml',
+                      'rm .github/workflows/materialize-class-subclass-browser.yml\nrm .github/workflows/materialize-class-subclass-browser-v3.yml',
+                  )
+              print(f'--- running: {name} ---', flush=True)
+              subprocess.run(['bash', '-euo', 'pipefail', '-c', run], check=True)
+          PY
