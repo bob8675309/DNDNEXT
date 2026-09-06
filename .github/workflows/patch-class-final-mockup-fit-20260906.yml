@@ -1,0 +1,166 @@
+name: Patch final Class mockup fit 2026-09-06
+
+on:
+  push:
+    branches:
+      - agent/class-final-mockup-fit-20260906
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/class-final-mockup-fit-20260906
+          fetch-depth: 2
+
+      - name: Guard exact starting head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = "8266570e94c80594e4ae05e0bf4a4ea639389646"
+
+      - name: Apply final mockup proportions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_required(path, old, new):
+              p = Path(path)
+              s = p.read_text()
+              if old not in s:
+                  raise SystemExit(f'{path}: missing expected token: {old[:180]}')
+              p.write_text(s.replace(old, new))
+
+          selector = 'components/ClassSubclassSection.js'
+          replace_required(selector,
+              '.class-subclass-two-column__scroll{max-height:166px;overflow-y:auto;overscroll-behavior:contain;padding:0 4px 0 0;scrollbar-gutter:stable}.class-subclass-two-column__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}',
+              '.class-subclass-two-column__scroll{max-height:166px;overflow-y:auto;overscroll-behavior:contain;padding:0 4px 0 0;scrollbar-gutter:stable}.class-subclass-two-column__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:52px;gap:5px}')
+          replace_required(selector,
+              'grid-template-columns:64px minmax(0,1fr);gap:7px;align-items:center;min-width:0;min-height:42px;padding:3px 5px',
+              'grid-template-columns:76px minmax(0,1fr);gap:8px;align-items:center;min-width:0;min-height:52px;padding:4px 6px')
+          replace_required(selector,
+              '.class-subclass-two-column__art{display:block;width:64px;height:32px;',
+              '.class-subclass-two-column__art{display:block;width:76px;height:40px;')
+          replace_required(selector,
+              '@media(max-width:760px){.class-subclass-two-column__grid{grid-template-columns:1fr}.class-subclass-two-column__scroll{max-height:min(36vh,285px)}.class-subclass-two-column__card{grid-template-columns:64px minmax(0,1fr)}}',
+              '@media(max-width:760px){.class-subclass-two-column__grid{grid-template-columns:1fr;grid-auto-rows:48px}.class-subclass-two-column__scroll{max-height:min(36vh,285px)}.class-subclass-two-column__card{grid-template-columns:70px minmax(0,1fr);min-height:48px}.class-subclass-two-column__art{width:70px;height:36px}}')
+
+          guide = 'components/NpcForgeClassGuide.js'
+          replace_required(guide,
+              '.npc-forge-class-guide__table-card{max-height:435px!important;padding:5px!important;overflow:auto!important}',
+              '.npc-forge-class-guide__table-card{width:min(74%,860px)!important;max-width:860px!important;align-self:start!important;max-height:435px!important;padding:5px!important;overflow:auto!important}')
+          replace_required(guide,
+              '.npc-forge-class-guide__table-card .class-level-guide__table{width:100%!important;min-width:900px!important}',
+              '.npc-forge-class-guide__table-card .class-level-guide__table{width:100%!important;min-width:760px!important}')
+          replace_required(guide,
+              '.npc-forge-class-guide__table-card .class-level-guide__table.has-spell-progression{min-width:1060px!important}',
+              '.npc-forge-class-guide__table-card .class-level-guide__table.has-spell-progression{min-width:820px!important}')
+          replace_required(guide,
+              'grid-template-columns:46px 44px minmax(300px,2.7fr) 58px 82px repeat(9,minmax(36px,.34fr))!important;',
+              'grid-template-columns:42px 38px minmax(230px,2.25fr) 50px 72px repeat(9,minmax(28px,.3fr))!important;')
+          replace_required(guide,
+              '@media(max-width:900px){.npc-forge-class-guide__overview-layout{padding:10px!important}.npc-forge-class-guide__table-card .class-level-guide__table{min-width:720px!important}.npc-forge-class-guide__table-card .class-level-guide__table.has-spell-progression{min-width:1080px!important}}',
+              '@media(max-width:900px){.npc-forge-class-guide__overview-layout{padding:10px!important}.npc-forge-class-guide__table-card{width:100%!important;max-width:none!important}.npc-forge-class-guide__table-card .class-level-guide__table{min-width:720px!important}.npc-forge-class-guide__table-card .class-level-guide__table.has-spell-progression{min-width:1080px!important}}')
+
+          framing = 'styles/character-forge-class-hero-framing.css'
+          p = Path(framing)
+          f = p.read_text()
+          marker = '''  .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__book-hero:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) {'''
+          if marker not in f:
+              raise SystemExit('framing: missing hero marker')
+          outer = '''  /* Browser-approved outer-edge treatment: the Overview card itself consumes the Class guide\n     top/right padding so the cinematic painting reaches the actual workspace edge. */\n  .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__overview-book:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) {\n    width: calc(100% + 8px) !important;\n    max-width: none !important;\n    margin-top: -8px !important;\n    margin-right: -8px !important;\n  }\n\n'''
+          if 'width: calc(100% + 8px) !important' not in f:
+              f = f.replace(marker, outer + marker, 1)
+          p.write_text(f)
+
+          for validator in ['scripts/validate_class_browser_polish.mjs', 'scripts/validate_class_subclass_browser.mjs']:
+              p = Path(validator)
+              v = p.read_text()
+              for old, new in [
+                  ('grid-template-columns:64px minmax(0,1fr)', 'grid-template-columns:76px minmax(0,1fr)'),
+                  ('min-height:42px', 'min-height:52px'),
+                  ('min-width:1060px!important', 'min-width:820px!important'),
+                  ('repeat(9,minmax(36px,.34fr))', 'repeat(9,minmax(28px,.3fr))'),
+              ]:
+                  if old not in v:
+                      raise SystemExit(f'{validator}: missing {old}')
+                  v = v.replace(old, new)
+              anchor = "'grid-template-columns:repeat(2,minmax(0,1fr))',"
+              if anchor in v and "'grid-auto-rows:52px'," not in v:
+                  v = v.replace(anchor, anchor + "\n  'grid-auto-rows:52px',")
+              anchor2 = "'width:min(35%,430px)',"
+              if anchor2 in v and "'max-height:166px'," not in v:
+                  v = v.replace(anchor2, anchor2 + "\n  'max-height:166px',")
+              p.write_text(v)
+
+          p = Path('scripts/validate_class_hero_framing.mjs')
+          v = p.read_text()
+          anchor = '"object-position: right center !important",'
+          if anchor not in v:
+              raise SystemExit('hero validator missing insertion anchor')
+          if '"width: calc(100% + 8px) !important",' not in v:
+              v = v.replace(anchor, anchor + '\n  "width: calc(100% + 8px) !important",\n  "margin-top: -8px !important",\n  "margin-right: -8px !important",', 1)
+          p.write_text(v)
+
+          p = Path('docs/CHARACTER_FORGE_CLASS_SUBCLASS_SELECTOR_ARTWORK.md')
+          d = p.read_text()
+          d = d.replace('each visible choice button contains only the subclass artwork and subclass name;', 'each visible choice button contains only the subclass artwork and subclass name; desktop cards are 52px tall with 76×40 artwork, so exactly six choices (2 columns × 3 rows) are visible before scrolling;')
+          d = d.replace('table-card height cap is 435px;', 'table-card height cap is 435px and the desktop card itself is constrained to `width:min(74%,860px)` so it ends before the right-side character art;')
+          d = d.replace('desktop spell-table minimum width is 820px while preserving all columns; narrow layouts retain the wider scrolling treatment;', 'desktop spell-table minimum width is 820px while preserving all columns; narrow layouts retain the wider scrolling treatment;')
+          if 'desktop spell-table minimum width is 820px' not in d:
+              d = d.replace('spell-table minimum width remains 1060px while preserving all columns;', 'desktop spell-table minimum width is 820px while preserving all columns; narrow layouts retain the wider scrolling treatment;')
+          d = d.replace('on desktop the cinematic layer spans the full Class Overview width from `left: 0` through the right edge;', 'on desktop the cinematic layer spans the full Class Overview width from `left: 0` through the right edge, and the Overview card consumes the Class guide\'s 8px top/right padding (`margin-top:-8px`, `margin-right:-8px`, `width:calc(100% + 8px)`) so the painting reaches the outer workspace edge;')
+          p.write_text(d)
+
+          selector_text = Path(selector).read_text()
+          assert 'width:min(35%,430px)' in selector_text
+          assert 'max-height:166px' in selector_text
+          assert 'grid-auto-rows:52px' in selector_text
+          assert 'grid-template-columns:76px minmax(0,1fr)' in selector_text
+          assert 'width:76px;height:40px' in selector_text
+          assert 'model.setPreviewKey(option.key)' in selector_text
+          assert 'model.selectSubclass(option)' in selector_text
+          assert 'onInspectSubclass?.(option)' in selector_text
+
+          guide_text = Path(guide).read_text()
+          assert 'width:min(74%,860px)' in guide_text
+          assert 'min-width:820px!important' in guide_text
+          assert 'repeat(9,minmax(28px,.3fr))' in guide_text
+          assert 'feature?.type !== "subclass"' in guide_text
+          assert 'model?.selected' in guide_text
+
+          framing_text = Path(framing).read_text()
+          assert 'width: calc(100% + 8px) !important' in framing_text
+          assert 'margin-top: -8px !important' in framing_text
+          assert 'margin-right: -8px !important' in framing_text
+          assert 'left: 0 !important' in framing_text
+          assert 'object-position: 100% 0% !important' in framing_text
+          PY
+
+          node scripts/validate_class_browser_polish.mjs
+          node scripts/validate_class_subclass_browser.mjs
+          node scripts/validate_class_hero_framing.mjs
+          git diff --check
+
+          changed="$(git diff --name-only | sort)"
+          printf '%s\n' "$changed"
+          expected="$(printf '%s\n' components/ClassSubclassSection.js components/NpcForgeClassGuide.js docs/CHARACTER_FORGE_CLASS_SUBCLASS_SELECTOR_ARTWORK.md scripts/validate_class_browser_polish.mjs scripts/validate_class_hero_framing.mjs scripts/validate_class_subclass_browser.mjs styles/character-forge-class-hero-framing.css | sort)"
+          test "$changed" = "$expected"
+
+      - name: Commit focused final Class proportions
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add components/ClassSubclassSection.js components/NpcForgeClassGuide.js docs/CHARACTER_FORGE_CLASS_SUBCLASS_SELECTOR_ARTWORK.md scripts/validate_class_browser_polish.mjs scripts/validate_class_hero_framing.mjs scripts/validate_class_subclass_browser.mjs styles/character-forge-class-hero-framing.css
+          git diff --cached --check
+          git commit -m "Match final Class mockup proportions"
+          git push origin HEAD:agent/class-final-mockup-fit-20260906
