@@ -56,7 +56,7 @@ The approved progression table structure remains unchanged: Level, PB, Features,
 - header minimum height is 28px;
 - row text is `.57rem`;
 - feature-pill padding is `.16rem .34rem`;
-- desktop spell-table minimum width is 820px while preserving all columns; narrow layouts retain the wider scrolling treatment;
+- desktop spell-table uses the available card width with no forced desktop minimum; its columns are rebalanced so Level, PB, Features, Cantrips, Known/Prepared, and 1st–9th remain aligned and the 9th-level column is visible without horizontal clipping at the approved desktop layout; narrow layouts retain the wider scrolling treatment;
 - narrow layouts continue to scroll horizontally rather than dropping progression data.
 
 Base Class features remain purple pills; selected-subclass features remain cyan pills.
@@ -67,7 +67,7 @@ The selector and art are intentionally decoupled:
 
 - public cinematic art remains viewport-height-derived and content-height independent;
 - expanding/collapsing the subclass selector must not move, resize, or recrop it;
-- on desktop the cinematic layer spans the full Class Overview width from `left: 0` through the right edge, and the Overview card consumes the Class guide's 8px top/right padding (`margin-top:-8px`, `margin-right:-8px`, `width:calc(100% + 8px)`) so the painting reaches the outer workspace edge;
+- on desktop the cinematic layer spans the full Class Overview width from `left: 0` through the right edge, and the Overview card consumes the Class guide's 8px top/right padding (`margin-top:-8px`, `margin-right:-32px`, `width:calc(100% + 32px)`) so the painting reaches the outer workspace edge;
 - the artwork begins beside and underneath the Class description;
 - a stronger left-to-right readability gradient fades the art behind the Class title, description, and fact boxes while preserving the unobstructed subject on the right;
 - the stable art layer remains `height: clamp(780px, 82vh, 960px)` with `object-position: 100% 0%`.
