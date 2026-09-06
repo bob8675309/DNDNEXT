@@ -62,7 +62,8 @@ for (const token of [
   "ProgressionTable",
   "Class Overview",
   "Detailed Guide",
-  "previewSubclass(model, onFeatureDetail, option)",
+  "inspectSubclass(model, onFeatureDetail, option)",
+  "selectedRowFeatures",
 ]) assert(guide.includes(token), `Artificer presentation patch must preserve existing Class behavior: ${token}`);
 
 assert(guideModel.includes('select("class_level,proficiency_bonus,cantrips_known,spells_known,spell_slots,features")'), "Class progression must remain sourced from the imported progression fields.");
