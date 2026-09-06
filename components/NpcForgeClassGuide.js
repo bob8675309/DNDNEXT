@@ -90,6 +90,20 @@ function spellSlotCells(slots) {
   if (pactSlots > 0 && pactLevel >= 1 && pactLevel <= 9) cells[pactLevel - 1] = `${pactSlots}p`;
   return cells;
 }
+function spellSlotCells(slots) {
+  const cells = Array(9).fill("—");
+  if (Array.isArray(slots)) {
+    for (let index = 0; index < Math.min(9, slots.length); index += 1) {
+      const count = Number(slots[index] || 0);
+      cells[index] = count > 0 ? String(count) : "—";
+    }
+    return cells;
+  }
+  const pactSlots = Number(slots?.pactSlots || 0);
+  const pactLevel = Number(slots?.pactSlotLevel || 0);
+  if (pactSlots > 0 && pactLevel >= 1 && pactLevel <= 9) cells[pactLevel - 1] = `${pactSlots}p`;
+  return cells;
+}
 function ForgeClassHero({ selectedClass }) {
   return <header id="forge-class-guide-introduction" className="class-book-guide__hero npc-forge-class-guide__book-hero">
     <div className="npc-forge-class-guide__hero-copy">
@@ -181,6 +195,8 @@ export default function NpcForgeClassGuide({ selectedClass = null, level = 1, on
       .npc-forge-class-guide__overview-layout{grid-template-columns:minmax(0,1fr)!important;gap:8px!important;padding:10px 12px 12px!important}.npc-forge-class-guide__overview-main{width:100%;min-width:0}.npc-forge-class-guide__dock-lane{display:none!important}
       .npc-forge-class-guide__table-card{max-height:565px!important;padding:8px!important;overflow:auto!important}.npc-forge-class-guide__table-card .class-level-guide__table{width:100%!important;min-width:900px!important}.npc-forge-class-guide__table-card .class-level-guide__row{grid-template-columns:58px 52px minmax(300px,1.7fr) 72px 108px minmax(160px,.9fr)!important;gap:.45rem!important;min-height:44px!important;padding:.38rem .5rem!important}.npc-forge-class-guide__table-card .class-level-guide__row>div{padding:3px 4px!important;font-size:.58rem!important;line-height:1.28!important}.npc-forge-class-guide__table-card .class-level-guide__row.is-head{min-height:36px!important}
       .npc-forge-class-guide__table-card .class-level-guide__features{display:flex!important;flex-wrap:wrap!important;gap:.3rem!important}.npc-forge-class-guide__table-card .class-level-guide__features button{appearance:none!important;padding:.24rem .44rem!important;border:1px solid rgba(196,163,255,.28)!important;border-radius:999px!important;color:rgba(255,255,255,.94)!important;background:rgba(126,75,202,.14)!important;font-family:inherit!important;font-size:.58rem!important;font-weight:650!important;line-height:1.2!important;text-decoration:none!important;transition:border-color 120ms ease,background 120ms ease,transform 120ms ease!important}.npc-forge-class-guide__table-card .class-level-guide__features button:hover,.npc-forge-class-guide__table-card .class-level-guide__features button:focus-visible{border-color:rgba(213,184,255,.82)!important;color:#fff!important;background:rgba(142,82,231,.3)!important;transform:translateY(-1px);outline:none!important}.npc-forge-class-guide__table-card .class-level-guide__features button.is-subclass{border-color:rgba(58,188,220,.58)!important;background:rgba(28,128,151,.2)!important}.npc-forge-class-guide__table-card .class-level-guide__slots{font-size:.56rem!important;line-height:1.35!important;white-space:normal!important}
+      .npc-forge-class-guide__table-card .class-level-guide__table.has-spell-progression{min-width:1120px!important}.npc-forge-class-guide__table-card .class-level-guide__row.is-spell-progression{grid-template-columns:48px 48px minmax(320px,2.7fr) 62px 88px repeat(9,minmax(38px,.34fr))!important;gap:.28rem!important}.npc-forge-class-guide__table-card .class-level-guide__row:not(.is-spell-progression){grid-template-columns:48px 48px minmax(360px,1fr)!important;gap:.4rem!important}.npc-forge-class-guide__table-card .class-level-guide__slot-head,.npc-forge-class-guide__table-card .class-level-guide__slot-cell{text-align:center!important;font-variant-numeric:tabular-nums}.npc-forge-class-guide__table-card .class-level-guide__slot-head{color:rgba(255,255,255,.56)!important;font-size:.48rem!important}.npc-forge-class-guide__table-card .class-level-guide__slot-cell{color:rgba(255,255,255,.76)!important;font-size:.54rem!important}.npc-forge-class-guide__table-card .class-level-guide__features button{cursor:pointer}.npc-forge-class-guide__table-card .class-level-guide__features button:focus-visible{outline:1px solid rgba(var(--class-secondary),.8)!important;outline-offset:1px!important}
+
       .npc-forge-class-guide__table-card .class-level-guide__table.has-spell-progression{min-width:1120px!important}.npc-forge-class-guide__table-card .class-level-guide__row.is-spell-progression{grid-template-columns:48px 48px minmax(320px,2.7fr) 62px 88px repeat(9,minmax(38px,.34fr))!important;gap:.28rem!important}.npc-forge-class-guide__table-card .class-level-guide__row:not(.is-spell-progression){grid-template-columns:48px 48px minmax(360px,1fr)!important;gap:.4rem!important}.npc-forge-class-guide__table-card .class-level-guide__slot-head,.npc-forge-class-guide__table-card .class-level-guide__slot-cell{text-align:center!important;font-variant-numeric:tabular-nums}.npc-forge-class-guide__table-card .class-level-guide__slot-head{color:rgba(255,255,255,.56)!important;font-size:.48rem!important}.npc-forge-class-guide__table-card .class-level-guide__slot-cell{color:rgba(255,255,255,.76)!important;font-size:.54rem!important}.npc-forge-class-guide__table-card .class-level-guide__features button{cursor:pointer}.npc-forge-class-guide__table-card .class-level-guide__features button:focus-visible{outline:1px solid rgba(var(--class-secondary),.8)!important;outline-offset:1px!important}
 
       @media(max-width:900px){.npc-forge-class-guide__overview-layout{padding:10px!important}.npc-forge-class-guide__table-card .class-level-guide__table{min-width:720px!important}.npc-forge-class-guide__table-card .class-level-guide__table.has-spell-progression{min-width:1080px!important}}
