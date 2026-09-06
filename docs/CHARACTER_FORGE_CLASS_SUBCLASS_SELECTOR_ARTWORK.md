@@ -6,21 +6,23 @@ This document records the browser-approved subclass-selector presentation layere
 
 ## Approved selector layout
 
-The approved target is the two-column Wizard treatment reviewed on 2026-09-06, with enough density to stay readable while leaving substantially more room for the cinematic Class artwork:
+The approved target is the final compact two-column Wizard treatment reviewed on 2026-09-06:
 
 - the selector sits directly above Class Progression;
 - it uses exactly two columns on desktop and one column on narrow layouts;
-- the normal desktop selector uses `width:min(54%,620px)`; together with the reduced scroll height this is about one-third less total footprint than the preceding 66% × 205px treatment;
-- the expanded selector is internally scrollable for larger catalogues;
-- current desktop scroll cap is `min(23vh, 168px)`;
-- each row is approximately 44px tall and contains a 74×36 landscape thumbnail, subclass name, one-line summary, source badge, and compact selected/level state;
-- every canonical subclass remains available even when the reference mockup visually depicts fewer rows;
+- the normal desktop selector occupies about the yellow-box proportion from browser review: `width:min(35%,430px)`;
+- at widths below 1100px it uses `width:min(42%,430px)` and below 900px it returns to full width;
+- the expanded selector remains internally scrollable for larger catalogues with the existing `max-height:min(23vh,168px)` cap;
+- each visible choice button contains only the subclass artwork and subclass name;
+- source badges, inline descriptions, level badges, status/check circles, and other visible metadata are intentionally omitted from choice buttons;
+- selected state is communicated by the existing border/background highlight rather than an extra visible status control;
+- every canonical subclass remains present even when the reference mockup visually depicts fewer rows;
 - selecting an eligible subclass still uses the existing Forge authority, updates progression, and collapses the selector;
-- collapsed state keeps only the selected subclass artwork/summary plus compact Change/Clear controls at the same restrained left-side width;
-- clicking a subclass row sends its details to the movable Feature card; hover/focus alone does not replace Feature-card content;
+- collapsed state retains the selected subclass artwork/name with compact Change/Clear controls;
+- clicking a subclass still sends its details to the movable Feature card; hover/focus alone does not replace Feature-card content;
 - search, source-filter toolbars, large inline detail cards, and the old multi-column pill wall are not part of the approved Overview layout.
 
-At widths below 900px the selector returns to full width. The cinematic artwork remains independently positioned and must not resize or recrop when the selector expands or collapses.
+The cinematic artwork remains independently positioned and must not resize or recrop when the selector expands or collapses.
 
 ## Artwork authority
 
@@ -47,7 +49,7 @@ The WebPs were transferred through the standing DNDNext binary route: local appr
 
 ## Progression density target
 
-The approved progression table structure remains unchanged: Level, PB, Features, Cantrips, Known/Prepared, then individual 1st–9th spell-slot columns for spellcasting Classes. The current browser target is roughly 20% shorter vertically than the previous balance pass while preserving the complete table:
+The approved progression table structure remains unchanged: Level, PB, Features, Cantrips, Known/Prepared, then individual 1st–9th spell-slot columns for spellcasting Classes. The current browser target remains roughly 20% shorter vertically than the preceding balance pass while preserving the complete table:
 
 - table-card height cap is 435px;
 - normal row minimum height is 34px;
@@ -65,8 +67,8 @@ The selector and art are intentionally decoupled:
 
 - public cinematic art remains viewport-height-derived and content-height independent;
 - expanding/collapsing the subclass selector must not move, resize, or recrop it;
-- on desktop the cinematic layer now spans the full Class Overview width from `left: 0` through the right edge;
-- the artwork therefore begins beside and underneath the Class description rather than starting later in the card;
+- on desktop the cinematic layer spans the full Class Overview width from `left: 0` through the right edge;
+- the artwork begins beside and underneath the Class description;
 - a stronger left-to-right readability gradient fades the art behind the Class title, description, and fact boxes while preserving the unobstructed subject on the right;
 - the stable art layer remains `height: clamp(780px, 82vh, 960px)` with `object-position: 100% 0%`.
 
@@ -79,12 +81,13 @@ Before this selector/artwork pass is accepted or extended:
 3. future-level subclasses may be inspected but must not persist early;
 4. only the selected subclass contributes cyan progression features;
 5. the Feature card remains click/selection-driven, not hover-driven;
-6. the expanded selector remains a readable two-column internal scroll region;
-7. the selected collapsed row retains its thumbnail and Change control;
-8. missing subclass images fall back to Class menu artwork rather than breaking the selector;
-9. all nine spell-slot columns remain visible/scrollable;
-10. expanding/collapsing the selector does not alter cinematic art framing;
-11. the public cinematic layer begins at the left edge and uses a readability fade beneath Class copy;
-12. `Validate Class browser polish`, subclass-selector validation, Source Magic Routing, and the normal Forge validation suite must pass;
-13. Vercel exact-head build/runtime checks and `/profile` must pass;
-14. no world-map, town/city-map, Supabase data/schema, crafting, inventory, travel, or unrelated runtime files may be changed.
+6. the expanded selector remains a two-column internal scroll region at the approved compact desktop width;
+7. each visible subclass choice contains only artwork and subclass name;
+8. the selected collapsed row retains its artwork/name and Change control;
+9. missing subclass images fall back to Class menu artwork rather than breaking the selector;
+10. all nine spell-slot columns remain visible/scrollable;
+11. expanding/collapsing the selector does not alter cinematic art framing;
+12. the public cinematic layer begins at the left edge and uses a readability fade beneath Class copy;
+13. `Validate Class browser polish`, subclass-selector validation, Source Magic Routing, and the normal Forge validation suite must pass;
+14. Vercel exact-head build/runtime checks and `/profile` must pass;
+15. no world-map, town/city-map, Supabase data/schema, crafting, inventory, travel, or unrelated runtime files may be changed.
