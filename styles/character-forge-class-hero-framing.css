@@ -19,10 +19,114 @@
   transform-origin: right center !important;
 }
 
-/* Artificer and Barbarian own purpose-built wide cinematic hero artwork. Keep those assets
-   filling the hero panel, but do not re-zoom them after the resolver has selected them. */
+/* Artificer and Barbarian own purpose-built generated wide hero artwork. Keep those assets
+   filling the current hero panel until they are explicitly promoted/replaced under the new
+   full-height public cinematic standard. */
 .unified-player-character-forge .npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__hero-art img,
 .unified-player-character-forge .npc-forge-class-guide.is-class-barbarian .npc-forge-class-guide__hero-art img {
   object-fit: cover !important;
   transform: none !important;
+}
+
+/*
+ * Public cinematic Class hero contract.
+ *
+ * Approved new hero exports live at /media/classes/cinematic-<class>.webp. Detect that exact
+ * resolver path rather than applying full-height cover behavior to legacy square paintings.
+ * The existing hero <img> is promoted out of the shallow header grid and becomes a full-height,
+ * right-anchored background layer inside the Class content card. Foreground Class content keeps
+ * its existing z-index and remains mechanically unchanged.
+ */
+@media (min-width: 901px) {
+  .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__overview-book:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]),
+  .unified-player-character-forge .npc-forge-class-guide .class-book-guide__content:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) {
+    position: relative !important;
+    isolation: isolate;
+    overflow: hidden !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__book-hero:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) {
+    position: static !important;
+    grid-template-columns: minmax(0, 62%) minmax(0, 38%) !important;
+    min-height: 218px !important;
+    overflow: visible !important;
+    background: linear-gradient(90deg, rgba(5, 8, 15, 0.96), rgba(5, 8, 15, 0.76) 46%, rgba(5, 8, 15, 0.28) 72%, rgba(5, 8, 15, 0.08)) !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__book-hero:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"])::before,
+  .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__book-hero:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"])::after {
+    content: none !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__book-hero:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) > .npc-forge-class-guide__hero-copy {
+    grid-column: 1 / 2;
+    width: 100%;
+    max-width: 760px;
+    min-height: 218px;
+    position: relative !important;
+    z-index: 4 !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__hero-art:has(img[src*="/media/classes/cinematic-"]) {
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 30% !important;
+    z-index: 0 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    background: #070a11 !important;
+    pointer-events: none;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__hero-art:has(img[src*="/media/classes/cinematic-"])::before {
+    content: "" !important;
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: 2 !important;
+    pointer-events: none;
+    background:
+      linear-gradient(90deg, rgba(5, 8, 15, 0.99) 0%, rgba(5, 8, 15, 0.92) 20%, rgba(5, 8, 15, 0.64) 42%, rgba(5, 8, 15, 0.2) 69%, rgba(5, 8, 15, 0.04) 100%),
+      linear-gradient(0deg, rgba(5, 8, 14, 0.7) 0%, rgba(5, 8, 14, 0.1) 24%, rgba(5, 8, 14, 0.08) 76%, rgba(5, 8, 14, 0.38) 100%) !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__hero-art:has(img[src*="/media/classes/cinematic-"]) img {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    object-fit: cover !important;
+    object-position: right center !important;
+    transform: none !important;
+    transform-origin: right center !important;
+    filter: saturate(0.96) contrast(1.05) brightness(0.86) !important;
+  }
+
+  /* Keep all normal Class copy/control surfaces above the full-height art. */
+  .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__overview-book:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) > :not(.npc-forge-class-guide__book-hero),
+  .unified-player-character-forge .npc-forge-class-guide .class-book-guide__content:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) > :not(.npc-forge-class-guide__book-hero) {
+    position: relative !important;
+    z-index: 3 !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__overview-book:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"])::after,
+  .unified-player-character-forge .npc-forge-class-guide .class-book-guide__content:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"])::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(90deg, rgba(4, 7, 13, 0.22) 0%, rgba(4, 7, 13, 0.08) 52%, rgba(4, 7, 13, 0) 100%);
+  }
+}
+
+/* Narrow layouts keep the cinematic image in the normal hero rail instead of placing a tall
+   background behind vertically stacked controls. This preserves mobile readability/scrolling. */
+@media (max-width: 900px) {
+  .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"] {
+    object-fit: cover !important;
+    object-position: center 24% !important;
+    transform: none !important;
+  }
 }
