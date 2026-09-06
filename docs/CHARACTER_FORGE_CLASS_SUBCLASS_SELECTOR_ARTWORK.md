@@ -12,8 +12,8 @@ The approved target is the final compact two-column Wizard treatment reviewed on
 - it uses exactly two columns on desktop and one column on narrow layouts;
 - the normal desktop selector occupies about the yellow-box proportion from browser review: `width:min(35%,430px)`;
 - at widths below 1100px it uses `width:min(42%,430px)` and below 900px it returns to full width;
-- the expanded selector remains internally scrollable for larger catalogues with the existing `max-height:min(23vh,168px)` cap;
-- each visible choice button contains only the subclass artwork and subclass name;
+- the expanded selector remains internally scrollable for larger catalogues with a `166px` desktop viewport;
+- each visible choice button contains only the subclass artwork and subclass name; desktop cards are 52px tall with 76×40 artwork, so exactly six choices (2 columns × 3 rows) are visible before scrolling;
 - source badges, inline descriptions, level badges, status/check circles, and other visible metadata are intentionally omitted from choice buttons;
 - selected state is communicated by the existing border/background highlight rather than an extra visible status control;
 - every canonical subclass remains present even when the reference mockup visually depicts fewer rows;
@@ -51,12 +51,12 @@ The WebPs were transferred through the standing DNDNext binary route: local appr
 
 The approved progression table structure remains unchanged: Level, PB, Features, Cantrips, Known/Prepared, then individual 1st–9th spell-slot columns for spellcasting Classes. The current browser target remains roughly 20% shorter vertically than the preceding balance pass while preserving the complete table:
 
-- table-card height cap is 435px;
+- table-card height cap is 435px and the desktop card itself is constrained to `width:min(74%,860px)` so it ends before the right-side character art;
 - normal row minimum height is 34px;
 - header minimum height is 28px;
 - row text is `.57rem`;
 - feature-pill padding is `.16rem .34rem`;
-- spell-table minimum width remains 1060px while preserving all columns;
+- desktop spell-table minimum width is 820px while preserving all columns; narrow layouts retain the wider scrolling treatment;
 - narrow layouts continue to scroll horizontally rather than dropping progression data.
 
 Base Class features remain purple pills; selected-subclass features remain cyan pills.
@@ -67,7 +67,7 @@ The selector and art are intentionally decoupled:
 
 - public cinematic art remains viewport-height-derived and content-height independent;
 - expanding/collapsing the subclass selector must not move, resize, or recrop it;
-- on desktop the cinematic layer spans the full Class Overview width from `left: 0` through the right edge;
+- on desktop the cinematic layer spans the full Class Overview width from `left: 0` through the right edge, and the Overview card consumes the Class guide's 8px top/right padding (`margin-top:-8px`, `margin-right:-8px`, `width:calc(100% + 8px)`) so the painting reaches the outer workspace edge;
 - the artwork begins beside and underneath the Class description;
 - a stronger left-to-right readability gradient fades the art behind the Class title, description, and fact boxes while preserving the unobstructed subject on the right;
 - the stable art layer remains `height: clamp(780px, 82vh, 960px)` with `object-position: 100% 0%`.
