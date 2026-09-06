@@ -47,6 +47,7 @@ jobs:
           block = s[start:end]
           s = s[:end] + s[end:].replace(block, '')
 
+          s = '\n'.join(line.rstrip() for line in s.splitlines()) + '\n'
           p.write_text(s)
           PY
           test "$(grep -c 'function spellSlotCells' components/NpcForgeClassGuide.js)" -eq 1
