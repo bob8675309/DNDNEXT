@@ -8,6 +8,7 @@ const assert = (condition, message) => { if (!condition) throw new Error(message
 const step = read("components/NpcForgeStepContent.js");
 const catalog = read("components/NpcForgeClassCatalog.js");
 const guide = read("components/NpcForgeClassGuide.js");
+const subclassBrowser = read("components/ClassSubclassSection.js");
 const guideStyles = read("components/NpcForgeClassGuideStyles.js");
 const dock = read("components/NpcForgeClassFeatureDock.js");
 const artwork = read("utils/classes/classArtwork.js");
@@ -79,16 +80,16 @@ assert(dock.includes("font-size:.72rem!important;line-height:1.58!important"), "
 for (const token of [
   "classThemeKey",
   "is-class-${theme}",
-  "classHeroTagline",
+  "classOverviewSummary(selectedClass)",
   "npc-forge-class-guide__hero-art",
   "npc-forge-class-guide__overview-layout",
   "npc-forge-class-guide__overview-main",
   "npc-forge-class-guide__dock-lane",
-  "npc-forge-class-guide__subclass-grid",
-  'aria-label="Available subclasses"',
-  "model.options.map((option) => <SubclassButton",
+  "ClassSubclassSection",
+  "onPreviewSubclass",
+  "model={model}",
   "previewSubclass(model, onFeatureDetail, option)",
-  "npc-forge-class-guide__subclass-confirm",
+  "ForgeSubclassSelection",
   "Deferred resolutions",
   "Choices for tools, feats, skills, spells, and other options",
   "Tools, skills, feats, fighting styles, maneuvers, invocations",
@@ -97,6 +98,7 @@ for (const token of [
   'aria-label={`View ${feature.name} details`}',
 ]) assert(guide.includes(token), `Mockup-aligned Artificer/Class presentation is missing ${token}`);
 assert(!guide.includes("model.options.slice(0, 4)"), "Subclass catalogue must no longer collapse after four entries.");
+for (const token of ["Browse Subclasses", "Search subclasses", "model.selectSubclass(option)", 'aria-label="Subclass catalogue"']) assert(subclassBrowser.includes(token), `Compact subclass browser is missing ${token}`);
 assert(!guide.includes("<select value={model.preview?.key"), "Subclass preview must use compact buttons instead of the old dropdown selector.");
 assert(!guide.includes("title={cleanPlayerCopy(feature.description)}"), "Native browser feature tooltips must not compete with the movable detail card.");
 for (const token of [
@@ -167,7 +169,7 @@ assert(dock.includes("classPresentationSummary(selectedClass)"), "Floating Class
 // ancestors cannot trap position: fixed. Mobile retains the in-flow fallback.
 assert(polish.includes("npc-forge-step-2"), "Class browser polish scope disappeared.");
 
-const protectedSources = `${step}\n${catalog}\n${guide}\n${guideStyles}\n${dock}\n${artwork}\n${presentation}\n${catalogWrapper}\n${polish}`.toLowerCase();
+const protectedSources = `${step}\n${catalog}\n${guide}\n${subclassBrowser}\n${guideStyles}\n${dock}\n${artwork}\n${presentation}\n${catalogWrapper}\n${polish}`.toLowerCase();
 for (const token of ["map_routes", "advance_all_characters", "mappageclient", "townsheet", "world travel"]) {
   assert(!protectedSources.includes(token), `Class browser patch unexpectedly references protected map/town behavior: ${token}`);
 }

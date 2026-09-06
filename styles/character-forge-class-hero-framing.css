@@ -47,8 +47,8 @@
 
   .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__book-hero:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) {
     position: static !important;
-    grid-template-columns: minmax(0, 62%) minmax(0, 38%) !important;
-    min-height: 218px !important;
+    grid-template-columns: minmax(0, 55%) minmax(0, 45%) !important;
+    min-height: 286px !important;
     overflow: visible !important;
     background: linear-gradient(90deg, rgba(5, 8, 15, 0.96), rgba(5, 8, 15, 0.76) 46%, rgba(5, 8, 15, 0.28) 72%, rgba(5, 8, 15, 0.08)) !important;
   }
@@ -62,7 +62,7 @@
     grid-column: 1 / 2;
     width: 100%;
     max-width: 760px;
-    min-height: 218px;
+    min-height: 286px;
     position: relative !important;
     z-index: 4 !important;
   }
@@ -72,7 +72,7 @@
     top: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
-    left: 30% !important;
+    left: 24% !important;
     z-index: 0 !important;
     min-width: 0 !important;
     overflow: hidden !important;
@@ -102,6 +102,35 @@
     transform-origin: right center !important;
     filter: saturate(0.96) contrast(1.05) brightness(0.86) !important;
   }
+
+  /* Browser-review refinement: expose more of approved cinematic art from the top-right. */
+.unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__hero-art:has(img[src*="/media/classes/cinematic-"])::before {
+  background:
+    linear-gradient(90deg, rgba(5, 8, 15, 0.99) 0%, rgba(5, 8, 15, 0.88) 18%, rgba(5, 8, 15, 0.52) 39%, rgba(5, 8, 15, 0.12) 61%, rgba(5, 8, 15, 0) 78%),
+    linear-gradient(0deg, rgba(5, 8, 14, 0.52) 0%, rgba(5, 8, 14, 0.04) 30%, rgba(5, 8, 14, 0.02) 80%, rgba(5, 8, 14, 0.18) 100%) !important;
+}
+
+.unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__hero-art:has(img[src*="/media/classes/cinematic-"]) img {
+  object-position: right top !important;
+  transform-origin: right top !important;
+  filter: saturate(0.98) contrast(1.04) brightness(0.94) !important;
+}
+
+.unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__book-hero:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) > .npc-forge-class-guide__hero-copy {
+  align-content: start !important;
+  padding: 42px 24px 24px 28px !important;
+}
+
+.unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__book-hero:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__hero-tagline {
+  max-width: 68ch !important;
+  font-size: .76rem !important;
+  line-height: 1.55 !important;
+}
+
+.unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__overview-book:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__overview-layout {
+  grid-template-columns: minmax(0, 72%) minmax(220px, 28%) !important;
+  gap: 10px !important;
+}
 
   /* Keep all normal Class copy/control surfaces above the full-height art. */
   .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__overview-book:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) > :not(.npc-forge-class-guide__book-hero),

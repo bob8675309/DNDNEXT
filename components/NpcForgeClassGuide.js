@@ -4,18 +4,12 @@ import { classPresentationSummary, classPrimaryAbilities } from "../utils/classe
 import ClassFeatureText, { classFeatureInline, normalizeClassFeatureText } from "./ClassFeatureText";
 import { classSlotSummary, classSourceLabel, useNpcForgeClassGuideModel } from "./NpcForgeClassGuideModel";
 import NpcForgeClassGuideStyles from "./NpcForgeClassGuideStyles";
+import ClassSubclassSection from "./ClassSubclassSection";
 
 function cleanPlayerCopy(value, fallback = "") { return classFeatureInline(value, fallback); }
 function classThemeKey(selectedClass = {}) { return String(selectedClass?.class_key || selectedClass?.class_name || "adventurer").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-"); }
 function classOverviewSummary(selectedClass = {}) {
-  if (classThemeKey(selectedClass) === "artificer") return "Artificers are innovators, artisans, and problem solvers who blend magic with technology. They create magic items, enhance equipment, and bring ingenuity to every challenge.";
   return cleanPlayerCopy(classPresentationSummary(selectedClass, `Explore the defining features, progression, and specialties of the ${selectedClass?.class_name || "selected"} class.`));
-}
-function classHeroTagline(selectedClass = {}) {
-  if (classThemeKey(selectedClass) === "artificer") return "A master of invention who turns ideas into reality.";
-  const copy = classOverviewSummary(selectedClass);
-  const firstStop = copy.search(/[.!?](?:\s|$)/);
-  return firstStop >= 0 ? copy.slice(0, firstStop + 1) : copy;
 }
 function heroFacts(selectedClass) {
   const primary = classPrimaryAbilities(selectedClass).map((key) => ABILITY_LABELS[key] || key).join(", ") || "Varies";
@@ -54,47 +48,18 @@ function ForgeClassHero({ selectedClass }) {
     <div className="npc-forge-class-guide__hero-copy">
       <div className="npc-forge-class-guide__hero-kicker"><span>Class View</span><em>{classSourceLabel(selectedClass.source)}</em></div>
       <h2>{selectedClass.class_name}</h2>
-      <p className="npc-forge-class-guide__hero-tagline">{classHeroTagline(selectedClass)}</p>
+      <p className="npc-forge-class-guide__hero-tagline">{classOverviewSummary(selectedClass)}</p>
       <div className="npc-forge-class-guide__hero-facts">{heroFacts(selectedClass).map(([label, value], index) => <div key={label} className={`is-fact-${index + 1}`}><span>{label}</span><strong>{value}</strong></div>)}</div>
     </div>
     <div className="npc-forge-class-guide__hero-art" aria-hidden="true"><img src={classHeroArtworkFor(selectedClass.class_key)} onError={handleClassArtworkError} alt="" /></div>
   </header>;
 }
-function ClassOverviewCopy({ selectedClass }) {
-  return <section className="npc-forge-class-guide__overview-copy"><p>{classOverviewSummary(selectedClass)}</p></section>;
-}
-function SubclassButton({ option, model, onFeatureDetail }) {
-  const active = model.preview?.key === option.key;
-  const selected = model.selected?.key === option.key;
-  const eligible = Number(option.firstLevel || 1) <= model.currentLevel;
-  return <button type="button" role="listitem" className={`${active ? "is-active" : ""}${selected ? " is-selected" : ""}`} onMouseEnter={() => previewSubclass(model, onFeatureDetail, option)} onFocus={() => previewSubclass(model, onFeatureDetail, option)} onClick={() => previewSubclass(model, onFeatureDetail, option)}>
-    <span className="npc-forge-class-guide__subclass-mark" aria-hidden="true">✦</span>
-    <span className="npc-forge-class-guide__subclass-label"><strong>{option.name}</strong><small>{selected ? "Selected" : eligible ? option.source : `${option.source} • L${option.firstLevel}`}</small></span>
-  </button>;
-}
 function ForgeSubclassSelection({ model, onFeatureDetail, detailed = false }) {
-  const required = model.eligible.length > 0;
-  return <section className={`npc-forge-class-guide__subclasses${detailed ? " is-detailed" : " is-compact"}${required && !model.selected ? " is-required" : ""}`}>
-    <div className="npc-forge-class-guide__subhead">
-      <div><span>Subclass</span><strong>{model.selected ? `${model.selected.name} selected` : required ? "Choose an eligible specialization" : model.entryLevel ? `Available at level ${model.entryLevel}` : "No subclasses listed"}</strong></div>
-      <div className="npc-forge-class-guide__subhead-actions">
-        {detailed && model.options.length > 1 ? <label><input type="checkbox" checked={model.compareAll} onChange={(event) => model.setCompareAll(event.target.checked)} /> Compare all</label> : null}
-        {model.selected ? <button type="button" onClick={() => model.selectSubclass(null)}>Clear choice</button> : null}
-      </div>
-    </div>
-    {model.options.length ? <>
-      <div className="npc-forge-class-guide__subclass-grid" role="list" aria-label="Available subclasses">
-        {model.options.map((option) => <SubclassButton key={option.key} option={option} model={model} onFeatureDetail={onFeatureDetail} />)}
-      </div>
-      {model.preview ? <div className="npc-forge-class-guide__subclass-confirm">
-        <span>{model.preview.name}</span>
-        <button type="button" className="is-primary" disabled={!model.previewEligible || model.selected?.key === model.preview?.key} onClick={() => model.selectSubclass(model.preview)}>{model.selected?.key === model.preview?.key ? "Selected" : model.previewEligible ? "Choose subclass" : `Available at level ${model.preview?.firstLevel || model.entryLevel}`}</button>
-      </div> : null}
-    </> : <p>No imported subclass catalogue is available for this class.</p>}
-    {required && !model.selected ? <p className="npc-forge-class-guide__requirement">Choose an eligible subclass before continuing.</p> : null}
-    {!required && model.entryLevel ? <p className="npc-forge-class-guide__subclass-level-note">Subclass selection opens at level {model.entryLevel}.</p> : null}
-    {detailed && model.compareAll ? <details className="npc-forge-class-guide__compare-drawer"><summary>Compare subclass summaries</summary><div>{model.options.map((option) => <button key={option.key} type="button" className={model.preview?.key === option.key ? "is-active" : ""} onClick={() => previewSubclass(model, onFeatureDetail, option)}><strong>{option.name}</strong><small>{option.source} • first feature level {option.firstLevel}</small><span>{cleanPlayerCopy(option.features?.find((feature) => feature.isIntroduction)?.description, "Preview this subclass in the guide below.")}</span></button>)}</div></details> : null}
-  </section>;
+  return <ClassSubclassSection
+    model={model}
+    detailed={detailed}
+    onPreviewSubclass={(option) => previewSubclass(model, onFeatureDetail, option)}
+  />;
 }
 function ChoiceRoutingNote({ model, compact = false }) {
   const groups = model.choiceGroups || [];
@@ -127,7 +92,6 @@ function ForgeOverview({ selectedClass, model, onFeatureDetail }) {
     <ForgeClassHero selectedClass={selectedClass} />
     <div className="npc-forge-class-guide__overview-layout">
       <div className="npc-forge-class-guide__overview-main">
-        <ClassOverviewCopy selectedClass={selectedClass} />
         <ForgeSubclassSelection model={model} onFeatureDetail={onFeatureDetail} />
         <ProgressionTable selectedClass={selectedClass} model={model} onFeatureDetail={onFeatureDetail} />
       </div>

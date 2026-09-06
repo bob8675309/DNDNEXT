@@ -1,0 +1,23 @@
+import fs from "node:fs";
+import path from "node:path";
+const root = process.cwd();
+const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
+const assert = (condition, message) => { if (!condition) throw new Error(message); };
+const guide = read("components/NpcForgeClassGuide.js");
+const browser = read("components/ClassSubclassSection.js");
+const presentation = read("utils/classes/classPresentation.js");
+const framing = read("styles/character-forge-class-hero-framing.css");
+const model = read("components/NpcForgeClassGuideModel.js");
+
+for (const token of ['import ClassSubclassSection from "./ClassSubclassSection"', '<ClassSubclassSection', 'onPreviewSubclass={(option) => previewSubclass(model, onFeatureDetail, option)}', '<p className="npc-forge-class-guide__hero-tagline">{classOverviewSummary(selectedClass)}</p>']) assert(guide.includes(token), `Class guide is missing ${token}`);
+assert(!guide.includes("model.options.map((option) => <SubclassButton"), "Legacy subclass pill wall is still rendered.");
+assert(!guide.includes("<ClassOverviewCopy selectedClass={selectedClass}"), "Expanded Class overview copy is duplicated below the hero facts.");
+for (const token of ['const [browserOpen, setBrowserOpen] = useState(false)', 'const [search, setSearch] = useState("")', 'const [source, setSource] = useState("all")', 'const [expandedKey, setExpandedKey] = useState("")', 'model?.options || []', 'model.selectSubclass(option)', 'Number(option.firstLevel || 1) <= Number(model?.currentLevel || 1)', 'aria-label="Subclass catalogue"', 'aria-label="Subclass source filters"', 'Search subclasses', 'Browse Subclasses', 'Change Subclass', 'Available at level', 'max-height:min(48vh,520px)', 'grid-template-columns:repeat(2,minmax(0,1fr))', 'grid-column:1/-1', 'detailed ? " is-detailed" : ""']) assert(browser.includes(token), `Subclass browser is missing ${token}`);
+assert(!browser.includes("supabase"), "Subclass browser must remain presentation-only.");
+assert(model.includes("resolveSubclassCatalog") && model.includes("const options = useMemo"), "Canonical subclass authority moved out of the existing guide model.");
+for (const key of ["fighter", "wizard", "rogue", "cleric", "ranger", "paladin", "warlock"]) assert(presentation.includes(`${key}:`), `Expanded core Class summary missing ${key}.`);
+assert(presentation.includes("imported.length >= 180"), "Long imported/campaign Class summaries must remain authoritative.");
+for (const token of ['object-position: right top !important', 'left: 24% !important', 'min-height: 286px !important', 'grid-template-columns: minmax(0, 55%) minmax(0, 45%) !important', 'grid-template-columns: minmax(0, 72%) minmax(220px, 28%) !important']) assert(framing.includes(token), `Top-right cinematic framing missing ${token}`);
+const protectedSource = `${guide}\n${browser}\n${presentation}\n${framing}`.toLowerCase();
+for (const token of ["map_routes", "advance_all_characters", "mappageclient", "townsheet", "encounter_weapon_attack", "crafting_recipe"]) assert(!protectedSource.includes(token), `Class presentation patch crossed protected boundary: ${token}`);
+console.log("Class subclass browser validation passed.");

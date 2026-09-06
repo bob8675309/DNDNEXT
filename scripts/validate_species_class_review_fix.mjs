@@ -8,6 +8,7 @@ const css = read("styles/character-forge-species-class-review-fix.css");
 const cinematic = read("styles/character-forge-cinematic-reference-pass.css");
 const finalCorrections = read("styles/character-forge-cinematic-final-corrections.css");
 const guide = read("components/NpcForgeClassGuide.js");
+const subclassBrowser = read("components/ClassSubclassSection.js");
 const classCatalog = read("components/NpcForgeClassCatalog.js");
 const classEmpty = read("components/NpcForgeClassEmptyState.js");
 const classArtwork = read("utils/classes/classArtwork.js");
@@ -60,11 +61,13 @@ for (const token of [
 ]) assert(finalCorrections.includes(token), `Final cinematic correction is missing ${token}`);
 assert(!finalCorrections.includes("grid-template-rows: auto minmax(0, 1fr) 0 !important"), "Class catalogue regression: the first in-flow Class row must not be auto-sized.");
 
-assert(guide.includes("model.options.map((option) => <SubclassButton"), "Every subclass must render directly in the visible subclass grid.");
-assert(!guide.includes("model.options.slice(0, 4)"), "Subclass grid must not collapse after four entries.");
+assert(guide.includes("ClassSubclassSection"), "Class overview must use the compact subclass browser.");
+assert(!guide.includes("model.options.map((option) => <SubclassButton"), "Legacy subclass pill wall returned to the Class overview.");
+assert(!guide.includes("model.options.slice(0, 4)"), "Subclass catalogue must not collapse after four entries.");
 assert(!guide.includes("npc-forge-class-guide__subclass-more"), "The Class overview must not hide subclasses behind a More disclosure.");
 assert(guide.includes("ForgeSubclassSelection"), "Subclass selection behavior was removed.");
-assert(guide.includes("model.selectSubclass(model.preview)"), "Subclass confirmation behavior was removed.");
+assert(subclassBrowser.includes("model.selectSubclass(option)"), "Subclass confirmation behavior was removed from the browser.");
+assert(subclassBrowser.includes('aria-label="Subclass catalogue"'), "Every canonical subclass must remain browseable in the inline catalogue.");
 assert(guide.includes("ProgressionTable"), "Class progression table was removed.");
 assert(guide.includes("Class Overview") && guide.includes("Detailed Guide"), "Class guide view controls regressed.");
 assert(guide.includes("classHeroArtworkFor(selectedClass.class_key)"), "Selected Class hero must use the cinematic hero-art authority.");
@@ -98,7 +101,7 @@ for (const token of [
   'title="Double-click or double-tap this header to restore the Forge window"',
 ]) assert(forgeModal.includes(token), `Character Forge double-click restore contract is missing ${token}`);
 
-const protectedSource = `${css}\n${cinematic}\n${finalCorrections}\n${guide}\n${classCatalog}\n${classEmpty}\n${classArtwork}\n${speciesArtwork}\n${forgeModal}`.toLowerCase();
+const protectedSource = `${css}\n${cinematic}\n${finalCorrections}\n${guide}\n${subclassBrowser}\n${classCatalog}\n${classEmpty}\n${classArtwork}\n${speciesArtwork}\n${forgeModal}`.toLowerCase();
 for (const token of ["map_routes", "advance_all_characters", "mappageclient", "townsheet", "encounter_weapon_attack", "crafting_recipe"]) assert(!protectedSource.includes(token), `Browser review fix crossed protected boundary: ${token}`);
 
 console.log("Species/Class cinematic reference pass validated: structurally valid cinematic Aarakocra/Elf/Half-orc/Halfling WebP artwork, head-safe Species framing, full-height Class catalogue, Forge double-click geometry recovery, generated Class idle artwork, blended selected-Class paintings, purpose-specific Class menu portraits, visible subclasses, preserved progression and protected boundaries.");
