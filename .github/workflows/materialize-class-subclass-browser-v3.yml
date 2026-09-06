@@ -60,8 +60,6 @@ jobs:
 
               if name == 'Commit clean scratch result':
                   run = f'''set -euo pipefail
-          # The Actions token cannot mutate workflow files. The already-validated workflow change is
-          # applied afterward through the connected GitHub API; keep it out of this bot commit.
           git checkout {baseline} -- .github/workflows/validate-class-browser-polish.yml
           cat > /tmp/expected.txt <<'EOF'
           components/ClassSubclassSection.js
@@ -80,10 +78,20 @@ jobs:
             | grep -v '^.github/workflows/validate-class-browser-polish.yml$' \
             | sort -u > /tmp/actual.txt
           diff -u /tmp/expected.txt /tmp/actual.txt
+
+          cat > /tmp/staged-expected.txt <<'EOF'
+          components/NpcForgeClassGuide.js
+          docs/CHARACTER_FORGE_CLASS_CINEMATIC_ARTWORK_ROLLOUT.md
+          scripts/validate_class_browser_polish.mjs
+          scripts/validate_class_hero_framing.mjs
+          scripts/validate_class_subclass_browser.mjs
+          scripts/validate_species_class_review_fix.mjs
+          styles/character-forge-class-hero-framing.css
+          utils/classes/classPresentation.js
+          EOF
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add \
-            components/ClassSubclassSection.js \
             components/NpcForgeClassGuide.js \
             docs/CHARACTER_FORGE_CLASS_CINEMATIC_ARTWORK_ROLLOUT.md \
             scripts/validate_class_browser_polish.mjs \
@@ -93,7 +101,7 @@ jobs:
             styles/character-forge-class-hero-framing.css \
             utils/classes/classPresentation.js
           git diff --cached --name-only | sort > /tmp/staged.txt
-          diff -u /tmp/expected.txt /tmp/staged.txt
+          diff -u /tmp/staged-expected.txt /tmp/staged.txt
           git commit -m 'Refine Class hero and subclass browser presentation'
           git push origin HEAD:agent/class-subclass-browser-20260905
           '''
