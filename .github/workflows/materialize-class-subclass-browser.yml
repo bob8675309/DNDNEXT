@@ -20,200 +20,49 @@ jobs:
           ref: agent/class-subclass-browser-20260905
           fetch-depth: 0
 
-      - name: Guard exact parent
+      - name: Guard exact scratch parent and PR baseline
         shell: bash
         run: |
           set -euo pipefail
-          expected='2be4a16fd4fdc9b943c2cfee1c8097e3d9589833'
-          actual="$(git rev-parse HEAD^)"
-          test "$actual" = "$expected" || { echo "Scratch branch parent moved: expected $expected, got $actual"; exit 1; }
+          test "$(git rev-parse HEAD^)" = '05b2f32a84b8e64127f1518452b9d0a2369df2df'
+          git cat-file -e '2be4a16fd4fdc9b943c2cfee1c8097e3d9589833^{commit}'
 
-      - name: Add subclass browser component
-        shell: bash
-        run: |
-          set -euo pipefail
-          cat > components/ClassSubclassSection.js <<'EOF'
-          import { useEffect, useMemo, useState } from "react";
-          import ClassFeatureText, { classFeatureInline } from "./ClassFeatureText";
-
-          const text = (value) => String(value ?? "").trim();
-          const normalized = (value) => text(value).toLowerCase();
-
-          function introFeature(option = {}) {
-            return option?.features?.find((feature) => feature?.isIntroduction) || option?.features?.[0] || null;
-          }
-
-          function optionSummary(option = {}) {
-            const intro = introFeature(option);
-            return classFeatureInline(
-              intro?.description,
-              `Explore the defining features and play style of ${option?.name || "this subclass"}.`,
-            );
-          }
-
-          function featurePreview(option = {}) {
-            return (option?.features || [])
-              .filter((feature) => !feature?.isIntroduction)
-              .slice(0, 6);
-          }
-
-          export default function ClassSubclassSection({ model, onPreviewSubclass = null, detailed = false }) {
-            const [browserOpen, setBrowserOpen] = useState(false);
-            const [search, setSearch] = useState("");
-            const [source, setSource] = useState("all");
-            const [expandedKey, setExpandedKey] = useState("");
-            const options = model?.options || [];
-            const selected = model?.selected || null;
-            const required = (model?.eligible || []).length > 0;
-            const optionSignature = options.map((option) => option.key).join("|");
-
-            useEffect(() => {
-              setBrowserOpen(false);
-              setSearch("");
-              setSource("all");
-              setExpandedKey("");
-            }, [optionSignature]);
-
-            const sources = useMemo(() => [
-              "all",
-              ...Array.from(new Set(options.map((option) => text(option.source)).filter(Boolean))),
-            ], [options]);
-
-            const filtered = useMemo(() => {
-              const query = normalized(search);
-              return options.filter((option) => {
-                const matchesSource = source === "all" || text(option.source) === source;
-                if (!matchesSource) return false;
-                if (!query) return true;
-                return normalized(`${option.name} ${option.source} ${optionSummary(option)}`).includes(query);
-              });
-            }, [options, search, source]);
-
-            if (!options.length) {
-              return <section className="npc-forge-class-guide__subclasses is-compact class-subclass-section is-empty">
-                <div className="class-subclass-summary__eyebrow"><span>Subclass</span><strong>No subclasses listed</strong></div>
-                <p>No imported subclass catalogue is available for this class.</p>
-              </section>;
-            }
-
-            const summary = selected ? optionSummary(selected) : "Browse every published specialization for this class without crowding the overview. You can inspect any option now and choose it once your current level makes it eligible.";
-            const unlockLevel = Number(model?.entryLevel || options[0]?.firstLevel || 1);
-
-            const previewOption = (option, expand = false) => {
-              onPreviewSubclass?.(option);
-              if (expand) setExpandedKey((current) => current === option.key ? "" : option.key);
-            };
-
-            const chooseOption = (option) => {
-              onPreviewSubclass?.(option);
-              if (Number(option.firstLevel || 1) <= Number(model?.currentLevel || 1)) model.selectSubclass(option);
-            };
-
-            return <section
-              className={`npc-forge-class-guide__subclasses is-compact class-subclass-section${required && !selected ? " is-required" : ""}${browserOpen ? " is-browser-open" : ""}`}
-              onKeyDown={(event) => { if (event.key === "Escape" && browserOpen) setBrowserOpen(false); }}
-            >
-              <div className="class-subclass-summary">
-                <div className="class-subclass-summary__copy">
-                  <div className="class-subclass-summary__eyebrow">
-                    <span>Subclass</span>
-                    <strong>{selected ? "Selected" : model?.currentLevel >= unlockLevel ? `Available now · level ${unlockLevel}` : `Available at level ${unlockLevel}`}</strong>
-                  </div>
-                  <h3>{selected ? selected.name : "Choose your specialization"}</h3>
-                  {selected ? <div className="class-subclass-summary__meta"><span>{selected.source || "Campaign"}</span><span>Level {selected.firstLevel || unlockLevel}</span></div> : null}
-                  <p>{summary}</p>
-                </div>
-                <div className="class-subclass-summary__actions">
-                  <button type="button" className="is-primary" aria-expanded={browserOpen} aria-controls="class-subclass-browser" onClick={() => setBrowserOpen((open) => !open)}>{browserOpen ? "Close Browser" : selected ? "Change Subclass" : "Browse Subclasses"}</button>
-                  {selected ? <button type="button" onClick={() => model.selectSubclass(null)}>Clear choice</button> : null}
-                </div>
-              </div>
-
-              {required && !selected ? <p className="npc-forge-class-guide__requirement">Choose an eligible subclass before continuing.</p> : null}
-              {!required && model?.entryLevel ? <p className="npc-forge-class-guide__subclass-level-note">You can browse every subclass now. Selection opens at level {model.entryLevel}.</p> : null}
-
-              {browserOpen ? <div id="class-subclass-browser" className="class-subclass-browser">
-                <div className="class-subclass-browser__header">
-                  <div><span>Subclass Browser</span><strong>{filtered.length} of {options.length}</strong></div>
-                  <button type="button" aria-label="Close subclass browser" onClick={() => setBrowserOpen(false)}>×</button>
-                </div>
-                <div className="class-subclass-browser__toolbar">
-                  <label className="class-subclass-browser__search"><span>Search subclasses</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search subclasses..." /></label>
-                  <div className="class-subclass-browser__sources" aria-label="Subclass source filters">
-                    {sources.map((entry) => <button key={entry} type="button" className={source === entry ? "is-active" : ""} aria-pressed={source === entry} onClick={() => setSource(entry)}>{entry === "all" ? "All" : entry}</button>)}
-                  </div>
-                </div>
-
-                {filtered.length ? <div className="class-subclass-browser__results" role="list" aria-label="Subclass catalogue">
-                  {filtered.map((option) => {
-                    const isSelected = selected?.key === option.key;
-                    const isExpanded = expandedKey === option.key;
-                    const eligible = Number(option.firstLevel || 1) <= Number(model?.currentLevel || 1);
-                    const features = featurePreview(option);
-                    const intro = introFeature(option);
-                    return <article key={option.key} role="listitem" className={`class-subclass-card${isSelected ? " is-selected" : ""}${isExpanded ? " is-expanded" : ""}`}>
-                      <div className="class-subclass-card__head">
-                        <div><h4>{option.name}</h4><div className="class-subclass-card__meta"><span>{option.source || "Campaign"}</span><span>Level {option.firstLevel || unlockLevel}</span>{isSelected ? <b>Selected</b> : null}</div></div>
-                        <span className="class-subclass-card__mark" aria-hidden="true">{isSelected ? "✓" : "✦"}</span>
-                      </div>
-                      <p className="class-subclass-card__summary">{optionSummary(option)}</p>
-                      {isExpanded ? <div className="class-subclass-card__details">
-                        <ClassFeatureText text={intro?.description} entries={intro?.entries || null} fallback="Its source-backed features are shown at the levels where they become available." />
-                        {features.length ? <div className="class-subclass-card__feature-list">{features.map((feature, index) => <span key={`${feature.name}-${feature.level}-${index}`}><b>Level {feature.level || option.firstLevel || unlockLevel}</b>{feature.name}</span>)}</div> : null}
-                      </div> : null}
-                      <div className="class-subclass-card__actions">
-                        <button type="button" aria-expanded={isExpanded} onClick={() => previewOption(option, true)}>{isExpanded ? "Collapse" : "Details"}</button>
-                        <button type="button" className="is-primary" disabled={!eligible || isSelected} onClick={() => chooseOption(option)}>{isSelected ? "Selected" : eligible ? "Choose" : `Available at level ${option.firstLevel || unlockLevel}`}</button>
-                      </div>
-                    </article>;
-                  })}
-                </div> : <div className="class-subclass-browser__empty">No subclasses match <strong>{search ? `“${search}”` : "this source"}</strong>.<button type="button" onClick={() => { setSearch(""); setSource("all"); }}>Clear filters</button></div>}
-              </div> : null}
-
-              <style jsx global>{`
-                .class-subclass-section{position:relative;display:grid;gap:8px!important;padding:0!important;background:transparent!important}
-                .class-subclass-section.is-required{padding:7px 8px!important}
-                .class-subclass-summary{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;min-height:92px;padding:12px 13px;border:1px solid rgba(var(--class-accent),.2);border-radius:10px;background:linear-gradient(120deg,rgba(17,17,30,.9),rgba(8,13,22,.8) 64%,rgba(var(--class-accent),.07));box-shadow:inset 0 1px rgba(255,255,255,.025)}
-                .class-subclass-summary__copy{min-width:0}.class-subclass-summary__eyebrow{display:flex;align-items:baseline;gap:9px;margin-bottom:3px}.class-subclass-summary__eyebrow span{color:#d4a8ff;font-family:Georgia,"Times New Roman",serif;font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase}.class-subclass-summary__eyebrow strong{color:rgba(255,255,255,.46);font-size:.52rem;font-weight:700}.class-subclass-summary h3{margin:0 0 3px;color:#f6efe6;font-family:Georgia,"Times New Roman",serif;font-size:.94rem;font-weight:600}.class-subclass-summary p{max-width:76ch;margin:0;color:rgba(245,238,226,.7);font-size:.61rem;line-height:1.48}.class-subclass-summary__meta{display:flex;gap:6px;margin-bottom:5px}.class-subclass-summary__meta span{padding:2px 6px;border:1px solid rgba(var(--class-secondary),.18);border-radius:999px;color:rgba(255,255,255,.5);background:rgba(6,14,22,.45);font-size:.46rem;font-weight:800}.class-subclass-summary__actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}.class-subclass-summary__actions button,.class-subclass-browser button,.class-subclass-card__actions button{border:1px solid rgba(255,255,255,.14);border-radius:7px;color:rgba(255,255,255,.78);background:rgba(255,255,255,.025);font-size:.56rem;font-weight:800}.class-subclass-summary__actions button{padding:7px 9px}.class-subclass-summary__actions button.is-primary,.class-subclass-card__actions button.is-primary{border-color:rgba(var(--class-accent),.7);color:#fff;background:linear-gradient(180deg,rgba(var(--class-accent),.48),rgba(56,34,92,.76))}
-                .class-subclass-browser{display:grid;gap:9px;padding:10px;border:1px solid rgba(var(--class-accent),.28);border-radius:11px;background:rgba(6,10,18,.95);box-shadow:0 16px 32px rgba(0,0,0,.26),inset 0 1px rgba(255,255,255,.025);backdrop-filter:blur(9px)}
-                .class-subclass-browser__header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:7px;border-bottom:1px solid rgba(var(--class-accent),.14)}.class-subclass-browser__header>div{display:flex;align-items:baseline;gap:8px}.class-subclass-browser__header span{color:#dec2ff;font-family:Georgia,"Times New Roman",serif;font-size:.76rem;font-weight:700;letter-spacing:.045em;text-transform:uppercase}.class-subclass-browser__header strong{color:rgba(255,255,255,.42);font-size:.5rem}.class-subclass-browser__header>button{display:grid;place-items:center;width:25px;height:25px;padding:0;font-size:.95rem}
-                .class-subclass-browser__toolbar{display:grid;grid-template-columns:minmax(190px,.75fr) minmax(0,1.25fr);gap:9px;align-items:end}.class-subclass-browser__search{display:grid;gap:4px}.class-subclass-browser__search span{color:rgba(255,255,255,.42);font-size:.47rem;font-weight:800;letter-spacing:.055em;text-transform:uppercase}.class-subclass-browser__search input{width:100%;min-height:32px;padding:6px 8px;border:1px solid rgba(255,255,255,.12);border-radius:7px;color:#f4edf9;background:rgba(3,7,13,.86);font-size:.61rem;outline:none}.class-subclass-browser__search input:focus{border-color:rgba(var(--class-secondary),.52);box-shadow:0 0 0 2px rgba(var(--class-secondary),.07)}.class-subclass-browser__sources{display:flex;justify-content:flex-end;gap:5px;overflow-x:auto;padding-bottom:1px}.class-subclass-browser__sources button{flex:0 0 auto;padding:6px 8px}.class-subclass-browser__sources button.is-active{border-color:rgba(var(--class-secondary),.54);color:#bff9f1;background:rgba(var(--class-secondary),.11)}
-                .class-subclass-browser__results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:min(48vh,520px);overflow-y:auto;overscroll-behavior:contain;padding:1px 4px 2px 1px;scrollbar-gutter:stable}.class-subclass-card{display:grid;align-content:start;gap:7px;min-width:0;padding:10px;border:1px solid rgba(255,255,255,.1);border-radius:9px;background:linear-gradient(145deg,rgba(14,18,29,.94),rgba(7,11,19,.98));box-shadow:inset 0 1px rgba(255,255,255,.015)}.class-subclass-card.is-selected{border-color:rgba(var(--class-secondary),.56);box-shadow:inset 3px 0 rgba(var(--class-secondary),.72),0 0 16px rgba(var(--class-secondary),.06)}.class-subclass-card.is-expanded{grid-column:1/-1;border-color:rgba(var(--class-accent),.58);background:linear-gradient(145deg,rgba(var(--class-accent),.1),rgba(7,11,19,.98))}.class-subclass-card__head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.class-subclass-card h4{margin:0;color:#f2eaf9;font-family:Georgia,"Times New Roman",serif;font-size:.7rem;font-weight:650;line-height:1.25}.class-subclass-card__meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:3px}.class-subclass-card__meta span,.class-subclass-card__meta b{color:rgba(255,255,255,.38);font-size:.43rem;font-weight:800}.class-subclass-card__meta b{color:#9cece2}.class-subclass-card__mark{display:grid;place-items:center;flex:0 0 auto;width:22px;height:22px;border:1px solid rgba(var(--class-accent),.3);border-radius:50%;color:rgb(var(--class-secondary));background:rgba(var(--class-accent),.06);font-size:.58rem}.class-subclass-card__summary{display:-webkit-box;overflow:hidden;margin:0;color:rgba(255,255,255,.62);font-size:.55rem;line-height:1.46;-webkit-line-clamp:3;-webkit-box-orient:vertical}.class-subclass-card.is-expanded .class-subclass-card__summary{display:none}.class-subclass-card__details{display:grid;gap:8px;padding-top:2px;border-top:1px solid rgba(255,255,255,.07)}.class-subclass-card__details p,.class-subclass-card__details li{color:rgba(255,255,255,.72);font-size:.59rem;line-height:1.52}.class-subclass-card__feature-list{display:flex;gap:5px;flex-wrap:wrap}.class-subclass-card__feature-list span{display:grid;gap:1px;padding:5px 7px;border:1px solid rgba(var(--class-accent),.14);border-radius:6px;color:rgba(255,255,255,.66);background:rgba(8,12,20,.64);font-size:.49rem}.class-subclass-card__feature-list b{color:#b9efe9;font-size:.4rem;text-transform:uppercase}.class-subclass-card__actions{display:flex;justify-content:flex-end;gap:6px;margin-top:auto}.class-subclass-card__actions button{padding:6px 8px}.class-subclass-card__actions button:disabled{opacity:.48;cursor:not-allowed}.class-subclass-browser__empty{display:grid;place-items:center;gap:7px;min-height:110px;color:rgba(255,255,255,.54);font-size:.6rem;text-align:center}.class-subclass-browser__empty button{padding:6px 9px}
-                @media(max-width:900px){.class-subclass-summary{grid-template-columns:1fr}.class-subclass-summary__actions{justify-content:flex-start}.class-subclass-browser__toolbar{grid-template-columns:1fr}.class-subclass-browser__sources{justify-content:flex-start}.class-subclass-browser__results{grid-template-columns:1fr;max-height:min(54vh,560px)}}
-              `}</style>
-            </section>;
-          }
-          EOF
-
-      - name: Apply Class presentation patch
+      - name: Patch Class guide and presentation
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY'
           from pathlib import Path
 
-          guide_path = Path('components/NpcForgeClassGuide.js')
-          guide = guide_path.read_text()
+          path = Path('components/NpcForgeClassGuide.js')
+          text = path.read_text()
           anchor = 'import NpcForgeClassGuideStyles from "./NpcForgeClassGuideStyles";\n'
-          assert anchor in guide
-          guide = guide.replace(anchor, anchor + 'import ClassSubclassSection from "./ClassSubclassSection";\n', 1)
-          tagline_fn = '''function classHeroTagline(selectedClass = {}) {
+          if 'import ClassSubclassSection from "./ClassSubclassSection";' not in text:
+              assert anchor in text
+              text = text.replace(anchor, anchor + 'import ClassSubclassSection from "./ClassSubclassSection";\n', 1)
+
+          old_tagline = '''function classHeroTagline(selectedClass = {}) {
             if (classThemeKey(selectedClass) === "artificer") return "A master of invention who turns ideas into reality.";
             const copy = classOverviewSummary(selectedClass);
             const firstStop = copy.search(/[.!?](?:\\s|$)/);
             return firstStop >= 0 ? copy.slice(0, firstStop + 1) : copy;
           }
           '''
-          assert tagline_fn in guide
-          guide = guide.replace(tagline_fn, '', 1)
-          assert '<p className="npc-forge-class-guide__hero-tagline">{classHeroTagline(selectedClass)}</p>' in guide
-          guide = guide.replace('<p className="npc-forge-class-guide__hero-tagline">{classHeroTagline(selectedClass)}</p>', '<p className="npc-forge-class-guide__hero-tagline">{classOverviewSummary(selectedClass)}</p>', 1)
-          overview_copy = 'function ClassOverviewCopy({ selectedClass }) {\n  return <section className="npc-forge-class-guide__overview-copy"><p>{classOverviewSummary(selectedClass)}</p></section>;\n}\n'
-          assert overview_copy in guide
-          guide = guide.replace(overview_copy, '', 1)
-          start = guide.index('function SubclassButton(')
-          end = guide.index('function ChoiceRoutingNote(')
-          replacement = '''function ForgeSubclassSelection({ model, onFeatureDetail, detailed = false }) {
+          if old_tagline in text:
+              text = text.replace(old_tagline, '', 1)
+          text = text.replace(
+              '<p className="npc-forge-class-guide__hero-tagline">{classHeroTagline(selectedClass)}</p>',
+              '<p className="npc-forge-class-guide__hero-tagline">{classOverviewSummary(selectedClass)}</p>',
+              1,
+          )
+
+          old_copy = 'function ClassOverviewCopy({ selectedClass }) {\n  return <section className="npc-forge-class-guide__overview-copy"><p>{classOverviewSummary(selectedClass)}</p></section>;\n}\n'
+          text = text.replace(old_copy, '', 1)
+
+          if 'function SubclassButton(' in text:
+              start = text.index('function SubclassButton(')
+              end = text.index('function ChoiceRoutingNote(')
+              wrapper = '''function ForgeSubclassSelection({ model, onFeatureDetail, detailed = false }) {
             return <ClassSubclassSection
               model={model}
               detailed={detailed}
@@ -221,17 +70,34 @@ jobs:
             />;
           }
           '''
-          guide = guide[:start] + replacement + guide[end:]
-          duplicate = '        <ClassOverviewCopy selectedClass={selectedClass} />\n'
-          assert duplicate in guide
-          guide = guide.replace(duplicate, '', 1)
-          guide_path.write_text(guide)
+              text = text[:start] + wrapper + text[end:]
 
-          presentation_path = Path('utils/classes/classPresentation.js')
-          presentation = presentation_path.read_text()
-          marker = '});\n\nexport function classPresentationSummary(classRow = {}, fallback = "") {'
-          assert marker in presentation
-          standard = '''});
+          text = text.replace('        <ClassOverviewCopy selectedClass={selectedClass} />\n', '', 1)
+
+          for token in [
+              'import ClassSubclassSection from "./ClassSubclassSection";',
+              '<p className="npc-forge-class-guide__hero-tagline">{classOverviewSummary(selectedClass)}</p>',
+              '<ClassSubclassSection',
+              'onPreviewSubclass={(option) => previewSubclass(model, onFeatureDetail, option)}',
+          ]:
+              assert token in text, token
+          assert 'function SubclassButton(' not in text
+          assert '<ClassOverviewCopy selectedClass={selectedClass}' not in text
+          path.write_text(text)
+          PY
+
+          cat > utils/classes/classPresentation.js <<'EOF'
+          const text = (value) => String(value ?? "").trim();
+          const keyFor = (classRow = {}) => text(classRow?.class_key).toLowerCase();
+
+          const SPECIAL_CLASS_SUMMARIES = Object.freeze({
+            "monster-hunter": "A tactical martial hunter who records dangerous creatures in a personal Monster Grimoire, combines weapon mastery with Studied Response reaction attacks, and expands that specialized knowledge as their experience grows. At level 3 the hunter joins the Carver, Devourer, Occultist, or Trapper Guild, shifting the class toward fearless frontline combat, monster-derived adaptations, occult countermeasures, or prepared gadgets and traps.",
+            mystic: "An Intelligence-focused psionic adept who turns disciplined thought into supernatural effects through talents, psi points, psychic focus, and psionic disciplines rather than conventional spellcasting. A Mystic Order is chosen at level 1—Avatar, Awakened, Immortal, Nomad, Soul Knife, or Wu Jen—and shapes how that mental power inspires allies, manipulates minds, reinforces the body, explores, fights, or controls the natural world.",
+            "expert-sidekick": "A support-oriented NPC sidekick built around broad proficiency, timely assistance, mobility, and Expertise. The Expert can Help as a Bonus Action, develops Cunning Action, and grows into a versatile problem-solver beside the adventuring party.",
+            "warrior-sidekick": "A combat-focused NPC sidekick trained to stand beside adventurers in a fight. The Warrior chooses an Attacker or Defender role at level 1 and develops dependable offense and durability through features such as Second Wind and Improved Critical.",
+            "spellcaster-sidekick": "A magic-focused NPC sidekick that chooses a Mage, Healer, or Prodigy role at level 1. That role determines its spell list and spellcasting ability—Intelligence, Wisdom, or Charisma—while the class advances a compact spellcasting progression alongside its sidekick features.",
+            civilian: "A character without an adventuring class: a townsperson, professional, official, artisan, scholar, attendant, or other ordinary person whose identity comes from species, background, skills, profession, and story rather than class progression.",
+          });
 
           const STANDARD_CLASS_SUMMARIES = Object.freeze({
             artificer: "Artificers turn practical knowledge into magical invention, combining careful study with tools, crafted devices, and adaptable spellwork. They excel at solving problems before and during an adventure, improving equipment, supporting allies, and shaping a personal specialty around the way they build, experiment, and apply magic.",
@@ -249,57 +115,69 @@ jobs:
             wizard: "Wizards master arcane magic through disciplined study, experimentation, and carefully recorded formulae. Their spellbooks let them prepare a broad range of magic for the challenges ahead, making them exceptionally versatile problem-solvers. As their knowledge grows, wizards specialize in magical traditions that refine how they study, shape, defend against, and deploy spells.",
           });
 
-          export function classPresentationSummary(classRow = {}, fallback = "") {'''
-          presentation = presentation.replace(marker, standard, 1)
-          old_body = '''export function classPresentationSummary(classRow = {}, fallback = "") {
-            const special = SPECIAL_CLASS_SUMMARIES[keyFor(classRow)];
-            return special || text(classRow?.summary) || fallback;
-          }'''
-          new_body = '''export function classPresentationSummary(classRow = {}, fallback = "") {
+          export function classPresentationSummary(classRow = {}, fallback = "") {
             const special = SPECIAL_CLASS_SUMMARIES[keyFor(classRow)];
             const imported = text(classRow?.summary);
             const standard = STANDARD_CLASS_SUMMARIES[keyFor(classRow)];
             return special || (imported.length >= 180 ? imported : standard || imported || fallback);
-          }'''
-          # The export line was reconstructed above; replace only the body tail.
-          tail = '''
-            const special = SPECIAL_CLASS_SUMMARIES[keyFor(classRow)];
-            return special || text(classRow?.summary) || fallback;
-          }'''
-          assert tail in presentation
-          presentation = presentation.replace(tail, '''
-            const special = SPECIAL_CLASS_SUMMARIES[keyFor(classRow)];
-            const imported = text(classRow?.summary);
-            const standard = STANDARD_CLASS_SUMMARIES[keyFor(classRow)];
-            return special || (imported.length >= 180 ? imported : standard || imported || fallback);
-          }''', 1)
-          presentation_path.write_text(presentation)
+          }
 
-          css_path = Path('styles/character-forge-class-hero-framing.css')
-          css = css_path.read_text()
-          css = css.replace('grid-template-columns: minmax(0, 62%) minmax(0, 38%) !important;', 'grid-template-columns: minmax(0, 55%) minmax(0, 45%) !important;', 1)
+          export function classPrimaryAbilities(classRow = {}) {
+            const imported = Array.isArray(classRow?.primary_abilities) ? classRow.primary_abilities.filter(Boolean) : [];
+            if (imported.length) return imported;
+            if (keyFor(classRow) === "artificer") return ["int"];
+            if (keyFor(classRow) === "mystic") return ["int"];
+            return [];
+          }
+
+          export function classMagicPresentation(classRow = {}, abilityLabels = {}) {
+            const key = keyFor(classRow);
+            if (key === "mystic") return "Psionics • Intelligence";
+            if (key === "monster-hunter") return "Guild-dependent";
+            if (key === "spellcaster-sidekick") return "Role-based • Int / Wis / Cha";
+            const ability = text(classRow?.spellcasting_ability);
+            return ability ? (abilityLabels[ability] || ability) : "None at base class";
+          }
+
+          export function isSidekickClass(classRow = {}) {
+            return keyFor(classRow).endsWith("-sidekick");
+          }
+          EOF
+
+      - name: Refine public cinematic hero framing
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('styles/character-forge-class-hero-framing.css')
+          css = path.read_text()
+          pairs = [
+              ('grid-template-columns: minmax(0, 62%) minmax(0, 38%) !important;', 'grid-template-columns: minmax(0, 55%) minmax(0, 45%) !important;'),
+              ('left: 30% !important;', 'left: 24% !important;'),
+          ]
+          for old, new in pairs:
+              assert old in css, old
+              css = css.replace(old, new, 1)
+          assert css.count('min-height: 218px !important;') >= 2
           css = css.replace('min-height: 218px !important;', 'min-height: 286px !important;', 2)
-          css = css.replace('left: 30% !important;', 'left: 24% !important;', 1)
-          old_gradient = '''linear-gradient(90deg, rgba(5, 8, 15, 0.99) 0%, rgba(5, 8, 15, 0.92) 20%, rgba(5, 8, 15, 0.64) 42%, rgba(5, 8, 15, 0.2) 69%, rgba(5, 8, 15, 0.04) 100%),
-              linear-gradient(0deg, rgba(5, 8, 14, 0.7) 0%, rgba(5, 8, 14, 0.1) 24%, rgba(5, 8, 14, 0.08) 76%, rgba(5, 8, 14, 0.38) 100%) !important;'''
-          new_gradient = '''linear-gradient(90deg, rgba(5, 8, 15, 0.99) 0%, rgba(5, 8, 15, 0.88) 18%, rgba(5, 8, 15, 0.52) 39%, rgba(5, 8, 15, 0.12) 61%, rgba(5, 8, 15, 0) 78%),
-              linear-gradient(0deg, rgba(5, 8, 14, 0.52) 0%, rgba(5, 8, 14, 0.04) 30%, rgba(5, 8, 14, 0.02) 80%, rgba(5, 8, 14, 0.18) 100%) !important;'''
-          assert old_gradient in css
-          css = css.replace(old_gradient, new_gradient, 1)
-          public_img = '''object-fit: cover !important;
-            object-position: right center !important;
-            transform: none !important;
-            transform-origin: right center !important;
-            filter: saturate(0.96) contrast(1.05) brightness(0.86) !important;'''
-          public_img_new = '''object-fit: cover !important;
+
+          marker = '  /* Keep all normal Class copy/control surfaces above the full-height art. */'
+          assert marker in css
+          enhancement = '''  /* Browser-review refinement: expose more of approved cinematic art from the top-right. */
+          .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__hero-art:has(img[src*="/media/classes/cinematic-"])::before {
+            background:
+              linear-gradient(90deg, rgba(5, 8, 15, 0.99) 0%, rgba(5, 8, 15, 0.88) 18%, rgba(5, 8, 15, 0.52) 39%, rgba(5, 8, 15, 0.12) 61%, rgba(5, 8, 15, 0) 78%),
+              linear-gradient(0deg, rgba(5, 8, 14, 0.52) 0%, rgba(5, 8, 14, 0.04) 30%, rgba(5, 8, 14, 0.02) 80%, rgba(5, 8, 14, 0.18) 100%) !important;
+          }
+
+          .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__hero-art:has(img[src*="/media/classes/cinematic-"]) img {
             object-position: right top !important;
-            transform: none !important;
             transform-origin: right top !important;
-            filter: saturate(0.98) contrast(1.04) brightness(0.94) !important;'''
-          assert public_img in css
-          css = css.replace(public_img, public_img_new, 1)
-          insert_before = '''  /* Keep all normal Class copy/control surfaces above the full-height art. */'''
-          enhancement = '''  .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__book-hero:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) > .npc-forge-class-guide__hero-copy {
+            filter: saturate(0.98) contrast(1.04) brightness(0.94) !important;
+          }
+
+          .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__book-hero:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) > .npc-forge-class-guide__hero-copy {
             align-content: start !important;
             padding: 42px 24px 24px 28px !important;
           }
@@ -316,153 +194,96 @@ jobs:
           }
 
           '''
-          assert insert_before in css
-          css = css.replace(insert_before, enhancement + insert_before, 1)
-          css_path.write_text(css)
+          css = css.replace(marker, enhancement + marker, 1)
+          path.write_text(css)
           PY
 
-      - name: Add regression validation and update existing validators
+      - name: Add subclass-browser regression coverage
         shell: bash
         run: |
           set -euo pipefail
           cat > scripts/validate_class_subclass_browser.mjs <<'EOF'
           import fs from "node:fs";
           import path from "node:path";
-
           const root = process.cwd();
           const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
           const assert = (condition, message) => { if (!condition) throw new Error(message); };
-
           const guide = read("components/NpcForgeClassGuide.js");
           const browser = read("components/ClassSubclassSection.js");
           const presentation = read("utils/classes/classPresentation.js");
           const framing = read("styles/character-forge-class-hero-framing.css");
           const model = read("components/NpcForgeClassGuideModel.js");
 
-          for (const token of [
-            'import ClassSubclassSection from "./ClassSubclassSection"',
-            "<ClassSubclassSection",
-            "onPreviewSubclass={(option) => previewSubclass(model, onFeatureDetail, option)}",
-            '<p className="npc-forge-class-guide__hero-tagline">{classOverviewSummary(selectedClass)}</p>',
-          ]) assert(guide.includes(token), `Class guide is missing ${token}`);
-          assert(!guide.includes("model.options.map((option) => <SubclassButton"), "Legacy all-subclass pill wall is still rendered by the Class guide.");
+          for (const token of ['import ClassSubclassSection from "./ClassSubclassSection"', '<ClassSubclassSection', 'onPreviewSubclass={(option) => previewSubclass(model, onFeatureDetail, option)}', '<p className="npc-forge-class-guide__hero-tagline">{classOverviewSummary(selectedClass)}</p>']) assert(guide.includes(token), `Class guide is missing ${token}`);
+          assert(!guide.includes("model.options.map((option) => <SubclassButton"), "Legacy subclass pill wall is still rendered.");
           assert(!guide.includes("<ClassOverviewCopy selectedClass={selectedClass}"), "Expanded Class overview copy is duplicated below the hero facts.");
-
-          for (const token of [
-            'import { useEffect, useMemo, useState } from "react"',
-            "const [browserOpen, setBrowserOpen] = useState(false)",
-            "const [search, setSearch] = useState(\"\")",
-            "const [source, setSource] = useState(\"all\")",
-            "const [expandedKey, setExpandedKey] = useState(\"\")",
-            "model?.options || []",
-            "model.selectSubclass(option)",
-            "Number(option.firstLevel || 1) <= Number(model?.currentLevel || 1)",
-            'aria-label="Subclass catalogue"',
-            'aria-label="Subclass source filters"',
-            "Search subclasses",
-            "Browse Subclasses",
-            "Change Subclass",
-            "Available at level",
-            "max-height:min(48vh,520px)",
-            "grid-template-columns:repeat(2,minmax(0,1fr))",
-            "grid-column:1/-1",
-          ]) assert(browser.includes(token), `Subclass browser is missing ${token}`);
-          assert(!browser.includes("supabase"), "Subclass browser must remain presentation-only and must not query Supabase directly.");
-          assert(model.includes("resolveSubclassCatalog") && model.includes("const options = useMemo"), "Subclass browser must continue receiving canonical options from the existing guide model.");
-
-          for (const key of ["fighter", "wizard", "rogue", "cleric", "ranger", "paladin", "warlock"]) {
-            assert(presentation.includes(`${key}:`), `Expanded standard Class overview copy is missing ${key}.`);
-          }
-          assert(presentation.includes("imported.length >= 180"), "Long imported/campaign-specific Class summaries must remain authoritative over generic standard copy.");
-
-          for (const token of [
-            "object-position: right top !important",
-            "left: 24% !important",
-            "min-height: 286px !important",
-            "grid-template-columns: minmax(0, 55%) minmax(0, 45%) !important",
-            "grid-template-columns: minmax(0, 72%) minmax(220px, 28%) !important",
-          ]) assert(framing.includes(token), `Top-right cinematic Class art framing is missing ${token}`);
-
+          for (const token of ['const [browserOpen, setBrowserOpen] = useState(false)', 'const [search, setSearch] = useState("")', 'const [source, setSource] = useState("all")', 'const [expandedKey, setExpandedKey] = useState("")', 'model?.options || []', 'model.selectSubclass(option)', 'Number(option.firstLevel || 1) <= Number(model?.currentLevel || 1)', 'aria-label="Subclass catalogue"', 'aria-label="Subclass source filters"', 'Search subclasses', 'Browse Subclasses', 'Change Subclass', 'Available at level', 'max-height:min(48vh,520px)', 'grid-template-columns:repeat(2,minmax(0,1fr))', 'grid-column:1/-1', 'detailed ? " is-detailed" : ""']) assert(browser.includes(token), `Subclass browser is missing ${token}`);
+          assert(!browser.includes("supabase"), "Subclass browser must remain presentation-only.");
+          assert(model.includes("resolveSubclassCatalog") && model.includes("const options = useMemo"), "Canonical subclass authority moved out of the existing guide model.");
+          for (const key of ["fighter", "wizard", "rogue", "cleric", "ranger", "paladin", "warlock"]) assert(presentation.includes(`${key}:`), `Expanded core Class summary missing ${key}.`);
+          assert(presentation.includes("imported.length >= 180"), "Long imported/campaign Class summaries must remain authoritative.");
+          for (const token of ['object-position: right top !important', 'left: 24% !important', 'min-height: 286px !important', 'grid-template-columns: minmax(0, 55%) minmax(0, 45%) !important', 'grid-template-columns: minmax(0, 72%) minmax(220px, 28%) !important']) assert(framing.includes(token), `Top-right cinematic framing missing ${token}`);
           const protectedSource = `${guide}\n${browser}\n${presentation}\n${framing}`.toLowerCase();
-          for (const token of ["map_routes", "advance_all_characters", "mappageclient", "townsheet", "encounter_weapon_attack", "crafting_recipe"]) {
-            assert(!protectedSource.includes(token), `Class presentation patch crossed protected boundary: ${token}`);
-          }
-
-          console.log("Class subclass browser validation passed: compact summary, searchable/source-filtered two-column browser, explicit details/selection, current-level eligibility, expanded Class copy, top-right cinematic art, canonical model authority, and protected boundaries are intact.");
+          for (const token of ["map_routes", "advance_all_characters", "mappageclient", "townsheet", "encounter_weapon_attack", "crafting_recipe"]) assert(!protectedSource.includes(token), `Class presentation patch crossed protected boundary: ${token}`);
+          console.log("Class subclass browser validation passed.");
           EOF
 
           python - <<'PY'
           from pathlib import Path
-
           workflow = Path('.github/workflows/validate-class-browser-polish.yml')
           text = workflow.read_text()
-          anchor = '''      - name: Validate Class hero framing
-                  run: node scripts/validate_class_hero_framing.mjs
-          '''
-          assert anchor in text
-          text = text.replace(anchor, anchor + '''      - name: Validate Class subclass browser
-                  run: node scripts/validate_class_subclass_browser.mjs
-          ''', 1)
+          if 'Validate Class subclass browser' not in text:
+              anchor = '      - name: Validate Class hero framing\n        run: node scripts/validate_class_hero_framing.mjs\n'
+              assert anchor in text
+              text = text.replace(anchor, anchor + '      - name: Validate Class subclass browser\n        run: node scripts/validate_class_subclass_browser.mjs\n', 1)
           workflow.write_text(text)
 
           polish = Path('scripts/validate_class_browser_polish.mjs')
           text = polish.read_text()
-          anchor = 'const guide = read("components/NpcForgeClassGuide.js");\n'
-          assert anchor in text
-          text = text.replace(anchor, anchor + 'const subclassBrowser = read("components/ClassSubclassSection.js");\n', 1)
-          replacements = {
-            '"classHeroTagline"': '"classOverviewSummary(selectedClass)"',
-            '"npc-forge-class-guide__subclass-grid"': '"ClassSubclassSection"',
-            '\'aria-label="Available subclasses"\'': '"onPreviewSubclass"',
-            '"model.options.map((option) => <SubclassButton"': '"model={model}"',
-            '"npc-forge-class-guide__subclass-confirm"': '"ForgeSubclassSelection"',
-          }
-          for old, new in replacements.items():
-            assert old in text, old
-            text = text.replace(old, new, 1)
-          insertion = '''assert(!guide.includes("model.options.slice(0, 4)"), "Subclass catalogue must no longer collapse after four entries.");'''
+          if 'const subclassBrowser = read("components/ClassSubclassSection.js");' not in text:
+              text = text.replace('const guide = read("components/NpcForgeClassGuide.js");\n', 'const guide = read("components/NpcForgeClassGuide.js");\nconst subclassBrowser = read("components/ClassSubclassSection.js");\n', 1)
+          for old, new in {
+              '"classHeroTagline"':'"classOverviewSummary(selectedClass)"',
+              '"npc-forge-class-guide__subclass-grid"':'"ClassSubclassSection"',
+              '\'aria-label="Available subclasses"\'':'"onPreviewSubclass"',
+              '"model.options.map((option) => <SubclassButton"':'"model={model}"',
+              '"npc-forge-class-guide__subclass-confirm"':'"ForgeSubclassSelection"',
+          }.items():
+              assert old in text, old
+              text = text.replace(old, new, 1)
+          insertion = 'assert(!guide.includes("model.options.slice(0, 4)"), "Subclass catalogue must no longer collapse after four entries.");'
           assert insertion in text
-          text = text.replace(insertion, '''assert(!guide.includes("model.options.slice(0, 4)"), "Subclass catalogue must no longer collapse after four entries.");
-          for (const token of ["Browse Subclasses", "Search subclasses", "model.selectSubclass(option)", "aria-label=\\"Subclass catalogue\\""]) assert(subclassBrowser.includes(token), `Compact subclass browser is missing ${token}`);''', 1)
-          protected_old = 'const protectedSources = `${step}\\n${catalog}\\n${guide}\\n${guideStyles}\\n${dock}\\n${artwork}\\n${presentation}\\n${catalogWrapper}\\n${polish}`.toLowerCase();'
-          assert protected_old in text
-          text = text.replace(protected_old, 'const protectedSources = `${step}\\n${catalog}\\n${guide}\\n${subclassBrowser}\\n${guideStyles}\\n${dock}\\n${artwork}\\n${presentation}\\n${catalogWrapper}\\n${polish}`.toLowerCase();', 1)
+          text = text.replace(insertion, insertion + '\nfor (const token of ["Browse Subclasses", "Search subclasses", "model.selectSubclass(option)", \'aria-label="Subclass catalogue"\']) assert(subclassBrowser.includes(token), `Compact subclass browser is missing ${token}`);', 1)
+          old = 'const protectedSources = `${step}\\n${catalog}\\n${guide}\\n${guideStyles}\\n${dock}\\n${artwork}\\n${presentation}\\n${catalogWrapper}\\n${polish}`.toLowerCase();'
+          assert old in text
+          text = text.replace(old, 'const protectedSources = `${step}\\n${catalog}\\n${guide}\\n${subclassBrowser}\\n${guideStyles}\\n${dock}\\n${artwork}\\n${presentation}\\n${catalogWrapper}\\n${polish}`.toLowerCase();', 1)
           polish.write_text(text)
 
           review = Path('scripts/validate_species_class_review_fix.mjs')
           text = review.read_text()
-          anchor = 'const guide = read("components/NpcForgeClassGuide.js");\n'
-          assert anchor in text
-          text = text.replace(anchor, anchor + 'const subclassBrowser = read("components/ClassSubclassSection.js");\n', 1)
-          old = '''assert(guide.includes("model.options.map((option) => <SubclassButton"), "Every subclass must render directly in the visible subclass grid.");
+          if 'const subclassBrowser = read("components/ClassSubclassSection.js");' not in text:
+              text = text.replace('const guide = read("components/NpcForgeClassGuide.js");\n', 'const guide = read("components/NpcForgeClassGuide.js");\nconst subclassBrowser = read("components/ClassSubclassSection.js");\n', 1)
+          old_block = '''assert(guide.includes("model.options.map((option) => <SubclassButton"), "Every subclass must render directly in the visible subclass grid.");
           assert(!guide.includes("model.options.slice(0, 4)"), "Subclass grid must not collapse after four entries.");
           assert(!guide.includes("npc-forge-class-guide__subclass-more"), "The Class overview must not hide subclasses behind a More disclosure.");
           assert(guide.includes("ForgeSubclassSelection"), "Subclass selection behavior was removed.");
           assert(guide.includes("model.selectSubclass(model.preview)"), "Subclass confirmation behavior was removed.");'''
-          new = '''assert(guide.includes("ClassSubclassSection"), "Class overview must use the compact subclass browser.");
+          new_block = '''assert(guide.includes("ClassSubclassSection"), "Class overview must use the compact subclass browser.");
           assert(!guide.includes("model.options.map((option) => <SubclassButton"), "Legacy subclass pill wall returned to the Class overview.");
           assert(!guide.includes("model.options.slice(0, 4)"), "Subclass catalogue must not collapse after four entries.");
           assert(!guide.includes("npc-forge-class-guide__subclass-more"), "The Class overview must not hide subclasses behind a More disclosure.");
           assert(guide.includes("ForgeSubclassSelection"), "Subclass selection behavior was removed.");
           assert(subclassBrowser.includes("model.selectSubclass(option)"), "Subclass confirmation behavior was removed from the browser.");
           assert(subclassBrowser.includes('aria-label="Subclass catalogue"'), "Every canonical subclass must remain browseable in the inline catalogue.");'''
+          assert old_block in text
+          text = text.replace(old_block, new_block, 1)
+          old = 'const protectedSource = `${css}\\n${cinematic}\\n${finalCorrections}\\n${guide}\\n${classCatalog}\\n${classEmpty}\\n${classArtwork}\\n${speciesArtwork}\\n${forgeModal}`.toLowerCase();'
           assert old in text
-          text = text.replace(old, new, 1)
-          protected_old = 'const protectedSource = `${css}\\n${cinematic}\\n${finalCorrections}\\n${guide}\\n${classCatalog}\\n${classEmpty}\\n${classArtwork}\\n${speciesArtwork}\\n${forgeModal}`.toLowerCase();'
-          assert protected_old in text
-          text = text.replace(protected_old, 'const protectedSource = `${css}\\n${cinematic}\\n${finalCorrections}\\n${guide}\\n${subclassBrowser}\\n${classCatalog}\\n${classEmpty}\\n${classArtwork}\\n${speciesArtwork}\\n${forgeModal}`.toLowerCase();', 1)
+          text = text.replace(old, 'const protectedSource = `${css}\\n${cinematic}\\n${finalCorrections}\\n${guide}\\n${subclassBrowser}\\n${classCatalog}\\n${classEmpty}\\n${classArtwork}\\n${speciesArtwork}\\n${forgeModal}`.toLowerCase();', 1)
           review.write_text(text)
-
-          hero = Path('scripts/validate_class_hero_framing.mjs')
-          text = hero.read_text()
-          anchor = '"object-position: right center !important",\n'
-          # Keep the legacy right-center guard and explicitly add the public cinematic top-right guard.
-          assert anchor in text
-          text = text.replace(anchor, anchor + '  "object-position: right top !important",\n', 1)
-          hero.write_text(text)
           PY
 
-      - name: Update Class rollout documentation
+      - name: Update rollout documentation
         shell: bash
         run: |
           set -euo pipefail
@@ -476,15 +297,15 @@ jobs:
 
           The first live cinematic browser review established three presentation refinements:
 
-          - Public cinematic hero art should be anchored to the top-right and exposed more aggressively instead of reading like a mid-page framed insert.
-          - The Class identity paragraph in the hero should use the longer presentation summary. Long imported/campaign-specific summaries remain authoritative; concise core summaries receive richer presentation copy.
+          - Public cinematic hero art is anchored to the top-right and exposed more aggressively instead of reading like a mid-page framed insert.
+          - The Class identity paragraph in the hero uses the longer presentation summary. Long imported/campaign-specific summaries remain authoritative; concise core summaries receive richer presentation copy.
           - The permanent all-subclass pill wall is replaced by a compact summary plus an inline browser. The browser exposes every canonical `model.options` subclass with search, source filters, a bounded two-column scroll area, one expanded detail card at a time, and explicit level-gated Choose buttons. Browsing never changes eligibility or persistence authority.
 
           `components/ClassSubclassSection.js` owns only browser presentation state (`browserOpen`, `search`, `source`, `expandedKey`). Actual subclass availability and persistence remain in `useNpcForgeClassGuideModel` / `NpcForgeClassChoiceContext` through `model.options`, `model.currentLevel`, and `model.selectSubclass`.
 
           '''
           if '## Browser-review refinement: top-right art + compact subclass browser' not in text:
-            text = text.replace(marker, section + marker, 1)
+              text = text.replace(marker, section + marker, 1)
           path.write_text(text)
           PY
 
@@ -509,14 +330,12 @@ jobs:
           components/NpcForgeClassGuide.js
           docs/CHARACTER_FORGE_CLASS_CINEMATIC_ARTWORK_ROLLOUT.md
           scripts/validate_class_browser_polish.mjs
-          scripts/validate_class_hero_framing.mjs
           scripts/validate_class_subclass_browser.mjs
           scripts/validate_species_class_review_fix.mjs
           styles/character-forge-class-hero-framing.css
           utils/classes/classPresentation.js
           EOF
-          git status --short
-          git diff --name-only HEAD^ | grep -v '^.github/workflows/materialize-class-subclass-browser.yml$' | sort > /tmp/actual.txt
+          git diff --name-only 2be4a16fd4fdc9b943c2cfee1c8097e3d9589833 | grep -v '^.github/workflows/materialize-class-subclass-browser.yml$' | sort > /tmp/actual.txt
           diff -u /tmp/expected.txt /tmp/actual.txt
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
