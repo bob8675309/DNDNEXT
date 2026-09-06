@@ -86,6 +86,16 @@ Environmental/art direction represented in this batch:
 
 All five use the same realistic cinematic fantasy family while varying pose, gaze, elevation, lighting, and environment.
 
+## Browser-review refinement: top-right art + compact subclass browser
+
+The first live cinematic browser review established three presentation refinements:
+
+- Public cinematic hero art is anchored to the top-right and exposed more aggressively instead of reading like a mid-page framed insert.
+- The Class identity paragraph in the hero uses the longer presentation summary. Long imported/campaign-specific summaries remain authoritative; concise core summaries receive richer presentation copy.
+- The permanent all-subclass pill wall is replaced by a compact summary plus an inline browser. The browser exposes every canonical `model.options` subclass with search, source filters, a bounded two-column scroll area, one expanded detail card at a time, and explicit level-gated Choose buttons. Browsing never changes eligibility or persistence authority.
+
+`components/ClassSubclassSection.js` owns only browser presentation state (`browserOpen`, `search`, `source`, `expandedKey`). Actual subclass availability and persistence remain in `useNpcForgeClassGuideModel` / `NpcForgeClassChoiceContext` through `model.options`, `model.currentLevel`, and `model.selectSubclass`.
+
 ## Validation gate
 
 Before a new Class hero batch is called installed:

@@ -29,8 +29,8 @@ for (const token of [
   'img[src*="/media/classes/cinematic-"]',
   "position: absolute !important",
   "bottom: 0 !important",
-  "left: 30% !important",
-  "object-position: right center !important",
+  "left: 24% !important",
+  "object-position: right top !important",
   "@media (max-width: 900px)",
 ]) assert(framing.includes(token), `Mirrored full-height Class cinematic contract is missing ${token}`);
 
