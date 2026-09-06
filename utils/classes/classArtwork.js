@@ -1,3 +1,8 @@
+import artificerHero from "../forgeGeneratedArt/artificerHero.js";
+import barbarianHero from "../forgeGeneratedArt/barbarianHero.js";
+import artificerMenu from "../forgeGeneratedArt/artificerMenu.js";
+import barbarianMenu from "../forgeGeneratedArt/barbarianMenu.js";
+
 const CLASS_ARTWORK = new Set([
   "adventurer",
   "artificer",
@@ -15,10 +20,35 @@ const CLASS_ARTWORK = new Set([
   "wizard",
 ]);
 
-// Core classes keep their dedicated class paintings. Special/non-core catalogue
-// entries use distinct paintings that already exist in the repository so no two
-// selectable classes intentionally share the same portrait. These can later be
-// replaced by purpose-built class paintings without changing the catalogue API.
+const APPROVED_CLASS_ARTWORK = Object.freeze({
+  artificer: "/media/classes/artificer-approved.webp",
+});
+
+/*
+ * Public cinematic hero/menu maps are intentionally separate. New Class artwork is
+ * promoted here only after browser approval and binary validation. Hero images are
+ * composed for the full-height right-side Class presentation; menu images are compact
+ * catalogue portraits and must not be destructive crops of the hero asset.
+ */
+const PUBLIC_CINEMATIC_CLASS_HERO_ARTWORK = Object.freeze({
+  fighter: "/media/classes/cinematic-fighter.webp",
+  wizard: "/media/classes/cinematic-wizard.webp",
+  rogue: "/media/classes/cinematic-rogue.webp",
+  cleric: "/media/classes/cinematic-cleric.webp",
+  ranger: "/media/classes/cinematic-ranger.webp",
+});
+const PUBLIC_CINEMATIC_CLASS_MENU_ARTWORK = Object.freeze({});
+
+const GENERATED_CINEMATIC_CLASS_HERO_ARTWORK = Object.freeze({
+  artificer: artificerHero,
+  barbarian: barbarianHero,
+});
+
+const GENERATED_CINEMATIC_CLASS_MENU_ARTWORK = Object.freeze({
+  artificer: artificerMenu,
+  barbarian: barbarianMenu,
+});
+
 const SPECIAL_CLASS_ARTWORK = Object.freeze({
   civilian: "/media/species/human.webp",
   "monster-hunter": "/media/species/human-innistrad.webp",
@@ -29,12 +59,38 @@ const SPECIAL_CLASS_ARTWORK = Object.freeze({
   sidekick: "/media/species/human-kaladesh.webp",
 });
 
-export function classArtworkFor(classKey = "") {
-  const normalized = String(classKey || "").trim().toLowerCase();
+function normalizedClassKey(classKey = "") {
+  return String(classKey || "").trim().toLowerCase();
+}
+
+function fallbackClassArtwork(normalized = "") {
+  if (APPROVED_CLASS_ARTWORK[normalized]) return APPROVED_CLASS_ARTWORK[normalized];
   if (SPECIAL_CLASS_ARTWORK[normalized]) return SPECIAL_CLASS_ARTWORK[normalized];
   return CLASS_ARTWORK.has(normalized)
     ? `/media/classes/${normalized}.webp`
     : "/media/classes/adventurer.webp";
+}
+
+export function classHeroArtworkFor(classKey = "") {
+  const normalized = normalizedClassKey(classKey);
+  return PUBLIC_CINEMATIC_CLASS_HERO_ARTWORK[normalized]
+    || GENERATED_CINEMATIC_CLASS_HERO_ARTWORK[normalized]
+    || fallbackClassArtwork(normalized);
+}
+
+export function classMenuArtworkFor(classKey = "") {
+  const normalized = normalizedClassKey(classKey);
+  return PUBLIC_CINEMATIC_CLASS_MENU_ARTWORK[normalized]
+    || GENERATED_CINEMATIC_CLASS_MENU_ARTWORK[normalized]
+    || fallbackClassArtwork(normalized);
+}
+
+export function classHasPublicCinematicHero(classKey = "") {
+  return Boolean(PUBLIC_CINEMATIC_CLASS_HERO_ARTWORK[normalizedClassKey(classKey)]);
+}
+
+export function classArtworkFor(classKey = "") {
+  return fallbackClassArtwork(normalizedClassKey(classKey));
 }
 
 export function handleClassArtworkError(event) {

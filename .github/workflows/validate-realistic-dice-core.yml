@@ -1,0 +1,41 @@
+name: Validate Realistic Dice core
+
+on:
+  pull_request:
+    paths:
+      - "components/dice/**"
+      - "components/NpcForgeAbilityStep.js"
+      - "components/NpcForgeAbilityContextCard.js"
+      - "components/NpcForgeAbilityGlyph.js"
+      - "styles/character-forge-ability-dice-tray.css"
+      - "styles/character-forge-class-ability-final.css"
+      - "utils/dice/**"
+      - "scripts/validate_realistic_dice_core.mjs"
+      - "scripts/validate_realistic_dice_physics.mjs"
+      - ".github/workflows/validate-realistic-dice-core.yml"
+  push:
+    branches:
+      - agent/realistic-dice-core
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Validate reusable Realistic Dice core
+        run: node scripts/validate_realistic_dice_core.mjs
+      - name: Stress-test responsive dice physics
+        run: node scripts/validate_realistic_dice_physics.mjs
+      # Do not run a bare `next build` in this workflow: this repository's page-data
+      # collection requires deployment Supabase environment variables that are not
+      # exposed to GitHub Actions. Exact-head production compilation is verified by
+      # the Vercel preview deployment instead; the semantic dice guard runs here.

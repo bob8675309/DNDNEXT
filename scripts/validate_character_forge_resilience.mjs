@@ -88,8 +88,9 @@ for (const token of ["ForgeSubclassSelection", "ChoiceRoutingNote", "cleanPlayer
 forbidToken(classGuide, "NpcForgeClassFeatureChoices", "class guide decision routing");
 forbidToken(classGuide, '"Primary Abilities"', "class hero redundant primary-ability tile");
 for (const token of ["normalizeClassFeatureText", "classFeatureSections", "class-feature-text__long-list", "LEVEL_BOILERPLATE"]) requireToken(classFeatureText, token, "structured class feature text");
-for (const token of ["Class Feature", "Subclass Feature", "npc-forge-class-feature-dock", "ClassFeatureText", "Training → Feats & Class Abilities"]) requireToken(classDock, token, "class feature card dock");
+for (const token of ["Class Feature", "Subclass Feature", "npc-forge-class-feature-dock", "ClassFeatureText", "Hover, focus, or select another feature or subclass"]) requireToken(classDock, token, "class feature card dock");
 forbidToken(classDock, "NpcForgeSourceChoiceFields", "class feature card dock decision routing");
+for (const token of ["Deferred resolutions", "resolve in Training", "Spell selections resolve in Spells"]) requireToken(classGuide, token, "class routed decision explanation");
 requireToken(forgeSteps, "NpcForgeClassFeatureDock", "class feature dock placement");
 requireToken(forgeSteps, "NpcForgeSpeciesBonusPanel", "ability Species Bonus placement");
 requireToken(forgeSteps, "speciesFixedLanguages", "source-defined player languages");
