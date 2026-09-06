@@ -46,6 +46,7 @@ jobs:
           for name in wanted:
               assert name in by_name and 'run' in by_name[name], name
               run = by_name[name]['run']
+
               if name == 'Refine public cinematic hero framing':
                   run = run.replace(
                       "assert css.count('min-height: 218px !important;') >= 2",
@@ -55,11 +56,40 @@ jobs:
                       "css = css.replace('min-height: 218px !important;', 'min-height: 286px !important;', 2)",
                       "css = css.replace('min-height: 218px !important;', 'min-height: 286px !important;', 1)\ncss = css.replace('min-height: 218px;', 'min-height: 286px;', 1)",
                   )
+
               if name == 'Commit clean scratch result':
                   run = run.replace(
                       'rm .github/workflows/materialize-class-subclass-browser.yml',
                       'rm .github/workflows/materialize-class-subclass-browser.yml\nrm .github/workflows/materialize-class-subclass-browser-v3.yml',
                   )
+                  run = run.replace(
+                      'scripts/validate_class_browser_polish.mjs\n',
+                      'scripts/validate_class_browser_polish.mjs\nscripts/validate_class_hero_framing.mjs\n',
+                      1,
+                  )
+
               print(f'--- running: {name} ---', flush=True)
               subprocess.run(['bash', '-euo', 'pipefail', '-c', run], check=True)
+
+              if name == 'Patch Class guide and presentation':
+                  guide_path = Path('components/NpcForgeClassGuide.js')
+                  guide = guide_path.read_text()
+                  old = '''function classOverviewSummary(selectedClass = {}) {
+            if (classThemeKey(selectedClass) === "artificer") return "Artificers are innovators, artisans, and problem solvers who blend magic with technology. They create magic items, enhance equipment, and bring ingenuity to every challenge.";
+            return cleanPlayerCopy(classPresentationSummary(selectedClass, `Explore the defining features, progression, and specialties of the ${selectedClass?.class_name || "selected"} class.`));
+          }'''
+                  new = '''function classOverviewSummary(selectedClass = {}) {
+            return cleanPlayerCopy(classPresentationSummary(selectedClass, `Explore the defining features, progression, and specialties of the ${selectedClass?.class_name || "selected"} class.`));
+          }'''
+                  assert old in guide, 'Artificer summary override drifted before browser patch.'
+                  guide_path.write_text(guide.replace(old, new, 1))
+
+              if name == 'Add subclass-browser regression coverage':
+                  hero_path = Path('scripts/validate_class_hero_framing.mjs')
+                  hero = hero_path.read_text()
+                  old = '"left: 30% !important",\n  "object-position: right center !important",'
+                  new = '"left: 24% !important",\n  "object-position: right top !important",'
+                  assert old in hero, 'Public cinematic hero validator tokens drifted.'
+                  hero_path.write_text(hero.replace(old, new, 1))
+
           PY
