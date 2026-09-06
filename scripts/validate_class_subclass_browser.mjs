@@ -41,10 +41,10 @@ for (const token of [
   'class-subclass-two-column__grid',
   'grid-template-columns:repeat(2,minmax(0,1fr))',
   'class-subclass-two-column__scroll',
-  'max-height:min(28vh,205px)',
-  'width:min(66%,760px)',
-  'grid-template-columns:82px minmax(0,1fr) auto 22px',
-  'min-height:48px',
+  'max-height:min(23vh,168px)',
+  'width:min(54%,620px)',
+  'grid-template-columns:74px minmax(0,1fr) auto 20px',
+  'min-height:44px',
   'class-subclass-selected-row',
   '>Change<',
   'aria-label="Collapse subclass selector"',
@@ -86,13 +86,13 @@ assert(presentation.includes("imported.length >= 180"), "Long imported/campaign 
 
 for (const token of [
   'bottom: auto !important',
-  'left: 20% !important',
+  'left: 0 !important',
   'height: clamp(780px, 82vh, 960px) !important',
   'object-position: 100% 0% !important',
   'grid-template-columns: minmax(0, 1fr) !important',
   'font-size: .82rem !important',
 ]) assert(framing.includes(token), `Stable open top-right cinematic framing missing ${token}`);
-assert(!framing.includes('bottom: 0 !important;\n    left: 20% !important'), "Cinematic art is still content-height-coupled.");
+assert(!framing.includes('bottom: 0 !important;\n    left: 0 !important'), "Cinematic art is still content-height-coupled.");
 
 for (const token of [
   '.class-level-guide__features button',
@@ -105,9 +105,9 @@ for (const token of [
   'button.is-subclass',
   'min-width:1060px!important',
   'repeat(9,minmax(36px,.34fr))',
-  'min-height:42px!important',
-  'padding:.2rem .42rem!important',
-  'font-size:.61rem!important',
+  'min-height:34px!important',
+  'padding:.16rem .34rem!important',
+  'font-size:.57rem!important',
 ]) assert(guide.includes(token), `Forge progression table did not retain the balanced feature-pill/spell-slot treatment: ${token}`);
 
 const protectedSource = `${guide}\n${selector}\n${subclassArtwork}\n${presentation}\n${framing}`.toLowerCase();
