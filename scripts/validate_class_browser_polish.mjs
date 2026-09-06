@@ -83,9 +83,9 @@ for (const token of [
   "class-subclass-two-column__scroll",
   "grid-template-columns:repeat(2,minmax(0,1fr))",
   "max-height:min(23vh,168px)",
-  "width:min(54%,620px)",
-  "grid-template-columns:74px minmax(0,1fr) auto 20px",
-  "min-height:44px",
+  "width:min(35%,430px)",
+  "grid-template-columns:64px minmax(0,1fr)",
+  "min-height:42px",
   "class-subclass-selected-row",
   ">Change<",
   'aria-label="Collapse subclass selector"',
@@ -95,6 +95,9 @@ for (const token of [
   "onInspectSubclass?.(option)",
 ]) assert(selector.includes(token), `Readable two-column subclass selector is missing ${token}`);
 for (const forbidden of [
+  'class-subclass-two-column__source',
+  'class-subclass-two-column__status',
+  'optionSummary(option)',
   "onMouseEnter",
   "Search subclasses",
   "browserOpen",
