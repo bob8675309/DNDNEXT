@@ -16,13 +16,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: agent/class-final-mockup-fit-20260906
-          fetch-depth: 2
+          fetch-depth: 4
 
-      - name: Guard exact starting head
+      - name: Guard exact untouched application baseline
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD^)" = "8266570e94c80594e4ae05e0bf4a4ea639389646"
+          git merge-base --is-ancestor 8266570e94c80594e4ae05e0bf4a4ea639389646 HEAD
+          test -z "$(git diff --name-only 8266570e94c80594e4ae05e0bf4a4ea639389646..HEAD -- components styles scripts docs)"
 
       - name: Apply final mockup proportions
         shell: bash
@@ -40,7 +41,7 @@ jobs:
 
           selector = 'components/ClassSubclassSection.js'
           replace_required(selector,
-              '.class-subclass-two-column__scroll{max-height:166px;overflow-y:auto;overscroll-behavior:contain;padding:0 4px 0 0;scrollbar-gutter:stable}.class-subclass-two-column__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}',
+              '.class-subclass-two-column__scroll{max-height:min(23vh,168px);overflow-y:auto;overscroll-behavior:contain;padding:0 4px 0 0;scrollbar-gutter:stable}.class-subclass-two-column__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}',
               '.class-subclass-two-column__scroll{max-height:166px;overflow-y:auto;overscroll-behavior:contain;padding:0 4px 0 0;scrollbar-gutter:stable}.class-subclass-two-column__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:52px;gap:5px}')
           replace_required(selector,
               'grid-template-columns:64px minmax(0,1fr);gap:7px;align-items:center;min-width:0;min-height:42px;padding:3px 5px',
@@ -84,6 +85,7 @@ jobs:
               p = Path(validator)
               v = p.read_text()
               for old, new in [
+                  ('max-height:min(23vh,168px)', 'max-height:166px'),
                   ('grid-template-columns:64px minmax(0,1fr)', 'grid-template-columns:76px minmax(0,1fr)'),
                   ('min-height:42px', 'min-height:52px'),
                   ('min-width:1060px!important', 'min-width:820px!important'),
@@ -95,9 +97,6 @@ jobs:
               anchor = "'grid-template-columns:repeat(2,minmax(0,1fr))',"
               if anchor in v and "'grid-auto-rows:52px'," not in v:
                   v = v.replace(anchor, anchor + "\n  'grid-auto-rows:52px',")
-              anchor2 = "'width:min(35%,430px)',"
-              if anchor2 in v and "'max-height:166px'," not in v:
-                  v = v.replace(anchor2, anchor2 + "\n  'max-height:166px',")
               p.write_text(v)
 
           p = Path('scripts/validate_class_hero_framing.mjs')
@@ -111,9 +110,9 @@ jobs:
 
           p = Path('docs/CHARACTER_FORGE_CLASS_SUBCLASS_SELECTOR_ARTWORK.md')
           d = p.read_text()
+          d = d.replace('the expanded selector remains internally scrollable for larger catalogues with the existing `max-height:min(23vh,168px)` cap;', 'the expanded selector remains internally scrollable for larger catalogues with a `166px` desktop viewport;')
           d = d.replace('each visible choice button contains only the subclass artwork and subclass name;', 'each visible choice button contains only the subclass artwork and subclass name; desktop cards are 52px tall with 76×40 artwork, so exactly six choices (2 columns × 3 rows) are visible before scrolling;')
           d = d.replace('table-card height cap is 435px;', 'table-card height cap is 435px and the desktop card itself is constrained to `width:min(74%,860px)` so it ends before the right-side character art;')
-          d = d.replace('desktop spell-table minimum width is 820px while preserving all columns; narrow layouts retain the wider scrolling treatment;', 'desktop spell-table minimum width is 820px while preserving all columns; narrow layouts retain the wider scrolling treatment;')
           if 'desktop spell-table minimum width is 820px' not in d:
               d = d.replace('spell-table minimum width remains 1060px while preserving all columns;', 'desktop spell-table minimum width is 820px while preserving all columns; narrow layouts retain the wider scrolling treatment;')
           d = d.replace('on desktop the cinematic layer spans the full Class Overview width from `left: 0` through the right edge;', 'on desktop the cinematic layer spans the full Class Overview width from `left: 0` through the right edge, and the Overview card consumes the Class guide\'s 8px top/right padding (`margin-top:-8px`, `margin-right:-8px`, `width:calc(100% + 8px)`) so the painting reaches the outer workspace edge;')
