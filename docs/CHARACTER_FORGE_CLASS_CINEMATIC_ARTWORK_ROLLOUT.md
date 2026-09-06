@@ -58,27 +58,33 @@ The full-height cinematic rules must:
 
 Artificer and Barbarian retain their existing generated hero/menu pair until browser review approves replacement or promotion under the same standard.
 
-## First approved production batch
+## First approved production batch — installed
 
-The first new Class hero batch is:
+The first new Class hero batch was browser-approved and installed on 2026-09-05:
 
-1. Fighter
-2. Wizard
-3. Rogue
-4. Cleric
-5. Ranger
+1. Fighter — `/media/classes/cinematic-fighter.webp`
+2. Wizard — `/media/classes/cinematic-wizard.webp`
+3. Rogue — `/media/classes/cinematic-rogue.webp`
+4. Cleric — `/media/classes/cinematic-cleric.webp`
+5. Ranger — `/media/classes/cinematic-ranger.webp`
 
-These five should be generated and browser-reviewed before their resolver paths are committed.
+Binary asset commit: `74d21a011f02239ee9913d39709c42448afea6fd` (`Add first cinematic Class hero batch`).
 
-Suggested environmental direction:
+Resolver mapping commit: `569a714fd5d31b14b94b1dadda07e1f2cce723bc` (`Map first approved cinematic Class hero batch`).
 
-- Fighter — fortified battlefield edge, training yard, or weathered stronghold approach.
-- Wizard — arcane observatory, tower study, or magical ruin with restrained spell light.
-- Rogue — moonlit rooftop, shadowed city passage, or rain-darkened urban overlook.
-- Cleric — sanctified ruin, temple threshold, or pilgrimage site with controlled divine light.
-- Ranger — forest pass, mountain trail, or wild frontier with practical scouting gear.
+The transfer used the established Dropbox `/DNDNext-Transfer` bridge and a one-shot GitHub Actions materializer with exact-head, ZIP SHA-256, per-file SHA-256, MIME, 1600×1200 dimension, exact-diff, and focused Class-framing guards before pushing the five binary files to `agent/realistic-dice-core`.
 
-The character should occupy the right side of each hero composition, but pose, gaze, elevation, and environment should vary substantially across the batch.
+The menu-art map remains separate and intentionally unchanged for this batch. Existing compact catalogue artwork remains in use until dedicated menu portraits are explicitly approved.
+
+Environmental/art direction represented in this batch:
+
+- Fighter — fortified battlefield/stronghold atmosphere.
+- Wizard — arcane study/observatory atmosphere.
+- Rogue — moonlit urban rooftop/shadowed city atmosphere.
+- Cleric — sanctified temple/divine-light atmosphere.
+- Ranger — mountain/forest frontier atmosphere.
+
+All five use the same realistic cinematic fantasy family while varying pose, gaze, elevation, lighting, and environment.
 
 ## Validation gate
 
