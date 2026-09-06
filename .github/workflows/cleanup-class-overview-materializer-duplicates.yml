@@ -1,0 +1,63 @@
+name: Cleanup Class overview materializer duplicates
+
+on:
+  push:
+    branches:
+      - agent/class-overview-target-layout-20260906
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/class-overview-target-layout-20260906
+          fetch-depth: 1
+      - name: Remove duplicate generated fragments
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path('components/NpcForgeClassGuide.js')
+          s = p.read_text()
+
+          helper = '''function spellSlotCells(slots) {\n  const cells = Array(9).fill("—");\n  if (Array.isArray(slots)) {\n    for (let index = 0; index < Math.min(9, slots.length); index += 1) {\n      const count = Number(slots[index] || 0);\n      cells[index] = count > 0 ? String(count) : "—";\n    }\n    return cells;\n  }\n  const pactSlots = Number(slots?.pactSlots || 0);\n  const pactLevel = Number(slots?.pactSlotLevel || 0);\n  if (pactSlots > 0 && pactLevel >= 1 && pactLevel <= 9) cells[pactLevel - 1] = `${pactSlots}p`;\n  return cells;\n}\n'''
+          count = s.count(helper)
+          if count < 1:
+            raise SystemExit('spellSlotCells helper missing')
+          first = s.find(helper)
+          before = s[:first + len(helper)]
+          after = s[first + len(helper):].replace(helper, '')
+          s = before + after
+
+          marker = '.npc-forge-class-guide__table-card .class-level-guide__table.has-spell-progression{min-width:1120px!important}'
+          end_marker = '.npc-forge-class-guide__table-card .class-level-guide__features button:focus-visible{outline:1px solid rgba(var(--class-secondary),.8)!important;outline-offset:1px!important}'
+          start = s.find(marker)
+          if start < 0:
+            raise SystemExit('target progression style block missing')
+          end = s.find(end_marker, start)
+          if end < 0:
+            raise SystemExit('target progression style block end missing')
+          end += len(end_marker)
+          block = s[start:end]
+          s = s[:end] + s[end:].replace(block, '')
+
+          p.write_text(s)
+          PY
+          test "$(grep -c 'function spellSlotCells' components/NpcForgeClassGuide.js)" -eq 1
+          test "$(grep -o 'min-width:1120px!important' components/NpcForgeClassGuide.js | wc -l)" -eq 1
+          git diff --check
+      - name: Commit cleanup
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add components/NpcForgeClassGuide.js
+          git diff --cached --quiet && exit 0
+          git commit -m "Clean Class overview generated fragments"
+          git push origin HEAD:agent/class-overview-target-layout-20260906
