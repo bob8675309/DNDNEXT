@@ -1,0 +1,103 @@
+name: Materialize Class cinematic batch 1
+
+on:
+  push:
+    branches:
+      - agent/class-cinematic-transfer-20260905
+    paths:
+      - .github/workflows/materialize-class-cinematic-batch1.yml
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact target branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/realistic-dice-core
+          fetch-depth: 0
+
+      - name: Guard expected target head
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected='2e7b99757358f006f0b6aeb75084f3bdcdb4a7f7'
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$expected" || { echo "Target moved: expected $expected, got $actual"; exit 1; }
+
+      - name: Download approved Class artwork bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 2 --output /tmp/class-art.zip 'https://uc3f40be50cf15dba514e41c9734.dl.dropboxusercontent.com/cd/0/get/DHn0Xrivxpt_12xN9K33gaIPvUB2rb71TrQGXHZh7w39e6Ug4CemQUIW_7b8MJCm9mqzT1pGAchP0KwQs5bLuFg5H6lZlKSHXTe_5EWB_1GzJzvlDHUi8ZxKNG3utJ0kB-YMc2pYKnU05yHdfKvBWa_x/file?c_luid=c335000c'
+          echo '80f89a942794c24611666f89cc93e1bf01d0913a0e3751f1ed54d0b3c06e7771  /tmp/class-art.zip' | sha256sum -c -
+          rm -rf /tmp/class-art
+          mkdir -p /tmp/class-art
+          unzip -q /tmp/class-art.zip -d /tmp/class-art
+
+      - name: Verify approved files
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/class-art
+          sha256sum -c SHA256SUMS.txt
+          for f in cinematic-fighter.webp cinematic-wizard.webp cinematic-rogue.webp cinematic-cleric.webp cinematic-ranger.webp; do
+            test "$(file -b --mime-type "$f")" = 'image/webp'
+          done
+          python -m pip install --disable-pip-version-check --quiet pillow==11.3.0
+          python - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          expected = {
+              'cinematic-fighter.webp',
+              'cinematic-wizard.webp',
+              'cinematic-rogue.webp',
+              'cinematic-cleric.webp',
+              'cinematic-ranger.webp',
+          }
+          found = {p.name for p in Path('/tmp/class-art').glob('*.webp')}
+          assert found == expected, (found, expected)
+          for path in sorted(Path('/tmp/class-art').glob('*.webp')):
+              with Image.open(path) as image:
+                  assert image.format == 'WEBP', (path, image.format)
+                  assert image.size == (1600, 1200), (path, image.size)
+          PY
+
+      - name: Install exactly five Class hero assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/media/classes
+          for f in cinematic-fighter.webp cinematic-wizard.webp cinematic-rogue.webp cinematic-cleric.webp cinematic-ranger.webp; do
+            cp "/tmp/class-art/$f" "public/media/classes/$f"
+          done
+          cat > /tmp/expected.txt <<'EOF'
+          public/media/classes/cinematic-cleric.webp
+          public/media/classes/cinematic-fighter.webp
+          public/media/classes/cinematic-ranger.webp
+          public/media/classes/cinematic-rogue.webp
+          public/media/classes/cinematic-wizard.webp
+          EOF
+          git diff --name-only | sort > /tmp/actual.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+
+      - name: Validate Class framing boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/validate_class_hero_framing.mjs
+
+      - name: Commit and push approved Class artwork
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/media/classes/cinematic-fighter.webp public/media/classes/cinematic-wizard.webp public/media/classes/cinematic-rogue.webp public/media/classes/cinematic-cleric.webp public/media/classes/cinematic-ranger.webp
+          git diff --cached --name-only | sort > /tmp/staged.txt
+          diff -u /tmp/expected.txt /tmp/staged.txt
+          git commit -m 'Add first cinematic Class hero batch'
+          git push origin HEAD:agent/realistic-dice-core
