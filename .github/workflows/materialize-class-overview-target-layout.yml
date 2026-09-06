@@ -1,0 +1,72 @@
+name: Materialize Class overview target layout
+
+on:
+  push:
+    branches:
+      - agent/class-overview-target-layout-20260906
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/class-overview-target-layout-20260906
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Apply Class overview interaction and progression patch
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('components/NpcForgeClassGuide.js')
+          s = p.read_text()
+
+          s = s.replace(
+            'import { classSlotSummary, classSourceLabel, useNpcForgeClassGuideModel } from "./NpcForgeClassGuideModel";',
+            'import { classSourceLabel, useNpcForgeClassGuideModel } from "./NpcForgeClassGuideModel";'
+          )
+
+          anchor = '''function selectedRowFeatures(model, row) {\n  const base = (row?.guideFeatures || []).filter((feature) => feature?.type !== "subclass");\n  if (!model?.selected || model?.preview?.key !== model.selected.key) return base;\n  return row.guideFeatures || base;\n}\n'''
+          helper = anchor + '''function spellSlotCells(slots) {\n  const cells = Array(9).fill("—");\n  if (Array.isArray(slots)) {\n    for (let index = 0; index < Math.min(9, slots.length); index += 1) {\n      const count = Number(slots[index] || 0);\n      cells[index] = count > 0 ? String(count) : "—";\n    }\n    return cells;\n  }\n  const pactSlots = Number(slots?.pactSlots || 0);\n  const pactLevel = Number(slots?.pactSlotLevel || 0);\n  if (pactSlots > 0 && pactLevel >= 1 && pactLevel <= 9) cells[pactLevel - 1] = `${pactSlots}p`;\n  return cells;\n}\n'''
+          if anchor not in s:
+            raise SystemExit('selectedRowFeatures anchor missing')
+          s = s.replace(anchor, helper, 1)
+
+          progression = '''function ProgressionTable({ selectedClass, model, onFeatureDetail }) {\n  const hasSpellProgression = model.rows.some((row) => row.cantrips_known != null || row.spells_known != null || row.spell_slots);\n  const slotLabels = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"];\n  const rowClassName = (row) => `class-level-guide__row${hasSpellProgression ? " is-spell-progression" : ""}${Number(row?.class_level) === model.currentLevel ? " is-current" : ""}`;\n  return <section className="npc-card class-level-guide__table-card npc-forge-class-guide__table-card">\n    <div className="npc-forge-class-guide__section-title"><span>Class Progression</span><small>Selected subclass features join the table automatically. Click a feature bubble to show its rules in the movable Feature card.</small></div>\n    <div className={`class-level-guide__table${hasSpellProgression ? " has-spell-progression" : ""}`} role="table">\n      <div className={`class-level-guide__row is-head${hasSpellProgression ? " is-spell-progression" : ""}`} role="row">\n        <div>Level</div><div>PB</div><div>Features</div>\n        {hasSpellProgression ? <><div>Cantrips</div><div>Known / Prepared</div>{slotLabels.map((label) => <div key={label} className="class-level-guide__slot-head" title={`${label} level spell slots`}>{label}</div>)}</> : null}\n      </div>\n      {model.rows.map((row) => {\n        const features = selectedRowFeatures(model, row);\n        const slots = spellSlotCells(row.spell_slots);\n        return <div key={row.class_level} className={rowClassName(row)} role="row">\n          <div><strong>{row.class_level}</strong>{Number(row.class_level) === model.currentLevel ? <span>Current</span> : null}</div>\n          <div>+{Number(row.proficiency_bonus || 2)}</div>\n          <div className="class-level-guide__features">{features.length ? features.map((feature, index) => <button type="button" key={`${feature.type}-${feature.name}-${index}`} className={feature.type === "subclass" ? "is-subclass" : ""} aria-label={`View ${feature.name} details`} onClick={() => publishFeature(model, onFeatureDetail, feature, row.class_level)}>{feature.type === "subclass" && model.selected ? `${model.selected.name}: ` : ""}{feature.name}</button>) : <span className="text-muted">—</span>}</div>\n          {hasSpellProgression ? <><div>{row.cantrips_known ?? "—"}</div><div>{row.spells_known ?? "—"}</div>{slots.map((count, index) => <div key={`${row.class_level}-slot-${index}`} className="class-level-guide__slot-cell">{count}</div>)}</> : null}\n        </div>;\n      })}\n    </div>\n    {hasSpellProgression ? <div className="npc-forge-class-guide__table-footnote"><span aria-hidden="true">i</span><p>Spell choices for the {selectedClass?.class_name || "selected class"} are resolved in the Spells tab; this table is the progression reference. A value ending in “p” denotes pact slots.</p></div> : null}\n  </section>;\n}\n'''
+          s, n = re.subn(r'function ProgressionTable\(\{ selectedClass, model, onFeatureDetail \}\) \{.*?\n\}\nfunction ForgeOverview', progression + 'function ForgeOverview', s, count=1, flags=re.S)
+          if n != 1:
+            raise SystemExit(f'ProgressionTable replacement count {n}')
+
+          s = s.replace(' onMouseEnter={() => publishFeature(model, onFeatureDetail, feature, row.class_level)} onFocus={() => publishFeature(model, onFeatureDetail, feature, row.class_level)} onClick={() => publishFeature(model, onFeatureDetail, feature, row.class_level)}', ' onClick={() => publishFeature(model, onFeatureDetail, feature, row.class_level)}')
+          s = s.replace('Hover or focus a subclass to inspect it in the movable Feature card. Select an eligible subclass to add its features to progression. Hover, focus, or click any feature bubble for full rules.', 'Click a subclass to select or inspect it in the movable Feature card. Select an eligible subclass to add its features to progression. Click any feature bubble for full rules.')
+
+          style_anchor = '.npc-forge-class-guide__table-card .class-level-guide__slots{font-size:.56rem!important;line-height:1.35!important;white-space:normal!important}'
+          style_patch = style_anchor + '''\n      .npc-forge-class-guide__table-card .class-level-guide__table.has-spell-progression{min-width:1120px!important}.npc-forge-class-guide__table-card .class-level-guide__row.is-spell-progression{grid-template-columns:48px 48px minmax(320px,2.7fr) 62px 88px repeat(9,minmax(38px,.34fr))!important;gap:.28rem!important}.npc-forge-class-guide__table-card .class-level-guide__row:not(.is-spell-progression){grid-template-columns:48px 48px minmax(360px,1fr)!important;gap:.4rem!important}.npc-forge-class-guide__table-card .class-level-guide__slot-head,.npc-forge-class-guide__table-card .class-level-guide__slot-cell{text-align:center!important;font-variant-numeric:tabular-nums}.npc-forge-class-guide__table-card .class-level-guide__slot-head{color:rgba(255,255,255,.56)!important;font-size:.48rem!important}.npc-forge-class-guide__table-card .class-level-guide__slot-cell{color:rgba(255,255,255,.76)!important;font-size:.54rem!important}.npc-forge-class-guide__table-card .class-level-guide__features button{cursor:pointer}.npc-forge-class-guide__table-card .class-level-guide__features button:focus-visible{outline:1px solid rgba(var(--class-secondary),.8)!important;outline-offset:1px!important}\n'''
+          if style_anchor not in s:
+            raise SystemExit('table style anchor missing')
+          s = s.replace(style_anchor, style_patch, 1)
+          s = s.replace('@media(max-width:900px){.npc-forge-class-guide__overview-layout{padding:10px!important}.npc-forge-class-guide__table-card .class-level-guide__table{min-width:820px!important}}', '@media(max-width:900px){.npc-forge-class-guide__overview-layout{padding:10px!important}.npc-forge-class-guide__table-card .class-level-guide__table{min-width:720px!important}.npc-forge-class-guide__table-card .class-level-guide__table.has-spell-progression{min-width:1080px!important}}')
+
+          p.write_text(s)
+          PY
+
+          git diff --check
+          node scripts/validate_class_subclass_browser.mjs || true
+      - name: Commit patch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add components/NpcForgeClassGuide.js
+          git diff --cached --quiet && exit 0
+          git commit -m "Apply target Class overview interaction layout"
+          git push origin HEAD:agent/class-overview-target-layout-20260906
