@@ -1,0 +1,100 @@
+name: Patch compact Class selector density 2026-09-06
+
+on:
+  push:
+    branches:
+      - agent/class-subclass-compact-art-20260906
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/class-subclass-compact-art-20260906
+          fetch-depth: 1
+
+      - name: Apply exact Class Overview wiring and density patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('components/NpcForgeClassGuide.js')
+          source = path.read_text()
+
+          replacements = [
+            (
+              'function ForgeSubclassSelection({ model, onFeatureDetail, detailed = false }) {',
+              'function ForgeSubclassSelection({ selectedClass, model, onFeatureDetail, detailed = false }) {'
+            ),
+            (
+              '  return <ClassSubclassSection\n    model={model}\n    detailed={detailed}',
+              '  return <ClassSubclassSection\n    model={model}\n    classKey={selectedClass?.class_key || ""}\n    detailed={detailed}'
+            ),
+            (
+              '<ForgeSubclassSelection model={model} onFeatureDetail={onFeatureDetail} />',
+              '<ForgeSubclassSelection selectedClass={selectedClass} model={model} onFeatureDetail={onFeatureDetail} />'
+            ),
+            (
+              '<ForgeSubclassSelection model={model} onFeatureDetail={onFeatureDetail} detailed />',
+              '<ForgeSubclassSelection selectedClass={selectedClass} model={model} onFeatureDetail={onFeatureDetail} detailed />'
+            ),
+            (
+              '.npc-forge-class-guide__table-card{max-height:565px!important;padding:8px!important;overflow:auto!important}',
+              '.npc-forge-class-guide__table-card{max-height:545px!important;padding:6px!important;overflow:auto!important}'
+            ),
+            (
+              'gap:.45rem!important;min-height:44px!important;padding:.38rem .5rem!important',
+              'gap:.36rem!important;min-height:39px!important;padding:.28rem .45rem!important'
+            ),
+            (
+              '.npc-forge-class-guide__table-card .class-level-guide__row.is-head{min-height:36px!important}',
+              '.npc-forge-class-guide__table-card .class-level-guide__row.is-head{min-height:32px!important}'
+            ),
+            (
+              'gap:.3rem!important}.npc-forge-class-guide__table-card .class-level-guide__features button{appearance:none!important;padding:.24rem .44rem!important',
+              'gap:.24rem!important}.npc-forge-class-guide__table-card .class-level-guide__features button{appearance:none!important;padding:.18rem .4rem!important'
+            ),
+            (
+              '.npc-forge-class-guide__table-card .class-level-guide__table.has-spell-progression{min-width:1120px!important}',
+              '.npc-forge-class-guide__table-card .class-level-guide__table.has-spell-progression{min-width:1060px!important}'
+            ),
+            (
+              'grid-template-columns:48px 48px minmax(320px,2.7fr) 62px 88px repeat(9,minmax(38px,.34fr))!important;gap:.28rem!important',
+              'grid-template-columns:46px 44px minmax(300px,2.7fr) 58px 82px repeat(9,minmax(36px,.34fr))!important;gap:.22rem!important'
+            ),
+            (
+              'grid-template-columns:48px 48px minmax(360px,1fr)!important;gap:.4rem!important',
+              'grid-template-columns:46px 44px minmax(340px,1fr)!important;gap:.32rem!important'
+            ),
+          ]
+
+          for old, new in replacements:
+            count = source.count(old)
+            if count != 1:
+              raise SystemExit(f'Expected exactly one match, got {count}: {old[:90]}')
+            source = source.replace(old, new, 1)
+
+          path.write_text(source)
+          PY
+
+          git diff --check
+          grep -q 'classKey={selectedClass?.class_key || ""}' components/NpcForgeClassGuide.js
+          grep -q 'min-width:1060px!important' components/NpcForgeClassGuide.js
+          test "$(git diff --name-only | sort)" = "components/NpcForgeClassGuide.js"
+
+      - name: Commit exact Class Overview patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add components/NpcForgeClassGuide.js
+          git commit -m "Wire subclass thumbnails and tighten progression density"
+          git push origin HEAD:agent/class-subclass-compact-art-20260906
