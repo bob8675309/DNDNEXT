@@ -67,6 +67,11 @@ jobs:
                       'scripts/validate_class_browser_polish.mjs\nscripts/validate_class_hero_framing.mjs\n',
                       1,
                   )
+                  run = run.replace(
+                      "git diff --name-only 2be4a16fd4fdc9b943c2cfee1c8097e3d9589833 | grep -v '^.github/workflows/materialize-class-subclass-browser.yml$' | sort > /tmp/actual.txt",
+                      "(git diff --name-only 2be4a16fd4fdc9b943c2cfee1c8097e3d9589833; git ls-files --others --exclude-standard) | grep -v '^.github/workflows/materialize-class-subclass-browser.yml$' | sort -u > /tmp/actual.txt",
+                      1,
+                  )
 
               print(f'--- running: {name} ---', flush=True)
               subprocess.run(['bash', '-euo', 'pipefail', '-c', run], check=True)
