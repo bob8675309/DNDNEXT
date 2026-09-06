@@ -22,7 +22,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD^)" = "1f5ad332120fdf984a113ce083b2df24c8da564e"
+          test "$(git rev-parse HEAD^)" = "5d4be7ab02d34c44b101a9d70fa5a150bf9df50c"
 
       - name: Apply browser-review proportions
         shell: bash
@@ -35,14 +35,11 @@ jobs:
               p = Path(path)
               s = p.read_text()
               for old, new in replacements:
-                  n = s.count(old)
-                  if n < 1:
+                  if old not in s:
                       raise SystemExit(f'{path}: missing expected token: {old[:140]}')
                   s = s.replace(old, new)
               p.write_text(s)
 
-          # Selector: shrink total desktop footprint to ~67% of the current area while
-          # preserving the readable two-column card treatment and all canonical options.
           patch('components/ClassSubclassSection.js', [
               ('width:min(66%,760px);max-width:760px', 'width:min(54%,620px);max-width:620px'),
               ('grid-template-columns:78px minmax(0,1fr) 22px', 'grid-template-columns:70px minmax(0,1fr) 20px'),
@@ -54,7 +51,6 @@ jobs:
               ('@media(max-width:1100px){.class-subclass-section.is-two-column:not(.is-detailed){width:min(72%,760px)}}', '@media(max-width:1100px){.class-subclass-section.is-two-column:not(.is-detailed){width:min(60%,620px)}}'),
           ])
 
-          # Progression: ~20% less vertical density, without removing columns or changing data.
           patch('components/NpcForgeClassGuide.js', [
               ('max-height:545px!important;padding:6px!important', 'max-height:435px!important;padding:5px!important'),
               ('gap:.34rem!important;min-height:42px!important;padding:.31rem .46rem!important', 'gap:.28rem!important;min-height:34px!important;padding:.22rem .38rem!important'),
@@ -66,8 +62,6 @@ jobs:
               ('.class-level-guide__slot-cell{color:rgba(255,255,255,.76)!important;font-size:.57rem!important}', '.class-level-guide__slot-cell{color:rgba(255,255,255,.76)!important;font-size:.53rem!important}'),
           ])
 
-          # Cinematic art: fill the complete Class Overview width and fade beneath the copy.
-          # Height remains viewport-derived so subclass expansion still cannot recrop the art.
           patch('styles/character-forge-class-hero-framing.css', [
               ('left: 20% !important', 'left: 0 !important'),
               ('linear-gradient(90deg, rgba(5, 8, 15, 0.98) 0%, rgba(5, 8, 15, 0.78) 16%, rgba(5, 8, 15, 0.34) 34%, rgba(5, 8, 15, 0.06) 56%, rgba(5, 8, 15, 0) 72%)', 'linear-gradient(90deg, rgba(5, 8, 15, 0.995) 0%, rgba(5, 8, 15, 0.95) 18%, rgba(5, 8, 15, 0.76) 34%, rgba(5, 8, 15, 0.46) 47%, rgba(5, 8, 15, 0.18) 59%, rgba(5, 8, 15, 0.04) 69%, rgba(5, 8, 15, 0) 80%)'),
@@ -92,17 +86,6 @@ jobs:
               ('stable brighter top-right layer', 'stable full-width faded background layer'),
           ])
 
-          patch('docs/CHARACTER_FORGE_CLASS_SUBCLASS_SELECTOR_ARTWORK.md', [
-              ('`width:min(66%,760px)`', '`width:min(54%,620px)`'),
-              ('`max-height:min(28vh,205px)`', '`max-height:min(23vh,168px)`'),
-              ('approximately 48px', 'approximately 44px'),
-              ('82×40', '74×36'),
-              ('normal rows are **42px** minimum', 'normal rows are **34px** minimum'),
-              ('header **34px**', 'header **28px**'),
-              ('row text `.61rem`', 'row text `.57rem`'),
-              ('feature pills `.2rem .42rem`', 'feature pills `.16rem .34rem`'),
-          ])
-
           selector = Path('components/ClassSubclassSection.js').read_text()
           guide = Path('components/NpcForgeClassGuide.js').read_text()
           framing = Path('styles/character-forge-class-hero-framing.css').read_text()
@@ -124,7 +107,7 @@ jobs:
 
           changed="$(git diff --name-only | sort)"
           printf '%s\n' "$changed"
-          test "$changed" = "$(printf '%s\n' components/ClassSubclassSection.js components/NpcForgeClassGuide.js docs/CHARACTER_FORGE_CLASS_SUBCLASS_SELECTOR_ARTWORK.md scripts/validate_class_browser_polish.mjs scripts/validate_class_hero_framing.mjs scripts/validate_class_subclass_browser.mjs styles/character-forge-class-hero-framing.css | sort)"
+          test "$changed" = "$(printf '%s\n' components/ClassSubclassSection.js components/NpcForgeClassGuide.js scripts/validate_class_browser_polish.mjs scripts/validate_class_hero_framing.mjs scripts/validate_class_subclass_browser.mjs styles/character-forge-class-hero-framing.css | sort)"
 
       - name: Commit focused Class presentation patch
         shell: bash
@@ -132,7 +115,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add components/ClassSubclassSection.js components/NpcForgeClassGuide.js styles/character-forge-class-hero-framing.css scripts/validate_class_browser_polish.mjs scripts/validate_class_hero_framing.mjs scripts/validate_class_subclass_browser.mjs docs/CHARACTER_FORGE_CLASS_SUBCLASS_SELECTOR_ARTWORK.md
+          git add components/ClassSubclassSection.js components/NpcForgeClassGuide.js styles/character-forge-class-hero-framing.css scripts/validate_class_browser_polish.mjs scripts/validate_class_hero_framing.mjs scripts/validate_class_subclass_browser.mjs
           git diff --cached --check
           git commit -m "Tighten Class overview density and widen artwork"
           git push origin HEAD:agent/class-density-art-20260906
