@@ -107,11 +107,13 @@ for (const token of [
   'border-radius:999px!important',
   'background:rgba(126,75,202,.14)!important',
   'button.is-subclass',
-  'min-width:820px!important',
-  'repeat(9,minmax(28px,.3fr))',
+  'min-width:0!important',
+  'repeat(9,minmax(24px,.32fr))',
   'min-height:34px!important',
   'padding:.16rem .34rem!important',
   'font-size:.57rem!important',
+  'grid-template-columns:40px 34px minmax(190px,2.15fr) 46px 62px repeat(9,minmax(24px,.32fr))!important',
+  'text-align:center!important',
 ]) assert(guide.includes(token), `Forge progression table did not retain the balanced feature-pill/spell-slot treatment: ${token}`);
 
 const protectedSource = `${guide}\n${selector}\n${subclassArtwork}\n${presentation}\n${framing}`.toLowerCase();
