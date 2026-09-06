@@ -128,7 +128,7 @@ for (const token of [
   "export function mergePreferredClasses",
 ]) assert(catalogWrapper.includes(token), `Forge class normalization is missing ${token}`);
 assert(polish.includes("npc-forge-step-2"), "Class browser polish scope disappeared.");
-assert(guideStyles.includes("Class Progression"), "Class visual foundation no longer exposes the progression section styling.");
+assert(guideStyles.includes("npc-forge-class-guide__table-card") && guideStyles.includes("class-level-guide__row"), "Class progression foundation styling disappeared.");
 
 const protectedSources = `${step}\n${catalog}\n${guide}\n${selector}\n${guideStyles}\n${dock}\n${artwork}\n${presentation}\n${catalogWrapper}\n${polish}\n${framing}`.toLowerCase();
 for (const token of ["map_routes", "advance_all_characters", "mappageclient", "townsheet", "world travel", "crafting_recipe"]) {
