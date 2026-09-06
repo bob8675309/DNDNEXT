@@ -16,18 +16,18 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: agent/class-subclass-compact-art-20260906
-          fetch-depth: 2
+          fetch-depth: 3
 
       - name: Guard exact starting head
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD^)" = "c344fbd417a56b6f3f08f711bec0a870bd305eff"
+          test "$(git rev-parse HEAD^^)" = "c344fbd417a56b6f3f08f711bec0a870bd305eff"
 
       - name: Download and verify approved artwork bundle
         shell: bash
         env:
-          DROPBOX_URL: "https://uc0b3d70e65766db1c5ff0433cef.dl.dropboxusercontent.com/cd/0/get/DHorERA08Zvnt2CMPgFmCOt6R47o9laZkWVP5GGHAlocsHumk4GNgc5nbNQ-VZ94esS74H233ljThlj6Q8iwPjK8KVP4o9-0T7WjLaEEdKCVQqdy50IvdHSicsTnDM2REVdQJbxpV0xD_lu-pZK6iKaz/file?c_luid=c335000c"
+          DROPBOX_URL: "https://uc957906532f3fa0e4da0731b5a0.dl.dropboxusercontent.com/cd/0/get/DHpXFros2I0E0qTrb6Xdr8Pv-0uAvcRLGLIJT4ougmg6v4BwZeBhmBJvdR20537kdQXMCuQYIGTbf_5R5uYJcNAUZnXyOiBkD4zt3kLtMaKDz2otXnu-BNEYvKrpi_d4KDLrEtXk5SYjv1-4jYsxBe10/file?c_luid=c335000c"
         run: |
           set -euo pipefail
           curl --fail --location --silent --show-error "$DROPBOX_URL" -o /tmp/wizard-subclasses.zip
@@ -86,7 +86,7 @@ jobs:
           public/media/subclasses/wizard/wizard-transmutation.webp
           EOF
           )
-          actual=$(git status --short | awk '{print $2}' | sort)
+          actual=$(git status --short --untracked-files=all | awk '{print $2}' | sort)
           test "$actual" = "$expected"
 
       - name: Commit approved thumbnails
