@@ -19,9 +19,6 @@ for (const token of [
   ".npc-forge-class-guide:not(.is-class-artificer):not(.is-class-barbarian)",
   "object-fit: contain !important",
   "object-position: right center !important",
-  "width: calc(100% + 32px) !important",
-  "margin-top: -8px !important",
-  "margin-right: -32px !important",
   "transform: none !important",
   ".npc-forge-class-guide.is-class-artificer",
   ".npc-forge-class-guide.is-class-barbarian",
@@ -30,20 +27,25 @@ for (const token of [
 
 for (const token of [
   'img[src*="/media/classes/cinematic-"]',
-  "position: absolute !important",
-  "top: 0 !important",
-  "right: 0 !important",
-  "bottom: auto !important",
-  "left: 0 !important",
-  "height: clamp(780px, 82vh, 960px) !important",
-  "object-position: 100% 0% !important",
-  "min-height: 312px !important",
+  "position: relative !important",
+  "grid-template-columns: minmax(0, 56%) minmax(320px, 44%) !important",
+  "min-height: 270px !important",
+  "grid-column: 2 / 3",
+  "inset: auto !important",
+  "height: auto !important",
+  "object-position: 100% 18% !important",
+  "width: 100% !important",
+  "max-width: none !important",
+  "margin: 0 !important",
   "font-size: .82rem !important",
   "grid-template-columns: minmax(0, 1fr) !important",
   "@media (max-width: 900px)",
-]) assert(framing.includes(token), `Open stable top-right Class cinematic contract is missing ${token}`);
-assert(!framing.includes("bottom: 0 !important;\n    left: 0 !important"), "Cinematic hero must not use the expanding content height as its bottom edge.");
-assert(framing.includes(`npc-forge-class-guide__overview-book:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"])::before`) && framing.includes("content: none !important"), "Cinematic Class art must suppress the old inset Overview frame so artwork reaches the card corners.");
+]) assert(framing.includes(token), `Header-contained Class cinematic contract is missing ${token}`);
+
+assert(!framing.includes("height: clamp(780px, 82vh, 960px) !important"), "Cinematic Class art regressed to the viewport-height background treatment.");
+assert(!framing.includes("position: absolute !important;\n    top: 0 !important;\n    right: 0 !important"), "Cinematic Class art must stay inside the hero header instead of becoming a full-card absolute layer.");
+assert(framing.includes(".npc-forge-class-guide__table-card") && framing.includes("width: 100% !important"), "Progression must reclaim full width below header-contained cinematic art.");
+assert(framing.includes("::after") && framing.includes("content: none !important"), "Cinematic Class Overview must not install a full-card artwork overlay.");
 
 assert(guide.includes("classHeroArtworkFor(selectedClass.class_key)"), "Class hero must keep the centralized artwork resolver.");
 assert(guide.includes("is-class-${theme}"), "Class guide must retain per-class theme hooks used by framing corrections.");
@@ -67,4 +69,4 @@ for (const token of ["mappageclient", "map_routes", "advance_all_characters", "t
   assert(!protectedText.includes(token), `Class hero framing patch unexpectedly references protected map/town behavior: ${token}`);
 }
 
-console.log("Class hero framing validation passed: legacy paintings retain safe framing, public cinematic art is fixed high in a stable full-width faded background layer independent of subclass/content height, artwork roles remain separate, and protected boundaries are untouched.");
+console.log("Class hero framing validation passed: legacy paintings retain safe framing, public cinematic art stays inside the hero header, progression reclaims the row below it, artwork roles remain separate, and protected boundaries are untouched.");
