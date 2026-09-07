@@ -1,0 +1,75 @@
+name: Apply corrected Class artwork 2026-09-07
+
+on:
+  push:
+    branches:
+      - agent/class-art-formatting-fix-20260907
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/class-art-formatting-fix-20260907
+          fetch-depth: 2
+
+      - name: Materialize clean Wizard art and validate
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '3b241ce0fcda44f2b9114b8855f42eebd38936fbc2db45cac88b76980d7b0404  .tmp/dndnext-class-art-selector-clean-20260907.zip' | sha256sum -c -
+          rm -rf /tmp/class-art-clean
+          mkdir -p /tmp/class-art-clean
+          unzip -q .tmp/dndnext-class-art-selector-clean-20260907.zip -d /tmp/class-art-clean
+          (cd /tmp/class-art-clean && sha256sum -c SHA256SUMS.txt)
+          rsync -a /tmp/class-art-clean/public/ public/
+
+          test "$(sha256sum public/media/classes/cinematic-wizard.webp | cut -d' ' -f1)" = '0fad4677726715188e59d9ea8dd010bc3332bca86ac0c603415f48def6cdf13c'
+          test "$(file -b --mime-type public/media/classes/cinematic-wizard.webp)" = 'image/webp'
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import struct
+
+          names = ['abjuration','abjurer','bladesinger','bladesinging','chronurgy','conjuration','divination','diviner','enchantment','evocation','evoker','graviturgy','illusion','illusionist','necromancy','scribes','transmutation','war']
+          paths = [Path(f'public/media/subclasses/wizard/wizard-{name}.webp') for name in names]
+          if len({p.read_bytes() for p in paths}) != len(paths):
+              raise SystemExit('Wizard subclass artwork binaries are not unique')
+
+          def webp_size(path):
+              data = Path(path).read_bytes()
+              if data[:4] != b'RIFF' or data[8:12] != b'WEBP':
+                  raise SystemExit(f'{path}: not WebP')
+              marker = data.find(b'\x9d\x01\x2a')
+              if marker < 0:
+                  raise SystemExit(f'{path}: unsupported WebP header')
+              w, h = struct.unpack_from('<HH', data, marker + 3)
+              return w & 0x3fff, h & 0x3fff
+
+          if webp_size('public/media/classes/cinematic-wizard.webp') != (1600, 900):
+              raise SystemExit('Wizard hero must be 1600x900')
+          for p in paths:
+              if webp_size(p) != (240, 112):
+                  raise SystemExit(f'{p}: expected 240x112, got {webp_size(p)}')
+          PY
+
+          node scripts/validate_class_hero_framing.mjs
+          node scripts/validate_class_subclass_browser.mjs
+          node scripts/validate_class_browser_polish.mjs
+
+      - name: Commit production assets and remove transfer files
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm .tmp/dndnext-class-art-selector-clean-20260907.zip
+          git rm .github/workflows/apply-class-art-formatting-fix-20260907.yml
+          git add public/media/classes/cinematic-wizard.webp public/media/subclasses/wizard
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Replace contaminated Wizard hero and subclass artwork'
+          git push origin HEAD:agent/class-art-formatting-fix-20260907
