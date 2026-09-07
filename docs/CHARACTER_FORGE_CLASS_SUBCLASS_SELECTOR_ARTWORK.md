@@ -1,67 +1,60 @@
 # Character Forge Class Subclass Selector Artwork
 
-Status date: 2026-09-06
+Status date: 2026-09-07
 
-This document records the browser-approved subclass-selector presentation layered onto the existing Class Overview on PR #177 (`agent/realistic-dice-core`). It is presentation-only. Canonical subclass availability, level gates, persistence, progression injection, and feature rules remain owned by `useNpcForgeClassGuideModel` / `NpcForgeClassChoiceContext` and Supabase-backed class catalogues.
+This document records the browser-approved subclass-selector and Class hero presentation layered onto PR #177 (`agent/realistic-dice-core`). It is presentation-only. Canonical subclass availability, level gates, persistence, progression injection, and feature rules remain owned by `useNpcForgeClassGuideModel` / `NpcForgeClassChoiceContext` and the Supabase-backed class catalogues.
 
 ## Approved selector layout
 
-The approved target is the final compact two-column Wizard treatment reviewed on 2026-09-06:
+The approved target remains the compact two-column treatment:
 
 - the selector sits directly above Class Progression;
 - it uses exactly two columns on desktop and one column on narrow layouts;
-- the normal desktop selector occupies about the yellow-box proportion from browser review: `width:min(35%,430px)`;
-- at widths below 1100px it uses `width:min(42%,430px)` and below 900px it returns to full width;
-- the expanded selector remains internally scrollable for larger catalogues with a `166px` desktop viewport;
-- each visible choice button contains only the subclass artwork and subclass name; desktop cards are 52px tall with 76×40 artwork, so exactly six choices (2 columns × 3 rows) are visible before scrolling;
-- source badges, inline descriptions, level badges, status/check circles, visible helper copy, and footer notes are intentionally omitted from the selector; eligibility guidance remains available to assistive technology;
-- selected state is communicated by the existing border/background highlight rather than an extra visible status control;
-- every canonical subclass remains present even when the reference mockup visually depicts fewer rows;
-- selecting an eligible subclass still uses the existing Forge authority, updates progression, and collapses the selector;
-- collapsed state retains the selected subclass artwork/name with compact Change/Clear controls;
-- clicking a subclass still sends its details to the movable Feature card; hover/focus alone does not replace Feature-card content;
-- search, source-filter toolbars, large inline detail cards, and the old multi-column pill wall are not part of the approved Overview layout.
-
-The cinematic artwork remains independently positioned and must not resize or recrop when the selector expands or collapses.
+- the normal desktop selector uses `width:min(35%,430px)`;
+- below 1100px it uses `width:min(42%,430px)` and below 900px returns to full width;
+- the expanded selector remains internally scrollable with a `166px` desktop viewport;
+- each visible choice button contains only subclass artwork and subclass name; desktop cards are 52px tall with 76×40 artwork, so six choices (2 columns × 3 rows) are visible before scrolling;
+- source badges, inline descriptions, level badges, status/check circles, visible helper copy, and footer notes remain omitted from the selector; eligibility guidance stays available to assistive technology;
+- every canonical subclass remains present;
+- selecting an eligible subclass continues through the existing Forge model/context authority, updates progression, and collapses the selector;
+- collapsed state retains selected subclass artwork/name with compact Change/Clear controls;
+- clicking a subclass sends its details to the movable Feature card; hover/focus alone does not replace Feature-card content;
+- search, source-filter toolbars, large inline detail cards, and the old multi-column pill wall are not part of the Overview layout.
 
 ## Artwork authority
 
-Subclass artwork is not stored in Supabase. A schema inspection on 2026-09-06 confirmed the canonical `class_feature_catalog` contains subclass names, source, levels, descriptions, entries, and raw payloads but no image/artwork field. Artwork therefore remains presentation-side and must not become a second subclass rules authority.
+Subclass artwork is not stored in Supabase. Supabase remains canonical for subclass names, sources, levels, descriptions, entries, eligibility, and rules. `utils/classes/subclassArtwork.js` is only a presentation resolver: it receives the Class key plus the canonical subclass option and returns an image path. Missing future artwork falls back through `classMenuArtworkFor(...)` without changing subclass identity or rules.
 
-`utils/classes/subclassArtwork.js` is the presentation resolver. It receives the selected Class key plus canonical subclass option and returns only an image path. If no dedicated subclass artwork is installed, it falls back to the existing Class menu artwork through `classMenuArtworkFor(...)`.
+### Wizard artwork set
 
-### Wizard first artwork set
+Wizard currently has 18 canonical subclasses in the catalogue: Abjuration, Abjurer, Bladesinger, Bladesinging, Chronurgy, Conjuration, Divination, Diviner, Enchantment, Evocation, Evoker, Graviturgy, Illusion, Illusionist, Necromancy, Scribes, Transmutation, and War.
 
-Wizard now uses one distinct 240×112 presentation asset for every canonical subclass exposed by the current catalogue: Abjuration, Abjurer, Bladesinger, Bladesinging, Chronurgy, Conjuration, Divination, Diviner, Enchantment, Evocation, Evoker, Graviturgy, Illusion, Illusionist, Necromancy, Scribes, Transmutation, and War. Files follow `/media/subclasses/wizard/wizard-<normalized-subclass>.webp`.
+Each one must resolve to its own 240×112 WebP at `/media/subclasses/wizard/wizard-<normalized-subclass>.webp`. Similar traditions may share visual motifs, but they must not resolve to the same binary or merely reuse one school image under another filename.
 
-These images remain presentation-only. Similar traditions may share visual motifs, but they must not resolve to the same file. The resolver maps each current canonical normalized subclass name to its own asset and falls back to Class menu artwork only for genuinely unmapped or missing future subclasses.
-
-The WebPs were transferred through the standing DNDNext binary route: local approved assets → checksum ZIP → Dropbox `/DNDNext-Transfer` → guarded one-shot GitHub Actions materializer → scratch branch. Do not regress to giant inline-base64 transfers.
+The 2026-09-07 artwork correction also establishes a binary-quality rule: selector artwork must be a clean borderless vignette. Do not bake Class UI borders, selector chrome, labels, screenshots, or other interface remnants into the WebP itself. Variant traditions may use distinct composition, grading, and restrained thematic sigils so they remain visually distinguishable at the 76×40 selector size.
 
 ## Progression density target
 
-The approved progression table structure remains unchanged: Level, PB, Features, Cantrips, Known/Prepared, then individual 1st–9th spell-slot columns for spellcasting Classes. The current browser target remains roughly 20% shorter vertically than the preceding balance pass while preserving the complete table:
+The progression table structure remains Level, PB, Features, Cantrips, Known/Prepared, then 1st–9th spell-slot columns for spellcasting Classes. Normal row density, feature-pill styling, and narrow-layout horizontal scrolling remain unchanged.
 
-- table-card height cap is 435px and the desktop card itself is constrained to `width:min(74%,860px)` so it ends before the right-side character art;
-- normal row minimum height is 34px;
-- header minimum height is 28px;
-- row text is `.57rem`;
-- feature-pill padding is `.16rem .34rem`;
-- desktop spell-table uses the available card width with no forced desktop minimum; its columns are rebalanced so Level, PB, Features, Cantrips, Known/Prepared, and 1st–9th remain aligned and the 9th-level column is visible without horizontal clipping at the approved desktop layout; narrow layouts retain the wider scrolling treatment;
-- narrow layouts continue to scroll horizontally rather than dropping progression data.
-
-Base Class features remain purple pills; selected-subclass features remain cyan pills.
+For Classes with a public cinematic hero, the progression card now reclaims the full available row below the hero. The old `width:min(74%,860px)` treatment existed only to avoid a full-height artwork layer and must not be reintroduced for cinematic Classes. Base Class features remain purple pills; selected-subclass features remain cyan pills.
 
 ## Cinematic Class art relationship
 
-The selector and art are intentionally decoupled:
+The 2026-09-07 browser correction replaces the former viewport-height/full-card background treatment.
 
-- public cinematic art remains viewport-height-derived and content-height independent;
-- expanding/collapsing the subclass selector must not move, resize, or recrop it;
-- on desktop the cinematic layer spans the full Class Overview width from `left: 0` through the right edge, and the Overview card consumes the Class guide's 8px top/right padding (`margin-top:-8px`, `margin-right:-32px`, `width:calc(100% + 32px)`) so the painting reaches the outer workspace edge; for cinematic heroes the older inset `::before` frame is suppressed so artwork reaches the actual card corners;
-- the artwork begins beside and underneath the Class description;
-- a stronger left-to-right readability gradient fades the art behind the Class title, description, and fact boxes while preserving the unobstructed subject on the right;
-- the stable art layer remains `height: clamp(780px, 82vh, 960px)` with `object-position: 100% 0%`.
+- Public cinematic Class art belongs to the **hero header only**.
+- On desktop the hero is a two-column composition: approximately 56% copy/facts and 44% artwork, with a 270px minimum hero height.
+- The cinematic art occupies the right hero column and uses `object-fit:cover` with `object-position:100% 18%`.
+- The readability fade is confined to the hero artwork edge; there is no full-card overlay behind the subclass selector or progression table.
+- The Class Overview no longer uses negative margins or `width:calc(100% + 32px)` to turn the artwork into a workspace-wide layer.
+- The old `height:clamp(780px,82vh,960px)` viewport-derived art height is forbidden.
+- Selector and progression render in the normal document flow beneath the hero, so opening/collapsing the selector cannot resize, move, or recrop the hero art.
+- Cinematic progression cards use the full available row below the hero.
+- Legacy square paintings retain their safe non-destructive framing until a dedicated cinematic asset is approved.
+- Generated Artificer/Barbarian behavior remains protected.
+
+The Wizard hero binary itself must also be clean source art. A UI screenshot or crop containing ghosted fact cards, labels, borders, or other interface elements must never be promoted as `cinematic-wizard.webp`.
 
 ## Validation requirements
 
@@ -74,11 +67,11 @@ Before this selector/artwork pass is accepted or extended:
 5. the Feature card remains click/selection-driven, not hover-driven;
 6. the expanded selector remains a two-column internal scroll region at the approved compact desktop width;
 7. each visible subclass choice contains only artwork and subclass name;
-8. the selected collapsed row retains its artwork/name and Change control;
-9. every currently canonical Wizard subclass resolves to a distinct artwork file; genuinely unmapped or missing future subclass images fall back to Class menu artwork rather than breaking the selector;
+8. the selected collapsed row retains artwork/name and Change/Clear controls;
+9. every currently canonical Wizard subclass resolves to a distinct artwork binary, and those images contain no baked selector/UI chrome;
 10. all nine spell-slot columns remain visible/scrollable;
-11. expanding/collapsing the selector does not alter cinematic art framing;
-12. the public cinematic layer begins at the left edge and uses a readability fade beneath Class copy;
-13. `Validate Class browser polish`, subclass-selector validation, Source Magic Routing, and the normal Forge validation suite must pass;
+11. cinematic artwork remains confined to the hero header and never becomes a viewport-height/full-card background;
+12. cinematic Classes reclaim full progression width beneath the hero;
+13. `Validate Class browser polish`, Class hero framing, subclass-selector validation, Source Magic Routing, and the normal Forge validation suite must pass;
 14. Vercel exact-head build/runtime checks and `/profile` must pass;
 15. no world-map, town/city-map, Supabase data/schema, crafting, inventory, travel, or unrelated runtime files may be changed.
