@@ -69,6 +69,14 @@ for (const forbidden of [
 ]) assert(!selector.includes(forbidden), `Subclass selector regressed to the prior bulky/hover-driven presentation: ${forbidden}`);
 assert(!selector.includes("supabase"), "Subclass selector must remain presentation-only.");
 
+const exactWizardSubclassArt = ["abjuration", "abjurer", "bladesinger", "bladesinging", "chronurgy", "conjuration", "divination", "diviner", "enchantment", "evocation", "evoker", "graviturgy", "illusion", "illusionist", "necromancy", "scribes", "transmutation", "war"];
+for (const subclass of exactWizardSubclassArt) {
+  assert(subclassArtwork.includes(`${subclass}: "${subclass}"`), `Wizard subclass artwork resolver is not one-to-one for ${subclass}.`);
+  assert(fs.existsSync(path.join(root, `public/media/subclasses/wizard/wizard-${subclass}.webp`)), `Wizard subclass selector artwork missing ${subclass}.`);
+}
+const wizardSubclassArtBytes = new Set(exactWizardSubclassArt.map((subclass) => fs.readFileSync(path.join(root, `public/media/subclasses/wizard/wizard-${subclass}.webp`)).toString("base64")));
+assert(wizardSubclassArtBytes.size === exactWizardSubclassArt.length, "Every canonical Wizard subclass must use a distinct artwork file.");
+
 for (const token of [
   'const WIZARD_SUBCLASS_ART_FAMILY',
   'evocation: "evocation"',

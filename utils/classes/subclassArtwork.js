@@ -5,23 +5,23 @@ const key = (value) => text(value).toLowerCase().replace(/[’']/g, "").replace(
 
 const WIZARD_SUBCLASS_ART_FAMILY = Object.freeze({
   abjuration: "abjuration",
-  abjurer: "abjuration",
-  bladesinger: "abjuration",
-  bladesinging: "abjuration",
+  abjurer: "abjurer",
+  bladesinger: "bladesinger",
+  bladesinging: "bladesinging",
+  chronurgy: "chronurgy",
   conjuration: "conjuration",
   divination: "divination",
-  diviner: "divination",
-  chronurgy: "divination",
-  scribes: "divination",
+  diviner: "diviner",
   enchantment: "enchantment",
   evocation: "evocation",
-  evoker: "evocation",
-  war: "evocation",
+  evoker: "evoker",
+  graviturgy: "graviturgy",
   illusion: "illusion",
-  illusionist: "illusion",
+  illusionist: "illusionist",
   necromancy: "necromancy",
+  scribes: "scribes",
   transmutation: "transmutation",
-  graviturgy: "transmutation",
+  war: "war",
 });
 
 export function subclassArtworkFor(classKey = "", option = {}) {

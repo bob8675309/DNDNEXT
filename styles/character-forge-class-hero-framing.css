@@ -54,6 +54,10 @@
     margin-right: -32px !important;
   }
 
+  .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__overview-book:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"])::before {
+    content: none !important;
+  }
+
   .unified-player-character-forge .npc-forge-class-guide .npc-forge-class-guide__book-hero:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) {
     position: static !important;
     grid-template-columns: minmax(0, 56%) minmax(0, 44%) !important;
