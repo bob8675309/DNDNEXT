@@ -1,6 +1,6 @@
 # Character Forge Class Subclass Selector Artwork
 
-Status date: 2026-09-06
+Status date: 2026-09-07
 
 This document records the browser-approved subclass-selector presentation layered onto the existing Class Overview on PR #177 (`agent/realistic-dice-core`). It is presentation-only. Canonical subclass availability, level gates, persistence, progression injection, and feature rules remain owned by `useNpcForgeClassGuideModel` / `NpcForgeClassChoiceContext` and Supabase-backed class catalogues.
 
@@ -36,7 +36,7 @@ Wizard now uses one distinct 240×112 presentation asset for every canonical sub
 
 These images remain presentation-only. Similar traditions may share visual motifs, but they must not resolve to the same file. The resolver maps each current canonical normalized subclass name to its own asset and falls back to Class menu artwork only for genuinely unmapped or missing future subclasses.
 
-The WebPs were transferred through the standing DNDNext binary route: local approved assets → checksum ZIP → Dropbox `/DNDNext-Transfer` → guarded one-shot GitHub Actions materializer → scratch branch. Do not regress to giant inline-base64 transfers.
+The WebPs were transferred through the standing DNDNext binary route: local approved assets → checksum ZIP → Dropbox `/DNDNext-Transfer` → guarded one-shot GitHub Actions materializer → scratch branch. The materializer verifies the ZIP checksum, the clean Wizard hero dimensions (1600×900), all 18 Wizard subclass dimensions (240×112), and binary uniqueness before committing. Do not regress to giant inline-base64 transfers.
 
 ## Progression density target
 
@@ -54,14 +54,19 @@ Base Class features remain purple pills; selected-subclass features remain cyan 
 
 ## Cinematic Class art relationship
 
-The selector and art are intentionally decoupled:
+The selector and art are intentionally decoupled. The final desktop correction is owned by `styles/character-forge-class-fullbleed-final.css`, loaded after the earlier Class hero-framing stylesheet so it can safely override only the reviewed cinematic presentation.
 
-- public cinematic art remains viewport-height-derived and content-height independent;
-- expanding/collapsing the subclass selector must not move, resize, or recrop it;
-- on desktop the cinematic layer spans the full Class Overview width from `left: 0` through the right edge, and the Overview card consumes the Class guide's 8px top/right padding (`margin-top:-8px`, `margin-right:-32px`, `width:calc(100% + 32px)`) so the painting reaches the outer workspace edge; for cinematic heroes the older inset `::before` frame is suppressed so artwork reaches the actual card corners;
-- the artwork begins beside and underneath the Class description;
-- a stronger left-to-right readability gradient fades the art behind the Class title, description, and fact boxes while preserving the unobstructed subject on the right;
-- the stable art layer remains `height: clamp(780px, 82vh, 960px)` with `object-position: 100% 0%`.
+For public cinematic Class heroes at desktop widths (`min-width: 901px`):
+
+- the **Class guide workspace** (`.npc-forge-class-guide`) is the artwork containing block; the inner Overview article is no longer the artwork boundary;
+- the Overview article becomes transparent/static for positioning purposes, so its padding, border, and margins cannot create top/right seams or crop the painting;
+- the nested `.npc-forge-class-guide__hero-art` is positioned `absolute` with `inset: 0` against the Class guide, so the image fills the actual Class workspace from top to right to bottom regardless of selector/progression height;
+- the cinematic image uses `width:100%`, `height:100%`, `object-fit:cover`, and `object-position:100% 0%`; it is not scaled by transform tricks;
+- the replacement Wizard cinematic is a clean 1600×900 asset with its dark left-side composition built into the artwork itself, so only a restrained readability veil remains in CSS;
+- Class copy, the view header, selector/progression layout, and footer remain normal foreground UI through explicit stacking order, while the artwork is pointer-inert behind them;
+- expanding/collapsing subclass controls can change Class workspace height without moving the artwork into a different positioning context or recropping it against an inner card.
+
+The final full-bleed rule is intentionally restricted to public cinematic Class artwork. Non-cinematic/core fallback paintings and layouts at 900px or narrower continue through the pre-existing Class framing rules rather than inheriting this desktop override.
 
 ## Validation requirements
 
@@ -77,8 +82,8 @@ Before this selector/artwork pass is accepted or extended:
 8. the selected collapsed row retains its artwork/name and Change control;
 9. every currently canonical Wizard subclass resolves to a distinct artwork file; genuinely unmapped or missing future subclass images fall back to Class menu artwork rather than breaking the selector;
 10. all nine spell-slot columns remain visible/scrollable;
-11. expanding/collapsing the selector does not alter cinematic art framing;
-12. the public cinematic layer begins at the left edge and uses a readability fade beneath Class copy;
+11. expanding/collapsing the selector does not change the cinematic image's containing block or create top/right/bottom seams;
+12. desktop public cinematic art fills the Class guide workspace while Class copy and controls remain stacked above it; non-cinematic and narrow-layout framing must remain unchanged;
 13. `Validate Class browser polish`, subclass-selector validation, Source Magic Routing, and the normal Forge validation suite must pass;
 14. Vercel exact-head build/runtime checks and `/profile` must pass;
 15. no world-map, town/city-map, Supabase data/schema, crafting, inventory, travel, or unrelated runtime files may be changed.
