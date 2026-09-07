@@ -112,9 +112,13 @@ for (const token of [
   '/media/subclasses/wizard/wizard-${family}.webp',
   'return classMenuArtworkFor(normalizedClass)',
 ]) assert(subclassArtwork.includes(token), `Subclass artwork resolver missing ${token}`);
-for (const family of ["abjuration", "conjuration", "divination", "enchantment", "evocation", "illusion", "necromancy", "transmutation"]) {
-  assert(fs.existsSync(path.join(root, `public/media/subclasses/wizard/wizard-${family}.webp`)), `Wizard subclass selector artwork missing ${family}.`);
+const exactWizardSubclassArt = ["abjuration", "abjurer", "bladesinger", "bladesinging", "chronurgy", "conjuration", "divination", "diviner", "enchantment", "evocation", "evoker", "graviturgy", "illusion", "illusionist", "necromancy", "scribes", "transmutation", "war"];
+for (const subclass of exactWizardSubclassArt) {
+  assert(subclassArtwork.includes(`${subclass}: "${subclass}"`), `Wizard subclass artwork resolver is not one-to-one for ${subclass}.`);
+  assert(fs.existsSync(path.join(root, `public/media/subclasses/wizard/wizard-${subclass}.webp`)), `Wizard subclass selector artwork missing ${subclass}.`);
 }
+const wizardSubclassArtBytes = new Set(exactWizardSubclassArt.map((subclass) => fs.readFileSync(path.join(root, `public/media/subclasses/wizard/wizard-${subclass}.webp`)).toString("base64")));
+assert(wizardSubclassArtBytes.size === exactWizardSubclassArt.length, "Every canonical Wizard subclass must use a distinct artwork file.");
 
 for (const token of [
   "grid-template-columns:minmax(0,1fr)!important",
@@ -130,13 +134,17 @@ for (const token of [
 ]) assert(guide.includes(token), `Balanced progression presentation is missing ${token}`);
 
 for (const token of [
-  "bottom: auto !important",
-  "left: 0 !important",
-  "height: clamp(780px, 82vh, 960px) !important",
-  "object-position: 100% 0% !important",
-  "min-height: 312px !important",
+  "position: relative !important",
+  "grid-template-columns: minmax(0, 56%) minmax(320px, 44%) !important",
+  "min-height: 270px !important",
+  "grid-column: 2 / 3",
+  "height: auto !important",
+  "object-position: 100% 18% !important",
   "font-size: .82rem !important",
-]) assert(framing.includes(token), `Open stable cinematic Class art is missing ${token}`);
+  ".npc-forge-class-guide__table-card",
+  "width: 100% !important",
+]) assert(framing.includes(token), `Header-contained cinematic Class art is missing ${token}`);
+assert(!framing.includes("height: clamp(780px, 82vh, 960px) !important"), "Class art regressed to the old full-height background treatment.");
 
 assert(artwork.includes('artificer: "/media/classes/artificer-approved.webp"'), "Approved Artificer Forge artwork mapping is missing.");
 assert(fs.existsSync(path.join(root, "public/media/classes/artificer-approved.webp")), "Approved Artificer Forge artwork asset is missing.");
@@ -159,4 +167,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSources.includes(token), `Class browser patch unexpectedly references protected behavior: ${token}`);
 }
 
-console.log("Class browser polish validation passed: readable mockup-proportioned subclass artwork selector, click-only movable Feature-card details, selected-subclass progression bubbles, balanced per-level spell-slot table, open stable top-right art, preserved Class authority, and protected boundaries are intact.");
+console.log("Class browser polish validation passed: readable two-column subclass selector with distinct Wizard artwork, click-only movable Feature-card details, selected-subclass progression bubbles, balanced spell-slot table, header-contained top-right cinematic art, preserved Class authority, and protected boundaries are intact.");
