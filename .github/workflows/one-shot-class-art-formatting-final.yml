@@ -1,0 +1,89 @@
+name: One-shot final Class art formatting
+
+on:
+  push:
+    branches:
+      - agent/class-art-formatting-fix2-20260907
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/class-art-formatting-fix2-20260907
+          fetch-depth: 0
+
+      - name: Install final Class artwork package
+        shell: bash
+        env:
+          ZIP_URL: "https://ucd351720c849a29748098422c65.dl.dropboxusercontent.com/cd/0/get/DHrUlIU1livjAP5eOKMKUVWxsg_47Q987QxjceY1oPGJ8myGLcmFmfyd89NnDKwv_0aUGcxKFZYDaf6OjMoU-UJqPN-Mmf6qKku1qoKy7ZxQNiy_cl_zA228andd3VCNpwdNfQZ7YrxX6-0x9ZZtmpZ0u_gDQY5l7EmSBobT1tJD1Q/file?c_luid=c335000c"
+          ZIP_SHA256: "0b15004cce423a0dd79c272471a98c9aa9cb9cf130fedba1bd38f2ab6b309572"
+        run: |
+          set -euo pipefail
+          work="$(mktemp -d)"
+          curl --fail --location --silent --show-error "$ZIP_URL" -o "$work/assets.zip"
+          echo "$ZIP_SHA256  $work/assets.zip" | sha256sum -c -
+          unzip -q "$work/assets.zip" -d "$work/unpacked"
+
+          test -f "$work/unpacked/public/media/classes/cinematic-wizard.webp"
+          test "$(find "$work/unpacked/public/media/subclasses/wizard" -maxdepth 1 -type f -name 'wizard-*.webp' | wc -l)" -eq 18
+
+          mkdir -p public/media/classes public/media/subclasses/wizard
+          cp "$work/unpacked/public/media/classes/cinematic-wizard.webp" public/media/classes/cinematic-wizard.webp
+          cp "$work/unpacked/public/media/subclasses/wizard/"*.webp public/media/subclasses/wizard/
+
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          import hashlib
+
+          app = Path('pages/_app.js')
+          text = app.read_text()
+          import_line = 'import "../styles/character-forge-class-fullbleed-final.css";\n'
+          anchor = 'import "../styles/character-forge-class-hero-framing.css";\n'
+          if import_line not in text:
+              if anchor not in text:
+                  raise SystemExit('Class hero framing import anchor missing')
+              text = text.replace(anchor, anchor + import_line, 1)
+              app.write_text(text)
+
+          hero = Image.open('public/media/classes/cinematic-wizard.webp')
+          if hero.size != (1600, 900):
+              raise SystemExit(f'Wizard hero must be 1600x900, got {hero.size}')
+
+          names = ['abjuration','abjurer','bladesinger','bladesinging','chronurgy','conjuration','divination','diviner','enchantment','evocation','evoker','graviturgy','illusion','illusionist','necromancy','scribes','transmutation','war']
+          hashes = []
+          for name in names:
+              path = Path(f'public/media/subclasses/wizard/wizard-{name}.webp')
+              if not path.exists():
+                  raise SystemExit(f'missing {path}')
+              image = Image.open(path)
+              if image.size != (240, 112):
+                  raise SystemExit(f'{path} must be 240x112, got {image.size}')
+              hashes.append(hashlib.sha256(path.read_bytes()).hexdigest())
+          if len(set(hashes)) != len(names):
+              raise SystemExit('Wizard subclass art files must all be distinct')
+          print('Validated clean 1600x900 Wizard hero and 18 distinct 240x112 subclass artworks.')
+          PY
+
+          rm -f pages/_app.tmp pages/_app.import-helper.txt pages/_app.import-helper2.txt pages/_app.import-helper3.txt pages/_app.import-helper4.txt
+          rm -f pages/_blobtest.txt pages/_blobtest2.txt pages/_blobtest3.txt
+          rm -f .tmp/class-art-final-trigger.txt
+          rm -f .github/workflows/one-shot-class-art-formatting-final.yml
+
+      - name: Commit clean final patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git status --short
+          git commit -m "Fix Class full-bleed art and unique Wizard subclass artwork"
+          git push origin HEAD:agent/class-art-formatting-fix2-20260907
