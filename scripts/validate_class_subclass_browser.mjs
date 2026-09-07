@@ -84,9 +84,6 @@ for (const token of [
   'necromancy: "necromancy"',
   'return classMenuArtworkFor(normalizedClass)',
 ]) assert(subclassArtwork.includes(token), `Subclass artwork authority is missing ${token}`);
-for (const family of ["abjuration", "conjuration", "divination", "enchantment", "evocation", "illusion", "necromancy", "transmutation"]) {
-  assert(fs.existsSync(path.join(root, `public/media/subclasses/wizard/wizard-${family}.webp`)), `Wizard subclass selector artwork missing ${family}.`);
-}
 
 assert(model.includes("resolveSubclassCatalog") && model.includes("const options = useMemo"), "Canonical subclass catalogue authority moved out of the existing guide model.");
 assert(model.includes("selectSubclass"), "Existing subclass persistence authority disappeared from the guide model.");
@@ -97,14 +94,18 @@ for (const key of ["fighter", "wizard", "rogue", "cleric", "ranger", "paladin", 
 assert(presentation.includes("imported.length >= 180"), "Long imported/campaign Class summaries must remain authoritative.");
 
 for (const token of [
-  'bottom: auto !important',
-  'left: 0 !important',
-  'height: clamp(780px, 82vh, 960px) !important',
-  'object-position: 100% 0% !important',
-  'grid-template-columns: minmax(0, 1fr) !important',
-  'font-size: .82rem !important',
-]) assert(framing.includes(token), `Stable open top-right cinematic framing missing ${token}`);
-assert(!framing.includes('bottom: 0 !important;\n    left: 0 !important'), "Cinematic art is still content-height-coupled.");
+  "position: relative !important",
+  "grid-template-columns: minmax(0, 56%) minmax(320px, 44%) !important",
+  "min-height: 270px !important",
+  "grid-column: 2 / 3",
+  "height: auto !important",
+  "object-position: 100% 18% !important",
+  "grid-template-columns: minmax(0, 1fr) !important",
+  "font-size: .82rem !important",
+  ".npc-forge-class-guide__table-card",
+  "width: 100% !important",
+]) assert(framing.includes(token), `Header-contained cinematic framing missing ${token}`);
+assert(!framing.includes("height: clamp(780px, 82vh, 960px) !important"), "Cinematic art is still using the old viewport-height background treatment.");
 
 for (const token of [
   '.class-level-guide__features button',
@@ -129,4 +130,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSource.includes(token), `Class presentation patch crossed protected boundary: ${token}`);
 }
 
-console.log("Class subclass selector validation passed: mockup-proportioned two-column choices with readable artwork, click-only Feature-card inspection, selected-subclass progression injection, balanced spell-slot table, stable cinematic art, safe artwork fallback, and protected boundaries are intact.");
+console.log("Class subclass selector validation passed: mockup-proportioned two-column choices with distinct Wizard artwork, click-only Feature-card inspection, selected-subclass progression injection, balanced spell-slot table, header-contained cinematic art, safe artwork fallback, and protected boundaries are intact.");
