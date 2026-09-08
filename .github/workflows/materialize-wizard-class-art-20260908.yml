@@ -1,12 +1,12 @@
 name: Materialize Wizard class art 20260908
 
 on:
-  push:
-    branches:
-      - agent/wizard-art-fade-transfer-20260908
-    paths:
-      - .github/workflows/materialize-wizard-class-art-20260908.yml
-      - transfer/dndnext-wizard-art-fade-20260908.zip
+  workflow_dispatch:
+    inputs:
+      patch_url:
+        description: One-time Dropbox transfer URL
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -17,16 +17,8 @@ jobs:
     env:
       TARGET_BRANCH: agent/realistic-dice-core
       EXPECTED_TARGET_HEAD: e8c1c985f98b14ba59dea54bc418ca06bdc95eac
+      PATCH_ZIP_SHA256: d6f0187e78d89ace36e6f191b9d24d872a1d13dc5a9526521747051fbbfdd1bd
     steps:
-      - name: Check out transfer payload
-        uses: actions/checkout@v4
-        with:
-          ref: agent/wizard-art-fade-transfer-20260908
-          fetch-depth: 0
-
-      - name: Stage transfer payload outside worktree
-        run: cp transfer/dndnext-wizard-art-fade-20260908.zip /tmp/dndnext-wizard-art-fade-20260908.zip
-
       - name: Check out exact working branch
         uses: actions/checkout@v4
         with:
@@ -37,11 +29,20 @@ jobs:
       - name: Guard exact target head
         run: test "$(git rev-parse HEAD)" = "$EXPECTED_TARGET_HEAD"
 
-      - name: Verify and apply bounded patch
+      - name: Download one-time transfer payload
+        shell: bash
+        env:
+          PATCH_URL: ${{ inputs.patch_url }}
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error "$PATCH_URL" -o /tmp/dndnext-wizard-art-fade-20260908.zip
+          echo "$PATCH_ZIP_SHA256  /tmp/dndnext-wizard-art-fade-20260908.zip" | sha256sum -c -
+          unzip -t /tmp/dndnext-wizard-art-fade-20260908.zip
+
+      - name: Apply bounded patch
         shell: bash
         run: |
           set -euo pipefail
-          unzip -t /tmp/dndnext-wizard-art-fade-20260908.zip
           unzip -o /tmp/dndnext-wizard-art-fade-20260908.zip -d .
 
           cat > /tmp/expected.txt <<'EOF'
