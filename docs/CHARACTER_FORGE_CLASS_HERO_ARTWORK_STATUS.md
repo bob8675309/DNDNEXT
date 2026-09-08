@@ -1,6 +1,6 @@
 # Character Forge Class Hero Artwork Status
 
-Status date: 2026-09-05
+Status date: 2026-09-08
 
 This is the focused handoff/status note for Character Forge Class hero artwork presentation on PR #177 (`agent/realistic-dice-core`).
 
@@ -46,6 +46,29 @@ Artificer and Barbarian already have dedicated generated cinematic hero assets t
 
 This boundary lets the current catalogue look correct immediately without pretending every Class already owns a custom wide hero painting.
 
+## 2026-09-08 Wizard browser correction
+
+Browser comparison against the accepted Class mockup showed two remaining presentation defects after the artwork first reached the Character Forge border:
+
+1. the left/middle of Wizard's cinematic background read like a blurred or separately processed panel instead of one continuous painting;
+2. Wizard subclass thumbnails were being letterboxed/cropped from artwork that did not match the actual selector viewport.
+
+The final Wizard correction keeps the **Character Forge modal** as the single cinematic-image containing block, but replaces the Wizard image with a crisp 1600×900 composition designed around the real desktop Forge proportions. The castle/environment remains detailed through the left and center of the image while the Wizard stays on the right. CSS now uses only a restrained transparent readability fade that clears by roughly the middle of the canvas; no blur or second nested Class image is allowed.
+
+The final presentation layer remains:
+
+`styles/character-forge-class-final-corners.css`
+
+It now explicitly suppresses `backdrop-filter`/blur behavior on the cinematic Class body/copy surfaces, keeps the body and nested guide transparent, and leaves the single modal-owned image visible behind the Class copy, subclass selector, and progression table.
+
+Wizard's 18 canonical subclass presentation assets were also replaced with binary-distinct wide-format WebPs authored for the real selector ratio. They are 456×240 (1.9:1), matching the 76×40 display viewport, and therefore use `object-fit: cover` rather than the previous `contain` workaround. Canonical subclass identity, source, eligibility, selection, persistence, and progression remain owned by the existing Class model/context and Supabase-backed catalogue; only presentation artwork changed.
+
+Validated runtime commit for this browser correction:
+
+`d879a51378618453c3ee7205c6dfe2322f3e1e27` — `Refine Wizard cinematic and subclass artwork`
+
+The guarded materializer verified the Wizard hero as WebP 1600×900, all 18 Wizard subclass WebPs as 456×240, binary uniqueness across all 18 subclass assets, the exact bounded changed-file list, `git diff --check`, the Class browser suite, Class hero framing, subclass browser, Artificer lock, final browser correction, Species/Class review, and Source Magic Routing before pushing the commit.
+
 ## Future Class artwork standard
 
 When a new Class hero is explicitly generated/approved:
@@ -57,6 +80,7 @@ When a new Class hero is explicitly generated/approved:
 5. Preserve a separate menu/catalogue portrait when the wide hero does not crop cleanly into the left catalogue row.
 6. Add the hero through `CINEMATIC_CLASS_HERO_ARTWORK` and the menu art through `CINEMATIC_CLASS_MENU_ARTWORK` rather than bypassing the resolver in page code.
 7. Only switch a Class from the safe contained legacy-painting path to cinematic cover behavior after a purpose-built wide hero has been reviewed.
+8. For subclass selector artwork, author directly to the selector's wide viewport ratio instead of relying on `contain`, portrait crops, or CSS transforms to rescue mismatched source art.
 
 ## Regression guard
 
@@ -66,6 +90,9 @@ When a new Class hero is explicitly generated/approved:
 - normal Class paintings use contain/no extra zoom;
 - Artificer and Barbarian retain cinematic cover behavior;
 - the centralized Class artwork resolver remains authoritative;
+- the modal owns one crisp public cinematic image from Forge border to Forge border;
+- the Class body/nested hero do not repaint or blur a second cinematic layer;
+- Wizard subclass artwork fills the native wide selector slot instead of being letterboxed;
 - the obsolete Bugbear Species crop override does not return;
 - protected map/town behavior is not referenced by this presentation patch.
 
