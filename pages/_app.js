@@ -22,6 +22,7 @@ import "../styles/character-forge-cinematic-reference-pass.css";
 import "../styles/character-forge-cinematic-final-corrections.css";
 import "../styles/character-forge-class-hero-framing.css";
 import "../styles/character-forge-class-fullbleed-final.css";
+import "../styles/character-forge-class-final-corners.css";
 import "../styles/card-compact.css";
 import "../styles/npc-profile-panel.css";
 import "../styles/player-profile-scroll-fix.css";
