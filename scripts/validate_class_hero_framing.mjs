@@ -51,29 +51,32 @@ for (const token of [
 assert(!framing.includes("bottom: 0 !important;\n    left: 0 !important"), "Cinematic hero must not use the expanding content height as its bottom edge.");
 assert(framing.includes(`npc-forge-class-guide__overview-book:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"])::before`) && framing.includes("content: none !important"), "Cinematic Class art must suppress the old inset Overview frame so artwork reaches the card corners.");
 
-/* Final browser-acceptance layer: the modal, not the Class body/guide, must own the one visible
-   cinematic image. This is what lets the painting reach the Character Forge border behind the
-   title/steps while keeping the center environment visible instead of covering it with a broad
-   opaque panel. */
+/* Final browser-acceptance layer: the modal owns one sharp cinematic image all the way through the
+   Character Forge border. A small transparent gradient protects text readability; no nested blur,
+   second crop, or letterboxed Wizard subclass artwork is allowed to return. */
 for (const token of [
   ".npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class",
   "--npc-forge-class-cinematic-art: url(\"/media/classes/cinematic-wizard.webp\")",
   ")::before {",
-  "var(--npc-forge-class-cinematic-art) center top / cover no-repeat",
+  "var(--npc-forge-class-cinematic-art) center center / cover no-repeat",
   "> .npc-forge-header",
   "> .npc-forge-steps",
-  "background: rgba(3, 4, 9, .28) !important",
+  "background: rgba(3, 4, 9, .16) !important",
   "background: transparent !important",
   "background-image: none !important",
   ".npc-forge-class-guide__hero-art",
   "display: none !important",
   ".npc-forge-class-guide__hero-copy",
-  "object-fit: contain !important",
+  "object-fit: cover !important",
+  "backdrop-filter: none !important",
 ]) assert(finalCorners.includes(token), `Final Class Forge-border cinematic contract is missing ${token}`);
 
-assert(finalCorners.includes("rgba(4, 7, 14, .025) 58%") && finalCorners.includes("rgba(4, 7, 14, 0) 74%"), "Final Class cinematic middle must retain the restrained transparency fade from browser review.");
+assert(finalCorners.includes("rgba(4, 7, 14, .02) 48%") && finalCorners.includes("rgba(4, 7, 14, 0) 58%"), "Final Class cinematic fade must clear early enough to preserve crisp center/environment art.");
+assert(!/filter\s*:\s*blur\(/i.test(finalCorners), "Final Class cinematic artwork must not be blurred.");
+assert(!/backdrop-filter\s*:\s*blur\(/i.test(finalCorners), "Final Class copy/chrome must not blur the cinematic artwork.");
 assert(!finalCorners.includes("rgba(4, 7, 14, .68) 0%, rgba(4, 7, 14, .54) 22%, rgba(4, 7, 14, .28) 45%"), "Obsolete body-level opaque cinematic veil must not return.");
 assert(finalCorners.includes(".npc-forge-body.is-player-mode.npc-forge-step-class") && finalCorners.includes("background-image: none !important"), "Class body must explicitly stop repainting the cinematic layer under the modal-owned artwork.");
+assert(finalCorners.includes("456x240") && finalCorners.includes("76x40"), "Wizard subclass artwork must document the true selector aspect-ratio contract.");
 
 assert(fullBleed.includes("position: absolute !important") && fullBleed.includes("inset: 0 !important"), "Pre-final Class full-bleed fallback contract must remain available beneath the browser-acceptance override.");
 assert(guide.includes("classHeroArtworkFor(selectedClass.class_key)"), "Class hero must keep the centralized artwork resolver.");
@@ -98,4 +101,4 @@ for (const token of ["mappageclient", "map_routes", "advance_all_characters", "t
   assert(!protectedText.includes(token), `Class hero framing patch unexpectedly references protected map/town behavior: ${token}`);
 }
 
-console.log("Class hero framing validation passed: legacy paintings retain safe framing, public cinematic Class art is owned by the full Character Forge modal through the visible border with a transparent center fade, nested duplicate art stays suppressed, artwork roles remain separate, and protected boundaries are untouched.");
+console.log("Class hero framing validation passed: one crisp modal-owned cinematic image reaches the Forge border with an early transparent text fade, Wizard subclass art fills its native wide slot, nested duplicate/blur layers stay suppressed, and protected boundaries are untouched.");

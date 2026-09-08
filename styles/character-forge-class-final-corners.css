@@ -1,10 +1,10 @@
 /* Final Class-tab browser acceptance corrections.
    Presentation only: preserve subclass selector/table sizing and all existing Class authorities.
 
-   Browser review established that the cinematic painting must belong to the Character Forge
-   window itself, not the Class body or the nested guide. The modal is the only containing block
-   that reaches the visible Forge border above the header/step rail and still encloses the Class
-   body. Paint one cinematic layer there, then keep the chrome/readability surfaces translucent.
+   Browser review established that the cinematic painting belongs to the Character Forge window,
+   not the Class body or nested guide. The modal therefore owns one crisp image from border to
+   border. Readability comes from a light transparent left-side fade rather than a blurred or
+   separately cropped panel, so the castle/environment stays visibly continuous behind the copy.
 */
 
 @media (min-width: 901px) {
@@ -28,8 +28,8 @@
     --npc-forge-class-cinematic-art: url("/media/classes/cinematic-ranger.webp");
   }
 
-  /* Full Forge-border cinematic layer. The middle is intentionally left almost unmasked so the
-     castle/environment remains visible behind the Class copy, selector and progression cards. */
+  /* One continuous, sharp Forge-border image. The readability veil ends around the middle of the
+     canvas so architecture and environmental detail stay crisp behind the Class content. */
   .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) {
     position: relative !important;
     isolation: isolate;
@@ -44,10 +44,11 @@
     z-index: 0;
     border-radius: inherit;
     pointer-events: none;
+    filter: none !important;
     background:
-      linear-gradient(90deg, rgba(4, 7, 14, .52) 0%, rgba(4, 7, 14, .30) 22%, rgba(4, 7, 14, .10) 43%, rgba(4, 7, 14, .025) 58%, rgba(4, 7, 14, 0) 74%),
-      linear-gradient(0deg, rgba(4, 7, 13, .16) 0%, rgba(4, 7, 13, 0) 24%),
-      var(--npc-forge-class-cinematic-art) center top / cover no-repeat;
+      linear-gradient(90deg, rgba(4, 7, 14, .42) 0%, rgba(4, 7, 14, .22) 24%, rgba(4, 7, 14, .08) 38%, rgba(4, 7, 14, .02) 48%, rgba(4, 7, 14, 0) 58%),
+      linear-gradient(0deg, rgba(4, 7, 13, .12) 0%, rgba(4, 7, 13, 0) 20%),
+      var(--npc-forge-class-cinematic-art) center center / cover no-repeat;
   }
 
   .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) > .npc-forge-header,
@@ -59,27 +60,29 @@
     z-index: 1;
   }
 
-  /* The artwork now continues behind the title and step rail, matching the approved reference.
-     Keep enough left-side tint for legibility without turning the middle of the painting opaque. */
+  /* Keep the title and step rail readable while still allowing the same painting to remain visible
+     through the chrome, matching the approved reference rather than creating an opaque top strip. */
   .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) > .npc-forge-header {
-    background: linear-gradient(90deg, rgba(5, 7, 13, .72) 0%, rgba(5, 7, 13, .46) 28%, rgba(5, 7, 13, .16) 58%, rgba(5, 7, 13, .06) 100%) !important;
+    background: linear-gradient(90deg, rgba(5, 7, 13, .48) 0%, rgba(5, 7, 13, .26) 30%, rgba(5, 7, 13, .08) 60%, rgba(5, 7, 13, .02) 100%) !important;
+    backdrop-filter: none !important;
   }
 
   .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) > .npc-forge-steps {
-    background: rgba(3, 4, 9, .28) !important;
+    background: rgba(3, 4, 9, .16) !important;
+    backdrop-filter: none !important;
   }
 
   .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) > .npc-forge-footer {
     background: rgba(4, 6, 12, .88) !important;
   }
 
-  /* The Class body must not paint a second veil/image. The modal owns the single cinematic
-     layer; the normal cards keep their own local surfaces above it. */
+  /* The Class body does not paint, blur, or recrop a second image. */
   .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) {
     position: relative !important;
     isolation: auto !important;
     background: transparent !important;
     background-image: none !important;
+    backdrop-filter: none !important;
   }
 
   /* Keep the existing hero node as the source/detection contract, but do not paint a second
@@ -95,6 +98,8 @@
   .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__book-hero,
   .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__hero-copy {
     background: transparent !important;
+    backdrop-filter: none !important;
+    filter: none !important;
   }
 
   .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide {
@@ -102,11 +107,10 @@
   }
 }
 
-/* Wizard subclass exports are 240x112 while the approved selector viewport is 76x40. `cover`
-   trims the sides enough to clip edge-weighted compositions. `contain` preserves the complete
-   approved thumbnail inside the exact same card/viewport dimensions (only a few pixels of the
-   existing dark thumbnail background can show above/below). */
+/* The replacement Wizard selector assets are authored at the selector's true 1.9:1 viewport ratio
+   (456x240). Fill the 76x40 slot edge-to-edge; do not letterbox them with `contain`. */
 .unified-player-character-forge .npc-forge-class-guide.is-class-wizard .class-subclass-two-column__art img[src*="/media/subclasses/wizard/"] {
-  object-fit: contain !important;
+  object-fit: cover !important;
   object-position: center center !important;
+  filter: saturate(1.08) contrast(1.06) !important;
 }
