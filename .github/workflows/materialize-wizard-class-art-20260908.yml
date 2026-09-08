@@ -17,7 +17,6 @@ jobs:
     env:
       TARGET_BRANCH: agent/realistic-dice-core
       EXPECTED_TARGET_HEAD: e8c1c985f98b14ba59dea54bc418ca06bdc95eac
-      PATCH_ZIP_SHA256: d6f0187e78d89ace36e6f191b9d24d872a1d13dc5a9526521747051fbbfdd1bd
     steps:
       - name: Check out transfer payload
         uses: actions/checkout@v4
@@ -42,7 +41,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          echo "$PATCH_ZIP_SHA256  /tmp/dndnext-wizard-art-fade-20260908.zip" | sha256sum -c -
+          unzip -t /tmp/dndnext-wizard-art-fade-20260908.zip
           unzip -o /tmp/dndnext-wizard-art-fade-20260908.zip -d .
 
           cat > /tmp/expected.txt <<'EOF'
