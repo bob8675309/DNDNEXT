@@ -1,0 +1,127 @@
+name: Materialize Wizard class art 20260908
+
+on:
+  push:
+    branches:
+      - agent/wizard-art-fade-transfer-20260908
+    paths:
+      - .github/workflows/materialize-wizard-class-art-20260908.yml
+      - transfer/dndnext-wizard-art-fade-20260908.zip
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    env:
+      TARGET_BRANCH: agent/realistic-dice-core
+      EXPECTED_TARGET_HEAD: e8c1c985f98b14ba59dea54bc418ca06bdc95eac
+      PATCH_ZIP_SHA256: d6f0187e78d89ace36e6f191b9d24d872a1d13dc5a9526521747051fbbfdd1bd
+    steps:
+      - name: Check out transfer payload
+        uses: actions/checkout@v4
+        with:
+          ref: agent/wizard-art-fade-transfer-20260908
+          fetch-depth: 0
+
+      - name: Stage transfer payload outside worktree
+        run: cp transfer/dndnext-wizard-art-fade-20260908.zip /tmp/dndnext-wizard-art-fade-20260908.zip
+
+      - name: Check out exact working branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TARGET_BRANCH }}
+          fetch-depth: 0
+          clean: true
+
+      - name: Guard exact target head
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_TARGET_HEAD"
+
+      - name: Verify and apply bounded patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "$PATCH_ZIP_SHA256  /tmp/dndnext-wizard-art-fade-20260908.zip" | sha256sum -c -
+          unzip -o /tmp/dndnext-wizard-art-fade-20260908.zip -d .
+
+          cat > /tmp/expected.txt <<'EOF'
+          public/media/classes/cinematic-wizard.webp
+          public/media/subclasses/wizard/wizard-abjuration.webp
+          public/media/subclasses/wizard/wizard-abjurer.webp
+          public/media/subclasses/wizard/wizard-bladesinger.webp
+          public/media/subclasses/wizard/wizard-bladesinging.webp
+          public/media/subclasses/wizard/wizard-chronurgy.webp
+          public/media/subclasses/wizard/wizard-conjuration.webp
+          public/media/subclasses/wizard/wizard-divination.webp
+          public/media/subclasses/wizard/wizard-diviner.webp
+          public/media/subclasses/wizard/wizard-enchantment.webp
+          public/media/subclasses/wizard/wizard-evocation.webp
+          public/media/subclasses/wizard/wizard-evoker.webp
+          public/media/subclasses/wizard/wizard-graviturgy.webp
+          public/media/subclasses/wizard/wizard-illusion.webp
+          public/media/subclasses/wizard/wizard-illusionist.webp
+          public/media/subclasses/wizard/wizard-necromancy.webp
+          public/media/subclasses/wizard/wizard-scribes.webp
+          public/media/subclasses/wizard/wizard-transmutation.webp
+          public/media/subclasses/wizard/wizard-war.webp
+          scripts/validate_class_hero_framing.mjs
+          styles/character-forge-class-final-corners.css
+          EOF
+          sed -i 's/^          //' /tmp/expected.txt
+          git diff --name-only | sort > /tmp/actual.txt
+          sort /tmp/expected.txt -o /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+          git diff --check
+
+      - name: Verify artwork dimensions and uniqueness
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check pillow==11.3.0
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          import hashlib
+
+          hero = Path('public/media/classes/cinematic-wizard.webp')
+          with Image.open(hero) as image:
+              assert image.format == 'WEBP', image.format
+              assert image.size == (1600, 900), image.size
+
+          names = [
+              'abjuration','abjurer','bladesinger','bladesinging','chronurgy','conjuration',
+              'divination','diviner','enchantment','evocation','evoker','graviturgy',
+              'illusion','illusionist','necromancy','scribes','transmutation','war',
+          ]
+          hashes = set()
+          for name in names:
+              path = Path(f'public/media/subclasses/wizard/wizard-{name}.webp')
+              with Image.open(path) as image:
+                  assert image.format == 'WEBP', (path, image.format)
+                  assert image.size == (456, 240), (path, image.size)
+              hashes.add(hashlib.sha256(path.read_bytes()).hexdigest())
+          assert len(hashes) == len(names), 'Wizard subclass art must remain binary-distinct.'
+          PY
+
+      - name: Run focused Class regressions
+        run: |
+          node scripts/validate_class_browser_polish.mjs
+          node scripts/validate_class_hero_framing.mjs
+          node scripts/validate_class_subclass_browser.mjs
+          node scripts/validate_artificer_mockup_lock.mjs
+          node scripts/validate_class_final_browser_fix.mjs
+          node scripts/validate_species_class_review_fix.mjs
+          node scripts/validate_player_forge_source_magic_routing.mjs
+
+      - name: Commit and push exact validated patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --pathspec-from-file=/tmp/expected.txt
+          git commit -m "Refine Wizard cinematic and subclass artwork"
+          git fetch origin "$TARGET_BRANCH"
+          test "$(git rev-parse "origin/$TARGET_BRANCH")" = "$EXPECTED_TARGET_HEAD"
+          git push origin "HEAD:$TARGET_BRANCH"
