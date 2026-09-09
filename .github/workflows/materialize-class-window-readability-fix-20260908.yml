@@ -1,0 +1,80 @@
+name: Materialize Class window readability fix 20260908
+
+on:
+  push:
+    branches:
+      - agent/class-window-readability-fix-20260908
+    paths:
+      - scripts/apply_class_window_readability_fix_20260908.mjs
+      - .github/workflows/materialize-class-window-readability-fix-20260908.yml
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    env:
+      TARGET_BRANCH: agent/realistic-dice-core
+      EXPECTED_TARGET_HEAD: 443463f8012bc9d73057cad406bb1182d04d5c22
+    steps:
+      - name: Check out bounded patch source
+        uses: actions/checkout@v4
+        with:
+          ref: agent/class-window-readability-fix-20260908
+          fetch-depth: 0
+
+      - name: Stage patch script outside worktree
+        run: cp scripts/apply_class_window_readability_fix_20260908.mjs /tmp/apply_class_window_readability_fix_20260908.mjs
+
+      - name: Check out exact working branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TARGET_BRANCH }}
+          fetch-depth: 0
+          clean: true
+
+      - name: Guard exact target head
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_TARGET_HEAD"
+
+      - name: Apply bounded patch and verify scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          node /tmp/apply_class_window_readability_fix_20260908.mjs
+
+          cat > /tmp/expected.txt <<'EOF'
+          components/ProfilePanelDragController.js
+          docs/CHARACTER_FORGE_CLASS_HERO_ARTWORK_STATUS.md
+          scripts/validate_class_hero_framing.mjs
+          scripts/validate_npc_page_panel_wrapper_adoption.mjs
+          styles/character-forge-class-final-corners.css
+          EOF
+          sed -i 's/^          //' /tmp/expected.txt
+          git diff --name-only | sort > /tmp/actual.txt
+          sort /tmp/expected.txt -o /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+          git diff --check
+
+      - name: Run focused Forge window and Class regressions
+        run: |
+          node scripts/validate_npc_page_panel_wrapper_adoption.mjs
+          node scripts/validate_character_forge_resilience.mjs
+          node scripts/validate_class_hero_framing.mjs
+          node scripts/validate_class_browser_polish.mjs
+          node scripts/validate_class_subclass_browser.mjs
+          node scripts/validate_class_final_browser_fix.mjs
+          node scripts/validate_species_class_review_fix.mjs
+          node scripts/validate_player_forge_source_magic_routing.mjs
+
+      - name: Commit and push exact validated patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --pathspec-from-file=/tmp/expected.txt
+          git commit -m "Keep Forge window visible and darken Class reading zone"
+          git fetch origin "$TARGET_BRANCH"
+          test "$(git rev-parse "origin/$TARGET_BRANCH")" = "$EXPECTED_TARGET_HEAD"
+          git push origin "HEAD:$TARGET_BRANCH"
