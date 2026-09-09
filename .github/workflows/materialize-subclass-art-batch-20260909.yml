@@ -1,0 +1,131 @@
+name: Materialize subclass artwork batch 20260909
+
+on:
+  push:
+    branches:
+      - agent/subclass-art-transfer-20260909-final
+    paths:
+      - .github/workflows/materialize-subclass-art-batch-20260909.yml
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    env:
+      TARGET_BRANCH: agent/realistic-dice-core
+      EXPECTED_TARGET_HEAD: 2679f3283a5f7b44e9329031943b4cff7a090799
+      PATCH_ZIP_SHA256: 5fda0108b613799c12a98e139a2304b48823418a5938bf9664316f4f9210c910
+      PATCH_URL: https://uc0968a0e7e3a422c96aedda6f60.dl.dropboxusercontent.com/cd/0/get/DH0_fuBIdkCXd15ZLhcYGEXhWvVUAimfP3qlZuTBJQt-wCnTQlgUDaTyruk8CrhdG4c72QHQYRa87UMf1NmcNmE_ggUOOmKj_ziMVGUpM5tjBmYhUyCsGIZGex96cjgR3Ca8FpGSWvPaOxrU_W5lHQrR8ul2YPRKay9mQBgYepPIrw/file?c_luid=c335000c
+    steps:
+      - name: Check out exact working branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TARGET_BRANCH }}
+          fetch-depth: 0
+          clean: true
+
+      - name: Guard exact target head
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_TARGET_HEAD"
+
+      - name: Download one-time transfer payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error "$PATCH_URL" -o /tmp/subclass-art.zip
+          echo "$PATCH_ZIP_SHA256  /tmp/subclass-art.zip" | sha256sum -c -
+          unzip -t /tmp/subclass-art.zip
+
+      - name: Verify transfer payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/subclass-art
+          mkdir -p /tmp/subclass-art
+          unzip -o /tmp/subclass-art.zip -d /tmp/subclass-art
+          cd /tmp/subclass-art
+          sha256sum -c SHA256SUMS.txt
+          test "$(find . -maxdepth 1 -type f -name '*.webp' | wc -l)" -eq 30
+          python -m pip install --disable-pip-version-check pillow==11.3.0
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          files = sorted(Path('/tmp/subclass-art').glob('*.webp'))
+          assert len(files) == 30, len(files)
+          for path in files:
+              with Image.open(path) as image:
+                  assert image.format == 'WEBP', (path.name, image.format)
+                  assert image.size == (456, 240), (path.name, image.size)
+          PY
+          for f in *.webp; do
+            test "$(file -b --mime-type "$f")" = "image/webp"
+          done
+
+      - name: Apply bounded subclass artwork patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          for cls in fighter paladin ranger sorcerer warlock; do
+            mkdir -p "public/media/subclasses/$cls"
+            install -m 0644 /tmp/subclass-art/${cls}-*.webp "public/media/subclasses/$cls/"
+          done
+
+          cat > /tmp/expected.txt <<'EOF'
+          public/media/subclasses/fighter/fighter-arcane-archer.webp
+          public/media/subclasses/fighter/fighter-banneret.webp
+          public/media/subclasses/fighter/fighter-battle-master.webp
+          public/media/subclasses/fighter/fighter-cavalier.webp
+          public/media/subclasses/fighter/fighter-champion.webp
+          public/media/subclasses/fighter/fighter-echo-knight.webp
+          public/media/subclasses/paladin/paladin-ancients.webp
+          public/media/subclasses/paladin/paladin-conquest.webp
+          public/media/subclasses/paladin/paladin-crown.webp
+          public/media/subclasses/paladin/paladin-devotion.webp
+          public/media/subclasses/paladin/paladin-glory.webp
+          public/media/subclasses/paladin/paladin-noble-genies.webp
+          public/media/subclasses/ranger/ranger-beast-master.webp
+          public/media/subclasses/ranger/ranger-drakewarden.webp
+          public/media/subclasses/ranger/ranger-fey-wanderer.webp
+          public/media/subclasses/ranger/ranger-gloom-stalker.webp
+          public/media/subclasses/ranger/ranger-horizon-walker.webp
+          public/media/subclasses/ranger/ranger-hunter.webp
+          public/media/subclasses/sorcerer/sorcerer-aberrant.webp
+          public/media/subclasses/sorcerer/sorcerer-clockwork.webp
+          public/media/subclasses/sorcerer/sorcerer-divine-soul.webp
+          public/media/subclasses/sorcerer/sorcerer-draconic.webp
+          public/media/subclasses/sorcerer/sorcerer-shadow.webp
+          public/media/subclasses/sorcerer/sorcerer-wild-magic.webp
+          public/media/subclasses/warlock/warlock-archfey.webp
+          public/media/subclasses/warlock/warlock-celestial.webp
+          public/media/subclasses/warlock/warlock-fiend.webp
+          public/media/subclasses/warlock/warlock-great-old-one.webp
+          public/media/subclasses/warlock/warlock-hexblade.webp
+          public/media/subclasses/warlock/warlock-undead.webp
+          EOF
+          sed -i 's/^          //' /tmp/expected.txt
+          { git diff --name-only; git ls-files --others --exclude-standard; } | sort -u > /tmp/actual.txt
+          sort /tmp/expected.txt -o /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+          git diff --check
+
+      - name: Run focused Class regressions
+        run: |
+          node scripts/validate_class_browser_polish.mjs
+          node scripts/validate_class_hero_framing.mjs
+          node scripts/validate_class_subclass_browser.mjs
+          node scripts/validate_class_final_browser_fix.mjs
+          node scripts/validate_species_class_review_fix.mjs
+          node scripts/validate_player_forge_source_magic_routing.mjs
+
+      - name: Commit and push exact validated subclass artwork
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --pathspec-from-file=/tmp/expected.txt
+          git commit -m "Install approved subclass artwork batch"
+          git fetch origin "$TARGET_BRANCH"
+          test "$(git rev-parse "origin/$TARGET_BRANCH")" = "$EXPECTED_TARGET_HEAD"
+          git push origin "HEAD:$TARGET_BRANCH"
