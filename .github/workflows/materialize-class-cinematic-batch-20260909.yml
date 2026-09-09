@@ -120,3 +120,5 @@ jobs:
           git fetch origin "$TARGET_BRANCH"
           test "$(git rev-parse "origin/$TARGET_BRANCH")" = "$EXPECTED_TARGET_HEAD"
           git push origin "HEAD:$TARGET_BRANCH"
+
+# trigger materialization after workflow registration
