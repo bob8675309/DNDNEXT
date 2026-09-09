@@ -179,6 +179,10 @@ if (portraitBleedStyles.includes(".merchant-panel-body") || portraitBleedStyles.
 
 requireContains(forgeSource, 'className={`npc-forge-modal npc-forge-modal-v2', "shared Forge modal shell");
 requireContains(forgeSource, 'className="npc-forge-header"', "shared Forge drag handle");
+requireContains(forgeSource, 'import { createPortal } from "react-dom";', "player Forge viewport portal import");
+requireContains(forgeSource, 'const forgeWindow = <NpcForgeControllerProvider', "player Forge portal window assignment");
+requireContains(forgeSource, 'createPortal(<div className="unified-player-character-forge npc-forge-portal-root">{forgeWindow}</div>, document.body)', "player Forge body portal boundary");
+requireContains(forgeSource, 'if (!playerMode || typeof document === "undefined") return forgeWindow;', "NPC/SSR non-portal fallback");
 requireContains(portraitPickerSource, 'className="portrait-picker-modal"', "portrait picker window shell");
 requireContains(portraitPickerSource, 'className="portrait-picker-head"', "portrait picker drag handle");
 requireContains(spritePickerSource, 'className="sprite-picker-modal"', "sprite picker window shell");
@@ -186,6 +190,10 @@ requireContains(spritePickerSource, "sprite-picker-head", "sprite picker drag ha
 
 if (windowSource.includes('shell.classList.contains("is-player-character-forge")')) {
   throw new Error("Character Forge is still excluded from the shared desktop window controller.");
+}
+
+if (!forgeSource.includes("npc-forge-portal-root") || !forgeSource.includes("document.body")) {
+  throw new Error("Player Character Forge must escape the profile-shell containing block before desktop drag/resize geometry is applied.");
 }
 
 if (windowSource.includes("MIN_VISIBLE_X") || windowSource.includes("MIN_VISIBLE_HEADER")) {

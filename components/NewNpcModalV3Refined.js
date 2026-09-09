@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import NpcForgeEquipmentStep from "./NpcForgeEquipmentStep";
 import NpcForgeFeatChoiceRegistrar from "./NpcForgeFeatChoiceRegistrar";
 import NpcForgeHumanVersatileRegistrar from "./NpcForgeHumanVersatileRegistrar";
@@ -134,7 +135,7 @@ export default function NewNpcModalV3Refined({ show, onClose, onCreated, locatio
   }, [show, creating, handleClose]);
 
   if (!show) return null;
-  return <NpcForgeControllerProvider controller={controller}><div className="npc-forge-backdrop" role="presentation"><div ref={modalRef} className={`npc-forge-modal npc-forge-modal-v2 ${playerMode ? "is-player-mode" : "is-npc-mode"}`} role="dialog" aria-modal="true">
+  const forgeWindow = <NpcForgeControllerProvider controller={controller}><div className="npc-forge-backdrop" role="presentation"><div ref={modalRef} className={`npc-forge-modal npc-forge-modal-v2 ${playerMode ? "is-player-mode" : "is-npc-mode"}`} role="dialog" aria-modal="true">
     <NpcForgeFeatChoiceRegistrar playerMode={playerMode} controller={controller} />
     <NpcForgeHumanVersatileRegistrar playerMode={playerMode} controller={controller} />
     <header className="npc-forge-header" onDoubleClick={handleHeaderDoubleClick} onPointerUp={handleHeaderPointerUp}><div>{playerMode ? <h2 title="Double-click or double-tap this header to restore the Forge window">Character Forge</h2> : <><div className="npc-forge-kicker">Canonical character system</div><h2>NPC Forge</h2><p>Build the rules first, then finish identity and placement.</p></>}</div><div className="npc-forge-header-actions"><button type="button" className="btn btn-sm btn-outline-warning" onClick={handleReset} disabled={creating}>Reset</button><button type="button" className="btn btn-sm btn-outline-light" onClick={handleClose} disabled={creating}>Close</button></div></header>
@@ -149,4 +150,7 @@ export default function NewNpcModalV3Refined({ show, onClose, onCreated, locatio
       .npc-forge-roll-card.refined{appearance:none;width:100%;cursor:grab;text-align:center}.npc-forge-roll-card.refined.is-selected{border-color:#a86cff;box-shadow:0 0 0 3px rgba(168,108,255,.18)}.npc-forge-allocation-instruction{margin:12px 0 8px;padding:9px 11px;border-radius:8px;color:#d9c5fa;background:rgba(126,72,199,.1);font-size:.72rem}.npc-forge-ability-drop-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.npc-forge-ability-drop-grid button{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 10px;min-height:82px;padding:12px;border:1px solid rgba(255,255,255,.1);border-radius:11px;color:rgba(255,255,255,.72);background:rgba(255,255,255,.026);text-align:left}.npc-forge-ability-drop-grid strong{grid-row:1/3;grid-column:2;color:#fff3ce;font-size:1.45rem}.npc-forge-ability-drop-grid em{grid-column:1/-1;font-size:.65rem;font-style:normal}.npc-forge-story-actions button{padding:7px 11px;border:1px solid rgba(88,214,199,.44);border-radius:8px;color:#c9fff7;background:rgba(42,136,124,.12)}.npc-forge-identity-art{display:grid;grid-template-columns:110px minmax(0,1fr);gap:14px;align-items:center;padding:12px;border:1px solid rgba(168,108,255,.28);border-radius:11px;background:rgba(126,72,199,.07)}.npc-forge-identity-art>img,.npc-forge-identity-art-empty{width:110px;height:145px;border-radius:8px;object-fit:cover;border:1px solid rgba(255,255,255,.12)}.npc-forge-identity-art>div{display:grid;gap:6px}.npc-forge-identity-art button{justify-self:start}@media(max-width:1220px){.npc-forge-modal-v2 .npc-forge-body{grid-template-columns:minmax(0,3fr) minmax(380px,2fr)}}@media(max-width:980px){.npc-forge-modal-v2 .npc-forge-body,.npc-forge-body.npc-forge-step-abilities,.npc-forge-body.npc-forge-step-spells,.npc-forge-body.npc-forge-step-equipment{grid-template-columns:1fr}.npc-forge-ability-drop-grid{grid-template-columns:repeat(2,minmax(0,1fr)}}@media(max-width:720px){.npc-forge-body.npc-forge-step-species.is-player-mode .npc-forge-species-fact-choice[data-icon-kind="languages"] .npc-forge-embedded-choice__slots{grid-template-columns:1fr}.npc-forge-ability-drop-grid{grid-template-columns:1fr}.npc-forge-identity-art{grid-template-columns:1fr}}
     `}</style>
   </div></div></NpcForgeControllerProvider>;
+
+  if (!playerMode || typeof document === "undefined") return forgeWindow;
+  return createPortal(<div className="unified-player-character-forge npc-forge-portal-root">{forgeWindow}</div>, document.body);
 }

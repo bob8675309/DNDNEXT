@@ -120,3 +120,11 @@ Validated resize/readability commit:
 `b89af0a18172da666fd07928b569d3cd7405856c` — `Keep Forge window visible and darken Class reading zone`
 
 This correction is presentation/window-management only: no Class rules, subclass authority, Supabase schema/data, world-map, town/city-map, crafting, travel, encounter, or inventory behavior changed.
+
+## 2026-09-08 viewport portal correction
+
+Follow-up video review showed the previous full-visibility clamp was mathematically correct but operating in the wrong coordinate space: the player Forge still lived inside the centered persistent profile host, so its fixed-position left/top values could be resolved against an offset containing block. The result was the exact failure shown in the recording — the Forge could jump hundreds of pixels right/down on first drag and still be moved partly or fully outside the visible browser area.
+
+The player Forge now portals its window root to document.body while preserving the existing React providers and the unified-player-character-forge styling scope. NPC Forge keeps its existing non-portal path. This gives the shared drag/resize controller a true viewport coordinate system, so the existing viewport clamps and resize geometry finally operate against the same origin as getBoundingClientRect().
+
+This correction does not change class rules, subclass persistence, creation authority, Supabase data, world/town maps, crafting, travel, encounter, inventory, or merchant behavior.
