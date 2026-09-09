@@ -15,9 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TARGET_BRANCH: agent/realistic-dice-core
-      EXPECTED_TARGET_HEAD: ed902f31cbea2b82435e9cc6db33743a0b4897e4
+      EXPECTED_TARGET_HEAD: 137c11ac57e110d6083cccc393461ab4bf202bd7
       PATCH_ZIP_SHA256: a557dfe250a6ab813f846c92a2aab92edb72ece50e3a366fab54255df4b984d1
-      PATCH_URL: https://uc431137f0d22c53fb593132bfb7.dl.dropboxusercontent.com/cd/0/get/DHz0P_9GSUQltHSpG_IL8UuG9YxYLcD3OlHXVPeSTk7JQ6SFXNnhJKH2KgYp6Gr6uguHNibAknGE5sUwakGj7S2TvYe36U68OrX9C8L2JYDJwRFy38xyQ5p1PAQi83IZidljjjvw8vv-ySlMcxG0CctrQBt1DeuYVmBMZBlGs1XJqA/file?c_luid=c335000c
+      PATCH_URL: https://ucc09d28f3b36e9951856a556c1b.dl.dropboxusercontent.com/cd/0/get/DHw9DwF4AxHyD9i_Mze5P63-ecTjBbbfc1bWnTAL39cgePXLFuTqKO6qmtNr51viPe-wjUvOhWgTS9e6gDEtPUSKpdZt-dxt7IZ-TXy5eXw2GbRU8zPSVwl918Gwl7wz04IRx5bpi5cO6clQ_sf-rUP8sX8VBQdmsQThqihZyQvXAw/file?c_luid=c335000c
     steps:
       - name: Check out exact working branch
         uses: actions/checkout@v4
@@ -70,7 +70,7 @@ jobs:
             test "$(file -b --mime-type "$f")" = "image/webp"
           done
 
-      - name: Apply bounded artwork patch
+      - name: Apply bounded missing artwork patch
         shell: bash
         run: |
           set -euo pipefail
@@ -83,10 +83,15 @@ jobs:
           install -m 0644 /tmp/class-cinematic-batch2/cinematic-sidekick.webp public/media/classes/cinematic-sidekick.webp
 
           cat > /tmp/expected.txt <<'EOF'
-          public/media/classes/cinematic-ranger.webp
+          public/media/classes/cinematic-monster-hunter.webp
+          public/media/classes/cinematic-mystic.webp
+          public/media/classes/cinematic-paladin.webp
+          public/media/classes/cinematic-sidekick.webp
+          public/media/classes/cinematic-sorcerer.webp
+          public/media/classes/cinematic-warlock.webp
           EOF
           sed -i 's/^          //' /tmp/expected.txt
-          git diff --name-only | sort > /tmp/actual.txt
+          git status --porcelain=v1 --untracked-files=all | sed -E 's/^.. //' | sort > /tmp/actual.txt
           sort /tmp/expected.txt -o /tmp/expected.txt
           diff -u /tmp/expected.txt /tmp/actual.txt
           git diff --check
@@ -100,14 +105,14 @@ jobs:
           node scripts/validate_species_class_review_fix.mjs
           node scripts/validate_player_forge_source_magic_routing.mjs
 
-      - name: Commit and push exact validated artwork batch
+      - name: Commit and push exact validated missing assets
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add --pathspec-from-file=/tmp/expected.txt
-          git commit -m "Install approved Elf Ranger cinematic artwork"
+          git commit -m "Install remaining approved Class cinematic assets"
           git fetch origin "$TARGET_BRANCH"
           test "$(git rev-parse "origin/$TARGET_BRANCH")" = "$EXPECTED_TARGET_HEAD"
           git push origin "HEAD:$TARGET_BRANCH"
