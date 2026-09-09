@@ -77,12 +77,35 @@ for (const subclass of exactWizardSubclassArt) {
 const wizardSubclassArtBytes = new Set(exactWizardSubclassArt.map((subclass) => fs.readFileSync(path.join(root, `public/media/subclasses/wizard/wizard-${subclass}.webp`)).toString("base64")));
 assert(wizardSubclassArtBytes.size === exactWizardSubclassArt.length, "Every canonical Wizard subclass must use a distinct artwork file.");
 
+const approvedSubclassFamilies = Object.freeze({
+  fighter: ["arcane-archer", "banneret", "battle-master", "cavalier", "champion", "echo-knight"],
+  paladin: ["ancients", "conquest", "crown", "devotion", "glory", "noble-genies"],
+  ranger: ["beast-master", "drakewarden", "fey-wanderer", "gloom-stalker", "horizon-walker", "hunter"],
+  sorcerer: ["aberrant", "clockwork", "divine-soul", "draconic", "shadow", "wild-magic"],
+  warlock: ["archfey", "celestial", "fiend", "great-old-one", "hexblade", "undead"],
+});
+
+for (const [classKey, families] of Object.entries(approvedSubclassFamilies)) {
+  for (const family of families) {
+    assert(subclassArtwork.includes(`\"${family}\"`) || subclassArtwork.includes(`${family}:`), `${classKey} subclass artwork resolver is missing ${family}.`);
+    const file = path.join(root, `public/media/subclasses/${classKey}/${classKey}-${family}.webp`);
+    assert(fs.existsSync(file), `Approved ${classKey} subclass selector artwork missing ${family}.`);
+    assert(fs.statSync(file).size > 0, `Approved ${classKey} subclass selector artwork is empty: ${family}.`);
+  }
+}
+
 for (const token of [
   'const WIZARD_SUBCLASS_ART_FAMILY',
+  'const APPROVED_SUBCLASS_ART_FAMILIES',
+  'function approvedSubclassArtworkFor',
   'evocation: "evocation"',
   'abjuration: "abjuration"',
   'necromancy: "necromancy"',
-  'return classMenuArtworkFor(normalizedClass)',
+  '"aberrant-mind": "aberrant"',
+  '"clockwork-soul": "clockwork"',
+  'wild: "wild-magic"',
+  '"purple-dragon-knight-banneret": "banneret"',
+  '|| classMenuArtworkFor(normalizedClass)',
 ]) assert(subclassArtwork.includes(token), `Subclass artwork authority is missing ${token}`);
 for (const family of ["abjuration", "conjuration", "divination", "enchantment", "evocation", "illusion", "necromancy", "transmutation"]) {
   assert(fs.existsSync(path.join(root, `public/media/subclasses/wizard/wizard-${family}.webp`)), `Wizard subclass selector artwork missing ${family}.`);
@@ -129,4 +152,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSource.includes(token), `Class presentation patch crossed protected boundary: ${token}`);
 }
 
-console.log("Class subclass selector validation passed: mockup-proportioned two-column choices with readable artwork, click-only Feature-card inspection, selected-subclass progression injection, balanced spell-slot table, stable cinematic art, safe artwork fallback, and protected boundaries are intact.");
+console.log("Class subclass selector validation passed: Wizard plus the approved Fighter, Paladin, Ranger, Sorcerer, and Warlock subclass batches use dedicated selector artwork; readable two-column choices, click-only Feature-card inspection, selected-subclass progression injection, balanced spell-slot table, stable cinematic art, safe artwork fallback, and protected boundaries are intact.");
