@@ -38,9 +38,18 @@ const PUBLIC_CINEMATIC_CLASS_HERO_ARTWORK = Object.freeze({
   druid: "/media/classes/cinematic-druid.webp",
   fighter: "/media/classes/cinematic-fighter.webp",
   monk: "/media/classes/cinematic-monk.webp",
-  rogue: "/media/classes/cinematic-rogue.webp",
+  paladin: "/media/classes/cinematic-paladin.webp",
   ranger: "/media/classes/cinematic-ranger.webp",
+  rogue: "/media/classes/cinematic-rogue.webp",
+  sorcerer: "/media/classes/cinematic-sorcerer.webp",
+  warlock: "/media/classes/cinematic-warlock.webp",
   wizard: "/media/classes/cinematic-wizard.webp",
+  mystic: "/media/classes/cinematic-mystic.webp",
+  "monster-hunter": "/media/classes/cinematic-monster-hunter.webp",
+  "expert-sidekick": "/media/classes/cinematic-sidekick.webp",
+  "warrior-sidekick": "/media/classes/cinematic-sidekick.webp",
+  "spellcaster-sidekick": "/media/classes/cinematic-sidekick.webp",
+  sidekick: "/media/classes/cinematic-sidekick.webp",
 });
 const PUBLIC_CINEMATIC_CLASS_MENU_ARTWORK = Object.freeze({});
 
