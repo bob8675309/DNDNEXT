@@ -17,7 +17,7 @@ jobs:
       TARGET_BRANCH: agent/realistic-dice-core
       EXPECTED_TARGET_HEAD: 8454b687dfde413b7e065e59b27bf8d10c8f0f10
       PATCH_ZIP_SHA256: ad6ed7cc49038bfc364eb8f1db123b4e66a4d837a580cbaced6cd4871450cb1b
-      PATCH_URL: https://uc7514587ce9b83fbffbcb951309.dl.dropboxusercontent.com/cd/0/get/DHzx4OqPtfwniiQg9EIYoQYrMVkeKsFL8aG1L2PhWFadNGjTU_vQEyQ02zYYkyTRCMexhpLS6yRjFMfelmdtiugy38F5Blt_DpmMZenMtHz6_Osn49D1h0nWhizDkEM2edsrC9OjI0L6UIobQCGwLwREonoDElPQpygVV8LWqazaHg/file?c_luid=c335000c
+      PATCH_URL: https://ucfa1865eed2ab30560dc1cf166d.dl.dropboxusercontent.com/cd/0/get/DHyQV2eoBUVo-DFJsGErU4xpFLDDLTB2v3qwAZbz_g8H56Zj1_ebqIvoBnJUCdiYAIBlx5cisfkV6xMxve8O3lvZP2M0woxef0-UWwEC-ZCmV-umgtDyEcfvb5bor6IgO2AEno-qqRonSsKu0C-IE9w3v1rIc_eLEzHLlRjOoQkUGA/file?c_luid=c335000c
     steps:
       - name: Check out exact working branch
         uses: actions/checkout@v4
@@ -95,6 +95,7 @@ jobs:
           public/media/classes/cinematic-rogue.webp
           EOF
           sed -i 's/^          //' /tmp/expected.txt
+          git add -N --pathspec-from-file=/tmp/expected.txt
           git diff --name-only | sort > /tmp/actual.txt
           sort /tmp/expected.txt -o /tmp/expected.txt
           diff -u /tmp/expected.txt /tmp/actual.txt
@@ -121,4 +122,4 @@ jobs:
           test "$(git rev-parse "origin/$TARGET_BRANCH")" = "$EXPECTED_TARGET_HEAD"
           git push origin "HEAD:$TARGET_BRANCH"
 
-# trigger materialization after workflow registration
+# retry after exact-diff guard learned about new untracked cinematic files
