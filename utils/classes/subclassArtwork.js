@@ -76,6 +76,10 @@ function approvedSubclassArtworkFor(normalizedClass = "", normalizedSubclass = "
   return family ? `/media/subclasses/${normalizedClass}/${normalizedClass}-${family}.webp` : "";
 }
 
+function fallbackSubclassArtworkFor(normalizedClass = "") {
+  return classMenuArtworkFor(normalizedClass);
+}
+
 export function subclassArtworkFor(classKey = "", option = {}) {
   const normalizedClass = key(classKey);
   const normalizedSubclass = key(option?.name || option?.key);
@@ -95,5 +99,5 @@ export function handleSubclassArtworkError(event, classKey = "") {
     return;
   }
   image.dataset.subclassFallbackApplied = "true";
-  image.src = classMenuArtworkFor(key(classKey));
+  image.src = fallbackSubclassArtworkFor(key(classKey));
 }
