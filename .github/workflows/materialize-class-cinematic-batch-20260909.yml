@@ -1,0 +1,122 @@
+name: Materialize Class cinematic batch 20260909
+
+on:
+  push:
+    branches:
+      - agent/class-cinematic-batch-transfer-20260909
+    paths:
+      - .github/workflows/materialize-class-cinematic-batch-20260909.yml
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    env:
+      TARGET_BRANCH: agent/realistic-dice-core
+      EXPECTED_TARGET_HEAD: 8454b687dfde413b7e065e59b27bf8d10c8f0f10
+      PATCH_ZIP_SHA256: ad6ed7cc49038bfc364eb8f1db123b4e66a4d837a580cbaced6cd4871450cb1b
+      PATCH_URL: https://uc7514587ce9b83fbffbcb951309.dl.dropboxusercontent.com/cd/0/get/DHzx4OqPtfwniiQg9EIYoQYrMVkeKsFL8aG1L2PhWFadNGjTU_vQEyQ02zYYkyTRCMexhpLS6yRjFMfelmdtiugy38F5Blt_DpmMZenMtHz6_Osn49D1h0nWhizDkEM2edsrC9OjI0L6UIobQCGwLwREonoDElPQpygVV8LWqazaHg/file?c_luid=c335000c
+    steps:
+      - name: Check out exact working branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TARGET_BRANCH }}
+          fetch-depth: 0
+          clean: true
+
+      - name: Guard exact target head
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_TARGET_HEAD"
+
+      - name: Download one-time transfer payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error "$PATCH_URL" -o /tmp/dndnext-class-cinematic-batch-20260909.zip
+          echo "$PATCH_ZIP_SHA256  /tmp/dndnext-class-cinematic-batch-20260909.zip" | sha256sum -c -
+          unzip -t /tmp/dndnext-class-cinematic-batch-20260909.zip
+
+      - name: Verify transfer payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/class-cinematic-batch
+          mkdir -p /tmp/class-cinematic-batch
+          unzip -o /tmp/dndnext-class-cinematic-batch-20260909.zip -d /tmp/class-cinematic-batch
+          cd /tmp/class-cinematic-batch
+          sha256sum -c SHA256SUMS.txt
+          python -m pip install --disable-pip-version-check pillow==11.3.0
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          names = [
+              'cinematic-fighter.webp',
+              'cinematic-rogue.webp',
+              'cinematic-artificer.webp',
+              'cinematic-barbarian.webp',
+              'cinematic-bard.webp',
+              'cinematic-monk.webp',
+              'cinematic-cleric.webp',
+              'cinematic-druid.webp',
+          ]
+          for name in names:
+              path = Path(name)
+              assert path.exists(), path
+              with Image.open(path) as image:
+                  assert image.format == 'WEBP', (name, image.format)
+                  assert image.size == (1600, 900), (name, image.size)
+          PY
+          for f in cinematic-*.webp; do
+            test "$(file -b --mime-type "$f")" = "image/webp"
+          done
+
+      - name: Apply bounded artwork patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          install -m 0644 /tmp/class-cinematic-batch/cinematic-fighter.webp public/media/classes/cinematic-fighter.webp
+          install -m 0644 /tmp/class-cinematic-batch/cinematic-rogue.webp public/media/classes/cinematic-rogue.webp
+          install -m 0644 /tmp/class-cinematic-batch/cinematic-artificer.webp public/media/classes/cinematic-artificer.webp
+          install -m 0644 /tmp/class-cinematic-batch/cinematic-barbarian.webp public/media/classes/cinematic-barbarian.webp
+          install -m 0644 /tmp/class-cinematic-batch/cinematic-bard.webp public/media/classes/cinematic-bard.webp
+          install -m 0644 /tmp/class-cinematic-batch/cinematic-monk.webp public/media/classes/cinematic-monk.webp
+          install -m 0644 /tmp/class-cinematic-batch/cinematic-cleric.webp public/media/classes/cinematic-cleric.webp
+          install -m 0644 /tmp/class-cinematic-batch/cinematic-druid.webp public/media/classes/cinematic-druid.webp
+
+          cat > /tmp/expected.txt <<'EOF'
+          public/media/classes/cinematic-artificer.webp
+          public/media/classes/cinematic-barbarian.webp
+          public/media/classes/cinematic-bard.webp
+          public/media/classes/cinematic-cleric.webp
+          public/media/classes/cinematic-druid.webp
+          public/media/classes/cinematic-fighter.webp
+          public/media/classes/cinematic-monk.webp
+          public/media/classes/cinematic-rogue.webp
+          EOF
+          sed -i 's/^          //' /tmp/expected.txt
+          git diff --name-only | sort > /tmp/actual.txt
+          sort /tmp/expected.txt -o /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+          git diff --check
+
+      - name: Run focused Class regressions
+        run: |
+          node scripts/validate_class_browser_polish.mjs
+          node scripts/validate_class_hero_framing.mjs
+          node scripts/validate_class_subclass_browser.mjs
+          node scripts/validate_class_final_browser_fix.mjs
+          node scripts/validate_species_class_review_fix.mjs
+          node scripts/validate_player_forge_source_magic_routing.mjs
+
+      - name: Commit and push exact validated artwork batch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --pathspec-from-file=/tmp/expected.txt
+          git commit -m "Install approved Class cinematic artwork batch"
+          git fetch origin "$TARGET_BRANCH"
+          test "$(git rev-parse "origin/$TARGET_BRANCH")" = "$EXPECTED_TARGET_HEAD"
+          git push origin "HEAD:$TARGET_BRANCH"
