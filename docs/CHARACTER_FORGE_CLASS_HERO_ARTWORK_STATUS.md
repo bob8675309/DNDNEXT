@@ -140,7 +140,7 @@ For every additional Class hero or replacement:
 
 ## 2026-09-09 remaining-Class publication chain
 
-The approved binary transfer bundle was checksum-verified and dimension-verified at 1600x900. During bounded application, six approved assets already matched the exact bytes present on the PR branch; only Ranger differed and therefore produced a binary Git diff. The guard correctly prevented unrelated/no-op files from being committed.
+The approved binary transfer bundle was checksum-verified and dimension-verified at 1600x900. The first bounded transfer exposed an important guard detail: `git diff --name-only` does not report newly created untracked binary files. Ranger was a tracked replacement and therefore appeared in that diff, while Paladin, Sorcerer, Warlock, Mystic, Monster Hunter, and Sidekick were new files and remained untracked. The corrected materializer switched its scope check to `git status --porcelain --untracked-files=all`, then committed exactly those six missing assets. The focused Class regression suite passed before that corrected asset commit was pushed.
 
 Ranger binary replacement:
 
@@ -157,6 +157,10 @@ Cinematic alignment/framing:
 Regression guard:
 
 `7d038ddae3f45bd39b568b50d4bc109c5aaaf739` — `Guard remaining approved Class cinematic heroes`
+
+Remaining six binary assets:
+
+`68813a1c0cb898035df472b7f24a6edcdba1b549` — `Install remaining approved Class cinematic assets`
 
 ## Protected boundaries
 
