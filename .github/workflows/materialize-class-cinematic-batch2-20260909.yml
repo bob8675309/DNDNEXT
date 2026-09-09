@@ -17,7 +17,7 @@ jobs:
       TARGET_BRANCH: agent/realistic-dice-core
       EXPECTED_TARGET_HEAD: ed902f31cbea2b82435e9cc6db33743a0b4897e4
       PATCH_ZIP_SHA256: a557dfe250a6ab813f846c92a2aab92edb72ece50e3a366fab54255df4b984d1
-      PATCH_URL: https://uc7d22f9ec262ff70a6c24e6d508.dl.dropboxusercontent.com/cd/0/get/DHxkrbNfZwTmgvU0EM47Dz8k-pgE2UCz9FCFVR4Oi3OogmpJEVZ9EnJa9WzatgblGJauCipjJvBE0MvH6EGI6F8G2ITtl7GtMAWWRwaNFkFl2EljipNNdThqukqyNLkISAHgtDh02EfBqla8BF0_8TWlxQulaotBrCoqE6zWdpcSKg/file?c_luid=c335000c
+      PATCH_URL: https://uc431137f0d22c53fb593132bfb7.dl.dropboxusercontent.com/cd/0/get/DHz0P_9GSUQltHSpG_IL8UuG9YxYLcD3OlHXVPeSTk7JQ6SFXNnhJKH2KgYp6Gr6uguHNibAknGE5sUwakGj7S2TvYe36U68OrX9C8L2JYDJwRFy38xyQ5p1PAQi83IZidljjjvw8vv-ySlMcxG0CctrQBt1DeuYVmBMZBlGs1XJqA/file?c_luid=c335000c
     steps:
       - name: Check out exact working branch
         uses: actions/checkout@v4
@@ -83,13 +83,7 @@ jobs:
           install -m 0644 /tmp/class-cinematic-batch2/cinematic-sidekick.webp public/media/classes/cinematic-sidekick.webp
 
           cat > /tmp/expected.txt <<'EOF'
-          public/media/classes/cinematic-monster-hunter.webp
-          public/media/classes/cinematic-mystic.webp
-          public/media/classes/cinematic-paladin.webp
           public/media/classes/cinematic-ranger.webp
-          public/media/classes/cinematic-sidekick.webp
-          public/media/classes/cinematic-sorcerer.webp
-          public/media/classes/cinematic-warlock.webp
           EOF
           sed -i 's/^          //' /tmp/expected.txt
           git diff --name-only | sort > /tmp/actual.txt
@@ -113,7 +107,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add --pathspec-from-file=/tmp/expected.txt
-          git commit -m "Install remaining approved Class cinematic artwork"
+          git commit -m "Install approved Elf Ranger cinematic artwork"
           git fetch origin "$TARGET_BRANCH"
           test "$(git rev-parse "origin/$TARGET_BRANCH")" = "$EXPECTED_TARGET_HEAD"
           git push origin "HEAD:$TARGET_BRANCH"
