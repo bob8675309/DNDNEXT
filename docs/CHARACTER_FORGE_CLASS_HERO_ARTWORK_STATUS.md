@@ -134,7 +134,7 @@ This correction does not change class rules, subclass persistence, creation auth
 Final browser review approved the Fighter treatment and established the last two composition requirements:
 
 - **Wizard:** the bright castle painting now fades much more decisively toward near-black on the left side of the Forge. The fade stays transparent and continuous with the same modal-owned image, remains very dark through the title/body-copy reading zone, and clears progressively toward the Wizard on the right. No blur, duplicate image, or opaque left panel is introduced.
-- **Fighter:** the cinematic focal position now favors the top of the source image (`70% 0%`) so more sky/banner/background remains above the Fighter and the horizontal Class-window divider no longer lands directly across his face. Fighter's accepted default reading fade is otherwise unchanged.
+- **Fighter:** the initial top-source focal correction was not enough at the real browser aspect ratio; the divider still crossed too close to the Fighter's face.
 
 Implementation commit:
 
@@ -144,4 +144,27 @@ Regression-guard commit:
 
 `b0c2559127c275bda9ffe30c99d38e4e8409822d` — `Guard final Wizard and Fighter cinematic polish`
 
-`scripts/validate_class_hero_framing.mjs` now explicitly locks the Fighter `70% 0%` focal position and the stronger Wizard near-black fade/clear points. This remains a presentation-only correction: no Class/subclass rules, Supabase data, map/town behavior, crafting, travel, encounter, inventory, merchant, or tactical runtime changed.
+## 2026-09-09 Fighter lower framing correction and next cinematic batch direction
+
+A further browser screenshot at the accepted desktop size showed the Fighter still sat too high even with the `70% 0%` focal rule. The character has therefore been shifted downward by using a pixel-based vertical focal offset (`70% 42px`) on the modal-owned cinematic layer. This intentionally leaves more of the upper composition as sky/banner/background and moves the face away from the horizontal Class-view divider, matching the approved reference more closely. Wizard remains unchanged and approved.
+
+Implementation commit:
+
+`ac27681d3673f05d3af88e329c4f30471134721a` — `Lower Fighter cinematic subject below Class divider`
+
+Regression guard:
+
+`9ef9883abf02c6685488cc396816cc8370b80c39` — `Guard lowered Fighter cinematic framing`
+
+The next cinematic Class-art batch should use the accepted Wizard/Fighter composition rules but deliberately vary character species instead of defaulting to humans. Initial target assignments are:
+
+- **Bard:** Satyr performer / storyteller composition.
+- **Druid:** Firbolg primal/nature composition.
+- **Monk:** Tabaxi disciplined martial-arts composition.
+- **Paladin:** Dragonborn holy-warrior composition.
+- **Sorcerer:** Aasimar innate-magic composition.
+- **Warlock:** Drow pact-magic composition.
+
+These are artwork/presentation choices only; they do not alter canonical Class identity, playable Species availability, character creation defaults, or Supabase rules. Each hero still requires standalone binary review before promotion into `PUBLIC_CINEMATIC_CLASS_HERO_ARTWORK`. Failed or UI-contaminated generations must not be committed merely to advance the batch.
+
+`scripts/validate_class_hero_framing.mjs` now explicitly locks the Fighter `70% 42px` offset and the stronger Wizard near-black fade/clear points. This remains a presentation-only correction: no Class/subclass rules, Supabase data, map/town behavior, crafting, travel, encounter, inventory, merchant, or tactical runtime changed.
