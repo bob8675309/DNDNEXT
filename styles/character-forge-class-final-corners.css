@@ -10,10 +10,12 @@
 @media (min-width: 901px) {
   .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-fighter .npc-forge-class-guide__overview-book) {
     --npc-forge-class-cinematic-art: url("/media/classes/cinematic-fighter.webp");
+    --npc-forge-class-art-position: 70% 6%;
   }
 
   .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-wizard .npc-forge-class-guide__overview-book) {
     --npc-forge-class-cinematic-art: url("/media/classes/cinematic-wizard.webp");
+    --npc-forge-class-art-position: 68% 10%;
   }
 
   .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-rogue .npc-forge-class-guide__overview-book) {
@@ -46,9 +48,9 @@
     pointer-events: none;
     filter: none !important;
     background:
-      linear-gradient(90deg, rgba(4, 7, 14, .42) 0%, rgba(4, 7, 14, .22) 24%, rgba(4, 7, 14, .08) 38%, rgba(4, 7, 14, .02) 48%, rgba(4, 7, 14, 0) 58%),
-      linear-gradient(0deg, rgba(4, 7, 13, .12) 0%, rgba(4, 7, 13, 0) 20%),
-      var(--npc-forge-class-cinematic-art) center center / cover no-repeat;
+      linear-gradient(90deg, rgba(3, 5, 12, .80) 0%, rgba(3, 5, 12, .72) 22%, rgba(3, 5, 12, .58) 38%, rgba(3, 5, 12, .40) 52%, rgba(3, 5, 12, .24) 63%, rgba(3, 5, 12, .10) 72%, rgba(3, 5, 12, 0) 80%),
+      linear-gradient(0deg, rgba(3, 5, 11, .20) 0%, rgba(3, 5, 11, 0) 24%),
+      var(--npc-forge-class-cinematic-art) var(--npc-forge-class-art-position, center center) / cover no-repeat;
   }
 
   .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) > .npc-forge-header,
@@ -104,6 +106,12 @@
 
   .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide {
     box-shadow: none !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__hero-kicker,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__hero-copy > h2,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__hero-tagline {
+    text-shadow: 0 1px 3px rgba(0, 0, 0, .92), 0 0 14px rgba(0, 0, 0, .46);
   }
 }
 

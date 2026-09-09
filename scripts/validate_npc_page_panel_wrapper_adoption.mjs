@@ -67,8 +67,10 @@ for (const token of [
   "INTERACTIVE_SELECTOR",
   "DESKTOP_MIN_WIDTH = 981",
   "CORNER_HIT_SIZE = 16",
-  "MIN_VISIBLE_X = 180",
-  "MIN_VISIBLE_HEADER = 48",
+  "function fullyVisiblePositionBounds(width, height)",
+  "window.innerWidth - resolvedWidth - EDGE_GAP",
+  "window.innerHeight - resolvedHeight - EDGE_GAP",
+  "reclampWindow(shell);",
   "function promoteToDesktopWindow(shell)",
   "function resizeGeometry(shell, direction, startRect, dx, dy)",
   "function resetDesktopWindow(shell)",
@@ -184,6 +186,10 @@ requireContains(spritePickerSource, "sprite-picker-head", "sprite picker drag ha
 
 if (windowSource.includes('shell.classList.contains("is-player-character-forge")')) {
   throw new Error("Character Forge is still excluded from the shared desktop window controller.");
+}
+
+if (windowSource.includes("MIN_VISIBLE_X") || windowSource.includes("MIN_VISIBLE_HEADER")) {
+  throw new Error("Desktop app windows can still be dragged almost completely off-screen.");
 }
 
 if (windowSource.includes('".npc-page-profile-panel-shell",\n  ".npc-forge-modal"')) {

@@ -58,7 +58,10 @@ for (const token of [
   ".npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class",
   "--npc-forge-class-cinematic-art: url(\"/media/classes/cinematic-wizard.webp\")",
   ")::before {",
-  "var(--npc-forge-class-cinematic-art) center center / cover no-repeat",
+  "var(--npc-forge-class-cinematic-art) var(--npc-forge-class-art-position, center center) / cover no-repeat",
+  "--npc-forge-class-art-position: 70% 6%",
+  "--npc-forge-class-art-position: 68% 10%",
+  "text-shadow: 0 1px 3px rgba(0, 0, 0, .92), 0 0 14px rgba(0, 0, 0, .46)",
   "> .npc-forge-header",
   "> .npc-forge-steps",
   "background: rgba(3, 4, 9, .16) !important",
@@ -71,7 +74,7 @@ for (const token of [
   "backdrop-filter: none !important",
 ]) assert(finalCorners.includes(token), `Final Class Forge-border cinematic contract is missing ${token}`);
 
-assert(finalCorners.includes("rgba(4, 7, 14, .02) 48%") && finalCorners.includes("rgba(4, 7, 14, 0) 58%"), "Final Class cinematic fade must clear early enough to preserve crisp center/environment art.");
+assert(finalCorners.includes("rgba(3, 5, 12, .80) 0%") && finalCorners.includes("rgba(3, 5, 12, .10) 72%") && finalCorners.includes("rgba(3, 5, 12, 0) 80%"), "Final Class cinematic fade must keep the left reading zone dark while clearing before the right-side subject.");
 assert(!/filter\s*:\s*blur\(/i.test(finalCorners), "Final Class cinematic artwork must not be blurred.");
 assert(!/backdrop-filter\s*:\s*blur\(/i.test(finalCorners), "Final Class copy/chrome must not blur the cinematic artwork.");
 assert(!finalCorners.includes("rgba(4, 7, 14, .68) 0%, rgba(4, 7, 14, .54) 22%, rgba(4, 7, 14, .28) 45%"), "Obsolete body-level opaque cinematic veil must not return.");
@@ -101,4 +104,4 @@ for (const token of ["mappageclient", "map_routes", "advance_all_characters", "t
   assert(!protectedText.includes(token), `Class hero framing patch unexpectedly references protected map/town behavior: ${token}`);
 }
 
-console.log("Class hero framing validation passed: one crisp modal-owned cinematic image reaches the Forge border with an early transparent text fade, Wizard subclass art fills its native wide slot, nested duplicate/blur layers stay suppressed, and protected boundaries are untouched.");
+console.log("Class hero framing validation passed: one crisp modal-owned cinematic image reaches the Forge border with a dark transparent left reading fade, resize-safe focal framing, Wizard subclass art filling its native wide slot, nested duplicate/blur layers suppressed, and protected boundaries untouched.");

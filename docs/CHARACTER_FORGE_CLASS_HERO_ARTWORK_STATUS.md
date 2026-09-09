@@ -105,3 +105,14 @@ This Class artwork correction is presentation-only.
 - No Supabase write or migration is required.
 - No world-map or town/city-map code is part of the patch.
 - No crafting, travel, inventory, merchant, tactical, or character-sheet runtime behavior is part of the patch.
+
+## 2026-09-08 resize/readability correction
+
+Browser review after the clean Wizard replacement established two additional presentation requirements:
+
+- The modal-owned cinematic remains one sharp image, but the left reading zone now carries a stronger transparent black/navy scrim. It darkens the Class title/tagline area without blur or a second cropped image, then clears before the right-side hero subject.
+- Fighter and Wizard provide explicit cinematic focal positions so resizing favors the character's head and upper body instead of center-cropping the face out of the frame.
+- The shared desktop window controller no longer allows a resized Forge to be dragged almost completely outside the viewport. Drag and post-interaction reclamping now keep the full window inside the usable viewport bounds.
+- Double-click/double-tap header reset remains available, but it is recovery convenience rather than the only way to rescue a lost Forge window.
+
+This correction is presentation/window-management only: no Class rules, subclass authority, Supabase schema/data, world-map, town/city-map, crafting, travel, encounter, or inventory behavior changed.
