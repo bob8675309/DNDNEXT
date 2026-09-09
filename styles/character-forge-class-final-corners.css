@@ -10,7 +10,7 @@
 @media (min-width: 901px) {
   .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-fighter .npc-forge-class-guide__overview-book) {
     --npc-forge-class-cinematic-art: url("/media/classes/cinematic-fighter.webp");
-    --npc-forge-class-art-position: 70% 0%;
+    --npc-forge-class-art-position: 70% 42px;
   }
 
   .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-wizard .npc-forge-class-guide__overview-book) {
