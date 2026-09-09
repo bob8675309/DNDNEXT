@@ -59,7 +59,7 @@ for (const token of [
   "--npc-forge-class-cinematic-art: url(\"/media/classes/cinematic-wizard.webp\")",
   ")::before {",
   "var(--npc-forge-class-cinematic-art) var(--npc-forge-class-art-position, center center) / cover no-repeat",
-  "--npc-forge-class-art-position: 70% 0%",
+  "--npc-forge-class-art-position: 70% 42px",
   "--npc-forge-class-art-position: 68% 10%",
   "--npc-forge-class-reading-fade: linear-gradient",
   "text-shadow: 0 1px 3px rgba(0, 0, 0, .92), 0 0 14px rgba(0, 0, 0, .46)",
@@ -106,4 +106,4 @@ for (const token of ["mappageclient", "map_routes", "advance_all_characters", "t
   assert(!protectedText.includes(token), `Class hero framing patch unexpectedly references protected map/town behavior: ${token}`);
 }
 
-console.log("Class hero framing validation passed: one crisp modal-owned cinematic image reaches the Forge border with a strong transparent Wizard reading fade, Fighter top-background-safe focal framing, resize-safe focal positioning, Wizard subclass art filling its native wide slot, nested duplicate/blur layers suppressed, and protected boundaries untouched.");
+console.log("Class hero framing validation passed: one crisp modal-owned cinematic image reaches the Forge border with a strong transparent Wizard reading fade, Fighter lowered below the Class divider, resize-safe focal positioning, Wizard subclass art filling its native wide slot, nested duplicate/blur layers suppressed, and protected boundaries untouched.");
