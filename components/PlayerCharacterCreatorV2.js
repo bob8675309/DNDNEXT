@@ -28,10 +28,11 @@ export default function PlayerCharacterCreatorV2({
   defaultName = "",
   onCreated = null,
   onCancel = null,
+  show = true,
 }) {
   return (
     <NewNpcModalV3
-      show
+      show={show}
       mode="player"
       defaultName={defaultName}
       onCreated={onCreated}

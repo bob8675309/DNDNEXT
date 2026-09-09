@@ -14,6 +14,8 @@ const profilePageSource = read("pages", "profile.js");
 const accountStyles = read("styles", "player-account-panel.css");
 const portraitBleedStyles = read("styles", "profile-portrait-bleed-overrides.css");
 const forgeSource = read("components", "NewNpcModalV3Refined.js");
+const forgeWrapperSource = read("components", "NewNpcModalV3.js");
+const playerCreatorSource = read("components", "PlayerCharacterCreatorV2.js");
 const portraitPickerSource = read("components", "PortraitPickerModal.js");
 const spritePickerSource = read("components", "SpritePickerModal.js");
 
@@ -113,6 +115,11 @@ requireContains(playerProfileSource, 'import("./PlayerAccountPanel")', "Account 
 requireContains(playerProfileSource, 'className="player-character-forge-toolbar__actions"', "profile toolbar right actions");
 requireContains(playerProfileSource, 'aria-label="Close profile panel"', "top profile close button");
 requireContains(playerProfileSource, "accountContent={accountContent}", "Account view content routing");
+requireContains(playerProfileSource, "show={open && showCreator && !showLoading}", "portalled Forge profile visibility gate");
+requireContains(playerCreatorSource, "show = true", "player creator visibility prop");
+requireContains(playerCreatorSource, "show={show}", "player creator shared Forge visibility routing");
+requireContains(forgeWrapperSource, ".player-character-forge-host .unified-player-character-forge .npc-forge-backdrop{position:static!important", "embedded-only Forge static backdrop scope");
+requireContains(forgeWrapperSource, ".player-character-forge-host .unified-player-character-forge .npc-forge-modal-v2{width:100%!important", "embedded-only Forge width scope");
 
 for (const token of [
   'from("players")',

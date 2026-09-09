@@ -33,3 +33,10 @@ Because the persistent profile backdrop remains mounted while Character Forge is
 ## Protected boundaries
 
 No Supabase writes or migrations were made. No Class/subclass rules or persistence authority changed. No world-map, town/city-map, travel, route, crafting, inventory, merchant, tactical, or encounter behavior was touched.
+## Portal host compatibility correction
+
+Video review immediately after the viewport portal change exposed two compatibility assumptions that were still tied to the old embedded DOM hierarchy. The legacy player-host CSS was matching the new portal wrapper and forcing its backdrop back to static flow plus a 100% embedded width, and the persistent creator stayed mounted even when its parent profile host was hidden. Because a React portal is no longer a DOM descendant of that hidden host, the Forge could remain visible behind the character profile or after navigation.
+
+The embedded-layout selectors are now scoped specifically through `.player-character-forge-host`, so the body-level portal uses the normal fixed application-window backdrop and centered modal sizing. The persistent creator also receives an explicit `show` signal from `PlayerCharacterProfilePanelUnified`, tied to `open && showCreator && !showLoading`. This hides/unmounts only the portal surface while leaving the creator component mounted, preserving the existing in-memory Forge draft state across panel close/reopen.
+
+No character rules, Class/subclass authority, Supabase data, world/town map behavior, crafting, travel, inventory, merchant, tactical, or encounter runtime is changed by this correction.

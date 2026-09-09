@@ -336,7 +336,7 @@ export default function PlayerCharacterProfilePanelUnified() {
         <div className={`persistent-player-character-forge ${showCreator && !showLoading ? "" : "is-hidden"}`} aria-hidden={!showCreator || showLoading}>
           <div className="p-3 player-character-forge-host">
             {message ? <div className="alert alert-secondary py-2">{message}</div> : null}
-            <PlayerCharacterCreator key={sessionUser.id} defaultName={character ? "" : playerName} onCreated={handleCharacterCreated} onCancel={cancelCreator} />
+            <PlayerCharacterCreator key={sessionUser.id} show={open && showCreator && !showLoading} defaultName={character ? "" : playerName} onCreated={handleCharacterCreated} onCancel={cancelCreator} />
           </div>
         </div>
 
