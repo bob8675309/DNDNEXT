@@ -10,13 +10,13 @@
 @media (min-width: 901px) {
   .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-fighter .npc-forge-class-guide__overview-book) {
     --npc-forge-class-cinematic-art: url("/media/classes/cinematic-fighter.webp");
-    --npc-forge-class-art-position: 70% 6%;
+    --npc-forge-class-art-position: 70% 0%;
   }
 
   .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-wizard .npc-forge-class-guide__overview-book) {
     --npc-forge-class-cinematic-art: url("/media/classes/cinematic-wizard.webp");
     --npc-forge-class-art-position: 68% 10%;
-    --npc-forge-class-reading-fade: linear-gradient(90deg, rgba(3, 5, 12, .94) 0%, rgba(3, 5, 12, .90) 20%, rgba(3, 5, 12, .82) 36%, rgba(3, 5, 12, .70) 50%, rgba(3, 5, 12, .50) 62%, rgba(3, 5, 12, .30) 72%, rgba(3, 5, 12, .12) 79%, rgba(3, 5, 12, 0) 86%);
+    --npc-forge-class-reading-fade: linear-gradient(90deg, rgba(3, 5, 12, .99) 0%, rgba(3, 5, 12, .98) 18%, rgba(3, 5, 12, .95) 32%, rgba(3, 5, 12, .88) 46%, rgba(3, 5, 12, .74) 58%, rgba(3, 5, 12, .52) 68%, rgba(3, 5, 12, .30) 76%, rgba(3, 5, 12, .12) 82%, rgba(3, 5, 12, 0) 88%);
   }
 
   .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-rogue .npc-forge-class-guide__overview-book) {
