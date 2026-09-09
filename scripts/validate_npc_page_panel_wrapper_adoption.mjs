@@ -182,6 +182,7 @@ requireContains(forgeSource, 'className="npc-forge-header"', "shared Forge drag 
 requireContains(forgeSource, 'import { createPortal } from "react-dom";', "player Forge viewport portal import");
 requireContains(forgeSource, 'const forgeWindow = <NpcForgeControllerProvider', "player Forge portal window assignment");
 requireContains(forgeSource, 'createPortal(<div className="unified-player-character-forge npc-forge-portal-root">{forgeWindow}</div>, document.body)', "player Forge body portal boundary");
+requireContains(forgeSource, ' .npc-forge-portal-root .npc-forge-backdrop{z-index:4900!important}'.trim(), "player Forge portal stack boundary");
 requireContains(forgeSource, 'if (!playerMode || typeof document === "undefined") return forgeWindow;', "NPC/SSR non-portal fallback");
 requireContains(portraitPickerSource, 'className="portrait-picker-modal"', "portrait picker window shell");
 requireContains(portraitPickerSource, 'className="portrait-picker-head"', "portrait picker drag handle");

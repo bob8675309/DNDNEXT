@@ -31,3 +31,6 @@ The Vercel build remains the final exact-head integration check.
 ## Protected boundaries
 
 No Supabase writes or migrations were made. No Class/subclass rules or persistence authority changed. No world-map, town/city-map, travel, route, crafting, inventory, merchant, tactical, or encounter behavior was touched.
+## Portal stacking boundary
+
+Because the persistent profile backdrop remains mounted while Character Forge is open and uses a higher application-layer stack than the legacy Forge backdrop, the body-level player Forge portal explicitly raises its own backdrop to z-index 4900. This keeps the portaled Forge above the inert profile host while leaving the global navbar and unrelated page systems unchanged.
