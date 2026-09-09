@@ -115,4 +115,8 @@ Browser review after the clean Wizard replacement established two additional pre
 - The shared desktop window controller no longer allows a resized Forge to be dragged almost completely outside the viewport. Drag and post-interaction reclamping now keep the full window inside the usable viewport bounds.
 - Double-click/double-tap header reset remains available, but it is recovery convenience rather than the only way to rescue a lost Forge window.
 
+Validated resize/readability commit:
+
+`b89af0a18172da666fd07928b569d3cd7405856c` — `Keep Forge window visible and darken Class reading zone`
+
 This correction is presentation/window-management only: no Class rules, subclass authority, Supabase schema/data, world-map, town/city-map, crafting, travel, encounter, or inventory behavior changed.
