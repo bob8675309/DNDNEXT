@@ -31,11 +31,16 @@ const APPROVED_CLASS_ARTWORK = Object.freeze({
  * catalogue portraits and must not be destructive crops of the hero asset.
  */
 const PUBLIC_CINEMATIC_CLASS_HERO_ARTWORK = Object.freeze({
-  fighter: "/media/classes/cinematic-fighter.webp",
-  wizard: "/media/classes/cinematic-wizard.webp",
-  rogue: "/media/classes/cinematic-rogue.webp",
+  artificer: "/media/classes/cinematic-artificer.webp",
+  barbarian: "/media/classes/cinematic-barbarian.webp",
+  bard: "/media/classes/cinematic-bard.webp",
   cleric: "/media/classes/cinematic-cleric.webp",
+  druid: "/media/classes/cinematic-druid.webp",
+  fighter: "/media/classes/cinematic-fighter.webp",
+  monk: "/media/classes/cinematic-monk.webp",
+  rogue: "/media/classes/cinematic-rogue.webp",
   ranger: "/media/classes/cinematic-ranger.webp",
+  wizard: "/media/classes/cinematic-wizard.webp",
 });
 const PUBLIC_CINEMATIC_CLASS_MENU_ARTWORK = Object.freeze({});
 
