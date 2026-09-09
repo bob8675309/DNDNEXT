@@ -128,3 +128,20 @@ Follow-up video review showed the previous full-visibility clamp was mathematica
 The player Forge now portals its window root to document.body while preserving the existing React providers and the unified-player-character-forge styling scope. NPC Forge keeps its existing non-portal path. This gives the shared drag/resize controller a true viewport coordinate system, so the existing viewport clamps and resize geometry finally operate against the same origin as getBoundingClientRect().
 
 This correction does not change class rules, subclass persistence, creation authority, Supabase data, world/town maps, crafting, travel, encounter, inventory, or merchant behavior.
+
+## 2026-09-08 final Wizard/Fighter cinematic polish
+
+Final browser review approved the Fighter treatment and established the last two composition requirements:
+
+- **Wizard:** the bright castle painting now fades much more decisively toward near-black on the left side of the Forge. The fade stays transparent and continuous with the same modal-owned image, remains very dark through the title/body-copy reading zone, and clears progressively toward the Wizard on the right. No blur, duplicate image, or opaque left panel is introduced.
+- **Fighter:** the cinematic focal position now favors the top of the source image (`70% 0%`) so more sky/banner/background remains above the Fighter and the horizontal Class-window divider no longer lands directly across his face. Fighter's accepted default reading fade is otherwise unchanged.
+
+Implementation commit:
+
+`8a5c186b0a77f0a2d1cf721d05a346e031db5e93` — `Polish Wizard fade and Fighter cinematic framing`
+
+Regression-guard commit:
+
+`b0c2559127c275bda9ffe30c99d38e4e8409822d` — `Guard final Wizard and Fighter cinematic polish`
+
+`scripts/validate_class_hero_framing.mjs` now explicitly locks the Fighter `70% 0%` focal position and the stronger Wizard near-black fade/clear points. This remains a presentation-only correction: no Class/subclass rules, Supabase data, map/town behavior, crafting, travel, encounter, inventory, merchant, or tactical runtime changed.
