@@ -3,8 +3,8 @@
 
    Browser review established that the cinematic painting belongs to the Character Forge window,
    not the Class body or nested guide. The modal therefore owns one crisp image from border to
-   border. Readability comes from a light transparent left-side fade rather than a blurred or
-   separately cropped panel, so the castle/environment stays visibly continuous behind the copy.
+   border. Readability comes from a transparent left-side fade rather than a blurred or separately
+   cropped panel, so the castle/environment stays visibly continuous behind the copy.
 */
 
 @media (min-width: 901px) {
@@ -16,6 +16,7 @@
   .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-wizard .npc-forge-class-guide__overview-book) {
     --npc-forge-class-cinematic-art: url("/media/classes/cinematic-wizard.webp");
     --npc-forge-class-art-position: 68% 10%;
+    --npc-forge-class-reading-fade: linear-gradient(90deg, rgba(3, 5, 12, .94) 0%, rgba(3, 5, 12, .90) 20%, rgba(3, 5, 12, .82) 36%, rgba(3, 5, 12, .70) 50%, rgba(3, 5, 12, .50) 62%, rgba(3, 5, 12, .30) 72%, rgba(3, 5, 12, .12) 79%, rgba(3, 5, 12, 0) 86%);
   }
 
   .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-rogue .npc-forge-class-guide__overview-book) {
@@ -30,8 +31,8 @@
     --npc-forge-class-cinematic-art: url("/media/classes/cinematic-ranger.webp");
   }
 
-  /* One continuous, sharp Forge-border image. The readability veil ends around the middle of the
-     canvas so architecture and environmental detail stay crisp behind the Class content. */
+  /* One continuous, sharp Forge-border image. The default veil preserves the approved Fighter
+     balance; brighter paintings such as Wizard can supply a stronger class-specific reading fade. */
   .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) {
     position: relative !important;
     isolation: isolate;
@@ -48,7 +49,7 @@
     pointer-events: none;
     filter: none !important;
     background:
-      linear-gradient(90deg, rgba(3, 5, 12, .80) 0%, rgba(3, 5, 12, .72) 22%, rgba(3, 5, 12, .58) 38%, rgba(3, 5, 12, .40) 52%, rgba(3, 5, 12, .24) 63%, rgba(3, 5, 12, .10) 72%, rgba(3, 5, 12, 0) 80%),
+      var(--npc-forge-class-reading-fade, linear-gradient(90deg, rgba(3, 5, 12, .80) 0%, rgba(3, 5, 12, .72) 22%, rgba(3, 5, 12, .58) 38%, rgba(3, 5, 12, .40) 52%, rgba(3, 5, 12, .24) 63%, rgba(3, 5, 12, .10) 72%, rgba(3, 5, 12, 0) 80%)),
       linear-gradient(0deg, rgba(3, 5, 11, .20) 0%, rgba(3, 5, 11, 0) 24%),
       var(--npc-forge-class-cinematic-art) var(--npc-forge-class-art-position, center center) / cover no-repeat;
   }
