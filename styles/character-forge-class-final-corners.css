@@ -8,9 +8,39 @@
 */
 
 @media (min-width: 901px) {
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__overview-book) {
+    --npc-forge-class-cinematic-art: url("/media/classes/cinematic-artificer.webp");
+    --npc-forge-class-art-position: 70% center;
+  }
+
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-barbarian .npc-forge-class-guide__overview-book) {
+    --npc-forge-class-cinematic-art: url("/media/classes/cinematic-barbarian.webp");
+    --npc-forge-class-art-position: 70% center;
+  }
+
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-bard .npc-forge-class-guide__overview-book) {
+    --npc-forge-class-cinematic-art: url("/media/classes/cinematic-bard.webp");
+    --npc-forge-class-art-position: 72% center;
+  }
+
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-cleric .npc-forge-class-guide__overview-book) {
+    --npc-forge-class-cinematic-art: url("/media/classes/cinematic-cleric.webp");
+    --npc-forge-class-art-position: 70% center;
+  }
+
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-druid .npc-forge-class-guide__overview-book) {
+    --npc-forge-class-cinematic-art: url("/media/classes/cinematic-druid.webp");
+    --npc-forge-class-art-position: 72% center;
+  }
+
   .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-fighter .npc-forge-class-guide__overview-book) {
     --npc-forge-class-cinematic-art: url("/media/classes/cinematic-fighter.webp");
-    --npc-forge-class-art-position: 70% 42px;
+    --npc-forge-class-art-position: 70% center;
+  }
+
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-monk .npc-forge-class-guide__overview-book) {
+    --npc-forge-class-cinematic-art: url("/media/classes/cinematic-monk.webp");
+    --npc-forge-class-art-position: 72% center;
   }
 
   .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-wizard .npc-forge-class-guide__overview-book) {
@@ -21,10 +51,7 @@
 
   .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-rogue .npc-forge-class-guide__overview-book) {
     --npc-forge-class-cinematic-art: url("/media/classes/cinematic-rogue.webp");
-  }
-
-  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-cleric .npc-forge-class-guide__overview-book) {
-    --npc-forge-class-cinematic-art: url("/media/classes/cinematic-cleric.webp");
+    --npc-forge-class-art-position: 72% center;
   }
 
   .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-ranger .npc-forge-class-guide__overview-book) {
