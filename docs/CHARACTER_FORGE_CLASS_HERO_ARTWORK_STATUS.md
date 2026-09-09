@@ -1,170 +1,129 @@
 # Character Forge Class Hero Artwork Status
 
-Status date: 2026-09-08
+Status date: 2026-09-09
 
-This is the focused handoff/status note for Character Forge Class hero artwork presentation on PR #177 (`agent/realistic-dice-core`).
+This is the focused handoff/status note for Character Forge Class hero artwork presentation on PR #177 (`agent/realistic-dice-core`). Current source, CI, browser behavior, and Supabase remain authoritative over older screenshots or superseded notes.
 
-## Browser/video finding
+## Current architecture
 
-The 2026-09-05 browser recording showed that the large right-side Class hero/background paintings were badly cropped for the normal/core classes. The problem was presentation CSS rather than missing class data or a Supabase issue.
-
-The Class guide renders its hero through the centralized resolver:
+The Class guide keeps one centralized artwork authority:
 
 `NpcForgeClassGuide.js -> classHeroArtworkFor(selectedClass.class_key) -> utils/classes/classArtwork.js`
 
-Most normal/core Class assets under `public/media/classes/` are square catalogue-style paintings. The previous hero rule forced every image through:
+Purpose-built cinematic heroes are promoted through `PUBLIC_CINEMATIC_CLASS_HERO_ARTWORK`. Catalogue/menu art remains a separate concern through `classMenuArtworkFor`; cinematic backgrounds must not be destructively reused as menu thumbnails merely because they exist.
 
-- `width: 100%` / `height: 100%`;
-- `object-fit: cover`;
-- a vertical focal crop;
-- an additional `transform: scale(1.12)` zoom.
-
-That combination is appropriate only for purpose-built wide hero artwork. On square paintings it removes a large part of the original composition and makes characters/backgrounds appear improperly zoomed and cropped.
-
-## 2026-09-05 framing correction
-
-A dedicated final cascade layer now lives at:
-
-`styles/character-forge-class-hero-framing.css`
-
-It intentionally distinguishes two artwork classes:
-
-### Existing square/portrait-backed Class paintings
-
-For normal/core classes that still use their existing square paintings:
-
-- use `object-fit: contain`;
-- align the painting to the right side of the hero art rail;
-- remove the extra transform zoom;
-- let the existing dark hero background/gradient fill unused horizontal space.
-
-This preserves the complete painting rather than destructively cropping it into a wide rectangle.
-
-### Purpose-built cinematic Class heroes
-
-Artificer and Barbarian already have dedicated generated cinematic hero assets through `utils/classes/classArtwork.js`. Those two retain `object-fit: cover`, but the redundant post-resolver scale transform is removed.
-
-This boundary lets the current catalogue look correct immediately without pretending every Class already owns a custom wide hero painting.
-
-## 2026-09-08 Wizard browser correction
-
-Browser comparison against the accepted Class mockup showed two remaining presentation defects after the artwork first reached the Character Forge border:
-
-1. the left/middle of Wizard's cinematic background read like a blurred or separately processed panel instead of one continuous painting;
-2. Wizard subclass thumbnails were being letterboxed/cropped from artwork that did not match the actual selector viewport.
-
-The final Wizard correction keeps the **Character Forge modal** as the single cinematic-image containing block, but replaces the Wizard image with a crisp 1600×900 composition designed around the real desktop Forge proportions. The castle/environment remains detailed through the left and center of the image while the Wizard stays on the right. CSS now uses only a restrained transparent readability fade that clears by roughly the middle of the canvas; no blur or second nested Class image is allowed.
-
-The final presentation layer remains:
+The Character Forge modal owns the cinematic painting. The Class body and nested guide stay transparent and do not repaint, blur, or independently crop a second copy. The final presentation layer is:
 
 `styles/character-forge-class-final-corners.css`
 
-It now explicitly suppresses `backdrop-filter`/blur behavior on the cinematic Class body/copy surfaces, keeps the body and nested guide transparent, and leaves the single modal-owned image visible behind the Class copy, subclass selector, and progression table.
+Desktop cinematic heroes use one sharp `cover` background across the Forge, with a transparent dark left-side readability fade and class-specific focal positions where needed. Wizard retains its stronger near-black fade because its moonlit castle is brighter behind the copy.
 
-Wizard's 18 canonical subclass presentation assets were also replaced with binary-distinct wide-format WebPs authored for the real selector ratio. They are 456×240 (1.9:1), matching the 76×40 display viewport, and therefore use `object-fit: cover` rather than the previous `contain` workaround. Canonical subclass identity, source, eligibility, selection, persistence, and progression remain owned by the existing Class model/context and Supabase-backed catalogue; only presentation artwork changed.
+## Approved public cinematic heroes
 
-Validated runtime commit for this browser correction:
+The following public heroes are now active through the centralized resolver:
 
-`d879a51378618453c3ee7205c6dfe2322f3e1e27` — `Refine Wizard cinematic and subclass artwork`
+- Artificer — `public/media/classes/cinematic-artificer.webp`
+- Barbarian — `public/media/classes/cinematic-barbarian.webp`
+- Bard — `public/media/classes/cinematic-bard.webp`
+- Cleric — `public/media/classes/cinematic-cleric.webp`
+- Druid — `public/media/classes/cinematic-druid.webp`
+- Fighter — `public/media/classes/cinematic-fighter.webp`
+- Monk — `public/media/classes/cinematic-monk.webp`
+- Ranger — `public/media/classes/cinematic-ranger.webp`
+- Rogue — `public/media/classes/cinematic-rogue.webp`
+- Wizard — `public/media/classes/cinematic-wizard.webp`
 
-The guarded materializer verified the Wizard hero as WebP 1600×900, all 18 Wizard subclass WebPs as 456×240, binary uniqueness across all 18 subclass assets, the exact bounded changed-file list, `git diff --check`, the Class browser suite, Class hero framing, subclass browser, Artificer lock, final browser correction, Species/Class review, and Source Magic Routing before pushing the commit.
+The 2026-09-09 promoted batch was exported as WebP at 1600x900 and transferred through the established Dropbox/GitHub Actions binary bridge with checksum, MIME, dimension, exact-diff, and focused Class validation before publication.
 
-## Future Class artwork standard
+### 2026-09-09 promoted diversity batch
 
-When a new Class hero is explicitly generated/approved:
+The newest approved compositions deliberately avoid presenting every Class as the same human fantasy hero. The promoted set includes visibly different character concepts, including:
 
-1. Create a hero composition intended for the wide Class header rather than stretching a menu portrait.
-2. Keep the character readable beside the left-side class title/tagline/fact content.
-3. Vary pose, environment, and eyeline across classes.
-4. Use a realistic fantasy direction consistent with the accepted Character Forge Species artwork unless Paul requests a different visual language.
-5. Preserve a separate menu/catalogue portrait when the wide hero does not crop cleanly into the left catalogue row.
-6. Add the hero through `CINEMATIC_CLASS_HERO_ARTWORK` and the menu art through `CINEMATIC_CLASS_MENU_ARTWORK` rather than bypassing the resolver in page code.
-7. Only switch a Class from the safe contained legacy-painting path to cinematic cover behavior after a purpose-built wide hero has been reviewed.
-8. For subclass selector artwork, author directly to the selector's wide viewport ratio instead of relying on `contain`, portrait crops, or CSS transforms to rescue mismatched source art.
+- a gnome Artificer in a clockwork/arcane forge;
+- a Dragonborn Bard in a court/feast setting;
+- a dwarven Cleric in a monumental cathedral;
+- a Firbolg Druid in an ancient moonlit forest;
+- a Tiefling Rogue above a gothic city;
+- a distinct martial Monk composition;
+- a storm-bound Barbarian composition;
+- a completely reworked Fighter composition using sword and shield rather than repeating the Barbarian's stance/eyeline.
+
+These are presentation choices only. They do not imply Species restrictions, Class defaults, or rules changes.
+
+## Fighter final composition
+
+The earlier Fighter asset placed the head too close to the horizontal Class divider. A temporary CSS-only `70% 42px` offset improved the old source but was not the desired final solution.
+
+That workaround is now superseded by the newly approved Fighter painting. The new composition deliberately places more fortress/sky/background above the subject, uses a different pose and eyeline from Barbarian, and fixes the previous weapon/hand composition issue. Fighter now uses the normal cinematic focal contract:
+
+`--npc-forge-class-art-position: 70% center`
+
+Do not restore the obsolete `70% 42px` compensation unless the source artwork itself is reverted.
+
+## Wizard accepted state
+
+Wizard is the reference for bright cinematic scenes:
+
+- one continuous 1600x900 image reaches the Forge border;
+- the left side fades strongly toward near-black for title/body readability;
+- the fade is transparent, not a separate black panel;
+- no blur or `backdrop-filter` is used on the cinematic painting;
+- the right-side Wizard remains bright and detailed;
+- Wizard's 18 subclass selector images remain wide 456x240 assets filling the 76x40 selector viewport with `object-fit: cover`.
+
+## Artwork composition standard going forward
+
+For every additional Class hero:
+
+1. Author for the wide Forge cinematic ratio, not a square catalogue portrait.
+2. Reserve the left side for readable Class copy and controls; dark environmental detail is preferred over a blank opaque panel.
+3. Keep the main subject on the right with enough background above the head that the Class divider cannot cross the face during ordinary desktop resizing.
+4. Vary pose, eyeline, body type, Species, environment, lighting, and action across Classes. Avoid a row of heroes all staring toward the same distant point.
+5. Check hands, weapons, instruments, spell effects, and held props for obvious generation defects before promotion.
+6. Keep menu/catalogue art separate when a cinematic crop would read poorly at thumbnail size.
+7. Promote a hero through `PUBLIC_CINEMATIC_CLASS_HERO_ARTWORK`; do not bypass the resolver from page/component code.
+8. Do not commit failed, UI-contaminated, placeholder, or unreviewed generations merely to complete a batch.
 
 ## Regression guard
 
-`scripts/validate_class_hero_framing.mjs` protects this behavior and is called by the existing **Validate Class browser polish** workflow. It checks that:
+`scripts/validate_class_hero_framing.mjs` is called by the existing Class browser validation workflow and now protects the current batch. It checks that:
 
-- the correction stylesheet is loaded after the older cinematic correction layer;
-- normal Class paintings use contain/no extra zoom;
-- Artificer and Barbarian retain cinematic cover behavior;
-- the centralized Class artwork resolver remains authoritative;
-- the modal owns one crisp public cinematic image from Forge border to Forge border;
-- the Class body/nested hero do not repaint or blur a second cinematic layer;
-- Wizard subclass artwork fills the native wide selector slot instead of being letterboxed;
-- the obsolete Bugbear Species crop override does not return;
-- protected map/town behavior is not referenced by this presentation patch.
+- the final Class cinematic stylesheet remains loaded last among the Class framing layers;
+- the modal owns the single public cinematic image;
+- all promoted public cinematic paths exist and remain wired through the centralized resolver;
+- the newly approved Artificer, Barbarian, Bard, Cleric, Druid, Fighter, Monk, and Rogue paths remain present;
+- Fighter uses the new composition's normal center focal treatment rather than the superseded pixel offset;
+- Wizard keeps its stronger left readability fade;
+- nested duplicate/blur layers remain suppressed;
+- Wizard subclass artwork keeps its native wide selector treatment;
+- protected map/town behavior is not referenced by the Class artwork patch.
 
-## Protected boundaries
+## 2026-09-09 publication chain
 
-This Class artwork correction is presentation-only.
+Binary artwork materialization:
 
-- No class selection/persistence authority changed.
-- No subclass/progression mechanics changed.
-- No Supabase write or migration is required.
-- No world-map or town/city-map code is part of the patch.
-- No crafting, travel, inventory, merchant, tactical, or character-sheet runtime behavior is part of the patch.
+`eaf88bcf9670674a262b58b219e47c78655516ef` — `Install approved Class cinematic artwork batch`
 
-## 2026-09-08 resize/readability correction
+Resolver promotion:
 
-Browser review after the clean Wizard replacement established two additional presentation requirements:
+`f3447baafd673d9ef72a9a7cc4c1bb9d0dda9246` — `Promote approved Class cinematic hero batch`
 
-- The modal-owned cinematic remains one sharp image, but the left reading zone now carries a stronger transparent black/navy scrim. It darkens the Class title/tagline area without blur or a second cropped image, then clears before the right-side hero subject.
-- Fighter and Wizard provide explicit cinematic focal positions so resizing favors the character's head and upper body instead of center-cropping the face out of the frame.
-- The shared desktop window controller no longer allows a resized Forge to be dragged almost completely outside the viewport. Drag and post-interaction reclamping now keep the full window inside the usable viewport bounds.
-- Double-click/double-tap header reset remains available, but it is recovery convenience rather than the only way to rescue a lost Forge window.
+Cinematic alignment/framing:
 
-Validated resize/readability commit:
-
-`b89af0a18172da666fd07928b569d3cd7405856c` — `Keep Forge window visible and darken Class reading zone`
-
-This correction is presentation/window-management only: no Class rules, subclass authority, Supabase schema/data, world-map, town/city-map, crafting, travel, encounter, or inventory behavior changed.
-
-## 2026-09-08 viewport portal correction
-
-Follow-up video review showed the previous full-visibility clamp was mathematically correct but operating in the wrong coordinate space: the player Forge still lived inside the centered persistent profile host, so its fixed-position left/top values could be resolved against an offset containing block. The result was the exact failure shown in the recording — the Forge could jump hundreds of pixels right/down on first drag and still be moved partly or fully outside the visible browser area.
-
-The player Forge now portals its window root to document.body while preserving the existing React providers and the unified-player-character-forge styling scope. NPC Forge keeps its existing non-portal path. This gives the shared drag/resize controller a true viewport coordinate system, so the existing viewport clamps and resize geometry finally operate against the same origin as getBoundingClientRect().
-
-This correction does not change class rules, subclass persistence, creation authority, Supabase data, world/town maps, crafting, travel, encounter, inventory, or merchant behavior.
-
-## 2026-09-08 final Wizard/Fighter cinematic polish
-
-Final browser review approved the Fighter treatment and established the last two composition requirements:
-
-- **Wizard:** the bright castle painting now fades much more decisively toward near-black on the left side of the Forge. The fade stays transparent and continuous with the same modal-owned image, remains very dark through the title/body-copy reading zone, and clears progressively toward the Wizard on the right. No blur, duplicate image, or opaque left panel is introduced.
-- **Fighter:** the initial top-source focal correction was not enough at the real browser aspect ratio; the divider still crossed too close to the Fighter's face.
-
-Implementation commit:
-
-`8a5c186b0a77f0a2d1cf721d05a346e031db5e93` — `Polish Wizard fade and Fighter cinematic framing`
-
-Regression-guard commit:
-
-`b0c2559127c275bda9ffe30c99d38e4e8409822d` — `Guard final Wizard and Fighter cinematic polish`
-
-## 2026-09-09 Fighter lower framing correction and next cinematic batch direction
-
-A further browser screenshot at the accepted desktop size showed the Fighter still sat too high even with the `70% 0%` focal rule. The character has therefore been shifted downward by using a pixel-based vertical focal offset (`70% 42px`) on the modal-owned cinematic layer. This intentionally leaves more of the upper composition as sky/banner/background and moves the face away from the horizontal Class-view divider, matching the approved reference more closely. Wizard remains unchanged and approved.
-
-Implementation commit:
-
-`ac27681d3673f05d3af88e329c4f30471134721a` — `Lower Fighter cinematic subject below Class divider`
+`b8d3405540ff8847f4c3b2d79589544762c6edcf` — `Align approved Class cinematic artwork batch`
 
 Regression guard:
 
-`9ef9883abf02c6685488cc396816cc8370b80c39` — `Guard lowered Fighter cinematic framing`
+`8ebe3cfe905b2e6caff092cafcd5d9a24e8a6c47` — `Guard approved Class cinematic artwork batch`
 
-The next cinematic Class-art batch should use the accepted Wizard/Fighter composition rules but deliberately vary character species instead of defaulting to humans. Initial target assignments are:
+## Protected boundaries
 
-- **Bard:** Satyr performer / storyteller composition.
-- **Druid:** Firbolg primal/nature composition.
-- **Monk:** Tabaxi disciplined martial-arts composition.
-- **Paladin:** Dragonborn holy-warrior composition.
-- **Sorcerer:** Aasimar innate-magic composition.
-- **Warlock:** Drow pact-magic composition.
+This work is presentation-only.
 
-These are artwork/presentation choices only; they do not alter canonical Class identity, playable Species availability, character creation defaults, or Supabase rules. Each hero still requires standalone binary review before promotion into `PUBLIC_CINEMATIC_CLASS_HERO_ARTWORK`. Failed or UI-contaminated generations must not be committed merely to advance the batch.
-
-`scripts/validate_class_hero_framing.mjs` now explicitly locks the Fighter `70% 42px` offset and the stronger Wizard near-black fade/clear points. This remains a presentation-only correction: no Class/subclass rules, Supabase data, map/town behavior, crafting, travel, encounter, inventory, merchant, or tactical runtime changed.
+- No Class selection or persistence authority changed.
+- No subclass/progression mechanics changed.
+- No Supabase data write or migration is required.
+- No world-map code was touched.
+- No town/city-map behavior was touched.
+- No crafting, travel, encounter, inventory, merchant, tactical, or character-sheet runtime behavior is part of this artwork batch.
+- Existing Player Forge window portal/drag/resize behavior remains separate from this artwork work.
