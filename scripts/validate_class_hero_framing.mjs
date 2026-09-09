@@ -57,9 +57,18 @@ assert(framing.includes(`npc-forge-class-guide__overview-book:has(.npc-forge-cla
 for (const token of [
   ".npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class",
   "--npc-forge-class-cinematic-art: url(\"/media/classes/cinematic-wizard.webp\")",
+  "--npc-forge-class-cinematic-art: url(\"/media/classes/cinematic-fighter.webp\")",
+  "--npc-forge-class-cinematic-art: url(\"/media/classes/cinematic-artificer.webp\")",
+  "--npc-forge-class-cinematic-art: url(\"/media/classes/cinematic-barbarian.webp\")",
+  "--npc-forge-class-cinematic-art: url(\"/media/classes/cinematic-bard.webp\")",
+  "--npc-forge-class-cinematic-art: url(\"/media/classes/cinematic-cleric.webp\")",
+  "--npc-forge-class-cinematic-art: url(\"/media/classes/cinematic-druid.webp\")",
+  "--npc-forge-class-cinematic-art: url(\"/media/classes/cinematic-monk.webp\")",
+  "--npc-forge-class-cinematic-art: url(\"/media/classes/cinematic-rogue.webp\")",
   ")::before {",
   "var(--npc-forge-class-cinematic-art) var(--npc-forge-class-art-position, center center) / cover no-repeat",
-  "--npc-forge-class-art-position: 70% 42px",
+  "--npc-forge-class-art-position: 70% center",
+  "--npc-forge-class-art-position: 72% center",
   "--npc-forge-class-art-position: 68% 10%",
   "--npc-forge-class-reading-fade: linear-gradient",
   "text-shadow: 0 1px 3px rgba(0, 0, 0, .92), 0 0 14px rgba(0, 0, 0, .46)",
@@ -97,7 +106,24 @@ for (const token of [
   "classMenuArtworkFor",
 ]) assert(artwork.includes(token), `Class artwork authority is missing ${token}`);
 
-assert(artwork.includes("artificer: artificerHero") && artwork.includes("barbarian: barbarianHero"), "Artificer/Barbarian generated cinematic hero mappings must remain intact.");
+for (const [classKey, asset] of Object.entries({
+  artificer: "cinematic-artificer.webp",
+  barbarian: "cinematic-barbarian.webp",
+  bard: "cinematic-bard.webp",
+  cleric: "cinematic-cleric.webp",
+  druid: "cinematic-druid.webp",
+  fighter: "cinematic-fighter.webp",
+  monk: "cinematic-monk.webp",
+  rogue: "cinematic-rogue.webp",
+  ranger: "cinematic-ranger.webp",
+  wizard: "cinematic-wizard.webp",
+})) {
+  const mapping = `${classKey}: \"/media/classes/${asset}\"`;
+  assert(artwork.includes(mapping), `Public cinematic Class hero mapping is missing ${mapping}`);
+  assert(fs.existsSync(path.join(root, "public/media/classes", asset)), `Public cinematic Class hero asset is missing ${asset}`);
+}
+
+assert(artwork.includes("artificer: artificerHero") && artwork.includes("barbarian: barbarianHero"), "Artificer/Barbarian generated cinematic hero fallbacks must remain intact beneath public artwork.");
 assert(artwork.includes("artificer: artificerMenu") && artwork.includes("barbarian: barbarianMenu"), "Artificer/Barbarian menu-art mappings must remain intact.");
 assert(!speciesCorrection.includes('img[alt^="Bugbear species reference"]'), "Obsolete Bugbear crop override would stack on top of the newly approved Bugbear composition.");
 
@@ -106,4 +132,4 @@ for (const token of ["mappageclient", "map_routes", "advance_all_characters", "t
   assert(!protectedText.includes(token), `Class hero framing patch unexpectedly references protected map/town behavior: ${token}`);
 }
 
-console.log("Class hero framing validation passed: one crisp modal-owned cinematic image reaches the Forge border with a strong transparent Wizard reading fade, Fighter lowered below the Class divider, resize-safe focal positioning, Wizard subclass art filling its native wide slot, nested duplicate/blur layers suppressed, and protected boundaries untouched.");
+console.log("Class hero framing validation passed: approved public Class cinematic heroes use one crisp modal-owned image with dark left reading fades, resize-safe focal positioning, Wizard subclass art fills its native wide slot, nested duplicate/blur layers stay suppressed, and protected boundaries remain untouched.");
