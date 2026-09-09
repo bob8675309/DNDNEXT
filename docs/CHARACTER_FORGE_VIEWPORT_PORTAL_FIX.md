@@ -22,7 +22,11 @@ Validated stacking follow-up:
 
 `b67ff8a31eb646c7ed82eac5268bd77d8b69cd8e` — `Keep portalled Forge above profile host`
 
-The guarded materializers required exact starting heads, exact bounded changed-file lists, and `git diff --check`. They ran the profile/window adoption validator, Character Forge resilience validator, Class hero framing validator, and Player Forge source-magic routing validator before either implementation commit was pushed.
+Validated host-compatibility correction:
+
+`57c669ea92a44ec289b5ffe796cfb3be812fb95b` — `Restore Forge portal host lifecycle`
+
+The guarded materializers required exact starting heads, exact bounded changed-file lists, and `git diff --check`. They ran the profile/window adoption validator, Character Forge resilience validator, Class hero framing validator, and Player Forge source-magic routing validator before each implementation commit was pushed.
 
 The Vercel exact-head build and normal PR validation suite remain the final integration checks.
 
@@ -33,6 +37,7 @@ Because the persistent profile backdrop remains mounted while Character Forge is
 ## Protected boundaries
 
 No Supabase writes or migrations were made. No Class/subclass rules or persistence authority changed. No world-map, town/city-map, travel, route, crafting, inventory, merchant, tactical, or encounter behavior was touched.
+
 ## Portal host compatibility correction
 
 Video review immediately after the viewport portal change exposed two compatibility assumptions that were still tied to the old embedded DOM hierarchy. The legacy player-host CSS was matching the new portal wrapper and forcing its backdrop back to static flow plus a 100% embedded width, and the persistent creator stayed mounted even when its parent profile host was hidden. Because a React portal is no longer a DOM descendant of that hidden host, the Forge could remain visible behind the character profile or after navigation.
