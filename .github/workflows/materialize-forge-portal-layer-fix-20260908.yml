@@ -1,0 +1,59 @@
+name: Materialize Forge portal stacking fix 20260908
+
+on:
+  push:
+    branches:
+      - agent/forge-portal-layer-fix-20260908
+    paths:
+      - scripts/materialize_forge_portal_layer_fix_20260908.mjs
+      - .github/workflows/materialize-forge-portal-layer-fix-20260908.yml
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out bounded patch source
+        uses: actions/checkout@v4
+        with:
+          ref: agent/forge-portal-layer-fix-20260908
+          fetch-depth: 0
+
+      - name: Stage patch script outside worktree
+        run: cp scripts/materialize_forge_portal_layer_fix_20260908.mjs /tmp/materialize_forge_portal_layer_fix_20260908.mjs
+
+      - name: Check out exact working branch
+        run: git checkout agent/realistic-dice-core
+
+      - name: Guard exact target head
+        run: |
+          test "$(git rev-parse HEAD)" = "7989dd30111259759ac916273ec95fb625d84208"
+
+      - name: Apply bounded stacking patch and verify scope
+        run: |
+          node /tmp/materialize_forge_portal_layer_fix_20260908.mjs
+          git diff --check
+          printf '%s\n' \
+            components/NewNpcModalV3Refined.js \
+            docs/CHARACTER_FORGE_VIEWPORT_PORTAL_FIX.md \
+            scripts/validate_npc_page_panel_wrapper_adoption.mjs > /tmp/expected-files
+          git diff --name-only | sort > /tmp/actual-files
+          sort -o /tmp/expected-files /tmp/expected-files
+          diff -u /tmp/expected-files /tmp/actual-files
+
+      - name: Run focused Forge portal regressions
+        run: |
+          node scripts/validate_npc_page_panel_wrapper_adoption.mjs
+          node scripts/validate_character_forge_resilience.mjs
+          node scripts/validate_class_hero_framing.mjs
+          node scripts/validate_player_forge_source_magic_routing.mjs
+
+      - name: Commit and push exact validated patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add components/NewNpcModalV3Refined.js scripts/validate_npc_page_panel_wrapper_adoption.mjs docs/CHARACTER_FORGE_VIEWPORT_PORTAL_FIX.md
+          git commit -m "Keep portalled Forge above profile host"
+          git push origin HEAD:agent/realistic-dice-core
