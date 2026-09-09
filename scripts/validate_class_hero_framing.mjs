@@ -64,11 +64,19 @@ for (const token of [
   "--npc-forge-class-cinematic-art: url(\"/media/classes/cinematic-cleric.webp\")",
   "--npc-forge-class-cinematic-art: url(\"/media/classes/cinematic-druid.webp\")",
   "--npc-forge-class-cinematic-art: url(\"/media/classes/cinematic-monk.webp\")",
+  "--npc-forge-class-cinematic-art: url(\"/media/classes/cinematic-paladin.webp\")",
+  "--npc-forge-class-cinematic-art: url(\"/media/classes/cinematic-ranger.webp\")",
   "--npc-forge-class-cinematic-art: url(\"/media/classes/cinematic-rogue.webp\")",
+  "--npc-forge-class-cinematic-art: url(\"/media/classes/cinematic-sorcerer.webp\")",
+  "--npc-forge-class-cinematic-art: url(\"/media/classes/cinematic-warlock.webp\")",
+  "--npc-forge-class-cinematic-art: url(\"/media/classes/cinematic-mystic.webp\")",
+  "--npc-forge-class-cinematic-art: url(\"/media/classes/cinematic-monster-hunter.webp\")",
+  "--npc-forge-class-cinematic-art: url(\"/media/classes/cinematic-sidekick.webp\")",
   ")::before {",
   "var(--npc-forge-class-cinematic-art) var(--npc-forge-class-art-position, center center) / cover no-repeat",
   "--npc-forge-class-art-position: 70% center",
   "--npc-forge-class-art-position: 72% center",
+  "--npc-forge-class-art-position: 74% center",
   "--npc-forge-class-art-position: 68% 10%",
   "--npc-forge-class-reading-fade: linear-gradient",
   "text-shadow: 0 1px 3px rgba(0, 0, 0, .92), 0 0 14px rgba(0, 0, 0, .46)",
@@ -83,6 +91,20 @@ for (const token of [
   "object-fit: cover !important",
   "backdrop-filter: none !important",
 ]) assert(finalCorners.includes(token), `Final Class Forge-border cinematic contract is missing ${token}`);
+
+for (const theme of [
+  "paladin",
+  "ranger",
+  "sorcerer",
+  "warlock",
+  "mystic",
+  "monster-hunter",
+  "expert-sidekick",
+  "warrior-sidekick",
+  "spellcaster-sidekick",
+]) {
+  assert(finalCorners.includes(`is-class-${theme}`), `Remaining Class cinematic selector is missing is-class-${theme}`);
+}
 
 assert(finalCorners.includes("rgba(3, 5, 12, .80) 0%") && finalCorners.includes("rgba(3, 5, 12, .10) 72%") && finalCorners.includes("rgba(3, 5, 12, 0) 80%"), "Default Class cinematic fade must keep the left reading zone dark while clearing before the right-side subject.");
 assert(finalCorners.includes("rgba(3, 5, 12, .99) 0%") && finalCorners.includes("rgba(3, 5, 12, .52) 68%") && finalCorners.includes("rgba(3, 5, 12, 0) 88%"), "Wizard must keep its stronger near-black left reading fade while clearing before the hero subject.");
@@ -114,12 +136,24 @@ for (const [classKey, asset] of Object.entries({
   druid: "cinematic-druid.webp",
   fighter: "cinematic-fighter.webp",
   monk: "cinematic-monk.webp",
-  rogue: "cinematic-rogue.webp",
+  paladin: "cinematic-paladin.webp",
   ranger: "cinematic-ranger.webp",
+  rogue: "cinematic-rogue.webp",
+  sorcerer: "cinematic-sorcerer.webp",
+  warlock: "cinematic-warlock.webp",
   wizard: "cinematic-wizard.webp",
+  mystic: "cinematic-mystic.webp",
 })) {
   const mapping = `${classKey}: \"/media/classes/${asset}\"`;
   assert(artwork.includes(mapping), `Public cinematic Class hero mapping is missing ${mapping}`);
+  assert(fs.existsSync(path.join(root, "public/media/classes", asset)), `Public cinematic Class hero asset is missing ${asset}`);
+}
+
+assert(artwork.includes('"monster-hunter": "/media/classes/cinematic-monster-hunter.webp"'), "Monster Hunter must use the approved public cinematic hero.");
+for (const sidekickKey of ["expert-sidekick", "warrior-sidekick", "spellcaster-sidekick", "sidekick"]) {
+  assert(artwork.includes(`"${sidekickKey}": "/media/classes/cinematic-sidekick.webp"`) || artwork.includes(`${sidekickKey}: "/media/classes/cinematic-sidekick.webp"`), `Sidekick cinematic mapping is missing ${sidekickKey}.`);
+}
+for (const asset of ["cinematic-monster-hunter.webp", "cinematic-sidekick.webp"]) {
   assert(fs.existsSync(path.join(root, "public/media/classes", asset)), `Public cinematic Class hero asset is missing ${asset}`);
 }
 
@@ -132,4 +166,4 @@ for (const token of ["mappageclient", "map_routes", "advance_all_characters", "t
   assert(!protectedText.includes(token), `Class hero framing patch unexpectedly references protected map/town behavior: ${token}`);
 }
 
-console.log("Class hero framing validation passed: approved public Class cinematic heroes use one crisp modal-owned image with dark left reading fades, resize-safe focal positioning, Wizard subclass art fills its native wide slot, nested duplicate/blur layers stay suppressed, and protected boundaries remain untouched.");
+console.log("Class hero framing validation passed: approved public Class cinematic heroes use one crisp modal-owned image with dark left reading fades, resize-safe focal positioning, the remaining non-human/diverse Class batch is wired through the resolver, Wizard subclass art fills its native wide slot, nested duplicate/blur layers stay suppressed, and protected boundaries remain untouched.");
