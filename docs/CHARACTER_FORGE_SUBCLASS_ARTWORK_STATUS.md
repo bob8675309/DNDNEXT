@@ -1,6 +1,6 @@
 # Character Forge Subclass Artwork Status
 
-Status date: 2026-09-09
+Status date: 2026-09-10
 
 This is the focused handoff for the Character Forge subclass selector artwork rollout on PR #177 (`agent/realistic-dice-core`). Current source, exact-head CI, and browser behavior remain authoritative.
 
@@ -18,71 +18,107 @@ Wizard remains the established reference family with 18 distinct selector assets
 
 `public/media/subclasses/wizard/`
 
-Wizard artwork was not changed in this batch.
+Wizard artwork was not changed in these batches.
 
-## 2026-09-09 approved first rollout batch
+## 2026-09-09 first rollout batch
 
-Thirty approved 456x240 WebP assets were installed through the Dropbox -> guarded GitHub Actions binary bridge with ZIP SHA-256, per-file SHA-256, MIME, dimension, exact-head, exact-file-scope, and focused Class validation before publication.
+Thirty approved 456x240 WebP assets were installed for six selector concepts each across Fighter, Paladin, Ranger, Sorcerer, and Warlock. Naming aliases for reprints remain centralized in `utils/classes/subclassArtwork.js`.
 
-### Fighter
+## 2026-09-10 continuation batch
 
-- Arcane Archer
-- Banneret
-- Battle Master
-- Cavalier
-- Champion
-- Echo Knight
+Fifty-two additional reviewed selector assets plus the approved Warlock cinematic hero replacement were installed through the Dropbox -> guarded GitHub Actions binary bridge. The materializer verified archive SHA-256, per-file SHA-256, exact target head, exact changed-file scope including untracked binaries, WebP dimensions, and the focused Class regressions before publication.
 
-`Purple Dragon Knight (Banneret)` intentionally aliases the Banneret artwork until its own art is authored.
+### Artificer
 
-### Paladin
+- Alchemist
+- Armorer
+- Artillerist
+- Battle Smith
+- Cartographer
+- Reanimator
 
-- Ancients
-- Conquest
-- Crown
-- Devotion
-- Glory
-- Noble Genies
+### Barbarian
 
-### Ranger
+- Ancestral Guardian
+- Berserker
+- Giant
+- Totem Warrior
+- Wild Magic
+- Zealot
 
-- Beast Master
-- Drakewarden
-- Fey Wanderer
-- Gloom Stalker
-- Horizon Walker
-- Hunter
+### Bard
 
-### Sorcerer
+- Creation
+- Glamour
+- Lore
+- Swords
+- Valor
+- Whispers
 
-- Aberrant / Aberrant Mind
-- Clockwork / Clockwork Soul
-- Divine Soul
-- Draconic
+### Cleric
+
+- Knowledge
+- Life
+- Light
+- Tempest
+- Trickery
+- War
+
+### Druid
+
+- Land
+- Moon
+- Shepherd
+- Spores
+- Stars
+- Wildfire
+
+### Monk
+
+- Astral Self
+- Drunken Master
+- Elements
+- Kensei
+- Open Hand
 - Shadow
-- Wild / Wild Magic
 
-The paired 2014/2024 naming variants above intentionally share the same visual concept rather than duplicating identical art under two filenames.
+`Four Elements` intentionally aliases the `Elements` artwork where the legacy name is the player-facing option.
 
-### Warlock
+### Monster Hunter
 
-- Archfey
-- Celestial
-- Fiend
-- Great Old One
-- Hexblade
-- Undead
+- Carver
+- Devourer
+- Occultist
+- Trapper
 
-## Current hero-art note
+### Mystic
 
-The approved Ranger and Warlock cinematic hero replacements were already installed immediately before this subclass batch. Ranger keeps the same attractive Elf/ruined-valley criteria with substantially more headroom above the subject so the Class menu/divider cannot cut through her head. Warlock now uses a visually distinct non-human moonlit occult composition so it no longer reads as a near-duplicate of Sorcerer.
+- Avatar
+- Awakened
+- Immortal
+- Nomad
+- Soul Knife
+- Wu Jen
+
+### Rogue
+
+- Arcane Trickster
+- Assassin
+- Phantom
+- Soulknife
+- Swashbuckler
+- Thief
+
+## Warlock cinematic hero correction
+
+`public/media/classes/cinematic-warlock.webp` was replaced with the approved moonlit non-human occult composition that keeps the same visual direction while moving the face safely away from the Forge window/menu border.
 
 ## Regression guard
 
-`scripts/validate_class_subclass_browser.mjs` now protects the first rollout batch. It verifies that:
+`scripts/validate_class_subclass_browser.mjs` now protects all currently promoted selector families. It verifies that:
 
-- the dedicated files exist for all 30 promoted selector assets;
-- the centralized resolver contains the approved class/family mappings and naming aliases;
+- every promoted selector file exists and is non-empty;
+- the centralized resolver contains each approved class/family mapping and naming alias;
 - Wizard's existing one-to-one selector artwork remains intact;
 - missing future subclasses retain the safe class-menu fallback;
 - the selector remains presentation-only and does not acquire Supabase authority;
@@ -90,21 +126,29 @@ The approved Ranger and Warlock cinematic hero replacements were already install
 
 ## Remaining work
 
-This is intentionally a partial rollout, not a claim that every non-Wizard subclass is finished. Unpromoted subclasses continue to display the Class menu fallback until their reviewed artwork batch is created and installed. Continue the rollout in bounded reviewed batches rather than silently reusing unrelated subclass art.
+This remains a staged rollout. Subclasses not listed above continue to display the normal Class artwork fallback until their reviewed art is created and promoted. Sidekick classes do not currently have subclass catalogue authority in Supabase, so the generated sidekick concept sheet was not wired as subclass artwork.
 
-## Publication chain
+## 2026-09-10 publication chain
 
 Binary materialization:
 
-`0c08b5770371d5381a20351b32d45dd186d201df` — `Install approved subclass artwork batch`
+`fcb2015e287a00d5d83b479c859cad39a67aed38` — `Install approved subclass artwork continuation batch`
 
 Resolver promotion:
 
-`816e986fc7df378bc7d559070589998710ec123d` — `Wire approved subclass artwork batch`
+`07fd74c749a9e01b7a9377f94fcceec834b1b1be` — `Wire approved subclass artwork continuation batch`
 
 Regression guard:
 
-`3575a0331b06fa7868d21608c7981d856fb0a084` — `Guard approved subclass artwork batch`
+`9a7c0d8a35e1d72fb7853447e72016f518552ab3` — `Guard approved subclass artwork continuation batch`
+
+Dropbox transfer archive:
+
+`/DNDNext-Transfer/dndnext-subclass-art-batch-20260910.zip`
+
+Archive SHA-256:
+
+`e04ea88dc11e49ced6bcfbd417abc80d9204a00a95c07069c24ad18cfbb33677`
 
 ## Protected boundaries
 
