@@ -1,8 +1,8 @@
 # Character Forge Class Hero Artwork Status
 
-Status date: 2026-09-09
+Status date: 2026-09-10
 
-This is the focused handoff/status note for Character Forge Class hero artwork presentation on PR #177 (`agent/realistic-dice-core`). Current source, CI, browser behavior, and Supabase remain authoritative over older screenshots or superseded notes.
+This is the focused handoff/status note for Character Forge Class artwork presentation on PR #177 (`agent/realistic-dice-core`). Current source, exact-head CI, browser behavior, and Supabase remain authoritative over older screenshots or superseded notes.
 
 ## Current architecture
 
@@ -10,18 +10,23 @@ The Class guide keeps one centralized artwork authority:
 
 `NpcForgeClassGuide.js -> classHeroArtworkFor(selectedClass.class_key) -> utils/classes/classArtwork.js`
 
-Purpose-built cinematic heroes are promoted through `PUBLIC_CINEMATIC_CLASS_HERO_ARTWORK`. Catalogue/menu art remains a separate concern through `classMenuArtworkFor`; cinematic backgrounds must not be destructively reused as menu thumbnails merely because they exist.
+Class-list/catalogue thumbnails remain separately resolved through:
+
+`NpcForgeClassCatalog.js -> classMenuArtworkFor(classKey) -> utils/classes/classArtwork.js`
+
+Purpose-built cinematic heroes are promoted through `PUBLIC_CINEMATIC_CLASS_HERO_ARTWORK`. Dedicated Class-list thumbnails are promoted through `PUBLIC_CINEMATIC_CLASS_MENU_ARTWORK`. The two roles remain intentionally separate so a full-width cinematic is never destructively reused merely because it exists.
 
 The Character Forge modal owns the cinematic painting. The Class body and nested guide stay transparent and do not repaint, blur, or independently crop a second copy. The final presentation layer is:
 
 `styles/character-forge-class-final-corners.css`
 
-Desktop cinematic heroes use one sharp `cover` background across the Forge, with a transparent dark left-side readability fade and class-specific focal positions where needed. Wizard retains its stronger near-black fade because its moonlit castle is brighter behind the copy.
+Desktop cinematic heroes use one sharp `cover` background across the Forge, with a transparent dark left-side readability fade and class-specific focal positions where needed. Wizard retains its stronger near-black fade and remains the accepted reference composition.
 
 ## Approved public cinematic heroes
 
-The following public heroes are active through the centralized resolver:
+The centralized resolver now covers:
 
+- No Adventuring Class / Civilian — `public/media/classes/cinematic-civilian.webp`
 - Artificer — `public/media/classes/cinematic-artificer.webp`
 - Barbarian — `public/media/classes/cinematic-barbarian.webp`
 - Bard — `public/media/classes/cinematic-bard.webp`
@@ -43,71 +48,46 @@ The following public heroes are active through the centralized resolver:
 
 The generic `sidekick` presentation key also resolves to the shared Sidekick cinematic as a compatibility fallback.
 
-## 2026-09-09 diversity direction
+## 2026-09-10 Class-list thumbnail refresh
 
-Paul explicitly approved continuing the Class cinematic set while avoiding additional human heroes because the Class browser already contained enough human representation. The active cinematic roster therefore deliberately varies visible Species, silhouette, pose, environment, and eyeline.
+All visible Class-list entries now have purpose-built menu artwork under `public/media/classes/menu-*.webp`. These are 600x800 portrait assets, independently authored from the full-width cinematic compositions.
 
-Recent approved compositions include:
+The public menu resolver now covers Civilian, Artificer, Barbarian, Bard, Cleric, Druid, Fighter, Monk, Monster Hunter, Mystic, Paladin, Ranger, Rogue, Sorcerer, Warlock, Wizard, plus the shared Sidekick family.
 
-- a gnome Artificer in a clockwork/arcane forge;
-- a storm-bound Barbarian composition;
-- a Dragonborn Bard in a court/feast setting;
-- a dwarven Cleric in a monumental cathedral;
-- a Firbolg Druid in an ancient moonlit forest;
-- a completely reworked Fighter using sword and shield with a different stance and eyeline from Barbarian;
-- a distinct martial Monk composition;
-- a celestial/non-human Paladin in a sunlit holy citadel;
-- an Elf Ranger overlooking a ruined mountain valley;
-- a Tiefling Rogue above a gothic city;
-- a celestial Sorcerer channeling innate magic over a floating citadel;
-- a Drow Warlock beneath an eldritch eclipse;
-- a psionic Mystic in an astral/floating-city environment;
-- a dwarven Monster Hunter surveying a moonlit monster-haunted valley;
-- a mixed-Species Sidekick party composition used by Expert, Warrior, and Spellcaster Sidekick.
+The shared Sidekick thumbnail is used for `sidekick`, `expert-sidekick`, `warrior-sidekick`, and `spellcaster-sidekick`, matching the existing shared Sidekick cinematic treatment without changing their separate Class rules or identities.
 
-These are presentation choices only. They do not imply Species restrictions, Class defaults, or rules changes.
+## 2026-09-10 Warlock, Sidekick, and Civilian corrections
 
-## Fighter accepted state
+### Warlock
 
-The original Fighter art repeatedly placed the face too close to the Class divider and visually duplicated Barbarian's pose/eyeline. A temporary CSS `70% 42px` offset was used only while the source art was being replaced.
+The approved Warlock cinematic was recomposed so the character's head sits higher within the scene while remaining below the Forge/menu divider. The new binary keeps the same moonlit non-human occult direction without the prior face/divider collision.
 
-The approved Fighter painting now builds the spacing into the artwork itself, uses a clearly different pose and direction of gaze, and fixes the earlier weapon/hand issue. Fighter therefore uses the normal cinematic focal contract:
+### Sidekick
 
-`--npc-forge-class-art-position: 70% center`
+The existing Sidekick cinematic remains approved. Its desktop focal position is now:
 
-Do not restore the obsolete pixel-offset workaround unless the source artwork itself is reverted.
+`--npc-forge-class-art-position: 74% 28%`
 
-## Wizard accepted state
+This shifts the party composition lower in the visible Forge crop so the window/step rail does not cut across the upper subjects.
 
-Wizard remains the reference for bright cinematic scenes:
+Sidekick presentation also omits the redundant Saving Throws and Primary Ability hero fact boxes. Hit Die remains visible, leaving more of the artwork unobstructed.
 
-- one continuous 1600x900 image reaches the Forge border;
-- the left side fades strongly toward near-black for title/body readability;
-- the fade is transparent, not a separate black panel;
-- no blur or `backdrop-filter` is used on the cinematic painting;
-- the right-side Wizard remains bright and detailed;
-- Wizard's 18 subclass selector images remain wide 456x240 assets filling the 76x40 selector viewport with `object-fit: cover`.
+### No Adventuring Class / Civilian
 
-## Ranger replacement
+Civilian now has a dedicated full-width cinematic and a dedicated Class-list thumbnail. Its cinematic uses the normal `72% center` focal treatment.
 
-The earlier Ranger cinematic was rejected after an obvious generated anatomy error was found in the Tabaxi hand/paw. A second feline revision was also intentionally superseded when Paul requested a different Species and a more attractive presentation.
+The synthetic Civilian entry can use an id such as `static-class-civilian`, which is not a Postgres UUID. `NpcForgeClassGuideModel.js` now guards the UUID-only `class_level_progression.class_id` query and skips that query for synthetic non-UUID entries. This removes the prior `invalid input syntax for type uuid: "static-class-civilian"` runtime warning without changing Supabase data or Class authority.
 
-The approved Ranger is now the Elf composition in `cinematic-ranger.webp`. It keeps the left reading zone dark, places the subject on the right, preserves clean bow/hand anatomy, and uses the standard `72% center` cinematic focal treatment.
+Like Sidekick, Civilian omits the redundant Saving Throws and Primary Ability hero fact boxes so the special non-adventuring presentation has more usable artwork space.
 
-## Paladin and Monster Hunter replacements
+## Accepted composition notes
 
-The initial Dragonborn Paladin and Orc-like Monster Hunter concepts were not the final approved choices. They were replaced before promotion:
-
-- Paladin now uses the approved celestial/non-human holy-warrior composition.
-- Monster Hunter now uses the approved dwarven hunter composition.
-
-Only the final reviewed artwork should be treated as authoritative.
-
-## Sidekick treatment
-
-Supabase currently exposes `expert-sidekick`, `warrior-sidekick`, and `spellcaster-sidekick` as distinct preferred Class keys. All three intentionally share the approved party cinematic because the artwork depicts a mixed adventuring support group rather than pretending each Sidekick track is a full standalone heroic archetype.
-
-The Class rules, progression, identity, and selection remain separate in Supabase; only the presentation background is shared.
+- Wizard remains accepted and should not be changed unless explicitly requested.
+- Fighter uses the normal `70% center` focal treatment; do not restore the obsolete temporary pixel offset.
+- Ranger uses the approved Elf cinematic with source-level headroom rather than a CSS compensation hack.
+- Paladin uses the approved celestial/non-human holy-warrior composition.
+- Monster Hunter uses the approved dwarven hunter composition.
+- Warlock uses the latest recomposed moonlit occult image described above.
 
 ## Artwork composition standard going forward
 
@@ -116,60 +96,57 @@ For every additional Class hero or replacement:
 1. Author for the wide Forge cinematic ratio, not a square catalogue portrait.
 2. Reserve the left side for readable Class copy and controls; dark environmental detail is preferred over a blank opaque panel.
 3. Keep the main subject on the right with enough background above the head that the Class divider cannot cross the face during ordinary desktop resizing.
-4. Vary pose, eyeline, body type, Species, environment, lighting, and action across Classes. Avoid a row of heroes all staring toward the same distant point.
-5. Avoid defaulting to humans while the current roster remains human-heavy; use appropriate playable fantasy Species where the composition benefits from it.
+4. Vary pose, eyeline, body type, Species, environment, lighting, and action across Classes.
+5. Avoid defaulting to humans while the roster remains human-heavy; use appropriate playable fantasy Species where the composition benefits from it.
 6. Check hands, paws, weapons, bows, instruments, spell effects, and held props for obvious generation defects before promotion.
-7. Keep menu/catalogue art separate when a cinematic crop would read poorly at thumbnail size.
-8. Promote a hero through `PUBLIC_CINEMATIC_CLASS_HERO_ARTWORK`; do not bypass the resolver from page/component code.
+7. Keep menu/catalogue artwork separate when a cinematic crop would read poorly at thumbnail size.
+8. Promote art through the centralized resolvers rather than bypassing them from page/component code.
 9. Do not commit failed, UI-contaminated, placeholder, or unreviewed generations merely to complete a batch.
 
 ## Regression guard
 
-`scripts/validate_class_hero_framing.mjs` is called by the existing Class browser validation workflow and protects the active cinematic roster. It checks that:
+`scripts/validate_class_hero_framing.mjs` protects the active cinematic presentation. It checks that:
 
 - the final Class cinematic stylesheet remains loaded last among the Class framing layers;
 - the modal owns the single public cinematic image;
-- all promoted public cinematic paths exist and remain wired through the centralized resolver;
-- Paladin, Ranger, Sorcerer, Warlock, Mystic, Monster Hunter, and the Sidekick family keep their approved cinematic routes;
-- Fighter keeps the final normal center focal treatment;
-- Ranger and the other new right-side compositions keep explicit resize-safe positions;
-- Wizard keeps its stronger left readability fade;
+- promoted public cinematic paths exist and remain wired through the centralized resolver;
+- Civilian and the Sidekick family retain their explicit special-case cinematic routes;
+- Sidekick retains its lower `74% 28%` focal treatment;
+- Wizard retains its stronger left readability fade;
 - nested duplicate/blur layers remain suppressed;
-- Wizard subclass artwork keeps its native wide selector treatment;
 - protected map/town behavior is not referenced by the Class artwork patch.
 
-## 2026-09-09 remaining-Class publication chain
+## 2026-09-10 publication chain
 
-The approved binary transfer bundle was checksum-verified and dimension-verified at 1600x900. The first bounded transfer exposed an important guard detail: `git diff --name-only` does not report newly created untracked binary files. Ranger was a tracked replacement and therefore appeared in that diff, while Paladin, Sorcerer, Warlock, Mystic, Monster Hunter, and Sidekick were new files and remained untracked. The corrected materializer switched its scope check to `git status --porcelain --untracked-files=all`, then committed exactly those six missing assets. The focused Class regression suite passed before that corrected asset commit was pushed.
+Latest reviewed binary installation:
 
-Ranger binary replacement:
+`0f1f5238fc9dacf274db08e590b81967a5f91caf` — `Install approved Class menu and civilian artwork`
 
-`68fc7fa4b2fdabaa7c1da10db7b50506b6b02aee` — `Install approved Elf Ranger cinematic artwork`
+Public menu/cinematic resolver promotion:
 
-Resolver promotion:
+`75bd678b785bcda56a70ce1c0cd9ebf8e9720c1b` — `Wire approved Class menu and civilian artwork`
 
-`0ccac2453759a6e9e682b4bd4b7986dbb72c4c04` — `Promote remaining approved Class cinematic heroes`
+Preferred subclass alias alignment:
 
-Cinematic alignment/framing:
+`ef56ee149924615888f524c296c12b7839791406` — `Align subclass artwork aliases with preferred catalog`
 
-`2fd0c0090538c256e7546813b34425c8d7aae981` — `Align remaining approved Class cinematic heroes`
+Special Class presentation polish:
 
-Regression guard:
+`34b9475b867f34357d7c8f02d27385d306ee0be7` — `Polish special Class cinematic presentation`
 
-`7d038ddae3f45bd39b568b50d4bc109c5aaaf739` — `Guard remaining approved Class cinematic heroes`
+Binary transfer archive:
 
-Remaining six binary assets:
+`/DNDNext-Transfer/dndnext-class-menu-civilian-warlock-20260910.zip`
 
-`68813a1c0cb898035df472b7f24a6edcdba1b549` — `Install remaining approved Class cinematic assets`
+Archive SHA-256:
+
+`fa07bd055fed6b9263920f44a8271e50d01262dbc1b3567dae0c8c84cec0ee06`
 
 ## Protected boundaries
 
-This work is presentation-only.
-
-- No Class selection or persistence authority changed.
-- No subclass/progression mechanics changed.
-- No Supabase data write or migration is required.
-- No world-map code was touched.
-- No town/city-map behavior was touched.
-- No crafting, travel, encounter, inventory, merchant, tactical, or character-sheet runtime behavior is part of this artwork batch.
-- Existing Player Forge window portal/drag/resize behavior remains separate from this artwork work.
+- No Supabase writes or migrations.
+- No Class/subclass persistence authority changes.
+- No world-map code.
+- No town/city-map code.
+- No crafting, travel, encounter, inventory, merchant, tactical, or character-sheet runtime behavior.
+- Existing Player Forge portal/drag/resize behavior remains separate from this artwork work.
