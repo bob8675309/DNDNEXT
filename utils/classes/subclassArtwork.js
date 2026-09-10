@@ -25,6 +25,46 @@ const WIZARD_SUBCLASS_ART_FAMILY = Object.freeze({
 });
 
 const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
+  artificer: Object.freeze({
+    alchemist: "alchemist",
+    armorer: "armorer",
+    artillerist: "artillerist",
+    "battle-smith": "battle-smith",
+    cartographer: "cartographer",
+    reanimator: "reanimator",
+  }),
+  barbarian: Object.freeze({
+    "ancestral-guardian": "ancestral-guardian",
+    berserker: "berserker",
+    giant: "giant",
+    "totem-warrior": "totem-warrior",
+    "wild-magic": "wild-magic",
+    zealot: "zealot",
+  }),
+  bard: Object.freeze({
+    creation: "creation",
+    glamour: "glamour",
+    lore: "lore",
+    swords: "swords",
+    valor: "valor",
+    whispers: "whispers",
+  }),
+  cleric: Object.freeze({
+    knowledge: "knowledge",
+    life: "life",
+    light: "light",
+    tempest: "tempest",
+    trickery: "trickery",
+    war: "war",
+  }),
+  druid: Object.freeze({
+    land: "land",
+    moon: "moon",
+    shepherd: "shepherd",
+    spores: "spores",
+    stars: "stars",
+    wildfire: "wildfire",
+  }),
   fighter: Object.freeze({
     "arcane-archer": "arcane-archer",
     banneret: "banneret",
@@ -33,6 +73,29 @@ const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
     cavalier: "cavalier",
     champion: "champion",
     "echo-knight": "echo-knight",
+  }),
+  monk: Object.freeze({
+    "astral-self": "astral-self",
+    "drunken-master": "drunken-master",
+    elements: "elements",
+    "four-elements": "elements",
+    kensei: "kensei",
+    "open-hand": "open-hand",
+    shadow: "shadow",
+  }),
+  "monster-hunter": Object.freeze({
+    carver: "carver",
+    devourer: "devourer",
+    occultist: "occultist",
+    trapper: "trapper",
+  }),
+  mystic: Object.freeze({
+    avatar: "avatar",
+    awakened: "awakened",
+    immortal: "immortal",
+    nomad: "nomad",
+    "soul-knife": "soul-knife",
+    "wu-jen": "wu-jen",
   }),
   paladin: Object.freeze({
     ancients: "ancients",
@@ -49,6 +112,14 @@ const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
     "gloom-stalker": "gloom-stalker",
     "horizon-walker": "horizon-walker",
     hunter: "hunter",
+  }),
+  rogue: Object.freeze({
+    "arcane-trickster": "arcane-trickster",
+    assassin: "assassin",
+    phantom: "phantom",
+    soulknife: "soulknife",
+    swashbuckler: "swashbuckler",
+    thief: "thief",
   }),
   sorcerer: Object.freeze({
     aberrant: "aberrant",
