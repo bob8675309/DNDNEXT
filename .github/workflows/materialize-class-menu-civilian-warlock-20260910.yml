@@ -35,11 +35,7 @@ jobs:
           unzip -q /tmp/class-menu.zip -d /tmp/class-menu
           cd /tmp/class-menu
           sha256sum -c SHA256SUMS
-          test "$(python3 - <<'PY'
-import json
-print(json.load(open('MANIFEST.json'))['count'])
-PY
-)" = "19"
+          test "$(python3 -c "import json; print(json.load(open('MANIFEST.json'))['count'])")" = "19"
 
       - name: Apply bounded artwork payload
         shell: bash
@@ -51,28 +47,26 @@ PY
         shell: bash
         run: |
           set -euo pipefail
-          cat > /tmp/expected-files <<'EOF'
-public/media/classes/cinematic-civilian.webp
-public/media/classes/cinematic-warlock.webp
-public/media/classes/menu-artificer.webp
-public/media/classes/menu-barbarian.webp
-public/media/classes/menu-bard.webp
-public/media/classes/menu-civilian.webp
-public/media/classes/menu-cleric.webp
-public/media/classes/menu-druid.webp
-public/media/classes/menu-fighter.webp
-public/media/classes/menu-monk.webp
-public/media/classes/menu-monster-hunter.webp
-public/media/classes/menu-mystic.webp
-public/media/classes/menu-paladin.webp
-public/media/classes/menu-ranger.webp
-public/media/classes/menu-rogue.webp
-public/media/classes/menu-sidekick.webp
-public/media/classes/menu-sorcerer.webp
-public/media/classes/menu-warlock.webp
-public/media/classes/menu-wizard.webp
-EOF
-          sort -o /tmp/expected-files /tmp/expected-files
+          printf '%s\n' \
+            'public/media/classes/cinematic-civilian.webp' \
+            'public/media/classes/cinematic-warlock.webp' \
+            'public/media/classes/menu-artificer.webp' \
+            'public/media/classes/menu-barbarian.webp' \
+            'public/media/classes/menu-bard.webp' \
+            'public/media/classes/menu-civilian.webp' \
+            'public/media/classes/menu-cleric.webp' \
+            'public/media/classes/menu-druid.webp' \
+            'public/media/classes/menu-fighter.webp' \
+            'public/media/classes/menu-monk.webp' \
+            'public/media/classes/menu-monster-hunter.webp' \
+            'public/media/classes/menu-mystic.webp' \
+            'public/media/classes/menu-paladin.webp' \
+            'public/media/classes/menu-ranger.webp' \
+            'public/media/classes/menu-rogue.webp' \
+            'public/media/classes/menu-sidekick.webp' \
+            'public/media/classes/menu-sorcerer.webp' \
+            'public/media/classes/menu-warlock.webp' \
+            'public/media/classes/menu-wizard.webp' | sort > /tmp/expected-files
           git status --porcelain=v1 --untracked-files=all | sed -E 's/^.. //' | sort > /tmp/actual-files
           diff -u /tmp/expected-files /tmp/actual-files
 
@@ -81,20 +75,7 @@ EOF
         run: |
           set -euo pipefail
           python3 -m pip install --quiet pillow
-          python3 - <<'PY'
-from pathlib import Path
-from PIL import Image
-root = Path('public/media/classes')
-for path in sorted(root.glob('menu-*.webp')):
-    with Image.open(path) as im:
-        if im.size != (600, 800) or im.format != 'WEBP':
-            raise SystemExit(f'bad menu asset {path}: {im.size} {im.format}')
-for name in ('cinematic-warlock.webp', 'cinematic-civilian.webp'):
-    path = root / name
-    with Image.open(path) as im:
-        if im.size != (1600, 900) or im.format != 'WEBP':
-            raise SystemExit(f'bad cinematic asset {path}: {im.size} {im.format}')
-PY
+          python3 -c "from pathlib import Path; from PIL import Image; root=Path('public/media/classes'); files=list(root.glob('menu-*.webp')); assert all((Image.open(p).size==(600,800) and Image.open(p).format=='WEBP') for p in files); assert all((Image.open(root/n).size==(1600,900) and Image.open(root/n).format=='WEBP') for n in ('cinematic-warlock.webp','cinematic-civilian.webp'))"
           node scripts/validate_class_subclass_browser.mjs
           node scripts/validate_class_hero_framing.mjs
 
