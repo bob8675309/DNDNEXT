@@ -31,6 +31,7 @@ const APPROVED_CLASS_ARTWORK = Object.freeze({
  * catalogue portraits and must not be destructive crops of the hero asset.
  */
 const PUBLIC_CINEMATIC_CLASS_HERO_ARTWORK = Object.freeze({
+  civilian: "/media/classes/cinematic-civilian.webp",
   artificer: "/media/classes/cinematic-artificer.webp",
   barbarian: "/media/classes/cinematic-barbarian.webp",
   bard: "/media/classes/cinematic-bard.webp",
@@ -51,7 +52,28 @@ const PUBLIC_CINEMATIC_CLASS_HERO_ARTWORK = Object.freeze({
   "spellcaster-sidekick": "/media/classes/cinematic-sidekick.webp",
   sidekick: "/media/classes/cinematic-sidekick.webp",
 });
-const PUBLIC_CINEMATIC_CLASS_MENU_ARTWORK = Object.freeze({});
+const PUBLIC_CINEMATIC_CLASS_MENU_ARTWORK = Object.freeze({
+  civilian: "/media/classes/menu-civilian.webp",
+  artificer: "/media/classes/menu-artificer.webp",
+  barbarian: "/media/classes/menu-barbarian.webp",
+  bard: "/media/classes/menu-bard.webp",
+  cleric: "/media/classes/menu-cleric.webp",
+  druid: "/media/classes/menu-druid.webp",
+  fighter: "/media/classes/menu-fighter.webp",
+  monk: "/media/classes/menu-monk.webp",
+  paladin: "/media/classes/menu-paladin.webp",
+  ranger: "/media/classes/menu-ranger.webp",
+  rogue: "/media/classes/menu-rogue.webp",
+  sorcerer: "/media/classes/menu-sorcerer.webp",
+  warlock: "/media/classes/menu-warlock.webp",
+  wizard: "/media/classes/menu-wizard.webp",
+  mystic: "/media/classes/menu-mystic.webp",
+  "monster-hunter": "/media/classes/menu-monster-hunter.webp",
+  "expert-sidekick": "/media/classes/menu-sidekick.webp",
+  "warrior-sidekick": "/media/classes/menu-sidekick.webp",
+  "spellcaster-sidekick": "/media/classes/menu-sidekick.webp",
+  sidekick: "/media/classes/menu-sidekick.webp",
+});
 
 const GENERATED_CINEMATIC_CLASS_HERO_ARTWORK = Object.freeze({
   artificer: artificerHero,
