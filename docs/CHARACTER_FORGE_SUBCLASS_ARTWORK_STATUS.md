@@ -2,7 +2,7 @@
 
 Status date: 2026-09-10
 
-This is the focused handoff for the Character Forge subclass selector artwork rollout on PR #177 (`agent/realistic-dice-core`). Current source, exact-head CI, and browser behavior remain authoritative.
+This is the focused handoff for the Character Forge subclass selector artwork rollout on PR #177 (`agent/realistic-dice-core`). Current source, exact-head CI, browser behavior, and the preferred Supabase Class catalogue remain authoritative over older screenshots or notes.
 
 ## Artwork authority
 
@@ -64,6 +64,8 @@ Fifty-two additional reviewed selector assets plus the approved Warlock cinemati
 - Trickery
 - War
 
+`Knowledge (PSA)` intentionally aliases the approved Knowledge artwork.
+
 ### Druid
 
 - Land
@@ -82,7 +84,7 @@ Fifty-two additional reviewed selector assets plus the approved Warlock cinemati
 - Open Hand
 - Shadow
 
-`Four Elements` intentionally aliases the `Elements` artwork where the legacy name is the player-facing option.
+`Four Elements` intentionally aliases the `Elements` artwork where the legacy name is player-facing.
 
 ### Monster Hunter
 
@@ -90,6 +92,8 @@ Fifty-two additional reviewed selector assets plus the approved Warlock cinemati
 - Devourer
 - Occultist
 - Trapper
+
+The preferred Grim Hollow catalogue exposes these as `Carver Guild`, `Devourer Guild`, `Occultist Guild`, and `Trapper Guild`. The resolver now aliases those exact preferred names to the four existing reviewed artworks rather than falling back to generic Class art.
 
 ### Mystic
 
@@ -100,6 +104,8 @@ Fifty-two additional reviewed selector assets plus the approved Warlock cinemati
 - Soul Knife
 - Wu Jen
 
+The current preferred Mystic source does not expose subclass catalogue rows, so these assets remain available for compatible source/catalogue variants without changing Supabase authority.
+
 ### Rogue
 
 - Arcane Trickster
@@ -109,24 +115,64 @@ Fifty-two additional reviewed selector assets plus the approved Warlock cinemati
 - Swashbuckler
 - Thief
 
-## Warlock cinematic hero correction
+## Current preferred-source audit
 
-`public/media/classes/cinematic-warlock.webp` was replaced with the approved moonlit non-human occult composition that keeps the same visual direction while moving the face safely away from the Forge window/menu border.
+A 2026-09-10 audit joined `class_catalog_preferred` to `class_feature_catalog` using each preferred Class source. After accounting for existing artwork and deliberate aliases, **33 currently preferred/visible subclass concepts still need dedicated reviewed selector artwork**.
+
+### Next 10-art batch
+
+- Barbarian — Wild Heart
+- Barbarian — World Tree
+- Bard — Dance
+- Bard — Moon
+- Bard — Spirits
+- Druid — Dreams
+- Druid — Sea
+- Fighter — Eldritch Knight
+- Fighter — Psi Warrior
+- Monk — Mercy
+
+### Following 11-art batch
+
+- Paladin — Vengeance
+- Ranger — Hollow Warden
+- Ranger — Winter Walker
+- Rogue — Scion of the Three
+- Sorcerer — Lunar
+- Sorcerer — Pyromancer (PSK)
+- Sorcerer — Spellfire
+- Sorcerer — Storm
+- Warlock — Fathomless
+- Warlock — Genie
+- Warlock — Undying
+
+### Remaining Cleric 12-art batch
+
+- Ambition (PSA)
+- Arcana
+- Death
+- Forge
+- Grave
+- Nature
+- Order
+- Peace
+- Solidarity (PSA)
+- Strength (PSA)
+- Twilight
+- Zeal (PSA)
+
+Artificer and Wizard are complete for their current preferred catalogue. Expert Sidekick, Warrior Sidekick, and Spellcaster Sidekick have no subclass catalogue authority in Supabase. No Adventuring Class likewise has no subclass family.
 
 ## Regression guard
 
-`scripts/validate_class_subclass_browser.mjs` now protects all currently promoted selector families. It verifies that:
+`scripts/validate_class_subclass_browser.mjs` protects the promoted selector families. It verifies that:
 
 - every promoted selector file exists and is non-empty;
 - the centralized resolver contains each approved class/family mapping and naming alias;
 - Wizard's existing one-to-one selector artwork remains intact;
-- missing future subclasses retain the safe class-menu fallback;
+- missing future subclasses retain the safe Class-menu fallback;
 - the selector remains presentation-only and does not acquire Supabase authority;
 - protected world-map, town/city-map, crafting, encounter, or other gameplay boundaries are not crossed.
-
-## Remaining work
-
-This remains a staged rollout. Subclasses not listed above continue to display the normal Class artwork fallback until their reviewed art is created and promoted. Sidekick classes do not currently have subclass catalogue authority in Supabase, so the generated sidekick concept sheet was not wired as subclass artwork.
 
 ## 2026-09-10 publication chain
 
@@ -141,6 +187,10 @@ Resolver promotion:
 Regression guard:
 
 `9a7c0d8a35e1d72fb7853447e72016f518552ab3` — `Guard approved subclass artwork continuation batch`
+
+Preferred-catalogue alias correction:
+
+`ef56ee149924615888f524c296c12b7839791406` — `Align subclass artwork aliases with preferred catalog`
 
 Dropbox transfer archive:
 
