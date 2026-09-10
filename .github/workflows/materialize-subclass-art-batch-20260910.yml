@@ -1,0 +1,143 @@
+name: Materialize approved subclass art batch 2026-09-10
+
+on:
+  push:
+    branches:
+      - agent/subclass-art-batch-20260910-transfer
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact target branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/realistic-dice-core
+          fetch-depth: 0
+
+      - name: Guard exact target head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "22bf0c306ef7ce0b6f7ac73e38d49375d2e4897a"
+
+      - name: Download and verify payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL 'https://uc66e233ecde17b14c7efd2aa848.dl.dropboxusercontent.com/cd/0/get/DH4kXTTn-LcuAutH8uqek7HKPsf51TxyoAA15DEj05IOiJv9lWrElrDbImdsJGx1jYeDxlloBnLY-2RpOnG6oRuJDBdPBZgnjDILCItiNHu-MmsV-K45smnApLV547nXDmkaFPVU-alyNUOI3yqaQo-UuJ1pF-mtEHAItrxsmvRsCA/file?c_luid=c335000c' -o /tmp/subclass-art.zip
+          echo 'e04ea88dc11e49ced6bcfbd417abc80d9204a00a95c07069c24ad18cfbb33677  /tmp/subclass-art.zip' | sha256sum -c -
+          rm -rf /tmp/subclass-art
+          mkdir -p /tmp/subclass-art
+          unzip -q /tmp/subclass-art.zip -d /tmp/subclass-art
+          cd /tmp/subclass-art
+          sha256sum -c SHA256SUMS
+          test "$(python3 - <<'PY'
+import json
+print(json.load(open('MANIFEST.json'))['count'])
+PY
+)" = "53"
+
+      - name: Apply bounded artwork payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp -a /tmp/subclass-art/public/. public/
+
+      - name: Guard exact changed-file scope including untracked binaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/expected-files <<'EOF'
+public/media/classes/cinematic-warlock.webp
+public/media/subclasses/artificer/artificer-alchemist.webp
+public/media/subclasses/artificer/artificer-armorer.webp
+public/media/subclasses/artificer/artificer-artillerist.webp
+public/media/subclasses/artificer/artificer-battle-smith.webp
+public/media/subclasses/artificer/artificer-cartographer.webp
+public/media/subclasses/artificer/artificer-reanimator.webp
+public/media/subclasses/barbarian/barbarian-ancestral-guardian.webp
+public/media/subclasses/barbarian/barbarian-berserker.webp
+public/media/subclasses/barbarian/barbarian-giant.webp
+public/media/subclasses/barbarian/barbarian-totem-warrior.webp
+public/media/subclasses/barbarian/barbarian-wild-magic.webp
+public/media/subclasses/barbarian/barbarian-zealot.webp
+public/media/subclasses/bard/bard-creation.webp
+public/media/subclasses/bard/bard-glamour.webp
+public/media/subclasses/bard/bard-lore.webp
+public/media/subclasses/bard/bard-swords.webp
+public/media/subclasses/bard/bard-valor.webp
+public/media/subclasses/bard/bard-whispers.webp
+public/media/subclasses/cleric/cleric-knowledge.webp
+public/media/subclasses/cleric/cleric-life.webp
+public/media/subclasses/cleric/cleric-light.webp
+public/media/subclasses/cleric/cleric-tempest.webp
+public/media/subclasses/cleric/cleric-trickery.webp
+public/media/subclasses/cleric/cleric-war.webp
+public/media/subclasses/druid/druid-land.webp
+public/media/subclasses/druid/druid-moon.webp
+public/media/subclasses/druid/druid-shepherd.webp
+public/media/subclasses/druid/druid-spores.webp
+public/media/subclasses/druid/druid-stars.webp
+public/media/subclasses/druid/druid-wildfire.webp
+public/media/subclasses/monk/monk-astral-self.webp
+public/media/subclasses/monk/monk-drunken-master.webp
+public/media/subclasses/monk/monk-elements.webp
+public/media/subclasses/monk/monk-kensei.webp
+public/media/subclasses/monk/monk-open-hand.webp
+public/media/subclasses/monk/monk-shadow.webp
+public/media/subclasses/monster-hunter/monster-hunter-carver.webp
+public/media/subclasses/monster-hunter/monster-hunter-devourer.webp
+public/media/subclasses/monster-hunter/monster-hunter-occultist.webp
+public/media/subclasses/monster-hunter/monster-hunter-trapper.webp
+public/media/subclasses/mystic/mystic-avatar.webp
+public/media/subclasses/mystic/mystic-awakened.webp
+public/media/subclasses/mystic/mystic-immortal.webp
+public/media/subclasses/mystic/mystic-nomad.webp
+public/media/subclasses/mystic/mystic-soul-knife.webp
+public/media/subclasses/mystic/mystic-wu-jen.webp
+public/media/subclasses/rogue/rogue-arcane-trickster.webp
+public/media/subclasses/rogue/rogue-assassin.webp
+public/media/subclasses/rogue/rogue-phantom.webp
+public/media/subclasses/rogue/rogue-soulknife.webp
+public/media/subclasses/rogue/rogue-swashbuckler.webp
+public/media/subclasses/rogue/rogue-thief.webp
+EOF
+          sort -o /tmp/expected-files /tmp/expected-files
+          git status --porcelain=v1 --untracked-files=all | sed -E 's/^.. //' | sort > /tmp/actual-files
+          diff -u /tmp/expected-files /tmp/actual-files
+
+      - name: Validate image dimensions and focused Class regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet pillow
+          python3 - <<'PY'
+from pathlib import Path
+from PIL import Image
+for path in Path('public/media/subclasses').glob('*/*.webp'):
+    if path.parts[-2] in {'artificer','barbarian','bard','cleric','druid','monk','monster-hunter','mystic','rogue'} and path.stat().st_mtime_ns:
+        with Image.open(path) as im:
+            if im.size != (456, 240) or im.format != 'WEBP':
+                raise SystemExit(f'bad selector asset {path}: {im.size} {im.format}')
+with Image.open('public/media/classes/cinematic-warlock.webp') as im:
+    if im.size != (1600, 900) or im.format != 'WEBP':
+        raise SystemExit(f'bad Warlock hero: {im.size} {im.format}')
+PY
+          node scripts/validate_class_subclass_browser.mjs
+          node scripts/validate_class_hero_framing.mjs
+
+      - name: Recheck remote head and publish bounded binary commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin agent/realistic-dice-core
+          test "$(git rev-parse origin/agent/realistic-dice-core)" = "22bf0c306ef7ce0b6f7ac73e38d49375d2e4897a"
+          git config user.name 'bob8675309'
+          git config user.email '69051502+bob8675309@users.noreply.github.com'
+          git add public/media/classes/cinematic-warlock.webp public/media/subclasses/artificer public/media/subclasses/barbarian public/media/subclasses/bard public/media/subclasses/cleric public/media/subclasses/druid public/media/subclasses/monk public/media/subclasses/monster-hunter public/media/subclasses/mystic public/media/subclasses/rogue
+          git commit -m 'Install approved subclass artwork continuation batch'
+          git push origin HEAD:agent/realistic-dice-core
