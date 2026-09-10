@@ -51,6 +51,7 @@ const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
   }),
   cleric: Object.freeze({
     knowledge: "knowledge",
+    "knowledge-psa": "knowledge",
     life: "life",
     light: "light",
     tempest: "tempest",
@@ -85,9 +86,13 @@ const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
   }),
   "monster-hunter": Object.freeze({
     carver: "carver",
+    "carver-guild": "carver",
     devourer: "devourer",
+    "devourer-guild": "devourer",
     occultist: "occultist",
+    "occultist-guild": "occultist",
     trapper: "trapper",
+    "trapper-guild": "trapper",
   }),
   mystic: Object.freeze({
     avatar: "avatar",
