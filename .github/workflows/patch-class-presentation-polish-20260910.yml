@@ -1,0 +1,116 @@
+name: Patch Class presentation polish 2026-09-10
+
+on:
+  push:
+    branches:
+      - agent/class-presentation-polish-20260910
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact target branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/realistic-dice-core
+          fetch-depth: 0
+
+      - name: Guard exact target head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "ef56ee149924615888f524c296c12b7839791406"
+
+      - name: Apply bounded presentation patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new):
+              p = Path(path)
+              data = p.read_text()
+              if old not in data:
+                  raise SystemExit(f"missing expected patch anchor in {path}: {old[:80]!r}")
+              p.write_text(data.replace(old, new, 1))
+
+          guide = "components/NpcForgeClassGuide.js"
+          old = '''function heroFacts(selectedClass) {
+            const primary = classPrimaryAbilities(selectedClass).map((key) => ABILITY_LABELS[key] || key).join(", ") || "Varies";
+            const saves = (selectedClass?.saving_throws || []).map((key) => ABILITY_LABELS[key] || key).join(", ") || "Varies";
+            return [["Hit Die", `d${selectedClass?.hit_die || 8}`], ["Saving Throws", saves], ["Primary Ability", primary]];
+          }'''
+          new = '''function heroFacts(selectedClass) {
+            const hitDie = ["Hit Die", `d${selectedClass?.hit_die || 8}`];
+            const theme = classThemeKey(selectedClass);
+            if (["civilian", "sidekick", "expert-sidekick", "warrior-sidekick", "spellcaster-sidekick"].includes(theme)) return [hitDie];
+            const primary = classPrimaryAbilities(selectedClass).map((key) => ABILITY_LABELS[key] || key).join(", ") || "Varies";
+            const saves = (selectedClass?.saving_throws || []).map((key) => ABILITY_LABELS[key] || key).join(", ") || "Varies";
+            return [hitDie, ["Saving Throws", saves], ["Primary Ability", primary]];
+          }'''
+          replace_once(guide, old, new)
+
+          model = "components/NpcForgeClassGuideModel.js"
+          replace_once(
+              model,
+              'const normalized = (value) => text(value).toLowerCase().replace(/[’\']/g, "").replace(/[^a-z0-9]+/g, " ").trim();\n',
+              'const normalized = (value) => text(value).toLowerCase().replace(/[’\']/g, "").replace(/[^a-z0-9]+/g, " ").trim();\nconst UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;\nconst isUuid = (value) => UUID_PATTERN.test(text(value));\n',
+          )
+          replace_once(
+              model,
+              '''    Promise.all([\n      supabase.from("class_level_progression")\n        .select("class_level,proficiency_bonus,cantrips_known,spells_known,spell_slots,features")\n        .eq("class_id", selectedClass.id).order("class_level", { ascending: true }),\n      supabase.from("class_feature_catalog")''',
+              '''    Promise.all([\n      isUuid(selectedClass.id)\n        ? supabase.from("class_level_progression")\n          .select("class_level,proficiency_bonus,cantrips_known,spells_known,spell_slots,features")\n          .eq("class_id", selectedClass.id).order("class_level", { ascending: true })\n        : Promise.resolve({ data: [], error: null }),\n      supabase.from("class_feature_catalog")''',
+          )
+
+          css = "styles/character-forge-class-final-corners.css"
+          monster_block = '''  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-monster-hunter .npc-forge-class-guide__overview-book) {\n    --npc-forge-class-cinematic-art: url("/media/classes/cinematic-monster-hunter.webp");\n    --npc-forge-class-art-position: 72% center;\n  }\n\n'''
+          civilian_block = monster_block + '''  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-civilian .npc-forge-class-guide__overview-book) {\n    --npc-forge-class-cinematic-art: url("/media/classes/cinematic-civilian.webp");\n    --npc-forge-class-art-position: 72% center;\n  }\n\n'''
+          replace_once(css, monster_block, civilian_block)
+          replace_once(css, '--npc-forge-class-art-position: 74% center;', '--npc-forge-class-art-position: 74% 28%;')
+
+          validator = "scripts/validate_class_hero_framing.mjs"
+          replace_once(
+              validator,
+              '  "--npc-forge-class-cinematic-art: url(\\"/media/classes/cinematic-monster-hunter.webp\\")",\n  "--npc-forge-class-cinematic-art: url(\\"/media/classes/cinematic-sidekick.webp\\")",',
+              '  "--npc-forge-class-cinematic-art: url(\\"/media/classes/cinematic-monster-hunter.webp\\")",\n  "--npc-forge-class-cinematic-art: url(\\"/media/classes/cinematic-civilian.webp\\")",\n  "--npc-forge-class-cinematic-art: url(\\"/media/classes/cinematic-sidekick.webp\\")",',
+          )
+          replace_once(validator, '  "--npc-forge-class-art-position: 74% center",', '  "--npc-forge-class-art-position: 74% 28%",')
+          replace_once(validator, '  "monster-hunter",\n  "expert-sidekick",', '  "monster-hunter",\n  "civilian",\n  "expert-sidekick",')
+          replace_once(validator, '  artificer: "cinematic-artificer.webp",', '  civilian: "cinematic-civilian.webp",\n  artificer: "cinematic-artificer.webp",')
+          PY
+
+      - name: Guard exact changed-file scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s\n' \
+            'components/NpcForgeClassGuide.js' \
+            'components/NpcForgeClassGuideModel.js' \
+            'scripts/validate_class_hero_framing.mjs' \
+            'styles/character-forge-class-final-corners.css' | sort > /tmp/expected-files
+          git status --porcelain=v1 --untracked-files=all | sed -E 's/^.. //' | sort > /tmp/actual-files
+          diff -u /tmp/expected-files /tmp/actual-files
+
+      - name: Run focused regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/validate_class_subclass_browser.mjs
+          node scripts/validate_class_hero_framing.mjs
+          node scripts/validate_character_progression_v3.mjs
+
+      - name: Recheck remote head and publish patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin agent/realistic-dice-core
+          test "$(git rev-parse origin/agent/realistic-dice-core)" = "ef56ee149924615888f524c296c12b7839791406"
+          git config user.name 'bob8675309'
+          git config user.email '69051502+bob8675309@users.noreply.github.com'
+          git add components/NpcForgeClassGuide.js components/NpcForgeClassGuideModel.js scripts/validate_class_hero_framing.mjs styles/character-forge-class-final-corners.css
+          git commit -m 'Polish special Class cinematic presentation'
+          git push origin HEAD:agent/realistic-dice-core
