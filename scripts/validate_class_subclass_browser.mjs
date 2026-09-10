@@ -78,9 +78,18 @@ const wizardSubclassArtBytes = new Set(exactWizardSubclassArt.map((subclass) => 
 assert(wizardSubclassArtBytes.size === exactWizardSubclassArt.length, "Every canonical Wizard subclass must use a distinct artwork file.");
 
 const approvedSubclassFamilies = Object.freeze({
+  artificer: ["alchemist", "armorer", "artillerist", "battle-smith", "cartographer", "reanimator"],
+  barbarian: ["ancestral-guardian", "berserker", "giant", "totem-warrior", "wild-magic", "zealot"],
+  bard: ["creation", "glamour", "lore", "swords", "valor", "whispers"],
+  cleric: ["knowledge", "life", "light", "tempest", "trickery", "war"],
+  druid: ["land", "moon", "shepherd", "spores", "stars", "wildfire"],
   fighter: ["arcane-archer", "banneret", "battle-master", "cavalier", "champion", "echo-knight"],
+  monk: ["astral-self", "drunken-master", "elements", "kensei", "open-hand", "shadow"],
+  "monster-hunter": ["carver", "devourer", "occultist", "trapper"],
+  mystic: ["avatar", "awakened", "immortal", "nomad", "soul-knife", "wu-jen"],
   paladin: ["ancients", "conquest", "crown", "devotion", "glory", "noble-genies"],
   ranger: ["beast-master", "drakewarden", "fey-wanderer", "gloom-stalker", "horizon-walker", "hunter"],
+  rogue: ["arcane-trickster", "assassin", "phantom", "soulknife", "swashbuckler", "thief"],
   sorcerer: ["aberrant", "clockwork", "divine-soul", "draconic", "shadow", "wild-magic"],
   warlock: ["archfey", "celestial", "fiend", "great-old-one", "hexblade", "undead"],
 });
@@ -105,6 +114,7 @@ for (const token of [
   '"clockwork-soul": "clockwork"',
   'wild: "wild-magic"',
   '"purple-dragon-knight-banneret": "banneret"',
+  '"four-elements": "elements"',
   '|| classMenuArtworkFor(normalizedClass)',
 ]) assert(subclassArtwork.includes(token), `Subclass artwork authority is missing ${token}`);
 for (const family of ["abjuration", "conjuration", "divination", "enchantment", "evocation", "illusion", "necromancy", "transmutation"]) {
@@ -152,4 +162,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSource.includes(token), `Class presentation patch crossed protected boundary: ${token}`);
 }
 
-console.log("Class subclass selector validation passed: Wizard plus the approved Fighter, Paladin, Ranger, Sorcerer, and Warlock subclass batches use dedicated selector artwork; readable two-column choices, click-only Feature-card inspection, selected-subclass progression injection, balanced spell-slot table, stable cinematic art, safe artwork fallback, and protected boundaries are intact.");
+console.log("Class subclass selector validation passed: Wizard plus all currently approved Artificer, Barbarian, Bard, Cleric, Druid, Fighter, Monk, Monster Hunter, Mystic, Paladin, Ranger, Rogue, Sorcerer, and Warlock selector artwork batches use dedicated assets; readable two-column choices, click-only Feature-card inspection, selected-subclass progression injection, balanced spell-slot table, stable cinematic art, safe artwork fallback, and protected boundaries are intact.");
