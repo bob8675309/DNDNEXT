@@ -12,9 +12,12 @@ function classOverviewSummary(selectedClass = {}) {
   return cleanPlayerCopy(classPresentationSummary(selectedClass, `Explore the defining features, progression, and specialties of the ${selectedClass?.class_name || "selected"} class.`));
 }
 function heroFacts(selectedClass) {
+  const hitDie = ["Hit Die", `d${selectedClass?.hit_die || 8}`];
+  const theme = classThemeKey(selectedClass);
+  if (["civilian", "sidekick", "expert-sidekick", "warrior-sidekick", "spellcaster-sidekick"].includes(theme)) return [hitDie];
   const primary = classPrimaryAbilities(selectedClass).map((key) => ABILITY_LABELS[key] || key).join(", ") || "Varies";
   const saves = (selectedClass?.saving_throws || []).map((key) => ABILITY_LABELS[key] || key).join(", ") || "Varies";
-  return [["Hit Die", `d${selectedClass?.hit_die || 8}`], ["Saving Throws", saves], ["Primary Ability", primary]];
+  return [hitDie, ["Saving Throws", saves], ["Primary Ability", primary]];
 }
 function featureDetailPayload(feature, level, selectedSubclass) {
   return {

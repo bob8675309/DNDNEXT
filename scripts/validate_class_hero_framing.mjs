@@ -71,12 +71,13 @@ for (const token of [
   "--npc-forge-class-cinematic-art: url(\"/media/classes/cinematic-warlock.webp\")",
   "--npc-forge-class-cinematic-art: url(\"/media/classes/cinematic-mystic.webp\")",
   "--npc-forge-class-cinematic-art: url(\"/media/classes/cinematic-monster-hunter.webp\")",
+  "--npc-forge-class-cinematic-art: url(\"/media/classes/cinematic-civilian.webp\")",
   "--npc-forge-class-cinematic-art: url(\"/media/classes/cinematic-sidekick.webp\")",
   ")::before {",
   "var(--npc-forge-class-cinematic-art) var(--npc-forge-class-art-position, center center) / cover no-repeat",
   "--npc-forge-class-art-position: 70% center",
   "--npc-forge-class-art-position: 72% center",
-  "--npc-forge-class-art-position: 74% center",
+  "--npc-forge-class-art-position: 74% 28%",
   "--npc-forge-class-art-position: 68% 10%",
   "--npc-forge-class-reading-fade: linear-gradient",
   "text-shadow: 0 1px 3px rgba(0, 0, 0, .92), 0 0 14px rgba(0, 0, 0, .46)",
@@ -99,6 +100,7 @@ for (const theme of [
   "warlock",
   "mystic",
   "monster-hunter",
+  "civilian",
   "expert-sidekick",
   "warrior-sidekick",
   "spellcaster-sidekick",
@@ -129,6 +131,7 @@ for (const token of [
 ]) assert(artwork.includes(token), `Class artwork authority is missing ${token}`);
 
 for (const [classKey, asset] of Object.entries({
+  civilian: "cinematic-civilian.webp",
   artificer: "cinematic-artificer.webp",
   barbarian: "cinematic-barbarian.webp",
   bard: "cinematic-bard.webp",

@@ -84,12 +84,17 @@
     --npc-forge-class-art-position: 72% center;
   }
 
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-civilian .npc-forge-class-guide__overview-book) {
+    --npc-forge-class-cinematic-art: url("/media/classes/cinematic-civilian.webp");
+    --npc-forge-class-art-position: 72% center;
+  }
+
   .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-expert-sidekick .npc-forge-class-guide__overview-book),
   .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-warrior-sidekick .npc-forge-class-guide__overview-book),
   .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-spellcaster-sidekick .npc-forge-class-guide__overview-book),
   .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-sidekick .npc-forge-class-guide__overview-book) {
     --npc-forge-class-cinematic-art: url("/media/classes/cinematic-sidekick.webp");
-    --npc-forge-class-art-position: 74% center;
+    --npc-forge-class-art-position: 74% 28%;
   }
 
   /* One continuous, sharp Forge-border image. The default veil preserves the approved Fighter
