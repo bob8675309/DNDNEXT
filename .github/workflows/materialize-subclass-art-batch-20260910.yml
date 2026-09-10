@@ -35,11 +35,7 @@ jobs:
           unzip -q /tmp/subclass-art.zip -d /tmp/subclass-art
           cd /tmp/subclass-art
           sha256sum -c SHA256SUMS
-          test "$(python3 - <<'PY'
-import json
-print(json.load(open('MANIFEST.json'))['count'])
-PY
-)" = "53"
+          test "$(python3 -c 'import json; print(json.load(open("MANIFEST.json"))["count"])')" = "53"
 
       - name: Apply bounded artwork payload
         shell: bash
@@ -52,60 +48,61 @@ PY
         run: |
           set -euo pipefail
           cat > /tmp/expected-files <<'EOF'
-public/media/classes/cinematic-warlock.webp
-public/media/subclasses/artificer/artificer-alchemist.webp
-public/media/subclasses/artificer/artificer-armorer.webp
-public/media/subclasses/artificer/artificer-artillerist.webp
-public/media/subclasses/artificer/artificer-battle-smith.webp
-public/media/subclasses/artificer/artificer-cartographer.webp
-public/media/subclasses/artificer/artificer-reanimator.webp
-public/media/subclasses/barbarian/barbarian-ancestral-guardian.webp
-public/media/subclasses/barbarian/barbarian-berserker.webp
-public/media/subclasses/barbarian/barbarian-giant.webp
-public/media/subclasses/barbarian/barbarian-totem-warrior.webp
-public/media/subclasses/barbarian/barbarian-wild-magic.webp
-public/media/subclasses/barbarian/barbarian-zealot.webp
-public/media/subclasses/bard/bard-creation.webp
-public/media/subclasses/bard/bard-glamour.webp
-public/media/subclasses/bard/bard-lore.webp
-public/media/subclasses/bard/bard-swords.webp
-public/media/subclasses/bard/bard-valor.webp
-public/media/subclasses/bard/bard-whispers.webp
-public/media/subclasses/cleric/cleric-knowledge.webp
-public/media/subclasses/cleric/cleric-life.webp
-public/media/subclasses/cleric/cleric-light.webp
-public/media/subclasses/cleric/cleric-tempest.webp
-public/media/subclasses/cleric/cleric-trickery.webp
-public/media/subclasses/cleric/cleric-war.webp
-public/media/subclasses/druid/druid-land.webp
-public/media/subclasses/druid/druid-moon.webp
-public/media/subclasses/druid/druid-shepherd.webp
-public/media/subclasses/druid/druid-spores.webp
-public/media/subclasses/druid/druid-stars.webp
-public/media/subclasses/druid/druid-wildfire.webp
-public/media/subclasses/monk/monk-astral-self.webp
-public/media/subclasses/monk/monk-drunken-master.webp
-public/media/subclasses/monk/monk-elements.webp
-public/media/subclasses/monk/monk-kensei.webp
-public/media/subclasses/monk/monk-open-hand.webp
-public/media/subclasses/monk/monk-shadow.webp
-public/media/subclasses/monster-hunter/monster-hunter-carver.webp
-public/media/subclasses/monster-hunter/monster-hunter-devourer.webp
-public/media/subclasses/monster-hunter/monster-hunter-occultist.webp
-public/media/subclasses/monster-hunter/monster-hunter-trapper.webp
-public/media/subclasses/mystic/mystic-avatar.webp
-public/media/subclasses/mystic/mystic-awakened.webp
-public/media/subclasses/mystic/mystic-immortal.webp
-public/media/subclasses/mystic/mystic-nomad.webp
-public/media/subclasses/mystic/mystic-soul-knife.webp
-public/media/subclasses/mystic/mystic-wu-jen.webp
-public/media/subclasses/rogue/rogue-arcane-trickster.webp
-public/media/subclasses/rogue/rogue-assassin.webp
-public/media/subclasses/rogue/rogue-phantom.webp
-public/media/subclasses/rogue/rogue-soulknife.webp
-public/media/subclasses/rogue/rogue-swashbuckler.webp
-public/media/subclasses/rogue/rogue-thief.webp
-EOF
+          public/media/classes/cinematic-warlock.webp
+          public/media/subclasses/artificer/artificer-alchemist.webp
+          public/media/subclasses/artificer/artificer-armorer.webp
+          public/media/subclasses/artificer/artificer-artillerist.webp
+          public/media/subclasses/artificer/artificer-battle-smith.webp
+          public/media/subclasses/artificer/artificer-cartographer.webp
+          public/media/subclasses/artificer/artificer-reanimator.webp
+          public/media/subclasses/barbarian/barbarian-ancestral-guardian.webp
+          public/media/subclasses/barbarian/barbarian-berserker.webp
+          public/media/subclasses/barbarian/barbarian-giant.webp
+          public/media/subclasses/barbarian/barbarian-totem-warrior.webp
+          public/media/subclasses/barbarian/barbarian-wild-magic.webp
+          public/media/subclasses/barbarian/barbarian-zealot.webp
+          public/media/subclasses/bard/bard-creation.webp
+          public/media/subclasses/bard/bard-glamour.webp
+          public/media/subclasses/bard/bard-lore.webp
+          public/media/subclasses/bard/bard-swords.webp
+          public/media/subclasses/bard/bard-valor.webp
+          public/media/subclasses/bard/bard-whispers.webp
+          public/media/subclasses/cleric/cleric-knowledge.webp
+          public/media/subclasses/cleric/cleric-life.webp
+          public/media/subclasses/cleric/cleric-light.webp
+          public/media/subclasses/cleric/cleric-tempest.webp
+          public/media/subclasses/cleric/cleric-trickery.webp
+          public/media/subclasses/cleric/cleric-war.webp
+          public/media/subclasses/druid/druid-land.webp
+          public/media/subclasses/druid/druid-moon.webp
+          public/media/subclasses/druid/druid-shepherd.webp
+          public/media/subclasses/druid/druid-spores.webp
+          public/media/subclasses/druid/druid-stars.webp
+          public/media/subclasses/druid/druid-wildfire.webp
+          public/media/subclasses/monk/monk-astral-self.webp
+          public/media/subclasses/monk/monk-drunken-master.webp
+          public/media/subclasses/monk/monk-elements.webp
+          public/media/subclasses/monk/monk-kensei.webp
+          public/media/subclasses/monk/monk-open-hand.webp
+          public/media/subclasses/monk/monk-shadow.webp
+          public/media/subclasses/monster-hunter/monster-hunter-carver.webp
+          public/media/subclasses/monster-hunter/monster-hunter-devourer.webp
+          public/media/subclasses/monster-hunter/monster-hunter-occultist.webp
+          public/media/subclasses/monster-hunter/monster-hunter-trapper.webp
+          public/media/subclasses/mystic/mystic-avatar.webp
+          public/media/subclasses/mystic/mystic-awakened.webp
+          public/media/subclasses/mystic/mystic-immortal.webp
+          public/media/subclasses/mystic/mystic-nomad.webp
+          public/media/subclasses/mystic/mystic-soul-knife.webp
+          public/media/subclasses/mystic/mystic-wu-jen.webp
+          public/media/subclasses/rogue/rogue-arcane-trickster.webp
+          public/media/subclasses/rogue/rogue-assassin.webp
+          public/media/subclasses/rogue/rogue-phantom.webp
+          public/media/subclasses/rogue/rogue-soulknife.webp
+          public/media/subclasses/rogue/rogue-swashbuckler.webp
+          public/media/subclasses/rogue/rogue-thief.webp
+          EOF
+          sed -i 's/^          //' /tmp/expected-files
           sort -o /tmp/expected-files /tmp/expected-files
           git status --porcelain=v1 --untracked-files=all | sed -E 's/^.. //' | sort > /tmp/actual-files
           diff -u /tmp/expected-files /tmp/actual-files
@@ -116,17 +113,18 @@ EOF
           set -euo pipefail
           python3 -m pip install --quiet pillow
           python3 - <<'PY'
-from pathlib import Path
-from PIL import Image
-for path in Path('public/media/subclasses').glob('*/*.webp'):
-    if path.parts[-2] in {'artificer','barbarian','bard','cleric','druid','monk','monster-hunter','mystic','rogue'} and path.stat().st_mtime_ns:
-        with Image.open(path) as im:
-            if im.size != (456, 240) or im.format != 'WEBP':
-                raise SystemExit(f'bad selector asset {path}: {im.size} {im.format}')
-with Image.open('public/media/classes/cinematic-warlock.webp') as im:
-    if im.size != (1600, 900) or im.format != 'WEBP':
-        raise SystemExit(f'bad Warlock hero: {im.size} {im.format}')
-PY
+          from pathlib import Path
+          from PIL import Image
+          families = {'artificer','barbarian','bard','cleric','druid','monk','monster-hunter','mystic','rogue'}
+          for path in Path('public/media/subclasses').glob('*/*.webp'):
+              if path.parts[-2] in families:
+                  with Image.open(path) as im:
+                      if im.size != (456, 240) or im.format != 'WEBP':
+                          raise SystemExit(f'bad selector asset {path}: {im.size} {im.format}')
+          with Image.open('public/media/classes/cinematic-warlock.webp') as im:
+              if im.size != (1600, 900) or im.format != 'WEBP':
+                  raise SystemExit(f'bad Warlock hero: {im.size} {im.format}')
+          PY
           node scripts/validate_class_subclass_browser.mjs
           node scripts/validate_class_hero_framing.mjs
 
