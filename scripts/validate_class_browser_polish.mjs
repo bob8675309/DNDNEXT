@@ -77,34 +77,37 @@ assert(!guide.includes('onFocus={() => publishFeature(model, onFeatureDetail'), 
 assert(!guide.includes("classSlotSummary(row.spell_slots)"), "Progression regressed to the compressed one-cell spell-slot summary.");
 
 for (const token of [
-  'import { useEffect, useMemo, useState } from "react"',
+  'import { createPortal } from "react-dom"',
   "subclassArtworkFor(classKey, option)",
-  "class-subclass-two-column__grid",
-  "class-subclass-two-column__scroll",
-  "grid-template-columns:repeat(2,minmax(0,1fr))",
-  "max-height:166px",
-  "width:min(35%,430px)",
-  "grid-template-columns:76px minmax(0,1fr)",
-  "min-height:52px",
-  "class-subclass-selected-row",
-  ">Change<",
-  'aria-label="Collapse subclass selector"',
+  "class-subclass-carousel-modal",
+  'role="dialog"',
+  'aria-modal="true"',
+  "class-subclass-carousel-modal__rail",
+  "scroll-snap-type:x mandatory",
+  "class-subclass-carousel-card",
+  "aspect-ratio:5/7",
+  "loopedOptions",
+  "keepRailLooped",
+  "rail.scrollWidth / 3",
+  "class-subclass-selected-card",
+  'onDoubleClick={() => setSelectorOpen(true)}',
+  ">Change Subclass<",
   "model.selectSubclass(option)",
   "model.setPreviewKey(option.key)",
-  'aria-label="Subclass catalogue"',
+  "optionEntryLevel(option) > currentLevel",
   "onInspectSubclass?.(option)",
-]) assert(selector.includes(token), `Readable two-column subclass selector is missing ${token}`);
+]) assert(selector.includes(token), `Cinematic looping subclass selector is missing ${token}`);
 for (const forbidden of [
-  'class-subclass-two-column__source',
-  'class-subclass-two-column__status',
-  'optionSummary(option)',
+  "class-subclass-two-column__grid",
+  "class-subclass-two-column__scroll",
+  "class-subclass-selected-row",
+  "grid-template-columns:repeat(2,minmax(0,1fr))",
   "onMouseEnter",
   "Search subclasses",
   "browserOpen",
   "class-subclass-browser__search",
   "class-subclass-browser__sources",
-  "grid-template-columns:repeat(6,minmax(0,1fr))",
-]) assert(!selector.includes(forbidden), `Subclass selector regressed to a bulky/hover-driven presentation: ${forbidden}`);
+]) assert(!selector.includes(forbidden), `Subclass selector regressed to the prior grid/hover-driven presentation: ${forbidden}`);
 assert(!selector.includes("supabase"), "Subclass selector must remain presentation-only.");
 
 for (const token of [
@@ -159,4 +162,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSources.includes(token), `Class browser patch unexpectedly references protected behavior: ${token}`);
 }
 
-console.log("Class browser polish validation passed: readable mockup-proportioned subclass artwork selector, click-only movable Feature-card details, selected-subclass progression bubbles, balanced per-level spell-slot table, open stable top-right art, preserved Class authority, and protected boundaries are intact.");
+console.log("Class browser polish validation passed: cinematic looping subclass gallery, click-only movable Feature-card details, selected-subclass progression bubbles, balanced per-level spell-slot table, open stable top-right art, preserved Class authority, and protected boundaries are intact.");
