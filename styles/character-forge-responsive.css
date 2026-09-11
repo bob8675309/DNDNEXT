@@ -214,7 +214,10 @@
 .npc-forge-body.is-player-mode.npc-forge-step-1,
 .npc-forge-body.is-player-mode.npc-forge-step-2{grid-template-columns:minmax(250px,30fr) minmax(0,70fr)!important}
 .npc-forge-body.is-player-mode.npc-forge-step-3{grid-template-columns:minmax(0,72fr) minmax(270px,28fr)!important}
-.npc-forge-body.is-player-mode.npc-forge-step-4{grid-template-columns:minmax(0,64fr) minmax(310px,36fr)!important}
+/* Training owns an information-heavy right dossier. Keep the authoritative
+   step-level split aligned with the Training component's 2fr/3fr contract so
+   older player-layout CSS cannot override it back to the former 64/36 layout. */
+.npc-forge-body.is-player-mode.npc-forge-step-4{grid-template-columns:minmax(390px,2fr) minmax(0,3fr)!important}
 .npc-forge-body.is-player-mode.npc-forge-step-5,
 .npc-forge-body.is-player-mode.npc-forge-step-6,
 .npc-forge-body.is-player-mode.npc-forge-step-7{grid-template-columns:minmax(0,1fr)!important}

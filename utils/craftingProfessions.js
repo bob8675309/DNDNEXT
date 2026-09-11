@@ -4,28 +4,69 @@ export const PROFESSION_DEFINITIONS = Object.freeze({
     label: "Alchemy",
     tool: "Alchemist's Supplies",
     abilities: Object.freeze(["int", "wis"]),
+    runtimeEnabled: true,
   }),
   smithing: Object.freeze({
     key: "smithing",
     label: "Smithing",
     tool: "Smith's Tools",
     abilities: Object.freeze(["str", "int"]),
+    runtimeEnabled: true,
   }),
   scribe: Object.freeze({
     key: "scribe",
     label: "Scribe",
     tool: "Calligrapher's Supplies",
     abilities: Object.freeze(["int", "wis"]),
+    runtimeEnabled: true,
   }),
   enchanting: Object.freeze({
     key: "enchanting",
     label: "Enchanting",
     tool: "Enchanter's Tools",
     abilities: Object.freeze(["int", "cha"]),
+    runtimeEnabled: true,
+  }),
+  cooking: Object.freeze({
+    key: "cooking",
+    label: "Cooking",
+    tool: "Cook's Utensils",
+    abilities: Object.freeze(["wis", "int"]),
+    runtimeEnabled: false,
+  }),
+  tinkering: Object.freeze({
+    key: "tinkering",
+    label: "Tinkering",
+    tool: "Tinker's Tools",
+    abilities: Object.freeze(["int", "dex"]),
+    runtimeEnabled: false,
+  }),
+  jewelcraft: Object.freeze({
+    key: "jewelcraft",
+    label: "Jewelcraft",
+    tool: "Jeweler's Tools",
+    abilities: Object.freeze(["dex", "int"]),
+    runtimeEnabled: false,
+  }),
+  brewing: Object.freeze({
+    key: "brewing",
+    label: "Brewing",
+    tool: "Brewer's Supplies",
+    abilities: Object.freeze(["wis", "int"]),
+    runtimeEnabled: false,
   }),
 });
 
-export const PROFESSION_KEYS = Object.freeze(Object.keys(PROFESSION_DEFINITIONS));
+// Player-facing campaign proficiency catalogue. The final four are deliberately
+// future-facing: they can be selected/persisted in Character Forge, but they do
+// not activate unfinished recipe/workshop/service runtime.
+export const TRADE_SKILL_KEYS = Object.freeze(Object.keys(PROFESSION_DEFINITIONS));
+
+// Existing crafting runtime/service authority remains intentionally limited to
+// the four implemented disciplines. Keep this export stable for legacy callers,
+// NPC Forge, workshop discovery, recipes, merchants, and crafting RPCs.
+export const PROFESSION_KEYS = Object.freeze(["alchemy", "smithing", "scribe", "enchanting"]);
+export const CRAFTING_RUNTIME_PROFESSION_KEYS = PROFESSION_KEYS;
 
 export const ABILITY_LABELS = Object.freeze({
   str: "Strength",
@@ -55,7 +96,9 @@ const SERVICE_TO_PROFESSION = Object.freeze({
 function normalizedToken(value = "") {
   return String(value || "")
     .toLowerCase()
+    .replace(/[’']/g, "")
     .replace(/[_-]+/g, " ")
+    .replace(/[^a-z0-9 ]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -73,7 +116,11 @@ export function normalizeProfessionKey(value = "") {
   if (token === "smith" || token === "blacksmith" || token === "smithing") return "smithing";
   if (token === "scribe" || token === "scribing" || token === "inscription") return "scribe";
   if (token === "enchanter" || token === "enchanting" || token === "enchantment") return "enchanting";
-  return PROFESSION_KEYS.includes(token) ? token : "";
+  if (token === "cook" || token === "cooking") return "cooking";
+  if (token === "tinker" || token === "tinkering") return "tinkering";
+  if (["jewelcraft", "jewelcrafting", "jeweler", "jeweller"].includes(token)) return "jewelcraft";
+  if (token === "brewer" || token === "brewing") return "brewing";
+  return TRADE_SKILL_KEYS.includes(token) ? token : "";
 }
 
 export function professionForDiscipline(value = "") {
@@ -129,12 +176,32 @@ export function normalizeProfessionEntry(value, professionKey) {
 
 export function normalizeProfessions(value = {}) {
   const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
-  return Object.fromEntries(PROFESSION_KEYS.map((key) => [key, normalizeProfessionEntry(source[key], key)]));
+  return Object.fromEntries(TRADE_SKILL_KEYS.map((key) => [key, normalizeProfessionEntry(source[key], key)]));
 }
 
 export function abilityModifier(score) {
   const numeric = Number(score);
   return Math.floor(((Number.isFinite(numeric) ? numeric : 10) - 10) / 2);
+}
+
+function sheetToolValues(sheet = {}) {
+  const values = [];
+  const push = (value) => {
+    if (!value) return;
+    if (Array.isArray(value)) return value.forEach(push);
+    if (typeof value === "object") return Object.values(value).forEach(push);
+    values.push(String(value));
+  };
+  push(sheet.tools);
+  push(sheet.toolProficiencies);
+  push(sheet.tool_proficiencies);
+  push(sheet.proficiencies?.tools);
+  return values;
+}
+
+function sheetHasProfessionTool(sheet = {}, definition = null) {
+  const expected = normalizedToken(definition?.tool);
+  return Boolean(expected && sheetToolValues(sheet).some((value) => normalizedToken(value) === expected));
 }
 
 export function professionModifierFromSheet(sheet = {}, professionKey) {
@@ -145,10 +212,17 @@ export function professionModifierFromSheet(sheet = {}, professionKey) {
   const rawProfessions = sheet?.professions && typeof sheet.professions === "object" ? sheet.professions : {};
   const explicitlyConfigured = Object.prototype.hasOwnProperty.call(rawProfessions, key);
   const profession = normalizeProfessionEntry(rawProfessions[key], key);
+  const hasToolProficiency = sheetHasProfessionTool(sheet, definition);
+
+  // Campaign rule: mundane artisan-tool proficiency and Trade Skill training are
+  // separate facts. A normal tool never promotes the Trade Skill to Proficient or
+  // Expertise. Unique crafting sites and magic tools can add bounded modifiers in
+  // a later crafting-bonus layer without changing the character's persisted rank.
+  const effectiveRank = profession.rank;
   const abilityScore = Number(sheet?.abilities?.[profession.ability]?.score ?? 10);
   const abilityMod = abilityModifier(abilityScore);
   const proficiencyBonus = Number(sheet?.proficiencyBonus ?? sheet?.proficiency_bonus ?? 2) || 0;
-  const proficiencyContribution = proficiencyBonus * profession.rank;
+  const proficiencyContribution = proficiencyBonus * effectiveRank;
 
   return {
     key,
@@ -160,12 +234,16 @@ export function professionModifierFromSheet(sheet = {}, professionKey) {
     abilityScore: Number.isFinite(abilityScore) ? abilityScore : 10,
     abilityModifier: abilityMod,
     proficiencyBonus,
-    rank: profession.rank,
-    rankLabel: profession.rank === 2 ? "Expertise" : profession.rank === 1 ? "Proficient" : "Untrained",
+    rank: effectiveRank,
+    rankLabel: effectiveRank === 2 ? "Expertise" : effectiveRank === 1 ? "Proficient" : "Untrained",
     offersService: profession.offersService,
     proficiencyContribution,
     totalModifier: abilityMod + proficiencyContribution,
     configured: explicitlyConfigured && profession.rank > 0,
+    proficiencySource: profession.rank > 0 ? "trade-skill" : "none",
+    hasToolProficiency,
+    toolRequiredForCrafting: true,
+    runtimeEnabled: Boolean(definition.runtimeEnabled),
   };
 }
 
@@ -247,7 +325,7 @@ export function availableProfessionsForCharacter(character = {}, sheetOverride =
 
 export function providerOffersProfession(character, professionKey, sheetOverride = null) {
   const key = normalizeProfessionKey(professionKey);
-  return Boolean(key && availableProfessionsForCharacter(character, sheetOverride).includes(key));
+  return Boolean(key && PROFESSION_KEYS.includes(key) && availableProfessionsForCharacter(character, sheetOverride).includes(key));
 }
 
 export function buildCrafterProfessionSnapshot(character, sheet, professionKey) {
@@ -269,6 +347,8 @@ export function buildCrafterProfessionSnapshot(character, sheet, professionKey) 
     offers_service: resolved.offersService,
     total_modifier: resolved.totalModifier,
     tool: resolved.tool,
+    has_tool_proficiency: resolved.hasToolProficiency,
+    tool_required_for_crafting: resolved.toolRequiredForCrafting,
     configured: resolved.configured,
   };
 }

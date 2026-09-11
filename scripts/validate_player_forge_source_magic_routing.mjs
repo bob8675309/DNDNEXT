@@ -34,12 +34,13 @@ for (const token of ["ChoiceRoutingNote", "Persistent feature choices are comple
 forbidden(classGuide, "NpcForgeClassFeatureChoices", "Class explanation routing");
 forbidden(classDock, "NpcForgeSourceChoiceFields", "Class dock explanation routing");
 for (const token of ["RichField", "npc-forge-rich-choice", "eldritch-invocation", "artificer-plan"]) required(sourceUi, token, "Rich catalogue choices");
-for (const token of ["resolverPlacement", "applyAutomaticSourceSelections"]) required(sourceContext, token, "Source resolver placement");
+for (const token of ["resolverPlacement", "applyAutomaticSourceSelections", "sourceChoiceFieldResolverPlacement", "sourceChoiceGroupsForResolverPlacement"]) required(sourceContext, token, "Source resolver placement");
+required(sourceContext, 'String(field?.kind || "") === "spell"', "Mixed feat source-magic field routing");
 for (const token of ["directCantripChoiceField", "fixedSpeciesSpellFields", '"spells"', "autoCastingAbility"]) required(speciesChoices, token, "Species source magic routing");
 for (const token of ["STRIXHAVEN_COLLEGES", "fixedCollegeForBackground", "routeStrixhaven", "routeMagicInitiate", "bestEligibleCastingAbility", "autoSelect: true"]) required(featRouting, token, "Feat source magic routing");
 for (const token of ["bestEligibleCastingAbility", "classPreferred", "STABLE_PRIORITY"]) required(autoCasting, token, "Automatic casting resolver");
 for (const token of ["routeFeatSourceChoiceGroups", "finalAbilities: controller?.finalAbilities", "selectedBackground: controller?.selectedBackground"]) required(registrar, token, "Feat routing registrar");
-for (const token of ["sourceSpellGroups", "Source-owned magic", "NpcForgeSourceChoiceFields", "automaticCastingForGroup", "No base-class spell catalogue selection is required"]) required(spellStep, token, "Unified Spell step");
+for (const token of ["sourceSpellGroups", "Source-owned magic", "NpcForgeSourceChoiceFields", "automaticCastingForGroup", "No base-class spell catalogue selection is required", "sourceChoiceGroupsForResolverPlacement", "groupsOverride={sourceSpellGroups}"]) required(spellStep, token, "Unified Spell step");
 for (const token of ["automaticSourceMagic", "Feats & Class Abilities", "sourceMagicChoices", "automaticCastingAbilityLabel"]) required(review, token, "Review source magic");
 for (const token of ["speciesFixedLanguages", "Languages"] ) required(species, token, "Fixed language parser");
 
@@ -66,4 +67,4 @@ for (const protectedToken of ["MapPageClient", "map_routes", "map_route_points",
 }
 
 required(all, "shared_character_forge_player_v2", "Forge creator authority");
-console.log("Player Forge source-defined languages, routed Training choices, rich catalogues, Species/Feat source magic, automatic casting ability, noncaster Spell resolution, server materialization, and protected-boundary isolation validated.");
+console.log("Player Forge source-defined languages, routed Training choices, rich catalogues, Species/Feat source magic including mixed feat field routing, automatic casting ability, noncaster Spell resolution, server materialization, and protected-boundary isolation validated.");

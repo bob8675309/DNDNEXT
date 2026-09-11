@@ -10,10 +10,13 @@ function currentForgePreview() {
   return activeModal?.querySelector(".npc-forge-preview") || null;
 }
 
-export default function NpcForgeSourceChoiceFields({ placement, ownerType = "", title = "Required source choices", empty = null }) {
+export default function NpcForgeSourceChoiceFields({ placement, ownerType = "", title = "Required source choices", empty = null, inline = false, groupsOverride = null }) {
   const { state, toggleChoice, setChoice } = useNpcForgeSourceChoices();
   const [previewTarget, setPreviewTarget] = useState(null);
-  const groups = sourceChoiceGroupsForPlacement(state, placement).filter((group) => {
+  const sourceGroups = Array.isArray(groupsOverride)
+    ? groupsOverride
+    : sourceChoiceGroupsForPlacement(state, placement);
+  const groups = sourceGroups.filter((group) => {
     if (!ownerType) return true;
     if (group.ownerType === ownerType) return true;
     return ownerType === "feat" && Boolean(group.metadata?.surfaceWithFeatChoices);
@@ -24,8 +27,12 @@ export default function NpcForgeSourceChoiceFields({ placement, ownerType = "", 
     : title;
 
   useEffect(() => {
+    if (inline) {
+      setPreviewTarget(null);
+      return;
+    }
     setPreviewTarget(currentForgePreview());
-  }, [placement, ownerType, groups.length]);
+  }, [placement, ownerType, groups.length, inline]);
 
   // Species and Background choices are rendered inside their owning purple rule cards by
   // NpcForgeContextPanelRefined. Keeping this wrapper mounted preserves registration and
@@ -41,7 +48,10 @@ export default function NpcForgeSourceChoiceFields({ placement, ownerType = "", 
     onSet={setChoice}
   />;
 
-  // Resolver-only source groups on later steps still belong in the right information rail.
-  // Falling back inline preserves standalone/test rendering when no Forge preview exists.
+  // `groupsOverride` narrows presentation only; canonical groups and selections remain in
+  // SourceChoice context. `inline` lets the owning surface decide where those canonical
+  // controls belong—for example feat-owned non-spell choices in Training's right dossier—
+  // while the default behavior keeps source-owned spell controls in the Forge preview rail.
+  if (inline) return fields;
   return previewTarget ? createPortal(fields, previewTarget) : fields;
 }

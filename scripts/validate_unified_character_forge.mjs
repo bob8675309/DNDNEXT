@@ -11,13 +11,17 @@ const playerCreator = read("components/PlayerCharacterCreatorV2.js");
 const sharedForge = read("components/NewNpcModalV3.js");
 const forge = read("components/NewNpcModalV3Refined.js");
 const forgeController = read("components/useNpcForgeController.js");
+const routedForgeController = read("components/useNpcForgeTrainingRoutedController.js");
 const forgeDerived = read("components/useNpcForgeDerivedModel.js");
 const forgeSteps = read("components/NpcForgeStepContent.js");
 const forgeCore = read("components/NpcForgeCoreSupport.js");
-const forgeSource = `${forge}\n${forgeController}\n${forgeDerived}\n${forgeSteps}\n${forgeCore}`;
+const forgeSource = `${forge}\n${forgeController}\n${routedForgeController}\n${forgeDerived}\n${forgeSteps}\n${forgeCore}`;
 const abilityStep = read("components/NpcForgeAbilityStep.js");
 const speciesBonus = read("components/NpcForgeSpeciesBonusPanel.js");
 const trainingStep = read("components/NpcForgeTrainingStep.js");
+const playerTrainingStep = read("components/NpcForgeTrainingStepPlayer.js");
+const trainingSource = `${trainingStep}\n${playerTrainingStep}`;
+const trainingFeatPicker = read("components/NpcForgeTrainingFeatPicker.js");
 const spellStep = read("components/NpcForgeSpellStep.js");
 const review = read("components/NpcForgeReviewPanel.js");
 const rules = read("utils/playerForgeRules.js");
@@ -53,10 +57,15 @@ expect(!sharedForge.includes("supabase.rpc =") && !sharedForge.includes("Mutatio
 
 includes(forgeSource, ["NPC_STEP_LABELS", "PLAYER_STEP_LABELS", '"Spells"', 'type="number" min="1" max="20"', 'mode = "npc"', "NpcForgeAbilityStep", "NpcForgeSpeciesBonusPanel", "NpcForgeTrainingStep", "NpcForgeSpellStep", "NpcForgeReviewPanel", "NpcForgeContextPanel", "NpcForgePortraitPickerModal", "spellChoicesForRpc", "serializeStartingMagicSelections", "startingMagicSelections", "Create Player Character", "Starting level may be set from 1 to 20.", "playerMode ? [] : draft.additionalFeats || []"], "canonical shared Forge");
 includes(abilityStep, ["Ability Score Generation Method", "Standard 3d6", "4d6 drop lowest die", "Point Buy", "Standard Class Array", "Manual Assign", "Reroll All Six", "Species Bonus stays in the right information panel"], "ability step");
-includes(speciesBonus, ["Species Bonus", "+2 in one stat and +1 in a different stat", "+1 in three different stats", "Choose a feat"], "contextual Species Bonus");
+includes(speciesBonus, ["Species Bonus", "+2 in one stat and +1 in a different stat", "+1 in three different stats", "Bonus feat", "specific feat is chosen later in Training"], "contextual Species Bonus");
+expect(!speciesBonus.includes("Species bonus feat</span>"), "Abilities still contains the old specific Bonus Feat chooser");
 expect(!abilityStep.includes("npc-forge-species-bonus mt-4"), "Species Bonus controls returned to the Abilities main workspace");
-includes(trainingStep, ["Background grants", "Training choices", "each uses one Training choice", "Campaign crafting house rule", "Short or Long Rest", "physical work site", "successful DC check"], "training step");
-expect(!trainingStep.includes("Expertise is not self-assigned during creation"), "player Training still shows the redundant Expertise denial");
+includes(trainingStep, ["NpcForgeTrainingStepBase", "NpcForgeTrainingStepPlayer", "if (!props.playerMode)"], "Training player/NPC router");
+includes(playerTrainingStep, ["Skill &amp; Training Selections", "<b>Skills</b>", "Trade Skills", "Other Training Choices", "Feat &amp; Class Choices", "Bonus Feat", "sourceGrantedTradeSkillKeys", "sourceProfessionFieldsFor", "Background tool proficiencies preserve", "NpcForgeSourceChoiceFields", 'placement="training" inline', "NpcForgeTrainingFeatPicker", "TRADE_SKILL_KEYS"], "player Training step");
+expect(!playerTrainingStep.includes("<h3>Training Picks</h3>"), "redundant Training Picks heading returned");
+includes(trainingFeatPicker, ["Search", "Category", "Prerequisite", "onDetail", "role=\"listbox\""], "Training feat catalogue");
+includes(routedForgeController, ['controller.stepKey === "abilities"', 'controller.stepKey === "training"', "Choose your Bonus Feat in Training", "TRADE_SKILL_KEYS", "sourceGrantedTradeSkillKeys", "sourceGrantedByCreation"], "Training-routed Bonus Feat/controller allowance");
+expect(!playerTrainingStep.includes("Expertise is not self-assigned during creation"), "player Training still shows the redundant Expertise denial");
 includes(spellStep, ['from("class_level_progression")', 'from("spells_catalog")', "startingSpellSourceForRow", "Known spells", "Spellbook", "Prepared", "Highest spell level", "Background-expanded access"], "spell step");
 includes(review, ["Confirm your player character", "Class Progression", "Ability Scores", "Training & Professions", "Starting Magic", "Story & Campaign Hooks", "Campaign Status", "Edit"], "review dossier");
 includes(rules, ["POINT_BUY_BUDGET = 27", "POINT_BUY_MIN = 8", "POINT_BUY_MAX = 15", "startingSpellSelectionModel", "validateStartingSpellSelections", "spellChoicesForRpc"], "player Forge rules");
@@ -83,8 +92,8 @@ includes(startingMagicAuthority, [
   "startingMagicSelections",
 ], "guarded multi-source starting magic authority");
 
-for (const source of [playerCreator, sharedForge, forgeSource, abilityStep, speciesBonus, trainingStep, spellStep, review, rules, spellSources, profile, responsive, migration, progressionFix, spellMigration, authorityMigration, startingMagicAuthority]) {
+for (const source of [playerCreator, sharedForge, forgeSource, abilityStep, speciesBonus, trainingSource, trainingFeatPicker, spellStep, review, rules, spellSources, profile, responsive, migration, progressionFix, spellMigration, authorityMigration, startingMagicAuthority]) {
   for (const forbidden of ["MapPageClient", "map_routes", "advance_all_characters", "weather", "route_segment_progress"]) expect(!source.includes(forbidden), `crossed protected world-map boundary ${forbidden}`);
 }
 
-console.log("Unified Character Forge, guarded v3 multi-source starting magic, fixed subclass spells, Background-expanded access, contextual Species Bonus, shared Training choices, player feat/spell authority, review dossier, and protected boundaries validated.");
+console.log("Unified Character Forge, guarded v3 multi-source starting magic, fixed subclass spells, Background-expanded access, Training-routed Bonus Feat catalogue, source-aware Background Trade Skills, isolated player Training, eight player Trade Skills, player feat/spell authority, review dossier, and protected boundaries validated.");

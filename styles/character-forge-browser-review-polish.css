@@ -1,0 +1,197 @@
+/* Character Forge browser-review polish.
+ * This file is intentionally scoped to the unified player Forge. It only adjusts
+ * presentation for the accepted Background/Training flow plus current Class-tab
+ * browser review; no choice ownership, persistence, crafting runtime, NPC Forge,
+ * map, or database behavior lives here.
+ */
+
+/* Background: when source features exist, let them occupy the open space directly
+ * under Skills while the Tools/Languages/Origin Feat rail continues on the right. */
+@media (min-width: 901px) {
+  .unified-player-character-forge .npc-forge-background-guide.is-showcase-one:has(> .npc-forge-bg-features) {
+    grid-template-columns: minmax(0, 1.08fr) minmax(260px, .92fr) !important;
+  }
+
+  .unified-player-character-forge .npc-forge-background-guide.is-showcase-one:has(> .npc-forge-bg-features) > .npc-forge-bg-showcase-hero,
+  .unified-player-character-forge .npc-forge-background-guide.is-showcase-one:has(> .npc-forge-bg-features) > .npc-forge-bg-showcase-story,
+  .unified-player-character-forge .npc-forge-background-guide.is-showcase-one:has(> .npc-forge-bg-features) > .npc-forge-bg-signature-choice,
+  .unified-player-character-forge .npc-forge-background-guide.is-showcase-one:has(> .npc-forge-bg-features) > .npc-forge-bg-spells,
+  .unified-player-character-forge .npc-forge-background-guide.is-showcase-one:has(> .npc-forge-bg-features) > .npc-forge-bg-showcase-note,
+  .unified-player-character-forge .npc-forge-background-guide.is-showcase-one:has(> .npc-forge-bg-features) > .npc-forge-bg-section:not(.npc-forge-bg-features) {
+    grid-column: 1 / -1;
+  }
+
+  .unified-player-character-forge .npc-forge-background-guide.is-showcase-one:has(> .npc-forge-bg-features) > .npc-forge-bg-showcase-grants {
+    display: contents !important;
+  }
+
+  .unified-player-character-forge .npc-forge-background-guide.is-showcase-one:has(> .npc-forge-bg-features) .npc-forge-bg-showcase-skills {
+    grid-column: 1;
+    grid-row: 3;
+    align-self: start;
+  }
+
+  .unified-player-character-forge .npc-forge-background-guide.is-showcase-one:has(> .npc-forge-bg-features) .npc-forge-bg-showcase-side {
+    grid-column: 2;
+    grid-row: 3 / span 2;
+    align-self: start;
+  }
+
+  .unified-player-character-forge .npc-forge-background-guide.is-showcase-one:has(> .npc-forge-bg-features) > .npc-forge-bg-features {
+    grid-column: 1;
+    grid-row: 4;
+    align-self: start;
+  }
+}
+
+/* Feats: source prose sometimes arrives as a heading followed by more than one
+ * paragraph. Keep continuation paragraphs visually inside the same feature card
+ * instead of making every paragraph look like a separate rule bubble. */
+.unified-player-character-forge .npc-forge-training-tabbed-shell.is-feats .npc-forge-training-feat-rule-list > article:first-child:not(:has(> strong)) {
+  padding: 0 2px 4px !important;
+  border: 0 !important;
+  border-left: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.unified-player-character-forge .npc-forge-training-tabbed-shell.is-feats .npc-forge-training-feat-rule-list > article:has(+ article:not(:has(> strong))) {
+  margin-bottom: 0 !important;
+  padding-bottom: 5px !important;
+  border-bottom: 0 !important;
+  border-radius: 8px 8px 0 0 !important;
+}
+
+.unified-player-character-forge .npc-forge-training-tabbed-shell.is-feats .npc-forge-training-feat-rule-list > article + article:not(:has(> strong)) {
+  margin-top: -8px !important;
+  padding-top: 4px !important;
+  border-top: 0 !important;
+  border-radius: 0 0 8px 8px !important;
+}
+
+/* The common imported pattern "You gain the following benefits." is currently
+ * paired with the first feature name by the source parser. Present that pair as
+ * supporting intro copy + the real feature heading while keeping one visual card. */
+.unified-player-character-forge .npc-forge-training-tabbed-shell.is-feats .npc-forge-training-feat-rule-list > article:first-child:has(+ article:not(:has(> strong))) > strong {
+  color: rgba(255, 255, 255, .62) !important;
+  font-size: .62rem !important;
+  font-weight: 600 !important;
+}
+
+.unified-player-character-forge .npc-forge-training-tabbed-shell.is-feats .npc-forge-training-feat-rule-list > article:first-child:has(+ article:not(:has(> strong))) > p {
+  color: #e5d2ff !important;
+  font-weight: 800 !important;
+}
+
+/* Remove the browser-review helper copy that duplicates information already shown
+ * in Current Selection. Spell-only follow-up rows also belong on Spells, not in
+ * the Feats workspace. Required Training-local feat follow-ups remain available. */
+.unified-player-character-forge .npc-forge-training-tabbed-shell.is-feats .npc-forge-training-feat-help,
+.unified-player-character-forge .npc-forge-training-tabbed-shell.is-feats .npc-forge-training-tabbed-help {
+  display: none !important;
+}
+
+.unified-player-character-forge .npc-forge-training-tabbed-shell.is-feats .npc-forge-training-feat-followups button.has-spells {
+  display: none !important;
+}
+
+.unified-player-character-forge .npc-forge-training-tabbed-shell.is-feats .npc-forge-training-feat-followups:not(:has(button:not(.has-spells))) {
+  display: none !important;
+}
+
+.unified-player-character-forge .npc-forge-training-tabbed-shell.is-feats .npc-forge-training-feat-followups > header > small {
+  display: none !important;
+}
+
+/* Use the reclaimed vertical room for the catalogue rather than leaving a dead
+ * band below five visible feats. */
+.unified-player-character-forge .npc-forge-training-tabbed-shell.is-feats .npc-forge-training-feat-list {
+  max-height: clamp(228px, calc(100dvh - 430px), 500px) !important;
+}
+
+/* Let Current Selection occupy the same available viewport height as the modal
+ * body. The generic final-step reminder is redundant on Feats and consumed space
+ * at the bottom of the browser-review screenshot. */
+.unified-player-character-forge .npc-forge-body:has(.npc-forge-training-tabbed-shell.is-feats) .npc-forge-context-panel {
+  height: calc(100dvh - 190px) !important;
+  max-height: calc(100dvh - 190px) !important;
+}
+
+.unified-player-character-forge .npc-forge-body:has(.npc-forge-training-tabbed-shell.is-feats) .npc-forge-training-context-dossier {
+  height: 100% !important;
+  min-height: 100% !important;
+  max-height: none !important;
+  overflow: auto !important;
+}
+
+.unified-player-character-forge .npc-forge-body:has(.npc-forge-training-tabbed-shell.is-feats) .npc-forge-training-context-note {
+  display: none !important;
+}
+
+/* Class: the right guide is frequently much taller than the catalogue. The body
+ * remains the single scroll owner; stretch the left workspace through that row,
+ * reserve a useful minimum for the Class catalogue at normal browser zoom, and
+ * cap the overview dock so long summaries scroll inside the dock instead of
+ * covering the selectable class list. */
+@media (min-width: 901px) {
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 > .npc-forge-workspace {
+    align-self: stretch !important;
+    min-height: 100% !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-selection {
+    display: grid !important;
+    grid-template-rows: auto auto minmax(300px, 1fr) auto !important;
+    align-content: stretch !important;
+    align-self: stretch !important;
+    min-height: 100% !important;
+    height: 100% !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog {
+    min-height: 300px !important;
+    height: 100% !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-list {
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-feature-dock {
+    position: static !important;
+    top: auto !important;
+    align-self: end !important;
+    width: 100% !important;
+    max-height: clamp(170px, 24dvh, 250px) !important;
+    overflow: auto !important;
+    overscroll-behavior: contain;
+    margin-top: 10px !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .unified-player-character-forge .npc-forge-body:has(.npc-forge-training-tabbed-shell.is-feats) .npc-forge-context-panel,
+  .unified-player-character-forge .npc-forge-body:has(.npc-forge-training-tabbed-shell.is-feats) .npc-forge-training-context-dossier {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .unified-player-character-forge .npc-forge-training-tabbed-shell.is-feats .npc-forge-training-feat-list {
+    max-height: 320px !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-selection {
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-feature-dock {
+    position: static !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}

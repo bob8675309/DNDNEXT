@@ -1,4 +1,5 @@
 import { createContext, useContext } from "react";
+import { PROFESSION_DEFINITIONS, TRADE_SKILL_KEYS } from "../utils/craftingProfessions";
 import { normalizeFeatSourceChoiceGroups } from "../utils/featSourceChoiceNormalization";
 import {
   foundationChoiceSummary,
@@ -32,15 +33,169 @@ function applyAutomaticSourceSelections(groups = [], selections = {}) {
   return normalizeSourceChoiceSelections(groups, next);
 }
 
-function resolverPlacement(group = {}) {
+function backgroundToolChoiceResolvesInTraining(group = {}) {
+  if (String(group.ownerType || "") !== "background") return false;
+  return (group.fields || []).some((field) => (
+    String(field?.kind || "") === "tool"
+    && !field?.autoSelect
+    && field?.required !== false
+  ));
+}
+
+function normalizedFeatName(group = {}) {
+  return String(group?.metadata?.featName || group?.label || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[’']/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+/**
+ * DnDNext campaign adaptation for the 2024 Crafter Origin feat.
+ *
+ * The imported source grants three Fast-Crafting artisan-tool proficiencies.
+ * DnDNext treats mapped crafting tools and Trade/Profession Skills as one
+ * campaign proficiency, so Crafter instead grants any three of the eight
+ * player-facing Profession Skills. Each option keeps the canonical mapped tool
+ * as its stored value so existing source-choice serialization, tool projection,
+ * character creation, and crafting proficiency checks continue to agree.
+ */
+function normalizeCrafterProfessionChoices(group = {}) {
+  if (String(group?.ownerType || "") !== "feat" || normalizedFeatName(group) !== "crafter") return group;
+  const source = group.source || group.metadata?.featSource || "XPHB";
+  return {
+    ...group,
+    label: "Crafter — Profession Skills",
+    helper: "DnDNext campaign rule: Crafter grants three additional Profession Skills instead of three raw Fast-Crafting tool picks. Choose them in Training → Skills → Trade Skills. Each Profession Skill also grants its mapped tool proficiency, and these feat-granted choices do not consume the class Skill / Trade Skill allowance.",
+    fields: [{
+      id: "profession-skills",
+      label: "Choose three Profession Skills",
+      kind: "tool",
+      count: 3,
+      required: true,
+      cadence: "creation",
+      options: TRADE_SKILL_KEYS.map((key) => {
+        const definition = PROFESSION_DEFINITIONS[key];
+        return {
+          key: `crafter-profession-${key}`,
+          value: definition.tool,
+          label: definition.label,
+          source: "Campaign",
+          kind: "tool",
+          description: `${definition.label} includes proficiency with ${definition.tool}.`,
+          metadata: {
+            professionKey: key,
+            mappedTool: definition.tool,
+            originalFeatSource: source,
+            campaignRule: "crafter-profession-skills",
+          },
+        };
+      }),
+      metadata: {
+        professionChoice: true,
+        campaignRule: "crafter-profession-skills",
+        originalFeatRule: "Choose three different Artisan's Tools from the Fast Crafting table.",
+      },
+    }],
+    metadata: {
+      ...(group.metadata || {}),
+      proficiencyFeat: true,
+      resolverPlacement: "training",
+      trainingSection: "skills",
+      campaignRule: "crafter-profession-skills",
+      originalFeatSource: source,
+    },
+  };
+}
+
+function normalizeProficiencyFeatDecisionSurface(group = {}) {
+  if (String(group?.ownerType || "") !== "feat" || !group?.metadata?.proficiencyFeat) return group;
+  if (group.metadata?.campaignRule === "crafter-profession-skills") return group;
+  const featName = String(group.metadata?.featName || group.label || "This feat").trim();
+  const acquisition = String(group.metadata?.acquisitionLabel || "").trim();
+  return {
+    ...group,
+    helper: `${featName} is already granted${acquisition ? ` by ${acquisition}` : ""}. Complete its feat-owned skill, tool, or instrument choices beside the feat rules in Training → Feats. These feat-granted proficiencies do not consume the class Skill / Trade Skill allowance.`,
+    metadata: {
+      ...(group.metadata || {}),
+      resolverPlacement: "training",
+      trainingSection: "feats",
+    },
+  };
+}
+
+/**
+ * Step-level resolver placement is distinct from source ownership. Class and
+ * advancement groups already resolve on the Training step but retain their
+ * subsection placement. Background tool choices are normalized into Training,
+ * and Crafter is the deliberate feat exception whose three Profession choices
+ * resolve in Skills → Trade Skills instead of the Feats dossier.
+ */
+export function sourceChoiceResolverPlacement(group = {}) {
   const explicit = String(group.resolverPlacement || group.metadata?.resolverPlacement || "").trim();
   if (explicit) return explicit;
+  if (backgroundToolChoiceResolvesInTraining(group)) return "training";
   if (["class", "advancement"].includes(group.placement)) return "training";
   return group.placement || "";
 }
 
+/**
+ * Mixed feat groups can own both permanent non-spell decisions and granted spell
+ * choices. Keep one canonical group/selection record, but resolve each field on
+ * the step where the player has the right context: feat spell fields in Spells,
+ * and other feat-owned persistent decisions in Training. Crafter remains a feat-
+ * owned choice internally but is surfaced in Skills → Trade Skills.
+ */
+export function sourceChoiceFieldResolverPlacement(group = {}, field = {}) {
+  const explicit = String(field?.resolverPlacement || field?.metadata?.resolverPlacement || "").trim();
+  if (explicit) return explicit;
+  const groupPlacement = sourceChoiceResolverPlacement(group);
+  if (groupPlacement === "spells") return "spells";
+  if (String(group?.ownerType || "") === "feat") {
+    if (String(field?.kind || "") === "spell") return "spells";
+    return "training";
+  }
+  return groupPlacement;
+}
+
+export function sourceChoiceGroupsForResolverPlacement(state = EMPTY_SOURCE_CHOICE_STATE, placement = "") {
+  return (state.groups || []).flatMap((group) => {
+    const fields = (group.fields || []).filter((field) => !placement || sourceChoiceFieldResolverPlacement(group, field) === placement);
+    if (!fields.length) return [];
+    // The clone is presentation-only. Most feat-owned non-spell groups use the
+    // existing "class" subsection marker so their decisions appear in Feats /
+    // Current Selection. Crafter is the exception: its three mapped Profession
+    // grants use the normal Training marker so the Trade Skill rows become the
+    // decision surface. Canonical ownership, ids, and serialized values stay put.
+    const crafterProfessionSkills = group.metadata?.campaignRule === "crafter-profession-skills"
+      && group.metadata?.trainingSection === "skills";
+    const projectedPlacement = placement === "training" && String(group.ownerType || "") === "feat"
+      ? crafterProfessionSkills ? "training" : "class"
+      : group.placement;
+    return [{ ...group, placement: projectedPlacement, resolverPlacement: placement || sourceChoiceResolverPlacement(group), fields }];
+  });
+}
+
+function normalizeBackgroundToolPlacement(group = {}) {
+  if (!backgroundToolChoiceResolvesInTraining(group)) return group;
+  return {
+    ...group,
+    placement: "training",
+    metadata: {
+      ...(group.metadata || {}),
+      sourcePlacement: group.placement || "background",
+      resolverPlacement: "training",
+      backgroundToolChoice: true,
+    },
+  };
+}
+
 export function normalizeSourceChoiceState(groups = [], catalogReady = true, previous = EMPTY_SOURCE_CHOICE_STATE, scope = "foundation") {
-  const validGroups = normalizeFeatSourceChoiceGroups(Array.isArray(groups) ? groups : []);
+  const validGroups = normalizeFeatSourceChoiceGroups(Array.isArray(groups) ? groups : [])
+    .map(normalizeBackgroundToolPlacement)
+    .map(normalizeCrafterProfessionChoices)
+    .map(normalizeProficiencyFeatDecisionSurface);
   const previousScopes = previous?.scopes && typeof previous.scopes === "object" ? previous.scopes : {};
   const scopes = {
     ...previousScopes,
@@ -59,7 +214,7 @@ export function normalizeSourceChoiceState(groups = [], catalogReady = true, pre
 export function sourceChoiceStateComplete(state = EMPTY_SOURCE_CHOICE_STATE, filters = {}) {
   if (!state.catalogReady) return false;
   if (filters?.placement) {
-    const groups = (state.groups || []).filter((group) => resolverPlacement(group) === filters.placement);
+    const groups = sourceChoiceGroupsForResolverPlacement(state, filters.placement);
     return sourceChoiceGroupsComplete(groups, state.selections || {}, { ...filters, placement: undefined });
   }
   return sourceChoiceGroupsComplete(state.groups || [], state.selections || {}, filters);

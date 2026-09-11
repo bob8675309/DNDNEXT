@@ -170,16 +170,6 @@ function supplementalBackgroundDetails(background = {}) {
   });
 }
 
-function clanCrafterHouseRule(sourceName = "") {
-  if (normalizedName(sourceName) !== "clan crafter") return null;
-  return {
-    name: "DnDNext House Rule: Craft Expertise",
-    description: "Your chosen Clan Crafter artisan's tool counts as Expertise when the check is specifically part of crafting with that tool. This does not double proficiency on unrelated checks that merely happen to use the same tool. The selected tool is persisted with a Craft Expertise marker so the campaign Crafting engine can consume it during the upcoming crafting-system pass.",
-    supplemental: true,
-    campaignRule: true,
-  };
-}
-
 export function backgroundFeatureDetails(background = {}) {
   const sourceName = background.sourceName || background.source_name || background.name || background.key || "";
   const rawFeatures = refinedBackgroundFeatureDetails({
@@ -203,11 +193,6 @@ export function backgroundFeatureDetails(background = {}) {
       seen.add(key);
       normalized.push(detail);
     }
-  }
-  const campaignRule = clanCrafterHouseRule(sourceName);
-  if (campaignRule) {
-    const key = `${safeText(campaignRule.name).toLowerCase()}|${safeText(campaignRule.description).toLowerCase()}`;
-    if (!seen.has(key)) normalized.push(campaignRule);
   }
   return normalized;
 }
