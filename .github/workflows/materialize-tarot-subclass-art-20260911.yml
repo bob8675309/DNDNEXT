@@ -1,0 +1,68 @@
+name: Materialize tarot subclass art 20260911
+
+on:
+  push:
+    branches:
+      - agent/tarot-subclass-transfer-20260911
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact target branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/subclass-carousel-selector-20260911
+          fetch-depth: 0
+
+      - name: Guard exact target head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "537832ab8f89191426f77e97f87ec6e081c512d0"
+
+      - name: Download reviewed tarot payload
+        shell: bash
+        env:
+          PAYLOAD_URL: "https://uca7549af5a7bb909a0dc0a15fde.dl.dropboxusercontent.com/cd/0/get/DH9V0Fx7HF4qTUfu8159twucgxONV5PqKRytdpML4JuAKMi-BvqGKbqXFiLsCtsJW9gaKkhCMd8b8iuwGQ6-_8PrL0ys1wK7Am7T-TE2x3grRjZrsEn4BFOftgQENVvusbvKSk4-GkCMox1Mtb9S85STHSM9yYnzue4n4hoCpW6hQA/file?c_luid=c335000c"
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 2 --retry-delay 2 "$PAYLOAD_URL" --output /tmp/tarot.zip
+          echo "d1051042b90680a3bd1abb9e9cfc41ad56466b0cfd094c211f1ee0d3426207f1  /tmp/tarot.zip" | sha256sum -c -
+          rm -rf /tmp/tarot-payload
+          mkdir -p /tmp/tarot-payload
+          unzip -q /tmp/tarot.zip -d /tmp/tarot-payload
+          cd /tmp/tarot-payload
+          sha256sum -c SHA256SUMS
+          test "$(find public/media/subclasses -type f -name '*.webp' | wc -l)" -eq 37
+
+      - name: Apply exact reviewed artwork scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp -R /tmp/tarot-payload/public/media/subclasses/. public/media/subclasses/
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          rows=json.loads(Path('/tmp/tarot-payload/MANIFEST.json').read_text())
+          Path('/tmp/expected.txt').write_text('\n'.join(sorted(r['dest'] for r in rows))+'\n')
+          PY
+          git status --porcelain=v1 --untracked-files=all | sed -E 's/^.. //' | sort > /tmp/changed.txt
+          diff -u /tmp/expected.txt /tmp/changed.txt
+
+      - name: Commit and push exact artwork batch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin agent/subclass-carousel-selector-20260911
+          test "$(git rev-parse origin/agent/subclass-carousel-selector-20260911)" = "537832ab8f89191426f77e97f87ec6e081c512d0"
+          git config user.name "DNDNext Artwork Materializer"
+          git config user.email "actions@users.noreply.github.com"
+          while IFS= read -r path; do git add -- "$path"; done < /tmp/expected.txt
+          git diff --cached --name-only | sort > /tmp/staged.txt
+          diff -u /tmp/expected.txt /tmp/staged.txt
+          git commit -m "Install reviewed tarot subclass artwork batch"
+          git push origin HEAD:agent/subclass-carousel-selector-20260911
