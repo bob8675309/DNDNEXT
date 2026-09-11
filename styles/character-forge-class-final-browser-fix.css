@@ -1,0 +1,249 @@
+/* Final Class browser correction pass after signed-in review.
+   Presentation only: fixes Class catalogue height/art, floating feature inspector lifecycle,
+   and Artificer hero/table proportions without changing class mechanics or source data. */
+
+@media (min-width: 901px) {
+  /* The Class step owns one fixed-height row inside the Forge. The left catalogue and
+     right guide scroll independently now that the feature inspector floats in the viewport. */
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 {
+    align-items: stretch !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 > .npc-forge-workspace,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 > .npc-forge-preview {
+    align-self: stretch !important;
+    height: 100% !important;
+    min-height: 0 !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 > .npc-forge-workspace {
+    overflow: hidden !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 > .npc-forge-preview {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-selection {
+    display: grid !important;
+    grid-template-rows: minmax(0, 1fr) !important;
+    align-content: stretch !important;
+    align-self: stretch !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog {
+    display: grid !important;
+    grid-template-rows: auto minmax(0, 1fr) !important;
+    align-content: stretch !important;
+    height: 100% !important;
+    min-height: 0 !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-list {
+    align-content: start !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+
+  /* Neutralize the earlier mockup contact-sheet sprite at equal/higher specificity.
+     Every class row uses its real dedicated image again. */
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key] .npc-forge-class-catalog-portrait {
+    width: 52px !important;
+    height: 56px !important;
+    background-image: none !important;
+    background-size: auto !important;
+    background-position: center !important;
+    border: 1px solid rgba(166, 111, 224, .38) !important;
+    border-radius: 7px !important;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, .36) !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key] .npc-forge-class-catalog-portrait img {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    opacity: 1 !important;
+    object-fit: cover !important;
+    object-position: center 24% !important;
+    filter: saturate(1.06) contrast(1.05) brightness(.98) !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="artificer"] .npc-forge-class-catalog-portrait {
+    background-image: none !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row[data-class-key="artificer"] .npc-forge-class-catalog-portrait img {
+    opacity: 1 !important;
+    object-position: 58% 45% !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-row,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-family-row {
+    grid-template-columns: 52px minmax(0, 1fr) auto !important;
+    min-height: 66px !important;
+    gap: 10px !important;
+    padding: 5px 8px !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-copy strong {
+    font-size: .78rem !important;
+    line-height: 1.08 !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-copy small {
+    font-size: .52rem !important;
+    line-height: 1.3 !important;
+    -webkit-line-clamp: 2 !important;
+  }
+
+  /* Match the approved Artificer banner proportions more closely. Avoid stretching the
+     panoramic source farther than necessary; the hero remains a backdrop, not a portrait box. */
+  .unified-player-character-forge .npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__book-hero {
+    height: 166px !important;
+    min-height: 166px !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__hero-copy {
+    width: 57% !important;
+    min-height: 166px !important;
+    padding: 18px 18px 11px 20px !important;
+    gap: 5px !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__hero-art img {
+    object-position: center 47% !important;
+    transform: none !important;
+    filter: saturate(1.06) contrast(1.08) brightness(.92) !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__book-hero h2 {
+    font-size: clamp(2.2rem, 2.7vw, 2.85rem) !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__hero-tagline {
+    font-size: .8rem !important;
+    line-height: 1.35 !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__hero-facts {
+    width: min(545px, 100%) !important;
+    gap: 6px !important;
+    margin-top: 2px !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__hero-facts > div {
+    min-height: 47px !important;
+    padding: 6px 7px 6px 40px !important;
+  }
+
+  /* The progression reference should consume the full available main lane. */
+  .unified-player-character-forge .npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__overview-layout {
+    grid-template-columns: minmax(0, 1fr) 286px !important;
+    gap: 12px !important;
+    padding: 9px 12px 12px !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__dock-lane {
+    min-height: 500px !important;
+    margin-top: -24px !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__table-card,
+  .unified-player-character-forge .npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__table-card .class-level-guide__table,
+  .unified-player-character-forge .npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__table-card .class-level-guide__row {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__table-card {
+    overflow: hidden !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__table-card .class-level-guide__table {
+    overflow-x: hidden !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__table-card .class-level-guide__row {
+    grid-template-columns: 42px 43px minmax(165px, 1.95fr) 55px 74px minmax(92px, .95fr) !important;
+    gap: 0 !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__table-card .class-level-guide__row > div {
+    min-width: 0 !important;
+    padding: 5px 4px !important;
+    font-size: .54rem !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__table-card .class-level-guide__features button,
+  .unified-player-character-forge .npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__table-card .class-level-guide__slots {
+    max-width: 100% !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  /* The feature inspector exists only while the Class step is actually mounted. A closed Forge,
+     Profile page, or another Forge tab must never leave the portal card behind. */
+  body:not(:has(.unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2)) > .npc-forge-class-feature-dock.is-viewport-floating {
+    display: none !important;
+  }
+
+  /* No generic floating card before a feature/subclass is actually inspected. */
+  body > .npc-forge-class-feature-dock.is-viewport-floating.is-placeholder {
+    display: none !important;
+  }
+
+  body > .npc-forge-class-feature-dock.is-viewport-floating.has-feature {
+    display: block !important;
+    width: min(308px, calc(100vw - 24px)) !important;
+    max-width: min(308px, calc(100vw - 24px)) !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: min(54dvh, calc(100dvh - var(--npc-forge-class-dock-top, 112px) - 14px)) !important;
+    overflow: auto !important;
+  }
+
+  body > .npc-forge-class-feature-dock.is-viewport-floating.has-feature .npc-forge-class-feature-dock__head {
+    min-height: 46px !important;
+    padding: 7px 8px !important;
+  }
+
+  body > .npc-forge-class-feature-dock.is-viewport-floating.has-feature .npc-forge-class-feature-dock__body {
+    gap: 7px !important;
+    padding: 8px 9px 9px !important;
+  }
+
+  body > .npc-forge-class-feature-dock.is-viewport-floating.has-feature .npc-forge-class-feature-dock__title-group > h3 {
+    font-size: .84rem !important;
+  }
+
+  body > .npc-forge-class-feature-dock.is-viewport-floating.has-feature .npc-forge-class-feature-dock__summary .class-feature-text,
+  body > .npc-forge-class-feature-dock.is-viewport-floating.has-feature .npc-forge-class-feature-dock__summary p {
+    font-size: .61rem !important;
+    line-height: 1.45 !important;
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1180px) {
+  .unified-player-character-forge .npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__overview-layout {
+    grid-template-columns: minmax(0, 1fr) 252px !important;
+    gap: 9px !important;
+  }
+
+  body > .npc-forge-class-feature-dock.is-viewport-floating.has-feature {
+    width: min(286px, calc(100vw - 20px)) !important;
+    max-width: min(286px, calc(100vw - 20px)) !important;
+  }
+}

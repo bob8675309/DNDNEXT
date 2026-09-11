@@ -37,8 +37,6 @@ const RESET_APP_WINDOW_EVENT = "dndnext:reset-app-window";
 const DESKTOP_MIN_WIDTH = 981;
 const EDGE_GAP = 8;
 const CORNER_HIT_SIZE = 16;
-const MIN_VISIBLE_X = 180;
-const MIN_VISIBLE_HEADER = 48;
 const RESIZE_DIRECTIONS = ["n", "s", "e", "w", "nw", "ne", "sw", "se"];
 
 function clamp(value, min, max) {
@@ -155,13 +153,21 @@ function clearInteractionClasses() {
   setResizeHover("");
 }
 
+function fullyVisiblePositionBounds(width, height) {
+  const resolvedWidth = Math.min(Math.max(0, Number(width || 0)), Math.max(0, window.innerWidth - EDGE_GAP * 2));
+  const resolvedHeight = Math.min(Math.max(0, Number(height || 0)), Math.max(0, window.innerHeight - EDGE_GAP * 2));
+  return {
+    minLeft: EDGE_GAP,
+    maxLeft: Math.max(EDGE_GAP, window.innerWidth - resolvedWidth - EDGE_GAP),
+    minTop: EDGE_GAP,
+    maxTop: Math.max(EDGE_GAP, window.innerHeight - resolvedHeight - EDGE_GAP),
+  };
+}
+
 function dragPosition(shell, startRect, dx, dy) {
-  const minLeft = MIN_VISIBLE_X - startRect.width;
-  const maxLeft = window.innerWidth - MIN_VISIBLE_X;
-  const minTop = EDGE_GAP;
-  const maxTop = Math.max(minTop, window.innerHeight - MIN_VISIBLE_HEADER);
-  setImportantPx(shell, "left", clamp(startRect.left + dx, minLeft, maxLeft));
-  setImportantPx(shell, "top", clamp(startRect.top + dy, minTop, maxTop));
+  const bounds = fullyVisiblePositionBounds(startRect.width, startRect.height);
+  setImportantPx(shell, "left", clamp(startRect.left + dx, bounds.minLeft, bounds.maxLeft));
+  setImportantPx(shell, "top", clamp(startRect.top + dy, bounds.minTop, bounds.maxTop));
 }
 
 function resizeGeometry(shell, direction, startRect, dx, dy) {
@@ -214,8 +220,9 @@ function reclampWindow(shell) {
   const maxHeight = Math.max(260, window.innerHeight - EDGE_GAP * 2);
   const width = clamp(rect.width, Math.min(minimums.width, maxWidth), maxWidth);
   const height = clamp(rect.height, Math.min(minimums.height, maxHeight), maxHeight);
-  const left = clamp(numericPx(shell.style.left, rect.left), MIN_VISIBLE_X - width, window.innerWidth - MIN_VISIBLE_X);
-  const top = clamp(numericPx(shell.style.top, rect.top), EDGE_GAP, Math.max(EDGE_GAP, window.innerHeight - MIN_VISIBLE_HEADER));
+  const bounds = fullyVisiblePositionBounds(width, height);
+  const left = clamp(numericPx(shell.style.left, rect.left), bounds.minLeft, bounds.maxLeft);
+  const top = clamp(numericPx(shell.style.top, rect.top), bounds.minTop, bounds.maxTop);
 
   setImportantPx(shell, "width", width);
   setImportantPx(shell, "height", height);
@@ -241,6 +248,7 @@ export default function ProfilePanelDragController() {
       if (pointerId != null && pointerId !== interaction.pointerId) return;
 
       const { shell, pointerId: activePointerId } = interaction;
+      reclampWindow(shell);
       shell.classList.remove("is-app-window-dragging", "is-app-window-resizing");
       try {
         shell.releasePointerCapture?.(activePointerId);

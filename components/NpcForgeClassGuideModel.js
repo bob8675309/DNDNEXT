@@ -9,6 +9,8 @@ import { useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
 
 const text = (value) => String(value ?? "").trim();
 const normalized = (value) => text(value).toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const isUuid = (value) => UUID_PATTERN.test(text(value));
 export const classSourceLabel = (source = "") => source === "XPHB" ? "2024 Player's Handbook" : source === "PHB" ? "2014 Player's Handbook" : source || "Campaign";
 export const classFeatureName = (feature) => typeof feature === "string" ? text(feature.split("|")[0]) : text(feature?.name || feature?.label || feature?.title || "Class feature");
 export const classSlotSummary = (slots) => {
@@ -151,9 +153,11 @@ export function useNpcForgeClassGuideModel(selectedClass, level) {
     let active = true;
     setLoading(true); setLoadedId(""); setLevels([]); setFeatures([]); setChoiceCatalog([]); setOptionalFeatureCatalog([]); setItems([]); setDetailItems([]); setSpells([]); setError("");
     Promise.all([
-      supabase.from("class_level_progression")
-        .select("class_level,proficiency_bonus,cantrips_known,spells_known,spell_slots,features")
-        .eq("class_id", selectedClass.id).order("class_level", { ascending: true }),
+      isUuid(selectedClass.id)
+        ? supabase.from("class_level_progression")
+          .select("class_level,proficiency_bonus,cantrips_known,spells_known,spell_slots,features")
+          .eq("class_id", selectedClass.id).order("class_level", { ascending: true })
+        : Promise.resolve({ data: [], error: null }),
       supabase.from("class_feature_catalog")
         .select("id,feature_type,name,source,class_source,subclass_name,subclass_short_name,level,description,entries,raw_payload")
         .eq("class_key", selectedClass.class_key).order("level", { ascending: true }).order("name", { ascending: true }).limit(5000),

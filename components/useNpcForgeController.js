@@ -110,7 +110,34 @@ export default function useNpcForgeController({ show, onClose, onCreated, locati
   function chooseClass(option) { const staticKey = CLASS_DEFINITIONS[option.class_key] ? option.class_key : "civilian"; patch({ classOptionId: option.id, classKey: staticKey, selectedClassSkills: [], expertiseSkills: [], baseAbilities: standardScoresForClass(option), spellSelections: {}, startingEquipment: {} }); setSpellModel(null); setSpellRows([]); setEquipmentModel(null); setDetail({ type: "class", option }); }
   function setAbilityMethod(method) { const values = { abilityMethod: method }; if (method === "standard") values.baseAbilities = standardScoresForClass(selectedClass); if (method === "pointBuy") values.baseAbilities = emptyPointBuyScores(); if (method === "3d6" || method === "4d6") { setRolls(rollAbilityPoolForMethod(method)); setAllocation({}); setSelectedRollId(""); } patch(values); }
   function rerollScores() { setRolls(rollAbilityPoolForMethod(draft.abilityMethod)); setAllocation({}); setSelectedRollId(""); }
-  function allocateRoll(ability, rollId) { if (!rollId) { setDetail({ type: "ability", key: ability }); return; } setAllocation((current) => { const next = { ...current }; const prior = next[ability]; const other = ABILITY_KEYS.find((key) => key !== ability && next[key] === rollId); next[ability] = rollId; if (other) next[other] = prior; return next; }); setSelectedRollId(""); setError(""); }
+  function allocateRoll(ability, rollId) {
+    if (!ABILITY_KEYS.includes(ability)) return;
+    if (!rollId) {
+      setAllocation((current) => {
+        if (!current[ability]) return current;
+        const next = { ...current };
+        delete next[ability];
+        return next;
+      });
+      setSelectedRollId("");
+      setDetail({ type: "ability", key: ability });
+      setError("");
+      return;
+    }
+    setAllocation((current) => {
+      const next = { ...current };
+      const prior = next[ability];
+      const other = ABILITY_KEYS.find((key) => key !== ability && next[key] === rollId);
+      next[ability] = rollId;
+      if (other) {
+        if (prior) next[other] = prior;
+        else delete next[other];
+      }
+      return next;
+    });
+    setSelectedRollId("");
+    setError("");
+  }
   function setAbility(key, value) { setDraft((current) => ({ ...current, baseAbilities: { ...(current.baseAbilities || {}), [key]: Number(value) } })); setDetail({ type: "ability", key }); setError(""); }
   function setSpeciesBonus(values) { setDraft((current) => ({ ...current, speciesBonus: { ...(current.speciesBonus || {}), ...values } })); setError(""); }
   function toggleSpeciesPlusOne(ability) { setDraft((current) => { const selected = uniqueText(current.speciesBonus?.plusOnes || []); const next = selected.includes(ability) ? selected.filter((key) => key !== ability) : selected.length < 3 ? [...selected, ability] : selected; return { ...current, speciesBonus: { ...(current.speciesBonus || {}), mode: "three", plusOnes: next, featId: "" } }; }); }

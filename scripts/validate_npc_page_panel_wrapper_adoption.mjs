@@ -14,6 +14,8 @@ const profilePageSource = read("pages", "profile.js");
 const accountStyles = read("styles", "player-account-panel.css");
 const portraitBleedStyles = read("styles", "profile-portrait-bleed-overrides.css");
 const forgeSource = read("components", "NewNpcModalV3Refined.js");
+const forgeWrapperSource = read("components", "NewNpcModalV3.js");
+const playerCreatorSource = read("components", "PlayerCharacterCreatorV2.js");
 const portraitPickerSource = read("components", "PortraitPickerModal.js");
 const spritePickerSource = read("components", "SpritePickerModal.js");
 
@@ -67,8 +69,10 @@ for (const token of [
   "INTERACTIVE_SELECTOR",
   "DESKTOP_MIN_WIDTH = 981",
   "CORNER_HIT_SIZE = 16",
-  "MIN_VISIBLE_X = 180",
-  "MIN_VISIBLE_HEADER = 48",
+  "function fullyVisiblePositionBounds(width, height)",
+  "window.innerWidth - resolvedWidth - EDGE_GAP",
+  "window.innerHeight - resolvedHeight - EDGE_GAP",
+  "reclampWindow(shell);",
   "function promoteToDesktopWindow(shell)",
   "function resizeGeometry(shell, direction, startRect, dx, dy)",
   "function resetDesktopWindow(shell)",
@@ -111,6 +115,11 @@ requireContains(playerProfileSource, 'import("./PlayerAccountPanel")', "Account 
 requireContains(playerProfileSource, 'className="player-character-forge-toolbar__actions"', "profile toolbar right actions");
 requireContains(playerProfileSource, 'aria-label="Close profile panel"', "top profile close button");
 requireContains(playerProfileSource, "accountContent={accountContent}", "Account view content routing");
+requireContains(playerProfileSource, "show={open && showCreator && !showLoading}", "portalled Forge profile visibility gate");
+requireContains(playerCreatorSource, "show = true", "player creator visibility prop");
+requireContains(playerCreatorSource, "show={show}", "player creator shared Forge visibility routing");
+requireContains(forgeWrapperSource, ".player-character-forge-host .unified-player-character-forge .npc-forge-backdrop{position:static!important", "embedded-only Forge static backdrop scope");
+requireContains(forgeWrapperSource, ".player-character-forge-host .unified-player-character-forge .npc-forge-modal-v2{width:100%!important", "embedded-only Forge width scope");
 
 for (const token of [
   'from("players")',
@@ -177,6 +186,11 @@ if (portraitBleedStyles.includes(".merchant-panel-body") || portraitBleedStyles.
 
 requireContains(forgeSource, 'className={`npc-forge-modal npc-forge-modal-v2', "shared Forge modal shell");
 requireContains(forgeSource, 'className="npc-forge-header"', "shared Forge drag handle");
+requireContains(forgeSource, 'import { createPortal } from "react-dom";', "player Forge viewport portal import");
+requireContains(forgeSource, 'const forgeWindow = <NpcForgeControllerProvider', "player Forge portal window assignment");
+requireContains(forgeSource, 'createPortal(<div className="unified-player-character-forge npc-forge-portal-root">{forgeWindow}</div>, document.body)', "player Forge body portal boundary");
+requireContains(forgeSource, ' .npc-forge-portal-root .npc-forge-backdrop{z-index:4900!important}'.trim(), "player Forge portal stack boundary");
+requireContains(forgeSource, 'if (!playerMode || typeof document === "undefined") return forgeWindow;', "NPC/SSR non-portal fallback");
 requireContains(portraitPickerSource, 'className="portrait-picker-modal"', "portrait picker window shell");
 requireContains(portraitPickerSource, 'className="portrait-picker-head"', "portrait picker drag handle");
 requireContains(spritePickerSource, 'className="sprite-picker-modal"', "sprite picker window shell");
@@ -184,6 +198,14 @@ requireContains(spritePickerSource, "sprite-picker-head", "sprite picker drag ha
 
 if (windowSource.includes('shell.classList.contains("is-player-character-forge")')) {
   throw new Error("Character Forge is still excluded from the shared desktop window controller.");
+}
+
+if (!forgeSource.includes("npc-forge-portal-root") || !forgeSource.includes("document.body")) {
+  throw new Error("Player Character Forge must escape the profile-shell containing block before desktop drag/resize geometry is applied.");
+}
+
+if (windowSource.includes("MIN_VISIBLE_X") || windowSource.includes("MIN_VISIBLE_HEADER")) {
+  throw new Error("Desktop app windows can still be dragged almost completely off-screen.");
 }
 
 if (windowSource.includes('".npc-page-profile-panel-shell",\n  ".npc-forge-modal"')) {

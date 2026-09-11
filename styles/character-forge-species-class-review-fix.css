@@ -1,0 +1,159 @@
+/* Signed-in browser review corrections: Species portrait stability and Class layout reachability.
+   Presentation only. No class/species selection authority or persisted rules are changed here. */
+
+/* Species: opening a promoted choice used to stretch the two-column hero row. The artwork
+   inherited height:100%, so object-fit:cover recalculated its crop every time Languages,
+   Size, Gender/Alignment, or another promoted choice expanded. Keep the artwork viewport
+   stable while the copy column is free to grow. */
+.unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-0 .npc-forge-species-hero {
+  align-items: start !important;
+}
+
+.unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-0 .npc-forge-species-hero .npc-forge-species-artwork {
+  align-self: start !important;
+  height: 410px !important;
+  min-height: 410px !important;
+  max-height: 410px !important;
+  aspect-ratio: auto !important;
+}
+
+.unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-0 .npc-forge-species-hero .npc-forge-species-artwork img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center top !important;
+}
+
+@media (max-width: 850px) {
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-0 .npc-forge-species-hero .npc-forge-species-artwork {
+    height: 420px !important;
+    min-height: 420px !important;
+    max-height: 420px !important;
+  }
+}
+
+@media (min-width: 901px) {
+  /* Class: both catalogue and guide are independent scroll regions. Keep a visible Firefox
+     scrollbar so a long class progression never looks clipped or unreachable. */
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 > .npc-forge-workspace,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 > .npc-forge-preview {
+    min-height: 0 !important;
+    height: 100% !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 > .npc-forge-preview {
+    position: relative !important;
+    overflow-x: hidden !important;
+    overflow-y: scroll !important;
+    scrollbar-width: auto !important;
+    scrollbar-color: rgba(168, 108, 255, .84) rgba(5, 9, 16, .96) !important;
+    scrollbar-gutter: stable !important;
+    padding-right: 10px !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-list {
+    overflow-x: hidden !important;
+    overflow-y: scroll !important;
+    scrollbar-width: auto !important;
+    scrollbar-color: rgba(168, 108, 255, .78) rgba(5, 9, 16, .94) !important;
+    scrollbar-gutter: stable !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 > .npc-forge-preview::-webkit-scrollbar,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-list::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 > .npc-forge-preview::-webkit-scrollbar-track,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-list::-webkit-scrollbar-track {
+    background: rgba(5, 9, 16, .96);
+    border-radius: 999px;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 > .npc-forge-preview::-webkit-scrollbar-thumb,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-list::-webkit-scrollbar-thumb {
+    min-height: 40px;
+    border: 2px solid rgba(5, 9, 16, .96);
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(168, 108, 255, .9), rgba(88, 214, 199, .72));
+  }
+
+  /* The generic context-card rule makes panels sticky. A class guide can be taller than its
+     scrollport, so sticky positioning makes its lower progression read as if it were missing.
+     The preview owns scrolling; the guide itself stays in normal document flow. */
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-guide {
+    position: relative !important;
+    top: auto !important;
+    height: auto !important;
+    min-height: max-content !important;
+    align-self: start !important;
+  }
+
+  /* The feature inspector is a viewport popup now. Do not reserve a dead right rail for it. */
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-guide__overview-layout,
+  .unified-player-character-forge .npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__overview-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0 !important;
+    padding: 9px 12px 18px !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-guide__dock-lane {
+    display: none !important;
+  }
+
+  /* The previous 166px Artificer banner was shorter than the copy + fact row and caused the
+     facts to collide with the overview below. Give the hero enough vertical room without
+     returning to the oversized early mockup. */
+  .unified-player-character-forge .npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__book-hero,
+  .unified-player-character-forge .npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__hero-copy {
+    height: 196px !important;
+    min-height: 196px !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__hero-art img {
+    min-height: 196px !important;
+  }
+
+  /* Every source-backed subclass is rendered directly now; wrap all boxes instead of hiding
+     overflow behind a More disclosure. This scales from four Artificer choices to larger
+     subclass catalogues without a second interaction layer. */
+  .unified-player-character-forge .npc-forge-class-guide__subclass-grid {
+    grid-template-columns: repeat(auto-fit, minmax(126px, 1fr)) !important;
+    gap: 6px !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide__subclass-grid > button {
+    min-height: 40px !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide__subclass-confirm {
+    min-height: 24px !important;
+    justify-content: flex-end !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide__subclass-confirm > span {
+    margin-right: auto;
+    color: rgba(255, 255, 255, .56) !important;
+    font-size: .53rem !important;
+  }
+
+  /* Overview guidance was duplicated by the footer note and the Detailed Guide. Removing the
+     large routing strip puts the subclass catalogue and progression higher in the viewport. */
+  .unified-player-character-forge .npc-forge-class-guide__overview-main > .npc-forge-class-guide__choice-routing.is-compact {
+    display: none !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide__overview-main {
+    gap: 8px !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide__footer-note {
+    margin-top: 0 !important;
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1180px) {
+  .unified-player-character-forge .npc-forge-class-guide__subclass-grid {
+    grid-template-columns: repeat(auto-fit, minmax(112px, 1fr)) !important;
+  }
+}

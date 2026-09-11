@@ -374,6 +374,33 @@
 }
 .unified-player-character-forge .npc-forge-ability-guide > p,
 .unified-player-character-forge .npc-forge-ability-bonus-card__head p { margin: 0; color: rgba(255,255,255,.62); font-size: .54rem; line-height: 1.45; }
+.unified-player-character-forge .npc-forge-ability-guide__focus {
+  --ability-rgb: 168,108,255;
+  display: grid;
+  gap: 7px;
+  padding: 10px;
+  border: 1px solid rgba(var(--ability-rgb), .28);
+  border-radius: 9px;
+  background: linear-gradient(145deg, rgba(var(--ability-rgb), .09), rgba(7,12,25,.5));
+  box-shadow: inset 0 1px rgba(255,255,255,.025), 0 0 20px rgba(var(--ability-rgb), .055);
+}
+.unified-player-character-forge .npc-forge-ability-guide__focus.is-str { --ability-rgb: 255,91,67; }
+.unified-player-character-forge .npc-forge-ability-guide__focus.is-dex { --ability-rgb: 242,176,40; }
+.unified-player-character-forge .npc-forge-ability-guide__focus.is-con { --ability-rgb: 48,210,129; }
+.unified-player-character-forge .npc-forge-ability-guide__focus.is-int { --ability-rgb: 65,137,255; }
+.unified-player-character-forge .npc-forge-ability-guide__focus.is-wis { --ability-rgb: 143,91,236; }
+.unified-player-character-forge .npc-forge-ability-guide__focus.is-cha { --ability-rgb: 205,67,232; }
+.unified-player-character-forge .npc-forge-ability-guide__focus-head { display: flex; align-items: center; gap: 9px; }
+.unified-player-character-forge .npc-forge-ability-guide__focus-head .npc-forge-ability-glyph { width: 38px; height: 38px; }
+.unified-player-character-forge .npc-forge-ability-guide__focus-head .npc-forge-ability-glyph svg { width: 18px; height: 18px; }
+.unified-player-character-forge .npc-forge-ability-guide__focus-head > div { display: grid; gap: 2px; }
+.unified-player-character-forge .npc-forge-ability-guide__focus-head span { color: rgba(var(--ability-rgb), .9); font-size: .42rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.unified-player-character-forge .npc-forge-ability-guide__focus-head strong { color: #fff; font-size: .75rem; line-height: 1; }
+.unified-player-character-forge .npc-forge-ability-guide__focus-head small { color: rgba(255,255,255,.67); font-size: .48rem; }
+.unified-player-character-forge .npc-forge-ability-guide__focus > p { margin: 0; color: rgba(255,255,255,.73); font-size: .51rem; line-height: 1.48; }
+.unified-player-character-forge .npc-forge-ability-guide__focus ul { display: grid; gap: 4px; margin: 0; padding-left: 16px; }
+.unified-player-character-forge .npc-forge-ability-guide__focus li { padding-left: 1px; color: rgba(255,255,255,.61); font-size: .47rem; line-height: 1.42; }
+.unified-player-character-forge .npc-forge-ability-guide__focus li::marker { color: rgba(var(--ability-rgb), .9); }
 .unified-player-character-forge .npc-forge-ability-guide__list { display: grid; gap: 5px; }
 .unified-player-character-forge .npc-forge-ability-guide__list > div {
   display: grid;

@@ -1,0 +1,113 @@
+/* Final browser-review correction for public cinematic Class artwork.
+   Presentation only. Subclass eligibility/persistence and progression authority remain unchanged.
+
+   The prior cinematic layer was anchored to the Overview article. That article sits inside the
+   Class guide's own padded workspace, so negative margins could still leave visible top/right
+   seams and made the artwork framing depend on an inner card. For public cinematic heroes in
+   Class Overview, anchor the existing <img> to the Class guide workspace itself instead.
+*/
+
+@media (min-width: 901px) {
+  .unified-player-character-forge .npc-forge-class-guide:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) {
+    position: relative !important;
+    isolation: isolate;
+  }
+
+  /* Remove the inner Overview surface as an artwork boundary. The root Class workspace is now
+     the containing block, allowing the painting to reach the actual top/right/bottom corners. */
+  .unified-player-character-forge .npc-forge-class-guide:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__overview-book {
+    position: static !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    border-color: transparent !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__overview-book::before,
+  .unified-player-character-forge .npc-forge-class-guide:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__overview-book::after {
+    content: none !important;
+  }
+
+  /* The header remains the copy/fact layout in normal flow, but it no longer owns the artwork's
+     positioning context. This lets the nested art element resolve inset:0 against the Class guide. */
+  .unified-player-character-forge .npc-forge-class-guide:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__book-hero {
+    position: static !important;
+    display: block !important;
+    min-height: 312px !important;
+    overflow: visible !important;
+    border-bottom: 0 !important;
+    background: transparent !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__hero-copy {
+    position: relative !important;
+    z-index: 4 !important;
+    width: min(56%, 780px) !important;
+    max-width: 780px !important;
+    min-height: 312px !important;
+    align-content: start !important;
+    padding: 40px 26px 24px 30px !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__hero-art {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 0 !important;
+    min-height: 100% !important;
+    z-index: 0 !important;
+    overflow: hidden !important;
+    border-radius: 0 !important;
+    background: #070a11 !important;
+    pointer-events: none;
+  }
+
+  /* The replacement cinematic assets already contain a deliberate dark left-side composition.
+     Keep only a restrained readability veil here instead of stacking the former heavy mask. */
+  .unified-player-character-forge .npc-forge-class-guide:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__hero-art::before {
+    content: "" !important;
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: 2 !important;
+    pointer-events: none;
+    background:
+      linear-gradient(90deg, rgba(5, 8, 15, .48) 0%, rgba(5, 8, 15, .22) 34%, rgba(5, 8, 15, .05) 56%, rgba(5, 8, 15, 0) 72%),
+      linear-gradient(0deg, rgba(5, 8, 14, .22) 0%, rgba(5, 8, 14, 0) 30%) !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__hero-art img {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    object-fit: cover !important;
+    object-position: 100% 0% !important;
+    transform: none !important;
+    transform-origin: right top !important;
+    filter: saturate(1) contrast(1.03) brightness(1) !important;
+  }
+
+  /* Foreground Class UI stays above the full-bleed painting. Selector/table cards retain their
+     own translucent surfaces, matching the approved mockup while keeping the art visible around them. */
+  .unified-player-character-forge .npc-forge-class-guide:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__view-header,
+  .unified-player-character-forge .npc-forge-class-guide:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__overview-layout,
+  .unified-player-character-forge .npc-forge-class-guide:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__footer-note {
+    position: relative !important;
+    z-index: 3 !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__view-header {
+    position: absolute !important;
+    z-index: 12 !important;
+  }
+
+  .unified-player-character-forge .npc-forge-class-guide:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__overview-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 8px !important;
+    padding: 10px 12px 12px !important;
+  }
+}

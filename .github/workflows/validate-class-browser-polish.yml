@@ -16,3 +16,13 @@ jobs:
           node-version: 22
       - name: Validate Class browser polish
         run: node scripts/validate_class_browser_polish.mjs
+      - name: Validate Class hero framing
+        run: node scripts/validate_class_hero_framing.mjs
+      - name: Validate Class subclass browser
+        run: node scripts/validate_class_subclass_browser.mjs
+      - name: Validate approved Artificer mockup lock
+        run: node scripts/validate_artificer_mockup_lock.mjs
+      - name: Validate final Class browser correction
+        run: node scripts/validate_class_final_browser_fix.mjs
+      - name: Validate Species and Class browser review fix
+        run: node scripts/validate_species_class_review_fix.mjs

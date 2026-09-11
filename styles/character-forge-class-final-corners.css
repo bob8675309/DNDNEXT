@@ -1,0 +1,191 @@
+/* Final Class-tab browser acceptance corrections.
+   Presentation only: preserve subclass selector/table sizing and all existing Class authorities.
+
+   Browser review established that the cinematic painting belongs to the Character Forge window,
+   not the Class body or nested guide. The modal therefore owns one crisp image from border to
+   border. Readability comes from a transparent left-side fade rather than a blurred or separately
+   cropped panel, so the castle/environment stays visibly continuous behind the copy.
+*/
+
+@media (min-width: 901px) {
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-artificer .npc-forge-class-guide__overview-book) {
+    --npc-forge-class-cinematic-art: url("/media/classes/cinematic-artificer.webp");
+    --npc-forge-class-art-position: 70% center;
+  }
+
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-barbarian .npc-forge-class-guide__overview-book) {
+    --npc-forge-class-cinematic-art: url("/media/classes/cinematic-barbarian.webp");
+    --npc-forge-class-art-position: 70% center;
+  }
+
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-bard .npc-forge-class-guide__overview-book) {
+    --npc-forge-class-cinematic-art: url("/media/classes/cinematic-bard.webp");
+    --npc-forge-class-art-position: 72% center;
+  }
+
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-cleric .npc-forge-class-guide__overview-book) {
+    --npc-forge-class-cinematic-art: url("/media/classes/cinematic-cleric.webp");
+    --npc-forge-class-art-position: 70% center;
+  }
+
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-druid .npc-forge-class-guide__overview-book) {
+    --npc-forge-class-cinematic-art: url("/media/classes/cinematic-druid.webp");
+    --npc-forge-class-art-position: 72% center;
+  }
+
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-fighter .npc-forge-class-guide__overview-book) {
+    --npc-forge-class-cinematic-art: url("/media/classes/cinematic-fighter.webp");
+    --npc-forge-class-art-position: 70% center;
+  }
+
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-monk .npc-forge-class-guide__overview-book) {
+    --npc-forge-class-cinematic-art: url("/media/classes/cinematic-monk.webp");
+    --npc-forge-class-art-position: 72% center;
+  }
+
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-paladin .npc-forge-class-guide__overview-book) {
+    --npc-forge-class-cinematic-art: url("/media/classes/cinematic-paladin.webp");
+    --npc-forge-class-art-position: 72% center;
+  }
+
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-ranger .npc-forge-class-guide__overview-book) {
+    --npc-forge-class-cinematic-art: url("/media/classes/cinematic-ranger.webp");
+    --npc-forge-class-art-position: 72% center;
+  }
+
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-rogue .npc-forge-class-guide__overview-book) {
+    --npc-forge-class-cinematic-art: url("/media/classes/cinematic-rogue.webp");
+    --npc-forge-class-art-position: 72% center;
+  }
+
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-sorcerer .npc-forge-class-guide__overview-book) {
+    --npc-forge-class-cinematic-art: url("/media/classes/cinematic-sorcerer.webp");
+    --npc-forge-class-art-position: 72% center;
+  }
+
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-warlock .npc-forge-class-guide__overview-book) {
+    --npc-forge-class-cinematic-art: url("/media/classes/cinematic-warlock.webp");
+    --npc-forge-class-art-position: 72% center;
+  }
+
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-wizard .npc-forge-class-guide__overview-book) {
+    --npc-forge-class-cinematic-art: url("/media/classes/cinematic-wizard.webp");
+    --npc-forge-class-art-position: 68% 10%;
+    --npc-forge-class-reading-fade: linear-gradient(90deg, rgba(3, 5, 12, .99) 0%, rgba(3, 5, 12, .98) 18%, rgba(3, 5, 12, .95) 32%, rgba(3, 5, 12, .88) 46%, rgba(3, 5, 12, .74) 58%, rgba(3, 5, 12, .52) 68%, rgba(3, 5, 12, .30) 76%, rgba(3, 5, 12, .12) 82%, rgba(3, 5, 12, 0) 88%);
+  }
+
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-mystic .npc-forge-class-guide__overview-book) {
+    --npc-forge-class-cinematic-art: url("/media/classes/cinematic-mystic.webp");
+    --npc-forge-class-art-position: 72% center;
+  }
+
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-monster-hunter .npc-forge-class-guide__overview-book) {
+    --npc-forge-class-cinematic-art: url("/media/classes/cinematic-monster-hunter.webp");
+    --npc-forge-class-art-position: 72% center;
+  }
+
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-civilian .npc-forge-class-guide__overview-book) {
+    --npc-forge-class-cinematic-art: url("/media/classes/cinematic-civilian.webp");
+    --npc-forge-class-art-position: 72% center;
+  }
+
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-expert-sidekick .npc-forge-class-guide__overview-book),
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-warrior-sidekick .npc-forge-class-guide__overview-book),
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-spellcaster-sidekick .npc-forge-class-guide__overview-book),
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide.is-class-sidekick .npc-forge-class-guide__overview-book) {
+    --npc-forge-class-cinematic-art: url("/media/classes/cinematic-sidekick.webp");
+    --npc-forge-class-art-position: 74% 28%;
+  }
+
+  /* One continuous, sharp Forge-border image. The default veil preserves the approved Fighter
+     balance; brighter paintings such as Wizard can supply a stronger class-specific reading fade. */
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) {
+    position: relative !important;
+    isolation: isolate;
+    overflow: hidden !important;
+    background: #070a11 !important;
+  }
+
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"])::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    filter: none !important;
+    background:
+      var(--npc-forge-class-reading-fade, linear-gradient(90deg, rgba(3, 5, 12, .80) 0%, rgba(3, 5, 12, .72) 22%, rgba(3, 5, 12, .58) 38%, rgba(3, 5, 12, .40) 52%, rgba(3, 5, 12, .24) 63%, rgba(3, 5, 12, .10) 72%, rgba(3, 5, 12, 0) 80%)),
+      linear-gradient(0deg, rgba(3, 5, 11, .20) 0%, rgba(3, 5, 11, 0) 24%),
+      var(--npc-forge-class-cinematic-art) var(--npc-forge-class-art-position, center center) / cover no-repeat;
+  }
+
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) > .npc-forge-header,
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) > .npc-forge-steps,
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) > .npc-forge-body,
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) > .npc-forge-error,
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) > .npc-forge-footer {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Keep the title and step rail readable while still allowing the same painting to remain visible
+     through the chrome, matching the approved reference rather than creating an opaque top strip. */
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) > .npc-forge-header {
+    background: linear-gradient(90deg, rgba(5, 7, 13, .48) 0%, rgba(5, 7, 13, .26) 30%, rgba(5, 7, 13, .08) 60%, rgba(5, 7, 13, .02) 100%) !important;
+    backdrop-filter: none !important;
+  }
+
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) > .npc-forge-steps {
+    background: rgba(3, 4, 9, .16) !important;
+    backdrop-filter: none !important;
+  }
+
+  .unified-player-character-forge .npc-forge-modal-v2.is-player-mode:has(.npc-forge-body.npc-forge-step-class .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) > .npc-forge-footer {
+    background: rgba(4, 6, 12, .88) !important;
+  }
+
+  /* The Class body does not paint, blur, or recrop a second image. */
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) {
+    position: relative !important;
+    isolation: auto !important;
+    background: transparent !important;
+    background-image: none !important;
+    backdrop-filter: none !important;
+  }
+
+  /* Keep the existing hero node as the source/detection contract, but do not paint a second
+     independently-cropped copy inside the right guide. */
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__hero-art {
+    display: none !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) > .npc-forge-workspace,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) > .npc-forge-preview,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__overview-book,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__book-hero,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__hero-copy {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    filter: none !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide {
+    box-shadow: none !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__hero-kicker,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__hero-copy > h2,
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class:has(.npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"]) .npc-forge-class-guide__hero-tagline {
+    text-shadow: 0 1px 3px rgba(0, 0, 0, .92), 0 0 14px rgba(0, 0, 0, .46);
+  }
+}
+
+/* The replacement Wizard selector assets are authored at the selector's true 1.9:1 viewport ratio
+   (456x240). Fill the 76x40 slot edge-to-edge; do not letterbox them with `contain`. */
+.unified-player-character-forge .npc-forge-class-guide.is-class-wizard .class-subclass-two-column__art img[src*="/media/subclasses/wizard/"] {
+  object-fit: cover !important;
+  object-position: center center !important;
+  filter: saturate(1.08) contrast(1.06) !important;
+}

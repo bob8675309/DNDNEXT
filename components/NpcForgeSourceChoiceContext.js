@@ -51,6 +51,74 @@ function normalizedFeatName(group = {}) {
     .trim();
 }
 
+function normalizedChoiceLabel(value = "") {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[’']/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+/**
+ * A class rule that grants a generic Artisan's Tool proficiency is a direct
+ * Trade Skill grant in DnDNext. Surface that single source-owned choice in the
+ * existing Training → Skills → Trade Skills list instead of duplicating it as
+ * an Additional Training dropdown. Fixed tools and mixed tool/instrument rules
+ * keep their imported source-choice presentation unchanged.
+ */
+function normalizeClassArtisanTradeSkillChoice(group = {}) {
+  if (String(group?.ownerType || "") !== "class") return group;
+  let converted = false;
+  const fields = (group.fields || []).map((field) => {
+    const exactGenericArtisanChoice = String(field?.kind || "") === "tool"
+      && normalizedChoiceLabel(field?.label) === "choose an artisans tool";
+    if (!exactGenericArtisanChoice) return field;
+    converted = true;
+    return {
+      ...field,
+      label: "Choose a Trade Skill",
+      helper: "Your class grants one additional Trade Skill through its Artisan's Tool proficiency.",
+      options: TRADE_SKILL_KEYS.map((professionKey) => {
+        const definition = PROFESSION_DEFINITIONS[professionKey];
+        return {
+          key: `class-profession-${professionKey}`,
+          value: definition.tool,
+          label: definition.label,
+          source: group.source || "Campaign",
+          kind: "tool",
+          description: `${definition.label} includes proficiency with ${definition.tool}.`,
+          metadata: {
+            professionKey,
+            mappedTool: definition.tool,
+            grantsMappedTradeSkill: true,
+            tradeSkillGrantSource: "class-artisan-tool",
+          },
+        };
+      }),
+      metadata: {
+        ...(field.metadata || {}),
+        grantsMappedTradeSkill: true,
+        campaignRule: "class-artisan-trade-skill",
+      },
+    };
+  });
+  if (!converted) return group;
+  return {
+    ...group,
+    label: "Class Trade Skill proficiency",
+    helper: "Your class grants one additional Trade Skill choice. Choose it directly from Trade Skills; it does not consume your normal Class Skill / Trade Skill allowance.",
+    fields,
+    metadata: {
+      ...(group.metadata || {}),
+      grantsMappedTradeSkill: true,
+      campaignRule: "class-artisan-trade-skill",
+      resolverPlacement: "training",
+      trainingSection: "skills",
+    },
+  };
+}
+
 /**
  * DnDNext campaign adaptation for the 2024 Crafter Origin feat.
  *
@@ -194,6 +262,7 @@ function normalizeBackgroundToolPlacement(group = {}) {
 export function normalizeSourceChoiceState(groups = [], catalogReady = true, previous = EMPTY_SOURCE_CHOICE_STATE, scope = "foundation") {
   const validGroups = normalizeFeatSourceChoiceGroups(Array.isArray(groups) ? groups : [])
     .map(normalizeBackgroundToolPlacement)
+    .map(normalizeClassArtisanTradeSkillChoice)
     .map(normalizeCrafterProfessionChoices)
     .map(normalizeProficiencyFeatDecisionSurface);
   const previousScopes = previous?.scopes && typeof previous.scopes === "object" ? previous.scopes : {};
