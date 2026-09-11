@@ -35,38 +35,41 @@ assert(!guide.includes('onMouseEnter={() => publishFeature(model, onFeatureDetai
 assert(!guide.includes('onFocus={() => publishFeature(model, onFeatureDetail'), "Feature card must not update from focus alone in the Class guide.");
 
 for (const token of [
-  'import { useEffect, useMemo, useState } from "react"',
+  'import { createPortal } from "react-dom"',
   'subclassArtworkFor(classKey, option)',
   'handleSubclassArtworkError(event, classKey)',
-  'class-subclass-two-column__grid',
-  'grid-template-columns:repeat(2,minmax(0,1fr))',
-  'grid-auto-rows:52px',
-  'class-subclass-two-column__scroll',
-  'max-height:166px',
-  'width:min(35%,430px)',
-  'grid-template-columns:76px minmax(0,1fr)',
-  'min-height:52px',
-  'class-subclass-selected-row',
-  '>Change<',
-  'aria-label="Collapse subclass selector"',
+  'class-subclass-carousel-modal',
+  'role="dialog"',
+  'aria-modal="true"',
+  'class-subclass-carousel-modal__rail',
+  'scroll-snap-type:x mandatory',
+  'class-subclass-carousel-card',
+  'aspect-ratio:5/7',
+  'loopedOptions',
+  'rail.scrollWidth / 3',
+  'keepRailLooped',
   'model.setPreviewKey(option.key)',
   'model.selectSubclass(option)',
   'optionEntryLevel(option) > currentLevel',
-  'aria-label="Subclass catalogue"',
+  'class-subclass-selected-card',
+  'onDoubleClick={() => setSelectorOpen(true)}',
+  '>Change Subclass<',
+  'currentLevel < entryLevel',
+  'setSelectorOpen(true)',
   'onInspectSubclass?.(option)',
-]) assert(selector.includes(token), `Readable two-column subclass selector is missing ${token}`);
+]) assert(selector.includes(token), `Cinematic looping subclass selector is missing ${token}`);
 
 for (const forbidden of [
-  'class-subclass-two-column__source',
-  'class-subclass-two-column__status',
-  'optionSummary(option)',
-  'onMouseEnter',
-  'onFocus={() => onInspectSubclass',
+  'class-subclass-two-column__grid',
+  'class-subclass-two-column__scroll',
+  'class-subclass-selected-row',
+  'grid-template-columns:repeat(2,minmax(0,1fr))',
   'Search subclasses',
   'class-subclass-browser__search',
   'class-subclass-browser__sources',
-  'grid-template-columns:repeat(6,minmax(0,1fr))',
-]) assert(!selector.includes(forbidden), `Subclass selector regressed to the prior bulky/hover-driven presentation: ${forbidden}`);
+  'onMouseEnter',
+  'onFocus={() => onInspectSubclass',
+]) assert(!selector.includes(forbidden), `Subclass selector regressed to the prior grid/hover-driven presentation: ${forbidden}`);
 assert(!selector.includes("supabase"), "Subclass selector must remain presentation-only.");
 
 const exactWizardSubclassArt = ["abjuration", "abjurer", "bladesinger", "bladesinging", "chronurgy", "conjuration", "divination", "diviner", "enchantment", "evocation", "evoker", "graviturgy", "illusion", "illusionist", "necromancy", "scribes", "transmutation", "war"];
@@ -162,4 +165,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSource.includes(token), `Class presentation patch crossed protected boundary: ${token}`);
 }
 
-console.log("Class subclass selector validation passed: Wizard plus all currently approved Artificer, Barbarian, Bard, Cleric, Druid, Fighter, Monk, Monster Hunter, Mystic, Paladin, Ranger, Rogue, Sorcerer, and Warlock selector artwork batches use dedicated assets; readable two-column choices, click-only Feature-card inspection, selected-subclass progression injection, balanced spell-slot table, stable cinematic art, safe artwork fallback, and protected boundaries are intact.");
+console.log("Class subclass selector validation passed: canonical subclass authority and persistence remain in the guide model while the Forge now presents subclasses through a cinematic looping, scroll-snapping card gallery with level-aware auto-open, locked-path previews, selected-card collapse, double-click reopen, safe artwork fallback, and protected boundaries intact.");
