@@ -110,14 +110,16 @@ for (const forbidden of [
 ]) assert(!selector.includes(forbidden), `Subclass selector regressed to the prior grid/hover-driven presentation: ${forbidden}`);
 assert(!selector.includes("supabase"), "Subclass selector must remain presentation-only.");
 
+// The subclass tarot deck was intentionally reset on 2026-09-12. Until the new
+// normalized 7:12 cards are approved and installed, the gallery must safely use
+// existing class-menu art rather than referencing deleted subclass assets.
 for (const token of [
-  'const WIZARD_SUBCLASS_ART_FAMILY',
-  '/media/subclasses/wizard/wizard-${family}.webp',
-  'return classMenuArtworkFor(normalizedClass)',
-]) assert(subclassArtwork.includes(token), `Subclass artwork resolver missing ${token}`);
-for (const family of ["abjuration", "conjuration", "divination", "enchantment", "evocation", "illusion", "necromancy", "transmutation"]) {
-  assert(fs.existsSync(path.join(root, `public/media/subclasses/wizard/wizard-${family}.webp`)), `Wizard subclass selector artwork missing ${family}.`);
-}
+  'classMenuArtworkFor',
+  'function fallbackSubclassArtworkFor',
+  'return fallbackSubclassArtworkFor(key(classKey))',
+  'handleSubclassArtworkError',
+]) assert(subclassArtwork.includes(token), `Subclass artwork reset/fallback contract is missing ${token}`);
+assert(!subclassArtwork.includes('/media/subclasses/'), "Reset resolver must not point at deleted subclass-specific artwork.");
 
 for (const token of [
   "grid-template-columns:minmax(0,1fr)!important",
@@ -162,4 +164,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSources.includes(token), `Class browser patch unexpectedly references protected behavior: ${token}`);
 }
 
-console.log("Class browser polish validation passed: cinematic looping subclass gallery, click-only movable Feature-card details, selected-subclass progression bubbles, balanced per-level spell-slot table, open stable top-right art, preserved Class authority, and protected boundaries are intact.");
+console.log("Class browser polish validation passed: cinematic looping subclass gallery, safe reset-era class-art fallbacks, click-only movable Feature-card details, selected-subclass progression bubbles, balanced per-level spell-slot table, open stable top-right art, preserved Class authority, and protected boundaries are intact.");
