@@ -1,197 +1,187 @@
 # Character Forge Tarot Subclass Artwork Checklist
 
-Status date: 2026-09-11
+Status date: 2026-09-12
 
-This is the working art-production checklist for the new portrait tarot-card subclass gallery. It exists specifically to prevent accidental remakes and to keep the visual remaster aligned with the preferred Supabase Class catalogue.
+This is the authoritative production checklist for the **normalized rebuild** of the Character Forge subclass tarot deck.
 
-## Authority and style contract
+The previous subclass artwork was intentionally deleted from the working branch on 2026-09-12. Progress therefore starts at **zero installed normalized tarot cards**.
 
-- Supabase `class_catalog_preferred` + matching `class_feature_catalog` rows are the source of truth for which subclasses are currently exposed.
-- Selection, level eligibility, persistence, and progression remain in the existing Class guide model. Artwork remains presentation-only.
-- Tarot card art target: **5:7 portrait**, exported as **840x1176 WebP** for the Forge gallery.
-- Keep the ornate gold frame and black title band.
-- Gold inside the illustration should be controlled; the frame already carries the strongest gold treatment.
-- Vary Species, gender presentation, age, pose, camera angle, gaze direction, action, and focal point.
-- Sexy is acceptable, but keep it tasteful: avoid excessive exposed skin and exaggerated anatomy.
-- Prefer strong environmental storytelling and immediate subclass identity.
-- Do **not** remake any entry marked ✅ unless Paul explicitly asks for a revision.
+Read first:
+
+- `docs/CHARACTER_FORGE_TAROT_SUBCLASS_CARD_STANDARD.md`
+- `docs/CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md`
+
+## Source of truth
+
+The subclass queue below is derived from the current Supabase `class_catalog_preferred` joined to matching `class_feature_catalog` rows by preferred class source.
+
+Rules:
+
+- Supabase/class-guide data determines which subclass names exist.
+- Artwork is presentation-only.
+- Equivalent imported aliases may intentionally share one art concept only where grouped together below.
+- Wizard names remain separate concepts in this checklist because the existing Wizard catalogue historically exposed one-to-one names.
+- Do not add a subclass card merely because an older non-preferred source contains that subclass.
+- Do not mark a card complete until it is approved, normalized to **7:12**, exported as **840 × 1440 WebP**, installed, wired, and validated.
 
 Legend:
 
-- ✅ **Tarot remaster installed on the current gallery branch**
-- 🟨 **Concept approved, but still needs a clean standalone tarot card rerender/export**
-- ⬜ **Legacy/wide artwork exists or safe fallback exists; tarot remaster still needed**
+- ⬜ Not yet created/approved in the normalized deck
+- 🟨 Art approved locally but not yet normalized/installed/wired
+- ✅ Approved, normalized, installed, wired, and validated
 
-## Current publication checkpoint
+## Progress
 
-The 2026-09-11 reviewed payload installed **37 portrait tarot assets** on `agent/subclass-carousel-selector-20260911` and wired all newly completed preferred subclass names through `utils/classes/subclassArtwork.js`.
+- **Target concepts:** 109
+- **✅ Installed:** 0
+- **🟨 Approved but not installed:** 0
+- **⬜ Remaining:** 109
 
-Dropbox transfer backup:
+## Artificer — 6
 
-`/DNDNext-Transfer/dndnext-tarot-remaster-20260911.zip`
-
-Archive SHA-256:
-
-`d1051042b90680a3bd1abb9e9cfc41ad56466b0cfd094c211f1ee0d3426207f1`
-
-Current count after this checkpoint:
-
-- **37** installed tarot cards
-- **6** Cleric cards with approved varied-composition direction that still need standalone rerenders
-- **66** other preferred art concepts still using legacy/wide/fallback presentation
-- **72 total distinct tarot cards still to finish**
-
-## Artificer
-
-- ✅ Alchemist
-- ✅ Armorer
-- ✅ Artillerist
-- ✅ Battle Smith
+- ⬜ Alchemist
+- ⬜ Armorer
+- ⬜ Artillerist
+- ⬜ Battle Smith
 - ⬜ Cartographer
 - ⬜ Reanimator
 
-## Barbarian
+## Barbarian — 4
 
 - ⬜ Berserker
-- ✅ Wild Heart
-- ✅ World Tree
+- ⬜ Wild Heart
+- ⬜ World Tree
 - ⬜ Zealot
 
-## Bard
+## Bard — 6
 
-- ✅ Dance
+- ⬜ Dance
 - ⬜ Glamour
 - ⬜ Lore
-- ✅ Moon
-- ✅ Spirits
+- ⬜ Moon
+- ⬜ Spirits
 - ⬜ Valor
 
-## Cleric
+## Cleric — 18 concepts
 
-`Knowledge (PSA)` intentionally shares the Knowledge artwork concept.
-
-- ✅ Ambition / Ambition (PSA)
-- ✅ Arcana
-- ✅ Death
-- ✅ Forge
-- ✅ Grave
-- ⬜ Knowledge / Knowledge (PSA)
+- ⬜ Ambition (PSA)
+- ⬜ Arcana
+- ⬜ Death
+- ⬜ Forge
+- ⬜ Grave
+- ⬜ Knowledge / Knowledge (PSA) — shared concept
 - ⬜ Life
 - ⬜ Light
-- ✅ Nature
-- 🟨 Order — corrected varied-pose direction approved in the six-card Cleric composition; standalone card still needed
-- 🟨 Peace — corrected varied-pose direction approved; standalone card still needed
-- 🟨 Solidarity / Solidarity (PSA) — corrected varied-pose direction approved; standalone card still needed
-- 🟨 Strength / Strength (PSA) — corrected varied-pose direction approved; standalone card still needed
+- ⬜ Nature
+- ⬜ Order
+- ⬜ Peace
+- ⬜ Solidarity (PSA)
+- ⬜ Strength (PSA)
 - ⬜ Tempest
 - ⬜ Trickery
-- 🟨 Twilight — corrected varied-pose direction approved; standalone card still needed
+- ⬜ Twilight
 - ⬜ War
-- 🟨 Zeal / Zeal (PSA) — corrected varied-pose direction approved; standalone card still needed
+- ⬜ Zeal (PSA)
 
-## Druid
+## Druid — 8
 
-- ✅ Dreams
+- ⬜ Dreams
 - ⬜ Land
 - ⬜ Moon
-- ✅ Sea
+- ⬜ Sea
 - ⬜ Shepherd
 - ⬜ Spores
 - ⬜ Stars
 - ⬜ Wildfire
 
-## Fighter
+## Fighter — 5
 
 - ⬜ Banneret
 - ⬜ Battle Master
 - ⬜ Champion
-- ✅ Eldritch Knight
-- ✅ Psi Warrior
+- ⬜ Eldritch Knight
+- ⬜ Psi Warrior
 
-## Monk
+## Monk — 4
 
 - ⬜ Elements
-- ✅ Mercy
+- ⬜ Mercy
 - ⬜ Open Hand
 - ⬜ Shadow
 
-## Monster Hunter
+## Monster Hunter — 4
 
-- ⬜ Carver
-- ⬜ Devourer
-- ⬜ Occultist
-- ⬜ Trapper
+- ⬜ Carver Guild
+- ⬜ Devourer Guild
+- ⬜ Occultist Guild
+- ⬜ Trapper Guild
 
 ## Mystic
 
-The current preferred Mystic source exposes no subclass catalogue rows. Do not create more Mystic tarot cards until the catalogue changes or Paul explicitly asks for compatible-source art.
+The current preferred-source join exposes no active Mystic subclass queue for this rebuild. Do not create Mystic tarot cards unless the preferred catalogue changes or Paul explicitly asks for a compatible-source set.
 
-## Paladin
+## Paladin — 5
 
 - ⬜ Ancients
 - ⬜ Devotion
 - ⬜ Glory
 - ⬜ Noble Genies
-- ✅ Vengeance
+- ⬜ Vengeance
 
-## Ranger
+## Ranger — 6
 
 - ⬜ Beast Master
 - ⬜ Fey Wanderer
 - ⬜ Gloom Stalker
-- ✅ Hollow Warden
+- ⬜ Hollow Warden
 - ⬜ Hunter
-- ✅ Winter Walker
+- ⬜ Winter Walker
 
-## Rogue
+## Rogue — 6
 
 - ⬜ Arcane Trickster
 - ⬜ Assassin
 - ⬜ Phantom
-- ✅ Scion of the Three
+- ⬜ Scion of the Three
 - ⬜ Soulknife
 - ⬜ Thief
 
-## Sorcerer
+## Sorcerer — 10 concepts
 
-The paired names below intentionally share one artwork concept where the preferred catalogue exposes equivalent naming variants.
-
-- ⬜ Aberrant / Aberrant Mind
-- ⬜ Clockwork / Clockwork Soul
+- ⬜ Aberrant / Aberrant Mind — shared concept
+- ⬜ Clockwork / Clockwork Soul — shared concept
 - ⬜ Divine Soul
 - ⬜ Draconic
-- ✅ Lunar
-- ✅ Pyromancer / Pyromancer (PSK)
+- ⬜ Lunar
+- ⬜ Pyromancer (PSK)
 - ⬜ Shadow
-- ✅ Spellfire
-- ✅ Storm
-- ⬜ Wild / Wild Magic
+- ⬜ Spellfire
+- ⬜ Storm
+- ⬜ Wild / Wild Magic — shared concept
 
-## Warlock
+## Warlock — 9
 
 - ⬜ Archfey
 - ⬜ Celestial
-- ✅ Fathomless
+- ⬜ Fathomless
 - ⬜ Fiend
-- ✅ Genie
+- ⬜ Genie
 - ⬜ Great Old One
 - ⬜ Hexblade
 - ⬜ Undead
-- ✅ Undying
+- ⬜ Undying
 
-## Wizard
-
-Wizard currently has one-to-one file coverage guarded by `validate_class_subclass_browser.mjs`, so similarly named catalogue rows remain separate checklist entries until that contract is deliberately changed.
+## Wizard — 18
 
 - ⬜ Abjuration
-- ✅ Abjurer
-- ✅ Bladesinger
+- ⬜ Abjurer
+- ⬜ Bladesinger
 - ⬜ Bladesinging
-- ✅ Chronurgy
-- ✅ Conjuration
+- ⬜ Chronurgy
+- ⬜ Conjuration
 - ⬜ Divination
-- ✅ Diviner
-- ✅ Enchantment
+- ⬜ Diviner
+- ⬜ Enchantment
 - ⬜ Evocation
 - ⬜ Evoker
 - ⬜ Graviturgy
@@ -208,23 +198,41 @@ Wizard currently has one-to-one file coverage guarded by `validate_class_subclas
 - Expert Sidekick — no subclass catalogue authority
 - Warrior Sidekick — no subclass catalogue authority
 - Spellcaster Sidekick — no subclass catalogue authority
+- Mystic — no preferred-source subclass rows in the current rebuild join
 
-## Next production batch
+## Recommended starting order
 
-To avoid remaking completed work, continue with entries still marked 🟨 or ⬜. Recommended next six:
+The new chat should work from the top of this checklist unless Paul chooses another class.
 
-1. Cleric — Order standalone rerender
-2. Cleric — Peace standalone rerender
-3. Cleric — Solidarity standalone rerender
-4. Cleric — Strength standalone rerender
-5. Cleric — Twilight standalone rerender
-6. Cleric — Zeal standalone rerender
+Recommended first small approval batch:
 
-After those six are exported individually, continue with **Artificer Cartographer + Reanimator**, then the remaining preferred legacy families in checklist order.
+1. Artificer — Alchemist
+2. Artificer — Armorer
+3. Artificer — Artillerist
+4. Artificer — Battle Smith
+
+Keep the first batch small enough to verify the finalized **7:12 no-footer template** before scaling production.
+
+## Completion rule
+
+A checkbox becomes ✅ only after all of the following are true:
+
+1. Individual card reviewed by Paul.
+2. Passes anatomy/hand/prop QA.
+3. Passes subclass-readability and variety tests.
+4. Uses canonical 7:12 composition.
+5. Uses continuous full-bleed art with **no footer**.
+6. Uses the fixed frame/title/emblem geometry.
+7. Exported at 840 × 1440 WebP.
+8. Added under `public/media/subclasses/<class-key>/`.
+9. Explicitly wired in `utils/classes/subclassArtwork.js`.
+10. Checklist updated.
+11. Relevant validation/CI passes.
+12. Vercel preview checked.
 
 ## Protected boundaries
 
 - No Supabase writes or migrations for artwork.
-- No Class/subclass rules or persistence changes.
+- No subclass rules or persistence changes.
 - No world-map or town/city-map changes.
-- No crafting, inventory, merchant, travel, encounter, tactical, or character-sheet runtime changes.
+- No crafting, inventory, merchant, travel, encounter, tactical, or unrelated character-sheet runtime changes.
