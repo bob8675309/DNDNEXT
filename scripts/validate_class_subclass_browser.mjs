@@ -44,7 +44,6 @@ for (const token of [
   'class-subclass-carousel-modal__rail',
   'scroll-snap-type:x mandatory',
   'class-subclass-carousel-card',
-  'aspect-ratio:5/7',
   'loopedOptions',
   'rail.scrollWidth / 3',
   'keepRailLooped',
@@ -72,57 +71,16 @@ for (const forbidden of [
 ]) assert(!selector.includes(forbidden), `Subclass selector regressed to the prior grid/hover-driven presentation: ${forbidden}`);
 assert(!selector.includes("supabase"), "Subclass selector must remain presentation-only.");
 
-const exactWizardSubclassArt = ["abjuration", "abjurer", "bladesinger", "bladesinging", "chronurgy", "conjuration", "divination", "diviner", "enchantment", "evocation", "evoker", "graviturgy", "illusion", "illusionist", "necromancy", "scribes", "transmutation", "war"];
-for (const subclass of exactWizardSubclassArt) {
-  assert(subclassArtwork.includes(`${subclass}: "${subclass}"`), `Wizard subclass artwork resolver is not one-to-one for ${subclass}.`);
-  assert(fs.existsSync(path.join(root, `public/media/subclasses/wizard/wizard-${subclass}.webp`)), `Wizard subclass selector artwork missing ${subclass}.`);
-}
-const wizardSubclassArtBytes = new Set(exactWizardSubclassArt.map((subclass) => fs.readFileSync(path.join(root, `public/media/subclasses/wizard/wizard-${subclass}.webp`)).toString("base64")));
-assert(wizardSubclassArtBytes.size === exactWizardSubclassArt.length, "Every canonical Wizard subclass must use a distinct artwork file.");
-
-const approvedSubclassFamilies = Object.freeze({
-  artificer: ["alchemist", "armorer", "artillerist", "battle-smith", "cartographer", "reanimator"],
-  barbarian: ["ancestral-guardian", "berserker", "giant", "totem-warrior", "wild-magic", "zealot"],
-  bard: ["creation", "glamour", "lore", "swords", "valor", "whispers"],
-  cleric: ["knowledge", "life", "light", "tempest", "trickery", "war"],
-  druid: ["land", "moon", "shepherd", "spores", "stars", "wildfire"],
-  fighter: ["arcane-archer", "banneret", "battle-master", "cavalier", "champion", "echo-knight"],
-  monk: ["astral-self", "drunken-master", "elements", "kensei", "open-hand", "shadow"],
-  "monster-hunter": ["carver", "devourer", "occultist", "trapper"],
-  mystic: ["avatar", "awakened", "immortal", "nomad", "soul-knife", "wu-jen"],
-  paladin: ["ancients", "conquest", "crown", "devotion", "glory", "noble-genies"],
-  ranger: ["beast-master", "drakewarden", "fey-wanderer", "gloom-stalker", "horizon-walker", "hunter"],
-  rogue: ["arcane-trickster", "assassin", "phantom", "soulknife", "swashbuckler", "thief"],
-  sorcerer: ["aberrant", "clockwork", "divine-soul", "draconic", "shadow", "wild-magic"],
-  warlock: ["archfey", "celestial", "fiend", "great-old-one", "hexblade", "undead"],
-});
-
-for (const [classKey, families] of Object.entries(approvedSubclassFamilies)) {
-  for (const family of families) {
-    assert(subclassArtwork.includes(`\"${family}\"`) || subclassArtwork.includes(`${family}:`), `${classKey} subclass artwork resolver is missing ${family}.`);
-    const file = path.join(root, `public/media/subclasses/${classKey}/${classKey}-${family}.webp`);
-    assert(fs.existsSync(file), `Approved ${classKey} subclass selector artwork missing ${family}.`);
-    assert(fs.statSync(file).size > 0, `Approved ${classKey} subclass selector artwork is empty: ${family}.`);
-  }
-}
-
+// 2026-09-12 intentional art reset: no subclass-specific files are required while the
+// new canonical 7:12 tarot deck is rebuilt. Runtime must use the existing class art
+// fallback until a newly reviewed card is explicitly added and wired.
 for (const token of [
-  'const WIZARD_SUBCLASS_ART_FAMILY',
-  'const APPROVED_SUBCLASS_ART_FAMILIES',
-  'function approvedSubclassArtworkFor',
-  'evocation: "evocation"',
-  'abjuration: "abjuration"',
-  'necromancy: "necromancy"',
-  '"aberrant-mind": "aberrant"',
-  '"clockwork-soul": "clockwork"',
-  'wild: "wild-magic"',
-  '"purple-dragon-knight-banneret": "banneret"',
-  '"four-elements": "elements"',
-  '|| classMenuArtworkFor(normalizedClass)',
-]) assert(subclassArtwork.includes(token), `Subclass artwork authority is missing ${token}`);
-for (const family of ["abjuration", "conjuration", "divination", "enchantment", "evocation", "illusion", "necromancy", "transmutation"]) {
-  assert(fs.existsSync(path.join(root, `public/media/subclasses/wizard/wizard-${family}.webp`)), `Wizard subclass selector artwork missing ${family}.`);
-}
+  'classMenuArtworkFor',
+  'function fallbackSubclassArtworkFor',
+  'return fallbackSubclassArtworkFor(key(classKey))',
+  'handleSubclassArtworkError',
+]) assert(subclassArtwork.includes(token), `Subclass artwork reset/fallback contract is missing ${token}`);
+assert(!subclassArtwork.includes('/media/subclasses/'), "Reset resolver must not point at deleted subclass-specific artwork.");
 
 assert(model.includes("resolveSubclassCatalog") && model.includes("const options = useMemo"), "Canonical subclass catalogue authority moved out of the existing guide model.");
 assert(model.includes("selectSubclass"), "Existing subclass persistence authority disappeared from the guide model.");
@@ -165,4 +123,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSource.includes(token), `Class presentation patch crossed protected boundary: ${token}`);
 }
 
-console.log("Class subclass selector validation passed: canonical subclass authority and persistence remain in the guide model while the Forge now presents subclasses through a cinematic looping, scroll-snapping card gallery with level-aware auto-open, locked-path previews, selected-card collapse, double-click reopen, safe artwork fallback, and protected boundaries intact.");
+console.log("Class subclass selector validation passed: canonical subclass authority and persistence remain in the guide model, the cinematic looping gallery remains intact, and subclass-specific artwork is intentionally reset to class-menu fallbacks pending the normalized 7:12 tarot rebuild.");
