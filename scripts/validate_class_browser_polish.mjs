@@ -5,6 +5,7 @@ const root = process.cwd();
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
 
+const app = read("pages/_app.js");
 const step = read("components/NpcForgeStepContent.js");
 const catalog = read("components/NpcForgeClassCatalog.js");
 const guide = read("components/NpcForgeClassGuide.js");
@@ -17,6 +18,7 @@ const presentation = read("utils/classes/classPresentation.js");
 const catalogWrapper = read("utils/npcForgeCatalog.js");
 const polish = read("styles/character-forge-browser-review-polish.css");
 const framing = read("styles/character-forge-class-hero-framing.css");
+const tarotLayout = read("styles/character-forge-subclass-tarot-layout.css");
 
 assert(step.includes('import NpcForgeClassCatalog from "./NpcForgeClassCatalog"'), "Class step must use the dedicated Class catalogue.");
 assert(step.includes("<NpcForgeClassCatalog query={classQuery}"), "Class step does not render the dedicated Class catalogue.");
@@ -85,7 +87,6 @@ for (const token of [
   "class-subclass-carousel-modal__rail",
   "scroll-snap-type:x mandatory",
   "class-subclass-carousel-card",
-  "aspect-ratio:5/7",
   "loopedOptions",
   "keepRailLooped",
   "rail.scrollWidth / 3",
@@ -109,6 +110,17 @@ for (const forbidden of [
   "class-subclass-browser__sources",
 ]) assert(!selector.includes(forbidden), `Subclass selector regressed to the prior grid/hover-driven presentation: ${forbidden}`);
 assert(!selector.includes("supabase"), "Subclass selector must remain presentation-only.");
+
+assert(app.includes('import "../styles/character-forge-subclass-tarot-layout.css";'), "Normalized subclass tarot layout stylesheet is not loaded by _app.js.");
+for (const token of [
+  ".class-subclass-carousel-card",
+  "aspect-ratio: 7 / 12 !important;",
+  ".class-subclass-carousel-card__shade",
+  "inset: 20px auto auto 20px !important;",
+  "max-height: min(900px, 94vh) !important;",
+]) assert(tarotLayout.includes(token), `Normalized 7:12 subclass tarot presentation is missing ${token}`);
+assert(!tarotLayout.includes("aspect-ratio: 5 / 7"), "Tarot layout override regressed to the old 5:7 card ratio.");
+assert(!tarotLayout.includes("rgba(3, 5, 10, 0.96)"), "Tarot layout override restored the old near-opaque lower footer shade.");
 
 // The subclass tarot deck was intentionally reset on 2026-09-12. Until the new
 // normalized 7:12 cards are approved and installed, the gallery must safely use
@@ -159,9 +171,9 @@ for (const token of [
 assert(polish.includes("npc-forge-step-2"), "Class browser polish scope disappeared.");
 assert(guideStyles.includes("npc-forge-class-guide__table-card") && guideStyles.includes("class-level-guide__row"), "Class progression foundation styling disappeared.");
 
-const protectedSources = `${step}\n${catalog}\n${guide}\n${selector}\n${guideStyles}\n${dock}\n${artwork}\n${subclassArtwork}\n${presentation}\n${catalogWrapper}\n${polish}\n${framing}`.toLowerCase();
+const protectedSources = `${step}\n${catalog}\n${guide}\n${selector}\n${guideStyles}\n${dock}\n${artwork}\n${subclassArtwork}\n${presentation}\n${catalogWrapper}\n${polish}\n${framing}\n${tarotLayout}`.toLowerCase();
 for (const token of ["map_routes", "advance_all_characters", "mappageclient", "townsheet", "world travel", "crafting_recipe"]) {
   assert(!protectedSources.includes(token), `Class browser patch unexpectedly references protected behavior: ${token}`);
 }
 
-console.log("Class browser polish validation passed: cinematic looping subclass gallery, safe reset-era class-art fallbacks, click-only movable Feature-card details, selected-subclass progression bubbles, balanced per-level spell-slot table, open stable top-right art, preserved Class authority, and protected boundaries are intact.");
+console.log("Class browser polish validation passed: cinematic looping subclass gallery, normalized 7:12 tarot layout, restrained no-footer card shading, safe class-art fallbacks pending approved asset installation, click-only movable Feature-card details, selected-subclass progression bubbles, balanced per-level spell-slot table, open stable top-right art, preserved Class authority, and protected boundaries are intact.");
