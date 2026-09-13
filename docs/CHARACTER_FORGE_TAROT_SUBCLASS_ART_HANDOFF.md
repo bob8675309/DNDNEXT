@@ -2,6 +2,19 @@
 
 Use this document as the starting brief for a new chat whose primary job is to rebuild the Character Forge subclass tarot-card artwork from zero.
 
+## START HERE — connector / transfer workflow
+
+Before doing artwork or repository work in a new conversation, use the connected **GitHub, Supabase, Vercel, and Dropbox** tools. Do not rediscover access from scratch.
+
+- **GitHub:** re-fetch PR #187, `agent/subclass-carousel-selector-20260911`, its exact current head, current files, and Actions/check state.
+- **Supabase:** verify preferred-source subclass catalogue data in `DnDWeb` (`ucggczovhmauhshvhusx`) when names/queue authority matter; artwork work is read-only and requires no DB mutation.
+- **Vercel:** after a push, find the preview deployment whose metadata matches the exact new target-branch Git SHA, wait for `READY`, inspect logs on failure, and use protected-preview fetch/access tools when needed.
+- **Dropbox:** use `/DNDNext-Transfer/` for approved binary ZIP payloads. Temporary download links may be single-use, so the GitHub Actions runner should perform the first real GET.
+
+When a real checkout, shell transform, or binary transfer is required, use the proven **scratch/preview branch** pattern: create the scratch branch from the exact PR head, put a one-shot workflow there, have that workflow check out the real PR branch, hard-guard the expected head SHA, modify/validate/commit, and push `HEAD:agent/subclass-carousel-selector-20260911`. The scratch branch itself is a runner surface and is **not merged into PR #187 merely to deliver the result**.
+
+Read `docs/REPO_ACCESS_STANDING_RULE.md`, `docs/CHATGPT_REPO_WRITE_PROCEDURE.md`, and `docs/ARTWORK_BINARY_TRANSFER_RUNBOOK.md` before claiming any access/transfer limitation.
+
 ## Project / repo context
 
 Repository: `bob8675309/DNDNEXT`
@@ -155,9 +168,17 @@ Relevant validators:
 
 ## Binary artwork materialization route
 
-A working binary-transfer path already exists in repository history and should be reused as a **pattern**, not by restoring its old deleted art.
+The binary-transfer path is now both historical and **currently proven**. Reuse the guarded Dropbox -> scratch/preview GitHub Actions -> real PR branch pattern; do not restore reset-era art.
 
-Reference commit:
+Current normalized install reference:
+
+`f95aea3d05cb7d5c4cecd1d5f4ed049b07ebd3c5` — `Install approved normalized tarot subclass artwork` (34 approved 840 × 1440 WebP concepts).
+
+Current wiring reference:
+
+`40fa46f2710ffadce2962b0bd66e21acefe0bcb5` — `Wire approved normalized tarot subclass artwork`.
+
+Historical materializer reference:
 
 `30d05db301638d998d7ebbd053750330547ab7d5` — `Materialize reviewed tarot subclass artwork batch`
 
@@ -181,7 +202,7 @@ Use:
 
 `docs/CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md`
 
-The checklist was reset to zero installed normalized tarot cards after the art purge. It is based on the current preferred Supabase class catalogue and groups only explicitly equivalent alias names where one art concept is intentionally shared.
+The checklist now records the first 34 approved normalized tarot concepts as installed, wired, and validated, with 75 concepts remaining. It is based on the current preferred Supabase class catalogue and groups only explicitly equivalent alias names where one art concept is intentionally shared.
 
 ## Approval philosophy
 

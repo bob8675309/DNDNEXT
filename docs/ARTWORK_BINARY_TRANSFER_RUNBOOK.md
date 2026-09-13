@@ -1,164 +1,188 @@
 # DNDNext Artwork Binary Transfer Runbook
 
-Status date: 2026-09-05
+Status date: 2026-09-13
 
-Use this runbook whenever approved/generated binary artwork must be installed into a DNDNext GitHub branch and the connector does not provide a byte-preserving direct file upload.
+Use this runbook whenever approved/generated binary artwork must be installed into a DNDNext GitHub branch and ordinary GitHub text/file actions are not the appropriate byte-preserving transport.
+
+## Connected tools used by this route
+
+- **GitHub connector** — target branch/head authority, scratch/preview branch creation, temporary workflow creation, run/commit verification.
+- **Dropbox connector** — upload the reviewed ZIP to `/DNDNext-Transfer/` and issue a temporary download link.
+- **Vercel connector** — verify the deployment created from the final target-branch commit and inspect build logs.
+- **Supabase connector** — normally read-only for artwork tasks; use it only to verify catalogue authority when artwork names depend on live preferred-source data. Pure artwork transport must not mutate Supabase.
 
 ## Preferred route
 
-`approved local bytes -> ZIP -> Dropbox /DNDNext-Transfer -> one-shot GitHub Actions scratch branch -> exact-head checkout/guard -> checksum/MIME/dimension verification -> exact diff guard -> bot commit -> push intended PR branch -> GitHub/CI/Vercel verification`
+`approved local bytes -> normalize/export final files -> manifest + SHA-256 -> ZIP -> Dropbox /DNDNext-Transfer -> one-shot GitHub Actions scratch/preview branch -> checkout exact intended PR branch -> exact-head guard -> download once -> checksum/MIME/dimension/count verification -> exact changed-path guard -> commit -> push intended PR branch -> GitHub/CI -> Vercel exact-head preview`
 
-This path successfully installed the approved Character Forge Species artwork on 2026-09-05. It is the default artwork-transfer path. Do not spend another session rediscovering giant base64 Git-blob transport while this bridge is available.
+This route is established DNDNext operating procedure. It successfully installed Species artwork on 2026-09-05 and the normalized subclass tarot batch on 2026-09-13. Do not spend another session rediscovering giant base64 Git-blob transport while this bridge is available.
 
-## 1. Freeze the intended repository baseline
+## 1. Freeze the intended target
 
 Before transfer:
 
-1. Read the active PR and exact remote head from GitHub.
-2. Confirm the target branch name.
-3. Confirm the expected changed-file list.
-4. Do not start from an older screenshot SHA or a remembered local SHA.
-5. Never use `main` as a transfer scratchpad.
+1. Use GitHub to fetch the active PR/working branch.
+2. Record the exact current target head SHA.
+3. Confirm the expected destination paths/count.
+4. Confirm the payload represents artwork Paul actually approved.
+5. Never use `main` as the transfer scratchpad.
 
-The one-shot workflow must later abort if the target branch is no longer at this exact head.
+The one-shot runner must abort if the intended target branch no longer has the expected head.
 
-## 2. Prepare final binary assets locally
+## 2. Prepare the final binary payload
 
-- Convert/export the exact user-approved artwork into the repository's intended final format.
-- Do not reduce quality merely to make transfer easier.
-- Do not regenerate already-approved artwork during transport.
-- Record the expected dimensions and MIME type.
+- Export the exact approved artwork into the repository's final format.
+- Never regenerate approved art merely for transport.
+- Never reduce quality merely to make a connector upload easier.
+- Record expected dimensions, format, MIME, and destination path for every asset.
 - Compute SHA-256 for every file.
+- Create a machine-readable manifest where practical.
+- Create one ZIP containing only the intended payload and manifest/checksum files.
+- Compute SHA-256 for the ZIP itself.
 
-Create one ZIP containing only the intended transfer payload. Compute SHA-256 for the ZIP as well.
-
-Keep a manifest similar to:
-
-```text
-<sha256>  cinematic-example-a.webp
-<sha256>  cinematic-example-b.webp
-```
+The 2026-09-13 tarot batch used 840 × 1440 WebP files and an exact 34-concept manifest/count guard.
 
 ## 3. Upload the ZIP to Dropbox
 
-Use the connected Dropbox tool and save the ZIP under:
+Use the Dropbox connector and save the bundle under:
 
 `/DNDNext-Transfer/`
 
-Use a unique descriptive filename. Verify Dropbox reports the upload completed before proceeding.
+Use a unique descriptive filename and wait until Dropbox reports `completed`.
 
-When the workflow is ready to run, obtain a Dropbox download URL. If the connector supplies a single-use temporary URL, do not preflight, preview, HEAD, or otherwise consume it before GitHub Actions does the real GET.
+Then request a temporary download URL for the uploaded file. Treat temporary Dropbox download URLs as potentially **single-use**:
 
-## 4. Create a bounded scratch branch
+- do not preview the URL;
+- do not send HEAD requests;
+- do not preflight it with another fetch;
+- do not paste it into a surface that may automatically unfurl/fetch it.
 
-Create a new scratch branch from the current accepted target-branch head. Example naming:
+The first real GET should be the GitHub Actions runner downloading `/tmp/<payload>.zip`.
 
-`agent/species-corrections-transfer-YYYYMMDD`
+## 4. Create a bounded scratch/preview branch
 
-Only the transfer workflow belongs on this scratch branch. The workflow itself should not be copied into the working PR branch.
+Create a new branch from the exact current target-branch head. Example:
+
+`agent/<task>-materialize-YYYYMMDD`
+
+This branch is a temporary runner surface. Put only the one-shot workflow there.
+
+**Do not merge the scratch/preview branch into the real PR just to deliver the binary result.** The workflow should check out the real target branch and push the verified resulting commit directly back to that target branch.
 
 ## 5. One-shot workflow contract
 
-The workflow should:
+The workflow must:
 
-1. Trigger only on the scratch branch/workflow path.
-2. Use `permissions: contents: write`.
-3. Check out the **real intended target branch**, not the scratch branch, with full enough history to push.
-4. Guard the exact expected target SHA:
+1. trigger only from the bounded scratch/preview branch;
+2. use `permissions: contents: write`;
+3. check out the **real intended PR/working branch**, not the scratch branch;
+4. guard the exact expected target SHA:
 
 ```bash
 test "$(git rev-parse HEAD)" = "<EXPECTED_TARGET_HEAD_SHA>"
 ```
 
-5. Download the ZIP once.
-6. Verify the ZIP SHA-256 before unzipping.
-7. Verify every asset SHA-256.
-8. Verify MIME type, e.g. `image/webp`.
-9. Verify dimensions/format with Pillow or another deterministic validator when relevant.
-10. Copy only the explicitly approved repository paths.
-11. Compare `git diff --name-only` against an explicit expected-file list and abort on any mismatch.
-12. Run any focused validator that can execute safely before publication.
-13. Commit as `github-actions[bot]`.
-14. Push `HEAD:<intended-working-branch>`.
+5. download the Dropbox bundle once;
+6. verify the ZIP SHA-256 before extraction;
+7. verify per-file SHA-256 values;
+8. verify required MIME/format/dimensions;
+9. verify the expected binary file count;
+10. copy only manifest-listed paths;
+11. compare changed/staged paths against the manifest and abort on any extra/missing path;
+12. run focused validators when applicable;
+13. re-fetch/guard target movement before push when practical;
+14. commit under a clear Actions/materializer identity;
+15. push `HEAD:<intended-real-target-branch>` without force.
 
-## 6. Example verification fragments
+## 6. Verification examples
 
-ZIP:
+ZIP checksum:
 
 ```bash
 echo '<ZIP_SHA256>  /tmp/artwork.zip' | sha256sum -c -
 ```
 
-Files:
+Manifest checksums:
 
 ```bash
 cd /tmp/artwork
-sha256sum -c /tmp/artwork.sha256
-for f in *.webp; do
+sha256sum -c SHA256SUMS
+```
+
+WebP MIME example:
+
+```bash
+while IFS= read -r f; do
   test "$(file -b --mime-type "$f")" = "image/webp"
-done
+done < /tmp/webp-files.txt
 ```
 
-Dimensions with Pillow:
+Exact changed-path guard:
 
 ```bash
-python -m pip install --disable-pip-version-check pillow==11.3.0
-python - <<'PY'
-from PIL import Image
-from pathlib import Path
-for path in Path('/tmp/artwork').glob('*.webp'):
-    with Image.open(path) as image:
-        assert image.format == 'WEBP', (path, image.format)
-        assert image.size == (720, 960), (path, image.size)
-PY
-```
-
-Exact diff guard:
-
-```bash
-git diff --name-only | sort > /tmp/actual.txt
+git status --porcelain=v1 --untracked-files=all | sed -E 's/^.. //' | sort > /tmp/actual.txt
 sort /tmp/expected.txt -o /tmp/expected.txt
 diff -u /tmp/expected.txt /tmp/actual.txt
 ```
 
-## 7. Publication verification
+## 7. Wiring is a separate explicit step when needed
 
-After the workflow pushes:
+Materializing binaries does not automatically authorize code mappings.
 
-1. Re-read the PR head from GitHub.
-2. Fetch the generated commit and confirm its parent is the expected baseline.
-3. Confirm the commit's file list is exactly the expected boundary.
-4. Confirm no protected-system file changed.
-5. Wait for the relevant GitHub Actions validation gates.
-6. Find the Vercel deployment for the exact new head and confirm it reaches READY.
-7. Inspect build logs if Vercel or CI fails.
-8. Only then report the artwork as pushed/accepted.
+For systems such as subclass artwork:
 
-## 8. Protected DNDNext boundaries
+1. first materialize/verify approved binary files;
+2. then use a second exact-head guarded code/docs runner or bounded GitHub commit to wire only approved asset mappings;
+3. preserve fallbacks for unfinished content;
+4. update validators/checklists/handoff docs;
+5. run semantic validators before pushing the wiring commit.
 
-Artwork transport must not become an excuse to touch unrelated runtime systems.
+This two-stage pattern was used on 2026-09-13 for the normalized subclass tarot deck.
 
-- No world-map code unless Paul explicitly requests it.
-- Keep world-map and town/city-map behavior separate.
-- No Supabase writes unless the task actually requires a data change and it has been separately reviewed.
-- No Character Forge mechanics, hooks, state variables, persistence fields, or props should change for a pure artwork transfer.
-- Preserve existing profile portraits unless the task explicitly targets them.
+## 8. Publication and Vercel verification
 
-## 9. Failure policy
+After the target branch is pushed:
 
-If any checksum, MIME, dimension, exact-head guard, expected-diff guard, validator, CI job, or deployment fails:
+1. re-fetch the real target branch/PR through GitHub;
+2. confirm the new head parent is the expected prior target head;
+3. inspect the exact file boundary;
+4. inspect relevant GitHub Actions checks;
+5. use the **Vercel connector** to list DNDNext deployments;
+6. find the deployment whose metadata exactly matches the new Git SHA and target branch;
+7. wait for `READY`;
+8. inspect Vercel build logs if it fails;
+9. fetch the protected preview through Vercel tooling when an HTTP/browser smoke check is required.
+
+Only then call the binary install complete.
+
+## 9. Supabase and protected boundaries
+
+A binary artwork transfer must not become a reason to alter unrelated systems.
+
+- No Supabase writes for presentation-only artwork transport.
+- Read Supabase only when verifying catalogue naming/authority.
+- No world-map changes unless Paul explicitly requests them.
+- Never mix world-map and town/city-map behavior.
+- No crafting, inventory, merchant, encounter, tactical, travel, economy, or character-rule changes during pure artwork transport.
+
+## 10. Failure policy
+
+If any exact-head, checksum, manifest, MIME, dimension, count, changed-path, validator, CI, or deployment check fails:
 
 - stop;
-- do not advance/force-move the accepted branch;
-- diagnose on the scratch branch;
-- never substitute a different image simply because it is easier to transfer;
-- never claim success from the local/staging state alone.
+- do not force the target branch forward;
+- diagnose on a bounded scratch/preview branch;
+- obtain a fresh Dropbox URL if a single-use link was consumed/expired;
+- never substitute a different image to make the pipeline pass;
+- never report success based solely on local/scratch state.
 
 ## Standing reminder
 
 Before saying repository/binary write access is unavailable, read:
 
+- `docs/DNDNext_Current_Handoff_Prompt.md`
 - `docs/REPO_ACCESS_STANDING_RULE.md`
+- `docs/CHATGPT_REPO_WRITE_PROCEDURE.md`
 - this runbook
 
-Then check GitHub + Dropbox + GitHub Actions. This route is established DNDNext operating procedure.
+Then check GitHub + Dropbox + GitHub Actions + Vercel. This route is already proven.

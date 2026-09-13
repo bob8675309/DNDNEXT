@@ -1,20 +1,26 @@
 # DNDNext Living Documentation Index
 
-Updated: 2026-08-30
+Updated: 2026-09-13
 
 This directory contains the project's living handoff, roadmap, architecture, subsystem, and evidence documents. For active work, **live Supabase + current GitHub source/validators/deployment state outrank prose** if they conflict.
 
 ## Start here
 
-1. `DNDNext_Current_Handoff_Prompt.md` — copy-ready current takeover brief, accepted baseline, protected boundaries, current Forge/PR state, and immediate future work.
-2. `Documentation_Refresh_Manifest.md` — documentation trust order, merged PR chain, live migration checkpoint, and active/future work queue.
-3. `Realistic_Dice_Roller_Architecture_Roadmap.md` — **controlling future plan for the reusable realistic dice subsystem: d6/d8/d10/d12/d20/resultCube, Three/Rapier architecture, Forge/Sheet/Tactical adapters, authority boundaries, implementation phases, and acceptance criteria.**
-4. `Character_Forge_Training_Redesign_Status.md` — detailed PR #176 Training subledger, source-choice/tool↔Trade Skill rules, and acceptance history.
-5. `Unified_Character_Forge_Status.md` — shared Player/NPC Forge, progression, source-choice, and runtime authority.
-6. The dedicated subsystem ledger for the area being changed.
-7. `CHATGPT_REPO_WRITE_PROCEDURE.md` before direct GitHub/Supabase mutation.
+**New conversations: read the connector/access documents before diagnosing access. GitHub, Supabase, Vercel, and Dropbox are established parts of the DNDNext workflow.**
 
-## Current code checkpoint
+1. `DNDNext_Current_Handoff_Prompt.md` — current copy-ready takeover brief, active PR/checkpoint, mandatory connector startup, scratch/preview branch push pattern, protected boundaries, and immediate work.
+2. `REPO_ACCESS_STANDING_RULE.md` — standing rule that GitHub/Supabase/Vercel/Dropbox must be checked before claiming access is unavailable.
+3. `CHATGPT_REPO_WRITE_PROCEDURE.md` — ordinary GitHub writes, exact-head discipline, and the bounded scratch/preview Actions runner pattern that can push verified results to the real PR branch.
+4. `ARTWORK_BINARY_TRANSFER_RUNBOOK.md` — Dropbox `/DNDNext-Transfer/` -> guarded GitHub Actions materializer -> target PR branch -> Vercel exact-head verification.
+5. The dedicated active subsystem handoff/ledger. For current subclass artwork: `CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md`, `CHARACTER_FORGE_TAROT_SUBCLASS_CARD_STANDARD.md`, and `CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md`.
+6. `Documentation_Refresh_Manifest.md` and other historical architecture/status ledgers as needed.
+
+Current handoff-time state: `main` is `02854698298f357d2dfde21dd292ba7caf73e1c1`; active work is PR #187 on `agent/subclass-carousel-selector-20260911`. Always re-fetch both rather than trusting these recorded SHAs. The normalized subclass tarot checklist currently records 34 installed/wired/validated concepts and 75 remaining; next normal batch is Druid Dreams, Land, Moon, Sea.
+
+## Historical code checkpoint retained for context
+
+> This section predates the 2026-09-13 current handoff above. Re-fetch GitHub before using any PR/SHA named below.
+
 
 Accepted runtime/code baseline on `main`:
 
