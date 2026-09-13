@@ -34,38 +34,38 @@ Legend:
 
 - **Target concepts:** 109
 - **✅ Installed:** 0
-- **🟨 Approved but not installed:** 0
-- **⬜ Remaining:** 109
+- **🟨 Approved but not installed:** 18
+- **⬜ Remaining:** 91
 
 ## Artificer — 6
 
-- ⬜ Alchemist
-- ⬜ Armorer
-- ⬜ Artillerist
-- ⬜ Battle Smith
-- ⬜ Cartographer
-- ⬜ Reanimator
+- 🟨 Alchemist
+- 🟨 Armorer
+- 🟨 Artillerist
+- 🟨 Battle Smith
+- 🟨 Cartographer
+- 🟨 Reanimator
 
 ## Barbarian — 4
 
-- ⬜ Berserker
-- ⬜ Wild Heart
-- ⬜ World Tree
-- ⬜ Zealot
+- 🟨 Berserker
+- 🟨 Wild Heart
+- 🟨 World Tree
+- 🟨 Zealot
 
 ## Bard — 6
 
-- ⬜ Dance
-- ⬜ Glamour
-- ⬜ Lore
-- ⬜ Moon
-- ⬜ Spirits
-- ⬜ Valor
+- 🟨 Dance
+- 🟨 Glamour
+- 🟨 Lore
+- 🟨 Moon
+- 🟨 Spirits
+- 🟨 Valor
 
 ## Cleric — 18 concepts
 
-- ⬜ Ambition (PSA)
-- ⬜ Arcana
+- 🟨 Ambition (PSA)
+- 🟨 Arcana
 - ⬜ Death
 - ⬜ Forge
 - ⬜ Grave
@@ -192,6 +192,15 @@ The current preferred-source join exposes no active Mystic subclass queue for th
 - ⬜ Transmutation
 - ⬜ War
 
+## Approved off-queue artwork — not counted in the 109 target
+
+The following cards were individually reviewed and approved during the rebuild, but they are **not present in the current authoritative preferred-source checklist**. Retain them as approved art references / reserve assets and do not regenerate them unless Paul explicitly requests a replacement or the preferred catalogue changes to include them.
+
+- 🟨 Swords
+- 🟨 Whispers
+- 🟨 Eloquence
+- 🟨 Creation
+
 ## Classes without an active subclass art queue
 
 - No Adventuring Class — no subclass family
@@ -202,16 +211,16 @@ The current preferred-source join exposes no active Mystic subclass queue for th
 
 ## Recommended starting order
 
-The new chat should work from the top of this checklist unless Paul chooses another class.
+Continue from the topmost ⬜ entry in this authoritative checklist unless Paul chooses another class or batch.
 
-Recommended first small approval batch:
+Current next four-card batch after the 2026-09-12 approvals:
 
-1. Artificer — Alchemist
-2. Artificer — Armorer
-3. Artificer — Artillerist
-4. Artificer — Battle Smith
+1. Cleric — Death
+2. Cleric — Forge
+3. Cleric — Grave
+4. Cleric — Knowledge / Knowledge (PSA) — shared concept
 
-Keep the first batch small enough to verify the finalized **7:12 no-footer template** before scaling production.
+Keep production in small approval batches and perform a visual-drift check after every batch before continuing.
 
 ## Completion rule
 
