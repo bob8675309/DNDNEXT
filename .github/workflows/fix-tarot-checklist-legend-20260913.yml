@@ -1,0 +1,46 @@
+name: Fix tarot checklist legend 20260913
+
+on:
+  push:
+    branches:
+      - agent/tarot-checklist-legend-fix-20260913
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/subclass-carousel-selector-20260911
+          fetch-depth: 0
+      - name: Guard target head and fix legend
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "40fa46f2710ffadce2962b0bd66e21acefe0bcb5"
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('docs/CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md')
+          s = p.read_text()
+          bad = '- ✅ Art approved locally but not yet normalized/installed/wired'
+          good = '- 🟨 Art approved locally but not yet normalized/installed/wired'
+          if s.count(bad) != 1:
+              raise SystemExit(f'Expected exactly one bad legend line, found {s.count(bad)}')
+          p.write_text(s.replace(bad, good))
+          PY
+          git diff --check
+      - name: Commit and push
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin agent/subclass-carousel-selector-20260911
+          test "$(git rev-parse origin/agent/subclass-carousel-selector-20260911)" = "40fa46f2710ffadce2962b0bd66e21acefe0bcb5"
+          git config user.name "DNDNext Docs Fix"
+          git config user.email "actions@users.noreply.github.com"
+          git add docs/CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md
+          test "$(git diff --cached --name-only | wc -l)" -eq 1
+          git commit -m "Fix tarot artwork checklist legend"
+          git push origin HEAD:agent/subclass-carousel-selector-20260911
