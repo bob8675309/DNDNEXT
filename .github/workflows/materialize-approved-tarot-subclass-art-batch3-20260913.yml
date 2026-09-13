@@ -1,0 +1,82 @@
+name: Materialize approved tarot subclass art batch 3 20260913
+
+on:
+  push:
+    branches:
+      - agent/tarot-approved-materialize-batch3-20260913
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact target branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/subclass-carousel-selector-20260911
+          fetch-depth: 0
+
+      - name: Guard exact target head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "ddb8f273f53512e398abd08b0f27e83b7d0a22f4"
+
+      - name: Download approved normalized tarot payload
+        shell: bash
+        env:
+          PAYLOAD_URL: "https://ucf738aaf2f5fefe1e84af49c275.dl.dropboxusercontent.com/cd/0/get/DIGKUPSygd3_Nz8yQ90CrezcZG-JXvLzfBV1oXcS9xK5774emcwn1fYB50DU1ELdhJ7UXKCLNeYrJYx1Xo6Jyaqoh_EzKcAHtZ5Bwfe17wxuhceohhfkx2c4hkVeQ_l_tN17DaE9dlxVDub9MKPWS1OvZaN4qGnSaUZ1USq5o3bbdw/file?c_luid=c335000c"
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 2 --retry-delay 2 "$PAYLOAD_URL" --output /tmp/tarot.zip
+          echo "c9edb0f2aa806868494499870a0d4dc23f240343ebf6ec5cbafaa4e9e71faf27  /tmp/tarot.zip" | sha256sum -c -
+          rm -rf /tmp/tarot-payload
+          mkdir -p /tmp/tarot-payload
+          unzip -q /tmp/tarot.zip -d /tmp/tarot-payload
+          cd /tmp/tarot-payload
+          sha256sum -c SHA256SUMS
+          test "$(find public/media/subclasses -type f -name '*.webp' | wc -l)" -eq 24
+          test "$(python - <<'PY'
+          import json
+          from pathlib import Path
+          rows = json.loads(Path('MANIFEST.json').read_text())
+          assert len(rows) == 24
+          assert len({row['dest'] for row in rows}) == 24
+          assert all(row.get('width') == 840 and row.get('height') == 1440 for row in rows)
+          allowed = {'fighter','paladin','ranger','rogue','sorcerer'}
+          assert {row['class'] for row in rows} <= allowed
+          print(len(rows))
+          PY
+          )" = "24"
+
+      - name: Apply exact approved artwork scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp -R /tmp/tarot-payload/public/media/subclasses/. public/media/subclasses/
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          rows = json.loads(Path('/tmp/tarot-payload/MANIFEST.json').read_text())
+          paths = sorted(row['dest'] for row in rows)
+          Path('/tmp/expected.txt').write_text('\n'.join(paths) + '\n')
+          PY
+          git status --porcelain=v1 --untracked-files=all | sed -E 's/^.. //' | sort > /tmp/changed.txt
+          diff -u /tmp/expected.txt /tmp/changed.txt
+
+      - name: Commit and push exact artwork batch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin agent/subclass-carousel-selector-20260911
+          test "$(git rev-parse origin/agent/subclass-carousel-selector-20260911)" = "ddb8f273f53512e398abd08b0f27e83b7d0a22f4"
+          git config user.name "DNDNext Artwork Materializer"
+          git config user.email "actions@users.noreply.github.com"
+          while IFS= read -r path; do git add -- "$path"; done < /tmp/expected.txt
+          git diff --cached --name-only | sort > /tmp/staged.txt
+          diff -u /tmp/expected.txt /tmp/staged.txt
+          test "$(wc -l < /tmp/staged.txt)" -eq 24
+          git commit -m "Install approved normalized tarot subclass batch 3"
+          git push origin HEAD:agent/subclass-carousel-selector-20260911
