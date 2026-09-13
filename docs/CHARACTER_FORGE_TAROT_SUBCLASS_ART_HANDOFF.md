@@ -54,7 +54,7 @@ That document is authoritative. The most important requirements are summarized b
 - Final export: **840 × 1440 WebP**
 - Preferred working master: **1680 × 2880** or larger at the same ratio
 - Never stretch to fit.
-- Before installing the first new deck cards, change the Forge carousel card CSS from the older `aspect-ratio:5/7` to **`aspect-ratio:7/12`** so the UI does not recrop the new art.
+- **Completed 2026-09-13:** the Forge carousel now has a final loaded override at `styles/character-forge-subclass-tarot-layout.css` that forces the effective card ratio to **7:12**, enlarges the modal safely for the taller cards, keeps the browser-owned subclass/status label away from the artwork lower third, and removes the old near-opaque lower shade. Do not revert the effective carousel presentation to 5:7.
 
 ### Absolute lower-third rule
 
@@ -142,11 +142,38 @@ The subclass carousel implementation lives in:
 
 `components/ClassSubclassSection.js`
 
-Before installing the first new card batch, update its card aspect ratio to 7:12 and update the corresponding validator expectation.
+The normalized tarot presentation layer now lives in:
 
-Relevant validator:
+`styles/character-forge-subclass-tarot-layout.css`
 
-`scripts/validate_class_subclass_browser.mjs`
+It is imported last in `pages/_app.js` so the effective carousel ratio is 7:12 without destabilizing the working looping selector while the approved art is installed in batches.
+
+Relevant validators:
+
+- `scripts/validate_class_browser_polish.mjs` — now validates the loaded 7:12 tarot presentation and restrained no-footer shading.
+- `scripts/validate_class_subclass_browser.mjs` — protects canonical subclass authority, persistence, looping selector behavior, and reset-era fallback behavior until approved assets are wired.
+
+## Binary artwork materialization route
+
+A working binary-transfer path already exists in repository history and should be reused as a **pattern**, not by restoring its old deleted art.
+
+Reference commit:
+
+`30d05db301638d998d7ebbd053750330547ab7d5` — `Materialize reviewed tarot subclass artwork batch`
+
+That commit created a one-time GitHub Actions materializer on `agent/tarot-subclass-transfer-20260911`. The workflow:
+
+1. checked out the exact target artwork branch;
+2. guarded the exact expected target head SHA;
+3. downloaded a reviewed ZIP payload from Dropbox;
+4. verified the ZIP SHA-256 and per-file `SHA256SUMS`;
+5. verified the expected WebP count;
+6. copied only manifest-listed files under `public/media/subclasses/`;
+7. compared the exact changed/staged paths against `MANIFEST.json`;
+8. committed as `DNDNext Artwork Materializer`;
+9. pushed the exact materialized artwork commit back to the target subclass branch.
+
+A later historical materializer commit was `1772154b6f588f238ca0b12810494bffb976d0ce` (`Install reviewed tarot subclass artwork batch`). Those historical assets were subsequently intentionally purged during the normalized reset, so **do not restore the old payload, old Dropbox URL, or old files**. Reuse only the guarded transfer technique with a newly prepared ZIP containing the currently approved normalized cards.
 
 ## Current subclass production queue
 
