@@ -122,16 +122,34 @@ for (const token of [
 assert(!tarotLayout.includes("aspect-ratio: 5 / 7"), "Tarot layout override regressed to the old 5:7 card ratio.");
 assert(!tarotLayout.includes("rgba(3, 5, 10, 0.96)"), "Tarot layout override restored the old near-opaque lower footer shade.");
 
-// The subclass tarot deck was intentionally reset on 2026-09-12. Until the new
-// normalized 7:12 cards are approved and installed, the gallery must safely use
-// existing class-menu art rather than referencing deleted subclass assets.
+// 2026-09-13 approved normalized tarot install: explicitly mapped cards use the
+// installed 7:12 deck while every unfinished subclass retains the class-art fallback.
 for (const token of [
   'classMenuArtworkFor',
+  'APPROVED_SUBCLASS_ART_FAMILIES',
+  'function approvedSubclassArtworkFor',
+  '/media/subclasses/',
   'function fallbackSubclassArtworkFor',
-  'return fallbackSubclassArtworkFor(key(classKey))',
   'handleSubclassArtworkError',
-]) assert(subclassArtwork.includes(token), `Subclass artwork reset/fallback contract is missing ${token}`);
-assert(!subclassArtwork.includes('/media/subclasses/'), "Reset resolver must not point at deleted subclass-specific artwork.");
+]) assert(subclassArtwork.includes(token), `Approved subclass artwork/fallback contract is missing ${token}`);
+
+const approvedTarotFamilies = {
+  artificer: ["alchemist", "armorer", "artillerist", "battle-smith", "cartographer", "reanimator"],
+  barbarian: ["berserker", "wild-heart", "world-tree", "zealot"],
+  bard: ["dance", "glamour", "lore", "moon", "spirits", "valor"],
+  cleric: ["ambition", "arcana", "death", "forge", "grave", "knowledge", "life", "light", "nature", "order", "peace", "solidarity", "strength", "tempest", "trickery", "twilight", "war", "zeal"],
+};
+let approvedTarotCount = 0;
+for (const [classKey, families] of Object.entries(approvedTarotFamilies)) {
+  for (const family of families) {
+    approvedTarotCount += 1;
+    assert(fs.existsSync(path.join(root, `public/media/subclasses/${classKey}/${classKey}-${family}.webp`)), `Approved tarot asset missing ${classKey}/${family}`);
+  }
+}
+assert(approvedTarotCount === 34, `Expected 34 installed approved tarot concepts, found ${approvedTarotCount}.`);
+for (const token of ['"ambition-psa": "ambition"', '"knowledge-psa": "knowledge"', '"solidarity-psa": "solidarity"', '"strength-psa": "strength"', '"zeal-psa": "zeal"']) {
+  assert(subclassArtwork.includes(token), `Preferred-source Cleric alias mapping missing ${token}`);
+}
 
 for (const token of [
   "grid-template-columns:minmax(0,1fr)!important",
@@ -176,4 +194,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSources.includes(token), `Class browser patch unexpectedly references protected behavior: ${token}`);
 }
 
-console.log("Class browser polish validation passed: cinematic looping subclass gallery, normalized 7:12 tarot layout, restrained no-footer card shading, safe class-art fallbacks pending approved asset installation, click-only movable Feature-card details, selected-subclass progression bubbles, balanced per-level spell-slot table, open stable top-right art, preserved Class authority, and protected boundaries are intact.");
+console.log("Class browser polish validation passed: cinematic looping subclass gallery, normalized 7:12 tarot layout, restrained no-footer card shading, 34 approved tarot concepts with safe fallbacks for unfinished subclasses, click-only movable Feature-card details, selected-subclass progression bubbles, balanced per-level spell-slot table, open stable top-right art, preserved Class authority, and protected boundaries are intact.");

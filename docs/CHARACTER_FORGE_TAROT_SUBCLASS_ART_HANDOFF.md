@@ -151,7 +151,7 @@ It is imported last in `pages/_app.js` so the effective carousel ratio is 7:12 w
 Relevant validators:
 
 - `scripts/validate_class_browser_polish.mjs` — now validates the loaded 7:12 tarot presentation and restrained no-footer shading.
-- `scripts/validate_class_subclass_browser.mjs` — protects canonical subclass authority, persistence, looping selector behavior, and reset-era fallback behavior until approved assets are wired.
+- `scripts/validate_class_subclass_browser.mjs` — protects canonical subclass authority, persistence, looping selector behavior, approved-card mappings, and fallback behavior for unfinished cards.
 
 ## Binary artwork materialization route
 

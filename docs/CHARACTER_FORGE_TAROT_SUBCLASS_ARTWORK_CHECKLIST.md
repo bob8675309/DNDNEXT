@@ -4,7 +4,7 @@ Status date: 2026-09-13
 
 This is the authoritative production checklist for the **normalized rebuild** of the Character Forge subclass tarot deck.
 
-The previous subclass artwork was intentionally deleted from the working branch on 2026-09-12. Progress therefore starts at **zero installed normalized tarot cards**.
+The previous subclass artwork was intentionally deleted from the working branch on 2026-09-12. On 2026-09-13, the first **34 approved normalized tarot concepts** were installed and wired from the reviewed rebuild.
 
 Read first:
 
@@ -27,62 +27,62 @@ Rules:
 Legend:
 
 - ⬜ Not yet created/approved in the normalized deck
-- 🟨 Art approved locally but not yet normalized/installed/wired
+- ✅ Art approved locally but not yet normalized/installed/wired
 - ✅ Approved, normalized, installed, wired, and validated
 - 📦 Approved reserve artwork installed but intentionally not wired because it is outside the current preferred-source queue
 
 ## Progress
 
 - **Target concepts:** 109
-- **✅ Installed:** 0
-- **🟨 Approved but not installed:** 34
+- **✅ Installed:** 34
+- **🟨 Approved but not installed:** 0
 - **⬜ Remaining:** 75
 
 ## Artificer — 6
 
-- 🟨 Alchemist
-- 🟨 Armorer
-- 🟨 Artillerist
-- 🟨 Battle Smith
-- 🟨 Cartographer
-- 🟨 Reanimator
+- ✅ Alchemist
+- ✅ Armorer
+- ✅ Artillerist
+- ✅ Battle Smith
+- ✅ Cartographer
+- ✅ Reanimator
 
 ## Barbarian — 4
 
-- 🟨 Berserker
-- 🟨 Wild Heart
-- 🟨 World Tree
-- 🟨 Zealot
+- ✅ Berserker
+- ✅ Wild Heart
+- ✅ World Tree
+- ✅ Zealot
 
 ## Bard — 6
 
-- 🟨 Dance
-- 🟨 Glamour
-- 🟨 Lore
-- 🟨 Moon
-- 🟨 Spirits
-- 🟨 Valor
+- ✅ Dance
+- ✅ Glamour
+- ✅ Lore
+- ✅ Moon
+- ✅ Spirits
+- ✅ Valor
 
 ## Cleric — 18 concepts
 
-- 🟨 Ambition (PSA)
-- 🟨 Arcana
-- 🟨 Death
-- 🟨 Forge
-- 🟨 Grave
-- 🟨 Knowledge / Knowledge (PSA) — shared concept
-- 🟨 Life
-- 🟨 Light
-- 🟨 Nature
-- 🟨 Order
-- 🟨 Peace
-- 🟨 Solidarity (PSA)
-- 🟨 Strength (PSA)
-- 🟨 Tempest
-- 🟨 Trickery
-- 🟨 Twilight
-- 🟨 War
-- 🟨 Zeal (PSA)
+- ✅ Ambition (PSA)
+- ✅ Arcana
+- ✅ Death
+- ✅ Forge
+- ✅ Grave
+- ✅ Knowledge / Knowledge (PSA) — shared concept
+- ✅ Life
+- ✅ Light
+- ✅ Nature
+- ✅ Order
+- ✅ Peace
+- ✅ Solidarity (PSA)
+- ✅ Strength (PSA)
+- ✅ Tempest
+- ✅ Trickery
+- ✅ Twilight
+- ✅ War
+- ✅ Zeal (PSA)
 
 ## Druid — 8
 

@@ -71,16 +71,34 @@ for (const forbidden of [
 ]) assert(!selector.includes(forbidden), `Subclass selector regressed to the prior grid/hover-driven presentation: ${forbidden}`);
 assert(!selector.includes("supabase"), "Subclass selector must remain presentation-only.");
 
-// 2026-09-12 intentional art reset: no subclass-specific files are required while the
-// new canonical 7:12 tarot deck is rebuilt. Runtime must use the existing class art
-// fallback until a newly reviewed card is explicitly added and wired.
+// 2026-09-13 approved normalized tarot install: explicitly mapped cards use the
+// installed 7:12 deck while every unfinished subclass retains the class-art fallback.
 for (const token of [
   'classMenuArtworkFor',
+  'APPROVED_SUBCLASS_ART_FAMILIES',
+  'function approvedSubclassArtworkFor',
+  '/media/subclasses/',
   'function fallbackSubclassArtworkFor',
-  'return fallbackSubclassArtworkFor(key(classKey))',
   'handleSubclassArtworkError',
-]) assert(subclassArtwork.includes(token), `Subclass artwork reset/fallback contract is missing ${token}`);
-assert(!subclassArtwork.includes('/media/subclasses/'), "Reset resolver must not point at deleted subclass-specific artwork.");
+]) assert(subclassArtwork.includes(token), `Approved subclass artwork/fallback contract is missing ${token}`);
+
+const approvedTarotFamilies = {
+  artificer: ["alchemist", "armorer", "artillerist", "battle-smith", "cartographer", "reanimator"],
+  barbarian: ["berserker", "wild-heart", "world-tree", "zealot"],
+  bard: ["dance", "glamour", "lore", "moon", "spirits", "valor"],
+  cleric: ["ambition", "arcana", "death", "forge", "grave", "knowledge", "life", "light", "nature", "order", "peace", "solidarity", "strength", "tempest", "trickery", "twilight", "war", "zeal"],
+};
+let approvedTarotCount = 0;
+for (const [classKey, families] of Object.entries(approvedTarotFamilies)) {
+  for (const family of families) {
+    approvedTarotCount += 1;
+    assert(fs.existsSync(path.join(root, `public/media/subclasses/${classKey}/${classKey}-${family}.webp`)), `Approved tarot asset missing ${classKey}/${family}`);
+  }
+}
+assert(approvedTarotCount === 34, `Expected 34 installed approved tarot concepts, found ${approvedTarotCount}.`);
+for (const token of ['"ambition-psa": "ambition"', '"knowledge-psa": "knowledge"', '"solidarity-psa": "solidarity"', '"strength-psa": "strength"', '"zeal-psa": "zeal"']) {
+  assert(subclassArtwork.includes(token), `Preferred-source Cleric alias mapping missing ${token}`);
+}
 
 assert(model.includes("resolveSubclassCatalog") && model.includes("const options = useMemo"), "Canonical subclass catalogue authority moved out of the existing guide model.");
 assert(model.includes("selectSubclass"), "Existing subclass persistence authority disappeared from the guide model.");
@@ -123,4 +141,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSource.includes(token), `Class presentation patch crossed protected boundary: ${token}`);
 }
 
-console.log("Class subclass selector validation passed: canonical subclass authority and persistence remain in the guide model, the cinematic looping gallery remains intact, and subclass-specific artwork is intentionally reset to class-menu fallbacks pending the normalized 7:12 tarot rebuild.");
+console.log("Class subclass selector validation passed: canonical subclass authority and persistence remain in the guide model, the cinematic looping gallery remains intact, 34 approved normalized tarot concepts are installed and mapped, and unfinished subclasses retain safe class-art fallbacks.");
