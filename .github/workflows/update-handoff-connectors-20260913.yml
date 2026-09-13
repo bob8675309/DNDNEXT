@@ -1,0 +1,690 @@
+name: Update DNDNext handoff connector documentation 20260913
+
+on:
+  push:
+    branches:
+      - agent/handoff-connectors-docs-20260913
+
+permissions:
+  contents: write
+
+jobs:
+  update-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact active PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/subclass-carousel-selector-20260911
+          fetch-depth: 0
+
+      - name: Guard exact target head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "12cc27de6f128f5670307fce9a7c5c1f6104bfaf"
+
+      - name: Rewrite current handoff and connector runbooks
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > docs/DNDNext_Current_Handoff_Prompt.md <<'EOF'
+          # DNDNext Next-Chat Handoff Brief
+
+          Updated: 2026-09-13
+
+          Repository: `bob8675309/DNDNEXT`
+
+          Stack: Next.js **Pages Router** 16.1.6, React 19, Supabase/Postgres, Bootstrap/SCSS, Vercel.
+
+          ## START HERE — connected project tools are part of the normal workflow
+
+          A new DNDNext conversation should **check and use the connected project tools before claiming access is unavailable, asking Paul to manually move files, or inventing a workaround**.
+
+          The expected connected services are:
+
+          - **GitHub connector** — inspect `main`, branches, PRs, commits, files, diffs, workflow runs, checks, and create/update branches/files/commits/PR metadata. Use it as the source-code and branch authority.
+          - **Supabase connector** — inspect the live `DnDWeb` project, query live tables/functions/policies, verify production state, and apply reviewed migrations when a task actually requires database changes. Use live read-only inspection before any write.
+          - **Vercel connector** — list deployments for the DNDNext project, match deployments to the exact Git commit/branch, inspect build logs, and fetch protected preview URLs when necessary. A GitHub push normally triggers the Vercel preview through the existing Git integration; a separate manual deploy is usually unnecessary.
+          - **Dropbox connector** — move approved/generated binary payloads that the GitHub text/file connector cannot safely preserve byte-for-byte. The established transfer folder is `/DNDNext-Transfer/`.
+
+          These connectors are complementary. Do not treat them as interchangeable:
+
+          `GitHub = source/branches/CI authority`
+
+          `Supabase = live database authority`
+
+          `Vercel = deployed preview/build authority`
+
+          `Dropbox = binary transport bridge`
+
+          If a connector is not immediately visible in a new session, discover/check the available project connectors first. Only report an access limitation after an actual connector/tool attempt or confirmed absence.
+
+          Read these operational docs at startup:
+
+          - `docs/REPO_ACCESS_STANDING_RULE.md`
+          - `docs/CHATGPT_REPO_WRITE_PROCEDURE.md`
+          - `docs/ARTWORK_BINARY_TRANSFER_RUNBOOK.md` when binary assets are involved
+          - the dedicated subsystem handoff/status document for the work being continued
+
+          ## Current authoritative checkpoint
+
+          Production/default branch:
+
+          - `main` — current checked checkpoint `02854698298f357d2dfde21dd292ba7caf73e1c1` (`Merge PR #177: Realistic Dice and current Character Forge work`).
+
+          Active subclass-art/selector work:
+
+          - PR **#187** — `Redesign subclass selector as cinematic looping gallery`
+          - branch: `agent/subclass-carousel-selector-20260911`
+          - handoff-time head before this documentation commit: `12cc27de6f128f5670307fce9a7c5c1f6104bfaf`
+
+          **Never assume those SHAs remain current. Re-fetch `main`, PR #187, and the exact remote branch head at the start of the next conversation and immediately before every write/push/merge.**
+
+          The current PR #187 branch contains the normalized 7:12 subclass tarot presentation and the first installed approved tarot batch. The authoritative artwork checklist records:
+
+          - target concepts: 109;
+          - installed/wired/validated: 34;
+          - approved but not installed: 0;
+          - remaining: 75;
+          - next normal production batch: Druid — Dreams, Land, Moon, Sea.
+
+          Read:
+
+          - `docs/CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md`
+          - `docs/CHARACTER_FORGE_TAROT_SUBCLASS_CARD_STANDARD.md`
+          - `docs/CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md`
+
+          ## The preview/scratch-branch push pattern — do not forget this
+
+          DNDNext has a proven way to perform work that needs a real checkout, shell commands, binary materialization, grouped multi-file edits, or validators even when the direct GitHub connector is not the right byte-level tool.
+
+          The pattern is:
+
+          `current target PR head -> bounded scratch/preview branch -> one-shot GitHub Actions workflow -> checkout the real target branch -> hard guard exact target SHA -> modify/test -> commit -> push HEAD back to the real target branch -> GitHub verification -> Vercel exact-head verification`
+
+          Important details:
+
+          1. The scratch/preview branch is created **from the exact current target head**.
+          2. The temporary workflow lives on the scratch/preview branch, not on the real PR branch.
+          3. The workflow checks out the **real intended PR/working branch**.
+          4. Before changing anything it verifies `git rev-parse HEAD` equals the expected target SHA.
+          5. It performs only the bounded requested work, runs focused checks, commits, and pushes `HEAD:<real-target-branch>`.
+          6. The scratch/preview branch itself is not merged into the PR merely to move the result. It is a controlled runner/transport surface.
+          7. After the push, re-read the actual PR branch head and changed-file boundary through GitHub.
+          8. Then use the Vercel connector to find the deployment whose metadata matches that exact new Git SHA and confirm it reaches `READY`; inspect build logs if it does not.
+
+          This is not an emergency workaround. It is established DNDNext operating procedure and was used successfully for the 2026-09-13 normalized subclass tarot installation and wiring.
+
+          ## Binary artwork transfer path
+
+          For approved/generated binary artwork, use:
+
+          `approved local bytes -> final repository-format files -> manifest + SHA-256 -> ZIP -> Dropbox /DNDNext-Transfer -> temporary Dropbox download URL -> one-shot GitHub Actions scratch/preview branch -> exact target checkout/head guard -> checksum/format/dimension/count verification -> exact path/diff guard -> bot commit -> push intended PR branch -> GitHub/CI verification -> Vercel exact-head preview verification`
+
+          Rules:
+
+          - Do not regenerate an already approved image merely because transport is inconvenient.
+          - Do not downgrade quality to make upload easier.
+          - Do not return to giant inline base64 Git-blob transport while the Dropbox bridge is available.
+          - Dropbox temporary download links may be single-use; do not preview/HEAD/preflight them before the Actions runner performs the real GET.
+          - Keep a payload manifest and file checksums.
+          - For artwork, verify expected dimensions/MIME/format and exact destination file count.
+          - Compare changed/staged paths to the manifest and abort on any extra or missing path.
+          - Do not leave the temporary workflow or transfer ZIP in the real PR diff unless intentionally making permanent tooling.
+
+          The 2026-09-13 tarot transfer used this exact model: a reviewed ZIP was uploaded to `/DNDNext-Transfer/`, the one-shot Actions materializer verified the bundle and 34 WebP scope, pushed the artwork commit to PR #187's branch, a second guarded runner wired the resolver/validators/docs, and Vercel was checked against the resulting target-branch commit.
+
+          ## Mandatory startup sequence for every new DNDNext conversation
+
+          1. Read this file first.
+          2. Check/discover the **GitHub, Supabase, Vercel, and Dropbox** connectors before discussing access limitations.
+          3. GitHub: fetch `main`, the active PR(s), exact head SHA, changed-file scope, relevant files, and workflow/check status.
+          4. Supabase: inspect project `ucggczovhmauhshvhusx` (`DnDWeb`) for only the tables/functions/policies relevant to the requested task. Diagnosis should be read-only first.
+          5. Vercel: identify the active preview deployment by exact Git SHA/branch and check state/build logs when browser/deployment behavior matters.
+          6. Dropbox: when binary transfer is required, use `/DNDNext-Transfer/` rather than asking Paul to manually shuttle generated art.
+          7. Read `docs/README.md`, this handoff, the repo-write/access runbooks, and the active subsystem ledger.
+          8. Inspect the real code/data path end to end before changing it. Documentation is guidance; current source/live database/deployed behavior outrank stale prose.
+          9. Propose/confirm a bounded patch plan when making runtime changes. Do not widen scope because a connector makes unrelated files easy to reach.
+          10. Before returning a patch, verify every new helper, hook, state variable, prop, callback, RPC argument, and data-contract field is defined and passed correctly.
+          11. Run focused validators and protected-boundary checks.
+          12. Re-fetch the branch head after mutation and verify the exact diff.
+          13. Verify the Vercel deployment for that exact head when the branch is deployed.
+          14. Never merge an open PR without Paul's explicit approval.
+
+          ## Live Supabase authority
+
+          Project: `DnDWeb` / `ucggczovhmauhshvhusx`.
+
+          Use the Supabase connector directly. Before any DB mutation:
+
+          - inspect the current live object/data first;
+          - do not assume a repository SQL filename means production has or has not received the effect;
+          - use `execute_sql` for diagnosis/read-only checks where appropriate;
+          - use the migration action for reviewed DDL/schema changes;
+          - verify live state afterward;
+          - do not expose service-role credentials in browser code.
+
+          Artwork-only work requires **no Supabase write**. Supabase is used during subclass artwork production only to verify the current preferred-source subclass catalogue/authority.
+
+          ## Current subclass tarot state
+
+          The subclass selector is presentation-only. Existing class-guide/model logic remains authoritative for subclass availability, level gating, selection, persistence, and progression injection.
+
+          Installed normalized tarot concepts currently cover the approved Artificer, Barbarian, Bard, and Cleric preferred-source queue. `utils/classes/subclassArtwork.js` maps only approved installed concepts; unfinished subclasses deliberately retain class-menu artwork fallbacks.
+
+          The current deck contract is:
+
+          - 7:12 ratio;
+          - final export 840 × 1440 WebP;
+          - full-bleed artwork through the lower third;
+          - no opaque footer/title band;
+          - fixed frame/title/emblem geometry;
+          - explicit mapping only after Paul approves the card and it is installed/validated.
+
+          Do not restore reset-era tarot artwork from old commits unless Paul explicitly asks for a particular old asset as reference.
+
+          ## Non-negotiable project boundaries
+
+          - World-map and town/city-map behavior are separate systems.
+          - Do **not** touch `components/MapPageClient.js`, world travel/routes/weather/camps/world clock unless Paul explicitly requests world-map work.
+          - Character Forge/artwork work does not authorize crafting, inventory, merchant, encounter, tactical, travel, or economy changes.
+          - Tactical encounter rules remain server/RPC authoritative.
+          - Preserve existing source-choice/runtime/persistence authority; do not create parallel React/database authority for presentation convenience.
+          - Prefer additive database migrations; never rewrite deployed migration history.
+          - Never weaken validators merely to make a change pass.
+          - Never force-push over unexpected concurrent branch movement.
+
+          ## Copy-ready takeover instruction
+
+          You are taking over DNDNext as a senior developer and technical advisor. Start by reading `docs/DNDNext_Current_Handoff_Prompt.md`. Before changing anything, use the connected **GitHub, Supabase, Vercel, and Dropbox** tools: re-fetch `main`, the active PR and exact head; inspect live Supabase only for the relevant subsystem; identify the Vercel preview for the exact Git head; and use Dropbox `/DNDNext-Transfer/` plus a guarded GitHub Actions scratch/preview branch when binary bytes or a real checkout are required. Do not say repository/database/deployment/binary transfer access is unavailable until those connector paths have actually been checked. Preserve working systems, keep world-map and town/city-map behavior separate, do not touch the world map unless Paul explicitly asks, keep changes bounded, verify every new helper/hook/state/prop/callback/RPC/data field is defined and passed correctly, run focused validators, re-check the exact branch diff, and verify the exact-head Vercel deployment before reporting completion. Never merge without Paul's explicit approval.
+          EOF
+
+          cat > docs/CHATGPT_REPO_WRITE_PROCEDURE.md <<'EOF'
+          # ChatGPT Repository Write Procedure
+
+          Updated: 2026-09-13
+
+          DNDNext is directly operable from ChatGPT through connected **GitHub, Supabase, Vercel, and Dropbox** services. A future session must check those tools before claiming that repository, database, deployment, or binary-transfer work requires Paul to leave ChatGPT and do it manually.
+
+          ## Connected-tool responsibility map
+
+          - **GitHub**: repository source, branches, PRs, exact heads, file reads/writes, commit/ref operations, workflow/check state.
+          - **Supabase**: live Postgres/project state, SQL diagnosis, functions/tables/policies, reviewed migrations/data actions.
+          - **Vercel**: preview/production deployment lookup, exact Git-SHA matching, build state/logs, protected preview fetching.
+          - **Dropbox**: byte-preserving transport bridge for generated/approved binary bundles that should not be encoded as giant GitHub text payloads.
+
+          Source and live-state precedence:
+
+          `current GitHub source + live Supabase + exact-head validators + exact-head Vercel behavior > stale prose`
+
+          ## Current repository checkpoint
+
+          Repository: `bob8675309/DNDNEXT`
+
+          - `main` handoff-time head: `02854698298f357d2dfde21dd292ba7caf73e1c1`.
+          - active PR: **#187**, `Redesign subclass selector as cinematic looping gallery`.
+          - active branch: `agent/subclass-carousel-selector-20260911`.
+          - handoff-time head before this documentation commit: `12cc27de6f128f5670307fce9a7c5c1f6104bfaf`.
+
+          Always re-fetch these values. Never treat a SHA in documentation as permanently current.
+
+          ## Preferred safe write paths
+
+          ### A. Ordinary text/source/documentation changes
+
+          1. Re-fetch the real target branch/PR head.
+          2. Read the current target files from that exact branch.
+          3. Keep the requested scope bounded.
+          4. Use GitHub branch/file/blob/tree/commit/ref actions with non-forced exact-head discipline.
+          5. Re-fetch the branch after writing and verify the actual diff.
+          6. Run relevant validators/checks.
+          7. Match the Vercel deployment to the exact resulting Git SHA when deployment behavior matters.
+
+          ### B. Work requiring a checkout/shell/grouped transformation
+
+          Use a **bounded scratch/preview branch + one-shot GitHub Actions runner**.
+
+          This is the established pattern:
+
+          `exact current target head -> create scratch/preview branch -> add temporary workflow there -> workflow checks out real target branch -> guard exact target SHA -> modify/test -> commit -> push HEAD:real-target-branch -> inspect target branch through GitHub -> inspect exact-head Vercel preview`
+
+          The scratch branch is a runner/transport surface. It does **not** need to be merged into the real PR to deliver the result. This pattern is useful for:
+
+          - binary materialization;
+          - real filesystem operations;
+          - Node/Python/shell transforms;
+          - grouped multi-file changes where a runner is safer than many independent API writes;
+          - deterministic validation/build commands.
+
+          Required guard before mutation:
+
+          ```bash
+          test "$(git rev-parse HEAD)" = "<EXPECTED_TARGET_HEAD_SHA>"
+          ```
+
+          Re-fetch the intended target branch immediately before the runner pushes and abort if it has moved unexpectedly.
+
+          ### C. Binary artwork/assets
+
+          Read `docs/ARTWORK_BINARY_TRANSFER_RUNBOOK.md` and use:
+
+          `local approved bytes -> ZIP + manifest/checksums -> Dropbox /DNDNext-Transfer -> temporary download URL -> guarded scratch/preview Actions runner -> exact target branch -> verify -> commit/push -> Vercel`
+
+          Do not re-encode large images as inline source merely because GitHub's ordinary file action is text-oriented.
+
+          ## Vercel verification procedure
+
+          GitHub integration normally creates the preview automatically after a branch push.
+
+          1. Use the Vercel connector to list DNDNext deployments.
+          2. Match deployment metadata to the **exact Git commit SHA and branch** you just pushed.
+          3. Wait for `READY` before reporting browser/deployment acceptance.
+          4. If it fails or stalls, inspect build logs through the Vercel connector.
+          5. For protected previews, use the Vercel fetch/access capability rather than assuming the preview is unreachable.
+
+          Do not validate a newer/older deployment and call it evidence for the target commit.
+
+          ## Supabase procedure
+
+          Supabase project: `DnDWeb` / `ucggczovhmauhshvhusx`.
+
+          Before any database change:
+
+          1. inspect the current live schema/function/policy/data involved;
+          2. use read-only diagnosis first;
+          3. distinguish live production effects from repository migration filenames;
+          4. use the migration action for reviewed DDL/schema changes;
+          5. use SQL/data writes only when the requested task actually authorizes them;
+          6. verify the live result afterward;
+          7. never expose service-role credentials to the browser.
+
+          Artwork, CSS, and presentation-only work normally require **no Supabase mutation**.
+
+          ## Branch and concurrency discipline
+
+          - Never force-push simply to make a stale patch apply.
+          - Never assume an open PR head has not moved.
+          - For direct file updates, re-fetch/use current blob SHAs rather than chaining stale SHAs.
+          - For a scratch/preview runner, hard-guard the target SHA before changes and again before push when practical.
+          - Keep temporary workflows on the scratch branch; do not pollute the working PR unless the workflow is intentionally becoming permanent tooling.
+          - Do not merge an open PR without Paul's explicit approval.
+
+          ## Standing project safety rules
+
+          - Do not touch the world map unless Paul explicitly asks.
+          - Do not mix world-map and town/city-map behavior.
+          - A Forge/artwork patch does not authorize tactical, crafting, inventory, merchant, travel, or economy changes.
+          - Preserve canonical source-choice/runtime/persistence authority.
+          - Verify every new helper, hook, state variable, prop, callback, RPC argument, and data field is defined and passed correctly.
+          - Preserve validators; do not weaken contracts to hide regressions.
+
+          ## Documentation discipline
+
+          At a meaningful handoff/checkpoint:
+
+          - update `DNDNext_Current_Handoff_Prompt.md`;
+          - update the active subsystem handoff/ledger;
+          - update `docs/README.md` when the trust/startup order changes;
+          - update `REPO_ACCESS_STANDING_RULE.md` / transfer runbook when a better connector or transfer path is proven;
+          - record exact branch/PR/SHA as a checkpoint **and** tell the next model to re-fetch current live state.
+
+          The purpose of this file is to prevent future sessions from forgetting the tools already available and wasting time rediscovering how to write, transfer, validate, and preview DNDNext changes.
+          EOF
+
+          cat > docs/REPO_ACCESS_STANDING_RULE.md <<'EOF'
+          # DNDNext Repository Access — Standing Rule
+
+          Updated: 2026-09-13
+
+          This is a persistent operational rule for all future DNDNext conversations.
+
+          ## Never claim project access is unavailable before checking the connected services
+
+          DNDNext normally has connected access to:
+
+          - **GitHub** for source, branches, PRs, commits, files, refs, workflows, and checks;
+          - **Supabase** for the live `DnDWeb` database/project;
+          - **Vercel** for deployments, build state/logs, and preview access;
+          - **Dropbox** for binary transfer, especially generated artwork.
+
+          A new chat must check/discover these connectors at startup. Do not tell Paul to manually upload, copy, deploy, or inspect something that one of these connected tools can already handle unless an actual connector call fails or the capability truly is unavailable.
+
+          ## Normal source write path
+
+          For ordinary source/text changes:
+
+          `ChatGPT -> GitHub connector -> exact branch/file/commit/ref -> GitHub verification -> Vercel exact-head verification`
+
+          Use the current branch head, not a remembered SHA.
+
+          ## Full-checkout / scratch-preview runner path
+
+          When work needs a checkout, shell tools, filesystem operations, binary materialization, grouped transforms, or deterministic local validators:
+
+          `ChatGPT -> GitHub connector -> bounded scratch/preview branch -> temporary GitHub Actions workflow -> checkout real target branch -> exact-head guard -> modify/test -> commit -> push real target branch -> GitHub verification -> Vercel verification`
+
+          The key point for future sessions: **the scratch/preview branch can run the workflow that pushes the verified result directly to the intended PR branch. The scratch branch itself does not need to be merged into that PR.**
+
+          Rules:
+
+          1. Create the scratch/preview branch from the exact accepted target head.
+          2. Put the temporary workflow only on the scratch/preview branch.
+          3. Have it check out the real intended branch.
+          4. Hard-guard the expected target SHA before mutation.
+          5. Keep the changed-file list explicit and bounded.
+          6. Run focused validators/build commands.
+          7. Commit/push back to the real target branch using a non-forced update.
+          8. Re-read the target branch/PR through GitHub.
+          9. Verify the Vercel deployment matching the exact new target SHA.
+
+          ## Preferred binary bridge
+
+          Binary artwork is not evidence that repo access is unavailable.
+
+          Established route:
+
+          `approved local binary bytes -> final format -> SHA-256 + manifest -> ZIP -> Dropbox /DNDNext-Transfer -> temporary download URL -> GitHub Actions scratch/preview branch -> exact target checkout/head guard -> checksum/MIME/dimension/count verification -> exact diff/path guard -> bot commit -> push intended PR branch -> GitHub/CI -> Vercel preview`
+
+          This route successfully handled the 2026-09-13 normalized subclass tarot installation: 34 approved 840 × 1440 WebP concepts were materialized to PR #187's branch and then explicitly wired/validated in a second guarded runner step.
+
+          See `docs/ARTWORK_BINARY_TRANSFER_RUNBOOK.md`.
+
+          ## Supabase authority
+
+          Use the connected Supabase tool for live database inspection. Repository SQL files are not a substitute for checking the deployed state.
+
+          - Project: `DnDWeb` / `ucggczovhmauhshvhusx`.
+          - Diagnose/read first.
+          - Apply schema changes only through an appropriate reviewed migration action.
+          - Do not rerun production SQL merely because migration naming differs between the repo and live ledger.
+          - Verify live state after any authorized mutation.
+
+          ## Vercel authority
+
+          Use Vercel after a branch write/deployment-triggering commit:
+
+          - list deployments for DNDNext;
+          - match by exact Git SHA/branch metadata;
+          - wait for `READY`;
+          - inspect build logs on failure;
+          - use protected-preview fetch/access tools when direct HTTP access is gated.
+
+          Do not use a deployment from another commit as proof that the current commit works.
+
+          ## Safety boundaries
+
+          - Do not use `main` as an experiment/transfer scratchpad.
+          - Do not force-move an accepted branch over unexpected concurrent work.
+          - Keep temporary transfer workflows out of the real PR branch.
+          - Do not restore/regenerate approved binary artwork merely for transport convenience.
+          - Do not touch the world map unless Paul explicitly asks.
+          - Never mix world-map behavior with town/city-map behavior.
+          - Do not allow a transport task to expand into unrelated runtime/database changes.
+
+          ## Why this file exists
+
+          DNDNext has repeatedly lost time at chat handoff boundaries because a new session forgot connector capabilities or assumed that no real checkout/binary path existed. The paths above are established and proven. Check them first.
+          EOF
+
+          cat > docs/ARTWORK_BINARY_TRANSFER_RUNBOOK.md <<'EOF'
+          # DNDNext Artwork Binary Transfer Runbook
+
+          Status date: 2026-09-13
+
+          Use this runbook whenever approved/generated binary artwork must be installed into a DNDNext GitHub branch and ordinary GitHub text/file actions are not the appropriate byte-preserving transport.
+
+          ## Connected tools used by this route
+
+          - **GitHub connector** — target branch/head authority, scratch/preview branch creation, temporary workflow creation, run/commit verification.
+          - **Dropbox connector** — upload the reviewed ZIP to `/DNDNext-Transfer/` and issue a temporary download link.
+          - **Vercel connector** — verify the deployment created from the final target-branch commit and inspect build logs.
+          - **Supabase connector** — normally read-only for artwork tasks; use it only to verify catalogue authority when artwork names depend on live preferred-source data. Pure artwork transport must not mutate Supabase.
+
+          ## Preferred route
+
+          `approved local bytes -> normalize/export final files -> manifest + SHA-256 -> ZIP -> Dropbox /DNDNext-Transfer -> one-shot GitHub Actions scratch/preview branch -> checkout exact intended PR branch -> exact-head guard -> download once -> checksum/MIME/dimension/count verification -> exact changed-path guard -> commit -> push intended PR branch -> GitHub/CI -> Vercel exact-head preview`
+
+          This route is established DNDNext operating procedure. It successfully installed Species artwork on 2026-09-05 and the normalized subclass tarot batch on 2026-09-13. Do not spend another session rediscovering giant base64 Git-blob transport while this bridge is available.
+
+          ## 1. Freeze the intended target
+
+          Before transfer:
+
+          1. Use GitHub to fetch the active PR/working branch.
+          2. Record the exact current target head SHA.
+          3. Confirm the expected destination paths/count.
+          4. Confirm the payload represents artwork Paul actually approved.
+          5. Never use `main` as the transfer scratchpad.
+
+          The one-shot runner must abort if the intended target branch no longer has the expected head.
+
+          ## 2. Prepare the final binary payload
+
+          - Export the exact approved artwork into the repository's final format.
+          - Never regenerate approved art merely for transport.
+          - Never reduce quality merely to make a connector upload easier.
+          - Record expected dimensions, format, MIME, and destination path for every asset.
+          - Compute SHA-256 for every file.
+          - Create a machine-readable manifest where practical.
+          - Create one ZIP containing only the intended payload and manifest/checksum files.
+          - Compute SHA-256 for the ZIP itself.
+
+          The 2026-09-13 tarot batch used 840 × 1440 WebP files and an exact 34-concept manifest/count guard.
+
+          ## 3. Upload the ZIP to Dropbox
+
+          Use the Dropbox connector and save the bundle under:
+
+          `/DNDNext-Transfer/`
+
+          Use a unique descriptive filename and wait until Dropbox reports `completed`.
+
+          Then request a temporary download URL for the uploaded file. Treat temporary Dropbox download URLs as potentially **single-use**:
+
+          - do not preview the URL;
+          - do not send HEAD requests;
+          - do not preflight it with another fetch;
+          - do not paste it into a surface that may automatically unfurl/fetch it.
+
+          The first real GET should be the GitHub Actions runner downloading `/tmp/<payload>.zip`.
+
+          ## 4. Create a bounded scratch/preview branch
+
+          Create a new branch from the exact current target-branch head. Example:
+
+          `agent/<task>-materialize-YYYYMMDD`
+
+          This branch is a temporary runner surface. Put only the one-shot workflow there.
+
+          **Do not merge the scratch/preview branch into the real PR just to deliver the binary result.** The workflow should check out the real target branch and push the verified resulting commit directly back to that target branch.
+
+          ## 5. One-shot workflow contract
+
+          The workflow must:
+
+          1. trigger only from the bounded scratch/preview branch;
+          2. use `permissions: contents: write`;
+          3. check out the **real intended PR/working branch**, not the scratch branch;
+          4. guard the exact expected target SHA:
+
+          ```bash
+          test "$(git rev-parse HEAD)" = "<EXPECTED_TARGET_HEAD_SHA>"
+          ```
+
+          5. download the Dropbox bundle once;
+          6. verify the ZIP SHA-256 before extraction;
+          7. verify per-file SHA-256 values;
+          8. verify required MIME/format/dimensions;
+          9. verify the expected binary file count;
+          10. copy only manifest-listed paths;
+          11. compare changed/staged paths against the manifest and abort on any extra/missing path;
+          12. run focused validators when applicable;
+          13. re-fetch/guard target movement before push when practical;
+          14. commit under a clear Actions/materializer identity;
+          15. push `HEAD:<intended-real-target-branch>` without force.
+
+          ## 6. Verification examples
+
+          ZIP checksum:
+
+          ```bash
+          echo '<ZIP_SHA256>  /tmp/artwork.zip' | sha256sum -c -
+          ```
+
+          Manifest checksums:
+
+          ```bash
+          cd /tmp/artwork
+          sha256sum -c SHA256SUMS
+          ```
+
+          WebP MIME example:
+
+          ```bash
+          while IFS= read -r f; do
+            test "$(file -b --mime-type "$f")" = "image/webp"
+          done < /tmp/webp-files.txt
+          ```
+
+          Exact changed-path guard:
+
+          ```bash
+          git status --porcelain=v1 --untracked-files=all | sed -E 's/^.. //' | sort > /tmp/actual.txt
+          sort /tmp/expected.txt -o /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+          ```
+
+          ## 7. Wiring is a separate explicit step when needed
+
+          Materializing binaries does not automatically authorize code mappings.
+
+          For systems such as subclass artwork:
+
+          1. first materialize/verify approved binary files;
+          2. then use a second exact-head guarded code/docs runner or bounded GitHub commit to wire only approved asset mappings;
+          3. preserve fallbacks for unfinished content;
+          4. update validators/checklists/handoff docs;
+          5. run semantic validators before pushing the wiring commit.
+
+          This two-stage pattern was used on 2026-09-13 for the normalized subclass tarot deck.
+
+          ## 8. Publication and Vercel verification
+
+          After the target branch is pushed:
+
+          1. re-fetch the real target branch/PR through GitHub;
+          2. confirm the new head parent is the expected prior target head;
+          3. inspect the exact file boundary;
+          4. inspect relevant GitHub Actions checks;
+          5. use the **Vercel connector** to list DNDNext deployments;
+          6. find the deployment whose metadata exactly matches the new Git SHA and target branch;
+          7. wait for `READY`;
+          8. inspect Vercel build logs if it fails;
+          9. fetch the protected preview through Vercel tooling when an HTTP/browser smoke check is required.
+
+          Only then call the binary install complete.
+
+          ## 9. Supabase and protected boundaries
+
+          A binary artwork transfer must not become a reason to alter unrelated systems.
+
+          - No Supabase writes for presentation-only artwork transport.
+          - Read Supabase only when verifying catalogue naming/authority.
+          - No world-map changes unless Paul explicitly requests them.
+          - Never mix world-map and town/city-map behavior.
+          - No crafting, inventory, merchant, encounter, tactical, travel, economy, or character-rule changes during pure artwork transport.
+
+          ## 10. Failure policy
+
+          If any exact-head, checksum, manifest, MIME, dimension, count, changed-path, validator, CI, or deployment check fails:
+
+          - stop;
+          - do not force the target branch forward;
+          - diagnose on a bounded scratch/preview branch;
+          - obtain a fresh Dropbox URL if a single-use link was consumed/expired;
+          - never substitute a different image to make the pipeline pass;
+          - never report success based solely on local/scratch state.
+
+          ## Standing reminder
+
+          Before saying repository/binary write access is unavailable, read:
+
+          - `docs/DNDNext_Current_Handoff_Prompt.md`
+          - `docs/REPO_ACCESS_STANDING_RULE.md`
+          - `docs/CHATGPT_REPO_WRITE_PROCEDURE.md`
+          - this runbook
+
+          Then check GitHub + Dropbox + GitHub Actions + Vercel. This route is already proven.
+          EOF
+
+      - name: Patch active tarot handoff and documentation index
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          handoff = Path('docs/CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md')
+          s = handoff.read_text()
+          anchor = '## Project / repo context\n'
+          startup = '''## START HERE — connector / transfer workflow\n\nBefore doing artwork or repository work in a new conversation, use the connected **GitHub, Supabase, Vercel, and Dropbox** tools. Do not rediscover access from scratch.\n\n- **GitHub:** re-fetch PR #187, `agent/subclass-carousel-selector-20260911`, its exact current head, current files, and Actions/check state.\n- **Supabase:** verify preferred-source subclass catalogue data in `DnDWeb` (`ucggczovhmauhshvhusx`) when names/queue authority matter; artwork work is read-only and requires no DB mutation.\n- **Vercel:** after a push, find the preview deployment whose metadata matches the exact new target-branch Git SHA, wait for `READY`, inspect logs on failure, and use protected-preview fetch/access tools when needed.\n- **Dropbox:** use `/DNDNext-Transfer/` for approved binary ZIP payloads. Temporary download links may be single-use, so the GitHub Actions runner should perform the first real GET.\n\nWhen a real checkout, shell transform, or binary transfer is required, use the proven **scratch/preview branch** pattern: create the scratch branch from the exact PR head, put a one-shot workflow there, have that workflow check out the real PR branch, hard-guard the expected head SHA, modify/validate/commit, and push `HEAD:agent/subclass-carousel-selector-20260911`. The scratch branch itself is a runner surface and is **not merged into PR #187 merely to deliver the result**.\n\nRead `docs/REPO_ACCESS_STANDING_RULE.md`, `docs/CHATGPT_REPO_WRITE_PROCEDURE.md`, and `docs/ARTWORK_BINARY_TRANSFER_RUNBOOK.md` before claiming any access/transfer limitation.\n\n'''
+          if '## START HERE — connector / transfer workflow' not in s:
+              s = s.replace(anchor, startup + anchor, 1)
+          s = s.replace(
+              'The checklist was reset to zero installed normalized tarot cards after the art purge. It is based on the current preferred Supabase class catalogue and groups only explicitly equivalent alias names where one art concept is intentionally shared.',
+              'The checklist now records the first 34 approved normalized tarot concepts as installed, wired, and validated, with 75 concepts remaining. It is based on the current preferred Supabase class catalogue and groups only explicitly equivalent alias names where one art concept is intentionally shared.'
+          )
+          old_material = '''A working binary-transfer path already exists in repository history and should be reused as a **pattern**, not by restoring its old deleted art.\n\nReference commit:\n\n`30d05db301638d998d7ebbd053750330547ab7d5` — `Materialize reviewed tarot subclass artwork batch`\n'''
+          new_material = '''The binary-transfer path is now both historical and **currently proven**. Reuse the guarded Dropbox -> scratch/preview GitHub Actions -> real PR branch pattern; do not restore reset-era art.\n\nCurrent normalized install reference:\n\n`f95aea3d05cb7d5c4cecd1d5f4ed049b07ebd3c5` — `Install approved normalized tarot subclass artwork` (34 approved 840 × 1440 WebP concepts).\n\nCurrent wiring reference:\n\n`40fa46f2710ffadce2962b0bd66e21acefe0bcb5` — `Wire approved normalized tarot subclass artwork`.\n\nHistorical materializer reference:\n\n`30d05db301638d998d7ebbd053750330547ab7d5` — `Materialize reviewed tarot subclass artwork batch`\n'''
+          if old_material in s:
+              s = s.replace(old_material, new_material, 1)
+          handoff.write_text(s)
+
+          readme = Path('docs/README.md')
+          r = readme.read_text()
+          r = r.replace('Updated: 2026-08-30', 'Updated: 2026-09-13', 1)
+          start_marker = '## Start here\n\n'
+          start_text = '''## Start here\n\n**New conversations: read the connector/access documents before diagnosing access. GitHub, Supabase, Vercel, and Dropbox are established parts of the DNDNext workflow.**\n\n1. `DNDNext_Current_Handoff_Prompt.md` — current copy-ready takeover brief, active PR/checkpoint, mandatory connector startup, scratch/preview branch push pattern, protected boundaries, and immediate work.\n2. `REPO_ACCESS_STANDING_RULE.md` — standing rule that GitHub/Supabase/Vercel/Dropbox must be checked before claiming access is unavailable.\n3. `CHATGPT_REPO_WRITE_PROCEDURE.md` — ordinary GitHub writes, exact-head discipline, and the bounded scratch/preview Actions runner pattern that can push verified results to the real PR branch.\n4. `ARTWORK_BINARY_TRANSFER_RUNBOOK.md` — Dropbox `/DNDNext-Transfer/` -> guarded GitHub Actions materializer -> target PR branch -> Vercel exact-head verification.\n5. The dedicated active subsystem handoff/ledger. For current subclass artwork: `CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md`, `CHARACTER_FORGE_TAROT_SUBCLASS_CARD_STANDARD.md`, and `CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md`.\n6. `Documentation_Refresh_Manifest.md` and other historical architecture/status ledgers as needed.\n\nCurrent handoff-time state: `main` is `02854698298f357d2dfde21dd292ba7caf73e1c1`; active work is PR #187 on `agent/subclass-carousel-selector-20260911`. Always re-fetch both rather than trusting these recorded SHAs. The normalized subclass tarot checklist currently records 34 installed/wired/validated concepts and 75 remaining; next normal batch is Druid Dreams, Land, Moon, Sea.\n\n'''
+          first_after = r.find('## Current code checkpoint')
+          if first_after == -1:
+              raise SystemExit('README current checkpoint marker missing')
+          start_at = r.find(start_marker)
+          if start_at == -1:
+              raise SystemExit('README start marker missing')
+          r = r[:start_at] + start_text + r[first_after:]
+          # Make the stale checkpoint explicitly historical so it cannot override the new top checkpoint.
+          r = r.replace('## Current code checkpoint\n', '## Historical code checkpoint retained for context\n\n> This section predates the 2026-09-13 current handoff above. Re-fetch GitHub before using any PR/SHA named below.\n\n', 1)
+          readme.write_text(r)
+          PY
+          git diff --check
+
+      - name: Verify bounded documentation scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          git status --short
+          git diff --name-only | sort > /tmp/actual.txt
+          cat > /tmp/expected.txt <<'EOF'
+          docs/ARTWORK_BINARY_TRANSFER_RUNBOOK.md
+          docs/CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md
+          docs/CHATGPT_REPO_WRITE_PROCEDURE.md
+          docs/DNDNext_Current_Handoff_Prompt.md
+          docs/README.md
+          docs/REPO_ACCESS_STANDING_RULE.md
+          EOF
+          diff -u /tmp/expected.txt /tmp/actual.txt
+
+      - name: Commit and push documentation to active PR branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin agent/subclass-carousel-selector-20260911
+          test "$(git rev-parse origin/agent/subclass-carousel-selector-20260911)" = "12cc27de6f128f5670307fce9a7c5c1f6104bfaf"
+          git config user.name "DNDNext Handoff Docs"
+          git config user.email "actions@users.noreply.github.com"
+          git add docs/ARTWORK_BINARY_TRANSFER_RUNBOOK.md docs/CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md docs/CHATGPT_REPO_WRITE_PROCEDURE.md docs/DNDNext_Current_Handoff_Prompt.md docs/README.md docs/REPO_ACCESS_STANDING_RULE.md
+          git diff --cached --name-only | sort > /tmp/staged.txt
+          diff -u /tmp/expected.txt /tmp/staged.txt
+          git commit -m "Document connector-first DNDNext handoff workflow"
+          git push origin HEAD:agent/subclass-carousel-selector-20260911
