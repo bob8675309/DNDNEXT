@@ -149,7 +149,7 @@ Resolver:
 
 `utils/classes/subclassArtwork.js`
 
-The resolver now explicitly maps the installed approved Artificer, Barbarian, Bard, Cleric, Druid, Fighter (except Psi Warrior), Monk, and Monster Hunter concepts and retains class-menu fallback artwork for unfinished subclasses. Add new subclass-specific mappings only after Paul approves and the normalized asset is installed/validated.
+The resolver now explicitly maps 78 installed approved concepts across Artificer, Barbarian, Bard, Cleric, Druid, Fighter, Monk, Monster Hunter, Paladin, Ranger, Rogue (through Scion of the Three), and Sorcerer (through Spellfire), while retaining class-menu fallback artwork for unfinished subclasses. Add new subclass-specific mappings only after Paul approves and the normalized asset is installed/validated.
 
 The subclass carousel implementation lives in:
 
@@ -175,6 +175,8 @@ Current normalized install reference:
 `f95aea3d05cb7d5c4cecd1d5f4ed049b07ebd3c5` — `Install approved normalized tarot subclass artwork` (first 34 approved 840 × 1440 WebP concepts).
 
 `2180841f21e7352d4f6fbf0881e345b8d95b643d` — `Install approved normalized tarot subclass batch 2` (20 additional approved 840 × 1440 WebP concepts).
+
+`fdd0ee116fc24c455274d7bd682d3bba79df4277` — `Install approved normalized tarot subclass batch 3` (24 additional approved 840 × 1440 WebP concepts).
 
 Current wiring reference:
 
@@ -204,7 +206,7 @@ Use:
 
 `docs/CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md`
 
-The checklist now records 54 approved normalized tarot concepts as installed, wired, and validated, with 55 concepts remaining. The next four-card production batch is Fighter — Psi Warrior, then Paladin — Ancients, Devotion, and Glory. It is based on the current preferred Supabase class catalogue and groups only explicitly equivalent alias names where one art concept is intentionally shared.
+The checklist now records 78 approved normalized tarot concepts as installed, wired, and validated, with 31 concepts remaining. The next authoritative four-card production batch is Rogue — Soulknife, Rogue — Thief, Sorcerer — Storm, and Sorcerer — Wild / Wild Magic. It is based on the current preferred Supabase class catalogue and groups only explicitly equivalent alias names where one art concept is intentionally shared.
 
 ## Approval philosophy
 

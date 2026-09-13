@@ -4,7 +4,7 @@ Status date: 2026-09-13
 
 This is the authoritative production checklist for the **normalized rebuild** of the Character Forge subclass tarot deck.
 
-The previous subclass artwork was intentionally deleted from the working branch on 2026-09-12. On 2026-09-13, the first **54 approved normalized tarot concepts** have now been installed and wired from the reviewed rebuild.
+The previous subclass artwork was intentionally deleted from the working branch on 2026-09-12. On 2026-09-13, the first **78 approved normalized tarot concepts** have now been installed and wired from the reviewed rebuild.
 
 Read first:
 
@@ -34,9 +34,9 @@ Legend:
 ## Progress
 
 - **Target concepts:** 109
-- **✅ Installed:** 54
+- **✅ Installed:** 78
 - **🟨 Approved but not installed:** 0
-- **⬜ Remaining:** 55
+- **⬜ Remaining:** 31
 
 ## Artificer — 6
 
@@ -101,7 +101,7 @@ Legend:
 - ✅ Battle Master
 - ✅ Champion
 - ✅ Eldritch Knight
-- ⬜ Psi Warrior
+- ✅ Psi Warrior
 
 ## Monk — 4
 
@@ -123,40 +123,40 @@ The current preferred-source join exposes no active Mystic subclass queue for th
 
 ## Paladin — 5
 
-- ⬜ Ancients
-- ⬜ Devotion
-- ⬜ Glory
-- ⬜ Noble Genies
-- ⬜ Vengeance
+- ✅ Ancients
+- ✅ Devotion
+- ✅ Glory
+- ✅ Noble Genies
+- ✅ Vengeance
 
 ## Ranger — 6
 
-- ⬜ Beast Master
-- ⬜ Fey Wanderer
-- ⬜ Gloom Stalker
-- ⬜ Hollow Warden
-- ⬜ Hunter
-- ⬜ Winter Walker
+- ✅ Beast Master
+- ✅ Fey Wanderer
+- ✅ Gloom Stalker
+- ✅ Hollow Warden
+- ✅ Hunter
+- ✅ Winter Walker
 
 ## Rogue — 6
 
-- ⬜ Arcane Trickster
-- ⬜ Assassin
-- ⬜ Phantom
-- ⬜ Scion of the Three
+- ✅ Arcane Trickster
+- ✅ Assassin
+- ✅ Phantom
+- ✅ Scion of the Three
 - ⬜ Soulknife
 - ⬜ Thief
 
 ## Sorcerer — 10 concepts
 
-- ⬜ Aberrant / Aberrant Mind — shared concept
-- ⬜ Clockwork / Clockwork Soul — shared concept
-- ⬜ Divine Soul
-- ⬜ Draconic
-- ⬜ Lunar
-- ⬜ Pyromancer (PSK)
-- ⬜ Shadow
-- ⬜ Spellfire
+- ✅ Aberrant / Aberrant Mind — shared concept
+- ✅ Clockwork / Clockwork Soul — shared concept
+- ✅ Divine Soul
+- ✅ Draconic
+- ✅ Lunar
+- ✅ Pyromancer (PSK)
+- ✅ Shadow
+- ✅ Spellfire
 - ⬜ Storm
 - ⬜ Wild / Wild Magic — shared concept
 
@@ -214,12 +214,12 @@ The following cards were individually reviewed and approved during the rebuild, 
 
 Continue from the topmost ⬜ entry in this authoritative checklist unless Paul chooses another class or batch.
 
-Current next four-card batch after the 2026-09-13 Druid/Fighter/Monk/Monster Hunter approvals:
+Current next four-card batch after the 2026-09-13 Fighter/Paladin/Ranger/Rogue/Sorcerer approvals:
 
-1. Fighter — Psi Warrior
-2. Paladin — Ancients
-3. Paladin — Devotion
-4. Paladin — Glory
+1. Rogue — Soulknife
+2. Rogue — Thief
+3. Sorcerer — Storm
+4. Sorcerer — Wild / Wild Magic
 
 Keep production in small approval batches and perform a visual-drift check after every batch before continuing.
 

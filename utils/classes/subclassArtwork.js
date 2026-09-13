@@ -63,6 +63,7 @@ const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
     "battle-master": "battle-master",
     champion: "champion",
     "eldritch-knight": "eldritch-knight",
+    "psi-warrior": "psi-warrior",
   }),
   monk: Object.freeze({
     elements: "elements",
@@ -75,6 +76,39 @@ const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
     "devourer-guild": "devourer-guild",
     "occultist-guild": "occultist-guild",
     "trapper-guild": "trapper-guild",
+  }),
+  paladin: Object.freeze({
+    ancients: "ancients",
+    devotion: "devotion",
+    glory: "glory",
+    "noble-genies": "noble-genies",
+    vengeance: "vengeance",
+  }),
+  ranger: Object.freeze({
+    "beast-master": "beast-master",
+    "fey-wanderer": "fey-wanderer",
+    "gloom-stalker": "gloom-stalker",
+    "hollow-warden": "hollow-warden",
+    hunter: "hunter",
+    "winter-walker": "winter-walker",
+  }),
+  rogue: Object.freeze({
+    "arcane-trickster": "arcane-trickster",
+    assassin: "assassin",
+    phantom: "phantom",
+    "scion-of-the-three": "scion-of-the-three",
+  }),
+  sorcerer: Object.freeze({
+    aberrant: "aberrant",
+    "aberrant-mind": "aberrant",
+    clockwork: "clockwork",
+    "clockwork-soul": "clockwork",
+    "divine-soul": "divine-soul",
+    draconic: "draconic",
+    lunar: "lunar",
+    "pyromancer-psk": "pyromancer",
+    shadow: "shadow",
+    spellfire: "spellfire",
   }),
 });
 
