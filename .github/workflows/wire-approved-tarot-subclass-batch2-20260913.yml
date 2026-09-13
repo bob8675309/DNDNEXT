@@ -1,0 +1,325 @@
+name: Wire approved tarot subclass batch 2 20260913
+
+on:
+  push:
+    branches:
+      - agent/tarot-approved-batch2-wire-20260913
+
+permissions:
+  contents: write
+
+jobs:
+  wire:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact target branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/subclass-carousel-selector-20260911
+          fetch-depth: 0
+
+      - name: Guard exact target head and approved assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "2180841f21e7352d4f6fbf0881e345b8d95b643d"
+          test "$(find public/media/subclasses -type f -name '*.webp' | wc -l)" -ge 54
+          for f in \
+            public/media/subclasses/druid/druid-dreams.webp \
+            public/media/subclasses/druid/druid-land.webp \
+            public/media/subclasses/druid/druid-moon.webp \
+            public/media/subclasses/druid/druid-sea.webp \
+            public/media/subclasses/druid/druid-shepherd.webp \
+            public/media/subclasses/druid/druid-spores.webp \
+            public/media/subclasses/druid/druid-stars.webp \
+            public/media/subclasses/druid/druid-wildfire.webp \
+            public/media/subclasses/fighter/fighter-banneret.webp \
+            public/media/subclasses/fighter/fighter-battle-master.webp \
+            public/media/subclasses/fighter/fighter-champion.webp \
+            public/media/subclasses/fighter/fighter-eldritch-knight.webp \
+            public/media/subclasses/monk/monk-elements.webp \
+            public/media/subclasses/monk/monk-mercy.webp \
+            public/media/subclasses/monk/monk-open-hand.webp \
+            public/media/subclasses/monk/monk-shadow.webp \
+            public/media/subclasses/monster-hunter/monster-hunter-carver-guild.webp \
+            public/media/subclasses/monster-hunter/monster-hunter-devourer-guild.webp \
+            public/media/subclasses/monster-hunter/monster-hunter-occultist-guild.webp \
+            public/media/subclasses/monster-hunter/monster-hunter-trapper-guild.webp; do
+            test -f "$f"
+          done
+
+      - name: Wire approved mappings and update authoritative docs
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > utils/classes/subclassArtwork.js <<'EOF'
+          import { classMenuArtworkFor } from "./classArtwork";
+
+          const text = (value) => String(value ?? "").trim();
+          const key = (value) => text(value).toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+
+          const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
+            artificer: Object.freeze({
+              alchemist: "alchemist",
+              armorer: "armorer",
+              artillerist: "artillerist",
+              "battle-smith": "battle-smith",
+              cartographer: "cartographer",
+              reanimator: "reanimator",
+            }),
+            barbarian: Object.freeze({
+              berserker: "berserker",
+              "wild-heart": "wild-heart",
+              "world-tree": "world-tree",
+              zealot: "zealot",
+            }),
+            bard: Object.freeze({
+              dance: "dance",
+              glamour: "glamour",
+              lore: "lore",
+              moon: "moon",
+              spirits: "spirits",
+              valor: "valor",
+            }),
+            cleric: Object.freeze({
+              ambition: "ambition",
+              "ambition-psa": "ambition",
+              arcana: "arcana",
+              death: "death",
+              forge: "forge",
+              grave: "grave",
+              knowledge: "knowledge",
+              "knowledge-psa": "knowledge",
+              life: "life",
+              light: "light",
+              nature: "nature",
+              order: "order",
+              peace: "peace",
+              "solidarity-psa": "solidarity",
+              "strength-psa": "strength",
+              tempest: "tempest",
+              trickery: "trickery",
+              twilight: "twilight",
+              war: "war",
+              "zeal-psa": "zeal",
+            }),
+            druid: Object.freeze({
+              dreams: "dreams",
+              land: "land",
+              moon: "moon",
+              sea: "sea",
+              shepherd: "shepherd",
+              spores: "spores",
+              stars: "stars",
+              wildfire: "wildfire",
+            }),
+            fighter: Object.freeze({
+              banneret: "banneret",
+              "battle-master": "battle-master",
+              champion: "champion",
+              "eldritch-knight": "eldritch-knight",
+            }),
+            monk: Object.freeze({
+              elements: "elements",
+              mercy: "mercy",
+              "open-hand": "open-hand",
+              shadow: "shadow",
+            }),
+            "monster-hunter": Object.freeze({
+              "carver-guild": "carver-guild",
+              "devourer-guild": "devourer-guild",
+              "occultist-guild": "occultist-guild",
+              "trapper-guild": "trapper-guild",
+            }),
+          });
+
+          function approvedSubclassArtworkFor(normalizedClass = "", normalizedSubclass = "") {
+            const family = APPROVED_SUBCLASS_ART_FAMILIES[normalizedClass]?.[normalizedSubclass];
+            return family ? `/media/subclasses/${normalizedClass}/${normalizedClass}-${family}.webp` : "";
+          }
+
+          function fallbackSubclassArtworkFor(normalizedClass = "") {
+            return classMenuArtworkFor(normalizedClass);
+          }
+
+          // Only Paul-approved normalized tarot cards are mapped here. Subclasses still in
+          // production continue to use the class-menu artwork fallback until individually
+          // approved, installed, and added to this resolver.
+          export function subclassArtworkFor(classKey = "", option = {}) {
+            const normalizedClass = key(classKey);
+            const normalizedSubclass = key(option?.name || option?.key);
+            return approvedSubclassArtworkFor(normalizedClass, normalizedSubclass)
+              || fallbackSubclassArtworkFor(normalizedClass);
+          }
+
+          export function handleSubclassArtworkError(event, classKey = "") {
+            const image = event?.currentTarget;
+            if (!image) return;
+            if (image.dataset.subclassFallbackApplied === "true") {
+              image.hidden = true;
+              return;
+            }
+            image.dataset.subclassFallbackApplied = "true";
+            image.src = fallbackSubclassArtworkFor(key(classKey));
+          }
+          EOF
+
+          python - <<'PY'
+          from pathlib import Path
+
+          old_families = '''const approvedTarotFamilies = {
+            artificer: ["alchemist", "armorer", "artillerist", "battle-smith", "cartographer", "reanimator"],
+            barbarian: ["berserker", "wild-heart", "world-tree", "zealot"],
+            bard: ["dance", "glamour", "lore", "moon", "spirits", "valor"],
+            cleric: ["ambition", "arcana", "death", "forge", "grave", "knowledge", "life", "light", "nature", "order", "peace", "solidarity", "strength", "tempest", "trickery", "twilight", "war", "zeal"],
+          };'''
+          new_families = '''const approvedTarotFamilies = {
+            artificer: ["alchemist", "armorer", "artillerist", "battle-smith", "cartographer", "reanimator"],
+            barbarian: ["berserker", "wild-heart", "world-tree", "zealot"],
+            bard: ["dance", "glamour", "lore", "moon", "spirits", "valor"],
+            cleric: ["ambition", "arcana", "death", "forge", "grave", "knowledge", "life", "light", "nature", "order", "peace", "solidarity", "strength", "tempest", "trickery", "twilight", "war", "zeal"],
+            druid: ["dreams", "land", "moon", "sea", "shepherd", "spores", "stars", "wildfire"],
+            fighter: ["banneret", "battle-master", "champion", "eldritch-knight"],
+            monk: ["elements", "mercy", "open-hand", "shadow"],
+            "monster-hunter": ["carver-guild", "devourer-guild", "occultist-guild", "trapper-guild"],
+          };'''
+
+          for name in ['scripts/validate_class_subclass_browser.mjs', 'scripts/validate_class_browser_polish.mjs']:
+              p = Path(name)
+              s = p.read_text()
+              if old_families not in s:
+                  raise SystemExit(f'Expected approved family block not found in {name}')
+              s = s.replace(old_families, new_families)
+              s = s.replace('approvedTarotCount === 34', 'approvedTarotCount === 54')
+              s = s.replace('Expected 34 installed approved tarot concepts', 'Expected 54 installed approved tarot concepts')
+              s = s.replace('34 approved normalized tarot concepts are installed and mapped', '54 approved normalized tarot concepts are installed and mapped')
+              s = s.replace('34 approved tarot concepts with safe fallbacks', '54 approved tarot concepts with safe fallbacks')
+              p.write_text(s)
+
+          checklist = Path('docs/CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md')
+          s = checklist.read_text()
+          s = s.replace('the first **34 approved normalized tarot concepts** were installed and wired from the reviewed rebuild.', 'the first **54 approved normalized tarot concepts** have now been installed and wired from the reviewed rebuild.')
+          s = s.replace('- **✅ Installed:** 34\n- **🟨 Approved but not installed:** 0\n- **⬜ Remaining:** 75', '- **✅ Installed:** 54\n- **🟨 Approved but not installed:** 0\n- **⬜ Remaining:** 55')
+          replacements = {
+          '''## Druid — 8
+
+          - ⬜ Dreams
+          - ⬜ Land
+          - ⬜ Moon
+          - ⬜ Sea
+          - ⬜ Shepherd
+          - ⬜ Spores
+          - ⬜ Stars
+          - ⬜ Wildfire''': '''## Druid — 8
+
+          - ✅ Dreams
+          - ✅ Land
+          - ✅ Moon
+          - ✅ Sea
+          - ✅ Shepherd
+          - ✅ Spores
+          - ✅ Stars
+          - ✅ Wildfire''',
+          '''## Fighter — 5
+
+          - ⬜ Banneret
+          - ⬜ Battle Master
+          - ⬜ Champion
+          - ⬜ Eldritch Knight
+          - ⬜ Psi Warrior''': '''## Fighter — 5
+
+          - ✅ Banneret
+          - ✅ Battle Master
+          - ✅ Champion
+          - ✅ Eldritch Knight
+          - ⬜ Psi Warrior''',
+          '''## Monk — 4
+
+          - ⬜ Elements
+          - ⬜ Mercy
+          - ⬜ Open Hand
+          - ⬜ Shadow''': '''## Monk — 4
+
+          - ✅ Elements
+          - ✅ Mercy
+          - ✅ Open Hand
+          - ✅ Shadow''',
+          '''## Monster Hunter — 4
+
+          - ⬜ Carver Guild
+          - ⬜ Devourer Guild
+          - ⬜ Occultist Guild
+          - ⬜ Trapper Guild''': '''## Monster Hunter — 4
+
+          - ✅ Carver Guild
+          - ✅ Devourer Guild
+          - ✅ Occultist Guild
+          - ✅ Trapper Guild''',
+          '''Current next four-card batch after the 2026-09-13 Cleric approvals:
+
+          1. Druid — Dreams
+          2. Druid — Land
+          3. Druid — Moon
+          4. Druid — Sea''': '''Current next four-card batch after the 2026-09-13 Druid/Fighter/Monk/Monster Hunter approvals:
+
+          1. Fighter — Psi Warrior
+          2. Paladin — Ancients
+          3. Paladin — Devotion
+          4. Paladin — Glory'''
+          }
+          for old, new in replacements.items():
+              if old not in s:
+                  raise SystemExit(f'Checklist replacement block missing: {old.splitlines()[0]}')
+              s = s.replace(old, new)
+          checklist.write_text(s)
+
+          handoff = Path('docs/CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md')
+          s = handoff.read_text()
+          s = s.replace('The resolver now explicitly maps the installed approved Artificer, Barbarian, Bard, and Cleric concepts and retains class-menu fallback artwork for unfinished subclasses.', 'The resolver now explicitly maps the installed approved Artificer, Barbarian, Bard, Cleric, Druid, Fighter (except Psi Warrior), Monk, and Monster Hunter concepts and retains class-menu fallback artwork for unfinished subclasses.')
+          s = s.replace('`f95aea3d05cb7d5c4cecd1d5f4ed049b07ebd3c5` — `Install approved normalized tarot subclass artwork` (34 approved 840 × 1440 WebP concepts).', '`f95aea3d05cb7d5c4cecd1d5f4ed049b07ebd3c5` — `Install approved normalized tarot subclass artwork` (first 34 approved 840 × 1440 WebP concepts).\n\n`2180841f21e7352d4f6fbf0881e345b8d95b643d` — `Install approved normalized tarot subclass batch 2` (20 additional approved 840 × 1440 WebP concepts).')
+          s = s.replace('The checklist now records the first 34 approved normalized tarot concepts as installed, wired, and validated, with 75 concepts remaining.', 'The checklist now records 54 approved normalized tarot concepts as installed, wired, and validated, with 55 concepts remaining. The next four-card production batch is Fighter — Psi Warrior, then Paladin — Ancients, Devotion, and Glory.')
+          handoff.write_text(s)
+
+          current = Path('docs/DNDNext_Current_Handoff_Prompt.md')
+          s = current.read_text()
+          s = s.replace('- handoff-time head before this documentation commit: `12cc27de6f128f5670307fce9a7c5c1f6104bfaf`', '- latest verified artwork materialization checkpoint before this documentation update: `2180841f21e7352d4f6fbf0881e345b8d95b643d`')
+          s = s.replace('The current PR #187 branch contains the normalized 7:12 subclass tarot presentation and the first installed approved tarot batch. The authoritative artwork checklist records:', 'The current PR #187 branch contains the normalized 7:12 subclass tarot presentation and two installed approved tarot batches. The authoritative artwork checklist records:')
+          s = s.replace('- installed/wired/validated: 34;\n- approved but not installed: 0;\n- remaining: 75;\n- next normal production batch: Druid — Dreams, Land, Moon, Sea.', '- installed/wired/validated: 54;\n- approved but not installed: 0;\n- remaining: 55;\n- next normal production batch: Fighter — Psi Warrior, then Paladin — Ancients, Devotion, Glory.')
+          s = s.replace('The 2026-09-13 tarot transfer used this exact model: a reviewed ZIP was uploaded to `/DNDNext-Transfer/`, the one-shot Actions materializer verified the bundle and 34 WebP scope, pushed the artwork commit to PR #187\'s branch, a second guarded runner wired the resolver/validators/docs, and Vercel was checked against the resulting target-branch commit.', 'The 2026-09-13 tarot transfers used this exact model twice: the first reviewed ZIP installed 34 normalized WebP concepts, and batch 2 installed 20 more. Each used `/DNDNext-Transfer/`, an exact-head guarded scratch/preview Actions runner, checksum/dimension/count/path verification, a direct push back to PR #187\'s branch, a separate guarded wiring/docs step, and exact-head Vercel verification.')
+          s = s.replace('Installed normalized tarot concepts currently cover the approved Artificer, Barbarian, Bard, and Cleric preferred-source queue.', 'Installed normalized tarot concepts currently cover the approved Artificer, Barbarian, Bard, Cleric, Druid, Fighter except Psi Warrior, Monk, and Monster Hunter preferred-source queue.')
+          current.write_text(s)
+          PY
+
+      - name: Validate approved tarot wiring
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/validate_class_subclass_browser.mjs
+          node scripts/validate_class_browser_polish.mjs
+          node scripts/validate_character_class_progression.mjs
+          git diff --check
+
+      - name: Guard exact changed-file boundary and push wiring
+        shell: bash
+        run: |
+          set -euo pipefail
+          git status --porcelain=v1 --untracked-files=all | sed -E 's/^.. //' | sort > /tmp/changed.txt
+          cat > /tmp/expected.txt <<'EOF'
+          docs/CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md
+          docs/CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md
+          docs/DNDNext_Current_Handoff_Prompt.md
+          scripts/validate_class_browser_polish.mjs
+          scripts/validate_class_subclass_browser.mjs
+          utils/classes/subclassArtwork.js
+          EOF
+          sort -o /tmp/expected.txt /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/changed.txt
+          git fetch origin agent/subclass-carousel-selector-20260911
+          test "$(git rev-parse origin/agent/subclass-carousel-selector-20260911)" = "2180841f21e7352d4f6fbf0881e345b8d95b643d"
+          git config user.name "DNDNext Artwork Wiring"
+          git config user.email "actions@users.noreply.github.com"
+          git add -- $(cat /tmp/expected.txt)
+          git diff --cached --name-only | sort > /tmp/staged.txt
+          diff -u /tmp/expected.txt /tmp/staged.txt
+          git commit -m "Wire approved normalized tarot subclass batch 2"
+          git push origin HEAD:agent/subclass-carousel-selector-20260911
