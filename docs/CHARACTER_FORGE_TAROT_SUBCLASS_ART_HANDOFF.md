@@ -1,6 +1,6 @@
 # DNDNext Subclass Tarot Artwork — New Chat Handoff
 
-Use this document as the starting brief for a new chat whose primary job is to rebuild the Character Forge subclass tarot-card artwork from zero.
+Use this document as the starting brief for a new chat whose primary job is to continue the normalized Character Forge subclass tarot-card rebuild from the current installed checkpoint.
 
 ## START HERE — connector / transfer workflow
 
@@ -149,7 +149,7 @@ Resolver:
 
 `utils/classes/subclassArtwork.js`
 
-At the reset checkpoint, the resolver intentionally uses class-menu fallback artwork. Reintroduce subclass-specific mappings only for approved cards.
+The resolver now explicitly maps the installed approved Artificer, Barbarian, Bard, and Cleric concepts and retains class-menu fallback artwork for unfinished subclasses. Add new subclass-specific mappings only after Paul approves and the normalized asset is installed/validated.
 
 The subclass carousel implementation lives in:
 
