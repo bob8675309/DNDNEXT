@@ -1,0 +1,53 @@
+name: Fix current tarot handoff status 20260913
+
+on:
+  push:
+    branches:
+      - agent/handoff-tarot-status-fix-20260913
+
+permissions:
+  contents: write
+
+jobs:
+  fix-doc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/subclass-carousel-selector-20260911
+          fetch-depth: 0
+      - name: Guard and patch current tarot handoff
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "dc4f42c0eca54ff89ddf7befed9c265142143324"
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('docs/CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md')
+          s = p.read_text()
+          a = 'Use this document as the starting brief for a new chat whose primary job is to rebuild the Character Forge subclass tarot-card artwork from zero.'
+          b = 'Use this document as the starting brief for a new chat whose primary job is to continue the normalized Character Forge subclass tarot-card rebuild from the current installed checkpoint.'
+          if a not in s:
+              raise SystemExit('intro marker missing')
+          s = s.replace(a, b, 1)
+          a = 'At the reset checkpoint, the resolver intentionally uses class-menu fallback artwork. Reintroduce subclass-specific mappings only for approved cards.'
+          b = 'The resolver now explicitly maps the installed approved Artificer, Barbarian, Bard, and Cleric concepts and retains class-menu fallback artwork for unfinished subclasses. Add new subclass-specific mappings only after Paul approves and the normalized asset is installed/validated.'
+          if a not in s:
+              raise SystemExit('resolver marker missing')
+          s = s.replace(a, b, 1)
+          p.write_text(s)
+          PY
+          git diff --check
+          test "$(git diff --name-only | wc -l)" -eq 1
+          test "$(git diff --name-only)" = "docs/CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md"
+      - name: Commit and push to active PR branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin agent/subclass-carousel-selector-20260911
+          test "$(git rev-parse origin/agent/subclass-carousel-selector-20260911)" = "dc4f42c0eca54ff89ddf7befed9c265142143324"
+          git config user.name "DNDNext Handoff Docs"
+          git config user.email "actions@users.noreply.github.com"
+          git add docs/CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md
+          git commit -m "Align tarot handoff with installed normalized batch"
+          git push origin HEAD:agent/subclass-carousel-selector-20260911
