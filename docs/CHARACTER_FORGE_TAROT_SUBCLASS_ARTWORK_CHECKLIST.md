@@ -27,7 +27,7 @@ Rules:
 Legend:
 
 - ⬜ Not yet created/approved in the normalized deck
-- ✅ Art approved locally but not yet normalized/installed/wired
+- 🟨 Art approved locally but not yet normalized/installed/wired
 - ✅ Approved, normalized, installed, wired, and validated
 - 📦 Approved reserve artwork installed but intentionally not wired because it is outside the current preferred-source queue
 
