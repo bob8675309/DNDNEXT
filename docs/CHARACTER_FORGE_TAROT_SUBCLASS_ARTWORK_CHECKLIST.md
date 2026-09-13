@@ -1,6 +1,6 @@
 # Character Forge Tarot Subclass Artwork Checklist
 
-Status date: 2026-09-12
+Status date: 2026-09-13
 
 This is the authoritative production checklist for the **normalized rebuild** of the Character Forge subclass tarot deck.
 
@@ -29,13 +29,14 @@ Legend:
 - ⬜ Not yet created/approved in the normalized deck
 - 🟨 Art approved locally but not yet normalized/installed/wired
 - ✅ Approved, normalized, installed, wired, and validated
+- 📦 Approved reserve artwork installed but intentionally not wired because it is outside the current preferred-source queue
 
 ## Progress
 
 - **Target concepts:** 109
 - **✅ Installed:** 0
-- **🟨 Approved but not installed:** 18
-- **⬜ Remaining:** 91
+- **🟨 Approved but not installed:** 34
+- **⬜ Remaining:** 75
 
 ## Artificer — 6
 
@@ -66,22 +67,22 @@ Legend:
 
 - 🟨 Ambition (PSA)
 - 🟨 Arcana
-- ⬜ Death
-- ⬜ Forge
-- ⬜ Grave
-- ⬜ Knowledge / Knowledge (PSA) — shared concept
-- ⬜ Life
-- ⬜ Light
-- ⬜ Nature
-- ⬜ Order
-- ⬜ Peace
-- ⬜ Solidarity (PSA)
-- ⬜ Strength (PSA)
-- ⬜ Tempest
-- ⬜ Trickery
-- ⬜ Twilight
-- ⬜ War
-- ⬜ Zeal (PSA)
+- 🟨 Death
+- 🟨 Forge
+- 🟨 Grave
+- 🟨 Knowledge / Knowledge (PSA) — shared concept
+- 🟨 Life
+- 🟨 Light
+- 🟨 Nature
+- 🟨 Order
+- 🟨 Peace
+- 🟨 Solidarity (PSA)
+- 🟨 Strength (PSA)
+- 🟨 Tempest
+- 🟨 Trickery
+- 🟨 Twilight
+- 🟨 War
+- 🟨 Zeal (PSA)
 
 ## Druid — 8
 
@@ -194,7 +195,7 @@ The current preferred-source join exposes no active Mystic subclass queue for th
 
 ## Approved off-queue artwork — not counted in the 109 target
 
-The following cards were individually reviewed and approved during the rebuild, but they are **not present in the current authoritative preferred-source checklist**. Retain them as approved art references / reserve assets and do not regenerate them unless Paul explicitly requests a replacement or the preferred catalogue changes to include them.
+The following cards were individually reviewed and approved during the rebuild, but they are **not present in the current authoritative preferred-source checklist**. Retain them as approved art references / reserve assets and do not wire them unless Paul explicitly requests it or the preferred catalogue changes to include them.
 
 - 🟨 Swords
 - 🟨 Whispers
@@ -213,12 +214,12 @@ The following cards were individually reviewed and approved during the rebuild, 
 
 Continue from the topmost ⬜ entry in this authoritative checklist unless Paul chooses another class or batch.
 
-Current next four-card batch after the 2026-09-12 approvals:
+Current next four-card batch after the 2026-09-13 Cleric approvals:
 
-1. Cleric — Death
-2. Cleric — Forge
-3. Cleric — Grave
-4. Cleric — Knowledge / Knowledge (PSA) — shared concept
+1. Druid — Dreams
+2. Druid — Land
+3. Druid — Moon
+4. Druid — Sea
 
 Keep production in small approval batches and perform a visual-drift check after every batch before continuing.
 
