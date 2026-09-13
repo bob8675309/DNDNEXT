@@ -138,6 +138,10 @@ const approvedTarotFamilies = {
   barbarian: ["berserker", "wild-heart", "world-tree", "zealot"],
   bard: ["dance", "glamour", "lore", "moon", "spirits", "valor"],
   cleric: ["ambition", "arcana", "death", "forge", "grave", "knowledge", "life", "light", "nature", "order", "peace", "solidarity", "strength", "tempest", "trickery", "twilight", "war", "zeal"],
+  druid: ["dreams", "land", "moon", "sea", "shepherd", "spores", "stars", "wildfire"],
+  fighter: ["banneret", "battle-master", "champion", "eldritch-knight"],
+  monk: ["elements", "mercy", "open-hand", "shadow"],
+  "monster-hunter": ["carver-guild", "devourer-guild", "occultist-guild", "trapper-guild"],
 };
 let approvedTarotCount = 0;
 for (const [classKey, families] of Object.entries(approvedTarotFamilies)) {
@@ -146,7 +150,7 @@ for (const [classKey, families] of Object.entries(approvedTarotFamilies)) {
     assert(fs.existsSync(path.join(root, `public/media/subclasses/${classKey}/${classKey}-${family}.webp`)), `Approved tarot asset missing ${classKey}/${family}`);
   }
 }
-assert(approvedTarotCount === 34, `Expected 34 installed approved tarot concepts, found ${approvedTarotCount}.`);
+assert(approvedTarotCount === 54, `Expected 54 installed approved tarot concepts, found ${approvedTarotCount}.`);
 for (const token of ['"ambition-psa": "ambition"', '"knowledge-psa": "knowledge"', '"solidarity-psa": "solidarity"', '"strength-psa": "strength"', '"zeal-psa": "zeal"']) {
   assert(subclassArtwork.includes(token), `Preferred-source Cleric alias mapping missing ${token}`);
 }
@@ -194,4 +198,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSources.includes(token), `Class browser patch unexpectedly references protected behavior: ${token}`);
 }
 
-console.log("Class browser polish validation passed: cinematic looping subclass gallery, normalized 7:12 tarot layout, restrained no-footer card shading, 34 approved tarot concepts with safe fallbacks for unfinished subclasses, click-only movable Feature-card details, selected-subclass progression bubbles, balanced per-level spell-slot table, open stable top-right art, preserved Class authority, and protected boundaries are intact.");
+console.log("Class browser polish validation passed: cinematic looping subclass gallery, normalized 7:12 tarot layout, restrained no-footer card shading, 54 approved tarot concepts with safe fallbacks for unfinished subclasses, click-only movable Feature-card details, selected-subclass progression bubbles, balanced per-level spell-slot table, open stable top-right art, preserved Class authority, and protected boundaries are intact.");

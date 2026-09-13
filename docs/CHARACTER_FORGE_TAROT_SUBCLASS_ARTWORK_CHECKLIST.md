@@ -4,7 +4,7 @@ Status date: 2026-09-13
 
 This is the authoritative production checklist for the **normalized rebuild** of the Character Forge subclass tarot deck.
 
-The previous subclass artwork was intentionally deleted from the working branch on 2026-09-12. On 2026-09-13, the first **34 approved normalized tarot concepts** were installed and wired from the reviewed rebuild.
+The previous subclass artwork was intentionally deleted from the working branch on 2026-09-12. On 2026-09-13, the first **54 approved normalized tarot concepts** have now been installed and wired from the reviewed rebuild.
 
 Read first:
 
@@ -34,9 +34,9 @@ Legend:
 ## Progress
 
 - **Target concepts:** 109
-- **✅ Installed:** 34
+- **✅ Installed:** 54
 - **🟨 Approved but not installed:** 0
-- **⬜ Remaining:** 75
+- **⬜ Remaining:** 55
 
 ## Artificer — 6
 
@@ -86,36 +86,36 @@ Legend:
 
 ## Druid — 8
 
-- ⬜ Dreams
-- ⬜ Land
-- ⬜ Moon
-- ⬜ Sea
-- ⬜ Shepherd
-- ⬜ Spores
-- ⬜ Stars
-- ⬜ Wildfire
+- ✅ Dreams
+- ✅ Land
+- ✅ Moon
+- ✅ Sea
+- ✅ Shepherd
+- ✅ Spores
+- ✅ Stars
+- ✅ Wildfire
 
 ## Fighter — 5
 
-- ⬜ Banneret
-- ⬜ Battle Master
-- ⬜ Champion
-- ⬜ Eldritch Knight
+- ✅ Banneret
+- ✅ Battle Master
+- ✅ Champion
+- ✅ Eldritch Knight
 - ⬜ Psi Warrior
 
 ## Monk — 4
 
-- ⬜ Elements
-- ⬜ Mercy
-- ⬜ Open Hand
-- ⬜ Shadow
+- ✅ Elements
+- ✅ Mercy
+- ✅ Open Hand
+- ✅ Shadow
 
 ## Monster Hunter — 4
 
-- ⬜ Carver Guild
-- ⬜ Devourer Guild
-- ⬜ Occultist Guild
-- ⬜ Trapper Guild
+- ✅ Carver Guild
+- ✅ Devourer Guild
+- ✅ Occultist Guild
+- ✅ Trapper Guild
 
 ## Mystic
 
@@ -214,12 +214,12 @@ The following cards were individually reviewed and approved during the rebuild, 
 
 Continue from the topmost ⬜ entry in this authoritative checklist unless Paul chooses another class or batch.
 
-Current next four-card batch after the 2026-09-13 Cleric approvals:
+Current next four-card batch after the 2026-09-13 Druid/Fighter/Monk/Monster Hunter approvals:
 
-1. Druid — Dreams
-2. Druid — Land
-3. Druid — Moon
-4. Druid — Sea
+1. Fighter — Psi Warrior
+2. Paladin — Ancients
+3. Paladin — Devotion
+4. Paladin — Glory
 
 Keep production in small approval batches and perform a visual-drift check after every batch before continuing.
 

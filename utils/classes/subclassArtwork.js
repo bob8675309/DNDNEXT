@@ -48,6 +48,34 @@ const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
     war: "war",
     "zeal-psa": "zeal",
   }),
+  druid: Object.freeze({
+    dreams: "dreams",
+    land: "land",
+    moon: "moon",
+    sea: "sea",
+    shepherd: "shepherd",
+    spores: "spores",
+    stars: "stars",
+    wildfire: "wildfire",
+  }),
+  fighter: Object.freeze({
+    banneret: "banneret",
+    "battle-master": "battle-master",
+    champion: "champion",
+    "eldritch-knight": "eldritch-knight",
+  }),
+  monk: Object.freeze({
+    elements: "elements",
+    mercy: "mercy",
+    "open-hand": "open-hand",
+    shadow: "shadow",
+  }),
+  "monster-hunter": Object.freeze({
+    "carver-guild": "carver-guild",
+    "devourer-guild": "devourer-guild",
+    "occultist-guild": "occultist-guild",
+    "trapper-guild": "trapper-guild",
+  }),
 });
 
 function approvedSubclassArtworkFor(normalizedClass = "", normalizedSubclass = "") {

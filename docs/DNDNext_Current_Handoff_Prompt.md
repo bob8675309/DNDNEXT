@@ -46,17 +46,17 @@ Active subclass-art/selector work:
 
 - PR **#187** — `Redesign subclass selector as cinematic looping gallery`
 - branch: `agent/subclass-carousel-selector-20260911`
-- handoff-time head before this documentation commit: `12cc27de6f128f5670307fce9a7c5c1f6104bfaf`
+- latest verified artwork materialization checkpoint before this documentation update: `2180841f21e7352d4f6fbf0881e345b8d95b643d`
 
 **Never assume those SHAs remain current. Re-fetch `main`, PR #187, and the exact remote branch head at the start of the next conversation and immediately before every write/push/merge.**
 
-The current PR #187 branch contains the normalized 7:12 subclass tarot presentation and the first installed approved tarot batch. The authoritative artwork checklist records:
+The current PR #187 branch contains the normalized 7:12 subclass tarot presentation and two installed approved tarot batches. The authoritative artwork checklist records:
 
 - target concepts: 109;
-- installed/wired/validated: 34;
+- installed/wired/validated: 54;
 - approved but not installed: 0;
-- remaining: 75;
-- next normal production batch: Druid — Dreams, Land, Moon, Sea.
+- remaining: 55;
+- next normal production batch: Fighter — Psi Warrior, then Paladin — Ancients, Devotion, Glory.
 
 Read:
 
@@ -102,7 +102,7 @@ Rules:
 - Compare changed/staged paths to the manifest and abort on any extra or missing path.
 - Do not leave the temporary workflow or transfer ZIP in the real PR diff unless intentionally making permanent tooling.
 
-The 2026-09-13 tarot transfer used this exact model: a reviewed ZIP was uploaded to `/DNDNext-Transfer/`, the one-shot Actions materializer verified the bundle and 34 WebP scope, pushed the artwork commit to PR #187's branch, a second guarded runner wired the resolver/validators/docs, and Vercel was checked against the resulting target-branch commit.
+The 2026-09-13 tarot transfers used this exact model twice: the first reviewed ZIP installed 34 normalized WebP concepts, and batch 2 installed 20 more. Each used `/DNDNext-Transfer/`, an exact-head guarded scratch/preview Actions runner, checksum/dimension/count/path verification, a direct push back to PR #187's branch, a separate guarded wiring/docs step, and exact-head Vercel verification.
 
 ## Mandatory startup sequence for every new DNDNext conversation
 
@@ -140,7 +140,7 @@ Artwork-only work requires **no Supabase write**. Supabase is used during subcla
 
 The subclass selector is presentation-only. Existing class-guide/model logic remains authoritative for subclass availability, level gating, selection, persistence, and progression injection.
 
-Installed normalized tarot concepts currently cover the approved Artificer, Barbarian, Bard, and Cleric preferred-source queue. `utils/classes/subclassArtwork.js` maps only approved installed concepts; unfinished subclasses deliberately retain class-menu artwork fallbacks.
+Installed normalized tarot concepts currently cover the approved Artificer, Barbarian, Bard, Cleric, Druid, Fighter except Psi Warrior, Monk, and Monster Hunter preferred-source queue. `utils/classes/subclassArtwork.js` maps only approved installed concepts; unfinished subclasses deliberately retain class-menu artwork fallbacks.
 
 The current deck contract is:
 
