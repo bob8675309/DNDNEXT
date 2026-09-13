@@ -1,0 +1,271 @@
+name: Wire approved tarot subclass art batch 3 20260913
+
+on:
+  push:
+    branches:
+      - agent/tarot-approved-wire-batch3-20260913
+
+permissions:
+  contents: write
+
+jobs:
+  wire:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact target branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/subclass-carousel-selector-20260911
+          fetch-depth: 0
+
+      - name: Guard exact target head and installed assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "fdd0ee116fc24c455274d7bd682d3bba79df4277"
+          test "$(find public/media/subclasses -type f -name '*.webp' | wc -l)" -ge 78
+          for p in \
+            public/media/subclasses/fighter/fighter-psi-warrior.webp \
+            public/media/subclasses/paladin/paladin-ancients.webp \
+            public/media/subclasses/paladin/paladin-devotion.webp \
+            public/media/subclasses/paladin/paladin-glory.webp \
+            public/media/subclasses/paladin/paladin-noble-genies.webp \
+            public/media/subclasses/paladin/paladin-vengeance.webp \
+            public/media/subclasses/ranger/ranger-beast-master.webp \
+            public/media/subclasses/ranger/ranger-fey-wanderer.webp \
+            public/media/subclasses/ranger/ranger-gloom-stalker.webp \
+            public/media/subclasses/ranger/ranger-hollow-warden.webp \
+            public/media/subclasses/ranger/ranger-hunter.webp \
+            public/media/subclasses/ranger/ranger-winter-walker.webp \
+            public/media/subclasses/rogue/rogue-arcane-trickster.webp \
+            public/media/subclasses/rogue/rogue-assassin.webp \
+            public/media/subclasses/rogue/rogue-phantom.webp \
+            public/media/subclasses/rogue/rogue-scion-of-the-three.webp \
+            public/media/subclasses/sorcerer/sorcerer-aberrant.webp \
+            public/media/subclasses/sorcerer/sorcerer-clockwork.webp \
+            public/media/subclasses/sorcerer/sorcerer-divine-soul.webp \
+            public/media/subclasses/sorcerer/sorcerer-draconic.webp \
+            public/media/subclasses/sorcerer/sorcerer-lunar.webp \
+            public/media/subclasses/sorcerer/sorcerer-pyromancer.webp \
+            public/media/subclasses/sorcerer/sorcerer-shadow.webp \
+            public/media/subclasses/sorcerer/sorcerer-spellfire.webp; do
+            test -f "$p"
+          done
+
+      - name: Wire approved mappings and update acceptance contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > utils/classes/subclassArtwork.js <<'EOF'
+          import { classMenuArtworkFor } from "./classArtwork";
+
+          const text = (value) => String(value ?? "").trim();
+          const key = (value) => text(value).toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+
+          const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
+            artificer: Object.freeze({
+              alchemist: "alchemist",
+              armorer: "armorer",
+              artillerist: "artillerist",
+              "battle-smith": "battle-smith",
+              cartographer: "cartographer",
+              reanimator: "reanimator",
+            }),
+            barbarian: Object.freeze({
+              berserker: "berserker",
+              "wild-heart": "wild-heart",
+              "world-tree": "world-tree",
+              zealot: "zealot",
+            }),
+            bard: Object.freeze({
+              dance: "dance",
+              glamour: "glamour",
+              lore: "lore",
+              moon: "moon",
+              spirits: "spirits",
+              valor: "valor",
+            }),
+            cleric: Object.freeze({
+              ambition: "ambition",
+              "ambition-psa": "ambition",
+              arcana: "arcana",
+              death: "death",
+              forge: "forge",
+              grave: "grave",
+              knowledge: "knowledge",
+              "knowledge-psa": "knowledge",
+              life: "life",
+              light: "light",
+              nature: "nature",
+              order: "order",
+              peace: "peace",
+              "solidarity-psa": "solidarity",
+              "strength-psa": "strength",
+              tempest: "tempest",
+              trickery: "trickery",
+              twilight: "twilight",
+              war: "war",
+              "zeal-psa": "zeal",
+            }),
+            druid: Object.freeze({
+              dreams: "dreams",
+              land: "land",
+              moon: "moon",
+              sea: "sea",
+              shepherd: "shepherd",
+              spores: "spores",
+              stars: "stars",
+              wildfire: "wildfire",
+            }),
+            fighter: Object.freeze({
+              banneret: "banneret",
+              "battle-master": "battle-master",
+              champion: "champion",
+              "eldritch-knight": "eldritch-knight",
+              "psi-warrior": "psi-warrior",
+            }),
+            monk: Object.freeze({
+              elements: "elements",
+              mercy: "mercy",
+              "open-hand": "open-hand",
+              shadow: "shadow",
+            }),
+            "monster-hunter": Object.freeze({
+              "carver-guild": "carver-guild",
+              "devourer-guild": "devourer-guild",
+              "occultist-guild": "occultist-guild",
+              "trapper-guild": "trapper-guild",
+            }),
+            paladin: Object.freeze({
+              ancients: "ancients",
+              devotion: "devotion",
+              glory: "glory",
+              "noble-genies": "noble-genies",
+              vengeance: "vengeance",
+            }),
+            ranger: Object.freeze({
+              "beast-master": "beast-master",
+              "fey-wanderer": "fey-wanderer",
+              "gloom-stalker": "gloom-stalker",
+              "hollow-warden": "hollow-warden",
+              hunter: "hunter",
+              "winter-walker": "winter-walker",
+            }),
+            rogue: Object.freeze({
+              "arcane-trickster": "arcane-trickster",
+              assassin: "assassin",
+              phantom: "phantom",
+              "scion-of-the-three": "scion-of-the-three",
+            }),
+            sorcerer: Object.freeze({
+              aberrant: "aberrant",
+              "aberrant-mind": "aberrant",
+              clockwork: "clockwork",
+              "clockwork-soul": "clockwork",
+              "divine-soul": "divine-soul",
+              draconic: "draconic",
+              lunar: "lunar",
+              "pyromancer-psk": "pyromancer",
+              shadow: "shadow",
+              spellfire: "spellfire",
+            }),
+          });
+
+          function approvedSubclassArtworkFor(normalizedClass = "", normalizedSubclass = "") {
+            const family = APPROVED_SUBCLASS_ART_FAMILIES[normalizedClass]?.[normalizedSubclass];
+            return family ? `/media/subclasses/${normalizedClass}/${normalizedClass}-${family}.webp` : "";
+          }
+
+          function fallbackSubclassArtworkFor(normalizedClass = "") {
+            return classMenuArtworkFor(normalizedClass);
+          }
+
+          // Only Paul-approved normalized tarot cards are mapped here. Subclasses still in
+          // production continue to use the class-menu artwork fallback until individually
+          // approved, installed, and added to this resolver.
+          export function subclassArtworkFor(classKey = "", option = {}) {
+            const normalizedClass = key(classKey);
+            const normalizedSubclass = key(option?.name || option?.key);
+            return approvedSubclassArtworkFor(normalizedClass, normalizedSubclass)
+              || fallbackSubclassArtworkFor(normalizedClass);
+          }
+
+          export function handleSubclassArtworkError(event, classKey = "") {
+            const image = event?.currentTarget;
+            if (!image) return;
+            if (image.dataset.subclassFallbackApplied === "true") {
+              image.hidden = true;
+              return;
+            }
+            image.dataset.subclassFallbackApplied = "true";
+            image.src = fallbackSubclassArtworkFor(key(classKey));
+          }
+          EOF
+
+          python - <<'PY'
+          from pathlib import Path
+
+          files = [Path('scripts/validate_class_subclass_browser.mjs'), Path('scripts/validate_class_browser_polish.mjs')]
+          old = '''const approvedTarotFamilies = {\n  artificer: ["alchemist", "armorer", "artillerist", "battle-smith", "cartographer", "reanimator"],\n  barbarian: ["berserker", "wild-heart", "world-tree", "zealot"],\n  bard: ["dance", "glamour", "lore", "moon", "spirits", "valor"],\n  cleric: ["ambition", "arcana", "death", "forge", "grave", "knowledge", "life", "light", "nature", "order", "peace", "solidarity", "strength", "tempest", "trickery", "twilight", "war", "zeal"],\n  druid: ["dreams", "land", "moon", "sea", "shepherd", "spores", "stars", "wildfire"],\n  fighter: ["banneret", "battle-master", "champion", "eldritch-knight"],\n  monk: ["elements", "mercy", "open-hand", "shadow"],\n  "monster-hunter": ["carver-guild", "devourer-guild", "occultist-guild", "trapper-guild"],\n};'''
+          new = '''const approvedTarotFamilies = {\n  artificer: ["alchemist", "armorer", "artillerist", "battle-smith", "cartographer", "reanimator"],\n  barbarian: ["berserker", "wild-heart", "world-tree", "zealot"],\n  bard: ["dance", "glamour", "lore", "moon", "spirits", "valor"],\n  cleric: ["ambition", "arcana", "death", "forge", "grave", "knowledge", "life", "light", "nature", "order", "peace", "solidarity", "strength", "tempest", "trickery", "twilight", "war", "zeal"],\n  druid: ["dreams", "land", "moon", "sea", "shepherd", "spores", "stars", "wildfire"],\n  fighter: ["banneret", "battle-master", "champion", "eldritch-knight", "psi-warrior"],\n  monk: ["elements", "mercy", "open-hand", "shadow"],\n  "monster-hunter": ["carver-guild", "devourer-guild", "occultist-guild", "trapper-guild"],\n  paladin: ["ancients", "devotion", "glory", "noble-genies", "vengeance"],\n  ranger: ["beast-master", "fey-wanderer", "gloom-stalker", "hollow-warden", "hunter", "winter-walker"],\n  rogue: ["arcane-trickster", "assassin", "phantom", "scion-of-the-three"],\n  sorcerer: ["aberrant", "clockwork", "divine-soul", "draconic", "lunar", "pyromancer", "shadow", "spellfire"],\n};'''
+          for p in files:
+              s=p.read_text()
+              if old not in s: raise SystemExit(f'approved family block missing in {p}')
+              s=s.replace(old,new)
+              s=s.replace('assert(approvedTarotCount === 54, `Expected 54 installed approved tarot concepts, found ${approvedTarotCount}.`);', 'assert(approvedTarotCount === 78, `Expected 78 installed approved tarot concepts, found ${approvedTarotCount}.`);')
+              s=s.replace('54 approved normalized tarot concepts are installed and mapped', '78 approved normalized tarot concepts are installed and mapped')
+              s=s.replace('54 approved tarot concepts with safe fallbacks for unfinished subclasses', '78 approved tarot concepts with safe fallbacks for unfinished subclasses')
+              p.write_text(s)
+
+          # Validate shared/alias mappings in both acceptance scripts.
+          for p in files:
+              s=p.read_text()
+              needle = '''for (const token of ['"ambition-psa": "ambition"', '"knowledge-psa": "knowledge"', '"solidarity-psa": "solidarity"', '"strength-psa": "strength"', '"zeal-psa": "zeal"']) {\n  assert(subclassArtwork.includes(token), `Preferred-source Cleric alias mapping missing ${token}`);\n}\n'''
+              replacement = needle + '''for (const token of ['"aberrant-mind": "aberrant"', '"clockwork-soul": "clockwork"', '"pyromancer-psk": "pyromancer"']) {\n  assert(subclassArtwork.includes(token), `Preferred-source Sorcerer alias mapping missing ${token}`);\n}\n'''
+              if needle not in s: raise SystemExit(f'alias validation block missing in {p}')
+              p.write_text(s.replace(needle,replacement))
+
+          checklist=Path('docs/CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md')
+          s=checklist.read_text()
+          s=s.replace('the first **54 approved normalized tarot concepts** have now been installed and wired from the reviewed rebuild.', 'the first **78 approved normalized tarot concepts** have now been installed and wired from the reviewed rebuild.')
+          s=s.replace('- **✅ Installed:** 54\n- **🟨 Approved but not installed:** 0\n- **⬜ Remaining:** 55', '- **✅ Installed:** 78\n- **🟨 Approved but not installed:** 0\n- **⬜ Remaining:** 31')
+          for name in ['Psi Warrior','Ancients','Devotion','Glory','Noble Genies','Vengeance','Beast Master','Fey Wanderer','Gloom Stalker','Hollow Warden','Hunter','Winter Walker','Arcane Trickster','Assassin','Phantom','Scion of the Three','Aberrant / Aberrant Mind — shared concept','Clockwork / Clockwork Soul — shared concept','Divine Soul','Draconic','Lunar','Pyromancer (PSK)','Shadow','Spellfire']:
+              oldline=f'- ⬜ {name}'
+              newline=f'- ✅ {name}'
+              if oldline not in s: raise SystemExit(f'checklist line missing: {oldline}')
+              s=s.replace(oldline,newline)
+          start='Current next four-card batch after the 2026-09-13 Druid/Fighter/Monk/Monster Hunter approvals:\n\n1. Fighter — Psi Warrior\n2. Paladin — Ancients\n3. Paladin — Devotion\n4. Paladin — Glory'
+          repl='Current next four-card batch after the 2026-09-13 Fighter/Paladin/Ranger/Rogue/Sorcerer approvals:\n\n1. Rogue — Soulknife\n2. Rogue — Thief\n3. Sorcerer — Storm\n4. Sorcerer — Wild / Wild Magic'
+          if start not in s: raise SystemExit('checklist next-batch block missing')
+          checklist.write_text(s.replace(start,repl))
+
+          handoff=Path('docs/CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md')
+          s=handoff.read_text()
+          s=s.replace('The resolver now explicitly maps the installed approved Artificer, Barbarian, Bard, Cleric, Druid, Fighter (except Psi Warrior), Monk, and Monster Hunter concepts and retains class-menu fallback artwork for unfinished subclasses.', 'The resolver now explicitly maps 78 installed approved concepts across Artificer, Barbarian, Bard, Cleric, Druid, Fighter, Monk, Monster Hunter, Paladin, Ranger, Rogue (through Scion of the Three), and Sorcerer (through Spellfire), while retaining class-menu fallback artwork for unfinished subclasses.')
+          s=s.replace('`2180841f21e7352d4f6fbf0881e345b8d95b643d` — `Install approved normalized tarot subclass batch 2` (20 additional approved 840 × 1440 WebP concepts).', '`2180841f21e7352d4f6fbf0881e345b8d95b643d` — `Install approved normalized tarot subclass batch 2` (20 additional approved 840 × 1440 WebP concepts).\n\n`fdd0ee116fc24c455274d7bd682d3bba79df4277` — `Install approved normalized tarot subclass batch 3` (24 additional approved 840 × 1440 WebP concepts).')
+          s=s.replace('The checklist now records 54 approved normalized tarot concepts as installed, wired, and validated, with 55 concepts remaining. The next four-card production batch is Fighter — Psi Warrior, then Paladin — Ancients, Devotion, and Glory.', 'The checklist now records 78 approved normalized tarot concepts as installed, wired, and validated, with 31 concepts remaining. The next authoritative four-card production batch is Rogue — Soulknife, Rogue — Thief, Sorcerer — Storm, and Sorcerer — Wild / Wild Magic.')
+          handoff.write_text(s)
+          PY
+
+      - name: Validate approved tarot wiring
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/validate_class_subclass_browser.mjs
+          node scripts/validate_class_browser_polish.mjs
+          node scripts/validate_character_class_progression.mjs
+          git diff --check
+
+      - name: Commit and push wiring
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin agent/subclass-carousel-selector-20260911
+          test "$(git rev-parse origin/agent/subclass-carousel-selector-20260911)" = "fdd0ee116fc24c455274d7bd682d3bba79df4277"
+          git config user.name "DNDNext Artwork Wiring"
+          git config user.email "actions@users.noreply.github.com"
+          git add utils/classes/subclassArtwork.js scripts/validate_class_subclass_browser.mjs scripts/validate_class_browser_polish.mjs docs/CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md docs/CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md
+          git diff --cached --name-only | sort
+          test "$(git diff --cached --name-only | wc -l)" -eq 5
+          git commit -m "Wire approved normalized tarot subclass batch 3"
+          git push origin HEAD:agent/subclass-carousel-selector-20260911
