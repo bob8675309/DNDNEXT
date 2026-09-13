@@ -1,0 +1,243 @@
+name: Wire approved tarot subclass art 20260913
+
+on:
+  push:
+    branches:
+      - agent/tarot-approved-wire-20260913
+
+permissions:
+  contents: write
+
+jobs:
+  wire:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact target branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/subclass-carousel-selector-20260911
+          fetch-depth: 0
+
+      - name: Guard exact target head and approved assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "f95aea3d05cb7d5c4cecd1d5f4ed049b07ebd3c5"
+          test "$(find public/media/subclasses/artificer public/media/subclasses/barbarian public/media/subclasses/bard public/media/subclasses/cleric -type f -name '*.webp' | wc -l)" -eq 34
+
+      - name: Wire approved mappings and update acceptance contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > utils/classes/subclassArtwork.js <<'EOF'
+          import { classMenuArtworkFor } from "./classArtwork";
+
+          const text = (value) => String(value ?? "").trim();
+          const key = (value) => text(value).toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+
+          const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
+            artificer: Object.freeze({
+              alchemist: "alchemist",
+              armorer: "armorer",
+              artillerist: "artillerist",
+              "battle-smith": "battle-smith",
+              cartographer: "cartographer",
+              reanimator: "reanimator",
+            }),
+            barbarian: Object.freeze({
+              berserker: "berserker",
+              "wild-heart": "wild-heart",
+              "world-tree": "world-tree",
+              zealot: "zealot",
+            }),
+            bard: Object.freeze({
+              dance: "dance",
+              glamour: "glamour",
+              lore: "lore",
+              moon: "moon",
+              spirits: "spirits",
+              valor: "valor",
+            }),
+            cleric: Object.freeze({
+              ambition: "ambition",
+              "ambition-psa": "ambition",
+              arcana: "arcana",
+              death: "death",
+              forge: "forge",
+              grave: "grave",
+              knowledge: "knowledge",
+              "knowledge-psa": "knowledge",
+              life: "life",
+              light: "light",
+              nature: "nature",
+              order: "order",
+              peace: "peace",
+              "solidarity-psa": "solidarity",
+              "strength-psa": "strength",
+              tempest: "tempest",
+              trickery: "trickery",
+              twilight: "twilight",
+              war: "war",
+              "zeal-psa": "zeal",
+            }),
+          });
+
+          function approvedSubclassArtworkFor(normalizedClass = "", normalizedSubclass = "") {
+            const family = APPROVED_SUBCLASS_ART_FAMILIES[normalizedClass]?.[normalizedSubclass];
+            return family ? `/media/subclasses/${normalizedClass}/${normalizedClass}-${family}.webp` : "";
+          }
+
+          function fallbackSubclassArtworkFor(normalizedClass = "") {
+            return classMenuArtworkFor(normalizedClass);
+          }
+
+          // Only Paul-approved normalized tarot cards are mapped here. Subclasses still in
+          // production continue to use the class-menu artwork fallback until individually
+          // approved, installed, and added to this resolver.
+          export function subclassArtworkFor(classKey = "", option = {}) {
+            const normalizedClass = key(classKey);
+            const normalizedSubclass = key(option?.name || option?.key);
+            return approvedSubclassArtworkFor(normalizedClass, normalizedSubclass)
+              || fallbackSubclassArtworkFor(normalizedClass);
+          }
+
+          export function handleSubclassArtworkError(event, classKey = "") {
+            const image = event?.currentTarget;
+            if (!image) return;
+            if (image.dataset.subclassFallbackApplied === "true") {
+              image.hidden = true;
+              return;
+            }
+            image.dataset.subclassFallbackApplied = "true";
+            image.src = fallbackSubclassArtworkFor(key(classKey));
+          }
+          EOF
+
+          python - <<'PY'
+          from pathlib import Path
+
+          approved_block_subclass = '''// 2026-09-13 approved normalized tarot install: explicitly mapped cards use the
+          // installed 7:12 deck while every unfinished subclass retains the class-art fallback.
+          for (const token of [
+            'classMenuArtworkFor',
+            'APPROVED_SUBCLASS_ART_FAMILIES',
+            'function approvedSubclassArtworkFor',
+            '/media/subclasses/',
+            'function fallbackSubclassArtworkFor',
+            'handleSubclassArtworkError',
+          ]) assert(subclassArtwork.includes(token), `Approved subclass artwork/fallback contract is missing ${token}`);
+
+          const approvedTarotFamilies = {
+            artificer: ["alchemist", "armorer", "artillerist", "battle-smith", "cartographer", "reanimator"],
+            barbarian: ["berserker", "wild-heart", "world-tree", "zealot"],
+            bard: ["dance", "glamour", "lore", "moon", "spirits", "valor"],
+            cleric: ["ambition", "arcana", "death", "forge", "grave", "knowledge", "life", "light", "nature", "order", "peace", "solidarity", "strength", "tempest", "trickery", "twilight", "war", "zeal"],
+          };
+          let approvedTarotCount = 0;
+          for (const [classKey, families] of Object.entries(approvedTarotFamilies)) {
+            for (const family of families) {
+              approvedTarotCount += 1;
+              assert(fs.existsSync(path.join(root, `public/media/subclasses/${classKey}/${classKey}-${family}.webp`)), `Approved tarot asset missing ${classKey}/${family}`);
+            }
+          }
+          assert(approvedTarotCount === 34, `Expected 34 installed approved tarot concepts, found ${approvedTarotCount}.`);
+          for (const token of ['"ambition-psa": "ambition"', '"knowledge-psa": "knowledge"', '"solidarity-psa": "solidarity"', '"strength-psa": "strength"', '"zeal-psa": "zeal"']) {
+            assert(subclassArtwork.includes(token), `Preferred-source Cleric alias mapping missing ${token}`);
+          }
+          '''
+
+          old_subclass = '''// 2026-09-12 intentional art reset: no subclass-specific files are required while the
+          // new canonical 7:12 tarot deck is rebuilt. Runtime must use the existing class art
+          // fallback until a newly reviewed card is explicitly added and wired.
+          for (const token of [
+            'classMenuArtworkFor',
+            'function fallbackSubclassArtworkFor',
+            'return fallbackSubclassArtworkFor(key(classKey))',
+            'handleSubclassArtworkError',
+          ]) assert(subclassArtwork.includes(token), `Subclass artwork reset/fallback contract is missing ${token}`);
+          assert(!subclassArtwork.includes('/media/subclasses/'), "Reset resolver must not point at deleted subclass-specific artwork.");
+          '''
+
+          old_polish = '''// The subclass tarot deck was intentionally reset on 2026-09-12. Until the new
+          // normalized 7:12 cards are approved and installed, the gallery must safely use
+          // existing class-menu art rather than referencing deleted subclass assets.
+          for (const token of [
+            'classMenuArtworkFor',
+            'function fallbackSubclassArtworkFor',
+            'return fallbackSubclassArtworkFor(key(classKey))',
+            'handleSubclassArtworkError',
+          ]) assert(subclassArtwork.includes(token), `Subclass artwork reset/fallback contract is missing ${token}`);
+          assert(!subclassArtwork.includes('/media/subclasses/'), "Reset resolver must not point at deleted subclass-specific artwork.");
+          '''
+
+          for file, old in [
+            (Path('scripts/validate_class_subclass_browser.mjs'), old_subclass),
+            (Path('scripts/validate_class_browser_polish.mjs'), old_polish),
+          ]:
+            text = file.read_text()
+            if old not in text:
+              raise SystemExit(f'Expected reset-era validator block not found in {file}')
+            file.write_text(text.replace(old, approved_block_subclass))
+
+          file = Path('scripts/validate_class_subclass_browser.mjs')
+          text = file.read_text()
+          text = text.replace(
+            'console.log("Class subclass selector validation passed: canonical subclass authority and persistence remain in the guide model, the cinematic looping gallery remains intact, and subclass-specific artwork is intentionally reset to class-menu fallbacks pending the normalized 7:12 tarot rebuild.");',
+            'console.log("Class subclass selector validation passed: canonical subclass authority and persistence remain in the guide model, the cinematic looping gallery remains intact, 34 approved normalized tarot concepts are installed and mapped, and unfinished subclasses retain safe class-art fallbacks.");'
+          )
+          file.write_text(text)
+
+          file = Path('scripts/validate_class_browser_polish.mjs')
+          text = file.read_text()
+          text = text.replace(
+            'console.log("Class browser polish validation passed: cinematic looping subclass gallery, normalized 7:12 tarot layout, restrained no-footer card shading, safe class-art fallbacks pending approved asset installation, click-only movable Feature-card details, selected-subclass progression bubbles, balanced per-level spell-slot table, open stable top-right art, preserved Class authority, and protected boundaries are intact.");',
+            'console.log("Class browser polish validation passed: cinematic looping subclass gallery, normalized 7:12 tarot layout, restrained no-footer card shading, 34 approved tarot concepts with safe fallbacks for unfinished subclasses, click-only movable Feature-card details, selected-subclass progression bubbles, balanced per-level spell-slot table, open stable top-right art, preserved Class authority, and protected boundaries are intact.");'
+          )
+          file.write_text(text)
+
+          checklist = Path('docs/CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md')
+          text = checklist.read_text()
+          text = text.replace(
+            'The previous subclass artwork was intentionally deleted from the working branch on 2026-09-12. Progress therefore starts at **zero installed normalized tarot cards**.',
+            'The previous subclass artwork was intentionally deleted from the working branch on 2026-09-12. On 2026-09-13, the first **34 approved normalized tarot concepts** were installed and wired from the reviewed rebuild.'
+          )
+          text = text.replace('- **✅ Installed:** 0\n- **🟨 Approved but not installed:** 34\n- **⬜ Remaining:** 75', '- **✅ Installed:** 34\n- **🟨 Approved but not installed:** 0\n- **⬜ Remaining:** 75')
+          marker = '## Approved off-queue artwork — not counted in the 109 target'
+          if marker not in text:
+            raise SystemExit('Checklist off-queue marker missing')
+          before, after = text.split(marker, 1)
+          before = before.replace('- 🟨 ', '- ✅ ')
+          text = before + marker + after
+          checklist.write_text(text)
+
+          handoff = Path('docs/CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md')
+          text = handoff.read_text()
+          text = text.replace(
+            '`scripts/validate_class_subclass_browser.mjs` — protects canonical subclass authority, persistence, looping selector behavior, and reset-era fallback behavior until approved assets are wired.',
+            '`scripts/validate_class_subclass_browser.mjs` — protects canonical subclass authority, persistence, looping selector behavior, approved-card mappings, and fallback behavior for unfinished cards.'
+          )
+          handoff.write_text(text)
+          PY
+
+      - name: Validate approved tarot wiring
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/validate_class_subclass_browser.mjs
+          node scripts/validate_class_browser_polish.mjs
+          node scripts/validate_character_class_progression.mjs
+          git diff --check
+
+      - name: Commit and push wiring
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin agent/subclass-carousel-selector-20260911
+          test "$(git rev-parse origin/agent/subclass-carousel-selector-20260911)" = "f95aea3d05cb7d5c4cecd1d5f4ed049b07ebd3c5"
+          git config user.name "DNDNext Artwork Wiring"
+          git config user.email "actions@users.noreply.github.com"
+          git add utils/classes/subclassArtwork.js scripts/validate_class_subclass_browser.mjs scripts/validate_class_browser_polish.mjs docs/CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md docs/CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md
+          git diff --cached --name-only | sort
+          test "$(git diff --cached --name-only | wc -l)" -eq 5
+          git commit -m "Wire approved normalized tarot subclass artwork"
+          git push origin HEAD:agent/subclass-carousel-selector-20260911
