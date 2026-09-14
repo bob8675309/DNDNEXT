@@ -1,10 +1,10 @@
 # Character Forge Tarot Subclass Artwork Checklist
 
-Status date: 2026-09-13
+Status date: 2026-09-14
 
 This is the authoritative production checklist for the **normalized rebuild** of the Character Forge subclass tarot deck.
 
-The previous subclass artwork was intentionally deleted from the working branch on 2026-09-12. On 2026-09-13, the first **78 approved normalized tarot concepts** have now been installed and wired from the reviewed rebuild.
+The previous subclass artwork was intentionally deleted from the working branch on 2026-09-12. The first **78 approved normalized tarot concepts** are installed and wired. An additional **21 approved concepts** are currently approved locally and waiting for the next normalization/install/wiring pass; that total includes Paul's supplied Evocation card.
 
 Read first:
 
@@ -35,8 +35,8 @@ Legend:
 
 - **Target concepts:** 109
 - **✅ Installed:** 78
-- **🟨 Approved but not installed:** 0
-- **⬜ Remaining:** 31
+- **🟨 Approved but not installed:** 21
+- **⬜ Remaining:** 10
 
 ## Artificer — 6
 
@@ -144,8 +144,8 @@ The current preferred-source join exposes no active Mystic subclass queue for th
 - ✅ Assassin
 - ✅ Phantom
 - ✅ Scion of the Three
-- ⬜ Soulknife
-- ⬜ Thief
+- 🟨 Soulknife
+- 🟨 Thief
 
 ## Sorcerer — 10 concepts
 
@@ -157,36 +157,36 @@ The current preferred-source join exposes no active Mystic subclass queue for th
 - ✅ Pyromancer (PSK)
 - ✅ Shadow
 - ✅ Spellfire
-- ⬜ Storm
-- ⬜ Wild / Wild Magic — shared concept
+- 🟨 Storm
+- 🟨 Wild / Wild Magic — shared concept
 
 ## Warlock — 9
 
-- ⬜ Archfey
-- ⬜ Celestial
-- ⬜ Fathomless
-- ⬜ Fiend
-- ⬜ Genie
-- ⬜ Great Old One
-- ⬜ Hexblade
-- ⬜ Undead
-- ⬜ Undying
+- 🟨 Archfey
+- 🟨 Celestial
+- 🟨 Fathomless
+- 🟨 Fiend
+- 🟨 Genie
+- 🟨 Great Old One
+- 🟨 Hexblade
+- 🟨 Undead
+- 🟨 Undying
 
 ## Wizard — 18
 
-- ⬜ Abjuration
+- 🟨 Abjuration
 - ⬜ Abjurer
-- ⬜ Bladesinger
+- 🟨 Bladesinger
 - ⬜ Bladesinging
 - ⬜ Chronurgy
-- ⬜ Conjuration
-- ⬜ Divination
+- 🟨 Conjuration
+- 🟨 Divination
 - ⬜ Diviner
-- ⬜ Enchantment
-- ⬜ Evocation
+- 🟨 Enchantment
+- 🟨 Evocation — Paul-supplied approved card
 - ⬜ Evoker
-- ⬜ Graviturgy
-- ⬜ Illusion
+- 🟨 Graviturgy
+- 🟨 Illusion
 - ⬜ Illusionist
 - ⬜ Necromancy
 - ⬜ Scribes
@@ -210,16 +210,37 @@ The following cards were individually reviewed and approved during the rebuild, 
 - Spellcaster Sidekick — no subclass catalogue authority
 - Mystic — no preferred-source subclass rows in the current rebuild join
 
+## Production variety priority
+
+For the remaining Wizard cards and future replacement/redraw work, preferentially pull from underused Character Forge species before repeating the deck's most common silhouettes. Paul's current priority pool is:
+
+- Aetherborn
+- Duergar
+- Githyanki
+- Hobgoblin
+- Khenra
+- Kor
+- Lizardfolk
+- Locathah
+- Lupin
+- RimeKin
+- Plasmoid
+- Zombie
+
+Continue to vary body type, gender, pose, camera angle, clothing silhouette, environment, emotional register, and magical presentation. Species variety does not override anatomy/hand/weapon QA or subclass readability.
+
 ## Recommended starting order
 
 Continue from the topmost ⬜ entry in this authoritative checklist unless Paul chooses another class or batch.
 
-Current next four-card batch after the 2026-09-13 Fighter/Paladin/Ranger/Rogue/Sorcerer approvals:
+Current next four-card batch after the 2026-09-14 Rogue/Sorcerer/Warlock/Wizard approvals:
 
-1. Rogue — Soulknife
-2. Rogue — Thief
-3. Sorcerer — Storm
-4. Sorcerer — Wild / Wild Magic
+1. Wizard — Abjurer
+2. Wizard — Bladesinging
+3. Wizard — Chronurgy
+4. Wizard — Diviner
+
+**Evocation is already supplied by Paul and must be skipped in generation.** Do not recreate it unless Paul explicitly requests a redraw.
 
 Keep production in small approval batches and perform a visual-drift check after every batch before continuing.
 
