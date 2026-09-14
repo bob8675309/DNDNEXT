@@ -1,5 +1,7 @@
 # Character Forge Subclass Artwork Status
 
+> **Historical pre-normalized status.** This 2026-09-10 document is retained for archaeology only. Current authority is `CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md` + `CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md`; the normalized 7:12 deck is complete at 109 / 109.
+
 Status date: 2026-09-10
 
 This is the focused handoff for the Character Forge subclass selector artwork rollout on PR #177 (`agent/realistic-dice-core`). Current source, exact-head CI, browser behavior, and the preferred Supabase Class catalogue remain authoritative over older screenshots or notes.

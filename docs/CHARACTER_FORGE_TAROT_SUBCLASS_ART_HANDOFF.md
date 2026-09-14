@@ -149,7 +149,7 @@ Resolver:
 
 `utils/classes/subclassArtwork.js`
 
-The resolver now explicitly maps 99 installed approved concepts across Artificer, Barbarian, Bard, Cleric, Druid, Fighter, Monk, Monster Hunter, Paladin, Ranger, Rogue, Sorcerer, all nine active Warlock concepts, and Wizard through Abjuration/Bladesinger/Conjuration/Divination/Enchantment/Evocation/Graviturgy/Illusion, while retaining class-menu fallback artwork for the final unfinished Wizard concepts. Add new subclass-specific mappings only after Paul approves and the normalized asset is installed/validated.
+The resolver now explicitly maps all 109 installed approved concepts across the active preferred-source deck, including all 18 Wizard concepts. The class-menu fallback remains available only for unmatched/future content. Add new subclass-specific mappings only after Paul approves and the normalized asset is installed/validated.
 
 The subclass carousel implementation lives in:
 
@@ -180,11 +180,15 @@ Current normalized install reference:
 
 `04f394f31fda021c5830b520c43c49a76f260877` — `Install approved normalized tarot subclass batch 4` (21 additional approved 840 × 1440 WebP concepts, including Paul-supplied Evocation).
 
+`0a24ba3b8b3e490554ad2eda682f613857b07599` — `Install approved normalized tarot final Wizard batch` (final 10 approved 840 × 1440 WebP concepts; normalized deck reaches 109 / 109).
+
 Current wiring reference:
 
 `40fa46f2710ffadce2962b0bd66e21acefe0bcb5` — `Wire approved normalized tarot subclass artwork` (initial normalized wiring).
 
 `61a2f5379b49ae078f59b0bd558185f4b55212d7` — `Wire approved normalized tarot subclass batch 4` (current 99-concept wiring/checklist/validator checkpoint).
+
+`1249824179027ab903ba0515dc80da1f3c03abdc` — `Wire final normalized Wizard tarot cards` (all 109 preferred-source concepts mapped; validator and checklist completed).
 
 Historical materializer reference:
 
@@ -210,7 +214,7 @@ Use:
 
 `docs/CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md`
 
-The checklist now records 99 approved normalized tarot concepts as installed, wired, and validated, with 10 concepts remaining. The next authoritative four-card production batch is Wizard — Abjurer, Wizard — Bladesinging, Wizard — Chronurgy, and Wizard — Diviner. Evocation is already supplied/installed and must not be regenerated unless Paul explicitly asks. It is based on the current preferred Supabase class catalogue and groups only explicitly equivalent alias names where one art concept is intentionally shared.
+The checklist now records all 109 approved normalized tarot concepts as installed, wired, and validated, with 0 concepts remaining. The preferred-source normalized deck is complete. Evocation remains Paul-supplied/installed and must not be regenerated unless Paul explicitly asks. Future work should be limited to requested redraws/replacements or newly introduced preferred-source subclasses.
 
 ## Approval philosophy
 
@@ -220,7 +224,7 @@ Before generating each set, and again after the set is generated, explicitly che
 
 ## Completion target
 
-The normalized preferred-source deck currently requires **109 distinct art concepts** across the active preferred subclass catalogue. **99 are now installed; 10 remain.**
+The normalized preferred-source deck requires **109 distinct art concepts** across the active preferred subclass catalogue. **All 109 are now installed, wired, and validated; 0 remain.**
 
 Mystic currently has no active preferred-source subclass art queue in the preferred-source join used for this rebuild. Do not invent a Mystic production queue unless the catalogue changes or Paul explicitly asks for it.
 
