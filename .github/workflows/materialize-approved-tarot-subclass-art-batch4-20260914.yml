@@ -1,0 +1,106 @@
+name: Materialize approved tarot subclass art batch 4 20260914
+
+on:
+  push:
+    branches:
+      - agent/tarot-approved-materialize-batch4-20260914
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact target branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/subclass-carousel-selector-20260911
+          fetch-depth: 0
+
+      - name: Guard exact target head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "3ef022b78562531bc337f0a7bc7b6e1cbab39e26"
+
+      - name: Download approved normalized tarot payload
+        shell: bash
+        env:
+          PAYLOAD_URL: "https://ucc50d852fb54075c43d3a82cd04.dl.dropboxusercontent.com/cd/0/get/DILlh0bFqOP1R7EanwwdCbLOs7SkFlji4PClzmbLJW0zQ8fLHHbGEsCsPg4gmPZ5J7NOSqRhEA-mDlpnMOJRFh6qQIF11Ybus7kp83r-ecoufIfHLuvtTj-ePP_SokJvagzF8T_Lo9joIWrtaNyeMh9lnUEBFaz-2TrsqY2cjltJVA/file?c_luid=c335000c"
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 2 --retry-delay 2 "$PAYLOAD_URL" --output /tmp/tarot.zip
+          echo "323c39f5d68004aa198b1be2d9f1f0b5a6106d2660ceb9d3721ff8a44fbdf4d2  /tmp/tarot.zip" | sha256sum -c -
+          rm -rf /tmp/tarot-payload
+          mkdir -p /tmp/tarot-payload
+          unzip -q /tmp/tarot.zip -d /tmp/tarot-payload
+          cd /tmp/tarot-payload
+          sha256sum -c SHA256SUMS
+          test "$(find public/media/subclasses -type f -name '*.webp' | wc -l)" -eq 21
+          test "$(python - <<'PY'
+          import json
+          from pathlib import Path
+          rows = json.loads(Path('MANIFEST.json').read_text())
+          assert len(rows) == 21
+          assert len({row['dest'] for row in rows}) == 21
+          assert all(row.get('width') == 840 and row.get('height') == 1440 for row in rows)
+          allowed = {'rogue','sorcerer','warlock','wizard'}
+          assert {row['class'] for row in rows} <= allowed
+          expected = {
+            'public/media/subclasses/rogue/rogue-soulknife.webp',
+            'public/media/subclasses/rogue/rogue-thief.webp',
+            'public/media/subclasses/sorcerer/sorcerer-storm.webp',
+            'public/media/subclasses/sorcerer/sorcerer-wild-magic.webp',
+            'public/media/subclasses/warlock/warlock-archfey.webp',
+            'public/media/subclasses/warlock/warlock-celestial.webp',
+            'public/media/subclasses/warlock/warlock-fathomless.webp',
+            'public/media/subclasses/warlock/warlock-fiend.webp',
+            'public/media/subclasses/warlock/warlock-genie.webp',
+            'public/media/subclasses/warlock/warlock-great-old-one.webp',
+            'public/media/subclasses/warlock/warlock-hexblade.webp',
+            'public/media/subclasses/warlock/warlock-undead.webp',
+            'public/media/subclasses/warlock/warlock-undying.webp',
+            'public/media/subclasses/wizard/wizard-abjuration.webp',
+            'public/media/subclasses/wizard/wizard-bladesinger.webp',
+            'public/media/subclasses/wizard/wizard-conjuration.webp',
+            'public/media/subclasses/wizard/wizard-divination.webp',
+            'public/media/subclasses/wizard/wizard-enchantment.webp',
+            'public/media/subclasses/wizard/wizard-evocation.webp',
+            'public/media/subclasses/wizard/wizard-graviturgy.webp',
+            'public/media/subclasses/wizard/wizard-illusion.webp',
+          }
+          assert {row['dest'] for row in rows} == expected
+          print(len(rows))
+          PY
+          )" = "21"
+
+      - name: Apply exact approved artwork scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp -R /tmp/tarot-payload/public/media/subclasses/. public/media/subclasses/
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          rows = json.loads(Path('/tmp/tarot-payload/MANIFEST.json').read_text())
+          paths = sorted(row['dest'] for row in rows)
+          Path('/tmp/expected.txt').write_text('\n'.join(paths) + '\n')
+          PY
+          git status --porcelain=v1 --untracked-files=all | sed -E 's/^.. //' | sort > /tmp/changed.txt
+          diff -u /tmp/expected.txt /tmp/changed.txt
+
+      - name: Commit and push exact artwork batch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin agent/subclass-carousel-selector-20260911
+          test "$(git rev-parse origin/agent/subclass-carousel-selector-20260911)" = "3ef022b78562531bc337f0a7bc7b6e1cbab39e26"
+          git config user.name "DNDNext Artwork Materializer"
+          git config user.email "actions@users.noreply.github.com"
+          while IFS= read -r path; do git add -- "$path"; done < /tmp/expected.txt
+          git diff --cached --name-only | sort > /tmp/staged.txt
+          diff -u /tmp/expected.txt /tmp/staged.txt
+          test "$(wc -l < /tmp/staged.txt)" -eq 21
+          git commit -m "Install approved normalized tarot subclass batch 4"
+          git push origin HEAD:agent/subclass-carousel-selector-20260911
