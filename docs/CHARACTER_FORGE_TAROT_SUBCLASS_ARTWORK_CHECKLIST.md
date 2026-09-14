@@ -4,7 +4,7 @@ Status date: 2026-09-14
 
 This is the authoritative production checklist for the **normalized rebuild** of the Character Forge subclass tarot deck.
 
-The previous subclass artwork was intentionally deleted from the working branch on 2026-09-12. The first **78 approved normalized tarot concepts** are installed and wired. An additional **21 approved concepts** are currently approved locally and waiting for the next normalization/install/wiring pass; that total includes Paul's supplied Evocation card.
+The previous subclass artwork was intentionally deleted from the working branch on 2026-09-12. The first **99 approved normalized tarot concepts** are installed, wired, and validated; this total includes Paul's supplied Evocation card.
 
 Read first:
 
@@ -34,8 +34,8 @@ Legend:
 ## Progress
 
 - **Target concepts:** 109
-- **✅ Installed:** 78
-- **🟨 Approved but not installed:** 21
+- **✅ Installed:** 99
+- **🟨 Approved but not installed:** 0
 - **⬜ Remaining:** 10
 
 ## Artificer — 6
@@ -144,8 +144,8 @@ The current preferred-source join exposes no active Mystic subclass queue for th
 - ✅ Assassin
 - ✅ Phantom
 - ✅ Scion of the Three
-- 🟨 Soulknife
-- 🟨 Thief
+- ✅ Soulknife
+- ✅ Thief
 
 ## Sorcerer — 10 concepts
 
@@ -157,36 +157,36 @@ The current preferred-source join exposes no active Mystic subclass queue for th
 - ✅ Pyromancer (PSK)
 - ✅ Shadow
 - ✅ Spellfire
-- 🟨 Storm
-- 🟨 Wild / Wild Magic — shared concept
+- ✅ Storm
+- ✅ Wild / Wild Magic — shared concept
 
 ## Warlock — 9
 
-- 🟨 Archfey
-- 🟨 Celestial
-- 🟨 Fathomless
-- 🟨 Fiend
-- 🟨 Genie
-- 🟨 Great Old One
-- 🟨 Hexblade
-- 🟨 Undead
-- 🟨 Undying
+- ✅ Archfey
+- ✅ Celestial
+- ✅ Fathomless
+- ✅ Fiend
+- ✅ Genie
+- ✅ Great Old One
+- ✅ Hexblade
+- ✅ Undead
+- ✅ Undying
 
 ## Wizard — 18
 
-- 🟨 Abjuration
+- ✅ Abjuration
 - ⬜ Abjurer
-- 🟨 Bladesinger
+- ✅ Bladesinger
 - ⬜ Bladesinging
 - ⬜ Chronurgy
-- 🟨 Conjuration
-- 🟨 Divination
+- ✅ Conjuration
+- ✅ Divination
 - ⬜ Diviner
-- 🟨 Enchantment
-- 🟨 Evocation — Paul-supplied approved card
+- ✅ Enchantment
+- ✅ Evocation — Paul-supplied approved card
 - ⬜ Evoker
-- 🟨 Graviturgy
-- 🟨 Illusion
+- ✅ Graviturgy
+- ✅ Illusion
 - ⬜ Illusionist
 - ⬜ Necromancy
 - ⬜ Scribes

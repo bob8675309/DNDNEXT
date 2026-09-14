@@ -93,8 +93,10 @@ const approvedTarotFamilies = {
   "monster-hunter": ["carver-guild", "devourer-guild", "occultist-guild", "trapper-guild"],
   paladin: ["ancients", "devotion", "glory", "noble-genies", "vengeance"],
   ranger: ["beast-master", "fey-wanderer", "gloom-stalker", "hollow-warden", "hunter", "winter-walker"],
-  rogue: ["arcane-trickster", "assassin", "phantom", "scion-of-the-three"],
-  sorcerer: ["aberrant", "clockwork", "divine-soul", "draconic", "lunar", "pyromancer", "shadow", "spellfire"],
+  rogue: ["arcane-trickster", "assassin", "phantom", "scion-of-the-three", "soulknife", "thief"],
+  sorcerer: ["aberrant", "clockwork", "divine-soul", "draconic", "lunar", "pyromancer", "shadow", "spellfire", "storm", "wild-magic"],
+  warlock: ["archfey", "celestial", "fathomless", "fiend", "genie", "great-old-one", "hexblade", "undead", "undying"],
+  wizard: ["abjuration", "bladesinger", "conjuration", "divination", "enchantment", "evocation", "graviturgy", "illusion"],
 };
 let approvedTarotCount = 0;
 for (const [classKey, families] of Object.entries(approvedTarotFamilies)) {
@@ -103,12 +105,15 @@ for (const [classKey, families] of Object.entries(approvedTarotFamilies)) {
     assert(fs.existsSync(path.join(root, `public/media/subclasses/${classKey}/${classKey}-${family}.webp`)), `Approved tarot asset missing ${classKey}/${family}`);
   }
 }
-assert(approvedTarotCount === 78, `Expected 78 installed approved tarot concepts, found ${approvedTarotCount}.`);
+assert(approvedTarotCount === 99, `Expected 99 installed approved tarot concepts, found ${approvedTarotCount}.`);
 for (const token of ['"ambition-psa": "ambition"', '"knowledge-psa": "knowledge"', '"solidarity-psa": "solidarity"', '"strength-psa": "strength"', '"zeal-psa": "zeal"']) {
   assert(subclassArtwork.includes(token), `Preferred-source Cleric alias mapping missing ${token}`);
 }
 for (const token of ['"aberrant-mind": "aberrant"', '"clockwork-soul": "clockwork"', '"pyromancer-psk": "pyromancer"']) {
   assert(subclassArtwork.includes(token), `Preferred-source Sorcerer alias mapping missing ${token}`);
+}
+for (const token of ['wild: "wild-magic"', '"wild-magic": "wild-magic"']) {
+  assert(subclassArtwork.includes(token), `Preferred-source Wild Magic alias mapping missing ${token}`);
 }
 
 assert(model.includes("resolveSubclassCatalog") && model.includes("const options = useMemo"), "Canonical subclass catalogue authority moved out of the existing guide model.");
@@ -152,4 +157,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSource.includes(token), `Class presentation patch crossed protected boundary: ${token}`);
 }
 
-console.log("Class subclass selector validation passed: canonical subclass authority and persistence remain in the guide model, the cinematic looping gallery remains intact, 78 approved normalized tarot concepts are installed and mapped, and unfinished subclasses retain safe class-art fallbacks.");
+console.log("Class subclass selector validation passed: canonical subclass authority and persistence remain in the guide model, the cinematic looping gallery remains intact, 99 approved normalized tarot concepts are installed and mapped, and unfinished subclasses retain safe class-art fallbacks.");
