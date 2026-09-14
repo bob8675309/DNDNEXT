@@ -4,7 +4,7 @@ Status date: 2026-09-14
 
 This is the authoritative production checklist for the **normalized rebuild** of the Character Forge subclass tarot deck.
 
-The previous subclass artwork was intentionally deleted from the working branch on 2026-09-12. The first **99 approved normalized tarot concepts** are installed, wired, and validated; this total includes Paul's supplied Evocation card.
+The previous subclass artwork was intentionally deleted from the working branch on 2026-09-12. All **109 approved normalized tarot concepts** are installed, wired, and validated; this total includes Paul's supplied Evocation card. The preferred-source normalized deck is complete.
 
 Read first:
 
@@ -34,9 +34,9 @@ Legend:
 ## Progress
 
 - **Target concepts:** 109
-- **✅ Installed:** 99
+- **✅ Installed:** 109
 - **🟨 Approved but not installed:** 0
-- **⬜ Remaining:** 10
+- **⬜ Remaining:** 0
 
 ## Artificer — 6
 
@@ -175,23 +175,23 @@ The current preferred-source join exposes no active Mystic subclass queue for th
 ## Wizard — 18
 
 - ✅ Abjuration
-- ⬜ Abjurer
+- ✅ Abjurer
 - ✅ Bladesinger
-- ⬜ Bladesinging
-- ⬜ Chronurgy
+- ✅ Bladesinging
+- ✅ Chronurgy
 - ✅ Conjuration
 - ✅ Divination
-- ⬜ Diviner
+- ✅ Diviner
 - ✅ Enchantment
 - ✅ Evocation — Paul-supplied approved card
-- ⬜ Evoker
+- ✅ Evoker
 - ✅ Graviturgy
 - ✅ Illusion
-- ⬜ Illusionist
-- ⬜ Necromancy
-- ⬜ Scribes
-- ⬜ Transmutation
-- ⬜ War
+- ✅ Illusionist
+- ✅ Necromancy
+- ✅ Scribes
+- ✅ Transmutation
+- ✅ War
 
 ## Approved off-queue artwork — not counted in the 109 target
 
@@ -231,18 +231,11 @@ Continue to vary body type, gender, pose, camera angle, clothing silhouette, env
 
 ## Recommended starting order
 
-Continue from the topmost ⬜ entry in this authoritative checklist unless Paul chooses another class or batch.
+The preferred-source normalized tarot deck is complete at **109 / 109 installed concepts**. There is no remaining production queue.
 
-Current next four-card batch after the 2026-09-14 Rogue/Sorcerer/Warlock/Wizard approvals:
+**Evocation is Paul-supplied and installed.** Do not recreate it unless Paul explicitly requests a redraw.
 
-1. Wizard — Abjurer
-2. Wizard — Bladesinging
-3. Wizard — Chronurgy
-4. Wizard — Diviner
-
-**Evocation is already supplied by Paul and must be skipped in generation.** Do not recreate it unless Paul explicitly requests a redraw.
-
-Keep production in small approval batches and perform a visual-drift check after every batch before continuing.
+Future work in this subsystem should be limited to Paul-requested redraws/replacements, newly introduced preferred-source subclasses, or deliberate promotion of approved off-queue reserve artwork.
 
 ## Completion rule
 
