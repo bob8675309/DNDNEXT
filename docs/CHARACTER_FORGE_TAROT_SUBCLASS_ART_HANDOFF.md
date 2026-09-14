@@ -182,7 +182,9 @@ Current normalized install reference:
 
 Current wiring reference:
 
-`40fa46f2710ffadce2962b0bd66e21acefe0bcb5` — `Wire approved normalized tarot subclass artwork`.
+`40fa46f2710ffadce2962b0bd66e21acefe0bcb5` — `Wire approved normalized tarot subclass artwork` (initial normalized wiring).
+
+`61a2f5379b49ae078f59b0bd558185f4b55212d7` — `Wire approved normalized tarot subclass batch 4` (current 99-concept wiring/checklist/validator checkpoint).
 
 Historical materializer reference:
 
@@ -221,7 +223,6 @@ Before generating each set, and again after the set is generated, explicitly che
 The normalized preferred-source deck currently requires **109 distinct art concepts** across the active preferred subclass catalogue. **99 are now installed; 10 remain.**
 
 Mystic currently has no active preferred-source subclass art queue in the preferred-source join used for this rebuild. Do not invent a Mystic production queue unless the catalogue changes or Paul explicitly asks for it.
-
 
 ## Remaining-deck species priority
 
