@@ -1,0 +1,125 @@
+name: Wire final Wizard tarot batch 20260914
+
+on:
+  push:
+    branches:
+      - agent/tarot-final-wizard10-wire-20260914
+
+permissions:
+  contents: write
+
+jobs:
+  wire:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact target branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/subclass-carousel-selector-20260911
+          fetch-depth: 0
+
+      - name: Guard exact target head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "0a24ba3b8b3e490554ad2eda682f613857b07599"
+
+      - name: Wire final ten Wizard cards and complete checklist
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          resolver = Path('utils/classes/subclassArtwork.js')
+          s = resolver.read_text()
+          old = '''  wizard: Object.freeze({\n    abjuration: "abjuration",\n    bladesinger: "bladesinger",\n    conjuration: "conjuration",\n    divination: "divination",\n    enchantment: "enchantment",\n    evocation: "evocation",\n    graviturgy: "graviturgy",\n    illusion: "illusion",\n  }),'''
+          new = '''  wizard: Object.freeze({\n    abjuration: "abjuration",\n    abjurer: "abjurer",\n    bladesinger: "bladesinger",\n    bladesinging: "bladesinging",\n    chronurgy: "chronurgy",\n    conjuration: "conjuration",\n    divination: "divination",\n    diviner: "diviner",\n    enchantment: "enchantment",\n    evocation: "evocation",\n    evoker: "evoker",\n    graviturgy: "graviturgy",\n    illusion: "illusion",\n    illusionist: "illusionist",\n    necromancy: "necromancy",\n    scribes: "scribes",\n    transmutation: "transmutation",\n    war: "war",\n  }),'''
+          assert old in s, 'wizard resolver block drifted'
+          resolver.write_text(s.replace(old, new))
+
+          validator = Path('scripts/validate_class_subclass_browser.mjs')
+          s = validator.read_text()
+          old = '  wizard: ["abjuration", "bladesinger", "conjuration", "divination", "enchantment", "evocation", "graviturgy", "illusion"],'
+          new = '  wizard: ["abjuration", "abjurer", "bladesinger", "bladesinging", "chronurgy", "conjuration", "divination", "diviner", "enchantment", "evocation", "evoker", "graviturgy", "illusion", "illusionist", "necromancy", "scribes", "transmutation", "war"],'
+          assert old in s, 'validator wizard family list drifted'
+          s = s.replace(old, new)
+          assert 'assert(approvedTarotCount === 99' in s
+          s = s.replace('assert(approvedTarotCount === 99, `Expected 99 installed approved tarot concepts, found ${approvedTarotCount}.`);', 'assert(approvedTarotCount === 109, `Expected 109 installed approved tarot concepts, found ${approvedTarotCount}.`);')
+          old_console = 'console.log("Class subclass selector validation passed: canonical subclass authority and persistence remain in the guide model, the cinematic looping gallery remains intact, 99 approved normalized tarot concepts are installed and mapped, and unfinished subclasses retain safe class-art fallbacks.");'
+          new_console = 'console.log("Class subclass selector validation passed: canonical subclass authority and persistence remain in the guide model, the cinematic looping gallery remains intact, all 109 approved normalized tarot concepts are installed and mapped, and unmatched content retains the safe class-art fallback.");'
+          assert old_console in s
+          validator.write_text(s.replace(old_console, new_console))
+
+          checklist = Path('docs/CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md')
+          s = checklist.read_text()
+          s = s.replace('The first **99 approved normalized tarot concepts** are installed, wired, and validated; this total includes Paul\'s supplied Evocation card.', 'All **109 approved normalized tarot concepts** are installed, wired, and validated; this total includes Paul\'s supplied Evocation card. The preferred-source normalized deck is complete.')
+          s = s.replace('- **✅ Installed:** 99\n- **🟨 Approved but not installed:** 0\n- **⬜ Remaining:** 10', '- **✅ Installed:** 109\n- **🟨 Approved but not installed:** 0\n- **⬜ Remaining:** 0')
+          for name in ['Abjurer','Bladesinging','Chronurgy','Diviner','Evoker','Illusionist','Necromancy','Scribes','Transmutation','War']:
+              s = s.replace(f'- ⬜ {name}', f'- ✅ {name}')
+          old_queue = '''## Recommended starting order\n\nContinue from the topmost ⬜ entry in this authoritative checklist unless Paul chooses another class or batch.\n\nCurrent next four-card batch after the 2026-09-14 Rogue/Sorcerer/Warlock/Wizard approvals:\n\n1. Wizard — Abjurer\n2. Wizard — Bladesinging\n3. Wizard — Chronurgy\n4. Wizard — Diviner\n\n**Evocation is already supplied by Paul and must be skipped in generation.** Do not recreate it unless Paul explicitly requests a redraw.\n\nKeep production in small approval batches and perform a visual-drift check after every batch before continuing.'''
+          new_queue = '''## Recommended starting order\n\nThe preferred-source normalized tarot deck is complete at **109 / 109 installed concepts**. There is no remaining production queue.\n\n**Evocation is Paul-supplied and installed.** Do not recreate it unless Paul explicitly requests a redraw.\n\nFuture work in this subsystem should be limited to Paul-requested redraws/replacements, newly introduced preferred-source subclasses, or deliberate promotion of approved off-queue reserve artwork.'''
+          assert old_queue in s, 'checklist queue section drifted'
+          checklist.write_text(s.replace(old_queue, new_queue))
+          PY
+
+          git diff --check
+          node scripts/validate_class_subclass_browser.mjs
+          node scripts/validate_class_browser_polish.mjs
+          node scripts/validate_character_class_progression.mjs
+
+      - name: Commit resolver validator and checklist
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "DNDNext Tarot Wiring"
+          git config user.email "actions@users.noreply.github.com"
+          git add utils/classes/subclassArtwork.js scripts/validate_class_subclass_browser.mjs docs/CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md
+          git diff --cached --check
+          git commit -m "Wire final normalized Wizard tarot cards"
+          echo "WIRE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Finalize handoff documentation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import os
+
+          handoff = Path('docs/CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md')
+          s = handoff.read_text()
+          s = s.replace('The resolver now explicitly maps 99 installed approved concepts across Artificer, Barbarian, Bard, Cleric, Druid, Fighter, Monk, Monster Hunter, Paladin, Ranger, Rogue, Sorcerer, all nine active Warlock concepts, and Wizard through Abjuration/Bladesinger/Conjuration/Divination/Enchantment/Evocation/Graviturgy/Illusion, while retaining class-menu fallback artwork for the final unfinished Wizard concepts.', 'The resolver now explicitly maps all 109 installed approved concepts across the active preferred-source deck, including all 18 Wizard concepts. The class-menu fallback remains available only for unmatched/future content.')
+          s = s.replace('The checklist now records 99 approved normalized tarot concepts as installed, wired, and validated, with 10 concepts remaining. The next authoritative four-card production batch is Wizard — Abjurer, Wizard — Bladesinging, Wizard — Chronurgy, and Wizard — Diviner. Evocation is already supplied/installed and must not be regenerated unless Paul explicitly asks. It is based on the current preferred Supabase class catalogue and groups only explicitly equivalent alias names where one art concept is intentionally shared.', 'The checklist now records all 109 approved normalized tarot concepts as installed, wired, and validated, with 0 concepts remaining. The preferred-source normalized deck is complete. Evocation remains Paul-supplied/installed and must not be regenerated unless Paul explicitly asks. Future work should be limited to requested redraws/replacements or newly introduced preferred-source subclasses.')
+          s = s.replace('The normalized preferred-source deck currently requires **109 distinct art concepts** across the active preferred subclass catalogue. **99 are now installed; 10 remain.**', 'The normalized preferred-source deck requires **109 distinct art concepts** across the active preferred subclass catalogue. **All 109 are now installed, wired, and validated; 0 remain.**')
+          marker = '`04f394f31fda021c5830b520c43c49a76f260877` — `Install approved normalized tarot subclass batch 4` (21 additional approved 840 × 1440 WebP concepts, including Paul-supplied Evocation).\n'
+          addition = marker + '\n`0a24ba3b8b3e490554ad2eda682f613857b07599` — `Install approved normalized tarot final Wizard batch` (final 10 approved 840 × 1440 WebP concepts; normalized deck reaches 109 / 109).\n'
+          assert marker in s and '0a24ba3b8b3e490554ad2eda682f613857b07599' not in s
+          s = s.replace(marker, addition)
+          wire_sha = os.environ['WIRE_SHA']
+          wire_marker = '`61a2f5379b49ae078f59b0bd558185f4b55212d7` — `Wire approved normalized tarot subclass batch 4` (current 99-concept wiring/checklist/validator checkpoint).\n'
+          wire_add = wire_marker + f'\n`{wire_sha}` — `Wire final normalized Wizard tarot cards` (all 109 preferred-source concepts mapped; validator and checklist completed).\n'
+          assert wire_marker in s
+          s = s.replace(wire_marker, wire_add)
+          handoff.write_text(s)
+
+          legacy = Path('docs/CHARACTER_FORGE_SUBCLASS_ARTWORK_STATUS.md')
+          s2 = legacy.read_text()
+          banner = '> **Historical pre-normalized status.** This 2026-09-10 document is retained for archaeology only. Current authority is `CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md` + `CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md`; the normalized 7:12 deck is complete at 109 / 109.\n\n'
+          if banner not in s2:
+              assert s2.startswith('# Character Forge Subclass Artwork Status\n\n')
+              s2 = s2.replace('# Character Forge Subclass Artwork Status\n\n', '# Character Forge Subclass Artwork Status\n\n' + banner, 1)
+              legacy.write_text(s2)
+          PY
+          git diff --check
+          git add docs/CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md docs/CHARACTER_FORGE_SUBCLASS_ARTWORK_STATUS.md
+          git diff --cached --check
+          git commit -m "Finalize normalized subclass tarot deck handoff"
+
+      - name: Guard target movement and push exact commits
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin agent/subclass-carousel-selector-20260911
+          test "$(git rev-parse origin/agent/subclass-carousel-selector-20260911)" = "0a24ba3b8b3e490554ad2eda682f613857b07599"
+          git push origin HEAD:agent/subclass-carousel-selector-20260911
