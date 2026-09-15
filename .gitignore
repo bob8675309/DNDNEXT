@@ -17,6 +17,7 @@ Thumbs.db
 # Local sprite production outputs and temporary review publisher worktree
 .sprite-review-worktree/
 dawn-whiteflame-review*.zip
+frames/
 
 # Local cleanup/drop-in helper artifacts
 cleanup-input/
