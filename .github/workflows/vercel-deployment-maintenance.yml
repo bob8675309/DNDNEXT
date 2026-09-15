@@ -69,6 +69,7 @@ jobs:
   cleanup:
     name: Audit or clean Vercel previews
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_TEAM_ID: ${{ vars.VERCEL_TEAM_ID }}
@@ -160,7 +161,9 @@ jobs:
           list_api="https://api.vercel.com/v7/deployments"
           candidates_file="$(mktemp)"
           protected_file="$(mktemp)"
-          trap 'rm -f "$candidates_file" "$protected_file"' EXIT
+          delete_body="$(mktemp)"
+          delete_headers="$(mktemp)"
+          trap 'rm -f "$candidates_file" "$protected_file" "$delete_body" "$delete_headers"' EXIT
 
           now_seconds="$(date -u +%s)"
           cutoff_ms="$(( (now_seconds - STALE_DAYS * 86400) * 1000 ))"
@@ -209,7 +212,7 @@ jobs:
                        and ((.created | tonumber) < $cutoff))
                     end
                   )
-                | [.id, .state, .target, .url, (.created | tostring), .ref]
+                | [.id, .state, .url, (.created | tostring), .ref]
                 | @tsv
               ' <<<"$response" >> "$candidates_file"
 
@@ -223,7 +226,7 @@ jobs:
                   ref: (.meta.githubCommitRef // "")
                 }
               | select(.id != "" and .target == "production")
-              | [.id, .state, .target, .url, .ref]
+              | [.id, .state, .url, .ref]
               | @tsv
             ' <<<"$response" >> "$protected_file"
 
@@ -252,14 +255,14 @@ jobs:
           if (( candidate_count > 0 )); then
             echo
             echo "Candidates:"
-            while IFS=$'\t' read -r id state target url created ref; do
+            while IFS=$'\t' read -r id state url created ref; do
               [[ -z "$id" ]] && continue
               printf '  - %s  %s  %s  %s\n' "$state" "$id" "$ref" "$url"
             done < "$candidates_file"
 
             echo
             echo "Candidate counts by branch:"
-            awk -F'\t' 'NF >= 6 { count[$6]++ } END { for (ref in count) printf "  %4d  %s\n", count[ref], ref }' "$candidates_file" | sort -nr
+            awk -F'\t' 'NF >= 5 { count[$5]++ } END { for (ref in count) printf "  %4d  %s\n", count[ref], ref }' "$candidates_file" | sort -nr
           fi
 
           {
@@ -279,7 +282,7 @@ jobs:
             if (( candidate_count > 0 )); then
               echo "| State | Branch | Deployment | URL |"
               echo "| --- | --- | --- | --- |"
-              while IFS=$'\t' read -r id state target url created ref; do
+              while IFS=$'\t' read -r id state url created ref; do
                 [[ -z "$id" ]] && continue
                 echo "| $state | \`$ref\` | \`$id\` | $url |"
               done < "$candidates_file"
@@ -299,28 +302,64 @@ jobs:
           fi
 
           deleted_count=0
-          while IFS=$'\t' read -r id state target url created ref; do
+          while IFS=$'\t' read -r id state url created ref; do
             [[ -z "$id" ]] && continue
 
-            delete_url="https://api.vercel.com/v13/deployments/${id}?teamId=${VERCEL_TEAM_ID}"
-            delete_response="$(
-              curl --fail-with-body --silent --show-error \
-                --request DELETE \
-                --header "Authorization: Bearer ${VERCEL_TOKEN_CLEAN}" \
-                --header "Content-Type: application/json" \
-                "$delete_url"
-            )"
+            attempt=0
+            while :; do
+              attempt=$((attempt + 1))
+              : > "$delete_body"
+              : > "$delete_headers"
 
-            final_state="$(jq -r '.state // empty' <<<"$delete_response")"
-            deleted_id="$(jq -r '.uid // .id // empty' <<<"$delete_response")"
-            if [[ "$deleted_id" != "$id" || "$final_state" != "DELETED" ]]; then
-              echo "::error::Vercel did not confirm deletion for $id."
-              echo "$delete_response" | jq .
+              http_code="$(
+                curl --silent --show-error \
+                  --request DELETE \
+                  --dump-header "$delete_headers" \
+                  --output "$delete_body" \
+                  --write-out "%{http_code}" \
+                  --header "Authorization: Bearer ${VERCEL_TOKEN_CLEAN}" \
+                  --header "Content-Type: application/json" \
+                  "https://api.vercel.com/v13/deployments/${id}?teamId=${VERCEL_TEAM_ID}"
+              )"
+
+              if [[ "$http_code" == "200" ]]; then
+                final_state="$(jq -r '.state // empty' "$delete_body")"
+                deleted_id="$(jq -r '.uid // .id // empty' "$delete_body")"
+                if [[ "$deleted_id" != "$id" || "$final_state" != "DELETED" ]]; then
+                  echo "::error::Vercel did not confirm deletion for $id."
+                  jq . "$delete_body"
+                  exit 1
+                fi
+
+                deleted_count=$((deleted_count + 1))
+                echo "Deleted $id ($state, $ref) — $url"
+                sleep 1
+                break
+              fi
+
+              if [[ "$http_code" == "429" ]]; then
+                if (( attempt > 8 )); then
+                  echo "::error::Vercel rate limiting persisted for $id after 8 retries."
+                  exit 1
+                fi
+
+                retry_after="$(awk 'BEGIN { IGNORECASE=1 } /^retry-after:/ { gsub("\r", "", $2); print $2; exit }' "$delete_headers")"
+                if ! [[ "$retry_after" =~ ^[0-9]+$ ]]; then
+                  retry_after=30
+                fi
+                if (( retry_after < 10 )); then
+                  retry_after=10
+                fi
+
+                echo "Rate limited while deleting $id; waiting ${retry_after}s before retry ${attempt}/8."
+                sleep "$retry_after"
+                continue
+              fi
+
+              message="$(jq -r '.error.message // .message // .error.code // "Vercel delete request failed"' "$delete_body" 2>/dev/null || echo 'Vercel delete request failed')"
+              echo "::error::Delete failed for $id (HTTP $http_code): $message"
               exit 1
-            fi
-
-            deleted_count=$((deleted_count + 1))
-            echo "Deleted $id ($state, $ref) — $url"
+            done
           done < "$candidates_file"
 
           {
