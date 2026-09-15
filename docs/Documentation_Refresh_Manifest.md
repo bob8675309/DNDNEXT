@@ -1,187 +1,170 @@
-# Documentation Refresh Manifest
+# DNDNext Documentation Refresh Manifest
 
-Updated: 2026-08-30
+Updated: 2026-09-15
 
-## Trust order
+This manifest records the repository-wide documentation reconciliation performed after the September 2026 Character Forge/Tarot work, repository vestige cleanup, and Vercel deployment-storage cleanup.
 
-For current work, trust sources in this order:
+## What was audited
 
-1. live Supabase schema, migration ledger, grants, RPC definitions, and relevant data;
-2. current GitHub `main`/active PR source, exact remote head, exact-head CI, and Vercel state;
-3. `DNDNext_Current_Handoff_Prompt.md` plus the dedicated active subsystem ledger;
-4. broader roadmap/history prose;
-5. raw exports and old PR ledgers as historical snapshots only.
+The pass reviewed the human-facing documentation surface under `docs/`, current `main`, recent merged/open pull requests, the live Supabase migration ledger, the production Vercel project, and the current source/validator paths most likely to invalidate older prose.
 
-If prose conflicts with live source/database state, live authority wins until documentation is corrected.
+The goal is not to rewrite every dated phase report into present tense. Historical phase reports are evidence. The goal is to make it impossible for a future handoff to mistake historical status for current status.
 
-## Current GitHub checkpoint
+## Current authority checkpoint
 
-Accepted runtime/code baseline on `main`:
+Repository: `bob8675309/DNDNEXT`
 
-`a2aecdd354346926afdf33efb1af320581563b68` — merged Character Forge Background polish/art system (PR #175).
+Current reconciled `main`: `663281753fc1f789bc7caa3092f6e9980f4458af`.
 
-Active work:
+Recent accepted chain:
 
-- PR #176 — `agent/training-tab-redesign` — **Character Forge browser-review continuation**, open/unmerged.
+- #176 — Character Forge Training/browser continuation — merged 2026-09-11.
+- #177 — Realistic Dice core + Forge/Class/Species continuation — merged 2026-09-11.
+- #189 — production subclass Tarot/carousel restoration — merged 2026-09-15.
+- #188 — Vercel preview guard + bounded repository/deployment cleanup — merged 2026-09-15.
+- #190 — Vercel maintenance hardening — merged 2026-09-15.
 
-PR #176 began as the Training redesign and now includes later Forge browser-polish work as well. Immediately before the 2026-08-30 documentation-only Realistic Dice handoff updates, its remote head was:
-
-`9447be566f8383e8227c6fccb37a0bde2bdbe078`
-
-Documentation commits advance that head. Always re-fetch the current PR head before implementation or merge.
-
-Recent accepted Forge sequence:
-
-- PR #170 — merged `599c4de7397ba6e4bbbb0a061d551d80c3570be7`;
-- PR #171 — merged `ed93331b946dffee1e63183e969f115d0c8a1a18`;
-- PR #172 — merged `8b62e38cc4de490dd4a02b57b0e9448baff3e5ef`;
-- PR #173 — merged `8c37e30063d2523a5f488073d3ea60c5571c7182`;
-- PR #175 — merged `a2aecdd354346926afdf33efb1af320581563b68`;
-- PR #176 — active/unmerged.
-
-Do not describe #170–#175 as open. Older ledgers that do so are historical evidence only.
+PR #187 remains open on `agent/subclass-carousel-selector-20260911`, but its important selector/Tarot production behavior was restored by #189. It is not the current production branch and must not be merged wholesale without a fresh source/diff reconciliation.
 
 ## Live database checkpoint
 
-Supabase project: `DnDWeb` / `ucggczovhmauhshvhusx`.
+Supabase: `DnDWeb` / `ucggczovhmauhshvhusx`.
 
-Prior migration-ledger checkpoint: 214 records, latest registered migration `20260814161314 grim_hollow_heritage_catalog_support`.
+Verified 2026-09-15:
 
-Some repository SQL has live effects under different migration-ledger names. Treat that as traceability drift, not proof that the live effect is missing. Do not re-run already-correct production SQL by assumption.
+- status: healthy;
+- migration count: **214**;
+- latest migration version: `20260814161314`;
+- latest migration name: `grim_hollow_heritage_catalog_support`.
 
-The planned Realistic Dice Phase 1 is presentation infrastructure and should require **no Supabase migration**. Later tactical dice integration must consume existing encounter RPC/combat-log outcomes rather than create a client-side roll authority.
+Repository SQL filenames and old migration references do not outrank the live database. Inspect live effects before any migration/data action.
 
-## Controlling current documents
+## Deployment/storage checkpoint
 
-Read before modifying these areas:
+The Vercel audit established that repeated READY Preview deployments from `agent/*` branches were the primary historical deployment-storage churn source.
 
-- `DNDNext_Current_Handoff_Prompt.md` — current copy-ready takeover brief and immediate future plan;
-- `Realistic_Dice_Roller_Architecture_Roadmap.md` — **controlling future architecture/implementation plan for the reusable dice subsystem**;
-- `Character_Forge_Training_Redesign_Status.md` — PR #176 Training design/history subledger;
-- `Character_Forge_Background_Audit.md` — accepted Background audit/history after PR #175;
-- `Forge_Post170_Species_Artwork_Status.md` — accepted/frozen Species presentation/artwork baseline;
-- `Unified_Character_Forge_Status.md` — shared creation/progression/runtime architecture;
-- `Player_Forge_Choice_Routing_and_Source_Magic_Status.md` — placement and source-magic authority;
-- `Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md` — item/equipment/crafting boundaries;
-- `Tactical_Encounter_Combat_Roadmap_Blueprint.md` — tactical roadmap, supplemented by current source/live RPC state;
-- `CHATGPT_REPO_WRITE_PROCEDURE.md` — coherent GitHub/Supabase write procedure.
+Cleanup completed 2026-09-15:
 
-## Core modeling rule
+- old failed/canceled deployments removed: **124**;
+- stale READY `agent/*` previews removed: **504**;
+- total removed: **628**;
+- final stale READY candidates older than seven days: **0**;
+- production deployments explicitly protected during the final audit: **23**.
 
-- permanent source-owned acquisition → Forge/progression authority;
-- proficiency-dependent permanent choice → Training;
-- specific Bonus Feat selected from the Species Bonus package → Training;
-- spell-centric permanent choice → Spells;
-- rest-configurable persistent choice → runtime authority;
-- next-rest-expiring choice → rest-cycle runtime state;
-- per-use/per-cast choice → action/spell resolver;
-- informational/always-on feature → presentation/consumer logic;
-- future narrative unlocks → quest/dialogue authority when that subsystem exists;
-- **dice physics/animation → presentation authority only, never rules authority.**
+Ordinary `agent/*` commits now skip full Vercel Preview builds through `scripts/vercel_ignore_build.mjs`; `[deploy-preview]` intentionally opts a commit into a full Preview build.
 
-Do not use visual similarity as permission to merge different lifecycles or persistence identities.
+Permanent maintenance authority: `.github/workflows/vercel-deployment-maintenance.yml`.
 
-## Realistic Dice architecture decision
+## Character Forge / subclass correction
 
-The current Character Forge Abilities tab has a CSS-based result-die/tray prototype. It should remain temporary until the reusable Realistic Dice subsystem is implemented on its own bounded branch/PR after the current Forge checkpoint is accepted.
+The old documentation had three conflicting eras:
 
-The future core must support:
+1. compact rectangular/two-column subclass selector;
+2. historical 109-concept normalized artwork checkpoint;
+3. runtime cinematic looping Tarot carousel.
 
-- d6;
-- d8;
-- d10;
-- d12;
-- d20;
-- Forge aggregate `resultCube`.
+Production now uses era 3.
 
-Preferred initial stack, subject to a fresh compatibility check when implementation begins:
+Current artwork-completion definition:
 
-- Three.js;
-- React Three Fiber;
-- direct Rapier (`@dimforge/rapier3d-compat`).
+- visible runtime subclass choices: **149**;
+- dedicated Tarot-card target: **149**;
+- current real visible fallbacks: **43**.
 
-### Mandatory authority boundary
+The historical **109** remains useful provenance for the first normalized artwork set but is not the final production target.
 
-Mechanical outcomes come from the owning system:
+Wizard compatibility note: Abjuration, Divination, Evocation, and Illusion have normalized assets/mappings but are suppressed duplicate/reprint identities in the visible runtime selector. They are not additional missing cards.
 
-- Forge generated roll object;
-- Character Sheet structured roll result;
-- tactical Supabase RPC/combat log;
-- future server authority where applicable.
+The 43-card queue is tracked in `CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md`.
 
-The Realistic Dice engine consumes those results and visualizes them. It must not independently reroll them.
+## Validator gap recorded by this refresh
 
-### Tactical collision boundary
+`scripts/validate_class_subclass_browser.mjs` still checks the historical 109 installed/mapped concepts and verifies fallback safety. That is not enough to prove the runtime-visible deck is complete.
 
-Rapier dice-body collisions must **not** be reused as the tactical movement/pathfinding authority.
+Before declaring the Tarot deck complete, validation must enumerate the visible Forge subclass set and fail if a known visible choice resolves to generic class artwork, while preserving:
 
-Tactical combat remains discrete axial-hex logic with occupancy, movement cost, reach, range, LOS, cover, and turn/action rules owned by existing encounter code/RPCs.
+- explicitly approved intentional aliases;
+- the four suppressed Wizard compatibility identities;
+- safe fallback for truly unknown/future content;
+- existing class-guide/model selection and persistence authority.
 
-A future token animation may interpolate along a server-approved path; it must not free-physics its way to a different legal position.
+Do not alter subclass eligibility merely to make an artwork count pass.
 
-### Planned integration sequence
+## Realistic Dice correction
 
-1. Realistic Dice Core + Forge adapter;
-2. Character Sheet adapter;
-3. tactical encounter adapter when combat work resumes;
-4. global overlay/replay host only if multiple consumers prove it useful.
+The 2026-08-30 roadmap said implementation had not started and proposed Three + React Three Fiber + direct Rapier.
 
-See `Realistic_Dice_Roller_Architecture_Roadmap.md` for contracts, files, physics design, fallbacks, validation, and acceptance criteria.
+Current source proves that statement is obsolete. Merged PR #177 established a reusable dice baseline using a custom deterministic JavaScript simulation and CSS/DOM rendering. Current implementation includes `RealisticDiceTray`, `ForgeAbilityDiceTray`, a normalized dice contract, seeded visual randomness, a fixed-step custom physics engine, and focused validation.
 
-## Accepted Species baseline
+The architectural rule survived unchanged: **rules determine outcomes; dice presentation visualizes resolved outcomes**.
 
-Species is frozen unless a concrete regression is reproduced. Accepted presentation includes the full-height catalogue, search-driven parent reveal, high-resolution Forge artwork, semantic portrait facts, canonical Size/Languages and Gender/Alignment controls, Darkvision guidance, affinity-aware Dragonborn copy, readable Aasimar/Hexblood structures, compact Goliath/Eladrin selected-detail choices, and source-backed Simic Animal Enhancement descriptions.
+The original Three/R3F/Rapier proposal is retained only as historical design exploration. It is not the current dependency/runtime architecture.
 
-`Gift of the Aetherborn` remains present and unchanged. Future acquisition belongs to quest/NPC dialogue progression with Game-Master-defined prerequisites.
+## Documentation classification policy
 
-## Accepted Background baseline
+### A. Current controlling documents
 
-Background is accepted after merged PR #175. The reusable banner/crest/icon system and compact dossier are now baseline.
+These should be read first and kept reconciled with current source/infrastructure:
 
-Current/remaining Training work may change **where unresolved proficiency/tool choices are resolved**, but should not broadly redesign the Background page again.
+- `README.md`;
+- `DNDNext_Current_Handoff_Prompt.md`;
+- `Documentation_Refresh_Manifest.md`;
+- `Current_Development_Status_and_Roadmap.md`;
+- `CHATGPT_REPO_WRITE_PROCEDURE.md`;
+- current active subsystem handoffs such as the Tarot and Vercel maintenance ledgers.
 
-Audit for missing/incorrect parsing or choice routing, not subjective power normalization. Any Background rebalance is a separate explicit house-rule decision.
+### B. Current subsystem architecture/reference
 
-## Training subledger
+These explain durable ownership/rules even when their status date is older:
 
-`Character_Forge_Training_Redesign_Status.md` remains the detailed Training authority/history document for the Training portion of PR #176.
+- `Unified_Character_Forge_Status.md`;
+- `Character_Progression_Foundation.md`;
+- `Character_Progression_and_Higher_Level_Forge.md`;
+- `Character_Sheet_Formula_Reference.md`;
+- `Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md`;
+- `NPC_Character_Sheet_Selection_Reconciliation.md`;
+- `Source_Patch_Pipeline_Audit.md`;
+- `Tactical_Encounter_Combat_Roadmap_Blueprint.md`;
+- `Security_Hardening_Roadmap_Status.md`;
+- sprite art/production architecture documents.
 
-Preserve the current direction:
+Their embedded old SHAs/counts remain evidence for their date. Re-check live/current source before mutation.
 
-- player/NPC Training isolation;
-- source-owned choices;
-- Skills/Feats focused views;
-- actual Bonus Feat selection in Training;
-- canonical mapped tool↔Trade Skill no-double-spend behavior;
-- existing completion/Continue authority.
+### C. Historical implementation/evidence ledgers
 
-Do not regress Training when working on Class/Abilities or future dice presentation.
+Dated browser-review files, `PR170_*`, `Tactical_Encounter_Phase*.md`, individual spell-phase/status ledgers, runtime-choice feature ledgers, and sprite run logs preserve implementation history. Do not silently rewrite their original acceptance evidence.
 
-## Protected boundaries
+If a historical file says an old PR was open, that statement describes the historical checkpoint unless a current controlling document repeats it.
 
-Forge/Realistic Dice work does not authorize world-map, town/city-map, route/travel/weather, tactical action/movement/path execution, crafting/inventory execution, merchants, or unrelated runtime changes. `components/MapPageClient.js` remains outside scope unless Paul explicitly requests world-map work.
+### D. Raw snapshots/reference artifacts
 
-World-map and town/city-map behavior remain separate systems.
+Database dumps/function listings, route/table snapshots, SQL files, workbook codices, and generated JSON reference data are snapshots, not live-state authority.
 
-## Current work queue
+## Documents corrected/superseded in this refresh
 
-1. **Finish browser acceptance of the current PR #176 Forge checkpoint** using the exact current head/preview; do not reconstruct old work from chat history.
-2. Keep the current CSS ability dice tray as the temporary prototype until the reusable system is ready.
-3. After Paul accepts that Forge checkpoint, create a **dedicated Realistic Dice Core branch/PR** from the accepted commit.
-4. Implement Realistic Dice Phase 1 from `Realistic_Dice_Roller_Architecture_Roadmap.md`:
-   - normalized roll-resolution contract;
-   - d6/d8/d10/d12/d20 + `resultCube` geometry;
-   - Three/R3F/direct Rapier physics;
-   - die-to-die and tray collisions;
-   - predetermined-result face guidance during settling;
-   - WebGL/WASM/reduced-motion fallback;
-   - Forge adapter only;
-   - no Supabase/map/tactical/crafting runtime changes.
-5. Browser-tune repeated rolls and run focused physics/Forge/protected-boundary validation.
-6. After Phase 1 acceptance, add Character Sheet dice presentation using the existing structured `onRoll` seam.
-7. When tactical combat work resumes, add a tactical dice adapter that consumes authoritative encounter RPC/combat-log results; do not change movement/path/LOS authority.
-8. Continue remaining Forge slices and broader crafting redesign according to user priority, but keep those projects isolated from the dice core unless explicitly authorized.
-9. Repository housekeeping only with evidence; do not mass-close old PRs/issues by age.
-10. Quest/NPC dialogue work later, including narrative Aetherborn Gift unlock authority.
+The refresh updates or replaces the most misleading current-status documents, including:
 
-A concrete production regression can supersede this queue, but otherwise keep each subsystem change isolated and exact-head validated.
+- the living index;
+- current handoff;
+- this manifest;
+- high-level development roadmap;
+- repository-write procedure;
+- Realistic Dice roadmap/status;
+- subclass artwork status;
+- compact subclass-selector document;
+- Training current status;
+- Species artwork current-branch status;
+- new Tarot handoff/checklist/card standard on `main`;
+- new Vercel deployment-storage/maintenance status.
+
+Older evidence documents remain available and are deliberately classified instead of rewritten into false present-tense history.
+
+## Standing protected boundaries
+
+- World map is protected unless Paul explicitly requests world-map changes.
+- World-map and town/city-map behavior remain separate.
+- Character Forge/Tarot/dice work does not authorize travel/routes/weather/camps/clock, crafting-runtime, inventory, merchants, economy, encounter movement/pathing, or unrelated tactical rules.
+- Tactical resolution remains server/RPC authoritative.
+- Supabase service-role credentials never belong in browser code.
+- Existing validators should be strengthened when necessary, not weakened to make a patch pass.
+- Before any merge, re-fetch the PR head and merge only the exact validated head after explicit approval.

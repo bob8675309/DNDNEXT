@@ -1,273 +1,170 @@
 # DNDNext Current Development Status and Roadmap
 
-Last reconciled: 2026-08-14
-
-This is the current high-level handoff for DNDNext. It reconciles the living roadmap, phase ledgers, repository source, GitHub state, and deployed Supabase state. Historical phase ledgers remain useful implementation records, but this document controls current status when an older status header or unchecked master-roadmap task conflicts with deployed evidence.
-
-## 2026-08-14 active-work override
-
-The detailed tactical and platform roadmap below remains valid history, but the active development line has moved forward:
-
-- PR #170 is merged at `599c4de7397ba6e4bbbb0a061d551d80c3570be7`;
-- active branch `agent/species-art-post170` is PR #171, open and unmerged;
-- latest validated code head is `39a263e034db4023ed7d1a4950a185a832c08867`;
-- all 14 workflows triggered for that head and Vercel completed successfully;
-- Supabase remains healthy through migration 93, with 166 raw / 102 preferred Species rows;
-- no database write or migration was made for the PR #171 artwork/layout/presentation continuation;
-- Paul considers the shared Player/NPC Forge Species tab nearly perfect.
-
-The current transition authority is `DNDNext_Current_Handoff_Prompt.md`; the detailed active Species ledger is `Forge_Post170_Species_Artwork_Status.md`. Unless a concrete Species regression is reproduced, the next Forge work should move to Background, Class, or the next tab Paul selects as a separate bounded pass.
-
-## Non-negotiable boundaries
-
-- The tactical encounter engine is separate from world-map and town/city-map behavior.
-- Tactical coordinates, movement, turns, combat, and effects must never write world routes, travel, weather, camps, clock, or location simulation state.
-- Do not modify world-map behavior unless the campaign owner explicitly requests world-map work.
-- One tactical hex equals 5 feet.
-- Canonical characters, sheets, equipment, spellbooks, classes, and progression remain the source of truth.
-- Browser state may preview an action; guarded Supabase RPCs authorize and resolve it.
-- Realtime is a synchronization signal. Database state remains authoritative.
-- Gloomhaven is presentation/readability inspiration only; rules remain D&D 5e/2024 and DNDNext-specific.
-- New helpers, hooks, memoized values, state, RPC arguments, and component props must be defined and passed at every use site.
-
-## Verified baseline
-
-- Production runtime baseline: current `main`; the last fixed production anchor before this reconciliation was `6f57b8f5827e5b286bf9b7fa66b1108436c8285d` (PR #147 merge).
-- PRs #136-#147 exact-head previews and merged `main` production Vercel deployments: green.
-- Milestone 2 durable-start PR #113: squash-merged as `8028813cb0ca665d06271946198f2db331d79cf2`; exact-head and production Vercel deployments green.
-- Milestone 2 lifecycle-guard PR #114: squash-merged as `e1cfdf9d83ecd18a79fb5ac27db55ae5e96758de`; exact-head and production Vercel deployments green.
-- Supabase project: `DnDWeb` / `ucggczovhmauhshvhusx`, healthy.
-- Latest deployed source migration slice:
-  - `20260801_01_crafting_completion_normalization.sql`;
-  - `20260801_02_equipped_armor_canonical_ac.sql`;
-  - `20260801_03_shared_equipment_effects_pipeline.sql`;
-  - `20260801_04_shared_equipment_effects_tactical_modifiers.sql`.
-- Protected live baseline: 7 characters, 7 character sheets, 3 Auth users, 3 player profiles, 3 character permissions, 32 character-spell assignments, 18 inventory items, 1 encounter map, 5 encounters, 16 participants, 20 combat-log rows, and 2 resolved reaction windows. One smoke encounter remains active at Round 6 / Version 63.
-- Protected world baseline: 20 locations, 4 map routes, and 9 map route points.
-
-## Platform foundations already operating
-
-### Character, NPC, and content systems
-
-- Player creation and NPC Forge.
-- Canonical character sheets, permissions, inventories, equipment, portraits, classes, spellbooks, feats, boons, and character options.
-- XP, progression state, supported transactional level-up completion, class overview, and level guide.
-- Profile-panel Class, Sheet & Rolls, Inventory, Spellbook, optional Shop, and optional Craft surfaces. The direct `/npcs` page and shared Profile panel place the portrait inside the Description content card with text wrapping below it; the old separate full-height portrait/About duplication is retired.
-- Live catalog scale at reconciliation:
-  - 936 spells;
-  - 30 classes;
-  - 600 class-level progression rows;
-  - 2,118 class-feature rows;
-  - 697 character options;
-  - 2,633 item-catalog rows;
-  - 197 NPC portraits.
-
-### Canonical equipment and character-sheet authority
-
-- Craft completion now normalizes physical-item display metadata and preserves the actual crafter/recipient receipt boundary (PR #127).
-- Equipped armor and shields now drive canonical AC through guarded database authority (PR #128).
-- Crafting output, equipped numeric effects, character-sheet overlays, and tactical staging share one defined authority pipeline (PR #129 plus the four August 1 migrations).
-- Character-sheet AC, Initiative, Passive Perception, saving throws, and skill calculations have pure formula coverage and documented ownership boundaries (PR #130).
-- NPC/merchant selection clears every identity-bound surface and guards sheet, equipment, and notes responses with both identity and request IDs (PRs #131-#134).
-- Sheet loading has a true eight-second deadline, explicit retry path, and no raw-JSON fallback during loading/failure (PR #135).
-- Always-mounted app-shell auth subscribers defer Supabase work until after the cross-tab auth lock is released (PR #136). Rapid switching plus tab-away/tab-return passed the campaign owner's preview test.
-- Linked-player profile loads reject superseded session results after every async boundary (PR #138).
-- Profile routes now open the character panel after a successful linked-character lookup, and the profile page exposes an explicit open button while preserving navbar and Backspace controls.
-- Character inventory reads/equipment writes now honor character permissions through guarded RPCs, so linked player characters retain canonical character-owned inventory without duplicating ownership rows.
-- Sheet & Rolls now derives a vertical quick-action list from canonical weapons, known cantrips, prepared spells, and resolved feature rows; standalone clicks calculate or display roll math, while encounter execution remains routed through guarded tactical authority. The direct `/npcs` sheet and embedded NPC profile panel share the same action inputs and high-contrast attack/damage result presentation, each action category can be collapsed independently, dual melee/thrown weapons explain the mode pill in Details, and the pinned Description stays top-aligned with slightly larger body text.
-- Barbarian and Monk Unarmored Defense are resolved consistently by the browser sheet and canonical database equipment/AC pipeline.
-- `NPC_Character_Sheet_Selection_Reconciliation.md`, `Character_Sheet_Formula_Reference.md`, and `Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md` are the controlling subsystem handoffs.
-
-### Economy, merchants, and crafting
-
-- RLS-hardened wallet and inventory boundaries.
-- Atomic merchant purchase flow.
-- Modern merchant market and crafter storefront presentation.
-- Alchemy, Smithing, Enchanting, profession, material, recipe, and crafting workflow foundations.
-- DB-backed NPC known-recipe support and admin Known/sort UI.
-- Shared town/map/NPC character interaction shell.
-- The source-mutating build patch pipeline has been retired; stable behavior is source-owned and validator-backed.
-
-### World and town systems
-
-World and town behavior are stable protected dependencies, not tactical implementation surfaces. Their movement, routes, weather, camps, travel windows, clock, and simulation rules remain outside this roadmap unless explicitly requested.
-
-## Tactical encounter implementation status
-
-### Visual and board foundations
-
-- Unified 8-direction visual metadata/runtime is deployed.
-- Portrait and sprite selection are independent; suggestions never force a pairing.
-- The retired 4-direction runtime is not a production requirement.
-- Axial pointy-top encounter hex utilities and isolated SVG board rendering are deployed.
-- Persistent encounter maps, sparse terrain overrides, encounter objects, staging, and session tables are deployed.
-- `/encounters`, `/encounters/live`, `/encounters/play`, and `/encounters/combat` exist.
-
-Remaining visual work:
-
-- migrate the last raw-path sprite caller;
-- remove obsolete legacy picker/fallback code after caller verification;
-- approve and register the first production-ready 256×512 eight-direction sprite batch;
-- lock final anchor/padding guidance from real animated assets.
-
-### Movement, turns, and combat
-
-Deployed and validated:
-
-- canonical Speed and 5-foot hex movement;
-- ordered contiguous paths;
-- difficult terrain, blockers, occupancy, boundaries, and movement-budget rejection;
-- controller and active-turn authorization;
-- request idempotency;
-- initiative order, rounds, End Turn, and resource reset;
-- Action, Bonus Action, Reaction, and movement state;
-- Dash, Disengage, Dodge, and Opportunity Attack reaction windows;
-- Unarmed Strike and canonical equipped melee/thrown/ranged weapons;
-- range, attack rolls, criticals, typed damage, healing, Temporary HP, AC, defeat state, and combat logs;
-- LOS, cover, saving throws, damage resistance/immunity/vulnerability;
-- generic Conditions and timed effects;
-- one-shot attack-roll and saving-throw modifiers;
-- speed reduction, healing prevention, and Opportunity Attack suppression effects.
+Last reconciled: 2026-09-15
 
-Still required for a campaign-ready shared 5e layer:
+This is the current high-level status/roadmap. Dated subsystem and phase ledgers remain implementation evidence, but this document controls present-tense project status when older prose conflicts with current source, live Supabase, current GitHub state, or deployed Vercel behavior.
 
-- real GM + Player A + Player B multi-round smoke testing and reconnect testing;
-- unconsciousness, death saves, stabilization, and recovery;
-- broader Condition semantics, including Prone, Grappled, Restrained, Incapacitated, and Stunned;
-- forced movement;
-- concentration;
-- Ready, Help, Hide, Search, and Use an Object;
-- persistent areas and start/end-turn hazards;
-- reaction-spell authority;
-- clean GM-assisted fallback for unsupported actions, spells, and abilities.
+## Current production checkpoint
 
-### Tactical spellcasting
+Repository: `bob8675309/DNDNEXT`
 
-Server-authoritative spellcasting is deployed for reviewed adapters from Phase 1I through Phase 1Z. The reviewed adapter set is:
+Reconciled `main`:
 
-- Fire Bolt;
-- Cure Wounds;
-- Sacred Flame;
-- Toll the Dead;
-- Poison Spray;
-- False Life;
-- Inflict Wounds;
-- Shocking Grasp;
-- Ray of Frost;
-- Chill Touch;
-- Mind Sliver;
-- Word of Radiance;
-- Guiding Bolt;
-- Vicious Mockery;
-- Healing Word;
-- Acid Splash;
-- Magic Missile;
-- Burning Hands;
-- Lightning Bolt.
+`663281753fc1f789bc7caa3092f6e9980f4458af` — PR #190, Vercel maintenance hardening.
 
-Implemented targeting/resource mechanics include creature, self, caster-centered Emanation, point-targeted Sphere, allocated multi-target darts, directional Cone, and server-deployed directional Line authority; attacks, saves, half/no damage, healing, Temporary HP, slots, upcasting, Bonus Action casting, and the 2024 one-slotted-spell-per-turn guard.
+Recent major accepted work:
 
-Phase 1Z client source is production-deployed. The exact PR head and squash-merged `main` commit passed Vercel, and the 39-validator tactical suite remains green.
+- #176 — Character Forge Training/browser continuation — merged.
+- #177 — reusable Realistic Dice core + Forge/Class/Species continuation — merged.
+- #189 — cinematic looping subclass carousel/Tarot presentation restored to production — merged.
+- #188 — Vercel Preview guard + bounded repository/deployment cleanup — merged.
+- #190 — Vercel cleanup workflow hardened — merged.
 
-## Reaffirmed delivery roadmap
+PR #187 remains open but is no longer production authority; its important carousel/Tarot behavior was transplanted through #189. Freshly reconcile it before any future use.
 
-### Milestone 1 — close Phase 1Z and synchronize documentation — COMPLETE
+## Live platform baseline
 
-Completed on 2026-07-30/31:
+### Supabase
 
-- combined client/documentation head `a5104ef394d0c29f89e7a98683c2b753f104fd25` passed Vercel;
-- PR #111 squash-merged as `7a6d949bfa0f75b17e381574d847de5dc59d6b09`;
-- merged production Vercel deployment passed;
-- the protected database and world baselines remained exact;
-- no illegal Lightning Bolt assignment was created.
+Project `DnDWeb` / `ucggczovhmauhshvhusx` is healthy.
 
-The canonical `Weapon of` catalog drift was source-baked on 2026-08-02, restoring the standing enchanting workflow without changing enchanting formulas, slot rules, completion authority, or database state.
+Migration ledger verified 2026-09-15:
 
-### Milestone 2 — first durable campaign encounter — IN PROGRESS
+- 214 rows;
+- latest `20260814161314 grim_hollow_heritage_catalog_support`.
 
-Production setup and interaction slices complete through 2026-08-02:
+### Vercel
 
-- `/encounters/live` now reflects the deployed encounter engine instead of stale Phase 1C guidance and links directly to Turn Play and Combat.
-- `admin_start_encounter_v1` atomically validates staged participants, initiative, map bounds, blockers, and occupied start hexes; selects the first initiative participant; initializes turn resources; activates the encounter; and writes an `encounter_started` log.
-- The legacy `admin_set_encounter_status_v1` compatibility entry point delegates staged `active` transitions to the same durable-start authority while preserving paused-to-active resume behavior.
-- Start/lifecycle authority is validator-backed and passed exact-head plus merged-production Vercel gates.
-- `/encounters/smoke` can idempotently prepare the guarded reusable radius-6 arena and four-actor staged encounter without direct table writes or automatic combat start (PR #116).
-- Staging roster reads, first-use ability guidance, command lock release, and post-command UI reconciliation were hardened through PRs #118-#124.
-- Attack results now expose clearer roll outcomes and durable per-entry attack math while rejecting delayed stale-result reconciliation (PRs #123-#126).
-- The reusable smoke encounter was exercised through four full rounds and part of rounds 5-6. Live acceptance covered difficult terrain, movement, equipped crafted weapons, Dodge disadvantage, opportunity reactions, healing, saves, spell slots, multi-target Magic Missile, duplicate-request idempotency, stale-client rejection, pause/resume, refresh, and tab-away/tab-return reconstruction.
-- The accepted handoff is Round 6 / Version 63 with Pip active at 5 HP and no pending reaction window. The current encounter is preserved for later observation; it must not be restaged or reset by setup tooling.
-- No world-map or town/city-map source was changed, and the protected 20/4/9 world baseline remained exact.
-- Account provisioning is complete: the live project now has three Auth users and three player profiles.
+Project `dndnext`, Node 22.x.
 
-Still required before Milestone 2 is complete:
+The September 15 deployment-storage cleanup removed 628 obsolete deployments: 124 failed/canceled and 504 stale READY `agent/*` previews. Final audit found 0 stale READY `agent/*` candidates older than seven days and protected 23 production deployments.
 
-- Prepare a fresh staged smoke session on the reusable arena, assign its actors to GM / Player A / Player B, and start it through the guarded durable-start command. Do not rewrite controller ownership on the active Round 6 session.
-- Run the real three-session ownership, turn-sync, movement-sync, reconnect, stale-client, reaction-owner, and GM-override matrix.
-- Resolve/archive and verify cleanup only after the multi-client evidence is recorded. Preserve the reusable map and keep campaign/world state unchanged.
+Ordinary `agent/*` pushes now skip full Preview builds. Use `[deploy-preview]` only for intentional exact commits.
 
-### Milestone 3 — shared 5e rules before more spell breadth
+### Build/validation
 
-Implement death/recovery, concentration, broader Conditions, forced movement, remaining common actions, persistent hazards, reaction spells, and manual fallback as reusable engine primitives.
+Production uses `npm run build:vercel` -> `scripts/vercel_build_v2.mjs` -> focused validators -> Next.js build. The existing `utils/encounterHex.js` module-type warning remains non-fatal; do not confuse it with a failed production build.
 
-### Milestone 4 — scalable adapter architecture
+## Platform systems already established
 
-The existing versioned RPCs remain compatibility contracts. Add an audited spell/ability adapter registry that composes shared range, action, slot, attack, save, damage, healing, Condition, duration, and targeting primitives. Do not remove old entry points until equivalence validators prove every established adapter.
+### Shared Character Forge and progression
 
-### Milestone 5 — class/species/feat/item abilities
+Player and NPC creation share the current Forge architecture. Existing source-choice contexts, creation RPCs, progression logic, character sheet state, and runtime-rest authorities remain the source of truth.
 
-Add a tactical ability registry, resource counters, common class/species/feat actions, consumables, equipment activations, rest reconciliation, and assisted/manual fallback.
+Player flow:
 
-### Milestone 6 — advanced board rules
+1. Species
+2. Background
+3. Class
+4. Abilities
+5. Training
+6. Spells
+7. Equipment
+8. Identity
+9. Story
+10. Review
 
-Add multi-hex creature sizes, fog of war, elevation, climb/swim/fly/burrow movement, teleportation, traps, hazards, and player-safe hidden-information filtering. Existing LOS, cover, and hidden-result masking are foundations, not work to recreate.
+Persistent source choices should converge between direct creation at level N and earned progression to level N. Rest-configurable and per-use decisions must remain runtime/action decisions rather than being forced into creation.
 
-### Milestone 7 — objectives and campaign handoff
+### Species
 
-Add objectives, round/time limits, reinforcements, victory/failure, rewards, XP/progression handoff, resource reconciliation, explicit campaign consequences, and encounter summaries. Encounter resolution must not silently mutate world travel or location simulation.
+Species presentation/artwork is mature. Preserve canonical identity and source-choice authority, parent/child reveal, dedicated artwork routing, semantic facts, language/size/lineage choices, and guided validation. Re-open only for concrete defects or explicitly requested new art/content.
 
-### Milestone 8 — routine-session polish
+### Background
 
-Complete accessibility, keyboard targeting, mobile/tablet behavior, colorblind-safe overlays, animation, network feedback, templates, monster presets, performance testing, archive/replay summaries, and production sprite content.
+Background presentation/source-choice routing is accepted. Preserve source-derived grants and choice placement; audit parser/routing evidence before hardcoding exceptions.
 
-## Parallel non-tactical backlog
+### Training
 
-### Character progression/content
+The #176 redesign is merged. Preserve player/NPC isolation, source-granted versus paid Training accounting, mapped tool↔Trade Skill behavior, feat/class-choice routing, and completion rules.
 
-- Sheet & Rolls now derives a unique Feats & Traits list from Feats & Boons grants, preferred species traits, and acquired base/subclass catalog features through the character's current level. Its compact one-line action rows keep one row per physical weapon, use a melee/thrown mode pill to select the active rules profile, apply conditional species reach without rewriting item data, roll attack and damage together for attack actions, expose expandable details, and support guarded persistent standalone feature state beginning with Rage.
-- Reuse the shared Sheet & Rolls quick-action model in a compact battle-board overlay. The overlay should supply encounter targets and submit the selected action through guarded tactical RPCs; it must not spend actions, slots, reactions, or HP through the standalone sheet roller.
-- Add source-backed selectors for blocked class choices such as Weapon Mastery, Fighting Style, Expertise, orders, Metamagic, Invocations, Magical Secrets, and Epic Boons.
-- Add class-and-level-appropriate automatic NPC spell loadouts.
-- Repair remaining catalog incompleteness: 16 spells without class metadata, 5 missing class summaries, and 75 class-feature rows without descriptions.
+### Class/subclass
 
-### Town, merchant, and crafter polish
+Production uses the cinematic looping subclass carousel/Tarot presentation. The old compact rectangular/two-column selector is historical only.
 
-- Configure actual NPC known-recipe rows; the live table is currently empty.
-- Keep player-facing NPC crafting focused on player materials and player/Admin receipts.
-- Remove player-irrelevant NPC crafter controls without changing crafting formulas or inventory semantics.
-- Improve crafter header/portrait presentation and merchant theme/reroll clarity.
+Current Tarot completion definition:
 
-### Loading and presentation
+- 149 runtime-visible subclass choices;
+- 149 dedicated-card target;
+- 43 visible choices still using generic/class fallback artwork.
 
-- Treat the NPC/merchant sheet-switching incident as resolved at PR #136 unless the production sequence reproduces; preserve its identity guards, true deadline, retry path, and post-auth-lock scheduling.
-- Reconfirm whether the town fallback-image flash still reproduces before patching it.
-- Direct `/npcs` and shared Profile portrait placement are source-owned inside the Description content layout; text wraps beside and below the portrait.
-- Merchant, crafter, and profile portrait sizing/bleed are source-owned. Treat them as complete unless a new browser reproduction identifies a specific regression.
-- Continue the broader audit of route-specific Supabase clients, query shape, dynamic imports, Bootstrap timing, and Realtime subscription duplication. `MapPageClient` remains outside scope until world-map work is explicitly authorized.
+Four normalized Wizard compatibility/reprint identities — Abjuration, Divination, Evocation, Illusion — are suppressed from the visible runtime list and are not missing cards.
 
-### Security and database maintenance
+Current validator still proves the historical 109 normalized concept set and fallback safety; it does not yet prove 149/149 runtime-visible dedicated art.
 
-- Review tactical and non-tactical advisor findings in a dedicated hardening pass.
-- Do not blanket-revoke authenticated `SECURITY DEFINER` RPCs; many are intentional guarded command boundaries.
-- Prioritize proven unindexed foreign keys and per-row RLS auth initialization issues before scale testing.
-- Keep storage listing, Auth settings, and managed PostgreSQL patching as explicit platform-administration tasks.
+### Realistic Dice
 
-## Documentation authority
+A reusable Phase-1 dice core is implemented and merged. It uses a custom deterministic JavaScript simulation and DOM/CSS rendering, not the original Three/R3F/Rapier proposal.
 
-Use documents in this order:
+Current Forge adapter exists. Mechanical result authority remains outside the physics system. Character Sheet and tactical dice adapters remain future bounded phases.
 
-1. `DNDNext_Current_Handoff_Prompt.md` and `Documentation_Refresh_Manifest.md` for current GitHub/Supabase/transition authority;
-2. the active dedicated ledger for the subsystem being changed;
-3. this broad roadmap for platform direction;
-4. `Tactical_Encounter_Combat_Roadmap_Blueprint.md` for tactical end-state architecture;
-5. historical phase/build notes for implementation evidence only;
-6. raw SQL/text exports only as historical snapshots—never as authoritative live schema or executable migrations.
+### Character Sheet / inventory / equipment
+
+Canonical character sheets, formulas, equipment, inventory, quick actions, class/spell/feature state, and permission-aware player/NPC flows are established. Preserve the documented item/equip/sheet/tactical authority pipeline.
+
+### Crafting/economy/town
+
+Alchemy, Smithing, Enchanting, profession, material, recipe, storefront, and merchant foundations exist. A larger future crafting redesign — including more unified/material-centric craft effects and potentially richer tool-specific craft skills — should remain a separate project from Forge/Tarot/dice work.
+
+### World and town maps
+
+World-map and town/city-map behavior are separate protected systems. World routes, travel windows, weather, camps, clock, and location simulation are not general-purpose UI work surfaces. Do not modify them unless explicitly requested.
+
+### Tactical encounter engine
+
+The tactical engine remains separate from world/town systems and server/RPC authoritative. Current foundations include axial hex movement, turns/actions/resources, melee/ranged/thrown attacks, saves, typed damage/healing, cover/LOS, conditions/effects, reactions, spell resources, combat logs, and reviewed spell adapters.
+
+The historical `Tactical_Encounter_Phase*.md` files document how these slices were delivered; current source/live RPCs outrank their old next-step wording.
+
+### Sprites
+
+The project has an 8-direction sprite production/runtime direction and retained production/QA documentation. Sprite art production remains separate from Character Forge portrait/Tarot artwork.
+
+## Current priority queue
+
+Unless Paul redirects or a production regression appears:
+
+1. finish the current subclass Tarot artwork backlog in small approved batches;
+2. strengthen subclass-art validation so it evaluates actual runtime-visible choices rather than only the historical 109 concept list;
+3. keep Preview deployments intentional and monitor Deployment Storage after the 628-deployment cleanup;
+4. continue repository vestige cleanup only when a file is proven unused/superseded;
+5. continue Character Forge polish only for reproduced defects or explicit user-directed presentation work;
+6. address Character Sheet dice integration as a separate consumer phase when requested;
+7. address tactical dice presentation separately, consuming already-resolved RPC/combat-log results;
+8. resume broader crafting redesign/tactical roadmap/sprite production according to user priority, without mixing those scopes into current artwork work.
+
+## Known follow-up risks / technical debt
+
+### Subclass artwork validation
+
+The current validator can allow a known visible subclass to use generic fallback art. Final deck completion requires runtime-visible enumeration plus explicit intentional-alias handling.
+
+### Open PR #187
+
+Do not assume #187 should eventually merge. It diverged while production was restored and infrastructure cleanup proceeded through separate PRs. Audit it against current `main`; salvage only still-needed deltas.
+
+### Historical documentation drift
+
+Many dated ledgers correctly preserve historical PR/migration/deployment evidence. Future handoffs must not interpret those embedded historical states as current. `docs/README.md` and `Documentation_Refresh_Manifest.md` define the trust model.
+
+### Module-type warning
+
+Production builds currently warn that `utils/encounterHex.js` is reparsed as an ES module because package type is not declared. This is a performance/build hygiene warning, not a current production failure. Any fix should be separately scoped and regression-tested because package-wide module-mode changes can have broad effects.
+
+## Architectural invariants
+
+- World map and town/city map are distinct systems.
+- Tactical state never writes world travel/route/weather/camp/clock state.
+- Game mechanics determine results before dice animation.
+- Presentation code does not replace canonical persistence/rules authority.
+- Source-owned persistent choices reuse existing contexts/RPCs rather than parallel state.
+- Realtime is synchronization; database state remains authoritative.
+- New helpers/hooks/state/props/callbacks/RPC arguments must be defined and passed everywhere they are used.
+- Prefer additive migrations and never rewrite deployed migration history.
+- Exact-head validation and explicit merge approval remain release gates.
+
+## Documentation map
+
+Read `README.md` and `DNDNext_Current_Handoff_Prompt.md` first. Then use the subsystem-specific ledgers for Character Forge, progression, runtime choices, sheet/equipment/crafting, tactical phases, sprites, security, or Vercel maintenance.
+
+Historical phase ledgers remain valuable; they are not deleted merely because their old active-branch statements are no longer current.
