@@ -1,0 +1,329 @@
+name: Vercel deployment maintenance
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Audit only, or delete the matched deployments."
+        required: true
+        type: choice
+        default: audit
+        options:
+          - audit
+          - delete
+      scope:
+        description: "Failed previews, or stale READY previews from agent/* branches."
+        required: true
+        type: choice
+        default: stale-agent-ready
+        options:
+          - stale-agent-ready
+          - failed
+      stale_days:
+        description: "For stale READY previews, only match deployments older than this many days."
+        required: true
+        type: string
+        default: "7"
+      branch_prefix:
+        description: "For stale READY previews, only match Git refs beginning with this prefix."
+        required: true
+        type: string
+        default: "agent/"
+      confirmation:
+        description: "Delete only: type DELETE FAILED or DELETE STALE PREVIEWS, matching the selected scope."
+        required: false
+        type: string
+        default: ""
+  workflow_call:
+    inputs:
+      action:
+        required: true
+        type: string
+      scope:
+        required: true
+        type: string
+      stale_days:
+        required: false
+        type: string
+        default: "7"
+      branch_prefix:
+        required: false
+        type: string
+        default: "agent/"
+      confirmation:
+        required: false
+        type: string
+        default: ""
+    secrets:
+      VERCEL_TOKEN:
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vercel-deployment-maintenance
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    name: Audit or clean Vercel previews
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_TEAM_ID: ${{ vars.VERCEL_TEAM_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+      ACTION: ${{ inputs.action }}
+      SCOPE: ${{ inputs.scope }}
+      STALE_DAYS: ${{ inputs.stale_days }}
+      BRANCH_PREFIX: ${{ inputs.branch_prefix }}
+      CONFIRM_DELETE: ${{ inputs.confirmation }}
+
+    steps:
+      - name: Validate maintenance configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +x
+
+          VERCEL_TOKEN_CLEAN="$(printf '%s' "$VERCEL_TOKEN" | tr -d '[:space:]')"
+
+          missing=0
+          if [[ -z "$VERCEL_TOKEN_CLEAN" ]]; then
+            echo "::error::VERCEL_TOKEN is not configured in GitHub Actions secrets."
+            missing=1
+          fi
+          for name in VERCEL_TEAM_ID VERCEL_PROJECT_ID; do
+            if [[ -z "${!name:-}" ]]; then
+              echo "::error::${name} is not configured in GitHub Actions variables."
+              missing=1
+            fi
+          done
+          if [[ "$missing" -ne 0 ]]; then
+            exit 1
+          fi
+
+          if [[ "$ACTION" != "audit" && "$ACTION" != "delete" ]]; then
+            echo "::error::Unexpected action: $ACTION"
+            exit 1
+          fi
+          if [[ "$SCOPE" != "failed" && "$SCOPE" != "stale-agent-ready" ]]; then
+            echo "::error::Unexpected scope: $SCOPE"
+            exit 1
+          fi
+          if ! [[ "$STALE_DAYS" =~ ^[0-9]+$ ]] || (( STALE_DAYS < 1 )); then
+            echo "::error::stale_days must be a positive integer."
+            exit 1
+          fi
+          if [[ "$SCOPE" == "stale-agent-ready" && "$BRANCH_PREFIX" != "agent/" ]]; then
+            echo "::error::Stale READY cleanup is intentionally restricted to the agent/ branch prefix."
+            exit 1
+          fi
+
+          if [[ "$ACTION" == "delete" ]]; then
+            expected="DELETE FAILED"
+            if [[ "$SCOPE" == "stale-agent-ready" ]]; then
+              expected="DELETE STALE PREVIEWS"
+            fi
+            if [[ "$CONFIRM_DELETE" != "$expected" ]]; then
+              echo "::error::Delete action requires confirmation text: $expected"
+              exit 1
+            fi
+          fi
+
+          auth_body="$(mktemp)"
+          trap 'rm -f "$auth_body"' EXIT
+          auth_code="$(
+            curl --silent --show-error \
+              --output "$auth_body" \
+              --write-out "%{http_code}" \
+              --header "Authorization: Bearer ${VERCEL_TOKEN_CLEAN}" \
+              --header "Content-Type: application/json" \
+              "https://api.vercel.com/v2/user"
+          )"
+
+          if [[ "$auth_code" != 2* ]]; then
+            message="$(jq -r '.error.message // .message // .error.code // "Vercel rejected the token"' "$auth_body" 2>/dev/null || echo 'Vercel rejected the token')"
+            echo "::error::Vercel token authentication preflight failed (HTTP $auth_code): $message"
+            exit 1
+          fi
+
+          echo "Vercel authentication preflight passed."
+
+      - name: Audit deployments and apply requested maintenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +x
+
+          VERCEL_TOKEN_CLEAN="$(printf '%s' "$VERCEL_TOKEN" | tr -d '[:space:]')"
+          list_api="https://api.vercel.com/v7/deployments"
+          candidates_file="$(mktemp)"
+          protected_file="$(mktemp)"
+          trap 'rm -f "$candidates_file" "$protected_file"' EXIT
+
+          now_seconds="$(date -u +%s)"
+          cutoff_ms="$(( (now_seconds - STALE_DAYS * 86400) * 1000 ))"
+          cursor=""
+          page=0
+
+          while :; do
+            page=$((page + 1))
+            if (( page > 100 )); then
+              echo "::error::Stopped after 100 deployment pages to avoid an unexpected pagination loop."
+              exit 1
+            fi
+
+            request_url="${list_api}?projectId=${VERCEL_PROJECT_ID}&teamId=${VERCEL_TEAM_ID}&limit=100"
+            if [[ -n "$cursor" ]]; then
+              request_url="${request_url}&until=${cursor}"
+            fi
+
+            response="$(
+              curl --fail-with-body --silent --show-error \
+                --header "Authorization: Bearer ${VERCEL_TOKEN_CLEAN}" \
+                --header "Content-Type: application/json" \
+                "$request_url"
+            )"
+
+            jq -r \
+              --arg scope "$SCOPE" \
+              --arg prefix "$BRANCH_PREFIX" \
+              --argjson cutoff "$cutoff_ms" '
+                .deployments[]
+                | {
+                    id: (.uid // .id // ""),
+                    state: (.readyState // .state // ""),
+                    target: (.target // ""),
+                    url: (.url // ""),
+                    created: (.createdAt // .created // 0),
+                    ref: (.meta.githubCommitRef // "")
+                  }
+                | select(.id != "" and .target != "production")
+                | select(
+                    if $scope == "failed" then
+                      (.state == "ERROR" or .state == "CANCELED")
+                    else
+                      (.state == "READY"
+                       and (.ref | startswith($prefix))
+                       and ((.created | tonumber) < $cutoff))
+                    end
+                  )
+                | [.id, .state, .target, .url, (.created | tostring), .ref]
+                | @tsv
+              ' <<<"$response" >> "$candidates_file"
+
+            jq -r '
+              .deployments[]
+              | {
+                  id: (.uid // .id // ""),
+                  state: (.readyState // .state // ""),
+                  target: (.target // ""),
+                  url: (.url // ""),
+                  ref: (.meta.githubCommitRef // "")
+                }
+              | select(.id != "" and .target == "production")
+              | [.id, .state, .target, .url, .ref]
+              | @tsv
+            ' <<<"$response" >> "$protected_file"
+
+            next_cursor="$(jq -r '.pagination.next // empty' <<<"$response")"
+            if [[ -z "$next_cursor" || "$next_cursor" == "$cursor" ]]; then
+              break
+            fi
+            cursor="$next_cursor"
+          done
+
+          sort -u -o "$candidates_file" "$candidates_file"
+          sort -u -o "$protected_file" "$protected_file"
+
+          candidate_count="$(awk 'NF { count++ } END { print count+0 }' "$candidates_file")"
+          production_count="$(awk 'NF { count++ } END { print count+0 }' "$protected_file")"
+
+          echo "Action: $ACTION"
+          echo "Scope: $SCOPE"
+          echo "Candidates: $candidate_count"
+          echo "Production deployments protected: $production_count"
+          if [[ "$SCOPE" == "stale-agent-ready" ]]; then
+            echo "Age threshold: older than $STALE_DAYS day(s)"
+            echo "Branch prefix: $BRANCH_PREFIX"
+          fi
+
+          if (( candidate_count > 0 )); then
+            echo
+            echo "Candidates:"
+            while IFS=$'\t' read -r id state target url created ref; do
+              [[ -z "$id" ]] && continue
+              printf '  - %s  %s  %s  %s\n' "$state" "$id" "$ref" "$url"
+            done < "$candidates_file"
+
+            echo
+            echo "Candidate counts by branch:"
+            awk -F'\t' 'NF >= 6 { count[$6]++ } END { for (ref in count) printf "  %4d  %s\n", count[ref], ref }' "$candidates_file" | sort -nr
+          fi
+
+          {
+            echo "### Vercel deployment maintenance"
+            echo
+            echo "- Action: \`$ACTION\`"
+            echo "- Scope: \`$SCOPE\`"
+            echo "- Project ID: \`$VERCEL_PROJECT_ID\`"
+            echo "- Team ID: \`$VERCEL_TEAM_ID\`"
+            echo "- Candidates: **$candidate_count**"
+            echo "- Production deployments explicitly protected: **$production_count**"
+            if [[ "$SCOPE" == "stale-agent-ready" ]]; then
+              echo "- READY preview age threshold: **older than $STALE_DAYS day(s)**"
+              echo "- Required branch prefix: \`$BRANCH_PREFIX\`"
+            fi
+            echo
+            if (( candidate_count > 0 )); then
+              echo "| State | Branch | Deployment | URL |"
+              echo "| --- | --- | --- | --- |"
+              while IFS=$'\t' read -r id state target url created ref; do
+                [[ -z "$id" ]] && continue
+                echo "| $state | \`$ref\` | \`$id\` | $url |"
+              done < "$candidates_file"
+            else
+              echo "No deployments matched the selected scope."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [[ "$ACTION" == "audit" ]]; then
+            echo "Audit complete. No deployments were deleted."
+            exit 0
+          fi
+
+          if (( candidate_count == 0 )); then
+            echo "Nothing to delete."
+            exit 0
+          fi
+
+          deleted_count=0
+          while IFS=$'\t' read -r id state target url created ref; do
+            [[ -z "$id" ]] && continue
+
+            delete_url="https://api.vercel.com/v13/deployments/${id}?teamId=${VERCEL_TEAM_ID}"
+            delete_response="$(
+              curl --fail-with-body --silent --show-error \
+                --request DELETE \
+                --header "Authorization: Bearer ${VERCEL_TOKEN_CLEAN}" \
+                --header "Content-Type: application/json" \
+                "$delete_url"
+            )"
+
+            final_state="$(jq -r '.state // empty' <<<"$delete_response")"
+            deleted_id="$(jq -r '.uid // .id // empty' <<<"$delete_response")"
+            if [[ "$deleted_id" != "$id" || "$final_state" != "DELETED" ]]; then
+              echo "::error::Vercel did not confirm deletion for $id."
+              echo "$delete_response" | jq .
+              exit 1
+            fi
+
+            deleted_count=$((deleted_count + 1))
+            echo "Deleted $id ($state, $ref) — $url"
+          done < "$candidates_file"
+
+          {
+            echo
+            echo "**Deleted:** $deleted_count deployment(s)."
+          } >> "$GITHUB_STEP_SUMMARY"
