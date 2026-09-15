@@ -1,0 +1,20 @@
+name: Vercel maintenance smoke test
+
+on:
+  push:
+    branches:
+      - agent/vercel-storage-guard-20260914
+    paths:
+      - ".github/workflows/vercel-maintenance-smoke.yml"
+      - ".github/workflows/vercel-deployment-maintenance.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  dry-run:
+    uses: ./.github/workflows/vercel-deployment-maintenance.yml
+    with:
+      mode: dry-run
+      confirmation: ""
+    secrets: inherit
