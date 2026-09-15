@@ -52,6 +52,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          set +x
 
           VERCEL_TOKEN_CLEAN="$(printf '%s' "$VERCEL_TOKEN" | tr -d '[:space:]')"
 
@@ -71,11 +72,6 @@ jobs:
             exit 1
           fi
 
-          if [[ "$VERCEL_TOKEN_CLEAN" != vcp_* ]]; then
-            echo "::error::VERCEL_TOKEN does not look like a Vercel personal access token after trimming whitespace."
-            exit 1
-          fi
-
           if [[ "$MODE" != "dry-run" && "$MODE" != "delete-error-canceled" ]]; then
             echo "::error::Unexpected mode: $MODE"
             exit 1
@@ -85,6 +81,25 @@ jobs:
             echo "::error::Delete mode requires confirmation text DELETE."
             exit 1
           fi
+
+          auth_body="$(mktemp)"
+          trap 'rm -f "$auth_body"' EXIT
+          auth_code="$(
+            curl --silent --show-error \
+              --output "$auth_body" \
+              --write-out "%{http_code}" \
+              --header "Authorization: Bearer ${VERCEL_TOKEN_CLEAN}" \
+              --header "Content-Type: application/json" \
+              "https://api.vercel.com/v2/user"
+          )"
+
+          if [[ "$auth_code" != 2* ]]; then
+            message="$(jq -r '.error.message // .message // .error.code // "Vercel rejected the token"' "$auth_body" 2>/dev/null || echo 'Vercel rejected the token')"
+            echo "::error::Vercel token authentication preflight failed (HTTP $auth_code): $message"
+            exit 1
+          fi
+
+          echo "Vercel authentication preflight passed."
 
       - name: Audit deployments and apply requested maintenance
         shell: bash
