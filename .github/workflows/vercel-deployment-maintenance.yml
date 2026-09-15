@@ -53,15 +53,26 @@ jobs:
         run: |
           set -euo pipefail
 
+          VERCEL_TOKEN_CLEAN="$(printf '%s' "$VERCEL_TOKEN" | tr -d '[:space:]')"
+
           missing=0
-          for name in VERCEL_TOKEN VERCEL_TEAM_ID VERCEL_PROJECT_ID; do
+          if [[ -z "$VERCEL_TOKEN_CLEAN" ]]; then
+            echo "::error::VERCEL_TOKEN is not configured in GitHub Actions secrets."
+            missing=1
+          fi
+          for name in VERCEL_TEAM_ID VERCEL_PROJECT_ID; do
             if [[ -z "${!name:-}" ]]; then
-              echo "::error::${name} is not configured in GitHub Actions secrets/variables."
+              echo "::error::${name} is not configured in GitHub Actions variables."
               missing=1
             fi
           done
 
           if [[ "$missing" -ne 0 ]]; then
+            exit 1
+          fi
+
+          if [[ "$VERCEL_TOKEN_CLEAN" != vcp_* ]]; then
+            echo "::error::VERCEL_TOKEN does not look like a Vercel personal access token after trimming whitespace."
             exit 1
           fi
 
@@ -80,6 +91,8 @@ jobs:
         run: |
           set -euo pipefail
           set +x
+
+          VERCEL_TOKEN_CLEAN="$(printf '%s' "$VERCEL_TOKEN" | tr -d '[:space:]')"
 
           list_api="https://api.vercel.com/v7/deployments"
           candidates_file="$(mktemp)"
@@ -103,7 +116,7 @@ jobs:
 
             response="$(
               curl --fail-with-body --silent --show-error \
-                --header "Authorization: Bearer ${VERCEL_TOKEN}" \
+                --header "Authorization: Bearer ${VERCEL_TOKEN_CLEAN}" \
                 --header "Content-Type: application/json" \
                 "$request_url"
             )"
@@ -208,7 +221,7 @@ jobs:
             delete_response="$(
               curl --fail-with-body --silent --show-error \
                 --request DELETE \
-                --header "Authorization: Bearer ${VERCEL_TOKEN}" \
+                --header "Authorization: Bearer ${VERCEL_TOKEN_CLEAN}" \
                 --header "Content-Type: application/json" \
                 "$delete_url"
             )"
