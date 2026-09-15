@@ -12,7 +12,55 @@ permissions:
   contents: read
 
 jobs:
+  diagnose:
+    name: Probe Vercel token scope
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_TEAM_ID: ${{ vars.VERCEL_TEAM_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+    steps:
+      - name: Probe read-only Vercel endpoints
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +x
+
+          probe() {
+            local label="$1"
+            local url="$2"
+            local body
+            body="$(mktemp)"
+
+            local code
+            code="$(
+              curl --silent --show-error \
+                --output "$body" \
+                --write-out "%{http_code}" \
+                --header "Authorization: Bearer ${VERCEL_TOKEN}" \
+                --header "Content-Type: application/json" \
+                "$url"
+            )"
+
+            if [[ "$code" == 2* ]]; then
+              echo "$label: HTTP $code"
+            else
+              local message
+              message="$(jq -r '.error.message // .message // .error.code // "request failed"' "$body" 2>/dev/null || echo 'unparseable error response')"
+              echo "$label: HTTP $code — $message"
+            fi
+
+            rm -f "$body"
+          }
+
+          probe "Teams list" "https://api.vercel.com/v2/teams?limit=20"
+          probe "Team detail" "https://api.vercel.com/v2/teams/${VERCEL_TEAM_ID}"
+          probe "Deployments without teamId" "https://api.vercel.com/v7/deployments?projectId=${VERCEL_PROJECT_ID}&limit=1"
+          probe "Deployments with teamId" "https://api.vercel.com/v7/deployments?projectId=${VERCEL_PROJECT_ID}&teamId=${VERCEL_TEAM_ID}&limit=1"
+
   dry-run:
+    name: Exercise maintenance workflow
+    needs: diagnose
     uses: ./.github/workflows/vercel-deployment-maintenance.yml
     with:
       mode: dry-run
