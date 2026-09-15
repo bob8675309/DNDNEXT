@@ -1,0 +1,220 @@
+name: Vercel deployment maintenance
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Dry run lists candidates; delete removes only non-production ERROR/CANCELED deployments."
+        required: true
+        type: choice
+        default: dry-run
+        options:
+          - dry-run
+          - delete-error-canceled
+      confirmation:
+        description: "For delete mode only, type DELETE. Leave blank for dry-run."
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vercel-deployment-maintenance
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    name: Audit or clean failed Vercel previews
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_TEAM_ID: ${{ vars.VERCEL_TEAM_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+      MODE: ${{ inputs.mode }}
+      CONFIRM_DELETE: ${{ inputs.confirmation }}
+
+    steps:
+      - name: Validate maintenance configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          missing=0
+          for name in VERCEL_TOKEN VERCEL_TEAM_ID VERCEL_PROJECT_ID; do
+            if [[ -z "${!name:-}" ]]; then
+              echo "::error::${name} is not configured in GitHub Actions secrets/variables."
+              missing=1
+            fi
+          done
+
+          if [[ "$missing" -ne 0 ]]; then
+            exit 1
+          fi
+
+          if [[ "$MODE" != "dry-run" && "$MODE" != "delete-error-canceled" ]]; then
+            echo "::error::Unexpected mode: $MODE"
+            exit 1
+          fi
+
+          if [[ "$MODE" == "delete-error-canceled" && "$CONFIRM_DELETE" != "DELETE" ]]; then
+            echo "::error::Delete mode requires confirmation text DELETE."
+            exit 1
+          fi
+
+      - name: Audit deployments and apply requested maintenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +x
+
+          list_api="https://api.vercel.com/v7/deployments"
+          candidates_file="$(mktemp)"
+          protected_file="$(mktemp)"
+          trap 'rm -f "$candidates_file" "$protected_file"' EXIT
+
+          cursor=""
+          page=0
+
+          while :; do
+            page=$((page + 1))
+            if (( page > 100 )); then
+              echo "::error::Stopped after 100 deployment pages to avoid an unexpected pagination loop."
+              exit 1
+            fi
+
+            request_url="${list_api}?projectId=${VERCEL_PROJECT_ID}&teamId=${VERCEL_TEAM_ID}&limit=100"
+            if [[ -n "$cursor" ]]; then
+              request_url="${request_url}&until=${cursor}"
+            fi
+
+            response="$(
+              curl --fail-with-body --silent --show-error \
+                --header "Authorization: Bearer ${VERCEL_TOKEN}" \
+                --header "Content-Type: application/json" \
+                "$request_url"
+            )"
+
+            jq -r '
+              .deployments[]
+              | {
+                  id: (.uid // .id // ""),
+                  state: (.readyState // .state // ""),
+                  target: (.target // ""),
+                  url: (.url // ""),
+                  created: (.createdAt // .created // 0)
+                }
+              | select(
+                  (.id != "")
+                  and (.state == "ERROR" or .state == "CANCELED")
+                  and (.target != "production")
+                )
+              | [.id, .state, .target, .url, (.created | tostring)]
+              | @tsv
+            ' <<<"$response" >> "$candidates_file"
+
+            jq -r '
+              .deployments[]
+              | {
+                  id: (.uid // .id // ""),
+                  state: (.readyState // .state // ""),
+                  target: (.target // ""),
+                  url: (.url // "")
+                }
+              | select(
+                  (.id != "")
+                  and (.state == "ERROR" or .state == "CANCELED")
+                  and (.target == "production")
+                )
+              | [.id, .state, .target, .url]
+              | @tsv
+            ' <<<"$response" >> "$protected_file"
+
+            next_cursor="$(jq -r '.pagination.next // empty' <<<"$response")"
+            if [[ -z "$next_cursor" || "$next_cursor" == "$cursor" ]]; then
+              break
+            fi
+            cursor="$next_cursor"
+          done
+
+          sort -u -o "$candidates_file" "$candidates_file"
+          sort -u -o "$protected_file" "$protected_file"
+
+          candidate_count="$(awk 'NF { count++ } END { print count+0 }' "$candidates_file")"
+          protected_count="$(awk 'NF { count++ } END { print count+0 }' "$protected_file")"
+
+          echo "Mode: $MODE"
+          echo "Non-production ERROR/CANCELED candidates: $candidate_count"
+          echo "Protected production ERROR/CANCELED deployments: $protected_count"
+
+          if (( candidate_count > 0 )); then
+            echo
+            echo "Candidates:"
+            while IFS=$'\t' read -r id state target url created; do
+              [[ -z "$id" ]] && continue
+              printf '  - %s  %s  %s\n' "$state" "$id" "$url"
+            done < "$candidates_file"
+          fi
+
+          {
+            echo "### Vercel deployment maintenance"
+            echo
+            echo "- Mode: \`$MODE\`"
+            echo "- Project ID: \`$VERCEL_PROJECT_ID\`"
+            echo "- Team ID: \`$VERCEL_TEAM_ID\`"
+            echo "- Non-production ERROR/CANCELED candidates: **$candidate_count**"
+            echo "- Protected production ERROR/CANCELED deployments: **$protected_count**"
+            echo
+            if (( candidate_count > 0 )); then
+              echo "| State | Deployment | URL |"
+              echo "| --- | --- | --- |"
+              while IFS=$'\t' read -r id state target url created; do
+                [[ -z "$id" ]] && continue
+                echo "| $state | \`$id\` | $url |"
+              done < "$candidates_file"
+            else
+              echo "No non-production ERROR/CANCELED deployments matched."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [[ "$MODE" == "dry-run" ]]; then
+            echo "Dry run complete. No deployments were deleted."
+            exit 0
+          fi
+
+          if (( candidate_count == 0 )); then
+            echo "Nothing to delete."
+            exit 0
+          fi
+
+          deleted_count=0
+          while IFS=$'\t' read -r id state target url created; do
+            [[ -z "$id" ]] && continue
+
+            delete_url="https://api.vercel.com/v13/deployments/${id}?teamId=${VERCEL_TEAM_ID}"
+            delete_response="$(
+              curl --fail-with-body --silent --show-error \
+                --request DELETE \
+                --header "Authorization: Bearer ${VERCEL_TOKEN}" \
+                --header "Content-Type: application/json" \
+                "$delete_url"
+            )"
+
+            final_state="$(jq -r '.state // empty' <<<"$delete_response")"
+            deleted_id="$(jq -r '.uid // empty' <<<"$delete_response")"
+
+            if [[ "$deleted_id" != "$id" || "$final_state" != "DELETED" ]]; then
+              echo "::error::Vercel did not confirm deletion for $id."
+              echo "$delete_response" | jq .
+              exit 1
+            fi
+
+            deleted_count=$((deleted_count + 1))
+            echo "Deleted $id ($state) — $url"
+          done < "$candidates_file"
+
+          {
+            echo
+            echo "**Deleted:** $deleted_count deployment(s)."
+          } >> "$GITHUB_STEP_SUMMARY"
