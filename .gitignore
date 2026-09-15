@@ -23,3 +23,12 @@ cleanup-input/
 cleanup-input.zip
 components/cleanup-input.zip
 components/needed files/
+
+# Generated 5etools import batches/previews (rebuildable; imported data lives in Supabase)
+character-option-batches/
+class-feature-batches/
+spell-batches/
+spell-batches-all/
+spell-batches-xphb/
+spell-preview.json
+character-options-*.json
