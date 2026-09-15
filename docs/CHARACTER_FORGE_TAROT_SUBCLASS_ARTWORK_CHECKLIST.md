@@ -2,261 +2,155 @@
 
 Status date: 2026-09-14
 
-This is the authoritative production checklist for the **normalized rebuild** of the Character Forge subclass tarot deck.
+This checklist now distinguishes the historical preferred-source rebuild checkpoint from the actual runtime-visible production target.
 
-The previous subclass artwork was intentionally deleted from the working branch on 2026-09-12. All **109 approved normalized tarot concepts** are installed, wired, and validated; this total includes Paul's supplied Evocation card. The preferred-source normalized deck is complete.
+## Completion authority
+
+Historical checkpoint:
+
+- **109 preferred-source normalized concepts** were installed, wired, and validated during the normalized rebuild.
+- That 109-concept milestone remains valid as provenance/history.
+- It is **not** the final deck-completion number because the Forge carousel exposes additional compatible subclass choices at runtime.
+
+Current production target:
+
+- **Runtime-visible choices:** 149
+- **Dedicated-card target:** 149
+- **Known visible choices still using generic class/fallback artwork:** 43
+
+Intentional art sharing is permitted only where Paul explicitly approves two visible names sharing the same card. Do not silently count a class-art fallback as a completed subclass card.
 
 Read first:
 
 - `docs/CHARACTER_FORGE_TAROT_SUBCLASS_CARD_STANDARD.md`
 - `docs/CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md`
+- `docs/DNDNext_Current_Handoff_Prompt.md`
 
-## Source of truth
+## Wizard compatibility note
 
-The subclass queue below is derived from the current Supabase `class_catalog_preferred` joined to matching `class_feature_catalog` rows by preferred class source.
+The older preferred-source checklist contains 18 Wizard concepts, but the runtime resolver exposes 14 visible Wizard choices. Four normalized names are compatibility/reprint identities that are currently suppressed from the visible carousel in favor of their corresponding resolved choices:
 
-Rules:
+- Abjuration
+- Divination
+- Evocation
+- Illusion
 
-- Supabase/class-guide data determines which subclass names exist.
-- Artwork is presentation-only.
-- Equivalent imported aliases may intentionally share one art concept only where grouped together below.
-- Wizard names remain separate concepts in this checklist because the existing Wizard catalogue historically exposed one-to-one names.
-- Do not add a subclass card merely because an older non-preferred source contains that subclass.
-- Do not mark a card complete until it is approved, normalized to **7:12**, exported as **840 × 1440 WebP**, installed, wired, and validated.
+Their normalized assets/mappings remain in the repository. Do not put those four names into the 43-card fallback queue merely because the historical Wizard count is larger than the runtime count.
 
-Legend:
+## Runtime fallback production queue — 43
 
-- ⬜ Not yet created/approved in the normalized deck
-- 🟨 Art approved locally but not yet normalized/installed/wired
-- ✅ Approved, normalized, installed, wired, and validated
-- 📦 Approved reserve artwork installed but intentionally not wired because it is outside the current preferred-source queue
+A checkbox below means the visible runtime choice has received a dedicated approved 7:12 tarot asset and explicit runtime wiring. Re-audit the resolver/runtime after each batch before marking completion.
 
-## Progress
+### Barbarian — 7
 
-- **Target concepts:** 109
-- **✅ Installed:** 109
-- **🟨 Approved but not installed:** 0
-- **⬜ Remaining:** 0
+- [ ] Ancestral Guardian
+- [ ] Battlerager
+- [ ] Beast
+- [ ] Giant
+- [ ] Storm Herald
+- [ ] Totem Warrior
+- [ ] Wild Magic
 
-## Artificer — 6
+### Bard — 4
 
-- ✅ Alchemist
-- ✅ Armorer
-- ✅ Artillerist
-- ✅ Battle Smith
-- ✅ Cartographer
-- ✅ Reanimator
+- [ ] Creation
+- [ ] Eloquence
+- [ ] Swords
+- [ ] Whispers
 
-## Barbarian — 4
+### Fighter — 6
 
-- ✅ Berserker
-- ✅ Wild Heart
-- ✅ World Tree
-- ✅ Zealot
+- [ ] Arcane Archer
+- [ ] Cavalier
+- [ ] Echo Knight
+- [ ] Purple Dragon Knight (Banneret)
+- [ ] Rune Knight
+- [ ] Samurai
 
-## Bard — 6
+### Monk — 7
 
-- ✅ Dance
-- ✅ Glamour
-- ✅ Lore
-- ✅ Moon
-- ✅ Spirits
-- ✅ Valor
+- [ ] Ascendant Dragon
+- [ ] Astral Self
+- [ ] Drunken Master
+- [ ] Four Elements
+- [ ] Kensei
+- [ ] Long Death
+- [ ] Sun Soul
 
-## Cleric — 18 concepts
+### Mystic — 6
 
-- ✅ Ambition (PSA)
-- ✅ Arcana
-- ✅ Death
-- ✅ Forge
-- ✅ Grave
-- ✅ Knowledge / Knowledge (PSA) — shared concept
-- ✅ Life
-- ✅ Light
-- ✅ Nature
-- ✅ Order
-- ✅ Peace
-- ✅ Solidarity (PSA)
-- ✅ Strength (PSA)
-- ✅ Tempest
-- ✅ Trickery
-- ✅ Twilight
-- ✅ War
-- ✅ Zeal (PSA)
+- [ ] Avatar
+- [ ] Awakened
+- [ ] Immortal
+- [ ] Nomad
+- [ ] Soul Knife
+- [ ] Wu Jen
 
-## Druid — 8
+### Paladin — 5
 
-- ✅ Dreams
-- ✅ Land
-- ✅ Moon
-- ✅ Sea
-- ✅ Shepherd
-- ✅ Spores
-- ✅ Stars
-- ✅ Wildfire
+- [ ] Conquest
+- [ ] Crown
+- [ ] Oathbreaker
+- [ ] Redemption
+- [ ] Watchers
 
-## Fighter — 5
+### Ranger — 4
 
-- ✅ Banneret
-- ✅ Battle Master
-- ✅ Champion
-- ✅ Eldritch Knight
-- ✅ Psi Warrior
+- [ ] Drakewarden
+- [ ] Horizon Walker
+- [ ] Monster Slayer
+- [ ] Swarmkeeper
 
-## Monk — 4
+### Rogue — 4
 
-- ✅ Elements
-- ✅ Mercy
-- ✅ Open Hand
-- ✅ Shadow
+- [ ] Inquisitive
+- [ ] Mastermind
+- [ ] Scout
+- [ ] Swashbuckler
 
-## Monster Hunter — 4
+Total remaining runtime fallbacks at this audit: **43**.
 
-- ✅ Carver Guild
-- ✅ Devourer Guild
-- ✅ Occultist Guild
-- ✅ Trapper Guild
+## Card completion rule
 
-## Mystic
+A runtime-visible choice counts as complete only after all applicable steps are true:
 
-The current preferred-source join exposes no active Mystic subclass queue for this rebuild. Do not create Mystic tarot cards unless the preferred catalogue changes or Paul explicitly asks for a compatible-source set.
+1. The exact visible subclass identity is confirmed against current Forge runtime/catalogue behavior.
+2. Paul reviews and approves the individual artwork.
+3. Anatomy, hands, weapons, props, companions, and species details pass QA.
+4. The card uses canonical 7:12 composition and continuous full-bleed art with no opaque footer.
+5. Final export is 840 x 1440 WebP.
+6. The file is installed under `public/media/subclasses/<class-key>/`.
+7. `utils/classes/subclassArtwork.js` explicitly resolves that visible identity to approved subclass art, or an intentional alias is documented and approved.
+8. The card does not silently fall back to generic class artwork.
+9. Focused validation passes.
+10. Runtime/preview behavior is checked when an intentional preview is requested.
 
-## Paladin — 5
+## Validator gap that must be closed before final completion
 
-- ✅ Ancients
-- ✅ Devotion
-- ✅ Glory
-- ✅ Noble Genies
-- ✅ Vengeance
+`scripts/validate_class_subclass_browser.mjs` currently asserts the historical set of 109 installed approved concepts and also asserts that unmatched content has a safe fallback. That remains useful, but it can allow a known visible Forge choice to fall back silently.
 
-## Ranger — 6
+Before the deck is declared fully complete, validation should enumerate the **actual visible runtime choices** and fail if any known visible production choice uses generic class artwork, while preserving:
 
-- ✅ Beast Master
-- ✅ Fey Wanderer
-- ✅ Gloom Stalker
-- ✅ Hollow Warden
-- ✅ Hunter
-- ✅ Winter Walker
+- approved intentional aliases;
+- the four suppressed Wizard duplicate/reprint identities;
+- safe fallback for truly unknown/future content;
+- existing class-guide/model authority for subclass behavior.
 
-## Rogue — 6
+The validator change is a runtime-safety follow-up; do not change subclass eligibility/persistence to make the artwork audit pass.
 
-- ✅ Arcane Trickster
-- ✅ Assassin
-- ✅ Phantom
-- ✅ Scion of the Three
-- ✅ Soulknife
-- ✅ Thief
+## Art standard summary
 
-## Sorcerer — 10 concepts
+- 7:12 aspect ratio.
+- 840 x 1440 WebP final export.
+- Full-bleed artwork through title/emblem area.
+- No opaque footer/title band.
+- Fixed gold frame/title/emblem geometry.
+- Crisp cinematic fantasy realism; restrained glitter, random motes, and excessive shine.
+- Deliberate species/gender/pose/environment variety.
+- Mandatory full-resolution anatomy/prop QA.
 
-- ✅ Aberrant / Aberrant Mind — shared concept
-- ✅ Clockwork / Clockwork Soul — shared concept
-- ✅ Divine Soul
-- ✅ Draconic
-- ✅ Lunar
-- ✅ Pyromancer (PSK)
-- ✅ Shadow
-- ✅ Spellfire
-- ✅ Storm
-- ✅ Wild / Wild Magic — shared concept
-
-## Warlock — 9
-
-- ✅ Archfey
-- ✅ Celestial
-- ✅ Fathomless
-- ✅ Fiend
-- ✅ Genie
-- ✅ Great Old One
-- ✅ Hexblade
-- ✅ Undead
-- ✅ Undying
-
-## Wizard — 18
-
-- ✅ Abjuration
-- ✅ Abjurer
-- ✅ Bladesinger
-- ✅ Bladesinging
-- ✅ Chronurgy
-- ✅ Conjuration
-- ✅ Divination
-- ✅ Diviner
-- ✅ Enchantment
-- ✅ Evocation — Paul-supplied approved card
-- ✅ Evoker
-- ✅ Graviturgy
-- ✅ Illusion
-- ✅ Illusionist
-- ✅ Necromancy
-- ✅ Scribes
-- ✅ Transmutation
-- ✅ War
-
-## Approved off-queue artwork — not counted in the 109 target
-
-The following cards were individually reviewed and approved during the rebuild, but they are **not present in the current authoritative preferred-source checklist**. Retain them as approved art references / reserve assets and do not wire them unless Paul explicitly requests it or the preferred catalogue changes to include them.
-
-- 🟨 Swords
-- 🟨 Whispers
-- 🟨 Eloquence
-- 🟨 Creation
-
-## Classes without an active subclass art queue
-
-- No Adventuring Class — no subclass family
-- Expert Sidekick — no subclass catalogue authority
-- Warrior Sidekick — no subclass catalogue authority
-- Spellcaster Sidekick — no subclass catalogue authority
-- Mystic — no preferred-source subclass rows in the current rebuild join
-
-## Production variety priority
-
-For the remaining Wizard cards and future replacement/redraw work, preferentially pull from underused Character Forge species before repeating the deck's most common silhouettes. Paul's current priority pool is:
-
-- Aetherborn
-- Duergar
-- Githyanki
-- Hobgoblin
-- Khenra
-- Kor
-- Lizardfolk
-- Locathah
-- Lupin
-- RimeKin
-- Plasmoid
-- Zombie
-
-Continue to vary body type, gender, pose, camera angle, clothing silhouette, environment, emotional register, and magical presentation. Species variety does not override anatomy/hand/weapon QA or subclass readability.
-
-## Recommended starting order
-
-The preferred-source normalized tarot deck is complete at **109 / 109 installed concepts**. There is no remaining production queue.
-
-**Evocation is Paul-supplied and installed.** Do not recreate it unless Paul explicitly requests a redraw.
-
-Future work in this subsystem should be limited to Paul-requested redraws/replacements, newly introduced preferred-source subclasses, or deliberate promotion of approved off-queue reserve artwork.
-
-## Completion rule
-
-A checkbox becomes ✅ only after all of the following are true:
-
-1. Individual card reviewed by Paul.
-2. Passes anatomy/hand/prop QA.
-3. Passes subclass-readability and variety tests.
-4. Uses canonical 7:12 composition.
-5. Uses continuous full-bleed art with **no footer**.
-6. Uses the fixed frame/title/emblem geometry.
-7. Exported at 840 × 1440 WebP.
-8. Added under `public/media/subclasses/<class-key>/`.
-9. Explicitly wired in `utils/classes/subclassArtwork.js`.
-10. Checklist updated.
-11. Relevant validation/CI passes.
-12. Vercel preview checked.
+The detailed visual contract remains `docs/CHARACTER_FORGE_TAROT_SUBCLASS_CARD_STANDARD.md`.
 
 ## Protected boundaries
 
-- No Supabase writes or migrations for artwork.
-- No subclass rules or persistence changes.
-- No world-map or town/city-map changes.
-- No crafting, inventory, merchant, travel, encounter, tactical, or unrelated character-sheet runtime changes.
+Subclass artwork is presentation-only. No Supabase writes/migrations are required. Do not touch world-map/town-map behavior, crafting, inventory, merchants, travel, encounter/tactical authority, economy, or unrelated character runtime while completing this queue.
