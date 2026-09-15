@@ -9,13 +9,13 @@ permissions:
   contents: read
 
 jobs:
-  cleanup:
+  audit:
     uses: ./.github/workflows/vercel-deployment-maintenance.yml
     with:
-      action: delete
+      action: audit
       scope: stale-agent-ready
       stale_days: "7"
       branch_prefix: "agent/"
-      confirmation: "DELETE STALE PREVIEWS"
+      confirmation: ""
     secrets:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
