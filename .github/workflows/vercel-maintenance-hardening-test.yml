@@ -1,0 +1,21 @@
+name: Test hardened Vercel maintenance
+
+on:
+  push:
+    branches:
+      - agent/vercel-maintenance-hardening-20260915
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    uses: ./.github/workflows/vercel-deployment-maintenance.yml
+    with:
+      action: audit
+      scope: failed
+      stale_days: "7"
+      branch_prefix: "agent/"
+      confirmation: ""
+    secrets:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
