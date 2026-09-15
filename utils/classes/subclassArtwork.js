@@ -128,13 +128,23 @@ const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
   }),
   wizard: Object.freeze({
     abjuration: "abjuration",
+    abjurer: "abjurer",
     bladesinger: "bladesinger",
+    bladesinging: "bladesinging",
+    chronurgy: "chronurgy",
     conjuration: "conjuration",
     divination: "divination",
+    diviner: "diviner",
     enchantment: "enchantment",
     evocation: "evocation",
+    evoker: "evoker",
     graviturgy: "graviturgy",
     illusion: "illusion",
+    illusionist: "illusionist",
+    necromancy: "necromancy",
+    scribes: "scribes",
+    transmutation: "transmutation",
+    war: "war",
   }),
 });
 
