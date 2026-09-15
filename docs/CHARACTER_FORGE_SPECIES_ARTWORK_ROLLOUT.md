@@ -1,28 +1,56 @@
 # Character Forge Species Artwork Rollout
 
-Status date: 2026-09-05
+Status reconciled: 2026-09-15
 
-This document is the handoff authority for the approved Character Forge Species cinematic-artwork rollout on PR #177 (`agent/realistic-dice-core`). It supplements the frozen post-PR #170 Species behavior ledger; it does not reopen the Species tab for a broad functional redesign.
+Status: **the PR #177 artwork/presentation line described by this document is merged. Current `main` and `utils/speciesArtwork.js` are production authority.**
 
-## Current branch / PR boundary
+This document records the durable Species cinematic-artwork rules and approved rollout decisions. It is not an instruction to resume the old `agent/realistic-dice-core` branch.
 
-- Working branch: `agent/realistic-dice-core`
-- Pull request: #177 — **Add reusable realistic dice physics core**
-- PR #177 remains intentionally unmerged until browser acceptance.
-- `utils/speciesArtwork.js` remains the exact-name cinematic artwork authority.
-- No Supabase migration or write is required for this artwork rollout.
-- Do not touch world-map, town/city-map, travel, route, weather, combat, crafting, merchant, inventory, or other protected runtime systems as part of this work.
+## Current branch / PR correction
 
-## Current accepted cinematic set
+Historical development branch: `agent/realistic-dice-core` / PR #177.
 
-The current PR contains exact cinematic overrides for twenty Species names:
+PR #177 merged on 2026-09-11. Do not treat it as open or as the current integration branch. Any new Species artwork should start from current `main` or another explicitly chosen current branch.
+
+No Supabase migration/write is required for presentation-only Species artwork unless a separate data requirement is established.
+
+## Artwork authority
+
+`utils/speciesArtwork.js` remains the shared artwork resolver authority.
+
+The cinematic resolver is intentionally exact-name/presentation aware. A base Species cinematic must not silently replace dedicated child/source-variant artwork.
+
+Important distinction:
+
+- Forge cinematic/portrait presentation may use a dedicated image for a nested lineage/ancestry presentation;
+- canonical Species/source identity and rules remain owned by the existing catalogue/source-choice system.
+
+Artwork must not create a second Species identity authority.
+
+## Accepted cinematic direction
+
+The approved Character Forge Species art direction remains:
+
+- realistic/cinematic fantasy rather than old sourcebook/purple-background presentation;
+- high-resolution portrait/cinematic exports suitable for the large right-side Forge surface;
+- subject clearly readable with the lore/fact overlay present;
+- natural/species-appropriate environments where useful;
+- varied pose, camera, gender/presentation, environment, and silhouette across the catalogue;
+- no destructive reuse of a base image when a child/source variant has dedicated art;
+- do not replace an accepted image merely to make filenames or batches look uniform.
+
+The September 2026 audit/cleanup did not authorize deleting current Species art. Approved art remains part of the production asset baseline.
+
+## Approved exact cinematic set from the rollout
+
+The #177-era rollout established exact cinematic overrides for entries including:
 
 - Aarakocra
 - Aasimar
 - Aetherborn
 - Autognome
 - Bugbear
-- Dragonborn — **base Dragonborn only**
+- base Dragonborn
 - Dwarf
 - Elf
 - Firbolg
@@ -38,85 +66,57 @@ The current PR contains exact cinematic overrides for twenty Species names:
 - Tabaxi
 - Tiefling
 
-The large approved ten-portrait continuation installed on 2026-09-05 added/replaced Human, Gnome, Dwarf, base Dragonborn, Goliath, Elf, Half-Orc, Halfling, Autognome, and Aetherborn. Lizardfolk was browser-reviewed and explicitly accepted in its existing artwork, so it is intentionally **not** being replaced merely to make the filename cinematic.
+Additional child/source artwork remains governed by the broader Species ledgers and current resolver source. Lizardfolk was explicitly browser-accepted in its existing presentation during the rollout and should not be replaced simply for naming consistency.
 
-## 2026-09-05 browser correction pass
+## Browser corrections retained
 
-Latest browser review identified three presentation issues:
+The rollout included source-composition corrections such as:
 
-1. **Bugbear** — the character needed to sit farther left in the source composition so the lore overlay does not hide as much of the figure.
-2. **Kenku** — likewise needed a slightly more left-weighted composition.
-3. **Orc** — the previous portrait read too dark; the replacement is brighter and more unmistakably full-orc, with stronger tusks, heavier brow, broader jaw, and a more imposing orc silhouette.
+- Bugbear and Kenku subject placement adjusted for the right-side information overlay;
+- Orc replaced with a brighter, more unmistakably full-orc composition;
+- obsolete CSS focal compensation removed where approved source artwork now owns composition.
 
-The correction exports are 720 × 960 WebP files and replace only:
+Do not reintroduce old crop/focal hacks without reproducing a current defect.
 
-- `public/media/species/cinematic-bugbear.webp`
-- `public/media/species/cinematic-kenku.webp`
-- `public/media/species/cinematic-orc.webp`
+## Parent/child/source-variant rule
 
-The old Bugbear-specific CSS focal override was removed so the approved artwork owns its composition rather than stacking an old crop correction on top of a new portrait.
+Species artwork routing must preserve the distinction between:
 
-## Image production standard
+- base Species;
+- parent-persisted lineage/ancestry presentations;
+- independent source Species rows;
+- setting/source variants;
+- trait-level appearance/configuration choices.
 
-Approved Character Forge hero exports should normally be:
+Examples such as Dragonborn ancestries, Genasi lineages, Elf/Gnome children, Shifter forms, Aven types, Fairy/Kithkin variants, and setting/source children may have distinct Forge artwork while sharing or differing in persistence models. Inspect current source-choice authority before altering resolver behavior.
 
-- 3:4 composition;
-- 720 × 960 WebP for the current cinematic set unless a later, explicitly approved standard replaces it;
-- high enough quality to remain sharp on the large desktop hero surface;
-- realistic fantasy rather than sourcebook/purple-background presentation;
-- composed with the subject clearly readable when the right-side lore/fact overlay is present;
-- placed in a natural/species-appropriate environment when new art is generated;
-- varied in pose and setting across the catalogue rather than repeating the same eyeline/body stance.
+## Current Species baseline
 
-Do not regress approved hero artwork to tiny low-quality thumbnails merely to reduce repository size.
+The Species tab is mature and should remain frozen unless Paul requests new artwork/content or a concrete regression is reproduced.
 
-## Artwork authority and exact-name rule
+Preserve:
 
-`utils/speciesArtwork.js` remains the shared resolver authority.
+- searchable parent/child reveal;
+- canonical parent/child persistence behavior;
+- large hero/portrait routing;
+- semantic fact icons;
+- Creature Type/Size/Vision/Languages fact handling;
+- Common-language conventions;
+- source-owned variable Size/Language/lineage choices;
+- affinity-aware Dragonborn copy;
+- structured Aasimar/Goliath/Eladrin/Hexblood/Simic presentation;
+- guided Continue validation.
 
-The cinematic map is intentionally an **exact normalized Species-name override**. A cinematic base Species image must not silently cascade into dedicated children or source variants that already have their own art.
+## Binary artwork workflow
 
-Examples:
+For future binary art batches, use the established guarded asset route rather than giant inline-base64 repository writes. Validate exact base/head, archive/file checksums, dimensions, changed paths, and focused artwork regressions before advancing the intended branch.
 
-- changing `elf` must not replace `drow`, `high-elf`, or `wood-elf`;
-- changing `gnome` must not replace `forest-gnome` or `rock-gnome`;
-- changing base `dragonborn` must not replace chromatic, metallic, or gem Dragonborn children;
-- setting/source variants should continue using their dedicated files when such files exist.
+## Relationship to subclass Tarot art
 
-This boundary is especially important because the non-Forge resolver intentionally retains family aliases. The cinematic hero resolver is the narrow presentation override and must stay narrow.
+Species portraits/cinematics and subclass Tarot cards are separate asset systems. The broad Forge Species catalogue can inspire visible subjects for subclass card diversity, but using a Species as artwork casting does not change subclass rules or Species persistence.
 
-## Dragonborn boundary
+Tarot card dimensions/format are controlled by `CHARACTER_FORGE_TAROT_SUBCLASS_CARD_STANDARD.md`, not by this Species portrait standard.
 
-Only the **base `Dragonborn`** cinematic portrait is covered by this rollout.
+## Protected boundaries
 
-Do not replace these merely because the parent was updated:
-
-- Black, Blue, Green, Red, or White Dragonborn;
-- Brass, Bronze, Copper, Gold, or Silver Dragonborn;
-- Amethyst, Crystal, Emerald, Sapphire, or Topaz Gem Dragonborn;
-- any other Dragonborn child/source presentation that already has dedicated artwork.
-
-Several existing Dragonborn variant portraits are already strong and should be audited individually before replacement.
-
-## Checkpoint validation requirements
-
-After every artwork checkpoint:
-
-1. Confirm every intended file is a valid WebP and matches the approved SHA-256.
-2. Confirm required image dimensions before materialization.
-3. Confirm the selected exact Species shows the intended image in Character Forge.
-4. Confirm child/variant Species still resolve to their own dedicated artwork where applicable.
-5. Check desktop headroom and horizontal focal framing; faces and important body features must not disappear behind the lore overlay at normal browser zoom.
-6. Check responsive/mobile presentation and make sure hero art does not force horizontal overflow.
-7. Run the relevant Forge Species validators and normal PR validation gates before calling the checkpoint accepted.
-8. Keep PR #177 unmerged until the user has browser-reviewed the result.
-
-## Proven binary transfer route — do not rediscover this again
-
-The earlier inline base64 Git-blob approach is no longer the preferred handoff. On 2026-09-05 the approved Species artwork was successfully installed through the connected Dropbox + GitHub Actions bridge:
-
-`approved local WebPs -> ZIP + SHA-256 manifest -> Dropbox /DNDNext-Transfer -> one-shot GitHub Actions scratch branch -> exact PR-head guard -> verify ZIP/files/MIME/dimensions -> exact diff guard -> bot commit -> push agent/realistic-dice-core -> GitHub/CI/Vercel verification`
-
-Use `docs/ARTWORK_BINARY_TRANSFER_RUNBOOK.md` for the operational recipe and `docs/REPO_ACCESS_STANDING_RULE.md` for the persistent repository-access rule.
-
-Do **not** regenerate approved images merely because a new chat took over, do **not** fall back to giant inline base64 payloads while the Dropbox bridge is available, and do **not** claim a binary rollout completed until the resulting PR commit and validations have been re-read from GitHub.
+Species artwork work does not authorize changes to world-map or town/city-map behavior, routes/travel/weather/camps/clock, tactical combat, crafting, inventory, merchants, economy, or unrelated runtime systems.

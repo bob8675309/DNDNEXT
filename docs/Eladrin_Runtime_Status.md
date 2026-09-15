@@ -1,160 +1,92 @@
 # Eladrin Runtime Status
 
-Status date: 2026-08-14
-Historical runtime PR: #170 (`agent/character-forge-resilience-presentation`) — merged at `599c4de7397ba6e4bbbb0a061d551d80c3570be7`
-Current presentation continuation: PR #171 (`agent/species-art-post170`) — open/unmerged; latest validated code head `39a263e034db4023ed7d1a4950a185a832c08867`
-Live migration: 68
+Status reconciled: 2026-09-15
+
+Historical implementation chain:
+
+- PR #170 — runtime foundation — merged at `599c4de7397ba6e4bbbb0a061d551d80c3570be7`;
+- PR #171 — Species presentation continuation — **merged** at `ed93331b946dffee1e63183e969f115d0c8a1a18`.
+
+The former “PR #171 open/unmerged” statement is obsolete. Current `main` and live Supabase are authority.
 
 ## Purpose
 
-This ledger records MPMM Eladrin choices that are not permanent Character Forge locks:
+Eladrin has two runtime-choice families that must not be converted into permanent one-time Character Forge locks:
 
-- current seasonal identity, which needs an initial state and may later change after a Long Rest;
-- Trance training, which grants two temporary Player's Handbook weapon/tool proficiencies after a completed Long Rest and expires at the next Long Rest.
+1. **Season** — an initial Species choice that persists but may be changed after a qualifying Long Rest.
+2. **Trance training** — temporary post-Long-Rest proficiencies that expire at the next Long Rest.
 
-The two families use independent runtime rows so a persistent season cannot be overwritten by temporary training state.
+They use independent runtime rows/keys so persistent season state cannot be overwritten by temporary training state.
 
 ## Season authority
 
 Feature key: `eladrin-season`.
 
-Shared Player Forge collects exactly one initial season:
+Shared Player Forge collects one initial season:
 
-- Autumn;
-- Winter;
-- Spring;
-- Summer.
+- Autumn
+- Winter
+- Spring
+- Summer
 
-In the Species step, each season's flavor and level-3 Fey Step effect are presented directly inside its selectable option. The raw source prompt is suppressed from the surrounding feature list, so `Eladrin Seasons` remains the single creation-time season card. This is presentation only: the four stored keys and the source-owned selection path are unchanged.
+The initial choice is source-owned runtime-initial state and is materialized into character runtime-choice authority after creation. The current season persists through rests until a newer completed Long Rest opens one replacement opportunity.
 
-That selection is serialized as source-owned runtime-initial state (`species-runtime-eladrin-season`) and deferred-materialized after Player Forge creation into `character_runtime_feature_choices`. It is projected under `sheet.runtimeFeatures.eladrinSeason`.
+Durable rules:
 
-The current season persists across Long Rests. A newer completed Long Rest opens one explicit replacement opportunity. Choosing the same season is rejected as a no-op, and after one change on a qualifying rest another change requires a still newer Long Rest.
+- same-season replacement is a no-op and should be rejected;
+- one qualifying Long Rest permits at most one replacement;
+- another replacement requires a newer Long Rest;
+- at level 3+, season affects Fey Step’s extra effect presentation/rules data;
+- tactical Fey Step execution is a separate combat concern and must not be implemented by the Species creator/runtime panel merely because season state exists.
 
-At character level 3+, the current season determines the extra effect of Fey Step. Migration 68 stores/presents that source state but does not implement or modify tactical Fey Step execution; spell/combat execution remains outside this slice.
+The Species UI may present the four season descriptions as the selectable creation choices, but presentation must preserve the stored source keys and lifecycle.
 
 ## Trance training authority
 
 Feature key: `eladrin-trance-training`.
 
-Trance training is not a creation-time Forge choice.
+Trance training is **not** a creation-time permanent choice.
 
-After a completed Long Rest/Trance, an eligible MPMM Eladrin may choose exactly two **different** proficiencies from the same source-legal PHB equipment catalogue used by Astral Trance/Githyanki:
+After a completed Long Rest/Trance, an eligible Eladrin chooses exactly two distinct source-legal PHB weapon/tool proficiencies. The pair is stored as temporary runtime proficiency state and consumed additively by the normal proficiency resolver.
 
-- weapons;
-- tools;
-- 74 total eligible entries;
-- campaign firearm exclusions remain intact.
+Durable rules:
 
-The pair is stored in `character_runtime_feature_choices` and projected under `sheet.runtimeProficiencies.eladrinTrance`.
-
-`utils/characterRuntimeProficiencies.js` consumes both training entries additively for weapon/tool proficiency checks. Permanent Species/class/Background/feat training is not rewritten.
-
-When the next Long Rest completes, the Trance runtime row and projection are automatically deleted. The new Long Rest then opens a fresh two-choice configuration.
+- unavailable before a qualifying completed Long Rest;
+- choices must be distinct and source-legal;
+- permanent Species/Class/Background/Feat training is not rewritten;
+- the runtime pair expires/deletes when the next Long Rest completes;
+- the new rest then opens a fresh configuration opportunity;
+- active-encounter/ownership/admin guards remain in force.
 
 ## UI / reachability
 
-`CharacterEladrinRuntimePanel` presents both families:
+The Eladrin runtime controls remain part of the downstream Species runtime-panel composition and must stay reachable independently of whether unrelated Species runtime families are eligible.
 
-- current season and post-Long-Rest replacement;
-- current temporary Trance pair or a two-selector post-rest form.
+The panel should expose:
 
-The Eladrin panel is an always-reachable downstream child of `CharacterSpeciesReplaceableCantripPanel`. The Species runtime composition therefore now behaves as:
+- current season;
+- post-Long-Rest season replacement when available;
+- current temporary Trance pair;
+- post-rest two-choice Trance configuration when available.
 
-`CharacterSpeciesRestProficiencyPanel → CharacterSpeciesReplaceableCantripPanel → CharacterEladrinRuntimePanel`
+Do not make Eladrin runtime controls depend on Githyanki/Khoravar proficiency state or High Elf/Khoravar cantrip state.
 
-Each parent renders its child even when its own Species family is ineligible. An Eladrin therefore reaches its controls without needing Githyanki/Khoravar proficiency state or High Elf/Khoravar cantrip state.
+## Security / RPC boundary
 
-## Security / guards
+Public runtime RPCs for Eladrin season/trance are authenticated/service-role only; helper/materializer functions remain private/service-role as designed. Mutations must honor character ownership/admin authority and existing active-encounter restrictions.
 
-All four public RPCs explicitly revoke `PUBLIC` and `anon`, then grant only `authenticated` and `service_role`:
+Canonical rest timing continues through the existing `character_rest_log`/long-rest authority rather than a second client rest clock.
 
-- `get_character_eladrin_season_v1`;
-- `configure_character_eladrin_season_v1`;
-- `get_character_eladrin_trance_v1`;
-- `configure_character_eladrin_trance_v1`.
+## Historical migration note
 
-Private helpers/materializers are service-role only.
+The original implementation was delivered as migration 68 and validated with rollback fixtures. The live migration ledger has since advanced to **214 rows**, latest `20260814161314 grim_hollow_heritage_catalog_support`.
 
-Runtime mutations use existing character ownership/admin authority and reject changes while the character is in an active encounter.
+Migration 68 remains the historical implementation anchor; it is not the current migration ceiling.
 
-Canonical rest timing uses `character_rest_log.rest_type='long_rest'` through the existing Species rest helper.
+## Current acceptance stance
 
-## Pre-deploy evidence
-
-The migration-68 candidate compiled against the live schema inside rollback before deployment.
-
-The exact branch head preserved every workflow that was green on the preceding 19-workflow Species-cantrip head and added the dedicated `Validate Eladrin runtime` workflow. Every required latest workflow completed successfully before migration 68 was applied.
-
-The Eladrin gate includes:
-
-- dedicated semantic validation;
-- Species proficiency regression validation;
-- Species replaceable-cantrip regression validation;
-- unified Character Forge validation;
-- production build.
-
-## Deployed rollback acceptance
-
-### Season
-
-Passed:
-
-- shared-Forge Autumn deferred materialization;
-- `runtimeFeatures.eladrinSeason` projection;
-- no replacement before a newer Long Rest;
-- Autumn persists through canonical `complete_character_rest_v1(...,'long_rest')`;
-- newer Long Rest opens replacement;
-- replacement to Winter succeeds;
-- projection updates to Winter;
-- second same-rest replacement rejected;
-- same-season no-op rejected;
-- serialized initial Forge source choice remains unchanged;
-- transaction rolled back.
-
-### Trance training
-
-Passed:
-
-- unavailable before first completed Long Rest;
-- canonical Long Rest opens configuration;
-- duplicate two-choice submission rejected;
-- invalid item ID rejected;
-- one weapon + one tool pair accepted;
-- exactly two runtime training entries projected;
-- permanent `sheet.proficiencies` unchanged;
-- second configuration on the same Long Rest rejected;
-- next canonical Long Rest deletes runtime row and projection;
-- selection reopens after expiry;
-- transaction rolled back.
-
-## Final zero-residue checkpoint
-
-After both deployed rollback fixtures:
-
-- 7 characters;
-- 7 character sheets;
-- 30 character-spell rows;
-- 7 progression rows;
-- 18 inventory rows;
-- 0 live Eladrin season/trance runtime rows;
-- 0 Eladrin QA characters;
-- 20 locations;
-- 4 routes;
-- 9 route points.
-
-Migration 68 is registered live.
-
-## Remaining source-choice audit
-
-Eladrin is closed. Remaining audited candidates include:
-
-- Boon of Energy Resistance Long-Rest resistance pair;
-- Echoing Soul / Zhentarim Tactics Long-Rest Expertise;
-- Cartomancer Hidden Ace;
-- Echoing Soul permanent acquisition count if confirmed under-modeled;
-- remaining class/subclass runtime families already excluded from permanent Forge state.
+The Eladrin runtime model is considered established. Re-open it only for a reproduced defect or an explicit feature request. Preserve the key lifecycle distinction: initial/persistent season with post-rest replacement versus temporary post-rest Trance proficiencies.
 
 ## Protected boundaries
 
-Migration 68 does not modify world-map, town/city-map, route/travel/weather, encounter/combat, or unrelated crafting behavior. Fey Step execution is deliberately untouched. `components/MapPageClient.js` remains outside scope.
+Eladrin runtime work does not authorize world-map, town/city-map, route/travel/weather/camp/clock, crafting, inventory, merchant, economy, or unrelated tactical changes. Fey Step combat execution remains separate from this runtime-choice ledger.
