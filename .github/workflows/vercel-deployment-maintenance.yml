@@ -16,6 +16,18 @@ on:
         required: false
         type: string
         default: ""
+  workflow_call:
+    inputs:
+      mode:
+        required: true
+        type: string
+      confirmation:
+        required: false
+        type: string
+        default: ""
+    secrets:
+      VERCEL_TOKEN:
+        required: true
 
 permissions:
   contents: read
