@@ -20,11 +20,29 @@ jobs:
       VERCEL_TEAM_ID: ${{ vars.VERCEL_TEAM_ID }}
       VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
     steps:
-      - name: Probe read-only Vercel endpoints
+      - name: Validate token shape and probe read-only Vercel endpoints
         shell: bash
         run: |
           set -euo pipefail
           set +x
+
+          token_length="${#VERCEL_TOKEN}"
+          if [[ "$VERCEL_TOKEN" == vcp_* ]]; then
+            prefix_ok="yes"
+          else
+            prefix_ok="no"
+          fi
+
+          if [[ "$VERCEL_TOKEN" =~ [[:space:]] ]]; then
+            whitespace="yes"
+          else
+            whitespace="no"
+          fi
+
+          echo "Token diagnostics (no secret value printed):"
+          echo "  starts with vcp_: $prefix_ok"
+          echo "  character count: $token_length"
+          echo "  contains whitespace: $whitespace"
 
           probe() {
             local label="$1"
@@ -53,6 +71,7 @@ jobs:
             rm -f "$body"
           }
 
+          probe "Current user" "https://api.vercel.com/v2/user"
           probe "Teams list" "https://api.vercel.com/v2/teams?limit=20"
           probe "Team detail" "https://api.vercel.com/v2/teams/${VERCEL_TEAM_ID}"
           probe "Deployments without teamId" "https://api.vercel.com/v7/deployments?projectId=${VERCEL_PROJECT_ID}&limit=1"
