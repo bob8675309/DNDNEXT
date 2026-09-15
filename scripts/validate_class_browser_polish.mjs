@@ -76,44 +76,59 @@ assert(!guide.includes('onMouseEnter={() => publishFeature(model, onFeatureDetai
 assert(!guide.includes('onFocus={() => publishFeature(model, onFeatureDetail'), "Feature-card content must not change from focus alone.");
 assert(!guide.includes("classSlotSummary(row.spell_slots)"), "Progression regressed to the compressed one-cell spell-slot summary.");
 
+// PR #189 replaced the historical compact two-column subclass grid with the
+// production Tarot carousel. This validator intentionally checks the current
+// presentation contract while leaving eligibility/persistence authority in the
+// existing guide model and deeper subclass validator.
 for (const token of [
-  'import { useEffect, useMemo, useState } from "react"',
+  'import { useEffect, useMemo, useRef, useState } from "react"',
+  'import { createPortal } from "react-dom"',
   "subclassArtworkFor(classKey, option)",
+  "handleSubclassArtworkError(event, classKey)",
+  "class-subclass-carousel-modal",
+  'role="dialog"',
+  'aria-modal="true"',
+  "class-subclass-carousel-modal__rail",
+  'aria-label="Subclass catalogue"',
+  "class-subclass-carousel-card",
+  "loopedOptions",
+  "rail.scrollWidth / 3",
+  "keepRailLooped",
+  "model.setPreviewKey(option.key)",
+  "model.selectSubclass(option)",
+  "optionEntryLevel(option) > currentLevel",
+  "class-subclass-selected-card",
+  "onDoubleClick={() => setSelectorOpen(true)}",
+  ">Change Subclass<",
+  "setSelectorOpen(true)",
+  "onInspectSubclass?.(option)",
+]) assert(selector.includes(token), `Cinematic Tarot subclass selector is missing ${token}`);
+for (const forbidden of [
   "class-subclass-two-column__grid",
   "class-subclass-two-column__scroll",
-  "grid-template-columns:repeat(2,minmax(0,1fr))",
-  "max-height:166px",
-  "width:min(35%,430px)",
-  "grid-template-columns:76px minmax(0,1fr)",
-  "min-height:52px",
   "class-subclass-selected-row",
-  ">Change<",
-  'aria-label="Collapse subclass selector"',
-  "model.selectSubclass(option)",
-  "model.setPreviewKey(option.key)",
-  'aria-label="Subclass catalogue"',
-  "onInspectSubclass?.(option)",
-]) assert(selector.includes(token), `Readable two-column subclass selector is missing ${token}`);
-for (const forbidden of [
-  'class-subclass-two-column__source',
-  'class-subclass-two-column__status',
-  'optionSummary(option)',
-  "onMouseEnter",
+  "grid-template-columns:repeat(2,minmax(0,1fr))",
+  "grid-template-columns:76px minmax(0,1fr)",
+  "max-height:166px",
   "Search subclasses",
-  "browserOpen",
   "class-subclass-browser__search",
   "class-subclass-browser__sources",
-  "grid-template-columns:repeat(6,minmax(0,1fr))",
-]) assert(!selector.includes(forbidden), `Subclass selector regressed to a bulky/hover-driven presentation: ${forbidden}`);
+  "onMouseEnter",
+  "onFocus={() => onInspectSubclass",
+]) assert(!selector.includes(forbidden), `Subclass selector regressed to the superseded compact-grid/hover presentation: ${forbidden}`);
 assert(!selector.includes("supabase"), "Subclass selector must remain presentation-only.");
 
 for (const token of [
-  'const WIZARD_SUBCLASS_ART_FAMILY',
-  '/media/subclasses/wizard/wizard-${family}.webp',
-  'return classMenuArtworkFor(normalizedClass)',
-]) assert(subclassArtwork.includes(token), `Subclass artwork resolver missing ${token}`);
+  "APPROVED_SUBCLASS_ART_FAMILIES",
+  "function approvedSubclassArtworkFor",
+  "/media/subclasses/${normalizedClass}/${normalizedClass}-${family}.webp",
+  "function fallbackSubclassArtworkFor",
+  "return approvedSubclassArtworkFor(normalizedClass, normalizedSubclass)",
+  "|| fallbackSubclassArtworkFor(normalizedClass)",
+  "handleSubclassArtworkError",
+]) assert(subclassArtwork.includes(token), `Current subclass Tarot artwork/fallback resolver is missing ${token}`);
 for (const family of ["abjuration", "conjuration", "divination", "enchantment", "evocation", "illusion", "necromancy", "transmutation"]) {
-  assert(fs.existsSync(path.join(root, `public/media/subclasses/wizard/wizard-${family}.webp`)), `Wizard subclass selector artwork missing ${family}.`);
+  assert(fs.existsSync(path.join(root, `public/media/subclasses/wizard/wizard-${family}.webp`)), `Wizard subclass Tarot artwork missing ${family}.`);
 }
 
 for (const token of [
@@ -159,4 +174,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSources.includes(token), `Class browser patch unexpectedly references protected behavior: ${token}`);
 }
 
-console.log("Class browser polish validation passed: readable mockup-proportioned subclass artwork selector, click-only movable Feature-card details, selected-subclass progression bubbles, balanced per-level spell-slot table, open stable top-right art, preserved Class authority, and protected boundaries are intact.");
+console.log("Class browser polish validation passed: cinematic Tarot subclass gallery, click-only movable Feature-card details, selected-subclass progression bubbles, balanced per-level spell-slot table, stable Class art, preserved Class authority, and protected boundaries are intact.");
