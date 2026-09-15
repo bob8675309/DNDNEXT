@@ -1,65 +1,92 @@
 # DNDNext Repository Access — Standing Rule
 
-This is a persistent operational rule for all future DNDNext work.
+Updated: 2026-09-13
 
-## Never claim repository access is unavailable before checking the established path
+This is a persistent operational rule for all future DNDNext conversations.
 
-The normal DNDNext write/validation path is:
+## Never claim project access is unavailable before checking the connected services
 
-1. Use the connected GitHub API/tools to inspect repositories, branches, PRs, commits, diffs, files, and workflow state.
-2. Use GitHub file/branch/ref actions for ordinary source and documentation changes.
-3. When work needs a real checkout, filesystem operations, binary materialization, builds, validators, image reconstruction, or other shell tooling, use a GitHub Actions workflow on a bounded scratch/staging branch.
-4. The Actions runner may check out the repository, run normal `git`, Node, Python, build/validation commands, create binary assets, commit them, and `git push` the resulting commit back to the intended branch.
-5. Re-read the resulting branch/commit/workflow state through GitHub before treating the change as accepted.
-6. Only advance the real working/PR branch after the scratch/staging result is verified.
+DNDNext normally has connected access to:
 
-Conceptually:
+- **GitHub** for source, branches, PRs, commits, files, refs, workflows, and checks;
+- **Supabase** for the live `DnDWeb` database/project;
+- **Vercel** for deployments, build state/logs, and preview access;
+- **Dropbox** for binary transfer, especially generated artwork.
 
-`ChatGPT -> GitHub API -> branch/commit/files`
+A new chat must check/discover these connectors at startup. Do not tell Paul to manually upload, copy, deploy, or inspect something that one of these connected tools can already handle unless an actual connector call fails or the capability truly is unavailable.
 
-and when a full working tree is required:
+## Normal source write path
 
-`ChatGPT -> GitHub API -> GitHub Actions runner -> checkout -> modify/test/build -> git commit/push -> GitHub API verification`
+For ordinary source/text changes:
 
-## Preferred binary-artwork bridge
+`ChatGPT -> GitHub connector -> exact branch/file/commit/ref -> GitHub verification -> Vercel exact-head verification`
 
-For generated artwork or other binary files, **do not return to giant inline base64 Git-blob transfers while the established Dropbox bridge is available**. The proven DNDNext path is:
+Use the current branch head, not a remembered SHA.
 
-`generated local bytes -> /DNDNext-Transfer in Dropbox -> one-shot GitHub Actions scratch branch -> exact PR-head checkout -> checksum/MIME/dimension verification -> exact diff guard -> bot commit -> push intended PR branch -> GitHub/CI/Vercel verification`
+## Full-checkout / scratch-preview runner path
 
-Use this sequence:
+When work needs a checkout, shell tools, filesystem operations, binary materialization, grouped transforms, or deterministic local validators:
 
-1. Prepare the approved binary files locally in their final repository format.
-2. Record a SHA-256 for the complete bundle and for every file.
-3. Upload one ZIP bundle to `/DNDNext-Transfer/` in the connected Dropbox account.
-4. Create a bounded one-shot scratch branch from the current accepted PR head.
-5. Add a temporary GitHub Actions workflow on that scratch branch only.
-6. Have the workflow check out the intended PR branch and **hard-guard the exact expected head SHA before modifying anything**.
-7. Download the Dropbox bundle, verify the ZIP SHA-256, verify each file SHA-256 and MIME type, and verify required dimensions/format when applicable.
-8. Materialize only the approved repository paths.
-9. Compare `git diff --name-only` against an explicit expected-file manifest. Abort on any extra or missing file.
-10. Run focused validators/build checks when appropriate, commit with the Actions bot, and push the verified commit to the intended PR branch.
-11. Re-read the new PR head, changed-file boundary, CI status, and Vercel deployment before reporting success.
+`ChatGPT -> GitHub connector -> bounded scratch/preview branch -> temporary GitHub Actions workflow -> checkout real target branch -> exact-head guard -> modify/test -> commit -> push real target branch -> GitHub verification -> Vercel verification`
 
-This Dropbox -> GitHub Actions route successfully installed the approved Character Forge Species cinematic artwork on **2026-09-05** and is the default binary-transfer route for future DNDNext artwork work.
+The key point for future sessions: **the scratch/preview branch can run the workflow that pushes the verified result directly to the intended PR branch. The scratch branch itself does not need to be merged into that PR.**
 
-See `docs/ARTWORK_BINARY_TRANSFER_RUNBOOK.md` for the copy-ready operational recipe.
+Rules:
 
-## Binary asset rule
+1. Create the scratch/preview branch from the exact accepted target head.
+2. Put the temporary workflow only on the scratch/preview branch.
+3. Have it check out the real intended branch.
+4. Hard-guard the expected target SHA before mutation.
+5. Keep the changed-file list explicit and bounded.
+6. Run focused validators/build commands.
+7. Commit/push back to the real target branch using a non-forced update.
+8. Re-read the target branch/PR through GitHub.
+9. Verify the Vercel deployment matching the exact new target SHA.
 
-Binary artwork is not evidence that repo access is unavailable. If a direct connector write is unsuitable for raw bytes, use the established Dropbox + scratch-branch + GitHub Actions materialization path. Verify exact source bytes before attaching new artwork to the working PR branch.
+## Preferred binary bridge
 
-Do not silently substitute older reachable blobs, regenerate already-approved art, downgrade image quality to make transport easier, or claim a binary install succeeded without checksum verification.
+Binary artwork is not evidence that repo access is unavailable.
+
+Established route:
+
+`approved local binary bytes -> final format -> SHA-256 + manifest -> ZIP -> Dropbox /DNDNext-Transfer -> temporary download URL -> GitHub Actions scratch/preview branch -> exact target checkout/head guard -> checksum/MIME/dimension/count verification -> exact diff/path guard -> bot commit -> push intended PR branch -> GitHub/CI -> Vercel preview`
+
+This route successfully handled the 2026-09-13 normalized subclass tarot installation: 34 approved 840 × 1440 WebP concepts were materialized to PR #187's branch and then explicitly wired/validated in a second guarded runner step.
+
+See `docs/ARTWORK_BINARY_TRANSFER_RUNBOOK.md`.
+
+## Supabase authority
+
+Use the connected Supabase tool for live database inspection. Repository SQL files are not a substitute for checking the deployed state.
+
+- Project: `DnDWeb` / `ucggczovhmauhshvhusx`.
+- Diagnose/read first.
+- Apply schema changes only through an appropriate reviewed migration action.
+- Do not rerun production SQL merely because migration naming differs between the repo and live ledger.
+- Verify live state after any authorized mutation.
+
+## Vercel authority
+
+Use Vercel after a branch write/deployment-triggering commit:
+
+- list deployments for DNDNext;
+- match by exact Git SHA/branch metadata;
+- wait for `READY`;
+- inspect build logs on failure;
+- use protected-preview fetch/access tools when direct HTTP access is gated.
+
+Do not use a deployment from another commit as proof that the current commit works.
 
 ## Safety boundaries
 
-- Do not touch `main` or an active PR branch merely to experiment.
-- Use a scratch/staging branch for risky transfer/materialization work.
-- Prefer fast-forward branch movement after verification; never force-move an accepted branch unless explicitly authorized.
-- Re-check the exact remote head before writing or validating.
-- Keep temporary transfer workflows/ZIPs out of the real PR diff unless they are intentionally becoming permanent tooling.
-- Preserve the standing DNDNext rule that world-map and town/city-map behavior are separate, and do not touch the world map unless Paul explicitly requests it.
+- Do not use `main` as an experiment/transfer scratchpad.
+- Do not force-move an accepted branch over unexpected concurrent work.
+- Keep temporary transfer workflows out of the real PR branch.
+- Do not restore/regenerate approved binary artwork merely for transport convenience.
+- Do not touch the world map unless Paul explicitly asks.
+- Never mix world-map behavior with town/city-map behavior.
+- Do not allow a transport task to expand into unrelated runtime/database changes.
 
 ## Why this file exists
 
-This path has been used repeatedly on DNDNext. Future sessions must not fall back to saying "I cannot push/pull the repo" or spend another work window rediscovering binary transport without first checking the GitHub connector/API, Dropbox `/DNDNext-Transfer`, and GitHub Actions route described above.
+DNDNext has repeatedly lost time at chat handoff boundaries because a new session forgot connector capabilities or assumed that no real checkout/binary path existed. The paths above are established and proven. Check them first.

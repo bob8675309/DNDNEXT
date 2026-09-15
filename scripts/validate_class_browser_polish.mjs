@@ -5,6 +5,7 @@ const root = process.cwd();
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
 
+const app = read("pages/_app.js");
 const step = read("components/NpcForgeStepContent.js");
 const catalog = read("components/NpcForgeClassCatalog.js");
 const guide = read("components/NpcForgeClassGuide.js");
@@ -17,6 +18,7 @@ const presentation = read("utils/classes/classPresentation.js");
 const catalogWrapper = read("utils/npcForgeCatalog.js");
 const polish = read("styles/character-forge-browser-review-polish.css");
 const framing = read("styles/character-forge-class-hero-framing.css");
+const tarotLayout = read("styles/character-forge-subclass-tarot-layout.css");
 
 assert(step.includes('import NpcForgeClassCatalog from "./NpcForgeClassCatalog"'), "Class step must use the dedicated Class catalogue.");
 assert(step.includes("<NpcForgeClassCatalog query={classQuery}"), "Class step does not render the dedicated Class catalogue.");
@@ -77,43 +79,92 @@ assert(!guide.includes('onFocus={() => publishFeature(model, onFeatureDetail'), 
 assert(!guide.includes("classSlotSummary(row.spell_slots)"), "Progression regressed to the compressed one-cell spell-slot summary.");
 
 for (const token of [
-  'import { useEffect, useMemo, useState } from "react"',
+  'import { createPortal } from "react-dom"',
   "subclassArtworkFor(classKey, option)",
-  "class-subclass-two-column__grid",
-  "class-subclass-two-column__scroll",
-  "grid-template-columns:repeat(2,minmax(0,1fr))",
-  "max-height:166px",
-  "width:min(35%,430px)",
-  "grid-template-columns:76px minmax(0,1fr)",
-  "min-height:52px",
-  "class-subclass-selected-row",
-  ">Change<",
-  'aria-label="Collapse subclass selector"',
+  "class-subclass-carousel-modal",
+  'role="dialog"',
+  'aria-modal="true"',
+  "class-subclass-carousel-modal__rail",
+  "scroll-snap-type:x mandatory",
+  "class-subclass-carousel-card",
+  "loopedOptions",
+  "keepRailLooped",
+  "rail.scrollWidth / 3",
+  "class-subclass-selected-card",
+  'onDoubleClick={() => setSelectorOpen(true)}',
+  ">Change Subclass<",
   "model.selectSubclass(option)",
   "model.setPreviewKey(option.key)",
-  'aria-label="Subclass catalogue"',
+  "optionEntryLevel(option) > currentLevel",
   "onInspectSubclass?.(option)",
-]) assert(selector.includes(token), `Readable two-column subclass selector is missing ${token}`);
+]) assert(selector.includes(token), `Cinematic looping subclass selector is missing ${token}`);
 for (const forbidden of [
-  'class-subclass-two-column__source',
-  'class-subclass-two-column__status',
-  'optionSummary(option)',
+  "class-subclass-two-column__grid",
+  "class-subclass-two-column__scroll",
+  "class-subclass-selected-row",
+  "grid-template-columns:repeat(2,minmax(0,1fr))",
   "onMouseEnter",
   "Search subclasses",
   "browserOpen",
   "class-subclass-browser__search",
   "class-subclass-browser__sources",
-  "grid-template-columns:repeat(6,minmax(0,1fr))",
-]) assert(!selector.includes(forbidden), `Subclass selector regressed to a bulky/hover-driven presentation: ${forbidden}`);
+]) assert(!selector.includes(forbidden), `Subclass selector regressed to the prior grid/hover-driven presentation: ${forbidden}`);
 assert(!selector.includes("supabase"), "Subclass selector must remain presentation-only.");
 
+assert(app.includes('import "../styles/character-forge-subclass-tarot-layout.css";'), "Normalized subclass tarot layout stylesheet is not loaded by _app.js.");
 for (const token of [
-  'const WIZARD_SUBCLASS_ART_FAMILY',
-  '/media/subclasses/wizard/wizard-${family}.webp',
-  'return classMenuArtworkFor(normalizedClass)',
-]) assert(subclassArtwork.includes(token), `Subclass artwork resolver missing ${token}`);
-for (const family of ["abjuration", "conjuration", "divination", "enchantment", "evocation", "illusion", "necromancy", "transmutation"]) {
-  assert(fs.existsSync(path.join(root, `public/media/subclasses/wizard/wizard-${family}.webp`)), `Wizard subclass selector artwork missing ${family}.`);
+  ".class-subclass-carousel-card",
+  "aspect-ratio: 7 / 12 !important;",
+  ".class-subclass-carousel-card__shade",
+  "inset: 20px auto auto 20px !important;",
+  "max-height: min(900px, 94vh) !important;",
+]) assert(tarotLayout.includes(token), `Normalized 7:12 subclass tarot presentation is missing ${token}`);
+assert(!tarotLayout.includes("aspect-ratio: 5 / 7"), "Tarot layout override regressed to the old 5:7 card ratio.");
+assert(!tarotLayout.includes("rgba(3, 5, 10, 0.96)"), "Tarot layout override restored the old near-opaque lower footer shade.");
+
+// 2026-09-13 approved normalized tarot install: explicitly mapped cards use the
+// installed 7:12 deck while every unfinished subclass retains the class-art fallback.
+for (const token of [
+  'classMenuArtworkFor',
+  'APPROVED_SUBCLASS_ART_FAMILIES',
+  'function approvedSubclassArtworkFor',
+  '/media/subclasses/',
+  'function fallbackSubclassArtworkFor',
+  'handleSubclassArtworkError',
+]) assert(subclassArtwork.includes(token), `Approved subclass artwork/fallback contract is missing ${token}`);
+
+const approvedTarotFamilies = {
+  artificer: ["alchemist", "armorer", "artillerist", "battle-smith", "cartographer", "reanimator"],
+  barbarian: ["berserker", "wild-heart", "world-tree", "zealot"],
+  bard: ["dance", "glamour", "lore", "moon", "spirits", "valor"],
+  cleric: ["ambition", "arcana", "death", "forge", "grave", "knowledge", "life", "light", "nature", "order", "peace", "solidarity", "strength", "tempest", "trickery", "twilight", "war", "zeal"],
+  druid: ["dreams", "land", "moon", "sea", "shepherd", "spores", "stars", "wildfire"],
+  fighter: ["banneret", "battle-master", "champion", "eldritch-knight", "psi-warrior"],
+  monk: ["elements", "mercy", "open-hand", "shadow"],
+  "monster-hunter": ["carver-guild", "devourer-guild", "occultist-guild", "trapper-guild"],
+  paladin: ["ancients", "devotion", "glory", "noble-genies", "vengeance"],
+  ranger: ["beast-master", "fey-wanderer", "gloom-stalker", "hollow-warden", "hunter", "winter-walker"],
+  rogue: ["arcane-trickster", "assassin", "phantom", "scion-of-the-three", "soulknife", "thief"],
+  sorcerer: ["aberrant", "clockwork", "divine-soul", "draconic", "lunar", "pyromancer", "shadow", "spellfire", "storm", "wild-magic"],
+  warlock: ["archfey", "celestial", "fathomless", "fiend", "genie", "great-old-one", "hexblade", "undead", "undying"],
+  wizard: ["abjuration", "bladesinger", "conjuration", "divination", "enchantment", "evocation", "graviturgy", "illusion"],
+};
+let approvedTarotCount = 0;
+for (const [classKey, families] of Object.entries(approvedTarotFamilies)) {
+  for (const family of families) {
+    approvedTarotCount += 1;
+    assert(fs.existsSync(path.join(root, `public/media/subclasses/${classKey}/${classKey}-${family}.webp`)), `Approved tarot asset missing ${classKey}/${family}`);
+  }
+}
+assert(approvedTarotCount === 99, `Expected 99 installed approved tarot concepts, found ${approvedTarotCount}.`);
+for (const token of ['"ambition-psa": "ambition"', '"knowledge-psa": "knowledge"', '"solidarity-psa": "solidarity"', '"strength-psa": "strength"', '"zeal-psa": "zeal"']) {
+  assert(subclassArtwork.includes(token), `Preferred-source Cleric alias mapping missing ${token}`);
+}
+for (const token of ['"aberrant-mind": "aberrant"', '"clockwork-soul": "clockwork"', '"pyromancer-psk": "pyromancer"']) {
+  assert(subclassArtwork.includes(token), `Preferred-source Sorcerer alias mapping missing ${token}`);
+}
+for (const token of ['wild: "wild-magic"', '"wild-magic": "wild-magic"']) {
+  assert(subclassArtwork.includes(token), `Preferred-source Wild Magic alias mapping missing ${token}`);
 }
 
 for (const token of [
@@ -154,9 +205,9 @@ for (const token of [
 assert(polish.includes("npc-forge-step-2"), "Class browser polish scope disappeared.");
 assert(guideStyles.includes("npc-forge-class-guide__table-card") && guideStyles.includes("class-level-guide__row"), "Class progression foundation styling disappeared.");
 
-const protectedSources = `${step}\n${catalog}\n${guide}\n${selector}\n${guideStyles}\n${dock}\n${artwork}\n${subclassArtwork}\n${presentation}\n${catalogWrapper}\n${polish}\n${framing}`.toLowerCase();
+const protectedSources = `${step}\n${catalog}\n${guide}\n${selector}\n${guideStyles}\n${dock}\n${artwork}\n${subclassArtwork}\n${presentation}\n${catalogWrapper}\n${polish}\n${framing}\n${tarotLayout}`.toLowerCase();
 for (const token of ["map_routes", "advance_all_characters", "mappageclient", "townsheet", "world travel", "crafting_recipe"]) {
   assert(!protectedSources.includes(token), `Class browser patch unexpectedly references protected behavior: ${token}`);
 }
 
-console.log("Class browser polish validation passed: readable mockup-proportioned subclass artwork selector, click-only movable Feature-card details, selected-subclass progression bubbles, balanced per-level spell-slot table, open stable top-right art, preserved Class authority, and protected boundaries are intact.");
+console.log("Class browser polish validation passed: cinematic looping subclass gallery, normalized 7:12 tarot layout, restrained no-footer card shading, 99 approved tarot concepts with safe fallbacks for unfinished subclasses, click-only movable Feature-card details, selected-subclass progression bubbles, balanced per-level spell-slot table, open stable top-right art, preserved Class authority, and protected boundaries are intact.");

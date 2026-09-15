@@ -1,82 +1,129 @@
 # ChatGPT Repository Write Procedure
 
-Updated: 2026-08-30
+Updated: 2026-09-13
 
-This project is directly writable from ChatGPT through the GitHub connector and Supabase connector when those actions are available. Do not claim that repo/database writes require a separate environment unless an actual connector/tool attempt fails.
+DNDNext is directly operable from ChatGPT through connected **GitHub, Supabase, Vercel, and Dropbox** services. A future session must check those tools before claiming that repository, database, deployment, or binary-transfer work requires Paul to leave ChatGPT and do it manually.
 
-## Repository authority
+## Connected-tool responsibility map
 
-- Repository: `bob8675309/DNDNEXT`
-- Default/production authority: `main`
-- Accepted current `main` checkpoint: `a2aecdd354346926afdf33efb1af320581563b68` (merged PR #175)
-- Current open continuation branch: `agent/training-tab-redesign`
-- Current open PR: **#176** — Character Forge browser-review continuation, unmerged
-- Immediately before the 2026-08-30 documentation-only handoff updates, PR #176 head was `9447be566f8383e8227c6fccb37a0bde2bdbe078`; documentation commits advance it.
+- **GitHub**: repository source, branches, PRs, exact heads, file reads/writes, commit/ref operations, workflow/check state.
+- **Supabase**: live Postgres/project state, SQL diagnosis, functions/tables/policies, reviewed migrations/data actions.
+- **Vercel**: preview/production deployment lookup, exact Git-SHA matching, build state/logs, protected preview fetching.
+- **Dropbox**: byte-preserving transport bridge for generated/approved binary bundles that should not be encoded as giant GitHub text payloads.
 
-Always re-fetch the remote PR/branch head immediately before a write, validation claim, deployment check, or merge. Do not treat a SHA copied into prose as permanently current.
+Source and live-state precedence:
 
-Do not merge PR #176 without explicit user approval.
+`current GitHub source + live Supabase + exact-head validators + exact-head Vercel behavior > stale prose`
 
-## Preferred safe write path
+## Current repository checkpoint
 
-For any change:
+Repository: `bob8675309/DNDNEXT`
 
-1. Re-fetch the current PR/branch head and confirm the target branch.
-2. Inspect the current target file(s) from that exact branch before writing.
-3. Keep the change bounded to the requested subsystem.
-4. Use non-forced, exact-head-aware GitHub writes.
-5. If the connector exposes grouped Git blob/tree/commit/ref operations, prefer one coherent commit for a coherent multi-file runtime change.
-6. For isolated UTF-8 documentation edits, `GitHub.create_file` / `GitHub.update_file` are acceptable.
-7. Never run sequential update/delete writes against the same path using a stale blob SHA; re-fetch/use the returned content SHA as needed.
-8. Re-fetch the branch/PR after writing and verify only intended files changed.
-9. Run the focused validator(s) and required regressions/protected-boundary checks.
-10. Verify exact-head GitHub checks and Vercel deployment when the change triggers deployment.
-11. Before merge, re-fetch the PR head again and merge only the validated expected head.
+- `main` handoff-time head: `02854698298f357d2dfde21dd292ba7caf73e1c1`.
+- active PR: **#187**, `Redesign subclass selector as cinematic looping gallery`.
+- active branch: `agent/subclass-carousel-selector-20260911`.
+- handoff-time head before this documentation commit: `12cc27de6f128f5670307fce9a7c5c1f6104bfaf`.
 
-Never force-push or overwrite concurrent branch movement simply to make a patch apply.
+Always re-fetch these values. Never treat a SHA in documentation as permanently current.
 
-## Branch/scope discipline
+## Preferred safe write paths
 
-PR #176 is already a broad Character Forge browser-review branch. Do not keep widening it indefinitely.
+### A. Ordinary text/source/documentation changes
 
-In particular, the planned reusable **Realistic Dice Core** is documented on #176 for handoff purposes, but its actual Three/Rapier implementation should be created on a **new bounded branch/PR from the user-accepted Forge checkpoint**. See `Realistic_Dice_Roller_Architecture_Roadmap.md`.
+1. Re-fetch the real target branch/PR head.
+2. Read the current target files from that exact branch.
+3. Keep the requested scope bounded.
+4. Use GitHub branch/file/blob/tree/commit/ref actions with non-forced exact-head discipline.
+5. Re-fetch the branch after writing and verify the actual diff.
+6. Run relevant validators/checks.
+7. Match the Vercel deployment to the exact resulting Git SHA when deployment behavior matters.
 
-If the requested work belongs to another subsystem, first decide whether it should be a separate branch rather than attaching it to the current Forge PR.
+### B. Work requiring a checkout/shell/grouped transformation
 
-## Supabase boundary
+Use a **bounded scratch/preview branch + one-shot GitHub Actions runner**.
 
-Supabase is also directly accessible through its connector. Before any DB change:
+This is the established pattern:
 
-1. re-check the live project/schema/migration/data baseline;
-2. inspect the exact relevant function/table/policy definitions;
-3. use read-only SQL for diagnosis/verification first when possible;
-4. use an approved migration path for DDL/schema changes;
-5. use approved SQL/data actions only for explicitly requested data changes;
-6. verify the resulting live state afterward;
-7. do not re-run SQL merely because a repo filename appears absent from the migration ledger if the live effect already exists.
+`exact current target head -> create scratch/preview branch -> add temporary workflow there -> workflow checks out real target branch -> guard exact target SHA -> modify/test -> commit -> push HEAD:real-target-branch -> inspect target branch through GitHub -> inspect exact-head Vercel preview`
 
-The planned Realistic Dice Phase 1 should not require any Supabase write.
+The scratch branch is a runner/transport surface. It does **not** need to be merged into the real PR to deliver the result. This pattern is useful for:
+
+- binary materialization;
+- real filesystem operations;
+- Node/Python/shell transforms;
+- grouped multi-file changes where a runner is safer than many independent API writes;
+- deterministic validation/build commands.
+
+Required guard before mutation:
+
+```bash
+test "$(git rev-parse HEAD)" = "<EXPECTED_TARGET_HEAD_SHA>"
+```
+
+Re-fetch the intended target branch immediately before the runner pushes and abort if it has moved unexpectedly.
+
+### C. Binary artwork/assets
+
+Read `docs/ARTWORK_BINARY_TRANSFER_RUNBOOK.md` and use:
+
+`local approved bytes -> ZIP + manifest/checksums -> Dropbox /DNDNext-Transfer -> temporary download URL -> guarded scratch/preview Actions runner -> exact target branch -> verify -> commit/push -> Vercel`
+
+Do not re-encode large images as inline source merely because GitHub's ordinary file action is text-oriented.
+
+## Vercel verification procedure
+
+GitHub integration normally creates the preview automatically after a branch push.
+
+1. Use the Vercel connector to list DNDNext deployments.
+2. Match deployment metadata to the **exact Git commit SHA and branch** you just pushed.
+3. Wait for `READY` before reporting browser/deployment acceptance.
+4. If it fails or stalls, inspect build logs through the Vercel connector.
+5. For protected previews, use the Vercel fetch/access capability rather than assuming the preview is unreachable.
+
+Do not validate a newer/older deployment and call it evidence for the target commit.
+
+## Supabase procedure
+
+Supabase project: `DnDWeb` / `ucggczovhmauhshvhusx`.
+
+Before any database change:
+
+1. inspect the current live schema/function/policy/data involved;
+2. use read-only diagnosis first;
+3. distinguish live production effects from repository migration filenames;
+4. use the migration action for reviewed DDL/schema changes;
+5. use SQL/data writes only when the requested task actually authorizes them;
+6. verify the live result afterward;
+7. never expose service-role credentials to the browser.
+
+Artwork, CSS, and presentation-only work normally require **no Supabase mutation**.
+
+## Branch and concurrency discipline
+
+- Never force-push simply to make a stale patch apply.
+- Never assume an open PR head has not moved.
+- For direct file updates, re-fetch/use current blob SHAs rather than chaining stale SHAs.
+- For a scratch/preview runner, hard-guard the target SHA before changes and again before push when practical.
+- Keep temporary workflows on the scratch branch; do not pollute the working PR unless the workflow is intentionally becoming permanent tooling.
+- Do not merge an open PR without Paul's explicit approval.
 
 ## Standing project safety rules
 
-- Do not touch the world map unless explicitly asked.
-- Do not mix world-map behavior with town/city-map behavior.
-- Character Forge or dice work does not authorize tactical movement/path, crafting, inventory, merchant, or economy changes.
-- Tactical encounter RPC/combat-log results remain rules-authoritative; future dice physics is presentation only.
-- Do not reuse dice rigid-body collision rules as tactical-grid movement/collision authority.
-- Verify every new helper, hook, state variable, prop, callback, RPC argument, physics reference, and data-contract field is defined and correctly passed.
-- Preserve working systems and existing validators rather than weakening contracts to make a patch pass.
-- Prefer additive database migrations; never rewrite already-deployed migration history.
-- Never expose Supabase service-role credentials to browser code.
-- Do not merge an open PR without explicit user approval.
+- Do not touch the world map unless Paul explicitly asks.
+- Do not mix world-map and town/city-map behavior.
+- A Forge/artwork patch does not authorize tactical, crafting, inventory, merchant, travel, or economy changes.
+- Preserve canonical source-choice/runtime/persistence authority.
+- Verify every new helper, hook, state variable, prop, callback, RPC argument, and data field is defined and passed correctly.
+- Preserve validators; do not weaken contracts to hide regressions.
 
 ## Documentation discipline
 
-After a meaningful runtime checkpoint is accepted:
+At a meaningful handoff/checkpoint:
 
 - update `DNDNext_Current_Handoff_Prompt.md`;
-- update the dedicated subsystem ledger;
-- update `Documentation_Refresh_Manifest.md` / `docs/README.md` if the active queue or trust map changed;
-- include the exact pre-document/current checkpoint but always tell the next model to re-fetch live GitHub state.
+- update the active subsystem handoff/ledger;
+- update `docs/README.md` when the trust/startup order changes;
+- update `REPO_ACCESS_STANDING_RULE.md` / transfer runbook when a better connector or transfer path is proven;
+- record exact branch/PR/SHA as a checkpoint **and** tell the next model to re-fetch current live state.
 
-This file exists specifically so future ChatGPT handoffs do not repeatedly forget that the repo and Supabase are writable through connectors while still requiring exact-head, bounded, reviewable changes.
+The purpose of this file is to prevent future sessions from forgetting the tools already available and wasting time rediscovering how to write, transfer, validate, and preview DNDNext changes.

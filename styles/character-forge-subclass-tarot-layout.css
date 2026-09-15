@@ -1,0 +1,130 @@
+/* Character Forge subclass tarot selector — normalized 7:12 presentation.
+   This layer intentionally overrides the older inline 5:7 carousel styling while
+   the approved tarot assets are installed in reviewed batches. */
+
+.class-subclass-carousel-modal__panel {
+  max-height: min(900px, 94vh) !important;
+}
+
+.class-subclass-carousel-modal__stage {
+  padding: 18px 6px 20px !important;
+}
+
+.class-subclass-carousel-modal__rail {
+  gap: 16px !important;
+  align-items: center !important;
+  padding: 10px max(10px, calc(50% - 126px)) 16px !important;
+}
+
+.class-subclass-carousel-card {
+  flex: 0 0 clamp(210px, 18vw, 252px) !important;
+  aspect-ratio: 7 / 12 !important;
+  border-radius: 11px !important;
+  border-color: rgba(214, 176, 96, 0.28) !important;
+  background: #07090f !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.42) !important;
+}
+
+.class-subclass-carousel-card:hover,
+.class-subclass-carousel-card:focus-visible {
+  transform: translateY(-6px) scale(1.016) !important;
+  border-color: rgba(232, 197, 118, 0.72) !important;
+  box-shadow: 0 26px 54px rgba(0, 0, 0, 0.56), 0 0 28px rgba(var(--class-accent), 0.12) !important;
+}
+
+.class-subclass-carousel-card.is-selected {
+  border-color: rgba(238, 205, 128, 0.94) !important;
+  box-shadow: 0 26px 58px rgba(0, 0, 0, 0.58), 0 0 0 2px rgba(238, 205, 128, 0.15), 0 0 34px rgba(var(--class-accent), 0.13) !important;
+}
+
+.class-subclass-carousel-card__art img {
+  object-fit: cover !important;
+  object-position: center !important;
+  filter: saturate(1.02) contrast(1.035) !important;
+}
+
+/* The approved tarot art already owns its lower third. Keep the browser vignette
+   restrained so the UI does not recreate the old opaque footer treatment. */
+.class-subclass-carousel-card__shade {
+  background:
+    linear-gradient(180deg, rgba(3, 5, 10, 0.20) 0%, rgba(3, 5, 10, 0.03) 22%, rgba(3, 5, 10, 0.02) 72%, rgba(3, 5, 10, 0.24) 100%),
+    linear-gradient(90deg, rgba(4, 7, 12, 0.10), transparent 32%, transparent 70%, rgba(4, 7, 12, 0.08)) !important;
+}
+
+/* Keep a small browser-owned identification chip away from the artwork's title
+   and emblem geometry. It remains useful while a subclass still uses class-art
+   fallback, and it will not cover the tarot lower third once art is wired. */
+.class-subclass-carousel-card__copy {
+  inset: 20px auto auto 20px !important;
+  width: auto !important;
+  max-width: calc(100% - 40px) !important;
+  gap: 2px !important;
+  padding: 7px 9px 6px !important;
+  border: 1px solid rgba(228, 194, 117, 0.22) !important;
+  border-radius: 8px !important;
+  background: rgba(4, 7, 13, 0.56) !important;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.24) !important;
+  backdrop-filter: blur(5px) !important;
+  text-align: left !important;
+}
+
+.class-subclass-carousel-card__copy strong {
+  font-size: clamp(0.68rem, 0.92vw, 0.82rem) !important;
+  line-height: 1.05 !important;
+  letter-spacing: 0.02em !important;
+}
+
+.class-subclass-carousel-card__copy small {
+  font-size: 0.44rem !important;
+  letter-spacing: 0.07em !important;
+}
+
+.class-subclass-carousel-card.is-locked {
+  opacity: 0.68 !important;
+  filter: saturate(0.78) !important;
+}
+
+.class-subclass-carousel-card.is-locked:hover,
+.class-subclass-carousel-card.is-locked:focus-visible {
+  opacity: 0.92 !important;
+}
+
+@media (max-width: 1100px) {
+  .class-subclass-carousel-card {
+    flex-basis: 226px !important;
+  }
+
+  .class-subclass-carousel-modal__rail {
+    padding-left: max(8px, calc(50% - 113px)) !important;
+    padding-right: max(8px, calc(50% - 113px)) !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .class-subclass-carousel-card {
+    flex-basis: min(62vw, 224px) !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .class-subclass-carousel-modal__stage {
+    padding-top: 12px !important;
+    padding-bottom: 14px !important;
+  }
+
+  .class-subclass-carousel-modal__rail {
+    gap: 10px !important;
+    padding-left: max(6px, calc(50% - 97px)) !important;
+    padding-right: max(6px, calc(50% - 97px)) !important;
+  }
+
+  .class-subclass-carousel-card {
+    flex-basis: min(62vw, 194px) !important;
+  }
+
+  .class-subclass-carousel-card__copy {
+    inset: 16px auto auto 16px !important;
+    max-width: calc(100% - 32px) !important;
+    padding: 6px 8px 5px !important;
+  }
+}
