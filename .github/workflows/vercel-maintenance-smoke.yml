@@ -1,4 +1,4 @@
-name: Vercel maintenance cleanup smoke
+name: Vercel maintenance verification smoke
 
 on:
   push:
@@ -11,10 +11,10 @@ permissions:
   contents: read
 
 jobs:
-  cleanup:
-    name: Execute approved Vercel cleanup
+  verify:
+    name: Verify cleanup left no failed previews
     uses: ./.github/workflows/vercel-deployment-maintenance.yml
     with:
-      mode: delete-error-canceled
-      confirmation: "DELETE"
+      mode: dry-run
+      confirmation: ""
     secrets: inherit
