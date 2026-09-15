@@ -1,4 +1,4 @@
-name: Vercel maintenance audit 2026-09-15
+name: Vercel throttled stale-preview cleanup 2026-09-15
 
 on:
   push:
@@ -8,14 +8,160 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: vercel-throttled-stale-preview-cleanup
+  cancel-in-progress: false
+
 jobs:
-  audit:
-    uses: ./.github/workflows/vercel-deployment-maintenance.yml
-    with:
-      action: audit
-      scope: stale-agent-ready
-      stale_days: "7"
-      branch_prefix: "agent/"
-      confirmation: ""
-    secrets:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_TEAM_ID: ${{ vars.VERCEL_TEAM_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+      STALE_DAYS: "7"
+      BRANCH_PREFIX: "agent/"
+    steps:
+      - name: Validate Vercel authorization
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +x
+          token="$(printf '%s' "$VERCEL_TOKEN" | tr -d '[:space:]')"
+          [[ -n "$token" ]] || { echo "::error::VERCEL_TOKEN is missing"; exit 1; }
+          [[ -n "$VERCEL_TEAM_ID" ]] || { echo "::error::VERCEL_TEAM_ID is missing"; exit 1; }
+          [[ -n "$VERCEL_PROJECT_ID" ]] || { echo "::error::VERCEL_PROJECT_ID is missing"; exit 1; }
+          code="$(curl --silent --show-error --output /tmp/vercel-auth.json --write-out '%{http_code}' \
+            --header "Authorization: Bearer ${token}" https://api.vercel.com/v2/user)"
+          [[ "$code" == 2* ]] || { echo "::error::Vercel authentication failed (HTTP $code)"; exit 1; }
+          echo "Vercel authentication preflight passed."
+
+      - name: Delete stale agent previews with throttling and retry
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +x
+          token="$(printf '%s' "$VERCEL_TOKEN" | tr -d '[:space:]')"
+          candidates="$(mktemp)"
+          production="$(mktemp)"
+          trap 'rm -f "$candidates" "$production" /tmp/vercel-delete-body.json /tmp/vercel-delete-headers.txt' EXIT
+
+          now_seconds="$(date -u +%s)"
+          cutoff_ms="$(( (now_seconds - STALE_DAYS * 86400) * 1000 ))"
+          cursor=""
+          page=0
+
+          while :; do
+            page=$((page + 1))
+            (( page <= 100 )) || { echo "::error::Pagination safety limit exceeded"; exit 1; }
+            request_url="https://api.vercel.com/v7/deployments?projectId=${VERCEL_PROJECT_ID}&teamId=${VERCEL_TEAM_ID}&limit=100"
+            [[ -z "$cursor" ]] || request_url="${request_url}&until=${cursor}"
+            response="$(curl --fail-with-body --silent --show-error \
+              --header "Authorization: Bearer ${token}" \
+              --header "Content-Type: application/json" \
+              "$request_url")"
+
+            jq -r --arg prefix "$BRANCH_PREFIX" --argjson cutoff "$cutoff_ms" '
+              .deployments[]
+              | {
+                  id: (.uid // .id // ""),
+                  state: (.readyState // .state // ""),
+                  target: (.target // ""),
+                  url: (.url // ""),
+                  created: (.createdAt // .created // 0),
+                  ref: (.meta.githubCommitRef // "")
+                }
+              | select(
+                  .id != ""
+                  and .target != "production"
+                  and .state == "READY"
+                  and (.ref | startswith($prefix))
+                  and ((.created | tonumber) < $cutoff)
+                )
+              | [.id, .url, .ref, (.created | tostring)] | @tsv
+            ' <<<"$response" >> "$candidates"
+
+            jq -r '
+              .deployments[]
+              | select((.target // "") == "production")
+              | (.uid // .id // empty)
+            ' <<<"$response" >> "$production"
+
+            next_cursor="$(jq -r '.pagination.next // empty' <<<"$response")"
+            [[ -n "$next_cursor" && "$next_cursor" != "$cursor" ]] || break
+            cursor="$next_cursor"
+          done
+
+          sort -u -o "$candidates" "$candidates"
+          sort -u -o "$production" "$production"
+          candidate_count="$(awk 'NF {n++} END {print n+0}' "$candidates")"
+          production_count="$(awk 'NF {n++} END {print n+0}' "$production")"
+
+          echo "Stale READY agent previews selected: $candidate_count"
+          echo "Production deployments explicitly excluded: $production_count"
+          echo "Cutoff: older than $STALE_DAYS days; branch prefix: $BRANCH_PREFIX"
+
+          {
+            echo "### Throttled Vercel stale-preview cleanup"
+            echo
+            echo "- Candidates at start: **$candidate_count**"
+            echo "- Production deployments excluded: **$production_count**"
+            echo "- Branch prefix: \`$BRANCH_PREFIX\`"
+            echo "- Age threshold: **older than $STALE_DAYS days**"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if (( candidate_count == 0 )); then
+            echo "No stale previews remain."
+            exit 0
+          fi
+
+          deleted=0
+          while IFS=$'\t' read -r id url ref created; do
+            [[ -n "$id" ]] || continue
+            attempt=0
+            while :; do
+              attempt=$((attempt + 1))
+              : > /tmp/vercel-delete-body.json
+              : > /tmp/vercel-delete-headers.txt
+              http_code="$(curl --silent --show-error \
+                --request DELETE \
+                --dump-header /tmp/vercel-delete-headers.txt \
+                --output /tmp/vercel-delete-body.json \
+                --write-out '%{http_code}' \
+                --header "Authorization: Bearer ${token}" \
+                --header "Content-Type: application/json" \
+                "https://api.vercel.com/v13/deployments/${id}?teamId=${VERCEL_TEAM_ID}")"
+
+              if [[ "$http_code" == "200" ]]; then
+                deleted_id="$(jq -r '.uid // .id // empty' /tmp/vercel-delete-body.json)"
+                final_state="$(jq -r '.state // empty' /tmp/vercel-delete-body.json)"
+                if [[ "$deleted_id" != "$id" || "$final_state" != "DELETED" ]]; then
+                  echo "::error::Vercel did not confirm deletion for $id"
+                  cat /tmp/vercel-delete-body.json
+                  exit 1
+                fi
+                deleted=$((deleted + 1))
+                printf 'Deleted %d/%d: %s (%s)\n' "$deleted" "$candidate_count" "$id" "$ref"
+                sleep 1
+                break
+              fi
+
+              if [[ "$http_code" == "429" ]]; then
+                (( attempt <= 8 )) || { echo "::error::Rate limit persisted for $id after 8 retries"; exit 1; }
+                retry_after="$(awk 'BEGIN{IGNORECASE=1} /^retry-after:/ {gsub("\r", "", $2); print $2; exit}' /tmp/vercel-delete-headers.txt)"
+                if ! [[ "$retry_after" =~ ^[0-9]+$ ]]; then retry_after=30; fi
+                if (( retry_after < 10 )); then retry_after=10; fi
+                echo "Rate limited while deleting $id; waiting ${retry_after}s before retry $attempt/8."
+                sleep "$retry_after"
+                continue
+              fi
+
+              echo "::error::Delete failed for $id with HTTP $http_code"
+              cat /tmp/vercel-delete-body.json
+              exit 1
+            done
+          done < "$candidates"
+
+          echo "Deleted $deleted stale preview deployment(s)."
+          echo "- Deleted this run: **$deleted**" >> "$GITHUB_STEP_SUMMARY"
