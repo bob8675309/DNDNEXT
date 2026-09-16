@@ -1,0 +1,145 @@
+name: Materialize approved subclass Tarot batch 2026-09-16
+
+on:
+  push:
+    branches:
+      - agent/subclass-tarot-transfer-20260916
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out intended artwork branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/subclass-tarot-approved-batch-20260916
+          fetch-depth: 0
+
+      - name: Guard exact target head
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="9cc3f3c8b31444047a0daef939183a2239ac9b0c"
+          actual="$(git rev-parse HEAD)"
+          echo "expected=$expected"
+          echo "actual=$actual"
+          test "$actual" = "$expected"
+
+      - name: Download and verify approved artwork archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error \
+            'https://ucb7c52d3c53f94eada0a628481d.dl.dropboxusercontent.com/cd/0/get/DITg-jRuJQZMJgQsb7ZFkkGembkMh-snuUagM0yGET1RCQPgGB7w4dO1wrmvJeyrUPeHTUhNbmUF2nlZxANwnXGkPXqlUmxGVNUhs6_2vulGVm0inggaF3r6O8P--PNE-exqe65Wsl8f3yiLifOryiAEUxy0qEqZWlXpkEPR16AyFw/file?c_luid=c335000c' \
+            --output /tmp/subclass-art.zip
+          echo 'c952cc1bb33eb4baca2d1f59b7c6cbd68bbe42e5f479b9cb058da2a08f823679  /tmp/subclass-art.zip' | sha256sum -c -
+          rm -rf /tmp/subclass-art
+          mkdir -p /tmp/subclass-art
+          unzip -q /tmp/subclass-art.zip -d /tmp/subclass-art
+
+          cat > /tmp/artwork.sha256 <<'EOF'
+          bbda4f8c95809d2fd5ce0f9eb3e2e1e6bce6fbf6f7b35ac0fe353e2476b05340  ./bard/bard-creation.webp
+          be16497e8c7d3712857be41c43848b55164a305a78389f90cbe6c87a1c7eaadc  ./bard/bard-eloquence.webp
+          6699762b4602501e78a02b6943a01263c10239a5c42db46cf99372cde04f106f  ./bard/bard-whispers.webp
+          73ccd8ddd8e079fe10e40b7e97c9da469ba62d793c2dce30306378ad76e21e5a  ./fighter/fighter-arcane-archer.webp
+          27222a53e9389b42256dc644e3f1332ff1dfe4b0732f6701bc10879d73c79a77  ./fighter/fighter-cavalier.webp
+          5f0c0eb6089b83065cefed3e4e278751054adee0fd2a47fcb77ce4c3e06bf219  ./fighter/fighter-echo-knight.webp
+          e250c2e69a255dda7e88231e21d7ac400d96b7f125e4de40a73f25cc9457830d  ./fighter/fighter-purple-dragon-knight-banneret.webp
+          01bc074d267c6e7410b4780d83a46ce6c25180627e27f343ba5a365b2289454b  ./fighter/fighter-rune-knight.webp
+          b119e59dbcef7fa227a1537e17c124eda6a207ffd1c02c690924f43662950e5c  ./monk/monk-drunken-master.webp
+          745aa91ff000d046332f014f952c14d09deeeb9456ecb6ecdd4baa43ed5fb785  ./monk/monk-kensei.webp
+          455902fce89d1468b2297ef70bddc8ead018f73a04ebe5c9624b6acf6361efe9  ./paladin/paladin-conquest.webp
+          07358cd11d20884c254766e052007add11f5f18a831378eb5032920e4beb93d2  ./paladin/paladin-oathbreaker.webp
+          4dcf91c328df7000d82dcc9bb37f76997590762601a8f9b0e5d8a1c5747e871f  ./paladin/paladin-redemption.webp
+          3ed991fd60041113a37262e51caa3a736bd3d5d2761248748104006a90b2409d  ./ranger/ranger-drakewarden.webp
+          893010ba2dc01b4a0509ceb8e6f4bbcf8037d3ad1718659cc897676c0a0d8eb8  ./ranger/ranger-horizon-walker.webp
+          a420947037140b382486b2c89764c520e259ec084e0847577f70587b49e38666  ./ranger/ranger-monster-slayer.webp
+          c11b5c8cb10a3c156096b19318b6b47ffa3880093e428d4f50f30103388ace7e  ./ranger/ranger-swarmkeeper.webp
+          dad5f3ecabe2c0eed6f77ce13131aa2429b699c25cc987b1fea065ea0e3147af  ./rogue/rogue-inquisitive.webp
+          fac1df29266c74fcee50573ff8dd8f08ab678221eb1aad8097f9d30c602f77ae  ./rogue/rogue-mastermind.webp
+          5f266d8823fe14d4e9a443412360314b24bd115bdfd0b495530e2fa54abfb7a4  ./rogue/rogue-scout.webp
+          90d734e9e3aff27913887ff3a043c60931ceae6a586f25e6d75664cd4ad94eac  ./rogue/rogue-swashbuckler.webp
+          EOF
+          sed -i 's/^          //' /tmp/artwork.sha256
+          cd /tmp/subclass-art
+          sha256sum -c /tmp/artwork.sha256
+          test "$(find . -type f -name '*.webp' | wc -l)" -eq 21
+
+      - name: Verify WebP dimensions and copy exact payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --quiet pillow==11.3.0
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          root = Path('/tmp/subclass-art')
+          paths = sorted(root.rglob('*.webp'))
+          assert len(paths) == 21, len(paths)
+          for path in paths:
+              with Image.open(path) as image:
+                  assert image.format == 'WEBP', (path, image.format)
+                  assert image.size == (840, 1440), (path, image.size)
+          print(f'validated {len(paths)} WebPs at 840x1440')
+          PY
+
+          while read -r _ rel; do
+            rel="${rel#./}"
+            mkdir -p "public/media/subclasses/$(dirname "$rel")"
+            cp "/tmp/subclass-art/$rel" "public/media/subclasses/$rel"
+          done < /tmp/artwork.sha256
+
+      - name: Guard exact changed-file scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/expected.txt <<'EOF'
+          public/media/subclasses/bard/bard-creation.webp
+          public/media/subclasses/bard/bard-eloquence.webp
+          public/media/subclasses/bard/bard-whispers.webp
+          public/media/subclasses/fighter/fighter-arcane-archer.webp
+          public/media/subclasses/fighter/fighter-cavalier.webp
+          public/media/subclasses/fighter/fighter-echo-knight.webp
+          public/media/subclasses/fighter/fighter-purple-dragon-knight-banneret.webp
+          public/media/subclasses/fighter/fighter-rune-knight.webp
+          public/media/subclasses/monk/monk-drunken-master.webp
+          public/media/subclasses/monk/monk-kensei.webp
+          public/media/subclasses/paladin/paladin-conquest.webp
+          public/media/subclasses/paladin/paladin-oathbreaker.webp
+          public/media/subclasses/paladin/paladin-redemption.webp
+          public/media/subclasses/ranger/ranger-drakewarden.webp
+          public/media/subclasses/ranger/ranger-horizon-walker.webp
+          public/media/subclasses/ranger/ranger-monster-slayer.webp
+          public/media/subclasses/ranger/ranger-swarmkeeper.webp
+          public/media/subclasses/rogue/rogue-inquisitive.webp
+          public/media/subclasses/rogue/rogue-mastermind.webp
+          public/media/subclasses/rogue/rogue-scout.webp
+          public/media/subclasses/rogue/rogue-swashbuckler.webp
+          EOF
+          sed -i 's/^          //' /tmp/expected.txt
+          sort -u /tmp/expected.txt -o /tmp/expected.txt
+          git status --short
+          git status --porcelain | sed -E 's/^...//' | sort -u > /tmp/actual.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+
+      - name: Run focused subclass validator
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/validate_class_subclass_browser.mjs
+
+      - name: Commit approved binaries to artwork branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- $(cat /tmp/expected.txt)
+          git diff --cached --name-only | sort > /tmp/staged.txt
+          diff -u /tmp/expected.txt /tmp/staged.txt
+          git commit -m 'Install approved subclass Tarot artwork batch'
+          git push origin HEAD:agent/subclass-tarot-approved-batch-20260916
