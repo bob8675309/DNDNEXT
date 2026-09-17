@@ -1,0 +1,117 @@
+name: Subclass Tarot final 22 materializer
+
+on:
+  push:
+    branches:
+      - agent/subclass-tarot-final22-transfer-20260917
+    paths:
+      - .github/workflows/subclass-tarot-final22-materialize.yml
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout intended artwork branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/subclass-tarot-approved-batch-20260916
+          fetch-depth: 0
+
+      - name: Guard exact accepted head
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="01e35ff99c2980891028993358aff38bc93ae611"
+          actual="$(git rev-parse HEAD)"
+          echo "Expected target head: $expected"
+          echo "Actual target head:   $actual"
+          test "$actual" = "$expected"
+          test -z "$(git status --porcelain)"
+
+      - name: Download and verify approved bundle
+        shell: bash
+        env:
+          ARTWORK_URL: "https://uc28a41a45312e0374c80158a30c.dl.dropboxusercontent.com/cd/0/get/DISRKUylTwhRAHFm08olN6LEB0wvX3c1EggonflVb82PkVSn9_D2B-Z9ffE_1cEEoGZv1K6O1z397M9c-fpa39TiKOP8uPAnFNq2aiulk_Kn15hJcONPY_GMjGb1lLJtaEP44RoBI6ulMhTds4QenTa3rLkeaFFGQm01PTed8t-j3Q/file?c_luid=c335000c"
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/final22
+          curl --fail --silent --show-error --location "$ARTWORK_URL" --output /tmp/final22.zip
+          echo "dfa51c50a6cdb8f9fc5d3c78504ff362aad9409059f4389fecb50e0435424bf1  /tmp/final22.zip" | sha256sum -c -
+          unzip -q /tmp/final22.zip -d /tmp/final22
+          cd /tmp/final22
+          sha256sum -c SHA256SUMS.txt
+
+      - name: Verify WebP format and dimensions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --quiet pillow==11.3.0
+          python - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          import json
+          root = Path('/tmp/final22')
+          manifest = json.loads((root / 'MANIFEST.json').read_text())
+          assert len(manifest) == 22, len(manifest)
+          for entry in manifest:
+              path = root / entry['repo_path']
+              assert path.is_file(), path
+              with Image.open(path) as image:
+                  assert image.format == 'WEBP', (path, image.format)
+                  assert image.size == (840, 1440), (path, image.size)
+          print('Verified 22 canonical 840x1440 WebP assets.')
+          PY
+          while IFS= read -r f; do
+            test "$(file -b --mime-type "$f")" = "image/webp"
+          done < <(find /tmp/final22/public/media/subclasses -type f -name '*.webp' | sort)
+
+      - name: Materialize exact approved paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE"
+          mapfile -t expected <<'EOF'
+          public/media/subclasses/barbarian/barbarian-ancestral-guardian.webp
+          public/media/subclasses/barbarian/barbarian-battlerager.webp
+          public/media/subclasses/barbarian/barbarian-beast.webp
+          public/media/subclasses/barbarian/barbarian-giant.webp
+          public/media/subclasses/barbarian/barbarian-storm-herald.webp
+          public/media/subclasses/barbarian/barbarian-totem-warrior.webp
+          public/media/subclasses/barbarian/barbarian-wild-magic.webp
+          public/media/subclasses/bard/bard-swords.webp
+          public/media/subclasses/fighter/fighter-samurai.webp
+          public/media/subclasses/monk/monk-ascendant-dragon.webp
+          public/media/subclasses/monk/monk-astral-self.webp
+          public/media/subclasses/monk/monk-four-elements.webp
+          public/media/subclasses/monk/monk-long-death.webp
+          public/media/subclasses/monk/monk-sun-soul.webp
+          public/media/subclasses/mystic/mystic-avatar.webp
+          public/media/subclasses/mystic/mystic-awakened.webp
+          public/media/subclasses/mystic/mystic-immortal.webp
+          public/media/subclasses/mystic/mystic-nomad.webp
+          public/media/subclasses/mystic/mystic-soul-knife.webp
+          public/media/subclasses/mystic/mystic-wu-jen.webp
+          public/media/subclasses/paladin/paladin-crown.webp
+          public/media/subclasses/paladin/paladin-watchers.webp
+          EOF
+          for path in "${expected[@]}"; do
+            mkdir -p "$(dirname "$path")"
+            cp "/tmp/final22/$path" "$path"
+          done
+          git add -- "${expected[@]}"
+          printf '%s\n' "${expected[@]}" | sort > /tmp/expected.txt
+          git diff --cached --name-only | sort > /tmp/actual.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+
+      - name: Commit and push intended artwork branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Install final 22 approved subclass Tarot assets"
+          git push origin HEAD:agent/subclass-tarot-approved-batch-20260916
