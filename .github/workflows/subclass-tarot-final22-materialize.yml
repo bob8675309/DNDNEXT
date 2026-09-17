@@ -35,7 +35,7 @@ jobs:
       - name: Download and verify approved bundle
         shell: bash
         env:
-          ARTWORK_URL: "https://uc28a41a45312e0374c80158a30c.dl.dropboxusercontent.com/cd/0/get/DISRKUylTwhRAHFm08olN6LEB0wvX3c1EggonflVb82PkVSn9_D2B-Z9ffE_1cEEoGZv1K6O1z397M9c-fpa39TiKOP8uPAnFNq2aiulk_Kn15hJcONPY_GMjGb1lLJtaEP44RoBI6ulMhTds4QenTa3rLkeaFFGQm01PTed8t-j3Q/file?c_luid=c335000c"
+          ARTWORK_URL: "https://uc1c88b0445bd4fcd1b4b1e71a34.dl.dropboxusercontent.com/cd/0/get/DIR7fzgdvJxEfCdY1OzdViD9h9zhJa8WYmKplCQgnjMR3tcpzIQD0NWpJ3Yan5O9F_RvisJG6fb_imYQHVKDICRWwXhZwrfFCiOos7NvuxPJZG28qkulpW0Q_w85ksw05NrecYzkt8o4uyMHkHWPo7hTF2Wo60aLAVMrDUajalKa7Q/file?c_luid=c335000c"
         run: |
           set -euo pipefail
           mkdir -p /tmp/final22
@@ -101,11 +101,19 @@ jobs:
           for path in "${expected[@]}"; do
             mkdir -p "$(dirname "$path")"
             cp "/tmp/final22/$path" "$path"
+            expected_sha="$(sha256sum "/tmp/final22/$path" | awk '{print $1}')"
+            actual_sha="$(sha256sum "$path" | awk '{print $1}')"
+            test "$actual_sha" = "$expected_sha"
           done
           git add -- "${expected[@]}"
-          printf '%s\n' "${expected[@]}" | sort > /tmp/expected.txt
+          printf '%s\n' "${expected[@]}" | sort > /tmp/allowed.txt
           git diff --cached --name-only | sort > /tmp/actual.txt
-          diff -u /tmp/expected.txt /tmp/actual.txt
+          comm -23 /tmp/actual.txt /tmp/allowed.txt > /tmp/unexpected.txt
+          test ! -s /tmp/unexpected.txt
+          changed_count="$(wc -l < /tmp/actual.txt | tr -d ' ')"
+          echo "Approved destination files verified: 22"
+          echo "Files requiring a Git commit: $changed_count"
+          test "$changed_count" -gt 0
 
       - name: Commit and push intended artwork branch
         shell: bash
@@ -113,5 +121,5 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "Install final 22 approved subclass Tarot assets"
+          git commit -m "Install final approved subclass Tarot assets"
           git push origin HEAD:agent/subclass-tarot-approved-batch-20260916
