@@ -12,13 +12,16 @@ Historical normalized checkpoint:
 - The 109 milestone remains useful provenance.
 - It is **not** the final production completion target.
 
-Current production target after the 2026-09-16 approved artwork batch:
+Current production target:
 
 - runtime-visible choices: **149**;
 - dedicated-card target: **149**;
-- visible choices now covered by dedicated/approved Tarot art: **127**;
-- known visible choices still resolving to generic/class fallback: **22**;
-- normalized installed Tarot concepts after this batch: **130** because the historical ledger also retains the four suppressed Wizard compatibility identities.
+- currently installed/validated visible choices on the artwork branch: **127**;
+- runtime-visible choices still resolving to fallback on that branch: **22**;
+- additionally approved artwork waiting to be normalized/installed/wired: **13**;
+- generated/revised cards still awaiting explicit final approval: **9**.
+
+If the 13 approved-pending cards are installed successfully, the visible fallback queue will drop from **22 to 9**.
 
 Intentional art sharing is allowed only when Paul explicitly approves it. A generic class-art fallback never counts as a completed subclass card.
 
@@ -40,9 +43,9 @@ The historical Wizard normalized ledger contains 18 identities. Runtime compatib
 
 Their normalized assets/mappings remain repository history. Do not add them to the missing-card queue solely because historical Wizard cardinality is higher than visible runtime cardinality.
 
-## 2026-09-16 approved and installed batch — 21
+## Installed and validated in the current artwork branch — 21
 
-The following cards were individually approved by Paul in the artwork review conversation and are the only newly promoted cards in this batch:
+These cards were individually approved, normalized to the canonical 840x1440 WebP format, installed, wired in `utils/classes/subclassArtwork.js`, and passed the focused subclass validator.
 
 ### Bard — 3
 
@@ -83,39 +86,67 @@ The following cards were individually approved by Paul in the artwork review con
 - [x] Scout
 - [x] Swashbuckler
 
-**Approved this batch: 21.**
+**Installed/validated in this batch: 21.**
 
 Do not regenerate or re-queue these unless Paul explicitly asks for a replacement. In particular, **Mastermind is already complete**.
 
-## Current runtime fallback queue — 22
+## Explicitly approved, pending install/wiring — 13
 
-A checked item means the exact runtime-visible identity has an approved canonical 7:12 Tarot asset, explicit resolver wiring (or an explicitly approved intentional alias), and has passed focused validation.
+These cards have received explicit approval in the current artwork review but are not yet counted as installed completion because they have not yet gone through final export/install/resolver/validation on the branch.
 
 ### Barbarian — 7
 
-- [ ] Ancestral Guardian
-- [ ] Battlerager
-- [ ] Beast
-- [ ] Giant
-- [ ] Storm Herald
-- [ ] Totem Warrior
-- [ ] Wild Magic
+- [~] Ancestral Guardian
+- [~] Battlerager
+- [~] Beast
+- [~] Giant
+- [~] Storm Herald
+- [~] Totem Warrior
+- [~] Wild Magic
+
+Notes:
+- Giant was revised with a new weapon and approved in the locked batch.
+- Totem Warrior was revised to remove the purple footer-emblem fill while preserving the approved composition, then the batch was locked.
 
 ### Bard — 1
 
-- [ ] Swords
+- [~] Swords
 
 ### Fighter — 1
 
-- [ ] Samurai
+- [~] Samurai
 
-### Monk — 5
+### Monk — 2
 
-- [ ] Ascendant Dragon
-- [ ] Astral Self
+- [~] Astral Self
+- [~] Ascendant Dragon
+
+### Paladin — 2
+
+- [~] Crown
+- [~] Watchers
+
+Notes:
+- Swords, Crown, and Astral Self were explicitly approved before the 19-card continuation.
+- Giant and Watchers were explicitly approved after revision.
+- The complete 10-card batch containing Ancestral Guardian, Battlerager, Beast, Giant, Storm Herald, Totem Warrior, Wild Magic, Samurai, Watchers, and Ascendant Dragon was then explicitly locked in before work moved to the final nine.
+
+**Approved but pending install: 13.**
+
+## Generated/revised, awaiting explicit final approval — 9
+
+These have artwork drafts in the current conversation. They must **not** be marked complete until Paul explicitly approves the final version and they then pass export/install/wiring/validation.
+
+### Monk — 3
+
 - [ ] Four Elements
 - [ ] Long Death
 - [ ] Sun Soul
+
+Current review state:
+- Four Elements: generated; no final approval recorded yet.
+- Long Death: revised to reduce the prominence of the hair; awaiting final approval.
+- Sun Soul: generated; no final approval recorded yet.
 
 ### Mystic — 6
 
@@ -126,24 +157,35 @@ A checked item means the exact runtime-visible identity has an approved canonica
 - [ ] Soul Knife
 - [ ] Wu Jen
 
-### Paladin — 2
+Current review state:
+- Avatar: revised to appear more powerful; awaiting final approval.
+- Awakened: generated; no final approval recorded yet.
+- Immortal: generated; no final approval recorded yet.
+- Nomad: revised for more coverage; awaiting final approval.
+- Soul Knife: revised for a more natural left-hand position; awaiting final approval.
+- Wu Jen: redrawn with a new species; awaiting final approval.
 
-- [ ] Crown
-- [ ] Watchers
+**Awaiting final approval: 9.**
 
-### Ranger — 0
+## Current queue summary
 
-- Complete for the current visible runtime catalogue.
+### Runtime fallback right now on the artwork branch — 22
 
-### Rogue — 0
+Because the 13 newly approved cards have not yet been installed/wired, the runtime branch still has the following fallback identities:
 
-- Complete for the current visible runtime catalogue.
+- Barbarian: Ancestral Guardian, Battlerager, Beast, Giant, Storm Herald, Totem Warrior, Wild Magic
+- Bard: Swords
+- Fighter: Samurai
+- Monk: Ascendant Dragon, Astral Self, Four Elements, Long Death, Sun Soul
+- Mystic: Avatar, Awakened, Immortal, Nomad, Soul Knife, Wu Jen
+- Paladin: Crown, Watchers
 
-**Current remaining total: 22.**
+### Artwork still needing approval after the approved-pending batch installs — 9
 
-The most recent generated drafts for **Swords**, **Crown**, and **Astral Self** are not checked here because they have not yet received explicit individual approval. Generation alone does not count as completion.
+- Monk: Four Elements, Long Death, Sun Soul
+- Mystic: Avatar, Awakened, Immortal, Nomad, Soul Knife, Wu Jen
 
-Re-audit the actual runtime-visible set after each approved installation batch before changing the total.
+Once those nine are individually approved, installed, wired, and validated, the visible 149-card production deck can reach full dedicated-card coverage.
 
 ## Card completion rule
 
@@ -153,7 +195,7 @@ For every visible subclass:
 2. Paul reviews and approves the individual artwork.
 3. Anatomy, hands, weapons, props, companions, and species details pass QA.
 4. The card follows the canonical 7:12 full-bleed template.
-5. Final export is 840×1440 WebP.
+5. Final export is 840x1440 WebP.
 6. Install under `public/media/subclasses/<class-key>/`.
 7. Wire the exact visible identity in `utils/classes/subclassArtwork.js`, unless an intentional alias was explicitly approved.
 8. Confirm the choice no longer silently falls back to generic class art.
@@ -163,7 +205,7 @@ For every visible subclass:
 ## Art standard summary
 
 - 7:12 aspect ratio.
-- 840×1440 WebP final export.
+- 840x1440 WebP final export.
 - Full-bleed illustration through title/emblem area.
 - No opaque footer or separate title band.
 - Fixed reusable antique-gold frame/title/emblem geometry.
