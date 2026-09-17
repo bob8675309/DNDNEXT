@@ -1,4 +1,4 @@
-name: Materialize final Tarot replacements 2026-09-17
+name: Finalize subclass Tarot deck 2026-09-17
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  materialize:
+  finalize:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,49 +17,424 @@ jobs:
           ref: agent/subclass-tarot-approved-batch-20260916
           fetch-depth: 0
 
-      - name: Verify exact target head
+      - name: Verify exact artwork branch head
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "03c04f1861eea878a756cd52f0da8fbbbe44d63c"
+          test "$(git rev-parse HEAD)" = "01e35ff99c2980891028993358aff38bc93ae611"
 
-      - name: Download and verify approved replacements
+      - name: Wire final approved Tarot identities and update completion ledger
         shell: bash
         run: |
           set -euo pipefail
-          curl -L --fail --silent --show-error 'https://uc1e6e40d19e4f1774afd2f98707.dl.dropboxusercontent.com/cd/0/get/DITnLzk65ecuifEuXkwKARTWQPiKFbDo7rPsLLQAlVA61r33-qBFfe974PSIGkcpvcUA43Wdim5LVRinGquDQJRJROx-pHk2d6d0i3Xp3bZG0vMtpMsgl_P7U15ttNeUDV5VecflVB0-QAQlQv8znv7zdWp7UsA8Xbl6kR9bbRGYFg/file?c_luid=c335000c' -o /tmp/tarot-replacements.zip
-          echo 'f5a3de24bfca5a4c33250b17244961c2cd286ef8d9db42912c11eefa89099354  /tmp/tarot-replacements.zip' | sha256sum -c -
-          rm -rf /tmp/tarot-replacements
-          mkdir -p /tmp/tarot-replacements
-          unzip -q /tmp/tarot-replacements.zip -d /tmp/tarot-replacements
-          test "$(jq '.files | length' /tmp/tarot-replacements/manifest.json)" = "2"
-          while IFS=$'\t' read -r path expected; do
-            test -f "/tmp/tarot-replacements/$path"
-            actual="$(sha256sum "/tmp/tarot-replacements/$path" | awk '{print $1}')"
-            test "$actual" = "$expected"
-            file "/tmp/tarot-replacements/$path" | grep -q 'Web/P image'
-            file "/tmp/tarot-replacements/$path" | grep -q '840x1440'
-          done < <(jq -r '.files[] | [.path,.sha256] | @tsv' /tmp/tarot-replacements/manifest.json)
+          python3 <<'PY'
+          from pathlib import Path
 
-      - name: Replace exact approved artwork files
+          def replace_once(text, old, new, label):
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"{label}: expected one match, found {count}")
+              return text.replace(old, new, 1)
+
+          resolver_path = Path("utils/classes/subclassArtwork.js")
+          resolver = resolver_path.read_text()
+
+          resolver = replace_once(resolver,
+          '''  barbarian: Object.freeze({
+            berserker: "berserker",
+            "wild-heart": "wild-heart",
+            "world-tree": "world-tree",
+            zealot: "zealot",
+          }),''',
+          '''  barbarian: Object.freeze({
+            "ancestral-guardian": "ancestral-guardian",
+            battlerager: "battlerager",
+            beast: "beast",
+            berserker: "berserker",
+            giant: "giant",
+            "storm-herald": "storm-herald",
+            "totem-warrior": "totem-warrior",
+            "wild-heart": "wild-heart",
+            "wild-magic": "wild-magic",
+            "world-tree": "world-tree",
+            zealot: "zealot",
+          }),''', "barbarian resolver")
+
+          resolver = replace_once(resolver,
+          '''  bard: Object.freeze({
+            creation: "creation",
+            dance: "dance",
+            eloquence: "eloquence",
+            glamour: "glamour",
+            lore: "lore",
+            moon: "moon",
+            spirits: "spirits",
+            valor: "valor",
+            whispers: "whispers",
+          }),''',
+          '''  bard: Object.freeze({
+            creation: "creation",
+            dance: "dance",
+            eloquence: "eloquence",
+            glamour: "glamour",
+            lore: "lore",
+            moon: "moon",
+            spirits: "spirits",
+            swords: "swords",
+            valor: "valor",
+            whispers: "whispers",
+          }),''', "bard resolver")
+
+          resolver = replace_once(resolver,
+          '''  fighter: Object.freeze({
+            "arcane-archer": "arcane-archer",
+            banneret: "banneret",
+            "battle-master": "battle-master",
+            cavalier: "cavalier",
+            champion: "champion",
+            "echo-knight": "echo-knight",
+            "eldritch-knight": "eldritch-knight",
+            "purple-dragon-knight-banneret": "purple-dragon-knight-banneret",
+            "psi-warrior": "psi-warrior",
+            "rune-knight": "rune-knight",
+          }),''',
+          '''  fighter: Object.freeze({
+            "arcane-archer": "arcane-archer",
+            banneret: "banneret",
+            "battle-master": "battle-master",
+            cavalier: "cavalier",
+            champion: "champion",
+            "echo-knight": "echo-knight",
+            "eldritch-knight": "eldritch-knight",
+            "purple-dragon-knight-banneret": "purple-dragon-knight-banneret",
+            "psi-warrior": "psi-warrior",
+            "rune-knight": "rune-knight",
+            samurai: "samurai",
+          }),''', "fighter resolver")
+
+          resolver = replace_once(resolver,
+          '''  monk: Object.freeze({
+            "drunken-master": "drunken-master",
+            elements: "elements",
+            kensei: "kensei",
+            mercy: "mercy",
+            "open-hand": "open-hand",
+            shadow: "shadow",
+          }),''',
+          '''  monk: Object.freeze({
+            "ascendant-dragon": "ascendant-dragon",
+            "astral-self": "astral-self",
+            "drunken-master": "drunken-master",
+            elements: "elements",
+            "four-elements": "four-elements",
+            kensei: "kensei",
+            "long-death": "long-death",
+            mercy: "mercy",
+            "open-hand": "open-hand",
+            shadow: "shadow",
+            "sun-soul": "sun-soul",
+          }),''', "monk resolver")
+
+          resolver = replace_once(resolver,
+          '''  paladin: Object.freeze({''',
+          '''  mystic: Object.freeze({
+            avatar: "avatar",
+            awakened: "awakened",
+            immortal: "immortal",
+            nomad: "nomad",
+            "soul-knife": "soul-knife",
+            "wu-jen": "wu-jen",
+          }),
+          paladin: Object.freeze({''', "mystic resolver")
+
+          resolver = replace_once(resolver,
+          '''  paladin: Object.freeze({
+            ancients: "ancients",
+            conquest: "conquest",
+            devotion: "devotion",
+            glory: "glory",
+            "noble-genies": "noble-genies",
+            oathbreaker: "oathbreaker",
+            redemption: "redemption",
+            vengeance: "vengeance",
+          }),''',
+          '''  paladin: Object.freeze({
+            ancients: "ancients",
+            conquest: "conquest",
+            crown: "crown",
+            devotion: "devotion",
+            glory: "glory",
+            "noble-genies": "noble-genies",
+            oathbreaker: "oathbreaker",
+            redemption: "redemption",
+            vengeance: "vengeance",
+            watchers: "watchers",
+          }),''', "paladin resolver")
+
+          resolver = resolver.replace(
+              "// Only Paul-approved normalized tarot cards are mapped here. Subclasses still in\n// production continue to use the class-menu artwork fallback until individually\n// approved, installed, and added to this resolver.",
+              "// Paul-approved normalized Tarot cards are mapped here. The current runtime-visible\n// Forge catalogue is fully covered; safe class-menu fallback remains only for truly\n// unknown/future content and image-load failure."
+          )
+          resolver_path.write_text(resolver)
+
+          validator_path = Path("scripts/validate_class_subclass_browser.mjs")
+          validator = validator_path.read_text()
+          replacements = [
+              ('barbarian: ["berserker", "wild-heart", "world-tree", "zealot"]', 'barbarian: ["ancestral-guardian", "battlerager", "beast", "berserker", "giant", "storm-herald", "totem-warrior", "wild-heart", "wild-magic", "world-tree", "zealot"]'),
+              ('bard: ["creation", "dance", "eloquence", "glamour", "lore", "moon", "spirits", "valor", "whispers"]', 'bard: ["creation", "dance", "eloquence", "glamour", "lore", "moon", "spirits", "swords", "valor", "whispers"]'),
+              ('fighter: ["arcane-archer", "banneret", "battle-master", "cavalier", "champion", "echo-knight", "eldritch-knight", "purple-dragon-knight-banneret", "psi-warrior", "rune-knight"]', 'fighter: ["arcane-archer", "banneret", "battle-master", "cavalier", "champion", "echo-knight", "eldritch-knight", "purple-dragon-knight-banneret", "psi-warrior", "rune-knight", "samurai"]'),
+              ('monk: ["drunken-master", "elements", "kensei", "mercy", "open-hand", "shadow"]', 'monk: ["ascendant-dragon", "astral-self", "drunken-master", "elements", "four-elements", "kensei", "long-death", "mercy", "open-hand", "shadow", "sun-soul"]'),
+              ('  paladin: ["ancients", "conquest", "devotion", "glory", "noble-genies", "oathbreaker", "redemption", "vengeance"],', '  mystic: ["avatar", "awakened", "immortal", "nomad", "soul-knife", "wu-jen"],\n  paladin: ["ancients", "conquest", "crown", "devotion", "glory", "noble-genies", "oathbreaker", "redemption", "vengeance", "watchers"],'),
+          ]
+          for old, new in replacements:
+              validator = replace_once(validator, old, new, f"validator replacement {old[:24]}")
+
+          validator = validator.replace(
+              "// 2026-09-16 approved normalized tarot install: explicitly mapped cards use the\n// installed 7:12 deck while every unfinished subclass retains the class-art fallback.",
+              "// 2026-09-17 final approved normalized Tarot install: the complete runtime-visible\n// catalogue uses dedicated 7:12 cards while unknown/future content retains safe fallback."
+          )
+          validator = replace_once(validator,
+              'assert(approvedTarotCount === 130, `Expected 130 installed approved normalized tarot concepts, found ${approvedTarotCount}.`);',
+              'assert(approvedTarotCount === 152, `Expected 152 installed approved normalized Tarot concepts, found ${approvedTarotCount}.`);',
+              "validator concept count")
+
+          completion_tokens = '''
+          const finalCompletionMappings = [
+            '"ancestral-guardian": "ancestral-guardian"',
+            'battlerager: "battlerager"',
+            'beast: "beast"',
+            'giant: "giant"',
+            '"storm-herald": "storm-herald"',
+            '"totem-warrior": "totem-warrior"',
+            '"wild-magic": "wild-magic"',
+            'swords: "swords"',
+            'samurai: "samurai"',
+            '"ascendant-dragon": "ascendant-dragon"',
+            '"astral-self": "astral-self"',
+            '"four-elements": "four-elements"',
+            '"long-death": "long-death"',
+            '"sun-soul": "sun-soul"',
+            'avatar: "avatar"',
+            'awakened: "awakened"',
+            'immortal: "immortal"',
+            'nomad: "nomad"',
+            '"soul-knife": "soul-knife"',
+            '"wu-jen": "wu-jen"',
+            'crown: "crown"',
+            'watchers: "watchers"',
+          ];
+          for (const token of finalCompletionMappings) {
+            assert(subclassArtwork.includes(token), `Final runtime-visible Tarot mapping missing ${token}`);
+          }
+          '''
+          validator = replace_once(validator,
+              'for (const token of [\'"ambition-psa": "ambition"\'',
+              completion_tokens + '\nfor (const token of [\'"ambition-psa": "ambition"\'',
+              "validator completion mapping checks")
+          validator = validator.replace(
+              "all 130 approved normalized tarot concepts are installed and mapped",
+              "all 152 approved normalized Tarot concepts are installed and the runtime-visible deck is fully mapped"
+          )
+          validator_path.write_text(validator)
+
+          checklist = '''# Character Forge Tarot Subclass Artwork Checklist
+
+          Status date: 2026-09-17
+
+          This checklist tracks the production-visible Tarot deck, not the historical preferred-source concept count.
+
+          ## Completion authority
+
+          Historical normalized checkpoint:
+
+          - **109 approved preferred-source concepts** were installed/mapped/validated before the 2026-09 completion pass.
+          - That milestone remains provenance only; it is not the production completion definition.
+
+          Current artwork-branch result:
+
+          - runtime-visible choices: **149**;
+          - dedicated-card target: **149**;
+          - runtime-visible choices covered by approved dedicated Tarot art: **149 / 149**;
+          - known runtime-visible choices resolving to generic/class fallback: **0**;
+          - installed normalized Tarot concept ledger: **152** (the historical ledger includes compatibility/alias identities that are not a one-to-one count of visible carousel choices).
+
+          Intentional art sharing remains allowed only when Paul explicitly approves it. Safe class-art fallback remains in the resolver for truly unknown/future content and image-load failure, but no known current runtime-visible subclass is intentionally left on generic fallback.
+
+          Read first:
+
+          - `CHARACTER_FORGE_TAROT_SUBCLASS_CARD_STANDARD.md`;
+          - `CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md`;
+          - `CHARACTER_FORGE_SUBCLASS_ARTWORK_STATUS.md`;
+          - `DNDNext_Current_Handoff_Prompt.md`.
+
+          ## Wizard compatibility note
+
+          The historical Wizard normalized ledger contains 18 identities. Runtime compatibility suppresses these four duplicate/reprint identities from the visible carousel:
+
+          - Abjuration
+          - Divination
+          - Evocation
+          - Illusion
+
+          Their normalized assets/mappings remain repository history. They are not missing runtime cards.
+
+          ## 2026-09 completion pass — 43 runtime fallbacks resolved
+
+          The completion pass started from 43 real runtime-visible fallback choices. Every one now has Paul-approved Tarot artwork installed on the artwork branch and an explicit resolver mapping.
+
+          ### Barbarian — 7
+
+          - [x] Ancestral Guardian
+          - [x] Battlerager
+          - [x] Beast
+          - [x] Giant
+          - [x] Storm Herald
+          - [x] Totem Warrior
+          - [x] Wild Magic
+
+          ### Bard — 4
+
+          - [x] Creation
+          - [x] Eloquence
+          - [x] Swords
+          - [x] Whispers
+
+          ### Fighter — 6
+
+          - [x] Arcane Archer
+          - [x] Cavalier
+          - [x] Echo Knight
+          - [x] Purple Dragon Knight (Banneret)
+          - [x] Rune Knight
+          - [x] Samurai
+
+          ### Monk — 7
+
+          - [x] Ascendant Dragon
+          - [x] Astral Self
+          - [x] Drunken Master
+          - [x] Four Elements
+          - [x] Kensei
+          - [x] Long Death
+          - [x] Sun Soul
+
+          ### Mystic — 6
+
+          - [x] Avatar
+          - [x] Awakened
+          - [x] Immortal
+          - [x] Nomad
+          - [x] Soul Knife
+          - [x] Wu Jen
+
+          ### Paladin — 5
+
+          - [x] Conquest
+          - [x] Crown
+          - [x] Oathbreaker
+          - [x] Redemption
+          - [x] Watchers
+
+          ### Ranger — 4
+
+          - [x] Drakewarden
+          - [x] Horizon Walker
+          - [x] Monster Slayer
+          - [x] Swarmkeeper
+
+          ### Rogue — 4
+
+          - [x] Inquisitive
+          - [x] Mastermind
+          - [x] Scout
+          - [x] Swashbuckler
+
+          **Completion-pass total: 43 / 43.**
+
+          Final-art notes from the review conversation:
+
+          - Giant uses the approved revised weapon composition.
+          - Totem Warrior uses the approved composition with the purple emblem fill removed for deck consistency.
+          - Watchers uses the approved revised species/composition.
+          - Soul Knife uses Paul’s final explicitly selected version from the 2026-09-17 review.
+          - Wu Jen uses Paul’s final explicitly selected version from the 2026-09-17 review.
+          - Mastermind was already complete and was not regenerated in the final pass.
+
+          ## Current runtime fallback queue — 0
+
+          No known current runtime-visible subclass remains in the generic/class-art fallback queue.
+
+          **Current remaining total: 0.**
+
+          Re-audit the actual runtime-visible set after future catalogue/import changes. A future subclass may legitimately use safe fallback until it receives approved dedicated art.
+
+          ## Card completion rule
+
+          For every visible subclass:
+
+          1. Confirm the exact visible identity against current Forge runtime/catalogue behavior.
+          2. Paul reviews and approves the individual artwork.
+          3. Anatomy, hands, weapons, props, companions, and species details pass QA.
+          4. The card follows the canonical 7:12 full-bleed template.
+          5. Final export is 840×1440 WebP.
+          6. Install under `public/media/subclasses/<class-key>/`.
+          7. Wire the exact visible identity in `utils/classes/subclassArtwork.js`, unless an intentional alias was explicitly approved.
+          8. Confirm the choice no longer silently falls back to generic class art.
+          9. Run focused validation.
+          10. Check an intentional Vercel Preview when browser validation is needed.
+
+          ## Art standard summary
+
+          - 7:12 aspect ratio.
+          - 840×1440 WebP final export.
+          - Full-bleed illustration through title/emblem area.
+          - No opaque footer or separate title band.
+          - Fixed reusable antique-gold frame/title/emblem geometry.
+          - Restrained lower readability gradient.
+          - Crisp cinematic fantasy realism.
+          - Deliberate species/gender/presentation/pose/environment diversity.
+          - Prefer underused Forge species when the subclass fantasy supports them.
+          - Vary facing direction, camera angle, focal point, action, weather, environment, and color temperature across the deck.
+          - Mandatory full-resolution anatomy/prop/species QA.
+
+          Detailed authority: `CHARACTER_FORGE_TAROT_SUBCLASS_CARD_STANDARD.md`.
+
+          ## Production/Preview rule
+
+          Work from current `main` or an explicitly current artwork branch. PR #187 is historical/working context, not production authority.
+
+          Ordinary `agent/*` commits skip full Vercel Preview builds. Use `[deploy-preview]` only on the exact commit requiring browser review.
+
+          ## Protected boundaries
+
+          Subclass art is presentation-only. No Supabase write/migration is required. Do not touch world-map/town-map behavior, travel/routes/weather/camps/clock, crafting, inventory, merchants, economy, encounter/tactical authority, or unrelated character runtime while maintaining the deck.
+          '''
+          checklist = '\n'.join(line[10:] if line.startswith('          ') else line for line in checklist.splitlines()) + '\n'
+          Path("docs/CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md").write_text(checklist)
+          PY
+
+      - name: Validate complete Tarot deck
         shell: bash
         run: |
           set -euo pipefail
-          jq -r '.files[].path' /tmp/tarot-replacements/manifest.json | sort > /tmp/expected.txt
-          while IFS= read -r path; do
-            cp "/tmp/tarot-replacements/$path" "$path"
-          done < /tmp/expected.txt
-          git diff --name-only | sort > /tmp/actual.txt
-          diff -u /tmp/expected.txt /tmp/actual.txt
-          test "$(wc -l < /tmp/actual.txt)" -eq 2
+          node scripts/validate_class_subclass_browser.mjs
+          expected=$(mktemp)
+          actual=$(mktemp)
+          printf '%s\n' \
+            docs/CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md \
+            scripts/validate_class_subclass_browser.mjs \
+            utils/classes/subclassArtwork.js | sort > "$expected"
+          git diff --name-only | sort > "$actual"
+          diff -u "$expected" "$actual"
+          git diff --check
 
-      - name: Commit replacements to artwork branch
+      - name: Commit final Tarot completion wiring
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add --pathspec-from-file=/tmp/expected.txt
+          git add docs/CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md scripts/validate_class_subclass_browser.mjs utils/classes/subclassArtwork.js
           git diff --cached --check
-          git commit -m 'Use final approved Soul Knife and Wu Jen Tarot art'
+          git commit -m 'Complete runtime-visible subclass Tarot deck'
           git push origin HEAD:agent/subclass-tarot-approved-batch-20260916
