@@ -42,11 +42,16 @@ for (const token of [
   'role="dialog"',
   'aria-modal="true"',
   'class-subclass-carousel-modal__rail',
-  'scroll-snap-type:x mandatory',
   'class-subclass-carousel-card',
-  'loopedOptions',
-  'rail.scrollWidth / 3',
-  'keepRailLooped',
+  'const [carouselStart, setCarouselStart] = useState(0)',
+  'const [visibleCount, setVisibleCount] = useState(4)',
+  'const visibleOptions = useMemo',
+  'Math.min(visibleCount, options.length)',
+  '(carouselStart + slot) % options.length',
+  'function rotateCarousel(direction)',
+  '(current + normalizedDirection + length) % length',
+  'grid-template-columns:repeat(var(--subclass-visible-count,4),minmax(0,1fr))',
+  'filter:brightness(1.12) saturate(1.08) contrast(1.03)',
   'model.setPreviewKey(option.key)',
   'model.selectSubclass(option)',
   'optionEntryLevel(option) > currentLevel',
@@ -56,7 +61,7 @@ for (const token of [
   'currentLevel < entryLevel',
   'setSelectorOpen(true)',
   'onInspectSubclass?.(option)',
-]) assert(selector.includes(token), `Cinematic looping subclass selector is missing ${token}`);
+]) assert(selector.includes(token), `Cinematic circular subclass selector is missing ${token}`);
 
 for (const forbidden of [
   'class-subclass-two-column__grid',
@@ -69,6 +74,14 @@ for (const forbidden of [
   'onMouseEnter',
   'onFocus={() => onInspectSubclass',
 ]) assert(!selector.includes(forbidden), `Subclass selector regressed to the prior grid/hover-driven presentation: ${forbidden}`);
+for (const forbidden of [
+  'loopedOptions',
+  'keepRailLooped',
+  'rail.scrollWidth / 3',
+  'scroll-snap-type:x mandatory',
+  'scrollLeft += segment',
+  'scrollLeft -= segment',
+]) assert(!selector.includes(forbidden), `Subclass carousel still contains rubberband/recentering behavior: ${forbidden}`);
 assert(!selector.includes("supabase"), "Subclass selector must remain presentation-only.");
 
 // 2026-09-17 completed normalized Tarot install: every current runtime-visible
@@ -158,4 +171,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSource.includes(token), `Class presentation patch crossed protected boundary: ${token}`);
 }
 
-console.log("Class subclass selector validation passed: canonical subclass authority and persistence remain in the guide model, the cinematic looping gallery remains intact, all 152 approved normalized tarot concepts are installed and mapped, the 149 current runtime-visible choices have dedicated approved coverage, and unmatched future content retains the safe class-art fallback.");
+console.log("Class subclass selector validation passed: canonical subclass authority and persistence remain in the guide model, the cinematic four-card circular gallery advances one card at a time without scroll recentering, all 152 approved normalized tarot concepts are installed and mapped, the 149 current runtime-visible choices have dedicated approved coverage, and unmatched future content retains the safe class-art fallback.");
