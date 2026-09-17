@@ -1,0 +1,65 @@
+name: Materialize final Tarot replacements 2026-09-17
+
+on:
+  push:
+    branches:
+      - agent/subclass-tarot-final2-materialize-20260917
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/subclass-tarot-approved-batch-20260916
+          fetch-depth: 0
+
+      - name: Verify exact target head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "03c04f1861eea878a756cd52f0da8fbbbe44d63c"
+
+      - name: Download and verify approved replacements
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -L --fail --silent --show-error 'https://uc1e6e40d19e4f1774afd2f98707.dl.dropboxusercontent.com/cd/0/get/DITnLzk65ecuifEuXkwKARTWQPiKFbDo7rPsLLQAlVA61r33-qBFfe974PSIGkcpvcUA43Wdim5LVRinGquDQJRJROx-pHk2d6d0i3Xp3bZG0vMtpMsgl_P7U15ttNeUDV5VecflVB0-QAQlQv8znv7zdWp7UsA8Xbl6kR9bbRGYFg/file?c_luid=c335000c' -o /tmp/tarot-replacements.zip
+          echo 'f5a3de24bfca5a4c33250b17244961c2cd286ef8d9db42912c11eefa89099354  /tmp/tarot-replacements.zip' | sha256sum -c -
+          rm -rf /tmp/tarot-replacements
+          mkdir -p /tmp/tarot-replacements
+          unzip -q /tmp/tarot-replacements.zip -d /tmp/tarot-replacements
+          test "$(jq '.files | length' /tmp/tarot-replacements/manifest.json)" = "2"
+          while IFS=$'\t' read -r path expected; do
+            test -f "/tmp/tarot-replacements/$path"
+            actual="$(sha256sum "/tmp/tarot-replacements/$path" | awk '{print $1}')"
+            test "$actual" = "$expected"
+            file "/tmp/tarot-replacements/$path" | grep -q 'Web/P image'
+            file "/tmp/tarot-replacements/$path" | grep -q '840x1440'
+          done < <(jq -r '.files[] | [.path,.sha256] | @tsv' /tmp/tarot-replacements/manifest.json)
+
+      - name: Replace exact approved artwork files
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq -r '.files[].path' /tmp/tarot-replacements/manifest.json | sort > /tmp/expected.txt
+          while IFS= read -r path; do
+            cp "/tmp/tarot-replacements/$path" "$path"
+          done < /tmp/expected.txt
+          git diff --name-only | sort > /tmp/actual.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+          test "$(wc -l < /tmp/actual.txt)" -eq 2
+
+      - name: Commit replacements to artwork branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add --pathspec-from-file=/tmp/expected.txt
+          git diff --cached --check
+          git commit -m 'Use final approved Soul Knife and Wu Jen Tarot art'
+          git push origin HEAD:agent/subclass-tarot-approved-batch-20260916
