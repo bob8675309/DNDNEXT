@@ -1,6 +1,6 @@
 # Character Forge Tarot Subclass Artwork Checklist
 
-Status date: 2026-09-16
+Status date: 2026-09-17
 
 This checklist tracks the production-visible Tarot deck, not the historical preferred-source concept count.
 
@@ -8,24 +8,22 @@ This checklist tracks the production-visible Tarot deck, not the historical pref
 
 Historical normalized checkpoint:
 
-- **109 approved preferred-source concepts** were installed/mapped/validated before the current completion pass.
-- The 109 milestone remains useful provenance.
-- It is **not** the final production completion target.
+- **109 approved preferred-source concepts** were the earlier normalized milestone.
+- That number remains provenance only and is not the production completion target.
 
-Current production target:
+Current completed artwork-branch state:
 
 - runtime-visible choices: **149**;
 - dedicated-card target: **149**;
-- currently installed/validated visible choices on the artwork branch: **127**;
-- runtime-visible choices still resolving to fallback on that branch: **22**;
-- additionally approved artwork waiting to be normalized/installed/wired: **13**;
-- generated/revised cards still awaiting explicit final approval: **9**.
+- runtime-visible choices with approved dedicated Tarot coverage: **149**;
+- known current runtime-visible choices resolving to generic/class fallback: **0**;
+- normalized installed Tarot concepts in the repository ledger: **152**, because the historical normalized set also retains the four suppressed Wizard compatibility identities and approved source aliases remain explicit.
 
-If the 13 approved-pending cards are installed successfully, the visible fallback queue will drop from **22 to 9**.
+**Current remaining Tarot card queue: 0.**
 
-Intentional art sharing is allowed only when Paul explicitly approves it. A generic class-art fallback never counts as a completed subclass card.
+Intentional art sharing remains allowed only when Paul explicitly approves it. Generic class-art fallback does not count as a completed subclass card.
 
-Read first:
+Read first for future maintenance:
 
 - `CHARACTER_FORGE_TAROT_SUBCLASS_CARD_STANDARD.md`;
 - `CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md`;
@@ -41,155 +39,89 @@ The historical Wizard normalized ledger contains 18 identities. Runtime compatib
 - Evocation
 - Illusion
 
-Their normalized assets/mappings remain repository history. Do not add them to the missing-card queue solely because historical Wizard cardinality is higher than visible runtime cardinality.
+Their normalized assets/mappings remain repository history. They are not missing production cards and must not be re-added to the visible missing-card queue solely because the historical Wizard cardinality is higher than the runtime-visible Wizard set.
 
-## Installed and validated in the current artwork branch — 21
+## 2026-09-16 installed/validated artwork batch — 21
 
-These cards were individually approved, normalized to the canonical 840x1440 WebP format, installed, wired in `utils/classes/subclassArtwork.js`, and passed the focused subclass validator.
+- Bard: Creation, Eloquence, Whispers
+- Fighter: Arcane Archer, Cavalier, Echo Knight, Purple Dragon Knight (Banneret), Rune Knight
+- Monk: Drunken Master, Kensei
+- Paladin: Conquest, Oathbreaker, Redemption
+- Ranger: Drakewarden, Horizon Walker, Monster Slayer, Swarmkeeper
+- Rogue: Inquisitive, Mastermind, Scout, Swashbuckler
 
-### Bard — 3
+Mastermind is complete and must not be re-queued unless Paul explicitly requests a replacement.
 
-- [x] Creation
-- [x] Eloquence
-- [x] Whispers
+## 2026-09-17 final completion batch — 22
 
-### Fighter — 5
-
-- [x] Arcane Archer
-- [x] Cavalier
-- [x] Echo Knight
-- [x] Purple Dragon Knight (Banneret)
-- [x] Rune Knight
-
-### Monk — 2
-
-- [x] Drunken Master
-- [x] Kensei
-
-### Paladin — 3
-
-- [x] Conquest
-- [x] Oathbreaker
-- [x] Redemption
-
-### Ranger — 4
-
-- [x] Drakewarden
-- [x] Horizon Walker
-- [x] Monster Slayer
-- [x] Swarmkeeper
-
-### Rogue — 4
-
-- [x] Inquisitive
-- [x] Mastermind
-- [x] Scout
-- [x] Swashbuckler
-
-**Installed/validated in this batch: 21.**
-
-Do not regenerate or re-queue these unless Paul explicitly asks for a replacement. In particular, **Mastermind is already complete**.
-
-## Explicitly approved, pending install/wiring — 13
-
-These cards have received explicit approval in the current artwork review but are not yet counted as installed completion because they have not yet gone through final export/install/resolver/validation on the branch.
+All of the following received explicit individual/batch approval from Paul, were normalized to canonical 7:12 **840x1440 WebP**, installed under canonical subclass paths, wired to their exact runtime-visible identities, and are covered by the focused subclass validator.
 
 ### Barbarian — 7
 
-- [~] Ancestral Guardian
-- [~] Battlerager
-- [~] Beast
-- [~] Giant
-- [~] Storm Herald
-- [~] Totem Warrior
-- [~] Wild Magic
+- [x] Ancestral Guardian
+- [x] Battlerager
+- [x] Beast
+- [x] Giant
+- [x] Storm Herald
+- [x] Totem Warrior
+- [x] Wild Magic
 
-Notes:
-- Giant was revised with a new weapon and approved in the locked batch.
-- Totem Warrior was revised to remove the purple footer-emblem fill while preserving the approved composition, then the batch was locked.
+Final-review notes:
+
+- Giant uses the approved revised weapon artwork.
+- Totem Warrior uses the approved final composition with the purple footer-emblem fill removed.
 
 ### Bard — 1
 
-- [~] Swords
+- [x] Swords
 
 ### Fighter — 1
 
-- [~] Samurai
+- [x] Samurai
 
-### Monk — 2
+### Monk — 5
 
-- [~] Astral Self
-- [~] Ascendant Dragon
-
-### Paladin — 2
-
-- [~] Crown
-- [~] Watchers
-
-Notes:
-- Swords, Crown, and Astral Self were explicitly approved before the 19-card continuation.
-- Giant and Watchers were explicitly approved after revision.
-- The complete 10-card batch containing Ancestral Guardian, Battlerager, Beast, Giant, Storm Herald, Totem Warrior, Wild Magic, Samurai, Watchers, and Ascendant Dragon was then explicitly locked in before work moved to the final nine.
-
-**Approved but pending install: 13.**
-
-## Generated/revised, awaiting explicit final approval — 9
-
-These have artwork drafts in the current conversation. They must **not** be marked complete until Paul explicitly approves the final version and they then pass export/install/wiring/validation.
-
-### Monk — 3
-
-- [ ] Four Elements
-- [ ] Long Death
-- [ ] Sun Soul
-
-Current review state:
-- Four Elements: generated; no final approval recorded yet.
-- Long Death: revised to reduce the prominence of the hair; awaiting final approval.
-- Sun Soul: generated; no final approval recorded yet.
+- [x] Ascendant Dragon
+- [x] Astral Self
+- [x] Four Elements
+- [x] Long Death
+- [x] Sun Soul
 
 ### Mystic — 6
 
-- [ ] Avatar
-- [ ] Awakened
-- [ ] Immortal
-- [ ] Nomad
-- [ ] Soul Knife
-- [ ] Wu Jen
+- [x] Avatar
+- [x] Awakened
+- [x] Immortal
+- [x] Nomad
+- [x] Soul Knife
+- [x] Wu Jen
 
-Current review state:
-- Avatar: revised to appear more powerful; awaiting final approval.
-- Awakened: generated; no final approval recorded yet.
-- Immortal: generated; no final approval recorded yet.
-- Nomad: revised for more coverage; awaiting final approval.
-- Soul Knife: revised for a more natural left-hand position; awaiting final approval.
-- Wu Jen: redrawn with a new species; awaiting final approval.
+Final-review notes:
 
-**Awaiting final approval: 9.**
+- Avatar uses the stronger revised presentation.
+- Nomad uses the revised, more-covered costume composition.
+- Long Death uses the revision with less-prominent hair.
+- Soul Knife uses Paul's explicitly selected final image from the last review.
+- Wu Jen uses Paul's explicitly selected final image from the last review.
 
-## Current queue summary
+### Paladin — 2
 
-### Runtime fallback right now on the artwork branch — 22
+- [x] Crown
+- [x] Watchers
 
-Because the 13 newly approved cards have not yet been installed/wired, the runtime branch still has the following fallback identities:
+Watchers uses the approved final revised species/composition.
 
-- Barbarian: Ancestral Guardian, Battlerager, Beast, Giant, Storm Herald, Totem Warrior, Wild Magic
-- Bard: Swords
-- Fighter: Samurai
-- Monk: Ascendant Dragon, Astral Self, Four Elements, Long Death, Sun Soul
-- Mystic: Avatar, Awakened, Immortal, Nomad, Soul Knife, Wu Jen
-- Paladin: Crown, Watchers
+**Final completion batch: 22.**
 
-### Artwork still needing approval after the approved-pending batch installs — 9
+## Runtime fallback queue — 0
 
-- Monk: Four Elements, Long Death, Sun Soul
-- Mystic: Avatar, Awakened, Immortal, Nomad, Soul Knife, Wu Jen
+The current 149 runtime-visible subclass choices all have approved dedicated Tarot coverage. The resolver retains a class-art fallback only as a safety net for genuinely unknown or future catalogue content.
 
-Once those nine are individually approved, installed, wired, and validated, the visible 149-card production deck can reach full dedicated-card coverage.
+Re-audit the actual runtime-visible set whenever subclass catalogue/compatibility behavior changes. Do not assume 149 is permanent if new playable subclass identities are later imported.
 
 ## Card completion rule
 
-For every visible subclass:
+For any future visible subclass:
 
 1. Confirm the exact visible identity against current Forge runtime/catalogue behavior.
 2. Paul reviews and approves the individual artwork.
@@ -213,7 +145,7 @@ For every visible subclass:
 - Crisp cinematic fantasy realism.
 - Deliberate species/gender/presentation/pose/environment diversity.
 - Prefer underused Forge species when the subclass fantasy supports them.
-- Vary facing direction, camera angle, focal point, action, weather, environment, and color temperature across the remaining deck.
+- Vary facing direction, camera angle, focal point, action, weather, environment, and color temperature across the deck.
 - Mandatory full-resolution anatomy/prop/species QA.
 
 Detailed authority: `CHARACTER_FORGE_TAROT_SUBCLASS_CARD_STANDARD.md`.
@@ -226,4 +158,4 @@ Ordinary `agent/*` commits skip full Vercel Preview builds. Use `[deploy-preview
 
 ## Protected boundaries
 
-Subclass art is presentation-only. No Supabase write/migration is required. Do not touch world-map/town-map behavior, travel/routes/weather/camps/clock, crafting, inventory, merchants, economy, encounter/tactical authority, or unrelated character runtime while completing this queue.
+Subclass art is presentation-only. No Supabase write/migration is required. Do not touch world-map/town-map behavior, travel/routes/weather/camps/clock, crafting, inventory, merchants, economy, encounter/tactical authority, or unrelated character runtime while maintaining this deck.

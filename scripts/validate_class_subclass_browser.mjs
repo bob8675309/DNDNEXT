@@ -71,8 +71,8 @@ for (const forbidden of [
 ]) assert(!selector.includes(forbidden), `Subclass selector regressed to the prior grid/hover-driven presentation: ${forbidden}`);
 assert(!selector.includes("supabase"), "Subclass selector must remain presentation-only.");
 
-// 2026-09-16 approved normalized tarot install: explicitly mapped cards use the
-// installed 7:12 deck while every unfinished subclass retains the class-art fallback.
+// 2026-09-17 completed normalized Tarot install: every current runtime-visible
+// subclass has approved dedicated art; the fallback remains only for unknown/future content.
 for (const token of [
   'classMenuArtworkFor',
   'APPROVED_SUBCLASS_ART_FAMILIES',
@@ -84,14 +84,15 @@ for (const token of [
 
 const approvedTarotFamilies = {
   artificer: ["alchemist", "armorer", "artillerist", "battle-smith", "cartographer", "reanimator"],
-  barbarian: ["berserker", "wild-heart", "world-tree", "zealot"],
-  bard: ["creation", "dance", "eloquence", "glamour", "lore", "moon", "spirits", "valor", "whispers"],
+  barbarian: ["ancestral-guardian", "battlerager", "beast", "berserker", "giant", "storm-herald", "totem-warrior", "wild-heart", "wild-magic", "world-tree", "zealot"],
+  bard: ["creation", "dance", "eloquence", "glamour", "lore", "moon", "spirits", "swords", "valor", "whispers"],
   cleric: ["ambition", "arcana", "death", "forge", "grave", "knowledge", "life", "light", "nature", "order", "peace", "solidarity", "strength", "tempest", "trickery", "twilight", "war", "zeal"],
   druid: ["dreams", "land", "moon", "sea", "shepherd", "spores", "stars", "wildfire"],
-  fighter: ["arcane-archer", "banneret", "battle-master", "cavalier", "champion", "echo-knight", "eldritch-knight", "purple-dragon-knight-banneret", "psi-warrior", "rune-knight"],
-  monk: ["drunken-master", "elements", "kensei", "mercy", "open-hand", "shadow"],
+  fighter: ["arcane-archer", "banneret", "battle-master", "cavalier", "champion", "echo-knight", "eldritch-knight", "purple-dragon-knight-banneret", "psi-warrior", "rune-knight", "samurai"],
+  monk: ["ascendant-dragon", "astral-self", "drunken-master", "elements", "four-elements", "kensei", "long-death", "mercy", "open-hand", "shadow", "sun-soul"],
   "monster-hunter": ["carver-guild", "devourer-guild", "occultist-guild", "trapper-guild"],
-  paladin: ["ancients", "conquest", "devotion", "glory", "noble-genies", "oathbreaker", "redemption", "vengeance"],
+  mystic: ["avatar", "awakened", "immortal", "nomad", "soul-knife", "wu-jen"],
+  paladin: ["ancients", "conquest", "crown", "devotion", "glory", "noble-genies", "oathbreaker", "redemption", "vengeance", "watchers"],
   ranger: ["beast-master", "drakewarden", "fey-wanderer", "gloom-stalker", "hollow-warden", "horizon-walker", "hunter", "monster-slayer", "swarmkeeper", "winter-walker"],
   rogue: ["arcane-trickster", "assassin", "inquisitive", "mastermind", "phantom", "scion-of-the-three", "scout", "soulknife", "swashbuckler", "thief"],
   sorcerer: ["aberrant", "clockwork", "divine-soul", "draconic", "lunar", "pyromancer", "shadow", "spellfire", "storm", "wild-magic"],
@@ -105,7 +106,7 @@ for (const [classKey, families] of Object.entries(approvedTarotFamilies)) {
     assert(fs.existsSync(path.join(root, `public/media/subclasses/${classKey}/${classKey}-${family}.webp`)), `Approved tarot asset missing ${classKey}/${family}`);
   }
 }
-assert(approvedTarotCount === 130, `Expected 130 installed approved normalized tarot concepts, found ${approvedTarotCount}.`);
+assert(approvedTarotCount === 152, `Expected 152 installed approved normalized tarot concepts, found ${approvedTarotCount}.`);
 for (const token of ['"ambition-psa": "ambition"', '"knowledge-psa": "knowledge"', '"solidarity-psa": "solidarity"', '"strength-psa": "strength"', '"zeal-psa": "zeal"']) {
   assert(subclassArtwork.includes(token), `Preferred-source Cleric alias mapping missing ${token}`);
 }
@@ -157,4 +158,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSource.includes(token), `Class presentation patch crossed protected boundary: ${token}`);
 }
 
-console.log("Class subclass selector validation passed: canonical subclass authority and persistence remain in the guide model, the cinematic looping gallery remains intact, all 130 approved normalized tarot concepts are installed and mapped, and unmatched content retains the safe class-art fallback.");
+console.log("Class subclass selector validation passed: canonical subclass authority and persistence remain in the guide model, the cinematic looping gallery remains intact, all 152 approved normalized tarot concepts are installed and mapped, the 149 current runtime-visible choices have dedicated approved coverage, and unmatched future content retains the safe class-art fallback.");
