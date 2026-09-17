@@ -25,7 +25,7 @@ jobs:
       - name: Download verified archive
         run: |
           set -euo pipefail
-          curl -L --fail --silent --show-error 'https://uc005593ac7450120df6c907c454.dl.dropboxusercontent.com/cd/0/get/DITvz3krgqusnT1xCjv0nRR6GLuSXhDGKajd90bhx3O48JB9V6Fbbm1Ne3201wWGzmM2T62UBj4_PNnp2HeJOtHBUhf1Xa4aZbybPW9Wq2diUvKkxBMXE9rmbmFq060u9dtfNEXXrE1pW768j1rGVhpPLD5Zc-h_-YWkItkaVjyDew/file?c_luid=c335000c' -o /tmp/final-tarot.zip
+          curl -L --fail --silent --show-error 'https://uca6f4f5e2231da6e0ed84e48ac6.dl.dropboxusercontent.com/cd/0/get/DIQk_USfsv-KfvbAAxcCK83vtRTmW914CIV0FOpcdlr7V7K5JOojb6AWaWYYtAFHP1fbyyR_71eDG2Z2I6JKxJ9xYR1airTgJsQXZQDmcsQl8UE5-cix-OMkhqbaYeX72iUutqGyTDRytdo6vKToANcKfXczFWLOqTJ-I0TdgyRRug/file?c_luid=c335000c' -o /tmp/final-tarot.zip
           echo '7b29c2730c3f18ce13b1eaee4b8f6a2d9b9bc2374166e02cab3787f7f0e35229  /tmp/final-tarot.zip' | sha256sum -c -
           rm -rf /tmp/final-tarot-stage
           mkdir -p /tmp/final-tarot-stage
@@ -45,7 +45,7 @@ jobs:
             cp "/tmp/final-tarot-stage/$path" "$path"
           done < <(jq -r '.files[].path' /tmp/final-tarot-stage/manifest.json)
           jq -r '.files[].path' /tmp/final-tarot-stage/manifest.json | sort > /tmp/expected.txt
-          git diff --name-only | sort > /tmp/actual.txt
+          git ls-files --others --modified --exclude-standard | sort > /tmp/actual.txt
           diff -u /tmp/expected.txt /tmp/actual.txt
           test "$(wc -l < /tmp/actual.txt)" -eq 22
 
