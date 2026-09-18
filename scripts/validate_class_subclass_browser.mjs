@@ -12,6 +12,7 @@ const presentation = read("utils/classes/classPresentation.js");
 const framing = read("styles/character-forge-class-hero-framing.css");
 const model = read("components/NpcForgeClassGuideModel.js");
 const workspaceCss = read("styles/character-class-workspace.css");
+const tarotCss = read("styles/character-forge-subclass-tarot-layout.css");
 
 for (const token of [
   'import ClassSubclassSection from "./ClassSubclassSection"',
@@ -38,20 +39,21 @@ for (const token of [
   'import { createPortal } from "react-dom"',
   'subclassArtworkFor(classKey, option)',
   'handleSubclassArtworkError(event, classKey)',
-  'class-subclass-carousel-modal',
-  'role="dialog"',
-  'aria-modal="true"',
-  'class-subclass-carousel-modal__rail',
-  'class-subclass-carousel-card',
-  'const [carouselStart, setCarouselStart] = useState(0)',
-  'const [visibleCount, setVisibleCount] = useState(4)',
-  'const visibleOptions = useMemo',
-  'Math.min(visibleCount, options.length)',
-  '(carouselStart + slot) % options.length',
+  'function orbitPlacement(optionIndex, carouselStart, total)',
+  'const frontCount = Math.min(4, count)',
+  'const offset = (Math.PI / 2) - (frontSpan / 2)',
+  'const orbitOptions = useMemo',
+  'const focusedIndex = options.length ? (carouselStart + focusedSlot) % options.length : 0',
+  'model?.setPreviewKey?.(focusedOption.key)',
   'function rotateCarousel(direction)',
   '(current + normalizedDirection + length) % length',
-  'grid-template-columns:repeat(var(--subclass-visible-count,4),minmax(0,1fr))',
-  'filter:brightness(1.12) saturate(1.08) contrast(1.03)',
+  'key={option.key}',
+  'data-orbit-slot={relative}',
+  'class-subclass-carousel-modal__orbit',
+  'class-subclass-carousel-modal__smoke-front',
+  'class-subclass-carousel-modal__details',
+  'class-subclass-carousel-modal__details-button',
+  'onClick={showFocusedDetails}',
   'model.setPreviewKey(option.key)',
   'model.selectSubclass(option)',
   'optionEntryLevel(option) > currentLevel',
@@ -61,19 +63,34 @@ for (const token of [
   'currentLevel < entryLevel',
   'setSelectorOpen(true)',
   'onInspectSubclass?.(option)',
-]) assert(selector.includes(token), `Cinematic circular subclass selector is missing ${token}`);
+]) assert(selector.includes(token), `Runic circular subclass selector is missing ${token}`);
+
+for (const token of [
+  'url("/media/forge/subclass-carousel/subclass-selector-cathedral-bg.png")',
+  'url("/media/forge/subclass-carousel/subclass-selector-runic-table.png")',
+  'url("/media/forge/subclass-carousel/subclass-selector-smoke-back.png")',
+  'url("/media/forge/subclass-carousel/subclass-selector-smoke-front.png")',
+  '.class-subclass-carousel-card.is-orbit-back',
+  'rotateY(var(--orbit-yaw))',
+  'z-index: var(--orbit-z)',
+  '.class-subclass-carousel-modal__details',
+  'backdrop-filter: blur(12px)',
+]) assert(tarotCss.includes(token), `Runic subclass carousel presentation is missing ${token}`);
 
 for (const forbidden of [
   'class-subclass-two-column__grid',
   'class-subclass-two-column__scroll',
   'class-subclass-selected-row',
-  'grid-template-columns:repeat(2,minmax(0,1fr))',
   'Search subclasses',
   'class-subclass-browser__search',
   'class-subclass-browser__sources',
   'onMouseEnter',
   'onFocus={() => onInspectSubclass',
-]) assert(!selector.includes(forbidden), `Subclass selector regressed to the prior grid/hover-driven presentation: ${forbidden}`);
+  'const [visibleCount, setVisibleCount] = useState(4)',
+  'const visibleOptions = useMemo',
+  '--subclass-visible-count',
+]) assert(!selector.includes(forbidden), `Subclass selector regressed to the prior flat/grid presentation: ${forbidden}`);
+
 for (const forbidden of [
   'loopedOptions',
   'keepRailLooped',
@@ -82,7 +99,16 @@ for (const forbidden of [
   'scrollLeft += segment',
   'scrollLeft -= segment',
 ]) assert(!selector.includes(forbidden), `Subclass carousel still contains rubberband/recentering behavior: ${forbidden}`);
+
 assert(!selector.includes("supabase"), "Subclass selector must remain presentation-only.");
+
+for (const asset of [
+  "public/media/forge/subclass-carousel/subclass-selector-cathedral-bg.png",
+  "public/media/forge/subclass-carousel/subclass-selector-runic-table.png",
+  "public/media/forge/subclass-carousel/subclass-selector-smoke-back.png",
+  "public/media/forge/subclass-carousel/subclass-selector-smoke-front.png",
+]) assert(fs.existsSync(path.join(root, asset)), `Runic subclass carousel UI asset missing ${asset}`);
+
 
 // 2026-09-17 completed normalized Tarot install: every current runtime-visible
 // subclass has approved dedicated art; the fallback remains only for unknown/future content.
@@ -171,4 +197,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSource.includes(token), `Class presentation patch crossed protected boundary: ${token}`);
 }
 
-console.log("Class subclass selector validation passed: canonical subclass authority and persistence remain in the guide model, the cinematic four-card circular gallery advances one card at a time without scroll recentering, all 152 approved normalized tarot concepts are installed and mapped, the 149 current runtime-visible choices have dedicated approved coverage, and unmatched future content retains the safe class-art fallback.");
+console.log("Class subclass selector validation passed: canonical subclass authority and persistence remain in the guide model, all subclass cards move through a stable runic-table orbit one position at a time, four front positions stay prominent while rear positions recede behind smoke, the details panel is source-backed, all 152 approved normalized tarot concepts remain installed and mapped, and unmatched future content retains the safe class-art fallback.");
