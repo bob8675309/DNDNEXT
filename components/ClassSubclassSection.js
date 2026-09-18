@@ -321,7 +321,7 @@ export default function ClassSubclassSection({
               ref={orbitRef}
               className={`class-subclass-carousel-modal__orbit${isDragging ? " is-dragging" : ""}`}
               role="list"
-              aria-label="Subclass catalogue. Drag to spin the carousel."
+              aria-label="Subclass catalogue"
               onPointerDown={handleOrbitPointerDown}
               onPointerMove={handleOrbitPointerMove}
               onPointerUp={(event) => finishOrbitPointer(event)}
