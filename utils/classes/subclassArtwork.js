@@ -13,18 +13,29 @@ const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
     reanimator: "reanimator",
   }),
   barbarian: Object.freeze({
+    "ancestral-guardian": "ancestral-guardian",
+    battlerager: "battlerager",
+    beast: "beast",
     berserker: "berserker",
+    giant: "giant",
+    "storm-herald": "storm-herald",
+    "totem-warrior": "totem-warrior",
     "wild-heart": "wild-heart",
+    "wild-magic": "wild-magic",
     "world-tree": "world-tree",
     zealot: "zealot",
   }),
   bard: Object.freeze({
+    creation: "creation",
     dance: "dance",
+    eloquence: "eloquence",
     glamour: "glamour",
     lore: "lore",
     moon: "moon",
     spirits: "spirits",
+    swords: "swords",
     valor: "valor",
+    whispers: "whispers",
   }),
   cleric: Object.freeze({
     ambition: "ambition",
@@ -59,17 +70,30 @@ const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
     wildfire: "wildfire",
   }),
   fighter: Object.freeze({
+    "arcane-archer": "arcane-archer",
     banneret: "banneret",
     "battle-master": "battle-master",
+    cavalier: "cavalier",
     champion: "champion",
+    "echo-knight": "echo-knight",
     "eldritch-knight": "eldritch-knight",
+    "purple-dragon-knight-banneret": "purple-dragon-knight-banneret",
     "psi-warrior": "psi-warrior",
+    "rune-knight": "rune-knight",
+    samurai: "samurai",
   }),
   monk: Object.freeze({
+    "ascendant-dragon": "ascendant-dragon",
+    "astral-self": "astral-self",
+    "drunken-master": "drunken-master",
     elements: "elements",
+    "four-elements": "four-elements",
+    kensei: "kensei",
+    "long-death": "long-death",
     mercy: "mercy",
     "open-hand": "open-hand",
     shadow: "shadow",
+    "sun-soul": "sun-soul",
   }),
   "monster-hunter": Object.freeze({
     "carver-guild": "carver-guild",
@@ -77,27 +101,48 @@ const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
     "occultist-guild": "occultist-guild",
     "trapper-guild": "trapper-guild",
   }),
+  mystic: Object.freeze({
+    avatar: "avatar",
+    awakened: "awakened",
+    immortal: "immortal",
+    nomad: "nomad",
+    "soul-knife": "soul-knife",
+    "wu-jen": "wu-jen",
+  }),
   paladin: Object.freeze({
     ancients: "ancients",
+    conquest: "conquest",
+    crown: "crown",
     devotion: "devotion",
     glory: "glory",
     "noble-genies": "noble-genies",
+    oathbreaker: "oathbreaker",
+    redemption: "redemption",
     vengeance: "vengeance",
+    watchers: "watchers",
   }),
   ranger: Object.freeze({
     "beast-master": "beast-master",
+    drakewarden: "drakewarden",
     "fey-wanderer": "fey-wanderer",
     "gloom-stalker": "gloom-stalker",
     "hollow-warden": "hollow-warden",
+    "horizon-walker": "horizon-walker",
     hunter: "hunter",
+    "monster-slayer": "monster-slayer",
+    swarmkeeper: "swarmkeeper",
     "winter-walker": "winter-walker",
   }),
   rogue: Object.freeze({
     "arcane-trickster": "arcane-trickster",
     assassin: "assassin",
+    inquisitive: "inquisitive",
+    mastermind: "mastermind",
     phantom: "phantom",
+    scout: "scout",
     "scion-of-the-three": "scion-of-the-three",
     soulknife: "soulknife",
+    swashbuckler: "swashbuckler",
     thief: "thief",
   }),
   sorcerer: Object.freeze({
@@ -157,9 +202,8 @@ function fallbackSubclassArtworkFor(normalizedClass = "") {
   return classMenuArtworkFor(normalizedClass);
 }
 
-// Only Paul-approved normalized tarot cards are mapped here. Subclasses still in
-// production continue to use the class-menu artwork fallback until individually
-// approved, installed, and added to this resolver.
+// All current runtime-visible subclasses approved by Paul are mapped to the completed
+// 7:12 Tarot deck. The class-menu fallback remains only for genuinely unknown/future content.
 export function subclassArtworkFor(classKey = "", option = {}) {
   const normalizedClass = key(classKey);
   const normalizedSubclass = key(option?.name || option?.key);

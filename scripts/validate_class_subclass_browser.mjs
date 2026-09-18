@@ -12,6 +12,7 @@ const presentation = read("utils/classes/classPresentation.js");
 const framing = read("styles/character-forge-class-hero-framing.css");
 const model = read("components/NpcForgeClassGuideModel.js");
 const workspaceCss = read("styles/character-class-workspace.css");
+const tarotCss = read("styles/character-forge-subclass-tarot-layout.css");
 
 for (const token of [
   'import ClassSubclassSection from "./ClassSubclassSection"',
@@ -38,15 +39,21 @@ for (const token of [
   'import { createPortal } from "react-dom"',
   'subclassArtworkFor(classKey, option)',
   'handleSubclassArtworkError(event, classKey)',
-  'class-subclass-carousel-modal',
-  'role="dialog"',
-  'aria-modal="true"',
-  'class-subclass-carousel-modal__rail',
-  'scroll-snap-type:x mandatory',
-  'class-subclass-carousel-card',
-  'loopedOptions',
-  'rail.scrollWidth / 3',
-  'keepRailLooped',
+  'function orbitPlacement(optionIndex, carouselStart, total)',
+  'const frontCount = Math.min(4, count)',
+  'const offset = (Math.PI / 2) - (frontSpan / 2)',
+  'const orbitOptions = useMemo',
+  'const focusedIndex = options.length ? (carouselStart + focusedSlot) % options.length : 0',
+  'model?.setPreviewKey?.(focusedOption.key)',
+  'function rotateCarousel(direction)',
+  '(current + normalizedDirection + length) % length',
+  'key={option.key}',
+  'data-orbit-slot={relative}',
+  'class-subclass-carousel-modal__orbit',
+  'class-subclass-carousel-modal__smoke-front',
+  'class-subclass-carousel-modal__details',
+  'class-subclass-carousel-modal__details-button',
+  'onClick={showFocusedDetails}',
   'model.setPreviewKey(option.key)',
   'model.selectSubclass(option)',
   'optionEntryLevel(option) > currentLevel',
@@ -56,23 +63,55 @@ for (const token of [
   'currentLevel < entryLevel',
   'setSelectorOpen(true)',
   'onInspectSubclass?.(option)',
-]) assert(selector.includes(token), `Cinematic looping subclass selector is missing ${token}`);
+]) assert(selector.includes(token), `Runic circular subclass selector is missing ${token}`);
+
+for (const token of [
+  'url("/media/forge/subclass-carousel/subclass-selector-cathedral-bg.png")',
+  'url("/media/forge/subclass-carousel/subclass-selector-runic-table.png")',
+  'url("/media/forge/subclass-carousel/subclass-selector-smoke-back.png")',
+  'url("/media/forge/subclass-carousel/subclass-selector-smoke-front.png")',
+  '.class-subclass-carousel-card.is-orbit-back',
+  'rotateY(var(--orbit-yaw))',
+  'z-index: var(--orbit-z)',
+  '.class-subclass-carousel-modal__details',
+  'backdrop-filter: blur(12px)',
+]) assert(tarotCss.includes(token), `Runic subclass carousel presentation is missing ${token}`);
 
 for (const forbidden of [
   'class-subclass-two-column__grid',
   'class-subclass-two-column__scroll',
   'class-subclass-selected-row',
-  'grid-template-columns:repeat(2,minmax(0,1fr))',
   'Search subclasses',
   'class-subclass-browser__search',
   'class-subclass-browser__sources',
   'onMouseEnter',
   'onFocus={() => onInspectSubclass',
-]) assert(!selector.includes(forbidden), `Subclass selector regressed to the prior grid/hover-driven presentation: ${forbidden}`);
+  'const [visibleCount, setVisibleCount] = useState(4)',
+  'const visibleOptions = useMemo',
+  '--subclass-visible-count',
+]) assert(!selector.includes(forbidden), `Subclass selector regressed to the prior flat/grid presentation: ${forbidden}`);
+
+for (const forbidden of [
+  'loopedOptions',
+  'keepRailLooped',
+  'rail.scrollWidth / 3',
+  'scroll-snap-type:x mandatory',
+  'scrollLeft += segment',
+  'scrollLeft -= segment',
+]) assert(!selector.includes(forbidden), `Subclass carousel still contains rubberband/recentering behavior: ${forbidden}`);
+
 assert(!selector.includes("supabase"), "Subclass selector must remain presentation-only.");
 
-// 2026-09-13 approved normalized tarot install: explicitly mapped cards use the
-// installed 7:12 deck while every unfinished subclass retains the class-art fallback.
+for (const asset of [
+  "public/media/forge/subclass-carousel/subclass-selector-cathedral-bg.png",
+  "public/media/forge/subclass-carousel/subclass-selector-runic-table.png",
+  "public/media/forge/subclass-carousel/subclass-selector-smoke-back.png",
+  "public/media/forge/subclass-carousel/subclass-selector-smoke-front.png",
+]) assert(fs.existsSync(path.join(root, asset)), `Runic subclass carousel UI asset missing ${asset}`);
+
+
+// 2026-09-17 completed normalized Tarot install: every current runtime-visible
+// subclass has approved dedicated art; the fallback remains only for unknown/future content.
 for (const token of [
   'classMenuArtworkFor',
   'APPROVED_SUBCLASS_ART_FAMILIES',
@@ -84,16 +123,17 @@ for (const token of [
 
 const approvedTarotFamilies = {
   artificer: ["alchemist", "armorer", "artillerist", "battle-smith", "cartographer", "reanimator"],
-  barbarian: ["berserker", "wild-heart", "world-tree", "zealot"],
-  bard: ["dance", "glamour", "lore", "moon", "spirits", "valor"],
+  barbarian: ["ancestral-guardian", "battlerager", "beast", "berserker", "giant", "storm-herald", "totem-warrior", "wild-heart", "wild-magic", "world-tree", "zealot"],
+  bard: ["creation", "dance", "eloquence", "glamour", "lore", "moon", "spirits", "swords", "valor", "whispers"],
   cleric: ["ambition", "arcana", "death", "forge", "grave", "knowledge", "life", "light", "nature", "order", "peace", "solidarity", "strength", "tempest", "trickery", "twilight", "war", "zeal"],
   druid: ["dreams", "land", "moon", "sea", "shepherd", "spores", "stars", "wildfire"],
-  fighter: ["banneret", "battle-master", "champion", "eldritch-knight", "psi-warrior"],
-  monk: ["elements", "mercy", "open-hand", "shadow"],
+  fighter: ["arcane-archer", "banneret", "battle-master", "cavalier", "champion", "echo-knight", "eldritch-knight", "purple-dragon-knight-banneret", "psi-warrior", "rune-knight", "samurai"],
+  monk: ["ascendant-dragon", "astral-self", "drunken-master", "elements", "four-elements", "kensei", "long-death", "mercy", "open-hand", "shadow", "sun-soul"],
   "monster-hunter": ["carver-guild", "devourer-guild", "occultist-guild", "trapper-guild"],
-  paladin: ["ancients", "devotion", "glory", "noble-genies", "vengeance"],
-  ranger: ["beast-master", "fey-wanderer", "gloom-stalker", "hollow-warden", "hunter", "winter-walker"],
-  rogue: ["arcane-trickster", "assassin", "phantom", "scion-of-the-three", "soulknife", "thief"],
+  mystic: ["avatar", "awakened", "immortal", "nomad", "soul-knife", "wu-jen"],
+  paladin: ["ancients", "conquest", "crown", "devotion", "glory", "noble-genies", "oathbreaker", "redemption", "vengeance", "watchers"],
+  ranger: ["beast-master", "drakewarden", "fey-wanderer", "gloom-stalker", "hollow-warden", "horizon-walker", "hunter", "monster-slayer", "swarmkeeper", "winter-walker"],
+  rogue: ["arcane-trickster", "assassin", "inquisitive", "mastermind", "phantom", "scion-of-the-three", "scout", "soulknife", "swashbuckler", "thief"],
   sorcerer: ["aberrant", "clockwork", "divine-soul", "draconic", "lunar", "pyromancer", "shadow", "spellfire", "storm", "wild-magic"],
   warlock: ["archfey", "celestial", "fathomless", "fiend", "genie", "great-old-one", "hexblade", "undead", "undying"],
   wizard: ["abjuration", "abjurer", "bladesinger", "bladesinging", "chronurgy", "conjuration", "divination", "diviner", "enchantment", "evocation", "evoker", "graviturgy", "illusion", "illusionist", "necromancy", "scribes", "transmutation", "war"],
@@ -105,7 +145,7 @@ for (const [classKey, families] of Object.entries(approvedTarotFamilies)) {
     assert(fs.existsSync(path.join(root, `public/media/subclasses/${classKey}/${classKey}-${family}.webp`)), `Approved tarot asset missing ${classKey}/${family}`);
   }
 }
-assert(approvedTarotCount === 109, `Expected 109 installed approved tarot concepts, found ${approvedTarotCount}.`);
+assert(approvedTarotCount === 152, `Expected 152 installed approved normalized tarot concepts, found ${approvedTarotCount}.`);
 for (const token of ['"ambition-psa": "ambition"', '"knowledge-psa": "knowledge"', '"solidarity-psa": "solidarity"', '"strength-psa": "strength"', '"zeal-psa": "zeal"']) {
   assert(subclassArtwork.includes(token), `Preferred-source Cleric alias mapping missing ${token}`);
 }
@@ -157,4 +197,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSource.includes(token), `Class presentation patch crossed protected boundary: ${token}`);
 }
 
-console.log("Class subclass selector validation passed: canonical subclass authority and persistence remain in the guide model, the cinematic looping gallery remains intact, all 109 approved normalized tarot concepts are installed and mapped, and unmatched content retains the safe class-art fallback.");
+console.log("Class subclass selector validation passed: canonical subclass authority and persistence remain in the guide model, all subclass cards move through a stable runic-table orbit one position at a time, four front positions stay prominent while rear positions recede behind smoke, the details panel is source-backed, all 152 approved normalized tarot concepts remain installed and mapped, and unmatched future content retains the safe class-art fallback.");

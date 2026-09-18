@@ -1,10 +1,40 @@
 # DNDNext Next-Chat Handoff Brief
 
-Updated: 2026-08-30
+Updated: 2026-09-18
 
 Repository: `bob8675309/DNDNEXT`
 
 Stack: Next.js **Pages Router** 16.1.6, React 19, Supabase/Postgres, Bootstrap/SCSS, Vercel.
+
+## 2026-09-18 current override — read this before older checkpoint prose
+
+The older sections below retain useful architecture/history, but their PR-number checkpoint is stale. Current active Character Forge subclass work is **PR #193**, branch `agent/subclass-tarot-approved-batch-20260916`, open and unmerged.
+
+Current implementation checkpoint before this documentation refresh:
+
+`49b6a0486878748f5d9c3147eb51fdbe16358451` — `Harden runic carousel preview effects [deploy-preview]`
+
+Current accepted state:
+
+- the full runtime-visible subclass Tarot deck is complete at **149/149** dedicated cards;
+- the resolver ledger contains **152 normalized installed concepts** because historical compatibility identities/explicit aliases remain represented;
+- current runtime-visible generic/class fallback count is **0**;
+- the subclass selector is now the approved **runic circular Tarot gallery** rather than the old compact two-column selector;
+- four cards are prominent on the front arc at desktop scale; all remaining choices continue around the same circular orbit as smaller/dimmer rear cards;
+- Left/Right advances exactly one option and wraps continuously without duplicated scroll rails or recentering;
+- selection, eligibility, persistence, progression, and Supabase authority remain unchanged;
+- the 2026-09-18 implementation checkpoint passed the Class-browser/subclass validators and Vercel Preview `dpl_5kcUtbeqoWqsY7iBMaLeyb81buaX` is READY; `/profile` returned HTTP 200.
+
+Read these current focused documents before changing subclass presentation/art:
+
+- `docs/CHARACTER_FORGE_CLASS_SUBCLASS_SELECTOR_ARTWORK.md`
+- `docs/CHARACTER_FORGE_SUBCLASS_ARTWORK_STATUS.md`
+- `docs/CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md`
+- `docs/CHARACTER_FORGE_TAROT_SUBCLASS_CARD_STANDARD.md`
+
+The standing world-map boundary is unchanged: **do not touch world-map behavior unless Paul explicitly requests it, and never mix world-map behavior with town/city-map behavior.**
+
+Always re-fetch PR #193 and current `main` before writing or merging. Source + exact-head CI/deployment outrank this recorded SHA if the branch moves.
 
 ## Current authoritative checkpoint
 
