@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { handleSubclassArtworkError, subclassArtworkFor } from "../utils/classes/subclassArtwork";
 
 const text = (value) => String(value ?? "").trim();
-const FRONT_CENTER_SLOT = 1.5;
+const FRONT_CENTER_SLOT = 1;
 const DRAG_THRESHOLD_PX = 6;
 const FLICK_PROJECTION_MS = 180;
 
@@ -49,21 +49,20 @@ function clamp(value, min, max) {
 function orbitPlacement(optionIndex, orbitOffset, total) {
   const count = Math.max(1, Number(total || 1));
   const step = (Math.PI * 2) / count;
+  const stepDegrees = 360 / count;
   const frontCenter = orbitOffset + FRONT_CENTER_SLOT;
   const signedSlots = signedOrbitSlots(optionIndex - frontCenter, count);
   const angle = (Math.PI / 2) + (signedSlots * step);
   const sine = Math.sin(angle);
   const cosine = Math.cos(angle);
   const depth = (sine + 1) / 2;
-  const isFront = Math.abs(signedSlots) < 2.01;
-  const x = 50 - (cosine * 44.2);
-  const y = 37.5 + (sine * 18.6);
-  const yawStrength = 10 + ((1 - depth) * 110);
-  const yaw = cosine * yawStrength;
-  const scale = 0.58 + (depth * 0.36);
-  const opacity = 0.26 + (depth * 0.74);
-  const dim = clamp((1 - depth) * 0.72, 0, 0.72);
-  const zIndex = 24 + Math.round(depth * 108);
+  const isFront = Math.abs(signedSlots) <= 1.01;
+  const x = 50 - (cosine * 44.8);
+  const y = 36.8 + (sine * 18.2);
+  const yaw = signedSlots * stepDegrees;
+  const scale = isFront ? 1 : 0.61 + (depth * 0.29);
+  const opacity = 0.24 + (depth * 0.76);
+  const zIndex = 24 + Math.round(depth * 110);
 
   return {
     signedSlots,
@@ -75,9 +74,8 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
       "--orbit-yaw": `${yaw.toFixed(2)}deg`,
       "--orbit-scale": scale.toFixed(4),
       "--orbit-opacity": opacity.toFixed(3),
-      "--orbit-dim": dim.toFixed(3),
       "--orbit-z": String(zIndex),
-      "--orbit-depth-z": `${Math.round(depth * 72)}px`,
+      "--orbit-depth-z": `${Math.round(depth * 68)}px`,
     },
   };
 }
@@ -103,6 +101,7 @@ export default function ClassSubclassSection({
   const [selectorOpen, setSelectorOpen] = useState(false);
   const [orbitOffset, setOrbitOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [inspectedKey, setInspectedKey] = useState("");
   const autoOpenedForRef = useRef("");
   const lastClassKeyRef = useRef(classKey);
   const orbitRef = useRef(null);
@@ -116,10 +115,11 @@ export default function ClassSubclassSection({
   })), [orbitOffset, options]);
 
   const browsedIndex = options.length
-    ? Math.floor(normalizeOrbitOffset(orbitOffset + FRONT_CENTER_SLOT, options.length))
+    ? Math.round(normalizeOrbitOffset(orbitOffset + FRONT_CENTER_SLOT, options.length)) % options.length
     : 0;
   const browsedOption = options[browsedIndex] || null;
-  const browsedSummary = useMemo(() => subclassSummary(browsedOption), [browsedOption]);
+  const inspectedOption = options.find((option) => option.key === inspectedKey) || browsedOption;
+  const inspectedSummary = useMemo(() => subclassSummary(inspectedOption), [inspectedOption]);
   const classLabel = classLabelFor(classKey, model?.className);
 
   useEffect(() => {
@@ -129,6 +129,7 @@ export default function ClassSubclassSection({
       setSelectorOpen(false);
     }
     setOrbitOffset(0);
+    setInspectedKey("");
   }, [classKey, optionSignature]);
 
   useEffect(() => {
@@ -143,7 +144,8 @@ export default function ClassSubclassSection({
     if (!selectorOpen || !selected || !options.length) return;
     const selectedIndex = options.findIndex((option) => option.key === selected.key);
     if (selectedIndex < 0) return;
-    setOrbitOffset(normalizeOrbitOffset(selectedIndex - 1, options.length));
+    setOrbitOffset(normalizeOrbitOffset(selectedIndex - FRONT_CENTER_SLOT, options.length));
+    setInspectedKey(selected.key);
   }, [selectorOpen, selected?.key, optionSignature]);
 
   useEffect(() => {
@@ -180,34 +182,29 @@ export default function ClassSubclassSection({
     );
   }
 
-  function choose(option) {
-    onInspectSubclass?.(option);
-    if (optionEntryLevel(option) > currentLevel) return;
-    model.setPreviewKey(option.key);
-    model.selectSubclass(option);
-    setSelectorOpen(false);
-  }
-
   function clearSelection() {
     model.selectSubclass(null);
+    setInspectedKey("");
     setSelectorOpen(true);
   }
 
   function rotateCarousel(direction) {
     if (options.length <= 1) return;
     const normalizedDirection = direction < 0 ? -1 : 1;
+    setInspectedKey("");
     setOrbitOffset((current) => normalizeOrbitOffset(Math.round(current) + normalizedDirection, options.length));
   }
 
-  function showBrowsedDetails() {
-    if (!browsedOption) return;
-    model?.setPreviewKey?.(browsedOption.key);
-    onInspectSubclass?.(browsedOption);
+  function showInspectedDetails() {
+    if (!inspectedOption) return;
+    model?.setPreviewKey?.(inspectedOption.key);
+    onInspectSubclass?.(inspectedOption);
   }
 
   function handleOrbitPointerDown(event) {
     if (options.length <= 1) return;
     if (event.pointerType === "mouse" && event.button !== 0) return;
+    setInspectedKey("");
     const bounds = orbitRef.current?.getBoundingClientRect();
     const now = Number(event.timeStamp || performance.now());
     dragStateRef.current = {
@@ -272,13 +269,20 @@ export default function ClassSubclassSection({
     setIsDragging(false);
   }
 
-  function handleCardClick(event, option) {
-    if (Date.now() < suppressClickUntilRef.current) {
+  function handleCardClick(event, option, isFront) {
+    if (!isFront || Date.now() < suppressClickUntilRef.current) {
       event.preventDefault();
       event.stopPropagation();
       return;
     }
-    choose(option);
+
+    setInspectedKey(option.key);
+    model?.setPreviewKey?.(option.key);
+    onInspectSubclass?.(option);
+
+    if (optionEntryLevel(option) <= currentLevel) {
+      model.selectSubclass(option);
+    }
   }
 
   const selectorModal = selectorOpen && typeof document !== "undefined"
@@ -309,19 +313,13 @@ export default function ClassSubclassSection({
             <div className="class-subclass-carousel-modal__table" aria-hidden="true" />
             <div className="class-subclass-carousel-modal__smoke-back" aria-hidden="true" />
 
-            <button
-              type="button"
-              className="class-subclass-carousel-modal__nav is-prev"
-              onClick={() => rotateCarousel(-1)}
-              aria-label="Previous subclass"
-              disabled={options.length <= 1}
-            >‹</button>
+            <button type="button" className="class-subclass-carousel-modal__nav is-prev" onClick={() => rotateCarousel(-1)} aria-label="Previous subclass" disabled={options.length <= 1}>‹</button>
 
             <div
               ref={orbitRef}
               className={`class-subclass-carousel-modal__orbit${isDragging ? " is-dragging" : ""}`}
               role="list"
-              aria-label="Subclass catalogue"
+              aria-label="Subclass catalogue. Drag to spin the carousel."
               onPointerDown={handleOrbitPointerDown}
               onPointerMove={handleOrbitPointerMove}
               onPointerUp={(event) => finishOrbitPointer(event)}
@@ -329,14 +327,14 @@ export default function ClassSubclassSection({
             >
               {orbitOptions.map(({ option, optionIndex, signedSlots, depth, isFront, style }) => {
                 const isSelected = selected?.key === option.key;
-                const isBrowsed = browsedOption?.key === option.key;
+                const isInspected = inspectedOption?.key === option.key;
                 const eligible = optionEntryLevel(option) <= currentLevel;
                 return (
                   <button
                     key={option.key}
                     type="button"
                     role="listitem"
-                    className={`class-subclass-carousel-card${isBrowsed ? " is-browsed" : ""}${isSelected ? " is-selected" : ""}${isFront ? " is-orbit-front" : " is-orbit-back"}${eligible ? " is-eligible" : " is-locked"}`}
+                    className={`class-subclass-carousel-card${isInspected ? " is-inspected" : ""}${isSelected ? " is-selected" : ""}${isFront ? " is-orbit-front" : " is-orbit-back"}${eligible ? " is-eligible" : " is-locked"}`}
                     style={style}
                     aria-pressed={isSelected}
                     aria-hidden={isFront ? undefined : "true"}
@@ -346,24 +344,30 @@ export default function ClassSubclassSection({
                     aria-label={`${option.name}, ${eligible ? "click to select" : `available at level ${optionEntryLevel(option)}`}`}
                     data-orbit-distance={Math.abs(signedSlots).toFixed(3)}
                     data-orbit-depth={depth.toFixed(3)}
-                    onClick={(event) => handleCardClick(event, option)}
+                    onClick={(event) => handleCardClick(event, option, isFront)}
                   >
                     <span className="class-subclass-carousel-card__surface">
-                      <span className="class-subclass-carousel-card__art" aria-hidden="true">
-                        <img
-                          src={subclassArtworkFor(classKey, option)}
-                          onError={(event) => handleSubclassArtworkError(event, classKey)}
-                          alt=""
-                          draggable="false"
-                          decoding="async"
-                        />
-                      </span>
-                      <span className="class-subclass-carousel-card__shade" aria-hidden="true" />
-                      {(!eligible || isSelected) ? (
-                        <span className="class-subclass-carousel-card__copy">
-                          <small>{!eligible ? `Unlocks at level ${optionEntryLevel(option)}` : "Selected"}</small>
+                      <span className="class-subclass-carousel-card__face is-front">
+                        <span className="class-subclass-carousel-card__art" aria-hidden="true">
+                          <img
+                            src={subclassArtworkFor(classKey, option)}
+                            onError={(event) => handleSubclassArtworkError(event, classKey)}
+                            alt=""
+                            draggable="false"
+                            decoding="async"
+                          />
                         </span>
-                      ) : null}
+                        <span className="class-subclass-carousel-card__shade" aria-hidden="true" />
+                        {(!eligible || isSelected) ? (
+                          <span className="class-subclass-carousel-card__copy">
+                            <small>{!eligible ? `Unlocks at level ${optionEntryLevel(option)}` : "Selected"}</small>
+                          </span>
+                        ) : null}
+                      </span>
+                      <span className="class-subclass-carousel-card__face is-back" aria-hidden="true">
+                        <span className="class-subclass-carousel-card__back-rune">✦</span>
+                        <span className="class-subclass-carousel-card__back-title">DNDNEXT</span>
+                      </span>
                     </span>
                   </button>
                 );
@@ -372,30 +376,24 @@ export default function ClassSubclassSection({
 
             <div className="class-subclass-carousel-modal__smoke-front" aria-hidden="true" />
 
-            <button
-              type="button"
-              className="class-subclass-carousel-modal__nav is-next"
-              onClick={() => rotateCarousel(1)}
-              aria-label="Next subclass"
-              disabled={options.length <= 1}
-            >›</button>
+            <button type="button" className="class-subclass-carousel-modal__nav is-next" onClick={() => rotateCarousel(1)} aria-label="Next subclass" disabled={options.length <= 1}>›</button>
 
             <div className="class-subclass-carousel-modal__position" aria-live="polite">
               <span>{browsedIndex + 1}</span><b>/</b><span>{options.length}</span>
             </div>
-            <div className="class-subclass-carousel-modal__hint">Drag the table or use the arrows. Click a card to choose.</div>
+            <div className="class-subclass-carousel-modal__hint">Drag the table or use the arrows. Only the three front cards can be chosen.</div>
           </div>
 
           <section className="class-subclass-carousel-modal__details" aria-live="polite">
             <div className="class-subclass-carousel-modal__details-icon" aria-hidden="true"><span>✦</span></div>
             <div className="class-subclass-carousel-modal__details-copy">
               <span>{classLabel} Subclass</span>
-              <h4>{browsedOption?.name || "Subclass"}</h4>
-              <p>{browsedSummary}</p>
-              {browsedOption && optionEntryLevel(browsedOption) > currentLevel ? <small>Available at level {optionEntryLevel(browsedOption)}</small> : null}
-              {selected?.key === browsedOption?.key ? <small className="is-selected-note">Currently selected</small> : null}
+              <h4>{inspectedOption?.name || "Subclass"}</h4>
+              <p>{inspectedSummary}</p>
+              {inspectedOption && optionEntryLevel(inspectedOption) > currentLevel ? <small>Available at level {optionEntryLevel(inspectedOption)}</small> : null}
+              {selected?.key === inspectedOption?.key ? <small className="is-selected-note">Currently selected</small> : null}
             </div>
-            <button type="button" className="class-subclass-carousel-modal__details-button" onClick={showBrowsedDetails} disabled={!browsedOption}>
+            <button type="button" className="class-subclass-carousel-modal__details-button" onClick={showInspectedDetails} disabled={!inspectedOption}>
               <span>View Details</span><b aria-hidden="true">→</b>
             </button>
           </section>
