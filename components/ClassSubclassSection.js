@@ -112,12 +112,12 @@ export default function ClassSubclassSection({
     if (selectedIndex < 0) return;
     const focusSlot = Math.min(1, Math.max(0, options.length - 1));
     setCarouselStart((selectedIndex - focusSlot + options.length) % options.length);
-  }, [selectorOpen, selected?.key, optionSignature, options]);
+  }, [selectorOpen, selected?.key, optionSignature]);
 
   useEffect(() => {
     if (!selectorOpen || !focusedOption?.key) return;
     model?.setPreviewKey?.(focusedOption.key);
-  }, [focusedOption?.key, model, selectorOpen]);
+  }, [focusedOption?.key, selectorOpen]);
 
   useEffect(() => {
     if (!selectorOpen || typeof document === "undefined") return undefined;
