@@ -3,6 +3,9 @@ import { createPortal } from "react-dom";
 import { handleSubclassArtworkError, subclassArtworkFor } from "../utils/classes/subclassArtwork";
 
 const text = (value) => String(value ?? "").trim();
+const FRONT_CENTER_SLOT = 1.5;
+const DRAG_THRESHOLD_PX = 6;
+const FLICK_PROJECTION_MS = 180;
 
 function optionEntryLevel(option = {}) {
   return Math.max(1, Number(option?.firstLevel || 1));
@@ -27,37 +30,62 @@ function classLabelFor(classKey = "", fallback = "") {
   return normalized.replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-function orbitPlacement(optionIndex, carouselStart, total) {
+function normalizeOrbitOffset(value, total) {
   const count = Math.max(1, Number(total || 1));
-  const relative = (optionIndex - carouselStart + count) % count;
-  const frontCount = Math.min(4, count);
+  return ((Number(value || 0) % count) + count) % count;
+}
+
+function signedOrbitSlots(value, total) {
+  const count = Math.max(1, Number(total || 1));
+  let wrapped = normalizeOrbitOffset(value, count);
+  if (wrapped > count / 2) wrapped -= count;
+  return wrapped;
+}
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function orbitPlacement(optionIndex, orbitOffset, total) {
+  const count = Math.max(1, Number(total || 1));
   const step = (Math.PI * 2) / count;
-  const frontSpan = Math.max(0, frontCount - 1) * step;
-  const offset = (Math.PI / 2) - (frontSpan / 2);
-  const angle = offset + (relative * step);
+  const frontCenter = orbitOffset + FRONT_CENTER_SLOT;
+  const signedSlots = signedOrbitSlots(optionIndex - frontCenter, count);
+  const angle = (Math.PI / 2) + (signedSlots * step);
   const sine = Math.sin(angle);
   const cosine = Math.cos(angle);
-  const isFront = relative < frontCount;
-  const x = 50 - (cosine * 40.5);
-  const y = 43 + (sine * 20.5);
   const depth = (sine + 1) / 2;
-  const yaw = isFront ? cosine * 18 : cosine * 72;
-  const scale = isFront ? 1 + (Math.max(0, sine) * 0.07) : 0.56 + (depth * 0.16);
-  const opacity = isFront ? 1 : 0.16 + (depth * 0.24);
-  const zIndex = isFront ? 100 + Math.round(depth * 18) : 18 + Math.round(depth * 18);
+  const isFront = Math.abs(signedSlots) < 2.01;
+  const x = 50 - (cosine * 44.2);
+  const y = 37.5 + (sine * 18.6);
+  const yawStrength = 10 + ((1 - depth) * 110);
+  const yaw = cosine * yawStrength;
+  const scale = 0.58 + (depth * 0.36);
+  const opacity = 0.26 + (depth * 0.74);
+  const dim = clamp((1 - depth) * 0.72, 0, 0.72);
+  const zIndex = 24 + Math.round(depth * 108);
 
   return {
-    relative,
+    signedSlots,
+    depth,
     isFront,
     style: {
       "--orbit-x": `${x.toFixed(3)}%`,
       "--orbit-y": `${y.toFixed(3)}%`,
       "--orbit-yaw": `${yaw.toFixed(2)}deg`,
-      "--orbit-scale": scale.toFixed(3),
+      "--orbit-scale": scale.toFixed(4),
       "--orbit-opacity": opacity.toFixed(3),
+      "--orbit-dim": dim.toFixed(3),
       "--orbit-z": String(zIndex),
+      "--orbit-depth-z": `${Math.round(depth * 72)}px`,
     },
   };
+}
+
+function pixelsPerCardFor(width, total) {
+  const count = Math.max(1, Number(total || 1));
+  const visibleSpan = clamp(count, 5, 8);
+  return clamp(Number(width || 900) / visibleSpan, 92, 178);
 }
 
 export default function ClassSubclassSection({
@@ -73,20 +101,25 @@ export default function ClassSubclassSection({
   const required = (model?.eligible || []).length > 0;
   const optionSignature = options.map((option) => option.key).join("|");
   const [selectorOpen, setSelectorOpen] = useState(false);
-  const [carouselStart, setCarouselStart] = useState(0);
+  const [orbitOffset, setOrbitOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const autoOpenedForRef = useRef("");
   const lastClassKeyRef = useRef(classKey);
+  const orbitRef = useRef(null);
+  const dragStateRef = useRef(null);
+  const suppressClickUntilRef = useRef(0);
 
   const orbitOptions = useMemo(() => options.map((option, optionIndex) => ({
     option,
     optionIndex,
-    ...orbitPlacement(optionIndex, carouselStart, options.length),
-  })), [carouselStart, options]);
+    ...orbitPlacement(optionIndex, orbitOffset, options.length),
+  })), [orbitOffset, options]);
 
-  const focusedSlot = Math.min(1, Math.max(0, options.length - 1));
-  const focusedIndex = options.length ? (carouselStart + focusedSlot) % options.length : 0;
-  const focusedOption = options[focusedIndex] || null;
-  const focusedSummary = useMemo(() => subclassSummary(focusedOption), [focusedOption]);
+  const browsedIndex = options.length
+    ? Math.floor(normalizeOrbitOffset(orbitOffset + FRONT_CENTER_SLOT, options.length))
+    : 0;
+  const browsedOption = options[browsedIndex] || null;
+  const browsedSummary = useMemo(() => subclassSummary(browsedOption), [browsedOption]);
   const classLabel = classLabelFor(classKey, model?.className);
 
   useEffect(() => {
@@ -95,7 +128,7 @@ export default function ClassSubclassSection({
       autoOpenedForRef.current = "";
       setSelectorOpen(false);
     }
-    setCarouselStart(0);
+    setOrbitOffset(0);
   }, [classKey, optionSignature]);
 
   useEffect(() => {
@@ -110,14 +143,8 @@ export default function ClassSubclassSection({
     if (!selectorOpen || !selected || !options.length) return;
     const selectedIndex = options.findIndex((option) => option.key === selected.key);
     if (selectedIndex < 0) return;
-    const focusSlot = Math.min(1, Math.max(0, options.length - 1));
-    setCarouselStart((selectedIndex - focusSlot + options.length) % options.length);
+    setOrbitOffset(normalizeOrbitOffset(selectedIndex - 1, options.length));
   }, [selectorOpen, selected?.key, optionSignature]);
-
-  useEffect(() => {
-    if (!selectorOpen || !focusedOption?.key) return;
-    model?.setPreviewKey?.(focusedOption.key);
-  }, [focusedOption?.key, selectorOpen]);
 
   useEffect(() => {
     if (!selectorOpen || typeof document === "undefined") return undefined;
@@ -169,16 +196,89 @@ export default function ClassSubclassSection({
   function rotateCarousel(direction) {
     if (options.length <= 1) return;
     const normalizedDirection = direction < 0 ? -1 : 1;
-    setCarouselStart((current) => {
-      const length = options.length;
-      return (current + normalizedDirection + length) % length;
-    });
+    setOrbitOffset((current) => normalizeOrbitOffset(Math.round(current) + normalizedDirection, options.length));
   }
 
-  function showFocusedDetails() {
-    if (!focusedOption) return;
-    model?.setPreviewKey?.(focusedOption.key);
-    onInspectSubclass?.(focusedOption);
+  function showBrowsedDetails() {
+    if (!browsedOption) return;
+    model?.setPreviewKey?.(browsedOption.key);
+    onInspectSubclass?.(browsedOption);
+  }
+
+  function handleOrbitPointerDown(event) {
+    if (options.length <= 1) return;
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    const bounds = orbitRef.current?.getBoundingClientRect();
+    const now = Number(event.timeStamp || performance.now());
+    dragStateRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startOffset: orbitOffset,
+      currentOffset: orbitOffset,
+      lastX: event.clientX,
+      lastAt: now,
+      velocityX: 0,
+      pixelsPerCard: pixelsPerCardFor(bounds?.width, options.length),
+      moved: false,
+    };
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  }
+
+  function handleOrbitPointerMove(event) {
+    const drag = dragStateRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const deltaX = event.clientX - drag.startX;
+    if (!drag.moved && Math.abs(deltaX) < DRAG_THRESHOLD_PX) return;
+
+    drag.moved = true;
+    setIsDragging(true);
+    event.preventDefault();
+
+    const nextOffset = normalizeOrbitOffset(
+      drag.startOffset - (deltaX / drag.pixelsPerCard),
+      options.length,
+    );
+    const now = Number(event.timeStamp || performance.now());
+    const elapsed = Math.max(1, now - drag.lastAt);
+    drag.velocityX = (event.clientX - drag.lastX) / elapsed;
+    drag.lastX = event.clientX;
+    drag.lastAt = now;
+    drag.currentOffset = nextOffset;
+    setOrbitOffset(nextOffset);
+  }
+
+  function finishOrbitPointer(event, cancelled = false) {
+    const drag = dragStateRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    try {
+      event.currentTarget.releasePointerCapture?.(event.pointerId);
+    } catch {
+      // Pointer capture may already be released by the browser.
+    }
+
+    if (drag.moved) {
+      const offsetVelocity = -(drag.velocityX / drag.pixelsPerCard);
+      const projectedCards = cancelled
+        ? 0
+        : clamp(offsetVelocity * FLICK_PROJECTION_MS, -2.25, 2.25);
+      setOrbitOffset(normalizeOrbitOffset(
+        Math.round(drag.currentOffset + projectedCards),
+        options.length,
+      ));
+      suppressClickUntilRef.current = Date.now() + 240;
+    }
+
+    dragStateRef.current = null;
+    setIsDragging(false);
+  }
+
+  function handleCardClick(event, option) {
+    if (Date.now() < suppressClickUntilRef.current) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+    choose(option);
   }
 
   const selectorModal = selectorOpen && typeof document !== "undefined"
@@ -217,36 +317,54 @@ export default function ClassSubclassSection({
               disabled={options.length <= 1}
             >‹</button>
 
-            <div className="class-subclass-carousel-modal__orbit" role="list" aria-label="Subclass catalogue">
-              {orbitOptions.map(({ option, optionIndex, relative, isFront, style }) => {
+            <div
+              ref={orbitRef}
+              className={`class-subclass-carousel-modal__orbit${isDragging ? " is-dragging" : ""}`}
+              role="list"
+              aria-label="Subclass catalogue. Drag to spin the carousel."
+              onPointerDown={handleOrbitPointerDown}
+              onPointerMove={handleOrbitPointerMove}
+              onPointerUp={(event) => finishOrbitPointer(event)}
+              onPointerCancel={(event) => finishOrbitPointer(event, true)}
+            >
+              {orbitOptions.map(({ option, optionIndex, signedSlots, depth, isFront, style }) => {
                 const isSelected = selected?.key === option.key;
-                const isFocused = focusedOption?.key === option.key;
+                const isBrowsed = browsedOption?.key === option.key;
                 const eligible = optionEntryLevel(option) <= currentLevel;
                 return (
                   <button
                     key={option.key}
                     type="button"
                     role="listitem"
-                    className={`class-subclass-carousel-card${isFocused ? " is-focused" : ""}${isSelected ? " is-selected" : ""}${isFront ? " is-orbit-front" : " is-orbit-back"}${eligible ? " is-eligible" : " is-locked"}`}
+                    className={`class-subclass-carousel-card${isBrowsed ? " is-browsed" : ""}${isSelected ? " is-selected" : ""}${isFront ? " is-orbit-front" : " is-orbit-back"}${eligible ? " is-eligible" : " is-locked"}`}
                     style={style}
                     aria-pressed={isSelected}
                     aria-hidden={isFront ? undefined : "true"}
                     tabIndex={isFront ? 0 : -1}
                     aria-posinset={optionIndex + 1}
                     aria-setsize={options.length}
-                    aria-label={`${option.name}, ${eligible ? "selectable now" : `available at level ${optionEntryLevel(option)}`}`}
-                    data-orbit-slot={relative}
-                    onClick={() => choose(option)}
+                    aria-label={`${option.name}, ${eligible ? "click to select" : `available at level ${optionEntryLevel(option)}`}`}
+                    data-orbit-distance={Math.abs(signedSlots).toFixed(3)}
+                    data-orbit-depth={depth.toFixed(3)}
+                    onClick={(event) => handleCardClick(event, option)}
                   >
-                    <span className="class-subclass-carousel-card__art" aria-hidden="true">
-                      <img src={subclassArtworkFor(classKey, option)} onError={(event) => handleSubclassArtworkError(event, classKey)} alt="" />
-                    </span>
-                    <span className="class-subclass-carousel-card__shade" aria-hidden="true" />
-                    {(!eligible || isSelected) ? (
-                      <span className="class-subclass-carousel-card__copy">
-                        <small>{!eligible ? `Unlocks at level ${optionEntryLevel(option)}` : "Selected"}</small>
+                    <span className="class-subclass-carousel-card__surface">
+                      <span className="class-subclass-carousel-card__art" aria-hidden="true">
+                        <img
+                          src={subclassArtworkFor(classKey, option)}
+                          onError={(event) => handleSubclassArtworkError(event, classKey)}
+                          alt=""
+                          draggable="false"
+                          decoding="async"
+                        />
                       </span>
-                    ) : null}
+                      <span className="class-subclass-carousel-card__shade" aria-hidden="true" />
+                      {(!eligible || isSelected) ? (
+                        <span className="class-subclass-carousel-card__copy">
+                          <small>{!eligible ? `Unlocks at level ${optionEntryLevel(option)}` : "Selected"}</small>
+                        </span>
+                      ) : null}
+                    </span>
                   </button>
                 );
               })}
@@ -263,20 +381,21 @@ export default function ClassSubclassSection({
             >›</button>
 
             <div className="class-subclass-carousel-modal__position" aria-live="polite">
-              <span>{focusedIndex + 1}</span><b>/</b><span>{options.length}</span>
+              <span>{browsedIndex + 1}</span><b>/</b><span>{options.length}</span>
             </div>
-            <div className="class-subclass-carousel-modal__hint">Slide left or right. The path is endless.</div>
+            <div className="class-subclass-carousel-modal__hint">Drag the table or use the arrows. Click a card to choose.</div>
           </div>
 
           <section className="class-subclass-carousel-modal__details" aria-live="polite">
             <div className="class-subclass-carousel-modal__details-icon" aria-hidden="true"><span>✦</span></div>
             <div className="class-subclass-carousel-modal__details-copy">
               <span>{classLabel} Subclass</span>
-              <h4>{focusedOption?.name || "Subclass"}</h4>
-              <p>{focusedSummary}</p>
-              {focusedOption && optionEntryLevel(focusedOption) > currentLevel ? <small>Available at level {optionEntryLevel(focusedOption)}</small> : null}
+              <h4>{browsedOption?.name || "Subclass"}</h4>
+              <p>{browsedSummary}</p>
+              {browsedOption && optionEntryLevel(browsedOption) > currentLevel ? <small>Available at level {optionEntryLevel(browsedOption)}</small> : null}
+              {selected?.key === browsedOption?.key ? <small className="is-selected-note">Currently selected</small> : null}
             </div>
-            <button type="button" className="class-subclass-carousel-modal__details-button" onClick={showFocusedDetails} disabled={!focusedOption}>
+            <button type="button" className="class-subclass-carousel-modal__details-button" onClick={showBrowsedDetails} disabled={!browsedOption}>
               <span>View Details</span><b aria-hidden="true">→</b>
             </button>
           </section>
