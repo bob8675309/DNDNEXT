@@ -156,3 +156,18 @@ Before merging or extending this selector:
 10. Unknown/future identities must retain safe class-art fallback.
 11. Exact-head focused CI plus one intentional Vercel Preview should be green before merge.
 12. Do not touch world-map or town/city-map behavior while maintaining this selector.
+
+
+## 2026-09-18 interaction/crispness refinement
+
+Follow-up refinement branch: `agent/subclass-carousel-drag-crisp-20260918`.
+
+- Front interaction is now exactly **three cards** wide.
+- Only those three front cards accept click/focus selection; side/rear cards are presentation-only until they rotate forward.
+- Clicking a front card immediately becomes the lower details-panel inspection target instead of leaving the panel bound to the geometric center position.
+- Eligible clicked cards persist through the existing `model.selectSubclass(option)` authority; future-level cards update inspection/details but do not persist early.
+- Carousel drag/flick remains independent of subclass persistence and snaps to the nearest card position.
+- Card orientation now follows the true table orbit. As cards pass the side they rotate through edge-on and reveal a dedicated runic **card back** on the rear half of the table.
+- The three front cards render at scale 1 with no artwork filter so the 840x1440 source Tarot images remain as crisp as browser perspective allows.
+- The stage is slightly wider/zoomed out so more of the runic table and rear orbit remain visible.
+- Arrow and keyboard navigation still advance one card and loop continuously with no rubber-band recentering.
