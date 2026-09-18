@@ -1,28 +1,89 @@
-name: Validate Class browser polish
+name: Materialize subclass carousel UI assets
 
 on:
-  pull_request:
   push:
     branches:
-      - agent/training-tab-redesign
+      - agent/subclass-carousel-runic-modal-20260918
+    paths:
+      - .github/workflows/validate-class-browser-polish.yml
+
+permissions:
+  contents: write
 
 jobs:
-  validate:
+  materialize:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
         with:
-          node-version: 22
-      - name: Validate Class browser polish
-        run: node scripts/validate_class_browser_polish.mjs
-      - name: Validate Class hero framing
-        run: node scripts/validate_class_hero_framing.mjs
-      - name: Validate Class subclass browser
-        run: node scripts/validate_class_subclass_browser.mjs
-      - name: Validate approved Artificer mockup lock
-        run: node scripts/validate_artificer_mockup_lock.mjs
-      - name: Validate final Class browser correction
-        run: node scripts/validate_class_final_browser_fix.mjs
-      - name: Validate Species and Class browser review fix
-        run: node scripts/validate_species_class_review_fix.mjs
+          ref: agent/subclass-tarot-approved-batch-20260916
+          fetch-depth: 0
+
+      - name: Guard exact accepted head
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "86a954acc16437a95a30415320682a530f818cdc"
+          test -z "$(git status --porcelain)"
+
+      - name: Download approved assets
+        env:
+          BG_URL: "https://uc6fd4c55aa65ca5296657d17808.dl.dropboxusercontent.com/cd/0/get/DIWA-dxxLcC9gKLfymo-6fQW9ydLrqcVbSJEscWZwbDvXnk1Jj0HzA16l2LZQ7OJvPJiCjDxirmIBt7jvPUjcOXFn6mvttMxBEKgFeNPBlMWrhKYJUi6aFzLm8K-egjmc6WXR4C4kfeoaYjnbWcpHKU6CFUvYvOQ7oQmcAt1Z6IoGw/file?c_luid=c335000c"
+          TABLE_URL: "https://uc64353c9bc2db8d7880f1c82c34.dl.dropboxusercontent.com/cd/0/get/DIVlKnl6ttO8dgDWHIdW7wxA8ZgPtCcqwuqKYieBOs6n8J76imCo2VXZTCfiKExiKXJ61OAUTBzgZT1_2y1GKhWttG8WKd3NPVChdvw9dvD7c4355vkt8kEVA7-CDcsgSo9DFgPms-FM1I0sP14IBVspBDgbCT0aWpjKNrwFEr8NMw/file?c_luid=c335000c"
+          FRONT_URL: "https://uc77deb0b30485bd7057daab9d6c.dl.dropboxusercontent.com/cd/0/get/DIUtxiGCJhPGXbPXQv1LkW4FOX82dapUBYJJ_S7hTyM2_0Ho-SicSPEul7oLkx8130nKbvOHY5FSxirBOe_e53Bc-0CqYjDmnkekh1Z_iSIcS2LbBnSxm3vpL-EVeVODl4673MSMUahXpX0Hj6v7HQwtqJ5lnAHDgVaBsKFsmUqW3g/file?c_luid=c335000c"
+          BACK_URL: "https://ucb950f4f81710d4ae21cba71d97.dl.dropboxusercontent.com/cd/0/get/DIU65C5nEXjwAHk9IQ5a4vjwtr88aWmRmjPrWlUDLZr3xkStELMN2FPm8u5RP8YikJ8R8cqvUZ960h30bg_IOpg4gzsm0VpBORrFQO1F87t0ABbvg0IxctMacuGV4DEXj376IYM_DEJy_QossXuoNySXk4qEpwzNMoNQa5QvhdmY9A/file?c_luid=c335000c"
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/subclass-carousel
+          curl -fsSL "$BG_URL" -o /tmp/subclass-carousel/bg.png
+          curl -fsSL "$TABLE_URL" -o /tmp/subclass-carousel/table.png
+          curl -fsSL "$FRONT_URL" -o /tmp/subclass-carousel/front.png
+          curl -fsSL "$BACK_URL" -o /tmp/subclass-carousel/back.png
+          echo "3e070ad601a6bbef20a2e1f94ac50bc580ab2b4c05d4aa1a5ccfa5adf225f943  /tmp/subclass-carousel/bg.png" | sha256sum -c -
+          echo "5bdd4da1dea5c16b4e634ea6854e2a1b8eb0400789ef98c50a5f448b32031d2f  /tmp/subclass-carousel/table.png" | sha256sum -c -
+          echo "d3c4d699f165910597e48e36c6a02fa9d9f8e16b670c2444436b61471e0392b2  /tmp/subclass-carousel/front.png" | sha256sum -c -
+          echo "b14f4d9a31763c2af62b251208a59cd999a18ac96ae2acab8c709e4e82dbd97c  /tmp/subclass-carousel/back.png" | sha256sum -c -
+
+      - name: Verify images
+        run: |
+          set -euo pipefail
+          python -m pip install --quiet pillow==11.3.0
+          python - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          for name in ("bg.png","table.png","front.png","back.png"):
+              with Image.open(Path("/tmp/subclass-carousel") / name) as im:
+                  assert im.format == "PNG"
+                  assert im.size == (1672, 941)
+          assert "A" in Image.open("/tmp/subclass-carousel/table.png").mode
+          assert "A" in Image.open("/tmp/subclass-carousel/front.png").mode
+          assert "A" in Image.open("/tmp/subclass-carousel/back.png").mode
+          PY
+
+      - name: Install exact assets
+        run: |
+          set -euo pipefail
+          root="public/media/forge/subclass-carousel"
+          mkdir -p "$root"
+          cp /tmp/subclass-carousel/bg.png "$root/subclass-selector-cathedral-bg.png"
+          cp /tmp/subclass-carousel/table.png "$root/subclass-selector-runic-table.png"
+          cp /tmp/subclass-carousel/front.png "$root/subclass-selector-smoke-front.png"
+          cp /tmp/subclass-carousel/back.png "$root/subclass-selector-smoke-back.png"
+          git add "$root"
+          cat > /tmp/expected <<'EOF'
+public/media/forge/subclass-carousel/subclass-selector-cathedral-bg.png
+public/media/forge/subclass-carousel/subclass-selector-runic-table.png
+public/media/forge/subclass-carousel/subclass-selector-smoke-back.png
+public/media/forge/subclass-carousel/subclass-selector-smoke-front.png
+EOF
+          git diff --cached --name-only | sort > /tmp/actual
+          sort -o /tmp/expected /tmp/expected
+          diff -u /tmp/expected /tmp/actual
+
+      - name: Commit and push approved assets
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Add runic subclass carousel UI assets"
+          git push origin HEAD:agent/subclass-tarot-approved-batch-20260916
