@@ -1,0 +1,108 @@
+name: Materialize subclass carousel UI assets
+
+on:
+  push:
+    branches:
+      - agent/subclass-carousel-runic-modal-20260918
+    paths:
+      - .github/workflows/subclass-carousel-runic-assets.yml
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout intended artwork branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/subclass-tarot-approved-batch-20260916
+          fetch-depth: 0
+
+      - name: Guard exact accepted head
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="86a954acc16437a95a30415320682a530f818cdc"
+          actual="$(git rev-parse HEAD)"
+          echo "Expected target head: $expected"
+          echo "Actual target head:   $actual"
+          test "$actual" = "$expected"
+          test -z "$(git status --porcelain)"
+
+      - name: Download approved UI assets
+        shell: bash
+        env:
+          BG_URL: "https://uc6d64fe865fe47fb92b1ed3fcc9.dl.dropboxusercontent.com/cd/0/get/DIXGt3gAlTXOxIeOGf-eqIehtLSxEKDTT99EDbwAA64HrcGu-RjrEgQlGyUv08WEVyVc-kHdUfrPIvlsAodJfvN41xBh7tVDqYPOLJFiNRUMNJ-mcGgrb8CE6L_BpA7R-CIfM9dZklGb13Y0Bdhko2p7lbt7-nl2X87u0a7W_qHQkQ/file?c_luid=c335000c"
+          TABLE_URL: "https://uc96a544feca995e9afd8675013b.dl.dropboxusercontent.com/cd/0/get/DIXTUN30Q0_Iw6J60sOYk4hCUXH2olqlcSJkLFSOO_irFKK1ksTlgr-H9n3SW0ip9Pvr02qyyqYm-rrmSaSEuxi1BBTU9zz6ur2SzhG8jYTp3I9wZu9OcymSC634PbzfvDirIX1HAuxQletCSldgGOizvLvca2FJzj0yL5lUi3QYAA/file?c_luid=c335000c"
+          SMOKE_FRONT_URL: "https://ucc23cdeba97eaa9ff624a90eef5.dl.dropboxusercontent.com/cd/0/get/DIXXPYgOXBrA9PvrIpFNKpdNU_KOsxVPV3I04WCJG9qHRWxXAtpt4fD38LCUvgOSxH8iCSejL_FjBfFLYdlfHD7NIJLD9es4QGuYJTeUashwLWZ5BdJM1anTS9D5_YSWSCU8VnQ0IHZKpmYSN6Pitgi-LJjKpxkeLR_UMrqxq_0rmw/file?c_luid=c335000c"
+          SMOKE_BACK_URL: "https://uc9ba5b191e5a248bc8fb5660b1f.dl.dropboxusercontent.com/cd/0/get/DIVWHt-NPrB0BzIP7LxrN6LNxWX_yT3K9KRMw_h17G15vLdFl4Z0zElNwqFZco_DiFs5FKV5U-JJmpJjCm9yZdiSfvQcoXWUojrncYTZlYLzYosBo4662xVrYqBhlFSOy2R2HDgq3EXUvH3BK_AlfSxCILwssDkzfsD98Zy084Abfw/file?c_luid=c335000c"
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/subclass-carousel
+          curl --fail --silent --show-error --location "$BG_URL" -o /tmp/subclass-carousel/subclass-selector-cathedral-bg.png
+          curl --fail --silent --show-error --location "$TABLE_URL" -o /tmp/subclass-carousel/subclass-selector-runic-table.png
+          curl --fail --silent --show-error --location "$SMOKE_FRONT_URL" -o /tmp/subclass-carousel/subclass-selector-smoke-front.png
+          curl --fail --silent --show-error --location "$SMOKE_BACK_URL" -o /tmp/subclass-carousel/subclass-selector-smoke-back.png
+          echo "3e070ad601a6bbef20a2e1f94ac50bc580ab2b4c05d4aa1a5ccfa5adf225f943  /tmp/subclass-carousel/subclass-selector-cathedral-bg.png" | sha256sum -c -
+          echo "5bdd4da1dea5c16b4e634ea6854e2a1b8eb0400789ef98c50a5f448b32031d2f  /tmp/subclass-carousel/subclass-selector-runic-table.png" | sha256sum -c -
+          echo "d3c4d699f165910597e48e36c6a02fa9d9f8e16b670c2444436b61471e0392b2  /tmp/subclass-carousel/subclass-selector-smoke-front.png" | sha256sum -c -
+          echo "b14f4d9a31763c2af62b251208a59cd999a18ac96ae2acab8c709e4e82dbd97c  /tmp/subclass-carousel/subclass-selector-smoke-back.png" | sha256sum -c -
+
+      - name: Verify PNG format and dimensions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --quiet pillow==11.3.0
+          python - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          expected = {
+            "subclass-selector-cathedral-bg.png": ((1672, 941), False),
+            "subclass-selector-runic-table.png": ((1672, 941), True),
+            "subclass-selector-smoke-front.png": ((1672, 941), True),
+            "subclass-selector-smoke-back.png": ((1672, 941), True),
+          }
+          root = Path("/tmp/subclass-carousel")
+          for name, (size, alpha_required) in expected.items():
+              path = root / name
+              with Image.open(path) as image:
+                  assert image.format == "PNG", (name, image.format)
+                  assert image.size == size, (name, image.size)
+                  if alpha_required:
+                      assert "A" in image.mode, (name, image.mode)
+          print("Verified four subclass carousel UI assets.")
+          PY
+
+      - name: Materialize exact approved paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE"
+          root="public/media/forge/subclass-carousel"
+          mkdir -p "$root"
+          cp /tmp/subclass-carousel/subclass-selector-cathedral-bg.png "$root/subclass-selector-cathedral-bg.png"
+          cp /tmp/subclass-carousel/subclass-selector-runic-table.png "$root/subclass-selector-runic-table.png"
+          cp /tmp/subclass-carousel/subclass-selector-smoke-front.png "$root/subclass-selector-smoke-front.png"
+          cp /tmp/subclass-carousel/subclass-selector-smoke-back.png "$root/subclass-selector-smoke-back.png"
+          git add -- "$root"
+          cat > /tmp/expected.txt <<'EOF'
+public/media/forge/subclass-carousel/subclass-selector-cathedral-bg.png
+public/media/forge/subclass-carousel/subclass-selector-runic-table.png
+public/media/forge/subclass-carousel/subclass-selector-smoke-back.png
+public/media/forge/subclass-carousel/subclass-selector-smoke-front.png
+EOF
+          git diff --cached --name-only | sort > /tmp/actual.txt
+          sort -o /tmp/expected.txt /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+
+      - name: Commit and push intended artwork branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Add runic subclass carousel UI assets"
+          git push origin HEAD:agent/subclass-tarot-approved-batch-20260916
