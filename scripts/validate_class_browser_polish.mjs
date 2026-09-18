@@ -119,9 +119,12 @@ for (const forbidden of [
 assert(!selector.includes("supabase"), "Subclass selector must remain presentation-only.");
 
 for (const token of [
-  'const WIZARD_SUBCLASS_ART_FAMILY',
-  '/media/subclasses/wizard/wizard-${family}.webp',
-  'return classMenuArtworkFor(normalizedClass)',
+  "const APPROVED_SUBCLASS_ART_FAMILIES",
+  "function approvedSubclassArtworkFor",
+  "/media/subclasses/${normalizedClass}/${normalizedClass}-${family}.webp",
+  "function fallbackSubclassArtworkFor",
+  "return classMenuArtworkFor(normalizedClass)",
+  "return approvedSubclassArtworkFor(normalizedClass, normalizedSubclass)",
 ]) assert(subclassArtwork.includes(token), `Subclass artwork resolver missing ${token}`);
 for (const family of ["abjuration", "conjuration", "divination", "enchantment", "evocation", "illusion", "necromancy", "transmutation"]) {
   assert(fs.existsSync(path.join(root, `public/media/subclasses/wizard/wizard-${family}.webp`)), `Wizard subclass selector artwork missing ${family}.`);
