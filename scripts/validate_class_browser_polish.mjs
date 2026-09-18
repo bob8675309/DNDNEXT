@@ -97,7 +97,7 @@ for (const token of [
   "class-subclass-carousel-card__face is-back",
   "class-subclass-carousel-modal__details",
   "model.selectSubclass(option)",
-  "model.setPreviewKey(option.key)",
+  "model?.setPreviewKey?.(option.key)",
   "onClick={showInspectedDetails}",
   "class-subclass-selected-card",
   ">Change Subclass<",
