@@ -67,7 +67,7 @@ for (const token of [
   'data-orbit-depth={depth.toFixed(3)}',
   'onClick={(event) => handleCardClick(event, option, isFront)}',
   'Only the three front cards can be chosen.',
-  'model.setPreviewKey(option.key)',
+  'model?.setPreviewKey?.(option.key)',
   'model.selectSubclass(option)',
   'onClick={showInspectedDetails}',
   'if (optionEntryLevel(option) <= currentLevel)',
