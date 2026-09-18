@@ -37,45 +37,66 @@ assert(!guide.includes('onFocus={() => publishFeature(model, onFeatureDetail'), 
 
 for (const token of [
   'import { createPortal } from "react-dom"',
-  'subclassArtworkFor(classKey, option)',
-  'handleSubclassArtworkError(event, classKey)',
-  'function orbitPlacement(optionIndex, carouselStart, total)',
-  'const frontCount = Math.min(4, count)',
-  'const offset = (Math.PI / 2) - (frontSpan / 2)',
-  'const orbitOptions = useMemo',
-  'const focusedIndex = options.length ? (carouselStart + focusedSlot) % options.length : 0',
-  'model?.setPreviewKey?.(focusedOption.key)',
-  'function rotateCarousel(direction)',
-  '(current + normalizedDirection + length) % length',
-  'key={option.key}',
-  'data-orbit-slot={relative}',
+  'const FRONT_CENTER_SLOT = 1.5',
+  'const DRAG_THRESHOLD_PX = 6',
+  'const FLICK_PROJECTION_MS = 180',
+  'function normalizeOrbitOffset(value, total)',
+  'function signedOrbitSlots(value, total)',
+  'function orbitPlacement(optionIndex, orbitOffset, total)',
+  'const [orbitOffset, setOrbitOffset] = useState(0)',
+  'const [isDragging, setIsDragging] = useState(false)',
+  'const dragStateRef = useRef(null)',
+  'const suppressClickUntilRef = useRef(0)',
+  'const browsedOption = options[browsedIndex] || null',
+  'function handleOrbitPointerDown(event)',
+  'function handleOrbitPointerMove(event)',
+  'function finishOrbitPointer(event, cancelled = false)',
+  'function handleCardClick(event, option)',
+  'event.currentTarget.setPointerCapture?.(event.pointerId)',
+  'event.currentTarget.releasePointerCapture?.(event.pointerId)',
+  'pixelsPerCardFor(bounds?.width, options.length)',
+  'Math.round(drag.currentOffset + projectedCards)',
   'class-subclass-carousel-modal__orbit',
-  'class-subclass-carousel-modal__smoke-front',
-  'class-subclass-carousel-modal__details',
-  'class-subclass-carousel-modal__details-button',
-  'onClick={showFocusedDetails}',
+  'onPointerDown={handleOrbitPointerDown}',
+  'onPointerMove={handleOrbitPointerMove}',
+  'onPointerUp={(event) => finishOrbitPointer(event)}',
+  'onPointerCancel={(event) => finishOrbitPointer(event, true)}',
+  'class-subclass-carousel-card__surface',
+  'data-orbit-depth={depth.toFixed(3)}',
+  'onClick={(event) => handleCardClick(event, option)}',
+  'Drag the table or use the arrows. Click a card to choose.',
   'model.setPreviewKey(option.key)',
   'model.selectSubclass(option)',
+  'onClick={showBrowsedDetails}',
   'optionEntryLevel(option) > currentLevel',
   'class-subclass-selected-card',
   'onDoubleClick={() => setSelectorOpen(true)}',
   '>Change Subclass<',
-  'currentLevel < entryLevel',
-  'setSelectorOpen(true)',
   'onInspectSubclass?.(option)',
-]) assert(selector.includes(token), `Runic circular subclass selector is missing ${token}`);
+]) assert(selector.includes(token), `Draggable runic subclass selector is missing ${token}`);
+
+assert((selector.match(/model\.selectSubclass\(option\)/g) || []).length === 1, "Carousel motion must never persist a subclass; only the explicit card-choice path may call selectSubclass(option).");
+assert(!selector.includes('model?.setPreviewKey?.(focusedOption.key)'), "Front-most carousel position must not auto-preview/persist as the player's subclass.");
+assert(!selector.includes('const focusedOption = options[focusedIndex] || null'), "Legacy auto-focused front-card selection state is still present.");
 
 for (const token of [
   'url("/media/forge/subclass-carousel/subclass-selector-cathedral-bg.png")',
   'url("/media/forge/subclass-carousel/subclass-selector-runic-table.png")',
   'url("/media/forge/subclass-carousel/subclass-selector-smoke-back.png")',
   'url("/media/forge/subclass-carousel/subclass-selector-smoke-front.png")',
-  '.class-subclass-carousel-card.is-orbit-back',
+  '.class-subclass-carousel-modal__orbit.is-dragging',
+  'touch-action: none',
+  'cursor: grab',
+  '.class-subclass-carousel-card__surface',
+  'translate3d(-50%, -50%, var(--orbit-depth-z))',
   'rotateY(var(--orbit-yaw))',
-  'z-index: var(--orbit-z)',
-  '.class-subclass-carousel-modal__details',
+  'width: clamp(138px, 10.85vw, 190px) !important',
+  'filter: none !important',
+  'image-rendering: auto',
+  '.class-subclass-carousel-card.is-selected .class-subclass-carousel-card__surface',
+  '.class-subclass-carousel-card.is-browsed .class-subclass-carousel-card__surface',
   'backdrop-filter: blur(12px)',
-]) assert(tarotCss.includes(token), `Runic subclass carousel presentation is missing ${token}`);
+]) assert(tarotCss.includes(token), `Draggable/crisp subclass carousel presentation is missing ${token}`);
 
 for (const forbidden of [
   'class-subclass-two-column__grid',
@@ -197,4 +218,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSource.includes(token), `Class presentation patch crossed protected boundary: ${token}`);
 }
 
-console.log("Class subclass selector validation passed: canonical subclass authority and persistence remain in the guide model, all subclass cards move through a stable runic-table orbit one position at a time, four front positions stay prominent while rear positions recede behind smoke, the details panel is source-backed, all 152 approved normalized tarot concepts remain installed and mapped, and unmatched future content retains the safe class-art fallback.");
+console.log("Class subclass selector validation passed: canonical authority remains in the guide model, the runic table supports fractional drag/flick plus one-card arrows, carousel motion never persists a subclass, explicit card clicks remain the only selection path, high-resolution Tarot art avoids the old image-filter blur path, all 152 approved normalized concepts remain installed/mapped, and future content retains safe fallback.");
