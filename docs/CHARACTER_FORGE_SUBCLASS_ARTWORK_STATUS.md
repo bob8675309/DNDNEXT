@@ -1,362 +1,123 @@
 # Character Forge Subclass Artwork Status
 
-Status date: 2026-09-14
+Status date: 2026-09-18
 
-This is the focused handoff for the Character Forge subclass selector artwork rollout originally developed on PR #177 (`agent/realistic-dice-core`), now merged into `main` at `02854698298f357d2dfde21dd292ba7caf73e1c1`. Current source, exact-head CI/browser behavior where noted below, and the preferred Supabase Class/Species catalogues remain authoritative over older screenshots or notes.
+This is the current focused handoff for the Character Forge subclass Tarot deck and its selector presentation. Older rollout counts such as 33 remaining cards, 109 total concepts, 456x240 selector thumbnails, or the compact two-column selector are historical checkpoints and are not current completion authority.
 
-## Artwork authority
+## Current completion authority
 
-Subclass selector artwork remains centralized through:
+- Runtime-visible subclass choices: **149**
+- Runtime-visible choices with dedicated approved Tarot cards: **149**
+- Runtime-visible generic/class fallback cards: **0**
+- Normalized installed artwork concepts in the repository ledger: **152**
+- Current missing-card queue: **0**
+
+The difference between 149 visible choices and 152 normalized installed concepts is intentional. Historical compatibility/reprint identities and explicit aliases remain represented in the resolver/art ledger while the actual Forge runtime suppresses duplicate/reprint Wizard identities.
+
+The historical Wizard compatibility identities **Abjuration, Divination, Evocation, and Illusion** are not missing current carousel choices and must not be re-added solely to make the visible count match the normalized ledger.
+
+The canonical detailed completion checklist is:
+
+`docs/CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md`
+
+## Current card standard
+
+The active Tarot standard is:
+
+- 7:12 aspect ratio
+- 840x1440 WebP final export
+- full-bleed illustration through title/emblem area
+- no opaque footer/title band
+- reusable antique-gold frame/title/emblem geometry
+- restrained readability gradient
+- cinematic fantasy realism
+- deliberate species/gender/presentation/pose/environment diversity
+- mandatory anatomy, hands, weapon, prop, companion, and species QA at full resolution
+
+Detailed authority:
+
+`docs/CHARACTER_FORGE_TAROT_SUBCLASS_CARD_STANDARD.md`
+
+## Current resolver authority
+
+Artwork resolution remains centralized through:
 
 `ClassSubclassSection.js -> subclassArtworkFor(classKey, option) -> utils/classes/subclassArtwork.js`
 
-The selector continues to use the existing 76x40 viewport. Purpose-built selector assets are authored at 456x240 (1.9:1) and displayed with `object-fit: cover`. Missing/unpromoted subclasses still fall back safely through `classMenuArtworkFor`; this rollout does not alter subclass selection, persistence, progression, or Supabase authority.
+`utils/classes/subclassArtwork.js` contains the approved class/family mappings and intentional aliases. Unknown/future subclass identities retain a safe fallback through `classMenuArtworkFor(...)`.
 
-## Existing complete family
+Artwork mapping is presentation-only. It does not create subclass eligibility, source authority, level gates, persistence, or progression rules.
 
-Wizard remains the established reference family with 18 distinct selector assets under:
+## Current selector presentation
 
-`public/media/subclasses/wizard/`
+As of 2026-09-18 the old compact two-column selector has been replaced on PR #193 by the approved runic circular Tarot gallery.
 
-Wizard artwork was not changed in these batches.
+The current selector:
 
-## 2026-09-09 first rollout batch
+- opens in a viewport portal/modal;
+- places every option on one continuous circular orbit;
+- keeps four cards prominent on the front arc at desktop scale;
+- pushes the remaining cards behind the runic table as dimmer/smaller rear positions;
+- advances exactly one card per Left/Right action;
+- wraps by modulo arithmetic with no duplicated rail or scroll recentering;
+- keeps card React keys stable so the same card visibly travels around the orbit;
+- uses a gothic cathedral, runic table, and layered purple-smoke scene;
+- includes a focused summary/details panel beneath the orbit;
+- preserves existing selection/level-gate/persistence authority.
 
-Thirty approved 456x240 WebP assets were installed for six selector concepts each across Fighter, Paladin, Ranger, Sorcerer, and Warlock. Naming aliases for reprints remain centralized in `utils/classes/subclassArtwork.js`.
+Current selector design authority:
 
-## 2026-09-10 continuation batch
+`docs/CHARACTER_FORGE_CLASS_SUBCLASS_SELECTOR_ARTWORK.md`
 
-Fifty-two additional reviewed selector assets plus the approved Warlock cinematic hero replacement were installed through the Dropbox -> guarded GitHub Actions binary bridge. The materializer verified archive SHA-256, per-file SHA-256, exact target head, exact changed-file scope including untracked binaries, WebP dimensions, and the focused Class regressions before publication.
+## Current implementation checkpoint
 
-### Artificer
+Implementation head before this documentation refresh:
 
-- Alchemist
-- Armorer
-- Artillerist
-- Battle Smith
-- Cartographer
-- Reanimator
+`49b6a0486878748f5d9c3147eb51fdbe16358451`
 
-### Barbarian
+At that checkpoint:
 
-- Ancestral Guardian
-- Berserker
-- Giant
-- Totem Warrior
-- Wild Magic
-- Zealot
+- focused GitHub Class-browser workflow: **success**
+- focused subclass-browser validator: **success**
+- Vercel deployment `dpl_5kcUtbeqoWqsY7iBMaLeyb81buaX`: **READY**
+- `/profile`: HTTP 200
+- PR #193: open, mergeable, unmerged
 
-### Bard
+The active branch is:
 
-- Creation
-- Glamour
-- Lore
-- Swords
-- Valor
-- Whispers
+`agent/subclass-tarot-approved-batch-20260916`
 
-### Cleric
+Always re-fetch the exact remote head before additional writes or merge.
 
-- Knowledge
-- Life
-- Light
-- Tempest
-- Trickery
-- War
-
-`Knowledge (PSA)` intentionally aliases the approved Knowledge artwork.
-
-### Druid
-
-- Land
-- Moon
-- Shepherd
-- Spores
-- Stars
-- Wildfire
-
-### Monk
-
-- Astral Self
-- Drunken Master
-- Elements
-- Kensei
-- Open Hand
-- Shadow
-
-`Four Elements` intentionally aliases the `Elements` artwork where the legacy name is player-facing.
-
-### Monster Hunter
-
-- Carver
-- Devourer
-- Occultist
-- Trapper
-
-The preferred Grim Hollow catalogue exposes these as `Carver Guild`, `Devourer Guild`, `Occultist Guild`, and `Trapper Guild`. The resolver now aliases those exact preferred names to the four existing reviewed artworks rather than falling back to generic Class art.
-
-### Mystic
-
-- Avatar
-- Awakened
-- Immortal
-- Nomad
-- Soul Knife
-- Wu Jen
-
-The current preferred Mystic source does not expose subclass catalogue rows, so these assets remain available for compatible source/catalogue variants without changing Supabase authority.
-
-### Rogue
-
-- Arcane Trickster
-- Assassin
-- Phantom
-- Soulknife
-- Swashbuckler
-- Thief
-
-## Subclass-art casting pool — use the full Forge Species catalogue
-
-The remaining subclass artwork should no longer default mainly to Humans, Elves, Dwarves, Tieflings, and the other most familiar core Species. The Character Forge now provides a much larger pool of valid character identities that can be used as the visible subject of subclass selector art.
-
-Live Supabase currently contains **102 preferred Species catalogue rows**. The Forge's current family-expansion/presentation layer intentionally collapses source rows and promotes source-backed lineage/ancestry choices, producing **83 top-level Species entries plus 43 named nested lineage, ancestry, subrace, subtype, or setting/source presentations**. For subclass-art casting purposes, that gives **126 named Forge Species presentations** before counting narrower trait-level appearance choices.
-
-Art-direction rules for the remaining subclass batches:
-
-- Treat the full pool below as available casting material. Do not repeatedly fall back to Human or the same small set of PHB-style Species when another Forge Species fits the subclass fantasy.
-- Prefer broad visual diversity across the unfinished subclass set. Avoid repeating the exact same Species/presentation in the remaining 33 cards unless the subclass concept strongly benefits from it.
-- A nested Forge presentation such as Air Genasi, Drow, Beasthide Shifter, Shadowmoor Fairy, or Amethyst Gem Dragonborn can be cast as its own visual identity even though Forge persistence may be owned by a parent Species.
-- Setting/source children remain real source-backed Species rows where the Forge models them that way. Their artwork use does not merge their rules into the parent.
-- Independently published Species such as Astral Elf, Sea Elf, Eladrin, Shadar-Kai, Duergar, and Deep Gnome remain independent top-level choices and should be treated as distinct casting options.
-- `Elf (Zendikar)` still exists in the underlying preferred data but is intentionally hidden/excluded from the Forge and is **not** part of the casting pool below.
-- The old FTD `Dragonborn (Chromatic)`, `Dragonborn (Metallic)`, and `Dragonborn (Gem)` umbrella rows are not separate Forge casting entries. Use the specific 15 Dragonborn ancestry presentations below instead.
-- Goliath Giant Ancestry, Tiefling Fiendish Legacy, and Aasimar transformations are trait-level/configuration choices rather than additional Species and are not included in the 126 count. They may still inform the appearance of a Goliath, Tiefling, or Aasimar subject where useful.
-- Species choice is an art-direction decision only. It must not create or alter subclass rules, Class eligibility, persistence, source authority, or gameplay state.
-
-### Full current Forge Species casting pool
-
-- **Aarakocra**
-- **Aasimar**
-- **Aetherborn**
-- **Astral Elf**
-- **Autognome**
-- **Aven**
-  - Hawk-Headed Aven
-  - Ibis-Headed Aven
-- **Boggart**
-- **Bugbear**
-- **Bullywug**
-- **Centaur**
-- **Changeling**
-- **Custom Lineage**
-- **Deep Gnome**
-- **Dhampir**
-- **Dragonborn**
-  - Black Dragonborn
-  - Blue Dragonborn
-  - Brass Dragonborn
-  - Bronze Dragonborn
-  - Copper Dragonborn
-  - Gold Dragonborn
-  - Green Dragonborn
-  - Red Dragonborn
-  - Silver Dragonborn
-  - White Dragonborn
-  - Amethyst Gem Dragonborn
-  - Crystal Gem Dragonborn
-  - Emerald Gem Dragonborn
-  - Sapphire Gem Dragonborn
-  - Topaz Gem Dragonborn
-- **Duergar**
-- **Dwarf**
-  - Dwarf (Kaladesh)
-- **Eladrin**
-- **Elf**
-  - Drow
-  - High Elf
-  - Wood Elf
-  - Elf (Kaladesh)
-- **Fairy**
-  - Lorwyn Fairy
-  - Shadowmoor Fairy
-- **Firbolg**
-- **Flamekin**
-- **Genasi**
-  - Air Genasi
-  - Earth Genasi
-  - Fire Genasi
-  - Water Genasi
-- **Giff**
-- **Githyanki**
-- **Githzerai**
-- **Gnoll**
-- **Gnome**
-  - Forest Gnome
-  - Rock Gnome
-- **Goblin**
-  - Goblin (Dankwood)
-- **Goliath**
-- **Grimlock**
-- **Grung**
-- **Hadozee**
-- **Half-Elf**
-- **Half-Orc**
-- **Halfling**
-- **Harengon**
-- **Hexblood**
-- **Hobgoblin**
-- **Human**
-  - Human (Innistrad)
-  - Human (Ixalan)
-  - Human (Kaladesh)
-  - Human (Zendikar)
-- **Kalashtar**
-- **Kender**
-- **Kenku**
-- **Khenra**
-- **Khoravar**
-- **Kithkin**
-  - Lorwyn Kithkin
-  - Shadowmoor Kithkin
-- **Kobold**
-- **Kor**
-- **Kuo-Toa**
-- **Leonin**
-- **Lizardfolk**
-- **Locathah**
-- **Lorwyn Changeling**
-- **Loxodon**
-- **Lupin**
-- **Merfolk**
-- **Minotaur**
-  - Minotaur (Amonkhet)
-- **Naga**
-- **Orc**
-  - Orc (Ixalan)
-- **Owlin**
-- **Plasmoid**
-- **Reborn**
-- **Rimekin**
-- **Satyr**
-- **Sea Elf**
-- **Shadar-Kai**
-- **Shifter**
-  - Beasthide Shifter
-  - Longtooth Shifter
-  - Swiftstride Shifter
-  - Wildhunt Shifter
-- **Simic Hybrid**
-- **Siren**
-- **Skeleton**
-- **Tabaxi**
-- **Thri-kreen**
-- **Tiefling**
-- **Tortle**
-- **Triton**
-- **Troglodyte**
-- **Vampire**
-- **Vedalken**
-- **Verdan**
-- **Warforged**
-- **Yuan-Ti**
-- **Yuan-ti Pureblood**
-- **Zombie**
-
-For visual-variety planning, especially strong underused candidates include Aetherborn, Aven, Boggart, Bullywug, Flamekin, Giff, Githzerai, Gnoll, Grimlock, Grung, Hadozee, Kender, Khenra, Khoravar, Kithkin, Kor, Kuo-Toa, Locathah, Lorwyn Changeling, Lupin, Naga, Plasmoid, Rimekin, Siren, Thri-kreen, Troglodyte, Verdan, Yuan-Ti, plus the Genasi, Dragonborn, Shifter, Fairy, Kithkin, and Aven child presentations. These are suggestions for variety, not mandatory pairings; subclass fantasy and composition still decide the final subject.
-
-## Current preferred-source audit
-
-A 2026-09-10 audit joined `class_catalog_preferred` to `class_feature_catalog` using each preferred Class source. After accounting for existing artwork and deliberate aliases, **33 currently preferred/visible subclass concepts still need dedicated reviewed selector artwork**.
-
-### Next 10-art batch
-
-- Barbarian — Wild Heart
-- Barbarian — World Tree
-- Bard — Dance
-- Bard — Moon
-- Bard — Spirits
-- Druid — Dreams
-- Druid — Sea
-- Fighter — Eldritch Knight
-- Fighter — Psi Warrior
-- Monk — Mercy
-
-### Following 11-art batch
-
-- Paladin — Vengeance
-- Ranger — Hollow Warden
-- Ranger — Winter Walker
-- Rogue — Scion of the Three
-- Sorcerer — Lunar
-- Sorcerer — Pyromancer (PSK)
-- Sorcerer — Spellfire
-- Sorcerer — Storm
-- Warlock — Fathomless
-- Warlock — Genie
-- Warlock — Undying
-
-### Remaining Cleric 12-art batch
-
-- Ambition (PSA)
-- Arcana
-- Death
-- Forge
-- Grave
-- Nature
-- Order
-- Peace
-- Solidarity (PSA)
-- Strength (PSA)
-- Twilight
-- Zeal (PSA)
-
-Artificer and Wizard are complete for their current preferred catalogue. Expert Sidekick, Warrior Sidekick, and Spellcaster Sidekick have no subclass catalogue authority in Supabase. No Adventuring Class likewise has no subclass family.
-
-## Regression guard
-
-`scripts/validate_class_subclass_browser.mjs` protects the promoted selector families. It verifies that:
-
-- every promoted selector file exists and is non-empty;
-- the centralized resolver contains each approved class/family mapping and naming alias;
-- Wizard's existing one-to-one selector artwork remains intact;
-- missing future subclasses retain the safe Class-menu fallback;
-- the selector remains presentation-only and does not acquire Supabase authority;
-- protected world-map, town/city-map, crafting, encounter, or other gameplay boundaries are not crossed.
-
-## 2026-09-10 publication chain
-
-Binary materialization:
-
-`fcb2015e287a00d5d83b479c859cad39a67aed38` — `Install approved subclass artwork continuation batch`
-
-Resolver promotion:
-
-`07fd74c749a9e01b7a9377f94fcceec834b1b1be` — `Wire approved subclass artwork continuation batch`
-
-Regression guard:
-
-`9a7c0d8a35e1d72fb7853447e72016f518552ab3` — `Guard approved subclass artwork continuation batch`
-
-Preferred-catalogue alias correction:
-
-`ef56ee149924615888f524c296c12b7839791406` — `Align subclass artwork aliases with preferred catalog`
-
-Dropbox transfer archive:
-
-`/DNDNext-Transfer/dndnext-subclass-art-batch-20260910.zip`
-
-Archive SHA-256:
-
-`e04ea88dc11e49ced6bcfbd417abc80d9204a00a95c07069c24ad18cfbb33677`
-
-## 2026-09-14 species-pool handoff refresh
-
-The species-casting expansion above is documentation/art-direction only. It was derived from the live preferred Supabase Species catalogue plus the Forge family/presentation code on `main`. No binary artwork, resolver mapping, Class/subclass behavior, Supabase data, or runtime system was changed in this refresh.
+## Validation guard
+
+`scripts/validate_class_subclass_browser.mjs` and `scripts/validate_class_browser_polish.mjs` protect the current presentation and authority split. Together they verify the runic-orbit structure, one-card modulo navigation, stable artwork resolver path, dedicated current deck coverage, safe future fallback, selection calls, and protected boundaries.
+
+The normal Vercel build also remains authoritative for production compilation. The 2026-09-18 exact implementation preview compiled successfully under Next.js 16.1.6.
+
+## Future artwork rule
+
+If a future catalogue change introduces a new runtime-visible subclass:
+
+1. Confirm the exact visible identity from current Forge runtime/catalogue behavior.
+2. Treat it as incomplete until Paul approves its dedicated card.
+3. Author/export to the 7:12 840x1440 WebP standard.
+4. Install under `public/media/subclasses/<class-key>/`.
+5. Wire the exact identity in `utils/classes/subclassArtwork.js`, unless Paul explicitly approves an alias.
+6. Shrink the fallback count back to zero.
+7. Run focused CI and an intentional browser preview.
+
+Do not assume 149 is permanent if future source imports add or expose new playable subclass identities.
 
 ## Protected boundaries
 
-- No Supabase writes or migrations.
-- No Class/subclass rules or persistence changes.
-- No world-map code.
-- No town/city-map code.
-- No crafting, travel, merchant, inventory, encounter, tactical, or character-sheet runtime changes.
+Subclass artwork and the selector are presentation work. Do not use this work as authority to change:
+
+- Supabase schema/data
+- subclass gameplay rules or progression
+- world-map behavior
+- town/city-map behavior
+- travel/routes/weather/camps/clock
+- crafting/inventory/merchants/economy
+- encounter/tactical authority
+- unrelated Character Sheet runtime behavior

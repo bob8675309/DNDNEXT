@@ -1,89 +1,110 @@
 # Character Forge Class Subclass Selector Artwork
 
-Status date: 2026-09-07
+Status date: 2026-09-18
 
-This document records the browser-approved subclass-selector presentation layered onto the existing Class Overview on PR #177 (`agent/realistic-dice-core`). It is presentation-only. Canonical subclass availability, level gates, persistence, progression injection, and feature rules remain owned by `useNpcForgeClassGuideModel` / `NpcForgeClassChoiceContext` and Supabase-backed class catalogues.
+This document records the current approved Character Forge subclass-selector presentation on PR #193 (`agent/subclass-tarot-approved-batch-20260916`). It replaces the older compact two-column selector description. The change is presentation-only: canonical subclass availability, level gates, persistence, progression injection, and feature rules remain owned by the existing Forge class guide/context and Supabase-backed catalogues.
 
-## Approved selector layout
+## Current approved selector
 
-The approved target is the final compact two-column Wizard treatment reviewed on 2026-09-06:
+The accepted visual target is the runic circular Tarot gallery reviewed on 2026-09-18.
 
-- the selector sits directly above Class Progression;
-- it uses exactly two columns on desktop and one column on narrow layouts;
-- the normal desktop selector occupies about the yellow-box proportion from browser review: `width:min(35%,430px)`;
-- at widths below 1100px it uses `width:min(42%,430px)` and below 900px it returns to full width;
-- the expanded selector remains internally scrollable for larger catalogues with a `166px` desktop viewport;
-- each visible choice button contains only the subclass artwork and subclass name; desktop cards are 52px tall with 76×40 artwork, so exactly six choices (2 columns × 3 rows) are visible before scrolling;
-- source badges, inline descriptions, level badges, status/check circles, visible helper copy, and footer notes are intentionally omitted from the selector; eligibility guidance remains available to assistive technology;
-- selected state is communicated by the existing border/background highlight rather than an extra visible status control;
-- every canonical subclass remains present even when the reference mockup visually depicts fewer rows;
-- selecting an eligible subclass still uses the existing Forge authority, updates progression, and collapses the selector;
-- collapsed state retains the selected subclass artwork/name with compact Change/Clear controls;
-- clicking a subclass still sends its details to the movable Feature card; hover/focus alone does not replace Feature-card content;
-- search, source-filter toolbars, large inline detail cards, and the old multi-column pill wall are not part of the approved Overview layout.
+- Opening the subclass picker uses a viewport-owned modal/portal rather than expanding an inline grid.
+- The scene is a gothic arcane selection hall with a glowing runic table and layered purple smoke.
+- All canonical `model.options` remain in the selector. The UI does not trim the rules catalogue to only the cards currently in front.
+- Four cards are the prominent front arc at desktop scale. Remaining cards continue around the same circular orbit as smaller, dimmer rear cards.
+- Cards keep stable React keys and stable orbital positions. Left/right movement advances the carousel by exactly one option and wraps with modulo arithmetic.
+- The loop is continuous; there is no duplicated scrolling rail, rubber-band recentering, `scrollLeft` correction, or snap-back segment.
+- The focused card is the second prominent front position, matching the approved reference composition rather than forcing the focus to the exact geometric center.
+- The selected/focused state is conveyed primarily by the existing Tarot artwork plus a restrained gold/purple glow. The card art itself is not covered by a large text footer.
+- The lower details panel shows the focused subclass name, class label, a concise source-backed subclass description, availability guidance when level-gated, and a **View Details** action.
+- Clicking an eligible card still selects through the existing model authority and closes the modal. A future-level card may be inspected but cannot persist early.
+- Keyboard Left/Right arrows mirror the one-card navigation; Escape closes the modal.
+- The selected collapsed card remains in the Class Overview and can be reopened through Change Subclass or double-click.
+- The modal prevents body scrolling while open and restores the previous body overflow state when closed.
 
-The cinematic artwork remains independently positioned and must not resize or recrop when the selector expands or collapses.
+## Presentation assets
+
+The runic scene assets live under:
+
+`public/media/forge/subclass-carousel/`
+
+Current files:
+
+- `subclass-selector-cathedral-bg.png`
+- `subclass-selector-runic-table.png`
+- `subclass-selector-smoke-back.png`
+- `subclass-selector-smoke-front.png`
+
+All four were transferred through the standing guarded binary workflow, checksum-validated, confirmed as 1672x941 PNGs, and installed on the PR #193 artwork branch. The table and smoke overlays retain alpha.
+
+The subclass Tarot cards remain under `public/media/subclasses/<class-key>/` and are resolved through `utils/classes/subclassArtwork.js`.
 
 ## Artwork authority
 
-Subclass artwork is not stored in Supabase. A schema inspection on 2026-09-06 confirmed the canonical `class_feature_catalog` contains subclass names, source, levels, descriptions, entries, and raw payloads but no image/artwork field. Artwork therefore remains presentation-side and must not become a second subclass rules authority.
+Subclass artwork remains presentation-side only:
 
-`utils/classes/subclassArtwork.js` is the presentation resolver. It receives the selected Class key plus canonical subclass option and returns only an image path. If no dedicated subclass artwork is installed, it falls back to the existing Class menu artwork through `classMenuArtworkFor(...)`.
+`ClassSubclassSection.js -> subclassArtworkFor(classKey, option) -> utils/classes/subclassArtwork.js`
 
-### Wizard first artwork set
+Current production-visible coverage is 149/149 dedicated cards. The repository artwork ledger contains 152 normalized installed concepts because historical compatibility identities and explicitly approved aliases are retained. The four historical Wizard identities Abjuration, Divination, Evocation, and Illusion are suppressed by runtime compatibility and are not missing visible cards.
 
-Wizard now uses one distinct 240×112 presentation asset for every canonical subclass exposed by the current catalogue: Abjuration, Abjurer, Bladesinger, Bladesinging, Chronurgy, Conjuration, Divination, Diviner, Enchantment, Evocation, Evoker, Graviturgy, Illusion, Illusionist, Necromancy, Scribes, Transmutation, and War. Files follow `/media/subclasses/wizard/wizard-<normalized-subclass>.webp`.
+Unknown/future subclass identities still retain the class-menu artwork fallback so new catalogue content fails safely rather than rendering a broken image.
 
-These images remain presentation-only. Similar traditions may share visual motifs, but they must not resolve to the same file. The resolver maps each current canonical normalized subclass name to its own asset and falls back to Class menu artwork only for genuinely unmapped or missing future subclasses.
+## Runtime / behavior authority preserved
 
-The WebPs were transferred through the standing DNDNext binary route: local approved assets → checksum ZIP → Dropbox `/DNDNext-Transfer` → guarded one-shot GitHub Actions materializer → scratch branch. The materializer verifies the ZIP checksum, the clean Wizard hero dimensions (1600×900), all 18 Wizard subclass dimensions (240×112), and binary uniqueness before committing. Do not regress to giant inline-base64 transfers.
+The runic selector must not become a second rules engine.
 
-## Progression density target
+Selection still flows through the existing model calls:
 
-The approved progression table structure remains unchanged: Level, PB, Features, Cantrips, Known/Prepared, then individual 1st–9th spell-slot columns for spellcasting Classes. The current browser target remains roughly 20% shorter vertically than the preceding balance pass while preserving the complete table:
+- `model.setPreviewKey(option.key)`
+- `model.selectSubclass(option)`
+- `optionEntryLevel(option) > currentLevel` prevents early persistence
+- `onInspectSubclass` remains the detail-inspection handoff
 
-- table-card height cap is 435px and the desktop card itself is constrained to `width:min(74%,860px)` so it ends before the right-side character art;
-- normal row minimum height is 34px;
-- header minimum height is 28px;
-- row text is `.57rem`;
-- feature-pill padding is `.16rem .34rem`;
-- desktop spell-table uses the available card width with no forced desktop minimum; its columns are rebalanced so Level, PB, Features, Cantrips, Known/Prepared, and 1st–9th remain aligned and the 9th-level column is visible without horizontal clipping at the approved desktop layout; narrow layouts retain the wider scrolling treatment;
-- narrow layouts continue to scroll horizontally rather than dropping progression data.
+No Supabase write, migration, subclass eligibility rewrite, progression rewrite, or new persistence state was introduced by this presentation pass.
 
-Base Class features remain purple pills; selected-subclass features remain cyan pills.
+## Current implementation files
 
-## Cinematic Class art relationship
+Primary implementation:
 
-The selector and art are intentionally decoupled. The final desktop correction is owned by `styles/character-forge-class-fullbleed-final.css`, loaded after the earlier Class hero-framing stylesheet so it can safely override only the reviewed cinematic presentation.
+- `components/ClassSubclassSection.js`
+- `styles/character-forge-subclass-tarot-layout.css`
 
-For public cinematic Class heroes at desktop widths (`min-width: 901px`):
+Focused guards:
 
-- the **Class guide workspace** (`.npc-forge-class-guide`) is the artwork containing block; the inner Overview article is no longer the artwork boundary;
-- the Overview article becomes transparent/static for positioning purposes, so its padding, border, and margins cannot create top/right seams or crop the painting;
-- the nested `.npc-forge-class-guide__hero-art` is positioned `absolute` with `inset: 0` against the Class guide, so the image fills the actual Class workspace from top to right to bottom regardless of selector/progression height;
-- the cinematic image uses `width:100%`, `height:100%`, `object-fit:cover`, and `object-position:100% 0%`; it is not scaled by transform tricks;
-- the replacement Wizard cinematic is a clean 1600×900 asset with its dark left-side composition built into the artwork itself, so only a restrained readability veil remains in CSS;
-- Class copy, the view header, selector/progression layout, and footer remain normal foreground UI through explicit stacking order, while the artwork is pointer-inert behind them;
-- expanding/collapsing subclass controls can change Class workspace height without moving the artwork into a different positioning context or recropping it against an inner card.
+- `scripts/validate_class_browser_polish.mjs`
+- `scripts/validate_class_subclass_browser.mjs`
 
-The final full-bleed rule is intentionally restricted to public cinematic Class artwork. Non-cinematic/core fallback paintings and layouts at 900px or narrower continue through the pre-existing Class framing rules rather than inheriting this desktop override.
+Runic scene assets:
 
-## Validation requirements
+- `public/media/forge/subclass-carousel/*`
 
-Before this selector/artwork pass is accepted or extended:
+## Validation checkpoint
 
-1. every canonical `model.options` subclass must remain present;
-2. eligibility and persistence must still call the existing model/context authority;
-3. future-level subclasses may be inspected but must not persist early;
-4. only the selected subclass contributes cyan progression features;
-5. the Feature card remains click/selection-driven, not hover-driven;
-6. the expanded selector remains a two-column internal scroll region at the approved compact desktop width;
-7. each visible subclass choice contains only artwork and subclass name;
-8. the selected collapsed row retains its artwork/name and Change control;
-9. every currently canonical Wizard subclass resolves to a distinct artwork file; genuinely unmapped or missing future subclass images fall back to Class menu artwork rather than breaking the selector;
-10. all nine spell-slot columns remain visible/scrollable;
-11. expanding/collapsing the selector does not change the cinematic image's containing block or create top/right/bottom seams;
-12. desktop public cinematic art fills the Class guide workspace while Class copy and controls remain stacked above it; non-cinematic and narrow-layout framing must remain unchanged;
-13. `Validate Class browser polish`, subclass-selector validation, Source Magic Routing, and the normal Forge validation suite must pass;
-14. Vercel exact-head build/runtime checks and `/profile` must pass;
-15. no world-map, town/city-map, Supabase data/schema, crafting, inventory, travel, or unrelated runtime files may be changed.
+Implementation checkpoint:
+
+`49b6a0486878748f5d9c3147eb51fdbe16358451` — `Harden runic carousel preview effects [deploy-preview]`
+
+At that checkpoint:
+
+- `Validate Class browser polish` completed successfully, including the focused subclass-browser validation;
+- Vercel Preview `dpl_5kcUtbeqoWqsY7iBMaLeyb81buaX` reached **READY**;
+- preview host: `dndnext-jy8z0xq7u-pauls-projects-2016aa54.vercel.app`;
+- `/profile` returned HTTP 200;
+- Next.js 16.1.6 production build compiled successfully;
+- no world-map, town/city-map, crafting, inventory, travel, merchant, economy, encounter/tactical, or Supabase runtime files were part of the runic-carousel implementation delta.
+
+## Acceptance / regression requirements
+
+Before merging or extending this selector:
+
+1. Re-fetch the current PR #193 head; do not trust a recorded SHA if the branch moved.
+2. Every canonical visible subclass option must still be reachable in the continuous orbit.
+3. Arrow/keyboard navigation must advance exactly one option and wrap without rubber-band recentering.
+4. Front/rear depth must remain one circular presentation, not two unrelated lists.
+5. Eligibility and persistence must continue through the existing Forge authority.
+6. Future-level subclasses must remain non-persistable.
+7. The details panel must remain based on actual subclass feature content; do not invent rules text.
+8. The 149 current runtime-visible identities must keep dedicated Tarot coverage.
+9. Unknown/future identities must retain the safe class-art fallback.
+10. Exact-head focused CI and an intentional Vercel Preview should be green before merge.
+11. Do not touch world-map or town/city-map behavior while maintaining this selector.
