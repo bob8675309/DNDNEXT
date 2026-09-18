@@ -361,16 +361,16 @@
 
 .class-subclass-carousel-modal__table {
   position: absolute;
-  left: 6%;
-  right: 6%;
-  top: 21%;
-  bottom: 18%;
+  left: 2%;
+  right: 2%;
+  top: 17%;
+  bottom: 13%;
   z-index: 24;
   pointer-events: none;
   background: url("/media/forge/subclass-carousel/subclass-selector-runic-table.png") center / contain no-repeat;
-  opacity: .78;
-  filter: saturate(1.08) brightness(.86) contrast(1.05);
-  transform: translateY(3%);
+  opacity: .82;
+  filter: saturate(1.05) brightness(.88) contrast(1.035);
+  transform: translateY(1%);
 }
 
 .class-subclass-carousel-modal__table::after {
@@ -413,10 +413,10 @@
 
 .class-subclass-carousel-modal__orbit {
   position: absolute !important;
-  left: 8%;
-  right: 8%;
-  top: 17.5%;
-  bottom: 24.5%;
+  left: 4%;
+  right: 4%;
+  top: 15.5%;
+  bottom: 23%;
   z-index: 60;
   display: block !important;
   min-width: 0 !important;
@@ -424,9 +424,17 @@
   margin: 0 !important;
   padding: 0 !important;
   overflow: visible !important;
-  perspective: 1450px;
-  perspective-origin: 50% 53%;
+  perspective: 1720px;
+  perspective-origin: 50% 55%;
   transform-style: preserve-3d;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.class-subclass-carousel-modal__orbit.is-dragging {
+  cursor: grabbing;
 }
 
 .class-subclass-carousel-card {
@@ -434,75 +442,106 @@
   left: var(--orbit-x) !important;
   top: var(--orbit-y) !important;
   z-index: var(--orbit-z) !important;
-  width: clamp(148px, 12.4vw, 220px) !important;
+  width: clamp(138px, 10.85vw, 190px) !important;
   min-width: 0 !important;
   aspect-ratio: 7 / 12 !important;
-  overflow: hidden !important;
+  overflow: visible !important;
   padding: 0 !important;
-  border: 1px solid rgba(222, 182, 99, .38) !important;
+  border: 0 !important;
   border-radius: 10px !important;
   color: #fff;
-  background: #07090f !important;
+  background: transparent !important;
   opacity: var(--orbit-opacity) !important;
   transform:
-    translate(-50%, -50%)
+    translate3d(-50%, -50%, var(--orbit-depth-z))
     rotateY(var(--orbit-yaw))
     scale(var(--orbit-scale)) !important;
   transform-origin: 50% 100%;
   transform-style: preserve-3d;
   text-align: left;
-  box-shadow:
-    0 17px 38px rgba(0, 0, 0, .56),
-    0 0 14px rgba(120, 68, 187, .08) !important;
+  box-shadow: none !important;
   filter: none !important;
   transition:
-    left .52s cubic-bezier(.2, .76, .24, 1),
-    top .52s cubic-bezier(.2, .76, .24, 1),
-    transform .52s cubic-bezier(.2, .76, .24, 1),
-    opacity .44s ease,
-    filter .44s ease,
-    box-shadow .28s ease,
-    border-color .28s ease !important;
+    left .48s cubic-bezier(.2, .76, .24, 1),
+    top .48s cubic-bezier(.2, .76, .24, 1),
+    transform .48s cubic-bezier(.2, .76, .24, 1),
+    opacity .38s ease !important;
   will-change: left, top, transform, opacity;
   animation: none !important;
 }
 
+.class-subclass-carousel-modal__orbit.is-dragging .class-subclass-carousel-card {
+  transition: none !important;
+}
+
 .class-subclass-carousel-card.is-orbit-back {
   pointer-events: none;
-  filter: brightness(.62) saturate(.67) contrast(1.08) !important;
-  border-color: rgba(188, 143, 72, .22) !important;
-  box-shadow: 0 13px 28px rgba(0, 0, 0, .42) !important;
 }
 
 .class-subclass-carousel-card.is-orbit-front {
   pointer-events: auto;
-  filter: brightness(1.03) saturate(1.06) contrast(1.025) !important;
+}
+
+.class-subclass-carousel-card__surface {
+  position: absolute;
+  inset: 0;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid rgba(222, 182, 99, .42);
+  border-radius: 10px;
+  background: #07090f;
+  box-shadow:
+    0 15px 34px rgba(0, 0, 0, .5),
+    0 0 12px rgba(120, 68, 187, .07);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(.01px);
+  transition:
+    border-color .22s ease,
+    box-shadow .22s ease;
+}
+
+.class-subclass-carousel-card__surface::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background: rgba(2, 4, 9, var(--orbit-dim));
+}
+
+.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__surface {
+  border-color: rgba(188, 143, 72, .2);
+  box-shadow: 0 11px 25px rgba(0, 0, 0, .38);
 }
 
 .class-subclass-carousel-card.is-orbit-front:hover,
 .class-subclass-carousel-card.is-orbit-front:focus-visible {
   outline: none !important;
-  border-color: rgba(237, 203, 128, .82) !important;
-  filter: brightness(1.09) saturate(1.08) contrast(1.025) !important;
-  box-shadow:
-    0 22px 48px rgba(0, 0, 0, .58),
-    0 0 25px rgba(149, 89, 222, .2) !important;
 }
 
-.class-subclass-carousel-card.is-focused {
-  border-color: rgba(244, 204, 116, .98) !important;
+.class-subclass-carousel-card.is-orbit-front:hover .class-subclass-carousel-card__surface,
+.class-subclass-carousel-card.is-orbit-front:focus-visible .class-subclass-carousel-card__surface {
+  border-color: rgba(237, 203, 128, .84);
   box-shadow:
-    0 24px 54px rgba(0, 0, 0, .64),
-    0 0 0 1px rgba(255, 221, 149, .26),
-    0 0 30px rgba(255, 168, 73, .34),
-    0 0 42px rgba(143, 75, 214, .18) !important;
+    0 19px 42px rgba(0, 0, 0, .56),
+    0 0 22px rgba(149, 89, 222, .18);
 }
 
-.class-subclass-carousel-card.is-selected:not(.is-focused) {
-  border-color: rgba(var(--class-secondary), .88) !important;
+.class-subclass-carousel-card.is-browsed .class-subclass-carousel-card__surface {
+  border-color: rgba(235, 196, 111, .72);
   box-shadow:
-    0 20px 45px rgba(0, 0, 0, .56),
-    0 0 22px rgba(var(--class-accent), .22) !important;
+    0 19px 42px rgba(0, 0, 0, .54),
+    0 0 20px rgba(154, 91, 216, .16);
+}
+
+.class-subclass-carousel-card.is-selected .class-subclass-carousel-card__surface {
+  border-color: rgba(247, 208, 122, .98);
+  box-shadow:
+    0 22px 48px rgba(0, 0, 0, .6),
+    0 0 0 1px rgba(255, 224, 157, .24),
+    0 0 28px rgba(255, 169, 74, .31),
+    0 0 38px rgba(143, 75, 214, .16);
 }
 
 .class-subclass-carousel-card__art {
@@ -517,7 +556,11 @@
   height: 100% !important;
   object-fit: cover !important;
   object-position: center !important;
-  filter: brightness(1.09) saturate(1.06) contrast(1.025) !important;
+  filter: none !important;
+  image-rendering: auto;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .class-subclass-carousel-card__shade {
@@ -525,13 +568,14 @@
   inset: 0 !important;
   z-index: -2 !important;
   background:
-    linear-gradient(180deg, rgba(2, 4, 8, .09) 0%, transparent 24%, transparent 76%, rgba(2, 4, 8, .22) 100%),
-    linear-gradient(90deg, rgba(3, 5, 10, .08), transparent 30%, transparent 70%, rgba(3, 5, 10, .07)) !important;
+    linear-gradient(180deg, rgba(2, 4, 8, .035) 0%, transparent 29%, transparent 79%, rgba(2, 4, 8, .13) 100%),
+    linear-gradient(90deg, rgba(3, 5, 10, .035), transparent 33%, transparent 70%, rgba(3, 5, 10, .03)) !important;
 }
 
 .class-subclass-carousel-card__copy {
   position: absolute !important;
   inset: 11px 11px auto auto !important;
+  z-index: 6;
   display: block !important;
   width: auto !important;
   max-width: calc(100% - 22px) !important;
@@ -553,9 +597,10 @@
   text-transform: uppercase;
 }
 
-.class-subclass-carousel-card.is-locked.is-orbit-front {
-  opacity: var(--orbit-opacity) !important;
-  filter: brightness(.82) saturate(.76) contrast(1.04) !important;
+.class-subclass-carousel-card.is-locked.is-orbit-front .class-subclass-carousel-card__surface::after {
+  background:
+    linear-gradient(rgba(4, 5, 10, .22), rgba(4, 5, 10, .22)),
+    rgba(2, 4, 9, var(--orbit-dim));
 }
 
 .class-subclass-carousel-modal__nav {
@@ -757,6 +802,10 @@
   letter-spacing: .04em;
 }
 
+.class-subclass-carousel-modal__details-copy small.is-selected-note {
+  color: #efc66f;
+}
+
 .class-subclass-carousel-modal__details-button {
   justify-self: stretch;
   display: flex;
@@ -819,13 +868,13 @@
   }
 
   .class-subclass-carousel-card {
-    width: clamp(132px, 13.5vw, 175px) !important;
+    width: clamp(126px, 12.5vw, 165px) !important;
   }
 
   .class-subclass-carousel-modal__orbit {
-    left: 7%;
-    right: 7%;
-    top: 18%;
+    left: 4%;
+    right: 4%;
+    top: 17%;
     bottom: 25%;
   }
 
@@ -873,14 +922,14 @@
   }
 
   .class-subclass-carousel-modal__orbit {
-    left: 3%;
-    right: 3%;
-    top: 20%;
+    left: 1%;
+    right: 1%;
+    top: 19%;
     bottom: 28%;
   }
 
   .class-subclass-carousel-card {
-    width: clamp(112px, 20vw, 154px) !important;
+    width: clamp(108px, 18.5vw, 146px) !important;
   }
 
   .class-subclass-carousel-modal__nav {
@@ -968,21 +1017,21 @@
   }
 
   .class-subclass-carousel-modal__orbit {
-    left: -1%;
-    right: -1%;
+    left: -3%;
+    right: -3%;
     top: 19%;
     bottom: 33%;
   }
 
   .class-subclass-carousel-card {
-    width: clamp(92px, 24vw, 126px) !important;
+    width: clamp(88px, 22vw, 120px) !important;
   }
 
   .class-subclass-carousel-modal__table {
-    left: -2%;
-    right: -2%;
-    top: 20%;
-    bottom: 25%;
+    left: -5%;
+    right: -5%;
+    top: 18%;
+    bottom: 23%;
   }
 
   .class-subclass-carousel-modal__nav {
@@ -1044,6 +1093,7 @@
 @media (prefers-reduced-motion: reduce) {
   .class-subclass-launcher,
   .class-subclass-carousel-card,
+  .class-subclass-carousel-card__surface,
   .class-subclass-carousel-modal__details-button b {
     transition: none !important;
   }
