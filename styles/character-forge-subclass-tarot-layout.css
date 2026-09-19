@@ -1133,6 +1133,10 @@
   width: clamp(194px, 15.5vw, 268px) !important;
 }
 
+.class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center.is-inspected {
+  width: clamp(206px, 16.45vw, 284px) !important;
+}
+
 .class-subclass-carousel-card.is-orbit-front {
   opacity: 1 !important;
 }
@@ -1141,7 +1145,7 @@
    This keeps the resting center face at native 2D raster quality; dragging
    and every non-center orbit card retain the normal 3D transform path. */
 .class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center {
-  transform: translate(-50%, -50%) scale(var(--inspection-scale, 1)) !important;
+  transform: translate(-50%, -50%) !important;
   transform-style: flat !important;
   will-change: auto !important;
 }
@@ -1333,6 +1337,10 @@
   .class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center {
     width: clamp(160px, 17.4vw, 210px) !important;
   }
+
+  .class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center.is-inspected {
+    width: clamp(170px, 18.45vw, 223px) !important;
+  }
 }
 
 @media (max-width: 859px) {
@@ -1343,6 +1351,10 @@
   .class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center {
     width: clamp(130px, 21.8vw, 174px) !important;
   }
+
+  .class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center.is-inspected {
+    width: clamp(138px, 23.1vw, 184px) !important;
+  }
 }
 
 @media (max-width: 619px) {
@@ -1352,6 +1364,10 @@
 
   .class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center {
     width: clamp(102px, 25vw, 136px) !important;
+  }
+
+  .class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center.is-inspected {
+    width: clamp(108px, 26.5vw, 144px) !important;
   }
 }
 
