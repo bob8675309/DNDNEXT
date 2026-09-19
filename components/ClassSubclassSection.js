@@ -5,9 +5,12 @@ import { handleSubclassArtworkError, subclassArtworkFor } from "../utils/classes
 const text = (value) => String(value ?? "").trim();
 const FRONT_CENTER_SLOT = 1;
 const FRONT_ARC_DEGREES = 22;
-const FRONT_BUFFER_SLOTS = 1.5;
-const FRONT_EDGE_DEGREES = 28;
+const FACE_UP_EDGE_SLOTS = 2;
+const FACE_UP_EDGE_DEGREES = 42;
+const REAR_HANDOFF_SLOTS = 2.5;
+const REAR_HANDOFF_DEGREES = 50;
 const FRONT_YAW_DEGREES = 8;
+const FACE_UP_EDGE_YAW_DEGREES = 20;
 const DRAG_THRESHOLD_PX = 6;
 const FLICK_PROJECTION_MS = 150;
 
@@ -97,29 +100,46 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
   const absSlots = Math.abs(signedSlots);
   const direction = signedSlots === 0 ? 0 : Math.sign(signedSlots);
   const maxDistance = Math.max(1, count / 2);
-  const rearSpan = Math.max(0.001, maxDistance - FRONT_BUFFER_SLOTS);
-  const rearProgress = clamp((absSlots - FRONT_BUFFER_SLOTS) / rearSpan, 0, 1);
+  const rearSpan = Math.max(0.001, maxDistance - REAR_HANDOFF_SLOTS);
+  const rearProgress = clamp((absSlots - REAR_HANDOFF_SLOTS) / rearSpan, 0, 1);
   const thetaDegrees = absSlots <= 1
     ? FRONT_ARC_DEGREES * absSlots
-    : absSlots <= FRONT_BUFFER_SLOTS
+    : absSlots <= FACE_UP_EDGE_SLOTS
       ? FRONT_ARC_DEGREES
-        + (((absSlots - 1) / (FRONT_BUFFER_SLOTS - 1)) * (FRONT_EDGE_DEGREES - FRONT_ARC_DEGREES))
-      : FRONT_EDGE_DEGREES + (rearProgress * (180 - FRONT_EDGE_DEGREES));
+        + ((absSlots - 1) * (FACE_UP_EDGE_DEGREES - FRONT_ARC_DEGREES))
+      : absSlots <= REAR_HANDOFF_SLOTS
+        ? FACE_UP_EDGE_DEGREES
+          + (((absSlots - FACE_UP_EDGE_SLOTS) / (REAR_HANDOFF_SLOTS - FACE_UP_EDGE_SLOTS))
+            * (REAR_HANDOFF_DEGREES - FACE_UP_EDGE_DEGREES))
+        : REAR_HANDOFF_DEGREES + (rearProgress * (180 - REAR_HANDOFF_DEGREES));
   const theta = (thetaDegrees * Math.PI) / 180;
   const cosine = Math.cos(theta);
   const sine = Math.sin(theta);
   const depth = (cosine + 1) / 2;
   const x = 50 + (direction * sine * 44.8);
   const y = 36.8 + (cosine * 18.2);
-  const rearYaw = FRONT_YAW_DEGREES + (rearProgress * (180 - FRONT_YAW_DEGREES));
+  const edgeYaw = FRONT_YAW_DEGREES
+    + (clamp(absSlots - 1, 0, 1) * (FACE_UP_EDGE_YAW_DEGREES - FRONT_YAW_DEGREES));
+  const rearYaw = FACE_UP_EDGE_YAW_DEGREES
+    + (rearProgress * (180 - FACE_UP_EDGE_YAW_DEGREES));
   const yaw = isFront
     ? clamp(signedSlots, -1, 1) * FRONT_YAW_DEGREES
-    : direction * rearYaw;
+    : showsFrontFace
+      ? direction * edgeYaw
+      : direction * rearYaw;
   const centerBoost = Math.max(0, 1 - absSlots) * 0.035;
-  const scale = isFront ? 1 + centerBoost : 0.58 + (depth * 0.24);
-  const opacity = isFront ? 1 : 0.16 + (depth * 0.58);
-  const zIndex = isFront ? 110 + Math.round(depth * 20) : 20 + Math.round(depth * 48);
-  const depthZ = isFront ? 0 : Math.round(depth * 48);
+  const scale = isFront
+    ? 1 + centerBoost
+    : showsFrontFace
+      ? 0.82
+      : 0.58 + (depth * 0.24);
+  const opacity = isFront ? 1 : showsFrontFace ? 0.72 : 0.16 + (depth * 0.58);
+  const zIndex = isFront
+    ? 110 + Math.round(depth * 20)
+    : showsFrontFace
+      ? 76 + Math.round(depth * 10)
+      : 20 + Math.round(depth * 48);
+  const depthZ = showsFrontFace ? 0 : Math.round(depth * 48);
 
   return {
     signedSlots,
