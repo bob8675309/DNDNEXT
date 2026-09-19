@@ -1130,11 +1130,11 @@
 }
 
 .class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center {
-  width: clamp(194px, 15.5vw, 268px) !important;
+  width: clamp(198px, 15.9vw, 274px) !important;
 }
 
 .class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center.is-inspected {
-  width: clamp(206px, 16.45vw, 284px) !important;
+  width: clamp(210px, 16.85vw, 290px) !important;
 }
 
 .class-subclass-carousel-card.is-orbit-front {
@@ -1230,6 +1230,13 @@
   transform: rotateY(var(--orbit-back-yaw)) translateZ(.3px) !important;
   backface-visibility: visible !important;
   -webkit-backface-visibility: visible !important;
+  filter: saturate(.82) brightness(.78);
+  box-shadow:
+    inset 0 0 0 3px rgba(8, 8, 14, .92),
+    inset 0 0 0 4px rgba(214, 166, 79, .34),
+    inset 0 0 0 8px rgba(8, 7, 14, .9),
+    inset 0 0 0 9px rgba(145, 85, 201, .12),
+    0 8px 20px rgba(0, 0, 0, .36) !important;
 }
 
 .class-subclass-carousel-card__face.is-back::before,
@@ -1335,11 +1342,11 @@
   }
 
   .class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center {
-    width: clamp(160px, 17.4vw, 210px) !important;
+    width: clamp(164px, 17.8vw, 216px) !important;
   }
 
   .class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center.is-inspected {
-    width: clamp(170px, 18.45vw, 223px) !important;
+    width: clamp(174px, 18.85vw, 229px) !important;
   }
 }
 
@@ -1349,11 +1356,11 @@
   }
 
   .class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center {
-    width: clamp(130px, 21.8vw, 174px) !important;
+    width: clamp(133px, 22.3vw, 179px) !important;
   }
 
   .class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center.is-inspected {
-    width: clamp(138px, 23.1vw, 184px) !important;
+    width: clamp(141px, 23.6vw, 189px) !important;
   }
 }
 
@@ -1363,11 +1370,11 @@
   }
 
   .class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center {
-    width: clamp(102px, 25vw, 136px) !important;
+    width: clamp(104px, 25.5vw, 139px) !important;
   }
 
   .class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center.is-inspected {
-    width: clamp(108px, 26.5vw, 144px) !important;
+    width: clamp(110px, 27vw, 147px) !important;
   }
 }
 

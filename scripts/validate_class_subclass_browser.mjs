@@ -43,9 +43,11 @@ for (const token of [
   'const INTERACTIVE_RADIUS = 1',
   'const VISIBLE_RADIUS = 4',
   'const ORBIT_VISUAL_PROFILE = [',
-  '{ x: 0, y: 55, yaw: 0, scale: 1.10, opacity: 1, z: 132, depthZ: 0 }',
-  '{ x: 16, y: 54, yaw: 8, scale: 0.96, opacity: 1, z: 122, depthZ: 0 }',
-  '{ x: 32, y: 50, yaw: 20, scale: 0.80, opacity: 0.72, z: 88, depthZ: 0 }',
+  '{ x: 0, y: 56, yaw: 0, scale: 1.12, opacity: 1, z: 136, depthZ: 0 }',
+  '{ x: 21, y: 55, yaw: 8, scale: 0.93, opacity: 1, z: 124, depthZ: 0 }',
+  '{ x: 40, y: 51, yaw: 20, scale: 0.74, opacity: 0.74, z: 90, depthZ: 0 }',
+  '{ x: 44, y: 39, yaw: 52, scale: 0.60, opacity: 0.42, z: 48, depthZ: 28 }',
+  '{ x: 29, y: 27, yaw: 74, scale: 0.46, opacity: 0.20, z: 28, depthZ: 10 }',
   'const FLICK_PROJECTION_MS = 150',
   'function normalizeOrbitOffset(value, total)',
   'function signedOrbitSlots(value, total)',
@@ -108,10 +110,13 @@ const pointerDownBlock = selector.slice(selector.indexOf("function handleOrbitPo
 assert(!rotateBlock.includes('setInspectedKey("")'), "Carousel arrows must not clear the explicitly clicked inspection target.");
 assert(!pointerDownBlock.includes('setInspectedKey("")'), "Dragging must not clear the explicitly clicked inspection target.");
 assert(selector.includes('const isVisible = count <= 9 || snappedDistance <= VISIBLE_RADIUS'), "Tarot orbit must cap the visual window at nine cards without capping subclass options.");
-assert(selector.includes('{ x: 0, y: 55, yaw: 0, scale: 1.10'), "Tarot center must remain larger than its neighboring face-up cards.");
-assert(selector.includes('{ x: 16, y: 54, yaw: 8, scale: 0.96'), "Tarot side cards must step down from the center size.");
-assert(selector.includes('{ x: 32, y: 50, yaw: 20, scale: 0.80'), "Tarot edge preview cards must step down again from the interactive side cards.");
-assert(tarotCss.includes('width: clamp(206px, 16.45vw, 284px) !important'), "A clicked resting center Tarot card must swell through physical width, not a compositor scale.");
+assert(selector.includes('{ x: 0, y: 56, yaw: 0, scale: 1.12'), "Tarot center must remain larger than its neighboring face-up cards.");
+assert(selector.includes('{ x: 21, y: 55, yaw: 8, scale: 0.93'), "Tarot side cards must be wider-spaced and step down from the center size.");
+assert(selector.includes('{ x: 40, y: 51, yaw: 20, scale: 0.74'), "Tarot edge preview cards must sit near the outer stage and step down again from the interactive side cards.");
+assert(selector.includes('{ x: 44, y: 39, yaw: 52, scale: 0.60'), "The first rear-card tier must stay visible above and behind the five-card spread.");
+assert(selector.includes('{ x: 29, y: 27, yaw: 74, scale: 0.46'), "The far rear-card tier must curve inward behind the spread instead of reading as side-edge slivers.");
+assert(tarotCss.includes('width: clamp(210px, 16.85vw, 290px) !important'), "A clicked resting center Tarot card must swell through physical width, not a compositor scale.");
+assert(tarotCss.includes('filter: saturate(.82) brightness(.78)'), "Rear Tarot backs must remain subdued atmosphere rather than competing choices.");
 assert(!tarotCss.includes('translate(-50%, -50%) scale(var(--inspection-scale, 1))'), "Resting center Tarot must not reintroduce transform scaling that softens the hero art.");
 
 
@@ -131,12 +136,12 @@ for (const token of [
   'translate3d(-50%, -50%, var(--orbit-depth-z))',
   'rotateY(var(--orbit-yaw))',
   'width: clamp(178px, 14.2vw, 246px) !important',
-  'width: clamp(194px, 15.5vw, 268px) !important',
+  'width: clamp(198px, 15.9vw, 274px) !important',
   '.class-subclass-carousel-card.is-orbit-hidden',
   '.class-subclass-carousel-card.is-orbit-face-up .class-subclass-carousel-card__face.is-back',
   '.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__face.is-front',
   '.class-subclass-carousel-card.is-orbit-edge',
-  'width: clamp(206px, 16.45vw, 284px) !important',
+  'width: clamp(210px, 16.85vw, 290px) !important',
   'transform: translate(-50%, -50%) !important',
   '.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__face.is-back',
   'rotateY(var(--orbit-back-yaw)) translateZ(.3px) !important',

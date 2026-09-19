@@ -11,12 +11,12 @@ const DRAG_THRESHOLD_PX = 6;
 const FLICK_PROJECTION_MS = 150;
 
 const ORBIT_VISUAL_PROFILE = [
-  { x: 0, y: 55, yaw: 0, scale: 1.10, opacity: 1, z: 132, depthZ: 0 },
-  { x: 16, y: 54, yaw: 8, scale: 0.96, opacity: 1, z: 122, depthZ: 0 },
-  { x: 32, y: 50, yaw: 20, scale: 0.80, opacity: 0.72, z: 88, depthZ: 0 },
-  { x: 40, y: 43, yaw: 48, scale: 0.64, opacity: 0.46, z: 54, depthZ: 24 },
-  { x: 45, y: 34, yaw: 68, scale: 0.52, opacity: 0.25, z: 32, depthZ: 12 },
-  { x: 48, y: 28, yaw: 82, scale: 0.44, opacity: 0, z: 20, depthZ: 0 },
+  { x: 0, y: 56, yaw: 0, scale: 1.12, opacity: 1, z: 136, depthZ: 0 },
+  { x: 21, y: 55, yaw: 8, scale: 0.93, opacity: 1, z: 124, depthZ: 0 },
+  { x: 40, y: 51, yaw: 20, scale: 0.74, opacity: 0.74, z: 90, depthZ: 0 },
+  { x: 44, y: 39, yaw: 52, scale: 0.60, opacity: 0.42, z: 48, depthZ: 28 },
+  { x: 29, y: 27, yaw: 74, scale: 0.46, opacity: 0.20, z: 28, depthZ: 10 },
+  { x: 12, y: 22, yaw: 88, scale: 0.40, opacity: 0, z: 18, depthZ: 0 },
 ];
 
 function optionEntryLevel(option = {}) {
