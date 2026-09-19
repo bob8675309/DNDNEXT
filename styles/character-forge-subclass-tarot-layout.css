@@ -464,6 +464,7 @@
   transition:
     left .48s cubic-bezier(.2, .76, .24, 1),
     top .48s cubic-bezier(.2, .76, .24, 1),
+    width .42s cubic-bezier(.2, .76, .24, 1),
     transform .48s cubic-bezier(.2, .76, .24, 1),
     opacity .38s ease !important;
   will-change: auto;
@@ -476,8 +477,13 @@
 }
 
 .class-subclass-carousel-card.is-orbit-back,
-.class-subclass-carousel-card.is-orbit-edge {
+.class-subclass-carousel-card.is-orbit-edge,
+.class-subclass-carousel-card.is-orbit-hidden {
   pointer-events: none;
+}
+
+.class-subclass-carousel-card.is-orbit-hidden {
+  opacity: 0 !important;
 }
 
 .class-subclass-carousel-card.is-orbit-front {
@@ -1123,6 +1129,10 @@
   width: clamp(178px, 14.2vw, 246px) !important;
 }
 
+.class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center {
+  width: clamp(194px, 15.5vw, 268px) !important;
+}
+
 .class-subclass-carousel-card.is-orbit-front {
   opacity: 1 !important;
 }
@@ -1319,17 +1329,29 @@
   .class-subclass-carousel-card {
     width: clamp(148px, 16vw, 194px) !important;
   }
+
+  .class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center {
+    width: clamp(160px, 17.4vw, 210px) !important;
+  }
 }
 
 @media (max-width: 859px) {
   .class-subclass-carousel-card {
     width: clamp(120px, 20vw, 160px) !important;
   }
+
+  .class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center {
+    width: clamp(130px, 21.8vw, 174px) !important;
+  }
 }
 
 @media (max-width: 619px) {
   .class-subclass-carousel-card {
     width: clamp(94px, 23vw, 126px) !important;
+  }
+
+  .class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center {
+    width: clamp(102px, 25vw, 136px) !important;
   }
 }
 
