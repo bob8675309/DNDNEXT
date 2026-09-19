@@ -96,8 +96,10 @@ for (const token of [
 assert((selector.match(/model\.selectSubclass\(option\)/g) || []).length === 1, "Carousel motion must never persist a subclass; only the explicit card-choice path may call selectSubclass(option).");
 assert(!selector.includes('model?.setPreviewKey?.(focusedOption.key)'), "Front-most carousel position must not auto-preview/persist as the player's subclass.");
 assert(!selector.includes('const focusedOption = options[focusedIndex] || null'), "Legacy auto-focused front-card selection state is still present.");
-assert(!/function rotateCarousel[\s\S]*?setInspectedKey\(""/.test(selector), "Carousel arrows must not clear the explicitly clicked inspection target.");
-assert(!/function handleOrbitPointerDown[\s\S]*?setInspectedKey\(""/.test(selector), "Dragging must not clear the explicitly clicked inspection target.");
+const rotateBlock = selector.slice(selector.indexOf("function rotateCarousel"), selector.indexOf("function showInspectedDetails"));
+const pointerDownBlock = selector.slice(selector.indexOf("function handleOrbitPointerDown"), selector.indexOf("function handleOrbitPointerMove"));
+assert(!rotateBlock.includes('setInspectedKey("")'), "Carousel arrows must not clear the explicitly clicked inspection target.");
+assert(!pointerDownBlock.includes('setInspectedKey("")'), "Dragging must not clear the explicitly clicked inspection target.");
 
 assert(!selector.includes('Unlocks at level ${optionEntryLevel(option)}'), "Tarot card faces must not carry unlock-level badges.");
 assert(selector.includes('.filter((line) => line && !isCatalogReferenceLine(line))'), "Subclass dossier summary must remove pipe-delimited catalog reference rows before rendering.");
