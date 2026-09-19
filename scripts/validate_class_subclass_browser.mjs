@@ -39,24 +39,25 @@ for (const token of [
   'import { createPortal } from "react-dom"',
   'const FRONT_CENTER_SLOT = 1',
   'const DRAG_THRESHOLD_PX = 6',
-  'const FRONT_ARC_DEGREES = 22',
-  'const FACE_UP_EDGE_SLOTS = 2',
-  'const FACE_UP_EDGE_DEGREES = 42',
-  'const REAR_HANDOFF_SLOTS = 2.5',
-  'const REAR_HANDOFF_DEGREES = 50',
-  'const FRONT_YAW_DEGREES = 8',
-  'const FACE_UP_EDGE_YAW_DEGREES = 20',
+  'const FACE_UP_RADIUS = 2',
+  'const INTERACTIVE_RADIUS = 1',
+  'const VISIBLE_RADIUS = 4',
+  'const ORBIT_VISUAL_PROFILE = [',
+  '{ x: 0, y: 55, yaw: 0, scale: 1.10, opacity: 1, z: 132, depthZ: 0 }',
+  '{ x: 16, y: 54, yaw: 8, scale: 0.96, opacity: 1, z: 122, depthZ: 0 }',
+  '{ x: 32, y: 50, yaw: 20, scale: 0.80, opacity: 0.72, z: 88, depthZ: 0 }',
   'const FLICK_PROJECTION_MS = 150',
   'function normalizeOrbitOffset(value, total)',
   'function signedOrbitSlots(value, total)',
   'function isCatalogReferenceLine(value = "")',
   'function cleanSubclassSummaryText(value = "")',
+  'function orbitVisualProfile(distance)',
   'function orbitPlacement(optionIndex, orbitOffset, total)',
   'const snappedCenterIndex = Math.round(normalizeOrbitOffset(frontCenter, count)) % count',
-  'const isFront = count <= 3 || Math.abs(snappedSlots) <= 1',
-  'const showsFrontFace = count <= 5 || Math.abs(snappedSlots) <= 2',
-  'const depthZ = showsFrontFace ? 0 : Math.round(depth * 48)',
-  'const opacity = isFront ? 1 : showsFrontFace ? 0.72 : 0.16 + (depth * 0.58)',
+  'const isFront = count <= 3 || snappedDistance <= INTERACTIVE_RADIUS',
+  'const showsFrontFace = count <= 5 || snappedDistance <= FACE_UP_RADIUS',
+  'const isVisible = count <= 9 || snappedDistance <= VISIBLE_RADIUS',
+  '"--orbit-opacity": (isVisible ? visual.opacity : 0).toFixed(3)',
   '"--orbit-back-yaw": `${(-yaw).toFixed(2)}deg`',
   'const [orbitOffset, setOrbitOffset] = useState(0)',
   'const [isDragging, setIsDragging] = useState(false)',
@@ -87,6 +88,7 @@ for (const token of [
   'const inspectionScale = isInspected && showsFrontFace ? 1.065 : 1',
   '"--inspection-scale": inspectionScale.toFixed(3)',
   'isFront ? " is-orbit-front" : showsFrontFace ? " is-orbit-edge" : " is-orbit-back"',
+  'isVisible ? "" : " is-orbit-hidden"',
   '}, [selectorOpen, optionSignature]);',
   'model?.setPreviewKey?.(option.key)',
   'model.selectSubclass(option)',
@@ -105,6 +107,11 @@ const rotateBlock = selector.slice(selector.indexOf("function rotateCarousel"), 
 const pointerDownBlock = selector.slice(selector.indexOf("function handleOrbitPointerDown"), selector.indexOf("function handleOrbitPointerMove"));
 assert(!rotateBlock.includes('setInspectedKey("")'), "Carousel arrows must not clear the explicitly clicked inspection target.");
 assert(!pointerDownBlock.includes('setInspectedKey("")'), "Dragging must not clear the explicitly clicked inspection target.");
+assert(selector.includes('const isVisible = count <= 9 || snappedDistance <= VISIBLE_RADIUS'), "Tarot orbit must cap the visual window at nine cards without capping subclass options.");
+assert(selector.includes('{ x: 0, y: 55, yaw: 0, scale: 1.10'), "Tarot center must remain larger than its neighboring face-up cards.");
+assert(selector.includes('{ x: 16, y: 54, yaw: 8, scale: 0.96'), "Tarot side cards must step down from the center size.");
+assert(selector.includes('{ x: 32, y: 50, yaw: 20, scale: 0.80'), "Tarot edge preview cards must step down again from the interactive side cards.");
+
 
 assert(!selector.includes('Unlocks at level ${optionEntryLevel(option)}'), "Tarot card faces must not carry unlock-level badges.");
 assert(selector.includes('.filter((line) => line && !isCatalogReferenceLine(line))'), "Subclass dossier summary must remove pipe-delimited catalog reference rows before rendering.");
@@ -121,6 +128,8 @@ for (const token of [
   'translate3d(-50%, -50%, var(--orbit-depth-z))',
   'rotateY(var(--orbit-yaw))',
   'width: clamp(178px, 14.2vw, 246px) !important',
+  'width: clamp(194px, 15.5vw, 268px) !important',
+  '.class-subclass-carousel-card.is-orbit-hidden',
   '.class-subclass-carousel-card.is-orbit-face-up .class-subclass-carousel-card__face.is-back',
   '.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__face.is-front',
   '.class-subclass-carousel-card.is-orbit-edge',
