@@ -101,12 +101,14 @@ export default function ClassSubclassSection({
   const [selectorOpen, setSelectorOpen] = useState(false);
   const [orbitOffset, setOrbitOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [isOrbitSettled, setIsOrbitSettled] = useState(true);
   const [inspectedKey, setInspectedKey] = useState("");
   const autoOpenedForRef = useRef("");
   const lastClassKeyRef = useRef(classKey);
   const orbitRef = useRef(null);
   const dragStateRef = useRef(null);
   const suppressClickUntilRef = useRef(0);
+  const settleTimerRef = useRef(null);
 
   const orbitOptions = useMemo(() => options.map((option, optionIndex) => ({
     option,
@@ -129,6 +131,7 @@ export default function ClassSubclassSection({
       setSelectorOpen(false);
     }
     setOrbitOffset(0);
+    setIsOrbitSettled(true);
     setInspectedKey("");
   }, [classKey, optionSignature]);
 
@@ -147,6 +150,10 @@ export default function ClassSubclassSection({
     setOrbitOffset(normalizeOrbitOffset(selectedIndex - FRONT_CENTER_SLOT, options.length));
     setInspectedKey(selected.key);
   }, [selectorOpen, selected?.key, optionSignature]);
+
+  useEffect(() => () => {
+    if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
+  }, []);
 
   useEffect(() => {
     if (!selectorOpen || typeof document === "undefined") return undefined;
@@ -188,11 +195,22 @@ export default function ClassSubclassSection({
     setSelectorOpen(true);
   }
 
+  function scheduleOrbitSettled() {
+    if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
+    settleTimerRef.current = setTimeout(() => {
+      setIsOrbitSettled(true);
+      settleTimerRef.current = null;
+    }, 520);
+  }
+
   function rotateCarousel(direction) {
     if (options.length <= 1) return;
     const normalizedDirection = direction < 0 ? -1 : 1;
+    if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
+    setIsOrbitSettled(false);
     setInspectedKey("");
     setOrbitOffset((current) => normalizeOrbitOffset(Math.round(current) + normalizedDirection, options.length));
+    scheduleOrbitSettled();
   }
 
   function showInspectedDetails() {
@@ -205,6 +223,8 @@ export default function ClassSubclassSection({
     if (options.length <= 1) return;
     if (event.pointerType === "mouse" && event.button !== 0) return;
     setInspectedKey("");
+    if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
+    setIsOrbitSettled(false);
     const bounds = orbitRef.current?.getBoundingClientRect();
     const now = Number(event.timeStamp || performance.now());
     dragStateRef.current = {
@@ -263,6 +283,9 @@ export default function ClassSubclassSection({
         options.length,
       ));
       suppressClickUntilRef.current = Date.now() + 240;
+      scheduleOrbitSettled();
+    } else {
+      setIsOrbitSettled(true);
     }
 
     dragStateRef.current = null;
@@ -329,7 +352,7 @@ export default function ClassSubclassSection({
                 const isSelected = selected?.key === option.key;
                 const isInspected = inspectedOption?.key === option.key;
                 const eligible = optionEntryLevel(option) <= currentLevel;
-                const isRestingCenter = !isDragging && Math.abs(signedSlots) < 0.001;
+                const isRestingCenter = isOrbitSettled && !isDragging && Math.abs(signedSlots) < 0.001;
                 return (
                   <button
                     key={option.key}
