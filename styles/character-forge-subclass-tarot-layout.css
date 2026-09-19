@@ -1119,7 +1119,7 @@
 }
 
 .class-subclass-carousel-card {
-  width: clamp(166px, 13vw, 226px) !important;
+  width: clamp(178px, 14.2vw, 246px) !important;
 }
 
 .class-subclass-carousel-card.is-orbit-front {
@@ -1184,6 +1184,14 @@
   transform: rotateY(0deg) translateZ(.3px);
 }
 
+.class-subclass-carousel-card.is-orbit-front .class-subclass-carousel-card__face.is-back {
+  display: none !important;
+}
+
+.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__face.is-front {
+  display: none !important;
+}
+
 .class-subclass-carousel-card__face.is-back {
   display: grid;
   place-items: center;
@@ -1201,6 +1209,12 @@
     inset 0 0 0 8px rgba(8, 7, 14, .86),
     inset 0 0 0 9px rgba(145, 85, 201, .2),
     0 15px 34px rgba(0, 0, 0, .5);
+}
+
+.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__face.is-back {
+  transform: none !important;
+  backface-visibility: visible !important;
+  -webkit-backface-visibility: visible !important;
 }
 
 .class-subclass-carousel-card__face.is-back::before,
@@ -1294,18 +1308,71 @@
 
 @media (max-width: 1179px) {
   .class-subclass-carousel-card {
-    width: clamp(142px, 15vw, 184px) !important;
+    width: clamp(148px, 16vw, 194px) !important;
   }
 }
 
 @media (max-width: 859px) {
   .class-subclass-carousel-card {
-    width: clamp(116px, 19vw, 152px) !important;
+    width: clamp(120px, 20vw, 160px) !important;
   }
 }
 
 @media (max-width: 619px) {
   .class-subclass-carousel-card {
-    width: clamp(92px, 22vw, 122px) !important;
+    width: clamp(94px, 23vw, 126px) !important;
+  }
+}
+
+/* Browser zoom and short-height windows must never trap the dossier below
+   an overflow-hidden modal. Preserve the cinematic canvas and let the modal
+   itself scroll when the effective viewport becomes too short. */
+@media (max-height: 720px) {
+  .class-subclass-carousel-modal {
+    place-items: start center;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  .class-subclass-carousel-modal__panel {
+    flex: 0 0 auto;
+    height: 620px !important;
+    min-height: 620px !important;
+    max-height: none !important;
+  }
+
+  .class-subclass-carousel-modal__head {
+    top: 16px;
+  }
+
+  .class-subclass-carousel-modal__head > div {
+    padding-top: 5px;
+    padding-bottom: 7px;
+  }
+
+  .class-subclass-carousel-modal__head h3 {
+    font-size: clamp(1.7rem, 4vw, 2.45rem) !important;
+  }
+
+  .class-subclass-carousel-modal__head p {
+    font-size: .66rem !important;
+  }
+
+  .class-subclass-carousel-modal__details {
+    bottom: 14px;
+  }
+}
+
+@media (max-height: 520px) {
+  .class-subclass-carousel-modal__panel {
+    height: 590px !important;
+    min-height: 590px !important;
+  }
+
+  .class-subclass-carousel-modal__head p {
+    display: none;
   }
 }
