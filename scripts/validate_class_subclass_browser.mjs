@@ -46,8 +46,8 @@ for (const token of [
   '{ x: 0, y: 56, yaw: 0, scale: 1.11, opacity: 1, z: 136, depthZ: 0 }',
   '{ x: 24, y: 54, yaw: 7, scale: 0.92, opacity: 1, z: 124, depthZ: 0 }',
   '{ x: 42, y: 49, yaw: 18, scale: 0.72, opacity: 0.84, z: 92, depthZ: 0 }',
-  '{ x: 12, y: 27, yaw: 46, scale: 0.62, opacity: 0.56, z: 78, depthZ: 26 }',
-  '{ x: 33, y: 16, yaw: 66, scale: 0.52, opacity: 0.34, z: 58, depthZ: 12 }',
+  '{ x: 44, y: 39, yaw: 44, scale: 0.64, opacity: 0.64, z: 76, depthZ: 26 }',
+  '{ x: 31, y: 24, yaw: 62, scale: 0.52, opacity: 0.42, z: 54, depthZ: 12 }',
   'const FLICK_PROJECTION_MS = 150',
   'function normalizeOrbitOffset(value, total)',
   'function signedOrbitSlots(value, total)',
@@ -60,7 +60,9 @@ for (const token of [
   'const showsFrontFace = count <= 5 || snappedDistance <= FACE_UP_RADIUS',
   'const isVisible = count <= 9 || snappedDistance <= VISIBLE_RADIUS',
   '"--orbit-opacity": (isVisible ? visual.opacity : 0).toFixed(3)',
-  '"--orbit-back-yaw": `${(-yaw * 0.55).toFixed(2)}deg`',
+  '"--orbit-back-yaw": `${(-yaw * 0.82).toFixed(2)}deg`',
+  'function activateCard(option)',
+  'data-subclass-key={option.key}',
   'const [orbitOffset, setOrbitOffset] = useState(0)',
   'const [isDragging, setIsDragging] = useState(false)',
   'const [isOrbitSettled, setIsOrbitSettled] = useState(true)',
@@ -115,17 +117,25 @@ assert(!pointerDownBlock.includes('setIsOrbitSettled(false)'), "A normal pointer
 const pointerMoveBlock = selector.slice(selector.indexOf("function handleOrbitPointerMove"), selector.indexOf("function finishOrbitPointer"));
 assert(pointerMoveBlock.includes('setIsOrbitSettled(false)'), "The orbit should leave its settled state only after the drag threshold is crossed.");
 assert(pointerMoveBlock.includes('setPointerCapture?.(event.pointerId)'), "Pointer capture must begin only after the drag threshold is crossed.");
+assert(selector.includes('const card = event.target?.closest?.(".class-subclass-carousel-card.is-orbit-front")'), "Ordinary pointer-up must resolve the actual clicked front card instead of relying only on native click dispatch.");
+assert(selector.includes('const optionKey = text(card?.dataset?.subclassKey)'), "Pointer-up card activation must resolve the subclass key from the clicked card.");
+assert(selector.includes('activateCard(option);'), "Pointer and keyboard activation must share one explicit subclass inspection authority.");
+
 assert(selector.includes('selected && inspectedOption && selected.key === inspectedOption.key'), "Selected-note rendering must not treat two undefined keys as a selected card.");
 
 assert(selector.includes('const isVisible = count <= 9 || snappedDistance <= VISIBLE_RADIUS'), "Tarot orbit must cap the visual window at nine cards without capping subclass options.");
 assert(selector.includes('{ x: 0, y: 56, yaw: 0, scale: 1.11'), "Tarot center must remain larger than its neighboring face-up cards.");
 assert(selector.includes('{ x: 24, y: 54, yaw: 7, scale: 0.92'), "Tarot side cards must stay clearly separated from the center and step down in size.");
 assert(selector.includes('{ x: 42, y: 49, yaw: 18, scale: 0.72, opacity: 0.84'), "Tarot outer previews must remain legible near the stage edges without competing with the interactive side cards.");
-assert(selector.includes('"--orbit-back-yaw": `${(-yaw * 0.55).toFixed(2)}deg`'), "Rear Tarot backs must retain partial yaw so the background reads as a circular deck instead of flat panels.");
-assert(selector.includes('{ x: 12, y: 27, yaw: 46, scale: 0.62'), "The near rear-card tier must occupy the central gaps so its backs remain readable behind the five-card spread.");
-assert(selector.includes('{ x: 33, y: 16, yaw: 66, scale: 0.52'), "The far rear-card tier must rise above the outer gaps and keep the rotating deck silhouette visible.");
+assert(selector.includes('"--orbit-back-yaw": `${(-yaw * 0.82).toFixed(2)}deg`'), "Rear Tarot backs must stay broad enough to read while preserving some carousel yaw.");
+assert(selector.includes('{ x: 44, y: 39, yaw: 44, scale: 0.64'), "The near rear-card tier must remain visible just outside the face-up spread like the older circular deck silhouette.");
+assert(selector.includes('{ x: 31, y: 24, yaw: 62, scale: 0.52'), "The far rear-card tier must curl inward and upward behind the outer spread.");
 assert(tarotCss.includes('width: clamp(216px, 17.3vw, 298px) !important'), "A clicked resting center Tarot card must swell through physical width, not a compositor scale.");
 assert(tarotCss.includes('filter: saturate(.92) brightness(1.02) contrast(1.01)'), "Rear Tarot backs must remain readable background motion without competing with the face-up spread.");
+assert(tarotCss.includes('opacity: .62;'), "Foreground smoke must be light enough for the rear deck to remain visible.");
+assert(tarotCss.includes('transparent 46%') && tarotCss.includes('#000 76%'), "Foreground smoke mask must preserve a wider clear window around the carousel.");
+assert(tarotCss.includes('.class-subclass-carousel-card.is-orbit-front {\n  pointer-events: auto;\n  cursor: pointer;'), "Interactive front cards must advertise clickability without removing drag support.");
+
 assert(!tarotCss.includes('translate(-50%, -50%) scale(var(--inspection-scale, 1))'), "Resting center Tarot must not reintroduce transform scaling that softens the hero art.");
 
 
