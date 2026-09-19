@@ -26,7 +26,7 @@ function isCatalogReferenceLine(value = "") {
 }
 
 function cleanSubclassSummaryText(value = "") {
-  const cleaned = text(value)
+  const lines = text(value)
     .replace(/\r/g, "")
     .split(/\n+/)
     .map((line) => text(line))
@@ -34,12 +34,20 @@ function cleanSubclassSummaryText(value = "") {
     .map((line) => line
       .replace(/\{@\w+\s+([^}|]+)(?:\|[^}]*)?\}/g, "$1")
       .replace(/<[^>]+>/g, " ")
-      .replace(/[*_]{2,}/g, " "))
+      .replace(/[*_]{2,}/g, " ")
+      .replace(/\s+/g, " ")
+      .trim())
+    .filter(Boolean);
+
+  if (lines.length > 1 && lines[0].length <= 80 && !/[.!?:;—]$/.test(lines[0])) {
+    lines[0] = `${lines[0]} —`;
+  }
+
+  return lines
     .join(" ")
     .replace(/\s+/g, " ")
     .replace(/\s+([,.;:!?])/g, "$1")
     .trim();
-  return cleaned;
 }
 
 function subclassSummary(option = {}) {
