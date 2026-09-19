@@ -179,8 +179,13 @@ export default function ClassSubclassSection({
     ? Math.round(normalizeOrbitOffset(orbitOffset + FRONT_CENTER_SLOT, options.length)) % options.length
     : 0;
   const browsedOption = options[browsedIndex] || null;
-  const inspectedOption = options.find((option) => option.key === inspectedKey) || browsedOption;
-  const inspectedSummary = useMemo(() => subclassSummary(inspectedOption), [inspectedOption]);
+  const inspectedOption = options.find((option) => option.key === inspectedKey) || null;
+  const inspectedSummary = useMemo(
+    () => inspectedOption
+      ? subclassSummary(inspectedOption)
+      : "Click any of the three front cards to inspect that path. Dragging the carousel will not change your choice.",
+    [inspectedOption],
+  );
   const classLabel = classLabelFor(classKey, model?.className);
 
   useEffect(() => {
@@ -407,7 +412,7 @@ export default function ClassSubclassSection({
             >
               {orbitOptions.map(({ option, optionIndex, signedSlots, depth, isFront, showsFrontFace, style }) => {
                 const isSelected = selected?.key === option.key;
-                const isInspected = inspectedOption?.key === option.key;
+                const isInspected = inspectedKey === option.key;
                 const eligible = optionEntryLevel(option) <= currentLevel;
                 const isRestingCenter = isOrbitSettled && !isDragging && Math.abs(signedSlots) < 0.001;
                 const inspectionScale = isInspected && showsFrontFace ? 1.065 : 1;
@@ -478,7 +483,7 @@ export default function ClassSubclassSection({
             <div className="class-subclass-carousel-modal__details-icon" aria-hidden="true"><span>✦</span></div>
             <div className="class-subclass-carousel-modal__details-copy">
               <span>{classLabel} Subclass</span>
-              <h4>{inspectedOption?.name || "Subclass"}</h4>
+              <h4>{inspectedOption?.name || "Choose a card"}</h4>
               <p>{inspectedSummary}</p>
               {inspectedOption && optionEntryLevel(inspectedOption) > currentLevel ? <small>Available at level {optionEntryLevel(inspectedOption)}</small> : null}
               {selected?.key === inspectedOption?.key ? <small className="is-selected-note">Currently selected</small> : null}
