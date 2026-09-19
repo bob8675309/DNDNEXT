@@ -5,6 +5,8 @@ import { handleSubclassArtworkError, subclassArtworkFor } from "../utils/classes
 const text = (value) => String(value ?? "").trim();
 const FRONT_CENTER_SLOT = 1;
 const FRONT_ARC_DEGREES = 22;
+const FRONT_BUFFER_SLOTS = 1.5;
+const FRONT_EDGE_DEGREES = 28;
 const FRONT_YAW_DEGREES = 8;
 const DRAG_THRESHOLD_PX = 6;
 const FLICK_PROJECTION_MS = 150;
@@ -86,11 +88,14 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
   const absSlots = Math.abs(signedSlots);
   const direction = signedSlots === 0 ? 0 : Math.sign(signedSlots);
   const maxDistance = Math.max(1, count / 2);
-  const rearSpan = Math.max(0.001, maxDistance - 1);
-  const rearProgress = clamp((absSlots - 1) / rearSpan, 0, 1);
+  const rearSpan = Math.max(0.001, maxDistance - FRONT_BUFFER_SLOTS);
+  const rearProgress = clamp((absSlots - FRONT_BUFFER_SLOTS) / rearSpan, 0, 1);
   const thetaDegrees = absSlots <= 1
     ? FRONT_ARC_DEGREES * absSlots
-    : FRONT_ARC_DEGREES + (rearProgress * (180 - FRONT_ARC_DEGREES));
+    : absSlots <= FRONT_BUFFER_SLOTS
+      ? FRONT_ARC_DEGREES
+        + (((absSlots - 1) / (FRONT_BUFFER_SLOTS - 1)) * (FRONT_EDGE_DEGREES - FRONT_ARC_DEGREES))
+      : FRONT_EDGE_DEGREES + (rearProgress * (180 - FRONT_EDGE_DEGREES));
   const theta = (thetaDegrees * Math.PI) / 180;
   const cosine = Math.cos(theta);
   const sine = Math.sin(theta);
@@ -115,6 +120,7 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
       "--orbit-x": `${x.toFixed(3)}%`,
       "--orbit-y": `${y.toFixed(3)}%`,
       "--orbit-yaw": `${yaw.toFixed(2)}deg`,
+      "--orbit-back-yaw": `${(-yaw).toFixed(2)}deg`,
       "--orbit-scale": scale.toFixed(4),
       "--orbit-opacity": opacity.toFixed(3),
       "--orbit-z": String(zIndex),
