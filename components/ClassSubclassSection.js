@@ -15,12 +15,12 @@ const ORBIT_VISUAL_PROFILE = [
   { x: 0, y: 56, yaw: 0, scale: 1.11, opacity: 1, z: 136, depthZ: 0 },
   { x: 24, y: 54, yaw: 7, scale: 0.92, opacity: 1, z: 124, depthZ: 0 },
   { x: 42, y: 49, yaw: 18, scale: 0.72, opacity: 0.84, z: 92, depthZ: 0 },
-  // The next four cards form a readable rear arc. The nearer pair sits in the
-  // center gaps and the farther pair sits outward/high, echoing the older deck
-  // silhouette without bringing its foreground clutter back.
-  { x: 12, y: 27, yaw: 46, scale: 0.62, opacity: 0.56, z: 78, depthZ: 26 },
-  { x: 33, y: 16, yaw: 66, scale: 0.52, opacity: 0.34, z: 58, depthZ: 12 },
-  { x: 44, y: 11, yaw: 86, scale: 0.42, opacity: 0, z: 18, depthZ: 0 },
+  // The four visible backs borrow the older carousel silhouette: the first
+  // rear tier lives just outside the five-card spread and the far tier curls
+  // inward/upward behind it. This keeps the circular deck readable in motion.
+  { x: 44, y: 39, yaw: 44, scale: 0.64, opacity: 0.64, z: 76, depthZ: 26 },
+  { x: 31, y: 24, yaw: 62, scale: 0.52, opacity: 0.42, z: 54, depthZ: 12 },
+  { x: 18, y: 16, yaw: 84, scale: 0.42, opacity: 0, z: 18, depthZ: 0 },
 ];
 
 function optionEntryLevel(option = {}) {
@@ -144,7 +144,7 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
       "--orbit-x": `${x.toFixed(3)}%`,
       "--orbit-y": `${visual.y.toFixed(3)}%`,
       "--orbit-yaw": `${yaw.toFixed(2)}deg`,
-      "--orbit-back-yaw": `${(-yaw * 0.55).toFixed(2)}deg`,
+      "--orbit-back-yaw": `${(-yaw * 0.82).toFixed(2)}deg`,
       "--orbit-scale": visual.scale.toFixed(4),
       "--orbit-opacity": (isVisible ? visual.opacity : 0).toFixed(3),
       "--orbit-z": String(isVisible ? visual.z : 0),
@@ -295,6 +295,17 @@ export default function ClassSubclassSection({
     onInspectSubclass?.(inspectedOption);
   }
 
+  function activateCard(option) {
+    if (!option) return;
+    setInspectedKey(option.key);
+    model?.setPreviewKey?.(option.key);
+    onInspectSubclass?.(option);
+
+    if (optionEntryLevel(option) <= currentLevel) {
+      model.selectSubclass(option);
+    }
+  }
+
   function handleOrbitPointerDown(event) {
     if (options.length <= 1) return;
     if (event.pointerType === "mouse" && event.button !== 0) return;
@@ -366,6 +377,18 @@ export default function ClassSubclassSection({
       scheduleOrbitSettled();
     } else {
       setIsOrbitSettled(true);
+
+      if (!cancelled) {
+        const card = event.target?.closest?.(".class-subclass-carousel-card.is-orbit-front");
+        const optionKey = text(card?.dataset?.subclassKey);
+        const option = optionKey ? options.find((entry) => entry.key === optionKey) : null;
+        if (option) {
+          activateCard(option);
+          // Pointer-up owns ordinary pointer activation. Suppress the immediate
+          // native click so selection/persistence only runs once.
+          suppressClickUntilRef.current = Date.now() + 120;
+        }
+      }
     }
 
     dragStateRef.current = null;
@@ -379,13 +402,9 @@ export default function ClassSubclassSection({
       return;
     }
 
-    setInspectedKey(option.key);
-    model?.setPreviewKey?.(option.key);
-    onInspectSubclass?.(option);
-
-    if (optionEntryLevel(option) <= currentLevel) {
-      model.selectSubclass(option);
-    }
+    // Keyboard activation and any browser click path that did not originate
+    // from the orbit pointer gesture still use the same explicit authority.
+    activateCard(option);
   }
 
   const selectorModal = selectorOpen && typeof document !== "undefined"
@@ -453,6 +472,7 @@ export default function ClassSubclassSection({
                     aria-posinset={optionIndex + 1}
                     aria-setsize={options.length}
                     aria-label={`${option.name}, ${eligible ? "click to select" : `available at level ${optionEntryLevel(option)}`}`}
+                    data-subclass-key={option.key}
                     data-orbit-distance={Math.abs(signedSlots).toFixed(3)}
                     data-orbit-depth={depth.toFixed(3)}
                     onClick={(event) => handleCardClick(event, option, isFront)}
