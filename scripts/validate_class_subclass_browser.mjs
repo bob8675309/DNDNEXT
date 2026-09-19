@@ -111,7 +111,9 @@ const pointerDownBlock = selector.slice(selector.indexOf("function handleOrbitPo
 assert(!rotateBlock.includes('setInspectedKey("")'), "Carousel arrows must not clear the explicitly clicked inspection target.");
 assert(!pointerDownBlock.includes('setInspectedKey("")'), "Dragging must not clear the explicitly clicked inspection target.");
 assert(!pointerDownBlock.includes('setPointerCapture'), "Pointer-down must not capture the pointer because doing so retargets a normal card click to the orbit container.");
+assert(!pointerDownBlock.includes('setIsOrbitSettled(false)'), "A normal pointer-down must not disturb the settled card layout before click dispatch.");
 const pointerMoveBlock = selector.slice(selector.indexOf("function handleOrbitPointerMove"), selector.indexOf("function finishOrbitPointer"));
+assert(pointerMoveBlock.includes('setIsOrbitSettled(false)'), "The orbit should leave its settled state only after the drag threshold is crossed.");
 assert(pointerMoveBlock.includes('setPointerCapture?.(event.pointerId)'), "Pointer capture must begin only after the drag threshold is crossed.");
 assert(selector.includes('selected && inspectedOption && selected.key === inspectedOption.key'), "Selected-note rendering must not treat two undefined keys as a selected card.");
 
