@@ -329,12 +329,13 @@ export default function ClassSubclassSection({
                 const isSelected = selected?.key === option.key;
                 const isInspected = inspectedOption?.key === option.key;
                 const eligible = optionEntryLevel(option) <= currentLevel;
+                const isRestingCenter = !isDragging && Math.abs(signedSlots) < 0.001;
                 return (
                   <button
                     key={option.key}
                     type="button"
                     role="listitem"
-                    className={`class-subclass-carousel-card${isInspected ? " is-inspected" : ""}${isSelected ? " is-selected" : ""}${isFront ? " is-orbit-front" : " is-orbit-back"}${eligible ? " is-eligible" : " is-locked"}`}
+                    className={`class-subclass-carousel-card${isRestingCenter ? " is-resting-center" : ""}${isInspected ? " is-inspected" : ""}${isSelected ? " is-selected" : ""}${isFront ? " is-orbit-front" : " is-orbit-back"}${eligible ? " is-eligible" : " is-locked"}`}
                     style={style}
                     aria-pressed={isSelected}
                     aria-hidden={isFront ? undefined : "true"}
@@ -353,6 +354,8 @@ export default function ClassSubclassSection({
                             src={subclassArtworkFor(classKey, option)}
                             onError={(event) => handleSubclassArtworkError(event, classKey)}
                             alt=""
+                            width={840}
+                            height={1440}
                             draggable="false"
                             decoding="async"
                           />
