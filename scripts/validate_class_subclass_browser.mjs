@@ -51,6 +51,7 @@ for (const token of [
   'function orbitPlacement(optionIndex, orbitOffset, total)',
   'const snappedCenterIndex = Math.round(normalizeOrbitOffset(frontCenter, count)) % count',
   'const isFront = count <= 3 || Math.abs(snappedSlots) <= 1',
+  'const showsFrontFace = count <= 5 || Math.abs(snappedSlots) <= 2',
   'const depthZ = isFront ? 0 : Math.round(depth * 48)',
   '"--orbit-back-yaw": `${(-yaw).toFixed(2)}deg`',
   'const [orbitOffset, setOrbitOffset] = useState(0)',
@@ -77,7 +78,11 @@ for (const token of [
   'class-subclass-carousel-card__surface',
   'data-orbit-depth={depth.toFixed(3)}',
   'onClick={(event) => handleCardClick(event, option, isFront)}',
-  '<div className="class-subclass-carousel-modal__hint">Drag to browse</div>',
+  '<div className="class-subclass-carousel-modal__hint">Drag to browse · Click any of the three front cards</div>',
+  'const inspectionScale = isInspected && showsFrontFace ? 1.065 : 1',
+  '"--inspection-scale": inspectionScale.toFixed(3)',
+  'isFront ? " is-orbit-front" : showsFrontFace ? " is-orbit-edge" : " is-orbit-back"',
+  '}, [selectorOpen, optionSignature]);',
   'model?.setPreviewKey?.(option.key)',
   'model.selectSubclass(option)',
   'onClick={showInspectedDetails}',
@@ -91,6 +96,9 @@ for (const token of [
 assert((selector.match(/model\.selectSubclass\(option\)/g) || []).length === 1, "Carousel motion must never persist a subclass; only the explicit card-choice path may call selectSubclass(option).");
 assert(!selector.includes('model?.setPreviewKey?.(focusedOption.key)'), "Front-most carousel position must not auto-preview/persist as the player's subclass.");
 assert(!selector.includes('const focusedOption = options[focusedIndex] || null'), "Legacy auto-focused front-card selection state is still present.");
+assert(!/function rotateCarousel[\s\S]*?setInspectedKey\(""/.test(selector), "Carousel arrows must not clear the explicitly clicked inspection target.");
+assert(!/function handleOrbitPointerDown[\s\S]*?setInspectedKey\(""/.test(selector), "Dragging must not clear the explicitly clicked inspection target.");
+
 assert(!selector.includes('Unlocks at level ${optionEntryLevel(option)}'), "Tarot card faces must not carry unlock-level badges.");
 assert(selector.includes('.filter((line) => line && !isCatalogReferenceLine(line))'), "Subclass dossier summary must remove pipe-delimited catalog reference rows before rendering.");
 
@@ -106,8 +114,10 @@ for (const token of [
   'translate3d(-50%, -50%, var(--orbit-depth-z))',
   'rotateY(var(--orbit-yaw))',
   'width: clamp(178px, 14.2vw, 246px) !important',
-  '.class-subclass-carousel-card.is-orbit-front .class-subclass-carousel-card__face.is-back',
+  '.class-subclass-carousel-card.is-orbit-face-up .class-subclass-carousel-card__face.is-back',
   '.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__face.is-front',
+  '.class-subclass-carousel-card.is-orbit-edge',
+  'scale(var(--inspection-scale, 1)) !important',
   '.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__face.is-back',
   'rotateY(var(--orbit-back-yaw)) translateZ(.3px) !important',
   '@media (max-height: 720px)',
