@@ -92,6 +92,7 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
   const snappedCenterIndex = Math.round(normalizeOrbitOffset(frontCenter, count)) % count;
   const snappedSlots = signedOrbitSlots(optionIndex - snappedCenterIndex, count);
   const isFront = count <= 3 || Math.abs(snappedSlots) <= 1;
+  const showsFrontFace = count <= 5 || Math.abs(snappedSlots) <= 2;
 
   const absSlots = Math.abs(signedSlots);
   const direction = signedSlots === 0 ? 0 : Math.sign(signedSlots);
@@ -124,6 +125,7 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
     signedSlots,
     depth,
     isFront,
+    showsFrontFace,
     style: {
       "--orbit-x": `${x.toFixed(3)}%`,
       "--orbit-y": `${y.toFixed(3)}%`,
@@ -206,7 +208,7 @@ export default function ClassSubclassSection({
     if (selectedIndex < 0) return;
     setOrbitOffset(normalizeOrbitOffset(selectedIndex - FRONT_CENTER_SLOT, options.length));
     setInspectedKey(selected.key);
-  }, [selectorOpen, selected?.key, optionSignature]);
+  }, [selectorOpen, optionSignature]);
 
   useEffect(() => () => {
     if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
@@ -265,7 +267,6 @@ export default function ClassSubclassSection({
     const normalizedDirection = direction < 0 ? -1 : 1;
     if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
     setIsOrbitSettled(false);
-    setInspectedKey("");
     setOrbitOffset((current) => normalizeOrbitOffset(Math.round(current) + normalizedDirection, options.length));
     scheduleOrbitSettled();
   }
@@ -279,7 +280,6 @@ export default function ClassSubclassSection({
   function handleOrbitPointerDown(event) {
     if (options.length <= 1) return;
     if (event.pointerType === "mouse" && event.button !== 0) return;
-    setInspectedKey("");
     if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
     setIsOrbitSettled(false);
     const bounds = orbitRef.current?.getBoundingClientRect();
@@ -405,18 +405,25 @@ export default function ClassSubclassSection({
               onPointerUp={(event) => finishOrbitPointer(event)}
               onPointerCancel={(event) => finishOrbitPointer(event, true)}
             >
-              {orbitOptions.map(({ option, optionIndex, signedSlots, depth, isFront, style }) => {
+              {orbitOptions.map(({ option, optionIndex, signedSlots, depth, isFront, showsFrontFace, style }) => {
                 const isSelected = selected?.key === option.key;
                 const isInspected = inspectedOption?.key === option.key;
                 const eligible = optionEntryLevel(option) <= currentLevel;
                 const isRestingCenter = isOrbitSettled && !isDragging && Math.abs(signedSlots) < 0.001;
+                const inspectionScale = isInspected && showsFrontFace ? 1.065 : 1;
+                const cardStyle = {
+                  ...style,
+                  "--orbit-scale": (Number(style["--orbit-scale"]) * inspectionScale).toFixed(4),
+                  "--inspection-scale": inspectionScale.toFixed(3),
+                  "--orbit-z": String(Number(style["--orbit-z"]) + (isInspected && showsFrontFace ? 14 : 0)),
+                };
                 return (
                   <button
                     key={option.key}
                     type="button"
                     role="listitem"
-                    className={`class-subclass-carousel-card${isRestingCenter ? " is-resting-center" : ""}${isInspected ? " is-inspected" : ""}${isSelected ? " is-selected" : ""}${isFront ? " is-orbit-front" : " is-orbit-back"}${eligible ? " is-eligible" : " is-locked"}`}
-                    style={style}
+                    className={`class-subclass-carousel-card${isRestingCenter ? " is-resting-center" : ""}${isInspected ? " is-inspected" : ""}${isSelected ? " is-selected" : ""}${isFront ? " is-orbit-front" : showsFrontFace ? " is-orbit-edge" : " is-orbit-back"}${showsFrontFace ? " is-orbit-face-up" : ""}${eligible ? " is-eligible" : " is-locked"}`}
+                    style={cardStyle}
                     aria-pressed={isSelected}
                     aria-hidden={isFront ? undefined : "true"}
                     tabIndex={isFront ? 0 : -1}
@@ -464,7 +471,7 @@ export default function ClassSubclassSection({
             <div className="class-subclass-carousel-modal__position" aria-live="polite">
               <span>{browsedIndex + 1}</span><b>/</b><span>{options.length}</span>
             </div>
-            <div className="class-subclass-carousel-modal__hint">Drag to browse</div>
+            <div className="class-subclass-carousel-modal__hint">Drag to browse · Click any of the three front cards</div>
           </div>
 
           <section className="class-subclass-carousel-modal__details" aria-live="polite">
