@@ -404,11 +404,11 @@
 
 .class-subclass-carousel-modal__smoke-front {
   z-index: 128;
-  opacity: .78;
+  opacity: .62;
   background-image: url("/media/forge/subclass-carousel/subclass-selector-smoke-front.png");
-  filter: brightness(.57) saturate(.98) contrast(1.12);
-  mask-image: radial-gradient(ellipse at 50% 52%, transparent 0%, transparent 37%, rgba(0, 0, 0, .22) 47%, #000 64%);
-  -webkit-mask-image: radial-gradient(ellipse at 50% 52%, transparent 0%, transparent 37%, rgba(0, 0, 0, .22) 47%, #000 64%);
+  filter: brightness(.61) saturate(.98) contrast(1.08);
+  mask-image: radial-gradient(ellipse at 50% 52%, transparent 0%, transparent 46%, rgba(0, 0, 0, .18) 57%, #000 76%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 52%, transparent 0%, transparent 46%, rgba(0, 0, 0, .18) 57%, #000 76%);
 }
 
 .class-subclass-carousel-modal__orbit {
@@ -488,6 +488,11 @@
 
 .class-subclass-carousel-card.is-orbit-front {
   pointer-events: auto;
+  cursor: pointer;
+}
+
+.class-subclass-carousel-modal__orbit.is-dragging .class-subclass-carousel-card {
+  cursor: grabbing !important;
 }
 
 .class-subclass-carousel-card__surface {
