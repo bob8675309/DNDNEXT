@@ -43,11 +43,11 @@ for (const token of [
   'const INTERACTIVE_RADIUS = 1',
   'const VISIBLE_RADIUS = 4',
   'const ORBIT_VISUAL_PROFILE = [',
-  '{ x: 0, y: 57, yaw: 0, scale: 1.11, opacity: 1, z: 136, depthZ: 0 }',
-  '{ x: 24, y: 55, yaw: 7, scale: 0.92, opacity: 1, z: 124, depthZ: 0 }',
-  '{ x: 42, y: 51, yaw: 18, scale: 0.72, opacity: 0.78, z: 92, depthZ: 0 }',
-  '{ x: 33, y: 34, yaw: 50, scale: 0.60, opacity: 0.40, z: 64, depthZ: 28 }',
-  '{ x: 12, y: 23, yaw: 72, scale: 0.48, opacity: 0.23, z: 46, depthZ: 12 }',
+  '{ x: 0, y: 56, yaw: 0, scale: 1.11, opacity: 1, z: 136, depthZ: 0 }',
+  '{ x: 24, y: 54, yaw: 7, scale: 0.92, opacity: 1, z: 124, depthZ: 0 }',
+  '{ x: 42, y: 49, yaw: 18, scale: 0.72, opacity: 0.78, z: 92, depthZ: 0 }',
+  '{ x: 12, y: 27, yaw: 46, scale: 0.62, opacity: 0.56, z: 78, depthZ: 26 }',
+  '{ x: 33, y: 16, yaw: 66, scale: 0.52, opacity: 0.34, z: 58, depthZ: 12 }',
   'const FLICK_PROJECTION_MS = 150',
   'function normalizeOrbitOffset(value, total)',
   'function signedOrbitSlots(value, total)',
@@ -88,7 +88,7 @@ for (const token of [
   'data-orbit-depth={depth.toFixed(3)}',
   'onClick={(event) => handleCardClick(event, option, isFront)}',
   '<div className="class-subclass-carousel-modal__hint">Drag to browse · Click any of the three front cards</div>',
-  'const inspectionScale = isInspected && showsFrontFace ? 1.065 : 1',
+  'const inspectionScale = isInspected && showsFrontFace ? 1.085 : 1',
   '"--inspection-scale": inspectionScale.toFixed(3)',
   'isFront ? " is-orbit-front" : showsFrontFace ? " is-orbit-edge" : " is-orbit-back"',
   'isVisible ? "" : " is-orbit-hidden"',
@@ -118,13 +118,13 @@ assert(pointerMoveBlock.includes('setPointerCapture?.(event.pointerId)'), "Point
 assert(selector.includes('selected && inspectedOption && selected.key === inspectedOption.key'), "Selected-note rendering must not treat two undefined keys as a selected card.");
 
 assert(selector.includes('const isVisible = count <= 9 || snappedDistance <= VISIBLE_RADIUS'), "Tarot orbit must cap the visual window at nine cards without capping subclass options.");
-assert(selector.includes('{ x: 0, y: 57, yaw: 0, scale: 1.11'), "Tarot center must remain larger than its neighboring face-up cards.");
-assert(selector.includes('{ x: 24, y: 55, yaw: 7, scale: 0.92'), "Tarot side cards must open farther away from the center and step down in size.");
-assert(selector.includes('{ x: 42, y: 51, yaw: 18, scale: 0.72'), "Tarot outer previews must sit near the stage edges and remain smaller than the interactive side cards.");
-assert(selector.includes('{ x: 33, y: 34, yaw: 50, scale: 0.60'), "The first rear-card tier must sit above the gaps between the outer previews and side choices.");
-assert(selector.includes('{ x: 12, y: 23, yaw: 72, scale: 0.48'), "The far rear-card tier must remain visible behind the center gaps instead of disappearing at the sides.");
-assert(tarotCss.includes('width: clamp(210px, 16.85vw, 290px) !important'), "A clicked resting center Tarot card must swell through physical width, not a compositor scale.");
-assert(tarotCss.includes('filter: saturate(.86) brightness(.90) contrast(.98)'), "Rear Tarot backs must remain readable background motion without competing with the face-up spread.");
+assert(selector.includes('{ x: 0, y: 56, yaw: 0, scale: 1.11'), "Tarot center must remain larger than its neighboring face-up cards.");
+assert(selector.includes('{ x: 24, y: 54, yaw: 7, scale: 0.92'), "Tarot side cards must stay clearly separated from the center and step down in size.");
+assert(selector.includes('{ x: 42, y: 49, yaw: 18, scale: 0.72'), "Tarot outer previews must sit near the stage edges and remain smaller than the interactive side cards.");
+assert(selector.includes('{ x: 12, y: 27, yaw: 46, scale: 0.62'), "The near rear-card tier must occupy the central gaps so its backs remain readable behind the five-card spread.");
+assert(selector.includes('{ x: 33, y: 16, yaw: 66, scale: 0.52'), "The far rear-card tier must rise above the outer gaps and keep the rotating deck silhouette visible.");
+assert(tarotCss.includes('width: clamp(216px, 17.3vw, 298px) !important'), "A clicked resting center Tarot card must swell through physical width, not a compositor scale.");
+assert(tarotCss.includes('filter: saturate(.92) brightness(1.02) contrast(1.01)'), "Rear Tarot backs must remain readable background motion without competing with the face-up spread.");
 assert(!tarotCss.includes('translate(-50%, -50%) scale(var(--inspection-scale, 1))'), "Resting center Tarot must not reintroduce transform scaling that softens the hero art.");
 
 
@@ -149,7 +149,7 @@ for (const token of [
   '.class-subclass-carousel-card.is-orbit-face-up .class-subclass-carousel-card__face.is-back',
   '.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__face.is-front',
   '.class-subclass-carousel-card.is-orbit-edge',
-  'width: clamp(210px, 16.85vw, 290px) !important',
+  'width: clamp(216px, 17.3vw, 298px) !important',
   'transform: translate(-50%, -50%) !important',
   '.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__face.is-back',
   'rotateY(var(--orbit-back-yaw)) translateZ(.3px) !important',
