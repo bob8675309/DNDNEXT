@@ -8,33 +8,48 @@ Stack: Next.js **Pages Router** 16.1.6, React 19, Supabase/Postgres, Bootstrap/S
 
 ## 2026-09-18 current override — read this before older checkpoint prose
 
-The older sections below retain useful architecture/history, but their PR-number checkpoint is stale. Current active Character Forge subclass work is **PR #193**, branch `agent/subclass-tarot-approved-batch-20260916`, open and unmerged.
+The older sections below retain useful architecture/history, but their PR-number checkpoint is stale.
 
-Current implementation checkpoint before this documentation refresh:
+Current accepted `main` baseline:
 
-`49b6a0486878748f5d9c3147eb51fdbe16358451` — `Harden runic carousel preview effects [deploy-preview]`
+`1e5c0795010a4714250d309ecefc68ee67977e2d` — merged PR #193, completing the **149/149** runtime-visible subclass Tarot deck and the first runic circular selector implementation.
 
-Current accepted state:
+Current active refinement:
 
-- the full runtime-visible subclass Tarot deck is complete at **149/149** dedicated cards;
-- the resolver ledger contains **152 normalized installed concepts** because historical compatibility identities/explicit aliases remain represented;
-- current runtime-visible generic/class fallback count is **0**;
-- the subclass selector is now the approved **runic circular Tarot gallery** rather than the old compact two-column selector;
-- four cards are prominent on the front arc at desktop scale; all remaining choices continue around the same circular orbit as smaller/dimmer rear cards;
-- Left/Right advances exactly one option and wraps continuously without duplicated scroll rails or recentering;
-- selection, eligibility, persistence, progression, and Supabase authority remain unchanged;
-- the 2026-09-18 implementation checkpoint passed the Class-browser/subclass validators and Vercel Preview `dpl_5kcUtbeqoWqsY7iBMaLeyb81buaX` is READY; `/profile` returned HTTP 200.
+- PR #194 — `agent/subclass-carousel-drag-crisp-20260918` — **open / unmerged**;
+- exact implementation head before this documentation refresh: `5c4e3d3af1b3afe6d065de2fbb9b451fdd152c2d`;
+- focused Class-browser workflow on that head: **success**.
 
-Read these current focused documents before changing subclass presentation/art:
+PR #194 is presentation-only and refines the runic selector after live production review:
+
+- every subclass remains on one continuous circular orbit around the runic table;
+- the orbit now uses a **fractional offset**, allowing direct pointer drag/flick rather than arrow-only discrete movement;
+- releasing a drag projects a short flick and snaps to the nearest card position;
+- Left/Right buttons and keyboard arrows still advance exactly one option;
+- drag motion is separated from selection and suppresses accidental click activation;
+- moving/spinning the carousel does **not** persist or auto-select the front-most card;
+- an eligible subclass is persisted only by an explicit card click through the existing `model.selectSubclass(option)` authority;
+- future-level cards can still be inspected but cannot persist early;
+- the lower details panel follows the browsed/front option without treating it as player selection;
+- the carousel stage is slightly zoomed out/widened so more of the runic table and rear cards remain visible;
+- Tarot rendering is sharpened by removing image-level filter compositing and isolating card visuals inside a dedicated high-resolution surface while retaining the original 840x1440 WebP files.
+
+The completed art authority remains unchanged:
+
+- runtime-visible dedicated cards: **149 / 149**;
+- current visible fallback cards: **0**;
+- normalized installed artwork concepts: **152** because historical compatibility identities/explicit aliases remain represented.
+
+Read these focused documents before changing subclass presentation/art:
 
 - `docs/CHARACTER_FORGE_CLASS_SUBCLASS_SELECTOR_ARTWORK.md`
 - `docs/CHARACTER_FORGE_SUBCLASS_ARTWORK_STATUS.md`
 - `docs/CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md`
 - `docs/CHARACTER_FORGE_TAROT_SUBCLASS_CARD_STANDARD.md`
 
-The standing world-map boundary is unchanged: **do not touch world-map behavior unless Paul explicitly requests it, and never mix world-map behavior with town/city-map behavior.**
+The standing boundary is unchanged: **do not touch world-map behavior unless Paul explicitly requests it, and never mix world-map behavior with town/city-map behavior.**
 
-Always re-fetch PR #193 and current `main` before writing or merging. Source + exact-head CI/deployment outrank this recorded SHA if the branch moves.
+Always re-fetch PR #194 and current `main` before writing, validating, deploying, or merging. Source + exact-head CI/deployment outrank recorded SHAs if the branch moves.
 
 ## Current authoritative checkpoint
 

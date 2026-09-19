@@ -37,45 +37,126 @@ assert(!guide.includes('onFocus={() => publishFeature(model, onFeatureDetail'), 
 
 for (const token of [
   'import { createPortal } from "react-dom"',
-  'subclassArtworkFor(classKey, option)',
-  'handleSubclassArtworkError(event, classKey)',
-  'function orbitPlacement(optionIndex, carouselStart, total)',
-  'const frontCount = Math.min(4, count)',
-  'const offset = (Math.PI / 2) - (frontSpan / 2)',
-  'const orbitOptions = useMemo',
-  'const focusedIndex = options.length ? (carouselStart + focusedSlot) % options.length : 0',
-  'model?.setPreviewKey?.(focusedOption.key)',
-  'function rotateCarousel(direction)',
-  '(current + normalizedDirection + length) % length',
-  'key={option.key}',
-  'data-orbit-slot={relative}',
+  'const FRONT_CENTER_SLOT = 1',
+  'const DRAG_THRESHOLD_PX = 6',
+  'const FACE_UP_RADIUS = 2',
+  'const INTERACTIVE_RADIUS = 1',
+  'const VISIBLE_RADIUS = 4',
+  'const ORBIT_VISUAL_PROFILE = [',
+  '{ x: 0, y: 56, yaw: 0, scale: 1.12, opacity: 1, z: 136, depthZ: 0 }',
+  '{ x: 21, y: 55, yaw: 8, scale: 0.93, opacity: 1, z: 124, depthZ: 0 }',
+  '{ x: 40, y: 51, yaw: 20, scale: 0.74, opacity: 0.74, z: 90, depthZ: 0 }',
+  '{ x: 44, y: 39, yaw: 52, scale: 0.60, opacity: 0.42, z: 48, depthZ: 28 }',
+  '{ x: 29, y: 27, yaw: 74, scale: 0.46, opacity: 0.20, z: 28, depthZ: 10 }',
+  'const FLICK_PROJECTION_MS = 150',
+  'function normalizeOrbitOffset(value, total)',
+  'function signedOrbitSlots(value, total)',
+  'function isCatalogReferenceLine(value = "")',
+  'function cleanSubclassSummaryText(value = "")',
+  'function orbitVisualProfile(distance)',
+  'function orbitPlacement(optionIndex, orbitOffset, total)',
+  'const snappedCenterIndex = Math.round(normalizeOrbitOffset(frontCenter, count)) % count',
+  'const isFront = count <= 3 || snappedDistance <= INTERACTIVE_RADIUS',
+  'const showsFrontFace = count <= 5 || snappedDistance <= FACE_UP_RADIUS',
+  'const isVisible = count <= 9 || snappedDistance <= VISIBLE_RADIUS',
+  '"--orbit-opacity": (isVisible ? visual.opacity : 0).toFixed(3)',
+  '"--orbit-back-yaw": `${(-yaw).toFixed(2)}deg`',
+  'const [orbitOffset, setOrbitOffset] = useState(0)',
+  'const [isDragging, setIsDragging] = useState(false)',
+  'const [isOrbitSettled, setIsOrbitSettled] = useState(true)',
+  'const [inspectedKey, setInspectedKey] = useState("")',
+  'const dragStateRef = useRef(null)',
+  'const suppressClickUntilRef = useRef(0)',
+  'const inspectedOption = options.find((option) => option.key === inspectedKey) || null',
+  '"Click any of the three front cards to inspect that path. Dragging the carousel will not change your choice."',
+  '<h4>{inspectedOption?.name || "Choose a card"}</h4>',
+  'function handleOrbitPointerDown(event)',
+  'function handleOrbitPointerMove(event)',
+  'function finishOrbitPointer(event, cancelled = false)',
+  'function handleCardClick(event, option, isFront)',
+  'event.currentTarget.setPointerCapture?.(event.pointerId)',
+  'event.currentTarget.releasePointerCapture?.(event.pointerId)',
+  'pixelsPerCardFor(bounds?.width, options.length)',
+  'Math.round(drag.currentOffset + projectedCards)',
   'class-subclass-carousel-modal__orbit',
-  'class-subclass-carousel-modal__smoke-front',
-  'class-subclass-carousel-modal__details',
-  'class-subclass-carousel-modal__details-button',
-  'onClick={showFocusedDetails}',
-  'model.setPreviewKey(option.key)',
+  'onPointerDown={handleOrbitPointerDown}',
+  'onPointerMove={handleOrbitPointerMove}',
+  'onPointerUp={(event) => finishOrbitPointer(event)}',
+  'onPointerCancel={(event) => finishOrbitPointer(event, true)}',
+  'class-subclass-carousel-card__surface',
+  'data-orbit-depth={depth.toFixed(3)}',
+  'onClick={(event) => handleCardClick(event, option, isFront)}',
+  '<div className="class-subclass-carousel-modal__hint">Drag to browse · Click any of the three front cards</div>',
+  'const inspectionScale = isInspected && showsFrontFace ? 1.065 : 1',
+  '"--inspection-scale": inspectionScale.toFixed(3)',
+  'isFront ? " is-orbit-front" : showsFrontFace ? " is-orbit-edge" : " is-orbit-back"',
+  'isVisible ? "" : " is-orbit-hidden"',
+  '}, [selectorOpen, optionSignature]);',
+  'model?.setPreviewKey?.(option.key)',
   'model.selectSubclass(option)',
-  'optionEntryLevel(option) > currentLevel',
+  'onClick={showInspectedDetails}',
+  'if (optionEntryLevel(option) <= currentLevel)',
   'class-subclass-selected-card',
   'onDoubleClick={() => setSelectorOpen(true)}',
   '>Change Subclass<',
-  'currentLevel < entryLevel',
-  'setSelectorOpen(true)',
   'onInspectSubclass?.(option)',
-]) assert(selector.includes(token), `Runic circular subclass selector is missing ${token}`);
+]) assert(selector.includes(token), `Draggable runic subclass selector is missing ${token}`);
+
+assert((selector.match(/model\.selectSubclass\(option\)/g) || []).length === 1, "Carousel motion must never persist a subclass; only the explicit card-choice path may call selectSubclass(option).");
+assert(!selector.includes('model?.setPreviewKey?.(focusedOption.key)'), "Front-most carousel position must not auto-preview/persist as the player's subclass.");
+assert(!selector.includes('const focusedOption = options[focusedIndex] || null'), "Legacy auto-focused front-card selection state is still present.");
+const rotateBlock = selector.slice(selector.indexOf("function rotateCarousel"), selector.indexOf("function showInspectedDetails"));
+const pointerDownBlock = selector.slice(selector.indexOf("function handleOrbitPointerDown"), selector.indexOf("function handleOrbitPointerMove"));
+assert(!rotateBlock.includes('setInspectedKey("")'), "Carousel arrows must not clear the explicitly clicked inspection target.");
+assert(!pointerDownBlock.includes('setInspectedKey("")'), "Dragging must not clear the explicitly clicked inspection target.");
+assert(selector.includes('const isVisible = count <= 9 || snappedDistance <= VISIBLE_RADIUS'), "Tarot orbit must cap the visual window at nine cards without capping subclass options.");
+assert(selector.includes('{ x: 0, y: 56, yaw: 0, scale: 1.12'), "Tarot center must remain larger than its neighboring face-up cards.");
+assert(selector.includes('{ x: 21, y: 55, yaw: 8, scale: 0.93'), "Tarot side cards must be wider-spaced and step down from the center size.");
+assert(selector.includes('{ x: 40, y: 51, yaw: 20, scale: 0.74'), "Tarot edge preview cards must sit near the outer stage and step down again from the interactive side cards.");
+assert(selector.includes('{ x: 44, y: 39, yaw: 52, scale: 0.60'), "The first rear-card tier must stay visible above and behind the five-card spread.");
+assert(selector.includes('{ x: 29, y: 27, yaw: 74, scale: 0.46'), "The far rear-card tier must curve inward behind the spread instead of reading as side-edge slivers.");
+assert(tarotCss.includes('width: clamp(210px, 16.85vw, 290px) !important'), "A clicked resting center Tarot card must swell through physical width, not a compositor scale.");
+assert(tarotCss.includes('filter: saturate(.82) brightness(.78)'), "Rear Tarot backs must remain subdued atmosphere rather than competing choices.");
+assert(!tarotCss.includes('translate(-50%, -50%) scale(var(--inspection-scale, 1))'), "Resting center Tarot must not reintroduce transform scaling that softens the hero art.");
+
+
+
+assert(!selector.includes('Unlocks at level ${optionEntryLevel(option)}'), "Tarot card faces must not carry unlock-level badges.");
+assert(selector.includes('.filter((line) => line && !isCatalogReferenceLine(line))'), "Subclass dossier summary must remove pipe-delimited catalog reference rows before rendering.");
 
 for (const token of [
   'url("/media/forge/subclass-carousel/subclass-selector-cathedral-bg.png")',
   'url("/media/forge/subclass-carousel/subclass-selector-runic-table.png")',
   'url("/media/forge/subclass-carousel/subclass-selector-smoke-back.png")',
   'url("/media/forge/subclass-carousel/subclass-selector-smoke-front.png")',
-  '.class-subclass-carousel-card.is-orbit-back',
+  '.class-subclass-carousel-modal__orbit.is-dragging',
+  'touch-action: none',
+  'cursor: grab',
+  '.class-subclass-carousel-card__surface',
+  'translate3d(-50%, -50%, var(--orbit-depth-z))',
   'rotateY(var(--orbit-yaw))',
-  'z-index: var(--orbit-z)',
-  '.class-subclass-carousel-modal__details',
+  'width: clamp(178px, 14.2vw, 246px) !important',
+  'width: clamp(198px, 15.9vw, 274px) !important',
+  '.class-subclass-carousel-card.is-orbit-hidden',
+  '.class-subclass-carousel-card.is-orbit-face-up .class-subclass-carousel-card__face.is-back',
+  '.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__face.is-front',
+  '.class-subclass-carousel-card.is-orbit-edge',
+  'width: clamp(210px, 16.85vw, 290px) !important',
+  'transform: translate(-50%, -50%) !important',
+  '.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__face.is-back',
+  'rotateY(var(--orbit-back-yaw)) translateZ(.3px) !important',
+  '@media (max-height: 720px)',
+  'overflow-y: auto',
+  'height: 620px !important',
+  'filter: none !important',
+  'image-rendering: auto !important',
+  '.class-subclass-carousel-card__face.is-back',
+  '.class-subclass-carousel-card__back-rune',
+  'backface-visibility: hidden',
+  '.class-subclass-carousel-card.is-selected .class-subclass-carousel-card__face.is-front',
+  '.class-subclass-carousel-card.is-inspected .class-subclass-carousel-card__face.is-front',
   'backdrop-filter: blur(12px)',
-]) assert(tarotCss.includes(token), `Runic subclass carousel presentation is missing ${token}`);
+]) assert(tarotCss.includes(token), `Draggable/crisp subclass carousel presentation is missing ${token}`);
 
 for (const forbidden of [
   'class-subclass-two-column__grid',
@@ -197,4 +278,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSource.includes(token), `Class presentation patch crossed protected boundary: ${token}`);
 }
 
-console.log("Class subclass selector validation passed: canonical subclass authority and persistence remain in the guide model, all subclass cards move through a stable runic-table orbit one position at a time, four front positions stay prominent while rear positions recede behind smoke, the details panel is source-backed, all 152 approved normalized tarot concepts remain installed and mapped, and unmatched future content retains the safe class-art fallback.");
+console.log("Class subclass selector validation passed: canonical authority remains in the guide model, the runic table supports fractional drag/flick plus one-card arrows, carousel motion never persists a subclass, explicit card clicks remain the only selection path, high-resolution Tarot art avoids the old image-filter blur path, all 152 approved normalized concepts remain installed/mapped, and future content retains safe fallback.");
