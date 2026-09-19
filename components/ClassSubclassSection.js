@@ -14,7 +14,7 @@ const ORBIT_VISUAL_PROFILE = [
   // Five face-up cards form the foreground spread: small -> medium -> hero -> medium -> small.
   { x: 0, y: 56, yaw: 0, scale: 1.11, opacity: 1, z: 136, depthZ: 0 },
   { x: 24, y: 54, yaw: 7, scale: 0.92, opacity: 1, z: 124, depthZ: 0 },
-  { x: 42, y: 49, yaw: 18, scale: 0.72, opacity: 0.78, z: 92, depthZ: 0 },
+  { x: 42, y: 49, yaw: 18, scale: 0.72, opacity: 0.84, z: 92, depthZ: 0 },
   // The next four cards form a readable rear arc. The nearer pair sits in the
   // center gaps and the farther pair sits outward/high, echoing the older deck
   // silhouette without bringing its foreground clutter back.
@@ -144,7 +144,7 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
       "--orbit-x": `${x.toFixed(3)}%`,
       "--orbit-y": `${visual.y.toFixed(3)}%`,
       "--orbit-yaw": `${yaw.toFixed(2)}deg`,
-      "--orbit-back-yaw": `${(-yaw).toFixed(2)}deg`,
+      "--orbit-back-yaw": `${(-yaw * 0.55).toFixed(2)}deg`,
       "--orbit-scale": visual.scale.toFixed(4),
       "--orbit-opacity": (isVisible ? visual.opacity : 0).toFixed(3),
       "--orbit-z": String(isVisible ? visual.z : 0),
