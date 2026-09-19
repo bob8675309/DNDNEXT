@@ -111,6 +111,9 @@ assert(selector.includes('const isVisible = count <= 9 || snappedDistance <= VIS
 assert(selector.includes('{ x: 0, y: 55, yaw: 0, scale: 1.10'), "Tarot center must remain larger than its neighboring face-up cards.");
 assert(selector.includes('{ x: 16, y: 54, yaw: 8, scale: 0.96'), "Tarot side cards must step down from the center size.");
 assert(selector.includes('{ x: 32, y: 50, yaw: 20, scale: 0.80'), "Tarot edge preview cards must step down again from the interactive side cards.");
+assert(tarotCss.includes('width: clamp(206px, 16.45vw, 284px) !important'), "A clicked resting center Tarot card must swell through physical width, not a compositor scale.");
+assert(!tarotCss.includes('translate(-50%, -50%) scale(var(--inspection-scale, 1))'), "Resting center Tarot must not reintroduce transform scaling that softens the hero art.");
+
 
 
 assert(!selector.includes('Unlocks at level ${optionEntryLevel(option)}'), "Tarot card faces must not carry unlock-level badges.");
@@ -133,7 +136,8 @@ for (const token of [
   '.class-subclass-carousel-card.is-orbit-face-up .class-subclass-carousel-card__face.is-back',
   '.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__face.is-front',
   '.class-subclass-carousel-card.is-orbit-edge',
-  'scale(var(--inspection-scale, 1)) !important',
+  'width: clamp(206px, 16.45vw, 284px) !important',
+  'transform: translate(-50%, -50%) !important',
   '.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__face.is-back',
   'rotateY(var(--orbit-back-yaw)) translateZ(.3px) !important',
   '@media (max-height: 720px)',
