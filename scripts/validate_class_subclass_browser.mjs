@@ -39,12 +39,20 @@ for (const token of [
   'import { createPortal } from "react-dom"',
   'const FRONT_CENTER_SLOT = 1',
   'const DRAG_THRESHOLD_PX = 6',
-  'const FLICK_PROJECTION_MS = 180',
+  'const FRONT_ARC_DEGREES = 22',
+  'const FRONT_YAW_DEGREES = 8',
+  'const FLICK_PROJECTION_MS = 150',
   'function normalizeOrbitOffset(value, total)',
   'function signedOrbitSlots(value, total)',
+  'function isCatalogReferenceLine(value = "")',
+  'function cleanSubclassSummaryText(value = "")',
   'function orbitPlacement(optionIndex, orbitOffset, total)',
+  'const snappedCenterIndex = Math.round(normalizeOrbitOffset(frontCenter, count)) % count',
+  'const isFront = count <= 3 || Math.abs(snappedSlots) <= 1',
+  'const depthZ = isFront ? 0 : Math.round(depth * 48)',
   'const [orbitOffset, setOrbitOffset] = useState(0)',
   'const [isDragging, setIsDragging] = useState(false)',
+  'const [isOrbitSettled, setIsOrbitSettled] = useState(true)',
   'const [inspectedKey, setInspectedKey] = useState("")',
   'const dragStateRef = useRef(null)',
   'const suppressClickUntilRef = useRef(0)',
@@ -66,7 +74,7 @@ for (const token of [
   'class-subclass-carousel-card__surface',
   'data-orbit-depth={depth.toFixed(3)}',
   'onClick={(event) => handleCardClick(event, option, isFront)}',
-  'Only the three front cards can be chosen.',
+  '<div className="class-subclass-carousel-modal__hint">Drag to browse</div>',
   'model?.setPreviewKey?.(option.key)',
   'model.selectSubclass(option)',
   'onClick={showInspectedDetails}',
@@ -80,6 +88,8 @@ for (const token of [
 assert((selector.match(/model\.selectSubclass\(option\)/g) || []).length === 1, "Carousel motion must never persist a subclass; only the explicit card-choice path may call selectSubclass(option).");
 assert(!selector.includes('model?.setPreviewKey?.(focusedOption.key)'), "Front-most carousel position must not auto-preview/persist as the player's subclass.");
 assert(!selector.includes('const focusedOption = options[focusedIndex] || null'), "Legacy auto-focused front-card selection state is still present.");
+assert(!selector.includes('Unlocks at level ${optionEntryLevel(option)}'), "Tarot card faces must not carry unlock-level badges.");
+assert(selector.includes('.filter((line) => line && !isCatalogReferenceLine(line))'), "Subclass dossier summary must remove pipe-delimited catalog reference rows before rendering.");
 
 for (const token of [
   'url("/media/forge/subclass-carousel/subclass-selector-cathedral-bg.png")',
@@ -92,7 +102,13 @@ for (const token of [
   '.class-subclass-carousel-card__surface',
   'translate3d(-50%, -50%, var(--orbit-depth-z))',
   'rotateY(var(--orbit-yaw))',
-  'width: clamp(142px, 10.4vw, 188px) !important',
+  'width: clamp(178px, 14.2vw, 246px) !important',
+  '.class-subclass-carousel-card.is-orbit-front .class-subclass-carousel-card__face.is-back',
+  '.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__face.is-front',
+  '.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__face.is-back',
+  '@media (max-height: 720px)',
+  'overflow-y: auto',
+  'height: 620px !important',
   'filter: none !important',
   'image-rendering: auto !important',
   '.class-subclass-carousel-card__face.is-back',
