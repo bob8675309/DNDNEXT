@@ -475,7 +475,8 @@
   will-change: left, top, transform, opacity;
 }
 
-.class-subclass-carousel-card.is-orbit-back {
+.class-subclass-carousel-card.is-orbit-back,
+.class-subclass-carousel-card.is-orbit-edge {
   pointer-events: none;
 }
 
@@ -1130,7 +1131,7 @@
    This keeps the resting center face at native 2D raster quality; dragging
    and every non-center orbit card retain the normal 3D transform path. */
 .class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center {
-  transform: translate(-50%, -50%) !important;
+  transform: translate(-50%, -50%) scale(var(--inspection-scale, 1)) !important;
   transform-style: flat !important;
   will-change: auto !important;
 }
@@ -1184,7 +1185,7 @@
   transform: rotateY(0deg) translateZ(.3px);
 }
 
-.class-subclass-carousel-card.is-orbit-front .class-subclass-carousel-card__face.is-back {
+.class-subclass-carousel-card.is-orbit-face-up .class-subclass-carousel-card__face.is-back {
   display: none !important;
 }
 
@@ -1276,10 +1277,18 @@
 }
 
 .class-subclass-carousel-card.is-inspected .class-subclass-carousel-card__face.is-front {
-  border-color: rgba(235, 196, 111, .82);
+  border-color: rgba(244, 207, 126, .92);
   box-shadow:
-    0 20px 44px rgba(0, 0, 0, .56),
-    0 0 23px rgba(154, 91, 216, .18);
+    0 22px 48px rgba(0, 0, 0, .58),
+    0 0 0 1px rgba(244, 207, 126, .12),
+    0 0 27px rgba(172, 101, 232, .24);
+}
+
+.class-subclass-carousel-card.is-orbit-edge .class-subclass-carousel-card__face.is-front {
+  border-color: rgba(217, 175, 94, .3);
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, .46),
+    0 0 10px rgba(120, 68, 187, .06);
 }
 
 .class-subclass-carousel-card.is-selected .class-subclass-carousel-card__face.is-front {
