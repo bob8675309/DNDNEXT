@@ -358,9 +358,9 @@ export default function ClassSubclassSection({
                           />
                         </span>
                         <span className="class-subclass-carousel-card__shade" aria-hidden="true" />
-                        {(!eligible || isSelected) ? (
+                        {isSelected ? (
                           <span className="class-subclass-carousel-card__copy">
-                            <small>{!eligible ? `Unlocks at level ${optionEntryLevel(option)}` : "Selected"}</small>
+                            <small>Selected</small>
                           </span>
                         ) : null}
                       </span>
