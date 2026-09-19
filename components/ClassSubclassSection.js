@@ -4,18 +4,47 @@ import { handleSubclassArtworkError, subclassArtworkFor } from "../utils/classes
 
 const text = (value) => String(value ?? "").trim();
 const FRONT_CENTER_SLOT = 1;
+const FRONT_ARC_DEGREES = 22;
+const FRONT_YAW_DEGREES = 8;
 const DRAG_THRESHOLD_PX = 6;
-const FLICK_PROJECTION_MS = 180;
+const FLICK_PROJECTION_MS = 150;
 
 function optionEntryLevel(option = {}) {
   return Math.max(1, Number(option?.firstLevel || 1));
 }
 
+function isCatalogReferenceLine(value = "") {
+  const line = text(value);
+  if (!line.includes("|")) return false;
+  const parts = line.split("|").map((part) => text(part));
+  if (parts.length < 4) return false;
+  const hasLevel = parts.some((part) => /^\d{1,2}$/.test(part));
+  const shortFields = parts.filter((part) => part.length <= 48).length;
+  return hasLevel && shortFields >= Math.max(3, parts.length - 1);
+}
+
+function cleanSubclassSummaryText(value = "") {
+  const cleaned = text(value)
+    .replace(/\r/g, "")
+    .split(/\n+/)
+    .map((line) => text(line))
+    .filter((line) => line && !isCatalogReferenceLine(line))
+    .map((line) => line
+      .replace(/\{@\w+\s+([^}|]+)(?:\|[^}]*)?\}/g, "$1")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/[*_]{2,}/g, " "))
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .replace(/\s+([,.;:!?])/g, "$1")
+    .trim();
+  return cleaned;
+}
+
 function subclassSummary(option = {}) {
   const features = Array.isArray(option?.features) ? option.features : [];
-  const intro = features.find((feature) => feature?.isIntroduction && text(feature?.description));
-  const described = intro || features.find((feature) => text(feature?.description));
-  const raw = text(described?.description).replace(/\s+/g, " ");
+  const intro = features.find((feature) => feature?.isIntroduction && cleanSubclassSummaryText(feature?.description));
+  const described = intro || features.find((feature) => cleanSubclassSummaryText(feature?.description));
+  const raw = cleanSubclassSummaryText(described?.description);
   if (!raw) return "Explore this subclass path, its defining features, and the role it can play in your character's story.";
   if (raw.length <= 330) return raw;
   const clipped = raw.slice(0, 327).replace(/\s+\S*$/, "").trim();
@@ -48,21 +77,35 @@ function clamp(value, min, max) {
 
 function orbitPlacement(optionIndex, orbitOffset, total) {
   const count = Math.max(1, Number(total || 1));
-  const step = (Math.PI * 2) / count;
-  const stepDegrees = 360 / count;
   const frontCenter = orbitOffset + FRONT_CENTER_SLOT;
   const signedSlots = signedOrbitSlots(optionIndex - frontCenter, count);
-  const angle = (Math.PI / 2) + (signedSlots * step);
-  const sine = Math.sin(angle);
-  const cosine = Math.cos(angle);
-  const depth = (sine + 1) / 2;
-  const isFront = Math.abs(signedSlots) <= 1.01;
-  const x = 50 - (cosine * 44.8);
-  const y = 36.8 + (sine * 18.2);
-  const yaw = signedSlots * stepDegrees;
-  const scale = isFront ? 1 : 0.61 + (depth * 0.29);
-  const opacity = 0.24 + (depth * 0.76);
-  const zIndex = 24 + Math.round(depth * 110);
+  const snappedCenterIndex = Math.round(normalizeOrbitOffset(frontCenter, count)) % count;
+  const snappedSlots = signedOrbitSlots(optionIndex - snappedCenterIndex, count);
+  const isFront = count <= 3 || Math.abs(snappedSlots) <= 1;
+
+  const absSlots = Math.abs(signedSlots);
+  const direction = signedSlots === 0 ? 0 : Math.sign(signedSlots);
+  const maxDistance = Math.max(1, count / 2);
+  const rearSpan = Math.max(0.001, maxDistance - 1);
+  const rearProgress = clamp((absSlots - 1) / rearSpan, 0, 1);
+  const thetaDegrees = absSlots <= 1
+    ? FRONT_ARC_DEGREES * absSlots
+    : FRONT_ARC_DEGREES + (rearProgress * (180 - FRONT_ARC_DEGREES));
+  const theta = (thetaDegrees * Math.PI) / 180;
+  const cosine = Math.cos(theta);
+  const sine = Math.sin(theta);
+  const depth = (cosine + 1) / 2;
+  const x = 50 + (direction * sine * 44.8);
+  const y = 36.8 + (cosine * 18.2);
+  const rearYaw = FRONT_YAW_DEGREES + (rearProgress * (180 - FRONT_YAW_DEGREES));
+  const yaw = isFront
+    ? clamp(signedSlots, -1, 1) * FRONT_YAW_DEGREES
+    : direction * rearYaw;
+  const centerBoost = Math.max(0, 1 - absSlots) * 0.035;
+  const scale = isFront ? 1 + centerBoost : 0.58 + (depth * 0.24);
+  const opacity = isFront ? 1 : 0.16 + (depth * 0.58);
+  const zIndex = isFront ? 110 + Math.round(depth * 20) : 20 + Math.round(depth * 48);
+  const depthZ = isFront ? 0 : Math.round(depth * 48);
 
   return {
     signedSlots,
@@ -75,7 +118,7 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
       "--orbit-scale": scale.toFixed(4),
       "--orbit-opacity": opacity.toFixed(3),
       "--orbit-z": String(zIndex),
-      "--orbit-depth-z": `${Math.round(depth * 68)}px`,
+      "--orbit-depth-z": `${depthZ}px`,
     },
   };
 }
@@ -277,7 +320,7 @@ export default function ClassSubclassSection({
       const offsetVelocity = -(drag.velocityX / drag.pixelsPerCard);
       const projectedCards = cancelled
         ? 0
-        : clamp(offsetVelocity * FLICK_PROJECTION_MS, -2.25, 2.25);
+        : clamp(offsetVelocity * FLICK_PROJECTION_MS, -1.75, 1.75);
       setOrbitOffset(normalizeOrbitOffset(
         Math.round(drag.currentOffset + projectedCards),
         options.length,
@@ -407,7 +450,7 @@ export default function ClassSubclassSection({
             <div className="class-subclass-carousel-modal__position" aria-live="polite">
               <span>{browsedIndex + 1}</span><b>/</b><span>{options.length}</span>
             </div>
-            <div className="class-subclass-carousel-modal__hint">Drag the table or use the arrows. Only the three front cards can be chosen.</div>
+            <div className="class-subclass-carousel-modal__hint">Drag to browse</div>
           </div>
 
           <section className="class-subclass-carousel-modal__details" aria-live="polite">
