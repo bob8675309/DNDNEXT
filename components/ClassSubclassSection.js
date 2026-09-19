@@ -4,15 +4,20 @@ import { handleSubclassArtworkError, subclassArtworkFor } from "../utils/classes
 
 const text = (value) => String(value ?? "").trim();
 const FRONT_CENTER_SLOT = 1;
-const FRONT_ARC_DEGREES = 22;
-const FACE_UP_EDGE_SLOTS = 2;
-const FACE_UP_EDGE_DEGREES = 42;
-const REAR_HANDOFF_SLOTS = 2.5;
-const REAR_HANDOFF_DEGREES = 50;
-const FRONT_YAW_DEGREES = 8;
-const FACE_UP_EDGE_YAW_DEGREES = 20;
+const FACE_UP_RADIUS = 2;
+const INTERACTIVE_RADIUS = 1;
+const VISIBLE_RADIUS = 4;
 const DRAG_THRESHOLD_PX = 6;
 const FLICK_PROJECTION_MS = 150;
+
+const ORBIT_VISUAL_PROFILE = [
+  { x: 0, y: 55, yaw: 0, scale: 1.10, opacity: 1, z: 132, depthZ: 0 },
+  { x: 16, y: 54, yaw: 8, scale: 0.96, opacity: 1, z: 122, depthZ: 0 },
+  { x: 32, y: 50, yaw: 20, scale: 0.80, opacity: 0.72, z: 88, depthZ: 0 },
+  { x: 40, y: 43, yaw: 48, scale: 0.64, opacity: 0.46, z: 54, depthZ: 24 },
+  { x: 45, y: 34, yaw: 68, scale: 0.52, opacity: 0.25, z: 32, depthZ: 12 },
+  { x: 48, y: 28, yaw: 82, scale: 0.44, opacity: 0, z: 20, depthZ: 0 },
+];
 
 function optionEntryLevel(option = {}) {
   return Math.max(1, Number(option?.firstLevel || 1));
@@ -88,73 +93,58 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
+function orbitVisualProfile(distance) {
+  const bounded = clamp(Number(distance || 0), 0, ORBIT_VISUAL_PROFILE.length - 1);
+  const lowerIndex = Math.floor(bounded);
+  const upperIndex = Math.min(ORBIT_VISUAL_PROFILE.length - 1, Math.ceil(bounded));
+  const lower = ORBIT_VISUAL_PROFILE[lowerIndex];
+  const upper = ORBIT_VISUAL_PROFILE[upperIndex];
+  const mix = bounded - lowerIndex;
+  const lerp = (from, to) => from + ((to - from) * mix);
+
+  return {
+    x: lerp(lower.x, upper.x),
+    y: lerp(lower.y, upper.y),
+    yaw: lerp(lower.yaw, upper.yaw),
+    scale: lerp(lower.scale, upper.scale),
+    opacity: lerp(lower.opacity, upper.opacity),
+    z: Math.round(lerp(lower.z, upper.z)),
+    depthZ: Math.round(lerp(lower.depthZ, upper.depthZ)),
+  };
+}
+
 function orbitPlacement(optionIndex, orbitOffset, total) {
   const count = Math.max(1, Number(total || 1));
   const frontCenter = orbitOffset + FRONT_CENTER_SLOT;
   const signedSlots = signedOrbitSlots(optionIndex - frontCenter, count);
   const snappedCenterIndex = Math.round(normalizeOrbitOffset(frontCenter, count)) % count;
   const snappedSlots = signedOrbitSlots(optionIndex - snappedCenterIndex, count);
-  const isFront = count <= 3 || Math.abs(snappedSlots) <= 1;
-  const showsFrontFace = count <= 5 || Math.abs(snappedSlots) <= 2;
+  const snappedDistance = Math.abs(snappedSlots);
+  const isFront = count <= 3 || snappedDistance <= INTERACTIVE_RADIUS;
+  const showsFrontFace = count <= 5 || snappedDistance <= FACE_UP_RADIUS;
+  const isVisible = count <= 9 || snappedDistance <= VISIBLE_RADIUS;
 
   const absSlots = Math.abs(signedSlots);
   const direction = signedSlots === 0 ? 0 : Math.sign(signedSlots);
-  const maxDistance = Math.max(1, count / 2);
-  const rearSpan = Math.max(0.001, maxDistance - REAR_HANDOFF_SLOTS);
-  const rearProgress = clamp((absSlots - REAR_HANDOFF_SLOTS) / rearSpan, 0, 1);
-  const thetaDegrees = absSlots <= 1
-    ? FRONT_ARC_DEGREES * absSlots
-    : absSlots <= FACE_UP_EDGE_SLOTS
-      ? FRONT_ARC_DEGREES
-        + ((absSlots - 1) * (FACE_UP_EDGE_DEGREES - FRONT_ARC_DEGREES))
-      : absSlots <= REAR_HANDOFF_SLOTS
-        ? FACE_UP_EDGE_DEGREES
-          + (((absSlots - FACE_UP_EDGE_SLOTS) / (REAR_HANDOFF_SLOTS - FACE_UP_EDGE_SLOTS))
-            * (REAR_HANDOFF_DEGREES - FACE_UP_EDGE_DEGREES))
-        : REAR_HANDOFF_DEGREES + (rearProgress * (180 - REAR_HANDOFF_DEGREES));
-  const theta = (thetaDegrees * Math.PI) / 180;
-  const cosine = Math.cos(theta);
-  const sine = Math.sin(theta);
-  const depth = (cosine + 1) / 2;
-  const x = 50 + (direction * sine * 44.8);
-  const y = 36.8 + (cosine * 18.2);
-  const edgeYaw = FRONT_YAW_DEGREES
-    + (clamp(absSlots - 1, 0, 1) * (FACE_UP_EDGE_YAW_DEGREES - FRONT_YAW_DEGREES));
-  const rearYaw = FACE_UP_EDGE_YAW_DEGREES
-    + (rearProgress * (180 - FACE_UP_EDGE_YAW_DEGREES));
-  const yaw = isFront
-    ? clamp(signedSlots, -1, 1) * FRONT_YAW_DEGREES
-    : showsFrontFace
-      ? direction * edgeYaw
-      : direction * rearYaw;
-  const centerBoost = Math.max(0, 1 - absSlots) * 0.035;
-  const scale = isFront
-    ? 1 + centerBoost
-    : showsFrontFace
-      ? 0.82
-      : 0.58 + (depth * 0.24);
-  const opacity = isFront ? 1 : showsFrontFace ? 0.72 : 0.16 + (depth * 0.58);
-  const zIndex = isFront
-    ? 110 + Math.round(depth * 20)
-    : showsFrontFace
-      ? 76 + Math.round(depth * 10)
-      : 20 + Math.round(depth * 48);
-  const depthZ = showsFrontFace ? 0 : Math.round(depth * 48);
+  const visual = orbitVisualProfile(absSlots);
+  const x = 50 + (direction * visual.x);
+  const yaw = direction * visual.yaw;
 
   return {
     signedSlots,
-    depth,
+    depth: 1 - clamp(absSlots / (VISIBLE_RADIUS + 1), 0, 1),
     isFront,
     showsFrontFace,
+    isVisible,
     style: {
       "--orbit-x": `${x.toFixed(3)}%`,
-      "--orbit-y": `${y.toFixed(3)}%`,
+      "--orbit-y": `${visual.y.toFixed(3)}%`,
       "--orbit-yaw": `${yaw.toFixed(2)}deg`,
       "--orbit-back-yaw": `${(-yaw).toFixed(2)}deg`,
-      "--orbit-scale": scale.toFixed(4),
-      "--orbit-opacity": opacity.toFixed(3),
-      "--orbit-z": String(zIndex),
-      "--orbit-depth-z": `${depthZ}px`,
+      "--orbit-scale": visual.scale.toFixed(4),
+      "--orbit-opacity": (isVisible ? visual.opacity : 0).toFixed(3),
+      "--orbit-z": String(isVisible ? visual.z : 0),
+      "--orbit-depth-z": `${visual.depthZ}px`,
     },
   };
 }
@@ -429,7 +419,7 @@ export default function ClassSubclassSection({
               onPointerUp={(event) => finishOrbitPointer(event)}
               onPointerCancel={(event) => finishOrbitPointer(event, true)}
             >
-              {orbitOptions.map(({ option, optionIndex, signedSlots, depth, isFront, showsFrontFace, style }) => {
+              {orbitOptions.map(({ option, optionIndex, signedSlots, depth, isFront, showsFrontFace, isVisible, style }) => {
                 const isSelected = selected?.key === option.key;
                 const isInspected = inspectedKey === option.key;
                 const eligible = optionEntryLevel(option) <= currentLevel;
@@ -446,7 +436,7 @@ export default function ClassSubclassSection({
                     key={option.key}
                     type="button"
                     role="listitem"
-                    className={`class-subclass-carousel-card${isRestingCenter ? " is-resting-center" : ""}${isInspected ? " is-inspected" : ""}${isSelected ? " is-selected" : ""}${isFront ? " is-orbit-front" : showsFrontFace ? " is-orbit-edge" : " is-orbit-back"}${showsFrontFace ? " is-orbit-face-up" : ""}${eligible ? " is-eligible" : " is-locked"}`}
+                    className={`class-subclass-carousel-card${isRestingCenter ? " is-resting-center" : ""}${isInspected ? " is-inspected" : ""}${isSelected ? " is-selected" : ""}${isFront ? " is-orbit-front" : showsFrontFace ? " is-orbit-edge" : " is-orbit-back"}${showsFrontFace ? " is-orbit-face-up" : ""}${isVisible ? "" : " is-orbit-hidden"}${eligible ? " is-eligible" : " is-locked"}`}
                     style={cardStyle}
                     aria-pressed={isSelected}
                     aria-hidden={isFront ? undefined : "true"}
