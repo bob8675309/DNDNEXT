@@ -1212,7 +1212,7 @@
 }
 
 .class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__face.is-back {
-  transform: none !important;
+  transform: rotateY(var(--orbit-back-yaw)) translateZ(.3px) !important;
   backface-visibility: visible !important;
   -webkit-backface-visibility: visible !important;
 }
