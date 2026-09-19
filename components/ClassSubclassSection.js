@@ -11,12 +11,15 @@ const DRAG_THRESHOLD_PX = 6;
 const FLICK_PROJECTION_MS = 150;
 
 const ORBIT_VISUAL_PROFILE = [
-  { x: 0, y: 56, yaw: 0, scale: 1.12, opacity: 1, z: 136, depthZ: 0 },
-  { x: 21, y: 55, yaw: 8, scale: 0.93, opacity: 1, z: 124, depthZ: 0 },
-  { x: 40, y: 51, yaw: 20, scale: 0.74, opacity: 0.74, z: 90, depthZ: 0 },
-  { x: 44, y: 39, yaw: 52, scale: 0.60, opacity: 0.42, z: 48, depthZ: 28 },
-  { x: 29, y: 27, yaw: 74, scale: 0.46, opacity: 0.20, z: 28, depthZ: 10 },
-  { x: 12, y: 22, yaw: 88, scale: 0.40, opacity: 0, z: 18, depthZ: 0 },
+  // Five face-up cards form the foreground spread: small -> medium -> hero -> medium -> small.
+  { x: 0, y: 57, yaw: 0, scale: 1.11, opacity: 1, z: 136, depthZ: 0 },
+  { x: 24, y: 55, yaw: 7, scale: 0.92, opacity: 1, z: 124, depthZ: 0 },
+  { x: 42, y: 51, yaw: 18, scale: 0.72, opacity: 0.78, z: 92, depthZ: 0 },
+  // The next four cards arc upward and inward behind the spread so their backs
+  // remain visible in motion without competing with the five face-up choices.
+  { x: 33, y: 34, yaw: 50, scale: 0.60, opacity: 0.40, z: 64, depthZ: 28 },
+  { x: 12, y: 23, yaw: 72, scale: 0.48, opacity: 0.23, z: 46, depthZ: 12 },
+  { x: 8, y: 19, yaw: 88, scale: 0.40, opacity: 0, z: 18, depthZ: 0 },
 ];
 
 function optionEntryLevel(option = {}) {
@@ -309,7 +312,9 @@ export default function ClassSubclassSection({
       pixelsPerCard: pixelsPerCardFor(bounds?.width, options.length),
       moved: false,
     };
-    event.currentTarget.setPointerCapture?.(event.pointerId);
+    // Do not capture on pointer-down. Capturing here retargets the eventual
+    // click to the orbit container instead of the card button. Capture only
+    // after the drag threshold is crossed so ordinary card clicks stay clicks.
   }
 
   function handleOrbitPointerMove(event) {
@@ -320,6 +325,7 @@ export default function ClassSubclassSection({
 
     drag.moved = true;
     setIsDragging(true);
+    event.currentTarget.setPointerCapture?.(event.pointerId);
     event.preventDefault();
 
     const nextOffset = normalizeOrbitOffset(
@@ -339,7 +345,9 @@ export default function ClassSubclassSection({
     const drag = dragStateRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
     try {
-      event.currentTarget.releasePointerCapture?.(event.pointerId);
+      if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
+        event.currentTarget.releasePointerCapture?.(event.pointerId);
+      }
     } catch {
       // Pointer capture may already be released by the browser.
     }
@@ -495,7 +503,7 @@ export default function ClassSubclassSection({
               <h4>{inspectedOption?.name || "Choose a card"}</h4>
               <p>{inspectedSummary}</p>
               {inspectedOption && optionEntryLevel(inspectedOption) > currentLevel ? <small>Available at level {optionEntryLevel(inspectedOption)}</small> : null}
-              {selected?.key === inspectedOption?.key ? <small className="is-selected-note">Currently selected</small> : null}
+              {selected && inspectedOption && selected.key === inspectedOption.key ? <small className="is-selected-note">Currently selected</small> : null}
             </div>
             <button type="button" className="class-subclass-carousel-modal__details-button" onClick={showInspectedDetails} disabled={!inspectedOption}>
               <span>View Details</span><b aria-hidden="true">→</b>
