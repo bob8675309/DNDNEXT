@@ -45,7 +45,7 @@ for (const token of [
   'const ORBIT_VISUAL_PROFILE = [',
   '{ x: 0, y: 56, yaw: 0, scale: 1.11, opacity: 1, z: 136, depthZ: 0 }',
   '{ x: 24, y: 54, yaw: 7, scale: 0.92, opacity: 1, z: 124, depthZ: 0 }',
-  '{ x: 42, y: 49, yaw: 18, scale: 0.72, opacity: 0.78, z: 92, depthZ: 0 }',
+  '{ x: 42, y: 49, yaw: 18, scale: 0.72, opacity: 0.84, z: 92, depthZ: 0 }',
   '{ x: 12, y: 27, yaw: 46, scale: 0.62, opacity: 0.56, z: 78, depthZ: 26 }',
   '{ x: 33, y: 16, yaw: 66, scale: 0.52, opacity: 0.34, z: 58, depthZ: 12 }',
   'const FLICK_PROJECTION_MS = 150',
@@ -60,7 +60,7 @@ for (const token of [
   'const showsFrontFace = count <= 5 || snappedDistance <= FACE_UP_RADIUS',
   'const isVisible = count <= 9 || snappedDistance <= VISIBLE_RADIUS',
   '"--orbit-opacity": (isVisible ? visual.opacity : 0).toFixed(3)',
-  '"--orbit-back-yaw": `${(-yaw).toFixed(2)}deg`',
+  '"--orbit-back-yaw": `${(-yaw * 0.55).toFixed(2)}deg`',
   'const [orbitOffset, setOrbitOffset] = useState(0)',
   'const [isDragging, setIsDragging] = useState(false)',
   'const [isOrbitSettled, setIsOrbitSettled] = useState(true)',
@@ -120,7 +120,8 @@ assert(selector.includes('selected && inspectedOption && selected.key === inspec
 assert(selector.includes('const isVisible = count <= 9 || snappedDistance <= VISIBLE_RADIUS'), "Tarot orbit must cap the visual window at nine cards without capping subclass options.");
 assert(selector.includes('{ x: 0, y: 56, yaw: 0, scale: 1.11'), "Tarot center must remain larger than its neighboring face-up cards.");
 assert(selector.includes('{ x: 24, y: 54, yaw: 7, scale: 0.92'), "Tarot side cards must stay clearly separated from the center and step down in size.");
-assert(selector.includes('{ x: 42, y: 49, yaw: 18, scale: 0.72'), "Tarot outer previews must sit near the stage edges and remain smaller than the interactive side cards.");
+assert(selector.includes('{ x: 42, y: 49, yaw: 18, scale: 0.72, opacity: 0.84'), "Tarot outer previews must remain legible near the stage edges without competing with the interactive side cards.");
+assert(selector.includes('"--orbit-back-yaw": `${(-yaw * 0.55).toFixed(2)}deg`'), "Rear Tarot backs must retain partial yaw so the background reads as a circular deck instead of flat panels.");
 assert(selector.includes('{ x: 12, y: 27, yaw: 46, scale: 0.62'), "The near rear-card tier must occupy the central gaps so its backs remain readable behind the five-card spread.");
 assert(selector.includes('{ x: 33, y: 16, yaw: 66, scale: 0.52'), "The far rear-card tier must rise above the outer gaps and keep the rotating deck silhouette visible.");
 assert(tarotCss.includes('width: clamp(216px, 17.3vw, 298px) !important'), "A clicked resting center Tarot card must swell through physical width, not a compositor scale.");
