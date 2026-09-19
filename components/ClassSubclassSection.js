@@ -12,14 +12,15 @@ const FLICK_PROJECTION_MS = 150;
 
 const ORBIT_VISUAL_PROFILE = [
   // Five face-up cards form the foreground spread: small -> medium -> hero -> medium -> small.
-  { x: 0, y: 57, yaw: 0, scale: 1.11, opacity: 1, z: 136, depthZ: 0 },
-  { x: 24, y: 55, yaw: 7, scale: 0.92, opacity: 1, z: 124, depthZ: 0 },
-  { x: 42, y: 51, yaw: 18, scale: 0.72, opacity: 0.78, z: 92, depthZ: 0 },
-  // The next four cards arc upward and inward behind the spread so their backs
-  // remain visible in motion without competing with the five face-up choices.
-  { x: 33, y: 34, yaw: 50, scale: 0.60, opacity: 0.40, z: 64, depthZ: 28 },
-  { x: 12, y: 23, yaw: 72, scale: 0.48, opacity: 0.23, z: 46, depthZ: 12 },
-  { x: 8, y: 19, yaw: 88, scale: 0.40, opacity: 0, z: 18, depthZ: 0 },
+  { x: 0, y: 56, yaw: 0, scale: 1.11, opacity: 1, z: 136, depthZ: 0 },
+  { x: 24, y: 54, yaw: 7, scale: 0.92, opacity: 1, z: 124, depthZ: 0 },
+  { x: 42, y: 49, yaw: 18, scale: 0.72, opacity: 0.78, z: 92, depthZ: 0 },
+  // The next four cards form a readable rear arc. The nearer pair sits in the
+  // center gaps and the farther pair sits outward/high, echoing the older deck
+  // silhouette without bringing its foreground clutter back.
+  { x: 12, y: 27, yaw: 46, scale: 0.62, opacity: 0.56, z: 78, depthZ: 26 },
+  { x: 33, y: 16, yaw: 66, scale: 0.52, opacity: 0.34, z: 58, depthZ: 12 },
+  { x: 44, y: 11, yaw: 86, scale: 0.42, opacity: 0, z: 18, depthZ: 0 },
 ];
 
 function optionEntryLevel(option = {}) {
@@ -432,7 +433,7 @@ export default function ClassSubclassSection({
                 const isInspected = inspectedKey === option.key;
                 const eligible = optionEntryLevel(option) <= currentLevel;
                 const isRestingCenter = isOrbitSettled && !isDragging && Math.abs(signedSlots) < 0.001;
-                const inspectionScale = isInspected && showsFrontFace ? 1.065 : 1;
+                const inspectionScale = isInspected && showsFrontFace ? 1.085 : 1;
                 const cardStyle = {
                   ...style,
                   "--orbit-scale": (Number(style["--orbit-scale"]) * inspectionScale).toFixed(4),
