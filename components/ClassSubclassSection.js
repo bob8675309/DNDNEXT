@@ -178,7 +178,6 @@ export default function ClassSubclassSection({
   const browsedIndex = options.length
     ? Math.round(normalizeOrbitOffset(orbitOffset + FRONT_CENTER_SLOT, options.length)) % options.length
     : 0;
-  const browsedOption = options[browsedIndex] || null;
   const inspectedOption = options.find((option) => option.key === inspectedKey) || null;
   const inspectedSummary = useMemo(
     () => inspectedOption
