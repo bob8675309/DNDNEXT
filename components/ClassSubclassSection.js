@@ -298,7 +298,6 @@ export default function ClassSubclassSection({
     if (options.length <= 1) return;
     if (event.pointerType === "mouse" && event.button !== 0) return;
     if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
-    setIsOrbitSettled(false);
     const bounds = orbitRef.current?.getBoundingClientRect();
     const now = Number(event.timeStamp || performance.now());
     dragStateRef.current = {
@@ -324,6 +323,7 @@ export default function ClassSubclassSection({
     if (!drag.moved && Math.abs(deltaX) < DRAG_THRESHOLD_PX) return;
 
     drag.moved = true;
+    setIsOrbitSettled(false);
     setIsDragging(true);
     event.currentTarget.setPointerCapture?.(event.pointerId);
     event.preventDefault();
