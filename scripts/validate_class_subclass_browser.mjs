@@ -122,7 +122,7 @@ assert(selector.includes('{ x: 42, y: 51, yaw: 18, scale: 0.72'), "Tarot outer p
 assert(selector.includes('{ x: 33, y: 34, yaw: 50, scale: 0.60'), "The first rear-card tier must sit above the gaps between the outer previews and side choices.");
 assert(selector.includes('{ x: 12, y: 23, yaw: 72, scale: 0.48'), "The far rear-card tier must remain visible behind the center gaps instead of disappearing at the sides.");
 assert(tarotCss.includes('width: clamp(210px, 16.85vw, 290px) !important'), "A clicked resting center Tarot card must swell through physical width, not a compositor scale.");
-assert(tarotCss.includes('filter: saturate(.82) brightness(.78)'), "Rear Tarot backs must remain subdued atmosphere rather than competing choices.");
+assert(tarotCss.includes('filter: saturate(.86) brightness(.90) contrast(.98)'), "Rear Tarot backs must remain readable background motion without competing with the face-up spread.");
 assert(!tarotCss.includes('translate(-50%, -50%) scale(var(--inspection-scale, 1))'), "Resting center Tarot must not reintroduce transform scaling that softens the hero art.");
 
 
