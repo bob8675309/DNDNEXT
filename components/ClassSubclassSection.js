@@ -73,16 +73,17 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
   // The front half deliberately uses more of the table rim than equal angular
   // slots would. This gives the five readable cards the same graceful spread
   // as the approved visual reference while the rear cards curl around behind.
-  const thetaDegrees = orbitThetaDegrees(absoluteSlots);
-  const theta = (thetaDegrees * Math.PI) / 180;
-  const sine = Math.sin(theta);
-  const cosine = Math.cos(theta);
-  const depth = (cosine + 1) / 2;
-
   const isFront = absoluteSlots <= 1.01;
   const faceUpRadius = count <= 4 ? 1 : 2;
   const isFaceUp = count <= 3 || absoluteSlots <= faceUpRadius + 0.01;
   const isCenter = absoluteSlots <= 0.015;
+  const isOpposite = count % 2 === 0 && Math.abs(absoluteSlots - (count / 2)) <= 0.015;
+
+  const thetaDegrees = isOpposite ? 180 : orbitThetaDegrees(absoluteSlots);
+  const theta = (thetaDegrees * Math.PI) / 180;
+  const sine = Math.sin(theta);
+  const cosine = Math.cos(theta);
+  const depth = (cosine + 1) / 2;
 
   // Position on the ellipse and card-facing angle are intentionally separate:
   // cards follow the table edge while their faces progressively bend into it.
