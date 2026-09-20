@@ -39,45 +39,22 @@ for (const token of [
   'import { createPortal } from "react-dom"',
   'const FRONT_CENTER_SLOT = 1',
   'const DRAG_THRESHOLD_PX = 6',
-  'const FACE_UP_RADIUS = 2',
-  'const INTERACTIVE_RADIUS = 1',
-  'const VISIBLE_RADIUS = 4',
-  'const ORBIT_VISUAL_PROFILE = [',
-  '{ x: 0, y: 56, yaw: 0, scale: 1.11, opacity: 1, z: 136, depthZ: 0 }',
-  '{ x: 24, y: 54, yaw: 7, scale: 0.92, opacity: 1, z: 124, depthZ: 0 }',
-  '{ x: 42, y: 49, yaw: 18, scale: 0.72, opacity: 0.84, z: 92, depthZ: 0 }',
-  '{ x: 44, y: 39, yaw: 44, scale: 0.64, opacity: 0.64, z: 76, depthZ: 26 }',
-  '{ x: 31, y: 24, yaw: 62, scale: 0.52, opacity: 0.42, z: 54, depthZ: 12 }',
-  'const FLICK_PROJECTION_MS = 150',
+  'const FLICK_PROJECTION_MS = 180',
   'function normalizeOrbitOffset(value, total)',
   'function signedOrbitSlots(value, total)',
-  'function isCatalogReferenceLine(value = "")',
-  'function cleanSubclassSummaryText(value = "")',
-  'function orbitVisualProfile(distance)',
   'function orbitPlacement(optionIndex, orbitOffset, total)',
-  'const snappedCenterIndex = Math.round(normalizeOrbitOffset(frontCenter, count)) % count',
-  'const isFront = count <= 3 || snappedDistance <= INTERACTIVE_RADIUS',
-  'const showsFrontFace = count <= 5 || snappedDistance <= FACE_UP_RADIUS',
-  'const isVisible = count <= 9 || snappedDistance <= VISIBLE_RADIUS',
-  '"--orbit-opacity": (isVisible ? visual.opacity : 0).toFixed(3)',
-  '"--orbit-back-yaw": `${(-yaw * 0.82).toFixed(2)}deg`',
-  'function activateCard(option)',
-  'data-subclass-key={option.key}',
   'const [orbitOffset, setOrbitOffset] = useState(0)',
   'const [isDragging, setIsDragging] = useState(false)',
-  'const [isOrbitSettled, setIsOrbitSettled] = useState(true)',
   'const [inspectedKey, setInspectedKey] = useState("")',
   'const dragStateRef = useRef(null)',
   'const suppressClickUntilRef = useRef(0)',
-  'const inspectedOption = options.find((option) => option.key === inspectedKey) || null',
-  '"Click any of the three front cards to inspect that path. Dragging the carousel will not change your choice."',
-  '<h4>{inspectedOption?.name || "Choose a card"}</h4>',
+  'const browsedOption = options[browsedIndex] || null',
+  'const inspectedOption = options.find((option) => option.key === inspectedKey) || browsedOption',
   'function handleOrbitPointerDown(event)',
   'function handleOrbitPointerMove(event)',
   'function finishOrbitPointer(event, cancelled = false)',
   'function handleCardClick(event, option, isFront)',
   'event.currentTarget.setPointerCapture?.(event.pointerId)',
-  'event.currentTarget.hasPointerCapture?.(event.pointerId)',
   'event.currentTarget.releasePointerCapture?.(event.pointerId)',
   'pixelsPerCardFor(bounds?.width, options.length)',
   'Math.round(drag.currentOffset + projectedCards)',
@@ -89,13 +66,8 @@ for (const token of [
   'class-subclass-carousel-card__surface',
   'data-orbit-depth={depth.toFixed(3)}',
   'onClick={(event) => handleCardClick(event, option, isFront)}',
-  '<div className="class-subclass-carousel-modal__hint">Drag to browse · Click any of the three front cards</div>',
-  'const inspectionScale = isInspected && showsFrontFace ? 1.085 : 1',
-  '"--inspection-scale": inspectionScale.toFixed(3)',
-  'isFront ? " is-orbit-front" : showsFrontFace ? " is-orbit-edge" : " is-orbit-back"',
-  'isVisible ? "" : " is-orbit-hidden"',
-  '}, [selectorOpen, optionSignature]);',
-  'model?.setPreviewKey?.(option.key)',
+  'Only the three front cards can be chosen.',
+  'model.setPreviewKey(option.key)',
   'model.selectSubclass(option)',
   'onClick={showInspectedDetails}',
   'if (optionEntryLevel(option) <= currentLevel)',
@@ -108,40 +80,6 @@ for (const token of [
 assert((selector.match(/model\.selectSubclass\(option\)/g) || []).length === 1, "Carousel motion must never persist a subclass; only the explicit card-choice path may call selectSubclass(option).");
 assert(!selector.includes('model?.setPreviewKey?.(focusedOption.key)'), "Front-most carousel position must not auto-preview/persist as the player's subclass.");
 assert(!selector.includes('const focusedOption = options[focusedIndex] || null'), "Legacy auto-focused front-card selection state is still present.");
-const rotateBlock = selector.slice(selector.indexOf("function rotateCarousel"), selector.indexOf("function showInspectedDetails"));
-const pointerDownBlock = selector.slice(selector.indexOf("function handleOrbitPointerDown"), selector.indexOf("function handleOrbitPointerMove"));
-assert(!rotateBlock.includes('setInspectedKey("")'), "Carousel arrows must not clear the explicitly clicked inspection target.");
-assert(!pointerDownBlock.includes('setInspectedKey("")'), "Dragging must not clear the explicitly clicked inspection target.");
-assert(!pointerDownBlock.includes('setPointerCapture'), "Pointer-down must not capture the pointer because doing so retargets a normal card click to the orbit container.");
-assert(!pointerDownBlock.includes('setIsOrbitSettled(false)'), "A normal pointer-down must not disturb the settled card layout before click dispatch.");
-const pointerMoveBlock = selector.slice(selector.indexOf("function handleOrbitPointerMove"), selector.indexOf("function finishOrbitPointer"));
-assert(pointerMoveBlock.includes('setIsOrbitSettled(false)'), "The orbit should leave its settled state only after the drag threshold is crossed.");
-assert(pointerMoveBlock.includes('setPointerCapture?.(event.pointerId)'), "Pointer capture must begin only after the drag threshold is crossed.");
-assert(selector.includes('const card = event.target?.closest?.(".class-subclass-carousel-card.is-orbit-front")'), "Ordinary pointer-up must resolve the actual clicked front card instead of relying only on native click dispatch.");
-assert(selector.includes('const optionKey = text(card?.dataset?.subclassKey)'), "Pointer-up card activation must resolve the subclass key from the clicked card.");
-assert(selector.includes('activateCard(option);'), "Pointer and keyboard activation must share one explicit subclass inspection authority.");
-
-assert(selector.includes('selected && inspectedOption && selected.key === inspectedOption.key'), "Selected-note rendering must not treat two undefined keys as a selected card.");
-
-assert(selector.includes('const isVisible = count <= 9 || snappedDistance <= VISIBLE_RADIUS'), "Tarot orbit must cap the visual window at nine cards without capping subclass options.");
-assert(selector.includes('{ x: 0, y: 56, yaw: 0, scale: 1.11'), "Tarot center must remain larger than its neighboring face-up cards.");
-assert(selector.includes('{ x: 24, y: 54, yaw: 7, scale: 0.92'), "Tarot side cards must stay clearly separated from the center and step down in size.");
-assert(selector.includes('{ x: 42, y: 49, yaw: 18, scale: 0.72, opacity: 0.84'), "Tarot outer previews must remain legible near the stage edges without competing with the interactive side cards.");
-assert(selector.includes('"--orbit-back-yaw": `${(-yaw * 0.82).toFixed(2)}deg`'), "Rear Tarot backs must stay broad enough to read while preserving some carousel yaw.");
-assert(selector.includes('{ x: 44, y: 39, yaw: 44, scale: 0.64'), "The near rear-card tier must remain visible just outside the face-up spread like the older circular deck silhouette.");
-assert(selector.includes('{ x: 31, y: 24, yaw: 62, scale: 0.52'), "The far rear-card tier must curl inward and upward behind the outer spread.");
-assert(tarotCss.includes('width: clamp(216px, 17.3vw, 298px) !important'), "A clicked resting center Tarot card must swell through physical width, not a compositor scale.");
-assert(tarotCss.includes('filter: saturate(.92) brightness(1.02) contrast(1.01)'), "Rear Tarot backs must remain readable background motion without competing with the face-up spread.");
-assert(tarotCss.includes('opacity: .62;'), "Foreground smoke must be light enough for the rear deck to remain visible.");
-assert(tarotCss.includes('transparent 46%') && tarotCss.includes('#000 76%'), "Foreground smoke mask must preserve a wider clear window around the carousel.");
-assert(tarotCss.includes('.class-subclass-carousel-card.is-orbit-front {\n  pointer-events: auto;\n  cursor: pointer;'), "Interactive front cards must advertise clickability without removing drag support.");
-
-assert(!tarotCss.includes('translate(-50%, -50%) scale(var(--inspection-scale, 1))'), "Resting center Tarot must not reintroduce transform scaling that softens the hero art.");
-
-
-
-assert(!selector.includes('Unlocks at level ${optionEntryLevel(option)}'), "Tarot card faces must not carry unlock-level badges.");
-assert(selector.includes('.filter((line) => line && !isCatalogReferenceLine(line))'), "Subclass dossier summary must remove pipe-delimited catalog reference rows before rendering.");
 
 for (const token of [
   'url("/media/forge/subclass-carousel/subclass-selector-cathedral-bg.png")',
@@ -154,19 +92,7 @@ for (const token of [
   '.class-subclass-carousel-card__surface',
   'translate3d(-50%, -50%, var(--orbit-depth-z))',
   'rotateY(var(--orbit-yaw))',
-  'width: clamp(178px, 14.2vw, 246px) !important',
-  'width: clamp(198px, 15.9vw, 274px) !important',
-  '.class-subclass-carousel-card.is-orbit-hidden',
-  '.class-subclass-carousel-card.is-orbit-face-up .class-subclass-carousel-card__face.is-back',
-  '.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__face.is-front',
-  '.class-subclass-carousel-card.is-orbit-edge',
-  'width: clamp(216px, 17.3vw, 298px) !important',
-  'transform: translate(-50%, -50%) !important',
-  '.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__face.is-back',
-  'rotateY(var(--orbit-back-yaw)) translateZ(.3px) !important',
-  '@media (max-height: 720px)',
-  'overflow-y: auto',
-  'height: 620px !important',
+  'width: clamp(142px, 10.4vw, 188px) !important',
   'filter: none !important',
   'image-rendering: auto !important',
   '.class-subclass-carousel-card__face.is-back',

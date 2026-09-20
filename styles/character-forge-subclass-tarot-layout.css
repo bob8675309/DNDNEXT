@@ -404,11 +404,11 @@
 
 .class-subclass-carousel-modal__smoke-front {
   z-index: 128;
-  opacity: .62;
+  opacity: .78;
   background-image: url("/media/forge/subclass-carousel/subclass-selector-smoke-front.png");
-  filter: brightness(.61) saturate(.98) contrast(1.08);
-  mask-image: radial-gradient(ellipse at 50% 52%, transparent 0%, transparent 46%, rgba(0, 0, 0, .18) 57%, #000 76%);
-  -webkit-mask-image: radial-gradient(ellipse at 50% 52%, transparent 0%, transparent 46%, rgba(0, 0, 0, .18) 57%, #000 76%);
+  filter: brightness(.57) saturate(.98) contrast(1.12);
+  mask-image: radial-gradient(ellipse at 50% 52%, transparent 0%, transparent 37%, rgba(0, 0, 0, .22) 47%, #000 64%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 52%, transparent 0%, transparent 37%, rgba(0, 0, 0, .22) 47%, #000 64%);
 }
 
 .class-subclass-carousel-modal__orbit {
@@ -464,35 +464,22 @@
   transition:
     left .48s cubic-bezier(.2, .76, .24, 1),
     top .48s cubic-bezier(.2, .76, .24, 1),
-    width .42s cubic-bezier(.2, .76, .24, 1),
     transform .48s cubic-bezier(.2, .76, .24, 1),
     opacity .38s ease !important;
-  will-change: auto;
+  will-change: left, top, transform, opacity;
   animation: none !important;
 }
 
 .class-subclass-carousel-modal__orbit.is-dragging .class-subclass-carousel-card {
   transition: none !important;
-  will-change: left, top, transform, opacity;
 }
 
-.class-subclass-carousel-card.is-orbit-back,
-.class-subclass-carousel-card.is-orbit-edge,
-.class-subclass-carousel-card.is-orbit-hidden {
+.class-subclass-carousel-card.is-orbit-back {
   pointer-events: none;
-}
-
-.class-subclass-carousel-card.is-orbit-hidden {
-  opacity: 0 !important;
 }
 
 .class-subclass-carousel-card.is-orbit-front {
   pointer-events: auto;
-  cursor: pointer;
-}
-
-.class-subclass-carousel-modal__orbit.is-dragging .class-subclass-carousel-card {
-  cursor: grabbing !important;
 }
 
 .class-subclass-carousel-card__surface {
@@ -1131,45 +1118,11 @@
 }
 
 .class-subclass-carousel-card {
-  width: clamp(178px, 14.2vw, 246px) !important;
-}
-
-.class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center {
-  width: clamp(198px, 15.9vw, 274px) !important;
-}
-
-.class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center.is-inspected {
-  width: clamp(216px, 17.3vw, 298px) !important;
+  width: clamp(142px, 10.4vw, 188px) !important;
 }
 
 .class-subclass-carousel-card.is-orbit-front {
   opacity: 1 !important;
-}
-
-/* When the carousel has snapped, let the hero card leave the 3D compositor.
-   This keeps the resting center face at native 2D raster quality; dragging
-   and every non-center orbit card retain the normal 3D transform path. */
-.class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center {
-  transform: translate(-50%, -50%) !important;
-  transform-style: flat !important;
-  will-change: auto !important;
-}
-
-.class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center .class-subclass-carousel-card__surface {
-  transform: none !important;
-  transform-style: flat !important;
-  backface-visibility: visible !important;
-  -webkit-backface-visibility: visible !important;
-}
-
-.class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center .class-subclass-carousel-card__face.is-front {
-  transform: none !important;
-  backface-visibility: visible !important;
-  -webkit-backface-visibility: visible !important;
-}
-
-.class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center .class-subclass-carousel-card__face.is-back {
-  display: none !important;
 }
 
 .class-subclass-carousel-card__surface {
@@ -1204,14 +1157,6 @@
   transform: rotateY(0deg) translateZ(.3px);
 }
 
-.class-subclass-carousel-card.is-orbit-face-up .class-subclass-carousel-card__face.is-back {
-  display: none !important;
-}
-
-.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__face.is-front {
-  display: none !important;
-}
-
 .class-subclass-carousel-card__face.is-back {
   display: grid;
   place-items: center;
@@ -1229,19 +1174,6 @@
     inset 0 0 0 8px rgba(8, 7, 14, .86),
     inset 0 0 0 9px rgba(145, 85, 201, .2),
     0 15px 34px rgba(0, 0, 0, .5);
-}
-
-.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__face.is-back {
-  transform: rotateY(var(--orbit-back-yaw)) translateZ(.3px) !important;
-  backface-visibility: visible !important;
-  -webkit-backface-visibility: visible !important;
-  filter: saturate(.92) brightness(1.02) contrast(1.01);
-  box-shadow:
-    inset 0 0 0 3px rgba(8, 8, 14, .92),
-    inset 0 0 0 4px rgba(214, 166, 79, .34),
-    inset 0 0 0 8px rgba(8, 7, 14, .9),
-    inset 0 0 0 9px rgba(145, 85, 201, .12),
-    0 8px 20px rgba(0, 0, 0, .36) !important;
 }
 
 .class-subclass-carousel-card__face.is-back::before,
@@ -1303,18 +1235,10 @@
 }
 
 .class-subclass-carousel-card.is-inspected .class-subclass-carousel-card__face.is-front {
-  border-color: rgba(248, 215, 137, .98);
+  border-color: rgba(235, 196, 111, .82);
   box-shadow:
-    0 24px 52px rgba(0, 0, 0, .60),
-    0 0 0 1px rgba(248, 215, 137, .20),
-    0 0 30px rgba(188, 112, 244, .30);
-}
-
-.class-subclass-carousel-card.is-orbit-edge .class-subclass-carousel-card__face.is-front {
-  border-color: rgba(217, 175, 94, .3);
-  box-shadow:
-    0 14px 30px rgba(0, 0, 0, .46),
-    0 0 10px rgba(120, 68, 187, .06);
+    0 20px 44px rgba(0, 0, 0, .56),
+    0 0 23px rgba(154, 91, 216, .18);
 }
 
 .class-subclass-carousel-card.is-selected .class-subclass-carousel-card__face.is-front {
@@ -1343,95 +1267,18 @@
 
 @media (max-width: 1179px) {
   .class-subclass-carousel-card {
-    width: clamp(148px, 16vw, 194px) !important;
-  }
-
-  .class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center {
-    width: clamp(164px, 17.8vw, 216px) !important;
-  }
-
-  .class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center.is-inspected {
-    width: clamp(174px, 18.85vw, 229px) !important;
+    width: clamp(128px, 11.9vw, 164px) !important;
   }
 }
 
 @media (max-width: 859px) {
   .class-subclass-carousel-card {
-    width: clamp(120px, 20vw, 160px) !important;
-  }
-
-  .class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center {
-    width: clamp(133px, 22.3vw, 179px) !important;
-  }
-
-  .class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center.is-inspected {
-    width: clamp(141px, 23.6vw, 189px) !important;
+    width: clamp(108px, 18vw, 144px) !important;
   }
 }
 
 @media (max-width: 619px) {
   .class-subclass-carousel-card {
-    width: clamp(94px, 23vw, 126px) !important;
-  }
-
-  .class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center {
-    width: clamp(104px, 25.5vw, 139px) !important;
-  }
-
-  .class-subclass-carousel-modal__orbit:not(.is-dragging) .class-subclass-carousel-card.is-resting-center.is-inspected {
-    width: clamp(110px, 27vw, 147px) !important;
-  }
-}
-
-/* Browser zoom and short-height windows must never trap the dossier below
-   an overflow-hidden modal. Preserve the cinematic canvas and let the modal
-   itself scroll when the effective viewport becomes too short. */
-@media (max-height: 720px) {
-  .class-subclass-carousel-modal {
-    place-items: start center;
-    overflow-y: auto;
-    overflow-x: hidden;
-    overscroll-behavior: contain;
-    padding-top: 6px;
-    padding-bottom: 6px;
-  }
-
-  .class-subclass-carousel-modal__panel {
-    flex: 0 0 auto;
-    height: 620px !important;
-    min-height: 620px !important;
-    max-height: none !important;
-  }
-
-  .class-subclass-carousel-modal__head {
-    top: 16px;
-  }
-
-  .class-subclass-carousel-modal__head > div {
-    padding-top: 5px;
-    padding-bottom: 7px;
-  }
-
-  .class-subclass-carousel-modal__head h3 {
-    font-size: clamp(1.7rem, 4vw, 2.45rem) !important;
-  }
-
-  .class-subclass-carousel-modal__head p {
-    font-size: .66rem !important;
-  }
-
-  .class-subclass-carousel-modal__details {
-    bottom: 14px;
-  }
-}
-
-@media (max-height: 520px) {
-  .class-subclass-carousel-modal__panel {
-    height: 590px !important;
-    min-height: 590px !important;
-  }
-
-  .class-subclass-carousel-modal__head p {
-    display: none;
+    width: clamp(88px, 21vw, 118px) !important;
   }
 }

@@ -67,7 +67,7 @@ assert(!guide.includes("model.options.slice(0, 4)"), "Subclass catalogue must no
 assert(!guide.includes("npc-forge-class-guide__subclass-more"), "The Class overview must not hide subclasses behind a More disclosure.");
 assert(guide.includes("ForgeSubclassSelection"), "Subclass selection behavior was removed.");
 assert(subclassBrowser.includes("model.selectSubclass(option)"), "Subclass confirmation behavior was removed from the browser.");
-assert(subclassBrowser.includes('aria-label="Subclass catalogue. Drag to spin the carousel."'), "Every canonical subclass must remain browseable in the runic carousel.");
+assert(subclassBrowser.includes('aria-label="Subclass catalogue"'), "Every canonical subclass must remain browseable in the inline catalogue.");
 assert(guide.includes("ProgressionTable"), "Class progression table was removed.");
 assert(guide.includes("Class Overview") && guide.includes("Detailed Guide"), "Class guide view controls regressed.");
 assert(guide.includes("classHeroArtworkFor(selectedClass.class_key)"), "Selected Class hero must use the cinematic hero-art authority.");
