@@ -65,9 +65,20 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
   const sine = Math.sin(angle);
   const cosine = Math.cos(angle);
   const depth = (sine + 1) / 2;
-  const yaw = signedSlots * stepDegrees;
+  const positionalYaw = signedSlots * stepDegrees;
   const isFront = absoluteSlots <= 1.01;
-  const isFaceUp = Math.abs(yaw) < 90;
+  const isFaceUp = count <= 3 || Math.abs(positionalYaw) <= 90.01;
+  const direction = signedSlots === 0 ? 0 : Math.sign(signedSlots);
+
+  // Position and card-facing are related but not identical. The cards still
+  // travel through evenly spaced ellipse slots, while the readable front half
+  // uses a shallower yaw so artwork stays legible at the larger render size.
+  const yaw = isFaceUp
+    ? signedSlots * Math.min(18, stepDegrees * 0.45)
+    : direction * Math.min(
+      180,
+      96 + (clamp((Math.abs(positionalYaw) - 90) / 90, 0, 1) * 84),
+    );
 
   // A deliberately taller ellipse: the front settles lower on the runic table,
   // while the back rises into the cathedral so its nearly-transparent motion
