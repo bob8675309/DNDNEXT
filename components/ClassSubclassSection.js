@@ -4,6 +4,7 @@ import { handleSubclassArtworkError, subclassArtworkFor } from "../utils/classes
 
 const text = (value) => String(value ?? "").trim();
 const FRONT_CENTER_SLOT = 1;
+const VISIBLE_CARD_CAP = 9;
 const DRAG_THRESHOLD_PX = 6;
 const FLICK_PROJECTION_MS = 180;
 
@@ -48,24 +49,49 @@ function clamp(value, min, max) {
 
 function orbitPlacement(optionIndex, orbitOffset, total) {
   const count = Math.max(1, Number(total || 1));
-  const step = (Math.PI * 2) / count;
-  const stepDegrees = 360 / count;
+  const visualSlotCount = Math.min(count, VISIBLE_CARD_CAP);
+  const step = (Math.PI * 2) / visualSlotCount;
+  const stepDegrees = 360 / visualSlotCount;
   const frontCenter = orbitOffset + FRONT_CENTER_SLOT;
   const signedSlots = signedOrbitSlots(optionIndex - frontCenter, count);
-  const snappedCenterIndex = Math.round(normalizeOrbitOffset(frontCenter, count)) % count;
-  const visibleSlots = Math.abs(signedOrbitSlots(optionIndex - snappedCenterIndex, count));
-  const isVisible = count <= 9 || visibleSlots <= 4;
+  const absoluteSlots = Math.abs(signedSlots);
+
+  // Keep the whole logical catalogue, but only draw the nearest visual ring.
+  // A half-slot rear seam allowance lets the outgoing/incoming card crossfade
+  // behind the carousel during drag instead of popping at the cull boundary.
+  const isVisible = count <= VISIBLE_CARD_CAP || absoluteSlots <= (VISIBLE_CARD_CAP / 2) + 0.15;
+
   const angle = (Math.PI / 2) + (signedSlots * step);
   const sine = Math.sin(angle);
   const cosine = Math.cos(angle);
   const depth = (sine + 1) / 2;
-  const isFront = Math.abs(signedSlots) <= 1.01;
-  const x = 50 - (cosine * 44.8);
-  const y = 36.8 + (sine * 18.2);
   const yaw = signedSlots * stepDegrees;
-  const scale = isFront ? 1 : 0.61 + (depth * 0.29);
-  const opacity = 0.24 + (depth * 0.76);
-  const zIndex = 24 + Math.round(depth * 110);
+  const isFront = absoluteSlots <= 1.01;
+  const isFaceUp = Math.abs(yaw) < 90;
+
+  // A deliberately taller ellipse: the front settles lower on the runic table,
+  // while the back rises into the cathedral so its nearly-transparent motion
+  // remains visible behind the readable cards.
+  const x = 50 - (cosine * 40.5);
+  const y = 36.5 + (sine * 21.5);
+
+  const scale = isFront
+    ? 1
+    : isFaceUp
+      ? 0.78 + (depth * 0.10)
+      : 0.54 + (depth * 0.20);
+
+  const opacity = isFront
+    ? 0.955
+    : isFaceUp
+      ? 0.82 + (depth * 0.12)
+      : 0.055 + (depth * 0.18);
+
+  const zIndex = isFront
+    ? 116 + Math.round(depth * 18)
+    : isFaceUp
+      ? 82 + Math.round(depth * 18)
+      : 24 + Math.round(depth * 28);
 
   return {
     signedSlots,
@@ -79,7 +105,7 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
       "--orbit-scale": scale.toFixed(4),
       "--orbit-opacity": (isVisible ? opacity : 0).toFixed(3),
       "--orbit-z": String(isVisible ? zIndex : 0),
-      "--orbit-depth-z": `${isFront ? 0 : Math.round(depth * 68)}px`,
+      "--orbit-depth-z": `${isFaceUp ? 0 : Math.round(depth * 34)}px`,
     },
   };
 }
