@@ -250,7 +250,6 @@ export default function ClassSubclassSection({
   function rotateCarousel(direction) {
     if (options.length <= 1) return;
     const normalizedDirection = direction < 0 ? -1 : 1;
-    setInspectedKey("");
     setOrbitOffset((current) => normalizeOrbitOffset(Math.round(current) + normalizedDirection, options.length));
   }
 
@@ -263,7 +262,6 @@ export default function ClassSubclassSection({
   function handleOrbitPointerDown(event) {
     if (options.length <= 1) return;
     if (event.pointerType === "mouse" && event.button !== 0) return;
-    setInspectedKey("");
     const bounds = orbitRef.current?.getBoundingClientRect();
     const now = Number(event.timeStamp || performance.now());
     dragStateRef.current = {
@@ -277,7 +275,6 @@ export default function ClassSubclassSection({
       pixelsPerCard: pixelsPerCardFor(bounds?.width, options.length),
       moved: false,
     };
-    event.currentTarget.setPointerCapture?.(event.pointerId);
   }
 
   function handleOrbitPointerMove(event) {
@@ -288,6 +285,7 @@ export default function ClassSubclassSection({
 
     drag.moved = true;
     setIsDragging(true);
+    event.currentTarget.setPointerCapture?.(event.pointerId);
     event.preventDefault();
 
     const nextOffset = normalizeOrbitOffset(
@@ -307,7 +305,9 @@ export default function ClassSubclassSection({
     const drag = dragStateRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
     try {
-      event.currentTarget.releasePointerCapture?.(event.pointerId);
+      if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
+        event.currentTarget.releasePointerCapture?.(event.pointerId);
+      }
     } catch {
       // Pointer capture may already be released by the browser.
     }
@@ -417,11 +417,7 @@ export default function ClassSubclassSection({
                           />
                         </span>
                         <span className="class-subclass-carousel-card__shade" aria-hidden="true" />
-                        {isSelected ? (
-                          <span className="class-subclass-carousel-card__copy">
-                            <small>Selected</small>
-                          </span>
-                        ) : null}
+                        {null}
                       </span>
                       <span className="class-subclass-carousel-card__face is-back" aria-hidden="true">
                         <span className="class-subclass-carousel-card__back-rune">✦</span>
@@ -448,7 +444,7 @@ export default function ClassSubclassSection({
               <h4>{inspectedOption?.name || "Subclass"}</h4>
               <p>{inspectedSummary}</p>
               {inspectedOption && optionEntryLevel(inspectedOption) > currentLevel ? <small>Available at level {optionEntryLevel(inspectedOption)}</small> : null}
-              {selected?.key === inspectedOption?.key ? <small className="is-selected-note">Currently selected</small> : null}
+              {selected && inspectedOption && selected.key === inspectedOption.key ? <small className="is-selected-note">Currently selected</small> : null}
             </div>
             <button type="button" className="class-subclass-carousel-modal__details-button" onClick={showInspectedDetails} disabled={!inspectedOption}>
               <span>View Details</span><b aria-hidden="true">→</b>
