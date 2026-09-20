@@ -42,18 +42,19 @@ for (const token of [
   'const FLICK_PROJECTION_MS = 180',
   'function normalizeOrbitOffset(value, total)',
   'function signedOrbitSlots(value, total)',
-  'const VISIBLE_CARD_CAP = 9',
+  'const VISIBLE_CARD_CAP = 7',
   'function orbitPlacement(optionIndex, orbitOffset, total)',
   'const visualSlotCount = Math.min(count, VISIBLE_CARD_CAP)',
   'const step = (Math.PI * 2) / visualSlotCount',
   'const isVisible = count <= VISIBLE_CARD_CAP || absoluteSlots <= (VISIBLE_CARD_CAP / 2) + 0.15',
   'const positionalYaw = signedSlots * stepDegrees',
-  'const isFaceUp = count <= 3 || Math.abs(positionalYaw) <= 90.01',
+  'const faceUpRadius = count <= 4 ? 1 : 2',
+  'const isFaceUp = count <= 3 || absoluteSlots <= faceUpRadius + 0.01',
   'const faceUpYawMagnitude = absoluteSlots <= 1',
-  '? absoluteSlots * 22',
-  ': 22 + ((absoluteSlots - 1) * 26)',
-  'Math.min(54, faceUpYawMagnitude)',
-  'const x = 50 - (cosine * 40.5)',
+  '? absoluteSlots * 30',
+  ': 30 + ((absoluteSlots - 1) * 30)',
+  'Math.min(64, faceUpYawMagnitude)',
+  'const x = 50 - (cosine * 37.5)',
   'const y = 36.5 + (sine * 21.5)',
   '"--orbit-opacity": (isVisible ? opacity : 0).toFixed(3)',
   '"--orbit-depth-z": `${isFaceUp ? 0 : Math.round(depth * 34)}px`',
@@ -98,12 +99,15 @@ assert(!selector.includes('model?.setPreviewKey?.(focusedOption.key)'), "Front-m
 assert(!selector.includes('const focusedOption = options[focusedIndex] || null'), "Legacy auto-focused front-card selection state is still present.");
 assert(selector.includes('const visualSlotCount = Math.min(count, VISIBLE_CARD_CAP)'), "Visible Tarot cards must use a capped visual slot count instead of inheriting spacing from the full subclass count.");
 assert(selector.includes('const step = (Math.PI * 2) / visualSlotCount'), "Visible Tarot cards must be evenly spaced around the visual carousel.");
-assert(selector.includes('const isVisible = count <= VISIBLE_CARD_CAP || absoluteSlots <= (VISIBLE_CARD_CAP / 2) + 0.15'), "Tarot carousel must keep the full option list while limiting the visual ring to about nine cards.");
+assert(selector.includes('const isVisible = count <= VISIBLE_CARD_CAP || absoluteSlots <= (VISIBLE_CARD_CAP / 2) + 0.15'), "Tarot carousel must keep the full option list while limiting the visual ring to about seven cards.");
+assert(selector.includes('const x = 50 - (cosine * 37.5)'), "Tarot ring must be horizontally tighter while retaining the existing ellipse flow.");
 assert(selector.includes('const y = 36.5 + (sine * 21.5)'), "Tarot orbit must keep the back higher and the front lower on a taller ellipse.");
-assert(selector.includes('const isFaceUp = count <= 3 || Math.abs(positionalYaw) <= 90.01'), "Tarot front/back presentation must follow the visible ellipse rather than hidden catalogue count.");
-assert(selector.includes('? absoluteSlots * 22'), "The first card pair away from center must yaw farther to follow the carousel bend.");
-assert(selector.includes(': 22 + ((absoluteSlots - 1) * 26)'), "The second card pair away from center must bend substantially more than the inner pair.");
-assert(selector.includes('Math.min(54, faceUpYawMagnitude)'), "Readable face-up cards must retain a bounded perspective angle.");
+assert(selector.includes('const faceUpRadius = count <= 4 ? 1 : 2'), "Small subclass catalogs must preserve a sensible 3-5 card face-up presentation.");
+assert(selector.includes('const isFaceUp = count <= 3 || absoluteSlots <= faceUpRadius + 0.01'), "Tarot front/back presentation must follow the nearest visible ring positions.");
+assert(selector.includes('? absoluteSlots * 30'), "The first card pair away from center must bend to roughly 30 degrees.");
+assert(selector.includes(': 30 + ((absoluteSlots - 1) * 30)'), "The second card pair away from center must bend to roughly 60 degrees.");
+assert(selector.includes('Math.min(64, faceUpYawMagnitude)'), "Readable face-up cards must retain a bounded but stronger perspective angle.");
+assert(selector.includes(': 0.11 + (depth * 0.20);'), "Rear Tarot cards must be slightly less transparent so carousel motion remains visible.");
 
 assert(selector.includes('"--orbit-depth-z": `${isFaceUp ? 0 : Math.round(depth * 34)}px`'), "Readable front-half Tarot cards must avoid positive Z-depth resampling.");
 assert(tarotCss.includes('opacity: .955 !important'), "Front Tarot cards must retain the requested slight translucency.");
