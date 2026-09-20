@@ -357,6 +357,8 @@ export default function ClassSubclassSection({
                             src={subclassArtworkFor(classKey, option)}
                             onError={(event) => handleSubclassArtworkError(event, classKey)}
                             alt=""
+                            width={840}
+                            height={1440}
                             draggable="false"
                             decoding="async"
                           />
