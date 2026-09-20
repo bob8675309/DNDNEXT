@@ -1319,3 +1319,311 @@
     width: clamp(112px, 26.5vw, 150px) !important;
   }
 }
+
+
+/* 2026-09-20 approved-reference implementation: translate the chosen mock-up into the live modal. */
+.class-subclass-carousel-modal {
+  padding: 0 !important;
+  background: #02030a !important;
+  backdrop-filter: none !important;
+}
+
+.class-subclass-carousel-modal__panel {
+  width: min(1760px, 100vw) !important;
+  height: min(990px, 100vh) !important;
+  min-height: min(640px, 100vh) !important;
+  max-height: 100vh !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #04050a !important;
+  box-shadow: none !important;
+}
+
+.class-subclass-carousel-modal__panel::before {
+  display: none !important;
+}
+
+.class-subclass-carousel-modal__panel::after {
+  z-index: 5 !important;
+  background:
+    linear-gradient(180deg, rgba(2, 3, 7, .08) 0%, transparent 22%, transparent 66%, rgba(2, 3, 7, .48) 100%),
+    radial-gradient(ellipse at 50% 54%, transparent 46%, rgba(2, 3, 7, .08) 74%, rgba(2, 3, 7, .28) 100%) !important;
+}
+
+.class-subclass-carousel-modal__scene {
+  background:
+    linear-gradient(90deg, rgba(2, 3, 8, .12), transparent 18%, transparent 82%, rgba(2, 3, 8, .12)),
+    url("/media/forge/subclass-carousel/subclass-selector-cathedral-bg.png") center 44% / cover no-repeat !important;
+  filter: saturate(1.01) contrast(1.02) brightness(.98) !important;
+}
+
+.class-subclass-carousel-modal__head {
+  top: 4.4% !important;
+  left: 3.35% !important;
+  right: 3.35% !important;
+}
+
+.class-subclass-carousel-modal__head > div {
+  max-width: 560px !important;
+  padding: 0 !important;
+  background: none !important;
+}
+
+.class-subclass-carousel-modal__head span {
+  color: rgba(238, 214, 166, .9) !important;
+  font-size: clamp(.58rem, .72vw, .76rem) !important;
+  letter-spacing: .28em !important;
+}
+
+.class-subclass-carousel-modal__head h3 {
+  margin-top: 4px !important;
+  color: #f2d79a !important;
+  font-size: clamp(2.5rem, 4vw, 4.35rem) !important;
+  font-weight: 500 !important;
+  letter-spacing: -.012em !important;
+  text-shadow: 0 3px 20px rgba(0, 0, 0, .75) !important;
+}
+
+.class-subclass-carousel-modal__head p {
+  max-width: 470px !important;
+  margin-top: 10px !important;
+  color: rgba(243, 234, 216, .86) !important;
+  font-size: clamp(.72rem, .9vw, .94rem) !important;
+  line-height: 1.48 !important;
+}
+
+.class-subclass-carousel-modal__close {
+  width: 44px !important;
+  height: 44px !important;
+  border-color: rgba(224, 183, 98, .44) !important;
+  border-radius: 50% !important;
+  background: rgba(5, 6, 10, .82) !important;
+  box-shadow:
+    0 0 0 1px rgba(235, 196, 111, .08),
+    0 9px 24px rgba(0, 0, 0, .38) !important;
+}
+
+.class-subclass-carousel-modal__table {
+  left: -2.5% !important;
+  right: -2.5% !important;
+  top: 20% !important;
+  bottom: 2.5% !important;
+  opacity: .98 !important;
+  filter: saturate(.98) brightness(1.02) contrast(1.02) !important;
+  transform: none !important;
+}
+
+.class-subclass-carousel-modal__table::after {
+  display: none !important;
+}
+
+.class-subclass-carousel-modal__orbit {
+  left: 1.5% !important;
+  right: 1.5% !important;
+  top: 19.5% !important;
+  bottom: 13% !important;
+  perspective: 2200px !important;
+  perspective-origin: 50% 59% !important;
+}
+
+.class-subclass-carousel-card__face {
+  border-color: rgba(225, 183, 94, .58) !important;
+  border-radius: 6px !important;
+  box-shadow:
+    0 18px 38px rgba(0, 0, 0, .48),
+    0 0 0 1px rgba(239, 199, 112, .05),
+    0 0 10px rgba(227, 177, 82, .06) !important;
+}
+
+.class-subclass-carousel-card.is-orbit-center .class-subclass-carousel-card__face.is-front {
+  border-color: rgba(246, 205, 113, .94) !important;
+  box-shadow:
+    0 24px 50px rgba(0, 0, 0, .56),
+    0 0 0 1px rgba(255, 226, 153, .15),
+    0 0 25px rgba(239, 185, 76, .19) !important;
+}
+
+.class-subclass-carousel-card.is-inspected .class-subclass-carousel-card__face.is-front,
+.class-subclass-carousel-card.is-selected .class-subclass-carousel-card__face.is-front {
+  border-color: rgba(246, 205, 113, .92) !important;
+  box-shadow:
+    0 21px 46px rgba(0, 0, 0, .54),
+    0 0 0 1px rgba(255, 225, 151, .14),
+    0 0 22px rgba(238, 181, 72, .16) !important;
+}
+
+.class-subclass-carousel-card__face.is-back {
+  filter: saturate(.9) brightness(.94) contrast(1.02);
+}
+
+.class-subclass-carousel-card__back-rune {
+  background: radial-gradient(circle, rgba(113, 82, 39, .16), rgba(8, 8, 13, .78) 68%) !important;
+  text-shadow: 0 0 13px rgba(225, 176, 81, .33) !important;
+  box-shadow: 0 0 20px rgba(218, 171, 79, .08) !important;
+}
+
+.class-subclass-carousel-modal__nav {
+  top: 52.5% !important;
+  width: clamp(52px, 4vw, 64px) !important;
+  height: clamp(52px, 4vw, 64px) !important;
+  border-color: rgba(233, 194, 108, .76) !important;
+  color: #f8e6ba !important;
+  background: rgba(5, 6, 10, .88) !important;
+  box-shadow:
+    0 0 0 2px rgba(225, 181, 88, .08),
+    0 0 22px rgba(225, 180, 78, .12),
+    inset 0 0 16px rgba(232, 191, 103, .05) !important;
+}
+
+.class-subclass-carousel-modal__nav:hover,
+.class-subclass-carousel-modal__nav:focus-visible {
+  border-color: rgba(250, 214, 133, .98) !important;
+  box-shadow:
+    0 0 0 2px rgba(233, 190, 99, .12),
+    0 0 30px rgba(235, 190, 87, .2),
+    inset 0 0 18px rgba(241, 204, 118, .07) !important;
+}
+
+.class-subclass-carousel-modal__nav.is-prev {
+  left: 3.3% !important;
+}
+
+.class-subclass-carousel-modal__nav.is-next {
+  right: 3.3% !important;
+}
+
+.class-subclass-carousel-modal__position,
+.class-subclass-carousel-modal__hint {
+  display: none !important;
+}
+
+.class-subclass-carousel-modal__details {
+  left: 24% !important;
+  right: 24% !important;
+  bottom: 3.6% !important;
+  grid-template-columns: 82px minmax(0, 1fr) minmax(170px, 220px) !important;
+  gap: 18px !important;
+  min-height: 126px !important;
+  padding: 14px 20px 14px 15px !important;
+  border-color: rgba(222, 178, 84, .52) !important;
+  border-radius: 5px !important;
+  background:
+    linear-gradient(145deg, rgba(7, 8, 13, .94), rgba(4, 5, 9, .90)),
+    rgba(5, 6, 10, .92) !important;
+  box-shadow:
+    0 18px 44px rgba(0, 0, 0, .48),
+    inset 0 0 0 1px rgba(239, 198, 104, .035) !important;
+  backdrop-filter: blur(6px) !important;
+}
+
+.class-subclass-carousel-modal__details::before {
+  display: none !important;
+}
+
+.class-subclass-carousel-modal__details-icon {
+  width: 62px !important;
+  height: 62px !important;
+  color: #edbd66 !important;
+}
+
+.class-subclass-carousel-modal__details-icon::before {
+  border-color: rgba(229, 182, 86, .82) !important;
+  background: radial-gradient(circle, rgba(89, 61, 25, .2), rgba(8, 8, 13, .98) 67%) !important;
+  box-shadow:
+    0 0 0 4px rgba(4, 5, 9, .5),
+    0 0 20px rgba(227, 178, 79, .08) !important;
+}
+
+.class-subclass-carousel-modal__details-copy > span {
+  color: rgba(233, 218, 188, .82) !important;
+}
+
+.class-subclass-carousel-modal__details-copy h4 {
+  color: #e8ba64 !important;
+  font-size: clamp(1.16rem, 1.45vw, 1.5rem) !important;
+}
+
+.class-subclass-carousel-modal__details-copy p {
+  color: rgba(244, 237, 224, .84) !important;
+  font-size: clamp(.6rem, .72vw, .71rem) !important;
+}
+
+.class-subclass-carousel-modal__details-button {
+  min-height: 46px !important;
+  border-color: rgba(225, 180, 87, .7) !important;
+  border-radius: 4px !important;
+  color: #ecd29a !important;
+  background: rgba(7, 8, 13, .9) !important;
+  box-shadow: inset 0 0 0 1px rgba(239, 198, 104, .035) !important;
+}
+
+.class-subclass-carousel-card__copy {
+  display: none !important;
+}
+
+@media (max-width: 1179px) {
+  .class-subclass-carousel-modal__head h3 {
+    font-size: clamp(2.15rem, 4.6vw, 3.5rem) !important;
+  }
+
+  .class-subclass-carousel-modal__details {
+    left: 16% !important;
+    right: 16% !important;
+  }
+}
+
+@media (max-width: 859px) {
+  .class-subclass-carousel-modal__panel {
+    width: 100vw !important;
+    height: 100vh !important;
+  }
+
+  .class-subclass-carousel-modal__head {
+    top: 3.4% !important;
+    left: 4% !important;
+    right: 4% !important;
+  }
+
+  .class-subclass-carousel-modal__table {
+    left: -8% !important;
+    right: -8% !important;
+    top: 23% !important;
+    bottom: 10% !important;
+  }
+
+  .class-subclass-carousel-modal__orbit {
+    left: -1% !important;
+    right: -1% !important;
+    top: 23% !important;
+    bottom: 22% !important;
+  }
+
+  .class-subclass-carousel-modal__details {
+    left: 5% !important;
+    right: 5% !important;
+    bottom: 2.2% !important;
+  }
+}
+
+@media (max-width: 619px) {
+  .class-subclass-carousel-modal__head h3 {
+    font-size: 1.9rem !important;
+  }
+
+  .class-subclass-carousel-modal__table {
+    left: -18% !important;
+    right: -18% !important;
+  }
+
+  .class-subclass-carousel-modal__orbit {
+    left: -6% !important;
+    right: -6% !important;
+    top: 24% !important;
+    bottom: 31% !important;
+  }
+
+  .class-subclass-carousel-modal__details {
+    left: 3% !important;
+    right: 3% !important;
+  }
+}
