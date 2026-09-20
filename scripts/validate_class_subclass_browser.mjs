@@ -137,6 +137,24 @@ assert(tarotCss.includes('opacity: .955 !important'), "Front Tarot cards must re
 assert(tarotCss.includes('display: none !important'), "Smoke-layer safety override must remain installed.");
 assert(tarotCss.includes('opacity: .91'), "Runic table must remain clear and visually present after smoke removal.");
 assert(tarotCss.includes('will-change: auto'), "Resting Tarot cards must not stay permanently promoted to compositor layers.");
+const rotateBlock = selector.slice(selector.indexOf("function rotateCarousel"), selector.indexOf("function showInspectedDetails"));
+const pointerDownBlock = selector.slice(selector.indexOf("function handleOrbitPointerDown"), selector.indexOf("function handleOrbitPointerMove"));
+const pointerMoveBlock = selector.slice(selector.indexOf("function handleOrbitPointerMove"), selector.indexOf("function finishOrbitPointer"));
+assert(!rotateBlock.includes('setInspectedKey("")'), "Arrow navigation must not clear an explicitly clicked subclass inspection target.");
+assert(!pointerDownBlock.includes('setInspectedKey("")'), "Pointer-down must not clear an explicitly clicked subclass inspection target.");
+assert(!pointerDownBlock.includes('setPointerCapture'), "Ordinary pointer-down must remain a click candidate instead of immediately becoming a captured drag.");
+assert(pointerMoveBlock.includes('setPointerCapture?.(event.pointerId)'), "Pointer capture must begin only after the drag threshold is crossed.");
+assert(selector.includes('selected && inspectedOption && selected.key === inspectedOption.key'), "Selected-note rendering must not treat two missing keys as a selected subclass.");
+assert(!selector.includes('<small>Selected</small>'), "Approved Tarot artwork must remain badge-free; selected state should use border/glow treatment only.");
+
+assert(tarotCss.includes('width: min(1760px, 100vw) !important'), "Approved subclass modal must use the near-fullscreen reference composition.");
+assert(tarotCss.includes('height: min(990px, 100vh) !important'), "Approved subclass modal must preserve the cinematic reference height.");
+assert(tarotCss.includes('top: 20% !important') && tarotCss.includes('bottom: 2.5% !important'), "Runic table must sit low and large in the approved composition.");
+assert(tarotCss.includes('top: 19.5% !important') && tarotCss.includes('bottom: 13% !important'), "Tarot orbit must align vertically to the table rim in the approved composition.");
+assert(tarotCss.includes('left: 24% !important') && tarotCss.includes('right: 24% !important'), "Subclass dossier must use the compact centered reference width.");
+assert(tarotCss.includes('.class-subclass-carousel-modal__position,\n.class-subclass-carousel-modal__hint {\n  display: none !important;'), "Legacy counter/hint text must not clutter the approved visual composition.");
+assert(tarotCss.includes('.class-subclass-carousel-card__copy {\n  display: none !important;'), "Tarot card artwork must remain free of pill overlays.");
+
 
 
 for (const token of [
