@@ -88,38 +88,43 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
   // Position on the ellipse and card-facing angle are intentionally separate:
   // cards follow the table edge while their faces progressively bend into it.
   const faceUpYawMagnitude = absoluteSlots <= 1
-    ? absoluteSlots * 28
-    : 28 + ((absoluteSlots - 1) * 30);
+    ? absoluteSlots * 18
+    : 18 + ((absoluteSlots - 1) * 18);
 
   const yaw = isFaceUp
-    ? direction * Math.min(62, faceUpYawMagnitude)
-    : direction * Math.min(180, 100 + ((thetaDegrees - 90) * 0.78));
+    ? direction * Math.min(40, faceUpYawMagnitude)
+    : direction * Math.min(180, 104 + ((thetaDegrees - 90) * 0.76));
 
-  // Reference geometry: a relaxed ellipse tracing the visible table rim.
-  // The readable front spread sits low; rear cards climb into the back edge.
-  const horizontalRadius = 42;
-  const verticalCenter = 36.5;
-  const verticalRadius = 21.5;
+  // The card's bottom-center, not its center, traces the physical table rim.
+  // This makes the Tarot deck look planted on the table instead of floating
+  // over an unrelated ellipse.
+  const horizontalRadius = 31.5;
+  const verticalCenter = 54;
+  const verticalRadius = 25;
   const x = 50 + (direction * sine * horizontalRadius);
   const y = verticalCenter + (cosine * verticalRadius);
 
-  const scale = isFront
+  const scale = isCenter
     ? 1
-    : isFaceUp
-      ? 0.82 + (depth * 0.06)
-      : 0.50 + (depth * 0.16);
+    : isFront
+      ? 0.94
+      : isFaceUp
+        ? 0.79 + (depth * 0.04)
+        : 0.50 + (depth * 0.16);
 
   const opacity = isFront
     ? 0.955
     : isFaceUp
-      ? 0.84 + (depth * 0.08)
-      : 0.16 + (depth * 0.20);
+      ? 0.86 + (depth * 0.06)
+      : 0.20 + (depth * 0.22);
 
-  const zIndex = isFront
-    ? 118 + Math.round(depth * 18)
-    : isFaceUp
-      ? 86 + Math.round(depth * 16)
-      : 28 + Math.round(depth * 30);
+  const zIndex = isCenter
+    ? 142
+    : isFront
+      ? 126 + Math.round(depth * 8)
+      : isFaceUp
+        ? 98 + Math.round(depth * 12)
+        : 30 + Math.round(depth * 26);
 
   return {
     signedSlots,
@@ -177,7 +182,7 @@ export default function ClassSubclassSection({
     ? Math.round(normalizeOrbitOffset(orbitOffset + FRONT_CENTER_SLOT, options.length)) % options.length
     : 0;
   const browsedOption = options[browsedIndex] || null;
-  const inspectedOption = options.find((option) => option.key === inspectedKey) || browsedOption;
+  const inspectedOption = options.find((option) => option.key === inspectedKey) || null;
   const inspectedSummary = useMemo(() => subclassSummary(inspectedOption), [inspectedOption]);
   const classLabel = classLabelFor(classKey, model?.className);
 
@@ -437,19 +442,21 @@ export default function ClassSubclassSection({
             <div className="class-subclass-carousel-modal__hint">Drag the table or use the arrows. Only the three front cards can be chosen.</div>
           </div>
 
-          <section className="class-subclass-carousel-modal__details" aria-live="polite">
-            <div className="class-subclass-carousel-modal__details-icon" aria-hidden="true"><span>✦</span></div>
-            <div className="class-subclass-carousel-modal__details-copy">
-              <span>{classLabel} Subclass</span>
-              <h4>{inspectedOption?.name || "Subclass"}</h4>
-              <p>{inspectedSummary}</p>
-              {inspectedOption && optionEntryLevel(inspectedOption) > currentLevel ? <small>Available at level {optionEntryLevel(inspectedOption)}</small> : null}
-              {selected && inspectedOption && selected.key === inspectedOption.key ? <small className="is-selected-note">Currently selected</small> : null}
-            </div>
-            <button type="button" className="class-subclass-carousel-modal__details-button" onClick={showInspectedDetails} disabled={!inspectedOption}>
-              <span>View Details</span><b aria-hidden="true">→</b>
-            </button>
-          </section>
+          {inspectedOption ? (
+            <section className="class-subclass-carousel-modal__details" aria-live="polite">
+              <div className="class-subclass-carousel-modal__details-icon" aria-hidden="true"><span>✦</span></div>
+              <div className="class-subclass-carousel-modal__details-copy">
+                <span>{classLabel} Subclass</span>
+                <h4>{inspectedOption.name}</h4>
+                <p>{inspectedSummary}</p>
+                {optionEntryLevel(inspectedOption) > currentLevel ? <small>Available at level {optionEntryLevel(inspectedOption)}</small> : null}
+                {selected && selected.key === inspectedOption.key ? <small className="is-selected-note">Currently selected</small> : null}
+              </div>
+              <button type="button" className="class-subclass-carousel-modal__details-button" onClick={showInspectedDetails}>
+                <span>View Details</span><b aria-hidden="true">→</b>
+              </button>
+            </section>
+          ) : null}
         </div>
       </div>,
       document.body,
