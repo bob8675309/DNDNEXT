@@ -49,6 +49,10 @@ for (const token of [
   'const isVisible = count <= VISIBLE_CARD_CAP || absoluteSlots <= (VISIBLE_CARD_CAP / 2) + 0.15',
   'const positionalYaw = signedSlots * stepDegrees',
   'const isFaceUp = count <= 3 || Math.abs(positionalYaw) <= 90.01',
+  'const faceUpYawMagnitude = absoluteSlots <= 1',
+  '? absoluteSlots * 22',
+  ': 22 + ((absoluteSlots - 1) * 26)',
+  'Math.min(54, faceUpYawMagnitude)',
   'const x = 50 - (cosine * 40.5)',
   'const y = 36.5 + (sine * 21.5)',
   '"--orbit-opacity": (isVisible ? opacity : 0).toFixed(3)',
@@ -97,6 +101,10 @@ assert(selector.includes('const step = (Math.PI * 2) / visualSlotCount'), "Visib
 assert(selector.includes('const isVisible = count <= VISIBLE_CARD_CAP || absoluteSlots <= (VISIBLE_CARD_CAP / 2) + 0.15'), "Tarot carousel must keep the full option list while limiting the visual ring to about nine cards.");
 assert(selector.includes('const y = 36.5 + (sine * 21.5)'), "Tarot orbit must keep the back higher and the front lower on a taller ellipse.");
 assert(selector.includes('const isFaceUp = count <= 3 || Math.abs(positionalYaw) <= 90.01'), "Tarot front/back presentation must follow the visible ellipse rather than hidden catalogue count.");
+assert(selector.includes('? absoluteSlots * 22'), "The first card pair away from center must yaw farther to follow the carousel bend.");
+assert(selector.includes(': 22 + ((absoluteSlots - 1) * 26)'), "The second card pair away from center must bend substantially more than the inner pair.");
+assert(selector.includes('Math.min(54, faceUpYawMagnitude)'), "Readable face-up cards must retain a bounded perspective angle.");
+
 assert(selector.includes('"--orbit-depth-z": `${isFaceUp ? 0 : Math.round(depth * 34)}px`'), "Readable front-half Tarot cards must avoid positive Z-depth resampling.");
 assert(tarotCss.includes('opacity: .955 !important'), "Front Tarot cards must retain the requested slight translucency.");
 assert(tarotCss.includes('width: clamp(196px, 16.6vw, 300px) !important'), "Desktop Tarot cards must use the larger near-natural review size.");
