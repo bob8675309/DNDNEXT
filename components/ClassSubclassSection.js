@@ -4,7 +4,7 @@ import { handleSubclassArtworkError, subclassArtworkFor } from "../utils/classes
 
 const text = (value) => String(value ?? "").trim();
 const FRONT_CENTER_SLOT = 1;
-const VISIBLE_CARD_CAP = 7;
+const VISIBLE_CARD_CAP = 9;
 const DRAG_THRESHOLD_PX = 6;
 const FLICK_PROJECTION_MS = 180;
 
@@ -47,72 +47,85 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
+function orbitThetaDegrees(distance) {
+  const d = Math.max(0, Number(distance || 0));
+  if (d <= 1) return d * 28;
+  if (d <= 2) return 28 + ((d - 1) * 29);
+  if (d <= 3) return 57 + ((d - 2) * 58);
+  if (d <= 4) return 115 + ((d - 3) * 40);
+  return Math.min(180, 155 + ((d - 4) * 38));
+}
+
 function orbitPlacement(optionIndex, orbitOffset, total) {
   const count = Math.max(1, Number(total || 1));
   const visualSlotCount = Math.min(count, VISIBLE_CARD_CAP);
-  const step = (Math.PI * 2) / visualSlotCount;
-  const stepDegrees = 360 / visualSlotCount;
   const frontCenter = orbitOffset + FRONT_CENTER_SLOT;
   const signedSlots = signedOrbitSlots(optionIndex - frontCenter, count);
   const absoluteSlots = Math.abs(signedSlots);
+  const direction = signedSlots === 0 ? 0 : Math.sign(signedSlots);
 
-  // Keep the whole logical catalogue, but only draw the nearest visual ring.
-  // A half-slot rear seam allowance lets the outgoing/incoming card crossfade
-  // behind the carousel during drag instead of popping at the cull boundary.
-  const isVisible = count <= VISIBLE_CARD_CAP || absoluteSlots <= (VISIBLE_CARD_CAP / 2) + 0.15;
+  // The catalogue remains complete. Only the nearest visual ring is painted.
+  // A small rear-seam allowance crossfades the outgoing/incoming card during
+  // drag so the ring never visibly pops.
+  const visibleRadius = Math.floor(visualSlotCount / 2);
+  const isVisible = count <= VISIBLE_CARD_CAP || absoluteSlots <= visibleRadius + 0.18;
 
-  const angle = (Math.PI / 2) + (signedSlots * step);
-  const sine = Math.sin(angle);
-  const cosine = Math.cos(angle);
-  const depth = (sine + 1) / 2;
-  const positionalYaw = signedSlots * stepDegrees;
+  // The front half deliberately uses more of the table rim than equal angular
+  // slots would. This gives the five readable cards the same graceful spread
+  // as the approved visual reference while the rear cards curl around behind.
+  const thetaDegrees = orbitThetaDegrees(absoluteSlots);
+  const theta = (thetaDegrees * Math.PI) / 180;
+  const sine = Math.sin(theta);
+  const cosine = Math.cos(theta);
+  const depth = (cosine + 1) / 2;
+
   const isFront = absoluteSlots <= 1.01;
   const faceUpRadius = count <= 4 ? 1 : 2;
   const isFaceUp = count <= 3 || absoluteSlots <= faceUpRadius + 0.01;
-  const direction = signedSlots === 0 ? 0 : Math.sign(signedSlots);
+  const isCenter = absoluteSlots <= 0.015;
 
-  // Position and card-facing are related but not identical. The cards still
-  // travel through evenly spaced ellipse slots, while the readable front half
-  // uses a shallower yaw so artwork stays legible at the larger render size.
+  // Position on the ellipse and card-facing angle are intentionally separate:
+  // cards follow the table edge while their faces progressively bend into it.
   const faceUpYawMagnitude = absoluteSlots <= 1
-    ? absoluteSlots * 30
-    : 30 + ((absoluteSlots - 1) * 30);
+    ? absoluteSlots * 28
+    : 28 + ((absoluteSlots - 1) * 30);
 
   const yaw = isFaceUp
-    ? direction * Math.min(64, faceUpYawMagnitude)
-    : direction * Math.min(
-      180,
-      102 + (clamp((Math.abs(positionalYaw) - 90) / 90, 0, 1) * 78),
-    );
+    ? direction * Math.min(62, faceUpYawMagnitude)
+    : direction * Math.min(180, 100 + ((thetaDegrees - 90) * 0.78));
 
-  // A deliberately taller ellipse: the front settles lower on the runic table,
-  // while the back rises into the cathedral so its nearly-transparent motion
-  // remains visible behind the readable cards.
-  const x = 50 - (cosine * 37.5);
-  const y = 36.5 + (sine * 21.5);
+  // Reference geometry: a relaxed ellipse tracing the visible table rim.
+  // The readable front spread sits low; rear cards climb into the back edge.
+  const horizontalRadius = 42;
+  const verticalCenter = 36.5;
+  const verticalRadius = 21.5;
+  const x = 50 + (direction * sine * horizontalRadius);
+  const y = verticalCenter + (cosine * verticalRadius);
 
   const scale = isFront
     ? 1
     : isFaceUp
-      ? 0.78 + (depth * 0.10)
-      : 0.54 + (depth * 0.20);
+      ? 0.82 + (depth * 0.06)
+      : 0.50 + (depth * 0.16);
 
   const opacity = isFront
     ? 0.955
     : isFaceUp
-      ? 0.82 + (depth * 0.12)
-      : 0.11 + (depth * 0.20);
+      ? 0.84 + (depth * 0.08)
+      : 0.16 + (depth * 0.20);
 
   const zIndex = isFront
-    ? 116 + Math.round(depth * 18)
+    ? 118 + Math.round(depth * 18)
     : isFaceUp
-      ? 82 + Math.round(depth * 18)
-      : 24 + Math.round(depth * 28);
+      ? 86 + Math.round(depth * 16)
+      : 28 + Math.round(depth * 30);
 
   return {
     signedSlots,
     depth,
     isFront,
+    isFaceUp,
+    isCenter,
     isVisible,
     style: {
       "--orbit-x": `${x.toFixed(3)}%`,
@@ -121,11 +134,10 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
       "--orbit-scale": scale.toFixed(4),
       "--orbit-opacity": (isVisible ? opacity : 0).toFixed(3),
       "--orbit-z": String(isVisible ? zIndex : 0),
-      "--orbit-depth-z": `${isFaceUp ? 0 : Math.round(depth * 34)}px`,
+      "--orbit-depth-z": `${isFaceUp ? 0 : Math.round(depth * 28)}px`,
     },
   };
 }
-
 function pixelsPerCardFor(width, total) {
   const count = Math.max(1, Number(total || 1));
   const visibleSpan = clamp(count, 5, 8);
@@ -344,7 +356,6 @@ export default function ClassSubclassSection({
       >
         <div className="class-subclass-carousel-modal__panel">
           <div className="class-subclass-carousel-modal__scene" aria-hidden="true" />
-          <div className="class-subclass-carousel-modal__ambient-smoke" aria-hidden="true" />
 
           <header className="class-subclass-carousel-modal__head">
             <div>
@@ -357,7 +368,6 @@ export default function ClassSubclassSection({
 
           <div className="class-subclass-carousel-modal__stage">
             <div className="class-subclass-carousel-modal__table" aria-hidden="true" />
-            <div className="class-subclass-carousel-modal__smoke-back" aria-hidden="true" />
 
             <button type="button" className="class-subclass-carousel-modal__nav is-prev" onClick={() => rotateCarousel(-1)} aria-label="Previous subclass" disabled={options.length <= 1}>‹</button>
 
@@ -371,7 +381,7 @@ export default function ClassSubclassSection({
               onPointerUp={(event) => finishOrbitPointer(event)}
               onPointerCancel={(event) => finishOrbitPointer(event, true)}
             >
-              {orbitOptions.map(({ option, optionIndex, signedSlots, depth, isFront, isVisible, style }) => {
+              {orbitOptions.map(({ option, optionIndex, signedSlots, depth, isFront, isFaceUp, isCenter, isVisible, style }) => {
                 const isSelected = selected?.key === option.key;
                 const isInspected = inspectedOption?.key === option.key;
                 const eligible = optionEntryLevel(option) <= currentLevel;
@@ -380,7 +390,7 @@ export default function ClassSubclassSection({
                     key={option.key}
                     type="button"
                     role="listitem"
-                    className={`class-subclass-carousel-card${isInspected ? " is-inspected" : ""}${isSelected ? " is-selected" : ""}${isFront ? " is-orbit-front" : " is-orbit-back"}${isVisible ? "" : " is-orbit-hidden"}${eligible ? " is-eligible" : " is-locked"}`}
+                    className={`class-subclass-carousel-card${isCenter ? " is-orbit-center" : ""}${isInspected ? " is-inspected" : ""}${isSelected ? " is-selected" : ""}${isFront ? " is-orbit-front" : " is-orbit-back"}${isFaceUp ? " is-orbit-face-up" : ""}${isVisible ? "" : " is-orbit-hidden"}${eligible ? " is-eligible" : " is-locked"}`}
                     style={style}
                     aria-pressed={isSelected}
                     aria-hidden={isFront ? undefined : "true"}
@@ -406,9 +416,9 @@ export default function ClassSubclassSection({
                           />
                         </span>
                         <span className="class-subclass-carousel-card__shade" aria-hidden="true" />
-                        {(!eligible || isSelected) ? (
+                        {isSelected ? (
                           <span className="class-subclass-carousel-card__copy">
-                            <small>{!eligible ? `Unlocks at level ${optionEntryLevel(option)}` : "Selected"}</small>
+                            <small>Selected</small>
                           </span>
                         ) : null}
                       </span>
@@ -421,8 +431,6 @@ export default function ClassSubclassSection({
                 );
               })}
             </div>
-
-            <div className="class-subclass-carousel-modal__smoke-front" aria-hidden="true" />
 
             <button type="button" className="class-subclass-carousel-modal__nav is-next" onClick={() => rotateCarousel(1)} aria-label="Next subclass" disabled={options.length <= 1}>›</button>
 
