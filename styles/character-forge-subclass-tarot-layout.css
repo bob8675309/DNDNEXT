@@ -1119,11 +1119,11 @@
 }
 
 .class-subclass-carousel-card {
-  width: clamp(168px, 12.6vw, 228px) !important;
+  width: clamp(196px, 16.6vw, 300px) !important;
 }
 
 .class-subclass-carousel-card.is-orbit-front {
-  opacity: .965 !important;
+  opacity: .955 !important;
 }
 
 .class-subclass-carousel-card.is-selected.is-orbit-front,
@@ -1281,18 +1281,18 @@
 
 @media (max-width: 1179px) {
   .class-subclass-carousel-card {
-    width: clamp(146px, 14vw, 190px) !important;
+    width: clamp(164px, 18vw, 222px) !important;
   }
 }
 
 @media (max-width: 859px) {
   .class-subclass-carousel-card {
-    width: clamp(122px, 20vw, 160px) !important;
+    width: clamp(134px, 22vw, 178px) !important;
   }
 }
 
 @media (max-width: 619px) {
   .class-subclass-carousel-card {
-    width: clamp(96px, 23vw, 128px) !important;
+    width: clamp(104px, 25vw, 140px) !important;
   }
 }
