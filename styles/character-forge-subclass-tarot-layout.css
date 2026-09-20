@@ -368,8 +368,8 @@
   z-index: 24;
   pointer-events: none;
   background: url("/media/forge/subclass-carousel/subclass-selector-runic-table.png") center / contain no-repeat;
-  opacity: .82;
-  filter: saturate(1.05) brightness(.88) contrast(1.035);
+  opacity: .91;
+  filter: saturate(1.02) brightness(.95) contrast(1.025);
   transform: translateY(1%);
 }
 
@@ -1101,6 +1101,13 @@
 }
 
 
+/* Approved 2026-09-20 visual reference: clear table, no purple smoke layers. */
+.class-subclass-carousel-modal__ambient-smoke,
+.class-subclass-carousel-modal__smoke-back,
+.class-subclass-carousel-modal__smoke-front {
+  display: none !important;
+}
+
 /* 2026-09-18 precision pass: three crisp front cards + real reversible card backs. */
 .class-subclass-carousel-modal__table {
   left: 1% !important;
@@ -1120,6 +1127,10 @@
 
 .class-subclass-carousel-card {
   width: clamp(196px, 16.6vw, 300px) !important;
+}
+
+.class-subclass-carousel-card.is-orbit-center {
+  width: clamp(210px, 17.75vw, 322px) !important;
 }
 
 .class-subclass-carousel-card.is-orbit-front {
@@ -1179,9 +1190,9 @@
   transform: rotateY(180deg) translateZ(.3px);
   color: #f2d28a;
   background:
-    radial-gradient(circle at 50% 50%, rgba(118, 55, 181, .24) 0 8%, transparent 9% 18%, rgba(201, 157, 74, .18) 19% 20%, transparent 21%),
-    repeating-conic-gradient(from 22.5deg at 50% 50%, rgba(203, 162, 82, .11) 0 2deg, transparent 2deg 22.5deg),
-    radial-gradient(ellipse at 50% 42%, rgba(76, 35, 120, .42), rgba(14, 10, 24, .96) 62%, #07070d 100%);
+    radial-gradient(circle at 50% 50%, rgba(131, 87, 41, .14) 0 8%, transparent 9% 18%, rgba(201, 157, 74, .18) 19% 20%, transparent 21%),
+    repeating-conic-gradient(from 22.5deg at 50% 50%, rgba(203, 162, 82, .12) 0 2deg, transparent 2deg 22.5deg),
+    radial-gradient(ellipse at 50% 42%, rgba(34, 25, 47, .55), rgba(12, 11, 18, .97) 62%, #07070d 100%);
   box-shadow:
     inset 0 0 0 3px rgba(8, 8, 14, .9),
     inset 0 0 0 4px rgba(214, 166, 79, .48),
@@ -1283,16 +1294,28 @@
   .class-subclass-carousel-card {
     width: clamp(164px, 18vw, 222px) !important;
   }
+
+  .class-subclass-carousel-card.is-orbit-center {
+    width: clamp(176px, 19.25vw, 238px) !important;
+  }
 }
 
 @media (max-width: 859px) {
   .class-subclass-carousel-card {
     width: clamp(134px, 22vw, 178px) !important;
   }
+
+  .class-subclass-carousel-card.is-orbit-center {
+    width: clamp(144px, 23.5vw, 190px) !important;
+  }
 }
 
 @media (max-width: 619px) {
   .class-subclass-carousel-card {
     width: clamp(104px, 25vw, 140px) !important;
+  }
+
+  .class-subclass-carousel-card.is-orbit-center {
+    width: clamp(112px, 26.5vw, 150px) !important;
   }
 }
