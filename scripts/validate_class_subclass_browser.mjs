@@ -67,6 +67,8 @@ for (const token of [
   'onPointerUp={(event) => finishOrbitPointer(event)}',
   'onPointerCancel={(event) => finishOrbitPointer(event, true)}',
   'class-subclass-carousel-card__surface',
+  'width={840}',
+  'height={1440}',
   'data-orbit-depth={depth.toFixed(3)}',
   'onClick={(event) => handleCardClick(event, option, isFront)}',
   'Only the three front cards can be chosen.',
