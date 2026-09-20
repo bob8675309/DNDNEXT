@@ -55,6 +55,8 @@ for (const token of [
   'const faceUpRadius = count <= 4 ? 1 : 2',
   'const isFaceUp = count <= 3 || absoluteSlots <= faceUpRadius + 0.01',
   'const isCenter = absoluteSlots <= 0.015',
+  'const isOpposite = count % 2 === 0 && Math.abs(absoluteSlots - (count / 2)) <= 0.015',
+  'const thetaDegrees = isOpposite ? 180 : orbitThetaDegrees(absoluteSlots)',
   'const faceUpYawMagnitude = absoluteSlots <= 1',
   '? absoluteSlots * 28',
   ': 28 + ((absoluteSlots - 1) * 30)',
@@ -118,6 +120,8 @@ assert(selector.includes('if (d <= 4) return 115 + ((d - 3) * 40)'), "Far rear c
 assert(selector.includes('const horizontalRadius = 42'), "Approved Tarot ring must use the relaxed 42-percent horizontal radius.");
 assert(selector.includes('const verticalRadius = 21.5'), "Approved Tarot ring must preserve the elevated rear and lower foreground ellipse.");
 assert(selector.includes('const isCenter = absoluteSlots <= 0.015'), "Only the centered Tarot card may receive the pop-out treatment.");
+assert(selector.includes('const isOpposite = count % 2 === 0 && Math.abs(absoluteSlots - (count / 2)) <= 0.015'), "Even-card subclass sets must place their lone opposite card at the true rear-center slot.");
+
 assert(selector.includes('? absoluteSlots * 28'), "The first readable pair must progressively bend away from the center.");
 assert(selector.includes(': 28 + ((absoluteSlots - 1) * 30)'), "The outer readable pair must bend substantially farther around the table.");
 assert(selector.includes('Math.min(62, faceUpYawMagnitude)'), "Readable face-up yaw must stay bounded at the approved reference angle.");
