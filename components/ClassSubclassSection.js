@@ -4,7 +4,7 @@ import { handleSubclassArtworkError, subclassArtworkFor } from "../utils/classes
 
 const text = (value) => String(value ?? "").trim();
 const FRONT_CENTER_SLOT = 1;
-const VISIBLE_CARD_CAP = 9;
+const VISIBLE_CARD_CAP = 7;
 const DRAG_THRESHOLD_PX = 6;
 const FLICK_PROJECTION_MS = 180;
 
@@ -67,18 +67,19 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
   const depth = (sine + 1) / 2;
   const positionalYaw = signedSlots * stepDegrees;
   const isFront = absoluteSlots <= 1.01;
-  const isFaceUp = count <= 3 || Math.abs(positionalYaw) <= 90.01;
+  const faceUpRadius = count <= 4 ? 1 : 2;
+  const isFaceUp = count <= 3 || absoluteSlots <= faceUpRadius + 0.01;
   const direction = signedSlots === 0 ? 0 : Math.sign(signedSlots);
 
   // Position and card-facing are related but not identical. The cards still
   // travel through evenly spaced ellipse slots, while the readable front half
   // uses a shallower yaw so artwork stays legible at the larger render size.
   const faceUpYawMagnitude = absoluteSlots <= 1
-    ? absoluteSlots * 22
-    : 22 + ((absoluteSlots - 1) * 26);
+    ? absoluteSlots * 30
+    : 30 + ((absoluteSlots - 1) * 30);
 
   const yaw = isFaceUp
-    ? direction * Math.min(54, faceUpYawMagnitude)
+    ? direction * Math.min(64, faceUpYawMagnitude)
     : direction * Math.min(
       180,
       102 + (clamp((Math.abs(positionalYaw) - 90) / 90, 0, 1) * 78),
@@ -87,7 +88,7 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
   // A deliberately taller ellipse: the front settles lower on the runic table,
   // while the back rises into the cathedral so its nearly-transparent motion
   // remains visible behind the readable cards.
-  const x = 50 - (cosine * 40.5);
+  const x = 50 - (cosine * 37.5);
   const y = 36.5 + (sine * 21.5);
 
   const scale = isFront
@@ -100,7 +101,7 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
     ? 0.955
     : isFaceUp
       ? 0.82 + (depth * 0.12)
-      : 0.055 + (depth * 0.18);
+      : 0.11 + (depth * 0.20);
 
   const zIndex = isFront
     ? 116 + Math.round(depth * 18)
