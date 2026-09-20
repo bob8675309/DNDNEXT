@@ -52,6 +52,9 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
   const stepDegrees = 360 / count;
   const frontCenter = orbitOffset + FRONT_CENTER_SLOT;
   const signedSlots = signedOrbitSlots(optionIndex - frontCenter, count);
+  const snappedCenterIndex = Math.round(normalizeOrbitOffset(frontCenter, count)) % count;
+  const visibleSlots = Math.abs(signedOrbitSlots(optionIndex - snappedCenterIndex, count));
+  const isVisible = count <= 9 || visibleSlots <= 4;
   const angle = (Math.PI / 2) + (signedSlots * step);
   const sine = Math.sin(angle);
   const cosine = Math.cos(angle);
@@ -68,14 +71,15 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
     signedSlots,
     depth,
     isFront,
+    isVisible,
     style: {
       "--orbit-x": `${x.toFixed(3)}%`,
       "--orbit-y": `${y.toFixed(3)}%`,
       "--orbit-yaw": `${yaw.toFixed(2)}deg`,
       "--orbit-scale": scale.toFixed(4),
-      "--orbit-opacity": opacity.toFixed(3),
-      "--orbit-z": String(zIndex),
-      "--orbit-depth-z": `${Math.round(depth * 68)}px`,
+      "--orbit-opacity": (isVisible ? opacity : 0).toFixed(3),
+      "--orbit-z": String(isVisible ? zIndex : 0),
+      "--orbit-depth-z": `${isFront ? 0 : Math.round(depth * 68)}px`,
     },
   };
 }
@@ -325,7 +329,7 @@ export default function ClassSubclassSection({
               onPointerUp={(event) => finishOrbitPointer(event)}
               onPointerCancel={(event) => finishOrbitPointer(event, true)}
             >
-              {orbitOptions.map(({ option, optionIndex, signedSlots, depth, isFront, style }) => {
+              {orbitOptions.map(({ option, optionIndex, signedSlots, depth, isFront, isVisible, style }) => {
                 const isSelected = selected?.key === option.key;
                 const isInspected = inspectedOption?.key === option.key;
                 const eligible = optionEntryLevel(option) <= currentLevel;
@@ -334,7 +338,7 @@ export default function ClassSubclassSection({
                     key={option.key}
                     type="button"
                     role="listitem"
-                    className={`class-subclass-carousel-card${isInspected ? " is-inspected" : ""}${isSelected ? " is-selected" : ""}${isFront ? " is-orbit-front" : " is-orbit-back"}${eligible ? " is-eligible" : " is-locked"}`}
+                    className={`class-subclass-carousel-card${isInspected ? " is-inspected" : ""}${isSelected ? " is-selected" : ""}${isFront ? " is-orbit-front" : " is-orbit-back"}${isVisible ? "" : " is-orbit-hidden"}${eligible ? " is-eligible" : " is-locked"}`}
                     style={style}
                     aria-pressed={isSelected}
                     aria-hidden={isFront ? undefined : "true"}
