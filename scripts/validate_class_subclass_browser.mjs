@@ -42,10 +42,17 @@ for (const token of [
   'const FLICK_PROJECTION_MS = 180',
   'function normalizeOrbitOffset(value, total)',
   'function signedOrbitSlots(value, total)',
+  'const VISIBLE_CARD_CAP = 9',
   'function orbitPlacement(optionIndex, orbitOffset, total)',
-  'const isVisible = count <= 9 || visibleSlots <= 4',
+  'const visualSlotCount = Math.min(count, VISIBLE_CARD_CAP)',
+  'const step = (Math.PI * 2) / visualSlotCount',
+  'const isVisible = count <= VISIBLE_CARD_CAP || absoluteSlots <= (VISIBLE_CARD_CAP / 2) + 0.15',
+  'const positionalYaw = signedSlots * stepDegrees',
+  'const isFaceUp = count <= 3 || Math.abs(positionalYaw) <= 90.01',
+  'const x = 50 - (cosine * 40.5)',
+  'const y = 36.5 + (sine * 21.5)',
   '"--orbit-opacity": (isVisible ? opacity : 0).toFixed(3)',
-  '"--orbit-depth-z": `${isFront ? 0 : Math.round(depth * 68)}px`',
+  '"--orbit-depth-z": `${isFaceUp ? 0 : Math.round(depth * 34)}px`',
   'const [orbitOffset, setOrbitOffset] = useState(0)',
   'const [isDragging, setIsDragging] = useState(false)',
   'const [inspectedKey, setInspectedKey] = useState("")',
@@ -85,10 +92,14 @@ for (const token of [
 assert((selector.match(/model\.selectSubclass\(option\)/g) || []).length === 1, "Carousel motion must never persist a subclass; only the explicit card-choice path may call selectSubclass(option).");
 assert(!selector.includes('model?.setPreviewKey?.(focusedOption.key)'), "Front-most carousel position must not auto-preview/persist as the player's subclass.");
 assert(!selector.includes('const focusedOption = options[focusedIndex] || null'), "Legacy auto-focused front-card selection state is still present.");
-assert(selector.includes('const isVisible = count <= 9 || visibleSlots <= 4'), "Tarot carousel must cap the visual deck at nine cards while keeping the full subclass option list.");
-assert(selector.includes('"--orbit-depth-z": `${isFront ? 0 : Math.round(depth * 68)}px`'), "The three front Tarot cards must avoid positive Z-depth resampling.");
-assert(tarotCss.includes('opacity: .965 !important'), "Front Tarot cards must retain the requested slight translucency.");
-assert(tarotCss.includes('width: clamp(168px, 12.6vw, 228px) !important'), "Desktop Tarot cards must use the enlarged crisp review size.");
+assert(selector.includes('const visualSlotCount = Math.min(count, VISIBLE_CARD_CAP)'), "Visible Tarot cards must use a capped visual slot count instead of inheriting spacing from the full subclass count.");
+assert(selector.includes('const step = (Math.PI * 2) / visualSlotCount'), "Visible Tarot cards must be evenly spaced around the visual carousel.");
+assert(selector.includes('const isVisible = count <= VISIBLE_CARD_CAP || absoluteSlots <= (VISIBLE_CARD_CAP / 2) + 0.15'), "Tarot carousel must keep the full option list while limiting the visual ring to about nine cards.");
+assert(selector.includes('const y = 36.5 + (sine * 21.5)'), "Tarot orbit must keep the back higher and the front lower on a taller ellipse.");
+assert(selector.includes('const isFaceUp = count <= 3 || Math.abs(positionalYaw) <= 90.01'), "Tarot front/back presentation must follow the visible ellipse rather than hidden catalogue count.");
+assert(selector.includes('"--orbit-depth-z": `${isFaceUp ? 0 : Math.round(depth * 34)}px`'), "Readable front-half Tarot cards must avoid positive Z-depth resampling.");
+assert(tarotCss.includes('opacity: .955 !important'), "Front Tarot cards must retain the requested slight translucency.");
+assert(tarotCss.includes('width: clamp(196px, 16.6vw, 300px) !important'), "Desktop Tarot cards must use the larger near-natural review size.");
 assert(tarotCss.includes('will-change: auto'), "Resting Tarot cards must not stay permanently promoted to compositor layers.");
 
 
@@ -103,8 +114,8 @@ for (const token of [
   '.class-subclass-carousel-card__surface',
   'translate3d(-50%, -50%, var(--orbit-depth-z))',
   'rotateY(var(--orbit-yaw))',
-  'width: clamp(168px, 12.6vw, 228px) !important',
-  'opacity: .965 !important',
+  'width: clamp(196px, 16.6vw, 300px) !important',
+  'opacity: .955 !important',
   'will-change: auto',
   '.class-subclass-carousel-modal__orbit.is-dragging .class-subclass-carousel-card',
   'will-change: left, top, transform, opacity',
