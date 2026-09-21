@@ -6,14 +6,15 @@ This directory contains the project's living handoff, roadmap, architecture, sub
 
 ## Start here
 
-1. `DNDNext_Current_Handoff_Prompt.md` — copy-ready current takeover brief. **Read its 2026-09-21 override before older checkpoint sections.**
-2. `Character_Forge_Subclass_Tarot_Flexible_Ring_Status.md` — active PR #194 flexible equal-angle table-ring architecture, target behavior, current head/preview, and acceptance checklist.
-3. `Auth_Navigation_Admin_Activity_Status.md` — merged PR #195 navbar/auth/admin-activity checkpoint plus live Supabase hardening.
-4. `Documentation_Refresh_Manifest.md` — documentation trust order, live migration/current PR checkpoint, and current queue.
-5. `Realistic_Dice_Roller_Architecture_Roadmap.md` — controlling future plan for reusable Realistic Dice.
-6. `Unified_Character_Forge_Status.md` — shared Player/NPC Forge, progression, source-choice, and runtime authority.
-7. The dedicated subsystem ledger for the area being changed.
-8. `CHATGPT_REPO_WRITE_PROCEDURE.md` before direct GitHub/Supabase mutation.
+1. `DNDNext_Current_Handoff_Prompt.md` — canonical long-form takeover brief. **Read its 2026-09-21 override before older checkpoint sections.**
+2. `Next_Chat_Handoff_2026-09-21.md` — concise copy-ready handoff for the next chat.
+3. `Character_Forge_Subclass_Tarot_Flexible_Ring_Status.md` — active PR #194 flexible equal-angle table-ring architecture, target behavior, current head/preview, and acceptance checklist.
+4. `Auth_Navigation_Admin_Activity_Status.md` — merged PR #195 navbar/auth/admin-activity checkpoint plus live Supabase hardening.
+5. `Documentation_Refresh_Manifest.md` — documentation trust order, live migration/current PR checkpoint, and current queue.
+6. `Realistic_Dice_Roller_Architecture_Roadmap.md` — controlling future plan for reusable Realistic Dice.
+7. `Unified_Character_Forge_Status.md` — shared Player/NPC Forge, progression, source-choice, and runtime authority.
+8. The dedicated subsystem ledger for the area being changed.
+9. `CHATGPT_REPO_WRITE_PROCEDURE.md` before direct GitHub/Supabase mutation.
 
 ## Current code checkpoint
 
