@@ -1,6 +1,6 @@
 # Documentation Refresh Manifest
 
-Updated: 2026-08-30
+Updated: 2026-09-21
 
 ## Trust order
 
@@ -13,6 +13,45 @@ For current work, trust sources in this order:
 5. raw exports and old PR ledgers as historical snapshots only.
 
 If prose conflicts with live source/database state, live authority wins until documentation is corrected.
+
+
+## 2026-09-21 current checkpoint override
+
+The older checkpoint sections below are retained as history. Current live authority is:
+
+- production `main`: `320671a22b83432177dcc67e9efd035f3c3ccc5d` — merged PR #195;
+- PR #195 is closed/merged: auth-gated navbar + admin activity view;
+- production Vercel for that merge: `dpl_ETZZCzVZq8Cpw56Fndf9pfYmp5B8` — **READY** at handoff;
+- active Character Forge presentation work: PR #194, branch `agent/subclass-carousel-drag-crisp-20260918`, reviewed head `f21a81435946b1ae8ec6112e5376062cfc2b62f4`, open/unmerged;
+- PR #194 exact-head preview: `dndnext-86xs3s1d4-pauls-projects-2016aa54.vercel.app` — **READY** at handoff.
+
+Current focused ledgers:
+
+- `Auth_Navigation_Admin_Activity_Status.md` — merged PR #195 and live Supabase hardening;
+- `Character_Forge_Subclass_Tarot_Flexible_Ring_Status.md` — active PR #194 flexible-ring architecture and acceptance target.
+
+### Live database update
+
+Latest relevant registered migration is now:
+
+`20260921185225 admin_site_activity_hardening_v1`.
+
+The PR #195 activity slice also includes:
+
+- `20260921152546 admin_site_activity_v1`;
+- `20260921153151 admin_site_activity_acl_fix`;
+- `20260921153328 admin_site_activity_retention_v1`.
+
+The previous `20260814161314 grim_hollow_heritage_catalog_support` checkpoint is no longer the latest migration.
+
+### Current work queue override
+
+1. Continue browser acceptance/refinement of PR #194 using its current flexible equal-angle table ring.
+2. Test a small subclass catalogue (especially Monster Hunter's four cards) and Wizard's dense catalogue.
+3. Preserve one hero position; do not reintroduce fixed visible-card-count rules.
+4. If the existing cathedral/table assets still prevent matching the supplied target, replace/rework stage assets while preserving the Tarot card deck.
+5. Merge PR #194 only after explicit user approval and exact-head validation.
+6. Broader documentation standardization can follow the accepted Tarot checkpoint; reconcile old ledgers rather than deleting historical evidence.
 
 ## Current GitHub checkpoint
 
