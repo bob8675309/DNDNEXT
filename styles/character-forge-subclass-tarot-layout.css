@@ -1758,3 +1758,96 @@
     right: 3% !important;
   }
 }
+
+
+/* 2026-09-20 three-card table-depth refinement: quieter foreground, deeper seating, stronger circular wrap. */
+.class-subclass-carousel-modal__scene {
+  filter: saturate(.55) contrast(1.08) brightness(.88) sepia(.08) !important;
+}
+
+.class-subclass-carousel-modal__table {
+  filter: saturate(.38) brightness(.84) contrast(1.15) sepia(.16) !important;
+}
+
+.class-subclass-carousel-modal__head > div {
+  max-width: 720px !important;
+}
+
+.class-subclass-carousel-modal__head h3 {
+  font-size: clamp(2.3rem, 3.35vw, 3.7rem) !important;
+  white-space: nowrap;
+}
+
+.class-subclass-carousel-card {
+  width: clamp(188px, 14.6vw, 270px) !important;
+}
+
+.class-subclass-carousel-card.is-orbit-center {
+  width: clamp(198px, 15.35vw, 284px) !important;
+  transform:
+    translate3d(-50%, -100%, var(--orbit-depth-z))
+    rotateY(var(--orbit-yaw))
+    scale(var(--orbit-scale)) !important;
+}
+
+.class-subclass-carousel-card__face {
+  border-color: rgba(225, 183, 94, .46) !important;
+  box-shadow:
+    0 15px 32px rgba(0, 0, 0, .46),
+    0 0 0 1px rgba(239, 199, 112, .035) !important;
+}
+
+.class-subclass-carousel-card.is-orbit-center .class-subclass-carousel-card__face.is-front {
+  border-color: rgba(246, 205, 113, .78) !important;
+  box-shadow:
+    0 19px 38px rgba(0, 0, 0, .5),
+    0 0 0 1px rgba(255, 226, 153, .09),
+    0 0 14px rgba(239, 185, 76, .1) !important;
+}
+
+.class-subclass-carousel-card.is-inspected .class-subclass-carousel-card__face.is-front,
+.class-subclass-carousel-card.is-selected .class-subclass-carousel-card__face.is-front {
+  border-color: rgba(246, 205, 113, .82) !important;
+  box-shadow:
+    0 18px 36px rgba(0, 0, 0, .5),
+    0 0 0 1px rgba(255, 225, 151, .09),
+    0 0 16px rgba(238, 181, 72, .11) !important;
+}
+
+.class-subclass-carousel-card.is-orbit-back {
+  filter: saturate(.78) brightness(.9) contrast(1.02) !important;
+}
+
+@media (max-width: 1179px) {
+  .class-subclass-carousel-card {
+    width: clamp(158px, 16.5vw, 216px) !important;
+  }
+
+  .class-subclass-carousel-card.is-orbit-center {
+    width: clamp(166px, 17.25vw, 226px) !important;
+  }
+
+  .class-subclass-carousel-modal__head h3 {
+    white-space: normal;
+  }
+}
+
+@media (max-width: 859px) {
+  .class-subclass-carousel-card {
+    width: clamp(130px, 20.8vw, 172px) !important;
+  }
+
+  .class-subclass-carousel-card.is-orbit-center {
+    width: clamp(136px, 21.7vw, 180px) !important;
+  }
+}
+
+@media (max-width: 619px) {
+  .class-subclass-carousel-card {
+    width: clamp(102px, 23.8vw, 136px) !important;
+  }
+
+  .class-subclass-carousel-card.is-orbit-center {
+    width: clamp(106px, 24.8vw, 142px) !important;
+  }
+}
