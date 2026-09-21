@@ -6,11 +6,13 @@ Use this as the concise takeover note. Then read the current override at the top
 
 Repository: `bob8675309/DNDNEXT`
 
-Current production `main`:
+Accepted runtime code checkpoint from PR #195:
 
 `320671a22b83432177dcc67e9efd035f3c3ccc5d`
 
-That commit merged PR #195:
+Documentation-only handoff merges may place current `main` ahead of that SHA. Re-fetch current `main` before any new work.
+
+That runtime commit merged PR #195:
 
 **Gate unauthenticated navbar and add admin activity view**
 
