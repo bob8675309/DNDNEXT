@@ -24,7 +24,8 @@ for (const token of [
 ]) {
   assert(navbar.includes(token), `Navbar is missing encounter navigation contract: ${token}`);
 }
-assert(navbar.includes("{user && <li className=\"nav-item dropdown\">"), "Encounter navigation must require an authenticated session");
+assert(navbar.includes("{user ? <>"), "Encounter navigation must remain inside the authenticated navbar branch");
+assert(navbar.indexOf("{user ? <>") < navbar.indexOf("Encounters"), "Encounter navigation must render only after the authenticated user gate");
 assert(navbar.includes("{isAdmin ? <>"), "GM-only encounter tools must remain admin-gated");
 
 for (const token of [
