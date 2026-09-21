@@ -213,6 +213,14 @@ export default function PlayerAccountPanel({ sessionUser = null, onNameSaved = n
             {passwordError ? <div className="alert alert-danger m-0 py-2">{passwordError}</div> : null}
           </form>
         </section>
+
+        {role === "admin" ? (
+          <section className="player-account-panel__card">
+            <h3>Admin activity</h3>
+            <p className="text-muted">Review accounts and privacy-minimized site visitors seen during the last 30 days.</p>
+            <a className="btn btn-outline-warning mt-3" href="/admin/activity">View recent site activity</a>
+          </section>
+        ) : null}
       </div>
     </div>
   );
