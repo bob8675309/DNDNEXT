@@ -49,11 +49,11 @@ function clamp(value, min, max) {
 
 function orbitThetaDegrees(distance) {
   const d = Math.max(0, Number(distance || 0));
-  if (d <= 1) return d * 28;
-  if (d <= 2) return 28 + ((d - 1) * 29);
-  if (d <= 3) return 57 + ((d - 2) * 58);
-  if (d <= 4) return 115 + ((d - 3) * 40);
-  return Math.min(180, 155 + ((d - 4) * 38));
+  if (d <= 1) return d * 29;
+  if (d <= 2) return 29 + ((d - 1) * 27);
+  if (d <= 3) return 56 + ((d - 2) * 56);
+  if (d <= 4) return 112 + ((d - 3) * 38);
+  return Math.min(180, 150 + ((d - 4) * 40));
 }
 
 function orbitPlacement(optionIndex, orbitOffset, total) {
@@ -74,10 +74,10 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
   // slots would. This gives the five readable cards the same graceful spread
   // as the approved visual reference while the rear cards curl around behind.
   const isFront = absoluteSlots <= 1.01;
-  // The approved table composition has only three readable/front-facing cards:
-  // center plus the immediate pair. Everything beyond that starts turning into
-  // the rear deck while remaining visible as carousel motion.
-  const faceUpRadius = 1;
+  // Keep five cards visually readable on large decks while preserving the
+  // interaction contract: only the center and immediate pair are selectable.
+  // The outer readable pair belongs to the table composition, not the click zone.
+  const faceUpRadius = count <= 4 ? 1 : 2;
   const isFaceUp = count <= 3 || absoluteSlots <= faceUpRadius + 0.01;
   const isCenter = absoluteSlots <= 0.015;
   const isOpposite = count % 2 === 0 && Math.abs(absoluteSlots - (count / 2)) <= 0.015;
@@ -91,44 +91,46 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
   // Position on the ellipse and card-facing angle are intentionally separate:
   // cards follow the table edge while their faces progressively bend into it.
   const yawMagnitude = absoluteSlots <= 1
-    ? absoluteSlots * 22
+    ? absoluteSlots * 16
     : absoluteSlots <= 2
-      ? 22 + ((absoluteSlots - 1) * 80)
-      : Math.min(180, Math.max(102, 104 + ((thetaDegrees - 90) * 0.76)));
+      ? 16 + ((absoluteSlots - 1) * 22)
+      : absoluteSlots <= 3
+        ? 38 + ((absoluteSlots - 2) * 74)
+        : Math.min(180, Math.max(112, 112 + ((thetaDegrees - 112) * 0.76)));
 
   const yaw = direction * yawMagnitude;
 
   // The card's bottom-center, not its center, traces the physical table rim.
   // This makes the Tarot deck look planted on the table instead of floating
   // over an unrelated ellipse.
-  const horizontalRadius = 30.5;
-  const verticalCenter = 49.5;
-  const verticalRadius = 20.5;
+  const horizontalRadius = 34;
+  const verticalCenter = 53;
+  const verticalRadius = 23;
   const x = 50 + (direction * sine * horizontalRadius);
   const y = verticalCenter + (cosine * verticalRadius);
 
   const scale = absoluteSlots <= 1
-    ? 1 - (absoluteSlots * 0.035)
+    ? 1 - (absoluteSlots * 0.06)
     : absoluteSlots <= 2
-      ? 0.965 - ((absoluteSlots - 1) * 0.30)
+      ? 0.94 - ((absoluteSlots - 1) * 0.14)
       : absoluteSlots <= 3
-        ? 0.665 - ((absoluteSlots - 2) * 0.10)
-        : Math.max(0.50, 0.565 - ((absoluteSlots - 3) * 0.04));
+        ? 0.80 - ((absoluteSlots - 2) * 0.23)
+        : Math.max(0.50, 0.57 - ((absoluteSlots - 3) * 0.05));
 
   const opacity = absoluteSlots <= 1
-    ? 0.965
+    ? 0.97 - (absoluteSlots * 0.02)
     : absoluteSlots <= 2
-      ? 0.965 - ((absoluteSlots - 1) * 0.58)
+      ? 0.95 - ((absoluteSlots - 1) * 0.12)
       : absoluteSlots <= 3
-        ? 0.385 - ((absoluteSlots - 2) * 0.10)
-        : Math.max(0.22, 0.285 - ((absoluteSlots - 3) * 0.055));
+        ? 0.83 - ((absoluteSlots - 2) * 0.48)
+        : Math.max(0.22, 0.35 - ((absoluteSlots - 3) * 0.12));
 
   const zIndex = isCenter
-    ? 132
+    ? 134
     : isFront
       ? 124 + Math.round(depth * 6)
       : isFaceUp
-        ? 98 + Math.round(depth * 10)
+        ? 96 + Math.round(depth * 12)
         : 30 + Math.round(depth * 24);
 
   return {
