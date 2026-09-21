@@ -361,16 +361,16 @@
 
 .class-subclass-carousel-modal__table {
   position: absolute;
-  left: 6%;
-  right: 6%;
-  top: 21%;
-  bottom: 18%;
+  left: 2%;
+  right: 2%;
+  top: 17%;
+  bottom: 13%;
   z-index: 24;
   pointer-events: none;
   background: url("/media/forge/subclass-carousel/subclass-selector-runic-table.png") center / contain no-repeat;
-  opacity: .78;
-  filter: saturate(1.08) brightness(.86) contrast(1.05);
-  transform: translateY(3%);
+  opacity: .91;
+  filter: saturate(1.02) brightness(.95) contrast(1.025);
+  transform: translateY(1%);
 }
 
 .class-subclass-carousel-modal__table::after {
@@ -413,10 +413,10 @@
 
 .class-subclass-carousel-modal__orbit {
   position: absolute !important;
-  left: 8%;
-  right: 8%;
-  top: 17.5%;
-  bottom: 24.5%;
+  left: 4%;
+  right: 4%;
+  top: 15.5%;
+  bottom: 23%;
   z-index: 60;
   display: block !important;
   min-width: 0 !important;
@@ -424,9 +424,17 @@
   margin: 0 !important;
   padding: 0 !important;
   overflow: visible !important;
-  perspective: 1450px;
-  perspective-origin: 50% 53%;
+  perspective: 1720px;
+  perspective-origin: 50% 55%;
   transform-style: preserve-3d;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.class-subclass-carousel-modal__orbit.is-dragging {
+  cursor: grabbing;
 }
 
 .class-subclass-carousel-card {
@@ -434,75 +442,107 @@
   left: var(--orbit-x) !important;
   top: var(--orbit-y) !important;
   z-index: var(--orbit-z) !important;
-  width: clamp(148px, 12.4vw, 220px) !important;
+  width: clamp(138px, 10.85vw, 190px) !important;
   min-width: 0 !important;
   aspect-ratio: 7 / 12 !important;
-  overflow: hidden !important;
+  overflow: visible !important;
   padding: 0 !important;
-  border: 1px solid rgba(222, 182, 99, .38) !important;
+  border: 0 !important;
   border-radius: 10px !important;
   color: #fff;
-  background: #07090f !important;
+  background: transparent !important;
   opacity: var(--orbit-opacity) !important;
   transform:
-    translate(-50%, -50%)
+    translate3d(-50%, -50%, var(--orbit-depth-z))
     rotateY(var(--orbit-yaw))
     scale(var(--orbit-scale)) !important;
   transform-origin: 50% 100%;
   transform-style: preserve-3d;
   text-align: left;
-  box-shadow:
-    0 17px 38px rgba(0, 0, 0, .56),
-    0 0 14px rgba(120, 68, 187, .08) !important;
+  box-shadow: none !important;
   filter: none !important;
   transition:
-    left .52s cubic-bezier(.2, .76, .24, 1),
-    top .52s cubic-bezier(.2, .76, .24, 1),
-    transform .52s cubic-bezier(.2, .76, .24, 1),
-    opacity .44s ease,
-    filter .44s ease,
-    box-shadow .28s ease,
-    border-color .28s ease !important;
-  will-change: left, top, transform, opacity;
+    left .48s cubic-bezier(.2, .76, .24, 1),
+    top .48s cubic-bezier(.2, .76, .24, 1),
+    transform .48s cubic-bezier(.2, .76, .24, 1),
+    opacity .38s ease !important;
+  will-change: auto;
   animation: none !important;
+}
+
+.class-subclass-carousel-modal__orbit.is-dragging .class-subclass-carousel-card {
+  transition: none !important;
+  will-change: left, top, transform, opacity;
 }
 
 .class-subclass-carousel-card.is-orbit-back {
   pointer-events: none;
-  filter: brightness(.62) saturate(.67) contrast(1.08) !important;
-  border-color: rgba(188, 143, 72, .22) !important;
-  box-shadow: 0 13px 28px rgba(0, 0, 0, .42) !important;
 }
 
 .class-subclass-carousel-card.is-orbit-front {
   pointer-events: auto;
-  filter: brightness(1.03) saturate(1.06) contrast(1.025) !important;
+}
+
+.class-subclass-carousel-card__surface {
+  position: absolute;
+  inset: 0;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid rgba(222, 182, 99, .42);
+  border-radius: 10px;
+  background: #07090f;
+  box-shadow:
+    0 15px 34px rgba(0, 0, 0, .5),
+    0 0 12px rgba(120, 68, 187, .07);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(.01px);
+  transition:
+    border-color .22s ease,
+    box-shadow .22s ease;
+}
+
+.class-subclass-carousel-card__surface::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background: rgba(2, 4, 9, var(--orbit-dim));
+}
+
+.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__surface {
+  border-color: rgba(188, 143, 72, .2);
+  box-shadow: 0 11px 25px rgba(0, 0, 0, .38);
 }
 
 .class-subclass-carousel-card.is-orbit-front:hover,
 .class-subclass-carousel-card.is-orbit-front:focus-visible {
   outline: none !important;
-  border-color: rgba(237, 203, 128, .82) !important;
-  filter: brightness(1.09) saturate(1.08) contrast(1.025) !important;
-  box-shadow:
-    0 22px 48px rgba(0, 0, 0, .58),
-    0 0 25px rgba(149, 89, 222, .2) !important;
 }
 
-.class-subclass-carousel-card.is-focused {
-  border-color: rgba(244, 204, 116, .98) !important;
+.class-subclass-carousel-card.is-orbit-front:hover .class-subclass-carousel-card__surface,
+.class-subclass-carousel-card.is-orbit-front:focus-visible .class-subclass-carousel-card__surface {
+  border-color: rgba(237, 203, 128, .84);
   box-shadow:
-    0 24px 54px rgba(0, 0, 0, .64),
-    0 0 0 1px rgba(255, 221, 149, .26),
-    0 0 30px rgba(255, 168, 73, .34),
-    0 0 42px rgba(143, 75, 214, .18) !important;
+    0 19px 42px rgba(0, 0, 0, .56),
+    0 0 22px rgba(149, 89, 222, .18);
 }
 
-.class-subclass-carousel-card.is-selected:not(.is-focused) {
-  border-color: rgba(var(--class-secondary), .88) !important;
+.class-subclass-carousel-card.is-browsed .class-subclass-carousel-card__surface {
+  border-color: rgba(235, 196, 111, .72);
   box-shadow:
-    0 20px 45px rgba(0, 0, 0, .56),
-    0 0 22px rgba(var(--class-accent), .22) !important;
+    0 19px 42px rgba(0, 0, 0, .54),
+    0 0 20px rgba(154, 91, 216, .16);
+}
+
+.class-subclass-carousel-card.is-selected .class-subclass-carousel-card__surface {
+  border-color: rgba(247, 208, 122, .98);
+  box-shadow:
+    0 22px 48px rgba(0, 0, 0, .6),
+    0 0 0 1px rgba(255, 224, 157, .24),
+    0 0 28px rgba(255, 169, 74, .31),
+    0 0 38px rgba(143, 75, 214, .16);
 }
 
 .class-subclass-carousel-card__art {
@@ -517,7 +557,11 @@
   height: 100% !important;
   object-fit: cover !important;
   object-position: center !important;
-  filter: brightness(1.09) saturate(1.06) contrast(1.025) !important;
+  filter: none !important;
+  image-rendering: auto;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .class-subclass-carousel-card__shade {
@@ -525,13 +569,14 @@
   inset: 0 !important;
   z-index: -2 !important;
   background:
-    linear-gradient(180deg, rgba(2, 4, 8, .09) 0%, transparent 24%, transparent 76%, rgba(2, 4, 8, .22) 100%),
-    linear-gradient(90deg, rgba(3, 5, 10, .08), transparent 30%, transparent 70%, rgba(3, 5, 10, .07)) !important;
+    linear-gradient(180deg, rgba(2, 4, 8, .035) 0%, transparent 29%, transparent 79%, rgba(2, 4, 8, .13) 100%),
+    linear-gradient(90deg, rgba(3, 5, 10, .035), transparent 33%, transparent 70%, rgba(3, 5, 10, .03)) !important;
 }
 
 .class-subclass-carousel-card__copy {
   position: absolute !important;
   inset: 11px 11px auto auto !important;
+  z-index: 6;
   display: block !important;
   width: auto !important;
   max-width: calc(100% - 22px) !important;
@@ -553,9 +598,10 @@
   text-transform: uppercase;
 }
 
-.class-subclass-carousel-card.is-locked.is-orbit-front {
-  opacity: var(--orbit-opacity) !important;
-  filter: brightness(.82) saturate(.76) contrast(1.04) !important;
+.class-subclass-carousel-card.is-locked.is-orbit-front .class-subclass-carousel-card__surface::after {
+  background:
+    linear-gradient(rgba(4, 5, 10, .22), rgba(4, 5, 10, .22)),
+    rgba(2, 4, 9, var(--orbit-dim));
 }
 
 .class-subclass-carousel-modal__nav {
@@ -757,6 +803,10 @@
   letter-spacing: .04em;
 }
 
+.class-subclass-carousel-modal__details-copy small.is-selected-note {
+  color: #efc66f;
+}
+
 .class-subclass-carousel-modal__details-button {
   justify-self: stretch;
   display: flex;
@@ -819,13 +869,13 @@
   }
 
   .class-subclass-carousel-card {
-    width: clamp(132px, 13.5vw, 175px) !important;
+    width: clamp(126px, 12.5vw, 165px) !important;
   }
 
   .class-subclass-carousel-modal__orbit {
-    left: 7%;
-    right: 7%;
-    top: 18%;
+    left: 4%;
+    right: 4%;
+    top: 17%;
     bottom: 25%;
   }
 
@@ -873,14 +923,14 @@
   }
 
   .class-subclass-carousel-modal__orbit {
-    left: 3%;
-    right: 3%;
-    top: 20%;
+    left: 1%;
+    right: 1%;
+    top: 19%;
     bottom: 28%;
   }
 
   .class-subclass-carousel-card {
-    width: clamp(112px, 20vw, 154px) !important;
+    width: clamp(108px, 18.5vw, 146px) !important;
   }
 
   .class-subclass-carousel-modal__nav {
@@ -968,21 +1018,21 @@
   }
 
   .class-subclass-carousel-modal__orbit {
-    left: -1%;
-    right: -1%;
+    left: -3%;
+    right: -3%;
     top: 19%;
     bottom: 33%;
   }
 
   .class-subclass-carousel-card {
-    width: clamp(92px, 24vw, 126px) !important;
+    width: clamp(88px, 22vw, 120px) !important;
   }
 
   .class-subclass-carousel-modal__table {
-    left: -2%;
-    right: -2%;
-    top: 20%;
-    bottom: 25%;
+    left: -5%;
+    right: -5%;
+    top: 18%;
+    bottom: 23%;
   }
 
   .class-subclass-carousel-modal__nav {
@@ -1044,7 +1094,631 @@
 @media (prefers-reduced-motion: reduce) {
   .class-subclass-launcher,
   .class-subclass-carousel-card,
+  .class-subclass-carousel-card__surface,
   .class-subclass-carousel-modal__details-button b {
     transition: none !important;
+  }
+}
+
+
+/* Approved 2026-09-20 visual reference: clear table, no purple smoke layers. */
+.class-subclass-carousel-modal__ambient-smoke,
+.class-subclass-carousel-modal__smoke-back,
+.class-subclass-carousel-modal__smoke-front {
+  display: none !important;
+}
+
+/* 2026-09-18 precision pass: three crisp front cards + real reversible card backs. */
+.class-subclass-carousel-modal__table {
+  left: 1% !important;
+  right: 1% !important;
+  top: 16% !important;
+  bottom: 12% !important;
+}
+
+.class-subclass-carousel-modal__orbit {
+  left: 3% !important;
+  right: 3% !important;
+  top: 14.5% !important;
+  bottom: 22.5% !important;
+  perspective: 1900px !important;
+  perspective-origin: 50% 54% !important;
+}
+
+.class-subclass-carousel-card {
+  width: clamp(196px, 16.6vw, 300px) !important;
+}
+
+.class-subclass-carousel-card.is-orbit-center {
+  width: clamp(210px, 17.75vw, 322px) !important;
+}
+
+.class-subclass-carousel-card.is-orbit-front {
+  opacity: .955 !important;
+}
+
+.class-subclass-carousel-card.is-selected.is-orbit-front,
+.class-subclass-carousel-card.is-inspected.is-orbit-front {
+  opacity: .99 !important;
+}
+
+.class-subclass-carousel-card.is-orbit-hidden {
+  pointer-events: none !important;
+}
+
+.class-subclass-carousel-card__surface {
+  overflow: visible !important;
+  transform-style: preserve-3d !important;
+  backface-visibility: visible !important;
+  -webkit-backface-visibility: visible !important;
+  transform: none !important;
+}
+
+.class-subclass-carousel-card__surface::after {
+  display: none !important;
+}
+
+.class-subclass-carousel-card__face {
+  position: absolute;
+  inset: 0;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid rgba(222, 182, 99, .44);
+  border-radius: 10px;
+  background: #07090f;
+  box-shadow:
+    0 15px 34px rgba(0, 0, 0, .5),
+    0 0 12px rgba(120, 68, 187, .07);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+.class-subclass-carousel-card__face.is-front {
+  transform: rotateY(0deg) translateZ(.3px);
+}
+
+.class-subclass-carousel-card.is-orbit-front .class-subclass-carousel-card__face.is-front {
+  transform: none !important;
+}
+
+.class-subclass-carousel-card__face.is-back {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 13px;
+  transform: rotateY(180deg) translateZ(.3px);
+  color: #f2d28a;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(131, 87, 41, .14) 0 8%, transparent 9% 18%, rgba(201, 157, 74, .18) 19% 20%, transparent 21%),
+    repeating-conic-gradient(from 22.5deg at 50% 50%, rgba(203, 162, 82, .12) 0 2deg, transparent 2deg 22.5deg),
+    radial-gradient(ellipse at 50% 42%, rgba(34, 25, 47, .55), rgba(12, 11, 18, .97) 62%, #07070d 100%);
+  box-shadow:
+    inset 0 0 0 3px rgba(8, 8, 14, .9),
+    inset 0 0 0 4px rgba(214, 166, 79, .48),
+    inset 0 0 0 8px rgba(8, 7, 14, .86),
+    inset 0 0 0 9px rgba(145, 85, 201, .2),
+    0 15px 34px rgba(0, 0, 0, .5);
+}
+
+.class-subclass-carousel-card__face.is-back::before,
+.class-subclass-carousel-card__face.is-back::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.class-subclass-carousel-card__face.is-back::before {
+  inset: 8%;
+  border: 1px solid rgba(220, 177, 93, .46);
+  border-radius: 7px;
+  clip-path: polygon(50% 0, 59% 9%, 91% 9%, 91% 41%, 100% 50%, 91% 59%, 91% 91%, 59% 91%, 50% 100%, 41% 91%, 9% 91%, 9% 59%, 0 50%, 9% 41%, 9% 9%, 41% 9%);
+}
+
+.class-subclass-carousel-card__face.is-back::after {
+  width: 52%;
+  aspect-ratio: 1;
+  border: 1px solid rgba(228, 187, 102, .5);
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 0 7px rgba(113, 57, 169, .11),
+    0 0 22px rgba(130, 67, 194, .13);
+}
+
+.class-subclass-carousel-card__back-rune {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 42%;
+  aspect-ratio: 1;
+  border: 1px solid rgba(231, 192, 111, .62);
+  border-radius: 50%;
+  color: #e8c673;
+  background: radial-gradient(circle, rgba(119, 58, 176, .24), rgba(8, 8, 14, .72) 68%);
+  font-size: clamp(1.2rem, 2vw, 2.1rem);
+  text-shadow: 0 0 15px rgba(185, 111, 245, .48);
+  box-shadow: 0 0 24px rgba(112, 53, 172, .16);
+}
+
+.class-subclass-carousel-card__back-title {
+  position: relative;
+  z-index: 2;
+  color: rgba(232, 201, 133, .84);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(.42rem, .62vw, .62rem);
+  font-weight: 800;
+  letter-spacing: .19em;
+}
+
+.class-subclass-carousel-card.is-orbit-front:hover .class-subclass-carousel-card__face.is-front,
+.class-subclass-carousel-card.is-orbit-front:focus-visible .class-subclass-carousel-card__face.is-front {
+  border-color: rgba(237, 203, 128, .86);
+  box-shadow:
+    0 19px 42px rgba(0, 0, 0, .56),
+    0 0 22px rgba(149, 89, 222, .18);
+}
+
+.class-subclass-carousel-card.is-inspected .class-subclass-carousel-card__face.is-front {
+  border-color: rgba(235, 196, 111, .82);
+  box-shadow:
+    0 20px 44px rgba(0, 0, 0, .56),
+    0 0 23px rgba(154, 91, 216, .18);
+}
+
+.class-subclass-carousel-card.is-selected .class-subclass-carousel-card__face.is-front {
+  border-color: rgba(247, 208, 122, .98);
+  box-shadow:
+    0 22px 48px rgba(0, 0, 0, .6),
+    0 0 0 1px rgba(255, 224, 157, .24),
+    0 0 28px rgba(255, 169, 74, .31),
+    0 0 38px rgba(143, 75, 214, .16);
+}
+
+.class-subclass-carousel-card__art img {
+  filter: none !important;
+  transform: none !important;
+  image-rendering: auto !important;
+}
+
+.class-subclass-carousel-card.is-locked.is-orbit-front .class-subclass-carousel-card__face.is-front::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: rgba(3, 4, 9, .16);
+}
+
+@media (max-width: 1179px) {
+  .class-subclass-carousel-card {
+    width: clamp(164px, 18vw, 222px) !important;
+  }
+
+  .class-subclass-carousel-card.is-orbit-center {
+    width: clamp(176px, 19.25vw, 238px) !important;
+  }
+}
+
+@media (max-width: 859px) {
+  .class-subclass-carousel-card {
+    width: clamp(134px, 22vw, 178px) !important;
+  }
+
+  .class-subclass-carousel-card.is-orbit-center {
+    width: clamp(144px, 23.5vw, 190px) !important;
+  }
+}
+
+@media (max-width: 619px) {
+  .class-subclass-carousel-card {
+    width: clamp(104px, 25vw, 140px) !important;
+  }
+
+  .class-subclass-carousel-card.is-orbit-center {
+    width: clamp(112px, 26.5vw, 150px) !important;
+  }
+}
+
+
+/* 2026-09-20 canonical flexible-ring implementation.
+   The screenshot target is the visual source of truth:
+   one table ring, N equally spaced subclass cards, one hero position. */
+
+.class-subclass-carousel-modal {
+  padding: 0 !important;
+  background: #020308 !important;
+  backdrop-filter: none !important;
+}
+
+.class-subclass-carousel-modal__panel {
+  width: min(1760px, 100vw) !important;
+  height: min(990px, 100vh) !important;
+  min-height: min(640px, 100vh) !important;
+  max-height: 100vh !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #04050a !important;
+  box-shadow: none !important;
+}
+
+.class-subclass-carousel-modal__panel::before {
+  display: none !important;
+}
+
+.class-subclass-carousel-modal__panel::after {
+  z-index: 5 !important;
+  background:
+    linear-gradient(180deg, rgba(2, 3, 7, .05) 0%, transparent 25%, transparent 70%, rgba(2, 3, 7, .38) 100%),
+    radial-gradient(ellipse at 50% 55%, transparent 50%, rgba(2, 3, 7, .06) 77%, rgba(2, 3, 7, .22) 100%) !important;
+}
+
+.class-subclass-carousel-modal__scene {
+  background:
+    linear-gradient(90deg, rgba(2, 3, 7, .24), transparent 18%, transparent 82%, rgba(2, 3, 7, .24)),
+    url("/media/forge/subclass-carousel/subclass-selector-cathedral-bg.png") center 43% / cover no-repeat !important;
+  filter: grayscale(.14) sepia(.11) saturate(.72) brightness(.92) contrast(1.06) !important;
+}
+
+.class-subclass-carousel-modal__scene::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 22%, rgba(235, 190, 107, .08), transparent 22%),
+    linear-gradient(180deg, rgba(2, 3, 7, .02), transparent 55%, rgba(2, 3, 7, .18));
+}
+
+.class-subclass-carousel-modal__ambient-smoke,
+.class-subclass-carousel-modal__smoke-back,
+.class-subclass-carousel-modal__smoke-front {
+  display: none !important;
+}
+
+.class-subclass-carousel-modal__head {
+  top: 4.2% !important;
+  left: 3.3% !important;
+  right: 3.3% !important;
+}
+
+.class-subclass-carousel-modal__head > div {
+  max-width: 720px !important;
+  padding: 0 !important;
+  background: none !important;
+}
+
+.class-subclass-carousel-modal__head span {
+  color: rgba(239, 215, 167, .9) !important;
+  font-size: clamp(.58rem, .72vw, .76rem) !important;
+  letter-spacing: .28em !important;
+}
+
+.class-subclass-carousel-modal__head h3 {
+  margin-top: 4px !important;
+  color: #f2d79a !important;
+  font-size: clamp(2.35rem, 3.5vw, 3.8rem) !important;
+  font-weight: 500 !important;
+  letter-spacing: -.012em !important;
+  white-space: nowrap;
+  text-shadow: 0 3px 18px rgba(0, 0, 0, .72) !important;
+}
+
+.class-subclass-carousel-modal__head p {
+  max-width: 470px !important;
+  margin-top: 10px !important;
+  color: rgba(243, 234, 216, .85) !important;
+  font-size: clamp(.72rem, .9vw, .94rem) !important;
+  line-height: 1.48 !important;
+}
+
+.class-subclass-carousel-modal__close {
+  width: 44px !important;
+  height: 44px !important;
+  border-color: rgba(224, 183, 98, .44) !important;
+  border-radius: 50% !important;
+  background: rgba(5, 6, 10, .82) !important;
+  box-shadow: 0 9px 24px rgba(0, 0, 0, .38) !important;
+}
+
+.class-subclass-carousel-modal__table {
+  left: -2% !important;
+  right: -2% !important;
+  top: 20% !important;
+  bottom: 2.5% !important;
+  opacity: .95 !important;
+  filter: grayscale(.48) sepia(.34) saturate(.82) brightness(.88) contrast(1.12) !important;
+  transform: none !important;
+}
+
+.class-subclass-carousel-modal__table::before {
+  content: "";
+  position: absolute;
+  left: 8.5%;
+  right: 8.5%;
+  top: 19%;
+  bottom: 8%;
+  border-radius: 50%;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 48%, rgba(137, 88, 30, .10) 0%, rgba(18, 13, 10, .2) 52%, rgba(5, 4, 7, .52) 100%) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(222, 178, 83, .25),
+    inset 0 0 36px rgba(0, 0, 0, .32);
+  mix-blend-mode: multiply;
+}
+
+.class-subclass-carousel-modal__table::after {
+  display: block !important;
+  content: "";
+  position: absolute;
+  left: 8.2% !important;
+  right: 8.2% !important;
+  top: 18.5% !important;
+  bottom: 7.5% !important;
+  border: 1px solid rgba(236, 193, 91, .40);
+  border-radius: 50%;
+  background: transparent !important;
+  filter: none !important;
+  box-shadow:
+    inset 0 -2px 0 rgba(247, 207, 119, .15),
+    0 0 18px rgba(209, 164, 71, .08);
+}
+
+.class-subclass-carousel-modal__orbit {
+  left: 1.5% !important;
+  right: 1.5% !important;
+  top: 20% !important;
+  bottom: 12% !important;
+  perspective: 2200px !important;
+  perspective-origin: 50% 58% !important;
+}
+
+.class-subclass-carousel-card {
+  width: clamp(var(--orbit-card-min), var(--orbit-card-vw), var(--orbit-card-max)) !important;
+  opacity: var(--orbit-opacity) !important;
+  transform:
+    translate3d(-50%, -100%, var(--orbit-depth-z))
+    rotateY(var(--orbit-yaw))
+    scale(var(--orbit-scale)) !important;
+  transform-origin: 50% 100% !important;
+  filter: none !important;
+  will-change: auto;
+}
+
+.class-subclass-carousel-modal__orbit.is-dragging .class-subclass-carousel-card {
+  transition: none !important;
+  will-change: left, top, transform, opacity;
+}
+
+.class-subclass-carousel-card.is-orbit-center {
+  width: clamp(var(--orbit-hero-min), var(--orbit-hero-vw), var(--orbit-hero-max)) !important;
+}
+
+.class-subclass-carousel-card.is-orbit-front {
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
+.class-subclass-carousel-card.is-orbit-back {
+  pointer-events: none !important;
+  filter: saturate(.78) brightness(.91) contrast(1.02) !important;
+}
+
+.class-subclass-carousel-card__surface {
+  overflow: visible !important;
+  transform-style: preserve-3d !important;
+  backface-visibility: visible !important;
+  -webkit-backface-visibility: visible !important;
+  transition: transform .30s ease, border-color .22s ease, box-shadow .22s ease;
+}
+
+.class-subclass-carousel-card.is-orbit-front .class-subclass-carousel-card__surface {
+  transform: none !important;
+}
+
+.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__surface {
+  transform: rotateY(180deg) !important;
+}
+
+.class-subclass-carousel-card__surface::after {
+  display: none !important;
+}
+
+.class-subclass-carousel-card__face {
+  border-color: rgba(225, 183, 94, .48) !important;
+  border-radius: 6px !important;
+  box-shadow:
+    0 15px 32px rgba(0, 0, 0, .46),
+    0 0 0 1px rgba(239, 199, 112, .035) !important;
+}
+
+.class-subclass-carousel-card__face.is-front {
+  transform: rotateY(0deg) !important;
+}
+
+.class-subclass-carousel-card__face.is-back {
+  transform: rotateY(180deg) !important;
+  filter: saturate(.88) brightness(.95) contrast(1.02);
+}
+
+.class-subclass-carousel-card.is-orbit-center .class-subclass-carousel-card__face.is-front {
+  border-color: rgba(246, 205, 113, .82) !important;
+  box-shadow:
+    0 18px 36px rgba(0, 0, 0, .5),
+    0 0 0 1px rgba(255, 226, 153, .09),
+    0 0 13px rgba(239, 185, 76, .09) !important;
+}
+
+.class-subclass-carousel-card.is-inspected .class-subclass-carousel-card__face.is-front,
+.class-subclass-carousel-card.is-selected .class-subclass-carousel-card__face.is-front {
+  border-color: rgba(246, 205, 113, .84) !important;
+  box-shadow:
+    0 18px 36px rgba(0, 0, 0, .5),
+    0 0 0 1px rgba(255, 225, 151, .09),
+    0 0 15px rgba(238, 181, 72, .10) !important;
+}
+
+.class-subclass-carousel-card__art img {
+  filter: none !important;
+  transform: none !important;
+  image-rendering: auto !important;
+}
+
+.class-subclass-carousel-card::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 13%;
+  right: 13%;
+  bottom: -7px;
+  height: 13px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: rgba(0, 0, 0, .38);
+  filter: blur(5px);
+  opacity: calc(.18 + (var(--orbit-opacity) * .34));
+}
+
+.class-subclass-carousel-card.is-orbit-back::after {
+  opacity: .13;
+}
+
+.class-subclass-carousel-card__copy {
+  display: none !important;
+}
+
+.class-subclass-carousel-modal__nav {
+  top: 55.5% !important;
+  width: clamp(52px, 4vw, 64px) !important;
+  height: clamp(52px, 4vw, 64px) !important;
+  border-color: rgba(233, 194, 108, .76) !important;
+  color: #f8e6ba !important;
+  background: rgba(5, 6, 10, .88) !important;
+  box-shadow:
+    0 0 0 2px rgba(225, 181, 88, .08),
+    0 0 22px rgba(225, 180, 78, .12),
+    inset 0 0 16px rgba(232, 191, 103, .05) !important;
+}
+
+.class-subclass-carousel-modal__nav.is-prev {
+  left: 3.3% !important;
+}
+
+.class-subclass-carousel-modal__nav.is-next {
+  right: 3.3% !important;
+}
+
+.class-subclass-carousel-modal__position,
+.class-subclass-carousel-modal__hint {
+  display: none !important;
+}
+
+.class-subclass-carousel-modal__details {
+  left: 27% !important;
+  right: 27% !important;
+  bottom: 2.5% !important;
+  min-height: 108px !important;
+  grid-template-columns: 70px minmax(0, 1fr) minmax(150px, 195px) !important;
+  gap: 16px !important;
+  padding: 12px 16px 12px 13px !important;
+  border-color: rgba(222, 178, 84, .50) !important;
+  border-radius: 5px !important;
+  background: rgba(5, 5, 8, .89) !important;
+  box-shadow:
+    0 18px 42px rgba(0, 0, 0, .46),
+    inset 0 0 0 1px rgba(239, 198, 104, .03) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.class-subclass-carousel-modal__details::before {
+  display: none !important;
+}
+
+.class-subclass-carousel-modal__details-icon {
+  width: 54px !important;
+  height: 54px !important;
+  color: #edbd66 !important;
+}
+
+.class-subclass-carousel-modal__details-copy h4 {
+  color: #e8ba64 !important;
+}
+
+.class-subclass-carousel-modal__details-copy p {
+  -webkit-line-clamp: 2 !important;
+}
+
+.class-subclass-carousel-modal__details-button {
+  min-height: 46px !important;
+  border-color: rgba(225, 180, 87, .68) !important;
+  color: #ecd29a !important;
+  background: rgba(7, 8, 13, .9) !important;
+}
+
+@media (max-width: 1179px) {
+  .class-subclass-carousel-modal__head h3 {
+    white-space: normal;
+  }
+
+  .class-subclass-carousel-modal__details {
+    left: 20% !important;
+    right: 20% !important;
+  }
+}
+
+@media (max-width: 859px) {
+  .class-subclass-carousel-modal__panel {
+    width: 100vw !important;
+    height: 100vh !important;
+  }
+
+  .class-subclass-carousel-modal__head {
+    top: 3.4% !important;
+    left: 4% !important;
+    right: 4% !important;
+  }
+
+  .class-subclass-carousel-modal__table {
+    left: -8% !important;
+    right: -8% !important;
+    top: 23% !important;
+    bottom: 8% !important;
+  }
+
+  .class-subclass-carousel-modal__orbit {
+    left: -1% !important;
+    right: -1% !important;
+    top: 23% !important;
+    bottom: 20% !important;
+  }
+
+  .class-subclass-carousel-modal__details {
+    left: 7% !important;
+    right: 7% !important;
+    bottom: 2.2% !important;
+  }
+}
+
+@media (max-width: 619px) {
+  .class-subclass-carousel-modal__head h3 {
+    font-size: 1.9rem !important;
+  }
+
+  .class-subclass-carousel-modal__table {
+    left: -18% !important;
+    right: -18% !important;
+  }
+
+  .class-subclass-carousel-modal__orbit {
+    left: -6% !important;
+    right: -6% !important;
+    top: 24% !important;
+    bottom: 30% !important;
+  }
+
+  .class-subclass-carousel-modal__details {
+    left: 3% !important;
+    right: 3% !important;
   }
 }

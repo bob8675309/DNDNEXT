@@ -80,26 +80,32 @@ for (const token of [
   'import { useEffect, useMemo, useRef, useState } from "react"',
   'import { createPortal } from "react-dom"',
   "subclassArtworkFor(classKey, option)",
-  "function orbitPlacement(optionIndex, carouselStart, total)",
-  "const frontCount = Math.min(4, count)",
-  "const orbitOptions = useMemo",
-  "const focusedOption = options[focusedIndex] || null",
-  "class-subclass-carousel-modal__orbit",
+  "function orbitPlacement(optionIndex, orbitOffset, total)",
+  "const [orbitOffset, setOrbitOffset] = useState(0)",
+  "const browsedOption = options[browsedIndex] || null",
+  "const inspectedOption = options.find((option) => option.key === inspectedKey) || browsedOption",
+  "function handleOrbitPointerDown(event)",
+  "function handleOrbitPointerMove(event)",
+  "function finishOrbitPointer(event, cancelled = false)",
+  "function handleCardClick(event, option, isFront)",
+  "onPointerDown={handleOrbitPointerDown}",
+  "onPointerMove={handleOrbitPointerMove}",
+  "onPointerUp={(event) => finishOrbitPointer(event)}",
+  "onClick={(event) => handleCardClick(event, option, isFront)}",
+  "class-subclass-carousel-card__surface",
+  "class-subclass-carousel-card__face is-front",
+  "class-subclass-carousel-card__face is-back",
   "class-subclass-carousel-modal__details",
-  "class-subclass-carousel-modal__smoke-front",
-  "data-orbit-slot={relative}",
-  "key={option.key}",
-  "function rotateCarousel(direction)",
-  "(current + normalizedDirection + length) % length",
   "model.selectSubclass(option)",
   "model.setPreviewKey(option.key)",
-  "model?.setPreviewKey?.(focusedOption.key)",
+  "onClick={showInspectedDetails}",
   "class-subclass-selected-card",
   ">Change Subclass<",
   "onDoubleClick={() => setSelectorOpen(true)}",
-  "onInspectSubclass?.(option)",
-  "onClick={showFocusedDetails}",
-]) assert(selector.includes(token), `Runic circular subclass selector is missing ${token}`);
+]) assert(selector.includes(token), `Draggable runic subclass selector is missing ${token}`);
+
+assert((selector.match(/model\.selectSubclass\(option\)/g) || []).length === 1, "Carousel motion must not create a second subclass-selection authority.");
+assert(!selector.includes('model?.setPreviewKey?.(focusedOption.key)'), "Front-most carousel position must not auto-select or auto-preview as player intent.");
 
 for (const forbidden of [
   "class-subclass-two-column__grid",
@@ -173,4 +179,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSources.includes(token), `Class browser patch unexpectedly references protected behavior: ${token}`);
 }
 
-console.log("Class browser polish validation passed: the runic circular subclass Tarot selector, click-only movable Feature-card details, selected-subclass progression bubbles, balanced per-level spell-slot table, open stable top-right art, preserved Class authority, and protected boundaries are intact.");
+console.log("Class browser polish validation passed: draggable runic Tarot browsing and explicit click selection are separated, Feature-card details remain click-owned, subclass progression bubbles/spell slots remain intact, Class authority stays preserved, and protected boundaries are unchanged.");
