@@ -12,11 +12,11 @@ The subclass Tarot selector remains active and **unmerged** on:
 - exact-head Vercel preview: `dndnext-86xs3s1d4-pauls-projects-2016aa54.vercel.app`;
 - preview state at handoff: **READY**.
 
-The production `main` line has since advanced through merged PR #195 to:
+The runtime baseline that PR #194 must integrate against includes merged PR #195 at:
 
 - `320671a22b83432177dcc67e9efd035f3c3ccc5d`.
 
-Always re-fetch PR #194, current `main`, mergeability, and the exact preview before writing or merging.
+Documentation-only merges may place current `main` ahead of that SHA. Always re-fetch PR #194, current `main`, mergeability, and the exact preview before writing or merging.
 
 ## Visual authority
 
