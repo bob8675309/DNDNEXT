@@ -11,6 +11,7 @@ const tracker = read("components/SiteVisitTracker.js");
 const activity = read("pages/admin/activity.js");
 const app = read("pages/_app.js");
 const migration = read("sql/20260921_01_admin_site_activity_v1.sql");
+const hardening = read("sql/20260921_04_admin_site_activity_hardening_v1.sql");
 
 for (const token of [
   'const [authReady, setAuthReady] = useState(false)',
@@ -36,15 +37,25 @@ for (const token of [
 
 for (const token of [
   'dndnext:site-visitor-key',
+  'dndnext:site-visitor-key:user:',
   'crypto.randomUUID',
+  'function storageKeyForUser(userId)',
+  'supabase.auth.getSession()',
   'record_site_visit_v1',
   'p_visitor_key: key',
   'p_path: cleanPath(pathValue)',
   'routeChangeComplete',
   'event === "SIGNED_IN"',
+  'event === "SIGNED_OUT"',
+  'event === "USER_UPDATED"',
+  'let authResolved = false',
+  'let activeUserId = null',
   'let deferredTimer = null',
   'window.setTimeout(() => {',
 ]) assert(tracker.includes(token), `Site visit tracker contract missing ${token}`);
+
+assert(tracker.includes('visitorKey(storageKeyForUser(activeUserId))'), "Tracker must use separate browser keys for signed-out and per-account activity.");
+assert(!tracker.includes('const key = visitorKey();'), "Tracker must not reuse one browser UUID across auth-state changes.");
 
 for (const forbidden of ["ip_address", "userAgent", "navigator.userAgent", "geolocation"]) {
   assert(!tracker.includes(forbidden), `Privacy-minimized tracker must not collect ${forbidden}`);
@@ -78,5 +89,20 @@ for (const token of [
 for (const forbidden of ["user_agent text", "ip_address inet", "precise_location", "fingerprint text"]) {
   assert(!migration.toLowerCase().includes(forbidden), `Site activity ledger must not define a sensitive ${forbidden} field`);
 }
+
+for (const token of [
+  "update public.site_visit_activity",
+  "set user_id = null",
+  "v_uid uuid := auth.uid()",
+  "pg_advisory_xact_lock",
+  "first_seen >= now() - interval '1 minute'",
+  "v_recent_anon_creations >= 12",
+  "v_anon_rows >= 2500",
+  "user_id = v_uid",
+  "grant execute on function public.record_site_visit_v1(uuid, text) to anon, authenticated",
+]) assert(hardening.includes(token), `Site activity hardening contract missing ${token}`);
+
+assert(!hardening.includes("user_id = coalesce(auth.uid(), public.site_visit_activity.user_id)"), "Signed-out activity must never retain the previous account association.");
+
 
 console.log("Auth-gated navbar and privacy-minimized admin site activity validation passed.");
