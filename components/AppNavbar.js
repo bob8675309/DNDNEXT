@@ -13,6 +13,7 @@ export default function AppNavbar() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -26,8 +27,11 @@ export default function AppNavbar() {
 
       if (!nextUser) {
         setIsAdmin(false);
+        setAuthReady(true);
         return;
       }
+
+      setAuthReady(true);
 
       try {
         const { data, error } = await supabase.rpc("is_admin", { uid: nextUser.id });
@@ -86,44 +90,50 @@ export default function AppNavbar() {
   return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary border-bottom sticky-top">
       <div className="container">
-        <NavAnchor className="navbar-brand fw-semibold" href="/">DnDNext</NavAnchor>
+        {user ? (
+          <NavAnchor className="navbar-brand fw-semibold" href="/">DnDNext</NavAnchor>
+        ) : (
+          <span className="navbar-brand fw-semibold" aria-disabled="true">DnDNext</span>
+        )}
         <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
           <span className="navbar-toggler-icon" />
         </button>
         <div id="mainNav" className="collapse navbar-collapse">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-            <li className="nav-item"><NavAnchor className="nav-link" href="/map">Map</NavAnchor></li>
-            <li className="nav-item"><NavAnchor className="nav-link" href="/npcs">NPCs</NavAnchor></li>
-            <li className="nav-item"><NavAnchor className="nav-link" href="/items">Crafting</NavAnchor></li>
-            <li className="nav-item"><NavAnchor className="nav-link" href="/inventory">Inventory</NavAnchor></li>
-            {user && <li className="nav-item dropdown">
-              <button className="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Encounters
-              </button>
-              <ul className="dropdown-menu">
-                <li><NavAnchor className="dropdown-item" href="/encounters/combat">Battle Board</NavAnchor></li>
-                <li><NavAnchor className="dropdown-item" href="/encounters/play">Turn Movement</NavAnchor></li>
-                {isAdmin ? <>
-                  <li><hr className="dropdown-divider" /></li>
-                  <li><NavAnchor className="dropdown-item" href="/encounters/live">GM Staging</NavAnchor></li>
-                  <li><NavAnchor className="dropdown-item" href="/encounters">Map Workshop</NavAnchor></li>
-                  <li><NavAnchor className="dropdown-item" href="/encounters/multiplayer-smoke">Multi-User Smoke Setup</NavAnchor></li>
-                </> : null}
-              </ul>
-            </li>}
-            {user && <li className="nav-item"><button type="button" className="nav-link" onClick={openProfilePanel}>Profile</button></li>}
-            {isAdmin && <li className="nav-item"><NavAnchor className="nav-link" href="/admin/spells">Magic</NavAnchor></li>}
-            {isAdmin && <li className="nav-item"><NavAnchor className="nav-link" href="/admin">Admin</NavAnchor></li>}
+            {user ? <>
+              <li className="nav-item"><NavAnchor className="nav-link" href="/map">Map</NavAnchor></li>
+              <li className="nav-item"><NavAnchor className="nav-link" href="/npcs">NPCs</NavAnchor></li>
+              <li className="nav-item"><NavAnchor className="nav-link" href="/items">Crafting</NavAnchor></li>
+              <li className="nav-item"><NavAnchor className="nav-link" href="/inventory">Inventory</NavAnchor></li>
+              <li className="nav-item dropdown">
+                <button className="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Encounters
+                </button>
+                <ul className="dropdown-menu">
+                  <li><NavAnchor className="dropdown-item" href="/encounters/combat">Battle Board</NavAnchor></li>
+                  <li><NavAnchor className="dropdown-item" href="/encounters/play">Turn Movement</NavAnchor></li>
+                  {isAdmin ? <>
+                    <li><hr className="dropdown-divider" /></li>
+                    <li><NavAnchor className="dropdown-item" href="/encounters/live">GM Staging</NavAnchor></li>
+                    <li><NavAnchor className="dropdown-item" href="/encounters">Map Workshop</NavAnchor></li>
+                    <li><NavAnchor className="dropdown-item" href="/encounters/multiplayer-smoke">Multi-User Smoke Setup</NavAnchor></li>
+                  </> : null}
+                </ul>
+              </li>
+              <li className="nav-item"><button type="button" className="nav-link" onClick={openProfilePanel}>Profile</button></li>
+              {isAdmin && <li className="nav-item"><NavAnchor className="nav-link" href="/admin/spells">Magic</NavAnchor></li>}
+              {isAdmin && <li className="nav-item"><NavAnchor className="nav-link" href="/admin">Admin</NavAnchor></li>}
+            </> : null}
           </ul>
           <div className="d-flex gap-2">
             {user ? (
               <button className="btn btn-outline-secondary btn-sm" type="button" onClick={signOut}>Logout</button>
-            ) : (
+            ) : authReady ? (
               <>
                 <NavAnchor className="btn btn-outline-primary btn-sm" href="/signup">Create account</NavAnchor>
                 <NavAnchor className="btn btn-primary btn-sm" href="/login">Login</NavAnchor>
               </>
-            )}
+            ) : null}
           </div>
         </div>
       </div>
