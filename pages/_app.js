@@ -51,6 +51,7 @@ import "../styles/character-class-workspace.css";
 import "../styles/profile-catalogue-workspace.css";
 import "../styles/character-forge-subclass-tarot-layout.css";
 import AppNavbar from "../components/AppNavbar";
+import SiteVisitTracker from "../components/SiteVisitTracker";
 import AppRouteReloadGuard from "../components/AppRouteReloadGuard";
 import AdminBuildBadge from "../components/AdminBuildBadge";
 import CharacterSheetSpellDetailsBridge from "../components/CharacterSheetSpellDetailsBridge";
@@ -73,6 +74,7 @@ export default function App({ Component, pageProps }) {
       </Head>
       <Script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" strategy="afterInteractive" />
       <AppRouteReloadGuard />
+      <SiteVisitTracker />
       <ProfilePanelDragController />
       <AppNavbar />
       <Component {...pageProps} />
