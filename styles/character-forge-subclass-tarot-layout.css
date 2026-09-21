@@ -1321,10 +1321,13 @@
 }
 
 
-/* 2026-09-20 approved-reference implementation: translate the chosen mock-up into the live modal. */
+/* 2026-09-20 canonical flexible-ring implementation.
+   The screenshot target is the visual source of truth:
+   one table ring, N equally spaced subclass cards, one hero position. */
+
 .class-subclass-carousel-modal {
   padding: 0 !important;
-  background: #02030a !important;
+  background: #020308 !important;
   backdrop-filter: none !important;
 }
 
@@ -1346,31 +1349,47 @@
 .class-subclass-carousel-modal__panel::after {
   z-index: 5 !important;
   background:
-    linear-gradient(180deg, rgba(2, 3, 7, .08) 0%, transparent 22%, transparent 66%, rgba(2, 3, 7, .48) 100%),
-    radial-gradient(ellipse at 50% 54%, transparent 46%, rgba(2, 3, 7, .08) 74%, rgba(2, 3, 7, .28) 100%) !important;
+    linear-gradient(180deg, rgba(2, 3, 7, .05) 0%, transparent 25%, transparent 70%, rgba(2, 3, 7, .38) 100%),
+    radial-gradient(ellipse at 50% 55%, transparent 50%, rgba(2, 3, 7, .06) 77%, rgba(2, 3, 7, .22) 100%) !important;
 }
 
 .class-subclass-carousel-modal__scene {
   background:
-    linear-gradient(90deg, rgba(2, 3, 8, .12), transparent 18%, transparent 82%, rgba(2, 3, 8, .12)),
-    url("/media/forge/subclass-carousel/subclass-selector-cathedral-bg.png") center 44% / cover no-repeat !important;
-  filter: saturate(1.01) contrast(1.02) brightness(.98) !important;
+    linear-gradient(90deg, rgba(2, 3, 7, .24), transparent 18%, transparent 82%, rgba(2, 3, 7, .24)),
+    url("/media/forge/subclass-carousel/subclass-selector-cathedral-bg.png") center 43% / cover no-repeat !important;
+  filter: grayscale(.14) sepia(.11) saturate(.72) brightness(.92) contrast(1.06) !important;
+}
+
+.class-subclass-carousel-modal__scene::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 22%, rgba(235, 190, 107, .08), transparent 22%),
+    linear-gradient(180deg, rgba(2, 3, 7, .02), transparent 55%, rgba(2, 3, 7, .18));
+}
+
+.class-subclass-carousel-modal__ambient-smoke,
+.class-subclass-carousel-modal__smoke-back,
+.class-subclass-carousel-modal__smoke-front {
+  display: none !important;
 }
 
 .class-subclass-carousel-modal__head {
-  top: 4.4% !important;
-  left: 3.35% !important;
-  right: 3.35% !important;
+  top: 4.2% !important;
+  left: 3.3% !important;
+  right: 3.3% !important;
 }
 
 .class-subclass-carousel-modal__head > div {
-  max-width: 560px !important;
+  max-width: 720px !important;
   padding: 0 !important;
   background: none !important;
 }
 
 .class-subclass-carousel-modal__head span {
-  color: rgba(238, 214, 166, .9) !important;
+  color: rgba(239, 215, 167, .9) !important;
   font-size: clamp(.58rem, .72vw, .76rem) !important;
   letter-spacing: .28em !important;
 }
@@ -1378,16 +1397,17 @@
 .class-subclass-carousel-modal__head h3 {
   margin-top: 4px !important;
   color: #f2d79a !important;
-  font-size: clamp(2.5rem, 4vw, 4.35rem) !important;
+  font-size: clamp(2.35rem, 3.5vw, 3.8rem) !important;
   font-weight: 500 !important;
   letter-spacing: -.012em !important;
-  text-shadow: 0 3px 20px rgba(0, 0, 0, .75) !important;
+  white-space: nowrap;
+  text-shadow: 0 3px 18px rgba(0, 0, 0, .72) !important;
 }
 
 .class-subclass-carousel-modal__head p {
   max-width: 470px !important;
   margin-top: 10px !important;
-  color: rgba(243, 234, 216, .86) !important;
+  color: rgba(243, 234, 216, .85) !important;
   font-size: clamp(.72rem, .9vw, .94rem) !important;
   line-height: 1.48 !important;
 }
@@ -1398,72 +1418,178 @@
   border-color: rgba(224, 183, 98, .44) !important;
   border-radius: 50% !important;
   background: rgba(5, 6, 10, .82) !important;
-  box-shadow:
-    0 0 0 1px rgba(235, 196, 111, .08),
-    0 9px 24px rgba(0, 0, 0, .38) !important;
+  box-shadow: 0 9px 24px rgba(0, 0, 0, .38) !important;
 }
 
 .class-subclass-carousel-modal__table {
-  left: -2.5% !important;
-  right: -2.5% !important;
+  left: -2% !important;
+  right: -2% !important;
   top: 20% !important;
   bottom: 2.5% !important;
-  opacity: .98 !important;
-  filter: saturate(.98) brightness(1.02) contrast(1.02) !important;
+  opacity: .95 !important;
+  filter: grayscale(.48) sepia(.34) saturate(.82) brightness(.88) contrast(1.12) !important;
   transform: none !important;
 }
 
+.class-subclass-carousel-modal__table::before {
+  content: "";
+  position: absolute;
+  left: 8.5%;
+  right: 8.5%;
+  top: 19%;
+  bottom: 8%;
+  border-radius: 50%;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 48%, rgba(137, 88, 30, .10) 0%, rgba(18, 13, 10, .2) 52%, rgba(5, 4, 7, .52) 100%) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(222, 178, 83, .25),
+    inset 0 0 36px rgba(0, 0, 0, .32);
+  mix-blend-mode: multiply;
+}
+
 .class-subclass-carousel-modal__table::after {
-  display: none !important;
+  display: block !important;
+  content: "";
+  position: absolute;
+  left: 8.2% !important;
+  right: 8.2% !important;
+  top: 18.5% !important;
+  bottom: 7.5% !important;
+  border: 1px solid rgba(236, 193, 91, .40);
+  border-radius: 50%;
+  background: transparent !important;
+  filter: none !important;
+  box-shadow:
+    inset 0 -2px 0 rgba(247, 207, 119, .15),
+    0 0 18px rgba(209, 164, 71, .08);
 }
 
 .class-subclass-carousel-modal__orbit {
   left: 1.5% !important;
   right: 1.5% !important;
-  top: 19.5% !important;
-  bottom: 13% !important;
+  top: 20% !important;
+  bottom: 12% !important;
   perspective: 2200px !important;
-  perspective-origin: 50% 59% !important;
+  perspective-origin: 50% 58% !important;
+}
+
+.class-subclass-carousel-card {
+  width: clamp(var(--orbit-card-min), var(--orbit-card-vw), var(--orbit-card-max)) !important;
+  opacity: var(--orbit-opacity) !important;
+  transform:
+    translate3d(-50%, -100%, var(--orbit-depth-z))
+    rotateY(var(--orbit-yaw))
+    scale(var(--orbit-scale)) !important;
+  transform-origin: 50% 100% !important;
+  filter: none !important;
+  will-change: auto;
+}
+
+.class-subclass-carousel-modal__orbit.is-dragging .class-subclass-carousel-card {
+  transition: none !important;
+  will-change: left, top, transform, opacity;
+}
+
+.class-subclass-carousel-card.is-orbit-center {
+  width: clamp(var(--orbit-hero-min), var(--orbit-hero-vw), var(--orbit-hero-max)) !important;
+}
+
+.class-subclass-carousel-card.is-orbit-front {
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
+.class-subclass-carousel-card.is-orbit-back {
+  pointer-events: none !important;
+  filter: saturate(.78) brightness(.91) contrast(1.02) !important;
+}
+
+.class-subclass-carousel-card__surface {
+  overflow: visible !important;
+  transform-style: preserve-3d !important;
+  backface-visibility: visible !important;
+  -webkit-backface-visibility: visible !important;
+  transition: transform .30s ease, border-color .22s ease, box-shadow .22s ease;
+}
+
+.class-subclass-carousel-card.is-orbit-front .class-subclass-carousel-card__surface {
+  transform: none !important;
+}
+
+.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__surface {
+  transform: rotateY(180deg) !important;
+}
+
+.class-subclass-carousel-card__surface::after {
+  display: none !important;
 }
 
 .class-subclass-carousel-card__face {
-  border-color: rgba(225, 183, 94, .58) !important;
+  border-color: rgba(225, 183, 94, .48) !important;
   border-radius: 6px !important;
   box-shadow:
-    0 18px 38px rgba(0, 0, 0, .48),
-    0 0 0 1px rgba(239, 199, 112, .05),
-    0 0 10px rgba(227, 177, 82, .06) !important;
+    0 15px 32px rgba(0, 0, 0, .46),
+    0 0 0 1px rgba(239, 199, 112, .035) !important;
+}
+
+.class-subclass-carousel-card__face.is-front {
+  transform: rotateY(0deg) !important;
+}
+
+.class-subclass-carousel-card__face.is-back {
+  transform: rotateY(180deg) !important;
+  filter: saturate(.88) brightness(.95) contrast(1.02);
 }
 
 .class-subclass-carousel-card.is-orbit-center .class-subclass-carousel-card__face.is-front {
-  border-color: rgba(246, 205, 113, .94) !important;
+  border-color: rgba(246, 205, 113, .82) !important;
   box-shadow:
-    0 24px 50px rgba(0, 0, 0, .56),
-    0 0 0 1px rgba(255, 226, 153, .15),
-    0 0 25px rgba(239, 185, 76, .19) !important;
+    0 18px 36px rgba(0, 0, 0, .5),
+    0 0 0 1px rgba(255, 226, 153, .09),
+    0 0 13px rgba(239, 185, 76, .09) !important;
 }
 
 .class-subclass-carousel-card.is-inspected .class-subclass-carousel-card__face.is-front,
 .class-subclass-carousel-card.is-selected .class-subclass-carousel-card__face.is-front {
-  border-color: rgba(246, 205, 113, .92) !important;
+  border-color: rgba(246, 205, 113, .84) !important;
   box-shadow:
-    0 21px 46px rgba(0, 0, 0, .54),
-    0 0 0 1px rgba(255, 225, 151, .14),
-    0 0 22px rgba(238, 181, 72, .16) !important;
+    0 18px 36px rgba(0, 0, 0, .5),
+    0 0 0 1px rgba(255, 225, 151, .09),
+    0 0 15px rgba(238, 181, 72, .10) !important;
 }
 
-.class-subclass-carousel-card__face.is-back {
-  filter: saturate(.9) brightness(.94) contrast(1.02);
+.class-subclass-carousel-card__art img {
+  filter: none !important;
+  transform: none !important;
+  image-rendering: auto !important;
 }
 
-.class-subclass-carousel-card__back-rune {
-  background: radial-gradient(circle, rgba(113, 82, 39, .16), rgba(8, 8, 13, .78) 68%) !important;
-  text-shadow: 0 0 13px rgba(225, 176, 81, .33) !important;
-  box-shadow: 0 0 20px rgba(218, 171, 79, .08) !important;
+.class-subclass-carousel-card::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 13%;
+  right: 13%;
+  bottom: -7px;
+  height: 13px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: rgba(0, 0, 0, .38);
+  filter: blur(5px);
+  opacity: calc(.18 + (var(--orbit-opacity) * .34));
+}
+
+.class-subclass-carousel-card.is-orbit-back::after {
+  opacity: .13;
+}
+
+.class-subclass-carousel-card__copy {
+  display: none !important;
 }
 
 .class-subclass-carousel-modal__nav {
-  top: 52.5% !important;
+  top: 55.5% !important;
   width: clamp(52px, 4vw, 64px) !important;
   height: clamp(52px, 4vw, 64px) !important;
   border-color: rgba(233, 194, 108, .76) !important;
@@ -1473,15 +1599,6 @@
     0 0 0 2px rgba(225, 181, 88, .08),
     0 0 22px rgba(225, 180, 78, .12),
     inset 0 0 16px rgba(232, 191, 103, .05) !important;
-}
-
-.class-subclass-carousel-modal__nav:hover,
-.class-subclass-carousel-modal__nav:focus-visible {
-  border-color: rgba(250, 214, 133, .98) !important;
-  box-shadow:
-    0 0 0 2px rgba(233, 190, 99, .12),
-    0 0 30px rgba(235, 190, 87, .2),
-    inset 0 0 18px rgba(241, 204, 118, .07) !important;
 }
 
 .class-subclass-carousel-modal__nav.is-prev {
@@ -1498,22 +1615,20 @@
 }
 
 .class-subclass-carousel-modal__details {
-  left: 24% !important;
-  right: 24% !important;
-  bottom: 3.6% !important;
-  grid-template-columns: 82px minmax(0, 1fr) minmax(170px, 220px) !important;
-  gap: 18px !important;
-  min-height: 126px !important;
-  padding: 14px 20px 14px 15px !important;
-  border-color: rgba(222, 178, 84, .52) !important;
+  left: 27% !important;
+  right: 27% !important;
+  bottom: 2.5% !important;
+  min-height: 108px !important;
+  grid-template-columns: 70px minmax(0, 1fr) minmax(150px, 195px) !important;
+  gap: 16px !important;
+  padding: 12px 16px 12px 13px !important;
+  border-color: rgba(222, 178, 84, .50) !important;
   border-radius: 5px !important;
-  background:
-    linear-gradient(145deg, rgba(7, 8, 13, .94), rgba(4, 5, 9, .90)),
-    rgba(5, 6, 10, .92) !important;
+  background: rgba(5, 5, 8, .89) !important;
   box-shadow:
-    0 18px 44px rgba(0, 0, 0, .48),
-    inset 0 0 0 1px rgba(239, 198, 104, .035) !important;
-  backdrop-filter: blur(6px) !important;
+    0 18px 42px rgba(0, 0, 0, .46),
+    inset 0 0 0 1px rgba(239, 198, 104, .03) !important;
+  backdrop-filter: blur(8px) !important;
 }
 
 .class-subclass-carousel-modal__details::before {
@@ -1521,54 +1636,34 @@
 }
 
 .class-subclass-carousel-modal__details-icon {
-  width: 62px !important;
-  height: 62px !important;
+  width: 54px !important;
+  height: 54px !important;
   color: #edbd66 !important;
-}
-
-.class-subclass-carousel-modal__details-icon::before {
-  border-color: rgba(229, 182, 86, .82) !important;
-  background: radial-gradient(circle, rgba(89, 61, 25, .2), rgba(8, 8, 13, .98) 67%) !important;
-  box-shadow:
-    0 0 0 4px rgba(4, 5, 9, .5),
-    0 0 20px rgba(227, 178, 79, .08) !important;
-}
-
-.class-subclass-carousel-modal__details-copy > span {
-  color: rgba(233, 218, 188, .82) !important;
 }
 
 .class-subclass-carousel-modal__details-copy h4 {
   color: #e8ba64 !important;
-  font-size: clamp(1.16rem, 1.45vw, 1.5rem) !important;
 }
 
 .class-subclass-carousel-modal__details-copy p {
-  color: rgba(244, 237, 224, .84) !important;
-  font-size: clamp(.6rem, .72vw, .71rem) !important;
+  -webkit-line-clamp: 2 !important;
 }
 
 .class-subclass-carousel-modal__details-button {
   min-height: 46px !important;
-  border-color: rgba(225, 180, 87, .7) !important;
-  border-radius: 4px !important;
+  border-color: rgba(225, 180, 87, .68) !important;
   color: #ecd29a !important;
   background: rgba(7, 8, 13, .9) !important;
-  box-shadow: inset 0 0 0 1px rgba(239, 198, 104, .035) !important;
-}
-
-.class-subclass-carousel-card__copy {
-  display: none !important;
 }
 
 @media (max-width: 1179px) {
   .class-subclass-carousel-modal__head h3 {
-    font-size: clamp(2.15rem, 4.6vw, 3.5rem) !important;
+    white-space: normal;
   }
 
   .class-subclass-carousel-modal__details {
-    left: 16% !important;
-    right: 16% !important;
+    left: 20% !important;
+    right: 20% !important;
   }
 }
 
@@ -1588,19 +1683,19 @@
     left: -8% !important;
     right: -8% !important;
     top: 23% !important;
-    bottom: 10% !important;
+    bottom: 8% !important;
   }
 
   .class-subclass-carousel-modal__orbit {
     left: -1% !important;
     right: -1% !important;
     top: 23% !important;
-    bottom: 22% !important;
+    bottom: 20% !important;
   }
 
   .class-subclass-carousel-modal__details {
-    left: 5% !important;
-    right: 5% !important;
+    left: 7% !important;
+    right: 7% !important;
     bottom: 2.2% !important;
   }
 }
@@ -1619,297 +1714,11 @@
     left: -6% !important;
     right: -6% !important;
     top: 24% !important;
-    bottom: 31% !important;
+    bottom: 30% !important;
   }
 
   .class-subclass-carousel-modal__details {
     left: 3% !important;
     right: 3% !important;
   }
-}
-
-
-/* 2026-09-20 table-rim anchoring pass: cards stand on the table instead of floating over it. */
-.class-subclass-carousel-modal__scene {
-  filter: saturate(.68) contrast(1.075) brightness(.9) sepia(.055) !important;
-}
-
-.class-subclass-carousel-modal__scene::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 50% 23%, rgba(226, 183, 104, .09), transparent 22%),
-    linear-gradient(90deg, rgba(3, 3, 6, .34) 0%, transparent 19%, transparent 81%, rgba(3, 3, 6, .34) 100%),
-    linear-gradient(180deg, rgba(3, 3, 7, .04) 0%, transparent 45%, rgba(3, 3, 7, .22) 100%);
-}
-
-.class-subclass-carousel-modal__table {
-  filter: saturate(.58) brightness(.88) contrast(1.13) sepia(.12) !important;
-}
-
-.class-subclass-carousel-modal__table::before {
-  content: "";
-  position: absolute;
-  left: 9%;
-  right: 9%;
-  top: 20%;
-  bottom: 9%;
-  border-radius: 50%;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse at 50% 48%, rgba(17, 14, 16, .12) 0%, rgba(10, 8, 11, .26) 52%, rgba(5, 4, 7, .6) 100%);
-  box-shadow:
-    inset 0 0 0 1px rgba(222, 178, 83, .3),
-    inset 0 0 38px rgba(0, 0, 0, .36);
-  mix-blend-mode: multiply;
-}
-
-.class-subclass-carousel-modal__table::after {
-  display: block !important;
-  content: "";
-  position: absolute;
-  left: 8.4% !important;
-  right: 8.4% !important;
-  top: 18.8% !important;
-  bottom: 7.8% !important;
-  border: 1px solid rgba(231, 188, 91, .34);
-  border-radius: 50%;
-  background: transparent !important;
-  filter: none !important;
-  box-shadow:
-    inset 0 -2px 0 rgba(247, 207, 119, .12),
-    0 0 18px rgba(209, 164, 71, .08);
-}
-
-.class-subclass-carousel-card {
-  transform:
-    translate3d(-50%, -100%, var(--orbit-depth-z))
-    rotateY(var(--orbit-yaw))
-    scale(var(--orbit-scale)) !important;
-  transform-origin: 50% 100% !important;
-}
-
-.class-subclass-carousel-card.is-orbit-center {
-  transform:
-    translate3d(-50%, -102%, var(--orbit-depth-z))
-    rotateY(var(--orbit-yaw))
-    scale(var(--orbit-scale)) !important;
-}
-
-.class-subclass-carousel-card.is-orbit-back {
-  filter: saturate(.82) brightness(.82) !important;
-}
-
-.class-subclass-carousel-card.is-orbit-face-up:not(.is-orbit-front) {
-  filter: saturate(.92) brightness(.93) !important;
-}
-
-.class-subclass-carousel-card.is-orbit-front {
-  filter: none !important;
-}
-
-.class-subclass-carousel-modal__nav {
-  top: 58% !important;
-}
-
-.class-subclass-carousel-modal__details {
-  left: 27% !important;
-  right: 27% !important;
-  bottom: 2.5% !important;
-  min-height: 108px !important;
-  grid-template-columns: 70px minmax(0, 1fr) minmax(150px, 195px) !important;
-  padding: 12px 16px 12px 13px !important;
-  background: rgba(5, 5, 8, .88) !important;
-  backdrop-filter: blur(8px) !important;
-}
-
-.class-subclass-carousel-modal__details-icon {
-  width: 54px !important;
-  height: 54px !important;
-}
-
-.class-subclass-carousel-modal__details-copy p {
-  -webkit-line-clamp: 2 !important;
-}
-
-@media (max-width: 1179px) {
-  .class-subclass-carousel-modal__details {
-    left: 20% !important;
-    right: 20% !important;
-  }
-}
-
-@media (max-width: 859px) {
-  .class-subclass-carousel-modal__scene {
-    background-position: 50% 42% !important;
-  }
-
-  .class-subclass-carousel-modal__details {
-    left: 7% !important;
-    right: 7% !important;
-  }
-}
-
-@media (max-width: 619px) {
-  .class-subclass-carousel-modal__details {
-    left: 3% !important;
-    right: 3% !important;
-  }
-}
-
-
-/* 2026-09-20 three-card table-depth refinement: quieter foreground, deeper seating, stronger circular wrap. */
-.class-subclass-carousel-modal__scene {
-  filter: saturate(.55) contrast(1.08) brightness(.88) sepia(.08) !important;
-}
-
-.class-subclass-carousel-modal__table {
-  filter: saturate(.38) brightness(.84) contrast(1.15) sepia(.16) !important;
-}
-
-.class-subclass-carousel-modal__head > div {
-  max-width: 720px !important;
-}
-
-.class-subclass-carousel-modal__head h3 {
-  font-size: clamp(2.3rem, 3.35vw, 3.7rem) !important;
-  white-space: nowrap;
-}
-
-.class-subclass-carousel-card {
-  width: clamp(188px, 14.6vw, 270px) !important;
-}
-
-.class-subclass-carousel-card.is-orbit-center {
-  width: clamp(198px, 15.35vw, 284px) !important;
-  transform:
-    translate3d(-50%, -100%, var(--orbit-depth-z))
-    rotateY(var(--orbit-yaw))
-    scale(var(--orbit-scale)) !important;
-}
-
-.class-subclass-carousel-card__face {
-  border-color: rgba(225, 183, 94, .46) !important;
-  box-shadow:
-    0 15px 32px rgba(0, 0, 0, .46),
-    0 0 0 1px rgba(239, 199, 112, .035) !important;
-}
-
-.class-subclass-carousel-card.is-orbit-center .class-subclass-carousel-card__face.is-front {
-  border-color: rgba(246, 205, 113, .78) !important;
-  box-shadow:
-    0 19px 38px rgba(0, 0, 0, .5),
-    0 0 0 1px rgba(255, 226, 153, .09),
-    0 0 14px rgba(239, 185, 76, .1) !important;
-}
-
-.class-subclass-carousel-card.is-inspected .class-subclass-carousel-card__face.is-front,
-.class-subclass-carousel-card.is-selected .class-subclass-carousel-card__face.is-front {
-  border-color: rgba(246, 205, 113, .82) !important;
-  box-shadow:
-    0 18px 36px rgba(0, 0, 0, .5),
-    0 0 0 1px rgba(255, 225, 151, .09),
-    0 0 16px rgba(238, 181, 72, .11) !important;
-}
-
-.class-subclass-carousel-card.is-orbit-back {
-  filter: saturate(.78) brightness(.9) contrast(1.02) !important;
-}
-
-@media (max-width: 1179px) {
-  .class-subclass-carousel-card {
-    width: clamp(158px, 16.5vw, 216px) !important;
-  }
-
-  .class-subclass-carousel-card.is-orbit-center {
-    width: clamp(166px, 17.25vw, 226px) !important;
-  }
-
-  .class-subclass-carousel-modal__head h3 {
-    white-space: normal;
-  }
-}
-
-@media (max-width: 859px) {
-  .class-subclass-carousel-card {
-    width: clamp(130px, 20.8vw, 172px) !important;
-  }
-
-  .class-subclass-carousel-card.is-orbit-center {
-    width: clamp(136px, 21.7vw, 180px) !important;
-  }
-}
-
-@media (max-width: 619px) {
-  .class-subclass-carousel-card {
-    width: clamp(102px, 23.8vw, 136px) !important;
-  }
-
-  .class-subclass-carousel-card.is-orbit-center {
-    width: clamp(106px, 24.8vw, 142px) !important;
-  }
-}
-
-
-/* 2026-09-20 annotated-reference pass: five visual fronts on the rim, three interactive, warm physical table. */
-.class-subclass-carousel-modal__scene {
-  filter: grayscale(.16) sepia(.10) saturate(.72) brightness(.92) contrast(1.06) !important;
-}
-
-.class-subclass-carousel-modal__table {
-  opacity: .94 !important;
-  filter: grayscale(.55) sepia(.38) saturate(.78) brightness(.86) contrast(1.14) !important;
-}
-
-.class-subclass-carousel-modal__table::before {
-  background:
-    radial-gradient(ellipse at 50% 48%, rgba(127, 82, 28, .11) 0%, rgba(17, 12, 9, .22) 52%, rgba(5, 4, 7, .56) 100%) !important;
-  mix-blend-mode: multiply !important;
-}
-
-.class-subclass-carousel-modal__table::after {
-  border-color: rgba(236, 193, 91, .42) !important;
-  box-shadow:
-    inset 0 -2px 0 rgba(247, 207, 119, .16),
-    0 0 20px rgba(209, 164, 71, .10) !important;
-}
-
-.class-subclass-carousel-card.is-orbit-face-up:not(.is-orbit-front) {
-  filter: saturate(.90) brightness(.95) contrast(1.01) !important;
-}
-
-.class-subclass-carousel-card.is-orbit-back:not(.is-orbit-face-up) {
-  filter: saturate(.76) brightness(.90) contrast(1.02) !important;
-}
-
-.class-subclass-carousel-card.is-orbit-center .class-subclass-carousel-card__face.is-front {
-  box-shadow:
-    0 18px 36px rgba(0, 0, 0, .48),
-    0 0 0 1px rgba(255, 226, 153, .07),
-    0 0 11px rgba(239, 185, 76, .08) !important;
-}
-
-.class-subclass-carousel-card::after {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  left: 13%;
-  right: 13%;
-  bottom: -7px;
-  height: 13px;
-  border-radius: 50%;
-  pointer-events: none;
-  background: rgba(0, 0, 0, .38);
-  filter: blur(5px);
-  opacity: calc(.25 + (var(--orbit-opacity) * .35));
-}
-
-.class-subclass-carousel-card.is-orbit-back:not(.is-orbit-face-up)::after {
-  opacity: .14;
-}
-
-.class-subclass-carousel-modal__nav {
-  top: 55.5% !important;
 }
