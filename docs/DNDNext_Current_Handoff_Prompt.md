@@ -11,11 +11,12 @@ Stack: Next.js **Pages Router** 16.1.6, React 19, Supabase/Postgres, Bootstrap/S
 
 Older sections remain useful architecture/history, but their PR numbers and accepted-main checkpoints are stale.
 
-### Current production `main`
+### Accepted PR #195 runtime checkpoint
 
 PR #195 — **Gate unauthenticated navbar and add admin activity view** — is merged.
 
-- current `main`: `320671a22b83432177dcc67e9efd035f3c3ccc5d`;
+- runtime code checkpoint merged by PR #195: `320671a22b83432177dcc67e9efd035f3c3ccc5d`;
+- documentation-only commits may advance `main` beyond that SHA without changing runtime behavior; always re-fetch current `main` before work;
 - validated PR #195 head: `30befd23507081fcbaa3b06c6634b1022d404ab7`;
 - production Vercel deployment: `dpl_ETZZCzVZq8Cpw56Fndf9pfYmp5B8`;
 - production state at this handoff: **READY**.

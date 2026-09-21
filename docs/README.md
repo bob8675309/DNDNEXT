@@ -18,9 +18,11 @@ This directory contains the project's living handoff, roadmap, architecture, sub
 
 ## Current code checkpoint
 
-Production `main`:
+Accepted runtime code checkpoint from merged PR #195:
 
-`320671a22b83432177dcc67e9efd035f3c3ccc5d` — merged PR #195, **Gate unauthenticated navbar and add admin activity view**.
+`320671a22b83432177dcc67e9efd035f3c3ccc5d` — **Gate unauthenticated navbar and add admin activity view**.
+
+Documentation-only handoff merges may advance the current `main` SHA without changing this runtime checkpoint. Always re-fetch `main` before implementation or merge.
 
 Production Vercel for that merge:
 

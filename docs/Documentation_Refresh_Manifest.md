@@ -19,7 +19,8 @@ If prose conflicts with live source/database state, live authority wins until do
 
 The older checkpoint sections below are retained as history. Current live authority is:
 
-- production `main`: `320671a22b83432177dcc67e9efd035f3c3ccc5d` — merged PR #195;
+- accepted runtime checkpoint from merged PR #195: `320671a22b83432177dcc67e9efd035f3c3ccc5d`;
+- documentation-only merges may place current `main` ahead of that runtime SHA, so re-fetch `main` before every write or merge;
 - PR #195 is closed/merged: auth-gated navbar + admin activity view;
 - production Vercel for that merge: `dpl_ETZZCzVZq8Cpw56Fndf9pfYmp5B8` — **READY** at handoff;
 - active Character Forge presentation work: PR #194, branch `agent/subclass-carousel-drag-crisp-20260918`, reviewed head `f21a81435946b1ae8ec6112e5376062cfc2b62f4`, open/unmerged;
