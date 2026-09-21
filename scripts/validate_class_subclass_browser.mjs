@@ -57,16 +57,19 @@ for (const token of [
   'const isCenter = absoluteSlots <= 0.015',
   'const isOpposite = count % 2 === 0 && Math.abs(absoluteSlots - (count / 2)) <= 0.015',
   'const thetaDegrees = isOpposite ? 180 : orbitThetaDegrees(absoluteSlots)',
-  'const faceUpYawMagnitude = absoluteSlots <= 1',
-  'const faceUpYawMagnitude = absoluteSlots * 22',
-  'Math.min(24, faceUpYawMagnitude)',
-  'Math.max(102, 104 + ((thetaDegrees - 90) * 0.76))',
+  'const yawMagnitude = absoluteSlots <= 1',
+  '? absoluteSlots * 22',
+  '? 22 + ((absoluteSlots - 1) * 80)',
+  'Math.min(180, Math.max(102, 104 + ((thetaDegrees - 90) * 0.76)))',
   'const horizontalRadius = 30.5',
   'const verticalCenter = 49.5',
   'const verticalRadius = 20.5',
   'const x = 50 + (direction * sine * horizontalRadius)',
   'const y = verticalCenter + (cosine * verticalRadius)',
-  ': 0.22 + (depth * 0.20)',
+  '? 0.965 - ((absoluteSlots - 1) * 0.30)',
+  '? 0.665 - ((absoluteSlots - 2) * 0.10)',
+  '? 0.965 - ((absoluteSlots - 1) * 0.58)',
+  '? 0.385 - ((absoluteSlots - 2) * 0.10)',
   '"--orbit-opacity": (isVisible ? opacity : 0).toFixed(3)',
   '"--orbit-depth-z": `${isFaceUp ? 0 : Math.round(depth * 28)}px`',
   'const [orbitOffset, setOrbitOffset] = useState(0)',
@@ -123,10 +126,11 @@ assert(selector.includes('const isCenter = absoluteSlots <= 0.015'), "Only the c
 assert(selector.includes('const isOpposite = count % 2 === 0 && Math.abs(absoluteSlots - (count / 2)) <= 0.015'), "Even-card subclass sets must place their lone opposite card at the true rear-center slot.");
 
 assert(selector.includes('const faceUpRadius = 1'), "Only the center and immediate left/right cards may remain readable on the front arc.");
-assert(selector.includes('const faceUpYawMagnitude = absoluteSlots * 22'), "The readable side pair must bend modestly with the table rim.");
-assert(selector.includes('Math.min(24, faceUpYawMagnitude)'), "Three readable cards must remain legible while visibly following the table curve.");
-assert(selector.includes('Math.max(102, 104 + ((thetaDegrees - 90) * 0.76))'), "Cards beyond the readable three must turn decisively into the rear deck.");
-assert(selector.includes(': 0.22 + (depth * 0.20)'), "Rear Tarot backs must remain visible enough to communicate carousel motion.");
+assert(selector.includes('? absoluteSlots * 22'), "The readable side pair must bend modestly with the table rim.");
+assert(selector.includes('? 22 + ((absoluteSlots - 1) * 80)'), "Cards leaving the readable three must turn smoothly rather than snapping into a rear-facing angle.");
+assert(selector.includes('Math.min(180, Math.max(102, 104 + ((thetaDegrees - 90) * 0.76)))'), "Settled cards beyond the readable three must turn decisively into the rear deck.");
+assert(selector.includes('? 0.965 - ((absoluteSlots - 1) * 0.30)'), "Card scale must interpolate smoothly between the readable front and the first rear slot.");
+assert(selector.includes('? 0.965 - ((absoluteSlots - 1) * 0.58)'), "Card opacity must interpolate smoothly while a card moves around the table edge.");
 assert(selector.includes('"--orbit-depth-z": `${isFaceUp ? 0 : Math.round(depth * 28)}px`'), "Readable Tarot faces must avoid positive Z-depth resampling.");
 assert(!selector.includes('class-subclass-carousel-modal__ambient-smoke'), "Approved clean-table presentation must not render ambient purple smoke.");
 assert(!selector.includes('class-subclass-carousel-modal__smoke-back'), "Approved clean-table presentation must not render rear purple smoke.");
