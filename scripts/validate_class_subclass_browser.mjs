@@ -52,21 +52,21 @@ for (const token of [
   'const visualSlotCount = Math.min(count, VISIBLE_CARD_CAP)',
   'const visibleRadius = Math.floor(visualSlotCount / 2)',
   'const isVisible = count <= VISIBLE_CARD_CAP || absoluteSlots <= visibleRadius + 0.18',
-  'const faceUpRadius = count <= 4 ? 1 : 2',
+  'const faceUpRadius = 1',
   'const isFaceUp = count <= 3 || absoluteSlots <= faceUpRadius + 0.01',
   'const isCenter = absoluteSlots <= 0.015',
   'const isOpposite = count % 2 === 0 && Math.abs(absoluteSlots - (count / 2)) <= 0.015',
   'const thetaDegrees = isOpposite ? 180 : orbitThetaDegrees(absoluteSlots)',
   'const faceUpYawMagnitude = absoluteSlots <= 1',
-  '? absoluteSlots * 18',
-  ': 18 + ((absoluteSlots - 1) * 18)',
-  'Math.min(40, faceUpYawMagnitude)',
-  'const horizontalRadius = 31.5',
-  'const verticalCenter = 54',
-  'const verticalRadius = 25',
+  'const faceUpYawMagnitude = absoluteSlots * 22',
+  'Math.min(24, faceUpYawMagnitude)',
+  'Math.max(102, 104 + ((thetaDegrees - 90) * 0.76))',
+  'const horizontalRadius = 30.5',
+  'const verticalCenter = 49.5',
+  'const verticalRadius = 20.5',
   'const x = 50 + (direction * sine * horizontalRadius)',
   'const y = verticalCenter + (cosine * verticalRadius)',
-  ': 0.20 + (depth * 0.22)',
+  ': 0.22 + (depth * 0.20)',
   '"--orbit-opacity": (isVisible ? opacity : 0).toFixed(3)',
   '"--orbit-depth-z": `${isFaceUp ? 0 : Math.round(depth * 28)}px`',
   'const [orbitOffset, setOrbitOffset] = useState(0)',
@@ -116,23 +116,24 @@ assert(selector.includes('if (d <= 1) return d * 28'), "Inner Tarot pair must fo
 assert(selector.includes('if (d <= 2) return 28 + ((d - 1) * 29)'), "Outer readable Tarot pair must spread farther along the table rim.");
 assert(selector.includes('if (d <= 3) return 57 + ((d - 2) * 58)'), "Near rear cards must climb around the table instead of flattening into the foreground.");
 assert(selector.includes('if (d <= 4) return 115 + ((d - 3) * 40)'), "Far rear cards must curl inward along the back of the ellipse.");
-assert(selector.includes('const horizontalRadius = 31.5'), "Tarot card feet must use the tighter table-rim radius from the approved reference.");
-assert(selector.includes('const verticalCenter = 54'), "Tarot card feet must sit on the physical table instead of a floating centerline.");
-assert(selector.includes('const verticalRadius = 25'), "Tarot card feet must preserve a clear front-low/rear-high table ellipse.");
+assert(selector.includes('const horizontalRadius = 30.5'), "Tarot card feet must follow the slightly tighter physical table rim.");
+assert(selector.includes('const verticalCenter = 49.5'), "Readable Tarot cards must sit farther back on the tabletop instead of dominating the front lip.");
+assert(selector.includes('const verticalRadius = 20.5'), "Tarot card feet must retain a front-low/rear-high ellipse while staying seated deeper on the table.");
 assert(selector.includes('const isCenter = absoluteSlots <= 0.015'), "Only the centered Tarot card may receive the pop-out treatment.");
 assert(selector.includes('const isOpposite = count % 2 === 0 && Math.abs(absoluteSlots - (count / 2)) <= 0.015'), "Even-card subclass sets must place their lone opposite card at the true rear-center slot.");
 
-assert(selector.includes('? absoluteSlots * 18'), "The first readable pair must use the gentler table-following yaw from the approved reference.");
-assert(selector.includes(': 18 + ((absoluteSlots - 1) * 18)'), "The outer readable pair must bend farther while remaining readable.");
-assert(selector.includes('Math.min(40, faceUpYawMagnitude)'), "Readable face-up yaw must stay bounded near the reference composition.");
-assert(selector.includes(': 0.20 + (depth * 0.22)'), "Rear Tarot cards must remain visible enough to communicate carousel motion.");
+assert(selector.includes('const faceUpRadius = 1'), "Only the center and immediate left/right cards may remain readable on the front arc.");
+assert(selector.includes('const faceUpYawMagnitude = absoluteSlots * 22'), "The readable side pair must bend modestly with the table rim.");
+assert(selector.includes('Math.min(24, faceUpYawMagnitude)'), "Three readable cards must remain legible while visibly following the table curve.");
+assert(selector.includes('Math.max(102, 104 + ((thetaDegrees - 90) * 0.76))'), "Cards beyond the readable three must turn decisively into the rear deck.");
+assert(selector.includes(': 0.22 + (depth * 0.20)'), "Rear Tarot backs must remain visible enough to communicate carousel motion.");
 assert(selector.includes('"--orbit-depth-z": `${isFaceUp ? 0 : Math.round(depth * 28)}px`'), "Readable Tarot faces must avoid positive Z-depth resampling.");
 assert(!selector.includes('class-subclass-carousel-modal__ambient-smoke'), "Approved clean-table presentation must not render ambient purple smoke.");
 assert(!selector.includes('class-subclass-carousel-modal__smoke-back'), "Approved clean-table presentation must not render rear purple smoke.");
 assert(!selector.includes('class-subclass-carousel-modal__smoke-front'), "Approved clean-table presentation must not render foreground purple smoke.");
 assert(!selector.includes('`Unlocks at level ${optionEntryLevel(option)}`'), "Tarot card faces must not render unlock-level pills over the artwork.");
-assert(tarotCss.includes('width: clamp(196px, 16.6vw, 300px) !important'), "Non-center Tarot cards must retain the enlarged near-natural size.");
-assert(tarotCss.includes('width: clamp(210px, 17.75vw, 322px) !important'), "Only the centered Tarot card must physically pop larger.");
+assert(tarotCss.includes('width: clamp(188px, 14.6vw, 270px) !important'), "Foreground Tarot cards must stay large enough for crisp native art without overpowering the table.");
+assert(tarotCss.includes('width: clamp(198px, 15.35vw, 284px) !important'), "Only the centered Tarot card may receive the restrained physical size bump.");
 assert(tarotCss.includes('opacity: .955 !important'), "Front Tarot cards must retain the requested subtle translucency.");
 assert(tarotCss.includes('display: none !important'), "Smoke-layer safety override must remain installed.");
 assert(tarotCss.includes('opacity: .91'), "Runic table must remain clear and visually present after smoke removal.");
@@ -160,9 +161,13 @@ assert(tarotCss.includes('.class-subclass-carousel-modal__position,\n.class-subc
 assert(tarotCss.includes('.class-subclass-carousel-card__copy {\n  display: none !important;'), "Tarot card artwork must remain free of pill overlays.");
 assert(tarotCss.includes('translate3d(-50%, -100%, var(--orbit-depth-z))'), "Tarot cards must be bottom-center anchored so their feet trace the table rim.");
 assert(tarotCss.includes('transform-origin: 50% 100% !important'), "Tarot scaling and yaw must remain planted at the card base.");
-assert(tarotCss.includes('filter: saturate(.68) contrast(1.075) brightness(.9) sepia(.055) !important'), "Cathedral stage must use the warmer, less-purple reference grade.");
-assert(tarotCss.includes('filter: saturate(.58) brightness(.88) contrast(1.13) sepia(.12) !important'), "Runic table must be darkened and desaturated toward the black/gold reference.");
+assert(tarotCss.includes('filter: saturate(.55) contrast(1.08) brightness(.88) sepia(.08) !important'), "Cathedral stage must keep the more restrained less-purple reference grade.");
+assert(tarotCss.includes('filter: saturate(.38) brightness(.84) contrast(1.15) sepia(.16) !important'), "Runic table must stay dark, physical, and gold-biased instead of neon-purple.");
 assert(tarotCss.includes('mix-blend-mode: multiply'), "Runic table must retain the dark physical-surface overlay.");
+assert(tarotCss.includes('width: clamp(198px, 15.35vw, 284px) !important'), "Center card must use only a restrained size increase over its neighbors.");
+assert(tarotCss.includes('white-space: nowrap'), "Desktop subclass heading should remain on one line like the approved reference.");
+assert(tarotCss.includes('translate3d(-50%, -100%, var(--orbit-depth-z))'), "Center card must remain seated on the same table-foot anchor as its neighbors.");
+
 
 
 
@@ -176,7 +181,7 @@ for (const token of [
   '.class-subclass-carousel-card__surface',
   'translate3d(-50%, -100%, var(--orbit-depth-z))',
   'rotateY(var(--orbit-yaw))',
-  'width: clamp(196px, 16.6vw, 300px) !important',
+  'width: clamp(188px, 14.6vw, 270px) !important',
   'opacity: .955 !important',
   'will-change: auto',
   '.class-subclass-carousel-modal__orbit.is-dragging .class-subclass-carousel-card',
