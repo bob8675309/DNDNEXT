@@ -90,14 +90,13 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
 
   // Position on the ellipse and card-facing angle are intentionally separate:
   // cards follow the table edge while their faces progressively bend into it.
-  const faceUpYawMagnitude = absoluteSlots * 22;
+  const yawMagnitude = absoluteSlots <= 1
+    ? absoluteSlots * 22
+    : absoluteSlots <= 2
+      ? 22 + ((absoluteSlots - 1) * 80)
+      : Math.min(180, Math.max(102, 104 + ((thetaDegrees - 90) * 0.76)));
 
-  const yaw = isFaceUp
-    ? direction * Math.min(24, faceUpYawMagnitude)
-    : direction * Math.min(
-      180,
-      Math.max(102, 104 + ((thetaDegrees - 90) * 0.76)),
-    );
+  const yaw = direction * yawMagnitude;
 
   // The card's bottom-center, not its center, traces the physical table rim.
   // This makes the Tarot deck look planted on the table instead of floating
@@ -108,19 +107,21 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
   const x = 50 + (direction * sine * horizontalRadius);
   const y = verticalCenter + (cosine * verticalRadius);
 
-  const scale = isCenter
-    ? 1
-    : isFront
-      ? 0.965
-      : isFaceUp
-        ? 0.82 + (depth * 0.03)
-        : 0.52 + (depth * 0.14);
+  const scale = absoluteSlots <= 1
+    ? 1 - (absoluteSlots * 0.035)
+    : absoluteSlots <= 2
+      ? 0.965 - ((absoluteSlots - 1) * 0.30)
+      : absoluteSlots <= 3
+        ? 0.665 - ((absoluteSlots - 2) * 0.10)
+        : Math.max(0.50, 0.565 - ((absoluteSlots - 3) * 0.04));
 
-  const opacity = isFront
+  const opacity = absoluteSlots <= 1
     ? 0.965
-    : isFaceUp
-      ? 0.91 + (depth * 0.04)
-      : 0.22 + (depth * 0.20);
+    : absoluteSlots <= 2
+      ? 0.965 - ((absoluteSlots - 1) * 0.58)
+      : absoluteSlots <= 3
+        ? 0.385 - ((absoluteSlots - 2) * 0.10)
+        : Math.max(0.22, 0.285 - ((absoluteSlots - 3) * 0.055));
 
   const zIndex = isCenter
     ? 132
