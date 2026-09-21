@@ -8,7 +8,7 @@ This project is directly writable from ChatGPT through the GitHub connector and 
 
 - Repository: `bob8675309/DNDNEXT`
 - Default/production authority: `main`
-- Accepted current `main` checkpoint: `320671a22b83432177dcc67e9efd035f3c3ccc5d` (merged PR #195)
+- Accepted runtime checkpoint: `320671a22b83432177dcc67e9efd035f3c3ccc5d` (merged PR #195); current `main` may be ahead due to documentation-only merges
 - Current open continuation branch: `agent/subclass-carousel-drag-crisp-20260918`
 - Current open PR: **#194** — Character Forge subclass Tarot carousel refinement, unmerged
 - Reviewed PR #194 head at this documentation checkpoint: `f21a81435946b1ae8ec6112e5376062cfc2b62f4`
