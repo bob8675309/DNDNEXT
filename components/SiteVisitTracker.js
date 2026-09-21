@@ -49,6 +49,7 @@ export default function SiteVisitTracker() {
 
   useEffect(() => {
     let active = true;
+    let deferredTimer = null;
     const key = visitorKey();
     if (!key) return undefined;
 
@@ -63,17 +64,27 @@ export default function SiteVisitTracker() {
         .catch(() => {});
     }
 
-    record(router.asPath || window.location.pathname);
+    function scheduleRecord(pathValue) {
+      if (!active) return;
+      if (deferredTimer !== null) window.clearTimeout(deferredTimer);
+      deferredTimer = window.setTimeout(() => {
+        deferredTimer = null;
+        record(pathValue);
+      }, 0);
+    }
 
-    const onRouteChange = (url) => record(url);
+    scheduleRecord(router.asPath || window.location.pathname);
+
+    const onRouteChange = (url) => scheduleRecord(url);
     router.events.on("routeChangeComplete", onRouteChange);
 
     const { data: authSubscription } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN") record(router.asPath || window.location.pathname);
+      if (event === "SIGNED_IN") scheduleRecord(router.asPath || window.location.pathname);
     });
 
     return () => {
       active = false;
+      if (deferredTimer !== null) window.clearTimeout(deferredTimer);
       router.events.off("routeChangeComplete", onRouteChange);
       authSubscription.subscription.unsubscribe();
     };
