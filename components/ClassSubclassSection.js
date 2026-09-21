@@ -74,7 +74,10 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
   // slots would. This gives the five readable cards the same graceful spread
   // as the approved visual reference while the rear cards curl around behind.
   const isFront = absoluteSlots <= 1.01;
-  const faceUpRadius = count <= 4 ? 1 : 2;
+  // The approved table composition has only three readable/front-facing cards:
+  // center plus the immediate pair. Everything beyond that starts turning into
+  // the rear deck while remaining visible as carousel motion.
+  const faceUpRadius = 1;
   const isFaceUp = count <= 3 || absoluteSlots <= faceUpRadius + 0.01;
   const isCenter = absoluteSlots <= 0.015;
   const isOpposite = count % 2 === 0 && Math.abs(absoluteSlots - (count / 2)) <= 0.015;
@@ -87,44 +90,45 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
 
   // Position on the ellipse and card-facing angle are intentionally separate:
   // cards follow the table edge while their faces progressively bend into it.
-  const faceUpYawMagnitude = absoluteSlots <= 1
-    ? absoluteSlots * 18
-    : 18 + ((absoluteSlots - 1) * 18);
+  const faceUpYawMagnitude = absoluteSlots * 22;
 
   const yaw = isFaceUp
-    ? direction * Math.min(40, faceUpYawMagnitude)
-    : direction * Math.min(180, 104 + ((thetaDegrees - 90) * 0.76));
+    ? direction * Math.min(24, faceUpYawMagnitude)
+    : direction * Math.min(
+      180,
+      Math.max(102, 104 + ((thetaDegrees - 90) * 0.76)),
+    );
 
   // The card's bottom-center, not its center, traces the physical table rim.
   // This makes the Tarot deck look planted on the table instead of floating
   // over an unrelated ellipse.
-  const horizontalRadius = 31.5;
-  const verticalCenter = 54;
-  const verticalRadius = 25;
+  const horizontalRadius = 30.5;
+  const verticalCenter = 49.5;
+  const verticalRadius = 20.5;
   const x = 50 + (direction * sine * horizontalRadius);
   const y = verticalCenter + (cosine * verticalRadius);
 
   const scale = isCenter
     ? 1
     : isFront
-      ? 0.94
+      ? 0.965
       : isFaceUp
-        ? 0.79 + (depth * 0.04)
-        : 0.50 + (depth * 0.16);
+        ? 0.82 + (depth * 0.03)
+        : 0.52 + (depth * 0.14);
 
   const opacity = isFront
-    ? 0.955
+    ? 0.965
     : isFaceUp
-      ? 0.86 + (depth * 0.06)
-      : 0.20 + (depth * 0.22);
+      ? 0.91 + (depth * 0.04)
+      : 0.22 + (depth * 0.20);
 
   const zIndex = isCenter
-    ? 142
+    ? 132
     : isFront
-      ? 126 + Math.round(depth * 8)
+      ? 124 + Math.round(depth * 6)
       : isFaceUp
-        ? 98 + Math.round(depth * 12)
-        : 30 + Math.round(depth * 26);
+        ? 98 + Math.round(depth * 10)
+        : 30 + Math.round(depth * 24);
 
   return {
     signedSlots,
