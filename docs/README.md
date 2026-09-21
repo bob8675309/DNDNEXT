@@ -1,51 +1,56 @@
 # DNDNext Living Documentation Index
 
-Updated: 2026-08-30
+Updated: 2026-09-21
 
 This directory contains the project's living handoff, roadmap, architecture, subsystem, and evidence documents. For active work, **live Supabase + current GitHub source/validators/deployment state outrank prose** if they conflict.
 
 ## Start here
 
-1. `DNDNext_Current_Handoff_Prompt.md` — copy-ready current takeover brief, accepted baseline, protected boundaries, current Forge/PR state, and immediate future work.
-2. `Documentation_Refresh_Manifest.md` — documentation trust order, merged PR chain, live migration checkpoint, and active/future work queue.
-3. `Realistic_Dice_Roller_Architecture_Roadmap.md` — **controlling future plan for the reusable realistic dice subsystem: d6/d8/d10/d12/d20/resultCube, Three/Rapier architecture, Forge/Sheet/Tactical adapters, authority boundaries, implementation phases, and acceptance criteria.**
-4. `Character_Forge_Training_Redesign_Status.md` — detailed PR #176 Training subledger, source-choice/tool↔Trade Skill rules, and acceptance history.
-5. `Unified_Character_Forge_Status.md` — shared Player/NPC Forge, progression, source-choice, and runtime authority.
-6. The dedicated subsystem ledger for the area being changed.
-7. `CHATGPT_REPO_WRITE_PROCEDURE.md` before direct GitHub/Supabase mutation.
+1. `DNDNext_Current_Handoff_Prompt.md` — canonical long-form takeover brief. **Read its 2026-09-21 override before older checkpoint sections.**
+2. `Next_Chat_Handoff_2026-09-21.md` — concise copy-ready handoff for the next chat.
+3. `Character_Forge_Subclass_Tarot_Flexible_Ring_Status.md` — active PR #194 flexible equal-angle table-ring architecture, target behavior, current head/preview, and acceptance checklist.
+4. `Auth_Navigation_Admin_Activity_Status.md` — merged PR #195 navbar/auth/admin-activity checkpoint plus live Supabase hardening.
+5. `Documentation_Refresh_Manifest.md` — documentation trust order, live migration/current PR checkpoint, and current queue.
+6. `Realistic_Dice_Roller_Architecture_Roadmap.md` — controlling future plan for reusable Realistic Dice.
+7. `Unified_Character_Forge_Status.md` — shared Player/NPC Forge, progression, source-choice, and runtime authority.
+8. The dedicated subsystem ledger for the area being changed.
+9. `CHATGPT_REPO_WRITE_PROCEDURE.md` before direct GitHub/Supabase mutation.
 
 ## Current code checkpoint
 
-Accepted runtime/code baseline on `main`:
+Production `main`:
 
-`a2aecdd354346926afdf33efb1af320581563b68` — merged Character Forge Background polish/art system (PR #175).
+`320671a22b83432177dcc67e9efd035f3c3ccc5d` — merged PR #195, **Gate unauthenticated navbar and add admin activity view**.
+
+Production Vercel for that merge:
+
+- deployment `dpl_ETZZCzVZq8Cpw56Fndf9pfYmp5B8`;
+- state at documentation handoff: **READY**.
 
 Active work:
 
-- PR #176 — `agent/training-tab-redesign` — **open/unmerged Character Forge browser-review continuation**.
+- PR #194 — `agent/subclass-carousel-drag-crisp-20260918` — **open/unmerged subclass Tarot selector refinement**;
+- reviewed head: `f21a81435946b1ae8ec6112e5376062cfc2b62f4`;
+- exact-head preview: `dndnext-86xs3s1d4-pauls-projects-2016aa54.vercel.app` — **READY** at handoff.
 
-PR #176 began as the Training redesign and now also contains later Forge browser-polish work, including Class/Abilities presentation changes. Immediately before the 2026-08-30 documentation-only Realistic Dice handoff commits, its remote head was `9447be566f8383e8227c6fccb37a0bde2bdbe078`.
+The active Tarot architecture is a flexible equal-angle table ring: `N` subclasses produce `N` evenly spaced cards on one physical ring, with one exact front hero position. Do not reintroduce old fixed 3/5/7/9-card rules from historical experiments.
 
-Always inspect the current PR head before implementation; documentation and implementation commits move it forward.
-
-Recent accepted Forge chain:
-
-- PR #170 — unified Character Forge/progression/runtime foundation — merged `599c4de7397ba6e4bbbb0a061d551d80c3570be7`;
-- PR #171 — Species/Profile/Forge continuation — merged `ed93331b946dffee1e63183e969f115d0c8a1a18`;
-- PR #172 — Species readability continuation — merged `8b62e38cc4de490dd4a02b57b0e9448baff3e5ef`;
-- PR #173 — Simic Hybrid Animal Enhancement descriptions — merged `8c37e30063d2523a5f488073d3ea60c5571c7182`;
-- PR #175 — Background presentation/source-choice/art system — merged `a2aecdd354346926afdf33efb1af320581563b68`;
-- PR #176 — Character Forge browser-review continuation — active/unmerged.
-
-Older documents that describe #170–#175 as open are historical snapshots only.
+Always re-fetch current `main`, PR #194 head/mergeability, and exact-head deployment before implementation or merge.
 
 ## Current live database checkpoint
 
 Supabase project: `DnDWeb` / `ucggczovhmauhshvhusx`.
 
-The prior migration-ledger checkpoint contains 214 records with latest registered migration `20260814161314 grim_hollow_heritage_catalog_support`. Some later repo SQL effects are live even when repository filename and migration-ledger naming differ; inspect live effects before any deployment-traceability repair and do not re-run already-correct SQL by assumption.
+Latest relevant registered migrations:
 
-The planned Realistic Dice Phase 1 does **not** require a Supabase migration. Later tactical dice presentation should consume existing authoritative encounter RPC/combat-log outcomes rather than introduce a client-side combat roll authority.
+- `20260921152546 admin_site_activity_v1`;
+- `20260921153151 admin_site_activity_acl_fix`;
+- `20260921153328 admin_site_activity_retention_v1`;
+- `20260921185225 admin_site_activity_hardening_v1`.
+
+Read `Auth_Navigation_Admin_Activity_Status.md` for the privacy model, grants, rate-bound anonymous ingestion, and signed-out attribution fix.
+
+The planned Realistic Dice Phase 1 still does **not** require a Supabase migration. Later tactical dice presentation should consume existing authoritative encounter RPC/combat-log outcomes rather than introduce client-side combat authority.
 
 ## Realistic Dice future subsystem
 

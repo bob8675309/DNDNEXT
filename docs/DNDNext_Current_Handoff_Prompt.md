@@ -1,10 +1,94 @@
 # DNDNext Next-Chat Handoff Brief
 
-Updated: 2026-09-18
+Updated: 2026-09-21
 
 Repository: `bob8675309/DNDNEXT`
 
 Stack: Next.js **Pages Router** 16.1.6, React 19, Supabase/Postgres, Bootstrap/SCSS, Vercel.
+
+
+## 2026-09-21 authoritative override — use this before every older checkpoint below
+
+Older sections remain useful architecture/history, but their PR numbers and accepted-main checkpoints are stale.
+
+### Current production `main`
+
+PR #195 — **Gate unauthenticated navbar and add admin activity view** — is merged.
+
+- current `main`: `320671a22b83432177dcc67e9efd035f3c3ccc5d`;
+- validated PR #195 head: `30befd23507081fcbaa3b06c6634b1022d404ab7`;
+- production Vercel deployment: `dpl_ETZZCzVZq8Cpw56Fndf9pfYmp5B8`;
+- production state at this handoff: **READY**.
+
+Read `Auth_Navigation_Admin_Activity_Status.md` before changing navbar auth exposure or the admin activity tracker.
+
+Important PR #195 behavior now on production:
+
+- signed-out users do not receive campaign/private navbar links;
+- admins have the recent site-activity surface;
+- activity tracking stores no IP, user-agent, fingerprint, or precise location;
+- live anonymous visit ingestion is bounded in Postgres;
+- anonymous and per-account browser visitor keys are separated;
+- the current auth state is authoritative for account attribution.
+
+### Live Supabase checkpoint
+
+Project remains `DnDWeb` / `ucggczovhmauhshvhusx`.
+
+Latest relevant registered migrations are now:
+
+- `20260921152546 admin_site_activity_v1`;
+- `20260921153151 admin_site_activity_acl_fix`;
+- `20260921153328 admin_site_activity_retention_v1`;
+- `20260921185225 admin_site_activity_hardening_v1`.
+
+The old 214-migration / `20260814161314` checkpoint below is historical.
+
+### Current active Character Forge work
+
+PR #194 — **Refine subclass Tarot carousel interaction and clarity** — remains **open / unmerged**.
+
+- branch: `agent/subclass-carousel-drag-crisp-20260918`;
+- reviewed head: `f21a81435946b1ae8ec6112e5376062cfc2b62f4`;
+- exact-head Vercel preview: `dndnext-86xs3s1d4-pauls-projects-2016aa54.vercel.app`;
+- preview state at this handoff: **READY**.
+
+Read `Character_Forge_Subclass_Tarot_Flexible_Ring_Status.md` before changing the subclass selector.
+
+The current controlling carousel architecture is **not** a fixed 3/5/7/9-card presentation. It is:
+
+> **One physical table ring. N subclasses = N evenly spaced cards. One exact front hero position. Presentation derives from each card's angle/depth on that ring.**
+
+Important consequences:
+
+- no fixed visible-card cap;
+- Monster Hunter's four cards naturally occupy four 90° positions;
+- Wizard's large deck uses the same ring at smaller angular intervals;
+- only the exact front card receives hero treatment;
+- rear cards remain on the ring and use the ornate back;
+- clicking a face-up card rotates that card to the hero position;
+- carousel movement alone must never persist a subclass;
+- native Tarot art remains `840 × 1440`;
+- the supplied cathedral/runic-table screenshot is the visual target;
+- stage/background/table artwork may be replaced if necessary, but preserve the Tarot deck.
+
+### Immediate next-chat task
+
+Start by re-fetching:
+
+1. current `main`;
+2. PR #194 current head/mergeability;
+3. PR #194 exact-head Vercel state;
+4. live Supabase only if the requested work touches database-backed behavior.
+
+If Paul continues Tarot work, compare the current PR #194 preview against the supplied target and test both:
+
+- Monster Hunter / another 4-option class;
+- Wizard / a dense subclass catalogue.
+
+Do not revive old fixed-card-count rules from historical chat or stale docs.
+
+If Paul instead asks for documentation cleanup, use this override plus the two new focused status documents to reconcile older ledgers systematically rather than rewriting history blindly.
 
 ## 2026-09-18 current override — read this before older checkpoint prose
 
