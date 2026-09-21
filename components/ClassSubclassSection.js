@@ -4,7 +4,7 @@ import { handleSubclassArtworkError, subclassArtworkFor } from "../utils/classes
 
 const text = (value) => String(value ?? "").trim();
 const FRONT_CENTER_SLOT = 1;
-const VISIBLE_CARD_CAP = 9;
+const FACE_UP_ARC_DEGREES = 72;
 const DRAG_THRESHOLD_PX = 6;
 const FLICK_PROJECTION_MS = 180;
 
@@ -47,110 +47,101 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
-function orbitThetaDegrees(distance) {
-  const d = Math.max(0, Number(distance || 0));
-  if (d <= 1) return d * 29;
-  if (d <= 2) return 29 + ((d - 1) * 27);
-  if (d <= 3) return 56 + ((d - 2) * 56);
-  if (d <= 4) return 112 + ((d - 3) * 38);
-  return Math.min(180, 150 + ((d - 4) * 40));
+function orbitProfileFor(total) {
+  const count = Math.max(1, Number(total || 1));
+  const density = clamp((count - 4) / 10, 0, 1);
+
+  // One ring, mildly expanding with catalogue size. Small classes remain
+  // centered on the same table; large classes use more of its perimeter.
+  const horizontalRadius = 31 + (density * 6.5);
+  const verticalRadius = 22 + (density * 2.5);
+  const verticalCenter = 52.5;
+
+  // Keep the physical render size large enough for the native 840x1440 Tarot
+  // art, but ease very large catalogues down slightly to preserve breathing room.
+  const maxWidth = count <= 4 ? 300
+    : count <= 6 ? 292
+      : count <= 8 ? 282
+        : count <= 10 ? 270
+          : count <= 12 ? 258
+            : 248;
+
+  const minWidth = Math.round(maxWidth * 0.68);
+  const viewportWidth = count <= 4 ? 16.4
+    : count <= 6 ? 15.9
+      : count <= 8 ? 15.2
+        : count <= 10 ? 14.6
+          : count <= 12 ? 14.0
+            : 13.5;
+
+  return {
+    horizontalRadius,
+    verticalRadius,
+    verticalCenter,
+    minWidth,
+    viewportWidth,
+    maxWidth,
+    heroMinWidth: Math.round(minWidth * 1.055),
+    heroViewportWidth: viewportWidth * 1.055,
+    heroMaxWidth: Math.round(maxWidth * 1.055),
+  };
 }
 
 function orbitPlacement(optionIndex, orbitOffset, total) {
   const count = Math.max(1, Number(total || 1));
-  const visualSlotCount = Math.min(count, VISIBLE_CARD_CAP);
   const frontCenter = orbitOffset + FRONT_CENTER_SLOT;
   const signedSlots = signedOrbitSlots(optionIndex - frontCenter, count);
-  const absoluteSlots = Math.abs(signedSlots);
-  const direction = signedSlots === 0 ? 0 : Math.sign(signedSlots);
-
-  // The catalogue remains complete. Only the nearest visual ring is painted.
-  // A small rear-seam allowance crossfades the outgoing/incoming card during
-  // drag so the ring never visibly pops.
-  const visibleRadius = Math.floor(visualSlotCount / 2);
-  const isVisible = count <= VISIBLE_CARD_CAP || absoluteSlots <= visibleRadius + 0.18;
-
-  // The front half deliberately uses more of the table rim than equal angular
-  // slots would. This gives the five readable cards the same graceful spread
-  // as the approved visual reference while the rear cards curl around behind.
-  const isFront = absoluteSlots <= 1.01;
-  // Keep five cards visually readable on large decks while preserving the
-  // interaction contract: only the center and immediate pair are selectable.
-  // The outer readable pair belongs to the table composition, not the click zone.
-  const faceUpRadius = count <= 4 ? 1 : 2;
-  const isFaceUp = count <= 3 || absoluteSlots <= faceUpRadius + 0.01;
-  const isCenter = absoluteSlots <= 0.015;
-  const isOpposite = count % 2 === 0 && Math.abs(absoluteSlots - (count / 2)) <= 0.015;
-
-  const thetaDegrees = isOpposite ? 180 : orbitThetaDegrees(absoluteSlots);
-  const theta = (thetaDegrees * Math.PI) / 180;
-  const sine = Math.sin(theta);
-  const cosine = Math.cos(theta);
+  const angleStep = 360 / count;
+  const angleDegrees = signedSlots * angleStep;
+  const absoluteAngle = Math.abs(angleDegrees);
+  const angle = (angleDegrees * Math.PI) / 180;
+  const sine = Math.sin(angle);
+  const cosine = Math.cos(angle);
   const depth = (cosine + 1) / 2;
+  const profile = orbitProfileFor(count);
 
-  // Position on the ellipse and card-facing angle are intentionally separate:
-  // cards follow the table edge while their faces progressively bend into it.
-  const yawMagnitude = absoluteSlots <= 1
-    ? absoluteSlots * 16
-    : absoluteSlots <= 2
-      ? 16 + ((absoluteSlots - 1) * 22)
-      : absoluteSlots <= 3
-        ? 38 + ((absoluteSlots - 2) * 74)
-        : Math.min(180, Math.max(112, 112 + ((thetaDegrees - 112) * 0.76)));
+  const isCenter = Math.abs(signedSlots) <= 0.015;
+  const isFaceUp = count === 1 || absoluteAngle <= FACE_UP_ARC_DEGREES + 0.01;
+  const isInteractive = isFaceUp;
 
-  const yaw = direction * yawMagnitude;
+  // Yaw follows the perimeter rather than fixed slot rules. Rear cards keep a
+  // broad readable silhouette; the surface itself flips to the ornate card back.
+  const yaw = clamp(angleDegrees * 0.5, -68, 68);
 
-  // The card's bottom-center, not its center, traces the physical table rim.
-  // This makes the Tarot deck look planted on the table instead of floating
-  // over an unrelated ellipse.
-  const horizontalRadius = 34;
-  const verticalCenter = 53;
-  const verticalRadius = 23;
-  const x = 50 + (direction * sine * horizontalRadius);
-  const y = verticalCenter + (cosine * verticalRadius);
+  const x = 50 + (sine * profile.horizontalRadius);
+  const y = profile.verticalCenter + (cosine * profile.verticalRadius);
 
-  const scale = absoluteSlots <= 1
-    ? 1 - (absoluteSlots * 0.06)
-    : absoluteSlots <= 2
-      ? 0.94 - ((absoluteSlots - 1) * 0.14)
-      : absoluteSlots <= 3
-        ? 0.80 - ((absoluteSlots - 2) * 0.23)
-        : Math.max(0.50, 0.57 - ((absoluteSlots - 3) * 0.05));
-
-  const opacity = absoluteSlots <= 1
-    ? 0.97 - (absoluteSlots * 0.02)
-    : absoluteSlots <= 2
-      ? 0.95 - ((absoluteSlots - 1) * 0.12)
-      : absoluteSlots <= 3
-        ? 0.83 - ((absoluteSlots - 2) * 0.48)
-        : Math.max(0.22, 0.35 - ((absoluteSlots - 3) * 0.12));
-
-  const zIndex = isCenter
-    ? 134
-    : isFront
-      ? 124 + Math.round(depth * 6)
-      : isFaceUp
-        ? 96 + Math.round(depth * 12)
-        : 30 + Math.round(depth * 24);
+  // Depth is continuous for every catalogue size. Only the exact front card is
+  // the hero; every other card remains seated at its natural point on the ring.
+  const scale = isCenter ? 1 : 0.56 + (depth * 0.40);
+  const opacity = isCenter ? 0.985 : 0.22 + (depth * 0.73);
+  const zIndex = 30 + Math.round(depth * 96) + (isCenter ? 16 : 0);
 
   return {
     signedSlots,
+    angleDegrees,
     depth,
-    isFront,
-    isFaceUp,
     isCenter,
-    isVisible,
+    isFaceUp,
+    isInteractive,
     style: {
       "--orbit-x": `${x.toFixed(3)}%`,
       "--orbit-y": `${y.toFixed(3)}%`,
       "--orbit-yaw": `${yaw.toFixed(2)}deg`,
       "--orbit-scale": scale.toFixed(4),
-      "--orbit-opacity": (isVisible ? opacity : 0).toFixed(3),
-      "--orbit-z": String(isVisible ? zIndex : 0),
-      "--orbit-depth-z": `${isFaceUp ? 0 : Math.round(depth * 28)}px`,
+      "--orbit-opacity": opacity.toFixed(3),
+      "--orbit-z": String(zIndex),
+      "--orbit-depth-z": "0px",
+      "--orbit-card-min": `${profile.minWidth}px`,
+      "--orbit-card-vw": `${profile.viewportWidth.toFixed(2)}vw`,
+      "--orbit-card-max": `${profile.maxWidth}px`,
+      "--orbit-hero-min": `${profile.heroMinWidth}px`,
+      "--orbit-hero-vw": `${profile.heroViewportWidth.toFixed(2)}vw`,
+      "--orbit-hero-max": `${profile.heroMaxWidth}px`,
     },
   };
 }
+
 function pixelsPerCardFor(width, total) {
   const count = Math.max(1, Number(total || 1));
   const visibleSpan = clamp(count, 5, 8);
@@ -339,13 +330,16 @@ export default function ClassSubclassSection({
     setIsDragging(false);
   }
 
-  function handleCardClick(event, option, isFront) {
-    if (!isFront || Date.now() < suppressClickUntilRef.current) {
+  function handleCardClick(event, option, optionIndex, isInteractive) {
+    if (!isInteractive || Date.now() < suppressClickUntilRef.current) {
       event.preventDefault();
       event.stopPropagation();
       return;
     }
 
+    // Clicking a visible front-half card rotates that exact card to the single
+    // hero position. Selection/inspection remain explicit user actions.
+    setOrbitOffset(normalizeOrbitOffset(optionIndex - FRONT_CENTER_SLOT, options.length));
     setInspectedKey(option.key);
     model?.setPreviewKey?.(option.key);
     onInspectSubclass?.(option);
@@ -393,7 +387,7 @@ export default function ClassSubclassSection({
               onPointerUp={(event) => finishOrbitPointer(event)}
               onPointerCancel={(event) => finishOrbitPointer(event, true)}
             >
-              {orbitOptions.map(({ option, optionIndex, signedSlots, depth, isFront, isFaceUp, isCenter, isVisible, style }) => {
+              {orbitOptions.map(({ option, optionIndex, signedSlots, angleDegrees, depth, isInteractive, isFaceUp, isCenter, style }) => {
                 const isSelected = selected?.key === option.key;
                 const isInspected = inspectedOption?.key === option.key;
                 const eligible = optionEntryLevel(option) <= currentLevel;
@@ -402,17 +396,18 @@ export default function ClassSubclassSection({
                     key={option.key}
                     type="button"
                     role="listitem"
-                    className={`class-subclass-carousel-card${isCenter ? " is-orbit-center" : ""}${isInspected ? " is-inspected" : ""}${isSelected ? " is-selected" : ""}${isFront ? " is-orbit-front" : " is-orbit-back"}${isFaceUp ? " is-orbit-face-up" : ""}${isVisible ? "" : " is-orbit-hidden"}${eligible ? " is-eligible" : " is-locked"}`}
+                    className={`class-subclass-carousel-card${isCenter ? " is-orbit-center" : ""}${isInspected ? " is-inspected" : ""}${isSelected ? " is-selected" : ""}${isInteractive ? " is-orbit-front" : " is-orbit-back"}${isFaceUp ? " is-orbit-face-up" : ""}${eligible ? " is-eligible" : " is-locked"}`}
                     style={style}
                     aria-pressed={isSelected}
-                    aria-hidden={isFront ? undefined : "true"}
-                    tabIndex={isFront ? 0 : -1}
+                    aria-hidden={isInteractive ? undefined : "true"}
+                    tabIndex={isInteractive ? 0 : -1}
                     aria-posinset={optionIndex + 1}
                     aria-setsize={options.length}
-                    aria-label={`${option.name}, ${eligible ? "click to select" : `available at level ${optionEntryLevel(option)}`}`}
+                    aria-label={`${option.name}, ${eligible ? "click to rotate to the hero position and select" : `available at level ${optionEntryLevel(option)}`}`}
                     data-orbit-distance={Math.abs(signedSlots).toFixed(3)}
+                    data-orbit-angle={angleDegrees.toFixed(3)}
                     data-orbit-depth={depth.toFixed(3)}
-                    onClick={(event) => handleCardClick(event, option, isFront)}
+                    onClick={(event) => handleCardClick(event, option, optionIndex, isInteractive)}
                   >
                     <span className="class-subclass-carousel-card__surface">
                       <span className="class-subclass-carousel-card__face is-front">
@@ -445,7 +440,7 @@ export default function ClassSubclassSection({
             <div className="class-subclass-carousel-modal__position" aria-live="polite">
               <span>{browsedIndex + 1}</span><b>/</b><span>{options.length}</span>
             </div>
-            <div className="class-subclass-carousel-modal__hint">Drag the table or use the arrows. Only the three front cards can be chosen.</div>
+            <div className="class-subclass-carousel-modal__hint">Drag the table, use the arrows, or click a face-up card to bring it to the hero position.</div>
           </div>
 
           {inspectedOption ? (
