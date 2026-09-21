@@ -42,6 +42,8 @@ for (const token of [
   'p_path: cleanPath(pathValue)',
   'routeChangeComplete',
   'event === "SIGNED_IN"',
+  'let deferredTimer = null',
+  'window.setTimeout(() => {',
 ]) assert(tracker.includes(token), `Site visit tracker contract missing ${token}`);
 
 for (const forbidden of ["ip_address", "userAgent", "navigator.userAgent", "geolocation"]) {
@@ -67,8 +69,10 @@ for (const token of [
   "grant execute on function public.record_site_visit_v1(uuid, text) to anon, authenticated",
   "create or replace function public.get_recent_site_activity_v1",
   "if not private.current_user_is_admin()",
+  "revoke execute on function public.get_recent_site_activity_v1() from anon",
   "grant execute on function public.get_recent_site_activity_v1() to authenticated",
   "now() - interval '30 days'",
+  "last_seen < now() - interval '31 days'",
 ]) assert(migration.includes(token), `Site activity migration contract missing ${token}`);
 
 for (const forbidden of ["user_agent", "ip_address inet", "precise_location", "fingerprint"]) {
