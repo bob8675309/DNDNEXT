@@ -2,7 +2,8 @@ import { useEffect } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "../utils/supabaseClient";
 
-const VISITOR_KEY_STORAGE = "dndnext:site-visitor-key";
+const ANON_VISITOR_KEY_STORAGE = "dndnext:site-visitor-key";
+const ACCOUNT_VISITOR_KEY_PREFIX = "dndnext:site-visitor-key:user:";
 
 function generatedVisitorKey() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -20,18 +21,23 @@ function generatedVisitorKey() {
   return null;
 }
 
-function visitorKey() {
+function storageKeyForUser(userId) {
+  const normalized = String(userId || "").trim();
+  return normalized ? `${ACCOUNT_VISITOR_KEY_PREFIX}${normalized}` : ANON_VISITOR_KEY_STORAGE;
+}
+
+function visitorKey(storageKey) {
   if (typeof window === "undefined") return null;
 
   try {
-    const existing = window.localStorage.getItem(VISITOR_KEY_STORAGE);
+    const existing = window.localStorage.getItem(storageKey);
     if (/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(existing || "")) {
       return existing;
     }
 
     const created = generatedVisitorKey();
     if (!created) return null;
-    window.localStorage.setItem(VISITOR_KEY_STORAGE, created);
+    window.localStorage.setItem(storageKey, created);
     return created;
   } catch {
     return generatedVisitorKey();
@@ -49,12 +55,16 @@ export default function SiteVisitTracker() {
 
   useEffect(() => {
     let active = true;
+    let authResolved = false;
+    let activeUserId = null;
     let deferredTimer = null;
-    const key = visitorKey();
-    if (!key) return undefined;
+    let pendingPath = router.asPath || window.location.pathname;
 
     function record(pathValue) {
-      if (!active) return;
+      if (!active || !authResolved) return;
+      const key = visitorKey(storageKeyForUser(activeUserId));
+      if (!key) return;
+
       void supabase
         .rpc("record_site_visit_v1", {
           p_visitor_key: key,
@@ -66,20 +76,34 @@ export default function SiteVisitTracker() {
 
     function scheduleRecord(pathValue) {
       if (!active) return;
+      pendingPath = pathValue || "/";
+      if (!authResolved) return;
       if (deferredTimer !== null) window.clearTimeout(deferredTimer);
       deferredTimer = window.setTimeout(() => {
         deferredTimer = null;
-        record(pathValue);
+        record(pendingPath);
       }, 0);
     }
 
-    scheduleRecord(router.asPath || window.location.pathname);
+    async function initializeAuthContext() {
+      const { data } = await supabase.auth.getSession();
+      if (!active) return;
+      activeUserId = data?.session?.user?.id || null;
+      authResolved = true;
+      scheduleRecord(pendingPath);
+    }
+
+    void initializeAuthContext();
 
     const onRouteChange = (url) => scheduleRecord(url);
     router.events.on("routeChangeComplete", onRouteChange);
 
-    const { data: authSubscription } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN") scheduleRecord(router.asPath || window.location.pathname);
+    const { data: authSubscription } = supabase.auth.onAuthStateChange((event, session) => {
+      activeUserId = session?.user?.id || null;
+      authResolved = true;
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
+        scheduleRecord(router.asPath || window.location.pathname);
+      }
     });
 
     return () => {
