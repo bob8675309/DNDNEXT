@@ -25,8 +25,9 @@ The older checkpoint sections below are retained as history. Current live author
 - active Character Forge presentation work: PR #194, branch `agent/subclass-carousel-drag-crisp-20260918`, reviewed head `f21a81435946b1ae8ec6112e5376062cfc2b62f4`, open/unmerged;
 - PR #194 exact-head preview: `dndnext-86xs3s1d4-pauls-projects-2016aa54.vercel.app` — **READY** at handoff.
 
-Current focused ledgers:
+Current focused handoff/status documents:
 
+- `Next_Chat_Handoff_2026-09-21.md` — concise copy-ready next-chat takeover note;
 - `Auth_Navigation_Admin_Activity_Status.md` — merged PR #195 and live Supabase hardening;
 - `Character_Forge_Subclass_Tarot_Flexible_Ring_Status.md` — active PR #194 flexible-ring architecture and acceptance target.
 
