@@ -38,6 +38,9 @@ begin
     raise exception 'visitor key is required' using errcode = '22023';
   end if;
 
+  delete from public.site_visit_activity
+  where last_seen < now() - interval '31 days';
+
   insert into public.site_visit_activity (
     visitor_key,
     user_id,
