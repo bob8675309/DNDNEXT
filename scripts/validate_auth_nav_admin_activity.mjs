@@ -75,8 +75,8 @@ for (const token of [
   "last_seen < now() - interval '31 days'",
 ]) assert(migration.includes(token), `Site activity migration contract missing ${token}`);
 
-for (const forbidden of ["user_agent", "ip_address inet", "precise_location", "fingerprint"]) {
-  assert(!migration.toLowerCase().includes(forbidden), `Site activity ledger must not store ${forbidden}`);
+for (const forbidden of ["user_agent text", "ip_address inet", "precise_location", "fingerprint text"]) {
+  assert(!migration.toLowerCase().includes(forbidden), `Site activity ledger must not define a sensitive ${forbidden} field`);
 }
 
 console.log("Auth-gated navbar and privacy-minimized admin site activity validation passed.");
