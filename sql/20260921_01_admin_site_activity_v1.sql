@@ -168,6 +168,7 @@ end;
 $$;
 
 revoke all on function public.get_recent_site_activity_v1() from public;
+revoke execute on function public.get_recent_site_activity_v1() from anon;
 grant execute on function public.get_recent_site_activity_v1() to authenticated;
 
 comment on table public.site_visit_activity is
