@@ -38,41 +38,35 @@ assert(!guide.includes('onFocus={() => publishFeature(model, onFeatureDetail'), 
 for (const token of [
   'import { createPortal } from "react-dom"',
   'const FRONT_CENTER_SLOT = 1',
-  'const VISIBLE_CARD_CAP = 9',
+  'const FACE_UP_ARC_DEGREES = 72',
   'const DRAG_THRESHOLD_PX = 6',
   'const FLICK_PROJECTION_MS = 180',
   'function normalizeOrbitOffset(value, total)',
   'function signedOrbitSlots(value, total)',
-  'function orbitThetaDegrees(distance)',
-  'if (d <= 1) return d * 29',
-  'if (d <= 2) return 29 + ((d - 1) * 27)',
-  'if (d <= 3) return 56 + ((d - 2) * 56)',
-  'if (d <= 4) return 112 + ((d - 3) * 38)',
+  'function orbitProfileFor(total)',
+  'const density = clamp((count - 4) / 10, 0, 1)',
+  'const horizontalRadius = 31 + (density * 6.5)',
+  'const verticalRadius = 22 + (density * 2.5)',
+  'const verticalCenter = 52.5',
   'function orbitPlacement(optionIndex, orbitOffset, total)',
-  'const visualSlotCount = Math.min(count, VISIBLE_CARD_CAP)',
-  'const visibleRadius = Math.floor(visualSlotCount / 2)',
-  'const isVisible = count <= VISIBLE_CARD_CAP || absoluteSlots <= visibleRadius + 0.18',
-  'const faceUpRadius = count <= 4 ? 1 : 2',
-  'const isFaceUp = count <= 3 || absoluteSlots <= faceUpRadius + 0.01',
-  'const isCenter = absoluteSlots <= 0.015',
-  'const isOpposite = count % 2 === 0 && Math.abs(absoluteSlots - (count / 2)) <= 0.015',
-  'const thetaDegrees = isOpposite ? 180 : orbitThetaDegrees(absoluteSlots)',
-  'const yawMagnitude = absoluteSlots <= 1',
-  '? absoluteSlots * 16',
-  '? 16 + ((absoluteSlots - 1) * 22)',
-  '? 38 + ((absoluteSlots - 2) * 74)',
-  'Math.min(180, Math.max(112, 112 + ((thetaDegrees - 112) * 0.76)))',
-  'const horizontalRadius = 34',
-  'const verticalCenter = 53',
-  'const verticalRadius = 23',
-  'const x = 50 + (direction * sine * horizontalRadius)',
-  'const y = verticalCenter + (cosine * verticalRadius)',
-  '? 0.94 - ((absoluteSlots - 1) * 0.14)',
-  '? 0.80 - ((absoluteSlots - 2) * 0.23)',
-  '? 0.95 - ((absoluteSlots - 1) * 0.12)',
-  '? 0.83 - ((absoluteSlots - 2) * 0.48)',
-  '"--orbit-opacity": (isVisible ? opacity : 0).toFixed(3)',
-  '"--orbit-depth-z": `${isFaceUp ? 0 : Math.round(depth * 28)}px`',
+  'const angleStep = 360 / count',
+  'const angleDegrees = signedSlots * angleStep',
+  'const depth = (cosine + 1) / 2',
+  'const isCenter = Math.abs(signedSlots) <= 0.015',
+  'const isFaceUp = count === 1 || absoluteAngle <= FACE_UP_ARC_DEGREES + 0.01',
+  'const isInteractive = isFaceUp',
+  'const yaw = clamp(angleDegrees * 0.5, -68, 68)',
+  'const x = 50 + (sine * profile.horizontalRadius)',
+  'const y = profile.verticalCenter + (cosine * profile.verticalRadius)',
+  'const scale = isCenter ? 1 : 0.56 + (depth * 0.40)',
+  'const opacity = isCenter ? 0.985 : 0.22 + (depth * 0.73)',
+  '"--orbit-depth-z": "0px"',
+  '"--orbit-card-min":',
+  '"--orbit-card-vw":',
+  '"--orbit-card-max":',
+  '"--orbit-hero-min":',
+  '"--orbit-hero-vw":',
+  '"--orbit-hero-max":',
   'const [orbitOffset, setOrbitOffset] = useState(0)',
   'const [isDragging, setIsDragging] = useState(false)',
   'const [inspectedKey, setInspectedKey] = useState("")',
@@ -82,24 +76,24 @@ for (const token of [
   'function handleOrbitPointerDown(event)',
   'function handleOrbitPointerMove(event)',
   'function finishOrbitPointer(event, cancelled = false)',
-  'function handleCardClick(event, option, isFront)',
+  'function handleCardClick(event, option, optionIndex, isInteractive)',
+  'setOrbitOffset(normalizeOrbitOffset(optionIndex - FRONT_CENTER_SLOT, options.length))',
   'event.currentTarget.setPointerCapture?.(event.pointerId)',
   'event.currentTarget.releasePointerCapture?.(event.pointerId)',
-  'pixelsPerCardFor(bounds?.width, options.length)',
   'Math.round(drag.currentOffset + projectedCards)',
   'class-subclass-carousel-modal__orbit',
   'onPointerDown={handleOrbitPointerDown}',
   'onPointerMove={handleOrbitPointerMove}',
   'onPointerUp={(event) => finishOrbitPointer(event)}',
   'onPointerCancel={(event) => finishOrbitPointer(event, true)}',
-  'class-subclass-carousel-card__surface',
   'width={840}',
   'height={1440}',
   'isCenter ? " is-orbit-center" : ""',
+  'isInteractive ? " is-orbit-front" : " is-orbit-back"',
   'isFaceUp ? " is-orbit-face-up" : ""',
-  'data-orbit-depth={depth.toFixed(3)}',
-  'onClick={(event) => handleCardClick(event, option, isFront)}',
-  'Only the three front cards can be chosen.',
+  'data-orbit-angle={angleDegrees.toFixed(3)}',
+  'onClick={(event) => handleCardClick(event, option, optionIndex, isInteractive)}',
+  'click to rotate to the hero position and select',
   'model.setPreviewKey(option.key)',
   'model.selectSubclass(option)',
   'onClick={showInspectedDetails}',
@@ -108,41 +102,35 @@ for (const token of [
   'onDoubleClick={() => setSelectorOpen(true)}',
   '>Change Subclass<',
   'onInspectSubclass?.(option)',
-]) assert(selector.includes(token), `Draggable runic subclass selector is missing ${token}`);
+]) assert(selector.includes(token), `Flexible table-ring subclass selector is missing ${token}`);
 
+assert(!selector.includes('VISIBLE_CARD_CAP'), "Flexible ring must not cap or hide subclasses based on a fixed visible-card count.");
+assert(!selector.includes('function orbitThetaDegrees'), "Fixed hand-authored slot geometry must not coexist with the parametric ring.");
+assert(!selector.includes('isVisible'), "Every subclass card must remain on the same physical ring instead of entering a capped visual window.");
 assert((selector.match(/model\.selectSubclass\(option\)/g) || []).length === 1, "Carousel motion must never persist a subclass; only the explicit card-choice path may call selectSubclass(option).");
 assert(!selector.includes('model?.setPreviewKey?.(focusedOption.key)'), "Front-most carousel position must not auto-preview/persist as the player's subclass.");
 assert(!selector.includes('const focusedOption = options[focusedIndex] || null'), "Legacy auto-focused front-card selection state is still present.");
-assert(selector.includes('const visualSlotCount = Math.min(count, VISIBLE_CARD_CAP)'), "Visible Tarot cards must use a capped presentation ring while preserving the full subclass catalogue.");
-assert(selector.includes('const visibleRadius = Math.floor(visualSlotCount / 2)'), "Visible Tarot ring must derive its cull radius from the visual slot cap.");
-assert(selector.includes('const isVisible = count <= VISIBLE_CARD_CAP || absoluteSlots <= visibleRadius + 0.18'), "Tarot carousel must keep the full option list while limiting the painted ring to the approved visual window.");
-assert(selector.includes('if (d <= 1) return d * 29'), "Inner Tarot pair must follow the annotated table-rim anchors.");
-assert(selector.includes('if (d <= 2) return 29 + ((d - 1) * 27)'), "Outer visual-front pair must sit near the approved 56-degree table position.");
-assert(selector.includes('if (d <= 3) return 56 + ((d - 2) * 56)'), "Near rear cards must climb around the table behind the five visual fronts.");
-assert(selector.includes('if (d <= 4) return 112 + ((d - 3) * 38)'), "Far rear cards must curl inward along the annotated rear ellipse.");
-assert(selector.includes('const horizontalRadius = 34'), "Tarot card feet must follow the approved annotated table-rim width.");
-assert(selector.includes('const verticalCenter = 53'), "Tarot card feet must align with the approved front-rim anchor band.");
-assert(selector.includes('const verticalRadius = 23'), "Tarot card feet must preserve the annotated front-low/rear-high table ellipse.");
-assert(selector.includes('const isCenter = absoluteSlots <= 0.015'), "Only the centered Tarot card may receive the pop-out treatment.");
-assert(selector.includes('const isOpposite = count % 2 === 0 && Math.abs(absoluteSlots - (count / 2)) <= 0.015'), "Even-card subclass sets must place their lone opposite card at the true rear-center slot.");
-
-assert(selector.includes('const faceUpRadius = count <= 4 ? 1 : 2'), "Large decks must show five visual front faces while keeping only three selectable.");
-assert(selector.includes('? absoluteSlots * 16'), "The interactive side pair must use the gentler annotated yaw.");
-assert(selector.includes('? 16 + ((absoluteSlots - 1) * 22)'), "The outer visual-front pair must bend farther along the table rim.");
-assert(selector.includes('? 38 + ((absoluteSlots - 2) * 74)'), "Cards leaving the five visual fronts must turn smoothly into the rear deck.");
-assert(selector.includes('? 0.94 - ((absoluteSlots - 1) * 0.14)'), "Outer visual-front scale must step down without overpowering the center trio.");
-assert(selector.includes('? 0.95 - ((absoluteSlots - 1) * 0.12)'), "Outer visual-front opacity must stay readable but subordinate.");
-assert(selector.includes('"--orbit-depth-z": `${isFaceUp ? 0 : Math.round(depth * 28)}px`'), "Readable Tarot faces must avoid positive Z-depth resampling.");
+assert(selector.includes('const angleStep = 360 / count'), "Subclass cards must be evenly spaced around the ring for every catalogue size.");
+assert(selector.includes('const angleDegrees = signedSlots * angleStep'), "Every card must derive its physical ring position from equal angular spacing.");
+assert(selector.includes('const density = clamp((count - 4) / 10, 0, 1)'), "The ring may expand mildly with catalogue size instead of switching to a different carousel.");
+assert(selector.includes('const horizontalRadius = 31 + (density * 6.5)'), "Adaptive horizontal ring radius must remain bounded to the physical table.");
+assert(selector.includes('const verticalRadius = 22 + (density * 2.5)'), "Adaptive vertical ring radius must preserve the same table ellipse.");
+assert(selector.includes('const isFaceUp = count === 1 || absoluteAngle <= FACE_UP_ARC_DEGREES + 0.01'), "Front/back presentation must be angle-based, not hard-coded by slot count.");
+assert(selector.includes('const isInteractive = isFaceUp'), "Visible face-up cards must be able to rotate themselves into the hero position.");
+assert(selector.includes('setOrbitOffset(normalizeOrbitOffset(optionIndex - FRONT_CENTER_SLOT, options.length))'), "Clicking a face-up card must rotate that exact card to the single hero position.");
+assert(selector.includes('const isCenter = Math.abs(signedSlots) <= 0.015'), "Only the exact front-center card may receive hero treatment.");
+assert(selector.includes('const scale = isCenter ? 1 : 0.56 + (depth * 0.40)'), "Non-hero scale must come continuously from ring depth.");
+assert(selector.includes('const opacity = isCenter ? 0.985 : 0.22 + (depth * 0.73)'), "Opacity must come continuously from ring depth so rear motion remains visible.");
+assert(selector.includes('"--orbit-depth-z": "0px"'), "Flexible ring must avoid positive Z translation that softens Tarot artwork.");
+assert(selector.includes('const maxWidth = count <= 4 ? 300'), "Small subclass catalogues must be allowed physically larger crisp Tarot cards.");
+assert(selector.includes(': count <= 12 ? 258'), "Large subclass catalogues must reduce physical card width modestly instead of hiding cards.");
 assert(!selector.includes('class-subclass-carousel-modal__ambient-smoke'), "Approved clean-table presentation must not render ambient purple smoke.");
 assert(!selector.includes('class-subclass-carousel-modal__smoke-back'), "Approved clean-table presentation must not render rear purple smoke.");
 assert(!selector.includes('class-subclass-carousel-modal__smoke-front'), "Approved clean-table presentation must not render foreground purple smoke.");
 assert(!selector.includes('`Unlocks at level ${optionEntryLevel(option)}`'), "Tarot card faces must not render unlock-level pills over the artwork.");
-assert(tarotCss.includes('width: clamp(188px, 14.6vw, 270px) !important'), "Foreground Tarot cards must stay large enough for crisp native art without overpowering the table.");
-assert(tarotCss.includes('width: clamp(198px, 15.35vw, 284px) !important'), "Only the centered Tarot card may receive the restrained physical size bump.");
-assert(tarotCss.includes('opacity: .955 !important'), "Front Tarot cards must retain the requested subtle translucency.");
-assert(tarotCss.includes('display: none !important'), "Smoke-layer safety override must remain installed.");
-assert(tarotCss.includes('opacity: .91'), "Runic table must remain clear and visually present after smoke removal.");
-assert(tarotCss.includes('will-change: auto'), "Resting Tarot cards must not stay permanently promoted to compositor layers.");
+assert(selector.includes('const inspectedOption = options.find((option) => option.key === inspectedKey) || null'), "Subclass dossier must belong only to an explicitly clicked card.");
+assert(selector.includes('{inspectedOption ? ('), "Subclass dossier must stay out of the cinematic table composition until a card is explicitly inspected.");
+
 const rotateBlock = selector.slice(selector.indexOf("function rotateCarousel"), selector.indexOf("function showInspectedDetails"));
 const pointerDownBlock = selector.slice(selector.indexOf("function handleOrbitPointerDown"), selector.indexOf("function handleOrbitPointerMove"));
 const pointerMoveBlock = selector.slice(selector.indexOf("function handleOrbitPointerMove"), selector.indexOf("function finishOrbitPointer"));
@@ -150,62 +138,45 @@ assert(!rotateBlock.includes('setInspectedKey("")'), "Arrow navigation must not 
 assert(!pointerDownBlock.includes('setInspectedKey("")'), "Pointer-down must not clear an explicitly clicked subclass inspection target.");
 assert(!pointerDownBlock.includes('setPointerCapture'), "Ordinary pointer-down must remain a click candidate instead of immediately becoming a captured drag.");
 assert(pointerMoveBlock.includes('setPointerCapture?.(event.pointerId)'), "Pointer capture must begin only after the drag threshold is crossed.");
-assert(selector.includes('selected && inspectedOption && selected.key === inspectedOption.key'), "Selected-note rendering must not treat two missing keys as a selected subclass.");
-assert(!selector.includes('<small>Selected</small>'), "Approved Tarot artwork must remain badge-free; selected state should use border/glow treatment only.");
-assert(selector.includes('const inspectedOption = options.find((option) => option.key === inspectedKey) || null'), "Subclass dossier must belong only to an explicitly clicked card, not the centered browse position.");
-assert(!selector.includes('const browsedOption = options[browsedIndex] || null'), "Centered browse position must not masquerade as explicit subclass inspection.");
-assert(selector.includes('{inspectedOption ? ('), "Subclass dossier must stay out of the cinematic table composition until a card is explicitly inspected.");
-
-
-assert(tarotCss.includes('width: min(1760px, 100vw) !important'), "Approved subclass modal must use the near-fullscreen reference composition.");
-assert(tarotCss.includes('height: min(990px, 100vh) !important'), "Approved subclass modal must preserve the cinematic reference height.");
-assert(tarotCss.includes('top: 20% !important') && tarotCss.includes('bottom: 2.5% !important'), "Runic table must sit low and large in the approved composition.");
-assert(tarotCss.includes('top: 19.5% !important') && tarotCss.includes('bottom: 13% !important'), "Tarot orbit must align vertically to the table rim in the approved composition.");
-assert(tarotCss.includes('left: 24% !important') && tarotCss.includes('right: 24% !important'), "Subclass dossier must use the compact centered reference width.");
-assert(tarotCss.includes('.class-subclass-carousel-modal__position,\n.class-subclass-carousel-modal__hint {\n  display: none !important;'), "Legacy counter/hint text must not clutter the approved visual composition.");
-assert(tarotCss.includes('.class-subclass-carousel-card__copy {\n  display: none !important;'), "Tarot card artwork must remain free of pill overlays.");
-assert(tarotCss.includes('translate3d(-50%, -100%, var(--orbit-depth-z))'), "Tarot cards must be bottom-center anchored so their feet trace the table rim.");
-assert(tarotCss.includes('transform-origin: 50% 100% !important'), "Tarot scaling and yaw must remain planted at the card base.");
-assert(tarotCss.includes('filter: grayscale(.16) sepia(.10) saturate(.72) brightness(.92) contrast(1.06) !important'), "Cathedral stage must keep the warmer less-purple approved grade.");
-assert(tarotCss.includes('filter: grayscale(.55) sepia(.38) saturate(.78) brightness(.86) contrast(1.14) !important'), "Runic table must stay physically dark and gold-biased instead of neon-purple.");
-assert(tarotCss.includes('mix-blend-mode: multiply'), "Runic table must retain the dark physical-surface overlay.");
-assert(tarotCss.includes('width: clamp(198px, 15.35vw, 284px) !important'), "Center card must use only a restrained size increase over its neighbors.");
-assert(tarotCss.includes('white-space: nowrap'), "Desktop subclass heading should remain on one line like the approved reference.");
-assert(tarotCss.includes('translate3d(-50%, -100%, var(--orbit-depth-z))'), "Center card must remain seated on the same table-foot anchor as its neighbors.");
-assert(tarotCss.includes('.class-subclass-carousel-card.is-orbit-face-up:not(.is-orbit-front)'), "Outer visual-front cards must remain face-up while staying non-interactive.");
-assert(tarotCss.includes('.class-subclass-carousel-card::after'), "Tarot cards must retain a subtle contact shadow where their feet meet the table.");
-
-
-
-
-
+assert(!selector.includes('<small>Selected</small>'), "Tarot artwork must remain badge-free; selected state should use restrained border/glow treatment only.");
 
 for (const token of [
+  '/* 2026-09-20 canonical flexible-ring implementation.',
   'url("/media/forge/subclass-carousel/subclass-selector-cathedral-bg.png")',
   'url("/media/forge/subclass-carousel/subclass-selector-runic-table.png")',
-  '.class-subclass-carousel-modal__orbit.is-dragging',
-  'touch-action: none',
-  'cursor: grab',
-  '.class-subclass-carousel-card__surface',
+  'width: min(1760px, 100vw) !important',
+  'height: min(990px, 100vh) !important',
+  'display: none !important',
+  'width: clamp(var(--orbit-card-min), var(--orbit-card-vw), var(--orbit-card-max)) !important',
+  'width: clamp(var(--orbit-hero-min), var(--orbit-hero-vw), var(--orbit-hero-max)) !important',
   'translate3d(-50%, -100%, var(--orbit-depth-z))',
-  'rotateY(var(--orbit-yaw))',
-  'width: clamp(188px, 14.6vw, 270px) !important',
-  'opacity: .955 !important',
+  'transform-origin: 50% 100% !important',
+  '.class-subclass-carousel-card.is-orbit-front .class-subclass-carousel-card__surface',
+  '.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__surface',
+  'transform: rotateY(180deg) !important',
+  '.class-subclass-carousel-card::after',
+  'filter: grayscale(.14) sepia(.11) saturate(.72) brightness(.92) contrast(1.06) !important',
+  'filter: grayscale(.48) sepia(.34) saturate(.82) brightness(.88) contrast(1.12) !important',
   'will-change: auto',
   '.class-subclass-carousel-modal__orbit.is-dragging .class-subclass-carousel-card',
   'will-change: left, top, transform, opacity',
-  '.class-subclass-carousel-card.is-orbit-front .class-subclass-carousel-card__face.is-front',
-  'transform: none !important',
-  '.class-subclass-carousel-card.is-orbit-hidden',
-  'filter: none !important',
   'image-rendering: auto !important',
   '.class-subclass-carousel-card__face.is-back',
   '.class-subclass-carousel-card__back-rune',
   'backface-visibility: hidden',
   '.class-subclass-carousel-card.is-selected .class-subclass-carousel-card__face.is-front',
   '.class-subclass-carousel-card.is-inspected .class-subclass-carousel-card__face.is-front',
-  'backdrop-filter: blur(12px)',
-]) assert(tarotCss.includes(token), `Draggable/crisp subclass carousel presentation is missing ${token}`);
+  '.class-subclass-carousel-modal__position,',
+  '.class-subclass-carousel-modal__hint',
+  'backdrop-filter: blur(8px) !important',
+]) assert(tarotCss.includes(token), `Flexible table-ring presentation is missing ${token}`);
+
+for (const oldMarker of [
+  'approved-reference implementation: translate the chosen mock-up',
+  'table-rim anchoring pass: cards stand on the table',
+  'three-card table-depth refinement',
+  'annotated-reference pass: five visual fronts',
+]) assert(!tarotCss.includes(oldMarker), `Conflicting historical Tarot override remains active: ${oldMarker}`);
 
 for (const forbidden of [
   'class-subclass-two-column__grid',
@@ -219,16 +190,11 @@ for (const forbidden of [
   'const [visibleCount, setVisibleCount] = useState(4)',
   'const visibleOptions = useMemo',
   '--subclass-visible-count',
-]) assert(!selector.includes(forbidden), `Subclass selector regressed to the prior flat/grid presentation: ${forbidden}`);
-
-for (const forbidden of [
   'loopedOptions',
   'keepRailLooped',
   'rail.scrollWidth / 3',
   'scroll-snap-type:x mandatory',
-  'scrollLeft += segment',
-  'scrollLeft -= segment',
-]) assert(!selector.includes(forbidden), `Subclass carousel still contains rubberband/recentering behavior: ${forbidden}`);
+]) assert(!selector.includes(forbidden), `Subclass selector regressed to an obsolete presentation: ${forbidden}`);
 
 assert(!selector.includes("supabase"), "Subclass selector must remain presentation-only.");
 
