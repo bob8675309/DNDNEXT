@@ -36,6 +36,8 @@ Important PR #195 behavior now on production:
 
 Project remains `DnDWeb` / `ucggczovhmauhshvhusx`.
 
+Live migration-ledger count at this reconciliation: **218**.
+
 Latest relevant registered migrations are now:
 
 - `20260921152546 admin_site_activity_v1`;
@@ -72,6 +74,12 @@ Important consequences:
 - native Tarot art remains `840 × 1440`;
 - the supplied cathedral/runic-table screenshot is the visual target;
 - stage/background/table artwork may be replaced if necessary, but preserve the Tarot deck.
+
+### Current PR #194 integration note
+
+The exact PR #194 head has a READY Vercel preview, but GitHub `Validate Class browser polish` currently fails because the validator still asserts the older `browsedOption`/automatic dossier-following contract. The current flexible-ring source intentionally keeps carousel motion separate from explicit inspection/selection. Treat this as a stale-validator reconciliation item, not proof that the current ring behavior is wrong.
+
+PR #194 is also behind current `main`. Post-base `main` changes overlap PR #194 only in this handoff document; the carousel component/CSS/validators do not overlap PR #195 runtime code. Rebase/reconcile exact-head state before merge.
 
 ### Immediate next-chat task
 
@@ -121,7 +129,7 @@ The standing world-map boundary is unchanged: **do not touch world-map behavior 
 
 Always re-fetch PR #193 and current `main` before writing or merging. Source + exact-head CI/deployment outrank this recorded SHA if the branch moves.
 
-## Current authoritative checkpoint
+## Historical 2026-08-30 checkpoint — retained for provenance
 
 Accepted runtime/code baseline on `main`:
 
@@ -129,7 +137,7 @@ Accepted runtime/code baseline on `main`:
 
 Active work is **not on `main`**. The current open continuation branch is:
 
-- PR #176 — `agent/training-tab-redesign` — still **open / unmerged**.
+- PR #176 — `agent/training-tab-redesign` — **later merged 2026-09-11** as `b7f079fa2e0e69d5c025ea6d03205e9ea26c8d64`.
 
 PR #176 began as the player Training redesign and has since accumulated broader Character Forge browser-review work, including later Class/Abilities presentation polish. Immediately before the 2026-08-30 documentation-only Realistic Dice handoff updates, the remote PR head was:
 
@@ -144,19 +152,23 @@ Recent accepted Forge chain:
 - PR #172 — Eladrin/Hexblood/shared Species readability refinements — merged `8b62e38cc4de490dd4a02b57b0e9448baff3e5ef`.
 - PR #173 — source-backed Simic Hybrid Animal Enhancement descriptions — merged `8c37e30063d2523a5f488073d3ea60c5571c7182`.
 - PR #175 — Background layout, source-choice polish, and reusable Background art system — merged `a2aecdd354346926afdf33efb1af320581563b68`.
-- PR #176 — **active / unmerged** Character Forge browser-review continuation.
+- PR #176 — historical Character Forge browser-review continuation; later merged.
 
 Species and Background are accepted enough to freeze unless a concrete browser regression is reproduced. Current Character Forge work should stay incremental and exact-head validated.
 
-## Most important new future plan: Realistic Dice Roller
+## Realistic Dice implementation reconciliation
 
 Read:
 
 - `docs/Realistic_Dice_Roller_Architecture_Roadmap.md`
 
-This is now the controlling design document for the planned reusable Realistic Dice subsystem.
+PR #177 — `Add reusable realistic dice physics core` — merged on 2026-09-11 as `02854698298f357d2dfde21dd292ba7caf73e1c1`.
 
-The current Abilities page contains a CSS-based dice-tray/result-die prototype. It is **not the final architecture**. The next reusable dice implementation should support:
+The current source now contains the reusable Forge-integrated dice core under `components/dice/**` and `utils/dice/**`, with custom JavaScript physics and DOM/CSS 3D cube presentation. The normalized contract declares d6/d8/d10/d12/d20/resultCube, but true polyhedral rendering and broader Character Sheet/tactical adapters are still future expansion work.
+
+`Realistic_Dice_Roller_Architecture_Roadmap.md` now records both the merged implementation boundary and the older proposed Three/R3F/Rapier design history.
+
+Future expansion should support:
 
 - Forge ability generation;
 - Character Sheet checks/saves/initiative;
