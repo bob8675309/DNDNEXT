@@ -4,7 +4,6 @@ import { handleSubclassArtworkError, subclassArtworkFor } from "../utils/classes
 
 const text = (value) => String(value ?? "").trim();
 const FRONT_CENTER_SLOT = 0;
-const FACE_UP_ARC_DEGREES = 78;
 const DRAG_THRESHOLD_PX = 7;
 const FLICK_PROJECTION_MS = 185;
 
@@ -34,6 +33,16 @@ function signedOrbitSlots(value, total) {
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
+}
+
+function faceUpArcDegreesFor(total) {
+  const count = Math.max(1, Number(total || 1));
+  if (count <= 4) return 112;
+  if (count <= 6) return 102;
+  if (count <= 8) return 92;
+  if (count <= 10) return 84;
+  if (count <= 12) return 76;
+  return 68;
 }
 
 function orbitProfileFor(total) {
@@ -90,7 +99,8 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
   const profile = orbitProfileFor(count);
 
   const isCenter = Math.abs(signedSlots) <= 0.015;
-  const isFaceUp = count === 1 || absoluteAngle <= FACE_UP_ARC_DEGREES + 0.01;
+  const faceUpArcDegrees = faceUpArcDegreesFor(count);
+  const isFaceUp = count === 1 || absoluteAngle <= faceUpArcDegrees + 0.01;
   const isInteractive = isFaceUp;
 
   // Yaw follows the ring tangent so the cards visibly bend around the table.
