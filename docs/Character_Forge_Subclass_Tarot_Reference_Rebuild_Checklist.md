@@ -43,19 +43,19 @@ Locked requirements:
 - [x] Transparent left navigation button generated.
 - [x] Transparent right navigation button generated.
 - [x] Transparent ornate Tarot card-back asset generated.
-- [ ] Inspect each generated asset at full resolution for transparency, composition, edge artifacts, and suitability for the live modal.
-- [ ] Decide whether the cathedral plate can be used as-is or needs one regeneration with a cleaner empty foreground to avoid a baked-table/double-table conflict.
+- [x] Inspect each generated asset at full resolution for transparency, composition, edge artifacts, and suitability for the live modal.
+- [x] Use the generated cathedral plate as the primary scene: it already contains the clean integrated table and matches the reference more closely. Keep the separately generated transparent table as an optional fallback layer rather than stacking both by default.
 - [ ] Normalize production filenames/dimensions/formats.
 - [ ] Transfer approved assets into `public/media/forge/subclass-carousel/` through the guarded binary workflow.
 - [ ] Verify MIME, dimensions, alpha where required, and exact diff after transfer.
 
 ## Phase 1 — establish clean implementation baseline
 
-- [ ] Compare current `main` PR #193 selector with PR #194 and preserve only useful interaction logic.
+- [x] Compare current `main` PR #193 selector with PR #194 and preserve only useful interaction logic.
 - [ ] Do not copy PR #194's accumulated experimental CSS override stack wholesale.
 - [ ] Keep `utils/classes/subclassArtwork.js` as the Tarot-card resolver authority.
 - [ ] Keep all 149 current runtime-visible subclass cards and safe future fallback behavior.
-- [ ] Confirm exact files in scope before runtime changes.
+- [x] Confirm initial runtime scope: `components/ClassSubclassSection.js`, `styles/character-forge-subclass-tarot-layout.css`, focused Class/subclass validators, new selector stage assets, and directly related selector docs only.
 - [ ] Update focused validators to describe the new reference-scene contract rather than stale experimental layouts.
 
 ## Phase 2 — modal scene shell
