@@ -1,10 +1,43 @@
 # Realistic Dice Roller — Architecture, Integration, and Future Roadmap
 
-Updated: 2026-08-30
+Updated: 2026-09-21
 
-Status: **planned reusable subsystem; architecture agreed; implementation intentionally not started in this documentation pass.**
+Status: **Phase 1 reusable Forge dice core merged; original Three/R3F/Rapier proposal retained as future-design history.**
 
-This document is the controlling handoff for the planned DNDNext **Realistic Dice Roller**. It exists so a future model can continue the work without reconstructing the design discussion from chat history.
+This document records both the current DNDNext Realistic Dice implementation boundary and the original architecture proposal. Current source/validators outrank the older proposal where they differ.
+
+## 2026-09-21 implementation reconciliation
+
+PR #177 — **Add reusable realistic dice physics core** — merged on 2026-09-11 as:
+
+`02854698298f357d2dfde21dd292ba7caf73e1c1`
+
+Current source authority:
+
+- `components/dice/RealisticDiceTray.js`;
+- `components/dice/adapters/ForgeAbilityDiceTray.js`;
+- `utils/dice/diceRollContract.js`;
+- `utils/dice/diceTypes.js`;
+- `utils/dice/diceVisualSeed.js`;
+- `utils/dice/physics/dicePhysicsEngine.js`;
+- `scripts/validate_realistic_dice_core.mjs`;
+- `scripts/validate_realistic_dice_physics.mjs`.
+
+Current implementation facts:
+
+- Forge roll/generation math remains authoritative; visual physics never rerolls outcomes.
+- The merged engine uses custom JavaScript rigid-body-style cube physics plus DOM/CSS 3D rendering.
+- The normalized type contract declares `d6`, `d8`, `d10`, `d12`, `d20`, and `resultCube`.
+- The current visible Forge implementation uses aggregate `resultCube` dice and cube collision geometry.
+- `package.json` currently does **not** include Three.js, React Three Fiber, `@react-three/rapier`, or `@dimforge/rapier3d-compat`.
+- Character Sheet and tactical adapters remain future work.
+- True polyhedral d8/d10/d12/d20 rendering remains future work.
+
+Therefore, later sections that prescribe Three/R3F/direct Rapier or say implementation has not started are **historical design proposals**, not current implementation facts. They remain useful if a future polyhedral/WebGL redesign is justified, but must not be treated as an instruction to replace the working merged core without a concrete requirement.
+
+The authority boundary remains unchanged:
+
+> **Game rules decide the result. Dice physics visualizes that result.**
 
 ## Executive summary
 
@@ -38,7 +71,7 @@ This separation is mandatory for deterministic rules, multiplayer encounters, se
 
 ---
 
-## Current state that the next model must preserve
+## Original 2026-08-30 design baseline (historical where superseded)
 
 ### Character Forge prototype
 

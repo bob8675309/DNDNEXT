@@ -1,6 +1,6 @@
 # Character Forge Subclass Artwork Status
 
-Status date: 2026-09-18
+Status date: 2026-09-21
 
 This is the current focused handoff for the Character Forge subclass Tarot deck and its selector presentation. Older rollout counts such as 33 remaining cards, 109 total concepts, 456x240 selector thumbnails, or the compact two-column selector are historical checkpoints and are not current completion authority.
 
@@ -50,44 +50,41 @@ Artwork mapping is presentation-only. It does not create subclass eligibility, s
 
 ## Current selector presentation
 
-As of 2026-09-18 the old compact two-column selector has been replaced on PR #193 by the approved runic circular Tarot gallery.
+PR #193 completed and merged the 149-card Tarot deck plus the runic selector baseline on 2026-09-18 as `1e5c0795010a4714250d309ecefc68ee67977e2d`.
 
-The current selector:
+The active presentation continuation is PR #194, `agent/subclass-carousel-drag-crisp-20260918`. Its controlling design is documented in:
 
-- opens in a viewport portal/modal;
-- places every option on one continuous circular orbit;
-- keeps four cards prominent on the front arc at desktop scale;
-- pushes the remaining cards behind the runic table as dimmer/smaller rear positions;
-- advances exactly one card per Left/Right action;
-- wraps by modulo arithmetic with no duplicated rail or scroll recentering;
-- keeps card React keys stable so the same card visibly travels around the orbit;
-- uses a gothic cathedral, runic table, and layered purple-smoke scene;
-- includes a focused summary/details panel beneath the orbit;
-- preserves existing selection/level-gate/persistence authority.
+`docs/Character_Forge_Subclass_Tarot_Flexible_Ring_Status.md`
 
-Current selector design authority:
+Current flexible-ring rules supersede the fixed “four prominent front cards” description from the PR #193 checkpoint:
 
-`docs/CHARACTER_FORGE_CLASS_SUBCLASS_SELECTOR_ARTWORK.md`
+- one physical ring contains every subclass option;
+- angular spacing is `360° / N`;
+- one exact front position is the hero;
+- side/rear scale, opacity, face/back presentation, and yaw derive continuously from ring position;
+- no fixed visible-card cap;
+- clicking a face-up card rotates that card to hero and owns explicit inspection/selection intent;
+- carousel motion alone must not silently change the dossier or persist a subclass.
+
+The PR #193 runic cathedral/table assets remain presentation assets and may be replaced/reworked if necessary to match the accepted visual target without altering the Tarot deck.
 
 ## Current implementation checkpoint
 
-Implementation head before this documentation refresh:
+Artwork/deck completion baseline:
 
-`49b6a0486878748f5d9c3147eb51fdbe16358451`
+- PR #193 merged on 2026-09-18 as `1e5c0795010a4714250d309ecefc68ee67977e2d`;
+- current runtime-visible coverage remains 149/149 dedicated approved cards;
+- known runtime-visible generic/class fallback count remains 0.
 
-At that checkpoint:
+Active presentation continuation:
 
-- focused GitHub Class-browser workflow: **success**
-- focused subclass-browser validator: **success**
-- Vercel deployment `dpl_5kcUtbeqoWqsY7iBMaLeyb81buaX`: **READY**
-- `/profile`: HTTP 200
-- PR #193: open, mergeable, unmerged
+- PR #194 — `Refine subclass Tarot carousel interaction and clarity`;
+- reviewed head: `f21a81435946b1ae8ec6112e5376062cfc2b62f4`;
+- exact-head Vercel preview: READY at the 2026-09-21 reconciliation;
+- GitHub `Validate Class browser polish`: currently failing because the validator still asserts the superseded browsed-card dossier fallback;
+- current source intentionally separates carousel motion from explicit inspection/selection intent.
 
-The active branch is:
-
-`agent/subclass-tarot-approved-batch-20260916`
-
-Always re-fetch the exact remote head before additional writes or merge.
+PR #194 is behind current `main`; post-base file overlap is limited to the handoff document, not the carousel runtime files. Re-fetch all exact-head state before any merge.
 
 ## Validation guard
 

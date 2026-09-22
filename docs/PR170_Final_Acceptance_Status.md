@@ -1,12 +1,12 @@
 # PR #170 Final Acceptance — Current Status
 
-Status date: 2026-08-14
+Status date: 2026-09-21
 PR: #170 (`agent/character-forge-resilience-presentation`)
 Status: **historical and merged** at `599c4de7397ba6e4bbbb0a061d551d80c3570be7`.
 Validated code head: `d2b64bd1128a0457393283a463fddd71cc7c9094`
 Live database authority: `20260812042950 aven_subrace_catalog` (migration 93)
 
-Current Species continuation is PR #171 (`agent/species-art-post170`), open and unmerged. This file retains PR #170 acceptance evidence; current transition instructions live in `DNDNext_Current_Handoff_Prompt.md`.
+PR #171 (`agent/species-art-post170`) later merged on 2026-08-16 as `ed93331b946dffee1e63183e969f115d0c8a1a18`. This file retains PR #170 acceptance evidence; current transition instructions live in `DNDNext_Current_Handoff_Prompt.md`.
 
 ## Current acceptance checkpoint
 
@@ -102,7 +102,7 @@ Recommended re-smoke:
 
 ## Current continuation rule
 
-PR #170 is already merged. Do not merge PR #171 without explicit user approval. Immediately before any approved PR #171 merge, re-check the exact PR head, current CI/deployment status, live migration list, relevant ACLs, and production residue.
+PR #170 and PR #171 are already merged. For any new continuation, re-check current `main`, exact-head CI/deployment state, live migration list, relevant ACLs, and production residue before merging a new branch.
 
 ## Protected boundaries
 

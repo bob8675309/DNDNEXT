@@ -1,8 +1,8 @@
 # Eladrin Runtime Status
 
-Status date: 2026-08-14
+Status date: 2026-09-21
 Historical runtime PR: #170 (`agent/character-forge-resilience-presentation`) — merged at `599c4de7397ba6e4bbbb0a061d551d80c3570be7`
-Current presentation continuation: PR #171 (`agent/species-art-post170`) — open/unmerged; latest validated code head `39a263e034db4023ed7d1a4950a185a832c08867`
+Historical presentation continuation: PR #171 (`agent/species-art-post170`) — merged on 2026-08-16 as `ed93331b946dffee1e63183e969f115d0c8a1a18`; the earlier validated head below remains provenance
 Live migration: 68
 
 ## Purpose

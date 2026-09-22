@@ -32,9 +32,11 @@ Important PR #195 behavior now on production:
 - anonymous and per-account browser visitor keys are separated;
 - the current auth state is authoritative for account attribution.
 
-### Live Supabase checkpoint
+### Historical 2026-08-30 Supabase checkpoint
 
 Project remains `DnDWeb` / `ucggczovhmauhshvhusx`.
+
+Live migration-ledger count at this reconciliation: **218**.
 
 Latest relevant registered migrations are now:
 
@@ -73,6 +75,12 @@ Important consequences:
 - the supplied cathedral/runic-table screenshot is the visual target;
 - stage/background/table artwork may be replaced if necessary, but preserve the Tarot deck.
 
+### Current PR #194 integration note
+
+The exact PR #194 head has a READY Vercel preview, but GitHub `Validate Class browser polish` currently fails because the validator still asserts the older `browsedOption`/automatic dossier-following contract. The current flexible-ring source intentionally keeps carousel motion separate from explicit inspection/selection. Treat this as a stale-validator reconciliation item, not proof that the current ring behavior is wrong.
+
+PR #194 is also behind current `main`. Post-base `main` changes overlap PR #194 only in this handoff document; the carousel component/CSS/validators do not overlap PR #195 runtime code. Rebase/reconcile exact-head state before merge.
+
 ### Immediate next-chat task
 
 Start by re-fetching:
@@ -91,9 +99,9 @@ Do not revive old fixed-card-count rules from historical chat or stale docs.
 
 If Paul instead asks for documentation cleanup, use this override plus the two new focused status documents to reconcile older ledgers systematically rather than rewriting history blindly.
 
-## 2026-09-18 current override — read this before older checkpoint prose
+## Historical 2026-09-18 override — retained for provenance
 
-The older sections below retain useful architecture/history, but their PR-number checkpoint is stale. Current active Character Forge subclass work is **PR #193**, branch `agent/subclass-tarot-approved-batch-20260916`, open and unmerged.
+At the 2026-09-18 checkpoint, active Character Forge subclass work was **PR #193**, branch `agent/subclass-tarot-approved-batch-20260916`. PR #193 later merged on 2026-09-18 as `1e5c0795010a4714250d309ecefc68ee67977e2d`. The 2026-09-21 override above is current authority.
 
 Current implementation checkpoint before this documentation refresh:
 
@@ -119,9 +127,9 @@ Read these current focused documents before changing subclass presentation/art:
 
 The standing world-map boundary is unchanged: **do not touch world-map behavior unless Paul explicitly requests it, and never mix world-map behavior with town/city-map behavior.**
 
-Always re-fetch PR #193 and current `main` before writing or merging. Source + exact-head CI/deployment outrank this recorded SHA if the branch moves.
+PR #193 is historical and merged. For current selector work, re-fetch PR #194 and current `main`; source + exact-head CI/deployment outrank these historical checkpoints.
 
-## Current authoritative checkpoint
+## Historical 2026-08-30 checkpoint — retained for provenance
 
 Accepted runtime/code baseline on `main`:
 
@@ -129,7 +137,7 @@ Accepted runtime/code baseline on `main`:
 
 Active work is **not on `main`**. The current open continuation branch is:
 
-- PR #176 — `agent/training-tab-redesign` — still **open / unmerged**.
+- PR #176 — `agent/training-tab-redesign` — **later merged 2026-09-11** as `b7f079fa2e0e69d5c025ea6d03205e9ea26c8d64`.
 
 PR #176 began as the player Training redesign and has since accumulated broader Character Forge browser-review work, including later Class/Abilities presentation polish. Immediately before the 2026-08-30 documentation-only Realistic Dice handoff updates, the remote PR head was:
 
@@ -144,19 +152,23 @@ Recent accepted Forge chain:
 - PR #172 — Eladrin/Hexblood/shared Species readability refinements — merged `8b62e38cc4de490dd4a02b57b0e9448baff3e5ef`.
 - PR #173 — source-backed Simic Hybrid Animal Enhancement descriptions — merged `8c37e30063d2523a5f488073d3ea60c5571c7182`.
 - PR #175 — Background layout, source-choice polish, and reusable Background art system — merged `a2aecdd354346926afdf33efb1af320581563b68`.
-- PR #176 — **active / unmerged** Character Forge browser-review continuation.
+- PR #176 — historical Character Forge browser-review continuation; later merged.
 
 Species and Background are accepted enough to freeze unless a concrete browser regression is reproduced. Current Character Forge work should stay incremental and exact-head validated.
 
-## Most important new future plan: Realistic Dice Roller
+## Realistic Dice implementation reconciliation
 
 Read:
 
 - `docs/Realistic_Dice_Roller_Architecture_Roadmap.md`
 
-This is now the controlling design document for the planned reusable Realistic Dice subsystem.
+PR #177 — `Add reusable realistic dice physics core` — merged on 2026-09-11 as `02854698298f357d2dfde21dd292ba7caf73e1c1`.
 
-The current Abilities page contains a CSS-based dice-tray/result-die prototype. It is **not the final architecture**. The next reusable dice implementation should support:
+The current source now contains the reusable Forge-integrated dice core under `components/dice/**` and `utils/dice/**`, with custom JavaScript physics and DOM/CSS 3D cube presentation. The normalized contract declares d6/d8/d10/d12/d20/resultCube, but true polyhedral rendering and broader Character Sheet/tactical adapters are still future expansion work.
+
+`Realistic_Dice_Roller_Architecture_Roadmap.md` now records both the merged implementation boundary and the older proposed Three/R3F/Rapier design history.
+
+Future expansion should support:
 
 - Forge ability generation;
 - Character Sheet checks/saves/initiative;
@@ -171,57 +183,37 @@ Locked architectural rule:
 
 Do not let client rigid-body physics become authoritative for attacks, saves, damage, initiative, generated ability scores, tactical movement, LOS, or any other rules result.
 
-### Current dice prototype files
+### Historical pre-PR #177 dice prototype files
 
-At the pre-documentation PR checkpoint, relevant Forge files include:
+Before PR #177, the Forge Abilities surface used a CSS-only result-die prototype centered on `NpcForgeAbilityStep.js` and the Forge dice-tray styles. That checkpoint established important UX requirements—hidden results until roll, visible underlying dice math, drag/select assignment, reroll, and reduced-motion handling.
 
-- `components/NpcForgeAbilityStep.js`;
-- `styles/character-forge-ability-dice-tray.css`;
-- `styles/character-forge-ability-dice-bounce.css`;
-- style imports in `pages/_app.js`.
+PR #177 later replaced that prototype with the reusable core now under `components/dice/**` and `utils/dice/**`. Do not treat the old CSS-only file list as current dice architecture.
 
-The current prototype usefully preserves:
+### Realistic Dice current boundary
 
-- six generated totals;
-- hidden results until the player rolls;
-- hover math showing individual dice and the dropped die;
-- drag/select assignment into ability slots;
-- reroll behavior;
-- reduced-motion presentation.
+The reusable core is already merged. Further dice work must extend the current source rather than recreating the pre-PR #177 proposal.
 
-Preserve those behaviors while replacing the CSS trajectory system later.
+The older Three.js / React Three Fiber / direct Rapier design remains an optional future redesign direction for true polyhedral/WebGL needs. It is not a required migration and must not displace the working custom JavaScript/DOM-CSS core without a concrete benefit and a bounded review.
 
-### Realistic Dice implementation boundary
-
-Do **not** keep widening PR #176 into the permanent physics-engine PR.
-
-Once Paul accepts the current Forge checkpoint, the Realistic Dice Core should be implemented on a **new bounded branch/PR from the accepted Forge state**. Documentation about that future system can live on #176, but the actual Three/Rapier subsystem deserves a separate review boundary.
-
-Preferred initial technology direction, subject to a fresh compatibility check at implementation time:
-
-- `three`;
-- `@react-three/fiber`;
-- direct `@dimforge/rapier3d-compat`.
-
-Initial Realistic Dice Phase 1 should require **no Supabase migration** and should not touch the world map, town/city maps, tactical movement/pathfinding, crafting, inventory, merchants, or economy.
+Presentation-only dice work should continue to require no Supabase migration and must not touch world-map/town-map movement, tactical pathfinding, crafting, inventory, merchants, or economy.
 
 ## Copy-ready takeover instruction
 
-You are taking over DNDNext as a senior developer and technical advisor. Before changing anything, inspect current GitHub `main`, PR #176 and its exact head, the live Supabase project, CI, and Vercel. Then read this brief plus `Realistic_Dice_Roller_Architecture_Roadmap.md` and the dedicated ledger for whichever Forge/tactical subsystem you are touching. Reconcile source, live data, validators, deployment state, and documentation before writing. Preserve working systems and verify every helper, hook, state variable, prop, callback, RPC argument, dice-contract field, and physics-world reference is defined and passed correctly. Do not touch the world map unless Paul explicitly requests world-map work, and never mix world-map behavior with town/city-map behavior.
+You are taking over DNDNext as a senior developer and technical advisor. Before changing anything, inspect current GitHub `main`, the exact head/mergeability/checks of the **currently active PR for the requested subsystem** (PR #194 for the current Tarot work), the live Supabase project when database-backed behavior is relevant, CI, and Vercel. Then read this brief plus the dedicated ledger for the subsystem being changed. Reconcile source, live data, validators, deployment state, and documentation before writing. Preserve working systems and verify every helper, hook, state variable, prop, callback, RPC argument, dice-contract field, and physics reference is defined and passed correctly. Do not touch the world map unless Paul explicitly requests world-map work, and never mix world-map behavior with town/city-map behavior.
 
 GitHub, live Supabase, current source, exact-head validators, and deployed behavior outrank prose when they disagree.
 
 ## Mandatory startup sequence
 
-1. Inspect `main`, PR #176, exact remote head, changed-file scope, GitHub workflows, and Vercel state.
-2. Inspect Supabase project `ucggczovhmauhshvhusx` (`DnDWeb`) and only the tables/functions relevant to the requested subsystem.
+1. Inspect current `main`, the active subsystem PR/branch if one exists, exact remote head, changed-file scope, GitHub workflows, and Vercel state.
+2. Inspect Supabase project `ucggczovhmauhshvhusx` (`DnDWeb`) only when the requested subsystem depends on live database state.
 3. Read `docs/README.md`, `Documentation_Refresh_Manifest.md`, this file, and the dedicated active subsystem ledger.
-4. If continuing dice work, read `Realistic_Dice_Roller_Architecture_Roadmap.md` in full before proposing code.
+4. If continuing dice work, inspect the merged `components/dice/**` / `utils/dice/**` implementation and then read `Realistic_Dice_Roller_Architecture_Roadmap.md` for boundaries/history.
 5. Inspect the existing consumer path end to end before extending/replacing presentation.
 6. Preserve existing source-choice/runtime/persistence authority; do not create parallel state for presentation convenience.
-7. Continue on the current branch only when the requested change belongs to its accepted scope. For the actual reusable Realistic Dice engine, use a dedicated branch/PR after the current Forge checkpoint is accepted.
-8. Run focused validators plus regression/protected-boundary checks and verify Vercel exact-head readiness.
-9. Before merge, re-read the PR head, confirm all triggered checks succeeded, and use an expected-head guard.
+7. Continue on an existing branch only when the requested change belongs to its accepted scope; otherwise create a new bounded branch/PR.
+8. Run focused validators plus regression/protected-boundary checks and verify exact-head deployment state when applicable.
+9. Before merge, re-read the PR head, confirm required checks succeeded, and use an expected-head guard.
 10. Never use a merge action as a substitute for finding branch-write tooling.
 
 ## Non-negotiable boundaries
@@ -242,7 +234,7 @@ Project: `DnDWeb` / `ucggczovhmauhshvhusx`.
 
 The prior migration-ledger checkpoint was 214 records with latest registered migration `20260814161314 grim_hollow_heritage_catalog_support`. Some repository SQL effects may be live under different migration-ledger naming, so inspect live effects before any database action and do not re-run already-correct production SQL by assumption.
 
-The Realistic Dice Phase 1 architecture does not require a database write. Tactical integration later should consume the existing authoritative encounter RPC/combat-log result path rather than inventing a second roll authority.
+PR #177 later merged without a database write. Future tactical dice integration should consume the existing authoritative encounter RPC/combat-log result path rather than inventing a second roll authority.
 
 Relevant tactical live objects already include:
 
@@ -265,8 +257,8 @@ Relevant tactical live objects already include:
 | Auth/profile | `pages/login.js`, `pages/signup.js`, `pages/profile.js`, `PlayerCharacterProfilePanelUnified.js` | Supabase Auth plus player/profile/permission rows; stale async identity loads must not overwrite the active character. |
 | Shared Character Forge | `NewNpcModalV3.js`, `NewNpcModalV3Refined.js`, `NpcForgeStepContent.js` | One creation architecture for NPCs and players. Player creation uses existing creation RPC authority. |
 | Forge context/choices | Species/Class/Source choice contexts | Explanation and canonical choices are separated by lifecycle/placement. Existing context state serializes into the creation payload. |
-| Abilities / current dice prototype | `NpcForgeAbilityStep.js`, `character-forge-ability-dice-tray.css`, `character-forge-ability-dice-bounce.css` | Existing Forge roll objects are math authority. Current motion is presentation only; planned Realistic Dice replaces presentation, not generation/allocation. |
-| Training | `NpcForgeTrainingStep.js`, preserved `NpcForgeTrainingStepBase.js`, player Training modules | Player redesign on PR #176; NPC legacy path remains intentionally isolated unless deliberately reconciled. |
+| Abilities / Realistic Dice | `NpcForgeAbilityStep.js`, `components/dice/**`, `utils/dice/**` | Forge roll objects remain math authority. The merged reusable dice core visualizes known results and owns no game RNG authority. |
+| Training | `NpcForgeTrainingStep.js`, preserved `NpcForgeTrainingStepBase.js`, player Training modules | PR #176 merged the player redesign; NPC legacy path remains intentionally isolated unless deliberately reconciled. |
 | Character/profile sheet | shared Profile/Sheet panels, `CharacterInteractionPanel.js`, `CharacterSheetPanel.js`, `CharacterSheet5e.js`, `pages/npcs.js` | Canonical character sheet, features, spellbook, equipment, runtime choices, permissions. Existing `onRoll` callback path is the future dice adapter seam. |
 | Inventory/equipment/crafting | `pages/inventory.js`, `EquipmentDiagram.js`, `CraftingWorkspace.js`, crafting RPCs | Canonical inventory/equip/crafting authority. Dice work does not alter recipes/formulas/consumption. |
 | World map | `pages/map.js`, `components/MapPageClient.js` | Protected world-location/travel/weather/camp/clock system. Do not embed dice rules/physics here. |

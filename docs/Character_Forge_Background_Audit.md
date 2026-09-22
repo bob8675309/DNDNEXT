@@ -1,8 +1,8 @@
 # Character Forge Background Audit
 
-Status: formatting/readability pass on PR #175 (`agent/background-source-choice-polish`).
+Status: **accepted/merged Background formatting and source-choice audit from PR #175** (`agent/background-source-choice-polish`). PR #175 is historical baseline, not an active formatting branch.
 
-Scope: all 75 preferred Backgrounds currently exposed by `character_option_catalog_preferred`. This pass is intentionally about **correct structure, choice ownership, readable source rules, and wasted-space reduction**. A later pass can add more visual identity/art/presence after the layout is browser-approved.
+Scope: all 75 preferred Backgrounds currently exposed by `character_option_catalog_preferred`. This pass was intentionally about **correct structure, choice ownership, readable source rules, and wasted-space reduction**. Later merged work added the reusable Background art/presence layer; the audit content below remains source/routing evidence.
 
 ## Formatting rules applied to the entire catalogue
 

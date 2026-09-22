@@ -1,8 +1,8 @@
 # Subclass Tarot Artwork
 
-All previous subclass artwork was intentionally removed on 2026-09-12 so the deck can be rebuilt from one normalized standard.
+The subclass Tarot deck was normalized from 2026-09-12 onward and is now complete for the current runtime-visible catalogue: 149/149 visible choices have dedicated approved cards.
 
-Do not restore old assets from history unless Paul explicitly requests a specific reference image.
+Do not restore old assets from history unless Paul explicitly requests a specific reference image. Re-audit runtime-visible coverage whenever the subclass catalogue changes.
 
 Before adding new artwork, read:
 

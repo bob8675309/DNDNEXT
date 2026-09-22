@@ -1,8 +1,8 @@
 # Character Forge Training Browser-Review Implementation Checkpoint
 
-Updated: 2026-08-21
+Updated: 2026-09-21
 
-Status: implemented on PR #176 (`agent/training-tab-redesign`) and ready for browser review. Do **not** merge until the visual/behavior acceptance pass is complete.
+Status: **historical browser-review implementation checkpoint for merged PR #176** (`agent/training-tab-redesign`). PR #176 merged on 2026-09-11 as `b7f079fa2e0e69d5c025ea6d03205e9ea26c8d64`. The checklist below records the pre-merge review contract and should be used as regression evidence, not as a current merge blocker.
 
 This document supersedes the implementation-status portions of `Character_Forge_Training_Browser_Review_2026-08-21.md`. The earlier document remains the approved requirements contract; this file records what was actually implemented and validated.
 
@@ -209,4 +209,4 @@ Suggested source-heavy cases: Athlete, Mist Wanderer, Clan Crafter, Rune Carver,
 
 ## Merge gate
 
-PR #176 remains **unmerged** until the browser acceptance pass is approved. If a browser issue is found, patch the same branch, rerun the focused and triggered regression gates, and verify the exact-head Vercel deployment before merge.
+PR #176 is merged. If one of these browser behaviors regresses, reproduce it against current `main` and fix it on a new bounded branch; do not revive the historical PR as the active work surface.

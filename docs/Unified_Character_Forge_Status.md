@@ -1,6 +1,6 @@
 # Unified NPC and Player Character Forge Status
 
-Status date: 2026-08-16
+Status date: 2026-09-21
 
 Accepted runtime/code baseline: `8c37e30063d2523a5f488073d3ea60c5571c7182`
 
@@ -11,7 +11,9 @@ Merged continuation chain:
 - PR #172 — Species readability refinements — `8b62e38cc4de490dd4a02b57b0e9448baff3e5ef`;
 - PR #173 — Simic Animal Enhancement source descriptions — `8c37e30063d2523a5f488073d3ea60c5571c7182`.
 
-Latest registered live migration at this status refresh: `20260814161314 grim_hollow_heritage_catalog_support`.
+Historical migration checkpoint at the original status refresh: `20260814161314 grim_hollow_heritage_catalog_support`.
+
+Current live migration ledger at the 2026-09-21 reconciliation contains **218** records; latest registered migration is `20260921185225 admin_site_activity_hardening_v1`.
 
 ## Governing architecture
 
@@ -160,8 +162,8 @@ Supabase project: `DnDWeb` / `ucggczovhmauhshvhusx`.
 
 At this refresh:
 
-- `supabase_migrations.schema_migrations` contains 214 rows;
-- latest registered migration is `20260814161314 grim_hollow_heritage_catalog_support`.
+- original 2026-08-16 checkpoint: 214 rows, latest `20260814161314 grim_hollow_heritage_catalog_support`;
+- current 2026-09-21 checkpoint: 218 rows, latest `20260921185225 admin_site_activity_hardening_v1`.
 
 Do not infer deployment state from old numbered repo migrations alone. Inspect live functions, grants, RLS, catalogue rows, and migration records relevant to the requested subsystem.
 

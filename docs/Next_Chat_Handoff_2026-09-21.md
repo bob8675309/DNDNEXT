@@ -69,6 +69,13 @@ PR #194 remains **open / unmerged**:
 
 Always re-fetch PR #194 and its deployment before changing or merging it.
 
+Current reconciliation note:
+
+- exact-head Vercel is READY;
+- GitHub `Validate Class browser polish` currently fails because the validator still asserts the superseded browsed-card dossier fallback;
+- current flexible-ring source intentionally requires explicit inspection/click ownership rather than auto-following carousel motion;
+- PR #194 is behind current `main`, with post-base overlap limited to the handoff document rather than carousel runtime files.
+
 Read:
 
 - `Character_Forge_Subclass_Tarot_Flexible_Ring_Status.md`.
@@ -148,6 +155,10 @@ Subclass Tarot presentation work does not authorize changes to:
 - merchants/economy;
 - unrelated Supabase schema;
 - route/travel/weather/camp/world-clock systems.
+
+## Realistic Dice current state
+
+PR #177 merged on 2026-09-11. The Forge-integrated reusable core now exists under `components/dice/**` and `utils/dice/**` with custom JavaScript physics and DOM/CSS 3D cube presentation. The older Three/R3F/Rapier roadmap is historical/future design material, not current implementation authority.
 
 ## Documentation cleanup
 

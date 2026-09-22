@@ -1,22 +1,26 @@
 # DNDNext Current Development Status and Roadmap
 
-Last reconciled: 2026-08-14
+Last reconciled: 2026-09-21
 
 This is the current high-level handoff for DNDNext. It reconciles the living roadmap, phase ledgers, repository source, GitHub state, and deployed Supabase state. Historical phase ledgers remain useful implementation records, but this document controls current status when an older status header or unchecked master-roadmap task conflicts with deployed evidence.
 
-## 2026-08-14 active-work override
+## 2026-09-21 active-work override
 
-The detailed tactical and platform roadmap below remains valid history, but the active development line has moved forward:
+The detailed tactical/platform sections below remain valuable deployed-history and roadmap evidence. Current live authority is:
 
-- PR #170 is merged at `599c4de7397ba6e4bbbb0a061d551d80c3570be7`;
-- active branch `agent/species-art-post170` is PR #171, open and unmerged;
-- latest validated code head is `39a263e034db4023ed7d1a4950a185a832c08867`;
-- all 14 workflows triggered for that head and Vercel completed successfully;
-- Supabase remains healthy through migration 93, with 166 raw / 102 preferred Species rows;
-- no database write or migration was made for the PR #171 artwork/layout/presentation continuation;
-- Paul considers the shared Player/NPC Forge Species tab nearly perfect.
+- current `main`: `ab8c5ce6df1fabd906890b38bcfee16deac2ca0d` at this reconciliation; re-fetch before every write because documentation-only merges may advance it;
+- accepted runtime code checkpoint from merged PR #195: `320671a22b83432177dcc67e9efd035f3c3ccc5d`;
+- active Character Forge presentation PR: #194, branch `agent/subclass-carousel-drag-crisp-20260918`, reviewed head `f21a81435946b1ae8ec6112e5376062cfc2b62f4`;
+- PR #194 exact-head Vercel preview is READY;
+- PR #194 GitHub Class-browser validation currently fails because `validate_class_browser_polish.mjs` still requires an older browsed-card dossier fallback that the flexible-ring implementation intentionally removed;
+- PR #194 is behind current `main`; the only file overlap with post-base main changes is the current handoff document, so the runtime rebase surface is narrow;
+- PR #176 (Training) and PR #177 (Realistic Dice core) are both merged as of 2026-09-11;
+- PR #193 completed the runtime-visible Tarot artwork deck at 149/149 dedicated cards and merged on 2026-09-18;
+- live Supabase project `DnDWeb` / `ucggczovhmauhshvhusx` is healthy with **218** registered migrations; latest is `20260921185225 admin_site_activity_hardening_v1`.
 
-The current transition authority is `DNDNext_Current_Handoff_Prompt.md`; the detailed active Species ledger is `Forge_Post170_Species_Artwork_Status.md`. Unless a concrete Species regression is reproduced, the next Forge work should move to Background, Class, or the next tab Paul selects as a separate bounded pass.
+The current transition authority is `DNDNext_Current_Handoff_Prompt.md`. The active selector ledger is `Character_Forge_Subclass_Tarot_Flexible_Ring_Status.md`; auth/admin activity authority is `Auth_Navigation_Admin_Activity_Status.md`.
+
+Species, Background, and Training are accepted baselines rather than current broad redesign queues. Do not reopen them without a reproduced defect or explicit request.
 
 ## Non-negotiable boundaries
 
@@ -30,7 +34,7 @@ The current transition authority is `DNDNext_Current_Handoff_Prompt.md`; the det
 - Gloomhaven is presentation/readability inspiration only; rules remain D&D 5e/2024 and DNDNext-specific.
 - New helpers, hooks, memoized values, state, RPC arguments, and component props must be defined and passed at every use site.
 
-## Verified baseline
+## Historical verified baseline (2026-08-14 and earlier)
 
 - Production runtime baseline: current `main`; the last fixed production anchor before this reconciliation was `6f57b8f5827e5b286bf9b7fa66b1108436c8285d` (PR #147 merge).
 - PRs #136-#147 exact-head previews and merged `main` production Vercel deployments: green.

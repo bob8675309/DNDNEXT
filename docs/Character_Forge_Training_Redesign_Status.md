@@ -1,14 +1,14 @@
 # Character Forge Training Redesign Status
 
-Updated: 2026-08-20
+Updated: 2026-09-21
 
-Status: implementation is substantially complete on PR #176 (`agent/training-tab-redesign`). The exact runtime code checkpoint `4cfa889d36df465d0ee6e892991e5cfa816b3aeb` passed every triggered GitHub workflow and has an exact Vercel deployment in `READY` state. Later commits in this file are documentation-only. Do not merge until Paul browser-reviews the preview and the remaining browser acceptance items below are complete or explicitly deferred.
+Status: **historical implementation/acceptance ledger for merged PR #176** (`agent/training-tab-redesign`). PR #176 merged on 2026-09-11 as `b7f079fa2e0e69d5c025ea6d03205e9ea26c8d64`. The exact earlier validation checkpoints below remain provenance for the Training design; they are not instructions to keep the PR open.
 
 ## Current accepted Forge baseline
 
 - Species is accepted/frozen unless a concrete regression is reproduced.
 - Background is accepted and merged to `main` in commit `a2aecdd354346926afdf33efb1af320581563b68` (PR #175). Its shared banner/crest/icon art system is part of the baseline.
-- Training is the active slice. PR #176 is the only intended work branch for this redesign.
+- Training is an accepted merged baseline from PR #176. Reopen it only for a concrete reproduced regression or explicit new Training request.
 - NPC Forge continues through the preserved legacy Training implementation in `NpcForgeTrainingStepBase.js`; the new player Training surface must not silently alter NPC creation behavior.
 - No world-map, town/city-map, travel, crafting-runtime, inventory, merchant, or economy behavior is authorized by this Training work.
 
@@ -166,7 +166,7 @@ Fixed/free grants do not consume paid allowance. Outstanding Background/source/f
 
 ### A. Documentation / handoff
 
-- [x] Record accepted Background merge and Training PR #176 as the active slice.
+- [x] Record accepted Background merge and Training PR #176 as the active slice at the historical checkpoint; PR #176 later merged.
 - [x] Record Bonus Feat ownership: package in Abilities, specific feat in Training.
 - [x] Record tool/Trade Skill unification and the longer-term granular crafting-tool goal.
 - [x] Record source-audit rule and confirmed source oddities.
@@ -238,7 +238,7 @@ Fixed/free grants do not consume paid allowance. Outstanding Background/source/f
 - [x] Exact runtime code-head Vercel deployment is `READY`.
 - [ ] Browser-test at minimum: Athlete, Mist Wanderer, Clan Crafter, Rune Carver, Folk Hero mixed fixed+choice tools, Charlatan/Skilled, Haunted One/Investigator Dark Gift choice, Rewarded/Ruined feat choice, an ordinary class, Artificer/crafting-heavy case, and Bonus Feat flow.
 - [x] Confirm PR changed-file scope contains no world-map, town/city-map, travel, tactical, crafting-runtime, inventory, merchant, or economy implementation files.
-- [x] Keep PR #176 unmerged pending user visual/behavior acceptance.
+- [x] Historical merge gate satisfied; PR #176 later merged on 2026-09-11.
 
 ## Protected boundaries
 
