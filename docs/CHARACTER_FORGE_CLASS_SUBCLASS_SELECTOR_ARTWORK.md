@@ -23,7 +23,7 @@ Read `Character_Forge_Subclass_Tarot_Flexible_Ring_Status.md` before editing the
 
 The cathedral/runic-table scene remains an approved baseline asset set, not immutable geometry. Stage assets may change if needed to match the accepted visual target; the Tarot card deck should be preserved.
 
-## Current approved selector
+## Historical PR #193 approved selector baseline
 
 The accepted visual target is the runic circular Tarot gallery reviewed on 2026-09-18.
 
@@ -97,7 +97,7 @@ Runic scene assets:
 
 - `public/media/forge/subclass-carousel/*`
 
-## Validation checkpoint
+## Historical PR #193 validation checkpoint
 
 Implementation checkpoint:
 
