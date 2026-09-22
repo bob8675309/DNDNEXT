@@ -49,7 +49,7 @@ for (const token of [
   'const angleStep = 360 / count',
   'const angleDegrees = signedSlots * angleStep',
   'const horizontalRadius = 36.5 + (density * 4.5)',
-  'const verticalRadius = 17.4 + (density * 1.2)',
+  'const verticalRadius = 10.6 + (density * 1.0)',
   'const [orbitOffset, setOrbitOffset] = useState(0)',
   'const orbitOptions = useMemo',
   'const heroOption = options[heroIndex] || null',
