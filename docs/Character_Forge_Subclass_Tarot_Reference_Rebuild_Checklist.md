@@ -49,6 +49,17 @@ Locked requirements:
 - [x] Commit the active cathedral/card-back assets through exact blob → tree → commit → non-forced ref update. Generated standalone table/nav assets remain optional and are not active.
 - [x] Verify active asset format/dimensions and exact branch diff after transfer.
 
+### 2026-09-22 browser-review repair
+
+Paul's first preview video exposed a binary-transfer defect rather than a carousel failure: the cathedral scene and shared card back had been committed as ~15 KB placeholder/corrupt blobs, so the ring rendered over the modal's dark fallback background. The actual generated artwork was re-exported unchanged as production WebPs and installed through the guarded Dropbox → one-shot GitHub Actions binary workflow.
+
+Verified replacement assets:
+
+- `subclass-selector-cathedral-20260922.webp` — 1672×941, 395,594 bytes, SHA-256 `de5a16e6580070ee223406564cb513db10aa35f81341407e174a025191cf74da`;
+- `subclass-selector-card-back-20260922.webp` — 958×1642, 457,926 bytes, SHA-256 `91870d716588b5b4f92c6bc5991a56294b147a384444fb72abda185f4b90bb80`.
+
+The transfer workflow guarded target head `1017a9aeddc6f9f7f1699798aa404508d574ff88`, verified ZIP/file hashes, MIME, dimensions, exact two-file diff, and the focused subclass selector validator before pushing binary-repair commit `e384423745b2b1f416edd1c51d32c2818434a72a`.
+
 ## Phase 1 — establish clean implementation baseline
 
 - [x] Compare current `main` PR #193 selector with PR #194 and preserve only useful interaction logic.
