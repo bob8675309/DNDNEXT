@@ -555,3 +555,5 @@
     transition-duration: .01ms !important;
   }
 }
+
+/* PR #199 exact-preview checkpoint: keep this runtime stylesheet in the final validation diff. */
