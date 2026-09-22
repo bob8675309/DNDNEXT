@@ -40,7 +40,7 @@ Never force-push or overwrite concurrent branch movement simply to make a patch 
 
 PR #194 is a bounded Character Forge subclass-Tarot presentation branch. Keep it limited to the selector/carousel/stage, its validators, and directly related documentation. Do not attach unrelated auth, map, tactical, crafting, inventory, merchant, or database work to it.
 
-The planned reusable **Realistic Dice Core** remains a separate future project and should use its own bounded branch/PR from the user-accepted Forge checkpoint. See `Realistic_Dice_Roller_Architecture_Roadmap.md`.
+The reusable **Realistic Dice Core** is already merged from PR #177. Any further dice work—true polyhedral rendering, Character Sheet integration, tactical visualization, or a rendering-stack redesign—must use a separate bounded branch/PR rather than widening PR #194. See `Realistic_Dice_Roller_Architecture_Roadmap.md`.
 
 If the requested work belongs to another subsystem, use a separate branch rather than widening PR #194.
 
@@ -56,7 +56,7 @@ Supabase is also directly accessible through its connector. Before any DB change
 6. verify the resulting live state afterward;
 7. do not re-run SQL merely because a repo filename appears absent from the migration ledger if the live effect already exists.
 
-The planned Realistic Dice Phase 1 should not require any Supabase write.
+The merged Realistic Dice core required no Supabase write. Future presentation-only dice work should also avoid database changes unless a separately reviewed authoritative rules requirement genuinely needs one.
 
 ## Standing project safety rules
 
