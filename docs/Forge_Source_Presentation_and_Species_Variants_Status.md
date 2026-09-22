@@ -1,12 +1,12 @@
 # Forge Source Presentation and Species Variants — Status
 
-Status date: 2026-08-14
+Status date: 2026-09-21
 Historical implementation PR: #170 (`agent/character-forge-resilience-presentation`) — merged at `599c4de7397ba6e4bbbb0a061d551d80c3570be7`
-Active compatible continuation: PR #171 (`agent/species-art-post170`) — open/unmerged
+Historical compatible continuation: PR #171 (`agent/species-art-post170`) — merged on 2026-08-16 as `ed93331b946dffee1e63183e969f115d0c8a1a18`
 Validated code head: `6106eea26f5de0f43b435a1d41563b8549daeb95`
 Database authority: `20260811062025 genasi_subrace_catalog` (migration 91) deployed.
 Database changes in this continuation pass: none.
-Current merge rule: merge PR #171 only after explicit user approval.
+Current status: PR #171 is merged; this ledger remains source/presentation contract evidence.
 
 ## Scope
 
@@ -209,4 +209,4 @@ On a deployment containing `6106eea...` or a later code-identical descendant, ve
 
 ## Current continuation rule
 
-PR #170 is historical and merged. Its structured-source evidence remains valid; later PR #171 Species presentation work preserves this renderer/persistence contract. Before any PR #171 merge, confirm exact-head CI/Vercel, perform the relevant live/ACL/residue checks, and obtain explicit user approval.
+PR #170 and PR #171 are historical and merged. Their structured-source evidence remains valid. Any new regression should be reproduced against current `main` and repaired on a new bounded branch.
