@@ -8,13 +8,12 @@ PR #170 was merged into `main` on 2026-08-13 UTC at merge commit:
 
 The merge occurred through an accidental GitHub connector invocation while a branch-integration action was being searched for. Do not describe PR #170 as open or unmerged, and do not attempt to use `merge_pull_request` for branch integration.
 
-Active continuation now lives in:
+Accepted continuation history now lives in:
 
 - `docs/Forge_Post170_Species_Artwork_Status.md`
-- branch `agent/species-art-post170`
-- PR #171 — OPEN / UNMERGED
+- merged PR #171 — `agent/species-art-post170` → `ed93331b946dffee1e63183e969f115d0c8a1a18`.
 
-PR #171 must not be merged without explicit user approval.
+PR #171 is no longer an active branch/merge target. Reproduce any Species regression against current `main`.
 
 ## Historical scope preserved from PR #170
 
