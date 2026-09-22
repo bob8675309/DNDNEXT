@@ -1,8 +1,27 @@
 # Character Forge Class Subclass Selector Artwork
 
-Status date: 2026-09-18
+Status date: 2026-09-21
 
-This document records the current approved Character Forge subclass-selector presentation on PR #193 (`agent/subclass-tarot-approved-batch-20260916`). It replaces the older compact two-column selector description. The change is presentation-only: canonical subclass availability, level gates, persistence, progression injection, and feature rules remain owned by the existing Forge class guide/context and Supabase-backed catalogues.
+This document records the merged PR #193 runic-selector baseline and the current PR #194 presentation override. PR #193 (`agent/subclass-tarot-approved-batch-20260916`) merged on 2026-09-18 as `1e5c0795010a4714250d309ecefc68ee67977e2d`. The change is presentation-only: canonical subclass availability, level gates, persistence, progression injection, and feature rules remain owned by the existing Forge class guide/context and Supabase-backed catalogues.
+
+## 2026-09-21 flexible-ring override
+
+Active continuation: PR #194, `agent/subclass-carousel-drag-crisp-20260918`.
+
+The fixed PR #193 front-arc composition below is now historical. Current controlling geometry is:
+
+- one physical ring for all `model.options`;
+- equal angular spacing `360° / option count`;
+- one exact front hero position;
+- continuous depth/scale/opacity/yaw from ring angle;
+- rear card backs remain on the same ring;
+- no fixed visible-card count;
+- explicit click owns inspection/selection intent;
+- carousel rotation alone does not auto-persist or auto-follow the dossier.
+
+Read `Character_Forge_Subclass_Tarot_Flexible_Ring_Status.md` before editing the current selector.
+
+The cathedral/runic-table scene remains an approved baseline asset set, not immutable geometry. Stage assets may change if needed to match the accepted visual target; the Tarot card deck should be preserved.
 
 ## Current approved selector
 
@@ -97,7 +116,7 @@ At that checkpoint:
 
 Before merging or extending this selector:
 
-1. Re-fetch the current PR #193 head; do not trust a recorded SHA if the branch moved.
+1. Re-fetch current `main` and PR #194 exact head/mergeability; PR #193 is already merged.
 2. Every canonical visible subclass option must still be reachable in the continuous orbit.
 3. Arrow/keyboard navigation must advance exactly one option and wrap without rubber-band recentering.
 4. Front/rear depth must remain one circular presentation, not two unrelated lists.
