@@ -36,46 +36,76 @@ assert(!guide.includes('onMouseEnter={() => publishFeature(model, onFeatureDetai
 assert(!guide.includes('onFocus={() => publishFeature(model, onFeatureDetail'), "Feature card must not update from focus alone in the Class guide.");
 
 for (const token of [
+  'import { useEffect, useMemo, useRef, useState } from "react"',
   'import { createPortal } from "react-dom"',
   'subclassArtworkFor(classKey, option)',
   'handleSubclassArtworkError(event, classKey)',
-  'function orbitPlacement(optionIndex, carouselStart, total)',
-  'const frontCount = Math.min(4, count)',
-  'const offset = (Math.PI / 2) - (frontSpan / 2)',
+  'const FRONT_CENTER_SLOT = 0',
+  'const FACE_UP_ARC_DEGREES = 78',
+  'function orbitProfileFor(total)',
+  'function orbitPlacement(optionIndex, orbitOffset, total)',
+  'const angleStep = 360 / count',
+  'const angleDegrees = signedSlots * angleStep',
+  'const horizontalRadius = 36.5 + (density * 4.5)',
+  'const verticalRadius = 17.4 + (density * 1.2)',
+  'const [orbitOffset, setOrbitOffset] = useState(0)',
   'const orbitOptions = useMemo',
-  'const focusedIndex = options.length ? (carouselStart + focusedSlot) % options.length : 0',
-  'model?.setPreviewKey?.(focusedOption.key)',
+  'const heroOption = options[heroIndex] || null',
   'function rotateCarousel(direction)',
-  '(current + normalizedDirection + length) % length',
-  'key={option.key}',
-  'data-orbit-slot={relative}',
+  'function handleOrbitPointerDown(event)',
+  'function handleOrbitPointerMove(event)',
+  'function finishOrbitPointer(event, cancelled = false)',
+  'function handleCardClick(event, option, optionIndex, isInteractive)',
+  'event.currentTarget.setPointerCapture?.(event.pointerId)',
+  'Math.round(drag.currentOffset + projectedCards)',
   'class-subclass-carousel-modal__orbit',
-  'class-subclass-carousel-modal__smoke-front',
-  'class-subclass-carousel-modal__details',
-  'class-subclass-carousel-modal__details-button',
-  'onClick={showFocusedDetails}',
-  'model.setPreviewKey(option.key)',
+  'class-subclass-carousel-modal__title',
+  'class-subclass-carousel-card__surface',
+  'class-subclass-carousel-card__face is-front',
+  'class-subclass-carousel-card__face is-back',
+  'isCenter ? " is-orbit-center" : ""',
+  'isInteractive ? " is-orbit-front" : " is-orbit-back"',
+  'data-orbit-angle={angleDegrees.toFixed(3)}',
+  'onClick={(event) => handleCardClick(event, option, optionIndex, isInteractive)}',
+  'model?.setPreviewKey?.(option.key)',
   'model.selectSubclass(option)',
-  'optionEntryLevel(option) > currentLevel',
   'class-subclass-selected-card',
   'onDoubleClick={() => setSelectorOpen(true)}',
   '>Change Subclass<',
   'currentLevel < entryLevel',
   'setSelectorOpen(true)',
   'onInspectSubclass?.(option)',
-]) assert(selector.includes(token), `Runic circular subclass selector is missing ${token}`);
+]) assert(selector.includes(token), `Reference-scene subclass selector is missing ${token}`);
+
+assert((selector.match(/model\.selectSubclass\(option\)/g) || []).length === 1, "Carousel motion must never create a second subclass persistence path.");
+assert(!selector.includes('model?.setPreviewKey?.(heroOption.key)'), "Hero position must not auto-preview or persist as player intent.");
+assert(!selector.includes('browsedOption'), "Obsolete automatic browsed-card dossier state must not return.");
+assert(!selector.includes('class-subclass-carousel-modal__details'), "The reference table scene must stay free of the old dossier panel.");
+assert(!selector.includes('class-subclass-carousel-modal__smoke'), "The approved clean cathedral scene must not render smoke layers.");
+assert(selector.includes('const isFaceUp = count === 1 || absoluteAngle <= FACE_UP_ARC_DEGREES + 0.01'), "Front/back card presentation must derive from ring angle.");
+assert(selector.includes('const scale = isCenter ? 1 : 0.46 + (depth * 0.48)'), "Non-hero scale must derive continuously from ring depth.");
+assert(selector.includes('setOrbitOffset(normalizeOrbitOffset(optionIndex - FRONT_CENTER_SLOT, options.length))'), "Clicking a face-up card must rotate that exact card to hero.");
 
 for (const token of [
-  'url("/media/forge/subclass-carousel/subclass-selector-cathedral-bg.png")',
-  'url("/media/forge/subclass-carousel/subclass-selector-runic-table.png")',
-  'url("/media/forge/subclass-carousel/subclass-selector-smoke-back.png")',
-  'url("/media/forge/subclass-carousel/subclass-selector-smoke-front.png")',
-  '.class-subclass-carousel-card.is-orbit-back',
+  'url("/media/forge/subclass-carousel/subclass-selector-cathedral-20260922.webp")',
+  'url("/media/forge/subclass-carousel/subclass-selector-card-back-20260922.webp")',
+  'width: min(1760px, 100vw, calc(100vh * 16 / 9))',
+  'aspect-ratio: 16 / 9',
+  '.class-subclass-carousel-card.is-orbit-center',
+  'width: clamp(var(--orbit-hero-min), var(--orbit-hero-vw), var(--orbit-hero-max))',
+  'translate3d(-50%, -100%, 0)',
+  'transform-origin: 50% 100%',
   'rotateY(var(--orbit-yaw))',
-  'z-index: var(--orbit-z)',
-  '.class-subclass-carousel-modal__details',
-  'backdrop-filter: blur(12px)',
-]) assert(tarotCss.includes(token), `Runic subclass carousel presentation is missing ${token}`);
+  '.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__surface',
+  'transform: rotateY(180deg)',
+  'backface-visibility: hidden',
+  '.class-subclass-carousel-modal__nav.is-prev',
+  '.class-subclass-carousel-modal__nav.is-next',
+  '@media (prefers-reduced-motion: reduce)',
+]) assert(tarotCss.includes(token), `Reference-scene Tarot presentation is missing ${token}`);
+
+assert(!tarotCss.includes('subclass-selector-smoke-back.png'), "Smoke asset must not remain active in the clean reference-scene CSS.");
+assert(!tarotCss.includes('subclass-selector-smoke-front.png'), "Foreground smoke must not remain active in the clean reference-scene CSS.");
 
 for (const forbidden of [
   'class-subclass-two-column__grid',
@@ -103,11 +133,9 @@ for (const forbidden of [
 assert(!selector.includes("supabase"), "Subclass selector must remain presentation-only.");
 
 for (const asset of [
-  "public/media/forge/subclass-carousel/subclass-selector-cathedral-bg.png",
-  "public/media/forge/subclass-carousel/subclass-selector-runic-table.png",
-  "public/media/forge/subclass-carousel/subclass-selector-smoke-back.png",
-  "public/media/forge/subclass-carousel/subclass-selector-smoke-front.png",
-]) assert(fs.existsSync(path.join(root, asset)), `Runic subclass carousel UI asset missing ${asset}`);
+  "public/media/forge/subclass-carousel/subclass-selector-cathedral-20260922.webp",
+  "public/media/forge/subclass-carousel/subclass-selector-card-back-20260922.webp",
+]) assert(fs.existsSync(path.join(root, asset)), `Reference-scene subclass selector asset missing ${asset}`);
 
 
 // 2026-09-17 completed normalized Tarot install: every current runtime-visible
@@ -197,4 +225,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSource.includes(token), `Class presentation patch crossed protected boundary: ${token}`);
 }
 
-console.log("Class subclass selector validation passed: canonical subclass authority and persistence remain in the guide model, all subclass cards move through a stable runic-table orbit one position at a time, four front positions stay prominent while rear positions recede behind smoke, the details panel is source-backed, all 152 approved normalized tarot concepts remain installed and mapped, and unmatched future content retains the safe class-art fallback.");
+console.log("Class subclass selector validation passed: canonical authority remains in the guide model, all subclass cards stay on one parametric table ring, rear cards use the shared card back, one exact hero position owns enlarged presentation, drag/arrow motion never persists a subclass, explicit card clicks remain the only selection path, all 152 approved normalized Tarot concepts remain installed/mapped, and future content retains safe fallback.");
