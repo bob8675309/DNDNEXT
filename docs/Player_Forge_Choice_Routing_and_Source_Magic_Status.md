@@ -1,6 +1,6 @@
 # Player Forge Choice Routing and Source Magic — Status
 
-Status: **implemented; migrations 86-88 deployed and rollback-accepted; post-rest presentation follow-up completed by migration 89.** PR #170 is historical/merged; current interactive follow-up belongs to PR #171 or a later dedicated continuation.
+Status: **implemented; migrations 86-88 deployed and rollback-accepted; post-rest presentation follow-up completed by migration 89.** PRs #170 and #171 are historical/merged. This ledger remains routing/source-magic authority; new UI work belongs on a current bounded branch.
 
 ## Player-facing routing model
 
@@ -112,4 +112,4 @@ No world-map, town/city-map, route/travel/weather, unrelated crafting/inventory,
 
 ## Current continuation
 
-PR #170 is historical and merged. This routing/source-magic authority remains active beneath PR #171. Any new browser defect should be reproduced against the current PR #171 deployment; PR #171 remains open and must not be merged without explicit user approval.
+PRs #170 and #171 are historical and merged. This routing/source-magic authority remains active on current `main`. Any new browser defect should be reproduced against current source and fixed on a new bounded branch.
