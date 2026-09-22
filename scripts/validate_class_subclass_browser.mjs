@@ -85,7 +85,7 @@ assert(!selector.includes('browsedOption'), "Obsolete automatic browsed-card dos
 assert(!selector.includes('class-subclass-carousel-modal__details'), "The reference table scene must stay free of the old dossier panel.");
 assert(!selector.includes('class-subclass-carousel-modal__smoke'), "The approved clean cathedral scene must not render smoke layers.");
 assert(selector.includes('const faceUpArcDegrees = faceUpArcDegreesFor(count)') && selector.includes('const isFaceUp = count === 1 || absoluteAngle <= faceUpArcDegrees + 0.01'), "Front/back card presentation must derive from ring angle and catalogue density.");
-assert(selector.includes('const scale = isCenter ? 1 : 0.46 + (depth * 0.48)'), "Non-hero scale must derive continuously from ring depth.");
+assert(selector.includes('const physicalSize = isCenter ? 1 : 0.36 + (depth * 0.60)'), "Non-hero physical card size must derive continuously from ring depth.");
 assert(selector.includes('setOrbitOffset(normalizeOrbitOffset(optionIndex - FRONT_CENTER_SLOT, options.length))'), "Clicking a face-up card must rotate that exact card to hero.");
 
 for (const token of [
@@ -93,11 +93,13 @@ for (const token of [
   'url("/media/forge/subclass-carousel/subclass-selector-card-back-20260922.webp")',
   'width: min(1760px, 100vw, calc(100vh * 16 / 9))',
   'aspect-ratio: 16 / 9',
+  '.class-subclass-carousel-modal__stage::before',
   '.class-subclass-carousel-card.is-orbit-center',
-  'width: clamp(var(--orbit-hero-min), var(--orbit-hero-vw), var(--orbit-hero-max))',
-  'translate3d(-50%, -100%, 0)',
+  'opacity: 1 !important',
+  'translate(-50%, -100%)',
   'transform-origin: 50% 100%',
   'rotateY(var(--orbit-yaw))',
+  '0 0 18px rgba(71, 148, 255, .24)',
   '.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__surface',
   'transform: rotateY(180deg)',
   'backface-visibility: hidden',

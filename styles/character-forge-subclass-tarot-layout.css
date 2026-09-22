@@ -214,8 +214,9 @@
   z-index: 0;
   pointer-events: none;
   background:
-    linear-gradient(to bottom, rgba(2,1,8,.04), rgba(2,1,8,.02) 65%, rgba(2,1,8,.16)),
-    url("/media/forge/subclass-carousel/subclass-selector-cathedral-20260922.webp") center center / cover no-repeat;
+    #080611
+    url("/media/forge/subclass-carousel/subclass-selector-cathedral-20260922.webp")
+    center center / 100% 100% no-repeat;
 }
 
 .class-subclass-carousel-modal__title {
@@ -264,6 +265,24 @@
   z-index: 10;
 }
 
+.class-subclass-carousel-modal__stage::before {
+  content: "";
+  position: absolute;
+  left: 10.6%;
+  top: 49.2%;
+  width: 78.8%;
+  height: 28.4%;
+  z-index: 4;
+  pointer-events: none;
+  border: 1px solid rgba(82, 190, 255, .50);
+  border-radius: 50%;
+  box-shadow:
+    0 0 7px rgba(66, 179, 255, .44),
+    0 0 18px rgba(71, 148, 255, .24),
+    inset 0 0 10px rgba(86, 194, 255, .18);
+  opacity: .78;
+}
+
 .class-subclass-carousel-modal__orbit {
   position: absolute;
   inset: 0;
@@ -294,9 +313,8 @@
   background: transparent;
   opacity: var(--orbit-opacity);
   transform:
-    translate3d(-50%, -100%, 0)
-    rotateY(var(--orbit-yaw))
-    scale(var(--orbit-scale));
+    translate(-50%, -100%)
+    rotateY(var(--orbit-yaw));
   transform-origin: 50% 100%;
   transform-style: preserve-3d;
   transition:
@@ -316,8 +334,9 @@
 }
 
 .class-subclass-carousel-card.is-orbit-center {
-  width: clamp(var(--orbit-hero-min), var(--orbit-hero-vw), var(--orbit-hero-max));
-  opacity: 1;
+  opacity: 1 !important;
+  transform: translate(-50%, -100%);
+  filter: none !important;
 }
 
 .class-subclass-carousel-card::after {
@@ -393,9 +412,36 @@
 
 .class-subclass-carousel-card__art img {
   object-fit: cover;
+  opacity: 1;
   image-rendering: auto;
   -webkit-user-drag: none;
   user-select: none;
+}
+
+.class-subclass-carousel-card.is-orbit-front .class-subclass-carousel-card__face.is-front {
+  box-shadow:
+    0 0 0 1px rgba(255, 211, 121, .66),
+    0 0 13px rgba(255, 195, 86, .30),
+    0 0 26px rgba(115, 83, 225, .16),
+    0 12px 24px rgba(0,0,0,.42);
+}
+
+.class-subclass-carousel-card__face.is-front::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(145deg, rgba(255, 238, 190, .075), transparent 34%),
+    radial-gradient(circle at 50% 20%, rgba(146, 111, 255, .055), transparent 42%);
+}
+
+.class-subclass-carousel-card.is-orbit-center .class-subclass-carousel-card__surface,
+.class-subclass-carousel-card.is-orbit-center .class-subclass-carousel-card__face.is-front,
+.class-subclass-carousel-card.is-orbit-center .class-subclass-carousel-card__art,
+.class-subclass-carousel-card.is-orbit-center .class-subclass-carousel-card__art img {
+  opacity: 1 !important;
+  filter: none !important;
 }
 
 .class-subclass-carousel-card.is-orbit-front:not(.is-orbit-center):hover .class-subclass-carousel-card__surface,
@@ -405,11 +451,12 @@
 }
 
 .class-subclass-carousel-card.is-orbit-center .class-subclass-carousel-card__surface {
+  transform: none !important;
   box-shadow:
-    0 0 0 1px rgba(255, 223, 145, .82),
-    0 0 22px rgba(226, 158, 53, .5),
-    0 0 56px rgba(126, 73, 208, .27),
-    0 22px 42px rgba(0,0,0,.52);
+    0 0 0 1px rgba(255, 226, 150, .94),
+    0 0 18px rgba(255, 191, 72, .56),
+    0 0 38px rgba(109, 94, 235, .24),
+    0 20px 34px rgba(0,0,0,.50);
 }
 
 .class-subclass-carousel-card.is-selected .class-subclass-carousel-card__face.is-front {

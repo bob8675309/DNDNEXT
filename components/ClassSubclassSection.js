@@ -52,8 +52,11 @@ function orbitProfileFor(total) {
   // One physical ellipse follows the visible runic table. Larger catalogues use
   // slightly more of the rim but never switch to a second carousel geometry.
   const horizontalRadius = 36.5 + (density * 4.5);
-  const verticalRadius = 17.4 + (density * 1.2);
-  const verticalCenter = 61.4;
+  // Keep the cards visually seated on the tabletop. Perspective now comes
+  // primarily from physical card size, not from lifting the rear arc high
+  // into the scene.
+  const verticalRadius = 10.6 + (density * 1.0);
+  const verticalCenter = 69.1;
 
   // Non-hero cards stay intentionally smaller so dense catalogues can bend
   // around the table without rendering every 840x1440 Tarot front at hero size.
@@ -109,9 +112,23 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
   const x = 50 + (sine * profile.horizontalRadius);
   const y = profile.verticalCenter + (cosine * profile.verticalRadius);
 
-  const scale = isCenter ? 1 : 0.46 + (depth * 0.48);
-  const opacity = isCenter ? 1 : 0.40 + (depth * 0.58);
+  const physicalSize = isCenter ? 1 : 0.36 + (depth * 0.60);
+  const opacity = isCenter
+    ? 1
+    : isFaceUp
+      ? 0.95 + (depth * 0.05)
+      : 0.82 + (depth * 0.14);
   const zIndex = 40 + Math.round(depth * 120) + (isCenter ? 32 : 0);
+
+  const cardMin = isCenter
+    ? profile.heroMinWidth
+    : Math.round(profile.minWidth * physicalSize);
+  const cardViewport = isCenter
+    ? profile.heroViewportWidth
+    : profile.viewportWidth * physicalSize;
+  const cardMax = isCenter
+    ? profile.heroMaxWidth
+    : Math.round(profile.maxWidth * physicalSize);
 
   return {
     signedSlots,
@@ -124,15 +141,11 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
       "--orbit-x": `${x.toFixed(3)}%`,
       "--orbit-y": `${y.toFixed(3)}%`,
       "--orbit-yaw": `${yaw.toFixed(2)}deg`,
-      "--orbit-scale": scale.toFixed(4),
       "--orbit-opacity": opacity.toFixed(3),
       "--orbit-z": String(zIndex),
-      "--orbit-card-min": `${profile.minWidth}px`,
-      "--orbit-card-vw": `${profile.viewportWidth.toFixed(2)}vw`,
-      "--orbit-card-max": `${profile.maxWidth}px`,
-      "--orbit-hero-min": `${profile.heroMinWidth}px`,
-      "--orbit-hero-vw": `${profile.heroViewportWidth.toFixed(2)}vw`,
-      "--orbit-hero-max": `${profile.heroMaxWidth}px`,
+      "--orbit-card-min": `${cardMin}px`,
+      "--orbit-card-vw": `${cardViewport.toFixed(2)}vw`,
+      "--orbit-card-max": `${cardMax}px`,
     },
   };
 }
