@@ -1,8 +1,8 @@
 # Character Forge Class Cinematic Artwork Rollout
 
-Status date: 2026-09-06
+Status date: 2026-09-21
 
-This document is the handoff authority for the mirrored cinematic Class artwork rollout on PR #177 (`agent/realistic-dice-core`). It is a presentation-layer program only. Existing Class selection, subclass selection, progression, feature inspection, Training/Spells/Equipment routing, and source-data authority remain unchanged.
+This document is the accepted rollout ledger for the mirrored cinematic Class artwork shipped through PR #177 (`agent/realistic-dice-core`). PR #177 merged on 2026-09-11 as `02854698298f357d2dfde21dd292ba7caf73e1c1`. It is a presentation-layer program only. Existing Class selection, subclass selection, progression, feature inspection, Training/Spells/Equipment routing, and source-data authority remain unchanged.
 
 ## Approved presentation direction
 
@@ -88,6 +88,10 @@ Environmental/art direction represented in this batch:
 
 All five use the same realistic cinematic fantasy family while varying pose, gaze, elevation, lighting, and environment.
 
+## Historical Class Overview selector layout from 2026-09-06
+
+The two-column subclass selector below records the accepted Class-layout checkpoint at that date. It was later superseded by the Tarot selector work merged through PR #193 and refined on active PR #194. Preserve its non-hover Feature-card and progression-authority rules, but do not restore the two-column selector merely because it appears in this historical rollout ledger.
+
 ## Approved Class Overview layout: two-column subclasses + wide progression
 
 The 2026-09-06 browser review selected the two-column mockup as the Class Overview target.
@@ -152,7 +156,7 @@ Before a new Class hero or Class-tab presentation batch is called installed:
 12. verify Overview and Detailed Guide views;
 13. run `Validate Class browser polish`, including hero-framing and subclass-selector regression steps;
 14. run the normal Forge validation suite and verify Vercel build/runtime state;
-15. inspect the exact diff for unrelated systems before advancing PR #177.
+15. inspect the exact diff for unrelated systems before advancing any future Class-art branch; PR #177 is already merged.
 
 ## Protected boundaries
 
