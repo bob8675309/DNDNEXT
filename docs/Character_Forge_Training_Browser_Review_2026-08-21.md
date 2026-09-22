@@ -1,6 +1,6 @@
 # Character Forge Training Browser Review Follow-up — 2026-08-21
 
-Status: approved implementation follow-up on PR #176 (`agent/training-tab-redesign`). This document is a handoff-safe addendum to `Character_Forge_Training_Redesign_Status.md`.
+Status: **historical approved browser-review requirements for merged PR #176** (`agent/training-tab-redesign`). PR #176 merged on 2026-09-11. This document remains a regression/intent addendum to `Character_Forge_Training_Redesign_Status.md`.
 
 ## User-approved changes from browser review
 
@@ -40,7 +40,7 @@ A mapped tool proficiency and its Trade Skill are one campaign proficiency. A so
 
 The long-term goal remains a more granular craft catalogue where additional tools can become independent Trade Skills with recipes/progression. That larger crafting-system project is deferred.
 
-For PR #176:
+For the PR #176 implementation (historical):
 
 - supported artisan/crafting-tool choices should present the eight mapped Trade Skills above rather than a large generic artisan-tool dropdown;
 - unsupported artisan craft options should be hidden from the generic player-facing artisan/craft picker for now, but **must not be deleted from source data**;
