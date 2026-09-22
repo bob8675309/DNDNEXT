@@ -45,82 +45,82 @@ Locked requirements:
 - [x] Transparent ornate Tarot card-back asset generated.
 - [x] Inspect each generated asset at full resolution for transparency, composition, edge artifacts, and suitability for the live modal.
 - [x] Use the generated cathedral plate as the primary scene: it already contains the clean integrated table and matches the reference more closely. Keep the separately generated transparent table as an optional fallback layer rather than stacking both by default.
-- [ ] Normalize production filenames/dimensions/formats.
-- [ ] Transfer approved assets into `public/media/forge/subclass-carousel/` through the guarded binary workflow.
-- [ ] Verify MIME, dimensions, alpha where required, and exact diff after transfer.
+- [x] Normalize the two active production assets: 1280×720 cathedral WebP and 315×540 7:12 shared card-back WebP.
+- [x] Commit the active cathedral/card-back assets through exact blob → tree → commit → non-forced ref update. Generated standalone table/nav assets remain optional and are not active.
+- [x] Verify active asset format/dimensions and exact branch diff after transfer.
 
 ## Phase 1 — establish clean implementation baseline
 
 - [x] Compare current `main` PR #193 selector with PR #194 and preserve only useful interaction logic.
-- [ ] Do not copy PR #194's accumulated experimental CSS override stack wholesale.
-- [ ] Keep `utils/classes/subclassArtwork.js` as the Tarot-card resolver authority.
-- [ ] Keep all 149 current runtime-visible subclass cards and safe future fallback behavior.
+- [x] Replace the selector stylesheet with one clean reference-scene stylesheet rather than copying PR #194's override stack.
+- [x] Keep `utils/classes/subclassArtwork.js` as the Tarot-card resolver authority.
+- [x] Keep all 149 current runtime-visible subclass cards and the existing safe future fallback behavior.
 - [x] Confirm initial runtime scope: `components/ClassSubclassSection.js`, `styles/character-forge-subclass-tarot-layout.css`, focused Class/subclass validators, new selector stage assets, and directly related selector docs only.
-- [ ] Update focused validators to describe the new reference-scene contract rather than stale experimental layouts.
+- [x] Update focused validators to describe the reference-scene contract and remove the stale automatic browsed-card expectation.
 
 ## Phase 2 — modal scene shell
 
-- [ ] Make the selector a large viewport-owned modal.
-- [ ] Match the reference's cinematic 16:9 composition as closely as responsive layout allows.
-- [ ] Use the new cathedral scene as the background plate.
-- [ ] Place the runic table as a separate controllable stage layer if that produces a closer match.
-- [ ] Remove smoke assets/effects from the active scene.
-- [ ] Replace the large old heading/copy with the small centered `Choose your Fate` heading.
-- [ ] Keep a close control that is visible but visually subordinate to the scene.
-- [ ] Position left/right navigation controls to match the reference.
-- [ ] Remove old position-counter/hint/dossier clutter from the main table composition unless needed for accessibility.
-- [ ] Keep subclass details accessible without covering the primary table scene.
+- [x] Make the selector a large viewport-owned modal.
+- [x] Use a centered 16:9 desktop scene shell matching the reference composition.
+- [x] Use the new cathedral/runic-table scene as the active background plate.
+- [x] Keep the separately generated transparent table out of the active composition for now because the accepted cathedral plate already contains the table; retain it only as an optional fallback if browser tuning needs independent table control.
+- [x] Remove smoke assets/effects from the active scene.
+- [x] Replace old heading/copy with the small centered `Choose your Fate` integrated into the scene; retain only a visually-hidden semantic heading in React.
+- [x] Keep a small subordinate close control in the upper-right.
+- [x] Position compact gold-ring left/right navigation controls at the table sides.
+- [x] Remove the old visible position counter, hint, and dossier from the table composition; retain an aria-live status only.
+- [x] Keep details routed through the existing `onInspectSubclass`/Class detail authority rather than restoring an in-modal dossier that covers the scene.
 
 ## Phase 3 — true ring geometry
 
-- [ ] Use one continuous parametric ring/ellipse for every subclass.
-- [ ] Compute each card angle from ring offset and catalogue size.
-- [ ] Anchor each card at its bottom-center so it appears to stand on the table rim.
-- [ ] Make horizontal position, vertical position, scale, opacity, z-order, and yaw derive continuously from ring angle.
-- [ ] Make card yaw follow the ring tangent so cards visibly bend around the table instead of sliding flat across the screen.
-- [ ] Keep the front hero at one exact angle/position.
-- [ ] Make hero pop forward/up from the table and enlarge smoothly.
-- [ ] Keep all non-hero cards seated normally on the rim.
+- [x] Use one continuous parametric ring/ellipse for every subclass.
+- [x] Compute each card angle from ring offset and catalogue size (`360 / N`).
+- [x] Anchor each card at bottom-center with `translate(-50%, -100%)` and bottom transform origin.
+- [x] Derive position, scale, opacity, z-order, and yaw continuously from ring angle/depth.
+- [x] Make yaw follow ring angle so cards bend around the table.
+- [x] Keep one exact front hero position.
+- [x] Enlarge the exact hero through physical card width with smooth position/size transitions.
+- [x] Keep non-hero cards on their natural ring positions.
 - [ ] Tune the ring against a small catalogue such as Monster Hunter (4 options).
 - [ ] Tune the same geometry against Wizard's dense catalogue.
-- [ ] Avoid a separate geometry mode for Wizard unless absolutely required.
+- [x] Use the same ring equations for every catalogue size; only bounded radius/card-size density adjustments vary with N.
 
 ## Phase 4 — front/back and density behavior
 
-- [ ] Use existing Tarot fronts for the front-facing arc.
-- [ ] Use the new common Tarot back for rear-facing cards.
-- [ ] Flip/transition front-to-back from ring angle rather than arbitrary slot numbers.
-- [ ] Keep rear motion visible so the player can understand the ring is continuous.
-- [ ] Scale rear cards down enough to reduce overlap while preserving the real-ring illusion.
+- [x] Use the existing approved Tarot fronts for the front-facing arc.
+- [x] Use the new shared Tarot back for rear-facing cards.
+- [x] Derive front/back state from ring angle (±78° face-up arc).
+- [x] Keep every rear card in the DOM/on the same physical ring with reduced depth/opacity rather than removing it.
+- [x] Scale non-hero/rear cards continuously by ring depth.
 - [ ] Test Wizard/high-count spacing for collision/stacking.
-- [ ] Prefer geometry/radius/scale/back-face treatment over hiding cards.
-- [ ] Only introduce rear virtualization/windowing if full-ring browser evidence shows it is genuinely necessary.
+- [x] Prefer geometry/radius/scale/back-face treatment; no visible-card cap or hiding window exists.
+- [x] No rear virtualization/windowing in the initial implementation.
 - [ ] Ensure card fronts stay crisp at normal browser zoom.
 
 ## Phase 5 — selection and interaction
 
-- [ ] Left arrow rotates one subclass step.
-- [ ] Right arrow rotates one subclass step.
-- [ ] Keyboard Left/Right mirrors button navigation.
-- [ ] Escape closes modal.
-- [ ] Mouse/touch drag rotates the ring continuously.
-- [ ] Flick projects to a sensible snapped card position.
-- [ ] Drag threshold prevents accidental card selection.
-- [ ] Clicking a visible face-up non-hero card rotates that exact card to the hero position.
-- [ ] Explicit eligible click uses existing `model.selectSubclass(option)` authority.
-- [ ] Locked/future-level subclass can be inspected without illegal persistence.
-- [ ] Carousel motion alone never calls subclass persistence.
-- [ ] Selected subclass state remains synchronized with the existing Class guide after modal close.
-- [ ] Reopening the modal starts from the currently selected subclass when appropriate.
+- [x] Left arrow rotates one subclass step.
+- [x] Right arrow rotates one subclass step.
+- [x] Keyboard Left/Right mirrors button navigation.
+- [x] Escape closes the modal.
+- [x] Mouse/touch pointer drag rotates the ring continuously.
+- [x] Flick velocity projects to a bounded snapped card position.
+- [x] Drag threshold + short click suppression prevents accidental selection after a drag.
+- [x] Clicking a visible face-up card rotates that exact card to hero.
+- [x] Explicit eligible click uses the existing `model.selectSubclass(option)` authority.
+- [x] Locked/future-level card click publishes inspection but does not call subclass persistence.
+- [x] Carousel motion alone never calls subclass persistence; validators enforce exactly one explicit `model.selectSubclass(option)` call.
+- [x] Selection still flows through the existing Class guide model; no parallel subclass state was introduced.
+- [x] Reopening centers the currently selected subclass.
 
 ## Phase 6 — hero-card presentation
 
-- [ ] Hero card uses the existing 7:12 Tarot artwork without crop/stretch distortion.
-- [ ] Hero card enlarges to the reference-like full presentation size.
-- [ ] Hero enlargement is physical/layout sizing first, not excessive transform scaling that softens the image.
-- [ ] Hero receives restrained gold/purple emphasis only; do not cover the artwork with large labels.
-- [ ] Non-hero cards remain smaller and visually subordinate.
-- [ ] Selected/hero state does not change the underlying card artwork asset.
+- [x] Hero uses the existing 7:12 Tarot front in a 7:12 container.
+- [x] Hero has a dedicated larger physical width (bounded up to 306px desktop) instead of rendering every card at hero size.
+- [x] Hero enlargement is driven by card width; transform scale remains 1 at hero.
+- [x] Hero receives restrained gold/purple outline/glow with no artwork-covering label.
+- [x] Non-hero cards remain smaller and depth-scaled.
+- [x] Selected/hero state does not change the Tarot front asset.
 - [ ] Hero transition stays smooth during arrow, click, and drag-snap motion.
 
 ## Phase 7 — visual fidelity pass
@@ -136,26 +136,26 @@ Locked requirements:
 
 ## Phase 8 — responsive and accessibility
 
-- [ ] Desktop/wide layout is the primary fidelity target.
-- [ ] Preserve a usable modal on medium screens without changing selection authority.
-- [ ] Provide a safe narrow/mobile fallback that keeps every option reachable.
-- [ ] Maintain keyboard focus visibility.
-- [ ] Keep semantic button roles/labels.
-- [ ] Respect reduced-motion preferences without changing the selected result.
-- [ ] Prevent body/background scrolling while the modal is open and restore it on close.
+- [x] Desktop/wide 16:9 is the primary implementation target.
+- [x] Add medium-screen sizing fallback without changing selection authority.
+- [x] Add a narrow/mobile modal fallback while preserving the same option/ring authority.
+- [x] Maintain focusable front cards, close control, and navigation buttons.
+- [x] Keep semantic button roles, list semantics, labels, posinset/setsize, and aria-live hero status.
+- [x] Respect reduced motion by collapsing transition duration only.
+- [x] Lock body scrolling while modal is open and restore the prior overflow value on cleanup.
 
 ## Phase 9 — validation / regression protection
 
-- [ ] Rewrite `scripts/validate_class_subclass_browser.mjs` around the final reference-scene invariants.
-- [ ] Fix `scripts/validate_class_browser_polish.mjs` so it no longer requires the obsolete automatic `browsedOption` dossier-follow behavior.
-- [ ] Validate that only the explicit card-choice path calls `model.selectSubclass(option)`.
-- [ ] Validate canonical subclass catalogue ownership remains in the existing guide model.
-- [ ] Validate all current approved Tarot assets still resolve.
-- [ ] Validate safe fallback for genuinely future/unknown subclasses.
-- [ ] Run Class browser/subclass validators.
+- [x] Rewrite `scripts/validate_class_subclass_browser.mjs` around the new ring/asset/authority invariants.
+- [x] Fix `scripts/validate_class_browser_polish.mjs` so it no longer requires obsolete `browsedOption` dossier-follow behavior.
+- [x] Validate that only the explicit card-choice path calls `model.selectSubclass(option)`.
+- [x] Validate canonical subclass catalogue ownership remains in the existing guide model.
+- [x] Validate all 152 normalized approved Tarot concepts remain installed/mapped (149 current runtime-visible choices).
+- [x] Validate safe fallback for genuinely future/unknown subclasses.
+- [x] Run Class browser/subclass validators on PR #199; all focused selector/Class validators pass.
 - [ ] Run relevant Forge foundation/progression regressions.
 - [ ] Run production build.
-- [ ] Confirm no protected map/town/tactical/crafting/inventory/merchant files changed.
+- [x] Confirm PR #199 changed-file scope contains no protected map/town/tactical/crafting/inventory/merchant/economy/Supabase runtime files.
 
 ## Phase 10 — browser acceptance matrix
 
@@ -178,10 +178,10 @@ Locked requirements:
 ## Phase 11 — delivery / cleanup
 
 - [ ] Remove obsolete scene assets only after the new scene is accepted.
-- [ ] Remove superseded experimental CSS instead of leaving late override stacks.
+- [x] Use a clean replacement selector stylesheet; no copied PR #194 late override stack.
 - [ ] Update selector/artwork status docs to the accepted implementation.
 - [ ] Record exact validated head and preview.
-- [ ] Open/refresh a bounded PR for review.
+- [x] Open bounded PR #199 from `agent/subclass-tarot-scene-rebuild-20260922`.
 - [ ] Do not merge without Paul's explicit approval.
 
 ## Definition of done
