@@ -80,26 +80,32 @@ for (const token of [
   'import { useEffect, useMemo, useRef, useState } from "react"',
   'import { createPortal } from "react-dom"',
   "subclassArtworkFor(classKey, option)",
-  "function orbitPlacement(optionIndex, carouselStart, total)",
-  "const frontCount = Math.min(4, count)",
-  "const orbitOptions = useMemo",
-  "const focusedOption = options[focusedIndex] || null",
-  "class-subclass-carousel-modal__orbit",
-  "class-subclass-carousel-modal__details",
-  "class-subclass-carousel-modal__smoke-front",
-  "data-orbit-slot={relative}",
-  "key={option.key}",
-  "function rotateCarousel(direction)",
-  "(current + normalizedDirection + length) % length",
+  "function orbitPlacement(optionIndex, orbitOffset, total)",
+  "const [orbitOffset, setOrbitOffset] = useState(0)",
+  "const heroOption = options[heroIndex] || null",
+  "function handleOrbitPointerDown(event)",
+  "function handleOrbitPointerMove(event)",
+  "function finishOrbitPointer(event, cancelled = false)",
+  "function handleCardClick(event, option, optionIndex, isInteractive)",
+  "onPointerDown={handleOrbitPointerDown}",
+  "onPointerMove={handleOrbitPointerMove}",
+  "onPointerUp={(event) => finishOrbitPointer(event)}",
+  "class-subclass-carousel-card__surface",
+  "class-subclass-carousel-card__face is-front",
+  "class-subclass-carousel-card__face is-back",
+  "class-subclass-carousel-modal__title",
   "model.selectSubclass(option)",
-  "model.setPreviewKey(option.key)",
-  "model?.setPreviewKey?.(focusedOption.key)",
+  "model?.setPreviewKey?.(option.key)",
   "class-subclass-selected-card",
   ">Change Subclass<",
   "onDoubleClick={() => setSelectorOpen(true)}",
-  "onInspectSubclass?.(option)",
-  "onClick={showFocusedDetails}",
-]) assert(selector.includes(token), `Runic circular subclass selector is missing ${token}`);
+]) assert(selector.includes(token), `Reference-scene subclass selector is missing ${token}`);
+
+assert((selector.match(/model\.selectSubclass\(option\)/g) || []).length === 1, "Carousel motion must not create a second subclass-selection authority.");
+assert(!selector.includes('model?.setPreviewKey?.(heroOption.key)'), "Front-most carousel position must not auto-select or auto-preview as player intent.");
+assert(!selector.includes("browsedOption"), "Stale browsed-card auto-follow state must remain removed.");
+assert(!selector.includes("class-subclass-carousel-modal__details"), "Old dossier panel must not cover the recreated reference scene.");
+assert(!selector.includes("class-subclass-carousel-modal__smoke"), "Clean cathedral target must not render old smoke layers.");
 
 for (const forbidden of [
   "class-subclass-two-column__grid",
@@ -173,4 +179,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSources.includes(token), `Class browser patch unexpectedly references protected behavior: ${token}`);
 }
 
-console.log("Class browser polish validation passed: the runic circular subclass Tarot selector, click-only movable Feature-card details, selected-subclass progression bubbles, balanced per-level spell-slot table, open stable top-right art, preserved Class authority, and protected boundaries are intact.");
+console.log("Class browser polish validation passed: the recreated cathedral Tarot ring keeps explicit click-owned subclass selection, selected-subclass progression bubbles and spell slots remain intact, Class authority stays preserved, and protected boundaries are unchanged.");
