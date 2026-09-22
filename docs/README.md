@@ -11,7 +11,7 @@ This directory contains the project's living handoff, roadmap, architecture, sub
 3. `Character_Forge_Subclass_Tarot_Flexible_Ring_Status.md` — active PR #194 flexible equal-angle table-ring architecture, target behavior, current head/preview, and acceptance checklist.
 4. `Auth_Navigation_Admin_Activity_Status.md` — merged PR #195 navbar/auth/admin-activity checkpoint plus live Supabase hardening.
 5. `Documentation_Refresh_Manifest.md` — documentation trust order, live migration/current PR checkpoint, and current queue.
-6. `Realistic_Dice_Roller_Architecture_Roadmap.md` — controlling future plan for reusable Realistic Dice.
+6. `Realistic_Dice_Roller_Architecture_Roadmap.md` — current Realistic Dice implementation boundary plus historical/future expansion roadmap.
 7. `Unified_Character_Forge_Status.md` — shared Player/NPC Forge, progression, source-choice, and runtime authority.
 8. The dedicated subsystem ledger for the area being changed.
 9. `CHATGPT_REPO_WRITE_PROCEDURE.md` before direct GitHub/Supabase mutation.
@@ -52,17 +52,29 @@ Latest relevant registered migrations:
 
 Read `Auth_Navigation_Admin_Activity_Status.md` for the privacy model, grants, rate-bound anonymous ingestion, and signed-out attribution fix.
 
-The planned Realistic Dice Phase 1 still does **not** require a Supabase migration. Later tactical dice presentation should consume existing authoritative encounter RPC/combat-log outcomes rather than introduce client-side combat authority.
+The reusable Realistic Dice core is already merged from PR #177 and required no Supabase migration. Future tactical dice presentation must continue to consume existing authoritative encounter RPC/combat-log outcomes rather than introduce client-side combat authority.
 
-## Realistic Dice future subsystem
+## Realistic Dice current core and future expansion
 
-Read `Realistic_Dice_Roller_Architecture_Roadmap.md` before implementing or modifying the future roller.
+Read `Realistic_Dice_Roller_Architecture_Roadmap.md` before modifying the current dice core or extending it to new consumers.
 
-### Why this exists
+### Current implementation
 
-The current Character Forge Abilities tab contains a CSS-based dice-tray/result-die prototype. It preserves the correct Forge roll objects and allocation behavior, but its trajectories are presentation-only and should not become the permanent cross-site engine.
+PR #177 — `Add reusable realistic dice physics core` — merged on 2026-09-11 as `02854698298f357d2dfde21dd292ba7caf73e1c1`.
 
-The reusable subsystem is planned to support:
+Current source includes:
+
+- `components/dice/RealisticDiceTray.js`;
+- `components/dice/adapters/ForgeAbilityDiceTray.js`;
+- `utils/dice/diceRollContract.js`;
+- `utils/dice/diceTypes.js`;
+- `utils/dice/diceVisualSeed.js`;
+- `utils/dice/physics/dicePhysicsEngine.js`;
+- focused semantic and numerical physics validators.
+
+The current renderer/physics implementation is custom JavaScript + DOM/CSS 3D cube physics. The normalized contract declares `d6`, `d8`, `d10`, `d12`, `d20`, and Forge `resultCube`, but true polyhedral rendering and additional site consumers remain future expansion work. The older Three/R3F/Rapier plan is design history, not a description of the merged implementation.
+
+The reusable subsystem is intended to support:
 
 - Forge generated ability totals;
 - Character Sheet ability/skill/save/initiative rolls;
@@ -87,14 +99,13 @@ Do not let Rapier/Three client physics decide or replace:
 
 Dice rigid-body collision rules are deliberately separate from the existing discrete tactical hex rules.
 
-### Planned implementation order
+### Current expansion order
 
-1. finish/accept the current Forge checkpoint;
-2. create a dedicated Realistic Dice branch/PR from the accepted commit rather than widening #176 indefinitely;
-3. build the reusable core + Forge adapter first;
-4. add Character Sheet adapter only after Phase 1 acceptance;
-5. add tactical adapter when tactical work resumes;
-6. consider a global overlay host only after multiple real consumers justify it.
+1. preserve the merged Forge adapter and authoritative-result boundary;
+2. add true polyhedral presentation only through a bounded dice-specific branch/PR;
+3. add a Character Sheet adapter without rewriting sheet math;
+4. add a tactical adapter only as a visualization of server-resolved encounter results;
+5. consider a global overlay/replay host only after multiple real consumers justify it.
 
 ## Character Forge / progression / runtime documents
 
@@ -142,7 +153,7 @@ Audit omissions/parsing/routing against the source payload before changing anyth
 
 ## Training subledger
 
-Training remains important because PR #176 started there. Preserve the accepted direction and source ownership documented in `Character_Forge_Training_Redesign_Status.md`, including player/NPC isolation, Skills/Feats view separation, canonical tool↔Trade Skill mapping, no double-spend, and existing completion authority.
+Training remains important because PR #176 started there and later merged on 2026-09-11. Preserve the accepted direction and source ownership documented in `Character_Forge_Training_Redesign_Status.md`, including player/NPC isolation, Skills/Feats view separation, canonical tool↔Trade Skill mapping, no double-spend, and existing completion authority.
 
 Do not regress Training while working on Class/Abilities/dice presentation.
 
@@ -154,7 +165,7 @@ Do not regress Training while working on Class/Abilities/dice presentation.
 - `Town_Crafter_Current_Status.md` — town crafter/profile state.
 - `Source_Patch_Pipeline_Audit.md` — source-bake / validator pipeline.
 
-After the Forge is complete, the user wants to circle back to a broader crafting redesign: a unified crafting-material list whose material has craft-specific effects, plus possible expansion of individual tools into granular craft skills/recipe systems. That is deliberately separate from Realistic Dice and PR #176.
+After the Forge is complete, the user wants to circle back to a broader crafting redesign: a unified crafting-material list whose material has craft-specific effects, plus possible expansion of individual tools into granular craft skills/recipe systems. That remains deliberately separate from Realistic Dice and the merged PR #176 Training implementation.
 
 ## Tactical encounter / sprites / security
 
