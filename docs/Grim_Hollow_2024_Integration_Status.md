@@ -1,6 +1,6 @@
 # Grim Hollow 2024 Integration Status
 
-Updated: 2026-08-14
+Updated: 2026-09-21
 
 ## Scope
 
@@ -84,4 +84,4 @@ Code head after the Custom Lineage source-choice work: `4fb5fa57ea948dcf44aba3e7
 
 All 15 GitHub workflows triggered for that exact code head completed successfully, including the NPC Forge foundation, nested-choice, Forge source-presentation, Player Forge source-magic-routing, character progression, Species runtime, and Eladrin/Astral Trance suites.
 
-PR #171 remains open and unmerged. Do not merge until the user explicitly approves it.
+PR #171 later merged on 2026-08-16. The validation checkpoint above remains historical evidence; current source/live catalogue state outranks the old branch checkpoint.
