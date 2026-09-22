@@ -16,7 +16,7 @@ The runtime baseline that PR #194 must integrate against includes merged PR #195
 
 - `320671a22b83432177dcc67e9efd035f3c3ccc5d`.
 
-Documentation-only merges may place current `main` ahead of that SHA. Always re-fetch PR #194, current `main`, mergeability, and the exact preview before writing or merging.
+At the 2026-09-21 documentation reconciliation, current `main` was `ab8c5ce6df1fabd906890b38bcfee16deac2ca0d`, with later changes after PR #195 documented as non-runtime handoff updates. Always re-fetch PR #194, current `main`, mergeability, and the exact preview before writing or merging.
 
 ## Visual authority
 
@@ -121,6 +121,20 @@ Primary files:
 - `scripts/validate_class_subclass_browser.mjs`.
 
 The CSS was consolidated so late experimental override blocks do not continue fighting one another.
+
+## Current validator / integration blocker
+
+The exact reviewed PR #194 head has a READY Vercel preview, but GitHub `Validate Class browser polish` is red.
+
+Root cause:
+
+- `ClassSubclassSection.js` intentionally no longer defines a `browsedOption` fallback for the details dossier;
+- carousel rotation alone should not silently change inspection/player intent;
+- `scripts/validate_class_browser_polish.mjs` still asserts the older `browsedOption`/auto-follow contract.
+
+Reconcile the validator to the flexible-ring interaction contract rather than reintroducing automatic dossier-following just to satisfy CI.
+
+PR #194 is also behind current `main`. A compare audit found post-base overlap only in `docs/DNDNext_Current_Handoff_Prompt.md`; the carousel component, CSS, and validators do not overlap PR #195 runtime files.
 
 ## Acceptance work still open
 
