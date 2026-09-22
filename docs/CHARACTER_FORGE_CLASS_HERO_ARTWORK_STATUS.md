@@ -1,8 +1,8 @@
 # Character Forge Class Hero Artwork Status
 
-Status date: 2026-09-10
+Status date: 2026-09-21
 
-This is the focused handoff/status note for Character Forge Class artwork presentation on PR #177 (`agent/realistic-dice-core`). Current source, exact-head CI, browser behavior, and Supabase remain authoritative over older screenshots or superseded notes.
+This is the accepted status note for Character Forge Class artwork presentation delivered through merged PR #177 (`agent/realistic-dice-core`). PR #177 merged on 2026-09-11 as `02854698298f357d2dfde21dd292ba7caf73e1c1`. Current source, exact-head CI, browser behavior, and Supabase remain authoritative over older screenshots or superseded notes.
 
 ## Current architecture
 
