@@ -41,7 +41,9 @@ for (const token of [
   'subclassArtworkFor(classKey, option)',
   'handleSubclassArtworkError(event, classKey)',
   'const FRONT_CENTER_SLOT = 0',
-  'const FACE_UP_ARC_DEGREES = 78',
+  'function faceUpArcDegreesFor(total)',
+  'if (count <= 4) return 112',
+  'return 68',
   'function orbitProfileFor(total)',
   'function orbitPlacement(optionIndex, orbitOffset, total)',
   'const angleStep = 360 / count',
@@ -82,7 +84,7 @@ assert(!selector.includes('model?.setPreviewKey?.(heroOption.key)'), "Hero posit
 assert(!selector.includes('browsedOption'), "Obsolete automatic browsed-card dossier state must not return.");
 assert(!selector.includes('class-subclass-carousel-modal__details'), "The reference table scene must stay free of the old dossier panel.");
 assert(!selector.includes('class-subclass-carousel-modal__smoke'), "The approved clean cathedral scene must not render smoke layers.");
-assert(selector.includes('const isFaceUp = count === 1 || absoluteAngle <= FACE_UP_ARC_DEGREES + 0.01'), "Front/back card presentation must derive from ring angle.");
+assert(selector.includes('const faceUpArcDegrees = faceUpArcDegreesFor(count)') && selector.includes('const isFaceUp = count === 1 || absoluteAngle <= faceUpArcDegrees + 0.01'), "Front/back card presentation must derive from ring angle and catalogue density.");
 assert(selector.includes('const scale = isCenter ? 1 : 0.46 + (depth * 0.48)'), "Non-hero scale must derive continuously from ring depth.");
 assert(selector.includes('setOrbitOffset(normalizeOrbitOffset(optionIndex - FRONT_CENTER_SLOT, options.length))'), "Clicking a face-up card must rotate that exact card to hero.");
 
