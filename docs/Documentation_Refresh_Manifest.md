@@ -17,6 +17,8 @@ If prose conflicts with live source/database state, live authority wins until do
 
 ## 2026-09-21 current checkpoint override
 
+This override was re-verified during the documentation reconciliation pass against live GitHub/Supabase state.
+
 The older checkpoint sections below are retained as history. Current live authority is:
 
 - accepted runtime checkpoint from merged PR #195: `320671a22b83432177dcc67e9efd035f3c3ccc5d`;
@@ -24,6 +26,8 @@ The older checkpoint sections below are retained as history. Current live author
 - PR #195 is closed/merged: auth-gated navbar + admin activity view;
 - production Vercel for that merge: `dpl_ETZZCzVZq8Cpw56Fndf9pfYmp5B8` — **READY** at handoff;
 - active Character Forge presentation work: PR #194, branch `agent/subclass-carousel-drag-crisp-20260918`, reviewed head `f21a81435946b1ae8ec6112e5376062cfc2b62f4`, open/unmerged;
+- PR #194 exact-head Vercel is READY, but GitHub `Validate Class browser polish` currently fails because the validator still asserts the superseded browsed-card dossier fallback; current source intentionally requires explicit click/inspection ownership;
+- PR #194 is behind current `main`; its only overlap with post-base `main` changes is `docs/DNDNext_Current_Handoff_Prompt.md`, so runtime integration risk is narrow but the branch still needs an exact-head rebase/reconciliation before merge;
 - PR #194 exact-head preview: `dndnext-86xs3s1d4-pauls-projects-2016aa54.vercel.app` — **READY** at handoff.
 
 Current focused handoff/status documents:
@@ -34,7 +38,9 @@ Current focused handoff/status documents:
 
 ### Live database update
 
-Latest relevant registered migration is now:
+Live migration ledger count at this reconciliation: **218**.
+
+Latest registered migration:
 
 `20260921185225 admin_site_activity_hardening_v1`.
 
@@ -55,7 +61,7 @@ The previous `20260814161314 grim_hollow_heritage_catalog_support` checkpoint is
 5. Merge PR #194 only after explicit user approval and exact-head validation.
 6. Broader documentation standardization can follow the accepted Tarot checkpoint; reconcile old ledgers rather than deleting historical evidence.
 
-## Current GitHub checkpoint
+## Historical 2026-08-30 GitHub checkpoint — retained for provenance
 
 Accepted runtime/code baseline on `main`:
 
@@ -63,7 +69,7 @@ Accepted runtime/code baseline on `main`:
 
 Active work:
 
-- PR #176 — `agent/training-tab-redesign` — **Character Forge browser-review continuation**, open/unmerged.
+- PR #176 — `agent/training-tab-redesign` — historical browser-review continuation; **merged 2026-09-11** as `b7f079fa2e0e69d5c025ea6d03205e9ea26c8d64`.
 
 PR #176 began as the Training redesign and now includes later Forge browser-polish work as well. Immediately before the 2026-08-30 documentation-only Realistic Dice handoff updates, its remote head was:
 
@@ -78,11 +84,11 @@ Recent accepted Forge sequence:
 - PR #172 — merged `8b62e38cc4de490dd4a02b57b0e9448baff3e5ef`;
 - PR #173 — merged `8c37e30063d2523a5f488073d3ea60c5571c7182`;
 - PR #175 — merged `a2aecdd354346926afdf33efb1af320581563b68`;
-- PR #176 — active/unmerged.
+- PR #176 — later merged `b7f079fa2e0e69d5c025ea6d03205e9ea26c8d64`.
 
 Do not describe #170–#175 as open. Older ledgers that do so are historical evidence only.
 
-## Live database checkpoint
+## Historical 2026-08-30 live-database checkpoint
 
 Supabase project: `DnDWeb` / `ucggczovhmauhshvhusx`.
 
@@ -90,14 +96,14 @@ Prior migration-ledger checkpoint: 214 records, latest registered migration `202
 
 Some repository SQL has live effects under different migration-ledger names. Treat that as traceability drift, not proof that the live effect is missing. Do not re-run already-correct production SQL by assumption.
 
-The planned Realistic Dice Phase 1 is presentation infrastructure and should require **no Supabase migration**. Later tactical dice integration must consume existing encounter RPC/combat-log outcomes rather than create a client-side roll authority.
+PR #177 later merged the reusable Realistic Dice core without a Supabase migration. Tactical dice integration must continue to consume existing encounter RPC/combat-log outcomes rather than create a client-side roll authority.
 
 ## Controlling current documents
 
 Read before modifying these areas:
 
 - `DNDNext_Current_Handoff_Prompt.md` — current copy-ready takeover brief and immediate future plan;
-- `Realistic_Dice_Roller_Architecture_Roadmap.md` — **controlling future architecture/implementation plan for the reusable dice subsystem**;
+- `Realistic_Dice_Roller_Architecture_Roadmap.md` — current implementation boundary plus historical/future expansion roadmap for reusable dice;
 - `Character_Forge_Training_Redesign_Status.md` — PR #176 Training design/history subledger;
 - `Character_Forge_Background_Audit.md` — accepted Background audit/history after PR #175;
 - `Forge_Post170_Species_Artwork_Status.md` — accepted/frozen Species presentation/artwork baseline;
@@ -122,11 +128,13 @@ Read before modifying these areas:
 
 Do not use visual similarity as permission to merge different lifecycles or persistence identities.
 
-## Realistic Dice architecture decision
+## Realistic Dice implementation reconciliation
 
-The current Character Forge Abilities tab has a CSS-based result-die/tray prototype. It should remain temporary until the reusable Realistic Dice subsystem is implemented on its own bounded branch/PR after the current Forge checkpoint is accepted.
+PR #177 merged on 2026-09-11 as `02854698298f357d2dfde21dd292ba7caf73e1c1`.
 
-The future core must support:
+The current reusable core is source-owned under `components/dice/**` and `utils/dice/**`, with a Forge adapter and focused validators. It uses custom JavaScript physics plus DOM/CSS 3D cube presentation; package.json does not currently include Three.js, React Three Fiber, or Rapier.
+
+The normalized type contract includes:
 
 - d6;
 - d8;
@@ -135,11 +143,7 @@ The future core must support:
 - d20;
 - Forge aggregate `resultCube`.
 
-Preferred initial stack, subject to a fresh compatibility check when implementation begins:
-
-- Three.js;
-- React Three Fiber;
-- direct Rapier (`@dimforge/rapier3d-compat`).
+The older preferred Three.js / React Three Fiber / direct Rapier stack remains a **future redesign option**, not current implementation authority. Any migration to that stack must be justified by a concrete need such as true polyhedral meshes or broader cross-site reuse and must preserve the existing authoritative-result boundary.
 
 ### Mandatory authority boundary
 
@@ -160,12 +164,12 @@ Tactical combat remains discrete axial-hex logic with occupancy, movement cost, 
 
 A future token animation may interpolate along a server-approved path; it must not free-physics its way to a different legal position.
 
-### Planned integration sequence
+### Current integration sequence
 
-1. Realistic Dice Core + Forge adapter;
-2. Character Sheet adapter;
-3. tactical encounter adapter when combat work resumes;
-4. global overlay/replay host only if multiple consumers prove it useful.
+1. Realistic Dice Core + Forge adapter — **merged/live in source**;
+2. Character Sheet adapter — future;
+3. tactical encounter adapter — future and visualization-only;
+4. global overlay/replay host — future, only if multiple consumers justify it.
 
 See `Realistic_Dice_Roller_Architecture_Roadmap.md` for contracts, files, physics design, fallbacks, validation, and acceptance criteria.
 
