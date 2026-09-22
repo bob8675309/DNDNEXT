@@ -1,11 +1,11 @@
 # Forge Species Family Submenus — Status
 
-Status date: 2026-08-14
+Status date: 2026-09-21
 Historical implementation PR: #170 (`agent/character-forge-resilience-presentation`) — merged at `599c4de7397ba6e4bbbb0a061d551d80c3570be7`
-Active compatible continuation: PR #171 (`agent/species-art-post170`) — open/unmerged
+Historical compatible continuation: PR #171 (`agent/species-art-post170`) — merged on 2026-08-16 as `ed93331b946dffee1e63183e969f115d0c8a1a18`
 Validated code head: `d2b64bd1128a0457393283a463fddd71cc7c9094`
 Database authority: `20260812042950 aven_subrace_catalog` (migration 93)
-Current merge rule: merge PR #171 only after explicit user approval
+Current status: PR #171 is merged; preserve this family/persistence contract on current `main`.
 
 ## Purpose
 
@@ -202,4 +202,4 @@ On a deployment containing `d2b64bd...` or a code-identical descendant:
 
 Later documentation-only descendants do not supersede the validated runtime/source checkpoint above.
 
-PR #170 is historical and merged. The family/persistence contract in this ledger remains authoritative and is preserved by the current PR #171 Species presentation descendants. PR #171 remains open and must not be merged until the user explicitly approves the merge.
+PR #170 and PR #171 are historical and merged. The family/persistence contract in this ledger remains authoritative for future regressions; reproduce any defect against current `main` rather than reviving the old branch.
