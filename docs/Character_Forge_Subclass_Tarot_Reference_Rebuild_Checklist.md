@@ -93,7 +93,7 @@ The transfer workflow guarded target head `1017a9aeddc6f9f7f1699798aa404508d574f
 - [x] Enlarge the exact hero through physical card width with smooth position/size transitions.
 - [x] Keep non-hero cards on their natural ring positions.
 - [ ] Tune the ring against a small catalogue such as Monster Hunter (4 options).
-- [ ] Tune the same geometry against Wizard's dense catalogue.
+- [ ] Browser-review the new grounded/physical-size geometry against Wizard's dense catalogue.
 - [x] Use the same ring equations for every catalogue size; only bounded radius/card-size density adjustments vary with N.
 
 ## Phase 4 — front/back and density behavior
@@ -106,7 +106,7 @@ The transfer workflow guarded target head `1017a9aeddc6f9f7f1699798aa404508d574f
 - [ ] Test Wizard/high-count spacing for collision/stacking.
 - [x] Prefer geometry/radius/scale/back-face treatment; no visible-card cap or hiding window exists.
 - [x] No rear virtualization/windowing in the initial implementation.
-- [ ] Ensure card fronts stay crisp at normal browser zoom.
+- [x] Remove transform scaling from card size, force hero 2D/full-opacity rendering, and keep card fronts at physical layout sizes to improve crispness.
 
 ## Phase 5 — selection and interaction
 
@@ -134,14 +134,39 @@ The transfer workflow guarded target head `1017a9aeddc6f9f7f1699798aa404508d574f
 - [x] Selected/hero state does not change the Tarot front asset.
 - [ ] Hero transition stays smooth during arrow, click, and drag-snap motion.
 
+### 2026-09-22 visual tuning pass 2
+
+Browser review requested three specific presentation corrections:
+
+- keep cards seated on the table rather than visually lifting into the cathedral;
+- let depth read primarily through smaller physical card size as cards travel away from the hero;
+- increase card illumination, strengthen the cool blue runic-table glow, and improve crispness.
+
+Implemented at exact runtime checkpoint `e41a5a5415f15341455de7ff9007afebdb360f82`:
+
+- reduced vertical ring travel from `17.4 + density*1.2` to `10.6 + density*1.0` and moved the ring center down so the front hero stays on the same table rim while the rear arc remains on the tabletop;
+- replaced transform-based card scaling with **physical card width derived from ring depth**, improving distance readability and avoiding unnecessary resampling blur;
+- forced the hero/front card to full opacity with no filter and a 2D hero transform;
+- increased front-card gold/purple edge illumination without placing overlays over the card text/art;
+- added a restrained cyan/blue elliptical table-rune glow;
+- removed the subtle dark scene gradient and render the cathedral plate directly at the modal's 16:9 bounds.
+
+The image-generation service failed when attempting the requested true higher-resolution background regeneration. Per tool constraints that generation was not retried in this request. The existing repaired cathedral asset remains active for this checkpoint; a true higher-resolution replacement stays pending for the next explicit image-generation request.
+
+Validation:
+
+- focused Class/subclass CI: **PASS**;
+- exact-head Vercel Preview: **READY**;
+- protected subsystem scope unchanged.
+
 ## Phase 7 — visual fidelity pass
 
 - [ ] Match reference framing: cathedral depth, table size, table height, and card horizon.
 - [ ] Match front-arc card spacing and perspective.
-- [ ] Match warm gold + cool violet lighting balance.
-- [ ] Keep the scene clean; no purple smoke unless a later browser comparison demonstrates a specific depth problem.
-- [ ] Prevent cards from appearing to float above or sink into the table.
-- [ ] Make the table visually support the ring rather than act as a decorative background only.
+- [x] Increase front-card gold/purple illumination while preserving the existing warm/cool palette.
+- [x] Keep the scene clean with no smoke; depth now comes from physical size/yaw/z-order.
+- [x] Reduce vertical orbit travel and move the ellipse center down so cards remain visually seated on the tabletop.
+- [x] Add a restrained blue/cyan elliptical rune glow aligned to the table ring beneath the cards.
 - [ ] Check that the scene still reads correctly at 100% browser zoom.
 - [ ] Remove any leftover experimental styling that fights the final geometry.
 
