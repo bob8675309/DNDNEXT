@@ -1,0 +1,93 @@
+name: One-shot subclass Tarot scene binary repair
+
+on:
+  push:
+    branches:
+      - agent/subclass-tarot-scene-repair-transfer-20260922
+    paths:
+      - .github/workflows/materialize-subclass-tarot-scene-repair.yml
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    env:
+      TARGET_BRANCH: agent/subclass-tarot-scene-rebuild-20260922
+      EXPECTED_TARGET_SHA: 1017a9aeddc6f9f7f1699798aa404508d574ff88
+      ZIP_SHA256: c1f6f80f2b63244a9cccf7e826f3d8af81f04232fec4e1c34ff0a0e64055a81c
+      DROPBOX_URL: "https://uc3f46906dcc6ed6e552378159bb.dl.dropboxusercontent.com/cd/0/get/DIov4Km-0gAZbAIm8NRSA61-WEMQH-ZxXDUM4N5SMIbMQLILA6cTKolN89GiqsRl1N2RZgbwB3ezQ6yopjR7agUF3V6cmmBRukPYoQqoTQ82Pdimz2oFIANdrOowV4RCgTXWgX_bipwNpjEh2uFYiiXI_BWZPnSxDMWK0B42vOIhsg/file?c_luid=c335000c"
+    steps:
+      - name: Check out exact target branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TARGET_BRANCH }}
+          fetch-depth: 0
+
+      - name: Guard exact target head
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$EXPECTED_TARGET_SHA" || {
+            echo "Target branch moved: expected $EXPECTED_TARGET_SHA, found $actual" >&2
+            exit 1
+          }
+
+      - name: Download approved repair bundle once
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error "$DROPBOX_URL" -o /tmp/artwork.zip
+          echo "$ZIP_SHA256  /tmp/artwork.zip" | sha256sum -c -
+
+      - name: Verify approved binary payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/artwork
+          mkdir -p /tmp/artwork
+          unzip -q /tmp/artwork.zip -d /tmp/artwork
+          cd /tmp/artwork
+          sha256sum -c SHA256SUMS.txt
+
+          test "$(file -b --mime-type subclass-selector-cathedral-20260922.webp)" = "image/webp"
+          test "$(file -b --mime-type subclass-selector-card-back-20260922.webp)" = "image/webp"
+
+          python -m pip install --disable-pip-version-check --quiet pillow==11.3.0
+          python - <<'PY'
+          from PIL import Image
+          expected = {
+              "subclass-selector-cathedral-20260922.webp": (1672, 941),
+              "subclass-selector-card-back-20260922.webp": (958, 1642),
+          }
+          for name, dims in expected.items():
+              with Image.open("/tmp/artwork/" + name) as image:
+                  assert image.format == "WEBP", (name, image.format)
+                  assert image.size == dims, (name, image.size, dims)
+          PY
+
+      - name: Replace only the two bad selector assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp /tmp/artwork/subclass-selector-cathedral-20260922.webp public/media/forge/subclass-carousel/subclass-selector-cathedral-20260922.webp
+          cp /tmp/artwork/subclass-selector-card-back-20260922.webp public/media/forge/subclass-carousel/subclass-selector-card-back-20260922.webp
+
+          printf '%s\n'             public/media/forge/subclass-carousel/subclass-selector-card-back-20260922.webp             public/media/forge/subclass-carousel/subclass-selector-cathedral-20260922.webp             | sort > /tmp/expected.txt
+          git diff --name-only | sort > /tmp/actual.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+
+      - name: Run focused subclass selector validator
+        run: node scripts/validate_class_subclass_browser.mjs
+
+      - name: Commit and push exact binary repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add             public/media/forge/subclass-carousel/subclass-selector-cathedral-20260922.webp             public/media/forge/subclass-carousel/subclass-selector-card-back-20260922.webp
+          git commit -m "fix: install approved subclass Tarot scene assets [deploy-preview]"
+          git push origin "HEAD:$TARGET_BRANCH"
