@@ -1,14 +1,14 @@
 # Character Forge Species Artwork Rollout
 
-Status date: 2026-09-05
+Status date: 2026-09-21
 
-This document is the handoff authority for the approved Character Forge Species cinematic-artwork rollout on PR #177 (`agent/realistic-dice-core`). It supplements the frozen post-PR #170 Species behavior ledger; it does not reopen the Species tab for a broad functional redesign.
+This document is the accepted rollout ledger for the Character Forge Species cinematic artwork that shipped through PR #177 (`agent/realistic-dice-core`). It supplements the frozen post-PR #170 Species behavior ledger; it does not reopen the Species tab for a broad functional redesign.
 
-## Current branch / PR boundary
+## Historical branch / PR boundary
 
 - Working branch: `agent/realistic-dice-core`
 - Pull request: #177 — **Add reusable realistic dice physics core**
-- PR #177 remains intentionally unmerged until browser acceptance.
+- PR #177 merged on 2026-09-11 as `02854698298f357d2dfde21dd292ba7caf73e1c1`.
 - `utils/speciesArtwork.js` remains the exact-name cinematic artwork authority.
 - No Supabase migration or write is required for this artwork rollout.
 - Do not touch world-map, town/city-map, travel, route, weather, combat, crafting, merchant, inventory, or other protected runtime systems as part of this work.
@@ -109,7 +109,7 @@ After every artwork checkpoint:
 5. Check desktop headroom and horizontal focal framing; faces and important body features must not disappear behind the lore overlay at normal browser zoom.
 6. Check responsive/mobile presentation and make sure hero art does not force horizontal overflow.
 7. Run the relevant Forge Species validators and normal PR validation gates before calling the checkpoint accepted.
-8. Keep PR #177 unmerged until the user has browser-reviewed the result.
+8. For future replacement batches, use a new bounded branch and require browser review before merge; PR #177 itself is already merged.
 
 ## Proven binary transfer route — do not rediscover this again
 
