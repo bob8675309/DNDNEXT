@@ -50,7 +50,7 @@ for (const token of [
   'const angleDegrees = signedSlots * angleStep',
   'const yaw = clamp(angleDegrees * 0.78, -82, 82)',
   'const roll = clamp(-sine * 10.5, -10.5, 10.5)',
-  'const horizontalRadius = 36.5 + (density * 4.5)',
+  'const horizontalRadius = 38.8 + (density * 0.9)',
   'const verticalRadius = 17.1 + (density * 0.4)',
   'const opacity = isFaceUp ? 1 : 0.84 + (depth * 0.14)',
   'const [orbitOffset, setOrbitOffset] = useState(0)',
