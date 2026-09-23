@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 150" role="img" aria-label="Tarot card tabletop contact mask">
+  <defs>
+    <linearGradient id="slot" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#06060d" stop-opacity=".92"/>
+      <stop offset=".52" stop-color="#130f18" stop-opacity=".84"/>
+      <stop offset="1" stop-color="#050711" stop-opacity=".35"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#a86b1d" stop-opacity="0"/>
+      <stop offset=".18" stop-color="#d8a84f" stop-opacity=".78"/>
+      <stop offset=".5" stop-color="#ffe08a" stop-opacity=".96"/>
+      <stop offset=".82" stop-color="#d8a84f" stop-opacity=".78"/>
+      <stop offset="1" stop-color="#a86b1d" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="cyan" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#75d9ff" stop-opacity=".62"/>
+      <stop offset=".48" stop-color="#2da7ef" stop-opacity=".26"/>
+      <stop offset="1" stop-color="#2da7ef" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur" x="-20%" y="-60%" width="140%" height="220%">
+      <feGaussianBlur stdDeviation="7"/>
+    </filter>
+  </defs>
+  <ellipse cx="400" cy="101" rx="306" ry="28" fill="url(#cyan)" filter="url(#blur)"/>
+  <ellipse cx="400" cy="92" rx="275" ry="25" fill="#02040a" opacity=".48"/>
+  <path d="M132 71 C224 54 576 54 668 71 C640 97 160 97 132 71Z" fill="url(#slot)"/>
+  <path d="M145 70 C239 57 561 57 655 70" fill="none" stroke="url(#gold)" stroke-width="4.5" stroke-linecap="round"/>
+  <path d="M190 78 C278 68 522 68 610 78" fill="none" stroke="#61cfff" stroke-opacity=".36" stroke-width="2.2" stroke-linecap="round"/>
+</svg>

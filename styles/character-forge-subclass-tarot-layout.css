@@ -296,7 +296,6 @@
   opacity: var(--orbit-opacity);
   transform:
     translate(-50%, -100%)
-    rotateZ(var(--orbit-roll))
     rotateY(var(--orbit-yaw));
   transform-origin: 50% 100%;
   transform-style: preserve-3d;
@@ -318,7 +317,7 @@
 
 .class-subclass-carousel-card.is-orbit-center {
   opacity: 1 !important;
-  transform: translate(-50%, -100%) rotateZ(0deg) rotateY(0deg);
+  transform: translate(-50%, -100%) rotateY(0deg);
   filter: none !important;
 }
 
@@ -326,20 +325,46 @@
   content: "";
   position: absolute;
   left: 50%;
-  bottom: -2.5%;
-  width: 114%;
-  height: 8%;
+  bottom: -3.25%;
+  width: 102%;
+  height: 5.5%;
   z-index: -1;
   pointer-events: none;
   border-radius: 50%;
-  background: radial-gradient(ellipse at center, rgba(224, 163, 58, .22), rgba(45, 21, 65, .14) 42%, transparent 74%);
-  filter: blur(5px);
-  transform: translateX(-50%) scaleX(.84);
-  opacity: calc(.16 + (var(--orbit-opacity) * .34));
+  background:
+    radial-gradient(ellipse at center, rgba(3, 4, 10, .72) 0 28%, rgba(6, 18, 31, .48) 46%, rgba(44, 153, 219, .14) 62%, transparent 76%);
+  filter: blur(3px);
+  transform: translateX(-50%) scaleX(.9);
+  opacity: calc(.36 + (var(--orbit-opacity) * .42));
 }
 
 .class-subclass-carousel-card.is-orbit-back::after {
-  opacity: .1;
+  opacity: .28;
+}
+
+.class-subclass-carousel-card__base-contact {
+  position: absolute;
+  left: 50%;
+  bottom: -4.3%;
+  z-index: 8;
+  width: 122%;
+  height: 11.5%;
+  pointer-events: none;
+  transform: translateX(-50%);
+  transform-origin: 50% 50%;
+  background:
+    url("/media/forge/subclass-carousel/subclass-card-base-contact-mask.svg")
+    center bottom / 100% 100% no-repeat;
+  opacity: .94;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,.42));
+}
+
+.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__base-contact {
+  opacity: .72;
+}
+
+.class-subclass-carousel-card.is-orbit-center .class-subclass-carousel-card__base-contact {
+  opacity: .98;
 }
 
 .class-subclass-carousel-card__surface {

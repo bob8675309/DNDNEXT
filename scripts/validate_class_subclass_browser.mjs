@@ -48,10 +48,10 @@ for (const token of [
   'function orbitPlacement(optionIndex, orbitOffset, total)',
   'const angleStep = 360 / count',
   'const angleDegrees = signedSlots * angleStep',
-  'const yaw = clamp(angleDegrees * 0.78, -82, 82)',
-  'const roll = clamp(-sine * 10.5, -10.5, 10.5)',
+  'const yaw = clamp(angleDegrees * 0.58, -68, 68)',
   'const horizontalRadius = 38.8 + (density * 0.9)',
-  'const verticalRadius = 17.1 + (density * 0.4)',
+  'const verticalRadius = 10.2 + (density * 0.35)',
+  'const verticalCenter = 56.8',
   'const opacity = isFaceUp ? 1 : 0.84 + (depth * 0.14)',
   'const [orbitOffset, setOrbitOffset] = useState(0)',
   'const orbitOptions = useMemo',
@@ -68,6 +68,7 @@ for (const token of [
   'class-subclass-carousel-card__surface',
   'class-subclass-carousel-card__face is-front',
   'class-subclass-carousel-card__face is-back',
+  'class-subclass-carousel-card__base-contact',
   'isCenter ? " is-orbit-center" : ""',
   'isInteractive ? " is-orbit-front" : " is-orbit-back"',
   'data-orbit-angle={angleDegrees.toFixed(3)}',
@@ -87,6 +88,8 @@ assert(!selector.includes('model?.setPreviewKey?.(heroOption.key)'), "Hero posit
 assert(!selector.includes('browsedOption'), "Obsolete automatic browsed-card dossier state must not return.");
 assert(!selector.includes('class-subclass-carousel-modal__details'), "The reference table scene must stay free of the old dossier panel.");
 assert(!selector.includes('class-subclass-carousel-modal__smoke'), "The approved clean cathedral scene must not render smoke layers.");
+assert(!selector.includes('const roll = clamp('), "Whole-card tangent roll must remain removed; cards should stay upright.");
+assert(!tarotCss.includes('--orbit-roll'), "Whole-card orbit roll CSS must remain removed.");
 assert(selector.includes('const faceUpArcDegrees = faceUpArcDegreesFor(count)') && selector.includes('const isFaceUp = count === 1 || absoluteAngle <= faceUpArcDegrees + 0.01'), "Front/back card presentation must derive from ring angle and catalogue density.");
 assert(selector.includes('Math.pow(depth, 1.72) * 0.74'), "Non-hero physical card size must use non-linear continuous depth falloff.");
 assert(selector.includes('setOrbitOffset(normalizeOrbitOffset(optionIndex - FRONT_CENTER_SLOT, options.length))'), "Clicking a face-up card must rotate that exact card to hero.");
@@ -100,8 +103,8 @@ for (const token of [
   'opacity: 1 !important',
   'translate(-50%, -100%)',
   'transform-origin: 50% 100%',
-  'rotateZ(var(--orbit-roll))',
   'rotateY(var(--orbit-yaw))',
+  'url("/media/forge/subclass-carousel/subclass-card-base-contact-mask.svg")',
   '.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__surface',
   'transform: rotateY(180deg)',
   'backface-visibility: hidden',
@@ -142,6 +145,7 @@ assert(!selector.includes("supabase"), "Subclass selector must remain presentati
 for (const asset of [
   "public/media/forge/subclass-carousel/subclass-selector-cathedral-20260922.webp",
   "public/media/forge/subclass-carousel/subclass-selector-card-back-20260922.webp",
+  "public/media/forge/subclass-carousel/subclass-card-base-contact-mask.svg",
 ]) assert(fs.existsSync(path.join(root, asset)), `Reference-scene subclass selector asset missing ${asset}`);
 
 const cathedralAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-cathedral-20260922.webp")).size;

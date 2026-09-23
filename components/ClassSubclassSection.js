@@ -55,8 +55,8 @@ function orbitProfileFor(total) {
   // bottom anchors travel around this path; apparent distance is handled by
   // physical card size rather than by keeping large cards high in the scene.
   const horizontalRadius = 38.8 + (density * 0.9);
-  const verticalRadius = 17.1 + (density * 0.4);
-  const verticalCenter = 56.4;
+  const verticalRadius = 10.2 + (density * 0.35);
+  const verticalCenter = 56.8;
 
   // Non-hero cards stay intentionally smaller so dense catalogues can bend
   // around the table without rendering every 840x1440 Tarot front at hero size.
@@ -108,8 +108,7 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
 
   // Yaw follows the ring tangent so the cards visibly bend around the table.
   // Rear cards keep the same geometry but their surface flips to the common back.
-  const yaw = clamp(angleDegrees * 0.78, -82, 82);
-  const roll = clamp(-sine * 10.5, -10.5, 10.5);
+  const yaw = clamp(angleDegrees * 0.58, -68, 68);
   const x = 50 + (sine * profile.horizontalRadius);
   const y = profile.verticalCenter + (cosine * profile.verticalRadius);
 
@@ -142,7 +141,6 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
       "--orbit-x": `${x.toFixed(3)}%`,
       "--orbit-y": `${y.toFixed(3)}%`,
       "--orbit-yaw": `${yaw.toFixed(2)}deg`,
-      "--orbit-roll": `${roll.toFixed(2)}deg`,
       "--orbit-opacity": opacity.toFixed(3),
       "--orbit-z": String(zIndex),
       "--orbit-card-min": `${cardMin}px`,
@@ -428,6 +426,7 @@ export default function ClassSubclassSection({
                       </span>
                       <span className="class-subclass-carousel-card__face is-back" aria-hidden="true" />
                     </span>
+                    <span className="class-subclass-carousel-card__base-contact" aria-hidden="true" />
                   </button>
                 );
               })}
