@@ -1,0 +1,83 @@
+name: One-shot subclass Tarot approved cathedral transfer
+
+on:
+  push:
+    branches:
+      - agent/subclass-tarot-hires-transfer-20260922
+    paths:
+      - .github/workflows/materialize-subclass-tarot-approved-cathedral.yml
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    env:
+      TARGET_BRANCH: agent/subclass-tarot-scene-rebuild-20260922
+      EXPECTED_TARGET_SHA: 8e18b4adf6e08c4e9321f0077803333fca06c6ba
+      SOURCE_SHA256: cd031292ef9e465977de4263b232527d12b40e73ab9b91f50172178b9e3b7d7e
+      OUTPUT_SHA256: 6e86f2339ad8bad980a6bd2865cc25c1be6b767b8df756d207d5346fc1cbc056
+      DROPBOX_URL: "https://uc81ec34f3707c3d8b3b4864bc7d.dl.dropboxusercontent.com/cd/0/get/DIp6ttT2jGmCdryyRbpOnnggEk2J3Fev19sYGhZ24fBo3xNyU0d5be8vyWnXRwWjnFHyvczwiWiUldu-bTgtszxx1_iSCrLTuiDlViF5mTfloxYbwRPkOamG1kXz91vvjR9M50AmWdqJZv1H1ImWaRQn5blKVdKpKm5LnAt8OaqSDQ/file?c_luid=c335000c"
+    steps:
+      - name: Check out exact target branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TARGET_BRANCH }}
+          fetch-depth: 0
+
+      - name: Guard exact target head
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$EXPECTED_TARGET_SHA" || {
+            echo "Target branch moved: expected $EXPECTED_TARGET_SHA, found $actual" >&2
+            exit 1
+          }
+
+      - name: Download approved cathedral source once
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error "$DROPBOX_URL" -o /tmp/cathedral.png
+          echo "$SOURCE_SHA256  /tmp/cathedral.png" | sha256sum -c -
+
+      - name: Convert and verify production WebP
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --quiet pillow==11.3.0
+          python - <<'PY'
+          from PIL import Image
+          source = "/tmp/cathedral.png"
+          target = "/tmp/subclass-selector-cathedral-20260922.webp"
+          with Image.open(source) as image:
+              assert image.format == "PNG", image.format
+              assert image.size == (1672, 941), image.size
+              image.convert("RGB").save(target, "WEBP", quality=94, method=6)
+          PY
+          echo "$OUTPUT_SHA256  /tmp/subclass-selector-cathedral-20260922.webp" | sha256sum -c -
+          test "$(file -b --mime-type /tmp/subclass-selector-cathedral-20260922.webp)" = "image/webp"
+
+      - name: Replace only approved cathedral asset
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp /tmp/subclass-selector-cathedral-20260922.webp public/media/forge/subclass-carousel/subclass-selector-cathedral-20260922.webp
+          printf '%s\n' public/media/forge/subclass-carousel/subclass-selector-cathedral-20260922.webp > /tmp/expected.txt
+          git diff --name-only | sort > /tmp/actual.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+
+      - name: Run focused subclass selector validator
+        run: node scripts/validate_class_subclass_browser.mjs
+
+      - name: Commit and push approved cathedral
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/media/forge/subclass-carousel/subclass-selector-cathedral-20260922.webp
+          git commit -m "assets: install approved cathedral stage [deploy-preview]"
+          git push origin "HEAD:$TARGET_BRANCH"
