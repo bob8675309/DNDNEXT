@@ -15,10 +15,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TARGET_BRANCH: agent/subclass-tarot-scene-rebuild-20260922
-      EXPECTED_TARGET_SHA: 8e18b4adf6e08c4e9321f0077803333fca06c6ba
+      EXPECTED_TARGET_SHA: 9bd4e20b7d4a11a9c2b9f25aec43bed40903243e
       SOURCE_SHA256: cd031292ef9e465977de4263b232527d12b40e73ab9b91f50172178b9e3b7d7e
       OUTPUT_SHA256: 6e86f2339ad8bad980a6bd2865cc25c1be6b767b8df756d207d5346fc1cbc056
-      DROPBOX_URL: "https://uc81ec34f3707c3d8b3b4864bc7d.dl.dropboxusercontent.com/cd/0/get/DIp6ttT2jGmCdryyRbpOnnggEk2J3Fev19sYGhZ24fBo3xNyU0d5be8vyWnXRwWjnFHyvczwiWiUldu-bTgtszxx1_iSCrLTuiDlViF5mTfloxYbwRPkOamG1kXz91vvjR9M50AmWdqJZv1H1ImWaRQn5blKVdKpKm5LnAt8OaqSDQ/file?c_luid=c335000c"
+      DROPBOX_URL: "https://ucb325ffe87872f09395cf2690df.dl.dropboxusercontent.com/cd/0/get/DIrgqfoflVd9xlnzM1_uzlUJiMsaflTBIOYZOMGWZlQvIgiVTGJXaJ68aV3AYbHQ9ZVXXMoBi06nUmb_CyPniLEs2Y7FFoF-Xaq3BxIQMqRxzhu1MMSCYtaIquZCT7NKyrdG7U9bG--72yH0WmV8iFGiaYfOt5F16yGbhW3BeQGVmg/file?c_luid=c335000c"
     steps:
       - name: Check out exact target branch
         uses: actions/checkout@v4
