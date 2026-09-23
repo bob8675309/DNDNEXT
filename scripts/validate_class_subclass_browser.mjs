@@ -144,6 +144,11 @@ for (const asset of [
   "public/media/forge/subclass-carousel/subclass-selector-card-back-20260922.webp",
 ]) assert(fs.existsSync(path.join(root, asset)), `Reference-scene subclass selector asset missing ${asset}`);
 
+const cathedralAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-cathedral-20260922.webp")).size;
+const tarotBackAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-card-back-20260922.webp")).size;
+assert(cathedralAssetSize > 300_000, `Cathedral selector asset is unexpectedly small (${cathedralAssetSize} bytes); reject placeholder/corrupt transfers.`);
+assert(tarotBackAssetSize > 300_000, `Tarot back asset is unexpectedly small (${tarotBackAssetSize} bytes); reject placeholder/corrupt transfers.`);
+
 
 // 2026-09-17 completed normalized Tarot install: every current runtime-visible
 // subclass has approved dedicated art; the fallback remains only for unknown/future content.

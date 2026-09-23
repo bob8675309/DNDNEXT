@@ -159,6 +159,30 @@ Validation:
 - exact-head Vercel Preview: **READY**;
 - protected subsystem scope unchanged.
 
+### 2026-09-22 visual tuning pass 3 — table-path wrap + approved cathedral
+
+Paul clarified the remaining visual target with yellow-marked reference circles: the cards should **wrap/bow around the circular table path**, not merely rotate in place, and the blue glow must be part of the actual table rather than a floating overlay.
+
+Implemented:
+
+- approved the lower-reflection cathedral/table regeneration and installed it as the active production stage asset;
+- removed the separate CSS blue-glow ellipse entirely; the blue rune ring now comes from the table artwork itself;
+- aligned the card bottom-anchor ellipse to the approved table ring (`horizontalRadius 38.8–39.7%`, `verticalRadius 17.1–17.5%`, center `56.4%`);
+- strengthened tangent yaw to `0.78 × ring angle`, capped at ±82°;
+- added bounded tangent roll (±10.5°) so the card bottoms visibly follow/bow around the table rim;
+- changed depth sizing to a stronger non-linear physical-width falloff (`0.26 + depth^1.72 × 0.74`) so there are multiple obvious size steps around the carousel;
+- made every face-up/front card fully opaque; only true rear/back positions can fade;
+- increased dense-catalogue non-hero base widths so Wizard retains readable near-front cards while still shrinking strongly into depth;
+- strengthened the 3D perspective from 1800px to 1180px for clearer foreshortening;
+- added validator guards rejecting future tiny placeholder/corrupt cathedral/card-back transfers.
+
+Approved cathedral source:
+
+- PNG: 1672×941, 2,378,006 bytes, SHA-256 `cd031292ef9e465977de4263b232527d12b40e73ab9b91f50172178b9e3b7d7e`;
+- production WebP: 1672×941, 461,622 bytes, SHA-256 `6e86f2339ad8bad980a6bd2865cc25c1be6b767b8df756d207d5346fc1cbc056`.
+
+The artwork itself remains unchanged for all subclass Tarot fronts.
+
 ## Phase 7 — visual fidelity pass
 
 - [ ] Match reference framing: cathedral depth, table size, table height, and card horizon.
