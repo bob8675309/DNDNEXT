@@ -265,30 +265,12 @@
   z-index: 10;
 }
 
-.class-subclass-carousel-modal__stage::before {
-  content: "";
-  position: absolute;
-  left: 10.6%;
-  top: 49.2%;
-  width: 78.8%;
-  height: 28.4%;
-  z-index: 4;
-  pointer-events: none;
-  border: 1px solid rgba(82, 190, 255, .50);
-  border-radius: 50%;
-  box-shadow:
-    0 0 7px rgba(66, 179, 255, .44),
-    0 0 18px rgba(71, 148, 255, .24),
-    inset 0 0 10px rgba(86, 194, 255, .18);
-  opacity: .78;
-}
-
 .class-subclass-carousel-modal__orbit {
   position: absolute;
   inset: 0;
   z-index: 20;
   overflow: visible;
-  perspective: 1800px;
+  perspective: 1180px;
   transform-style: preserve-3d;
   touch-action: none;
   cursor: grab;
@@ -314,6 +296,7 @@
   opacity: var(--orbit-opacity);
   transform:
     translate(-50%, -100%)
+    rotateZ(var(--orbit-roll))
     rotateY(var(--orbit-yaw));
   transform-origin: 50% 100%;
   transform-style: preserve-3d;
@@ -335,7 +318,7 @@
 
 .class-subclass-carousel-card.is-orbit-center {
   opacity: 1 !important;
-  transform: translate(-50%, -100%);
+  transform: translate(-50%, -100%) rotateZ(0deg) rotateY(0deg);
   filter: none !important;
 }
 

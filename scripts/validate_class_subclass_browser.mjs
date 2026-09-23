@@ -48,8 +48,11 @@ for (const token of [
   'function orbitPlacement(optionIndex, orbitOffset, total)',
   'const angleStep = 360 / count',
   'const angleDegrees = signedSlots * angleStep',
+  'const yaw = clamp(angleDegrees * 0.78, -82, 82)',
+  'const roll = clamp(-sine * 10.5, -10.5, 10.5)',
   'const horizontalRadius = 36.5 + (density * 4.5)',
-  'const verticalRadius = 10.6 + (density * 1.0)',
+  'const verticalRadius = 17.1 + (density * 0.4)',
+  'const opacity = isFaceUp ? 1 : 0.84 + (depth * 0.14)',
   'const [orbitOffset, setOrbitOffset] = useState(0)',
   'const orbitOptions = useMemo',
   'const heroOption = options[heroIndex] || null',
@@ -85,7 +88,7 @@ assert(!selector.includes('browsedOption'), "Obsolete automatic browsed-card dos
 assert(!selector.includes('class-subclass-carousel-modal__details'), "The reference table scene must stay free of the old dossier panel.");
 assert(!selector.includes('class-subclass-carousel-modal__smoke'), "The approved clean cathedral scene must not render smoke layers.");
 assert(selector.includes('const faceUpArcDegrees = faceUpArcDegreesFor(count)') && selector.includes('const isFaceUp = count === 1 || absoluteAngle <= faceUpArcDegrees + 0.01'), "Front/back card presentation must derive from ring angle and catalogue density.");
-assert(selector.includes('const physicalSize = isCenter ? 1 : 0.36 + (depth * 0.60)'), "Non-hero physical card size must derive continuously from ring depth.");
+assert(selector.includes('Math.pow(depth, 1.72) * 0.74'), "Non-hero physical card size must use non-linear continuous depth falloff.");
 assert(selector.includes('setOrbitOffset(normalizeOrbitOffset(optionIndex - FRONT_CENTER_SLOT, options.length))'), "Clicking a face-up card must rotate that exact card to hero.");
 
 for (const token of [
@@ -93,13 +96,12 @@ for (const token of [
   'url("/media/forge/subclass-carousel/subclass-selector-card-back-20260922.webp")',
   'width: min(1760px, 100vw, calc(100vh * 16 / 9))',
   'aspect-ratio: 16 / 9',
-  '.class-subclass-carousel-modal__stage::before',
   '.class-subclass-carousel-card.is-orbit-center',
   'opacity: 1 !important',
   'translate(-50%, -100%)',
   'transform-origin: 50% 100%',
+  'rotateZ(var(--orbit-roll))',
   'rotateY(var(--orbit-yaw))',
-  '0 0 18px rgba(71, 148, 255, .24)',
   '.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__surface',
   'transform: rotateY(180deg)',
   'backface-visibility: hidden',
@@ -108,6 +110,7 @@ for (const token of [
   '@media (prefers-reduced-motion: reduce)',
 ]) assert(tarotCss.includes(token), `Reference-scene Tarot presentation is missing ${token}`);
 
+assert(!tarotCss.includes('.class-subclass-carousel-modal__stage::before'), "The blue rune ring must come from the approved table art, not a floating CSS ellipse.");
 assert(!tarotCss.includes('subclass-selector-smoke-back.png'), "Smoke asset must not remain active in the clean reference-scene CSS.");
 assert(!tarotCss.includes('subclass-selector-smoke-front.png'), "Foreground smoke must not remain active in the clean reference-scene CSS.");
 

@@ -51,29 +51,29 @@ function orbitProfileFor(total) {
 
   // One physical ellipse follows the visible runic table. Larger catalogues use
   // slightly more of the rim but never switch to a second carousel geometry.
-  const horizontalRadius = 36.5 + (density * 4.5);
-  // Keep the cards visually seated on the tabletop. Perspective now comes
-  // primarily from physical card size, not from lifting the rear arc high
-  // into the scene.
-  const verticalRadius = 10.6 + (density * 1.0);
-  const verticalCenter = 69.1;
+  // Match the actual blue rune-ring ellipse in the approved table art. Card
+  // bottom anchors travel around this path; apparent distance is handled by
+  // physical card size rather than by keeping large cards high in the scene.
+  const horizontalRadius = 38.8 + (density * 0.9);
+  const verticalRadius = 17.1 + (density * 0.4);
+  const verticalCenter = 56.4;
 
   // Non-hero cards stay intentionally smaller so dense catalogues can bend
   // around the table without rendering every 840x1440 Tarot front at hero size.
-  const maxWidth = count <= 4 ? 224
-    : count <= 6 ? 210
-      : count <= 8 ? 198
-        : count <= 10 ? 186
-          : count <= 12 ? 176
-            : 164;
+  const maxWidth = count <= 4 ? 236
+    : count <= 6 ? 228
+      : count <= 8 ? 220
+        : count <= 10 ? 214
+          : count <= 12 ? 208
+            : 202;
 
   const minWidth = Math.round(maxWidth * 0.72);
-  const viewportWidth = count <= 4 ? 12.6
-    : count <= 6 ? 11.8
-      : count <= 8 ? 11.1
-        : count <= 10 ? 10.5
-          : count <= 12 ? 9.9
-            : 9.3;
+  const viewportWidth = count <= 4 ? 13.2
+    : count <= 6 ? 12.8
+      : count <= 8 ? 12.4
+        : count <= 10 ? 12.0
+          : count <= 12 ? 11.7
+            : 11.4;
 
   return {
     horizontalRadius,
@@ -84,7 +84,7 @@ function orbitProfileFor(total) {
     maxWidth,
     heroMinWidth: 220,
     heroViewportWidth: 17.2,
-    heroMaxWidth: 306,
+    heroMaxWidth: 312,
   };
 }
 
@@ -108,16 +108,17 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
 
   // Yaw follows the ring tangent so the cards visibly bend around the table.
   // Rear cards keep the same geometry but their surface flips to the common back.
-  const yaw = clamp(angleDegrees * 0.58, -70, 70);
+  const yaw = clamp(angleDegrees * 0.78, -82, 82);
+  const roll = clamp(-sine * 10.5, -10.5, 10.5);
   const x = 50 + (sine * profile.horizontalRadius);
   const y = profile.verticalCenter + (cosine * profile.verticalRadius);
 
-  const physicalSize = isCenter ? 1 : 0.36 + (depth * 0.60);
-  const opacity = isCenter
+  // Stronger non-linear physical-size falloff creates several readable depth
+  // steps around the ring without soft transform scaling.
+  const physicalSize = isCenter
     ? 1
-    : isFaceUp
-      ? 0.95 + (depth * 0.05)
-      : 0.82 + (depth * 0.14);
+    : 0.26 + (Math.pow(depth, 1.72) * 0.74);
+  const opacity = isFaceUp ? 1 : 0.84 + (depth * 0.14);
   const zIndex = 40 + Math.round(depth * 120) + (isCenter ? 32 : 0);
 
   const cardMin = isCenter
@@ -141,6 +142,7 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
       "--orbit-x": `${x.toFixed(3)}%`,
       "--orbit-y": `${y.toFixed(3)}%`,
       "--orbit-yaw": `${yaw.toFixed(2)}deg`,
+      "--orbit-roll": `${roll.toFixed(2)}deg`,
       "--orbit-opacity": opacity.toFixed(3),
       "--orbit-z": String(zIndex),
       "--orbit-card-min": `${cardMin}px`,
