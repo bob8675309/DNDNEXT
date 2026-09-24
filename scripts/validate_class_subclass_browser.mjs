@@ -50,7 +50,7 @@ for (const token of [
   'const angleDegrees = signedSlots * angleStep',
   'const yaw = clamp(angleDegrees * 0.24, -34, 34)',
   'const horizontalRadius = 39.1',
-  'const verticalRadius = 16.1',
+  'const verticalRadius = 18.5',
   'const verticalCenter = 55.8',
   'const opacity = isFaceUp ? 1 : 0.84 + (depth * 0.14)',
   'const [orbitOffset, setOrbitOffset] = useState(0)',
@@ -68,7 +68,7 @@ for (const token of [
   'class-subclass-carousel-card__surface',
   'class-subclass-carousel-card__face is-front',
   'class-subclass-carousel-card__face is-back',
-  'class-subclass-carousel-card__table-seat',
+  'class-subclass-carousel-modal__rune-foreground',
   'isCenter ? " is-orbit-center" : ""',
   'isInteractive ? " is-orbit-front" : " is-orbit-back"',
   'data-orbit-angle={angleDegrees.toFixed(3)}',
@@ -92,12 +92,13 @@ assert(!selector.includes('const roll = clamp('), "Whole-card tangent roll must 
 assert(!tarotCss.includes('--orbit-roll'), "Whole-card orbit roll CSS must remain removed.");
 assert(!selector.includes('class-subclass-carousel-card__base-contact'), "Rejected shadow-only base-contact layer must not return.");
 assert(!selector.includes('class-subclass-carousel-card__base-fold'), "Rejected hinged footer must not return.");
+assert(!selector.includes('class-subclass-carousel-card__table-seat'), "Rejected per-card table-seat layer must not return.");
 assert(!tarotCss.includes('rotateX(70deg)'), "Rejected hinged footer transform must not return.");
 assert(!tarotCss.includes('clip-path: inset(0 0 7.5% 0)'), "Full Tarot card artwork must remain intact; do not clip the footer.");
 assert(!tarotCss.includes('subclass-card-base-contact-mask.svg'), "Rejected shadow-only contact-mask asset must not drive the live selector.");
 assert(selector.includes('const faceUpArcDegrees = faceUpArcDegreesFor(count)') && selector.includes('const isFaceUp = count === 1 || absoluteAngle <= faceUpArcDegrees + 0.01'), "Front/back card presentation must derive from ring angle and catalogue density.");
 assert(selector.includes('Math.pow(depth, 1.72) * 0.74'), "Non-hero physical card size must use non-linear continuous depth falloff.");
-assert(selector.includes('const horizontalRadius = 39.1') && selector.includes('const verticalRadius = 16.1') && selector.includes('const verticalCenter = 55.8'), "Card hinge path must stay locked to the approved blue rune ellipse.");
+assert(selector.includes('const horizontalRadius = 39.1') && selector.includes('const verticalRadius = 18.5') && selector.includes('const verticalCenter = 55.8'), "Card-bottom path must stay locked to the approved blue rune ellipse.");
 assert(selector.includes('setOrbitOffset(normalizeOrbitOffset(optionIndex - FRONT_CENTER_SLOT, options.length))'), "Clicking a face-up card must rotate that exact card to hero.");
 
 for (const token of [
@@ -110,7 +111,7 @@ for (const token of [
   'translate(-50%, -100%)',
   'transform-origin: 50% 100%',
   'rotateY(var(--orbit-yaw))',
-  'url("/media/forge/subclass-carousel/subclass-card-table-seat-mask.svg")',
+  'url("/media/forge/subclass-carousel/subclass-rune-front-mask.svg")',
   '.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__surface',
   'transform: rotateY(180deg)',
   'backface-visibility: hidden',
@@ -120,6 +121,8 @@ for (const token of [
 ]) assert(tarotCss.includes(token), `Reference-scene Tarot presentation is missing ${token}`);
 
 assert(!tarotCss.includes('.class-subclass-carousel-modal__stage::before'), "The blue rune ring must come from the approved table art, not a floating CSS ellipse.");
+assert((tarotCss.match(/subclass-selector-cathedral-20260922\.webp/g) || []).length >= 2, "The foreground rune occluder must use the same approved cathedral image as the scene.");
+assert(tarotCss.includes('.class-subclass-carousel-modal__rune-foreground'), "A table-owned foreground rune layer is required.");
 assert(!tarotCss.includes('subclass-selector-smoke-back.png'), "Smoke asset must not remain active in the clean reference-scene CSS.");
 assert(!tarotCss.includes('subclass-selector-smoke-front.png'), "Foreground smoke must not remain active in the clean reference-scene CSS.");
 
@@ -151,7 +154,7 @@ assert(!selector.includes("supabase"), "Subclass selector must remain presentati
 for (const asset of [
   "public/media/forge/subclass-carousel/subclass-selector-cathedral-20260922.webp",
   "public/media/forge/subclass-carousel/subclass-selector-card-back-20260922.webp",
-  "public/media/forge/subclass-carousel/subclass-card-table-seat-mask.svg",
+  "public/media/forge/subclass-carousel/subclass-rune-front-mask.svg",
 ]) assert(fs.existsSync(path.join(root, asset)), `Reference-scene subclass selector asset missing ${asset}`);
 
 const cathedralAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-cathedral-20260922.webp")).size;

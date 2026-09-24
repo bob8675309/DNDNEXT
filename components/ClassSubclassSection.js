@@ -57,7 +57,7 @@ function orbitProfileFor(total) {
   // Fixed physical ellipse measured from the approved blue rune band.
   // Catalogue density changes card size, never the table path itself.
   const horizontalRadius = 39.1;
-  const verticalRadius = 16.1;
+  const verticalRadius = 18.5;
   const verticalCenter = 55.8;
 
   // Non-hero cards stay intentionally smaller so dense catalogues can bend
@@ -381,6 +381,8 @@ export default function ClassSubclassSection({
               ‹
             </button>
 
+            <div className="class-subclass-carousel-modal__rune-foreground" aria-hidden="true" />
+
             <div
               ref={orbitRef}
               className={`class-subclass-carousel-modal__orbit${isDragging ? " is-dragging" : ""}`}
@@ -429,7 +431,7 @@ export default function ClassSubclassSection({
                       </span>
                       <span className="class-subclass-carousel-card__face is-back" aria-hidden="true" />
                     </span>
-                    <span className="class-subclass-carousel-card__table-seat" aria-hidden="true" />
+
                   </button>
                 );
               })}

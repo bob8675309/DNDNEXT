@@ -265,6 +265,23 @@
   z-index: 10;
 }
 
+.class-subclass-carousel-modal__rune-foreground {
+  position: absolute;
+  inset: 0;
+  z-index: 220;
+  pointer-events: none;
+  background:
+    #080611
+    url("/media/forge/subclass-carousel/subclass-selector-cathedral-20260922.webp")
+    center center / 100% 100% no-repeat;
+  -webkit-mask:
+    url("/media/forge/subclass-carousel/subclass-rune-front-mask.svg")
+    center center / 100% 100% no-repeat;
+  mask:
+    url("/media/forge/subclass-carousel/subclass-rune-front-mask.svg")
+    center center / 100% 100% no-repeat;
+}
+
 .class-subclass-carousel-modal__orbit {
   position: absolute;
   inset: 0;
@@ -339,31 +356,6 @@
 
 .class-subclass-carousel-card.is-orbit-back::after {
   opacity: .20;
-}
-
-.class-subclass-carousel-card__table-seat {
-  position: absolute;
-  left: 50%;
-  bottom: -2.6%;
-  z-index: 9;
-  width: 112%;
-  height: 7.2%;
-  pointer-events: none;
-  transform: translateX(-50%);
-  transform-origin: 50% 50%;
-  background:
-    url("/media/forge/subclass-carousel/subclass-card-table-seat-mask.svg")
-    center bottom / 100% 100% no-repeat;
-  opacity: .96;
-  filter: drop-shadow(0 1px 1.5px rgba(0,0,0,.34));
-}
-
-.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__table-seat {
-  opacity: .78;
-}
-
-.class-subclass-carousel-card.is-orbit-center .class-subclass-carousel-card__table-seat {
-  opacity: 1;
 }
 
 .class-subclass-carousel-card__surface {
