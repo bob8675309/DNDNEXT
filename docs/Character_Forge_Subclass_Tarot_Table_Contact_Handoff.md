@@ -60,13 +60,37 @@ Documentation:
 - this handoff;
 - the parent `Character_Forge_Subclass_Tarot_Reference_Rebuild_Checklist.md` only after the implementation checkpoint is validated.
 
+## 2026-09-23 browser-review correction — previous mask interpretation rejected
+
+The browser video at runtime head `4cff918cde08c20182bec10b7fa993424ff6e51c` proved that the previous implementation did **not** satisfy the visual target even though CI passed.
+
+What was wrong:
+
+- the previous `subclass-card-base-contact-mask.svg` was only a shadow/slot underneath a rigid card;
+- the card itself never folded at the bottom;
+- the last geometry pass flattened the orbit to a shallow ellipse, so card hinges no longer followed the actual front/back ellipse of the blue rune band;
+- ±68° whole-card yaw remained too aggressive for the near-front cards.
+
+Correct interpretation:
+
+1. The **hinge line**, not the card's absolute bottom, is the orbit anchor.
+2. The main ~92–93% of the Tarot card remains upright.
+3. The bottom ~7–8% of the **same Tarot image** is rendered as a second clipped strip.
+4. Only that strip folds around the horizontal hinge using `rotateX(...)`, visually lying onto the tabletop.
+5. The upright copy is clipped above the hinge so the footer is not duplicated.
+6. The hinge travels on one fixed ellipse measured from the approved blue rune ring artwork (approximately 39.1% horizontal radius, 16.1% vertical radius, center Y approximately 55.8%).
+7. Whole-card yaw is restrained; the fold, physical size, fixed rune ellipse, and z-order carry most of the depth illusion.
+8. A small contact shadow may remain under the folded strip, but it is supporting detail—not the fold itself.
+
+This correction supersedes the previous interpretation of Phase 1–4 below.
+
 ## Phase 1 — orbit path alignment
 
-- [x] Move the card-bottom anchor ellipse rearward/upward: vertical radius is now `10.2 + density*0.35`, center `56.8`, keeping the path inside the blue rune band rather than at the front lip.
-- [x] Tune `verticalCenter` and `verticalRadius` as one pair; no separate front/rear path was introduced.
+- [ ] Replace the rejected shallow ellipse with the fixed ellipse measured from the approved blue rune band; anchor the **fold hinge** to that path.
+- [ ] Lock the table path to approximately `horizontalRadius 39.1`, `verticalRadius 16.1`, `verticalCenter 55.8`; do not vary table geometry by catalogue density.
 - [x] Preserve one continuous ellipse for all catalogue sizes.
 - [x] Keep the same ring for arrow, keyboard, drag, flick, and click-to-hero motion.
-- [x] Source/validator authority uses the same geometry for all catalogue sizes; browser acceptance for Wizard/four-option classes remains pending.
+- [ ] Verify Wizard/high-count and a four-option class use the exact same fixed table ellipse.
 
 ### Done when
 
@@ -76,8 +100,8 @@ The bottom center of every visible card appears to travel inside the table's blu
 
 - [x] Remove the current ±10.5° whole-card roll completely.
 - [x] Keep cards visually upright in screen space; whole-card `rotateZ`/orbit-roll was removed.
-- [x] Retain moderate tangent yaw: `0.58 × ring angle`, capped at ±68°.
-- [ ] Browser-review the reduced ±68° yaw; reduce further only if the live preview still compresses side cards too aggressively.
+- [ ] Reduce whole-card yaw substantially; near-front cards should turn gently around the ring rather than becoming steeply edge-on.
+- [ ] Browser-review a target around `0.34 × ring angle`, capped near ±48°.
 - [x] Keep hero yaw exactly 0°.
 
 ### Done when
@@ -98,13 +122,13 @@ The asset should be subtle and contain:
 
 Implementation:
 
-- [x] Create `subclass-card-base-contact-mask.svg` as a transparent shared slot/contact treatment.
-- [x] Add one `class-subclass-carousel-card__base-contact` layer per card.
-- [x] Position the layer relative to the card bottom so it travels with the same orbit transform.
+- [ ] Replace the rejected shadow-only contact treatment with a real hinged footer fold built from the same Tarot art.
+- [ ] Add a dedicated `class-subclass-carousel-card__base-fold` layer per card.
+- [ ] Make the fold hinge (about 92.5% down the card) the orbit anchor; the fold extends from that hinge onto the tabletop.
 - [x] Keep `pointer-events: none`.
-- [x] Keep it visually subordinate with a narrow dark slot, restrained gold edge, cyan reflection, and soft table shadow.
-- [x] Use the same card-level contact layer for front-face art and rear card-back positions.
-- [x] Keep the hero contact layer near-full opacity but restrained; no artwork mutation.
+- [ ] Clip the upright card above the hinge and render the bottom ~7.5% of the same image in the fold layer; no duplicated vertical footer.
+- [ ] Front fold uses the current Tarot front's bottom slice; rear fold uses the shared Tarot back bottom slice.
+- [ ] Keep the hero fold crisp/full-opacity; do not mutate source artwork.
 
 ### Done when
 
@@ -112,9 +136,9 @@ The lower edge reads as planted/standing on the table without an obvious pasted-
 
 ## Phase 4 — table contact shadow / depth
 
-- [x] Replace the broad floating shadow with a tighter base-anchored contact shadow.
-- [x] Keep the shadow at the card base/tabletop contact point.
-- [x] Let the contact shadow scale with the card because it is card-relative rather than stage-relative.
+- [ ] Keep only a small supporting tabletop shadow underneath the actual folded footer.
+- [ ] Shadow/contact effect must sit at the hinge/fold footprint, not substitute for the fold.
+- [ ] Let the small contact shadow scale with the card/fold.
 - [x] Avoid smoke/haze.
 - [x] Keep face-up/front cards at opacity 1.
 
@@ -143,10 +167,10 @@ The lower edge reads as planted/standing on the table without an obvious pasted-
 
 Update `validate_class_subclass_browser.mjs` to require:
 
-- [x] shared base-contact asset exists;
-- [x] base-contact layer exists in the component;
-- [x] whole-card orbit roll has been removed;
-- [x] one continuous ellipse remains authoritative;
+- [ ] validator requires the hinged base-fold implementation (the old shadow-only asset is no longer sufficient);
+- [ ] validator requires the base-fold layer and same-art footer slice;
+- [x] whole-card orbit roll remains removed;
+- [ ] validator locks the fixed rune-band ellipse measured from the approved table art;
 - [x] front cards remain fully opaque;
 - [x] physical depth sizing remains continuous/non-linear;
 - [x] floating CSS blue ellipse does not return;
@@ -200,7 +224,7 @@ Validated:
 - Vercel Preview: **READY**;
 - PR #199: **open / mergeable / unmerged**.
 
-Current remaining work is browser acceptance/tuning only: Wizard, a four-option class, slow drag, flick/snap, side-card click → hero, and visual confirmation that the contact mask/base path now stay centered in the blue rune band.
+Current work is **not browser-tuning-only**. Browser review rejected the shadow-only contact implementation. The next runtime patch must implement the real hinged footer fold and restore the fixed rune-band ellipse before further acceptance testing.
 
 ## Definition of done
 
