@@ -48,7 +48,7 @@ for (const token of [
   'function orbitPlacement(optionIndex, orbitOffset, total)',
   'const angleStep = 360 / count',
   'const angleDegrees = signedSlots * angleStep',
-  'const yaw = clamp(angleDegrees * 0.34, -48, 48)',
+  'const yaw = clamp(angleDegrees * 0.24, -34, 34)',
   'const horizontalRadius = 39.1',
   'const verticalRadius = 16.1',
   'const verticalCenter = 55.8',
@@ -68,10 +68,7 @@ for (const token of [
   'class-subclass-carousel-card__surface',
   'class-subclass-carousel-card__face is-front',
   'class-subclass-carousel-card__face is-back',
-  'class-subclass-carousel-card__base-fold',
-  'class-subclass-carousel-card__base-fold-face is-front',
-  'class-subclass-carousel-card__base-fold-face is-back',
-  '"--fold-front-image": `url("\${artworkSrc}")`',
+  'class-subclass-carousel-card__table-seat',
   'isCenter ? " is-orbit-center" : ""',
   'isInteractive ? " is-orbit-front" : " is-orbit-back"',
   'data-orbit-angle={angleDegrees.toFixed(3)}',
@@ -94,6 +91,9 @@ assert(!selector.includes('class-subclass-carousel-modal__smoke'), "The approved
 assert(!selector.includes('const roll = clamp('), "Whole-card tangent roll must remain removed; cards should stay upright.");
 assert(!tarotCss.includes('--orbit-roll'), "Whole-card orbit roll CSS must remain removed.");
 assert(!selector.includes('class-subclass-carousel-card__base-contact'), "Rejected shadow-only base-contact layer must not return.");
+assert(!selector.includes('class-subclass-carousel-card__base-fold'), "Rejected hinged footer must not return.");
+assert(!tarotCss.includes('rotateX(70deg)'), "Rejected hinged footer transform must not return.");
+assert(!tarotCss.includes('clip-path: inset(0 0 7.5% 0)'), "Full Tarot card artwork must remain intact; do not clip the footer.");
 assert(!tarotCss.includes('subclass-card-base-contact-mask.svg'), "Rejected shadow-only contact-mask asset must not drive the live selector.");
 assert(selector.includes('const faceUpArcDegrees = faceUpArcDegreesFor(count)') && selector.includes('const isFaceUp = count === 1 || absoluteAngle <= faceUpArcDegrees + 0.01'), "Front/back card presentation must derive from ring angle and catalogue density.");
 assert(selector.includes('Math.pow(depth, 1.72) * 0.74'), "Non-hero physical card size must use non-linear continuous depth falloff.");
@@ -107,14 +107,10 @@ for (const token of [
   'aspect-ratio: 16 / 9',
   '.class-subclass-carousel-card.is-orbit-center',
   'opacity: 1 !important',
-  'translate(-50%, -92.5%)',
-  'transform-origin: 50% 92.5%',
+  'translate(-50%, -100%)',
+  'transform-origin: 50% 100%',
   'rotateY(var(--orbit-yaw))',
-  'clip-path: inset(0 0 7.5% 0)',
-  'top: 92.5%',
-  'height: 7.5%',
-  'rotateX(70deg)',
-  'background-size: 100% 1333.333%',
+  'url("/media/forge/subclass-carousel/subclass-card-table-seat-mask.svg")',
   '.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__surface',
   'transform: rotateY(180deg)',
   'backface-visibility: hidden',
@@ -155,6 +151,7 @@ assert(!selector.includes("supabase"), "Subclass selector must remain presentati
 for (const asset of [
   "public/media/forge/subclass-carousel/subclass-selector-cathedral-20260922.webp",
   "public/media/forge/subclass-carousel/subclass-selector-card-back-20260922.webp",
+  "public/media/forge/subclass-carousel/subclass-card-table-seat-mask.svg",
 ]) assert(fs.existsSync(path.join(root, asset)), `Reference-scene subclass selector asset missing ${asset}`);
 
 const cathedralAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-cathedral-20260922.webp")).size;

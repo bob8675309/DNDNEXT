@@ -110,7 +110,7 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
 
   // Yaw follows the ring tangent so the cards visibly bend around the table.
   // Rear cards keep the same geometry but their surface flips to the common back.
-  const yaw = clamp(angleDegrees * 0.34, -48, 48);
+  const yaw = clamp(angleDegrees * 0.24, -34, 34);
   const x = 50 + (sine * profile.horizontalRadius);
   const y = profile.verticalCenter + (cosine * profile.verticalRadius);
 
@@ -395,17 +395,13 @@ export default function ClassSubclassSection({
                 const isSelected = selected?.key === option.key;
                 const eligible = optionEntryLevel(option) <= currentLevel;
                 const artworkSrc = subclassArtworkFor(classKey, option);
-                const cardStyle = {
-                  ...style,
-                  "--fold-front-image": `url("${artworkSrc}")`,
-                };
                 return (
                   <button
                     key={option.key}
                     type="button"
                     role="listitem"
                     className={`class-subclass-carousel-card${isCenter ? " is-orbit-center" : ""}${isSelected ? " is-selected" : ""}${isInteractive ? " is-orbit-front" : " is-orbit-back"}${isFaceUp ? " is-orbit-face-up" : ""}${eligible ? " is-eligible" : " is-locked"}`}
-                    style={cardStyle}
+                    style={style}
                     aria-pressed={isSelected}
                     aria-hidden={isInteractive ? undefined : "true"}
                     tabIndex={isInteractive ? 0 : -1}
@@ -433,10 +429,7 @@ export default function ClassSubclassSection({
                       </span>
                       <span className="class-subclass-carousel-card__face is-back" aria-hidden="true" />
                     </span>
-                    <span className="class-subclass-carousel-card__base-fold" aria-hidden="true">
-                      <span className="class-subclass-carousel-card__base-fold-face is-front" />
-                      <span className="class-subclass-carousel-card__base-fold-face is-back" />
-                    </span>
+                    <span className="class-subclass-carousel-card__table-seat" aria-hidden="true" />
                   </button>
                 );
               })}

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 120" aria-hidden="true">
+  <defs>
+    <linearGradient id="slot" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#06101a" stop-opacity=".18"/>
+      <stop offset=".26" stop-color="#05060b" stop-opacity=".86"/>
+      <stop offset=".58" stop-color="#08070d" stop-opacity=".94"/>
+      <stop offset="1" stop-color="#06060a" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="cyan" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#58cfff" stop-opacity="0"/>
+      <stop offset=".14" stop-color="#58cfff" stop-opacity=".48"/>
+      <stop offset=".5" stop-color="#b9efff" stop-opacity=".78"/>
+      <stop offset=".86" stop-color="#58cfff" stop-opacity=".48"/>
+      <stop offset="1" stop-color="#58cfff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#c28a32" stop-opacity="0"/>
+      <stop offset=".2" stop-color="#d7a348" stop-opacity=".34"/>
+      <stop offset=".5" stop-color="#f2cf7b" stop-opacity=".55"/>
+      <stop offset=".8" stop-color="#d7a348" stop-opacity=".34"/>
+      <stop offset="1" stop-color="#c28a32" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="soft" x="-15%" y="-80%" width="130%" height="260%">
+      <feGaussianBlur stdDeviation="3.2"/>
+    </filter>
+  </defs>
+  <ellipse cx="450" cy="70" rx="330" ry="25" fill="#02030a" opacity=".34" filter="url(#soft)"/>
+  <path d="M118 45 C220 28 680 28 782 45 C742 76 158 76 118 45Z" fill="url(#slot)"/>
+  <path d="M130 43 C236 30 664 30 770 43" fill="none" stroke="url(#cyan)" stroke-width="3.2" stroke-linecap="round"/>
+  <path d="M168 53 C270 42 630 42 732 53" fill="none" stroke="url(#gold)" stroke-width="2" stroke-linecap="round"/>
+</svg>
