@@ -54,9 +54,11 @@ function orbitProfileFor(total) {
   // Match the actual blue rune-ring ellipse in the approved table art. Card
   // bottom anchors travel around this path; apparent distance is handled by
   // physical card size rather than by keeping large cards high in the scene.
-  const horizontalRadius = 38.8 + (density * 0.9);
-  const verticalRadius = 10.2 + (density * 0.35);
-  const verticalCenter = 56.8;
+  // Fixed physical ellipse measured from the approved blue rune band.
+  // Catalogue density changes card size, never the table path itself.
+  const horizontalRadius = 39.1;
+  const verticalRadius = 16.1;
+  const verticalCenter = 55.8;
 
   // Non-hero cards stay intentionally smaller so dense catalogues can bend
   // around the table without rendering every 840x1440 Tarot front at hero size.
@@ -108,7 +110,7 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
 
   // Yaw follows the ring tangent so the cards visibly bend around the table.
   // Rear cards keep the same geometry but their surface flips to the common back.
-  const yaw = clamp(angleDegrees * 0.58, -68, 68);
+  const yaw = clamp(angleDegrees * 0.34, -48, 48);
   const x = 50 + (sine * profile.horizontalRadius);
   const y = profile.verticalCenter + (cosine * profile.verticalRadius);
 
@@ -392,13 +394,18 @@ export default function ClassSubclassSection({
               {orbitOptions.map(({ option, optionIndex, signedSlots, angleDegrees, depth, isInteractive, isFaceUp, isCenter, style }) => {
                 const isSelected = selected?.key === option.key;
                 const eligible = optionEntryLevel(option) <= currentLevel;
+                const artworkSrc = subclassArtworkFor(classKey, option);
+                const cardStyle = {
+                  ...style,
+                  "--fold-front-image": `url("${artworkSrc}")`,
+                };
                 return (
                   <button
                     key={option.key}
                     type="button"
                     role="listitem"
                     className={`class-subclass-carousel-card${isCenter ? " is-orbit-center" : ""}${isSelected ? " is-selected" : ""}${isInteractive ? " is-orbit-front" : " is-orbit-back"}${isFaceUp ? " is-orbit-face-up" : ""}${eligible ? " is-eligible" : " is-locked"}`}
-                    style={style}
+                    style={cardStyle}
                     aria-pressed={isSelected}
                     aria-hidden={isInteractive ? undefined : "true"}
                     tabIndex={isInteractive ? 0 : -1}
@@ -414,7 +421,7 @@ export default function ClassSubclassSection({
                       <span className="class-subclass-carousel-card__face is-front">
                         <span className="class-subclass-carousel-card__art" aria-hidden="true">
                           <img
-                            src={subclassArtworkFor(classKey, option)}
+                            src={artworkSrc}
                             onError={(event) => handleSubclassArtworkError(event, classKey)}
                             alt=""
                             width={840}
@@ -426,7 +433,10 @@ export default function ClassSubclassSection({
                       </span>
                       <span className="class-subclass-carousel-card__face is-back" aria-hidden="true" />
                     </span>
-                    <span className="class-subclass-carousel-card__base-contact" aria-hidden="true" />
+                    <span className="class-subclass-carousel-card__base-fold" aria-hidden="true">
+                      <span className="class-subclass-carousel-card__base-fold-face is-front" />
+                      <span className="class-subclass-carousel-card__base-fold-face is-back" />
+                    </span>
                   </button>
                 );
               })}
