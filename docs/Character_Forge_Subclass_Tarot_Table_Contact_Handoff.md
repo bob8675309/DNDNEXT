@@ -224,7 +224,39 @@ Validated:
 - Vercel Preview: **READY**;
 - PR #199: **open / mergeable / unmerged**.
 
-Current work is **not browser-tuning-only**. Browser review rejected the shadow-only contact implementation. The next runtime patch must implement the real hinged footer fold and restore the fixed rune-band ellipse before further acceptance testing.
+Browser review rejected the shadow-only contact implementation. The corrected hinged-footer runtime patch has now landed; acceptance is again browser-driven, with the hinge position/fold angle/yaw intentionally left tunable.
+
+## 2026-09-23 corrected hinged-footer implementation checkpoint
+
+Runtime implementation: `e85d41808fce97ac2fc788c39fffc28c63efa327`  
+Cleanup removing the rejected shadow-only SVG: `40384505175cb4814fdc763def9933c4d555ffeb`
+
+Implemented:
+
+- fixed table path: `horizontalRadius 39.1`, `verticalRadius 16.1`, `verticalCenter 55.8`;
+- table geometry no longer changes with catalogue density;
+- whole-card roll remains removed;
+- whole-card yaw reduced to `0.34 × ring angle`, capped at ±48°;
+- orbit anchor moved from the absolute card bottom to the footer hinge at 92.5% card height;
+- upright card surface is clipped above the lower 7.5%;
+- the lower 7.5% of the **same current Tarot front** is rendered again as a separate fold strip;
+- rear cards use the same treatment with the shared Tarot-back footer slice;
+- only the footer strip uses `rotateX(70deg)`, creating the tabletop fold while the card body stays upright;
+- contact shadow is now small/supporting and sits under the hinge/fold footprint;
+- rejected `subclass-card-base-contact-mask.svg` was removed from the branch.
+
+Validation:
+
+- focused subclass selector validator: **PASS**;
+- full triggered `Validate Class browser polish`: **PASS**;
+- PR #199 remains open / mergeable / unmerged.
+
+Still pending:
+
+- browser review of the actual fold illusion;
+- final rune-band ellipse tuning if the hinge does not visually sit in the band center;
+- Wizard and four-option visual acceptance;
+- drag/flick/contact continuity acceptance.
 
 ## Definition of done
 
