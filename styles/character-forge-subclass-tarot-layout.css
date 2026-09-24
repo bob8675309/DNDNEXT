@@ -558,9 +558,17 @@
     max-height: none;
   }
 
-  .class-subclass-carousel-modal__scene {
+  .class-subclass-carousel-modal__scene,
+  .class-subclass-carousel-modal__rune-foreground {
     background-position: center top;
     background-size: auto 100%;
+  }
+
+  .class-subclass-carousel-modal__rune-foreground {
+    -webkit-mask-position: center top;
+    -webkit-mask-size: auto 100%;
+    mask-position: center top;
+    mask-size: auto 100%;
   }
 
   .class-subclass-carousel-card {

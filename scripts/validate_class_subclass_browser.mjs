@@ -96,6 +96,7 @@ assert(!selector.includes('class-subclass-carousel-card__table-seat'), "Rejected
 assert(!tarotCss.includes('rotateX(70deg)'), "Rejected hinged footer transform must not return.");
 assert(!tarotCss.includes('clip-path: inset(0 0 7.5% 0)'), "Full Tarot card artwork must remain intact; do not clip the footer.");
 assert(!tarotCss.includes('subclass-card-base-contact-mask.svg'), "Rejected shadow-only contact-mask asset must not drive the live selector.");
+assert(!tarotCss.includes('subclass-card-table-seat-mask.svg'), "Rejected per-card table-seat mask must not drive the live selector.");
 assert(selector.includes('const faceUpArcDegrees = faceUpArcDegreesFor(count)') && selector.includes('const isFaceUp = count === 1 || absoluteAngle <= faceUpArcDegrees + 0.01'), "Front/back card presentation must derive from ring angle and catalogue density.");
 assert(selector.includes('Math.pow(depth, 1.72) * 0.74'), "Non-hero physical card size must use non-linear continuous depth falloff.");
 assert(selector.includes('const horizontalRadius = 39.1') && selector.includes('const verticalRadius = 18.5') && selector.includes('const verticalCenter = 55.8'), "Card-bottom path must stay locked to the approved blue rune ellipse.");
@@ -117,6 +118,8 @@ for (const token of [
   'backface-visibility: hidden',
   '.class-subclass-carousel-modal__nav.is-prev',
   '.class-subclass-carousel-modal__nav.is-next',
+  'mask-position: center top',
+  'mask-size: auto 100%',
   '@media (prefers-reduced-motion: reduce)',
 ]) assert(tarotCss.includes(token), `Reference-scene Tarot presentation is missing ${token}`);
 
