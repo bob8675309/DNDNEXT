@@ -112,10 +112,44 @@ Implementation target for the next runtime patch:
 - add one reusable `subclass-card-table-seat-mask.svg` rendered **in front of** the bottom edge of each card;
 - keep the existing non-linear physical-size depth falloff.
 
+## 2026-09-24 browser-review correction — table owns the occlusion
+
+The latest browser video at runtime head `82687fba7ffc130dddb1994fa0fd9c40adc50697` shows that the per-card `table-seat` effect is still wrong. It moves with each Tarot card and therefore reads as a glowing underline/pedestal attached to the card rather than part of the physical table.
+
+This supersedes the shadow-only, hinged-footer, and per-card-seat interpretations.
+
+Correct implementation target:
+
+1. The Tarot card remains one intact rigid rectangle.
+2. The card's actual bottom-center is the orbit anchor.
+3. The card has no attached seat, fold, pedestal, or foreground mask.
+4. One fixed ellipse is shared by every card and every interaction mode.
+5. The path should run through the **middle of the approved blue rune band**, not along its outer/front lip.
+6. The table itself owns the contact illusion:
+   - render the approved cathedral/table image normally behind the cards;
+   - render the **same exact table image a second time in front of the cards**;
+   - mask that foreground copy so only a narrow front-half section of the blue rune annulus is visible.
+7. Because the foreground layer is pixel-identical to the background, the rune artwork/glow/perspective cannot float or drift independently.
+8. The foreground rune strip overlaps only the lowest few pixels of cards crossing the front half of the table, creating real scene occlusion.
+9. Rear-half cards remain in front of the rear rune arc because only the front half of the annulus is foreground.
+10. Whole-card roll remains zero. Yaw stays restrained and may be browser-tuned separately from table contact.
+11. Front-facing cards remain fully opaque.
+12. No Tarot artwork redraw, clipping, duplication, or fold is allowed.
+
+Implementation recommendation:
+
+- remove `class-subclass-carousel-card__table-seat` from every card;
+- delete `subclass-card-table-seat-mask.svg`;
+- keep the approved cathedral/table image as both background and foreground source;
+- add a stage-level foreground element/pseudo-element using the same background-position/size as the scene;
+- mask that foreground copy with a new **mask-only** SVG describing the front half of the blue rune ellipse;
+- shift the card-bottom ellipse slightly rearward from the current outer-lip position so its front point lies near the middle of the blue rune band;
+- keep non-linear physical card sizing and the current click/drag/selection authority unchanged.
+
 ## Phase 1 — orbit path alignment
 
-- [ ] Anchor the **actual card bottom-center** to the fixed ellipse measured from the approved blue rune band.
-- [ ] Lock the table path to approximately `horizontalRadius 39.1`, `verticalRadius 16.1`, `verticalCenter 55.8`; do not vary table geometry by catalogue density.
+- [ ] Anchor the **actual card bottom-center** to the fixed ellipse through the middle of the approved blue rune band.
+- [ ] Keep `horizontalRadius 39.1` and `verticalCenter 55.8`, but shift the front/back depth inward from the current outer-lip path; browser target begins around `verticalRadius 13.8`.
 - [x] Preserve one continuous ellipse for all catalogue sizes.
 - [x] Keep the same ring for arrow, keyboard, drag, flick, and click-to-hero motion.
 - [ ] Verify Wizard/high-count and a four-option class use the exact same fixed table ellipse.
@@ -150,13 +184,13 @@ The asset should be subtle and contain:
 
 Implementation:
 
-- [ ] Remove the rejected hinged footer entirely; use a shallow **foreground seat/occlusion mask** over the lowest few pixels of the intact Tarot card.
-- [ ] Add one `class-subclass-carousel-card__table-seat` layer per card.
-- [ ] Restore the actual card bottom as the orbit anchor.
+- [ ] Remove the rejected per-card seat entirely. The **table**, not the card, owns foreground occlusion.
+- [ ] Add one stage-level `class-subclass-carousel-modal__rune-foreground` layer (or equivalent pseudo-element), never one layer per card.
+- [x] The actual card bottom remains the orbit anchor.
 - [x] Keep `pointer-events: none`.
-- [ ] Keep the entire Tarot card uncut; the seat mask only overlaps the lowest few pixels from the foreground.
-- [ ] Use one shared table-seat mask for front and rear cards; do not duplicate card artwork.
-- [ ] Keep hero artwork fully intact, fully opaque, and unobscured except for the very shallow base occlusion.
+- [x] Keep the entire Tarot card intact and uncut.
+- [ ] Use the exact approved table image as the foreground source, masked to the front-half rune annulus only.
+- [ ] Hero artwork remains intact/full-opacity; only the actual table foreground may occlude its lowest few pixels.
 
 ### Done when
 
@@ -165,8 +199,8 @@ The lower edge reads as planted/standing on the table without an obvious pasted-
 ## Phase 4 — table contact shadow / depth
 
 - [ ] Keep only a small supporting tabletop shadow behind the card base.
-- [ ] The front seat/occlusion mask must sit directly over the lowest card edge; the shadow remains behind it.
-- [ ] Let the small contact shadow and seat mask scale naturally with the card.
+- [ ] The stage-level foreground rune strip must pass in front of the lowest card edge; no card-attached foreground effect may remain.
+- [ ] Keep only a restrained card-relative shadow behind the base; the rune foreground remains fixed to the table.
 - [x] Avoid smoke/haze.
 - [x] Keep face-up/front cards at opacity 1.
 
@@ -195,10 +229,10 @@ The lower edge reads as planted/standing on the table without an obvious pasted-
 
 Update `validate_class_subclass_browser.mjs` to require:
 
-- [ ] validator requires the foreground table-seat mask and rejects the hinged base-fold implementation;
-- [ ] validator requires intact full-card art plus the table-seat layer;
+- [ ] validator requires a stage-level rune foreground and rejects all per-card seat/fold/contact layers;
+- [ ] validator requires intact full-card art plus the table-owned foreground rune mask;
 - [x] whole-card orbit roll remains removed;
-- [ ] validator locks the fixed rune-band ellipse measured from the approved table art;
+- [ ] validator locks the fixed rune-band ellipse and ensures catalogue density cannot change table geometry;
 - [x] front cards remain fully opaque;
 - [x] physical depth sizing remains continuous/non-linear;
 - [x] floating CSS blue ellipse does not return;
@@ -215,7 +249,7 @@ Test deliberately:
 - [ ] near-front cards stay upright;
 - [ ] several physical size steps are obvious;
 - [ ] side cards turn through yaw without severe lean;
-- [ ] base mask/contact treatment remains believable;
+- [ ] table-owned rune occlusion remains believable and does not move independently with cards;
 - [ ] rear card backs stay on the same path.
 
 ### Small catalogue
@@ -252,7 +286,7 @@ Validated:
 - Vercel Preview: **READY**;
 - PR #199: **open / mergeable / unmerged**.
 
-Browser review rejected the shadow-only contact implementation. The hinged-footer runtime patch was rejected by browser review. The next patch must restore the intact card and use the front occlusion/seat-mask interpretation.
+Browser review rejected the shadow-only contact implementation. The per-card seat implementation was also rejected by browser review. The next patch must remove every card-attached contact treatment and use a table-owned foreground copy of the real rune band.
 
 ## 2026-09-23 corrected hinged-footer implementation checkpoint
 
