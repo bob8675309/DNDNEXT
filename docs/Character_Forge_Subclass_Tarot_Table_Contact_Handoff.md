@@ -84,9 +84,37 @@ Correct interpretation:
 
 This correction supersedes the previous interpretation of Phase 1–4 below.
 
+## 2026-09-24 browser-review correction — hinged footer rejected
+
+The latest browser video proved the hinged-footer interpretation is also wrong. It creates a visible trapezoid/flap under the Tarot card, especially at hero, while the reference image shows a rigid upright card whose base simply appears seated into the table/rune path.
+
+This supersedes the 2026-09-23 hinged-footer section.
+
+Correct target:
+
+1. The **actual bottom-center of the full rigid Tarot card** is the orbit anchor.
+2. The card artwork is not clipped, duplicated, or folded.
+3. There is **no `rotateX` footer strip**.
+4. The full card remains upright; whole-card roll stays removed.
+5. Whole-card yaw is gentle and only communicates that the card is turning around the ring.
+6. One fixed ellipse measured from the approved blue rune band remains the path authority.
+7. A shallow **foreground table-seat mask** overlaps only the lowest few pixels of the card. Its job is occlusion/contact: it makes the base look inserted into or immediately behind the glowing rune band.
+8. The seat mask is not a pedestal, fold, or shadow pretending to be geometry. It is a thin local table-contact/occlusion lip.
+9. A small shadow can remain behind the base, but the front occlusion layer is what sells the card as standing on the table.
+10. Front-facing Tarot cards remain fully opaque.
+
+Implementation target for the next runtime patch:
+
+- remove all `base-fold` markup/styles;
+- restore `translate(-50%, -100%)` and `transform-origin: 50% 100%`;
+- keep the fixed rune ellipse (`39.1 / 16.1 / 55.8`) initially; browser-tune only if the real card bottoms do not land in the band center;
+- reduce yaw toward approximately `0.24 × ring angle`, capped near ±34°;
+- add one reusable `subclass-card-table-seat-mask.svg` rendered **in front of** the bottom edge of each card;
+- keep the existing non-linear physical-size depth falloff.
+
 ## Phase 1 — orbit path alignment
 
-- [ ] Replace the rejected shallow ellipse with the fixed ellipse measured from the approved blue rune band; anchor the **fold hinge** to that path.
+- [ ] Anchor the **actual card bottom-center** to the fixed ellipse measured from the approved blue rune band.
 - [ ] Lock the table path to approximately `horizontalRadius 39.1`, `verticalRadius 16.1`, `verticalCenter 55.8`; do not vary table geometry by catalogue density.
 - [x] Preserve one continuous ellipse for all catalogue sizes.
 - [x] Keep the same ring for arrow, keyboard, drag, flick, and click-to-hero motion.
@@ -100,8 +128,8 @@ The bottom center of every visible card appears to travel inside the table's blu
 
 - [x] Remove the current ±10.5° whole-card roll completely.
 - [x] Keep cards visually upright in screen space; whole-card `rotateZ`/orbit-roll was removed.
-- [ ] Reduce whole-card yaw substantially; near-front cards should turn gently around the ring rather than becoming steeply edge-on.
-- [ ] Browser-review a target around `0.34 × ring angle`, capped near ±48°.
+- [ ] Reduce whole-card yaw further so near-front cards stay nearly upright while still turning around the ring.
+- [ ] Browser-review a target around `0.24 × ring angle`, capped near ±34°.
 - [x] Keep hero yaw exactly 0°.
 
 ### Done when
@@ -122,13 +150,13 @@ The asset should be subtle and contain:
 
 Implementation:
 
-- [ ] Replace the rejected shadow-only contact treatment with a real hinged footer fold built from the same Tarot art.
-- [ ] Add a dedicated `class-subclass-carousel-card__base-fold` layer per card.
-- [ ] Make the fold hinge (about 92.5% down the card) the orbit anchor; the fold extends from that hinge onto the tabletop.
+- [ ] Remove the rejected hinged footer entirely; use a shallow **foreground seat/occlusion mask** over the lowest few pixels of the intact Tarot card.
+- [ ] Add one `class-subclass-carousel-card__table-seat` layer per card.
+- [ ] Restore the actual card bottom as the orbit anchor.
 - [x] Keep `pointer-events: none`.
-- [ ] Clip the upright card above the hinge and render the bottom ~7.5% of the same image in the fold layer; no duplicated vertical footer.
-- [ ] Front fold uses the current Tarot front's bottom slice; rear fold uses the shared Tarot back bottom slice.
-- [ ] Keep the hero fold crisp/full-opacity; do not mutate source artwork.
+- [ ] Keep the entire Tarot card uncut; the seat mask only overlaps the lowest few pixels from the foreground.
+- [ ] Use one shared table-seat mask for front and rear cards; do not duplicate card artwork.
+- [ ] Keep hero artwork fully intact, fully opaque, and unobscured except for the very shallow base occlusion.
 
 ### Done when
 
@@ -136,9 +164,9 @@ The lower edge reads as planted/standing on the table without an obvious pasted-
 
 ## Phase 4 — table contact shadow / depth
 
-- [ ] Keep only a small supporting tabletop shadow underneath the actual folded footer.
-- [ ] Shadow/contact effect must sit at the hinge/fold footprint, not substitute for the fold.
-- [ ] Let the small contact shadow scale with the card/fold.
+- [ ] Keep only a small supporting tabletop shadow behind the card base.
+- [ ] The front seat/occlusion mask must sit directly over the lowest card edge; the shadow remains behind it.
+- [ ] Let the small contact shadow and seat mask scale naturally with the card.
 - [x] Avoid smoke/haze.
 - [x] Keep face-up/front cards at opacity 1.
 
@@ -167,8 +195,8 @@ The lower edge reads as planted/standing on the table without an obvious pasted-
 
 Update `validate_class_subclass_browser.mjs` to require:
 
-- [ ] validator requires the hinged base-fold implementation (the old shadow-only asset is no longer sufficient);
-- [ ] validator requires the base-fold layer and same-art footer slice;
+- [ ] validator requires the foreground table-seat mask and rejects the hinged base-fold implementation;
+- [ ] validator requires intact full-card art plus the table-seat layer;
 - [x] whole-card orbit roll remains removed;
 - [ ] validator locks the fixed rune-band ellipse measured from the approved table art;
 - [x] front cards remain fully opaque;
@@ -224,7 +252,7 @@ Validated:
 - Vercel Preview: **READY**;
 - PR #199: **open / mergeable / unmerged**.
 
-Browser review rejected the shadow-only contact implementation. The corrected hinged-footer runtime patch has now landed; acceptance is again browser-driven, with the hinge position/fold angle/yaw intentionally left tunable.
+Browser review rejected the shadow-only contact implementation. The hinged-footer runtime patch was rejected by browser review. The next patch must restore the intact card and use the front occlusion/seat-mask interpretation.
 
 ## 2026-09-23 corrected hinged-footer implementation checkpoint
 
