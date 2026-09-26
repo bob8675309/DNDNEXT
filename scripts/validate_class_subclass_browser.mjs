@@ -36,46 +36,98 @@ assert(!guide.includes('onMouseEnter={() => publishFeature(model, onFeatureDetai
 assert(!guide.includes('onFocus={() => publishFeature(model, onFeatureDetail'), "Feature card must not update from focus alone in the Class guide.");
 
 for (const token of [
+  'import { useEffect, useMemo, useRef, useState } from "react"',
   'import { createPortal } from "react-dom"',
   'subclassArtworkFor(classKey, option)',
   'handleSubclassArtworkError(event, classKey)',
-  'function orbitPlacement(optionIndex, carouselStart, total)',
-  'const frontCount = Math.min(4, count)',
-  'const offset = (Math.PI / 2) - (frontSpan / 2)',
+  'const FRONT_CENTER_SLOT = 0',
+  'function faceUpArcDegreesFor(total)',
+  'if (count <= 4) return 112',
+  'return 68',
+  'function orbitProfileFor(total)',
+  'function orbitPlacement(optionIndex, orbitOffset, total)',
+  'const angleStep = 360 / count',
+  'const angleDegrees = signedSlots * angleStep',
+  'const yaw = clamp(angleDegrees * 0.24, -34, 34)',
+  'const horizontalRadius = 39.1',
+  'const verticalRadius = 18.5',
+  'const verticalCenter = 55.8',
+  'const opacity = isFaceUp ? 1 : 0.84 + (depth * 0.14)',
+  'const [orbitOffset, setOrbitOffset] = useState(0)',
   'const orbitOptions = useMemo',
-  'const focusedIndex = options.length ? (carouselStart + focusedSlot) % options.length : 0',
-  'model?.setPreviewKey?.(focusedOption.key)',
+  'const heroOption = options[heroIndex] || null',
   'function rotateCarousel(direction)',
-  '(current + normalizedDirection + length) % length',
-  'key={option.key}',
-  'data-orbit-slot={relative}',
+  'function handleOrbitPointerDown(event)',
+  'function handleOrbitPointerMove(event)',
+  'function finishOrbitPointer(event, cancelled = false)',
+  'function handleCardClick(event, option, optionIndex, isInteractive)',
+  'event.currentTarget.setPointerCapture?.(event.pointerId)',
+  'Math.round(drag.currentOffset + projectedCards)',
   'class-subclass-carousel-modal__orbit',
-  'class-subclass-carousel-modal__smoke-front',
-  'class-subclass-carousel-modal__details',
-  'class-subclass-carousel-modal__details-button',
-  'onClick={showFocusedDetails}',
-  'model.setPreviewKey(option.key)',
+  'class-subclass-carousel-modal__title',
+  'class-subclass-carousel-card__surface',
+  'class-subclass-carousel-card__face is-front',
+  'class-subclass-carousel-card__face is-back',
+  'class-subclass-carousel-modal__rune-foreground',
+  'isCenter ? " is-orbit-center" : ""',
+  'isInteractive ? " is-orbit-front" : " is-orbit-back"',
+  'data-orbit-angle={angleDegrees.toFixed(3)}',
+  'onClick={(event) => handleCardClick(event, option, optionIndex, isInteractive)}',
+  'model?.setPreviewKey?.(option.key)',
   'model.selectSubclass(option)',
-  'optionEntryLevel(option) > currentLevel',
   'class-subclass-selected-card',
   'onDoubleClick={() => setSelectorOpen(true)}',
   '>Change Subclass<',
   'currentLevel < entryLevel',
   'setSelectorOpen(true)',
   'onInspectSubclass?.(option)',
-]) assert(selector.includes(token), `Runic circular subclass selector is missing ${token}`);
+]) assert(selector.includes(token), `Reference-scene subclass selector is missing ${token}`);
+
+assert((selector.match(/model\.selectSubclass\(option\)/g) || []).length === 1, "Carousel motion must never create a second subclass persistence path.");
+assert(!selector.includes('model?.setPreviewKey?.(heroOption.key)'), "Hero position must not auto-preview or persist as player intent.");
+assert(!selector.includes('browsedOption'), "Obsolete automatic browsed-card dossier state must not return.");
+assert(!selector.includes('class-subclass-carousel-modal__details'), "The reference table scene must stay free of the old dossier panel.");
+assert(!selector.includes('class-subclass-carousel-modal__smoke'), "The approved clean cathedral scene must not render smoke layers.");
+assert(!selector.includes('const roll = clamp('), "Whole-card tangent roll must remain removed; cards should stay upright.");
+assert(!tarotCss.includes('--orbit-roll'), "Whole-card orbit roll CSS must remain removed.");
+assert(!selector.includes('class-subclass-carousel-card__base-contact'), "Rejected shadow-only base-contact layer must not return.");
+assert(!selector.includes('class-subclass-carousel-card__base-fold'), "Rejected hinged footer must not return.");
+assert(!selector.includes('class-subclass-carousel-card__table-seat'), "Rejected per-card table-seat layer must not return.");
+assert(!tarotCss.includes('rotateX(70deg)'), "Rejected hinged footer transform must not return.");
+assert(!tarotCss.includes('clip-path: inset(0 0 7.5% 0)'), "Full Tarot card artwork must remain intact; do not clip the footer.");
+assert(!tarotCss.includes('subclass-card-base-contact-mask.svg'), "Rejected shadow-only contact-mask asset must not drive the live selector.");
+assert(!tarotCss.includes('subclass-card-table-seat-mask.svg'), "Rejected per-card table-seat mask must not drive the live selector.");
+assert(selector.includes('const faceUpArcDegrees = faceUpArcDegreesFor(count)') && selector.includes('const isFaceUp = count === 1 || absoluteAngle <= faceUpArcDegrees + 0.01'), "Front/back card presentation must derive from ring angle and catalogue density.");
+assert(selector.includes('Math.pow(depth, 1.72) * 0.74'), "Non-hero physical card size must use non-linear continuous depth falloff.");
+assert(selector.includes('const horizontalRadius = 39.1') && selector.includes('const verticalRadius = 18.5') && selector.includes('const verticalCenter = 55.8'), "Card-bottom path must stay locked to the approved blue rune ellipse.");
+assert(selector.includes('setOrbitOffset(normalizeOrbitOffset(optionIndex - FRONT_CENTER_SLOT, options.length))'), "Clicking a face-up card must rotate that exact card to hero.");
 
 for (const token of [
-  'url("/media/forge/subclass-carousel/subclass-selector-cathedral-bg.png")',
-  'url("/media/forge/subclass-carousel/subclass-selector-runic-table.png")',
-  'url("/media/forge/subclass-carousel/subclass-selector-smoke-back.png")',
-  'url("/media/forge/subclass-carousel/subclass-selector-smoke-front.png")',
-  '.class-subclass-carousel-card.is-orbit-back',
+  'url("/media/forge/subclass-carousel/subclass-selector-cathedral-20260922.webp")',
+  'url("/media/forge/subclass-carousel/subclass-selector-card-back-20260922.webp")',
+  'width: min(1760px, 100vw, calc(100vh * 16 / 9))',
+  'aspect-ratio: 16 / 9',
+  '.class-subclass-carousel-card.is-orbit-center',
+  'opacity: 1 !important',
+  'translate(-50%, -100%)',
+  'transform-origin: 50% 100%',
   'rotateY(var(--orbit-yaw))',
-  'z-index: var(--orbit-z)',
-  '.class-subclass-carousel-modal__details',
-  'backdrop-filter: blur(12px)',
-]) assert(tarotCss.includes(token), `Runic subclass carousel presentation is missing ${token}`);
+  'url("/media/forge/subclass-carousel/subclass-rune-front-mask.svg")',
+  '.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__surface',
+  'transform: rotateY(180deg)',
+  'backface-visibility: hidden',
+  '.class-subclass-carousel-modal__nav.is-prev',
+  '.class-subclass-carousel-modal__nav.is-next',
+  'mask-position: center top',
+  'mask-size: auto 100%',
+  '@media (prefers-reduced-motion: reduce)',
+]) assert(tarotCss.includes(token), `Reference-scene Tarot presentation is missing ${token}`);
+
+assert(!tarotCss.includes('.class-subclass-carousel-modal__stage::before'), "The blue rune ring must come from the approved table art, not a floating CSS ellipse.");
+assert((tarotCss.match(/subclass-selector-cathedral-20260922\.webp/g) || []).length >= 2, "The foreground rune occluder must use the same approved cathedral image as the scene.");
+assert(tarotCss.includes('.class-subclass-carousel-modal__rune-foreground'), "A table-owned foreground rune layer is required.");
+assert(!tarotCss.includes('subclass-selector-smoke-back.png'), "Smoke asset must not remain active in the clean reference-scene CSS.");
+assert(!tarotCss.includes('subclass-selector-smoke-front.png'), "Foreground smoke must not remain active in the clean reference-scene CSS.");
 
 for (const forbidden of [
   'class-subclass-two-column__grid',
@@ -103,11 +155,15 @@ for (const forbidden of [
 assert(!selector.includes("supabase"), "Subclass selector must remain presentation-only.");
 
 for (const asset of [
-  "public/media/forge/subclass-carousel/subclass-selector-cathedral-bg.png",
-  "public/media/forge/subclass-carousel/subclass-selector-runic-table.png",
-  "public/media/forge/subclass-carousel/subclass-selector-smoke-back.png",
-  "public/media/forge/subclass-carousel/subclass-selector-smoke-front.png",
-]) assert(fs.existsSync(path.join(root, asset)), `Runic subclass carousel UI asset missing ${asset}`);
+  "public/media/forge/subclass-carousel/subclass-selector-cathedral-20260922.webp",
+  "public/media/forge/subclass-carousel/subclass-selector-card-back-20260922.webp",
+  "public/media/forge/subclass-carousel/subclass-rune-front-mask.svg",
+]) assert(fs.existsSync(path.join(root, asset)), `Reference-scene subclass selector asset missing ${asset}`);
+
+const cathedralAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-cathedral-20260922.webp")).size;
+const tarotBackAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-card-back-20260922.webp")).size;
+assert(cathedralAssetSize > 300_000, `Cathedral selector asset is unexpectedly small (${cathedralAssetSize} bytes); reject placeholder/corrupt transfers.`);
+assert(tarotBackAssetSize > 300_000, `Tarot back asset is unexpectedly small (${tarotBackAssetSize} bytes); reject placeholder/corrupt transfers.`);
 
 
 // 2026-09-17 completed normalized Tarot install: every current runtime-visible
@@ -197,4 +253,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSource.includes(token), `Class presentation patch crossed protected boundary: ${token}`);
 }
 
-console.log("Class subclass selector validation passed: canonical subclass authority and persistence remain in the guide model, all subclass cards move through a stable runic-table orbit one position at a time, four front positions stay prominent while rear positions recede behind smoke, the details panel is source-backed, all 152 approved normalized tarot concepts remain installed and mapped, and unmatched future content retains the safe class-art fallback.");
+console.log("Class subclass selector validation passed: canonical authority remains in the guide model, all subclass cards stay on one parametric table ring, rear cards use the shared card back, one exact hero position owns enlarged presentation, drag/arrow motion never persists a subclass, explicit card clicks remain the only selection path, all 152 approved normalized Tarot concepts remain installed/mapped, and future content retains safe fallback.");
