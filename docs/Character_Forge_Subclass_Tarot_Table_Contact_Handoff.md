@@ -1,35 +1,105 @@
-# Character Forge Subclass Tarot — Table Contact / Base Mask Handoff
+# Character Forge Subclass Tarot — Floating Gothic Library Handoff
 
-Updated: 2026-09-23
+Updated: 2026-09-26
 
 Status: **active implementation handoff / progress tracker**
 
 Branch: `agent/subclass-tarot-scene-rebuild-20260922`  
-Pull request: **#199 — Rebuild subclass Tarot selector as cathedral table ring**
+Pull request: **#199 — Rebuild subclass Tarot selector**
 
-## User-approved target
+## Superseding decision
 
-Continue the cathedral/table Tarot selector, but correct the remaining card-to-table illusion.
+The physical runic-table presentation is retired.
 
-The cards should:
+Browser review established that repeated attempts to make 2D Tarot cards convincingly stand, bend, fold, or occlude around a physical tabletop introduced more visual artifacts than value. The carousel itself, card scale progression, hero treatment, rear card backs, drag/flick behavior, and real DNDNext Tarot fronts are worth preserving.
 
-- remain mostly upright rather than leaning/rolling with the ellipse;
-- travel around one continuous physical ring inside the **middle of the blue rune band** on the tabletop;
-- remain visually connected to that rune band throughout arrow, drag, flick, and snap motion;
-- use yaw/perspective/physical size to show circular distance;
-- avoid severe whole-card roll;
-- gain a subtle shared bottom contact treatment so each card appears to stand in or immediately above the table surface;
-- preserve the existing approved Tarot fronts without redrawing them;
-- keep every face-up/front card fully opaque;
-- preserve explicit click-owned subclass selection and all existing Forge authority.
+The accepted new presentation is the **floating Tarot carousel in a dark, smoky ruined gothic library** shown in Paul's approved mockup.
 
-The approved lower-reflection cathedral/table artwork remains the active stage background.
+This handoff supersedes the earlier table-contact / rune-band implementation notes in this file.
+
+## User-approved visual target
+
+Preserve:
+
+- the real existing subclass Tarot fronts from `public/media/subclasses/**`;
+- the existing shared Tarot back unless live review shows a concrete mismatch;
+- the current hero-card scale and multi-stage side-card size falloff;
+- the existing arrow, keyboard, drag, flick/snap, click-to-hero, and explicit-click selection behavior;
+- face-up cards at full opacity;
+- a 16:9 cinematic modal as the primary desktop composition.
+
+Replace:
+
+- the cathedral + runic table background;
+- all table/rune foreground occlusion;
+- all table-contact shadows, folds, seats, and surface-following assumptions;
+- table-specific geometry comments and validator requirements.
+
+New scene:
+
+- very dark, dimly lit ruined gothic library / archive rotunda;
+- moonlit broken roof and deep architectural shadows;
+- warm candle clusters at the outer edges and galleries;
+- LOTS of atmospheric smoke/fog, but card readability remains protected;
+- cards float freely in open air and never touch a table, floor, altar, or other surface;
+- title remains `Choose your Fate`;
+- side navigation stays visually restrained and site-consistent.
+
+## Ambient life / animation target
+
+Animation must remain subtle. The selector should feel alive, not busy.
+
+Required first pass:
+
+1. **Back smoke layer**
+   - slow horizontal/diagonal drift;
+   - behind the cards;
+   - low contrast;
+   - long loop, approximately 24–36 seconds.
+
+2. **Front smoke layer**
+   - slow counter-drift;
+   - in front of the lower/outer card region but never covering the hero text/art heavily;
+   - long loop, approximately 18–30 seconds.
+
+3. **Candle-light flicker**
+   - restrained warm glow modulation over a few existing candle clusters;
+   - no strobe;
+   - asynchronous timing so both sides do not pulse together.
+
+Optional after browser review:
+
+4. **Distant mouse**
+   - one tiny mouse crossing a distant lower shelf/walkway;
+   - rare loop (roughly every 18–30 seconds);
+   - must remain an easter-egg-scale ambient detail, never a focal element.
+
+All ambient motion must disable under `prefers-reduced-motion: reduce`.
+
+## Asset authority
+
+Already approved / existing and should be reused:
+
+- existing DNDNext Tarot fronts;
+- existing `subclass-selector-card-back-20260922.webp`;
+- existing repo smoke assets may be reused if they visually fit:
+  - `subclass-selector-smoke-back.png`;
+  - `subclass-selector-smoke-front.png`.
+
+New accepted base plate prepared from the approved concept work:
+
+- source: moonlit ruined gothic library rotunda, 1672×941;
+- production target path:
+  - `public/media/forge/subclass-carousel/subclass-selector-library-ruins-20260926.webp`;
+- prepared production file:
+  - 334,924 bytes;
+  - SHA-256 `dcf3fd8ccebb4efcbdc7b821dc232f7f41ee3701c101cc664eaa1c8a9f866741`.
+
+Do **not** regenerate the title, navigation buttons, Tarot fronts, or card back merely because concept-art versions exist. The current runtime UI already owns those elements.
 
 ## Protected boundaries
 
-This work is presentation-only.
-
-Do **not** change:
+This is presentation-only. Do not change:
 
 - canonical subclass catalogue/eligibility;
 - subclass persistence/progression;
@@ -38,7 +108,7 @@ Do **not** change:
 - town/city-map behavior;
 - tactical encounter authority;
 - crafting/inventory/merchant/economy systems;
-- existing subclass Tarot front artwork.
+- existing approved subclass Tarot front artwork.
 
 ## Files intentionally in scope
 
@@ -47,279 +117,115 @@ Runtime:
 - `components/ClassSubclassSection.js`
 - `styles/character-forge-subclass-tarot-layout.css`
 
-New presentation asset:
-
-- `public/media/forge/subclass-carousel/subclass-card-base-contact-mask.svg`
-
 Validation:
 
 - `scripts/validate_class_subclass_browser.mjs`
 
+Presentation asset:
+
+- `public/media/forge/subclass-carousel/subclass-selector-library-ruins-20260926.webp`
+
 Documentation:
 
 - this handoff;
-- the parent `Character_Forge_Subclass_Tarot_Reference_Rebuild_Checklist.md` only after the implementation checkpoint is validated.
+- parent Tarot rebuild checklist only after a validated browser checkpoint.
 
-## 2026-09-23 browser-review correction — previous mask interpretation rejected
+## Phase 1 — remove table-specific runtime
 
-The browser video at runtime head `4cff918cde08c20182bec10b7fa993424ff6e51c` proved that the previous implementation did **not** satisfy the visual target even though CI passed.
+- [ ] Remove `class-subclass-carousel-modal__rune-foreground`.
+- [ ] Remove `subclass-rune-front-mask.svg` from runtime requirements.
+- [ ] Remove table-contact/rune-band comments and table-specific validator assertions.
+- [ ] Remove card-base contact shadow that implies a physical tabletop.
+- [ ] Keep Tarot art intact and untouched.
 
-What was wrong:
+## Phase 2 — install ruined-library stage
 
-- the previous `subclass-card-base-contact-mask.svg` was only a shadow/slot underneath a rigid card;
-- the card itself never folded at the bottom;
-- the last geometry pass flattened the orbit to a shallow ellipse, so card hinges no longer followed the actual front/back ellipse of the blue rune band;
-- ±68° whole-card yaw remained too aggressive for the near-front cards.
+- [ ] Install the approved ruined-library production background.
+- [ ] Make it the sole static stage background.
+- [ ] Preserve 16:9 desktop framing.
+- [ ] Keep the center airspace clear enough for hero readability.
+- [ ] Ensure narrow-screen background cropping remains intentional.
 
-Correct interpretation:
+## Phase 3 — convert ring geometry to free-floating carousel
 
-1. The **hinge line**, not the card's absolute bottom, is the orbit anchor.
-2. The main ~92–93% of the Tarot card remains upright.
-3. The bottom ~7–8% of the **same Tarot image** is rendered as a second clipped strip.
-4. Only that strip folds around the horizontal hinge using `rotateX(...)`, visually lying onto the tabletop.
-5. The upright copy is clipped above the hinge so the footer is not duplicated.
-6. The hinge travels on one fixed ellipse measured from the approved blue rune ring artwork (approximately 39.1% horizontal radius, 16.1% vertical radius, center Y approximately 55.8%).
-7. Whole-card yaw is restrained; the fold, physical size, fixed rune ellipse, and z-order carry most of the depth illusion.
-8. A small contact shadow may remain under the folded strip, but it is supporting detail—not the fold itself.
+Keep the current circular offset math and interaction authority, but remove the assumption that the path corresponds to a physical surface.
 
-This correction supersedes the previous interpretation of Phase 1–4 below.
+- [ ] Retain one continuous carousel path for all catalogue sizes.
+- [ ] Keep hero at the current large physical width.
+- [ ] Keep several intermediate physical card sizes.
+- [ ] Keep whole-card roll at 0.
+- [ ] Keep yaw restrained.
+- [ ] Tune vertical travel only for attractive free-floating depth, not surface contact.
+- [ ] Rear cards may rise/recede naturally because no table contact must be maintained.
+- [ ] Keep dense Wizard catalogues legible.
+- [ ] Keep four-option classes visually balanced.
 
-## 2026-09-24 browser-review correction — hinged footer rejected
+## Phase 4 — ambient animation layers
 
-The latest browser video proved the hinged-footer interpretation is also wrong. It creates a visible trapezoid/flap under the Tarot card, especially at hero, while the reference image shows a rigid upright card whose base simply appears seated into the table/rune path.
+- [ ] Re-enable/use a back smoke layer behind cards.
+- [ ] Re-enable/use a front smoke layer above lower/outer card areas.
+- [ ] Add independent slow keyframes so the two smoke layers do not move together.
+- [ ] Add restrained CSS candle-glow flicker at a few fixed scene positions.
+- [ ] Keep all ambient layers `pointer-events: none`.
+- [ ] Disable ambient keyframes under reduced motion.
+- [ ] Do not animate the background plate itself.
 
-This supersedes the 2026-09-23 hinged-footer section.
+## Phase 5 — preserve working carousel authority
 
-Correct target:
-
-1. The **actual bottom-center of the full rigid Tarot card** is the orbit anchor.
-2. The card artwork is not clipped, duplicated, or folded.
-3. There is **no `rotateX` footer strip**.
-4. The full card remains upright; whole-card roll stays removed.
-5. Whole-card yaw is gentle and only communicates that the card is turning around the ring.
-6. One fixed ellipse measured from the approved blue rune band remains the path authority.
-7. A shallow **foreground table-seat mask** overlaps only the lowest few pixels of the card. Its job is occlusion/contact: it makes the base look inserted into or immediately behind the glowing rune band.
-8. The seat mask is not a pedestal, fold, or shadow pretending to be geometry. It is a thin local table-contact/occlusion lip.
-9. A small shadow can remain behind the base, but the front occlusion layer is what sells the card as standing on the table.
-10. Front-facing Tarot cards remain fully opaque.
-
-Implementation target for the next runtime patch:
-
-- remove all `base-fold` markup/styles;
-- restore `translate(-50%, -100%)` and `transform-origin: 50% 100%`;
-- keep the fixed rune ellipse (`39.1 / 16.1 / 55.8`) initially; browser-tune only if the real card bottoms do not land in the band center;
-- reduce yaw toward approximately `0.24 × ring angle`, capped near ±34°;
-- add one reusable `subclass-card-table-seat-mask.svg` rendered **in front of** the bottom edge of each card;
-- keep the existing non-linear physical-size depth falloff.
-
-## 2026-09-24 browser-review correction — table owns the occlusion
-
-The latest browser video at runtime head `82687fba7ffc130dddb1994fa0fd9c40adc50697` shows that the per-card `table-seat` effect is still wrong. It moves with each Tarot card and therefore reads as a glowing underline/pedestal attached to the card rather than part of the physical table.
-
-This supersedes the shadow-only, hinged-footer, and per-card-seat interpretations.
-
-Correct implementation target:
-
-1. The Tarot card remains one intact rigid rectangle.
-2. The card's actual bottom-center is the orbit anchor.
-3. The card has no attached seat, fold, pedestal, or foreground mask.
-4. One fixed ellipse is shared by every card and every interaction mode.
-5. The path should run through the **middle of the approved blue rune band**, not along its outer/front lip.
-6. The table itself owns the contact illusion:
-   - render the approved cathedral/table image normally behind the cards;
-   - render the **same exact table image a second time in front of the cards**;
-   - mask that foreground copy so only a narrow front-half section of the blue rune annulus is visible.
-7. Because the foreground layer is pixel-identical to the background, the rune artwork/glow/perspective cannot float or drift independently.
-8. The foreground rune strip overlaps only the lowest few pixels of cards crossing the front half of the table, creating real scene occlusion.
-9. Rear-half cards remain in front of the rear rune arc because only the front half of the annulus is foreground.
-10. Whole-card roll remains zero. Yaw stays restrained and may be browser-tuned separately from table contact.
-11. Front-facing cards remain fully opaque.
-12. No Tarot artwork redraw, clipping, duplication, or fold is allowed.
-
-Implementation recommendation:
-
-- remove `class-subclass-carousel-card__table-seat` from every card;
-- delete `subclass-card-table-seat-mask.svg`;
-- keep the approved cathedral/table image as both background and foreground source;
-- add a stage-level foreground element/pseudo-element using the same background-position/size as the scene;
-- mask that foreground copy with a new **mask-only** SVG describing the front half of the blue rune ellipse;
-- shift the card-bottom ellipse slightly rearward from the current outer-lip position so its front point lies near the middle of the blue rune band;
-- keep non-linear physical card sizing and the current click/drag/selection authority unchanged.
-
-## Phase 1 — orbit path alignment
-
-- [ ] Anchor the **actual card bottom-center** to the fixed ellipse through the middle of the approved blue rune band.
-- [ ] Keep `horizontalRadius 39.1` and `verticalCenter 55.8`, but shift the front/back depth inward from the current outer-lip path; browser target begins around `verticalRadius 13.8`.
-- [x] Preserve one continuous ellipse for all catalogue sizes.
-- [x] Keep the same ring for arrow, keyboard, drag, flick, and click-to-hero motion.
-- [ ] Verify Wizard/high-count and a four-option class use the exact same fixed table ellipse.
-
-### Done when
-
-The bottom center of every visible card appears to travel inside the table's blue rune band without jumping between paths.
-
-## Phase 2 — upright posture
-
-- [x] Remove the current ±10.5° whole-card roll completely.
-- [x] Keep cards visually upright in screen space; whole-card `rotateZ`/orbit-roll was removed.
-- [ ] Reduce whole-card yaw further so near-front cards stay nearly upright while still turning around the ring.
-- [ ] Browser-review a target around `0.24 × ring angle`, capped near ±34°.
-- [x] Keep hero yaw exactly 0°.
-
-### Done when
-
-Side cards read as upright cards turning around a circular table, not cards leaning sideways.
-
-## Phase 3 — shared bottom contact mask
-
-Create one reusable SVG contact/slot treatment because the lower card-frame/contact behavior is common across the Tarot deck.
-
-The asset should be subtle and contain:
-
-- a soft elliptical/table contact shadow;
-- a narrow dark slot/occlusion band that hides only a few pixels of the card's bottom edge;
-- restrained antique-gold edge detail;
-- restrained cyan reflection/glow consistent with the table rune band;
-- transparent surroundings.
-
-Implementation:
-
-- [ ] Remove the rejected per-card seat entirely. The **table**, not the card, owns foreground occlusion.
-- [ ] Add one stage-level `class-subclass-carousel-modal__rune-foreground` layer (or equivalent pseudo-element), never one layer per card.
-- [x] The actual card bottom remains the orbit anchor.
-- [x] Keep `pointer-events: none`.
-- [x] Keep the entire Tarot card intact and uncut.
-- [ ] Use the exact approved table image as the foreground source, masked to the front-half rune annulus only.
-- [ ] Hero artwork remains intact/full-opacity; only the actual table foreground may occlude its lowest few pixels.
-
-### Done when
-
-The lower edge reads as planted/standing on the table without an obvious pasted-on effect or a visible hard fold line.
-
-## Phase 4 — table contact shadow / depth
-
-- [ ] Keep only a small supporting tabletop shadow behind the card base.
-- [ ] The stage-level foreground rune strip must pass in front of the lowest card edge; no card-attached foreground effect may remain.
-- [ ] Keep only a restrained card-relative shadow behind the base; the rune foreground remains fixed to the table.
-- [x] Avoid smoke/haze.
-- [x] Keep face-up/front cards at opacity 1.
-
-## Phase 5 — physical depth progression
-
-- [x] Preserve physical-width sizing rather than transform scale.
-- [x] Preserve the existing non-linear physical-width depth falloff for multiple intermediate sizes.
-- [ ] Ensure small/rear cards still remain large enough to communicate that they are cards.
-- [x] Do not introduce a fixed visible-card cap or separate Wizard-only geometry.
-- [x] Keep rear cards on the same continuous ring and use the shared Tarot back where appropriate.
-
-## Phase 6 — interaction regression
-
-- [ ] Left/Right button = exactly one card step.
+- [ ] Left/right button moves exactly one card step.
 - [ ] Keyboard Left/Right mirrors buttons.
 - [ ] Escape closes modal.
 - [ ] Drag rotates continuously.
-- [ ] Flick snaps to one legal ring position.
-- [ ] Click-vs-drag threshold still prevents accidental selection.
+- [ ] Flick snaps to a legal card position.
+- [ ] Click-vs-drag threshold prevents accidental selection.
 - [ ] Clicking a visible face-up card rotates that exact card to hero.
 - [ ] Only explicit eligible card click calls `model.selectSubclass(option)`.
 - [ ] Locked future-level cards can inspect without illegal persistence.
 - [ ] Reopening centers the selected subclass.
 
-## Phase 7 — validators
+## Phase 6 — visual acceptance
 
-Update `validate_class_subclass_browser.mjs` to require:
+Wizard / dense catalogue:
 
-- [ ] validator requires a stage-level rune foreground and rejects all per-card seat/fold/contact layers;
-- [ ] validator requires intact full-card art plus the table-owned foreground rune mask;
-- [x] whole-card orbit roll remains removed;
-- [ ] validator locks the fixed rune-band ellipse and ensures catalogue density cannot change table geometry;
-- [x] front cards remain fully opaque;
-- [x] physical depth sizing remains continuous/non-linear;
-- [x] floating CSS blue ellipse does not return;
-- [x] exactly one explicit `model.selectSubclass(option)` path remains;
-- [x] cathedral/card-back asset size guards remain.
+- [ ] hero remains crisp and dominant;
+- [ ] multiple side-card size steps are obvious;
+- [ ] rear backs read cleanly through the smoke;
+- [ ] smoke never obscures the hero enough to harm readability;
+- [ ] carousel feels suspended in the room rather than attached to a surface.
 
-## Phase 8 — browser acceptance
+Small catalogue:
 
-Test deliberately:
+- [ ] four-option presentation does not feel empty;
+- [ ] side cards remain face-up where expected;
+- [ ] scene still feels composed with fewer cards.
 
-### Wizard / dense catalogue
+Ambient motion:
 
-- [ ] bases remain inside blue rune band;
-- [ ] near-front cards stay upright;
-- [ ] several physical size steps are obvious;
-- [ ] side cards turn through yaw without severe lean;
-- [ ] table-owned rune occlusion remains believable and does not move independently with cards;
-- [ ] rear card backs stay on the same path.
+- [ ] back smoke loop is subtle and seamless enough for normal use;
+- [ ] front smoke loop adds depth without repeatedly crossing the hero title/art;
+- [ ] candle glow flicker is visible only when noticed, not distracting;
+- [ ] reduced-motion mode is effectively static.
 
-### Small catalogue
+Responsive:
 
-- [ ] four-option ring does not look empty or over-rotated;
-- [ ] side cards remain face-up as expected;
-- [ ] hero remains centered and planted.
+- [ ] desktop 16:9;
+- [ ] medium viewport;
+- [ ] narrow/mobile fallback.
 
-### Motion
+## Phase 7 — validation / delivery
 
-- [ ] slow drag around the ring;
-- [ ] fast flick and snap;
-- [ ] left/right arrows;
-- [ ] click side card → hero;
-- [ ] watch the lower contact point continuously during movement.
-
-## Phase 9 — delivery
-
-- [x] Run focused subclass validator — PASS at runtime head `4cff918cde08c20182bec10b7fa993424ff6e51c`.
-- [x] Run triggered Class-browser CI — PASS at runtime head `4cff918cde08c20182bec10b7fa993424ff6e51c`.
-- [x] Verify exact changed-file scope: component, selector CSS, focused validator, shared SVG asset, and this handoff only.
-- [x] Verify exact-head Vercel Preview READY for runtime head `4cff918cde08c20182bec10b7fa993424ff6e51c`.
-- [ ] Update parent rebuild checklist with accepted checkpoint.
+- [ ] Rewrite the focused validator around the floating-library invariants.
+- [ ] Reject the old table/rune foreground from returning.
+- [ ] Preserve approved-Tarot coverage checks.
+- [ ] Preserve explicit-click subclass persistence guard.
+- [ ] Run focused Class/subclass validators.
+- [ ] Run relevant Forge regressions.
+- [ ] Verify exact changed-file scope.
+- [ ] Verify exact-head Vercel Preview.
+- [ ] Browser-review the preview against the approved ruined-library mockup.
+- [ ] Update parent checklist only after browser acceptance.
 - [ ] Keep PR #199 unmerged until Paul's explicit approval.
-
-## Current implementation checkpoint
-
-Runtime head: `4cff918cde08c20182bec10b7fa993424ff6e51c`
-
-Validated:
-
-- GitHub `Validate Class browser polish`: **PASS**;
-- focused subclass selector validator: **PASS**;
-- Vercel Preview: **READY**;
-- PR #199: **open / mergeable / unmerged**.
-
-Browser review rejected the shadow-only contact implementation. The per-card seat implementation was also rejected by browser review. The next patch must remove every card-attached contact treatment and use a table-owned foreground copy of the real rune band.
-
-## 2026-09-23 corrected hinged-footer implementation checkpoint
-
-Runtime implementation: `e85d41808fce97ac2fc788c39fffc28c63efa327`  
-Cleanup removing the rejected shadow-only SVG: `40384505175cb4814fdc763def9933c4d555ffeb`
-
-Implemented:
-
-- fixed table path: `horizontalRadius 39.1`, `verticalRadius 16.1`, `verticalCenter 55.8`;
-- table geometry no longer changes with catalogue density;
-- whole-card roll remains removed;
-- whole-card yaw reduced to `0.34 × ring angle`, capped at ±48°;
-- orbit anchor moved from the absolute card bottom to the footer hinge at 92.5% card height;
-- upright card surface is clipped above the lower 7.5%;
-- the lower 7.5% of the **same current Tarot front** is rendered again as a separate fold strip;
-- rear cards use the same treatment with the shared Tarot-back footer slice;
-- only the footer strip uses `rotateX(70deg)`, creating the tabletop fold while the card body stays upright;
-- contact shadow is now small/supporting and sits under the hinge/fold footprint;
-- rejected `subclass-card-base-contact-mask.svg` was removed from the branch.
-
-Validation:
-
-- focused subclass selector validator: **PASS**;
-- full triggered `Validate Class browser polish`: **PASS**;
-- PR #199 remains open / mergeable / unmerged.
-
-Still pending:
-
-- browser review of the actual fold illusion;
-- final rune-band ellipse tuning if the hinge does not visually sit in the band center;
-- Wizard and four-option visual acceptance;
-- drag/flick/contact continuity acceptance.
 
 ## Definition of done
 
-The cards read as **upright Tarot cards standing on the blue rune band of the physical table**, with their bases continuously attached to that path while the carousel moves. Circular depth comes from yaw, perspective, z-order, and multiple physical card sizes—not severe sideways roll. The shared base-contact mask subtly sells the standing/slot illusion without modifying any Tarot card front.
+The selector reads as a **floating Tarot carousel suspended in a dark, smoke-filled ruined gothic library**, using the real DNDNext Tarot deck and the already-working carousel interactions. The presentation has no physical table/surface dependency. Slow independent smoke movement and restrained candle flicker make the room feel alive without distracting from subclass selection. No canonical Forge authority or protected system is changed.
