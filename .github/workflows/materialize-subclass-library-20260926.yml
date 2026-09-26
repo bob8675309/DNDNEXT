@@ -30,6 +30,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          sha256sum .github/asset-transfer/subclass-library-20260926/c*.txt
           cat .github/asset-transfer/subclass-library-20260926/c*.txt > /tmp/library.b64
           base64 --decode /tmp/library.b64 > /tmp/subclass-selector-library-ruins-20260926.webp
           echo "$OUTPUT_SHA256  /tmp/subclass-selector-library-ruins-20260926.webp" | sha256sum -c -
