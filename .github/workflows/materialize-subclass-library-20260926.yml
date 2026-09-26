@@ -1,0 +1,74 @@
+name: One-shot subclass library background transfer
+
+on:
+  push:
+    branches:
+      - agent/subclass-library-asset-transfer-20260926
+    paths:
+      - .github/workflows/materialize-subclass-library-20260926.yml
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    env:
+      TARGET_BRANCH: agent/subclass-tarot-scene-rebuild-20260922
+      EXPECTED_TARGET_SHA: fd51ea952cbb3dd2e12e43490a7426b1d8db9add
+      OUTPUT_SHA256: c369dca6e654ec62db1fafd8f38635bccf2af54ccac5cda8fbb613c67dd44999
+      OUTPUT_BYTES: "89822"
+      OUTPUT_PATH: public/media/forge/subclass-carousel/subclass-selector-library-ruins-20260926.webp
+    steps:
+      - name: Check out transfer branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/subclass-library-asset-transfer-20260926
+          fetch-depth: 0
+
+      - name: Assemble and verify WebP
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .github/asset-transfer/subclass-library-20260926/c*.txt > /tmp/library.b64
+          base64 --decode /tmp/library.b64 > /tmp/subclass-selector-library-ruins-20260926.webp
+          echo "$OUTPUT_SHA256  /tmp/subclass-selector-library-ruins-20260926.webp" | sha256sum -c -
+          actual_bytes="$(wc -c < /tmp/subclass-selector-library-ruins-20260926.webp | tr -d ' ')"
+          test "$actual_bytes" = "$OUTPUT_BYTES" || {
+            echo "Unexpected byte count: expected $OUTPUT_BYTES, got $actual_bytes" >&2
+            exit 1
+          }
+          test "$(file -b --mime-type /tmp/subclass-selector-library-ruins-20260926.webp)" = "image/webp"
+
+      - name: Guard exact target head
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin "$TARGET_BRANCH"
+          actual="$(git rev-parse "origin/$TARGET_BRANCH")"
+          test "$actual" = "$EXPECTED_TARGET_SHA" || {
+            echo "Target branch moved: expected $EXPECTED_TARGET_SHA, found $actual" >&2
+            exit 1
+          }
+
+      - name: Install only the approved library stage asset
+        shell: bash
+        run: |
+          set -euo pipefail
+          git checkout -B "$TARGET_BRANCH" "origin/$TARGET_BRANCH"
+          cp /tmp/subclass-selector-library-ruins-20260926.webp "$OUTPUT_PATH"
+          printf '%s\n' "$OUTPUT_PATH" > /tmp/expected.txt
+          git diff --name-only | sort > /tmp/actual.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+          test "$(wc -c < "$OUTPUT_PATH" | tr -d ' ')" = "$OUTPUT_BYTES"
+          echo "$OUTPUT_SHA256  $OUTPUT_PATH" | sha256sum -c -
+
+      - name: Commit and push exact asset
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$OUTPUT_PATH"
+          git commit -m "assets: install ruined library Tarot stage [deploy-preview]"
+          git push origin "HEAD:$TARGET_BRANCH"
