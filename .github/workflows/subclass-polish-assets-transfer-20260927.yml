@@ -1,0 +1,95 @@
+name: One-shot subclass selector polish asset transfer
+
+on:
+  push:
+    branches:
+      - agent/subclass-polish-assets-transfer-20260927
+    paths:
+      - .github/workflows/subclass-polish-assets-transfer-20260927.yml
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact target branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/subclass-tarot-scene-rebuild-20260922
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Guard exact target head
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "344148ee61e16c3a32bb69f742d1f5dcb6d77906"
+
+      - name: Download transfer bundle exactly once
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error "https://ucb35a6392d8bba01cef961a19a7.dl.dropboxusercontent.com/cd/0/get/DI90iERzbNgB32BNtqlrOh3ff1SLv5u71nNL772UUwBnDHP_Ff0oufKtkrIAmDaO0usUYeB7Zjk6iKboNAfn_2uHjplQyWrals6I83Orpdli_b6RyAb7w8cRPHE1pBC3taNnHtke22UPuell2Q6PF8-jc5yszyC15O-k-RjqvQS1fA/file?c_luid=c335000c" -o /tmp/subclass-polish.zip
+          echo "67965c87deedc8471fe18feb597e8c7b78d673266dac697d928d8c9410b08f9a  /tmp/subclass-polish.zip" | sha256sum -c -
+
+      - name: Verify and install assets
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/subclass-polish
+          mkdir -p /tmp/subclass-polish
+          unzip -q /tmp/subclass-polish.zip -d /tmp/subclass-polish
+          cd /tmp/subclass-polish
+          sha256sum -c SHA256SUMS.txt
+
+          for f in subclass-selector-title-choose-fate-20260927.webp subclass-selector-nav-prev-20260927.webp subclass-selector-nav-next-20260927.webp subclass-selector-smoke-gray-20260927.webp; do
+            test "$(file -b --mime-type "$f")" = "image/webp"
+          done
+
+          python -m pip install --disable-pip-version-check --quiet pillow==11.3.0
+          python - <<'PY'
+          from PIL import Image
+          expected = {
+              "subclass-selector-title-choose-fate-20260927.webp": (1272, 729),
+              "subclass-selector-nav-prev-20260927.webp": (340, 349),
+              "subclass-selector-nav-next-20260927.webp": (340, 351),
+              "subclass-selector-smoke-gray-20260927.webp": (1672, 941),
+          }
+          for name, size in expected.items():
+              with Image.open("/tmp/subclass-polish/" + name) as image:
+                  assert image.format == "WEBP", (name, image.format)
+                  assert image.size == size, (name, image.size, size)
+          PY
+
+          mkdir -p "$GITHUB_WORKSPACE/public/media/forge/subclass-carousel"
+          cp subclass-selector-title-choose-fate-20260927.webp "$GITHUB_WORKSPACE/public/media/forge/subclass-carousel/"
+          cp subclass-selector-nav-prev-20260927.webp "$GITHUB_WORKSPACE/public/media/forge/subclass-carousel/"
+          cp subclass-selector-nav-next-20260927.webp "$GITHUB_WORKSPACE/public/media/forge/subclass-carousel/"
+          cp subclass-selector-smoke-gray-20260927.webp "$GITHUB_WORKSPACE/public/media/forge/subclass-carousel/"
+
+      - name: Guard exact binary diff
+        run: |
+          set -euo pipefail
+          cat > /tmp/expected.txt <<'EOF'
+          public/media/forge/subclass-carousel/subclass-selector-nav-next-20260927.webp
+          public/media/forge/subclass-carousel/subclass-selector-nav-prev-20260927.webp
+          public/media/forge/subclass-carousel/subclass-selector-smoke-gray-20260927.webp
+          public/media/forge/subclass-carousel/subclass-selector-title-choose-fate-20260927.webp
+          EOF
+          git diff --name-only | sort > /tmp/actual.txt
+          sort /tmp/expected.txt -o /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+
+      - name: Run focused subclass selector validator
+        run: node scripts/validate_class_subclass_browser.mjs
+
+      - name: Commit and push exact asset payload
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/media/forge/subclass-carousel/subclass-selector-title-choose-fate-20260927.webp
+          git add public/media/forge/subclass-carousel/subclass-selector-nav-prev-20260927.webp
+          git add public/media/forge/subclass-carousel/subclass-selector-nav-next-20260927.webp
+          git add public/media/forge/subclass-carousel/subclass-selector-smoke-gray-20260927.webp
+          git commit -m "assets: add subclass selector polish overlays"
+          git push origin HEAD:agent/subclass-tarot-scene-rebuild-20260922
