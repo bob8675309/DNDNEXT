@@ -212,23 +212,54 @@
   position: absolute;
   inset: 0;
   z-index: 0;
+  overflow: hidden;
   pointer-events: none;
   background:
-    #080611
-    url("/media/forge/subclass-carousel/subclass-selector-cathedral-20260922.webp")
+    #05070b
+    url("/media/forge/subclass-carousel/subclass-selector-library-ruins-20260926.webp")
     center center / 100% 100% no-repeat;
+  filter: saturate(.94) brightness(.92) contrast(1.035);
+}
+
+.class-subclass-carousel-modal__scene::before,
+.class-subclass-carousel-modal__scene::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.class-subclass-carousel-modal__scene::before {
+  background:
+    radial-gradient(circle at 4.5% 55%, rgba(255,181,89,.20), rgba(255,155,58,.07) 2.2%, transparent 5.7%),
+    radial-gradient(circle at 13% 28%, rgba(255,189,98,.15), rgba(255,153,61,.05) 1.8%, transparent 5%),
+    radial-gradient(circle at 23% 79%, rgba(255,177,78,.13), rgba(255,144,49,.04) 1.7%, transparent 4.8%);
+  animation: subclass-candle-flicker-left 4.7s ease-in-out infinite;
+}
+
+.class-subclass-carousel-modal__scene::after {
+  background:
+    radial-gradient(circle at 95.2% 54%, rgba(255,184,91,.18), rgba(255,150,54,.065) 2.2%, transparent 5.6%),
+    radial-gradient(circle at 87% 28%, rgba(255,190,101,.14), rgba(255,153,61,.05) 1.8%, transparent 5%),
+    radial-gradient(circle at 77.5% 78%, rgba(255,175,76,.12), rgba(255,142,47,.04) 1.7%, transparent 4.7%);
+  animation: subclass-candle-flicker-right 5.3s ease-in-out -1.4s infinite;
 }
 
 .class-subclass-carousel-modal__title {
-  position: absolute !important;
-  width: 1px !important;
-  height: 1px !important;
-  padding: 0 !important;
-  margin: -1px !important;
-  overflow: hidden !important;
-  clip: rect(0, 0, 0, 0) !important;
-  white-space: nowrap !important;
-  border: 0 !important;
+  position: absolute;
+  top: 5.8%;
+  left: 50%;
+  z-index: 245;
+  margin: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  color: #efd89d;
+  font: 600 clamp(2rem, 4vw, 4.15rem)/1.05 Georgia, "Times New Roman", serif;
+  letter-spacing: .015em;
+  text-shadow:
+    0 2px 2px rgba(0,0,0,.88),
+    0 0 13px rgba(222,174,87,.20);
 }
 
 .class-subclass-carousel-modal__close {
@@ -265,21 +296,31 @@
   z-index: 10;
 }
 
-.class-subclass-carousel-modal__rune-foreground {
+.class-subclass-carousel-modal__stage::before,
+.class-subclass-carousel-modal__stage::after {
+  content: "";
   position: absolute;
-  inset: 0;
-  z-index: 220;
+  inset: -4%;
   pointer-events: none;
-  background:
-    #080611
-    url("/media/forge/subclass-carousel/subclass-selector-cathedral-20260922.webp")
-    center center / 100% 100% no-repeat;
-  -webkit-mask:
-    url("/media/forge/subclass-carousel/subclass-rune-front-mask.svg")
-    center center / 100% 100% no-repeat;
-  mask:
-    url("/media/forge/subclass-carousel/subclass-rune-front-mask.svg")
-    center center / 100% 100% no-repeat;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.class-subclass-carousel-modal__stage::before {
+  z-index: 3;
+  background-image: url("/media/forge/subclass-carousel/subclass-selector-smoke-back.png");
+  opacity: .52;
+  animation: subclass-smoke-back-drift 31s ease-in-out infinite;
+}
+
+.class-subclass-carousel-modal__stage::after {
+  z-index: 210;
+  background-image: url("/media/forge/subclass-carousel/subclass-selector-smoke-front.png");
+  opacity: .38;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0 31%, rgba(0,0,0,.24) 43%, #000 68%, #000 100%);
+  mask-image: linear-gradient(to bottom, transparent 0 31%, rgba(0,0,0,.24) 43%, #000 68%, #000 100%);
+  animation: subclass-smoke-front-drift 24s ease-in-out -7s infinite;
 }
 
 .class-subclass-carousel-modal__orbit {
@@ -336,26 +377,6 @@
   opacity: 1 !important;
   transform: translate(-50%, -100%) rotateY(0deg);
   filter: none !important;
-}
-
-.class-subclass-carousel-card::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: -1.8%;
-  width: 88%;
-  height: 4.4%;
-  z-index: -1;
-  pointer-events: none;
-  border-radius: 50%;
-  background: radial-gradient(ellipse at center, rgba(2, 3, 8, .70) 0 34%, rgba(10, 21, 31, .38) 48%, rgba(46, 167, 226, .10) 64%, transparent 80%);
-  filter: blur(2.2px);
-  transform: translateX(-50%) scaleX(.92);
-  opacity: calc(.28 + (var(--orbit-opacity) * .34));
-}
-
-.class-subclass-carousel-card.is-orbit-back::after {
-  opacity: .20;
 }
 
 .class-subclass-carousel-card__surface {
@@ -517,6 +538,30 @@
   cursor: default;
 }
 
+@keyframes subclass-smoke-back-drift {
+  0%, 100% { transform: translate3d(-1.6%, .7%, 0) scale(1.055); opacity: .46; }
+  50% { transform: translate3d(1.6%, -.8%, 0) scale(1.085); opacity: .57; }
+}
+
+@keyframes subclass-smoke-front-drift {
+  0%, 100% { transform: translate3d(1.4%, .8%, 0) scale(1.075); opacity: .31; }
+  50% { transform: translate3d(-1.5%, -.5%, 0) scale(1.105); opacity: .43; }
+}
+
+@keyframes subclass-candle-flicker-left {
+  0%, 100% { opacity: .67; filter: brightness(.94); }
+  17% { opacity: .78; filter: brightness(1.05); }
+  41% { opacity: .61; filter: brightness(.91); }
+  69% { opacity: .75; filter: brightness(1.03); }
+}
+
+@keyframes subclass-candle-flicker-right {
+  0%, 100% { opacity: .64; filter: brightness(.92); }
+  23% { opacity: .76; filter: brightness(1.04); }
+  52% { opacity: .59; filter: brightness(.90); }
+  81% { opacity: .73; filter: brightness(1.02); }
+}
+
 .class-subclass-carousel-modal__sr-status {
   position: absolute;
 }
@@ -558,17 +603,20 @@
     max-height: none;
   }
 
-  .class-subclass-carousel-modal__scene,
-  .class-subclass-carousel-modal__rune-foreground {
+  .class-subclass-carousel-modal__scene {
     background-position: center top;
     background-size: auto 100%;
   }
 
-  .class-subclass-carousel-modal__rune-foreground {
-    -webkit-mask-position: center top;
-    -webkit-mask-size: auto 100%;
-    mask-position: center top;
-    mask-size: auto 100%;
+  .class-subclass-carousel-modal__stage::before,
+  .class-subclass-carousel-modal__stage::after {
+    background-position: center top;
+    background-size: auto 100%;
+  }
+
+  .class-subclass-carousel-modal__title {
+    top: 4.4%;
+    font-size: clamp(1.65rem, 8vw, 2.65rem);
   }
 
   .class-subclass-carousel-card {
@@ -607,6 +655,14 @@
   .class-subclass-carousel-modal__nav,
   .class-subclass-carousel-modal__close {
     transition-duration: .01ms !important;
+  }
+
+  .class-subclass-carousel-modal__scene::before,
+  .class-subclass-carousel-modal__scene::after,
+  .class-subclass-carousel-modal__stage::before,
+  .class-subclass-carousel-modal__stage::after {
+    animation: none !important;
+    transform: none !important;
   }
 }
 

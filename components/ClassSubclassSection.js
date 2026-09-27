@@ -49,13 +49,10 @@ function orbitProfileFor(total) {
   const count = Math.max(1, Number(total || 1));
   const density = clamp((count - 4) / 10, 0, 1);
 
-  // One physical ellipse follows the visible runic table. Larger catalogues use
-  // slightly more of the rim but never switch to a second carousel geometry.
-  // Match the actual blue rune-ring ellipse in the approved table art. Card
-  // bottom anchors travel around this path; apparent distance is handled by
-  // physical card size rather than by keeping large cards high in the scene.
-  // Fixed physical ellipse measured from the approved blue rune band.
-  // Catalogue density changes card size, never the table path itself.
+  // Keep one continuous free-floating carousel path for every catalogue size.
+  // The cards no longer imply contact with a physical table or floor; depth is
+  // communicated through vertical travel, yaw, z-order, and physical card size.
+  // Catalogue density changes card sizing only, never the carousel path itself.
   const horizontalRadius = 39.1;
   const verticalRadius = 18.5;
   const verticalCenter = 55.8;
@@ -108,8 +105,8 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
   const isFaceUp = count === 1 || absoluteAngle <= faceUpArcDegrees + 0.01;
   const isInteractive = isFaceUp;
 
-  // Yaw follows the ring tangent so the cards visibly bend around the table.
-  // Rear cards keep the same geometry but their surface flips to the common back.
+  // Restrained yaw turns the floating cards through depth without pretending
+  // they are attached to a physical surface. Rear positions use the shared back.
   const yaw = clamp(angleDegrees * 0.24, -34, 34);
   const x = 50 + (sine * profile.horizontalRadius);
   const y = profile.verticalCenter + (cosine * profile.verticalRadius);
@@ -381,13 +378,11 @@ export default function ClassSubclassSection({
               ‹
             </button>
 
-            <div className="class-subclass-carousel-modal__rune-foreground" aria-hidden="true" />
-
             <div
               ref={orbitRef}
               className={`class-subclass-carousel-modal__orbit${isDragging ? " is-dragging" : ""}`}
               role="list"
-              aria-label="Subclass Tarot ring. Drag to rotate."
+              aria-label="Subclass Tarot carousel. Drag to rotate."
               onPointerDown={handleOrbitPointerDown}
               onPointerMove={handleOrbitPointerMove}
               onPointerUp={(event) => finishOrbitPointer(event)}
