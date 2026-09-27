@@ -1,105 +1,128 @@
 # Character Forge Subclass Tarot — Floating Gothic Library Handoff
 
-Updated: 2026-09-26
+Updated: 2026-09-27
 
-Status: **active implementation handoff / progress tracker**
+Status: **implemented runtime checkpoint / browser acceptance pending**
+
+> Legacy filename note: this document keeps the older `Table_Contact` filename so existing links do not break. The physical runic-table direction is retired.
 
 Branch: `agent/subclass-tarot-scene-rebuild-20260922`  
-Pull request: **#199 — Rebuild subclass Tarot selector**
+Pull request: **#199 — Rebuild subclass Tarot selector**  
+Validated runtime head: `e53706117ff70cc817063755e39c261bfb0accaf`
 
 ## Superseding decision
 
 The physical runic-table presentation is retired.
 
-Browser review established that repeated attempts to make 2D Tarot cards convincingly stand, bend, fold, or occlude around a physical tabletop introduced more visual artifacts than value. The carousel itself, card scale progression, hero treatment, rear card backs, drag/flick behavior, and real DNDNext Tarot fronts are worth preserving.
+Browser review established that repeated attempts to make 2D Tarot cards convincingly stand, bend, fold, or occlude around a physical tabletop introduced more visual artifacts than value. The parts worth preserving are the existing DNDNext Tarot fronts, hero scale, depth sizing, rear card backs, drag/flick motion, arrow/keyboard navigation, and explicit-click subclass authority.
 
-The accepted new presentation is the **floating Tarot carousel in a dark, smoky ruined gothic library** shown in Paul's approved mockup.
+The active presentation is now a **floating Tarot carousel suspended in a dark, smoky ruined gothic library**.
 
-This handoff supersedes the earlier table-contact / rune-band implementation notes in this file.
+Do not reintroduce:
+
+- runic table contact;
+- rune foreground masking;
+- card-bottom folds;
+- per-card seat/pedestal masks;
+- whole-card roll;
+- surface-following assumptions.
 
 ## User-approved visual target
 
 Preserve:
 
-- the real existing subclass Tarot fronts from `public/media/subclasses/**`;
-- the existing shared Tarot back unless live review shows a concrete mismatch;
-- the current hero-card scale and multi-stage side-card size falloff;
-- the existing arrow, keyboard, drag, flick/snap, click-to-hero, and explicit-click selection behavior;
-- face-up cards at full opacity;
-- a 16:9 cinematic modal as the primary desktop composition.
+- real existing subclass Tarot fronts under `public/media/subclasses/**`;
+- shared `subclass-selector-card-back-20260922.webp`;
+- current hero-card scale;
+- current non-linear physical size falloff;
+- current restrained yaw;
+- current continuous carousel motion;
+- arrow, keyboard, drag, flick/snap, side-card click → hero, and explicit-click selection authority;
+- face-up/front cards at full opacity.
 
-Replace:
+Scene:
 
-- the cathedral + runic table background;
-- all table/rune foreground occlusion;
-- all table-contact shadows, folds, seats, and surface-following assumptions;
-- table-specific geometry comments and validator requirements.
+- dark ruined gothic library / archive rotunda;
+- moonlit broken roof;
+- deep architectural shadows;
+- warm candle clusters at the outer galleries;
+- heavy atmospheric smoke/fog;
+- cards float freely in open air;
+- no table, floor, altar, or other support under the cards;
+- visible `Choose your Fate` title;
+- restrained gold circular navigation.
 
-New scene:
+## Installed background asset
 
-- very dark, dimly lit ruined gothic library / archive rotunda;
-- moonlit broken roof and deep architectural shadows;
-- warm candle clusters at the outer edges and galleries;
-- LOTS of atmospheric smoke/fog, but card readability remains protected;
-- cards float freely in open air and never touch a table, floor, altar, or other surface;
-- title remains `Choose your Fate`;
-- side navigation stays visually restrained and site-consistent.
+Repository path:
 
-## Ambient life / animation target
+`public/media/forge/subclass-carousel/subclass-selector-library-ruins-20260926.webp`
 
-Animation must remain subtle. The selector should feel alive, not busy.
+Verified transfer metadata:
 
-Required first pass:
+- dimensions: **1672×941**;
+- MIME: **image/webp**;
+- bytes: **161,270**;
+- SHA-256: `488c8d75b8b8d2d7bf9ab37195d0467cee73391c987a26ae1a5320b4e7b63987`.
 
-1. **Back smoke layer**
-   - slow horizontal/diagonal drift;
-   - behind the cards;
-   - low contrast;
-   - long loop, approximately 24–36 seconds.
+Transfer bundle:
 
-2. **Front smoke layer**
-   - slow counter-drift;
-   - in front of the lower/outer card region but never covering the hero text/art heavily;
-   - long loop, approximately 18–30 seconds.
+- Dropbox: `/DNDNext-Transfer/dndnext-subclass-library-ruins-20260927.zip`;
+- bundle SHA-256: `a3e61d00d09a78f63bce4cd1c70bd3093621f7c97812fecef4eb2c876c8ba394`;
+- asset-only bot commit: `fe6f8a584035accf4ea9006dd626f70cf040771a`.
 
-3. **Candle-light flicker**
-   - restrained warm glow modulation over a few existing candle clusters;
-   - no strobe;
-   - asynchronous timing so both sides do not pulse together.
+The asset was installed through the standing guarded Dropbox → one-shot GitHub Actions materializer path with:
 
-Optional after browser review:
+- exact target-head guard;
+- ZIP SHA-256 verification;
+- per-file SHA-256 verification;
+- MIME verification;
+- 1672×941 dimension verification;
+- exact one-file diff guard;
+- focused selector validator before push.
 
-4. **Distant mouse**
-   - one tiny mouse crossing a distant lower shelf/walkway;
-   - rare loop (roughly every 18–30 seconds);
-   - must remain an easter-egg-scale ambient detail, never a focal element.
+## Ambient life implemented
 
-All ambient motion must disable under `prefers-reduced-motion: reduce`.
+The room should feel alive without becoming busy.
 
-## Asset authority
+### Back smoke
 
-Already approved / existing and should be reused:
+- uses existing `subclass-selector-smoke-back.png`;
+- renders behind cards;
+- slow 31-second drift loop;
+- low/moderate opacity;
+- no pointer interaction.
 
-- existing DNDNext Tarot fronts;
-- existing `subclass-selector-card-back-20260922.webp`;
-- existing repo smoke assets may be reused if they visually fit:
-  - `subclass-selector-smoke-back.png`;
-  - `subclass-selector-smoke-front.png`.
+### Front smoke
 
-New accepted base plate prepared from the approved concept work:
+- uses existing `subclass-selector-smoke-front.png`;
+- renders above the card field but below navigation;
+- masked away from the upper scene so the title stays readable;
+- slow 24-second counter-drift loop;
+- restrained opacity.
 
-- source: moonlit ruined gothic library rotunda, 1672×941;
-- production target path:
-  - `public/media/forge/subclass-carousel/subclass-selector-library-ruins-20260926.webp`;
-- prepared production file:
-  - 334,924 bytes;
-  - SHA-256 `dcf3fd8ccebb4efcbdc7b821dc232f7f41ee3701c101cc664eaa1c8a9f866741`.
+### Candle flicker
 
-Do **not** regenerate the title, navigation buttons, Tarot fronts, or card back merely because concept-art versions exist. The current runtime UI already owns those elements.
+- implemented as subtle warm radial glow modulation over existing left/right candle clusters;
+- left and right timings are asynchronous;
+- no strobe;
+- background plate itself never moves.
+
+### Reduced motion
+
+Under `prefers-reduced-motion: reduce`:
+
+- smoke animation stops;
+- candle flicker stops;
+- carousel transitions collapse to the existing near-zero reduced-motion duration.
+
+### Mouse
+
+A distant mouse remains **optional after browser review**. Do not add it until the current smoke/candle presentation is accepted; the scene should not accumulate ambient gimmicks.
 
 ## Protected boundaries
 
-This is presentation-only. Do not change:
+Presentation-only. Do not change:
 
 - canonical subclass catalogue/eligibility;
 - subclass persistence/progression;
@@ -108,124 +131,135 @@ This is presentation-only. Do not change:
 - town/city-map behavior;
 - tactical encounter authority;
 - crafting/inventory/merchant/economy systems;
-- existing approved subclass Tarot front artwork.
+- approved subclass Tarot front artwork.
 
-## Files intentionally in scope
+## Current implementation checklist
 
-Runtime:
+### Phase 1 — retire table-specific runtime
 
-- `components/ClassSubclassSection.js`
-- `styles/character-forge-subclass-tarot-layout.css`
+- [x] Remove `class-subclass-carousel-modal__rune-foreground`.
+- [x] Remove rune foreground mask from runtime requirements.
+- [x] Remove table-contact card shadow.
+- [x] Remove table/rune-specific runtime comments.
+- [x] Reject old table/rune presentation in the focused validator.
+- [x] Keep Tarot art intact.
 
-Validation:
+### Phase 2 — ruined-library stage
 
-- `scripts/validate_class_subclass_browser.mjs`
+- [x] Install approved ruined-library WebP.
+- [x] Use it as the sole static stage background.
+- [x] Preserve 16:9 desktop framing.
+- [x] Restore visible `Choose your Fate` heading as runtime text.
+- [x] Keep center airspace clear for the hero card.
+- [x] Add narrow-screen background cropping without changing selector authority.
 
-Presentation asset:
+### Phase 3 — floating carousel
 
-- `public/media/forge/subclass-carousel/subclass-selector-library-ruins-20260926.webp`
+- [x] Preserve one continuous path for all catalogue sizes.
+- [x] Preserve current hero width.
+- [x] Preserve multiple physical depth-size steps.
+- [x] Keep whole-card roll at 0.
+- [x] Keep yaw restrained at `0.24 × ring angle`, capped at ±34°.
+- [x] Preserve existing vertical travel as a free-floating depth path rather than surface contact.
+- [x] Preserve rear-card shared-back behavior.
+- [ ] Browser-review Wizard dense-catalogue composition.
+- [ ] Browser-review four-option/small catalogue composition.
 
-Documentation:
+### Phase 4 — ambient animation
 
-- this handoff;
-- parent Tarot rebuild checklist only after a validated browser checkpoint.
+- [x] Rear smoke layer.
+- [x] Foreground smoke layer.
+- [x] Independent long-loop keyframes.
+- [x] Restrained asynchronous candle flicker.
+- [x] `pointer-events: none` for ambient layers.
+- [x] Reduced-motion shutdown.
+- [x] Static background plate; no background animation.
+- [ ] Optional mouse only after current presentation is accepted.
 
-## Phase 1 — remove table-specific runtime
+### Phase 5 — interaction authority
 
-- [ ] Remove `class-subclass-carousel-modal__rune-foreground`.
-- [ ] Remove `subclass-rune-front-mask.svg` from runtime requirements.
-- [ ] Remove table-contact/rune-band comments and table-specific validator assertions.
-- [ ] Remove card-base contact shadow that implies a physical tabletop.
-- [ ] Keep Tarot art intact and untouched.
+The runtime logic was intentionally preserved. Exact browser interaction acceptance remains pending.
 
-## Phase 2 — install ruined-library stage
+- [x] Source still moves Left/Right exactly one card step.
+- [x] Keyboard Left/Right still calls the same rotation authority.
+- [x] Escape still closes modal.
+- [x] Drag/flick code remains unchanged.
+- [x] Click-vs-drag suppression remains unchanged.
+- [x] Side-card click still rotates exact option to hero.
+- [x] Exactly one `model.selectSubclass(option)` persistence path remains.
+- [x] Future-level eligibility guard remains unchanged.
+- [x] Selected subclass still re-centers on reopen.
+- [ ] Browser-test slow drag.
+- [ ] Browser-test fast flick/snap.
+- [ ] Browser-test side-card click → hero/select.
 
-- [ ] Install the approved ruined-library production background.
-- [ ] Make it the sole static stage background.
-- [ ] Preserve 16:9 desktop framing.
-- [ ] Keep the center airspace clear enough for hero readability.
-- [ ] Ensure narrow-screen background cropping remains intentional.
+### Phase 6 — validation
 
-## Phase 3 — convert ring geometry to free-floating carousel
+Exact runtime head: `e53706117ff70cc817063755e39c261bfb0accaf`
 
-Keep the current circular offset math and interaction authority, but remove the assumption that the path corresponds to a physical surface.
+GitHub `Validate Class browser polish`: **PASS**
 
-- [ ] Retain one continuous carousel path for all catalogue sizes.
-- [ ] Keep hero at the current large physical width.
-- [ ] Keep several intermediate physical card sizes.
-- [ ] Keep whole-card roll at 0.
-- [ ] Keep yaw restrained.
-- [ ] Tune vertical travel only for attractive free-floating depth, not surface contact.
-- [ ] Rear cards may rise/recede naturally because no table contact must be maintained.
-- [ ] Keep dense Wizard catalogues legible.
-- [ ] Keep four-option classes visually balanced.
+Included successful steps:
 
-## Phase 4 — ambient animation layers
+- Validate Class browser polish;
+- Validate Class hero framing;
+- Validate Class subclass browser;
+- Validate approved Artificer mockup lock;
+- Validate final Class browser correction;
+- Validate Species and Class browser review fix.
 
-- [ ] Re-enable/use a back smoke layer behind cards.
-- [ ] Re-enable/use a front smoke layer above lower/outer card areas.
-- [ ] Add independent slow keyframes so the two smoke layers do not move together.
-- [ ] Add restrained CSS candle-glow flicker at a few fixed scene positions.
-- [ ] Keep all ambient layers `pointer-events: none`.
-- [ ] Disable ambient keyframes under reduced motion.
-- [ ] Do not animate the background plate itself.
+Vercel exact-head deployment:
 
-## Phase 5 — preserve working carousel authority
+- deployment: `dpl_kUXpi2krxq3G8Egnt2mQjfssXLzu`;
+- state: **READY**;
+- Vercel status: **success**.
 
-- [ ] Left/right button moves exactly one card step.
-- [ ] Keyboard Left/Right mirrors buttons.
-- [ ] Escape closes modal.
-- [ ] Drag rotates continuously.
-- [ ] Flick snaps to a legal card position.
-- [ ] Click-vs-drag threshold prevents accidental selection.
-- [ ] Clicking a visible face-up card rotates that exact card to hero.
-- [ ] Only explicit eligible card click calls `model.selectSubclass(option)`.
-- [ ] Locked future-level cards can inspect without illegal persistence.
-- [ ] Reopening centers the selected subclass.
+Runtime diff from the pre-library handoff checkpoint is bounded to:
 
-## Phase 6 — visual acceptance
+- `components/ClassSubclassSection.js`;
+- `styles/character-forge-subclass-tarot-layout.css`;
+- `scripts/validate_class_subclass_browser.mjs`;
+- `public/media/forge/subclass-carousel/subclass-selector-library-ruins-20260926.webp`.
 
-Wizard / dense catalogue:
+No protected map/town/tactical/crafting/inventory/merchant/economy/Supabase runtime file changed.
 
-- [ ] hero remains crisp and dominant;
-- [ ] multiple side-card size steps are obvious;
-- [ ] rear backs read cleanly through the smoke;
-- [ ] smoke never obscures the hero enough to harm readability;
-- [ ] carousel feels suspended in the room rather than attached to a surface.
+## Browser acceptance still required
 
-Small catalogue:
+Review deliberately before merge:
 
-- [ ] four-option presentation does not feel empty;
-- [ ] side cards remain face-up where expected;
-- [ ] scene still feels composed with fewer cards.
+### Wizard / dense catalogue
 
-Ambient motion:
+- [ ] hero remains crisp/dominant;
+- [ ] several side-card size steps remain obvious;
+- [ ] rear backs read through the smoke;
+- [ ] smoke feels substantial but does not obscure the hero;
+- [ ] carousel reads as floating in the room.
 
-- [ ] back smoke loop is subtle and seamless enough for normal use;
-- [ ] front smoke loop adds depth without repeatedly crossing the hero title/art;
-- [ ] candle glow flicker is visible only when noticed, not distracting;
+### Small catalogue
+
+- [ ] four-option layout remains balanced;
+- [ ] side cards remain face-up as expected;
+- [ ] scene does not feel empty.
+
+### Motion / ambience
+
+- [ ] slow drag;
+- [ ] fast flick/snap;
+- [ ] arrows;
+- [ ] side-card click → hero;
+- [ ] rear front/back transition;
+- [ ] back/front smoke loops feel natural;
+- [ ] candle flicker is subtle;
 - [ ] reduced-motion mode is effectively static.
 
-Responsive:
+### Responsive
 
 - [ ] desktop 16:9;
 - [ ] medium viewport;
 - [ ] narrow/mobile fallback.
 
-## Phase 7 — validation / delivery
-
-- [ ] Rewrite the focused validator around the floating-library invariants.
-- [ ] Reject the old table/rune foreground from returning.
-- [ ] Preserve approved-Tarot coverage checks.
-- [ ] Preserve explicit-click subclass persistence guard.
-- [ ] Run focused Class/subclass validators.
-- [ ] Run relevant Forge regressions.
-- [ ] Verify exact changed-file scope.
-- [ ] Verify exact-head Vercel Preview.
-- [ ] Browser-review the preview against the approved ruined-library mockup.
-- [ ] Update parent checklist only after browser acceptance.
-- [ ] Keep PR #199 unmerged until Paul's explicit approval.
-
 ## Definition of done
 
-The selector reads as a **floating Tarot carousel suspended in a dark, smoke-filled ruined gothic library**, using the real DNDNext Tarot deck and the already-working carousel interactions. The presentation has no physical table/surface dependency. Slow independent smoke movement and restrained candle flicker make the room feel alive without distracting from subclass selection. No canonical Forge authority or protected system is changed.
+The selector is accepted when the live modal reads as a **floating Tarot carousel in a dark, smoke-filled ruined gothic library**, using the real DNDNext Tarot deck and existing carousel authority. The scene has no physical-surface dependency. Ambient smoke and candle flicker make the room feel alive without distracting from subclass selection. No canonical Forge authority or protected subsystem is changed.
+
+Do not merge PR #199 without Paul's explicit approval.
