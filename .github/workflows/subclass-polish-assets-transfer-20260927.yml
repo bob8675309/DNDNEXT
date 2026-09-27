@@ -29,7 +29,7 @@ jobs:
       - name: Download transfer bundle exactly once
         run: |
           set -euo pipefail
-          curl --fail --location --silent --show-error "https://ucb35a6392d8bba01cef961a19a7.dl.dropboxusercontent.com/cd/0/get/DI90iERzbNgB32BNtqlrOh3ff1SLv5u71nNL772UUwBnDHP_Ff0oufKtkrIAmDaO0usUYeB7Zjk6iKboNAfn_2uHjplQyWrals6I83Orpdli_b6RyAb7w8cRPHE1pBC3taNnHtke22UPuell2Q6PF8-jc5yszyC15O-k-RjqvQS1fA/file?c_luid=c335000c" -o /tmp/subclass-polish.zip
+          curl --fail --location --silent --show-error "https://uc0faa6e6e38df79e81114b54abd.dl.dropboxusercontent.com/cd/0/get/DI9w6V31wm0TfQ6OlNwAw_LO9pjsdCvl-i2Ubtz1Qz_X6m5UWa2-m4uKyb_WHh0j-A-gJZk7Bqcs6bAmgEBZ1qPuQ6iN_P7zRP_oyENCrCPwoZdEv90xohdZx1Fz1x0I3jN_y_xJBmmBAUMBjeIw1hN-DwcOvRzq2VmPD_tzeUciFw/file?c_luid=c335000c" -o /tmp/subclass-polish.zip
           echo "67965c87deedc8471fe18feb597e8c7b78d673266dac697d928d8c9410b08f9a  /tmp/subclass-polish.zip" | sha256sum -c -
 
       - name: Verify and install assets
@@ -75,7 +75,10 @@ jobs:
           public/media/forge/subclass-carousel/subclass-selector-smoke-gray-20260927.webp
           public/media/forge/subclass-carousel/subclass-selector-title-choose-fate-20260927.webp
           EOF
-          git diff --name-only | sort > /tmp/actual.txt
+          {
+            git diff --name-only
+            git ls-files --others --exclude-standard
+          } | sort -u > /tmp/actual.txt
           sort /tmp/expected.txt -o /tmp/expected.txt
           diff -u /tmp/expected.txt /tmp/actual.txt
 
