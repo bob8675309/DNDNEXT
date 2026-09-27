@@ -57,8 +57,8 @@ function orbitProfileFor(total) {
   const verticalRadius = 18.5;
   const verticalCenter = 55.8;
 
-  // Non-hero cards stay intentionally smaller so dense catalogues can bend
-  // around the table without rendering every 840x1440 Tarot front at hero size.
+  // Non-hero cards stay intentionally smaller so dense catalogues keep several
+  // readable depth steps without rendering every 840x1440 Tarot front at hero size.
   const maxWidth = count <= 4 ? 236
     : count <= 6 ? 228
       : count <= 8 ? 220

@@ -85,7 +85,7 @@ for (const token of [
 assert((selector.match(/model\.selectSubclass\(option\)/g) || []).length === 1, "Carousel motion must never create a second subclass persistence path.");
 assert(!selector.includes('model?.setPreviewKey?.(heroOption.key)'), "Hero position must not auto-preview or persist as player intent.");
 assert(!selector.includes('browsedOption'), "Obsolete automatic browsed-card dossier state must not return.");
-assert(!selector.includes('class-subclass-carousel-modal__details'), "The reference table scene must stay free of the old dossier panel.");
+assert(!selector.includes('class-subclass-carousel-modal__details'), "The floating Tarot scene must stay free of the old dossier panel.");
 assert(!selector.includes('class-subclass-carousel-modal__rune-foreground'), "Retired runic-table foreground must not return.");
 assert(!selector.includes('const roll = clamp('), "Whole-card tangent roll must remain removed; cards should stay upright.");
 assert(!tarotCss.includes('--orbit-roll'), "Whole-card orbit roll CSS must remain removed.");
@@ -262,4 +262,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSource.includes(token), `Class presentation patch crossed protected boundary: ${token}`);
 }
 
-console.log("Class subclass selector validation passed: canonical authority remains in the guide model, all subclass cards stay on one parametric table ring, rear cards use the shared card back, one exact hero position owns enlarged presentation, drag/arrow motion never persists a subclass, explicit card clicks remain the only selection path, all 152 approved normalized Tarot concepts remain installed/mapped, and future content retains safe fallback.");
+console.log("Class subclass selector validation passed: canonical authority remains in the guide model, all subclass cards stay on one free-floating parametric carousel, rear cards use the shared card back, one exact hero position owns enlarged presentation, ambient library motion is presentation-only, drag/arrow motion never persists a subclass, explicit card clicks remain the only selection path, all 152 approved normalized Tarot concepts remain installed/mapped, and future content retains safe fallback.");

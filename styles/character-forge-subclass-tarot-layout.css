@@ -1,6 +1,6 @@
 /* Character Forge subclass Tarot selector.
-   Reference-scene rebuild: one physical table ring, existing Tarot fronts only,
-   common rear card back, one exact hero position. Presentation only. */
+   Floating ruined-library presentation: existing Tarot fronts, shared rear card
+   back, one exact hero position, and presentation-only ambient motion. */
 
 .class-subclass-section.is-card-launcher {
   min-width: 0;
@@ -566,7 +566,7 @@
   position: absolute;
 }
 
-/* Medium screens retain the same physical ring and scene. */
+/* Medium screens retain the same floating carousel authority and scene. */
 @media (max-width: 1100px), (max-height: 720px) {
   .class-subclass-carousel-card {
     width: clamp(92px, 10.8vw, 172px);
