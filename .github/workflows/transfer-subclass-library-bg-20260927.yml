@@ -1,0 +1,79 @@
+name: One-shot subclass library background transfer 2026-09-27
+
+on:
+  push:
+    branches:
+      - agent/subclass-library-bg-transfer-20260927
+    paths:
+      - .github/workflows/transfer-subclass-library-bg-20260927.yml
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out intended PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/subclass-tarot-scene-rebuild-20260922
+          fetch-depth: 0
+
+      - name: Guard exact target head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "fd51ea952cbb3dd2e12e43490a7426b1d8db9add"
+
+      - name: Download and verify transfer bundle
+        shell: bash
+        env:
+          BUNDLE_URL: "https://uc8f6e4ad355c28f395c7acdbfc5.dl.dropboxusercontent.com/cd/0/get/DI5prFBGw1S6AHZICcosf5BybC7CvqBZTO2Z-LDebntc28OwlCn2vJzJj6XZBzsrUAyZCU9C66-v7ZXND9txIKy4OJGe-8GHmSmNx0rZJ8DQCRggx7-sP1--H8RTOmALY2sI_kED5g8UzqvF_d52UPaoPdwDCr37RjAP8dmFLKaEWg/file?c_luid=c335000c"
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error "$BUNDLE_URL" --output /tmp/subclass-library.zip
+          echo "a3e61d00d09a78f63bce4cd1c70bd3093621f7c97812fecef4eb2c876c8ba394  /tmp/subclass-library.zip" | sha256sum -c -
+          mkdir -p /tmp/subclass-library
+          unzip -q /tmp/subclass-library.zip -d /tmp/subclass-library
+          cd /tmp/subclass-library
+          echo "488c8d75b8b8d2d7bf9ab37195d0467cee73391c987a26ae1a5320b4e7b63987  subclass-selector-library-ruins-20260926.webp" | sha256sum -c -
+          test "$(file -b --mime-type subclass-selector-library-ruins-20260926.webp)" = "image/webp"
+
+      - name: Verify image dimensions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --quiet pillow==11.3.0
+          python - <<'PY'
+          from PIL import Image
+          p="/tmp/subclass-library/subclass-selector-library-ruins-20260926.webp"
+          with Image.open(p) as im:
+              assert im.format == "WEBP", im.format
+              assert im.size == (1672, 941), im.size
+          PY
+
+      - name: Install approved background and guard exact diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          install -D -m 0644 /tmp/subclass-library/subclass-selector-library-ruins-20260926.webp public/media/forge/subclass-carousel/subclass-selector-library-ruins-20260926.webp
+          git diff --name-only | sort > /tmp/actual.txt
+          printf '%s\n' 'public/media/forge/subclass-carousel/subclass-selector-library-ruins-20260926.webp' > /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+
+      - name: Run focused existing selector validator
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/validate_class_subclass_browser.mjs
+
+      - name: Commit and push approved asset
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/media/forge/subclass-carousel/subclass-selector-library-ruins-20260926.webp
+          git commit -m "art: add ruined library subclass selector background"
+          git push origin HEAD:agent/subclass-tarot-scene-rebuild-20260922
