@@ -29,7 +29,7 @@ jobs:
       - name: Download and verify transfer bundle
         shell: bash
         env:
-          BUNDLE_URL: "https://uc8f6e4ad355c28f395c7acdbfc5.dl.dropboxusercontent.com/cd/0/get/DI5prFBGw1S6AHZICcosf5BybC7CvqBZTO2Z-LDebntc28OwlCn2vJzJj6XZBzsrUAyZCU9C66-v7ZXND9txIKy4OJGe-8GHmSmNx0rZJ8DQCRggx7-sP1--H8RTOmALY2sI_kED5g8UzqvF_d52UPaoPdwDCr37RjAP8dmFLKaEWg/file?c_luid=c335000c"
+          BUNDLE_URL: "https://uc2ef9bbb1d6e0bb97e5f495d0c8.dl.dropboxusercontent.com/cd/0/get/DI5sXBbotco7zi8Fw7YWojuKvvd8t9FD2OXyieARsjnTokLf3TpYE044mudQ7KB1sQu3zusfMvibJ2gux290SYtWC9-bc8_EuKSz7CX5lnW-4XVBbkS9tmHy1DF-bRe2Ns0vmzxtColYVIESQBBzpd6BYmAsbhWx_jCBb18zA8ZGzg/file?c_luid=c335000c"
         run: |
           set -euo pipefail
           curl --fail --location --silent --show-error "$BUNDLE_URL" --output /tmp/subclass-library.zip
@@ -58,6 +58,7 @@ jobs:
         run: |
           set -euo pipefail
           install -D -m 0644 /tmp/subclass-library/subclass-selector-library-ruins-20260926.webp public/media/forge/subclass-carousel/subclass-selector-library-ruins-20260926.webp
+          git add -N public/media/forge/subclass-carousel/subclass-selector-library-ruins-20260926.webp
           git diff --name-only | sort > /tmp/actual.txt
           printf '%s\n' 'public/media/forge/subclass-carousel/subclass-selector-library-ruins-20260926.webp' > /tmp/expected.txt
           diff -u /tmp/expected.txt /tmp/actual.txt
