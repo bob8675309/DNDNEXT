@@ -8,7 +8,7 @@ Status: **implemented runtime checkpoint / browser acceptance pending**
 
 Branch: `agent/subclass-tarot-scene-rebuild-20260922`  
 Pull request: **#199 — Rebuild subclass Tarot selector**  
-Validated runtime head: `e53706117ff70cc817063755e39c261bfb0accaf`
+Validated runtime head before this documentation commit: `7ec85dd495674f77ec38946a921512cc9c0f70ae`
 
 ## Superseding decision
 
@@ -222,6 +222,69 @@ Runtime diff from the pre-library handoff checkpoint is bounded to:
 - `public/media/forge/subclass-carousel/subclass-selector-library-ruins-20260926.webp`.
 
 No protected map/town/tactical/crafting/inventory/merchant/economy/Supabase runtime file changed.
+
+## 2026-09-27 depth/smoke polish checkpoint
+
+Browser feedback on the first ruined-library preview was positive: the floating carousel and animated smoke direction are accepted as the basis for further polish.
+
+Implemented in this pass:
+
+- added the approved generated `Choose your Fate` title artwork;
+- added the approved generated left/right celestial navigation artwork;
+- retained the existing colored smoke family;
+- added the generated gray-blue smoke family as a separately animated layer;
+- moved both mid-scene smoke layers into the carousel stacking context so they render **in front of rear/back cards but behind front-facing cards**;
+- kept the original rear smoke behind the entire carousel;
+- introduced explicit front/rear card z-index bands so rear cards cannot slice across nearer face-up cards;
+- made outer cards atomic stacking layers while keeping the inner Tarot face flip context;
+- increased candle/torch glow modulation so the flicker is visible without becoming a strobe;
+- slightly lifted front-facing card brightness:
+  - near-front cards: `brightness(1.06)`;
+  - hero: `brightness(1.11)`;
+- preserved all existing carousel motion/selection authority and reduced-motion shutdown.
+
+Binary assets installed through the guarded Dropbox → one-shot GitHub Actions transfer route:
+
+- `subclass-selector-title-choose-fate-20260927.webp`
+  - 201,682 bytes
+  - SHA-256 `b7cc7a3fdd3839111a5f5435976d998bd4cc7b09075f1eaae030603aeb20ba41`
+- `subclass-selector-nav-prev-20260927.webp`
+  - 36,798 bytes
+  - SHA-256 `9c5242b72f5b61128c9491424e50d290d4f0e854eb84ce1782d2b960b564d21b`
+- `subclass-selector-nav-next-20260927.webp`
+  - 36,878 bytes
+  - SHA-256 `2a49de4212fb7dc1175209a1c019e1f3946f0366b1756095c6714b437ed7be6b`
+- `subclass-selector-smoke-gray-20260927.webp`
+  - 361,530 bytes
+  - SHA-256 `dbd1c25ebf2b15435ede4e41b90172d28c69f7ee8545c8b14310d81ca497c9ed`
+
+Transfer bundle:
+
+- Dropbox: `/DNDNext-Transfer/dndnext-subclass-polish-assets-20260927.zip`
+- ZIP SHA-256: `67965c87deedc8471fe18feb597e8c7b78d673266dac697d928d8c9410b08f9a`
+- asset commit: `f6c38d7e1a8e5a87f1b20d19d4daff2340c3c8c2`
+
+Runtime polish commit:
+
+- `7ec85dd495674f77ec38946a921512cc9c0f70ae`
+
+Validation at the runtime polish commit:
+
+- **Validate Class browser polish: PASS**
+- **Validate Class hero framing: PASS**
+- **Validate Class subclass browser: PASS**
+- **Validate approved Artificer mockup lock: PASS**
+- **Validate final Class browser correction: PASS**
+- **Validate Species and Class browser review fix: PASS**
+
+Browser acceptance still required:
+
+- [ ] confirm both colored and gray smoke read as separate depth layers;
+- [ ] confirm front-facing cards stay above rear cards through drag/flick;
+- [ ] confirm hero/near-front brightness lift is subtle enough;
+- [ ] confirm candle flicker is now noticeable but not distracting;
+- [ ] confirm approved title and navigation artwork scale well on desktop/medium/mobile;
+- [ ] confirm Wizard dense-catalogue and four-option classes remain balanced.
 
 ## Browser acceptance still required
 
