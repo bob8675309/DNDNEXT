@@ -113,8 +113,13 @@ for (const token of [
   'rotateY(var(--orbit-yaw))',
   'url("/media/forge/subclass-carousel/subclass-selector-smoke-back.png")',
   'url("/media/forge/subclass-carousel/subclass-selector-smoke-front.png")',
+  'url("/media/forge/subclass-carousel/subclass-selector-smoke-gray-20260927.webp")',
+  'url("/media/forge/subclass-carousel/subclass-selector-title-choose-fate-20260927.webp")',
+  'url("/media/forge/subclass-carousel/subclass-selector-nav-prev-20260927.webp")',
+  'url("/media/forge/subclass-carousel/subclass-selector-nav-next-20260927.webp")',
   '@keyframes subclass-smoke-back-drift',
   '@keyframes subclass-smoke-front-drift',
+  '@keyframes subclass-smoke-gray-drift',
   '@keyframes subclass-candle-flicker-left',
   '@keyframes subclass-candle-flicker-right',
   '.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__surface',
@@ -129,8 +134,13 @@ assert(!tarotCss.includes('subclass-selector-cathedral-20260922.webp'), "Retired
 assert(!tarotCss.includes('subclass-rune-front-mask.svg'), "Retired rune foreground mask must not return.");
 assert(!tarotCss.includes('.class-subclass-carousel-modal__rune-foreground'), "Retired table-owned rune foreground must not return.");
 assert(tarotCss.includes('subclass-selector-smoke-back.png'), "Floating library scene must include the rear smoke layer.");
-assert(tarotCss.includes('subclass-selector-smoke-front.png'), "Floating library scene must include the foreground smoke layer.");
-assert(tarotCss.includes('.class-subclass-carousel-modal__title {') && !tarotCss.includes('clip: rect(0, 0, 0, 0)'), "Choose your Fate title must remain visibly rendered in the new library scene.");
+assert(tarotCss.includes('subclass-selector-smoke-front.png'), "Floating library scene must include the colored depth-smoke layer.");
+assert(tarotCss.includes('subclass-selector-smoke-gray-20260927.webp'), "Floating library scene must include the gray depth-smoke layer.");
+assert(tarotCss.includes('subclass-selector-title-choose-fate-20260927.webp') && selector.includes('Choose your Fate'), "Choose your Fate must use the approved title artwork while retaining accessible runtime text.");
+assert(tarotCss.includes('subclass-selector-nav-prev-20260927.webp') && tarotCss.includes('subclass-selector-nav-next-20260927.webp'), "Subclass selector must use the approved left/right navigation artwork.");
+assert(selector.includes('? 820') && selector.includes('? 520 + Math.round(depth * 180)') && selector.includes(': 100 + Math.round(depth * 120)'), "Front/rear cards must use separate stacking bands so rear cards cannot clip across front cards.");
+assert(tarotCss.includes('transform-style: flat') && tarotCss.includes('isolation: isolate'), "Carousel cards must remain atomic stacking layers while inner Tarot faces retain their own flip context.");
+assert(tarotCss.includes('brightness(1.11)') && tarotCss.includes('brightness(1.06)'), "Front-facing Tarot cards must retain the subtle browser-approved brightness lift.");
 assert(tarotCss.includes('animation: none !important'), "Reduced-motion mode must disable ambient library animation.");
 
 for (const forbidden of [
@@ -163,16 +173,27 @@ for (const asset of [
   "public/media/forge/subclass-carousel/subclass-selector-card-back-20260922.webp",
   "public/media/forge/subclass-carousel/subclass-selector-smoke-back.png",
   "public/media/forge/subclass-carousel/subclass-selector-smoke-front.png",
+  "public/media/forge/subclass-carousel/subclass-selector-smoke-gray-20260927.webp",
+  "public/media/forge/subclass-carousel/subclass-selector-title-choose-fate-20260927.webp",
+  "public/media/forge/subclass-carousel/subclass-selector-nav-prev-20260927.webp",
+  "public/media/forge/subclass-carousel/subclass-selector-nav-next-20260927.webp",
 ]) assert(fs.existsSync(path.join(root, asset)), `Floating-library subclass selector asset missing ${asset}`);
 
 const libraryAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-library-ruins-20260926.webp")).size;
 const tarotBackAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-card-back-20260922.webp")).size;
 const smokeBackAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-smoke-back.png")).size;
 const smokeFrontAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-smoke-front.png")).size;
+const smokeGrayAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-smoke-gray-20260927.webp")).size;
+const titleAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-title-choose-fate-20260927.webp")).size;
+const navPrevAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-nav-prev-20260927.webp")).size;
+const navNextAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-nav-next-20260927.webp")).size;
 assert(libraryAssetSize > 150_000, `Ruined-library selector asset is unexpectedly small (${libraryAssetSize} bytes); reject placeholder/corrupt transfers.`);
 assert(tarotBackAssetSize > 300_000, `Tarot back asset is unexpectedly small (${tarotBackAssetSize} bytes); reject placeholder/corrupt transfers.`);
 assert(smokeBackAssetSize > 1_000_000, `Rear smoke asset is unexpectedly small (${smokeBackAssetSize} bytes); reject placeholder/corrupt transfers.`);
 assert(smokeFrontAssetSize > 1_000_000, `Foreground smoke asset is unexpectedly small (${smokeFrontAssetSize} bytes); reject placeholder/corrupt transfers.`);
+assert(smokeGrayAssetSize > 250_000, `Gray smoke asset is unexpectedly small (${smokeGrayAssetSize} bytes); reject placeholder/corrupt transfers.`);
+assert(titleAssetSize > 150_000, `Title artwork is unexpectedly small (${titleAssetSize} bytes); reject placeholder/corrupt transfers.`);
+assert(navPrevAssetSize > 25_000 && navNextAssetSize > 25_000, "Approved navigation assets are unexpectedly small; reject placeholder/corrupt transfers.");
 
 
 // 2026-09-17 completed normalized Tarot install: every current runtime-visible

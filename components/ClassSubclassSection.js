@@ -117,7 +117,14 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
     ? 1
     : 0.26 + (Math.pow(depth, 1.72) * 0.74);
   const opacity = isFaceUp ? 1 : 0.84 + (depth * 0.14);
-  const zIndex = 40 + Math.round(depth * 120) + (isCenter ? 32 : 0);
+  // Keep front-facing cards in a higher stacking band than rear/back cards.
+  // This makes each card an atomic depth layer and prevents a rear card from
+  // slicing across a nearer face-up card while the carousel is in motion.
+  const zIndex = isCenter
+    ? 820
+    : isFaceUp
+      ? 520 + Math.round(depth * 180)
+      : 100 + Math.round(depth * 120);
 
   const cardMin = isCenter
     ? profile.heroMinWidth
