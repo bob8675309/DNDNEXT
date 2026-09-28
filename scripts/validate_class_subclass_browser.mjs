@@ -204,7 +204,6 @@ const smokeGrayAssetSize = fs.statSync(path.join(root, "public/media/forge/subcl
 const titleAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-title-choose-fate-20260927.webp")).size;
 const navPrevAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-nav-prev-20260927.webp")).size;
 const navNextAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-nav-next-20260927.webp")).size;
-const mouseAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-mouse-20260927.webp")).size;
 assert(libraryAssetSize > 150_000, `Ruined-library selector asset is unexpectedly small (${libraryAssetSize} bytes); reject placeholder/corrupt transfers.`);
 assert(tarotBackAssetSize > 300_000, `Tarot back asset is unexpectedly small (${tarotBackAssetSize} bytes); reject placeholder/corrupt transfers.`);
 assert(smokeBackAssetSize > 1_000_000, `Rear smoke asset is unexpectedly small (${smokeBackAssetSize} bytes); reject placeholder/corrupt transfers.`);
