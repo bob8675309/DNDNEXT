@@ -251,8 +251,8 @@
   top: 1.7%;
   left: 50%;
   z-index: 760;
-  width: clamp(340px, 38vw, 640px);
-  height: clamp(108px, 12.5vw, 170px);
+  width: clamp(300px, 33vw, 560px);
+  height: clamp(92px, 10.8vw, 148px);
   margin: 0;
   overflow: hidden;
   transform: translateX(-50%);
@@ -303,19 +303,58 @@
 
 .class-subclass-carousel-modal__mouse {
   position: absolute;
-  left: 7.2%;
-  top: 76.5%;
+  left: 9.5%;
+  top: 72.5%;
   z-index: 8;
-  width: clamp(16px, 1.65vw, 27px);
+  width: clamp(27px, 2.25vw, 42px);
   aspect-ratio: 320 / 342;
   pointer-events: none;
   opacity: 0;
   background:
     url("/media/forge/subclass-carousel/subclass-selector-mouse-20260927.webp")
     center / contain no-repeat;
-  filter: brightness(.62) saturate(.52) drop-shadow(0 1px 1px rgba(0,0,0,.55));
+  filter: brightness(.78) saturate(.62) drop-shadow(0 1px 1px rgba(0,0,0,.58));
   transform: translate3d(0,0,0);
-  animation: subclass-library-mouse-scurry 29s linear -8s infinite;
+  animation: subclass-library-mouse-scurry 26s linear -5s infinite;
+}
+
+.class-subclass-carousel-modal__flame {
+  position: absolute;
+  z-index: 6;
+  width: clamp(11px, .82vw, 17px);
+  aspect-ratio: 96 / 139;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    url("/media/forge/subclass-carousel/subclass-selector-flame-20260928.webp")
+    center / contain no-repeat;
+  mix-blend-mode: screen;
+  transform-origin: 50% 82%;
+  animation: subclass-library-flame-waver 7.8s ease-in-out infinite;
+}
+
+.class-subclass-carousel-modal__flame.is-flame-left-upper {
+  left: 12.3%;
+  top: 24.8%;
+  animation-delay: -1.2s;
+}
+
+.class-subclass-carousel-modal__flame.is-flame-left-mid {
+  left: 4.3%;
+  top: 51.8%;
+  animation-delay: -4.6s;
+}
+
+.class-subclass-carousel-modal__flame.is-flame-right-upper {
+  right: 12.2%;
+  top: 24.8%;
+  animation-delay: -2.9s;
+}
+
+.class-subclass-carousel-modal__flame.is-flame-right-mid {
+  right: 4.1%;
+  top: 51.5%;
+  animation-delay: -6.1s;
 }
 
 .class-subclass-carousel-modal__stage::before {
@@ -373,6 +412,25 @@
   animation: subclass-smoke-gray-drift 37s ease-in-out -13s infinite;
 }
 
+.class-subclass-carousel-modal__smoke-near {
+  position: absolute;
+  inset: -4%;
+  z-index: 760;
+  pointer-events: none;
+  background:
+    url("/media/forge/subclass-carousel/subclass-selector-smoke-gray-20260927.webp")
+    center / cover no-repeat;
+  opacity: .13;
+  filter: brightness(.48) saturate(.26) contrast(1.10);
+  -webkit-mask-image:
+    radial-gradient(ellipse at center 54%, transparent 0 18%, rgba(0,0,0,.18) 31%, #000 58%),
+    linear-gradient(to bottom, transparent 0 30%, rgba(0,0,0,.20) 44%, #000 72%);
+  mask-image:
+    radial-gradient(ellipse at center 54%, transparent 0 18%, rgba(0,0,0,.18) 31%, #000 58%),
+    linear-gradient(to bottom, transparent 0 30%, rgba(0,0,0,.20) 44%, #000 72%);
+  animation: subclass-smoke-near-drift 28s ease-in-out -9s infinite;
+}
+
 .class-subclass-carousel-modal__orbit.is-dragging {
   cursor: grabbing;
 }
@@ -397,12 +455,11 @@
   transform-style: flat;
   isolation: isolate;
   transition:
-    left .52s cubic-bezier(.22,.8,.22,1),
-    top .52s cubic-bezier(.22,.8,.22,1),
-    width .52s cubic-bezier(.22,.8,.22,1),
-    opacity .4s ease,
-    transform .52s cubic-bezier(.22,.8,.22,1),
-    filter .3s ease;
+    left .88s cubic-bezier(.2,.72,.22,1),
+    top .88s cubic-bezier(.2,.72,.22,1),
+    width .88s cubic-bezier(.2,.72,.22,1),
+    opacity .62s ease,
+    transform .88s cubic-bezier(.2,.72,.22,1);
   will-change: auto;
   outline: none;
 }
@@ -418,13 +475,31 @@
   filter: none !important;
 }
 
+.class-subclass-carousel-card__float {
+  position: absolute;
+  inset: 0;
+  display: block;
+  transform: translate3d(0,0,0);
+  animation: subclass-card-idle-float 5.8s ease-in-out var(--orbit-float-delay, 0s) infinite;
+}
+
+.class-subclass-carousel-card.is-orbit-center .class-subclass-carousel-card__float {
+  animation: none;
+  transform: none;
+}
+
+.class-subclass-carousel-modal__orbit.is-dragging .class-subclass-carousel-card__float {
+  animation: none !important;
+  transform: none !important;
+}
+
 .class-subclass-carousel-card__surface {
   position: absolute;
   inset: 0;
   display: block;
   border-radius: inherit;
   transform-style: preserve-3d;
-  transition: transform .36s cubic-bezier(.22,.8,.22,1), filter .28s ease, box-shadow .28s ease;
+  transition: transform .68s cubic-bezier(.2,.72,.22,1), box-shadow .28s ease;
 }
 
 .class-subclass-carousel-card.is-orbit-front .class-subclass-carousel-card__surface {
@@ -515,10 +590,13 @@
   filter: brightness(1.11) saturate(1.035) contrast(1.02) !important;
 }
 
-.class-subclass-carousel-card.is-orbit-front:not(.is-orbit-center):hover .class-subclass-carousel-card__surface,
-.class-subclass-carousel-card.is-orbit-front:not(.is-orbit-center):focus-visible .class-subclass-carousel-card__surface {
-  filter: brightness(1.08) saturate(1.08);
-  box-shadow: 0 0 24px rgba(226, 174, 76, .24);
+.class-subclass-carousel-card.is-orbit-front:not(.is-orbit-center):hover .class-subclass-carousel-card__face.is-front,
+.class-subclass-carousel-card.is-orbit-front:not(.is-orbit-center):focus-visible .class-subclass-carousel-card__face.is-front {
+  border-color: rgba(255, 228, 158, .90);
+  box-shadow:
+    0 0 0 1px rgba(255, 225, 153, .72),
+    0 0 18px rgba(255, 195, 86, .38),
+    0 12px 24px rgba(0,0,0,.42);
 }
 
 .class-subclass-carousel-card.is-orbit-center .class-subclass-carousel-card__surface {
@@ -601,6 +679,45 @@
   68% { transform: translate3d(1.5%, .15%, 0) scale(1.07); opacity: .35; }
 }
 
+@keyframes subclass-smoke-near-drift {
+  0%, 100% { transform: translate3d(.8%, .7%, 0) scale(1.06); opacity: .09; }
+  48% { transform: translate3d(-1.4%, -.35%, 0) scale(1.09); opacity: .15; }
+}
+
+@keyframes subclass-card-idle-float {
+  0%, 100% { transform: translate3d(0, 0, 0) rotateZ(0deg); }
+  28% { transform: translate3d(-1.5px, -4px, 0) rotateZ(-.34deg); }
+  58% { transform: translate3d(1.8px, -1px, 0) rotateZ(.28deg); }
+  82% { transform: translate3d(.5px, 3px, 0) rotateZ(-.12deg); }
+}
+
+@keyframes subclass-library-flame-waver {
+  0%, 12%, 46%, 100% {
+    opacity: 0;
+    transform: translate3d(0,0,0) scale(.94, .96) rotateZ(0deg);
+  }
+  16% {
+    opacity: .34;
+    transform: translate3d(-.5px, -1px, 0) scale(.98, 1.04) rotateZ(-2deg);
+  }
+  22% {
+    opacity: .62;
+    transform: translate3d(.7px, -2px, 0) scale(1.03, 1.10) rotateZ(2.3deg);
+  }
+  29% {
+    opacity: .46;
+    transform: translate3d(-.8px, -1px, 0) scale(.96, 1.05) rotateZ(-2.8deg);
+  }
+  36% {
+    opacity: .58;
+    transform: translate3d(.4px, -2.5px, 0) scale(1.01, 1.12) rotateZ(1.8deg);
+  }
+  42% {
+    opacity: .18;
+    transform: translate3d(0, -.5px, 0) scale(.96, 1.01) rotateZ(0deg);
+  }
+}
+
 @keyframes subclass-candle-flicker-left {
   0%, 100% { opacity: .54; }
   10% { opacity: .92; }
@@ -623,29 +740,33 @@
 }
 
 @keyframes subclass-library-mouse-scurry {
-  0%, 56% {
+  0%, 46% {
     opacity: 0;
     transform: translate3d(0, 0, 0);
   }
-  58% {
-    opacity: .34;
+  49% {
+    opacity: .52;
     transform: translate3d(0, 0, 0);
   }
-  63% {
-    opacity: .46;
-    transform: translate3d(4.8vw, -.08vh, 0);
+  57% {
+    opacity: .68;
+    transform: translate3d(4.2vw, -.10vh, 0);
   }
-  69% {
-    opacity: .48;
-    transform: translate3d(10.8vw, -.16vh, 0);
+  66% {
+    opacity: .72;
+    transform: translate3d(9.2vw, -.18vh, 0);
   }
   75% {
-    opacity: .42;
-    transform: translate3d(16.2vw, -.08vh, 0);
+    opacity: .66;
+    transform: translate3d(13.5vw, -.08vh, 0);
   }
-  78%, 100% {
+  80% {
+    opacity: .30;
+    transform: translate3d(15.6vw, 0, 0);
+  }
+  83%, 100% {
     opacity: 0;
-    transform: translate3d(18.4vw, 0, 0);
+    transform: translate3d(16.2vw, 0, 0);
   }
 }
 
@@ -703,9 +824,9 @@
   }
 
   .class-subclass-carousel-modal__title {
-    top: 2.2%;
-    width: min(78vw, 520px);
-    height: clamp(104px, 26vw, 164px);
+    top: 2.0%;
+    width: min(68vw, 450px);
+    height: clamp(92px, 22vw, 148px);
   }
 
   .class-subclass-carousel-card {
@@ -750,6 +871,9 @@
   .class-subclass-carousel-modal__stage::before,
   .class-subclass-carousel-modal__orbit::before,
   .class-subclass-carousel-modal__orbit::after,
+  .class-subclass-carousel-modal__smoke-near,
+  .class-subclass-carousel-card__float,
+  .class-subclass-carousel-modal__flame,
   .class-subclass-carousel-modal__mouse {
     animation: none !important;
     transform: none !important;

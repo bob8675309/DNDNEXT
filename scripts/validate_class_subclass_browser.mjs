@@ -51,7 +51,7 @@ for (const token of [
   'const yaw = clamp(angleDegrees * 0.24, -34, 34)',
   'const horizontalRadius = 39.1',
   'const verticalRadius = 18.5',
-  'const verticalCenter = 55.8',
+  'const verticalCenter = 59.2',
   'const opacity = isFaceUp ? 1 : 0.84 + (depth * 0.14)',
   'const [orbitOffset, setOrbitOffset] = useState(0)',
   'const orbitOptions = useMemo',
@@ -66,6 +66,9 @@ for (const token of [
   'class-subclass-carousel-modal__orbit',
   'class-subclass-carousel-modal__title',
   'class-subclass-carousel-modal__mouse',
+  'class-subclass-carousel-modal__flame is-flame-left-upper',
+  'class-subclass-carousel-modal__smoke-near',
+  'class-subclass-carousel-card__float',
   'class-subclass-carousel-card__surface',
   'class-subclass-carousel-card__face is-front',
   'class-subclass-carousel-card__face is-back',
@@ -99,7 +102,7 @@ assert(!tarotCss.includes('subclass-card-base-contact-mask.svg'), "Rejected shad
 assert(!tarotCss.includes('subclass-card-table-seat-mask.svg'), "Rejected per-card table-seat mask must not drive the live selector.");
 assert(selector.includes('const faceUpArcDegrees = faceUpArcDegreesFor(count)') && selector.includes('const isFaceUp = count === 1 || absoluteAngle <= faceUpArcDegrees + 0.01'), "Front/back card presentation must derive from ring angle and catalogue density.");
 assert(selector.includes('Math.pow(depth, 1.72) * 0.74'), "Non-hero physical card size must use non-linear continuous depth falloff.");
-assert(selector.includes('const horizontalRadius = 39.1') && selector.includes('const verticalRadius = 18.5') && selector.includes('const verticalCenter = 55.8'), "Floating carousel path must remain stable across catalogue sizes.");
+assert(selector.includes('const horizontalRadius = 39.1') && selector.includes('const verticalRadius = 18.5') && selector.includes('const verticalCenter = 59.2'), "Floating carousel path must remain stable across catalogue sizes and retain the browser-approved lower placement.");
 assert(selector.includes('setOrbitOffset(normalizeOrbitOffset(optionIndex - FRONT_CENTER_SLOT, options.length))'), "Clicking a face-up card must rotate that exact card to hero.");
 
 for (const token of [
@@ -119,7 +122,11 @@ for (const token of [
   'url("/media/forge/subclass-carousel/subclass-selector-nav-prev-20260927.webp")',
   'url("/media/forge/subclass-carousel/subclass-selector-nav-next-20260927.webp")',
   'url("/media/forge/subclass-carousel/subclass-selector-mouse-20260927.webp")',
+  'url("/media/forge/subclass-carousel/subclass-selector-flame-20260928.webp")',
   '@keyframes subclass-library-mouse-scurry',
+  '@keyframes subclass-library-flame-waver',
+  '@keyframes subclass-card-idle-float',
+  '@keyframes subclass-smoke-near-drift',
   '@keyframes subclass-smoke-back-drift',
   '@keyframes subclass-smoke-front-drift',
   '@keyframes subclass-smoke-gray-drift',
@@ -146,7 +153,11 @@ assert(tarotCss.includes('transform-style: flat') && tarotCss.includes('isolatio
 assert(tarotCss.includes('brightness(1.11)') && tarotCss.includes('brightness(1.06)'), "Front-facing Tarot cards must retain the subtle browser-approved brightness lift.");
 assert(tarotCss.includes('animation: none !important'), "Reduced-motion mode must disable ambient library animation.");
 assert(selector.includes('className="class-subclass-carousel-modal__mouse" aria-hidden="true"'), "Ambient mouse must remain a non-interactive scene layer.");
-assert(tarotCss.includes('z-index: 8') && tarotCss.includes('subclass-library-mouse-scurry 29s'), "Mouse animation must remain behind Tarot interaction layers and use a rare long loop.");
+assert(tarotCss.includes('z-index: 8') && tarotCss.includes('subclass-library-mouse-scurry 26s'), "Mouse animation must remain behind Tarot interaction layers and use a rare long loop.");
+assert(tarotCss.includes('left .88s cubic-bezier') && tarotCss.includes('transform .88s cubic-bezier'), "Button/keyboard carousel movement must remain deliberately slower than the original quick snap.");
+assert(tarotCss.includes('.class-subclass-carousel-card.is-orbit-center .class-subclass-carousel-card__float') && tarotCss.includes('animation: none;'), "Hero card must stay still while non-hero cards idle-float.");
+assert(tarotCss.includes('z-index: 760') && tarotCss.includes('class-subclass-carousel-modal__smoke-near'), "Near smoke must cross side/front cards while remaining below the hero z-band.");
+assert(!tarotCss.includes(':hover .class-subclass-carousel-card__surface {\n  filter:'), "Hover must not filter the 3D card surface; that compositor path caused cards to disappear.");
 assert(tarotCss.includes('.class-subclass-carousel-modal__mouse {\n    opacity: 0 !important;'), "Reduced-motion mode must hide the ambient mouse.");
 assert(!tarotCss.includes('subclass-selector-bat'), "Do not introduce bats before the mouse-only browser review.");
 
@@ -185,12 +196,14 @@ for (const asset of [
   "public/media/forge/subclass-carousel/subclass-selector-nav-prev-20260927.webp",
   "public/media/forge/subclass-carousel/subclass-selector-nav-next-20260927.webp",
   "public/media/forge/subclass-carousel/subclass-selector-mouse-20260927.webp",
+  "public/media/forge/subclass-carousel/subclass-selector-flame-20260928.webp",
 ]) assert(fs.existsSync(path.join(root, asset)), `Floating-library subclass selector asset missing ${asset}`);
 
 const libraryAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-library-ruins-20260926.webp")).size;
 const tarotBackAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-card-back-20260922.webp")).size;
 const smokeBackAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-smoke-back.png")).size;
 const smokeFrontAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-smoke-front.png")).size;
+const flameAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-flame-20260928.webp")).size;
 const smokeGrayAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-smoke-gray-20260927.webp")).size;
 const titleAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-title-choose-fate-20260927.webp")).size;
 const navPrevAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-nav-prev-20260927.webp")).size;
@@ -200,6 +213,7 @@ assert(libraryAssetSize > 150_000, `Ruined-library selector asset is unexpectedl
 assert(tarotBackAssetSize > 300_000, `Tarot back asset is unexpectedly small (${tarotBackAssetSize} bytes); reject placeholder/corrupt transfers.`);
 assert(smokeBackAssetSize > 1_000_000, `Rear smoke asset is unexpectedly small (${smokeBackAssetSize} bytes); reject placeholder/corrupt transfers.`);
 assert(smokeFrontAssetSize > 1_000_000, `Foreground smoke asset is unexpectedly small (${smokeFrontAssetSize} bytes); reject placeholder/corrupt transfers.`);
+assert(flameAssetSize > 5_000, `Flame overlay asset is unexpectedly small (${flameAssetSize} bytes); reject placeholder/corrupt transfers.`);
 assert(smokeGrayAssetSize > 250_000, `Gray smoke asset is unexpectedly small (${smokeGrayAssetSize} bytes); reject placeholder/corrupt transfers.`);
 assert(titleAssetSize > 150_000, `Title artwork is unexpectedly small (${titleAssetSize} bytes); reject placeholder/corrupt transfers.`);
 assert(navPrevAssetSize > 25_000 && navNextAssetSize > 25_000, "Approved navigation assets are unexpectedly small; reject placeholder/corrupt transfers.");

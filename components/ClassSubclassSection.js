@@ -55,7 +55,7 @@ function orbitProfileFor(total) {
   // Catalogue density changes card sizing only, never the carousel path itself.
   const horizontalRadius = 39.1;
   const verticalRadius = 18.5;
-  const verticalCenter = 55.8;
+  const verticalCenter = 59.2;
 
   // Non-hero cards stay intentionally smaller so dense catalogues keep several
   // readable depth steps without rendering every 840x1440 Tarot front at hero size.
@@ -125,6 +125,7 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
     : isFaceUp
       ? 520 + Math.round(depth * 180)
       : 100 + Math.round(depth * 120);
+  const floatDelay = -((optionIndex % 7) * 0.73);
 
   const cardMin = isCenter
     ? profile.heroMinWidth
@@ -149,6 +150,7 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
       "--orbit-yaw": `${yaw.toFixed(2)}deg`,
       "--orbit-opacity": opacity.toFixed(3),
       "--orbit-z": String(zIndex),
+      "--orbit-float-delay": `${floatDelay.toFixed(2)}s`,
       "--orbit-card-min": `${cardMin}px`,
       "--orbit-card-vw": `${cardViewport.toFixed(2)}vw`,
       "--orbit-card-max": `${cardMax}px`,
@@ -376,6 +378,10 @@ export default function ClassSubclassSection({
 
           <div className="class-subclass-carousel-modal__stage">
             <div className="class-subclass-carousel-modal__mouse" aria-hidden="true" />
+            <span className="class-subclass-carousel-modal__flame is-flame-left-upper" aria-hidden="true" />
+            <span className="class-subclass-carousel-modal__flame is-flame-left-mid" aria-hidden="true" />
+            <span className="class-subclass-carousel-modal__flame is-flame-right-upper" aria-hidden="true" />
+            <span className="class-subclass-carousel-modal__flame is-flame-right-mid" aria-hidden="true" />
 
             <button
               type="button"
@@ -419,7 +425,8 @@ export default function ClassSubclassSection({
                     data-orbit-depth={depth.toFixed(3)}
                     onClick={(event) => handleCardClick(event, option, optionIndex, isInteractive)}
                   >
-                    <span className="class-subclass-carousel-card__surface">
+                    <span className="class-subclass-carousel-card__float">
+                      <span className="class-subclass-carousel-card__surface">
                       <span className="class-subclass-carousel-card__face is-front">
                         <span className="class-subclass-carousel-card__art" aria-hidden="true">
                           <img
@@ -433,12 +440,14 @@ export default function ClassSubclassSection({
                           />
                         </span>
                       </span>
-                      <span className="class-subclass-carousel-card__face is-back" aria-hidden="true" />
+                        <span className="class-subclass-carousel-card__face is-back" aria-hidden="true" />
+                      </span>
                     </span>
 
                   </button>
                 );
               })}
+              <div className="class-subclass-carousel-modal__smoke-near" aria-hidden="true" />
             </div>
 
             <button
