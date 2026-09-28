@@ -94,6 +94,8 @@ for (const token of [
   "class-subclass-carousel-card__face is-front",
   "class-subclass-carousel-card__face is-back",
   "class-subclass-carousel-modal__title",
+  "class-subclass-carousel-modal__smoke-near",
+  "class-subclass-carousel-card__float",
   "model.selectSubclass(option)",
   "model?.setPreviewKey?.(option.key)",
   "class-subclass-selected-card",
@@ -105,7 +107,8 @@ assert((selector.match(/model\.selectSubclass\(option\)/g) || []).length === 1, 
 assert(!selector.includes('model?.setPreviewKey?.(heroOption.key)'), "Front-most carousel position must not auto-select or auto-preview as player intent.");
 assert(!selector.includes("browsedOption"), "Stale browsed-card auto-follow state must remain removed.");
 assert(!selector.includes("class-subclass-carousel-modal__details"), "Old dossier panel must not cover the recreated reference scene.");
-assert(!selector.includes("class-subclass-carousel-modal__smoke"), "Clean cathedral target must not render old smoke layers.");
+assert(selector.includes("class-subclass-carousel-modal__smoke-near"), "Floating ruined-library target must retain the near smoke depth layer.");
+assert(!selector.includes("class-subclass-carousel-modal__rune-foreground"), "Retired runic-table foreground must not return.");
 
 for (const forbidden of [
   "class-subclass-two-column__grid",
@@ -179,4 +182,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSources.includes(token), `Class browser patch unexpectedly references protected behavior: ${token}`);
 }
 
-console.log("Class browser polish validation passed: the recreated cathedral Tarot ring keeps explicit click-owned subclass selection, selected-subclass progression bubbles and spell slots remain intact, Class authority stays preserved, and protected boundaries are unchanged.");
+console.log("Class browser polish validation passed: the floating ruined-library Tarot carousel keeps explicit click-owned subclass selection, selected-subclass progression bubbles and spell slots remain intact, Class authority stays preserved, and protected boundaries are unchanged.");
