@@ -367,6 +367,72 @@ Target behavior:
 - [ ] Verify exact-head Vercel Preview.
 - [ ] Keep PR #199 unmerged until Paul's explicit approval.
 
+## 2026-09-28 motion / flame / float polish checkpoint
+
+Browser feedback after the prior smoke-and-mouse pass:
+
+- ignore the recorded GPU/PC load for selector tuning; the recording machine was intentionally running games in the background;
+- candle glow flicker is accepted, but a few actual flames should move intermittently;
+- the previous mouse was too subtle to notice;
+- title should be smaller;
+- the carousel should sit lower;
+- click/arrow rotation should be slow enough to visibly watch cards travel and turn;
+- non-hero cards should have a subtle idle float around their assigned carousel point;
+- the hero must stay completely still;
+- some smoke may cross in front of face-up side cards, but never the hero;
+- some cards disappeared on hover and that compositor regression must be removed.
+
+Implemented at runtime:
+
+- carousel vertical center moved from `55.8` to `59.2`;
+- approved title artwork reduced to `clamp(300px, 33vw, 560px)` on desktop, with a smaller mobile treatment;
+- button/keyboard card travel slowed from ~0.52s to **0.88s**;
+- Tarot face flip transition slowed to **0.68s**;
+- added a nested `class-subclass-carousel-card__float` wrapper:
+  - non-hero cards idle-float by only a few pixels with tiny sub-degree roll;
+  - per-card phase offsets prevent synchronized bobbing;
+  - hero float is disabled;
+  - dragging disables float and snaps the card back to its authoritative carousel point;
+- added a low-opacity `smoke-near` depth layer at z-index 760:
+  - crosses face-up side cards;
+  - remains below hero z-index 820;
+  - preserves hero clarity;
+- removed the hover-time `filter` from the 3D Tarot surface, which was the likely browser compositor trigger for cards disappearing on hover;
+- hover emphasis now changes only the visible front-face border/glow;
+- mouse presentation strengthened:
+  - larger displayed size;
+  - brighter/less desaturated;
+  - longer visible scurry window;
+  - 26-second rare loop;
+  - still behind Tarot and interaction layers;
+- added one optimized **96×139 / 7,204-byte** flame overlay:
+  - `public/media/forge/subclass-carousel/subclass-selector-flame-20260928.webp`;
+  - four small placements over existing background candle zones;
+  - intermittent opacity/sway/stretch rather than continuous motion;
+  - asynchronous phase offsets;
+- reduced-motion disables card float, smoke-near motion, flame motion, and mouse motion.
+
+Validation:
+
+- first runtime commit: `48a8c8f33ccbc91aeea364002fc4ba87acc07631`;
+- stale `validate_class_browser_polish.mjs` still described the retired clean-cathedral/no-smoke target and failed correctly;
+- validator contract was updated to the accepted floating ruined-library direction at `1f0c928632440f33c44b59fb1a95efd160b887f9`;
+- all six Class/Forge CI steps then passed;
+- browser acceptance remains pending.
+
+Review next:
+
+- [ ] title scale;
+- [ ] lower carousel placement;
+- [ ] visible card travel/flip timing;
+- [ ] non-hero float subtlety;
+- [ ] hero remains completely still;
+- [ ] side-card near-smoke depth;
+- [ ] no card disappearance on hover;
+- [ ] mouse now noticeable without becoming distracting;
+- [ ] intermittent flame motion aligns with real candle clusters;
+- [ ] reduced-motion static behavior.
+
 ## Browser acceptance still required
 
 Review deliberately before merge:
