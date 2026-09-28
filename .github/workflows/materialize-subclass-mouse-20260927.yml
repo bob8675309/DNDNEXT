@@ -1,0 +1,82 @@
+name: Materialize subclass mouse asset 20260927
+
+on:
+  push:
+    branches:
+      - agent/subclass-mouse-transfer-20260927
+    paths:
+      - .github/workflows/materialize-subclass-mouse-20260927.yml
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout intended PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/subclass-tarot-scene-rebuild-20260922
+          fetch-depth: 0
+
+      - name: Guard exact target head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "34c2c3d34bf1ba9876cf516bfb42bd606fc1275b"
+
+      - name: Download and verify transfer bundle
+        shell: bash
+        env:
+          ASSET_URL: "https://uc8c4473c440acc3680fd9b7ba97.dl.dropboxusercontent.com/cd/0/get/DI8PspXHmgkneh6atYK-jS2S030ILWuIMTcSTwBlXQ2Qklj_fEmMcrdtRj-3dQYGUmKX0jl1Vi-QZuzfqVaKWdPIIg7VEJ_C0Y9eYqRzcFxSfs1fHO2xcUnphWyKk7DriOyM6ZP4yT8Eg3iza1l9Ou7Ufaab_JqEjoAn8lLatN8jqA/file?c_luid=c335000c"
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error "$ASSET_URL" -o /tmp/subclass-mouse.zip
+          echo "548cc86a5990068e89672d8bf70cc6963b40d785bca2c47d3420a46d3803eb57  /tmp/subclass-mouse.zip" | sha256sum -c -
+          mkdir -p /tmp/subclass-mouse
+          unzip -q /tmp/subclass-mouse.zip -d /tmp/subclass-mouse
+          cd /tmp/subclass-mouse
+          echo "bf3db1b5f587f60396e91da0ca8127b7428c344a00c71a80ca347016539510d8  subclass-selector-mouse-20260927.webp" | sha256sum -c -
+          test "$(file -b --mime-type subclass-selector-mouse-20260927.webp)" = "image/webp"
+
+      - name: Verify dimensions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --quiet pillow==11.3.0
+          python - <<'PY'
+          from PIL import Image
+          p="/tmp/subclass-mouse/subclass-selector-mouse-20260927.webp"
+          with Image.open(p) as im:
+              assert im.format == "WEBP", im.format
+              assert im.size == (320, 342), im.size
+          PY
+
+      - name: Install exact asset
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/media/forge/subclass-carousel
+          cp /tmp/subclass-mouse/subclass-selector-mouse-20260927.webp \
+            public/media/forge/subclass-carousel/subclass-selector-mouse-20260927.webp
+          printf '%s\n' "public/media/forge/subclass-carousel/subclass-selector-mouse-20260927.webp" > /tmp/expected.txt
+          git diff --name-only | sort > /tmp/actual.txt
+          sort /tmp/expected.txt -o /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+
+      - name: Run focused subclass selector validator
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/validate_class_subclass_browser.mjs
+
+      - name: Commit and push intended branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/media/forge/subclass-carousel/subclass-selector-mouse-20260927.webp
+          git commit -m "asset: add ambient subclass selector mouse"
+          git push origin HEAD:agent/subclass-tarot-scene-rebuild-20260922
