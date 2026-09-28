@@ -29,7 +29,7 @@ jobs:
       - name: Download and verify transfer bundle
         shell: bash
         env:
-          ASSET_URL: "https://uc8c4473c440acc3680fd9b7ba97.dl.dropboxusercontent.com/cd/0/get/DI8PspXHmgkneh6atYK-jS2S030ILWuIMTcSTwBlXQ2Qklj_fEmMcrdtRj-3dQYGUmKX0jl1Vi-QZuzfqVaKWdPIIg7VEJ_C0Y9eYqRzcFxSfs1fHO2xcUnphWyKk7DriOyM6ZP4yT8Eg3iza1l9Ou7Ufaab_JqEjoAn8lLatN8jqA/file?c_luid=c335000c"
+          ASSET_URL: "https://ucbf9e08ace72612ee3eefd9cd07.dl.dropboxusercontent.com/cd/0/get/DI_O7E2ulUZgrw-OIvhC5d7yDiCPVOsP2q9UR1s7-5DHpQ-zHiiA7RRl7KWy4rn71dROBJcsGVUwY-Bi5QJndbNqQf6mWrjkK4UNJMRaGsi6V7tmkC94LgtTjpwcUbGCatPHi2Gj_r2ULIGGkmsuvkZDbdzoC7wVK3GTe_G6p91xkA/file?c_luid=c335000c"
         run: |
           set -euo pipefail
           curl --fail --location --silent --show-error "$ASSET_URL" -o /tmp/subclass-mouse.zip
