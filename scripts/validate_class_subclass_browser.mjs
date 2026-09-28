@@ -65,6 +65,7 @@ for (const token of [
   'Math.round(drag.currentOffset + projectedCards)',
   'class-subclass-carousel-modal__orbit',
   'class-subclass-carousel-modal__title',
+  'class-subclass-carousel-modal__mouse',
   'class-subclass-carousel-card__surface',
   'class-subclass-carousel-card__face is-front',
   'class-subclass-carousel-card__face is-back',
@@ -117,6 +118,8 @@ for (const token of [
   'url("/media/forge/subclass-carousel/subclass-selector-title-choose-fate-20260927.webp")',
   'url("/media/forge/subclass-carousel/subclass-selector-nav-prev-20260927.webp")',
   'url("/media/forge/subclass-carousel/subclass-selector-nav-next-20260927.webp")',
+  'url("/media/forge/subclass-carousel/subclass-selector-mouse-20260927.webp")',
+  '@keyframes subclass-library-mouse-scurry',
   '@keyframes subclass-smoke-back-drift',
   '@keyframes subclass-smoke-front-drift',
   '@keyframes subclass-smoke-gray-drift',
@@ -142,6 +145,10 @@ assert(selector.includes('? 820') && selector.includes('? 520 + Math.round(depth
 assert(tarotCss.includes('transform-style: flat') && tarotCss.includes('isolation: isolate'), "Carousel cards must remain atomic stacking layers while inner Tarot faces retain their own flip context.");
 assert(tarotCss.includes('brightness(1.11)') && tarotCss.includes('brightness(1.06)'), "Front-facing Tarot cards must retain the subtle browser-approved brightness lift.");
 assert(tarotCss.includes('animation: none !important'), "Reduced-motion mode must disable ambient library animation.");
+assert(selector.includes('className="class-subclass-carousel-modal__mouse" aria-hidden="true"'), "Ambient mouse must remain a non-interactive scene layer.");
+assert(tarotCss.includes('z-index: 8') && tarotCss.includes('subclass-library-mouse-scurry 29s'), "Mouse animation must remain behind Tarot interaction layers and use a rare long loop.");
+assert(tarotCss.includes('.class-subclass-carousel-modal__mouse {\n    opacity: 0 !important;'), "Reduced-motion mode must hide the ambient mouse.");
+assert(!tarotCss.includes('subclass-selector-bat'), "Do not introduce bats before the mouse-only browser review.");
 
 for (const forbidden of [
   'class-subclass-two-column__grid',
@@ -177,6 +184,7 @@ for (const asset of [
   "public/media/forge/subclass-carousel/subclass-selector-title-choose-fate-20260927.webp",
   "public/media/forge/subclass-carousel/subclass-selector-nav-prev-20260927.webp",
   "public/media/forge/subclass-carousel/subclass-selector-nav-next-20260927.webp",
+  "public/media/forge/subclass-carousel/subclass-selector-mouse-20260927.webp",
 ]) assert(fs.existsSync(path.join(root, asset)), `Floating-library subclass selector asset missing ${asset}`);
 
 const libraryAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-library-ruins-20260926.webp")).size;
@@ -187,6 +195,7 @@ const smokeGrayAssetSize = fs.statSync(path.join(root, "public/media/forge/subcl
 const titleAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-title-choose-fate-20260927.webp")).size;
 const navPrevAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-nav-prev-20260927.webp")).size;
 const navNextAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-nav-next-20260927.webp")).size;
+const mouseAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-mouse-20260927.webp")).size;
 assert(libraryAssetSize > 150_000, `Ruined-library selector asset is unexpectedly small (${libraryAssetSize} bytes); reject placeholder/corrupt transfers.`);
 assert(tarotBackAssetSize > 300_000, `Tarot back asset is unexpectedly small (${tarotBackAssetSize} bytes); reject placeholder/corrupt transfers.`);
 assert(smokeBackAssetSize > 1_000_000, `Rear smoke asset is unexpectedly small (${smokeBackAssetSize} bytes); reject placeholder/corrupt transfers.`);

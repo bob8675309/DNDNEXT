@@ -235,7 +235,7 @@
     radial-gradient(circle at 4.5% 55%, rgba(255,185,92,.34), rgba(255,155,58,.12) 2.5%, transparent 6.2%),
     radial-gradient(circle at 13% 28%, rgba(255,194,104,.26), rgba(255,153,61,.09) 2%, transparent 5.4%),
     radial-gradient(circle at 23% 79%, rgba(255,181,82,.22), rgba(255,144,49,.07) 1.9%, transparent 5.2%);
-  animation: subclass-candle-flicker-left 4.35s ease-in-out infinite;
+  animation: subclass-candle-flicker-left 3.45s ease-in-out infinite;
 }
 
 .class-subclass-carousel-modal__scene::after {
@@ -243,16 +243,16 @@
     radial-gradient(circle at 95.2% 54%, rgba(255,188,96,.32), rgba(255,150,54,.115) 2.5%, transparent 6.1%),
     radial-gradient(circle at 87% 28%, rgba(255,195,106,.25), rgba(255,153,61,.085) 2%, transparent 5.4%),
     radial-gradient(circle at 77.5% 78%, rgba(255,178,80,.21), rgba(255,142,47,.07) 1.9%, transparent 5.1%);
-  animation: subclass-candle-flicker-right 5.05s ease-in-out -1.15s infinite;
+  animation: subclass-candle-flicker-right 4.15s ease-in-out -1.05s infinite;
 }
 
 .class-subclass-carousel-modal__title {
   position: absolute;
-  top: 1.4%;
+  top: 1.7%;
   left: 50%;
   z-index: 760;
-  width: clamp(360px, 42vw, 700px);
-  height: clamp(118px, 14vw, 188px);
+  width: clamp(340px, 38vw, 640px);
+  height: clamp(108px, 12.5vw, 170px);
   margin: 0;
   overflow: hidden;
   transform: translateX(-50%);
@@ -301,6 +301,23 @@
   z-index: 10;
 }
 
+.class-subclass-carousel-modal__mouse {
+  position: absolute;
+  left: 7.2%;
+  top: 76.5%;
+  z-index: 8;
+  width: clamp(16px, 1.65vw, 27px);
+  aspect-ratio: 320 / 342;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    url("/media/forge/subclass-carousel/subclass-selector-mouse-20260927.webp")
+    center / contain no-repeat;
+  filter: brightness(.62) saturate(.52) drop-shadow(0 1px 1px rgba(0,0,0,.55));
+  transform: translate3d(0,0,0);
+  animation: subclass-library-mouse-scurry 29s linear -8s infinite;
+}
+
 .class-subclass-carousel-modal__stage::before {
   content: "";
   position: absolute;
@@ -310,7 +327,7 @@
   background:
     url("/media/forge/subclass-carousel/subclass-selector-smoke-back.png")
     center / cover no-repeat;
-  opacity: .52;
+  opacity: .44;
   animation: subclass-smoke-back-drift 31s ease-in-out infinite;
 }
 
@@ -340,17 +357,17 @@
 .class-subclass-carousel-modal__orbit::before {
   z-index: 340;
   background-image: url("/media/forge/subclass-carousel/subclass-selector-smoke-front.png");
-  opacity: .36;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0 28%, rgba(0,0,0,.2) 41%, #000 66%, #000 100%);
-  mask-image: linear-gradient(to bottom, transparent 0 28%, rgba(0,0,0,.2) 41%, #000 66%, #000 100%);
+  opacity: .29;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0 28%, rgba(0,0,0,.18) 41%, #000 68%, #000 100%);
+  mask-image: linear-gradient(to bottom, transparent 0 28%, rgba(0,0,0,.18) 41%, #000 68%, #000 100%);
   animation: subclass-smoke-front-drift 24s ease-in-out -7s infinite;
 }
 
 .class-subclass-carousel-modal__orbit::after {
   z-index: 370;
   background-image: url("/media/forge/subclass-carousel/subclass-selector-smoke-gray-20260927.webp");
-  opacity: .30;
-  filter: brightness(.58) saturate(.48) contrast(1.08);
+  opacity: .37;
+  filter: brightness(.50) saturate(.30) contrast(1.12);
   -webkit-mask-image: linear-gradient(to bottom, transparent 0 24%, rgba(0,0,0,.18) 38%, #000 61%, #000 100%);
   mask-image: linear-gradient(to bottom, transparent 0 24%, rgba(0,0,0,.18) 38%, #000 61%, #000 100%);
   animation: subclass-smoke-gray-drift 37s ease-in-out -13s infinite;
@@ -470,8 +487,8 @@
 
 .class-subclass-carousel-card.is-orbit-front .class-subclass-carousel-card__face.is-front {
   box-shadow:
-    0 0 0 1px rgba(255, 211, 121, .66),
-    0 0 13px rgba(255, 195, 86, .30),
+    0 0 0 1px rgba(255, 222, 145, .76),
+    0 0 14px rgba(255, 195, 86, .34),
     0 0 26px rgba(115, 83, 225, .16),
     0 12px 24px rgba(0,0,0,.42);
 }
@@ -569,35 +586,67 @@
 }
 
 @keyframes subclass-smoke-back-drift {
-  0%, 100% { transform: translate3d(-1.6%, .7%, 0) scale(1.055); opacity: .46; }
-  50% { transform: translate3d(1.6%, -.8%, 0) scale(1.085); opacity: .57; }
+  0%, 100% { transform: translate3d(-1.6%, .7%, 0) scale(1.055); opacity: .38; }
+  50% { transform: translate3d(1.6%, -.8%, 0) scale(1.085); opacity: .48; }
 }
 
 @keyframes subclass-smoke-front-drift {
-  0%, 100% { transform: translate3d(1.4%, .8%, 0) scale(1.075); opacity: .30; }
-  50% { transform: translate3d(-1.5%, -.5%, 0) scale(1.105); opacity: .40; }
+  0%, 100% { transform: translate3d(1.4%, .8%, 0) scale(1.075); opacity: .23; }
+  50% { transform: translate3d(-1.5%, -.5%, 0) scale(1.105); opacity: .32; }
 }
 
 @keyframes subclass-smoke-gray-drift {
-  0%, 100% { transform: translate3d(-1.2%, 1.0%, 0) scale(1.055); opacity: .24; }
-  36% { transform: translate3d(.9%, -.5%, 0) scale(1.085); opacity: .32; }
-  68% { transform: translate3d(1.5%, .15%, 0) scale(1.07); opacity: .28; }
+  0%, 100% { transform: translate3d(-1.2%, 1.0%, 0) scale(1.055); opacity: .31; }
+  36% { transform: translate3d(.9%, -.5%, 0) scale(1.085); opacity: .40; }
+  68% { transform: translate3d(1.5%, .15%, 0) scale(1.07); opacity: .35; }
 }
 
 @keyframes subclass-candle-flicker-left {
-  0%, 100% { opacity: .70; filter: brightness(.92); }
-  14% { opacity: .94; filter: brightness(1.17); }
-  35% { opacity: .68; filter: brightness(.95); }
-  57% { opacity: 1; filter: brightness(1.22); }
-  79% { opacity: .76; filter: brightness(1.02); }
+  0%, 100% { opacity: .54; }
+  10% { opacity: .92; }
+  21% { opacity: .66; }
+  36% { opacity: 1; }
+  48% { opacity: .62; }
+  64% { opacity: .88; }
+  78% { opacity: .58; }
+  91% { opacity: .96; }
 }
 
 @keyframes subclass-candle-flicker-right {
-  0%, 100% { opacity: .68; filter: brightness(.91); }
-  19% { opacity: .91; filter: brightness(1.14); }
-  43% { opacity: .66; filter: brightness(.94); }
-  71% { opacity: .98; filter: brightness(1.19); }
-  88% { opacity: .74; filter: brightness(1.01); }
+  0%, 100% { opacity: .52; }
+  13% { opacity: .89; }
+  29% { opacity: .61; }
+  44% { opacity: .98; }
+  59% { opacity: .57; }
+  73% { opacity: .86; }
+  87% { opacity: .63; }
+}
+
+@keyframes subclass-library-mouse-scurry {
+  0%, 56% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0);
+  }
+  58% {
+    opacity: .34;
+    transform: translate3d(0, 0, 0);
+  }
+  63% {
+    opacity: .46;
+    transform: translate3d(4.8vw, -.08vh, 0);
+  }
+  69% {
+    opacity: .48;
+    transform: translate3d(10.8vw, -.16vh, 0);
+  }
+  75% {
+    opacity: .42;
+    transform: translate3d(16.2vw, -.08vh, 0);
+  }
+  78%, 100% {
+    opacity: 0;
+    transform: translate3d(18.4vw, 0, 0);
+  }
 }
 
 .class-subclass-carousel-modal__sr-status {
@@ -700,9 +749,14 @@
   .class-subclass-carousel-modal__scene::after,
   .class-subclass-carousel-modal__stage::before,
   .class-subclass-carousel-modal__orbit::before,
-  .class-subclass-carousel-modal__orbit::after {
+  .class-subclass-carousel-modal__orbit::after,
+  .class-subclass-carousel-modal__mouse {
     animation: none !important;
     transform: none !important;
+  }
+
+  .class-subclass-carousel-modal__mouse {
+    opacity: 0 !important;
   }
 }
 

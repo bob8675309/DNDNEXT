@@ -375,6 +375,8 @@ export default function ClassSubclassSection({
           </button>
 
           <div className="class-subclass-carousel-modal__stage">
+            <div className="class-subclass-carousel-modal__mouse" aria-hidden="true" />
+
             <button
               type="button"
               className="class-subclass-carousel-modal__nav is-prev"
