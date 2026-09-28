@@ -286,6 +286,87 @@ Browser acceptance still required:
 - [ ] confirm approved title and navigation artwork scale well on desktop/medium/mobile;
 - [ ] confirm Wizard dense-catalogue and four-option classes remain balanced.
 
+## 2026-09-27 next polish checklist — ambience / readability / creature life
+
+This checklist is the next bounded browser-polish pass after review of build `c2471e72acf137e471d7ece852212a80c57f855e`.
+
+### A. Smoke balance
+
+- [ ] Keep all three existing smoke depths: rear smoke, colored mid smoke, and gray-blue mid smoke.
+- [ ] Reduce the overall purple wash slightly so the ruined-library architecture and Tarot faces retain neutral contrast.
+- [ ] Let gray smoke carry more of the atmospheric volume; darken/desaturate it further only if browser review shows it washing out cards.
+- [ ] Keep smoke in front of rear/back-facing cards and behind face-up/front cards.
+- [ ] Verify the hero remains readable through an entire smoke loop.
+- [ ] Keep each smoke family on different duration/direction/easing so the layers never move as one sheet.
+- [ ] Preserve `prefers-reduced-motion` shutdown.
+
+### B. Candle / torch life
+
+- [ ] Strengthen candle flicker one more restrained step; current browser review still reads it as too subtle.
+- [ ] Tighten glow hotspots around actual visible candle clusters instead of broadly lighting wall regions.
+- [ ] Keep left/right timings asynchronous.
+- [ ] Avoid fast brightness changes, strobing, or full-scene exposure shifts.
+
+### C. Card readability / layering
+
+- [ ] Preserve hero as the brightest card, but review whether `brightness(1.11)` needs a small reduction after smoke retuning.
+- [ ] Preserve a smaller brightness lift for near-front side cards.
+- [ ] Add a restrained edge/rim contrast lift to face-up side cards only if smoke still swallows their borders.
+- [ ] Re-test explicit front/rear z-index bands through slow drag and fast flick.
+- [ ] Confirm no rear card, rear card back, or smoke layer slices across a nearer face-up card.
+- [ ] Check Wizard dense catalogue plus one four-option class.
+
+### D. Title / navigation polish
+
+- [ ] Keep the approved generated title and arrow assets already installed.
+- [ ] Browser-review title dominance; if it competes with hero, reduce displayed size or glow slightly rather than replacing the asset.
+- [ ] Keep navigation controls separated from card hit areas and visually subordinate to the hero.
+- [ ] Verify desktop, medium, and narrow sizing.
+
+### E. Feature-panel integration
+
+- [ ] Review the right-side feature/details panel against the cinematic modal.
+- [ ] If it still reads as a detached application panel, tune only presentation: shadow, border, transparency, ambient tint, and breathing room.
+- [ ] Do not change inspection authority, feature data, or persistence behavior.
+
+### F. Ambient creature pass — existing mouse art
+
+Do **not** generate replacement mice before checking the existing generated assets from this work session.
+
+Existing created assets available for reuse:
+
+- `moonlit_gothic_mice_asset_trio.png`
+- `crawling_moonlit_fantasy_mouse.png`
+
+Target behavior:
+
+- [ ] Pick the cleaner existing mouse asset after visual inspection; do not add both unless there is a concrete reason.
+- [ ] Install the chosen mouse as a small optimized transparent runtime asset through the guarded binary-transfer path.
+- [ ] Place it on a distant lower wall / shelf / balcony route, outside the main card and title silhouette.
+- [ ] Use one short scurry path with long idle delay, approximately one appearance every 20–35 seconds.
+- [ ] Keep scale tiny enough that the mouse reads as an easter-egg ambient detail, not a UI element.
+- [ ] Keep the mouse behind the Tarot cards and all interaction layers.
+- [ ] Disable mouse motion under `prefers-reduced-motion: reduce`.
+- [ ] Browser-review the mouse before considering bats.
+
+### G. Optional bats — only after mouse review
+
+- [ ] Do not add bats in the same first creature pass.
+- [ ] If the room still feels too static after the mouse/flicker/smoke pass, test one very distant bat silhouette route near the broken upper roof.
+- [ ] Keep bat frequency rarer than the mouse and avoid crossing the title, hero card, or moon focal point.
+- [ ] Remove the bat idea entirely if it reads as haunted-house decoration rather than subtle environmental life.
+
+### H. Performance / regression guard
+
+- [ ] Keep ambient layers transform/opacity based; avoid expensive animated blur/filter changes on full-screen elements.
+- [ ] Check recording/runtime FPS after adding the mouse.
+- [ ] Preserve carousel drag/flick responsiveness.
+- [ ] Preserve reduced-motion behavior.
+- [ ] Run the focused Class/subclass validator suite.
+- [ ] Verify exact changed-file scope.
+- [ ] Verify exact-head Vercel Preview.
+- [ ] Keep PR #199 unmerged until Paul's explicit approval.
+
 ## Browser acceptance still required
 
 Review deliberately before merge:
