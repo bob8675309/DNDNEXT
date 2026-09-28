@@ -377,7 +377,6 @@ export default function ClassSubclassSection({
           </button>
 
           <div className="class-subclass-carousel-modal__stage">
-            <div className="class-subclass-carousel-modal__mouse" aria-hidden="true" />
             <span className="class-subclass-carousel-modal__flame is-flame-left-upper" aria-hidden="true" />
             <span className="class-subclass-carousel-modal__flame is-flame-left-mid" aria-hidden="true" />
             <span className="class-subclass-carousel-modal__flame is-flame-right-upper" aria-hidden="true" />

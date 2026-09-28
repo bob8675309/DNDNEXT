@@ -96,6 +96,7 @@ for (const token of [
   "class-subclass-carousel-modal__title",
   "class-subclass-carousel-modal__smoke-near",
   "class-subclass-carousel-card__float",
+  "class-subclass-carousel-modal__flame is-flame-left-upper",
   "model.selectSubclass(option)",
   "model?.setPreviewKey?.(option.key)",
   "class-subclass-selected-card",
@@ -109,6 +110,7 @@ assert(!selector.includes("browsedOption"), "Stale browsed-card auto-follow stat
 assert(!selector.includes("class-subclass-carousel-modal__details"), "Old dossier panel must not cover the recreated reference scene.");
 assert(selector.includes("class-subclass-carousel-modal__smoke-near"), "Floating ruined-library target must retain the near smoke depth layer.");
 assert(!selector.includes("class-subclass-carousel-modal__rune-foreground"), "Retired runic-table foreground must not return.");
+assert(!selector.includes("class-subclass-carousel-modal__mouse"), "Terrain-independent ambient mouse must stay removed.");
 
 for (const forbidden of [
   "class-subclass-two-column__grid",

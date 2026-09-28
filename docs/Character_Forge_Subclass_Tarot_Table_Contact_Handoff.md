@@ -433,6 +433,43 @@ Review next:
 - [ ] intermittent flame motion aligns with real candle clusters;
 - [ ] reduced-motion static behavior.
 
+## 2026-09-28 terrain-clean motion polish checkpoint
+
+Browser review of the prior motion pass found three remaining presentation issues:
+
+- the mouse animation physically moved, but because it traveled on a straight screen-space path independent of ruined-library geometry it did not look grounded;
+- the flame overlays moved, but several were not registered to real candle clusters in the static background;
+- non-hero card idle motion was still too quick/jerky, and the title remained taller than desired.
+
+This pass therefore:
+
+- removes the mouse runtime layer completely rather than spending complexity on terrain-aware pathing;
+- removes the mouse asset from the live selector asset contract;
+- keeps the accepted glow flicker;
+- repositions four intermittent flame overlays onto actual candle clusters in the 16:9 background plate:
+  - upper-left approximately 13.7% / 12.4%;
+  - mid-left approximately 21.9% / 29.9%;
+  - upper-right approximately 16.4% from the right / 12.4%;
+  - mid-right approximately 19.8% from the right / 29.9%;
+- reduces flame overlay scale and motion amplitude so the overlay augments the painted flame rather than appearing as a new floating fire;
+- slows carousel travel to 1.18s with a stronger ease-out/inertial feel;
+- slows Tarot face turning to 1.02s;
+- replaces the multi-keyframe idle wobble with a 9.6s two-endpoint smooth float of only a few pixels;
+- hero remains completely still;
+- keeps near-smoke below the hero and above front side cards;
+- reduces the existing approved title artwork again rather than introducing another unreviewed title asset.
+
+Review next:
+
+- [ ] no mice visible anywhere in the scene;
+- [ ] intermittent flame movement sits on painted candle clusters instead of empty wall space;
+- [ ] card idle movement feels slow/fluid, not twitchy;
+- [ ] carousel rotation has visible inertia and remains readable in motion;
+- [ ] hero remains completely still;
+- [ ] title scale is now appropriately subordinate to the hero;
+- [ ] hover disappearance remains fixed;
+- [ ] reduced-motion remains static.
+
 ## Browser acceptance still required
 
 Review deliberately before merge:

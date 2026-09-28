@@ -65,7 +65,6 @@ for (const token of [
   'Math.round(drag.currentOffset + projectedCards)',
   'class-subclass-carousel-modal__orbit',
   'class-subclass-carousel-modal__title',
-  'class-subclass-carousel-modal__mouse',
   'class-subclass-carousel-modal__flame is-flame-left-upper',
   'class-subclass-carousel-modal__smoke-near',
   'class-subclass-carousel-card__float',
@@ -121,9 +120,7 @@ for (const token of [
   'url("/media/forge/subclass-carousel/subclass-selector-title-choose-fate-20260927.webp")',
   'url("/media/forge/subclass-carousel/subclass-selector-nav-prev-20260927.webp")',
   'url("/media/forge/subclass-carousel/subclass-selector-nav-next-20260927.webp")',
-  'url("/media/forge/subclass-carousel/subclass-selector-mouse-20260927.webp")',
   'url("/media/forge/subclass-carousel/subclass-selector-flame-20260928.webp")',
-  '@keyframes subclass-library-mouse-scurry',
   '@keyframes subclass-library-flame-waver',
   '@keyframes subclass-card-idle-float',
   '@keyframes subclass-smoke-near-drift',
@@ -152,14 +149,14 @@ assert(selector.includes('? 820') && selector.includes('? 520 + Math.round(depth
 assert(tarotCss.includes('transform-style: flat') && tarotCss.includes('isolation: isolate'), "Carousel cards must remain atomic stacking layers while inner Tarot faces retain their own flip context.");
 assert(tarotCss.includes('brightness(1.11)') && tarotCss.includes('brightness(1.06)'), "Front-facing Tarot cards must retain the subtle browser-approved brightness lift.");
 assert(tarotCss.includes('animation: none !important'), "Reduced-motion mode must disable ambient library animation.");
-assert(selector.includes('className="class-subclass-carousel-modal__mouse" aria-hidden="true"'), "Ambient mouse must remain a non-interactive scene layer.");
-assert(tarotCss.includes('z-index: 8') && tarotCss.includes('subclass-library-mouse-scurry 26s'), "Mouse animation must remain behind Tarot interaction layers and use a rare long loop.");
-assert(tarotCss.includes('left .88s cubic-bezier') && tarotCss.includes('transform .88s cubic-bezier'), "Button/keyboard carousel movement must remain deliberately slower than the original quick snap.");
+assert(tarotCss.includes('left 1.18s cubic-bezier') && tarotCss.includes('transform 1.18s cubic-bezier'), "Button/keyboard carousel movement must retain the slower inertial travel timing.");
 assert(tarotCss.includes('.class-subclass-carousel-card.is-orbit-center .class-subclass-carousel-card__float') && tarotCss.includes('animation: none;'), "Hero card must stay still while non-hero cards idle-float.");
 assert(tarotCss.includes('z-index: 760') && tarotCss.includes('class-subclass-carousel-modal__smoke-near'), "Near smoke must cross side/front cards while remaining below the hero z-band.");
+assert(tarotCss.includes('left: 13.7%') && tarotCss.includes('right: 16.4%') && tarotCss.includes('top: 12.4%'), "Animated flames must stay registered to real upper candle clusters in the ruined-library background.");
+assert(tarotCss.includes('9.6s cubic-bezier(.37,0,.63,1)') && tarotCss.includes('translate3d(1px, -3px, 0)'), "Non-hero idle float must remain slow and smooth rather than jittery.");
 assert(!tarotCss.includes(':hover .class-subclass-carousel-card__surface {\n  filter:'), "Hover must not filter the 3D card surface; that compositor path caused cards to disappear.");
-assert(tarotCss.includes('.class-subclass-carousel-modal__mouse {\n    opacity: 0 !important;'), "Reduced-motion mode must hide the ambient mouse.");
-assert(!tarotCss.includes('subclass-selector-bat'), "Do not introduce bats before the mouse-only browser review.");
+assert(!tarotCss.includes('subclass-library-mouse-scurry') && !selector.includes('class-subclass-carousel-modal__mouse'), "Terrain-independent mouse animation must stay removed.");
+assert(!tarotCss.includes('subclass-selector-bat'), "Do not replace the removed mouse with bats without a separate browser-reviewed plan.");
 
 for (const forbidden of [
   'class-subclass-two-column__grid',
@@ -195,7 +192,6 @@ for (const asset of [
   "public/media/forge/subclass-carousel/subclass-selector-title-choose-fate-20260927.webp",
   "public/media/forge/subclass-carousel/subclass-selector-nav-prev-20260927.webp",
   "public/media/forge/subclass-carousel/subclass-selector-nav-next-20260927.webp",
-  "public/media/forge/subclass-carousel/subclass-selector-mouse-20260927.webp",
   "public/media/forge/subclass-carousel/subclass-selector-flame-20260928.webp",
 ]) assert(fs.existsSync(path.join(root, asset)), `Floating-library subclass selector asset missing ${asset}`);
 
