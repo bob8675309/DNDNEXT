@@ -668,21 +668,9 @@
 }
 
 @keyframes subclass-card-idle-float {
-  0%, 100% {
-    transform:
-      translate3d(calc(var(--orbit-float-x, 1px) * -0.55), calc(var(--orbit-float-y, 3px) * .30), 0)
-      rotateZ(calc(var(--orbit-float-tilt, .12deg) * -0.45));
-  }
-  31% {
-    transform:
-      translate3d(calc(var(--orbit-float-x, 1px) * .72), calc(var(--orbit-float-y, 3px) * -0.62), 0)
-      rotateZ(var(--orbit-float-tilt, .12deg));
-  }
-  67% {
-    transform:
-      translate3d(var(--orbit-float-x, 1px), calc(var(--orbit-float-y, 3px) * .18), 0)
-      rotateZ(calc(var(--orbit-float-tilt, .12deg) * -0.70));
-  }
+  0%, 100% { transform: translate3d(0, 0, 0) rotateZ(0deg); }
+  31% { transform: translate3d(var(--orbit-float-x, 1px), var(--orbit-float-y-up, -3px), 0) rotateZ(var(--orbit-float-tilt, .12deg)); }
+  67% { transform: translate3d(var(--orbit-float-x, -1px), var(--orbit-float-y-down, 1px), 0) rotateZ(var(--orbit-float-tilt-alt, -.08deg)); }
 }
 
 @keyframes subclass-library-flame-waver {
