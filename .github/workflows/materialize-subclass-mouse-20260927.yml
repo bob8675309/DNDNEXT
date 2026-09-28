@@ -29,7 +29,7 @@ jobs:
       - name: Download and verify transfer bundle
         shell: bash
         env:
-          ASSET_URL: "https://ucbf9e08ace72612ee3eefd9cd07.dl.dropboxusercontent.com/cd/0/get/DI_O7E2ulUZgrw-OIvhC5d7yDiCPVOsP2q9UR1s7-5DHpQ-zHiiA7RRl7KWy4rn71dROBJcsGVUwY-Bi5QJndbNqQf6mWrjkK4UNJMRaGsi6V7tmkC94LgtTjpwcUbGCatPHi2Gj_r2ULIGGkmsuvkZDbdzoC7wVK3GTe_G6p91xkA/file?c_luid=c335000c"
+          ASSET_URL: "https://uc1e651a4636a48afcc2c763623c.dl.dropboxusercontent.com/cd/0/get/DI-nObqfcTL2EOWJRamGLGo1aBaLKQ26kX3NwoVADYuSqNy4EPs54EkAcc63bNIvrJxO18rS3Qwx53xqU9AWP1q2lcohqyq1GTe_G4GKVy4mDDe3O2OEbe7CUFoz6jnOQkI1hZQBo5sdXbWohLokGk5sVZTjgW8IF-skWz7RK3Snaw/file?c_luid=c335000c"
         run: |
           set -euo pipefail
           curl --fail --location --silent --show-error "$ASSET_URL" -o /tmp/subclass-mouse.zip
@@ -58,10 +58,9 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p public/media/forge/subclass-carousel
-          cp /tmp/subclass-mouse/subclass-selector-mouse-20260927.webp \
-            public/media/forge/subclass-carousel/subclass-selector-mouse-20260927.webp
+          cp /tmp/subclass-mouse/subclass-selector-mouse-20260927.webp             public/media/forge/subclass-carousel/subclass-selector-mouse-20260927.webp
           printf '%s\n' "public/media/forge/subclass-carousel/subclass-selector-mouse-20260927.webp" > /tmp/expected.txt
-          git diff --name-only | sort > /tmp/actual.txt
+          git status --short --untracked-files=all | sed -E 's/^.. //' | sort > /tmp/actual.txt
           sort /tmp/expected.txt -o /tmp/expected.txt
           diff -u /tmp/expected.txt /tmp/actual.txt
 
