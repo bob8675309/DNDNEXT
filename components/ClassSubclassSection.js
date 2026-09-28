@@ -125,7 +125,16 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
     : isFaceUp
       ? 520 + Math.round(depth * 180)
       : 100 + Math.round(depth * 120);
-  const floatDelay = -((optionIndex % 7) * 0.73);
+  // Give each non-hero card a deterministic motion signature so the orbit feels
+  // suspended rather than synchronized. Keep this index-derived (not random)
+  // so React renders never restart or reshuffle the ambient motion.
+  const floatSeed = ((optionIndex * 37) + (count * 11)) % 17;
+  const floatDelay = -((floatSeed * 0.83) % 9.4);
+  const floatDuration = 8.7 + ((floatSeed % 7) * 0.71);
+  const floatX = 0.8 + ((floatSeed % 5) * 0.42);
+  const floatY = 1.8 + (((floatSeed * 3) % 6) * 0.48);
+  const floatTilt = 0.08 + (((floatSeed * 5) % 5) * 0.055);
+  const floatDirection = floatSeed % 2 === 0 ? 1 : -1;
 
   const cardMin = isCenter
     ? profile.heroMinWidth
@@ -151,6 +160,10 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
       "--orbit-opacity": opacity.toFixed(3),
       "--orbit-z": String(zIndex),
       "--orbit-float-delay": `${floatDelay.toFixed(2)}s`,
+      "--orbit-float-duration": `${floatDuration.toFixed(2)}s`,
+      "--orbit-float-x": `${(floatX * floatDirection).toFixed(2)}px`,
+      "--orbit-float-y": `${floatY.toFixed(2)}px`,
+      "--orbit-float-tilt": `${(floatTilt * floatDirection).toFixed(3)}deg`,
       "--orbit-card-min": `${cardMin}px`,
       "--orbit-card-vw": `${cardViewport.toFixed(2)}vw`,
       "--orbit-card-max": `${cardMax}px`,
