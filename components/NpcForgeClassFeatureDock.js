@@ -9,7 +9,7 @@ import { subclassArtworkFor, handleSubclassArtworkError } from "../utils/classes
 const DOCK_GUTTER = 12;
 const DOCK_MIN_WIDTH = 300;
 const DOCK_DEFAULT_WIDTH = 390;
-const DOCK_MAX_WIDTH = 740;
+const DOCK_MAX_WIDTH = 780;
 const DOCK_VISIBLE_HEADER = 60;
 
 function safeText(value) {
@@ -193,7 +193,7 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
         const base = defaultDockPosition();
         setFloatingPosition(boundedDockPosition({
           ...base,
-          width: isSubclassInspector ? 700 : DOCK_DEFAULT_WIDTH,
+          width: isSubclassInspector ? 720 : DOCK_DEFAULT_WIDTH,
         }));
         setPortalHost(document.body);
       });
@@ -357,6 +357,7 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
         .npc-forge-class-feature-dock__item-card .sitem-title{font-size:.9rem}
         .npc-forge-class-feature-dock__item-card .sitem-section{font-size:.72rem;line-height:1.55}
         .npc-forge-class-feature-dock.is-subclass-inspector{border-color:rgba(213,163,74,.72)!important;background:linear-gradient(155deg,rgba(12,15,18,.99),rgba(7,14,18,.99) 62%,rgba(12,10,10,.99))!important;box-shadow:inset 0 0 0 1px rgba(255,219,151,.06),0 20px 58px rgba(0,0,0,.54),0 0 28px rgba(161,104,34,.10)!important}
+        body > .npc-forge-class-feature-dock.is-viewport-floating.is-subclass-inspector{width:min(720px,calc(100vw - 36px))!important;max-width:min(720px,calc(100vw - 36px))!important}
         .npc-forge-class-feature-dock.is-subclass-inspector .npc-forge-class-feature-dock__head{border-bottom-color:rgba(213,163,74,.32)!important;background:linear-gradient(155deg,rgba(24,20,15,.995),rgba(8,15,18,.995))!important}
         .npc-forge-class-feature-dock.is-subclass-inspector .npc-forge-class-feature-dock__title-group>span{color:#cda65f!important}.npc-forge-class-feature-dock.is-subclass-inspector .npc-forge-class-feature-dock__title-group>h3{color:#f1cf89!important;font-family:Georgia,serif!important;font-size:1.13rem!important}
         .npc-forge-class-feature-dock.is-subclass-inspector .npc-forge-class-feature-dock__head-actions>em{border-color:rgba(213,163,74,.24)!important;color:#d9bf8c!important;background:rgba(99,64,24,.13)!important}.npc-forge-class-feature-dock.is-subclass-inspector .npc-forge-class-feature-dock__head-actions>button{border-color:rgba(213,163,74,.42)!important;color:#ead6ad!important}
