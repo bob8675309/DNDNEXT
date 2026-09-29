@@ -11,6 +11,21 @@ const text = (value) => String(value ?? "").trim();
 const normalized = (value) => text(value).toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const isUuid = (value) => UUID_PATTERN.test(text(value));
+function spellSourceRank(source = "") {
+  const key = text(source).toUpperCase();
+  if (key === "XPHB") return 0;
+  if (key === "PHB") return 1;
+  return 2;
+}
+function maxSpellLevelForProgressionRow(row = {}) {
+  const slots = row?.spell_slots;
+  if (Array.isArray(slots)) {
+    let highest = 0;
+    slots.forEach((count, index) => { if (Number(count || 0) > 0) highest = index + 1; });
+    return highest;
+  }
+  return Math.max(0, Number(slots?.pactSlotLevel || 0));
+}
 export const classSourceLabel = (source = "") => source === "XPHB" ? "2024 Player's Handbook" : source === "PHB" ? "2014 Player's Handbook" : source || "Campaign";
 export const classFeatureName = (feature) => typeof feature === "string" ? text(feature.split("|")[0]) : text(feature?.name || feature?.label || feature?.title || "Class feature");
 export const classSlotSummary = (slots) => {
@@ -175,7 +190,7 @@ export function useNpcForgeClassGuideModel(selectedClass, level) {
         .select("item_key,item_name,item_type,item_rarity,payload")
         .limit(5000),
       supabase.from("spells_catalog")
-        .select("id,spell_key,name,source,level,school_code,school,classes,ritual,concentration,casting_time,range_text,components_v,components_s,components_m,duration_text,damage_dice,damage_types,description")
+        .select("id,spell_key,name,source,level,school_code,school,classes,subclasses,ritual,concentration,casting_time,range_text,components_v,components_s,components_m,duration_text,damage_dice,damage_types,description")
         .order("level", { ascending: true }).order("name", { ascending: true }).limit(5000),
     ]).then(([levelResult, featureResult, optionResult, optionalFeatureResult, itemResult, detailItemResult, spellResult]) => {
       if (!active) return;
@@ -212,6 +227,23 @@ export function useNpcForgeClassGuideModel(selectedClass, level) {
   const eligible = options.filter((option) => Number(option.firstLevel || 1) <= currentLevel);
   const entryLevel = options.length ? Math.min(...options.map((option) => Number(option.firstLevel || 20))) : null;
   const previewEligible = Boolean(preview && Number(preview.firstLevel || 1) <= currentLevel);
+  const currentProgressionRow = levels.find((row) => Number(row?.class_level) === currentLevel) || null;
+  const maxSpellLevel = maxSpellLevelForProgressionRow(currentProgressionRow);
+  const spellCatalog = useMemo(() => {
+    const classIdentity = normalized(selectedClass?.class_name || selectedClass?.class_key);
+    const preferred = new Map();
+    for (const spell of spells) {
+      const belongsToClass = (spell?.classes || []).some((name) => normalized(name) === classIdentity);
+      if (!belongsToClass) continue;
+      const spellLevel = Math.max(0, Number(spell?.level || 0));
+      if (spellLevel > 0 && (!maxSpellLevel || spellLevel > maxSpellLevel)) continue;
+      const key = normalized(spell?.name);
+      if (!key) continue;
+      const current = preferred.get(key);
+      if (!current || spellSourceRank(spell?.source) < spellSourceRank(current?.source)) preferred.set(key, spell);
+    }
+    return [...preferred.values()].sort((a, b) => Number(a?.level || 0) - Number(b?.level || 0) || text(a?.name).localeCompare(text(b?.name)));
+  }, [maxSpellLevel, selectedClass?.class_key, selectedClass?.class_name, spells]);
   const rawChoiceGroups = useMemo(() => buildClassFeatureChoiceGroups({
     selectedClass,
     level: currentLevel,
@@ -270,7 +302,7 @@ export function useNpcForgeClassGuideModel(selectedClass, level) {
   return {
     view, setView, compareAll, setCompareAll, previewKey, setPreviewKey,
     loading, error, pinned, setPinned, currentLevel, options, preview, selected,
-    eligible, entryLevel, previewEligible, rows, intro: subclassIntroduction(preview), selectSubclass,
+    eligible, entryLevel, previewEligible, rows, intro: subclassIntroduction(preview), selectSubclass, spellCatalog, maxSpellLevel,
     choiceGroups, choiceSelections: state.featureSelections || {}, toggleFeatureOption,
     resolveListedDetail,
   };
