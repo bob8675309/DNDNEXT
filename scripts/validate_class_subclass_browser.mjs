@@ -13,6 +13,7 @@ const framing = read("styles/character-forge-class-hero-framing.css");
 const model = read("components/NpcForgeClassGuideModel.js");
 const workspaceCss = read("styles/character-class-workspace.css");
 const tarotCss = read("styles/character-forge-subclass-tarot-layout.css");
+const featureDock = read("components/NpcForgeClassFeatureDock.js");
 
 for (const token of [
   'import ClassSubclassSection from "./ClassSubclassSection"',
@@ -300,5 +301,8 @@ const protectedSource = `${guide}\n${selector}\n${subclassArtwork}\n${presentati
 for (const token of ["map_routes", "advance_all_characters", "mappageclient", "townsheet", "encounter_weapon_attack", "crafting_recipe"]) {
   assert(!protectedSource.includes(token), `Class presentation patch crossed protected boundary: ${token}`);
 }
+
+for (const token of ["subclassOption: option"]) assert(guide.includes(token), `Subclass inspector payload is missing ${token}`);
+for (const token of ["subclassTab", "npc-forge-subclass-inspector__tabs", "Overview", "Features", "Lore", "Spells", "subclassArtworkFor", "subclassFeatures"]) assert(featureDock.includes(token), `Tabbed subclass inspector is missing ${token}`);
 
 console.log("Class subclass selector validation passed: canonical authority remains in the guide model, all subclass cards stay on one free-floating parametric carousel, rear cards use the shared card back, one exact hero position owns enlarged presentation, ambient library motion is presentation-only, drag/arrow motion never persists a subclass, explicit card clicks remain the only selection path, all 152 approved normalized Tarot concepts remain installed/mapped, and future content retains safe fallback.");
