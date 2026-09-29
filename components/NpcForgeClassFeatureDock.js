@@ -310,9 +310,9 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
               </div>
             </> : null}
             {subclassTab === "features" ? <div className="npc-forge-subclass-inspector__feature-list">
-              {subclassFeatures.length ? subclassFeatures.map((entry) => <details key={`${entry.level}-${entry.name}`}><summary><span>Level {Number(entry.level || subclassOption.firstLevel || 1)}</span><strong>{entry.name}</strong></summary><ClassFeatureText text={entry.description} entries={entry.entries || null} compact /></details>) : <p>No source-backed subclass features are available for this entry.</p>}
+              {subclassFeatures.length ? subclassFeatures.map((entry) => <details key={`${entry.level}-${entry.name}`}><summary><span>Level {Number(entry.level || subclassOption.firstLevel || 1)}</span><strong>{entry.name}</strong></summary><ClassFeatureText text={entry.description} compact /></details>) : <p>No source-backed subclass features are available for this entry.</p>}
             </div> : null}
-            {subclassTab === "lore" ? <div className="npc-forge-subclass-inspector__reading"><h4>{subclassOption.name}</h4>{subclassIntro?.description ? <ClassFeatureText text={subclassIntro.description} entries={subclassIntro.entries || null} compact /> : <p>No separate source-backed lore text is available for this subclass.</p>}</div> : null}
+            {subclassTab === "lore" ? <div className="npc-forge-subclass-inspector__reading"><h4>{subclassOption.name}</h4>{subclassIntro?.description ? <ClassFeatureText text={subclassIntro.description} compact /> : <p>No separate source-backed lore text is available for this subclass.</p>}</div> : null}
             {subclassTab === "spells" ? <div className="npc-forge-subclass-inspector__spells">
               <section className="npc-forge-subclass-inspector__spell-grants">
                 <div className="npc-forge-subclass-inspector__section-head"><span>Subclass Spell Grants</span><small>Source-backed additions and always-prepared spells</small></div>
