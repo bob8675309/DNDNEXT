@@ -482,7 +482,7 @@
   display: block;
   border-radius: inherit;
   transform-style: preserve-3d;
-  transition: transform 1.18s cubic-bezier(.22,.61,.36,1), box-shadow .28s ease;
+  transition: transform 1.78s cubic-bezier(.20,.56,.28,1), box-shadow .28s ease;
 }
 
 .class-subclass-carousel-card.is-orbit-front .class-subclass-carousel-card__surface {
