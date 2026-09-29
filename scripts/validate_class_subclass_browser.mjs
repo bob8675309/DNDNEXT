@@ -154,7 +154,7 @@ assert(tarotCss.includes('left 1.18s cubic-bezier') && tarotCss.includes('transf
 assert(tarotCss.includes('.class-subclass-carousel-card.is-orbit-center .class-subclass-carousel-card__float') && tarotCss.includes('animation: none;'), "Hero card must stay still while non-hero cards idle-float.");
 assert(tarotCss.includes('z-index: 760') && tarotCss.includes('class-subclass-carousel-modal__smoke-near'), "Near smoke must cross side/front cards while remaining below the hero z-band.");
 assert(tarotCss.includes('left: 13.7%') && tarotCss.includes('right: 16.4%') && tarotCss.includes('top: 12.4%'), "Animated flames must stay registered to real upper candle clusters in the ruined-library background.");
-assert(tarotCss.includes('9.6s cubic-bezier(.37,0,.63,1)') && tarotCss.includes('translate3d(1px, -3px, 0)'), "Non-hero idle float must remain slow and smooth rather than jittery.");
+assert(tarotCss.includes('left 2.15s cubic-bezier(.24,.08,.18,1)') && tarotCss.includes('var(--orbit-float-duration, 9.6s)'), "Tarot motion must keep the soft-start travel curve and independently timed idle float.");
 assert(!tarotCss.includes(':hover .class-subclass-carousel-card__surface {\n  filter:'), "Hover must not filter the 3D card surface; that compositor path caused cards to disappear.");
 assert(!tarotCss.includes('subclass-library-mouse-scurry') && !selector.includes('class-subclass-carousel-modal__mouse'), "Terrain-independent mouse animation must stay removed.");
 assert(!tarotCss.includes('subclass-selector-bat'), "Do not replace the removed mouse with bats without a separate browser-reviewed plan.");
@@ -303,6 +303,6 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
 }
 
 for (const token of ["subclassOption: option"]) assert(guide.includes(token), `Subclass inspector payload is missing ${token}`);
-for (const token of ["subclassTab", "npc-forge-subclass-inspector__tabs", "Overview", "Features", "Lore", "Spells", "subclassArtworkFor", "subclassFeatures"]) assert(featureDock.includes(token), `Tabbed subclass inspector is missing ${token}`);
+for (const token of ["subclassTab", "npc-forge-subclass-inspector__tabs", "Overview", "Features", "Lore", "Spells", "subclassArtworkFor", "subclassFeatures", "subclassSpellReferences", "spellCatalog", "Class Spell Access"]) assert(featureDock.includes(token), `Tabbed subclass inspector is missing ${token}`);\nassert(!featureDock.includes("subclassSpellFeatures"), "Spells tab regressed to keyword-filtered feature duplication.");\nassert(model.includes("spellCatalog") && model.includes("maxSpellLevelForProgressionRow"), "Subclass inspector class-spell access is not sourced from the guide model.");
 
 console.log("Class subclass selector validation passed: canonical authority remains in the guide model, all subclass cards stay on one free-floating parametric carousel, rear cards use the shared card back, one exact hero position owns enlarged presentation, ambient library motion is presentation-only, drag/arrow motion never persists a subclass, explicit card clicks remain the only selection path, all 152 approved normalized Tarot concepts remain installed/mapped, and future content retains safe fallback.");
