@@ -144,7 +144,7 @@ assert(!tarotCss.includes('.class-subclass-carousel-modal__rune-foreground'), "R
 assert(tarotCss.includes('subclass-selector-smoke-back.png'), "Floating library scene must include the rear smoke layer.");
 assert(tarotCss.includes('subclass-selector-smoke-front.png'), "Floating library scene must include the colored depth-smoke layer.");
 assert(tarotCss.includes('subclass-selector-smoke-gray-20260927.webp'), "Floating library scene must include the gray depth-smoke layer.");
-assert(tarotCss.includes('subclass-selector-title-choose-fate-20260927.webp') && selector.includes('Choose your Fate'), "Choose your Fate must use the approved title artwork while retaining accessible runtime text.");
+assert(selector.includes('Choose Your Subclass') && !tarotCss.includes('subclass-selector-title-choose-fate-20260927.webp'), "Subclass selector title must use the symbol-free Choose Your Subclass plaque.");
 assert(tarotCss.includes('subclass-selector-nav-prev-20260927.webp') && tarotCss.includes('subclass-selector-nav-next-20260927.webp'), "Subclass selector must use the approved left/right navigation artwork.");
 assert(selector.includes('? 820') && selector.includes('? 520 + Math.round(depth * 180)') && selector.includes(': 100 + Math.round(depth * 120)'), "Front/rear cards must use separate stacking bands so rear cards cannot clip across front cards.");
 assert(tarotCss.includes('transform-style: flat') && tarotCss.includes('isolation: isolate'), "Carousel cards must remain atomic stacking layers while inner Tarot faces retain their own flip context.");
@@ -311,6 +311,7 @@ for (const token of ["subclassTab", "npc-forge-subclass-inspector__tabs", "Overv
 assert(!featureDock.includes("subclassSpellFeatures"), "Spells tab regressed to keyword-filtered feature duplication.");
 assert(!featureDock.includes("Class Spell Access"), "Subclass Spells tab must not duplicate the later full class spell catalogue.");
 assert(featureDock.includes("width: isSubclassInspector ? 720 : DOCK_DEFAULT_WIDTH") && featureDock.includes("body > .npc-forge-class-feature-dock.is-viewport-floating.is-subclass-inspector"), "Subclass inspector must override legacy floating-dock width caps with the wider reading layout.");
+assert(featureDock.includes("npc-forge-subclass-inspector__overview-lore-scroll") && !featureDock.includes("Path Overview"), "Overview must present the source-backed subclass lore in the scrollable reading area rather than the old shallow Path Overview box.");
 assert(featureDock.includes("grid-template-columns:repeat(2,minmax(0,1fr))"), "Subclass feature summaries must retain the two-column desktop layout.");
 assert(model.includes("spellCatalog") && !model.includes("maxSpellLevelForProgressionRow"), "Subclass spell resolution should use the source-backed class spell catalogue without rendering the full class list here.");
 
