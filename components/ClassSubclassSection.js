@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { handleSubclassArtworkError, subclassArtworkFor } from "../utils/classes/subclassArtwork";
 
@@ -199,6 +199,10 @@ export default function ClassSubclassSection({
   const orbitRef = useRef(null);
   const dragStateRef = useRef(null);
   const suppressClickUntilRef = useRef(0);
+  const cardRefsRef = useRef(new Map());
+  const pendingGlideRectsRef = useRef(null);
+  const glideAnimationsRef = useRef(new Map());
+  const glideUntilRef = useRef(0);
 
   const orbitOptions = useMemo(() => options.map((option, optionIndex) => ({
     option,
@@ -211,6 +215,66 @@ export default function ClassSubclassSection({
     : 0;
   const heroOption = options[heroIndex] || null;
   const classLabel = classLabelFor(classKey, model?.className);
+
+  function captureGlideRects() {
+    const rects = new Map();
+    for (const [key, node] of cardRefsRef.current.entries()) {
+      const glide = node?.querySelector?.(".class-subclass-carousel-card__glide");
+      if (!glide) continue;
+      rects.set(key, glide.getBoundingClientRect());
+    }
+    pendingGlideRectsRef.current = rects.size ? rects : null;
+  }
+
+  useLayoutEffect(() => {
+    if (isDragging) return;
+    const previousRects = pendingGlideRectsRef.current;
+    if (!previousRects?.size) return;
+    pendingGlideRectsRef.current = null;
+    const duration = 2450;
+    glideUntilRef.current = Date.now() + duration;
+
+    for (const [key, node] of cardRefsRef.current.entries()) {
+      const glide = node?.querySelector?.(".class-subclass-carousel-card__glide");
+      const previous = previousRects.get(key);
+      if (!glide || !previous) continue;
+
+      const active = glideAnimationsRef.current.get(key);
+      active?.cancel?.();
+
+      const next = node.getBoundingClientRect();
+      if (!next.width || !next.height) continue;
+      const dx = previous.left - next.left;
+      const dy = previous.top - next.top;
+      const scaleX = previous.width / next.width;
+      const scaleY = previous.height / next.height;
+      const movement = Math.hypot(dx, dy);
+      const sizeShift = Math.max(Math.abs(1 - scaleX), Math.abs(1 - scaleY));
+
+      if (movement < .5 && sizeShift < .005) continue;
+
+      const animation = glide.animate(
+        [
+          { transform: `translate3d(${dx.toFixed(2)}px, ${dy.toFixed(2)}px, 0) scale(${scaleX.toFixed(4)}, ${scaleY.toFixed(4)})` },
+          { transform: "translate3d(0, 0, 0) scale(1, 1)" },
+        ],
+        {
+          duration,
+          easing: "cubic-bezier(.32,.035,.18,1)",
+          fill: "both",
+        },
+      );
+      glideAnimationsRef.current.set(key, animation);
+      animation.onfinish = () => {
+        if (glideAnimationsRef.current.get(key) !== animation) return;
+        animation.cancel();
+        glideAnimationsRef.current.delete(key);
+      };
+      animation.oncancel = () => {
+        if (glideAnimationsRef.current.get(key) === animation) glideAnimationsRef.current.delete(key);
+      };
+    }
+  }, [isDragging, orbitOffset, optionSignature]);
 
   useEffect(() => {
     if (lastClassKeyRef.current !== classKey) {
@@ -277,6 +341,7 @@ export default function ClassSubclassSection({
 
   function rotateCarousel(direction) {
     if (options.length <= 1) return;
+    captureGlideRects();
     const normalizedDirection = direction < 0 ? -1 : 1;
     setOrbitOffset((current) => normalizeOrbitOffset(Math.round(current) + normalizedDirection, options.length));
   }
@@ -284,6 +349,7 @@ export default function ClassSubclassSection({
   function handleOrbitPointerDown(event) {
     if (options.length <= 1) return;
     if (event.pointerType === "mouse" && event.button !== 0) return;
+    if (Date.now() < glideUntilRef.current) return;
     const bounds = orbitRef.current?.getBoundingClientRect();
     const now = Number(event.timeStamp || performance.now());
     dragStateRef.current = {
@@ -335,6 +401,7 @@ export default function ClassSubclassSection({
     }
 
     if (drag.moved) {
+      captureGlideRects();
       const offsetVelocity = -(drag.velocityX / drag.pixelsPerCard);
       const projectedCards = cancelled
         ? 0
@@ -357,8 +424,10 @@ export default function ClassSubclassSection({
       return;
     }
 
-    // Explicit card clicks own player intent. The same click rotates the chosen
-    // card to hero, publishes its detail target, and persists it only if legal.
+    // Explicit card clicks own player intent. Capture the card's current visual
+    // pose before changing slots so the compositor can glide from that exact pose
+    // into the new orbit destination without a layout-property snap.
+    captureGlideRects();
     setOrbitOffset(normalizeOrbitOffset(optionIndex - FRONT_CENTER_SLOT, options.length));
     model?.setPreviewKey?.(option.key);
     onInspectSubclass?.(option);
@@ -425,6 +494,10 @@ export default function ClassSubclassSection({
                 return (
                   <button
                     key={option.key}
+                    ref={(node) => {
+                      if (node) cardRefsRef.current.set(option.key, node);
+                      else cardRefsRef.current.delete(option.key);
+                    }}
                     type="button"
                     role="listitem"
                     className={`class-subclass-carousel-card${isCenter ? " is-orbit-center" : ""}${isSelected ? " is-selected" : ""}${isInteractive ? " is-orbit-front" : " is-orbit-back"}${isFaceUp ? " is-orbit-face-up" : ""}${eligible ? " is-eligible" : " is-locked"}`}
@@ -440,9 +513,11 @@ export default function ClassSubclassSection({
                     data-orbit-depth={depth.toFixed(3)}
                     onClick={(event) => handleCardClick(event, option, optionIndex, isInteractive)}
                   >
-                    <span className="class-subclass-carousel-card__float">
-                      <span className="class-subclass-carousel-card__surface">
-                      <span className="class-subclass-carousel-card__face is-front">
+                    <span className="class-subclass-carousel-card__glide">
+                      <span className="class-subclass-carousel-card__yaw">
+                        <span className="class-subclass-carousel-card__float">
+                          <span className="class-subclass-carousel-card__surface">
+                          <span className="class-subclass-carousel-card__face is-front">
                         <span className="class-subclass-carousel-card__art" aria-hidden="true">
                           <img
                             src={artworkSrc}
@@ -455,7 +530,9 @@ export default function ClassSubclassSection({
                           />
                         </span>
                       </span>
-                        <span className="class-subclass-carousel-card__face is-back" aria-hidden="true" />
+                            <span className="class-subclass-carousel-card__face is-back" aria-hidden="true" />
+                          </span>
+                        </span>
                       </span>
                     </span>
 
