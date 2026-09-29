@@ -231,7 +231,7 @@ export default function ClassSubclassSection({
     const previousRects = pendingGlideRectsRef.current;
     if (!previousRects?.size) return;
     pendingGlideRectsRef.current = null;
-    const duration = 2450;
+    const duration = 2180;
     glideUntilRef.current = Date.now() + duration;
 
     for (const [key, node] of cardRefsRef.current.entries()) {
@@ -450,7 +450,7 @@ export default function ClassSubclassSection({
       >
         <div className="class-subclass-carousel-modal__panel">
           <div className="class-subclass-carousel-modal__scene" aria-hidden="true" />
-          <h3 className="class-subclass-carousel-modal__title">Choose your Fate</h3>
+          <h3 className="class-subclass-carousel-modal__title">Choose Your Subclass</h3>
           <button
             type="button"
             className="class-subclass-carousel-modal__close"
