@@ -395,6 +395,21 @@
   animation: subclass-smoke-gray-drift 37s ease-in-out -13s infinite;
 }
 
+
+.class-subclass-carousel-modal__smoke-mid-right {
+  position: absolute;
+  right: 0;
+  top: 14%;
+  z-index: 300;
+  width: 54%;
+  height: 48%;
+  pointer-events: none;
+  background: url("/media/forge/subclass-carousel/subclass-selector-smoke-gray-20260927.webp") center / cover no-repeat;
+  opacity: .14;
+  filter: brightness(.64) saturate(.34);
+  animation: subclass-smoke-mid-right-drift 34s ease-in-out -11s infinite;
+}
+
 .class-subclass-carousel-modal__smoke-near {
   position: absolute;
   inset: -4%;
@@ -660,6 +675,13 @@
   0%, 100% { transform: translate3d(-1.2%, 1.0%, 0) scale(1.055); opacity: .31; }
   36% { transform: translate3d(.9%, -.5%, 0) scale(1.085); opacity: .40; }
   68% { transform: translate3d(1.5%, .15%, 0) scale(1.07); opacity: .35; }
+}
+
+
+@keyframes subclass-smoke-mid-right-drift {
+  0%, 100% { transform: translate3d(5%, 2%, 0) scale(1.04); opacity: .09; }
+  40% { transform: translate3d(-3%, -2%, 0) scale(1.09); opacity: .16; }
+  72% { transform: translate3d(1%, -3%, 0) scale(1.06); opacity: .12; }
 }
 
 @keyframes subclass-smoke-near-drift {
