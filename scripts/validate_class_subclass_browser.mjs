@@ -303,6 +303,14 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
 }
 
 for (const token of ["subclassOption: option"]) assert(guide.includes(token), `Subclass inspector payload is missing ${token}`);
-for (const token of ["subclassTab", "npc-forge-subclass-inspector__tabs", "Overview", "Features", "Lore", "Spells", "subclassArtworkFor", "subclassFeatures", "subclassSpellReferences", "spellCatalog", "Class Spell Access"]) assert(featureDock.includes(token), `Tabbed subclass inspector is missing ${token}`);\nassert(!featureDock.includes("subclassSpellFeatures"), "Spells tab regressed to keyword-filtered feature duplication.");\nassert(model.includes("spellCatalog") && model.includes("maxSpellLevelForProgressionRow"), "Subclass inspector class-spell access is not sourced from the guide model.");
+for (const token of ["subclassTab", "npc-forge-subclass-inspector__tabs", "Overview", "Features", "Lore", "Spells", "subclassArtworkFor", "subclassFeatures", "subclassSpellReferences", "spellCatalog", "Subclass Spell Grants"]) {
+  assert(featureDock.includes(token), `Tabbed subclass inspector is missing ${token}`);
+}
+assert(!featureDock.includes("subclassSpellFeatures"), "Spells tab regressed to keyword-filtered feature duplication.");
+assert(!featureDock.includes("Class Spell Access"), "Subclass Spells tab must not duplicate the later full class spell catalogue.");
+assert(featureDock.includes("width: isSubclassInspector ? 700 : DOCK_DEFAULT_WIDTH"), "Subclass inspector must retain the wider desktop reading layout.");
+assert(featureDock.includes("grid-template-columns:repeat(2,minmax(0,1fr))"), "Subclass feature summaries must retain the two-column desktop layout.");
+assert(model.includes("spellCatalog") && !model.includes("maxSpellLevelForProgressionRow"), "Subclass spell resolution should use the source-backed class spell catalogue without rendering the full class list here.");
+
 
 console.log("Class subclass selector validation passed: canonical authority remains in the guide model, all subclass cards stay on one free-floating parametric carousel, rear cards use the shared card back, one exact hero position owns enlarged presentation, ambient library motion is presentation-only, drag/arrow motion never persists a subclass, explicit card clicks remain the only selection path, all 152 approved normalized Tarot concepts remain installed/mapped, and future content retains safe fallback.");
