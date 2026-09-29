@@ -446,31 +446,52 @@
   border-radius: clamp(5px, .55vw, 9px);
   background: transparent;
   opacity: var(--orbit-opacity);
-  transform:
-    translate(-50%, -100%)
-    rotateY(var(--orbit-yaw));
+  transform: translate(-50%, -100%);
   transform-origin: 50% 100%;
   transform-style: flat;
   isolation: isolate;
-  transition:
-    left 2.15s cubic-bezier(.24,.08,.18,1),
-    top 2.25s cubic-bezier(.24,.08,.18,1),
-    width 2.35s cubic-bezier(.26,.06,.20,1),
-    opacity 1.65s ease-in-out,
-    transform 2.35s cubic-bezier(.26,.06,.20,1);
+  transition: opacity 1.65s ease-in-out;
   will-change: auto;
   outline: none;
 }
 
 .class-subclass-carousel-modal__orbit.is-dragging .class-subclass-carousel-card {
   transition: none;
-  will-change: left, top, transform, opacity;
+  will-change: left, top, width, opacity;
 }
 
 .class-subclass-carousel-card.is-orbit-center {
   opacity: 1 !important;
-  transform: translate(-50%, -100%) rotateY(0deg);
+  transform: translate(-50%, -100%);
   filter: none !important;
+}
+
+.class-subclass-carousel-card__glide,
+.class-subclass-carousel-card__yaw {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.class-subclass-carousel-card__glide {
+  transform: translate3d(0,0,0) scale(1);
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.class-subclass-carousel-card__yaw {
+  transform: rotateY(var(--orbit-yaw));
+  transform-origin: 50% 100%;
+  transform-style: preserve-3d;
+  transition: transform 2.35s cubic-bezier(.32,.035,.18,1);
+}
+
+.class-subclass-carousel-card.is-orbit-center .class-subclass-carousel-card__yaw {
+  transform: rotateY(0deg);
+}
+
+.class-subclass-carousel-modal__orbit.is-dragging .class-subclass-carousel-card__yaw {
+  transition: none;
 }
 
 .class-subclass-carousel-card__float {
