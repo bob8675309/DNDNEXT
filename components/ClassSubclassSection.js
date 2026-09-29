@@ -417,6 +417,7 @@ export default function ClassSubclassSection({
               onPointerUp={(event) => finishOrbitPointer(event)}
               onPointerCancel={(event) => finishOrbitPointer(event, true)}
             >
+              <div className="class-subclass-carousel-modal__smoke-mid-right" aria-hidden="true" />
               {orbitOptions.map(({ option, optionIndex, signedSlots, angleDegrees, depth, isInteractive, isFaceUp, isCenter, style }) => {
                 const isSelected = selected?.key === option.key;
                 const eligible = optionEntryLevel(option) <= currentLevel;
