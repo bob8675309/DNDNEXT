@@ -78,19 +78,6 @@ function resolveSubclassSpells(refs = [], catalog = []) {
   return refs.map((ref) => ({ ...(byName.get(normalizedSpellName(ref.name)) || {}), ...ref, name: ref.name }));
 }
 
-function groupedSpellCatalog(catalog = []) {
-  const groups = new Map();
-  for (const spell of catalog) {
-    const level = Math.max(0, Number(spell?.level || 0));
-    if (!groups.has(level)) groups.set(level, []);
-    groups.get(level).push(spell);
-  }
-  return [...groups.entries()].sort(([a], [b]) => a - b).map(([level, spells]) => ({
-    level,
-    spells: spells.sort((a, b) => safeText(a?.name).localeCompare(safeText(b?.name))),
-  }));
-}
-
 function classOverviewHighlights(classRow = {}) {
   const byLevel = classRow?.class_features_by_level || classRow?.raw_payload?.class_features_by_level || {};
   const seen = new Set();
