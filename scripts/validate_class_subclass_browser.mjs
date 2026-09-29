@@ -154,7 +154,9 @@ assert(tarotCss.includes('left 1.18s cubic-bezier') && tarotCss.includes('transf
 assert(tarotCss.includes('.class-subclass-carousel-card.is-orbit-center .class-subclass-carousel-card__float') && tarotCss.includes('animation: none;'), "Hero card must stay still while non-hero cards idle-float.");
 assert(tarotCss.includes('z-index: 760') && tarotCss.includes('class-subclass-carousel-modal__smoke-near'), "Near smoke must cross side/front cards while remaining below the hero z-band.");
 assert(tarotCss.includes('left: 13.7%') && tarotCss.includes('right: 16.4%') && tarotCss.includes('top: 12.4%'), "Animated flames must stay registered to real upper candle clusters in the ruined-library background.");
-assert(tarotCss.includes('left 2.15s cubic-bezier(.24,.08,.18,1)') && tarotCss.includes('var(--orbit-float-duration, 9.6s)'), "Tarot motion must keep the soft-start travel curve and independently timed idle float.");
+assert(selector.includes("captureGlideRects") && selector.includes("glide.animate") && selector.includes('cubic-bezier(.32,.035,.18,1)'), "Tarot slot changes must use the compositor glide path rather than snapping layout-property transitions.");
+assert(tarotCss.includes(".class-subclass-carousel-card__glide") && tarotCss.includes(".class-subclass-carousel-card__yaw") && tarotCss.includes('var(--orbit-float-duration, 9.6s)'), "Tarot glide, yaw, and independent idle-float layers must remain separated.");
+assert(!tarotCss.includes("left 2.15s cubic-bezier") && !tarotCss.includes("top 2.25s cubic-bezier"), "Programmatic Tarot travel must not regress to left/top transition animation.");
 assert(!tarotCss.includes(':hover .class-subclass-carousel-card__surface {\n  filter:'), "Hover must not filter the 3D card surface; that compositor path caused cards to disappear.");
 assert(!tarotCss.includes('subclass-library-mouse-scurry') && !selector.includes('class-subclass-carousel-modal__mouse'), "Terrain-independent mouse animation must stay removed.");
 assert(!tarotCss.includes('subclass-selector-bat'), "Do not replace the removed mouse with bats without a separate browser-reviewed plan.");
@@ -308,7 +310,7 @@ for (const token of ["subclassTab", "npc-forge-subclass-inspector__tabs", "Overv
 }
 assert(!featureDock.includes("subclassSpellFeatures"), "Spells tab regressed to keyword-filtered feature duplication.");
 assert(!featureDock.includes("Class Spell Access"), "Subclass Spells tab must not duplicate the later full class spell catalogue.");
-assert(featureDock.includes("width: isSubclassInspector ? 700 : DOCK_DEFAULT_WIDTH"), "Subclass inspector must retain the wider desktop reading layout.");
+assert(featureDock.includes("width: isSubclassInspector ? 720 : DOCK_DEFAULT_WIDTH") && featureDock.includes("body > .npc-forge-class-feature-dock.is-viewport-floating.is-subclass-inspector"), "Subclass inspector must override legacy floating-dock width caps with the wider reading layout.");
 assert(featureDock.includes("grid-template-columns:repeat(2,minmax(0,1fr))"), "Subclass feature summaries must retain the two-column desktop layout.");
 assert(model.includes("spellCatalog") && !model.includes("maxSpellLevelForProgressionRow"), "Subclass spell resolution should use the source-backed class spell catalogue without rendering the full class list here.");
 
