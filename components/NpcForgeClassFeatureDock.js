@@ -20,6 +20,15 @@ function normalizedSpellName(value) {
   return safeText(value).toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 }
 
+function playerFacingSubclassLore(value) {
+  return safeText(value)
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .filter((line) => !/^[^|]+\|[^|]+\|\|[^|]+\|\|\d+$/.test(line))
+    .join("\n\n");
+}
+
 function collectSpellTokens(value, unlockLabel = "", output = []) {
   if (typeof value === "string") {
     const pattern = /\{@spell\s+([^}|]+)(?:\|([^}|]+))?[^}]*\}/gi;
@@ -328,7 +337,7 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
                 </div>
                 <section className="npc-forge-subclass-inspector__overview-lore" aria-label={`${subclassOption.name} lore`}>
                   <div className="npc-forge-subclass-inspector__overview-lore-scroll">
-                    {subclassIntro?.description ? <ClassFeatureText text={subclassIntro.description} compact /> : <p>No separate source-backed lore text is available for this subclass.</p>}
+                    {subclassIntro?.description ? <ClassFeatureText text={playerFacingSubclassLore(subclassIntro.description)} compact /> : <p>No separate source-backed lore text is available for this subclass.</p>}
                   </div>
                 </section>
               </div>
@@ -418,9 +427,9 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
         .npc-forge-class-feature-dock__item-card .sitem-section{font-size:.72rem;line-height:1.55}
         .npc-forge-class-feature-dock.is-subclass-inspector{border-color:rgba(213,163,74,.72)!important;background:linear-gradient(155deg,rgba(12,15,18,.99),rgba(7,14,18,.99) 62%,rgba(12,10,10,.99))!important;box-shadow:inset 0 0 0 1px rgba(255,219,151,.06),0 20px 58px rgba(0,0,0,.54),0 0 28px rgba(161,104,34,.10)!important}
         body > .npc-forge-class-feature-dock.is-viewport-floating.is-subclass-inspector{width:min(720px,calc(100vw - 36px))!important;max-width:min(720px,calc(100vw - 36px))!important}
-        .npc-forge-class-feature-dock.is-subclass-inspector .npc-forge-class-feature-dock__head{border-bottom-color:rgba(213,163,74,.32)!important;background:linear-gradient(155deg,rgba(24,20,15,.995),rgba(8,15,18,.995))!important}
-        .npc-forge-class-feature-dock.is-subclass-inspector .npc-forge-class-feature-dock__title-group>span{color:#cda65f!important}.npc-forge-class-feature-dock.is-subclass-inspector .npc-forge-class-feature-dock__title-group>h3{color:#f1cf89!important;font-family:Georgia,serif!important;font-size:1.13rem!important}
-        .npc-forge-class-feature-dock.is-subclass-inspector .npc-forge-class-feature-dock__head-actions>em{border-color:rgba(213,163,74,.24)!important;color:#d9bf8c!important;background:rgba(99,64,24,.13)!important}.npc-forge-class-feature-dock.is-subclass-inspector .npc-forge-class-feature-dock__head-actions>button{border-color:rgba(213,163,74,.42)!important;color:#ead6ad!important}
+        .npc-forge-class-feature-dock.is-subclass-inspector .npc-forge-class-feature-dock__head{min-height:42px!important;padding:6px 9px!important;justify-content:flex-end!important;border-bottom-color:rgba(213,163,74,.24)!important;background:linear-gradient(155deg,rgba(20,17,14,.995),rgba(8,15,18,.995))!important}
+        .npc-forge-class-feature-dock.is-subclass-inspector .npc-forge-class-feature-dock__title-group{display:none!important}
+        .npc-forge-class-feature-dock.is-subclass-inspector .npc-forge-class-feature-dock__head-actions>em{display:none!important}.npc-forge-class-feature-dock.is-subclass-inspector .npc-forge-class-feature-dock__head-actions>button{border-color:rgba(213,163,74,.42)!important;color:#ead6ad!important}
         .npc-forge-class-feature-dock__body.is-subclass-inspector{gap:0!important;padding:0!important;background:linear-gradient(160deg,rgba(7,13,18,.99),rgba(8,18,23,.985) 55%,rgba(10,12,18,.99))}
         .npc-forge-subclass-inspector__tabs{display:grid;grid-template-columns:repeat(5,1fr);border-bottom:1px solid rgba(209,158,67,.48);background:rgba(5,10,14,.9)}
         .npc-forge-subclass-inspector__tabs button{min-height:44px;border:0;border-right:1px solid rgba(209,158,67,.28);border-radius:0;color:#d8c6a3;background:rgba(9,15,20,.72);font:700 .72rem/1 Georgia,serif;letter-spacing:.02em}
