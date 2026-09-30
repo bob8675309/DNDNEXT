@@ -289,7 +289,7 @@ export function useNpcForgeClassGuideModel(selectedClass, level) {
   return {
     view, setView, compareAll, setCompareAll, previewKey, setPreviewKey,
     loading, error, pinned, setPinned, currentLevel, options, preview, selected,
-    eligible, entryLevel, previewEligible, rows, intro: subclassIntroduction(preview), selectSubclass, spellCatalog,
+    eligible, entryLevel, previewEligible, rows, intro: subclassIntroduction(preview), selectSubclass, spellCatalog, allSpellCatalog: spells,
     choiceGroups, choiceSelections: state.featureSelections || {}, toggleFeatureOption,
     resolveListedDetail,
   };
