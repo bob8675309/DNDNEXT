@@ -37,7 +37,7 @@ assert(!guide.includes('onMouseEnter={() => publishFeature(model, onFeatureDetai
 assert(!guide.includes('onFocus={() => publishFeature(model, onFeatureDetail'), "Feature card must not update from focus alone in the Class guide.");
 
 for (const token of [
-  'import { useEffect, useMemo, useRef, useState } from "react"',
+  'import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"',
   'import { createPortal } from "react-dom"',
   'subclassArtworkFor(classKey, option)',
   'handleSubclassArtworkError(event, classKey)',
@@ -118,7 +118,6 @@ for (const token of [
   'url("/media/forge/subclass-carousel/subclass-selector-smoke-back.png")',
   'url("/media/forge/subclass-carousel/subclass-selector-smoke-front.png")',
   'url("/media/forge/subclass-carousel/subclass-selector-smoke-gray-20260927.webp")',
-  'url("/media/forge/subclass-carousel/subclass-selector-title-choose-fate-20260927.webp")',
   'url("/media/forge/subclass-carousel/subclass-selector-nav-prev-20260927.webp")',
   'url("/media/forge/subclass-carousel/subclass-selector-nav-next-20260927.webp")',
   'url("/media/forge/subclass-carousel/subclass-selector-flame-20260928.webp")',
@@ -144,17 +143,17 @@ assert(!tarotCss.includes('.class-subclass-carousel-modal__rune-foreground'), "R
 assert(tarotCss.includes('subclass-selector-smoke-back.png'), "Floating library scene must include the rear smoke layer.");
 assert(tarotCss.includes('subclass-selector-smoke-front.png'), "Floating library scene must include the colored depth-smoke layer.");
 assert(tarotCss.includes('subclass-selector-smoke-gray-20260927.webp'), "Floating library scene must include the gray depth-smoke layer.");
-assert(selector.includes('Choose Your Subclass') && !tarotCss.includes('subclass-selector-title-choose-fate-20260927.webp'), "Subclass selector title must use the symbol-free Choose Your Subclass plaque.");
+assert(selector.includes("<span>Choose Your</span><strong>Subclass</strong>") && !tarotCss.includes("subclass-selector-title-choose-fate-20260927.webp"), "Subclass selector title must use the symbol-free cinematic Choose Your / Subclass hierarchy.");
 assert(tarotCss.includes('subclass-selector-nav-prev-20260927.webp') && tarotCss.includes('subclass-selector-nav-next-20260927.webp'), "Subclass selector must use the approved left/right navigation artwork.");
 assert(selector.includes('? 820') && selector.includes('? 520 + Math.round(depth * 180)') && selector.includes(': 100 + Math.round(depth * 120)'), "Front/rear cards must use separate stacking bands so rear cards cannot clip across front cards.");
 assert(tarotCss.includes('transform-style: flat') && tarotCss.includes('isolation: isolate'), "Carousel cards must remain atomic stacking layers while inner Tarot faces retain their own flip context.");
 assert(tarotCss.includes('brightness(1.11)') && tarotCss.includes('brightness(1.06)'), "Front-facing Tarot cards must retain the subtle browser-approved brightness lift.");
 assert(tarotCss.includes('animation: none !important'), "Reduced-motion mode must disable ambient library animation.");
-assert(tarotCss.includes('left 1.18s cubic-bezier') && tarotCss.includes('transform 1.18s cubic-bezier'), "Button/keyboard carousel movement must retain the slower inertial travel timing.");
 assert(tarotCss.includes('.class-subclass-carousel-card.is-orbit-center .class-subclass-carousel-card__float') && tarotCss.includes('animation: none;'), "Hero card must stay still while non-hero cards idle-float.");
 assert(tarotCss.includes('z-index: 760') && tarotCss.includes('class-subclass-carousel-modal__smoke-near'), "Near smoke must cross side/front cards while remaining below the hero z-band.");
 assert(tarotCss.includes('left: 13.7%') && tarotCss.includes('right: 16.4%') && tarotCss.includes('top: 12.4%'), "Animated flames must stay registered to real upper candle clusters in the ruined-library background.");
 assert(selector.includes("captureGlideRects") && selector.includes("glide.animate") && selector.includes('cubic-bezier(.32,.035,.18,1)'), "Tarot slot changes must use the compositor glide path rather than snapping layout-property transitions.");
+assert(selector.includes("changedFaceBand ? 1 : clamp(rawScaleX, .72, 1.38)") && selector.includes("isFront: node.classList.contains(\"is-orbit-front\")"), "Tarot FLIP scaling must suppress oversized front/back depth-band transitions.");
 assert(tarotCss.includes(".class-subclass-carousel-card__glide") && tarotCss.includes(".class-subclass-carousel-card__yaw") && tarotCss.includes('var(--orbit-float-duration, 9.6s)'), "Tarot glide, yaw, and independent idle-float layers must remain separated.");
 assert(!tarotCss.includes("left 2.15s cubic-bezier") && !tarotCss.includes("top 2.25s cubic-bezier"), "Programmatic Tarot travel must not regress to left/top transition animation.");
 assert(!tarotCss.includes(':hover .class-subclass-carousel-card__surface {\n  filter:'), "Hover must not filter the 3D card surface; that compositor path caused cards to disappear.");
@@ -192,7 +191,6 @@ for (const asset of [
   "public/media/forge/subclass-carousel/subclass-selector-smoke-back.png",
   "public/media/forge/subclass-carousel/subclass-selector-smoke-front.png",
   "public/media/forge/subclass-carousel/subclass-selector-smoke-gray-20260927.webp",
-  "public/media/forge/subclass-carousel/subclass-selector-title-choose-fate-20260927.webp",
   "public/media/forge/subclass-carousel/subclass-selector-nav-prev-20260927.webp",
   "public/media/forge/subclass-carousel/subclass-selector-nav-next-20260927.webp",
   "public/media/forge/subclass-carousel/subclass-selector-flame-20260928.webp",
@@ -204,7 +202,6 @@ const smokeBackAssetSize = fs.statSync(path.join(root, "public/media/forge/subcl
 const smokeFrontAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-smoke-front.png")).size;
 const flameAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-flame-20260928.webp")).size;
 const smokeGrayAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-smoke-gray-20260927.webp")).size;
-const titleAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-title-choose-fate-20260927.webp")).size;
 const navPrevAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-nav-prev-20260927.webp")).size;
 const navNextAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-nav-next-20260927.webp")).size;
 assert(libraryAssetSize > 150_000, `Ruined-library selector asset is unexpectedly small (${libraryAssetSize} bytes); reject placeholder/corrupt transfers.`);
@@ -213,7 +210,6 @@ assert(smokeBackAssetSize > 1_000_000, `Rear smoke asset is unexpectedly small (
 assert(smokeFrontAssetSize > 1_000_000, `Foreground smoke asset is unexpectedly small (${smokeFrontAssetSize} bytes); reject placeholder/corrupt transfers.`);
 assert(flameAssetSize > 5_000, `Flame overlay asset is unexpectedly small (${flameAssetSize} bytes); reject placeholder/corrupt transfers.`);
 assert(smokeGrayAssetSize > 250_000, `Gray smoke asset is unexpectedly small (${smokeGrayAssetSize} bytes); reject placeholder/corrupt transfers.`);
-assert(titleAssetSize > 150_000, `Title artwork is unexpectedly small (${titleAssetSize} bytes); reject placeholder/corrupt transfers.`);
 assert(navPrevAssetSize > 25_000 && navNextAssetSize > 25_000, "Approved navigation assets are unexpectedly small; reject placeholder/corrupt transfers.");
 
 
@@ -243,7 +239,7 @@ const approvedTarotFamilies = {
   rogue: ["arcane-trickster", "assassin", "inquisitive", "mastermind", "phantom", "scion-of-the-three", "scout", "soulknife", "swashbuckler", "thief"],
   sorcerer: ["aberrant", "clockwork", "divine-soul", "draconic", "lunar", "pyromancer", "shadow", "spellfire", "storm", "wild-magic"],
   warlock: ["archfey", "celestial", "fathomless", "fiend", "genie", "great-old-one", "hexblade", "undead", "undying"],
-  wizard: ["abjuration", "abjurer", "bladesinger", "bladesinging", "chronurgy", "conjuration", "divination", "diviner", "enchantment", "evocation", "evoker", "graviturgy", "illusion", "illusionist", "necromancy", "scribes", "transmutation", "war"],
+  wizard: ["abjuration", "abjurer", "bladesinger", "chronurgy", "conjuration", "divination", "diviner", "enchantment", "evocation", "evoker", "graviturgy", "illusion", "illusionist", "necromancy", "scribes", "transmutation", "war"],
 };
 let approvedTarotCount = 0;
 for (const [classKey, families] of Object.entries(approvedTarotFamilies)) {
@@ -252,7 +248,7 @@ for (const [classKey, families] of Object.entries(approvedTarotFamilies)) {
     assert(fs.existsSync(path.join(root, `public/media/subclasses/${classKey}/${classKey}-${family}.webp`)), `Approved tarot asset missing ${classKey}/${family}`);
   }
 }
-assert(approvedTarotCount === 152, `Expected 152 installed approved normalized tarot concepts, found ${approvedTarotCount}.`);
+assert(approvedTarotCount === 151, `Expected 151 installed approved normalized tarot concepts after retiring corrupt Bladesinging, found ${approvedTarotCount}.`);
 for (const token of ['"ambition-psa": "ambition"', '"knowledge-psa": "knowledge"', '"solidarity-psa": "solidarity"', '"strength-psa": "strength"', '"zeal-psa": "zeal"']) {
   assert(subclassArtwork.includes(token), `Preferred-source Cleric alias mapping missing ${token}`);
 }
@@ -312,8 +308,10 @@ assert(!featureDock.includes("subclassSpellFeatures"), "Spells tab regressed to 
 assert(!featureDock.includes("Class Spell Access"), "Subclass Spells tab must not duplicate the later full class spell catalogue.");
 assert(featureDock.includes("width: isSubclassInspector ? 720 : DOCK_DEFAULT_WIDTH") && featureDock.includes("body > .npc-forge-class-feature-dock.is-viewport-floating.is-subclass-inspector"), "Subclass inspector must override legacy floating-dock width caps with the wider reading layout.");
 assert(featureDock.includes("npc-forge-subclass-inspector__overview-lore-scroll") && !featureDock.includes("Path Overview"), "Overview must present the source-backed subclass lore in the scrollable reading area rather than the old shallow Path Overview box.");
+assert(featureDock.includes('grid-template-areas:"heading heading" "lore art"') && featureDock.includes("height:254px") && !featureDock.includes("<strong>Lore</strong>"), "Overview lore and Tarot art must remain parallel while redundant source/Lore labels stay removed.");
+assert(!subclassArtwork.includes('bladesinging: "bladesinging"'), "Retired Bladesinging artwork mapping must not return.");
 assert(featureDock.includes("grid-template-columns:repeat(2,minmax(0,1fr))"), "Subclass feature summaries must retain the two-column desktop layout.");
 assert(model.includes("spellCatalog") && !model.includes("maxSpellLevelForProgressionRow"), "Subclass spell resolution should use the source-backed class spell catalogue without rendering the full class list here.");
 
 
-console.log("Class subclass selector validation passed: canonical authority remains in the guide model, all subclass cards stay on one free-floating parametric carousel, rear cards use the shared card back, one exact hero position owns enlarged presentation, ambient library motion is presentation-only, drag/arrow motion never persists a subclass, explicit card clicks remain the only selection path, all 152 approved normalized Tarot concepts remain installed/mapped, and future content retains safe fallback.");
+console.log("Class subclass selector validation passed: canonical authority remains in the guide model, all subclass cards stay on one free-floating parametric carousel, rear cards use the shared card back, one exact hero position owns enlarged presentation, ambient library motion is presentation-only, drag/arrow motion never persists a subclass, explicit card clicks remain the only selection path, all 151 approved normalized Tarot concepts remain installed/mapped, and future content retains safe fallback.");
