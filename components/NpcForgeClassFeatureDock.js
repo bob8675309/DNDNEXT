@@ -20,13 +20,37 @@ function normalizedSpellName(value) {
   return safeText(value).toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 }
 
+const DUNAMANCY_SPELL_NAMES = [
+  "Sapping Sting",
+  "Gift of Alacrity",
+  "Magnify Gravity",
+  "Fortune's Favor",
+  "Immovable Object",
+  "Wristpocket",
+  "Pulse Wave",
+  "Gravity Sinkhole",
+  "Temporal Shunt",
+  "Gravity Fissure",
+  "Tether Essence",
+  "Dark Star",
+  "Reality Break",
+  "Ravenous Void",
+  "Time Ravage",
+];
+
 function playerFacingSubclassLore(value) {
   return safeText(value)
     .split(/\n+/)
     .map((line) => line.trim())
     .filter(Boolean)
     .filter((line) => !/^[^|]+\|[^|]+\|\|[^|]+\|\|\d+$/.test(line))
+    .filter((line) => !/this subclass has access to dunamancy spells/i.test(line))
     .join("\n\n");
+}
+
+function subclassHasDunamancyAccess(intro = null) {
+  const sourceText = `${safeText(intro?.description)} ${JSON.stringify(intro?.entries || [])}`;
+  return /dunamancy spells/i.test(sourceText);
 }
 
 function collectSpellTokens(value, unlockLabel = "", output = []) {
@@ -97,24 +121,35 @@ function isGenericSubclassFeatureName(value) {
   return key === "subclass" || key === "subclass feature" || key.endsWith(" subclass feature");
 }
 
+function uniqueProgressionFeatures(features = []) {
+  const seen = new Set();
+  return features.filter((feature) => {
+    const key = normalizedSpellName(feature?.name);
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 function buildSubclassProgressionRows(rows = [], subclassFeatures = []) {
   return (Array.isArray(rows) ? rows : []).map((row) => {
     const baseSource = Array.isArray(row?.guideFeatures) && row.guideFeatures.length
       ? row.guideFeatures.filter((feature) => feature?.type !== "subclass")
       : (Array.isArray(row?.features) ? row.features : []);
-    const baseFeatures = baseSource
-      .map(progressionFeatureName)
-      .filter(Boolean)
-      .filter((name) => !isGenericSubclassFeatureName(name));
-    const subclassAtLevel = subclassFeatures
+    const baseFeatures = uniqueProgressionFeatures(baseSource
+      .map((feature) => typeof feature === "string"
+        ? { name: progressionFeatureName(feature), type: "class", source: "", description: "" }
+        : { ...feature, name: progressionFeatureName(feature), type: "class" })
+      .filter((feature) => feature.name && !isGenericSubclassFeatureName(feature.name)));
+    const subclassAtLevel = uniqueProgressionFeatures(subclassFeatures
       .filter((feature) => Number(feature?.level) === Number(row?.class_level))
-      .map((feature) => safeText(feature?.name))
-      .filter(Boolean);
+      .map((feature) => ({ ...feature, name: safeText(feature?.name), type: "subclass" }))
+      .filter((feature) => feature.name));
     return {
       level: Number(row?.class_level || 0),
       proficiencyBonus: Number(row?.proficiency_bonus || 2),
-      baseFeatures: [...new Set(baseFeatures)],
-      subclassFeatures: [...new Set(subclassAtLevel)],
+      baseFeatures,
+      subclassFeatures: subclassAtLevel,
     };
   }).filter((row) => row.level > 0);
 }
@@ -170,7 +205,7 @@ function defaultDockPosition() {
   });
 }
 
-export default function NpcForgeClassFeatureDock({ detail = null, selectedClass = null }) {
+export default function NpcForgeClassFeatureDock({ detail = null, selectedClass = null, onFeatureDetail = null }) {
   const dockRef = useRef(null);
   const dragRef = useRef(null);
   const [closedDetailKey, setClosedDetailKey] = useState("");
@@ -186,6 +221,9 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
   const spellCatalog = Array.isArray(detail?.spellCatalog) ? detail.spellCatalog : [];
   const subclassSpellRefs = subclassSpellReferences(subclassFeatures);
   const subclassSpells = resolveSubclassSpells(subclassSpellRefs, spellCatalog);
+  const dunamancySpells = subclassHasDunamancyAccess(subclassIntro)
+    ? resolveSubclassSpells(DUNAMANCY_SPELL_NAMES.map((name) => ({ name, source: "EGW", unlockLabel: "Dunamancy" })), spellCatalog)
+    : [];
   const progressionRows = buildSubclassProgressionRows(detail?.progressionRows || [], subclassFeatures);
   const currentLevel = Math.max(1, Number(detail?.currentLevel || 1));
   const isOverview = !feature;
