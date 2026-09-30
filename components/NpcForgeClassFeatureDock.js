@@ -78,6 +78,38 @@ function resolveSubclassSpells(refs = [], catalog = []) {
   return refs.map((ref) => ({ ...(byName.get(normalizedSpellName(ref.name)) || {}), ...ref, name: ref.name }));
 }
 
+function progressionFeatureName(value) {
+  if (typeof value === "string") return safeText(value.split("|")[0]);
+  return safeText(value?.name || value?.label || value?.title);
+}
+
+function isGenericSubclassFeatureName(value) {
+  const key = safeText(value).toLowerCase();
+  return key === "subclass" || key === "subclass feature" || key.endsWith(" subclass feature");
+}
+
+function buildSubclassProgressionRows(rows = [], subclassFeatures = []) {
+  return (Array.isArray(rows) ? rows : []).map((row) => {
+    const baseSource = Array.isArray(row?.guideFeatures) && row.guideFeatures.length
+      ? row.guideFeatures.filter((feature) => feature?.type !== "subclass")
+      : (Array.isArray(row?.features) ? row.features : []);
+    const baseFeatures = baseSource
+      .map(progressionFeatureName)
+      .filter(Boolean)
+      .filter((name) => !isGenericSubclassFeatureName(name));
+    const subclassAtLevel = subclassFeatures
+      .filter((feature) => Number(feature?.level) === Number(row?.class_level))
+      .map((feature) => safeText(feature?.name))
+      .filter(Boolean);
+    return {
+      level: Number(row?.class_level || 0),
+      proficiencyBonus: Number(row?.proficiency_bonus || 2),
+      baseFeatures: [...new Set(baseFeatures)],
+      subclassFeatures: [...new Set(subclassAtLevel)],
+    };
+  }).filter((row) => row.level > 0);
+}
+
 function classOverviewHighlights(classRow = {}) {
   const byLevel = classRow?.class_features_by_level || classRow?.raw_payload?.class_features_by_level || {};
   const seen = new Set();
@@ -145,6 +177,8 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
   const spellCatalog = Array.isArray(detail?.spellCatalog) ? detail.spellCatalog : [];
   const subclassSpellRefs = subclassSpellReferences(subclassFeatures);
   const subclassSpells = resolveSubclassSpells(subclassSpellRefs, spellCatalog);
+  const progressionRows = buildSubclassProgressionRows(detail?.progressionRows || [], subclassFeatures);
+  const currentLevel = Math.max(1, Number(detail?.currentLevel || 1));
   const isOverview = !feature;
   const title = isSubclassInspector ? subclassOption.name : feature?.name || selectedClass?.class_name || "Class feature details";
   const description = feature?.description
@@ -275,12 +309,17 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
           <nav className="npc-forge-subclass-inspector__tabs" aria-label={`${subclassOption.name} details`}>
             {[
               ["overview", "Overview"],
+              ["progression", "Progression"],
               ["features", "Features"],
               ["lore", "Lore"],
               ["spells", "Spells"],
             ].map(([key, label]) => <button key={key} type="button" className={subclassTab === key ? "is-active" : ""} onClick={() => setSubclassTab(key)}>{label}</button>)}
           </nav>
           <div className="npc-forge-subclass-inspector__content">
+            <div className="npc-forge-subclass-inspector__art-backdrop" aria-hidden="true">
+              <img src={subclassArtworkFor(selectedClass?.class_key || "", subclassOption)} onError={(event) => handleSubclassArtworkError(event, selectedClass?.class_key || "")} alt="" />
+            </div>
+            <div className="npc-forge-subclass-inspector__content-layer">
             {subclassTab === "overview" ? <>
               <div className="npc-forge-subclass-inspector__identity">
                 <div className="npc-forge-subclass-inspector__identity-heading">
@@ -292,12 +331,29 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
                     {subclassIntro?.description ? <ClassFeatureText text={subclassIntro.description} compact /> : <p>No separate source-backed lore text is available for this subclass.</p>}
                   </div>
                 </section>
-                <img src={subclassArtworkFor(selectedClass?.class_key || "", subclassOption)} onError={(event) => handleSubclassArtworkError(event, selectedClass?.class_key || "")} alt="" aria-hidden="true" />
               </div>
               <div className="npc-forge-subclass-inspector__feature-strip">
                 {subclassFeatures.slice(0, 5).map((entry) => <div key={`${entry.level}-${entry.name}`}><b>{Number(entry.level || subclassOption.firstLevel || 1)}</b><span>{entry.name}</span></div>)}
               </div>
             </> : null}
+            {subclassTab === "progression" ? <section className="npc-forge-subclass-inspector__progression">
+              <header>
+                <div><strong>Class + Subclass Progression</strong><small>{selectedClass?.class_name || "Class"} features remain in the base color; {subclassOption.name} additions are highlighted.</small></div>
+                <div className="npc-forge-subclass-inspector__progression-legend"><span>Class</span><span className="is-subclass">Subclass</span></div>
+              </header>
+              <div className="npc-forge-subclass-inspector__progression-table" role="table" aria-label={`${selectedClass?.class_name || "Class"} and ${subclassOption.name} progression`}>
+                <div className="npc-forge-subclass-inspector__progression-row is-head" role="row"><div>Level</div><div>PB</div><div>Features</div></div>
+                {progressionRows.length ? progressionRows.map((row) => <div key={row.level} className={`npc-forge-subclass-inspector__progression-row${row.level === currentLevel ? " is-current" : ""}`} role="row">
+                  <div><strong>{row.level}</strong>{row.level === currentLevel ? <small>Current</small> : null}</div>
+                  <div>+{row.proficiencyBonus}</div>
+                  <div className="npc-forge-subclass-inspector__progression-features">
+                    {row.baseFeatures.map((name) => <span key={`base-${row.level}-${name}`}>{name}</span>)}
+                    {row.subclassFeatures.map((name) => <span className="is-subclass" key={`subclass-${row.level}-${name}`}>{name}</span>)}
+                    {!row.baseFeatures.length && !row.subclassFeatures.length ? <em>—</em> : null}
+                  </div>
+                </div>) : <div className="npc-forge-subclass-inspector__empty-note"><span>No class progression rows are available for this source entry.</span></div>}
+              </div>
+            </section> : null}
             {subclassTab === "features" ? <div className="npc-forge-subclass-inspector__feature-list">
               {subclassFeatures.length ? subclassFeatures.map((entry) => <details key={`${entry.level}-${entry.name}`}><summary><span>Level {Number(entry.level || subclassOption.firstLevel || 1)}</span><strong>{entry.name}</strong></summary><ClassFeatureText text={entry.description} compact /></details>) : <p>No source-backed subclass features are available for this entry.</p>}
             </div> : null}
@@ -308,6 +364,7 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
                 {subclassSpells.length ? <div className="npc-forge-subclass-inspector__spell-cards">{subclassSpells.map((spell) => <article key={`${spell.name}-${spell.unlockLabel}`}><div><strong>{spell.name}</strong><small>{spell.unlockLabel ? `Class level ${spell.unlockLabel}` : "Subclass spell"}</small></div><span>{Number.isFinite(Number(spell.level)) ? (Number(spell.level) === 0 ? "Cantrip" : `Spell ${Number(spell.level)}`) : "Spell"}{spell.school ? ` • ${spell.school}` : ""}</span></article>)}</div> : <div className="npc-forge-subclass-inspector__empty-note"><strong>No separate subclass spell list</strong><span>{subclassOption.name} does not grant a structured spell list in the imported source. It uses normal {selectedClass?.class_name || "class"} spell access.</span></div>}
               </section>
             </div> : null}
+            </div>
           </div>
         </> : <>
           {isOverview && selectedClass?.class_name ? <span className="npc-forge-class-feature-dock__class-chip">{selectedClass.class_name}</span> : null}
