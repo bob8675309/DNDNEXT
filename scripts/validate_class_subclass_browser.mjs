@@ -14,6 +14,7 @@ const model = read("components/NpcForgeClassGuideModel.js");
 const workspaceCss = read("styles/character-class-workspace.css");
 const tarotCss = read("styles/character-forge-subclass-tarot-layout.css");
 const featureDock = read("components/NpcForgeClassFeatureDock.js");
+const forgeSteps = read("components/NpcForgeStepContent.js");
 
 for (const token of [
   'import ClassSubclassSection from "./ClassSubclassSection"',
