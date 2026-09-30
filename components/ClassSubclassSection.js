@@ -221,7 +221,10 @@ export default function ClassSubclassSection({
     for (const [key, node] of cardRefsRef.current.entries()) {
       const glide = node?.querySelector?.(".class-subclass-carousel-card__glide");
       if (!glide) continue;
-      rects.set(key, glide.getBoundingClientRect());
+      rects.set(key, {
+        rect: glide.getBoundingClientRect(),
+        isFront: node.classList.contains("is-orbit-front"),
+      });
     }
     pendingGlideRectsRef.current = rects.size ? rects : null;
   }
@@ -236,18 +239,22 @@ export default function ClassSubclassSection({
 
     for (const [key, node] of cardRefsRef.current.entries()) {
       const glide = node?.querySelector?.(".class-subclass-carousel-card__glide");
-      const previous = previousRects.get(key);
-      if (!glide || !previous) continue;
+      const previousState = previousRects.get(key);
+      if (!glide || !previousState?.rect) continue;
 
       const active = glideAnimationsRef.current.get(key);
       active?.cancel?.();
 
       const next = node.getBoundingClientRect();
       if (!next.width || !next.height) continue;
+      const previous = previousState.rect;
       const dx = previous.left - next.left;
       const dy = previous.top - next.top;
-      const scaleX = previous.width / next.width;
-      const scaleY = previous.height / next.height;
+      const rawScaleX = previous.width / next.width;
+      const rawScaleY = previous.height / next.height;
+      const changedFaceBand = previousState.isFront !== node.classList.contains("is-orbit-front");
+      const scaleX = changedFaceBand ? 1 : clamp(rawScaleX, .72, 1.38);
+      const scaleY = changedFaceBand ? 1 : clamp(rawScaleY, .72, 1.38);
       const movement = Math.hypot(dx, dy);
       const sizeShift = Math.max(Math.abs(1 - scaleX), Math.abs(1 - scaleY));
 
