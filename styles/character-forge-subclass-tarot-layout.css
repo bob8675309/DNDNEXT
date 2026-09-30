@@ -503,14 +503,14 @@
 }
 
 .class-subclass-carousel-card__yaw {
-  transform: rotateY(var(--orbit-yaw));
+  transform: none;
   transform-origin: 50% 100%;
   transform-style: preserve-3d;
-  transition: transform 2.1s cubic-bezier(.32,.035,.18,1);
+  transition: none;
 }
 
 .class-subclass-carousel-card.is-orbit-center .class-subclass-carousel-card__yaw {
-  transform: rotateY(0deg);
+  transform: none;
 }
 
 .class-subclass-carousel-modal__orbit.is-dragging .class-subclass-carousel-card__yaw {
