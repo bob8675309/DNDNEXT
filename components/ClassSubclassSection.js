@@ -457,7 +457,7 @@ export default function ClassSubclassSection({
       >
         <div className="class-subclass-carousel-modal__panel">
           <div className="class-subclass-carousel-modal__scene" aria-hidden="true" />
-          <h3 className="class-subclass-carousel-modal__title">Choose Your Subclass</h3>
+          <h3 className="class-subclass-carousel-modal__title"><span>Choose Your</span><strong>Subclass</strong></h3>
           <button
             type="button"
             className="class-subclass-carousel-modal__close"
