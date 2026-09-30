@@ -72,7 +72,7 @@ function inspectSubclass(model, onFeatureDetail, option) {
   if (!option?.key) return;
   const feature = subclassPreviewFeature(option);
   model.setPinned(feature);
-  onFeatureDetail?.({ type: "classFeature", feature, subclassName: option.name || "Subclass", subclassOption: option, spellCatalog: model.spellCatalog || [] });
+  onFeatureDetail?.({ type: "classFeature", feature, subclassName: option.name || "Subclass", subclassOption: option, spellCatalog: model.spellCatalog || [], progressionRows: model.rows || [], currentLevel: model.currentLevel });
 }
 function selectedRowFeatures(model, row) {
   const base = (row?.guideFeatures || []).filter((feature) => feature?.type !== "subclass");
