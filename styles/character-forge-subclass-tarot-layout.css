@@ -246,6 +246,7 @@
   animation: subclass-candle-flicker-right 4.15s ease-in-out -1.05s infinite;
 }
 
+/* Symbol-free cinematic subclass title: linework only, no class-like emblems. */
 .class-subclass-carousel-modal__title {
   position: absolute;
   top: 1.6%;
