@@ -356,7 +356,6 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
           <nav className="npc-forge-subclass-inspector__tabs" aria-label={`${subclassOption.name} details`}>
             {[
               ["overview", "Overview"],
-              ["progression", "Progression"],
               ["features", "Features"],
               ["lore", "Lore"],
               ["spells", "Spells"],
@@ -379,37 +378,39 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
                   </div>
                 </section>
               </div>
-              <div className="npc-forge-subclass-inspector__feature-strip">
-                {subclassFeatures.slice(0, 5).map((entry) => <div key={`${entry.level}-${entry.name}`}><b>{Number(entry.level || subclassOption.firstLevel || 1)}</b><span>{entry.name}</span></div>)}
-              </div>
+              <section className="npc-forge-subclass-inspector__progression is-overview-progression">
+                <header>
+                  <div><strong>Class + Subclass Progression</strong><small>{selectedClass?.class_name || "Class"} features use the base color; {subclassOption.name} additions are highlighted. Select a feature to open its Feature panel.</small></div>
+                  <div className="npc-forge-subclass-inspector__progression-legend"><span>Class</span><span className="is-subclass">Subclass</span></div>
+                </header>
+                <div className="npc-forge-subclass-inspector__progression-table" role="table" aria-label={`${selectedClass?.class_name || "Class"} and ${subclassOption.name} progression`}>
+                  <div className="npc-forge-subclass-inspector__progression-row is-head" role="row"><div>Level</div><div>PB</div><div>Features</div></div>
+                  {progressionRows.length ? progressionRows.map((row) => <div key={row.level} className={`npc-forge-subclass-inspector__progression-row${row.level === currentLevel ? " is-current" : ""}`} role="row">
+                    <div><strong>{row.level}</strong>{row.level === currentLevel ? <small>Current</small> : null}</div>
+                    <div>+{row.proficiencyBonus}</div>
+                    <div className="npc-forge-subclass-inspector__progression-features">
+                      {row.baseFeatures.map((entry) => <button type="button" key={`base-${row.level}-${entry.name}`} onClick={() => onFeatureDetail?.({ type: "classFeature", feature: { ...entry, level: row.level } })}>{entry.name}</button>)}
+                      {row.subclassFeatures.map((entry) => <button type="button" className="is-subclass" key={`subclass-${row.level}-${entry.name}`} onClick={() => onFeatureDetail?.({ type: "classFeature", feature: { ...entry, level: row.level }, subclassName: subclassOption.name })}>{entry.name}</button>)}
+                      {!row.baseFeatures.length && !row.subclassFeatures.length ? <em>—</em> : null}
+                    </div>
+                  </div>) : <div className="npc-forge-subclass-inspector__empty-note"><span>No class progression rows are available for this source entry.</span></div>}
+                </div>
+              </section>
             </> : null}
-            {subclassTab === "progression" ? <section className="npc-forge-subclass-inspector__progression">
-              <header>
-                <div><strong>Class + Subclass Progression</strong><small>{selectedClass?.class_name || "Class"} features remain in the base color; {subclassOption.name} additions are highlighted.</small></div>
-                <div className="npc-forge-subclass-inspector__progression-legend"><span>Class</span><span className="is-subclass">Subclass</span></div>
-              </header>
-              <div className="npc-forge-subclass-inspector__progression-table" role="table" aria-label={`${selectedClass?.class_name || "Class"} and ${subclassOption.name} progression`}>
-                <div className="npc-forge-subclass-inspector__progression-row is-head" role="row"><div>Level</div><div>PB</div><div>Features</div></div>
-                {progressionRows.length ? progressionRows.map((row) => <div key={row.level} className={`npc-forge-subclass-inspector__progression-row${row.level === currentLevel ? " is-current" : ""}`} role="row">
-                  <div><strong>{row.level}</strong>{row.level === currentLevel ? <small>Current</small> : null}</div>
-                  <div>+{row.proficiencyBonus}</div>
-                  <div className="npc-forge-subclass-inspector__progression-features">
-                    {row.baseFeatures.map((name) => <span key={`base-${row.level}-${name}`}>{name}</span>)}
-                    {row.subclassFeatures.map((name) => <span className="is-subclass" key={`subclass-${row.level}-${name}`}>{name}</span>)}
-                    {!row.baseFeatures.length && !row.subclassFeatures.length ? <em>—</em> : null}
-                  </div>
-                </div>) : <div className="npc-forge-subclass-inspector__empty-note"><span>No class progression rows are available for this source entry.</span></div>}
-              </div>
-            </section> : null}
             {subclassTab === "features" ? <div className="npc-forge-subclass-inspector__feature-list">
               {subclassFeatures.length ? subclassFeatures.map((entry) => <details key={`${entry.level}-${entry.name}`}><summary><span>Level {Number(entry.level || subclassOption.firstLevel || 1)}</span><strong>{entry.name}</strong></summary><ClassFeatureText text={entry.description} compact /></details>) : <p>No source-backed subclass features are available for this entry.</p>}
             </div> : null}
-            {subclassTab === "lore" ? <div className="npc-forge-subclass-inspector__reading"><h4>{subclassOption.name}</h4>{subclassIntro?.description ? <ClassFeatureText text={subclassIntro.description} compact /> : <p>No separate source-backed lore text is available for this subclass.</p>}</div> : null}
+            {subclassTab === "lore" ? <div className="npc-forge-subclass-inspector__reading"><h4>{subclassOption.name}</h4>{subclassIntro?.description ? <ClassFeatureText text={playerFacingSubclassLore(subclassIntro.description)} compact /> : <p>No separate source-backed lore text is available for this subclass.</p>}</div> : null}
             {subclassTab === "spells" ? <div className="npc-forge-subclass-inspector__spells">
-              <section className="npc-forge-subclass-inspector__spell-grants">
+              {dunamancySpells.length ? <section className="npc-forge-subclass-inspector__spell-grants is-dunamancy">
+                <div className="npc-forge-subclass-inspector__section-head"><span>Dunamancy Spells</span><small>Source-backed EGW spell access granted by this subclass</small></div>
+                <div className="npc-forge-subclass-inspector__spell-cards">{dunamancySpells.map((spell) => <article key={`dunamancy-${spell.name}`}><div><strong>{spell.name}</strong><small>{Number(spell.level || 0) === 0 ? "Cantrip" : `Spell level ${Number(spell.level)}`}</small></div><span>{spell.school || "Spell"} • {spell.source || "EGW"}</span></article>)}</div>
+              </section> : null}
+              {subclassSpells.length ? <section className="npc-forge-subclass-inspector__spell-grants">
                 <div className="npc-forge-subclass-inspector__section-head"><span>Subclass Spell Grants</span><small>Source-backed additions and always-prepared spells</small></div>
-                {subclassSpells.length ? <div className="npc-forge-subclass-inspector__spell-cards">{subclassSpells.map((spell) => <article key={`${spell.name}-${spell.unlockLabel}`}><div><strong>{spell.name}</strong><small>{spell.unlockLabel ? `Class level ${spell.unlockLabel}` : "Subclass spell"}</small></div><span>{Number.isFinite(Number(spell.level)) ? (Number(spell.level) === 0 ? "Cantrip" : `Spell ${Number(spell.level)}`) : "Spell"}{spell.school ? ` • ${spell.school}` : ""}</span></article>)}</div> : <div className="npc-forge-subclass-inspector__empty-note"><strong>No separate subclass spell list</strong><span>{subclassOption.name} does not grant a structured spell list in the imported source. It uses normal {selectedClass?.class_name || "class"} spell access.</span></div>}
-              </section>
+                <div className="npc-forge-subclass-inspector__spell-cards">{subclassSpells.map((spell) => <article key={`${spell.name}-${spell.unlockLabel}`}><div><strong>{spell.name}</strong><small>{spell.unlockLabel ? `Class level ${spell.unlockLabel}` : "Subclass spell"}</small></div><span>{Number.isFinite(Number(spell.level)) ? (Number(spell.level) === 0 ? "Cantrip" : `Spell ${Number(spell.level)}`) : "Spell"}{spell.school ? ` • ${spell.school}` : ""}</span></article>)}</div>
+              </section> : null}
+              {!dunamancySpells.length && !subclassSpells.length ? <div className="npc-forge-subclass-inspector__empty-note"><strong>No separate subclass spell list</strong><span>{subclassOption.name} does not grant a structured spell list in the imported source.</span></div> : null}
             </div> : null}
             </div>
           </div>
