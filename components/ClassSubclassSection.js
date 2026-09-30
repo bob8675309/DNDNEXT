@@ -221,10 +221,7 @@ export default function ClassSubclassSection({
     for (const [key, node] of cardRefsRef.current.entries()) {
       const glide = node?.querySelector?.(".class-subclass-carousel-card__glide");
       if (!glide) continue;
-      rects.set(key, {
-        rect: glide.getBoundingClientRect(),
-        isFront: node.classList.contains("is-orbit-front"),
-      });
+      rects.set(key, glide.getBoundingClientRect());
     }
     pendingGlideRectsRef.current = rects.size ? rects : null;
   }
@@ -239,23 +236,24 @@ export default function ClassSubclassSection({
 
     for (const [key, node] of cardRefsRef.current.entries()) {
       const glide = node?.querySelector?.(".class-subclass-carousel-card__glide");
-      const previousState = previousRects.get(key);
-      if (!glide || !previousState?.rect) continue;
+      const previous = previousRects.get(key);
+      if (!glide || !previous) continue;
 
       const active = glideAnimationsRef.current.get(key);
       active?.cancel?.();
 
       const next = node.getBoundingClientRect();
       if (!next.width || !next.height) continue;
-      const previous = previousState.rect;
       const dx = previous.left - next.left;
       const dy = previous.top - next.top;
-      const rawScaleX = previous.width / next.width;
-      const rawScaleY = previous.height / next.height;
-      const changedFaceBand = previousState.isFront !== node.classList.contains("is-orbit-front");
-      const scaleX = changedFaceBand ? 1 : clamp(rawScaleX, .72, 1.38);
-      const scaleY = changedFaceBand ? 1 : clamp(rawScaleY, .72, 1.38);
       const movement = Math.hypot(dx, dy);
+      const orbitWidth = Number(orbitRef.current?.getBoundingClientRect()?.width || 0);
+      // One rear card wraps across the signed-angle seam on some arrow presses.
+      // Do not FLIP that hidden/back-of-ring teleport across the whole viewport;
+      // letting only that rear card take its new slot prevents the giant card-back fly-through.
+      if (orbitWidth > 0 && movement > orbitWidth * .58) continue;
+      const scaleX = clamp(previous.width / next.width, .72, 1.45);
+      const scaleY = clamp(previous.height / next.height, .72, 1.45);
       const sizeShift = Math.max(Math.abs(1 - scaleX), Math.abs(1 - scaleY));
 
       if (movement < .5 && sizeShift < .005) continue;
@@ -597,13 +595,14 @@ export default function ClassSubclassSection({
             </div>
           </div>
         ) : (
-          <button type="button" className="class-subclass-launcher" onClick={() => setSelectorOpen(true)}>
-            <span className="class-subclass-launcher__icon" aria-hidden="true">✦</span>
-            <span>
-              <strong>{currentLevel >= entryLevel ? "Choose your subclass" : `Subclass unlocks at level ${entryLevel}`}</strong>
-              <small>{currentLevel >= entryLevel ? "Open the Tarot selector" : "Preview the paths available to this class"}</small>
-            </span>
-            <b aria-hidden="true">→</b>
+          <button
+            type="button"
+            className="class-subclass-launcher"
+            onClick={() => setSelectorOpen(true)}
+            aria-label={currentLevel >= entryLevel ? "Open Subclass Browser" : `Open Subclass Browser. Subclass selection unlocks at level ${entryLevel}.`}
+            title={currentLevel >= entryLevel ? "Open the subclass Tarot browser" : `Preview subclasses. Selection unlocks at level ${entryLevel}.`}
+          >
+            <strong>Subclass Browser</strong>
           </button>
         )}
         <span className="visually-hidden">{required && !selected ? "Choose an eligible subclass before continuing." : `Subclass selection unlocks at level ${entryLevel}.`}</span>
