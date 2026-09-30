@@ -248,55 +248,76 @@
 
 .class-subclass-carousel-modal__title {
   position: absolute;
-  top: 2.2%;
+  top: 1.6%;
   left: 50%;
   z-index: 760;
-  width: clamp(370px, 34vw, 610px);
-  min-height: clamp(54px, 5.2vw, 76px);
+  width: clamp(420px, 37vw, 680px);
+  min-height: clamp(72px, 7vw, 104px);
   display: grid;
   place-items: center;
+  align-content: center;
+  gap: .12rem;
   margin: 0;
-  padding: clamp(.65rem, 1vw, .9rem) clamp(2.5rem, 4vw, 4.4rem);
-  border: 1px solid rgba(232, 190, 96, .76);
-  border-radius: 12px 12px 20px 20px;
+  padding: clamp(.72rem, 1.1vw, 1.02rem) clamp(4rem, 6vw, 6.8rem);
+  border: 1px solid rgba(232,190,96,.72);
+  border-radius: 10px;
   transform: translateX(-50%);
-  color: #f4cf7e;
-  font: 700 clamp(1.08rem, 1.7vw, 1.62rem)/1 Georgia, "Times New Roman", serif;
-  letter-spacing: .065em;
-  text-align: center;
-  text-shadow: 0 1px 0 #3a1f08, 0 0 12px rgba(250, 198, 90, .32);
+  clip-path: polygon(4% 0, 96% 0, 100% 24%, 100% 76%, 96% 100%, 4% 100%, 0 76%, 0 24%);
   background:
-    linear-gradient(180deg, rgba(40, 26, 18, .97), rgba(12, 10, 14, .98) 68%, rgba(19, 12, 11, .98)),
-    radial-gradient(ellipse at 50% 0%, rgba(232, 177, 77, .18), transparent 58%);
+    linear-gradient(180deg, rgba(33,21,17,.97), rgba(11,9,13,.985) 52%, rgba(19,11,11,.985)),
+    radial-gradient(ellipse at 50% 0%, rgba(232,177,77,.16), transparent 62%);
   box-shadow:
-    inset 0 0 0 3px rgba(8, 6, 9, .82),
-    inset 0 0 0 4px rgba(205, 153, 63, .28),
-    inset 0 10px 24px rgba(255, 208, 108, .045),
-    0 7px 18px rgba(0,0,0,.56),
-    0 0 24px rgba(201, 141, 49, .14);
+    inset 0 0 0 3px rgba(7,5,8,.88),
+    inset 0 0 0 4px rgba(205,153,63,.30),
+    inset 0 12px 28px rgba(255,207,102,.045),
+    0 8px 22px rgba(0,0,0,.58),
+    0 0 28px rgba(201,141,49,.15);
+  text-align: center;
   pointer-events: none;
 }
 
-.class-subclass-carousel-modal__title::before {
-  content: "";
-  position: absolute;
-  inset: 6px 10px;
-  border-top: 1px solid rgba(242, 205, 126, .28);
-  border-bottom: 1px solid rgba(123, 77, 28, .55);
-  border-radius: 8px 8px 15px 15px;
-  pointer-events: none;
+.class-subclass-carousel-modal__title > span {
+  color: rgba(226,190,119,.78);
+  font: 700 clamp(.58rem,.78vw,.82rem)/1 Georgia,"Times New Roman",serif;
+  letter-spacing: .36em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 0 rgba(40,20,6,.9);
 }
 
+.class-subclass-carousel-modal__title > strong {
+  color: #f5d487;
+  font: 700 clamp(1.26rem,2vw,1.95rem)/1 Georgia,"Times New Roman",serif;
+  letter-spacing: .115em;
+  text-transform: uppercase;
+  text-shadow:
+    0 1px 0 #3a1f08,
+    0 0 10px rgba(250,198,90,.32),
+    0 0 24px rgba(232,164,63,.12);
+}
+
+.class-subclass-carousel-modal__title::before,
 .class-subclass-carousel-modal__title::after {
   content: "";
   position: absolute;
-  left: 14%;
-  right: 14%;
-  bottom: 7px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(238, 189, 89, .72), transparent);
-  box-shadow: 0 0 7px rgba(238, 189, 89, .24);
-  pointer-events: none;
+  top: 50%;
+  width: 17%;
+  height: 9px;
+  transform: translateY(-50%);
+  border-top: 1px solid rgba(239,199,115,.68);
+  border-bottom: 1px solid rgba(126,76,27,.52);
+  opacity: .86;
+}
+
+.class-subclass-carousel-modal__title::before {
+  left: 5%;
+  clip-path: polygon(0 45%, 78% 45%, 100% 0, 83% 50%, 100% 100%, 78% 55%, 0 55%);
+  background: linear-gradient(90deg, transparent, rgba(203,147,55,.16));
+}
+
+.class-subclass-carousel-modal__title::after {
+  right: 5%;
+  clip-path: polygon(100% 45%, 22% 45%, 0 0, 17% 50%, 0 100%, 22% 55%, 100% 55%);
+  background: linear-gradient(270deg, transparent, rgba(203,147,55,.16));
 }
 
 .class-subclass-carousel-modal__close {
