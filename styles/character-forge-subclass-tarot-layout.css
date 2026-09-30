@@ -226,76 +226,68 @@
 /* Symbol-free cinematic subclass title: linework only, no class-like emblems. */
 .class-subclass-carousel-modal__title {
   position: absolute;
-  top: 1.6%;
+  top: 1.5%;
   left: 50%;
   z-index: 760;
-  width: clamp(420px, 37vw, 680px);
-  min-height: clamp(72px, 7vw, 104px);
+  width: clamp(430px, 39vw, 710px);
+  min-height: clamp(76px, 7vw, 108px);
   display: grid;
   place-items: center;
   align-content: center;
-  gap: .12rem;
+  gap: .14rem;
   margin: 0;
-  padding: clamp(.72rem, 1.1vw, 1.02rem) clamp(4rem, 6vw, 6.8rem);
-  border: 1px solid rgba(232,190,96,.72);
-  border-radius: 10px;
+  padding: clamp(.68rem, 1vw, .96rem) clamp(5.2rem, 7vw, 7.8rem);
+  border: 0;
   transform: translateX(-50%);
-  clip-path: polygon(4% 0, 96% 0, 100% 24%, 100% 76%, 96% 100%, 4% 100%, 0 76%, 0 24%);
   background:
-    linear-gradient(180deg, rgba(33,21,17,.97), rgba(11,9,13,.985) 52%, rgba(19,11,11,.985)),
-    radial-gradient(ellipse at 50% 0%, rgba(232,177,77,.16), transparent 62%);
-  box-shadow:
-    inset 0 0 0 3px rgba(7,5,8,.88),
-    inset 0 0 0 4px rgba(205,153,63,.30),
-    inset 0 12px 28px rgba(255,207,102,.045),
-    0 8px 22px rgba(0,0,0,.58),
-    0 0 28px rgba(201,141,49,.15);
+    radial-gradient(ellipse at 50% 52%, rgba(10,7,9,.94) 0%, rgba(12,8,11,.82) 42%, rgba(8,6,9,.18) 74%, transparent 100%);
+  filter: drop-shadow(0 7px 11px rgba(0,0,0,.6));
   text-align: center;
   pointer-events: none;
 }
 
 .class-subclass-carousel-modal__title > span {
-  color: rgba(226,190,119,.78);
-  font: 700 clamp(.58rem,.78vw,.82rem)/1 Georgia,"Times New Roman",serif;
-  letter-spacing: .36em;
+  color: rgba(222,188,120,.82);
+  font: 700 clamp(.56rem,.76vw,.8rem)/1 Georgia,"Times New Roman",serif;
+  letter-spacing: .42em;
   text-transform: uppercase;
-  text-shadow: 0 1px 0 rgba(40,20,6,.9);
+  text-shadow: 0 1px 0 rgba(35,17,5,.95),0 0 9px rgba(222,163,63,.16);
 }
 
 .class-subclass-carousel-modal__title > strong {
-  color: #f5d487;
-  font: 700 clamp(1.26rem,2vw,1.95rem)/1 Georgia,"Times New Roman",serif;
-  letter-spacing: .115em;
+  color: transparent;
+  font: 700 clamp(1.42rem,2.18vw,2.12rem)/1 Georgia,"Times New Roman",serif;
+  letter-spacing: .13em;
   text-transform: uppercase;
-  text-shadow:
-    0 1px 0 #3a1f08,
-    0 0 10px rgba(250,198,90,.32),
-    0 0 24px rgba(232,164,63,.12);
+  background: linear-gradient(180deg,#fff0ba 0%,#f4d27f 36%,#c88d32 70%,#f2cb72 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: drop-shadow(0 1px 0 #3a1f08) drop-shadow(0 0 8px rgba(246,190,78,.26));
 }
 
 .class-subclass-carousel-modal__title::before,
 .class-subclass-carousel-modal__title::after {
   content: "";
   position: absolute;
-  top: 50%;
-  width: 17%;
-  height: 9px;
+  top: 57%;
+  width: 27%;
+  height: 16px;
   transform: translateY(-50%);
-  border-top: 1px solid rgba(239,199,115,.68);
-  border-bottom: 1px solid rgba(126,76,27,.52);
-  opacity: .86;
+  opacity: .9;
+  background:
+    linear-gradient(180deg,transparent 0 5px,rgba(238,198,111,.72) 5px 6px,transparent 6px 10px,rgba(139,87,31,.52) 10px 11px,transparent 11px),
+    linear-gradient(90deg,transparent,rgba(205,148,55,.24));
 }
 
 .class-subclass-carousel-modal__title::before {
-  left: 5%;
-  clip-path: polygon(0 45%, 78% 45%, 100% 0, 83% 50%, 100% 100%, 78% 55%, 0 55%);
-  background: linear-gradient(90deg, transparent, rgba(203,147,55,.16));
+  right: 77%;
+  clip-path: polygon(0 47%,70% 47%,83% 10%,88% 47%,100% 47%,100% 55%,88% 55%,83% 92%,70% 55%,0 55%);
 }
 
 .class-subclass-carousel-modal__title::after {
-  right: 5%;
-  clip-path: polygon(100% 45%, 22% 45%, 0 0, 17% 50%, 0 100%, 22% 55%, 100% 55%);
-  background: linear-gradient(270deg, transparent, rgba(203,147,55,.16));
+  left: 77%;
+  transform: translateY(-50%) scaleX(-1);
+  clip-path: polygon(0 47%,70% 47%,83% 10%,88% 47%,100% 47%,100% 55%,88% 55%,83% 92%,70% 55%,0 55%);
 }
 
 .class-subclass-carousel-modal__close {
