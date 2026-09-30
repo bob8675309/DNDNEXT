@@ -107,7 +107,7 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
 
   // Restrained yaw turns the floating cards through depth without pretending
   // they are attached to a physical surface. Rear positions use the shared back.
-  const yaw = clamp(angleDegrees * 0.24, -34, 34);
+  // Keep cards face-on while travelling; depth is conveyed by size/position rather than Y-axis corkscrew.\n  const yaw = 0;
   const x = 50 + (sine * profile.horizontalRadius);
   const y = profile.verticalCenter + (cosine * profile.verticalRadius);
 
@@ -252,8 +252,8 @@ export default function ClassSubclassSection({
       // Do not FLIP that hidden/back-of-ring teleport across the whole viewport;
       // letting only that rear card take its new slot prevents the giant card-back fly-through.
       if (orbitWidth > 0 && movement > orbitWidth * .58) continue;
-      const scaleX = clamp(previous.width / next.width, .72, 1.45);
-      const scaleY = clamp(previous.height / next.height, .72, 1.45);
+      const scaleX = clamp(previous.width / next.width, .30, 3.25);
+      const scaleY = clamp(previous.height / next.height, .30, 3.25);
       const sizeShift = Math.max(Math.abs(1 - scaleX), Math.abs(1 - scaleY));
 
       if (movement < .5 && sizeShift < .005) continue;
