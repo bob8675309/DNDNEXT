@@ -153,9 +153,11 @@ assert(tarotCss.includes('.class-subclass-carousel-card.is-orbit-center .class-s
 assert(tarotCss.includes('z-index: 760') && tarotCss.includes('class-subclass-carousel-modal__smoke-near'), "Near smoke must cross side/front cards while remaining below the hero z-band.");
 assert(tarotCss.includes('left: 13.7%') && tarotCss.includes('right: 16.4%') && tarotCss.includes('top: 12.4%'), "Animated flames must stay registered to real upper candle clusters in the ruined-library background.");
 assert(selector.includes("captureGlideRects") && selector.includes("glide.animate") && selector.includes('cubic-bezier(.32,.035,.18,1)'), "Tarot slot changes must use the compositor glide path rather than snapping layout-property transitions.");
-assert(selector.includes("changedFaceBand ? 1 : clamp(rawScaleX, .72, 1.38)") && selector.includes("isFront: node.classList.contains(\"is-orbit-front\")"), "Tarot FLIP scaling must suppress oversized front/back depth-band transitions.");
+assert(selector.includes("movement > orbitWidth * .58") && selector.includes("clamp(previous.width / next.width, .72, 1.45)"), "Tarot FLIP must preserve smooth size interpolation while skipping only the rear signed-angle seam teleport that caused giant card-back fly-throughs.");
 assert(tarotCss.includes(".class-subclass-carousel-card__glide") && tarotCss.includes(".class-subclass-carousel-card__yaw") && tarotCss.includes('var(--orbit-float-duration, 9.6s)'), "Tarot glide, yaw, and independent idle-float layers must remain separated.");
 assert(!tarotCss.includes("left 2.15s cubic-bezier") && !tarotCss.includes("top 2.25s cubic-bezier"), "Programmatic Tarot travel must not regress to left/top transition animation.");
+assert(selector.includes("<strong>Subclass Browser</strong>") && !selector.includes("class-subclass-launcher__icon"), "Unselected subclass entry point must remain the compact Subclass Browser pill.");
+assert(tarotCss.includes("width: max-content") && tarotCss.includes("border-radius: 999px"), "Subclass Browser launcher must remain compact rather than stretching across the class panel.");
 assert(!tarotCss.includes(':hover .class-subclass-carousel-card__surface {\n  filter:'), "Hover must not filter the 3D card surface; that compositor path caused cards to disappear.");
 assert(!tarotCss.includes('subclass-library-mouse-scurry') && !selector.includes('class-subclass-carousel-modal__mouse'), "Terrain-independent mouse animation must stay removed.");
 assert(!tarotCss.includes('subclass-selector-bat'), "Do not replace the removed mouse with bats without a separate browser-reviewed plan.");
@@ -300,15 +302,18 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSource.includes(token), `Class presentation patch crossed protected boundary: ${token}`);
 }
 
-for (const token of ["subclassOption: option"]) assert(guide.includes(token), `Subclass inspector payload is missing ${token}`);
-for (const token of ["subclassTab", "npc-forge-subclass-inspector__tabs", "Overview", "Features", "Lore", "Spells", "subclassArtworkFor", "subclassFeatures", "subclassSpellReferences", "spellCatalog", "Subclass Spell Grants"]) {
+for (const token of ["subclassOption: option", "progressionRows: model.rows || []", "currentLevel: model.currentLevel"]) assert(guide.includes(token), `Subclass inspector payload is missing ${token}`);
+for (const token of ["subclassTab", "npc-forge-subclass-inspector__tabs", "Overview", "Progression", "Features", "Lore", "Spells", "subclassArtworkFor", "subclassFeatures", "subclassSpellReferences", "spellCatalog", "Subclass Spell Grants", "buildSubclassProgressionRows", "npc-forge-subclass-inspector__art-backdrop"]) {
   assert(featureDock.includes(token), `Tabbed subclass inspector is missing ${token}`);
 }
 assert(!featureDock.includes("subclassSpellFeatures"), "Spells tab regressed to keyword-filtered feature duplication.");
 assert(!featureDock.includes("Class Spell Access"), "Subclass Spells tab must not duplicate the later full class spell catalogue.");
 assert(featureDock.includes("width: isSubclassInspector ? 720 : DOCK_DEFAULT_WIDTH") && featureDock.includes("body > .npc-forge-class-feature-dock.is-viewport-floating.is-subclass-inspector"), "Subclass inspector must override legacy floating-dock width caps with the wider reading layout.");
 assert(featureDock.includes("npc-forge-subclass-inspector__overview-lore-scroll") && !featureDock.includes("Path Overview"), "Overview must present the source-backed subclass lore in the scrollable reading area rather than the old shallow Path Overview box.");
-assert(featureDock.includes('grid-template-areas:"heading heading" "lore art"') && featureDock.includes("height:254px") && !featureDock.includes("<strong>Lore</strong>"), "Overview lore and Tarot art must remain parallel while redundant source/Lore labels stay removed.");
+assert(featureDock.includes("npc-forge-subclass-inspector__art-backdrop") && featureDock.includes("npc-forge-subclass-inspector__content-layer") && !featureDock.includes("<strong>Lore</strong>"), "Subclass Tarot art must remain a subdued background layer while redundant Lore labels stay removed.");
+assert(featureDock.includes("npc-forge-subclass-inspector__progression-table") && featureDock.includes("npc-forge-subclass-inspector__progression-features") && featureDock.includes("is-subclass"), "Subclass inspector must retain the merged class/subclass progression table with distinct subclass feature styling.");
+assert(featureDock.includes("playerFacingSubclassLore") && featureDock.includes("^[^|]+\\|[^|]+\\|\\|[^|]+\\|\\|\\d+$"), "Player-facing subclass lore must strip imported pipe-reference metadata without mutating catalogue data.");
+assert(featureDock.includes("npc-forge-class-feature-dock__title-group{display:none!important}") && featureDock.includes("head-actions>em{display:none!important}"), "Subclass inspector header must stay compact and avoid repeating identity/source labels.");
 assert(!subclassArtwork.includes('bladesinging: "bladesinging"'), "Retired Bladesinging artwork mapping must not return.");
 assert(featureDock.includes("grid-template-columns:repeat(2,minmax(0,1fr))"), "Subclass feature summaries must retain the two-column desktop layout.");
 assert(model.includes("spellCatalog") && !model.includes("maxSpellLevelForProgressionRow"), "Subclass spell resolution should use the source-backed class spell catalogue without rendering the full class list here.");
