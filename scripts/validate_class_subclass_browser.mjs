@@ -316,7 +316,8 @@ assert(featureDock.includes("width: isSubclassInspector ? 720 : DOCK_DEFAULT_WID
 assert(featureDock.includes("npc-forge-subclass-inspector__overview-lore-scroll") && !featureDock.includes("Path Overview"), "Overview must present the source-backed subclass lore in the scrollable reading area rather than the old shallow Path Overview box.");
 assert(featureDock.includes("npc-forge-subclass-inspector__art-backdrop") && featureDock.includes("npc-forge-subclass-inspector__content-layer") && !featureDock.includes("<strong>Lore</strong>"), "Subclass Tarot art must remain a subdued background layer while redundant Lore labels stay removed.");
 assert(featureDock.includes("npc-forge-subclass-inspector__progression-table") && featureDock.includes("npc-forge-subclass-inspector__progression-features") && featureDock.includes("is-subclass"), "Subclass inspector must retain the merged class/subclass progression table with distinct subclass feature styling.");
-assert(!featureDock.includes('["progression", "Progression"]') && featureDock.includes("is-overview-progression"), "Merged class/subclass progression belongs directly below Overview lore rather than in a duplicate Progression tab.");
+assert(featureDock.includes('["progression", "Progression"]') && !featureDock.includes("is-overview-progression"), "Progression must remain in its own dedicated Subclass Codex tab.");
+assert(featureDock.includes("overviewFeatureKey") && featureDock.includes("npc-forge-subclass-inspector__overview-feature-index") && featureDock.includes("Back to lore"), "Overview must keep the right-side subclass feature index and swap the left lore panel into feature details in place.");
 assert(featureDock.includes('onClick={() => onFeatureDetail?.({ type: "classFeature"') && forgeSteps.includes("onFeatureDetail={setDetail}"), "Codex progression pills must route into the existing shared Feature panel.");
 assert(featureDock.includes("this subclass has access to dunamancy spells") && featureDock.includes("subclassHasDunamancyAccess"), "Dunamancy access must move out of lore and into the Spells tab.");
 assert(featureDock.includes("width:86%") && featureDock.includes("brightness(.98)"), "Subclass Tarot backdrop must remain enlarged and lightened behind the Codex content.");
@@ -324,6 +325,9 @@ assert(featureDock.includes("playerFacingSubclassLore") && featureDock.includes(
 assert(featureDock.includes("npc-forge-class-feature-dock__title-group{display:none!important}") && featureDock.includes("head-actions>em{display:none!important}"), "Subclass inspector header must stay compact and avoid repeating identity/source labels.");
 assert(!subclassArtwork.includes('bladesinging: "bladesinging"'), "Retired Bladesinging artwork mapping must not return.");
 assert(featureDock.includes("grid-template-columns:repeat(2,minmax(0,1fr))"), "Subclass feature summaries must retain the two-column desktop layout.");
+assert(featureDock.includes("font-size:.94rem!important") && featureDock.includes("line-height:1.72!important"), "Subclass Features tab must retain the larger readable rules text.");
+assert(featureDock.includes("grid-template-columns:repeat(5,1fr)"), "Subclass Codex must retain Overview, Progression, Features, Lore, and Spells tabs.");
+assert(tarotCss.includes("width: max-content") && tarotCss.includes("padding: .38rem .46rem") && tarotCss.includes("class-subclass-section.is-card-launcher"), "Subclass Browser launcher shell must stay compact around its button rather than stretching across the class panel.");
 assert(model.includes("spellCatalog") && model.includes("allSpellCatalog: spells") && !model.includes("maxSpellLevelForProgressionRow"), "Subclass spell resolution should retain class access while exposing the full source-backed spell catalogue for special subclass access such as Dunamancy.");
 
 
