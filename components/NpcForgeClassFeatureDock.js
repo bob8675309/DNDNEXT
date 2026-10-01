@@ -9,6 +9,8 @@ import { subclassArtworkFor, handleSubclassArtworkError } from "../utils/classes
 const DOCK_GUTTER = 12;
 const DOCK_MIN_WIDTH = 300;
 const DOCK_DEFAULT_WIDTH = 390;
+const FEATURE_DOCK_WIDTH = 520;
+const CODEX_DOCK_WIDTH = 720;
 const DOCK_MAX_WIDTH = 780;
 const DOCK_VISIBLE_HEADER = 60;
 
@@ -193,23 +195,24 @@ function boundedDockPosition(position = {}) {
   };
 }
 
-function defaultDockPosition() {
-  if (typeof window === "undefined" || typeof document === "undefined") return { left: DOCK_GUTTER, top: 112, width: DOCK_DEFAULT_WIDTH };
-  const lane = document.querySelector(".npc-forge-class-guide__dock-lane")?.getBoundingClientRect();
-  if (lane?.width > 40 && lane?.height > 40) {
-    const width = Math.min(DOCK_DEFAULT_WIDTH, Math.max(DOCK_MIN_WIDTH, lane.width - 10));
-    return boundedDockPosition({ left: lane.left + Math.max(0, (lane.width - width) / 2), top: lane.top + 4, width });
+function defaultDockPosition(panelRole = "feature") {
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    const width = panelRole === "codex" ? CODEX_DOCK_WIDTH : FEATURE_DOCK_WIDTH;
+    return { left: DOCK_GUTTER, top: 112, width };
   }
   const forge = document.querySelector(".unified-player-character-forge")?.getBoundingClientRect();
-  const width = Math.min(DOCK_DEFAULT_WIDTH, Math.max(DOCK_MIN_WIDTH, Number(forge?.width || window.innerWidth) * .27));
+  const requestedWidth = panelRole === "codex" ? CODEX_DOCK_WIDTH : FEATURE_DOCK_WIDTH;
+  const width = Math.min(requestedWidth, Math.max(DOCK_MIN_WIDTH, window.innerWidth - (DOCK_GUTTER * 2)));
+  const rightAlignedLeft = forge ? forge.right - width - 24 : window.innerWidth - width - 24;
+  const leftAlignedLeft = forge ? forge.left + 24 : 24;
   return boundedDockPosition({
-    left: forge ? forge.right - width - 24 : window.innerWidth - width - 24,
+    left: panelRole === "codex" ? rightAlignedLeft : leftAlignedLeft,
     top: forge ? forge.top + Math.min(210, Math.max(118, forge.height * .2)) : 112,
     width,
   });
 }
 
-export default function NpcForgeClassFeatureDock({ detail = null, selectedClass = null, onFeatureDetail = null }) {
+export default function NpcForgeClassFeatureDock({ detail = null, selectedClass = null, onFeatureDetail = null, panelRole = "feature" }) {
   const dockRef = useRef(null);
   const dragRef = useRef(null);
   const [closedDetailKey, setClosedDetailKey] = useState("");
@@ -265,6 +268,10 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
   }, [subclassOption?.key]);
 
   useEffect(() => {
+    setClosedDetailKey("");
+  }, [detail]);
+
+  useEffect(() => {
     if (typeof window === "undefined" || typeof document === "undefined") return undefined;
     const desktop = window.matchMedia("(min-width: 901px)");
     let frame = null;
@@ -278,11 +285,8 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
       }
 
       frame = window.requestAnimationFrame(() => {
-        const base = defaultDockPosition();
-        setFloatingPosition(boundedDockPosition({
-          ...base,
-          width: isSubclassInspector ? 720 : DOCK_DEFAULT_WIDTH,
-        }));
+        const base = defaultDockPosition(panelRole);
+        setFloatingPosition(boundedDockPosition(base));
         setPortalHost(document.body);
       });
     }
@@ -293,7 +297,7 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
       if (frame != null) window.cancelAnimationFrame(frame);
       desktop.removeEventListener?.("change", syncDockMode);
     };
-  }, [isSubclassInspector, selectedClass?.class_key, selectedClass?.id]);
+  }, [isSubclassInspector, panelRole, selectedClass?.class_key, selectedClass?.id]);
 
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
@@ -340,6 +344,9 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
     event.currentTarget.releasePointerCapture?.(event.pointerId);
   }
 
+  if (panelRole === "codex" && !isSubclassInspector) return null;
+  if (panelRole === "feature" && !feature) return null;
+
   const floatingStyle = portalHost && floatingPosition ? {
     left: `${floatingPosition.left}px`,
     top: `${floatingPosition.top}px`,
@@ -348,7 +355,7 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
   } : undefined;
 
   const dock = (
-    <section ref={dockRef} style={floatingStyle} className={`npc-forge-class-feature-dock${feature ? " has-feature" : " is-placeholder"}${isSubclassInspector ? " is-subclass-inspector" : ""}${portalHost ? " is-floating is-viewport-floating" : ""}${dragging ? " is-dragging" : ""}`}>
+    <section ref={dockRef} style={floatingStyle} className={`npc-forge-class-feature-dock${feature ? " has-feature" : " is-placeholder"}${isSubclassInspector ? " is-subclass-inspector" : ""}${panelRole === "feature" ? " is-feature-panel" : " is-codex-panel"}${portalHost ? " is-floating is-viewport-floating" : ""}${dragging ? " is-dragging" : ""}`}>
       <div className="npc-forge-class-feature-dock__head" onPointerDown={handleDragStart} onPointerMove={handleDragMove} onPointerUp={handleDragEnd} onPointerCancel={handleDragEnd} title={portalHost ? "Drag to move this description window anywhere in the viewport" : undefined}>
         <div className="npc-forge-class-feature-dock__title-group">
           <span>{type}</span>
@@ -501,6 +508,16 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
         .npc-forge-class-feature-dock__item-card .sitem-section{font-size:.72rem;line-height:1.55}
         .npc-forge-class-feature-dock.is-subclass-inspector{border-color:rgba(213,163,74,.72)!important;background:linear-gradient(155deg,rgba(12,15,18,.99),rgba(7,14,18,.99) 62%,rgba(12,10,10,.99))!important;box-shadow:inset 0 0 0 1px rgba(255,219,151,.06),0 20px 58px rgba(0,0,0,.54),0 0 28px rgba(161,104,34,.10)!important}
         body > .npc-forge-class-feature-dock.is-viewport-floating.is-subclass-inspector{width:min(720px,calc(100vw - 36px))!important;max-width:min(720px,calc(100vw - 36px))!important}
+        body > .npc-forge-class-feature-dock.is-viewport-floating.is-feature-panel{width:min(520px,calc(100vw - 36px))!important;max-width:min(520px,calc(100vw - 36px))!important}
+        .npc-forge-class-feature-dock.is-feature-panel .npc-forge-class-feature-dock__title-group>h3{font-size:1.12rem!important;line-height:1.3!important}
+        .npc-forge-class-feature-dock.is-feature-panel .npc-forge-class-feature-dock__summary .class-feature-text,
+        .npc-forge-class-feature-dock.is-feature-panel .npc-forge-class-feature-dock__summary p,
+        .npc-forge-class-feature-dock.is-feature-panel .npc-forge-class-feature-dock__summary li{font-size:.98rem!important;line-height:1.74!important}
+        .npc-forge-class-feature-dock.is-feature-panel .npc-forge-class-feature-dock__summary h4,
+        .npc-forge-class-feature-dock.is-feature-panel .npc-forge-class-feature-dock__summary h5{font-size:1.04rem!important;line-height:1.4!important}
+        .npc-forge-class-feature-dock.is-feature-panel .npc-forge-class-feature-dock__meta>span{font-size:.6rem!important}
+        .npc-forge-class-feature-dock.is-feature-panel .npc-forge-class-feature-dock__routing-note,
+        .npc-forge-class-feature-dock.is-feature-panel .npc-forge-class-feature-dock__listed-note{font-size:.72rem!important;line-height:1.58!important}
         .npc-forge-class-feature-dock.is-subclass-inspector .npc-forge-class-feature-dock__head{min-height:42px!important;padding:6px 9px!important;justify-content:flex-end!important;border-bottom-color:rgba(213,163,74,.24)!important;background:linear-gradient(155deg,rgba(20,17,14,.995),rgba(8,15,18,.995))!important}
         .npc-forge-class-feature-dock.is-subclass-inspector .npc-forge-class-feature-dock__title-group{display:none!important}
         .npc-forge-class-feature-dock.is-subclass-inspector .npc-forge-class-feature-dock__head-actions>em{display:none!important}.npc-forge-class-feature-dock.is-subclass-inspector .npc-forge-class-feature-dock__head-actions>button{border-color:rgba(213,163,74,.42)!important;color:#ead6ad!important}
