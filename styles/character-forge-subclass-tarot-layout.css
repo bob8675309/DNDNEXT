@@ -4,7 +4,13 @@
 
 .class-subclass-section.is-card-launcher {
   min-width: 0;
-  width: 100%;
+  width: max-content;
+  max-width: 100%;
+  padding: .38rem .46rem;
+  border: 1px solid rgba(159, 112, 217, .2);
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(30, 21, 43, .34), rgba(8, 12, 21, .34));
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.012);
 }
 
 .class-subclass-section.is-card-launcher:not(.is-detailed) {
@@ -19,7 +25,7 @@
   align-items: center;
   justify-content: center;
   justify-self: start;
-  padding: .48rem .88rem;
+  padding: .5rem .92rem;
   border: 1px solid rgba(218, 173, 84, .5);
   border-radius: 999px;
   background:
