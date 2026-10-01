@@ -107,7 +107,8 @@ function orbitPlacement(optionIndex, orbitOffset, total) {
 
   // Restrained yaw turns the floating cards through depth without pretending
   // they are attached to a physical surface. Rear positions use the shared back.
-  // Keep cards face-on while travelling; depth is conveyed by size/position rather than Y-axis corkscrew.\n  const yaw = 0;
+  // Keep cards face-on while travelling; depth is conveyed by size/position rather than Y-axis corkscrew.
+  const yaw = 0;
   const x = 50 + (sine * profile.horizontalRadius);
   const y = profile.verticalCenter + (cosine * profile.verticalRadius);
 
