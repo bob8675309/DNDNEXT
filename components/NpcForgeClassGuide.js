@@ -68,11 +68,11 @@ function subclassPreviewFeature(option = {}) {
     entries: null,
   };
 }
-function inspectSubclass(model, onFeatureDetail, option) {
+function inspectSubclass(model, onSubclassDetail, option) {
   if (!option?.key) return;
   const feature = subclassPreviewFeature(option);
   model.setPinned(feature);
-  onFeatureDetail?.({ type: "classFeature", feature, subclassName: option.name || "Subclass", subclassOption: option, spellCatalog: model.allSpellCatalog || model.spellCatalog || [], progressionRows: model.rows || [], currentLevel: model.currentLevel });
+  onSubclassDetail?.({ type: "classFeature", feature, subclassName: option.name || "Subclass", subclassOption: option, spellCatalog: model.allSpellCatalog || model.spellCatalog || [], progressionRows: model.rows || [], currentLevel: model.currentLevel });
 }
 function selectedRowFeatures(model, row) {
   const base = (row?.guideFeatures || []).filter((feature) => feature?.type !== "subclass");
@@ -104,12 +104,12 @@ function ForgeClassHero({ selectedClass }) {
     <div className="npc-forge-class-guide__hero-art" aria-hidden="true"><img src={classHeroArtworkFor(selectedClass.class_key)} onError={handleClassArtworkError} alt="" /></div>
   </header>;
 }
-function ForgeSubclassSelection({ selectedClass, model, onFeatureDetail, detailed = false }) {
+function ForgeSubclassSelection({ selectedClass, model, onSubclassDetail, detailed = false }) {
   return <ClassSubclassSection
     model={model}
     classKey={selectedClass?.class_key || ""}
     detailed={detailed}
-    onInspectSubclass={(option) => inspectSubclass(model, onFeatureDetail, option)}
+    onInspectSubclass={(option) => inspectSubclass(model, onSubclassDetail, option)}
   />;
 }
 function ChoiceRoutingNote({ model, compact = false }) {
@@ -151,24 +151,24 @@ function ProgressionTable({ selectedClass, model, onFeatureDetail }) {
     {hasSpellProgression ? <div className="npc-forge-class-guide__table-footnote"><span aria-hidden="true">i</span><p>Spell choices for the {selectedClass?.class_name || "selected class"} are resolved in the Spells tab; this table is the progression reference. A value ending in “p” denotes pact slots.</p></div> : null}
   </section>;
 }
-function ForgeOverview({ selectedClass, model, onFeatureDetail }) {
+function ForgeOverview({ selectedClass, model, onFeatureDetail, onSubclassDetail }) {
   return <article className="npc-card class-book-guide__content npc-forge-class-guide__overview-book">
     <ForgeClassHero selectedClass={selectedClass} />
     <div className="npc-forge-class-guide__overview-layout">
       <div className="npc-forge-class-guide__overview-main">
-        <ForgeSubclassSelection selectedClass={selectedClass} model={model} onFeatureDetail={onFeatureDetail} />
+        <ForgeSubclassSelection selectedClass={selectedClass} model={model} onSubclassDetail={onSubclassDetail} />
         <ProgressionTable selectedClass={selectedClass} model={model} onFeatureDetail={onFeatureDetail} />
       </div>
     </div>
   </article>;
 }
-function ForgeDetailedGuide({ selectedClass, model, onFeatureDetail }) {
+function ForgeDetailedGuide({ selectedClass, model, onFeatureDetail, onSubclassDetail }) {
   const visibleRows = model.rows
     .map((row) => ({ ...row, visibleFeatures: selectedRowFeatures(model, row) }))
     .filter((row) => row.visibleFeatures.length);
-  return <div className="class-book-guide npc-forge-class-guide__book"><aside className="npc-card class-book-guide__outline"><div className="spell-admin-kicker">Guide Outline</div><a href="#forge-class-guide-introduction">{selectedClass.class_name}</a><div className="class-book-guide__outline-levels">{visibleRows.map((row) => <a key={row.class_level} href={`#forge-class-guide-level-${row.class_level}`}>Level {row.class_level}</a>)}</div></aside><article className="npc-card class-book-guide__content"><ForgeClassHero selectedClass={selectedClass} /><div className="npc-forge-class-guide__detailed-controls"><ForgeSubclassSelection selectedClass={selectedClass} model={model} onFeatureDetail={onFeatureDetail} detailed /><ChoiceRoutingNote model={model} /></div><div className="class-book-guide__levels">{visibleRows.map((row) => <details key={row.class_level} id={`forge-class-guide-level-${row.class_level}`} className={`npc-forge-class-guide__level ${Number(row.class_level) === model.currentLevel ? "is-current" : ""}`} defaultOpen={Number(row.class_level) === model.currentLevel}><summary className="class-book-guide__level-heading npc-forge-class-guide__level-heading"><div><div className="spell-admin-kicker">Level {row.class_level}</div><h3>{selectedClass.class_name} {row.class_level}</h3></div><div className="class-book-guide__level-stats"><span>PB +{Number(row.proficiency_bonus || 2)}</span>{row.cantrips_known != null ? <span>{row.cantrips_known} cantrips</span> : null}{row.spells_known != null ? <span>{row.spells_known} known/prepared</span> : null}</div></summary><div className="npc-forge-class-guide__level-content">{row.visibleFeatures.map((feature, index) => <div key={`${feature.type}-${feature.name}-${index}`} className={`class-book-guide__feature ${feature.type === "subclass" ? "is-subclass" : ""}`} role="button" tabIndex={0} onClick={() => publishFeature(model, onFeatureDetail, feature, row.class_level)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") publishFeature(model, onFeatureDetail, feature, row.class_level); }}><div className="d-flex align-items-center justify-content-between gap-2 flex-wrap"><h4>{feature.type === "subclass" && model.selected ? `${model.selected.name}: ` : ""}{feature.name}</h4><span>{feature.source || "Campaign"}</span></div><ClassFeatureText text={feature.description} entries={feature.entries || null} fallback="No imported description is available for this feature yet." onListItemDetail={(item) => publishListedOption(model, onFeatureDetail, feature, item, row.class_level)} /></div>)}</div></details>)}</div></article></div>;
+  return <div className="class-book-guide npc-forge-class-guide__book"><aside className="npc-card class-book-guide__outline"><div className="spell-admin-kicker">Guide Outline</div><a href="#forge-class-guide-introduction">{selectedClass.class_name}</a><div className="class-book-guide__outline-levels">{visibleRows.map((row) => <a key={row.class_level} href={`#forge-class-guide-level-${row.class_level}`}>Level {row.class_level}</a>)}</div></aside><article className="npc-card class-book-guide__content"><ForgeClassHero selectedClass={selectedClass} /><div className="npc-forge-class-guide__detailed-controls"><ForgeSubclassSelection selectedClass={selectedClass} model={model} onSubclassDetail={onSubclassDetail} detailed /><ChoiceRoutingNote model={model} /></div><div className="class-book-guide__levels">{visibleRows.map((row) => <details key={row.class_level} id={`forge-class-guide-level-${row.class_level}`} className={`npc-forge-class-guide__level ${Number(row.class_level) === model.currentLevel ? "is-current" : ""}`} defaultOpen={Number(row.class_level) === model.currentLevel}><summary className="class-book-guide__level-heading npc-forge-class-guide__level-heading"><div><div className="spell-admin-kicker">Level {row.class_level}</div><h3>{selectedClass.class_name} {row.class_level}</h3></div><div className="class-book-guide__level-stats"><span>PB +{Number(row.proficiency_bonus || 2)}</span>{row.cantrips_known != null ? <span>{row.cantrips_known} cantrips</span> : null}{row.spells_known != null ? <span>{row.spells_known} known/prepared</span> : null}</div></summary><div className="npc-forge-class-guide__level-content">{row.visibleFeatures.map((feature, index) => <div key={`${feature.type}-${feature.name}-${index}`} className={`class-book-guide__feature ${feature.type === "subclass" ? "is-subclass" : ""}`} role="button" tabIndex={0} onClick={() => publishFeature(model, onFeatureDetail, feature, row.class_level)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") publishFeature(model, onFeatureDetail, feature, row.class_level); }}><div className="d-flex align-items-center justify-content-between gap-2 flex-wrap"><h4>{feature.type === "subclass" && model.selected ? `${model.selected.name}: ` : ""}{feature.name}</h4><span>{feature.source || "Campaign"}</span></div><ClassFeatureText text={feature.description} entries={feature.entries || null} fallback="No imported description is available for this feature yet." onListItemDetail={(item) => publishListedOption(model, onFeatureDetail, feature, item, row.class_level)} /></div>)}</div></details>)}</div></article></div>;
 }
-export default function NpcForgeClassGuide({ selectedClass = null, level = 1, onFeatureDetail = null }) {
+export default function NpcForgeClassGuide({ selectedClass = null, level = 1, onFeatureDetail = null, onSubclassDetail = null }) {
   const model = useNpcForgeClassGuideModel(selectedClass, level);
   if (!selectedClass) return <div className="npc-forge-context-card"><h3>Choose a class</h3><p>Select a class to read its progression and compare subclasses.</p></div>;
   const theme = classThemeKey(selectedClass);
@@ -176,9 +176,9 @@ export default function NpcForgeClassGuide({ selectedClass = null, level = 1, on
     <nav className="npc-forge-class-guide__view-header" aria-label="Class guide view"><div className="npc-forge-class-guide__tabs"><button type="button" className={model.view === "overview" ? "is-active" : ""} onClick={() => model.setView("overview")}>Class Overview</button><button type="button" className={model.view === "detailed" ? "is-active" : ""} onClick={() => model.setView("detailed")}>Detailed Guide</button></div></nav>
     {model.error ? <div className="npc-forge-class-guide__warning">{model.error}</div> : null}
     {model.loading ? <div className="npc-forge-class-guide__loading">Loading the complete class progression…</div> : null}
-    {!model.loading && model.view === "overview" ? <ForgeOverview selectedClass={selectedClass} model={model} onFeatureDetail={onFeatureDetail} /> : null}
-    {!model.loading && model.view === "detailed" ? <ForgeDetailedGuide selectedClass={selectedClass} model={model} onFeatureDetail={onFeatureDetail} /> : null}
-    <div className="npc-forge-context-note npc-forge-class-guide__footer-note">Click a subclass to select or inspect it in the movable Feature card. Select an eligible subclass to add its features to progression. Click any feature bubble for full rules. Persistent training options still belong in Training, spell choices in Spells, and gear choices in Equipment.</div>
+    {!model.loading && model.view === "overview" ? <ForgeOverview selectedClass={selectedClass} model={model} onFeatureDetail={onFeatureDetail} onSubclassDetail={onSubclassDetail} /> : null}
+    {!model.loading && model.view === "detailed" ? <ForgeDetailedGuide selectedClass={selectedClass} model={model} onFeatureDetail={onFeatureDetail} onSubclassDetail={onSubclassDetail} /> : null}
+    <div className="npc-forge-context-note npc-forge-class-guide__footer-note">Click a subclass to select or inspect it in the movable Subclass Codex. Select an eligible subclass to add its features to progression. Click any feature bubble for full rules. Persistent training options still belong in Training, spell choices in Spells, and gear choices in Equipment.</div>
     <NpcForgeClassGuideStyles />
     <style jsx global>{`
       .npc-forge-class-guide .class-book-guide__feature{padding:18px 20px;border-radius:12px}.npc-forge-class-guide .class-book-guide__feature h4{font-size:1rem;line-height:1.35}.npc-forge-class-guide .class-book-guide__feature p,.npc-forge-class-guide .class-book-guide__feature li{max-width:78ch;color:rgba(255,255,255,.82);font-size:.82rem;line-height:1.68}.npc-forge-class-guide .class-book-guide__feature p+p{margin-top:.8rem}.npc-forge-class-guide .class-book-guide__feature ul,.npc-forge-class-guide .class-book-guide__feature ol{display:grid;gap:.42rem;padding-left:1.3rem}.npc-forge-class-guide__level{scroll-margin-top:74px}.npc-forge-class-guide__level>summary{list-style:none;cursor:pointer;position:relative;padding-right:3rem!important}.npc-forge-class-guide__level>summary::-webkit-details-marker{display:none}.npc-forge-class-guide__level>summary::after{content:"+";position:absolute;right:1rem;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:1.7rem;height:1.7rem;border:1px solid rgba(168,108,255,.42);border-radius:999px;color:#eadfff;background:rgba(126,72,199,.12);font-size:1rem;font-weight:900}.npc-forge-class-guide__level[open]>summary::after{content:"–"}.npc-forge-class-guide__level:not([open])>summary{margin-bottom:.45rem!important;padding-top:.62rem!important;padding-bottom:.62rem!important}.npc-forge-class-guide__level:not([open])>summary h3{font-size:1rem!important}.npc-forge-class-guide__level-content{display:grid;gap:.15rem;padding-bottom:.8rem}
