@@ -19,6 +19,9 @@ const forgeSteps = read("components/NpcForgeStepContent.js");
 const playerFacingText = read("utils/playerFacingText.js");
 const subclassSpellGrantsSource = read("utils/classes/subclassSpellGrants.js");
 const spellCardCss = read("styles/spell-card.css");
+const finalClassBrowserCss = read("styles/character-forge-class-final-browser-fix.css");
+const classAcceptanceCss = read("styles/character-forge-class-acceptance-corrections.css");
+const classMenuApprovedCss = read("styles/character-forge-class-menu-approved-art.css");
 
 for (const token of [
   'import ClassSubclassSection from "./ClassSubclassSection"',
@@ -503,9 +506,11 @@ assert(forgeSteps.includes("const [classFeatureDetail, setClassFeatureDetail] = 
 assert(forgeSteps.includes('panelRole="codex" detail={subclassCodexDetail}') && forgeSteps.includes('panelRole="feature" detail={classFeatureDetail}'), "Class step must render independent Codex and Feature panel instances.");
 assert(guide.includes("onSubclassDetail") && guide.includes("onFeatureDetail") && !guide.includes("inspectSubclass(model, onFeatureDetail"), "Subclass inspection and feature detail routing must remain separate callbacks.");
 assert(featureDock.includes("FEATURE_DOCK_WIDTH = 520") && featureDock.includes("is-feature-panel") && featureDock.includes("font-size:1.48rem!important") && featureDock.includes("color:#fff!important") && featureDock.includes("width:min(560px"), "Feature panel must retain the larger desktop reading width and substantially larger high-contrast rules text.");
+assert(!finalClassBrowserCss.includes("is-viewport-floating.has-feature .npc-forge-class-feature-dock__summary") && !classAcceptanceCss.includes("body .npc-forge-class-feature-dock .npc-forge-class-feature-dock__summary") && !classMenuApprovedCss.includes("body .npc-forge-class-feature-dock .npc-forge-class-feature-dock__summary"), "Legacy browser-polish styles must not shrink the Class Feature rules text underneath the current readable panel treatment.");
 assert(model.includes("OPTION_SUMMARIES") && model.includes("listedOptionsForFeature") && featureDock.includes("npc-forge-class-feature-dock__listed-options") && featureDock.includes("Available options"), "Warlock Eldritch Invocation Options must surface the canonical invocation catalogue instead of only the imported pointer sentence.");
 assert(featureDock.includes("window.innerWidth - width - 28") && featureDock.includes("forge ? forge.top + 46 : 72"), "Subclass Codex must default to the upper-right so it does not cover the hero Tarot card.");
 assert(!tarotCss.includes("class-subclass-carousel-modal__choice-bar") && tarotCss.includes(".class-subclass-selected-card-shell") && tarotCss.includes("width: max-content") && tarotCss.includes(".class-subclass-selected-card__copy button"), "Tarot selector must not render the obsolete bottom confirmation box, and the selected subclass must remain a simple card/title/Open Codex presentation.");
+assert(selector.includes('selected ? " has-selection" : ""') && tarotCss.includes(".class-subclass-section.is-card-launcher.has-selection") && tarotCss.includes("background: transparent !important") && tarotCss.includes("border: 0 !important"), "Selected subclass presentation must sit directly on the Class background without the old nested container chrome.");
 assert(featureDock.includes("npc-forge-class-feature-dock__subclass-action") && featureDock.includes("subclassActionLabel") && featureDock.includes("Browse Tarot"), "Subclass selection/change action must live in the Codex header rather than below the carousel.");
 assert(model.includes("spellCatalog") && model.includes("allSpellCatalog: spells") && !model.includes("maxSpellLevelForProgressionRow"), "Subclass spell resolution should retain class access while exposing the full source-backed spell catalogue for special subclass access such as Dunamancy.");
 for (const token of ["area_type", "area_size", "area_unit", "material_text", "saving_throw_abilities", "attack_type", "healing_dice", "higher_level_text"]) assert(model.includes(token), `Subclass Codex spell query must retain Profile SpellCard detail field: ${token}`);
