@@ -16,6 +16,21 @@ const navbar = fs.readFileSync(path.join(root, "components/AppNavbar.js"), "utf8
 const adminBuildBadge = fs.readFileSync(path.join(root, "components/AdminBuildBadge.js"), "utf8");
 const playerProfileEntry = fs.readFileSync(path.join(root, "components/PlayerCharacterProfilePanel.js"), "utf8");
 const playerProfile = fs.readFileSync(path.join(root, "components/PlayerCharacterProfilePanelUnified.js"), "utf8");
+const singletonBrowserClientSources = [
+  ["pages/index.js", "../utils/supabaseClient"],
+  ["pages/signup.js", "../utils/supabaseClient"],
+  ["pages/admin.js", "../utils/supabaseClient"],
+  ["pages/inventory.js", "@/utils/supabaseClient"],
+  ["pages/deck.js", "../utils/supabaseClient"],
+  ["pages/admin/spells.js", "../../utils/supabaseClient"],
+  ["components/AssignItemButton.js", "../utils/supabaseClient"],
+  ["components/OfferTradeButton.js", "../utils/supabaseClient"],
+  ["components/TradeRequestsPanel.js", "../utils/supabaseClient"],
+].map(([relativePath, importPath]) => ({
+  relativePath,
+  importPath,
+  source: fs.readFileSync(path.join(root, relativePath), "utf8"),
+}));
 const failures = [];
 
 function expect(condition, message) {
@@ -263,6 +278,15 @@ expect(navbar.includes('import { supabase } from "../utils/supabaseClient";'),
   "AppNavbar must use the shared Supabase singleton");
 expect(!navbar.includes('createClient'),
   "AppNavbar must not instantiate a second GoTrueClient under the shared storage key");
+
+for (const browserClient of singletonBrowserClientSources) {
+  expect(browserClient.source.includes(`import { supabase } from "${browserClient.importPath}";`),
+    `${browserClient.relativePath} must use the shared Supabase browser singleton`);
+  expect(!browserClient.source.includes('@supabase/supabase-js'),
+    `${browserClient.relativePath} must not import supabase-js directly in the browser bundle`);
+  expect(!browserClient.source.includes('createClient('),
+    `${browserClient.relativePath} must not instantiate a second GoTrueClient under the shared storage key`);
+}
 
 for (const subscriber of [
   { label: "AppNavbar", source: navbar, scheduleCall: "scheduleSessionWork(session)" },
