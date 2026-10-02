@@ -60,7 +60,7 @@ for (const token of [
   "ClassSubclassSection",
   "classKey={selectedClass?.class_key || \"\"}",
   "onInspectSubclass",
-  "inspectSubclass(model, onSubclassDetail, option)",
+  "inspectSubclass(model, onSubclassDetail, option, actions)",
   "selectedRowFeatures",
   "spellSlotCells",
   'const slotLabels = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"]',
@@ -98,16 +98,15 @@ for (const token of [
   "class-subclass-carousel-modal__smoke-near",
   "class-subclass-carousel-card__float",
   "class-subclass-carousel-modal__flame is-flame-left-upper",
-  "function confirmHeroSelection()",
-  "model.selectSubclass(heroOption)",
-  "class-subclass-carousel-modal__choice-bar",
+  "function inspectOption(option, selectedOverride = false)",
+  "model.selectSubclass(option)",
   "model?.setPreviewKey?.(option.key)",
-  "class-subclass-selected-card",
-  ">Change Subclass<",
+  "class-subclass-selected-card-shell",
+  ">Open Codex<",
 ]) assert(selector.includes(token), `Reference-scene subclass selector is missing ${token}`);
 
-assert((selector.match(/model\.selectSubclass\(heroOption\)/g) || []).length === 1, "Carousel must retain one explicit subclass-confirmation authority.");
-assert(selector.includes("model?.setPreviewKey?.(option.key)") && selector.includes("function confirmHeroSelection()"), "Card click must preview first and explicit confirmation must own persistence.");
+assert((selector.match(/model\.selectSubclass\(option\)/g) || []).length === 1, "Carousel/Codex flow must retain one explicit subclass-confirmation authority.");
+assert(selector.includes("model?.setPreviewKey?.(option.key)") && selector.includes("function inspectOption(option, selectedOverride = false)") && selector.includes("onInspectSubclass?.(option, {"), "Card click must preview first and hand explicit confirmation authority to the Codex.");
 assert(!selector.includes("browsedOption"), "Stale browsed-card auto-follow state must remain removed.");
 assert(!selector.includes("class-subclass-carousel-modal__details"), "Old dossier panel must not cover the recreated reference scene.");
 assert(selector.includes("class-subclass-carousel-modal__smoke-near"), "Floating ruined-library target must retain the near smoke depth layer.");
