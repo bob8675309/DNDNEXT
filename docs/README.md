@@ -26,10 +26,10 @@ Active work:
 
 - PR #199 — **Polish floating ruined-library subclass Tarot selector**;
 - branch: `agent/subclass-tarot-scene-rebuild-20260922`;
-- validated runtime head before the current documentation updates: `5cebb825bfc57ce0a00fb32020845259c3e69ada`;
+- validated runtime head before the current documentation updates: `5ad44348198a5b299a81ec9ff349cbb1db942ad4`;
 - state: **open / mergeable / unmerged**;
 - GitHub Actions at that head: **12/12 successful**;
-- exact-head Vercel deployment: `FEDUUsrMw2PGavNWwgDb3GwXovkV` — **READY / success**;
+- exact-head Vercel deployment: `5rFeEKFPQ4UFCWeowSAbyfNYVe9M` — **READY / success**;
 - preview: `dndnext-git-agent-subclass-tarot-9aeaa6-pauls-projects-2016aa54.vercel.app`.
 
 Current Class/subclass presentation rules:
@@ -39,6 +39,9 @@ Current Class/subclass presentation rules:
 - explicit eligible card selection is the only persistence path;
 - Subclass Codex and Class Feature panel use independent state/callbacks and may remain open simultaneously;
 - Codex Progression feature pills open the independent Feature panel rather than replacing the Codex;
+- Codex top-level navigation is now only **Overview / Progression / Spells**; Overview combines lore and the feature index;
+- Spells uses the Profile spellbook pattern: selectable list left, shared compact `SpellCard` detail right;
+- the Tarot backdrop begins behind the opaque Codex tab strip and uses top-aligned framing so the visible portrait sits lower;
 - subclass introduction detection is semantic rather than “all null-header rows are lore,” preserving valid same-level feature rows;
 - player-facing Codex text strips mixed-case/long imported source references, and subclass-spell discovery requires real whole-word grant verbs;
 - Codex Tarot backdrop framing is shifted down slightly to reduce top clipping;

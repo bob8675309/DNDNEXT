@@ -8,7 +8,7 @@ Status: **implemented runtime checkpoint / browser acceptance pending**
 
 Branch: `agent/subclass-tarot-scene-rebuild-20260922`  
 Pull request: **#199 — Polish floating ruined-library subclass Tarot selector**  
-Validated runtime head before this documentation repair: `5cebb825bfc57ce0a00fb32020845259c3e69ada`
+Validated runtime head before this documentation update: `5ad44348198a5b299a81ec9ff349cbb1db942ad4`
 
 ## 2026-10-01 Class-panel / validator checkpoint
 
@@ -31,7 +31,7 @@ Current desktop readability targets:
 - Class Feature panel: about **520px**;
 - Subclass Codex: about **720px**;
 - Feature rules copy uses the larger readable treatment;
-- Codex keeps Overview, Progression, Features, Lore, and Spells tabs.
+- Codex keeps only Overview, Progression, and Spells tabs; Overview owns both lore and feature inspection.
 
 Validator drift exposed by this architecture change is repaired. At `89197828b6ae9945ac436da4339ef910c379eb4c`:
 
@@ -62,6 +62,34 @@ Related Codex fixes:
 Validated runtime head: `5cebb825bfc57ce0a00fb32020845259c3e69ada` — **12/12 GitHub workflows PASS**, Vercel `FEDUUsrMw2PGavNWwgDb3GwXovkV` **READY / success**.
 
 No Supabase writes or protected-subsystem changes were made.
+
+## 2026-10-02 Codex finishing pass
+
+Browser review approved a simpler three-tab Codex.
+
+Current tab authority:
+
+- **Overview** — source-backed lore plus the right-side subclass feature index; choosing a feature swaps the left lore pane to feature details in place.
+- **Progression** — combined class/subclass progression; pills may open the independent Class Feature panel.
+- **Spells** — profile-style two-pane spell browser.
+
+Removed as redundant:
+
+- standalone **Features** tab;
+- standalone **Lore** tab.
+
+The Spells tab intentionally reuses the existing shared `SpellCard` component used by the Profile spellbook. The left side is a selectable compact list; the right side is full spell detail. This replaces the prior flat multi-card grid.
+
+Tarot backdrop behavior now matches Paul's marked screenshot:
+
+- backdrop starts at the top of the Codex body, behind the navigation buttons;
+- nav is opaque and remains above the art;
+- only art below the nav's bottom border is visible;
+- image framing uses top alignment/top transform origin so portrait faces sit lower in the visible body.
+
+Validated runtime head `5ad44348198a5b299a81ec9ff349cbb1db942ad4`: **12/12 workflows PASS**, Vercel `5rFeEKFPQ4UFCWeowSAbyfNYVe9M` **READY / success**.
+
+No Supabase write or protected-subsystem change.
 
 ## Superseding decision
 

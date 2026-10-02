@@ -16,10 +16,10 @@ The older PR #176/#193/#194 sections remain useful architecture/history, but the
 - current `main`: `ab8c5ce6df1fabd906890b38bcfee16deac2ca0d`;
 - active work: PR #199 — **Polish floating ruined-library subclass Tarot selector**;
 - branch: `agent/subclass-tarot-scene-rebuild-20260922`;
-- validated runtime head before this documentation repair: `5cebb825bfc57ce0a00fb32020845259c3e69ada`;
+- validated runtime head before this documentation update: `5ad44348198a5b299a81ec9ff349cbb1db942ad4`;
 - PR state at this checkpoint: **open / mergeable / unmerged**;
-- all **12/12** PR-triggered GitHub workflows completed successfully at `5cebb825bfc57ce0a00fb32020845259c3e69ada`;
-- exact-head Vercel deployment `FEDUUsrMw2PGavNWwgDb3GwXovkV`: **READY / success**;
+- all **12/12** PR-triggered GitHub workflows completed successfully at `5ad44348198a5b299a81ec9ff349cbb1db942ad4`;
+- exact-head Vercel deployment `5rFeEKFPQ4UFCWeowSAbyfNYVe9M`: **READY / success**;
 - preview host: `dndnext-git-agent-subclass-tarot-9aeaa6-pauls-projects-2016aa54.vercel.app`;
 - PR #199 contains no Supabase migration/data change.
 
@@ -55,7 +55,7 @@ The PR #199 Class changes exposed stale literal expectations in older validators
 - `validate_class_subclass_browser.mjs` now guards `onSubclassDetail` rather than the retired shared Feature callback;
 - `validate_artificer_mockup_lock.mjs` now preserves the same split callback contract.
 
-At `5cebb825bfc57ce0a00fb32020845259c3e69ada`, all 12 triggered workflows and Vercel pass.
+At `5ad44348198a5b299a81ec9ff349cbb1db942ad4`, all 12 triggered workflows and Vercel pass.
 
 ### 2026-10-02 subclass completeness / Codex repair
 
@@ -86,13 +86,48 @@ At that exact runtime head:
 - PR #199 remains open / mergeable / unmerged;
 - no Supabase migration/data write and no world-map, town/city-map, tactical, crafting, inventory, merchant, economy, travel, weather, camp, or clock change was made.
 
+### 2026-10-02 Codex finishing pass
+
+Paul approved the consolidated Codex direction from browser review.
+
+The Subclass Codex now has only three top-level tabs:
+
+- **Overview** — owns both lore and feature browsing. The left reading pane shows source-backed lore; the right feature index swaps the left pane into the selected feature and provides **Back to lore**.
+- **Progression** — remains the combined class/subclass progression table and still opens the independent Class Feature panel.
+- **Spells** — now follows the established Profile → Spellbook interaction instead of a flat grid of spell cards.
+
+The Spells tab uses a two-pane workspace:
+
+- left: compact selectable subclass-spell list with level/school/source plus grant/status tags;
+- right: the shared existing `SpellCard` in compact mode, so casting time, range, components, duration, damage/area, description, source, and other catalogue metadata use the same presentation language as the profile spellbook;
+- explicit subclass level grants and special Dunamancy access stay visible in the selection context.
+
+The redundant standalone **Features** and **Lore** tabs are removed because Overview already provides both functions.
+
+Tarot backdrop framing is also changed structurally rather than by another percentage tweak:
+
+- the backdrop now begins at the top of the Codex body, behind the navigation strip;
+- the navigation strip is opaque and sits above the artwork;
+- therefore only the portion below the navigation border is visible;
+- the Tarot image is top-aligned with a top transform origin, placing the portrait/faces lower in the visible crop.
+
+Validated runtime head: `5ad44348198a5b299a81ec9ff349cbb1db942ad4`.
+
+At that exact runtime head:
+
+- **12/12** triggered GitHub workflows passed;
+- Vercel deployment `5rFeEKFPQ4UFCWeowSAbyfNYVe9M` is **READY / success**;
+- no Supabase migration/data write or protected-subsystem change was made.
+
 ### Immediate continuation
 
 Continue browser acceptance of PR #199 rather than reopening old architecture:
 
 - verify Subclass Codex + Class Feature panel can remain open together;
 - verify Feature-panel readability and independent drag/close behavior;
-- verify Codex Overview / Progression / Features / Lore / Spells behavior;
+- verify the three-tab Codex: Overview / Progression / Spells;
+- verify Overview lore/feature swap behavior and the Profile-style two-pane Spells workspace;
+- verify the Tarot backdrop begins behind the nav strip and the visible portrait crop sits lower;
 - test Wizard / dense catalogue and a four-option class;
 - test slow drag, fast flick/snap, arrows/keyboard, side-card click → hero/select, responsive layouts, and reduced motion.
 

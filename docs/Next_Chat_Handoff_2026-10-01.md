@@ -8,10 +8,10 @@ Use this as the concise takeover note, then read the 2026-10-01 override at the 
 - current `main` at this documentation refresh: `ab8c5ce6df1fabd906890b38bcfee16deac2ca0d`;
 - active PR: **#199 — Polish floating ruined-library subclass Tarot selector**;
 - branch: `agent/subclass-tarot-scene-rebuild-20260922`;
-- validated runtime head before the current documentation updates: `5cebb825bfc57ce0a00fb32020845259c3e69ada`;
+- validated runtime head before the current documentation updates: `5ad44348198a5b299a81ec9ff349cbb1db942ad4`;
 - PR state: **open / mergeable / unmerged**;
 - all **12/12** triggered GitHub workflows passed at that head;
-- Vercel deployment `FEDUUsrMw2PGavNWwgDb3GwXovkV`: **READY / success**;
+- Vercel deployment `5rFeEKFPQ4UFCWeowSAbyfNYVe9M`: **READY / success**;
 - preview host: `dndnext-git-agent-subclass-tarot-9aeaa6-pauls-projects-2016aa54.vercel.app`;
 - do not merge without Paul's explicit approval.
 
@@ -82,13 +82,26 @@ Current runtime now:
 
 Read-only live audit found 65 of 275 subclass source groups have multiple null-header rows, so the regression coverage protects this as a catalogue-wide rule rather than a one-off Winter Walker patch.
 
+## Codex finishing pass
+
+The current Subclass Codex is intentionally reduced to **Overview / Progression / Spells**.
+
+- Overview combines lore and the subclass feature index; selecting a feature replaces the lore pane until **Back to lore**.
+- Progression remains combined class/subclass progression and keeps independent Feature-panel routing.
+- Spells now mirrors the Profile spellbook: selectable spell list on the left, shared compact `SpellCard` details on the right.
+- standalone Features and Lore tabs are removed.
+- Tarot backdrop begins behind the opaque navigation strip and is top-aligned so only the portion below the tab border is visible and portrait faces sit lower.
+
+Validated runtime head: `5ad44348198a5b299a81ec9ff349cbb1db942ad4` — **12/12 workflows PASS**, Vercel **READY / success**.
+
 ## Immediate browser acceptance
 
 1. Verify Subclass Codex and Class Feature panel remain open together.
 2. Verify each window moves/closes independently and rules copy is readable.
-3. Verify Codex Overview, Progression, Features, Lore, and Spells.
-4. Test Wizard / dense catalogue and a four-option class.
-5. Test slow drag, fast flick/snap, arrows, keyboard, side-card → hero/select.
-6. Test desktop, medium, narrow/mobile, and reduced-motion behavior.
-7. Re-run exact-head CI/Vercel after any change.
-8. Merge only after Paul's explicit approval.
+3. Verify the three-tab Codex: Overview, Progression, and Spells.
+4. Verify Overview lore/feature swapping, Profile-style spell selection/details, and lower Tarot backdrop framing.
+5. Test Wizard / dense catalogue and a four-option class.
+6. Test slow drag, fast flick/snap, arrows, keyboard, side-card → hero/select.
+7. Test desktop, medium, narrow/mobile, and reduced-motion behavior.
+8. Re-run exact-head CI/Vercel after any change.
+9. Merge only after Paul's explicit approval.
