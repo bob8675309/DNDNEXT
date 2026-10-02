@@ -92,7 +92,7 @@ function isGenericSubclassFeatureName(value) {
 function uniqueProgressionFeatures(features = []) {
   const seen = new Set();
   return features.filter((feature) => {
-    const key = normalizedSpellName(feature?.name);
+    const key = normalizeSubclassSpellName(feature?.name);
     if (!key || seen.has(key)) return false;
     seen.add(key);
     return true;
@@ -100,7 +100,7 @@ function uniqueProgressionFeatures(features = []) {
 }
 
 function subclassFeatureKey(feature = {}) {
-  return `${Number(feature?.level || 0)}:${normalizedSpellName(feature?.name)}`;
+  return `${Number(feature?.level || 0)}:${normalizeSubclassSpellName(feature?.name)}`;
 }
 
 function buildSubclassProgressionRows(rows = [], subclassFeatures = []) {
