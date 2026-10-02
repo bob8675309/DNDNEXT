@@ -340,11 +340,6 @@ export default function ClassSubclassSection({
     );
   }
 
-  function clearSelection() {
-    model.selectSubclass(null);
-    setSelectorOpen(true);
-  }
-
   function rotateCarousel(direction) {
     if (options.length <= 1) return;
     captureGlideRects();
@@ -423,12 +418,29 @@ export default function ClassSubclassSection({
     setIsDragging(false);
   }
 
-  function confirmHeroSelection() {
-    if (!heroOption || optionEntryLevel(heroOption) > currentLevel) return;
-    model?.setPreviewKey?.(heroOption.key);
-    model.selectSubclass(heroOption);
-    onInspectSubclass?.(heroOption);
-    setSelectorOpen(false);
+  function inspectOption(option, selectedOverride = false) {
+    if (!option?.key) return;
+    const eligible = optionEntryLevel(option) <= currentLevel;
+    const selectedNow = selectedOverride || selected?.key === option.key;
+    const browse = () => setSelectorOpen(true);
+    const choose = eligible && !selectedNow ? () => {
+      model.selectSubclass(option);
+      setSelectorOpen(false);
+      model?.setPreviewKey?.(option.key);
+      onInspectSubclass?.(option, {
+        eligible: true,
+        selected: true,
+        choose: null,
+        browse,
+      });
+    } : null;
+
+    onInspectSubclass?.(option, {
+      eligible,
+      selected: selectedNow,
+      choose,
+      browse,
+    });
   }
 
   function handleCardClick(event, option, optionIndex, isInteractive) {
@@ -444,7 +456,7 @@ export default function ClassSubclassSection({
     captureGlideRects();
     setOrbitOffset(normalizeOrbitOffset(optionIndex - FRONT_CENTER_SLOT, options.length));
     model?.setPreviewKey?.(option.key);
-    onInspectSubclass?.(option);
+    inspectOption(option);
   }
 
   const selectorModal = selectorOpen && typeof document !== "undefined"
@@ -562,21 +574,6 @@ export default function ClassSubclassSection({
               ›
             </button>
 
-            <div className="class-subclass-carousel-modal__choice-bar" aria-live="polite">
-              <div>
-                <span>{selected?.key === heroOption?.key ? "Selected subclass" : "Previewing"}</span>
-                <strong>{heroOption?.name || "Subclass"}</strong>
-                {heroOption ? <small>{optionEntryLevel(heroOption) <= currentLevel ? `Available at level ${optionEntryLevel(heroOption)}` : `Unlocks at level ${optionEntryLevel(heroOption)}`}</small> : null}
-              </div>
-              <button
-                type="button"
-                onClick={confirmHeroSelection}
-                disabled={!heroOption || optionEntryLevel(heroOption) > currentLevel || selected?.key === heroOption?.key}
-              >
-                {selected?.key === heroOption?.key ? "Selected" : heroOption && optionEntryLevel(heroOption) <= currentLevel ? `Choose ${heroOption.name}` : `Locked until level ${optionEntryLevel(heroOption || {})}`}
-              </button>
-            </div>
-
             <div className="class-subclass-carousel-modal__sr-status visually-hidden" aria-live="polite">
               {heroOption ? `${heroOption.name}, card ${heroIndex + 1} of ${options.length}` : ""}
             </div>
@@ -592,25 +589,12 @@ export default function ClassSubclassSection({
       <section className={`npc-forge-class-guide__subclasses is-compact class-subclass-section is-card-launcher${detailed ? " is-detailed" : ""}${required && !selected ? " is-required" : ""}`}>
         {selected ? (
           <div className="class-subclass-selected-card-shell">
-            <button
-              type="button"
-              className="class-subclass-selected-card"
-              onClick={() => onInspectSubclass?.(selected)}
-              aria-label={`Open the ${selected.name} subclass Codex.`}
-            >
-              <span className="class-subclass-selected-card__art" aria-hidden="true">
-                <img src={subclassArtworkFor(classKey, selected)} onError={(event) => handleSubclassArtworkError(event, classKey)} alt="" />
-              </span>
-              <span className="class-subclass-selected-card__shade" aria-hidden="true" />
-              <span className="class-subclass-selected-card__copy">
-                <span>Selected subclass</span>
-                <strong>{selected.name}</strong>
-                <small>Open the subclass Codex</small>
-              </span>
-            </button>
-            <div className="class-subclass-selected-card-shell__actions">
-              <button type="button" onClick={() => setSelectorOpen(true)}>Change Subclass</button>
-              <button type="button" className="is-muted" onClick={clearSelection}>Clear</button>
+            <span className="class-subclass-selected-card__art" aria-hidden="true">
+              <img src={subclassArtworkFor(classKey, selected)} onError={(event) => handleSubclassArtworkError(event, classKey)} alt="" />
+            </span>
+            <div className="class-subclass-selected-card__copy">
+              <strong>{selected.name}</strong>
+              <button type="button" onClick={() => inspectOption(selected, true)} aria-label={`Open the ${selected.name} subclass Codex.`}>Open Codex</button>
             </div>
           </div>
         ) : (
