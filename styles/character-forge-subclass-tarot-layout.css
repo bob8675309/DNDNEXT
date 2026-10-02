@@ -17,6 +17,16 @@
   margin-top: .75rem;
 }
 
+.unified-player-character-forge .class-subclass-section.is-card-launcher.has-selection {
+  width: max-content !important;
+  max-width: 100% !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
 .class-subclass-launcher {
   width: max-content;
   min-width: 0;
