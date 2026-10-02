@@ -117,6 +117,7 @@ function sentenceForToken(value, token) {
 function sentenceGrantsSpells(sentence) {
   const text = safeText(sentence);
   return /\byou\s+(?:also\s+)?(?:can|may)\s+cast\b/i.test(text)
+    || /\bwhen\s+you\s+do\s+so,?\s+you\s+cast\b/i.test(text)
     || /\byou\s+(?:can|may)\b[^.!?]{0,160}\bto\s+cast\b/i.test(text)
     || /\byou\s+(?:can|may)\b[^.!?]{0,180}\band\b[^.!?]{0,40}\bcast\b/i.test(text)
     || /\byou\s+gain\b[^.!?]{0,140}\b(?:ability|option)\s+to\s+cast\b/i.test(text)
