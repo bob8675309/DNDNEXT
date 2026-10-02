@@ -395,6 +395,17 @@ for (const spell of ["Beast Sense", "Speak with Animals", "Commune with Nature",
   assert(directGrantRefs.some((entry) => entry.name === spell), `Direct subclass spell grant missing ${spell}`);
 }
 
+const choiceGrantRefs = subclassSpellGrantReferences([
+  testSubclassRow({ subclassName: "Arcane Archer", name: "Arcane Archer Lore", source: "XGE", classSource: "PHB", entries: ["You choose to learn either the {@spell prestidigitation} or the {@spell druidcraft} cantrip."] }),
+  testSubclassRow({ subclassName: "Scion of the Three", name: "Dread Allegiance", source: "FRHoF", entries: [{ type: "table", colLabels: ["Dead Three", "Resistance", "Cantrip"], rows: [["Bane", "Psychic", "{@spell Minor Illusion|XPHB}"], ["Bhaal", "Poison", "{@spell Blade Ward|XPHB}"], ["Myrkul", "Necrotic", "{@spell Chill Touch|XPHB}"]] }] }),
+  testSubclassRow({ subclassName: "Light", name: "Bonus Cantrip", source: "PHB", classSource: "PHB", level: 1, entries: ["You gain the {@spell light} cantrip if you don't already know it."] }),
+  testSubclassRow({ subclassName: "Ancestral Guardian", name: "Consult the Spirits", source: "XGE", classSource: "PHB", level: 10, entries: ["When you consult your ancestors, you cast the {@spell augury} or {@spell clairvoyance} spell without a spell slot."] }),
+  testSubclassRow({ subclassName: "Phantom", name: "Tokens of the Departed", source: "RHW", level: 9, entries: ["You can take a Magic action to destroy a soul trinket and immediately cast the {@spell Augury|XPHB} spell."] }),
+]);
+for (const spell of ["prestidigitation", "druidcraft", "Minor Illusion", "Blade Ward", "Chill Touch", "light", "augury", "clairvoyance", "Augury"]) {
+  assert(choiceGrantRefs.some((entry) => entry.name === spell), `Choice/direct subclass spell grant missing ${spell}`);
+}
+
 const falseGrantRefs = subclassSpellGrantReferences([
   testSubclassRow({ subclassName: "Zealot", name: "Warrior of the Gods", header: 1, entries: ["If a spell, such as {@spell raise dead}, restores you to life, its caster needs no Material components."] }),
   testSubclassRow({ subclassName: "Scribes", name: "Manifest Mind", level: 6, header: 2, entries: ["The spectral mind ends if someone casts {@spell dispel magic} on it."] }),

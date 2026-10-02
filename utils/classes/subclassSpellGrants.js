@@ -41,9 +41,9 @@ function spellTable(node, featureName = "") {
   if (!node || typeof node !== "object" || Array.isArray(node)) return false;
   if (!(node.type === "table" || Array.isArray(node.rows))) return false;
   const labels = Array.isArray(node.colLabels) ? node.colLabels.map(cleanInlineMarkup) : [];
-  return /\bspells?\b/i.test(cleanInlineMarkup(node.caption))
-    || labels.some((label) => /\bspells?\b/i.test(label))
-    || (/\bspells?\b/i.test(safeText(featureName)) && Array.isArray(node.rows));
+  return /\b(?:spells?|cantrips?)\b/i.test(cleanInlineMarkup(node.caption))
+    || labels.some((label) => /\b(?:spells?|cantrips?)\b/i.test(label))
+    || (/\b(?:spells?|cantrips?)\b/i.test(safeText(featureName)) && Array.isArray(node.rows));
 }
 
 function collectSpellTokens(value, output = []) {
@@ -117,9 +117,11 @@ function sentenceForToken(value, token) {
 function sentenceGrantsSpells(sentence) {
   const text = safeText(sentence);
   return /\byou\s+(?:also\s+)?(?:can|may)\s+cast\b/i.test(text)
-    || /\byou\s+(?:can|may)\b[^.!?]{0,140}\bto\s+cast\b/i.test(text)
+    || /\byou\s+(?:can|may)\b[^.!?]{0,160}\bto\s+cast\b/i.test(text)
+    || /\byou\s+(?:can|may)\b[^.!?]{0,180}\band\b[^.!?]{0,40}\bcast\b/i.test(text)
     || /\byou\s+gain\b[^.!?]{0,140}\b(?:ability|option)\s+to\s+cast\b/i.test(text)
-    || /\byou\s+(?:learn|know)\b/i.test(text)
+    || /\byou\s+gain\b[^.!?]{0,140}\b(?:spell|spells|cantrip|cantrips)\b/i.test(text)
+    || /\byou\s+(?:choose\s+to\s+)?(?:learn|know)\b/i.test(text)
     || /\byou\s+(?:always\s+)?have\b[^.!?]{0,180}\bprepared\b/i.test(text)
     || /\byou\s+add\b[^.!?]{0,180}\b(?:spell|spells)\b/i.test(text);
 }
@@ -127,7 +129,8 @@ function sentenceGrantsSpells(sentence) {
 function prefixGrantsSpell(before) {
   const text = safeText(before);
   return /\byou\s+(?:also\s+)?cast(?:\s+the)?\s*$/i.test(text)
-    || /\b(?:to|and)\s+cast(?:\s+the)?\s*$/i.test(text);
+    || /\b(?:to|and)(?:\s+immediately)?\s+cast(?:\s+the)?\s*$/i.test(text)
+    || /\byou\s+cast\b[^.!?]{0,120}\b(?:or|and)\s*$/i.test(text);
 }
 
 function collectDirectSpellReferences(node, feature, output, insideGrantTable = false) {
