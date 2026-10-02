@@ -119,6 +119,81 @@
   overflow: auto;
 }
 
+.spell-card--dense {
+  padding: 0.5rem;
+  border-radius: 10px;
+  font-size: 0.74rem;
+}
+
+.spell-card--dense .spell-card__header {
+  gap: 0.4rem;
+  padding-bottom: 0.28rem;
+  margin-bottom: 0.32rem;
+}
+
+.spell-card--dense .spell-card__eyebrow,
+.spell-card--dense .spell-card__source,
+.spell-card--dense .spell-card__footer {
+  font-size: 0.5rem;
+}
+
+.spell-card--dense .spell-card__title {
+  margin-top: 0.06rem;
+  font-size: 0.9rem;
+  line-height: 1.05;
+}
+
+.spell-card--dense .spell-card__source {
+  padding: 0.1rem 0.28rem;
+}
+
+.spell-card--dense .spell-card__badges {
+  gap: 0.16rem;
+  margin-bottom: 0.3rem;
+}
+
+.spell-card--dense .spell-card__badges span {
+  font-size: 0.5rem;
+  padding: 0.1rem 0.28rem;
+}
+
+.spell-card--dense .spell-card__grid {
+  gap: 0.24rem;
+  margin-bottom: 0.32rem;
+}
+
+.spell-card--dense .spell-card__grid > div {
+  padding: 0.24rem 0.32rem;
+  border-radius: 7px;
+}
+
+.spell-card--dense dt {
+  font-size: 0.48rem;
+  margin-bottom: 0.06rem;
+}
+
+.spell-card--dense dd {
+  font-size: 0.68rem;
+  line-height: 1.2;
+}
+
+.spell-card--dense .spell-card__description,
+.spell-card--dense .spell-card__higher {
+  padding: 0.36rem;
+  border-radius: 7px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.spell-card--dense .spell-card__higher {
+  margin-top: 0.28rem;
+}
+
+.spell-card--dense .spell-card__footer {
+  margin-top: 0.28rem;
+  line-height: 1.3;
+}
+
 .spell-school-abjuration { --spell-accent: #64d2ff; }
 .spell-school-conjuration { --spell-accent: #7bd88f; }
 .spell-school-divination { --spell-accent: #ffd166; }
