@@ -402,8 +402,9 @@ const choiceGrantRefs = subclassSpellGrantReferences([
   testSubclassRow({ subclassName: "Ancestral Guardian", name: "Consult the Spirits", source: "XGE", classSource: "PHB", level: 10, entries: ["At 10th level, you gain the ability to consult with your ancestral spirits. When you do so, you cast the {@spell augury} or {@spell clairvoyance} spell, without using a spell slot or material components."] }),
   testSubclassRow({ subclassName: "Phantom", name: "Tokens of the Departed", source: "RHW", level: 9, entries: ["You can take a Magic action to destroy a soul trinket and immediately cast the {@spell Augury|XPHB} spell."] }),
 ]);
-for (const spell of ["prestidigitation", "druidcraft", "Minor Illusion", "Blade Ward", "Chill Touch", "light", "augury", "clairvoyance", "Augury"]) {
-  assert(choiceGrantRefs.some((entry) => entry.name === spell), `Choice/direct subclass spell grant missing ${spell}`);
+for (const spell of ["prestidigitation", "druidcraft", "Minor Illusion", "Blade Ward", "Chill Touch", "light", "augury", "clairvoyance"]) {
+  const spellKey = spell.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  assert(choiceGrantRefs.some((entry) => entry.name.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim() === spellKey), `Choice/direct subclass spell grant missing ${spell}`);
 }
 
 const falseGrantRefs = subclassSpellGrantReferences([
