@@ -21,10 +21,10 @@ Everything below this section is historical unless a newer focused ledger says o
 
 - current `main`: `ab8c5ce6df1fabd906890b38bcfee16deac2ca0d`;
 - active Character Forge presentation work: PR #199, branch `agent/subclass-tarot-scene-rebuild-20260922`;
-- validated pre-documentation PR head: `89197828b6ae9945ac436da4339ef910c379eb4c`;
+- validated runtime PR head before the current documentation updates: `5cebb825bfc57ce0a00fb32020845259c3e69ada`;
 - PR #199: **open / mergeable / unmerged**;
-- **11/11** PR-triggered workflows passed at that head;
-- Vercel deployment `3KoiKyA8wXeWPkMfVME5CFfXjToD`: **READY / success**;
+- **12/12** PR-triggered workflows passed at that head;
+- Vercel deployment `FEDUUsrMw2PGavNWwgDb3GwXovkV`: **READY / success**;
 - current presentation: floating Tarot carousel in a smoky ruined gothic library;
 - Class Feature panel and Subclass Codex have independent state, independent routing, and may coexist;
 - validator drift from the split-panel change has been reconciled across the Class browser, PR170 browser-smoke, focused subclass, and Artificer lock validators;
@@ -37,6 +37,13 @@ Current focused documents:
 - `Character_Forge_Subclass_Tarot_Table_Contact_Handoff.md`;
 - `Character_Forge_Subclass_Tarot_Reference_Rebuild_Checklist.md`;
 - `CHATGPT_REPO_WRITE_PROCEDURE.md`.
+
+Current source-completeness note:
+
+- browser review found the live subclass rows were present; resolver logic had hidden valid null-header features;
+- intro detection now uses semantic identity plus null-header status;
+- mixed-case/long source refs are sanitized, false spell-grant substring matches are blocked, and Codex art framing is shifted down;
+- no Supabase write was required.
 
 Current queue:
 
