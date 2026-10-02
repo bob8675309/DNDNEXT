@@ -26,10 +26,10 @@ Active work:
 
 - PR #199 — **Polish floating ruined-library subclass Tarot selector**;
 - branch: `agent/subclass-tarot-scene-rebuild-20260922`;
-- validated pre-documentation head: `89197828b6ae9945ac436da4339ef910c379eb4c`;
+- validated runtime head before the current documentation updates: `5cebb825bfc57ce0a00fb32020845259c3e69ada`;
 - state: **open / mergeable / unmerged**;
-- GitHub Actions at that head: **11/11 successful**;
-- exact-head Vercel deployment: `3KoiKyA8wXeWPkMfVME5CFfXjToD` — **READY / success**;
+- GitHub Actions at that head: **12/12 successful**;
+- exact-head Vercel deployment: `FEDUUsrMw2PGavNWwgDb3GwXovkV` — **READY / success**;
 - preview: `dndnext-git-agent-subclass-tarot-9aeaa6-pauls-projects-2016aa54.vercel.app`.
 
 Current Class/subclass presentation rules:
@@ -39,6 +39,9 @@ Current Class/subclass presentation rules:
 - explicit eligible card selection is the only persistence path;
 - Subclass Codex and Class Feature panel use independent state/callbacks and may remain open simultaneously;
 - Codex Progression feature pills open the independent Feature panel rather than replacing the Codex;
+- subclass introduction detection is semantic rather than “all null-header rows are lore,” preserving valid same-level feature rows;
+- player-facing Codex text strips mixed-case/long imported source references, and subclass-spell discovery requires real whole-word grant verbs;
+- Codex Tarot backdrop framing is shifted down slightly to reduce top clipping;
 - no Supabase, world-map, town/city-map, tactical, crafting, inventory, merchant, or economy authority changed for this presentation work.
 
 Always re-fetch current `main`, PR #199 head/mergeability, exact-head workflows, and Vercel before implementation or merge. Do not merge PR #199 without explicit user approval.
