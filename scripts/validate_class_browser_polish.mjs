@@ -60,7 +60,7 @@ for (const token of [
   "ClassSubclassSection",
   "classKey={selectedClass?.class_key || \"\"}",
   "onInspectSubclass",
-  "inspectSubclass(model, onFeatureDetail, option)",
+  "inspectSubclass(model, onSubclassDetail, option)",
   "selectedRowFeatures",
   "spellSlotCells",
   'const slotLabels = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"]',
@@ -75,6 +75,7 @@ assert(!guide.includes('<aside className="npc-forge-class-guide__dock-lane"'), "
 assert(!guide.includes('onMouseEnter={() => publishFeature(model, onFeatureDetail'), "Feature-card content must not change on feature hover.");
 assert(!guide.includes('onFocus={() => publishFeature(model, onFeatureDetail'), "Feature-card content must not change from focus alone.");
 assert(!guide.includes("classSlotSummary(row.spell_slots)"), "Progression regressed to the compressed one-cell spell-slot summary.");
+assert(!guide.includes("inspectSubclass(model, onFeatureDetail, option)"), "Subclass inspection must remain routed to the independent Subclass Codex callback, not the Class Feature panel.");
 
 for (const token of [
   'import { useEffect, useMemo, useRef, useState } from "react"',
