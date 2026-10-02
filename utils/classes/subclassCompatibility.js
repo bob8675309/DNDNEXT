@@ -33,12 +33,23 @@ export function subclassOptionKey(name, source) {
   return `${sourceKey(source)}:${normalizeSubclassName(name).replace(/\s+/g, "-")}`;
 }
 
+function subclassIntroductionIdentity(value) {
+  let identity = normalizeSubclassName(value);
+  if (!identity) return "";
+  identity = identity
+    .replace(/^the\s+/, "")
+    .replace(/^(?:school|path|college|circle|oath|way|warrior|order)\s+of\s+(?:the\s+)?/, "");
+  return identity
+    .split(/\s+/)
+    .filter((token) => !["domain", "sorcery", "patron", "tradition"].includes(token))
+    .join(" ")
+    .trim();
+}
+
 function isIntroductionRow(row, subclassName) {
-  const rawHeader = row?.raw_payload?.header;
-  if (rawHeader == null) return true;
-  const rowName = normalizeSubclassName(row?.name);
-  const optionName = normalizeSubclassName(subclassName);
-  return Boolean(rowName && optionName && (rowName === optionName || rowName === `school of ${optionName}` || rowName === `path of the ${optionName}`));
+  const rowIdentity = subclassIntroductionIdentity(row?.name);
+  const optionIdentity = subclassIntroductionIdentity(subclassName);
+  return Boolean(rowIdentity && optionIdentity && rowIdentity === optionIdentity);
 }
 
 function effectiveSubclassLevel(level, classSource, targetClassSource) {

@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 const root = process.cwd();
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
@@ -266,6 +267,65 @@ for (const token of ['wild: "wild-magic"', '"wild-magic": "wild-magic"']) {
   assert(subclassArtwork.includes(token), `Preferred-source Wild Magic alias mapping missing ${token}`);
 }
 
+const subclassCompatibility = await import(pathToFileURL(path.join(root, "utils/classes/subclassCompatibility.js")).href);
+const { resolveSubclassCatalog, guideSubclassFeatures, subclassIntroduction } = subclassCompatibility;
+
+function testSubclassRow({ subclassName, name, level = 3, source = "TEST", classSource = "XPHB", header = null, description = "Source-backed rules." }) {
+  return {
+    feature_type: "subclass",
+    class_key: "test",
+    subclass_name: subclassName,
+    subclass_short_name: subclassName,
+    name,
+    source,
+    class_source: classSource,
+    level,
+    description,
+    entries: [],
+    raw_payload: { header },
+  };
+}
+
+const winterWalker = resolveSubclassCatalog([
+  testSubclassRow({ subclassName: "Winter Walker", name: "Frigid Explorer", header: null }),
+  testSubclassRow({ subclassName: "Winter Walker", name: "Hunter's Rime", header: null }),
+  testSubclassRow({ subclassName: "Winter Walker", name: "Winter Walker", header: null, description: "Winter Walker lore." }),
+  testSubclassRow({ subclassName: "Winter Walker", name: "Winter Walker Spells", header: null }),
+  testSubclassRow({ subclassName: "Winter Walker", name: "Fortifying Soul", level: 7, header: 2 }),
+], "XPHB")[0];
+assert(subclassIntroduction(winterWalker)?.name === "Winter Walker", "Winter Walker lore row must remain the subclass introduction when several level-3 feature rows have null headers.");
+for (const name of ["Frigid Explorer", "Hunter's Rime", "Winter Walker Spells", "Fortifying Soul"]) {
+  assert(guideSubclassFeatures(winterWalker).some((feature) => feature.name === name), `Winter Walker feature was incorrectly hidden as introduction: ${name}`);
+}
+
+const bladesinger = resolveSubclassCatalog([
+  testSubclassRow({ subclassName: "Bladesinger", name: "Bladesinger", source: "FRHoF", header: null, description: "Bladesinger lore." }),
+  testSubclassRow({ subclassName: "Bladesinger", name: "Bladesong", source: "FRHoF", header: null }),
+  testSubclassRow({ subclassName: "Bladesinger", name: "Training in War and Song", source: "FRHoF", header: null }),
+  testSubclassRow({ subclassName: "Bladesinger", name: "Extra Attack", source: "FRHoF", level: 6, header: 2 }),
+], "XPHB")[0];
+assert(subclassIntroduction(bladesinger)?.name === "Bladesinger", "Bladesinger lore row must not swallow same-level Bladesong/Training features.");
+assert(guideSubclassFeatures(bladesinger).some((feature) => feature.name === "Bladesong"), "Bladesong must remain a visible subclass feature.");
+assert(guideSubclassFeatures(bladesinger).some((feature) => feature.name === "Training in War and Song"), "Training in War and Song must remain a visible subclass feature.");
+
+for (const [subclassName, introName] of [
+  ["Swords", "College of Swords"],
+  ["Land", "Circle of the Land"],
+  ["Noble Genies", "Oath of the Noble Genies"],
+  ["Shadow", "Warrior of Shadow"],
+  ["Scribes", "Order of Scribes"],
+  ["Archfey", "Archfey Patron"],
+  ["Spellfire", "Spellfire Sorcery"],
+  ["Ambition (PSA)", "Ambition Domain (PSA)"],
+]) {
+  const option = resolveSubclassCatalog([
+    testSubclassRow({ subclassName, name: introName, description: `${subclassName} lore.` }),
+    testSubclassRow({ subclassName, name: `${subclassName} Feature`, header: null }),
+  ], "XPHB")[0];
+  assert(subclassIntroduction(option)?.name === introName, `Wrapped subclass introduction identity failed for ${subclassName}: ${introName}`);
+  assert(guideSubclassFeatures(option).some((feature) => feature.name === `${subclassName} Feature`), `Null-header feature was incorrectly hidden for ${subclassName}`);
+}
+
 assert(model.includes("resolveSubclassCatalog") && model.includes("const options = useMemo"), "Canonical subclass catalogue authority moved out of the existing guide model.");
 assert(model.includes("selectSubclass"), "Existing subclass persistence authority disappeared from the guide model.");
 
@@ -321,8 +381,8 @@ assert(featureDock.includes('["progression", "Progression"]') && !featureDock.in
 assert(featureDock.includes("overviewFeatureKey") && featureDock.includes("npc-forge-subclass-inspector__overview-feature-index") && featureDock.includes("Back to lore"), "Overview must keep the right-side subclass feature index and swap the left lore panel into feature details in place.");
 assert(featureDock.includes('onClick={() => onFeatureDetail?.({ type: "classFeature"') && forgeSteps.includes("onFeatureDetail={setClassFeatureDetail}"), "Codex progression pills must route into the independent Feature panel.");
 assert(featureDock.includes("this subclass has access to dunamancy spells") && featureDock.includes("subclassHasDunamancyAccess"), "Dunamancy access must move out of lore and into the Spells tab.");
-assert(featureDock.includes("width:86%") && featureDock.includes("brightness(.98)"), "Subclass Tarot backdrop must remain enlarged and lightened behind the Codex content.");
-assert(featureDock.includes("playerFacingSubclassLore") && featureDock.includes("^[^|]+\\|[^|]+\\|\\|[^|]+\\|\\|\\d+$"), "Player-facing subclass lore must strip imported pipe-reference metadata without mutating catalogue data.");
+assert(featureDock.includes("width:86%") && featureDock.includes("brightness(.98)") && featureDock.includes("object-position:center 20%"), "Subclass Tarot backdrop must remain enlarged/lightened and sit lower in the Codex so the card art is not clipped too high.");
+assert(featureDock.includes("playerFacingSubclassLore") && featureDock.includes("isImportedSubclassReferenceLine") && featureDock.includes('split("|")') && featureDock.includes("parts.length >= 7 ? parts[parts.length - 2]"), "Player-facing subclass lore must strip imported subclass-reference metadata without mutating catalogue data.");
 assert(featureDock.includes("npc-forge-class-feature-dock__title-group{display:none!important}") && featureDock.includes("head-actions>em{display:none!important}"), "Subclass inspector header must stay compact and avoid repeating identity/source labels.");
 assert(!subclassArtwork.includes('bladesinging: "bladesinging"'), "Retired Bladesinging artwork mapping must not return.");
 assert(featureDock.includes("grid-template-columns:repeat(2,minmax(0,1fr))"), "Subclass feature summaries must retain the two-column desktop layout.");
