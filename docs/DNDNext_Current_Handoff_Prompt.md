@@ -1,11 +1,73 @@
 # DNDNext Next-Chat Handoff Brief
 
-Updated: 2026-09-21
+Updated: 2026-10-01
 
 Repository: `bob8675309/DNDNEXT`
 
 Stack: Next.js **Pages Router** 16.1.6, React 19, Supabase/Postgres, Bootstrap/SCSS, Vercel.
 
+
+## 2026-10-01 authoritative override — use this before every older checkpoint below
+
+The older PR #176/#193/#194 sections remain useful architecture/history, but they are no longer the active work checkpoint.
+
+### Current GitHub / deployment state
+
+- current `main`: `ab8c5ce6df1fabd906890b38bcfee16deac2ca0d`;
+- active work: PR #199 — **Polish floating ruined-library subclass Tarot selector**;
+- branch: `agent/subclass-tarot-scene-rebuild-20260922`;
+- validated pre-documentation head: `89197828b6ae9945ac436da4339ef910c379eb4c`;
+- PR state at this checkpoint: **open / mergeable / unmerged**;
+- all **11/11** PR-triggered GitHub workflows completed successfully at `89197828b6ae9945ac436da4339ef910c379eb4c`;
+- exact-head Vercel deployment `3KoiKyA8wXeWPkMfVME5CFfXjToD`: **READY / success**;
+- preview host: `dndnext-git-agent-subclass-tarot-9aeaa6-pauls-projects-2016aa54.vercel.app`;
+- PR #199 contains no Supabase migration/data change.
+
+Documentation-only commits after `89197828b6ae9945ac436da4339ef910c379eb4c` may advance the branch SHA without changing runtime behavior. Always re-fetch the exact PR head before writing, validating, deploying, or merging.
+
+### Current Character Forge Class / subclass architecture
+
+The active selector is a **floating Tarot carousel in a dark, smoky ruined gothic library**. The retired physical runic-table/contact model must not be restored.
+
+The Class step now has two independent viewport-floating detail models:
+
+- `classFeatureDetail` → **Class Feature** panel;
+- `subclassCodexDetail` → **Subclass Codex**.
+
+They deliberately do not replace each other. The Codex and Feature panel may be open simultaneously.
+
+Routing is intentionally split:
+
+- subclass inspection → `onSubclassDetail` / Subclass Codex;
+- class/subclass feature inspection → `onFeatureDetail` / Class Feature panel;
+- Codex Progression feature pills may open the Feature panel while leaving the Codex open.
+
+Desktop reading targets are currently about **720px** for the Subclass Codex and **520px** for the Class Feature panel. Preserve independent drag/close state and readability.
+
+Subclass selection authority is unchanged: carousel movement never persists a subclass; explicit eligible selection still flows through the existing guide model and `model.selectSubclass(option)`.
+
+### Validator reconciliation completed
+
+The PR #199 Class changes exposed stale literal expectations in older validators. Those contracts were reconciled to the accepted architecture without weakening runtime authority:
+
+- `validate_class_browser_polish.mjs` now expects the independent Subclass Codex callback and current selector import shape;
+- `validate_pr170_browser_smoke_corrections.mjs` validates structural independent `<details>` disclosure instead of obsolete prose literals;
+- `validate_class_subclass_browser.mjs` now guards `onSubclassDetail` rather than the retired shared Feature callback;
+- `validate_artificer_mockup_lock.mjs` now preserves the same split callback contract.
+
+At `89197828b6ae9945ac436da4339ef910c379eb4c`, the Class browser workflow, PR170 browser-smoke workflow, Artificer workflow, Forge regressions, and Vercel all pass.
+
+### Immediate continuation
+
+Continue browser acceptance of PR #199 rather than reopening old architecture:
+
+- verify Subclass Codex + Class Feature panel can remain open together;
+- verify Feature-panel readability and independent drag/close behavior;
+- verify Codex Overview / Progression / Features / Lore / Spells behavior;
+- test Wizard / dense catalogue and a four-option class;
+- test slow drag, fast flick/snap, arrows/keyboard, side-card click → hero/select, responsive layouts, and reduced motion.
+
+Do not merge PR #199 without Paul's explicit approval.
 
 ## 2026-09-21 authoritative override — use this before every older checkpoint below
 
