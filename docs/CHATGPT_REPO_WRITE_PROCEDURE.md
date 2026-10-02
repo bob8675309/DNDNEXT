@@ -1,6 +1,6 @@
 # ChatGPT Repository Write Procedure
 
-Updated: 2026-09-21
+Updated: 2026-10-01
 
 This project is directly writable from ChatGPT through the GitHub connector and Supabase connector when those actions are available. Do not claim that repo/database writes require a separate environment unless an actual connector/tool attempt fails.
 
@@ -9,14 +9,14 @@ This project is directly writable from ChatGPT through the GitHub connector and 
 - Repository: `bob8675309/DNDNEXT`
 - Default/production authority: `main`
 - Accepted runtime checkpoint: `320671a22b83432177dcc67e9efd035f3c3ccc5d` (merged PR #195); current `main` may be ahead due to documentation-only merges
-- Current open continuation branch: `agent/subclass-carousel-drag-crisp-20260918`
-- Current open PR: **#194** — Character Forge subclass Tarot carousel refinement, unmerged
-- Reviewed PR #194 head at this documentation checkpoint: `f21a81435946b1ae8ec6112e5376062cfc2b62f4`
+- Current open continuation branch: `agent/subclass-tarot-scene-rebuild-20260922`
+- Current open PR: **#199** — floating ruined-library subclass Tarot polish, open/mergeable/unmerged
+- Validated pre-documentation PR #199 head: `89197828b6ae9945ac436da4339ef910c379eb4c` — 11/11 triggered workflows passed and Vercel was READY/success
 - PR #195 — auth-gated navbar + admin activity — is merged and production-deployed.
 
 Always re-fetch the remote PR/branch head immediately before a write, validation claim, deployment check, or merge. Do not treat a SHA copied into prose as permanently current.
 
-Do not merge PR #194 without explicit user approval.
+Do not merge PR #199 without explicit user approval.
 
 ## Preferred safe write path
 
@@ -38,11 +38,11 @@ Never force-push or overwrite concurrent branch movement simply to make a patch 
 
 ## Branch/scope discipline
 
-PR #194 is a bounded Character Forge subclass-Tarot presentation branch. Keep it limited to the selector/carousel/stage, its validators, and directly related documentation. Do not attach unrelated auth, map, tactical, crafting, inventory, merchant, or database work to it.
+PR #199 is a bounded Character Forge Class/subclass presentation branch. Keep it limited to the selector/carousel/stage, Subclass Codex/Class Feature presentation, its validators, and directly related documentation. Do not attach unrelated auth, map, tactical, crafting, inventory, merchant, or database work to it.
 
 The planned reusable **Realistic Dice Core** remains a separate future project and should use its own bounded branch/PR from the user-accepted Forge checkpoint. See `Realistic_Dice_Roller_Architecture_Roadmap.md`.
 
-If the requested work belongs to another subsystem, use a separate branch rather than widening PR #194.
+If the requested work belongs to another subsystem, use a separate branch rather than widening PR #199.
 
 ## Supabase boundary
 
@@ -76,7 +76,7 @@ The planned Realistic Dice Phase 1 should not require any Supabase write.
 After a meaningful runtime checkpoint is accepted:
 
 - update `DNDNext_Current_Handoff_Prompt.md`;
-- update the dedicated subsystem ledger (for current Tarot work: `Character_Forge_Subclass_Tarot_Flexible_Ring_Status.md`; for auth/admin activity: `Auth_Navigation_Admin_Activity_Status.md`);
+- update the dedicated subsystem ledger (for current Tarot/Class work: `Character_Forge_Subclass_Tarot_Table_Contact_Handoff.md`; for auth/admin activity: `Auth_Navigation_Admin_Activity_Status.md`);
 - update `Documentation_Refresh_Manifest.md` / `docs/README.md` if the active queue or trust map changed;
 - include the exact pre-document/current checkpoint but always tell the next model to re-fetch live GitHub state.
 
