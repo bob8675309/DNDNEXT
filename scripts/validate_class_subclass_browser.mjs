@@ -20,7 +20,7 @@ for (const token of [
   'import ClassSubclassSection from "./ClassSubclassSection"',
   '<ClassSubclassSection',
   'classKey={selectedClass?.class_key || ""}',
-  'onInspectSubclass={(option) => inspectSubclass(model, onFeatureDetail, option)}',
+  'onInspectSubclass={(option) => inspectSubclass(model, onSubclassDetail, option)}',
   '<p className="npc-forge-class-guide__hero-tagline">{classOverviewSummary(selectedClass)}</p>',
   'function selectedRowFeatures(model, row)',
   'feature?.type !== "subclass"',
@@ -36,6 +36,7 @@ assert(!guide.includes('<aside className="npc-forge-class-guide__dock-lane"'), "
 assert(!guide.includes("<ClassOverviewCopy selectedClass={selectedClass}"), "Expanded Class overview copy is duplicated below the hero facts.");
 assert(!guide.includes('onMouseEnter={() => publishFeature(model, onFeatureDetail'), "Feature card must not update from hover in the Class guide.");
 assert(!guide.includes('onFocus={() => publishFeature(model, onFeatureDetail'), "Feature card must not update from focus alone in the Class guide.");
+assert(!guide.includes('onInspectSubclass={(option) => inspectSubclass(model, onFeatureDetail, option)}'), "Subclass inspection must not route through the Class Feature callback.");
 
 for (const token of [
   'import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"',
