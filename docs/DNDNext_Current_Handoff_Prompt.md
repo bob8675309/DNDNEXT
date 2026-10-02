@@ -16,10 +16,10 @@ The older PR #176/#193/#194 sections remain useful architecture/history, but the
 - current `main`: `ab8c5ce6df1fabd906890b38bcfee16deac2ca0d`;
 - active work: PR #199 — **Polish floating ruined-library subclass Tarot selector**;
 - branch: `agent/subclass-tarot-scene-rebuild-20260922`;
-- validated pre-documentation head: `89197828b6ae9945ac436da4339ef910c379eb4c`;
+- validated runtime head before this documentation repair: `5cebb825bfc57ce0a00fb32020845259c3e69ada`;
 - PR state at this checkpoint: **open / mergeable / unmerged**;
-- all **11/11** PR-triggered GitHub workflows completed successfully at `89197828b6ae9945ac436da4339ef910c379eb4c`;
-- exact-head Vercel deployment `3KoiKyA8wXeWPkMfVME5CFfXjToD`: **READY / success**;
+- all **12/12** PR-triggered GitHub workflows completed successfully at `5cebb825bfc57ce0a00fb32020845259c3e69ada`;
+- exact-head Vercel deployment `FEDUUsrMw2PGavNWwgDb3GwXovkV`: **READY / success**;
 - preview host: `dndnext-git-agent-subclass-tarot-9aeaa6-pauls-projects-2016aa54.vercel.app`;
 - PR #199 contains no Supabase migration/data change.
 
@@ -55,7 +55,36 @@ The PR #199 Class changes exposed stale literal expectations in older validators
 - `validate_class_subclass_browser.mjs` now guards `onSubclassDetail` rather than the retired shared Feature callback;
 - `validate_artificer_mockup_lock.mjs` now preserves the same split callback contract.
 
-At `89197828b6ae9945ac436da4339ef910c379eb4c`, the Class browser workflow, PR170 browser-smoke workflow, Artificer workflow, Forge regressions, and Vercel all pass.
+At `5cebb825bfc57ce0a00fb32020845259c3e69ada`, all 12 triggered workflows and Vercel pass.
+
+### 2026-10-02 subclass completeness / Codex repair
+
+Paul's browser videos exposed a source-presentation bug rather than missing live catalogue data.
+
+Live read-only Supabase inspection confirmed that Winter Walker, Bladesinger, and the affected examples already had their source-backed feature/lore rows. The resolver had been treating **every subclass row with `raw_payload.header = null` as an introduction**. That is invalid for newer imports: 65 of 275 subclass source groups contain more than one null-header row, so valid same-level features were being hidden by `guideSubclassFeatures()` and the first alphabetical null-header row could be shown as lore.
+
+The accepted repair:
+
+- identifies a subclass introduction by normalized subclass identity plus a null-header requirement, rather than null-header alone;
+- preserves wrapper names such as College/Circle/Oath/Way/Order, Domain, Patron, Sorcery, Magic, and Bloodline;
+- keeps same-name real feature rows with non-null headers visible, including Kensei and Mystic Soul Knife edge cases;
+- restores Winter Walker level-3 `Frigid Explorer`, `Hunter's Rime`, and `Winter Walker Spells` while retaining `Fortifying Soul`, `Chilling Retribution`, and `Frozen Haunt`;
+- restores Bladesinger's `Bladesong` and `Training in War and Song` instead of misclassifying them as lore;
+- expands the player-facing internal-reference sanitizer so mixed-case/long source codes such as `FRHoF` and `UATheMysticClass` no longer leak pipe-reference metadata into Codex text;
+- requires whole-word spell-grant verbs, preventing text such as “again ... spell slot” from falsely classifying `Frozen Haunt` as a spell-grant feature;
+- therefore resolves Winter Walker's structured spell grants to Ice Knife (3), Hold Person (5), Remove Curse (9), Ice Storm (13), and Cone of Cold (17), instead of the false Hunter's Mark result;
+- moves the Codex Tarot backdrop down slightly by changing its vertical object position from 28% to 20%, so the artwork is less top-cropped.
+
+Read-only catalogue audit after the new introduction identity rule found one source group with no intro candidate: the SCAG Totem Warrior supplemental Elk/Tiger fragment, which contains only supplemental features and no standalone lore row. No database write was required.
+
+Validated runtime head: `5cebb825bfc57ce0a00fb32020845259c3e69ada`.
+
+At that exact runtime head:
+
+- all **12/12** triggered GitHub workflows passed;
+- Vercel deployment `FEDUUsrMw2PGavNWwgDb3GwXovkV` is **READY / success**;
+- PR #199 remains open / mergeable / unmerged;
+- no Supabase migration/data write and no world-map, town/city-map, tactical, crafting, inventory, merchant, economy, travel, weather, camp, or clock change was made.
 
 ### Immediate continuation
 
