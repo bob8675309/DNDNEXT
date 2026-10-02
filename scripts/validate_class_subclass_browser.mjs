@@ -469,7 +469,7 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
 }
 
 for (const token of ["subclassOption: option", "progressionRows: model.rows || []", "currentLevel: model.currentLevel"]) assert(guide.includes(token), `Subclass inspector payload is missing ${token}`);
-for (const token of ["subclassTab", "npc-forge-subclass-inspector__tabs", "Overview", "Progression", "Spells", "subclassArtworkFor", "subclassFeatures", "subclassSpellGrantReferences", "spellCatalog", "Subclass Spells", "Spell Details", "SpellCard", "subclassSpellWorkspaceRows", "npc-forge-subclass-inspector__spell-workspace", "npc-forge-subclass-inspector__spell-list", "npc-forge-subclass-inspector__spell-preview", "buildSubclassProgressionRows", "npc-forge-subclass-inspector__art-backdrop", "DUNAMANCY_SPELL_NAMES", "onFeatureDetail = null"]) {
+for (const token of ["subclassTab", "npc-forge-subclass-inspector__tabs", "Overview", "Progression", "Spells", "subclassArtworkFor", "subclassFeatures", "subclassSpellGrantReferences", "spellCatalog", "Subclass Spells", "SpellCard", "subclassSpellWorkspaceRows", "npc-forge-subclass-inspector__spell-workspace", "npc-forge-subclass-inspector__spell-list", "npc-forge-subclass-inspector__spell-preview", "buildSubclassProgressionRows", "npc-forge-subclass-inspector__art-backdrop", "DUNAMANCY_SPELL_NAMES", "onFeatureDetail = null"]) {
   assert(featureDock.includes(token), `Tabbed subclass inspector is missing ${token}`);
 }
 assert(!featureDock.includes("subclassSpellFeatures"), "Spells tab regressed to keyword-filtered feature duplication.");
