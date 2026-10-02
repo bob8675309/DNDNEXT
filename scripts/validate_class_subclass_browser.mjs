@@ -16,6 +16,7 @@ const workspaceCss = read("styles/character-class-workspace.css");
 const tarotCss = read("styles/character-forge-subclass-tarot-layout.css");
 const featureDock = read("components/NpcForgeClassFeatureDock.js");
 const forgeSteps = read("components/NpcForgeStepContent.js");
+const playerFacingText = read("utils/playerFacingText.js");
 
 for (const token of [
   'import ClassSubclassSection from "./ClassSubclassSection"',
@@ -269,6 +270,9 @@ for (const token of ['wild: "wild-magic"', '"wild-magic": "wild-magic"']) {
 
 const subclassCompatibility = await import(pathToFileURL(path.join(root, "utils/classes/subclassCompatibility.js")).href);
 const { resolveSubclassCatalog, guideSubclassFeatures, subclassIntroduction } = subclassCompatibility;
+const playerFacingModule = await import(pathToFileURL(path.join(root, "utils/playerFacingText.js")).href);
+const cleanedImportedRefs = playerFacingModule.formatPlayerFacingText("Lore text.\n\nBladesong|Wizard|XPHB|Bladesinger|FRHoF|3|FRHoF\n\nSoul Knife|Mystic|UATheMysticClass|Soul Knife|UATheMysticClass|1");
+assert(cleanedImportedRefs === "Lore text.", "Mixed-case and long imported source codes must be stripped from player-facing feature/lore text.");
 
 function testSubclassRow({ subclassName, name, level = 3, source = "TEST", classSource = "XPHB", header = null, description = "Source-backed rules." }) {
   return {
@@ -400,6 +404,8 @@ assert(featureDock.includes('["progression", "Progression"]') && !featureDock.in
 assert(featureDock.includes("overviewFeatureKey") && featureDock.includes("npc-forge-subclass-inspector__overview-feature-index") && featureDock.includes("Back to lore"), "Overview must keep the right-side subclass feature index and swap the left lore panel into feature details in place.");
 assert(featureDock.includes('onClick={() => onFeatureDetail?.({ type: "classFeature"') && forgeSteps.includes("onFeatureDetail={setClassFeatureDetail}"), "Codex progression pills must route into the independent Feature panel.");
 assert(featureDock.includes("this subclass has access to dunamancy spells") && featureDock.includes("subclassHasDunamancyAccess"), "Dunamancy access must move out of lore and into the Spells tab.");
+assert(featureDock.includes("subclassSpellGrantLike") && featureDock.includes("\\b(?:always have|learn|gain|know|prepare|prepared|added to)\\b"), "Subclass spell discovery must require whole grant verbs so words like 'again' cannot create false spell grants.");
+assert(playerFacingText.includes("/^[A-Z][A-Z0-9]{1,23}$/i"), "Player-facing reference sanitizer must recognize mixed-case/long source codes such as FRHoF and UATheMysticClass.");
 assert(featureDock.includes("width:86%") && featureDock.includes("brightness(.98)") && featureDock.includes("object-position:center 20%"), "Subclass Tarot backdrop must remain enlarged/lightened and sit lower in the Codex so the card art is not clipped too high.");
 assert(featureDock.includes("playerFacingSubclassLore") && featureDock.includes("isImportedSubclassReferenceLine") && featureDock.includes('split("|")') && featureDock.includes("parts.length >= 7 ? parts[parts.length - 2]"), "Player-facing subclass lore must strip imported subclass-reference metadata without mutating catalogue data.");
 assert(featureDock.includes("npc-forge-class-feature-dock__title-group{display:none!important}") && featureDock.includes("head-actions>em{display:none!important}"), "Subclass inspector header must stay compact and avoid repeating identity/source labels.");

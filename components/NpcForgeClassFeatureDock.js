@@ -91,15 +91,18 @@ function collectSpellTokens(value, unlockLabel = "", output = []) {
   return output;
 }
 
+function subclassSpellGrantLike(feature = {}) {
+  const name = safeText(feature?.name);
+  const description = safeText(feature?.description);
+  return /\bspells?\b/i.test(name)
+    || /\b(?:always have|learn|gain|know|prepare|prepared|added to)\b[^.!?]{0,90}\bspells?\b/i.test(description)
+    || /\bspells?\b[^.!?]{0,90}\b(?:prepared|known|spell list)\b/i.test(description);
+}
+
 function subclassSpellReferences(features = []) {
   const refs = [];
   for (const feature of features) {
-    const name = safeText(feature?.name);
-    const description = safeText(feature?.description);
-    const grantLike = /\bspells?\b/i.test(name)
-      || /(?:always have|learn|gain|know|prepare|prepared|added to)[^.!?]{0,90}\bspells?\b/i.test(description)
-      || /\bspells?\b[^.!?]{0,90}(?:prepared|known|spell list)/i.test(description);
-    if (!grantLike) continue;
+    if (!subclassSpellGrantLike(feature)) continue;
     collectSpellTokens(feature?.entries, "", refs);
   }
   const seen = new Set();

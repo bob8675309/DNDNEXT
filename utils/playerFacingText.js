@@ -3,7 +3,7 @@ function safeText(value) {
 }
 
 function isSourceCode(value) {
-  return /^[A-Z][A-Z0-9]{1,11}$/.test(safeText(value));
+  return /^[A-Z][A-Z0-9]{1,23}$/i.test(safeText(value));
 }
 
 function isFeatureLevel(value) {
