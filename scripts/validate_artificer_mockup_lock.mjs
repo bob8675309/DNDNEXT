@@ -62,9 +62,10 @@ for (const token of [
   "ProgressionTable",
   "Class Overview",
   "Detailed Guide",
-  "inspectSubclass(model, onFeatureDetail, option)",
+  "inspectSubclass(model, onSubclassDetail, option)",
   "selectedRowFeatures",
 ]) assert(guide.includes(token), `Artificer presentation patch must preserve existing Class behavior: ${token}`);
+assert(!guide.includes("inspectSubclass(model, onFeatureDetail, option)"), "Artificer presentation validation must preserve the independent Subclass Codex callback.");
 
 assert(guideModel.includes('select("class_level,proficiency_bonus,cantrips_known,spells_known,spell_slots,features")'), "Class progression must remain sourced from the imported progression fields.");
 assert(!guide.includes("Infusions Known") && !guideModel.includes("infusions_known"), "Do not invent an Infusions Known progression column from mockup-only presentation art without source-backed data.");
