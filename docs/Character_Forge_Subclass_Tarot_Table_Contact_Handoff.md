@@ -8,7 +8,7 @@ Status: **implemented runtime checkpoint / browser acceptance pending**
 
 Branch: `agent/subclass-tarot-scene-rebuild-20260922`  
 Pull request: **#199 — Polish floating ruined-library subclass Tarot selector**  
-Validated pre-documentation head: `89197828b6ae9945ac436da4339ef910c379eb4c`
+Validated runtime head before this documentation repair: `5cebb825bfc57ce0a00fb32020845259c3e69ada`
 
 ## 2026-10-01 Class-panel / validator checkpoint
 
@@ -43,6 +43,25 @@ Validator drift exposed by this architecture change is repaired. At `89197828b6a
 - Vercel deployment `3KoiKyA8wXeWPkMfVME5CFfXjToD`: **READY / success**.
 
 The validator repair did not restore the retired shared callback. It explicitly protects the split Codex/Feature model.
+
+## 2026-10-02 source completeness repair
+
+Browser review of Winter Walker and Bladesinger revealed that live source rows were complete but the Codex resolver was hiding valid features.
+
+Root cause: `isIntroductionRow()` previously treated every `header = null` subclass row as introductory lore. Newer source imports often have several legitimate level-entry features with null headers. A live read-only audit found 65 of 275 subclass source groups with multiple null-header rows.
+
+The resolver now uses semantic subclass identity plus the null-header guard. This restores same-level feature rows while retaining wrapped introduction names such as College/Circle/Oath/Way/Order, Domain, Patron, Sorcery, Magic, and Bloodline. Regression coverage includes Winter Walker, Bladesinger, Kensei, Mystic Soul Knife, and representative wrapped-name subclasses.
+
+Related Codex fixes:
+
+- mixed-case/long imported source-reference lines are removed from player-facing text;
+- spell-grant discovery uses whole-word grant verbs, so “again” can no longer match “gain” and falsely surface Hunter's Mark;
+- Winter Walker now resolves its actual structured subclass spell table;
+- Codex Tarot backdrop vertical framing moved from 28% to 20% to expose more of the card art.
+
+Validated runtime head: `5cebb825bfc57ce0a00fb32020845259c3e69ada` — **12/12 GitHub workflows PASS**, Vercel `FEDUUsrMw2PGavNWwgDb3GwXovkV` **READY / success**.
+
+No Supabase writes or protected-subsystem changes were made.
 
 ## Superseding decision
 
