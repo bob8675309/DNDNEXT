@@ -21,7 +21,7 @@ function joinValues(values) {
   return values.length ? values.join(", ") : "—";
 }
 
-export default function SpellCard({ spell, compact = false }) {
+export default function SpellCard({ spell, compact = false, dense = false }) {
   if (!spell) return null;
 
   const school = spell.school || "Spell";
@@ -31,9 +31,12 @@ export default function SpellCard({ spell, compact = false }) {
     spell.components_s ? "S" : null,
     spell.components_m ? `M${spell.material_text ? ` (${spell.material_text})` : ""}` : null,
   ].filter(Boolean).join(", ");
+  const damageTypes = Array.isArray(spell.damage_types) ? spell.damage_types : [];
+  const showDamage = Boolean(spell.damage_dice || damageTypes.length);
+  const showArea = Boolean(spell.area_type);
 
   return (
-    <article className={`spell-card ${accent} ${compact ? "spell-card--compact" : ""}`}>
+    <article className={`spell-card ${accent} ${compact ? "spell-card--compact" : ""} ${dense ? "spell-card--dense" : ""}`}>
       <header className="spell-card__header">
         <div>
           <div className="spell-card__eyebrow">{levelLabel(spell.level)} • {school}</div>
@@ -54,8 +57,8 @@ export default function SpellCard({ spell, compact = false }) {
         <div><dt>Range</dt><dd>{spell.range_text || "—"}</dd></div>
         <div><dt>Components</dt><dd>{components || "—"}</dd></div>
         <div><dt>Duration</dt><dd>{spell.duration_text || "—"}</dd></div>
-        <div><dt>Damage</dt><dd>{spell.damage_dice || "—"} {joinValues(spell.damage_types)}</dd></div>
-        <div><dt>Area</dt><dd>{spell.area_type ? `${spell.area_size || ""} ${spell.area_unit || ""} ${spell.area_type}`.trim() : "—"}</dd></div>
+        {!dense || showDamage ? <div><dt>Damage</dt><dd>{spell.damage_dice || "—"} {joinValues(spell.damage_types)}</dd></div> : null}
+        {!dense || showArea ? <div><dt>Area</dt><dd>{spell.area_type ? `${spell.area_size || ""} ${spell.area_unit || ""} ${spell.area_type}`.trim() : "—"}</dd></div> : null}
       </dl>
 
       {spell.description ? <p className="spell-card__description">{spell.description}</p> : null}

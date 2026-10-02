@@ -48,7 +48,40 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [recoveryLoading, setRecoveryLoading] = useState(false);
+  const [recoverySent, setRecoverySent] = useState(false);
   const [error, setError] = useState("");
+
+  async function onForgotPassword() {
+    if (recoveryLoading) return;
+    const cleanEmail = email.trim().toLowerCase();
+    setError("");
+    setRecoverySent(false);
+
+    if (!cleanEmail) {
+      setError("Enter your email address first, then choose Forgot password?");
+      return;
+    }
+
+    setRecoveryLoading(true);
+    try {
+      const redirectTo = typeof window !== "undefined"
+        ? `${window.location.origin}/reset-password`
+        : undefined;
+      const { error: recoveryError } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+        redirectTo,
+      });
+      if (recoveryError) {
+        setError(recoveryError.message || "Could not send the password reset email.");
+        return;
+      }
+      setRecoverySent(true);
+    } catch (cause) {
+      setError(cause?.message || "Could not send the password reset email.");
+    } finally {
+      setRecoveryLoading(false);
+    }
+  }
 
   async function onSubmit(event) {
     event.preventDefault();
@@ -123,16 +156,31 @@ export default function LoginPage() {
                 </div>
 
                 <div>
-                  <label className="form-label" htmlFor="loginPassword">Password</label>
+                  <div className="d-flex align-items-center justify-content-between gap-3">
+                    <label className="form-label mb-0" htmlFor="loginPassword">Password</label>
+                    <button
+                      type="button"
+                      className="btn btn-link btn-sm p-0 text-decoration-none"
+                      onClick={onForgotPassword}
+                      disabled={recoveryLoading || loading}
+                    >
+                      {recoveryLoading ? "Sending reset…" : "Forgot password?"}
+                    </button>
+                  </div>
                   <input
                     id="loginPassword"
                     type="password"
-                    className="form-control"
+                    className="form-control mt-2"
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
                     autoComplete="current-password"
                     required
                   />
+                  {recoverySent && (
+                    <div className="form-text text-success">
+                      Password reset email sent. Open the link in that email to choose a new password.
+                    </div>
+                  )}
                 </div>
 
                 <button type="submit" className="btn btn-primary" disabled={loading}>

@@ -18,6 +18,7 @@ const featureDock = read("components/NpcForgeClassFeatureDock.js");
 const forgeSteps = read("components/NpcForgeStepContent.js");
 const playerFacingText = read("utils/playerFacingText.js");
 const subclassSpellGrantsSource = read("utils/classes/subclassSpellGrants.js");
+const spellCardCss = read("styles/spell-card.css");
 
 for (const token of [
   'import ClassSubclassSection from "./ClassSubclassSection"',
@@ -468,7 +469,7 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
 }
 
 for (const token of ["subclassOption: option", "progressionRows: model.rows || []", "currentLevel: model.currentLevel"]) assert(guide.includes(token), `Subclass inspector payload is missing ${token}`);
-for (const token of ["subclassTab", "npc-forge-subclass-inspector__tabs", "Overview", "Progression", "Spells", "subclassArtworkFor", "subclassFeatures", "subclassSpellGrantReferences", "spellCatalog", "Subclass Spells", "Spell Details", "SpellCard", "subclassSpellWorkspaceRows", "npc-forge-subclass-inspector__spell-workspace", "npc-forge-subclass-inspector__spell-list", "npc-forge-subclass-inspector__spell-preview", "buildSubclassProgressionRows", "npc-forge-subclass-inspector__art-backdrop", "DUNAMANCY_SPELL_NAMES", "onFeatureDetail = null"]) {
+for (const token of ["subclassTab", "npc-forge-subclass-inspector__tabs", "Overview", "Progression", "Spells", "subclassArtworkFor", "subclassFeatures", "subclassSpellGrantReferences", "spellCatalog", "Subclass Spells", "SpellCard", "subclassSpellWorkspaceRows", "npc-forge-subclass-inspector__spell-workspace", "npc-forge-subclass-inspector__spell-list", "npc-forge-subclass-inspector__spell-preview", "buildSubclassProgressionRows", "npc-forge-subclass-inspector__art-backdrop", "DUNAMANCY_SPELL_NAMES", "onFeatureDetail = null"]) {
   assert(featureDock.includes(token), `Tabbed subclass inspector is missing ${token}`);
 }
 assert(!featureDock.includes("subclassSpellFeatures"), "Spells tab regressed to keyword-filtered feature duplication.");
@@ -491,8 +492,11 @@ assert(featureDock.includes("npc-forge-class-feature-dock__title-group{display:n
 assert(!subclassArtwork.includes('bladesinging: "bladesinging"'), "Retired Bladesinging artwork mapping must not return.");
 assert(!featureDock.includes('["features", "Features"]') && !featureDock.includes('["lore", "Lore"]'), "Redundant Features and Lore tabs must stay removed; Overview already owns both functions.");
 assert(featureDock.includes("grid-template-columns:repeat(3,1fr)"), "Subclass Codex must retain only Overview, Progression, and Spells tabs.");
-assert(featureDock.includes('import SpellCard from "./SpellCard"') && featureDock.includes("<SpellCard spell={selectedSubclassSpellRow.spell} compact />"), "Subclass Spells tab must reuse the profile-panel SpellCard detail treatment.");
-assert(featureDock.includes("npc-forge-subclass-inspector__spell-preview-scroll") && featureDock.includes("grid-template-rows:auto minmax(0,1fr)") && featureDock.includes("max-height:none;overflow:visible"), "Subclass spell preview must scroll the full shared SpellCard inside its pane instead of clipping the lower half.");
+assert(featureDock.includes('import SpellCard from "./SpellCard"') && featureDock.includes("<SpellCard spell={selectedSubclassSpellRow.spell} compact dense />"), "Subclass Spells tab must reuse the shared SpellCard with the Codex-only dense presentation.");
+assert(featureDock.includes("npc-forge-subclass-inspector__spell-preview-scroll") && featureDock.includes("npc-forge-subclass-inspector__spell-preview{min-height:0;overflow:visible}") && !featureDock.includes("npc-forge-subclass-inspector__spell-preview{height:360px"), "Subclass spell preview must flow with the Codex body instead of clipping inside a fixed-height pane.");
+assert(featureDock.includes("grid-template-columns:minmax(180px,.58fr) minmax(0,1.42fr)"), "Subclass spell workspace must give the detail card more horizontal room.");
+assert(featureDock.includes("spell-card__description{font-size:.9rem!important;line-height:1.52!important;color:#fff!important}"), "Subclass spell rules body text must remain larger and high-contrast in the dense Codex preview.");
+for (const token of [".spell-card--dense", "font-size: 0.84rem;", "line-height: 1.5;", ".spell-card--dense .spell-card__grid"]) assert(spellCardCss.includes(token), `Dense Codex spell-card readability treatment missing ${token}`);
 assert(featureDock.includes("npc-forge-subclass-inspector__spell-row-name") && featureDock.includes("npc-forge-subclass-inspector__spell-row-meta") && featureDock.includes("npc-forge-subclass-inspector__spell-row-tags"), "Subclass Spells tab must use the profile-style selectable spell list plus detailed preview.");
 assert(tarotCss.includes("width: max-content") && tarotCss.includes("padding: .38rem .46rem") && tarotCss.includes("class-subclass-section.is-card-launcher"), "Subclass Browser launcher shell must stay compact around its button rather than stretching across the class panel.");
 assert(forgeSteps.includes("const [classFeatureDetail, setClassFeatureDetail] = useState(null)") && forgeSteps.includes("const [subclassCodexDetail, setSubclassCodexDetail] = useState(null)"), "Class Feature panel and Subclass Codex must keep independent state models.");
