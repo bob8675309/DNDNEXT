@@ -78,7 +78,7 @@ assert(!guide.includes("classSlotSummary(row.spell_slots)"), "Progression regres
 assert(!guide.includes("inspectSubclass(model, onFeatureDetail, option)"), "Subclass inspection must remain routed to the independent Subclass Codex callback, not the Class Feature panel.");
 
 for (const token of [
-  'import { useEffect, useMemo, useRef, useState } from "react"',
+  'import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"',
   'import { createPortal } from "react-dom"',
   "subclassArtworkFor(classKey, option)",
   "function orbitPlacement(optionIndex, orbitOffset, total)",
