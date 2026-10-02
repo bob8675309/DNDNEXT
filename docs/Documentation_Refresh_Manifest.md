@@ -1,6 +1,6 @@
 # Documentation Refresh Manifest
 
-Updated: 2026-09-21
+Updated: 2026-10-01
 
 ## Trust order
 
@@ -15,7 +15,38 @@ For current work, trust sources in this order:
 If prose conflicts with live source/database state, live authority wins until documentation is corrected.
 
 
-## 2026-09-21 current checkpoint override
+## 2026-10-01 current checkpoint override
+
+Everything below this section is historical unless a newer focused ledger says otherwise.
+
+- current `main`: `ab8c5ce6df1fabd906890b38bcfee16deac2ca0d`;
+- active Character Forge presentation work: PR #199, branch `agent/subclass-tarot-scene-rebuild-20260922`;
+- validated pre-documentation PR head: `89197828b6ae9945ac436da4339ef910c379eb4c`;
+- PR #199: **open / mergeable / unmerged**;
+- **11/11** PR-triggered workflows passed at that head;
+- Vercel deployment `3KoiKyA8wXeWPkMfVME5CFfXjToD`: **READY / success**;
+- current presentation: floating Tarot carousel in a smoky ruined gothic library;
+- Class Feature panel and Subclass Codex have independent state, independent routing, and may coexist;
+- validator drift from the split-panel change has been reconciled across the Class browser, PR170 browser-smoke, focused subclass, and Artificer lock validators;
+- no Supabase migration/data change belongs to PR #199.
+
+Current focused documents:
+
+- `Next_Chat_Handoff_2026-10-01.md`;
+- `DNDNext_Current_Handoff_Prompt.md`;
+- `Character_Forge_Subclass_Tarot_Table_Contact_Handoff.md`;
+- `Character_Forge_Subclass_Tarot_Reference_Rebuild_Checklist.md`;
+- `CHATGPT_REPO_WRITE_PROCEDURE.md`.
+
+Current queue:
+
+1. browser-accept simultaneous Subclass Codex + Class Feature windows;
+2. verify readability, drag/close independence, and Codex tab behavior;
+3. verify Wizard dense catalogue and a four-option class;
+4. re-run exact-head CI/Vercel after any further change;
+5. merge PR #199 only after Paul's explicit approval.
+
+## 2026-09-21 historical checkpoint
 
 The older checkpoint sections below are retained as history. Current live authority is:
 
@@ -46,7 +77,7 @@ The PR #195 activity slice also includes:
 
 The previous `20260814161314 grim_hollow_heritage_catalog_support` checkpoint is no longer the latest migration.
 
-### Current work queue override
+### Historical work queue override (PR #194)
 
 1. Continue browser acceptance/refinement of PR #194 using its current flexible equal-angle table ring.
 2. Test a small subclass catalogue (especially Monster Hunter's four cards) and Wizard's dense catalogue.
@@ -55,7 +86,7 @@ The previous `20260814161314 grim_hollow_heritage_catalog_support` checkpoint is
 5. Merge PR #194 only after explicit user approval and exact-head validation.
 6. Broader documentation standardization can follow the accepted Tarot checkpoint; reconcile old ledgers rather than deleting historical evidence.
 
-## Current GitHub checkpoint
+## Historical GitHub checkpoint (pre-PR #199)
 
 Accepted runtime/code baseline on `main`:
 
