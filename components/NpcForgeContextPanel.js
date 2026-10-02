@@ -87,7 +87,7 @@ export default function NpcForgeContextPanel(props) {
     : activeBackground;
 
   if (props?.playerMode && classStepActive && !activeClass) return <NpcForgeClassEmptyState />;
-  if (activeClass) return <NpcForgeClassGuide selectedClass={activeClass} level={props?.draft?.level || 1} onFeatureDetail={props?.onFeatureDetail} />;
+  if (activeClass) return <NpcForgeClassGuide selectedClass={activeClass} level={props?.draft?.level || 1} onFeatureDetail={props?.onFeatureDetail} onSubclassDetail={props?.onSubclassDetail} />;
   if (props?.playerMode && backgroundStepActive) {
     if (!activeBackground) return <NpcForgeBackgroundEmptyState />;
     return <NpcForgeBackgroundGuide

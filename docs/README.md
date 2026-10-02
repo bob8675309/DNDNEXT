@@ -1,43 +1,53 @@
 # DNDNext Living Documentation Index
 
-Updated: 2026-09-21
+Updated: 2026-10-01
 
 This directory contains the project's living handoff, roadmap, architecture, subsystem, and evidence documents. For active work, **live Supabase + current GitHub source/validators/deployment state outrank prose** if they conflict.
 
 ## Start here
 
-1. `DNDNext_Current_Handoff_Prompt.md` — canonical long-form takeover brief. **Read its 2026-09-21 override before older checkpoint sections.**
-2. `Next_Chat_Handoff_2026-09-21.md` — concise copy-ready handoff for the next chat.
-3. `Character_Forge_Subclass_Tarot_Flexible_Ring_Status.md` — active PR #194 flexible equal-angle table-ring architecture, target behavior, current head/preview, and acceptance checklist.
-4. `Auth_Navigation_Admin_Activity_Status.md` — merged PR #195 navbar/auth/admin-activity checkpoint plus live Supabase hardening.
-5. `Documentation_Refresh_Manifest.md` — documentation trust order, live migration/current PR checkpoint, and current queue.
-6. `Realistic_Dice_Roller_Architecture_Roadmap.md` — controlling future plan for reusable Realistic Dice.
-7. `Unified_Character_Forge_Status.md` — shared Player/NPC Forge, progression, source-choice, and runtime authority.
-8. The dedicated subsystem ledger for the area being changed.
+1. `DNDNext_Current_Handoff_Prompt.md` — canonical long-form takeover brief. **Read its 2026-10-01 override before older checkpoint sections.**
+2. `Next_Chat_Handoff_2026-10-01.md` — concise copy-ready handoff for the active PR #199 checkpoint.
+3. `Character_Forge_Subclass_Tarot_Table_Contact_Handoff.md` — despite the legacy filename, this is the current floating ruined-library Tarot presentation ledger.
+4. `Character_Forge_Subclass_Tarot_Reference_Rebuild_Checklist.md` — implementation history/checklist; its old cathedral/runic-table target is superseded by the floating-library handoff.
+5. `Auth_Navigation_Admin_Activity_Status.md` — merged PR #195 navbar/auth/admin-activity checkpoint plus live Supabase hardening.
+6. `Documentation_Refresh_Manifest.md` — documentation trust order and current queue.
+7. `Realistic_Dice_Roller_Architecture_Roadmap.md` — controlling future plan for reusable Realistic Dice.
+8. `Unified_Character_Forge_Status.md` — shared Player/NPC Forge, progression, source-choice, and runtime authority.
 9. `CHATGPT_REPO_WRITE_PROCEDURE.md` before direct GitHub/Supabase mutation.
 
 ## Current code checkpoint
 
-Accepted runtime code checkpoint from merged PR #195:
+Current `main` at this documentation refresh:
 
-`320671a22b83432177dcc67e9efd035f3c3ccc5d` — **Gate unauthenticated navbar and add admin activity view**.
-
-Documentation-only handoff merges may advance the current `main` SHA without changing this runtime checkpoint. Always re-fetch `main` before implementation or merge.
-
-Production Vercel for that merge:
-
-- deployment `dpl_ETZZCzVZq8Cpw56Fndf9pfYmp5B8`;
-- state at documentation handoff: **READY**.
+`ab8c5ce6df1fabd906890b38bcfee16deac2ca0d`
 
 Active work:
 
-- PR #194 — `agent/subclass-carousel-drag-crisp-20260918` — **open/unmerged subclass Tarot selector refinement**;
-- reviewed head: `f21a81435946b1ae8ec6112e5376062cfc2b62f4`;
-- exact-head preview: `dndnext-86xs3s1d4-pauls-projects-2016aa54.vercel.app` — **READY** at handoff.
+- PR #199 — **Polish floating ruined-library subclass Tarot selector**;
+- branch: `agent/subclass-tarot-scene-rebuild-20260922`;
+- validated runtime head before the current documentation updates: `5ad44348198a5b299a81ec9ff349cbb1db942ad4`;
+- state: **open / mergeable / unmerged**;
+- GitHub Actions at that head: **12/12 successful**;
+- exact-head Vercel deployment: `5rFeEKFPQ4UFCWeowSAbyfNYVe9M` — **READY / success**;
+- preview: `dndnext-git-agent-subclass-tarot-9aeaa6-pauls-projects-2016aa54.vercel.app`.
 
-The active Tarot architecture is a flexible equal-angle table ring: `N` subclasses produce `N` evenly spaced cards on one physical ring, with one exact front hero position. Do not reintroduce old fixed 3/5/7/9-card rules from historical experiments.
+Current Class/subclass presentation rules:
 
-Always re-fetch current `main`, PR #194 head/mergeability, and exact-head deployment before implementation or merge.
+- the selector is a floating Tarot carousel in a smoky ruined gothic library, not a physical runic table;
+- all canonical subclass options stay on one continuous carousel; no fixed 3/5/7/9 visible-card contract;
+- explicit eligible card selection is the only persistence path;
+- Subclass Codex and Class Feature panel use independent state/callbacks and may remain open simultaneously;
+- Codex Progression feature pills open the independent Feature panel rather than replacing the Codex;
+- Codex top-level navigation is now only **Overview / Progression / Spells**; Overview combines lore and the feature index;
+- Spells uses the Profile spellbook pattern: selectable list left, shared compact `SpellCard` detail right;
+- the Tarot backdrop begins behind the opaque Codex tab strip and uses top-aligned framing so the visible portrait sits lower;
+- subclass introduction detection is semantic rather than “all null-header rows are lore,” preserving valid same-level feature rows;
+- player-facing Codex text strips mixed-case/long imported source references, and subclass-spell discovery requires real whole-word grant verbs;
+- Codex Tarot backdrop framing is shifted down slightly to reduce top clipping;
+- no Supabase, world-map, town/city-map, tactical, crafting, inventory, merchant, or economy authority changed for this presentation work.
+
+Always re-fetch current `main`, PR #199 head/mergeability, exact-head workflows, and Vercel before implementation or merge. Do not merge PR #199 without explicit user approval.
 
 ## Current live database checkpoint
 

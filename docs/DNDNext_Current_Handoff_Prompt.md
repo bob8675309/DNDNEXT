@@ -1,11 +1,137 @@
 # DNDNext Next-Chat Handoff Brief
 
-Updated: 2026-09-21
+Updated: 2026-10-01
 
 Repository: `bob8675309/DNDNEXT`
 
 Stack: Next.js **Pages Router** 16.1.6, React 19, Supabase/Postgres, Bootstrap/SCSS, Vercel.
 
+
+## 2026-10-01 authoritative override — use this before every older checkpoint below
+
+The older PR #176/#193/#194 sections remain useful architecture/history, but they are no longer the active work checkpoint.
+
+### Current GitHub / deployment state
+
+- current `main`: `ab8c5ce6df1fabd906890b38bcfee16deac2ca0d`;
+- active work: PR #199 — **Polish floating ruined-library subclass Tarot selector**;
+- branch: `agent/subclass-tarot-scene-rebuild-20260922`;
+- validated runtime head before this documentation update: `5ad44348198a5b299a81ec9ff349cbb1db942ad4`;
+- PR state at this checkpoint: **open / mergeable / unmerged**;
+- all **12/12** PR-triggered GitHub workflows completed successfully at `5ad44348198a5b299a81ec9ff349cbb1db942ad4`;
+- exact-head Vercel deployment `5rFeEKFPQ4UFCWeowSAbyfNYVe9M`: **READY / success**;
+- preview host: `dndnext-git-agent-subclass-tarot-9aeaa6-pauls-projects-2016aa54.vercel.app`;
+- PR #199 contains no Supabase migration/data change.
+
+Documentation-only commits after `89197828b6ae9945ac436da4339ef910c379eb4c` may advance the branch SHA without changing runtime behavior. Always re-fetch the exact PR head before writing, validating, deploying, or merging.
+
+### Current Character Forge Class / subclass architecture
+
+The active selector is a **floating Tarot carousel in a dark, smoky ruined gothic library**. The retired physical runic-table/contact model must not be restored.
+
+The Class step now has two independent viewport-floating detail models:
+
+- `classFeatureDetail` → **Class Feature** panel;
+- `subclassCodexDetail` → **Subclass Codex**.
+
+They deliberately do not replace each other. The Codex and Feature panel may be open simultaneously.
+
+Routing is intentionally split:
+
+- subclass inspection → `onSubclassDetail` / Subclass Codex;
+- class/subclass feature inspection → `onFeatureDetail` / Class Feature panel;
+- Codex Progression feature pills may open the Feature panel while leaving the Codex open.
+
+Desktop reading targets are currently about **720px** for the Subclass Codex and **520px** for the Class Feature panel. Preserve independent drag/close state and readability.
+
+Subclass selection authority is unchanged: carousel movement never persists a subclass; explicit eligible selection still flows through the existing guide model and `model.selectSubclass(option)`.
+
+### Validator reconciliation completed
+
+The PR #199 Class changes exposed stale literal expectations in older validators. Those contracts were reconciled to the accepted architecture without weakening runtime authority:
+
+- `validate_class_browser_polish.mjs` now expects the independent Subclass Codex callback and current selector import shape;
+- `validate_pr170_browser_smoke_corrections.mjs` validates structural independent `<details>` disclosure instead of obsolete prose literals;
+- `validate_class_subclass_browser.mjs` now guards `onSubclassDetail` rather than the retired shared Feature callback;
+- `validate_artificer_mockup_lock.mjs` now preserves the same split callback contract.
+
+At `5ad44348198a5b299a81ec9ff349cbb1db942ad4`, all 12 triggered workflows and Vercel pass.
+
+### 2026-10-02 subclass completeness / Codex repair
+
+Paul's browser videos exposed a source-presentation bug rather than missing live catalogue data.
+
+Live read-only Supabase inspection confirmed that Winter Walker, Bladesinger, and the affected examples already had their source-backed feature/lore rows. The resolver had been treating **every subclass row with `raw_payload.header = null` as an introduction**. That is invalid for newer imports: 65 of 275 subclass source groups contain more than one null-header row, so valid same-level features were being hidden by `guideSubclassFeatures()` and the first alphabetical null-header row could be shown as lore.
+
+The accepted repair:
+
+- identifies a subclass introduction by normalized subclass identity plus a null-header requirement, rather than null-header alone;
+- preserves wrapper names such as College/Circle/Oath/Way/Order, Domain, Patron, Sorcery, Magic, and Bloodline;
+- keeps same-name real feature rows with non-null headers visible, including Kensei and Mystic Soul Knife edge cases;
+- restores Winter Walker level-3 `Frigid Explorer`, `Hunter's Rime`, and `Winter Walker Spells` while retaining `Fortifying Soul`, `Chilling Retribution`, and `Frozen Haunt`;
+- restores Bladesinger's `Bladesong` and `Training in War and Song` instead of misclassifying them as lore;
+- expands the player-facing internal-reference sanitizer so mixed-case/long source codes such as `FRHoF` and `UATheMysticClass` no longer leak pipe-reference metadata into Codex text;
+- requires whole-word spell-grant verbs, preventing text such as “again ... spell slot” from falsely classifying `Frozen Haunt` as a spell-grant feature;
+- therefore resolves Winter Walker's structured spell grants to Ice Knife (3), Hold Person (5), Remove Curse (9), Ice Storm (13), and Cone of Cold (17), instead of the false Hunter's Mark result;
+- moves the Codex Tarot backdrop down slightly by changing its vertical object position from 28% to 20%, so the artwork is less top-cropped.
+
+Read-only catalogue audit after the new introduction identity rule found one source group with no intro candidate: the SCAG Totem Warrior supplemental Elk/Tiger fragment, which contains only supplemental features and no standalone lore row. No database write was required.
+
+Validated runtime head: `5cebb825bfc57ce0a00fb32020845259c3e69ada`.
+
+At that exact runtime head:
+
+- all **12/12** triggered GitHub workflows passed;
+- Vercel deployment `FEDUUsrMw2PGavNWwgDb3GwXovkV` is **READY / success**;
+- PR #199 remains open / mergeable / unmerged;
+- no Supabase migration/data write and no world-map, town/city-map, tactical, crafting, inventory, merchant, economy, travel, weather, camp, or clock change was made.
+
+### 2026-10-02 Codex finishing pass
+
+Paul approved the consolidated Codex direction from browser review.
+
+The Subclass Codex now has only three top-level tabs:
+
+- **Overview** — owns both lore and feature browsing. The left reading pane shows source-backed lore; the right feature index swaps the left pane into the selected feature and provides **Back to lore**.
+- **Progression** — remains the combined class/subclass progression table and still opens the independent Class Feature panel.
+- **Spells** — now follows the established Profile → Spellbook interaction instead of a flat grid of spell cards.
+
+The Spells tab uses a two-pane workspace:
+
+- left: compact selectable subclass-spell list with level/school/source plus grant/status tags;
+- right: the shared existing `SpellCard` in compact mode, so casting time, range, components, duration, damage/area, description, source, and other catalogue metadata use the same presentation language as the profile spellbook;
+- explicit subclass level grants and special Dunamancy access stay visible in the selection context.
+
+The redundant standalone **Features** and **Lore** tabs are removed because Overview already provides both functions.
+
+Tarot backdrop framing is also changed structurally rather than by another percentage tweak:
+
+- the backdrop now begins at the top of the Codex body, behind the navigation strip;
+- the navigation strip is opaque and sits above the artwork;
+- therefore only the portion below the navigation border is visible;
+- the Tarot image is top-aligned with a top transform origin, placing the portrait/faces lower in the visible crop.
+
+Validated runtime head: `5ad44348198a5b299a81ec9ff349cbb1db942ad4`.
+
+At that exact runtime head:
+
+- **12/12** triggered GitHub workflows passed;
+- Vercel deployment `5rFeEKFPQ4UFCWeowSAbyfNYVe9M` is **READY / success**;
+- no Supabase migration/data write or protected-subsystem change was made.
+
+### Immediate continuation
+
+Continue browser acceptance of PR #199 rather than reopening old architecture:
+
+- verify Subclass Codex + Class Feature panel can remain open together;
+- verify Feature-panel readability and independent drag/close behavior;
+- verify the three-tab Codex: Overview / Progression / Spells;
+- verify Overview lore/feature swap behavior and the Profile-style two-pane Spells workspace;
+- verify the Tarot backdrop begins behind the nav strip and the visible portrait crop sits lower;
+- test Wizard / dense catalogue and a four-option class;
+- test slow drag, fast flick/snap, arrows/keyboard, side-card click → hero/select, responsive layouts, and reduced motion.
+
+Do not merge PR #199 without Paul's explicit approval.
 
 ## 2026-09-21 authoritative override — use this before every older checkpoint below
 

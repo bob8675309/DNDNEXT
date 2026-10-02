@@ -175,7 +175,6 @@ const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
     abjuration: "abjuration",
     abjurer: "abjurer",
     bladesinger: "bladesinger",
-    bladesinging: "bladesinging",
     chronurgy: "chronurgy",
     conjuration: "conjuration",
     divination: "divination",

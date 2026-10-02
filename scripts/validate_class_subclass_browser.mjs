@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 const root = process.cwd();
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
@@ -13,12 +14,16 @@ const framing = read("styles/character-forge-class-hero-framing.css");
 const model = read("components/NpcForgeClassGuideModel.js");
 const workspaceCss = read("styles/character-class-workspace.css");
 const tarotCss = read("styles/character-forge-subclass-tarot-layout.css");
+const featureDock = read("components/NpcForgeClassFeatureDock.js");
+const forgeSteps = read("components/NpcForgeStepContent.js");
+const playerFacingText = read("utils/playerFacingText.js");
+const subclassSpellGrantsSource = read("utils/classes/subclassSpellGrants.js");
 
 for (const token of [
   'import ClassSubclassSection from "./ClassSubclassSection"',
   '<ClassSubclassSection',
   'classKey={selectedClass?.class_key || ""}',
-  'onInspectSubclass={(option) => inspectSubclass(model, onFeatureDetail, option)}',
+  'onInspectSubclass={(option) => inspectSubclass(model, onSubclassDetail, option)}',
   '<p className="npc-forge-class-guide__hero-tagline">{classOverviewSummary(selectedClass)}</p>',
   'function selectedRowFeatures(model, row)',
   'feature?.type !== "subclass"',
@@ -34,48 +39,136 @@ assert(!guide.includes('<aside className="npc-forge-class-guide__dock-lane"'), "
 assert(!guide.includes("<ClassOverviewCopy selectedClass={selectedClass}"), "Expanded Class overview copy is duplicated below the hero facts.");
 assert(!guide.includes('onMouseEnter={() => publishFeature(model, onFeatureDetail'), "Feature card must not update from hover in the Class guide.");
 assert(!guide.includes('onFocus={() => publishFeature(model, onFeatureDetail'), "Feature card must not update from focus alone in the Class guide.");
+assert(!guide.includes('onInspectSubclass={(option) => inspectSubclass(model, onFeatureDetail, option)}'), "Subclass inspection must not route through the Class Feature callback.");
 
 for (const token of [
+  'import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"',
   'import { createPortal } from "react-dom"',
   'subclassArtworkFor(classKey, option)',
   'handleSubclassArtworkError(event, classKey)',
-  'function orbitPlacement(optionIndex, carouselStart, total)',
-  'const frontCount = Math.min(4, count)',
-  'const offset = (Math.PI / 2) - (frontSpan / 2)',
+  'const FRONT_CENTER_SLOT = 0',
+  'function faceUpArcDegreesFor(total)',
+  'if (count <= 4) return 112',
+  'return 68',
+  'function orbitProfileFor(total)',
+  'function orbitPlacement(optionIndex, orbitOffset, total)',
+  'const angleStep = 360 / count',
+  'const angleDegrees = signedSlots * angleStep',
+  'const yaw = 0',
+  'const horizontalRadius = 39.1',
+  'const verticalRadius = 18.5',
+  'const verticalCenter = 59.2',
+  'const opacity = isFaceUp ? 1 : 0.84 + (depth * 0.14)',
+  'const [orbitOffset, setOrbitOffset] = useState(0)',
   'const orbitOptions = useMemo',
-  'const focusedIndex = options.length ? (carouselStart + focusedSlot) % options.length : 0',
-  'model?.setPreviewKey?.(focusedOption.key)',
+  'const heroOption = options[heroIndex] || null',
   'function rotateCarousel(direction)',
-  '(current + normalizedDirection + length) % length',
-  'key={option.key}',
-  'data-orbit-slot={relative}',
+  'function handleOrbitPointerDown(event)',
+  'function handleOrbitPointerMove(event)',
+  'function finishOrbitPointer(event, cancelled = false)',
+  'function handleCardClick(event, option, optionIndex, isInteractive)',
+  'event.currentTarget.setPointerCapture?.(event.pointerId)',
+  'Math.round(drag.currentOffset + projectedCards)',
   'class-subclass-carousel-modal__orbit',
-  'class-subclass-carousel-modal__smoke-front',
-  'class-subclass-carousel-modal__details',
-  'class-subclass-carousel-modal__details-button',
-  'onClick={showFocusedDetails}',
-  'model.setPreviewKey(option.key)',
+  'class-subclass-carousel-modal__title',
+  'class-subclass-carousel-modal__flame is-flame-left-upper',
+  'class-subclass-carousel-modal__smoke-near',
+  'class-subclass-carousel-card__float',
+  'class-subclass-carousel-card__surface',
+  'class-subclass-carousel-card__face is-front',
+  'class-subclass-carousel-card__face is-back',
+  'isCenter ? " is-orbit-center" : ""',
+  'isInteractive ? " is-orbit-front" : " is-orbit-back"',
+  'data-orbit-angle={angleDegrees.toFixed(3)}',
+  'onClick={(event) => handleCardClick(event, option, optionIndex, isInteractive)}',
+  'model?.setPreviewKey?.(option.key)',
   'model.selectSubclass(option)',
-  'optionEntryLevel(option) > currentLevel',
   'class-subclass-selected-card',
   'onDoubleClick={() => setSelectorOpen(true)}',
   '>Change Subclass<',
   'currentLevel < entryLevel',
   'setSelectorOpen(true)',
   'onInspectSubclass?.(option)',
-]) assert(selector.includes(token), `Runic circular subclass selector is missing ${token}`);
+]) assert(selector.includes(token), `Reference-scene subclass selector is missing ${token}`);
+
+assert((selector.match(/model\.selectSubclass\(option\)/g) || []).length === 1, "Carousel motion must never create a second subclass persistence path.");
+assert(!selector.includes('model?.setPreviewKey?.(heroOption.key)'), "Hero position must not auto-preview or persist as player intent.");
+assert(!selector.includes('browsedOption'), "Obsolete automatic browsed-card dossier state must not return.");
+assert(!selector.includes('class-subclass-carousel-modal__details'), "The floating Tarot scene must stay free of the old dossier panel.");
+assert(!selector.includes('class-subclass-carousel-modal__rune-foreground'), "Retired runic-table foreground must not return.");
+assert(!selector.includes('const roll = clamp('), "Whole-card tangent roll must remain removed; cards should stay upright.");
+assert(!tarotCss.includes('--orbit-roll'), "Whole-card orbit roll CSS must remain removed.");
+assert(!selector.includes('class-subclass-carousel-card__base-contact'), "Rejected shadow-only base-contact layer must not return.");
+assert(!selector.includes('class-subclass-carousel-card__base-fold'), "Rejected hinged footer must not return.");
+assert(!selector.includes('class-subclass-carousel-card__table-seat'), "Rejected per-card table-seat layer must not return.");
+assert(!tarotCss.includes('rotateX(70deg)'), "Rejected hinged footer transform must not return.");
+assert(!tarotCss.includes('clip-path: inset(0 0 7.5% 0)'), "Full Tarot card artwork must remain intact; do not clip the footer.");
+assert(!tarotCss.includes('subclass-card-base-contact-mask.svg'), "Rejected shadow-only contact-mask asset must not drive the live selector.");
+assert(!tarotCss.includes('subclass-card-table-seat-mask.svg'), "Rejected per-card table-seat mask must not drive the live selector.");
+assert(selector.includes('const faceUpArcDegrees = faceUpArcDegreesFor(count)') && selector.includes('const isFaceUp = count === 1 || absoluteAngle <= faceUpArcDegrees + 0.01'), "Front/back card presentation must derive from ring angle and catalogue density.");
+assert(selector.includes('Math.pow(depth, 1.72) * 0.74'), "Non-hero physical card size must use non-linear continuous depth falloff.");
+assert(selector.includes('const horizontalRadius = 39.1') && selector.includes('const verticalRadius = 18.5') && selector.includes('const verticalCenter = 59.2'), "Floating carousel path must remain stable across catalogue sizes and retain the browser-approved lower placement.");
+assert(selector.includes('setOrbitOffset(normalizeOrbitOffset(optionIndex - FRONT_CENTER_SLOT, options.length))'), "Clicking a face-up card must rotate that exact card to hero.");
 
 for (const token of [
-  'url("/media/forge/subclass-carousel/subclass-selector-cathedral-bg.png")',
-  'url("/media/forge/subclass-carousel/subclass-selector-runic-table.png")',
+  'url("/media/forge/subclass-carousel/subclass-selector-library-ruins-20260926.webp")',
+  'url("/media/forge/subclass-carousel/subclass-selector-card-back-20260922.webp")',
+  'width: min(1760px, 100vw, calc(100vh * 16 / 9))',
+  'aspect-ratio: 16 / 9',
+  '.class-subclass-carousel-card.is-orbit-center',
+  'opacity: 1 !important',
+  'translate(-50%, -100%)',
+  'transform-origin: 50% 100%',
+  '.class-subclass-carousel-card__yaw {',
+  'transform: none;',
   'url("/media/forge/subclass-carousel/subclass-selector-smoke-back.png")',
   'url("/media/forge/subclass-carousel/subclass-selector-smoke-front.png")',
-  '.class-subclass-carousel-card.is-orbit-back',
-  'rotateY(var(--orbit-yaw))',
-  'z-index: var(--orbit-z)',
-  '.class-subclass-carousel-modal__details',
-  'backdrop-filter: blur(12px)',
-]) assert(tarotCss.includes(token), `Runic subclass carousel presentation is missing ${token}`);
+  'url("/media/forge/subclass-carousel/subclass-selector-smoke-gray-20260927.webp")',
+  'url("/media/forge/subclass-carousel/subclass-selector-nav-prev-20260927.webp")',
+  'url("/media/forge/subclass-carousel/subclass-selector-nav-next-20260927.webp")',
+  'url("/media/forge/subclass-carousel/subclass-selector-flame-20260928.webp")',
+  '@keyframes subclass-library-flame-waver',
+  '@keyframes subclass-card-idle-float',
+  '@keyframes subclass-smoke-near-drift',
+  '@keyframes subclass-smoke-back-drift',
+  '@keyframes subclass-smoke-front-drift',
+  '@keyframes subclass-smoke-gray-drift',
+  '@keyframes subclass-candle-flicker-left',
+  '@keyframes subclass-candle-flicker-right',
+  '.class-subclass-carousel-card.is-orbit-back .class-subclass-carousel-card__surface',
+  'transform: rotateY(180deg)',
+  'backface-visibility: hidden',
+  '.class-subclass-carousel-modal__nav.is-prev',
+  '.class-subclass-carousel-modal__nav.is-next',
+  '@media (prefers-reduced-motion: reduce)',
+]) assert(tarotCss.includes(token), `Reference-scene Tarot presentation is missing ${token}`);
+
+assert(!tarotCss.includes('subclass-selector-cathedral-20260922.webp'), "Retired cathedral/runic-table background must not return.");
+assert(!tarotCss.includes('subclass-rune-front-mask.svg'), "Retired rune foreground mask must not return.");
+assert(!tarotCss.includes('.class-subclass-carousel-modal__rune-foreground'), "Retired table-owned rune foreground must not return.");
+assert(tarotCss.includes('subclass-selector-smoke-back.png'), "Floating library scene must include the rear smoke layer.");
+assert(tarotCss.includes('subclass-selector-smoke-front.png'), "Floating library scene must include the colored depth-smoke layer.");
+assert(tarotCss.includes('subclass-selector-smoke-gray-20260927.webp'), "Floating library scene must include the gray depth-smoke layer.");
+assert(selector.includes("<span>Choose Your</span><strong>Subclass</strong>") && !tarotCss.includes("subclass-selector-title-choose-fate-20260927.webp"), "Subclass selector title must use the symbol-free cinematic Choose Your / Subclass hierarchy.");
+assert(tarotCss.includes('subclass-selector-nav-prev-20260927.webp') && tarotCss.includes('subclass-selector-nav-next-20260927.webp'), "Subclass selector must use the approved left/right navigation artwork.");
+assert(selector.includes('? 820') && selector.includes('? 520 + Math.round(depth * 180)') && selector.includes(': 100 + Math.round(depth * 120)'), "Front/rear cards must use separate stacking bands so rear cards cannot clip across front cards.");
+assert(tarotCss.includes('transform-style: flat') && tarotCss.includes('isolation: isolate'), "Carousel cards must remain atomic stacking layers while inner Tarot faces retain their own flip context.");
+assert(tarotCss.includes('brightness(1.11)') && tarotCss.includes('brightness(1.06)'), "Front-facing Tarot cards must retain the subtle browser-approved brightness lift.");
+assert(tarotCss.includes('animation: none !important'), "Reduced-motion mode must disable ambient library animation.");
+assert(tarotCss.includes('.class-subclass-carousel-card.is-orbit-center .class-subclass-carousel-card__float') && tarotCss.includes('animation: none;'), "Hero card must stay still while non-hero cards idle-float.");
+assert(tarotCss.includes('z-index: 760') && tarotCss.includes('class-subclass-carousel-modal__smoke-near'), "Near smoke must cross side/front cards while remaining below the hero z-band.");
+assert(tarotCss.includes('left: 13.7%') && tarotCss.includes('right: 16.4%') && tarotCss.includes('top: 12.4%'), "Animated flames must stay registered to real upper candle clusters in the ruined-library background.");
+assert(selector.includes("captureGlideRects") && selector.includes("glide.animate") && selector.includes('cubic-bezier(.32,.035,.18,1)'), "Tarot slot changes must use the compositor glide path rather than snapping layout-property transitions.");
+assert(selector.includes("movement > orbitWidth * .58") && selector.includes("clamp(previous.width / next.width, .30, 3.25)"), "Tarot FLIP must preserve full hero size interpolation while skipping only the rear signed-angle seam teleport that caused giant card-back fly-throughs.");
+assert(/\n\s*const yaw = 0;\n/.test(selector), "Tarot yaw declaration must remain executable code on its own line.");
+assert(!selector.includes("corkscrew.\\n  const yaw = 0;"), "Tarot yaw declaration must never be swallowed by a line comment through a literal \\n sequence.");
+assert(tarotCss.includes(".class-subclass-carousel-card__glide") && tarotCss.includes(".class-subclass-carousel-card__yaw") && tarotCss.includes('var(--orbit-float-duration, 9.6s)'), "Tarot glide, yaw, and independent idle-float layers must remain separated.");
+assert(!tarotCss.includes("left 2.15s cubic-bezier") && !tarotCss.includes("top 2.25s cubic-bezier"), "Programmatic Tarot travel must not regress to left/top transition animation.");
+assert(selector.includes("<strong>Subclass Browser</strong>") && !selector.includes("class-subclass-launcher__icon"), "Unselected subclass entry point must remain the compact Subclass Browser pill.");
+assert(tarotCss.includes("width: max-content") && tarotCss.includes("border-radius: 999px"), "Subclass Browser launcher must remain compact rather than stretching across the class panel.");
+assert(!tarotCss.includes(':hover .class-subclass-carousel-card__surface {\n  filter:'), "Hover must not filter the 3D card surface; that compositor path caused cards to disappear.");
+assert(!tarotCss.includes('subclass-library-mouse-scurry') && !selector.includes('class-subclass-carousel-modal__mouse'), "Terrain-independent mouse animation must stay removed.");
+assert(!tarotCss.includes('subclass-selector-bat'), "Do not replace the removed mouse with bats without a separate browser-reviewed plan.");
 
 for (const forbidden of [
   'class-subclass-two-column__grid',
@@ -103,11 +196,31 @@ for (const forbidden of [
 assert(!selector.includes("supabase"), "Subclass selector must remain presentation-only.");
 
 for (const asset of [
-  "public/media/forge/subclass-carousel/subclass-selector-cathedral-bg.png",
-  "public/media/forge/subclass-carousel/subclass-selector-runic-table.png",
+  "public/media/forge/subclass-carousel/subclass-selector-library-ruins-20260926.webp",
+  "public/media/forge/subclass-carousel/subclass-selector-card-back-20260922.webp",
   "public/media/forge/subclass-carousel/subclass-selector-smoke-back.png",
   "public/media/forge/subclass-carousel/subclass-selector-smoke-front.png",
-]) assert(fs.existsSync(path.join(root, asset)), `Runic subclass carousel UI asset missing ${asset}`);
+  "public/media/forge/subclass-carousel/subclass-selector-smoke-gray-20260927.webp",
+  "public/media/forge/subclass-carousel/subclass-selector-nav-prev-20260927.webp",
+  "public/media/forge/subclass-carousel/subclass-selector-nav-next-20260927.webp",
+  "public/media/forge/subclass-carousel/subclass-selector-flame-20260928.webp",
+]) assert(fs.existsSync(path.join(root, asset)), `Floating-library subclass selector asset missing ${asset}`);
+
+const libraryAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-library-ruins-20260926.webp")).size;
+const tarotBackAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-card-back-20260922.webp")).size;
+const smokeBackAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-smoke-back.png")).size;
+const smokeFrontAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-smoke-front.png")).size;
+const flameAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-flame-20260928.webp")).size;
+const smokeGrayAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-smoke-gray-20260927.webp")).size;
+const navPrevAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-nav-prev-20260927.webp")).size;
+const navNextAssetSize = fs.statSync(path.join(root, "public/media/forge/subclass-carousel/subclass-selector-nav-next-20260927.webp")).size;
+assert(libraryAssetSize > 150_000, `Ruined-library selector asset is unexpectedly small (${libraryAssetSize} bytes); reject placeholder/corrupt transfers.`);
+assert(tarotBackAssetSize > 300_000, `Tarot back asset is unexpectedly small (${tarotBackAssetSize} bytes); reject placeholder/corrupt transfers.`);
+assert(smokeBackAssetSize > 1_000_000, `Rear smoke asset is unexpectedly small (${smokeBackAssetSize} bytes); reject placeholder/corrupt transfers.`);
+assert(smokeFrontAssetSize > 1_000_000, `Foreground smoke asset is unexpectedly small (${smokeFrontAssetSize} bytes); reject placeholder/corrupt transfers.`);
+assert(flameAssetSize > 5_000, `Flame overlay asset is unexpectedly small (${flameAssetSize} bytes); reject placeholder/corrupt transfers.`);
+assert(smokeGrayAssetSize > 250_000, `Gray smoke asset is unexpectedly small (${smokeGrayAssetSize} bytes); reject placeholder/corrupt transfers.`);
+assert(navPrevAssetSize > 25_000 && navNextAssetSize > 25_000, "Approved navigation assets are unexpectedly small; reject placeholder/corrupt transfers.");
 
 
 // 2026-09-17 completed normalized Tarot install: every current runtime-visible
@@ -136,7 +249,7 @@ const approvedTarotFamilies = {
   rogue: ["arcane-trickster", "assassin", "inquisitive", "mastermind", "phantom", "scion-of-the-three", "scout", "soulknife", "swashbuckler", "thief"],
   sorcerer: ["aberrant", "clockwork", "divine-soul", "draconic", "lunar", "pyromancer", "shadow", "spellfire", "storm", "wild-magic"],
   warlock: ["archfey", "celestial", "fathomless", "fiend", "genie", "great-old-one", "hexblade", "undead", "undying"],
-  wizard: ["abjuration", "abjurer", "bladesinger", "bladesinging", "chronurgy", "conjuration", "divination", "diviner", "enchantment", "evocation", "evoker", "graviturgy", "illusion", "illusionist", "necromancy", "scribes", "transmutation", "war"],
+  wizard: ["abjuration", "abjurer", "bladesinger", "chronurgy", "conjuration", "divination", "diviner", "enchantment", "evocation", "evoker", "graviturgy", "illusion", "illusionist", "necromancy", "scribes", "transmutation", "war"],
 };
 let approvedTarotCount = 0;
 for (const [classKey, families] of Object.entries(approvedTarotFamilies)) {
@@ -145,7 +258,7 @@ for (const [classKey, families] of Object.entries(approvedTarotFamilies)) {
     assert(fs.existsSync(path.join(root, `public/media/subclasses/${classKey}/${classKey}-${family}.webp`)), `Approved tarot asset missing ${classKey}/${family}`);
   }
 }
-assert(approvedTarotCount === 152, `Expected 152 installed approved normalized tarot concepts, found ${approvedTarotCount}.`);
+assert(approvedTarotCount === 151, `Expected 151 installed approved normalized tarot concepts after retiring corrupt Bladesinging, found ${approvedTarotCount}.`);
 for (const token of ['"ambition-psa": "ambition"', '"knowledge-psa": "knowledge"', '"solidarity-psa": "solidarity"', '"strength-psa": "strength"', '"zeal-psa": "zeal"']) {
   assert(subclassArtwork.includes(token), `Preferred-source Cleric alias mapping missing ${token}`);
 }
@@ -155,6 +268,163 @@ for (const token of ['"aberrant-mind": "aberrant"', '"clockwork-soul": "clockwor
 for (const token of ['wild: "wild-magic"', '"wild-magic": "wild-magic"']) {
   assert(subclassArtwork.includes(token), `Preferred-source Wild Magic alias mapping missing ${token}`);
 }
+
+const subclassCompatibility = await import(pathToFileURL(path.join(root, "utils/classes/subclassCompatibility.js")).href);
+const { resolveSubclassCatalog, guideSubclassFeatures, subclassIntroduction } = subclassCompatibility;
+const playerFacingModule = await import(pathToFileURL(path.join(root, "utils/playerFacingText.js")).href);
+const subclassSpellGrants = await import(pathToFileURL(path.join(root, "utils/classes/subclassSpellGrants.js")).href);
+const { subclassSpellGrantReferences, resolveSubclassSpellGrants } = subclassSpellGrants;
+const cleanedImportedRefs = playerFacingModule.formatPlayerFacingText("Lore text.\n\nBladesong|Wizard|XPHB|Bladesinger|FRHoF|3|FRHoF\n\nSoul Knife|Mystic|UATheMysticClass|Soul Knife|UATheMysticClass|1");
+assert(cleanedImportedRefs === "Lore text.", "Mixed-case and long imported source-reference rows must stay out of player-facing lore.");
+
+function testSubclassRow({ subclassName, name, level = 3, source = "TEST", classSource = "XPHB", header = null, description = "Source-backed rules.", entries = [] }) {
+  return {
+    feature_type: "subclass",
+    class_key: "test",
+    subclass_name: subclassName,
+    subclass_short_name: subclassName,
+    name,
+    source,
+    class_source: classSource,
+    level,
+    description,
+    entries,
+    raw_payload: { header },
+  };
+}
+
+const winterWalker = resolveSubclassCatalog([
+  testSubclassRow({ subclassName: "Winter Walker", name: "Frigid Explorer", header: null }),
+  testSubclassRow({ subclassName: "Winter Walker", name: "Hunter's Rime", header: null }),
+  testSubclassRow({ subclassName: "Winter Walker", name: "Winter Walker", header: null, description: "Winter Walker lore." }),
+  testSubclassRow({ subclassName: "Winter Walker", name: "Winter Walker Spells", header: null }),
+  testSubclassRow({ subclassName: "Winter Walker", name: "Fortifying Soul", level: 7, header: 2 }),
+], "XPHB")[0];
+assert(subclassIntroduction(winterWalker)?.name === "Winter Walker", "Winter Walker lore row must remain the subclass introduction when several level-3 feature rows have null headers.");
+for (const name of ["Frigid Explorer", "Hunter's Rime", "Winter Walker Spells", "Fortifying Soul"]) {
+  assert(guideSubclassFeatures(winterWalker).some((feature) => feature.name === name), `Winter Walker feature was incorrectly hidden as introduction: ${name}`);
+}
+
+const bladesinger = resolveSubclassCatalog([
+  testSubclassRow({ subclassName: "Bladesinger", name: "Bladesinger", source: "FRHoF", header: null, description: "Bladesinger lore." }),
+  testSubclassRow({ subclassName: "Bladesinger", name: "Bladesong", source: "FRHoF", header: null }),
+  testSubclassRow({ subclassName: "Bladesinger", name: "Training in War and Song", source: "FRHoF", header: null }),
+  testSubclassRow({ subclassName: "Bladesinger", name: "Extra Attack", source: "FRHoF", level: 6, header: 2 }),
+], "XPHB")[0];
+assert(subclassIntroduction(bladesinger)?.name === "Bladesinger", "Bladesinger lore row must not swallow same-level Bladesong/Training features.");
+assert(guideSubclassFeatures(bladesinger).some((feature) => feature.name === "Bladesong"), "Bladesong must remain a visible subclass feature.");
+assert(guideSubclassFeatures(bladesinger).some((feature) => feature.name === "Training in War and Song"), "Training in War and Song must remain a visible subclass feature.");
+
+const kensei = resolveSubclassCatalog([
+  testSubclassRow({ subclassName: "Kensei", name: "Way of the Kensei", source: "XGE", classSource: "PHB", header: null, description: "Kensei lore." }),
+  testSubclassRow({ subclassName: "Kensei", name: "Path of the Kensei", source: "XGE", classSource: "PHB", header: 1, description: "Kensei feature rules." }),
+], "XPHB")[0];
+assert(subclassIntroduction(kensei)?.name === "Way of the Kensei", "Header-1 Path of the Kensei feature must not be mistaken for the lore introduction.");
+assert(guideSubclassFeatures(kensei).some((feature) => feature.name === "Path of the Kensei"), "Path of the Kensei must remain a visible feature.");
+
+const soulKnife = resolveSubclassCatalog([
+  testSubclassRow({ subclassName: "Soul Knife", name: "Order of the Soul Knife", source: "UATheMysticClass", classSource: "UATheMysticClass", level: 1, header: null, description: "Soul Knife lore." }),
+  testSubclassRow({ subclassName: "Soul Knife", name: "Soul Knife", source: "UATheMysticClass", classSource: "UATheMysticClass", level: 1, header: 1, description: "Soul Knife feature rules." }),
+], "UATheMysticClass")[0];
+assert(subclassIntroduction(soulKnife)?.name === "Order of the Soul Knife", "Header-1 Soul Knife feature must not replace the Order of the Soul Knife lore row.");
+assert(guideSubclassFeatures(soulKnife).some((feature) => feature.name === "Soul Knife"), "Soul Knife level-1 feature must remain visible.");
+
+const knowledgeChoices = resolveSubclassCatalog([
+  testSubclassRow({ subclassName: "Knowledge", name: "Knowledge Domain", source: "FRHoF", classSource: "XPHB", description: "Modern Knowledge lore." }),
+  testSubclassRow({ subclassName: "Knowledge", name: "Blessings of Knowledge", source: "FRHoF", classSource: "XPHB", description: "Modern Knowledge rules." }),
+  testSubclassRow({ subclassName: "Knowledge", name: "Knowledge Domain", source: "PHB", classSource: "PHB", level: 1, description: "Legacy Knowledge lore." }),
+  testSubclassRow({ subclassName: "Knowledge", name: "Blessings of Knowledge", source: "PHB", classSource: "PHB", level: 1, header: 1, description: "Legacy Knowledge rules." }),
+  testSubclassRow({ subclassName: "Knowledge (PSA)", name: "Knowledge Domain (PSA)", source: "PSA", classSource: "XPHB", description: "", entries: [] }),
+  testSubclassRow({ subclassName: "Knowledge (PSA)", name: "Knowledge Domain (PSA)", source: "PSA", classSource: "PHB", level: 1, description: "Setting-variant lore." }),
+], "XPHB");
+assert(knowledgeChoices.length === 1 && knowledgeChoices[0].name === "Knowledge" && knowledgeChoices[0].source === "FRHoF", "Complete exact-ruleset Knowledge must beat legacy/empty placeholders, and duplicate Knowledge (PSA) must stay hidden.");
+
+for (const [subclassName, introName] of [
+  ["Swords", "College of Swords"],
+  ["Land", "Circle of the Land"],
+  ["Noble Genies", "Oath of the Noble Genies"],
+  ["Shadow", "Warrior of Shadow"],
+  ["Scribes", "Order of Scribes"],
+  ["Archfey", "Archfey Patron"],
+  ["Spellfire", "Spellfire Sorcery"],
+  ["Draconic", "Draconic Bloodline"],
+  ["Wild", "Wild Magic"],
+  ["Chronurgy", "Chronurgy Magic"],
+  ["Graviturgy", "Graviturgy Magic"],
+  ["War", "War Magic"],
+  ["Ambition (PSA)", "Ambition Domain (PSA)"],
+]) {
+  const option = resolveSubclassCatalog([
+    testSubclassRow({ subclassName, name: introName, description: `${subclassName} lore.` }),
+    testSubclassRow({ subclassName, name: `${subclassName} Feature`, header: null }),
+  ], "XPHB")[0];
+  assert(subclassIntroduction(option)?.name === introName, `Wrapped subclass introduction identity failed for ${subclassName}: ${introName}`);
+  assert(guideSubclassFeatures(option).some((feature) => feature.name === `${subclassName} Feature`), `Null-header feature was incorrectly hidden for ${subclassName}`);
+}
+
+const twilightGrantRows = [
+  testSubclassRow({
+    subclassName: "Twilight",
+    name: "Twilight Domain",
+    source: "TCE",
+    classSource: "PHB",
+    level: 1,
+    entries: [{
+      type: "table",
+      caption: "Twilight Domain Spells",
+      colLabels: ["Cleric Level", "Spells"],
+      rows: [
+        ["1st", "{@spell faerie fire}, {@spell sleep}"],
+        ["3rd", "{@spell moonbeam}, {@spell see invisibility}"],
+        ["5th", "{@spell aura of vitality}, {@spell Leomund's tiny hut}"],
+        ["7th", "{@spell aura of life}, {@spell greater invisibility}"],
+        ["9th", "{@spell circle of power}, {@spell mislead}"],
+      ],
+    }],
+  }),
+];
+const twilightRefs = subclassSpellGrantReferences(twilightGrantRows);
+assert(twilightRefs.length === 10 && twilightRefs.some((spell) => spell.name === "mislead"), "Intro-embedded legacy subclass spell tables must populate the Codex Spells tab.");
+
+const directGrantRefs = subclassSpellGrantReferences([
+  testSubclassRow({ subclassName: "Wild Heart", name: "Animal Speaker", entries: ["You can cast the {@spell Beast Sense|XPHB} and {@spell Speak with Animals|XPHB} spells but only as Rituals."] }),
+  testSubclassRow({ subclassName: "Wild Heart", name: "Nature Speaker", level: 10, header: 2, entries: ["You can cast the {@spell Commune with Nature|XPHB} spell but only as a Ritual."] }),
+  testSubclassRow({ subclassName: "Sun Soul", name: "Searing Arc Strike", level: 6, header: 2, entries: ["You can spend 2 Focus Points to cast the {@spell Burning Hands|XPHB} spell as a Bonus Action."] }),
+]);
+for (const spell of ["Beast Sense", "Speak with Animals", "Commune with Nature", "Burning Hands"]) {
+  assert(directGrantRefs.some((entry) => entry.name === spell), `Direct subclass spell grant missing ${spell}`);
+}
+
+const choiceGrantRefs = subclassSpellGrantReferences([
+  testSubclassRow({ subclassName: "Arcane Archer", name: "Arcane Archer Lore", source: "XGE", classSource: "PHB", entries: ["You choose to learn either the {@spell prestidigitation} or the {@spell druidcraft} cantrip."] }),
+  testSubclassRow({ subclassName: "Scion of the Three", name: "Dread Allegiance", source: "FRHoF", entries: [{ type: "table", colLabels: ["Dead Three", "Resistance", "Cantrip"], rows: [["Bane", "Psychic", "{@spell Minor Illusion|XPHB}"], ["Bhaal", "Poison", "{@spell Blade Ward|XPHB}"], ["Myrkul", "Necrotic", "{@spell Chill Touch|XPHB}"]] }] }),
+  testSubclassRow({ subclassName: "Light", name: "Bonus Cantrip", source: "PHB", classSource: "PHB", level: 1, entries: ["You gain the {@spell light} cantrip if you don't already know it."] }),
+  testSubclassRow({ subclassName: "Ancestral Guardian", name: "Consult the Spirits", source: "XGE", classSource: "PHB", level: 10, entries: ["At 10th level, you gain the ability to consult with your ancestral spirits. When you do so, you cast the {@spell augury} or {@spell clairvoyance} spell, without using a spell slot or material components."] }),
+  testSubclassRow({ subclassName: "Phantom", name: "Tokens of the Departed", source: "RHW", level: 9, entries: ["You can take a Magic action to destroy a soul trinket and immediately cast the {@spell Augury|XPHB} spell."] }),
+]);
+for (const spell of ["prestidigitation", "druidcraft", "Minor Illusion", "Blade Ward", "Chill Touch", "light", "augury", "clairvoyance"]) {
+  const spellKey = spell.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  assert(choiceGrantRefs.some((entry) => entry.name.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim() === spellKey), `Choice/direct subclass spell grant missing ${spell}`);
+}
+
+const falseGrantRefs = subclassSpellGrantReferences([
+  testSubclassRow({ subclassName: "Zealot", name: "Warrior of the Gods", header: 1, entries: ["If a spell, such as {@spell raise dead}, restores you to life, its caster needs no Material components."] }),
+  testSubclassRow({ subclassName: "Scribes", name: "Manifest Mind", level: 6, header: 2, entries: ["The spectral mind ends if someone casts {@spell dispel magic} on it."] }),
+  testSubclassRow({ subclassName: "Hunter", name: "Evasion", level: 15, header: 2, entries: ["You evade effects such as a {@spell lightning bolt} spell."] }),
+]);
+assert(falseGrantRefs.length === 0, "Incidental spell references must not be presented as subclass-granted spells.");
+
+const resolvedSpellGrant = resolveSubclassSpellGrants(
+  [{ name: "Shield", source: "", unlockLabel: "3" }],
+  [
+    { name: "Shield", source: "PHB", level: 1, description: "Legacy." },
+    { name: "Shield", source: "XPHB", level: 1, description: "2024." },
+  ],
+)[0];
+assert(resolvedSpellGrant?.source === "XPHB" && resolvedSpellGrant?.description === "2024.", "Subclass spell resolution must prefer the modern Profile-spellbook source when a grant omits a source.");
+
+const cleanedEmptySourceRef = playerFacingModule.formatPlayerFacingText("Rules.\n\nSpirit Seeker|Barbarian||Totem Warrior||3\n\nBear|XGE\n\nFriendly [Attitude] creature in an Emanation [Area of Effect].");
+assert(cleanedEmptySourceRef === "Rules.\n\nFriendly creature in an Emanation.", "Player-facing cleanup must remove empty-source/short imported references and strip bracketed 5etools annotations.");
 
 assert(model.includes("resolveSubclassCatalog") && model.includes("const options = useMemo"), "Canonical subclass catalogue authority moved out of the existing guide model.");
 assert(model.includes("selectSubclass"), "Existing subclass persistence authority disappeared from the guide model.");
@@ -197,4 +467,41 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSource.includes(token), `Class presentation patch crossed protected boundary: ${token}`);
 }
 
-console.log("Class subclass selector validation passed: canonical subclass authority and persistence remain in the guide model, all subclass cards move through a stable runic-table orbit one position at a time, four front positions stay prominent while rear positions recede behind smoke, the details panel is source-backed, all 152 approved normalized tarot concepts remain installed and mapped, and unmatched future content retains the safe class-art fallback.");
+for (const token of ["subclassOption: option", "progressionRows: model.rows || []", "currentLevel: model.currentLevel"]) assert(guide.includes(token), `Subclass inspector payload is missing ${token}`);
+for (const token of ["subclassTab", "npc-forge-subclass-inspector__tabs", "Overview", "Progression", "Spells", "subclassArtworkFor", "subclassFeatures", "subclassSpellGrantReferences", "spellCatalog", "Subclass Spells", "Spell Details", "SpellCard", "subclassSpellWorkspaceRows", "npc-forge-subclass-inspector__spell-workspace", "npc-forge-subclass-inspector__spell-list", "npc-forge-subclass-inspector__spell-preview", "buildSubclassProgressionRows", "npc-forge-subclass-inspector__art-backdrop", "DUNAMANCY_SPELL_NAMES", "onFeatureDetail = null"]) {
+  assert(featureDock.includes(token), `Tabbed subclass inspector is missing ${token}`);
+}
+assert(!featureDock.includes("subclassSpellFeatures"), "Spells tab regressed to keyword-filtered feature duplication.");
+assert(!featureDock.includes("Class Spell Access"), "Subclass Spells tab must not duplicate the later full class spell catalogue.");
+assert(featureDock.includes("CODEX_DOCK_WIDTH = 720") && featureDock.includes("body > .npc-forge-class-feature-dock.is-viewport-floating.is-subclass-inspector"), "Subclass Codex must override legacy floating-dock width caps with the wider reading layout.");
+assert(featureDock.includes("npc-forge-subclass-inspector__overview-lore-scroll") && !featureDock.includes("Path Overview"), "Overview must present the source-backed subclass lore in the scrollable reading area rather than the old shallow Path Overview box.");
+assert(featureDock.includes("npc-forge-subclass-inspector__art-backdrop") && featureDock.includes("npc-forge-subclass-inspector__content-layer") && !featureDock.includes("<strong>Lore</strong>"), "Subclass Tarot art must remain a subdued background layer while redundant Lore labels stay removed.");
+assert(featureDock.includes("npc-forge-subclass-inspector__progression-table") && featureDock.includes("npc-forge-subclass-inspector__progression-features") && featureDock.includes("is-subclass"), "Subclass inspector must retain the merged class/subclass progression table with distinct subclass feature styling.");
+assert(featureDock.includes('["progression", "Progression"]') && !featureDock.includes("is-overview-progression"), "Progression must remain in its own dedicated Subclass Codex tab.");
+assert(featureDock.includes("overviewFeatureKey") && featureDock.includes("npc-forge-subclass-inspector__overview-feature-index") && featureDock.includes("Back to lore"), "Overview must keep the right-side subclass feature index and swap the left lore panel into feature details in place.");
+assert(featureDock.includes('onClick={() => onFeatureDetail?.({ type: "classFeature"') && forgeSteps.includes("onFeatureDetail={setClassFeatureDetail}"), "Codex progression pills must route into the independent Feature panel.");
+assert(featureDock.includes("this subclass has access to dunamancy spells") && featureDock.includes("subclassHasDunamancyAccess"), "Dunamancy access must remain in the Spells tab.");
+assert(featureDock.includes("subclassSpellGrantReferences(subclassOption?.features || [])") && featureDock.includes("resolveSubclassSpellGrants"), "Subclass Codex must inspect every source-backed subclass row, including intro-embedded spell tables, and resolve grants against the full spell catalogue.");
+assert(!featureDock.includes("normalizedSpellName(") && featureDock.includes("normalizeSubclassSpellName(feature?.name)"), "Subclass Codex progression helpers must use the imported normalization helper; stale normalizedSpellName calls would crash the Codex at runtime.");
+assert(subclassSpellGrantsSource.includes("spellTable") && subclassSpellGrantsSource.includes("sentenceGrantsSpells") && subclassSpellGrantsSource.includes("prefixGrantsSpell"), "Subclass spell discovery must distinguish real table/direct grants from incidental spell mentions.");
+assert(playerFacingText.includes("internalReferenceLabel") && playerFacingText.includes("Area of Effect|Attitude"), "Player-facing sanitizer must collapse imported reference rows and remove bracketed 5etools annotations.");
+assert(featureDock.includes("width:86%") && featureDock.includes("brightness(.98)") && featureDock.includes("object-position:center top") && featureDock.includes("transform-origin:50% 0"), "Subclass Tarot backdrop must begin behind the navigation strip and reveal only the lower portion below it, keeping faces lower in the Codex crop.");
+assert(featureDock.includes("playerFacingSubclassLore") && featureDock.includes("isImportedSubclassReferenceLine") && featureDock.includes('split("|")') && featureDock.includes("parts.length >= 7 ? parts[parts.length - 2]"), "Player-facing subclass lore must strip imported subclass-reference metadata without mutating catalogue data.");
+assert(featureDock.includes("npc-forge-class-feature-dock__title-group{display:none!important}") && featureDock.includes("head-actions>em{display:none!important}"), "Subclass inspector header must stay compact and avoid repeating identity/source labels.");
+assert(!subclassArtwork.includes('bladesinging: "bladesinging"'), "Retired Bladesinging artwork mapping must not return.");
+assert(!featureDock.includes('["features", "Features"]') && !featureDock.includes('["lore", "Lore"]'), "Redundant Features and Lore tabs must stay removed; Overview already owns both functions.");
+assert(featureDock.includes("grid-template-columns:repeat(3,1fr)"), "Subclass Codex must retain only Overview, Progression, and Spells tabs.");
+assert(featureDock.includes('import SpellCard from "./SpellCard"') && featureDock.includes("<SpellCard spell={selectedSubclassSpellRow.spell} compact />"), "Subclass Spells tab must reuse the profile-panel SpellCard detail treatment.");
+assert(featureDock.includes("npc-forge-subclass-inspector__spell-preview-scroll") && featureDock.includes("grid-template-rows:auto minmax(0,1fr)") && featureDock.includes("max-height:none;overflow:visible"), "Subclass spell preview must scroll the full shared SpellCard inside its pane instead of clipping the lower half.");
+assert(featureDock.includes("npc-forge-subclass-inspector__spell-row-name") && featureDock.includes("npc-forge-subclass-inspector__spell-row-meta") && featureDock.includes("npc-forge-subclass-inspector__spell-row-tags"), "Subclass Spells tab must use the profile-style selectable spell list plus detailed preview.");
+assert(tarotCss.includes("width: max-content") && tarotCss.includes("padding: .38rem .46rem") && tarotCss.includes("class-subclass-section.is-card-launcher"), "Subclass Browser launcher shell must stay compact around its button rather than stretching across the class panel.");
+assert(forgeSteps.includes("const [classFeatureDetail, setClassFeatureDetail] = useState(null)") && forgeSteps.includes("const [subclassCodexDetail, setSubclassCodexDetail] = useState(null)"), "Class Feature panel and Subclass Codex must keep independent state models.");
+assert(forgeSteps.includes('panelRole="codex" detail={subclassCodexDetail}') && forgeSteps.includes('panelRole="feature" detail={classFeatureDetail}'), "Class step must render independent Codex and Feature panel instances.");
+assert(guide.includes("onSubclassDetail") && guide.includes("onFeatureDetail") && !guide.includes("inspectSubclass(model, onFeatureDetail"), "Subclass inspection and feature detail routing must remain separate callbacks.");
+assert(featureDock.includes("FEATURE_DOCK_WIDTH = 520") && featureDock.includes("is-feature-panel") && featureDock.includes("font-size:.98rem!important"), "Feature panel must retain the wider readable desktop layout and larger rules text.");
+assert(model.includes("spellCatalog") && model.includes("allSpellCatalog: spells") && !model.includes("maxSpellLevelForProgressionRow"), "Subclass spell resolution should retain class access while exposing the full source-backed spell catalogue for special subclass access such as Dunamancy.");
+for (const token of ["area_type", "area_size", "area_unit", "material_text", "saving_throw_abilities", "attack_type", "healing_dice", "higher_level_text"]) assert(model.includes(token), `Subclass Codex spell query must retain Profile SpellCard detail field: ${token}`);
+assert(featureDock.includes("overflow:hidden!important") && featureDock.includes("flex-direction:column!important") && featureDock.includes("npc-forge-class-feature-dock__body{min-height:0;flex:1 1 auto;overflow:auto!important") && featureDock.includes("npc-forge-subclass-inspector__tabs{position:sticky;top:0"), "Codex scrolling must stay inside the body below the fixed header/tab boundary.");
+
+
+console.log("Class subclass selector validation passed: canonical authority remains in the guide model, all subclass cards stay on one free-floating parametric carousel, rear cards use the shared card back, one exact hero position owns enlarged presentation, ambient library motion is presentation-only, drag/arrow motion never persists a subclass, explicit card clicks remain the only selection path, all 151 approved normalized Tarot concepts remain installed/mapped, and future content retains safe fallback.");

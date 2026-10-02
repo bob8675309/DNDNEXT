@@ -60,7 +60,7 @@ for (const token of [
   "ClassSubclassSection",
   "classKey={selectedClass?.class_key || \"\"}",
   "onInspectSubclass",
-  "inspectSubclass(model, onFeatureDetail, option)",
+  "inspectSubclass(model, onSubclassDetail, option)",
   "selectedRowFeatures",
   "spellSlotCells",
   'const slotLabels = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"]',
@@ -75,31 +75,43 @@ assert(!guide.includes('<aside className="npc-forge-class-guide__dock-lane"'), "
 assert(!guide.includes('onMouseEnter={() => publishFeature(model, onFeatureDetail'), "Feature-card content must not change on feature hover.");
 assert(!guide.includes('onFocus={() => publishFeature(model, onFeatureDetail'), "Feature-card content must not change from focus alone.");
 assert(!guide.includes("classSlotSummary(row.spell_slots)"), "Progression regressed to the compressed one-cell spell-slot summary.");
+assert(!guide.includes("inspectSubclass(model, onFeatureDetail, option)"), "Subclass inspection must remain routed to the independent Subclass Codex callback, not the Class Feature panel.");
 
 for (const token of [
-  'import { useEffect, useMemo, useRef, useState } from "react"',
+  'import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"',
   'import { createPortal } from "react-dom"',
   "subclassArtworkFor(classKey, option)",
-  "function orbitPlacement(optionIndex, carouselStart, total)",
-  "const frontCount = Math.min(4, count)",
-  "const orbitOptions = useMemo",
-  "const focusedOption = options[focusedIndex] || null",
-  "class-subclass-carousel-modal__orbit",
-  "class-subclass-carousel-modal__details",
-  "class-subclass-carousel-modal__smoke-front",
-  "data-orbit-slot={relative}",
-  "key={option.key}",
-  "function rotateCarousel(direction)",
-  "(current + normalizedDirection + length) % length",
+  "function orbitPlacement(optionIndex, orbitOffset, total)",
+  "const [orbitOffset, setOrbitOffset] = useState(0)",
+  "const heroOption = options[heroIndex] || null",
+  "function handleOrbitPointerDown(event)",
+  "function handleOrbitPointerMove(event)",
+  "function finishOrbitPointer(event, cancelled = false)",
+  "function handleCardClick(event, option, optionIndex, isInteractive)",
+  "onPointerDown={handleOrbitPointerDown}",
+  "onPointerMove={handleOrbitPointerMove}",
+  "onPointerUp={(event) => finishOrbitPointer(event)}",
+  "class-subclass-carousel-card__surface",
+  "class-subclass-carousel-card__face is-front",
+  "class-subclass-carousel-card__face is-back",
+  "class-subclass-carousel-modal__title",
+  "class-subclass-carousel-modal__smoke-near",
+  "class-subclass-carousel-card__float",
+  "class-subclass-carousel-modal__flame is-flame-left-upper",
   "model.selectSubclass(option)",
-  "model.setPreviewKey(option.key)",
-  "model?.setPreviewKey?.(focusedOption.key)",
+  "model?.setPreviewKey?.(option.key)",
   "class-subclass-selected-card",
   ">Change Subclass<",
   "onDoubleClick={() => setSelectorOpen(true)}",
-  "onInspectSubclass?.(option)",
-  "onClick={showFocusedDetails}",
-]) assert(selector.includes(token), `Runic circular subclass selector is missing ${token}`);
+]) assert(selector.includes(token), `Reference-scene subclass selector is missing ${token}`);
+
+assert((selector.match(/model\.selectSubclass\(option\)/g) || []).length === 1, "Carousel motion must not create a second subclass-selection authority.");
+assert(!selector.includes('model?.setPreviewKey?.(heroOption.key)'), "Front-most carousel position must not auto-select or auto-preview as player intent.");
+assert(!selector.includes("browsedOption"), "Stale browsed-card auto-follow state must remain removed.");
+assert(!selector.includes("class-subclass-carousel-modal__details"), "Old dossier panel must not cover the recreated reference scene.");
+assert(selector.includes("class-subclass-carousel-modal__smoke-near"), "Floating ruined-library target must retain the near smoke depth layer.");
+assert(!selector.includes("class-subclass-carousel-modal__rune-foreground"), "Retired runic-table foreground must not return.");
+assert(!selector.includes("class-subclass-carousel-modal__mouse"), "Terrain-independent ambient mouse must stay removed.");
 
 for (const forbidden of [
   "class-subclass-two-column__grid",
@@ -173,4 +185,4 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
   assert(!protectedSources.includes(token), `Class browser patch unexpectedly references protected behavior: ${token}`);
 }
 
-console.log("Class browser polish validation passed: the runic circular subclass Tarot selector, click-only movable Feature-card details, selected-subclass progression bubbles, balanced per-level spell-slot table, open stable top-right art, preserved Class authority, and protected boundaries are intact.");
+console.log("Class browser polish validation passed: the floating ruined-library Tarot carousel keeps explicit click-owned subclass selection, selected-subclass progression bubbles and spell slots remain intact, Class authority stays preserved, and protected boundaries are unchanged.");

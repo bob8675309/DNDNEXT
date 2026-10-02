@@ -67,7 +67,7 @@ assert(!guide.includes("model.options.slice(0, 4)"), "Subclass catalogue must no
 assert(!guide.includes("npc-forge-class-guide__subclass-more"), "The Class overview must not hide subclasses behind a More disclosure.");
 assert(guide.includes("ForgeSubclassSelection"), "Subclass selection behavior was removed.");
 assert(subclassBrowser.includes("model.selectSubclass(option)"), "Subclass confirmation behavior was removed from the browser.");
-assert(subclassBrowser.includes('aria-label="Subclass catalogue"'), "Every canonical subclass must remain browseable in the inline catalogue.");
+assert(subclassBrowser.includes("orbitOptions.map(({ option, optionIndex") && subclassBrowser.includes('role="list"') && subclassBrowser.includes('aria-setsize={options.length}'), "Every canonical subclass must remain reachable in the modal Tarot ring.");
 assert(guide.includes("ProgressionTable"), "Class progression table was removed.");
 assert(guide.includes("Class Overview") && guide.includes("Detailed Guide"), "Class guide view controls regressed.");
 assert(guide.includes("classHeroArtworkFor(selectedClass.class_key)"), "Selected Class hero must use the cinematic hero-art authority.");
@@ -104,4 +104,4 @@ for (const token of [
 const protectedSource = `${css}\n${cinematic}\n${finalCorrections}\n${guide}\n${subclassBrowser}\n${classCatalog}\n${classEmpty}\n${classArtwork}\n${speciesArtwork}\n${forgeModal}`.toLowerCase();
 for (const token of ["map_routes", "advance_all_characters", "mappageclient", "townsheet", "encounter_weapon_attack", "crafting_recipe"]) assert(!protectedSource.includes(token), `Browser review fix crossed protected boundary: ${token}`);
 
-console.log("Species/Class cinematic reference pass validated: structurally valid cinematic Aarakocra/Elf/Half-orc/Halfling WebP artwork, head-safe Species framing, full-height Class catalogue, Forge double-click geometry recovery, generated Class idle artwork, blended selected-Class paintings, purpose-specific Class menu portraits, visible subclasses, preserved progression and protected boundaries.");
+console.log("Species/Class cinematic reference pass validated: structurally valid cinematic Aarakocra/Elf/Half-orc/Halfling WebP artwork, head-safe Species framing, full-height Class catalogue, Forge double-click geometry recovery, generated Class idle artwork, blended selected-Class paintings, purpose-specific Class menu portraits, every canonical subclass remains reachable through the modal Tarot ring, progression is preserved, and protected boundaries remain intact.");

@@ -3,7 +3,7 @@ function safeText(value) {
 }
 
 function isSourceCode(value) {
-  return /^[A-Z][A-Z0-9]{1,11}$/.test(safeText(value));
+  return /^[A-Z][A-Z0-9]{1,23}$/i.test(safeText(value));
 }
 
 function isFeatureLevel(value) {
@@ -11,14 +11,18 @@ function isFeatureLevel(value) {
 }
 
 function isInternalReferenceLine(value) {
-  const parts = safeText(value).split("|").map((part) => part.trim()).filter(Boolean);
-  if (parts.length < 4 || parts.length > 8) return false;
-  const penultimate = parts.at(-2) || "";
-  const last = parts.at(-1) || "";
-  const tailLooksInternal = (isSourceCode(penultimate) && isFeatureLevel(last))
-    || (isFeatureLevel(penultimate) && isSourceCode(last));
-  if (!tailLooksInternal) return false;
-  return parts.slice(1).some(isSourceCode);
+  const rawParts = safeText(value).split("|").map((part) => part.trim());
+  if (rawParts.length === 2) {
+    const source = rawParts[1];
+    return Boolean(rawParts[0] && source && /^[A-Za-z][A-Za-z0-9]{1,23}$/.test(source) && /[A-Z]/.test(source));
+  }
+  if (rawParts.length < 4 || rawParts.length > 8) return false;
+  if (!rawParts[0] || !rawParts.slice(1).some(isFeatureLevel)) return false;
+  return rawParts.slice(1).some((part) => isSourceCode(part) || part === "");
+}
+
+function internalReferenceLabel(value) {
+  return safeText(value).split("|")[0]?.trim() || "";
 }
 
 function cleanInlineMarkup(value) {
@@ -27,6 +31,7 @@ function cleanInlineMarkup(value) {
     .replace(/\{@(?:spell|item|creature|condition|skill|action|sense|language|race|class|subclass|feat|filter|book|adventure|variantrule)\s+([^}|]+)(?:\|[^}]*)?}/gi, "$1")
     .replace(/\{@(?:b|i|u|note|atk|h|dc)\s+([^}]*)}/gi, "$1")
     .replace(/\{@[a-zA-Z0-9]+\s+([^}|]+)(?:\|[^}]*)?}/g, "$1")
+    .replace(/\s*\[(?:Area of Effect|Attitude)\]/gi, "")
     .replace(/\s+([,.;:!?])/g, "$1")
     .replace(/[ \t]+/g, " ")
     .trim();
