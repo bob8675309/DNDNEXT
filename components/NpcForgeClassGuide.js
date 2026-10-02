@@ -70,11 +70,25 @@ function subclassPreviewFeature(option = {}) {
     entries: null,
   };
 }
-function inspectSubclass(model, onSubclassDetail, option) {
+function inspectSubclass(model, onSubclassDetail, option, actions = {}) {
   if (!option?.key) return;
   const feature = subclassPreviewFeature(option);
   model.setPinned(feature);
-  onSubclassDetail?.({ type: "classFeature", feature, subclassName: option.name || "Subclass", subclassOption: option, spellCatalog: model.allSpellCatalog || model.spellCatalog || [], progressionRows: model.rows || [], currentLevel: model.currentLevel });
+  onSubclassDetail?.({
+    type: "classFeature",
+    feature,
+    subclassName: option.name || "Subclass",
+    subclassOption: option,
+    spellCatalog: model.allSpellCatalog || model.spellCatalog || [],
+    progressionRows: model.rows || [],
+    currentLevel: model.currentLevel,
+    subclassSelection: {
+      eligible: Boolean(actions?.eligible),
+      selected: Boolean(actions?.selected),
+      choose: typeof actions?.choose === "function" ? actions.choose : null,
+      browse: typeof actions?.browse === "function" ? actions.browse : null,
+    },
+  });
 }
 function selectedRowFeatures(model, row) {
   const base = (row?.guideFeatures || []).filter((feature) => feature?.type !== "subclass");
@@ -111,7 +125,7 @@ function ForgeSubclassSelection({ selectedClass, model, onSubclassDetail, detail
     model={model}
     classKey={selectedClass?.class_key || ""}
     detailed={detailed}
-    onInspectSubclass={(option) => inspectSubclass(model, onSubclassDetail, option)}
+    onInspectSubclass={(option, actions) => inspectSubclass(model, onSubclassDetail, option, actions)}
   />;
 }
 function ChoiceRoutingNote({ model, compact = false }) {
