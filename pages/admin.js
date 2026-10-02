@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import AssignItemButton from "../components/AssignItemButton";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "../utils/supabaseClient";
 import ItemCard from "../components/ItemCard";
 import { classifyUi, TYPE_PILLS, titleCase } from "../utils/itemsIndex";
 import dynamic from "next/dynamic";
@@ -19,12 +19,6 @@ function useDebounced(value, delay = 180) {
 const VariantBuilder = dynamic(
   () => import("../components/MagicVariantBuilder").then((m) => m.default || m),
   { ssr: false }
-);
-
-// Instantiate supabase client once at module scope to avoid multiple GoTrue instances.
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
 function AdminErrorBoundary({ children }) {
@@ -64,7 +58,7 @@ export default function AdminPanel() {
   const [magicVariants, setMagicVariants] = useState(null);
   const [stagedCustom, setStagedCustom] = useState(null);
 
-  // Supabase client for admin operations - use the singleton defined above.
+  // Supabase admin operations use the shared browser singleton.
 
   // Owner selection for assigning items
   const [assignOwnerType, setAssignOwnerType] = useState("player");
