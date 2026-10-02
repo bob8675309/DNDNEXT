@@ -308,6 +308,20 @@ assert(subclassIntroduction(bladesinger)?.name === "Bladesinger", "Bladesinger l
 assert(guideSubclassFeatures(bladesinger).some((feature) => feature.name === "Bladesong"), "Bladesong must remain a visible subclass feature.");
 assert(guideSubclassFeatures(bladesinger).some((feature) => feature.name === "Training in War and Song"), "Training in War and Song must remain a visible subclass feature.");
 
+const kensei = resolveSubclassCatalog([
+  testSubclassRow({ subclassName: "Kensei", name: "Way of the Kensei", source: "XGE", classSource: "PHB", header: null, description: "Kensei lore." }),
+  testSubclassRow({ subclassName: "Kensei", name: "Path of the Kensei", source: "XGE", classSource: "PHB", header: 1, description: "Kensei feature rules." }),
+], "XPHB")[0];
+assert(subclassIntroduction(kensei)?.name === "Way of the Kensei", "Header-1 Path of the Kensei feature must not be mistaken for the lore introduction.");
+assert(guideSubclassFeatures(kensei).some((feature) => feature.name === "Path of the Kensei"), "Path of the Kensei must remain a visible feature.");
+
+const soulKnife = resolveSubclassCatalog([
+  testSubclassRow({ subclassName: "Soul Knife", name: "Order of the Soul Knife", source: "UATheMysticClass", classSource: "UATheMysticClass", level: 1, header: null, description: "Soul Knife lore." }),
+  testSubclassRow({ subclassName: "Soul Knife", name: "Soul Knife", source: "UATheMysticClass", classSource: "UATheMysticClass", level: 1, header: 1, description: "Soul Knife feature rules." }),
+], "UATheMysticClass")[0];
+assert(subclassIntroduction(soulKnife)?.name === "Order of the Soul Knife", "Header-1 Soul Knife feature must not replace the Order of the Soul Knife lore row.");
+assert(guideSubclassFeatures(soulKnife).some((feature) => feature.name === "Soul Knife"), "Soul Knife level-1 feature must remain visible.");
+
 for (const [subclassName, introName] of [
   ["Swords", "College of Swords"],
   ["Land", "Circle of the Land"],
@@ -316,6 +330,11 @@ for (const [subclassName, introName] of [
   ["Scribes", "Order of Scribes"],
   ["Archfey", "Archfey Patron"],
   ["Spellfire", "Spellfire Sorcery"],
+  ["Draconic", "Draconic Bloodline"],
+  ["Wild", "Wild Magic"],
+  ["Chronurgy", "Chronurgy Magic"],
+  ["Graviturgy", "Graviturgy Magic"],
+  ["War", "War Magic"],
   ["Ambition (PSA)", "Ambition Domain (PSA)"],
 ]) {
   const option = resolveSubclassCatalog([

@@ -41,12 +41,13 @@ function subclassIntroductionIdentity(value) {
     .replace(/^(?:school|path|college|circle|oath|way|warrior|order)\s+of\s+(?:the\s+)?/, "");
   return identity
     .split(/\s+/)
-    .filter((token) => !["domain", "sorcery", "patron", "tradition"].includes(token))
+    .filter((token) => !["domain", "sorcery", "patron", "tradition", "magic", "bloodline"].includes(token))
     .join(" ")
     .trim();
 }
 
 function isIntroductionRow(row, subclassName) {
+  if (row?.raw_payload?.header != null) return false;
   const rowIdentity = subclassIntroductionIdentity(row?.name);
   const optionIdentity = subclassIntroductionIdentity(subclassName);
   return Boolean(rowIdentity && optionIdentity && rowIdentity === optionIdentity);
