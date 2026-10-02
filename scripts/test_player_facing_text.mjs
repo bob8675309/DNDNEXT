@@ -18,6 +18,9 @@ const importedSubclassText = [
 assert.equal(isInternalReferenceLine("Arcane Shot|Fighter|Arcane Archer|XGE|3"), true);
 assert.equal(isInternalReferenceLine("Choose Strength | Dexterity as your ability."), false);
 assert.equal(formatPlayerFacingText(importedSubclassText), "Arcane Archers weave magic into their arrows.");
+assert.equal(formatPlayerFacingText("Bear|XGE"), "");
+assert.equal(formatPlayerFacingText("Spirit Seeker|Barbarian||Totem Warrior||3"), "");
+assert.equal(formatPlayerFacingText("Friendly [Attitude] creature in an Emanation [Area of Effect]."), "Friendly creature in an Emanation.");
 assert.equal(formatPlayerFacingInline("Use {@skill Perception|PHB} to notice it."), "Use Perception to notice it.");
 
 const traits = extractSpeciesTraitDetails({

@@ -56,7 +56,7 @@ for (const token of ["classStepChoiceStateComplete", "trainingClassChoiceStateCo
 for (const token of ['from("spells_catalog")', "damage_types", "spells,"]) requireToken(guideModel, token, "class guide spell source");
 for (const token of ["SpellChoiceCard", "Spell details", "Dependent choices open", "activeClassFeatureGroups", "CompactChoicePicker", "conciseChoiceHelper", 'placement = "class"', "eligibleOptionNames", "availableOptions.length > 8", "Number(option.minLevel || 1) <= Number(level || 1)"]) requireToken(choices, token, "nested choice UI");
 for (const token of ["COMPACT_VISIBLE_SECTIONS", "Full feature rules", "class-feature-text__compact-more"]) requireToken(featureText, token, "compact feature presentation");
-for (const token of ["isSourceCode(penultimate) && isFeatureLevel(last)", "isFeatureLevel(penultimate) && isSourceCode(last)"]) requireToken(playerFacing, token, "internal source-reference sanitizer");
+for (const token of ["rawParts.length === 2", "rawParts.slice(1).some(isFeatureLevel)", "Area of Effect|Attitude"]) requireToken(playerFacing, token, "internal source-reference sanitizer");
 for (const token of ["useNpcForgeClassChoice", 'placement="training"', "eligibleExpertiseNames", "Feature-granted Training choices"]) requireToken(training, token, "Training-stage Expertise routing");
 forbidToken(abilityStep, "npc-forge-species-bonus mt-4", "Abilities main-workspace Species Bonus duplication");
 for (const token of ["speciesCharacterSizeOptions", 'T: "Tiny"', 'S: "Small"', 'M: "Medium"', 'L: "Large"']) requireToken(speciesPresentation, token, "species source-size normalization");

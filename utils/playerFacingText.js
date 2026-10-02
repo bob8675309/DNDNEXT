@@ -41,8 +41,8 @@ export function formatPlayerFacingText(value, fallback = "") {
   const lines = String(value ?? "")
     .replace(/\r\n?/g, "\n")
     .split("\n")
-    .map((line) => isInternalReferenceLine(line) ? internalReferenceLabel(line) : line)
-    .map(cleanInlineMarkup);
+    .map(cleanInlineMarkup)
+    .filter((line) => !isInternalReferenceLine(line));
 
   const cleaned = lines
     .join("\n")

@@ -275,7 +275,7 @@ const playerFacingModule = await import(pathToFileURL(path.join(root, "utils/pla
 const subclassSpellGrants = await import(pathToFileURL(path.join(root, "utils/classes/subclassSpellGrants.js")).href);
 const { subclassSpellGrantReferences, resolveSubclassSpellGrants } = subclassSpellGrants;
 const cleanedImportedRefs = playerFacingModule.formatPlayerFacingText("Lore text.\n\nBladesong|Wizard|XPHB|Bladesinger|FRHoF|3|FRHoF\n\nSoul Knife|Mystic|UATheMysticClass|Soul Knife|UATheMysticClass|1");
-assert(cleanedImportedRefs === "Lore text.\n\nBladesong\n\nSoul Knife", "Mixed-case and long imported reference rows must collapse to player-facing labels instead of leaking source syntax.");
+assert(cleanedImportedRefs === "Lore text.", "Mixed-case and long imported source-reference rows must stay out of player-facing lore.");
 
 function testSubclassRow({ subclassName, name, level = 3, source = "TEST", classSource = "XPHB", header = null, description = "Source-backed rules.", entries = [] }) {
   return {
@@ -412,7 +412,7 @@ const resolvedSpellGrant = resolveSubclassSpellGrants(
 assert(resolvedSpellGrant?.source === "XPHB" && resolvedSpellGrant?.description === "2024.", "Subclass spell resolution must prefer the modern Profile-spellbook source when a grant omits a source.");
 
 const cleanedEmptySourceRef = playerFacingModule.formatPlayerFacingText("Rules.\n\nSpirit Seeker|Barbarian||Totem Warrior||3\n\nBear|XGE\n\nFriendly [Attitude] creature in an Emanation [Area of Effect].");
-assert(cleanedEmptySourceRef.includes("Spirit Seeker") && cleanedEmptySourceRef.includes("Bear") && !cleanedEmptySourceRef.includes("|") && !cleanedEmptySourceRef.includes("[Attitude]") && !cleanedEmptySourceRef.includes("[Area of Effect]"), "Player-facing cleanup must collapse empty-source/short imported references and strip bracketed 5etools annotations.");
+assert(cleanedEmptySourceRef === "Rules.\n\nFriendly creature in an Emanation.", "Player-facing cleanup must remove empty-source/short imported references and strip bracketed 5etools annotations.");
 
 assert(model.includes("resolveSubclassCatalog") && model.includes("const options = useMemo"), "Canonical subclass catalogue authority moved out of the existing guide model.");
 assert(model.includes("selectSubclass"), "Existing subclass persistence authority disappeared from the guide model.");
@@ -456,7 +456,7 @@ for (const token of ["map_routes", "advance_all_characters", "mappageclient", "t
 }
 
 for (const token of ["subclassOption: option", "progressionRows: model.rows || []", "currentLevel: model.currentLevel"]) assert(guide.includes(token), `Subclass inspector payload is missing ${token}`);
-for (const token of ["subclassTab", "npc-forge-subclass-inspector__tabs", "Overview", "Progression", "Spells", "subclassArtworkFor", "subclassFeatures", "subclassSpellReferences", "spellCatalog", "Subclass Spells", "Spell Details", "SpellCard", "subclassSpellWorkspaceRows", "npc-forge-subclass-inspector__spell-workspace", "npc-forge-subclass-inspector__spell-list", "npc-forge-subclass-inspector__spell-preview", "buildSubclassProgressionRows", "npc-forge-subclass-inspector__art-backdrop", "DUNAMANCY_SPELL_NAMES", "onFeatureDetail = null"]) {
+for (const token of ["subclassTab", "npc-forge-subclass-inspector__tabs", "Overview", "Progression", "Spells", "subclassArtworkFor", "subclassFeatures", "subclassSpellGrantReferences", "spellCatalog", "Subclass Spells", "Spell Details", "SpellCard", "subclassSpellWorkspaceRows", "npc-forge-subclass-inspector__spell-workspace", "npc-forge-subclass-inspector__spell-list", "npc-forge-subclass-inspector__spell-preview", "buildSubclassProgressionRows", "npc-forge-subclass-inspector__art-backdrop", "DUNAMANCY_SPELL_NAMES", "onFeatureDetail = null"]) {
   assert(featureDock.includes(token), `Tabbed subclass inspector is missing ${token}`);
 }
 assert(!featureDock.includes("subclassSpellFeatures"), "Spells tab regressed to keyword-filtered feature duplication.");
