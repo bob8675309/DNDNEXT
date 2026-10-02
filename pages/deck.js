@@ -1,13 +1,8 @@
 // /pages/deck.js
 
 import { useEffect, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "../utils/supabaseClient";
 import ItemCard from "../components/ItemCard";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
 
 export default function ItemDeckPage() {
   const [items, setItems] = useState([]);
