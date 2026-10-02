@@ -32,6 +32,8 @@ function featureDetailPayload(feature, level, selectedSubclass) {
 }
 function publishFeature(model, onFeatureDetail, feature, level) {
   const payload = featureDetailPayload(feature, level, model.selected);
+  const listedOptions = model.listedOptionsForFeature?.(feature) || [];
+  if (listedOptions.length) payload.feature.listedOptions = listedOptions;
   model.setPinned(payload.feature);
   onFeatureDetail?.(payload);
 }
