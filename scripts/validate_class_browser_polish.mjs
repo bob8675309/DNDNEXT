@@ -98,15 +98,16 @@ for (const token of [
   "class-subclass-carousel-modal__smoke-near",
   "class-subclass-carousel-card__float",
   "class-subclass-carousel-modal__flame is-flame-left-upper",
-  "model.selectSubclass(option)",
+  "function confirmHeroSelection()",
+  "model.selectSubclass(heroOption)",
+  "class-subclass-carousel-modal__choice-bar",
   "model?.setPreviewKey?.(option.key)",
   "class-subclass-selected-card",
   ">Change Subclass<",
-  "onDoubleClick={() => setSelectorOpen(true)}",
 ]) assert(selector.includes(token), `Reference-scene subclass selector is missing ${token}`);
 
-assert((selector.match(/model\.selectSubclass\(option\)/g) || []).length === 1, "Carousel motion must not create a second subclass-selection authority.");
-assert(!selector.includes('model?.setPreviewKey?.(heroOption.key)'), "Front-most carousel position must not auto-select or auto-preview as player intent.");
+assert((selector.match(/model\.selectSubclass\(heroOption\)/g) || []).length === 1, "Carousel must retain one explicit subclass-confirmation authority.");
+assert(selector.includes("model?.setPreviewKey?.(option.key)") && selector.includes("function confirmHeroSelection()"), "Card click must preview first and explicit confirmation must own persistence.");
 assert(!selector.includes("browsedOption"), "Stale browsed-card auto-follow state must remain removed.");
 assert(!selector.includes("class-subclass-carousel-modal__details"), "Old dossier panel must not cover the recreated reference scene.");
 assert(selector.includes("class-subclass-carousel-modal__smoke-near"), "Floating ruined-library target must retain the near smoke depth layer.");
