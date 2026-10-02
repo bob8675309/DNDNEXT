@@ -1,12 +1,28 @@
 # Subclass Tarot Selector — Reference Scene Rebuild Checklist
 
-Updated: 2026-09-22
+Updated: 2026-10-01
 
-Status: **active implementation checklist**
+Status: **historical implementation checklist / current regression reference**
 
 Branch: `agent/subclass-tarot-scene-rebuild-20260922`
 
-Visual source of truth: Paul's supplied cathedral/runic-table reference screenshot.
+Historical visual source: Paul's supplied cathedral/runic-table reference screenshot.
+
+Current visual authority: `Character_Forge_Subclass_Tarot_Table_Contact_Handoff.md` — floating Tarot carousel in a smoky ruined gothic library. The physical table/contact requirements below are retained as implementation history and must not override the current handoff.
+
+## 2026-10-01 current override
+
+PR #199 remains the active branch for this work.
+
+- branch: `agent/subclass-tarot-scene-rebuild-20260922`;
+- validated pre-documentation head: `89197828b6ae9945ac436da4339ef910c379eb4c`;
+- **11/11** triggered workflows passed;
+- Vercel `3KoiKyA8wXeWPkMfVME5CFfXjToD`: **READY / success**;
+- current Class step uses independent Subclass Codex and Class Feature panels;
+- subclass inspection routes through `onSubclassDetail`;
+- feature inspection routes through `onFeatureDetail`;
+- both floating windows may remain open simultaneously;
+- the floating ruined-library presentation supersedes the physical runic-table/contact visual target below.
 
 ## Locked target
 
@@ -213,8 +229,9 @@ The artwork itself remains unchanged for all subclass Tarot fronts.
 - [x] Validate all 152 normalized approved Tarot concepts remain installed/mapped (149 current runtime-visible choices).
 - [x] Validate safe fallback for genuinely future/unknown subclasses.
 - [x] Run Class browser/subclass validators on PR #199; all focused selector/Class validators pass.
-- [ ] Run relevant Forge foundation/progression regressions.
-- [ ] Run production build.
+- [x] Reconcile stale split-panel literals in `validate_class_browser_polish.mjs`, `validate_pr170_browser_smoke_corrections.mjs`, `validate_class_subclass_browser.mjs`, and `validate_artificer_mockup_lock.mjs`.
+- [x] Run relevant Forge foundation/progression regressions; all 11 triggered workflows pass at the validated pre-documentation head.
+- [x] Run the exact-head Vercel production-equivalent build; deployment is READY/success.
 - [x] Confirm PR #199 changed-file scope contains no protected map/town/tactical/crafting/inventory/merchant/economy/Supabase runtime files.
 
 ## Phase 10 — browser acceptance matrix
