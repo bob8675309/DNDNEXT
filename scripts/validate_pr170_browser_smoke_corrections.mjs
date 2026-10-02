@@ -25,6 +25,7 @@ const actionHook = read("hooks/useNpcSheetActionData.js");
 const restSyncBridge = read("components/CharacterSheetRestSyncBridge.js");
 const astralPanel = read("components/CharacterAstralTrancePanel.js");
 const login = read("pages/login.js");
+const resetPassword = read("pages/reset-password.js");
 const app = read("pages/_app.js");
 const css = read("styles/character-forge-smoke-fixes.css");
 
@@ -73,12 +74,15 @@ for (const token of ['import CharacterSheetRestSyncBridge from "./CharacterSheet
 
 for (const token of ['import { supabase } from "../utils/supabaseClient";', "resolveAdminAfterLogin", "Promise.race", "timeoutResult(1500)", "timeoutResult(1000)", 'void router.replace(isAdmin ? "/admin" : "/profile")']) assert.ok(login.includes(token), `login resilience missing ${token}`);
 assert.ok(!login.includes("createClient("), "login page must use the shared Supabase singleton");
+for (const token of ["Forgot password?", "resetPasswordForEmail", "/reset-password", "Password reset email sent"]) assert.ok(login.includes(token), `login password recovery missing ${token}`);
+for (const token of ['import { supabase } from "../utils/supabaseClient";', "PASSWORD_RECOVERY", "getSession()", "updateUser({ password: newPassword })", "MIN_PASSWORD_LENGTH = 8", "Return to sign in"]) assert.ok(resetPassword.includes(token), `reset-password flow missing ${token}`);
+assert.ok(!resetPassword.includes("createClient("), "reset-password page must use the shared Supabase singleton");
 
 assert.ok(app.includes('import "../styles/character-forge-smoke-fixes.css";'), "smoke correction stylesheet is not loaded");
 for (const token of ["npc-forge-body.is-player-mode.npc-forge-step-2", "overflow-y: auto", "npc-forge-class-feature-dock", "position: sticky", "height: auto", "npc-forge-rule-copy", "npc-forge-source-choice-group.is-required", "rgba(255, 255, 255, .82)", "npc-forge-background-spell-name", "#090c14", "z-index: 120"]) assert.ok(css.includes(token), `smoke correction CSS missing ${token}`);
 assert.ok(!css.includes("npc-forge-step-2 > .npc-forge-workspace {\n  align-self: stretch;\n  height: 100%;"), "Class workspace must not cap sticky range at viewport height");
 
-for (const protectedSource of [classFeatureText, classGuide, classGuideModel, classFeatureDock, context, embeddedSourceChoices, backgroundMechanicsText, planHelperText, sourceChoices, sourceChoiceDock, actionHook, restSyncBridge, astralPanel, login, speciesPresentationText, speciesRuntimeText, css]) {
+for (const protectedSource of [classFeatureText, classGuide, classGuideModel, classFeatureDock, context, embeddedSourceChoices, backgroundMechanicsText, planHelperText, sourceChoices, sourceChoiceDock, actionHook, restSyncBridge, astralPanel, login, resetPassword, speciesPresentationText, speciesRuntimeText, css]) {
   assert.ok(!/MapPageClient|map_routes|map_route_points|advance_all_characters|route_segment_progress/.test(protectedSource), "smoke correction crossed protected map/travel boundaries");
 }
 
