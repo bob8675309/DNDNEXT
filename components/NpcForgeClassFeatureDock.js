@@ -20,6 +20,15 @@ function safeText(value) {
   return String(value ?? "").trim();
 }
 
+function listedOptionRequirementLabel(option = {}) {
+  const parts = [];
+  const minLevel = Number(option?.minLevel || 0);
+  if (minLevel > 0) parts.push(`Warlock level ${minLevel}+`);
+  if (safeText(option?.requires)) parts.push(`Requires ${safeText(option.requires)}`);
+  if (option?.repeatable) parts.push("Repeatable");
+  return parts.length ? parts.join(" · ") : "No prerequisite";
+}
+
 const DUNAMANCY_SPELL_NAMES = [
   "Sapping Sting",
   "Gift of Alacrity",
@@ -169,11 +178,13 @@ function defaultDockPosition(panelRole = "feature") {
   const forge = document.querySelector(".unified-player-character-forge")?.getBoundingClientRect();
   const requestedWidth = panelRole === "codex" ? CODEX_DOCK_WIDTH : FEATURE_DOCK_WIDTH;
   const width = Math.min(requestedWidth, Math.max(DOCK_MIN_WIDTH, window.innerWidth - (DOCK_GUTTER * 2)));
-  const rightAlignedLeft = forge ? forge.right - width - 24 : window.innerWidth - width - 24;
+  const rightAlignedLeft = window.innerWidth - width - 28;
   const leftAlignedLeft = forge ? forge.left + 24 : 24;
   return boundedDockPosition({
     left: panelRole === "codex" ? rightAlignedLeft : leftAlignedLeft,
-    top: forge ? forge.top + Math.min(210, Math.max(118, forge.height * .2)) : 112,
+    top: panelRole === "codex"
+      ? (forge ? forge.top + 46 : 72)
+      : (forge ? forge.top + Math.min(210, Math.max(118, forge.height * .2)) : 112),
     width,
   });
 }
@@ -189,6 +200,7 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
   const [overviewFeatureKey, setOverviewFeatureKey] = useState("");
   const [selectedSubclassSpellKey, setSelectedSubclassSpellKey] = useState("");
   const feature = detail?.type === "classFeature" ? detail.feature : null;
+  const listedOptions = Array.isArray(feature?.listedOptions) ? feature.listedOptions : [];
   const subclassOption = detail?.subclassOption?.key ? detail.subclassOption : null;
   const subclassFeatures = (subclassOption?.features || []).filter((entry) => !entry?.isIntroduction);
   const subclassIntro = (subclassOption?.features || []).find((entry) => entry?.isIntroduction && safeText(entry?.description)) || null;
@@ -452,6 +464,15 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
             {isListedOption && parentFeatureName ? <span>From {parentFeatureName}</span> : null}
           </div>
           <div className="npc-forge-class-feature-dock__summary"><ClassFeatureText text={description} entries={feature?.entries || null} compact /></div>
+          {listedOptions.length ? <section className="npc-forge-class-feature-dock__listed-options" aria-label={`${title} options`}>
+            <div className="npc-forge-class-feature-dock__listed-options-head"><span>Available options</span><strong>{listedOptions.length}</strong></div>
+            <div className="npc-forge-class-feature-dock__listed-options-scroll">
+              {listedOptions.map((option) => <article key={`${option.source}:${option.name}`} className="npc-forge-class-feature-dock__listed-option">
+                <div><strong>{option.name}</strong><span>{listedOptionRequirementLabel(option)}</span></div>
+                {option.summary ? <p>{option.summary}</p> : null}
+              </article>)}
+            </div>
+          </section> : null}
           {isOverview && overviewHighlights.length ? <div className="npc-forge-class-feature-dock__highlights"><strong>Feature Highlights</strong><ul>{overviewHighlights.map((name) => <li key={name}>{name}</li>)}</ul></div> : null}
           {canonicalItem ? <div className="npc-forge-class-feature-dock__item-card" aria-label={`${title} canonical item card`}><ItemCard item={canonicalItem} /></div> : null}
           {!feature && !selectedClass ? <small>Feature descriptions will appear here as you move through the progression table or detailed guide.</small> : null}
@@ -486,6 +507,16 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
         .npc-forge-class-feature-dock__routing-note,.npc-forge-class-feature-dock__listed-note{margin-top:1px;padding:10px 11px;border:1px solid rgba(88,214,199,.2);border-left:3px solid #58d6c7;border-radius:8px;color:rgba(226,255,250,.84);background:linear-gradient(90deg,rgba(18,70,73,.2),rgba(8,20,28,.35));font-size:.61rem;line-height:1.52}
         .npc-forge-class-feature-dock__listed-note{border-color:rgba(168,108,255,.2);border-left-color:#a86cff;background:rgba(126,72,199,.075)}
         .npc-forge-class-feature-dock__routing-note strong,.npc-forge-class-feature-dock__listed-note strong{color:#d8fff9}
+        .npc-forge-class-feature-dock__listed-options{display:grid;gap:8px;min-height:0;padding:10px;border:1px solid rgba(213,163,74,.22);border-radius:10px;background:rgba(9,13,20,.72)}
+        .npc-forge-class-feature-dock__listed-options-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:7px;border-bottom:1px solid rgba(213,163,74,.18)}
+        .npc-forge-class-feature-dock__listed-options-head>span{color:#e1ba71;font-size:.72rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+        .npc-forge-class-feature-dock__listed-options-head>strong{display:grid;place-items:center;min-width:28px;height:24px;padding:0 7px;border:1px solid rgba(213,163,74,.28);border-radius:999px;color:#f2d394;background:rgba(86,56,20,.22);font-size:.66rem}
+        .npc-forge-class-feature-dock__listed-options-scroll{display:grid;gap:7px;max-height:min(46dvh,470px);overflow:auto;padding-right:4px;scrollbar-width:thin;scrollbar-color:rgba(213,163,74,.38) rgba(255,255,255,.03)}
+        .npc-forge-class-feature-dock__listed-option{display:grid;gap:5px;padding:9px 10px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:linear-gradient(135deg,rgba(31,21,43,.5),rgba(9,15,22,.66))}
+        .npc-forge-class-feature-dock__listed-option>div{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+        .npc-forge-class-feature-dock__listed-option strong{color:#fff1cf;font:700 .92rem/1.25 Georgia,serif}
+        .npc-forge-class-feature-dock__listed-option span{color:#d3b77e;font-size:.64rem;font-weight:700}
+        .npc-forge-class-feature-dock__listed-option p{margin:0;color:rgba(255,255,255,.88);font-size:.84rem;line-height:1.52}
         .npc-forge-class-feature-dock__drag-cue{justify-self:end;color:rgba(255,255,255,.46);font-size:.49rem;letter-spacing:.025em}
         .npc-forge-class-feature-dock__drag-cue span{color:#8ae7db;font-size:.72rem}
         .npc-forge-class-feature-dock__item-card{margin-top:2px}
@@ -499,9 +530,9 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
         .npc-forge-class-feature-dock.is-feature-panel .npc-forge-class-feature-dock__title-group>h3{font-size:1.12rem!important;line-height:1.3!important}
         .npc-forge-class-feature-dock.is-feature-panel .npc-forge-class-feature-dock__summary .class-feature-text,
         .npc-forge-class-feature-dock.is-feature-panel .npc-forge-class-feature-dock__summary p,
-        .npc-forge-class-feature-dock.is-feature-panel .npc-forge-class-feature-dock__summary li{font-size:1.08rem!important;line-height:1.72!important}
+        .npc-forge-class-feature-dock.is-feature-panel .npc-forge-class-feature-dock__summary li{font-size:1.22rem!important;line-height:1.68!important;color:#fff!important}
         .npc-forge-class-feature-dock.is-feature-panel .npc-forge-class-feature-dock__summary h4,
-        .npc-forge-class-feature-dock.is-feature-panel .npc-forge-class-feature-dock__summary h5{font-size:1.04rem!important;line-height:1.4!important}
+        .npc-forge-class-feature-dock.is-feature-panel .npc-forge-class-feature-dock__summary h5{font-size:1.14rem!important;line-height:1.4!important}
         .npc-forge-class-feature-dock.is-feature-panel .npc-forge-class-feature-dock__meta>span{font-size:.6rem!important}
         .npc-forge-class-feature-dock.is-feature-panel .npc-forge-class-feature-dock__routing-note,
         .npc-forge-class-feature-dock.is-feature-panel .npc-forge-class-feature-dock__listed-note{font-size:.72rem!important;line-height:1.58!important}
