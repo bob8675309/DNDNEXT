@@ -10,14 +10,13 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "@/utils/supabaseClient";
 import ItemCard from "@/components/ItemCard";
 import EquipmentDiagram, { EQUIPMENT_SLOTS, inferEquipmentSlot } from "@/components/EquipmentDiagram";
 import OfferTradeButton from "@/components/OfferTradeButton";
 import TradeRequestsPanel from "@/components/TradeRequestsPanel";
 import useWallet from "@/utils/useWallet";
 
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
 const OWNER_TYPES = ["player", "npc", "merchant"];
 
