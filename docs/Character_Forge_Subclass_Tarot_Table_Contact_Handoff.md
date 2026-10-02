@@ -1,14 +1,48 @@
 # Character Forge Subclass Tarot — Floating Gothic Library Handoff
 
-Updated: 2026-09-27
+Updated: 2026-10-01
 
 Status: **implemented runtime checkpoint / browser acceptance pending**
 
 > Legacy filename note: this document keeps the older `Table_Contact` filename so existing links do not break. The physical runic-table direction is retired.
 
 Branch: `agent/subclass-tarot-scene-rebuild-20260922`  
-Pull request: **#199 — Rebuild subclass Tarot selector**  
-Validated runtime head before this documentation commit: `7ec85dd495674f77ec38946a921512cc9c0f70ae`
+Pull request: **#199 — Polish floating ruined-library subclass Tarot selector**  
+Validated pre-documentation head: `89197828b6ae9945ac436da4339ef910c379eb4c`
+
+## 2026-10-01 Class-panel / validator checkpoint
+
+The Class step now separates subclass inspection from ordinary feature inspection.
+
+Independent state:
+
+- `classFeatureDetail` — movable **Class Feature** panel;
+- `subclassCodexDetail` — movable **Subclass Codex**.
+
+Independent routing:
+
+- subclass card/selector inspection → `onSubclassDetail`;
+- class/subclass feature bubbles and Codex Progression pills → `onFeatureDetail`.
+
+Both windows can be open at the same time. Closing, moving, or changing Feature content must not close/replace the Codex, and opening/changing the Codex must not replace Feature content.
+
+Current desktop readability targets:
+
+- Class Feature panel: about **520px**;
+- Subclass Codex: about **720px**;
+- Feature rules copy uses the larger readable treatment;
+- Codex keeps Overview, Progression, Features, Lore, and Spells tabs.
+
+Validator drift exposed by this architecture change is repaired. At `89197828b6ae9945ac436da4339ef910c379eb4c`:
+
+- `Validate Class browser polish`: **PASS**;
+- `Validate PR170 browser smoke corrections`: **PASS**;
+- `Validate Artificer Magic Item Plans`: **PASS**;
+- all other triggered Forge checks: **PASS**;
+- total triggered workflows: **11/11 PASS**;
+- Vercel deployment `3KoiKyA8wXeWPkMfVME5CFfXjToD`: **READY / success**.
+
+The validator repair did not restore the retired shared callback. It explicitly protects the split Codex/Feature model.
 
 ## Superseding decision
 
