@@ -586,7 +586,7 @@ export default function ClassSubclassSection({
 
   return (
     <>
-      <section className={`npc-forge-class-guide__subclasses is-compact class-subclass-section is-card-launcher${detailed ? " is-detailed" : ""}${required && !selected ? " is-required" : ""}`}>
+      <section className={`npc-forge-class-guide__subclasses is-compact class-subclass-section is-card-launcher${selected ? " has-selection" : ""}${detailed ? " is-detailed" : ""}${required && !selected ? " is-required" : ""}`}>
         {selected ? (
           <div className="class-subclass-selected-card-shell">
             <span className="class-subclass-selected-card__art" aria-hidden="true">
