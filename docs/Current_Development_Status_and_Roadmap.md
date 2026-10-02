@@ -1,10 +1,26 @@
 # DNDNext Current Development Status and Roadmap
 
-Last reconciled: 2026-08-14
+Last reconciled: 2026-10-01
 
 This is the current high-level handoff for DNDNext. It reconciles the living roadmap, phase ledgers, repository source, GitHub state, and deployed Supabase state. Historical phase ledgers remain useful implementation records, but this document controls current status when an older status header or unchecked master-roadmap task conflicts with deployed evidence.
 
-## 2026-08-14 active-work override
+## 2026-10-01 active-work override
+
+The detailed roadmap below remains architecture/history. Current active work is PR #199 on `agent/subclass-tarot-scene-rebuild-20260922`.
+
+Validated pre-documentation checkpoint:
+
+- PR #199 head: `89197828b6ae9945ac436da4339ef910c379eb4c`;
+- PR state: **open / mergeable / unmerged**;
+- GitHub Actions: **11/11 successful**;
+- Vercel deployment `3KoiKyA8wXeWPkMfVME5CFfXjToD`: **READY / success**;
+- no Supabase migration/data change.
+
+The current Class/subclass work is presentation-only: floating ruined-library Tarot carousel, independent Subclass Codex, and independent Class Feature panel. The two floating windows may coexist and use separate callbacks/state. Subclass persistence, progression, source authority, and protected map/town/tactical/crafting systems remain unchanged.
+
+Next acceptance work is browser validation of readability/coexistence, Wizard and small catalogues, interaction motion, responsive layouts, and reduced motion. Do not merge PR #199 without explicit user approval.
+
+## 2026-08-14 historical active-work checkpoint
 
 The detailed tactical and platform roadmap below remains valid history, but the active development line has moved forward:
 
