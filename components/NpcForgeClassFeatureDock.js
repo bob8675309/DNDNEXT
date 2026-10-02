@@ -6,6 +6,7 @@ import SpellCard from "./SpellCard";
 import { formatPlayerFacingText } from "../utils/playerFacingText";
 import { classPresentationSummary } from "../utils/classes/classPresentation";
 import { subclassArtworkFor, handleSubclassArtworkError } from "../utils/classes/subclassArtwork";
+import { normalizeSubclassSpellName, resolveSubclassSpellGrants, subclassSpellGrantReferences } from "../utils/classes/subclassSpellGrants";
 
 const DOCK_GUTTER = 12;
 const DOCK_MIN_WIDTH = 300;
@@ -17,10 +18,6 @@ const DOCK_VISIBLE_HEADER = 60;
 
 function safeText(value) {
   return String(value ?? "").trim();
-}
-
-function normalizedSpellName(value) {
-  return safeText(value).toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 }
 
 const DUNAMANCY_SPELL_NAMES = [
@@ -63,72 +60,11 @@ function subclassHasDunamancyAccess(intro = null) {
   return /dunamancy spells/i.test(sourceText);
 }
 
-function collectSpellTokens(value, unlockLabel = "", output = []) {
-  if (typeof value === "string") {
-    const pattern = /\{@spell\s+([^}|]+)(?:\|([^}|]+))?[^}]*\}/gi;
-    let match = pattern.exec(value);
-    while (match) {
-      output.push({ name: safeText(match[1]), source: safeText(match[2]), unlockLabel: safeText(unlockLabel) });
-      match = pattern.exec(value);
-    }
-    return output;
-  }
-  if (Array.isArray(value)) {
-    for (const entry of value) collectSpellTokens(entry, unlockLabel, output);
-    return output;
-  }
-  if (!value || typeof value !== "object") return output;
-  if (Array.isArray(value.rows)) {
-    for (const row of value.rows) {
-      const rowLabel = Array.isArray(row) ? safeText(row[0]) : unlockLabel;
-      if (Array.isArray(row)) row.slice(1).forEach((cell) => collectSpellTokens(cell, rowLabel || unlockLabel, output));
-      else collectSpellTokens(row, unlockLabel, output);
-    }
-  }
-  for (const [key, entry] of Object.entries(value)) {
-    if (key === "rows") continue;
-    collectSpellTokens(entry, unlockLabel, output);
-  }
-  return output;
-}
-
-function subclassSpellGrantLike(feature = {}) {
-  const name = safeText(feature?.name);
-  const description = safeText(feature?.description);
-  return /\bspells?\b/i.test(name)
-    || /\b(?:always have|learn|gain|know|prepare|prepared|added to)\b[^.!?]{0,90}\bspells?\b/i.test(description)
-    || /\bspells?\b[^.!?]{0,90}\b(?:prepared|known|spell list)\b/i.test(description);
-}
-
-function subclassSpellReferences(features = []) {
-  const refs = [];
-  for (const feature of features) {
-    if (!subclassSpellGrantLike(feature)) continue;
-    collectSpellTokens(feature?.entries, "", refs);
-  }
-  const seen = new Set();
-  return refs.filter((ref) => {
-    const key = normalizedSpellName(ref.name);
-    if (!key || seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
-
-function resolveSubclassSpells(refs = [], catalog = []) {
-  const byName = new Map();
-  for (const spell of catalog) {
-    const key = normalizedSpellName(spell?.name);
-    if (key && !byName.has(key)) byName.set(key, spell);
-  }
-  return refs.map((ref) => ({ ...(byName.get(normalizedSpellName(ref.name)) || {}), ...ref, name: ref.name }));
-}
-
 function subclassSpellWorkspaceRows(subclassSpells = [], dunamancySpells = []) {
   const rows = [];
   const seen = new Set();
   const append = (spell, grantType) => {
-    const identity = normalizedSpellName(spell?.name);
+    const identity = normalizeSubclassSpellName(spell?.name);
     if (!identity || seen.has(identity)) return;
     seen.add(identity);
     rows.push({
@@ -258,10 +194,10 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
   const subclassIntro = (subclassOption?.features || []).find((entry) => entry?.isIntroduction && safeText(entry?.description)) || null;
   const isSubclassInspector = Boolean(subclassOption);
   const spellCatalog = Array.isArray(detail?.spellCatalog) ? detail.spellCatalog : [];
-  const subclassSpellRefs = subclassSpellReferences(subclassFeatures);
-  const subclassSpells = resolveSubclassSpells(subclassSpellRefs, spellCatalog);
+  const subclassSpellRefs = subclassSpellGrantReferences(subclassOption?.features || []);
+  const subclassSpells = resolveSubclassSpellGrants(subclassSpellRefs, spellCatalog);
   const dunamancySpells = subclassHasDunamancyAccess(subclassIntro)
-    ? resolveSubclassSpells(DUNAMANCY_SPELL_NAMES.map((name) => ({ name, source: "EGW", unlockLabel: "Dunamancy" })), spellCatalog)
+    ? resolveSubclassSpellGrants(DUNAMANCY_SPELL_NAMES.map((name) => ({ name, source: "EGW", unlockLabel: "Dunamancy", grantKind: "dunamancy" })), spellCatalog)
     : [];
   const subclassSpellRows = subclassSpellWorkspaceRows(subclassSpells, dunamancySpells);
   const selectedSubclassSpellRow = subclassSpellRows.find((row) => row.key === selectedSubclassSpellKey) || subclassSpellRows[0] || null;
@@ -589,6 +525,10 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
         .npc-forge-subclass-inspector__class-spells>details{border:1px solid rgba(209,158,67,.18);border-radius:7px;background:rgba(9,16,20,.66);overflow:hidden}.npc-forge-subclass-inspector__class-spells>details>summary{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;cursor:pointer;list-style:none}.npc-forge-subclass-inspector__class-spells>details>summary::-webkit-details-marker{display:none}.npc-forge-subclass-inspector__class-spells>details>summary strong{color:#ead6af;font-size:.7rem}.npc-forge-subclass-inspector__class-spells>details>summary span{display:grid;place-items:center;min-width:24px;height:22px;padding:0 6px;border:1px solid rgba(209,158,67,.26);border-radius:999px;color:#d9b66f;font-size:.56rem}.npc-forge-subclass-inspector__spell-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:0 10px 11px}.npc-forge-subclass-inspector__spell-grid>div{display:grid;gap:2px;padding:7px 8px;border:1px solid rgba(255,255,255,.07);border-radius:6px;background:rgba(255,255,255,.025)}.npc-forge-subclass-inspector__spell-grid strong{color:#eee0c4;font-size:.64rem}.npc-forge-subclass-inspector__spell-grid small{color:rgba(234,221,196,.52);font-size:.52rem}
 
         .npc-forge-class-feature-dock.is-viewport-floating{position:fixed!important;right:auto!important;bottom:auto!important;z-index:14050!important;max-width:calc(100vw - 24px)!important;max-height:min(72dvh,calc(100dvh - var(--npc-forge-class-dock-top,112px) - 12px))!important;margin:0!important;overflow:auto!important;overscroll-behavior:contain;box-shadow:0 22px 68px rgba(0,0,0,.58),0 0 0 1px rgba(168,108,255,.22),0 0 42px rgba(126,72,199,.13)!important}
+        body > .npc-forge-class-feature-dock.is-viewport-floating.is-subclass-inspector{display:flex!important;flex-direction:column!important;overflow:hidden!important}
+        body > .npc-forge-class-feature-dock.is-viewport-floating.is-subclass-inspector .npc-forge-class-feature-dock__head{position:relative!important;top:auto!important;z-index:7!important;flex:0 0 auto}
+        body > .npc-forge-class-feature-dock.is-viewport-floating.is-subclass-inspector .npc-forge-class-feature-dock__body{min-height:0;flex:1 1 auto;overflow:auto!important;overscroll-behavior:contain}
+        body > .npc-forge-class-feature-dock.is-viewport-floating.is-subclass-inspector .npc-forge-subclass-inspector__tabs{position:sticky;top:0;z-index:6}
 
         @media(min-width:901px){
           .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-class{position:relative;isolation:isolate;background:radial-gradient(circle at 76% 16%,rgba(122,70,206,.16),transparent 30%),radial-gradient(circle at 18% 76%,rgba(67,184,177,.07),transparent 31%),linear-gradient(116deg,rgba(6,11,25,.995),rgba(9,12,28,.985) 50%,rgba(11,13,31,.995))!important}

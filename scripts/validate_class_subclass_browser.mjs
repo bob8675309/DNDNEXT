@@ -17,6 +17,7 @@ const tarotCss = read("styles/character-forge-subclass-tarot-layout.css");
 const featureDock = read("components/NpcForgeClassFeatureDock.js");
 const forgeSteps = read("components/NpcForgeStepContent.js");
 const playerFacingText = read("utils/playerFacingText.js");
+const subclassSpellGrantsSource = read("utils/classes/subclassSpellGrants.js");
 
 for (const token of [
   'import ClassSubclassSection from "./ClassSubclassSection"',
@@ -271,10 +272,12 @@ for (const token of ['wild: "wild-magic"', '"wild-magic": "wild-magic"']) {
 const subclassCompatibility = await import(pathToFileURL(path.join(root, "utils/classes/subclassCompatibility.js")).href);
 const { resolveSubclassCatalog, guideSubclassFeatures, subclassIntroduction } = subclassCompatibility;
 const playerFacingModule = await import(pathToFileURL(path.join(root, "utils/playerFacingText.js")).href);
+const subclassSpellGrants = await import(pathToFileURL(path.join(root, "utils/classes/subclassSpellGrants.js")).href);
+const { subclassSpellGrantReferences, resolveSubclassSpellGrants } = subclassSpellGrants;
 const cleanedImportedRefs = playerFacingModule.formatPlayerFacingText("Lore text.\n\nBladesong|Wizard|XPHB|Bladesinger|FRHoF|3|FRHoF\n\nSoul Knife|Mystic|UATheMysticClass|Soul Knife|UATheMysticClass|1");
-assert(cleanedImportedRefs === "Lore text.", "Mixed-case and long imported source codes must be stripped from player-facing feature/lore text.");
+assert(cleanedImportedRefs === "Lore text.\n\nBladesong\n\nSoul Knife", "Mixed-case and long imported reference rows must collapse to player-facing labels instead of leaking source syntax.");
 
-function testSubclassRow({ subclassName, name, level = 3, source = "TEST", classSource = "XPHB", header = null, description = "Source-backed rules." }) {
+function testSubclassRow({ subclassName, name, level = 3, source = "TEST", classSource = "XPHB", header = null, description = "Source-backed rules.", entries = [] }) {
   return {
     feature_type: "subclass",
     class_key: "test",
@@ -285,7 +288,7 @@ function testSubclassRow({ subclassName, name, level = 3, source = "TEST", class
     class_source: classSource,
     level,
     description,
-    entries: [],
+    entries,
     raw_payload: { header },
   };
 }
@@ -326,6 +329,16 @@ const soulKnife = resolveSubclassCatalog([
 assert(subclassIntroduction(soulKnife)?.name === "Order of the Soul Knife", "Header-1 Soul Knife feature must not replace the Order of the Soul Knife lore row.");
 assert(guideSubclassFeatures(soulKnife).some((feature) => feature.name === "Soul Knife"), "Soul Knife level-1 feature must remain visible.");
 
+const knowledgeChoices = resolveSubclassCatalog([
+  testSubclassRow({ subclassName: "Knowledge", name: "Knowledge Domain", source: "FRHoF", classSource: "XPHB", description: "Modern Knowledge lore." }),
+  testSubclassRow({ subclassName: "Knowledge", name: "Blessings of Knowledge", source: "FRHoF", classSource: "XPHB", description: "Modern Knowledge rules." }),
+  testSubclassRow({ subclassName: "Knowledge", name: "Knowledge Domain", source: "PHB", classSource: "PHB", level: 1, description: "Legacy Knowledge lore." }),
+  testSubclassRow({ subclassName: "Knowledge", name: "Blessings of Knowledge", source: "PHB", classSource: "PHB", level: 1, header: 1, description: "Legacy Knowledge rules." }),
+  testSubclassRow({ subclassName: "Knowledge (PSA)", name: "Knowledge Domain (PSA)", source: "PSA", classSource: "XPHB", description: "", entries: [] }),
+  testSubclassRow({ subclassName: "Knowledge (PSA)", name: "Knowledge Domain (PSA)", source: "PSA", classSource: "PHB", level: 1, description: "Setting-variant lore." }),
+], "XPHB");
+assert(knowledgeChoices.length === 1 && knowledgeChoices[0].name === "Knowledge" && knowledgeChoices[0].source === "FRHoF", "Complete exact-ruleset Knowledge must beat legacy/empty placeholders, and duplicate Knowledge (PSA) must stay hidden.");
+
 for (const [subclassName, introName] of [
   ["Swords", "College of Swords"],
   ["Land", "Circle of the Land"],
@@ -348,6 +361,58 @@ for (const [subclassName, introName] of [
   assert(subclassIntroduction(option)?.name === introName, `Wrapped subclass introduction identity failed for ${subclassName}: ${introName}`);
   assert(guideSubclassFeatures(option).some((feature) => feature.name === `${subclassName} Feature`), `Null-header feature was incorrectly hidden for ${subclassName}`);
 }
+
+const twilightGrantRows = [
+  testSubclassRow({
+    subclassName: "Twilight",
+    name: "Twilight Domain",
+    source: "TCE",
+    classSource: "PHB",
+    level: 1,
+    entries: [{
+      type: "table",
+      caption: "Twilight Domain Spells",
+      colLabels: ["Cleric Level", "Spells"],
+      rows: [
+        ["1st", "{@spell faerie fire}, {@spell sleep}"],
+        ["3rd", "{@spell moonbeam}, {@spell see invisibility}"],
+        ["5th", "{@spell aura of vitality}, {@spell Leomund's tiny hut}"],
+        ["7th", "{@spell aura of life}, {@spell greater invisibility}"],
+        ["9th", "{@spell circle of power}, {@spell mislead}"],
+      ],
+    }],
+  }),
+];
+const twilightRefs = subclassSpellGrantReferences(twilightGrantRows);
+assert(twilightRefs.length === 10 && twilightRefs.some((spell) => spell.name === "mislead"), "Intro-embedded legacy subclass spell tables must populate the Codex Spells tab.");
+
+const directGrantRefs = subclassSpellGrantReferences([
+  testSubclassRow({ subclassName: "Wild Heart", name: "Animal Speaker", entries: ["You can cast the {@spell Beast Sense|XPHB} and {@spell Speak with Animals|XPHB} spells but only as Rituals."] }),
+  testSubclassRow({ subclassName: "Wild Heart", name: "Nature Speaker", level: 10, header: 2, entries: ["You can cast the {@spell Commune with Nature|XPHB} spell but only as a Ritual."] }),
+  testSubclassRow({ subclassName: "Sun Soul", name: "Searing Arc Strike", level: 6, header: 2, entries: ["You can spend 2 Focus Points to cast the {@spell Burning Hands|XPHB} spell as a Bonus Action."] }),
+]);
+for (const spell of ["Beast Sense", "Speak with Animals", "Commune with Nature", "Burning Hands"]) {
+  assert(directGrantRefs.some((entry) => entry.name === spell), `Direct subclass spell grant missing ${spell}`);
+}
+
+const falseGrantRefs = subclassSpellGrantReferences([
+  testSubclassRow({ subclassName: "Zealot", name: "Warrior of the Gods", header: 1, entries: ["If a spell, such as {@spell raise dead}, restores you to life, its caster needs no Material components."] }),
+  testSubclassRow({ subclassName: "Scribes", name: "Manifest Mind", level: 6, header: 2, entries: ["The spectral mind ends if someone casts {@spell dispel magic} on it."] }),
+  testSubclassRow({ subclassName: "Hunter", name: "Evasion", level: 15, header: 2, entries: ["You evade effects such as a {@spell lightning bolt} spell."] }),
+]);
+assert(falseGrantRefs.length === 0, "Incidental spell references must not be presented as subclass-granted spells.");
+
+const resolvedSpellGrant = resolveSubclassSpellGrants(
+  [{ name: "Shield", source: "", unlockLabel: "3" }],
+  [
+    { name: "Shield", source: "PHB", level: 1, description: "Legacy." },
+    { name: "Shield", source: "XPHB", level: 1, description: "2024." },
+  ],
+)[0];
+assert(resolvedSpellGrant?.source === "XPHB" && resolvedSpellGrant?.description === "2024.", "Subclass spell resolution must prefer the modern Profile-spellbook source when a grant omits a source.");
+
+const cleanedEmptySourceRef = playerFacingModule.formatPlayerFacingText("Rules.\n\nSpirit Seeker|Barbarian||Totem Warrior||3\n\nBear|XGE\n\nFriendly [Attitude] creature in an Emanation [Area of Effect].");
+assert(cleanedEmptySourceRef.includes("Spirit Seeker") && cleanedEmptySourceRef.includes("Bear") && !cleanedEmptySourceRef.includes("|") && !cleanedEmptySourceRef.includes("[Attitude]") && !cleanedEmptySourceRef.includes("[Area of Effect]"), "Player-facing cleanup must collapse empty-source/short imported references and strip bracketed 5etools annotations.");
 
 assert(model.includes("resolveSubclassCatalog") && model.includes("const options = useMemo"), "Canonical subclass catalogue authority moved out of the existing guide model.");
 assert(model.includes("selectSubclass"), "Existing subclass persistence authority disappeared from the guide model.");
@@ -403,9 +468,10 @@ assert(featureDock.includes("npc-forge-subclass-inspector__progression-table") &
 assert(featureDock.includes('["progression", "Progression"]') && !featureDock.includes("is-overview-progression"), "Progression must remain in its own dedicated Subclass Codex tab.");
 assert(featureDock.includes("overviewFeatureKey") && featureDock.includes("npc-forge-subclass-inspector__overview-feature-index") && featureDock.includes("Back to lore"), "Overview must keep the right-side subclass feature index and swap the left lore panel into feature details in place.");
 assert(featureDock.includes('onClick={() => onFeatureDetail?.({ type: "classFeature"') && forgeSteps.includes("onFeatureDetail={setClassFeatureDetail}"), "Codex progression pills must route into the independent Feature panel.");
-assert(featureDock.includes("this subclass has access to dunamancy spells") && featureDock.includes("subclassHasDunamancyAccess"), "Dunamancy access must move out of lore and into the Spells tab.");
-assert(featureDock.includes("subclassSpellGrantLike") && featureDock.includes("\\b(?:always have|learn|gain|know|prepare|prepared|added to)\\b"), "Subclass spell discovery must require whole grant verbs so words like 'again' cannot create false spell grants.");
-assert(playerFacingText.includes("/^[A-Z][A-Z0-9]{1,23}$/i"), "Player-facing reference sanitizer must recognize mixed-case/long source codes such as FRHoF and UATheMysticClass.");
+assert(featureDock.includes("this subclass has access to dunamancy spells") && featureDock.includes("subclassHasDunamancyAccess"), "Dunamancy access must remain in the Spells tab.");
+assert(featureDock.includes("subclassSpellGrantReferences(subclassOption?.features || [])") && featureDock.includes("resolveSubclassSpellGrants"), "Subclass Codex must inspect every source-backed subclass row, including intro-embedded spell tables, and resolve grants against the full spell catalogue.");
+assert(subclassSpellGrantsSource.includes("spellTable") && subclassSpellGrantsSource.includes("sentenceGrantsSpells") && subclassSpellGrantsSource.includes("prefixGrantsSpell"), "Subclass spell discovery must distinguish real table/direct grants from incidental spell mentions.");
+assert(playerFacingText.includes("internalReferenceLabel") && playerFacingText.includes("Area of Effect|Attitude"), "Player-facing sanitizer must collapse imported reference rows and remove bracketed 5etools annotations.");
 assert(featureDock.includes("width:86%") && featureDock.includes("brightness(.98)") && featureDock.includes("object-position:center top") && featureDock.includes("transform-origin:50% 0"), "Subclass Tarot backdrop must begin behind the navigation strip and reveal only the lower portion below it, keeping faces lower in the Codex crop.");
 assert(featureDock.includes("playerFacingSubclassLore") && featureDock.includes("isImportedSubclassReferenceLine") && featureDock.includes('split("|")') && featureDock.includes("parts.length >= 7 ? parts[parts.length - 2]"), "Player-facing subclass lore must strip imported subclass-reference metadata without mutating catalogue data.");
 assert(featureDock.includes("npc-forge-class-feature-dock__title-group{display:none!important}") && featureDock.includes("head-actions>em{display:none!important}"), "Subclass inspector header must stay compact and avoid repeating identity/source labels.");
@@ -420,6 +486,8 @@ assert(forgeSteps.includes('panelRole="codex" detail={subclassCodexDetail}') && 
 assert(guide.includes("onSubclassDetail") && guide.includes("onFeatureDetail") && !guide.includes("inspectSubclass(model, onFeatureDetail"), "Subclass inspection and feature detail routing must remain separate callbacks.");
 assert(featureDock.includes("FEATURE_DOCK_WIDTH = 520") && featureDock.includes("is-feature-panel") && featureDock.includes("font-size:.98rem!important"), "Feature panel must retain the wider readable desktop layout and larger rules text.");
 assert(model.includes("spellCatalog") && model.includes("allSpellCatalog: spells") && !model.includes("maxSpellLevelForProgressionRow"), "Subclass spell resolution should retain class access while exposing the full source-backed spell catalogue for special subclass access such as Dunamancy.");
+for (const token of ["area_type", "area_size", "area_unit", "material_text", "saving_throw_abilities", "attack_type", "healing_dice", "higher_level_text"]) assert(model.includes(token), `Subclass Codex spell query must retain Profile SpellCard detail field: ${token}`);
+assert(featureDock.includes("overflow:hidden!important") && featureDock.includes("flex-direction:column!important") && featureDock.includes("npc-forge-class-feature-dock__body{min-height:0;flex:1 1 auto;overflow:auto!important") && featureDock.includes("npc-forge-subclass-inspector__tabs{position:sticky;top:0"), "Codex scrolling must stay inside the body below the fixed header/tab boundary.");
 
 
 console.log("Class subclass selector validation passed: canonical authority remains in the guide model, all subclass cards stay on one free-floating parametric carousel, rear cards use the shared card back, one exact hero position owns enlarged presentation, ambient library motion is presentation-only, drag/arrow motion never persists a subclass, explicit card clicks remain the only selection path, all 151 approved normalized Tarot concepts remain installed/mapped, and future content retains safe fallback.");

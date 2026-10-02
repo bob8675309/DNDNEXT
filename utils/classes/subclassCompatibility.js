@@ -75,6 +75,14 @@ function reprintOverlap(left, right) {
   return shared / Math.min(leftNames.size, rightNames.size);
 }
 
+function featureHasPlayerFacingContent(feature = {}) {
+  return Boolean(safeText(feature?.description) || (Array.isArray(feature?.entries) && feature.entries.length));
+}
+
+function groupHasPlayerFacingContent(group = {}) {
+  return (group?.features || []).some(featureHasPlayerFacingContent);
+}
+
 function candidateScore(group, targetClassSource) {
   const exactClass = sourceKey(group.classSource) === sourceKey(targetClassSource) ? 1 : 0;
   const complete = group.describedFeatureCount > 1 ? 1 : 0;
@@ -82,11 +90,20 @@ function candidateScore(group, targetClassSource) {
 }
 
 function preferDuplicateSubclass(candidate, current, targetClassSource) {
-  // Never let a newer but incomplete placeholder hide a complete supplemental definition.
-  // Once both candidates are usable definitions, publication order decides the reprint.
+  // Compatibility placeholders must never hide a source-backed definition.
+  const candidateHasContent = groupHasPlayerFacingContent(candidate);
+  const currentHasContent = groupHasPlayerFacingContent(current);
+  if (candidateHasContent !== currentHasContent) return candidateHasContent;
+
   const candidateComplete = candidate.describedFeatureCount > 1;
   const currentComplete = current.describedFeatureCount > 1;
   if (candidateComplete !== currentComplete) return candidateComplete;
+
+  // Once both are usable, prefer the version authored for the active class ruleset.
+  const candidateExactClass = sourceKey(candidate.classSource) === sourceKey(targetClassSource);
+  const currentExactClass = sourceKey(current.classSource) === sourceKey(targetClassSource);
+  if (candidateExactClass !== currentExactClass) return candidateExactClass;
+
   const candidatePublished = sourcePublicationOrder(candidate.source);
   const currentPublished = sourcePublicationOrder(current.source);
   if (candidatePublished !== currentPublished) return candidatePublished > currentPublished;
@@ -152,7 +169,13 @@ export function resolveSubclassCatalog(featureRows = [], targetClassSource = "XP
     if (!current || preferDuplicateSubclass(group, current, targetClassSource)) preferredByIdentity.set(identity, group);
   }
 
-  const candidates = [...preferredByIdentity.values()];
+  const contentCandidates = [...preferredByIdentity.values()].filter(groupHasPlayerFacingContent);
+  const candidateIdentities = new Set(contentCandidates.map((group) => normalizeSubclassName(group.name)));
+  const candidates = contentCandidates.filter((group) => {
+    const match = safeText(group.name).match(/^(.*?)\s*\([^)]*\)\s*$/);
+    if (!match) return true;
+    return !candidateIdentities.has(normalizeSubclassName(match[1]));
+  });
   const modernReprints = candidates.filter((group) =>
     sourceKey(group.source) === sourceKey(targetClassSource)
     && sourceKey(group.classSource) === sourceKey(targetClassSource)
