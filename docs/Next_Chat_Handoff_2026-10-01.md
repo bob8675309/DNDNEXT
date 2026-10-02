@@ -8,10 +8,10 @@ Use this as the concise takeover note, then read the 2026-10-01 override at the 
 - current `main` at this documentation refresh: `ab8c5ce6df1fabd906890b38bcfee16deac2ca0d`;
 - active PR: **#199 — Polish floating ruined-library subclass Tarot selector**;
 - branch: `agent/subclass-tarot-scene-rebuild-20260922`;
-- validated pre-documentation head: `89197828b6ae9945ac436da4339ef910c379eb4c`;
+- validated runtime head before the current documentation updates: `5cebb825bfc57ce0a00fb32020845259c3e69ada`;
 - PR state: **open / mergeable / unmerged**;
-- all **11/11** triggered GitHub workflows passed at that head;
-- Vercel deployment `3KoiKyA8wXeWPkMfVME5CFfXjToD`: **READY / success**;
+- all **12/12** triggered GitHub workflows passed at that head;
+- Vercel deployment `FEDUUsrMw2PGavNWwgDb3GwXovkV`: **READY / success**;
 - preview host: `dndnext-git-agent-subclass-tarot-9aeaa6-pauls-projects-2016aa54.vercel.app`;
 - do not merge without Paul's explicit approval.
 
@@ -65,6 +65,22 @@ At `89197828b6ae9945ac436da4339ef910c379eb4c`:
 PR #199 makes no Supabase migration/data change.
 
 Do not touch the world map unless Paul explicitly requests it. Keep world-map and town/city-map behavior separate. Class/Tarot presentation work does not authorize tactical, crafting, inventory, merchant, economy, route/travel/weather/camp/clock, or unrelated database changes.
+
+## Subclass completeness repair
+
+The latest browser review found a systemic Codex source-presentation bug. Live Supabase data was complete, but all null-header subclass rows were being treated as lore, hiding valid features for sources such as FRHoF.
+
+Current runtime now:
+
+- resolves introductions by semantic subclass identity plus null-header status;
+- restores Winter Walker's level-3 Frigid Explorer, Hunter's Rime, and Winter Walker Spells;
+- restores Bladesinger's Bladesong and Training in War and Song;
+- strips mixed-case/long imported source-reference metadata;
+- prevents “again” from matching the spell-grant verb “gain”;
+- resolves Winter Walker's actual structured spell list rather than false Hunter's Mark;
+- shifts Codex Tarot backdrop framing down slightly.
+
+Read-only live audit found 65 of 275 subclass source groups have multiple null-header rows, so the regression coverage protects this as a catalogue-wide rule rather than a one-off Winter Walker patch.
 
 ## Immediate browser acceptance
 
