@@ -69,7 +69,7 @@
   width: max-content;
   max-width: 100%;
   display: inline-flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 1.05rem;
   padding: .2rem .1rem;
   border: 0;
@@ -100,9 +100,10 @@
 .class-subclass-selected-card__copy {
   min-width: 140px;
   display: grid;
-  align-content: center;
+  align-content: start;
   justify-items: start;
   gap: .55rem;
+  padding-top: .08rem;
 }
 
 .class-subclass-selected-card__copy strong {
