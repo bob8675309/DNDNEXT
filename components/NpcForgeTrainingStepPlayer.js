@@ -483,7 +483,7 @@ export default function NpcForgeTrainingStepPlayer({
             })}</div></section> : null}
           </div>
           <div className="npc-forge-training-class-only">
-            <NpcForgeClassFeatureChoices groups={classChoiceState.featureGroups || []} selections={classChoiceState.featureSelections || {}} level={classChoiceState.level || 1} onToggle={toggleFeatureOption} placement="class" sourceOwnerLabel={selectedClassName || "Class"} heading="Class and subclass choices" description="Fighting styles, maneuvers, and other feature-owned choices remain here. Source-backed catalogues such as Eldritch Invocations use the click-to-inspect list below." />
+            <NpcForgeClassFeatureChoices groups={classChoiceState.featureGroups || []} selections={classChoiceState.featureSelections || {}} level={classChoiceState.level || 1} onToggle={toggleFeatureOption} placement="class" sourceOwnerLabel={selectedClassName || "Class"} heading="Class and subclass choices" description="Open a granted choice, inspect an option on the left, then confirm it from Current Selection on the right." inspectOnly onDetail={onDetail} />
             <NpcForgeClassOptionBrowser groups={classOptionGroups} selections={sourceChoiceState.selections || {}} onDetail={onDetail} />
             {otherSourceClassAbilityGroups.length ? <NpcForgeSourceChoiceFields placement="training" inline groupsOverride={otherSourceClassAbilityGroups} title="Other class and advancement decisions" /> : null}
           </div>
