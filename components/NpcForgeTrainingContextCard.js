@@ -291,7 +291,7 @@ export default function NpcForgeTrainingContextCard({ detail = null, selectedSki
       controller.setDetail?.({ ...detail });
     };
 
-    const actionAvailable = !selected && ["source-profession", "trade-skill"].includes(detail?.selectionKind);
+    const actionAvailable = ["source-profession", "trade-skill"].includes(detail?.selectionKind);
     const actionLabel = selected ? "Selected" : detail?.canSelect === false ? "Selection Full" : "Select Trade Skill";
     return <ContextShell icon={PROFESSION_ICON[key] || `${TRAINING_ASSET_ROOT}/choice-tool.svg`} iconIsImage title={selectedProfession.label} badge="Trade Skill" selected={selected} description={`${selectedProfession.label} is the character's crafting proficiency.${grantNote} The associated tool is still normally required to perform the craft.${runtimeNote}`} onAction={actionAvailable ? selectProfession : null} actionLabel={actionLabel} actionDisabled={selected || detail?.canSelect === false}>
       <section className="npc-forge-training-context-section"><h4>Typical Uses</h4><ul>{(PROFESSION_USES[key] || ["Apply this Trade Skill when a supported campaign crafting or professional task calls for it."]).map((use) => <li key={use}>{use}</li>)}</ul><div className="npc-forge-training-context-facts"><span><small>Associated Tool</small><b>{selectedProfession.tool}</b></span><span><small>Crafting Ability</small><b>{profession.ability ? ABILITY_LABELS[profession.ability] || profession.ability : abilities}</b></span><span><small>Campaign Support</small><b>{selectedProfession.runtimeEnabled === false ? "Proficiency now • recipes later" : "Crafting runtime active"}</b></span>{detail?.grantSource ? <span><small>{selected ? "Granted By" : "Available From"}</small><b>{detail.grantSource}</b></span> : null}</div></section>
@@ -338,7 +338,7 @@ export default function NpcForgeTrainingContextCard({ detail = null, selectedSki
       controller.setDetail?.({ ...detail });
     };
 
-    const actionAvailable = !selected && ["background-skill", "source-skill", "class-skill"].includes(detail?.selectionKind);
+    const actionAvailable = ["background-skill", "source-skill", "class-skill"].includes(detail?.selectionKind);
     const actionLabel = selected ? "Selected" : detail?.canSelect === false ? "Selection Full" : "Select Skill";
     return <ContextShell icon={<SkillIcon skillKey={key} />} title={selectedSkill.label} badge={availableFromClass ? "Class Skill" : "Skill"} selected={selected} description={selectedSkill.description || "Use this skill when its governing ability and trained application are relevant."} onAction={actionAvailable ? selectSkill : null} actionLabel={actionLabel} actionDisabled={selected || detail?.canSelect === false}>
       <section className="npc-forge-training-context-section"><h4>Typical Uses</h4><ul>{(SKILL_USES[key] || ["Apply this skill when the Game Master calls for a check involving its trained area of expertise."]).map((use) => <li key={use}>{use}</li>)}</ul><div className="npc-forge-training-context-facts"><span><small>Governing Ability</small><b>{ABILITY_LABELS[selectedSkill.ability] || selectedSkill.ability || "Varies"}</b></span>{detail?.grantSource ? <span><small>{selected ? "Granted By" : "Available From"}</small><b>{detail.grantSource}</b></span> : null}</div></section>
