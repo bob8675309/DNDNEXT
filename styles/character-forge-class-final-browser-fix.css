@@ -229,11 +229,6 @@
     font-size: .84rem !important;
   }
 
-  body > .npc-forge-class-feature-dock.is-viewport-floating.has-feature .npc-forge-class-feature-dock__summary .class-feature-text,
-  body > .npc-forge-class-feature-dock.is-viewport-floating.has-feature .npc-forge-class-feature-dock__summary p {
-    font-size: .61rem !important;
-    line-height: 1.45 !important;
-  }
 }
 
 @media (min-width: 901px) and (max-width: 1180px) {

@@ -8,9 +8,10 @@ import {
 } from "react-icons/fa";
 import { ABILITY_LABELS } from "../utils/characterCreation";
 import { formatPrerequisiteText } from "../utils/formatPrerequisiteText";
-import { formatPlayerFacingText } from "../utils/playerFacingText";
+import { featRuleSectionsFromDescription } from "../utils/featRulePresentation";
 import NpcForgeSourceChoiceFields from "./NpcForgeSourceChoiceFields";
 import { sourceChoiceGroupsForResolverPlacement, useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
+import { useNpcForgeControllerContext } from "./NpcForgeControllerContext";
 
 const TRAINING_ASSET_ROOT = "/ui/forge/training";
 const normalized = (value) => String(value ?? "").trim().toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
@@ -82,27 +83,7 @@ function featGroupMatches(group = {}, feat = {}, featInstanceId = "") {
 }
 
 function genericFeatRuleSections(feat = {}) {
-  const formatted = formatPlayerFacingText(feat.description || "", "").trim();
-  if (!formatted) return [{ title: "Rules", body: "No source description is available for this feat." }];
-  const paragraphs = formatted.split(/\n\s*\n/).map((paragraph) => paragraph.trim()).filter(Boolean);
-  const sections = [];
-  for (let index = 0; index < paragraphs.length; index += 1) {
-    const paragraph = paragraphs[index];
-    const standaloneHeading = paragraph.match(/^([^.!?]{2,56})\.$/);
-    if (standaloneHeading && paragraphs[index + 1]) {
-      sections.push({ title: standaloneHeading[1].trim(), body: paragraphs[index + 1].trim() });
-      index += 1;
-      continue;
-    }
-    const inlineHeading = paragraph.match(/^([^.!?]{2,56})\.\s+([\s\S]+)$/);
-    if (inlineHeading) {
-      sections.push({ title: inlineHeading[1].trim(), body: inlineHeading[2].trim() });
-      continue;
-    }
-    const intro = sections.length === 0 && /^(you gain|you have|you learn|you receive|the following)/i.test(paragraph);
-    sections.push({ title: "", body: paragraph, intro });
-  }
-  return sections;
+  return featRuleSectionsFromDescription(feat.description || "");
 }
 
 function featRuleSections(feat = {}, matchingGroups = []) {
@@ -132,25 +113,47 @@ function FeatRuleList({ feat = {}, matchingGroups = [] }) {
     : <article key={`${section.title || "rule"}-${index}`}>{section.title ? <strong>{section.title}</strong> : null}<p>{section.body}</p></article>)}</div>;
 }
 
-function ContextShell({ icon, iconIsImage = false, title, badge, selected, description, children }) {
+function ContextShell({ icon, iconIsImage = false, title, badge, selected, description, actionLabel = "", onAction = null, actionDisabled = false, children }) {
   return <div className="npc-forge-training-context-dossier">
     <h3>Current Selection</h3>
     <div className="npc-forge-training-context-hero">
       <span className="npc-forge-training-context-icon">{iconIsImage ? <img src={icon} alt="" aria-hidden="true" /> : icon}</span>
       <div className="npc-forge-training-context-copy"><div><h2>{title}</h2>{badge ? <em>{badge}</em> : null}</div><p>{description}</p></div>
-      <strong className={selected ? "is-selected" : ""}>{selected ? "Selected" : "Available"}</strong>
+      {onAction ? <button type="button" className={`npc-forge-training-context-action ${selected ? "is-selected" : ""}`} aria-pressed={selected} disabled={actionDisabled} onClick={onAction}>{actionLabel || (selected ? "Selected" : "Select")}</button> : <strong className={selected ? "is-selected" : ""}>{selected ? "Selected" : "Available"}</strong>}
     </div>
     <div className="npc-forge-training-context-divider" />
     {children}
     <div className="npc-forge-training-context-note"><span>ⓘ</span><p>You can change your selections until you continue.<br />All choices can be reviewed on the final step.</p></div>
     <style jsx global>{`
-      .npc-forge-training-context-dossier{display:flex;flex-direction:column;min-height:100%;padding:4px 2px 2px}.npc-forge-training-context-dossier>h3{margin:0 0 18px;color:#fff;font-size:1rem}.npc-forge-training-context-hero{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:14px;align-items:center}.npc-forge-training-context-icon{display:grid;place-items:center;width:48px;height:48px;border:1px solid rgba(168,108,255,.2);border-radius:9px;color:#bd85ff;background:rgba(126,72,199,.08);font-size:1.65rem}.npc-forge-training-context-icon img{width:34px;height:34px;object-fit:contain}.npc-forge-training-context-copy{display:grid;gap:5px;min-width:0}.npc-forge-training-context-copy>div{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.npc-forge-training-context-copy h2{margin:0;color:#fff;font-size:1.22rem;line-height:1.1}.npc-forge-training-context-copy em{padding:4px 8px;border-radius:999px;color:#d9bfff;background:rgba(126,72,199,.15);font-size:.61rem;font-style:normal}.npc-forge-training-context-copy p{margin:0;color:rgba(255,255,255,.7);font-size:.72rem;line-height:1.55}.npc-forge-training-context-hero>strong{align-self:start;margin-top:4px;padding:4px 10px;border-radius:999px;color:rgba(255,255,255,.56);background:rgba(255,255,255,.05);font-size:.62rem}.npc-forge-training-context-hero>strong.is-selected{color:#83f4df;background:rgba(19,164,139,.16)}.npc-forge-training-context-divider{height:1px;margin:18px 0;background:rgba(255,255,255,.09)}.npc-forge-training-context-section{display:grid;gap:12px}.npc-forge-training-context-section+ .npc-forge-training-context-section{margin-top:18px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08)}.npc-forge-training-context-section>h4{margin:0;color:#fff;font-size:.76rem}.npc-forge-training-context-section ul{display:grid;gap:9px;margin:0;padding-left:20px;color:rgba(255,255,255,.7);font-size:.7rem;line-height:1.5}.npc-forge-training-context-section>p{margin:0;color:rgba(255,255,255,.72);font-size:.72rem;line-height:1.65;white-space:pre-line}.npc-forge-training-feat-rule-list{display:grid;gap:8px}.npc-forge-training-feat-rule-intro{margin:0 0 2px;color:rgba(255,255,255,.68);font-size:.69rem;line-height:1.58}.npc-forge-training-feat-rule-list article{display:grid;gap:5px;padding:10px 12px;border:1px solid rgba(168,108,255,.12);border-left:3px solid rgba(168,108,255,.46);border-radius:8px;background:linear-gradient(90deg,rgba(126,72,199,.07),rgba(255,255,255,.018))}.npc-forge-training-feat-rule-list article>strong{color:#e5d2ff;font-size:.68rem;letter-spacing:.01em}.npc-forge-training-feat-rule-list article>p{margin:0;color:rgba(255,255,255,.76);font-size:.69rem;line-height:1.58}.npc-forge-training-context-facts{display:flex;flex-wrap:wrap;gap:8px}.npc-forge-training-context-facts>span{display:grid;gap:2px;min-width:150px;padding:8px 10px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:rgba(255,255,255,.025)}.npc-forge-training-context-facts small{color:rgba(255,255,255,.43);font-size:.52rem;text-transform:uppercase}.npc-forge-training-context-facts b{color:#fff;font-size:.67rem}.npc-forge-training-context-choices{gap:9px!important}.npc-forge-training-context-choices>p{max-width:720px}.npc-forge-training-context-choices .npc-forge-source-choices{gap:8px;margin-top:0}.npc-forge-training-context-choices .npc-forge-source-choices__heading{display:none}.npc-forge-training-context-choices .npc-forge-source-choice-group{gap:8px;padding:10px 11px}.npc-forge-training-context-choices .npc-forge-source-choice-group>header small{font-size:.58rem}.npc-forge-training-context-choices .npc-forge-source-choice-slots{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}.npc-forge-training-context-route{display:grid;grid-template-columns:auto minmax(0,1fr);gap:9px;align-items:start;padding:10px 11px;border:1px solid rgba(168,108,255,.18);border-radius:9px;background:rgba(126,72,199,.045)}.npc-forge-training-context-route>span{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;color:#d8c2fb;background:rgba(126,72,199,.14);font-size:.7rem}.npc-forge-training-context-route>div{display:grid;gap:3px}.npc-forge-training-context-route strong{color:#fff;font-size:.68rem}.npc-forge-training-context-route p{margin:0;color:rgba(255,255,255,.65);font-size:.62rem;line-height:1.5}.npc-forge-training-context-route b{color:#e7d7ff}.npc-forge-training-context-note{display:flex;gap:10px;align-items:flex-start;width:min(560px,100%);margin-top:28px;padding:12px 14px;border:1px solid rgba(255,255,255,.08);border-radius:9px;background:rgba(7,10,18,.32)}.npc-forge-training-context-note>span{color:#d4dcff;font-size:.8rem}.npc-forge-training-context-note p{margin:0;color:rgba(255,255,255,.64);font-size:.68rem;line-height:1.55}@media(max-width:720px){.npc-forge-training-context-hero{grid-template-columns:42px minmax(0,1fr)}.npc-forge-training-context-hero>strong{grid-column:2;justify-self:start;margin:0}.npc-forge-training-context-icon{width:42px;height:42px}.npc-forge-training-context-note{margin-top:24px}.npc-forge-training-context-choices .npc-forge-source-choice-slots{grid-template-columns:1fr}}
+      .npc-forge-training-context-dossier{display:flex;flex-direction:column;min-height:100%;padding:4px 2px 2px}.npc-forge-training-context-dossier>h3{margin:0 0 18px;color:#fff;font-size:1rem}.npc-forge-training-context-hero{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:14px;align-items:center}.npc-forge-training-context-icon{display:grid;place-items:center;width:48px;height:48px;border:1px solid rgba(168,108,255,.2);border-radius:9px;color:#bd85ff;background:rgba(126,72,199,.08);font-size:1.65rem}.npc-forge-training-context-icon img{width:34px;height:34px;object-fit:contain}.npc-forge-training-context-copy{display:grid;gap:5px;min-width:0}.npc-forge-training-context-copy>div{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.npc-forge-training-context-copy h2{margin:0;color:#fff;font-size:1.22rem;line-height:1.1}.npc-forge-training-context-copy em{padding:4px 8px;border-radius:999px;color:#d9bfff;background:rgba(126,72,199,.15);font-size:.61rem;font-style:normal}.npc-forge-training-context-copy p{margin:0;color:rgba(255,255,255,.7);font-size:.72rem;line-height:1.55}.npc-forge-training-context-hero>strong,.npc-forge-training-context-action{align-self:start;margin-top:4px;padding:4px 10px;border:1px solid transparent;border-radius:999px;color:rgba(255,255,255,.56);background:rgba(255,255,255,.05);font-size:.62rem}.npc-forge-training-context-hero>strong.is-selected,.npc-forge-training-context-action.is-selected{color:#83f4df;background:rgba(19,164,139,.16)}.npc-forge-training-context-action{border-color:rgba(168,108,255,.38);color:#f0e6ff;background:rgba(126,72,199,.12);cursor:pointer}.npc-forge-training-context-action:hover:not(:disabled),.npc-forge-training-context-action:focus-visible{border-color:rgba(193,145,255,.78);background:rgba(126,72,199,.24);outline:none}.npc-forge-training-context-action:disabled{cursor:default;opacity:1}.npc-forge-training-context-divider{height:1px;margin:18px 0;background:rgba(255,255,255,.09)}.npc-forge-training-context-section{display:grid;gap:12px}.npc-forge-training-context-section+ .npc-forge-training-context-section{margin-top:18px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08)}.npc-forge-training-context-section>h4{margin:0;color:#fff;font-size:.76rem}.npc-forge-training-context-section ul{display:grid;gap:9px;margin:0;padding-left:20px;color:rgba(255,255,255,.7);font-size:.7rem;line-height:1.5}.npc-forge-training-context-section>p{margin:0;color:rgba(255,255,255,.72);font-size:.72rem;line-height:1.65;white-space:pre-line}.npc-forge-training-feat-rule-list{display:grid;gap:0}.npc-forge-training-feat-rule-intro{margin:0;padding:2px 0 10px;color:rgba(255,255,255,.74);font-size:.69rem;line-height:1.62}.npc-forge-training-feat-rule-list article{position:relative;display:grid;gap:4px;padding:9px 4px 9px 13px;border:0;border-left:2px solid rgba(168,108,255,.38);border-radius:0;background:transparent}.npc-forge-training-feat-rule-list article+article{border-top:1px solid rgba(255,255,255,.055)}.npc-forge-training-feat-rule-list article>strong{color:#e5d2ff;font-size:.68rem;letter-spacing:.01em}.npc-forge-training-feat-rule-list article>p{margin:0;color:rgba(255,255,255,.76);font-size:.69rem;line-height:1.62}.npc-forge-training-context-facts{display:flex;flex-wrap:wrap;gap:0;margin-top:2px;border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07)}.npc-forge-training-context-facts>span{display:grid;gap:2px;min-width:140px;padding:8px 12px 8px 0}.npc-forge-training-context-facts>span+span{padding-left:12px;border-left:1px solid rgba(255,255,255,.07)}.npc-forge-training-context-facts small{color:rgba(255,255,255,.43);font-size:.52rem;text-transform:uppercase}.npc-forge-training-context-facts b{color:#fff;font-size:.67rem}.npc-forge-training-context-choices{gap:9px!important}.npc-forge-training-context-choices>p{max-width:720px}.npc-forge-training-context-choices .npc-forge-source-choices{gap:8px;margin-top:0}.npc-forge-training-context-choices .npc-forge-source-choices__heading{display:none}.npc-forge-training-context-choices .npc-forge-source-choice-group{gap:8px;padding:10px 11px}.npc-forge-training-context-choices .npc-forge-source-choice-group>header small{font-size:.58rem}.npc-forge-training-context-choices .npc-forge-source-choice-slots{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}.npc-forge-training-context-route{display:grid;grid-template-columns:auto minmax(0,1fr);gap:9px;align-items:start;padding:8px 2px 8px 10px;border:0;border-left:2px solid rgba(168,108,255,.42);border-radius:0;background:transparent}.npc-forge-training-context-route>span{display:grid;place-items:center;width:20px;height:20px;color:#d8c2fb;background:transparent;font-size:.7rem}.npc-forge-training-context-route>div{display:grid;gap:3px}.npc-forge-training-context-route strong{color:#fff;font-size:.68rem}.npc-forge-training-context-route p{margin:0;color:rgba(255,255,255,.65);font-size:.62rem;line-height:1.5}.npc-forge-training-context-route b{color:#e7d7ff}.npc-forge-training-context-note{display:flex;gap:10px;align-items:flex-start;width:min(560px,100%);margin-top:28px;padding:12px 14px;border:1px solid rgba(255,255,255,.08);border-radius:9px;background:rgba(7,10,18,.32)}.npc-forge-training-context-note>span{color:#d4dcff;font-size:.8rem}.npc-forge-training-context-note p{margin:0;color:rgba(255,255,255,.64);font-size:.68rem;line-height:1.55}@media(max-width:720px){.npc-forge-training-context-hero{grid-template-columns:42px minmax(0,1fr)}.npc-forge-training-context-hero>strong{grid-column:2;justify-self:start;margin:0}.npc-forge-training-context-icon{width:42px;height:42px}.npc-forge-training-context-note{margin-top:24px}.npc-forge-training-context-choices .npc-forge-source-choice-slots{grid-template-columns:1fr}}
     `}</style>
   </div>;
 }
 
 export default function NpcForgeTrainingContextCard({ detail = null, selectedSkill = null, selectedProfession = null, selectedClass = null, draft = {} }) {
   const { state: sourceChoiceState } = useNpcForgeSourceChoices();
+  const controller = useNpcForgeControllerContext() || {};
+
+  if (detail?.type === "trainingOverview") {
+    const metrics = Array.isArray(detail.metrics) ? detail.metrics : [];
+    const sources = Array.isArray(detail.sources) ? detail.sources : [];
+    return <div className="npc-forge-training-context-dossier npc-forge-training-overview">
+      <h3>Current Selection</h3>
+      <div className="npc-forge-training-overview__head">
+        <span className="npc-forge-training-context-icon"><img src={detail.icon || `${TRAINING_ASSET_ROOT}/summary-training.svg`} alt="" aria-hidden="true" /></span>
+        <div><span>Training section</span><h2>{detail.title || "Training"}</h2><p>{detail.description || "Review where these choices come from and how many remain."}</p></div>
+      </div>
+      <div className="npc-forge-training-context-divider" />
+      <section className="npc-forge-training-overview__metrics" aria-label="Training choice breakdown">
+        {metrics.map((metric) => <div key={metric.label}><span>{metric.label}</span><strong>{metric.value}</strong>{metric.detail ? <small>{metric.detail}</small> : null}</div>)}
+      </section>
+      {sources.length ? <section className="npc-forge-training-overview__sources"><h4>Where these come from</h4>{sources.map((source, index) => <div key={`${source.label}-${index}`}><span><strong>{source.label}</strong>{source.detail ? <small>{source.detail}</small> : null}</span><b>{source.value}</b></div>)}</section> : null}
+      <div className="npc-forge-training-context-note"><span>ⓘ</span><p>Click a specific choice on the left to inspect it here. Moving the mouse over another row will no longer replace what you were reading.</p></div>
+      <style jsx global>{`
+        .npc-forge-training-overview__head{display:grid;grid-template-columns:48px minmax(0,1fr);gap:14px;align-items:center}.npc-forge-training-overview__head>div{display:grid;gap:3px}.npc-forge-training-overview__head>div>span{color:#bc91ff;font-size:.54rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.npc-forge-training-overview__head h2{margin:0;color:#fff;font-size:1.18rem}.npc-forge-training-overview__head p{margin:0;max-width:70ch;color:rgba(255,255,255,.67);font-size:.7rem;line-height:1.55}.npc-forge-training-overview__metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:0;border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07)}.npc-forge-training-overview__metrics>div{display:grid;gap:2px;padding:10px 12px}.npc-forge-training-overview__metrics>div+div{border-left:1px solid rgba(255,255,255,.07)}.npc-forge-training-overview__metrics span,.npc-forge-training-overview__sources h4{color:rgba(255,255,255,.47);font-size:.52rem;font-weight:800;letter-spacing:.055em;text-transform:uppercase}.npc-forge-training-overview__metrics strong{color:#f3eaff;font-size:.85rem}.npc-forge-training-overview__metrics small{color:rgba(255,255,255,.5);font-size:.52rem;line-height:1.4}.npc-forge-training-overview__sources{display:grid;gap:0;margin-top:18px}.npc-forge-training-overview__sources h4{margin:0 0 5px}.npc-forge-training-overview__sources>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 2px;border-top:1px solid rgba(255,255,255,.065)}.npc-forge-training-overview__sources>div>span{display:grid;gap:2px}.npc-forge-training-overview__sources strong{color:#fff;font-size:.7rem}.npc-forge-training-overview__sources small{color:rgba(255,255,255,.5);font-size:.56rem;line-height:1.4}.npc-forge-training-overview__sources b{color:#bff8ef;font-size:.68rem;font-weight:700}@media(max-width:720px){.npc-forge-training-overview__metrics{grid-template-columns:1fr}.npc-forge-training-overview__metrics>div+div{border-left:0;border-top:1px solid rgba(255,255,255,.07)}}
+      `}</style>
+    </div>;
+  }
 
   if (detail?.type === "feat" && detail.option) {
     const feat = detail.option;
@@ -164,7 +167,11 @@ export default function NpcForgeTrainingContextCard({ detail = null, selectedSki
     const selected = Boolean(detail?.granted)
       || matchingGroups.length > 0
       || String(draft.speciesBonus?.featId || "") === String(feat.id || "");
-    return <ContextShell icon={`${TRAINING_ASSET_ROOT}/summary-feat.svg`} iconIsImage title={feat.name} badge={feat.category || "Feat"} selected={selected} description={prerequisite ? `Prerequisite: ${prerequisite}` : "No prerequisite is listed for this feat."}>
+    const selectableBonusFeat = detail?.selectionKind === "species-bonus-feat";
+    const chooseFeat = selectableBonusFeat ? () => {
+      controller.setSpeciesBonus?.({ featId: feat.id });
+    } : null;
+    return <ContextShell icon={`${TRAINING_ASSET_ROOT}/summary-feat.svg`} iconIsImage title={feat.name} badge={feat.category || "Feat"} selected={selected} description={prerequisite ? `Prerequisite: ${prerequisite}` : "No prerequisite is listed for this feat."} onAction={chooseFeat} actionLabel={selected ? "Selected" : "Select Feat"} actionDisabled={selected}>
       <section className="npc-forge-training-context-section"><h4>Feat Rules</h4><FeatRuleList feat={feat} matchingGroups={matchingGroups} /><div className="npc-forge-training-context-facts"><span><small>Source</small><b>{feat.source || "Campaign"}</b></span><span><small>Category</small><b>{feat.category || "Feat"}</b></span>{prerequisite ? <span><small>Prerequisite</small><b>{prerequisite}</b></span> : null}</div></section>
       {skillsRoutedGroups.length ? <section className="npc-forge-training-context-section"><div className="npc-forge-training-context-route"><span>←</span><div><strong>Profession choices resolve in Skills</strong><p>This feat adds {skillsRoutedGroups.reduce((count, group) => count + (group.fields || []).reduce((sum, field) => sum + Number(field.count || 1), 0), 0)} additional Profession Skill choices. Make them in <b>Skills → Trade Skills</b>; each available or granted row is labeled with this feat as its source and does not spend the class Skill / Trade Skill allowance.</p></div></div></section> : null}
       {featTrainingGroups.length ? <section className="npc-forge-training-context-section npc-forge-training-context-choices"><h4>Required Feat Choices</h4><p>Every permanent non-spell decision owned by this feat is completed here beside its rules. Skill, tool, or instrument grants are reflected in Skills after you choose them.</p><NpcForgeSourceChoiceFields placement="training" inline groupsOverride={featTrainingGroups} title="Required feat choices" /></section> : null}
@@ -197,5 +204,5 @@ export default function NpcForgeTrainingContextCard({ detail = null, selectedSki
     </ContextShell>;
   }
 
-  return <div className="npc-forge-training-context-dossier"><h3>Current Selection</h3><p>Hover, focus, or select a Skill, Trade Skill, Training choice, or feat to see its details here.</p></div>;
+  return <div className="npc-forge-training-context-dossier"><h3>Current Selection</h3><p>Click a Skill, Trade Skill, feat, or Class Choice on the left to keep its details here.</p></div>;
 }

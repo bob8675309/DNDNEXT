@@ -29,12 +29,14 @@ export default function PlayerCharacterCreatorV2({
   onCreated = null,
   onCancel = null,
   show = true,
+  draftStorageScope = "",
 }) {
   return (
     <NewNpcModalV3
       show={show}
       mode="player"
       defaultName={defaultName}
+      draftStorageScope={draftStorageScope}
       onCreated={onCreated}
       onClose={onCancel}
       locations={[]}

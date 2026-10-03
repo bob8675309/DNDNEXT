@@ -19,12 +19,15 @@ const forgeSteps = read("components/NpcForgeStepContent.js");
 const playerFacingText = read("utils/playerFacingText.js");
 const subclassSpellGrantsSource = read("utils/classes/subclassSpellGrants.js");
 const spellCardCss = read("styles/spell-card.css");
+const finalClassBrowserCss = read("styles/character-forge-class-final-browser-fix.css");
+const classAcceptanceCss = read("styles/character-forge-class-acceptance-corrections.css");
+const classMenuApprovedCss = read("styles/character-forge-class-menu-approved-art.css");
 
 for (const token of [
   'import ClassSubclassSection from "./ClassSubclassSection"',
   '<ClassSubclassSection',
   'classKey={selectedClass?.class_key || ""}',
-  'onInspectSubclass={(option) => inspectSubclass(model, onSubclassDetail, option)}',
+  'onInspectSubclass={(option, actions) => inspectSubclass(model, onSubclassDetail, option, actions)}',
   '<p className="npc-forge-class-guide__hero-tagline">{classOverviewSummary(selectedClass)}</p>',
   'function selectedRowFeatures(model, row)',
   'feature?.type !== "subclass"',
@@ -83,17 +86,17 @@ for (const token of [
   'data-orbit-angle={angleDegrees.toFixed(3)}',
   'onClick={(event) => handleCardClick(event, option, optionIndex, isInteractive)}',
   'model?.setPreviewKey?.(option.key)',
+  'function inspectOption(option, selectedOverride = false)',
   'model.selectSubclass(option)',
-  'class-subclass-selected-card',
-  'onDoubleClick={() => setSelectorOpen(true)}',
-  '>Change Subclass<',
-  'currentLevel < entryLevel',
+  'class-subclass-selected-card-shell',
+  '>Open Codex<',
+  'currentLevel >= entryLevel',
   'setSelectorOpen(true)',
-  'onInspectSubclass?.(option)',
+  'onInspectSubclass?.(option, {',
 ]) assert(selector.includes(token), `Reference-scene subclass selector is missing ${token}`);
 
-assert((selector.match(/model\.selectSubclass\(option\)/g) || []).length === 1, "Carousel motion must never create a second subclass persistence path.");
-assert(!selector.includes('model?.setPreviewKey?.(heroOption.key)'), "Hero position must not auto-preview or persist as player intent.");
+assert((selector.match(/model\.selectSubclass\(option\)/g) || []).length === 1, "Subclass persistence must remain a single explicit Codex-confirmation path.");
+assert(selector.includes("function handleCardClick") && selector.includes("model?.setPreviewKey?.(option.key)") && selector.includes("function inspectOption(option, selectedOverride = false)") && selector.includes("choose = eligible && !selectedNow"), "Tarot card click must preview/center first, while the Codex receives the explicit choose action.");
 assert(!selector.includes('browsedOption'), "Obsolete automatic browsed-card dossier state must not return.");
 assert(!selector.includes('class-subclass-carousel-modal__details'), "The floating Tarot scene must stay free of the old dossier panel.");
 assert(!selector.includes('class-subclass-carousel-modal__rune-foreground'), "Retired runic-table foreground must not return.");
@@ -159,13 +162,17 @@ assert(tarotCss.includes('animation: none !important'), "Reduced-motion mode mus
 assert(tarotCss.includes('.class-subclass-carousel-card.is-orbit-center .class-subclass-carousel-card__float') && tarotCss.includes('animation: none;'), "Hero card must stay still while non-hero cards idle-float.");
 assert(tarotCss.includes('z-index: 760') && tarotCss.includes('class-subclass-carousel-modal__smoke-near'), "Near smoke must cross side/front cards while remaining below the hero z-band.");
 assert(tarotCss.includes('left: 13.7%') && tarotCss.includes('right: 16.4%') && tarotCss.includes('top: 12.4%'), "Animated flames must stay registered to real upper candle clusters in the ruined-library background.");
-assert(selector.includes("captureGlideRects") && selector.includes("glide.animate") && selector.includes('cubic-bezier(.32,.035,.18,1)'), "Tarot slot changes must use the compositor glide path rather than snapping layout-property transitions.");
-assert(selector.includes("movement > orbitWidth * .58") && selector.includes("clamp(previous.width / next.width, .30, 3.25)"), "Tarot FLIP must preserve full hero size interpolation while skipping only the rear signed-angle seam teleport that caused giant card-back fly-throughs.");
+assert(selector.includes("captureGlideRects") && selector.includes("glide.animate") && selector.includes('cubic-bezier(.22,.78,.24,1)'), "Tarot slot changes must use the current base-anchored compositor glide rather than snapping layout-property transitions.");
+assert(selector.includes("movement > orbitWidth * .58") && selector.includes("previousCenterX") && selector.includes("previous.bottom - next.bottom") && selector.includes("const duration = 980"), "Tarot glide must animate bottom-center anchor travel while skipping the rear signed-angle seam teleport.");
+assert(selector.includes("const scale = clamp(previous.width / next.width, .42, 2.35)") && selector.includes("scale(${scale.toFixed(4)})") && tarotCss.includes(".class-subclass-carousel-card__glide") && tarotCss.includes("transform-origin: 50% 100%;"), "Tarot cards must resize continuously around their base anchor while moving between orbit slots.");
+assert(!selector.includes("scaleX = clamp(previous.width / next.width") && !selector.includes("scaleY = clamp(previous.height / next.height"), "Anisotropic top-left FLIP scaling must not return; it caused camera-lunge blowups.");
 assert(/\n\s*const yaw = 0;\n/.test(selector), "Tarot yaw declaration must remain executable code on its own line.");
 assert(!selector.includes("corkscrew.\\n  const yaw = 0;"), "Tarot yaw declaration must never be swallowed by a line comment through a literal \\n sequence.");
 assert(tarotCss.includes(".class-subclass-carousel-card__glide") && tarotCss.includes(".class-subclass-carousel-card__yaw") && tarotCss.includes('var(--orbit-float-duration, 9.6s)'), "Tarot glide, yaw, and independent idle-float layers must remain separated.");
 assert(!tarotCss.includes("left 2.15s cubic-bezier") && !tarotCss.includes("top 2.25s cubic-bezier"), "Programmatic Tarot travel must not regress to left/top transition animation.");
 assert(selector.includes("<strong>Subclass Browser</strong>") && !selector.includes("class-subclass-launcher__icon"), "Unselected subclass entry point must remain the compact Subclass Browser pill.");
+assert(!selector.includes("autoOpenedForRef") && !selector.includes("autoOpenKey"), "Crossing the subclass entry level must never auto-open the selector; Forge advancement should signal readiness without stealing focus.");
+assert(tarotCss.includes(".class-subclass-section.is-required .class-subclass-launcher") && tarotCss.includes("@keyframes subclass-browser-ready-energy") && tarotCss.includes("@keyframes subclass-browser-ready-aura"), "Eligible unselected subclass state must pulse the Subclass Browser with the reviewed energy-ready treatment.");
 assert(tarotCss.includes("width: max-content") && tarotCss.includes("border-radius: 999px"), "Subclass Browser launcher must remain compact rather than stretching across the class panel.");
 assert(!tarotCss.includes(':hover .class-subclass-carousel-card__surface {\n  filter:'), "Hover must not filter the 3D card surface; that compositor path caused cards to disappear.");
 assert(!tarotCss.includes('subclass-library-mouse-scurry') && !selector.includes('class-subclass-carousel-modal__mouse'), "Terrain-independent mouse animation must stay removed.");
@@ -444,6 +451,8 @@ for (const token of [
   'font-size: .82rem !important',
 ]) assert(framing.includes(token), `Stable open top-right cinematic framing missing ${token}`);
 assert(!framing.includes('bottom: 0 !important;\n    left: 0 !important'), "Cinematic art is still content-height-coupled.");
+assert(framing.includes(".npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art:has") && !framing.includes('.class-book-guide__content:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"])'), "Global cinematic framing must remain Overview-scoped; Detailed Guide owns its separate intentional background treatment.");
+assert(guide.includes("npc-forge-class-guide__detailed-book") && guide.includes("npc-forge-class-guide__detailed-subclass-slot") && guide.includes("<ForgeClassHero selectedClass={selectedClass} detailed"), "Detailed Guide must move the subclass card into the former image rail while keeping the guide structure intact.");
 
 for (const token of [
   '.class-level-guide__features button',
@@ -493,7 +502,7 @@ assert(!subclassArtwork.includes('bladesinging: "bladesinging"'), "Retired Blade
 assert(!featureDock.includes('["features", "Features"]') && !featureDock.includes('["lore", "Lore"]'), "Redundant Features and Lore tabs must stay removed; Overview already owns both functions.");
 assert(featureDock.includes("grid-template-columns:repeat(3,1fr)"), "Subclass Codex must retain only Overview, Progression, and Spells tabs.");
 assert(featureDock.includes('import SpellCard from "./SpellCard"') && featureDock.includes("<SpellCard spell={selectedSubclassSpellRow.spell} compact dense />"), "Subclass Spells tab must reuse the shared SpellCard with the Codex-only dense presentation.");
-assert(featureDock.includes("npc-forge-subclass-inspector__spell-preview-scroll") && featureDock.includes("npc-forge-subclass-inspector__spell-preview{min-height:0;overflow:visible}") && !featureDock.includes("npc-forge-subclass-inspector__spell-preview{height:360px"), "Subclass spell preview must flow with the Codex body instead of clipping inside a fixed-height pane.");
+assert(featureDock.includes("height:min(460px,calc(84dvh - 160px))") && featureDock.includes("npc-forge-subclass-inspector__spell-preview{display:grid;grid-template-rows:minmax(0,1fr);min-height:0;overflow:hidden}") && featureDock.includes("npc-forge-subclass-inspector__spell-preview-scroll{min-height:0;height:100%;overflow-y:auto;overflow-x:hidden") && featureDock.includes("scrollbar-gutter:stable"), "Long subclass spell cards must stay inside a bounded preview pane with their own complete vertical scroll instead of forcing the outer Codex to clip or scroll the card under the tabs.");
 assert(featureDock.includes("grid-template-columns:minmax(180px,.58fr) minmax(0,1.42fr)"), "Subclass spell workspace must give the detail card more horizontal room.");
 assert(featureDock.includes("spell-card__description{font-size:.9rem!important;line-height:1.52!important;color:#fff!important}"), "Subclass spell rules body text must remain larger and high-contrast in the dense Codex preview.");
 for (const token of [".spell-card--dense", "font-size: 0.84rem;", "line-height: 1.5;", ".spell-card--dense .spell-card__grid"]) assert(spellCardCss.includes(token), `Dense Codex spell-card readability treatment missing ${token}`);
@@ -502,10 +511,19 @@ assert(tarotCss.includes("width: max-content") && tarotCss.includes("padding: .3
 assert(forgeSteps.includes("const [classFeatureDetail, setClassFeatureDetail] = useState(null)") && forgeSteps.includes("const [subclassCodexDetail, setSubclassCodexDetail] = useState(null)"), "Class Feature panel and Subclass Codex must keep independent state models.");
 assert(forgeSteps.includes('panelRole="codex" detail={subclassCodexDetail}') && forgeSteps.includes('panelRole="feature" detail={classFeatureDetail}'), "Class step must render independent Codex and Feature panel instances.");
 assert(guide.includes("onSubclassDetail") && guide.includes("onFeatureDetail") && !guide.includes("inspectSubclass(model, onFeatureDetail"), "Subclass inspection and feature detail routing must remain separate callbacks.");
-assert(featureDock.includes("FEATURE_DOCK_WIDTH = 520") && featureDock.includes("is-feature-panel") && featureDock.includes("font-size:.98rem!important"), "Feature panel must retain the wider readable desktop layout and larger rules text.");
+assert(featureDock.includes("FEATURE_DOCK_WIDTH = 520") && featureDock.includes("is-feature-panel") && featureDock.includes("font-size:1.08rem!important;line-height:1.56!important;color:#fff!important") && featureDock.includes("width:min(560px"), "Feature panel must retain the larger desktop reading width with balanced high-contrast rules text.");
+assert(!finalClassBrowserCss.includes("is-viewport-floating.has-feature .npc-forge-class-feature-dock__summary") && !classAcceptanceCss.includes("body .npc-forge-class-feature-dock .npc-forge-class-feature-dock__summary") && !classMenuApprovedCss.includes("body .npc-forge-class-feature-dock .npc-forge-class-feature-dock__summary"), "Legacy browser-polish styles must not shrink the Class Feature rules text underneath the current readable panel treatment.");
+assert(model.includes("OPTION_SUMMARIES") && model.includes("listedOptionsForFeature") && featureDock.includes("npc-forge-class-feature-dock__listed-options") && featureDock.includes("Available options"), "Warlock Eldritch Invocation Options must surface the canonical invocation catalogue instead of only the imported pointer sentence.");
+assert(featureDock.includes("window.innerWidth - width - 28") && featureDock.includes("forge ? forge.top + 46 : 72"), "Subclass Codex must default to the upper-right so it does not cover the hero Tarot card.");
+assert(!tarotCss.includes("class-subclass-carousel-modal__choice-bar") && tarotCss.includes(".class-subclass-selected-card-shell") && tarotCss.includes("width: max-content") && tarotCss.includes(".class-subclass-selected-card__copy button"), "Tarot selector must not render the obsolete bottom confirmation box, and the selected subclass must remain a simple card/title/Open Codex presentation.");
+assert(tarotCss.includes("align-items: flex-start;") && tarotCss.includes("align-content: start;") && tarotCss.includes("padding-top: .08rem;"), "Selected subclass title and Open Codex action must stay top-aligned with the Tarot card.");
+assert(classMenuApprovedCss.includes('content: "LEVEL";') && classMenuApprovedCss.includes("width: 96px !important;") && classMenuApprovedCss.includes("font-size: .78rem !important;") && classMenuApprovedCss.includes("padding: 8px 112px 8px 11px !important;"), "Class level selector must retain the larger high-contrast LEVEL treatment without covering the search field.");
+assert(selector.includes('selected ? " has-selection" : ""') && tarotCss.includes(".class-subclass-section.is-card-launcher.has-selection") && tarotCss.includes("background: transparent !important") && tarotCss.includes("border: 0 !important"), "Selected subclass presentation must sit directly on the Class background without the old nested container chrome.");
+assert(featureDock.includes("npc-forge-class-feature-dock__subclass-action") && featureDock.includes("subclassActionLabel") && featureDock.includes("Browse Tarot"), "Subclass selection/change action must live in the Codex header rather than below the carousel.");
 assert(model.includes("spellCatalog") && model.includes("allSpellCatalog: spells") && !model.includes("maxSpellLevelForProgressionRow"), "Subclass spell resolution should retain class access while exposing the full source-backed spell catalogue for special subclass access such as Dunamancy.");
 for (const token of ["area_type", "area_size", "area_unit", "material_text", "saving_throw_abilities", "attack_type", "healing_dice", "higher_level_text"]) assert(model.includes(token), `Subclass Codex spell query must retain Profile SpellCard detail field: ${token}`);
-assert(featureDock.includes("overflow:hidden!important") && featureDock.includes("flex-direction:column!important") && featureDock.includes("npc-forge-class-feature-dock__body{min-height:0;flex:1 1 auto;overflow:auto!important") && featureDock.includes("npc-forge-subclass-inspector__tabs{position:sticky;top:0"), "Codex scrolling must stay inside the body below the fixed header/tab boundary.");
+assert(featureDock.includes("overflow:hidden!important") && featureDock.includes("flex-direction:column!important") && featureDock.includes("max-height:min(84dvh") && featureDock.includes("overflow-x:hidden!important;overflow-y:auto!important") && featureDock.includes("scrollbar-gutter:stable") && featureDock.includes("npc-forge-subclass-inspector__tabs{position:sticky;top:0"), "Codex scrolling must stay inside the body below the fixed header/tab boundary without a horizontal scrollbar cutting off the inner Codex.");
+assert(featureDock.includes("padding:22px 22px 34px") && featureDock.includes("npc-forge-subclass-inspector__content.is-spells{min-height:0;padding-bottom:22px;overflow:hidden}") && featureDock.includes("padding:5px 8px 14px 5px"), "Codex content and the spell preview must preserve bottom breathing room so the card footer is fully reachable.");
 
 
 console.log("Class subclass selector validation passed: canonical authority remains in the guide model, all subclass cards stay on one free-floating parametric carousel, rear cards use the shared card back, one exact hero position owns enlarged presentation, ambient library motion is presentation-only, drag/arrow motion never persists a subclass, explicit card clicks remain the only selection path, all 151 approved normalized Tarot concepts remain installed/mapped, and future content retains safe fallback.");

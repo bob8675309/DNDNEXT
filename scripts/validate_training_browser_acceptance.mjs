@@ -9,9 +9,12 @@ const app = read("pages/_app.js");
 const responsive = read("styles/character-forge-responsive.css");
 const browserPolish = read("styles/character-forge-browser-review-polish.css");
 const playerTraining = read("components/NpcForgeTrainingStepPlayer.js");
+const classFeatureChoices = read("components/NpcForgeClassFeatureChoices.js");
 const playerTabbed = read("components/NpcForgeTrainingStepPlayerTabbed.js");
 const sourceContext = read("components/NpcForgeSourceChoiceContext.js");
 const trainingContext = read("components/NpcForgeTrainingContextCard.js");
+const featRulePresentation = read("utils/featRulePresentation.js");
+const profileFeatures = read("components/CharacterFeaturesPanel.js");
 const routedController = read("components/useNpcForgeTrainingRoutedController.js");
 const contextPanel = read("components/NpcForgeContextPanel.js");
 const backgroundEmpty = read("components/NpcForgeBackgroundEmptyState.js");
@@ -50,8 +53,7 @@ for (const token of [
 ]) assert(playerTraining.includes(token), `Trade Skill surface must own source-granted Profession choices: missing ${token}`);
 
 for (const token of [
-  "const standaloneHeading",
-  "standaloneHeading && paragraphs[index + 1]",
+  "featRuleSectionsFromDescription",
   "npc-forge-training-feat-rule-intro",
   "skillsRoutedGroups",
   "featTrainingGroups",
@@ -62,15 +64,23 @@ for (const token of [
   'title: "Discount"',
   'title: "Fast Crafting"',
 ]) assert(trainingContext.includes(token), `Feat dossier cleanup / Crafter routing is missing ${token}`);
+for (const token of ["const standaloneHeading", "plainHeading", "standaloneHeading?.[1] || paragraph", "formatPlayerFacingText"]) assert(featRulePresentation.includes(token), `Shared feat rule formatter is missing ${token}`);
 assert(!trainingContext.includes("groupsOverride={trainingGroups}"), "The Feats dossier must not render Skills-routed Crafter Profession controls.");
 assert(!trainingContext.includes('<h4>Feat Rules</h4><p>{feat.description'), "Training must not dump raw unformatted feat descriptions directly into the dossier.");
+assert(playerTraining.includes("backgroundSourceLabel") && playerTraining.includes("classSourceLabel") && playerTraining.includes("sourceOwnerLabel={selectedClassName || \"Class\"}"), "Skills and feature-owned Training choices must expose their actual Background/Class provenance.");
+assert(classFeatureChoices.includes("npc-forge-class-choice-source") && classFeatureChoices.includes("Granted by") && classFeatureChoices.includes("group.subclassName || sourceOwnerLabel"), "Expertise and other class/subclass feature choices must identify the granting feature and owner.");
+assert(playerTraining.includes("npc-forge-training-feat-only") && playerTraining.includes("npc-forge-training-class-only"), "Feat and class-option controls must be separated into distinct Training subviews.");
+assert(!playerTraining.includes("onMouseEnter={() => onDetail") && !playerTraining.includes("onMouseEnter={() => publishFeatGroup"), "Training Current Selection must not change merely because the pointer passes over another choice.");
+assert(profileFeatures.includes("FeatureRuleText") && profileFeatures.includes("profile-feature-rule-list") && featRulePresentation.includes("featRuleSectionsFromDescription"), "Profile and Forge feat descriptions must share structured low-chrome rule formatting.");
 
 for (const token of [
   "npc-forge-training-mode-switch{display:flex",
   "border-radius:999px",
-  "Crafter's Profession grants are the exception and resolve in Skills",
-  "Feat-granted Profession choices such as Crafter also resolve here",
-]) assert(playerTabbed.includes(token), `Segmented Skills/Feats pill or routing copy is missing ${token}`);
+  "Class Choices",
+  "classSourceGroups",
+  "Shared class picks",
+]) assert(playerTabbed.includes(token), `Segmented Skills/Feats/Class Choices navigation is missing ${token}`);
+assert(trainingContext.includes("Where these come from"), "Training section tabs must publish source/count breakdowns into Current Selection.");
 
 assert(app.includes('import "../styles/character-forge-browser-review-polish.css";'), "Latest Character Forge browser-review stylesheet is not loaded by _app.js.");
 for (const token of [
@@ -86,8 +96,18 @@ for (const token of [
 ]) assert(browserPolish.includes(token), `Background feature-upflow polish is missing ${token}`);
 
 for (const token of [
-  ".npc-forge-training-feat-rule-list > article + article:not(:has(> strong))",
-  ".npc-forge-training-feat-rule-list > article:first-child:not(:has(> strong))",
+  ".npc-forge-training-mode-switch > button::after",
+  ".npc-forge-training-picks",
+  ".npc-forge-training-feat-picker",
+  ".npc-forge-training-feat-list > button::before",
+  ".npc-forge-body:has(.npc-forge-training-tabbed-shell) .npc-forge-context-panel",
+]) assert(browserPolish.includes(token), `Training browse/inspect/choose visual hierarchy is missing ${token}`);
+
+for (const token of [
+  ".npc-forge-training-feat-rule-list > article",
+  "border-left: 2px solid rgba(168,108,255,.38)",
+  "border-radius: 0 !important",
+  "background: transparent !important",
   ".npc-forge-training-feat-help",
   ".npc-forge-training-tabbed-help",
   ".npc-forge-training-feat-followups button.has-spells",
@@ -95,7 +115,8 @@ for (const token of [
   "max-height: clamp(228px, calc(100dvh - 430px), 500px)",
   ".npc-forge-training-context-note",
   "height: calc(100dvh - 190px)",
-]) assert(browserPolish.includes(token), `Latest Feats compaction / continuation polish is missing ${token}`);
+  ".npc-forge-training-tabbed-shell:is(.is-feats,.is-class)",
+]) assert(browserPolish.includes(token), `Latest low-chrome Feats/Class Choices continuation polish is missing ${token}`);
 
 for (const token of [
   "function initialBackground",
@@ -119,4 +140,4 @@ for (const token of ["map_routes", "advance_all_characters", "world-map", "town 
   assert(!protectedSources.includes(token), `Browser acceptance patch unexpectedly references protected map behavior: ${token}`);
 }
 
-console.log("Training browser acceptance validation passed: authoritative 40/60 layout, Crafter three free Profession choices routed through Skills/Trade Skills, Background features lifted under Skills, continuation feat prose visually grouped, redundant Feats helper/spell-only rows removed, full-height Current Selection, segmented Training pill, and first-Background default selection are intact.");
+console.log("Training browser acceptance validation passed: authoritative 40/60 layout, click-owned Current Selection, separate Skills/Feats/Class Choices tabs, right-panel feat confirmation, source breakdowns, subtle feat prose formatting, and first-Background default selection are intact.");

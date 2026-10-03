@@ -62,7 +62,7 @@ for (const token of [
   "ProgressionTable",
   "Class Overview",
   "Detailed Guide",
-  "inspectSubclass(model, onSubclassDetail, option)",
+  "inspectSubclass(model, onSubclassDetail, option, actions)",
   "selectedRowFeatures",
 ]) assert(guide.includes(token), `Artificer presentation patch must preserve existing Class behavior: ${token}`);
 assert(!guide.includes("inspectSubclass(model, onFeatureDetail, option)"), "Artificer presentation validation must preserve the independent Subclass Codex callback.");

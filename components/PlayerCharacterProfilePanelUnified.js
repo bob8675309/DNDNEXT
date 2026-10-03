@@ -214,6 +214,16 @@ export default function PlayerCharacterProfilePanelUnified() {
       if (!active || requestId !== sessionRequestId) return;
       const user = session?.user || null;
       const requestedUserId = user?.id ? String(user.id) : null;
+      const activeUserId = activeProfileUserIdRef.current;
+
+      // Supabase can emit SIGNED_IN/TOKEN_REFRESHED again when a browser tab regains
+      // focus. Refresh the user object, but do not close or rebuild an in-progress Forge
+      // for the same account.
+      if (requestedUserId && activeUserId && requestedUserId === activeUserId) {
+        setSessionUser(user);
+        return;
+      }
+
       activeProfileUserIdRef.current = requestedUserId;
       profileLoadRequestRef.current += 1;
       selectedCharacterIdRef.current = null;
@@ -336,7 +346,7 @@ export default function PlayerCharacterProfilePanelUnified() {
         <div className={`persistent-player-character-forge ${showCreator && !showLoading ? "" : "is-hidden"}`} aria-hidden={!showCreator || showLoading}>
           <div className="p-3 player-character-forge-host">
             {message ? <div className="alert alert-secondary py-2">{message}</div> : null}
-            <PlayerCharacterCreator key={sessionUser.id} show={open && showCreator && !showLoading} defaultName={character ? "" : playerName} onCreated={handleCharacterCreated} onCancel={cancelCreator} />
+            <PlayerCharacterCreator key={sessionUser.id} show={open && showCreator && !showLoading} defaultName={character ? "" : playerName} draftStorageScope={sessionUser.id} onCreated={handleCharacterCreated} onCancel={cancelCreator} />
           </div>
         </div>
 

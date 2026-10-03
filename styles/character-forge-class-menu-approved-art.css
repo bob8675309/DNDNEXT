@@ -9,11 +9,11 @@
   .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-level-row {
     display: block !important;
     position: absolute !important;
-    top: 7px !important;
+    top: 3px !important;
     right: 9px !important;
     z-index: 8 !important;
-    width: 66px !important;
-    height: 31px !important;
+    width: 96px !important;
+    height: 38px !important;
     margin: 0 !important;
     pointer-events: none;
   }
@@ -23,40 +23,50 @@
   .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-level-row > label {
     pointer-events: auto;
     display: grid !important;
-    grid-template-columns: 20px 34px !important;
+    grid-template-columns: 42px 42px !important;
     align-items: center !important;
-    gap: 3px !important;
-    width: 64px !important;
-    min-height: 30px !important;
-    padding: 3px 4px !important;
-    border: 1px solid rgba(164,100,235,.33) !important;
-    border-radius: 6px !important;
-    background: rgba(10,14,24,.94) !important;
-    box-shadow: 0 2px 9px rgba(0,0,0,.3) !important;
+    gap: 5px !important;
+    width: 94px !important;
+    min-height: 38px !important;
+    padding: 4px 5px !important;
+    border: 1px solid rgba(208,160,255,.72) !important;
+    border-radius: 8px !important;
+    background: linear-gradient(145deg,rgba(53,31,78,.98),rgba(13,20,35,.98)) !important;
+    box-shadow: inset 0 1px rgba(255,255,255,.08),0 0 0 1px rgba(94,221,205,.08),0 5px 15px rgba(0,0,0,.38),0 0 16px rgba(157,96,230,.16) !important;
   }
   .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-level-row > label > span {
-    overflow: hidden;
-    width: 20px;
-    color: rgba(224,199,246,.72) !important;
+    overflow: visible;
+    width: 42px;
+    color: #e9d6ff !important;
     font-size: 0 !important;
     letter-spacing: 0 !important;
+    text-align: center;
   }
   .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-level-row > label > span::after {
-    content: "Lv";
+    content: "LEVEL";
     font-size: .52rem;
-    font-weight: 800;
+    font-weight: 900;
+    letter-spacing: .08em;
   }
   .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-level-row input {
-    width: 34px !important;
-    min-height: 23px !important;
-    height: 23px !important;
-    padding: 1px 2px !important;
-    border: 0 !important;
-    border-radius: 4px !important;
-    color: #f4e9dc !important;
-    background: rgba(255,255,255,.045) !important;
-    font-size: .62rem !important;
+    width: 42px !important;
+    min-height: 29px !important;
+    height: 29px !important;
+    padding: 2px 3px !important;
+    border: 1px solid rgba(101,224,208,.54) !important;
+    border-radius: 6px !important;
+    color: #fff7e8 !important;
+    background: linear-gradient(180deg,rgba(11,24,35,.98),rgba(8,15,27,.98)) !important;
+    box-shadow: inset 0 1px rgba(255,255,255,.055),0 0 10px rgba(87,213,198,.09) !important;
+    font-size: .78rem !important;
+    font-weight: 850 !important;
     text-align: center;
+    color-scheme: dark;
+  }
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-level-row input:focus {
+    border-color: rgba(125,240,224,.92) !important;
+    outline: 2px solid rgba(174,116,255,.42) !important;
+    outline-offset: 1px !important;
   }
 
   /* Class catalogue: use the real per-class images again. The temporary
@@ -66,7 +76,7 @@
   }
   .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog .npc-forge-search {
     min-height: 39px !important;
-    padding: 8px 84px 8px 11px !important;
+    padding: 8px 112px 8px 11px !important;
     font-size: .64rem !important;
   }
   .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2 .npc-forge-class-catalog-list {
@@ -231,15 +241,6 @@
   body .npc-forge-class-feature-dock .npc-forge-class-feature-dock__body {
     gap: 8px !important;
     padding: 9px 10px 10px !important;
-  }
-  body .npc-forge-class-feature-dock .npc-forge-class-feature-dock__summary .class-feature-text,
-  body .npc-forge-class-feature-dock .npc-forge-class-feature-dock__summary p {
-    font-size: .63rem !important;
-    line-height: 1.48 !important;
-  }
-  body .npc-forge-class-feature-dock .npc-forge-class-feature-dock__summary li {
-    font-size: .60rem !important;
-    line-height: 1.44 !important;
   }
   body .npc-forge-class-feature-dock .npc-forge-class-feature-dock__highlights {
     gap: 5px !important;

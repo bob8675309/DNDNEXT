@@ -60,7 +60,7 @@ for (const token of [
   "ClassSubclassSection",
   "classKey={selectedClass?.class_key || \"\"}",
   "onInspectSubclass",
-  "inspectSubclass(model, onSubclassDetail, option)",
+  "inspectSubclass(model, onSubclassDetail, option, actions)",
   "selectedRowFeatures",
   "spellSlotCells",
   'const slotLabels = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"]',
@@ -98,17 +98,20 @@ for (const token of [
   "class-subclass-carousel-modal__smoke-near",
   "class-subclass-carousel-card__float",
   "class-subclass-carousel-modal__flame is-flame-left-upper",
+  "function inspectOption(option, selectedOverride = false)",
   "model.selectSubclass(option)",
   "model?.setPreviewKey?.(option.key)",
-  "class-subclass-selected-card",
-  ">Change Subclass<",
-  "onDoubleClick={() => setSelectorOpen(true)}",
+  "class-subclass-selected-card-shell",
+  ">Open Codex<",
 ]) assert(selector.includes(token), `Reference-scene subclass selector is missing ${token}`);
 
-assert((selector.match(/model\.selectSubclass\(option\)/g) || []).length === 1, "Carousel motion must not create a second subclass-selection authority.");
-assert(!selector.includes('model?.setPreviewKey?.(heroOption.key)'), "Front-most carousel position must not auto-select or auto-preview as player intent.");
+assert((selector.match(/model\.selectSubclass\(option\)/g) || []).length === 1, "Carousel/Codex flow must retain one explicit subclass-confirmation authority.");
+assert(dock.includes(".npc-forge-class-feature-dock__head-actions{display:flex!important;flex-flow:row nowrap!important;"), "Subclass Codex select/locked action and Close controls must remain in one horizontal row.");
+assert(dock.includes("font-size:1.08rem!important;line-height:1.56!important;color:#fff!important"), "Feature panel rules text must remain high-contrast at the browser-reviewed medium reading size.");
+assert(selector.includes("model?.setPreviewKey?.(option.key)") && selector.includes("function inspectOption(option, selectedOverride = false)") && selector.includes("onInspectSubclass?.(option, {"), "Card click must preview first and hand explicit confirmation authority to the Codex.");
 assert(!selector.includes("browsedOption"), "Stale browsed-card auto-follow state must remain removed.");
 assert(!selector.includes("class-subclass-carousel-modal__details"), "Old dossier panel must not cover the recreated reference scene.");
+assert(guideStyles.includes(".npc-forge-class-guide__book .class-book-guide__levels>details") && guideStyles.includes(".npc-forge-class-guide__book>.class-book-guide__outline") && guideStyles.includes("grid-template-columns:minmax(190px,230px)") && guideStyles.includes(".npc-forge-class-guide__detailed-book") && guideStyles.includes(".npc-forge-class-guide__detailed-subclass-slot"), "Detailed Guide must retain the full-width outline, background-art reading panel, top-right subclass slot, and real details-accordion structure.");
 assert(selector.includes("class-subclass-carousel-modal__smoke-near"), "Floating ruined-library target must retain the near smoke depth layer.");
 assert(!selector.includes("class-subclass-carousel-modal__rune-foreground"), "Retired runic-table foreground must not return.");
 assert(!selector.includes("class-subclass-carousel-modal__mouse"), "Terrain-independent ambient mouse must stay removed.");

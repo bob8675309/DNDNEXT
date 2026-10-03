@@ -66,7 +66,7 @@ assert(!guide.includes("model.options.map((option) => <SubclassButton"), "Legacy
 assert(!guide.includes("model.options.slice(0, 4)"), "Subclass catalogue must not collapse after four entries.");
 assert(!guide.includes("npc-forge-class-guide__subclass-more"), "The Class overview must not hide subclasses behind a More disclosure.");
 assert(guide.includes("ForgeSubclassSelection"), "Subclass selection behavior was removed.");
-assert(subclassBrowser.includes("model.selectSubclass(option)"), "Subclass confirmation behavior was removed from the browser.");
+assert(subclassBrowser.includes("function inspectOption(option, selectedOverride = false)") && subclassBrowser.includes("model.selectSubclass(option)") && subclassBrowser.includes("onInspectSubclass?.(option, {"), "Explicit Codex-owned subclass confirmation behavior was removed from the browser.");
 assert(subclassBrowser.includes("orbitOptions.map(({ option, optionIndex") && subclassBrowser.includes('role="list"') && subclassBrowser.includes('aria-setsize={options.length}'), "Every canonical subclass must remain reachable in the modal Tarot ring.");
 assert(guide.includes("ProgressionTable"), "Class progression table was removed.");
 assert(guide.includes("Class Overview") && guide.includes("Detailed Guide"), "Class guide view controls regressed.");

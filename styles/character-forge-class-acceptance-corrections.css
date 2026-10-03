@@ -180,16 +180,6 @@
     padding: 9px 10px 10px !important;
   }
 
-  body .npc-forge-class-feature-dock .npc-forge-class-feature-dock__summary .class-feature-text,
-  body .npc-forge-class-feature-dock .npc-forge-class-feature-dock__summary p {
-    font-size: .64rem !important;
-    line-height: 1.48 !important;
-  }
-
-  body .npc-forge-class-feature-dock .npc-forge-class-feature-dock__summary li {
-    font-size: .62rem !important;
-    line-height: 1.45 !important;
-  }
 
   body .npc-forge-class-feature-dock .npc-forge-class-feature-dock__routing-note,
   body .npc-forge-class-feature-dock .npc-forge-class-feature-dock__listed-note {
