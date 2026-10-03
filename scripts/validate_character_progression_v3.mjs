@@ -96,11 +96,14 @@ for (const token of [
 ]) requireToken(guideModel, token, "canonical optional-feature class guide");
 
 const classChoicesUi = read("components/NpcForgeClassFeatureChoices.js");
+const classOptionBrowser = read("components/NpcForgeClassOptionBrowser.js");
+forbidToken(classChoicesUi, "NpcForgeSourceChoiceFields", "class feature chooser preview portal");
 for (const token of [
-  "NpcForgeSourceChoiceFields",
-  'ownerType="class-option"',
-  'title="Source-owned class option instances"',
-]) requireToken(classChoicesUi, token, "source-owned Class workspace");
+  "sourceChoiceFieldIsActive",
+  'type: "classSourceOption"',
+  "Selection is confirmed from Current Selection",
+  "npc-forge-class-option-list",
+]) requireToken(classOptionBrowser, token, "source-owned Class workspace");
 
 const classExtensions = read("utils/classFeatureChoiceExtensions.js");
 for (const token of [
