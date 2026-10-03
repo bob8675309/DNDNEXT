@@ -4,11 +4,13 @@ import { ABILITY_LABELS, SKILL_DEFINITIONS } from "../utils/characterCreation";
 import { PROFESSION_DEFINITIONS, TRADE_SKILL_KEYS } from "../utils/craftingProfessions";
 import { sourceGrantedTradeSkillKey, sourceGrantedTradeSkillKeys } from "../utils/craftingToolProfessions";
 import { selectedSourceChoiceOptions, sourceChoiceFieldIsActive, sourceChoiceGroupComplete } from "../utils/playerForgeSourceChoices";
+import { activeClassFeatureGroups } from "../utils/classFeatureChoices";
 import NpcForgeClassFeatureChoices from "./NpcForgeClassFeatureChoices";
+import NpcForgeClassOptionBrowser from "./NpcForgeClassOptionBrowser";
 import NpcForgeSourceChoiceFields from "./NpcForgeSourceChoiceFields";
 import NpcForgeTrainingFeatPicker from "./NpcForgeTrainingFeatPicker";
 import { useNpcForgeClassChoice } from "./NpcForgeClassChoiceContext";
-import { sourceChoiceGroupsForResolverPlacement, useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
+import { sourceChoiceGroupsForPlacement, sourceChoiceGroupsForResolverPlacement, useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
 import { useNpcForgeControllerContext } from "./NpcForgeControllerContext";
 
 const normalized = (value) => String(value ?? "").trim().toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
@@ -189,8 +191,12 @@ export default function NpcForgeTrainingStepPlayer({
   const backgroundGrantedSkillKeys = useMemo(() => new Set([...backgroundSkills, ...backgroundChoiceSelectedKeys]), [backgroundSkills, backgroundChoiceSelectedKeys]);
   const effectiveGrantedSkillKeys = useMemo(() => new Set([...backgroundGrantedSkillKeys, ...sourceGrantedSkillKeys]), [backgroundGrantedSkillKeys, sourceGrantedSkillKeys]);
 
-  const trainingChoiceGroups = useMemo(() => (classChoiceState.featureGroups || []).filter((group) => (group.placement || "class") === "training"), [classChoiceState.featureGroups]);
-  const classAbilityGroups = useMemo(() => (classChoiceState.featureGroups || []).filter((group) => (group.placement || "class") === "class"), [classChoiceState.featureGroups]);
+  const activeFeatureGroups = useMemo(
+    () => activeClassFeatureGroups(classChoiceState.featureGroups || [], classChoiceState.featureSelections || {}),
+    [classChoiceState.featureGroups, classChoiceState.featureSelections]
+  );
+  const trainingChoiceGroups = useMemo(() => activeFeatureGroups.filter((group) => (group.placement || "class") === "training"), [activeFeatureGroups]);
+  const classAbilityGroups = useMemo(() => activeFeatureGroups.filter((group) => (group.placement || "class") === "class"), [activeFeatureGroups]);
   const resolverTrainingGroups = useMemo(() => sourceChoiceGroupsForResolverPlacement(sourceChoiceState, "training"), [sourceChoiceState]);
   const sourceTrainingGroups = useMemo(() => resolverTrainingGroups.filter((group) => (
     group.placement === "training"
@@ -202,6 +208,14 @@ export default function NpcForgeTrainingStepPlayer({
   )), [resolverTrainingGroups]);
   const featTrainingGroups = useMemo(() => sourceClassAbilityGroups.filter((group) => group.ownerType === "feat"), [sourceClassAbilityGroups]);
   const otherSourceClassAbilityGroups = useMemo(() => sourceClassAbilityGroups.filter((group) => group.ownerType !== "feat"), [sourceClassAbilityGroups]);
+  const classOptionGroups = useMemo(
+    () => sourceChoiceGroupsForPlacement(sourceChoiceState, "class").filter((group) => group.ownerType === "class-option"),
+    [sourceChoiceState]
+  );
+  const allSourceClassAbilityGroups = useMemo(() => {
+    const byId = new Map([...sourceClassAbilityGroups, ...classOptionGroups].map((group) => [group.id, group]));
+    return [...byId.values()];
+  }, [classOptionGroups, sourceClassAbilityGroups]);
   const featSpellGroups = useMemo(() => sourceChoiceGroupsForResolverPlacement(sourceChoiceState, "spells").filter((group) => group.ownerType === "feat"), [sourceChoiceState]);
   const featDecisionGroups = useMemo(() => {
     const ids = [...new Set([...featTrainingGroups.map((group) => group.id), ...featSpellGroups.map((group) => group.id)])];
@@ -243,14 +257,14 @@ export default function NpcForgeTrainingStepPlayer({
   const incompleteTrainingFeature = trainingChoiceGroups.some((group) => group.required && (classChoiceState.featureSelections?.[group.id] || []).length !== Number(group.count || 0));
   const incompleteClassAbility = classAbilityGroups.some((group) => group.required && (classChoiceState.featureSelections?.[group.id] || []).length !== Number(group.count || 0));
   const incompleteSourceTraining = sourceTrainingGroups.some((group) => !sourceChoiceGroupComplete(group, sourceChoiceState.selections || {}));
-  const incompleteSourceClassAbility = sourceClassAbilityGroups.some((group) => !sourceChoiceGroupComplete(group, sourceChoiceState.selections || {}));
+  const incompleteSourceClassAbility = allSourceClassAbilityGroups.some((group) => !sourceChoiceGroupComplete(group, sourceChoiceState.selections || {}));
   const incompleteBonusFeat = bonusFeatRequired && !selectedBonusFeat;
 
   const trainingFeatureProgress = classChoiceProgress(trainingChoiceGroups, classChoiceState.featureSelections || {});
   const sourceTrainingProgress = sourceChoiceProgress(sourceTrainingGroups, sourceChoiceState.selections || {});
   const trainingStageProgress = { target: trainingFeatureProgress.target + sourceTrainingProgress.target, done: trainingFeatureProgress.done + sourceTrainingProgress.done };
   const classAbilityProgress = classChoiceProgress(classAbilityGroups, classChoiceState.featureSelections || {});
-  const sourceClassProgress = sourceChoiceProgress(sourceClassAbilityGroups, sourceChoiceState.selections || {});
+  const sourceClassProgress = sourceChoiceProgress(allSourceClassAbilityGroups, sourceChoiceState.selections || {});
   const featChoiceTarget = classAbilityProgress.target + sourceClassProgress.target + (bonusFeatRequired ? 1 : 0);
   const featChoiceDone = classAbilityProgress.done + sourceClassProgress.done + (bonusFeatRequired && selectedBonusFeat ? 1 : 0);
   const totalSelectionTarget = backgroundChoiceTarget + totalTrainingChoices + trainingStageProgress.target + featChoiceTarget;
@@ -452,7 +466,8 @@ export default function NpcForgeTrainingStepPlayer({
             })}</div></section> : null}
           </div>
           <div className="npc-forge-training-class-only">
-            <NpcForgeClassFeatureChoices groups={classChoiceState.featureGroups || []} selections={classChoiceState.featureSelections || {}} level={classChoiceState.level || 1} onToggle={toggleFeatureOption} placement="class" sourceOwnerLabel={selectedClassName || "Class"} heading="Class and subclass choices" description="Invocations, fighting styles, maneuvers, plans, and other persistent class/subclass decisions are resolved here. Spell selections remain on the Spells step." />
+            <NpcForgeClassFeatureChoices groups={classChoiceState.featureGroups || []} selections={classChoiceState.featureSelections || {}} level={classChoiceState.level || 1} onToggle={toggleFeatureOption} placement="class" sourceOwnerLabel={selectedClassName || "Class"} heading="Class and subclass choices" description="Fighting styles, maneuvers, and other feature-owned choices remain here. Source-backed catalogues such as Eldritch Invocations use the click-to-inspect list below." />
+            <NpcForgeClassOptionBrowser groups={classOptionGroups} selections={sourceChoiceState.selections || {}} onDetail={onDetail} />
             {otherSourceClassAbilityGroups.length ? <NpcForgeSourceChoiceFields placement="training" inline groupsOverride={otherSourceClassAbilityGroups} title="Other class and advancement decisions" /> : null}
           </div>
         </div>
