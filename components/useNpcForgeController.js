@@ -16,11 +16,11 @@ import { selectedSubclassOption, useNpcForgeClassChoice } from "./NpcForgeClassC
 import useNpcForgeDerivedModel from "./useNpcForgeDerivedModel";
 import { NPC_STEP_LABELS, PLAYER_STEP_LABELS, initialDraft, titleForSkill, abilityModifier, proficiencyBonus, maximumHitPoints, sourceLabel, standardScoresForClass, speciesTraits, optionId, assetSummary, toolProficiencyDescription, recoverCreatedCharacter } from "./NpcForgeCoreSupport";
 
-export default function useNpcForgeController({ show, onClose, onCreated, locations = [], mode = "npc", createCharacter = null, onReset = null }) {
+export default function useNpcForgeController({ show, onClose, onCreated, locations = [], mode = "npc", createCharacter = null, onReset = null, draftStorageScope = "" }) {
   const playerMode = mode === "player";
   const STEP_LABELS = playerMode ? PLAYER_STEP_LABELS : NPC_STEP_LABELS;
   const restoredPlayerDraftRef = useRef(undefined);
-  if (restoredPlayerDraftRef.current === undefined) restoredPlayerDraftRef.current = playerMode ? readPlayerForgeDraft() : null;
+  if (restoredPlayerDraftRef.current === undefined) restoredPlayerDraftRef.current = playerMode ? readPlayerForgeDraft(draftStorageScope) : null;
   const restoredController = restoredPlayerDraftRef.current?.controller || {};
   const [step, setStep] = useState(() => Math.max(0, Math.min(STEP_LABELS.length - 1, Number(restoredController.step || 0))));
   const [draft, setDraft] = useState(() => ({ ...initialDraft(), ...(restoredController.draft || {}) }));
@@ -69,8 +69,8 @@ export default function useNpcForgeController({ show, onClose, onCreated, locati
         allocation,
         selectedRollId,
       },
-    });
-  }, [playerMode, step, draft, rolls, allocation, selectedRollId]);
+    }, draftStorageScope);
+  }, [playerMode, draftStorageScope, step, draft, rolls, allocation, selectedRollId]);
   useEffect(() => {
     if (!show) return;
     let active = true;
@@ -127,7 +127,7 @@ export default function useNpcForgeController({ show, onClose, onCreated, locati
 
   function patch(values) { setDraft((current) => ({ ...current, ...values })); setError(""); clearForgeValidationGuidance(); }
   function resetForm() {
-    if (playerMode) clearPlayerForgeDraft();
+    if (playerMode) clearPlayerForgeDraft(draftStorageScope);
     clearForgeValidationGuidance(); setStep(0); setDraft(initialDraft()); setCreating(false); setCatalogError(""); setError(""); setSpeciesQuery(""); setBackgroundQuery(""); setClassQuery(""); setFeatQuery(""); setFeatToAdd(""); setTagInput(""); setRolls(rollAbilityPoolForMethod("4d6")); setAllocation({}); setSelectedRollId(""); setDetail(null); setPortraitPickerOpen(false); setSpellModel(null); setSpellRows([]); setEquipmentModel(null); onReset?.();
   }
   function handleClose() { if (creating) return; onClose?.(); }
