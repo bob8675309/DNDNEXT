@@ -557,7 +557,7 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
         .npc-forge-class-feature-dock.is-feature-panel .npc-forge-class-feature-dock__summary .class-feature-text.is-compact,
         .npc-forge-class-feature-dock.is-feature-panel .npc-forge-class-feature-dock__summary .class-feature-text>p,
         .npc-forge-class-feature-dock.is-feature-panel .npc-forge-class-feature-dock__summary .class-feature-text p,
-        .npc-forge-class-feature-dock.is-feature-panel .npc-forge-class-feature-dock__summary .class-feature-text li{font-size:1.22rem!important;line-height:1.58!important;color:#fff!important}
+        .npc-forge-class-feature-dock.is-feature-panel .npc-forge-class-feature-dock__summary .class-feature-text li{font-size:1.08rem!important;line-height:1.56!important;color:#fff!important}
         .npc-forge-class-feature-dock.is-feature-panel .npc-forge-class-feature-dock__summary h4,
         .npc-forge-class-feature-dock.is-feature-panel .npc-forge-class-feature-dock__summary h5{font-size:1.3rem!important;line-height:1.42!important}
         .npc-forge-class-feature-dock.is-feature-panel .npc-forge-class-feature-dock__meta>span{font-size:.6rem!important}
