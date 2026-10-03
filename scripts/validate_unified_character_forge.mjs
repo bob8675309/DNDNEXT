@@ -37,7 +37,7 @@ const spellMigration = read("sql/20260805_02_player_forge_starting_spell_validat
 const authorityMigration = read("sql/20260805_03_player_character_authority_hardening.sql");
 const startingMagicAuthority = read("sql/20260808_04_player_forge_starting_magic_authority.sql");
 
-includes(playerCreator, ['import NewNpcModalV3 from "./NewNpcModalV3";', 'mode="player"', "onCreated={onCreated}", "onClose={onCancel}"], "player creator adapter");
+includes(playerCreator, ['import NewNpcModalV3 from "./NewNpcModalV3";', 'mode="player"', "draftStorageScope={draftStorageScope}", "onCreated={onCreated}", "onClose={onCancel}"], "player creator adapter");
 expect(!/^\s*import\s+PlayerCharacterForgeView\b/m.test(playerCreator), "retired standalone player creator returned");
 includes(sharedForge, [
   'props?.mode === "player"',
@@ -55,9 +55,9 @@ includes(sharedForge, [
 expect(!sharedForge.includes('supabase.rpc("create_player_character_v2"'), "shared Forge still stops at the v2 starting-magic boundary");
 expect(!sharedForge.includes("p_spell_choices: []"), "player Forge still discards starting spell choices");
 expect(!sharedForge.includes("supabase.rpc =") && !sharedForge.includes("MutationObserver"), "player mode returned to RPC or DOM interception");
-includes(sharedForge, ["readPlayerForgeDraft", "writePlayerForgeDraft", "clearPlayerForgeDraft", "restoredChoices", "choices: {"], "persistent player Forge choice state");
-includes(forgeController, ["readPlayerForgeDraft", "writePlayerForgeDraft", "clearPlayerForgeDraft", "restoredController", "controller: {", "step,", "draft,", "rolls,", "allocation,"], "persistent player Forge controller state");
-includes(forgeDraftPersistence, ["dndnext:player-character-forge:draft:v1", "window.localStorage.getItem", "window.localStorage.setItem", "window.localStorage.removeItem"], "local player Forge draft persistence");
+includes(sharedForge, ["readPlayerForgeDraft(draftStorageScope)", "writePlayerForgeDraft({", "draftStorageScope", "clearPlayerForgeDraft(draftStorageScope)", "restoredChoices", "choices: {"], "persistent account-scoped player Forge choice state");
+includes(forgeController, ["readPlayerForgeDraft(draftStorageScope)", "writePlayerForgeDraft({", "draftStorageScope", "clearPlayerForgeDraft(draftStorageScope)", "restoredController", "controller: {", "step,", "draft,", "rolls,", "allocation,"], "persistent account-scoped player Forge controller state");
+includes(forgeDraftPersistence, ["dndnext:player-character-forge:draft:v1", "playerForgeDraftStorageKey", "window.localStorage.getItem", "window.localStorage.setItem", "window.localStorage.removeItem"], "local account-scoped player Forge draft persistence");
 
 includes(forgeSource, ["NPC_STEP_LABELS", "PLAYER_STEP_LABELS", '"Spells"', 'type="number" min="1" max="20"', 'mode = "npc"', "NpcForgeAbilityStep", "NpcForgeSpeciesBonusPanel", "NpcForgeTrainingStep", "NpcForgeSpellStep", "NpcForgeReviewPanel", "NpcForgeContextPanel", "NpcForgePortraitPickerModal", "spellChoicesForRpc", "serializeStartingMagicSelections", "startingMagicSelections", "Create Player Character", "Starting level may be set from 1 to 20.", "playerMode ? [] : draft.additionalFeats || []"], "canonical shared Forge");
 includes(abilityStep, ["Ability Score Generation Method", "Standard 3d6", "4d6 drop lowest die", "Point Buy", "Standard Class Array", "Manual Assign", "Reroll All Six", "Species Bonus stays in the right information panel"], "ability step");
@@ -77,6 +77,7 @@ includes(spellSources, ["subclassStartingSpellSelectionModel", "startingSpellSou
 
 includes(profileEntry, ['import PlayerCharacterProfilePanelUnified from "./PlayerCharacterProfilePanelUnified";', "export default PlayerCharacterProfilePanelUnified;"], "profile entry");
 includes(profile, ['supabase.rpc("get_my_player_characters_v2")', "const [characters, setCharacters] = useState([]);", "Create another character", "const isLoggedIn = !!sessionUser;", "is-forge-suspended"], "multi-character profile");
+includes(profile, ["requestedUserId && activeUserId && requestedUserId === activeUserId", "setSessionUser(user);", "draftStorageScope={sessionUser.id}"], "same-account Forge continuity across auth refresh");
 expect(profile.includes("if (!isLoggedIn) return null;") || profile.includes("if (!keepCreatorMounted) return null;"), "multi-character profile missing authenticated mount guard");
 includes(responsive, ["max-height: calc(100dvh - 24px)", ".npc-forge-modal-v2 .npc-forge-body", "overflow-x: auto", ".npc-forge-modal-v2 .npc-forge-footer", "position: sticky", "@media (max-width: 720px)"], "responsive Forge CSS");
 expect(app.includes('import "../styles/character-forge-responsive.css";'), "responsive stylesheet is not loaded");
