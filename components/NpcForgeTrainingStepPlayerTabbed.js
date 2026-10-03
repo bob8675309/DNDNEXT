@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { TRADE_SKILL_KEYS } from "../utils/craftingProfessions";
-import { sourceChoiceGroupComplete } from "../utils/playerForgeSourceChoices";
+import { sourceChoiceFieldIsActive, sourceChoiceGroupComplete } from "../utils/playerForgeSourceChoices";
 import { useNpcForgeClassChoice } from "./NpcForgeClassChoiceContext";
 import { useNpcForgeControllerContext } from "./NpcForgeControllerContext";
 import { sourceChoiceGroupsForPlacement, sourceChoiceGroupsForResolverPlacement, useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
@@ -23,7 +23,7 @@ function classGroupProgress(groups = [], selections = {}) {
 
 function sourceGroupProgress(groups = [], selections = {}) {
   return groups.reduce((progress, group) => {
-    const requiredFields = (group?.fields || []).filter((field) => field?.required !== false);
+    const requiredFields = (group?.fields || []).filter((field) => field?.required !== false && sourceChoiceFieldIsActive(field, selections));
     const target = requiredFields.reduce((total, field) => total + Math.max(1, Number(field?.count || 1)), 0);
     const done = requiredFields.reduce((total, field) => total + Math.min(Math.max(1, Number(field?.count || 1)), (selections?.[group.id]?.[field.id] || []).length), 0);
     return { target: progress.target + target, done: progress.done + done };
