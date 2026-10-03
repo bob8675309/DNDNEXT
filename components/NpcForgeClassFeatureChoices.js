@@ -132,7 +132,7 @@ export default function NpcForgeClassFeatureChoices({
           const compactPicker = group.kind !== "spell" && Number(group.count || 0) <= 6 && availableOptions.length <= 36 && !availableOptions.some((option) => option.requires || option.followup);
           const helperCopy = conciseChoiceHelper(group.helper);
           return (
-            <details key={group.id} className={`npc-forge-class-choice-group ${complete ? "is-complete" : "is-required"}`} open={!complete}>
+            <details key={group.id} className={`npc-forge-class-choice-group ${complete ? "is-complete" : "is-required"}`} open={inspectOnly ? undefined : !complete}>
               <summary><div><span>Level {group.level} • {group.sourceFeature || group.label}</span><strong>{group.label}</strong></div><em>{selected.length}/{group.count} selected</em></summary>
               <div className="npc-forge-class-choice-group__body">
                 <div className="npc-forge-class-choice-source">
