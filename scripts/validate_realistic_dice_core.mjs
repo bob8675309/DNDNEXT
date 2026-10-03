@@ -85,6 +85,7 @@ expect(css.includes(".staticDie") && css.includes(".returnButton"), "assigned ab
 expect(css.includes(".modifierBadge"), "assigned ability modifier badge missing");
 expect(tray.includes("positionTooltipInsideTray") && tray.includes('data-dice-tray-surface="true"') && tray.includes('dataset.tooltipSide = topSpace < 108'), "dice hover math must choose an inward tray placement before display");
 expect(css.includes("--dice-tooltip-shift-x") && css.includes('data-tooltip-side="below"'), "dice tooltip CSS must clamp horizontal placement and flip below near the tray top");
+expect(css.includes(".settled:focus-visible { z-index: 80 !important; }") && css.includes("z-index: 100;"), "hover/focus dice math must stack above every neighboring die even when it opens downward");
 expect(trayLayoutCss.includes("padding: 0") && trayLayoutCss.includes("forge-ability-realistic-dice"), "physical tray must expand through the outer Forge shell");
 
 expect(adapter.includes('type: "resultCube"'), "Forge must use aggregate resultCube rather than pretending totals are literal d6 faces");
