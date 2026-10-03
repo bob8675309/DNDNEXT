@@ -101,7 +101,9 @@ forbidToken(classChoicesUi, "NpcForgeSourceChoiceFields", "class feature chooser
 for (const token of [
   "sourceChoiceFieldIsActive",
   'type: "classSourceOption"',
-  "Selection is confirmed from Current Selection",
+  "Descriptions and selection stay in Current Selection",
+  "<details",
+  "npc-forge-class-option-group__body",
   "npc-forge-class-option-list",
 ]) requireToken(classOptionBrowser, token, "source-owned Class workspace");
 
