@@ -7,8 +7,6 @@ import { sourceChoiceGroupsForPlacement, sourceChoiceGroupsForResolverPlacement,
 import NpcForgeTrainingStepPlayer from "./NpcForgeTrainingStepPlayer";
 
 const TRAINING_ASSET_ROOT = "/ui/forge/training";
-const normalized = (value) => String(value ?? "").trim().toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
-
 function classGroupsIncomplete(groups = [], selections = {}) {
   return groups.some((group) => group?.required && (selections?.[group.id] || []).length !== Number(group.count || 0));
 }
@@ -34,15 +32,6 @@ function titleCase(value = "") {
   return String(value || "").replace(/[-_]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()).trim();
 }
 
-function featOptionForGroup(group = {}, options = []) {
-  const optionId = String(group?.metadata?.featOptionId || "");
-  const name = normalized(group?.metadata?.featName || group?.label);
-  const source = String(group?.metadata?.featSource || group?.source || "");
-  return options.find((option) => optionId && String(option?.id || "") === optionId)
-    || options.find((option) => name && normalized(option?.name) === name && (!source || String(option?.source || "") === source))
-    || options.find((option) => name && normalized(option?.name) === name)
-    || null;
-}
 
 export default function NpcForgeTrainingStepPlayerTabbed(props) {
   const [activeView, setActiveView] = useState("skills");
@@ -98,7 +87,7 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
   const classChoicesHaveChoices = classFeatureGroups.length > 0 || classSourceGroups.length > 0;
 
   useEffect(() => {
-    if (activeView !== "feats") return;
+    if (!["feats", "class"].includes(activeView)) return;
     const featSection = shellRef.current?.querySelector("details.npc-forge-training-feat-section");
     if (featSection) featSection.open = true;
   }, [activeView, controller.speciesBonusFeat, classSelections, sourceSelections]);
