@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import { PROFESSION_DEFINITIONS, PROFESSION_KEYS } from "../utils/craftingProfessions";
 import { ABILITY_KEYS, ABILITY_LABELS, CLASS_DEFINITIONS, FEAT_OPTIONS, SKILL_DEFINITIONS, SPECIES_DEFINITIONS, buildCharacterCreatePayload } from "../utils/characterCreation";
@@ -8,6 +8,7 @@ import { emptyPointBuyScores, pointBuyRemaining, rollAbilityPoolForMethod, spell
 import { normalizeStartingEquipmentSelection, startingEquipmentSelectionComplete } from "../utils/playerForgeStartingEquipment";
 import { speciesDefaultCharacterSize } from "../utils/speciesPresentation";
 import { clearForgeValidationGuidance, forgeStepGuidanceSelectors, showForgeValidationGuidance } from "../utils/forgeValidationGuidance";
+import { clearPlayerForgeDraft, readPlayerForgeDraft, writePlayerForgeDraft } from "../utils/playerForgeDraftPersistence";
 import { generateNpcName } from "../utils/npcNameGenerator";
 import { generateNpcStory, generatedStoryLocationLabel } from "../utils/npcStoryGenerator";
 import { backgroundFeatRule as getBackgroundFeatRule, backgroundFeatSummary, resolveBackgroundFeatOptions } from "../utils/backgroundMechanics";
@@ -18,8 +19,11 @@ import { NPC_STEP_LABELS, PLAYER_STEP_LABELS, initialDraft, titleForSkill, abili
 export default function useNpcForgeController({ show, onClose, onCreated, locations = [], mode = "npc", createCharacter = null, onReset = null }) {
   const playerMode = mode === "player";
   const STEP_LABELS = playerMode ? PLAYER_STEP_LABELS : NPC_STEP_LABELS;
-  const [step, setStep] = useState(0);
-  const [draft, setDraft] = useState(() => initialDraft());
+  const restoredPlayerDraftRef = useRef(undefined);
+  if (restoredPlayerDraftRef.current === undefined) restoredPlayerDraftRef.current = playerMode ? readPlayerForgeDraft() : null;
+  const restoredController = restoredPlayerDraftRef.current?.controller || {};
+  const [step, setStep] = useState(() => Math.max(0, Math.min(STEP_LABELS.length - 1, Number(restoredController.step || 0))));
+  const [draft, setDraft] = useState(() => ({ ...initialDraft(), ...(restoredController.draft || {}) }));
   const [creating, setCreating] = useState(false);
   const [loadingCatalogs, setLoadingCatalogs] = useState(false);
   const [catalogError, setCatalogError] = useState("");
@@ -33,9 +37,9 @@ export default function useNpcForgeController({ show, onClose, onCreated, locati
   const [featQuery, setFeatQuery] = useState("");
   const [featToAdd, setFeatToAdd] = useState("");
   const [tagInput, setTagInput] = useState("");
-  const [rolls, setRolls] = useState(() => rollAbilityPoolForMethod("4d6"));
-  const [allocation, setAllocation] = useState({});
-  const [selectedRollId, setSelectedRollId] = useState("");
+  const [rolls, setRolls] = useState(() => Array.isArray(restoredController.rolls) && restoredController.rolls.length ? restoredController.rolls : rollAbilityPoolForMethod("4d6"));
+  const [allocation, setAllocation] = useState(() => restoredController.allocation && typeof restoredController.allocation === "object" ? restoredController.allocation : {});
+  const [selectedRollId, setSelectedRollId] = useState(() => String(restoredController.selectedRollId || ""));
   const [detail, setDetail] = useState(null);
   const [portraitPickerOpen, setPortraitPickerOpen] = useState(false);
   const [spellModel, setSpellModel] = useState(null);
@@ -44,7 +48,29 @@ export default function useNpcForgeController({ show, onClose, onCreated, locati
   const { state: classChoiceState } = useNpcForgeClassChoice();
   const selectedSubclass = selectedSubclassOption(classChoiceState);
 
-  useEffect(() => { if (draft.abilityMethod === "3d6" || draft.abilityMethod === "4d6") { setAllocation(defaultRollAllocation(rolls)); setSelectedRollId(""); } }, [rolls]);
+  useEffect(() => {
+    if (draft.abilityMethod !== "3d6" && draft.abilityMethod !== "4d6") return;
+    const validRollIds = new Set((rolls || []).map((roll) => String(roll?.id || "")).filter(Boolean));
+    setAllocation((current) => {
+      const entries = Object.entries(current || {});
+      const currentIsValid = entries.length > 0 && entries.every(([, rollId]) => validRollIds.has(String(rollId || "")));
+      return currentIsValid ? current : defaultRollAllocation(rolls);
+    });
+    setSelectedRollId((current) => validRollIds.has(String(current || "")) ? current : "");
+  }, [rolls, draft.abilityMethod]);
+
+  useEffect(() => {
+    if (!playerMode) return;
+    writePlayerForgeDraft({
+      controller: {
+        step,
+        draft,
+        rolls,
+        allocation,
+        selectedRollId,
+      },
+    });
+  }, [playerMode, step, draft, rolls, allocation, selectedRollId]);
   useEffect(() => {
     if (!show) return;
     let active = true;
@@ -101,6 +127,7 @@ export default function useNpcForgeController({ show, onClose, onCreated, locati
 
   function patch(values) { setDraft((current) => ({ ...current, ...values })); setError(""); clearForgeValidationGuidance(); }
   function resetForm() {
+    if (playerMode) clearPlayerForgeDraft();
     clearForgeValidationGuidance(); setStep(0); setDraft(initialDraft()); setCreating(false); setCatalogError(""); setError(""); setSpeciesQuery(""); setBackgroundQuery(""); setClassQuery(""); setFeatQuery(""); setFeatToAdd(""); setTagInput(""); setRolls(rollAbilityPoolForMethod("4d6")); setAllocation({}); setSelectedRollId(""); setDetail(null); setPortraitPickerOpen(false); setSpellModel(null); setSpellRows([]); setEquipmentModel(null); onReset?.();
   }
   function handleClose() { if (creating) return; onClose?.(); }
