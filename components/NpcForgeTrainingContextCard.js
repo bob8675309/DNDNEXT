@@ -194,7 +194,9 @@ export default function NpcForgeTrainingContextCard({ detail = null, selectedSki
     const prerequisite = sourceOptionPrerequisite(option, selectedClass);
     const childFields = (group.fields || []).filter((candidate) => candidate.id !== field.id && candidate.activeWhen?.values?.includes(option.key));
     const actionLabel = selected ? "Selected" : full ? "Selection Full" : selectedKeys.length && count === 1 ? "Replace Selection" : "Select";
-    const chooseOption = selected || full ? null : () => toggleSourceChoice?.(group.id, field.id, option.key);
+    const chooseOption = () => {
+      if (!selected && !full) toggleSourceChoice?.(group.id, field.id, option.key);
+    };
     const facts = sourceOptionMeta(option, field, group);
 
     return <ContextShell
