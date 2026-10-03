@@ -86,6 +86,14 @@ for (const token of [
 ]) assert(browserPolish.includes(token), `Background feature-upflow polish is missing ${token}`);
 
 for (const token of [
+  ".npc-forge-training-mode-switch > button::after",
+  ".npc-forge-training-picks",
+  ".npc-forge-training-feat-picker",
+  ".npc-forge-training-feat-list > button::before",
+  ".npc-forge-body:has(.npc-forge-training-tabbed-shell) .npc-forge-context-panel",
+]) assert(browserPolish.includes(token), `Training browse/inspect/choose visual hierarchy is missing ${token}`);
+
+for (const token of [
   ".npc-forge-training-feat-rule-list > article + article:not(:has(> strong))",
   ".npc-forge-training-feat-rule-list > article:first-child:not(:has(> strong))",
   ".npc-forge-training-feat-help",
