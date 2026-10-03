@@ -231,7 +231,7 @@ export default function ClassSubclassSection({
     const previousRects = pendingGlideRectsRef.current;
     if (!previousRects?.size) return;
     pendingGlideRectsRef.current = null;
-    const duration = 1180;
+    const duration = 980;
     glideUntilRef.current = Date.now() + duration;
 
     for (const [key, node] of cardRefsRef.current.entries()) {
@@ -245,28 +245,30 @@ export default function ClassSubclassSection({
       const next = node.getBoundingClientRect();
       if (!next.width || !next.height) continue;
 
-      // The orbit is anchored at each card's bottom-center. Animate only that anchor's
-      // travel between slots. Scaling the FLIP layer made hero-to-rear transitions
-      // temporarily magnify cards toward the viewer, especially during repeated input.
+      // Reconstruct the card's previous physical size around the same bottom-center anchor,
+      // then glide and resize together into the next orbit slot. The old top-left FLIP
+      // origin made large-to-small moves read as cards lunging toward the camera.
       const previousCenterX = previous.left + (previous.width / 2);
       const nextCenterX = next.left + (next.width / 2);
       const dx = previousCenterX - nextCenterX;
       const dy = previous.bottom - next.bottom;
+      const scale = clamp(previous.width / next.width, .42, 2.35);
       const movement = Math.hypot(dx, dy);
+      const sizeShift = Math.abs(1 - scale);
       const orbitWidth = Number(orbitRef.current?.getBoundingClientRect()?.width || 0);
       // One rear card wraps across the signed-angle seam on some arrow presses.
       // Skip that hidden/back-of-ring teleport rather than flying it across the viewport.
       if (orbitWidth > 0 && movement > orbitWidth * .58) continue;
-      if (movement < .5) continue;
+      if (movement < .5 && sizeShift < .01) continue;
 
       const animation = glide.animate(
         [
-          { transform: `translate3d(${dx.toFixed(2)}px, ${dy.toFixed(2)}px, 0)` },
-          { transform: "translate3d(0, 0, 0)" },
+          { transform: `translate3d(${dx.toFixed(2)}px, ${dy.toFixed(2)}px, 0) scale(${scale.toFixed(4)})` },
+          { transform: "translate3d(0, 0, 0) scale(1)" },
         ],
         {
           duration,
-          easing: "cubic-bezier(.32,.035,.18,1)",
+          easing: "cubic-bezier(.22,.78,.24,1)",
           fill: "both",
         },
       );
