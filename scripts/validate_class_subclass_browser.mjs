@@ -451,7 +451,8 @@ for (const token of [
   'font-size: .82rem !important',
 ]) assert(framing.includes(token), `Stable open top-right cinematic framing missing ${token}`);
 assert(!framing.includes('bottom: 0 !important;\n    left: 0 !important'), "Cinematic art is still content-height-coupled.");
-assert(framing.includes(".npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art:has") && !framing.includes('.class-book-guide__content:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"])'), "Full-height cinematic artwork must stay scoped to Class Overview and never bleed behind Detailed Guide level accordions.");
+assert(framing.includes(".npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art:has") && !framing.includes('.class-book-guide__content:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"])'), "Global cinematic framing must remain Overview-scoped; Detailed Guide owns its separate intentional background treatment.");
+assert(guide.includes("npc-forge-class-guide__detailed-book") && guide.includes("npc-forge-class-guide__detailed-subclass-slot") && guide.includes("<ForgeClassHero selectedClass={selectedClass} detailed"), "Detailed Guide must move the subclass card into the former image rail while keeping the guide structure intact.");
 
 for (const token of [
   '.class-level-guide__features button',
