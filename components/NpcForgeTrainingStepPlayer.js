@@ -163,6 +163,10 @@ export default function NpcForgeTrainingStepPlayer({
   onDetail,
 }) {
   const controller = useNpcForgeControllerContext() || {};
+  const selectedBackgroundName = String(controller.selectedBackground?.name || controller.selectedBackground?.class_name || "").trim();
+  const selectedClassName = String(controller.selectedClass?.class_name || controller.selectedClass?.name || "").trim();
+  const backgroundSourceLabel = selectedBackgroundName ? `Background — ${selectedBackgroundName}` : "Background";
+  const classSourceLabel = selectedClassName ? `Class — ${selectedClassName}` : "Class";
   const { state: classChoiceState, toggleFeatureOption } = useNpcForgeClassChoice();
   const { state: sourceChoiceState, setChoice: setSourceChoice } = useNpcForgeSourceChoices();
   const initialDetailSet = useRef(false);
@@ -379,8 +383,8 @@ export default function NpcForgeTrainingStepPlayer({
           const selected = granted || classSelected;
           const disabled = granted || (!pendingBackgroundChoice && !sourceAvailable && (!classAvailable || (!classSelected && remainingTrainingChoices <= 0)));
           const definition = SKILL_BY_KEY[key];
-          const grantSource = backgroundGranted ? "Background" : sourceGranted ? skillGrantSource.get(key) || "Source" : sourceAvailable ? `${ownerLabel(sourceRef.group)}: ${sourceRef.group.label}` : "";
-          const provenance = backgroundGranted ? "Granted by Background" : sourceGranted ? `Granted by ${grantSource}` : pendingBackgroundChoice ? "Background choice" : sourceAvailable ? `Available from ${grantSource}` : classSelected ? "Class skill choice" : ABILITY_LABELS[definition?.ability] || "Skill";
+          const grantSource = backgroundGranted ? backgroundSourceLabel : sourceGranted ? skillGrantSource.get(key) || "Source" : sourceAvailable ? `${ownerLabel(sourceRef.group)}: ${sourceRef.group.label}` : "";
+          const provenance = backgroundGranted ? `Granted by ${backgroundSourceLabel}` : sourceGranted ? `Granted by ${grantSource}` : pendingBackgroundChoice ? `Choice from ${backgroundSourceLabel}` : sourceAvailable ? `Available from ${grantSource}` : classSelected ? `Chosen from ${classSourceLabel}` : classAvailable ? `Available from ${classSourceLabel}` : ABILITY_LABELS[definition?.ability] || "Skill";
           return <button key={key} type="button" disabled={disabled} className={`${selected ? "is-selected" : ""} ${granted ? "is-granted" : ""} ${(pendingBackgroundChoice || sourceAvailable) && !granted ? "is-source-option" : ""}`} onMouseEnter={() => onDetail?.({ type: "skill", key, granted, grantSource })} onFocus={() => onDetail?.({ type: "skill", key, granted, grantSource })} onClick={() => {
             if (fixedBackgroundGranted || sourceGranted) return;
             if (selectedBackgroundChoice && backgroundGroup) {
@@ -390,7 +394,7 @@ export default function NpcForgeTrainingStepPlayer({
             if (pendingBackgroundChoice && backgroundGroup) {
               if (classSelected) onToggleClassSkill?.(key);
               onToggleBackgroundSkill?.(backgroundGroup.id, key, backgroundGroup.count);
-              onDetail?.({ type: "skill", key, granted: true, grantSource: "Background" });
+              onDetail?.({ type: "skill", key, granted: true, grantSource: backgroundSourceLabel });
               return;
             }
             if (sourceAvailable) {
@@ -436,7 +440,7 @@ export default function NpcForgeTrainingStepPlayer({
       {renderOtherTrainingChoices ? <details className={`npc-forge-training-choice-section npc-forge-training-source-section ${(incompleteTrainingFeature || incompleteSourceTraining) ? "is-required" : ""}`} defaultOpen={incompleteSourceTraining && genericSourceTrainingGroups.length > 0}>
         <summary><span><img src={`${TRAINING_ASSET_ROOT}/summary-training.svg`} alt="" aria-hidden="true" /><b>Other Training Choices</b>{sourceTrainingKinds.length ? <i>{sourceTrainingKinds.map((kind) => <img key={kind} src={SOURCE_KIND_ICON[kind]} alt="" aria-hidden="true" />)}</i> : null}</span><em>{trainingStageProgress.target ? `${trainingStageProgress.done}/${trainingStageProgress.target}` : "Open"}</em></summary>
         <div className="npc-forge-training-choice-body">
-          {trainingChoiceGroups.length ? <NpcForgeClassFeatureChoices groups={classChoiceState.featureGroups || []} selections={classChoiceState.featureSelections || {}} level={classChoiceState.level || 1} onToggle={toggleFeatureOption} placement="training" eligibleOptionNames={eligibleExpertiseNames} heading="Feature-granted Training choices" description="Expertise and similar feature-owned decisions remain here and do not consume the shared Skill / Trade Skill allowance unless their source says otherwise." /> : null}
+          {trainingChoiceGroups.length ? <NpcForgeClassFeatureChoices groups={classChoiceState.featureGroups || []} selections={classChoiceState.featureSelections || {}} level={classChoiceState.level || 1} onToggle={toggleFeatureOption} placement="training" eligibleOptionNames={eligibleExpertiseNames} sourceOwnerLabel={selectedClassName || "Class"} heading="Feature-granted Training choices" description="Expertise and similar feature-owned decisions remain here and do not consume the shared Skill / Trade Skill allowance unless their source says otherwise." /> : null}
           {genericSourceTrainingGroups.length ? <NpcForgeSourceChoiceFields placement="training" inline groupsOverride={genericSourceTrainingGroups} title="Languages, tools, instruments, and other source-required Training choices" /> : null}
         </div>
       </details> : null}
@@ -454,7 +458,7 @@ export default function NpcForgeTrainingStepPlayer({
             const detailText = needsTraining ? "Finish the feat-owned choice beside its rules." : hasSpellsNext ? "Its granted spell choice continues on the Spells tab." : "All creation-time choices for this feat are complete.";
             return <button key={group.id} type="button" className={needsTraining ? "is-required" : hasSpellsNext ? "has-spells" : "is-complete"} onMouseEnter={() => publishFeatGroup(group)} onFocus={() => publishFeatGroup(group)} onClick={() => publishFeatGroup(group)}><span><b>{group.metadata?.featName || group.label || "Feat"}</b><small>{detailText}</small></span><em>{status}</em></button>;
           })}</div></section> : null}
-          <NpcForgeClassFeatureChoices groups={classChoiceState.featureGroups || []} selections={classChoiceState.featureSelections || {}} level={classChoiceState.level || 1} onToggle={toggleFeatureOption} placement="class" heading="Class and subclass ability choices" description="Persistent class and subclass choices are made here. Spell selections remain on the Spells step." />
+          <NpcForgeClassFeatureChoices groups={classChoiceState.featureGroups || []} selections={classChoiceState.featureSelections || {}} level={classChoiceState.level || 1} onToggle={toggleFeatureOption} placement="class" sourceOwnerLabel={selectedClassName || "Class"} heading="Class and subclass ability choices" description="Persistent class and subclass choices are made here. Spell selections remain on the Spells step." />
           {otherSourceClassAbilityGroups.length ? <NpcForgeSourceChoiceFields placement="training" inline groupsOverride={otherSourceClassAbilityGroups} title="Other class and advancement decisions" /> : null}
         </div>
       </details>
