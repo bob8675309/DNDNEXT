@@ -90,7 +90,7 @@ for (const token of [
   'model.selectSubclass(option)',
   'class-subclass-selected-card-shell',
   '>Open Codex<',
-  'currentLevel < entryLevel',
+  'currentLevel >= entryLevel',
   'setSelectorOpen(true)',
   'onInspectSubclass?.(option, {',
 ]) assert(selector.includes(token), `Reference-scene subclass selector is missing ${token}`);
@@ -163,12 +163,15 @@ assert(tarotCss.includes('.class-subclass-carousel-card.is-orbit-center .class-s
 assert(tarotCss.includes('z-index: 760') && tarotCss.includes('class-subclass-carousel-modal__smoke-near'), "Near smoke must cross side/front cards while remaining below the hero z-band.");
 assert(tarotCss.includes('left: 13.7%') && tarotCss.includes('right: 16.4%') && tarotCss.includes('top: 12.4%'), "Animated flames must stay registered to real upper candle clusters in the ruined-library background.");
 assert(selector.includes("captureGlideRects") && selector.includes("glide.animate") && selector.includes('cubic-bezier(.32,.035,.18,1)'), "Tarot slot changes must use the compositor glide path rather than snapping layout-property transitions.");
-assert(selector.includes("movement > orbitWidth * .58") && selector.includes("clamp(previous.width / next.width, .30, 3.25)"), "Tarot FLIP must preserve full hero size interpolation while skipping only the rear signed-angle seam teleport that caused giant card-back fly-throughs.");
+assert(selector.includes("movement > orbitWidth * .58") && selector.includes("previousCenterX") && selector.includes("previous.bottom - next.bottom") && selector.includes("const duration = 1180"), "Tarot glide must animate bottom-center anchor travel while skipping the rear signed-angle seam teleport.");
+assert(!selector.includes("scaleX = clamp(previous.width / next.width") && !selector.includes("scaleY = clamp(previous.height / next.height"), "Tarot glide must never FLIP-scale cards; scale interpolation caused cards to blow up toward the viewer.");
 assert(/\n\s*const yaw = 0;\n/.test(selector), "Tarot yaw declaration must remain executable code on its own line.");
 assert(!selector.includes("corkscrew.\\n  const yaw = 0;"), "Tarot yaw declaration must never be swallowed by a line comment through a literal \\n sequence.");
 assert(tarotCss.includes(".class-subclass-carousel-card__glide") && tarotCss.includes(".class-subclass-carousel-card__yaw") && tarotCss.includes('var(--orbit-float-duration, 9.6s)'), "Tarot glide, yaw, and independent idle-float layers must remain separated.");
 assert(!tarotCss.includes("left 2.15s cubic-bezier") && !tarotCss.includes("top 2.25s cubic-bezier"), "Programmatic Tarot travel must not regress to left/top transition animation.");
 assert(selector.includes("<strong>Subclass Browser</strong>") && !selector.includes("class-subclass-launcher__icon"), "Unselected subclass entry point must remain the compact Subclass Browser pill.");
+assert(!selector.includes("autoOpenedForRef") && !selector.includes("autoOpenKey"), "Crossing the subclass entry level must never auto-open the selector; Forge advancement should signal readiness without stealing focus.");
+assert(tarotCss.includes(".class-subclass-section.is-required .class-subclass-launcher") && tarotCss.includes("@keyframes subclass-browser-ready-energy") && tarotCss.includes("@keyframes subclass-browser-ready-aura"), "Eligible unselected subclass state must pulse the Subclass Browser with the reviewed energy-ready treatment.");
 assert(tarotCss.includes("width: max-content") && tarotCss.includes("border-radius: 999px"), "Subclass Browser launcher must remain compact rather than stretching across the class panel.");
 assert(!tarotCss.includes(':hover .class-subclass-carousel-card__surface {\n  filter:'), "Hover must not filter the 3D card surface; that compositor path caused cards to disappear.");
 assert(!tarotCss.includes('subclass-library-mouse-scurry') && !selector.includes('class-subclass-carousel-modal__mouse'), "Terrain-independent mouse animation must stay removed.");
@@ -447,6 +450,7 @@ for (const token of [
   'font-size: .82rem !important',
 ]) assert(framing.includes(token), `Stable open top-right cinematic framing missing ${token}`);
 assert(!framing.includes('bottom: 0 !important;\n    left: 0 !important'), "Cinematic art is still content-height-coupled.");
+assert(framing.includes(".npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art:has") && !framing.includes('.class-book-guide__content:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"])'), "Full-height cinematic artwork must stay scoped to Class Overview and never bleed behind Detailed Guide level accordions.");
 
 for (const token of [
   '.class-level-guide__features button',
