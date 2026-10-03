@@ -152,7 +152,7 @@ function ContextShell({ icon, iconIsImage = false, title, badge, selected, descr
 }
 
 export default function NpcForgeTrainingContextCard({ detail = null, selectedSkill = null, selectedProfession = null, selectedClass = null, draft = {} }) {
-  const { state: sourceChoiceState, toggleChoice: toggleSourceChoice } = useNpcForgeSourceChoices();
+  const { state: sourceChoiceState, toggleChoice: toggleSourceChoice, setChoice: setSourceChoice } = useNpcForgeSourceChoices();
   const controller = useNpcForgeControllerContext() || {};
 
   useEffect(() => {
@@ -253,25 +253,95 @@ export default function NpcForgeTrainingContextCard({ detail = null, selectedSki
   if (detail?.type === "profession" && selectedProfession) {
     const key = String(detail.key || "");
     const profession = draft.professions?.[key] || {};
-    const selected = Boolean(detail?.granted) || Number(profession.rank || 0) > 0;
+    const sourceSelected = detail?.sourceGroupId && detail?.sourceFieldId && detail?.sourceOptionKey
+      ? (sourceChoiceState.selections?.[detail.sourceGroupId]?.[detail.sourceFieldId] || []).includes(detail.sourceOptionKey)
+      : false;
+    const selected = detail?.selectionKind === "granted-profession"
+      || sourceSelected
+      || Number(profession.rank || 0) > 0;
     const abilities = (selectedProfession.abilities || []).map((ability) => ABILITY_LABELS[ability] || ability).join(" or ");
     const runtimeNote = selectedProfession.runtimeEnabled === false
       ? " This proficiency is available in Character Forge now; its dedicated recipe/progression system is intentionally deferred."
       : "";
-    const grantNote = detail?.grantSource
+    const sourceAvailable = detail?.selectionKind === "source-profession" && !sourceSelected;
+    const grantNote = detail?.grantSource && selected
       ? ` ${detail.grantSource} explicitly grants this Trade Skill because its source rule grants the matching professional tool proficiency. This is Proficiency, not Expertise.`
-      : ` ${selectedProfession.tool} is the associated mundane tool, but an ordinary copy or incidental tool grant does not grant this Trade Skill or Expertise.`;
-    return <ContextShell icon={PROFESSION_ICON[key] || `${TRAINING_ASSET_ROOT}/choice-tool.svg`} iconIsImage title={selectedProfession.label} badge="Trade Skill" selected={selected} description={`${selectedProfession.label} is the character's crafting proficiency.${grantNote} The associated tool is still normally required to perform the craft.${runtimeNote}`}>
-      <section className="npc-forge-training-context-section"><h4>Typical Uses</h4><ul>{(PROFESSION_USES[key] || ["Apply this Trade Skill when a supported campaign crafting or professional task calls for it."]).map((use) => <li key={use}>{use}</li>)}</ul><div className="npc-forge-training-context-facts"><span><small>Associated Tool</small><b>{selectedProfession.tool}</b></span><span><small>Crafting Ability</small><b>{profession.ability ? ABILITY_LABELS[profession.ability] || profession.ability : abilities}</b></span><span><small>Campaign Support</small><b>{selectedProfession.runtimeEnabled === false ? "Proficiency now • recipes later" : "Crafting runtime active"}</b></span>{detail?.grantSource ? <span><small>Granted By</small><b>{detail.grantSource}</b></span> : null}</div></section>
+      : sourceAvailable && detail?.grantSource
+        ? ` ${detail.grantSource} can grant this Trade Skill without spending the shared Class Skill / Trade Skill allowance.`
+        : ` ${selectedProfession.tool} is the associated mundane tool, but an ordinary copy or incidental tool grant does not grant this Trade Skill or Expertise.`;
+
+    const selectProfession = () => {
+      if (selected || !detail?.canSelect) return;
+      if (detail?.selectionKind === "source-profession" && detail.sourceGroupId && detail.sourceFieldId && detail.sourceOptionKey) {
+        const count = Math.max(1, Number(detail.sourceCount || 1));
+        const current = Array.isArray(sourceChoiceState.selections?.[detail.sourceGroupId]?.[detail.sourceFieldId])
+          ? [...sourceChoiceState.selections[detail.sourceGroupId][detail.sourceFieldId]]
+          : [];
+        const next = count === 1
+          ? [detail.sourceOptionKey]
+          : current.includes(detail.sourceOptionKey)
+            ? current
+            : current.length < count
+              ? [...current, detail.sourceOptionKey]
+              : [...current.slice(0, Math.max(0, count - 1)), detail.sourceOptionKey];
+        setSourceChoice?.(detail.sourceGroupId, detail.sourceFieldId, next);
+      } else if (detail?.selectionKind === "trade-skill") {
+        controller.setProfession?.(key, "rank", 1);
+      }
+      controller.setDetail?.({ ...detail });
+    };
+
+    const actionAvailable = !selected && ["source-profession", "trade-skill"].includes(detail?.selectionKind);
+    const actionLabel = selected ? "Selected" : detail?.canSelect === false ? "Selection Full" : "Select Trade Skill";
+    return <ContextShell icon={PROFESSION_ICON[key] || `${TRAINING_ASSET_ROOT}/choice-tool.svg`} iconIsImage title={selectedProfession.label} badge="Trade Skill" selected={selected} description={`${selectedProfession.label} is the character's crafting proficiency.${grantNote} The associated tool is still normally required to perform the craft.${runtimeNote}`} onAction={actionAvailable ? selectProfession : null} actionLabel={actionLabel} actionDisabled={selected || detail?.canSelect === false}>
+      <section className="npc-forge-training-context-section"><h4>Typical Uses</h4><ul>{(PROFESSION_USES[key] || ["Apply this Trade Skill when a supported campaign crafting or professional task calls for it."]).map((use) => <li key={use}>{use}</li>)}</ul><div className="npc-forge-training-context-facts"><span><small>Associated Tool</small><b>{selectedProfession.tool}</b></span><span><small>Crafting Ability</small><b>{profession.ability ? ABILITY_LABELS[profession.ability] || profession.ability : abilities}</b></span><span><small>Campaign Support</small><b>{selectedProfession.runtimeEnabled === false ? "Proficiency now • recipes later" : "Crafting runtime active"}</b></span>{detail?.grantSource ? <span><small>{selected ? "Granted By" : "Available From"}</small><b>{detail.grantSource}</b></span> : null}</div></section>
     </ContextShell>;
   }
 
   if (selectedSkill) {
     const key = selectedSkill.key;
-    const selected = (draft.selectedClassSkills || []).includes(key) || Boolean(detail?.granted);
+    const backgroundSelected = detail?.backgroundGroupId
+      ? (draft.backgroundSkillChoices?.[detail.backgroundGroupId] || []).includes(key)
+      : false;
+    const sourceSelected = detail?.sourceGroupId && detail?.sourceFieldId && detail?.sourceOptionKey
+      ? (sourceChoiceState.selections?.[detail.sourceGroupId]?.[detail.sourceFieldId] || []).includes(detail.sourceOptionKey)
+      : false;
+    const classSelected = (draft.selectedClassSkills || []).includes(key);
+    const selected = Boolean(detail?.granted)
+      || backgroundSelected
+      || sourceSelected
+      || classSelected;
     const availableFromClass = Boolean(selectedClass);
-    return <ContextShell icon={<SkillIcon skillKey={key} />} title={selectedSkill.label} badge={availableFromClass ? "Class Skill" : "Skill"} selected={selected} description={selectedSkill.description || "Use this skill when its governing ability and trained application are relevant."}>
-      <section className="npc-forge-training-context-section"><h4>Typical Uses</h4><ul>{(SKILL_USES[key] || ["Apply this skill when the Game Master calls for a check involving its trained area of expertise."]).map((use) => <li key={use}>{use}</li>)}</ul><div className="npc-forge-training-context-facts"><span><small>Governing Ability</small><b>{ABILITY_LABELS[selectedSkill.ability] || selectedSkill.ability || "Varies"}</b></span>{detail?.grantSource ? <span><small>Granted By</small><b>{detail.grantSource}</b></span> : null}</div></section>
+
+    const selectSkill = () => {
+      if (selected || detail?.canSelect === false) return;
+      if (detail?.selectionKind === "background-skill" && detail.backgroundGroupId) {
+        if (classSelected) controller.toggleClassSkill?.(key);
+        controller.toggleBackgroundSkill?.(detail.backgroundGroupId, key, Math.max(1, Number(detail.backgroundCount || 1)));
+      } else if (detail?.selectionKind === "source-skill" && detail.sourceGroupId && detail.sourceFieldId && detail.sourceOptionKey) {
+        if (classSelected) controller.toggleClassSkill?.(key);
+        const count = Math.max(1, Number(detail.sourceCount || 1));
+        const current = Array.isArray(sourceChoiceState.selections?.[detail.sourceGroupId]?.[detail.sourceFieldId])
+          ? [...sourceChoiceState.selections[detail.sourceGroupId][detail.sourceFieldId]]
+          : [];
+        const next = count === 1
+          ? [detail.sourceOptionKey]
+          : current.includes(detail.sourceOptionKey)
+            ? current
+            : current.length < count
+              ? [...current, detail.sourceOptionKey]
+              : [...current.slice(0, Math.max(0, count - 1)), detail.sourceOptionKey];
+        setSourceChoice?.(detail.sourceGroupId, detail.sourceFieldId, next);
+      } else if (detail?.selectionKind === "class-skill") {
+        controller.toggleClassSkill?.(key);
+      }
+      controller.setDetail?.({ ...detail });
+    };
+
+    const actionAvailable = !selected && ["background-skill", "source-skill", "class-skill"].includes(detail?.selectionKind);
+    const actionLabel = selected ? "Selected" : detail?.canSelect === false ? "Selection Full" : "Select Skill";
+    return <ContextShell icon={<SkillIcon skillKey={key} />} title={selectedSkill.label} badge={availableFromClass ? "Class Skill" : "Skill"} selected={selected} description={selectedSkill.description || "Use this skill when its governing ability and trained application are relevant."} onAction={actionAvailable ? selectSkill : null} actionLabel={actionLabel} actionDisabled={selected || detail?.canSelect === false}>
+      <section className="npc-forge-training-context-section"><h4>Typical Uses</h4><ul>{(SKILL_USES[key] || ["Apply this skill when the Game Master calls for a check involving its trained area of expertise."]).map((use) => <li key={use}>{use}</li>)}</ul><div className="npc-forge-training-context-facts"><span><small>Governing Ability</small><b>{ABILITY_LABELS[selectedSkill.ability] || selectedSkill.ability || "Varies"}</b></span>{detail?.grantSource ? <span><small>{selected ? "Granted By" : "Available From"}</small><b>{detail.grantSource}</b></span> : null}</div></section>
     </ContextShell>;
   }
 
