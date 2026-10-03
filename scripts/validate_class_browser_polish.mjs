@@ -107,6 +107,7 @@ for (const token of [
 
 assert((selector.match(/model\.selectSubclass\(option\)/g) || []).length === 1, "Carousel/Codex flow must retain one explicit subclass-confirmation authority.");
 assert(dock.includes(".npc-forge-class-feature-dock__head-actions{display:flex!important;flex-flow:row nowrap!important;"), "Subclass Codex select/locked action and Close controls must remain in one horizontal row.");
+assert(dock.includes("font-size:1.22rem!important;line-height:1.58!important;color:#fff!important"), "Feature panel rules text must remain high-contrast but below the oversized browser-review value.");
 assert(selector.includes("model?.setPreviewKey?.(option.key)") && selector.includes("function inspectOption(option, selectedOverride = false)") && selector.includes("onInspectSubclass?.(option, {"), "Card click must preview first and hand explicit confirmation authority to the Codex.");
 assert(!selector.includes("browsedOption"), "Stale browsed-card auto-follow state must remain removed.");
 assert(!selector.includes("class-subclass-carousel-modal__details"), "Old dossier panel must not cover the recreated reference scene.");
