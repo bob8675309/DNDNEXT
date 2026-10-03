@@ -107,10 +107,11 @@ for (const token of [
 
 assert((selector.match(/model\.selectSubclass\(option\)/g) || []).length === 1, "Carousel/Codex flow must retain one explicit subclass-confirmation authority.");
 assert(dock.includes(".npc-forge-class-feature-dock__head-actions{display:flex!important;flex-flow:row nowrap!important;"), "Subclass Codex select/locked action and Close controls must remain in one horizontal row.");
-assert(dock.includes("font-size:1.22rem!important;line-height:1.58!important;color:#fff!important"), "Feature panel rules text must remain high-contrast but below the oversized browser-review value.");
+assert(dock.includes("font-size:1.08rem!important;line-height:1.56!important;color:#fff!important"), "Feature panel rules text must remain high-contrast at the browser-reviewed medium reading size.");
 assert(selector.includes("model?.setPreviewKey?.(option.key)") && selector.includes("function inspectOption(option, selectedOverride = false)") && selector.includes("onInspectSubclass?.(option, {"), "Card click must preview first and hand explicit confirmation authority to the Codex.");
 assert(!selector.includes("browsedOption"), "Stale browsed-card auto-follow state must remain removed.");
 assert(!selector.includes("class-subclass-carousel-modal__details"), "Old dossier panel must not cover the recreated reference scene.");
+assert(guideStyles.includes(".npc-forge-class-guide__book .class-book-guide__levels>details") && guideStyles.includes(".npc-forge-class-guide__book>.class-book-guide__outline") && guideStyles.includes("background:linear-gradient(100deg,rgba(48,29,71,.36)"), "Detailed Guide must retain its restored outline/content hierarchy and real details-accordion styling.");
 assert(selector.includes("class-subclass-carousel-modal__smoke-near"), "Floating ruined-library target must retain the near smoke depth layer.");
 assert(!selector.includes("class-subclass-carousel-modal__rune-foreground"), "Retired runic-table foreground must not return.");
 assert(!selector.includes("class-subclass-carousel-modal__mouse"), "Terrain-independent ambient mouse must stay removed.");
