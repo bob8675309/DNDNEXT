@@ -64,7 +64,7 @@ for (const token of [
   'title: "Discount"',
   'title: "Fast Crafting"',
 ]) assert(trainingContext.includes(token), `Feat dossier cleanup / Crafter routing is missing ${token}`);
-for (const token of ["const standaloneHeading", "standaloneHeading && paragraphs[index + 1]", "formatPlayerFacingText"]) assert(featRulePresentation.includes(token), `Shared feat rule formatter is missing ${token}`);
+for (const token of ["const standaloneHeading", "plainHeading", "standaloneHeading?.[1] || paragraph", "formatPlayerFacingText"]) assert(featRulePresentation.includes(token), `Shared feat rule formatter is missing ${token}`);
 assert(!trainingContext.includes("groupsOverride={trainingGroups}"), "The Feats dossier must not render Skills-routed Crafter Profession controls.");
 assert(!trainingContext.includes('<h4>Feat Rules</h4><p>{feat.description'), "Training must not dump raw unformatted feat descriptions directly into the dossier.");
 assert(playerTraining.includes("backgroundSourceLabel") && playerTraining.includes("classSourceLabel") && playerTraining.includes("sourceOwnerLabel={selectedClassName || \"Class\"}"), "Skills and feature-owned Training choices must expose their actual Background/Class provenance.");
