@@ -128,6 +128,252 @@
   display: none !important;
 }
 
+/* Training / Feats: keep the existing resolver and persistence model, but make the
+ * player path read as a clear browse -> inspect -> choose workflow rather than a dense admin list. */
+.unified-player-character-forge .npc-forge-training-tabbed-shell {
+  gap: 10px !important;
+}
+
+.unified-player-character-forge .npc-forge-training-mode-switch {
+  gap: 7px !important;
+  padding: 6px !important;
+  border-color: rgba(168,108,255,.34) !important;
+  border-radius: 13px !important;
+  background:
+    radial-gradient(circle at 18% 0, rgba(168,108,255,.12), transparent 34%),
+    linear-gradient(180deg, rgba(25,18,39,.96), rgba(7,10,17,.98)) !important;
+  box-shadow: inset 0 1px rgba(255,255,255,.045), 0 10px 24px rgba(0,0,0,.2) !important;
+}
+
+.unified-player-character-forge .npc-forge-training-mode-switch > button {
+  position: relative;
+  min-height: 54px !important;
+  padding: 8px 11px !important;
+  border: 1px solid rgba(255,255,255,.075) !important;
+  border-radius: 10px !important;
+  background: rgba(5,8,14,.46) !important;
+}
+
+.unified-player-character-forge .npc-forge-training-mode-switch > button::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 0;
+  height: 2px;
+  opacity: 0;
+  background: linear-gradient(90deg, rgb(168,108,255), rgb(88,214,199));
+  box-shadow: 0 0 10px rgba(126,72,199,.35);
+}
+
+.unified-player-character-forge .npc-forge-training-mode-switch > button:hover {
+  border-color: rgba(168,108,255,.38) !important;
+  background: rgba(126,72,199,.085) !important;
+}
+
+.unified-player-character-forge .npc-forge-training-mode-switch > button.is-active {
+  border-color: rgba(187,133,255,.7) !important;
+  background: linear-gradient(115deg, rgba(111,61,166,.34), rgba(21,35,44,.42)) !important;
+  box-shadow: inset 0 1px rgba(255,255,255,.05), 0 5px 16px rgba(92,49,145,.2) !important;
+}
+
+.unified-player-character-forge .npc-forge-training-mode-switch > button.is-active::after {
+  opacity: 1;
+}
+
+.unified-player-character-forge .npc-forge-training-mode-switch > button strong {
+  font-size: .76rem !important;
+  letter-spacing: .01em;
+}
+
+.unified-player-character-forge .npc-forge-training-mode-switch > button small {
+  color: rgba(239,232,250,.55) !important;
+  font-size: .5rem !important;
+}
+
+.unified-player-character-forge .npc-forge-training-picks {
+  gap: 9px !important;
+  padding: 11px !important;
+  border-color: rgba(168,108,255,.18) !important;
+  border-radius: 11px !important;
+  background:
+    linear-gradient(145deg, rgba(23,17,35,.72), rgba(6,10,17,.92)),
+    radial-gradient(circle at 0 0, rgba(168,108,255,.06), transparent 34%) !important;
+  box-shadow: inset 0 1px rgba(255,255,255,.025), 0 12px 26px rgba(0,0,0,.13) !important;
+}
+
+.unified-player-character-forge .npc-forge-training-pick-group,
+.unified-player-character-forge .npc-forge-training-choice-section {
+  padding: 8px !important;
+  border: 1px solid rgba(255,255,255,.065) !important;
+  border-radius: 9px !important;
+  background: rgba(4,7,13,.32) !important;
+}
+
+.unified-player-character-forge .npc-forge-training-pick-group.is-required,
+.unified-player-character-forge .npc-forge-training-choice-section.is-required {
+  border-color: rgba(243,191,99,.24) !important;
+  box-shadow: inset 3px 0 rgba(243,191,99,.48) !important;
+}
+
+.unified-player-character-forge .npc-forge-training-group-head,
+.unified-player-character-forge .npc-forge-training-choice-section > summary {
+  min-height: 29px;
+  margin: 0 0 6px !important;
+  padding: 0 2px 6px !important;
+  border-bottom: 1px solid rgba(255,255,255,.055) !important;
+}
+
+.unified-player-character-forge .npc-forge-training-group-head b,
+.unified-player-character-forge .npc-forge-training-choice-section > summary b {
+  color: #caa4ff !important;
+  font-size: .6rem !important;
+}
+
+.unified-player-character-forge .npc-forge-training-skill-list,
+.unified-player-character-forge .npc-forge-training-trade-list {
+  gap: 5px !important;
+}
+
+.unified-player-character-forge .npc-forge-training-skill-list > button,
+.unified-player-character-forge .npc-forge-training-trade-list > article {
+  min-height: 36px !important;
+  border-color: rgba(255,255,255,.09) !important;
+  border-radius: 7px !important;
+  background: linear-gradient(90deg, rgba(13,17,27,.82), rgba(5,9,16,.76)) !important;
+  transition: border-color .14s ease, background .14s ease, transform .14s ease !important;
+}
+
+.unified-player-character-forge .npc-forge-training-skill-list > button:hover,
+.unified-player-character-forge .npc-forge-training-trade-list > article:hover {
+  border-color: rgba(168,108,255,.42) !important;
+  background: linear-gradient(90deg, rgba(42,28,60,.82), rgba(7,14,22,.82)) !important;
+  transform: translateX(2px);
+}
+
+.unified-player-character-forge .npc-forge-training-feat-picker {
+  gap: 9px !important;
+  padding: 10px !important;
+  border-color: rgba(218,171,82,.28) !important;
+  border-radius: 10px !important;
+  background:
+    linear-gradient(145deg, rgba(44,31,18,.13), rgba(22,14,35,.4)),
+    rgba(5,8,14,.58) !important;
+  box-shadow: inset 0 1px rgba(255,255,255,.02) !important;
+}
+
+.unified-player-character-forge .npc-forge-training-feat-picker > header {
+  min-height: 34px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid rgba(218,171,82,.14);
+}
+
+.unified-player-character-forge .npc-forge-training-feat-picker > header span {
+  color: #d4ad67 !important;
+}
+
+.unified-player-character-forge .npc-forge-training-feat-picker > header strong {
+  color: #fff2d8 !important;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: .72rem !important;
+}
+
+.unified-player-character-forge .npc-forge-training-feat-toolbar {
+  gap: 7px !important;
+  padding: 7px !important;
+  border: 1px solid rgba(255,255,255,.065);
+  border-radius: 8px;
+  background: rgba(3,6,11,.42);
+}
+
+.unified-player-character-forge .npc-forge-training-feat-toolbar input,
+.unified-player-character-forge .npc-forge-training-feat-toolbar select {
+  min-height: 31px !important;
+  border-color: rgba(168,108,255,.2) !important;
+  background: rgba(6,9,16,.96) !important;
+}
+
+.unified-player-character-forge .npc-forge-training-feat-toolbar input:focus,
+.unified-player-character-forge .npc-forge-training-feat-toolbar select:focus {
+  border-color: rgba(168,108,255,.68) !important;
+  outline: 1px solid rgba(168,108,255,.3) !important;
+}
+
+.unified-player-character-forge .npc-forge-training-tabbed-shell.is-feats .npc-forge-training-feat-list {
+  gap: 5px !important;
+  padding: 1px 4px 1px 1px !important;
+}
+
+.unified-player-character-forge .npc-forge-training-feat-list > button {
+  position: relative;
+  min-height: 42px !important;
+  padding: 7px 9px 7px 11px !important;
+  border-color: rgba(255,255,255,.085) !important;
+  border-radius: 7px !important;
+  background: linear-gradient(90deg, rgba(13,16,25,.92), rgba(5,9,15,.8)) !important;
+  transition: border-color .14s ease, background .14s ease, transform .14s ease !important;
+}
+
+.unified-player-character-forge .npc-forge-training-feat-list > button::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 7px;
+  bottom: 7px;
+  width: 2px;
+  border-radius: 999px;
+  background: rgba(168,108,255,.36);
+}
+
+.unified-player-character-forge .npc-forge-training-feat-list > button:hover,
+.unified-player-character-forge .npc-forge-training-feat-list > button:focus-visible {
+  border-color: rgba(178,122,255,.48) !important;
+  background: linear-gradient(90deg, rgba(57,35,80,.64), rgba(7,13,21,.9)) !important;
+  transform: translateX(2px);
+}
+
+.unified-player-character-forge .npc-forge-training-feat-list > button.is-selected {
+  border-color: rgba(88,214,199,.58) !important;
+  background: linear-gradient(90deg, rgba(31,104,100,.22), rgba(46,26,68,.22), rgba(7,12,20,.9)) !important;
+  box-shadow: inset 0 0 18px rgba(88,214,199,.035) !important;
+}
+
+.unified-player-character-forge .npc-forge-training-feat-list > button.is-selected::before {
+  width: 3px;
+  background: #58d6c7;
+  box-shadow: 0 0 8px rgba(88,214,199,.45);
+}
+
+.unified-player-character-forge .npc-forge-training-feat-list strong {
+  font-size: .64rem !important;
+}
+
+.unified-player-character-forge .npc-forge-training-feat-list small,
+.unified-player-character-forge .npc-forge-training-feat-list i {
+  font-size: .47rem !important;
+}
+
+.unified-player-character-forge .npc-forge-body:has(.npc-forge-training-tabbed-shell) .npc-forge-preview {
+  border-left: 1px solid rgba(168,108,255,.14);
+  background:
+    radial-gradient(circle at 18% 0, rgba(88,214,199,.035), transparent 28%),
+    radial-gradient(circle at 72% 0, rgba(168,108,255,.05), transparent 34%),
+    #080c14 !important;
+}
+
+.unified-player-character-forge .npc-forge-body:has(.npc-forge-training-tabbed-shell) .npc-forge-context-panel {
+  border: 1px solid rgba(168,108,255,.14);
+  border-radius: 11px;
+  background: linear-gradient(160deg, rgba(13,16,27,.82), rgba(6,10,17,.94));
+  box-shadow: inset 0 1px rgba(255,255,255,.018), 0 12px 28px rgba(0,0,0,.12);
+}
+
+.unified-player-character-forge .npc-forge-body:has(.npc-forge-training-tabbed-shell) .npc-forge-training-context-dossier {
+  padding: 3px 5px 3px 1px !important;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(168,108,255,.34) rgba(255,255,255,.025);
+}
+
 /* Class: the right guide is frequently much taller than the catalogue. The body
  * remains the single scroll owner; stretch the left workspace through that row,
  * reserve a useful minimum for the Class catalogue at normal browser zoom, and
