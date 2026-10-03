@@ -164,8 +164,9 @@ function playerPayload(payload = {}, spellChoices = [], magicSelections = []) {
 export default function NewNpcModalV3(props) {
   const show = Boolean(props?.show);
   const playerMode = props?.mode === "player";
+  const draftStorageScope = String(props?.draftStorageScope || "default");
   const restoredPlayerDraftRef = useRef(undefined);
-  if (restoredPlayerDraftRef.current === undefined) restoredPlayerDraftRef.current = playerMode ? readPlayerForgeDraft() : null;
+  if (restoredPlayerDraftRef.current === undefined) restoredPlayerDraftRef.current = playerMode ? readPlayerForgeDraft(draftStorageScope) : null;
   const restoredChoices = restoredPlayerDraftRef.current?.choices || {};
   const [speciesChoiceState, setSpeciesChoiceState] = useState(() => restoredChoices.species || ({ speciesId: "", speciesName: "", rules: [], selections: {} }));
   const [classChoiceState, setClassChoiceState] = useState(() => restoredChoices.class || ({ ...EMPTY_CLASS_CHOICE_STATE, options: [], featureGroups: [], featureSelections: {} }));
@@ -184,8 +185,8 @@ export default function NewNpcModalV3(props) {
         class: classChoiceState,
         source: sourceChoiceState,
       },
-    });
-  }, [playerMode, speciesChoiceState, classChoiceState, sourceChoiceState]);
+    }, draftStorageScope);
+  }, [playerMode, draftStorageScope, speciesChoiceState, classChoiceState, sourceChoiceState]);
   const registerSpecies = useCallback((species, rules = []) => setSpeciesChoiceState((current) => normalizeSpeciesChoiceState(species, rules, current)), []);
   const selectChoice = useCallback((ruleId, fieldId, value) => setSpeciesChoiceState((current) => ({ ...current, selections: { ...(current.selections || {}), [ruleId]: { ...(current.selections?.[ruleId] || {}), [fieldId]: value } } })), []);
   const registerClass = useCallback((classRow, options = [], level = 1, catalogReady = false) => setClassChoiceState((current) => normalizeClassChoiceState(classRow, options, level, catalogReady, current)), []);
@@ -276,7 +277,7 @@ export default function NewNpcModalV3(props) {
   }, [playerMode, show]);
   async function handleCreated(created) {
     const snapshot = choiceStateRef.current;
-    if (playerMode) clearPlayerForgeDraft();
+    if (playerMode) clearPlayerForgeDraft(draftStorageScope);
     setSpeciesChoiceState({ speciesId: "", speciesName: "", rules: [], selections: {} });
     setClassChoiceState({ ...EMPTY_CLASS_CHOICE_STATE, options: [], featureGroups: [], featureSelections: {} });
     setSourceChoiceState({ ...EMPTY_SOURCE_CHOICE_STATE, groups: [], selections: {}, scopes: {} });
@@ -284,7 +285,7 @@ export default function NewNpcModalV3(props) {
     if (!playerMode) Promise.race([persistSpeciesChoices(created, snapshot), new Promise((_, reject) => setTimeout(() => reject(new Error("species choice persistence timeout")), 5000))]).catch((error) => console.error("Could not persist species choices after character creation", error));
   }
   function resetChoiceState() {
-    if (playerMode) clearPlayerForgeDraft();
+    if (playerMode) clearPlayerForgeDraft(draftStorageScope);
     setSpeciesChoiceState({ speciesId: "", speciesName: "", rules: [], selections: {} });
     setClassChoiceState({ ...EMPTY_CLASS_CHOICE_STATE, options: [], featureGroups: [], featureSelections: {} });
     setSourceChoiceState({ ...EMPTY_SOURCE_CHOICE_STATE, groups: [], selections: {}, scopes: {} });
