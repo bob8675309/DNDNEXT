@@ -1,3 +1,4 @@
+import { OPTION_SUMMARIES } from "./classFeatureChoiceConstants";
 const text = (value) => String(value ?? "").trim();
 const norm = (value) => text(value).toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 const array = (value) => Array.isArray(value) ? value : [];
@@ -30,7 +31,7 @@ function spellOption(row) {
     label: row.name,
     source: row.source || "XPHB",
     kind: "spell",
-    description: text(row.description),
+    description: text(row.description) || OPTION_SUMMARIES[norm(row.name)] || "",
     metadata: {
       spellId: row.id || null,
       spellKey: row.spell_key || null,
