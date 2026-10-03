@@ -13,6 +13,7 @@ import { featRuleSectionsFromDescription } from "../utils/featRulePresentation";
 import NpcForgeSourceChoiceFields from "./NpcForgeSourceChoiceFields";
 import { sourceChoiceGroupsForResolverPlacement, useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
 import { useNpcForgeControllerContext } from "./NpcForgeControllerContext";
+import { useNpcForgeClassChoice } from "./NpcForgeClassChoiceContext";
 
 const TRAINING_ASSET_ROOT = "/ui/forge/training";
 const normalized = (value) => String(value ?? "").trim().toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
@@ -153,6 +154,7 @@ function ContextShell({ icon, iconIsImage = false, title, badge, selected, descr
 
 export default function NpcForgeTrainingContextCard({ detail = null, selectedSkill = null, selectedProfession = null, selectedClass = null, draft = {} }) {
   const { state: sourceChoiceState, toggleChoice: toggleSourceChoice, setChoice: setSourceChoice } = useNpcForgeSourceChoices();
+  const { state: classChoiceState, toggleFeatureOption } = useNpcForgeClassChoice();
   const controller = useNpcForgeControllerContext() || {};
 
   useEffect(() => {
@@ -181,6 +183,51 @@ export default function NpcForgeTrainingContextCard({ detail = null, selectedSki
         .npc-forge-training-overview__head{display:grid;grid-template-columns:48px minmax(0,1fr);gap:14px;align-items:center}.npc-forge-training-overview__head>div{display:grid;gap:3px}.npc-forge-training-overview__head>div>span{color:#bc91ff;font-size:.54rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.npc-forge-training-overview__head h2{margin:0;color:#fff;font-size:1.18rem}.npc-forge-training-overview__head p{margin:0;max-width:70ch;color:rgba(255,255,255,.67);font-size:.7rem;line-height:1.55}.npc-forge-training-overview__metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:0;border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07)}.npc-forge-training-overview__metrics>div{display:grid;gap:2px;padding:10px 12px}.npc-forge-training-overview__metrics>div+div{border-left:1px solid rgba(255,255,255,.07)}.npc-forge-training-overview__metrics span,.npc-forge-training-overview__sources h4{color:rgba(255,255,255,.47);font-size:.52rem;font-weight:800;letter-spacing:.055em;text-transform:uppercase}.npc-forge-training-overview__metrics strong{color:#f3eaff;font-size:.85rem}.npc-forge-training-overview__metrics small{color:rgba(255,255,255,.5);font-size:.52rem;line-height:1.4}.npc-forge-training-overview__sources{display:grid;gap:0;margin-top:18px}.npc-forge-training-overview__sources h4{margin:0 0 5px}.npc-forge-training-overview__sources>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 2px;border-top:1px solid rgba(255,255,255,.065)}.npc-forge-training-overview__sources>div>span{display:grid;gap:2px}.npc-forge-training-overview__sources strong{color:#fff;font-size:.7rem}.npc-forge-training-overview__sources small{color:rgba(255,255,255,.5);font-size:.56rem;line-height:1.4}.npc-forge-training-overview__sources b{color:#bff8ef;font-size:.68rem;font-weight:700}@media(max-width:720px){.npc-forge-training-overview__metrics{grid-template-columns:1fr}.npc-forge-training-overview__metrics>div+div{border-left:0;border-top:1px solid rgba(255,255,255,.07)}}
       `}</style>
     </div>;
+  }
+
+  if (detail?.type === "classFeatureOption" && detail.groupId && detail.optionKey) {
+    const group = (classChoiceState.featureGroups || []).find((entry) => entry.id === detail.groupId) || detail.group || {};
+    const option = (group.options || []).find((entry) => entry.key === detail.optionKey) || detail.option || {};
+    const selectedKeys = Array.isArray(classChoiceState.featureSelections?.[group.id]) ? classChoiceState.featureSelections[group.id] : [];
+    const selected = selectedKeys.includes(option.key);
+    const count = Math.max(1, Number(group.count || 1));
+    const replacing = !selected && selectedKeys.length >= count;
+    const eligible = selected || detail?.eligible !== false;
+    const requirement = detail?.requirement || option.requires || "";
+    const owner = group.subclassName || selectedClass?.class_name || selectedClass?.name || "Class";
+    const grantedBy = group.sourceFeature ? `${owner} — ${group.sourceFeature}` : owner;
+    const chooseOption = () => {
+      if (selected || !eligible) return;
+      toggleFeatureOption?.(group.id, option.key);
+      controller.setDetail?.({ ...detail });
+    };
+    const actionLabel = selected ? "Selected" : !eligible ? "Locked" : replacing ? "Replace Selection" : "Select";
+
+    return <ContextShell
+      icon={`${TRAINING_ASSET_ROOT}/summary-training.svg`}
+      iconIsImage
+      title={option.name || "Class Choice"}
+      badge={group.label || "Class Choice"}
+      selected={selected}
+      description={requirement ? `Requires: ${requirement}` : group.helper || `Granted by ${grantedBy}.`}
+      onAction={chooseOption}
+      actionLabel={actionLabel}
+      actionDisabled={selected || !eligible}
+    >
+      <section className="npc-forge-training-context-section">
+        <h4>{group.label || "Class Choice"}</h4>
+        <div className="npc-forge-training-class-option-copy">
+          <p>{option.description || "No additional source description is available for this option."}</p>
+        </div>
+        <div className="npc-forge-training-context-facts">
+          <span><small>Granted By</small><b>{grantedBy}</b></span>
+          <span><small>Level</small><b>{group.level || option.minLevel || 1}</b></span>
+          <span><small>Source</small><b>{option.source || group.source || selectedClass?.source || "Campaign"}</b></span>
+          {requirement ? <span><small>Requires</small><b>{requirement}</b></span> : null}
+        </div>
+      </section>
+      {option.followup ? <section className="npc-forge-training-context-section"><div className="npc-forge-training-context-route"><span>→</span><div><strong>Follow-up choice</strong><p>{option.followup}</p></div></div></section> : null}
+    </ContextShell>;
   }
 
   if (detail?.type === "classSourceOption" && detail.groupId && detail.fieldId) {
