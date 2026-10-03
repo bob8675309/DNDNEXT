@@ -123,7 +123,7 @@ export default function NpcForgeClassFeatureChoices({
               <div className="npc-forge-class-choice-group__body">
                 <div className="npc-forge-class-choice-source">
                   <span>Granted by</span>
-                  <strong>{sourceOwnerLabel}{group.sourceFeature ? ` — ${group.sourceFeature}` : ""}</strong>
+                  <strong>{group.subclassName || sourceOwnerLabel}{group.sourceFeature ? ` — ${group.sourceFeature}` : ""}</strong>
                   <em>Level {group.level}{group.source ? ` • ${group.source}` : ""}</em>
                 </div>
                 {helperCopy ? <p>{helperCopy}</p> : null}
