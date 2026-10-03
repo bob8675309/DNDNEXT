@@ -9,6 +9,7 @@ const app = read("pages/_app.js");
 const responsive = read("styles/character-forge-responsive.css");
 const browserPolish = read("styles/character-forge-browser-review-polish.css");
 const playerTraining = read("components/NpcForgeTrainingStepPlayer.js");
+const classFeatureChoices = read("components/NpcForgeClassFeatureChoices.js");
 const playerTabbed = read("components/NpcForgeTrainingStepPlayerTabbed.js");
 const sourceContext = read("components/NpcForgeSourceChoiceContext.js");
 const trainingContext = read("components/NpcForgeTrainingContextCard.js");
@@ -64,6 +65,8 @@ for (const token of [
 ]) assert(trainingContext.includes(token), `Feat dossier cleanup / Crafter routing is missing ${token}`);
 assert(!trainingContext.includes("groupsOverride={trainingGroups}"), "The Feats dossier must not render Skills-routed Crafter Profession controls.");
 assert(!trainingContext.includes('<h4>Feat Rules</h4><p>{feat.description'), "Training must not dump raw unformatted feat descriptions directly into the dossier.");
+assert(playerTraining.includes("backgroundSourceLabel") && playerTraining.includes("classSourceLabel") && playerTraining.includes("sourceOwnerLabel={selectedClassName || \"Class\"}"), "Skills and feature-owned Training choices must expose their actual Background/Class provenance.");
+assert(classFeatureChoices.includes("npc-forge-class-choice-source") && classFeatureChoices.includes("Granted by") && classFeatureChoices.includes("group.subclassName || sourceOwnerLabel"), "Expertise and other class/subclass feature choices must identify the granting feature and owner.");
 
 for (const token of [
   "npc-forge-training-mode-switch{display:flex",
