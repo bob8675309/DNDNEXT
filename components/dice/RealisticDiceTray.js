@@ -126,6 +126,30 @@ function TrayArtwork() {
   </svg>;
 }
 
+function positionTooltipInsideTray(element) {
+  if (!element) return;
+  const surface = element.closest?.('[data-dice-tray-surface="true"]');
+  if (!surface) {
+    element.style.removeProperty("--dice-tooltip-shift-x");
+    delete element.dataset.tooltipSide;
+    return;
+  }
+
+  const surfaceRect = surface.getBoundingClientRect();
+  const dieRect = element.getBoundingClientRect();
+  const centerX = (dieRect.left + (dieRect.width / 2)) - surfaceRect.left;
+  const tooltipHalfWidth = Math.min(104, Math.max(88, (surfaceRect.width - 24) / 2));
+  const safeCenter = Math.min(
+    Math.max(centerX, tooltipHalfWidth + 12),
+    Math.max(tooltipHalfWidth + 12, surfaceRect.width - tooltipHalfWidth - 12),
+  );
+  element.style.setProperty("--dice-tooltip-shift-x", `${(safeCenter - centerX).toFixed(1)}px`);
+
+  const topSpace = dieRect.top - surfaceRect.top;
+  const bottomSpace = surfaceRect.bottom - dieRect.bottom;
+  element.dataset.tooltipSide = topSpace < 108 && bottomSpace > topSpace ? "below" : "above";
+}
+
 function syncBumperElements(simulation, bumperElements) {
   bumperElements.forEach((bumper, index) => {
     if (!bumper) return;
@@ -166,6 +190,8 @@ export const ResultCubeDie = forwardRef(function ResultCubeDie({
     data-settled={settled ? "true" : "false"}
     data-dragging={dragging ? "true" : "false"}
     onClick={onClick || undefined}
+    onMouseEnter={(event) => positionTooltipInsideTray(event.currentTarget)}
+    onFocus={(event) => positionTooltipInsideTray(event.currentTarget)}
     onDragStart={onDragStart || undefined}
     onDragEnd={onDragEnd || undefined}
     aria-label={ariaLabel || die.label}
@@ -383,6 +409,7 @@ export default function RealisticDiceTray({
     <div
       ref={surfaceRef}
       className={styles.surface}
+      data-dice-tray-surface="true"
       onDragOver={(event) => {
         const hasForgeRoll = Array.from(event.dataTransfer?.types || []).includes("text/npc-forge-roll");
         if (!dragStateRef.current.dieId && !(onTrayDrop && hasForgeRoll)) return;
