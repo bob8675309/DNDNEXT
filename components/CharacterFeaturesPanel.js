@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import { formatPrerequisiteText } from "../utils/formatPrerequisiteText";
+import { featRuleSectionsFromDescription } from "../utils/featRulePresentation";
 import { mergeKnownCharacterOptions } from "../utils/characterOptionPresentation";
 
 function safeText(value) {
@@ -19,6 +20,13 @@ function optionTypeLabel(type) {
   return type === "boon" ? "Epic Boon" : "Feat";
 }
 
+function FeatureRuleText({ description = "" }) {
+  const sections = featRuleSectionsFromDescription(description);
+  return <div className="profile-feature-rule-list">{sections.map((section, index) => section.intro
+    ? <p key={`intro-${index}`} className="profile-feature-rule-intro">{section.body}</p>
+    : <section key={`${section.title || "rule"}-${index}`}><>{section.title ? <h4>{section.title}</h4> : null}</><p>{section.body}</p></section>)}</div>;
+}
+
 function DetailCard({ option, isAdmin = false, notes = "", setNotes = null, busy = false, isKnown = false, onGrant = null, onRemove = null }) {
   if (!option) return <div className="text-muted">Select a feat or boon to inspect it.</div>;
   const prerequisite = formatPrerequisiteText(option.prerequisite_text || option.prerequisiteText || "");
@@ -33,7 +41,7 @@ function DetailCard({ option, isAdmin = false, notes = "", setNotes = null, busy
           <span className="badge text-bg-secondary">{option.source || "Campaign"}</span>
         </div>
         {prerequisite ? <div className="small mt-2 feature-prerequisite"><strong>Prerequisite:</strong> {prerequisite}</div> : null}
-        <p className="small mt-3 mb-0">{option.description || "No source description is available."}</p>
+        <div className="mt-3"><FeatureRuleText description={option.description || "No source description is available."} /></div>
         {option.notes ? <div className="small mt-3"><strong>GM notes:</strong> {option.notes}</div> : null}
       </div>
       {isAdmin && (onGrant || onRemove) ? (
@@ -336,10 +344,16 @@ export default function CharacterFeaturesPanel({ character = null, isAdmin = fal
 
       <style jsx>{`
         .feature-summary { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap; }
-        .feature-detail { padding:.8rem; border-radius:.7rem; background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.09); }
-        .feature-detail p { white-space:pre-line; line-height:1.55; }
+        .feature-detail { padding:.8rem; border-radius:.7rem; background:rgba(255,255,255,.025); border:1px solid rgba(255,255,255,.08); }
+        .feature-detail p { white-space:pre-line; line-height:1.6; }
         .feature-prerequisite { line-height:1.45; color:rgba(255,255,255,.78); }
         .feature-detail-card { min-height:230px; }
+        .profile-feature-rule-list { display:grid; gap:0; }
+        .profile-feature-rule-intro { margin:0; padding:0 0 .7rem; color:rgba(255,255,255,.8); font-size:.82rem; line-height:1.62; }
+        .profile-feature-rule-list > section { display:grid; gap:.25rem; padding:.62rem 0 .62rem .8rem; border-left:2px solid rgba(168,108,255,.42); }
+        .profile-feature-rule-list > section + section { border-top:1px solid rgba(255,255,255,.065); }
+        .profile-feature-rule-list h4 { margin:0; color:#eadbff; font-size:.78rem; font-weight:700; }
+        .profile-feature-rule-list section p { margin:0; color:rgba(255,255,255,.78); font-size:.8rem; line-height:1.62; }
       `}</style>
     </div>
   );
