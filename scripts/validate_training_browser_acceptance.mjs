@@ -51,8 +51,9 @@ for (const token of [
   "sourceFieldForKey(sourceTradeFields, key, \"professionKey\")",
   "sourceAvailable ? `Available from ${grantSource}`",
   "sourceGranted ? `Granted by ${grantSource}`",
-  "chooseSourceMappedOption(sourceRef, option)",
-]) assert(playerTraining.includes(token), `Trade Skill surface must own source-granted Profession choices: missing ${token}`);
+  'selectionKind = sourceGranted ? "granted-profession"',
+]) assert(playerTraining.includes(token), `Trade Skill surface must expose source-granted Profession choices without mutating them on row click: missing ${token}`);
+assert(trainingContext.includes('detail?.selectionKind === "source-profession"') && trainingContext.includes("setSourceChoice?.(detail.sourceGroupId, detail.sourceFieldId, next)"), "Source-granted Profession choices must be confirmed from Current Selection.");
 
 for (const token of [
   "featRuleSectionsFromDescription",
