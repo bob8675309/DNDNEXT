@@ -104,8 +104,10 @@ for (const token of [
 ]) assert(browserPolish.includes(token), `Training browse/inspect/choose visual hierarchy is missing ${token}`);
 
 for (const token of [
-  ".npc-forge-training-feat-rule-list > article + article:not(:has(> strong))",
-  ".npc-forge-training-feat-rule-list > article:first-child:not(:has(> strong))",
+  ".npc-forge-training-feat-rule-list > article",
+  "border-left: 2px solid rgba(168,108,255,.38)",
+  "border-radius: 0 !important",
+  "background: transparent !important",
   ".npc-forge-training-feat-help",
   ".npc-forge-training-tabbed-help",
   ".npc-forge-training-feat-followups button.has-spells",
@@ -113,7 +115,8 @@ for (const token of [
   "max-height: clamp(228px, calc(100dvh - 430px), 500px)",
   ".npc-forge-training-context-note",
   "height: calc(100dvh - 190px)",
-]) assert(browserPolish.includes(token), `Latest Feats compaction / continuation polish is missing ${token}`);
+  ".npc-forge-training-tabbed-shell:is(.is-feats,.is-class)",
+]) assert(browserPolish.includes(token), `Latest low-chrome Feats/Class Choices continuation polish is missing ${token}`);
 
 for (const token of [
   "function initialBackground",
