@@ -134,7 +134,7 @@
 .dragging .detail { display: none !important; }
 .dragging .shadow { opacity: .65 !important; }
 .settled:hover,
-.settled:focus-visible { z-index: 20; }
+.settled:focus-visible { z-index: 80 !important; }
 .assigned .face {
   border-color: rgba(var(--die-accent), .92);
   box-shadow:
@@ -219,7 +219,7 @@
   position: absolute;
   left: 50%;
   bottom: calc(100% + 16px);
-  z-index: 50;
+  z-index: 100;
   display: none;
   min-width: 174px;
   padding: 9px 11px;
