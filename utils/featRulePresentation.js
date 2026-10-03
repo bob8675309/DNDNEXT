@@ -10,8 +10,12 @@ export function featRuleSectionsFromDescription(description = "") {
   for (let index = 0; index < paragraphs.length; index += 1) {
     const paragraph = paragraphs[index];
     const standaloneHeading = paragraph.match(/^([^.!?]{2,56})\.$/);
-    if (standaloneHeading && paragraphs[index + 1]) {
-      sections.push({ title: standaloneHeading[1].trim(), body: paragraphs[index + 1].trim(), intro: false });
+    const plainHeading = !/[.!?:;]$/.test(paragraph)
+      && paragraph.length <= 56
+      && paragraph.split(/\s+/).length <= 8
+      && paragraphs[index + 1];
+    if ((standaloneHeading || plainHeading) && paragraphs[index + 1]) {
+      sections.push({ title: (standaloneHeading?.[1] || paragraph).trim(), body: paragraphs[index + 1].trim(), intro: false });
       index += 1;
       continue;
     }
