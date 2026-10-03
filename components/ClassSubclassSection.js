@@ -195,7 +195,6 @@ export default function ClassSubclassSection({
   const [selectorOpen, setSelectorOpen] = useState(false);
   const [orbitOffset, setOrbitOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const autoOpenedForRef = useRef("");
   const lastClassKeyRef = useRef(classKey);
   const orbitRef = useRef(null);
   const dragStateRef = useRef(null);
@@ -232,7 +231,7 @@ export default function ClassSubclassSection({
     const previousRects = pendingGlideRectsRef.current;
     if (!previousRects?.size) return;
     pendingGlideRectsRef.current = null;
-    const duration = 2180;
+    const duration = 1180;
     glideUntilRef.current = Date.now() + duration;
 
     for (const [key, node] of cardRefsRef.current.entries()) {
@@ -245,24 +244,25 @@ export default function ClassSubclassSection({
 
       const next = node.getBoundingClientRect();
       if (!next.width || !next.height) continue;
-      const dx = previous.left - next.left;
-      const dy = previous.top - next.top;
+
+      // The orbit is anchored at each card's bottom-center. Animate only that anchor's
+      // travel between slots. Scaling the FLIP layer made hero-to-rear transitions
+      // temporarily magnify cards toward the viewer, especially during repeated input.
+      const previousCenterX = previous.left + (previous.width / 2);
+      const nextCenterX = next.left + (next.width / 2);
+      const dx = previousCenterX - nextCenterX;
+      const dy = previous.bottom - next.bottom;
       const movement = Math.hypot(dx, dy);
       const orbitWidth = Number(orbitRef.current?.getBoundingClientRect()?.width || 0);
       // One rear card wraps across the signed-angle seam on some arrow presses.
-      // Do not FLIP that hidden/back-of-ring teleport across the whole viewport;
-      // letting only that rear card take its new slot prevents the giant card-back fly-through.
+      // Skip that hidden/back-of-ring teleport rather than flying it across the viewport.
       if (orbitWidth > 0 && movement > orbitWidth * .58) continue;
-      const scaleX = clamp(previous.width / next.width, .30, 3.25);
-      const scaleY = clamp(previous.height / next.height, .30, 3.25);
-      const sizeShift = Math.max(Math.abs(1 - scaleX), Math.abs(1 - scaleY));
-
-      if (movement < .5 && sizeShift < .005) continue;
+      if (movement < .5) continue;
 
       const animation = glide.animate(
         [
-          { transform: `translate3d(${dx.toFixed(2)}px, ${dy.toFixed(2)}px, 0) scale(${scaleX.toFixed(4)}, ${scaleY.toFixed(4)})` },
-          { transform: "translate3d(0, 0, 0) scale(1, 1)" },
+          { transform: `translate3d(${dx.toFixed(2)}px, ${dy.toFixed(2)}px, 0)` },
+          { transform: "translate3d(0, 0, 0)" },
         ],
         {
           duration,
@@ -285,20 +285,13 @@ export default function ClassSubclassSection({
   useEffect(() => {
     if (lastClassKeyRef.current !== classKey) {
       lastClassKeyRef.current = classKey;
-      autoOpenedForRef.current = "";
       setSelectorOpen(false);
     }
     setOrbitOffset(0);
   }, [classKey, optionSignature]);
 
-  useEffect(() => {
-    if (!options.length || selected || currentLevel < entryLevel) return;
-    const autoOpenKey = `${classKey}:${entryLevel}:${optionSignature}`;
-    if (autoOpenedForRef.current === autoOpenKey) return;
-    autoOpenedForRef.current = autoOpenKey;
-    setSelectorOpen(true);
-  }, [classKey, currentLevel, entryLevel, optionSignature, options.length, selected]);
-
+  // Character Forge also serves advancement. Crossing a subclass-entry level should
+  // signal that a choice is ready without stealing focus or opening a modal automatically.
   useEffect(() => {
     if (!selectorOpen || !selected || !options.length) return;
     const selectedIndex = options.findIndex((option) => option.key === selected.key);
