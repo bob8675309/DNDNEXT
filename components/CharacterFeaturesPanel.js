@@ -342,7 +342,7 @@ export default function CharacterFeaturesPanel({ character = null, isAdmin = fal
         </div>
       )}
 
-      <style jsx>{`
+      <style jsx global>{`
         .feature-summary { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap; }
         .feature-detail { padding:.8rem; border-radius:.7rem; background:rgba(255,255,255,.025); border:1px solid rgba(255,255,255,.08); }
         .feature-detail p { white-space:pre-line; line-height:1.6; }
