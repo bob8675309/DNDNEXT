@@ -10,6 +10,7 @@ const responsive = read("styles/character-forge-responsive.css");
 const browserPolish = read("styles/character-forge-browser-review-polish.css");
 const playerTraining = read("components/NpcForgeTrainingStepPlayer.js");
 const classFeatureChoices = read("components/NpcForgeClassFeatureChoices.js");
+const classOptionBrowser = read("components/NpcForgeClassOptionBrowser.js");
 const playerTabbed = read("components/NpcForgeTrainingStepPlayerTabbed.js");
 const sourceContext = read("components/NpcForgeSourceChoiceContext.js");
 const trainingContext = read("components/NpcForgeTrainingContextCard.js");
@@ -70,6 +71,9 @@ assert(!trainingContext.includes('<h4>Feat Rules</h4><p>{feat.description'), "Tr
 assert(playerTraining.includes("backgroundSourceLabel") && playerTraining.includes("classSourceLabel") && playerTraining.includes("sourceOwnerLabel={selectedClassName || \"Class\"}"), "Skills and feature-owned Training choices must expose their actual Background/Class provenance.");
 assert(classFeatureChoices.includes("npc-forge-class-choice-source") && classFeatureChoices.includes("Granted by") && classFeatureChoices.includes("group.subclassName || sourceOwnerLabel"), "Expertise and other class/subclass feature choices must identify the granting feature and owner.");
 assert(playerTraining.includes("npc-forge-training-feat-only") && playerTraining.includes("npc-forge-training-class-only"), "Feat and class-option controls must be separated into distinct Training subviews.");
+assert(playerTraining.includes("NpcForgeClassOptionBrowser") && playerTraining.includes("groups={classOptionGroups}"), "Class Choices must render source-backed catalogues inside the left workspace.");
+assert(!classFeatureChoices.includes("NpcForgeSourceChoiceFields"), "Class feature choices must not portal class-option controls into the preview rail.");
+assert(classOptionBrowser.includes('type: "classSourceOption"') && classOptionBrowser.includes("Selection is confirmed from Current Selection") && !classOptionBrowser.includes("onMouseEnter") && !classOptionBrowser.includes("onFocus"), "Source-backed Class Choices must inspect on click and confirm on the right.");
 assert(!playerTraining.includes("onMouseEnter={() => onDetail") && !playerTraining.includes("onMouseEnter={() => publishFeatGroup"), "Training Current Selection must not change merely because the pointer passes over another choice.");
 assert(profileFeatures.includes("FeatureRuleText") && profileFeatures.includes("profile-feature-rule-list") && featRulePresentation.includes("featRuleSectionsFromDescription"), "Profile and Forge feat descriptions must share structured low-chrome rule formatting.");
 
@@ -79,8 +83,12 @@ for (const token of [
   "Class Choices",
   "classSourceGroups",
   "Shared class picks",
-]) assert(playerTabbed.includes(token), `Segmented Skills/Feats/Class Choices navigation is missing ${token}`);
+  "activeClassFeatureGroups",
+  "backgroundSourceSkillOptions",
+  "Required class choices",
+]) assert(playerTabbed.includes(token), `Segmented Skills/Feats/Class Choices navigation or accurate source summary is missing ${token}`);
 assert(trainingContext.includes("Where these come from"), "Training section tabs must publish source/count breakdowns into Current Selection.");
+assert(trainingContext.includes('detail?.type === "classSourceOption"') && trainingContext.includes("toggleChoice: toggleSourceChoice") && trainingContext.includes('"Replace Selection"') && trainingContext.includes("dossier?.scrollTo?.({ top: 0"), "Current Selection must own source-backed Class Choice confirmation and reset its scroll position on deliberate clicks.");
 
 assert(app.includes('import "../styles/character-forge-browser-review-polish.css";'), "Latest Character Forge browser-review stylesheet is not loaded by _app.js.");
 for (const token of [
@@ -135,9 +143,9 @@ for (const token of ["Choose a Background", "Your life before adventuring", "His
   assert(backgroundEmpty.includes(token), `Refined Background fallback is missing ${token}`);
 }
 
-const protectedSources = `${responsive}\n${browserPolish}\n${sourceContext}\n${trainingContext}\n${playerTabbed}\n${routedController}\n${contextPanel}\n${backgroundEmpty}`.toLowerCase();
+const protectedSources = `${responsive}\n${browserPolish}\n${sourceContext}\n${trainingContext}\n${classOptionBrowser}\n${playerTabbed}\n${routedController}\n${contextPanel}\n${backgroundEmpty}`.toLowerCase();
 for (const token of ["map_routes", "advance_all_characters", "world-map", "town map", "city map"]) {
   assert(!protectedSources.includes(token), `Browser acceptance patch unexpectedly references protected map behavior: ${token}`);
 }
 
-console.log("Training browser acceptance validation passed: authoritative 40/60 layout, click-owned Current Selection, separate Skills/Feats/Class Choices tabs, right-panel feat confirmation, source breakdowns, subtle feat prose formatting, and first-Background default selection are intact.");
+console.log("Training browser acceptance validation passed: authoritative 40/60 layout, non-portaled Class Choices catalogues, click-owned Current Selection, right-panel feat/class-option confirmation, accurate source breakdowns, subtle feat prose formatting, and first-Background default selection are intact.");
