@@ -204,5 +204,5 @@ export default function NpcForgeTrainingContextCard({ detail = null, selectedSki
     </ContextShell>;
   }
 
-  return <div className="npc-forge-training-context-dossier"><h3>Current Selection</h3><p>Hover, focus, or select a Skill, Trade Skill, Training choice, or feat to see its details here.</p></div>;
+  return <div className="npc-forge-training-context-dossier"><h3>Current Selection</h3><p>Click a Skill, Trade Skill, feat, or Class Choice on the left to keep its details here.</p></div>;
 }
