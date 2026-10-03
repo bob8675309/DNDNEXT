@@ -65,6 +65,63 @@
   white-space: nowrap;
 }
 
+.class-subclass-section.is-required .class-subclass-launcher {
+  position: relative;
+  isolation: isolate;
+  border-color: rgba(247, 204, 111, .9);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(91, 222, 205, .13), transparent 66%),
+    linear-gradient(135deg, rgba(58, 31, 83, .98), rgba(13, 12, 25, .99));
+  animation: subclass-browser-ready-energy 1.75s ease-in-out infinite;
+}
+
+.class-subclass-section.is-required .class-subclass-launcher::before {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  z-index: -1;
+  pointer-events: none;
+  border: 1px solid rgba(142, 102, 255, .72);
+  border-radius: inherit;
+  opacity: .72;
+  box-shadow:
+    0 0 8px rgba(248, 202, 99, .48),
+    0 0 18px rgba(160, 94, 255, .42),
+    0 0 30px rgba(82, 220, 205, .26);
+  animation: subclass-browser-ready-aura 1.75s ease-in-out infinite;
+}
+
+.class-subclass-section.is-required .class-subclass-launcher strong {
+  color: #fff7dc;
+  text-shadow:
+    0 0 7px rgba(255, 215, 128, .42),
+    0 0 13px rgba(122, 231, 218, .24);
+}
+
+@keyframes subclass-browser-ready-energy {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,.04),
+      0 0 8px rgba(221, 166, 68, .2),
+      0 7px 20px rgba(0,0,0,.24);
+  }
+  50% {
+    transform: translateY(-1px) scale(1.025);
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,.07),
+      0 0 16px rgba(248, 199, 96, .55),
+      0 0 30px rgba(152, 88, 255, .36),
+      0 0 42px rgba(80, 219, 203, .2),
+      0 9px 24px rgba(0,0,0,.3);
+  }
+}
+
+@keyframes subclass-browser-ready-aura {
+  0%, 100% { inset: -4px; opacity: .46; filter: blur(.15px); }
+  50% { inset: -8px; opacity: .95; filter: blur(.55px); }
+}
+
 .class-subclass-selected-card-shell {
   width: max-content;
   max-width: 100%;
@@ -849,6 +906,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .class-subclass-section.is-required .class-subclass-launcher,
+  .class-subclass-section.is-required .class-subclass-launcher::before,
   .class-subclass-launcher,
   .class-subclass-selected-card,
   .class-subclass-carousel-card,
