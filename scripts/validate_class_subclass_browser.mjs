@@ -7,6 +7,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
 
 const guide = read("components/NpcForgeClassGuide.js");
+const guideStyles = read("components/NpcForgeClassGuideStyles.js");
 const selector = read("components/ClassSubclassSection.js");
 const subclassArtwork = read("utils/classes/subclassArtwork.js");
 const presentation = read("utils/classes/classPresentation.js");
@@ -454,6 +455,7 @@ assert(!framing.includes('bottom: 0 !important;\n    left: 0 !important'), "Cine
 assert(framing.includes(".npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art:has") && !framing.includes('.class-book-guide__content:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"])'), "Global cinematic framing must remain Overview-scoped; Detailed Guide owns its separate intentional background treatment.");
 assert(!guide.includes("npc-forge-class-guide__detailed-background") && guide.includes("npc-forge-class-guide__detailed-hero-stage") && guide.includes("npc-forge-class-guide__detailed-subclass-slot") && guide.includes("<ForgeClassHero selectedClass={selectedClass} detailed"), "Detailed Guide must use the canonical ForgeClassHero nested hero-art instead of a sibling image hidden behind the hero background.");
 assert(!guide.includes("ChoiceRoutingNote") && !guide.includes("npc-forge-class-guide__detailed-controls"), "Detailed Guide must not render the retired Deferred Resolutions routing box.");
+assert(guideStyles.includes("height:430px!important;min-height:430px!important") && guideStyles.includes("npc-forge-class-guide__hero-tagline{margin-top:36px!important}"), "Detailed Guide hero must retain the taller post-routing-note stage and the larger title-to-lore gap.");
 
 for (const token of [
   '.class-level-guide__features button',
