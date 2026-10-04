@@ -30,13 +30,8 @@ for (const token of ["speciesFixedLanguages", "fixed-languages", "autoSelect: tr
 forbidden(steps, "{playerMode && selectedSpecies?.lineages?.length ?", "Player lineage presentation");
 for (const token of ["Skills & Proficiencies", "Feats & Class Abilities", 'placement="advancement"', 'placement="class"']) required(training, token, "Training decision hub");
 forbidden(ability, "NpcForgeSourceChoiceFields", "Ability feat routing");
-for (const token of [
-  "ChoiceRoutingNote",
-  "Deferred resolutions",
-  "Tools, skills, feats, fighting styles, maneuvers, invocations",
-  "resolve in Training",
-  "Spell selections resolve in Spells",
-]) required(classGuide, token, "Class explanation routing");
+forbidden(classGuide, "ChoiceRoutingNote", "Class guide player-facing routing note");
+forbidden(classGuide, "Deferred resolutions", "Class guide player-facing routing note");
 forbidden(classGuide, "NpcForgeClassFeatureChoices", "Class explanation routing");
 forbidden(classDock, "NpcForgeSourceChoiceFields", "Class dock explanation routing");
 for (const token of ["RichField", "npc-forge-rich-choice", "eldritch-invocation", "artificer-plan"]) required(sourceUi, token, "Rich catalogue choices");
