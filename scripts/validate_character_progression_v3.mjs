@@ -108,12 +108,14 @@ for (const token of [
 ]) requireToken(classOptionBrowser, token, "source-owned Class workspace");
 
 const classExtensions = read("utils/classFeatureChoiceExtensions.js");
+const classParsing = read("utils/classFeatureChoiceParsing.js");
 for (const token of [
   'id: "bard-lore-magical-discoveries"',
   'id: "sorcerer-draconic-affinity"',
   'id: "fighter-champion-additional-fighting-style"',
   'findRow(rows, "Additional Fighting Style", "Champion")',
 ]) requireToken(classExtensions, token, "higher-level Forge subclass parity");
+for (const token of ['"doing one of the following"', '"do one of the following"', 'return "per-use"']) requireToken(classParsing, token, "runtime class-feature choice cadence");
 
 const simple = read("sql/20260808_16_simple_class_choice_delta_authority.sql");
 for (const token of [

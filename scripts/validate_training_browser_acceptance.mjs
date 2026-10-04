@@ -15,6 +15,7 @@ const playerTabbed = read("components/NpcForgeTrainingStepPlayerTabbed.js");
 const sourceContext = read("components/NpcForgeSourceChoiceContext.js");
 const trainingContext = read("components/NpcForgeTrainingContextCard.js");
 const featRulePresentation = read("utils/featRulePresentation.js");
+const classFeatureChoiceParsing = read("utils/classFeatureChoiceParsing.js");
 const invocationChoices = read("utils/warlockInvocationChoices.js");
 const profileFeatures = read("components/CharacterFeaturesPanel.js");
 const routedController = read("components/useNpcForgeTrainingRoutedController.js");
@@ -67,7 +68,8 @@ for (const token of [
   'title: "Discount"',
   'title: "Fast Crafting"',
 ]) assert(trainingContext.includes(token), `Feat dossier cleanup / Crafter routing is missing ${token}`);
-for (const token of ["looksLikeRuleHeading", "titleLike.length / significant.length >= 0.8", "flushProse", "formatPlayerFacingText"]) assert(featRulePresentation.includes(token), `Shared feat rule formatter is missing ${token}`);
+for (const token of ["looksLikeRuleHeading", "titleLike.length / significant.length >= 0.8", "flushProse", "formatPlayerFacingText", "with|over|by|as"]) assert(featRulePresentation.includes(token), `Shared feat rule formatter is missing ${token}`);
+assert(classFeatureChoiceParsing.includes('"doing one of the following"'), "Runtime Rage instructions must not surface as a Class Choice.");
 assert(!trainingContext.includes("groupsOverride={trainingGroups}"), "The Feats dossier must not render Skills-routed Crafter Profession controls.");
 assert(!trainingContext.includes('<h4>Feat Rules</h4><p>{feat.description'), "Training must not dump raw unformatted feat descriptions directly into the dossier.");
 assert(playerTraining.includes("backgroundSourceLabel") && playerTraining.includes("classSourceLabel") && playerTraining.includes("sourceOwnerLabel={selectedClassName || \"Class\"}"), "Skills and feature-owned Training choices must expose their actual Background/Class provenance.");
@@ -97,7 +99,7 @@ for (const token of [
 assert(trainingContext.includes("Where these come from"), "Training section tabs must publish source/count breakdowns into Current Selection.");
 assert(!trainingContext.includes("Moving the mouse over another row will no longer replace") && trainingContext.includes("npc-forge-training-overview__source-name"), "Skills overview must remove implementation-facing helper copy and visually separate Background/Class names from their player-facing descriptions.");
 assert(trainingContext.includes('detail?.type === "classSourceOption"') && trainingContext.includes("toggleChoice: toggleSourceChoice") && trainingContext.includes('"Replace Selection"') && trainingContext.includes("dossier?.scrollTo?.({ top: 0"), "Current Selection must own source-backed Class Choice confirmation and reset its scroll position on deliberate clicks.");
-assert(trainingContext.includes('"Select Skill"') && trainingContext.includes('"Select Trade Skill"') && playerTraining.includes('selectionKind = fixedBackgroundGranted || sourceGranted'), "Skills and Trade Skills must browse on the left and confirm selection from Current Selection.");
+assert(trainingContext.includes('"Select Skill"') && trainingContext.includes('"Deselect Skill"') && trainingContext.includes('"Select Trade Skill"') && playerTraining.includes("sourceChoiceSelected") && playerTraining.includes("fixedSourceGranted"), "Skills must browse on the left and support Select/Deselect from Current Selection without treating removable source choices as fixed grants.");
 assert(invocationChoices.includes("OPTION_SUMMARIES") && invocationChoices.includes('text(row.description) || OPTION_SUMMARIES[norm(row.name)]'), "Invocation descriptions must use canonical summaries when imported source rows have null descriptions.");
 
 assert(app.includes('import "../styles/character-forge-browser-review-polish.css";'), "Latest Character Forge browser-review stylesheet is not loaded by _app.js.");

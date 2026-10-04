@@ -13,7 +13,7 @@ function looksLikeRuleHeading(value = "") {
 
   const significant = words.filter((word) => /[A-Za-z]/.test(word));
   if (!significant.length) return false;
-  const titleLike = significant.filter((word) => /^[A-Z0-9][A-Za-z0-9'’/-]*$/.test(word) || /^(of|the|and|or|to|a|an|in|on|for|with)$/i.test(word));
+  const titleLike = significant.filter((word) => /^[A-Z0-9][A-Za-z0-9'’/-]*$/.test(word) || /^(of|the|and|or|to|a|an|in|on|for|with|over|by|as)$/i.test(word));
   return titleLike.length / significant.length >= 0.8;
 }
 

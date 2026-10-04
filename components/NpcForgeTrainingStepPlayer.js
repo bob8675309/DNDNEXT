@@ -325,7 +325,8 @@ export default function NpcForgeTrainingStepPlayer({
 
   function sourceFieldForKey(refs, key, mappedKey) {
     const matching = refs.filter((entry) => entry.mappedOptions.some((option) => option[mappedKey] === key));
-    return matching.find((entry) => entry.selectedKeys.length < Number(entry.field.count || 1)) || matching[0] || null;
+    const selected = matching.find((entry) => entry.mappedOptions.some((option) => option[mappedKey] === key && entry.selectedKeys.includes(option.key)));
+    return selected || matching.find((entry) => entry.selectedKeys.length < Number(entry.field.count || 1)) || matching[0] || null;
   }
 
   function chooseSourceMappedOption(ref, option) {
@@ -377,24 +378,47 @@ export default function NpcForgeTrainingStepPlayer({
           const selectedBackgroundChoice = backgroundChoiceSelectedKeys.has(key);
           const backgroundGroup = backgroundChoiceForSkill(key);
           const pendingBackgroundChoice = Boolean(backgroundGroup && !fixedBackgroundGranted && !selectedBackgroundChoice);
-          const backgroundGranted = fixedBackgroundGranted || selectedBackgroundChoice;
           const sourceGranted = sourceGrantedSkillKeys.has(key);
           const sourceRef = sourceFieldForKey(sourceSkillFields, key, "skillKey");
-          const sourceAvailable = Boolean(sourceRef && !sourceGranted);
+          const sourceOption = sourceRef?.mappedOptions?.find((candidate) => candidate.skillKey === key) || null;
+          const sourceChoiceSelected = Boolean(sourceRef && sourceOption && sourceRef.selectedKeys.includes(sourceOption.key));
+          const fixedSourceGranted = sourceGranted && !sourceChoiceSelected;
+          const sourceAvailable = Boolean(sourceRef && !sourceChoiceSelected);
           const classAvailable = classSkillOptions.includes(key);
           const classSelected = selectedClassSkills.includes(key);
-          const granted = backgroundGranted || sourceGranted;
-          const selected = granted || classSelected;
-          const disabled = !granted && !pendingBackgroundChoice && !sourceAvailable && (!classAvailable || (!classSelected && remainingTrainingChoices <= 0));
+          const granted = fixedBackgroundGranted || fixedSourceGranted;
+          const selected = granted || selectedBackgroundChoice || sourceChoiceSelected || classSelected;
+          const disabled = !selected && !pendingBackgroundChoice && !sourceAvailable && (!classAvailable || remainingTrainingChoices <= 0);
           const definition = SKILL_BY_KEY[key];
-          const grantSource = backgroundGranted ? backgroundSourceLabel : sourceGranted ? skillGrantSource.get(key) || "Source" : sourceAvailable ? `${ownerLabel(sourceRef.group)}: ${sourceRef.group.label}` : "";
-          const provenance = backgroundGranted ? `Granted by ${backgroundSourceLabel}` : sourceGranted ? `Granted by ${grantSource}` : pendingBackgroundChoice ? `Choice from ${backgroundSourceLabel}` : sourceAvailable ? `Available from ${grantSource}` : classSelected ? `Chosen from ${classSourceLabel}` : classAvailable ? `Available from ${classSourceLabel}` : ABILITY_LABELS[definition?.ability] || "Skill";
-          const sourceOption = sourceRef?.mappedOptions?.find((candidate) => candidate.skillKey === key) || null;
-          const selectionKind = fixedBackgroundGranted || sourceGranted
+          const grantSource = fixedBackgroundGranted
+            ? backgroundSourceLabel
+            : fixedSourceGranted
+              ? skillGrantSource.get(key) || "Source"
+              : (sourceChoiceSelected || sourceAvailable) && sourceRef
+                ? `${ownerLabel(sourceRef.group)}: ${sourceRef.group.label}`
+                : "";
+          const provenance = fixedBackgroundGranted
+            ? `Granted by ${backgroundSourceLabel}`
+            : fixedSourceGranted
+              ? `Granted by ${grantSource}`
+              : selectedBackgroundChoice
+                ? `Chosen from ${backgroundSourceLabel}`
+                : pendingBackgroundChoice
+                  ? `Choice from ${backgroundSourceLabel}`
+                  : sourceChoiceSelected
+                    ? `Chosen from ${grantSource}`
+                    : sourceAvailable
+                      ? `Available from ${grantSource}`
+                      : classSelected
+                        ? `Chosen from ${classSourceLabel}`
+                        : classAvailable
+                          ? `Available from ${classSourceLabel}`
+                          : ABILITY_LABELS[definition?.ability] || "Skill";
+          const selectionKind = fixedBackgroundGranted || fixedSourceGranted
             ? "granted-skill"
             : selectedBackgroundChoice || pendingBackgroundChoice
               ? "background-skill"
-              : sourceAvailable
+              : sourceChoiceSelected || sourceAvailable
                 ? "source-skill"
                 : classAvailable
                   ? "class-skill"
@@ -419,7 +443,7 @@ export default function NpcForgeTrainingStepPlayer({
               sourceOptionKey: sourceOption?.key || "",
               sourceCount: Number(sourceRef?.field?.count || 1),
             });
-          }}><SkillGlyph skillKey={key} /><span><b>{titleForSkill(key)}</b><small>{provenance}</small></span><em>{granted ? "Granted" : classSelected || selectedBackgroundChoice ? "Selected" : (pendingBackgroundChoice || sourceAvailable || classAvailable) ? "View" : "Info"}</em></button>;
+          }}><SkillGlyph skillKey={key} /><span><b>{titleForSkill(key)}</b><small>{provenance}</small></span><em>{granted ? "Granted" : selected ? "Selected" : (pendingBackgroundChoice || sourceAvailable || classAvailable) ? "View" : "Info"}</em></button>;
         })}</div>
       </section>
 
