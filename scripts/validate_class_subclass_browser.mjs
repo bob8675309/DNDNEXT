@@ -452,7 +452,7 @@ for (const token of [
 ]) assert(framing.includes(token), `Stable open top-right cinematic framing missing ${token}`);
 assert(!framing.includes('bottom: 0 !important;\n    left: 0 !important'), "Cinematic art is still content-height-coupled.");
 assert(framing.includes(".npc-forge-class-guide__overview-book .npc-forge-class-guide__hero-art:has") && !framing.includes('.class-book-guide__content:has(.npc-forge-class-guide__hero-art img[src*="/media/classes/cinematic-"])'), "Global cinematic framing must remain Overview-scoped; Detailed Guide owns its separate intentional background treatment.");
-assert(guide.includes('className="npc-forge-class-guide__detailed-background"') && guide.includes("src={classHeroArtworkFor(selectedClass.class_key)}") && guide.includes("npc-forge-class-guide__detailed-hero-stage") && guide.includes("npc-forge-class-guide__detailed-subclass-slot") && guide.includes("<ForgeClassHero selectedClass={selectedClass} detailed"), "Detailed Guide must render the cinematic class image as an actual hero-stage image layer, with the subclass card over that stage and level accordions below.");
+assert(!guide.includes("npc-forge-class-guide__detailed-background") && guide.includes("npc-forge-class-guide__detailed-hero-stage") && guide.includes("npc-forge-class-guide__detailed-subclass-slot") && guide.includes("<ForgeClassHero selectedClass={selectedClass} detailed"), "Detailed Guide must use the canonical ForgeClassHero nested hero-art instead of a sibling image hidden behind the hero background.");
 
 for (const token of [
   '.class-level-guide__features button',
