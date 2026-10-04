@@ -84,14 +84,18 @@ assert(profileFeatures.includes("FeatureRuleText") && profileFeatures.includes("
 for (const token of [
   "npc-forge-training-mode-switch{display:flex",
   "border-radius:999px",
-  "Class Choices",
+  "is-class-choice-tab",
+  "<span>Class</span><span>Choices</span>",
   "classSourceGroups",
-  "Shared class picks",
+  "Class Skill Choices",
+  'label: "Background"',
+  'label: "Class"',
   "activeClassFeatureGroups",
   "backgroundSourceSkillOptions",
   "Required class choices",
-]) assert(playerTabbed.includes(token), `Segmented Skills/Feats/Class Choices navigation or accurate source summary is missing ${token}`);
+]) assert(playerTabbed.includes(token), `Segmented Skills/Feats/Class Choices navigation or player-facing source summary is missing ${token}`);
 assert(trainingContext.includes("Where these come from"), "Training section tabs must publish source/count breakdowns into Current Selection.");
+assert(!trainingContext.includes("Moving the mouse over another row will no longer replace") && trainingContext.includes("npc-forge-training-overview__source-name"), "Skills overview must remove implementation-facing helper copy and visually separate Background/Class names from their player-facing descriptions.");
 assert(trainingContext.includes('detail?.type === "classSourceOption"') && trainingContext.includes("toggleChoice: toggleSourceChoice") && trainingContext.includes('"Replace Selection"') && trainingContext.includes("dossier?.scrollTo?.({ top: 0"), "Current Selection must own source-backed Class Choice confirmation and reset its scroll position on deliberate clicks.");
 assert(trainingContext.includes('"Select Skill"') && trainingContext.includes('"Select Trade Skill"') && playerTraining.includes('selectionKind = fixedBackgroundGranted || sourceGranted'), "Skills and Trade Skills must browse on the left and confirm selection from Current Selection.");
 assert(invocationChoices.includes("OPTION_SUMMARIES") && invocationChoices.includes('text(row.description) || OPTION_SUMMARIES[norm(row.name)]'), "Invocation descriptions must use canonical summaries when imported source rows have null descriptions.");

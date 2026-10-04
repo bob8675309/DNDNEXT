@@ -33,6 +33,13 @@ function titleCase(value = "") {
   return String(value || "").replace(/[-_]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()).trim();
 }
 
+function playerList(values = []) {
+  const list = values.filter(Boolean);
+  if (list.length <= 1) return list[0] || "";
+  if (list.length === 2) return `${list[0]} and ${list[1]}`;
+  return `${list.slice(0, -1).join(", ")}, and ${list[list.length - 1]}`;
+}
+
 
 export default function NpcForgeTrainingStepPlayerTabbed(props) {
   const [activeView, setActiveView] = useState("skills");
@@ -125,6 +132,10 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
       ...backgroundSourceSkillOptions.map((option) => String(option.value || option.label || option.key || "").trim().toLowerCase()),
     ].filter(Boolean));
     const backgroundFixed = backgroundSkillKeys.size;
+    const backgroundSkillNames = [...backgroundSkillKeys].map(titleCase);
+    const backgroundSkillSentence = backgroundSkillNames.length
+      ? `Grants you access to the ${playerList(backgroundSkillNames)} Skill${backgroundSkillNames.length === 1 ? "" : "s"}.`
+      : "Provides the skills listed by your Background.";
     const selectedBonusName = controller.speciesBonusFeat?.name || "";
 
     if (view === "feats") {
@@ -181,17 +192,16 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
       view: "skills",
       icon: `${TRAINING_ASSET_ROOT}/summary-skills.svg`,
       title: "Skills & Training",
-      description: "This section combines fixed grants, Background choices, your shared class Skill / Trade Skill allowance, and feature-granted training such as Expertise.",
+      description: "",
       metrics: [
-        { label: "Shared class picks", value: `${sharedChoiceDone}/${sharedChoiceTarget}`, detail: "Skills and paid Trade Skills use the same allowance" },
-        { label: "Background skills", value: String(backgroundFixed), detail: backgroundChoiceTarget ? `${backgroundChoiceDone}/${backgroundChoiceTarget} variable choice${backgroundChoiceTarget === 1 ? "" : "s"} resolved • ${backgroundName}` : `Fixed/source grants from ${backgroundName}` },
-        { label: "Feature training", value: (trainingProgress.target + trainingSourceProgress.target) ? `${trainingProgress.done + trainingSourceProgress.done}/${trainingProgress.target + trainingSourceProgress.target}` : "0", detail: "Expertise, tools, languages, and other granted training" },
+        { label: "Class Skill Choices", value: `${sharedChoiceDone}/${sharedChoiceTarget}`, detail: sharedChoiceTarget === 1 ? `Choose one skill from your ${className} list.` : `Choose ${sharedChoiceTarget} skills from your ${className} list.` },
+        { label: "Background Skills", value: String(backgroundFixed), detail: backgroundSkillNames.length ? playerList(backgroundSkillNames) : backgroundName },
+        { label: "Additional Training", value: (trainingProgress.target + trainingSourceProgress.target) ? `${trainingProgress.done + trainingSourceProgress.done}/${trainingProgress.target + trainingSourceProgress.target}` : "0", detail: "Expertise, tools, or languages from your features." },
       ],
       sources: [
-        { label: backgroundName, detail: "Fixed, auto-selected, and selectable Background skill/training grants", value: `${backgroundFixed} skill${backgroundFixed === 1 ? "" : "s"}` },
-        { label: className, detail: "Shared Skill / Trade Skill allowance", value: `${sharedChoiceDone}/${sharedChoiceTarget}` },
-        ...(controller.sourceGrantedTradeSkillKeys?.length ? [{ label: "Source-granted Trade Skills", detail: "Free grants that do not spend the shared class allowance", value: String(controller.sourceGrantedTradeSkillKeys.length) }] : []),
-        ...(trainingClassGroups.length ? [{ label: "Class features", detail: "Feature-granted Training choices such as Expertise", value: trainingProgress.target ? `${trainingProgress.done}/${trainingProgress.target}` : String(trainingClassGroups.length) }] : []),
+        { label: "Background", name: backgroundName, detail: backgroundSkillSentence, value: `${backgroundFixed} skill${backgroundFixed === 1 ? "" : "s"}` },
+        { label: "Class", name: className, detail: sharedChoiceTarget === 1 ? "Grants you one skill choice from the list provided." : `Grants you ${sharedChoiceTarget} skill choices from the list provided.`, value: `${sharedChoiceDone}/${sharedChoiceTarget}` },
+        ...(trainingProgress.target ? [{ label: "Class Feature", name: className, detail: "Provides an additional training choice from one of your class features.", value: `${trainingProgress.done}/${trainingProgress.target}` }] : []),
       ],
     };
   }
@@ -224,9 +234,9 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
         <span><strong>Feats</strong><small>Feat catalogue &amp; feat-owned follow-ups</small></span>
         <em className={featsIncomplete ? "is-required" : "is-complete"}>{featsStatus}</em>
       </button>
-      <button type="button" role="tab" aria-selected={activeView === "class"} className={activeView === "class" ? "is-active" : ""} onClick={() => selectView("class")}>
+      <button type="button" role="tab" aria-selected={activeView === "class"} className={`${activeView === "class" ? "is-active " : ""}is-class-choice-tab`} onClick={() => selectView("class")}>
         <img src={`${TRAINING_ASSET_ROOT}/summary-training.svg`} alt="" aria-hidden="true" />
-        <span><strong>Class Choices</strong><small>Invocations, styles, maneuvers &amp; class options</small></span>
+        <span><strong><span>Class</span><span>Choices</span></strong><small>Invocations, styles, maneuvers &amp; class options</small></span>
         <em className={classChoicesIncomplete ? "is-required" : "is-complete"}>{classStatus}</em>
       </button>
     </div>
@@ -235,17 +245,15 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
       <NpcForgeTrainingStepPlayer {...props} />
     </div>
 
-    <div className="npc-forge-training-tabbed-help">
+    {activeView !== "skills" ? <div className="npc-forge-training-tabbed-help">
       <span>ⓘ</span>
-      <p>{activeView === "skills"
-        ? "Choose Skills, Trade Skills, languages, tools, instruments, and other training here. Background and other source grants are labeled and do not silently consume your shared class allowance."
-        : activeView === "feats"
-          ? "Click a feat to inspect it on the right. For selectable bonus feats, confirm the choice with Select Feat in Current Selection. Feat-owned non-spell follow-ups remain with the feat; granted spells continue to Spells."
-          : "Resolve persistent class and subclass choices here, including Eldritch Invocations, fighting styles, maneuvers, Artificer plans, and similar level-based options."}</p>
-    </div>
+      <p>{activeView === "feats"
+        ? "Click a feat to inspect it on the right. For selectable bonus feats, confirm the choice with Select Feat in Current Selection. Feat-owned non-spell follow-ups remain with the feat; granted spells continue to Spells."
+        : "Resolve persistent class and subclass choices here, including Eldritch Invocations, fighting styles, maneuvers, Artificer plans, and similar level-based options."}</p>
+    </div> : null}
 
     <style jsx global>{`
-      .npc-forge-training-tabbed-shell{display:grid;gap:9px}.npc-forge-training-mode-switch{display:flex;gap:3px;align-items:stretch;width:100%;padding:4px;border:1px solid rgba(168,108,255,.28);border-radius:999px;background:linear-gradient(180deg,rgba(38,25,61,.92),rgba(7,9,16,.96));box-shadow:inset 0 1px rgba(255,255,255,.045),0 8px 24px rgba(0,0,0,.18)}.npc-forge-training-mode-switch>button{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:9px;align-items:center;flex:1 1 0;min-width:0;min-height:50px;padding:7px 11px;border:1px solid transparent;border-radius:999px;color:rgba(255,255,255,.68);background:transparent;text-align:left;transition:transform .16s ease,border-color .16s ease,background .16s ease,box-shadow .16s ease}.npc-forge-training-mode-switch>button:hover{border-color:rgba(168,108,255,.28);background:rgba(126,72,199,.07);transform:translateY(-1px)}.npc-forge-training-mode-switch>button.is-active{border-color:rgba(168,108,255,.68);background:linear-gradient(110deg,rgba(126,72,199,.32),rgba(75,42,124,.16));box-shadow:inset 0 0 0 1px rgba(220,190,255,.06),0 4px 14px rgba(126,72,199,.16)}.npc-forge-training-mode-switch>button>img{width:25px;height:25px;object-fit:contain}.npc-forge-training-mode-switch>button>span{display:grid;gap:1px;min-width:0}.npc-forge-training-mode-switch>button strong{color:#fff;font-size:.72rem;white-space:nowrap}.npc-forge-training-mode-switch>button small{overflow:hidden;color:rgba(255,255,255,.48);font-size:.48rem;white-space:nowrap;text-overflow:ellipsis}.npc-forge-training-mode-switch>button>em{padding:4px 7px;border-radius:999px;color:rgba(255,255,255,.58);background:rgba(255,255,255,.055);font-size:.46rem;font-style:normal;white-space:nowrap}.npc-forge-training-mode-switch>button>em.is-required{color:#ffe0a0;background:rgba(243,191,99,.12)}.npc-forge-training-mode-switch>button>em.is-complete{color:#9cece2;background:rgba(88,214,199,.1)}.npc-forge-training-tabbed-shell .npc-forge-training-summary--unified{display:none!important}.npc-forge-training-tabbed-shell .npc-forge-training-help{display:none!important}.npc-forge-training-tabbed-shell.is-skills .npc-forge-training-feat-section{display:none!important}.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-class-skills,.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-trade-skills,.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-source-section,.npc-forge-training-tabbed-shell.is-class .npc-forge-training-class-skills,.npc-forge-training-tabbed-shell.is-class .npc-forge-training-trade-skills,.npc-forge-training-tabbed-shell.is-class .npc-forge-training-source-section{display:none!important}.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-feat-section,.npc-forge-training-tabbed-shell.is-class .npc-forge-training-feat-section{display:block!important;border-top:0!important}.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-feat-section>summary,.npc-forge-training-tabbed-shell.is-class .npc-forge-training-feat-section>summary{display:none!important}.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-feat-section .npc-forge-training-choice-body,.npc-forge-training-tabbed-shell.is-class .npc-forge-training-feat-section .npc-forge-training-choice-body{padding:1px 0 4px}.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-picks,.npc-forge-training-tabbed-shell.is-class .npc-forge-training-picks{padding-top:11px}.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-class-only{display:none!important}.npc-forge-training-tabbed-shell.is-class .npc-forge-training-feat-only{display:none!important}.npc-forge-training-tabbed-shell .npc-forge-training-source-section>summary b{font-size:0}.npc-forge-training-tabbed-shell .npc-forge-training-source-section>summary b::after{content:"Additional Training";font-size:.57rem}.npc-forge-training-tabbed-help{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border-top:1px solid rgba(255,255,255,.065);color:rgba(255,255,255,.52)}.npc-forge-training-tabbed-help>span{color:#cfd8ff;font-size:.72rem}.npc-forge-training-tabbed-help p{margin:0;font-size:.5rem;line-height:1.45}@media(max-width:1180px){.npc-forge-training-mode-switch>button small{display:none}.npc-forge-training-mode-switch>button{grid-template-columns:25px minmax(0,1fr) auto;padding-inline:8px}.npc-forge-training-mode-switch>button strong{font-size:.66rem}.npc-forge-training-mode-switch>button>em{font-size:.43rem}}@media(max-width:720px){.npc-forge-training-mode-switch{border-radius:18px;flex-direction:column}.npc-forge-training-mode-switch>button{grid-template-columns:28px minmax(0,1fr) auto;min-height:48px;border-radius:14px;padding:7px 9px}.npc-forge-training-mode-switch>button>img{width:24px;height:24px}}
+      .npc-forge-training-tabbed-shell{display:grid;gap:9px}.npc-forge-training-mode-switch{display:flex;gap:3px;align-items:stretch;width:100%;padding:4px;border:1px solid rgba(168,108,255,.28);border-radius:999px;background:linear-gradient(180deg,rgba(38,25,61,.92),rgba(7,9,16,.96));box-shadow:inset 0 1px rgba(255,255,255,.045),0 8px 24px rgba(0,0,0,.18)}.npc-forge-training-mode-switch>button{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:9px;align-items:center;flex:1 1 0;min-width:0;min-height:50px;padding:7px 11px;border:1px solid transparent;border-radius:999px;color:rgba(255,255,255,.68);background:transparent;text-align:left;transition:transform .16s ease,border-color .16s ease,background .16s ease,box-shadow .16s ease}.npc-forge-training-mode-switch>button:hover{border-color:rgba(168,108,255,.28);background:rgba(126,72,199,.07);transform:translateY(-1px)}.npc-forge-training-mode-switch>button.is-active{border-color:rgba(168,108,255,.68);background:linear-gradient(110deg,rgba(126,72,199,.32),rgba(75,42,124,.16));box-shadow:inset 0 0 0 1px rgba(220,190,255,.06),0 4px 14px rgba(126,72,199,.16)}.npc-forge-training-mode-switch>button>img{width:25px;height:25px;object-fit:contain}.npc-forge-training-mode-switch>button>span{display:grid;gap:1px;min-width:0}.npc-forge-training-mode-switch>button strong{color:#fff;font-size:.72rem;white-space:nowrap}.npc-forge-training-mode-switch>button.is-class-choice-tab strong{display:grid;gap:0;font-size:.65rem;line-height:.92;white-space:normal}.npc-forge-training-mode-switch>button.is-class-choice-tab strong>span{display:block}.npc-forge-training-mode-switch>button small{overflow:hidden;color:rgba(255,255,255,.48);font-size:.48rem;white-space:nowrap;text-overflow:ellipsis}.npc-forge-training-mode-switch>button>em{padding:4px 7px;border-radius:999px;color:rgba(255,255,255,.58);background:rgba(255,255,255,.055);font-size:.46rem;font-style:normal;white-space:nowrap}.npc-forge-training-mode-switch>button>em.is-required{color:#ffe0a0;background:rgba(243,191,99,.12)}.npc-forge-training-mode-switch>button>em.is-complete{color:#9cece2;background:rgba(88,214,199,.1)}.npc-forge-training-tabbed-shell .npc-forge-training-summary--unified{display:none!important}.npc-forge-training-tabbed-shell .npc-forge-training-help{display:none!important}.npc-forge-training-tabbed-shell.is-skills .npc-forge-training-feat-section{display:none!important}.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-class-skills,.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-trade-skills,.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-source-section,.npc-forge-training-tabbed-shell.is-class .npc-forge-training-class-skills,.npc-forge-training-tabbed-shell.is-class .npc-forge-training-trade-skills,.npc-forge-training-tabbed-shell.is-class .npc-forge-training-source-section{display:none!important}.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-feat-section,.npc-forge-training-tabbed-shell.is-class .npc-forge-training-feat-section{display:block!important;border-top:0!important}.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-feat-section>summary,.npc-forge-training-tabbed-shell.is-class .npc-forge-training-feat-section>summary{display:none!important}.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-feat-section .npc-forge-training-choice-body,.npc-forge-training-tabbed-shell.is-class .npc-forge-training-feat-section .npc-forge-training-choice-body{padding:1px 0 4px}.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-picks,.npc-forge-training-tabbed-shell.is-class .npc-forge-training-picks{padding-top:11px}.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-class-only{display:none!important}.npc-forge-training-tabbed-shell.is-class .npc-forge-training-feat-only{display:none!important}.npc-forge-training-tabbed-shell .npc-forge-training-source-section>summary b{font-size:0}.npc-forge-training-tabbed-shell .npc-forge-training-source-section>summary b::after{content:"Additional Training";font-size:.57rem}.npc-forge-training-tabbed-help{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border-top:1px solid rgba(255,255,255,.065);color:rgba(255,255,255,.52)}.npc-forge-training-tabbed-help>span{color:#cfd8ff;font-size:.72rem}.npc-forge-training-tabbed-help p{margin:0;font-size:.5rem;line-height:1.45}@media(max-width:1180px){.npc-forge-training-mode-switch>button small{display:none}.npc-forge-training-mode-switch>button{grid-template-columns:25px minmax(0,1fr) auto;padding-inline:8px}.npc-forge-training-mode-switch>button strong{font-size:.66rem}.npc-forge-training-mode-switch>button>em{font-size:.43rem}}@media(max-width:720px){.npc-forge-training-mode-switch{border-radius:18px;flex-direction:column}.npc-forge-training-mode-switch>button{grid-template-columns:28px minmax(0,1fr) auto;min-height:48px;border-radius:14px;padding:7px 9px}.npc-forge-training-mode-switch>button>img{width:24px;height:24px}}
     `}</style>
   </div>;
 }
