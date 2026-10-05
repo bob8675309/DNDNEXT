@@ -67,10 +67,12 @@ expect(!abilityStep.includes("npc-forge-species-bonus mt-4"), "Species Bonus con
 includes(trainingStep, ["NpcForgeTrainingStepBase", "NpcForgeTrainingStepPlayer", "if (!props.playerMode)"], "Training player/NPC router");
 includes(playerTrainingStep, ["Skill &amp; Training Selections", "<b>Skills</b>", "Trade Skills", "Other Training Choices", "Feat &amp; Class Choices", "Bonus Feat", "sourceGrantedTradeSkillKeys", "sourceProfessionFieldsFor", "Background tool proficiencies preserve", "NpcForgeSourceChoiceFields", 'placement="training" inline', "NpcForgeTrainingFeatPicker", "TRADE_SKILL_KEYS"], "player Training step");
 expect(!playerTrainingStep.includes("<h3>Training Picks</h3>"), "redundant Training Picks heading returned");
-includes(trainingFeatPicker, ["Search", "Category", "Prerequisite", "onDetail", "role=\"listbox\""], "Training feat catalogue");
+includes(trainingFeatPicker, ["Search", "Category", "Prerequisite", "Sort", "sortMode", "categoryLabel", "onDetail", "role=\"listbox\""], "Training feat catalogue");
 includes(routedForgeController, ['controller.stepKey === "abilities"', 'controller.stepKey === "training"', "Choose your Bonus Feat in Training", "TRADE_SKILL_KEYS", "sourceGrantedTradeSkillKeys", "sourceGrantedByCreation"], "Training-routed Bonus Feat/controller allowance");
 expect(!playerTrainingStep.includes("Expertise is not self-assigned during creation"), "player Training still shows the redundant Expertise denial");
-includes(spellStep, ['from("class_level_progression")', 'from("spells_catalog")', "startingSpellSourceForRow", "Known spells", "Spellbook", "Prepared", "Highest spell level", "Background-expanded access"], "spell step");
+includes(spellStep, ['from("class_level_progression")', 'from("spells_catalog")', "components_v,components_s,components_m,material_text", "startingSpellSourceForRow", "Known spells", "Spellbook", "Prepared", "Highest spell level", "Background-expanded access"], "spell step");
+expect(!spellStep.includes("components_text"), "spell step queries a spells_catalog column that does not exist in the live schema");
+expect(!rules.includes("row.components_text"), "spell preference scoring depends on the removed/nonexistent components_text column");
 includes(review, ["Confirm your player character", "Class Progression", "Ability Scores", "Training & Professions", "Starting Magic", "Story & Campaign Hooks", "Campaign Status", "Edit"], "review dossier");
 includes(rules, ["POINT_BUY_BUDGET = 27", "POINT_BUY_MIN = 8", "POINT_BUY_MAX = 15", "startingSpellSelectionModel", "validateStartingSpellSelections", "spellChoicesForRpc"], "player Forge rules");
 includes(spellSources, ["subclassStartingSpellSelectionModel", "startingSpellSourceForRow", "serializeStartingMagicSelections", "model?.fixedSpells", 'source_type: choice.sourceType || model?.sourceType || "class"', 'access_type: choice.accessType || null', 'access_type: "fixed"'], "multi-source starting magic serialization");

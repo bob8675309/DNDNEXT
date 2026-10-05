@@ -293,8 +293,8 @@
 
 .unified-player-character-forge .npc-forge-training-feat-list > button {
   position: relative;
-  min-height: 42px !important;
-  padding: 7px 9px 7px 11px !important;
+  min-height: 48px !important;
+  padding: 8px 9px 8px 11px !important;
   border-color: rgba(255,255,255,.085) !important;
   border-radius: 7px !important;
   background: linear-gradient(90deg, rgba(13,16,25,.92), rgba(5,9,15,.8)) !important;
@@ -332,12 +332,16 @@
 }
 
 .unified-player-character-forge .npc-forge-training-feat-list strong {
-  font-size: .64rem !important;
+  font-size: .69rem !important;
 }
 
-.unified-player-character-forge .npc-forge-training-feat-list small,
+.unified-player-character-forge .npc-forge-training-feat-list small {
+  font-size: .49rem !important;
+}
+
 .unified-player-character-forge .npc-forge-training-feat-list i {
-  font-size: .47rem !important;
+  font-size: .49rem !important;
+  line-height: 1.35 !important;
 }
 
 .unified-player-character-forge .npc-forge-body:has(.npc-forge-training-tabbed-shell) .npc-forge-preview {

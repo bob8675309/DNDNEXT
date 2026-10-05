@@ -130,8 +130,9 @@ export function normalizedSpellName(value = "") {
 }
 
 function spellRowCompleteness(row = {}) {
-  return [row.description, row.casting_time, row.range_text, row.duration_text, row.school, row.components_text]
-    .reduce((score, value) => score + (String(value || "").trim() ? 1 : 0), 0);
+  const hasComponents = Boolean(row.components_v || row.components_s || row.components_m || String(row.material_text || "").trim());
+  return [row.description, row.casting_time, row.range_text, row.duration_text, row.school]
+    .reduce((score, value) => score + (String(value || "").trim() ? 1 : 0), hasComponents ? 1 : 0);
 }
 
 export function preferSpellRows(rows = []) {

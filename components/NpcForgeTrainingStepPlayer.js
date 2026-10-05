@@ -207,7 +207,7 @@ export default function NpcForgeTrainingStepPlayer({
     || ["class", "advancement"].includes(group.placement)
   )), [resolverTrainingGroups]);
   const featTrainingGroups = useMemo(() => sourceClassAbilityGroups.filter((group) => group.ownerType === "feat"), [sourceClassAbilityGroups]);
-  const otherSourceClassAbilityGroups = useMemo(() => sourceClassAbilityGroups.filter((group) => group.ownerType !== "feat"), [sourceClassAbilityGroups]);
+  const otherSourceClassAbilityGroups = useMemo(() => sourceClassAbilityGroups.filter((group) => group.ownerType !== "feat" && group.ownerType !== "class-option"), [sourceClassAbilityGroups]);
   const classOptionGroups = useMemo(
     () => sourceChoiceGroupsForPlacement(sourceChoiceState, "class").filter((group) => group.ownerType === "class-option"),
     [sourceChoiceState]
