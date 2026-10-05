@@ -60,7 +60,7 @@ for (const token of [
   "ClassSubclassSection",
   "classKey={selectedClass?.class_key || \"\"}",
   "onInspectSubclass",
-  "inspectSubclass(model, onSubclassDetail, option)",
+  "inspectSubclass(model, onSubclassDetail, option, actions)",
   "selectedRowFeatures",
   "spellSlotCells",
   'const slotLabels = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"]',
@@ -98,17 +98,22 @@ for (const token of [
   "class-subclass-carousel-modal__smoke-near",
   "class-subclass-carousel-card__float",
   "class-subclass-carousel-modal__flame is-flame-left-upper",
+  "function inspectOption(option, selectedOverride = false)",
   "model.selectSubclass(option)",
   "model?.setPreviewKey?.(option.key)",
-  "class-subclass-selected-card",
-  ">Change Subclass<",
-  "onDoubleClick={() => setSelectorOpen(true)}",
+  "class-subclass-selected-card-shell",
+  ">Open Codex<",
 ]) assert(selector.includes(token), `Reference-scene subclass selector is missing ${token}`);
 
-assert((selector.match(/model\.selectSubclass\(option\)/g) || []).length === 1, "Carousel motion must not create a second subclass-selection authority.");
-assert(!selector.includes('model?.setPreviewKey?.(heroOption.key)'), "Front-most carousel position must not auto-select or auto-preview as player intent.");
+assert((selector.match(/model\.selectSubclass\(option\)/g) || []).length === 1, "Carousel/Codex flow must retain one explicit subclass-confirmation authority.");
+assert(dock.includes(".npc-forge-class-feature-dock__head-actions{display:flex!important;flex-flow:row nowrap!important;"), "Subclass Codex select/locked action and Close controls must remain in one horizontal row.");
+assert(dock.includes("font-size:1.08rem!important;line-height:1.56!important;color:#fff!important"), "Feature panel rules text must remain high-contrast at the browser-reviewed medium reading size.");
+assert(selector.includes("model?.setPreviewKey?.(option.key)") && selector.includes("function inspectOption(option, selectedOverride = false)") && selector.includes("onInspectSubclass?.(option, {"), "Card click must preview first and hand explicit confirmation authority to the Codex.");
 assert(!selector.includes("browsedOption"), "Stale browsed-card auto-follow state must remain removed.");
 assert(!selector.includes("class-subclass-carousel-modal__details"), "Old dossier panel must not cover the recreated reference scene.");
+assert(guideStyles.includes(".npc-forge-class-guide__book .class-book-guide__levels>details") && guideStyles.includes(".npc-forge-class-guide__book>.class-book-guide__outline") && guideStyles.includes("grid-template-columns:minmax(190px,230px)") && guideStyles.includes(".npc-forge-class-guide__detailed-hero-stage .npc-forge-class-guide__book-hero.is-detailed-hero .npc-forge-class-guide__hero-art{position:absolute!important;top:0!important;right:0!important;bottom:auto!important;left:auto!important") && guideStyles.includes("width:58%!important;height:430px!important") && guideStyles.includes("min-width:58%!important;min-height:430px!important") && guideStyles.includes("object-fit:cover!important;object-position:right center!important") && guideStyles.includes("height:430px!important;max-width:none!important;max-height:none!important;min-width:100%!important;min-height:430px!important") && guideStyles.includes("transform:none!important") && !guideStyles.includes(".npc-forge-class-guide__hero-art{display:none!important}") && guideStyles.includes("left:31%!important") && guideStyles.includes("background:transparent!important;box-shadow:none!important;backdrop-filter:none!important"), "Detailed Guide must give the right-side cinematic art an explicit 58% by 430px box so legacy layout rules cannot collapse it into a strip, while keeping the unboxed subclass Tarot in the title-side gap.");
+assert(guideStyles.includes("height:430px!important;min-height:430px!important") && guideStyles.includes("npc-forge-class-guide__hero-tagline{margin-top:36px!important}") && guideStyles.includes("npc-forge-class-guide__hero-facts{margin-top:22px!important}") && !guide.includes("npc-forge-class-guide__detailed-controls") && !guide.includes("Deferred resolutions"), "Detailed Guide must visibly extend the cinematic hero through the full former Deferred Resolutions region, push lore lower beneath the class title, and place level accordions directly below the divider.");
+assert(guideStyles.includes("rgba(5,8,15,.46) 0%") && guideStyles.includes("rgba(5,8,15,.38) 32%") && guideStyles.includes(".npc-forge-class-guide__hero-art::before{content:none!important}"), "Detailed Guide must use a single lighter readability veil—roughly half the prior left-side darkness—without stacking the global hero-art mask.");
 assert(selector.includes("class-subclass-carousel-modal__smoke-near"), "Floating ruined-library target must retain the near smoke depth layer.");
 assert(!selector.includes("class-subclass-carousel-modal__rune-foreground"), "Retired runic-table foreground must not return.");
 assert(!selector.includes("class-subclass-carousel-modal__mouse"), "Terrain-independent ambient mouse must stay removed.");

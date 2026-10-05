@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import { buildClassFeatureChoiceGroups } from "../utils/classFeatureChoices";
 import { applyClassFeatureOptionAuthority } from "../utils/classFeatureOptionAuthority";
+import { INVOCATION_PREREQUISITES, OPTION_SUMMARIES } from "../utils/classFeatureChoiceConstants";
 import { guideSubclassFeatures, resolveSubclassCatalog, subclassIntroduction } from "../utils/classes/subclassCompatibility";
 import { formatPlayerFacingText } from "../utils/playerFacingText";
 import { useNpcForgeClassChoice } from "./NpcForgeClassChoiceContext";
@@ -269,6 +270,33 @@ export function useNpcForgeClassGuideModel(selectedClass, level) {
     };
   }), [levels, lookup, preview, selectedClass?.source]);
 
+  const listedOptionsForFeature = useCallback((feature = {}) => {
+    if (normalized(feature?.name) !== "eldritch invocation options") return [];
+    return optionalFeatureCatalog
+      .filter((row) => row?.option_type === "eldritch-invocation"
+        && normalized(row?.class_key) === "warlock"
+        && text(row?.source).toUpperCase() === "XPHB")
+      .map((row) => {
+        const identity = normalized(row?.name);
+        const catalogPrerequisites = row?.prerequisites && typeof row.prerequisites === "object" ? row.prerequisites : {};
+        const fallbackPrerequisites = INVOCATION_PREREQUISITES[identity] || {};
+        const minLevel = Number(catalogPrerequisites.minClassLevel || fallbackPrerequisites.minLevel || 0);
+        const requires = Array.isArray(catalogPrerequisites.requiresOptions)
+          ? catalogPrerequisites.requiresOptions.filter(Boolean).join(", ")
+          : text(fallbackPrerequisites.requires);
+        return {
+          name: text(row?.name),
+          source: text(row?.source || "XPHB"),
+          summary: text(row?.description) || text(OPTION_SUMMARIES[identity]),
+          minLevel,
+          requires,
+          repeatable: Boolean(row?.repeatable),
+        };
+      })
+      .filter((row) => row.name)
+      .sort((left, right) => left.name.localeCompare(right.name));
+  }, [optionalFeatureCatalog]);
+
   const resolveListedDetail = useCallback((label, parentFeature = null, levelOverride = null) => {
     const name = text(label);
     const matched = listedLookupKeys(name).map((key) => listDetailLookup.get(key)).find(Boolean) || null;
@@ -291,6 +319,6 @@ export function useNpcForgeClassGuideModel(selectedClass, level) {
     loading, error, pinned, setPinned, currentLevel, options, preview, selected,
     eligible, entryLevel, previewEligible, rows, intro: subclassIntroduction(preview), selectSubclass, spellCatalog, allSpellCatalog: spells,
     choiceGroups, choiceSelections: state.featureSelections || {}, toggleFeatureOption,
-    resolveListedDetail,
+    resolveListedDetail, listedOptionsForFeature,
   };
 }

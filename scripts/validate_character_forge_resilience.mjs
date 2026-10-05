@@ -84,13 +84,14 @@ requireToken(classGuideModel, 'from("class_feature_catalog")', "class choice sou
 requireToken(classGuideModel, 'from("character_option_catalog_preferred")', "class feat/skill source");
 requireToken(classGuideModel, 'from("items_catalog")', "weapon mastery source");
 forbidToken(classGuideModel, "subclass_source", "class feature catalog query");
-for (const token of ["ForgeSubclassSelection", "ChoiceRoutingNote", "cleanPlayerCopy", "npc-forge-class-guide__level-heading", "npc-forge-class-guide__hero-facts", "onFeatureDetail", "ClassFeatureText"]) requireToken(classGuide, token, "class guide");
+for (const token of ["ForgeSubclassSelection", "cleanPlayerCopy", "npc-forge-class-guide__level-heading", "npc-forge-class-guide__hero-facts", "onFeatureDetail", "ClassFeatureText"]) requireToken(classGuide, token, "class guide");
+forbidToken(classGuide, "ChoiceRoutingNote", "class guide player-facing routing note");
 forbidToken(classGuide, "NpcForgeClassFeatureChoices", "class guide decision routing");
 forbidToken(classGuide, '"Primary Abilities"', "class hero redundant primary-ability tile");
 for (const token of ["normalizeClassFeatureText", "classFeatureSections", "class-feature-text__long-list", "LEVEL_BOILERPLATE"]) requireToken(classFeatureText, token, "structured class feature text");
 for (const token of ["Class Feature", "Subclass Feature", "npc-forge-class-feature-dock", "ClassFeatureText", "Select another feature or subclass"]) requireToken(classDock, token, "class feature card dock");
 forbidToken(classDock, "NpcForgeSourceChoiceFields", "class feature card dock decision routing");
-for (const token of ["Deferred resolutions", "resolve in Training", "Spell selections resolve in Spells"]) requireToken(classGuide, token, "class routed decision explanation");
+forbidToken(classGuide, "Deferred resolutions", "class routed decision explanation");
 requireToken(forgeSteps, "NpcForgeClassFeatureDock", "class feature dock placement");
 requireToken(forgeSteps, "NpcForgeSpeciesBonusPanel", "ability Species Bonus placement");
 requireToken(forgeSteps, "speciesFixedLanguages", "source-defined player languages");

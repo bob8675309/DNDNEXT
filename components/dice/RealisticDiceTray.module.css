@@ -134,7 +134,7 @@
 .dragging .detail { display: none !important; }
 .dragging .shadow { opacity: .65 !important; }
 .settled:hover,
-.settled:focus-visible { z-index: 20; }
+.settled:focus-visible { z-index: 80 !important; }
 .assigned .face {
   border-color: rgba(var(--die-accent), .92);
   box-shadow:
@@ -219,11 +219,12 @@
   position: absolute;
   left: 50%;
   bottom: calc(100% + 16px);
-  z-index: 50;
+  z-index: 100;
   display: none;
   min-width: 174px;
   padding: 9px 11px;
-  transform: translateX(-50%);
+  max-width: min(196px, calc(100vw - 32px));
+  transform: translateX(calc(-50% + var(--dice-tooltip-shift-x, 0px)));
   border: 1px solid rgba(var(--die-accent), .48);
   border-radius: 10px;
   background: rgba(12, 10, 28, .97);
@@ -238,6 +239,10 @@
 .detail b,
 .detail strong { color: white; }
 .detail em { margin-top: 3px; color: rgba(255,255,255,.58); font-style: normal; }
+.die[data-tooltip-side="below"] .detail {
+  top: calc(100% + 16px);
+  bottom: auto;
+}
 .settled:hover .detail,
 .settled:focus-visible .detail { display: block; }
 

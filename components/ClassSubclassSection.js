@@ -195,7 +195,6 @@ export default function ClassSubclassSection({
   const [selectorOpen, setSelectorOpen] = useState(false);
   const [orbitOffset, setOrbitOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const autoOpenedForRef = useRef("");
   const lastClassKeyRef = useRef(classKey);
   const orbitRef = useRef(null);
   const dragStateRef = useRef(null);
@@ -232,7 +231,7 @@ export default function ClassSubclassSection({
     const previousRects = pendingGlideRectsRef.current;
     if (!previousRects?.size) return;
     pendingGlideRectsRef.current = null;
-    const duration = 2180;
+    const duration = 980;
     glideUntilRef.current = Date.now() + duration;
 
     for (const [key, node] of cardRefsRef.current.entries()) {
@@ -245,28 +244,31 @@ export default function ClassSubclassSection({
 
       const next = node.getBoundingClientRect();
       if (!next.width || !next.height) continue;
-      const dx = previous.left - next.left;
-      const dy = previous.top - next.top;
+
+      // Reconstruct the card's previous physical size around the same bottom-center anchor,
+      // then glide and resize together into the next orbit slot. The old top-left FLIP
+      // origin made large-to-small moves read as cards lunging toward the camera.
+      const previousCenterX = previous.left + (previous.width / 2);
+      const nextCenterX = next.left + (next.width / 2);
+      const dx = previousCenterX - nextCenterX;
+      const dy = previous.bottom - next.bottom;
+      const scale = clamp(previous.width / next.width, .42, 2.35);
       const movement = Math.hypot(dx, dy);
+      const sizeShift = Math.abs(1 - scale);
       const orbitWidth = Number(orbitRef.current?.getBoundingClientRect()?.width || 0);
       // One rear card wraps across the signed-angle seam on some arrow presses.
-      // Do not FLIP that hidden/back-of-ring teleport across the whole viewport;
-      // letting only that rear card take its new slot prevents the giant card-back fly-through.
+      // Skip that hidden/back-of-ring teleport rather than flying it across the viewport.
       if (orbitWidth > 0 && movement > orbitWidth * .58) continue;
-      const scaleX = clamp(previous.width / next.width, .30, 3.25);
-      const scaleY = clamp(previous.height / next.height, .30, 3.25);
-      const sizeShift = Math.max(Math.abs(1 - scaleX), Math.abs(1 - scaleY));
-
-      if (movement < .5 && sizeShift < .005) continue;
+      if (movement < .5 && sizeShift < .01) continue;
 
       const animation = glide.animate(
         [
-          { transform: `translate3d(${dx.toFixed(2)}px, ${dy.toFixed(2)}px, 0) scale(${scaleX.toFixed(4)}, ${scaleY.toFixed(4)})` },
-          { transform: "translate3d(0, 0, 0) scale(1, 1)" },
+          { transform: `translate3d(${dx.toFixed(2)}px, ${dy.toFixed(2)}px, 0) scale(${scale.toFixed(4)})` },
+          { transform: "translate3d(0, 0, 0) scale(1)" },
         ],
         {
           duration,
-          easing: "cubic-bezier(.32,.035,.18,1)",
+          easing: "cubic-bezier(.22,.78,.24,1)",
           fill: "both",
         },
       );
@@ -285,20 +287,13 @@ export default function ClassSubclassSection({
   useEffect(() => {
     if (lastClassKeyRef.current !== classKey) {
       lastClassKeyRef.current = classKey;
-      autoOpenedForRef.current = "";
       setSelectorOpen(false);
     }
     setOrbitOffset(0);
   }, [classKey, optionSignature]);
 
-  useEffect(() => {
-    if (!options.length || selected || currentLevel < entryLevel) return;
-    const autoOpenKey = `${classKey}:${entryLevel}:${optionSignature}`;
-    if (autoOpenedForRef.current === autoOpenKey) return;
-    autoOpenedForRef.current = autoOpenKey;
-    setSelectorOpen(true);
-  }, [classKey, currentLevel, entryLevel, optionSignature, options.length, selected]);
-
+  // Character Forge also serves advancement. Crossing a subclass-entry level should
+  // signal that a choice is ready without stealing focus or opening a modal automatically.
   useEffect(() => {
     if (!selectorOpen || !selected || !options.length) return;
     const selectedIndex = options.findIndex((option) => option.key === selected.key);
@@ -338,11 +333,6 @@ export default function ClassSubclassSection({
         </div>
       </section>
     );
-  }
-
-  function clearSelection() {
-    model.selectSubclass(null);
-    setSelectorOpen(true);
   }
 
   function rotateCarousel(direction) {
@@ -423,6 +413,31 @@ export default function ClassSubclassSection({
     setIsDragging(false);
   }
 
+  function inspectOption(option, selectedOverride = false) {
+    if (!option?.key) return;
+    const eligible = optionEntryLevel(option) <= currentLevel;
+    const selectedNow = selectedOverride || selected?.key === option.key;
+    const browse = () => setSelectorOpen(true);
+    const choose = eligible && !selectedNow ? () => {
+      model.selectSubclass(option);
+      setSelectorOpen(false);
+      model?.setPreviewKey?.(option.key);
+      onInspectSubclass?.(option, {
+        eligible: true,
+        selected: true,
+        choose: null,
+        browse,
+      });
+    } : null;
+
+    onInspectSubclass?.(option, {
+      eligible,
+      selected: selectedNow,
+      choose,
+      browse,
+    });
+  }
+
   function handleCardClick(event, option, optionIndex, isInteractive) {
     if (!isInteractive || Date.now() < suppressClickUntilRef.current) {
       event.preventDefault();
@@ -436,11 +451,7 @@ export default function ClassSubclassSection({
     captureGlideRects();
     setOrbitOffset(normalizeOrbitOffset(optionIndex - FRONT_CENTER_SLOT, options.length));
     model?.setPreviewKey?.(option.key);
-    onInspectSubclass?.(option);
-
-    if (optionEntryLevel(option) <= currentLevel) {
-      model.selectSubclass(option);
-    }
+    inspectOption(option);
   }
 
   const selectorModal = selectorOpen && typeof document !== "undefined"
@@ -513,7 +524,7 @@ export default function ClassSubclassSection({
                     tabIndex={isInteractive ? 0 : -1}
                     aria-posinset={optionIndex + 1}
                     aria-setsize={options.length}
-                    aria-label={`${option.name}, ${eligible ? "select and bring to the hero position" : `available at level ${optionEntryLevel(option)}`}`}
+                    aria-label={`${option.name}, ${eligible ? "preview and bring to the hero position" : `available at level ${optionEntryLevel(option)}`}`}
                     data-orbit-distance={Math.abs(signedSlots).toFixed(3)}
                     data-orbit-angle={angleDegrees.toFixed(3)}
                     data-orbit-depth={depth.toFixed(3)}
@@ -570,29 +581,15 @@ export default function ClassSubclassSection({
 
   return (
     <>
-      <section className={`npc-forge-class-guide__subclasses is-compact class-subclass-section is-card-launcher${detailed ? " is-detailed" : ""}${required && !selected ? " is-required" : ""}`}>
+      <section className={`npc-forge-class-guide__subclasses is-compact class-subclass-section is-card-launcher${selected ? " has-selection" : ""}${detailed ? " is-detailed" : ""}${required && !selected ? " is-required" : ""}`}>
         {selected ? (
           <div className="class-subclass-selected-card-shell">
-            <button
-              type="button"
-              className="class-subclass-selected-card"
-              onClick={() => onInspectSubclass?.(selected)}
-              onDoubleClick={() => setSelectorOpen(true)}
-              aria-label={`Show ${selected.name} details. Double click to change subclass.`}
-            >
-              <span className="class-subclass-selected-card__art" aria-hidden="true">
-                <img src={subclassArtworkFor(classKey, selected)} onError={(event) => handleSubclassArtworkError(event, classKey)} alt="" />
-              </span>
-              <span className="class-subclass-selected-card__shade" aria-hidden="true" />
-              <span className="class-subclass-selected-card__copy">
-                <span>Selected subclass</span>
-                <strong>{selected.name}</strong>
-                <small>Double-click to reopen the Tarot selector</small>
-              </span>
-            </button>
-            <div className="class-subclass-selected-card-shell__actions">
-              <button type="button" onClick={() => setSelectorOpen(true)}>Change Subclass</button>
-              <button type="button" className="is-muted" onClick={clearSelection}>Clear</button>
+            <span className="class-subclass-selected-card__art" aria-hidden="true">
+              <img src={subclassArtworkFor(classKey, selected)} onError={(event) => handleSubclassArtworkError(event, classKey)} alt="" />
+            </span>
+            <div className="class-subclass-selected-card__copy">
+              <strong>{selected.name}</strong>
+              <button type="button" onClick={() => inspectOption(selected, true)} aria-label={`Open the ${selected.name} subclass Codex.`}>Open Codex</button>
             </div>
           </div>
         ) : (

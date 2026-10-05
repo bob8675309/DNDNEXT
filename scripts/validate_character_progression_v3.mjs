@@ -96,19 +96,26 @@ for (const token of [
 ]) requireToken(guideModel, token, "canonical optional-feature class guide");
 
 const classChoicesUi = read("components/NpcForgeClassFeatureChoices.js");
+const classOptionBrowser = read("components/NpcForgeClassOptionBrowser.js");
+forbidToken(classChoicesUi, "NpcForgeSourceChoiceFields", "class feature chooser preview portal");
 for (const token of [
-  "NpcForgeSourceChoiceFields",
-  'ownerType="class-option"',
-  'title="Source-owned class option instances"',
-]) requireToken(classChoicesUi, token, "source-owned Class workspace");
+  "sourceChoiceFieldIsActive",
+  'type: "classSourceOption"',
+  "Descriptions and selection stay in Current Selection",
+  "<details",
+  "npc-forge-class-option-group__body",
+  "npc-forge-class-option-list",
+]) requireToken(classOptionBrowser, token, "source-owned Class workspace");
 
 const classExtensions = read("utils/classFeatureChoiceExtensions.js");
+const classParsing = read("utils/classFeatureChoiceParsing.js");
 for (const token of [
   'id: "bard-lore-magical-discoveries"',
   'id: "sorcerer-draconic-affinity"',
   'id: "fighter-champion-additional-fighting-style"',
   'findRow(rows, "Additional Fighting Style", "Champion")',
 ]) requireToken(classExtensions, token, "higher-level Forge subclass parity");
+for (const token of ['"doing one of the following"', '"do one of the following"', 'return "per-use"']) requireToken(classParsing, token, "runtime class-feature choice cadence");
 
 const simple = read("sql/20260808_16_simple_class_choice_delta_authority.sql");
 for (const token of [

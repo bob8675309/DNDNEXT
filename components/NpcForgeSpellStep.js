@@ -88,7 +88,7 @@ export default function NpcForgeSpellStep({ selectedClass, selectedSubclass = nu
     setLoading(true); setError("");
     const maximumLevel = Math.max(0, Number(model.maximumSpellLevel || 0));
     supabase.from("spells_catalog")
-      .select("id,spell_key,name,source,level,school,school_code,classes,casting_time,range_text,duration_text,ritual,concentration,components_v,components_s,components_m,components_text,material_text,description,damage_dice,damage_types")
+      .select("id,spell_key,name,source,level,school,school_code,classes,casting_time,range_text,duration_text,ritual,concentration,components_v,components_s,components_m,material_text,description,damage_dice,damage_types")
       .lte("level", maximumLevel)
       .order("level", { ascending: true })
       .order("name", { ascending: true })

@@ -32,6 +32,8 @@ function featureDetailPayload(feature, level, selectedSubclass) {
 }
 function publishFeature(model, onFeatureDetail, feature, level) {
   const payload = featureDetailPayload(feature, level, model.selected);
+  const listedOptions = model.listedOptionsForFeature?.(feature) || [];
+  if (listedOptions.length) payload.feature.listedOptions = listedOptions;
   model.setPinned(payload.feature);
   onFeatureDetail?.(payload);
 }
@@ -68,11 +70,25 @@ function subclassPreviewFeature(option = {}) {
     entries: null,
   };
 }
-function inspectSubclass(model, onSubclassDetail, option) {
+function inspectSubclass(model, onSubclassDetail, option, actions = {}) {
   if (!option?.key) return;
   const feature = subclassPreviewFeature(option);
   model.setPinned(feature);
-  onSubclassDetail?.({ type: "classFeature", feature, subclassName: option.name || "Subclass", subclassOption: option, spellCatalog: model.allSpellCatalog || model.spellCatalog || [], progressionRows: model.rows || [], currentLevel: model.currentLevel });
+  onSubclassDetail?.({
+    type: "classFeature",
+    feature,
+    subclassName: option.name || "Subclass",
+    subclassOption: option,
+    spellCatalog: model.allSpellCatalog || model.spellCatalog || [],
+    progressionRows: model.rows || [],
+    currentLevel: model.currentLevel,
+    subclassSelection: {
+      eligible: Boolean(actions?.eligible),
+      selected: Boolean(actions?.selected),
+      choose: typeof actions?.choose === "function" ? actions.choose : null,
+      browse: typeof actions?.browse === "function" ? actions.browse : null,
+    },
+  });
 }
 function selectedRowFeatures(model, row) {
   const base = (row?.guideFeatures || []).filter((feature) => feature?.type !== "subclass");
@@ -93,8 +109,8 @@ function spellSlotCells(slots) {
   if (pactSlots > 0 && pactLevel >= 1 && pactLevel <= 9) cells[pactLevel - 1] = `${pactSlots}p`;
   return cells;
 }
-function ForgeClassHero({ selectedClass }) {
-  return <header id="forge-class-guide-introduction" className="class-book-guide__hero npc-forge-class-guide__book-hero">
+function ForgeClassHero({ selectedClass, detailed = false }) {
+  return <header id="forge-class-guide-introduction" className={`class-book-guide__hero npc-forge-class-guide__book-hero${detailed ? " is-detailed-hero" : ""}`}>
     <div className="npc-forge-class-guide__hero-copy">
       <div className="npc-forge-class-guide__hero-kicker"><span>Class View</span><em>{classSourceLabel(selectedClass.source)}</em></div>
       <h2>{selectedClass.class_name}</h2>
@@ -109,22 +125,8 @@ function ForgeSubclassSelection({ selectedClass, model, onSubclassDetail, detail
     model={model}
     classKey={selectedClass?.class_key || ""}
     detailed={detailed}
-    onInspectSubclass={(option) => inspectSubclass(model, onSubclassDetail, option)}
+    onInspectSubclass={(option, actions) => inspectSubclass(model, onSubclassDetail, option, actions)}
   />;
-}
-function ChoiceRoutingNote({ model, compact = false }) {
-  const groups = model.choiceGroups || [];
-  const trainingCount = groups.filter((group) => ["class", "training"].includes(group.placement || "class")).length;
-  const spellCount = groups.filter((group) => group.placement === "spells").length;
-  if (compact) return <section className="npc-forge-class-guide__choice-routing is-compact">
-    <div className="npc-forge-class-guide__choice-routing-icon" aria-hidden="true">i</div>
-    <div><strong>Choices for tools, feats, skills, spells, and other options are made in their respective tabs (Training, Spells, Equipment, etc.), not here.</strong></div>
-  </section>;
-  return <section className="npc-forge-class-guide__choice-routing">
-    <div className="npc-forge-class-guide__choice-routing-icon" aria-hidden="true">⌛</div>
-    <div><span>Deferred resolutions</span><strong>Use this page to understand the class. Make its mechanical choices in the tab that owns them.</strong><small>Tools, skills, feats, fighting styles, maneuvers, invocations, and similar training choices resolve in Training. Spell selections resolve in Spells. Equipment choices resolve in Equipment.</small></div>
-    <div className="npc-forge-class-guide__choice-routing-counts">{trainingCount ? <span><b>{trainingCount}</b> Training group{trainingCount === 1 ? "" : "s"}</span> : null}{spellCount ? <span><b>{spellCount}</b> Spell group{spellCount === 1 ? "" : "s"}</span> : null}</div>
-  </section>;
 }
 function ProgressionTable({ selectedClass, model, onFeatureDetail }) {
   const hasSpellProgression = model.rows.some((row) => row.cantrips_known != null || row.spells_known != null || row.spell_slots);
@@ -166,7 +168,7 @@ function ForgeDetailedGuide({ selectedClass, model, onFeatureDetail, onSubclassD
   const visibleRows = model.rows
     .map((row) => ({ ...row, visibleFeatures: selectedRowFeatures(model, row) }))
     .filter((row) => row.visibleFeatures.length);
-  return <div className="class-book-guide npc-forge-class-guide__book"><aside className="npc-card class-book-guide__outline"><div className="spell-admin-kicker">Guide Outline</div><a href="#forge-class-guide-introduction">{selectedClass.class_name}</a><div className="class-book-guide__outline-levels">{visibleRows.map((row) => <a key={row.class_level} href={`#forge-class-guide-level-${row.class_level}`}>Level {row.class_level}</a>)}</div></aside><article className="npc-card class-book-guide__content"><ForgeClassHero selectedClass={selectedClass} /><div className="npc-forge-class-guide__detailed-controls"><ForgeSubclassSelection selectedClass={selectedClass} model={model} onSubclassDetail={onSubclassDetail} detailed /><ChoiceRoutingNote model={model} /></div><div className="class-book-guide__levels">{visibleRows.map((row) => <details key={row.class_level} id={`forge-class-guide-level-${row.class_level}`} className={`npc-forge-class-guide__level ${Number(row.class_level) === model.currentLevel ? "is-current" : ""}`} defaultOpen={Number(row.class_level) === model.currentLevel}><summary className="class-book-guide__level-heading npc-forge-class-guide__level-heading"><div><div className="spell-admin-kicker">Level {row.class_level}</div><h3>{selectedClass.class_name} {row.class_level}</h3></div><div className="class-book-guide__level-stats"><span>PB +{Number(row.proficiency_bonus || 2)}</span>{row.cantrips_known != null ? <span>{row.cantrips_known} cantrips</span> : null}{row.spells_known != null ? <span>{row.spells_known} known/prepared</span> : null}</div></summary><div className="npc-forge-class-guide__level-content">{row.visibleFeatures.map((feature, index) => <div key={`${feature.type}-${feature.name}-${index}`} className={`class-book-guide__feature ${feature.type === "subclass" ? "is-subclass" : ""}`} role="button" tabIndex={0} onClick={() => publishFeature(model, onFeatureDetail, feature, row.class_level)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") publishFeature(model, onFeatureDetail, feature, row.class_level); }}><div className="d-flex align-items-center justify-content-between gap-2 flex-wrap"><h4>{feature.type === "subclass" && model.selected ? `${model.selected.name}: ` : ""}{feature.name}</h4><span>{feature.source || "Campaign"}</span></div><ClassFeatureText text={feature.description} entries={feature.entries || null} fallback="No imported description is available for this feature yet." onListItemDetail={(item) => publishListedOption(model, onFeatureDetail, feature, item, row.class_level)} /></div>)}</div></details>)}</div></article></div>;
+  return <div className="class-book-guide npc-forge-class-guide__book"><aside className="npc-card class-book-guide__outline"><div className="spell-admin-kicker">Guide Outline</div><a href="#forge-class-guide-introduction">{selectedClass.class_name}</a><div className="class-book-guide__outline-levels">{visibleRows.map((row) => <a key={row.class_level} href={`#forge-class-guide-level-${row.class_level}`}>Level {row.class_level}</a>)}</div></aside><article className="npc-card class-book-guide__content npc-forge-class-guide__detailed-book"><div className="npc-forge-class-guide__detailed-hero-stage"><ForgeClassHero selectedClass={selectedClass} detailed /><div className="npc-forge-class-guide__detailed-subclass-slot"><ForgeSubclassSelection selectedClass={selectedClass} model={model} onSubclassDetail={onSubclassDetail} detailed /></div></div><div className="class-book-guide__levels">{visibleRows.map((row) => <details key={row.class_level} id={`forge-class-guide-level-${row.class_level}`} className={`npc-forge-class-guide__level ${Number(row.class_level) === model.currentLevel ? "is-current" : ""}`} defaultOpen={Number(row.class_level) === model.currentLevel}><summary className="class-book-guide__level-heading npc-forge-class-guide__level-heading"><div><div className="spell-admin-kicker">Level {row.class_level}</div><h3>{selectedClass.class_name} {row.class_level}</h3></div><div className="class-book-guide__level-stats"><span>PB +{Number(row.proficiency_bonus || 2)}</span>{row.cantrips_known != null ? <span>{row.cantrips_known} cantrips</span> : null}{row.spells_known != null ? <span>{row.spells_known} known/prepared</span> : null}</div></summary><div className="npc-forge-class-guide__level-content">{row.visibleFeatures.map((feature, index) => <div key={`${feature.type}-${feature.name}-${index}`} className={`class-book-guide__feature ${feature.type === "subclass" ? "is-subclass" : ""}`} role="button" tabIndex={0} onClick={() => publishFeature(model, onFeatureDetail, feature, row.class_level)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") publishFeature(model, onFeatureDetail, feature, row.class_level); }}><div className="d-flex align-items-center justify-content-between gap-2 flex-wrap"><h4>{feature.type === "subclass" && model.selected ? `${model.selected.name}: ` : ""}{feature.name}</h4><span>{feature.source || "Campaign"}</span></div><ClassFeatureText text={feature.description} entries={feature.entries || null} fallback="No imported description is available for this feature yet." onListItemDetail={(item) => publishListedOption(model, onFeatureDetail, feature, item, row.class_level)} /></div>)}</div></details>)}</div></article></div>;
 }
 export default function NpcForgeClassGuide({ selectedClass = null, level = 1, onFeatureDetail = null, onSubclassDetail = null }) {
   const model = useNpcForgeClassGuideModel(selectedClass, level);

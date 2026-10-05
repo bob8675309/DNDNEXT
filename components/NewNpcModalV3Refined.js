@@ -42,8 +42,8 @@ function isInteractiveHeaderTarget(target) {
 // const backgroundExpandedSpellNames = selectedBackground?.expandedSpellNames || []; originFeat: selectedBackgroundFeat?.name || null;
 // backgroundFeatChoice: selectedBackgroundFeat?.name || null; backgroundExpandedSpells: backgroundExpandedSpellNames; backgroundSpellList
 
-export default function NewNpcModalV3Refined({ show, onClose, onCreated, locations = [], mode = "npc", createCharacter = null, onReset = null }) {
-  const controller = useNpcForgeTrainingRoutedController({ show, onClose, onCreated, locations, mode, createCharacter, onReset });
+export default function NewNpcModalV3Refined({ show, onClose, onCreated, locations = [], mode = "npc", createCharacter = null, onReset = null, draftStorageScope = "" }) {
+  const controller = useNpcForgeTrainingRoutedController({ show, onClose, onCreated, locations, mode, createCharacter, onReset, draftStorageScope });
   const { playerMode, STEP_LABELS, step, setStep, setDetail, setError, stepKey, creating, loadingCatalogs, error, handleClose, handleReset, handleBack, handleNext, handleCreate, draft, equipmentModel, patch, portraitPickerOpen, setPortraitPickerOpen, choosePortrait, speciesOptions, chooseSpecies } = controller;
   const catalogLoadSeenRef = useRef(false);
   const modalRef = useRef(null);

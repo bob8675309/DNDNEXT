@@ -79,6 +79,7 @@ function perUseChoiceText(description = "") {
   if (!text) return false;
   return [
     "when you do so choose", "as a bonus action choose", "as an action choose", "can use one of the following", "use one of the following",
+    "doing one of the following", "do one of the following",
     "powers below", "following powers", "choose the option each time", "choose an option each time", "each time you cast", "each time you use",
     "each time you transform", "when you cast this spell choose", "when you use this feature choose", "based on the environment you chose",
   ].some((phrase) => text.includes(phrase));
