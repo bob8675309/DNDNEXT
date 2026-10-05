@@ -9,6 +9,7 @@ const app = read("pages/_app.js");
 const responsive = read("styles/character-forge-responsive.css");
 const browserPolish = read("styles/character-forge-browser-review-polish.css");
 const playerTraining = read("components/NpcForgeTrainingStepPlayer.js");
+const featPicker = read("components/NpcForgeTrainingFeatPicker.js");
 const classFeatureChoices = read("components/NpcForgeClassFeatureChoices.js");
 const classOptionBrowser = read("components/NpcForgeClassOptionBrowser.js");
 const playerTabbed = read("components/NpcForgeTrainingStepPlayerTabbed.js");
