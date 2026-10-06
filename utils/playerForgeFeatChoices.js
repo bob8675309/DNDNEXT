@@ -1,4 +1,5 @@
 import { ABILITY_LABELS, SKILL_DEFINITIONS, proficiencyBonusForLevel } from "./characterCreation";
+import { OPTION_SUMMARIES } from "./classFeatureChoiceConstants";
 import { buildToolOptionCatalog, sourceChoiceFieldIsActive } from "./playerForgeSourceChoices";
 
 const text = (value) => String(value ?? "").trim();
@@ -26,6 +27,17 @@ function spellOption(spell) {
   return {
     key: text(spell.id || spell.spell_key || `${slug(spell.name)}|${spell.source || "XPHB"}`), value: text(spell.id || spell.spell_key || spell.name), label: spell.name, source: spell.source || "XPHB", kind: "spell",
     description: text(spell.description), metadata: { spellId: spell.id || null, spellKey: spell.spell_key || null, level: Number(spell.level || 0), school: spell.school || spell.school_code || "", classes: array(spell.classes), ritual: Boolean(spell.ritual), castingTime: spell.casting_time || null },
+  };
+}
+function metamagicOption(row = {}) {
+  return {
+    key: text(row.option_key || row.id || `${slug(row.name)}|${row.source || "XPHB"}`),
+    value: text(row.option_key || row.id || row.name),
+    label: row.name,
+    source: row.source || "XPHB",
+    kind: "metamagic",
+    description: text(row.description) || OPTION_SUMMARIES[norm(row.name)] || "",
+    metadata: { optionId: row.id || null, optionKey: row.option_key || null, classKey: row.class_key || "sorcerer" },
   };
 }
 function spellOptions(spells = [], filters = {}) {
@@ -191,7 +203,7 @@ function magicInitiateFields(feat, spells) {
   return fields;
 }
 
-function specialFields(instance, spells, toolRows) {
+function specialFields(instance, spells, toolRows, metamagicOptions = []) {
   const feat = instance.feat || {};
   const name = norm(feat.name);
   const output = [];
@@ -201,6 +213,22 @@ function specialFields(instance, spells, toolRows) {
     return magicInitiateFields(decorated, spells);
   }
   if (name === "elemental adept") output.push(field({ id: "damage-type", label: "Energy Mastery damage type", kind: "damage-type", options: DAMAGE_TYPE_OPTIONS }));
+  if (name === "metamagic adept") {
+    const options = array(metamagicOptions)
+      .filter((row) => row?.option_type === "metamagic")
+      .map(metamagicOption)
+      .sort((a, b) => a.label.localeCompare(b.label));
+    if (options.length) output.push(field({
+      id: "metamagic-options",
+      label: "Choose two Metamagic options",
+      kind: "metamagic",
+      count: 2,
+      options,
+      replacementCadence: "ability-score-improvement",
+      helper: "Metamagic Adept grants two Sorcerer Metamagic options. Choose two different options.",
+      metadata: { sourceFeature: "Metamagic Adept", sorceryPoints: 2 },
+    }));
+  }
   if (name === "skilled") {
     const tools = buildToolOptionCatalog(toolRows).all;
     output.push(field({ id: "skills-or-tools", label: "Choose three skills or tools", kind: "skill-or-tool", count: 3, options: [...SKILL_OPTIONS, ...tools] }));
@@ -226,13 +254,13 @@ function featUsesSpecialAbilityShape(feat) {
   return ["ability score improvement", "resilient"].includes(norm(feat.name));
 }
 
-export function buildFeatSourceChoiceGroups({ featInstances = [], toolRows = [], spells = [], level = 1 } = {}) {
+export function buildFeatSourceChoiceGroups({ featInstances = [], toolRows = [], spells = [], metamagicOptions = [], level = 1 } = {}) {
   const groups = [];
   for (const instance of array(featInstances)) {
     const feat = instance.feat;
     if (!feat?.name) continue;
     const ability = featUsesSpecialAbilityShape(feat) ? { fields: [], fixedEffects: [] } : abilityFields(feat);
-    const fields = [...ability.fields, ...skillFields(feat), ...toolFields(feat, toolRows), ...specialFields(instance, spells, toolRows), ...ritualCasterFields(feat, spells, level)];
+    const fields = [...ability.fields, ...skillFields(feat), ...toolFields(feat, toolRows), ...specialFields(instance, spells, toolRows, metamagicOptions), ...ritualCasterFields(feat, spells, level)];
     let fixedSpellTokens = [];
     if (!featHasSpecialSpellShape(feat)) {
       const spellModel = genericAdditionalSpellFields(feat, spells);

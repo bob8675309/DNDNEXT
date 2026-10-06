@@ -74,9 +74,11 @@ for (const token of ["buildSpeciesSourceChoiceGroups", "draconic ancestry", "elv
 for (const token of [
   "buildFeatSourceChoiceGroups", "featGrantInstancesFromSelections", "featInstanceSummaries", "abilityScoreImprovementFields", "magicInitiateFields", "ritualCasterFields",
   'name === "resilient"', "saving-throw-proficiency", "sourceChoiceFieldIsActive",
+  "metamagicOptions = []", 'name === "metamagic adept"', 'label: "Choose two Metamagic options"', 'kind: "metamagic"', "OPTION_SUMMARIES",
 ]) requireToken(featChoices, token, "nested feat-instance engine");
 for (const token of ["buildAdvancementSourceChoiceGroups", 'ownerType: "advancement"', "Ability Score Improvement", "Epic Boon"]) requireToken(advancement, token, "higher-level advancement engine");
-for (const token of ["buildSpeciesSourceChoiceGroups", "buildAdvancementSourceChoiceGroups", 'registerGroups(playerMode ? featGroups', '"species-extra"', '"advancement"', '"feats"']) requireToken(featRegistrar, token, "source-choice registrar");
+for (const token of ["buildSpeciesSourceChoiceGroups", "buildAdvancementSourceChoiceGroups", 'registerGroups(playerMode ? featGroups', '"species-extra"', '"advancement"', '"feats"', '.eq("option_type", "metamagic")', "metamagicOptionReady", "metamagicOptions: metamagicOptionRows"]) requireToken(featRegistrar, token, "source-choice registrar");
+for (const token of ["RichField", '"eldritch-invocation", "artificer-plan", "metamagic"']) requireToken(sharedSourceFields, token, "rich Metamagic source-choice presentation");
 for (const token of [
   "featGrantInstances", "featSpellChoices", "featAuthorityFromState", "applyFeatAbilityAuthority", "canonicalSkillKey", "mergeSaveAuthority",
   'sourcePlacements =', '"abilities", "advancement"', "sourceChoiceStateComplete",

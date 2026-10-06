@@ -16,6 +16,9 @@ const classOptionBrowser = read("components/NpcForgeClassOptionBrowser.js");
 const playerTabbed = read("components/NpcForgeTrainingStepPlayerTabbed.js");
 const sourceContext = read("components/NpcForgeSourceChoiceContext.js");
 const trainingContext = read("components/NpcForgeTrainingContextCard.js");
+const sharedSourceFields = read("components/SourceChoiceFields.js");
+const featChoices = read("utils/playerForgeFeatChoices.js");
+const featRegistrar = read("components/NpcForgeFeatChoiceRegistrar.js");
 const featRulePresentation = read("utils/featRulePresentation.js");
 const classFeatureChoiceParsing = read("utils/classFeatureChoiceParsing.js");
 const invocationChoices = read("utils/warlockInvocationChoices.js");
@@ -106,6 +109,12 @@ assert(trainingContext.includes('"Select Skill"') && trainingContext.includes('"
 assert(featPicker.includes("sortMode") && featPicker.includes("prerequisiteFilter") && featPicker.includes("categoryLabel") && featPicker.includes("Name A–Z") && featPicker.includes("Required level"), "Feat catalogue must provide player-readable category names, prerequisite filtering, and explicit sorting controls.");
 assert(spellStep.includes("components_v,components_s,components_m,material_text") && !spellStep.includes("components_text"), "Spell catalogue query must match the live spells_catalog schema.");
 assert(invocationChoices.includes("OPTION_SUMMARIES") && invocationChoices.includes('text(row.description) || OPTION_SUMMARIES[norm(row.name)]'), "Invocation descriptions must use canonical summaries when imported source rows have null descriptions.");
+assert(featChoices.includes('name === "metamagic adept"') && featChoices.includes('label: "Choose two Metamagic options"') && featChoices.includes('kind: "metamagic"') && featChoices.includes("count: 2") && featChoices.includes("OPTION_SUMMARIES[norm(row.name)]"), "Metamagic Adept must create a required two-option Metamagic choice with player-facing option summaries.");
+assert(featRegistrar.includes('.eq("option_type", "metamagic")') && featRegistrar.includes('metamagicOptions: metamagicOptionRows') && featRegistrar.includes("metamagicOptionReady"), "Feat registration must load the canonical Metamagic catalogue before publishing Metamagic Adept choices.");
+assert(sharedSourceFields.includes('"artificer-plan", "metamagic"') && sharedSourceFields.includes("RichField"), "Metamagic choices must use the rich inspect-and-choose source-choice presentation.");
+assert(spellStep.includes('import SpellCard from "./SpellCard";') && spellStep.includes("profile-catalogue-workspace") && spellStep.includes("profile-catalogue__preview") && spellStep.includes("<SpellCard spell={inspectedSpell} compact />") && spellStep.includes('"Select Spell"') && spellStep.includes('"Remove Spell"'), "Forge Spells must use the profile-style list + SpellCard preview selection workspace.");
+assert(spellStep.includes("saving_throw_abilities,attack_type") && spellStep.includes("higher_level_text") && spellStep.includes("area_type,area_size,area_unit"), "Forge spell queries must load the fields needed by the shared SpellCard.");
+assert(!spellStep.includes("openSpellId") && !spellStep.includes("npc-forge-spell-details"), "Forge Spells must not regress to per-row expandable detail dumps.");
 
 assert(app.includes('import "../styles/character-forge-browser-review-polish.css";'), "Latest Character Forge browser-review stylesheet is not loaded by _app.js.");
 for (const token of [
