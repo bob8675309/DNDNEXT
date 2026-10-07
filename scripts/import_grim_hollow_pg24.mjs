@@ -306,6 +306,7 @@ export function itemRows(book = {}) {
         rawType: strip(row.type),
         uiType,
         uiSubKind: null,
+        source_property: row.property || [],
         property: properties,
         propertiesText: properties.map((property) => propertyNames[property] || property).join(", "),
         damageText: row.dmg1 ? `${row.dmg1} ${DAMAGE_NAMES[strip(row.dmgType)] || strip(row.dmgType) || ""}`.trim() + (properties.includes("V") && row.dmg2 ? `; versatile (${row.dmg2})` : "") : "",
