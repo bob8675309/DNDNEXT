@@ -1,4 +1,4 @@
-import { OPTION_SUMMARIES } from "./classFeatureChoiceConstants";
+import { INVOCATION_PLAYER_GUIDES, OPTION_SUMMARIES } from "./classFeatureChoiceConstants";
 const text = (value) => String(value ?? "").trim();
 const norm = (value) => text(value).toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 const array = (value) => Array.isArray(value) ? value : [];
@@ -79,19 +79,23 @@ function featOption(row) {
 }
 
 function invocationOption(row) {
+  const guide = INVOCATION_PLAYER_GUIDES[norm(row.name)] || null;
   return {
     key: row.option_key,
     value: row.option_key,
     label: row.name,
     source: row.source || "XPHB",
     kind: "eldritch-invocation",
-    description: text(row.description) || OPTION_SUMMARIES[norm(row.name)] || "",
+    description: guide?.summary || text(row.description) || OPTION_SUMMARIES[norm(row.name)] || "",
     metadata: {
       optionId: row.id || null,
       optionKey: row.option_key,
       repeatable: Boolean(row.repeatable),
       prerequisites: row.prerequisites || {},
       choiceSchema: row.choice_schema || {},
+      classKey: row.class_key || "warlock",
+      minClassLevel: Number(row.prerequisites?.minClassLevel || 0) || null,
+      playerRules: array(guide?.rules),
     },
   };
 }

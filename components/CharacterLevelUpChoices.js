@@ -117,6 +117,7 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
   const [catalogSpells, setCatalogSpells] = useState([]);
   const [assignedClassSpellIds, setAssignedClassSpellIds] = useState(() => new Set());
   const [toolRows, setToolRows] = useState([]);
+  const [metamagicOptions, setMetamagicOptions] = useState([]);
   const [backgroundExpandedSpells, setBackgroundExpandedSpells] = useState([]);
   const [selectedSpells, setSelectedSpells] = useState({});
   const [spellQuery, setSpellQuery] = useState("");
@@ -202,7 +203,8 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
     selections: sourceSelections,
     toolRows,
     spells: catalogSpells,
-  }), [advancement, catalogSpells, preview?.classKey, preview?.toLevel, sourceSelections, toolRows]);
+    metamagicOptions,
+  }), [advancement, catalogSpells, metamagicOptions, preview?.classKey, preview?.toLevel, sourceSelections, toolRows]);
 
   const classOptionFeatInstanceRows = useMemo(
     () => classOptionFeatInstances(resolvedClassChoiceGroups, classChoiceSelections, Number(preview?.toLevel || 1)),
@@ -213,9 +215,10 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
       featInstances: classOptionFeatInstanceRows,
       toolRows,
       spells: catalogSpells,
+      metamagicOptions,
       level: Number(preview?.toLevel || 1),
     })),
-    [catalogSpells, classOptionFeatInstanceRows, preview?.toLevel, toolRows]
+    [catalogSpells, classOptionFeatInstanceRows, metamagicOptions, preview?.toLevel, toolRows]
   );
   const classOptionFeatsComplete = useMemo(
     () => sourceChoiceGroupsComplete(classOptionFeatGroups, classOptionFeatSelections),
@@ -362,11 +365,12 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
         setCatalogSpells([]);
         setAssignedClassSpellIds(new Set());
         setToolRows([]);
+        setMetamagicOptions([]);
         setBackgroundExpandedSpells([]);
         return;
       }
       setLoadingCatalogs(true);
-      const [catalogResult, assignmentResult, sheetResult, toolsResult] = await Promise.all([
+      const [catalogResult, assignmentResult, sheetResult, toolsResult, metamagicResult] = await Promise.all([
         supabase
           .from("spells_catalog_preferred")
           .select("id,spell_key,name,source,level,school,school_code,classes,ritual,casting_time,description")
@@ -382,20 +386,29 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
           .in("item_type", ["Tools", "Instrument"])
           .order("item_name", { ascending: true })
           .limit(2000),
+        supabase
+          .from("class_feature_option_catalog")
+          .select("id,option_key,option_type,name,source,class_key,description,prerequisites,metadata")
+          .eq("option_type", "metamagic")
+          .eq("source", "XPHB")
+          .eq("class_key", "sorcerer")
+          .order("name", { ascending: true }),
       ]);
       if (!active) return;
-      const loadError = catalogResult.error || assignmentResult.error || sheetResult.error || toolsResult.error;
+      const loadError = catalogResult.error || assignmentResult.error || sheetResult.error || toolsResult.error || metamagicResult.error;
       if (loadError) {
         setError(loadError.message || "Could not load level-up choice catalogues.");
         setCatalogSpells([]);
         setAssignedClassSpellIds(new Set());
         setToolRows([]);
+        setMetamagicOptions([]);
         setBackgroundExpandedSpells([]);
       } else {
         setCatalogSpells(catalogResult.data || []);
         const wizard = safeText(preview?.classKey).toLowerCase() === "wizard";
         setAssignedClassSpellIds(new Set((assignmentResult.data || []).filter((row) => row.source_type === "class" || (wizard && row.source_type === "class-feature" && Boolean(row.raw_payload?.wizardSpellbook))).map((row) => row.spell_id)));
         setToolRows(toolsResult.data || []);
+        setMetamagicOptions(metamagicResult.data || []);
         const sheet = sheetResult.data?.sheet || {};
         const meta = sheet?.meta || {};
         setBackgroundExpandedSpells(uniqueText([

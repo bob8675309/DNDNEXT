@@ -224,7 +224,6 @@ function specialFields(instance, spells, toolRows, metamagicOptions = []) {
       kind: "metamagic",
       count: 2,
       options,
-      replacementCadence: "ability-score-improvement",
       helper: "Metamagic Adept grants two Sorcerer Metamagic options. Choose two different options.",
       metadata: { sourceFeature: "Metamagic Adept", sorceryPoints: 2 },
     }));

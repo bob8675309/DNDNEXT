@@ -42,7 +42,11 @@ for (const token of [
   "magicalSecretsAccess",
   "Magical Secrets expands these new Bard spell choices",
   '["bard", "cleric", "druid", "wizard"]',
-]) requireToken(ui, token, "earned level-up v5 source-choice, replacement, and spell-access UI");
+  "metamagicOptions",
+  '.from("class_feature_option_catalog")',
+  '.eq("option_type", "metamagic")',
+  "setMetamagicOptions(metamagicResult.data || [])",
+]) requireToken(ui, token, "earned level-up v5 source-choice, replacement, spell-access, and Metamagic Adept UI");
 
 const recoveryUi = read("components/CharacterInvocationRecovery.js");
 for (const token of [
@@ -52,6 +56,13 @@ for (const token of [
   'title="Confirm current Eldritch Invocations"',
   "This records current state only; it does not retrain or replace an Invocation.",
 ]) requireToken(recoveryUi, token, "legacy Invocation recovery UI");
+
+const levelUpPlan = read("utils/characterLevelUpPlan.js");
+for (const token of ["metamagicOptions = []", "buildFeatSourceChoiceGroups({ featInstances: [instance], toolRows, spells, metamagicOptions"]) requireToken(levelUpPlan, token, "Metamagic Adept advancement nesting");
+
+const featChoices = read("utils/playerForgeFeatChoices.js");
+requireToken(featChoices, 'name === "metamagic adept"', "Metamagic Adept source-choice model");
+forbidToken(featChoices, 'replacementCadence: "ability-score-improvement"', "unsupported Metamagic Adept replacement promise");
 
 const sourceFields = read("components/SourceChoiceFields.js");
 for (const token of ["sourceChoiceFieldIsActive", "activeFields", "replacementCadence"]) requireToken(sourceFields, token, "dependent source-choice renderer");

@@ -209,8 +209,8 @@ function routeMagicInitiate(group, selectedBackground, finalAbilities = {}, sele
     placement: "spells",
     resolverPlacement: "spells",
     helper: fixedList
-      ? `${selectedBackground?.name || "This background"} fixes Magic Initiate to the ${fixedList} spell list. Choose only its two cantrips and one level 1 spell here. The Forge automatically uses the highest eligible Intelligence, Wisdom, or Charisma score for these spells.`
-      : "Choose the spell list and granted spells here. The Forge automatically uses the highest eligible Intelligence, Wisdom, or Charisma score for this feat's spells.",
+      ? `${selectedBackground?.name || "This background"} gives you Magic Initiate (${fixedList}). Pick two ${fixedList} cantrips and one level-1 ${fixedList} spell; the Forge uses your best eligible spellcasting ability.`
+      : "Pick a spell list, two cantrips, and one level-1 spell. The Forge uses your best eligible Intelligence, Wisdom, or Charisma.",
     fields,
     metadata: {
       ...(group.metadata || {}),
