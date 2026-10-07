@@ -17,6 +17,7 @@ function sourceKey(value) {
 // Publication order is used only when two imported subclasses have the same normalized name.
 // Known campaign sources are explicit so the Forge does not show duplicate reprints.
 const SOURCE_PUBLICATION_ORDER = Object.freeze({
+  GRIMHOLLOWPG24: 20250815,
   EFA: 20251209,
   XDMG: 20241112,
   XPHB: 20240917,

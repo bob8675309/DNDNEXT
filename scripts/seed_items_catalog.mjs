@@ -273,6 +273,17 @@ async function loadItems() {
   const coreItems = Array.isArray(data) ? data : Array.isArray(data?.items) ? data.items : [];
   console.log(`Loaded ${coreItems.length} items from ${itemsPath}`);
 
+  const grimHollowPath = path.join(__dirname, "..", "public", "items", "grim-hollow-pg24.json");
+  let grimHollowItems = [];
+  try {
+    const grimRaw = await fs.readFile(grimHollowPath, "utf8");
+    const grimData = JSON.parse(grimRaw);
+    grimHollowItems = Array.isArray(grimData) ? grimData : Array.isArray(grimData?.items) ? grimData.items : [];
+    console.log(`Loaded ${grimHollowItems.length} Grim Hollow items from ${grimHollowPath}`);
+  } catch (err) {
+    console.warn(`Grim Hollow item pack skipped: ${err?.message || err}`);
+  }
+
   // Alchemy v3 local catalog notes:
   // This file is shaped like items_catalog rows already. When you are ready to
   // merge it into Supabase, keep payload.alchemy unchanged; recipes, merchants,
@@ -288,7 +299,7 @@ async function loadItems() {
     console.warn(`Alchemy catalog skipped: ${err?.message || err}`);
   }
 
-  return [...coreItems, ...alchemyRows];
+  return [...coreItems, ...grimHollowItems, ...alchemyRows];
 }
 
 /* ---------- MAIN: build rows + UPSERT items_catalog ---------- */

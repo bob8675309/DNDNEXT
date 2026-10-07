@@ -1,0 +1,35 @@
+name: Validate Grim Hollow Player Guide content
+
+on:
+  pull_request:
+    paths:
+      - "data/source-manifests/grim-hollow-pg24.json"
+      - "public/items/grim-hollow-pg24.json"
+      - "public/items/magicvariants.grim-hollow-pg24.json"
+      - "scripts/import_grim_hollow_pg24.mjs"
+      - "scripts/seed_items_catalog.mjs"
+      - "scripts/validate_grim_hollow_player_guide_content.mjs"
+      - "utils/itemsIndex.js"
+      - "utils/classes/subclassArtwork.js"
+      - "utils/classes/subclassCompatibility.js"
+      - "components/NpcForgeClassGuideModel.js"
+      - "components/TownSheet.js"
+      - "pages/admin.js"
+      - "docs/Grim_Hollow_2024_Integration_Status.md"
+      - ".github/workflows/validate-grim-hollow-player-guide.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate Grim Hollow Player Guide content
+        run: node scripts/validate_grim_hollow_player_guide_content.mjs

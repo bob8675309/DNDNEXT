@@ -23,6 +23,7 @@
 
 const norm = (s = "") => String(s).toLowerCase().replace(/\s+/g, " ").trim();
 const stripCode = (s) => String(s || "").split("|")[0];
+export const ITEM_CATALOG_PACKS = Object.freeze(["/items/all-items.json", "/items/grim-hollow-pg24.json"]);
 export const titleCase = (s = "") =>
   s.replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
 
@@ -89,6 +90,8 @@ export function classifyUi(it = {}) {
   if (raw === "LA" || raw === "MA" || raw === "HA") {
     return { uiType: "Armor", uiSubKind: null, rawType: raw };
   }
+
+  if (raw === "AdvEq") return { uiType: it.uiType || it.item_type || "Adventuring Gear", uiSubKind: it.uiSubKind || null, rawType: raw };
 
   // Tools umbrella
   if (raw === "T" || raw === "GS" || raw === "AT") {
@@ -194,11 +197,27 @@ async function safeJson(url) {
 export function classifyType(it) {
   return classifyUi(it);
 }
+
+export async function loadItemCatalogList() {
+  const payloads = await Promise.all(ITEM_CATALOG_PACKS.map((url) => safeJson(url)));
+  const byIdentity = new Map();
+  for (const payload of payloads) {
+    const rows = Array.isArray(payload) ? payload : Array.isArray(payload?.items) ? payload.items : [];
+    for (const item of rows) {
+      const name = norm(item?.name || item?.item_name);
+      if (!name) continue;
+      const source = String(item?.source || item?.item_source || "UNK").trim().toUpperCase();
+      byIdentity.set(`${name}|${source}`, item);
+    }
+  }
+  return [...byIdentity.values()];
+}
+
 /** Load a prebuilt catalog if present; otherwise merge and enrich */
 export async function loadItemsIndex() {
   const overrides = (await safeJson("/items/flavor-overrides.json")) || { items: {} };
   const oMap = new Map(Object.entries(overrides.items || {}).map(([k,v]) => [norm(k), v]));
-  const merged = await safeJson("/items/all-items.json");
+  const merged = await loadItemCatalogList();
 
   const byKey = {};
   if (Array.isArray(merged) && merged.length) {
@@ -228,7 +247,7 @@ export async function loadItemsIndex() {
         rangeText: (it.range ? String(it.range).replace(/ft\.?$/i, "").trim() : ""),
         propertiesText: propsText(p)
       };
-      byKey[k] = enriched;
+      if (!byKey[k] || String(it.source || "").toUpperCase() !== "GRIMHOLLOWPG24") byKey[k] = enriched;
     }
   }
 

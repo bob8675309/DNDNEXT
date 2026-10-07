@@ -85,3 +85,53 @@ Code head after the Custom Lineage source-choice work: `4fb5fa57ea948dcf44aba3e7
 All 15 GitHub workflows triggered for that exact code head completed successfully, including the NPC Forge foundation, nested-choice, Forge source-presentation, Player Forge source-magic-routing, character progression, Species runtime, and Eladrin/Astral Trance suites.
 
 PR #171 remains open and unmerged. Do not merge until the user explicitly approves it.
+
+## Player's Guide content expansion — October 7, 2026
+
+The partnered 5etools source has been re-pinned to `TheGiddyLimit/homebrew` commit
+`ab4012f136dc1224c45d6c13c1d8f71b543c34bb`, file
+`collection/Ghostfire Gaming; Grim Hollow - Player's Guide - 2024.json`.
+
+The source-backed import now covers the Player's Guide spell, subclass, and item catalogues in addition to the previously imported Heritage, feat, and Monster Hunter material.
+
+### Spells
+
+- 101 `GrimHollowPG24` spell rows are present in `public.spells_catalog`.
+- Every imported spell keeps its full structured 5etools payload in `raw_payload` and a player-readable flattened description in `description`.
+- Source class-list access is preserved in `classes`; source subclass associations are preserved in `subclasses`.
+- The import also refreshes one normalized `spell_effects` row per Grim Hollow spell for the existing action/rules inspection pipeline.
+- Ten source spells intentionally have neither a general class-list nor subclass-list association in the structured source. DNDNext leaves those as source-special access instead of inventing a class assignment.
+
+### Subclasses
+
+- The structured source defines 40 subclasses and 258 subclass-feature records.
+- All 258 source rows are stored through the existing `class_feature_catalog` subclass representation, covering 36 XPHB subclasses plus the four already-supported Monster Hunter Guilds.
+- Each feature keeps the exact structured `entries`, a flattened player-facing description, the parent subclass definition, its `additionalSpells` / `subclassSpells` metadata when present, and a source-backed subclass art URL.
+- Character Forge continues to use the generic subclass catalogue/compatibility authority. No Grim-Hollow-only subclass state system was introduced.
+- Source-backed artwork is accepted only from the partnered `TheGiddyLimit/homebrew-img` raw GitHub host; unknown URLs still fall back to the existing local class/subclass artwork.
+- Importing a subclass does not claim that every unique subclass combat/resource mechanic is already automated. The complete source data is retained so later runtime adapters can be implemented without re-copying rules text.
+
+### Items
+
+- 106 concrete Player's Guide item records are represented as the runtime pack `public/items/grim-hollow-pg24.json` and are also present in `public.items_catalog`.
+- Source values are converted from 5etools copper-piece storage to GP for DNDNext pricing while the source fields and rules entries remain intact.
+- The source's Advanced Equipment rows are assigned existing player-facing item categories without changing their underlying source type.
+- The source's one `magicvariant`, Hunter's Armor, is stored separately in `public/items/magicvariants.grim-hollow-pg24.json` so it remains an armor variant rather than being materialized as a fake standalone armor item.
+- The Admin and Town item loaders now merge the normal item corpus with the Grim Hollow runtime pack. Grim Hollow blackpowder equipment remains visible as campaign equipment in Admin, while the existing Town smith firearm/future-equipment exclusion remains unchanged.
+
+### Reproducible import
+
+`scripts/import_grim_hollow_pg24.mjs` is the source-backed regeneration path. By default it downloads the pinned partnered JSON and generates reviewed spell, subclass, item, and variant payloads. It can also accept a local source file with `--input`. The script deliberately refuses `--apply`; database writes remain a reviewed step through the existing import/upsert authorities.
+
+`data/source-manifests/grim-hollow-pg24.json` records the pinned source identity and expected counts. `scripts/validate_grim_hollow_player_guide_content.mjs` guards the runtime item packs, merged consumers, source-art boundary, expected source counts, and protected world-map separation.
+
+### Live validation checkpoint
+
+After the reviewed import, live Supabase reports:
+
+- 101 Grim Hollow spells, all with non-empty flattened descriptions;
+- 40 distinct Grim Hollow subclasses / 258 subclass feature rows, all with non-empty flattened descriptions and source-art metadata;
+- 106 concrete Grim Hollow item rows in `items_catalog`.
+
+One stale pre-existing Trapper Guild key for **Ambusher's Advantage** used an older apostrophe slug (`ambusher-s-advantage`). The source-backed key is `ambushers-advantage`; the stale duplicate was removed after the exact source-key reconciliation.
+

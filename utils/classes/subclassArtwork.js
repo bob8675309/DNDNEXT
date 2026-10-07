@@ -197,6 +197,19 @@ function approvedSubclassArtworkFor(normalizedClass = "", normalizedSubclass = "
   return family ? `/media/subclasses/${normalizedClass}/${normalizedClass}-${family}.webp` : "";
 }
 
+function trustedSourceArtworkUrl(value = "") {
+  const url = text(value);
+  return /^https:\/\/raw\.githubusercontent\.com\/TheGiddyLimit\/homebrew-img\//i.test(url) ? url : "";
+}
+
+function sourceSubclassArtworkFor(option = {}) {
+  for (const feature of Array.isArray(option?.features) ? option.features : []) {
+    const url = trustedSourceArtworkUrl(feature?.raw_payload?.subclassArtUrl);
+    if (url) return url;
+  }
+  return "";
+}
+
 function fallbackSubclassArtworkFor(normalizedClass = "") {
   return classMenuArtworkFor(normalizedClass);
 }
@@ -207,6 +220,7 @@ export function subclassArtworkFor(classKey = "", option = {}) {
   const normalizedClass = key(classKey);
   const normalizedSubclass = key(option?.name || option?.key);
   return approvedSubclassArtworkFor(normalizedClass, normalizedSubclass)
+    || sourceSubclassArtworkFor(option)
     || fallbackSubclassArtworkFor(normalizedClass);
 }
 

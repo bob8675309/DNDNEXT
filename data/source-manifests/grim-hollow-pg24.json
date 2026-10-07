@@ -1,0 +1,18 @@
+{
+  "sourceId": "GrimHollowPG24",
+  "title": "Grim Hollow: Player's Guide (2024)",
+  "partneredRepository": "TheGiddyLimit/homebrew",
+  "sourceCommit": "ab4012f136dc1224c45d6c13c1d8f71b543c34bb",
+  "sourcePath": "collection/Ghostfire Gaming; Grim Hollow - Player's Guide - 2024.json",
+  "expected": {
+    "spells": 101,
+    "subclasses": 40,
+    "subclassFeatures": 258,
+    "items": 106,
+    "itemVariants": 1
+  },
+  "generated": {
+    "items": 106,
+    "itemVariants": 1
+  }
+}
