@@ -60,9 +60,9 @@ for (const token of [
 const levelUpPlan = read("utils/characterLevelUpPlan.js");
 for (const token of ["metamagicOptions = []", "buildFeatSourceChoiceGroups({ featInstances: [instance], toolRows, spells, metamagicOptions"]) requireToken(levelUpPlan, token, "Metamagic Adept advancement nesting");
 
-const featChoices = read("utils/playerForgeFeatChoices.js");
-requireToken(featChoices, 'name === "metamagic adept"', "Metamagic Adept source-choice model");
-forbidToken(featChoices, 'replacementCadence: "ability-score-improvement"', "unsupported Metamagic Adept replacement promise");
+const metamagicFeatChoices = read("utils/playerForgeFeatChoices.js");
+requireToken(metamagicFeatChoices, 'name === "metamagic adept"', "Metamagic Adept source-choice model");
+forbidToken(metamagicFeatChoices, 'replacementCadence: "ability-score-improvement"', "unsupported Metamagic Adept replacement promise");
 
 const sourceFields = read("components/SourceChoiceFields.js");
 for (const token of ["sourceChoiceFieldIsActive", "activeFields", "replacementCadence"]) requireToken(sourceFields, token, "dependent source-choice renderer");
