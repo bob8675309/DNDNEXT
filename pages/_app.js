@@ -10,6 +10,7 @@ import "../styles/character-forge-final-polish.css";
 import "../styles/character-forge-smoke-fixes.css";
 import "../styles/character-forge-background-polish.css";
 import "../styles/character-forge-browser-review-polish.css";
+import "../styles/character-forge-heritage-browser-polish.css";
 import "../styles/character-forge-class-ability-final.css";
 import "../styles/character-forge-ability-dice-tray.css";
 import "../styles/character-forge-ability-dice-bounce.css";

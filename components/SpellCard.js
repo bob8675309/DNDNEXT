@@ -21,7 +21,7 @@ function joinValues(values) {
   return values.length ? values.join(", ") : "—";
 }
 
-export default function SpellCard({ spell, compact = false, dense = false }) {
+export default function SpellCard({ spell, compact = false, dense = false, headerAction = null }) {
   if (!spell) return null;
 
   const school = spell.school || "Spell";
@@ -42,7 +42,10 @@ export default function SpellCard({ spell, compact = false, dense = false }) {
           <div className="spell-card__eyebrow">{levelLabel(spell.level)} • {school}</div>
           <h3 className="spell-card__title">{spell.name}</h3>
         </div>
-        <div className="spell-card__source">{spell.source || "—"}</div>
+        <div className="spell-card__header-actions">
+          <div className="spell-card__source">{spell.source || "—"}</div>
+          {headerAction ? <div className="spell-card__header-action">{headerAction}</div> : null}
+        </div>
       </header>
 
       <div className="spell-card__badges">

@@ -13,6 +13,8 @@ on:
       - 'components/NewNpcModalV3Refined.js'
       - 'sql/20260815_01_merfolk_playable_speed_override.sql'
       - 'scripts/validate_forge_species_heritage_layout_and_human_versatile.mjs'
+      - 'styles/character-forge-heritage-browser-polish.css'
+      - 'pages/_app.js'
       - '.github/workflows/validate-forge-species-heritage-layout-and-human-versatile.yml'
 
 jobs:

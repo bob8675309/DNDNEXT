@@ -69,7 +69,7 @@ function featOption(row) {
     label: row.name,
     source: row.source || "XPHB",
     kind: "feat",
-    description: text(row.description) || OPTION_SUMMARIES[norm(row.name)] || "",
+    description: text(row.description),
     metadata: {
       optionId: row.id || null,
       optionKey: row.option_key || null,
@@ -85,7 +85,7 @@ function invocationOption(row) {
     label: row.name,
     source: row.source || "XPHB",
     kind: "eldritch-invocation",
-    description: text(row.description),
+    description: text(row.description) || OPTION_SUMMARIES[norm(row.name)] || "",
     metadata: {
       optionId: row.id || null,
       optionKey: row.option_key,
