@@ -85,6 +85,23 @@ function inferDice(value = "") {
   return text(value).match(/\b\d+d\d+(?:\s*[+-]\s*\d+)?\b/i)?.[0] || null;
 }
 
+function materialText(value) {
+  if (typeof value === "string") return clean5eText(value);
+  if (value && typeof value === "object") return clean5eText(value.text || value.entry || "");
+  return null;
+}
+
+function scalingText(value = null, higherLevelText = "") {
+  if (higherLevelText) return higherLevelText;
+  const scaling = value?.scaling && typeof value.scaling === "object" ? value.scaling : null;
+  if (!scaling) return null;
+  const label = clean5eText(value.label || "Scaling");
+  const parts = Object.entries(scaling)
+    .map(([level, formula]) => `level ${level}: ${clean5eText(formula)}`)
+    .filter((entry) => !entry.endsWith(": "));
+  return parts.length ? `${label}: ${parts.join(" • ")}` : null;
+}
+
 function effectKind(spell = {}, description = "") {
   if (array(spell.damageInflict).length) return "damage";
   if (/heal|healing|regain|hit point maximum/i.test(description)) return "healing";
@@ -162,7 +179,7 @@ export function spellRows(book = {}) {
       components_v: Boolean(spell.components?.v),
       components_s: Boolean(spell.components?.s),
       components_m: Boolean(spell.components?.m),
-      material_text: typeof spell.components?.m === "string" ? clean5eText(spell.components.m) : null,
+      material_text: materialText(spell.components?.m),
       components_json: spell.components || {},
       duration_text: formatDuration(spell.duration),
       duration_json: spell.duration || [],
@@ -171,7 +188,7 @@ export function spellRows(book = {}) {
       damage_dice: damageDice || null,
       damage_types: spell.damageInflict || [],
       healing_dice: healingDice || null,
-      scaling_text: spell.scalingLevelDice ? clean5eText(JSON.stringify(spell.scalingLevelDice)) : higherLevelText || null,
+      scaling_text: scalingText(spell.scalingLevelDice, higherLevelText),
       scaling_json: spell.scalingLevelDice || {},
       description: description || null,
       higher_level_text: higherLevelText || null,
