@@ -246,6 +246,8 @@ export function subclassRows(book = {}) {
         sourceCommit: GRIM_HOLLOW_SOURCE_COMMIT,
         sourceFile: GRIM_HOLLOW_SOURCE_PATH,
         subclassDefinition: definition,
+        subclassAdditionalSpells: definition?.additionalSpells || [],
+        subclassSpells: definition?.subclassSpells || [],
         subclassArtUrl: artUrl,
       },
     });
