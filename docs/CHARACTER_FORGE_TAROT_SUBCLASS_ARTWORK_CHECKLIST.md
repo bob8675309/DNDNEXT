@@ -1,6 +1,6 @@
 # Character Forge Tarot Subclass Artwork Checklist
 
-Status date: 2026-09-17
+Status date: 2026-10-07
 
 This checklist tracks the production-visible Tarot deck, not the historical preferred-source concept count.
 
@@ -17,9 +17,56 @@ Current completed artwork-branch state:
 - dedicated-card target: **149**;
 - runtime-visible choices with approved dedicated Tarot coverage: **149**;
 - known current runtime-visible choices resolving to generic/class fallback: **0**;
-- normalized installed Tarot concepts in the repository ledger: **152**, because the historical normalized set also retains the four suppressed Wizard compatibility identities and approved source aliases remain explicit.
+- normalized installed Tarot concepts in the repository ledger: **155**, including the three approved Grim Hollow Druid cards staged on main ahead of the Grim Hollow catalogue merge; the historical normalized set also retains suppressed Wizard compatibility identities and explicit source aliases.
 
 **Current remaining Tarot card queue: 0.**
+
+
+That zero applies to the currently runtime-visible 149-choice deck on `main`. A separate Grim Hollow Player's Guide expansion is now in progress.
+
+## Grim Hollow Player's Guide expansion — 12/36 approved
+
+The Player's Guide adds 40 subclasses. Four Monster Hunter Guilds already have dedicated cards in the existing deck, leaving **36 new cards** to create.
+
+Paul has approved these **12** new cards:
+
+### Barbarian — 3/3
+- [x] Path of the Fractured
+- [x] Path of the Primal Spirit
+- [x] Path of the Wrathful Dead
+
+### Bard — 3/3
+- [x] College of Adventurers
+- [x] College of Fools
+- [x] College of Requiems
+
+### Cleric — 3/3
+- [x] Eldritch Domain
+- [x] Inquisition Domain
+- [x] Purification Domain
+
+### Druid — 3/3
+- [x] Circle of Blood
+- [x] Circle of Entropy
+- [x] Circle of Mutation
+
+The three Druid cards are installed directly on `main` at canonical 840x1440 WebP paths and mapped in `utils/classes/subclassArtwork.js`. The earlier Barbarian/Bard/Cleric approved assets remain on the Grim Hollow integration branch/PR #203 until that work is reconciled with current main.
+
+**Grim Hollow cards remaining to create: 24.**
+
+Remaining batches:
+
+- Fighter: Bulwark Warrior, Living Crucible, Nightwatcher
+- Monk: Warrior of Pride, Warrior of Regret, Warrior of the Leaden Crown
+- Paladin: Oath of Pestilence, Oath of Slaughter, Oath of Zeal
+- Ranger: Green Reaper, Primordial Archer, Vermin Lord
+- Rogue: Highway Rider, Misfortune Bringer, Sanguine Thief
+- Sorcerer: Apocalypse Sorcery, Haunted Sorcery, Wretched Bloodline Sorcery
+- Warlock: The Coven, The First Vampire Patron, The Parasite Patron
+- Wizard: Daemonologist, Plague Doctor, Sangromancer
+
+Grim Hollow art direction remains the established older Tarot presentation represented by the Battle Master/Soul Knife references: photorealistic cinematic fantasy, complete antique-gold border/title/emblem treatment, full bottom border, strong subclass theme, and deliberate species/pose/camera/environment variation. Anatomy and body symmetry must be checked before approval.
+
 
 Intentional art sharing remains allowed only when Paul explicitly approves it. Generic class-art fallback does not count as a completed subclass card.
 

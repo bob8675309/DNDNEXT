@@ -60,6 +60,9 @@ const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
     "zeal-psa": "zeal",
   }),
   druid: Object.freeze({
+    "circle-of-blood": "circle-of-blood",
+    "circle-of-entropy": "circle-of-entropy",
+    "circle-of-mutation": "circle-of-mutation",
     dreams: "dreams",
     land: "land",
     moon: "moon",

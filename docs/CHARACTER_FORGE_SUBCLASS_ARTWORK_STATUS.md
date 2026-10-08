@@ -1,6 +1,6 @@
 # Character Forge Subclass Artwork Status
 
-Status date: 2026-09-18
+Status date: 2026-10-07
 
 This is the current focused handoff for the Character Forge subclass Tarot deck and its selector presentation. Older rollout counts such as 33 remaining cards, 109 total concepts, 456x240 selector thumbnails, or the compact two-column selector are historical checkpoints and are not current completion authority.
 
@@ -9,12 +9,27 @@ This is the current focused handoff for the Character Forge subclass Tarot deck 
 - Runtime-visible subclass choices: **149**
 - Runtime-visible choices with dedicated approved Tarot cards: **149**
 - Runtime-visible generic/class fallback cards: **0**
-- Normalized installed artwork concepts in the repository ledger: **152**
+- Normalized installed artwork concepts in the repository ledger: **155**
 - Current missing-card queue: **0**
 
 The difference between 149 visible choices and 152 normalized installed concepts is intentional. Historical compatibility/reprint identities and explicit aliases remain represented in the resolver/art ledger while the actual Forge runtime suppresses duplicate/reprint Wizard identities.
 
 The historical Wizard compatibility identities **Abjuration, Divination, Evocation, and Illusion** are not missing current carousel choices and must not be re-added solely to make the visible count match the normalized ledger.
+
+## Grim Hollow Player's Guide Tarot expansion — October 7, 2026
+
+The Grim Hollow Player's Guide import is still being integrated separately on PR #203, so the three new Druid identities are not yet runtime-visible on current `main`. Their approved Tarot fronts are now installed on `main` in advance of that catalogue merge:
+
+- Circle of Blood
+- Circle of Entropy
+- Circle of Mutation
+
+All three are canonical 7:12 **840x1440 WebP** assets under `public/media/subclasses/druid/` and are wired to their exact future runtime names in `utils/classes/subclassArtwork.js`.
+
+This raises the main-branch installed/mapped artwork ledger by three while leaving the current runtime-visible count at 149 until the Grim Hollow catalogue itself lands. Do not count these staged cards as current runtime choices before that merge.
+
+For the Grim Hollow extension as a whole, Paul has approved **12 of the 36 new cards** needed beyond the four pre-existing Monster Hunter Guild cards. The next uncreated batch begins with Fighter: **Bulwark Warrior, Living Crucible, Nightwatcher**.
+
 
 The canonical detailed completion checklist is:
 

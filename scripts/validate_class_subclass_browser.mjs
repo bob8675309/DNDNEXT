@@ -248,7 +248,7 @@ const approvedTarotFamilies = {
   barbarian: ["ancestral-guardian", "battlerager", "beast", "berserker", "giant", "storm-herald", "totem-warrior", "wild-heart", "wild-magic", "world-tree", "zealot"],
   bard: ["creation", "dance", "eloquence", "glamour", "lore", "moon", "spirits", "swords", "valor", "whispers"],
   cleric: ["ambition", "arcana", "death", "forge", "grave", "knowledge", "life", "light", "nature", "order", "peace", "solidarity", "strength", "tempest", "trickery", "twilight", "war", "zeal"],
-  druid: ["dreams", "land", "moon", "sea", "shepherd", "spores", "stars", "wildfire"],
+  druid: ["circle-of-blood", "circle-of-entropy", "circle-of-mutation", "dreams", "land", "moon", "sea", "shepherd", "spores", "stars", "wildfire"],
   fighter: ["arcane-archer", "banneret", "battle-master", "cavalier", "champion", "echo-knight", "eldritch-knight", "purple-dragon-knight-banneret", "psi-warrior", "rune-knight", "samurai"],
   monk: ["ascendant-dragon", "astral-self", "drunken-master", "elements", "four-elements", "kensei", "long-death", "mercy", "open-hand", "shadow", "sun-soul"],
   "monster-hunter": ["carver-guild", "devourer-guild", "occultist-guild", "trapper-guild"],
@@ -267,7 +267,11 @@ for (const [classKey, families] of Object.entries(approvedTarotFamilies)) {
     assert(fs.existsSync(path.join(root, `public/media/subclasses/${classKey}/${classKey}-${family}.webp`)), `Approved tarot asset missing ${classKey}/${family}`);
   }
 }
-assert(approvedTarotCount === 151, `Expected 151 installed approved normalized tarot concepts after retiring corrupt Bladesinging, found ${approvedTarotCount}.`);
+assert(approvedTarotCount === 154, `Expected 154 installed approved Tarot concepts after adding the three approved Grim Hollow Druid cards, found ${approvedTarotCount}.`);
+for (const token of ['"circle-of-blood": "circle-of-blood"', '"circle-of-entropy": "circle-of-entropy"', '"circle-of-mutation": "circle-of-mutation"']) {
+  assert(subclassArtwork.includes(token), `Approved Grim Hollow Druid Tarot mapping missing ${token}`);
+}
+
 for (const token of ['"ambition-psa": "ambition"', '"knowledge-psa": "knowledge"', '"solidarity-psa": "solidarity"', '"strength-psa": "strength"', '"zeal-psa": "zeal"']) {
   assert(subclassArtwork.includes(token), `Preferred-source Cleric alias mapping missing ${token}`);
 }
@@ -530,4 +534,4 @@ assert(featureDock.includes("overflow:hidden!important") && featureDock.includes
 assert(featureDock.includes("padding:22px 22px 34px") && featureDock.includes("npc-forge-subclass-inspector__content.is-spells{min-height:0;padding-bottom:22px;overflow:hidden}") && featureDock.includes("padding:5px 8px 14px 5px"), "Codex content and the spell preview must preserve bottom breathing room so the card footer is fully reachable.");
 
 
-console.log("Class subclass selector validation passed: canonical authority remains in the guide model, all subclass cards stay on one free-floating parametric carousel, rear cards use the shared card back, one exact hero position owns enlarged presentation, ambient library motion is presentation-only, drag/arrow motion never persists a subclass, explicit card clicks remain the only selection path, all 151 approved normalized Tarot concepts remain installed/mapped, and future content retains safe fallback.");
+console.log("Class subclass selector validation passed: canonical authority remains in the guide model, all subclass cards stay on one free-floating parametric carousel, rear cards use the shared card back, one exact hero position owns enlarged presentation, ambient library motion is presentation-only, drag/arrow motion never persists a subclass, explicit card clicks remain the only selection path, all 154 approved normalized Tarot concepts remain installed/mapped, and future content retains safe fallback.");
