@@ -1,4 +1,4 @@
-name: One-shot Grim Hollow Druid Tarot main transfer
+name: One-shot validate Grim Hollow Druid Tarot main
 
 on:
   push:
@@ -8,10 +8,10 @@ on:
       - ".github/workflows/one-shot-grim-hollow-druid-tarot-main.yml"
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  materialize:
+  validate:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -25,72 +25,28 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "2263201b79c19c2d3c17fd556e629138aee53295"
+          test "$(git rev-parse HEAD)" = "5caf25069e91ac5b40b723c4d9826c1fb93cfbb8"
 
-      - name: Download and verify approved artwork bundle
+      - name: Verify approved Druid Tarot bytes and dimensions
         shell: bash
-        env:
-          ZIP_URL: 'https://uc8a9d53643c2a58b589ff7d6b36.dl.dropboxusercontent.com/cd/0/get/DJnQrL7pgz013H9KXZEY1n9lw_huOREAY1P2BuNHHnWBoYaDDBrqO2A0ZJy3zTpkz2NTroXXh0aTP4_6Rzmiwo5pC66V2-ULouy7wkehaMibRuZ-gP7KFJn4XMvSzPhyJL5dnv12RFIlPEMdT8Zbo477UBZjhCv7zKJTa2qdIE3DNg/file?c_luid=c335000c'
         run: |
           set -euo pipefail
-          curl --fail --location --silent --show-error "$ZIP_URL" -o /tmp/druid-tarot.zip
-          echo "f4a15b9b4e67421f4c0ee08c7ece1d12e21e951440746194f05842220327dacb  /tmp/druid-tarot.zip" | sha256sum -c -
-          rm -rf /tmp/druid-tarot
-          mkdir -p /tmp/druid-tarot
-          unzip -q /tmp/druid-tarot.zip -d /tmp/druid-tarot
-          cd /tmp/druid-tarot
           echo "b4bd7a3601b7adc419a7544abd97c6d608b7c5503ef6522785fd9481d80945e3  public/media/subclasses/druid/druid-circle-of-blood.webp" | sha256sum -c -
           echo "1952185310c3896710bb7270cfb500d60c7ae0890041b91576ee4c1fa8bc62c1  public/media/subclasses/druid/druid-circle-of-entropy.webp" | sha256sum -c -
           echo "cb55b3ed67819ac9829b198a0c2a3726f12049fcd05fcec2c3bae4ec84b35685  public/media/subclasses/druid/druid-circle-of-mutation.webp" | sha256sum -c -
-          for f in public/media/subclasses/druid/*.webp; do
+          for f in public/media/subclasses/druid/druid-circle-of-{blood,entropy,mutation}.webp; do
             test "$(file -b --mime-type "$f")" = "image/webp"
           done
-
-      - name: Verify dimensions
-        shell: bash
-        run: |
-          set -euo pipefail
           python -m pip install --disable-pip-version-check pillow==11.3.0 >/dev/null
           python - <<'PY'
           from PIL import Image
           from pathlib import Path
-          root = Path("/tmp/druid-tarot/public/media/subclasses/druid")
-          names = [
-              "druid-circle-of-blood.webp",
-              "druid-circle-of-entropy.webp",
-              "druid-circle-of-mutation.webp",
-          ]
-          for name in names:
-              p = root / name
+          for name in ["blood", "entropy", "mutation"]:
+              p = Path(f"public/media/subclasses/druid/druid-circle-of-{name}.webp")
               with Image.open(p) as im:
-                  assert im.format == "WEBP", (name, im.format)
-                  assert im.size == (840, 1440), (name, im.size)
+                  assert im.format == "WEBP", (p, im.format)
+                  assert im.size == (840, 1440), (p, im.size)
           PY
 
-      - name: Install exact approved assets
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p public/media/subclasses/druid
-          cp /tmp/druid-tarot/public/media/subclasses/druid/druid-circle-of-blood.webp public/media/subclasses/druid/
-          cp /tmp/druid-tarot/public/media/subclasses/druid/druid-circle-of-entropy.webp public/media/subclasses/druid/
-          cp /tmp/druid-tarot/public/media/subclasses/druid/druid-circle-of-mutation.webp public/media/subclasses/druid/
-          git add -N             public/media/subclasses/druid/druid-circle-of-blood.webp             public/media/subclasses/druid/druid-circle-of-entropy.webp             public/media/subclasses/druid/druid-circle-of-mutation.webp
-          git diff --name-only | sort > /tmp/actual.txt
-          cat > /tmp/expected.txt <<'EOF'
-          public/media/subclasses/druid/druid-circle-of-blood.webp
-          public/media/subclasses/druid/druid-circle-of-entropy.webp
-          public/media/subclasses/druid/druid-circle-of-mutation.webp
-          EOF
-          sort /tmp/expected.txt -o /tmp/expected.txt
-          diff -u /tmp/expected.txt /tmp/actual.txt
-
-      - name: Commit and push to main
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/media/subclasses/druid/
-          git commit -m "art: install Grim Hollow Druid tarot cards"
-          git push origin HEAD:main
+      - name: Validate subclass Tarot browser
+        run: node scripts/validate_class_subclass_browser.mjs
