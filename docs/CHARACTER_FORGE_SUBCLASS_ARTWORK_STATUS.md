@@ -1,138 +1,91 @@
 # Character Forge Subclass Artwork Status
 
-Status date: 2026-10-07
+Status date: 2026-10-08
 
-This is the current focused handoff for the Character Forge subclass Tarot deck and its selector presentation. Older rollout counts such as 33 remaining cards, 109 total concepts, 456x240 selector thumbnails, or the compact two-column selector are historical checkpoints and are not current completion authority.
+This is the current focused status for the Character Forge subclass Tarot deck and selector presentation. Live source and the focused validator outrank older branch-era counts or selector descriptions.
 
 ## Current completion authority
 
-- Runtime-visible subclass choices: **149**
-- Runtime-visible choices with dedicated approved Tarot cards: **149**
-- Runtime-visible generic/class fallback cards: **0**
-- Normalized installed artwork concepts in the repository ledger: **155**
-- Current missing-card queue: **0**
+Current `main` still exposes the pre-Grim-Hollow-import runtime catalogue because PR #203 remains open/unmerged:
 
-The difference between 149 visible choices and 152 normalized installed concepts is intentional. Historical compatibility/reprint identities and explicit aliases remain represented in the resolver/art ledger while the actual Forge runtime suppresses duplicate/reprint Wizard identities.
+- runtime-visible subclass choices on current `main`: **149**;
+- runtime-visible choices with dedicated approved Tarot cards: **149 / 149**;
+- current runtime-visible generic/class fallback cards: **0**.
 
-The historical Wizard compatibility identities **Abjuration, Divination, Evocation, and Illusion** are not missing current carousel choices and must not be re-added solely to make the visible count match the normalized ledger.
+The Grim Hollow: Player's Guide expansion adds 36 new visible subclass identities beyond the four Monster Hunter Guilds that already had dedicated cards. Paul has approved **12 / 36** of those new cards, and **all 12 approved cards are now installed and mapped on `main`** ahead of the catalogue merge:
 
-## Grim Hollow Player's Guide Tarot expansion — October 7, 2026
+- Barbarian — Path of the Fractured; Path of the Primal Spirit; Path of the Wrathful Dead.
+- Bard — College of Adventurers; College of Fools; College of Requiems.
+- Cleric — Eldritch Domain; Inquisition Domain; Purification Domain.
+- Druid — Circle of Blood; Circle of Entropy; Circle of Mutation.
 
-The Grim Hollow Player's Guide import is still being integrated separately on PR #203, so the three new Druid identities are not yet runtime-visible on current `main`. Their approved Tarot fronts are now installed on `main` in advance of that catalogue merge:
+The focused validator now tracks **163 approved asset families** in the repository, including these 12 staged Grim Hollow cards. These staged cards do not become runtime-visible choices until their source-backed subclass catalogue is present.
 
-- Circle of Blood
-- Circle of Entropy
-- Circle of Mutation
+**Remaining Grim Hollow cards to create: 24.** The next batch is Fighter: Bulwark Warrior, Living Crucible, Nightwatcher.
 
-All three are canonical 7:12 **840x1440 WebP** assets under `public/media/subclasses/druid/` and are wired to their exact future runtime names in `utils/classes/subclassArtwork.js`.
-
-This raises the main-branch installed/mapped artwork ledger by three while leaving the current runtime-visible count at 149 until the Grim Hollow catalogue itself lands. Do not count these staged cards as current runtime choices before that merge.
-
-For the Grim Hollow extension as a whole, Paul has approved **12 of the 36 new cards** needed beyond the four pre-existing Monster Hunter Guild cards. The next uncreated batch begins with Fighter: **Bulwark Warrior, Living Crucible, Nightwatcher**.
-
-
-The canonical detailed completion checklist is:
-
-`docs/CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md`
-
-## Current card standard
-
-The active Tarot standard is:
-
-- 7:12 aspect ratio
-- 840x1440 WebP final export
-- full-bleed illustration through title/emblem area
-- no opaque footer/title band
-- reusable antique-gold frame/title/emblem geometry
-- restrained readability gradient
-- cinematic fantasy realism
-- deliberate species/gender/presentation/pose/environment diversity
-- mandatory anatomy, hands, weapon, prop, companion, and species QA at full resolution
+## Canonical card standard
 
 Detailed authority:
 
 `docs/CHARACTER_FORGE_TAROT_SUBCLASS_CARD_STANDARD.md`
 
-## Current resolver authority
+Core rules:
+
+- canonical 7:12 aspect ratio;
+- final export **840 × 1440 WebP**;
+- full-bleed illustration through the title/emblem area;
+- no opaque footer/title band;
+- consistent antique-gold frame/title/emblem geometry;
+- restrained readability gradient;
+- cinematic fantasy realism;
+- deliberate species/gender/presentation/pose/environment diversity;
+- mandatory full-resolution anatomy, hands, weapon, prop, companion, and species QA.
+
+## Resolver authority
 
 Artwork resolution remains centralized through:
 
 `ClassSubclassSection.js -> subclassArtworkFor(classKey, option) -> utils/classes/subclassArtwork.js`
 
-`utils/classes/subclassArtwork.js` contains the approved class/family mappings and intentional aliases. Unknown/future subclass identities retain a safe fallback through `classMenuArtworkFor(...)`.
-
-Artwork mapping is presentation-only. It does not create subclass eligibility, source authority, level gates, persistence, or progression rules.
+The resolver owns presentation only. It does not create subclass eligibility, source authority, level gates, persistence, or progression rules. Unknown/future identities retain the class-art fallback until a dedicated card is approved.
 
 ## Current selector presentation
 
-As of 2026-09-18 the old compact two-column selector has been replaced on PR #193 by the approved runic circular Tarot gallery.
+PR #199 merged the accepted selector presentation on 2026-10-02. The active selector is a **floating Tarot carousel in a dark, smoky ruined gothic library**, not the retired physical runic-table/table-contact model.
 
-The current selector:
+Current presentation rules:
 
-- opens in a viewport portal/modal;
-- places every option on one continuous circular orbit;
-- keeps four cards prominent on the front arc at desktop scale;
-- pushes the remaining cards behind the runic table as dimmer/smaller rear positions;
-- advances exactly one card per Left/Right action;
-- wraps by modulo arithmetic with no duplicated rail or scroll recentering;
-- keeps card React keys stable so the same card visibly travels around the orbit;
-- uses a gothic cathedral, runic table, and layered purple-smoke scene;
-- includes a focused summary/details panel beneath the orbit;
-- preserves existing selection/level-gate/persistence authority.
+- all canonical options remain on one continuous carousel;
+- one exact front hero position;
+- rear cards use the ornate back;
+- explicit eligible selection remains the only persistence path;
+- carousel motion alone never persists a subclass;
+- the Subclass Codex and Class Feature panel are independent and may remain open simultaneously;
+- Codex navigation is Overview / Progression / Spells;
+- Spells uses the Profile-style list + shared SpellCard detail pattern;
+- reduced-motion behavior remains supported.
 
-Current selector design authority:
-
-`docs/CHARACTER_FORGE_CLASS_SUBCLASS_SELECTOR_ARTWORK.md`
-
-## Current implementation checkpoint
-
-Implementation head before this documentation refresh:
-
-`49b6a0486878748f5d9c3147eb51fdbe16358451`
-
-At that checkpoint:
-
-- focused GitHub Class-browser workflow: **success**
-- focused subclass-browser validator: **success**
-- Vercel deployment `dpl_5kcUtbeqoWqsY7iBMaLeyb81buaX`: **READY**
-- `/profile`: HTTP 200
-- PR #193: open, mergeable, unmerged
-
-The active branch is:
-
-`agent/subclass-tarot-approved-batch-20260916`
-
-Always re-fetch the exact remote head before additional writes or merge.
+The selector and Tarot artwork are presentation systems layered over the existing class-guide/source authority.
 
 ## Validation guard
 
-`scripts/validate_class_subclass_browser.mjs` and `scripts/validate_class_browser_polish.mjs` protect the current presentation and authority split. Together they verify the runic-orbit structure, one-card modulo navigation, stable artwork resolver path, dedicated current deck coverage, safe future fallback, selection calls, and protected boundaries.
+`scripts/validate_class_subclass_browser.mjs` and `scripts/validate_class_browser_polish.mjs` protect the current selector, artwork resolver, approved asset presence, single persistence path, Codex/Feature split, and protected boundaries.
 
-The normal Vercel build also remains authoritative for production compilation. The 2026-09-18 exact implementation preview compiled successfully under Next.js 16.1.6.
+The approved Grim Hollow cards are intentionally validated even while their catalogue import remains unmerged.
 
 ## Future artwork rule
 
-If a future catalogue change introduces a new runtime-visible subclass:
+For every newly runtime-visible subclass:
 
-1. Confirm the exact visible identity from current Forge runtime/catalogue behavior.
-2. Treat it as incomplete until Paul approves its dedicated card.
-3. Author/export to the 7:12 840x1440 WebP standard.
-4. Install under `public/media/subclasses/<class-key>/`.
-5. Wire the exact identity in `utils/classes/subclassArtwork.js`, unless Paul explicitly approves an alias.
-6. Shrink the fallback count back to zero.
-7. Run focused CI and an intentional browser preview.
-
-Do not assume 149 is permanent if future source imports add or expose new playable subclass identities.
+1. confirm the exact visible identity from current source/catalogue behavior;
+2. verify it is not merely a compatibility alias/reprint;
+3. create and explicitly approve a dedicated card;
+4. export it to 840 × 1440 WebP;
+5. install it under `public/media/subclasses/<class-key>/`;
+6. wire the exact identity in `utils/classes/subclassArtwork.js`;
+7. extend the focused asset/mapping validator;
+8. verify the runtime fallback count returns to zero after the source content lands.
 
 ## Protected boundaries
 
-Subclass artwork and the selector are presentation work. Do not use this work as authority to change:
-
-- Supabase schema/data
-- subclass gameplay rules or progression
-- world-map behavior
-- town/city-map behavior
-- travel/routes/weather/camps/clock
-- crafting/inventory/merchants/economy
-- encounter/tactical authority
-- unrelated Character Sheet runtime behavior
+Subclass artwork and selector maintenance are presentation-only. They do not authorize changes to Supabase schema/data, subclass gameplay rules, world-map or town/city-map behavior, travel/routes/weather/camps/clock, crafting/inventory/merchant/economy systems, tactical encounter authority, or unrelated Character Sheet runtime behavior.

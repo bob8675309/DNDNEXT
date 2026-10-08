@@ -1,23 +1,22 @@
 # Next Chat Handoff — Grim Hollow Tarot Expansion
 
-Status date: 2026-10-07
+Status date: 2026-10-08
 
-This is the focused handoff for continuing the Grim Hollow: Player's Guide Tarot-card rollout after the current chat reached its practical length limit.
+This is the focused handoff for continuing the Grim Hollow: Player's Guide Tarot-card rollout after consolidating the approved artwork and the completed PR #202 Forge polish onto current `main`.
 
-## Re-fetch before writing
+## Current consolidation state
 
-At handoff time:
+At the start of this consolidation, `main` was `5caf25069e91ac5b40b723c4d9826c1fb93cfbb8`.
 
-- `main` artwork install checkpoint: `a4e8ae692c4de2c0fa9ae54b0a161a07937de6d2` (three Grim Hollow Druid WebPs only).
-- PR #203: **Import Grim Hollow Player Guide spells, items, and subclasses**.
-- PR #203 last observed head before this handoff: `c9a675bbb2a04a25ee9aa0be4975d46d0b9c5ef1`.
-- PR #203 remains open and must not be merged without Paul's explicit approval.
+PR #202 — **Polish Metamagic Adept, invocation details, and Forge spell browsing** — was reviewed against its final head `36ea5994ea256eaeac641ef1a32c8b523cb988a1`, with all 13 triggered workflows passing and Vercel Preview READY, then merged onto `main` as `15eaa8077c6beddcf4a8d6d42b7da980efc04d3d`.
 
-Always re-fetch current `main`, PR #203, and any active artwork branch before another write. Do not rely on these SHAs if they have moved.
+This documentation/art consolidation commit advances `main` again. Always re-fetch the exact current head before further writes.
+
+PR #203 — **Import Grim Hollow Player Guide spells, items, and subclasses** — remains open and unmerged. Its source-content work must be reconciled separately before any merge. The approved Tarot artwork no longer depends on PR #203.
 
 ## Source/content authority
 
-The partnered Grim Hollow source is pinned to:
+The partnered Grim Hollow source remains pinned to:
 
 - repository: `TheGiddyLimit/homebrew`
 - commit: `ab4012f136dc1224c45d6c13c1d8f71b543c34bb`
@@ -28,24 +27,18 @@ The partnered Grim Hollow source is pinned to:
 
 ## Tarot production authority
 
-The new Grim Hollow Player's Guide set requires **36 new cards** because the four Monster Hunter Guilds already have approved dedicated Tarot cards.
+The Grim Hollow Player's Guide set requires **36 new cards** because the four Monster Hunter Guilds already have approved dedicated Tarot cards.
 
-Approved new Grim Hollow cards: **12/36**.
+Approved new Grim Hollow cards: **12 / 36**.
 
-Approved cards:
+All twelve approved cards are now installed and mapped on current `main`:
 
-- Barbarian: Path of the Fractured; Path of the Primal Spirit; Path of the Wrathful Dead.
-- Bard: College of Adventurers; College of Fools; College of Requiems.
-- Cleric: Eldritch Domain; Inquisition Domain; Purification Domain.
-- Druid: Circle of Blood; Circle of Entropy; Circle of Mutation.
+- Barbarian — Path of the Fractured; Path of the Primal Spirit; Path of the Wrathful Dead.
+- Bard — College of Adventurers; College of Fools; College of Requiems.
+- Cleric — Eldritch Domain; Inquisition Domain; Purification Domain.
+- Druid — Circle of Blood; Circle of Entropy; Circle of Mutation.
 
-The Druid trio is the first Grim Hollow class batch installed directly on current `main`:
-
-- `public/media/subclasses/druid/druid-circle-of-blood.webp`
-- `public/media/subclasses/druid/druid-circle-of-entropy.webp`
-- `public/media/subclasses/druid/druid-circle-of-mutation.webp`
-
-The earlier approved Barbarian/Bard/Cleric cards were installed on PR #203 during the prior pass. Reconcile PR #203 against current main before any eventual merge; do not assume branch parity.
+The focused subclass validator requires all twelve binaries and mappings. The source-backed Grim Hollow catalogue is still separate on PR #203, so these new identities remain staged presentation assets until the catalogue lands.
 
 ## Remaining creation queue — 24
 
@@ -62,31 +55,21 @@ Continue in three-card class batches:
 
 Next batch: **Fighter**.
 
-## Art direction Paul approved
+## Art direction
 
-Use the older Battle Master / Soul Knife Tarot cards as layout authority.
+Use `docs/CHARACTER_FORGE_TAROT_SUBCLASS_CARD_STANDARD.md` as the detailed contract and the older Battle Master / Soul Knife cards as visual-layout authority.
 
-Each new card should:
+Each new card must:
 
 - be photorealistic/cinematic rather than painterly;
 - strongly represent the subclass fantasy and mechanics;
-- remain attractive and visually striking;
-- use the full antique-gold border through the bottom edge;
-- use the established title + emblem treatment rather than a redesigned frame;
+- use the established full antique-gold border/title/emblem treatment;
+- preserve full-bleed artwork through the lower title area rather than introducing an opaque footer;
 - vary species, gender/presentation, pose, camera direction, silhouette, environment, lighting, and action across the deck;
-- avoid repeatedly posing characters looking off into the same distance;
 - receive full-resolution anatomy QA, especially legs, hands, joints, weapon grip, and body symmetry;
-- export to **840x1440 WebP** at the canonical 7:12 presentation.
+- export to **840 × 1440 WebP** at the canonical 7:12 presentation.
 
-Production loop: read the actual Grim Hollow subclass features first -> generate one card -> Paul approves/revises -> lock it -> proceed through the three-card batch -> install only approved finals.
-
-## Current Druid approvals
-
-- Circle of Blood: approved corrected version with complete leg/body alignment.
-- Circle of Entropy: approved ruined-civilization entropy composition.
-- Circle of Mutation: approved dragonborn mutation/swamp composition.
-
-Do not regenerate these unless Paul explicitly requests a replacement.
+Production loop: read the actual source-backed subclass features -> generate one card -> Paul approves/revises -> lock it -> proceed through the three-card batch -> install only approved finals.
 
 ## Protected boundaries
 

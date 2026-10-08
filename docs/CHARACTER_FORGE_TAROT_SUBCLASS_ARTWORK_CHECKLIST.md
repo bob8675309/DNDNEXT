@@ -1,6 +1,6 @@
 # Character Forge Tarot Subclass Artwork Checklist
 
-Status date: 2026-10-07
+Status date: 2026-10-08
 
 This checklist tracks the production-visible Tarot deck, not the historical preferred-source concept count.
 
@@ -11,18 +11,16 @@ Historical normalized checkpoint:
 - **109 approved preferred-source concepts** were the earlier normalized milestone.
 - That number remains provenance only and is not the production completion target.
 
-Current completed artwork-branch state:
+Current consolidated `main` state:
 
-- runtime-visible choices: **149**;
-- dedicated-card target: **149**;
-- runtime-visible choices with approved dedicated Tarot coverage: **149**;
-- known current runtime-visible choices resolving to generic/class fallback: **0**;
-- normalized installed Tarot concepts in the repository ledger: **155**, including the three approved Grim Hollow Druid cards staged on main ahead of the Grim Hollow catalogue merge; the historical normalized set also retains suppressed Wizard compatibility identities and explicit source aliases.
+- runtime-visible choices before the Grim Hollow catalogue merge: **149**;
+- runtime-visible choices with approved dedicated Tarot coverage: **149 / 149**;
+- current runtime-visible generic/class fallback count: **0**;
+- approved Grim Hollow future identities staged on `main`: **12**;
+- validator-tracked approved asset families installed in the repository: **163**;
+- Grim Hollow expansion cards still to create: **24**.
 
-**Current remaining Tarot card queue: 0.**
-
-
-That zero applies to the currently runtime-visible 149-choice deck on `main`. A separate Grim Hollow Player's Guide expansion is now in progress.
+The 12 approved Grim Hollow cards are staged presentation assets until PR #203 or a later reconciled source-content change makes those subclass identities runtime-visible.
 
 ## Grim Hollow Player's Guide expansion — 12/36 approved
 
@@ -50,7 +48,7 @@ Paul has approved these **12** new cards:
 - [x] Circle of Entropy
 - [x] Circle of Mutation
 
-The three Druid cards are installed directly on `main` at canonical 840x1440 WebP paths and mapped in `utils/classes/subclassArtwork.js`. The earlier Barbarian/Bard/Cleric approved assets remain on the Grim Hollow integration branch/PR #203 until that work is reconciled with current main.
+All twelve approved Grim Hollow cards are installed directly on `main` at canonical 840x1440 WebP paths and mapped in `utils/classes/subclassArtwork.js`. PR #203 still owns the separate source-content import; the approved Tarot binaries no longer depend on that branch.
 
 **Grim Hollow cards remaining to create: 24.**
 
