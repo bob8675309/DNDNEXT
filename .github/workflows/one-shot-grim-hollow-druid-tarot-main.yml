@@ -1,0 +1,95 @@
+name: One-shot Grim Hollow Druid Tarot main transfer
+
+on:
+  push:
+    branches:
+      - agent/grim-hollow-druid-tarot-main-transfer-20261007
+    paths:
+      - ".github/workflows/one-shot-grim-hollow-druid-tarot-main.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact main target
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Guard exact main head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "2263201b79c19c2d3c17fd556e629138aee53295"
+
+      - name: Download and verify approved artwork bundle
+        shell: bash
+        env:
+          ZIP_URL: 'https://uceed42b98199e6b1b2ab3e3ad98.dl.dropboxusercontent.com/cd/0/get/DJntUAjech_uRie39j2qbW-15yL8oqBcwQkCVFXuQa6DS73xLyg5vFyX7GL7cuxmYiCjn_4jOHMa81GNPyX1OQwx70s2kBhwu4PrRo8XeexYOyeFoiO7Lvx6Jhb_JJrKd81XJZXIokrejVzBtxAEm2pHV2KiIi5_eV8mN5EYsNUeNQ/file?c_luid=c335000c'
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error "$ZIP_URL" -o /tmp/druid-tarot.zip
+          echo "f4a15b9b4e67421f4c0ee08c7ece1d12e21e951440746194f05842220327dacb  /tmp/druid-tarot.zip" | sha256sum -c -
+          rm -rf /tmp/druid-tarot
+          mkdir -p /tmp/druid-tarot
+          unzip -q /tmp/druid-tarot.zip -d /tmp/druid-tarot
+          cd /tmp/druid-tarot
+          echo "b4bd7a3601b7adc419a7544abd97c6d608b7c5503ef6522785fd9481d80945e3  public/media/subclasses/druid/druid-circle-of-blood.webp" | sha256sum -c -
+          echo "1952185310c3896710bb7270cfb500d60c7ae0890041b91576ee4c1fa8bc62c1  public/media/subclasses/druid/druid-circle-of-entropy.webp" | sha256sum -c -
+          echo "cb55b3ed67819ac9829b198a0c2a3726f12049fcd05fcec2c3bae4ec84b35685  public/media/subclasses/druid/druid-circle-of-mutation.webp" | sha256sum -c -
+          for f in public/media/subclasses/druid/*.webp; do
+            test "$(file -b --mime-type "$f")" = "image/webp"
+          done
+
+      - name: Verify dimensions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check pillow==11.3.0 >/dev/null
+          python - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          root = Path("/tmp/druid-tarot/public/media/subclasses/druid")
+          names = [
+              "druid-circle-of-blood.webp",
+              "druid-circle-of-entropy.webp",
+              "druid-circle-of-mutation.webp",
+          ]
+          for name in names:
+              p = root / name
+              with Image.open(p) as im:
+                  assert im.format == "WEBP", (name, im.format)
+                  assert im.size == (840, 1440), (name, im.size)
+          PY
+
+      - name: Install exact approved assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/media/subclasses/druid
+          cp /tmp/druid-tarot/public/media/subclasses/druid/druid-circle-of-blood.webp public/media/subclasses/druid/
+          cp /tmp/druid-tarot/public/media/subclasses/druid/druid-circle-of-entropy.webp public/media/subclasses/druid/
+          cp /tmp/druid-tarot/public/media/subclasses/druid/druid-circle-of-mutation.webp public/media/subclasses/druid/
+          git diff --name-only | sort > /tmp/actual.txt
+          cat > /tmp/expected.txt <<'EOF'
+          public/media/subclasses/druid/druid-circle-of-blood.webp
+          public/media/subclasses/druid/druid-circle-of-entropy.webp
+          public/media/subclasses/druid/druid-circle-of-mutation.webp
+          EOF
+          sort /tmp/expected.txt -o /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+
+      - name: Commit and push to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/media/subclasses/druid/
+          git commit -m "art: install Grim Hollow Druid tarot cards"
+          git push origin HEAD:main
