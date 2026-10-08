@@ -12,7 +12,7 @@ PR #202 — **Polish Metamagic Adept, invocation details, and Forge spell browsi
 
 This documentation/art consolidation commit advances `main` again. Always re-fetch the exact current head before further writes.
 
-PR #203 — **Import Grim Hollow Player Guide spells, items, and subclasses** — remains open and unmerged. Its source-content work must be reconciled separately before any merge. The approved Tarot artwork no longer depends on PR #203.
+PR #203 — **Import Grim Hollow Player Guide spells, items, and subclasses** — has now been reconciled and folded into `main`. Its 101 spells, 40 subclasses / 258 subclass-feature rows, and 106 item rows are production catalogue content. The known full-catalog seeder price bug was fixed during the merge so generated GP prices take precedence over raw 5etools cp values.
 
 ## Source/content authority
 
@@ -38,7 +38,7 @@ All twelve approved cards are now installed and mapped on current `main`:
 - Cleric — Eldritch Domain; Inquisition Domain; Purification Domain.
 - Druid — Circle of Blood; Circle of Entropy; Circle of Mutation.
 
-The focused subclass validator requires all twelve binaries and mappings. The source-backed Grim Hollow catalogue is still separate on PR #203, so these new identities remain staged presentation assets until the catalogue lands.
+The focused subclass validator requires all twelve binaries and mappings. The source-backed Grim Hollow catalogue is now live on `main`, so all 36 new non-Monster-Hunter identities are runtime-visible; 24 still await dedicated Tarot cards.
 
 ## Remaining creation queue — 24
 

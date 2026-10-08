@@ -14,7 +14,8 @@ Current production authority is consolidated on `main`.
 - PR #199 (floating ruined-library subclass Tarot selector) is merged.
 - PR #202 (Metamagic Adept, invocation details, Forge spell browsing) is merged.
 - All 12 currently approved Grim Hollow expansion Tarot cards are installed and mapped on `main`.
-- PR #203 remains open only for the separate Grim Hollow Player's Guide source-content import and must be reconciled before any merge.
+- PR #203 (Grim Hollow Player's Guide spells/items/subclasses) is now folded into `main` after reconciliation.
+- Live Grim Hollow catalogue authority: 101 spells, 40 subclasses / 258 subclass-feature rows, and 106 items; the full item seeder preserves reviewed `price_gp` instead of treating raw 5etools cp values as gp.
 - Current focused Tarot continuation: Fighter — Bulwark Warrior, Living Crucible, Nightwatcher.
 - The restored authoritative art-direction file is `CHARACTER_FORGE_TAROT_SUBCLASS_CARD_STANDARD.md`.
 - The restored current artwork maintenance handoff is `CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md`.
@@ -23,7 +24,9 @@ Current production authority is consolidated on `main`.
 
 Current source of truth for the Grim Hollow art queue is `Next_Chat_Handoff_2026-10-07_Grim_Hollow_Tarot.md` (updated in place on 2026-10-08) plus the artwork checklist/status docs.
 
-Always re-fetch current `main` before writing; do not treat the recorded SHA above as permanently current.
+The Grim Hollow source catalogue is now production content. The 36 new non-Monster-Hunter subclass identities are runtime-visible; 12 have approved dedicated Tarot cards and 24 remain on trusted source/class fallback pending artwork.
+
+Always re-fetch current `main` before writing; do not treat any recorded SHA as permanently current.
 
 ## 2026-10-01 authoritative override — use this before every older checkpoint below
 

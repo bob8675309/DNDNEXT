@@ -72,7 +72,7 @@ Next batch:
 
 - Fighter: Bulwark Warrior; Living Crucible; Nightwatcher.
 
-PR #203 still owns the separate source-backed Grim Hollow spells/items/subclasses import. The approved artwork no longer depends on that branch.
+The source-backed Grim Hollow spells/items/subclasses import is now on `main`. All 36 new non-Monster-Hunter identities are runtime-visible; 12 have approved dedicated Tarot cards and 24 remain in the artwork queue.
 
 ## Future artwork workflow
 

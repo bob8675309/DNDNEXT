@@ -18,7 +18,7 @@ function spellSourceRank(source = "") {
   if (key === "PHB") return 1;
   return 2;
 }
-export const classSourceLabel = (source = "") => source === "XPHB" ? "2024 Player's Handbook" : source === "PHB" ? "2014 Player's Handbook" : source || "Campaign";
+export const classSourceLabel = (source = "") => source === "XPHB" ? "2024 Player's Handbook" : source === "PHB" ? "2014 Player's Handbook" : source === "GrimHollowPG24" ? "Grim Hollow: Player's Guide (2024)" : source || "Campaign";
 export const classFeatureName = (feature) => typeof feature === "string" ? text(feature.split("|")[0]) : text(feature?.name || feature?.label || feature?.title || "Class feature");
 export const classSlotSummary = (slots) => {
   if (!slots) return "—";

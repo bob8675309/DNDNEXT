@@ -13,14 +13,14 @@ Historical normalized checkpoint:
 
 Current consolidated `main` state:
 
-- runtime-visible choices before the Grim Hollow catalogue merge: **149**;
-- runtime-visible choices with approved dedicated Tarot coverage: **149 / 149**;
-- current runtime-visible generic/class fallback count: **0**;
-- approved Grim Hollow future identities staged on `main`: **12**;
+- runtime-visible choices after the Grim Hollow catalogue merge: **185**;
+- runtime-visible choices with approved dedicated Tarot coverage: **161 / 185**;
+- current runtime-visible choices still using fallback artwork: **24**;
+- approved Grim Hollow expansion cards installed on `main`: **12 / 36**;
 - validator-tracked approved asset families installed in the repository: **163**;
 - Grim Hollow expansion cards still to create: **24**.
 
-The 12 approved Grim Hollow cards are staged presentation assets until PR #203 or a later reconciled source-content change makes those subclass identities runtime-visible.
+The 12 approved Grim Hollow cards are live presentation assets. The remaining 24 new identities are valid runtime choices and remain in the artwork queue.
 
 ## Grim Hollow Player's Guide expansion — 12/36 approved
 
@@ -48,7 +48,7 @@ Paul has approved these **12** new cards:
 - [x] Circle of Entropy
 - [x] Circle of Mutation
 
-All twelve approved Grim Hollow cards are installed directly on `main` at canonical 840x1440 WebP paths and mapped in `utils/classes/subclassArtwork.js`. PR #203 still owns the separate source-content import; the approved Tarot binaries no longer depend on that branch.
+All twelve approved Grim Hollow cards are installed directly on `main` at canonical 840x1440 WebP paths and mapped in `utils/classes/subclassArtwork.js`. The Grim Hollow source-content import is also on `main`, so the 36 new non-Monster-Hunter identities are now runtime-visible.
 
 **Grim Hollow cards remaining to create: 24.**
 

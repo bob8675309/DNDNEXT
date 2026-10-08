@@ -25,12 +25,14 @@ Consolidated state as of 2026-10-08:
 - PR #199 merged the accepted floating ruined-library subclass Tarot selector.
 - PR #202 merged Metamagic Adept nested choice support, invocation detail fallback, and Profile-style Forge spell browsing.
 - The 12 currently approved Grim Hollow expansion Tarot cards are all installed and mapped on `main`.
-- PR #203 remains open and unmerged for the separate source-backed Grim Hollow Player's Guide spells/items/subclasses import.
-- The current runtime-visible pre-import deck remains 149/149 covered; the 12 approved Grim Hollow cards are staged presentation assets until their catalogue lands.
+- PR #203's source-backed Grim Hollow Player's Guide spells/items/subclasses import is folded into `main`.
+- Runtime-visible subclass choices are now **185**. The prior 149 remain fully covered; 12 of the 36 newly visible Grim Hollow identities have approved dedicated Tarot cards and 24 remain on trusted source/class fallback.
 - Remaining Grim Hollow Tarot creation queue: **24** cards; next batch Fighter.
 - Consolidation commit `076a9b92e3d492f2dd4867d418477997ca0b4852` deployed to Vercel production **READY** and `/profile` returned HTTP 200.
 
-Always re-fetch current `main`, PR #203 if touching the source-content import, and live Supabase only when the requested work is database-backed.
+Live Grim Hollow catalogue checkpoint: **101 spells, 40 subclasses / 258 subclass-feature rows, 106 items**. The full item seeder preserves generated `price_gp` values so raw 5etools copper-piece values cannot inflate catalog prices by 100×.
+
+Always re-fetch current `main` and live Supabase when requested work is database-backed.
 
 ## Current live database checkpoint
 

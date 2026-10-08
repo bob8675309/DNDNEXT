@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import AssignItemButton from "../components/AssignItemButton";
 import { supabase } from "../utils/supabaseClient";
 import ItemCard from "../components/ItemCard";
-import { classifyUi, TYPE_PILLS, titleCase } from "../utils/itemsIndex";
+import { classifyUi, loadItemCatalogList, TYPE_PILLS, titleCase } from "../utils/itemsIndex";
 import dynamic from "next/dynamic";
 
 // Small debounce hook to keep Search smooth and focused
@@ -143,10 +143,7 @@ export default function AdminPanel() {
     (async () => {
       try {
         setLoading(true);
-        const res = await fetch("/items/all-items.json");
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        const list = Array.isArray(data) ? data : [];
+        const list = await loadItemCatalogList();
         if (!die) {
           setItems(list);
           if (typeof window !== "undefined") window.__ALL_ITEMS__ = list;
@@ -170,7 +167,8 @@ export default function AdminPanel() {
       try {
         const files = [
           "/items/magicvariants.json",
-          "/items/magicvariants.hb-armor-shield.json"
+          "/items/magicvariants.hb-armor-shield.json",
+          "/items/magicvariants.grim-hollow-pg24.json"
         ];
         const payloads = await Promise.all(
           files.map(async (url) => {
@@ -246,9 +244,10 @@ export default function AdminPanel() {
       const ageRaw = String(it.age || it.age_category || it.age_group || "").toLowerCase();
       const nameL = name.toLowerCase();
       const looksLikeFirearm = /(pistol|rifle|musket|revolver|firearm|shotgun|smg|carbine)/i.test(nameL);
+      const source = String(it.source || it.item_source || "").toUpperCase();
       if (
         ["futuristic", "renaissance", "modern", "contemporary", "industrial", "victorian"].includes(ageRaw) ||
-        looksLikeFirearm
+        (looksLikeFirearm && source !== "GRIMHOLLOWPG24")
       ) cls.uiType = "Future";
 
       return { ...it, __cls: cls };

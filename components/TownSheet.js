@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { buildTownData } from "../utils/townData";
 import { supabase } from "../utils/supabaseClient";
 import { availableProfessionsForCharacter } from "../utils/craftingProfessions";
+import { loadItemCatalogList } from "../utils/itemsIndex";
 import styles from "./TownSheet.module.scss";
 
 const MerchantPanel = dynamic(() => import("./MerchantPanel"), { ssr: false });
@@ -2231,9 +2232,7 @@ function useWorkshopItemCatalog(enabled) {
     setState((prev) => ({ ...prev, status: "loading", message: "" }));
     (async () => {
       try {
-        const res = await fetch("/items/all-items.json");
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
+        const data = await loadItemCatalogList();
         const normalized = normalizeWorkshopCatalog(data);
         if (!dead) setState({ items: normalized, status: "ready", message: "" });
       } catch (err) {
@@ -2649,7 +2648,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, playerPlants = [], onCl
   const selectedTabLabel = selectedService?.id === "brew" ? "Formulas" : availableTabs.find((tab) => tab.id === activeTab)?.label || "Items";
   const sourceLabel = selectedService?.id === "forge_mundane" ? "Catalog forge patterns" : selectedService?.id === "brew" ? "Herb formulas" : "Owned inventory";
   const noPatternText = selectedService?.id === "forge_mundane"
-    ? "No forge patterns found for this family. Check that public/items/all-items.json exists and contains mundane gear rows."
+    ? "No forge patterns found for this family. Check that the item catalog packs contain mundane gear rows."
     : selectedService?.id === "imbue"
       ? "No smith-tiered +1, +2, or +3 inventory items match this family. Forge and reforge gear with a smith first."
       : "No owned inventory items match this family and service.";

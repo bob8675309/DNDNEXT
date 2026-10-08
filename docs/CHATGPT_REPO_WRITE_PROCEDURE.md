@@ -11,13 +11,11 @@ This project is directly writable from ChatGPT through the GitHub connector and 
 - PR #199 is merged.
 - PR #202 is merged.
 - All 12 currently approved Grim Hollow expansion Tarot cards are consolidated on `main`.
-- PR #203 remains open/unmerged for the separate Grim Hollow Player's Guide source-content import; reconcile it with current `main` before any eventual merge.
+- PR #203's Grim Hollow Player's Guide source-content work is merged into `main`.
 - Current Tarot creation queue: Fighter — Bulwark Warrior, Living Crucible, Nightwatcher next; 24 new Grim Hollow cards remain overall.
 - Consolidation production deployment for `076a9b92e3d492f2dd4867d418477997ca0b4852` is READY.
 
 Always re-fetch the current remote head immediately before a write, validation claim, deployment check, or merge. Do not treat a SHA copied into prose as permanently current.
-
-Do not merge PR #203 without explicit user approval.
 
 ## Preferred safe write path
 
@@ -41,7 +39,7 @@ Never force-push or overwrite concurrent branch movement simply to make a patch 
 
 PR #199 and PR #202 are historical merged work and must not be treated as active continuation branches.
 
-Keep future changes bounded to the requested subsystem. The active Grim Hollow source-content import remains PR #203 until reconciled; Tarot artwork may continue directly from current `main` when Paul explicitly requests it.
+Keep future changes bounded to the requested subsystem. Grim Hollow source content is now part of current `main`; future fixes should be bounded follow-up changes rather than reviving PR #203. Tarot artwork may continue directly from current `main` when Paul explicitly requests it.
 
 ## Supabase boundary
 
