@@ -1,53 +1,36 @@
 # DNDNext Living Documentation Index
 
-Updated: 2026-10-01
+Updated: 2026-10-08
 
 This directory contains the project's living handoff, roadmap, architecture, subsystem, and evidence documents. For active work, **live Supabase + current GitHub source/validators/deployment state outrank prose** if they conflict.
 
 ## Start here
 
-1. `DNDNext_Current_Handoff_Prompt.md` — canonical long-form takeover brief. **Read its 2026-10-01 override before older checkpoint sections.**
-2. `Next_Chat_Handoff_2026-10-01.md` — concise copy-ready handoff for the active PR #199 checkpoint.
-3. `Character_Forge_Subclass_Tarot_Table_Contact_Handoff.md` — despite the legacy filename, this is the current floating ruined-library Tarot presentation ledger.
-4. `Character_Forge_Subclass_Tarot_Reference_Rebuild_Checklist.md` — implementation history/checklist; its old cathedral/runic-table target is superseded by the floating-library handoff.
-5. `Auth_Navigation_Admin_Activity_Status.md` — merged PR #195 navbar/auth/admin-activity checkpoint plus live Supabase hardening.
-6. `Documentation_Refresh_Manifest.md` — documentation trust order and current queue.
-7. `Realistic_Dice_Roller_Architecture_Roadmap.md` — controlling future plan for reusable Realistic Dice.
-8. `Unified_Character_Forge_Status.md` — shared Player/NPC Forge, progression, source-choice, and runtime authority.
+1. `DNDNext_Current_Handoff_Prompt.md` — canonical long-form takeover brief. Read the **2026-10-08 override** first.
+2. `Next_Chat_Handoff_2026-10-07_Grim_Hollow_Tarot.md` — current focused Grim Hollow/Tarot continuation handoff, updated 2026-10-08.
+3. `CHARACTER_FORGE_SUBCLASS_ARTWORK_STATUS.md` — current Tarot coverage/resolver/selector status.
+4. `CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md` — approved and remaining Grim Hollow card queue.
+5. `CHARACTER_FORGE_TAROT_SUBCLASS_CARD_STANDARD.md` — authoritative card dimensions, layout, art direction, and QA contract.
+6. `CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md` — current artwork maintenance workflow.
+7. `Character_Progression_v3_Implementation_Status.md` — progression authority pointer plus merged PR #202 reconciliation.
+8. `Documentation_Refresh_Manifest.md` — trust order and current queue.
 9. `CHATGPT_REPO_WRITE_PROCEDURE.md` before direct GitHub/Supabase mutation.
 
 ## Current code checkpoint
 
-Current `main` at this documentation refresh:
+Current production authority is `main`.
 
-`ab8c5ce6df1fabd906890b38bcfee16deac2ca0d`
+Consolidated state as of 2026-10-08:
 
-Active work:
+- PR #199 merged the accepted floating ruined-library subclass Tarot selector.
+- PR #202 merged Metamagic Adept nested choice support, invocation detail fallback, and Profile-style Forge spell browsing.
+- The 12 currently approved Grim Hollow expansion Tarot cards are all installed and mapped on `main`.
+- PR #203 remains open and unmerged for the separate source-backed Grim Hollow Player's Guide spells/items/subclasses import.
+- The current runtime-visible pre-import deck remains 149/149 covered; the 12 approved Grim Hollow cards are staged presentation assets until their catalogue lands.
+- Remaining Grim Hollow Tarot creation queue: **24** cards; next batch Fighter.
+- Consolidation commit `076a9b92e3d492f2dd4867d418477997ca0b4852` deployed to Vercel production **READY** and `/profile` returned HTTP 200.
 
-- PR #199 — **Polish floating ruined-library subclass Tarot selector**;
-- branch: `agent/subclass-tarot-scene-rebuild-20260922`;
-- validated runtime head before the current documentation updates: `5ad44348198a5b299a81ec9ff349cbb1db942ad4`;
-- state: **open / mergeable / unmerged**;
-- GitHub Actions at that head: **12/12 successful**;
-- exact-head Vercel deployment: `5rFeEKFPQ4UFCWeowSAbyfNYVe9M` — **READY / success**;
-- preview: `dndnext-git-agent-subclass-tarot-9aeaa6-pauls-projects-2016aa54.vercel.app`.
-
-Current Class/subclass presentation rules:
-
-- the selector is a floating Tarot carousel in a smoky ruined gothic library, not a physical runic table;
-- all canonical subclass options stay on one continuous carousel; no fixed 3/5/7/9 visible-card contract;
-- explicit eligible card selection is the only persistence path;
-- Subclass Codex and Class Feature panel use independent state/callbacks and may remain open simultaneously;
-- Codex Progression feature pills open the independent Feature panel rather than replacing the Codex;
-- Codex top-level navigation is now only **Overview / Progression / Spells**; Overview combines lore and the feature index;
-- Spells uses the Profile spellbook pattern: selectable list left, shared compact `SpellCard` detail right;
-- the Tarot backdrop begins behind the opaque Codex tab strip and uses top-aligned framing so the visible portrait sits lower;
-- subclass introduction detection is semantic rather than “all null-header rows are lore,” preserving valid same-level feature rows;
-- player-facing Codex text strips mixed-case/long imported source references, and subclass-spell discovery requires real whole-word grant verbs;
-- Codex Tarot backdrop framing is shifted down slightly to reduce top clipping;
-- no Supabase, world-map, town/city-map, tactical, crafting, inventory, merchant, or economy authority changed for this presentation work.
-
-Always re-fetch current `main`, PR #199 head/mergeability, exact-head workflows, and Vercel before implementation or merge. Do not merge PR #199 without explicit user approval.
+Always re-fetch current `main`, PR #203 if touching the source-content import, and live Supabase only when the requested work is database-backed.
 
 ## Current live database checkpoint
 

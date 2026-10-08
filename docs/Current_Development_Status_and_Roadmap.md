@@ -1,8 +1,21 @@
 # DNDNext Current Development Status and Roadmap
 
-Last reconciled: 2026-10-01
+Last reconciled: 2026-10-08
 
 This is the current high-level handoff for DNDNext. It reconciles the living roadmap, phase ledgers, repository source, GitHub state, and deployed Supabase state. Historical phase ledgers remain useful implementation records, but this document controls current status when an older status header or unchecked master-roadmap task conflicts with deployed evidence.
+
+## 2026-10-08 active-work override
+
+Current production authority is consolidated on `main`.
+
+- PR #199 is merged; its floating ruined-library Tarot selector is the accepted Class/subclass presentation.
+- PR #202 is merged; Metamagic Adept nested choices, invocation summaries, and Forge SpellCard browsing are part of the current Forge baseline.
+- All 12 currently approved Grim Hollow expansion Tarot cards are installed/mapped on `main`.
+- PR #203 remains open only for the separate Grim Hollow Player's Guide source-content import and must be reconciled before any merge.
+- Current Tarot queue: 24 Grim Hollow cards remain; next batch Fighter.
+- Consolidation commit `076a9b92e3d492f2dd4867d418477997ca0b4852` is production-deployed READY; `/profile` returned HTTP 200.
+
+The detailed roadmap below remains useful architecture/history, but branch/PR status in older override sections is historical.
 
 ## 2026-10-01 active-work override
 

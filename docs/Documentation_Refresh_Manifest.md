@@ -1,6 +1,6 @@
 # Documentation Refresh Manifest
 
-Updated: 2026-10-01
+Updated: 2026-10-08
 
 ## Trust order
 
@@ -14,6 +14,30 @@ For current work, trust sources in this order:
 
 If prose conflicts with live source/database state, live authority wins until documentation is corrected.
 
+
+## 2026-10-08 current checkpoint override
+
+Everything below this section is historical unless a newer focused ledger says otherwise.
+
+- current production authority is `main`;
+- PR #199 is merged;
+- PR #202 is merged;
+- the 12 approved Grim Hollow expansion Tarot cards are consolidated on `main`;
+- PR #203 remains open/unmerged for the separate Grim Hollow source-content import;
+- current Tarot creation queue: **24** cards remaining, next batch Fighter;
+- restored/vetted docs from PR #198: Tarot card standard, Tarot art handoff, and the real progression v3 status pointer;
+- production deployment for consolidation commit `076a9b92e3d492f2dd4867d418477997ca0b4852`: **READY**;
+- `/profile` returned HTTP 200 on that deployment.
+
+Current focused documents:
+
+- `Next_Chat_Handoff_2026-10-07_Grim_Hollow_Tarot.md` (updated 2026-10-08);
+- `CHARACTER_FORGE_SUBCLASS_ARTWORK_STATUS.md`;
+- `CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md`;
+- `CHARACTER_FORGE_TAROT_SUBCLASS_CARD_STANDARD.md`;
+- `CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md`;
+- `Character_Progression_v3_Implementation_Status.md`;
+- `CHATGPT_REPO_WRITE_PROCEDURE.md`.
 
 ## 2026-10-01 current checkpoint override
 

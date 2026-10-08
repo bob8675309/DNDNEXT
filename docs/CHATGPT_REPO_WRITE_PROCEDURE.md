@@ -1,6 +1,6 @@
 # ChatGPT Repository Write Procedure
 
-Updated: 2026-10-01
+Updated: 2026-10-08
 
 This project is directly writable from ChatGPT through the GitHub connector and Supabase connector when those actions are available. Do not claim that repo/database writes require a separate environment unless an actual connector/tool attempt fails.
 
@@ -8,15 +8,16 @@ This project is directly writable from ChatGPT through the GitHub connector and 
 
 - Repository: `bob8675309/DNDNEXT`
 - Default/production authority: `main`
-- Accepted runtime checkpoint: `320671a22b83432177dcc67e9efd035f3c3ccc5d` (merged PR #195); current `main` may be ahead due to documentation-only merges
-- Current open continuation branch: `agent/subclass-tarot-scene-rebuild-20260922`
-- Current open PR: **#199** — floating ruined-library subclass Tarot polish, open/mergeable/unmerged
-- Validated pre-documentation PR #199 head: `89197828b6ae9945ac436da4339ef910c379eb4c` — 11/11 triggered workflows passed and Vercel was READY/success
-- PR #195 — auth-gated navbar + admin activity — is merged and production-deployed.
+- PR #199 is merged.
+- PR #202 is merged.
+- All 12 currently approved Grim Hollow expansion Tarot cards are consolidated on `main`.
+- PR #203 remains open/unmerged for the separate Grim Hollow Player's Guide source-content import; reconcile it with current `main` before any eventual merge.
+- Current Tarot creation queue: Fighter — Bulwark Warrior, Living Crucible, Nightwatcher next; 24 new Grim Hollow cards remain overall.
+- Consolidation production deployment for `076a9b92e3d492f2dd4867d418477997ca0b4852` is READY.
 
-Always re-fetch the remote PR/branch head immediately before a write, validation claim, deployment check, or merge. Do not treat a SHA copied into prose as permanently current.
+Always re-fetch the current remote head immediately before a write, validation claim, deployment check, or merge. Do not treat a SHA copied into prose as permanently current.
 
-Do not merge PR #199 without explicit user approval.
+Do not merge PR #203 without explicit user approval.
 
 ## Preferred safe write path
 
@@ -38,11 +39,9 @@ Never force-push or overwrite concurrent branch movement simply to make a patch 
 
 ## Branch/scope discipline
 
-PR #199 is a bounded Character Forge Class/subclass presentation branch. Keep it limited to the selector/carousel/stage, Subclass Codex/Class Feature presentation, its validators, and directly related documentation. Do not attach unrelated auth, map, tactical, crafting, inventory, merchant, or database work to it.
+PR #199 and PR #202 are historical merged work and must not be treated as active continuation branches.
 
-The planned reusable **Realistic Dice Core** remains a separate future project and should use its own bounded branch/PR from the user-accepted Forge checkpoint. See `Realistic_Dice_Roller_Architecture_Roadmap.md`.
-
-If the requested work belongs to another subsystem, use a separate branch rather than widening PR #199.
+Keep future changes bounded to the requested subsystem. The active Grim Hollow source-content import remains PR #203 until reconciled; Tarot artwork may continue directly from current `main` when Paul explicitly requests it.
 
 ## Supabase boundary
 

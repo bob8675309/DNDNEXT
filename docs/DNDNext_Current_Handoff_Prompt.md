@@ -1,11 +1,29 @@
 # DNDNext Next-Chat Handoff Brief
 
-Updated: 2026-10-01
+Updated: 2026-10-08
 
 Repository: `bob8675309/DNDNEXT`
 
 Stack: Next.js **Pages Router** 16.1.6, React 19, Supabase/Postgres, Bootstrap/SCSS, Vercel.
 
+
+## 2026-10-08 authoritative override — use this before every older checkpoint below
+
+Current production authority is consolidated on `main`.
+
+- PR #199 (floating ruined-library subclass Tarot selector) is merged.
+- PR #202 (Metamagic Adept, invocation details, Forge spell browsing) is merged.
+- All 12 currently approved Grim Hollow expansion Tarot cards are installed and mapped on `main`.
+- PR #203 remains open only for the separate Grim Hollow Player's Guide source-content import and must be reconciled before any merge.
+- Current focused Tarot continuation: Fighter — Bulwark Warrior, Living Crucible, Nightwatcher.
+- The restored authoritative art-direction file is `CHARACTER_FORGE_TAROT_SUBCLASS_CARD_STANDARD.md`.
+- The restored current artwork maintenance handoff is `CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md`.
+- `Character_Progression_v3_Implementation_Status.md` is no longer the accidental path-probe placeholder; it now points to the real progression authority and records the merged PR #202 choice-routing state.
+- Vercel production for consolidation commit `076a9b92e3d492f2dd4867d418477997ca0b4852` is READY and `/profile` returned HTTP 200.
+
+Current source of truth for the Grim Hollow art queue is `Next_Chat_Handoff_2026-10-07_Grim_Hollow_Tarot.md` (updated in place on 2026-10-08) plus the artwork checklist/status docs.
+
+Always re-fetch current `main` before writing; do not treat the recorded SHA above as permanently current.
 
 ## 2026-10-01 authoritative override — use this before every older checkpoint below
 
