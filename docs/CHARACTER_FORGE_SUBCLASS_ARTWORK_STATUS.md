@@ -1,24 +1,36 @@
 # Character Forge Subclass Artwork Status
 
-Status date: 2026-09-18
+Status date: 2026-10-08
 
 This is the current focused handoff for the Character Forge subclass Tarot deck and its selector presentation. Older rollout counts such as 33 remaining cards, 109 total concepts, 456x240 selector thumbnails, or the compact two-column selector are historical checkpoints and are not current completion authority.
 
 ## Current completion authority
 
-- Runtime-visible subclass choices: **149**
-- Runtime-visible choices with dedicated approved Tarot cards: **149**
-- Runtime-visible generic/class fallback cards: **0**
-- Normalized installed artwork concepts in the repository ledger: **152**
-- Current missing-card queue: **0**
+- Runtime-visible subclass choices after the Grim Hollow Player's Guide expansion: **185**
+- Runtime-visible choices with dedicated approved Tarot cards installed: **159**
+- New Grim Hollow choices still awaiting dedicated Tarot cards: **26**
+- Normalized installed artwork concepts enforced by the repository validator: **161**
+- Current missing-card queue: **26**
 
-The difference between 149 visible choices and 152 normalized installed concepts is intentional. Historical compatibility/reprint identities and explicit aliases remain represented in the resolver/art ledger while the actual Forge runtime suppresses duplicate/reprint Wizard identities.
+The pre-expansion deck covered all 149 runtime-visible choices. Grim Hollow adds 36 new visible identities beyond the four Monster Hunter Guilds that were already present. The first approved expansion batch installs 10 of those 36, bringing dedicated runtime-visible coverage to 159 while leaving 26 cards to create. Historical compatibility/reprint identities and explicit aliases remain represented in the resolver/art ledger separately from the visible runtime count.
 
 The historical Wizard compatibility identities **Abjuration, Divination, Evocation, and Illusion** are not missing current carousel choices and must not be re-added solely to make the visible count match the normalized ledger.
 
 The canonical detailed completion checklist is:
 
 `docs/CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md`
+
+## Grim Hollow expansion checkpoint — 10/36 new cards installed
+
+Installed and mapped on the active Grim Hollow Player's Guide branch:
+
+- Barbarian: Path of the Fractured, Path of the Primal Spirit, Path of the Wrathful Dead
+- Bard: College of Adventurers, College of Fools, College of Requiems
+- Cleric: Eldritch Domain, Inquisition Domain, Purification Domain
+- Druid: Circle of Blood
+
+Remaining: Circle of Entropy, Circle of Mutation, then the Fighter, Monk, Paladin, Ranger, Rogue, Sorcerer, Warlock, and Wizard three-card batches listed in the canonical checklist.
+
 
 ## Current card standard
 

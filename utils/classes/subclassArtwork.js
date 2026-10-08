@@ -24,6 +24,9 @@ const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
     "wild-magic": "wild-magic",
     "world-tree": "world-tree",
     zealot: "zealot",
+    "path-of-the-fractured": "path-of-the-fractured",
+    "path-of-the-primal-spirit": "path-of-the-primal-spirit",
+    "path-of-the-wrathful-dead": "path-of-the-wrathful-dead",
   }),
   bard: Object.freeze({
     creation: "creation",
@@ -36,6 +39,9 @@ const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
     swords: "swords",
     valor: "valor",
     whispers: "whispers",
+    "college-of-adventurers": "college-of-adventurers",
+    "college-of-fools": "college-of-fools",
+    "college-of-requiems": "college-of-requiems",
   }),
   cleric: Object.freeze({
     ambition: "ambition",
@@ -58,6 +64,9 @@ const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
     twilight: "twilight",
     war: "war",
     "zeal-psa": "zeal",
+    "eldritch-domain": "eldritch-domain",
+    "inquisition-domain": "inquisition-domain",
+    "purification-domain": "purification-domain",
   }),
   druid: Object.freeze({
     dreams: "dreams",
@@ -68,6 +77,7 @@ const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
     spores: "spores",
     stars: "stars",
     wildfire: "wildfire",
+    "circle-of-blood": "circle-of-blood",
   }),
   fighter: Object.freeze({
     "arcane-archer": "arcane-archer",

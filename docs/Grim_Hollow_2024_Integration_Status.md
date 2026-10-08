@@ -135,3 +135,25 @@ After the reviewed import, live Supabase reports:
 
 One stale pre-existing Trapper Guild key for **Ambusher's Advantage** used an older apostrophe slug (`ambusher-s-advantage`). The source-backed key is `ambushers-advantage`; the stale duplicate was removed after the exact source-key reconciliation.
 
+## Tarot artwork expansion — October 8, 2026
+
+The 36 newly visible non-Monster-Hunter Grim Hollow subclasses require dedicated Character Forge Tarot cards. The four Monster Hunter Guilds (Carver, Devourer, Occultist, and Trapper) already had approved dedicated cards in the existing deck.
+
+The first approved Grim Hollow Tarot installation contains 10 cards:
+
+- Barbarian: Path of the Fractured, Path of the Primal Spirit, Path of the Wrathful Dead
+- Bard: College of Adventurers, College of Fools, College of Requiems
+- Cleric: Eldritch Domain, Inquisition Domain, Purification Domain
+- Druid: Circle of Blood
+
+All ten are installed as canonical **840x1440 WebP** assets under `public/media/subclasses/<class-key>/` and mapped through `utils/classes/subclassArtwork.js`. The artwork uses the established antique-gold Tarot frame/title/emblem treatment, photoreal cinematic rendering, varied species/poses/compositions, and full-resolution anatomy/prop QA.
+
+Progress after this install:
+
+- new Grim Hollow cards required: **36**
+- new Grim Hollow cards installed/approved: **10**
+- remaining new Grim Hollow cards: **26**
+- next cards: **Circle of Entropy** and **Circle of Mutation**
+
+The dedicated-card queue is tracked in `docs/CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md`.
+

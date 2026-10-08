@@ -1,6 +1,6 @@
 # Character Forge Tarot Subclass Artwork Checklist
 
-Status date: 2026-09-17
+Status date: 2026-10-08
 
 This checklist tracks the production-visible Tarot deck, not the historical preferred-source concept count.
 
@@ -11,15 +11,15 @@ Historical normalized checkpoint:
 - **109 approved preferred-source concepts** were the earlier normalized milestone.
 - That number remains provenance only and is not the production completion target.
 
-Current completed artwork-branch state:
+Current artwork state after the Grim Hollow Player's Guide expansion:
 
-- runtime-visible choices: **149**;
-- dedicated-card target: **149**;
-- runtime-visible choices with approved dedicated Tarot coverage: **149**;
-- known current runtime-visible choices resolving to generic/class fallback: **0**;
-- normalized installed Tarot concepts in the repository ledger: **152**, because the historical normalized set also retains the four suppressed Wizard compatibility identities and approved source aliases remain explicit.
+- runtime-visible subclass choices: **185**;
+- dedicated-card target: **185**;
+- runtime-visible choices with approved dedicated Tarot coverage installed: **159**;
+- current Grim Hollow choices still awaiting dedicated Tarot cards: **26**;
+- normalized installed Tarot concepts enforced by the repository validator: **161**.
 
-**Current remaining Tarot card queue: 0.**
+The prior deck covered all 149 pre-expansion runtime-visible choices. The Grim Hollow import adds 36 new visible identities beyond the four Monster Hunter Guilds that were already represented. Ten of those 36 now have approved dedicated cards installed, leaving **26** to create.
 
 Intentional art sharing remains allowed only when Paul explicitly approves it. Generic class-art fallback does not count as a completed subclass card.
 
@@ -113,11 +113,87 @@ Watchers uses the approved final revised species/composition.
 
 **Final completion batch: 22.**
 
-## Runtime fallback queue — 0
+## 2026-10-08 Grim Hollow expansion batch — 10 installed
 
-The current 149 runtime-visible subclass choices all have approved dedicated Tarot coverage. The resolver retains a class-art fallback only as a safety net for genuinely unknown or future catalogue content.
+These cards received Paul's explicit approval in the current Grim Hollow rollout, were normalized to the canonical 7:12 **840x1440 WebP** format, installed under the canonical subclass paths, and wired to their exact runtime-visible identities.
 
-Re-audit the actual runtime-visible set whenever subclass catalogue/compatibility behavior changes. Do not assume 149 is permanent if new playable subclass identities are later imported.
+### Barbarian — 3
+
+- [x] Path of the Fractured
+- [x] Path of the Primal Spirit
+- [x] Path of the Wrathful Dead
+
+### Bard — 3
+
+- [x] College of Adventurers
+- [x] College of Fools
+- [x] College of Requiems
+
+### Cleric — 3
+
+- [x] Eldritch Domain
+- [x] Inquisition Domain
+- [x] Purification Domain
+
+### Druid — 1
+
+- [x] Circle of Blood
+
+Approval notes:
+
+- The Grim Hollow extension keeps the older approved Tarot border/title/emblem language used by cards such as Battle Master and Soul Knife.
+- The artwork target is photoreal/cinematic rather than painterly.
+- Species, pose, camera direction, and silhouette are intentionally varied across the set.
+- Revised anatomy was explicitly required where earlier drafts had missing limbs or unnatural torso/leg alignment.
+- Circle of Blood uses the corrected two-leg composition approved by Paul.
+
+## Current missing-card queue — 26
+
+### Druid — 2
+- [ ] Circle of Entropy
+- [ ] Circle of Mutation
+
+### Fighter — 3
+- [ ] Bulwark Warrior
+- [ ] Living Crucible
+- [ ] Nightwatcher
+
+### Monk — 3
+- [ ] Warrior of Pride
+- [ ] Warrior of Regret
+- [ ] Warrior of the Leaden Crown
+
+### Paladin — 3
+- [ ] Oath of Pestilence
+- [ ] Oath of Slaughter
+- [ ] Oath of Zeal
+
+### Ranger — 3
+- [ ] Green Reaper
+- [ ] Primordial Archer
+- [ ] Vermin Lord
+
+### Rogue — 3
+- [ ] Highway Rider
+- [ ] Misfortune Bringer
+- [ ] Sanguine Thief
+
+### Sorcerer — 3
+- [ ] Apocalypse Sorcery
+- [ ] Haunted Sorcery
+- [ ] Wretched Bloodline Sorcery
+
+### Warlock — 3
+- [ ] The Coven
+- [ ] The First Vampire Patron
+- [ ] The Parasite Patron
+
+### Wizard — 3
+- [ ] Daemonologist
+- [ ] Plague Doctor
+- [ ] Sangromancer
+
+The four Monster Hunter Guilds from Grim Hollow—Carver, Devourer, Occultist, and Trapper—already had approved dedicated Tarot coverage before this expansion and are not part of the 26-card queue.
 
 ## Card completion rule
 
