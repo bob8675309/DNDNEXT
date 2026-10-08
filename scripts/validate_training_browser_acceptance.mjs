@@ -16,9 +16,14 @@ const classOptionBrowser = read("components/NpcForgeClassOptionBrowser.js");
 const playerTabbed = read("components/NpcForgeTrainingStepPlayerTabbed.js");
 const sourceContext = read("components/NpcForgeSourceChoiceContext.js");
 const trainingContext = read("components/NpcForgeTrainingContextCard.js");
+const sharedSourceFields = read("components/SourceChoiceFields.js");
+const featChoices = read("utils/playerForgeFeatChoices.js");
+const featRegistrar = read("components/NpcForgeFeatChoiceRegistrar.js");
 const featRulePresentation = read("utils/featRulePresentation.js");
 const classFeatureChoiceParsing = read("utils/classFeatureChoiceParsing.js");
 const invocationChoices = read("utils/warlockInvocationChoices.js");
+const classChoiceConstants = read("utils/classFeatureChoiceConstants.js");
+const featChoiceRouting = read("utils/playerForgeFeatChoiceRouting.js");
 const profileFeatures = read("components/CharacterFeaturesPanel.js");
 const routedController = read("components/useNpcForgeTrainingRoutedController.js");
 const contextPanel = read("components/NpcForgeContextPanel.js");
@@ -105,7 +110,33 @@ assert(trainingContext.includes('detail?.type === "classSourceOption"') && train
 assert(trainingContext.includes('"Select Skill"') && trainingContext.includes('"Deselect Skill"') && trainingContext.includes('"Select Trade Skill"') && playerTraining.includes("sourceChoiceSelected") && playerTraining.includes("fixedSourceGranted"), "Skills must browse on the left and support Select/Deselect from Current Selection without treating removable source choices as fixed grants.");
 assert(featPicker.includes("sortMode") && featPicker.includes("prerequisiteFilter") && featPicker.includes("categoryLabel") && featPicker.includes("Name A–Z") && featPicker.includes("Required level"), "Feat catalogue must provide player-readable category names, prerequisite filtering, and explicit sorting controls.");
 assert(spellStep.includes("components_v,components_s,components_m,material_text") && !spellStep.includes("components_text"), "Spell catalogue query must match the live spells_catalog schema.");
-assert(invocationChoices.includes("OPTION_SUMMARIES") && invocationChoices.includes('text(row.description) || OPTION_SUMMARIES[norm(row.name)]'), "Invocation descriptions must use canonical summaries when imported source rows have null descriptions.");
+const invocationOptionBody = invocationChoices.slice(invocationChoices.indexOf("function invocationOption"), invocationChoices.indexOf("function selectedOption"));
+assert(invocationOptionBody.includes("INVOCATION_PLAYER_GUIDES[norm(row.name)]") && invocationOptionBody.includes("playerRules: array(guide?.rules)") && invocationOptionBody.includes('classKey: row.class_key || "warlock"'), "Invocation choices must expose complete player-facing guidance and class-aware prerequisites when imported descriptions are null.");
+for (const token of [
+  '"pact of the blade": Object.freeze({',
+  '"pact of the tome": Object.freeze({',
+  '"gaze of two minds": Object.freeze({',
+  '"fiendish vigor": Object.freeze({',
+  '"investment of the chain master": Object.freeze({',
+  '"gift of the protectors": Object.freeze({',
+  "30 feet for each Warlock level",
+  "highest possible result on its Temporary Hit Point die",
+  "three chosen cantrips and two chosen level-1 ritual spells",
+]) assert(classChoiceConstants.includes(token), `Player-facing Invocation guide is missing ${token}`);
+assert(classChoiceConstants.includes('"one with shadows": Object.freeze({') && !classChoiceConstants.includes("Become Invisible in dim light or darkness until you move, act, or react."), "One with Shadows must use the XPHB rule rather than the legacy move/action/reaction ending text.");
+assert(classChoiceConstants.includes('"visions of distant realms": { minLevel: 9 }'), "XPHB Visions of Distant Realms must unlock at Warlock level 9.");
+assert(trainingContext.includes("npc-forge-training-option-rules") && trainingContext.includes("Rules and limits") && trainingContext.includes("option.metadata?.playerRules"), "Current Selection must keep concise Invocation text visible and put detailed limits in a collapsible rules section.");
+assert(sharedSourceFields.includes("CompactFixedFacts") && sharedSourceFields.includes("is-compact-group") && sharedSourceFields.includes("defaultOpen={!complete}") && sharedSourceFields.includes("npc-forge-rich-choice__rules"), "Source choices must support compact completed groups, inline fixed facts, and collapsible detailed rules.");
+assert(sharedSourceFields.includes("classLabel(option.metadata?.classKey || group.metadata?.classKey)") && !sharedSourceFields.includes("Artificer level ${value}+"), "Source-choice prerequisites must identify the owning class instead of hard-coding Artificer.");
+assert(featChoiceRouting.includes("gives you Magic Initiate") && featChoiceRouting.includes("best eligible spellcasting ability"), "Magic Initiate routing copy must remain compact and player-facing.");
+assert(featChoices.includes('name === "metamagic adept"') && featChoices.includes('label: "Choose two Metamagic options"') && featChoices.includes('kind: "metamagic"') && featChoices.includes("count: 2") && featChoices.includes("OPTION_SUMMARIES[norm(row.name)]"), "Metamagic Adept must create a required two-option Metamagic choice with player-facing option summaries.");
+assert(featRegistrar.includes('.eq("option_type", "metamagic")') && featRegistrar.includes('metamagicOptions: metamagicOptionRows') && featRegistrar.includes("metamagicOptionReady"), "Feat registration must load the canonical Metamagic catalogue before publishing Metamagic Adept choices.");
+assert(sharedSourceFields.includes('"artificer-plan", "metamagic"') && sharedSourceFields.includes("RichField"), "Metamagic choices must use the rich inspect-and-choose source-choice presentation.");
+assert(spellStep.includes('import SpellCard from "./SpellCard";') && spellStep.includes("profile-catalogue-workspace") && spellStep.includes("profile-catalogue__preview") && spellStep.includes("headerAction={<button") && spellStep.includes("npc-forge-spell-card-select") && spellStep.includes('inline compact groupsOverride={sourceSpellGroups}'), "Forge Spells must use the profile-style list + SpellCard preview, top-right Select action, and compact inline source-owned spell controls.");
+assert(!spellStep.includes("npc-forge-auto-casting-list") && spellStep.includes("do not use your class spell picks"), "Source-owned magic must not repeat automatic casting ability in a second oversized card.");
+assert(spellStep.includes("saving_throw_abilities,attack_type") && spellStep.includes("higher_level_text") && spellStep.includes("area_type,area_size,area_unit"), "Forge spell queries must load the fields needed by the shared SpellCard.");
+assert(!spellStep.includes("openSpellId") && !spellStep.includes("npc-forge-spell-details"), "Forge Spells must not regress to per-row expandable detail dumps.");
+assert(spellStep.includes("incompleteSourceSpellGroups.map((group) => group.label).join"), "Blocked spell progression must name the unresolved source-owned spell group.");
 
 assert(app.includes('import "../styles/character-forge-browser-review-polish.css";'), "Latest Character Forge browser-review stylesheet is not loaded by _app.js.");
 for (const token of [

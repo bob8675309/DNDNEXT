@@ -38,11 +38,24 @@
   line-height: 1.08;
 }
 
+.spell-card__header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.42rem;
+  flex-wrap: wrap;
+}
+
 .spell-card__source {
   border: 1px solid rgba(255,255,255,0.16);
   border-radius: 999px;
   padding: 0.22rem 0.42rem;
   background: rgba(255,255,255,0.06);
+}
+
+.spell-card__header-action {
+  display: inline-flex;
+  align-items: center;
 }
 
 .spell-card__badges {

@@ -41,7 +41,8 @@ for (const token of ["directCantripChoiceField", "fixedSpeciesSpellFields", '"sp
 for (const token of ["STRIXHAVEN_COLLEGES", "fixedCollegeForBackground", "routeStrixhaven", "routeMagicInitiate", "bestEligibleCastingAbility", "autoSelect: true"]) required(featRouting, token, "Feat source magic routing");
 for (const token of ["bestEligibleCastingAbility", "classPreferred", "STABLE_PRIORITY"]) required(autoCasting, token, "Automatic casting resolver");
 for (const token of ["routeFeatSourceChoiceGroups", "finalAbilities: controller?.finalAbilities", "selectedBackground: controller?.selectedBackground"]) required(registrar, token, "Feat routing registrar");
-for (const token of ["sourceSpellGroups", "Source-owned magic", "NpcForgeSourceChoiceFields", "automaticCastingForGroup", "No base-class spell catalogue selection is required", "sourceChoiceGroupsForResolverPlacement", "groupsOverride={sourceSpellGroups}"]) required(spellStep, token, "Unified Spell step");
+for (const token of ["sourceSpellGroups", "Source-owned magic", "NpcForgeSourceChoiceFields", "No base-class spell catalogue selection is required", "sourceChoiceGroupsForResolverPlacement", "inline compact groupsOverride={sourceSpellGroups}", "do not use your class spell picks"]) required(spellStep, token, "Unified Spell step");
+forbidden(spellStep, "npc-forge-auto-casting-list", "Unified Spell step duplicate automatic-casting card");
 for (const token of ["automaticSourceMagic", "Feats & Class Abilities", "sourceMagicChoices", "automaticCastingAbilityLabel"]) required(review, token, "Review source magic");
 for (const token of ["speciesFixedLanguages", "Languages"] ) required(species, token, "Fixed language parser");
 

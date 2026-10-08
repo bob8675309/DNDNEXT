@@ -76,6 +76,7 @@ export function buildRuntimeAdvancementChoiceModel({
   selections = {},
   toolRows = [],
   spells = [],
+  metamagicOptions = [],
 } = {}) {
   if (!advancement?.required) return { groups: [], selections: {}, instance: null, complete: true };
   const mainGroup = buildRuntimeAdvancementGroup({
@@ -95,7 +96,7 @@ export function buildRuntimeAdvancementChoiceModel({
     acquisitionLabel: advancement.kind === "epic-boon" ? `Level ${Number(toLevel || 1)} Epic Boon` : `Level ${Number(toLevel || 1)} feat`,
     feat: selectedOption,
   } : null;
-  const nestedGroups = instance ? normalizeFeatSourceChoiceGroups(buildFeatSourceChoiceGroups({ featInstances: [instance], toolRows, spells, level: Number(toLevel || 1) })) : [];
+  const nestedGroups = instance ? normalizeFeatSourceChoiceGroups(buildFeatSourceChoiceGroups({ featInstances: [instance], toolRows, spells, metamagicOptions, level: Number(toLevel || 1) })) : [];
   const groups = [mainGroup, ...nestedGroups];
   const normalizedSelections = normalizeSourceChoiceSelections(groups, selections);
   const summaries = featInstanceSummaries(groups, normalizedSelections);

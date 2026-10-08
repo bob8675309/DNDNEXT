@@ -7,6 +7,8 @@ const panel = read("components/NpcForgeContextPanel.js");
 const sourceFields = read("components/NpcForgeSourceChoiceFields.js");
 const registrar = read("components/NpcForgeHumanVersatileRegistrar.js");
 const modal = read("components/NewNpcModalV3Refined.js");
+const app = read("pages/_app.js");
+const heritagePolish = read("styles/character-forge-heritage-browser-polish.css");
 const migration = read("sql/20260815_01_merfolk_playable_speed_override.sql");
 
 assert.match(picker, /Custom Lineage is built entirely from Heritage Traits\. Choose eight Heritage Traits, some traits may be chosen more then once\./);
@@ -20,6 +22,15 @@ assert.match(picker, /SourceChoiceFields/);
 assert.match(picker, /npc-forge-heritage-picker__selected-remove/);
 assert.match(picker, /aria-label={`Remove one \$\{option\.label\} Heritage Trait pick`}/);
 assert.match(picker, /onClick=\{\(\) => removeTrait\(option\.key\)\}/);
+assert.match(app, /character-forge-heritage-browser-polish\.css/);
+for (const token of [
+  ".npc-forge-heritage-picker__controls",
+  "grid-template-columns: repeat(3,minmax(0,1fr))",
+  ".npc-forge-heritage-picker__list > button::before",
+  ".npc-forge-heritage-picker__detail",
+  "font-family: Georgia",
+  ".npc-forge-heritage-picker__actions > button",
+]) assert.ok(heritagePolish.includes(token), `Heritage browser polish is missing ${token}`);
 
 assert.match(panel, /Versatile — Feat Selection/);
 assert.match(panel, /full imported Origin-feat catalogue/);
@@ -48,7 +59,7 @@ assert.match(migration, /heritageSourceSpeed/);
 assert.doesNotMatch(migration, /raw_payload\s*=/i);
 
 for (const protectedPath of ["MapPageClient", "map_routes", "advance_all_characters", "town-map", "world-map"]) {
-  assert.doesNotMatch([picker, panel, sourceFields, registrar, modal, migration].join("\n"), new RegExp(protectedPath, "i"));
+  assert.doesNotMatch([picker, panel, sourceFields, registrar, modal, app, heritagePolish, migration].join("\n"), new RegExp(protectedPath, "i"));
 }
 
 console.log("Forge Heritage layout, compact Player header/reset hint, Merfolk speed, and Human Versatile routing validation passed.");

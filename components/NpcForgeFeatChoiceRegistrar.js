@@ -65,6 +65,8 @@ export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, contro
   const [advancementReady, setAdvancementReady] = useState(false);
   const [classOptionRows, setClassOptionRows] = useState([]);
   const [classOptionReady, setClassOptionReady] = useState(false);
+  const [metamagicOptionRows, setMetamagicOptionRows] = useState([]);
+  const [metamagicOptionReady, setMetamagicOptionReady] = useState(false);
   const [magicItemRows, setMagicItemRows] = useState([]);
   const [magicItemCatalogReady, setMagicItemCatalogReady] = useState(true);
   const [catalogError, setCatalogError] = useState("");
@@ -97,6 +99,34 @@ export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, contro
         }
         setSpells(data || []);
         setSpellCatalogReady(true);
+      });
+    return () => { active = false; };
+  }, [playerMode]);
+
+  useEffect(() => {
+    if (!playerMode) {
+      setMetamagicOptionRows([]);
+      setMetamagicOptionReady(true);
+      return undefined;
+    }
+    let active = true;
+    setMetamagicOptionReady(false);
+    supabase.from("class_feature_option_catalog")
+      .select("id,option_key,option_type,name,source,class_key,description,prerequisites,metadata")
+      .eq("option_type", "metamagic")
+      .eq("source", "XPHB")
+      .eq("class_key", "sorcerer")
+      .order("name", { ascending: true })
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error) {
+          setCatalogError(error.message || "Could not load canonical Metamagic options.");
+          setMetamagicOptionRows([]);
+          setMetamagicOptionReady(false);
+          return;
+        }
+        setMetamagicOptionRows(data || []);
+        setMetamagicOptionReady(true);
       });
     return () => { active = false; };
   }, [playerMode]);
@@ -297,7 +327,7 @@ export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, contro
   }), [classChoiceFeats, controller?.featOptions, controller?.selectedBackgroundFeat, controller?.speciesBonusFeat, speciesChoiceFeats]);
   const featInstances = useMemo(() => [...baseFeatInstances, ...sourceFeatInstances], [baseFeatInstances, sourceFeatInstances]);
   const featGroups = useMemo(() => {
-    const nested = buildFeatSourceChoiceGroups({ featInstances, toolRows: controller?.toolRows || [], spells, level: controller?.draft?.level || 1 });
+    const nested = buildFeatSourceChoiceGroups({ featInstances, toolRows: controller?.toolRows || [], spells, metamagicOptions: metamagicOptionRows, level: controller?.draft?.level || 1 });
     const routed = routeFeatSourceChoiceGroups({
       groups: nested,
       selectedBackground: controller?.selectedBackground || null,
@@ -307,11 +337,11 @@ export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, contro
     });
     const byInstance = new Map(routed.map((entry) => [entry.metadata?.featInstanceId || entry.ownerKey, entry]));
     return featInstances.map((instance) => byInstance.get(instance.instanceId) || emptyFeatGroup(instance));
-  }, [controller?.draft?.level, controller?.finalAbilities, controller?.selectedBackground, controller?.selectedClass, controller?.toolRows, featInstances, spells]);
+  }, [controller?.draft?.level, controller?.finalAbilities, controller?.selectedBackground, controller?.selectedClass, controller?.toolRows, featInstances, metamagicOptionRows, spells]);
 
   useEffect(() => {
-    registerGroups(playerMode ? featGroups : [], !playerMode || spellCatalogReady, "feats");
-  }, [featGroups, playerMode, registerGroups, spellCatalogReady]);
+    registerGroups(playerMode ? featGroups : [], !playerMode || (spellCatalogReady && metamagicOptionReady), "feats");
+  }, [featGroups, metamagicOptionReady, playerMode, registerGroups, spellCatalogReady]);
 
   useEffect(() => {
     if (catalogError && controller?.setError) controller.setError((current) => current || catalogError);

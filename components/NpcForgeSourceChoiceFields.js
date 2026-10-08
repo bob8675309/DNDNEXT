@@ -10,7 +10,7 @@ function currentForgePreview() {
   return activeModal?.querySelector(".npc-forge-preview") || null;
 }
 
-export default function NpcForgeSourceChoiceFields({ placement, ownerType = "", title = "Required source choices", empty = null, inline = false, groupsOverride = null }) {
+export default function NpcForgeSourceChoiceFields({ placement, ownerType = "", title = "Required source choices", empty = null, inline = false, compact = false, groupsOverride = null }) {
   const { state, toggleChoice, setChoice } = useNpcForgeSourceChoices();
   const [previewTarget, setPreviewTarget] = useState(null);
   const sourceGroups = Array.isArray(groupsOverride)
@@ -46,6 +46,7 @@ export default function NpcForgeSourceChoiceFields({ placement, ownerType = "", 
     empty={empty}
     onToggle={toggleChoice}
     onSet={setChoice}
+    compact={compact}
   />;
 
   // `groupsOverride` narrows presentation only; canonical groups and selections remain in
