@@ -29,31 +29,31 @@ The partnered Grim Hollow source remains pinned to:
 
 The Grim Hollow Player's Guide set requires **36 new cards** because the four Monster Hunter Guilds already have approved dedicated Tarot cards.
 
-Approved new Grim Hollow cards: **12 / 36**.
+Approved new Grim Hollow cards: **21 / 36**.
 
-All twelve approved cards are now installed and mapped on current `main`:
+All twenty-one approved cards are now installed and mapped on current `main`:
 
 - Barbarian — Path of the Fractured; Path of the Primal Spirit; Path of the Wrathful Dead.
 - Bard — College of Adventurers; College of Fools; College of Requiems.
 - Cleric — Eldritch Domain; Inquisition Domain; Purification Domain.
 - Druid — Circle of Blood; Circle of Entropy; Circle of Mutation.
+- Fighter — Bulwark Warrior; Living Crucible; Nightwatcher.
+- Monk — Warrior of Pride; Warrior of Regret; Warrior of the Leaden Crown.
+- Paladin — Oath of Pestilence; Oath of Slaughter; Oath of Zeal.
 
-The focused subclass validator requires all twelve binaries and mappings. The source-backed Grim Hollow catalogue is now live on `main`, so all 36 new non-Monster-Hunter identities are runtime-visible; 24 still await dedicated Tarot cards.
+The focused subclass validator requires all twenty-one approved binaries and mappings. The source-backed Grim Hollow catalogue is live on `main`, so all 36 new non-Monster-Hunter identities are runtime-visible; 15 still await dedicated Tarot cards.
 
-## Remaining creation queue — 24
+## Remaining creation queue — 15
 
 Continue in three-card class batches:
 
-1. Fighter — Bulwark Warrior; Living Crucible; Nightwatcher.
-2. Monk — Warrior of Pride; Warrior of Regret; Warrior of the Leaden Crown.
-3. Paladin — Oath of Pestilence; Oath of Slaughter; Oath of Zeal.
-4. Ranger — Green Reaper; Primordial Archer; Vermin Lord.
-5. Rogue — Highway Rider; Misfortune Bringer; Sanguine Thief.
-6. Sorcerer — Apocalypse Sorcery; Haunted Sorcery; Wretched Bloodline Sorcery.
-7. Warlock — The Coven; The First Vampire Patron; The Parasite Patron.
-8. Wizard — Daemonologist; Plague Doctor; Sangromancer.
+1. Ranger — Green Reaper; Primordial Archer; Vermin Lord.
+2. Rogue — Highway Rider; Misfortune Bringer; Sanguine Thief.
+3. Sorcerer — Apocalypse Sorcery; Haunted Sorcery; Wretched Bloodline Sorcery.
+4. Warlock — The Coven; The First Vampire Patron; The Parasite Patron.
+5. Wizard — Daemonologist; Plague Doctor; Sangromancer.
 
-Next batch: **Fighter**.
+Next batch: **Ranger**.
 
 ## Art direction
 

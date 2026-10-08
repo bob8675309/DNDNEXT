@@ -14,19 +14,19 @@ Historical normalized checkpoint:
 Current consolidated `main` state:
 
 - runtime-visible choices after the Grim Hollow catalogue merge: **185**;
-- runtime-visible choices with approved dedicated Tarot coverage: **161 / 185**;
-- current runtime-visible choices still using fallback artwork: **24**;
-- approved Grim Hollow expansion cards installed on `main`: **12 / 36**;
-- validator-tracked approved asset families installed in the repository: **163**;
-- Grim Hollow expansion cards still to create: **24**.
+- runtime-visible choices with approved dedicated Tarot coverage: **170 / 185**;
+- current runtime-visible choices still using fallback artwork: **15**;
+- approved Grim Hollow expansion cards installed on `main`: **21 / 36**;
+- validator-tracked approved asset families installed in the repository: **172**;
+- Grim Hollow expansion cards still to create: **15**.
 
-The 12 approved Grim Hollow cards are live presentation assets. The remaining 24 new identities are valid runtime choices and remain in the artwork queue.
+The 21 approved Grim Hollow cards are live presentation assets. The remaining 15 new identities are valid runtime choices and remain in the artwork queue.
 
-## Grim Hollow Player's Guide expansion — 12/36 approved
+## Grim Hollow Player's Guide expansion — 21/36 approved
 
 The Player's Guide adds 40 subclasses. Four Monster Hunter Guilds already have dedicated cards in the existing deck, leaving **36 new cards** to create.
 
-Paul has approved these **12** new cards:
+Paul has approved these **21** new cards:
 
 ### Barbarian — 3/3
 - [x] Path of the Fractured
@@ -48,15 +48,27 @@ Paul has approved these **12** new cards:
 - [x] Circle of Entropy
 - [x] Circle of Mutation
 
-All twelve approved Grim Hollow cards are installed directly on `main` at canonical 840x1440 WebP paths and mapped in `utils/classes/subclassArtwork.js`. The Grim Hollow source-content import is also on `main`, so the 36 new non-Monster-Hunter identities are now runtime-visible.
+### Fighter — 3/3
+- [x] Bulwark Warrior
+- [x] Living Crucible
+- [x] Nightwatcher
 
-**Grim Hollow cards remaining to create: 24.**
+### Monk — 3/3
+- [x] Warrior of Pride
+- [x] Warrior of Regret
+- [x] Warrior of the Leaden Crown
+
+### Paladin — 3/3
+- [x] Oath of Pestilence
+- [x] Oath of Slaughter
+- [x] Oath of Zeal
+
+All twenty-one approved Grim Hollow cards are installed directly on `main` at canonical 840x1440 WebP paths and mapped in `utils/classes/subclassArtwork.js`. The Grim Hollow source-content import is also on `main`, so the 36 new non-Monster-Hunter identities are now runtime-visible.
+
+**Grim Hollow cards remaining to create: 15.**
 
 Remaining batches:
 
-- Fighter: Bulwark Warrior, Living Crucible, Nightwatcher
-- Monk: Warrior of Pride, Warrior of Regret, Warrior of the Leaden Crown
-- Paladin: Oath of Pestilence, Oath of Slaughter, Oath of Zeal
 - Ranger: Green Reaper, Primordial Archer, Vermin Lord
 - Rogue: Highway Rider, Misfortune Bringer, Sanguine Thief
 - Sorcerer: Apocalypse Sorcery, Haunted Sorcery, Wretched Bloodline Sorcery

@@ -8,7 +8,7 @@ The Player's Guide spells/items/subclasses expansion from PR #203 has been recon
 
 The known full-catalog seeder hazard was corrected during reconciliation: generated source-pack `price_gp` now takes precedence over raw 5etools numeric `value` fields (which are copper pieces). Live `Arbalest|GrimHollowPG24` remains **750 gp** while its preserved source value is **75000 cp**.
 
-All **12 / 36** currently approved new Grim Hollow Tarot cards are installed on `main`; **24** dedicated cards remain to create. The next batch is Fighter: Bulwark Warrior, Living Crucible, Nightwatcher.
+All **21 / 36** currently approved new Grim Hollow Tarot cards are installed on `main`; **15** dedicated cards remain to create. The next batch is Ranger: Green Reaper, Primordial Archer, Vermin Lord.
 
 ## Scope
 
@@ -147,21 +147,24 @@ One stale pre-existing Trapper Guild key for **Ambusher's Advantage** used an ol
 
 The 36 newly visible non-Monster-Hunter Grim Hollow subclasses require dedicated Character Forge Tarot cards. The four Monster Hunter Guilds (Carver, Devourer, Occultist, and Trapper) already had approved dedicated cards in the existing deck.
 
-The approved Grim Hollow Tarot installation currently contains 12 cards:
+The approved Grim Hollow Tarot installation currently contains 21 cards:
 
 - Barbarian: Path of the Fractured, Path of the Primal Spirit, Path of the Wrathful Dead
 - Bard: College of Adventurers, College of Fools, College of Requiems
 - Cleric: Eldritch Domain, Inquisition Domain, Purification Domain
 - Druid: Circle of Blood, Circle of Entropy, Circle of Mutation
+- Fighter: Bulwark Warrior, Living Crucible, Nightwatcher
+- Monk: Warrior of Pride, Warrior of Regret, Warrior of the Leaden Crown
+- Paladin: Oath of Pestilence, Oath of Slaughter, Oath of Zeal
 
-All twelve are installed as canonical **840x1440 WebP** assets under `public/media/subclasses/<class-key>/` and mapped through `utils/classes/subclassArtwork.js`. The artwork uses the established antique-gold Tarot frame/title/emblem treatment, photoreal cinematic rendering, varied species/poses/compositions, and full-resolution anatomy/prop QA.
+All twenty-one are installed as canonical **840x1440 WebP** assets under `public/media/subclasses/<class-key>/` and mapped through `utils/classes/subclassArtwork.js`. The artwork uses the established antique-gold Tarot frame/title/emblem treatment, photoreal cinematic rendering, varied species/poses/compositions, and full-resolution anatomy/prop QA.
 
 Progress after this install:
 
 - new Grim Hollow cards required: **36**
-- new Grim Hollow cards installed/approved: **12**
-- remaining new Grim Hollow cards: **24**
-- next cards: **Bulwark Warrior**, **Living Crucible**, and **Nightwatcher**
+- new Grim Hollow cards installed/approved: **21**
+- remaining new Grim Hollow cards: **15**
+- next cards: **Green Reaper**, **Primordial Archer**, and **Vermin Lord**
 
 The dedicated-card queue is tracked in `docs/CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md`.
 

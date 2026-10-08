@@ -249,11 +249,11 @@ const approvedTarotFamilies = {
   bard: ["creation", "dance", "eloquence", "glamour", "lore", "moon", "spirits", "swords", "valor", "whispers", "college-of-adventurers", "college-of-fools", "college-of-requiems"],
   cleric: ["ambition", "arcana", "death", "forge", "grave", "knowledge", "life", "light", "nature", "order", "peace", "solidarity", "strength", "tempest", "trickery", "twilight", "war", "zeal", "eldritch-domain", "inquisition-domain", "purification-domain"],
   druid: ["circle-of-blood", "circle-of-entropy", "circle-of-mutation", "dreams", "land", "moon", "sea", "shepherd", "spores", "stars", "wildfire"],
-  fighter: ["arcane-archer", "banneret", "battle-master", "cavalier", "champion", "echo-knight", "eldritch-knight", "purple-dragon-knight-banneret", "psi-warrior", "rune-knight", "samurai"],
-  monk: ["ascendant-dragon", "astral-self", "drunken-master", "elements", "four-elements", "kensei", "long-death", "mercy", "open-hand", "shadow", "sun-soul"],
+  fighter: ["arcane-archer", "banneret", "battle-master", "cavalier", "champion", "echo-knight", "eldritch-knight", "purple-dragon-knight-banneret", "psi-warrior", "rune-knight", "samurai", "bulwark-warrior", "living-crucible", "nightwatcher"],
+  monk: ["ascendant-dragon", "astral-self", "drunken-master", "elements", "four-elements", "kensei", "long-death", "mercy", "open-hand", "shadow", "sun-soul", "warrior-of-pride", "warrior-of-regret", "warrior-of-the-leaden-crown"],
   "monster-hunter": ["carver-guild", "devourer-guild", "occultist-guild", "trapper-guild"],
   mystic: ["avatar", "awakened", "immortal", "nomad", "soul-knife", "wu-jen"],
-  paladin: ["ancients", "conquest", "crown", "devotion", "glory", "noble-genies", "oathbreaker", "redemption", "vengeance", "watchers"],
+  paladin: ["ancients", "conquest", "crown", "devotion", "glory", "noble-genies", "oathbreaker", "redemption", "vengeance", "watchers", "oath-of-pestilence", "oath-of-slaughter", "oath-of-zeal"],
   ranger: ["beast-master", "drakewarden", "fey-wanderer", "gloom-stalker", "hollow-warden", "horizon-walker", "hunter", "monster-slayer", "swarmkeeper", "winter-walker"],
   rogue: ["arcane-trickster", "assassin", "inquisitive", "mastermind", "phantom", "scion-of-the-three", "scout", "soulknife", "swashbuckler", "thief"],
   sorcerer: ["aberrant", "clockwork", "divine-soul", "draconic", "lunar", "pyromancer", "shadow", "spellfire", "storm", "wild-magic"],
@@ -267,7 +267,7 @@ for (const [classKey, families] of Object.entries(approvedTarotFamilies)) {
     assert(fs.existsSync(path.join(root, `public/media/subclasses/${classKey}/${classKey}-${family}.webp`)), `Approved tarot asset missing ${classKey}/${family}`);
   }
 }
-assert(approvedTarotCount === 163, `Expected 163 installed approved Tarot concepts after consolidating all 12 approved Grim Hollow expansion cards on main, found ${approvedTarotCount}.`);
+assert(approvedTarotCount === 172, `Expected 172 installed approved Tarot concepts after consolidating 21 approved Grim Hollow expansion cards on main, found ${approvedTarotCount}.`);
 for (const token of [
   '"path-of-the-fractured": "path-of-the-fractured"',
   '"path-of-the-primal-spirit": "path-of-the-primal-spirit"',
@@ -281,6 +281,15 @@ for (const token of [
   '"circle-of-blood": "circle-of-blood"',
   '"circle-of-entropy": "circle-of-entropy"',
   '"circle-of-mutation": "circle-of-mutation"',
+  '"bulwark-warrior": "bulwark-warrior"',
+  '"living-crucible": "living-crucible"',
+  'nightwatcher: "nightwatcher"',
+  '"warrior-of-pride": "warrior-of-pride"',
+  '"warrior-of-regret": "warrior-of-regret"',
+  '"warrior-of-the-leaden-crown": "warrior-of-the-leaden-crown"',
+  '"oath-of-pestilence": "oath-of-pestilence"',
+  '"oath-of-slaughter": "oath-of-slaughter"',
+  '"oath-of-zeal": "oath-of-zeal"',
 ]) {
   assert(subclassArtwork.includes(token), `Approved Grim Hollow Tarot mapping missing ${token}`);
 }

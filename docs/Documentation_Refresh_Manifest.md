@@ -22,11 +22,11 @@ Everything below this section is historical unless a newer focused ledger says o
 - current production authority is `main`;
 - PR #199 is merged;
 - PR #202 is merged;
-- the 12 approved Grim Hollow expansion Tarot cards are consolidated on `main`;
+- the 21 approved Grim Hollow expansion Tarot cards are consolidated on `main`;
 - PR #203 source-content work is reconciled and folded into `main`;
 - live Grim Hollow Player's Guide catalogue: **101 spells, 40 subclasses / 258 subclass features, 106 items**;
 - Grim Hollow item seeding preserves generated GP-normalized prices rather than reinterpreting source cp as gp;
-- current Tarot creation queue: **24** cards remaining, next batch Fighter;
+- current Tarot creation queue: **15** cards remaining, next batch Ranger;
 - restored/vetted docs from PR #198: Tarot card standard, Tarot art handoff, and the real progression v3 status pointer;
 - production deployment for consolidation commit `076a9b92e3d492f2dd4867d418477997ca0b4852`: **READY**;
 - `/profile` returned HTTP 200 on that deployment.

@@ -93,6 +93,9 @@ const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
     "psi-warrior": "psi-warrior",
     "rune-knight": "rune-knight",
     samurai: "samurai",
+    "bulwark-warrior": "bulwark-warrior",
+    "living-crucible": "living-crucible",
+    nightwatcher: "nightwatcher",
   }),
   monk: Object.freeze({
     "ascendant-dragon": "ascendant-dragon",
@@ -106,6 +109,9 @@ const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
     "open-hand": "open-hand",
     shadow: "shadow",
     "sun-soul": "sun-soul",
+    "warrior-of-pride": "warrior-of-pride",
+    "warrior-of-regret": "warrior-of-regret",
+    "warrior-of-the-leaden-crown": "warrior-of-the-leaden-crown",
   }),
   "monster-hunter": Object.freeze({
     "carver-guild": "carver-guild",
@@ -132,6 +138,9 @@ const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
     redemption: "redemption",
     vengeance: "vengeance",
     watchers: "watchers",
+    "oath-of-pestilence": "oath-of-pestilence",
+    "oath-of-slaughter": "oath-of-slaughter",
+    "oath-of-zeal": "oath-of-zeal",
   }),
   ranger: Object.freeze({
     "beast-master": "beast-master",

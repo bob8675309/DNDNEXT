@@ -9,19 +9,22 @@ This is the current focused status for the Character Forge subclass Tarot deck a
 The Grim Hollow Player's Guide source-content import is now part of the production catalogue:
 
 - runtime-visible subclass choices: **185**;
-- runtime-visible choices with dedicated approved Tarot cards: **161 / 185**;
-- runtime-visible choices still using source/class fallback artwork: **24**.
+- runtime-visible choices with dedicated approved Tarot cards: **170 / 185**;
+- runtime-visible choices still using source/class fallback artwork: **15**.
 
-The Grim Hollow: Player's Guide expansion adds 36 new visible subclass identities beyond the four Monster Hunter Guilds that already had dedicated cards. Paul has approved **12 / 36** of those new cards, and **all 12 approved cards are installed and mapped on `main`**:
+The Grim Hollow: Player's Guide expansion adds 36 new visible subclass identities beyond the four Monster Hunter Guilds that already had dedicated cards. Paul has approved **21 / 36** of those new cards, and **all 21 approved cards are installed and mapped on `main`**:
 
 - Barbarian — Path of the Fractured; Path of the Primal Spirit; Path of the Wrathful Dead.
 - Bard — College of Adventurers; College of Fools; College of Requiems.
 - Cleric — Eldritch Domain; Inquisition Domain; Purification Domain.
 - Druid — Circle of Blood; Circle of Entropy; Circle of Mutation.
+- Fighter — Bulwark Warrior; Living Crucible; Nightwatcher.
+- Monk — Warrior of Pride; Warrior of Regret; Warrior of the Leaden Crown.
+- Paladin — Oath of Pestilence; Oath of Slaughter; Oath of Zeal.
 
-The focused validator tracks **163 approved asset families** in the repository, including these 12 Grim Hollow cards. The remaining 24 Grim Hollow identities use the trusted partnered source-art fallback (or class fallback when no trusted source image is available) until their dedicated Tarot cards are approved.
+The focused validator tracks **172 approved asset families** in the repository, including these 21 Grim Hollow cards. The remaining 15 Grim Hollow identities use the trusted partnered source-art fallback (or class fallback when no trusted source image is available) until their dedicated Tarot cards are approved.
 
-**Remaining Grim Hollow cards to create: 24.** The next batch is Fighter: Bulwark Warrior, Living Crucible, Nightwatcher.
+**Remaining Grim Hollow cards to create: 15.** The next batch is Ranger: Green Reaper, Primordial Archer, Vermin Lord.
 
 ## Canonical card standard
 
@@ -71,7 +74,7 @@ The selector and Tarot artwork are presentation systems layered over the existin
 
 `scripts/validate_class_subclass_browser.mjs` and `scripts/validate_class_browser_polish.mjs` protect the current selector, artwork resolver, approved asset presence, single persistence path, Codex/Feature split, and protected boundaries.
 
-The approved Grim Hollow cards are intentionally validated even while their catalogue import remains unmerged.
+The approved Grim Hollow cards are validated against the live source-backed Grim Hollow catalogue on `main`.
 
 ## Future artwork rule
 

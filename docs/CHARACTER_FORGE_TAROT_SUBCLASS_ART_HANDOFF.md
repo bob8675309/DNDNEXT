@@ -8,14 +8,14 @@ This file restores the durable artwork handoff path from PR #198 without carryin
 
 ## Current completion state
 
-Current `main` before the Grim Hollow source-content merge:
+Current `main` after the Grim Hollow source-content merge:
 
-- runtime-visible subclass choices: **149**;
-- dedicated approved Tarot coverage for current runtime choices: **149 / 149**;
-- runtime-visible class/generic fallbacks: **0**;
-- newly approved Grim Hollow expansion cards installed on `main`: **12 / 36**;
-- remaining Grim Hollow cards to create: **24**;
-- focused validator-tracked approved asset families: **163**.
+- runtime-visible subclass choices: **185**;
+- dedicated approved Tarot coverage for current runtime choices: **170 / 185**;
+- runtime-visible source/class fallbacks: **15**;
+- approved Grim Hollow expansion cards installed on `main`: **21 / 36**;
+- remaining Grim Hollow cards to create: **15**;
+- focused validator-tracked approved asset families: **172**.
 
 The four Monster Hunter Guilds were already represented in the existing deck and are not part of the 36-card new-art requirement.
 
@@ -67,12 +67,15 @@ Approved and installed on `main`:
 - Bard: College of Adventurers; College of Fools; College of Requiems.
 - Cleric: Eldritch Domain; Inquisition Domain; Purification Domain.
 - Druid: Circle of Blood; Circle of Entropy; Circle of Mutation.
+- Ranger: Green Reaper; Primordial Archer; Vermin Lord.
+- Monk: Warrior of Pride; Warrior of Regret; Warrior of the Leaden Crown.
+- Paladin: Oath of Pestilence; Oath of Slaughter; Oath of Zeal.
 
 Next batch:
 
 - Fighter: Bulwark Warrior; Living Crucible; Nightwatcher.
 
-The source-backed Grim Hollow spells/items/subclasses import is now on `main`. All 36 new non-Monster-Hunter identities are runtime-visible; 12 have approved dedicated Tarot cards and 24 remain in the artwork queue.
+The source-backed Grim Hollow spells/items/subclasses import is on `main`. All 36 new non-Monster-Hunter identities are runtime-visible; 21 have approved dedicated Tarot cards and 15 remain in the artwork queue.
 
 ## Future artwork workflow
 
