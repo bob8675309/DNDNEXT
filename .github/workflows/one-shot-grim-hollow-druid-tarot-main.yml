@@ -30,7 +30,7 @@ jobs:
       - name: Download and verify approved artwork bundle
         shell: bash
         env:
-          ZIP_URL: 'https://uceed42b98199e6b1b2ab3e3ad98.dl.dropboxusercontent.com/cd/0/get/DJntUAjech_uRie39j2qbW-15yL8oqBcwQkCVFXuQa6DS73xLyg5vFyX7GL7cuxmYiCjn_4jOHMa81GNPyX1OQwx70s2kBhwu4PrRo8XeexYOyeFoiO7Lvx6Jhb_JJrKd81XJZXIokrejVzBtxAEm2pHV2KiIi5_eV8mN5EYsNUeNQ/file?c_luid=c335000c'
+          ZIP_URL: 'https://uc8a9d53643c2a58b589ff7d6b36.dl.dropboxusercontent.com/cd/0/get/DJnQrL7pgz013H9KXZEY1n9lw_huOREAY1P2BuNHHnWBoYaDDBrqO2A0ZJy3zTpkz2NTroXXh0aTP4_6Rzmiwo5pC66V2-ULouy7wkehaMibRuZ-gP7KFJn4XMvSzPhyJL5dnv12RFIlPEMdT8Zbo477UBZjhCv7zKJTa2qdIE3DNg/file?c_luid=c335000c'
         run: |
           set -euo pipefail
           curl --fail --location --silent --show-error "$ZIP_URL" -o /tmp/druid-tarot.zip
@@ -75,6 +75,7 @@ jobs:
           cp /tmp/druid-tarot/public/media/subclasses/druid/druid-circle-of-blood.webp public/media/subclasses/druid/
           cp /tmp/druid-tarot/public/media/subclasses/druid/druid-circle-of-entropy.webp public/media/subclasses/druid/
           cp /tmp/druid-tarot/public/media/subclasses/druid/druid-circle-of-mutation.webp public/media/subclasses/druid/
+          git add -N             public/media/subclasses/druid/druid-circle-of-blood.webp             public/media/subclasses/druid/druid-circle-of-entropy.webp             public/media/subclasses/druid/druid-circle-of-mutation.webp
           git diff --name-only | sort > /tmp/actual.txt
           cat > /tmp/expected.txt <<'EOF'
           public/media/subclasses/druid/druid-circle-of-blood.webp
