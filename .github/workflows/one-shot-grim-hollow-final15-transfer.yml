@@ -1,0 +1,115 @@
+name: one-shot Grim Hollow final 15 Tarot transfer
+
+on:
+  push:
+    branches:
+      - agent/grim-hollow-final15-transfer-20261008
+    paths:
+      - .github/workflows/one-shot-grim-hollow-final15-transfer.yml
+
+permissions:
+  contents: write
+
+jobs:
+  transfer:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout intended artwork branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/grim-hollow-final15-20261008
+          fetch-depth: 0
+
+      - name: Guard exact target head
+        run: |
+          test "$(git rev-parse HEAD)" = "43692fe996ada052f61cc1aa851acaa401476f75"
+
+      - name: Download approved bundle once
+        run: |
+          curl -fL --retry 2 --retry-delay 2 \
+            "https://uc3d086cf3804bb4d735a261787a.dl.dropboxusercontent.com/cd/0/get/DJqxd2VL0_B8RF6q44LcZ_TYoeA2_mkB1X-FQr0o9QTkRg6V3SL41iBJgNI8oDjEokxWyM1N7g7YgLKkCox9-3BTUWScns5OqrtUBWk8s2C4iityyNr_ukFRX0czj0IirFfmIyBBjAyomdtKK1cyh59vxAtG8L2_9MjVzLmZX3Dbag/file?c_luid=c335000c" \
+            -o /tmp/final15.zip
+          echo "8cc78d43db010d859d2ddd75503f4d643372787c52e7db07f192da176885bcee  /tmp/final15.zip" | sha256sum -c -
+
+      - name: Verify bundle and install exact assets
+        run: |
+          rm -rf /tmp/final15
+          mkdir -p /tmp/final15
+          unzip -q /tmp/final15.zip -d /tmp/final15
+          python -m pip install --disable-pip-version-check pillow==11.3.0
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          from PIL import Image
+
+          root = Path("/tmp/final15")
+          manifest = json.loads((root / "manifest.json").read_text())
+          assert len(manifest) == 15, len(manifest)
+          names = {entry["file"] for entry in manifest}
+          expected = {
+              "ranger-green-reaper.webp",
+              "ranger-primordial-archer.webp",
+              "ranger-vermin-lord.webp",
+              "rogue-highway-rider.webp",
+              "rogue-misfortune-bringer.webp",
+              "rogue-sanguine-thief.webp",
+              "sorcerer-apocalypse-sorcery.webp",
+              "sorcerer-haunted-sorcery.webp",
+              "sorcerer-wretched-bloodline-sorcery.webp",
+              "warlock-the-coven.webp",
+              "warlock-the-first-vampire-patron.webp",
+              "warlock-the-parasite-patron.webp",
+              "wizard-daemonologist.webp",
+              "wizard-plague-doctor.webp",
+              "wizard-sangromancer.webp",
+          }
+          assert names == expected, (names ^ expected)
+          for entry in manifest:
+              path = root / entry["file"]
+              data = path.read_bytes()
+              assert hashlib.sha256(data).hexdigest() == entry["sha256"], entry["file"]
+              with Image.open(path) as image:
+                  assert image.format == "WEBP", (entry["file"], image.format)
+                  assert image.size == (840, 1440), (entry["file"], image.size)
+          PY
+
+          mkdir -p public/media/subclasses/{ranger,rogue,sorcerer,warlock,wizard}
+          cp /tmp/final15/ranger-*.webp public/media/subclasses/ranger/
+          cp /tmp/final15/rogue-*.webp public/media/subclasses/rogue/
+          cp /tmp/final15/sorcerer-*.webp public/media/subclasses/sorcerer/
+          cp /tmp/final15/warlock-*.webp public/media/subclasses/warlock/
+          cp /tmp/final15/wizard-*.webp public/media/subclasses/wizard/
+
+      - name: Exact diff guard
+        run: |
+          cat > /tmp/expected.txt <<'EOF'
+          public/media/subclasses/ranger/ranger-green-reaper.webp
+          public/media/subclasses/ranger/ranger-primordial-archer.webp
+          public/media/subclasses/ranger/ranger-vermin-lord.webp
+          public/media/subclasses/rogue/rogue-highway-rider.webp
+          public/media/subclasses/rogue/rogue-misfortune-bringer.webp
+          public/media/subclasses/rogue/rogue-sanguine-thief.webp
+          public/media/subclasses/sorcerer/sorcerer-apocalypse-sorcery.webp
+          public/media/subclasses/sorcerer/sorcerer-haunted-sorcery.webp
+          public/media/subclasses/sorcerer/sorcerer-wretched-bloodline-sorcery.webp
+          public/media/subclasses/warlock/warlock-the-coven.webp
+          public/media/subclasses/warlock/warlock-the-first-vampire-patron.webp
+          public/media/subclasses/warlock/warlock-the-parasite-patron.webp
+          public/media/subclasses/wizard/wizard-daemonologist.webp
+          public/media/subclasses/wizard/wizard-plague-doctor.webp
+          public/media/subclasses/wizard/wizard-sangromancer.webp
+          EOF
+          git diff --name-only | sort > /tmp/actual.txt
+          sort /tmp/expected.txt -o /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+
+      - name: Validate current subclass browser
+        run: node scripts/validate_class_subclass_browser.mjs
+
+      - name: Commit and push approved binaries
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/media/subclasses/ranger public/media/subclasses/rogue public/media/subclasses/sorcerer public/media/subclasses/warlock public/media/subclasses/wizard
+          git commit -m "art: install final 15 approved Grim Hollow Tarot cards"
+          git push origin HEAD:agent/grim-hollow-final15-20261008
