@@ -2,7 +2,7 @@
 
 Status: **authoritative art-direction contract, vetted and restored to current `main` on 2026-10-08.** The durable visual/QA rules originated during the earlier Tarot rebuild and remain consistent with the accepted floating-library selector and the current approved deck.
 
-This document defines the required visual, dimensional, compositional, and QA standard for every subclass Tarot card used by the Character Forge subclass carousel. The pre-Grim-Hollow catalogue remains complete at 149/149 dedicated cards. The Grim Hollow Player's Guide expansion has 21/36 new cards approved and installed on `main`, with 15 still to create. Apply this standard to every future addition or explicitly requested replacement.
+This document defines the required visual, dimensional, compositional, and QA standard for every subclass Tarot card used by the Character Forge subclass carousel. The pre-Grim-Hollow catalogue remains complete at 149/149 dedicated cards. The Grim Hollow Player's Guide expansion is complete at 36/36 new cards approved and installed on `main`; all 185 current runtime-visible subclass choices have dedicated approved Tarot coverage. Apply this standard to every future addition or explicitly requested replacement.
 
 ## 1. Canonical card dimensions
 
