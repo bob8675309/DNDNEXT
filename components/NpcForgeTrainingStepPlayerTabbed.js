@@ -268,7 +268,7 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
       <span>ⓘ</span>
       <p>{activeView === "feats"
         ? "Click a feat to inspect it on the right. For selectable bonus feats, confirm the choice with Select Feat in Current Selection. Feat-owned non-spell follow-ups remain with the feat; granted spells continue to Spells."
-        : "Resolve only the permanent class or subclass choices that are actually due at this level. Empty choice families are hidden."}</p>
+        : "Resolve only permanent choices due at this level, including Eldritch Invocations, fighting styles, maneuvers, and similar class options. Empty choice families are hidden."}</p>
     </div> : null}
 
     <style jsx global>{`
