@@ -1,5 +1,52 @@
 # Unified NPC and Player Character Forge Status
 
+## 2026-10-09 authoritative completion-direction override
+
+Current production authority is `main` at the post-Grim-Hollow Tarot baseline.
+
+Key accepted Forge milestones now merged:
+
+- PR #175 — Background routing/readability/profile-entry behavior;
+- PR #176 — focused player Training redesign;
+- PR #199 — floating ruined-library Class/subclass Tarot selector and Subclass Codex;
+- PR #202 — Metamagic Adept nested choices, invocation detail fallback, and Profile-style Forge spell browsing;
+- PR #204 — complete 36/36 Grim Hollow Tarot expansion coverage.
+
+The next broad Character Forge task is **completion/reconciliation**, not another architectural rewrite. Audit all ten player Forge steps on current `main`, reproduce concrete defects, and patch only the remaining gaps:
+
+1. Species;
+2. Background;
+3. Class;
+4. Abilities;
+5. Training;
+6. Spells;
+7. Equipment;
+8. Identity;
+9. Story;
+10. Review.
+
+Accepted slices should remain stable unless a real regression is reproduced. Creation must continue to flow through the existing server-authoritative player creation/progression model.
+
+### Future AI-readiness direction
+
+The agreed post-Forge AI direction is documented in:
+
+`docs/DNDNEXT_AI_INTEGRATION_FOUNDATION.md`
+
+While finishing Character Forge, preserve the structured canonical state that future local AI context builders can consume:
+
+- stable canonical ids/keys;
+- source/provenance metadata;
+- structured permanent choices rather than presentation-only prose;
+- lifecycle separation between permanent, rest-configurable, per-use, and narrative state;
+- explicit player/DM permission boundaries;
+- reusable read models rather than component/DOM scraping;
+- one shared creation/progression authority.
+
+Do **not** add an AI-specific save path, AI-only duplicate character fields, or model-provider code inside Forge components. The future AI layer should consume canonical DNDNext state through bounded adapters.
+
+
+
 Status date: 2026-08-16
 
 Accepted runtime/code baseline: `8c37e30063d2523a5f488073d3ea60c5571c7182`

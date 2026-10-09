@@ -15,9 +15,18 @@ Current production authority is consolidated on `main`.
 - Live Grim Hollow Player's Guide catalogue now includes 101 spells, 40 subclasses / 258 subclass-feature rows, and 106 items.
 - The item seeder's source-price path was hardened so normalized GP prices are retained instead of reading raw 5etools cp values as gp.
 - Current Grim Hollow Tarot queue: 0; all 185 runtime-visible subclass choices have dedicated approved Tarot coverage.
-- Consolidation commit `076a9b92e3d492f2dd4867d418477997ca0b4852` is production-deployed READY; `/profile` returned HTTP 200.
+- Current `main` checkpoint `3b4cb1113b170d703f4f161f8ac149a3e7f2ffe9` (PR #204) is production-deployed READY; `/profile` returned HTTP 200.
 
 The detailed roadmap below remains useful architecture/history, but branch/PR status in older override sections is historical.
+
+### Current next priority — Character Forge completion with future AI compatibility
+
+Before beginning AI implementation, perform a current-main Character Forge completion audit across Species, Background, Class, Abilities, Training, Spells, Equipment, Identity, Story, and Review. Accepted slices should not be broadly redesigned without a reproduced defect.
+
+The future AI architecture is defined in `docs/DNDNEXT_AI_INTEGRATION_FOUNDATION.md`. Character Forge work should support that future direction by preserving structured canonical ids, source/provenance, lifecycle distinctions, permission boundaries, and reusable read models. No AI-specific persistence or duplicate character state should be introduced.
+
+After Forge completion, the planned first AI proof is a local/admin-only magic-item drafting layer that populates the existing item-creation modal without bypassing its Save/validation path. NPC/monster text interaction comes after that.
+
 
 ## 2026-10-01 active-work override
 
