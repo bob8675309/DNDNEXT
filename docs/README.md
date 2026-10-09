@@ -1,13 +1,13 @@
 # DNDNext Living Documentation Index
 
-Updated: 2026-10-08
+Updated: 2026-10-09
 
 This directory contains the project's living handoff, roadmap, architecture, subsystem, and evidence documents. For active work, **live Supabase + current GitHub source/validators/deployment state outrank prose** if they conflict.
 
 ## Start here
 
 1. `DNDNext_Current_Handoff_Prompt.md` — canonical long-form takeover brief. Read the **2026-10-08 override** first.
-2. `Next_Chat_Handoff_2026-10-07_Grim_Hollow_Tarot.md` — current focused Grim Hollow/Tarot continuation handoff, updated 2026-10-08.
+2. `Next_Chat_Handoff_2026-10-07_Grim_Hollow_Tarot.md` — focused Grim Hollow/Tarot completion handoff, updated 2026-10-09.
 3. `CHARACTER_FORGE_SUBCLASS_ARTWORK_STATUS.md` — current Tarot coverage/resolver/selector status.
 4. `CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md` — approved and remaining Grim Hollow card queue.
 5. `CHARACTER_FORGE_TAROT_SUBCLASS_CARD_STANDARD.md` — authoritative card dimensions, layout, art direction, and QA contract.
@@ -24,10 +24,10 @@ Consolidated state as of 2026-10-08:
 
 - PR #199 merged the accepted floating ruined-library subclass Tarot selector.
 - PR #202 merged Metamagic Adept nested choice support, invocation detail fallback, and Profile-style Forge spell browsing.
-- The 21 currently approved Grim Hollow expansion Tarot cards are all installed and mapped on `main`.
+- All 36 required new Grim Hollow expansion Tarot cards are installed and mapped on `main`.
 - PR #203's source-backed Grim Hollow Player's Guide spells/items/subclasses import is folded into `main`.
-- Runtime-visible subclass choices are now **185**. The prior 149 remain fully covered; 21 of the 36 newly visible Grim Hollow identities have approved dedicated Tarot cards and 15 remain on trusted source/class fallback.
-- Remaining Grim Hollow Tarot creation queue: **15** cards; next batch Ranger.
+- Runtime-visible subclass choices are **185 / 185** covered by dedicated approved Tarot cards; no current visible subclass uses source/class fallback artwork.
+- Remaining Grim Hollow Tarot creation queue: **0**; the Player's Guide expansion is complete.
 - Consolidation commit `076a9b92e3d492f2dd4867d418477997ca0b4852` deployed to Vercel production **READY** and `/profile` returned HTTP 200.
 
 Live Grim Hollow catalogue checkpoint: **101 spells, 40 subclasses / 258 subclass-feature rows, 106 items**. The full item seeder preserves generated `price_gp` values so raw 5etools copper-piece values cannot inflate catalog prices by 100×.
