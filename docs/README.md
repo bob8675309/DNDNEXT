@@ -14,7 +14,8 @@ This directory contains the project's living handoff, roadmap, architecture, sub
 6. `CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md` — current artwork maintenance workflow.
 7. `Character_Progression_v3_Implementation_Status.md` — progression authority pointer plus merged PR #202 reconciliation.
 8. `Documentation_Refresh_Manifest.md` — trust order and current queue.
-9. `CHATGPT_REPO_WRITE_PROCEDURE.md` before direct GitHub/Supabase mutation.
+9. `DNDNEXT_AI_INTEGRATION_FOUNDATION.md` — post-Forge local-AI architecture direction for item drafting, NPC/monster dialogue, and future bounded decisions.
+10. `CHATGPT_REPO_WRITE_PROCEDURE.md` before direct GitHub/Supabase mutation.
 
 ## Current code checkpoint
 
@@ -28,7 +29,8 @@ Consolidated state as of 2026-10-08:
 - PR #203's source-backed Grim Hollow Player's Guide spells/items/subclasses import is folded into `main`.
 - Runtime-visible subclass choices are **185 / 185** covered by dedicated approved Tarot cards; no current visible subclass uses source/class fallback artwork.
 - Remaining Grim Hollow Tarot creation queue: **0**; the Player's Guide expansion is complete.
-- Consolidation commit `076a9b92e3d492f2dd4867d418477997ca0b4852` deployed to Vercel production **READY** and `/profile` returned HTTP 200.
+- Current `main` checkpoint `3b4cb1113b170d703f4f161f8ac149a3e7f2ffe9` (PR #204) deployed to Vercel production **READY** and `/profile` returned HTTP 200.
+- Next broad product priority: finish/reconcile the ten-step Character Forge on current `main`, preserving structured canonical state for the future provider-neutral local AI layer. AI implementation itself remains deferred until the Forge completion pass.
 
 Live Grim Hollow catalogue checkpoint: **101 spells, 40 subclasses / 258 subclass-feature rows, 106 items**. The full item seeder preserves generated `price_gp` values so raw 5etools copper-piece values cannot inflate catalog prices by 100×.
 
