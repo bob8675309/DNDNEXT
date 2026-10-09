@@ -1,6 +1,6 @@
 # Grim Hollow 2024 Integration Status
 
-Updated: 2026-10-08
+Updated: 2026-10-09
 
 ## 2026-10-08 current authority override
 
@@ -8,7 +8,7 @@ The Player's Guide spells/items/subclasses expansion from PR #203 has been recon
 
 The known full-catalog seeder hazard was corrected during reconciliation: generated source-pack `price_gp` now takes precedence over raw 5etools numeric `value` fields (which are copper pieces). Live `Arbalest|GrimHollowPG24` remains **750 gp** while its preserved source value is **75000 cp**.
 
-All **21 / 36** currently approved new Grim Hollow Tarot cards are installed on `main`; **15** dedicated cards remain to create. The next batch is Ranger: Green Reaper, Primordial Archer, Vermin Lord.
+All **36 / 36** new Grim Hollow Tarot cards are approved, installed, and mapped on `main`. No dedicated Grim Hollow artwork remains to create.
 
 ## Scope
 
@@ -143,28 +143,33 @@ After the reviewed import, live Supabase reports:
 
 One stale pre-existing Trapper Guild key for **Ambusher's Advantage** used an older apostrophe slug (`ambusher-s-advantage`). The source-backed key is `ambushers-advantage`; the stale duplicate was removed after the exact source-key reconciliation.
 
-## Tarot artwork expansion — October 8, 2026
+## Tarot artwork expansion — completed October 9, 2026
 
 The 36 newly visible non-Monster-Hunter Grim Hollow subclasses require dedicated Character Forge Tarot cards. The four Monster Hunter Guilds (Carver, Devourer, Occultist, and Trapper) already had approved dedicated cards in the existing deck.
 
-The approved Grim Hollow Tarot installation currently contains 21 cards:
+The approved Grim Hollow Tarot installation now contains all 36 required new cards:
 
-- Barbarian: Path of the Fractured, Path of the Primal Spirit, Path of the Wrathful Dead
-- Bard: College of Adventurers, College of Fools, College of Requiems
-- Cleric: Eldritch Domain, Inquisition Domain, Purification Domain
-- Druid: Circle of Blood, Circle of Entropy, Circle of Mutation
-- Fighter: Bulwark Warrior, Living Crucible, Nightwatcher
-- Monk: Warrior of Pride, Warrior of Regret, Warrior of the Leaden Crown
-- Paladin: Oath of Pestilence, Oath of Slaughter, Oath of Zeal
+- Barbarian — Path of the Fractured; Path of the Primal Spirit; Path of the Wrathful Dead
+- Bard — College of Adventurers; College of Fools; College of Requiems
+- Cleric — Eldritch Domain; Inquisition Domain; Purification Domain
+- Druid — Circle of Blood; Circle of Entropy; Circle of Mutation
+- Fighter — Bulwark Warrior; Living Crucible; Nightwatcher
+- Monk — Warrior of Pride; Warrior of Regret; Warrior of the Leaden Crown
+- Paladin — Oath of Pestilence; Oath of Slaughter; Oath of Zeal
+- Ranger — Green Reaper; Primordial Archer; Vermin Lord
+- Rogue — Highway Rider; Misfortune Bringer; Sanguine Thief
+- Sorcerer — Apocalypse Sorcery; Haunted Sorcery; Wretched Bloodline Sorcery
+- Warlock — The Coven; The First Vampire Patron; The Parasite Patron
+- Wizard — Daemonologist; Plague Doctor; Sangromancer
 
-All twenty-one are installed as canonical **840x1440 WebP** assets under `public/media/subclasses/<class-key>/` and mapped through `utils/classes/subclassArtwork.js`. The artwork uses the established antique-gold Tarot frame/title/emblem treatment, photoreal cinematic rendering, varied species/poses/compositions, and full-resolution anatomy/prop QA.
+All thirty-six are installed as canonical **840x1440 WebP** assets under `public/media/subclasses/<class-key>/` and mapped through `utils/classes/subclassArtwork.js`. The focused validator now tracks the complete set.
 
-Progress after this install:
+Progress after final install:
 
 - new Grim Hollow cards required: **36**
-- new Grim Hollow cards installed/approved: **21**
-- remaining new Grim Hollow cards: **15**
-- next cards: **Green Reaper**, **Primordial Archer**, and **Vermin Lord**
+- new Grim Hollow cards installed/approved: **36**
+- remaining new Grim Hollow cards: **0**
+- runtime-visible subclass choices using fallback art: **0**
 
 The dedicated-card queue is tracked in `docs/CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md`.
 
