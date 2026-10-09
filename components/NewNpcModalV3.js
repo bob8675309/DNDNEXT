@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
-import { classFeatureGroupsComplete, toggleClassFeatureSelection } from "../utils/classFeatureChoices";
+import { activeClassFeatureGroups, classFeatureGroupsComplete, toggleClassFeatureSelection } from "../utils/classFeatureChoices";
 import { normalizeSkillKey } from "../utils/npcForgeCatalog";
 import { featInstanceSummaries } from "../utils/playerForgeFeatChoices";
 import { setSourceChoiceSelection, toggleSourceChoiceSelection } from "../utils/playerForgeSourceChoices";
@@ -264,7 +264,28 @@ export default function NewNpcModalV3(props) {
       }
       if (playerMode && /Training/i.test(currentStep) && classState.classId && !trainingClassChoiceStateComplete(classState)) {
         event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation?.();
-        showForgeValidationGuidance("Complete the required Training selection.", [".npc-forge-class-choices.is-placement-training .npc-forge-class-choice-group.is-required", ".npc-forge-workspace"], modal);
+        const activeGroups = activeClassFeatureGroups(classState.featureGroups || [], classState.featureSelections || {});
+        const incompleteTrainingGroup = activeGroups.find((group) => (
+          (group.placement || "class") === "training"
+          && group.required
+          && (classState.featureSelections?.[group.id] || []).length !== Number(group.count || 0)
+        )) || null;
+        const incompleteClassGroup = activeGroups.find((group) => (
+          (group.placement || "class") === "class"
+          && group.required
+          && (classState.featureSelections?.[group.id] || []).length !== Number(group.count || 0)
+        )) || null;
+        const incompleteGroup = incompleteTrainingGroup || incompleteClassGroup;
+        const remaining = incompleteGroup ? Math.max(1, Number(incompleteGroup.count || 0) - (classState.featureSelections?.[incompleteGroup.id] || []).length) : 1;
+        const expertise = incompleteGroup?.kind === "expertise";
+        const label = incompleteGroup?.label || "required class choice";
+        const message = expertise
+          ? `Choose ${remaining} more proficient skill${remaining === 1 ? "" : "s"} to gain Expertise. Use the Expertise flags beside your selected Skills.`
+          : `Complete ${label} in Training → Class Choices before continuing.`;
+        const selectors = expertise
+          ? [".npc-forge-training-class-skills", ".npc-forge-training-expertise-guide.is-required", ".npc-forge-training-step"]
+          : [".npc-forge-training-feat-section .npc-forge-class-choice-group.is-required", ".npc-forge-class-option-group.is-required", ".npc-forge-training-feat-section", ".npc-forge-workspace"];
+        showForgeValidationGuidance(message, selectors, modal);
         return;
       }
       if (playerMode && /Spells/i.test(currentStep) && classState.classId && !classFeatureGroupsComplete(classState.featureGroups || [], classState.featureSelections || {}, "spells")) {
