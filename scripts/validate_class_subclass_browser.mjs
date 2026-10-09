@@ -254,11 +254,11 @@ const approvedTarotFamilies = {
   "monster-hunter": ["carver-guild", "devourer-guild", "occultist-guild", "trapper-guild"],
   mystic: ["avatar", "awakened", "immortal", "nomad", "soul-knife", "wu-jen"],
   paladin: ["ancients", "conquest", "crown", "devotion", "glory", "noble-genies", "oathbreaker", "redemption", "vengeance", "watchers", "oath-of-pestilence", "oath-of-slaughter", "oath-of-zeal"],
-  ranger: ["beast-master", "drakewarden", "fey-wanderer", "gloom-stalker", "hollow-warden", "horizon-walker", "hunter", "monster-slayer", "swarmkeeper", "winter-walker"],
-  rogue: ["arcane-trickster", "assassin", "inquisitive", "mastermind", "phantom", "scion-of-the-three", "scout", "soulknife", "swashbuckler", "thief"],
-  sorcerer: ["aberrant", "clockwork", "divine-soul", "draconic", "lunar", "pyromancer", "shadow", "spellfire", "storm", "wild-magic"],
-  warlock: ["archfey", "celestial", "fathomless", "fiend", "genie", "great-old-one", "hexblade", "undead", "undying"],
-  wizard: ["abjuration", "abjurer", "bladesinger", "chronurgy", "conjuration", "divination", "diviner", "enchantment", "evocation", "evoker", "graviturgy", "illusion", "illusionist", "necromancy", "scribes", "transmutation", "war"],
+  ranger: ["beast-master", "drakewarden", "fey-wanderer", "gloom-stalker", "hollow-warden", "horizon-walker", "hunter", "monster-slayer", "swarmkeeper", "winter-walker", "green-reaper", "primordial-archer", "vermin-lord"],
+  rogue: ["arcane-trickster", "assassin", "inquisitive", "mastermind", "phantom", "scion-of-the-three", "scout", "soulknife", "swashbuckler", "thief", "highway-rider", "misfortune-bringer", "sanguine-thief"],
+  sorcerer: ["aberrant", "clockwork", "divine-soul", "draconic", "lunar", "pyromancer", "shadow", "spellfire", "storm", "wild-magic", "apocalypse-sorcery", "haunted-sorcery", "wretched-bloodline-sorcery"],
+  warlock: ["archfey", "celestial", "fathomless", "fiend", "genie", "great-old-one", "hexblade", "undead", "undying", "the-coven", "the-first-vampire-patron", "the-parasite-patron"],
+  wizard: ["abjuration", "abjurer", "bladesinger", "chronurgy", "conjuration", "divination", "diviner", "enchantment", "evocation", "evoker", "graviturgy", "illusion", "illusionist", "necromancy", "scribes", "transmutation", "war", "daemonologist", "plague-doctor", "sangromancer"],
 };
 let approvedTarotCount = 0;
 for (const [classKey, families] of Object.entries(approvedTarotFamilies)) {
@@ -267,7 +267,7 @@ for (const [classKey, families] of Object.entries(approvedTarotFamilies)) {
     assert(fs.existsSync(path.join(root, `public/media/subclasses/${classKey}/${classKey}-${family}.webp`)), `Approved tarot asset missing ${classKey}/${family}`);
   }
 }
-assert(approvedTarotCount === 172, `Expected 172 installed approved Tarot concepts after consolidating 21 approved Grim Hollow expansion cards on main, found ${approvedTarotCount}.`);
+assert(approvedTarotCount === 187, `Expected 187 installed approved Tarot concepts after consolidating all 36 approved Grim Hollow expansion cards on main, found ${approvedTarotCount}.`);
 for (const token of [
   '"path-of-the-fractured": "path-of-the-fractured"',
   '"path-of-the-primal-spirit": "path-of-the-primal-spirit"',
@@ -290,6 +290,21 @@ for (const token of [
   '"oath-of-pestilence": "oath-of-pestilence"',
   '"oath-of-slaughter": "oath-of-slaughter"',
   '"oath-of-zeal": "oath-of-zeal"',
+  '"green-reaper": "green-reaper"',
+  '"primordial-archer": "primordial-archer"',
+  '"vermin-lord": "vermin-lord"',
+  '"highway-rider": "highway-rider"',
+  '"misfortune-bringer": "misfortune-bringer"',
+  '"sanguine-thief": "sanguine-thief"',
+  '"apocalypse-sorcery": "apocalypse-sorcery"',
+  '"haunted-sorcery": "haunted-sorcery"',
+  '"wretched-bloodline-sorcery": "wretched-bloodline-sorcery"',
+  '"the-coven": "the-coven"',
+  '"the-first-vampire-patron": "the-first-vampire-patron"',
+  '"the-parasite-patron": "the-parasite-patron"',
+  'daemonologist: "daemonologist"',
+  '"plague-doctor": "plague-doctor"',
+  'sangromancer: "sangromancer"',
 ]) {
   assert(subclassArtwork.includes(token), `Approved Grim Hollow Tarot mapping missing ${token}`);
 }
