@@ -8,8 +8,8 @@ function visibleForgeModal() {
 
 function validationContainer(node) {
   if (!node) return null;
-  if (node.matches?.("details, .npc-forge-catalog, .npc-forge-form-grid, .npc-forge-identity-art, .npc-forge-ability-drop-grid, .npc-forge-species-bonus, .npc-forge-species-choice, .npc-forge-training-step, .npc-forge-spell-validation, .npc-forge-equipment-layout, .npc-forge-class-guide, .npc-forge-class-guide__subclasses")) return node;
-  return node.closest?.("details, .npc-forge-species-choice, .npc-forge-source-choice-group, .npc-forge-class-choice-group, .npc-forge-class-guide__subclasses, .npc-forge-class-guide, .npc-forge-catalog, .npc-forge-form-grid, .npc-forge-workspace") || node;
+  if (node.matches?.("details, .npc-forge-catalog, .npc-forge-form-grid, .npc-forge-identity-art, .npc-forge-ability-drop-grid, .npc-forge-species-bonus, .npc-forge-species-choice, .npc-forge-training-step, .npc-forge-training-pick-group, .npc-forge-training-expertise-guide, .npc-forge-spell-validation, .npc-forge-equipment-layout, .npc-forge-class-guide, .npc-forge-class-guide__subclasses")) return node;
+  return node.closest?.("details, .npc-forge-training-pick-group, .npc-forge-training-expertise-guide, .npc-forge-species-choice, .npc-forge-source-choice-group, .npc-forge-class-choice-group, .npc-forge-class-option-group, .npc-forge-class-guide__subclasses, .npc-forge-class-guide, .npc-forge-catalog, .npc-forge-form-grid, .npc-forge-workspace") || node;
 }
 
 export function clearForgeValidationGuidance(modal = null) {
@@ -59,7 +59,9 @@ export function forgeStepGuidanceSelectors(stepKey = "", message = "") {
     ? [".npc-forge-catalog"]
     : [".npc-forge-level-row", ".npc-forge-class-guide", ".npc-forge-workspace"];
   if (key === "abilities") return [".npc-forge-species-bonus", ".npc-forge-ability-drop-grid", ".npc-forge-workspace"];
-  if (key === "training") return [".npc-forge-class-choice-group.is-required", ".npc-forge-training-step", ".npc-forge-workspace"];
+  if (key === "training") return text.includes("expertise")
+    ? [".npc-forge-training-class-skills", ".npc-forge-training-expertise-guide.is-required", ".npc-forge-training-step"]
+    : [".npc-forge-class-choice-group.is-required", ".npc-forge-class-option-group.is-required", ".npc-forge-training-step", ".npc-forge-workspace"];
   if (key === "spells") return [".npc-forge-spell-validation.is-incomplete", ".npc-forge-source-choice-group.is-required", ".npc-forge-workspace"];
   if (key === "equipment") return [".npc-forge-equipment-layout", ".npc-forge-workspace"];
   if (key === "identity") return text.includes("portrait")

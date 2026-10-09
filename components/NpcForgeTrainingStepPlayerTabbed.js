@@ -54,6 +54,7 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
   const activeClassGroups = useMemo(() => activeClassFeatureGroups(classGroups, classSelections), [classGroups, classSelections]);
 
   const trainingClassGroups = useMemo(() => activeClassGroups.filter((group) => (group.placement || "class") === "training"), [activeClassGroups]);
+  const expertiseGroups = useMemo(() => trainingClassGroups.filter((group) => group.kind === "expertise"), [trainingClassGroups]);
   const classFeatureGroups = useMemo(() => activeClassGroups.filter((group) => (group.placement || "class") === "class"), [activeClassGroups]);
   const resolverTrainingGroups = useMemo(() => sourceChoiceGroupsForResolverPlacement(sourceChoiceState, "training"), [sourceChoiceState]);
   const trainingSourceGroups = useMemo(() => resolverTrainingGroups.filter((group) => (
@@ -81,6 +82,7 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
   const backgroundChoiceDone = (props.backgroundSkillChoices || []).reduce((total, group) => total + Math.min(Number(group.count || 1), (props.backgroundSkillSelections?.[group.id] || []).length), 0);
   const incompleteBackgroundChoices = backgroundChoiceDone !== backgroundChoiceTarget;
   const incompleteTrainingClass = classGroupsIncomplete(trainingClassGroups, classSelections);
+  const incompleteExpertiseGroup = expertiseGroups.find((group) => group?.required && (classSelections?.[group.id] || []).length !== Number(group.count || 0)) || null;
   const incompleteTrainingSource = trainingSourceGroups.some((group) => !sourceChoiceGroupComplete(group, sourceSelections));
 
   const bonusFeatRequired = controller.draft?.speciesBonus?.mode === "feat";
@@ -106,14 +108,31 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
     function routeContinueToUnfinishedView(event) {
       const button = event.target?.closest?.("button");
       if (!button || button.textContent?.trim() !== "Continue") return;
-      if (incompleteBonusFeat) selectView("feats");
-      else if (skillsIncomplete) selectView("skills");
-      else if (featsIncomplete) selectView("feats");
-      else if (classChoicesIncomplete) selectView("class");
+      const incompleteClassGroup = classFeatureGroups.find((group) => group?.required && (classSelections?.[group.id] || []).length !== Number(group.count || 0)) || null;
+      const incompleteClassSourceGroup = classSourceGroups.find((group) => !sourceChoiceGroupComplete(group, sourceSelections)) || null;
+      if (incompleteBonusFeat) {
+        setActiveView("feats");
+        controller.setError?.("Choose your Bonus Feat before continuing.");
+      } else if (incompleteExpertiseGroup) {
+        setActiveView("skills");
+        const done = (classSelections?.[incompleteExpertiseGroup.id] || []).length;
+        const left = Math.max(1, Number(incompleteExpertiseGroup.count || 0) - done);
+        controller.setError?.(`Choose ${left} more proficient skill${left === 1 ? "" : "s"} to gain Expertise. Use the Expertise flags in Skills.`);
+      } else if (skillsIncomplete) {
+        setActiveView("skills");
+        controller.setError?.("Finish the highlighted Skill, Trade Skill, language, or tool choice before continuing.");
+      } else if (featsIncomplete) {
+        setActiveView("feats");
+        controller.setError?.("Finish the highlighted feat choice before continuing.");
+      } else if (classChoicesIncomplete) {
+        setActiveView("class");
+        const label = incompleteClassGroup?.label || incompleteClassSourceGroup?.label || "Class choice";
+        controller.setError?.(`Complete ${label} in Class Choices before continuing.`);
+      }
     }
     window.addEventListener("click", routeContinueToUnfinishedView, true);
     return () => window.removeEventListener("click", routeContinueToUnfinishedView, true);
-  }, [classChoicesIncomplete, featsIncomplete, incompleteBonusFeat, skillsIncomplete]);
+  }, [classChoicesIncomplete, classFeatureGroups, classSelections, classSourceGroups, controller, featsIncomplete, incompleteBonusFeat, incompleteExpertiseGroup, skillsIncomplete, sourceSelections]);
 
   function overviewDetail(view) {
     const trainingProgress = classGroupProgress(trainingClassGroups, classSelections);
@@ -170,11 +189,11 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
         view,
         icon: `${TRAINING_ASSET_ROOT}/summary-training.svg`,
         title: "Class Choices",
-        description: "Persistent choices granted by your class or subclass live here: invocations, fighting styles, maneuvers, magic-item plans, and similar advancement decisions.",
+        description: "Only unresolved or reviewable permanent class and subclass choices appear here. Select a row on the left to inspect and confirm it.",
         metrics: [
-          { label: "Required class choices", value: (classProgress.target + classSourceProgress.target) ? `${classProgress.done + classSourceProgress.done}/${classProgress.target + classSourceProgress.target}` : "0", detail: "Active class, subclass, and source-backed decisions" },
-          { label: "Feature choices", value: classProgress.target ? `${classProgress.done}/${classProgress.target}` : "0", detail: className },
-          { label: "Subclass", value: subclassName || "None", detail: subclassName ? "Selected subclass source" : "No subclass selected at this level" },
+          { label: "Required", value: (classProgress.target + classSourceProgress.target) ? `${classProgress.done + classSourceProgress.done}/${classProgress.target + classSourceProgress.target}` : "0", detail: "Permanent choices due now" },
+          { label: "Class", value: className, detail: `Level ${controller.draft?.level || 1}` },
+          { label: "Subclass", value: subclassName || "None", detail: subclassName ? "Selected subclass" : "No subclass at this level" },
         ],
         sources: [
           { label: className, detail: `Level ${controller.draft?.level || 1} class progression`, value: classChoicesIncomplete ? "Choices left" : "Current" },
@@ -249,7 +268,7 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
       <span>ⓘ</span>
       <p>{activeView === "feats"
         ? "Click a feat to inspect it on the right. For selectable bonus feats, confirm the choice with Select Feat in Current Selection. Feat-owned non-spell follow-ups remain with the feat; granted spells continue to Spells."
-        : "Resolve persistent class and subclass choices here, including Eldritch Invocations, fighting styles, maneuvers, Artificer plans, and similar level-based options."}</p>
+        : "Resolve only permanent choices due at this level, including Eldritch Invocations, fighting styles, maneuvers, and similar class options. Empty choice families are hidden."}</p>
     </div> : null}
 
     <style jsx global>{`

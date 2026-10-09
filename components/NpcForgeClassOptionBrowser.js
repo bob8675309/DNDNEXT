@@ -21,11 +21,7 @@ export default function NpcForgeClassOptionBrowser({ groups = [], selections = {
     [groups]
   );
 
-  if (!visibleGroups.length) {
-    return <section className="npc-forge-class-option-browser is-empty">
-      <header><span>Source-backed class options</span><strong>No additional class-option slots are active at this level.</strong></header>
-    </section>;
-  }
+  if (!visibleGroups.length) return null;
 
   return <section className="npc-forge-class-option-browser" aria-label="Source-backed class choices">
     <header>
@@ -94,13 +90,13 @@ export default function NpcForgeClassOptionBrowser({ groups = [], selections = {
     </div>
 
     <style jsx global>{`
-      .npc-forge-class-option-browser{display:grid;gap:9px;margin:0;padding:9px 0;border-top:1px solid rgba(255,255,255,.06)}
-      .npc-forge-class-option-browser>header{display:flex;align-items:end;justify-content:space-between;gap:12px;padding:0 1px}
+      .npc-forge-class-option-browser{display:grid;gap:6px;margin:0;padding:6px 0 2px;border-top:1px solid rgba(255,255,255,.06)}
+      .npc-forge-class-option-browser>header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 1px}
       .npc-forge-class-option-browser>header>div{display:grid;gap:2px}
       .npc-forge-class-option-browser>header span{color:#9cece2;font-size:.52rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
-      .npc-forge-class-option-browser>header strong{color:#fff;font-size:.7rem}
-      .npc-forge-class-option-browser>header p{max-width:260px;margin:0;color:rgba(255,255,255,.48);font-size:.48rem;line-height:1.4}
-      .npc-forge-class-option-browser.is-empty{padding:12px 1px}
+      .npc-forge-class-option-browser>header strong{color:#fff;font-size:.64rem}
+      .npc-forge-class-option-browser>header p{max-width:250px;margin:0;color:rgba(255,255,255,.48);font-size:.45rem;line-height:1.3}
+      
       .npc-forge-class-option-browser__groups{display:grid;gap:6px}
       .npc-forge-class-option-group{border:1px solid rgba(168,108,255,.24);border-left:3px solid rgba(168,108,255,.42);border-radius:9px;background:linear-gradient(120deg,rgba(126,72,199,.075),rgba(4,7,13,.45));overflow:hidden}
       .npc-forge-class-option-group.is-required{border-left-color:rgba(243,191,99,.78)}
