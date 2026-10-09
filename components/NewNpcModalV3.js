@@ -285,7 +285,9 @@ export default function NewNpcModalV3(props) {
         const selectors = expertise
           ? [".npc-forge-training-class-skills", ".npc-forge-training-expertise-guide.is-required", ".npc-forge-training-step"]
           : [".npc-forge-training-feat-section .npc-forge-class-choice-group.is-required", ".npc-forge-class-option-group.is-required", ".npc-forge-training-feat-section", ".npc-forge-workspace"];
-        showForgeValidationGuidance(message, selectors, modal);
+        const showTrainingGuidance = () => showForgeValidationGuidance(message, selectors, modal);
+        if (typeof window !== "undefined" && typeof window.requestAnimationFrame === "function") window.requestAnimationFrame(showTrainingGuidance);
+        else showTrainingGuidance();
         return;
       }
       if (playerMode && /Spells/i.test(currentStep) && classState.classId && !classFeatureGroupsComplete(classState.featureGroups || [], classState.featureSelections || {}, "spells")) {
