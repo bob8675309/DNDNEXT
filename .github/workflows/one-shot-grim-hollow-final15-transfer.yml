@@ -27,7 +27,7 @@ jobs:
       - name: Download approved bundle once
         run: |
           curl -fL --retry 2 --retry-delay 2 \
-            "https://uc3d086cf3804bb4d735a261787a.dl.dropboxusercontent.com/cd/0/get/DJqxd2VL0_B8RF6q44LcZ_TYoeA2_mkB1X-FQr0o9QTkRg6V3SL41iBJgNI8oDjEokxWyM1N7g7YgLKkCox9-3BTUWScns5OqrtUBWk8s2C4iityyNr_ukFRX0czj0IirFfmIyBBjAyomdtKK1cyh59vxAtG8L2_9MjVzLmZX3Dbag/file?c_luid=c335000c" \
+            "https://uc6ae15e73bba524263b5b312aea.dl.dropboxusercontent.com/cd/0/get/DJrvG_FX3XFEXSG2k8mx48sgkcdl-3b2TfvFuJvLiu0UTWbvvAnkjKm1mTzadFuqpzZ2L4saNo7KPy3N8A0JcGFhS8XkNQqK3LoDuKggmPcvBaAI5rg7Q5_zUWld-3XjaZ0aYOZa64RF6U71D2EMATH75dADD0orMZ5cnfIerpfO_Q/file?c_luid=c335000c" \
             -o /tmp/final15.zip
           echo "8cc78d43db010d859d2ddd75503f4d643372787c52e7db07f192da176885bcee  /tmp/final15.zip" | sha256sum -c -
 
@@ -82,6 +82,7 @@ jobs:
 
       - name: Exact diff guard
         run: |
+          git add public/media/subclasses/ranger public/media/subclasses/rogue public/media/subclasses/sorcerer public/media/subclasses/warlock public/media/subclasses/wizard
           cat > /tmp/expected.txt <<'EOF'
           public/media/subclasses/ranger/ranger-green-reaper.webp
           public/media/subclasses/ranger/ranger-primordial-archer.webp
@@ -99,7 +100,7 @@ jobs:
           public/media/subclasses/wizard/wizard-plague-doctor.webp
           public/media/subclasses/wizard/wizard-sangromancer.webp
           EOF
-          git diff --name-only | sort > /tmp/actual.txt
+          git diff --cached --name-only | sort > /tmp/actual.txt
           sort /tmp/expected.txt -o /tmp/expected.txt
           diff -u /tmp/expected.txt /tmp/actual.txt
 
@@ -110,6 +111,5 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/media/subclasses/ranger public/media/subclasses/rogue public/media/subclasses/sorcerer public/media/subclasses/warlock public/media/subclasses/wizard
           git commit -m "art: install final 15 approved Grim Hollow Tarot cards"
           git push origin HEAD:agent/grim-hollow-final15-20261008
