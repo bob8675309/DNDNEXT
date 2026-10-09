@@ -20,13 +20,32 @@ Current production authority is consolidated on `main`.
 - The restored authoritative art-direction file is `CHARACTER_FORGE_TAROT_SUBCLASS_CARD_STANDARD.md`.
 - The restored current artwork maintenance handoff is `CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md`.
 - `Character_Progression_v3_Implementation_Status.md` is no longer the accidental path-probe placeholder; it now points to the real progression authority and records the merged PR #202 choice-routing state.
-- Vercel production for consolidation commit `076a9b92e3d492f2dd4867d418477997ca0b4852` is READY and `/profile` returned HTTP 200.
+- Current production checkpoint `3b4cb1113b170d703f4f161f8ac149a3e7f2ffe9` (PR #204) is deployed READY on Vercel and `/profile` returned HTTP 200.
 
 Current source of truth for the Grim Hollow art queue is `Next_Chat_Handoff_2026-10-07_Grim_Hollow_Tarot.md` (updated in place on 2026-10-08) plus the artwork checklist/status docs.
 
 The Grim Hollow source catalogue is production content. All 36 new non-Monster-Hunter subclass identities are runtime-visible and now have dedicated approved Tarot cards; current runtime fallback count is 0.
 
 Always re-fetch current `main` before writing; do not treat any recorded SHA as permanently current.
+
+### 2026-10-09 next product direction — finish Forge, preserve AI readiness
+
+The next broad development priority is to finish/reconcile the ten-step Character Forge on current `main` before implementing the planned AI subsystem.
+
+Use `docs/Unified_Character_Forge_Status.md` for the shared Forge authority and `docs/DNDNEXT_AI_INTEGRATION_FOUNDATION.md` for the agreed future local-AI direction.
+
+While finishing Forge, preserve stable canonical ids, source/provenance metadata, structured lifecycle-aware choices, explicit ownership/permission boundaries, and reusable read models. Do not add an AI-specific save path or duplicate character state.
+
+Planned AI work after the Forge completion pass:
+
+1. local admin magic-item drafting into the existing item-creation modal;
+2. one text-only NPC conversation proof;
+3. shared Actor AI for NPCs/monsters;
+4. later bounded encounter decisions selected only from encounter-engine-generated legal actions;
+5. eventual downloadable local-model packaging.
+
+Existing DNDNext validation/persistence remains authoritative. AI is a creative/reasoning layer, never a replacement for Forge, crafting, combat, inventory, or database authority.
+
 
 ## 2026-10-01 authoritative override — use this before every older checkpoint below
 
