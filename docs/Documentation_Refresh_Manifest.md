@@ -28,8 +28,10 @@ Everything below this section is historical unless a newer focused ledger says o
 - Grim Hollow item seeding preserves generated GP-normalized prices rather than reinterpreting source cp as gp;
 - current Grim Hollow Tarot creation queue: **0**; all 185 runtime-visible subclasses have dedicated approved Tarot coverage;
 - restored/vetted docs from PR #198: Tarot card standard, Tarot art handoff, and the real progression v3 status pointer;
-- production deployment for consolidation commit `076a9b92e3d492f2dd4867d418477997ca0b4852`: **READY**;
-- `/profile` returned HTTP 200 on that deployment.
+- current `main` checkpoint `3b4cb1113b170d703f4f161f8ac149a3e7f2ffe9` (PR #204): production deployment **READY**;
+- `/profile` returned HTTP 200 on that deployment;
+- next broad priority: Character Forge completion/reconciliation on current `main`;
+- future AI direction documented in `DNDNEXT_AI_INTEGRATION_FOUNDATION.md`; implementation remains deferred until the Forge completion pass.
 
 Current focused documents:
 
@@ -39,6 +41,7 @@ Current focused documents:
 - `CHARACTER_FORGE_TAROT_SUBCLASS_CARD_STANDARD.md`;
 - `CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md`;
 - `Character_Progression_v3_Implementation_Status.md`;
+- `DNDNEXT_AI_INTEGRATION_FOUNDATION.md`;
 - `CHATGPT_REPO_WRITE_PROCEDURE.md`.
 
 ## 2026-10-01 current checkpoint override
