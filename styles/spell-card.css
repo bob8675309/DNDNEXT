@@ -104,18 +104,132 @@
   overflow-wrap: anywhere;
 }
 
+.spell-card__body {
+  display: grid;
+  gap: 0.5rem;
+  min-height: 0;
+}
+
 .spell-card__description,
 .spell-card__higher {
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 10px;
   background: rgba(0,0,0,0.16);
   padding: 0.55rem;
-  white-space: pre-wrap;
+}
+
+.spell-card__description .source-rule-content {
+  font-size: 0.84rem;
+  line-height: 1.58;
+}
+
+.spell-card__description .source-rule-content__list ul {
+  grid-template-columns: 1fr;
+  gap: 0.34rem;
+}
+
+.spell-card__description .source-rule-content__list li {
+  padding: 0.46rem 0.55rem;
+  border: 0;
+  border-left: 2px solid color-mix(in srgb, var(--spell-accent) 60%, transparent);
+  border-radius: 0 7px 7px 0;
+  background: color-mix(in srgb, var(--spell-accent) 7%, rgba(0,0,0,0.08));
 }
 
 .spell-card__higher {
-  margin-top: 0.45rem;
   color: rgba(255,255,255,0.86);
+}
+
+.spell-card__progression {
+  padding: 0;
+  overflow: hidden;
+}
+
+.spell-card__progression > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  padding: 0.55rem 0.65rem;
+  cursor: pointer;
+  list-style: none;
+  color: #f1ddff;
+  font-weight: 850;
+}
+
+.spell-card__progression > summary::-webkit-details-marker {
+  display: none;
+}
+
+.spell-card__progression > summary::before {
+  content: "›";
+  flex: 0 0 auto;
+  color: var(--spell-accent);
+  font-size: 1rem;
+  line-height: 1;
+  transform: rotate(0deg);
+  transition: transform 140ms ease;
+}
+
+.spell-card__progression[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.spell-card__progression > summary > span {
+  margin-right: auto;
+}
+
+.spell-card__progression > summary > small {
+  color: rgba(255,255,255,0.5);
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+.spell-card__progression-body {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0 0.65rem 0.65rem;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+.spell-card__progression-body .source-rule-content {
+  padding-top: 0.55rem;
+  font-size: 0.8rem;
+}
+
+.spell-card__scaling-table {
+  display: grid;
+  gap: 0;
+  margin-top: 0.55rem;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 8px;
+}
+
+.spell-card__scaling-table > div {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.8fr) minmax(0, 1.2fr);
+  gap: 0.7rem;
+  align-items: center;
+  padding: 0.42rem 0.55rem;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.spell-card__scaling-table > div:first-child {
+  border-top: 0;
+}
+
+.spell-card__scaling-head {
+  color: rgba(255,255,255,0.58);
+  background: rgba(255,255,255,0.035);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.spell-card__scaling-table strong {
+  color: #fff;
 }
 
 .spell-card__footer {
@@ -126,10 +240,12 @@
   margin-top: 0.55rem;
 }
 
-.spell-card--compact .spell-card__description,
-.spell-card--compact .spell-card__higher {
-  max-height: 7.5rem;
-  overflow: auto;
+.spell-card--compact .spell-card__body {
+  max-height: clamp(260px, 38vh, 500px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 0.18rem;
+  scrollbar-gutter: stable;
 }
 
 .spell-card--dense {
@@ -220,4 +336,68 @@
   .spell-card__grid {
     grid-template-columns: 1fr;
   }
+}
+
+.spell-card--compressed {
+  padding: 0.58rem;
+  border-radius: 12px;
+  font-size: 0.86rem;
+}
+
+.spell-card--compressed .spell-card__header {
+  gap: 0.5rem;
+  padding-bottom: 0.36rem;
+  margin-bottom: 0.4rem;
+}
+
+.spell-card--compressed .spell-card__title {
+  font-size: 1rem;
+  line-height: 1.08;
+}
+
+.spell-card--compressed .spell-card__eyebrow,
+.spell-card--compressed .spell-card__source,
+.spell-card--compressed .spell-card__footer {
+  font-size: 0.6rem;
+}
+
+.spell-card--compressed .spell-card__source {
+  padding: 0.16rem 0.34rem;
+}
+
+.spell-card--compressed .spell-card__badges {
+  margin-bottom: 0.42rem;
+}
+
+.spell-card--compressed .spell-card__badges span {
+  font-size: 0.6rem;
+  padding: 0.14rem 0.34rem;
+}
+
+.spell-card--compressed .spell-card__grid {
+  gap: 0.3rem;
+  margin-bottom: 0.44rem;
+}
+
+.spell-card--compressed .spell-card__grid > div {
+  padding: 0.3rem 0.4rem;
+  border-radius: 8px;
+}
+
+.spell-card--compressed dt {
+  font-size: 0.58rem;
+}
+
+.spell-card--compressed dd {
+  font-size: 0.78rem;
+  line-height: 1.25;
+}
+
+.spell-card--compressed .spell-card__description .source-rule-content {
+  font-size: 0.82rem;
+}
+
+.spell-card--compressed .spell-card__progression > summary {
+  padding: 0.48rem 0.55rem;
+  font-size: 0.78rem;
 }
