@@ -102,12 +102,14 @@ for (const token of [
   'label: "Class"',
   "activeClassFeatureGroups",
   "backgroundSourceSkillOptions",
-  "Required class choices",
+  "Permanent choices due now",
 ]) assert(playerTabbed.includes(token), `Segmented Skills/Feats/Class Choices navigation or player-facing source summary is missing ${token}`);
 assert(trainingContext.includes("Where these come from"), "Training section tabs must publish source/count breakdowns into Current Selection.");
 assert(!trainingContext.includes("Moving the mouse over another row will no longer replace") && trainingContext.includes("npc-forge-training-overview__source-name"), "Skills overview must remove implementation-facing helper copy and visually separate Background/Class names from their player-facing descriptions.");
 assert(trainingContext.includes('detail?.type === "classSourceOption"') && trainingContext.includes("toggleChoice: toggleSourceChoice") && trainingContext.includes('"Replace Selection"') && trainingContext.includes("dossier?.scrollTo?.({ top: 0"), "Current Selection must own source-backed Class Choice confirmation and reset its scroll position on deliberate clicks.");
 assert(trainingContext.includes('"Select Skill"') && trainingContext.includes('"Deselect Skill"') && trainingContext.includes('"Select Trade Skill"') && playerTraining.includes("sourceChoiceSelected") && playerTraining.includes("fixedSourceGranted"), "Skills must browse on the left and support Select/Deselect from Current Selection without treating removable source choices as fixed grants.");
+assert(playerTraining.includes("npc-forge-training-expertise-flag") && playerTraining.includes("Add Expertise") && playerTraining.includes("Expertise never creates proficiency"), "Expertise must present as a direct flag on already-proficient Skill rows instead of a detached Training mini-form.");
+assert(classOptionBrowser.includes("if (!visibleGroups.length) return null;"), "Empty source-backed Class Choice families must not reserve dead space.");
 assert(featPicker.includes("sortMode") && featPicker.includes("prerequisiteFilter") && featPicker.includes("categoryLabel") && featPicker.includes("Name A–Z") && featPicker.includes("Required level"), "Feat catalogue must provide player-readable category names, prerequisite filtering, and explicit sorting controls.");
 assert(spellStep.includes("components_v,components_s,components_m,material_text") && !spellStep.includes("components_text"), "Spell catalogue query must match the live spells_catalog schema.");
 const invocationOptionBody = invocationChoices.slice(invocationChoices.indexOf("function invocationOption"), invocationChoices.indexOf("function selectedOption"));
