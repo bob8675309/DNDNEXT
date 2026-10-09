@@ -1,21 +1,21 @@
 # DNDNext Subclass Tarot Artwork — Current Handoff
 
-Updated: 2026-10-08
+Updated: 2026-10-09
 
-Status: **current maintenance handoff for the approved Tarot deck and active Grim Hollow expansion.**
+Status: **current maintenance handoff for the completed Grim Hollow Tarot expansion and future subclass-art maintenance.**
 
 This file restores the durable artwork handoff path from PR #198 without carrying forward its stale September branch/selector state.
 
 ## Current completion state
 
-Current `main` after the Grim Hollow source-content merge:
+Current `main` after the completed Grim Hollow Tarot rollout:
 
 - runtime-visible subclass choices: **185**;
-- dedicated approved Tarot coverage for current runtime choices: **170 / 185**;
-- runtime-visible source/class fallbacks: **15**;
-- approved Grim Hollow expansion cards installed on `main`: **21 / 36**;
-- remaining Grim Hollow cards to create: **15**;
-- focused validator-tracked approved asset families: **172**.
+- dedicated approved Tarot coverage for current runtime choices: **185 / 185**;
+- runtime-visible source/class fallbacks: **0**;
+- approved Grim Hollow expansion cards installed on `main`: **36 / 36**;
+- remaining Grim Hollow cards to create: **0**;
+- focused validator-tracked approved asset families: **187**.
 
 The four Monster Hunter Guilds were already represented in the existing deck and are not part of the 36-card new-art requirement.
 
@@ -61,21 +61,22 @@ Selector geometry/stage work must preserve the approved Tarot deck. Do not regen
 
 ## Grim Hollow expansion state
 
-Approved and installed on `main`:
+The 36-card new-art requirement is complete and installed on `main`:
 
 - Barbarian: Path of the Fractured; Path of the Primal Spirit; Path of the Wrathful Dead.
 - Bard: College of Adventurers; College of Fools; College of Requiems.
 - Cleric: Eldritch Domain; Inquisition Domain; Purification Domain.
 - Druid: Circle of Blood; Circle of Entropy; Circle of Mutation.
-- Ranger: Green Reaper; Primordial Archer; Vermin Lord.
+- Fighter: Bulwark Warrior; Living Crucible; Nightwatcher.
 - Monk: Warrior of Pride; Warrior of Regret; Warrior of the Leaden Crown.
 - Paladin: Oath of Pestilence; Oath of Slaughter; Oath of Zeal.
+- Ranger: Green Reaper; Primordial Archer; Vermin Lord.
+- Rogue: Highway Rider; Misfortune Bringer; Sanguine Thief.
+- Sorcerer: Apocalypse Sorcery; Haunted Sorcery; Wretched Bloodline Sorcery.
+- Warlock: The Coven; The First Vampire Patron; The Parasite Patron.
+- Wizard: Daemonologist; Plague Doctor; Sangromancer.
 
-Next batch:
-
-- Fighter: Bulwark Warrior; Living Crucible; Nightwatcher.
-
-The source-backed Grim Hollow spells/items/subclasses import is on `main`. All 36 new non-Monster-Hunter identities are runtime-visible; 21 have approved dedicated Tarot cards and 15 remain in the artwork queue.
+The source-backed Grim Hollow spells/items/subclasses import is also on `main`. All 36 new non-Monster-Hunter identities are runtime-visible and have dedicated approved Tarot cards. There is no remaining Grim Hollow artwork queue.
 
 ## Future artwork workflow
 
