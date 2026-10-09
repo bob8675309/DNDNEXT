@@ -1,5 +1,27 @@
 # Character Forge Training Redesign Status
 
+## 2026-10-09 browser-review follow-up — PR #206
+
+Paul’s current-main browser review identified four focused presentation/usability defects without changing the established Training authority model:
+
+- Background dossier/catalogue text was slightly too small for comfortable reading;
+- Expertise was technically correct but presented as a detached feature-choice mini-form;
+- Class Choices reserved too much space for empty or low-content choice families;
+- Rogue could be blocked by a legitimate required choice such as **Thieves’ Cant additional language** without clearly telling the player what remained.
+
+PR #206 corrects those issues while preserving canonical state:
+
+- Expertise remains a `classFeatureChoices` selection and persists through the existing player creation/progression authority, but it is now applied as an **Expertise flag directly on an already-proficient Skill row**;
+- losing the prerequisite skill proficiency still clears an invalid Expertise selection;
+- the detached Expertise picker is suppressed from Other Training Choices rather than creating a second state path;
+- empty source-backed Class Choice catalogues render nothing instead of a large empty card, and inspect-only class choice cards use compact spacing;
+- Continue routing now distinguishes unresolved Expertise from unresolved Class Choices and emits a concrete message. For XPHB Rogue level 1, the source-correct blocker is **Thieves’ Cant additional language** because the live class feature grants Thieves’ Cant plus one other language;
+- validation highlighting waits until the routed Training subview is visible, then points at the relevant Skill/Class control;
+- the accepted Background layout is unchanged, with only modest typography increases.
+
+No database migration is required for this follow-up. The live Rogue source rows already contain the correct Expertise and Thieves’ Cant rules; this patch changes presentation and validation guidance only.
+
+
 Updated: 2026-08-20
 
 Status: implementation is substantially complete on PR #176 (`agent/training-tab-redesign`). The exact runtime code checkpoint `4cfa889d36df465d0ee6e892991e5cfa816b3aeb` passed every triggered GitHub workflow and has an exact Vercel deployment in `READY` state. Later commits in this file are documentation-only. Do not merge until Paul browser-reviews the preview and the remaining browser acceptance items below are complete or explicitly deferred.
