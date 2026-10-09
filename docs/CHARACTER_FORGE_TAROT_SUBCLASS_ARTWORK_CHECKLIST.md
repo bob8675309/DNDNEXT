@@ -1,6 +1,6 @@
 # Character Forge Tarot Subclass Artwork Checklist
 
-Status date: 2026-10-08
+Status date: 2026-10-09
 
 This checklist tracks the production-visible Tarot deck, not the historical preferred-source concept count.
 
@@ -14,19 +14,17 @@ Historical normalized checkpoint:
 Current consolidated `main` state:
 
 - runtime-visible choices after the Grim Hollow catalogue merge: **185**;
-- runtime-visible choices with approved dedicated Tarot coverage: **170 / 185**;
-- current runtime-visible choices still using fallback artwork: **15**;
-- approved Grim Hollow expansion cards installed on `main`: **21 / 36**;
-- validator-tracked approved asset families installed in the repository: **172**;
-- Grim Hollow expansion cards still to create: **15**.
+- runtime-visible choices with approved dedicated Tarot coverage: **185 / 185**;
+- current runtime-visible choices still using fallback artwork: **0**;
+- approved Grim Hollow expansion cards installed on `main`: **36 / 36**;
+- validator-tracked approved asset families installed in the repository: **187**;
+- Grim Hollow expansion cards still to create: **0**.
 
-The 21 approved Grim Hollow cards are live presentation assets. The remaining 15 new identities are valid runtime choices and remain in the artwork queue.
+All 36 new non-Monster-Hunter Grim Hollow identities now have approved dedicated Tarot cards. The source/class fallback remains only as a safety net for genuinely unknown or future catalogue content.
 
-## Grim Hollow Player's Guide expansion — 21/36 approved
+## Grim Hollow Player's Guide expansion — 36/36 complete
 
-The Player's Guide adds 40 subclasses. Four Monster Hunter Guilds already have dedicated cards in the existing deck, leaving **36 new cards** to create.
-
-Paul has approved these **21** new cards:
+The Player's Guide adds 40 subclasses. Four Monster Hunter Guilds already had dedicated cards in the existing deck, leaving **36 new cards**; all 36 are now approved, installed, and mapped.
 
 ### Barbarian — 3/3
 - [x] Path of the Fractured
@@ -63,17 +61,32 @@ Paul has approved these **21** new cards:
 - [x] Oath of Slaughter
 - [x] Oath of Zeal
 
-All twenty-one approved Grim Hollow cards are installed directly on `main` at canonical 840x1440 WebP paths and mapped in `utils/classes/subclassArtwork.js`. The Grim Hollow source-content import is also on `main`, so the 36 new non-Monster-Hunter identities are now runtime-visible.
+### Ranger — 3/3
+- [x] Green Reaper
+- [x] Primordial Archer
+- [x] Vermin Lord
 
-**Grim Hollow cards remaining to create: 15.**
+### Rogue — 3/3
+- [x] Highway Rider
+- [x] Misfortune Bringer
+- [x] Sanguine Thief
 
-Remaining batches:
+### Sorcerer — 3/3
+- [x] Apocalypse Sorcery
+- [x] Haunted Sorcery
+- [x] Wretched Bloodline Sorcery
 
-- Ranger: Green Reaper, Primordial Archer, Vermin Lord
-- Rogue: Highway Rider, Misfortune Bringer, Sanguine Thief
-- Sorcerer: Apocalypse Sorcery, Haunted Sorcery, Wretched Bloodline Sorcery
-- Warlock: The Coven, The First Vampire Patron, The Parasite Patron
-- Wizard: Daemonologist, Plague Doctor, Sangromancer
+### Warlock — 3/3
+- [x] The Coven
+- [x] The First Vampire Patron
+- [x] The Parasite Patron
+
+### Wizard — 3/3
+- [x] Daemonologist
+- [x] Plague Doctor
+- [x] Sangromancer
+
+All thirty-six new Grim Hollow cards are installed directly on `main` at canonical 840x1440 WebP paths and mapped in `utils/classes/subclassArtwork.js`. No Grim Hollow artwork queue remains.
 
 Grim Hollow art direction remains the established older Tarot presentation represented by the Battle Master/Soul Knife references: photorealistic cinematic fantasy, complete antique-gold border/title/emblem treatment, full bottom border, strong subclass theme, and deliberate species/pose/camera/environment variation. Anatomy and body symmetry must be checked before approval.
 
