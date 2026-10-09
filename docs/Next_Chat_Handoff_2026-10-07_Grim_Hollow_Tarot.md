@@ -1,6 +1,6 @@
 # Next Chat Handoff — Grim Hollow Tarot Expansion
 
-Status date: 2026-10-08
+Status date: 2026-10-09
 
 This is the focused handoff for continuing the Grim Hollow: Player's Guide Tarot-card rollout after consolidating the approved artwork and the completed PR #202 Forge polish onto current `main`.
 
@@ -27,11 +27,11 @@ The partnered Grim Hollow source remains pinned to:
 
 ## Tarot production authority
 
-The Grim Hollow Player's Guide set requires **36 new cards** because the four Monster Hunter Guilds already have approved dedicated Tarot cards.
+The Grim Hollow Player's Guide set requires **36 new cards** because the four Monster Hunter Guilds already had approved dedicated Tarot cards.
 
-Approved new Grim Hollow cards: **21 / 36**.
+Approved new Grim Hollow cards: **36 / 36**.
 
-All twenty-one approved cards are now installed and mapped on current `main`:
+All thirty-six approved cards are installed and mapped on current `main`:
 
 - Barbarian — Path of the Fractured; Path of the Primal Spirit; Path of the Wrathful Dead.
 - Bard — College of Adventurers; College of Fools; College of Requiems.
@@ -40,20 +40,17 @@ All twenty-one approved cards are now installed and mapped on current `main`:
 - Fighter — Bulwark Warrior; Living Crucible; Nightwatcher.
 - Monk — Warrior of Pride; Warrior of Regret; Warrior of the Leaden Crown.
 - Paladin — Oath of Pestilence; Oath of Slaughter; Oath of Zeal.
+- Ranger — Green Reaper; Primordial Archer; Vermin Lord.
+- Rogue — Highway Rider; Misfortune Bringer; Sanguine Thief.
+- Sorcerer — Apocalypse Sorcery; Haunted Sorcery; Wretched Bloodline Sorcery.
+- Warlock — The Coven; The First Vampire Patron; The Parasite Patron.
+- Wizard — Daemonologist; Plague Doctor; Sangromancer.
 
-The focused subclass validator requires all twenty-one approved binaries and mappings. The source-backed Grim Hollow catalogue is live on `main`, so all 36 new non-Monster-Hunter identities are runtime-visible; 15 still await dedicated Tarot cards.
+The focused subclass validator requires all thirty-six new Grim Hollow binaries and exact mappings. All 36 new non-Monster-Hunter identities are runtime-visible and now resolve to dedicated Tarot artwork.
 
-## Remaining creation queue — 15
+## Remaining creation queue — 0
 
-Continue in three-card class batches:
-
-1. Ranger — Green Reaper; Primordial Archer; Vermin Lord.
-2. Rogue — Highway Rider; Misfortune Bringer; Sanguine Thief.
-3. Sorcerer — Apocalypse Sorcery; Haunted Sorcery; Wretched Bloodline Sorcery.
-4. Warlock — The Coven; The First Vampire Patron; The Parasite Patron.
-5. Wizard — Daemonologist; Plague Doctor; Sangromancer.
-
-Next batch: **Ranger**.
+The Grim Hollow Player's Guide Tarot rollout is complete. Do not invent another Grim Hollow batch. Future card work begins only when Paul explicitly requests a replacement or a new source/catalogue introduces a genuinely new visible subclass.
 
 ## Art direction
 

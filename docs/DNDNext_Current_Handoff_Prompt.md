@@ -1,22 +1,22 @@
 # DNDNext Next-Chat Handoff Brief
 
-Updated: 2026-10-08
+Updated: 2026-10-09
 
 Repository: `bob8675309/DNDNEXT`
 
 Stack: Next.js **Pages Router** 16.1.6, React 19, Supabase/Postgres, Bootstrap/SCSS, Vercel.
 
 
-## 2026-10-08 authoritative override — use this before every older checkpoint below
+## 2026-10-09 authoritative override — use this before every older checkpoint below
 
 Current production authority is consolidated on `main`.
 
 - PR #199 (floating ruined-library subclass Tarot selector) is merged.
 - PR #202 (Metamagic Adept, invocation details, Forge spell browsing) is merged.
-- All 21 currently approved Grim Hollow expansion Tarot cards are installed and mapped on `main`.
+- All 36 required new Grim Hollow expansion Tarot cards are installed and mapped on `main`.
 - PR #203 (Grim Hollow Player's Guide spells/items/subclasses) is now folded into `main` after reconciliation.
 - Live Grim Hollow catalogue authority: 101 spells, 40 subclasses / 258 subclass-feature rows, and 106 items; the full item seeder preserves reviewed `price_gp` instead of treating raw 5etools cp values as gp.
-- Current focused Tarot continuation: Ranger — Green Reaper, Primordial Archer, Vermin Lord.
+- Grim Hollow Player's Guide Tarot rollout: complete at **36 / 36** new cards; no creation batch remains.
 - The restored authoritative art-direction file is `CHARACTER_FORGE_TAROT_SUBCLASS_CARD_STANDARD.md`.
 - The restored current artwork maintenance handoff is `CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md`.
 - `Character_Progression_v3_Implementation_Status.md` is no longer the accidental path-probe placeholder; it now points to the real progression authority and records the merged PR #202 choice-routing state.
@@ -24,7 +24,7 @@ Current production authority is consolidated on `main`.
 
 Current source of truth for the Grim Hollow art queue is `Next_Chat_Handoff_2026-10-07_Grim_Hollow_Tarot.md` (updated in place on 2026-10-08) plus the artwork checklist/status docs.
 
-The Grim Hollow source catalogue is production content. The 36 new non-Monster-Hunter subclass identities are runtime-visible; 21 have approved dedicated Tarot cards and 15 remain on trusted source/class fallback pending artwork.
+The Grim Hollow source catalogue is production content. All 36 new non-Monster-Hunter subclass identities are runtime-visible and now have dedicated approved Tarot cards; current runtime fallback count is 0.
 
 Always re-fetch current `main` before writing; do not treat any recorded SHA as permanently current.
 

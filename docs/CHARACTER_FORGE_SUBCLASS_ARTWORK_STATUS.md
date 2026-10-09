@@ -1,6 +1,6 @@
 # Character Forge Subclass Artwork Status
 
-Status date: 2026-10-08
+Status date: 2026-10-09
 
 This is the current focused status for the Character Forge subclass Tarot deck and selector presentation. Live source and the focused validator outrank older branch-era counts or selector descriptions.
 
@@ -9,10 +9,10 @@ This is the current focused status for the Character Forge subclass Tarot deck a
 The Grim Hollow Player's Guide source-content import is now part of the production catalogue:
 
 - runtime-visible subclass choices: **185**;
-- runtime-visible choices with dedicated approved Tarot cards: **170 / 185**;
-- runtime-visible choices still using source/class fallback artwork: **15**.
+- runtime-visible choices with dedicated approved Tarot cards: **185 / 185**;
+- runtime-visible choices still using source/class fallback artwork: **0**.
 
-The Grim Hollow: Player's Guide expansion adds 36 new visible subclass identities beyond the four Monster Hunter Guilds that already had dedicated cards. Paul has approved **21 / 36** of those new cards, and **all 21 approved cards are installed and mapped on `main`**:
+The Grim Hollow: Player's Guide expansion adds 36 new visible subclass identities beyond the four Monster Hunter Guilds that already had dedicated cards. Paul has approved **36 / 36**, and all 36 are installed and mapped on `main`:
 
 - Barbarian — Path of the Fractured; Path of the Primal Spirit; Path of the Wrathful Dead.
 - Bard — College of Adventurers; College of Fools; College of Requiems.
@@ -21,10 +21,15 @@ The Grim Hollow: Player's Guide expansion adds 36 new visible subclass identitie
 - Fighter — Bulwark Warrior; Living Crucible; Nightwatcher.
 - Monk — Warrior of Pride; Warrior of Regret; Warrior of the Leaden Crown.
 - Paladin — Oath of Pestilence; Oath of Slaughter; Oath of Zeal.
+- Ranger — Green Reaper; Primordial Archer; Vermin Lord.
+- Rogue — Highway Rider; Misfortune Bringer; Sanguine Thief.
+- Sorcerer — Apocalypse Sorcery; Haunted Sorcery; Wretched Bloodline Sorcery.
+- Warlock — The Coven; The First Vampire Patron; The Parasite Patron.
+- Wizard — Daemonologist; Plague Doctor; Sangromancer.
 
-The focused validator tracks **172 approved asset families** in the repository, including these 21 Grim Hollow cards. The remaining 15 Grim Hollow identities use the trusted partnered source-art fallback (or class fallback when no trusted source image is available) until their dedicated Tarot cards are approved.
+The focused validator tracks **187 approved asset families** in the repository, including all 36 new Grim Hollow cards. The trusted partnered source-art/class fallback is no longer used by any current runtime-visible subclass choice.
 
-**Remaining Grim Hollow cards to create: 15.** The next batch is Ranger: Green Reaper, Primordial Archer, Vermin Lord.
+**Remaining Grim Hollow cards to create: 0.** Future Tarot work is limited to explicitly requested replacements or genuinely new runtime-visible subclasses.
 
 ## Canonical card standard
 

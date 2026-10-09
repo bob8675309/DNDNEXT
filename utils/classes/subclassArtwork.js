@@ -153,6 +153,9 @@ const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
     "monster-slayer": "monster-slayer",
     swarmkeeper: "swarmkeeper",
     "winter-walker": "winter-walker",
+    "green-reaper": "green-reaper",
+    "primordial-archer": "primordial-archer",
+    "vermin-lord": "vermin-lord",
   }),
   rogue: Object.freeze({
     "arcane-trickster": "arcane-trickster",
@@ -165,6 +168,9 @@ const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
     soulknife: "soulknife",
     swashbuckler: "swashbuckler",
     thief: "thief",
+    "highway-rider": "highway-rider",
+    "misfortune-bringer": "misfortune-bringer",
+    "sanguine-thief": "sanguine-thief",
   }),
   sorcerer: Object.freeze({
     aberrant: "aberrant",
@@ -180,6 +186,9 @@ const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
     storm: "storm",
     wild: "wild-magic",
     "wild-magic": "wild-magic",
+    "apocalypse-sorcery": "apocalypse-sorcery",
+    "haunted-sorcery": "haunted-sorcery",
+    "wretched-bloodline-sorcery": "wretched-bloodline-sorcery",
   }),
   warlock: Object.freeze({
     archfey: "archfey",
@@ -191,6 +200,9 @@ const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
     hexblade: "hexblade",
     undead: "undead",
     undying: "undying",
+    "the-coven": "the-coven",
+    "the-first-vampire-patron": "the-first-vampire-patron",
+    "the-parasite-patron": "the-parasite-patron",
   }),
   wizard: Object.freeze({
     abjuration: "abjuration",
@@ -210,6 +222,9 @@ const APPROVED_SUBCLASS_ART_FAMILIES = Object.freeze({
     scribes: "scribes",
     transmutation: "transmutation",
     war: "war",
+    daemonologist: "daemonologist",
+    "plague-doctor": "plague-doctor",
+    sangromancer: "sangromancer",
   }),
 });
 
