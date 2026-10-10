@@ -280,10 +280,10 @@ export default function NewNpcModalV3(props) {
         const expertise = incompleteGroup?.kind === "expertise";
         const label = incompleteGroup?.label || "required class choice";
         const message = expertise
-          ? `Choose ${remaining} proficient skill${remaining === 1 ? "" : "s"} to gain Expertise. This class-granted choice is available in Class Choices and beside your proficient Skills.`
+          ? `Choose ${remaining} proficient skill${remaining === 1 ? "" : "s"} to gain Expertise in Training → Class Choices.`
           : `Complete ${label} in Training → Class Choices before continuing.`;
         const selectors = expertise
-          ? [".npc-forge-training-class-only .npc-forge-class-choice-group.is-required", ".npc-forge-training-expertise-guide.is-required", ".npc-forge-training-class-skills", ".npc-forge-training-step"]
+          ? [".npc-forge-training-class-only .npc-forge-class-choice-group.is-required", ".npc-forge-training-class-only .npc-forge-class-choice-inspect", ".npc-forge-training-step"]
           : [".npc-forge-training-feat-section .npc-forge-class-choice-group.is-required", ".npc-forge-class-option-group.is-required", ".npc-forge-training-feat-section", ".npc-forge-workspace"];
         const showTrainingGuidance = () => showForgeValidationGuidance(message, selectors, modal);
         if (typeof window !== "undefined" && typeof window.requestAnimationFrame === "function") window.requestAnimationFrame(showTrainingGuidance);
