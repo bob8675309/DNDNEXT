@@ -430,3 +430,288 @@
     overflow: visible !important;
   }
 }
+
+
+/* 2026-10-09 browser review: Background catalogue height, Training readability,
+ * and denser/readable Class Choice inspection. These are presentation-only rules. */
+@media (min-width: 981px) {
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-background > .npc-forge-workspace {
+    display: flex !important;
+    min-height: 0 !important;
+    align-self: stretch !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-background > .npc-forge-workspace > .npc-forge-section {
+    display: flex !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    flex: 1 1 auto !important;
+    flex-direction: column !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-background > .npc-forge-workspace > .npc-forge-section > .npc-forge-catalog {
+    display: flex !important;
+    min-height: 430px !important;
+    flex: 1 1 0 !important;
+    flex-direction: column !important;
+  }
+
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-background .npc-forge-catalog-list {
+    min-height: 0 !important;
+    max-height: none !important;
+    flex: 1 1 0 !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+  }
+}
+
+.unified-player-character-forge .npc-forge-training-mode-switch > button {
+  grid-template-columns: 28px minmax(0, 1fr) auto !important;
+}
+
+.unified-player-character-forge .npc-forge-training-mode-switch > button strong {
+  font-size: .8rem !important;
+}
+
+.unified-player-character-forge .npc-forge-training-mode-switch > button.is-class-choice-tab strong {
+  font-size: .72rem !important;
+  line-height: 1 !important;
+}
+
+.unified-player-character-forge .npc-forge-training-tab-status {
+  display: grid !important;
+  justify-items: end !important;
+  align-content: center !important;
+  gap: 4px !important;
+}
+
+.unified-player-character-forge .npc-forge-training-tab-status > em {
+  padding: 4px 7px !important;
+  border-radius: 999px !important;
+  font-size: .5rem !important;
+  font-style: normal !important;
+  font-weight: 800 !important;
+  white-space: nowrap !important;
+}
+
+.unified-player-character-forge .npc-forge-training-tab-status > em.is-required {
+  color: #ffe0a0 !important;
+  background: rgba(243,191,99,.12) !important;
+}
+
+.unified-player-character-forge .npc-forge-training-tab-status > em.is-complete {
+  color: #9cece2 !important;
+  background: rgba(88,214,199,.1) !important;
+}
+
+.unified-player-character-forge .npc-forge-training-tab-status > small {
+  color: rgba(255,255,255,.9) !important;
+  font-size: .66rem !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+}
+
+.unified-player-character-forge .npc-forge-training-group-head b,
+.unified-player-character-forge .npc-forge-training-choice-section > summary b {
+  font-size: .68rem !important;
+}
+
+.unified-player-character-forge .npc-forge-training-group-head small {
+  color: rgba(255,255,255,.68) !important;
+  font-size: .56rem !important;
+  line-height: 1.35 !important;
+}
+
+.unified-player-character-forge .npc-forge-training-skill-list > article,
+.unified-player-character-forge .npc-forge-training-trade-list > article {
+  min-height: 39px !important;
+}
+
+.unified-player-character-forge .npc-forge-training-skill-main,
+.unified-player-character-forge .npc-forge-training-trade-main {
+  padding-block: 6px !important;
+}
+
+.unified-player-character-forge .npc-forge-training-skill-main b,
+.unified-player-character-forge .npc-forge-training-trade-main b {
+  font-size: .69rem !important;
+}
+
+.unified-player-character-forge .npc-forge-training-skill-main span small,
+.unified-player-character-forge .npc-forge-training-trade-main small {
+  color: rgba(255,255,255,.58) !important;
+  font-size: .54rem !important;
+}
+
+.unified-player-character-forge .npc-forge-training-skill-main > em,
+.unified-player-character-forge .npc-forge-training-trade-main > em {
+  width: auto !important;
+  min-width: 42px !important;
+  height: auto !important;
+  padding: 3px 6px !important;
+  border-radius: 999px !important;
+  font-size: .5rem !important;
+  line-height: 1.1 !important;
+}
+
+.unified-player-character-forge .npc-forge-training-expertise-guide {
+  padding: 7px 9px !important;
+}
+
+.unified-player-character-forge .npc-forge-training-expertise-guide > span {
+  font-size: .61rem !important;
+}
+
+.unified-player-character-forge .npc-forge-training-expertise-guide > small {
+  color: rgba(255,255,255,.64) !important;
+  font-size: .55rem !important;
+  line-height: 1.45 !important;
+}
+
+.unified-player-character-forge .npc-forge-training-expertise-flag {
+  min-width: 96px !important;
+  padding: 5px 8px !important;
+  font-size: .53rem !important;
+}
+
+.unified-player-character-forge .npc-forge-training-trade-ability > span {
+  font-size: .5rem !important;
+}
+
+.unified-player-character-forge .npc-forge-training-trade-ability select {
+  font-size: .55rem !important;
+}
+
+.unified-player-character-forge .npc-forge-training-choice-section > summary em,
+.unified-player-character-forge .npc-forge-training-feat-followups button > em {
+  font-size: .51rem !important;
+}
+
+.unified-player-character-forge .npc-forge-training-feat-followups button b {
+  font-size: .66rem !important;
+}
+
+.unified-player-character-forge .npc-forge-training-feat-followups button small {
+  color: rgba(255,255,255,.58) !important;
+  font-size: .52rem !important;
+  line-height: 1.4 !important;
+}
+
+.unified-player-character-forge .npc-forge-class-choices.is-inspect-only {
+  gap: 9px !important;
+  padding: 10px !important;
+}
+
+.unified-player-character-forge .npc-forge-class-choices.is-inspect-only > header {
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) !important;
+  gap: 4px !important;
+  align-items: start !important;
+}
+
+.unified-player-character-forge .npc-forge-class-choices.is-inspect-only > header h3 {
+  margin-top: 2px !important;
+  font-size: .88rem !important;
+  line-height: 1.15 !important;
+}
+
+.unified-player-character-forge .npc-forge-class-choices.is-inspect-only > header p {
+  max-width: none !important;
+  color: rgba(255,255,255,.7) !important;
+  font-size: .66rem !important;
+  line-height: 1.5 !important;
+}
+
+.unified-player-character-forge .npc-forge-class-choices.is-inspect-only .npc-forge-class-choice-group > summary {
+  min-height: 48px !important;
+  padding: 9px 10px !important;
+}
+
+.unified-player-character-forge .npc-forge-class-choices.is-inspect-only .npc-forge-class-choice-group > summary strong {
+  font-size: .76rem !important;
+}
+
+.unified-player-character-forge .npc-forge-class-choices.is-inspect-only .npc-forge-class-choice-group > summary span {
+  color: rgba(255,255,255,.58) !important;
+  font-size: .54rem !important;
+}
+
+.unified-player-character-forge .npc-forge-class-choices.is-inspect-only .npc-forge-class-choice-group > summary em {
+  font-size: .57rem !important;
+}
+
+.unified-player-character-forge .npc-forge-class-choices.is-inspect-only .npc-forge-class-choice-group__body {
+  gap: 8px !important;
+  padding: 0 9px 10px !important;
+}
+
+.unified-player-character-forge .npc-forge-class-choices.is-inspect-only .npc-forge-class-choice-source {
+  padding: 7px 8px !important;
+}
+
+.unified-player-character-forge .npc-forge-class-choices.is-inspect-only .npc-forge-class-choice-source > span {
+  font-size: .56rem !important;
+}
+
+.unified-player-character-forge .npc-forge-class-choices.is-inspect-only .npc-forge-class-choice-source > strong {
+  font-size: .7rem !important;
+}
+
+.unified-player-character-forge .npc-forge-class-choices.is-inspect-only .npc-forge-class-choice-source > em {
+  font-size: .55rem !important;
+}
+
+.unified-player-character-forge .npc-forge-class-choices.is-inspect-only .npc-forge-class-choice-group__body > p {
+  color: rgba(255,255,255,.86) !important;
+  font-size: .75rem !important;
+  line-height: 1.62 !important;
+}
+
+.unified-player-character-forge .npc-forge-class-choices.is-inspect-only .npc-forge-class-choice-training-note {
+  font-size: .66rem !important;
+  line-height: 1.5 !important;
+}
+
+.unified-player-character-forge .npc-forge-class-choice-inspect-list {
+  gap: 5px !important;
+  margin-left: 0 !important;
+}
+
+.unified-player-character-forge .npc-forge-class-choice-inspect {
+  min-height: 40px !important;
+  padding: 7px 9px !important;
+}
+
+.unified-player-character-forge .npc-forge-class-choice-inspect strong {
+  font-size: .66rem !important;
+}
+
+.unified-player-character-forge .npc-forge-class-choice-inspect small,
+.unified-player-character-forge .npc-forge-class-choice-inspect em {
+  font-size: .5rem !important;
+}
+
+.unified-player-character-forge .npc-forge-training-overview__metrics span,
+.unified-player-character-forge .npc-forge-training-overview__sources h4 {
+  font-size: .59rem !important;
+}
+
+.unified-player-character-forge .npc-forge-training-overview__metrics small {
+  font-size: .6rem !important;
+}
+
+.unified-player-character-forge .npc-forge-training-overview__source-type {
+  font-size: .57rem !important;
+}
+
+.unified-player-character-forge .npc-forge-training-overview__source-name {
+  font-size: .84rem !important;
+}
+
+.unified-player-character-forge .npc-forge-training-overview__sources small {
+  font-size: .64rem !important;
+}
+
+.unified-player-character-forge .npc-forge-training-overview__source-value {
+  font-size: .74rem !important;
+}
