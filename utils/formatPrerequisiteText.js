@@ -88,4 +88,15 @@ export function formatPrerequisiteText(value) {
   }
 }
 
+export function formatPlayerFacingPrerequisiteText(value) {
+  const formatted = formatPrerequisiteText(value);
+  if (!formatted) return "";
+  return formatted
+    .split(/\s*;\s*/)
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .filter((part) => !/^(?:campaign|setting|exclusive\s*feat\s*category|exclusivefeatcategory)\s*:/i.test(part))
+    .join("; ");
+}
+
 export default formatPrerequisiteText;
