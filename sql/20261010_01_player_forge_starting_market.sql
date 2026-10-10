@@ -8,7 +8,7 @@
 -- source-backed coin in public.character_currency.
 --
 -- Existing package-mode payloads remain supported for older drafts/characters.
--- This migration does not use or mutate public.player_wallets.
+-- This migration does not use or mutate the account-wide player wallet.
 
 create or replace function private.player_forge_cash_equipment_option_v1(p_options jsonb)
 returns jsonb
