@@ -132,8 +132,8 @@
 
 .unified-player-character-forge .npc-forge-training-mode-switch > button {
   position: relative;
-  min-height: 54px !important;
-  padding: 8px 11px !important;
+  min-height: 50px !important;
+  padding: 7px 10px !important;
   border: 1px solid rgba(255,255,255,.075) !important;
   border-radius: 10px !important;
   background: rgba(5,8,14,.46) !important;
@@ -338,8 +338,8 @@
 }
 
 .unified-player-character-forge .npc-forge-training-feat-list i {
-  font-size: .49rem !important;
-  line-height: 1.35 !important;
+  font-size: .56rem !important;
+  line-height: 1.45 !important;
 }
 
 .unified-player-character-forge .npc-forge-body:has(.npc-forge-training-tabbed-shell) .npc-forge-preview {
@@ -474,7 +474,20 @@
 }
 
 .unified-player-character-forge .npc-forge-training-mode-switch > button.is-class-choice-tab strong {
-  font-size: .72rem !important;
+  font-size: .78rem !important;
+  line-height: 1.12 !important;
+}
+
+.unified-player-character-forge .npc-forge-training-tab-copy {
+  display: grid !important;
+  align-content: center !important;
+  gap: 3px !important;
+}
+
+.unified-player-character-forge .npc-forge-training-tab-copy > small {
+  color: rgba(255,255,255,.88) !important;
+  font-size: .62rem !important;
+  font-weight: 900 !important;
   line-height: 1 !important;
 }
 
@@ -482,7 +495,7 @@
   display: grid !important;
   justify-items: end !important;
   align-content: center !important;
-  gap: 4px !important;
+  gap: 0 !important;
 }
 
 .unified-player-character-forge .npc-forge-training-tab-status > em {
@@ -505,10 +518,7 @@
 }
 
 .unified-player-character-forge .npc-forge-training-tab-status > small {
-  color: rgba(255,255,255,.9) !important;
-  font-size: .66rem !important;
-  font-weight: 900 !important;
-  line-height: 1 !important;
+  display: none !important;
 }
 
 .unified-player-character-forge .npc-forge-training-group-head b,
@@ -600,6 +610,8 @@
 .unified-player-character-forge .npc-forge-class-choices.is-inspect-only {
   gap: 9px !important;
   padding: 10px !important;
+  border-color: rgba(168,108,255,.22) !important;
+  background: linear-gradient(145deg,rgba(24,17,37,.58),rgba(5,9,16,.82)) !important;
 }
 
 .unified-player-character-forge .npc-forge-class-choices.is-inspect-only > header {
@@ -678,8 +690,10 @@
 }
 
 .unified-player-character-forge .npc-forge-class-choice-inspect {
-  min-height: 40px !important;
-  padding: 7px 9px !important;
+  min-height: 44px !important;
+  padding: 8px 10px !important;
+  border-left: 2px solid rgba(168,108,255,.34) !important;
+  background: linear-gradient(90deg,rgba(13,16,25,.9),rgba(5,9,15,.76)) !important;
 }
 
 .unified-player-character-forge .npc-forge-class-choice-inspect strong {
