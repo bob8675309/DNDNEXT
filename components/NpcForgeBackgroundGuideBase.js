@@ -331,7 +331,6 @@ export default function NpcForgeBackgroundGuide({
     <BackgroundFeatures background={selectedBackground} features={selectedBackground.features || []} featOptions={backgroundFeatOptions} />
     {fallbackGroups.length ? <section className="npc-forge-bg-section npc-forge-bg-showcase-lower"><header><span>Background choices</span><small>{sourceChoiceGroupsNeedInput(fallbackGroups, selections) ? "Choose" : "Complete"}</small></header><NpcForgeEmbeddedSourceChoices groups={fallbackGroups} selections={selections} onToggle={toggleChoice} onSet={setChoice} /></section> : null}
     <ExpandedSpellList groups={backgroundMechanicDetails?.spellList || []} />
-    <div className="npc-forge-bg-footer-note npc-forge-bg-showcase-note"><FaBookOpen /><span>Use this history to choose former allies, obligations, rivals, and unfinished business that can matter during play. Background-granted tool and language choices stay with the background that grants them; feat-owned skill or spell choices are completed on the Training or Spells step.</span></div>
 
     <style jsx global>{`
       .unified-player-character-forge .npc-forge-background-guide.is-showcase-one{display:grid!important;gap:10px!important;width:100%!important;min-width:0!important;padding:8px 10px 16px!important;color:#fff}
