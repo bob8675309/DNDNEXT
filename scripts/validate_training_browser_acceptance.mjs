@@ -25,8 +25,11 @@ const featChoices = read("utils/playerForgeFeatChoices.js");
 const featRegistrar = read("components/NpcForgeFeatChoiceRegistrar.js");
 const featRulePresentation = read("utils/featRulePresentation.js");
 const classFeatureChoiceParsing = read("utils/classFeatureChoiceParsing.js");
+const classFeatureOptionAuthority = read("utils/classFeatureOptionAuthority.js");
 const invocationChoices = read("utils/warlockInvocationChoices.js");
 const classChoiceConstants = read("utils/classFeatureChoiceConstants.js");
+const optionRuleEnrichment = read("sql/20261009_01_enrich_class_feature_option_rules.sql");
+const referencedOptionRuleBackfill = read("sql/20261009_02_backfill_referenced_optional_feature_rules.sql");
 const featChoiceRouting = read("utils/playerForgeFeatChoiceRouting.js");
 const profileFeatures = read("components/CharacterFeaturesPanel.js");
 const routedController = read("components/useNpcForgeTrainingRoutedController.js");
@@ -81,6 +84,13 @@ for (const token of [
 ]) assert(trainingContext.includes(token), `Feat dossier cleanup / Crafter routing is missing ${token}`);
 for (const token of ["looksLikeRuleHeading", "titleLike.length / significant.length >= 0.8", "flushProse", "formatPlayerFacingText", "with|over|by|as"]) assert(featRulePresentation.includes(token), `Shared feat rule formatter is missing ${token}`);
 assert(classFeatureChoiceParsing.includes('"doing one of the following"'), "Runtime Rage instructions must not surface as a Class Choice.");
+assert(classFeatureChoiceParsing.includes("option.description || option.raw?.description"), "Feat-backed class options such as Fighting Styles must keep the imported feat rule instead of falling through to generic placeholder copy.");
+assert(classFeatureOptionAuthority.includes("descriptionExact") && classFeatureOptionAuthority.includes("sourceDescription") && classFeatureOptionAuthority.includes("formatPlayerFacingText(row.description"), "Class option authority must resolve exact source-backed descriptions across maneuvers, Arcane Shots, runes, disciplines, Pact Boons, and imported subclass option families.");
+assert(invocationChoices.includes('formatPlayerFacingText(row.description, "") || guide?.summary || OPTION_SUMMARIES[norm(row.name)]'), "Warlock Invocations must prefer their complete canonical source rule over the older concise guide summary.");
+assert(featChoices.includes('formatPlayerFacingText(row.description, "") || OPTION_SUMMARIES[norm(row.name)]'), "Metamagic choice cards must prefer canonical source rules over terse summaries.");
+for (const token of ["descriptionAuthority", "5etools:data/optionalfeatures.json", "battle-master-maneuver", "eldritch-invocation", "metamagic"]) assert(optionRuleEnrichment.includes(token), `Focused class-option source-rule enrichment is missing ${token}`);
+for (const token of ["refOptionalfeature", "Grim Hollow - Player''s Guide - 2024.json", "arcane-shot", "rune", "elemental-discipline", "fighting-style", "pact-boon", "Referenced class optional-feature rule backfill incomplete"]) assert(referencedOptionRuleBackfill.includes(token), `Reference-driven class option rule backfill is missing ${token}`);
+assert(!trainingContext.includes("npc-forge-training-context-note") && !trainingContext.includes("All choices can be reviewed on the final step"), "Training Current Selection must not restore the redundant bottom reminder.");
 assert(!trainingContext.includes("groupsOverride={trainingGroups}"), "The Feats dossier must not render Skills-routed Crafter Profession controls.");
 assert(!trainingContext.includes('<h4>Feat Rules</h4><p>{feat.description'), "Training must not dump raw unformatted feat descriptions directly into the dossier.");
 assert(playerTraining.includes("backgroundSourceLabel") && playerTraining.includes("classSourceLabel") && playerTraining.includes("sourceOwnerLabel={selectedClassName || \"Class\"}"), "Skills and feature-owned Training choices must expose their actual Background/Class provenance.");
@@ -182,10 +192,12 @@ for (const token of [
   ".npc-forge-training-feat-followups button.has-spells",
   ".npc-forge-training-feat-list",
   "max-height: clamp(228px, calc(100dvh - 430px), 500px)",
-  ".npc-forge-training-context-note",
-  "height: calc(100dvh - 190px)",
+  "height: fit-content !important",
+  "min-height: 0 !important",
+  "max-height: calc(100dvh - 218px)",
   ".npc-forge-training-tabbed-shell:is(.is-feats,.is-class)",
 ]) assert(browserPolish.includes(token), `Latest low-chrome Feats/Class Choices continuation polish is missing ${token}`);
+assert(!browserPolish.includes("height: calc(100dvh - 190px) !important"), "Class Choices Current Selection must not be forced to viewport height; short rules should end the card.");
 
 for (const token of [
   "function initialBackground",
