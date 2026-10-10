@@ -8,7 +8,7 @@ function visibleForgeModal() {
 
 function validationContainer(node) {
   if (!node) return null;
-  if (node.matches?.("details, .npc-forge-catalog, .npc-forge-form-grid, .npc-forge-identity-art, .npc-forge-ability-drop-grid, .npc-forge-species-bonus, .npc-forge-species-choice, .npc-forge-training-step, .npc-forge-training-pick-group, .npc-forge-training-expertise-guide, .npc-forge-spell-validation, .npc-forge-equipment-layout, .npc-forge-class-guide, .npc-forge-class-guide__subclasses")) return node;
+  if (node.matches?.("details, .npc-forge-catalog, .npc-forge-form-grid, .npc-forge-identity-art, .npc-forge-ability-drop-grid, .npc-forge-species-bonus, .npc-forge-species-choice, .npc-forge-training-step, .npc-forge-training-pick-group, .npc-forge-spell-validation, .npc-forge-equipment-layout, .npc-forge-class-guide, .npc-forge-class-guide__subclasses")) return node;
   return node.closest?.("details, .npc-forge-training-pick-group, .npc-forge-training-expertise-guide, .npc-forge-species-choice, .npc-forge-source-choice-group, .npc-forge-class-choice-group, .npc-forge-class-option-group, .npc-forge-class-guide__subclasses, .npc-forge-class-guide, .npc-forge-catalog, .npc-forge-form-grid, .npc-forge-workspace") || node;
 }
 
