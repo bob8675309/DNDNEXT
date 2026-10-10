@@ -20,6 +20,11 @@ Live Supabase inspection confirmed this is a presentation/interaction issue, not
 No Supabase schema/data migration belongs to PR #207.
 
 
+Validated runtime checkpoint before this documentation-only deployment marker: `4333e59018b67fab7604a8adc04bfe6ed6c55073`.
+
+At that exact runtime head, all **11 / 11** PR-triggered workflows completed successfully, including Player Forge v3 starting magic, Training redesign, source-magic routing, nested choices, Background, NPC Forge, Class browser, Species runtime, progression, PR170 smoke, and Forge source-presentation gates.
+
+
 Status date: 2026-08-08
 PR: #170 (`agent/character-forge-resilience-presentation`)
 Live migrations: 47-48
