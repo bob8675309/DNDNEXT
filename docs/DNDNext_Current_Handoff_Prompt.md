@@ -47,6 +47,23 @@ Planned AI work after the Forge completion pass:
 Existing DNDNext validation/persistence remains authoritative. AI is a creative/reasoning layer, never a replacement for Forge, crafting, combat, inventory, or database authority.
 
 
+### 2026-10-09 active Forge browser-review follow-up — PR #207
+
+Current bounded work is PR #207 on `agent/forge-spell-browser-readability-20261009`.
+
+Scope:
+
+- slightly larger Background dossier text and removal of its redundant bottom routing note;
+- compact sortable one-line Forge spell catalogue;
+- client-side hard ceilings for class cantrip/leveled-spell selection while retaining v3 server validation;
+- less-zoomed Forge SpellCard chrome;
+- structured player-facing spell rules using existing catalogue/raw payload;
+- Light/Finesse/Reach expansion for imported item-property shorthand;
+- one scroll body with a collapsed Spell Progression section.
+
+The source/provenance and `create_player_character_v3` boundaries are unchanged. No Supabase write is expected or authorized for this presentation/interaction fix.
+
+
 ## 2026-10-01 authoritative override — use this before every older checkpoint below
 
 The older PR #176/#193/#194 sections remain useful architecture/history, but they are no longer the active work checkpoint.
