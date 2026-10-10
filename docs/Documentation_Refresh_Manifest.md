@@ -32,6 +32,7 @@ Everything below this section is historical unless a newer focused ledger says o
 - `/profile` returned HTTP 200 on that deployment;
 - next broad priority: Character Forge completion/reconciliation on current `main`;
 - future AI direction documented in `DNDNEXT_AI_INTEGRATION_FOUNDATION.md`; implementation remains deferred until the Forge completion pass.
+- active bounded Forge browser-review continuation: PR #207 — compact/sortable Spells UI, hard selection ceilings, structured Spell Progression, and Background readability/footer cleanup; no DB migration.
 
 Current focused documents:
 
