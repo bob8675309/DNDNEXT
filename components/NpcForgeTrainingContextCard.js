@@ -219,11 +219,11 @@ export default function NpcForgeTrainingContextCard({ detail = null, selectedSki
     const isExpertise = group.kind === "expertise";
     const expertiseExplanation = "Expertise doubles your Proficiency Bonus when you make an ability check using the chosen skill proficiency. It does not grant proficiency by itself, so choose a skill you are already proficient in.";
     const chooseOption = () => {
-      if (selected || !eligible) return;
+      if (!eligible || (selected && !isExpertise)) return;
       toggleFeatureOption?.(group.id, option.key);
       controller.setDetail?.({ ...detail });
     };
-    const actionLabel = selected ? "Selected" : !eligible ? "Locked" : replacing ? "Replace Selection" : "Select";
+    const actionLabel = selected ? (isExpertise ? "Deselect Expertise" : "Selected") : !eligible ? "Locked" : replacing ? "Replace Selection" : isExpertise ? "Select Expertise" : "Select";
 
     return <ContextShell
       icon={`${TRAINING_ASSET_ROOT}/summary-training.svg`}
@@ -236,7 +236,7 @@ export default function NpcForgeTrainingContextCard({ detail = null, selectedSki
         : requirement ? `Requires: ${requirement}` : group.helper || `Granted by ${grantedBy}.`}
       onAction={chooseOption}
       actionLabel={actionLabel}
-      actionDisabled={selected || !eligible}
+      actionDisabled={(selected && !isExpertise) || !eligible}
     >
       <section className="npc-forge-training-context-section">
         <h4>{group.label || "Class Choice"}</h4>
