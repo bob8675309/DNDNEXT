@@ -289,7 +289,7 @@ export default function NpcForgeSpellStep({ selectedClass, selectedSubclass = nu
               const status = prepared && Number(spell.level || 0) > 0 ? "Prepared" : selected ? "Selected" : atLimit ? "Full" : "Available";
               const flags = [spell.concentration ? "Concentration" : "", spell.ritual ? "Ritual" : "", expanded ? "Background access" : ""].filter(Boolean);
               return <button key={spell.id} type="button" aria-pressed={inspected} className={`profile-catalogue__row npc-forge-spell-table-row ${inspected ? "active" : ""} ${selected ? "is-selected" : ""}`} onClick={() => setInspectedSpellId(String(spell.id))} title={flags.length ? `${spell.name} • ${flags.join(" • ")}` : spell.name}>
-                <span className="profile-catalogue__row-name">{spell.name}{flags.length ? <small>{flags.map((flag) => flag[0]).join(" ")}</small> : null}</span>
+                <span className="profile-catalogue__row-name">{spell.name}</span>
                 <span>{levelLabel(spell.level)}</span>
                 <span>{schoolLabel(spell)}</span>
                 <span>{spell.source || "—"}</span>
