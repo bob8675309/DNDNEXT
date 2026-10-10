@@ -59,9 +59,15 @@ Scope:
 - less-zoomed Forge SpellCard chrome;
 - structured player-facing spell rules using existing catalogue/raw payload;
 - Light/Finesse/Reach expansion for imported item-property shorthand;
-- one scroll body with a collapsed Spell Progression section.
+- one scroll body with a collapsed Spell Progression section;
+- Training Current Selection cards now use intrinsic content height instead of a forced viewport-height empty tail;
+- Fighting Style choices preserve the complete imported feat description rather than the generic source-backed placeholder;
+- class/subclass optional-feature rules were audited end-to-end and exact source descriptions are now available for all **218 / 218** currently referenced option identities;
+- Battle Master maneuvers, Arcane Shots, Rune Knight runes, Four Elements disciplines, Pact Boons, Eldritch Invocations, Metamagic, and Grim Hollow optional-feature families now resolve source-backed rules through the shared class-option authority.
 
-The source/provenance and `create_player_character_v3` boundaries are unchanged. No Supabase write is expected or authorized for this presentation/interaction fix.
+The source/provenance and `create_player_character_v3` boundaries are unchanged. The latest browser-review pass did add two narrowly scoped live source-rule enrichment SQL files: `20261009_01_enrich_class_feature_option_rules.sql` and `20261009_02_backfill_referenced_optional_feature_rules.sql`. They repair descriptions/source metadata only; they do not alter legal-choice counts, prerequisites already curated by DNDNext, progression ownership, save paths, or unrelated game systems.
+
+Pinned upstream rule sources for this pass are `5etools-mirror-3/5etools-src@8c026b807fac21862a309379a0c3228a0683198b` and `TheGiddyLimit/homebrew@ab4012f136dc1224c45d6c13c1d8f71b543c34bb`. Live post-apply audit is **218 referenced optional-feature identities / 218 with descriptions / 0 missing**; preferred Fighting Style feats are **17 / 17** described.
 
 
 ## 2026-10-01 authoritative override — use this before every older checkpoint below
