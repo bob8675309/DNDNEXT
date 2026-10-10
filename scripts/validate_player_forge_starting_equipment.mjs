@@ -130,7 +130,7 @@ for (const token of [
   "delete from public.character_stock",
   "update public.character_stock",
   "'marketSpentCopper'",
-  "'startingCurrencyCopper'",
+  "startingCurrencyCopper",
 ]) need(marketMigration, token, "starting-market server authority");
 
 forbid(marketMigration, "player_wallets", "starting-market account wallet usage");
