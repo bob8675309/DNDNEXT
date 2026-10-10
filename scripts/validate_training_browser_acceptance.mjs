@@ -10,6 +10,7 @@ const responsive = read("styles/character-forge-responsive.css");
 const browserPolish = read("styles/character-forge-browser-review-polish.css");
 const playerTraining = read("components/NpcForgeTrainingStepPlayer.js");
 const featPicker = read("components/NpcForgeTrainingFeatPicker.js");
+const prerequisiteFormatter = read("utils/formatPrerequisiteText.js");
 const spellStep = read("components/NpcForgeSpellStep.js");
 const spellCard = read("components/SpellCard.js");
 const spellCardCss = read("styles/spell-card.css");
@@ -108,6 +109,7 @@ assert(trainingContext.includes('detail?.type === "classFeatureOption"') && trai
 assert(!playerTraining.includes("Trade Skills measure crafting proficiency") && !playerTraining.includes("Background tool proficiencies preserve their original rules value"), "Player Training must not expose internal Trade Skill mapping/compatibility prose.");
 assert(!classFeatureChoices.includes("NpcForgeSourceChoiceFields"), "Class feature choices must not portal class-option controls into the preview rail.");
 assert(classOptionBrowser.includes('type: "classSourceOption"') && classOptionBrowser.includes("Descriptions and selection stay in Current Selection") && classOptionBrowser.includes("<details") && classOptionBrowser.includes("npc-forge-class-option-group__body") && !classOptionBrowser.includes("onMouseEnter") && !classOptionBrowser.includes("onFocus"), "Source-backed Class Choices must use collapsible slots, inspect on click, and confirm on the right.");
+assert(classFeatureChoices.includes("npc-forge-class-choice-chevron") && trainingContext.includes("ClassChoiceRuleCopy") && trainingContext.includes("npc-forge-training-class-rule-chevron"), "Class Choices must use clear collapsible hierarchy and readable source-rule sections.");
 assert(!playerTraining.includes("onMouseEnter={() => onDetail") && !playerTraining.includes("onMouseEnter={() => publishFeatGroup"), "Training Current Selection must not change merely because the pointer passes over another choice.");
 assert(profileFeatures.includes("FeatureRuleText") && profileFeatures.includes("profile-feature-rule-list") && featRulePresentation.includes("featRuleSectionsFromDescription"), "Profile and Forge feat descriptions must share structured low-chrome rule formatting.");
 
@@ -115,8 +117,11 @@ for (const token of [
   "npc-forge-training-mode-switch{display:flex",
   "border-radius:999px",
   "is-class-choice-tab",
-  "<span>Class</span><span>Choices</span>",
+  "<strong>Class Choices</strong>",
   "npc-forge-training-tab-status",
+  "npc-forge-training-tab-copy",
+  "backgroundSkillCount",
+  "availableClassSkillSlots",
   "skillsProgress",
   "featsProgress",
   "classTabProgress",
@@ -180,6 +185,8 @@ assert(browserPolish.includes(".npc-forge-body.is-player-mode.npc-forge-step-bac
 assert(stepContent.includes('!playerMode ? <div className="npc-forge-workspace-note mt-3"') && !stepContent.includes('{playerMode ? <div className="npc-forge-workspace-note mt-3">Background features'), "Player Background must not show the implementation-facing source-routing note.");
 assert(browserPolish.includes("Final browser-review readability floor") && browserPolish.includes(".npc-forge-class-choice-inspect strong") && browserPolish.includes("font-size: .72rem !important") && browserPolish.includes(".npc-forge-training-skill-main b"), "Training and Class Choice player text must retain the moderately enlarged readability floor.");
 assert(validationGuidance.includes(".npc-forge-training-class-only .npc-forge-class-choice-group.is-required") && validationGuidance.includes(".npc-forge-training-class-skills"), "Expertise validation must prioritize Class Choices while retaining the Skills mirror fallback.");
+assert(featPicker.includes("formatPlayerFacingPrerequisiteText") && prerequisiteFormatter.includes("formatPlayerFacingPrerequisiteText"), "Feat catalogue prerequisite copy must use the player-facing campaign-gate filter without deleting source metadata.");
+assert(trainingContext.includes('"Deselect Feat"') && trainingContext.includes('"Replace Feat"') && trainingContext.includes("identityMatches"), "Bonus Feats must be replaceable/deselectable and feat-instance matching must remain identity-safe.");
 for (const token of [
   ".npc-forge-background-guide.is-showcase-one:has(> .npc-forge-bg-features)",
   "> .npc-forge-bg-showcase-grants",
