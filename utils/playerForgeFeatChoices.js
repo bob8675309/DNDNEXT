@@ -1,5 +1,6 @@
 import { ABILITY_LABELS, SKILL_DEFINITIONS, proficiencyBonusForLevel } from "./characterCreation";
 import { OPTION_SUMMARIES } from "./classFeatureChoiceConstants";
+import { formatPlayerFacingText } from "./playerFacingText";
 import { buildToolOptionCatalog, sourceChoiceFieldIsActive } from "./playerForgeSourceChoices";
 
 const text = (value) => String(value ?? "").trim();
@@ -36,7 +37,7 @@ function metamagicOption(row = {}) {
     label: row.name,
     source: row.source || "XPHB",
     kind: "metamagic",
-    description: text(row.description) || OPTION_SUMMARIES[norm(row.name)] || "",
+    description: formatPlayerFacingText(row.description, "") || OPTION_SUMMARIES[norm(row.name)] || "",
     metadata: { optionId: row.id || null, optionKey: row.option_key || null, classKey: row.class_key || "sorcerer" },
   };
 }
