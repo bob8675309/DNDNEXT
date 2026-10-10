@@ -7,6 +7,9 @@ const requireToken = (text, token, label) => { if (!text.includes(token)) throw 
 
 const spellStep = read("components/NpcForgeSpellStep.js");
 const spellSources = read("utils/playerForgeSpellSources.js");
+const spellCard = read("components/SpellCard.js");
+const spellCardCss = read("styles/spell-card.css");
+const playerFacingText = read("utils/playerFacingText.js");
 
 for (const token of [
   "subclassStartingSpellSelectionModel",
@@ -16,6 +19,45 @@ for (const token of [
   "expandedSpellNames = []",
   "Background-expanded access",
 ]) requireToken(spellStep, token, "spell-selection UI");
+
+for (const token of [
+  "selectionLimitFor",
+  "canAddSpell",
+  "selectionLimitMessage",
+  "npc-forge-spell-table-head",
+  "sortKey",
+  "sortDirection",
+  "scaling_text,scaling_json,raw_payload",
+  "compressed",
+]) requireToken(spellStep, token, "bounded sortable spell browser");
+
+for (const token of [
+  'import SourceRuleContent from "./SourceRuleContent";',
+  "spell-card__progression",
+  "Spell Progression",
+  "scalingProfile",
+  "raw_payload?.entries",
+  "entriesHigherLevel",
+]) requireToken(spellCard, token, "structured player-facing spell card");
+
+for (const token of [
+  ".spell-card__body",
+  ".spell-card--compressed",
+  ".spell-card__progression",
+  "scrollbar-gutter: stable",
+]) requireToken(spellCardCss, token, "single-scroll compact spell presentation");
+
+for (const token of [
+  "ITEM_PROPERTY_LABELS",
+  'L: "Light"',
+  'F: "Finesse"',
+  'R: "Reach"',
+  "itemPropertyLabel",
+]) requireToken(playerFacingText, token, "player-facing imported property expansion");
+
+if (spellStep.includes("groupByLevel") || spellStep.includes("npc-forge-spell-catalogue-level")) {
+  throw new Error("Character Forge spell sources: Forge Spells regressed to stacked level-group cards instead of the compact sortable table.");
+}
 
 for (const token of [
   "THIRD_CASTER_SLOTS",
