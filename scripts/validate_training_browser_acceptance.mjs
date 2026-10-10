@@ -197,7 +197,7 @@ for (const token of [
   "max-height: calc(100dvh - 218px)",
   ".npc-forge-training-tabbed-shell:is(.is-feats,.is-class)",
 ]) assert(browserPolish.includes(token), `Latest low-chrome Feats/Class Choices continuation polish is missing ${token}`);
-assert(!browserPolish.includes("height: calc(100dvh - 190px) !important"), "Class Choices Current Selection must not be forced to viewport height; short rules should end the card.");
+assert(!/\n\s*height:\s*calc\(100dvh - 190px\)\s*!important;/.test(browserPolish), "Class Choices Current Selection must not be forced to viewport height; short rules should end the card.");
 
 for (const token of [
   "function initialBackground",
