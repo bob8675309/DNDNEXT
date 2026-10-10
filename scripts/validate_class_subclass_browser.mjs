@@ -355,6 +355,22 @@ for (const name of ["Frigid Explorer", "Hunter's Rime", "Winter Walker Spells", 
   assert(guideSubclassFeatures(winterWalker).some((feature) => feature.name === name), `Winter Walker feature was incorrectly hidden as introduction: ${name}`);
 }
 
+for (const [classKey, subclassName, featureName] of [
+  ["druid", "Circle of Blood", "Rite of the Blood Moon"],
+  ["druid", "Circle of Entropy", "Ruin Incarnate"],
+  ["druid", "Circle of Mutation", "Mutate Shape"],
+  ["paladin", "Oath of Pestilence", "Debilitating Fever"],
+  ["paladin", "Oath of Slaughter", "Frenzied Slaughter"],
+  ["paladin", "Oath of Zeal", "Mark of the Heretic"],
+]) {
+  const option = resolveSubclassCatalog([
+    { ...testSubclassRow({ subclassName, name: subclassName, source: "GrimHollowPG24", header: 1, description: `${subclassName} lore.` }), class_key: classKey },
+    { ...testSubclassRow({ subclassName, name: featureName, source: "GrimHollowPG24", header: null, description: `${featureName} rules.` }), class_key: classKey },
+  ], "XPHB")[0];
+  assert(subclassIntroduction(option)?.name === subclassName, `Grim Hollow header-1 lore row was not recovered for ${subclassName}`);
+  assert(guideSubclassFeatures(option).some((feature) => feature.name === featureName), `Grim Hollow feature was incorrectly consumed as lore for ${subclassName}: ${featureName}`);
+}
+
 const bladesinger = resolveSubclassCatalog([
   testSubclassRow({ subclassName: "Bladesinger", name: "Bladesinger", source: "FRHoF", header: null, description: "Bladesinger lore." }),
   testSubclassRow({ subclassName: "Bladesinger", name: "Bladesong", source: "FRHoF", header: null }),
