@@ -60,7 +60,7 @@ export function forgeStepGuidanceSelectors(stepKey = "", message = "") {
     : [".npc-forge-level-row", ".npc-forge-class-guide", ".npc-forge-workspace"];
   if (key === "abilities") return [".npc-forge-species-bonus", ".npc-forge-ability-drop-grid", ".npc-forge-workspace"];
   if (key === "training") return text.includes("expertise")
-    ? [".npc-forge-training-class-skills", ".npc-forge-training-expertise-guide.is-required", ".npc-forge-training-step"]
+    ? [".npc-forge-training-class-only .npc-forge-class-choice-group.is-required", ".npc-forge-training-expertise-guide.is-required", ".npc-forge-training-class-skills", ".npc-forge-training-step"]
     : [".npc-forge-class-choice-group.is-required", ".npc-forge-class-option-group.is-required", ".npc-forge-training-step", ".npc-forge-workspace"];
   if (key === "spells") return [".npc-forge-spell-validation.is-incomplete", ".npc-forge-source-choice-group.is-required", ".npc-forge-workspace"];
   if (key === "equipment") return [".npc-forge-equipment-layout", ".npc-forge-workspace"];
