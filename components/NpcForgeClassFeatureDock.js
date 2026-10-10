@@ -153,6 +153,44 @@ function classOverviewHighlights(classRow = {}) {
   return highlights;
 }
 
+function RulesReferenceContent({ reference = null }) {
+  if (!reference) return null;
+  const statBlock = reference.statBlock;
+  if (!statBlock) {
+    return <div className="npc-forge-rules-reference">
+      <ClassFeatureText text={reference.description || ""} compact />
+      {Array.isArray(reference.notes) && reference.notes.length ? <ul>{reference.notes.map((note) => <li key={note}>{note}</li>)}</ul> : null}
+    </div>;
+  }
+  return <article className="npc-forge-rules-reference npc-forge-rules-reference--statblock" aria-label={`${reference.title || "Referenced creature"} stat block`}>
+    <div className="npc-forge-rules-reference__intro">
+      <strong>{statBlock.sizeType}</strong>
+      <span>{statBlock.alignment}</span>
+    </div>
+    <div className="npc-forge-rules-reference__facts">
+      <div><span>Armor Class</span><b>{statBlock.armorClass}</b></div>
+      <div><span>Hit Points</span><b>{statBlock.hitPoints}</b></div>
+      <div className="is-wide"><span>Speed</span><b>{statBlock.speed}</b></div>
+    </div>
+    <div className="npc-forge-rules-reference__abilities" role="table" aria-label="Ability scores">
+      {(statBlock.abilities || []).map(([ability, score, modifier]) => <div role="row" key={ability}><span>{ability}</span><b>{score}</b><em>{modifier}</em></div>)}
+    </div>
+    <div className="npc-forge-rules-reference__secondary">
+      <p><strong>Senses</strong> {statBlock.senses}</p>
+      <p><strong>Languages</strong> {statBlock.languages}</p>
+      <p><strong>PB</strong> {statBlock.proficiencyBonus}</p>
+    </div>
+    {(statBlock.traits || []).length ? <details className="npc-forge-rules-reference__section" open>
+      <summary><span>Traits</span><small>{statBlock.traits.length}</small></summary>
+      <div>{statBlock.traits.map(([name, body]) => <p key={name}><strong>{name}.</strong> {body}</p>)}</div>
+    </details> : null}
+    {(statBlock.actions || []).length ? <details className="npc-forge-rules-reference__section" open>
+      <summary><span>Actions</span><small>{statBlock.actions.length}</small></summary>
+      <div>{statBlock.actions.map(([name, body]) => <p key={name}><strong>{name}.</strong> {body}</p>)}</div>
+    </details> : null}
+  </article>;
+}
+
 function boundedDockPosition(position = {}) {
   if (typeof window === "undefined") return position;
   const viewportWidth = Math.max(1, Number(window.innerWidth || 1));
@@ -199,7 +237,15 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
   const [subclassTab, setSubclassTab] = useState("overview");
   const [overviewFeatureKey, setOverviewFeatureKey] = useState("");
   const [selectedSubclassSpellKey, setSelectedSubclassSpellKey] = useState("");
-  const feature = detail?.type === "classFeature" ? detail.feature : null;
+  const rulesReference = detail?.type === "rulesReference" && detail?.reference ? detail.reference : null;
+  const classFeature = detail?.type === "classFeature" ? detail.feature : null;
+  const feature = classFeature || (rulesReference ? {
+    name: rulesReference.title || "Rules Reference",
+    source: rulesReference.source || "Source Rule",
+    description: rulesReference.description || "",
+    type: "rules-reference",
+    metadata: { rulesReference: true },
+  } : null);
   const listedOptions = Array.isArray(feature?.listedOptions) ? feature.listedOptions : [];
   const subclassSelection = detail?.subclassSelection && typeof detail.subclassSelection === "object" ? detail.subclassSelection : null;
   const subclassOption = detail?.subclassOption?.key ? detail.subclassOption : null;
@@ -241,7 +287,8 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
   const isListedOption = feature?.type === "listed-option";
   const type = isSubclassInspector
     ? `${selectedClass?.class_name || "Class"} Subclass`
-    : isListedOption ? "Listed Option" : feature?.type === "subclass" ? "Subclass Feature" : feature ? "Class Feature" : "Class Overview";
+    : rulesReference ? rulesReference.kindLabel || "Rules Reference"
+      : isListedOption ? "Listed Option" : feature?.type === "subclass" ? "Subclass Feature" : feature ? "Class Feature" : "Class Overview";
   const parentFeatureName = safeText(feature?.parentFeatureName || detail?.parentFeatureName);
   const overviewHighlights = isOverview && selectedClass ? classOverviewHighlights(selectedClass) : [];
   const canonicalItem = isListedOption && feature?.detailKind === "item" && feature?.metadata?.itemCard
@@ -484,11 +531,12 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
           {isOverview && selectedClass?.class_name ? <span className="npc-forge-class-feature-dock__class-chip">{selectedClass.class_name}</span> : null}
           <div className="npc-forge-class-feature-dock__meta">
             {level ? <span>Level {level}</span> : null}
-            {!isOverview && selectedClass?.class_name ? <span>{selectedClass.class_name}</span> : null}
+            {!isOverview && !rulesReference && selectedClass?.class_name ? <span>{selectedClass.class_name}</span> : null}
             {feature?.type === "subclass" && detail?.subclassName ? <span>{detail.subclassName}</span> : null}
             {isListedOption && parentFeatureName ? <span>From {parentFeatureName}</span> : null}
+            {rulesReference?.spellName ? <span>From {rulesReference.spellName}</span> : null}
           </div>
-          <div className="npc-forge-class-feature-dock__summary"><ClassFeatureText text={description} entries={feature?.entries || null} compact /></div>
+          <div className="npc-forge-class-feature-dock__summary">{rulesReference ? <RulesReferenceContent reference={rulesReference} /> : <ClassFeatureText text={description} entries={feature?.entries || null} compact />}</div>
           {listedOptions.length ? <section className="npc-forge-class-feature-dock__listed-options" aria-label={`${title} options`}>
             <div className="npc-forge-class-feature-dock__listed-options-head"><span>Available options</span><strong>{listedOptions.length}</strong></div>
             <div className="npc-forge-class-feature-dock__listed-options-scroll">
@@ -502,7 +550,7 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
           {canonicalItem ? <div className="npc-forge-class-feature-dock__item-card" aria-label={`${title} canonical item card`}><ItemCard item={canonicalItem} /></div> : null}
           {!feature && !selectedClass ? <small>Feature descriptions will appear here as you move through the progression table or detailed guide.</small> : null}
           {isListedOption ? <div className="npc-forge-class-feature-dock__listed-note">This is a listed option inside <strong>{parentFeatureName || "the selected feature"}</strong>. The description comes from the normalized class-option or canonical item catalogue when a matching entry exists; otherwise the parent feature remains the mechanical authority.</div> : null}
-          {selectedClass ? <div className="npc-forge-class-feature-dock__routing-note">{feature ? "Select another feature or subclass to inspect it here." : "Select a feature or subclass to see more detail here."}</div> : null}
+          {rulesReference ? <div className="npc-forge-class-feature-dock__routing-note">Select another highlighted rule term on the spell card to inspect it here.</div> : selectedClass ? <div className="npc-forge-class-feature-dock__routing-note">{feature ? "Select another feature or subclass to inspect it here." : "Select a feature or subclass to see more detail here."}</div> : null}
           {portalHost ? <div className="npc-forge-class-feature-dock__drag-cue" aria-hidden="true">Drag header to move <span>✥</span></div> : null}
         </>}
       </div>
@@ -518,6 +566,7 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
         .npc-forge-class-feature-dock__head-actions>em{padding:4px 7px!important;border:1px solid rgba(255,255,255,.14)!important;border-radius:7px!important;color:rgba(255,255,255,.75)!important;background:rgba(255,255,255,.045)!important;font-size:.5rem!important;font-style:normal!important;font-weight:850!important;letter-spacing:.045em!important}
         .npc-forge-class-feature-dock__head-actions>button{min-width:52px;height:30px;padding:0 9px;border:1px solid rgba(168,108,255,.42);border-radius:7px;color:#f0e8ff;background:rgba(10,12,20,.72);font-size:.56rem;font-weight:800;line-height:1}
         .npc-forge-class-feature-dock__head-actions>button:hover{border-color:#a86cff;background:rgba(126,72,199,.26)}
+        .npc-forge-rules-reference{display:grid;gap:9px;color:rgba(255,255,255,.88)}.npc-forge-rules-reference>ul{display:grid;gap:5px;margin:0;padding-left:18px}.npc-forge-rules-reference--statblock{padding:3px 0 2px}.npc-forge-rules-reference__intro{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:0 2px 7px;border-bottom:2px solid rgba(168,108,255,.42)}.npc-forge-rules-reference__intro strong{color:#fff;font-size:.86rem}.npc-forge-rules-reference__intro span{color:rgba(255,255,255,.58);font-size:.62rem;font-style:italic}.npc-forge-rules-reference__facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.npc-forge-rules-reference__facts>div{display:grid;gap:2px;padding:6px 7px;border:1px solid rgba(255,255,255,.08);border-radius:6px;background:rgba(255,255,255,.025)}.npc-forge-rules-reference__facts>div.is-wide{grid-column:1/-1}.npc-forge-rules-reference__facts span{color:rgba(255,255,255,.5);font-size:.5rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em}.npc-forge-rules-reference__facts b{color:#fff;font-size:.69rem}.npc-forge-rules-reference__abilities{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px;padding:6px 0;border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07)}.npc-forge-rules-reference__abilities>div{display:grid;justify-items:center;gap:1px}.npc-forge-rules-reference__abilities span{color:#c8a9ff;font-size:.48rem;font-weight:900}.npc-forge-rules-reference__abilities b{font-size:.68rem}.npc-forge-rules-reference__abilities em{color:rgba(255,255,255,.55);font-size:.49rem;font-style:normal}.npc-forge-rules-reference__secondary{display:grid;gap:3px}.npc-forge-rules-reference__secondary p{margin:0;font-size:.64rem;line-height:1.4}.npc-forge-rules-reference__secondary strong{color:#d8c2fb}.npc-forge-rules-reference__section{border-top:1px solid rgba(255,255,255,.08)}.npc-forge-rules-reference__section>summary{display:flex;align-items:center;gap:6px;padding:7px 2px;list-style:none;cursor:pointer;color:#fff;font-size:.67rem;font-weight:900}.npc-forge-rules-reference__section>summary::-webkit-details-marker{display:none}.npc-forge-rules-reference__section>summary::before{content:"›";color:#b98cff;font-size:.9rem;transition:transform .14s ease}.npc-forge-rules-reference__section[open]>summary::before{transform:rotate(90deg)}.npc-forge-rules-reference__section>summary span{margin-right:auto}.npc-forge-rules-reference__section>summary small{color:rgba(255,255,255,.45);font-size:.5rem}.npc-forge-rules-reference__section>div{display:grid;gap:6px;padding:0 2px 7px 14px}.npc-forge-rules-reference__section p{margin:0;font-size:.64rem;line-height:1.48}.npc-forge-rules-reference__section p strong{color:#f0ddff}
         .npc-forge-class-feature-dock__body{position:relative;display:grid;gap:12px;padding:13px 14px 15px!important}
         .npc-forge-class-feature-dock__class-chip{justify-self:start;padding:4px 8px;border:1px solid rgba(168,108,255,.35);border-radius:999px;color:#d8c8ff;background:rgba(126,72,199,.12);font-size:.54rem;font-weight:800}
         .npc-forge-class-feature-dock__summary{color:rgba(255,255,255,.84)}
