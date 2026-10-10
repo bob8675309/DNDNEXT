@@ -149,7 +149,9 @@ function featAbilityIncreaseRule(matchingGroups = []) {
 }
 
 function FeatRuleList({ feat = {}, matchingGroups = [] }) {
-  const abilityRule = featAbilityIncreaseRule(matchingGroups);
+  const sourceText = String(feat?.description || "");
+  const alreadyStatesAbilityIncrease = /ability score increase|increase your [^\n.]{0,80}(?:score )?by 1/i.test(sourceText);
+  const abilityRule = alreadyStatesAbilityIncrease ? null : featAbilityIncreaseRule(matchingGroups);
   const sections = [...(abilityRule ? [abilityRule] : []), ...featRuleSections(feat, matchingGroups)];
   return <div className="npc-forge-training-feat-rule-list">{sections.map((section, index) => section.intro
     ? <p key={`intro-${index}`} className="npc-forge-training-feat-rule-intro">{section.body}</p>
