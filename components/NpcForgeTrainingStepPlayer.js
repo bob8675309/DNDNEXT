@@ -315,7 +315,7 @@ export default function NpcForgeTrainingStepPlayer({
       if (incompleteBonusFeat) controller.setError?.("Choose your Bonus Feat in Training before continuing.");
       else if (incompleteBackgroundSkills) controller.setError?.("Complete the Background-granted skill choice shown in the Skills list.");
       else if (incompleteTrainingAllowance) controller.setError?.("Complete your Class Skill or Trade Skill selections before continuing.");
-      else if (incompleteExpertise) controller.setError?.(`Choose ${Math.max(1, expertiseProgress.target - expertiseProgress.done)} more proficient skill${Math.max(1, expertiseProgress.target - expertiseProgress.done) === 1 ? "" : "s"} to gain Expertise. Use the Expertise flags beside your selected Skills.`);
+      else if (incompleteExpertise) controller.setError?.(`Choose ${Math.max(1, expertiseProgress.target - expertiseProgress.done)} proficient skill${Math.max(1, expertiseProgress.target - expertiseProgress.done) === 1 ? "" : "s"} to gain Expertise. Use Class Choices or the Expertise controls beside your proficient Skills.`);
       else if (incompleteSourceClassAbility) controller.setError?.("Complete the remaining class or advancement choice in Class Choices before continuing.");
       else controller.setError?.("Complete the remaining required Training choice before continuing.");
       const host = button.closest(".npc-forge-modal-v2")?.querySelector(".npc-forge-training-player-layout");
