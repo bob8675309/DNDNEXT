@@ -1,5 +1,6 @@
 import React from "react";
 import SourceRuleContent from "./SourceRuleContent";
+import { spellRuleReferenceDetail } from "../utils/spellRuleReferences";
 
 const SCHOOL_ACCENTS = {
   Abjuration: "spell-school-abjuration",
@@ -43,7 +44,7 @@ function progressionEntries(spell = {}) {
   return Array.isArray(entries) && entries.length ? entries : null;
 }
 
-export default function SpellCard({ spell, compact = false, dense = false, compressed = false, headerAction = null }) {
+export default function SpellCard({ spell, compact = false, dense = false, compressed = false, headerAction = null, onReferenceDetail = null }) {
   if (!spell) return null;
 
   const school = spell.school || "Spell";
@@ -63,6 +64,10 @@ export default function SpellCard({ spell, compact = false, dense = false, compr
   const scaling = scalingProfile(spell);
   const progressionText = spell.higher_level_text || (!safeJson(spell.scaling_text) ? spell.scaling_text : "");
   const hasProgression = Boolean(progression || scaling || progressionText);
+  const publishReference = (reference) => {
+    if (!onReferenceDetail || !reference) return;
+    onReferenceDetail(spellRuleReferenceDetail(reference, spell));
+  };
 
   return (
     <article className={`spell-card ${accent} ${compact ? "spell-card--compact" : ""} ${dense ? "spell-card--dense" : ""} ${compressed ? "spell-card--compressed" : ""}`}>
@@ -94,20 +99,19 @@ export default function SpellCard({ spell, compact = false, dense = false, compr
       </dl>
 
       <div className="spell-card__body">
-        {ruleEntries || spell.description ? <section className="spell-card__description">
-          <SourceRuleContent entries={ruleEntries} text={spell.description || ""} />
+        {ruleEntries || spell.description || hasProgression ? <section className="spell-card__description">
+          {ruleEntries || spell.description ? <SourceRuleContent entries={ruleEntries} text={spell.description || ""} digital onReferenceDetail={publishReference} /> : null}
+          {hasProgression ? <details className="spell-card__progression">
+            <summary><span>Spell Progression</span><small>Higher-level effects and scaling</small></summary>
+            <div className="spell-card__progression-body">
+              {scaling ? <div className="spell-card__scaling-table" role="table" aria-label={`${spell.name} progression`}>
+                <div role="row" className="spell-card__scaling-head"><span role="columnheader">Character level</span><span role="columnheader">{scaling.label}</span></div>
+                {scaling.rows.map((entry) => <div role="row" key={entry.level}><span role="cell">{entry.level}</span><strong role="cell">{entry.value}</strong></div>)}
+              </div> : null}
+              {progression || progressionText ? <SourceRuleContent entries={progression} text={progressionText || ""} digital onReferenceDetail={publishReference} /> : null}
+            </div>
+          </details> : null}
         </section> : null}
-
-        {hasProgression ? <details className="spell-card__higher spell-card__progression">
-          <summary><span>Spell Progression</span><small>Higher-level effects and scaling</small></summary>
-          <div className="spell-card__progression-body">
-            {scaling ? <div className="spell-card__scaling-table" role="table" aria-label={`${spell.name} progression`}>
-              <div role="row" className="spell-card__scaling-head"><span role="columnheader">Character level</span><span role="columnheader">{scaling.label}</span></div>
-              {scaling.rows.map((entry) => <div role="row" key={entry.level}><span role="cell">{entry.level}</span><strong role="cell">{entry.value}</strong></div>)}
-            </div> : null}
-            {progression || progressionText ? <SourceRuleContent entries={progression} text={progressionText || ""} /> : null}
-          </div>
-        </details> : null}
 
         <footer className="spell-card__footer">
           <span>Classes: {joinValues(spell.classes)}</span>
