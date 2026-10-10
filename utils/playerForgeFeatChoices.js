@@ -26,8 +26,22 @@ function preferredSpellRows(spells = []) {
 }
 function spellOption(spell) {
   return {
-    key: text(spell.id || spell.spell_key || `${slug(spell.name)}|${spell.source || "XPHB"}`), value: text(spell.id || spell.spell_key || spell.name), label: spell.name, source: spell.source || "XPHB", kind: "spell",
-    description: text(spell.description), metadata: { spellId: spell.id || null, spellKey: spell.spell_key || null, level: Number(spell.level || 0), school: spell.school || spell.school_code || "", classes: array(spell.classes), ritual: Boolean(spell.ritual), castingTime: spell.casting_time || null },
+    key: text(spell.id || spell.spell_key || `${slug(spell.name)}|${spell.source || "XPHB"}`),
+    value: text(spell.id || spell.spell_key || spell.name),
+    label: spell.name,
+    source: spell.source || "XPHB",
+    kind: "spell",
+    description: text(spell.description),
+    metadata: {
+      spellId: spell.id || null,
+      spellKey: spell.spell_key || null,
+      level: Number(spell.level || 0),
+      school: spell.school || spell.school_code || "",
+      classes: array(spell.classes),
+      ritual: Boolean(spell.ritual),
+      castingTime: spell.casting_time || null,
+      spell: { ...spell },
+    },
   };
 }
 function metamagicOption(row = {}) {
