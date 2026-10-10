@@ -110,8 +110,7 @@
   min-height: 0;
 }
 
-.spell-card__description,
-.spell-card__higher {
+.spell-card__description {
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 10px;
   background: rgba(0,0,0,0.16);
@@ -136,13 +135,35 @@
   background: color-mix(in srgb, var(--spell-accent) 7%, rgba(0,0,0,0.08));
 }
 
-.spell-card__higher {
-  color: rgba(255,255,255,0.86);
+.spell-card__description .source-rule-content__disclosure {
+  border: 0;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  border-radius: 0;
+  background: transparent;
+}
+
+.spell-card__description .source-rule-content__disclosure:first-child {
+  border-top: 0;
+}
+
+.spell-card__description .source-rule-content__disclosure > summary {
+  padding: 0.46rem 0.18rem;
+}
+
+.spell-card__description .source-rule-content__disclosure-body {
+  padding: 0.08rem 0.22rem 0.5rem 1.05rem;
+  border-top: 0;
 }
 
 .spell-card__progression {
+  margin-top: 0.55rem;
   padding: 0;
   overflow: hidden;
+  border: 0;
+  border-top: 1px solid rgba(255,255,255,0.09);
+  border-radius: 0;
+  color: rgba(255,255,255,0.86);
+  background: transparent;
 }
 
 .spell-card__progression > summary {
@@ -306,16 +327,20 @@
   line-height: 1.2;
 }
 
-.spell-card--dense .spell-card__description,
-.spell-card--dense .spell-card__higher {
+.spell-card--dense .spell-card__description {
   padding: 0.36rem;
   border-radius: 7px;
   font-size: 0.84rem;
   line-height: 1.5;
 }
 
-.spell-card--dense .spell-card__higher {
-  margin-top: 0.28rem;
+.spell-card--dense .spell-card__progression {
+  margin-top: 0.3rem;
+}
+
+.spell-card--dense .spell-card__progression > summary {
+  padding: 0.38rem 0.28rem;
+  font-size: 0.7rem;
 }
 
 .spell-card--dense .spell-card__footer {
@@ -400,4 +425,56 @@
 .spell-card--compressed .spell-card__progression > summary {
   padding: 0.48rem 0.55rem;
   font-size: 0.78rem;
+}
+
+
+@media print {
+  .spell-card {
+    --spell-accent: #333;
+    color: #111 !important;
+    background: #fff !important;
+    border: 1px solid #777 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    break-inside: avoid;
+  }
+  .spell-card--compact .spell-card__body {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .spell-card__header,
+  .spell-card__progression,
+  .spell-card__progression-body {
+    border-color: #bbb !important;
+  }
+  .spell-card__eyebrow,
+  .spell-card__source,
+  .spell-card__footer,
+  .spell-card dt,
+  .spell-card__progression > summary > small {
+    color: #444 !important;
+  }
+  .spell-card__title,
+  .spell-card dd,
+  .spell-card__progression > summary,
+  .spell-card__scaling-table strong {
+    color: #111 !important;
+  }
+  .spell-card__source,
+  .spell-card__badges span,
+  .spell-card__grid > div,
+  .spell-card__description,
+  .spell-card__scaling-table,
+  .spell-card__scaling-table > div {
+    color: #111 !important;
+    background: transparent !important;
+    border-color: #bbb !important;
+  }
+  .spell-card details:not([open]) > *:not(summary) {
+    display: block !important;
+  }
+  .spell-card details > summary::before {
+    display: none !important;
+  }
 }
