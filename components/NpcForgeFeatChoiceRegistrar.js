@@ -85,7 +85,7 @@ export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, contro
     setSpellCatalogReady(false);
     setCatalogError("");
     supabase.from("spells_catalog")
-      .select("id,spell_key,name,source,level,school,school_code,classes,ritual,casting_time,range_text,range_distance,range_unit,attack_type,duration_text,description,components_v,components_s,components_m,damage_dice,damage_types")
+      .select("id,spell_key,name,source,page,level,school,school_code,classes,ritual,casting_time,range_text,range_distance,range_unit,attack_type,duration_text,description,higher_level_text,components_v,components_s,components_m,material_text,damage_dice,damage_types,area_type,area_size,area_unit,saving_throw_abilities,concentration,scaling_text,scaling_json,raw_payload")
       .order("level", { ascending: true })
       .order("name", { ascending: true })
       .limit(10000)
