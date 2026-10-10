@@ -2,6 +2,7 @@ import fs from "node:fs";
 
 const read = (path) => fs.readFileSync(path, "utf8");
 const migration = read("sql/20260808_49_player_forge_starting_equipment_currency.sql");
+const marketMigration = read("sql/20261010_01_player_forge_starting_market.sql");
 const utility = read("utils/playerForgeStartingEquipment.js");
 const controller = read("components/useNpcForgeController.js");
 const core = read("components/NpcForgeCoreSupport.js");
@@ -94,14 +95,49 @@ for (const token of [
 ]) need(controller, token);
 
 for (const token of [
-  "Starting gear & character currency",
-  "PackageGroup",
+  "Starting market",
+  "Take the source-backed cash alternative",
+  "startingMarketBudgetCopper",
+  "startingMarketRemainingCopper",
+  "marketPurchases",
+  'from("characters")',
+  'from("character_stock")',
+  "ItemCard",
+  "Starting cart",
   "Roll 1d10 Starting Wealth",
-  "startingCurrencyCopper",
-  "magicAllowanceLabel",
   "DM guide only",
-  "not randomly or automatically granted",
 ]) need(equipmentStep, token);
+
+for (const token of [
+  "cashOnlyEquipmentOption",
+  "startingMarketBaseCopper",
+  "startingMarketPurchases",
+  "startingMarketSpentCopper",
+  "startingMarketBudgetCopper",
+  "startingMarketRemainingCopper",
+  'mode: "market"',
+]) need(utility, token, "starting-market utility");
+
+for (const token of [
+  "player_forge_cash_equipment_option_v1",
+  "v_mode='market'",
+  "marketPurchases",
+  "for update of cs",
+  "merchant.storefront_enabled is true",
+  "Starting-market purchases exceed the source-backed starting purse.",
+  "'startingMarket',true",
+  "'character',p_character_id::text",
+  "delete from public.character_stock",
+  "update public.character_stock",
+  "'marketSpentCopper'",
+  "'startingCurrencyCopper'",
+]) need(marketMigration, token, "starting-market server authority");
+
+forbid(marketMigration, "player_wallets", "starting-market account wallet usage");
+forbid(marketMigration, "owner_type,'player'", "starting-market account inventory");
+forbid(marketMigration, "MapPageClient", "starting-market world-map crossover");
+forbid(marketMigration, "map_routes", "starting-market route crossover");
+forbid(marketMigration, "weather", "starting-market weather crossover");
 
 for (const token of [
   "startingEquipmentSelections",
@@ -119,4 +155,4 @@ for (const source of [utility, controller, equipmentStep, derived, modal]) {
   for (const token of ["MapPageClient", "map_routes", "advance_all_characters", "weather"]) forbid(source, token, `protected world boundary ${token}`);
 }
 
-console.log("Player Forge source-backed class/background starting equipment, character-scoped inventory/currency, higher-level wealth, DM-only magic guide, Equipment step, and protected boundaries validated.");
+console.log("Player Forge source-backed starting market, staged merchant purchases, character-scoped inventory/currency, higher-level wealth, DM-only magic guide, and protected boundaries validated.");
