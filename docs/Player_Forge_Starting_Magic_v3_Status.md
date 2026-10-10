@@ -1,5 +1,25 @@
 # Player Forge v3 Starting Magic Status
 
+## 2026-10-09 browser-review follow-up — PR #207
+
+This follow-up preserves the existing `create_player_character_v3`, `sheet.startingMagicSelections`, `character_spells`, and source-provenance authorities. It changes the player-facing Forge Spells presentation and adds an earlier client-side guard against invalid over-selection.
+
+Browser-review changes:
+
+- the class-spell catalogue is now a compact **one-row sortable table** with Spell, Level, School, Source, and Status columns instead of three stacked lines per spell;
+- class cantrip and leveled-spell selections now hard-stop at the active `startingSpellSelectionModel` limits. Selected spells can always be removed, but the Forge will not add a third cantrip to a 2-cantrip model or another leveled spell after its legal count is full;
+- final/server validation remains authoritative; the new client ceiling is an earlier usability guard, not a replacement validation path;
+- the shared SpellCard accepts a less-zoomed `compressed` presentation for Forge while keeping readable rule text;
+- the main spell rules, progression/scaling, and footer now share one bounded scroll body rather than separate description and higher-level scroll boxes;
+- structured `raw_payload.entries` / `entriesHigherLevel` and catalogue scaling metadata are used when available, with a collapsed **Spell Progression** disclosure for higher-level slot/cantrip scaling;
+- player-facing imported item-property tags expand shorthand such as `L`, `F`, and `R` to **Light**, **Finesse**, and **Reach**;
+- the redundant Background routing footer was removed and the accepted Background dossier typography was increased another small step.
+
+Live Supabase inspection confirmed this is a presentation/interaction issue, not a catalogue defect. For example, Grim Hollow **Crimson Lash** preserves structured Light/Finesse/Reach source tags and higher-level attack scaling in `raw_payload`; no database rewrite is required.
+
+No Supabase schema/data migration belongs to PR #207.
+
+
 Status date: 2026-08-08
 PR: #170 (`agent/character-forge-resilience-presentation`)
 Live migrations: 47-48
