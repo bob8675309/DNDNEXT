@@ -521,7 +521,7 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
               </section>
               <section className="npc-forge-subclass-inspector__spell-preview" aria-label="Selected subclass spell details">
                 <div className="npc-forge-subclass-inspector__spell-preview-scroll">
-                  {selectedSubclassSpellRow ? <SpellCard spell={selectedSubclassSpellRow.spell} compact dense /> : <div className="npc-forge-subclass-inspector__empty-note"><span>Select a granted spell to view its complete catalogue details.</span></div>}
+                  {selectedSubclassSpellRow ? <SpellCard spell={selectedSubclassSpellRow.spell} compact dense onReferenceDetail={onFeatureDetail} /> : <div className="npc-forge-subclass-inspector__empty-note"><span>Select a granted spell to view its complete catalogue details.</span></div>}
                 </div>
               </section>
             </div> : null}
