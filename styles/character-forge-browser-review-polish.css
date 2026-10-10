@@ -96,23 +96,21 @@
   max-height: clamp(228px, calc(100dvh - 430px), 500px) !important;
 }
 
-/* Let Current Selection occupy the same available viewport height as the modal
- * body. The generic final-step reminder is redundant on Feats and consumed space
- * at the bottom of the browser-review screenshot. */
+/* Current Selection should end just below its content. Long source rules can
+ * still scroll once they reach the available viewport height, but short choices
+ * must not grow a large empty tail merely to match the left catalogue. */
 .unified-player-character-forge .npc-forge-body:has(.npc-forge-training-tabbed-shell:is(.is-feats,.is-class)) .npc-forge-context-panel {
-  height: calc(100dvh - 190px) !important;
+  height: fit-content !important;
+  min-height: 0 !important;
   max-height: calc(100dvh - 190px) !important;
+  align-self: start !important;
 }
 
 .unified-player-character-forge .npc-forge-body:has(.npc-forge-training-tabbed-shell:is(.is-feats,.is-class)) .npc-forge-training-context-dossier {
-  height: 100% !important;
-  min-height: 100% !important;
-  max-height: none !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: calc(100dvh - 218px) !important;
   overflow: auto !important;
-}
-
-.unified-player-character-forge .npc-forge-body:has(.npc-forge-training-tabbed-shell:is(.is-feats,.is-class)) .npc-forge-training-context-note {
-  display: none !important;
 }
 
 /* Training / Feats: keep the existing resolver and persistence model, but make the
