@@ -49,7 +49,7 @@ export default function NpcForgeTrainingFeatPicker({
         prerequisite,
       ].filter(Boolean).join(" ")).includes(q);
     });
-    return rows.sort((a, b) => {
+    const sorted = rows.sort((a, b) => {
       if (sortMode === "category") {
         return categoryLabel(categoryKey(a)).localeCompare(categoryLabel(categoryKey(b))) || text(a.name).localeCompare(text(b.name));
       }
@@ -61,7 +61,11 @@ export default function NpcForgeTrainingFeatPicker({
       }
       return text(a.name).localeCompare(text(b.name));
     });
-  }, [category, options, prerequisiteFilter, query, sortMode]);
+    if (!selectedId) return sorted;
+    const selectedIndex = sorted.findIndex((option) => String(option.id) === String(selectedId));
+    if (selectedIndex <= 0) return sorted;
+    return [sorted[selectedIndex], ...sorted.slice(0, selectedIndex), ...sorted.slice(selectedIndex + 1)];
+  }, [category, options, prerequisiteFilter, query, selectedId, sortMode]);
 
   const selected = useMemo(() => options.find((option) => String(option.id) === String(selectedId)) || null, [options, selectedId]);
 
