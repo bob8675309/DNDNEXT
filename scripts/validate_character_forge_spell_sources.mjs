@@ -25,6 +25,12 @@ for (const token of [
   "canAddSpell",
   "selectionLimitMessage",
   "npc-forge-spell-table-head",
+  'function spellStatus(spell, selections = {}, mode = "")',
+  'mode !== "known"',
+  "spellStatus(spell, selections, model.mode)",
+  "grid-template-columns:minmax(0,1fr) 58px 74px",
+  "button:nth-child(3)",
+  "overflow-x:hidden",
   "sortKey",
   "sortDirection",
   "scaling_text,scaling_json,raw_payload",
@@ -57,6 +63,14 @@ for (const token of [
 
 if (spellStep.includes("groupByLevel") || spellStep.includes("npc-forge-spell-catalogue-level")) {
   throw new Error("Character Forge spell sources: Forge Spells regressed to stacked level-group cards instead of the compact sortable table.");
+}
+
+if ((spellStep.match(/spellStatus\(spell, selections, model\.mode\)/g) || []).length < 2) {
+  throw new Error("Character Forge spell sources: known/prepared status authority must be shared by both row rendering and Status sorting.");
+}
+
+if (!spellStep.includes("button:nth-child(3)") || !spellStep.includes("span:nth-child(3)") || !spellStep.includes("overflow-x:hidden")) {
+  throw new Error("Character Forge spell sources: narrow-phone spell rows must hide School/Source and prevent independent horizontal row scrolling.");
 }
 
 for (const token of [
