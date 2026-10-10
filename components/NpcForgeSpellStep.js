@@ -20,7 +20,7 @@ function spellStatus(spell, selections = {}, mode = "") {
 }
 function compareText(a, b) { return String(a || "").localeCompare(String(b || ""), undefined, { sensitivity: "base", numeric: true }); }
 
-export default function NpcForgeSpellStep({ selectedClass, selectedSubclass = null, level = 1, selections = {}, expandedSpellNames = [], onChange, onModelChange, onSpellRowsChange }) {
+export default function NpcForgeSpellStep({ selectedClass, selectedSubclass = null, level = 1, selections = {}, expandedSpellNames = [], onChange, onModelChange, onSpellRowsChange, onReferenceDetail = null }) {
   const { state: classChoiceState, toggleFeatureOption } = useNpcForgeClassChoice();
   const { state: sourceChoiceState } = useNpcForgeSourceChoices();
   const [levelRow, setLevelRow] = useState(null);
@@ -306,6 +306,7 @@ export default function NpcForgeSpellStep({ selectedClass, selectedSubclass = nu
               compact
               compressed
               headerAction={<button type="button" disabled={!inspectedSelected && !inspectedCanAdd} title={!inspectedSelected && !inspectedCanAdd ? selectionLimitMessage(inspectedSpell) : undefined} className={`npc-forge-spell-card-select ${inspectedSelected ? "is-selected" : ""}`} onClick={() => toggleSpell(inspectedSpell)}>{inspectedSelectLabel}</button>}
+              onReferenceDetail={onReferenceDetail}
             />
             {selections?.[inspectedSpell.id] && model.mode === "spellbook" && Number(inspectedSpell.level) > 0 ? <div className="npc-forge-spell-preview__actions"><button type="button" className={selections?.[inspectedSpell.id]?.prepared ? "is-prepared" : ""} onClick={() => togglePrepared(inspectedSpell)}>{selections?.[inspectedSpell.id]?.prepared ? "Prepared" : "Spellbook only"}</button></div> : null}
           </> : <div className="profile-catalogue__empty">Select a spell from the catalogue to inspect its card.</div>}
