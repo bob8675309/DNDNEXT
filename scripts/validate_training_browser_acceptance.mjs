@@ -34,6 +34,8 @@ const featChoiceRouting = read("utils/playerForgeFeatChoiceRouting.js");
 const profileFeatures = read("components/CharacterFeaturesPanel.js");
 const routedController = read("components/useNpcForgeTrainingRoutedController.js");
 const contextPanel = read("components/NpcForgeContextPanel.js");
+const stepContent = read("components/NpcForgeStepContent.js");
+const validationGuidance = read("utils/forgeValidationGuidance.js");
 const backgroundEmpty = read("components/NpcForgeBackgroundEmptyState.js");
 
 const authoritativeTrainingSplit = ".npc-forge-body.is-player-mode.npc-forge-step-4{grid-template-columns:minmax(390px,2fr) minmax(0,3fr)!important}";
@@ -84,6 +86,7 @@ for (const token of [
 ]) assert(trainingContext.includes(token), `Feat dossier cleanup / Crafter routing is missing ${token}`);
 for (const token of ["looksLikeRuleHeading", "titleLike.length / significant.length >= 0.8", "flushProse", "formatPlayerFacingText", "with|over|by|as"]) assert(featRulePresentation.includes(token), `Shared feat rule formatter is missing ${token}`);
 assert(classFeatureChoiceParsing.includes('"doing one of the following"'), "Runtime Rage instructions must not surface as a Class Choice.");
+assert(classFeatureChoices.includes("ChoiceHelperCopy") && classFeatureChoices.includes("npc-forge-class-choice-helper") && classFeatureChoices.includes("headingLike"), "Dense class-choice feature text must be split into readable titled sections instead of one tiny wall of text.");
 assert(classFeatureChoiceParsing.includes("option.description || option.raw?.description"), "Feat-backed class options such as Fighting Styles must keep the imported feat rule instead of falling through to generic placeholder copy.");
 assert(classFeatureOptionAuthority.includes("descriptionExact") && classFeatureOptionAuthority.includes("sourceDescription") && classFeatureOptionAuthority.includes("formatPlayerFacingText(row.description"), "Class option authority must resolve exact source-backed descriptions across maneuvers, Arcane Shots, runes, disciplines, Pact Boons, and imported subclass option families.");
 assert(invocationChoices.includes('formatPlayerFacingText(row.description, "") || guide?.summary || OPTION_SUMMARIES[norm(row.name)]'), "Warlock Invocations must prefer their complete canonical source rule over the older concise guide summary.");
@@ -99,7 +102,10 @@ assert(playerTraining.includes("npc-forge-training-feat-only") && playerTraining
 assert(playerTraining.includes("NpcForgeClassOptionBrowser") && playerTraining.includes("groups={classOptionGroups}"), "Class Choices must render source-backed catalogues inside the left workspace.");
 assert(playerTraining.includes('group.ownerType !== "feat" && group.ownerType !== "class-option"'), "Source-owned class-option groups must not be rendered a second time through the generic source-choice surface.");
 assert(playerTraining.includes("inspectOnly onDetail={onDetail}") && classFeatureChoices.includes('type: "classFeatureOption"') && classFeatureChoices.includes("npc-forge-class-choice-inspect-list"), "Regular class/subclass choices must inspect on the left and defer description/selection to Current Selection.");
+assert(playerTraining.includes("classChoicePresentationGroups") && playerTraining.includes('group.kind === "expertise" ? { ...group, placement: "class" } : group') && playerTraining.includes("groups={classChoicePresentationGroups}"), "Class Choices must mirror the existing Expertise group without duplicating its persistence state.");
+assert(trainingContext.includes("expertiseExplanation") && trainingContext.includes("Expertise doubles your Proficiency Bonus") && trainingContext.includes("Granted by") && trainingContext.includes('detail?.type === "classFeatureOption"'), "Current Selection must explain what Expertise does and preserve class/source provenance.");
 assert(trainingContext.includes('detail?.type === "classFeatureOption"') && trainingContext.includes("toggleFeatureOption"), "Current Selection must own regular class feature choice confirmation.");
+assert(!playerTraining.includes("Trade Skills measure crafting proficiency") && !playerTraining.includes("Background tool proficiencies preserve their original rules value"), "Player Training must not expose internal Trade Skill mapping/compatibility prose.");
 assert(!classFeatureChoices.includes("NpcForgeSourceChoiceFields"), "Class feature choices must not portal class-option controls into the preview rail.");
 assert(classOptionBrowser.includes('type: "classSourceOption"') && classOptionBrowser.includes("Descriptions and selection stay in Current Selection") && classOptionBrowser.includes("<details") && classOptionBrowser.includes("npc-forge-class-option-group__body") && !classOptionBrowser.includes("onMouseEnter") && !classOptionBrowser.includes("onFocus"), "Source-backed Class Choices must use collapsible slots, inspect on click, and confirm on the right.");
 assert(!playerTraining.includes("onMouseEnter={() => onDetail") && !playerTraining.includes("onMouseEnter={() => publishFeatGroup"), "Training Current Selection must not change merely because the pointer passes over another choice.");
@@ -110,14 +116,22 @@ for (const token of [
   "border-radius:999px",
   "is-class-choice-tab",
   "<span>Class</span><span>Choices</span>",
+  "npc-forge-training-tab-status",
+  "skillsProgress",
+  "featsProgress",
+  "classTabProgress",
+  "fraction(skillsProgress)",
+  "fraction(featsProgress)",
+  "fraction(classTabProgress)",
   "classSourceGroups",
   "Class Skill Choices",
   'label: "Background"',
   'label: "Class"',
   "activeClassFeatureGroups",
   "backgroundSourceSkillOptions",
-  "Permanent choices due now",
-]) assert(playerTabbed.includes(token), `Segmented Skills/Feats/Class Choices navigation or player-facing source summary is missing ${token}`);
+  "Class and subclass choices at this level",
+]) assert(playerTabbed.includes(token), `Segmented Skills/Feats/Class Choices navigation, progress fraction, or player-facing source summary is missing ${token}`);
+assert(!playerTabbed.includes("Skills, Trade Skills &amp; additional training") && !playerTabbed.includes("Feat catalogue &amp; feat-owned follow-ups") && !playerTabbed.includes("Invocations, styles, maneuvers &amp; class options") && !playerTabbed.includes("npc-forge-training-tabbed-help"), "Training tabs must omit the retired tiny subtitles and bottom implementation helper.");
 assert(trainingContext.includes("Where these come from"), "Training section tabs must publish source/count breakdowns into Current Selection.");
 assert(!trainingContext.includes("Moving the mouse over another row will no longer replace") && trainingContext.includes("npc-forge-training-overview__source-name"), "Skills overview must remove implementation-facing helper copy and visually separate Background/Class names from their player-facing descriptions.");
 assert(trainingContext.includes('detail?.type === "classSourceOption"') && trainingContext.includes("toggleChoice: toggleSourceChoice") && trainingContext.includes('"Replace Selection"') && trainingContext.includes("dossier?.scrollTo?.({ top: 0"), "Current Selection must own source-backed Class Choice confirmation and reset its scroll position on deliberate clicks.");
@@ -162,6 +176,10 @@ assert(!spellStep.includes("openSpellId") && !spellStep.includes("npc-forge-spel
 assert(spellStep.includes("incompleteSourceSpellGroups.map((group) => group.label).join"), "Blocked spell progression must name the unresolved source-owned spell group.");
 
 assert(app.includes('import "../styles/character-forge-browser-review-polish.css";'), "Latest Character Forge browser-review stylesheet is not loaded by _app.js.");
+assert(browserPolish.includes(".npc-forge-body.is-player-mode.npc-forge-step-background") && browserPolish.includes(".npc-forge-catalog-list") && browserPolish.includes("max-height: none !important") && browserPolish.includes("flex: 1 1 0 !important"), "Player Background catalogue must extend through the available desktop height instead of stopping at the old generic list cap.");
+assert(stepContent.includes('!playerMode ? <div className="npc-forge-workspace-note mt-3"') && !stepContent.includes('{playerMode ? <div className="npc-forge-workspace-note mt-3">Background features'), "Player Background must not show the implementation-facing source-routing note.");
+assert(browserPolish.includes("Final browser-review readability floor") && browserPolish.includes(".npc-forge-class-choice-inspect strong") && browserPolish.includes("font-size: .72rem !important") && browserPolish.includes(".npc-forge-training-skill-main b"), "Training and Class Choice player text must retain the moderately enlarged readability floor.");
+assert(validationGuidance.includes(".npc-forge-training-class-only .npc-forge-class-choice-group.is-required") && validationGuidance.includes(".npc-forge-training-class-skills"), "Expertise validation must prioritize Class Choices while retaining the Skills mirror fallback.");
 for (const token of [
   ".npc-forge-background-guide.is-showcase-one:has(> .npc-forge-bg-features)",
   "> .npc-forge-bg-showcase-grants",
