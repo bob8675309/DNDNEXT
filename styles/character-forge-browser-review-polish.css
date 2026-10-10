@@ -857,6 +857,36 @@
   min-height: 36px !important;
   padding: 5px 7px !important;
 }
+.unified-player-character-forge .npc-forge-class-option-group__title {
+  display: flex !important;
+  align-items: baseline !important;
+  gap: 7px !important;
+  min-width: 0 !important;
+}
+.unified-player-character-forge .npc-forge-class-option-group__title strong {
+  overflow: hidden !important;
+  font-size: .68rem !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+}
+.unified-player-character-forge .npc-forge-class-option-group__title small {
+  overflow: hidden !important;
+  font-size: .46rem !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+}
+.unified-player-character-forge .npc-forge-class-option-group > summary > em {
+  padding: 0 !important;
+  border-radius: 0 !important;
+  color: rgba(255,255,255,.58) !important;
+  background: transparent !important;
+  font-size: .48rem !important;
+  font-weight: 800 !important;
+}
+.unified-player-character-forge .npc-forge-class-option-group.is-complete > summary > em {
+  color: #9cece2 !important;
+  background: transparent !important;
+}
 .unified-player-character-forge .npc-forge-class-option-group__body {
   gap: 4px !important;
   margin: 0 5px 5px 16px !important;
