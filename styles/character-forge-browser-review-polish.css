@@ -173,7 +173,7 @@
 
 .unified-player-character-forge .npc-forge-training-mode-switch > button small {
   color: rgba(239,232,250,.55) !important;
-  font-size: .5rem !important;
+  font-size: .55rem !important;
 }
 
 .unified-player-character-forge .npc-forge-training-picks {
@@ -513,13 +513,13 @@
 
 .unified-player-character-forge .npc-forge-training-group-head b,
 .unified-player-character-forge .npc-forge-training-choice-section > summary b {
-  font-size: .68rem !important;
+  font-size: .72rem !important;
 }
 
 .unified-player-character-forge .npc-forge-training-group-head small {
   color: rgba(255,255,255,.68) !important;
-  font-size: .56rem !important;
-  line-height: 1.35 !important;
+  font-size: .6rem !important;
+  line-height: 1.4 !important;
 }
 
 .unified-player-character-forge .npc-forge-training-skill-list > article,
@@ -534,13 +534,13 @@
 
 .unified-player-character-forge .npc-forge-training-skill-main b,
 .unified-player-character-forge .npc-forge-training-trade-main b {
-  font-size: .69rem !important;
+  font-size: .74rem !important;
 }
 
 .unified-player-character-forge .npc-forge-training-skill-main span small,
 .unified-player-character-forge .npc-forge-training-trade-main small {
   color: rgba(255,255,255,.58) !important;
-  font-size: .54rem !important;
+  font-size: .58rem !important;
 }
 
 .unified-player-character-forge .npc-forge-training-skill-main > em,
@@ -559,19 +559,19 @@
 }
 
 .unified-player-character-forge .npc-forge-training-expertise-guide > span {
-  font-size: .61rem !important;
+  font-size: .66rem !important;
 }
 
 .unified-player-character-forge .npc-forge-training-expertise-guide > small {
   color: rgba(255,255,255,.64) !important;
-  font-size: .55rem !important;
-  line-height: 1.45 !important;
+  font-size: .6rem !important;
+  line-height: 1.5 !important;
 }
 
 .unified-player-character-forge .npc-forge-training-expertise-flag {
   min-width: 96px !important;
   padding: 5px 8px !important;
-  font-size: .53rem !important;
+  font-size: .61rem !important;
 }
 
 .unified-player-character-forge .npc-forge-training-trade-ability > span {
@@ -588,13 +588,13 @@
 }
 
 .unified-player-character-forge .npc-forge-training-feat-followups button b {
-  font-size: .66rem !important;
+  font-size: .74rem !important;
 }
 
 .unified-player-character-forge .npc-forge-training-feat-followups button small {
   color: rgba(255,255,255,.58) !important;
-  font-size: .52rem !important;
-  line-height: 1.4 !important;
+  font-size: .57rem !important;
+  line-height: 1.45 !important;
 }
 
 .unified-player-character-forge .npc-forge-class-choices.is-inspect-only {
@@ -611,15 +611,15 @@
 
 .unified-player-character-forge .npc-forge-class-choices.is-inspect-only > header h3 {
   margin-top: 2px !important;
-  font-size: .88rem !important;
-  line-height: 1.15 !important;
+  font-size: .92rem !important;
+  line-height: 1.18 !important;
 }
 
 .unified-player-character-forge .npc-forge-class-choices.is-inspect-only > header p {
   max-width: none !important;
   color: rgba(255,255,255,.7) !important;
-  font-size: .66rem !important;
-  line-height: 1.5 !important;
+  font-size: .72rem !important;
+  line-height: 1.55 !important;
 }
 
 .unified-player-character-forge .npc-forge-class-choices.is-inspect-only .npc-forge-class-choice-group > summary {
@@ -628,12 +628,12 @@
 }
 
 .unified-player-character-forge .npc-forge-class-choices.is-inspect-only .npc-forge-class-choice-group > summary strong {
-  font-size: .76rem !important;
+  font-size: .8rem !important;
 }
 
 .unified-player-character-forge .npc-forge-class-choices.is-inspect-only .npc-forge-class-choice-group > summary span {
   color: rgba(255,255,255,.58) !important;
-  font-size: .54rem !important;
+  font-size: .59rem !important;
 }
 
 .unified-player-character-forge .npc-forge-class-choices.is-inspect-only .npc-forge-class-choice-group > summary em {
@@ -663,8 +663,8 @@
 
 .unified-player-character-forge .npc-forge-class-choices.is-inspect-only .npc-forge-class-choice-group__body > p {
   color: rgba(255,255,255,.86) !important;
-  font-size: .75rem !important;
-  line-height: 1.62 !important;
+  font-size: .8rem !important;
+  line-height: 1.65 !important;
 }
 
 .unified-player-character-forge .npc-forge-class-choices.is-inspect-only .npc-forge-class-choice-training-note {
@@ -683,7 +683,7 @@
 }
 
 .unified-player-character-forge .npc-forge-class-choice-inspect strong {
-  font-size: .66rem !important;
+  font-size: .72rem !important;
 }
 
 .unified-player-character-forge .npc-forge-class-choice-inspect small,
@@ -714,4 +714,33 @@
 
 .unified-player-character-forge .npc-forge-training-overview__source-value {
   font-size: .74rem !important;
+}
+
+
+/* Final browser-review readability floor for the Training choice surfaces. */
+.unified-player-character-forge .npc-forge-training-skill-main b,
+.unified-player-character-forge .npc-forge-training-trade-main b {
+  font-size: .74rem !important;
+  line-height: 1.25 !important;
+}
+.unified-player-character-forge .npc-forge-training-skill-main span small,
+.unified-player-character-forge .npc-forge-training-trade-main small {
+  font-size: .58rem !important;
+  line-height: 1.35 !important;
+}
+.unified-player-character-forge .npc-forge-class-choices.is-inspect-only > header p {
+  font-size: .72rem !important;
+  line-height: 1.55 !important;
+}
+.unified-player-character-forge .npc-forge-class-choices.is-inspect-only .npc-forge-class-choice-group__body > p,
+.unified-player-character-forge .npc-forge-class-choices.is-inspect-only .npc-forge-class-choice-helper > p {
+  font-size: .8rem !important;
+  line-height: 1.65 !important;
+}
+.unified-player-character-forge .npc-forge-class-choice-inspect strong {
+  font-size: .72rem !important;
+}
+.unified-player-character-forge .npc-forge-class-choice-inspect small,
+.unified-player-character-forge .npc-forge-class-choice-inspect em {
+  font-size: .55rem !important;
 }
