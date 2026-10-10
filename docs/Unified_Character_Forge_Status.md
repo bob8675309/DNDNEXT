@@ -12,6 +12,7 @@ Key accepted Forge milestones now merged:
 - PR #202 — Metamagic Adept nested choices, invocation detail fallback, and Profile-style Forge spell browsing;
 - PR #204 — complete 36/36 Grim Hollow Tarot expansion coverage.
 - PR #206 — October 9 browser-review follow-up: modest Background readability increase, Expertise-as-Skill-flag UX, compact Class Choices, and exact Training blocker guidance. This preserves existing class-feature/source-choice persistence rather than introducing parallel state.
+- PR #207 — active October 9 Spells/Background browser-review follow-up: compact sortable spell rows, client-side selection ceilings aligned to existing starting-magic models, structured one-scroll SpellCard rules/progression, player-facing property expansion, and removal of the redundant Background routing footer. No new persistence authority or DB migration.
 
 The next broad Character Forge task is **completion/reconciliation**, not another architectural rewrite. Audit all ten player Forge steps on current `main`, reproduce concrete defects, and patch only the remaining gaps:
 
