@@ -55,6 +55,7 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
 
   const trainingClassGroups = useMemo(() => activeClassGroups.filter((group) => (group.placement || "class") === "training"), [activeClassGroups]);
   const expertiseGroups = useMemo(() => trainingClassGroups.filter((group) => group.kind === "expertise"), [trainingClassGroups]);
+  const nonExpertiseTrainingClassGroups = useMemo(() => trainingClassGroups.filter((group) => group.kind !== "expertise"), [trainingClassGroups]);
   const classFeatureGroups = useMemo(() => activeClassGroups.filter((group) => (group.placement || "class") === "class"), [activeClassGroups]);
   const resolverTrainingGroups = useMemo(() => sourceChoiceGroupsForResolverPlacement(sourceChoiceState, "training"), [sourceChoiceState]);
   const trainingSourceGroups = useMemo(() => resolverTrainingGroups.filter((group) => (
@@ -81,7 +82,15 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
   const backgroundChoiceTarget = (props.backgroundSkillChoices || []).reduce((total, group) => total + Number(group.count || 1), 0);
   const backgroundChoiceDone = (props.backgroundSkillChoices || []).reduce((total, group) => total + Math.min(Number(group.count || 1), (props.backgroundSkillSelections?.[group.id] || []).length), 0);
   const incompleteBackgroundChoices = backgroundChoiceDone !== backgroundChoiceTarget;
-  const incompleteTrainingClass = classGroupsIncomplete(trainingClassGroups, classSelections);
+  const backgroundSourceSkillOptions = useMemo(() => selectedSourceChoiceOptions(sourceChoiceState.groups || [], sourceSelections, { ownerType: "background" })
+    .filter((option) => option.fieldKind === "skill" || option.kind === "skill"), [sourceChoiceState.groups, sourceSelections]);
+  const backgroundSkillKeys = useMemo(() => new Set([
+    ...(props.backgroundSkills || []).map((value) => String(value || "").trim().toLowerCase()),
+    ...(props.backgroundSkillChoices || []).flatMap((group) => (props.backgroundSkillSelections?.[group.id] || []).map((value) => String(value || "").trim().toLowerCase())),
+    ...backgroundSourceSkillOptions.map((option) => String(option.value || option.label || option.key || "").trim().toLowerCase()),
+  ].filter(Boolean)), [backgroundSourceSkillOptions, props.backgroundSkillChoices, props.backgroundSkillSelections, props.backgroundSkills]);
+  const backgroundSkillCount = backgroundSkillKeys.size;
+  const incompleteTrainingClass = classGroupsIncomplete(nonExpertiseTrainingClassGroups, classSelections);
   const incompleteExpertiseGroup = expertiseGroups.find((group) => group?.required && (classSelections?.[group.id] || []).length !== Number(group.count || 0)) || null;
   const incompleteTrainingSource = trainingSourceGroups.some((group) => !sourceChoiceGroupComplete(group, sourceSelections));
 
@@ -93,9 +102,9 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
 
   const skillsIncomplete = incompleteBackgroundChoices || incompleteSharedChoices || incompleteTrainingClass || incompleteTrainingSource;
   const featsIncomplete = incompleteBonusFeat || incompleteFeatSource;
-  const classChoicesIncomplete = incompleteClassFeature || incompleteClassSource;
+  const classChoicesIncomplete = Boolean(incompleteExpertiseGroup) || incompleteClassFeature || incompleteClassSource;
   const featsHaveChoices = bonusFeatRequired || featSourceGroups.length > 0 || Boolean(controller.selectedBackgroundFeat);
-  const classChoicesHaveChoices = classFeatureGroups.length > 0 || classSourceGroups.length > 0;
+  const classChoicesHaveChoices = expertiseGroups.length > 0 || classFeatureGroups.length > 0 || classSourceGroups.length > 0;
 
   useEffect(() => {
     if (!["feats", "class"].includes(activeView)) return;
@@ -113,17 +122,17 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
       if (incompleteBonusFeat) {
         setActiveView("feats");
         controller.setError?.("Choose your Bonus Feat before continuing.");
-      } else if (incompleteExpertiseGroup) {
-        setActiveView("skills");
-        const done = (classSelections?.[incompleteExpertiseGroup.id] || []).length;
-        const left = Math.max(1, Number(incompleteExpertiseGroup.count || 0) - done);
-        controller.setError?.(`Choose ${left} more proficient skill${left === 1 ? "" : "s"} to gain Expertise. Use the Expertise flags in Skills.`);
       } else if (skillsIncomplete) {
         setActiveView("skills");
         controller.setError?.("Finish the highlighted Skill, Trade Skill, language, or tool choice before continuing.");
       } else if (featsIncomplete) {
         setActiveView("feats");
         controller.setError?.("Finish the highlighted feat choice before continuing.");
+      } else if (incompleteExpertiseGroup) {
+        setActiveView("class");
+        const done = (classSelections?.[incompleteExpertiseGroup.id] || []).length;
+        const left = Math.max(1, Number(incompleteExpertiseGroup.count || 0) - done);
+        controller.setError?.(`Choose ${left} proficient skill${left === 1 ? "" : "s"} to gain Expertise in Class Choices.`);
       } else if (classChoicesIncomplete) {
         setActiveView("class");
         const label = incompleteClassGroup?.label || incompleteClassSourceGroup?.label || "Class choice";
@@ -135,22 +144,16 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
   }, [classChoicesIncomplete, classFeatureGroups, classSelections, classSourceGroups, controller, featsIncomplete, incompleteBonusFeat, incompleteExpertiseGroup, skillsIncomplete, sourceSelections]);
 
   function overviewDetail(view) {
-    const trainingProgress = classGroupProgress(trainingClassGroups, classSelections);
+    const trainingProgress = classGroupProgress(nonExpertiseTrainingClassGroups, classSelections);
     const trainingSourceProgress = sourceGroupProgress(trainingSourceGroups, sourceSelections);
+    const expertiseProgress = classGroupProgress(expertiseGroups, classSelections);
     const classProgress = classGroupProgress(classFeatureGroups, classSelections);
     const classSourceProgress = sourceGroupProgress(classSourceGroups, sourceSelections);
     const featProgress = sourceGroupProgress(featSourceGroups, sourceSelections);
     const backgroundName = controller.selectedBackground?.name || controller.selectedBackground?.class_name || "Background";
     const className = controller.selectedClass?.class_name || controller.selectedClass?.name || "Class";
     const subclassName = controller.selectedSubclass?.name || "";
-    const backgroundSourceSkillOptions = selectedSourceChoiceOptions(sourceChoiceState.groups || [], sourceSelections, { ownerType: "background" })
-      .filter((option) => option.fieldKind === "skill" || option.kind === "skill");
-    const backgroundSkillKeys = new Set([
-      ...(props.backgroundSkills || []).map((value) => String(value || "").trim().toLowerCase()),
-      ...(props.backgroundSkillChoices || []).flatMap((group) => (props.backgroundSkillSelections?.[group.id] || []).map((value) => String(value || "").trim().toLowerCase())),
-      ...backgroundSourceSkillOptions.map((option) => String(option.value || option.label || option.key || "").trim().toLowerCase()),
-    ].filter(Boolean));
-    const backgroundFixed = backgroundSkillKeys.size;
+    const backgroundFixed = backgroundSkillCount;
     const backgroundSkillNames = [...backgroundSkillKeys].map(titleCase);
     const backgroundSkillSentence = backgroundSkillNames.length
       ? `Grants you access to the ${playerList(backgroundSkillNames)} Skill${backgroundSkillNames.length === 1 ? "" : "s"}.`
@@ -189,15 +192,16 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
         view,
         icon: `${TRAINING_ASSET_ROOT}/summary-training.svg`,
         title: "Class Choices",
-        description: "Only unresolved or reviewable permanent class and subclass choices appear here. Select a row on the left to inspect and confirm it.",
+        description: "Choose the class and subclass options your character gains at this level. Select a row on the left to read it, then confirm the choice here.",
         metrics: [
-          { label: "Required", value: (classProgress.target + classSourceProgress.target) ? `${classProgress.done + classSourceProgress.done}/${classProgress.target + classSourceProgress.target}` : "0", detail: "Permanent choices due now" },
+          { label: "Required", value: (expertiseProgress.target + classProgress.target + classSourceProgress.target) ? `${expertiseProgress.done + classProgress.done + classSourceProgress.done}/${expertiseProgress.target + classProgress.target + classSourceProgress.target}` : "0", detail: "Class and subclass choices at this level" },
           { label: "Class", value: className, detail: `Level ${controller.draft?.level || 1}` },
           { label: "Subclass", value: subclassName || "None", detail: subclassName ? "Selected subclass" : "No subclass at this level" },
         ],
         sources: [
-          { label: className, detail: `Level ${controller.draft?.level || 1} class progression`, value: classChoicesIncomplete ? "Choices left" : "Current" },
-          ...(subclassName ? [{ label: subclassName, detail: "Subclass-granted permanent choices", value: "Included" }] : []),
+          { label: "Class", name: className, detail: `Level ${controller.draft?.level || 1} class progression`, value: classChoicesIncomplete ? "Choices left" : "Complete" },
+          ...(expertiseProgress.target ? [{ label: "Class Feature", name: expertiseGroups[0]?.sourceFeature || "Expertise", detail: "Expertise doubles your Proficiency Bonus when you use one of the chosen skill proficiencies.", value: `${expertiseProgress.done}/${expertiseProgress.target}` }] : []),
+          ...(subclassName ? [{ label: "Subclass", name: subclassName, detail: "Subclass-granted choices at this level", value: "Included" }] : []),
           ...[...families.entries()].map(([family, groups]) => {
             const progress = sourceGroupProgress(groups, sourceSelections);
             return { label: titleCase(family), detail: `${groups.length} slot${groups.length === 1 ? "" : "s"} granted by class progression`, value: progress.target ? `${progress.done}/${progress.target}` : "Ready" };
@@ -237,6 +241,31 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const nonExpertiseTrainingProgress = classGroupProgress(nonExpertiseTrainingClassGroups, classSelections);
+  const trainingSourceProgress = sourceGroupProgress(trainingSourceGroups, sourceSelections);
+  const expertiseProgress = classGroupProgress(expertiseGroups, classSelections);
+  const classProgress = classGroupProgress(classFeatureGroups, classSelections);
+  const classSourceProgress = sourceGroupProgress(classSourceGroups, sourceSelections);
+  const pendingBackgroundSkillCount = Math.max(0, backgroundChoiceTarget - backgroundChoiceDone);
+  const availableClassSkillSlots = Math.max(0, sharedChoiceTarget - paidTradeSkills.length);
+  const skillsProgress = {
+    done: backgroundSkillCount + (props.selectedClassSkills || []).length,
+    target: backgroundSkillCount + pendingBackgroundSkillCount + availableClassSkillSlots,
+  };
+  const backgroundFeatUnit = controller.selectedBackgroundFeat ? 1 : 0;
+  const otherGrantedFeatUnits = new Set(featSourceGroups
+    .map((group) => String(group?.metadata?.featInstanceId || group?.ownerKey || ""))
+    .filter((instanceId) => instanceId && !["background-feat", "species-bonus-feat"].includes(instanceId))).size;
+  const featsProgress = {
+    done: backgroundFeatUnit + (bonusFeatRequired && controller.speciesBonusFeat ? 1 : 0) + otherGrantedFeatUnits,
+    target: backgroundFeatUnit + (bonusFeatRequired ? 1 : 0) + otherGrantedFeatUnits,
+  };
+  const classTabProgress = {
+    done: expertiseProgress.done + classProgress.done + classSourceProgress.done,
+    target: expertiseProgress.target + classProgress.target + classSourceProgress.target,
+  };
+  const fraction = (progress) => `${progress.done}/${progress.target}`;
+
   const skillsStatus = skillsIncomplete ? "Needs choice" : "Complete";
   const featsStatus = featsIncomplete ? "Needs choice" : featsHaveChoices ? "Complete" : "No choices";
   const classStatus = classChoicesIncomplete ? "Needs choice" : classChoicesHaveChoices ? "Complete" : "No choices";
@@ -245,18 +274,18 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
     <div className="npc-forge-training-mode-switch" role="tablist" aria-label="Training sections">
       <button type="button" role="tab" aria-selected={activeView === "skills"} className={activeView === "skills" ? "is-active" : ""} onClick={() => selectView("skills")}>
         <img src={`${TRAINING_ASSET_ROOT}/summary-skills.svg`} alt="" aria-hidden="true" />
-        <span><strong>Skills</strong><small>Skills, Trade Skills &amp; additional training</small></span>
-        <em className={skillsIncomplete ? "is-required" : "is-complete"}>{skillsStatus}</em>
+        <span className="npc-forge-training-tab-copy"><strong>Skills &amp; Trade Skills</strong><small>{fraction(skillsProgress)}</small></span>
+        <span className="npc-forge-training-tab-status"><em className={skillsIncomplete ? "is-required" : "is-complete"}>{skillsStatus}</em></span>
       </button>
       <button type="button" role="tab" aria-selected={activeView === "feats"} className={activeView === "feats" ? "is-active" : ""} onClick={() => selectView("feats")}>
         <img src={`${TRAINING_ASSET_ROOT}/summary-feat.svg`} alt="" aria-hidden="true" />
-        <span><strong>Feats</strong><small>Feat catalogue &amp; feat-owned follow-ups</small></span>
-        <em className={featsIncomplete ? "is-required" : "is-complete"}>{featsStatus}</em>
+        <span className="npc-forge-training-tab-copy"><strong>Feats</strong><small>{fraction(featsProgress)}</small></span>
+        <span className="npc-forge-training-tab-status"><em className={featsIncomplete ? "is-required" : "is-complete"}>{featsStatus}</em></span>
       </button>
       <button type="button" role="tab" aria-selected={activeView === "class"} className={`${activeView === "class" ? "is-active " : ""}is-class-choice-tab`} onClick={() => selectView("class")}>
         <img src={`${TRAINING_ASSET_ROOT}/summary-training.svg`} alt="" aria-hidden="true" />
-        <span><strong><span>Class</span><span>Choices</span></strong><small>Invocations, styles, maneuvers &amp; class options</small></span>
-        <em className={classChoicesIncomplete ? "is-required" : "is-complete"}>{classStatus}</em>
+        <span className="npc-forge-training-tab-copy"><strong>Class Choices</strong><small>{fraction(classTabProgress)}</small></span>
+        <span className="npc-forge-training-tab-status"><em className={classChoicesIncomplete ? "is-required" : "is-complete"}>{classStatus}</em></span>
       </button>
     </div>
 
@@ -264,15 +293,8 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
       <NpcForgeTrainingStepPlayer {...props} />
     </div>
 
-    {activeView !== "skills" ? <div className="npc-forge-training-tabbed-help">
-      <span>ⓘ</span>
-      <p>{activeView === "feats"
-        ? "Click a feat to inspect it on the right. For selectable bonus feats, confirm the choice with Select Feat in Current Selection. Feat-owned non-spell follow-ups remain with the feat; granted spells continue to Spells."
-        : "Resolve only permanent choices due at this level, including Eldritch Invocations, fighting styles, maneuvers, and similar class options. Empty choice families are hidden."}</p>
-    </div> : null}
-
     <style jsx global>{`
-      .npc-forge-training-tabbed-shell{display:grid;gap:9px}.npc-forge-training-mode-switch{display:flex;gap:3px;align-items:stretch;width:100%;padding:4px;border:1px solid rgba(168,108,255,.28);border-radius:999px;background:linear-gradient(180deg,rgba(38,25,61,.92),rgba(7,9,16,.96));box-shadow:inset 0 1px rgba(255,255,255,.045),0 8px 24px rgba(0,0,0,.18)}.npc-forge-training-mode-switch>button{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:9px;align-items:center;flex:1 1 0;min-width:0;min-height:50px;padding:7px 11px;border:1px solid transparent;border-radius:999px;color:rgba(255,255,255,.68);background:transparent;text-align:left;transition:transform .16s ease,border-color .16s ease,background .16s ease,box-shadow .16s ease}.npc-forge-training-mode-switch>button:hover{border-color:rgba(168,108,255,.28);background:rgba(126,72,199,.07);transform:translateY(-1px)}.npc-forge-training-mode-switch>button.is-active{border-color:rgba(168,108,255,.68);background:linear-gradient(110deg,rgba(126,72,199,.32),rgba(75,42,124,.16));box-shadow:inset 0 0 0 1px rgba(220,190,255,.06),0 4px 14px rgba(126,72,199,.16)}.npc-forge-training-mode-switch>button>img{width:25px;height:25px;object-fit:contain}.npc-forge-training-mode-switch>button>span{display:grid;gap:1px;min-width:0}.npc-forge-training-mode-switch>button strong{color:#fff;font-size:.72rem;white-space:nowrap}.npc-forge-training-mode-switch>button.is-class-choice-tab strong{display:grid;gap:0;font-size:.65rem;line-height:.92;white-space:normal}.npc-forge-training-mode-switch>button.is-class-choice-tab strong>span{display:block}.npc-forge-training-mode-switch>button small{overflow:hidden;color:rgba(255,255,255,.48);font-size:.48rem;white-space:nowrap;text-overflow:ellipsis}.npc-forge-training-mode-switch>button>em{padding:4px 7px;border-radius:999px;color:rgba(255,255,255,.58);background:rgba(255,255,255,.055);font-size:.46rem;font-style:normal;white-space:nowrap}.npc-forge-training-mode-switch>button>em.is-required{color:#ffe0a0;background:rgba(243,191,99,.12)}.npc-forge-training-mode-switch>button>em.is-complete{color:#9cece2;background:rgba(88,214,199,.1)}.npc-forge-training-tabbed-shell .npc-forge-training-summary--unified{display:none!important}.npc-forge-training-tabbed-shell .npc-forge-training-help{display:none!important}.npc-forge-training-tabbed-shell.is-skills .npc-forge-training-feat-section{display:none!important}.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-class-skills,.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-trade-skills,.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-source-section,.npc-forge-training-tabbed-shell.is-class .npc-forge-training-class-skills,.npc-forge-training-tabbed-shell.is-class .npc-forge-training-trade-skills,.npc-forge-training-tabbed-shell.is-class .npc-forge-training-source-section{display:none!important}.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-feat-section,.npc-forge-training-tabbed-shell.is-class .npc-forge-training-feat-section{display:block!important;border-top:0!important}.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-feat-section>summary,.npc-forge-training-tabbed-shell.is-class .npc-forge-training-feat-section>summary{display:none!important}.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-feat-section .npc-forge-training-choice-body,.npc-forge-training-tabbed-shell.is-class .npc-forge-training-feat-section .npc-forge-training-choice-body{padding:1px 0 4px}.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-picks,.npc-forge-training-tabbed-shell.is-class .npc-forge-training-picks{padding-top:11px}.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-class-only{display:none!important}.npc-forge-training-tabbed-shell.is-class .npc-forge-training-feat-only{display:none!important}.npc-forge-training-tabbed-shell .npc-forge-training-source-section>summary b{font-size:0}.npc-forge-training-tabbed-shell .npc-forge-training-source-section>summary b::after{content:"Additional Training";font-size:.57rem}.npc-forge-training-tabbed-help{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border-top:1px solid rgba(255,255,255,.065);color:rgba(255,255,255,.52)}.npc-forge-training-tabbed-help>span{color:#cfd8ff;font-size:.72rem}.npc-forge-training-tabbed-help p{margin:0;font-size:.5rem;line-height:1.45}@media(max-width:1180px){.npc-forge-training-mode-switch>button small{display:none}.npc-forge-training-mode-switch>button{grid-template-columns:25px minmax(0,1fr) auto;padding-inline:8px}.npc-forge-training-mode-switch>button strong{font-size:.66rem}.npc-forge-training-mode-switch>button>em{font-size:.43rem}}@media(max-width:720px){.npc-forge-training-mode-switch{border-radius:18px;flex-direction:column}.npc-forge-training-mode-switch>button{grid-template-columns:28px minmax(0,1fr) auto;min-height:48px;border-radius:14px;padding:7px 9px}.npc-forge-training-mode-switch>button>img{width:24px;height:24px}}
+      .npc-forge-training-tabbed-shell{display:grid;gap:9px}.npc-forge-training-mode-switch{display:flex;gap:3px;align-items:stretch;width:100%;padding:4px;border:1px solid rgba(168,108,255,.28);border-radius:999px;background:linear-gradient(180deg,rgba(38,25,61,.92),rgba(7,9,16,.96));box-shadow:inset 0 1px rgba(255,255,255,.045),0 8px 24px rgba(0,0,0,.18)}.npc-forge-training-mode-switch>button{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:9px;align-items:center;flex:1 1 0;min-width:0;min-height:50px;padding:7px 11px;border:1px solid transparent;border-radius:999px;color:rgba(255,255,255,.68);background:transparent;text-align:left;transition:transform .16s ease,border-color .16s ease,background .16s ease,box-shadow .16s ease}.npc-forge-training-mode-switch>button:hover{border-color:rgba(168,108,255,.28);background:rgba(126,72,199,.07);transform:translateY(-1px)}.npc-forge-training-mode-switch>button.is-active{border-color:rgba(168,108,255,.68);background:linear-gradient(110deg,rgba(126,72,199,.32),rgba(75,42,124,.16));box-shadow:inset 0 0 0 1px rgba(220,190,255,.06),0 4px 14px rgba(126,72,199,.16)}.npc-forge-training-mode-switch>button>img{width:25px;height:25px;object-fit:contain}.npc-forge-training-mode-switch>button>span{display:grid;gap:1px;min-width:0}.npc-forge-training-mode-switch>button strong{color:#fff;font-size:.72rem;white-space:nowrap}.npc-forge-training-tab-copy{align-content:center}.npc-forge-training-tab-copy>small{color:rgba(255,255,255,.82);font-size:.6rem;font-weight:900;line-height:1}.npc-forge-training-mode-switch>button.is-class-choice-tab strong{font-size:.72rem;line-height:1.05;white-space:nowrap}.npc-forge-training-tab-status{justify-items:end;align-content:center;gap:3px!important}.npc-forge-training-tab-status>em{padding:4px 7px;border-radius:999px;color:rgba(255,255,255,.58);background:rgba(255,255,255,.055);font-size:.46rem;font-style:normal;white-space:nowrap}.npc-forge-training-tab-status>em.is-required{color:#ffe0a0;background:rgba(243,191,99,.12)}.npc-forge-training-tab-status>em.is-complete{color:#9cece2;background:rgba(88,214,199,.1)}.npc-forge-training-tab-status>small{color:#fff;font-size:.56rem;font-weight:900;line-height:1;white-space:nowrap}.npc-forge-training-tabbed-shell .npc-forge-training-summary--unified{display:none!important}.npc-forge-training-tabbed-shell .npc-forge-training-help{display:none!important}.npc-forge-training-tabbed-shell.is-skills .npc-forge-training-feat-section{display:none!important}.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-class-skills,.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-trade-skills,.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-source-section,.npc-forge-training-tabbed-shell.is-class .npc-forge-training-class-skills,.npc-forge-training-tabbed-shell.is-class .npc-forge-training-trade-skills,.npc-forge-training-tabbed-shell.is-class .npc-forge-training-source-section{display:none!important}.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-feat-section,.npc-forge-training-tabbed-shell.is-class .npc-forge-training-feat-section{display:block!important;border-top:0!important}.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-feat-section>summary,.npc-forge-training-tabbed-shell.is-class .npc-forge-training-feat-section>summary{display:none!important}.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-feat-section .npc-forge-training-choice-body,.npc-forge-training-tabbed-shell.is-class .npc-forge-training-feat-section .npc-forge-training-choice-body{padding:1px 0 4px}.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-picks,.npc-forge-training-tabbed-shell.is-class .npc-forge-training-picks{padding-top:11px}.npc-forge-training-tabbed-shell.is-feats .npc-forge-training-class-only{display:none!important}.npc-forge-training-tabbed-shell.is-class .npc-forge-training-feat-only{display:none!important}.npc-forge-training-tabbed-shell .npc-forge-training-source-section>summary b{font-size:0}.npc-forge-training-tabbed-shell .npc-forge-training-source-section>summary b::after{content:"Additional Training";font-size:.57rem}@media(max-width:1180px){.npc-forge-training-mode-switch>button{grid-template-columns:25px minmax(0,1fr) auto;padding-inline:8px}.npc-forge-training-mode-switch>button strong{font-size:.66rem}.npc-forge-training-tab-copy>small{font-size:.56rem}.npc-forge-training-mode-switch>button>em{font-size:.43rem}}@media(max-width:720px){.npc-forge-training-mode-switch{border-radius:18px;flex-direction:column}.npc-forge-training-mode-switch>button{grid-template-columns:28px minmax(0,1fr) auto;min-height:48px;border-radius:14px;padding:7px 9px}.npc-forge-training-mode-switch>button>img{width:24px;height:24px}}
     `}</style>
   </div>;
 }

@@ -278,9 +278,34 @@ for (const token of [
   "battle-master-maneuver",
   "arcane-shot",
   "metamagic",
+  "rune",
+  "elemental-discipline",
+  "pact-boon",
   "raw_payload: raw",
   "Preview/batch generation complete. No database writes were performed.",
 ]) requireToken(optionImporter, token, "optional class-feature importer");
+
+const sourceRuleEnrichment = read("sql/20261009_01_enrich_class_feature_option_rules.sql");
+for (const token of [
+  "descriptionAuthority",
+  "5etools:data/optionalfeatures.json",
+  "battle-master-maneuver",
+  "eldritch-invocation",
+  "metamagic",
+]) requireToken(sourceRuleEnrichment, token, "focused optional-feature source-rule enrichment");
+
+const referencedRuleBackfill = read("sql/20261009_02_backfill_referenced_optional_feature_rules.sql");
+for (const token of [
+  "refOptionalfeature",
+  "5etools-mirror-3/5etools-src",
+  "TheGiddyLimit/homebrew",
+  "arcane-shot",
+  "rune",
+  "elemental-discipline",
+  "fighting-style",
+  "pact-boon",
+  "Referenced class optional-feature rule backfill incomplete",
+]) requireToken(referencedRuleBackfill, token, "reference-driven optional-feature source-rule backfill");
 
 const delta = read("utils/characterClassChoiceDeltaPlan.js");
 for (const token of [

@@ -1,5 +1,6 @@
 import { ABILITY_LABELS, SKILL_DEFINITIONS, proficiencyBonusForLevel } from "./characterCreation";
 import { OPTION_SUMMARIES } from "./classFeatureChoiceConstants";
+import { formatPlayerFacingText } from "./playerFacingText";
 import { buildToolOptionCatalog, sourceChoiceFieldIsActive } from "./playerForgeSourceChoices";
 
 const text = (value) => String(value ?? "").trim();
@@ -25,8 +26,22 @@ function preferredSpellRows(spells = []) {
 }
 function spellOption(spell) {
   return {
-    key: text(spell.id || spell.spell_key || `${slug(spell.name)}|${spell.source || "XPHB"}`), value: text(spell.id || spell.spell_key || spell.name), label: spell.name, source: spell.source || "XPHB", kind: "spell",
-    description: text(spell.description), metadata: { spellId: spell.id || null, spellKey: spell.spell_key || null, level: Number(spell.level || 0), school: spell.school || spell.school_code || "", classes: array(spell.classes), ritual: Boolean(spell.ritual), castingTime: spell.casting_time || null },
+    key: text(spell.id || spell.spell_key || `${slug(spell.name)}|${spell.source || "XPHB"}`),
+    value: text(spell.id || spell.spell_key || spell.name),
+    label: spell.name,
+    source: spell.source || "XPHB",
+    kind: "spell",
+    description: text(spell.description),
+    metadata: {
+      spellId: spell.id || null,
+      spellKey: spell.spell_key || null,
+      level: Number(spell.level || 0),
+      school: spell.school || spell.school_code || "",
+      classes: array(spell.classes),
+      ritual: Boolean(spell.ritual),
+      castingTime: spell.casting_time || null,
+      spell: { ...spell },
+    },
   };
 }
 function metamagicOption(row = {}) {
@@ -36,8 +51,27 @@ function metamagicOption(row = {}) {
     label: row.name,
     source: row.source || "XPHB",
     kind: "metamagic",
-    description: text(row.description) || OPTION_SUMMARIES[norm(row.name)] || "",
+    description: formatPlayerFacingText(row.description, "") || OPTION_SUMMARIES[norm(row.name)] || "",
     metadata: { optionId: row.id || null, optionKey: row.option_key || null, classKey: row.class_key || "sorcerer" },
+  };
+}
+
+function fightingStyleOption(row = {}) {
+  return {
+    key: text(row.id || row.option_key || `${slug(row.name)}|${row.source || "XPHB"}`),
+    value: text(row.id || row.option_key || row.name),
+    label: row.name,
+    source: row.source || "XPHB",
+    kind: "fighting-style",
+    description: formatPlayerFacingText(row.description, ""),
+    metadata: {
+      optionId: row.id || null,
+      optionKey: row.option_key || null,
+      featName: row.name || "",
+      featSource: row.source || "XPHB",
+      featCategory: row.category || "FS",
+      category: "Fighting Style",
+    },
   };
 }
 function spellOptions(spells = [], filters = {}) {
@@ -203,7 +237,24 @@ function magicInitiateFields(feat, spells) {
   return fields;
 }
 
-function specialFields(instance, spells, toolRows, metamagicOptions = []) {
+function fightingInitiateFields(featOptions = [], knownFightingStyles = []) {
+  const known = new Set(array(knownFightingStyles).map((entry) => norm(entry?.name || entry?.label)).filter(Boolean));
+  const options = array(featOptions)
+    .filter((row) => row?.option_type === "feat" && String(row?.category || "").toUpperCase() === "FS")
+    .filter((row) => !known.has(norm(row?.name)))
+    .map(fightingStyleOption)
+    .sort((a, b) => a.label.localeCompare(b.label) || a.source.localeCompare(b.source));
+  return options.length ? [field({
+    id: "fighting-style",
+    label: "Choose a Fighting Style",
+    kind: "fighting-style",
+    options,
+    helper: "Fighting Initiate grants one Fighting Style option from the Fighter list. Ranger-only and Paladin-only Fighting Styles remain class-specific choices.",
+    metadata: { sourceFeature: "Fighting Initiate", choiceFamily: "fighter-fighting-style", featCatalogueBranch: true },
+  })] : [];
+}
+
+function specialFields(instance, spells, toolRows, metamagicOptions = [], featOptions = [], knownFightingStyles = []) {
   const feat = instance.feat || {};
   const name = norm(feat.name);
   const output = [];
@@ -212,6 +263,7 @@ function specialFields(instance, spells, toolRows, metamagicOptions = []) {
     const decorated = { ...feat, __instanceId: instance.instanceId };
     return magicInitiateFields(decorated, spells);
   }
+  if (name === "fighting initiate") return fightingInitiateFields(featOptions, knownFightingStyles);
   if (name === "elemental adept") output.push(field({ id: "damage-type", label: "Energy Mastery damage type", kind: "damage-type", options: DAMAGE_TYPE_OPTIONS }));
   if (name === "metamagic adept") {
     const options = array(metamagicOptions)
@@ -253,13 +305,13 @@ function featUsesSpecialAbilityShape(feat) {
   return ["ability score improvement", "resilient"].includes(norm(feat.name));
 }
 
-export function buildFeatSourceChoiceGroups({ featInstances = [], toolRows = [], spells = [], metamagicOptions = [], level = 1 } = {}) {
+export function buildFeatSourceChoiceGroups({ featInstances = [], toolRows = [], spells = [], metamagicOptions = [], featOptions = [], knownFightingStyles = [], level = 1 } = {}) {
   const groups = [];
   for (const instance of array(featInstances)) {
     const feat = instance.feat;
     if (!feat?.name) continue;
     const ability = featUsesSpecialAbilityShape(feat) ? { fields: [], fixedEffects: [] } : abilityFields(feat);
-    const fields = [...ability.fields, ...skillFields(feat), ...toolFields(feat, toolRows), ...specialFields(instance, spells, toolRows, metamagicOptions), ...ritualCasterFields(feat, spells, level)];
+    const fields = [...ability.fields, ...skillFields(feat), ...toolFields(feat, toolRows), ...specialFields(instance, spells, toolRows, metamagicOptions, featOptions, knownFightingStyles), ...ritualCasterFields(feat, spells, level)];
     let fixedSpellTokens = [];
     if (!featHasSpecialSpellShape(feat)) {
       const spellModel = genericAdditionalSpellFields(feat, spells);
@@ -299,7 +351,7 @@ export function featGrantInstancesFromSelections({ selectedBackgroundFeat = null
 }
 
 export function featInstanceSummaries(groups = [], selections = {}) {
-  return array(groups).filter((group) => group.ownerType === "feat").map((group) => ({
+  const parents = array(groups).filter((group) => group.ownerType === "feat").map((group) => ({
     instanceId: group.metadata?.featInstanceId || group.ownerKey,
     optionId: group.metadata?.featOptionId || null,
     optionKey: group.metadata?.featOptionKey || null,
@@ -318,4 +370,24 @@ export function featInstanceSummaries(groups = [], selections = {}) {
       return option ? { key: option.key, value: option.value, label: option.label, kind: option.kind || fieldRow.kind, source: option.source || group.source, metadata: option.metadata || null } : null;
     }).filter(Boolean) : []])),
   }));
+
+  return parents.flatMap((parent) => {
+    const nestedFightingStyles = Object.values(parent.choices || {}).flat().filter((choice) => choice?.kind === "fighting-style" && choice?.metadata?.optionId).map((choice, index) => ({
+      instanceId: `${parent.instanceId}-fighting-style-${index + 1}`,
+      optionId: choice.metadata.optionId,
+      optionKey: choice.metadata.optionKey || null,
+      name: choice.label,
+      source: choice.source || choice.metadata.featSource || "XPHB",
+      category: choice.metadata.featCategory || "FS",
+      repeatable: false,
+      acquisitionOwnerType: "feat",
+      acquisitionOwnerKey: parent.instanceId,
+      acquisitionLabel: `${parent.name} — Fighting Style`,
+      acquisitionLevel: Number(parent.acquisitionLevel || 1),
+      fixedEffects: [],
+      fixedSpellTokens: [],
+      choices: {},
+    }));
+    return [parent, ...nestedFightingStyles];
+  });
 }

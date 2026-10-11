@@ -148,6 +148,19 @@ export function resolveSubclassCatalog(featureRows = [], targetClassSource = "XP
   }
 
   for (const group of rawGroups.values()) {
+    // Most imports identify lore with a null header, but some newer source files (notably
+    // Grim Hollow 2024) put header: 1 on the row whose name is exactly the subclass name.
+    // Only use that exact-name row as a fallback when no semantic/null-header intro was
+    // already found, so feature rows such as "Soul Knife" do not displace a wrapped
+    // introduction such as "Order of the Soul Knife".
+    if (!group.features.some((feature) => feature.isIntroduction)) {
+      const exactNamedIntro = group.features.find((feature) =>
+        normalizeSubclassName(feature.name) === normalizeSubclassName(group.name)
+        && featureHasPlayerFacingContent(feature)
+      );
+      if (exactNamedIntro) exactNamedIntro.isIntroduction = true;
+    }
+
     const seen = new Set();
     group.features = group.features
       .sort((a, b) => Number(a.level) - Number(b.level) || Number(a.isIntroduction) - Number(b.isIntroduction) || safeText(a.name).localeCompare(safeText(b.name)))

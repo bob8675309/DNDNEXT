@@ -1,4 +1,5 @@
 import { normalized, safeText } from "./classFeatureChoiceConstants";
+import { formatPlayerFacingText } from "./playerFacingText";
 
 const array = (value) => Array.isArray(value) ? value : [];
 
@@ -12,21 +13,68 @@ const CATALOG_KINDS = new Set([
   "artificer-plan",
 ]);
 
+function sourceCode(value = "") {
+  return safeText(value).toUpperCase();
+}
+
 function sourceRank(source, preferredSource) {
-  if (safeText(source) === safeText(preferredSource)) return 0;
-  if (safeText(source) === "XPHB") return 1;
-  if (safeText(source) === "PHB") return 2;
+  if (sourceCode(source) === sourceCode(preferredSource)) return 0;
+  if (sourceCode(source) === "XPHB") return 1;
+  if (sourceCode(source) === "PHB") return 2;
   return 3;
 }
 
 function indexedRows(rows = [], preferredSource = "") {
-  const index = new Map();
+  const typedExact = new Map();
+  const typedPreferred = new Map();
+  const descriptionExact = new Map();
+  const descriptionPreferred = new Map();
+
   for (const row of array(rows)) {
-    const key = `${safeText(row.option_type)}|${normalized(row.name)}`;
-    const current = index.get(key);
-    if (!current || sourceRank(row.source, preferredSource) < sourceRank(current.source, preferredSource)) index.set(key, row);
+    const type = safeText(row.option_type);
+    const name = normalized(row.name);
+    const source = sourceCode(row.source);
+    if (!name) continue;
+
+    if (type) {
+      typedExact.set(`${type}|${name}|${source}`, row);
+      const typedKey = `${type}|${name}`;
+      const current = typedPreferred.get(typedKey);
+      if (!current || sourceRank(row.source, preferredSource) < sourceRank(current.source, preferredSource)) typedPreferred.set(typedKey, row);
+    }
+
+    if (safeText(row.description)) {
+      descriptionExact.set(`${name}|${source}`, row);
+      const current = descriptionPreferred.get(name);
+      if (!current || sourceRank(row.source, preferredSource) < sourceRank(current.source, preferredSource)) descriptionPreferred.set(name, row);
+    }
   }
-  return index;
+
+  return { typedExact, typedPreferred, descriptionExact, descriptionPreferred };
+}
+
+function sourceDescription(option, index) {
+  const name = normalized(option?.name);
+  if (!name) return null;
+  const exact = index.descriptionExact.get(`${name}|${sourceCode(option?.source)}`);
+  return exact || index.descriptionPreferred.get(name) || null;
+}
+
+function canonicalRow(groupKind, option, index) {
+  const name = normalized(option?.name);
+  if (!name) return null;
+  const exact = index.typedExact.get(`${groupKind}|${name}|${sourceCode(option?.source)}`);
+  return exact || index.typedPreferred.get(`${groupKind}|${name}`) || null;
+}
+
+function withSourceDescription(option, row) {
+  const description = formatPlayerFacingText(row?.description, "");
+  if (!description) return option;
+  return {
+    ...option,
+    description,
+    descriptionAuthority: "class_feature_option_catalog",
+  };
 }
 
 function canonicalOption(option, row) {
@@ -35,7 +83,7 @@ function canonicalOption(option, row) {
   return {
     ...option,
     source: row.source || option.source,
-    description: safeText(row.description) || option.description,
+    description: formatPlayerFacingText(row.description, "") || option.description,
     minLevel: Math.max(1, Number(prerequisites.minClassLevel || option.minLevel || 1)),
     requires: requiresAll[0] || option.requires || "",
     requiresAll,
@@ -51,17 +99,33 @@ function canonicalOption(option, row) {
 export function applyClassFeatureOptionAuthority(groups = [], optionRows = [], selectedClass = null) {
   const preferredSource = safeText(selectedClass?.source);
   const index = indexedRows(optionRows, preferredSource);
+
   return array(groups).map((group) => {
-    if (!CATALOG_KINDS.has(group.kind)) return group;
-    const canonicalOptions = array(group.options).flatMap((option) => {
-      const row = index.get(`${group.kind}|${normalized(option.name)}`);
+    const optionsWithDescriptions = array(group.options).map((option) => {
+      const descriptionRow = sourceDescription(option, index);
+      return descriptionRow ? withSourceDescription(option, descriptionRow) : option;
+    });
+
+    if (!CATALOG_KINDS.has(group.kind)) {
+      return {
+        ...group,
+        options: optionsWithDescriptions,
+        sourceAuthority: optionsWithDescriptions.some((option) => option.descriptionAuthority === "class_feature_option_catalog")
+          ? "class_feature_option_catalog"
+          : group.sourceAuthority || null,
+      };
+    }
+
+    const canonicalOptions = optionsWithDescriptions.flatMap((option) => {
+      const row = canonicalRow(group.kind, option, index);
       if (!row) {
         // Invocation authority is fail-closed because production has a complete XPHB catalogue.
-        if (group.kind === "eldritch-invocation" && preferredSource === "XPHB") return [];
+        if (group.kind === "eldritch-invocation" && sourceCode(preferredSource) === "XPHB") return [];
         return [option];
       }
       return [canonicalOption(option, row)];
     });
+
     return {
       ...group,
       options: canonicalOptions,

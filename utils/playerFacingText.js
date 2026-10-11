@@ -25,8 +25,29 @@ function internalReferenceLabel(value) {
   return safeText(value).split("|")[0]?.trim() || "";
 }
 
+const ITEM_PROPERTY_LABELS = Object.freeze({
+  L: "Light",
+  F: "Finesse",
+  H: "Heavy",
+  R: "Reach",
+  T: "Thrown",
+  V: "Versatile",
+  "2H": "Two-Handed",
+  A: "Ammunition",
+  LD: "Loading",
+  S: "Special",
+  RLD: "Reload",
+});
+
+function itemPropertyLabel(code = "", display = "") {
+  const explicit = safeText(display);
+  if (explicit) return explicit;
+  return ITEM_PROPERTY_LABELS[safeText(code).toUpperCase()] || safeText(code);
+}
+
 function cleanInlineMarkup(value) {
   return safeText(value)
+    .replace(/\{@itemProperty\s+([^|}]+)(?:\|[^|}]*)?(?:\|([^}]+))?}/gi, (_, code, display) => itemPropertyLabel(code, display))
     .replace(/\{@(?:damage|dice|hit|chance)\s+([^}|]+)(?:\|[^}]*)?}/gi, "$1")
     .replace(/\{@(?:spell|item|creature|condition|skill|action|sense|language|race|class|subclass|feat|filter|book|adventure|variantrule)\s+([^}|]+)(?:\|[^}]*)?}/gi, "$1")
     .replace(/\{@(?:b|i|u|note|atk|h|dc)\s+([^}]*)}/gi, "$1")

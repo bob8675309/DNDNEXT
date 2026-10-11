@@ -181,7 +181,7 @@ export function enrichOptions(options, features, groupKind) {
       name,
       source: option.source || "CAMPAIGN",
       kind: option.referenceType || groupKind || "class-feature",
-      description: formatPlayerFacingText(option.description, "") || resolveFeatureDescription(option, features),
+      description: formatPlayerFacingText(option.description || option.raw?.description, "") || resolveFeatureDescription(option, features),
       minLevel: Number(option.minLevel || prerequisites.minLevel || 1),
       requires: prerequisites.requires || "",
       followup: prerequisites.followup || "",

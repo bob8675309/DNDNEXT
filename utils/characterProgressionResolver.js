@@ -32,6 +32,22 @@ function classStartingProficiencies(selectedClass = {}) {
   };
 }
 
+export function classFeaturesThroughLevel(selectedClass = {}, level = 1) {
+  const payload = selectedClass.raw_payload || selectedClass.rawPayload || {};
+  const byLevel = payload.class_features_by_level || payload.classFeaturesByLevel || {};
+  const maximum = Math.max(1, number(level, 1));
+  if (Array.isArray(byLevel)) {
+    return unique(byLevel.flatMap((entry, index) => index + 1 <= maximum ? array(entry) : []).map((value) => text(value).split("|")[0]));
+  }
+  if (!byLevel || typeof byLevel !== "object") return [];
+  return unique(Object.entries(byLevel).flatMap(([entryLevel, features]) => Number(entryLevel) <= maximum ? array(features) : []).map((value) => text(value).split("|")[0]));
+}
+
+export function classHasFeatureThroughLevel(selectedClass = {}, featureName = "", level = 1) {
+  const wanted = norm(featureName);
+  return Boolean(wanted && classFeaturesThroughLevel(selectedClass, level).some((feature) => norm(feature) === wanted));
+}
+
 export function progressionState({
   level = 1,
   abilities = {},
@@ -45,15 +61,15 @@ export function progressionState({
   campaigns = [],
   spellcasting = null,
 } = {}) {
+  const resolvedLevel = Math.max(1, number(level, 1));
   const starting = classStartingProficiencies(selectedClass || {});
   const scores = Object.fromEntries(ABILITY_KEYS.map((key) => [key, number(abilities?.[key]?.score ?? abilities?.[key], 10)]));
-  const classFeatures = array(selectedClass?.raw_payload?.class_features_by_level || selectedClass?.rawPayload?.class_features_by_level)
-    .flatMap((entry) => Array.isArray(entry) ? entry : []);
+  const classFeatures = classFeaturesThroughLevel(selectedClass || {}, resolvedLevel);
   const spellcastingFeature = spellcasting == null
     ? Boolean(selectedClass?.spellcasting_ability || norm(selectedClass?.caster_progression).includes("pact") || classFeatures.some((feature) => /spellcasting|pact magic/i.test(text(feature))))
     : Boolean(spellcasting);
   return {
-    level: Math.max(1, number(level, 1)),
+    level: resolvedLevel,
     abilities: scores,
     classKey: norm(selectedClass?.class_key || selectedClass?.className || selectedClass?.class_name),
     className: text(selectedClass?.class_name || selectedClass?.className),

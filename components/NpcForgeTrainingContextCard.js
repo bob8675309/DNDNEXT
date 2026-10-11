@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   FaBookOpen,
   FaEye,
@@ -8,7 +8,7 @@ import {
   FaSearch,
 } from "react-icons/fa";
 import { ABILITY_LABELS } from "../utils/characterCreation";
-import { formatPrerequisiteText } from "../utils/formatPrerequisiteText";
+import { formatPlayerFacingPrerequisiteText, formatPrerequisiteText } from "../utils/formatPrerequisiteText";
 import { featRuleSectionsFromDescription } from "../utils/featRulePresentation";
 import NpcForgeSourceChoiceFields from "./NpcForgeSourceChoiceFields";
 import { sourceChoiceGroupsForResolverPlacement, useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
@@ -47,15 +47,26 @@ const SKILL_USES = Object.freeze({
   survival: ["Track creatures and follow signs through the wilderness", "Navigate natural terrain and recognize environmental hazards", "Find practical signs of shelter, routes, or changing conditions"],
 });
 
+const PROFESSION_DESCRIPTIONS = Object.freeze({
+  alchemy: "Alchemy covers brewing potions, elixirs, oils, bombs, and other alchemical creations.",
+  smithing: "Smithing covers forging, repairing, reforging, and tempering weapons, armor, shields, and other worked gear.",
+  scribe: "Scribe covers precise written, inscribed, and formula-based work used by the campaign's supported crafting systems.",
+  enchanting: "Enchanting covers imbuing eligible equipment with magical properties and working with magical components.",
+  cooking: "Cooking covers preparing meals, rations, and other food with trained technique and appropriate equipment.",
+  tinkering: "Tinkering covers building, repairing, and diagnosing small mechanisms and compact mechanical assemblies.",
+  jewelcraft: "Jewelcraft covers appraising, cutting, setting, repairing, and fashioning gems and fine decorative work.",
+  brewing: "Brewing covers fermentation, ingredient balance, sanitation, and the preparation of brewed drinks.",
+});
+
 const PROFESSION_USES = Object.freeze({
-  alchemy: ["Brew campaign alchemical recipes when you know the recipe and have the required equipment", "Identify and process ingredients used by alchemical formulas", "Use Alchemy as the campaign crafting proficiency; an ordinary copy of Alchemist's Supplies does not grant the Trade Skill or Expertise"],
-  smithing: ["Forge and repair mundane metal weapons and armor with the required equipment", "Work metals and smithing materials during campaign crafting", "Use Smithing as the campaign crafting proficiency; an ordinary copy of Smith's Tools does not grant the Trade Skill or Expertise"],
-  scribe: ["Prepare written magical or technical works supported by campaign recipes and required equipment", "Produce precise inscriptions, diagrams, and formal records", "Use Scribe as the campaign crafting proficiency; an ordinary copy of Calligrapher's Supplies does not grant the Trade Skill or Expertise"],
-  enchanting: ["Apply supported magical imbuements to eligible equipment at an appropriate crafting site", "Work with magical components during campaign enchanting", "Use Enchanting as the campaign crafting proficiency; an ordinary copy of Enchanter's Tools does not grant the Trade Skill or Expertise"],
-  cooking: ["Prepare meals, rations, and other food with appropriate cooking equipment", "Judge ingredients, spoilage, seasoning, and food preparation", "Use Cooking as the campaign proficiency when future dedicated cooking recipes call for it"],
-  tinkering: ["Build, repair, or diagnose small mechanisms with appropriate equipment", "Work precisely on compact mechanical assemblies", "Use Tinkering as the campaign proficiency when future dedicated tinkering recipes call for it"],
-  jewelcraft: ["Appraise, cut, set, repair, or fashion gems and fine decorative work with appropriate equipment", "Perform precision work with valuable small materials", "Use Jewelcraft as the campaign proficiency when future dedicated jewelcraft recipes call for it"],
-  brewing: ["Prepare and evaluate brewed drinks and fermentation processes with appropriate equipment", "Control ingredients, sanitation, and flavor", "Use Brewing as the campaign proficiency when future dedicated brewing recipes call for it"],
+  alchemy: ["Brew campaign alchemical recipes when you know the recipe and have the required equipment", "Identify and process ingredients used by alchemical formulas"],
+  smithing: ["Forge and repair mundane metal weapons and armor with the required equipment", "Work metals and smithing materials during campaign crafting"],
+  scribe: ["Prepare written magical or technical works supported by campaign recipes and required equipment", "Produce precise inscriptions, diagrams, and formal records"],
+  enchanting: ["Apply supported magical imbuements to eligible equipment at an appropriate crafting site", "Work with magical components during campaign enchanting"],
+  cooking: ["Prepare meals, rations, and other food with appropriate cooking equipment", "Judge ingredients, spoilage, seasoning, and food preparation"],
+  tinkering: ["Build, repair, or diagnose small mechanisms with appropriate equipment", "Work precisely on compact mechanical assemblies"],
+  jewelcraft: ["Appraise, cut, set, repair, or fashion gems and fine decorative work with appropriate equipment", "Perform precision work with valuable small materials"],
+  brewing: ["Prepare and evaluate brewed drinks and fermentation processes with appropriate equipment", "Control ingredients, sanitation, and flavor"],
 });
 
 const PROFESSION_ICON = Object.freeze({
@@ -65,6 +76,84 @@ const PROFESSION_ICON = Object.freeze({
   enchanting: `${TRAINING_ASSET_ROOT}/profession-enchanting.svg`,
 });
 
+const FEAT_CATEGORY_LABELS = Object.freeze({
+  O: "Origin",
+  G: "General",
+  FS: "Fighting Style",
+  "FS:P": "Paladin Fighting Style",
+  "FS:R": "Ranger Fighting Style",
+  D: "Dragonmark",
+  DG: "Dark Gift",
+});
+
+const FEAT_ABILITY_LABELS = Object.freeze({
+  str: "Strength",
+  dex: "Dexterity",
+  con: "Constitution",
+  int: "Intelligence",
+  wis: "Wisdom",
+  cha: "Charisma",
+});
+
+function featCategoryLabel(value = "") {
+  const key = String(value || "").trim();
+  return FEAT_CATEGORY_LABELS[key] || key || "Feat";
+}
+
+function playerFacingAbilityList(keys = []) {
+  const labels = [...new Set((Array.isArray(keys) ? keys : []).map((key) => FEAT_ABILITY_LABELS[String(key || "").toLowerCase()]).filter(Boolean))];
+  if (!labels.length) return "";
+  if (labels.length === 1) return labels[0];
+  if (labels.length === 2) return `${labels[0]} or ${labels[1]}`;
+  return `${labels.slice(0, -1).join(", ")}, or ${labels.at(-1)}`;
+}
+
+function featAbilityBonusPresentation(feat = {}) {
+  if (normalized(feat?.name) === "ability score improvement") return null;
+  const raw = feat?.metadata?.ability ?? feat?.raw_payload?.ability ?? feat?.rawPayload?.ability ?? [];
+  const entries = Array.isArray(raw) ? raw.filter((entry) => entry && typeof entry === "object" && !entry.hidden) : [];
+  if (entries.length !== 1) return null;
+
+  const entry = entries[0];
+  const choose = entry.choose && typeof entry.choose === "object" ? entry.choose : null;
+  if (choose) {
+    const options = Array.isArray(choose.from) ? choose.from.map((key) => String(key || "").toLowerCase()).filter((key) => FEAT_ABILITY_LABELS[key]) : [];
+    if (!options.length) return null;
+    const amount = Math.max(1, Number(choose.amount || entry.amount || 1));
+    const count = Math.max(1, Number(choose.count || 1));
+    if (count > 1) {
+      const allAbilities = options.length === Object.keys(FEAT_ABILITY_LABELS).length;
+      return {
+        amount,
+        options,
+        body: allAbilities
+          ? `This feat grants a +${amount} bonus to ${count} different ability scores of your choice.`
+          : `This feat grants a +${amount} bonus to ${count} of the following ability scores: ${playerFacingAbilityList(options)}.`,
+      };
+    }
+    const allAbilities = options.length === Object.keys(FEAT_ABILITY_LABELS).length;
+    return {
+      amount,
+      options,
+      body: allAbilities
+        ? `This feat grants a +${amount} bonus to any ability score.`
+        : `This feat grants a +${amount} bonus to one of the following ability scores: ${playerFacingAbilityList(options)}.`,
+    };
+  }
+
+  const fixed = Object.entries(entry)
+    .filter(([key, value]) => FEAT_ABILITY_LABELS[key] && Number(value || 0) !== 0)
+    .map(([key, value]) => ({ key, amount: Number(value) }));
+  if (!fixed.length) return null;
+  return {
+    amount: fixed.length === 1 ? fixed[0].amount : 0,
+    fixed,
+    body: fixed.length === 1
+      ? `This feat grants a +${fixed[0].amount} bonus to ${FEAT_ABILITY_LABELS[fixed[0].key]}.`
+      : `This feat grants the following ability score bonuses: ${fixed.map(({ key, amount }) => `${FEAT_ABILITY_LABELS[key]} +${amount}`).join(", ")}.`,
+  };
+}
+
 function SkillIcon({ skillKey }) {
   const Icon = SKILL_ICONS[skillKey] || FaBookOpen;
   return <Icon aria-hidden="true" focusable="false" />;
@@ -73,15 +162,18 @@ function SkillIcon({ skillKey }) {
 function featGroupMatches(group = {}, feat = {}, featInstanceId = "") {
   if (String(group?.ownerType || "") !== "feat") return false;
   const groupInstanceId = String(group?.metadata?.featInstanceId || group?.ownerKey || "");
-  if (featInstanceId && groupInstanceId === String(featInstanceId)) return true;
   const featId = String(feat?.id || "");
   const groupFeatId = String(group?.metadata?.featOptionId || "");
-  if (featId && groupFeatId && featId === groupFeatId) return true;
   const featName = normalized(feat?.name);
   const groupName = normalized(group?.metadata?.featName || group?.label);
   const featSource = String(feat?.source || "");
   const groupSource = String(group?.metadata?.featSource || group?.source || "");
-  return Boolean(featName && groupName === featName && (!featSource || !groupSource || featSource === groupSource));
+  const identityMatches = Boolean(
+    (featId && groupFeatId && featId === groupFeatId)
+    || (featName && groupName === featName && (!featSource || !groupSource || featSource === groupSource))
+  );
+  if (featInstanceId && groupInstanceId === String(featInstanceId)) return identityMatches;
+  return identityMatches;
 }
 
 function genericFeatRuleSections(feat = {}) {
@@ -128,10 +220,105 @@ function featRuleSections(feat = {}, matchingGroups = []) {
   ];
 }
 
-function FeatRuleList({ feat = {}, matchingGroups = [] }) {
-  return <div className="npc-forge-training-feat-rule-list">{featRuleSections(feat, matchingGroups).map((section, index) => section.intro
-    ? <p key={`intro-${index}`} className="npc-forge-training-feat-rule-intro">{section.body}</p>
-    : <article key={`${section.title || "rule"}-${index}`}>{section.title ? <strong>{section.title}</strong> : null}<p>{section.body}</p></article>)}</div>;
+function simpleFeatAbilityChoices(groups = []) {
+  return groups.flatMap((group) => (group.fields || []).flatMap((field) => {
+    const effect = field.metadata?.effect || field.options?.[0]?.metadata?.effect || "";
+    const amount = Number(field.metadata?.amount ?? field.options?.[0]?.metadata?.amount ?? 0);
+    if (field.kind !== "ability" || effect !== "ability-increase" || !(amount > 0) || field.activeWhen || Number(field.count || 1) !== 1) return [];
+    return [{ group, field, amount }];
+  }));
+}
+
+function FeatAbilityChoice({ group, field, amount = 1, body = "", selections = {}, onToggle = null }) {
+  const selectedKeys = Array.isArray(selections?.[group.id]?.[field.id]) ? selections[group.id][field.id] : [];
+  const selectedKey = selectedKeys[0] || "";
+  const selectedOption = (field.options || []).find((option) => option.key === selectedKey) || null;
+  const [open, setOpen] = useState(!selectedOption);
+
+  useEffect(() => {
+    if (selectedOption) setOpen(false);
+  }, [selectedOption?.key]);
+
+  return <details className={`npc-forge-training-feat-ability-choice ${selectedOption ? "is-complete" : "is-required"}`} open={open} onToggle={(event) => setOpen(event.currentTarget.open)}>
+    <summary>
+      <span className="npc-forge-training-feat-choice-chevron" aria-hidden="true">›</span>
+      <span><strong>Ability Score Bonus</strong><p>{body}</p></span>
+      <em>{selectedOption ? `${selectedOption.label} +${amount}` : "Choose"}</em>
+    </summary>
+    <div>{(field.options || []).map((option) => {
+      const selected = option.key === selectedKey;
+      return <button key={option.key} type="button" className={selected ? "is-selected" : ""} onClick={() => onToggle?.(group.id, field.id, option.key)}>{option.label}{selected ? ` +${amount}` : ""}</button>;
+    })}</div>
+  </details>;
+}
+
+function StaticFeatAbilityBonus({ presentation = null }) {
+  if (!presentation) return null;
+  const fixedLabel = presentation.fixed?.length === 1
+    ? `${FEAT_ABILITY_LABELS[presentation.fixed[0].key]} +${presentation.fixed[0].amount}`
+    : "";
+  return <article className="npc-forge-training-feat-ability-static">
+    <span><strong>Ability Score Bonus</strong><p>{presentation.body}</p></span>
+    {fixedLabel ? <em>{fixedLabel}</em> : null}
+  </article>;
+}
+
+function FeatRuleList({ feat = {}, matchingGroups = [], abilityChoices = [], selections = {}, onToggleAbility = null }) {
+  const sections = featRuleSections(feat, matchingGroups);
+  const abilityPresentation = featAbilityBonusPresentation(feat);
+  const abilityChoice = abilityChoices[0] || null;
+  let abilityInserted = false;
+
+  const renderAbilityBonus = () => {
+    if (!abilityPresentation || abilityInserted) return null;
+    abilityInserted = true;
+    if (abilityChoice) {
+      return <FeatAbilityChoice
+        key="ability-score-bonus"
+        group={abilityChoice.group}
+        field={abilityChoice.field}
+        amount={abilityChoice.amount}
+        body={abilityPresentation.body}
+        selections={selections}
+        onToggle={onToggleAbility}
+      />;
+    }
+    return <StaticFeatAbilityBonus key="ability-score-bonus" presentation={abilityPresentation} />;
+  };
+
+  const rendered = [];
+  sections.forEach((section, index) => {
+    if (section.intro) {
+      rendered.push(<p key={`intro-${index}`} className="npc-forge-training-feat-rule-intro">{section.body}</p>);
+      if (abilityPresentation && !abilityInserted) rendered.push(renderAbilityBonus());
+      return;
+    }
+    if (abilityPresentation && !abilityInserted) rendered.push(renderAbilityBonus());
+    rendered.push(<article key={`${section.title || "rule"}-${index}`}>{section.title ? <strong>{section.title}</strong> : null}<p>{section.body}</p></article>);
+  });
+  if (abilityPresentation && !abilityInserted) rendered.unshift(renderAbilityBonus());
+
+  return <div className="npc-forge-training-feat-rule-list">{rendered}</div>;
+}
+
+function ContextDescription({ value = "" }) {
+  const description = String(value || "").trim();
+  const prerequisite = description.match(/^Prerequisite:\s*(.+)$/i);
+  return <p className={prerequisite ? "is-prerequisite" : ""}>{prerequisite ? <><strong>Prerequisite:</strong> <span>{prerequisite[1]}</span></> : description}</p>;
+}
+
+function ClassChoiceRuleCopy({ value = "", fallback = "No additional source description is available for this option." }) {
+  const raw = String(value || "").trim();
+  const sections = featRuleSectionsFromDescription(raw || fallback);
+  const long = raw.length > 720 || sections.length > 3;
+  if (long && sections.length === 1) {
+    return <div className="npc-forge-training-class-rule-list is-long"><details open><summary><span className="npc-forge-training-class-rule-chevron" aria-hidden="true">›</span><strong>Source rules</strong></summary><p>{sections[0].body}</p></details></div>;
+  }
+  return <div className={`npc-forge-training-class-rule-list ${long ? "is-long" : ""}`}>{sections.map((section, index) => section.intro
+    ? <p key={`class-intro-${index}`} className="npc-forge-training-class-rule-intro">{section.body}</p>
+    : long
+      ? <details key={`class-rule-${index}`} open={index === 0}><summary><span className="npc-forge-training-class-rule-chevron" aria-hidden="true">›</span><strong>{section.title || `Rule ${index + 1}`}</strong></summary><p>{section.body}</p></details>
+      : <article key={`class-rule-${index}`}>{section.title ? <strong>{section.title}</strong> : null}<p>{section.body}</p></article>)}</div>;
 }
 
 function ContextShell({ icon, iconIsImage = false, title, badge, selected, description, actionLabel = "", onAction = null, actionDisabled = false, children }) {
@@ -139,14 +326,13 @@ function ContextShell({ icon, iconIsImage = false, title, badge, selected, descr
     <h3>Current Selection</h3>
     <div className="npc-forge-training-context-hero">
       <span className="npc-forge-training-context-icon">{iconIsImage ? <img src={icon} alt="" aria-hidden="true" /> : icon}</span>
-      <div className="npc-forge-training-context-copy"><div><h2>{title}</h2>{badge ? <em>{badge}</em> : null}</div><p>{description}</p></div>
+      <div className="npc-forge-training-context-copy"><div><h2>{title}</h2>{badge ? <em>{badge}</em> : null}</div><ContextDescription value={description} /></div>
       {onAction ? <button type="button" className={`npc-forge-training-context-action ${selected ? "is-selected" : ""}`} aria-pressed={selected} disabled={actionDisabled} onClick={onAction}>{actionLabel || (selected ? "Selected" : "Select")}</button> : <strong className={selected ? "is-selected" : ""}>{selected ? "Selected" : "Available"}</strong>}
     </div>
     <div className="npc-forge-training-context-divider" />
     {children}
-    <div className="npc-forge-training-context-note"><span>ⓘ</span><p>You can change your selections until you continue.<br />All choices can be reviewed on the final step.</p></div>
     <style jsx global>{`
-      .npc-forge-training-context-dossier{display:flex;flex-direction:column;min-height:100%;padding:4px 2px 2px}.npc-forge-training-context-dossier>h3{margin:0 0 18px;color:#fff;font-size:1rem}.npc-forge-training-context-hero{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:14px;align-items:center}.npc-forge-training-context-icon{display:grid;place-items:center;width:48px;height:48px;border:1px solid rgba(168,108,255,.2);border-radius:9px;color:#bd85ff;background:rgba(126,72,199,.08);font-size:1.65rem}.npc-forge-training-context-icon img{width:34px;height:34px;object-fit:contain}.npc-forge-training-context-copy{display:grid;gap:5px;min-width:0}.npc-forge-training-context-copy>div{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.npc-forge-training-context-copy h2{margin:0;color:#fff;font-size:1.22rem;line-height:1.1}.npc-forge-training-context-copy em{padding:4px 8px;border-radius:999px;color:#d9bfff;background:rgba(126,72,199,.15);font-size:.61rem;font-style:normal}.npc-forge-training-context-copy p{margin:0;color:rgba(255,255,255,.7);font-size:.72rem;line-height:1.55}.npc-forge-training-context-hero>strong,.npc-forge-training-context-action{align-self:start;margin-top:4px;padding:4px 10px;border:1px solid transparent;border-radius:999px;color:rgba(255,255,255,.56);background:rgba(255,255,255,.05);font-size:.62rem}.npc-forge-training-context-hero>strong.is-selected,.npc-forge-training-context-action.is-selected{color:#83f4df;background:rgba(19,164,139,.16)}.npc-forge-training-context-action{border-color:rgba(168,108,255,.38);color:#f0e6ff;background:rgba(126,72,199,.12);cursor:pointer}.npc-forge-training-context-action:hover:not(:disabled),.npc-forge-training-context-action:focus-visible{border-color:rgba(193,145,255,.78);background:rgba(126,72,199,.24);outline:none}.npc-forge-training-context-action:disabled{cursor:default;opacity:1}.npc-forge-training-context-divider{height:1px;margin:18px 0;background:rgba(255,255,255,.09)}.npc-forge-training-context-section{display:grid;gap:12px}.npc-forge-training-context-section+ .npc-forge-training-context-section{margin-top:18px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08)}.npc-forge-training-context-section>h4{margin:0;color:#fff;font-size:.76rem}.npc-forge-training-class-option-copy{padding:2px 0 8px}.npc-forge-training-class-option-copy p{margin:0;color:rgba(255,255,255,.84);font-size:.82rem;line-height:1.58;white-space:pre-line}.npc-forge-training-option-rules{margin-top:9px;border-top:1px solid rgba(255,255,255,.07);padding-top:8px}.npc-forge-training-option-rules summary{cursor:pointer;color:#d9c4fb;font-size:.66rem;font-weight:800}.npc-forge-training-option-rules ul{display:grid;gap:6px;margin:8px 0 0;padding-left:18px;color:rgba(255,255,255,.76);font-size:.68rem;line-height:1.5}.npc-forge-training-context-section ul{display:grid;gap:9px;margin:0;padding-left:20px;color:rgba(255,255,255,.7);font-size:.7rem;line-height:1.5}.npc-forge-training-context-section>p{margin:0;color:rgba(255,255,255,.72);font-size:.72rem;line-height:1.65;white-space:pre-line}.npc-forge-training-feat-rule-list{display:grid;gap:0}.npc-forge-training-feat-rule-intro{margin:0;padding:2px 0 10px;color:rgba(255,255,255,.74);font-size:.69rem;line-height:1.62}.npc-forge-training-feat-rule-list article{position:relative;display:grid;gap:4px;padding:9px 4px 9px 13px;border:0;border-left:2px solid rgba(168,108,255,.38);border-radius:0;background:transparent}.npc-forge-training-feat-rule-list article+article{border-top:1px solid rgba(255,255,255,.055)}.npc-forge-training-feat-rule-list article>strong{color:#e5d2ff;font-size:.68rem;letter-spacing:.01em}.npc-forge-training-feat-rule-list article>p{margin:0;color:rgba(255,255,255,.76);font-size:.69rem;line-height:1.62}.npc-forge-training-context-facts{display:flex;flex-wrap:wrap;gap:0;margin-top:2px;border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07)}.npc-forge-training-context-facts>span{display:grid;gap:2px;min-width:140px;padding:8px 12px 8px 0}.npc-forge-training-context-facts>span+span{padding-left:12px;border-left:1px solid rgba(255,255,255,.07)}.npc-forge-training-context-facts small{color:rgba(255,255,255,.43);font-size:.52rem;text-transform:uppercase}.npc-forge-training-context-facts b{color:#fff;font-size:.67rem}.npc-forge-training-context-choices{gap:9px!important}.npc-forge-training-context-choices>p{max-width:720px}.npc-forge-training-context-choices .npc-forge-source-choices{gap:8px;margin-top:0}.npc-forge-training-context-choices .npc-forge-source-choices__heading{display:none}.npc-forge-training-context-choices .npc-forge-source-choice-group{gap:8px;padding:10px 11px}.npc-forge-training-context-choices .npc-forge-source-choice-group>header small{font-size:.58rem}.npc-forge-training-context-choices .npc-forge-source-choice-slots{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}.npc-forge-training-context-route{display:grid;grid-template-columns:auto minmax(0,1fr);gap:9px;align-items:start;padding:8px 2px 8px 10px;border:0;border-left:2px solid rgba(168,108,255,.42);border-radius:0;background:transparent}.npc-forge-training-context-route>span{display:grid;place-items:center;width:20px;height:20px;color:#d8c2fb;background:transparent;font-size:.7rem}.npc-forge-training-context-route>div{display:grid;gap:3px}.npc-forge-training-context-route strong{color:#fff;font-size:.68rem}.npc-forge-training-context-route p{margin:0;color:rgba(255,255,255,.65);font-size:.62rem;line-height:1.5}.npc-forge-training-context-route b{color:#e7d7ff}.npc-forge-training-context-note{display:flex;gap:10px;align-items:flex-start;width:min(560px,100%);margin-top:28px;padding:12px 14px;border:1px solid rgba(255,255,255,.08);border-radius:9px;background:rgba(7,10,18,.32)}.npc-forge-training-context-note>span{color:#d4dcff;font-size:.8rem}.npc-forge-training-context-note p{margin:0;color:rgba(255,255,255,.64);font-size:.68rem;line-height:1.55}@media(max-width:720px){.npc-forge-training-context-hero{grid-template-columns:42px minmax(0,1fr)}.npc-forge-training-context-hero>strong{grid-column:2;justify-self:start;margin:0}.npc-forge-training-context-icon{width:42px;height:42px}.npc-forge-training-context-note{margin-top:24px}.npc-forge-training-context-choices .npc-forge-source-choice-slots{grid-template-columns:1fr}}
+      .npc-forge-training-context-dossier{display:flex;flex-direction:column;height:auto;min-height:0;padding:4px 2px 2px}.npc-forge-training-context-dossier>h3{margin:0 0 18px;color:#fff;font-size:1rem}.npc-forge-training-context-hero{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:14px;align-items:center}.npc-forge-training-context-icon{display:grid;place-items:center;width:48px;height:48px;border:1px solid rgba(168,108,255,.2);border-radius:9px;color:#bd85ff;background:rgba(126,72,199,.08);font-size:1.65rem}.npc-forge-training-context-icon img{width:34px;height:34px;object-fit:contain}.npc-forge-training-context-copy{display:grid;gap:5px;min-width:0}.npc-forge-training-context-copy>div{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.npc-forge-training-context-copy h2{margin:0;color:#fff;font-size:1.22rem;line-height:1.1}.npc-forge-training-context-copy em{padding:4px 8px;border-radius:999px;color:#d9bfff;background:rgba(126,72,199,.15);font-size:.61rem;font-style:normal}.npc-forge-training-context-copy p{margin:0;color:rgba(255,255,255,.75);font-size:.8rem;line-height:1.58}.npc-forge-training-context-copy p.is-prerequisite{font-size:.84rem}.npc-forge-training-context-copy p.is-prerequisite strong{color:inherit;font-weight:900;letter-spacing:.01em}.npc-forge-training-context-copy p.is-prerequisite span{font-weight:600}.npc-forge-training-context-hero>strong,.npc-forge-training-context-action{align-self:start;margin-top:4px;padding:4px 10px;border:1px solid transparent;border-radius:999px;color:rgba(255,255,255,.56);background:rgba(255,255,255,.05);font-size:.62rem}.npc-forge-training-context-hero>strong.is-selected,.npc-forge-training-context-action.is-selected{color:#83f4df;background:rgba(19,164,139,.16)}.npc-forge-training-context-action{border-color:rgba(168,108,255,.38);color:#f0e6ff;background:rgba(126,72,199,.12);cursor:pointer}.npc-forge-training-context-action:hover:not(:disabled),.npc-forge-training-context-action:focus-visible{border-color:rgba(193,145,255,.78);background:rgba(126,72,199,.24);outline:none}.npc-forge-training-context-action:disabled{cursor:default;opacity:1}.npc-forge-training-context-divider{height:1px;margin:18px 0;background:rgba(255,255,255,.09)}.npc-forge-training-context-section{display:grid;gap:12px}.npc-forge-training-context-section+ .npc-forge-training-context-section{margin-top:18px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08)}.npc-forge-training-context-section>h4{margin:0;color:#fff;font-size:.84rem}.npc-forge-training-class-option-copy{display:grid;gap:8px;padding:2px 0 8px}.npc-forge-training-class-option-copy p{margin:0;color:rgba(255,255,255,.86);font-size:.88rem;line-height:1.62;white-space:pre-line}.npc-forge-training-class-rule-list{display:grid;gap:0}.npc-forge-training-class-rule-intro{padding:2px 0 10px!important;color:rgba(255,255,255,.8)!important}.npc-forge-training-class-rule-list article{display:grid;gap:4px;padding:9px 4px 9px 13px;border-left:2px solid rgba(88,214,199,.38)}.npc-forge-training-class-rule-list article+article{border-top:1px solid rgba(255,255,255,.055)}.npc-forge-training-class-rule-list article>strong{color:#c9fff7;font-size:.72rem}.npc-forge-training-class-rule-list details{border-left:2px solid rgba(168,108,255,.38);border-top:1px solid rgba(255,255,255,.055);padding:0 0 0 10px}.npc-forge-training-class-rule-list details:first-child{border-top:0}.npc-forge-training-class-rule-list details>summary{display:grid;grid-template-columns:14px minmax(0,1fr);gap:5px;align-items:center;padding:8px 4px;list-style:none;cursor:pointer;color:#e5d2ff}.npc-forge-training-class-rule-list details>summary::-webkit-details-marker{display:none}.npc-forge-training-class-rule-list details>summary strong{font-size:.72rem}.npc-forge-training-class-rule-list details>p{padding:0 4px 10px 19px!important}.npc-forge-training-class-rule-chevron{color:#c9a8ff;font-size:1rem;line-height:1;transition:transform .15s ease}.npc-forge-training-class-rule-list details[open] .npc-forge-training-class-rule-chevron{transform:rotate(90deg)}.npc-forge-training-expertise-explanation{padding:10px 12px;border-left:3px solid #58d6c7;border-radius:7px;background:rgba(88,214,199,.07);color:#eafffb!important}.npc-forge-training-option-rules{margin-top:9px;border-top:1px solid rgba(255,255,255,.07);padding-top:8px}.npc-forge-training-option-rules summary{cursor:pointer;color:#d9c4fb;font-size:.66rem;font-weight:800}.npc-forge-training-option-rules ul{display:grid;gap:6px;margin:8px 0 0;padding-left:18px;color:rgba(255,255,255,.76);font-size:.68rem;line-height:1.5}.npc-forge-training-context-section ul{display:grid;gap:9px;margin:0;padding-left:20px;color:rgba(255,255,255,.7);font-size:.7rem;line-height:1.5}.npc-forge-training-context-section>p{margin:0;color:rgba(255,255,255,.72);font-size:.72rem;line-height:1.65;white-space:pre-line}.npc-forge-training-feat-rule-list{display:grid;gap:0}.npc-forge-training-feat-rule-intro{margin:0;padding:2px 0 10px;color:rgba(255,255,255,.74);font-size:.69rem;line-height:1.62}.npc-forge-training-feat-rule-list article{position:relative;display:grid;gap:4px;padding:9px 4px 9px 13px;border:0;border-left:2px solid rgba(168,108,255,.38);border-radius:0;background:transparent}.npc-forge-training-feat-rule-list article+article{border-top:1px solid rgba(255,255,255,.055)}.npc-forge-training-feat-rule-list article>strong{color:#e5d2ff;font-size:.68rem;letter-spacing:.01em}.npc-forge-training-feat-rule-list article>p{margin:0;color:rgba(255,255,255,.76);font-size:.69rem;line-height:1.62}.npc-forge-training-feat-ability-choice,.npc-forge-training-feat-ability-static{margin:0;border:0;border-left:2px solid rgba(168,108,255,.38);border-radius:0;background:transparent}.npc-forge-training-feat-ability-choice{overflow:hidden}.npc-forge-training-feat-ability-choice>summary{display:grid;grid-template-columns:14px minmax(0,1fr) auto;gap:7px;align-items:center;padding:9px 4px 9px 10px;list-style:none;cursor:pointer}.npc-forge-training-feat-ability-choice>summary::-webkit-details-marker{display:none}.npc-forge-training-feat-choice-chevron{color:#c9a8ff;font-size:1rem;line-height:1;transition:transform .14s ease}.npc-forge-training-feat-ability-choice[open] .npc-forge-training-feat-choice-chevron{transform:rotate(90deg)}.npc-forge-training-feat-ability-choice>summary span{display:grid;gap:4px}.npc-forge-training-feat-ability-choice>summary strong,.npc-forge-training-feat-ability-static strong{color:#e5d2ff;font-size:.68rem;letter-spacing:.01em}.npc-forge-training-feat-ability-choice>summary p,.npc-forge-training-feat-ability-static p{margin:0;color:rgba(255,255,255,.76);font-size:.69rem;line-height:1.62}.npc-forge-training-feat-ability-choice>summary em,.npc-forge-training-feat-ability-static>em{padding:3px 7px;border:1px solid rgba(168,108,255,.26);border-radius:999px;color:#dfcbff;background:rgba(126,72,199,.09);font-size:.56rem;font-style:normal;font-weight:850;white-space:nowrap}.npc-forge-training-feat-ability-choice.is-complete>summary em,.npc-forge-training-feat-ability-static>em{border-color:rgba(88,214,199,.3);color:#bafff4;background:rgba(88,214,199,.08)}.npc-forge-training-feat-ability-choice>div{display:flex;flex-wrap:wrap;gap:5px;padding:0 9px 9px 31px}.npc-forge-training-feat-ability-choice>div button{min-height:27px;padding:4px 9px;border:1px solid rgba(168,108,255,.3);border-radius:999px;color:#f4edff;background:rgba(126,72,199,.08);font-size:.62rem;font-weight:800}.npc-forge-training-feat-ability-choice>div button.is-selected{border-color:rgba(88,214,199,.48);color:#bafff4;background:rgba(88,214,199,.1)}.npc-forge-training-feat-ability-static{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 4px 9px 13px}.npc-forge-training-feat-ability-static>span{display:grid;gap:4px}.npc-forge-training-context-facts{display:flex;flex-wrap:wrap;gap:0;margin-top:2px;border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07)}.npc-forge-training-context-facts>span{display:grid;gap:2px;min-width:140px;padding:8px 12px 8px 0}.npc-forge-training-context-facts>span+span{padding-left:12px;border-left:1px solid rgba(255,255,255,.07)}.npc-forge-training-context-facts small{color:rgba(255,255,255,.48);font-size:.58rem;text-transform:uppercase}.npc-forge-training-context-facts b{color:#fff;font-size:.74rem}.npc-forge-training-context-choices{gap:8px!important}.npc-forge-training-context-choices>p{max-width:720px;margin-bottom:1px!important}.npc-forge-training-context-choices .npc-forge-source-choices{gap:6px;margin-top:0}.npc-forge-training-context-choices .npc-forge-source-choices__heading{display:none}.npc-forge-training-context-choices .npc-forge-source-choice-group{gap:6px;padding:7px 9px;border-color:rgba(168,108,255,.26);border-radius:8px;background:rgba(126,72,199,.035)}.npc-forge-training-context-choices .npc-forge-source-choice-group>header{align-items:center;gap:8px}.npc-forge-training-context-choices .npc-forge-source-choice-group>header>div{display:flex;align-items:baseline;gap:8px;min-width:0}.npc-forge-training-context-choices .npc-forge-source-choice-group>header strong{font-size:.68rem;white-space:nowrap}.npc-forge-training-context-choices .npc-forge-source-choice-group>header small{overflow:hidden;max-width:460px;font-size:.55rem;line-height:1.25;text-overflow:ellipsis;white-space:nowrap}.npc-forge-training-context-choices .npc-forge-source-choice-group>header em{padding:2px 6px;font-size:.5rem}.npc-forge-training-context-choices .npc-forge-source-choice-field{gap:5px}.npc-forge-training-context-choices .npc-forge-source-choice-field>span{font-size:.6rem}.npc-forge-training-context-choices .npc-forge-source-choice-buttons{gap:5px}.npc-forge-training-context-choices .npc-forge-source-choice-buttons button{display:inline-flex;align-items:center;min-height:30px;padding:5px 10px;border-radius:999px;font-size:.67rem}.npc-forge-training-context-choices .npc-forge-source-choice-buttons button strong{font-size:.67rem}.npc-forge-training-context-choices .npc-forge-source-choice-buttons button small{display:none}.npc-forge-training-context-choices .npc-forge-source-choice-group{gap:8px;padding:10px 11px}.npc-forge-training-context-choices .npc-forge-source-choice-group>header small{font-size:.58rem}.npc-forge-training-context-choices .npc-forge-source-choice-slots{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}.npc-forge-training-context-route{display:grid;grid-template-columns:auto minmax(0,1fr);gap:9px;align-items:start;padding:8px 2px 8px 10px;border:0;border-left:2px solid rgba(168,108,255,.42);border-radius:0;background:transparent}.npc-forge-training-context-route>span{display:grid;place-items:center;width:20px;height:20px;color:#d8c2fb;background:transparent;font-size:.7rem}.npc-forge-training-context-route>div{display:grid;gap:3px}.npc-forge-training-context-route strong{color:#fff;font-size:.68rem}.npc-forge-training-context-route p{margin:0;color:rgba(255,255,255,.65);font-size:.62rem;line-height:1.5}.npc-forge-training-context-route b{color:#e7d7ff}@media(max-width:720px){.npc-forge-training-context-hero{grid-template-columns:42px minmax(0,1fr)}.npc-forge-training-context-hero>strong{grid-column:2;justify-self:start;margin:0}.npc-forge-training-context-icon{width:42px;height:42px}.npc-forge-training-context-choices .npc-forge-source-choice-slots{grid-template-columns:1fr}}
     `}</style>
   </div>;
 }
@@ -178,7 +364,7 @@ export default function NpcForgeTrainingContextCard({ detail = null, selectedSki
       </section>
       {sources.length ? <section className="npc-forge-training-overview__sources"><h4>Where these come from</h4>{sources.map((source, index) => <div key={`${source.label}-${index}`}><span><strong className="npc-forge-training-overview__source-type">{source.label}</strong>{source.name ? <b className="npc-forge-training-overview__source-name">{source.name}</b> : null}{source.detail ? <small>{source.detail}</small> : null}</span><b className="npc-forge-training-overview__source-value">{source.value}</b></div>)}</section> : null}
       <style jsx global>{`
-        .npc-forge-training-overview__head{display:grid;grid-template-columns:48px minmax(0,1fr);gap:14px;align-items:center}.npc-forge-training-overview__head>div{display:grid;gap:3px}.npc-forge-training-overview__head h2{margin:0;color:#fff;font-size:1.18rem}.npc-forge-training-overview__head p{margin:0;max-width:70ch;color:rgba(255,255,255,.67);font-size:.7rem;line-height:1.55}.npc-forge-training-overview__metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:0;border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07)}.npc-forge-training-overview__metrics>div{display:grid;gap:2px;padding:10px 12px}.npc-forge-training-overview__metrics>div+div{border-left:1px solid rgba(255,255,255,.07)}.npc-forge-training-overview__metrics span,.npc-forge-training-overview__sources h4{color:rgba(255,255,255,.47);font-size:.52rem;font-weight:800;letter-spacing:.055em;text-transform:uppercase}.npc-forge-training-overview__metrics strong{color:#f3eaff;font-size:.85rem}.npc-forge-training-overview__metrics small{color:rgba(255,255,255,.5);font-size:.52rem;line-height:1.4}.npc-forge-training-overview__sources{display:grid;gap:0;margin-top:18px}.npc-forge-training-overview__sources h4{margin:0 0 5px}.npc-forge-training-overview__sources>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 2px;border-top:1px solid rgba(255,255,255,.065)}.npc-forge-training-overview__sources>div>span{display:grid;gap:2px}.npc-forge-training-overview__source-type{color:rgba(255,255,255,.46)!important;font-size:.5rem!important;font-weight:900!important;letter-spacing:.07em;text-transform:uppercase}.npc-forge-training-overview__source-name{color:#fff3df!important;font-family:Georgia,"Times New Roman",serif;font-size:.76rem!important;font-weight:700!important}.npc-forge-training-overview__sources small{color:rgba(255,255,255,.6);font-size:.57rem;line-height:1.45}.npc-forge-training-overview__source-value{color:#bff8ef!important;font-size:.68rem!important;font-weight:700!important}@media(max-width:720px){.npc-forge-training-overview__metrics{grid-template-columns:1fr}.npc-forge-training-overview__metrics>div+div{border-left:0;border-top:1px solid rgba(255,255,255,.07)}}
+        .npc-forge-training-overview__head{display:grid;grid-template-columns:48px minmax(0,1fr);gap:14px;align-items:center}.npc-forge-training-overview__head>div{display:grid;gap:3px}.npc-forge-training-overview__head h2{margin:0;color:#fff;font-size:1.24rem}.npc-forge-training-overview__head p{margin:0;max-width:70ch;color:rgba(255,255,255,.72);font-size:.78rem;line-height:1.58}.npc-forge-training-overview__metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:0;border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07)}.npc-forge-training-overview__metrics>div{display:grid;gap:2px;padding:10px 12px}.npc-forge-training-overview__metrics>div+div{border-left:1px solid rgba(255,255,255,.07)}.npc-forge-training-overview__metrics span,.npc-forge-training-overview__sources h4{color:rgba(255,255,255,.52);font-size:.59rem;font-weight:800;letter-spacing:.055em;text-transform:uppercase}.npc-forge-training-overview__metrics strong{color:#f3eaff;font-size:.92rem}.npc-forge-training-overview__metrics small{color:rgba(255,255,255,.58);font-size:.6rem;line-height:1.45}.npc-forge-training-overview__sources{display:grid;gap:0;margin-top:18px}.npc-forge-training-overview__sources h4{margin:0 0 5px}.npc-forge-training-overview__sources>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 2px;border-top:1px solid rgba(255,255,255,.065)}.npc-forge-training-overview__sources>div>span{display:grid;gap:2px}.npc-forge-training-overview__source-type{color:rgba(255,255,255,.5)!important;font-size:.57rem!important;font-weight:900!important;letter-spacing:.07em;text-transform:uppercase}.npc-forge-training-overview__source-name{color:#fff3df!important;font-family:Georgia,"Times New Roman",serif;font-size:.84rem!important;font-weight:700!important}.npc-forge-training-overview__sources small{color:rgba(255,255,255,.66);font-size:.64rem;line-height:1.5}.npc-forge-training-overview__source-value{color:#bff8ef!important;font-size:.74rem!important;font-weight:700!important}@media(max-width:720px){.npc-forge-training-overview__metrics{grid-template-columns:1fr}.npc-forge-training-overview__metrics>div+div{border-left:0;border-top:1px solid rgba(255,255,255,.07)}}
       `}</style>
     </div>;
   }
@@ -194,12 +380,14 @@ export default function NpcForgeTrainingContextCard({ detail = null, selectedSki
     const requirement = detail?.requirement || option.requires || "";
     const owner = group.subclassName || selectedClass?.class_name || selectedClass?.name || "Class";
     const grantedBy = group.sourceFeature ? `${owner} — ${group.sourceFeature}` : owner;
+    const isExpertise = group.kind === "expertise";
+    const expertiseExplanation = "Expertise doubles your Proficiency Bonus when you make an ability check using the chosen skill proficiency. It does not grant proficiency by itself, so choose a skill you are already proficient in.";
     const chooseOption = () => {
-      if (selected || !eligible) return;
+      if (!eligible || (selected && !isExpertise)) return;
       toggleFeatureOption?.(group.id, option.key);
       controller.setDetail?.({ ...detail });
     };
-    const actionLabel = selected ? "Selected" : !eligible ? "Locked" : replacing ? "Replace Selection" : "Select";
+    const actionLabel = selected ? (isExpertise ? "Deselect Expertise" : "Selected") : !eligible ? "Locked" : replacing ? "Replace Selection" : isExpertise ? "Select Expertise" : "Select";
 
     return <ContextShell
       icon={`${TRAINING_ASSET_ROOT}/summary-training.svg`}
@@ -207,15 +395,17 @@ export default function NpcForgeTrainingContextCard({ detail = null, selectedSki
       title={option.name || "Class Choice"}
       badge={group.label || "Class Choice"}
       selected={selected}
-      description={requirement ? `Requires: ${requirement}` : group.helper || `Granted by ${grantedBy}.`}
+      description={isExpertise
+        ? `Granted by ${grantedBy}. Choose a skill proficiency to receive Expertise.`
+        : requirement ? `Requires: ${requirement}` : group.helper || `Granted by ${grantedBy}.`}
       onAction={chooseOption}
       actionLabel={actionLabel}
-      actionDisabled={selected || !eligible}
+      actionDisabled={(selected && !isExpertise) || !eligible}
     >
       <section className="npc-forge-training-context-section">
         <h4>{group.label || "Class Choice"}</h4>
         <div className="npc-forge-training-class-option-copy">
-          <p>{option.description || "No additional source description is available for this option."}</p>
+          {isExpertise ? <><p className="npc-forge-training-expertise-explanation">{expertiseExplanation}</p>{option.description ? <ClassChoiceRuleCopy value={option.description} /> : null}</> : <ClassChoiceRuleCopy value={option.description} />}
         </div>
         <div className="npc-forge-training-context-facts">
           <span><small>Granted By</small><b>{grantedBy}</b></span>
@@ -259,7 +449,7 @@ export default function NpcForgeTrainingContextCard({ detail = null, selectedSki
       <section className="npc-forge-training-context-section">
         <h4>What it does</h4>
         <div className="npc-forge-training-class-option-copy">
-          <p>{option.description || "No additional rules summary is available for this option."}</p>
+          <ClassChoiceRuleCopy value={option.description} fallback="No additional rules summary is available for this option." />
           {playerRules.length ? <details className="npc-forge-training-option-rules"><summary>Rules and limits</summary><ul>{playerRules.map((rule) => <li key={rule}>{rule}</li>)}</ul></details> : null}
         </div>
         <div className="npc-forge-training-context-facts">
@@ -275,22 +465,44 @@ export default function NpcForgeTrainingContextCard({ detail = null, selectedSki
 
   if (detail?.type === "feat" && detail.option) {
     const feat = detail.option;
-    const prerequisite = formatPrerequisiteText(feat.prerequisite_text || feat.prerequisiteText || "");
+    const prerequisite = formatPlayerFacingPrerequisiteText(feat.prerequisite_text || feat.prerequisiteText || "");
     const matchingGroups = (sourceChoiceState.groups || []).filter((group) => featGroupMatches(group, feat, detail?.featInstanceId || ""));
     const matchingState = { ...sourceChoiceState, groups: matchingGroups };
     const trainingGroups = sourceChoiceGroupsForResolverPlacement(matchingState, "training");
     const skillsRoutedGroups = trainingGroups.filter((group) => group.metadata?.trainingSection === "skills");
-    const featTrainingGroups = trainingGroups.filter((group) => group.metadata?.trainingSection !== "skills");
+    const featOwnedTrainingGroups = trainingGroups.filter((group) => group.metadata?.trainingSection !== "skills");
+    const featAbilityChoices = simpleFeatAbilityChoices(featOwnedTrainingGroups);
+    const compactAbilityFieldIds = new Set(featAbilityChoices.map(({ group, field }) => `${group.id}:${field.id}`));
+    const featCatalogueBranchChoices = featOwnedTrainingGroups.flatMap((group) => (group.fields || []).filter((field) => field.metadata?.featCatalogueBranch).map((field) => {
+      const selectedKey = (sourceChoiceState.selections?.[group.id]?.[field.id] || [])[0] || "";
+      const selectedOption = (field.options || []).find((option) => option.key === selectedKey) || null;
+      return { group, field, selectedOption };
+    }));
+    const featTrainingGroups = featOwnedTrainingGroups.map((group) => ({
+      ...group,
+      fields: (group.fields || []).filter((field) => !compactAbilityFieldIds.has(`${group.id}:${field.id}`) && !field.metadata?.featCatalogueBranch),
+    })).filter((group) => group.fields.length);
+    const featCatalogueBranchSelection = featCatalogueBranchChoices.find(({ selectedOption }) => selectedOption)?.selectedOption || detail?.branchSelectionOption || null;
     const spellGroups = sourceChoiceGroupsForResolverPlacement(matchingState, "spells");
-    const selected = Boolean(detail?.granted)
-      || matchingGroups.length > 0
-      || String(draft.speciesBonus?.featId || "") === String(feat.id || "");
     const selectableBonusFeat = detail?.selectionKind === "species-bonus-feat";
+    const currentBonusFeatId = String(draft.speciesBonus?.featId || "");
+    const bonusFeatSelected = selectableBonusFeat && currentBonusFeatId === String(feat.id || "");
+    const selected = Boolean(detail?.granted) || bonusFeatSelected;
+    const replacingBonusFeat = selectableBonusFeat && Boolean(currentBonusFeatId) && !bonusFeatSelected;
+    const prerequisiteMet = detail?.eligible !== false;
     const chooseFeat = selectableBonusFeat ? () => {
-      controller.setSpeciesBonus?.({ featId: feat.id });
+      if (!bonusFeatSelected && !prerequisiteMet) {
+        controller.setError?.(`${feat.name} requires ${prerequisite || "its listed prerequisite"}.`);
+        return;
+      }
+      controller.setSpeciesBonus?.({ featId: bonusFeatSelected ? "" : feat.id });
+      controller.setDetail?.({ ...detail });
     } : null;
-    return <ContextShell icon={`${TRAINING_ASSET_ROOT}/summary-feat.svg`} iconIsImage title={feat.name} badge={feat.category || "Feat"} selected={selected} description={prerequisite ? `Prerequisite: ${prerequisite}` : "No prerequisite is listed for this feat."} onAction={chooseFeat} actionLabel={selected ? "Selected" : "Select Feat"} actionDisabled={selected}>
-      <section className="npc-forge-training-context-section"><h4>Feat Rules</h4><FeatRuleList feat={feat} matchingGroups={matchingGroups} /><div className="npc-forge-training-context-facts"><span><small>Source</small><b>{feat.source || "Campaign"}</b></span><span><small>Category</small><b>{feat.category || "Feat"}</b></span>{prerequisite ? <span><small>Prerequisite</small><b>{prerequisite}</b></span> : null}</div></section>
+    const actionLabel = bonusFeatSelected ? "Deselect Feat" : !prerequisiteMet ? "Prerequisite unmet" : replacingBonusFeat ? "Replace Feat" : selected ? "Selected" : "Select Feat";
+    const actionDisabled = selected && !selectableBonusFeat ? true : Boolean(selectableBonusFeat && !bonusFeatSelected && !prerequisiteMet);
+    return <ContextShell icon={`${TRAINING_ASSET_ROOT}/summary-feat.svg`} iconIsImage title={feat.name} badge={featCategoryLabel(feat.category)} selected={selected} description={prerequisite ? `Prerequisite: ${prerequisite}` : "No prerequisite is listed for this feat."} onAction={chooseFeat} actionLabel={actionLabel} actionDisabled={actionDisabled}>
+      <section className="npc-forge-training-context-section"><h4>Feat Rules</h4><FeatRuleList feat={feat} matchingGroups={matchingGroups} abilityChoices={featAbilityChoices} selections={sourceChoiceState.selections || {}} onToggleAbility={toggleSourceChoice} /><div className="npc-forge-training-context-facts"><span><small>Source</small><b>{feat.source || "Campaign"}</b></span><span><small>Category</small><b>{featCategoryLabel(feat.category)}</b></span>{prerequisite ? <span><small>Prerequisite</small><b>{prerequisite}</b></span> : null}</div></section>
+      {featCatalogueBranchChoices.length ? <section className="npc-forge-training-context-section"><div className="npc-forge-training-context-route"><span>←</span><div><strong>Fighting Style branches from this feat</strong><p>{featCatalogueBranchSelection ? `Selected: ${featCatalogueBranchSelection.label || featCatalogueBranchSelection.name}. Expand Fighting Initiate in the feat list to change it.` : "Expand Fighting Initiate in the feat list on the left and choose the Fighting Style beneath it."}</p></div></div>{featCatalogueBranchSelection ? <div className="npc-forge-training-class-option-copy"><strong>{featCatalogueBranchSelection.label || featCatalogueBranchSelection.name}</strong><ClassChoiceRuleCopy value={featCatalogueBranchSelection.description} fallback="No additional Fighting Style rules summary is available." /></div> : null}</section> : null}
       {skillsRoutedGroups.length ? <section className="npc-forge-training-context-section"><div className="npc-forge-training-context-route"><span>←</span><div><strong>Profession choices resolve in Skills</strong><p>This feat adds {skillsRoutedGroups.reduce((count, group) => count + (group.fields || []).reduce((sum, field) => sum + Number(field.count || 1), 0), 0)} additional Profession Skill choices. Make them in <b>Skills → Trade Skills</b>; each available or granted row is labeled with this feat as its source and does not spend the class Skill / Trade Skill allowance.</p></div></div></section> : null}
       {featTrainingGroups.length ? <section className="npc-forge-training-context-section npc-forge-training-context-choices"><h4>Required Feat Choices</h4><p>Every permanent non-spell decision owned by this feat is completed here beside its rules. Skill, tool, or instrument grants are reflected in Skills after you choose them.</p><NpcForgeSourceChoiceFields placement="training" inline groupsOverride={featTrainingGroups} title="Required feat choices" /></section> : null}
       {spellGroups.length ? <section className="npc-forge-training-context-section"><div className="npc-forge-training-context-route"><span>→</span><div><strong>Granted spells resolve on the next tab</strong><p>This feat grants {spellGroups.reduce((count, group) => count + (group.fields || []).filter((field) => field.required !== false).length, 0)} spell choice{spellGroups.reduce((count, group) => count + (group.fields || []).filter((field) => field.required !== false).length, 0) === 1 ? "" : "s"}. They are intentionally completed in <b>Spells</b>, where the spell catalogue, descriptions, levels, and spell-specific rules already live.</p></div></div></section> : null}
@@ -307,15 +519,8 @@ export default function NpcForgeTrainingContextCard({ detail = null, selectedSki
       || sourceSelected
       || Number(profession.rank || 0) > 0;
     const abilities = (selectedProfession.abilities || []).map((ability) => ABILITY_LABELS[ability] || ability).join(" or ");
-    const runtimeNote = selectedProfession.runtimeEnabled === false
-      ? " This proficiency is available in Character Forge now; its dedicated recipe/progression system is intentionally deferred."
-      : "";
     const sourceAvailable = detail?.selectionKind === "source-profession" && !sourceSelected;
-    const grantNote = detail?.grantSource && selected
-      ? ` ${detail.grantSource} explicitly grants this Trade Skill because its source rule grants the matching professional tool proficiency. This is Proficiency, not Expertise.`
-      : sourceAvailable && detail?.grantSource
-        ? ` ${detail.grantSource} can grant this Trade Skill without spending the shared Class Skill / Trade Skill allowance.`
-        : ` ${selectedProfession.tool} is the associated mundane tool, but an ordinary copy or incidental tool grant does not grant this Trade Skill or Expertise.`;
+    const professionDescription = PROFESSION_DESCRIPTIONS[key] || `${selectedProfession.label} is a campaign Trade Skill used when its trained craft or profession is relevant.`;
 
     const selectProfession = () => {
       if (selected || !detail?.canSelect) return;
@@ -340,7 +545,7 @@ export default function NpcForgeTrainingContextCard({ detail = null, selectedSki
 
     const actionAvailable = ["source-profession", "trade-skill"].includes(detail?.selectionKind);
     const actionLabel = selected ? "Selected" : detail?.canSelect === false ? "Selection Full" : "Select Trade Skill";
-    return <ContextShell icon={PROFESSION_ICON[key] || `${TRAINING_ASSET_ROOT}/choice-tool.svg`} iconIsImage title={selectedProfession.label} badge="Trade Skill" selected={selected} description={`${selectedProfession.label} is the character's crafting proficiency.${grantNote} The associated tool is still normally required to perform the craft.${runtimeNote}`} onAction={actionAvailable ? selectProfession : null} actionLabel={actionLabel} actionDisabled={selected || detail?.canSelect === false}>
+    return <ContextShell icon={PROFESSION_ICON[key] || `${TRAINING_ASSET_ROOT}/choice-tool.svg`} iconIsImage title={selectedProfession.label} badge="Trade Skill" selected={selected} description={professionDescription} onAction={actionAvailable ? selectProfession : null} actionLabel={actionLabel} actionDisabled={selected || detail?.canSelect === false}>
       <section className="npc-forge-training-context-section"><h4>Typical Uses</h4><ul>{(PROFESSION_USES[key] || ["Apply this Trade Skill when a supported campaign crafting or professional task calls for it."]).map((use) => <li key={use}>{use}</li>)}</ul><div className="npc-forge-training-context-facts"><span><small>Associated Tool</small><b>{selectedProfession.tool}</b></span><span><small>Crafting Ability</small><b>{profession.ability ? ABILITY_LABELS[profession.ability] || profession.ability : abilities}</b></span><span><small>Campaign Support</small><b>{selectedProfession.runtimeEnabled === false ? "Proficiency now • recipes later" : "Crafting runtime active"}</b></span>{detail?.grantSource ? <span><small>{selected ? "Granted By" : "Available From"}</small><b>{detail.grantSource}</b></span> : null}</div></section>
     </ContextShell>;
   }

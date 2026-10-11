@@ -1,6 +1,7 @@
 import fs from "node:fs";
 
 const source = fs.readFileSync("sql/20260808_51_player_forge_character_scoped_equipment_projection.sql", "utf8");
+const market = fs.readFileSync("sql/20261010_01_player_forge_starting_market.sql", "utf8");
 const need = (token) => { if (!source.includes(token)) throw new Error(`Missing character-scoped starter equipment contract: ${token}`); };
 const forbid = (token) => { if (source.includes(token)) throw new Error(`Forbidden character-scoped starter equipment contract: ${token}`); };
 
@@ -16,6 +17,17 @@ for (const token of [
 ]) need(token);
 
 for (const token of [
+  "insert into public.inventory_items",
+  "'character',p_character_id::text",
+  "insert into public.character_currency",
+  "marketBudgetCopper",
+  "marketSpentCopper",
+  "update public.character_sheets set sheet=v_sheet",
+]) {
+  if (!market.includes(token)) throw new Error(`Missing character-scoped starting-market contract: ${token}`);
+}
+
+for (const token of [
   "update public.players",
   "insert into public.players",
   "player_wallets",
@@ -23,6 +35,9 @@ for (const token of [
   "MapPageClient",
   "map_routes",
   "weather",
-]) forbid(token);
+]) {
+  forbid(token);
+  if (market.includes(token)) throw new Error(`Forbidden character-scoped starting-market contract: ${token}`);
+}
 
-console.log("Player Forge starter equipment/currency remains character scoped and avoids legacy account-wide sheet/wallet projection.");
+console.log("Player Forge starter market/currency remains character scoped and avoids legacy account-wide sheet/wallet projection.");
