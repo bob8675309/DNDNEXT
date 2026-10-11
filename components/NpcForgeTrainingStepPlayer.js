@@ -176,6 +176,11 @@ export default function NpcForgeTrainingStepPlayer({
   const bonusFeatRequired = speciesBonus.mode === "feat";
   const selectedBonusFeat = controller.speciesBonusFeat || null;
   const featOptions = controller.featOptions || [];
+  const bonusFeatCatalogueOptions = useMemo(() => featOptions.filter((feat) => {
+    const category = String(feat?.category || "").toUpperCase();
+    const alreadySelected = String(feat?.id || "") === String(speciesBonus.featId || "");
+    return alreadySelected || !category.startsWith("FS");
+  }), [featOptions, speciesBonus.featId]);
   const classSkillOptions = Array.isArray(classSkillConfig?.options) ? classSkillConfig.options : [];
 
   const selectedSourceOptions = useMemo(
@@ -518,7 +523,7 @@ export default function NpcForgeTrainingStepPlayer({
         <summary><span><img src={`${TRAINING_ASSET_ROOT}/summary-feat.svg`} alt="" aria-hidden="true" /><b>Feat &amp; Class Choices</b></span><em>{featChoiceTarget ? `${featChoiceDone}/${featChoiceTarget}` : "None"}</em></summary>
         <div className="npc-forge-training-choice-body">
           <div className="npc-forge-training-feat-only">
-            {bonusFeatRequired ? <NpcForgeTrainingFeatPicker options={featOptions} selectedId={speciesBonus.featId || ""} grantedFeats={controller.selectedBackgroundFeat ? [{ feat: controller.selectedBackgroundFeat, featInstanceId: "background-feat" }] : []} onDetail={(next) => onDetail?.({ ...next, selectionKind: next.selectionKind || "species-bonus-feat", featInstanceId: next.featInstanceId || "species-bonus-feat" })} label="Bonus Feat" /> : null}
+            {bonusFeatRequired ? <NpcForgeTrainingFeatPicker options={bonusFeatCatalogueOptions} selectedId={speciesBonus.featId || ""} grantedFeats={controller.selectedBackgroundFeat ? [{ feat: controller.selectedBackgroundFeat, featInstanceId: "background-feat" }] : []} onDetail={(next) => onDetail?.({ ...next, selectionKind: next.selectionKind || "species-bonus-feat", featInstanceId: next.featInstanceId || "species-bonus-feat" })} label="Bonus Feat" /> : null}
             {featDecisionGroups.length ? <section className="npc-forge-training-feat-followups" aria-label="Feat follow-up choices"><header><span>Feat follow-ups</span><small>Click a feat here to keep its rules in Current Selection while you finish any owned choices.</small></header><div>{featDecisionGroups.map(({ group, trainingGroup, spellGroup }) => {
               const trainingComplete = !trainingGroup || sourceChoiceGroupComplete(trainingGroup, sourceChoiceState.selections || {});
               const spellComplete = !spellGroup || sourceChoiceGroupComplete(spellGroup, sourceChoiceState.selections || {});
