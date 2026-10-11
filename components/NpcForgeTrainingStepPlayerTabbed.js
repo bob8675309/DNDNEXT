@@ -89,6 +89,12 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
     ...(props.backgroundSkillChoices || []).flatMap((group) => (props.backgroundSkillSelections?.[group.id] || []).map((value) => String(value || "").trim().toLowerCase())),
     ...backgroundSourceSkillOptions.map((option) => String(option.value || option.label || option.key || "").trim().toLowerCase()),
   ].filter(Boolean)), [backgroundSourceSkillOptions, props.backgroundSkillChoices, props.backgroundSkillSelections, props.backgroundSkills]);
+  const selectedSourceSkillOptions = useMemo(() => selectedSourceChoiceOptions(sourceChoiceState.groups || [], sourceSelections)
+    .filter((option) => option.fieldKind === "skill" || option.kind === "skill"), [sourceChoiceState.groups, sourceSelections]);
+  const allocatedSkillKeys = useMemo(() => new Set([
+    ...backgroundSkillKeys,
+    ...selectedSourceSkillOptions.map((option) => String(option.value || option.label || option.key || "").trim().toLowerCase()),
+  ].filter(Boolean)), [backgroundSkillKeys, selectedSourceSkillOptions]);
   const backgroundSkillCount = backgroundSkillKeys.size;
   const incompleteTrainingClass = classGroupsIncomplete(nonExpertiseTrainingClassGroups, classSelections);
   const incompleteExpertiseGroup = expertiseGroups.find((group) => group?.required && (classSelections?.[group.id] || []).length !== Number(group.count || 0)) || null;
@@ -247,10 +253,18 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
   const classProgress = classGroupProgress(classFeatureGroups, classSelections);
   const classSourceProgress = sourceGroupProgress(classSourceGroups, sourceSelections);
   const pendingBackgroundSkillCount = Math.max(0, backgroundChoiceTarget - backgroundChoiceDone);
-  const availableClassSkillSlots = Math.max(0, sharedChoiceTarget - paidTradeSkills.length);
+  const remainingSharedChoices = Math.max(0, sharedChoiceTarget - sharedChoiceDone);
+  const skillAllocatedCount = allocatedSkillKeys.size + (props.selectedClassSkills || []).length;
+  const skillAllowedCount = skillAllocatedCount + pendingBackgroundSkillCount + remainingSharedChoices;
+  const tradeSkillAllocatedCount = sourceGrantedTradeSkills.size + paidTradeSkills.length;
+  const tradeSourceChoiceTarget = trainingSourceGroups.reduce((total, group) => total + (group.fields || []).reduce((fieldTotal, field) => {
+    const professionField = (field.options || []).some((option) => TRADE_SKILL_KEYS.includes(String(option?.metadata?.professionKey || "")));
+    return professionField ? fieldTotal + Math.max(1, Number(field.count || 1)) : fieldTotal;
+  }, 0), 0);
+  const tradeSkillAllowedCount = tradeSkillAllocatedCount || tradeSourceChoiceTarget;
   const skillsProgress = {
-    done: backgroundSkillCount + (props.selectedClassSkills || []).length,
-    target: backgroundSkillCount + pendingBackgroundSkillCount + availableClassSkillSlots,
+    done: skillAllocatedCount + tradeSkillAllocatedCount,
+    target: skillAllowedCount + tradeSkillAllowedCount,
   };
   const backgroundFeatUnit = controller.selectedBackgroundFeat ? 1 : 0;
   const otherGrantedFeatUnits = new Set(featSourceGroups
