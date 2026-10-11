@@ -64,3 +64,17 @@ The Training feat catalogue treats Fighting Style rows as children rather than o
 The parent source specifically points to the Fighter Fighting Style pool, so class-specific `FS:R` and `FS:P` rows are deliberately not folded into the branch. **Druidic Warrior** remains a Ranger Fighting Style choice and **Blessed Warrior** remains a Paladin Fighting Style choice. Those styles still appear when their corresponding class Fighting Style feature is being resolved.
 
 If the class already granted a generic Fighting Style, Fighting Initiate removes that same style from its child pool so the source rule's “must be different” requirement is enforced before creation. Existing saved drafts that directly selected a Fighting Style remain visible long enough to be replaced instead of being silently invalidated.
+
+
+## Training ratio and Class Choice cleanup — 2026-10-11
+
+The player Training Skills view now uses compact allocation ratios instead of prose counters.
+
+- **Skills** shows `allocated / allowed` beside the section heading.
+- **Trade Skills** uses the same compact ratio treatment.
+- The top **Skills & Trade Skills** tab combines the two displayed groups into one allocation total instead of reporting Skills alone.
+- The old “granted / paid / shared left” header prose is removed. Selection authority is unchanged; the ratio presentation follows the current allocation of the shared class allowance.
+
+Source-backed Class Choice Current Selection also removes duplicate rule presentation. The hero now gives only concise provenance or a prerequisite; the actual option rule appears once in the rules section. Label-only descriptions such as the Magic Item Plan common-item category are suppressed, and the “additional choice follows” helper disappears once the parent option is selected because the dependent choices are already visible in the left catalogue.
+
+The Forge Spells step keeps the same source-owned magic, class spell limits, filters, sortable catalogue, and SpellCard preview, but the top chrome is compressed: the section header, source-owned magic wrapper, selection summary counters, notices, access notes, and search toolbar use less vertical space.
