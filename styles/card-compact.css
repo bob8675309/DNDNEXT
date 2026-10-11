@@ -90,3 +90,91 @@
   border: 1px solid rgba(255,255,255,0.10);
   color: #f7f1e2 !important;
 }
+
+
+/* Merchant/Forge shop presentation. Default ItemCard rendering is unchanged unless
+   variant="shop" is supplied. */
+.sitem-card.is-shop-variant {
+  border-radius: .75rem !important;
+  box-shadow: none !important;
+}
+.sitem-card.is-shop-variant .card-body {
+  padding: .65rem;
+}
+.sitem-card.is-shop-variant .sitem-header {
+  padding: .48rem .65rem;
+}
+.sitem-card.is-shop-variant .sitem-title {
+  font-size: .82rem;
+}
+.sitem-card.is-shop-variant .sitem-type {
+  padding: .18rem .42rem;
+  font-size: .48rem;
+}
+.sitem-card.is-shop-variant .sitem-meta {
+  margin-bottom: .4rem !important;
+  font-size: .55rem;
+}
+.sitem-card.is-shop-variant .sitem-section {
+  padding: .48rem .55rem;
+  color: rgba(255,255,255,.78);
+  font-size: .57rem;
+  line-height: 1.45;
+}
+.sitem-card.is-shop-variant .sitem-thumb {
+  overflow: hidden;
+  border-style: solid !important;
+}
+.sitem-card.is-shop-variant .sitem-thumb > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.sitem-game-details {
+  overflow: hidden;
+  border: 1px solid rgba(168,108,255,.24);
+  border-radius: .55rem;
+  background: rgba(7,10,18,.44);
+}
+.sitem-game-details > summary {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  gap: .5rem;
+  align-items: center;
+  padding: .52rem .62rem;
+  cursor: pointer;
+  list-style: none;
+  color: #ba87ff;
+  background: rgba(126,72,199,.055);
+}
+.sitem-game-details > summary::-webkit-details-marker {
+  display: none;
+}
+.sitem-game-details > summary::after {
+  content: "⌄";
+  grid-column: 2;
+  grid-row: 1 / 3;
+  align-self: center;
+  color: rgba(255,255,255,.72);
+  transition: transform .16s ease;
+}
+.sitem-game-details[open] > summary::after {
+  transform: rotate(180deg);
+}
+.sitem-game-details > summary span {
+  color: #ba87ff;
+  font-size: .61rem;
+  font-weight: 850;
+}
+.sitem-game-details > summary em {
+  grid-column: 1;
+  color: rgba(255,255,255,.42);
+  font-size: .43rem;
+  font-style: normal;
+}
+.sitem-game-details__body {
+  padding: 0 .52rem .52rem;
+}
+.sitem-action {
+  margin-top: .55rem;
+}

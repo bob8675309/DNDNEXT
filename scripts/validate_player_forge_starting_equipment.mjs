@@ -9,6 +9,16 @@ const controller = read("components/useNpcForgeController.js");
 const core = read("components/NpcForgeCoreSupport.js");
 const equipmentStep = read("components/NpcForgeEquipmentStep.js");
 const equipmentDock = read("components/NpcForgeEquipmentSummaryDock.js");
+const merchantHero = read("components/MerchantHero.js");
+const merchantRail = read("components/MerchantRail.js");
+const merchantStockBrowser = read("components/MerchantStockBrowser.js");
+const merchantBackdrop = read("components/MerchantAmbientBackdrop.js");
+const merchantMedia = read("utils/merchantStorefrontMedia.js");
+const itemVisuals = read("utils/itemVisuals.js");
+const itemCard = read("components/ItemCard.js");
+const merchantStyles = read("styles/merchant-storefront.css");
+const equipmentStyles = read("styles/player-forge-equipment-market.css");
+const app = read("pages/_app.js");
 const merchantExpansion = read("sql/20261011_03_starting_market_merchant_expansion.sql");
 const merchantVariety = read("sql/20261011_04_merchant_catalog_reroll_variety.sql");
 const derived = read("components/useNpcForgeDerivedModel.js");
@@ -101,22 +111,30 @@ for (const token of [
 for (const token of [
   "Starting market",
   "DNDNext starting purse",
-  "Campaign merchants",
   "startingMarketBudgetCopper",
   "startingMarketRemainingCopper",
   "marketPurchases",
   'from("characters")',
   'from("character_stock")',
   "ItemCard",
+  "MerchantHero",
+  "MerchantRail",
+  "MerchantStockBrowser",
   "NpcForgeEquipmentSummaryDock",
+  'presentation="rail"',
   "Roll 1d10 Starting Wealth",
   "Starting market needs this Forge draft",
-  "grid-template-columns:minmax(0,1fr)",
+  "storefront_bg_video_url",
+  "storefront_bg_image_url",
 ]) need(equipmentStep, token);
 forbid(equipmentStep, "npc-forge-starting-market__budgetbar", "duplicated in-workspace budget strip");
+forbid(equipmentStep, "buy_from_merchant", "account-wallet merchant checkout inside Forge");
+forbid(equipmentStep, "useWallet", "account wallet hook inside Forge");
 
 for (const token of [
   "createPortal",
+  'presentation = "floating"',
+  'presentation === "rail"',
   "Starting cart",
   "Total gold",
   "Spent",
@@ -128,7 +146,22 @@ for (const token of [
   "startDrag",
   "moveDrag",
   "is-collapsed",
-]) need(equipmentDock, token, "floating Equipment summary dock");
+]) need(equipmentDock, token, "reusable Equipment summary dock");
+
+for (const token of ["MerchantAmbientBackdrop", "merchant-storefront-hero__copy", "Ambient shop scene"]) need(merchantHero, token, "merchant hero");
+for (const token of ["resolveMerchantPortrait", "Campaign merchants", "merchant-rail__merchant"]) need(merchantRail, token, "merchant rail");
+for (const token of ["resolveItemVisual", "merchant-stock-browser__row", "Search items", "Sort", "onAdd"]) need(merchantStockBrowser, token, "merchant stock browser");
+for (const token of ["LOOP_TAIL_SECONDS", "muted", "playsInline", "prefers-reduced-motion"]) {
+  if (token === "prefers-reduced-motion") need(merchantStyles, token, "merchant reduced-motion support");
+  else need(merchantBackdrop, token, "merchant ambient backdrop");
+}
+for (const token of ["storefront_bg_video_url", "storefront_bg_image_url", "portrait_shop_url", "portrait_thumb_url"]) need(merchantMedia, token, "merchant media resolver");
+for (const token of ["resolveItemVisual", "explicitItemImage", "FALLBACKS", "NAME_FALLBACKS"]) need(itemVisuals, token, "item visual fallback resolver");
+for (const token of ['variant = "default"', "detailsCollapsible", "sitem-game-details", "sitem-thumb-fallback", "resolveItemVisual"]) need(itemCard, token, "shared ItemCard shop variant");
+for (const token of [".merchant-storefront-hero", ".merchant-rail", ".merchant-stock-browser", ".sitem-thumb-fallback"]) need(merchantStyles, token, "shared merchant storefront styles");
+for (const token of [".npc-forge-equipment-market-layout", "grid-template-columns: 218px minmax(0,1fr) 340px", ".npc-forge-equipment-market-right", ".npc-forge-equipment-summary-dock"]) need(equipmentStyles, token, "Forge Equipment market layout");
+need(app, 'import "../styles/merchant-storefront.css";', "shared merchant stylesheet import");
+need(app, 'import "../styles/player-forge-equipment-market.css";', "Forge Equipment stylesheet import");
 
 for (const token of [
   "cashOnlyEquipmentOption",
@@ -211,8 +244,8 @@ for (const token of [
   "perform * from public.reroll_merchant_inventory_v2(v.id,v.theme,36)",
 ]) need(merchantVariety, token, "full-catalog diversified merchant reroll");
 
-for (const source of [utility, controller, equipmentStep, equipmentDock, derived, modal, merchantExpansion, merchantVariety]) {
+for (const source of [utility, controller, equipmentStep, equipmentDock, merchantHero, merchantRail, merchantStockBrowser, merchantBackdrop, merchantMedia, itemVisuals, itemCard, merchantStyles, equipmentStyles, derived, modal, merchantExpansion, merchantVariety]) {
   for (const token of ["MapPageClient", "map_routes", "advance_all_characters", "weather"]) forbid(source, token, `protected world boundary ${token}`);
 }
 
-console.log("Player Forge source-backed starting market, staged merchant purchases, character-scoped inventory/currency, higher-level wealth, DM-only magic guide, and protected boundaries validated.");
+console.log("Player Forge starting market authority, shared merchant storefront shell, ItemCard visual fallbacks, staged purchases, character-scoped currency, and protected boundaries validated.");

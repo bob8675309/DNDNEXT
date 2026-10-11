@@ -1,0 +1,481 @@
+/* Character Forge Equipment market composition.
+   Shared storefront visuals live in merchant-storefront.css. */
+
+.unified-player-character-forge .npc-forge-body.npc-forge-step-equipment.is-player-mode {
+  display: block !important;
+  overflow: hidden !important;
+}
+
+.unified-player-character-forge .npc-forge-body.npc-forge-step-equipment.is-player-mode > .npc-forge-workspace {
+  height: 100%;
+  min-height: 0;
+  padding: 8px 10px 10px !important;
+  overflow: hidden !important;
+}
+
+.npc-forge-equipment-market-shell {
+  display: grid;
+  grid-template-rows: auto minmax(0,1fr);
+  gap: 7px;
+  height: 100%;
+  min-height: 0;
+}
+
+.npc-forge-equipment-market-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 30px;
+  padding: 5px 8px;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 7px;
+  color: rgba(255,255,255,.62);
+  background: rgba(255,255,255,.018);
+  font-size: .52rem;
+}
+.npc-forge-equipment-market-status strong {
+  color: #efe5ff;
+  font-size: .56rem;
+}
+.npc-forge-equipment-market-status span:last-child {
+  color: rgba(255,255,255,.46);
+  text-align: right;
+}
+
+.npc-forge-equipment-market-layout {
+  display: grid;
+  grid-template-columns: 218px minmax(0,1fr) 340px;
+  gap: 9px;
+  min-height: 0;
+  height: 100%;
+}
+
+.npc-forge-equipment-market-center {
+  display: grid;
+  grid-template-rows: minmax(250px, .95fr) minmax(285px, 1.05fr);
+  gap: 8px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.npc-forge-equipment-market-browser {
+  min-height: 0;
+  padding: 8px;
+  border: 1px solid rgba(168,108,255,.21);
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(14,18,30,.96), rgba(8,11,18,.98));
+  overflow: hidden;
+}
+
+.npc-forge-equipment-market-right {
+  display: grid;
+  grid-template-rows: minmax(0,1.08fr) minmax(220px,.92fr);
+  gap: 8px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.npc-forge-equipment-selected {
+  display: grid;
+  grid-template-rows: auto minmax(0,1fr);
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid rgba(168,108,255,.32);
+  border-radius: 11px;
+  background: linear-gradient(155deg, rgba(15,18,28,.985), rgba(9,12,20,.99));
+  box-shadow: 0 16px 44px rgba(0,0,0,.28);
+}
+.npc-forge-equipment-selected__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 43px;
+  padding: 7px 9px 7px 11px;
+  border-bottom: 1px solid rgba(255,255,255,.085);
+  background: linear-gradient(90deg, rgba(126,72,199,.10), rgba(88,214,199,.025));
+}
+.npc-forge-equipment-selected__head h3 {
+  margin: 0;
+  color: #fff;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: .95rem;
+}
+.npc-forge-equipment-selected__head span {
+  color: rgba(255,255,255,.42);
+  font-size: .48rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.npc-forge-equipment-selected__body {
+  min-height: 0;
+  overflow: auto;
+  padding: 8px;
+}
+.npc-forge-equipment-selected__empty {
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+  color: rgba(255,255,255,.5);
+  font-size: .58rem;
+  text-align: center;
+}
+.npc-forge-equipment-selected .sitem-card {
+  margin-bottom: 0 !important;
+}
+.npc-forge-equipment-selected .sitem-action {
+  position: sticky;
+  bottom: 0;
+  padding-top: 8px;
+  background: linear-gradient(180deg, rgba(23,16,33,0), #171021 32%);
+}
+.npc-forge-equipment-selected .sitem-action > button {
+  width: 100%;
+  min-height: 34px;
+  border: 1px solid rgba(127,76,255,.9);
+  border-radius: 7px;
+  color: #fff;
+  background: linear-gradient(180deg, #7243ff, #5522e5);
+  font-size: .6rem;
+  font-weight: 850;
+}
+.npc-forge-equipment-selected .sitem-action > button:disabled {
+  cursor: not-allowed;
+  opacity: .46;
+}
+
+.npc-forge-equipment-market-roll {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto auto;
+  gap: 9px;
+  align-items: center;
+  padding: 7px 9px;
+  border: 1px solid rgba(88,214,199,.22);
+  border-radius: 7px;
+  color: rgba(255,255,255,.68);
+  background: rgba(88,214,199,.045);
+  font-size: .52rem;
+}
+.npc-forge-equipment-market-roll p {
+  margin: 0;
+}
+.npc-forge-equipment-market-roll button {
+  padding: 4px 8px;
+  border: 1px solid rgba(88,214,199,.45);
+  border-radius: 6px;
+  color: #c9fff7;
+  background: rgba(42,136,124,.12);
+  font-size: .51rem;
+}
+.npc-forge-equipment-market-roll strong {
+  color: #fff0be;
+  font-size: .53rem;
+}
+
+.npc-forge-equipment-market-prereq {
+  margin: 8px;
+  padding: 14px;
+  border: 1px solid rgba(239,199,100,.24);
+  border-radius: 10px;
+  color: rgba(255,255,255,.72);
+  background: rgba(239,199,100,.055);
+  font-size: .68rem;
+  line-height: 1.5;
+}
+.npc-forge-equipment-market-prereq strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #ffe6a8;
+  font-size: .8rem;
+}
+
+@media (max-width: 1320px) {
+  .npc-forge-equipment-market-layout {
+    grid-template-columns: 190px minmax(0,1fr) 310px;
+  }
+  .npc-forge-equipment-market-center {
+    grid-template-rows: minmax(230px,.9fr) minmax(280px,1.1fr);
+  }
+}
+
+@media (max-width: 1080px) {
+  .unified-player-character-forge .npc-forge-body.npc-forge-step-equipment.is-player-mode {
+    overflow: auto !important;
+  }
+  .unified-player-character-forge .npc-forge-body.npc-forge-step-equipment.is-player-mode > .npc-forge-workspace {
+    overflow: visible !important;
+  }
+  .npc-forge-equipment-market-shell {
+    height: auto;
+  }
+  .npc-forge-equipment-market-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .npc-forge-equipment-market-layout > .merchant-rail {
+    order: 1;
+  }
+  .npc-forge-equipment-market-center {
+    order: 2;
+    grid-template-rows: auto auto;
+  }
+  .npc-forge-equipment-market-right {
+    order: 3;
+    grid-template-columns: minmax(0,1.15fr) minmax(300px,.85fr);
+    grid-template-rows: auto;
+  }
+  .merchant-rail__list {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+  }
+  .merchant-rail__merchant {
+    flex: 0 0 190px;
+    margin: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .npc-forge-equipment-market-status {
+    display: grid;
+  }
+  .npc-forge-equipment-market-status span:last-child {
+    text-align: left;
+  }
+  .npc-forge-equipment-market-right {
+    grid-template-columns: 1fr;
+  }
+  .npc-forge-equipment-market-roll {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Starting Cart panel. Rail mode is the approved Forge layout; floating mode is retained
+   for reuse and legacy/debug contexts. */
+.npc-forge-equipment-summary-dock {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-rows: auto minmax(0,1fr);
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid rgba(168,108,255,.34);
+  border-radius: 11px;
+  color: #fff;
+  background: linear-gradient(155deg, rgba(15,18,28,.985), rgba(9,12,20,.99));
+  box-shadow: 0 16px 44px rgba(0,0,0,.28), inset 0 0 0 1px rgba(255,255,255,.02);
+}
+body > .npc-forge-equipment-summary-dock.is-floating {
+  position: fixed;
+  z-index: 5400;
+  max-height: min(70vh,720px);
+}
+.npc-forge-equipment-summary-dock.is-rail {
+  height: 100%;
+}
+.npc-forge-equipment-summary-dock.is-dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+.npc-forge-equipment-summary-dock__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9px;
+  min-height: 43px;
+  padding: 7px 9px 7px 11px;
+  border-bottom: 1px solid rgba(255,255,255,.085);
+  background: linear-gradient(90deg, rgba(126,72,199,.10), rgba(88,214,199,.025));
+}
+.npc-forge-equipment-summary-dock.is-floating .npc-forge-equipment-summary-dock__head {
+  cursor: grab;
+  touch-action: none;
+}
+.npc-forge-equipment-summary-dock.is-collapsed .npc-forge-equipment-summary-dock__head {
+  border-bottom: 0;
+}
+.npc-forge-equipment-summary-dock__head > div:first-child {
+  display: grid;
+  gap: 1px;
+}
+.npc-forge-equipment-summary-dock__head span {
+  color: rgba(255,255,255,.48);
+  font-size: .48rem;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.npc-forge-equipment-summary-dock__head strong {
+  color: #fff;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: .8rem;
+}
+.npc-forge-equipment-summary-dock__head-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.npc-forge-equipment-summary-dock__head-actions em {
+  padding: 3px 6px;
+  border-radius: 999px;
+  color: #aefbef;
+  background: rgba(88,214,199,.08);
+  font-size: .48rem;
+  font-style: normal;
+  font-weight: 850;
+}
+.npc-forge-equipment-summary-dock__head-actions button {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 6px;
+  color: #fff;
+  background: rgba(255,255,255,.025);
+  font-weight: 900;
+}
+.npc-forge-equipment-summary-dock__body {
+  display: grid;
+  grid-template-rows: auto minmax(0,1fr) auto;
+  gap: 7px;
+  min-height: 0;
+  overflow: hidden;
+  padding: 8px;
+}
+.npc-forge-equipment-summary-dock__totals {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 5px;
+}
+.npc-forge-equipment-summary-dock__totals > div {
+  display: grid;
+  gap: 1px;
+  padding: 6px 7px;
+  border: 1px solid rgba(168,108,255,.17);
+  border-radius: 7px;
+  background: rgba(126,72,199,.04);
+}
+.npc-forge-equipment-summary-dock__totals > div.is-remaining {
+  border-color: rgba(88,214,199,.32);
+  background: rgba(88,214,199,.055);
+}
+.npc-forge-equipment-summary-dock__totals span {
+  color: rgba(255,255,255,.42);
+  font-size: .42rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+.npc-forge-equipment-summary-dock__totals strong {
+  color: #fff;
+  font-size: .6rem;
+}
+.npc-forge-equipment-summary-dock__totals .is-remaining strong {
+  color: #aefbef;
+}
+.npc-forge-equipment-summary-dock__cart {
+  min-height: 0;
+}
+.npc-forge-starting-cart__items {
+  display: grid;
+  gap: 0;
+  max-height: 100%;
+  overflow: auto;
+  border-top: 1px solid rgba(255,255,255,.06);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.npc-forge-starting-cart__items > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+  padding: 6px 2px;
+  border-top: 1px solid rgba(255,255,255,.05);
+}
+.npc-forge-starting-cart__items > div:first-child {
+  border-top: 0;
+}
+.npc-forge-starting-cart__items > div > span {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+.npc-forge-starting-cart__items strong {
+  overflow: hidden;
+  color: #fff;
+  font-size: .54rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.npc-forge-starting-cart__items small {
+  color: rgba(255,255,255,.46);
+  font-size: .43rem;
+}
+.npc-forge-starting-cart__items button {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(255,115,95,.3);
+  border-radius: 6px;
+  color: #ffd1c9;
+  background: rgba(255,115,95,.055);
+}
+.npc-forge-starting-cart__items p {
+  margin: 8px 2px;
+  color: rgba(255,255,255,.5);
+  font-size: .5rem;
+}
+.npc-forge-equipment-summary-dock__rules {
+  padding: 6px 7px;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 7px;
+  background: rgba(255,255,255,.018);
+}
+.npc-forge-equipment-summary-dock__rules > summary {
+  cursor: pointer;
+  color: rgba(255,255,255,.62);
+  font-size: .49rem;
+  font-weight: 850;
+}
+.npc-forge-equipment-summary {
+  display: grid;
+  gap: 5px;
+  margin: 7px 0 2px;
+}
+.npc-forge-equipment-summary > div {
+  display: grid;
+  grid-template-columns: 102px minmax(0,1fr);
+  gap: 6px;
+}
+.npc-forge-equipment-summary dt {
+  color: rgba(255,255,255,.4);
+  font-size: .44rem;
+  text-transform: uppercase;
+}
+.npc-forge-equipment-summary dd {
+  margin: 0;
+  color: #fff;
+  font-size: .51rem;
+}
+.npc-forge-equipment-note {
+  margin: 7px 0 0;
+  color: rgba(255,255,255,.5);
+  font-size: .47rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 1080px) {
+  .npc-forge-equipment-summary-dock.is-rail {
+    height: auto;
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 620px) {
+  .npc-forge-equipment-summary-dock__totals {
+    grid-template-columns: 1fr;
+  }
+}

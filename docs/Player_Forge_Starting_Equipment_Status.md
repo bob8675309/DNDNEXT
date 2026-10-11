@@ -4,6 +4,25 @@ Status date: 2026-10-11
 Active follow-up: PR #208 (`agent/forge-ux-equipment-homebrew-20261011`)  
 Current authority: migrations 49-51 plus `20261010_01_player_forge_starting_market.sql` and `20261011_02_player_forge_homebrew_starting_budget.sql`
 
+## 2026-10-11 storefront UI implementation batch
+
+Active implementation branch: `agent/forge-equipment-storefront-ui-20261011`.
+
+This batch deliberately reuses the existing merchant and item authorities rather than creating a second shop system.
+
+- `NpcForgeEquipmentStep` remains the owner of Forge-only staged `marketPurchases[]`; it still reads enabled merchants from `public.characters` and live shelves from `public.character_stock`.
+- The approved Equipment composition is now split into reusable presentation pieces: `MerchantRail`, `MerchantHero`, `MerchantAmbientBackdrop`, and `MerchantStockBrowser`.
+- The Forge layout is a three-column storefront on desktop: Campaign Merchants on the left, a large merchant/workshop hero plus searchable stock browser in the center, and Selected Item + Starting Cart on the right.
+- Merchant media resolution now understands `storefront_bg_video_url`, `storefront_bg_image_url`, `storefront_bg_url`, shop portraits, normal portraits, and legacy background fields.
+- Ambient storefront video is muted, inline, tail-looped, and disabled by `prefers-reduced-motion`; a still image remains the fallback/poster.
+- The existing shared `ItemCard` remains the item-detail renderer. It gained an opt-in `shop` presentation and collapsible **Game Details** without changing default Inventory/Admin/NPC rendering.
+- Missing item art no longer has to render as an accidental generic placeholder. `utils/itemVisuals.js` resolves explicit item art first, then supplies category/name-aware fallback icon treatments until individual item art is created.
+- Compact stock rows use the same visual resolver, item terminology, and source payloads as ItemCard, while remaining dense enough for merchant browsing.
+- `NpcForgeEquipmentSummaryDock` keeps its existing floating mode for reuse, but the Forge passes `presentation="rail"` so Total Gold / Spent / Remaining / cart / source-purse information occupies the lower-right panel from the approved mockup.
+- Normal wallet purchasing remains owned by `MerchantPanel`; Character Forge does **not** import `useWallet` or call `buy_from_merchant`.
+
+This is a presentation refactor only. Final starting-market checkout, stock locking, price revalidation, character-scoped inventory/currency, homebrew/vanilla ruleset handling, and all protected world/town/combat/crafting boundaries remain unchanged.
+
 ## 2026-10-11 Equipment browser-review follow-up
 
 The Equipment workspace now uses the full Forge width on desktop. Budget, spent, remaining currency, source-purse provenance, higher-level magic guidance, and cart contents live in a draggable/collapsible **Starting cart** dock modeled on the Class feature window instead of reserving a permanent right-hand column. The old in-workspace Ruleset / Budget / Spent / Remaining strip and separate vanilla-reference disclosure are no longer the primary presentation.

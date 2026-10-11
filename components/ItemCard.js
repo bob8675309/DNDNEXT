@@ -1,6 +1,7 @@
 //    components/ItemCard.js
 import React, { useEffect, useState } from "react";
 import { classifyUi, titleCase } from "../utils/itemsIndex";
+import { resolveItemVisual } from "../utils/itemVisuals";
 import { loadFlavorIndex } from "../utils/flavorIndex";
 
 /* ---------- helpers ---------- */
@@ -184,12 +185,18 @@ function potionDetailsForItem(item = {}, type = "", ruleText = "", entriesText =
 }
 
 /* ---------- component ---------- */
-export default function ItemCard({ item = {} }) {
+export default function ItemCard({
+  item = {},
+  variant = "default",
+  detailsCollapsible = false,
+  action = null,
+}) {
   const mergedItem = {
     ...(item.card_payload && typeof item.card_payload === "object" ? item.card_payload : {}),
     ...item,
   };
   const { uiType, uiSubKind } = classifyUi(mergedItem);
+  const visual = resolveItemVisual(mergedItem);
 
   const [flavorIndex, setFlavorIndex] = useState(null);
   useEffect(() => {
@@ -204,28 +211,25 @@ export default function ItemCard({ item = {} }) {
       : null;
 
   const entriesText = flattenEntries(mergedItem.entries);
-
   const overrideFlavor = (flavorIndex && flavorIndex.get(mergedItem.item_name || mergedItem.name)) || null;
   const flavorText = mergedItem.flavor || overrideFlavor || entriesText || "";
-
   const rawRuleText = coalesce(mergedItem.item_description, mergedItem.rulesText, mergedItem.rules, "");
   const hasItemDescription = !!rawRuleText;
   const potionDetails = potionDetailsForItem(mergedItem, uiType || mergedItem.type || mergedItem.item_type, rawRuleText, entriesText);
 
   const gp = parseValueToGp(coalesce(mergedItem.item_cost, mergedItem.cost, mergedItem.value));
   const weight = coalesce(mergedItem.item_weight, mergedItem.weight, mergedItem?.card_payload?.weight, null);
-
   const rawProps = coalesce(mergedItem.property, mergedItem.properties, mergedItem?.card_payload?.properties, []);
-  const dmgText  = buildDamageText(mergedItem);
-  const rngText  = buildRangeText(mergedItem, Array.isArray(rawProps) ? rawProps.map(stripTag) : []);
+  const dmgText = buildDamageText(mergedItem);
+  const rngText = buildRangeText(mergedItem, Array.isArray(rawProps) ? rawProps.map(stripTag) : []);
   const propsTxt = buildPropsText(mergedItem);
-  const acText   = buildACText(mergedItem);
-
+  const acText = buildACText(mergedItem);
   const rarityRaw = coalesce(mergedItem.item_rarity, mergedItem.rarity, mergedItem?.card_payload?.rarity);
   const rarity = humanRarity(rarityRaw);
 
   const norm = {
-    image: mergedItem.image_url || mergedItem.img || mergedItem.image || "/placeholder.png",
+    image: visual.imageUrl,
+    visual,
     name: mergedItem.item_name || mergedItem.name || "Unnamed Item",
     type: uiType || typeFromBuilderCategory(mergedItem.category) || titleCase(stripTag(mergedItem.type || mergedItem.item_type || "Item")),
     typeHint: uiType === "Wondrous Item" ? uiSubKind : null,
@@ -244,8 +248,66 @@ export default function ItemCard({ item = {} }) {
   const rarityClass = `rarity-${(norm.rarity || "Common").toLowerCase().replace(/\s+/g, "-")}`;
   const showRange = norm.rng && norm.rng !== "—";
 
+  const detailContent = <>
+    {potionDetails ? (
+      <div className="sitem-section sitem-rules mt-2">
+        <div className="small text-muted mb-1 text-uppercase fw-semibold">Potion Details</div>
+        <div className="row g-2">
+          <div className="col-12 col-md-6"><strong>Use:</strong> {potionDetails.use}</div>
+          <div className="col-12 col-md-6"><strong>Duration:</strong> {potionDetails.duration}</div>
+          <div className="col-12"><strong>Effect:</strong> {potionDetails.effect}</div>
+        </div>
+      </div>
+    ) : null}
+
+    <div
+      className="sitem-section sitem-rules mt-2"
+      style={{ whiteSpace: hasItemDescription ? "pre-line" : (pureStringBullets ? "normal" : "pre-line") }}
+    >
+      {hasItemDescription ? (
+        rawRuleText
+      ) : pureStringBullets ? (
+        <ul className="mb-0">
+          {pureStringBullets.map((ln, i) => <li key={i}>{ln}</li>)}
+        </ul>
+      ) : (
+        "—"
+      )}
+    </div>
+
+    <div className="row g-2 mt-2">
+      <div className="col-12 col-md-6">
+        <div className="sitem-section">
+          <div className="small text-muted mb-1">Damage</div>
+          <div className="text-wrap">{norm.dmg}</div>
+        </div>
+      </div>
+      <div className="col-12 col-md-6">
+        <div className="sitem-section">
+          <div className="small text-muted mb-1">Range / AC</div>
+          <div className="text-wrap">{showRange ? norm.rng : norm.ac}</div>
+        </div>
+      </div>
+      <div className="col-12">
+        <div className="sitem-section">
+          <div className="small text-muted mb-1">Properties</div>
+          <div className="text-wrap">{norm.props}</div>
+        </div>
+      </div>
+    </div>
+
+    <div className="d-flex justify-content-between align-items-center mt-2">
+      <div className="d-flex gap-2 flex-wrap">
+        <span className="badge text-bg-dark">{norm.cost != null ? `${norm.cost} gp` : "— gp"}</span>
+        <span className="badge text-bg-dark">{norm.weight != null ? `${norm.weight} lbs` : "— lbs"}</span>
+        <span className="badge text-bg-dark">{norm.type}{norm.typeHint ? ` • ${norm.typeHint}` : ""}</span>
+        {norm.source && <span className="badge text-bg-secondary">{norm.source}</span>}
+      </div>
+    </div>
+  </>;
+
   return (
-    <div className="card sitem-card mb-4">
+    <div className={`card sitem-card mb-4 ${variant === "shop" ? "is-shop-variant" : ""}`}>
       <div className={`card-header sitem-header d-flex align-items-center justify-content-between ${rarityClass}`}>
         <div className="sitem-title fw-semibold">{norm.name}</div>
         <div className="sitem-type small text-uppercase">
@@ -266,73 +328,23 @@ export default function ItemCard({ item = {} }) {
             </div>
           </div>
           <div className="col-4">
-            <div className="sitem-thumb ratio ratio-1x1">
-              <img
+            <div className={`sitem-thumb ratio ratio-1x1 ${!norm.visual.hasImage ? `sitem-thumb-fallback ${norm.visual.className}` : ""}`}>
+              {norm.visual.hasImage ? <img
                 src={norm.image}
                 alt={norm.name}
                 className="img-fluid object-fit-cover rounded"
                 loading="lazy"
-              />
+              /> : <span className="sitem-thumb-fallback__icon" title={norm.visual.label} aria-label={norm.visual.label}>{norm.visual.icon}</span>}
             </div>
           </div>
         </div>
 
-        {potionDetails ? (
-          <div className="sitem-section sitem-rules mt-2">
-            <div className="small text-muted mb-1 text-uppercase fw-semibold">Potion Details</div>
-            <div className="row g-2">
-              <div className="col-12 col-md-6"><strong>Use:</strong> {potionDetails.use}</div>
-              <div className="col-12 col-md-6"><strong>Duration:</strong> {potionDetails.duration}</div>
-              <div className="col-12"><strong>Effect:</strong> {potionDetails.effect}</div>
-            </div>
-          </div>
-        ) : null}
+        {detailsCollapsible ? <details className="sitem-game-details mt-2">
+          <summary><span>Game Details</span><em>Rules, stats &amp; source</em></summary>
+          <div className="sitem-game-details__body">{detailContent}</div>
+        </details> : detailContent}
 
-        <div
-          className="sitem-section sitem-rules mt-2"
-          style={{ whiteSpace: hasItemDescription ? "pre-line" : (pureStringBullets ? "normal" : "pre-line") }}
-        >
-          {hasItemDescription ? (
-            rawRuleText
-          ) : pureStringBullets ? (
-            <ul className="mb-0">
-              {pureStringBullets.map((ln, i) => <li key={i}>{ln}</li>)}
-            </ul>
-          ) : (
-            "—"
-          )}
-        </div>
-
-        <div className="row g-2 mt-2">
-          <div className="col-12 col-md-6">
-            <div className="sitem-section">
-              <div className="small text-muted mb-1">Damage</div>
-              <div className="text-wrap">{norm.dmg}</div>
-            </div>
-          </div>
-          <div className="col-12 col-md-6">
-            <div className="sitem-section">
-              <div className="small text-muted mb-1">Range / AC</div>
-              <div className="text-wrap">{showRange ? norm.rng : norm.ac}</div>
-            </div>
-          </div>
-
-          <div className="col-12">
-            <div className="sitem-section">
-              <div className="small text-muted mb-1">Properties</div>
-              <div className="text-wrap">{norm.props}</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="d-flex justify-content-between align-items-center mt-2">
-          <div className="d-flex gap-2 flex-wrap">
-            <span className="badge text-bg-dark">{norm.cost != null ? `${norm.cost} gp` : "— gp"}</span>
-            <span className="badge text-bg-dark">{norm.weight != null ? `${norm.weight} lbs` : "— lbs"}</span>
-            <span className="badge text-bg-dark">{norm.type}{norm.typeHint ? ` • ${norm.typeHint}` : ""}</span>
-            {norm.source && <span className="badge text-bg-secondary">{norm.source}</span>}
-          </div>
-        </div>
+        {action ? <div className="sitem-action">{action}</div> : null}
       </div>
     </div>
   );
