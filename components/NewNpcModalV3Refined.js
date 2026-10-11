@@ -48,6 +48,7 @@ export default function NewNpcModalV3Refined({ show, onClose, onCreated, locatio
   const catalogLoadSeenRef = useRef(false);
   const modalRef = useRef(null);
   const lastHeaderTapRef = useRef({ time: 0, x: 0, y: 0 });
+  const debugStepAppliedRef = useRef(false);
 
   function restoreForgeGeometry(event = null) {
     if (!playerMode || creating || isInteractiveHeaderTarget(event?.target)) return;
@@ -92,6 +93,27 @@ export default function NewNpcModalV3Refined({ show, onClose, onCreated, locatio
       if (secondFrame) window.cancelAnimationFrame(secondFrame);
     };
   }, [show]);
+
+  useEffect(() => {
+    if (!show || !playerMode || loadingCatalogs || typeof window === "undefined") {
+      if (!show) debugStepAppliedRef.current = false;
+      return;
+    }
+    if (debugStepAppliedRef.current) return;
+    const requested = String(new URLSearchParams(window.location.search).get("forgeStep") || "").trim();
+    if (!requested) return;
+    const normalized = requested.toLowerCase();
+    let targetStep = STEP_LABELS.findIndex((label) => String(label).trim().toLowerCase() === normalized);
+    if (targetStep < 0 && /^\d+$/.test(requested)) {
+      const oneBased = Number(requested);
+      if (oneBased >= 1 && oneBased <= STEP_LABELS.length) targetStep = oneBased - 1;
+    }
+    if (targetStep < 0) return;
+    debugStepAppliedRef.current = true;
+    setStep(targetStep);
+    setDetail?.(null);
+    setError?.("");
+  }, [show, playerMode, loadingCatalogs, STEP_LABELS, setStep, setDetail, setError]);
 
   useEffect(() => {
     if (!show || typeof document === "undefined") return undefined;
