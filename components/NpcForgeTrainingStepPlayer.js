@@ -246,6 +246,26 @@ export default function NpcForgeTrainingStepPlayer({
     String(feat.id || feat.option_key || `${feat.name}|${feat.source || ""}`),
     evaluateFeatPrerequisites(feat, featPrerequisiteState, forgeLevel),
   ])), [bonusFeatCatalogueOptions, featPrerequisiteState, forgeLevel]);
+  const grantedCatalogueFeats = useMemo(() => {
+    const granted = [];
+    const seen = new Set();
+    const addGrant = (feat, featInstanceId) => {
+      if (!feat?.name) return;
+      const identity = `${String(feat.id || feat.option_key || "")}|${normalized(feat.name)}|${String(feat.source || "").toLowerCase()}`;
+      if (seen.has(identity)) return;
+      seen.add(identity);
+      granted.push({ feat, featInstanceId });
+    };
+    for (const summary of featGrantSummaries) {
+      if (String(summary?.instanceId || "") === "species-bonus-feat") continue;
+      const feat = featOptions.find((option) => summary?.optionId && String(option.id || "") === String(summary.optionId))
+        || featOptions.find((option) => normalized(option.name) === normalized(summary?.name) && (!summary?.source || String(option.source || "") === String(summary.source)))
+        || featOptions.find((option) => normalized(option.name) === normalized(summary?.name));
+      addGrant(feat, summary?.instanceId || "source-granted-feat");
+    }
+    addGrant(controller.selectedBackgroundFeat, "background-feat");
+    return granted;
+  }, [controller.selectedBackgroundFeat, featGrantSummaries, featOptions]);
   const fightingInitiateFeat = useMemo(() => bonusFeatCatalogueOptions.find((feat) => normalized(feat?.name) === "fighting initiate") || null, [bonusFeatCatalogueOptions]);
   const knownClassFightingStyleNames = useMemo(() => new Set((classChoiceState.featureGroups || [])
     .filter((group) => group.kind === "fighting-style")
@@ -727,7 +747,7 @@ export default function NpcForgeTrainingStepPlayer({
         <summary><span><img src={`${TRAINING_ASSET_ROOT}/summary-feat.svg`} alt="" aria-hidden="true" /><b>Feat &amp; Class Choices</b></span><em>{featChoiceTarget ? `${featChoiceDone}/${featChoiceTarget}` : "None"}</em></summary>
         <div className="npc-forge-training-choice-body">
           <div className="npc-forge-training-feat-only">
-            {bonusFeatRequired ? <NpcForgeTrainingFeatPicker options={bonusFeatCatalogueOptions} selectedId={speciesBonus.featId || ""} grantedFeats={controller.selectedBackgroundFeat ? [{ feat: controller.selectedBackgroundFeat, featInstanceId: "background-feat" }] : []} eligibilityByFeat={featEligibilityById} branchesByFeat={fightingInitiateBranches} onSelectBranchOption={selectFightingInitiateStyle} onDetail={(next) => onDetail?.({ ...next, selectionKind: next.selectionKind || "species-bonus-feat", featInstanceId: next.featInstanceId || "species-bonus-feat" })} label="Bonus Feat" /> : null}
+            {bonusFeatRequired ? <NpcForgeTrainingFeatPicker options={bonusFeatCatalogueOptions} selectedId={speciesBonus.featId || ""} grantedFeats={grantedCatalogueFeats} eligibilityByFeat={featEligibilityById} branchesByFeat={fightingInitiateBranches} onSelectBranchOption={selectFightingInitiateStyle} onDetail={(next) => onDetail?.({ ...next, selectionKind: next.selectionKind || "species-bonus-feat", featInstanceId: next.featInstanceId || "species-bonus-feat" })} label="Bonus Feat" /> : null}
             {visibleFeatDecisionGroups.length ? <section className="npc-forge-training-feat-followups" aria-label="Feat follow-up choices"><header><span>Feat follow-ups</span><small>Click a feat here to keep its rules in Current Selection while you finish any owned choices.</small></header><div>{visibleFeatDecisionGroups.map(({ group, trainingGroup, spellGroup }) => {
               const trainingComplete = !trainingGroup || sourceChoiceGroupComplete(trainingGroup, sourceChoiceState.selections || {});
               const spellComplete = !spellGroup || sourceChoiceGroupComplete(spellGroup, sourceChoiceState.selections || {});
