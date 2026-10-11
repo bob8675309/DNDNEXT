@@ -2,6 +2,7 @@ import fs from "node:fs";
 
 const source = fs.readFileSync("sql/20260808_50_player_forge_starting_equipment_guard.sql", "utf8");
 const market = fs.readFileSync("sql/20261010_01_player_forge_starting_market.sql", "utf8");
+const homebrew = fs.readFileSync("sql/20261011_02_player_forge_homebrew_starting_budget.sql", "utf8");
 const need = (token) => { if (!source.includes(token)) throw new Error(`Missing starting-equipment guard contract: ${token}`); };
 const forbid = (token) => { if (source.includes(token)) throw new Error(`Forbidden starting-equipment guard crossover: ${token}`); };
 
@@ -34,6 +35,10 @@ for (const token of [
 for (const token of ["player_wallets", "MapPageClient", "map_routes", "advance_all_characters", "weather"]) {
   forbid(token);
   if (market.includes(token)) throw new Error(`Forbidden starting-market guard crossover: ${token}`);
+  if (homebrew.includes(token)) throw new Error(`Forbidden homebrew starting-budget guard crossover: ${token}`);
+}
+for (const token of ["v_ruleset", "dndnext-homebrew", "Unknown Player Forge starting-equipment ruleset."]) {
+  if (!homebrew.includes(token)) throw new Error(`Missing homebrew starting-budget guard contract: ${token}`);
 }
 
 console.log("Player Forge starting-equipment Background binding, starting-market shape/wealth guards, RLS, currency existence, and protected boundaries validated.");
