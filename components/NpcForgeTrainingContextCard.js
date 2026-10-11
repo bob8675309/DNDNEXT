@@ -303,6 +303,7 @@ function FeatRuleList({ feat = {}, matchingGroups = [], abilityChoices = [], sel
 
 function ContextDescription({ value = "" }) {
   const description = String(value || "").trim();
+  if (!description) return null;
   const prerequisite = description.match(/^Prerequisite:\s*(.+)$/i);
   return <p className={prerequisite ? "is-prerequisite" : ""}>{prerequisite ? <><strong>Prerequisite:</strong> <span>{prerequisite[1]}</span></> : description}</p>;
 }
@@ -438,9 +439,7 @@ export default function NpcForgeTrainingContextCard({ detail = null, selectedSki
     const optionDescription = String(option.description || "").trim();
     const descriptionMatchesLabel = [optionTitle, field.label, group.label].filter(Boolean).some((value) => normalized(value) === normalized(optionDescription));
     const showRuleCopy = Boolean(optionDescription && !descriptionMatchesLabel);
-    const className = selectedClass?.class_name || selectedClass?.name || "your class";
-    const grantedBy = group.sourceFeature ? `${className} — ${group.sourceFeature}` : group.label || className;
-    const contextDescription = prerequisite ? `Prerequisite: ${prerequisite}` : `Granted by ${grantedBy}.`;
+    const contextDescription = prerequisite ? `Prerequisite: ${prerequisite}` : "";
 
     return <ContextShell
       icon={`${TRAINING_ASSET_ROOT}/summary-training.svg`}
@@ -455,7 +454,7 @@ export default function NpcForgeTrainingContextCard({ detail = null, selectedSki
     >
       <section className="npc-forge-training-context-section">
         {(showRuleCopy || playerRules.length) ? <>
-          <h4>{group.label || "Rules"}</h4>
+          <h4>Rules</h4>
           <div className="npc-forge-training-class-option-copy">
             {showRuleCopy ? <ClassChoiceRuleCopy value={optionDescription} /> : null}
             {playerRules.length ? <details className="npc-forge-training-option-rules"><summary>Rules and limits</summary><ul>{playerRules.map((rule) => <li key={rule}>{rule}</li>)}</ul></details> : null}
