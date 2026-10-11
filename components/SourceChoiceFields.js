@@ -215,14 +215,15 @@ function prefersRichField(field = {}) {
 }
 
 function CompactSourceChoiceGroup({ group, complete, body, autoCollapseComplete = false }) {
-  if (!autoCollapseComplete) return <details className={`npc-forge-source-choice-group is-compact-group ${complete ? "is-complete" : "is-required"}`} defaultOpen={!complete}><summary><span><strong>{group.label}</strong><small>{group.helper || "Source-owned character choice"}</small></span><em>{complete ? "Complete" : "Required"}</em></summary><div className="npc-forge-source-choice-group__body">{body}</div></details>;
   const [open, setOpen] = useState(!complete);
   const previousComplete = useRef(complete);
   useEffect(() => {
+    if (!autoCollapseComplete) return;
     if (!previousComplete.current && complete) setOpen(false);
     if (previousComplete.current && !complete) setOpen(true);
     previousComplete.current = complete;
-  }, [complete]);
+  }, [autoCollapseComplete, complete]);
+  if (!autoCollapseComplete) return <details className={`npc-forge-source-choice-group is-compact-group ${complete ? "is-complete" : "is-required"}`} defaultOpen={!complete}><summary><span><strong>{group.label}</strong><small>{group.helper || "Source-owned character choice"}</small></span><em>{complete ? "Complete" : "Required"}</em></summary><div className="npc-forge-source-choice-group__body">{body}</div></details>;
   return <details className={`npc-forge-source-choice-group is-compact-group ${complete ? "is-complete" : "is-required"}`} open={open} onToggle={(event) => setOpen(event.currentTarget.open)}><summary><span><strong>{group.label}</strong><small>{group.helper || "Source-owned character choice"}</small></span><em>{complete ? "Complete" : "Required"}</em></summary><div className="npc-forge-source-choice-group__body">{body}</div></details>;
 }
 
