@@ -76,6 +76,84 @@ const PROFESSION_ICON = Object.freeze({
   enchanting: `${TRAINING_ASSET_ROOT}/profession-enchanting.svg`,
 });
 
+const FEAT_CATEGORY_LABELS = Object.freeze({
+  O: "Origin",
+  G: "General",
+  FS: "Fighting Style",
+  "FS:P": "Paladin Fighting Style",
+  "FS:R": "Ranger Fighting Style",
+  D: "Dragonmark",
+  DG: "Dark Gift",
+});
+
+const FEAT_ABILITY_LABELS = Object.freeze({
+  str: "Strength",
+  dex: "Dexterity",
+  con: "Constitution",
+  int: "Intelligence",
+  wis: "Wisdom",
+  cha: "Charisma",
+});
+
+function featCategoryLabel(value = "") {
+  const key = String(value || "").trim();
+  return FEAT_CATEGORY_LABELS[key] || key || "Feat";
+}
+
+function playerFacingAbilityList(keys = []) {
+  const labels = [...new Set((Array.isArray(keys) ? keys : []).map((key) => FEAT_ABILITY_LABELS[String(key || "").toLowerCase()]).filter(Boolean))];
+  if (!labels.length) return "";
+  if (labels.length === 1) return labels[0];
+  if (labels.length === 2) return `${labels[0]} or ${labels[1]}`;
+  return `${labels.slice(0, -1).join(", ")}, or ${labels.at(-1)}`;
+}
+
+function featAbilityBonusPresentation(feat = {}) {
+  if (normalized(feat?.name) === "ability score improvement") return null;
+  const raw = feat?.metadata?.ability ?? feat?.raw_payload?.ability ?? feat?.rawPayload?.ability ?? [];
+  const entries = Array.isArray(raw) ? raw.filter((entry) => entry && typeof entry === "object" && !entry.hidden) : [];
+  if (entries.length !== 1) return null;
+
+  const entry = entries[0];
+  const choose = entry.choose && typeof entry.choose === "object" ? entry.choose : null;
+  if (choose) {
+    const options = Array.isArray(choose.from) ? choose.from.map((key) => String(key || "").toLowerCase()).filter((key) => FEAT_ABILITY_LABELS[key]) : [];
+    if (!options.length) return null;
+    const amount = Math.max(1, Number(choose.amount || entry.amount || 1));
+    const count = Math.max(1, Number(choose.count || 1));
+    if (count > 1) {
+      const allAbilities = options.length === Object.keys(FEAT_ABILITY_LABELS).length;
+      return {
+        amount,
+        options,
+        body: allAbilities
+          ? `This feat grants a +${amount} bonus to ${count} different ability scores of your choice.`
+          : `This feat grants a +${amount} bonus to ${count} of the following ability scores: ${playerFacingAbilityList(options)}.`,
+      };
+    }
+    const allAbilities = options.length === Object.keys(FEAT_ABILITY_LABELS).length;
+    return {
+      amount,
+      options,
+      body: allAbilities
+        ? `This feat grants a +${amount} bonus to any ability score.`
+        : `This feat grants a +${amount} bonus to one of the following ability scores: ${playerFacingAbilityList(options)}.`,
+    };
+  }
+
+  const fixed = Object.entries(entry)
+    .filter(([key, value]) => FEAT_ABILITY_LABELS[key] && Number(value || 0) !== 0)
+    .map(([key, value]) => ({ key, amount: Number(value) }));
+  if (!fixed.length) return null;
+  return {
+    amount: fixed.length === 1 ? fixed[0].amount : 0,
+    fixed,
+    body: fixed.length === 1
+      ? `This feat grants a +${fixed[0].amount} bonus to ${FEAT_ABILITY_LABELS[fixed[0].key]}.`
+      : `This feat grants the following ability score bonuses: ${fixed.map(({ key, amount }) => `${FEAT_ABILITY_LABELS[key]} +${amount}`).join(", ")}.`,
+  };
+}
+
 function SkillIcon({ skillKey }) {
   const Icon = SKILL_ICONS[skillKey] || FaBookOpen;
   return <Icon aria-hidden="true" focusable="false" />;
@@ -151,7 +229,7 @@ function simpleFeatAbilityChoices(groups = []) {
   }));
 }
 
-function FeatAbilityChoice({ group, field, amount = 1, selections = {}, onToggle = null }) {
+function FeatAbilityChoice({ group, field, amount = 1, body = "", selections = {}, onToggle = null }) {
   const selectedKeys = Array.isArray(selections?.[group.id]?.[field.id]) ? selections[group.id][field.id] : [];
   const selectedKey = selectedKeys[0] || "";
   const selectedOption = (field.options || []).find((option) => option.key === selectedKey) || null;
@@ -161,12 +239,10 @@ function FeatAbilityChoice({ group, field, amount = 1, selections = {}, onToggle
     if (selectedOption) setOpen(false);
   }, [selectedOption?.key]);
 
-  const sentence = `This feat grants a +${amount} to one of the following ability scores; choose between these options.`;
-
   return <details className={`npc-forge-training-feat-ability-choice ${selectedOption ? "is-complete" : "is-required"}`} open={open} onToggle={(event) => setOpen(event.currentTarget.open)}>
     <summary>
       <span className="npc-forge-training-feat-choice-chevron" aria-hidden="true">›</span>
-      <span><strong>{sentence}</strong></span>
+      <span><strong>Ability Score Bonus</strong><p>{body}</p></span>
       <em>{selectedOption ? `${selectedOption.label} +${amount}` : "Choose"}</em>
     </summary>
     <div>{(field.options || []).map((option) => {
@@ -176,11 +252,53 @@ function FeatAbilityChoice({ group, field, amount = 1, selections = {}, onToggle
   </details>;
 }
 
-function FeatRuleList({ feat = {}, matchingGroups = [] }) {
+function StaticFeatAbilityBonus({ presentation = null }) {
+  if (!presentation) return null;
+  const fixedLabel = presentation.fixed?.length === 1
+    ? `${FEAT_ABILITY_LABELS[presentation.fixed[0].key]} +${presentation.fixed[0].amount}`
+    : "";
+  return <article className="npc-forge-training-feat-ability-static">
+    <span><strong>Ability Score Bonus</strong><p>{presentation.body}</p></span>
+    {fixedLabel ? <em>{fixedLabel}</em> : null}
+  </article>;
+}
+
+function FeatRuleList({ feat = {}, matchingGroups = [], abilityChoices = [], selections = {}, onToggleAbility = null }) {
   const sections = featRuleSections(feat, matchingGroups);
-  return <div className="npc-forge-training-feat-rule-list">{sections.map((section, index) => section.intro
-    ? <p key={`intro-${index}`} className="npc-forge-training-feat-rule-intro">{section.body}</p>
-    : <article key={`${section.title || "rule"}-${index}`}>{section.title ? <strong>{section.title}</strong> : null}<p>{section.body}</p></article>)}</div>;
+  const abilityPresentation = featAbilityBonusPresentation(feat);
+  const abilityChoice = abilityChoices[0] || null;
+  let abilityInserted = false;
+
+  const renderAbilityBonus = () => {
+    if (!abilityPresentation || abilityInserted) return null;
+    abilityInserted = true;
+    if (abilityChoice) {
+      return <FeatAbilityChoice
+        key="ability-score-bonus"
+        group={abilityChoice.group}
+        field={abilityChoice.field}
+        amount={abilityChoice.amount}
+        body={abilityPresentation.body}
+        selections={selections}
+        onToggle={onToggleAbility}
+      />;
+    }
+    return <StaticFeatAbilityBonus key="ability-score-bonus" presentation={abilityPresentation} />;
+  };
+
+  const rendered = [];
+  sections.forEach((section, index) => {
+    if (section.intro) {
+      rendered.push(<p key={`intro-${index}`} className="npc-forge-training-feat-rule-intro">{section.body}</p>);
+      if (abilityPresentation && !abilityInserted) rendered.push(renderAbilityBonus());
+      return;
+    }
+    if (abilityPresentation && !abilityInserted) rendered.push(renderAbilityBonus());
+    rendered.push(<article key={`${section.title || "rule"}-${index}`}>{section.title ? <strong>{section.title}</strong> : null}<p>{section.body}</p></article>);
+  });
+  if (abilityPresentation && !abilityInserted) rendered.unshift(renderAbilityBonus());
+
+  return <div className="npc-forge-training-feat-rule-list">{rendered}</div>;
 }
 
 function ContextDescription({ value = "" }) {
@@ -214,7 +332,7 @@ function ContextShell({ icon, iconIsImage = false, title, badge, selected, descr
     <div className="npc-forge-training-context-divider" />
     {children}
     <style jsx global>{`
-      .npc-forge-training-context-dossier{display:flex;flex-direction:column;height:auto;min-height:0;padding:4px 2px 2px}.npc-forge-training-context-dossier>h3{margin:0 0 18px;color:#fff;font-size:1rem}.npc-forge-training-context-hero{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:14px;align-items:center}.npc-forge-training-context-icon{display:grid;place-items:center;width:48px;height:48px;border:1px solid rgba(168,108,255,.2);border-radius:9px;color:#bd85ff;background:rgba(126,72,199,.08);font-size:1.65rem}.npc-forge-training-context-icon img{width:34px;height:34px;object-fit:contain}.npc-forge-training-context-copy{display:grid;gap:5px;min-width:0}.npc-forge-training-context-copy>div{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.npc-forge-training-context-copy h2{margin:0;color:#fff;font-size:1.22rem;line-height:1.1}.npc-forge-training-context-copy em{padding:4px 8px;border-radius:999px;color:#d9bfff;background:rgba(126,72,199,.15);font-size:.61rem;font-style:normal}.npc-forge-training-context-copy p{margin:0;color:rgba(255,255,255,.75);font-size:.8rem;line-height:1.58}.npc-forge-training-context-copy p.is-prerequisite{font-size:.84rem}.npc-forge-training-context-copy p.is-prerequisite strong{color:inherit;font-weight:900;letter-spacing:.01em}.npc-forge-training-context-copy p.is-prerequisite span{font-weight:600}.npc-forge-training-context-hero>strong,.npc-forge-training-context-action{align-self:start;margin-top:4px;padding:4px 10px;border:1px solid transparent;border-radius:999px;color:rgba(255,255,255,.56);background:rgba(255,255,255,.05);font-size:.62rem}.npc-forge-training-context-hero>strong.is-selected,.npc-forge-training-context-action.is-selected{color:#83f4df;background:rgba(19,164,139,.16)}.npc-forge-training-context-action{border-color:rgba(168,108,255,.38);color:#f0e6ff;background:rgba(126,72,199,.12);cursor:pointer}.npc-forge-training-context-action:hover:not(:disabled),.npc-forge-training-context-action:focus-visible{border-color:rgba(193,145,255,.78);background:rgba(126,72,199,.24);outline:none}.npc-forge-training-context-action:disabled{cursor:default;opacity:1}.npc-forge-training-context-divider{height:1px;margin:18px 0;background:rgba(255,255,255,.09)}.npc-forge-training-context-section{display:grid;gap:12px}.npc-forge-training-context-section+ .npc-forge-training-context-section{margin-top:18px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08)}.npc-forge-training-context-section>h4{margin:0;color:#fff;font-size:.84rem}.npc-forge-training-class-option-copy{display:grid;gap:8px;padding:2px 0 8px}.npc-forge-training-class-option-copy p{margin:0;color:rgba(255,255,255,.86);font-size:.88rem;line-height:1.62;white-space:pre-line}.npc-forge-training-class-rule-list{display:grid;gap:0}.npc-forge-training-class-rule-intro{padding:2px 0 10px!important;color:rgba(255,255,255,.8)!important}.npc-forge-training-class-rule-list article{display:grid;gap:4px;padding:9px 4px 9px 13px;border-left:2px solid rgba(88,214,199,.38)}.npc-forge-training-class-rule-list article+article{border-top:1px solid rgba(255,255,255,.055)}.npc-forge-training-class-rule-list article>strong{color:#c9fff7;font-size:.72rem}.npc-forge-training-class-rule-list details{border-left:2px solid rgba(168,108,255,.38);border-top:1px solid rgba(255,255,255,.055);padding:0 0 0 10px}.npc-forge-training-class-rule-list details:first-child{border-top:0}.npc-forge-training-class-rule-list details>summary{display:grid;grid-template-columns:14px minmax(0,1fr);gap:5px;align-items:center;padding:8px 4px;list-style:none;cursor:pointer;color:#e5d2ff}.npc-forge-training-class-rule-list details>summary::-webkit-details-marker{display:none}.npc-forge-training-class-rule-list details>summary strong{font-size:.72rem}.npc-forge-training-class-rule-list details>p{padding:0 4px 10px 19px!important}.npc-forge-training-class-rule-chevron{color:#c9a8ff;font-size:1rem;line-height:1;transition:transform .15s ease}.npc-forge-training-class-rule-list details[open] .npc-forge-training-class-rule-chevron{transform:rotate(90deg)}.npc-forge-training-expertise-explanation{padding:10px 12px;border-left:3px solid #58d6c7;border-radius:7px;background:rgba(88,214,199,.07);color:#eafffb!important}.npc-forge-training-option-rules{margin-top:9px;border-top:1px solid rgba(255,255,255,.07);padding-top:8px}.npc-forge-training-option-rules summary{cursor:pointer;color:#d9c4fb;font-size:.66rem;font-weight:800}.npc-forge-training-option-rules ul{display:grid;gap:6px;margin:8px 0 0;padding-left:18px;color:rgba(255,255,255,.76);font-size:.68rem;line-height:1.5}.npc-forge-training-context-section ul{display:grid;gap:9px;margin:0;padding-left:20px;color:rgba(255,255,255,.7);font-size:.7rem;line-height:1.5}.npc-forge-training-context-section>p{margin:0;color:rgba(255,255,255,.72);font-size:.72rem;line-height:1.65;white-space:pre-line}.npc-forge-training-feat-rule-list{display:grid;gap:0}.npc-forge-training-feat-rule-intro{margin:0;padding:2px 0 10px;color:rgba(255,255,255,.74);font-size:.69rem;line-height:1.62}.npc-forge-training-feat-rule-list article{position:relative;display:grid;gap:4px;padding:9px 4px 9px 13px;border:0;border-left:2px solid rgba(168,108,255,.38);border-radius:0;background:transparent}.npc-forge-training-feat-rule-list article+article{border-top:1px solid rgba(255,255,255,.055)}.npc-forge-training-feat-rule-list article>strong{color:#e5d2ff;font-size:.68rem;letter-spacing:.01em}.npc-forge-training-feat-rule-list article>p{margin:0;color:rgba(255,255,255,.76);font-size:.69rem;line-height:1.62}.npc-forge-training-feat-ability-choice{margin:0 0 7px;border:1px solid rgba(168,108,255,.22);border-radius:7px;background:rgba(126,72,199,.035);overflow:hidden}.npc-forge-training-feat-ability-choice>summary{display:grid;grid-template-columns:14px minmax(0,1fr) auto;gap:7px;align-items:center;padding:7px 9px;list-style:none;cursor:pointer}.npc-forge-training-feat-ability-choice>summary::-webkit-details-marker{display:none}.npc-forge-training-feat-choice-chevron{color:#c9a8ff;font-size:1rem;line-height:1;transition:transform .14s ease}.npc-forge-training-feat-ability-choice[open] .npc-forge-training-feat-choice-chevron{transform:rotate(90deg)}.npc-forge-training-feat-ability-choice>summary strong{color:rgba(255,255,255,.82);font-size:.66rem;font-weight:700;line-height:1.42}.npc-forge-training-feat-ability-choice>summary em{padding:3px 7px;border:1px solid rgba(168,108,255,.26);border-radius:999px;color:#dfcbff;background:rgba(126,72,199,.09);font-size:.56rem;font-style:normal;font-weight:850;white-space:nowrap}.npc-forge-training-feat-ability-choice.is-complete>summary em{border-color:rgba(88,214,199,.3);color:#bafff4;background:rgba(88,214,199,.08)}.npc-forge-training-feat-ability-choice>div{display:flex;flex-wrap:wrap;gap:5px;padding:0 9px 8px 30px}.npc-forge-training-feat-ability-choice>div button{min-height:27px;padding:4px 9px;border:1px solid rgba(168,108,255,.3);border-radius:999px;color:#f4edff;background:rgba(126,72,199,.08);font-size:.62rem;font-weight:800}.npc-forge-training-feat-ability-choice>div button.is-selected{border-color:rgba(88,214,199,.48);color:#bafff4;background:rgba(88,214,199,.1)}.npc-forge-training-context-facts{display:flex;flex-wrap:wrap;gap:0;margin-top:2px;border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07)}.npc-forge-training-context-facts>span{display:grid;gap:2px;min-width:140px;padding:8px 12px 8px 0}.npc-forge-training-context-facts>span+span{padding-left:12px;border-left:1px solid rgba(255,255,255,.07)}.npc-forge-training-context-facts small{color:rgba(255,255,255,.48);font-size:.58rem;text-transform:uppercase}.npc-forge-training-context-facts b{color:#fff;font-size:.74rem}.npc-forge-training-context-choices{gap:8px!important}.npc-forge-training-context-choices>p{max-width:720px;margin-bottom:1px!important}.npc-forge-training-context-choices .npc-forge-source-choices{gap:6px;margin-top:0}.npc-forge-training-context-choices .npc-forge-source-choices__heading{display:none}.npc-forge-training-context-choices .npc-forge-source-choice-group{gap:6px;padding:7px 9px;border-color:rgba(168,108,255,.26);border-radius:8px;background:rgba(126,72,199,.035)}.npc-forge-training-context-choices .npc-forge-source-choice-group>header{align-items:center;gap:8px}.npc-forge-training-context-choices .npc-forge-source-choice-group>header>div{display:flex;align-items:baseline;gap:8px;min-width:0}.npc-forge-training-context-choices .npc-forge-source-choice-group>header strong{font-size:.68rem;white-space:nowrap}.npc-forge-training-context-choices .npc-forge-source-choice-group>header small{overflow:hidden;max-width:460px;font-size:.55rem;line-height:1.25;text-overflow:ellipsis;white-space:nowrap}.npc-forge-training-context-choices .npc-forge-source-choice-group>header em{padding:2px 6px;font-size:.5rem}.npc-forge-training-context-choices .npc-forge-source-choice-field{gap:5px}.npc-forge-training-context-choices .npc-forge-source-choice-field>span{font-size:.6rem}.npc-forge-training-context-choices .npc-forge-source-choice-buttons{gap:5px}.npc-forge-training-context-choices .npc-forge-source-choice-buttons button{display:inline-flex;align-items:center;min-height:30px;padding:5px 10px;border-radius:999px;font-size:.67rem}.npc-forge-training-context-choices .npc-forge-source-choice-buttons button strong{font-size:.67rem}.npc-forge-training-context-choices .npc-forge-source-choice-buttons button small{display:none}.npc-forge-training-context-choices .npc-forge-source-choice-group{gap:8px;padding:10px 11px}.npc-forge-training-context-choices .npc-forge-source-choice-group>header small{font-size:.58rem}.npc-forge-training-context-choices .npc-forge-source-choice-slots{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}.npc-forge-training-context-route{display:grid;grid-template-columns:auto minmax(0,1fr);gap:9px;align-items:start;padding:8px 2px 8px 10px;border:0;border-left:2px solid rgba(168,108,255,.42);border-radius:0;background:transparent}.npc-forge-training-context-route>span{display:grid;place-items:center;width:20px;height:20px;color:#d8c2fb;background:transparent;font-size:.7rem}.npc-forge-training-context-route>div{display:grid;gap:3px}.npc-forge-training-context-route strong{color:#fff;font-size:.68rem}.npc-forge-training-context-route p{margin:0;color:rgba(255,255,255,.65);font-size:.62rem;line-height:1.5}.npc-forge-training-context-route b{color:#e7d7ff}@media(max-width:720px){.npc-forge-training-context-hero{grid-template-columns:42px minmax(0,1fr)}.npc-forge-training-context-hero>strong{grid-column:2;justify-self:start;margin:0}.npc-forge-training-context-icon{width:42px;height:42px}.npc-forge-training-context-choices .npc-forge-source-choice-slots{grid-template-columns:1fr}}
+      .npc-forge-training-context-dossier{display:flex;flex-direction:column;height:auto;min-height:0;padding:4px 2px 2px}.npc-forge-training-context-dossier>h3{margin:0 0 18px;color:#fff;font-size:1rem}.npc-forge-training-context-hero{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:14px;align-items:center}.npc-forge-training-context-icon{display:grid;place-items:center;width:48px;height:48px;border:1px solid rgba(168,108,255,.2);border-radius:9px;color:#bd85ff;background:rgba(126,72,199,.08);font-size:1.65rem}.npc-forge-training-context-icon img{width:34px;height:34px;object-fit:contain}.npc-forge-training-context-copy{display:grid;gap:5px;min-width:0}.npc-forge-training-context-copy>div{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.npc-forge-training-context-copy h2{margin:0;color:#fff;font-size:1.22rem;line-height:1.1}.npc-forge-training-context-copy em{padding:4px 8px;border-radius:999px;color:#d9bfff;background:rgba(126,72,199,.15);font-size:.61rem;font-style:normal}.npc-forge-training-context-copy p{margin:0;color:rgba(255,255,255,.75);font-size:.8rem;line-height:1.58}.npc-forge-training-context-copy p.is-prerequisite{font-size:.84rem}.npc-forge-training-context-copy p.is-prerequisite strong{color:inherit;font-weight:900;letter-spacing:.01em}.npc-forge-training-context-copy p.is-prerequisite span{font-weight:600}.npc-forge-training-context-hero>strong,.npc-forge-training-context-action{align-self:start;margin-top:4px;padding:4px 10px;border:1px solid transparent;border-radius:999px;color:rgba(255,255,255,.56);background:rgba(255,255,255,.05);font-size:.62rem}.npc-forge-training-context-hero>strong.is-selected,.npc-forge-training-context-action.is-selected{color:#83f4df;background:rgba(19,164,139,.16)}.npc-forge-training-context-action{border-color:rgba(168,108,255,.38);color:#f0e6ff;background:rgba(126,72,199,.12);cursor:pointer}.npc-forge-training-context-action:hover:not(:disabled),.npc-forge-training-context-action:focus-visible{border-color:rgba(193,145,255,.78);background:rgba(126,72,199,.24);outline:none}.npc-forge-training-context-action:disabled{cursor:default;opacity:1}.npc-forge-training-context-divider{height:1px;margin:18px 0;background:rgba(255,255,255,.09)}.npc-forge-training-context-section{display:grid;gap:12px}.npc-forge-training-context-section+ .npc-forge-training-context-section{margin-top:18px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08)}.npc-forge-training-context-section>h4{margin:0;color:#fff;font-size:.84rem}.npc-forge-training-class-option-copy{display:grid;gap:8px;padding:2px 0 8px}.npc-forge-training-class-option-copy p{margin:0;color:rgba(255,255,255,.86);font-size:.88rem;line-height:1.62;white-space:pre-line}.npc-forge-training-class-rule-list{display:grid;gap:0}.npc-forge-training-class-rule-intro{padding:2px 0 10px!important;color:rgba(255,255,255,.8)!important}.npc-forge-training-class-rule-list article{display:grid;gap:4px;padding:9px 4px 9px 13px;border-left:2px solid rgba(88,214,199,.38)}.npc-forge-training-class-rule-list article+article{border-top:1px solid rgba(255,255,255,.055)}.npc-forge-training-class-rule-list article>strong{color:#c9fff7;font-size:.72rem}.npc-forge-training-class-rule-list details{border-left:2px solid rgba(168,108,255,.38);border-top:1px solid rgba(255,255,255,.055);padding:0 0 0 10px}.npc-forge-training-class-rule-list details:first-child{border-top:0}.npc-forge-training-class-rule-list details>summary{display:grid;grid-template-columns:14px minmax(0,1fr);gap:5px;align-items:center;padding:8px 4px;list-style:none;cursor:pointer;color:#e5d2ff}.npc-forge-training-class-rule-list details>summary::-webkit-details-marker{display:none}.npc-forge-training-class-rule-list details>summary strong{font-size:.72rem}.npc-forge-training-class-rule-list details>p{padding:0 4px 10px 19px!important}.npc-forge-training-class-rule-chevron{color:#c9a8ff;font-size:1rem;line-height:1;transition:transform .15s ease}.npc-forge-training-class-rule-list details[open] .npc-forge-training-class-rule-chevron{transform:rotate(90deg)}.npc-forge-training-expertise-explanation{padding:10px 12px;border-left:3px solid #58d6c7;border-radius:7px;background:rgba(88,214,199,.07);color:#eafffb!important}.npc-forge-training-option-rules{margin-top:9px;border-top:1px solid rgba(255,255,255,.07);padding-top:8px}.npc-forge-training-option-rules summary{cursor:pointer;color:#d9c4fb;font-size:.66rem;font-weight:800}.npc-forge-training-option-rules ul{display:grid;gap:6px;margin:8px 0 0;padding-left:18px;color:rgba(255,255,255,.76);font-size:.68rem;line-height:1.5}.npc-forge-training-context-section ul{display:grid;gap:9px;margin:0;padding-left:20px;color:rgba(255,255,255,.7);font-size:.7rem;line-height:1.5}.npc-forge-training-context-section>p{margin:0;color:rgba(255,255,255,.72);font-size:.72rem;line-height:1.65;white-space:pre-line}.npc-forge-training-feat-rule-list{display:grid;gap:0}.npc-forge-training-feat-rule-intro{margin:0;padding:2px 0 10px;color:rgba(255,255,255,.74);font-size:.69rem;line-height:1.62}.npc-forge-training-feat-rule-list article{position:relative;display:grid;gap:4px;padding:9px 4px 9px 13px;border:0;border-left:2px solid rgba(168,108,255,.38);border-radius:0;background:transparent}.npc-forge-training-feat-rule-list article+article{border-top:1px solid rgba(255,255,255,.055)}.npc-forge-training-feat-rule-list article>strong{color:#e5d2ff;font-size:.68rem;letter-spacing:.01em}.npc-forge-training-feat-rule-list article>p{margin:0;color:rgba(255,255,255,.76);font-size:.69rem;line-height:1.62}.npc-forge-training-feat-ability-choice,.npc-forge-training-feat-ability-static{margin:0;border:0;border-left:2px solid rgba(168,108,255,.38);border-radius:0;background:transparent}.npc-forge-training-feat-ability-choice{overflow:hidden}.npc-forge-training-feat-ability-choice>summary{display:grid;grid-template-columns:14px minmax(0,1fr) auto;gap:7px;align-items:center;padding:9px 4px 9px 10px;list-style:none;cursor:pointer}.npc-forge-training-feat-ability-choice>summary::-webkit-details-marker{display:none}.npc-forge-training-feat-choice-chevron{color:#c9a8ff;font-size:1rem;line-height:1;transition:transform .14s ease}.npc-forge-training-feat-ability-choice[open] .npc-forge-training-feat-choice-chevron{transform:rotate(90deg)}.npc-forge-training-feat-ability-choice>summary span{display:grid;gap:4px}.npc-forge-training-feat-ability-choice>summary strong,.npc-forge-training-feat-ability-static strong{color:#e5d2ff;font-size:.68rem;letter-spacing:.01em}.npc-forge-training-feat-ability-choice>summary p,.npc-forge-training-feat-ability-static p{margin:0;color:rgba(255,255,255,.76);font-size:.69rem;line-height:1.62}.npc-forge-training-feat-ability-choice>summary em,.npc-forge-training-feat-ability-static>em{padding:3px 7px;border:1px solid rgba(168,108,255,.26);border-radius:999px;color:#dfcbff;background:rgba(126,72,199,.09);font-size:.56rem;font-style:normal;font-weight:850;white-space:nowrap}.npc-forge-training-feat-ability-choice.is-complete>summary em,.npc-forge-training-feat-ability-static>em{border-color:rgba(88,214,199,.3);color:#bafff4;background:rgba(88,214,199,.08)}.npc-forge-training-feat-ability-choice>div{display:flex;flex-wrap:wrap;gap:5px;padding:0 9px 9px 31px}.npc-forge-training-feat-ability-choice>div button{min-height:27px;padding:4px 9px;border:1px solid rgba(168,108,255,.3);border-radius:999px;color:#f4edff;background:rgba(126,72,199,.08);font-size:.62rem;font-weight:800}.npc-forge-training-feat-ability-choice>div button.is-selected{border-color:rgba(88,214,199,.48);color:#bafff4;background:rgba(88,214,199,.1)}.npc-forge-training-feat-ability-static{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 4px 9px 13px}.npc-forge-training-feat-ability-static>span{display:grid;gap:4px}.npc-forge-training-context-facts{display:flex;flex-wrap:wrap;gap:0;margin-top:2px;border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07)}.npc-forge-training-context-facts>span{display:grid;gap:2px;min-width:140px;padding:8px 12px 8px 0}.npc-forge-training-context-facts>span+span{padding-left:12px;border-left:1px solid rgba(255,255,255,.07)}.npc-forge-training-context-facts small{color:rgba(255,255,255,.48);font-size:.58rem;text-transform:uppercase}.npc-forge-training-context-facts b{color:#fff;font-size:.74rem}.npc-forge-training-context-choices{gap:8px!important}.npc-forge-training-context-choices>p{max-width:720px;margin-bottom:1px!important}.npc-forge-training-context-choices .npc-forge-source-choices{gap:6px;margin-top:0}.npc-forge-training-context-choices .npc-forge-source-choices__heading{display:none}.npc-forge-training-context-choices .npc-forge-source-choice-group{gap:6px;padding:7px 9px;border-color:rgba(168,108,255,.26);border-radius:8px;background:rgba(126,72,199,.035)}.npc-forge-training-context-choices .npc-forge-source-choice-group>header{align-items:center;gap:8px}.npc-forge-training-context-choices .npc-forge-source-choice-group>header>div{display:flex;align-items:baseline;gap:8px;min-width:0}.npc-forge-training-context-choices .npc-forge-source-choice-group>header strong{font-size:.68rem;white-space:nowrap}.npc-forge-training-context-choices .npc-forge-source-choice-group>header small{overflow:hidden;max-width:460px;font-size:.55rem;line-height:1.25;text-overflow:ellipsis;white-space:nowrap}.npc-forge-training-context-choices .npc-forge-source-choice-group>header em{padding:2px 6px;font-size:.5rem}.npc-forge-training-context-choices .npc-forge-source-choice-field{gap:5px}.npc-forge-training-context-choices .npc-forge-source-choice-field>span{font-size:.6rem}.npc-forge-training-context-choices .npc-forge-source-choice-buttons{gap:5px}.npc-forge-training-context-choices .npc-forge-source-choice-buttons button{display:inline-flex;align-items:center;min-height:30px;padding:5px 10px;border-radius:999px;font-size:.67rem}.npc-forge-training-context-choices .npc-forge-source-choice-buttons button strong{font-size:.67rem}.npc-forge-training-context-choices .npc-forge-source-choice-buttons button small{display:none}.npc-forge-training-context-choices .npc-forge-source-choice-group{gap:8px;padding:10px 11px}.npc-forge-training-context-choices .npc-forge-source-choice-group>header small{font-size:.58rem}.npc-forge-training-context-choices .npc-forge-source-choice-slots{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}.npc-forge-training-context-route{display:grid;grid-template-columns:auto minmax(0,1fr);gap:9px;align-items:start;padding:8px 2px 8px 10px;border:0;border-left:2px solid rgba(168,108,255,.42);border-radius:0;background:transparent}.npc-forge-training-context-route>span{display:grid;place-items:center;width:20px;height:20px;color:#d8c2fb;background:transparent;font-size:.7rem}.npc-forge-training-context-route>div{display:grid;gap:3px}.npc-forge-training-context-route strong{color:#fff;font-size:.68rem}.npc-forge-training-context-route p{margin:0;color:rgba(255,255,255,.65);font-size:.62rem;line-height:1.5}.npc-forge-training-context-route b{color:#e7d7ff}@media(max-width:720px){.npc-forge-training-context-hero{grid-template-columns:42px minmax(0,1fr)}.npc-forge-training-context-hero>strong{grid-column:2;justify-self:start;margin:0}.npc-forge-training-context-icon{width:42px;height:42px}.npc-forge-training-context-choices .npc-forge-source-choice-slots{grid-template-columns:1fr}}
     `}</style>
   </div>;
 }
@@ -370,8 +488,8 @@ export default function NpcForgeTrainingContextCard({ detail = null, selectedSki
       controller.setDetail?.({ ...detail });
     } : null;
     const actionLabel = bonusFeatSelected ? "Deselect Feat" : replacingBonusFeat ? "Replace Feat" : selected ? "Selected" : "Select Feat";
-    return <ContextShell icon={`${TRAINING_ASSET_ROOT}/summary-feat.svg`} iconIsImage title={feat.name} badge={feat.category || "Feat"} selected={selected} description={prerequisite ? `Prerequisite: ${prerequisite}` : "No prerequisite is listed for this feat."} onAction={chooseFeat} actionLabel={actionLabel} actionDisabled={selected && !selectableBonusFeat}>
-      <section className="npc-forge-training-context-section"><h4>Feat Rules</h4>{featAbilityChoices.map(({ group, field, amount }) => <FeatAbilityChoice key={`${group.id}:${field.id}`} group={group} field={field} amount={amount} selections={sourceChoiceState.selections || {}} onToggle={toggleSourceChoice} />)}<FeatRuleList feat={feat} matchingGroups={matchingGroups} /><div className="npc-forge-training-context-facts"><span><small>Source</small><b>{feat.source || "Campaign"}</b></span><span><small>Category</small><b>{feat.category || "Feat"}</b></span>{prerequisite ? <span><small>Prerequisite</small><b>{prerequisite}</b></span> : null}</div></section>
+    return <ContextShell icon={`${TRAINING_ASSET_ROOT}/summary-feat.svg`} iconIsImage title={feat.name} badge={featCategoryLabel(feat.category)} selected={selected} description={prerequisite ? `Prerequisite: ${prerequisite}` : "No prerequisite is listed for this feat."} onAction={chooseFeat} actionLabel={actionLabel} actionDisabled={selected && !selectableBonusFeat}>
+      <section className="npc-forge-training-context-section"><h4>Feat Rules</h4><FeatRuleList feat={feat} matchingGroups={matchingGroups} abilityChoices={featAbilityChoices} selections={sourceChoiceState.selections || {}} onToggleAbility={toggleSourceChoice} /><div className="npc-forge-training-context-facts"><span><small>Source</small><b>{feat.source || "Campaign"}</b></span><span><small>Category</small><b>{featCategoryLabel(feat.category)}</b></span>{prerequisite ? <span><small>Prerequisite</small><b>{prerequisite}</b></span> : null}</div></section>
       {skillsRoutedGroups.length ? <section className="npc-forge-training-context-section"><div className="npc-forge-training-context-route"><span>←</span><div><strong>Profession choices resolve in Skills</strong><p>This feat adds {skillsRoutedGroups.reduce((count, group) => count + (group.fields || []).reduce((sum, field) => sum + Number(field.count || 1), 0), 0)} additional Profession Skill choices. Make them in <b>Skills → Trade Skills</b>; each available or granted row is labeled with this feat as its source and does not spend the class Skill / Trade Skill allowance.</p></div></div></section> : null}
       {featTrainingGroups.length ? <section className="npc-forge-training-context-section npc-forge-training-context-choices"><h4>Required Feat Choices</h4><p>Every permanent non-spell decision owned by this feat is completed here beside its rules. Skill, tool, or instrument grants are reflected in Skills after you choose them.</p><NpcForgeSourceChoiceFields placement="training" inline groupsOverride={featTrainingGroups} title="Required feat choices" /></section> : null}
       {spellGroups.length ? <section className="npc-forge-training-context-section"><div className="npc-forge-training-context-route"><span>→</span><div><strong>Granted spells resolve on the next tab</strong><p>This feat grants {spellGroups.reduce((count, group) => count + (group.fields || []).filter((field) => field.required !== false).length, 0)} spell choice{spellGroups.reduce((count, group) => count + (group.fields || []).filter((field) => field.required !== false).length, 0) === 1 ? "" : "s"}. They are intentionally completed in <b>Spells</b>, where the spell catalogue, descriptions, levels, and spell-specific rules already live.</p></div></div></section> : null}
