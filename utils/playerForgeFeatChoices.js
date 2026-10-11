@@ -237,9 +237,11 @@ function magicInitiateFields(feat, spells) {
   return fields;
 }
 
-function fightingInitiateFields(featOptions = []) {
+function fightingInitiateFields(featOptions = [], knownFightingStyles = []) {
+  const known = new Set(array(knownFightingStyles).map((entry) => `${norm(entry?.name || entry?.label)}|${text(entry?.source).toUpperCase()}`));
   const options = array(featOptions)
     .filter((row) => row?.option_type === "feat" && String(row?.category || "").toUpperCase() === "FS")
+    .filter((row) => !known.has(`${norm(row?.name)}|${text(row?.source).toUpperCase()}`))
     .map(fightingStyleOption)
     .sort((a, b) => a.label.localeCompare(b.label) || a.source.localeCompare(b.source));
   return options.length ? [field({
@@ -252,7 +254,7 @@ function fightingInitiateFields(featOptions = []) {
   })] : [];
 }
 
-function specialFields(instance, spells, toolRows, metamagicOptions = [], featOptions = []) {
+function specialFields(instance, spells, toolRows, metamagicOptions = [], featOptions = [], knownFightingStyles = []) {
   const feat = instance.feat || {};
   const name = norm(feat.name);
   const output = [];
@@ -261,7 +263,7 @@ function specialFields(instance, spells, toolRows, metamagicOptions = [], featOp
     const decorated = { ...feat, __instanceId: instance.instanceId };
     return magicInitiateFields(decorated, spells);
   }
-  if (name === "fighting initiate") return fightingInitiateFields(featOptions);
+  if (name === "fighting initiate") return fightingInitiateFields(featOptions, knownFightingStyles);
   if (name === "elemental adept") output.push(field({ id: "damage-type", label: "Energy Mastery damage type", kind: "damage-type", options: DAMAGE_TYPE_OPTIONS }));
   if (name === "metamagic adept") {
     const options = array(metamagicOptions)
@@ -303,13 +305,13 @@ function featUsesSpecialAbilityShape(feat) {
   return ["ability score improvement", "resilient"].includes(norm(feat.name));
 }
 
-export function buildFeatSourceChoiceGroups({ featInstances = [], toolRows = [], spells = [], metamagicOptions = [], featOptions = [], level = 1 } = {}) {
+export function buildFeatSourceChoiceGroups({ featInstances = [], toolRows = [], spells = [], metamagicOptions = [], featOptions = [], knownFightingStyles = [], level = 1 } = {}) {
   const groups = [];
   for (const instance of array(featInstances)) {
     const feat = instance.feat;
     if (!feat?.name) continue;
     const ability = featUsesSpecialAbilityShape(feat) ? { fields: [], fixedEffects: [] } : abilityFields(feat);
-    const fields = [...ability.fields, ...skillFields(feat), ...toolFields(feat, toolRows), ...specialFields(instance, spells, toolRows, metamagicOptions, featOptions), ...ritualCasterFields(feat, spells, level)];
+    const fields = [...ability.fields, ...skillFields(feat), ...toolFields(feat, toolRows), ...specialFields(instance, spells, toolRows, metamagicOptions, featOptions, knownFightingStyles), ...ritualCasterFields(feat, spells, level)];
     let fixedSpellTokens = [];
     if (!featHasSpecialSpellShape(feat)) {
       const spellModel = genericAdditionalSpellFields(feat, spells);
@@ -349,7 +351,7 @@ export function featGrantInstancesFromSelections({ selectedBackgroundFeat = null
 }
 
 export function featInstanceSummaries(groups = [], selections = {}) {
-  return array(groups).filter((group) => group.ownerType === "feat").map((group) => ({
+  const parents = array(groups).filter((group) => group.ownerType === "feat").map((group) => ({
     instanceId: group.metadata?.featInstanceId || group.ownerKey,
     optionId: group.metadata?.featOptionId || null,
     optionKey: group.metadata?.featOptionKey || null,
@@ -368,4 +370,24 @@ export function featInstanceSummaries(groups = [], selections = {}) {
       return option ? { key: option.key, value: option.value, label: option.label, kind: option.kind || fieldRow.kind, source: option.source || group.source, metadata: option.metadata || null } : null;
     }).filter(Boolean) : []])),
   }));
+
+  return parents.flatMap((parent) => {
+    const nestedFightingStyles = Object.values(parent.choices || {}).flat().filter((choice) => choice?.kind === "fighting-style" && choice?.metadata?.optionId).map((choice, index) => ({
+      instanceId: `${parent.instanceId}-fighting-style-${index + 1}`,
+      optionId: choice.metadata.optionId,
+      optionKey: choice.metadata.optionKey || null,
+      name: choice.label,
+      source: choice.source || choice.metadata.featSource || "XPHB",
+      category: choice.metadata.featCategory || "FS",
+      repeatable: false,
+      acquisitionOwnerType: "feat",
+      acquisitionOwnerKey: parent.instanceId,
+      acquisitionLabel: `${parent.name} — Fighting Style`,
+      acquisitionLevel: Number(parent.acquisitionLevel || 1),
+      fixedEffects: [],
+      fixedSpellTokens: [],
+      choices: {},
+    }));
+    return [parent, ...nestedFightingStyles];
+  });
 }
