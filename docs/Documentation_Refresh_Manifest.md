@@ -32,6 +32,8 @@ Everything below this section is historical unless a newer focused ledger says o
 - `/profile` returned HTTP 200 on that deployment;
 - next broad priority: Character Forge completion/reconciliation on current `main`;
 - future AI direction documented in `DNDNEXT_AI_INTEGRATION_FOUNDATION.md`; implementation remains deferred until the Forge completion pass.
+- active bounded Forge browser-review continuation: PR #207 — compact/sortable Spells UI, hard selection ceilings, structured Spell Progression, Background cleanup, content-height Training detail cards, and complete class/subclass option rule presentation. Two reviewed source-rule enrichment SQL files were applied live; they repair descriptions/source metadata only and do not change choice/progression authority.
+- current class-option source completeness checkpoint: **218 / 218** exact `refOptionalfeature` identities used by `class_feature_catalog` have descriptions; preferred Fighting Style feats are **17 / 17** described.
 
 Current focused documents:
 

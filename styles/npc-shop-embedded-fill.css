@@ -60,3 +60,66 @@
     min-height: 240px;
   }
 }
+
+
+/* Merchant storefront readability/scale pass.
+   Keep purchase/admin behavior untouched; give the existing market a little more
+   physical room and a modestly larger reading scale in profile/shop contexts. */
+@media (min-width: 981px) {
+  .npc-page-profile-panel-shell:has(.npc-panel-shop-view) {
+    width: min(1360px, calc(100vw - 2rem));
+  }
+
+  .npc-panel-shop-view .merchant-market-shell {
+    grid-template-columns: minmax(255px, 0.62fr) minmax(0, 2.38fr) !important;
+  }
+
+  .npc-panel-shop-view .merchant-stock-layout {
+    grid-template-columns: minmax(300px, 0.82fr) minmax(430px, 1.18fr) !important;
+  }
+}
+
+.npc-panel-shop-view .merchant-market-header {
+  padding: 16px 20px;
+}
+
+.npc-panel-shop-view .merchant-market-title {
+  font-size: clamp(1.3rem, 1.9vw, 1.68rem);
+}
+
+.npc-panel-shop-view .merchant-market-subline {
+  font-size: .88rem;
+}
+
+.npc-panel-shop-view .merchant-stock-workspace {
+  padding: 16px;
+}
+
+.npc-panel-shop-view .merchant-stock-row {
+  padding: 12px 13px;
+}
+
+.npc-panel-shop-view .merchant-stock-row-head strong {
+  font-size: .96rem;
+}
+
+.npc-panel-shop-view .merchant-stock-row p {
+  font-size: .8rem;
+  line-height: 1.48;
+}
+
+.npc-panel-shop-view .merchant-stock-row-meta span {
+  font-size: .69rem;
+}
+
+.npc-panel-shop-view .merchant-preview-head {
+  padding: 14px 16px;
+}
+
+.npc-panel-shop-view .merchant-preview-head h3 {
+  font-size: 1.14rem;
+}
+
+.npc-panel-shop-view .merchant-preview-card-scroll {
+  padding: 14px;
+}

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useMemo } from "react";
 import { createPortal } from "react-dom";
 import ClassFeatureText from "./ClassFeatureText";
 import ItemCard from "./ItemCard";
@@ -153,6 +154,45 @@ function classOverviewHighlights(classRow = {}) {
   return highlights;
 }
 
+function RulesReferenceContent({ reference = null }) {
+  if (!reference) return null;
+  const statBlock = reference.statBlock;
+  if (!statBlock) {
+    return <div className="npc-forge-rules-reference">
+      <ClassFeatureText text={reference.description || ""} compact />
+      {Array.isArray(reference.notes) && reference.notes.length ? <ul>{reference.notes.map((note) => <li key={note}>{note}</li>)}</ul> : null}
+    </div>;
+  }
+  return <article className="npc-forge-rules-reference npc-forge-rules-reference--statblock" aria-label={`${reference.title || "Referenced creature"} stat block`}>
+    {reference.description ? <p className="npc-forge-rules-reference__context">{reference.description}</p> : null}
+    <div className="npc-forge-rules-reference__intro">
+      <strong>{statBlock.sizeType}</strong>
+      <span>{statBlock.alignment}</span>
+    </div>
+    <div className="npc-forge-rules-reference__facts">
+      <div><span>Armor Class</span><b>{statBlock.armorClass}</b></div>
+      <div><span>Hit Points</span><b>{statBlock.hitPoints}</b></div>
+      <div className="is-wide"><span>Speed</span><b>{statBlock.speed}</b></div>
+    </div>
+    <div className="npc-forge-rules-reference__abilities" role="table" aria-label="Ability scores">
+      {(statBlock.abilities || []).map(([ability, score, modifier]) => <div role="row" key={ability}><span>{ability}</span><b>{score}</b><em>{modifier}</em></div>)}
+    </div>
+    <div className="npc-forge-rules-reference__secondary">
+      <p><strong>Senses</strong> {statBlock.senses}</p>
+      <p><strong>Languages</strong> {statBlock.languages}</p>
+      <p><strong>PB</strong> {statBlock.proficiencyBonus}</p>
+    </div>
+    {(statBlock.traits || []).length ? <details className="npc-forge-rules-reference__section" open>
+      <summary><span>Traits</span><small>{statBlock.traits.length}</small></summary>
+      <div>{statBlock.traits.map(([name, body]) => <p key={name}><strong>{name}.</strong> {body}</p>)}</div>
+    </details> : null}
+    {(statBlock.actions || []).length ? <details className="npc-forge-rules-reference__section" open>
+      <summary><span>Actions</span><small>{statBlock.actions.length}</small></summary>
+      <div>{statBlock.actions.map(([name, body]) => <p key={name}><strong>{name}.</strong> {body}</p>)}</div>
+    </details> : null}
+  </article>;
+}
+
 function boundedDockPosition(position = {}) {
   if (typeof window === "undefined") return position;
   const viewportWidth = Math.max(1, Number(window.innerWidth || 1));
@@ -199,7 +239,17 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
   const [subclassTab, setSubclassTab] = useState("overview");
   const [overviewFeatureKey, setOverviewFeatureKey] = useState("");
   const [selectedSubclassSpellKey, setSelectedSubclassSpellKey] = useState("");
-  const feature = detail?.type === "classFeature" ? detail.feature : null;
+  const [subclassSpellSortKey, setSubclassSpellSortKey] = useState("level");
+  const [subclassSpellSortDirection, setSubclassSpellSortDirection] = useState("asc");
+  const rulesReference = detail?.type === "rulesReference" && detail?.reference ? detail.reference : null;
+  const classFeature = detail?.type === "classFeature" ? detail.feature : null;
+  const feature = classFeature || (rulesReference ? {
+    name: rulesReference.title || "Rules Reference",
+    source: rulesReference.source || "Source Rule",
+    description: rulesReference.description || "",
+    type: "rules-reference",
+    metadata: { rulesReference: true },
+  } : null);
   const listedOptions = Array.isArray(feature?.listedOptions) ? feature.listedOptions : [];
   const subclassSelection = detail?.subclassSelection && typeof detail.subclassSelection === "object" ? detail.subclassSelection : null;
   const subclassOption = detail?.subclassOption?.key ? detail.subclassOption : null;
@@ -213,7 +263,26 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
     ? resolveSubclassSpellGrants(DUNAMANCY_SPELL_NAMES.map((name) => ({ name, source: "EGW", unlockLabel: "Dunamancy", grantKind: "dunamancy" })), spellCatalog)
     : [];
   const subclassSpellRows = subclassSpellWorkspaceRows(subclassSpells, dunamancySpells);
-  const selectedSubclassSpellRow = subclassSpellRows.find((row) => row.key === selectedSubclassSpellKey) || subclassSpellRows[0] || null;
+  const displaySubclassSpellRows = useMemo(() => [...subclassSpellRows].sort((left, right) => {
+    const value = (row, key) => {
+      if (key === "name") return safeText(row?.spell?.name);
+      if (key === "level") return Number(row?.spell?.level || 0);
+      if (key === "school") return safeText(row?.spell?.school || row?.spell?.school_code || "");
+      if (key === "source") return safeText(row?.spell?.source);
+      if (key === "access") return row?.grantType === "dunamancy" ? "Dunamancy" : safeText(row?.unlockLabel) ? `Level ${safeText(row.unlockLabel)}` : "Subclass";
+      return safeText(row?.spell?.name);
+    };
+    const leftValue = value(left, subclassSpellSortKey);
+    const rightValue = value(right, subclassSpellSortKey);
+    const primary = typeof leftValue === "number" && typeof rightValue === "number"
+      ? leftValue - rightValue
+      : String(leftValue).localeCompare(String(rightValue), undefined, { numeric: true, sensitivity: "base" });
+    const directed = subclassSpellSortDirection === "asc" ? primary : -primary;
+    return directed
+      || Number(left?.spell?.level || 0) - Number(right?.spell?.level || 0)
+      || safeText(left?.spell?.name).localeCompare(safeText(right?.spell?.name));
+  }), [subclassSpellRows, subclassSpellSortDirection, subclassSpellSortKey]);
+  const selectedSubclassSpellRow = displaySubclassSpellRows.find((row) => row.key === selectedSubclassSpellKey) || displaySubclassSpellRows[0] || null;
   const progressionRows = buildSubclassProgressionRows(detail?.progressionRows || [], subclassFeatures);
   const overviewFeatures = [...subclassFeatures].sort((a, b) => Number(a?.level || 0) - Number(b?.level || 0) || safeText(a?.name).localeCompare(safeText(b?.name)));
   const overviewFeature = overviewFeatures.find((entry) => subclassFeatureKey(entry) === overviewFeatureKey) || null;
@@ -241,7 +310,8 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
   const isListedOption = feature?.type === "listed-option";
   const type = isSubclassInspector
     ? `${selectedClass?.class_name || "Class"} Subclass`
-    : isListedOption ? "Listed Option" : feature?.type === "subclass" ? "Subclass Feature" : feature ? "Class Feature" : "Class Overview";
+    : rulesReference ? rulesReference.kindLabel || "Rules Reference"
+      : isListedOption ? "Listed Option" : feature?.type === "subclass" ? "Subclass Feature" : feature ? "Class Feature" : "Class Overview";
   const parentFeatureName = safeText(feature?.parentFeatureName || detail?.parentFeatureName);
   const overviewHighlights = isOverview && selectedClass ? classOverviewHighlights(selectedClass) : [];
   const canonicalItem = isListedOption && feature?.detailKind === "item" && feature?.metadata?.itemCard
@@ -256,6 +326,8 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
     setSubclassTab("overview");
     setOverviewFeatureKey("");
     setSelectedSubclassSpellKey("");
+    setSubclassSpellSortKey("level");
+    setSubclassSpellSortDirection("asc");
   }, [subclassOption?.key]);
 
   useEffect(() => {
@@ -333,6 +405,15 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
     dragRef.current = null;
     setDragging(false);
     event.currentTarget.releasePointerCapture?.(event.pointerId);
+  }
+
+  function changeSubclassSpellSort(nextKey) {
+    if (subclassSpellSortKey === nextKey) {
+      setSubclassSpellSortDirection((value) => value === "asc" ? "desc" : "asc");
+      return;
+    }
+    setSubclassSpellSortKey(nextKey);
+    setSubclassSpellSortDirection("asc");
   }
 
   function handleSubclassAction() {
@@ -453,20 +534,26 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
                   </div>
                   <span>{subclassSpellRows.length}</span>
                 </div>
+                <div className="npc-forge-subclass-inspector__spell-table-head" role="row">
+                  {[
+                    ["name", "Spell"],
+                    ["level", "Level"],
+                    ["school", "School"],
+                    ["source", "Source"],
+                    ["access", "Access"],
+                  ].map(([key, label]) => <button key={key} type="button" className={subclassSpellSortKey === key ? "is-sorted" : ""} onClick={() => changeSubclassSpellSort(key)} title={`Sort by ${label}`}><span>{label}</span><em aria-hidden="true">{subclassSpellSortKey === key ? subclassSpellSortDirection === "asc" ? "▲" : "▼" : "↕"}</em></button>)}
+                </div>
                 <div className="npc-forge-subclass-inspector__spell-list-scroll">
-                  {subclassSpellRows.map((row) => {
+                  {displaySubclassSpellRows.map((row) => {
                     const spell = row.spell;
                     const active = row.key === selectedSubclassSpellRow?.key;
-                    return <button type="button" key={row.key} className={`npc-forge-subclass-inspector__spell-row${active ? " is-active" : ""}`} aria-pressed={active} onClick={() => setSelectedSubclassSpellKey(row.key)}>
+                    const access = row.grantType === "dunamancy" ? "Dunamancy" : row.unlockLabel ? `Level ${row.unlockLabel}` : "Subclass";
+                    return <button type="button" key={row.key} className={`npc-forge-subclass-inspector__spell-row${active ? " is-active" : ""}`} aria-pressed={active} onClick={() => setSelectedSubclassSpellKey(row.key)} title={[spell.name, spell.concentration ? "Concentration" : "", spell.ritual ? "Ritual" : ""].filter(Boolean).join(" • ")}>
                       <span className="npc-forge-subclass-inspector__spell-row-name">{spell.name}</span>
-                      <span className="npc-forge-subclass-inspector__spell-row-meta">{Number(spell.level || 0) === 0 ? "Cantrip" : `Spell level ${Number(spell.level || 0)}`} • {spell.school || "Spell"} • {spell.source || "—"}</span>
-                      <span className="npc-forge-subclass-inspector__spell-row-tags">
-                        {row.grantType === "dunamancy" ? <i>Dunamancy</i> : row.unlockLabel ? <i>Class level {row.unlockLabel}</i> : <i>Subclass</i>}
-                        {spell.concentration ? <i>Concentration</i> : null}
-                        {spell.ritual ? <i>Ritual</i> : null}
-                        {safeText(spell.saving_throw_abilities?.[0]) ? <i>{spell.saving_throw_abilities[0]} save</i> : null}
-                        {safeText(spell.damage_types?.[0]) ? <i>{spell.damage_types[0]}</i> : null}
-                      </span>
+                      <span>{Number(spell.level || 0) === 0 ? "Cantrip" : `Level ${Number(spell.level || 0)}`}</span>
+                      <span>{spell.school || spell.school_code || "Spell"}</span>
+                      <span>{spell.source || "—"}</span>
+                      <span className="npc-forge-subclass-inspector__spell-row-access">{access}</span>
                     </button>;
                   })}
                   {!subclassSpellRows.length ? <div className="npc-forge-subclass-inspector__empty-note"><strong>No separate subclass spell list</strong><span>{subclassOption.name} does not grant a structured spell list in the imported source.</span></div> : null}
@@ -474,7 +561,7 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
               </section>
               <section className="npc-forge-subclass-inspector__spell-preview" aria-label="Selected subclass spell details">
                 <div className="npc-forge-subclass-inspector__spell-preview-scroll">
-                  {selectedSubclassSpellRow ? <SpellCard spell={selectedSubclassSpellRow.spell} compact dense /> : <div className="npc-forge-subclass-inspector__empty-note"><span>Select a granted spell to view its complete catalogue details.</span></div>}
+                  {selectedSubclassSpellRow ? <SpellCard spell={selectedSubclassSpellRow.spell} compact compressed onReferenceDetail={onFeatureDetail} /> : <div className="npc-forge-subclass-inspector__empty-note"><span>Select a granted spell to view its complete catalogue details.</span></div>}
                 </div>
               </section>
             </div> : null}
@@ -484,11 +571,12 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
           {isOverview && selectedClass?.class_name ? <span className="npc-forge-class-feature-dock__class-chip">{selectedClass.class_name}</span> : null}
           <div className="npc-forge-class-feature-dock__meta">
             {level ? <span>Level {level}</span> : null}
-            {!isOverview && selectedClass?.class_name ? <span>{selectedClass.class_name}</span> : null}
+            {!isOverview && !rulesReference && selectedClass?.class_name ? <span>{selectedClass.class_name}</span> : null}
             {feature?.type === "subclass" && detail?.subclassName ? <span>{detail.subclassName}</span> : null}
             {isListedOption && parentFeatureName ? <span>From {parentFeatureName}</span> : null}
+            {rulesReference?.spellName ? <span>From {rulesReference.spellName}</span> : null}
           </div>
-          <div className="npc-forge-class-feature-dock__summary"><ClassFeatureText text={description} entries={feature?.entries || null} compact /></div>
+          <div className="npc-forge-class-feature-dock__summary">{rulesReference ? <RulesReferenceContent reference={rulesReference} /> : <ClassFeatureText text={description} entries={feature?.entries || null} compact />}</div>
           {listedOptions.length ? <section className="npc-forge-class-feature-dock__listed-options" aria-label={`${title} options`}>
             <div className="npc-forge-class-feature-dock__listed-options-head"><span>Available options</span><strong>{listedOptions.length}</strong></div>
             <div className="npc-forge-class-feature-dock__listed-options-scroll">
@@ -502,7 +590,7 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
           {canonicalItem ? <div className="npc-forge-class-feature-dock__item-card" aria-label={`${title} canonical item card`}><ItemCard item={canonicalItem} /></div> : null}
           {!feature && !selectedClass ? <small>Feature descriptions will appear here as you move through the progression table or detailed guide.</small> : null}
           {isListedOption ? <div className="npc-forge-class-feature-dock__listed-note">This is a listed option inside <strong>{parentFeatureName || "the selected feature"}</strong>. The description comes from the normalized class-option or canonical item catalogue when a matching entry exists; otherwise the parent feature remains the mechanical authority.</div> : null}
-          {selectedClass ? <div className="npc-forge-class-feature-dock__routing-note">{feature ? "Select another feature or subclass to inspect it here." : "Select a feature or subclass to see more detail here."}</div> : null}
+          {rulesReference ? <div className="npc-forge-class-feature-dock__routing-note">Select another highlighted rule term on the spell card to inspect it here.</div> : selectedClass ? <div className="npc-forge-class-feature-dock__routing-note">{feature ? "Select another feature or subclass to inspect it here." : "Select a feature or subclass to see more detail here."}</div> : null}
           {portalHost ? <div className="npc-forge-class-feature-dock__drag-cue" aria-hidden="true">Drag header to move <span>✥</span></div> : null}
         </>}
       </div>
@@ -518,6 +606,7 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
         .npc-forge-class-feature-dock__head-actions>em{padding:4px 7px!important;border:1px solid rgba(255,255,255,.14)!important;border-radius:7px!important;color:rgba(255,255,255,.75)!important;background:rgba(255,255,255,.045)!important;font-size:.5rem!important;font-style:normal!important;font-weight:850!important;letter-spacing:.045em!important}
         .npc-forge-class-feature-dock__head-actions>button{min-width:52px;height:30px;padding:0 9px;border:1px solid rgba(168,108,255,.42);border-radius:7px;color:#f0e8ff;background:rgba(10,12,20,.72);font-size:.56rem;font-weight:800;line-height:1}
         .npc-forge-class-feature-dock__head-actions>button:hover{border-color:#a86cff;background:rgba(126,72,199,.26)}
+        .npc-forge-rules-reference{display:grid;gap:9px;color:rgba(255,255,255,.88)}.npc-forge-rules-reference>ul{display:grid;gap:5px;margin:0;padding-left:18px}.npc-forge-rules-reference--statblock{padding:3px 0 2px}.npc-forge-rules-reference__context{margin:0;color:rgba(255,255,255,.72);font-size:.65rem;line-height:1.45}.npc-forge-rules-reference__intro{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:0 2px 7px;border-bottom:2px solid rgba(168,108,255,.42)}.npc-forge-rules-reference__intro strong{color:#fff;font-size:.86rem}.npc-forge-rules-reference__intro span{color:rgba(255,255,255,.58);font-size:.62rem;font-style:italic}.npc-forge-rules-reference__facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.npc-forge-rules-reference__facts>div{display:grid;gap:2px;padding:6px 7px;border:1px solid rgba(255,255,255,.08);border-radius:6px;background:rgba(255,255,255,.025)}.npc-forge-rules-reference__facts>div.is-wide{grid-column:1/-1}.npc-forge-rules-reference__facts span{color:rgba(255,255,255,.5);font-size:.5rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em}.npc-forge-rules-reference__facts b{color:#fff;font-size:.69rem}.npc-forge-rules-reference__abilities{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px;padding:6px 0;border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07)}.npc-forge-rules-reference__abilities>div{display:grid;justify-items:center;gap:1px}.npc-forge-rules-reference__abilities span{color:#c8a9ff;font-size:.48rem;font-weight:900}.npc-forge-rules-reference__abilities b{font-size:.68rem}.npc-forge-rules-reference__abilities em{color:rgba(255,255,255,.55);font-size:.49rem;font-style:normal}.npc-forge-rules-reference__secondary{display:grid;gap:3px}.npc-forge-rules-reference__secondary p{margin:0;font-size:.64rem;line-height:1.4}.npc-forge-rules-reference__secondary strong{color:#d8c2fb}.npc-forge-rules-reference__section{border-top:1px solid rgba(255,255,255,.08)}.npc-forge-rules-reference__section>summary{display:flex;align-items:center;gap:6px;padding:7px 2px;list-style:none;cursor:pointer;color:#fff;font-size:.67rem;font-weight:900}.npc-forge-rules-reference__section>summary::-webkit-details-marker{display:none}.npc-forge-rules-reference__section>summary::before{content:"›";color:#b98cff;font-size:.9rem;transition:transform .14s ease}.npc-forge-rules-reference__section[open]>summary::before{transform:rotate(90deg)}.npc-forge-rules-reference__section>summary span{margin-right:auto}.npc-forge-rules-reference__section>summary small{color:rgba(255,255,255,.45);font-size:.5rem}.npc-forge-rules-reference__section>div{display:grid;gap:6px;padding:0 2px 7px 14px}.npc-forge-rules-reference__section p{margin:0;font-size:.64rem;line-height:1.48}.npc-forge-rules-reference__section p strong{color:#f0ddff}
         .npc-forge-class-feature-dock__body{position:relative;display:grid;gap:12px;padding:13px 14px 15px!important}
         .npc-forge-class-feature-dock__class-chip{justify-self:start;padding:4px 8px;border:1px solid rgba(168,108,255,.35);border-radius:999px;color:#d8c8ff;background:rgba(126,72,199,.12);font-size:.54rem;font-weight:800}
         .npc-forge-class-feature-dock__summary{color:rgba(255,255,255,.84)}
@@ -578,7 +667,7 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
         .npc-forge-subclass-inspector__content .class-feature-text,.npc-forge-subclass-inspector__content p{font-size:.86rem!important;line-height:1.7!important;color:rgba(244,239,226,.91)!important}.npc-forge-subclass-inspector__content .class-feature-text p+p{margin-top:.88rem!important}.npc-forge-subclass-inspector__overview-grid{display:grid;grid-template-columns:minmax(0,1fr) 188px;gap:14px;align-items:stretch}.npc-forge-subclass-inspector__overview-lore{width:100%;height:286px;min-height:0;display:grid;margin:0;padding:14px 15px;border:1px solid rgba(209,158,67,.22);border-radius:7px;background:linear-gradient(180deg,rgba(8,15,19,.90),rgba(7,13,17,.84));box-shadow:inset 0 1px rgba(255,255,255,.025),0 10px 32px rgba(0,0,0,.16)}.npc-forge-subclass-inspector__overview-lore.is-feature-detail{grid-template-rows:auto minmax(0,1fr);gap:10px}.npc-forge-subclass-inspector__overview-detail-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding-bottom:9px;border-bottom:1px solid rgba(209,158,67,.18)}.npc-forge-subclass-inspector__overview-detail-head>div{display:grid;gap:3px;min-width:0}.npc-forge-subclass-inspector__overview-detail-head span{color:#c99d54;font-size:.56rem;font-weight:850;letter-spacing:.06em;text-transform:uppercase}.npc-forge-subclass-inspector__overview-detail-head strong{color:#f1d28f;font:700 1rem/1.22 Georgia,serif}.npc-forge-subclass-inspector__overview-detail-head button{flex:0 0 auto;padding:5px 8px;border:1px solid rgba(209,158,67,.26);border-radius:999px;color:#dec38f;background:rgba(45,31,16,.34);font-size:.53rem;font-weight:750;cursor:pointer}.npc-forge-subclass-inspector__overview-detail-head button:hover,.npc-forge-subclass-inspector__overview-detail-head button:focus-visible{border-color:rgba(234,190,103,.66);color:#ffe5aa;outline:none}.npc-forge-subclass-inspector__section-head>span{color:#d7ac62;font-size:.62rem;font-weight:850;letter-spacing:.08em;text-transform:uppercase}.npc-forge-subclass-inspector__overview-lore-scroll{min-height:0;overflow:auto;padding-right:7px;scrollbar-width:thin;scrollbar-color:rgba(209,158,67,.45) rgba(255,255,255,.04)}.npc-forge-subclass-inspector__overview-lore-scroll::-webkit-scrollbar{width:7px}.npc-forge-subclass-inspector__overview-lore-scroll::-webkit-scrollbar-track{background:rgba(255,255,255,.035);border-radius:999px}.npc-forge-subclass-inspector__overview-lore-scroll::-webkit-scrollbar-thumb{background:rgba(209,158,67,.42);border-radius:999px}.npc-forge-subclass-inspector__overview-feature-index{height:286px;min-width:0;display:grid;grid-template-rows:auto minmax(0,1fr);gap:8px;padding:12px 10px;border:1px solid rgba(209,158,67,.24);border-radius:7px;background:linear-gradient(180deg,rgba(10,16,20,.88),rgba(7,12,16,.80));box-shadow:inset 0 1px rgba(255,255,255,.025)}.npc-forge-subclass-inspector__overview-feature-index>strong{color:#d7ac62;font-size:.58rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.npc-forge-subclass-inspector__overview-feature-index>div{min-height:0;display:grid;align-content:start;gap:7px;overflow:auto;padding-right:3px;scrollbar-width:thin;scrollbar-color:rgba(209,158,67,.38) rgba(255,255,255,.03)}.npc-forge-subclass-inspector__overview-feature-index button{display:grid;gap:4px;width:100%;padding:9px 10px;border:1px solid rgba(209,158,67,.22);border-radius:6px;color:#ead8b4;background:rgba(8,14,18,.72);text-align:left;cursor:pointer;transition:border-color .14s ease,background .14s ease,transform .14s ease}.npc-forge-subclass-inspector__overview-feature-index button:hover,.npc-forge-subclass-inspector__overview-feature-index button:focus-visible{border-color:rgba(225,179,89,.66);background:rgba(64,43,19,.30);transform:translateX(-1px);outline:none}.npc-forge-subclass-inspector__overview-feature-index button.is-active{border-color:rgba(236,191,97,.82);background:linear-gradient(90deg,rgba(100,64,20,.42),rgba(19,20,20,.78));box-shadow:inset 3px 0 #d8a64f}.npc-forge-subclass-inspector__overview-feature-index button span{color:#c39248;font-size:.51rem;font-weight:850;letter-spacing:.05em;text-transform:uppercase}.npc-forge-subclass-inspector__overview-feature-index button b{color:#f0dfbd;font:700 .72rem/1.24 Georgia,serif}
         .npc-forge-subclass-inspector__progression{display:grid;gap:11px}.npc-forge-subclass-inspector__progression>header{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;padding:0 2px 9px;border-bottom:1px solid rgba(209,158,67,.22)}.npc-forge-subclass-inspector__progression>header>div:first-child{display:grid;gap:3px}.npc-forge-subclass-inspector__progression>header strong{color:#f0cf8b;font:700 .86rem/1.2 Georgia,serif}.npc-forge-subclass-inspector__progression>header small{color:rgba(236,224,202,.58);font-size:.56rem;line-height:1.35}.npc-forge-subclass-inspector__progression-legend{display:flex;gap:6px;flex:0 0 auto}.npc-forge-subclass-inspector__progression-legend span,.npc-forge-subclass-inspector__progression-features button{appearance:none;display:inline-flex;align-items:center;width:max-content;max-width:100%;padding:3px 7px;border:1px solid rgba(174,132,222,.33);border-radius:999px;color:#eadfff;background:rgba(105,68,156,.20);font-family:inherit;font-size:.56rem;font-weight:650;line-height:1.25}.npc-forge-subclass-inspector__progression-legend span.is-subclass,.npc-forge-subclass-inspector__progression-features button.is-subclass{border-color:rgba(58,188,220,.58);color:#d9f8ff;background:rgba(28,128,151,.22)}.npc-forge-subclass-inspector__progression-table{max-height:370px;overflow:auto;border:1px solid rgba(209,158,67,.18);border-radius:8px;background:rgba(5,11,15,.62);scrollbar-width:thin;scrollbar-color:rgba(209,158,67,.42) rgba(255,255,255,.03)}.npc-forge-subclass-inspector__progression-row{display:grid;grid-template-columns:48px 44px minmax(0,1fr);gap:8px;align-items:start;min-height:36px;padding:7px 9px;border-bottom:1px solid rgba(255,255,255,.055)}.npc-forge-subclass-inspector__progression-row:last-child{border-bottom:0}.npc-forge-subclass-inspector__progression-row.is-head{position:sticky;top:0;z-index:2;min-height:30px;align-items:center;color:rgba(238,219,181,.66);background:rgba(12,17,21,.96);font-size:.52rem;font-weight:850;letter-spacing:.055em;text-transform:uppercase}.npc-forge-subclass-inspector__progression-row.is-current{box-shadow:inset 3px 0 #d2a44f;background:rgba(112,75,24,.09)}.npc-forge-subclass-inspector__progression-row>div:first-child{display:grid;gap:1px;color:#f1dcae}.npc-forge-subclass-inspector__progression-row>div:first-child>strong{font-size:.68rem}.npc-forge-subclass-inspector__progression-row>div:first-child>small{color:#d8ae60;font-size:.44rem;text-transform:uppercase}.npc-forge-subclass-inspector__progression-row>div:nth-child(2){padding-top:2px;color:rgba(239,226,203,.68);font-size:.6rem}.npc-forge-subclass-inspector__progression-features{display:flex;flex-wrap:wrap;gap:5px;min-width:0}.npc-forge-subclass-inspector__progression-features button{cursor:pointer;transition:border-color .14s ease,background .14s ease,transform .14s ease}.npc-forge-subclass-inspector__progression-features button:hover,.npc-forge-subclass-inspector__progression-features button:focus-visible{border-color:rgba(229,198,255,.74);background:rgba(126,78,186,.32);transform:translateY(-1px);outline:none}.npc-forge-subclass-inspector__progression-features button.is-subclass:hover,.npc-forge-subclass-inspector__progression-features button.is-subclass:focus-visible{border-color:rgba(91,220,246,.82);background:rgba(28,128,151,.34)}.npc-forge-subclass-inspector__progression-features em{color:rgba(255,255,255,.35);font-size:.62rem;font-style:normal}
         .npc-forge-subclass-inspector__feature-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.npc-forge-subclass-inspector__feature-list details{border:1px solid rgba(209,158,67,.24);border-radius:7px;background:rgba(12,18,22,.72);overflow:hidden;min-width:0}.npc-forge-subclass-inspector__feature-list details[open]{grid-column:1/-1}.npc-forge-subclass-inspector__feature-list summary{display:grid;grid-template-columns:86px minmax(0,1fr);gap:12px;align-items:center;padding:13px 15px;cursor:pointer;list-style:none}.npc-forge-subclass-inspector__feature-list summary::-webkit-details-marker{display:none}.npc-forge-subclass-inspector__feature-list summary span{color:#c69b53;font-size:.66rem;font-weight:800;text-transform:uppercase}.npc-forge-subclass-inspector__feature-list summary strong{color:#f1dfbd;font:700 .94rem/1.28 Georgia,serif}.npc-forge-subclass-inspector__feature-list details>.class-feature-text{padding:4px 16px 17px;font-size:.94rem!important;line-height:1.72!important}.npc-forge-subclass-inspector__feature-list details>.class-feature-text p,.npc-forge-subclass-inspector__feature-list details>.class-feature-text li{font-size:.94rem!important;line-height:1.72!important}.npc-forge-subclass-inspector__reading{display:grid;gap:11px}.npc-forge-subclass-inspector__reading .class-feature-text{padding:13px 14px;border:1px solid rgba(209,158,67,.18);border-radius:7px;background:rgba(10,17,21,.58)}
-        .npc-forge-subclass-inspector__spell-workspace{display:grid;grid-template-columns:minmax(180px,.58fr) minmax(0,1.42fr);gap:8px;align-items:stretch;height:min(460px,calc(84dvh - 160px));min-height:280px;overflow:hidden;padding-bottom:0}.npc-forge-subclass-inspector__spell-list,.npc-forge-subclass-inspector__spell-preview{min-width:0;min-height:0;height:100%;border:1px solid rgba(209,158,67,.20);border-radius:8px;background:rgba(7,13,17,.76);box-shadow:inset 0 1px rgba(255,255,255,.025)}.npc-forge-subclass-inspector__spell-list-head,.npc-forge-subclass-inspector__spell-preview-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;padding:10px 11px;border-bottom:1px solid rgba(209,158,67,.18)}.npc-forge-subclass-inspector__spell-list-head>div{display:grid;gap:2px}.npc-forge-subclass-inspector__spell-list-head strong,.npc-forge-subclass-inspector__spell-preview-head strong{color:#f0cf8b;font:700 .82rem/1.2 Georgia,serif}.npc-forge-subclass-inspector__spell-list-head small,.npc-forge-subclass-inspector__spell-preview-head small{color:rgba(236,224,202,.58);font-size:.54rem;line-height:1.3}.npc-forge-subclass-inspector__spell-list-head>span{display:grid;place-items:center;min-width:26px;height:23px;padding:0 7px;border:1px solid rgba(209,158,67,.28);border-radius:999px;color:#d9b66f;background:rgba(64,43,19,.28);font-size:.56rem;font-weight:850}.npc-forge-subclass-inspector__spell-list{display:grid;grid-template-rows:auto minmax(0,1fr);overflow:hidden}.npc-forge-subclass-inspector__spell-list-scroll{min-height:0;max-height:none;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:rgba(209,158,67,.42) rgba(255,255,255,.03)}.npc-forge-subclass-inspector__spell-row{display:grid;gap:4px;width:100%;padding:10px 11px;border:0;border-bottom:1px solid rgba(255,255,255,.06);border-left:3px solid transparent;color:#eadfca;background:rgba(8,14,18,.52);text-align:left;cursor:pointer}.npc-forge-subclass-inspector__spell-row:last-child{border-bottom:0}.npc-forge-subclass-inspector__spell-row:hover,.npc-forge-subclass-inspector__spell-row:focus-visible{background:rgba(72,48,20,.24);outline:none}.npc-forge-subclass-inspector__spell-row.is-active{border-left-color:#d2a44f;background:linear-gradient(90deg,rgba(111,74,24,.30),rgba(17,22,24,.72))}.npc-forge-subclass-inspector__spell-row-name{color:#f4dfb4;font:700 .76rem/1.2 Georgia,serif}.npc-forge-subclass-inspector__spell-row-meta{color:rgba(231,216,188,.62);font-size:.54rem;line-height:1.35}.npc-forge-subclass-inspector__spell-row-tags{display:flex;flex-wrap:wrap;gap:4px}.npc-forge-subclass-inspector__spell-row-tags i{padding:2px 5px;border:1px solid rgba(209,158,67,.22);border-radius:999px;color:#d9bd86;background:rgba(92,61,24,.20);font-size:.46rem;font-style:normal;font-weight:750;line-height:1.25}.npc-forge-subclass-inspector__spell-preview{display:grid;grid-template-rows:minmax(0,1fr);min-height:0;overflow:hidden}.npc-forge-subclass-inspector__spell-preview-scroll{min-height:0;height:100%;overflow-y:auto;overflow-x:hidden;padding:5px 8px 14px 5px;scrollbar-gutter:stable;scrollbar-width:thin;scrollbar-color:rgba(209,158,67,.42) rgba(255,255,255,.03)}.npc-forge-subclass-inspector__spell-preview-scroll>.spell-card{margin:0 0 6px}.npc-forge-subclass-inspector__spell-preview .spell-card--compact .spell-card__description,.npc-forge-subclass-inspector__spell-preview .spell-card--compact .spell-card__higher{max-height:none;overflow:visible}.npc-forge-subclass-inspector__spell-preview .spell-card__description{font-size:.9rem!important;line-height:1.52!important;color:#fff!important}.npc-forge-subclass-inspector__spell-preview .spell-card__higher{font-size:.82rem!important;line-height:1.48!important}
+        .npc-forge-subclass-inspector__spell-workspace{display:grid;grid-template-columns:minmax(300px,.88fr) minmax(0,1.12fr);gap:8px;align-items:stretch;height:min(480px,calc(84dvh - 160px));min-height:300px;overflow:hidden;padding-bottom:0}.npc-forge-subclass-inspector__spell-list,.npc-forge-subclass-inspector__spell-preview{min-width:0;min-height:0;height:100%;border:1px solid rgba(209,158,67,.20);border-radius:8px;background:rgba(7,13,17,.76);box-shadow:inset 0 1px rgba(255,255,255,.025)}.npc-forge-subclass-inspector__spell-list-head,.npc-forge-subclass-inspector__spell-preview-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;padding:9px 10px;border-bottom:1px solid rgba(209,158,67,.18)}.npc-forge-subclass-inspector__spell-list-head>div{display:grid;gap:2px}.npc-forge-subclass-inspector__spell-list-head strong,.npc-forge-subclass-inspector__spell-preview-head strong{color:#f0cf8b;font:700 .82rem/1.2 Georgia,serif}.npc-forge-subclass-inspector__spell-list-head small,.npc-forge-subclass-inspector__spell-preview-head small{color:rgba(236,224,202,.58);font-size:.54rem;line-height:1.3}.npc-forge-subclass-inspector__spell-list-head>span{display:grid;place-items:center;min-width:26px;height:23px;padding:0 7px;border:1px solid rgba(209,158,67,.28);border-radius:999px;color:#d9b66f;background:rgba(64,43,19,.28);font-size:.56rem;font-weight:850}.npc-forge-subclass-inspector__spell-list{display:grid;grid-template-rows:auto auto minmax(0,1fr);overflow:hidden}.npc-forge-subclass-inspector__spell-table-head,.npc-forge-subclass-inspector__spell-row{display:grid;grid-template-columns:minmax(110px,1.35fr) 58px minmax(72px,.82fr) 58px 68px;gap:6px;align-items:center}.npc-forge-subclass-inspector__spell-table-head{padding:0 8px;border-bottom:1px solid rgba(209,158,67,.16);background:rgba(8,13,17,.96)}.npc-forge-subclass-inspector__spell-table-head>button{display:flex;align-items:center;justify-content:space-between;gap:3px;min-width:0;padding:6px 1px;border:0;color:rgba(236,224,202,.55);background:transparent;font-size:.48rem;font-weight:850;letter-spacing:.04em;text-align:left;text-transform:uppercase}.npc-forge-subclass-inspector__spell-table-head>button.is-sorted{color:#f0cf8b}.npc-forge-subclass-inspector__spell-table-head>button em{color:rgba(209,158,67,.72);font-size:.42rem;font-style:normal}.npc-forge-subclass-inspector__spell-list-scroll{min-height:0;max-height:none;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:rgba(209,158,67,.42) rgba(255,255,255,.03)}.npc-forge-subclass-inspector__spell-row{width:100%;min-height:34px;padding:6px 8px;border:0;border-bottom:1px solid rgba(255,255,255,.06);border-left:3px solid transparent;color:#eadfca;background:rgba(8,14,18,.52);text-align:left;cursor:pointer}.npc-forge-subclass-inspector__spell-row:last-child{border-bottom:0}.npc-forge-subclass-inspector__spell-row:hover,.npc-forge-subclass-inspector__spell-row:focus-visible{background:rgba(72,48,20,.24);outline:none}.npc-forge-subclass-inspector__spell-row.is-active{border-left-color:#d2a44f;background:linear-gradient(90deg,rgba(111,74,24,.30),rgba(17,22,24,.72))}.npc-forge-subclass-inspector__spell-row>span{min-width:0;overflow:hidden;color:rgba(231,216,188,.66);font-size:.5rem;line-height:1.15;text-overflow:ellipsis;white-space:nowrap}.npc-forge-subclass-inspector__spell-row-name{color:#f4dfb4!important;font:700 .66rem/1.15 Georgia,serif!important}.npc-forge-subclass-inspector__spell-row-access{color:#e0bd77!important;font-weight:750}.npc-forge-subclass-inspector__spell-preview{display:grid;grid-template-rows:minmax(0,1fr);min-height:0;overflow:hidden}.npc-forge-subclass-inspector__spell-preview-scroll{min-height:0;height:100%;overflow-y:auto;overflow-x:hidden;padding:5px 8px 14px 5px;scrollbar-gutter:stable;scrollbar-width:thin;scrollbar-color:rgba(209,158,67,.42) rgba(255,255,255,.03)}.npc-forge-subclass-inspector__spell-preview-scroll>.spell-card{margin:0 0 6px}.npc-forge-subclass-inspector__spell-preview .spell-card--compact .spell-card__description,.npc-forge-subclass-inspector__spell-preview .spell-card--compact .spell-card__higher{max-height:none;overflow:visible}.npc-forge-subclass-inspector__spell-preview .spell-card__description{font-size:.86rem!important;line-height:1.52!important;color:#fff!important}.npc-forge-subclass-inspector__spell-preview .source-rule-content__disclosure{margin-top:7px}.npc-forge-subclass-inspector__spell-preview .source-rule-content__disclosure>summary{padding-block:7px}.npc-forge-subclass-inspector__spell-preview .spell-card__higher{font-size:.8rem!important;line-height:1.48!important}
         .npc-forge-subclass-inspector__spells{display:grid;gap:18px}.npc-forge-subclass-inspector__spell-grants,.npc-forge-subclass-inspector__class-spells{display:grid;gap:10px}.npc-forge-subclass-inspector__section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding-bottom:8px;border-bottom:1px solid rgba(209,158,67,.22)}.npc-forge-subclass-inspector__section-head small{color:rgba(240,229,205,.58);font-size:.58rem;line-height:1.3;text-align:right}
         .npc-forge-subclass-inspector__spell-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.npc-forge-subclass-inspector__spell-cards article{display:grid;gap:7px;padding:10px 11px;border:1px solid rgba(209,158,67,.22);border-radius:7px;background:rgba(14,21,24,.72)}.npc-forge-subclass-inspector__spell-cards article>div{display:grid;gap:2px}.npc-forge-subclass-inspector__spell-cards strong{color:#f1dfbd;font-size:.74rem}.npc-forge-subclass-inspector__spell-cards small,.npc-forge-subclass-inspector__spell-cards article>span{color:rgba(229,213,184,.66);font-size:.56rem;line-height:1.35}
         .npc-forge-subclass-inspector__empty-note{display:grid;gap:4px;padding:11px 12px;border:1px solid rgba(209,158,67,.18);border-left:3px solid rgba(209,158,67,.55);border-radius:7px;background:rgba(80,54,22,.10)}.npc-forge-subclass-inspector__empty-note strong{color:#e5c47e;font-size:.7rem}.npc-forge-subclass-inspector__empty-note span{color:rgba(240,232,215,.74);font-size:.65rem;line-height:1.5}

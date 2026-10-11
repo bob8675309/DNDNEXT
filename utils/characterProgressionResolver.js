@@ -23,6 +23,30 @@ function featTokenNames(values = []) {
   });
 }
 
+function featStateFrom(values = []) {
+  const feats = new Set();
+  const variants = new Set();
+  const categories = new Set();
+  for (const value of array(values)) {
+    const raw = text(typeof value === "string" ? value : value?.name || value?.label || value?.value);
+    if (!raw) continue;
+    const parts = raw.split("|").map(text);
+    const base = parts[0];
+    if (base) feats.add(norm(base));
+    if (parts[2]) variants.add(norm(parts[2]));
+    if (typeof value !== "object" || value == null) continue;
+    const category = norm(value.category || value?.metadata?.category || value?.metadata?.featCategory || "");
+    if (category) categories.add(category);
+    const choiceValues = Object.values(value.choices || {}).flatMap((entry) => array(entry));
+    for (const choice of choiceValues) {
+      const choiceLabel = text(choice?.label || choice?.name || choice?.value);
+      if (!choiceLabel) continue;
+      variants.add(norm(`${base} (${choiceLabel})`));
+    }
+  }
+  return { feats, variants, categories };
+}
+
 function classStartingProficiencies(selectedClass = {}) {
   const payload = selectedClass.raw_payload || selectedClass.rawPayload || {};
   const starting = payload.starting_proficiencies || payload.startingProficiencies || {};
@@ -30,6 +54,22 @@ function classStartingProficiencies(selectedClass = {}) {
     armor: unique(starting.armor || []),
     weapons: unique(starting.weapons || []),
   };
+}
+
+export function classFeaturesThroughLevel(selectedClass = {}, level = 1) {
+  const payload = selectedClass.raw_payload || selectedClass.rawPayload || {};
+  const byLevel = payload.class_features_by_level || payload.classFeaturesByLevel || {};
+  const maximum = Math.max(1, number(level, 1));
+  if (Array.isArray(byLevel)) {
+    return unique(byLevel.flatMap((entry, index) => index + 1 <= maximum ? array(entry) : []).map((value) => text(value).split("|")[0]));
+  }
+  if (!byLevel || typeof byLevel !== "object") return [];
+  return unique(Object.entries(byLevel).flatMap(([entryLevel, features]) => Number(entryLevel) <= maximum ? array(features) : []).map((value) => text(value).split("|")[0]));
+}
+
+export function classHasFeatureThroughLevel(selectedClass = {}, featureName = "", level = 1) {
+  const wanted = norm(featureName);
+  return Boolean(wanted && classFeaturesThroughLevel(selectedClass, level).some((feature) => norm(feature) === wanted));
 }
 
 export function progressionState({
@@ -45,22 +85,25 @@ export function progressionState({
   campaigns = [],
   spellcasting = null,
 } = {}) {
+  const resolvedLevel = Math.max(1, number(level, 1));
   const starting = classStartingProficiencies(selectedClass || {});
   const scores = Object.fromEntries(ABILITY_KEYS.map((key) => [key, number(abilities?.[key]?.score ?? abilities?.[key], 10)]));
-  const classFeatures = array(selectedClass?.raw_payload?.class_features_by_level || selectedClass?.rawPayload?.class_features_by_level)
-    .flatMap((entry) => Array.isArray(entry) ? entry : []);
+  const classFeatures = classFeaturesThroughLevel(selectedClass || {}, resolvedLevel);
   const spellcastingFeature = spellcasting == null
     ? Boolean(selectedClass?.spellcasting_ability || norm(selectedClass?.caster_progression).includes("pact") || classFeatures.some((feature) => /spellcasting|pact magic/i.test(text(feature))))
     : Boolean(spellcasting);
+  const featState = featStateFrom(feats);
   return {
-    level: Math.max(1, number(level, 1)),
+    level: resolvedLevel,
     abilities: scores,
     classKey: norm(selectedClass?.class_key || selectedClass?.className || selectedClass?.class_name),
     className: text(selectedClass?.class_name || selectedClass?.className),
     species: norm(selectedSpecies?.name || selectedSpecies),
     subrace: norm(selectedSpecies?.lineage || selectedSpecies?.subrace || ""),
-    background: norm(selectedBackground?.name || selectedBackground),
-    feats: normalizedSet(featTokenNames(feats)),
+    size: norm(selectedSpecies?.size || array(selectedSpecies?.metadata?.size)[0] || array(selectedSpecies?.raw_payload?.size)[0] || ""),
+    feats: featState.feats,
+    featVariants: featState.variants,
+    featCategories: featState.categories,
     features: normalizedSet([...features, ...classFeatures].map((value) => text(value).split("|")[0])),
     armorProficiencies: normalizedSet([...starting.armor, ...armorProficiencies]),
     weaponProficiencies: normalizedSet([...starting.weapons, ...weaponProficiencies]),
@@ -102,7 +145,7 @@ function raceRequirementSatisfied(requirements, state) {
   if (!entries.length) return true;
   return entries.some((entry) => {
     const race = norm(entry?.name || entry);
-    if (race === "small race") return false;
+    if (race === "small race") return state.size === "small" || state.size === "s";
     if (race && race !== state.species) return false;
     const subrace = norm(entry?.subrace || "");
     return !subrace || subrace === state.subrace;
@@ -116,9 +159,49 @@ function backgroundRequirementSatisfied(requirements, state) {
 }
 
 function featRequirementSatisfied(requirements, state) {
-  const wanted = featTokenNames(requirements).map(norm).filter(Boolean);
+  const entries = array(requirements);
+  if (!entries.length) return true;
+  return entries.some((requirement) => {
+    const raw = text(typeof requirement === "string" ? requirement : requirement?.name || requirement?.label || requirement?.value);
+    if (!raw) return false;
+    const parts = raw.split("|").map(text);
+    const base = norm(parts[0]);
+    const variant = norm(parts[2] || "");
+    if (variant) return state.featVariants?.has(variant) || false;
+    return state.feats.has(base);
+  });
+}
+
+function featCategoryRequirementSatisfied(requirements, state) {
+  const wanted = array(requirements).map(norm).filter(Boolean);
   if (!wanted.length) return true;
-  return wanted.some((candidate) => state.feats.has(candidate));
+  return wanted.some((category) => state.featCategories?.has(category));
+}
+
+function exclusiveFeatCategoryRequirementSatisfied(requirements, state) {
+  const wanted = array(requirements).map(norm).filter(Boolean);
+  if (!wanted.length) return true;
+  return wanted.every((category) => !state.featCategories?.has(category));
+}
+
+function otherPrerequisiteSatisfied(value, state) {
+  const requirement = norm(value);
+  if (!requirement) return true;
+  if (requirement === "no other dragonmark") return !state.featCategories?.has("d");
+  return false;
+}
+
+function otherSummaryPrerequisiteSatisfied(value, state, acquisitionLevel) {
+  const entry = text(value?.entry || value?.entrySummary || value);
+  if (!entry) return true;
+  const match = entry.match(/when\s+gaining\s+the\s+level\s+(\d+)\s+(.+?)\s+["“”']([^"“”']+)["“”']\s+feature/i);
+  if (!match) return false;
+  const requiredLevel = number(match[1], 0);
+  const requiredClass = norm(match[2]);
+  const requiredFeature = norm(match[3]);
+  return Number(acquisitionLevel || state.level) === requiredLevel
+    && (requiredClass === norm(state.className) || requiredClass === state.classKey)
+    && state.features.has(requiredFeature);
 }
 
 function featureRequirementSatisfied(requirements, state) {
@@ -128,7 +211,8 @@ function featureRequirementSatisfied(requirements, state) {
 }
 
 const SUPPORTED_PREREQUISITE_KEYS = new Set([
-  "level", "ability", "spellcasting2020", "spellcastingFeature", "feature", "proficiency", "feat", "background", "race", "campaign",
+  "level", "ability", "spellcasting", "spellcasting2020", "spellcastingFeature", "feature", "proficiency", "feat", "featCategory",
+  "exclusiveFeatCategory", "background", "race", "campaign", "other", "otherSummary",
 ]);
 
 function prerequisiteAlternativeResult(alternative = {}, state, acquisitionLevel) {
@@ -138,13 +222,17 @@ function prerequisiteAlternativeResult(alternative = {}, state, acquisitionLevel
   const reasons = [];
   if (!levelRequirementSatisfied(alternative.level, state, acquisitionLevel)) reasons.push(`Requires level ${typeof alternative.level === "object" ? alternative.level.level : alternative.level}.`);
   if (!abilityRequirementSatisfied(alternative.ability, state)) reasons.push("Required ability score is not high enough yet.");
-  if ((alternative.spellcasting2020 || alternative.spellcastingFeature) && !state.spellcasting) reasons.push("Requires Spellcasting or Pact Magic.");
+  if ((alternative.spellcasting || alternative.spellcasting2020 || alternative.spellcastingFeature) && !state.spellcasting) reasons.push("Requires Spellcasting or Pact Magic.");
   if (!featureRequirementSatisfied(alternative.feature, state)) reasons.push(`Requires ${array(alternative.feature).join(" or ")}.`);
   if (!proficiencyRequirementSatisfied(alternative.proficiency, state)) reasons.push("Required armor or weapon proficiency is missing.");
-  if (!featRequirementSatisfied(alternative.feat, state)) reasons.push("Required earlier feat is missing.");
+  if (!featRequirementSatisfied(alternative.feat, state)) reasons.push("Required earlier feat or feat variant is missing.");
+  if (!featCategoryRequirementSatisfied(alternative.featCategory, state)) reasons.push("Required earlier feat category is missing.");
+  if (!exclusiveFeatCategoryRequirementSatisfied(alternative.exclusiveFeatCategory, state)) reasons.push("Another mutually exclusive feat from this category is already owned.");
   if (!backgroundRequirementSatisfied(alternative.background, state)) reasons.push("Required background is missing.");
-  if (!raceRequirementSatisfied(alternative.race, state)) reasons.push("Required species or lineage is missing.");
-  if (array(alternative.campaign).length && state.campaigns.size && !array(alternative.campaign).some((value) => state.campaigns.has(norm(value)))) reasons.push("This feat is restricted to another campaign setting.");
+  if (!raceRequirementSatisfied(alternative.race, state)) reasons.push("Required species, lineage, or size is missing.");
+  if (array(alternative.campaign).length && !array(alternative.campaign).some((value) => state.campaigns.has(norm(value)))) reasons.push(`Requires the ${array(alternative.campaign).join(" or ")} campaign setting.`);
+  if (alternative.other != null && !otherPrerequisiteSatisfied(alternative.other, state)) reasons.push(`Requires: ${text(alternative.other)}.`);
+  if (alternative.otherSummary != null && !otherSummaryPrerequisiteSatisfied(alternative.otherSummary, state, acquisitionLevel)) reasons.push(`Requires: ${text(alternative.otherSummary?.entry || alternative.otherSummary?.entrySummary || "special acquisition condition")}.`);
   return { eligible: reasons.length === 0, supported: true, reasons };
 }
 
@@ -184,11 +272,14 @@ export function applyFeatToProgressionState(stateInput = {}, feat = {}, selected
     ...state,
     abilities: { ...state.abilities },
     feats: new Set(state.feats),
+    featVariants: new Set(state.featVariants || []),
+    featCategories: new Set(state.featCategories || []),
     features: new Set(state.features),
     armorProficiencies: new Set(state.armorProficiencies),
     weaponProficiencies: new Set(state.weaponProficiencies),
   };
   next.feats.add(norm(feat.name));
+  if (feat.category) next.featCategories.add(norm(feat.category));
   const abilityEffects = array(feat.metadata?.ability);
   for (const effect of abilityEffects) {
     for (const key of ABILITY_KEYS) {

@@ -12,6 +12,26 @@ Key accepted Forge milestones now merged:
 - PR #202 — Metamagic Adept nested choices, invocation detail fallback, and Profile-style Forge spell browsing;
 - PR #204 — complete 36/36 Grim Hollow Tarot expansion coverage.
 - PR #206 — October 9 browser-review follow-up: modest Background readability increase, Expertise-as-Skill-flag UX, compact Class Choices, and exact Training blocker guidance. This preserves existing class-feature/source-choice persistence rather than introducing parallel state.
+- PR #207 — active October 9 browser-review follow-up: compact sortable spell rows, client-side selection ceilings aligned to existing starting-magic models, structured one-scroll SpellCard rules/progression, Background cleanup, intrinsic-height Training Current Selection cards, and complete source-rule presentation for class/subclass options. Choice/progression persistence authority is unchanged; two reviewed source-rule enrichment SQL files were applied live to repair previously identity-only option descriptions.
+
+### 2026-10-09 Class Choices source-rule completeness pass
+
+Browser review of Fighter Fighting Styles and Battle Master maneuvers exposed two separate presentation/data gaps.
+
+- Fighting Style feat rows already had complete descriptions in `character_option_catalog_preferred`; the Class Choice parser was discarding the nested `option.raw.description` and falling through to placeholder prose. The parser now preserves that imported rule text. Live audit: **17 / 17** preferred Fighting Style feat rows have descriptions.
+- Battle Master maneuvers, XPHB Eldritch Invocations, and XPHB Metamagic rows had been normalized as identity-only rows with null descriptions. `20261009_01_enrich_class_feature_option_rules.sql` fills those existing rows from the pinned canonical 5etools optional-feature source without changing their prerequisite/choice/progression authority.
+- A broader reference audit then checked every `refOptionalfeature` currently used by `class_feature_catalog`. `20261009_02_backfill_referenced_optional_feature_rules.sql` materializes the exact source-backed rules needed by those references from pinned core 5etools and Grim Hollow PG24 source snapshots, including Battle Master maneuvers, Arcane Shots, Rune Knight runes, Four Elements disciplines, fighting-style references, Pact Boons, and Grim Hollow subclass option families.
+- Live post-apply audit: **218 / 218** currently referenced class/subclass optional-feature identities have source-rule descriptions; **0** are missing.
+- `classFeatureOptionAuthority` now prefers exact name+source descriptions before edition fallbacks and applies source descriptions even to option families that do not own specialized persistence logic. This is presentation enrichment, not a second choice authority.
+- Warlock Invocation and Metamagic presentation now prefer canonical source-rule descriptions; concise hand-authored summaries remain fallback/supplemental guidance only.
+- Training Current Selection no longer stretches short option cards to the viewport. Short rules stop the card below the content; genuinely long source rules remain bounded by a viewport max-height and scroll inside the dossier.
+
+Pinned source checkpoints for this pass:
+
+- `5etools-mirror-3/5etools-src@8c026b807fac21862a309379a0c3228a0683198b` — `data/optionalfeatures.json`;
+- `TheGiddyLimit/homebrew@ab4012f136dc1224c45d6c13c1d8f71b543c34bb` — Grim Hollow Player's Guide 2024 collection.
+
+No world-map, town/city-map, tactical combat, crafting, inventory, merchant, or economy authority is changed by this pass.
 
 The next broad Character Forge task is **completion/reconciliation**, not another architectural rewrite. Audit all ten player Forge steps on current `main`, reproduce concrete defects, and patch only the remaining gaps:
 

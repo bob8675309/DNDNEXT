@@ -94,8 +94,8 @@ export default function NpcForgeClassOptionBrowser({ groups = [], selections = {
       .npc-forge-class-option-browser>header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 1px}
       .npc-forge-class-option-browser>header>div{display:grid;gap:2px}
       .npc-forge-class-option-browser>header span{color:#9cece2;font-size:.52rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
-      .npc-forge-class-option-browser>header strong{color:#fff;font-size:.64rem}
-      .npc-forge-class-option-browser>header p{max-width:250px;margin:0;color:rgba(255,255,255,.48);font-size:.45rem;line-height:1.3}
+      .npc-forge-class-option-browser>header strong{color:#fff;font-size:.72rem}
+      .npc-forge-class-option-browser>header p{max-width:290px;margin:0;color:rgba(255,255,255,.58);font-size:.56rem;line-height:1.4}
       
       .npc-forge-class-option-browser__groups{display:grid;gap:6px}
       .npc-forge-class-option-group{border:1px solid rgba(168,108,255,.24);border-left:3px solid rgba(168,108,255,.42);border-radius:9px;background:linear-gradient(120deg,rgba(126,72,199,.075),rgba(4,7,13,.45));overflow:hidden}
@@ -107,8 +107,8 @@ export default function NpcForgeClassOptionBrowser({ groups = [], selections = {
       .npc-forge-class-option-group__chevron{color:#c8a9ff;font-size:1rem;line-height:1;transition:transform .16s ease}
       .npc-forge-class-option-group[open] .npc-forge-class-option-group__chevron{transform:rotate(90deg)}
       .npc-forge-class-option-group__title{display:grid;gap:2px;min-width:0}
-      .npc-forge-class-option-group__title strong{color:#f7f0ff;font-size:.68rem}
-      .npc-forge-class-option-group__title small{overflow:hidden;color:rgba(255,255,255,.45);font-size:.46rem;white-space:nowrap;text-overflow:ellipsis}
+      .npc-forge-class-option-group__title strong{color:#f7f0ff;font-size:.74rem}
+      .npc-forge-class-option-group__title small{overflow:hidden;color:rgba(255,255,255,.52);font-size:.52rem;white-space:nowrap;text-overflow:ellipsis}
       .npc-forge-class-option-group>summary>em{padding:3px 7px;border-radius:999px;color:#d8c2fb;background:rgba(126,72,199,.09);font-size:.45rem;font-style:normal}
       .npc-forge-class-option-group.is-complete>summary>em{color:#a7f5ea;background:rgba(88,214,199,.09)}
       .npc-forge-class-option-group__body{display:grid;gap:8px;margin:0 8px 8px 22px;padding:8px 0 0 10px;border-top:1px solid rgba(255,255,255,.055);border-left:1px solid rgba(168,108,255,.18)}
@@ -120,13 +120,13 @@ export default function NpcForgeClassOptionBrowser({ groups = [], selections = {
       .npc-forge-class-option-field__head small{color:rgba(255,255,255,.4);font-size:.42rem}
       .npc-forge-class-option-field__head input{min-width:0;width:100%;padding:5px 7px;border:1px solid rgba(168,108,255,.22);border-radius:6px;color:#fff;background:#080b12;font-size:.49rem}
       .npc-forge-class-option-list{display:grid;gap:3px;max-height:300px;overflow:auto;padding-right:2px;scrollbar-width:thin;scrollbar-color:rgba(168,108,255,.32) rgba(255,255,255,.025)}
-      .npc-forge-class-option-list>button{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;min-height:31px;padding:5px 7px;border:1px solid rgba(255,255,255,.075);border-radius:6px;color:#fff;background:rgba(4,7,13,.34);text-align:left}
+      .npc-forge-class-option-list>button{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;min-height:39px;padding:7px 9px;border:1px solid rgba(255,255,255,.075);border-left:2px solid rgba(168,108,255,.34);border-radius:7px;color:#fff;background:linear-gradient(90deg,rgba(13,16,25,.9),rgba(4,7,13,.5));text-align:left}
       .npc-forge-class-option-list>button:hover,.npc-forge-class-option-list>button:focus-visible{border-color:rgba(168,108,255,.48);background:rgba(126,72,199,.075);outline:none}
       .npc-forge-class-option-list>button.is-selected{border-color:rgba(88,214,199,.5);background:linear-gradient(90deg,rgba(88,214,199,.08),rgba(126,72,199,.03))}
       .npc-forge-class-option-list>button>span{display:grid;gap:1px;min-width:0}
-      .npc-forge-class-option-list>button strong{overflow:hidden;color:#fff;font-size:.55rem;white-space:nowrap;text-overflow:ellipsis}
-      .npc-forge-class-option-list>button small{overflow:hidden;color:rgba(255,255,255,.41);font-size:.41rem;white-space:nowrap;text-overflow:ellipsis}
-      .npc-forge-class-option-list>button em{color:rgba(255,255,255,.43);font-size:.42rem;font-style:normal}
+      .npc-forge-class-option-list>button strong{overflow:hidden;color:#fff;font-size:.68rem;white-space:nowrap;text-overflow:ellipsis}
+      .npc-forge-class-option-list>button small{overflow:hidden;color:rgba(255,255,255,.5);font-size:.51rem;white-space:nowrap;text-overflow:ellipsis}
+      .npc-forge-class-option-list>button em{color:rgba(255,255,255,.5);font-size:.5rem;font-style:normal}
       .npc-forge-class-option-list>button.is-selected em{color:#9cece2}
       .npc-forge-class-option-list__empty{padding:8px;color:rgba(255,255,255,.48);font-size:.49rem;text-align:center}
       @media(max-width:900px){.npc-forge-class-option-browser>header{align-items:start;flex-direction:column}.npc-forge-class-option-field__head{grid-template-columns:1fr}.npc-forge-class-option-group__body{margin-left:12px}}

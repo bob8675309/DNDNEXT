@@ -34,7 +34,8 @@ forbidden(classGuide, "ChoiceRoutingNote", "Class guide player-facing routing no
 forbidden(classGuide, "Deferred resolutions", "Class guide player-facing routing note");
 forbidden(classGuide, "NpcForgeClassFeatureChoices", "Class explanation routing");
 forbidden(classDock, "NpcForgeSourceChoiceFields", "Class dock explanation routing");
-for (const token of ["RichField", "npc-forge-rich-choice", "eldritch-invocation", "artificer-plan"]) required(sourceUi, token, "Rich catalogue choices");
+for (const token of ["RichField", "npc-forge-rich-choice", "eldritch-invocation", "artificer-plan", "SourceSpellField", "npc-forge-source-spell-picker__table-head", "<SpellCard"]) required(sourceUi, token, "Rich catalogue choices");
+required(sourceUi, 'field.kind === "spell"', "Source spell choices use shared SpellCard browser");
 for (const token of ["resolverPlacement", "applyAutomaticSourceSelections", "sourceChoiceFieldResolverPlacement", "sourceChoiceGroupsForResolverPlacement"]) required(sourceContext, token, "Source resolver placement");
 required(sourceContext, 'String(field?.kind || "") === "spell"', "Mixed feat source-magic field routing");
 for (const token of ["directCantripChoiceField", "fixedSpeciesSpellFields", '"spells"', "autoCastingAbility"]) required(speciesChoices, token, "Species source magic routing");

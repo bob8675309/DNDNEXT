@@ -1,4 +1,6 @@
 import React from "react";
+import SourceRuleContent from "./SourceRuleContent";
+import { spellRuleReferenceDetail } from "../utils/spellRuleReferences";
 
 const SCHOOL_ACCENTS = {
   Abjuration: "spell-school-abjuration",
@@ -21,7 +23,28 @@ function joinValues(values) {
   return values.length ? values.join(", ") : "—";
 }
 
-export default function SpellCard({ spell, compact = false, dense = false, headerAction = null }) {
+function safeJson(value) {
+  if (!value) return null;
+  if (typeof value === "object") return value;
+  try { return JSON.parse(String(value)); } catch { return null; }
+}
+
+function scalingProfile(spell = {}) {
+  const direct = spell?.raw_payload?.scalingLevelDice || safeJson(spell?.scaling_json) || safeJson(spell?.scaling_text);
+  if (!direct || typeof direct !== "object" || !direct.scaling || typeof direct.scaling !== "object") return null;
+  const rows = Object.entries(direct.scaling)
+    .map(([level, value]) => ({ level: Number(level), value: String(value || "").trim() }))
+    .filter((entry) => Number.isFinite(entry.level) && entry.value)
+    .sort((a, b) => a.level - b.level);
+  return rows.length ? { label: String(direct.label || "Effect").trim(), rows } : null;
+}
+
+function progressionEntries(spell = {}) {
+  const entries = spell?.raw_payload?.entriesHigherLevel;
+  return Array.isArray(entries) && entries.length ? entries : null;
+}
+
+export default function SpellCard({ spell, compact = false, dense = false, compressed = false, headerAction = null, onReferenceDetail = null }) {
   if (!spell) return null;
 
   const school = spell.school || "Spell";
@@ -34,9 +57,20 @@ export default function SpellCard({ spell, compact = false, dense = false, heade
   const damageTypes = Array.isArray(spell.damage_types) ? spell.damage_types : [];
   const showDamage = Boolean(spell.damage_dice || damageTypes.length);
   const showArea = Boolean(spell.area_type);
+  const ruleEntries = Array.isArray(spell?.raw_payload?.entries) && spell.raw_payload.entries.length
+    ? spell.raw_payload.entries
+    : null;
+  const progression = progressionEntries(spell);
+  const scaling = scalingProfile(spell);
+  const progressionText = spell.higher_level_text || (!safeJson(spell.scaling_text) ? spell.scaling_text : "");
+  const hasProgression = Boolean(progression || scaling || progressionText);
+  const publishReference = (reference) => {
+    if (!onReferenceDetail || !reference) return;
+    onReferenceDetail(spellRuleReferenceDetail(reference, spell));
+  };
 
   return (
-    <article className={`spell-card ${accent} ${compact ? "spell-card--compact" : ""} ${dense ? "spell-card--dense" : ""}`}>
+    <article className={`spell-card ${accent} ${compact ? "spell-card--compact" : ""} ${dense ? "spell-card--dense" : ""} ${compressed ? "spell-card--compressed" : ""}`}>
       <header className="spell-card__header">
         <div>
           <div className="spell-card__eyebrow">{levelLabel(spell.level)} • {school}</div>
@@ -64,13 +98,26 @@ export default function SpellCard({ spell, compact = false, dense = false, heade
         {!dense || showArea ? <div><dt>Area</dt><dd>{spell.area_type ? `${spell.area_size || ""} ${spell.area_unit || ""} ${spell.area_type}`.trim() : "—"}</dd></div> : null}
       </dl>
 
-      {spell.description ? <p className="spell-card__description">{spell.description}</p> : null}
-      {spell.higher_level_text ? <section className="spell-card__higher"><strong>At Higher Levels.</strong> {spell.higher_level_text}</section> : null}
+      <div className="spell-card__body">
+        {ruleEntries || spell.description || hasProgression ? <section className="spell-card__description">
+          {ruleEntries || spell.description ? <SourceRuleContent entries={ruleEntries} text={spell.description || ""} digital onReferenceDetail={publishReference} /> : null}
+          {hasProgression ? <details className="spell-card__progression">
+            <summary><span>Spell Progression</span><small>Higher-level effects and scaling</small></summary>
+            <div className="spell-card__progression-body">
+              {scaling ? <div className="spell-card__scaling-table" role="table" aria-label={`${spell.name} progression`}>
+                <div role="row" className="spell-card__scaling-head"><span role="columnheader">Character level</span><span role="columnheader">{scaling.label}</span></div>
+                {scaling.rows.map((entry) => <div role="row" key={entry.level}><span role="cell">{entry.level}</span><strong role="cell">{entry.value}</strong></div>)}
+              </div> : null}
+              {progression || progressionText ? <SourceRuleContent entries={progression} text={progressionText || ""} digital onReferenceDetail={publishReference} /> : null}
+            </div>
+          </details> : null}
+        </section> : null}
 
-      <footer className="spell-card__footer">
-        <span>Classes: {joinValues(spell.classes)}</span>
-        {spell.page ? <span>p. {spell.page}</span> : null}
-      </footer>
+        <footer className="spell-card__footer">
+          <span>Classes: {joinValues(spell.classes)}</span>
+          {spell.page ? <span>p. {spell.page}</span> : null}
+        </footer>
+      </div>
     </article>
   );
 }

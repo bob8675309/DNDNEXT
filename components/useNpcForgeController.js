@@ -200,7 +200,7 @@ export default function useNpcForgeController({ show, onClose, onCreated, locati
       if (!playerMode) PROFESSION_KEYS.forEach((professionKey) => { const profession = draft.professions?.[professionKey] || {}; if (profession.offersService && Number(profession.rank || 0) === 0) errors.push(`${PROFESSION_DEFINITIONS[professionKey].label} must be trained before offering service.`); });
     }
     if (key === "spells" && playerMode) { if (!spellModel?.catalogReady) errors.push(spellModel?.error || "Wait for the canonical spell catalogue and class progression to finish loading."); else errors.push(...validateStartingSpellSelections(spellModel, spellRows, draft.spellSelections)); }
-    if (key === "equipment" && playerMode) { if (!equipmentModel?.catalogReady) errors.push(equipmentModel?.error || "Wait for source-backed starting equipment to finish loading."); else if (!startingEquipmentSelectionComplete(equipmentModel,draft.startingEquipment || {})) errors.push("Complete the class package, Background package, equipment-category choices, and higher-level wealth roll."); }
+    if (key === "equipment" && playerMode) { if (!equipmentModel?.catalogReady) errors.push(equipmentModel?.error || "Wait for the source-backed starting market to finish loading."); else if (!startingEquipmentSelectionComplete(equipmentModel,draft.startingEquipment || {})) errors.push("Finish the required higher-level wealth roll and keep starting-market purchases within your source-backed purse."); }
     if (key === "identity") { if (!safeText(draft.name)) errors.push("Enter or generate a name."); if (!safeText(draft.role)) errors.push("Enter a role or title."); if (!draft.portraitLibraryId) errors.push("Choose a portrait for this character."); }
     return errors;
   }

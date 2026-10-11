@@ -70,6 +70,9 @@ function optionType(featureTypes = []) {
   if (types.has("MM")) return "metamagic";
   if (types.has("MV:B") || types.has("MV")) return "battle-master-maneuver";
   if (types.has("AS")) return "arcane-shot";
+  if (types.has("RN")) return "rune";
+  if (types.has("ED")) return "elemental-discipline";
+  if (types.has("PB")) return "pact-boon";
   if (types.has("AI")) return "artificer-infusion";
   if ([...types].some((type) => type.startsWith("FS"))) return "fighting-style";
   return "optional-feature";
@@ -83,7 +86,9 @@ function classKey(featureTypes = [], prerequisites = []) {
   const type = optionType(featureTypes);
   if (type === "eldritch-invocation") return "warlock";
   if (type === "metamagic") return "sorcerer";
-  if (["battle-master-maneuver", "arcane-shot"].includes(type)) return "fighter";
+  if (["battle-master-maneuver", "arcane-shot", "rune"].includes(type)) return "fighter";
+  if (type === "elemental-discipline") return "monk";
+  if (type === "pact-boon") return "warlock";
   if (type === "artificer-infusion") return "artificer";
   return null;
 }

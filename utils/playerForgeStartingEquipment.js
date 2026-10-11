@@ -55,6 +55,41 @@ export function equipmentOptionCopper(option = null) {
   return asArray(option?.parts).reduce((total, part) => total + (Number.isFinite(Number(part?.value)) ? Number(part.value) : 0), 0);
 }
 
+export function cashOnlyEquipmentOption(raw = []) {
+  return normalizeEquipmentOptions(raw).find((option) => option.parts.length > 0 && option.parts.every((part) => Number.isFinite(Number(part?.value)))) || null;
+}
+
+export function startingMarketBaseCopper(model = null) {
+  return equipmentOptionCopper(cashOnlyEquipmentOption(model?.classOptions))
+    + equipmentOptionCopper(cashOnlyEquipmentOption(model?.backgroundOptions));
+}
+
+export function startingMarketPurchases(selection = {}) {
+  return asArray(selection?.marketPurchases).map((entry) => ({
+    merchantId: safeText(entry?.merchantId),
+    merchantName: safeText(entry?.merchantName),
+    stockId: safeText(entry?.stockId),
+    itemId: safeText(entry?.itemId),
+    itemName: safeText(entry?.itemName),
+    itemType: safeText(entry?.itemType),
+    itemRarity: safeText(entry?.itemRarity),
+    priceGp: Math.max(0, Number(entry?.priceGp || 0)),
+    qty: Math.max(1, Math.trunc(Number(entry?.qty || 1))),
+  })).filter((entry) => entry.merchantId && entry.stockId && entry.itemName && Number.isFinite(entry.priceGp));
+}
+
+export function startingMarketSpentCopper(selection = {}) {
+  return startingMarketPurchases(selection).reduce((total, entry) => total + Math.round(entry.priceGp * 100) * entry.qty, 0);
+}
+
+export function startingMarketBudgetCopper(model = null, selection = {}) {
+  return startingMarketBaseCopper(model) + higherLevelCopper(model?.level || 1, selection?.wealthRoll);
+}
+
+export function startingMarketRemainingCopper(model = null, selection = {}) {
+  return Math.max(0, startingMarketBudgetCopper(model, selection) - startingMarketSpentCopper(selection));
+}
+
 export function higherLevelCopper(level = 1, roll = null) {
   const resolvedLevel = Math.max(1, Math.min(20, Number(level || 1)));
   const d10 = Number(roll);
@@ -81,18 +116,28 @@ export function magicAllowanceLabel(level = 1) {
 }
 
 export function normalizeStartingEquipmentSelection(model = null, current = {}) {
-  const classOptions = normalizeEquipmentOptions(model?.classOptions);
-  const backgroundOptions = normalizeEquipmentOptions(model?.backgroundOptions);
-  const classOption = classOptions.some((option) => option.key === current?.classOption) ? current.classOption : classOptions[0]?.key || "";
-  const backgroundOption = backgroundOptions.some((option) => option.key === current?.backgroundOption) ? current.backgroundOption : backgroundOptions[0]?.key || "";
-  const choices = current?.choices && typeof current.choices === "object" ? { ...current.choices } : {};
   const rule = higherLevelWealthRule(model?.level || 1);
   const wealthRoll = rule.rollRequired && Number.isInteger(Number(current?.wealthRoll)) && Number(current.wealthRoll) >= 1 && Number(current.wealthRoll) <= 10 ? Number(current.wealthRoll) : null;
-  return { classOption, backgroundOption, choices, wealthRoll };
+  return {
+    mode: "market",
+    wealthRoll,
+    marketMerchantId: safeText(current?.marketMerchantId),
+    marketPurchases: startingMarketPurchases(current),
+  };
 }
 
 export function startingEquipmentSelectionComplete(model = null, selection = {}) {
   if (!model?.catalogReady) return false;
+  const rule = higherLevelWealthRule(model?.level || 1);
+  if (rule.rollRequired && (!Number.isInteger(Number(selection?.wealthRoll)) || Number(selection.wealthRoll) < 1 || Number(selection.wealthRoll) > 10)) return false;
+  if (safeText(selection?.mode || "market") === "market") {
+    if (normalizeEquipmentOptions(model?.classOptions).length && !cashOnlyEquipmentOption(model?.classOptions)) return false;
+    if (normalizeEquipmentOptions(model?.backgroundOptions).length && !cashOnlyEquipmentOption(model?.backgroundOptions)) return false;
+    const purchases = startingMarketPurchases(selection);
+    if (purchases.some((entry) => !entry.merchantId || !entry.stockId || entry.qty < 1 || !Number.isFinite(entry.priceGp))) return false;
+    return startingMarketSpentCopper(selection) <= startingMarketBudgetCopper(model, selection);
+  }
+
   const classOptions = normalizeEquipmentOptions(model.classOptions);
   const backgroundOptions = normalizeEquipmentOptions(model.backgroundOptions);
   const classOption = classOptions.find((option) => option.key === selection?.classOption) || null;
@@ -109,12 +154,11 @@ export function startingEquipmentSelectionComplete(model = null, selection = {})
       if (!selected || !allowed.includes(selected)) return false;
     }
   }
-  const rule = higherLevelWealthRule(model?.level || 1);
-  if (rule.rollRequired && (!Number.isInteger(Number(selection?.wealthRoll)) || Number(selection.wealthRoll) < 1 || Number(selection.wealthRoll) > 10)) return false;
   return true;
 }
 
 export function startingCurrencyCopper(model = null, selection = {}) {
+  if (safeText(selection?.mode || "market") === "market") return startingMarketRemainingCopper(model, selection);
   const classOption = normalizeEquipmentOptions(model?.classOptions).find((option) => option.key === selection?.classOption) || null;
   const backgroundOption = normalizeEquipmentOptions(model?.backgroundOptions).find((option) => option.key === selection?.backgroundOption) || null;
   return equipmentOptionCopper(classOption) + equipmentOptionCopper(backgroundOption) + higherLevelCopper(model?.level || 1, selection?.wealthRoll);

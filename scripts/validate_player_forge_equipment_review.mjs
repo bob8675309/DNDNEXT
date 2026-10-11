@@ -14,20 +14,23 @@ for (const token of [
 ]) need(modal, token);
 
 for (const token of [
-  "startingCurrencyCopper",
-  "magicAllowanceLabel",
+  "startingMarketBudgetCopper",
+  "startingMarketSpentCopper",
+  "startingMarketRemainingCopper",
+  "startingMarketPurchases",
   "Equipment & currency",
-  "Class package",
-  "Background package",
+  "Starting market",
+  "Source budget",
+  "Market purchases",
+  "Merchants used",
   "Higher-level roll",
   "Magic-item guide",
-  "canonical inventory",
-  "start unequipped",
-  "not automatically granted",
+  "staged until character creation",
+  "character-scoped currency",
 ]) need(review, token);
 
 for (const source of [modal, review]) {
   for (const token of ["MapPageClient", "map_routes", "weather", "player_wallets"]) forbid(source, token);
 }
 
-console.log("Player Forge Review shows the exact character-scoped starter equipment/currency summary without crossing protected boundaries.");
+console.log("Player Forge Review shows the exact source-funded starting-market/cart/currency summary without crossing protected boundaries.");

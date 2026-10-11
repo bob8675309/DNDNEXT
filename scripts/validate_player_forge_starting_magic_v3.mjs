@@ -40,6 +40,9 @@ for (const token of [
   "accessType: source.accessType",
   "subclassStartingSpellSelectionModel",
   "Background-expanded access",
+  "selectionLimitFor",
+  "canAddSpell",
+  "selectionLimitMessage",
 ]) need(spellStep, token);
 
 for (const token of [

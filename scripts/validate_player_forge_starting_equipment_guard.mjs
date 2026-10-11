@@ -1,6 +1,7 @@
 import fs from "node:fs";
 
 const source = fs.readFileSync("sql/20260808_50_player_forge_starting_equipment_guard.sql", "utf8");
+const market = fs.readFileSync("sql/20261010_01_player_forge_starting_market.sql", "utf8");
 const need = (token) => { if (!source.includes(token)) throw new Error(`Missing starting-equipment guard contract: ${token}`); };
 const forbid = (token) => { if (source.includes(token)) throw new Error(`Forbidden starting-equipment guard crossover: ${token}`); };
 
@@ -20,6 +21,19 @@ for (const token of [
   "'hasBalance',true",
 ]) need(token);
 
-for (const token of ["player_wallets", "MapPageClient", "map_routes", "advance_all_characters", "weather"]) forbid(token);
+for (const token of [
+  "v_mode not in ('market','package')",
+  "Starting market purchases must be a JSON array.",
+  "Each starting market purchase must identify its merchant and stock row.",
+  "Starting market purchase quantity must be at least 1.",
+  "Higher-level starting wealth requires a d10 result from 1 to 10.",
+]) {
+  if (!market.includes(token)) throw new Error(`Missing starting-market guard contract: ${token}`);
+}
 
-console.log("Player Forge starting-equipment Background binding, wealth-roll guard, RLS, currency existence, and protected boundaries validated.");
+for (const token of ["player_wallets", "MapPageClient", "map_routes", "advance_all_characters", "weather"]) {
+  forbid(token);
+  if (market.includes(token)) throw new Error(`Forbidden starting-market guard crossover: ${token}`);
+}
+
+console.log("Player Forge starting-equipment Background binding, starting-market shape/wealth guards, RLS, currency existence, and protected boundaries validated.");
