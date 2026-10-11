@@ -8,6 +8,9 @@ const utility = read("utils/playerForgeStartingEquipment.js");
 const controller = read("components/useNpcForgeController.js");
 const core = read("components/NpcForgeCoreSupport.js");
 const equipmentStep = read("components/NpcForgeEquipmentStep.js");
+const equipmentDock = read("components/NpcForgeEquipmentSummaryDock.js");
+const merchantExpansion = read("sql/20261011_03_starting_market_merchant_expansion.sql");
+const merchantVariety = read("sql/20261011_04_merchant_catalog_reroll_variety.sql");
 const derived = read("components/useNpcForgeDerivedModel.js");
 const modal = read("components/NewNpcModalV3Refined.js");
 
@@ -98,7 +101,6 @@ for (const token of [
 for (const token of [
   "Starting market",
   "DNDNext starting purse",
-  "Vanilla starting-equipment reference",
   "Campaign merchants",
   "startingMarketBudgetCopper",
   "startingMarketRemainingCopper",
@@ -106,10 +108,27 @@ for (const token of [
   'from("characters")',
   'from("character_stock")',
   "ItemCard",
-  "Starting cart",
+  "NpcForgeEquipmentSummaryDock",
   "Roll 1d10 Starting Wealth",
-  "DM guide only",
+  "Starting market needs this Forge draft",
+  "grid-template-columns:minmax(0,1fr)",
 ]) need(equipmentStep, token);
+forbid(equipmentStep, "npc-forge-starting-market__budgetbar", "duplicated in-workspace budget strip");
+
+for (const token of [
+  "createPortal",
+  "Starting cart",
+  "Total gold",
+  "Spent",
+  "Remaining",
+  "Vanilla source purse",
+  "Class source cash",
+  "Background source cash",
+  "DM guide only",
+  "startDrag",
+  "moveDrag",
+  "is-collapsed",
+]) need(equipmentDock, token, "floating Equipment summary dock");
 
 for (const token of [
   "cashOnlyEquipmentOption",
@@ -171,7 +190,28 @@ for (const token of [
   "draft.startingEquipment",
 ]) need(modal, token);
 
-for (const source of [utility, controller, equipmentStep, derived, modal]) {
+for (const token of [
+  "Mara Ironvein",
+  "Selene Quill",
+  "Pell Mossgrove",
+  "Brakka Wayfarer",
+  "Ilyra Glasshand",
+  "Torren Packswell",
+  "reroll_merchant_inventory_v2",
+]) need(merchantExpansion, token, "starting-market merchant expansion");
+
+for (const token of [
+  "from public.items_catalog ic",
+  "v_total integer := least(greatest",
+  "48",
+  "row_number() over",
+  "type_slot",
+  "lower(coalesce(ic.item_type,'')) <> 'recipe'",
+  "v_recipe_target",
+  "perform * from public.reroll_merchant_inventory_v2(v.id,v.theme,36)",
+]) need(merchantVariety, token, "full-catalog diversified merchant reroll");
+
+for (const source of [utility, controller, equipmentStep, equipmentDock, derived, modal, merchantExpansion, merchantVariety]) {
   for (const token of ["MapPageClient", "map_routes", "advance_all_characters", "weather"]) forbid(source, token, `protected world boundary ${token}`);
 }
 
