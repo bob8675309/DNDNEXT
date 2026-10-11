@@ -25,6 +25,8 @@ import "../styles/character-forge-class-hero-framing.css";
 import "../styles/character-forge-class-fullbleed-final.css";
 import "../styles/character-forge-class-final-corners.css";
 import "../styles/card-compact.css";
+import "../styles/merchant-storefront.css";
+import "../styles/player-forge-equipment-market.css";
 import "../styles/npc-profile-panel.css";
 import "../styles/player-profile-scroll-fix.css";
 import "../styles/profile-panel-drag.css";
