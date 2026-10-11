@@ -76,6 +76,9 @@ assert(!guide.includes('onMouseEnter={() => publishFeature(model, onFeatureDetai
 assert(!guide.includes('onFocus={() => publishFeature(model, onFeatureDetail'), "Feature-card content must not change from focus alone.");
 assert(!guide.includes("classSlotSummary(row.spell_slots)"), "Progression regressed to the compressed one-cell spell-slot summary.");
 assert(!guide.includes("inspectSubclass(model, onFeatureDetail, option)"), "Subclass inspection must remain routed to the independent Subclass Codex callback, not the Class Feature panel.");
+assert(guide.includes("function StartingLevelControl") && guide.includes("npc-forge-class-guide__subclass-level") && guide.includes("level={level} onLevelChange={onLevelChange}"), "Starting Level must render beside subclass selection.");
+assert(guideStyles.includes(".npc-forge-class-guide__subclass-level") && guideStyles.includes(".npc-forge-class-guide__detailed-level-row"), "Starting Level placement must avoid covering class artwork.");
+
 
 for (const token of [
   'import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"',
