@@ -120,13 +120,20 @@ function ForgeClassHero({ selectedClass, detailed = false }) {
     <div className="npc-forge-class-guide__hero-art" aria-hidden="true"><img src={classHeroArtworkFor(selectedClass.class_key)} onError={handleClassArtworkError} alt="" /></div>
   </header>;
 }
-function ForgeSubclassSelection({ selectedClass, model, onSubclassDetail, detailed = false }) {
-  return <ClassSubclassSection
-    model={model}
-    classKey={selectedClass?.class_key || ""}
-    detailed={detailed}
-    onInspectSubclass={(option, actions) => inspectSubclass(model, onSubclassDetail, option, actions)}
-  />;
+function StartingLevelControl({ level = 1, onLevelChange = null }) {
+  if (!onLevelChange) return null;
+  return <label className="npc-forge-class-guide__level-control"><span>Starting Level</span><input type="number" min="1" max="20" value={level} aria-label="Starting character level" onChange={(event) => onLevelChange(Math.max(1, Math.min(20, Number(event.target.value) || 1)))} /></label>;
+}
+function ForgeSubclassSelection({ selectedClass, model, onSubclassDetail, level = 1, onLevelChange = null, detailed = false }) {
+  return <div className={`npc-forge-class-guide__subclass-stack${detailed ? " is-detailed" : ""}`}>
+    {!detailed && onLevelChange ? <div className="npc-forge-class-guide__subclass-level"><StartingLevelControl level={level} onLevelChange={onLevelChange} /></div> : null}
+    <ClassSubclassSection
+      model={model}
+      classKey={selectedClass?.class_key || ""}
+      detailed={detailed}
+      onInspectSubclass={(option, actions) => inspectSubclass(model, onSubclassDetail, option, actions)}
+    />
+  </div>;
 }
 function ProgressionTable({ selectedClass, model, onFeatureDetail }) {
   const hasSpellProgression = model.rows.some((row) => row.cantrips_known != null || row.spells_known != null || row.spell_slots);
@@ -153,33 +160,33 @@ function ProgressionTable({ selectedClass, model, onFeatureDetail }) {
     {hasSpellProgression ? <div className="npc-forge-class-guide__table-footnote"><span aria-hidden="true">i</span><p>Spell choices for the {selectedClass?.class_name || "selected class"} are resolved in the Spells tab; this table is the progression reference. A value ending in “p” denotes pact slots.</p></div> : null}
   </section>;
 }
-function ForgeOverview({ selectedClass, model, onFeatureDetail, onSubclassDetail }) {
+function ForgeOverview({ selectedClass, model, onFeatureDetail, onSubclassDetail, level = 1, onLevelChange = null }) {
   return <article className="npc-card class-book-guide__content npc-forge-class-guide__overview-book">
     <ForgeClassHero selectedClass={selectedClass} />
     <div className="npc-forge-class-guide__overview-layout">
       <div className="npc-forge-class-guide__overview-main">
-        <ForgeSubclassSelection selectedClass={selectedClass} model={model} onSubclassDetail={onSubclassDetail} />
+        <ForgeSubclassSelection selectedClass={selectedClass} model={model} onSubclassDetail={onSubclassDetail} level={level} onLevelChange={onLevelChange} />
         <ProgressionTable selectedClass={selectedClass} model={model} onFeatureDetail={onFeatureDetail} />
       </div>
     </div>
   </article>;
 }
-function ForgeDetailedGuide({ selectedClass, model, onFeatureDetail, onSubclassDetail }) {
+function ForgeDetailedGuide({ selectedClass, model, onFeatureDetail, onSubclassDetail, level = 1, onLevelChange = null }) {
   const visibleRows = model.rows
     .map((row) => ({ ...row, visibleFeatures: selectedRowFeatures(model, row) }))
     .filter((row) => row.visibleFeatures.length);
-  return <div className="class-book-guide npc-forge-class-guide__book"><aside className="npc-card class-book-guide__outline"><div className="spell-admin-kicker">Guide Outline</div><a href="#forge-class-guide-introduction">{selectedClass.class_name}</a><div className="class-book-guide__outline-levels">{visibleRows.map((row) => <a key={row.class_level} href={`#forge-class-guide-level-${row.class_level}`}>Level {row.class_level}</a>)}</div></aside><article className="npc-card class-book-guide__content npc-forge-class-guide__detailed-book"><div className="npc-forge-class-guide__detailed-hero-stage"><ForgeClassHero selectedClass={selectedClass} detailed /><div className="npc-forge-class-guide__detailed-subclass-slot"><ForgeSubclassSelection selectedClass={selectedClass} model={model} onSubclassDetail={onSubclassDetail} detailed /></div></div><div className="class-book-guide__levels">{visibleRows.map((row) => <details key={row.class_level} id={`forge-class-guide-level-${row.class_level}`} className={`npc-forge-class-guide__level ${Number(row.class_level) === model.currentLevel ? "is-current" : ""}`} defaultOpen={Number(row.class_level) === model.currentLevel}><summary className="class-book-guide__level-heading npc-forge-class-guide__level-heading"><div><div className="spell-admin-kicker">Level {row.class_level}</div><h3>{selectedClass.class_name} {row.class_level}</h3></div><div className="class-book-guide__level-stats"><span>PB +{Number(row.proficiency_bonus || 2)}</span>{row.cantrips_known != null ? <span>{row.cantrips_known} cantrips</span> : null}{row.spells_known != null ? <span>{row.spells_known} known/prepared</span> : null}</div></summary><div className="npc-forge-class-guide__level-content">{row.visibleFeatures.map((feature, index) => <div key={`${feature.type}-${feature.name}-${index}`} className={`class-book-guide__feature ${feature.type === "subclass" ? "is-subclass" : ""}`} role="button" tabIndex={0} onClick={() => publishFeature(model, onFeatureDetail, feature, row.class_level)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") publishFeature(model, onFeatureDetail, feature, row.class_level); }}><div className="d-flex align-items-center justify-content-between gap-2 flex-wrap"><h4>{feature.type === "subclass" && model.selected ? `${model.selected.name}: ` : ""}{feature.name}</h4><span>{feature.source || "Campaign"}</span></div><ClassFeatureText text={feature.description} entries={feature.entries || null} fallback="No imported description is available for this feature yet." onListItemDetail={(item) => publishListedOption(model, onFeatureDetail, feature, item, row.class_level)} /></div>)}</div></details>)}</div></article></div>;
+  return <div className="class-book-guide npc-forge-class-guide__book"><aside className="npc-card class-book-guide__outline"><div className="spell-admin-kicker">Guide Outline</div><a href="#forge-class-guide-introduction">{selectedClass.class_name}</a><div className="class-book-guide__outline-levels">{visibleRows.map((row) => <a key={row.class_level} href={`#forge-class-guide-level-${row.class_level}`}>Level {row.class_level}</a>)}</div></aside><article className="npc-card class-book-guide__content npc-forge-class-guide__detailed-book">{onLevelChange ? <div className="npc-forge-class-guide__detailed-level-row"><StartingLevelControl level={level} onLevelChange={onLevelChange} /></div> : null}<div className="npc-forge-class-guide__detailed-hero-stage"><ForgeClassHero selectedClass={selectedClass} detailed /><div className="npc-forge-class-guide__detailed-subclass-slot"><ForgeSubclassSelection selectedClass={selectedClass} model={model} onSubclassDetail={onSubclassDetail} detailed /></div></div><div className="class-book-guide__levels">{visibleRows.map((row) => <details key={row.class_level} id={`forge-class-guide-level-${row.class_level}`} className={`npc-forge-class-guide__level ${Number(row.class_level) === model.currentLevel ? "is-current" : ""}`} defaultOpen={Number(row.class_level) === model.currentLevel}><summary className="class-book-guide__level-heading npc-forge-class-guide__level-heading"><div><div className="spell-admin-kicker">Level {row.class_level}</div><h3>{selectedClass.class_name} {row.class_level}</h3></div><div className="class-book-guide__level-stats"><span>PB +{Number(row.proficiency_bonus || 2)}</span>{row.cantrips_known != null ? <span>{row.cantrips_known} cantrips</span> : null}{row.spells_known != null ? <span>{row.spells_known} known/prepared</span> : null}</div></summary><div className="npc-forge-class-guide__level-content">{row.visibleFeatures.map((feature, index) => <div key={`${feature.type}-${feature.name}-${index}`} className={`class-book-guide__feature ${feature.type === "subclass" ? "is-subclass" : ""}`} role="button" tabIndex={0} onClick={() => publishFeature(model, onFeatureDetail, feature, row.class_level)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") publishFeature(model, onFeatureDetail, feature, row.class_level); }}><div className="d-flex align-items-center justify-content-between gap-2 flex-wrap"><h4>{feature.type === "subclass" && model.selected ? `${model.selected.name}: ` : ""}{feature.name}</h4><span>{feature.source || "Campaign"}</span></div><ClassFeatureText text={feature.description} entries={feature.entries || null} fallback="No imported description is available for this feature yet." onListItemDetail={(item) => publishListedOption(model, onFeatureDetail, feature, item, row.class_level)} /></div>)}</div></details>)}</div></article></div>;
 }
 export default function NpcForgeClassGuide({ selectedClass = null, level = 1, onLevelChange = null, onFeatureDetail = null, onSubclassDetail = null }) {
   const model = useNpcForgeClassGuideModel(selectedClass, level);
   if (!selectedClass) return <div className="npc-forge-context-card"><h3>Choose a class</h3><p>Select a class to read its progression and compare subclasses.</p></div>;
   const theme = classThemeKey(selectedClass);
   return <div className={`npc-forge-context-card npc-forge-class-guide is-class-${theme}`}>
-    <nav className="npc-forge-class-guide__view-header" aria-label="Class guide view">{onLevelChange ? <label className="npc-forge-class-guide__level-control"><span>Starting Level</span><input type="number" min="1" max="20" value={level} aria-label="Starting character level" onChange={(event) => onLevelChange(Math.max(1, Math.min(20, Number(event.target.value) || 1)))} /></label> : null}<div className="npc-forge-class-guide__tabs"><button type="button" className={model.view === "overview" ? "is-active" : ""} onClick={() => model.setView("overview")}>Class Overview</button><button type="button" className={model.view === "detailed" ? "is-active" : ""} onClick={() => model.setView("detailed")}>Detailed Guide</button></div></nav>
+    <nav className="npc-forge-class-guide__view-header" aria-label="Class guide view"><div className="npc-forge-class-guide__tabs"><button type="button" className={model.view === "overview" ? "is-active" : ""} onClick={() => model.setView("overview")}>Class Overview</button><button type="button" className={model.view === "detailed" ? "is-active" : ""} onClick={() => model.setView("detailed")}>Detailed Guide</button></div></nav>
     {model.error ? <div className="npc-forge-class-guide__warning">{model.error}</div> : null}
     {model.loading ? <div className="npc-forge-class-guide__loading">Loading the complete class progression…</div> : null}
-    {!model.loading && model.view === "overview" ? <ForgeOverview selectedClass={selectedClass} model={model} onFeatureDetail={onFeatureDetail} onSubclassDetail={onSubclassDetail} /> : null}
-    {!model.loading && model.view === "detailed" ? <ForgeDetailedGuide selectedClass={selectedClass} model={model} onFeatureDetail={onFeatureDetail} onSubclassDetail={onSubclassDetail} /> : null}
+    {!model.loading && model.view === "overview" ? <ForgeOverview selectedClass={selectedClass} model={model} onFeatureDetail={onFeatureDetail} onSubclassDetail={onSubclassDetail} level={level} onLevelChange={onLevelChange} /> : null}
+    {!model.loading && model.view === "detailed" ? <ForgeDetailedGuide selectedClass={selectedClass} model={model} onFeatureDetail={onFeatureDetail} onSubclassDetail={onSubclassDetail} level={level} onLevelChange={onLevelChange} /> : null}
     <div className="npc-forge-context-note npc-forge-class-guide__footer-note">Click a subclass to select or inspect it in the movable Subclass Codex. Select an eligible subclass to add its features to progression. Click any feature bubble for full rules. Persistent training options still belong in Training, spell choices in Spells, and gear choices in Equipment.</div>
     <NpcForgeClassGuideStyles />
     <style jsx global>{`
