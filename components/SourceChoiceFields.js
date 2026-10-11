@@ -210,7 +210,7 @@ function RichField({ group, field, selected = [], blocked = [], onToggle }) {
 }
 
 function prefersRichField(field = {}) {
-  return ["spell", "feat", "boon", "boon-or-feat", "eldritch-invocation", "artificer-plan", "metamagic"].includes(field.kind)
+  return ["spell", "feat", "boon", "boon-or-feat", "fighting-style", "eldritch-invocation", "artificer-plan", "metamagic"].includes(field.kind)
     || ((field.options || []).length > 12 && !["language", "tool"].includes(field.kind));
 }
 
