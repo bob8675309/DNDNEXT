@@ -33,6 +33,21 @@ function formatAbility(value) {
     .join(" or ");
 }
 
+function formatOtherSummary(value) {
+  if (!value) return "";
+  const raw = typeof value === "object"
+    ? safeText(value.entry || value.entrySummary || "")
+    : safeText(value);
+  if (!raw) return "";
+  return raw
+    .replace(/\{@[^\s}]+\s+([^}|]+)(?:\|[^}]*)?}/g, "$1")
+    .replace(/[“”"]/g, "")
+    .replace(/^When Gaining\b/, "When gaining")
+    .replace(/\bFeature\b$/, "feature")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function formatEntry(key, value) {
   const labelMap = {
     level: "",
@@ -53,6 +68,7 @@ function formatEntry(key, value) {
     const text = formatAbility(value);
     return text ? `Ability: ${text}` : "";
   }
+  if (key === "otherSummary") return formatOtherSummary(value);
 
   let text = "";
   if (Array.isArray(value)) text = value.map((item) => formatValue(item)).filter(Boolean).join(" or ");
