@@ -327,7 +327,7 @@ export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, contro
   }), [classChoiceFeats, controller?.featOptions, controller?.selectedBackgroundFeat, controller?.speciesBonusFeat, speciesChoiceFeats]);
   const featInstances = useMemo(() => [...baseFeatInstances, ...sourceFeatInstances], [baseFeatInstances, sourceFeatInstances]);
   const featGroups = useMemo(() => {
-    const nested = buildFeatSourceChoiceGroups({ featInstances, toolRows: controller?.toolRows || [], spells, metamagicOptions: metamagicOptionRows, level: controller?.draft?.level || 1 });
+    const nested = buildFeatSourceChoiceGroups({ featInstances, toolRows: controller?.toolRows || [], spells, metamagicOptions: metamagicOptionRows, featOptions: controller?.featOptions || [], level: controller?.draft?.level || 1 });
     const routed = routeFeatSourceChoiceGroups({
       groups: nested,
       selectedBackground: controller?.selectedBackground || null,
@@ -337,7 +337,7 @@ export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, contro
     });
     const byInstance = new Map(routed.map((entry) => [entry.metadata?.featInstanceId || entry.ownerKey, entry]));
     return featInstances.map((instance) => byInstance.get(instance.instanceId) || emptyFeatGroup(instance));
-  }, [controller?.draft?.level, controller?.finalAbilities, controller?.selectedBackground, controller?.selectedClass, controller?.toolRows, featInstances, metamagicOptionRows, spells]);
+  }, [controller?.draft?.level, controller?.featOptions, controller?.finalAbilities, controller?.selectedBackground, controller?.selectedClass, controller?.toolRows, featInstances, metamagicOptionRows, spells]);
 
   useEffect(() => {
     registerGroups(playerMode ? featGroups : [], !playerMode || (spellCatalogReady && metamagicOptionReady), "feats");
