@@ -9,7 +9,10 @@ on:
       - "components/NpcForgeTrainingStepBase.js"
       - "components/NpcForgeTrainingStepPlayer.js"
       - "components/NpcForgeTrainingStepPlayerTabbed.js"
+      - "components/NpcForgeTrainingFeatPicker.js"
       - "components/NpcForgeTrainingContextCard.js"
+      - "utils/characterProgressionResolver.js"
+      - "utils/playerForgeFeatChoices.js"
       - "components/NpcForgeSourceChoiceContext.js"
       - "components/NpcForgeSourceChoiceFields.js"
       - "components/NpcForgeContextPanel.js"
@@ -20,6 +23,7 @@ on:
       - "public/ui/forge/training/**"
       - "scripts/validate_training_tab_redesign.mjs"
       - "scripts/validate_training_browser_acceptance.mjs"
+      - "scripts/validate_player_forge_feat_prerequisites.mjs"
       - ".github/workflows/validate-training-tab-redesign.yml"
   workflow_dispatch:
 
@@ -48,3 +52,6 @@ jobs:
 
       - name: Validate Training browser acceptance
         run: node scripts/validate_training_browser_acceptance.mjs
+
+      - name: Validate Player Forge feat prerequisites
+        run: node scripts/validate_player_forge_feat_prerequisites.mjs
