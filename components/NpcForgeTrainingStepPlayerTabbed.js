@@ -246,7 +246,6 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
   const expertiseProgress = classGroupProgress(expertiseGroups, classSelections);
   const classProgress = classGroupProgress(classFeatureGroups, classSelections);
   const classSourceProgress = sourceGroupProgress(classSourceGroups, sourceSelections);
-  const featProgress = sourceGroupProgress(featSourceGroups, sourceSelections);
   const pendingBackgroundSkillCount = Math.max(0, backgroundChoiceTarget - backgroundChoiceDone);
   const availableClassSkillSlots = Math.max(0, sharedChoiceTarget - paidTradeSkills.length);
   const skillsProgress = {
