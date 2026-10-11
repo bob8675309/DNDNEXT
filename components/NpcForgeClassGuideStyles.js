@@ -18,6 +18,10 @@ export default function NpcForgeClassGuideStyles() {
     .npc-forge-class-guide__level-control>span{font-size:.52rem;font-weight:900;letter-spacing:.055em;text-transform:uppercase;white-space:nowrap}
     .npc-forge-class-guide__level-control>input{width:42px;height:28px;padding:2px 3px;border:1px solid rgba(var(--class-secondary),.46);border-radius:6px;color:#fff;background:rgba(8,15,27,.95);font-size:.72rem;font-weight:850;text-align:center;color-scheme:dark}
     .npc-forge-class-guide__level-control>input:focus{border-color:rgba(var(--class-secondary),.9);outline:2px solid rgba(var(--class-accent),.38);outline-offset:1px}
+    .npc-forge-class-guide__subclass-stack{display:grid;gap:7px;min-width:0}
+    .npc-forge-class-guide__subclass-level{display:flex;justify-content:flex-start;align-items:center;padding:0 2px}
+    .npc-forge-class-guide__subclass-level .npc-forge-class-guide__level-control,.npc-forge-class-guide__detailed-level-row .npc-forge-class-guide__level-control{background:rgba(5,8,16,.92)}
+    .npc-forge-class-guide__detailed-level-row{display:flex;justify-content:flex-start;padding:8px 10px 0;background:rgba(5,8,16,.96)}
     .npc-forge-class-guide__tabs{display:flex;justify-content:flex-end;gap:6px;padding:3px;border:1px solid rgba(var(--class-accent),.18);border-radius:9px;background:rgba(5,8,16,.76);backdrop-filter:blur(8px)}
     .npc-forge-class-guide__tabs button,.npc-forge-class-guide__subhead-actions button,.npc-forge-class-guide__subclass-confirm button{padding:7px 11px;border:1px solid rgba(255,255,255,.14);border-radius:6px;color:rgba(255,255,255,.78);background:rgba(255,255,255,.025);font-size:.66rem;font-weight:800}
     .npc-forge-class-guide__tabs button.is-active,.npc-forge-class-guide__subclass-confirm button.is-primary{border-color:rgba(var(--class-accent),.84);color:#fff;background:linear-gradient(180deg,rgba(var(--class-accent),.56),rgba(56,34,92,.8));box-shadow:0 0 18px rgba(var(--class-accent),.11)}
