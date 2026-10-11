@@ -377,6 +377,7 @@ export default function NpcForgeTrainingStepPlayer({
       featInstanceId: "species-bonus-feat",
       eligible: hasFightingStyleClassFeature,
       branchSelectionLabel: style.name || style.label || "",
+      branchSelectionOption: style,
     };
     onDetail?.(detail);
     if (!hasFightingStyleClassFeature) {
