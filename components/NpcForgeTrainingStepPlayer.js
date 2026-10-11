@@ -1,10 +1,11 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FaBookOpen, FaEye, FaLeaf, FaMagic, FaPlusCircle, FaSearch } from "react-icons/fa";
 import { ABILITY_LABELS, SKILL_DEFINITIONS } from "../utils/characterCreation";
 import { PROFESSION_DEFINITIONS, TRADE_SKILL_KEYS } from "../utils/craftingProfessions";
 import { sourceGrantedTradeSkillKey, sourceGrantedTradeSkillKeys } from "../utils/craftingToolProfessions";
 import { selectedSourceChoiceOptions, sourceChoiceFieldIsActive, sourceChoiceGroupComplete } from "../utils/playerForgeSourceChoices";
 import { activeClassFeatureGroups } from "../utils/classFeatureChoices";
+import { classHasFeatureThroughLevel } from "../utils/characterProgressionResolver";
 import NpcForgeClassFeatureChoices from "./NpcForgeClassFeatureChoices";
 import NpcForgeClassOptionBrowser from "./NpcForgeClassOptionBrowser";
 import NpcForgeSourceChoiceFields from "./NpcForgeSourceChoiceFields";
@@ -171,16 +172,38 @@ export default function NpcForgeTrainingStepPlayer({
   const classSourceLabel = selectedClassName ? `Class — ${selectedClassName}` : "Class";
   const { state: classChoiceState, toggleFeatureOption } = useNpcForgeClassChoice();
   const { state: sourceChoiceState, setChoice: setSourceChoice } = useNpcForgeSourceChoices();
+  const [pendingFightingStyleId, setPendingFightingStyleId] = useState("");
 
   const speciesBonus = controller.draft?.speciesBonus || {};
   const bonusFeatRequired = speciesBonus.mode === "feat";
   const selectedBonusFeat = controller.speciesBonusFeat || null;
   const featOptions = controller.featOptions || [];
+  const forgeLevel = Math.max(1, Number(controller.draft?.level || 1));
+  const hasFightingStyleClassFeature = useMemo(
+    () => classHasFeatureThroughLevel(controller.selectedClass || {}, "Fighting Style", forgeLevel),
+    [controller.selectedClass, forgeLevel]
+  );
   const bonusFeatCatalogueOptions = useMemo(() => featOptions.filter((feat) => {
     const category = String(feat?.category || "").toUpperCase();
     const alreadySelected = String(feat?.id || "") === String(speciesBonus.featId || "");
     return alreadySelected || !category.startsWith("FS");
-  }), [featOptions, speciesBonus.featId]);
+  }).map((feat) => normalized(feat?.name) === "fighting initiate" ? {
+    ...feat,
+    category: feat.category || "G",
+    prerequisite_text: "Fighting Style class feature",
+    prerequisiteText: "Fighting Style class feature",
+    metadata: { ...(feat.metadata || {}), forgeEligibility: hasFightingStyleClassFeature },
+  } : feat), [featOptions, hasFightingStyleClassFeature, speciesBonus.featId]);
+  const fightingInitiateFeat = useMemo(() => bonusFeatCatalogueOptions.find((feat) => normalized(feat?.name) === "fighting initiate") || null, [bonusFeatCatalogueOptions]);
+  const knownClassFightingStyleNames = useMemo(() => new Set((classChoiceState.featureGroups || [])
+    .filter((group) => group.kind === "fighting-style")
+    .flatMap((group) => (classChoiceState.featureSelections?.[group.id] || []).map((key) => group.options?.find((option) => option.key === key)?.name || group.options?.find((option) => option.key === key)?.label))
+    .map(normalized)
+    .filter(Boolean)), [classChoiceState.featureGroups, classChoiceState.featureSelections]);
+  const fightingStyleBranchOptions = useMemo(() => featOptions
+    .filter((feat) => String(feat?.category || "").toUpperCase() === "FS")
+    .filter((feat) => !knownClassFightingStyleNames.has(normalized(feat?.name)))
+    .sort((left, right) => String(left?.name || "").localeCompare(String(right?.name || "")) || String(left?.source || "").localeCompare(String(right?.source || ""))), [featOptions, knownClassFightingStyleNames]);
   const classSkillOptions = Array.isArray(classSkillConfig?.options) ? classSkillConfig.options : [];
 
   const selectedSourceOptions = useMemo(
@@ -212,6 +235,23 @@ export default function NpcForgeTrainingStepPlayer({
     || ["class", "advancement"].includes(group.placement)
   )), [resolverTrainingGroups]);
   const featTrainingGroups = useMemo(() => sourceClassAbilityGroups.filter((group) => group.ownerType === "feat"), [sourceClassAbilityGroups]);
+  const fightingInitiateChoice = useMemo(() => {
+    const group = featTrainingGroups.find((entry) => normalized(entry.metadata?.featName || entry.label) === "fighting initiate") || null;
+    const field = group?.fields?.find((entry) => entry.kind === "fighting-style") || null;
+    const selectedKey = group && field ? (sourceChoiceState.selections?.[group.id]?.[field.id] || [])[0] || "" : "";
+    const selectedOption = field?.options?.find((entry) => entry.key === selectedKey) || null;
+    return { group, field, selectedKey, selectedOption };
+  }, [featTrainingGroups, sourceChoiceState.selections]);
+  const selectedFightingStyleId = String(fightingInitiateChoice.selectedOption?.metadata?.optionId || fightingInitiateChoice.selectedOption?.key || "");
+  const fightingInitiateBranches = useMemo(() => fightingInitiateFeat ? {
+    [String(fightingInitiateFeat.id)]: {
+      label: "Fighting Styles",
+      options: fightingStyleBranchOptions,
+      selectedId: selectedFightingStyleId,
+      eligible: hasFightingStyleClassFeature,
+      lockedText: "Requires the Fighting Style class feature.",
+    },
+  } : {}, [fightingInitiateFeat, fightingStyleBranchOptions, hasFightingStyleClassFeature, selectedFightingStyleId]);
   const otherSourceClassAbilityGroups = useMemo(() => sourceClassAbilityGroups.filter((group) => group.ownerType !== "feat" && group.ownerType !== "class-option"), [sourceClassAbilityGroups]);
   const classOptionGroups = useMemo(
     () => sourceChoiceGroupsForPlacement(sourceChoiceState, "class").filter((group) => group.ownerType === "class-option"),
@@ -230,6 +270,11 @@ export default function NpcForgeTrainingStepPlayer({
       spellGroup: featSpellGroups.find((group) => group.id === id) || null,
     })).filter((entry) => entry.group);
   }, [featSpellGroups, featTrainingGroups, sourceChoiceState.groups]);
+  const visibleFeatDecisionGroups = useMemo(() => featDecisionGroups.filter(({ group, trainingGroup, spellGroup }) => {
+    const fightingInitiate = normalized(group?.metadata?.featName || group?.label) === "fighting initiate";
+    const branchOnly = Boolean(trainingGroup?.fields?.length) && trainingGroup.fields.every((field) => field.metadata?.featCatalogueBranch);
+    return !(fightingInitiate && branchOnly && !spellGroup);
+  }), [featDecisionGroups]);
   const sourceSkillFields = useMemo(() => sourceSkillFieldsFor(sourceTrainingGroups, sourceChoiceState.selections || {}), [sourceTrainingGroups, sourceChoiceState.selections]);
   const sourceTradeFields = useMemo(() => sourceProfessionFieldsFor(sourceTrainingGroups, sourceChoiceState.selections || {}), [sourceTrainingGroups, sourceChoiceState.selections]);
   const genericSourceTrainingGroups = useMemo(() => presentationSourceGroups(sourceTrainingGroups, sourceChoiceState.selections || {}), [sourceTrainingGroups, sourceChoiceState.selections]);
@@ -292,6 +337,22 @@ export default function NpcForgeTrainingStepPlayer({
   }, [genericSourceTrainingGroups]);
 
   useEffect(() => {
+    if (!pendingFightingStyleId) return;
+    if (!fightingInitiateFeat || String(speciesBonus.featId || "") !== String(fightingInitiateFeat.id || "")) return;
+    const { group, field } = fightingInitiateChoice;
+    if (!group || !field) return;
+    const option = (field.options || []).find((entry) => String(entry.metadata?.optionId || entry.key) === String(pendingFightingStyleId));
+    if (!option) return;
+    setSourceChoice?.(group.id, field.id, [option.key]);
+    setPendingFightingStyleId("");
+  }, [fightingInitiateChoice, fightingInitiateFeat, pendingFightingStyleId, setSourceChoice, speciesBonus.featId]);
+
+  useEffect(() => {
+    if (!pendingFightingStyleId || !fightingInitiateFeat) return;
+    if (speciesBonus.featId && String(speciesBonus.featId) !== String(fightingInitiateFeat.id)) setPendingFightingStyleId("");
+  }, [fightingInitiateFeat, pendingFightingStyleId, speciesBonus.featId]);
+
+  useEffect(() => {
     for (const group of trainingChoiceGroups) {
       if (group.kind !== "expertise") continue;
       for (const key of classChoiceState.featureSelections?.[group.id] || []) {
@@ -306,6 +367,37 @@ export default function NpcForgeTrainingStepPlayer({
       if (selectedClassSkills.includes(key)) onToggleClassSkill?.(key);
     }
   }, [effectiveGrantedSkillKeys, onToggleClassSkill, selectedClassSkills]);
+
+  function selectFightingInitiateStyle(parentFeat, style) {
+    if (!parentFeat || !style) return;
+    const detail = {
+      type: "feat",
+      option: parentFeat,
+      selectionKind: "species-bonus-feat",
+      featInstanceId: "species-bonus-feat",
+      eligible: hasFightingStyleClassFeature,
+      branchSelectionLabel: style.name || style.label || "",
+    };
+    onDetail?.(detail);
+    if (!hasFightingStyleClassFeature) {
+      controller.setError?.("Fighting Initiate requires the Fighting Style class feature.");
+      return;
+    }
+    const parentAlreadySelected = String(speciesBonus.featId || "") === String(parentFeat.id || "");
+    if (!parentAlreadySelected) {
+      setPendingFightingStyleId(String(style.id || style.option_key || ""));
+      controller.setSpeciesBonus?.({ featId: parentFeat.id });
+      return;
+    }
+    const { group, field } = fightingInitiateChoice;
+    const option = field?.options?.find((entry) => String(entry.metadata?.optionId || entry.key) === String(style.id || style.option_key || ""));
+    if (group && field && option) {
+      setSourceChoice?.(group.id, field.id, [option.key]);
+      setPendingFightingStyleId("");
+    } else {
+      setPendingFightingStyleId(String(style.id || style.option_key || ""));
+    }
+  }
 
   useEffect(() => {
     if (typeof document === "undefined") return undefined;
@@ -523,8 +615,8 @@ export default function NpcForgeTrainingStepPlayer({
         <summary><span><img src={`${TRAINING_ASSET_ROOT}/summary-feat.svg`} alt="" aria-hidden="true" /><b>Feat &amp; Class Choices</b></span><em>{featChoiceTarget ? `${featChoiceDone}/${featChoiceTarget}` : "None"}</em></summary>
         <div className="npc-forge-training-choice-body">
           <div className="npc-forge-training-feat-only">
-            {bonusFeatRequired ? <NpcForgeTrainingFeatPicker options={bonusFeatCatalogueOptions} selectedId={speciesBonus.featId || ""} grantedFeats={controller.selectedBackgroundFeat ? [{ feat: controller.selectedBackgroundFeat, featInstanceId: "background-feat" }] : []} onDetail={(next) => onDetail?.({ ...next, selectionKind: next.selectionKind || "species-bonus-feat", featInstanceId: next.featInstanceId || "species-bonus-feat" })} label="Bonus Feat" /> : null}
-            {featDecisionGroups.length ? <section className="npc-forge-training-feat-followups" aria-label="Feat follow-up choices"><header><span>Feat follow-ups</span><small>Click a feat here to keep its rules in Current Selection while you finish any owned choices.</small></header><div>{featDecisionGroups.map(({ group, trainingGroup, spellGroup }) => {
+            {bonusFeatRequired ? <NpcForgeTrainingFeatPicker options={bonusFeatCatalogueOptions} selectedId={speciesBonus.featId || ""} grantedFeats={controller.selectedBackgroundFeat ? [{ feat: controller.selectedBackgroundFeat, featInstanceId: "background-feat" }] : []} branchesByFeat={fightingInitiateBranches} onSelectBranchOption={selectFightingInitiateStyle} onDetail={(next) => onDetail?.({ ...next, selectionKind: next.selectionKind || "species-bonus-feat", featInstanceId: next.featInstanceId || "species-bonus-feat" })} label="Bonus Feat" /> : null}
+            {visibleFeatDecisionGroups.length ? <section className="npc-forge-training-feat-followups" aria-label="Feat follow-up choices"><header><span>Feat follow-ups</span><small>Click a feat here to keep its rules in Current Selection while you finish any owned choices.</small></header><div>{visibleFeatDecisionGroups.map(({ group, trainingGroup, spellGroup }) => {
               const trainingComplete = !trainingGroup || sourceChoiceGroupComplete(trainingGroup, sourceChoiceState.selections || {});
               const spellComplete = !spellGroup || sourceChoiceGroupComplete(spellGroup, sourceChoiceState.selections || {});
               const needsTraining = Boolean(trainingGroup && !trainingComplete);
