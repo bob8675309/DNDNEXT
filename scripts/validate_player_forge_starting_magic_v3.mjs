@@ -47,7 +47,9 @@ for (const token of [
   "selectionLimitMessage",
 ]) need(spellStep, token);
 for (const token of ["autoCollapseComplete", "font-size:.68rem", "font-size:.64rem"]) need(spellStep, token, "source-owned spell readability/collapse");
+for (const token of ["preparedLeveledCount", "inspectedPrepareBlocked", "Prepared spell limit reached", "npc-forge-spell-card-prepare", "npc-forge-spell-card-actions"]) need(spellStep, token, "Wizard prepare hard cap and spell-card action placement");
 for (const token of ["CompactSourceChoiceGroup", "previousComplete", "setOpen(false)", "defaultOpen={!complete}"]) need(sourceChoiceFields, token, "source choice completion collapse");
+for (const token of ["CompactSourceChoiceField", "npc-forge-source-choice-field-shell", "useState(false)", "sourceChoiceFieldComplete(group, field, selections)"]) need(sourceChoiceFields, token, "nested source selector manual-open and completion collapse");
 need(sourceChoiceWrapper, "autoCollapseComplete={autoCollapseComplete}", "source choice wrapper auto-collapse passthrough");
 
 for (const token of [
