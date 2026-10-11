@@ -4,6 +4,8 @@ const read = (path) => fs.readFileSync(path, "utf8");
 const sharedForge = read("components/NewNpcModalV3.js");
 const derived = read("components/useNpcForgeDerivedModel.js");
 const spellStep = read("components/NpcForgeSpellStep.js");
+const sourceChoiceFields = read("components/SourceChoiceFields.js");
+const sourceChoiceWrapper = read("components/NpcForgeSourceChoiceFields.js");
 const spellSources = read("utils/playerForgeSpellSources.js");
 const migration = read("sql/20260808_47_player_forge_starting_magic_v3_completion.sql");
 const aclMigration = read("sql/20260808_48_player_forge_v3_acl_cleanup.sql");
@@ -44,6 +46,9 @@ for (const token of [
   "canAddSpell",
   "selectionLimitMessage",
 ]) need(spellStep, token);
+for (const token of ["autoCollapseComplete", "font-size:.68rem", "font-size:.64rem"]) need(spellStep, token, "source-owned spell readability/collapse");
+for (const token of ["CompactSourceChoiceGroup", "previousComplete", "setOpen(false)", "defaultOpen={!complete}"]) need(sourceChoiceFields, token, "source choice completion collapse");
+need(sourceChoiceWrapper, "autoCollapseComplete={autoCollapseComplete}", "source choice wrapper auto-collapse passthrough");
 
 for (const token of [
   "serializeStartingMagicSelections",
