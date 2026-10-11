@@ -238,10 +238,10 @@ function magicInitiateFields(feat, spells) {
 }
 
 function fightingInitiateFields(featOptions = [], knownFightingStyles = []) {
-  const known = new Set(array(knownFightingStyles).map((entry) => `${norm(entry?.name || entry?.label)}|${text(entry?.source).toUpperCase()}`));
+  const known = new Set(array(knownFightingStyles).map((entry) => norm(entry?.name || entry?.label)).filter(Boolean));
   const options = array(featOptions)
     .filter((row) => row?.option_type === "feat" && String(row?.category || "").toUpperCase() === "FS")
-    .filter((row) => !known.has(`${norm(row?.name)}|${text(row?.source).toUpperCase()}`))
+    .filter((row) => !known.has(norm(row?.name)))
     .map(fightingStyleOption)
     .sort((a, b) => a.label.localeCompare(b.label) || a.source.localeCompare(b.source));
   return options.length ? [field({
