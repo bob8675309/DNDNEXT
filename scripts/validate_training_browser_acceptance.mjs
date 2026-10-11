@@ -127,7 +127,7 @@ for (const token of [
   "npc-forge-training-tab-status",
   "npc-forge-training-tab-copy",
   "backgroundSkillCount",
-  "availableClassSkillSlots",
+  "remainingSharedChoices",
   "skillsProgress",
   "featsProgress",
   "classTabProgress",
