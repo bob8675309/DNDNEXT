@@ -466,11 +466,23 @@
 }
 
 .unified-player-character-forge .npc-forge-training-mode-switch > button {
-  grid-template-columns: 28px minmax(0, 1fr) auto !important;
+  grid-template-columns: 28px minmax(0, 1fr) !important;
+  grid-template-rows: auto auto !important;
+  column-gap: 9px !important;
+  row-gap: 2px !important;
+  min-height: 56px !important;
+}
+
+.unified-player-character-forge .npc-forge-training-mode-switch > button > img {
+  grid-column: 1 !important;
+  grid-row: 1 / span 2 !important;
+  align-self: center !important;
 }
 
 .unified-player-character-forge .npc-forge-training-mode-switch > button strong {
   font-size: .8rem !important;
+  line-height: 1.1 !important;
+  white-space: normal !important;
 }
 
 .unified-player-character-forge .npc-forge-training-mode-switch > button.is-class-choice-tab strong {
@@ -479,12 +491,17 @@
 }
 
 .unified-player-character-forge .npc-forge-training-tab-copy {
-  display: grid !important;
-  align-content: center !important;
-  gap: 3px !important;
+  display: flex !important;
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  align-items: baseline !important;
+  align-self: end !important;
+  gap: 7px !important;
+  min-width: 0 !important;
 }
 
 .unified-player-character-forge .npc-forge-training-tab-copy > small {
+  flex: 0 0 auto !important;
   color: rgba(255,255,255,.88) !important;
   font-size: .62rem !important;
   font-weight: 900 !important;
@@ -493,9 +510,13 @@
 
 .unified-player-character-forge .npc-forge-training-tab-status {
   display: grid !important;
-  justify-items: end !important;
-  align-content: center !important;
+  grid-column: 2 !important;
+  grid-row: 2 !important;
+  justify-self: start !important;
+  justify-items: start !important;
+  align-content: start !important;
   gap: 0 !important;
+  margin-top: 1px !important;
 }
 
 .unified-player-character-forge .npc-forge-training-tab-status > em {
