@@ -38,7 +38,8 @@ function eligibilityForOption(eligibilityByFeat = {}, option = {}) {
 
 function hasPrerequisite(option = {}) {
   if (Array.isArray(option?.metadata?.prerequisite) && option.metadata.prerequisite.length) return true;
-  return Boolean(text(option.prerequisite_text || option.prerequisiteText));
+  const raw = text(option.prerequisite_text || option.prerequisiteText);
+  return Boolean(raw && raw !== "[]");
 }
 
 export default function NpcForgeTrainingFeatPicker({
