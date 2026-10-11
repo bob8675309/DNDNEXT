@@ -59,9 +59,29 @@ export function cashOnlyEquipmentOption(raw = []) {
   return normalizeEquipmentOptions(raw).find((option) => option.parts.length > 0 && option.parts.every((part) => Number.isFinite(Number(part?.value)))) || null;
 }
 
-export function startingMarketBaseCopper(model = null) {
+export const PLAYER_FORGE_EQUIPMENT_RULESETS = Object.freeze({
+  VANILLA: "vanilla",
+  DNDNEXT: "dndnext-homebrew",
+});
+export const DNDNEXT_STARTING_MARKET_FLOOR_COPPER = 300 * 100;
+
+export function startingEquipmentRuleset(selection = {}) {
+  const requested = safeText(selection?.ruleset).toLowerCase();
+  return requested === PLAYER_FORGE_EQUIPMENT_RULESETS.VANILLA
+    ? PLAYER_FORGE_EQUIPMENT_RULESETS.VANILLA
+    : PLAYER_FORGE_EQUIPMENT_RULESETS.DNDNEXT;
+}
+
+export function startingMarketVanillaCopper(model = null) {
   return equipmentOptionCopper(cashOnlyEquipmentOption(model?.classOptions))
     + equipmentOptionCopper(cashOnlyEquipmentOption(model?.backgroundOptions));
+}
+
+export function startingMarketBaseCopper(model = null, selection = {}) {
+  const vanillaCopper = startingMarketVanillaCopper(model);
+  return startingEquipmentRuleset(selection) === PLAYER_FORGE_EQUIPMENT_RULESETS.VANILLA
+    ? vanillaCopper
+    : Math.max(vanillaCopper, DNDNEXT_STARTING_MARKET_FLOOR_COPPER);
 }
 
 export function startingMarketPurchases(selection = {}) {
@@ -83,7 +103,7 @@ export function startingMarketSpentCopper(selection = {}) {
 }
 
 export function startingMarketBudgetCopper(model = null, selection = {}) {
-  return startingMarketBaseCopper(model) + higherLevelCopper(model?.level || 1, selection?.wealthRoll);
+  return startingMarketBaseCopper(model, selection) + higherLevelCopper(model?.level || 1, selection?.wealthRoll);
 }
 
 export function startingMarketRemainingCopper(model = null, selection = {}) {
@@ -120,6 +140,7 @@ export function normalizeStartingEquipmentSelection(model = null, current = {}) 
   const wealthRoll = rule.rollRequired && Number.isInteger(Number(current?.wealthRoll)) && Number(current.wealthRoll) >= 1 && Number(current.wealthRoll) <= 10 ? Number(current.wealthRoll) : null;
   return {
     mode: "market",
+    ruleset: startingEquipmentRuleset(current),
     wealthRoll,
     marketMerchantId: safeText(current?.marketMerchantId),
     marketPurchases: startingMarketPurchases(current),
@@ -131,6 +152,8 @@ export function startingEquipmentSelectionComplete(model = null, selection = {})
   const rule = higherLevelWealthRule(model?.level || 1);
   if (rule.rollRequired && (!Number.isInteger(Number(selection?.wealthRoll)) || Number(selection.wealthRoll) < 1 || Number(selection.wealthRoll) > 10)) return false;
   if (safeText(selection?.mode || "market") === "market") {
+    const requestedRuleset = safeText(selection?.ruleset);
+    if (requestedRuleset && !Object.values(PLAYER_FORGE_EQUIPMENT_RULESETS).includes(requestedRuleset.toLowerCase())) return false;
     if (normalizeEquipmentOptions(model?.classOptions).length && !cashOnlyEquipmentOption(model?.classOptions)) return false;
     if (normalizeEquipmentOptions(model?.backgroundOptions).length && !cashOnlyEquipmentOption(model?.backgroundOptions)) return false;
     const purchases = startingMarketPurchases(selection);
