@@ -51,3 +51,14 @@ Feat Current Selection now reads the canonical feat ability metadata before the 
 After a simple +1 choice feat is selected, the same Ability Score Bonus row becomes the compact chevron chooser. Choosing an ability collapses the row and leaves the chosen ability/value at the right edge; reopening it allows replacement without adding a second feat-rule box.
 
 Imported special prerequisites such as Druidic Warrior/Blessed Warrior no longer expose raw `OtherSummary` / `EntrySummary` keys. Druidic Warrior now reads as **When gaining the Level 2 Ranger Fighting Style feature**, and the Current Selection category is shown as **Ranger Fighting Style** rather than `FS:R`.
+
+
+## Fighting Style feat hierarchy follow-up
+
+The Training feat catalogue now treats Fighting Style rows as child options rather than ordinary top-level Bonus Feats. Existing saved drafts that already point directly at a Fighting Style remain visible long enough to be replaced, but new selections route through their owning rule.
+
+**Fighting Initiate (TCE)** is the source-backed parent feat for the generic Fighter Fighting Style pool. Selecting it creates one required nested **Choose a Fighting Style** decision using canonical `FS` feat rows. The nested browser shows the style's source rule and persists the chosen style as its own authoritative feat grant owned by the Fighting Initiate instance, so character feature authority and downstream sheet behavior continue to see the selected style.
+
+The parent source specifically says the choice comes from the Fighter class. Therefore class-specific `FS:R` and `FS:P` rows are deliberately not folded into Fighting Initiate. **Druidic Warrior** remains a Ranger Fighting Style choice and **Blessed Warrior** remains a Paladin Fighting Style choice. Those styles still appear when the corresponding class Fighting Style feature is being resolved.
+
+If a class already granted a generic Fighting Style, Fighting Initiate removes that exact style from its legal child pool so the source rule's “must be different” requirement is enforced before creation rather than deferred to server rejection.
