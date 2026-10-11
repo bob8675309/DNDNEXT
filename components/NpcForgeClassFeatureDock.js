@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useMemo } from "react";
 import { createPortal } from "react-dom";
 import ClassFeatureText from "./ClassFeatureText";
 import ItemCard from "./ItemCard";
