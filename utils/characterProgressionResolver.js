@@ -272,11 +272,14 @@ export function applyFeatToProgressionState(stateInput = {}, feat = {}, selected
     ...state,
     abilities: { ...state.abilities },
     feats: new Set(state.feats),
+    featVariants: new Set(state.featVariants || []),
+    featCategories: new Set(state.featCategories || []),
     features: new Set(state.features),
     armorProficiencies: new Set(state.armorProficiencies),
     weaponProficiencies: new Set(state.weaponProficiencies),
   };
   next.feats.add(norm(feat.name));
+  if (feat.category) next.featCategories.add(norm(feat.category));
   const abilityEffects = array(feat.metadata?.ability);
   for (const effect of abilityEffects) {
     for (const key of ABILITY_KEYS) {
