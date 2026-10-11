@@ -548,3 +548,132 @@
     display: none;
   }
 }
+
+
+/* 2026-10-11 storefront review corrections */
+.merchant-ambient-backdrop.is-neutral-fallback {
+  background:
+    radial-gradient(circle at 72% 34%, rgba(206,158,77,.10), transparent 20%),
+    radial-gradient(circle at 18% 70%, rgba(126,72,199,.10), transparent 22%),
+    linear-gradient(145deg, #11151e 0%, #0a0d14 52%, #090b10 100%);
+}
+.merchant-ambient-backdrop__fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: end start;
+  padding: 22px 24px;
+  background:
+    linear-gradient(90deg, transparent 0 8%, rgba(255,255,255,.025) 8.2% 8.6%, transparent 8.8% 22%, rgba(255,255,255,.018) 22.2% 22.5%, transparent 22.8%),
+    linear-gradient(180deg, rgba(255,255,255,.02) 0 1px, transparent 1px 31%, rgba(255,255,255,.015) 31% 31.3%, transparent 31.5% 64%, rgba(255,255,255,.014) 64% 64.3%, transparent 64.5%);
+}
+.merchant-ambient-backdrop__fallback::before,
+.merchant-ambient-backdrop__fallback::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(229,176,80,.08);
+  filter: blur(10px);
+  box-shadow: 0 0 35px rgba(229,176,80,.07);
+}
+.merchant-ambient-backdrop__fallback::before {
+  width: 54px;
+  height: 54px;
+  right: 11%;
+  top: 18%;
+}
+.merchant-ambient-backdrop__fallback::after {
+  width: 28px;
+  height: 28px;
+  left: 18%;
+  bottom: 19%;
+}
+.merchant-ambient-backdrop__fallback > span {
+  position: relative;
+  z-index: 1;
+  color: rgba(255,255,255,.09);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.6rem,4vw,3.4rem);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.merchant-ambient-backdrop.is-smith.is-neutral-fallback,
+.merchant-ambient-backdrop.is-weapons.is-neutral-fallback {
+  background: linear-gradient(145deg,#171311,#0d0d10 58%,#08090c);
+}
+.merchant-ambient-backdrop.is-herbalist.is-neutral-fallback,
+.merchant-ambient-backdrop.is-alchemy.is-neutral-fallback {
+  background: linear-gradient(145deg,#111912,#0b100d 58%,#080b09);
+}
+.merchant-ambient-backdrop.is-arcanist.is-neutral-fallback {
+  background: linear-gradient(145deg,#111421,#0b0d17 58%,#080910);
+}
+.merchant-ambient-backdrop.is-jeweler.is-neutral-fallback {
+  background: linear-gradient(145deg,#18131c,#0e0b12 58%,#09080c);
+}
+.merchant-ambient-backdrop.is-caravan.is-neutral-fallback,
+.merchant-ambient-backdrop.is-general.is-neutral-fallback {
+  background: linear-gradient(145deg,#18140f,#0f0d0b 58%,#09090a);
+}
+.merchant-rail__portrait-fallback {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid rgba(202,164,89,.22);
+  border-radius: 7px;
+  color: #e8d7b7;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(202,164,89,.13), transparent 52%),
+    linear-gradient(145deg, rgba(126,72,199,.10), rgba(255,255,255,.02));
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+}
+.merchant-rail__merchant.is-smith .merchant-rail__portrait-fallback,
+.merchant-rail__merchant.is-weapons .merchant-rail__portrait-fallback { border-color: rgba(196,113,74,.34); }
+.merchant-rail__merchant.is-herbalist .merchant-rail__portrait-fallback,
+.merchant-rail__merchant.is-alchemy .merchant-rail__portrait-fallback { border-color: rgba(93,153,106,.34); }
+.merchant-rail__merchant.is-arcanist .merchant-rail__portrait-fallback { border-color: rgba(109,119,190,.38); }
+.merchant-rail__merchant.is-jeweler .merchant-rail__portrait-fallback { border-color: rgba(158,113,185,.38); }
+
+.merchant-storefront-hero {
+  min-height: 0;
+  height: 100%;
+}
+.merchant-storefront-hero__copy {
+  top: 16px;
+  left: 18px;
+  width: min(330px, 40%);
+  padding: 10px 13px 11px;
+}
+.merchant-storefront-hero__copy h2 {
+  font-size: 1.35rem;
+}
+.merchant-storefront-hero__copy p {
+  margin-top: 6px;
+  max-width: 30ch;
+  font-size: .64rem;
+  line-height: 1.4;
+}
+.merchant-ambient-backdrop__image,
+.merchant-ambient-backdrop__video {
+  object-position: center 34%;
+}
+
+@media (max-width: 1080px) {
+  .merchant-storefront-hero {
+    min-height: 230px;
+    height: auto;
+  }
+}
+
+@media (max-width: 760px) {
+  .merchant-storefront-hero {
+    min-height: 220px;
+  }
+  .merchant-storefront-hero__copy {
+    width: min(330px, calc(100% - 28px));
+  }
+}

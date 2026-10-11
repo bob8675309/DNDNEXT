@@ -280,7 +280,7 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
   }
 
   if (!model) {
-    return <div className="npc-forge-body npc-forge-step-equipment is-player-mode"><section className="npc-forge-workspace"><div className="npc-forge-equipment-market-prereq"><strong>Starting market needs this Forge draft.</strong>The direct Equipment review link can restore a saved Forge draft, but Equipment still needs a selected Class and Background to resolve its source purse. Choose those first or continue through creation; the market will then load normally.</div></section></div>;
+    return <div className="npc-forge-body npc-forge-step-equipment is-player-mode"><section className="npc-forge-workspace"><div className="npc-forge-equipment-market-prereq"><strong>Starting market needs this Forge draft.</strong>Equipment needs a selected Class and Background to resolve its source purse. A saved Forge draft restores only on the same site origin where it was created; version-specific Vercel deployment hostnames do not share browser localStorage with dndnext.vercel.app. Choose Class and Background first, or open the review link on the same origin as the saved draft.</div></section></div>;
   }
 
   if (!model.catalogReady) {

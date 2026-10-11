@@ -479,3 +479,103 @@ body > .npc-forge-equipment-summary-dock.is-floating {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* 2026-10-11 browser-review sizing correction:
+   fit hero + stock browser and Selected Item + Starting Cart inside the actual Forge viewport. */
+.npc-forge-equipment-market-layout {
+  min-height: 0;
+  overflow: hidden;
+}
+.npc-forge-equipment-market-center {
+  grid-template-rows: minmax(180px, 42%) minmax(0, 1fr);
+  overflow: hidden;
+}
+.npc-forge-equipment-market-browser {
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+.npc-forge-equipment-market-browser > .merchant-stock-browser {
+  height: 100%;
+}
+.npc-forge-equipment-market-right {
+  grid-template-rows: minmax(205px, 1.12fr) minmax(155px, .88fr);
+  overflow: hidden;
+}
+.npc-forge-equipment-selected,
+.npc-forge-equipment-summary-dock.is-rail {
+  min-height: 0;
+  height: 100%;
+}
+.npc-forge-equipment-selected__body {
+  overscroll-behavior: contain;
+}
+.npc-forge-equipment-summary-dock__body {
+  min-height: 0;
+}
+.npc-forge-equipment-summary-dock__cart {
+  min-height: 0;
+  overflow: hidden;
+}
+.npc-forge-starting-cart__items {
+  min-height: 0;
+  max-height: none;
+  height: 100%;
+}
+.npc-forge-equipment-summary-dock__rules {
+  flex: 0 0 auto;
+}
+
+@media (max-height: 820px) and (min-width: 1081px) {
+  .npc-forge-equipment-market-status {
+    min-height: 26px;
+    padding-block: 3px;
+  }
+  .npc-forge-equipment-market-center {
+    grid-template-rows: minmax(165px, 39%) minmax(0, 1fr);
+  }
+  .npc-forge-equipment-market-right {
+    grid-template-rows: minmax(185px, 1fr) minmax(145px, .8fr);
+  }
+}
+
+@media (max-height: 720px) and (min-width: 1081px) {
+  .npc-forge-equipment-market-center {
+    grid-template-rows: minmax(150px, 36%) minmax(0, 1fr);
+  }
+  .npc-forge-equipment-market-right {
+    grid-template-rows: minmax(170px, .92fr) minmax(138px, .78fr);
+  }
+  .npc-forge-equipment-selected__head,
+  .npc-forge-equipment-summary-dock__head {
+    min-height: 38px;
+    padding-block: 5px;
+  }
+}
+
+@media (max-width: 1080px) {
+  .npc-forge-equipment-market-layout {
+    overflow: visible;
+  }
+  .npc-forge-equipment-market-center {
+    grid-template-rows: auto auto;
+    overflow: visible;
+  }
+  .npc-forge-equipment-market-browser {
+    height: auto;
+    overflow: visible;
+  }
+  .npc-forge-equipment-market-browser > .merchant-stock-browser {
+    height: auto;
+    min-height: 420px;
+  }
+  .npc-forge-equipment-market-right {
+    grid-template-rows: auto;
+    overflow: visible;
+  }
+  .npc-forge-equipment-selected,
+  .npc-forge-equipment-summary-dock.is-rail {
+    height: auto;
+  }
+}

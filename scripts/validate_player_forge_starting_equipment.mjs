@@ -21,6 +21,7 @@ const equipmentStyles = read("styles/player-forge-equipment-market.css");
 const app = read("pages/_app.js");
 const merchantExpansion = read("sql/20261011_03_starting_market_merchant_expansion.sql");
 const merchantVariety = read("sql/20261011_04_merchant_catalog_reroll_variety.sql");
+const dawnStorefrontMetadata = read("sql/20261011_05_dawn_storefront_metadata.sql");
 const derived = read("components/useNpcForgeDerivedModel.js");
 const modal = read("components/NewNpcModalV3Refined.js");
 
@@ -124,6 +125,7 @@ for (const token of [
   'presentation="rail"',
   "Roll 1d10 Starting Wealth",
   "Starting market needs this Forge draft",
+  "version-specific Vercel deployment hostnames do not share browser localStorage",
   "storefront_bg_video_url",
   "storefront_bg_image_url",
 ]) need(equipmentStep, token);
@@ -148,18 +150,20 @@ for (const token of [
   "is-collapsed",
 ]) need(equipmentDock, token, "reusable Equipment summary dock");
 
-for (const token of ["MerchantAmbientBackdrop", "merchant-storefront-hero__copy", "Ambient shop scene"]) need(merchantHero, token, "merchant hero");
-for (const token of ["resolveMerchantPortrait", "Campaign merchants", "merchant-rail__merchant"]) need(merchantRail, token, "merchant rail");
+for (const token of ["MerchantAmbientBackdrop", "merchant-storefront-hero__copy", "resolveMerchantStorefrontMedia", "hasDedicatedVideo"]) need(merchantHero, token, "merchant hero");
+for (const token of ["resolveMerchantPortrait", "merchantInitials", "themeFromMerchant", "Campaign merchants", "merchant-rail__merchant", "merchant-rail__portrait-fallback"]) need(merchantRail, token, "merchant rail");
 for (const token of ["resolveItemVisual", "merchant-stock-browser__row", "Search items", "Sort", "onAdd"]) need(merchantStockBrowser, token, "merchant stock browser");
 for (const token of ["LOOP_TAIL_SECONDS", "muted", "playsInline", "prefers-reduced-motion"]) {
   if (token === "prefers-reduced-motion") need(merchantStyles, token, "merchant reduced-motion support");
   else need(merchantBackdrop, token, "merchant ambient backdrop");
 }
-for (const token of ["storefront_bg_video_url", "storefront_bg_image_url", "portrait_shop_url", "portrait_thumb_url"]) need(merchantMedia, token, "merchant media resolver");
+for (const token of ["storefront_bg_video_url", "storefront_bg_image_url", "portrait_shop_url", "portrait_thumb_url", "THEME_BACKDROPS", "merchantInitials", "themeFromMerchant"]) need(merchantMedia, token, "merchant media resolver");
+forbid(merchantMedia, '|| "/parchment.jpg"', "shared character portrait fallback in storefront media");
+forbid(merchantMedia, "merchant.description", "character biography as shop tagline");
 for (const token of ["resolveItemVisual", "explicitItemImage", "FALLBACKS", "NAME_FALLBACKS"]) need(itemVisuals, token, "item visual fallback resolver");
 for (const token of ['variant = "default"', "detailsCollapsible", "sitem-game-details", "sitem-thumb-fallback", "resolveItemVisual"]) need(itemCard, token, "shared ItemCard shop variant");
-for (const token of [".merchant-storefront-hero", ".merchant-rail", ".merchant-stock-browser", ".sitem-thumb-fallback"]) need(merchantStyles, token, "shared merchant storefront styles");
-for (const token of [".npc-forge-equipment-market-layout", "grid-template-columns: 218px minmax(0,1fr) 340px", ".npc-forge-equipment-market-right", ".npc-forge-equipment-summary-dock"]) need(equipmentStyles, token, "Forge Equipment market layout");
+for (const token of [".merchant-storefront-hero", ".merchant-rail", ".merchant-stock-browser", ".sitem-thumb-fallback", ".merchant-ambient-backdrop__fallback", ".merchant-rail__portrait-fallback", "2026-10-11 storefront review corrections"]) need(merchantStyles, token, "shared merchant storefront styles");
+for (const token of [".npc-forge-equipment-market-layout", "grid-template-columns: 218px minmax(0,1fr) 340px", ".npc-forge-equipment-market-right", ".npc-forge-equipment-summary-dock", "grid-template-rows: minmax(180px, 42%) minmax(0, 1fr)", "grid-template-rows: minmax(205px, 1.12fr) minmax(155px, .88fr)", "2026-10-11 browser-review sizing correction"]) need(equipmentStyles, token, "Forge Equipment market layout");
 need(app, 'import "../styles/merchant-storefront.css";', "shared merchant stylesheet import");
 need(app, 'import "../styles/player-forge-equipment-market.css";', "Forge Equipment stylesheet import");
 
@@ -224,6 +228,13 @@ for (const token of [
 ]) need(modal, token);
 
 for (const token of [
+  "dawn whiteflame",
+  "General goods merchant",
+  "General Goods",
+  "Quality gear for every journey.",
+]) need(dawnStorefrontMetadata, token, "Dawn storefront metadata correction");
+
+for (const token of [
   "Mara Ironvein",
   "Selene Quill",
   "Pell Mossgrove",
@@ -244,7 +255,7 @@ for (const token of [
   "perform * from public.reroll_merchant_inventory_v2(v.id,v.theme,36)",
 ]) need(merchantVariety, token, "full-catalog diversified merchant reroll");
 
-for (const source of [utility, controller, equipmentStep, equipmentDock, merchantHero, merchantRail, merchantStockBrowser, merchantBackdrop, merchantMedia, itemVisuals, itemCard, merchantStyles, equipmentStyles, derived, modal, merchantExpansion, merchantVariety]) {
+for (const source of [utility, controller, equipmentStep, equipmentDock, merchantHero, merchantRail, merchantStockBrowser, merchantBackdrop, merchantMedia, itemVisuals, itemCard, merchantStyles, equipmentStyles, derived, modal, merchantExpansion, merchantVariety, dawnStorefrontMetadata]) {
   for (const token of ["MapPageClient", "map_routes", "advance_all_characters", "weather"]) forbid(source, token, `protected world boundary ${token}`);
 }
 

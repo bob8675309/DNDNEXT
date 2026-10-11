@@ -35,14 +35,16 @@ export default function MerchantAmbientBackdrop({ merchant, className = "" }) {
     };
   }, [hasVideo, media.videoUrl]);
 
-  return <div className={`merchant-ambient-backdrop ${className}`} aria-hidden="true">
-    <img className="merchant-ambient-backdrop__image" src={media.imageUrl} alt="" loading="lazy" />
+  return <div className={`merchant-ambient-backdrop is-${media.theme || "general"} ${media.imageUrl ? "has-image" : "is-neutral-fallback"} ${className}`} aria-hidden="true">
+    {media.imageUrl ? <img className="merchant-ambient-backdrop__image" src={media.imageUrl} alt="" loading="lazy" /> : <div className="merchant-ambient-backdrop__fallback">
+      <span>{String(media.theme || "general").replace(/-/g, " ")}</span>
+    </div>}
     {hasVideo ? <video
       ref={videoRef}
       key={media.videoUrl}
       className="merchant-ambient-backdrop__video"
       src={media.videoUrl}
-      poster={media.imageUrl}
+      poster={media.imageUrl || undefined}
       muted
       playsInline
       preload="metadata"
