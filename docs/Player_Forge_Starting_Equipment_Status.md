@@ -1,8 +1,25 @@
 # Player Forge Starting Equipment & Character Currency Status
 
-Status date: 2026-10-10  
-Active PR: #207 (`agent/forge-spell-browser-readability-20261009`)  
-Current authority: migrations 49-51 plus `20261010_01_player_forge_starting_market.sql`
+Status date: 2026-10-11  
+Active follow-up: PR #208 (`agent/forge-ux-equipment-homebrew-20261011`)  
+Current authority: migrations 49-51 plus `20261010_01_player_forge_starting_market.sql` and `20261011_02_player_forge_homebrew_starting_budget.sql`
+
+## 2026-10-11 DNDNext homebrew market override
+
+The player-facing Forge now records an explicit starting-equipment ruleset. The default is `dndnext-homebrew`; `vanilla` remains a supported server value for the future global vanilla/homebrew campaign switch.
+
+For market-mode creation:
+
+- the imported class and Background cash alternatives remain the **vanilla source purse** and are retained in metadata/provenance;
+- DNDNext Homebrew raises the starting market base to a **300 gp minimum** when the vanilla source purse is lower;
+- existing level 5+ higher-level wealth remains additive after the active base purse;
+- the live server still re-resolves merchant, stock, quantity, and current price transactionally at character creation;
+- unspent coin remains character-scoped;
+- legacy Package A/B/C payloads remain supported for old drafts and future vanilla-mode presentation.
+
+The Equipment screen no longer leads with separate Class Purse / Background Purse / Budget / Remaining cards. It uses a compact **Ruleset / Budget / Spent / Remaining** strip and a collapsed **Vanilla starting-equipment reference** disclosure so the imported source values are preserved without dominating the shopping UI.
+
+The storefront selector is portrait-aware and uses merchant imagery when the merchant record provides it. Production currently has one enabled storefront merchant and no storefront portrait field populated, so PR #208 intentionally does not fabricate placeholder merchant identities or art. A later merchant-content batch can add real merchant NPCs, stock identities, and approved shop portraits without changing this checkout architecture.
 
 ## Current player-facing model
 

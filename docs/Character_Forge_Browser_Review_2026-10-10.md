@@ -93,3 +93,20 @@ Bonus Feat selection now evaluates the live structured prerequisite metadata for
 The live preferred feat catalogue currently contains **229 feats**. The prerequisite audit found no structured prerequisite keys outside the resolver's supported set: level, ability, spellcasting, spellcasting feature, class feature, proficiency, earlier feat/feat variant, feat category, mutually exclusive feat category, Background, species/lineage/size, campaign, and the imported special-condition forms. Unknown future prerequisite shapes fail closed rather than silently becoming selectable.
 
 **Baleful Scion** is explicitly covered by the regression matrix: it requires level 4 and the exact **Scion of the Outer Planes (Evil Outer Plane)** variant. Owning only the parent Scion feat is insufficient. The matrix also covers alternative ability prerequisites, campaign gates, Fighting Initiate's Fighting Style feature gate, Dragonmark category/exclusivity rules, Small-race rules, spellcasting prerequisites, special Ranger/Paladin Fighting Style acquisition timing, and unsupported prerequisite shapes.
+
+
+## October 11 follow-up — Class level placement, direct Feat actions, Spell collapse, and Equipment market
+
+Paul's next browser review produced a bounded UX follow-up rather than another Forge architecture rewrite.
+
+- **Starting Level** no longer occupies the Class hero's upper-right art/control cluster. In Class Overview it sits directly above the Subclass Browser; Detailed Guide keeps a compact non-art-overlapping level row.
+- source-granted Feats such as **Magic Initiate** retain their real ownership but now use the same teal pinned-row treatment as selected Feats;
+- Feat rows now expose small **Select / Deselect** controls that share the same Bonus Feat authority as the larger Current Selection action. Granted and prerequisite-locked rows remain non-removable/non-selectable;
+- source-owned Spell helper text is larger and higher contrast;
+- compact source-owned Spell selectors auto-collapse when their required choice becomes complete, reopen if the choice becomes incomplete, and remain manually reopenable for changes;
+- browser-review deep links can open the Forge directly to a named or numbered step with `?forgeStep=equipment` (or another step). This changes navigation only and does not bypass final creation validation;
+- Equipment uses a compact merchant-style budget bar and collapses vanilla/source bookkeeping into a reference disclosure;
+- the new `dndnext-homebrew` market ruleset uses a **300 gp minimum starting purse**, while `vanilla` preserves the imported class/background cash alternatives. Package A/B/C data and legacy package payload support remain intact for the future campaign-level vanilla/homebrew switch;
+- live merchant checkout authority remains unchanged: current storefront state, stock, quantity, and server price are revalidated transactionally when the character is created.
+
+Production inspection during this pass found one currently enabled storefront merchant and no populated storefront portrait field. The selector is portrait-aware, but new merchant identities/portraits are intentionally deferred to an explicit content/art batch rather than adding placeholder NPCs.

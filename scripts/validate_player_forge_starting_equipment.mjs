@@ -3,6 +3,7 @@ import fs from "node:fs";
 const read = (path) => fs.readFileSync(path, "utf8");
 const migration = read("sql/20260808_49_player_forge_starting_equipment_currency.sql");
 const marketMigration = read("sql/20261010_01_player_forge_starting_market.sql");
+const homebrewMigration = read("sql/20261011_02_player_forge_homebrew_starting_budget.sql");
 const utility = read("utils/playerForgeStartingEquipment.js");
 const controller = read("components/useNpcForgeController.js");
 const core = read("components/NpcForgeCoreSupport.js");
@@ -96,7 +97,9 @@ for (const token of [
 
 for (const token of [
   "Starting market",
-  "Take the source-backed cash alternative",
+  "DNDNext starting purse",
+  "Vanilla starting-equipment reference",
+  "Campaign merchants",
   "startingMarketBudgetCopper",
   "startingMarketRemainingCopper",
   "marketPurchases",
@@ -110,6 +113,9 @@ for (const token of [
 
 for (const token of [
   "cashOnlyEquipmentOption",
+  "startingEquipmentRuleset",
+  "startingMarketVanillaCopper",
+  "DNDNEXT_STARTING_MARKET_FLOOR_COPPER",
   "startingMarketBaseCopper",
   "startingMarketPurchases",
   "startingMarketSpentCopper",
@@ -138,6 +144,20 @@ forbid(marketMigration, "owner_type,'player'", "starting-market account inventor
 forbid(marketMigration, "MapPageClient", "starting-market world-map crossover");
 forbid(marketMigration, "map_routes", "starting-market route crossover");
 forbid(marketMigration, "weather", "starting-market weather crossover");
+
+for (const token of [
+  "dndnext-homebrew",
+  "30000::bigint",
+  "greatest(v_package_copper,30000::bigint)",
+  "'vanillaSourceCopper',v_package_copper",
+  "'homebrewBaseFloorCopper',30000",
+  "startingEquipmentRuleset",
+  "Unknown Player Forge starting-equipment ruleset.",
+]) need(homebrewMigration, token, "DNDNext homebrew starting-budget authority");
+
+forbid(homebrewMigration, "player_wallets", "homebrew starting-budget account wallet usage");
+forbid(homebrewMigration, "MapPageClient", "homebrew starting-budget world-map crossover");
+forbid(homebrewMigration, "map_routes", "homebrew starting-budget route crossover");
 
 for (const token of [
   "startingEquipmentSelections",

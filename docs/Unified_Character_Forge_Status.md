@@ -12,6 +12,8 @@ Key accepted Forge milestones now merged:
 - PR #202 — Metamagic Adept nested choices, invocation detail fallback, and Profile-style Forge spell browsing;
 - PR #204 — complete 36/36 Grim Hollow Tarot expansion coverage.
 - PR #206 — October 9 browser-review follow-up: modest Background readability increase, Expertise-as-Skill-flag UX, compact Class Choices, and exact Training blocker guidance. This preserves existing class-feature/source-choice persistence rather than introducing parallel state.
+- PR #207 — merged October 11 browser-review work covering spell-browser readability, source-rule enrichment, Training/Class-choice polish, prerequisite enforcement, and the transactional starting-market foundation.
+- PR #208 — October 11 UX/equipment follow-up: Starting Level moved off hero art, direct Feat row actions, source-Spell completion collapse/readability, Forge step deep-links, and an explicit `dndnext-homebrew` starting-market ruleset with a 300 gp floor while retaining vanilla/package authority.
 - PR #207 — active October 9 browser-review follow-up: compact sortable spell rows, client-side selection ceilings aligned to existing starting-magic models, structured one-scroll SpellCard rules/progression, Background cleanup, intrinsic-height Training Current Selection cards, and complete source-rule presentation for class/subclass options. Choice/progression persistence authority is unchanged; two reviewed source-rule enrichment SQL files were applied live to repair previously identity-only option descriptions.
 
 ### 2026-10-09 Class Choices source-rule completeness pass
