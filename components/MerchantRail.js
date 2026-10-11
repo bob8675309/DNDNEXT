@@ -1,4 +1,5 @@
-import { merchantShopLabel, merchantTagline, resolveMerchantPortrait } from "../utils/merchantStorefrontMedia";
+import { merchantInitials, merchantShopLabel, merchantTagline, resolveMerchantPortrait } from "../utils/merchantStorefrontMedia";
+import { themeFromMerchant } from "../utils/merchantTheme";
 
 export default function MerchantRail({
   merchants = [],
@@ -17,18 +18,20 @@ export default function MerchantRail({
       {merchants.map((merchant) => {
         const active = String(merchant.id) === String(activeMerchantId);
         const tagline = merchantTagline(merchant);
+        const portrait = resolveMerchantPortrait(merchant);
+        const theme = themeFromMerchant(merchant);
         return <button
           key={merchant.id}
           type="button"
-          className={`merchant-rail__merchant ${active ? "is-active" : ""}`}
+          className={`merchant-rail__merchant is-${theme} ${active ? "is-active" : ""}`}
           onClick={() => onSelect?.(merchant.id)}
           aria-pressed={active}
         >
-          <img src={resolveMerchantPortrait(merchant)} alt="" loading="lazy" />
+          {portrait ? <img src={portrait} alt="" loading="lazy" /> : <span className="merchant-rail__portrait-fallback" aria-hidden="true">{merchantInitials(merchant)}</span>}
           <span className="merchant-rail__merchant-copy">
             <strong>{merchant.name || "Merchant"}</strong>
             <em>{merchantShopLabel(merchant)}</em>
-            {tagline ? <small>{tagline}</small> : null}
+            {tagline ? <small>{tagline}</small> : <small>Campaign storefront</small>}
           </span>
           <span className="merchant-rail__status" aria-label="Storefront available" title="Storefront available" />
         </button>;

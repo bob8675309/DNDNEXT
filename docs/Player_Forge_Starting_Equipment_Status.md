@@ -4,6 +4,27 @@ Status date: 2026-10-11
 Active follow-up: PR #208 (`agent/forge-ux-equipment-homebrew-20261011`)  
 Current authority: migrations 49-51 plus `20261010_01_player_forge_starting_market.sql` and `20261011_02_player_forge_homebrew_starting_budget.sql`
 
+## 2026-10-11 first production storefront review correction
+
+The first live browser/video review exposed presentation problems that were not visible in static validation:
+
+- the merchant hero and right-side panels were respecting minimum heights that could exceed the actual Forge body height, pushing the stock browser and Starting Cart below the clipped workspace;
+- all seven live storefront merchants still had empty portrait/shop/background fields, so the storefront resolver fell back to `/parchment.jpg`, which showed an unrelated character image for multiple merchants;
+- the merchant rail therefore also had blank portrait boxes when no merchant portrait existed;
+- Dawn Whiteflame still had stale storefront metadata (`Clam merchant`, generic shop title, no storefront tagline), which caused her Character biography to leak into shop presentation.
+
+The corrective pass changes presentation rather than commerce authority:
+
+- the desktop Equipment center column now reserves roughly 42% of the available height for the merchant hero and gives the remaining space to the stock browser, with additional short-viewport reductions;
+- the Selected Item and Starting Cart share the available right-rail height and each scroll internally rather than forcing the other below the Forge viewport;
+- merchants with no approved portrait now receive a deliberate monogram portrait fallback;
+- storefronts with no approved hero art now use a neutral dark storefront treatment, with existing profession-themed merchant backgrounds reused only where they are appropriate;
+- `/parchment.jpg` is no longer the storefront media fallback;
+- Character biography text is no longer used as a storefront tagline;
+- Dawn's storefront metadata is corrected to **General goods merchant / General Goods / Quality gear for every journey.**
+
+The Forge-draft warning seen while reviewing a version-specific Vercel hostname is not a new persistence defect. Player Forge draft persistence is browser `localStorage`, scoped by the signed-in user **and by web origin**. A draft saved at `dndnext.vercel.app` is not visible to a deployment hostname such as `dndnext-<hash>-pauls-projects-....vercel.app`. The direct `forgeStep=equipment` convenience continues to work when opened on the same origin as the saved draft. The warning copy now states that boundary explicitly.
+
 ## 2026-10-11 storefront UI implementation batch
 
 Active implementation branch: `agent/forge-equipment-storefront-ui-20261011`.
