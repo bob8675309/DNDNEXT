@@ -434,31 +434,40 @@ export default function NpcForgeTrainingContextCard({ detail = null, selectedSki
     };
     const facts = sourceOptionMeta(option, field, group);
     const playerRules = Array.isArray(option.metadata?.playerRules) ? option.metadata.playerRules.filter(Boolean) : [];
+    const optionTitle = option.label || option.name || "Class Choice";
+    const optionDescription = String(option.description || "").trim();
+    const descriptionMatchesLabel = [optionTitle, field.label, group.label].filter(Boolean).some((value) => normalized(value) === normalized(optionDescription));
+    const showRuleCopy = Boolean(optionDescription && !descriptionMatchesLabel);
+    const className = selectedClass?.class_name || selectedClass?.name || "your class";
+    const grantedBy = group.sourceFeature ? `${className} — ${group.sourceFeature}` : group.label || className;
+    const contextDescription = prerequisite ? `Prerequisite: ${prerequisite}` : `Granted by ${grantedBy}.`;
 
     return <ContextShell
       icon={`${TRAINING_ASSET_ROOT}/summary-training.svg`}
       iconIsImage
-      title={option.label || option.name || "Class Choice"}
+      title={optionTitle}
       badge={field.label || group.label || "Class Choice"}
       selected={selected}
-      description={prerequisite ? `Prerequisite: ${prerequisite}` : group.helper || "This option is granted by your class progression."}
+      description={contextDescription}
       onAction={chooseOption}
       actionLabel={actionLabel}
       actionDisabled={selected || full}
     >
       <section className="npc-forge-training-context-section">
-        <h4>What it does</h4>
-        <div className="npc-forge-training-class-option-copy">
-          <ClassChoiceRuleCopy value={option.description} fallback="No additional rules summary is available for this option." />
-          {playerRules.length ? <details className="npc-forge-training-option-rules"><summary>Rules and limits</summary><ul>{playerRules.map((rule) => <li key={rule}>{rule}</li>)}</ul></details> : null}
-        </div>
+        {(showRuleCopy || playerRules.length) ? <>
+          <h4>{group.label || "Rules"}</h4>
+          <div className="npc-forge-training-class-option-copy">
+            {showRuleCopy ? <ClassChoiceRuleCopy value={optionDescription} /> : null}
+            {playerRules.length ? <details className="npc-forge-training-option-rules"><summary>Rules and limits</summary><ul>{playerRules.map((rule) => <li key={rule}>{rule}</li>)}</ul></details> : null}
+          </div>
+        </> : null}
         <div className="npc-forge-training-context-facts">
           {facts.map((fact) => <span key={fact.label}><small>{fact.label}</small><b>{fact.value}</b></span>)}
           {prerequisite ? <span><small>Prerequisite</small><b>{prerequisite}</b></span> : null}
         </div>
       </section>
-      {childFields.length ? <section className="npc-forge-training-context-section">
-        <div className="npc-forge-training-context-route"><span>→</span><div><strong>Additional choice follows this option</strong><p>{selected ? "The follow-up field is now available in Class Choices on the left. Click one of its options to inspect and select it here." : "Select this option first. Its dependent choice will then appear in Class Choices on the left."}</p></div></div>
+      {childFields.length && !selected ? <section className="npc-forge-training-context-section">
+        <div className="npc-forge-training-context-route"><span>→</span><div><strong>More choices unlock after selection</strong><p>Select this option to reveal its dependent choice in Class Choices.</p></div></div>
       </section> : null}
     </ContextShell>;
   }
