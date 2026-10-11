@@ -1,5 +1,23 @@
 # Unified NPC and Player Character Forge Status
 
+## 2026-10-11 production override
+
+Current production authority is `main` at `5937d5e960e8de117be6f5605754306137f0ae0a` after merged PR #208.
+
+- PR #207 and PR #208 are merged.
+- Exact PR #208 head `6da80428cb6403f63e8586eec8a944f9dc80dbd0` passed **17 / 17** triggered workflows.
+- Vercel production deployment `dpl_3f2vpd1AcmgWXkLEpc4Kv8swJ1tF` is **READY** and `/profile` returned HTTP 200.
+- Live Supabase migration `20261011142727 player_forge_homebrew_starting_budget` is registered.
+- The player-facing Equipment default is `dndnext-homebrew` with a **300 gp minimum market purse**; `vanilla` preserves imported cash alternatives, and legacy Package A/B/C data/payloads remain available for future campaign-wide ruleset switching.
+- Starting-market checkout remains server-authoritative and transactional; merchant stock/current price are rechecked at character creation and resulting inventory/currency remain character-scoped.
+- Starting Level now sits above Subclass Browser instead of on Class hero art.
+- Feat list rows expose direct Select/Deselect controls while preserving the existing Bonus Feat authority; source-granted Feats share the teal selected-row presentation but remain labeled **Granted** and cannot be removed.
+- source-owned Spell helper text is more readable and completed source-choice groups auto-collapse while remaining reopenable.
+- `?forgeStep=<name|number>` is an admin/browser-review navigation convenience only; it does not weaken final creation validation.
+- Merchant selector presentation is portrait-aware, but merchant NPC/portrait expansion is intentionally a separate content/art batch rather than placeholder data.
+
+Post-migration verification showed no character/merchant-stock residue from deployment itself. Broader Supabase security-advisor findings remain a separate pre-existing hardening queue.
+
 ## 2026-10-09 authoritative completion-direction override
 
 Current production authority is `main` at the post-Grim-Hollow Tarot baseline.
@@ -14,7 +32,6 @@ Key accepted Forge milestones now merged:
 - PR #206 — October 9 browser-review follow-up: modest Background readability increase, Expertise-as-Skill-flag UX, compact Class Choices, and exact Training blocker guidance. This preserves existing class-feature/source-choice persistence rather than introducing parallel state.
 - PR #207 — merged October 11 browser-review work covering spell-browser readability, source-rule enrichment, Training/Class-choice polish, prerequisite enforcement, and the transactional starting-market foundation.
 - PR #208 — October 11 UX/equipment follow-up: Starting Level moved off hero art, direct Feat row actions, source-Spell completion collapse/readability, Forge step deep-links, and an explicit `dndnext-homebrew` starting-market ruleset with a 300 gp floor while retaining vanilla/package authority.
-- PR #207 — active October 9 browser-review follow-up: compact sortable spell rows, client-side selection ceilings aligned to existing starting-magic models, structured one-scroll SpellCard rules/progression, Background cleanup, intrinsic-height Training Current Selection cards, and complete source-rule presentation for class/subclass options. Choice/progression persistence authority is unchanged; two reviewed source-rule enrichment SQL files were applied live to repair previously identity-only option descriptions.
 
 ### 2026-10-09 Class Choices source-rule completeness pass
 
