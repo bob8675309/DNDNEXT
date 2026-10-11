@@ -254,9 +254,12 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
     target: backgroundSkillCount + pendingBackgroundSkillCount + availableClassSkillSlots,
   };
   const backgroundFeatUnit = controller.selectedBackgroundFeat ? 1 : 0;
+  const otherGrantedFeatUnits = new Set(featSourceGroups
+    .map((group) => String(group?.metadata?.featInstanceId || group?.ownerKey || ""))
+    .filter((instanceId) => instanceId && !["background-feat", "species-bonus-feat"].includes(instanceId))).size;
   const featsProgress = {
-    done: backgroundFeatUnit + (bonusFeatRequired && controller.speciesBonusFeat ? 1 : 0) + featProgress.done,
-    target: backgroundFeatUnit + (bonusFeatRequired ? 1 : 0) + featProgress.target,
+    done: backgroundFeatUnit + (bonusFeatRequired && controller.speciesBonusFeat ? 1 : 0) + otherGrantedFeatUnits,
+    target: backgroundFeatUnit + (bonusFeatRequired ? 1 : 0) + otherGrantedFeatUnits,
   };
   const classTabProgress = {
     done: expertiseProgress.done + classProgress.done + classSourceProgress.done,
@@ -272,7 +275,7 @@ export default function NpcForgeTrainingStepPlayerTabbed(props) {
     <div className="npc-forge-training-mode-switch" role="tablist" aria-label="Training sections">
       <button type="button" role="tab" aria-selected={activeView === "skills"} className={activeView === "skills" ? "is-active" : ""} onClick={() => selectView("skills")}>
         <img src={`${TRAINING_ASSET_ROOT}/summary-skills.svg`} alt="" aria-hidden="true" />
-        <span className="npc-forge-training-tab-copy"><strong>Skills</strong><small>{fraction(skillsProgress)}</small></span>
+        <span className="npc-forge-training-tab-copy"><strong>Skills &amp; Trade Skills</strong><small>{fraction(skillsProgress)}</small></span>
         <span className="npc-forge-training-tab-status"><em className={skillsIncomplete ? "is-required" : "is-complete"}>{skillsStatus}</em></span>
       </button>
       <button type="button" role="tab" aria-selected={activeView === "feats"} className={activeView === "feats" ? "is-active" : ""} onClick={() => selectView("feats")}>
