@@ -1,11 +1,34 @@
 # DNDNext Next-Chat Handoff Brief
 
-Updated: 2026-10-09
+Updated: 2026-10-11
 
 Repository: `bob8675309/DNDNEXT`
 
 Stack: Next.js **Pages Router** 16.1.6, React 19, Supabase/Postgres, Bootstrap/SCSS, Vercel.
 
+
+## 2026-10-11 authoritative override — use this before every older checkpoint below
+
+Current production authority is `main` at `5937d5e960e8de117be6f5605754306137f0ae0a` (merged PR #208).
+
+- PR #207 is merged and retained the accepted spell-browser, prerequisite, Training/Class-choice, source-rule, and transactional starting-market foundation.
+- PR #208 is merged and production-deployed.
+- Exact PR #208 head `6da80428cb6403f63e8586eec8a944f9dc80dbd0` passed **17 / 17** triggered GitHub workflows before merge.
+- Vercel production deployment `dpl_3f2vpd1AcmgWXkLEpc4Kv8swJ1tF` is **READY** and `/profile` returned HTTP 200.
+- Live Supabase migration `20261011142727 player_forge_homebrew_starting_budget` is registered.
+- The Player Forge Equipment ruleset seam is now explicit: `dndnext-homebrew` is the player-facing default with a **300 gp minimum starting market purse**; `vanilla` retains imported class/background cash alternatives, and legacy Package A/B/C source data/payload support remains available for the future campaign-wide ruleset switch.
+- Starting-market checkout remains server-authoritative: live merchant/storefront state, stock, quantity, and current price are revalidated transactionally at character creation; inventory/currency remain character-scoped.
+- Starting Level sits above the Subclass Browser rather than covering Class hero art.
+- selected and source-granted Feat rows share the teal pinned presentation; quick list-row Select/Deselect controls use the existing Bonus Feat authority, while Granted/Locked states remain protected.
+- source-owned Spell helper text is larger; completed source-owned selectors auto-collapse but remain manually reopenable.
+- browser review can deep-link to a Forge step with `?forgeStep=equipment` or another step name/number. This is navigation only and does not bypass creation validation.
+- The Equipment storefront is portrait-aware, but production currently has one enabled storefront merchant and no populated storefront portrait. Do not invent placeholder merchants/art; add merchant NPCs and approved shop portraits as a deliberate content/art pass.
+
+Post-migration verification showed the 300 gp server floor and ruleset guard live, with the existing production counts unchanged by the migration: 7 characters, 18 inventory rows, 0 character-currency rows, 1 enabled storefront merchant, and 16 stock rows / quantity 16.
+
+Supabase security-advisor output still contains broader pre-existing RLS/SECURITY DEFINER warnings unrelated to PR #208; do not conflate those with this migration.
+
+Always re-fetch current `main`, live Supabase, and Vercel before mutation.
 
 ## 2026-10-09 authoritative override — use this before every older checkpoint below
 
