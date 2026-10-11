@@ -4,6 +4,16 @@ Status date: 2026-10-11
 Active follow-up: PR #208 (`agent/forge-ux-equipment-homebrew-20261011`)  
 Current authority: migrations 49-51 plus `20261010_01_player_forge_starting_market.sql` and `20261011_02_player_forge_homebrew_starting_budget.sql`
 
+## 2026-10-11 Equipment browser-review follow-up
+
+The Equipment workspace now uses the full Forge width on desktop. Budget, spent, remaining currency, source-purse provenance, higher-level magic guidance, and cart contents live in a draggable/collapsible **Starting cart** dock modeled on the Class feature window instead of reserving a permanent right-hand column. The old in-workspace Ruleset / Budget / Spent / Remaining strip and separate vanilla-reference disclosure are no longer the primary presentation.
+
+A direct `forgeStep=equipment` review link is still draft-aware: Equipment requires a selected Class and Background because those choices determine the source-backed purse. When those prerequisites are not present in the account-scoped saved Forge draft, the step now explains the missing prerequisites instead of sitting forever on “Preparing the starting market…”.
+
+The class starter rule imported as **“Choose an Artisan's Tool or Musical Instrument”** is now normalized through the existing DNDNext class-artisan campaign adaptation and appears as one additional **Trade Skill** choice in Training. It is source-granted and does not spend the character's normal Class Skill / Trade Skill allowance.
+
+The live storefront catalogue was expanded from one enabled merchant to seven. Six storefront-only merchant characters were added without map locations or routes: Mara Ironvein, Selene Quill, Pell Mossgrove, Brakka Wayfarer, Ilyra Glasshand, and Torren Packswell. Their live shelves are generated from `public.items_catalog`, not from a static sample list. The live canonical catalogue contains 2,739 rows / 2,702 distinct names across 29 item types, and every catalogue row currently carries merchant tags. The diversified reroll keeps recipes to a small portion of each shelf, spreads stock across item types, and uses the complete catalogue as its fallback candidate pool. Current storefront stock after the expansion is 232 rows, all 232 resolving back to canonical `items_catalog` rows.
+
 ## 2026-10-11 DNDNext homebrew market override
 
 The player-facing Forge now records an explicit starting-equipment ruleset. The default is `dndnext-homebrew`; `vanilla` remains a supported server value for the future global vanilla/homebrew campaign switch.
@@ -19,7 +29,7 @@ For market-mode creation:
 
 The Equipment screen no longer leads with separate Class Purse / Background Purse / Budget / Remaining cards. It uses a compact **Ruleset / Budget / Spent / Remaining** strip and a collapsed **Vanilla starting-equipment reference** disclosure so the imported source values are preserved without dominating the shopping UI.
 
-The storefront selector is portrait-aware and uses merchant imagery when the merchant record provides it. Production currently has one enabled storefront merchant and no storefront portrait field populated, so PR #208 intentionally does not fabricate placeholder merchant identities or art. A later merchant-content batch can add real merchant NPCs, stock identities, and approved shop portraits without changing this checkout architecture.
+The storefront selector is portrait-aware and uses merchant imagery when the merchant record provides it. Production now has seven enabled storefront merchants. The six newly seeded storefronts intentionally remain hidden and unplaced on the world map until a later world-content pass assigns approved locations, routes, and portrait art; this avoids changing map behavior as a side effect of the Equipment expansion.
 
 ## Current player-facing model
 
