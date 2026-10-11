@@ -228,12 +228,11 @@ function CompactSourceChoiceField({ field, complete, children }) {
 }
 
 function CompactSourceChoiceGroup({ group, complete, body, autoCollapseComplete = false }) {
-  const [open, setOpen] = useState(!complete);
+  const [open, setOpen] = useState(false);
   const previousComplete = useRef(complete);
   useEffect(() => {
     if (!autoCollapseComplete) return;
     if (!previousComplete.current && complete) setOpen(false);
-    if (previousComplete.current && !complete) setOpen(true);
     previousComplete.current = complete;
   }, [autoCollapseComplete, complete]);
   if (!autoCollapseComplete) return <details className={`npc-forge-source-choice-group is-compact-group ${complete ? "is-complete" : "is-required"}`} defaultOpen={!complete}><summary><span><strong>{group.label}</strong><small>{group.helper || "Source-owned character choice"}</small></span><em>{complete ? "Complete" : "Required"}</em></summary><div className="npc-forge-source-choice-group__body">{body}</div></details>;
