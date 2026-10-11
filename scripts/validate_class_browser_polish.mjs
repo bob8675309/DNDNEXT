@@ -78,6 +78,7 @@ assert(!guide.includes("classSlotSummary(row.spell_slots)"), "Progression regres
 assert(!guide.includes("inspectSubclass(model, onFeatureDetail, option)"), "Subclass inspection must remain routed to the independent Subclass Codex callback, not the Class Feature panel.");
 assert(guide.includes("function StartingLevelControl") && guide.includes("npc-forge-class-guide__subclass-level") && guide.includes("level={level} onLevelChange={onLevelChange}"), "Starting Level must render beside subclass selection.");
 assert(guideStyles.includes(".npc-forge-class-guide__subclass-level") && guideStyles.includes(".npc-forge-class-guide__detailed-level-row"), "Starting Level placement must avoid covering class artwork.");
+assert(guideStyles.includes(".npc-forge-class-guide__subclass-stack{display:flex;align-items:flex-start") && guideStyles.includes(".npc-forge-class-guide__subclass-stack>.class-subclass-section.is-card-launcher:not(.is-detailed){margin-top:0}"), "Starting Level and the subclass selector must share one horizontal row on desktop.");
 
 
 for (const token of [
