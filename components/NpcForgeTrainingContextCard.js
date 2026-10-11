@@ -473,9 +473,14 @@ export default function NpcForgeTrainingContextCard({ detail = null, selectedSki
     const featOwnedTrainingGroups = trainingGroups.filter((group) => group.metadata?.trainingSection !== "skills");
     const featAbilityChoices = simpleFeatAbilityChoices(featOwnedTrainingGroups);
     const compactAbilityFieldIds = new Set(featAbilityChoices.map(({ group, field }) => `${group.id}:${field.id}`));
+    const featCatalogueBranchChoices = featOwnedTrainingGroups.flatMap((group) => (group.fields || []).filter((field) => field.metadata?.featCatalogueBranch).map((field) => {
+      const selectedKey = (sourceChoiceState.selections?.[group.id]?.[field.id] || [])[0] || "";
+      const selectedOption = (field.options || []).find((option) => option.key === selectedKey) || null;
+      return { group, field, selectedOption };
+    }));
     const featTrainingGroups = featOwnedTrainingGroups.map((group) => ({
       ...group,
-      fields: (group.fields || []).filter((field) => !compactAbilityFieldIds.has(`${group.id}:${field.id}`)),
+      fields: (group.fields || []).filter((field) => !compactAbilityFieldIds.has(`${group.id}:${field.id}`) && !field.metadata?.featCatalogueBranch),
     })).filter((group) => group.fields.length);
     const spellGroups = sourceChoiceGroupsForResolverPlacement(matchingState, "spells");
     const selectableBonusFeat = detail?.selectionKind === "species-bonus-feat";
@@ -483,13 +488,20 @@ export default function NpcForgeTrainingContextCard({ detail = null, selectedSki
     const bonusFeatSelected = selectableBonusFeat && currentBonusFeatId === String(feat.id || "");
     const selected = Boolean(detail?.granted) || bonusFeatSelected;
     const replacingBonusFeat = selectableBonusFeat && Boolean(currentBonusFeatId) && !bonusFeatSelected;
+    const prerequisiteMet = detail?.eligible !== false;
     const chooseFeat = selectableBonusFeat ? () => {
+      if (!bonusFeatSelected && !prerequisiteMet) {
+        controller.setError?.(`${feat.name} requires ${prerequisite || "its listed prerequisite"}.`);
+        return;
+      }
       controller.setSpeciesBonus?.({ featId: bonusFeatSelected ? "" : feat.id });
       controller.setDetail?.({ ...detail });
     } : null;
-    const actionLabel = bonusFeatSelected ? "Deselect Feat" : replacingBonusFeat ? "Replace Feat" : selected ? "Selected" : "Select Feat";
-    return <ContextShell icon={`${TRAINING_ASSET_ROOT}/summary-feat.svg`} iconIsImage title={feat.name} badge={featCategoryLabel(feat.category)} selected={selected} description={prerequisite ? `Prerequisite: ${prerequisite}` : "No prerequisite is listed for this feat."} onAction={chooseFeat} actionLabel={actionLabel} actionDisabled={selected && !selectableBonusFeat}>
+    const actionLabel = bonusFeatSelected ? "Deselect Feat" : !prerequisiteMet ? "Prerequisite unmet" : replacingBonusFeat ? "Replace Feat" : selected ? "Selected" : "Select Feat";
+    const actionDisabled = selected && !selectableBonusFeat ? true : Boolean(selectableBonusFeat && !bonusFeatSelected && !prerequisiteMet);
+    return <ContextShell icon={`${TRAINING_ASSET_ROOT}/summary-feat.svg`} iconIsImage title={feat.name} badge={featCategoryLabel(feat.category)} selected={selected} description={prerequisite ? `Prerequisite: ${prerequisite}` : "No prerequisite is listed for this feat."} onAction={chooseFeat} actionLabel={actionLabel} actionDisabled={actionDisabled}>
       <section className="npc-forge-training-context-section"><h4>Feat Rules</h4><FeatRuleList feat={feat} matchingGroups={matchingGroups} abilityChoices={featAbilityChoices} selections={sourceChoiceState.selections || {}} onToggleAbility={toggleSourceChoice} /><div className="npc-forge-training-context-facts"><span><small>Source</small><b>{feat.source || "Campaign"}</b></span><span><small>Category</small><b>{featCategoryLabel(feat.category)}</b></span>{prerequisite ? <span><small>Prerequisite</small><b>{prerequisite}</b></span> : null}</div></section>
+      {featCatalogueBranchChoices.length ? <section className="npc-forge-training-context-section"><div className="npc-forge-training-context-route"><span>←</span><div><strong>Fighting Style branches from this feat</strong><p>{featCatalogueBranchChoices.some(({ selectedOption }) => selectedOption) ? `Selected: ${featCatalogueBranchChoices.map(({ selectedOption }) => selectedOption?.label).filter(Boolean).join(", ")}. Expand Fighting Initiate in the feat list to change it.` : "Expand Fighting Initiate in the feat list on the left and choose the Fighting Style beneath it."}</p></div></div></section> : null}
       {skillsRoutedGroups.length ? <section className="npc-forge-training-context-section"><div className="npc-forge-training-context-route"><span>←</span><div><strong>Profession choices resolve in Skills</strong><p>This feat adds {skillsRoutedGroups.reduce((count, group) => count + (group.fields || []).reduce((sum, field) => sum + Number(field.count || 1), 0), 0)} additional Profession Skill choices. Make them in <b>Skills → Trade Skills</b>; each available or granted row is labeled with this feat as its source and does not spend the class Skill / Trade Skill allowance.</p></div></div></section> : null}
       {featTrainingGroups.length ? <section className="npc-forge-training-context-section npc-forge-training-context-choices"><h4>Required Feat Choices</h4><p>Every permanent non-spell decision owned by this feat is completed here beside its rules. Skill, tool, or instrument grants are reflected in Skills after you choose them.</p><NpcForgeSourceChoiceFields placement="training" inline groupsOverride={featTrainingGroups} title="Required feat choices" /></section> : null}
       {spellGroups.length ? <section className="npc-forge-training-context-section"><div className="npc-forge-training-context-route"><span>→</span><div><strong>Granted spells resolve on the next tab</strong><p>This feat grants {spellGroups.reduce((count, group) => count + (group.fields || []).filter((field) => field.required !== false).length, 0)} spell choice{spellGroups.reduce((count, group) => count + (group.fields || []).filter((field) => field.required !== false).length, 0) === 1 ? "" : "s"}. They are intentionally completed in <b>Spells</b>, where the spell catalogue, descriptions, levels, and spell-specific rules already live.</p></div></div></section> : null}
