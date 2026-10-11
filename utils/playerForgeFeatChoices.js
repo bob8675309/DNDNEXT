@@ -250,7 +250,7 @@ function fightingInitiateFields(featOptions = [], knownFightingStyles = []) {
     kind: "fighting-style",
     options,
     helper: "Fighting Initiate grants one Fighting Style option from the Fighter list. Ranger-only and Paladin-only Fighting Styles remain class-specific choices.",
-    metadata: { sourceFeature: "Fighting Initiate", choiceFamily: "fighter-fighting-style" },
+    metadata: { sourceFeature: "Fighting Initiate", choiceFamily: "fighter-fighting-style", featCatalogueBranch: true },
   })] : [];
 }
 
