@@ -47,6 +47,21 @@ Planned AI work after the Forge completion pass:
 Existing DNDNext validation/persistence remains authoritative. AI is a creative/reasoning layer, never a replacement for Forge, crafting, combat, inventory, or database authority.
 
 
+### 2026-10-11 Forge UX / Equipment follow-up — PR #208
+
+PR #207 is merged to `main`. The next bounded browser-review follow-up is PR #208 on `agent/forge-ux-equipment-homebrew-20261011`.
+
+This follow-up moves Starting Level off the Class hero art, gives Feat rows direct Select/Deselect controls while preserving source-granted ownership, enlarges source-owned Spell helper text, auto-collapses completed source-owned Spell selectors, and adds `?forgeStep=<step>` browser-review deep links.
+
+Equipment now has an explicit ruleset seam:
+- default player-facing ruleset: `dndnext-homebrew`;
+- homebrew starting-market floor: **300 gp** before existing higher-level wealth;
+- `vanilla` preserves imported class/background cash alternatives;
+- legacy Package A/B/C source data/payload support is retained for the future global vanilla/homebrew ruleset switch;
+- merchant stock/price checkout, character-scoped inventory/currency, and server authority remain unchanged.
+
+Do not add synthetic merchant records or placeholder shop portraits merely to fill the new selector. Production had one enabled storefront merchant and no populated storefront portrait at this checkpoint; merchant NPC/portrait expansion should be a deliberate content/art batch.
+
 ### 2026-10-09 active Forge browser-review follow-up — PR #207
 
 Current bounded work is PR #207 on `agent/forge-spell-browser-readability-20261009`.
