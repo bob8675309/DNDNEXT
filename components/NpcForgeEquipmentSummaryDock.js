@@ -40,6 +40,8 @@ export default function NpcForgeEquipmentSummaryDock({
   spentCopper = 0,
   remainingCopper = 0,
   vanillaSourceCopper = 0,
+  classCashCopper = 0,
+  backgroundCashCopper = 0,
   level = 1,
   purchases = [],
   onRemovePurchase = null,
@@ -156,6 +158,8 @@ export default function NpcForgeEquipmentSummaryDock({
         <dl className="npc-forge-equipment-summary">
           <div><dt>Ruleset</dt><dd>{ruleset === "vanilla" ? "Vanilla source rules" : "DNDNext Homebrew"}</dd></div>
           <div><dt>Vanilla source purse</dt><dd>{formatCopper(vanillaSourceCopper)}</dd></div>
+          <div><dt>Class source cash</dt><dd>{formatCopper(classCashCopper)}</dd></div>
+          <div><dt>Background source cash</dt><dd>{formatCopper(backgroundCashCopper)}</dd></div>
           <div><dt>Higher-level magic</dt><dd>{magicAllowanceLabel(level)}</dd></div>
         </dl>
         <p className="npc-forge-equipment-note"><strong>DM guide only:</strong> the higher-level magic-item allowance remains a review guide; the Forge does not grant free magic items.</p>
