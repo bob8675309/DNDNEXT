@@ -1,6 +1,6 @@
 # Documentation Refresh Manifest
 
-Updated: 2026-10-09
+Updated: 2026-10-11
 
 ## Trust order
 
@@ -14,6 +14,29 @@ For current work, trust sources in this order:
 
 If prose conflicts with live source/database state, live authority wins until documentation is corrected.
 
+
+## 2026-10-11 current checkpoint override
+
+Everything below this section is historical unless a newer focused ledger says otherwise.
+
+- current production authority: `main` at `5937d5e960e8de117be6f5605754306137f0ae0a` (merged PR #208);
+- PR #207 and PR #208 are merged;
+- exact PR #208 head `6da80428cb6403f63e8586eec8a944f9dc80dbd0` passed **17 / 17** triggered workflows;
+- production Vercel deployment `dpl_3f2vpd1AcmgWXkLEpc4Kv8swJ1tF`: **READY**; `/profile`: HTTP 200;
+- live migration `20261011142727 player_forge_homebrew_starting_budget` is registered;
+- DNDNext Homebrew starting market minimum: **300 gp**; vanilla imported cash alternatives and Package A/B/C data remain retained for future ruleset switching;
+- Starting Level placement, direct Feat row actions, source-owned Spell completion collapse/readability, and `forgeStep` review deep-link are production baseline;
+- merchant storefront UI is portrait-aware; production still has one enabled storefront merchant and no storefront portrait populated, so merchant NPC/portrait expansion remains a separate explicit content/art task;
+- migration verification left production entity/stock counts unchanged; broader Supabase security-advisor warnings are pre-existing and outside PR #208 scope.
+
+Current focused documents:
+
+- `DNDNext_Current_Handoff_Prompt.md`;
+- `Unified_Character_Forge_Status.md`;
+- `Character_Forge_Browser_Review_2026-10-10.md`;
+- `Player_Forge_Starting_Equipment_Status.md`;
+- `Player_Forge_Starting_Magic_v3_Status.md`;
+- `CHATGPT_REPO_WRITE_PROCEDURE.md`.
 
 ## 2026-10-08 current checkpoint override
 
