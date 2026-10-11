@@ -182,7 +182,7 @@ export function useNpcForgeClassGuideModel(selectedClass, level) {
         .select("item_key,item_name,item_type,item_rarity,payload")
         .limit(5000),
       supabase.from("spells_catalog")
-        .select("id,spell_key,name,source,page,level,school_code,school,classes,subclasses,ritual,concentration,casting_time,range_text,area_type,area_size,area_unit,components_v,components_s,components_m,material_text,duration_text,saving_throw_abilities,attack_type,damage_dice,damage_types,healing_dice,scaling_text,description,higher_level_text,tags,misc_tags,area_tags")
+        .select("id,spell_key,name,source,page,level,school_code,school,classes,subclasses,ritual,concentration,casting_time,range_text,area_type,area_size,area_unit,components_v,components_s,components_m,material_text,duration_text,saving_throw_abilities,attack_type,damage_dice,damage_types,healing_dice,scaling_text,scaling_json,description,higher_level_text,tags,misc_tags,area_tags,raw_payload")
         .order("level", { ascending: true }).order("name", { ascending: true }).limit(5000),
     ]).then(([levelResult, featureResult, optionResult, optionalFeatureResult, itemResult, detailItemResult, spellResult]) => {
       if (!active) return;
