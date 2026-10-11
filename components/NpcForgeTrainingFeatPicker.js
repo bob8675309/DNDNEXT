@@ -21,9 +21,15 @@ function prerequisiteLevel(option = {}) {
   return match ? Number(match[1]) : 0;
 }
 
+function featIdentity(option = {}) {
+  const id = text(option?.id);
+  return id ? `id:${id}` : `name:${normalized(option?.name)}|${text(option?.source).toLowerCase()}`;
+}
+
 export default function NpcForgeTrainingFeatPicker({
   options = [],
   selectedId = "",
+  grantedFeats = [],
   onDetail = null,
   label = "Bonus Feat",
 }) {
@@ -33,6 +39,10 @@ export default function NpcForgeTrainingFeatPicker({
   const [sortMode, setSortMode] = useState("name");
 
   const categories = useMemo(() => ["All", ...unique(options.map(categoryKey)).sort((a, b) => categoryLabel(a).localeCompare(categoryLabel(b)))], [options]);
+  const grantByIdentity = useMemo(() => new Map((Array.isArray(grantedFeats) ? grantedFeats : []).map((entry) => {
+    const feat = entry?.feat || entry;
+    return [featIdentity(feat), { ...entry, feat }];
+  }).filter(([key]) => key !== "name:|")), [grantedFeats]);
   const filtered = useMemo(() => {
     const q = normalized(query);
     const rows = options.filter((option) => {
@@ -61,11 +71,19 @@ export default function NpcForgeTrainingFeatPicker({
       }
       return text(a.name).localeCompare(text(b.name));
     });
-    if (!selectedId) return sorted;
-    const selectedIndex = sorted.findIndex((option) => String(option.id) === String(selectedId));
-    if (selectedIndex <= 0) return sorted;
-    return [sorted[selectedIndex], ...sorted.slice(0, selectedIndex), ...sorted.slice(selectedIndex + 1)];
-  }, [category, options, prerequisiteFilter, query, selectedId, sortMode]);
+    const pinnedKeys = [
+      ...grantByIdentity.keys(),
+      ...(selectedId ? [`id:${String(selectedId)}`] : []),
+    ];
+    if (!pinnedKeys.length) return sorted;
+    const rank = new Map(pinnedKeys.map((key, index) => [key, index]));
+    return [...sorted].sort((left, right) => {
+      const leftRank = rank.has(featIdentity(left)) ? rank.get(featIdentity(left)) : Number.POSITIVE_INFINITY;
+      const rightRank = rank.has(featIdentity(right)) ? rank.get(featIdentity(right)) : Number.POSITIVE_INFINITY;
+      if (leftRank !== rightRank) return leftRank - rightRank;
+      return sorted.indexOf(left) - sorted.indexOf(right);
+    });
+  }, [category, grantByIdentity, options, prerequisiteFilter, query, selectedId, sortMode]);
 
   const selected = useMemo(() => options.find((option) => String(option.id) === String(selectedId)) || null, [options, selectedId]);
 
@@ -75,7 +93,16 @@ export default function NpcForgeTrainingFeatPicker({
 
   function publish(option) {
     if (!option) return;
-    onDetail?.({ type: "feat", option });
+    const grant = grantByIdentity.get(featIdentity(option)) || null;
+    onDetail?.({
+      type: "feat",
+      option,
+      ...(grant ? {
+        granted: true,
+        selectionKind: "granted-feat",
+        featInstanceId: grant.featInstanceId || "background-feat",
+      } : {}),
+    });
   }
 
   return <section className="npc-forge-training-feat-picker" aria-label={`${label} catalogue`}>
@@ -92,24 +119,25 @@ export default function NpcForgeTrainingFeatPicker({
     <div className="npc-forge-training-feat-list" role="listbox" aria-label={label}>
       {filtered.map((feat) => {
         const isSelected = String(feat.id) === String(selectedId);
+        const isGranted = grantByIdentity.has(featIdentity(feat));
         const prerequisite = prerequisiteText(feat);
         return <button
           key={feat.id}
           type="button"
           role="option"
-          aria-selected={isSelected}
-          className={isSelected ? "is-selected" : ""}
+          aria-selected={isSelected || isGranted}
+          className={`${isSelected ? "is-selected" : ""} ${isGranted ? "is-granted" : ""}`}
           onClick={() => publish(feat)}
         >
           <span><strong>{feat.name}</strong><small className="npc-forge-training-feat-meta"><b>{categoryLabel(categoryKey(feat))}</b>{feat.source ? <span>{feat.source}</span> : null}</small>{prerequisite ? <i><b>Prerequisite:</b> {prerequisite}</i> : <i className="has-none">No prerequisite</i>}</span>
-          <em>{isSelected ? "Selected" : "View"}</em>
+          <em>{isSelected ? "Selected" : isGranted ? "Granted" : "View"}</em>
         </button>;
       })}
       {!filtered.length ? <p>No feats match these filters.</p> : null}
     </div>
     <small className="npc-forge-training-feat-help">Click a feat to inspect it on the right, then use the Select Feat button in Current Selection to confirm it. Any feat-owned follow-up choices remain directly below.</small>
     <style jsx global>{`
-      .npc-forge-training-feat-picker{display:grid;gap:8px;padding:9px;border:1px solid rgba(243,191,99,.24);border-radius:8px;background:linear-gradient(135deg,rgba(243,191,99,.045),rgba(126,72,199,.035))}.npc-forge-training-feat-picker>header{display:flex;align-items:center;justify-content:space-between;gap:10px}.npc-forge-training-feat-picker>header>div{display:grid;gap:2px}.npc-forge-training-feat-picker>header span,.npc-forge-training-feat-toolbar label>span{color:rgba(255,255,255,.46);font-size:.48rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em}.npc-forge-training-feat-picker>header strong{color:#fff;font-size:.68rem}.npc-forge-training-feat-picker>header>em{padding:2px 6px;border-radius:999px;color:#ffe5ae;background:rgba(243,191,99,.1);font-size:.48rem;font-style:normal}.npc-forge-training-feat-toolbar{display:grid;grid-template-columns:minmax(0,1.75fr) repeat(3,minmax(105px,.72fr));gap:6px}.npc-forge-training-feat-toolbar label{display:grid;gap:3px}.npc-forge-training-feat-toolbar input,.npc-forge-training-feat-toolbar select{width:100%;min-width:0;padding:6px 7px;border:1px solid rgba(255,255,255,.12);border-radius:6px;color:#fff;background:#090b12;font-size:.57rem}.npc-forge-training-feat-list{display:grid;gap:3px;max-height:228px;padding-right:3px;overflow:auto}.npc-forge-training-feat-list>button{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:6px 8px;border:1px solid rgba(255,255,255,.085);border-radius:6px;color:rgba(255,255,255,.78);background:rgba(3,5,10,.34);text-align:left}.npc-forge-training-feat-list>button>span{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 8px;min-width:0}.npc-forge-training-feat-list strong{overflow:hidden;color:#fff;font-size:.61rem;white-space:nowrap;text-overflow:ellipsis}.npc-forge-training-feat-list small{color:rgba(255,255,255,.43);font-size:.47rem;white-space:nowrap}.npc-forge-training-feat-meta{display:flex;align-items:center;justify-content:flex-end;gap:5px}.npc-forge-training-feat-meta>b{padding:2px 5px;border:1px solid rgba(168,108,255,.22);border-radius:999px;color:#dbc5ff;background:rgba(126,72,199,.08);font-size:.45rem;font-weight:700}.npc-forge-training-feat-meta>span{color:rgba(255,255,255,.38)}.npc-forge-training-feat-list i{grid-column:1/-1;overflow:visible;color:rgba(255,230,174,.68);font-size:.46rem;font-style:normal;line-height:1.35;white-space:normal}.npc-forge-training-feat-list i>b{color:inherit;font-weight:900}.npc-forge-training-feat-list i.has-none{color:rgba(255,255,255,.35)}.npc-forge-training-feat-list>button>em{color:rgba(255,255,255,.4);font-size:.47rem;font-style:normal;white-space:nowrap}.npc-forge-training-feat-list>button:hover,.npc-forge-training-feat-list>button:focus-visible{border-color:rgba(168,108,255,.4);background:rgba(126,72,199,.08)}.npc-forge-training-feat-list>button.is-selected{border-color:rgba(88,214,199,.58);background:linear-gradient(90deg,rgba(88,214,199,.1),rgba(126,72,199,.04))}.npc-forge-training-feat-list>button.is-selected>em{color:#9cece2;font-weight:700}.npc-forge-training-feat-list>p{margin:4px 0;color:rgba(255,255,255,.5);font-size:.56rem}.npc-forge-training-feat-help{color:rgba(255,255,255,.48);font-size:.49rem;line-height:1.45}@media(max-width:1180px){.npc-forge-training-feat-toolbar{grid-template-columns:minmax(0,1fr) minmax(120px,.72fr)}}@media(max-width:720px){.npc-forge-training-feat-toolbar{grid-template-columns:1fr}}
+      .npc-forge-training-feat-picker{display:grid;gap:8px;padding:9px;border:1px solid rgba(243,191,99,.24);border-radius:8px;background:linear-gradient(135deg,rgba(243,191,99,.045),rgba(126,72,199,.035))}.npc-forge-training-feat-picker>header{display:flex;align-items:center;justify-content:space-between;gap:10px}.npc-forge-training-feat-picker>header>div{display:grid;gap:2px}.npc-forge-training-feat-picker>header span,.npc-forge-training-feat-toolbar label>span{color:rgba(255,255,255,.46);font-size:.48rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em}.npc-forge-training-feat-picker>header strong{color:#fff;font-size:.68rem}.npc-forge-training-feat-picker>header>em{padding:2px 6px;border-radius:999px;color:#ffe5ae;background:rgba(243,191,99,.1);font-size:.48rem;font-style:normal}.npc-forge-training-feat-toolbar{display:grid;grid-template-columns:minmax(0,1.75fr) repeat(3,minmax(105px,.72fr));gap:6px}.npc-forge-training-feat-toolbar label{display:grid;gap:3px}.npc-forge-training-feat-toolbar input,.npc-forge-training-feat-toolbar select{width:100%;min-width:0;padding:6px 7px;border:1px solid rgba(255,255,255,.12);border-radius:6px;color:#fff;background:#090b12;font-size:.57rem}.npc-forge-training-feat-list{display:grid;gap:3px;max-height:228px;padding-right:3px;overflow:auto}.npc-forge-training-feat-list>button{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:6px 8px;border:1px solid rgba(255,255,255,.085);border-radius:6px;color:rgba(255,255,255,.78);background:rgba(3,5,10,.34);text-align:left}.npc-forge-training-feat-list>button>span{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 8px;min-width:0}.npc-forge-training-feat-list strong{overflow:hidden;color:#fff;font-size:.61rem;white-space:nowrap;text-overflow:ellipsis}.npc-forge-training-feat-list small{color:rgba(255,255,255,.43);font-size:.47rem;white-space:nowrap}.npc-forge-training-feat-meta{display:flex;align-items:center;justify-content:flex-end;gap:5px}.npc-forge-training-feat-meta>b{padding:2px 5px;border:1px solid rgba(168,108,255,.22);border-radius:999px;color:#dbc5ff;background:rgba(126,72,199,.08);font-size:.45rem;font-weight:700}.npc-forge-training-feat-meta>span{color:rgba(255,255,255,.38)}.npc-forge-training-feat-list i{grid-column:1/-1;overflow:visible;color:rgba(255,230,174,.68);font-size:.46rem;font-style:normal;line-height:1.35;white-space:normal}.npc-forge-training-feat-list i>b{color:inherit;font-weight:900}.npc-forge-training-feat-list i.has-none{color:rgba(255,255,255,.35)}.npc-forge-training-feat-list>button>em{color:rgba(255,255,255,.4);font-size:.47rem;font-style:normal;white-space:nowrap}.npc-forge-training-feat-list>button:hover,.npc-forge-training-feat-list>button:focus-visible{border-color:rgba(168,108,255,.4);background:rgba(126,72,199,.08)}.npc-forge-training-feat-list>button.is-selected,.npc-forge-training-feat-list>button.is-granted{border-color:rgba(88,214,199,.58);background:linear-gradient(90deg,rgba(88,214,199,.1),rgba(126,72,199,.04))}.npc-forge-training-feat-list>button.is-selected>em,.npc-forge-training-feat-list>button.is-granted>em{color:#9cece2;font-weight:700}.npc-forge-training-feat-list>p{margin:4px 0;color:rgba(255,255,255,.5);font-size:.56rem}.npc-forge-training-feat-help{color:rgba(255,255,255,.48);font-size:.49rem;line-height:1.45}@media(max-width:1180px){.npc-forge-training-feat-toolbar{grid-template-columns:minmax(0,1fr) minmax(120px,.72fr)}}@media(max-width:720px){.npc-forge-training-feat-toolbar{grid-template-columns:1fr}}
     `}</style>
   </section>;
 }
