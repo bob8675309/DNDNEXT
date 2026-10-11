@@ -42,3 +42,12 @@ Complex conditional Ability Score Improvement structures continue to use the gen
 ## Boundaries
 
 These changes are presentation/routing changes inside Character Forge and the Class/Subclass Codex. They do not change world-map, town-map, combat, crafting runtime, source-choice persistence, or class/subclass persistence authority.
+
+
+## Feat ability-bonus disclosure follow-up
+
+Feat Current Selection now reads the canonical feat ability metadata before the feat is selected. For the 141 imported feat rows that currently carry an ability-bonus rule, the Feat Rules presentation adds an **Ability Score Bonus** entry alongside the feat's other benefits. Limited choices list their actual abilities, while six-ability choices say that any ability score can be chosen. The dedicated Ability Score Improvement feat remains on its existing specialized flow.
+
+After a simple +1 choice feat is selected, the same Ability Score Bonus row becomes the compact chevron chooser. Choosing an ability collapses the row and leaves the chosen ability/value at the right edge; reopening it allows replacement without adding a second feat-rule box.
+
+Imported special prerequisites such as Druidic Warrior/Blessed Warrior no longer expose raw `OtherSummary` / `EntrySummary` keys. Druidic Warrior now reads as **When gaining the Level 2 Ranger Fighting Style feature**, and the Current Selection category is shown as **Ranger Fighting Style** rather than `FS:R`.
