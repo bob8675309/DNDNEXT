@@ -71,9 +71,13 @@ function normalizeClassArtisanTradeSkillChoice(group = {}) {
   if (String(group?.ownerType || "") !== "class") return group;
   let converted = false;
   const fields = (group.fields || []).map((field) => {
-    const exactGenericArtisanChoice = String(field?.kind || "") === "tool"
-      && normalizedChoiceLabel(field?.label) === "choose an artisans tool";
-    if (!exactGenericArtisanChoice) return field;
+    const normalizedLabel = normalizedChoiceLabel(field?.label);
+    const classArtisanChoice = String(field?.kind || "") === "tool"
+      && (
+        normalizedLabel === "choose an artisans tool"
+        || normalizedLabel === "choose an artisans tool or musical instrument"
+      );
+    if (!classArtisanChoice) return field;
     converted = true;
     return {
       ...field,
@@ -98,6 +102,7 @@ function normalizeClassArtisanTradeSkillChoice(group = {}) {
       }),
       metadata: {
         ...(field.metadata || {}),
+        professionChoice: true,
         grantsMappedTradeSkill: true,
         campaignRule: "class-artisan-trade-skill",
       },
