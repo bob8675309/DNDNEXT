@@ -1,12 +1,12 @@
 # DNDNext Living Documentation Index
 
-Updated: 2026-10-09
+Updated: 2026-10-11
 
 This directory contains the project's living handoff, roadmap, architecture, subsystem, and evidence documents. For active work, **live Supabase + current GitHub source/validators/deployment state outrank prose** if they conflict.
 
 ## Start here
 
-1. `DNDNext_Current_Handoff_Prompt.md` — canonical long-form takeover brief. Read the **2026-10-08 override** first.
+1. `DNDNext_Current_Handoff_Prompt.md` — canonical long-form takeover brief. Read the **2026-10-11 override** first.
 2. `Next_Chat_Handoff_2026-10-07_Grim_Hollow_Tarot.md` — focused Grim Hollow/Tarot completion handoff, updated 2026-10-09.
 3. `CHARACTER_FORGE_SUBCLASS_ARTWORK_STATUS.md` — current Tarot coverage/resolver/selector status.
 4. `CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md` — approved and remaining Grim Hollow card queue.
@@ -21,16 +21,16 @@ This directory contains the project's living handoff, roadmap, architecture, sub
 
 Current production authority is `main`.
 
-Consolidated state as of 2026-10-08:
+Consolidated state as of 2026-10-11:
 
-- PR #199 merged the accepted floating ruined-library subclass Tarot selector.
-- PR #202 merged Metamagic Adept nested choice support, invocation detail fallback, and Profile-style Forge spell browsing.
-- All 36 required new Grim Hollow expansion Tarot cards are installed and mapped on `main`.
-- PR #203's source-backed Grim Hollow Player's Guide spells/items/subclasses import is folded into `main`.
-- Runtime-visible subclass choices are **185 / 185** covered by dedicated approved Tarot cards; no current visible subclass uses source/class fallback artwork.
-- Remaining Grim Hollow Tarot creation queue: **0**; the Player's Guide expansion is complete.
-- Current `main` checkpoint `3b4cb1113b170d703f4f161f8ac149a3e7f2ffe9` (PR #204) deployed to Vercel production **READY** and `/profile` returned HTTP 200.
-- Next broad product priority: finish/reconcile the ten-step Character Forge on current `main`, preserving structured canonical state for the future provider-neutral local AI layer. AI implementation itself remains deferred until the Forge completion pass.
+- PRs #199, #202, #203/#204, #206, #207, and #208 are merged into current `main`.
+- Current production code checkpoint: `5937d5e960e8de117be6f5605754306137f0ae0a` (PR #208).
+- Exact PR #208 head passed **17 / 17** triggered workflows; Vercel production deployment `dpl_3f2vpd1AcmgWXkLEpc4Kv8swJ1tF` is **READY**, and `/profile` returned HTTP 200.
+- Live migration `20261011142727 player_forge_homebrew_starting_budget` establishes the DNDNext/vanilla starting-equipment ruleset seam.
+- DNDNext Homebrew currently uses a **300 gp minimum** starting market purse while preserving vanilla class/background cash, Package A/B/C source data, higher-level wealth logic, transactional merchant checkout, and character-scoped inventory/currency.
+- Starting Level no longer overlays Class hero art; Feat rows have direct Select/Deselect controls with selected/granted visual parity; source-owned Spell choice groups auto-collapse when complete; `?forgeStep=equipment` supports direct browser-review navigation.
+- Runtime-visible subclass choices remain **185 / 185** covered by dedicated approved Tarot cards; the Grim Hollow Tarot creation queue remains **0**.
+- Next broad product priority remains completion/reconciliation of the ten-step Character Forge, with merchant NPC/portrait expansion available as a separate content/art pass and future AI implementation still deferred until Forge completion.
 
 Live Grim Hollow catalogue checkpoint: **101 spells, 40 subclasses / 258 subclass-feature rows, 106 items**. The full item seeder preserves generated `price_gp` values so raw 5etools copper-piece values cannot inflate catalog prices by 100×.
 
@@ -40,12 +40,14 @@ Always re-fetch current `main` and live Supabase when requested work is database
 
 Supabase project: `DnDWeb` / `ucggczovhmauhshvhusx`.
 
-Latest relevant registered migrations:
+Latest relevant registered migrations include:
 
 - `20260921152546 admin_site_activity_v1`;
 - `20260921153151 admin_site_activity_acl_fix`;
 - `20260921153328 admin_site_activity_retention_v1`;
-- `20260921185225 admin_site_activity_hardening_v1`.
+- `20260921185225 admin_site_activity_hardening_v1`;
+- `20261011060110 fighting_initiate_2024_adaptation`;
+- `20261011142727 player_forge_homebrew_starting_budget`.
 
 Read `Auth_Navigation_Admin_Activity_Status.md` for the privacy model, grants, rate-bound anonymous ingestion, and signed-out attribution fix.
 
