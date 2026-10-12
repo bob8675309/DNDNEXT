@@ -1285,14 +1285,15 @@ body > .npc-forge-equipment-summary-dock.is-floating {
 .forge-equipment-merchant-market-shell {
   flex: 1 1 0;
   min-height: 0;
-  height: auto;
+  height: 0;
   overflow: hidden;
 }
 .forge-equipment-vendor-scene {
   image-rendering: auto;
   filter: none;
-  background-size: cover;
-  background-position: var(--merchant-bg-position, center center);
+  background-color: #080a0f;
+  background-size: var(--merchant-bg-size, contain);
+  background-position: var(--merchant-bg-position, center top);
   background-repeat: no-repeat;
 }
 .forge-equipment-vendor-scene > .forge-equipment-vendor-ambient {
@@ -1497,3 +1498,17 @@ body > .npc-forge-equipment-summary-dock.is-floating {
    Keep the MerchantPanel workspace inside the Forge viewport so the stock list,
    not the whole fixed Forge body, owns vertical scrolling. Dedicated storefront
    artwork is preferred over portrait fallback and uses an explicit crop anchor. */
+
+
+/* 2026-10-12 stable merchant portrait framing.
+   Category/search changes must never alter the merchant image zoom. The MerchantPanel
+   shell is locked to the remaining Forge height, and merchant art uses the same
+   contain-style framing as the established vendor panel instead of cover-cropping. */
+.forge-equipment-merchant-panel {
+  max-height: 100%;
+  overflow: hidden;
+}
+.forge-equipment-vendor-scene {
+  min-height: 0;
+  height: 100%;
+}
