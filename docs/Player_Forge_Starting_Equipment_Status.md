@@ -4,6 +4,16 @@ Status date: 2026-10-11
 Active follow-up: PR #208 (`agent/forge-ux-equipment-homebrew-20261011`)  
 Current authority: migrations 49-51 plus `20261010_01_player_forge_starting_market.sql` and `20261011_02_player_forge_homebrew_starting_budget.sql`
 
+## 2026-10-12 full-stage art, rarity authority, and no-gear path
+
+The Dawn browser review established three concrete corrections.
+
+First, storefront art is now one continuous Equipment-stage background rather than a workshop-only image plus a separately filtered Wares duplicate. The active merchant's existing `MerchantAmbientBackdrop` is mounted once behind the purse bar, Campaign Merchants rail, workshop copy, Wares browser, and selected ItemCard. The Forge disables the workshop's duplicate backdrop and removes the Wares duplicate scene. Forge-specific image filtering/transforms and row backdrop blur are disabled; readability comes from translucent dark menu surfaces and restrained stage shading instead of blurring the artwork.
+
+Second, Wares rarity now uses the site's canonical `rarity-*` class on the stock row itself. Live Dawn stock already carried correct `item_rarity` values (including Uncommon and Very Rare); the defect was presentation. The row had only an `is-rarity-*` class on the inner badge, so the existing `--rarity-color` authority fell back to gray. Rows and rarity badges now share the canonical rarity variable used elsewhere: neutral Common/Mundane, green Uncommon, blue Rare, purple Very Rare, gold Legendary, and red Artifact.
+
+Third, the starting market now exposes an explicit **No gear / Keep all gold** action. Selecting it clears a non-empty cart only after confirmation, marks the draft intent as `keepStartingGold`, and explains that the full starting purse remains character-scoped. Adding an item clears that intent. This is presentation/state clarity, not a new currency rule: empty market carts were already valid and the existing materializer already persists the full unspent starting purse to `public.character_currency`.
+
 ## 2026-10-12 Dawn Whiteflame visual calibration pack
 
 Dawn Whiteflame is now the first storefront with a complete approved media set. This is the calibration merchant for the remaining campaign shops.

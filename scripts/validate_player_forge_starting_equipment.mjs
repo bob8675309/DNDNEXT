@@ -93,6 +93,7 @@ for (const token of [
   "startingEquipmentSelectionComplete",
   "startingCurrencyCopper",
   "formatCopper",
+  "keepStartingGold",
   "(500 + d10 * 25) * 100",
   "(5000 + d10 * 250) * 100",
   "(20000 + d10 * 250) * 100",
@@ -118,6 +119,12 @@ for (const token of [
   "startingMarketBudgetCopper",
   "startingMarketRemainingCopper",
   "marketPurchases",
+  "MerchantAmbientBackdrop",
+  'className="forge-equipment-stage-backdrop"',
+  "showBackdrop={false}",
+  "keepFullPurse",
+  "keepStartingGold",
+  "Keep all gold",
   'from("characters")',
   'from("character_stock")',
   "ItemCard",
@@ -161,9 +168,11 @@ for (const token of [
   "forge-starting-cart-drawer",
 ]) need(cartDrawer, token, "Forge starting-cart drawer");
 
-for (const token of ["MerchantAmbientBackdrop", "merchantShopLabel", "merchantTagline", "forge-merchant-workshop"]) need(workshopPane, token, "merchant workshop pane");
+for (const token of ["MerchantAmbientBackdrop", "merchantShopLabel", "merchantTagline", "forge-merchant-workshop", "showBackdrop = true", "showBackdrop ? <MerchantAmbientBackdrop"]) need(workshopPane, token, "merchant workshop pane");
 for (const token of ["resolveMerchantPortrait", "merchantInitials", "themeFromMerchant", "Campaign merchants", "merchant-rail__merchant", "merchant-rail__portrait-fallback"]) need(merchantRail, token, "merchant rail");
-for (const token of ["resolveItemVisual", "resolveMerchantStorefrontMedia", "rarityClass", "merchant-stock-row", "Search stock", "Sort", "merchant-category-chip", "forge-merchant-wares__scene", "is-rarity-"]) need(waresList, token, "merchant-overlay wares list");
+for (const token of ["resolveItemVisual", "raritySlug", "rarityClass", "rarityRowClass", "rarity-", "merchant-stock-row", "Search stock", "Sort", "merchant-category-chip", "is-rarity-"]) need(waresList, token, "merchant-overlay wares list");
+forbid(waresList, "resolveMerchantStorefrontMedia", "duplicate per-column storefront background");
+forbid(waresList, "forge-merchant-wares__scene", "duplicate Wares scene background");
 for (const token of ["LOOP_TAIL_SECONDS", "muted", "playsInline", "prefers-reduced-motion"]) {
   if (token === "prefers-reduced-motion") need(merchantStyles, token, "merchant reduced-motion support");
   else need(merchantBackdrop, token, "merchant ambient backdrop");
@@ -174,8 +183,8 @@ forbid(merchantMedia, "merchant.description", "character biography as shop tagli
 for (const token of ["resolveItemVisual", "explicitItemImage", "FALLBACKS", "NAME_FALLBACKS"]) need(itemVisuals, token, "item visual fallback resolver");
 for (const token of ['variant = "default"', "detailsCollapsible", "sitem-game-details", "sitem-thumb-fallback", "resolveItemVisual"]) need(itemCard, token, "shared ItemCard shop variant");
 for (const token of ["2026-10-11 storefront ItemCard readability floor", ".sitem-card.is-shop-variant .sitem-title", "font-size: 1rem", ".sitem-card.is-shop-variant .sitem-section"]) need(cardCompact, token, "shop ItemCard readability");
-for (const token of [".merchant-rail", ".sitem-thumb-fallback", ".merchant-ambient-backdrop__fallback", ".merchant-rail__portrait-fallback", ".forge-merchant-workshop", ".forge-merchant-wares", ".forge-merchant-wares__scene", ".is-rarity-uncommon", ".is-rarity-rare", ".is-rarity-very-rare", ".is-rarity-legendary", ".is-rarity-artifact", "2026-10-11 Equipment readability + rarity polish", "2026-10-12 Forge Wares scrolling hotfix", "flex: 1 1 0", "overflow-y: auto !important", "scrollbar-gutter: stable"]) need(merchantStyles, token, "shared merchant storefront styles");
-for (const token of [".npc-forge-equipment-storefront", ".forge-starting-purse-bar", ".forge-merchant-overlay-layout", ".forge-merchant-preview", ".forge-starting-cart-drawer", "grid-template-columns: 175px minmax(270px,.82fr) minmax(360px,1.22fr) minmax(330px,.96fr)", "2026-10-11 Equipment readability pass"]) need(equipmentStyles, token, "Forge Equipment merchant-overlay layout");
+for (const token of [".merchant-rail", ".sitem-thumb-fallback", ".merchant-ambient-backdrop__fallback", ".merchant-rail__portrait-fallback", ".forge-merchant-workshop", ".forge-merchant-wares", ".is-rarity-uncommon", ".is-rarity-rare", ".is-rarity-very-rare", ".is-rarity-legendary", ".is-rarity-artifact", ".forge-merchant-wares__row.rarity-uncommon", ".forge-merchant-wares__row.rarity-very-rare", "--rarity-color", "2026-10-12 unified Equipment scene + canonical rarity pass", "2026-10-12 Forge Wares scrolling hotfix", "flex: 1 1 0", "overflow-y: auto !important", "scrollbar-gutter: stable"]) need(merchantStyles, token, "shared merchant storefront styles");
+for (const token of [".npc-forge-equipment-storefront", ".forge-equipment-stage-backdrop", ".forge-starting-purse-bar", ".forge-starting-purse-bar__keep", ".forge-merchant-overlay-layout", ".forge-merchant-preview", ".forge-starting-cart-drawer", "filter: none", "2026-10-12 full-stage storefront background + no-gear choice"]) need(equipmentStyles, token, "Forge Equipment merchant-overlay layout");
 need(app, 'import "../styles/merchant-storefront.css";', "shared merchant stylesheet import");
 need(app, 'import "../styles/player-forge-equipment-market.css";', "Forge Equipment stylesheet import");
 

@@ -144,6 +144,7 @@ export function normalizeStartingEquipmentSelection(model = null, current = {}) 
     wealthRoll,
     marketMerchantId: safeText(current?.marketMerchantId),
     marketPurchases: startingMarketPurchases(current),
+    keepStartingGold: Boolean(current?.keepStartingGold) && startingMarketPurchases(current).length === 0,
   };
 }
 
