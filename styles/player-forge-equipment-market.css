@@ -1133,3 +1133,104 @@ body > .npc-forge-equipment-summary-dock.is-floating {
     grid-template-columns: 160px minmax(245px,.74fr) minmax(335px,1.18fr) minmax(305px,.92fr);
   }
 }
+
+
+/* 2026-10-12 full-stage storefront background + no-gear choice */
+.npc-forge-equipment-storefront {
+  isolation: isolate;
+  border-radius: 11px;
+  background: #080b12;
+}
+.npc-forge-equipment-storefront > .forge-equipment-stage-backdrop {
+  z-index: 0;
+  inset: 0;
+  border-radius: inherit;
+}
+.npc-forge-equipment-storefront > .forge-equipment-stage-backdrop .merchant-ambient-backdrop__image,
+.npc-forge-equipment-storefront > .forge-equipment-stage-backdrop .merchant-ambient-backdrop__video {
+  object-position: center 36%;
+  filter: none;
+  transform: none;
+  image-rendering: auto;
+}
+.npc-forge-equipment-storefront > .forge-equipment-stage-backdrop .merchant-ambient-backdrop__shade {
+  background:
+    linear-gradient(90deg, rgba(4,6,10,.30) 0%, rgba(4,6,10,.24) 25%, rgba(4,6,10,.40) 55%, rgba(4,6,10,.56) 100%),
+    linear-gradient(180deg, rgba(4,6,10,.27), rgba(4,6,10,.16) 44%, rgba(4,6,10,.46));
+}
+.npc-forge-equipment-storefront > .forge-equipment-stage-backdrop .merchant-ambient-backdrop__vignette {
+  box-shadow: inset 0 0 68px rgba(0,0,0,.28), inset 0 -42px 70px rgba(0,0,0,.22);
+}
+.npc-forge-equipment-storefront > :not(.forge-equipment-stage-backdrop) {
+  position: relative;
+  z-index: 1;
+}
+.forge-starting-purse-bar {
+  grid-template-columns: minmax(150px,1.08fr) repeat(3,minmax(88px,.58fr)) auto auto auto;
+  background: linear-gradient(90deg, rgba(18,14,29,.82), rgba(9,12,20,.88));
+  box-shadow: 0 7px 24px rgba(0,0,0,.16);
+}
+.forge-starting-purse-bar__title,
+.forge-starting-purse-bar__metric,
+.forge-starting-purse-bar__wealth,
+.forge-starting-purse-bar__keep,
+.forge-starting-purse-bar__cart {
+  min-width: 0;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 7px;
+  background: rgba(7,9,15,.52);
+}
+.forge-starting-purse-bar__keep {
+  display: grid;
+  align-content: center;
+  gap: 1px;
+  min-width: 110px;
+  padding: 5px 10px;
+  cursor: pointer;
+  color: #fff;
+  text-align: left;
+}
+.forge-starting-purse-bar__keep span {
+  color: rgba(255,255,255,.52);
+  font-size: .50rem;
+  font-weight: 900;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+}
+.forge-starting-purse-bar__keep strong {
+  color: #f7ecff;
+  font-size: .68rem;
+  white-space: nowrap;
+}
+.forge-starting-purse-bar__keep:hover,
+.forge-starting-purse-bar__keep.is-active {
+  border-color: rgba(88,214,199,.56);
+  background: rgba(27,106,97,.34);
+}
+.forge-starting-purse-bar__keep.is-active strong {
+  color: #aefbef;
+}
+.forge-merchant-overlay-layout > .merchant-rail {
+  background: linear-gradient(180deg, rgba(14,18,31,.78), rgba(8,11,19,.82));
+  border-color: rgba(255,255,255,.14);
+}
+.forge-merchant-overlay-layout > .forge-merchant-preview {
+  background: radial-gradient(circle at top right, rgba(126,88,255,.10), transparent 36%), rgba(12,10,20,.72);
+  border-color: rgba(255,255,255,.14);
+}
+.forge-merchant-preview .merchant-preview-head,
+.forge-merchant-preview .merchant-preview-purchase {
+  background: rgba(7,9,15,.76);
+}
+.forge-merchant-preview .merchant-preview-card-scroll {
+  background: rgba(7,9,15,.30);
+}
+@media (max-width: 1320px) {
+  .forge-starting-purse-bar {
+    grid-template-columns: minmax(140px,1fr) repeat(3,minmax(82px,.56fr)) auto auto auto;
+  }
+  .forge-starting-purse-bar__keep { min-width: 100px; }
+}
+@media (max-width: 1120px) {
+  .forge-starting-purse-bar__keep { min-height: 38px; }
+}

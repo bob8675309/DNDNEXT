@@ -1,5 +1,4 @@
 import { resolveItemVisual } from "../utils/itemVisuals";
-import { resolveMerchantStorefrontMedia } from "../utils/merchantStorefrontMedia";
 
 function itemDescription(item = {}) {
   return String(item.item_description || item.card_payload?.item_description || item.card_payload?.description || "").trim();
@@ -9,13 +8,23 @@ function sourceLabel(item = {}) {
   return String(item.source || item.item_source || item.card_payload?.source || item.card_payload?.item_source || "Campaign").trim();
 }
 
+function raritySlug(value = "") {
+  return String(value || "Mundane")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "") || "mundane";
+}
+
 function rarityClass(value = "") {
-  const rarity = String(value || "Mundane").trim().toLowerCase().replace(/\s+/g, "-");
-  return `is-rarity-${rarity || "mundane"}`;
+  return `is-rarity-${raritySlug(value)}`;
+}
+
+function rarityRowClass(value = "") {
+  return `rarity-${raritySlug(value)}`;
 }
 
 export default function MerchantWaresList({
-  merchant = null,
   merchantName = "Merchant",
   items = [],
   categories = ["All"],
@@ -31,9 +40,7 @@ export default function MerchantWaresList({
   onSortChange = null,
   onSelect = null,
 }) {
-  const media = resolveMerchantStorefrontMedia(merchant || {});
-  return <section className={`merchant-stock-workspace forge-merchant-wares ${media.imageUrl ? "has-scene" : ""}`} aria-label={`${merchantName} wares`}>
-    {media.imageUrl ? <div className="forge-merchant-wares__scene" aria-hidden="true" style={{ backgroundImage: `url("${media.imageUrl}")` }} /> : null}
+  return <section className="merchant-stock-workspace forge-merchant-wares" aria-label={`${merchantName} wares`}>
     <div className="merchant-stock-toolbar forge-merchant-wares__toolbar">
       <label className="merchant-search-field">
         <span>Search stock</span>
@@ -80,7 +87,7 @@ export default function MerchantWaresList({
           type="button"
           role="option"
           aria-selected={selected}
-          className={`merchant-stock-row forge-merchant-wares__row ${selected ? "selected" : ""}`}
+          className={`merchant-stock-row forge-merchant-wares__row ${rarityRowClass(item.item_rarity)} ${selected ? "selected" : ""}`}
           onClick={() => onSelect?.(item.id)}
         >
           <span className={`forge-merchant-wares__thumb ${visual.className}`}>

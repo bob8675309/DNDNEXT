@@ -2,7 +2,7 @@ import MerchantAmbientBackdrop from "./MerchantAmbientBackdrop";
 import { merchantShopLabel, merchantTagline } from "../utils/merchantStorefrontMedia";
 import { themeFromMerchant } from "../utils/merchantTheme";
 
-export default function MerchantWorkshopPane({ merchant }) {
+export default function MerchantWorkshopPane({ merchant, showBackdrop = true }) {
   if (!merchant) return <section className="forge-merchant-workshop is-empty">
     <div className="forge-merchant-workshop__empty">Choose a campaign merchant to browse their storefront.</div>
   </section>;
@@ -12,7 +12,7 @@ export default function MerchantWorkshopPane({ merchant }) {
   const theme = themeFromMerchant(merchant);
 
   return <section className={`forge-merchant-workshop is-${theme}`} aria-label={`${merchant.name || "Merchant"} workshop`}>
-    <MerchantAmbientBackdrop merchant={merchant} />
+    {showBackdrop ? <MerchantAmbientBackdrop merchant={merchant} /> : null}
     <div className="forge-merchant-workshop__copy">
       <span>{shopLabel}</span>
       <h2>{merchant.name || "Merchant"}</h2>

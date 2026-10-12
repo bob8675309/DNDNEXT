@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import ItemCard from "./ItemCard";
 import MerchantRail from "./MerchantRail";
+import MerchantAmbientBackdrop from "./MerchantAmbientBackdrop";
 import MerchantWorkshopPane from "./MerchantWorkshopPane";
 import MerchantWaresList from "./MerchantWaresList";
 import NpcForgeStartingCartDrawer from "./NpcForgeStartingCartDrawer";
@@ -106,6 +107,7 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
   const remainingCopper = startingMarketRemainingCopper(model, selection);
   const rule = higherLevelWealthRule(model?.level || 1);
   const cartItemCount = useMemo(() => purchases.reduce((sum, entry) => sum + Math.max(0, Number(entry?.qty || 0)), 0), [purchases]);
+  const keepingFullPurse = Boolean(selection.keepStartingGold) && purchases.length === 0;
 
   useEffect(() => {
     let active = true;
@@ -127,7 +129,7 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
         setMerchants(rows);
         const current = safeText(selection.marketMerchantId);
         if ((!current || !rows.some((merchant) => String(merchant.id) === current)) && rows[0]?.id) {
-          onChange?.({ ...selection, mode: "market", marketMerchantId: String(rows[0].id), marketPurchases: purchases });
+          onChange?.({ ...selection, mode: "market", marketMerchantId: String(rows[0].id), marketPurchases: purchases, keepStartingGold: Boolean(selection.keepStartingGold) && purchases.length === 0 });
         }
         setLoadingMerchants(false);
       });
@@ -220,7 +222,7 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
     setSortKey("name-asc");
     setSelectedStockId("");
     setNotice("");
-    onChange?.({ ...selection, mode: "market", marketMerchantId: String(merchantId), marketPurchases: purchases });
+    onChange?.({ ...selection, mode: "market", marketMerchantId: String(merchantId), marketPurchases: purchases, keepStartingGold: keepingFullPurse });
   }
 
   function addItem(card) {
@@ -252,7 +254,7 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
 
     setSelectedStockId(String(card.id));
     setNotice(`${card.item_name} added to your starting cart.`);
-    onChange?.({ ...selection, mode: "market", marketMerchantId: String(activeMerchant.id), marketPurchases: next });
+    onChange?.({ ...selection, mode: "market", marketMerchantId: String(activeMerchant.id), marketPurchases: next, keepStartingGold: false });
   }
 
   function removePurchase(stockId) {
@@ -266,6 +268,23 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
       mode: "market",
       marketMerchantId: String(activeMerchant?.id || selection.marketMerchantId || ""),
       marketPurchases: next,
+      keepStartingGold: false,
+    });
+  }
+
+  function keepFullPurse() {
+    if (purchases.length && typeof window !== "undefined") {
+      const confirmed = window.confirm(`Clear your starting cart and keep the full ${formatCopper(budgetCopper)} starting purse?`);
+      if (!confirmed) return;
+    }
+    setCartOpen(false);
+    setNotice(`No starting gear selected. Continue when ready; the full ${formatCopper(budgetCopper)} will stay with this character.`);
+    onChange?.({
+      ...selection,
+      mode: "market",
+      marketMerchantId: String(activeMerchant?.id || selection.marketMerchantId || ""),
+      marketPurchases: [],
+      keepStartingGold: true,
     });
   }
 
@@ -290,6 +309,7 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
   return <div className="npc-forge-body npc-forge-step-equipment is-player-mode">
     <section className="npc-forge-workspace">
       <div className="npc-forge-equipment-storefront">
+        <MerchantAmbientBackdrop merchant={activeMerchant} className="forge-equipment-stage-backdrop" />
         <header className="forge-starting-purse-bar">
           <div className="forge-starting-purse-bar__title">
             <span>Starting market</span>
@@ -299,9 +319,19 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
           <div className="forge-starting-purse-bar__metric"><span>Spent</span><strong>{formatCopper(spentCopper)}</strong></div>
           <div className="forge-starting-purse-bar__metric is-remaining"><span>Remaining</span><strong>{formatCopper(remainingCopper)}</strong></div>
           {rule.rollRequired ? <div className="forge-starting-purse-bar__wealth">
-            <button type="button" onClick={() => onChange?.({ ...selection, mode: "market", wealthRoll: 1 + Math.floor(Math.random() * 10), marketPurchases: purchases })}>Roll 1d10 wealth</button>
+            <button type="button" onClick={() => onChange?.({ ...selection, mode: "market", wealthRoll: 1 + Math.floor(Math.random() * 10), marketPurchases: purchases, keepStartingGold: keepingFullPurse })}>Roll 1d10 wealth</button>
             <span>{selection.wealthRoll ? `d10 = ${selection.wealthRoll}` : "Roll required"}</span>
           </div> : null}
+          <button
+            type="button"
+            className={`forge-starting-purse-bar__keep ${keepingFullPurse ? "is-active" : ""}`}
+            onClick={keepFullPurse}
+            aria-pressed={keepingFullPurse}
+            title="Buy nothing and keep the full starting purse on this character"
+          >
+            <span>No gear</span>
+            <strong>{keepingFullPurse ? "Full purse kept" : "Keep all gold"}</strong>
+          </button>
           <button type="button" className="forge-starting-purse-bar__cart" onClick={() => setCartOpen(true)}>
             <span>Cart</span>
             <strong>{cartItemCount} item{cartItemCount === 1 ? "" : "s"}</strong>
@@ -316,10 +346,9 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
             onSelect={chooseMerchant}
           />
 
-          <MerchantWorkshopPane merchant={activeMerchant} />
+          <MerchantWorkshopPane merchant={activeMerchant} showBackdrop={false} />
 
           <MerchantWaresList
-            merchant={activeMerchant}
             merchantName={activeMerchant?.name || "Merchant"}
             items={filteredCards}
             categories={categories}

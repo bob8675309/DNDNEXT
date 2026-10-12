@@ -25,7 +25,7 @@ export default function NpcForgeEquipmentReviewSummary({ model, selection = {} }
     </div>
     <div className="npc-forge-review-equipment__grid">
       <div><span>Source budget</span><strong>{formatCopper(budgetCopper)}</strong></div>
-      <div><span>Market purchases</span><strong>{itemCount ? `${itemCount} item${itemCount === 1 ? "" : "s"} · ${formatCopper(spentCopper)}` : "None · keep full purse"}</strong></div>
+      <div><span>Market purchases</span><strong>{itemCount ? `${itemCount} item${itemCount === 1 ? "" : "s"} · ${formatCopper(spentCopper)}` : selection.keepStartingGold ? "No gear · full purse kept" : "None · full purse remains"}</strong></div>
       <div><span>Merchants used</span><strong>{merchantCount || "None"}</strong></div>
       <div><span>Higher-level roll</span><strong>{rule.rollRequired ? selection.wealthRoll ? `d10 = ${selection.wealthRoll}` : "Required" : "Not required"}</strong></div>
       <div><span>Magic-item guide</span><strong>{magicAllowanceLabel(model.level)}</strong></div>
