@@ -1234,3 +1234,223 @@ body > .npc-forge-equipment-summary-dock.is-floating {
 @media (max-width: 1120px) {
   .forge-starting-purse-bar__keep { min-height: 38px; }
 }
+
+
+/* 2026-10-12 MerchantPanel-derived Equipment pivot.
+   The normal MerchantPanel remains transactionally independent; Character Forge only reuses its
+   visual language and keeps staged starting purchases/currency authority. */
+.npc-forge-equipment-storefront.is-merchant-panel-pivot {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 10px;
+  background: transparent;
+}
+.forge-equipment-vendor-frame {
+  display: grid;
+  grid-template-columns: 188px minmax(0, 1fr);
+  gap: 8px;
+  height: 100%;
+  min-height: 0;
+}
+.forge-equipment-vendor-frame > .merchant-rail {
+  height: 100%;
+  min-height: 0;
+  border: 1px solid rgba(188,156,255,.18);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(13,16,26,.96), rgba(7,9,16,.98));
+  box-shadow: 0 14px 34px rgba(0,0,0,.22);
+}
+.forge-equipment-merchant-panel {
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  border: 1px solid rgba(188,156,255,.18);
+  border-radius: 12px;
+  box-shadow: 0 16px 42px rgba(0,0,0,.28);
+}
+.forge-equipment-merchant-panel .merchant-market-header {
+  padding: 10px 14px;
+}
+.forge-equipment-merchant-panel .merchant-market-title {
+  font-size: clamp(1.05rem, 1.45vw, 1.35rem);
+}
+.forge-equipment-merchant-panel .merchant-market-subline {
+  font-size: .76rem;
+}
+.forge-equipment-merchant-panel .merchant-wallet-badge {
+  min-height: 28px;
+  font-size: .72rem;
+}
+.forge-equipment-merchant-market-shell {
+  min-height: 0;
+  height: 100%;
+}
+.forge-equipment-vendor-scene {
+  image-rendering: auto;
+  filter: none;
+}
+.forge-equipment-vendor-scene > .forge-equipment-vendor-ambient {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.forge-equipment-vendor-scene > .forge-equipment-vendor-ambient .merchant-ambient-backdrop__image,
+.forge-equipment-vendor-scene > .forge-equipment-vendor-ambient .merchant-ambient-backdrop__video {
+  filter: none;
+  transform: none;
+}
+.forge-equipment-merchant-stock {
+  min-height: 0;
+}
+.forge-equipment-merchant-panel .merchant-stock-toolbar {
+  grid-template-columns: minmax(230px,.78fr) minmax(0,1.22fr);
+}
+.forge-equipment-merchant-panel .merchant-stock-list {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(168,108,255,.62) rgba(255,255,255,.035);
+}
+.forge-equipment-merchant-panel .merchant-stock-row {
+  --rarity-color: #aab2bd;
+  border-left: 4px solid var(--rarity-color);
+  background: linear-gradient(180deg, rgba(41,31,65,.74), rgba(28,21,45,.86));
+}
+.forge-equipment-merchant-panel .merchant-stock-row.rarity-mundane,
+.forge-equipment-merchant-panel .merchant-stock-row.rarity-none {
+  --rarity-color: #aab2bd;
+}
+.forge-equipment-merchant-panel .merchant-stock-row:hover {
+  border-color: color-mix(in srgb, var(--rarity-color) 72%, rgba(211,180,255,.36));
+  border-left-color: var(--rarity-color);
+}
+.forge-equipment-merchant-panel .merchant-stock-row.selected {
+  border-color: color-mix(in srgb, var(--rarity-color) 76%, white);
+  border-left-color: var(--rarity-color);
+  box-shadow: inset 4px 0 0 var(--rarity-color), 0 8px 22px rgba(0,0,0,.22);
+}
+.forge-equipment-merchant-panel .merchant-stock-row-meta > span:first-child {
+  border: 1px solid color-mix(in srgb, var(--rarity-color) 54%, transparent);
+  color: color-mix(in srgb, var(--rarity-color) 86%, white);
+  background: color-mix(in srgb, var(--rarity-color) 16%, rgba(5,7,12,.86));
+}
+.forge-equipment-merchant-panel .merchant-preview-card-scroll > .sitem-card {
+  margin-bottom: 0 !important;
+}
+.npc-forge-equipment-summary-dock__no-gear {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 9px;
+  border: 1px solid rgba(241,201,117,.20);
+  border-radius: 8px;
+  background: rgba(241,201,117,.045);
+}
+.npc-forge-equipment-summary-dock__no-gear > div {
+  display: grid;
+  gap: 2px;
+}
+.npc-forge-equipment-summary-dock__no-gear span {
+  color: rgba(255,255,255,.48);
+  font-size: .48rem;
+  font-weight: 900;
+  letter-spacing: .055em;
+  text-transform: uppercase;
+}
+.npc-forge-equipment-summary-dock__no-gear strong {
+  color: #f5e5bd;
+  font-size: .7rem;
+}
+.npc-forge-equipment-summary-dock__no-gear small {
+  color: rgba(255,255,255,.58);
+  font-size: .56rem;
+  line-height: 1.35;
+}
+.npc-forge-equipment-summary-dock__no-gear button {
+  min-width: 74px;
+  padding: 6px 8px;
+  border: 1px solid rgba(241,201,117,.42);
+  border-radius: 7px;
+  color: #ffeab4;
+  background: rgba(111,77,27,.24);
+  font-size: .58rem;
+  font-weight: 850;
+}
+.npc-forge-equipment-summary-dock__no-gear.is-active {
+  border-color: rgba(88,214,199,.50);
+  background: rgba(27,106,97,.18);
+}
+.npc-forge-equipment-summary-dock__no-gear.is-active strong,
+.npc-forge-equipment-summary-dock__no-gear.is-active button {
+  color: #bffbf2;
+}
+.npc-forge-equipment-summary-dock__no-gear.is-active button {
+  border-color: rgba(88,214,199,.46);
+  background: rgba(27,106,97,.28);
+}
+@media (max-width: 1180px) {
+  .forge-equipment-vendor-frame {
+    grid-template-columns: 164px minmax(0,1fr);
+  }
+  .forge-equipment-merchant-panel .merchant-stock-layout {
+    grid-template-columns: minmax(245px,.86fr) minmax(320px,1.14fr);
+  }
+}
+@media (max-width: 900px) {
+  .npc-forge-equipment-storefront.is-merchant-panel-pivot {
+    height: auto;
+    overflow: visible;
+  }
+  .forge-equipment-vendor-frame {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .forge-equipment-vendor-frame > .merchant-rail {
+    height: auto;
+  }
+  .forge-equipment-merchant-panel {
+    min-height: 720px;
+  }
+}
+
+.npc-forge-equipment-summary-dock__wealth {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 9px;
+  border: 1px solid rgba(168,108,255,.22);
+  border-radius: 8px;
+  background: rgba(126,72,199,.07);
+}
+.npc-forge-equipment-summary-dock__wealth > div {
+  display: grid;
+  gap: 2px;
+}
+.npc-forge-equipment-summary-dock__wealth span {
+  color: rgba(255,255,255,.48);
+  font-size: .48rem;
+  font-weight: 900;
+  letter-spacing: .055em;
+  text-transform: uppercase;
+}
+.npc-forge-equipment-summary-dock__wealth strong {
+  color: #eadfff;
+  font-size: .7rem;
+}
+.npc-forge-equipment-summary-dock__wealth small {
+  color: rgba(255,255,255,.58);
+  font-size: .56rem;
+  line-height: 1.35;
+}
+.npc-forge-equipment-summary-dock__wealth button {
+  min-width: 74px;
+  padding: 6px 8px;
+  border: 1px solid rgba(168,108,255,.42);
+  border-radius: 7px;
+  color: #eadfff;
+  background: rgba(86,49,133,.24);
+  font-size: .58rem;
+  font-weight: 850;
+}

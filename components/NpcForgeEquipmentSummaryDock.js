@@ -45,6 +45,11 @@ export default function NpcForgeEquipmentSummaryDock({
   backgroundCashCopper = 0,
   level = 1,
   purchases = [],
+  keepStartingGold = false,
+  wealthRoll = null,
+  rollRequired = false,
+  onRollWealth = null,
+  onKeepFullPurse = null,
   onRemovePurchase = null,
 }) {
   const floating = presentation === "floating";
@@ -153,6 +158,24 @@ export default function NpcForgeEquipmentSummaryDock({
         <div><span>Spent</span><strong>{formatCopper(spentCopper)}</strong></div>
         <div className="is-remaining"><span>Remaining</span><strong>{formatCopper(remainingCopper)}</strong></div>
       </div>
+
+      {rollRequired ? <section className="npc-forge-equipment-summary-dock__wealth">
+        <div>
+          <span>Higher-level wealth</span>
+          <strong>{wealthRoll ? `d10 = ${wealthRoll}` : "Roll required"}</strong>
+          <small>This roll is part of the existing higher-level starting-wealth rule.</small>
+        </div>
+        <button type="button" onClick={() => onRollWealth?.()}>{wealthRoll ? "Reroll d10" : "Roll d10"}</button>
+      </section> : null}
+
+      <section className={`npc-forge-equipment-summary-dock__no-gear ${keepStartingGold ? "is-active" : ""}`}>
+        <div>
+          <span>No starting gear</span>
+          <strong>{keepStartingGold ? "Full purse kept" : "Keep all starting gold"}</strong>
+          <small>Continue with no purchases and place the full unspent purse on this character.</small>
+        </div>
+        <button type="button" onClick={() => onKeepFullPurse?.()}>{keepStartingGold ? "Selected" : "Keep gold"}</button>
+      </section>
 
       <section className="npc-forge-equipment-summary-dock__cart">
         <div className="npc-forge-starting-cart__items">

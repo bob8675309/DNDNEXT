@@ -35,7 +35,7 @@ const featValidationMigration = read("sql/20260808_03_player_forge_feat_instance
 for (const token of [
   "activeClassFeatureGroups", "buildExplicitClassFeatureGroups", "Agonizing Blast", "Lessons of the First Ones",
   "Mystic Arcanum", "Magical Discoveries", "Primal Lore", "Blessed Strikes",
-  "Deft Explorer languages", "Thieves' Cant additional language", "Elemental Affinity",
+  "Deft Explorer languages", "Choose one additional language", "Thieves' Cant is granted automatically", "Elemental Affinity",
   "Signature Spells", "sourceRank", "preferredSpellRows",
 ]) requireToken(extensions, token, "source-backed extension engine");
 for (const token of ["artificer-armorer-model", "wizard-spell-mastery-", "fighter-banneret-language", "warlock-pact-tome-cantrips", "warlock-pact-tome-rituals"]) forbidToken(extensions, token, "runtime/rest class choices");

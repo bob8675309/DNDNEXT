@@ -198,7 +198,14 @@ export function buildExplicitClassFeatureGroups({ rows = [], selectedClass, leve
   if (deftExplorer) addGroup(output, group({ id: "ranger-deft-explorer-languages", label: "Deft Explorer languages", row: deftExplorer, count: 2, kind: "language", options: languages }));
 
   const thievesCant = findRow(rows, "Thieves' Cant");
-  if (thievesCant) addGroup(output, group({ id: "rogue-thieves-cant-language", label: "Thieves' Cant additional language", row: thievesCant, kind: "language", options: languages.filter((option) => normalized(option.name) !== "thieves cant") }));
+  if (thievesCant) addGroup(output, group({
+    id: "rogue-thieves-cant-language",
+    label: "Choose one additional language",
+    row: thievesCant,
+    kind: "language",
+    helper: "Thieves' Cant is granted automatically by this Rogue feature. Choose the one other language the feature also grants.",
+    options: languages.filter((option) => normalized(option.name) !== "thieves cant"),
+  }));
 
   const affinity = findRow(rows, "Elemental Affinity", "Draconic");
   if (affinity) addGroup(output, group({ id: "sorcerer-draconic-affinity", label: "Elemental Affinity", row: affinity, kind: "damage-type", options: DAMAGE_TYPES.map((name) => staticOption(name, source, "damage-type")) }));

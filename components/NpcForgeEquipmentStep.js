@@ -1,10 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import ItemCard from "./ItemCard";
 import MerchantRail from "./MerchantRail";
-import MerchantAmbientBackdrop from "./MerchantAmbientBackdrop";
-import MerchantWorkshopPane from "./MerchantWorkshopPane";
-import MerchantWaresList from "./MerchantWaresList";
-import NpcForgeStartingCartDrawer from "./NpcForgeStartingCartDrawer";
+import NpcForgeMerchantMarket from "./NpcForgeMerchantMarket";
+import NpcForgeEquipmentSummaryDock from "./NpcForgeEquipmentSummaryDock";
 import { supabase } from "../utils/supabaseClient";
 import {
   cashOnlyEquipmentOption,
@@ -55,33 +52,6 @@ function isStartingMarketStock(row = {}) {
   return Number(row.qty || 0) > 0;
 }
 
-const RARITY_ORDER = {
-  mundane: 0,
-  none: 0,
-  common: 1,
-  uncommon: 2,
-  rare: 3,
-  "very rare": 4,
-  legendary: 5,
-  artifact: 6,
-};
-
-function sortCards(cards = [], sortKey = "name-asc") {
-  const copy = [...cards];
-  copy.sort((a, b) => {
-    if (sortKey === "name-desc") return String(b.item_name || "").localeCompare(String(a.item_name || ""));
-    if (sortKey === "price-asc") return Number(a._price_gp || 0) - Number(b._price_gp || 0) || String(a.item_name || "").localeCompare(String(b.item_name || ""));
-    if (sortKey === "price-desc") return Number(b._price_gp || 0) - Number(a._price_gp || 0) || String(a.item_name || "").localeCompare(String(b.item_name || ""));
-    if (sortKey === "rarity") {
-      const ar = RARITY_ORDER[safeText(a.item_rarity || "mundane").toLowerCase()] ?? 99;
-      const br = RARITY_ORDER[safeText(b.item_rarity || "mundane").toLowerCase()] ?? 99;
-      return ar - br || String(a.item_name || "").localeCompare(String(b.item_name || ""));
-    }
-    return String(a.item_name || "").localeCompare(String(b.item_name || ""));
-  });
-  return copy;
-}
-
 export default function NpcForgeEquipmentStep({ model, selection = {}, onChange }) {
   const [merchants, setMerchants] = useState([]);
   const [stock, setStock] = useState([]);
@@ -90,10 +60,8 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
   const [marketError, setMarketError] = useState("");
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
-  const [sortKey, setSortKey] = useState("name-asc");
   const [selectedStockId, setSelectedStockId] = useState("");
   const [notice, setNotice] = useState("");
-  const [cartOpen, setCartOpen] = useState(false);
 
   const purchases = useMemo(() => startingMarketPurchases(selection), [selection]);
   const classCashOption = cashOnlyEquipmentOption(model?.classOptions);
@@ -106,7 +74,6 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
   const spentCopper = startingMarketSpentCopper(selection);
   const remainingCopper = startingMarketRemainingCopper(model, selection);
   const rule = higherLevelWealthRule(model?.level || 1);
-  const cartItemCount = useMemo(() => purchases.reduce((sum, entry) => sum + Math.max(0, Number(entry?.qty || 0)), 0), [purchases]);
   const keepingFullPurse = Boolean(selection.keepStartingGold) && purchases.length === 0;
 
   useEffect(() => {
@@ -195,8 +162,8 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
         .toLowerCase()
         .includes(needle);
     });
-    return sortCards(filtered, sortKey);
-  }, [cards, query, sortKey, typeFilter]);
+    return filtered;
+  }, [cards, query, typeFilter]);
 
   useEffect(() => {
     if (!filteredCards.length) {
@@ -219,7 +186,6 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
   function chooseMerchant(merchantId) {
     setQuery("");
     setTypeFilter("All");
-    setSortKey("name-asc");
     setSelectedStockId("");
     setNotice("");
     onChange?.({ ...selection, mode: "market", marketMerchantId: String(merchantId), marketPurchases: purchases, keepStartingGold: keepingFullPurse });
@@ -277,7 +243,6 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
       const confirmed = window.confirm(`Clear your starting cart and keep the full ${formatCopper(budgetCopper)} starting purse?`);
       if (!confirmed) return;
     }
-    setCartOpen(false);
     setNotice(`No starting gear selected. Continue when ready; the full ${formatCopper(budgetCopper)} will stay with this character.`);
     onChange?.({
       ...selection,
@@ -308,37 +273,8 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
 
   return <div className="npc-forge-body npc-forge-step-equipment is-player-mode">
     <section className="npc-forge-workspace">
-      <div className="npc-forge-equipment-storefront">
-        {activeMerchant ? <MerchantAmbientBackdrop merchant={activeMerchant} className="forge-equipment-stage-backdrop" /> : null}
-        <header className="forge-starting-purse-bar">
-          <div className="forge-starting-purse-bar__title">
-            <span>Starting market</span>
-            <strong>{ruleset === "vanilla" ? "Vanilla source rules" : "DNDNext Homebrew"}</strong>
-          </div>
-          <div className="forge-starting-purse-bar__metric"><span>Total gold</span><strong>{formatCopper(budgetCopper)}</strong></div>
-          <div className="forge-starting-purse-bar__metric"><span>Spent</span><strong>{formatCopper(spentCopper)}</strong></div>
-          <div className="forge-starting-purse-bar__metric is-remaining"><span>Remaining</span><strong>{formatCopper(remainingCopper)}</strong></div>
-          {rule.rollRequired ? <div className="forge-starting-purse-bar__wealth">
-            <button type="button" onClick={() => onChange?.({ ...selection, mode: "market", wealthRoll: 1 + Math.floor(Math.random() * 10), marketPurchases: purchases, keepStartingGold: keepingFullPurse })}>Roll 1d10 wealth</button>
-            <span>{selection.wealthRoll ? `d10 = ${selection.wealthRoll}` : "Roll required"}</span>
-          </div> : null}
-          <button
-            type="button"
-            className={`forge-starting-purse-bar__keep ${keepingFullPurse ? "is-active" : ""}`}
-            onClick={keepFullPurse}
-            aria-pressed={keepingFullPurse}
-            title="Buy nothing and keep the full starting purse on this character"
-          >
-            <span>No gear</span>
-            <strong>{keepingFullPurse ? "Full purse kept" : "Keep all gold"}</strong>
-          </button>
-          <button type="button" className="forge-starting-purse-bar__cart" onClick={() => setCartOpen(true)}>
-            <span>Cart</span>
-            <strong>{cartItemCount} item{cartItemCount === 1 ? "" : "s"}</strong>
-          </button>
-        </header>
-
-        <div className="forge-merchant-overlay-layout">
+      <div className="npc-forge-equipment-storefront is-merchant-panel-pivot">
+        <div className="forge-equipment-vendor-frame">
           <MerchantRail
             merchants={merchants}
             activeMerchantId={activeMerchant?.id || ""}
@@ -346,52 +282,31 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
             onSelect={chooseMerchant}
           />
 
-          <MerchantWorkshopPane merchant={activeMerchant} showBackdrop={false} />
-
-          <MerchantWaresList
-            merchantName={activeMerchant?.name || "Merchant"}
+          <NpcForgeMerchantMarket
+            merchant={activeMerchant}
             items={filteredCards}
             categories={categories}
-            selectedId={selectedCard?.id || ""}
+            selectedCard={selectedCard}
             query={query}
             typeFilter={typeFilter}
-            sortKey={sortKey}
             loading={loadingStock}
             error={marketError}
             notice={notice}
+            remainingCopper={remainingCopper}
             onQueryChange={setQuery}
             onTypeFilterChange={setTypeFilter}
-            onSortChange={setSortKey}
             onSelect={(id) => {
               setSelectedStockId(String(id));
               setNotice("");
             }}
+            onAdd={addItem}
+            canAddItem={canAddItem}
+            selectedActionLabel={selectedActionLabel}
           />
-
-          <aside className="merchant-preview-pane forge-merchant-preview">
-            {selectedCard ? <>
-              <div className="merchant-preview-head">
-                <div>
-                  <div className="merchant-market-kicker">Selected item</div>
-                  <h3>{selectedCard.item_name}</h3>
-                </div>
-                <span className="merchant-preview-price">{selectedCard._price_gp} gp</span>
-              </div>
-              <div className="merchant-preview-card-scroll">
-                <ItemCard item={selectedCard} variant="shop" detailsCollapsible />
-              </div>
-              <div className="merchant-preview-purchase">
-                <div><span>Available</span><strong>{Math.max(0, Number(selectedCard._available_qty || 0))}</strong></div>
-                <div><span>Remaining</span><strong>{formatCopper(remainingCopper)}</strong></div>
-                <button type="button" className="btn btn-success" disabled={!canAddItem(selectedCard)} onClick={() => addItem(selectedCard)}>{selectedActionLabel}</button>
-              </div>
-            </> : <div className="merchant-market-empty">Select an item to inspect it.</div>}
-          </aside>
         </div>
 
-        <NpcForgeStartingCartDrawer
-          open={cartOpen}
-          onClose={() => setCartOpen(false)}
+        <NpcForgeEquipmentSummaryDock
+          presentation="floating"
           ruleset={ruleset}
           budgetCopper={budgetCopper}
           spentCopper={spentCopper}
@@ -401,6 +316,17 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
           backgroundCashCopper={backgroundCash}
           level={model.level}
           purchases={purchases}
+          keepStartingGold={keepingFullPurse}
+          wealthRoll={selection.wealthRoll || null}
+          rollRequired={rule.rollRequired}
+          onRollWealth={() => onChange?.({
+            ...selection,
+            mode: "market",
+            wealthRoll: 1 + Math.floor(Math.random() * 10),
+            marketPurchases: purchases,
+            keepStartingGold: keepingFullPurse,
+          })}
+          onKeepFullPurse={keepFullPurse}
           onRemovePurchase={removePurchase}
         />
       </div>
