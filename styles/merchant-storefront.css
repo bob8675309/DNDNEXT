@@ -677,3 +677,206 @@
     width: min(330px, calc(100% - 28px));
   }
 }
+
+
+/* Merchant-overlay-derived storefront surfaces.
+   These are shared presentation primitives; purchase authority remains outside them. */
+.forge-merchant-workshop {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(188,156,255,.16);
+  border-radius: 12px;
+  background: #090c12;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.018);
+}
+.forge-merchant-workshop.is-empty {
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+.forge-merchant-workshop__empty {
+  color: rgba(255,255,255,.52);
+  font-size: .62rem;
+  text-align: center;
+}
+.forge-merchant-workshop__copy {
+  position: absolute;
+  z-index: 4;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  padding: 10px 11px 11px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 9px;
+  background: linear-gradient(135deg,rgba(6,8,13,.84),rgba(6,8,13,.48));
+  box-shadow: 0 12px 30px rgba(0,0,0,.26);
+  backdrop-filter: blur(3px);
+}
+.forge-merchant-workshop__copy > span {
+  display: inline-flex;
+  padding: 3px 6px;
+  border: 1px solid rgba(239,199,100,.22);
+  border-radius: 999px;
+  color: #efc764;
+  background: rgba(239,199,100,.055);
+  font-size: .46rem;
+  font-weight: 850;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+}
+.forge-merchant-workshop__copy h2 {
+  margin: 6px 0 3px;
+  color: #fff5dc;
+  font-family: Georgia,"Times New Roman",serif;
+  font-size: 1.12rem;
+  line-height: 1.05;
+}
+.forge-merchant-workshop__copy p {
+  margin: 0;
+  color: rgba(255,255,255,.7);
+  font-size: .56rem;
+  line-height: 1.42;
+}
+.forge-merchant-workshop .merchant-ambient-backdrop__shade {
+  background:
+    linear-gradient(180deg,rgba(5,7,12,.03),rgba(5,7,12,.17) 52%,rgba(5,7,12,.78)),
+    linear-gradient(90deg,rgba(5,7,12,.12),transparent 50%,rgba(5,7,12,.08));
+}
+.forge-merchant-workshop .merchant-ambient-backdrop__vignette {
+  box-shadow: inset 0 0 78px rgba(0,0,0,.48), inset 0 -72px 80px rgba(0,0,0,.32);
+}
+.forge-merchant-workshop .merchant-ambient-backdrop__image,
+.forge-merchant-workshop .merchant-ambient-backdrop__video {
+  object-position: center 34%;
+}
+
+/* Forge wares use the proven MerchantPanel list language with small shared item visuals. */
+.forge-merchant-wares {
+  padding: 9px;
+  border: 1px solid rgba(188,156,255,.16);
+  border-radius: 12px;
+}
+.forge-merchant-wares__toolbar {
+  grid-template-columns: minmax(0,1fr) 118px;
+  gap: 7px;
+  margin-bottom: 7px;
+}
+.forge-merchant-wares__sort {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  color: rgba(235,226,250,.82);
+  font-size: .65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+}
+.forge-merchant-wares__sort select {
+  min-width: 0;
+  height: 31px;
+  padding: 4px 6px;
+  border: 1px solid rgba(188,156,255,.18);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(10,8,17,.88);
+  font-size: .55rem;
+}
+.forge-merchant-wares__sort option {
+  color: #fff;
+  background: #0d0b13;
+}
+.forge-merchant-wares__categories {
+  flex: 0 0 auto;
+  margin-bottom: 7px;
+}
+.forge-merchant-wares__categories .merchant-category-chip {
+  padding: 4px 8px;
+  font-size: .54rem;
+}
+.forge-merchant-wares__notice {
+  margin-bottom: 7px;
+  padding: 6px 8px;
+  border: 1px solid rgba(239,199,100,.22);
+  border-radius: 8px;
+  color: #ffe8aa;
+  background: rgba(239,199,100,.055);
+  font-size: .52rem;
+}
+.forge-merchant-wares__list {
+  gap: 6px;
+  padding-right: 3px;
+}
+.forge-merchant-wares__row {
+  display: grid;
+  grid-template-columns: 42px minmax(0,1fr);
+  gap: 8px;
+  min-height: 62px;
+  padding: 7px 8px;
+  border-radius: 10px;
+}
+.forge-merchant-wares__thumb {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  overflow: hidden;
+  align-self: start;
+  border: 1px solid rgba(255,255,255,.11);
+  border-radius: 7px;
+  color: rgba(255,255,255,.76);
+  background:
+    radial-gradient(circle at 50% 32%,rgba(168,108,255,.14),transparent 58%),
+    rgba(255,255,255,.035);
+  font-size: 1rem;
+}
+.forge-merchant-wares__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.forge-merchant-wares__copy {
+  display: block;
+  min-width: 0;
+}
+.forge-merchant-wares__row .merchant-stock-row-head strong {
+  overflow: hidden;
+  font-size: .66rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.forge-merchant-wares__row .merchant-stock-row-head span {
+  font-size: .58rem;
+}
+.forge-merchant-wares__row .merchant-stock-row-meta {
+  gap: 4px;
+  margin-top: 4px;
+}
+.forge-merchant-wares__row .merchant-stock-row-meta span {
+  padding: 2px 5px;
+  font-size: .43rem;
+}
+.forge-merchant-wares__row p {
+  margin-top: 5px;
+  font-size: .5rem;
+  -webkit-line-clamp: 1;
+}
+.forge-merchant-wares__footer {
+  flex: 0 0 auto;
+  padding-top: 6px;
+  color: rgba(255,255,255,.42);
+  font-size: .46rem;
+}
+
+@media (max-width: 1120px) {
+  .forge-merchant-workshop {
+    min-height: 260px;
+  }
+  .forge-merchant-workshop__copy {
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+  }
+}

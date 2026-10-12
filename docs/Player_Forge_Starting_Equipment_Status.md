@@ -4,6 +4,23 @@ Status date: 2026-10-11
 Active follow-up: PR #208 (`agent/forge-ux-equipment-homebrew-20261011`)  
 Current authority: migrations 49-51 plus `20261010_01_player_forge_starting_market.sql` and `20261011_02_player_forge_homebrew_starting_budget.sql`
 
+## 2026-10-11 MerchantPanel-derived storefront pivot
+
+The preferred Equipment direction now uses the existing merchant overlay as the primary interaction model instead of the large horizontal hero experiment.
+
+The Forge composition is intentionally close to the current `MerchantPanel`:
+
+- a narrow **Campaign Merchants** selector sits at the extreme left;
+- a dedicated **merchant + workshop** scene occupies the next pane and supports the same still/ambient media resolver;
+- a dense **Wares** pane uses the established MerchantPanel search/category/list language and the shared item visual resolver;
+- the right pane uses the existing shared `ItemCard` with the opt-in shop presentation and collapsible **Game Details**;
+- starting purse information is compressed into a top utility bar showing **Total gold / Spent / Remaining / Cart** rather than consuming a permanent right-hand panel;
+- the cart opens as a collapsible overlay drawer so shopping space remains dedicated to merchant, stock, and selected-item inspection.
+
+Forge purchase authority remains separate from normal merchant checkout. `MerchantPanel` continues to use the account wallet and `buy_from_merchant`; Character Forge continues to stage `marketPurchases[]` and resolves them transactionally only when the character is created.
+
+The shared pieces retained from the earlier storefront pass are still valid: merchant media fields, ambient-loop support, `ItemCard` shop mode, centralized item-art fallbacks, seven live storefront merchants, and full-catalogue stock generation. The pivot changes composition, not commerce authority.
+
 ## 2026-10-11 first production storefront review correction
 
 The first live browser/video review exposed presentation problems that were not visible in static validation:
