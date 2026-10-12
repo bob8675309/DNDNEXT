@@ -41,16 +41,17 @@ export function backgroundForTheme(theme) {
 }
 
 export function themeFromMerchant(m = {}) {
+  const merchantRecord = m && typeof m === "object" ? m : {};
   // Explicit icon/theme wins first; then inspect the full storefront identity.
-  const explicit = normalizeTheme(m.icon || m.theme || m.merchant_theme);
+  const explicit = normalizeTheme(merchantRecord.icon || merchantRecord.theme || merchantRecord.merchant_theme);
   if (explicit !== "general") return explicit;
-  const tags = Array.isArray(m.tags) ? m.tags.join(" ") : String(m.tags || "");
+  const tags = Array.isArray(merchantRecord.tags) ? merchantRecord.tags.join(" ") : String(merchantRecord.tags || "");
   const identity = [
-    m.name,
-    m.role,
-    m.affiliation,
-    m.storefront_title,
-    m.storefront_tagline,
+    merchantRecord.name,
+    merchantRecord.role,
+    merchantRecord.affiliation,
+    merchantRecord.storefront_title,
+    merchantRecord.storefront_tagline,
     tags,
   ].filter(Boolean).join(" ");
   return normalizeTheme(identity);

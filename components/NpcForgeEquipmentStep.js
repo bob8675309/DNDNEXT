@@ -309,7 +309,7 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
   return <div className="npc-forge-body npc-forge-step-equipment is-player-mode">
     <section className="npc-forge-workspace">
       <div className="npc-forge-equipment-storefront">
-        <MerchantAmbientBackdrop merchant={activeMerchant} className="forge-equipment-stage-backdrop" />
+        {activeMerchant ? <MerchantAmbientBackdrop merchant={activeMerchant} className="forge-equipment-stage-backdrop" /> : null}
         <header className="forge-starting-purse-bar">
           <div className="forge-starting-purse-bar__title">
             <span>Starting market</span>

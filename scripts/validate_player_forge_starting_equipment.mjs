@@ -15,6 +15,7 @@ const merchantRail = read("components/MerchantRail.js");
 const waresList = read("components/MerchantWaresList.js");
 const merchantBackdrop = read("components/MerchantAmbientBackdrop.js");
 const merchantMedia = read("utils/merchantStorefrontMedia.js");
+const merchantTheme = read("utils/merchantTheme.js");
 const itemVisuals = read("utils/itemVisuals.js");
 const itemCard = read("components/ItemCard.js");
 const cardCompact = read("styles/card-compact.css");
@@ -120,6 +121,7 @@ for (const token of [
   "startingMarketRemainingCopper",
   "marketPurchases",
   "MerchantAmbientBackdrop",
+  'activeMerchant ? <MerchantAmbientBackdrop',
   'className="forge-equipment-stage-backdrop"',
   "showBackdrop={false}",
   "keepFullPurse",
@@ -178,6 +180,8 @@ for (const token of ["LOOP_TAIL_SECONDS", "muted", "playsInline", "prefers-reduc
   else need(merchantBackdrop, token, "merchant ambient backdrop");
 }
 for (const token of ["storefront_bg_video_url", "storefront_bg_image_url", "portrait_shop_url", "portrait_thumb_url", "THEME_BACKDROPS", "merchantInitials", "themeFromMerchant"]) need(merchantMedia, token, "merchant media resolver");
+for (const token of ["asMerchantRecord", "const record = asMerchantRecord(merchant)"]) need(merchantMedia, token, "null-safe merchant media resolver");
+for (const token of ['const merchantRecord = m && typeof m === "object" ? m : {}', "merchantRecord.icon", "merchantRecord.storefront_title"]) need(merchantTheme, token, "null-safe merchant theme resolver");
 forbid(merchantMedia, '|| "/parchment.jpg"', "shared character portrait fallback in storefront media");
 forbid(merchantMedia, "merchant.description", "character biography as shop tagline");
 for (const token of ["resolveItemVisual", "explicitItemImage", "FALLBACKS", "NAME_FALLBACKS"]) need(itemVisuals, token, "item visual fallback resolver");

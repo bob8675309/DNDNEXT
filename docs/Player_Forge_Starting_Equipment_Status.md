@@ -4,6 +4,12 @@ Status date: 2026-10-11
 Active follow-up: PR #208 (`agent/forge-ux-equipment-homebrew-20261011`)  
 Current authority: migrations 49-51 plus `20261010_01_player_forge_starting_market.sql` and `20261011_02_player_forge_homebrew_starting_budget.sql`
 
+## 2026-10-12 Spells → Equipment null-merchant crash hotfix
+
+The post-merge browser video exposed a client-side crash immediately after pressing **Continue** from Spells into Equipment: `TypeError: can't access property "icon", e is null`. The full-stage background introduced in the prior pass mounted `MerchantAmbientBackdrop` during the first Equipment render while the async merchant query had not resolved yet, so `activeMerchant` was still null. `themeFromMerchant` then dereferenced `.icon`.
+
+The Equipment stage now mounts merchant media only after an active merchant exists. The shared merchant theme/media helpers are also null-safe so a loading-state null cannot crash other storefront consumers. This is a presentation/loading-state correction only; spell validation, merchant queries, starting-market authority, cart behavior, rarity handling, and character currency rules are unchanged.
+
 ## 2026-10-12 full-stage art, rarity authority, and no-gear path
 
 The Dawn browser review established three concrete corrections.
