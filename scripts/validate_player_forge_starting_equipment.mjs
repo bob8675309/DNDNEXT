@@ -24,6 +24,7 @@ const app = read("pages/_app.js");
 const merchantExpansion = read("sql/20261011_03_starting_market_merchant_expansion.sql");
 const merchantVariety = read("sql/20261011_04_merchant_catalog_reroll_variety.sql");
 const dawnStorefrontMetadata = read("sql/20261011_05_dawn_storefront_metadata.sql");
+const dawnStorefrontMedia = read("sql/20261012_01_dawn_whiteflame_media.sql");
 const derived = read("components/useNpcForgeDerivedModel.js");
 const modal = read("components/NewNpcModalV3Refined.js");
 
@@ -246,6 +247,18 @@ for (const token of [
 ]) need(dawnStorefrontMetadata, token, "Dawn storefront metadata correction");
 
 for (const token of [
+  "dawn whiteflame",
+  "/merchant-media/dawn-whiteflame/storefront.webp",
+  "/merchant-media/dawn-whiteflame/portrait.webp",
+  "/merchant-media/dawn-whiteflame/thumb.webp",
+  "storefront_bg_image_url",
+  "portrait_shop_url",
+  "portrait_thumb_url",
+  "portrait_source = 'generated'",
+  "storefront_bg_video_url = null",
+]) need(dawnStorefrontMedia, token, "Dawn visual calibration media");
+
+for (const token of [
   "Mara Ironvein",
   "Selene Quill",
   "Pell Mossgrove",
@@ -266,7 +279,7 @@ for (const token of [
   "perform * from public.reroll_merchant_inventory_v2(v.id,v.theme,36)",
 ]) need(merchantVariety, token, "full-catalog diversified merchant reroll");
 
-for (const source of [utility, controller, equipmentStep, equipmentDock, cartDrawer, workshopPane, merchantRail, waresList, merchantBackdrop, merchantMedia, itemVisuals, itemCard, cardCompact, merchantStyles, equipmentStyles, derived, modal, merchantExpansion, merchantVariety, dawnStorefrontMetadata]) {
+for (const source of [utility, controller, equipmentStep, equipmentDock, cartDrawer, workshopPane, merchantRail, waresList, merchantBackdrop, merchantMedia, itemVisuals, itemCard, cardCompact, merchantStyles, equipmentStyles, derived, modal, merchantExpansion, merchantVariety, dawnStorefrontMetadata, dawnStorefrontMedia]) {
   for (const token of ["MapPageClient", "map_routes", "advance_all_characters", "weather"]) forbid(source, token, `protected world boundary ${token}`);
 }
 

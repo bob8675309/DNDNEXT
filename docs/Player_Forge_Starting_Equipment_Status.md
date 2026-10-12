@@ -4,6 +4,22 @@ Status date: 2026-10-11
 Active follow-up: PR #208 (`agent/forge-ux-equipment-homebrew-20261011`)  
 Current authority: migrations 49-51 plus `20261010_01_player_forge_starting_market.sql` and `20261011_02_player_forge_homebrew_starting_budget.sql`
 
+## 2026-10-12 Dawn Whiteflame visual calibration pack
+
+Dawn Whiteflame is now the first storefront with a complete approved media set. This is the calibration merchant for the remaining campaign shops.
+
+The committed assets are:
+
+- `/merchant-media/dawn-whiteflame/storefront.webp` — 16:9 photorealistic General Goods workshop scene, composed for the dedicated workshop pane and the low-opacity Wares bleed/fade;
+- `/merchant-media/dawn-whiteflame/portrait.webp` — 3:4 merchant portrait for profile/shop portrait contexts;
+- `/merchant-media/dawn-whiteflame/thumb.webp` — square merchant-rail thumbnail.
+
+The generated art direction is intentionally darker and more photographic than the earlier bright fantasy mockups: warm practical lantern light, deep wood/leather/brass materials, believable adventuring stock, restrained saturation, and Dawn integrated into her actual shop rather than presented as a detached character portrait.
+
+The live `public.characters` row points Dawn's canonical portrait and storefront fields at those static assets. `storefront_bg_video_url` remains null for this calibration pass; the ambient-video renderer is already implemented and can be populated later without another layout change.
+
+Do not use the neutral placeholder gradients to judge final storefront atmosphere now that Dawn has real art. The next browser review should use Dawn to tune workshop width, crop/object-position, Wares bleed opacity, copy-panel transparency, and ItemCard balance. Once those values are approved, Dawn becomes the visual specification for the other six storefront merchants.
+
 ## 2026-10-12 Wares scrolling hotfix and visual-art checkpoint
 
 The latest browser video exposed a functional layout bug: the Forge Wares list was reusing `.merchant-stock-list`, but unlike the normal MerchantPanel it is not nested inside `.merchant-stock-layout`. As a result, the list did not explicitly own the remaining flex height and the browser could clip lower stock rows without exposing a usable vertical scroll region.
