@@ -4,6 +4,14 @@ Status date: 2026-10-11
 Active follow-up: PR #208 (`agent/forge-ux-equipment-homebrew-20261011`)  
 Current authority: migrations 49-51 plus `20261010_01_player_forge_starting_market.sql` and `20261011_02_player_forge_homebrew_starting_budget.sql`
 
+## 2026-10-12 Wares scrolling hotfix and visual-art checkpoint
+
+The latest browser video exposed a functional layout bug: the Forge Wares list was reusing `.merchant-stock-list`, but unlike the normal MerchantPanel it is not nested inside `.merchant-stock-layout`. As a result, the list did not explicitly own the remaining flex height and the browser could clip lower stock rows without exposing a usable vertical scroll region.
+
+The Forge-specific list now explicitly uses `flex: 1 1 0`, `min-height: 0`, `height: 0`, and `overflow-y: auto`, with a visible purple scrollbar and contained wheel scrolling. Search/sort/category/footer controls remain fixed while only the stock rows scroll.
+
+The same video also confirms that the current visual treatment should not be judged as final art direction yet. Dawn Whiteflame and Brakka Wayfarer currently have no `portrait_shop_url`, `portrait_url`, `storefront_bg_url`, `storefront_bg_image_url`, or `storefront_bg_video_url` in live merchant data. Therefore the large workshop pane is still a neutral fallback and the Wares background fade has no real storefront artwork to blend from. Further decorative CSS iteration is intentionally deferred until the first approved photoreal storefront image is assigned, so the composition can be evaluated with real art instead of placeholder gradients.
+
 ## 2026-10-11 readability / rarity / artwork-fade polish
 
 The first MerchantPanel-derived production review kept the new composition but exposed a readability floor problem: Equipment labels, merchant metadata, stock rows, filters, and the selected ItemCard were too small at normal desktop zoom.

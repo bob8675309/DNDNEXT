@@ -1080,3 +1080,43 @@
   font-size: .66rem;
   line-height: 1.46;
 }
+
+
+/* 2026-10-12 Forge Wares scrolling hotfix.
+   The MerchantPanel stock list normally gets its scrolling height from merchant-stock-layout.
+   Character Forge places the list directly in the flex-column Wares pane, so it must
+   explicitly own the remaining height. */
+.forge-merchant-wares > .merchant-stock-toolbar,
+.forge-merchant-wares > .forge-merchant-wares__categories,
+.forge-merchant-wares > .merchant-inline-error,
+.forge-merchant-wares > .forge-merchant-wares__notice,
+.forge-merchant-wares > .forge-merchant-wares__footer {
+  flex: 0 0 auto;
+}
+.forge-merchant-wares > .forge-merchant-wares__list {
+  flex: 1 1 0;
+  min-height: 0;
+  height: 0;
+  max-height: none;
+  overflow-x: hidden;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(168,108,255,.72) rgba(255,255,255,.04);
+}
+.forge-merchant-wares > .forge-merchant-wares__list::-webkit-scrollbar {
+  width: 10px;
+}
+.forge-merchant-wares > .forge-merchant-wares__list::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: rgba(255,255,255,.035);
+}
+.forge-merchant-wares > .forge-merchant-wares__list::-webkit-scrollbar-thumb {
+  border: 2px solid rgba(10,8,17,.72);
+  border-radius: 999px;
+  background: rgba(168,108,255,.68);
+}
+.forge-merchant-wares > .forge-merchant-wares__list::-webkit-scrollbar-thumb:hover {
+  background: rgba(190,144,255,.88);
+}
