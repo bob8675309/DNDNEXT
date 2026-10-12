@@ -5,6 +5,10 @@ function safe(value) {
   return String(value || "").trim();
 }
 
+function asMerchantRecord(value) {
+  return value && typeof value === "object" ? value : {};
+}
+
 function storagePortraitUrl(path) {
   const key = safe(path);
   if (!key) return "";
@@ -25,17 +29,19 @@ const THEME_BACKDROPS = Object.freeze({
 });
 
 export function resolveMerchantPortrait(merchant = {}) {
+  const record = asMerchantRecord(merchant);
   return safe(
-    merchant.portrait_thumb_url
-    || merchant.portrait_shop_url
-    || merchant.portrait_url
-    || merchant.image_url
-    || storagePortraitUrl(merchant.portrait_storage_path)
+    record.portrait_thumb_url
+    || record.portrait_shop_url
+    || record.portrait_url
+    || record.image_url
+    || storagePortraitUrl(record.portrait_storage_path)
   );
 }
 
 export function merchantInitials(merchant = {}) {
-  const parts = safe(merchant.name || merchant.storefront_title || "Merchant")
+  const record = asMerchantRecord(merchant);
+  const parts = safe(record.name || record.storefront_title || "Merchant")
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2);
@@ -43,23 +49,24 @@ export function merchantInitials(merchant = {}) {
 }
 
 export function resolveMerchantStorefrontMedia(merchant = {}) {
-  const theme = themeFromMerchant(merchant);
+  const record = asMerchantRecord(merchant);
+  const theme = themeFromMerchant(record);
   const explicitVideoUrl = safe(
-    merchant.storefront_bg_video_url
-    || merchant.bg_video_url
-    || merchant.bgVideoUrl
+    record.storefront_bg_video_url
+    || record.bg_video_url
+    || record.bgVideoUrl
   );
   const explicitImageUrl = safe(
-    merchant.storefront_bg_image_url
-    || merchant.storefront_bg_url
-    || merchant.portrait_shop_url
-    || merchant.bg_image_url
-    || merchant.bg_url
-    || merchant.bgImageUrl
-    || merchant.bgUrl
-    || merchant.portrait_url
-    || merchant.image_url
-    || storagePortraitUrl(merchant.portrait_storage_path)
+    record.storefront_bg_image_url
+    || record.storefront_bg_url
+    || record.portrait_shop_url
+    || record.bg_image_url
+    || record.bg_url
+    || record.bgImageUrl
+    || record.bgUrl
+    || record.portrait_url
+    || record.image_url
+    || storagePortraitUrl(record.portrait_storage_path)
   );
   const themeImageUrl = explicitImageUrl ? "" : safe(THEME_BACKDROPS[theme]);
 
@@ -74,9 +81,10 @@ export function resolveMerchantStorefrontMedia(merchant = {}) {
 }
 
 export function merchantShopLabel(merchant = {}) {
-  return safe(merchant.storefront_title || merchant.role || "Merchant");
+  const record = asMerchantRecord(merchant);
+  return safe(record.storefront_title || record.role || "Merchant");
 }
 
 export function merchantTagline(merchant = {}) {
-  return safe(merchant.storefront_tagline);
+  return safe(asMerchantRecord(merchant).storefront_tagline);
 }
