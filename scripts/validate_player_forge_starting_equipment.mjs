@@ -147,6 +147,8 @@ for (const token of [
   "detailsCollapsible",
   "resolveMerchantPortrait",
   "resolveMerchantStorefrontMedia",
+  "const sceneImage = media.imageUrl || portrait",
+  "--merchant-bg-position",
   "rarityClass",
   "rarityBadgeClass",
   "Starting equipment merchant",
@@ -205,7 +207,7 @@ for (const token of ["resolveItemVisual", "explicitItemImage", "FALLBACKS", "NAM
 for (const token of ['variant = "default"', "detailsCollapsible", "sitem-game-details", "sitem-thumb-fallback", "resolveItemVisual"]) need(itemCard, token, "shared ItemCard shop variant");
 for (const token of ["2026-10-11 storefront ItemCard readability floor", ".sitem-card.is-shop-variant .sitem-title", "font-size: 1rem", ".sitem-card.is-shop-variant .sitem-section"]) need(cardCompact, token, "shop ItemCard readability");
 for (const token of [".merchant-rail", ".sitem-thumb-fallback", ".merchant-ambient-backdrop__fallback", ".merchant-rail__portrait-fallback", ".forge-merchant-workshop", ".forge-merchant-wares", ".is-rarity-uncommon", ".is-rarity-rare", ".is-rarity-very-rare", ".is-rarity-legendary", ".is-rarity-artifact", ".forge-merchant-wares__row.rarity-uncommon", ".forge-merchant-wares__row.rarity-very-rare", "--rarity-color", "2026-10-12 unified Equipment scene + canonical rarity pass", "2026-10-12 Forge Wares scrolling hotfix", "flex: 1 1 0", "overflow-y: auto !important", "scrollbar-gutter: stable"]) need(merchantStyles, token, "shared merchant storefront styles");
-for (const token of [".npc-forge-equipment-storefront", ".forge-equipment-vendor-frame", ".forge-equipment-merchant-panel", ".forge-equipment-merchant-market-shell", ".npc-forge-equipment-summary-dock__no-gear", ".npc-forge-equipment-summary-dock__wealth", "merchant-stock-row.rarity-mundane", "--rarity-color", "2026-10-12 MerchantPanel-derived Equipment pivot"]) need(equipmentStyles, token, "Forge Equipment MerchantPanel-derived layout");
+for (const token of [".npc-forge-equipment-storefront", ".forge-equipment-vendor-frame", ".forge-equipment-merchant-panel", ".forge-equipment-merchant-market-shell", ".npc-forge-equipment-summary-dock__no-gear", ".npc-forge-equipment-summary-dock__wealth", "merchant-stock-row.rarity-mundane", "--rarity-color", "height: 0", "overflow-y: auto !important", "overscroll-behavior: contain", "--merchant-bg-position", "2026-10-12 MerchantPanel-derived Equipment pivot", "2026-10-12 Equipment MerchantPanel scroll + scene-fit correction"]) need(equipmentStyles, token, "Forge Equipment MerchantPanel-derived layout");
 need(app, 'import "../styles/merchant-storefront.css";', "shared merchant stylesheet import");
 need(app, 'import "../styles/player-forge-equipment-market.css";', "Forge Equipment stylesheet import");
 
