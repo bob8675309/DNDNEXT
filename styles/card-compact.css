@@ -178,3 +178,52 @@
 .sitem-action {
   margin-top: .55rem;
 }
+
+
+/* 2026-10-11 storefront ItemCard readability floor */
+.sitem-card.is-shop-variant .card-body {
+  padding: .78rem;
+}
+.sitem-card.is-shop-variant .sitem-header {
+  padding: .60rem .75rem;
+}
+.sitem-card.is-shop-variant .sitem-title {
+  font-size: 1rem;
+  line-height: 1.18;
+}
+.sitem-card.is-shop-variant .sitem-type {
+  padding: .24rem .5rem;
+  font-size: .58rem;
+}
+.sitem-card.is-shop-variant .sitem-meta {
+  margin-bottom: .52rem !important;
+  font-size: .67rem;
+}
+.sitem-card.is-shop-variant .sitem-rarity {
+  font-size: .68rem;
+}
+.sitem-card.is-shop-variant .sitem-section {
+  padding: .58rem .64rem;
+  color: rgba(255,255,255,.84);
+  font-size: .68rem;
+  line-height: 1.5;
+}
+.sitem-card.is-shop-variant .sitem-section .small,
+.sitem-card.is-shop-variant .text-muted {
+  font-size: .58rem !important;
+}
+.sitem-card.is-shop-variant .badge {
+  font-size: .56rem;
+}
+.sitem-card.is-shop-variant .sitem-thumb-fallback__icon {
+  font-size: clamp(1.55rem, 3vw, 2.35rem);
+}
+.sitem-card.is-shop-variant .sitem-game-details > summary {
+  padding: .62rem .70rem;
+}
+.sitem-card.is-shop-variant .sitem-game-details > summary span {
+  font-size: .71rem;
+}
+.sitem-card.is-shop-variant .sitem-game-details > summary em {
+  font-size: .51rem;
+}

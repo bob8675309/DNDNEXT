@@ -1,4 +1,5 @@
 import { resolveItemVisual } from "../utils/itemVisuals";
+import { resolveMerchantStorefrontMedia } from "../utils/merchantStorefrontMedia";
 
 function itemDescription(item = {}) {
   return String(item.item_description || item.card_payload?.item_description || item.card_payload?.description || "").trim();
@@ -8,7 +9,13 @@ function sourceLabel(item = {}) {
   return String(item.source || item.item_source || item.card_payload?.source || item.card_payload?.item_source || "Campaign").trim();
 }
 
+function rarityClass(value = "") {
+  const rarity = String(value || "Mundane").trim().toLowerCase().replace(/\s+/g, "-");
+  return `is-rarity-${rarity || "mundane"}`;
+}
+
 export default function MerchantWaresList({
+  merchant = null,
   merchantName = "Merchant",
   items = [],
   categories = ["All"],
@@ -24,7 +31,9 @@ export default function MerchantWaresList({
   onSortChange = null,
   onSelect = null,
 }) {
-  return <section className="merchant-stock-workspace forge-merchant-wares" aria-label={`${merchantName} wares`}>
+  const media = resolveMerchantStorefrontMedia(merchant || {});
+  return <section className={`merchant-stock-workspace forge-merchant-wares ${media.imageUrl ? "has-scene" : ""}`} aria-label={`${merchantName} wares`}>
+    {media.imageUrl ? <div className="forge-merchant-wares__scene" aria-hidden="true" style={{ backgroundImage: `url("${media.imageUrl}")` }} /> : null}
     <div className="merchant-stock-toolbar forge-merchant-wares__toolbar">
       <label className="merchant-search-field">
         <span>Search stock</span>
@@ -83,7 +92,7 @@ export default function MerchantWaresList({
               <span>{Number(item._price_gp || 0)} gp</span>
             </span>
             <span className="merchant-stock-row-meta">
-              <span>{item.item_rarity || "Mundane"}</span>
+              <span className={rarityClass(item.item_rarity)}>{item.item_rarity || "Mundane"}</span>
               <span>{item.item_type || "Item"}</span>
               <span>Qty {Math.max(0, Number(item._available_qty ?? item._stock_qty ?? 0))}</span>
               <span>{sourceLabel(item)}</span>

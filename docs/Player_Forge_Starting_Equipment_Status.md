@@ -4,6 +4,22 @@ Status date: 2026-10-11
 Active follow-up: PR #208 (`agent/forge-ux-equipment-homebrew-20261011`)  
 Current authority: migrations 49-51 plus `20261010_01_player_forge_starting_market.sql` and `20261011_02_player_forge_homebrew_starting_budget.sql`
 
+## 2026-10-11 readability / rarity / artwork-fade polish
+
+The first MerchantPanel-derived production review kept the new composition but exposed a readability floor problem: Equipment labels, merchant metadata, stock rows, filters, and the selected ItemCard were too small at normal desktop zoom.
+
+This pass keeps the four-pane storefront architecture and improves scanability rather than changing commerce behavior:
+
+- Campaign Merchant names, specialties, and supporting text are enlarged;
+- Starting Market Total / Spent / Remaining / Cart values are enlarged;
+- Wares search/sort controls, category chips, item names, prices, metadata, descriptions, and footer counts are enlarged;
+- stock rows gain more vertical padding and preserve two lines of description;
+- the first metadata pill now reflects canonical rarity color: neutral Common/Mundane, green Uncommon, blue Rare, purple Very Rare, gold Legendary, and red Artifact;
+- the active merchant's resolved storefront image is reused at low opacity behind the Wares pane with a dark directional fade, retaining the older merchant-overlay atmosphere without sacrificing text contrast;
+- the shared ItemCard `shop` variant receives a larger title, rarity label, rules text, metadata badges, and Game Details disclosure while default/admin ItemCard rendering remains unchanged.
+
+A separate Spells correction fixes the top-right Forge spell Select action: its CSS rule had a missing closing brace, which allowed the teal button styling to parse incorrectly. The button now uses a high-contrast light-teal surface with dark text; selected/removal state remains intentionally distinct.
+
 ## 2026-10-11 MerchantPanel-derived storefront pivot
 
 The preferred Equipment direction now uses the existing merchant overlay as the primary interaction model instead of the large horizontal hero experiment.

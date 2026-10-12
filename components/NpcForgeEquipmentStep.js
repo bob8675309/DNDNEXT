@@ -319,6 +319,7 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
           <MerchantWorkshopPane merchant={activeMerchant} />
 
           <MerchantWaresList
+            merchant={activeMerchant}
             merchantName={activeMerchant?.name || "Merchant"}
             items={filteredCards}
             categories={categories}
