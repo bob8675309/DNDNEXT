@@ -17,6 +17,7 @@ const merchantBackdrop = read("components/MerchantAmbientBackdrop.js");
 const merchantMedia = read("utils/merchantStorefrontMedia.js");
 const itemVisuals = read("utils/itemVisuals.js");
 const itemCard = read("components/ItemCard.js");
+const cardCompact = read("styles/card-compact.css");
 const merchantStyles = read("styles/merchant-storefront.css");
 const equipmentStyles = read("styles/player-forge-equipment-market.css");
 const app = read("pages/_app.js");
@@ -161,7 +162,7 @@ for (const token of [
 
 for (const token of ["MerchantAmbientBackdrop", "merchantShopLabel", "merchantTagline", "forge-merchant-workshop"]) need(workshopPane, token, "merchant workshop pane");
 for (const token of ["resolveMerchantPortrait", "merchantInitials", "themeFromMerchant", "Campaign merchants", "merchant-rail__merchant", "merchant-rail__portrait-fallback"]) need(merchantRail, token, "merchant rail");
-for (const token of ["resolveItemVisual", "merchant-stock-row", "Search stock", "Sort", "merchant-category-chip"]) need(waresList, token, "merchant-overlay wares list");
+for (const token of ["resolveItemVisual", "resolveMerchantStorefrontMedia", "rarityClass", "merchant-stock-row", "Search stock", "Sort", "merchant-category-chip", "forge-merchant-wares__scene", "is-rarity-"]) need(waresList, token, "merchant-overlay wares list");
 for (const token of ["LOOP_TAIL_SECONDS", "muted", "playsInline", "prefers-reduced-motion"]) {
   if (token === "prefers-reduced-motion") need(merchantStyles, token, "merchant reduced-motion support");
   else need(merchantBackdrop, token, "merchant ambient backdrop");
@@ -171,8 +172,9 @@ forbid(merchantMedia, '|| "/parchment.jpg"', "shared character portrait fallback
 forbid(merchantMedia, "merchant.description", "character biography as shop tagline");
 for (const token of ["resolveItemVisual", "explicitItemImage", "FALLBACKS", "NAME_FALLBACKS"]) need(itemVisuals, token, "item visual fallback resolver");
 for (const token of ['variant = "default"', "detailsCollapsible", "sitem-game-details", "sitem-thumb-fallback", "resolveItemVisual"]) need(itemCard, token, "shared ItemCard shop variant");
-for (const token of [".merchant-rail", ".sitem-thumb-fallback", ".merchant-ambient-backdrop__fallback", ".merchant-rail__portrait-fallback", ".forge-merchant-workshop", ".forge-merchant-wares", "Merchant-overlay-derived storefront surfaces"]) need(merchantStyles, token, "shared merchant storefront styles");
-for (const token of [".npc-forge-equipment-storefront", ".forge-starting-purse-bar", ".forge-merchant-overlay-layout", "grid-template-columns: 155px minmax(245px,.76fr) minmax(330px,1.2fr) minmax(300px,.92fr)", ".forge-merchant-preview", ".forge-starting-cart-drawer", "2026-10-11 merchant-overlay pivot"]) need(equipmentStyles, token, "Forge Equipment merchant-overlay layout");
+for (const token of ["2026-10-11 storefront ItemCard readability floor", ".sitem-card.is-shop-variant .sitem-title", "font-size: 1rem", ".sitem-card.is-shop-variant .sitem-section"]) need(cardCompact, token, "shop ItemCard readability");
+for (const token of [".merchant-rail", ".sitem-thumb-fallback", ".merchant-ambient-backdrop__fallback", ".merchant-rail__portrait-fallback", ".forge-merchant-workshop", ".forge-merchant-wares", ".forge-merchant-wares__scene", ".is-rarity-uncommon", ".is-rarity-rare", ".is-rarity-very-rare", ".is-rarity-legendary", ".is-rarity-artifact", "2026-10-11 Equipment readability + rarity polish"]) need(merchantStyles, token, "shared merchant storefront styles");
+for (const token of [".npc-forge-equipment-storefront", ".forge-starting-purse-bar", ".forge-merchant-overlay-layout", ".forge-merchant-preview", ".forge-starting-cart-drawer", "grid-template-columns: 175px minmax(270px,.82fr) minmax(360px,1.22fr) minmax(330px,.96fr)", "2026-10-11 Equipment readability pass"]) need(equipmentStyles, token, "Forge Equipment merchant-overlay layout");
 need(app, 'import "../styles/merchant-storefront.css";', "shared merchant stylesheet import");
 need(app, 'import "../styles/player-forge-equipment-market.css";', "Forge Equipment stylesheet import");
 
@@ -264,7 +266,7 @@ for (const token of [
   "perform * from public.reroll_merchant_inventory_v2(v.id,v.theme,36)",
 ]) need(merchantVariety, token, "full-catalog diversified merchant reroll");
 
-for (const source of [utility, controller, equipmentStep, equipmentDock, cartDrawer, workshopPane, merchantRail, waresList, merchantBackdrop, merchantMedia, itemVisuals, itemCard, merchantStyles, equipmentStyles, derived, modal, merchantExpansion, merchantVariety, dawnStorefrontMetadata]) {
+for (const source of [utility, controller, equipmentStep, equipmentDock, cartDrawer, workshopPane, merchantRail, waresList, merchantBackdrop, merchantMedia, itemVisuals, itemCard, cardCompact, merchantStyles, equipmentStyles, derived, modal, merchantExpansion, merchantVariety, dawnStorefrontMetadata]) {
   for (const token of ["MapPageClient", "map_routes", "advance_all_characters", "weather"]) forbid(source, token, `protected world boundary ${token}`);
 }
 

@@ -880,3 +880,203 @@
     bottom: 10px;
   }
 }
+
+
+/* 2026-10-11 Equipment readability + rarity polish */
+.forge-merchant-wares {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 11px;
+}
+.forge-merchant-wares > :not(.forge-merchant-wares__scene) {
+  position: relative;
+  z-index: 1;
+}
+.forge-merchant-wares__scene {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background-position: left center;
+  background-size: cover;
+  opacity: .14;
+  filter: saturate(.72) brightness(.58) contrast(1.06);
+  transform: scale(1.025);
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(90deg, rgba(0,0,0,.9) 0%, rgba(0,0,0,.62) 36%, rgba(0,0,0,.2) 70%, transparent 100%);
+  mask-image: linear-gradient(90deg, rgba(0,0,0,.9) 0%, rgba(0,0,0,.62) 36%, rgba(0,0,0,.2) 70%, transparent 100%);
+}
+.forge-merchant-wares::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(10,8,17,.42), rgba(10,8,17,.76) 42%, rgba(10,8,17,.96) 78%),
+    linear-gradient(180deg, rgba(10,8,17,.72), rgba(10,8,17,.42) 30%, rgba(10,8,17,.88));
+  pointer-events: none;
+}
+.forge-merchant-wares__toolbar {
+  grid-template-columns: minmax(0,1fr) 136px;
+  gap: 9px;
+  margin-bottom: 9px;
+}
+.forge-merchant-wares .merchant-search-field,
+.forge-merchant-wares__sort {
+  font-size: .73rem;
+}
+.forge-merchant-wares .merchant-search-field > span,
+.forge-merchant-wares__sort > span {
+  color: rgba(245,239,255,.88);
+  font-size: .67rem;
+  font-weight: 850;
+}
+.forge-merchant-wares .merchant-search-field input,
+.forge-merchant-wares__sort select {
+  min-height: 35px;
+  font-size: .68rem;
+}
+.forge-merchant-wares__categories {
+  gap: 6px;
+  margin-bottom: 9px;
+}
+.forge-merchant-wares__categories .merchant-category-chip {
+  padding: 5px 9px;
+  font-size: .62rem;
+}
+.forge-merchant-wares__notice,
+.forge-merchant-wares .merchant-inline-error,
+.forge-merchant-wares .merchant-market-empty {
+  font-size: .64rem;
+  line-height: 1.42;
+}
+.forge-merchant-wares__list {
+  gap: 7px;
+}
+.forge-merchant-wares__row {
+  grid-template-columns: 48px minmax(0,1fr);
+  gap: 9px;
+  min-height: 74px;
+  padding: 9px 10px;
+  background: rgba(20,15,31,.80);
+  backdrop-filter: blur(2px);
+}
+.forge-merchant-wares__row:hover {
+  background: rgba(31,22,48,.90);
+}
+.forge-merchant-wares__row.selected {
+  background: rgba(44,30,67,.94);
+}
+.forge-merchant-wares__thumb {
+  width: 48px;
+  height: 48px;
+  font-size: 1.15rem;
+}
+.forge-merchant-wares__row .merchant-stock-row-head strong {
+  font-size: .78rem;
+  line-height: 1.18;
+}
+.forge-merchant-wares__row .merchant-stock-row-head span {
+  color: #ffe1a0;
+  font-size: .70rem;
+}
+.forge-merchant-wares__row .merchant-stock-row-meta {
+  gap: 5px;
+  margin-top: 5px;
+}
+.forge-merchant-wares__row .merchant-stock-row-meta span {
+  padding: 3px 6px;
+  border: 1px solid rgba(255,255,255,.12);
+  color: rgba(248,245,255,.82);
+  background: rgba(255,255,255,.055);
+  font-size: .52rem;
+  font-weight: 800;
+  letter-spacing: .015em;
+}
+.forge-merchant-wares__row .merchant-stock-row-meta .is-rarity-mundane,
+.forge-merchant-wares__row .merchant-stock-row-meta .is-rarity-none,
+.forge-merchant-wares__row .merchant-stock-row-meta .is-rarity-common {
+  border-color: rgba(192,200,214,.34);
+  color: #e8edf5;
+  background: rgba(149,161,180,.13);
+}
+.forge-merchant-wares__row .merchant-stock-row-meta .is-rarity-uncommon {
+  border-color: rgba(90,205,126,.50);
+  color: #9ff0b7;
+  background: rgba(54,156,84,.15);
+}
+.forge-merchant-wares__row .merchant-stock-row-meta .is-rarity-rare {
+  border-color: rgba(82,150,255,.55);
+  color: #9dc6ff;
+  background: rgba(55,111,205,.17);
+}
+.forge-merchant-wares__row .merchant-stock-row-meta .is-rarity-very-rare {
+  border-color: rgba(182,104,255,.58);
+  color: #d5a5ff;
+  background: rgba(128,62,190,.18);
+}
+.forge-merchant-wares__row .merchant-stock-row-meta .is-rarity-legendary {
+  border-color: rgba(255,178,66,.62);
+  color: #ffd58a;
+  background: rgba(184,112,34,.18);
+}
+.forge-merchant-wares__row .merchant-stock-row-meta .is-rarity-artifact {
+  border-color: rgba(255,98,107,.62);
+  color: #ffb0b5;
+  background: rgba(172,49,61,.18);
+}
+.forge-merchant-wares__row p {
+  margin-top: 6px;
+  color: rgba(255,255,255,.70);
+  font-size: .59rem;
+  line-height: 1.42;
+  -webkit-line-clamp: 2;
+}
+.forge-merchant-wares__footer {
+  padding-top: 8px;
+  color: rgba(255,255,255,.58);
+  font-size: .55rem;
+}
+
+/* Merchant rail readability floor */
+.forge-merchant-overlay-layout > .merchant-rail .merchant-rail__head span {
+  font-size: .60rem !important;
+}
+.forge-merchant-overlay-layout > .merchant-rail .merchant-rail__head small {
+  font-size: .49rem !important;
+}
+.forge-merchant-overlay-layout > .merchant-rail .merchant-rail__merchant {
+  grid-template-columns: 42px minmax(0,1fr) 7px !important;
+  min-height: 58px !important;
+  gap: 7px !important;
+  padding: 5px !important;
+}
+.forge-merchant-overlay-layout > .merchant-rail .merchant-rail__merchant > img,
+.forge-merchant-overlay-layout > .merchant-rail .merchant-rail__portrait-fallback {
+  width: 42px !important;
+  height: 42px !important;
+}
+.forge-merchant-overlay-layout > .merchant-rail .merchant-rail__merchant-copy strong {
+  font-size: .64rem !important;
+}
+.forge-merchant-overlay-layout > .merchant-rail .merchant-rail__merchant-copy em {
+  font-size: .53rem !important;
+}
+.forge-merchant-overlay-layout > .merchant-rail .merchant-rail__merchant-copy small {
+  font-size: .46rem !important;
+}
+
+/* Workshop copy is player-facing; keep it readable even over artwork. */
+.forge-merchant-workshop__copy {
+  padding: 12px 13px 13px;
+}
+.forge-merchant-workshop__copy > span {
+  font-size: .56rem;
+}
+.forge-merchant-workshop__copy h2 {
+  font-size: 1.34rem;
+}
+.forge-merchant-workshop__copy p {
+  font-size: .66rem;
+  line-height: 1.46;
+}
