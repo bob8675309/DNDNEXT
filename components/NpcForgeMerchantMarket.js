@@ -55,14 +55,19 @@ export default function NpcForgeMerchantMarket({
   const theme = themeFromMerchant(merchant);
   const media = resolveMerchantStorefrontMedia(merchant);
   const portrait = resolveMerchantPortrait(merchant);
-  const sceneImage = portrait || media.imageUrl;
+  // Forge prefers the dedicated storefront scene. Portraits are a fallback only.
+  // This avoids forcing portrait crops into the wider MerchantPanel scene.
+  const sceneImage = media.imageUrl || portrait;
   const shopLabel = merchantShopLabel(merchant);
   const tagline = merchantTagline(merchant);
   const stockLabel = loading
     ? "Loading stock"
     : `${items.length} item${items.length === 1 ? "" : "s"} shown`;
 
-  const sceneStyle = sceneImage ? { "--merchant-bg": `url("${sceneImage}")` } : undefined;
+  const sceneStyle = sceneImage ? {
+    "--merchant-bg": `url("${sceneImage}")`,
+    "--merchant-bg-position": media.imageUrl ? "center center" : "center 26%",
+  } : undefined;
   const selectedAvailable = Math.max(0, Number(selectedCard?._available_qty || 0));
   const addEnabled = selectedCard && (typeof canAddItem !== "function" || canAddItem(selectedCard));
 

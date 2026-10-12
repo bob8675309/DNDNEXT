@@ -1283,12 +1283,17 @@ body > .npc-forge-equipment-summary-dock.is-floating {
   font-size: .72rem;
 }
 .forge-equipment-merchant-market-shell {
+  flex: 1 1 0;
   min-height: 0;
-  height: 100%;
+  height: auto;
+  overflow: hidden;
 }
 .forge-equipment-vendor-scene {
   image-rendering: auto;
   filter: none;
+  background-size: cover;
+  background-position: var(--merchant-bg-position, center center);
+  background-repeat: no-repeat;
 }
 .forge-equipment-vendor-scene > .forge-equipment-vendor-ambient {
   position: absolute;
@@ -1301,15 +1306,47 @@ body > .npc-forge-equipment-summary-dock.is-floating {
   transform: none;
 }
 .forge-equipment-merchant-stock {
+  flex: 1 1 0;
   min-height: 0;
+  height: 0;
+  overflow: hidden;
 }
 .forge-equipment-merchant-panel .merchant-stock-toolbar {
   grid-template-columns: minmax(230px,.78fr) minmax(0,1.22fr);
 }
+.forge-equipment-merchant-panel .merchant-stock-layout {
+  flex: 1 1 0;
+  min-height: 0;
+  height: 0;
+  overflow: hidden;
+}
 .forge-equipment-merchant-panel .merchant-stock-list {
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
   scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(168,108,255,.62) rgba(255,255,255,.035);
+  scrollbar-width: auto;
+  scrollbar-color: rgba(168,108,255,.72) rgba(255,255,255,.045);
+}
+.forge-equipment-merchant-panel .merchant-stock-list::-webkit-scrollbar {
+  width: 10px;
+}
+.forge-equipment-merchant-panel .merchant-stock-list::-webkit-scrollbar-track {
+  background: rgba(255,255,255,.035);
+  border-radius: 999px;
+}
+.forge-equipment-merchant-panel .merchant-stock-list::-webkit-scrollbar-thumb {
+  background: rgba(168,108,255,.62);
+  border-radius: 999px;
+}
+.forge-equipment-vendor-frame > .merchant-rail .merchant-rail__list {
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 .forge-equipment-merchant-panel .merchant-stock-row {
   --rarity-color: #aab2bd;
@@ -1454,3 +1491,9 @@ body > .npc-forge-equipment-summary-dock.is-floating {
   font-size: .58rem;
   font-weight: 850;
 }
+
+
+/* 2026-10-12 Equipment MerchantPanel scroll + scene-fit correction.
+   Keep the MerchantPanel workspace inside the Forge viewport so the stock list,
+   not the whole fixed Forge body, owns vertical scrolling. Dedicated storefront
+   artwork is preferred over portrait fallback and uses an explicit crop anchor. */

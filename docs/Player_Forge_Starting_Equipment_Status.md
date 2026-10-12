@@ -1,3 +1,14 @@
+## 2026-10-12 MerchantPanel scroll + scene-fit follow-up
+
+The first browser pass of the MerchantPanel-derived Equipment layout exposed two presentation defects:
+
+- the stock workspace inherited a fixed-height Forge ancestor without giving `.merchant-stock-list` a bounded remaining height, so lower merchant inventory could be clipped without a usable vertical scroll region;
+- the Forge scene resolver preferred the merchant portrait over the dedicated storefront image. That forced portrait-oriented media into the wider storefront scene and produced the oversized/cropped composition seen in the browser video.
+
+The Forge MerchantPanel shell now gives the stock workspace and stock layout explicit flex/min-height/height boundaries, with the stock list owning vertical scrolling and visible scrollbar behavior. The Campaign Merchants rail remains independently scrollable. The scene now prefers `storefront_bg_image_url` / resolved storefront media and falls back to the portrait only when dedicated shop art is absent. Storefront art and portrait fallbacks use separate background-position anchors.
+
+No transaction, wallet, stock-authority, map, movement, combat, or crafting behavior changed.
+
 # Player Forge Starting Equipment & Character Currency Status
 
 Status date: 2026-10-11  
