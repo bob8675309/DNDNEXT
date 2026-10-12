@@ -9,9 +9,10 @@ const controller = read("components/useNpcForgeController.js");
 const core = read("components/NpcForgeCoreSupport.js");
 const equipmentStep = read("components/NpcForgeEquipmentStep.js");
 const equipmentDock = read("components/NpcForgeEquipmentSummaryDock.js");
-const merchantHero = read("components/MerchantHero.js");
+const cartDrawer = read("components/NpcForgeStartingCartDrawer.js");
+const workshopPane = read("components/MerchantWorkshopPane.js");
 const merchantRail = read("components/MerchantRail.js");
-const merchantStockBrowser = read("components/MerchantStockBrowser.js");
+const waresList = read("components/MerchantWaresList.js");
 const merchantBackdrop = read("components/MerchantAmbientBackdrop.js");
 const merchantMedia = read("utils/merchantStorefrontMedia.js");
 const itemVisuals = read("utils/itemVisuals.js");
@@ -111,19 +112,22 @@ for (const token of [
 
 for (const token of [
   "Starting market",
-  "DNDNext starting purse",
+  "DNDNext Homebrew",
   "startingMarketBudgetCopper",
   "startingMarketRemainingCopper",
   "marketPurchases",
   'from("characters")',
   'from("character_stock")',
   "ItemCard",
-  "MerchantHero",
   "MerchantRail",
-  "MerchantStockBrowser",
-  "NpcForgeEquipmentSummaryDock",
-  'presentation="rail"',
-  "Roll 1d10 Starting Wealth",
+  "MerchantWorkshopPane",
+  "MerchantWaresList",
+  "NpcForgeStartingCartDrawer",
+  "forge-starting-purse-bar",
+  "forge-merchant-overlay-layout",
+  "merchant-preview-pane",
+  "variant=\"shop\"",
+  "detailsCollapsible",
   "Starting market needs this Forge draft",
   "version-specific Vercel deployment hostnames do not share browser localStorage",
   "storefront_bg_video_url",
@@ -141,18 +145,23 @@ for (const token of [
   "Total gold",
   "Spent",
   "Remaining",
+]) need(equipmentDock, token, "legacy/reusable Equipment summary dock");
+
+for (const token of [
+  "Starting cart",
+  "Total gold",
+  "Spent",
+  "Remaining",
   "Vanilla source purse",
   "Class source cash",
   "Background source cash",
   "DM guide only",
-  "startDrag",
-  "moveDrag",
-  "is-collapsed",
-]) need(equipmentDock, token, "reusable Equipment summary dock");
+  "forge-starting-cart-drawer",
+]) need(cartDrawer, token, "Forge starting-cart drawer");
 
-for (const token of ["MerchantAmbientBackdrop", "merchant-storefront-hero__copy", "resolveMerchantStorefrontMedia", "hasDedicatedVideo"]) need(merchantHero, token, "merchant hero");
+for (const token of ["MerchantAmbientBackdrop", "merchantShopLabel", "merchantTagline", "forge-merchant-workshop"]) need(workshopPane, token, "merchant workshop pane");
 for (const token of ["resolveMerchantPortrait", "merchantInitials", "themeFromMerchant", "Campaign merchants", "merchant-rail__merchant", "merchant-rail__portrait-fallback"]) need(merchantRail, token, "merchant rail");
-for (const token of ["resolveItemVisual", "merchant-stock-browser__row", "Search items", "Sort", "onAdd"]) need(merchantStockBrowser, token, "merchant stock browser");
+for (const token of ["resolveItemVisual", "merchant-stock-row", "Search stock", "Sort", "merchant-category-chip"]) need(waresList, token, "merchant-overlay wares list");
 for (const token of ["LOOP_TAIL_SECONDS", "muted", "playsInline", "prefers-reduced-motion"]) {
   if (token === "prefers-reduced-motion") need(merchantStyles, token, "merchant reduced-motion support");
   else need(merchantBackdrop, token, "merchant ambient backdrop");
@@ -162,8 +171,8 @@ forbid(merchantMedia, '|| "/parchment.jpg"', "shared character portrait fallback
 forbid(merchantMedia, "merchant.description", "character biography as shop tagline");
 for (const token of ["resolveItemVisual", "explicitItemImage", "FALLBACKS", "NAME_FALLBACKS"]) need(itemVisuals, token, "item visual fallback resolver");
 for (const token of ['variant = "default"', "detailsCollapsible", "sitem-game-details", "sitem-thumb-fallback", "resolveItemVisual"]) need(itemCard, token, "shared ItemCard shop variant");
-for (const token of [".merchant-storefront-hero", ".merchant-rail", ".merchant-stock-browser", ".sitem-thumb-fallback", ".merchant-ambient-backdrop__fallback", ".merchant-rail__portrait-fallback", "2026-10-11 storefront review corrections"]) need(merchantStyles, token, "shared merchant storefront styles");
-for (const token of [".npc-forge-equipment-market-layout", "grid-template-columns: 218px minmax(0,1fr) 340px", ".npc-forge-equipment-market-right", ".npc-forge-equipment-summary-dock", "grid-template-rows: minmax(180px, 42%) minmax(0, 1fr)", "grid-template-rows: minmax(205px, 1.12fr) minmax(155px, .88fr)", "2026-10-11 browser-review sizing correction"]) need(equipmentStyles, token, "Forge Equipment market layout");
+for (const token of [".merchant-rail", ".sitem-thumb-fallback", ".merchant-ambient-backdrop__fallback", ".merchant-rail__portrait-fallback", ".forge-merchant-workshop", ".forge-merchant-wares", "Merchant-overlay-derived storefront surfaces"]) need(merchantStyles, token, "shared merchant storefront styles");
+for (const token of [".npc-forge-equipment-storefront", ".forge-starting-purse-bar", ".forge-merchant-overlay-layout", "grid-template-columns: 155px minmax(245px,.76fr) minmax(330px,1.2fr) minmax(300px,.92fr)", ".forge-merchant-preview", ".forge-starting-cart-drawer", "2026-10-11 merchant-overlay pivot"]) need(equipmentStyles, token, "Forge Equipment merchant-overlay layout");
 need(app, 'import "../styles/merchant-storefront.css";', "shared merchant stylesheet import");
 need(app, 'import "../styles/player-forge-equipment-market.css";', "Forge Equipment stylesheet import");
 
@@ -255,8 +264,8 @@ for (const token of [
   "perform * from public.reroll_merchant_inventory_v2(v.id,v.theme,36)",
 ]) need(merchantVariety, token, "full-catalog diversified merchant reroll");
 
-for (const source of [utility, controller, equipmentStep, equipmentDock, merchantHero, merchantRail, merchantStockBrowser, merchantBackdrop, merchantMedia, itemVisuals, itemCard, merchantStyles, equipmentStyles, derived, modal, merchantExpansion, merchantVariety, dawnStorefrontMetadata]) {
+for (const source of [utility, controller, equipmentStep, equipmentDock, cartDrawer, workshopPane, merchantRail, waresList, merchantBackdrop, merchantMedia, itemVisuals, itemCard, merchantStyles, equipmentStyles, derived, modal, merchantExpansion, merchantVariety, dawnStorefrontMetadata]) {
   for (const token of ["MapPageClient", "map_routes", "advance_all_characters", "weather"]) forbid(source, token, `protected world boundary ${token}`);
 }
 
-console.log("Player Forge starting market authority, shared merchant storefront shell, ItemCard visual fallbacks, staged purchases, character-scoped currency, and protected boundaries validated.");
+console.log("Player Forge starting market authority, MerchantPanel-derived storefront composition, ItemCard detail reuse, collapsible starting cart, staged purchases, and protected boundaries validated.");

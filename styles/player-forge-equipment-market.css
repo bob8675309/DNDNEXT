@@ -579,3 +579,453 @@ body > .npc-forge-equipment-summary-dock.is-floating {
     height: auto;
   }
 }
+
+
+/* 2026-10-11 merchant-overlay pivot.
+   The Forge now follows the proven MerchantPanel composition:
+   merchant selector -> workshop scene -> wares -> selected ItemCard,
+   with starting-purse/cart controls kept compact above the storefront. */
+.npc-forge-equipment-storefront {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0,1fr);
+  gap: 7px;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+.forge-starting-purse-bar {
+  display: grid;
+  grid-template-columns: minmax(150px,1.15fr) repeat(3,minmax(88px,.62fr)) auto auto;
+  gap: 6px;
+  align-items: stretch;
+  min-height: 42px;
+  padding: 5px;
+  border: 1px solid rgba(168,108,255,.18);
+  border-radius: 9px;
+  background: linear-gradient(90deg,rgba(18,14,29,.98),rgba(9,12,20,.985));
+}
+.forge-starting-purse-bar__title,
+.forge-starting-purse-bar__metric,
+.forge-starting-purse-bar__wealth,
+.forge-starting-purse-bar__cart {
+  min-width: 0;
+  border: 1px solid rgba(255,255,255,.065);
+  border-radius: 7px;
+  background: rgba(255,255,255,.018);
+}
+.forge-starting-purse-bar__title,
+.forge-starting-purse-bar__metric {
+  display: grid;
+  align-content: center;
+  gap: 1px;
+  padding: 5px 7px;
+}
+.forge-starting-purse-bar__title span,
+.forge-starting-purse-bar__metric span,
+.forge-starting-purse-bar__cart span {
+  color: rgba(255,255,255,.42);
+  font-size: .42rem;
+  font-weight: 900;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+}
+.forge-starting-purse-bar__title strong {
+  overflow: hidden;
+  color: #efe4ff;
+  font-size: .58rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.forge-starting-purse-bar__metric strong {
+  color: #fff;
+  font-size: .62rem;
+}
+.forge-starting-purse-bar__metric.is-remaining {
+  border-color: rgba(88,214,199,.28);
+  background: rgba(88,214,199,.045);
+}
+.forge-starting-purse-bar__metric.is-remaining strong {
+  color: #aefbef;
+}
+.forge-starting-purse-bar__wealth {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 5px;
+}
+.forge-starting-purse-bar__wealth button,
+.forge-starting-purse-bar__cart {
+  border-color: rgba(168,108,255,.28);
+  color: #fff;
+}
+.forge-starting-purse-bar__wealth button {
+  padding: 5px 7px;
+  border: 1px solid rgba(168,108,255,.34);
+  border-radius: 6px;
+  background: rgba(126,72,199,.10);
+  font-size: .48rem;
+  font-weight: 800;
+}
+.forge-starting-purse-bar__wealth span {
+  color: #ffe6a8;
+  font-size: .46rem;
+  white-space: nowrap;
+}
+.forge-starting-purse-bar__cart {
+  display: grid;
+  align-content: center;
+  gap: 1px;
+  padding: 4px 10px;
+  min-width: 92px;
+  cursor: pointer;
+  background: linear-gradient(180deg,rgba(126,72,199,.15),rgba(126,72,199,.065));
+}
+.forge-starting-purse-bar__cart:hover {
+  border-color: rgba(168,108,255,.58);
+  background: rgba(126,72,199,.16);
+}
+.forge-starting-purse-bar__cart strong {
+  color: #fff;
+  font-size: .58rem;
+}
+
+.forge-merchant-overlay-layout {
+  display: grid;
+  grid-template-columns: 155px minmax(245px,.76fr) minmax(330px,1.2fr) minmax(300px,.92fr);
+  gap: 8px;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+.forge-merchant-overlay-layout > .merchant-rail,
+.forge-merchant-overlay-layout > .forge-merchant-workshop,
+.forge-merchant-overlay-layout > .forge-merchant-wares,
+.forge-merchant-overlay-layout > .forge-merchant-preview {
+  min-height: 0;
+  height: 100%;
+}
+.forge-merchant-overlay-layout > .merchant-rail .merchant-rail__head {
+  padding: 7px 7px 6px;
+}
+.forge-merchant-overlay-layout > .merchant-rail .merchant-rail__head span {
+  font-size: .5rem;
+}
+.forge-merchant-overlay-layout > .merchant-rail .merchant-rail__head small {
+  font-size: .42rem;
+}
+.forge-merchant-overlay-layout > .merchant-rail .merchant-rail__list {
+  padding: 4px;
+}
+.forge-merchant-overlay-layout > .merchant-rail .merchant-rail__merchant {
+  grid-template-columns: 38px minmax(0,1fr) 6px;
+  gap: 5px;
+  min-height: 48px;
+  margin-bottom: 4px;
+  padding: 3px 4px 3px 3px;
+}
+.forge-merchant-overlay-layout > .merchant-rail .merchant-rail__merchant > img,
+.forge-merchant-overlay-layout > .merchant-rail .merchant-rail__portrait-fallback {
+  width: 38px;
+  height: 38px;
+}
+.forge-merchant-overlay-layout > .merchant-rail .merchant-rail__merchant-copy strong {
+  font-size: .52rem;
+}
+.forge-merchant-overlay-layout > .merchant-rail .merchant-rail__merchant-copy em {
+  font-size: .43rem;
+}
+.forge-merchant-overlay-layout > .merchant-rail .merchant-rail__merchant-copy small {
+  font-size: .38rem;
+}
+
+.forge-merchant-preview {
+  border-radius: 12px;
+}
+.forge-merchant-preview .merchant-preview-head {
+  padding: 8px 10px;
+}
+.forge-merchant-preview .merchant-preview-head h3 {
+  margin-top: 2px;
+  font-size: .78rem;
+}
+.forge-merchant-preview .merchant-preview-price {
+  color: #ffe1a0;
+  font-size: .68rem;
+  font-weight: 900;
+}
+.forge-merchant-preview .merchant-preview-card-scroll {
+  padding: 8px;
+}
+.forge-merchant-preview .merchant-preview-purchase {
+  grid-template-columns: auto auto minmax(125px,1fr);
+  gap: 7px;
+  padding: 8px;
+}
+.forge-merchant-preview .merchant-preview-purchase span {
+  font-size: .5rem;
+}
+.forge-merchant-preview .merchant-preview-purchase strong {
+  font-size: .58rem;
+}
+.forge-merchant-preview .merchant-preview-purchase .btn {
+  min-height: 31px;
+  padding: 5px 8px;
+  font-size: .52rem;
+  font-weight: 800;
+}
+
+/* Cart opens over the storefront rather than permanently consuming shopping space. */
+.forge-starting-cart-drawer {
+  position: absolute;
+  z-index: 40;
+  inset: 0;
+  display: flex;
+  justify-content: flex-end;
+  overflow: hidden;
+  border-radius: 10px;
+}
+.forge-starting-cart-drawer__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(2,4,8,.46);
+  backdrop-filter: blur(1.5px);
+}
+.forge-starting-cart-drawer__panel {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-rows: auto auto minmax(0,1fr) auto;
+  gap: 8px;
+  width: min(390px,92%);
+  min-height: 0;
+  padding: 10px;
+  border-left: 1px solid rgba(168,108,255,.34);
+  background: linear-gradient(155deg,rgba(16,19,29,.995),rgba(8,11,18,.995));
+  box-shadow: -22px 0 50px rgba(0,0,0,.38);
+}
+.forge-starting-cart-drawer__panel > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9px;
+  min-height: 39px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.forge-starting-cart-drawer__panel > header > div {
+  display: grid;
+  gap: 1px;
+}
+.forge-starting-cart-drawer__panel > header span {
+  color: rgba(255,255,255,.46);
+  font-size: .46rem;
+  font-weight: 900;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+.forge-starting-cart-drawer__panel > header strong {
+  color: #fff;
+  font-family: Georgia,"Times New Roman",serif;
+  font-size: .82rem;
+}
+.forge-starting-cart-drawer__panel > header button {
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 7px;
+  color: #fff;
+  background: rgba(255,255,255,.025);
+}
+.forge-starting-cart-drawer__totals {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 5px;
+}
+.forge-starting-cart-drawer__totals > div {
+  display: grid;
+  gap: 2px;
+  padding: 7px;
+  border: 1px solid rgba(168,108,255,.17);
+  border-radius: 7px;
+  background: rgba(126,72,199,.04);
+}
+.forge-starting-cart-drawer__totals .is-remaining {
+  border-color: rgba(88,214,199,.30);
+  background: rgba(88,214,199,.055);
+}
+.forge-starting-cart-drawer__totals span {
+  color: rgba(255,255,255,.42);
+  font-size: .42rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+.forge-starting-cart-drawer__totals strong {
+  color: #fff;
+  font-size: .62rem;
+}
+.forge-starting-cart-drawer__totals .is-remaining strong {
+  color: #aefbef;
+}
+.forge-starting-cart-drawer__items {
+  min-height: 0;
+  overflow: auto;
+  border-top: 1px solid rgba(255,255,255,.055);
+  border-bottom: 1px solid rgba(255,255,255,.055);
+}
+.forge-starting-cart-drawer__items > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 2px;
+  border-top: 1px solid rgba(255,255,255,.05);
+}
+.forge-starting-cart-drawer__items > div:first-child {
+  border-top: 0;
+}
+.forge-starting-cart-drawer__items > div > span {
+  display: grid;
+  min-width: 0;
+}
+.forge-starting-cart-drawer__items strong {
+  overflow: hidden;
+  color: #fff;
+  font-size: .55rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.forge-starting-cart-drawer__items small {
+  color: rgba(255,255,255,.46);
+  font-size: .43rem;
+}
+.forge-starting-cart-drawer__items button {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(255,115,95,.28);
+  border-radius: 6px;
+  color: #ffd0c8;
+  background: rgba(255,115,95,.055);
+}
+.forge-starting-cart-drawer__items p {
+  margin: 10px 2px;
+  color: rgba(255,255,255,.5);
+  font-size: .52rem;
+}
+.forge-starting-cart-drawer__rules {
+  padding: 7px;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 7px;
+  background: rgba(255,255,255,.018);
+}
+.forge-starting-cart-drawer__rules > summary {
+  cursor: pointer;
+  color: rgba(255,255,255,.64);
+  font-size: .5rem;
+  font-weight: 850;
+}
+.forge-starting-cart-drawer__rules dl {
+  display: grid;
+  gap: 4px;
+  margin: 7px 0 0;
+}
+.forge-starting-cart-drawer__rules dl > div {
+  display: grid;
+  grid-template-columns: 112px minmax(0,1fr);
+  gap: 7px;
+}
+.forge-starting-cart-drawer__rules dt {
+  color: rgba(255,255,255,.4);
+  font-size: .42rem;
+  text-transform: uppercase;
+}
+.forge-starting-cart-drawer__rules dd {
+  margin: 0;
+  color: #fff;
+  font-size: .5rem;
+}
+.forge-starting-cart-drawer__rules p {
+  margin: 7px 0 0;
+  color: rgba(255,255,255,.48);
+  font-size: .45rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 1320px) {
+  .forge-merchant-overlay-layout {
+    grid-template-columns: 140px minmax(220px,.68fr) minmax(310px,1.15fr) minmax(285px,.9fr);
+  }
+}
+
+@media (max-width: 1120px) {
+  .unified-player-character-forge .npc-forge-body.npc-forge-step-equipment.is-player-mode {
+    overflow: auto !important;
+  }
+  .unified-player-character-forge .npc-forge-body.npc-forge-step-equipment.is-player-mode > .npc-forge-workspace {
+    overflow: visible !important;
+  }
+  .npc-forge-equipment-storefront {
+    height: auto;
+    overflow: visible;
+  }
+  .forge-starting-purse-bar {
+    grid-template-columns: repeat(4,minmax(0,1fr));
+  }
+  .forge-starting-purse-bar__title {
+    grid-column: span 2;
+  }
+  .forge-starting-purse-bar__wealth,
+  .forge-starting-purse-bar__cart {
+    min-height: 38px;
+  }
+  .forge-merchant-overlay-layout {
+    grid-template-columns: 1fr 1.2fr;
+    height: auto;
+    overflow: visible;
+  }
+  .forge-merchant-overlay-layout > .merchant-rail {
+    grid-column: 1 / -1;
+    height: auto;
+  }
+  .forge-merchant-overlay-layout > .merchant-rail .merchant-rail__list {
+    display: flex;
+    gap: 5px;
+    overflow-x: auto;
+  }
+  .forge-merchant-overlay-layout > .merchant-rail .merchant-rail__merchant {
+    flex: 0 0 165px;
+    margin: 0;
+  }
+  .forge-merchant-overlay-layout > .forge-merchant-workshop {
+    min-height: 340px;
+  }
+  .forge-merchant-overlay-layout > .forge-merchant-wares {
+    min-height: 520px;
+  }
+  .forge-merchant-overlay-layout > .forge-merchant-preview {
+    grid-column: 1 / -1;
+    min-height: 520px;
+  }
+}
+
+@media (max-width: 720px) {
+  .forge-starting-purse-bar {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+  }
+  .forge-starting-purse-bar__title {
+    grid-column: 1 / -1;
+  }
+  .forge-merchant-overlay-layout {
+    grid-template-columns: 1fr;
+  }
+  .forge-merchant-overlay-layout > .forge-merchant-workshop,
+  .forge-merchant-overlay-layout > .forge-merchant-wares,
+  .forge-merchant-overlay-layout > .forge-merchant-preview {
+    grid-column: 1;
+  }
+  .forge-starting-cart-drawer__panel {
+    width: 100%;
+  }
+}

@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import ItemCard from "./ItemCard";
-import MerchantHero from "./MerchantHero";
 import MerchantRail from "./MerchantRail";
-import MerchantStockBrowser from "./MerchantStockBrowser";
-import NpcForgeEquipmentSummaryDock from "./NpcForgeEquipmentSummaryDock";
+import MerchantWorkshopPane from "./MerchantWorkshopPane";
+import MerchantWaresList from "./MerchantWaresList";
+import NpcForgeStartingCartDrawer from "./NpcForgeStartingCartDrawer";
 import { supabase } from "../utils/supabaseClient";
 import {
   cashOnlyEquipmentOption,
@@ -92,6 +92,7 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
   const [sortKey, setSortKey] = useState("name-asc");
   const [selectedStockId, setSelectedStockId] = useState("");
   const [notice, setNotice] = useState("");
+  const [cartOpen, setCartOpen] = useState(false);
 
   const purchases = useMemo(() => startingMarketPurchases(selection), [selection]);
   const classCashOption = cashOnlyEquipmentOption(model?.classOptions);
@@ -104,6 +105,7 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
   const spentCopper = startingMarketSpentCopper(selection);
   const remainingCopper = startingMarketRemainingCopper(model, selection);
   const rule = higherLevelWealthRule(model?.level || 1);
+  const cartItemCount = useMemo(() => purchases.reduce((sum, entry) => sum + Math.max(0, Number(entry?.qty || 0)), 0), [purchases]);
 
   useEffect(() => {
     let active = true;
@@ -212,14 +214,6 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
     return card._available_qty > 0 && priceCopper <= remainingCopper;
   }
 
-  function addLabel(card) {
-    if (!card) return "Add";
-    if (card._available_qty <= 0) return "Reserved";
-    const priceCopper = Math.round(Number(card._price_gp || 0) * 100);
-    if (priceCopper > remainingCopper) return "Too costly";
-    return "Add";
-  }
-
   function chooseMerchant(merchantId) {
     setQuery("");
     setTypeFilter("All");
@@ -295,17 +289,26 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
 
   return <div className="npc-forge-body npc-forge-step-equipment is-player-mode">
     <section className="npc-forge-workspace">
-      <div className="npc-forge-equipment-market-shell npc-forge-starting-market">
-        {rule.rollRequired ? <div className="npc-forge-equipment-market-roll">
-          <p>Higher-level creation adds {rule.baseGp.toLocaleString()} gp + 1d10 × {rule.multiplierGp.toLocaleString()} gp to this DNDNext starting purse.</p>
-          <button type="button" onClick={() => onChange?.({ ...selection, mode: "market", wealthRoll: 1 + Math.floor(Math.random() * 10), marketPurchases: purchases })}>Roll 1d10 Starting Wealth</button>
-          <strong>{selection.wealthRoll ? `d10 = ${selection.wealthRoll}` : "Roll required"}</strong>
-        </div> : <div className="npc-forge-equipment-market-status">
-          <strong>Starting market</strong>
-          <span>Campaign merchants use live character_stock. Cart changes are staged until the character is created; unspent gold stays with the character.</span>
-        </div>}
+      <div className="npc-forge-equipment-storefront">
+        <header className="forge-starting-purse-bar">
+          <div className="forge-starting-purse-bar__title">
+            <span>Starting market</span>
+            <strong>{ruleset === "vanilla" ? "Vanilla source rules" : "DNDNext Homebrew"}</strong>
+          </div>
+          <div className="forge-starting-purse-bar__metric"><span>Total gold</span><strong>{formatCopper(budgetCopper)}</strong></div>
+          <div className="forge-starting-purse-bar__metric"><span>Spent</span><strong>{formatCopper(spentCopper)}</strong></div>
+          <div className="forge-starting-purse-bar__metric is-remaining"><span>Remaining</span><strong>{formatCopper(remainingCopper)}</strong></div>
+          {rule.rollRequired ? <div className="forge-starting-purse-bar__wealth">
+            <button type="button" onClick={() => onChange?.({ ...selection, mode: "market", wealthRoll: 1 + Math.floor(Math.random() * 10), marketPurchases: purchases })}>Roll 1d10 wealth</button>
+            <span>{selection.wealthRoll ? `d10 = ${selection.wealthRoll}` : "Roll required"}</span>
+          </div> : null}
+          <button type="button" className="forge-starting-purse-bar__cart" onClick={() => setCartOpen(true)}>
+            <span>Cart</span>
+            <strong>{cartItemCount} item{cartItemCount === 1 ? "" : "s"}</strong>
+          </button>
+        </header>
 
-        <div className="npc-forge-equipment-market-layout">
+        <div className="forge-merchant-overlay-layout">
           <MerchantRail
             merchants={merchants}
             activeMerchantId={activeMerchant?.id || ""}
@@ -313,63 +316,63 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
             onSelect={chooseMerchant}
           />
 
-          <div className="npc-forge-equipment-market-center">
-            {activeMerchant ? <MerchantHero merchant={activeMerchant} /> : <div className="npc-forge-equipment-market-prereq"><strong>Campaign merchants</strong>No storefront is currently available. You can continue and keep the full DNDNext starting purse.</div>}
+          <MerchantWorkshopPane merchant={activeMerchant} />
 
-            <div className="npc-forge-equipment-market-browser">
-              <MerchantStockBrowser
-                merchantName={activeMerchant?.name || "Merchant"}
-                items={filteredCards}
-                categories={categories}
-                selectedId={selectedCard?.id || ""}
-                query={query}
-                typeFilter={typeFilter}
-                sortKey={sortKey}
-                loading={loadingStock}
-                error={marketError}
-                notice={notice}
-                onQueryChange={setQuery}
-                onTypeFilterChange={setTypeFilter}
-                onSortChange={setSortKey}
-                onSelect={(id) => {
-                  setSelectedStockId(String(id));
-                  setNotice("");
-                }}
-                onAdd={addItem}
-                canAddItem={canAddItem}
-                addLabel={addLabel}
-              />
-            </div>
-          </div>
+          <MerchantWaresList
+            merchantName={activeMerchant?.name || "Merchant"}
+            items={filteredCards}
+            categories={categories}
+            selectedId={selectedCard?.id || ""}
+            query={query}
+            typeFilter={typeFilter}
+            sortKey={sortKey}
+            loading={loadingStock}
+            error={marketError}
+            notice={notice}
+            onQueryChange={setQuery}
+            onTypeFilterChange={setTypeFilter}
+            onSortChange={setSortKey}
+            onSelect={(id) => {
+              setSelectedStockId(String(id));
+              setNotice("");
+            }}
+          />
 
-          <aside className="npc-forge-equipment-market-right">
-            <section className="npc-forge-equipment-selected">
-              <header className="npc-forge-equipment-selected__head"><div><span>Selected item</span><h3>{selectedCard?.item_name || "Choose an item"}</h3></div></header>
-              <div className="npc-forge-equipment-selected__body">
-                {selectedCard ? <ItemCard
-                  item={selectedCard}
-                  variant="shop"
-                  detailsCollapsible
-                  action={<button type="button" disabled={!canAddItem(selectedCard)} onClick={() => addItem(selectedCard)}>{selectedActionLabel}</button>}
-                /> : <div className="npc-forge-equipment-selected__empty">Select an item from the merchant stock to inspect it.</div>}
+          <aside className="merchant-preview-pane forge-merchant-preview">
+            {selectedCard ? <>
+              <div className="merchant-preview-head">
+                <div>
+                  <div className="merchant-market-kicker">Selected item</div>
+                  <h3>{selectedCard.item_name}</h3>
+                </div>
+                <span className="merchant-preview-price">{selectedCard._price_gp} gp</span>
               </div>
-            </section>
-
-            <NpcForgeEquipmentSummaryDock
-              presentation="rail"
-              ruleset={ruleset}
-              budgetCopper={budgetCopper}
-              spentCopper={spentCopper}
-              remainingCopper={remainingCopper}
-              vanillaSourceCopper={vanillaSourceCopper}
-              classCashCopper={classCash}
-              backgroundCashCopper={backgroundCash}
-              level={model.level}
-              purchases={purchases}
-              onRemovePurchase={removePurchase}
-            />
+              <div className="merchant-preview-card-scroll">
+                <ItemCard item={selectedCard} variant="shop" detailsCollapsible />
+              </div>
+              <div className="merchant-preview-purchase">
+                <div><span>Available</span><strong>{Math.max(0, Number(selectedCard._available_qty || 0))}</strong></div>
+                <div><span>Remaining</span><strong>{formatCopper(remainingCopper)}</strong></div>
+                <button type="button" className="btn btn-success" disabled={!canAddItem(selectedCard)} onClick={() => addItem(selectedCard)}>{selectedActionLabel}</button>
+              </div>
+            </> : <div className="merchant-market-empty">Select an item to inspect it.</div>}
           </aside>
         </div>
+
+        <NpcForgeStartingCartDrawer
+          open={cartOpen}
+          onClose={() => setCartOpen(false)}
+          ruleset={ruleset}
+          budgetCopper={budgetCopper}
+          spentCopper={spentCopper}
+          remainingCopper={remainingCopper}
+          vanillaSourceCopper={vanillaSourceCopper}
+          classCashCopper={classCash}
+          backgroundCashCopper={backgroundCash}
+          level={model.level}
+          purchases={purchases}
+          onRemovePurchase={removePurchase}
+        />
       </div>
     </section>
   </div>;
