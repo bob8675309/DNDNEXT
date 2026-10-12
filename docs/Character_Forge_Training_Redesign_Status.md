@@ -275,3 +275,7 @@ This Training work does **not** authorize changes to:
 - unrelated runtime/rest systems.
 
 The future unified crafting-material redesign remains a separate post-Forge project.
+
+## 2026-10-12 Rogue Thieves' Cant wording correction
+
+The XPHB Rogue feature is named **Thieves' Cant**. The live source row states that the Rogue knows Thieves' Cant automatically and chooses **one other language** from the language tables. The Forge therefore no longer labels the required selector as “Thieves' Cant additional language,” which made the granted language sound like the choice itself. The choice is now labeled **Choose one additional language**, with helper text stating that Thieves' Cant is granted automatically. Thieves' Cant remains present in the rare-language catalogue and is excluded from the additional-language picker so the automatic grant cannot be selected twice.

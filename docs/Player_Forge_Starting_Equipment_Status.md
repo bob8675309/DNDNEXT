@@ -4,6 +4,20 @@ Status date: 2026-10-11
 Active follow-up: PR #208 (`agent/forge-ux-equipment-homebrew-20261011`)  
 Current authority: migrations 49-51 plus `20261010_01_player_forge_starting_market.sql` and `20261011_02_player_forge_homebrew_starting_budget.sql`
 
+## 2026-10-12 current MerchantPanel visual pivot
+
+The latest side-by-side browser video confirms that the established live merchant storefront remains the stronger shopping composition. Character Forge Equipment now intentionally uses that storefront as the visual foundation rather than continuing the separate four-column Forge experiment.
+
+The player-facing Equipment composition is now:
+
+- **Campaign Merchants** remains as a narrow selector on the far left;
+- the remaining space uses the current MerchantPanel hierarchy and CSS language: merchant header, large portrait/store scene, Search Stock/category strip, vertically scrolling stock list, and Selected Item ItemCard;
+- the existing portrait-to-stock fade from the live MerchantPanel applies here too, so merchant art bleeds beneath the stock workspace rather than ending at a hard divider;
+- Forge purchase behavior is still staged only. The new presentation component does not import `useWallet` and cannot call `buy_from_merchant`;
+- starting purse, spent/remaining gold, cart contents, source-purse rules, and the explicit **No starting gear / Keep all starting gold** choice now live in the existing movable/collapsible Equipment summary dock. This intentionally uses the same interaction concept as the Class Feature window instead of permanently consuming another storefront column.
+
+The normal `MerchantPanel` remains untouched as the account-wallet shop. This pass shares its presentation vocabulary without sharing its transaction controller.
+
 ## 2026-10-12 Spells → Equipment null-merchant crash hotfix
 
 The post-merge browser video exposed a client-side crash immediately after pressing **Continue** from Spells into Equipment: `TypeError: can't access property "icon", e is null`. The full-stage background introduced in the prior pass mounted `MerchantAmbientBackdrop` during the first Equipment render while the async merchant query had not resolved yet, so `activeMerchant` was still null. `themeFromMerchant` then dereferenced `.icon`.
