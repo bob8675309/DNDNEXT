@@ -1,3 +1,9 @@
+## 2026-10-12 stable merchant image framing
+
+The follow-up video showed that switching stock categories could still change the apparent merchant-image zoom. The image itself was not changing; the scene box was still allowed to follow the filtered workspace's content height, and `background-size: cover` recalculated the crop whenever that box changed.
+
+The Forge merchant shell is now hard-bounded to the remaining Equipment viewport (`flex: 1 1 0; height: 0`) so item filters cannot resize the scene. The left merchant image also returns to the established live MerchantPanel behavior: the profile/shop portrait is preferred over storefront art and is rendered with `contain` rather than `cover`. That keeps the profile portrait at one stable zoom/crop while switching All, Melee Weapon, Armor, or other categories. Dedicated storefront art remains the fallback when a merchant has no profile/shop portrait.
+
 ## 2026-10-12 MerchantPanel scroll + scene-fit follow-up
 
 The first browser pass of the MerchantPanel-derived Equipment layout exposed two presentation defects:
