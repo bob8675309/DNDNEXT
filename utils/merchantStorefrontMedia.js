@@ -19,14 +19,10 @@ function storagePortraitUrl(path) {
   }
 }
 
-const THEME_BACKDROPS = Object.freeze({
-  smith: "/merchant-backgrounds/smith.jpg",
-  weapons: "/merchant-backgrounds/smith.jpg",
-  alchemy: "/merchant-backgrounds/alchemist.jpg",
-  herbalist: "/merchant-backgrounds/alchemist.jpg",
-  arcanist: "/merchant-backgrounds/arcane.jpg",
-  jeweler: "/merchant-backgrounds/jeweler.jpg",
-});
+// Legacy theme-image paths were never backed by committed assets. Keep the
+// resolver explicit-only so missing merchant art falls through to the shared
+// themed neutral backdrop instead of producing a broken/black image surface.
+const THEME_BACKDROPS = Object.freeze({});
 
 export function resolveMerchantPortrait(merchant = {}) {
   const record = asMerchantRecord(merchant);
