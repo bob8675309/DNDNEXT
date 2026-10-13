@@ -84,7 +84,7 @@ export default function NpcForgeMerchantMarket({
     shellClassName="forge-equipment-merchant-market-shell"
     sceneClassName={`forge-equipment-vendor-scene is-${theme}`}
     sceneStyle={sceneStyle}
-    sceneMedia={media.videoUrl ? <MerchantAmbientBackdrop merchant={merchant} className="forge-equipment-vendor-ambient" /> : null}
+    sceneMedia={(media.videoUrl || !sceneImage) ? <MerchantAmbientBackdrop merchant={merchant} className="forge-equipment-vendor-ambient" /> : null}
     theme={theme}
     sceneTitle={shopLabel || "Curated wares"}
     sceneTagline={tagline || "Browse the merchant’s current stock and choose what this character carries into the campaign."}
