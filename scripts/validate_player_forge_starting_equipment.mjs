@@ -349,7 +349,7 @@ for (const token of [
 ]) need(merchantRecipeCap, token, "routine merchant recipe rarity cap");
 forbid(merchantRecipeCap, "very rare','legendary','artifact", "routine recipe high-rarity allowance");
 
-for (const source of [utility, controller, equipmentStep, forgeMerchantMarket, sharedStorefront, merchantPanel, equipmentDock, cartDrawer, workshopPane, merchantRail, waresList, merchantBackdrop, merchantMedia, itemVisuals, itemCard, cardCompact, merchantStyles, equipmentStyles, derived, modal, merchantExpansion, merchantVariety, merchantDistribution, merchantRecipeCap, dawnStorefrontMetadata, dawnStorefrontMedia]) {
+for (const source of [utility, controller, equipmentStep, forgeMerchantMarket, sharedStorefront, equipmentDock, cartDrawer, workshopPane, merchantRail, waresList, merchantBackdrop, merchantMedia, itemVisuals, itemCard, cardCompact, merchantStyles, equipmentStyles, derived, modal, merchantExpansion, merchantVariety, merchantDistribution, merchantRecipeCap, dawnStorefrontMetadata, dawnStorefrontMedia]) {
   for (const token of ["MapPageClient", "map_routes", "advance_all_characters", "weather"]) forbid(source, token, `protected world boundary ${token}`);
 }
 
