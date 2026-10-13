@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const merchant = fs.readFileSync(path.join(process.cwd(), "components", "MerchantPanel.js"), "utf8");
+const storefront = fs.readFileSync(path.join(process.cwd(), "components", "MerchantStorefrontView.js"), "utf8");
 const town = fs.readFileSync(path.join(process.cwd(), "components", "TownSheet.js"), "utf8");
 const globalCss = fs.readFileSync(path.join(process.cwd(), "styles", "globals.scss"), "utf8");
 const townCss = fs.readFileSync(path.join(process.cwd(), "components", "TownSheet.module.scss"), "utf8");
@@ -16,7 +17,7 @@ function warnToken(source, token, label) {
 
 for (const token of [
   'presentation = "map"',
-  'className={"merchant-panel-inner merchant-market merchant-panel-" + presentation}',
+  'rootClassName={"merchant-panel-inner merchant-market merchant-storefront-shared merchant-panel-" + presentation}',
   'merchant?.portrait_shop_url',
   'merchant?.portrait_url',
   'merchant?.image_url',
@@ -27,8 +28,19 @@ for (const token of [
   'const [notice, setNotice] = useState(null);',
   'setNotice({ kind: "error", message: "Please sign in before purchasing an item." });',
   'setNotice({ kind: "success", message: "Purchased " + card.item_name + " for " + card._price_gp + " gp. It has been added to your inventory." });',
-  'merchant-stock-layout',
+  'MerchantStorefrontView',
 ]) requireToken(merchant, token, "Merchant market UI handoff");
+
+for (const token of [
+  'merchant-market-header',
+  'merchant-market-shell',
+  'merchant-scene',
+  'merchant-stock-workspace',
+  'merchant-stock-layout',
+  'merchant-stock-list',
+  'merchant-preview-pane',
+  'ItemCard',
+]) requireToken(storefront, token, "Shared merchant storefront UI handoff");
 
 for (const token of [
   'presentation="town"',
