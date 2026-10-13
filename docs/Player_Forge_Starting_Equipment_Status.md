@@ -1,3 +1,13 @@
+## 2026-10-13 MerchantPanel height-parity correction
+
+The latest side-by-side browser video showed that the previous “vertical balance” pass solved the wrong problem: it compressed content inside the existing short Forge window instead of matching the normal MerchantPanel’s taller canvas.
+
+The Character Forge modal now receives an explicit `is-step-equipment` class while the Equipment step is active. On desktop, a non-manually-resized Equipment Forge window fills the same usable vertical window envelope as the normal profile/merchant panel: `100dvh - navbar offset - 32px`. The Forge header, step bar, and footer remain intact; the Equipment body flexes to consume the remaining height.
+
+The last stock-row/chrome compression is intentionally overridden for the active Equipment step. MerchantPanel-like header padding, toolbar height, category chips, two-line stock descriptions, stock-row spacing, preview padding, and cart-header size are restored. The selected ItemCard remains fully expanded. Extra visible stock and taller merchant art now come from the taller outer Forge canvas rather than from making the storefront elements smaller.
+
+Manually dragged/resized app-window geometry remains respected because this default-height rule applies only while the Forge is not `is-app-windowed`.
+
 ## 2026-10-13 MerchantPanel vertical-balance follow-up
 
 The normal MerchantPanel is now the accepted vertical-density reference for the Forge Equipment tab. The Forge keeps its narrower selected-item column and integrated merchant-art background, but now gives the vendor frame the full available Equipment body height.
