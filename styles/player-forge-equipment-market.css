@@ -790,7 +790,7 @@ body > .npc-forge-equipment-summary-dock.is-floating {
   inset: 0;
   border: 0;
   background: rgba(2,4,8,.46);
-  backdrop-filter: blur(1.5px);
+  backdrop-filter: none;
 }
 .forge-starting-cart-drawer__panel {
   position: relative;
@@ -1580,7 +1580,7 @@ body > .npc-forge-equipment-summary-dock.is-floating {
     border-radius: 10px;
     background: linear-gradient(180deg, rgba(10,13,22,.70), rgba(6,9,15,.78));
     box-shadow: 0 10px 28px rgba(0,0,0,.18);
-    backdrop-filter: blur(6px);
+    backdrop-filter: none;
   }
 
   .forge-equipment-merchant-panel {
@@ -1597,7 +1597,7 @@ body > .npc-forge-equipment-summary-dock.is-floating {
     border-bottom-color: rgba(255,255,255,.10);
     background: linear-gradient(90deg, rgba(35,22,54,.76), rgba(54,34,82,.64));
     box-shadow: 0 7px 22px rgba(0,0,0,.16);
-    backdrop-filter: blur(7px);
+    backdrop-filter: none;
   }
   .forge-equipment-merchant-panel .merchant-market-title {
     font-size: clamp(.86rem, 1.02vw, 1.02rem);
@@ -1629,7 +1629,7 @@ body > .npc-forge-equipment-summary-dock.is-floating {
   .forge-equipment-merchant-stock {
     padding: 8px;
     background: linear-gradient(180deg, rgba(15,11,24,.58), rgba(8,8,14,.70));
-    backdrop-filter: blur(5px);
+    backdrop-filter: none;
   }
   .forge-equipment-merchant-panel .merchant-stock-toolbar {
     grid-template-columns: minmax(185px,.68fr) minmax(0,1.32fr);
@@ -1643,7 +1643,7 @@ body > .npc-forge-equipment-summary-dock.is-floating {
   .forge-equipment-merchant-panel .merchant-category-chip {
     border-color: rgba(255,255,255,.10);
     background: rgba(8,9,15,.50);
-    backdrop-filter: blur(4px);
+    backdrop-filter: none;
   }
 
   /* Roughly one-third narrower preview than the previous Forge split. */
@@ -1659,7 +1659,7 @@ body > .npc-forge-equipment-summary-dock.is-floating {
     border-color: rgba(255,255,255,.10);
     border-radius: 8px;
     background: linear-gradient(180deg, rgba(34,27,49,.62), rgba(19,17,30,.72));
-    backdrop-filter: blur(4px);
+    backdrop-filter: none;
   }
   .forge-equipment-merchant-panel .merchant-stock-row:hover {
     background: linear-gradient(180deg, rgba(48,36,70,.72), rgba(25,20,39,.82));
@@ -1686,7 +1686,7 @@ body > .npc-forge-equipment-summary-dock.is-floating {
     background:
       radial-gradient(circle at top right, rgba(126,88,255,.10), transparent 35%),
       rgba(10,9,17,.60);
-    backdrop-filter: blur(6px);
+    backdrop-filter: none;
   }
   .forge-equipment-merchant-panel .merchant-preview-head {
     padding: 7px 8px;
@@ -1724,7 +1724,7 @@ body > .npc-forge-equipment-summary-dock.is-floating {
     border-radius: 8px;
     background: linear-gradient(135deg, rgba(18,14,30,.82), rgba(9,12,20,.78));
     box-shadow: 0 8px 22px rgba(0,0,0,.18);
-    backdrop-filter: blur(8px);
+    backdrop-filter: none;
   }
   .npc-forge-equipment-summary-dock.is-header .npc-forge-equipment-summary-dock__head {
     min-height: 38px;
@@ -1760,7 +1760,7 @@ body > .npc-forge-equipment-summary-dock.is-floating {
     border-radius: 10px;
     background: linear-gradient(155deg, rgba(15,18,28,.96), rgba(9,12,20,.97));
     box-shadow: 0 20px 48px rgba(0,0,0,.44);
-    backdrop-filter: blur(12px);
+    backdrop-filter: none;
   }
 }
 
