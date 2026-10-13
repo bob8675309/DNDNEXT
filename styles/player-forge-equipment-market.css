@@ -2052,3 +2052,33 @@ body > .npc-forge-equipment-summary-dock.is-floating {
     gap: 7px;
   }
 }
+
+
+/* 2026-10-13 MerchantPanel horizontal-balance pass.
+   Equipment's middle stock column remained substantially wider than the normal
+   MerchantPanel while the selected ItemCard was narrower. Move toward the
+   MerchantPanel balance without making the stock bubbles too narrow for a
+   future small leading item-icon slot. */
+@media (min-width: 1181px) {
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-layout {
+    grid-template-columns: minmax(285px, 1.08fr) minmax(300px, .92fr);
+    gap: 8px;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row {
+    min-width: 0;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row-head,
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row-meta,
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row p {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 1180px) and (min-width: 981px) {
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-layout {
+    grid-template-columns: minmax(260px, 1fr) minmax(280px, .86fr);
+    gap: 7px;
+  }
+}
