@@ -1,3 +1,13 @@
+## 2026-10-13 sharp overlay / expanded ItemCard / stock-scroll follow-up
+
+The latest browser comparison showed three Forge-only defects after the integrated-background pass. The normal MerchantPanel's selected ItemCard was preferred because its rules/details are fully open; the Forge still passed `detailsCollapsible: true`. The Forge now passes `detailsCollapsible: false`, so selected starting-equipment ItemCards always render their complete rules/stat/source content and naturally use the taller preview presentation.
+
+The translucent Equipment composition is retained, but all Forge Equipment `backdrop-filter: blur(...)` effects have been removed. Merchant art remains visible behind the rail, stock, preview, and cart surfaces without optical blur; the stage media itself is also rendered with no filter override in the final desktop rule.
+
+The non-scrolling Equipment stock list was a height-ownership defect. The stock workspace remains the full-height grid cell, while exactly one child—the `merchant-stock-layout` flex region—now owns the remaining height using `flex: 1 1 0`, `height: 0`, and `min-height: 0`. The stock list then fills that bounded region with `height: 100%` and `overflow-y: auto`. This deliberately avoids restoring the earlier chained zero-height constraints that collapsed the storefront.
+
+No commerce, currency, stock-generation, materialization, or protected world-map authority changed in this follow-up.
+
 ## 2026-10-13 integrated Equipment storefront composition
 
 A follow-up browser/video review established that the normal merchant panel was at an acceptable native scale, while the Forge Equipment tab still read too large and too segmented. The Forge-only presentation now treats the active merchant artwork as a full-stage background rather than confining atmosphere to the scene column.
