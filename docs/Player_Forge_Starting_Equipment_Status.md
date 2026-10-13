@@ -1,3 +1,11 @@
+## 2026-10-13 MerchantPanel horizontal-balance follow-up
+
+The latest side-by-side comparison showed that the Forge Equipment selected ItemCard was still narrower than the normal MerchantPanel while the middle stock browser was substantially wider.
+
+Desktop Equipment now uses a roughly 54/46 stock-list-to-preview split instead of the previous approximately 62/38 split. This makes the selected ItemCard meaningfully wider for readability while preserving a 285px minimum stock-list column on large desktop layouts. That minimum is deliberate so the stock bubbles can later accommodate a small leading item icon without requiring another major layout reflow.
+
+The ItemCard itself is not visually redesigned in this pass. Its current expanded presentation and dimensions remain the baseline while the future card redesign is deferred until the Equipment storefront geometry is accepted.
+
 ## 2026-10-13 MerchantPanel height-parity correction
 
 The latest side-by-side browser video showed that the previous “vertical balance” pass solved the wrong problem: it compressed content inside the existing short Forge window instead of matching the normal MerchantPanel’s taller canvas.
