@@ -106,7 +106,7 @@ export default function NpcForgeMerchantMarket({
     rarityBadgeClassFor={rarityBadgeClass}
     showSource
     quantityFor={(card) => Math.max(0, Number(card?._available_qty ?? card?._stock_qty ?? 0))}
-    itemCardProps={{ variant: "shop", detailsCollapsible: true }}
+    itemCardProps={{ variant: "shop", detailsCollapsible: false }}
     previewMetrics={[
       { label: "Available", value: selectedAvailable },
       { label: "Remaining", value: formatCopper(remainingCopper) },
