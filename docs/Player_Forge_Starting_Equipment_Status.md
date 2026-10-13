@@ -1,3 +1,13 @@
+## 2026-10-13 MerchantPanel vertical-balance follow-up
+
+The normal MerchantPanel is now the accepted vertical-density reference for the Forge Equipment tab. The Forge keeps its narrower selected-item column and integrated merchant-art background, but now gives the vendor frame the full available Equipment body height.
+
+The previous storefront container still reserved an obsolete `auto` grid row from the older top-purse/cart layout even though the Starting Cart has moved into the merchant header. That dead row is removed; the storefront now uses a single `minmax(0,1fr)` row. Equipment workspace padding, vendor-frame padding, header/cart height, toolbar spacing, and preview chrome are also reduced slightly so those pixels become usable merchant art and stock-list height.
+
+The selected ItemCard remains fully expanded. The stock browser is denser instead: stock descriptions are clamped to one line in Forge, row/meta spacing is tightened, and the existing dedicated stock scrollbar remains authoritative. The intent is to expose roughly one to two additional stock rows at desktop heights while preserving the taller selected-card presentation.
+
+No normal MerchantPanel styling, commerce authority, stock generation, character currency, or protected world-map behavior changed in this pass.
+
 ## 2026-10-13 sharp overlay / expanded ItemCard / stock-scroll follow-up
 
 The latest browser comparison showed three Forge-only defects after the integrated-background pass. The normal MerchantPanel's selected ItemCard was preferred because its rules/details are fully open; the Forge still passed `detailsCollapsible: true`. The Forge now passes `detailsCollapsible: false`, so selected starting-equipment ItemCards always render their complete rules/stat/source content and naturally use the taller preview presentation.
