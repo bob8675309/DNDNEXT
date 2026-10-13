@@ -1951,3 +1951,104 @@ body > .npc-forge-equipment-summary-dock.is-floating {
     min-height: 0;
   }
 }
+
+
+/* 2026-10-13 MerchantPanel-height parity correction.
+   The earlier pass compressed children inside a short Forge canvas. Instead,
+   make the Equipment Forge window itself fill the same usable desktop height as
+   the normal profile/merchant window, then restore MerchantPanel-like row/chrome
+   proportions inside that taller canvas. */
+@media (min-width: 981px) {
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment:not(.is-app-windowed) {
+    height: calc(100dvh - var(--dndnext-window-nav-offset, 58px) - 32px) !important;
+    max-height: calc(100dvh - var(--dndnext-window-nav-offset, 58px) - 32px) !important;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment > .npc-forge-body.npc-forge-step-equipment {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .npc-forge-body.npc-forge-step-equipment > .npc-forge-workspace {
+    height: 100%;
+    min-height: 0;
+    padding: 8px 10px 10px !important;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .npc-forge-equipment-storefront.is-merchant-panel-pivot {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-vendor-frame {
+    height: 100%;
+    min-height: 0;
+    padding: 5px;
+    gap: 5px;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-market-header {
+    padding: 7px 9px;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .npc-forge-equipment-summary-dock.is-header {
+    width: 250px;
+    min-width: 230px;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .npc-forge-equipment-summary-dock.is-header .npc-forge-equipment-summary-dock__head {
+    min-height: 38px;
+    padding: 5px 6px 5px 8px;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .npc-forge-equipment-summary-dock.is-header .npc-forge-equipment-summary-dock__head-actions button {
+    width: 22px;
+    height: 22px;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-stock {
+    padding: 8px;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-toolbar {
+    gap: 7px;
+    margin-bottom: 7px;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-search-field {
+    gap: 4px;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-search-field .form-control {
+    min-height: 28px;
+    padding-block: .25rem;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-category-row {
+    gap: 5px;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-category-chip {
+    padding: 5px 8px;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-list {
+    gap: 6px;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row {
+    padding: 7px 8px;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row-meta {
+    gap: 4px;
+    margin-top: 5px;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row p {
+    -webkit-line-clamp: 2;
+    margin-top: 6px;
+    line-height: 1.35;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-preview-head {
+    padding: 9px 10px;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-preview-card-scroll {
+    padding: 9px;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-preview-purchase {
+    padding: 8px 9px;
+    gap: 7px;
+  }
+}
