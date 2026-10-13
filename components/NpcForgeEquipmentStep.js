@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import MerchantAmbientBackdrop from "./MerchantAmbientBackdrop";
 import MerchantRail from "./MerchantRail";
 import NpcForgeMerchantMarket from "./NpcForgeMerchantMarket";
 import NpcForgeEquipmentSummaryDock from "./NpcForgeEquipmentSummaryDock";
@@ -271,9 +272,36 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
       ? "Not enough gold"
       : `Add to Starting Cart (${selectedCard._price_gp} gp)`;
 
+  const cartControl = <NpcForgeEquipmentSummaryDock
+    presentation="header"
+    ruleset={ruleset}
+    budgetCopper={budgetCopper}
+    spentCopper={spentCopper}
+    remainingCopper={remainingCopper}
+    vanillaSourceCopper={vanillaSourceCopper}
+    classCashCopper={classCash}
+    backgroundCashCopper={backgroundCash}
+    level={model.level}
+    purchases={purchases}
+    keepStartingGold={keepingFullPurse}
+    wealthRoll={selection.wealthRoll || null}
+    rollRequired={rule.rollRequired}
+    onRollWealth={() => onChange?.({
+      ...selection,
+      mode: "market",
+      wealthRoll: 1 + Math.floor(Math.random() * 10),
+      marketPurchases: purchases,
+      keepStartingGold: keepingFullPurse,
+    })}
+    onKeepFullPurse={keepFullPurse}
+    onRemovePurchase={removePurchase}
+  />;
+
   return <div className="npc-forge-body npc-forge-step-equipment is-player-mode">
     <section className="npc-forge-workspace">
       <div className="npc-forge-equipment-storefront is-merchant-panel-pivot">
+        {activeMerchant ? <MerchantAmbientBackdrop merchant={activeMerchant} className="forge-equipment-stage-backdrop" /> : null}
+
         <div className="forge-equipment-vendor-frame">
           <MerchantRail
             merchants={merchants}
@@ -293,6 +321,7 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
             error={marketError}
             notice={notice}
             remainingCopper={remainingCopper}
+            headerActions={cartControl}
             onQueryChange={setQuery}
             onTypeFilterChange={setTypeFilter}
             onSelect={(id) => {
@@ -304,31 +333,6 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
             selectedActionLabel={selectedActionLabel}
           />
         </div>
-
-        <NpcForgeEquipmentSummaryDock
-          presentation="floating"
-          ruleset={ruleset}
-          budgetCopper={budgetCopper}
-          spentCopper={spentCopper}
-          remainingCopper={remainingCopper}
-          vanillaSourceCopper={vanillaSourceCopper}
-          classCashCopper={classCash}
-          backgroundCashCopper={backgroundCash}
-          level={model.level}
-          purchases={purchases}
-          keepStartingGold={keepingFullPurse}
-          wealthRoll={selection.wealthRoll || null}
-          rollRequired={rule.rollRequired}
-          onRollWealth={() => onChange?.({
-            ...selection,
-            mode: "market",
-            wealthRoll: 1 + Math.floor(Math.random() * 10),
-            marketPurchases: purchases,
-            keepStartingGold: keepingFullPurse,
-          })}
-          onKeepFullPurse={keepFullPurse}
-          onRemovePurchase={removePurchase}
-        />
       </div>
     </section>
   </div>;
