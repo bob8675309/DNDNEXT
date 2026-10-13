@@ -1187,3 +1187,196 @@
 .forge-merchant-wares__thumb {
   border-color: color-mix(in srgb, var(--rarity-color) 34%, rgba(255,255,255,.12));
 }
+
+
+/* 2026-10-12 native 80%-reference storefront density.
+   Browser zoom at 80% established the accepted desktop proportions. Reproduce
+   that density with real CSS dimensions so text, hit-testing, scroll regions,
+   and responsive breakpoints remain native at 100% browser zoom. */
+@media (min-width: 821px) {
+  .merchant-storefront-shared .merchant-market-header {
+    gap: 11px;
+    padding: 10px 13px;
+  }
+  .merchant-storefront-shared .merchant-market-kicker {
+    font-size: .54rem;
+    letter-spacing: .14em;
+  }
+  .merchant-storefront-shared .merchant-market-title {
+    font-size: clamp(.92rem, 1.22vw, 1.18rem);
+  }
+  .merchant-storefront-shared .merchant-market-subline {
+    margin-top: 2px;
+    font-size: .66rem;
+  }
+  .merchant-storefront-shared .merchant-market-header-actions {
+    gap: 6px;
+  }
+  .merchant-storefront-shared .merchant-wallet-badge,
+  .merchant-storefront-shared .merchant-preview-price {
+    min-height: 25px;
+    padding: 4px 8px;
+    font-size: .66rem;
+  }
+
+  .merchant-storefront-shared .merchant-market-shell {
+    grid-template-columns: minmax(200px, .72fr) minmax(0, 2fr);
+  }
+  .merchant-storefront-shared .merchant-scene-copy {
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+  }
+  .merchant-storefront-shared .merchant-scene-theme {
+    padding: 3px 6px;
+    font-size: .56rem;
+    letter-spacing: .10em;
+  }
+  .merchant-storefront-shared .merchant-scene-copy h3 {
+    margin: 6px 0 3px;
+    font-size: 1rem;
+  }
+  .merchant-storefront-shared .merchant-scene-copy p {
+    font-size: .67rem;
+    line-height: 1.38;
+  }
+
+  .merchant-storefront-shared .merchant-stock-workspace {
+    padding: 10px;
+  }
+  .merchant-storefront-shared .merchant-stock-toolbar {
+    grid-template-columns: minmax(190px, .70fr) minmax(0, 1.30fr);
+    gap: 9px;
+    margin-bottom: 9px;
+  }
+  .merchant-storefront-shared .merchant-search-field {
+    gap: 4px;
+    font-size: .60rem;
+    letter-spacing: .065em;
+  }
+  .merchant-storefront-shared .merchant-search-field .form-control {
+    min-height: 28px;
+    padding: .25rem .48rem;
+    font-size: .70rem;
+  }
+  .merchant-storefront-shared .merchant-category-row {
+    gap: 5px;
+  }
+  .merchant-storefront-shared .merchant-category-chip {
+    padding: 5px 8px;
+    font-size: .59rem;
+  }
+
+  .merchant-storefront-shared .merchant-stock-layout {
+    grid-template-columns: minmax(228px, .78fr) minmax(304px, 1.22fr);
+    gap: 9px;
+  }
+  .merchant-storefront-shared .merchant-stock-list {
+    gap: 6px;
+    padding-right: 3px;
+  }
+  .merchant-storefront-shared .merchant-stock-row {
+    padding: 7px 8px;
+    border-radius: 10px;
+  }
+  .merchant-storefront-shared .merchant-stock-row-head {
+    gap: 9px;
+  }
+  .merchant-storefront-shared .merchant-stock-row-head strong {
+    font-size: .72rem;
+    line-height: 1.22;
+  }
+  .merchant-storefront-shared .merchant-stock-row-head > span {
+    font-size: .68rem;
+  }
+  .merchant-storefront-shared .merchant-stock-row-meta {
+    gap: 4px;
+    margin-top: 5px;
+  }
+  .merchant-storefront-shared .merchant-stock-row-meta span {
+    padding: 2px 6px;
+    font-size: .52rem;
+  }
+  .merchant-storefront-shared .merchant-stock-row p {
+    margin-top: 6px;
+    font-size: .60rem;
+    line-height: 1.35;
+  }
+
+  .merchant-storefront-shared .merchant-preview-pane {
+    border-radius: 12px;
+  }
+  .merchant-storefront-shared .merchant-preview-head {
+    gap: 9px;
+    padding: 9px 10px;
+  }
+  .merchant-storefront-shared .merchant-preview-head h3 {
+    margin-top: 3px;
+    font-size: .84rem;
+  }
+  .merchant-storefront-shared .merchant-preview-card-scroll {
+    padding: 9px;
+  }
+  .merchant-storefront-shared .merchant-preview-purchase {
+    grid-template-columns: auto auto minmax(120px, 1fr);
+    gap: 7px;
+    padding: 8px 9px;
+  }
+  .merchant-storefront-shared .merchant-preview-purchase span {
+    font-size: .54rem;
+    letter-spacing: .065em;
+  }
+  .merchant-storefront-shared .merchant-preview-purchase strong {
+    font-size: .72rem;
+  }
+  .merchant-storefront-shared .merchant-preview-purchase .btn {
+    min-height: 29px;
+    padding: .26rem .55rem;
+    font-size: .68rem;
+  }
+
+  /* ItemCard was the largest remaining difference between native 100% and the
+     accepted 80% reference. Limit this compaction to storefront previews. */
+  .merchant-storefront-shared .sitem-card.is-shop-variant .card-body {
+    padding: .62rem;
+  }
+  .merchant-storefront-shared .sitem-card.is-shop-variant .sitem-header {
+    padding: .48rem .60rem;
+  }
+  .merchant-storefront-shared .sitem-card.is-shop-variant .sitem-title {
+    font-size: .80rem;
+    line-height: 1.15;
+  }
+  .merchant-storefront-shared .sitem-card.is-shop-variant .sitem-type {
+    padding: .19rem .40rem;
+    font-size: .46rem;
+  }
+  .merchant-storefront-shared .sitem-card.is-shop-variant .sitem-meta {
+    margin-bottom: .42rem !important;
+    font-size: .54rem;
+  }
+  .merchant-storefront-shared .sitem-card.is-shop-variant .sitem-rarity {
+    font-size: .55rem;
+  }
+  .merchant-storefront-shared .sitem-card.is-shop-variant .sitem-section {
+    padding: .46rem .52rem;
+    font-size: .55rem;
+    line-height: 1.42;
+  }
+  .merchant-storefront-shared .sitem-card.is-shop-variant .sitem-section .small,
+  .merchant-storefront-shared .sitem-card.is-shop-variant .text-muted {
+    font-size: .47rem !important;
+  }
+  .merchant-storefront-shared .sitem-card.is-shop-variant .badge {
+    font-size: .45rem;
+  }
+  .merchant-storefront-shared .sitem-card.is-shop-variant .sitem-game-details > summary {
+    padding: .50rem .56rem;
+  }
+  .merchant-storefront-shared .sitem-card.is-shop-variant .sitem-game-details > summary span {
+    font-size: .57rem;
+  }
+  .merchant-storefront-shared .sitem-card.is-shop-variant .sitem-game-details > summary em {
+    font-size: .42rem;
+  }
+}
