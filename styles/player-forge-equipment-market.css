@@ -1248,7 +1248,7 @@ body > .npc-forge-equipment-summary-dock.is-floating {
 }
 .forge-equipment-vendor-frame {
   display: grid;
-  grid-template-columns: 188px minmax(0, 1fr);
+  grid-template-columns: 160px minmax(0, 1fr);
   gap: 8px;
   height: 100%;
   min-height: 0;
@@ -1270,17 +1270,17 @@ body > .npc-forge-equipment-summary-dock.is-floating {
   box-shadow: 0 16px 42px rgba(0,0,0,.28);
 }
 .forge-equipment-merchant-panel .merchant-market-header {
-  padding: 10px 14px;
+  padding: 8px 11px;
 }
 .forge-equipment-merchant-panel .merchant-market-title {
-  font-size: clamp(1.05rem, 1.45vw, 1.35rem);
+  font-size: clamp(.94rem, 1.18vw, 1.16rem);
 }
 .forge-equipment-merchant-panel .merchant-market-subline {
-  font-size: .76rem;
+  font-size: .66rem;
 }
 .forge-equipment-merchant-panel .merchant-wallet-badge {
-  min-height: 28px;
-  font-size: .72rem;
+  min-height: 24px;
+  font-size: .62rem;
 }
 .forge-equipment-merchant-market-shell {
   flex: 1 1 0;
@@ -1313,7 +1313,7 @@ body > .npc-forge-equipment-summary-dock.is-floating {
   overflow: hidden;
 }
 .forge-equipment-merchant-panel .merchant-stock-toolbar {
-  grid-template-columns: minmax(230px,.78fr) minmax(0,1.22fr);
+  grid-template-columns: minmax(200px,.74fr) minmax(0,1.26fr);
 }
 .forge-equipment-merchant-panel .merchant-stock-layout {
   flex: 1 1 0;
@@ -1511,4 +1511,42 @@ body > .npc-forge-equipment-summary-dock.is-floating {
 .forge-equipment-vendor-scene {
   min-height: 0;
   height: 100%;
+}
+
+
+/* 2026-10-12 100%-zoom density pass.
+   Match the useful visual density previously reached only by browser zooming out.
+   Keep native CSS sizing so hit targets, scroll regions, and responsive breakpoints stay correct. */
+.forge-equipment-merchant-panel .merchant-stock-workspace {
+  padding: 11px;
+}
+.forge-equipment-merchant-panel .merchant-stock-row {
+  padding: 8px 9px;
+  border-radius: 11px;
+}
+.forge-equipment-merchant-panel .merchant-stock-row-head strong {
+  font-size: .76rem;
+}
+.forge-equipment-merchant-panel .merchant-stock-row-head > span {
+  font-size: .66rem;
+}
+.forge-equipment-merchant-panel .merchant-stock-row-meta span {
+  font-size: .52rem;
+}
+.forge-equipment-merchant-panel .merchant-stock-row p {
+  font-size: .61rem;
+  line-height: 1.38;
+}
+.forge-equipment-merchant-panel .merchant-preview-head {
+  padding: 10px 12px;
+}
+.forge-equipment-merchant-panel .merchant-preview-head h3 {
+  font-size: .96rem;
+}
+.forge-equipment-merchant-panel .merchant-preview-card-scroll {
+  padding: 10px;
+}
+.forge-equipment-vendor-frame > .merchant-rail .merchant-rail__merchant {
+  min-height: 54px !important;
+  padding: 5px !important;
 }
