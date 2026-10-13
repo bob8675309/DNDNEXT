@@ -156,7 +156,7 @@ export default function NpcForgeEquipmentSummaryDock({
       <div className="npc-forge-equipment-summary-dock__totals">
         <div><span>Total gold</span><strong>{formatCopper(budgetCopper)}</strong></div>
         <div><span>Spent</span><strong>{formatCopper(spentCopper)}</strong></div>
-        <div className="is-remaining"><span>Remaining</span><strong>{formatCopper(remainingCopper)}</strong></div>
+        <div className="is-remaining"><span>Remaining → wallet</span><strong>{formatCopper(remainingCopper)}</strong></div>
       </div>
 
       {rollRequired ? <section className="npc-forge-equipment-summary-dock__wealth">
@@ -172,7 +172,7 @@ export default function NpcForgeEquipmentSummaryDock({
         <div>
           <span>No starting gear</span>
           <strong>{keepStartingGold ? "Full purse kept" : "Keep all starting gold"}</strong>
-          <small>Continue with no purchases and place the full unspent purse on this character.</small>
+          <small>Continue with no purchases; the full unspent purse becomes this character’s wallet balance at creation.</small>
         </div>
         <button type="button" onClick={() => onKeepFullPurse?.()}>{keepStartingGold ? "Selected" : "Keep gold"}</button>
       </section>
