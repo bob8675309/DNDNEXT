@@ -1,3 +1,19 @@
+## 2026-10-12 shared storefront + balanced prototype merchant stock
+
+The Equipment storefront and the normal runtime merchant shop now render the same shared presentation component, `components/MerchantStorefrontView.js`. The transaction controllers remain separate: runtime `MerchantPanel` still owns the account wallet, `buy_from_merchant`, admin stock controls, and merchant travel controls; Player Forge still owns only the starting purse, staged `marketPurchases[]`, and the server-authoritative creation materializer.
+
+The Forge keeps Campaign Merchants as the separate left rail. Inside the active storefront, both contexts now share the merchant header, scene, Search Stock/category controls, scrollable stock list, selected ItemCard preview, rarity treatment, and layout hierarchy. Forge-specific actions substitute Starting Gold Remaining and Add to Starting Cart for the runtime wallet/purchase action.
+
+Unspent starting-market currency continues to be materialized server-side into `public.character_currency` by the deferred `character_progression` trigger. The Equipment summary now labels this explicitly as `Remaining → wallet`; no account-wide player wallet is used.
+
+Routine merchant stock generation now draws from the complete canonical `public.items_catalog` but uses explicit rarity shelves instead of allowing one global ranking to determine rarity accidentally. Prototype storefronts are regenerated at 30 rows each. The baseline target is approximately 57% Mundane/Common, 33% Uncommon, and the remaining few rows Rare; routine rerolls exclude Very Rare, Legendary, and Artifact stock. Specialist merchants may reserve one recipe row, but that recipe is also capped at Rare or below. Theme affinity and item-type diversity determine which catalog entries win inside each rarity shelf.
+
+Because no storefront inventory is manually curated in the prototype phase, all currently enabled storefronts were refreshed against the new rule. The live verification after the recipe cap shows 30 stock rows per enabled storefront and zero Very Rare/Legendary/Artifact rows.
+
+The merchant presentation also received a native 100%-browser-zoom density pass. The previous embedded merchant profile sizing was visually comfortable only around 80% browser zoom; the CSS now uses smaller desktop shell width, spacing, typography, stock-row padding, and preview padding instead of relying on browser zoom or CSS transforms. Forge Equipment receives the corresponding density reduction while preserving its bounded scroll regions and stable merchant-image framing.
+
+No world-map, route simulation, weather, combat, crafting formulas, account-wallet authority, or character-creation transaction boundaries were changed by this pass.
+
 ## 2026-10-12 stable merchant image framing
 
 The follow-up video showed that switching stock categories could still change the apparent merchant-image zoom. The image itself was not changing; the scene box was still allowed to follow the filtered workspace's content height, and `background-size: cover` recalculated the crop whenever that box changed.
