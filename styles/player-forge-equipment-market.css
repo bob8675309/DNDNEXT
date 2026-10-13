@@ -2082,3 +2082,107 @@ body > .npc-forge-equipment-summary-dock.is-floating {
     gap: 7px;
   }
 }
+
+
+/* 2026-10-13 Equipment readability + full rarity-outline pass.
+   Match the normal MerchantPanel's small-text floor and restore the canonical
+   rarity palette on the active Forge stock rows. The rarity accent surrounds
+   the whole stock bubble; the left edge remains slightly stronger for scanning. */
+@media (min-width: 981px) {
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-market-kicker {
+    font-size: .54rem;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-market-subline {
+    font-size: .66rem;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-search-field {
+    font-size: .60rem;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-search-field .form-control {
+    font-size: .70rem;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-category-chip {
+    font-size: .59rem;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row-head strong {
+    font-size: .72rem;
+    line-height: 1.22;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row-head > span {
+    font-size: .68rem;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row-meta span {
+    font-size: .52rem;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row p {
+    font-size: .60rem;
+    line-height: 1.35;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-vendor-frame > .merchant-rail .merchant-rail__head span {
+    font-size: .60rem !important;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-vendor-frame > .merchant-rail .merchant-rail__head small {
+    font-size: .49rem !important;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-vendor-frame > .merchant-rail .merchant-rail__merchant-copy strong {
+    font-size: .62rem;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-vendor-frame > .merchant-rail .merchant-rail__merchant-copy em {
+    font-size: .50rem;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-vendor-frame > .merchant-rail .merchant-rail__merchant-copy small {
+    font-size: .45rem;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row {
+    --rarity-color: #aab2bd;
+    border: 1px solid color-mix(in srgb, var(--rarity-color) 68%, rgba(255,255,255,.16));
+    border-left-width: 4px;
+    border-left-color: var(--rarity-color);
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.rarity-common {
+    --rarity-color: #ced4da;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.rarity-mundane,
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.rarity-none {
+    --rarity-color: #aab2bd;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.rarity-uncommon {
+    --rarity-color: #55d17a;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.rarity-rare {
+    --rarity-color: #5aa7f3;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.rarity-very-rare {
+    --rarity-color: #a67cf3;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.rarity-legendary {
+    --rarity-color: #f3b24d;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.rarity-artifact {
+    --rarity-color: #e85d5d;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row:hover {
+    border-color: color-mix(in srgb, var(--rarity-color) 80%, white);
+    border-left-color: var(--rarity-color);
+    box-shadow:
+      inset 4px 0 0 color-mix(in srgb, var(--rarity-color) 76%, transparent),
+      0 0 0 1px color-mix(in srgb, var(--rarity-color) 18%, transparent),
+      0 8px 22px rgba(0,0,0,.20);
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.selected {
+    border-color: color-mix(in srgb, var(--rarity-color) 88%, white);
+    border-left-color: var(--rarity-color);
+    background:
+      linear-gradient(180deg,
+        color-mix(in srgb, var(--rarity-color) 10%, rgba(34,27,49,.78)),
+        color-mix(in srgb, var(--rarity-color) 7%, rgba(19,17,30,.84)));
+    box-shadow:
+      inset 4px 0 0 var(--rarity-color),
+      0 0 0 1px color-mix(in srgb, var(--rarity-color) 28%, transparent),
+      0 8px 22px rgba(0,0,0,.22);
+  }
+}
