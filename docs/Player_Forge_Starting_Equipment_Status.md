@@ -1,3 +1,15 @@
+## 2026-10-13 integrated Equipment storefront composition
+
+A follow-up browser/video review established that the normal merchant panel was at an acceptable native scale, while the Forge Equipment tab still read too large and too segmented. The Forge-only presentation now treats the active merchant artwork as a full-stage background rather than confining atmosphere to the scene column.
+
+The active merchant is rendered through `MerchantAmbientBackdrop` behind the Campaign Merchants rail, storefront header, stock workspace, and selected-item preview. The scene itself remains the brightest/readable portion, while the rail, stock controls, rows, and preview use translucent dark surfaces and blur so the same merchant environment bleeds behind them without sacrificing legibility.
+
+Desktop proportions were rebalanced around the review target: the Campaign Merchants rail is slightly wider, the merchant scene receives most of the reclaimed width, and the selected-item preview is approximately one-third narrower than the prior Forge split. The stock list receives the rest of the reclaimed workspace.
+
+The Starting Cart no longer defaults to an expanded floating window. In the Forge it now uses `presentation="header"`, starts collapsed, and occupies the storefront's top-right header action position that previously showed only the remaining-GP badge. Expanding it opens an overlay below the header without changing the merchant scene, stock, or preview geometry. The existing floating and rail presentations remain available for other contexts.
+
+This pass is presentation-only. Starting-market purchases, server validation/materialization, character currency, merchant stock authority, and all protected world-map systems are unchanged.
+
 ## 2026-10-12 shared storefront + balanced prototype merchant stock
 
 The Equipment storefront and the normal runtime merchant shop now render the same shared presentation component, `components/MerchantStorefrontView.js`. The transaction controllers remain separate: runtime `MerchantPanel` still owns the account wallet, `buy_from_merchant`, admin stock controls, and merchant travel controls; Player Forge still owns only the starting purse, staged `marketPurchases[]`, and the server-authoritative creation materializer.
