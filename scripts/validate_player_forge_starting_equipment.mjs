@@ -223,6 +223,7 @@ for (const token of ["storefront_bg_video_url", "storefront_bg_image_url", "port
 for (const token of ["asMerchantRecord", "const record = asMerchantRecord(merchant)"]) need(merchantMedia, token, "null-safe merchant media resolver");
 for (const token of ['const merchantRecord = m && typeof m === "object" ? m : {}', "merchantRecord.icon", "merchantRecord.storefront_title"]) need(merchantTheme, token, "null-safe merchant theme resolver");
 forbid(merchantMedia, '|| "/parchment.jpg"', "shared character portrait fallback in storefront media");
+forbid(merchantMedia, "/merchant-backgrounds/", "phantom theme-image fallback path");
 forbid(merchantMedia, "merchant.description", "character biography as shop tagline");
 for (const token of ["resolveItemVisual", "explicitItemImage", "FALLBACKS", "NAME_FALLBACKS"]) need(itemVisuals, token, "item visual fallback resolver");
 for (const token of ['variant = "default"', "detailsCollapsible", "sitem-game-details", "sitem-thumb-fallback", "resolveItemVisual"]) need(itemCard, token, "shared ItemCard shop variant");
