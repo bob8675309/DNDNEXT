@@ -1248,8 +1248,8 @@ body > .npc-forge-equipment-summary-dock.is-floating {
 }
 .forge-equipment-vendor-frame {
   display: grid;
-  grid-template-columns: 160px minmax(0, 1fr);
-  gap: 8px;
+  grid-template-columns: 132px minmax(0, 1fr);
+  gap: 7px;
   height: 100%;
   min-height: 0;
 }
@@ -1283,9 +1283,9 @@ body > .npc-forge-equipment-summary-dock.is-floating {
   font-size: .62rem;
 }
 .forge-equipment-merchant-market-shell {
-  flex: 1 1 0;
+  flex: 1 1 auto;
   min-height: 0;
-  height: 0;
+  height: auto;
   overflow: hidden;
 }
 .forge-equipment-vendor-scene {
@@ -1307,23 +1307,24 @@ body > .npc-forge-equipment-summary-dock.is-floating {
   transform: none;
 }
 .forge-equipment-merchant-stock {
-  flex: 1 1 0;
+  flex: 1 1 auto;
   min-height: 0;
-  height: 0;
+  height: auto;
   overflow: hidden;
 }
 .forge-equipment-merchant-panel .merchant-stock-toolbar {
-  grid-template-columns: minmax(200px,.74fr) minmax(0,1.26fr);
+  grid-template-columns: minmax(175px,.74fr) minmax(0,1.26fr);
 }
 .forge-equipment-merchant-panel .merchant-stock-layout {
-  flex: 1 1 0;
+  flex: 1 1 auto;
   min-height: 0;
-  height: 0;
+  height: auto;
   overflow: hidden;
+  grid-template-columns: minmax(220px,.78fr) minmax(300px,1.22fr);
 }
 .forge-equipment-merchant-panel .merchant-stock-list {
   min-height: 0;
-  height: 100%;
+  height: auto;
   overflow-y: auto !important;
   overflow-x: hidden;
   overscroll-behavior: contain;
@@ -1501,9 +1502,10 @@ body > .npc-forge-equipment-summary-dock.is-floating {
 
 
 /* 2026-10-12 stable merchant portrait framing.
-   Category/search changes must never alter the merchant image zoom. The MerchantPanel
-   shell is locked to the remaining Forge height, and merchant art uses the same
-   contain-style framing as the established vendor panel instead of cover-cropping. */
+   Category/search changes must never alter the merchant image zoom. The outer Forge
+   panel owns the fixed remaining height; nested storefront flex/grid children use
+   min-height:0 rather than chained height:0 constraints so the stock list can scroll
+   without collapsing. Merchant art keeps contain-style framing. */
 .forge-equipment-merchant-panel {
   max-height: 100%;
   overflow: hidden;
@@ -1514,39 +1516,32 @@ body > .npc-forge-equipment-summary-dock.is-floating {
 }
 
 
-/* 2026-10-12 100%-zoom density pass.
-   Match the useful visual density previously reached only by browser zooming out.
-   Keep native CSS sizing so hit targets, scroll regions, and responsive breakpoints stay correct. */
+/* 2026-10-12 native 80%-reference Equipment density.
+   Shared storefront sizing now supplies the desktop scale. Forge overrides only
+   its rail and the bounded scrolling geometry needed inside the fixed Forge stage. */
 .forge-equipment-merchant-panel .merchant-stock-workspace {
-  padding: 11px;
+  padding: 9px;
 }
-.forge-equipment-merchant-panel .merchant-stock-row {
-  padding: 8px 9px;
-  border-radius: 11px;
-}
-.forge-equipment-merchant-panel .merchant-stock-row-head strong {
-  font-size: .76rem;
-}
-.forge-equipment-merchant-panel .merchant-stock-row-head > span {
-  font-size: .66rem;
-}
-.forge-equipment-merchant-panel .merchant-stock-row-meta span {
-  font-size: .52rem;
-}
-.forge-equipment-merchant-panel .merchant-stock-row p {
-  font-size: .61rem;
-  line-height: 1.38;
-}
-.forge-equipment-merchant-panel .merchant-preview-head {
-  padding: 10px 12px;
-}
-.forge-equipment-merchant-panel .merchant-preview-head h3 {
-  font-size: .96rem;
-}
-.forge-equipment-merchant-panel .merchant-preview-card-scroll {
-  padding: 10px;
+.forge-equipment-vendor-frame > .merchant-rail .merchant-rail__head {
+  padding: 7px 8px 6px;
 }
 .forge-equipment-vendor-frame > .merchant-rail .merchant-rail__merchant {
-  min-height: 54px !important;
-  padding: 5px !important;
+  grid-template-columns: 38px minmax(0,1fr) 6px;
+  min-height: 46px !important;
+  gap: 5px;
+  padding: 3px 5px 3px 3px !important;
+}
+.forge-equipment-vendor-frame > .merchant-rail .merchant-rail__merchant > img,
+.forge-equipment-vendor-frame > .merchant-rail .merchant-rail__portrait-fallback {
+  width: 38px;
+  height: 38px;
+}
+.forge-equipment-vendor-frame > .merchant-rail .merchant-rail__merchant-copy strong {
+  font-size: .55rem;
+}
+.forge-equipment-vendor-frame > .merchant-rail .merchant-rail__merchant-copy em {
+  font-size: .45rem;
+}
+.forge-equipment-vendor-frame > .merchant-rail .merchant-rail__merchant-copy small {
+  font-size: .39rem;
 }
