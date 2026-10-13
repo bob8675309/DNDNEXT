@@ -73,7 +73,7 @@ export default function NpcForgeMerchantMarket({
 
   return <MerchantStorefrontView
     merchant={merchant}
-    rootClassName="merchant-panel-inner merchant-market merchant-panel-forge forge-equipment-merchant-panel"
+    rootClassName="merchant-panel-inner merchant-market merchant-storefront-shared merchant-panel-forge forge-equipment-merchant-panel"
     headerKicker="Starting equipment merchant"
     title={`${merchant.name || "Merchant"}’s Wares`}
     subline={`${shopLabel} · ${stockLabel}`}
