@@ -9,6 +9,8 @@ const controller = read("components/useNpcForgeController.js");
 const core = read("components/NpcForgeCoreSupport.js");
 const equipmentStep = read("components/NpcForgeEquipmentStep.js");
 const forgeMerchantMarket = read("components/NpcForgeMerchantMarket.js");
+const sharedStorefront = read("components/MerchantStorefrontView.js");
+const merchantPanel = read("components/MerchantPanel.js");
 const equipmentDock = read("components/NpcForgeEquipmentSummaryDock.js");
 const cartDrawer = read("components/NpcForgeStartingCartDrawer.js");
 const workshopPane = read("components/MerchantWorkshopPane.js");
@@ -25,6 +27,8 @@ const equipmentStyles = read("styles/player-forge-equipment-market.css");
 const app = read("pages/_app.js");
 const merchantExpansion = read("sql/20261011_03_starting_market_merchant_expansion.sql");
 const merchantVariety = read("sql/20261011_04_merchant_catalog_reroll_variety.sql");
+const merchantDistribution = read("sql/20261012_02_merchant_stock_distribution.sql");
+const merchantRecipeCap = read("sql/20261012_03_merchant_recipe_rarity_cap.sql");
 const dawnStorefrontMetadata = read("sql/20261011_05_dawn_storefront_metadata.sql");
 const dawnStorefrontMedia = read("sql/20261012_01_dawn_whiteflame_media.sql");
 const derived = read("components/useNpcForgeDerivedModel.js");
@@ -134,17 +138,8 @@ for (const token of [
 ]) need(equipmentStep, token);
 
 for (const token of [
-  "merchant-panel-inner merchant-market merchant-panel-forge",
-  "merchant-market-header",
-  "merchant-market-shell",
-  "merchant-scene",
-  "merchant-stock-workspace",
-  "merchant-stock-layout",
-  "merchant-stock-list",
-  "merchant-preview-pane",
-  "ItemCard",
-  'variant="shop"',
-  "detailsCollapsible",
+  "MerchantStorefrontView",
+  "merchant-panel-inner merchant-market merchant-storefront-shared merchant-panel-forge",
   "resolveMerchantPortrait",
   "resolveMerchantStorefrontMedia",
   "const sceneImage = portrait || media.imageUrl",
@@ -153,7 +148,31 @@ for (const token of [
   "rarityClass",
   "rarityBadgeClass",
   "Starting equipment merchant",
-]) need(forgeMerchantMarket, token, "MerchantPanel-derived Forge storefront");
+  "Unspent starting gold becomes this character's wallet balance",
+  'variant: "shop"',
+  "detailsCollapsible: true",
+]) need(forgeMerchantMarket, token, "shared MerchantPanel-derived Forge storefront");
+for (const token of [
+  "merchant-market-header",
+  "merchant-market-shell",
+  "merchant-scene",
+  "merchant-stock-workspace",
+  "merchant-stock-layout",
+  "merchant-stock-list",
+  "merchant-preview-pane",
+  "ItemCard",
+  "previewMetrics",
+  "actionLabel",
+  "quantityFor",
+]) need(sharedStorefront, token, "shared merchant storefront presentation");
+for (const token of [
+  'import MerchantStorefrontView from "./MerchantStorefrontView";',
+  "merchant-storefront-shared",
+  "desiredCount = 28 + Math.floor(Math.random() * 5)",
+  "const nLow",
+  "const nUncommon",
+  "const nRare",
+]) need(merchantPanel, token, "normal MerchantPanel shared storefront adoption");
 forbid(forgeMerchantMarket, "buy_from_merchant", "normal merchant checkout inside Forge storefront");
 forbid(forgeMerchantMarket, "useWallet", "account wallet hook inside Forge storefront");
 
@@ -168,7 +187,7 @@ for (const token of [
   "Starting cart",
   "Total gold",
   "Spent",
-  "Remaining",
+  "Remaining → wallet",
   "keepStartingGold",
   "onKeepFullPurse",
   "rollRequired",
@@ -312,8 +331,26 @@ for (const token of [
   "perform * from public.reroll_merchant_inventory_v2(v.id,v.theme,36)",
 ]) need(merchantVariety, token, "full-catalog diversified merchant reroll");
 
-for (const source of [utility, controller, equipmentStep, forgeMerchantMarket, equipmentDock, cartDrawer, workshopPane, merchantRail, waresList, merchantBackdrop, merchantMedia, itemVisuals, itemCard, cardCompact, merchantStyles, equipmentStyles, derived, modal, merchantExpansion, merchantVariety, dawnStorefrontMetadata, dawnStorefrontMedia]) {
+for (const token of [
+  "0.57",
+  "0.33",
+  "rarity_bucket",
+  "in ('mundane','common')",
+  "= 'uncommon'",
+  "= 'rare'",
+  "v_total-(select count(*) from merchant_reroll_pick)",
+  "where c.storefront_enabled is true",
+  "perform * from public.reroll_merchant_inventory_v2(v.id,v_theme,30)",
+]) need(merchantDistribution, token, "balanced full-catalog merchant distribution");
+
+for (const token of [
+  "lower(coalesce(ic.item_rarity,'mundane')) in ('mundane','common','uncommon','rare')",
+  "perform * from public.reroll_merchant_inventory_v2(v.id,v_theme,30)",
+]) need(merchantRecipeCap, token, "routine merchant recipe rarity cap");
+forbid(merchantRecipeCap, "very rare','legendary','artifact", "routine recipe high-rarity allowance");
+
+for (const source of [utility, controller, equipmentStep, forgeMerchantMarket, sharedStorefront, merchantPanel, equipmentDock, cartDrawer, workshopPane, merchantRail, waresList, merchantBackdrop, merchantMedia, itemVisuals, itemCard, cardCompact, merchantStyles, equipmentStyles, derived, modal, merchantExpansion, merchantVariety, merchantDistribution, merchantRecipeCap, dawnStorefrontMetadata, dawnStorefrontMedia]) {
   for (const token of ["MapPageClient", "map_routes", "advance_all_characters", "weather"]) forbid(source, token, `protected world boundary ${token}`);
 }
 
-console.log("Player Forge starting market authority, current-MerchantPanel-derived storefront composition, merchant rail, movable starting-cart feature window, ItemCard detail reuse, staged purchases, and protected boundaries validated.");
+console.log("Player Forge starting market authority, shared MerchantPanel storefront composition, balanced 30-item merchant stock, character-wallet handoff, merchant rail, staged purchases, and protected boundaries validated.");
