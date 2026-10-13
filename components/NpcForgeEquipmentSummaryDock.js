@@ -53,12 +53,13 @@ export default function NpcForgeEquipmentSummaryDock({
   onRemovePurchase = null,
 }) {
   const floating = presentation === "floating";
+  const header = presentation === "header";
   const dockRef = useRef(null);
   const dragRef = useRef(null);
   const [portalHost, setPortalHost] = useState(null);
   const [position, setPosition] = useState(null);
   const [dragging, setDragging] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => presentation !== "rail");
 
   useEffect(() => {
     if (!floating || typeof window === "undefined" || typeof document === "undefined") {
@@ -132,9 +133,10 @@ export default function NpcForgeEquipmentSummaryDock({
   }
 
   const totalItems = (purchases || []).reduce((sum, entry) => sum + Math.max(0, Number(entry?.qty || 0)), 0);
+  const presentationClass = presentation === "rail" ? "is-rail" : header ? "is-header" : "is-floating";
   const body = <aside
     ref={dockRef}
-    className={`npc-forge-equipment-summary-dock ${presentation === "rail" ? "is-rail" : "is-floating"} ${collapsed ? "is-collapsed" : ""} ${dragging ? "is-dragging" : ""}`}
+    className={`npc-forge-equipment-summary-dock ${presentationClass} ${collapsed ? "is-collapsed" : ""} ${dragging ? "is-dragging" : ""}`}
     style={portalHost && position ? { left: position.left, top: position.top, width: position.width } : undefined}
     aria-label="Starting market summary"
   >
