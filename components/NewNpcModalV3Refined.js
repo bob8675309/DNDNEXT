@@ -157,7 +157,7 @@ export default function NewNpcModalV3Refined({ show, onClose, onCreated, locatio
   }, [show, creating, handleClose]);
 
   if (!show) return null;
-  const forgeWindow = <NpcForgeControllerProvider controller={controller}><div className="npc-forge-backdrop" role="presentation"><div ref={modalRef} className={`npc-forge-modal npc-forge-modal-v2 ${playerMode ? "is-player-mode" : "is-npc-mode"}`} role="dialog" aria-modal="true">
+  const forgeWindow = <NpcForgeControllerProvider controller={controller}><div className="npc-forge-backdrop" role="presentation"><div ref={modalRef} className={`npc-forge-modal npc-forge-modal-v2 ${playerMode ? "is-player-mode" : "is-npc-mode"} ${stepKey === "equipment" ? "is-step-equipment" : ""}`} role="dialog" aria-modal="true">
     <NpcForgeFeatChoiceRegistrar playerMode={playerMode} controller={controller} />
     <NpcForgeHumanVersatileRegistrar playerMode={playerMode} controller={controller} />
     <header className="npc-forge-header" onDoubleClick={handleHeaderDoubleClick} onPointerUp={handleHeaderPointerUp}><div>{playerMode ? <h2 title="Double-click or double-tap this header to restore the Forge window">Character Forge</h2> : <><div className="npc-forge-kicker">Canonical character system</div><h2>NPC Forge</h2><p>Build the rules first, then finish identity and placement.</p></>}</div><div className="npc-forge-header-actions"><button type="button" className="btn btn-sm btn-outline-warning" onClick={handleReset} disabled={creating}>Reset</button><button type="button" className="btn btn-sm btn-outline-light" onClick={handleClose} disabled={creating}>Close</button></div></header>
