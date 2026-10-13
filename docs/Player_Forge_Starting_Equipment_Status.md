@@ -1,3 +1,15 @@
+## 2026-10-13 Equipment readability and rarity-outline follow-up
+
+The latest side-by-side review found two remaining Forge-only presentation issues before the planned ItemCard visual redesign.
+
+First, the Forge stock-browser text had remained below the normal MerchantPanel readability floor. The Equipment step now matches the MerchantPanel small-text sizing for merchant subline/kicker text, search/category controls, stock-row title/price/meta/description text, and the Campaign Merchants rail.
+
+Second, the active Forge stock bubbles were defaulting to the mundane gray `--rarity-color` because the current MerchantPanel-derived path did not define the canonical rarity variables for `rarity-uncommon`, `rarity-rare`, and higher classes. Equipment now uses the canonical merchant palette directly: Common `#ced4da`, Mundane `#aab2bd`, Uncommon `#55d17a`, Rare `#5aa7f3`, Very Rare `#a67cf3`, Legendary `#f3b24d`, and Artifact `#e85d5d`.
+
+The rarity color now outlines the entire middle-column stock bubble instead of appearing only as a left-side stripe. The left edge remains slightly stronger as a scan affordance, while hover/selected states preserve the same rarity color around the complete border.
+
+The ItemCard itself is intentionally unchanged in this pass. Its upcoming redesign remains a separate visual-only task after the Equipment storefront geometry is accepted.
+
 ## 2026-10-13 MerchantPanel horizontal-balance follow-up
 
 The latest side-by-side comparison showed that the Forge Equipment selected ItemCard was still narrower than the normal MerchantPanel while the middle stock browser was substantially wider.
