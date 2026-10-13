@@ -130,7 +130,10 @@ for (const token of [
   "MerchantRail",
   "NpcForgeMerchantMarket",
   "NpcForgeEquipmentSummaryDock",
-  'presentation="floating"',
+  'presentation="header"',
+  "MerchantAmbientBackdrop",
+  'className="forge-equipment-stage-backdrop"',
+  "headerActions={cartControl}",
   "Starting market needs this Forge draft",
   "version-specific Vercel deployment hostnames do not share browser localStorage",
   "storefront_bg_video_url",
@@ -185,6 +188,8 @@ for (const token of [
   "createPortal",
   'presentation = "floating"',
   'presentation === "rail"',
+  'presentation === "header"',
+  'presentation !== "rail"',
   "Starting cart",
   "Total gold",
   "Spent",
@@ -229,7 +234,7 @@ for (const token of ["resolveItemVisual", "explicitItemImage", "FALLBACKS", "NAM
 for (const token of ['variant = "default"', "detailsCollapsible", "sitem-game-details", "sitem-thumb-fallback", "resolveItemVisual"]) need(itemCard, token, "shared ItemCard shop variant");
 for (const token of ["2026-10-11 storefront ItemCard readability floor", ".sitem-card.is-shop-variant .sitem-title", "font-size: 1rem", ".sitem-card.is-shop-variant .sitem-section"]) need(cardCompact, token, "shop ItemCard readability");
 for (const token of [".merchant-rail", ".sitem-thumb-fallback", ".merchant-ambient-backdrop__fallback", ".merchant-rail__portrait-fallback", ".forge-merchant-workshop", ".forge-merchant-wares", ".is-rarity-uncommon", ".is-rarity-rare", ".is-rarity-very-rare", ".is-rarity-legendary", ".is-rarity-artifact", ".forge-merchant-wares__row.rarity-uncommon", ".forge-merchant-wares__row.rarity-very-rare", "--rarity-color", "2026-10-12 unified Equipment scene + canonical rarity pass", "2026-10-12 Forge Wares scrolling hotfix", "2026-10-12 native 80%-reference storefront density", "merchant-storefront-shared .sitem-card.is-shop-variant .sitem-title", "overflow-y: auto !important", "scrollbar-gutter: stable"]) need(merchantStyles, token, "shared merchant storefront styles");
-for (const token of [".npc-forge-equipment-storefront", ".forge-equipment-vendor-frame", ".forge-equipment-merchant-panel", ".forge-equipment-merchant-market-shell", ".npc-forge-equipment-summary-dock__no-gear", ".npc-forge-equipment-summary-dock__wealth", "merchant-stock-row.rarity-mundane", "--rarity-color", "grid-template-columns: 132px minmax(0, 1fr)", "flex: 1 1 auto", "height: auto", "overflow-y: auto !important", "overscroll-behavior: contain", "--merchant-bg-position", "--merchant-bg-size", "background-size: var(--merchant-bg-size, contain)", "2026-10-12 MerchantPanel-derived Equipment pivot", "2026-10-12 Equipment MerchantPanel scroll + scene-fit correction", "2026-10-12 stable merchant portrait framing", "2026-10-12 native 80%-reference Equipment density"]) need(equipmentStyles, token, "Forge Equipment MerchantPanel-derived layout");
+for (const token of [".npc-forge-equipment-storefront", ".forge-equipment-vendor-frame", ".forge-equipment-merchant-panel", ".forge-equipment-merchant-market-shell", ".npc-forge-equipment-summary-dock__no-gear", ".npc-forge-equipment-summary-dock__wealth", ".npc-forge-equipment-summary-dock.is-header", "merchant-stock-row.rarity-mundane", "--rarity-color", "grid-template-columns: 132px minmax(0, 1fr)", "flex: 1 1 auto", "height: auto", "overflow-y: auto !important", "overscroll-behavior: contain", "--merchant-bg-position", "--merchant-bg-size", "background-size: var(--merchant-bg-size, contain)", "2026-10-12 MerchantPanel-derived Equipment pivot", "2026-10-12 Equipment MerchantPanel scroll + scene-fit correction", "2026-10-12 stable merchant portrait framing", "2026-10-12 native 80%-reference Equipment density", "2026-10-13 integrated Equipment storefront composition", "grid-template-columns: minmax(330px, 1.12fr) minmax(0, 1.88fr)", "grid-template-columns: minmax(300px,1fr) minmax(220px,.60fr)"]) need(equipmentStyles, token, "Forge Equipment MerchantPanel-derived layout");
 need(app, 'import "../styles/merchant-storefront.css";', "shared merchant stylesheet import");
 need(app, 'import "../styles/player-forge-equipment-market.css";', "Forge Equipment stylesheet import");
 
