@@ -45,6 +45,7 @@ export default function NpcForgeMerchantMarket({
   onAdd = null,
   canAddItem = null,
   selectedActionLabel = "Add to Starting Cart",
+  headerActions = null,
 }) {
   if (!merchant) {
     return <section className="merchant-panel-inner merchant-market merchant-panel-forge forge-equipment-merchant-panel is-loading">
@@ -77,7 +78,7 @@ export default function NpcForgeMerchantMarket({
     headerKicker="Starting equipment merchant"
     title={`${merchant.name || "Merchant"}’s Wares`}
     subline={`${shopLabel} · ${stockLabel}`}
-    headerActions={<span className="merchant-wallet-badge" title="Unspent starting gold becomes this character's wallet balance when creation finishes.">
+    headerActions={headerActions || <span className="merchant-wallet-badge" title="Unspent starting gold becomes this character's wallet balance when creation finishes.">
       {formatCopper(remainingCopper)} left
     </span>}
     notice={notice}
