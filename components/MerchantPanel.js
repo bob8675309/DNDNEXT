@@ -442,10 +442,10 @@ export default function MerchantPanel({
     // Client-side reroll (when the RPC isn't installed):
     // - dump existing stock
     // - select items from items_catalog by theme tag
-    // - insert 12–20 themed items into character_stock
+    // - insert a 28–32 item mundane/common + uncommon + rare mix
     if (!merchant?.id) return;
 
-    const count = 12 + Math.floor(Math.random() * 9); // 12..20
+    const count = 28 + Math.floor(Math.random() * 5); // 28..32
 
     // 1) Clear stock
     {
@@ -474,24 +474,25 @@ export default function MerchantPanel({
       return { ...r, _rarity: rarity };
     });
 
-    // Prefer Uncommon/Rare, with a small chance of Very Rare.
+    // Match the server distribution: most stock is mundane/common, with a
+    // healthy uncommon shelf and only a few rares. Routine shops do not roll
+    // Very Rare, Legendary, or Artifact items.
+    const low = candidates.filter((r) => !r._rarity || r._rarity === "Common");
     const uncommon = candidates.filter((r) => r._rarity === "Uncommon");
     const rare = candidates.filter((r) => r._rarity === "Rare");
-    const veryRare = candidates.filter((r) => r._rarity === "Very Rare");
-    const fallback = candidates.filter((r) => !r._rarity || r._rarity === "Common");
 
-    const nUncommon = Math.max(0, Math.round(count * 0.6));
-    const nRare = Math.max(0, Math.round(count * 0.35));
-    const nVeryRare = Math.max(0, count - nUncommon - nRare);
+    const nLow = Math.max(1, Math.round(count * 0.57));
+    const nUncommon = Math.max(1, Math.round(count * 0.33));
+    const nRare = Math.max(0, count - nLow - nUncommon);
 
     let picked = [
+      ...sample(low, nLow),
       ...sample(uncommon, nUncommon),
       ...sample(rare, nRare),
-      ...sample(veryRare, nVeryRare),
     ];
 
     if (picked.length < count) {
-      const pool = [...uncommon, ...rare, ...veryRare, ...fallback];
+      const pool = [...low, ...uncommon, ...rare];
       const already = new Set(picked.map((p) => p.item_name));
       const extra = pool.filter((p) => !already.has(p.item_name));
       picked = picked.concat(sample(extra, count - picked.length));
@@ -564,8 +565,9 @@ export default function MerchantPanel({
     try {
       // IMPORTANT: pass p_count to disambiguate overloaded functions in PostgREST
       // (your DB can have both a 2-arg and 3-arg overload of reroll_merchant_inventory_v2).
-      // Target 12-20 items, matching the merchant inventory expectation.
-      const desiredCount = 12 + Math.floor(Math.random() * 9);
+      // Keep routine storefronts broad enough to browse without becoming a
+      // full catalogue dump. The server enforces the rarity distribution.
+      const desiredCount = 28 + Math.floor(Math.random() * 5);
 
       let rpcError = null;
       let rpcData = null;
@@ -596,7 +598,7 @@ export default function MerchantPanel({
       // Supabase returns a 1-row array for SETOF/TABLE-returning functions.
       const insertedCount = Array.isArray(rpcData) ? rpcData?.[0]?.inserted_count : rpcData?.inserted_count;
       if (typeof insertedCount === "number" && insertedCount === 0) {
-        setError(
+        setErr(
           "Reroll completed but inserted 0 items. This usually means your items_catalog is missing merchant_tags for the selected theme (or the theme is too restrictive)."
         );
       }
