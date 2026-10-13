@@ -934,7 +934,7 @@ export default function MerchantPanel({
   return (
     <MerchantStorefrontView
       merchant={merchant}
-      rootClassName={"merchant-panel-inner merchant-market merchant-panel-" + presentation}
+      rootClassName={"merchant-panel-inner merchant-market merchant-storefront-shared merchant-panel-" + presentation}
       headerKicker="Merchant storefront"
       title={`${merchant.name}’s Wares`}
       titleAddon={<Pill theme={theme} small />}
