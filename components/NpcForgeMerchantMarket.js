@@ -107,9 +107,10 @@ export default function NpcForgeMerchantMarket({
     showSource
     quantityFor={(card) => Math.max(0, Number(card?._available_qty ?? card?._stock_qty ?? 0))}
     itemCardProps={{ variant: "shop", detailsCollapsible: false }}
+    showPreviewHeader={false}
     previewMetrics={[
+      { label: "Price", value: selectedCard ? `${Number(selectedCard._price_gp || 0)} gp` : "—" },
       { label: "Available", value: selectedAvailable },
-      { label: "Remaining", value: formatCopper(remainingCopper) },
     ]}
     actionLabel={selectedActionLabel}
     actionDisabled={!addEnabled}
