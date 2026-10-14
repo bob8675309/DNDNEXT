@@ -254,3 +254,99 @@
   border-color: color-mix(in srgb, var(--sitem-rarity-color) 32%, rgba(255,255,255,.10)) !important;
   background: color-mix(in srgb, var(--sitem-rarity-color) 7%, rgba(255,255,255,.05)) !important;
 }
+
+
+/* 2026-10-13 ItemCard dark-rarity art pass + trait chevrons.
+   Preserve card geometry while deepening rarity color and formatting long
+   named secondary traits as independent disclosures. */
+.sitem-card {
+  border-width: 4px !important;
+  border-color: color-mix(in srgb, var(--sitem-rarity-color) 82%, #0a0b10 18%) !important;
+  box-shadow:
+    0 18px 48px rgba(0,0,0,.34),
+    0 0 18px color-mix(in srgb, var(--sitem-rarity-color) 16%, transparent),
+    inset 0 0 0 1px rgba(255,255,255,.04) !important;
+}
+
+.sitem-card .sitem-header {
+  background:
+    radial-gradient(circle at 14% -35%,
+      color-mix(in srgb, var(--sitem-rarity-color) 44%, white 10%) 0%,
+      transparent 42%),
+    linear-gradient(
+      110deg,
+      color-mix(in srgb, var(--sitem-rarity-color) 58%, #0b111b 42%) 0%,
+      color-mix(in srgb, var(--sitem-rarity-color) 46%, #10101a 54%) 54%,
+      color-mix(in srgb, var(--sitem-rarity-color) 34%, #090b12 66%) 100%
+    ) !important;
+  border-bottom-width: 4px !important;
+  border-bottom-color: color-mix(in srgb, var(--sitem-rarity-color) 84%, #0b0d13 16%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.20),
+    inset 0 -10px 22px rgba(0,0,0,.18),
+    0 5px 16px color-mix(in srgb, var(--sitem-rarity-color) 12%, transparent) !important;
+}
+
+.sitem-card .sitem-rule-traits {
+  display: grid;
+  gap: .42rem;
+}
+
+.sitem-card .sitem-rule-trait {
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--sitem-rarity-color) 30%, rgba(255,255,255,.09));
+  border-radius: .58rem;
+  background: color-mix(in srgb, var(--sitem-rarity-color) 5%, rgba(255,255,255,.045));
+}
+
+.sitem-card .sitem-rule-trait > summary {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: .48rem 1.9rem .48rem .62rem;
+  color: rgba(255,255,255,.92);
+  font-weight: 760;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.sitem-card .sitem-rule-trait > summary::-webkit-details-marker {
+  display: none;
+}
+
+.sitem-card .sitem-rule-trait > summary::after {
+  content: "›";
+  position: absolute;
+  right: .66rem;
+  top: 50%;
+  color: var(--sitem-rarity-color);
+  font-size: 1.18em;
+  font-weight: 900;
+  transform: translateY(-50%);
+  transition: transform .14s ease;
+}
+
+.sitem-card .sitem-rule-trait[open] > summary::after {
+  transform: translateY(-50%) rotate(90deg);
+}
+
+.sitem-card .sitem-rule-trait[open] > summary {
+  background: color-mix(in srgb, var(--sitem-rarity-color) 10%, rgba(255,255,255,.03));
+  border-bottom: 1px solid color-mix(in srgb, var(--sitem-rarity-color) 22%, rgba(255,255,255,.07));
+}
+
+.sitem-card .sitem-rule-trait__body {
+  padding: .56rem .64rem .64rem;
+  color: rgba(255,255,255,.82);
+  line-height: 1.48;
+}
+
+.sitem-card.is-shop-variant .sitem-rule-trait > summary {
+  font-size: .69rem;
+}
+
+.sitem-card.is-shop-variant .sitem-rule-trait__body {
+  font-size: .66rem;
+}
