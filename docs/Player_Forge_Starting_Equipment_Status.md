@@ -1,3 +1,17 @@
+## 2026-10-14 alchemy ItemCard normalization + category-scrollbar correction
+
+Browser/video review exposed two shared MerchantPanel issues after the crafting-style ItemCard pass.
+
+Alchemy ingredients were rendering their physical description twice because the same canonical text exists as both `flavor` and `item_description`. Ingredient cards now recognize `alchemy.kind = ingredient`, keep the physical description once in the summary area, and use the details area for the actual brewing metadata already present in the catalog: Role/slot, Family, Brew Impact, Craft DC reduction, and Brew Tags.
+
+Finished alchemy products now distinguish beneficial consumables from offensive delivery items. Potion/elixir cards no longer display a Save field merely because a generic `save_dc` number exists; a save is shown only when the payload also supplies a real save ability. This removes misleading Save DC values from beneficial items such as Elixir of Fire Resistance and Potion of Comprehension. Repeated effect/rules text that is identical to the summary is also suppressed.
+
+Bomb cards now consume their existing canonical alchemy metadata instead of falling through to the generic item fields. Where available, the adaptive field grid exposes Use, Area, Save ability + DC, Damage dice/type, Duration, Condition, Repeat Save, and Charges. For example, Bomb of Lightning can surface its 10-foot burst, Dexterity save, enhanced save DC, 2d6 lightning damage, Instant duration, and use action without repeating the same effect paragraph twice.
+
+No catalog rows were rewritten; this is a renderer correction over existing payload data.
+
+The horizontal category scroller is also corrected. The chip row retains horizontal touch/wheel scrolling but hides its native bottom scrollbar. A synchronized scrollbar is rendered immediately above the chips, sized from the actual chip-row scroll width and kept in sync in both directions. This shared behavior applies to both normal MerchantPanel and Forge Equipment.
+
 ## 2026-10-14 crafting-preview ItemCard structure + deep rarity authority
 
 The shared ItemCard now borrows the information hierarchy demonstrated by the existing Alchemy/Smithing preview cards while preserving the accepted shop-card footprint. The title/type header and centered rarity label remain first, followed by the short description + thumbnail row. A dedicated 3px rarity divider now sits immediately below that row. The divider uses the darker rarity anchor color with a subtle center highlight and restrained outer glow rather than a flat line.
