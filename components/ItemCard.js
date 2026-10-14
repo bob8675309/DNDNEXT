@@ -136,7 +136,7 @@ function typeFromBuilderCategory(category = "") {
 }
 
 
-function adaptiveItemFields(item = {}, type = "", norm = {}, potionDetails = null) {
+function adaptiveItemFields(item = {}, type = "", norm = {}, potionDetails = null, bombDetails = null) {
   const blob = [type, item.item_type, item.type, item.category, item.item_name, item.name]
     .filter(Boolean)
     .join(" ")
@@ -158,6 +158,15 @@ function adaptiveItemFields(item = {}, type = "", norm = {}, potionDetails = nul
     item.saving_throw_dc,
     item?.card_payload?.save_dc,
     item?.card_payload?.saveDc
+  );
+  const saveAbilityValue = coalesce(
+    item.save_ability,
+    item.saveAbility,
+    item.saving_throw_ability,
+    item?.alchemy?.save_ability,
+    item?.alchemy?.saveAbility,
+    item?.card_payload?.save_ability,
+    item?.card_payload?.saveAbility
   );
   const strengthValue = coalesce(
     item.strength_requirement,
@@ -186,11 +195,27 @@ function adaptiveItemFields(item = {}, type = "", norm = {}, potionDetails = nul
     return { label, value: text, span };
   };
 
+  if (bombDetails) {
+    const save = bombDetails.saveAbility && bombDetails.saveDc
+      ? `${bombDetails.saveAbility} DC ${bombDetails.saveDc}`
+      : (bombDetails.saveAbility || "");
+    return [
+      clean("Use", bombDetails.use),
+      clean("Area", bombDetails.area),
+      clean("Save", save),
+      clean("Damage", bombDetails.damage),
+      clean("Duration", bombDetails.duration),
+      clean("Condition", bombDetails.conditions?.join(", ")),
+      clean("Repeat Save", bombDetails.repeatSave),
+      clean("Charges", chargesValue),
+    ].filter(Boolean);
+  }
+
   if (potionDetails) {
     return [
       clean("Use", potionDetails.use),
       clean("Duration", potionDetails.duration),
-      clean("Save DC", saveDcValue),
+      clean("Save", saveAbilityValue && saveDcValue ? `${saveAbilityValue} DC ${saveDcValue}` : null),
       clean("Doses / Charges", chargesValue),
     ].filter(Boolean);
   }
@@ -281,6 +306,59 @@ function alchemyModifierDetailsForItem(item = {}) {
   };
 }
 
+function alchemyIngredientDetailsForItem(item = {}) {
+  const alchemy = item?.alchemy && typeof item.alchemy === "object" ? item.alchemy : null;
+  if (!alchemy || String(alchemy.kind || "").toLowerCase() !== "ingredient") return null;
+
+  const brewTags = Array.isArray(alchemy.brewTags)
+    ? uniqueList(alchemy.brewTags.map((value) => String(value || "").trim()).filter(Boolean))
+    : [];
+  const reduction = Number(alchemy.craftDcReduction || 0);
+
+  return {
+    role: alchemy.slot || "Alchemy ingredient",
+    family: alchemy.familyLabel || titleCase(alchemy.family || "Ingredient"),
+    brewTags,
+    brewImpact: alchemy.brewImpact || "Recipe component",
+    dcReduction: Number.isFinite(reduction) ? reduction : 0,
+    physicalDescription: alchemy.physicalDescription || "",
+  };
+}
+
+function bombDetailsForItem(item = {}, type = "") {
+  const blob = [type, item.item_type, item.type, item.category, item.item_name, item.name]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  if (!/\bbomb\b/.test(blob)) return null;
+
+  const alchemy = item?.alchemy && typeof item.alchemy === "object" ? item.alchemy : {};
+  const saveAbility = coalesce(item.save_ability, item.saveAbility, alchemy.save_ability, alchemy.saveAbility);
+  const saveDc = coalesce(item.save_dc, item.saveDc, alchemy.save_dc, alchemy.saveDc);
+  const area = coalesce(item.area_text, item.areaText, alchemy.area_text, alchemy.areaText);
+  const duration = coalesce(item.duration, item.duration_text, alchemy.duration, "Instant");
+  const use = coalesce(item.use, item.use_text, alchemy.use, "Use as described");
+  const repeatSave = coalesce(item.rider_repeat_save, alchemy.rider_repeat_save);
+  const conditions = Array.isArray(alchemy.condition_riders)
+    ? uniqueList(alchemy.condition_riders.map((value) => String(value || "").trim()).filter(Boolean))
+    : [];
+  const count = Number(alchemy.base_dice_count || 0);
+  const die = Number(alchemy.base_die_size || 0);
+  const theme = coalesce(alchemy.themeTag, alchemy.tag_label);
+  const damage = count > 0 && die > 0
+    ? `${count}d${die}${theme ? ` ${String(theme).toLowerCase()}` : ""}`
+    : "";
+
+  return { saveAbility, saveDc, area, duration, use, repeatSave, conditions, damage };
+}
+
+function normalizedComparableText(value = "") {
+  return String(value || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
 function namedRuleSections(text = "") {
   const source = String(text || "").replace(/\r\n/g, "\n").trim();
   if (!source) return null;
@@ -333,9 +411,9 @@ function potionDetailsForItem(item = {}, type = "", ruleText = "", entriesText =
   const name = item.item_name || item.name || "";
   const known = POTION_DETAIL_OVERRIDES[name] || {};
   const sourceText = [ruleText, entriesText, item.effect_text, item.effect, item.rulesText].filter(Boolean).join("\n");
-  const duration = item.duration || item.duration_text || known.duration || extractDuration(sourceText) || "By item text / DM ruling";
-  const use = item.use || item.use_text || item.activation || item.application || known.use || (/oil/i.test(name) ? "Apply as described" : "Action to drink/use");
-  const effect = item.effect_detail || item.effect_text || item.effect || known.effect || sourceText || "See item text.";
+  const duration = item.duration || item.duration_text || item?.alchemy?.duration || known.duration || extractDuration(sourceText) || "By item text / DM ruling";
+  const use = item.use || item.use_text || item.activation || item.application || item?.alchemy?.use || known.use || (/oil/i.test(name) ? "Apply as described" : "Action to drink/use");
+  const effect = item.effect_detail || item.effect_text || item.effect || item?.alchemy?.effect || known.effect || sourceText || "See item text.";
   return { use, duration, effect };
 }
 
@@ -371,14 +449,23 @@ export default function ItemCard({
   const rawRuleText = coalesce(mergedItem.item_description, mergedItem.rulesText, mergedItem.rules, "");
   const hasItemDescription = !!rawRuleText;
   const potionDetails = potionDetailsForItem(mergedItem, uiType || mergedItem.type || mergedItem.item_type, rawRuleText, entriesText);
+  const bombDetails = bombDetailsForItem(mergedItem, uiType || mergedItem.type || mergedItem.item_type);
   const alchemyModifierDetails = alchemyModifierDetailsForItem(mergedItem);
-  const structuredRules = !alchemyModifierDetails && hasItemDescription ? namedRuleSections(rawRuleText) : null;
-  const alchemyRuleDuplicatesFlavor = Boolean(
-    alchemyModifierDetails &&
+  const alchemyIngredientDetails = alchemyIngredientDetailsForItem(mergedItem);
+  const isAlchemyComponent = Boolean(alchemyModifierDetails || alchemyIngredientDetails);
+  const ruleDuplicatesFlavor = Boolean(
     rawRuleText &&
     flavorText &&
-    String(rawRuleText).trim().toLowerCase() === String(flavorText).trim().toLowerCase()
+    normalizedComparableText(rawRuleText) === normalizedComparableText(flavorText)
   );
+  const effectDuplicatesFlavor = Boolean(
+    potionDetails?.effect &&
+    flavorText &&
+    normalizedComparableText(potionDetails.effect) === normalizedComparableText(flavorText)
+  );
+  const structuredRules = !isAlchemyComponent && hasItemDescription && !ruleDuplicatesFlavor
+    ? namedRuleSections(rawRuleText)
+    : null;
 
   const gp = parseValueToGp(coalesce(mergedItem.item_cost, mergedItem.cost, mergedItem.value));
   const weight = coalesce(mergedItem.item_weight, mergedItem.weight, mergedItem?.card_payload?.weight, null);
@@ -409,9 +496,19 @@ export default function ItemCard({
   };
 
   const rarityClass = `rarity-${(norm.rarity || "Common").toLowerCase().replace(/\s+/g, "-")}`;
-  const adaptiveFields = adaptiveItemFields(mergedItem, norm.type, norm, potionDetails);
+  const adaptiveFields = adaptiveItemFields(mergedItem, norm.type, norm, potionDetails, bombDetails);
 
   const detailContent = <>
+    {alchemyIngredientDetails ? (
+      <div className="sitem-field-grid sitem-alchemy-ingredient-grid mt-2">
+        <div className="sitem-field"><div className="sitem-field__label">Role</div><div className="sitem-field__value">{alchemyIngredientDetails.role}</div></div>
+        <div className="sitem-field"><div className="sitem-field__label">Family</div><div className="sitem-field__value">{alchemyIngredientDetails.family}</div></div>
+        <div className="sitem-field is-wide"><div className="sitem-field__label">Brew Impact</div><div className="sitem-field__value">{alchemyIngredientDetails.brewImpact}</div></div>
+        <div className="sitem-field"><div className="sitem-field__label">Craft DC</div><div className="sitem-field__value">{alchemyIngredientDetails.dcReduction > 0 ? `−${alchemyIngredientDetails.dcReduction}` : "No reduction"}</div></div>
+        <div className="sitem-field"><div className="sitem-field__label">Brew Tags</div><div className="sitem-field__value">{alchemyIngredientDetails.brewTags.join(", ") || "Neutral"}</div></div>
+      </div>
+    ) : null}
+
     {alchemyModifierDetails ? (
       <div className="sitem-section sitem-alchemy-details mt-2">
         <div className="small text-muted mb-1 text-uppercase fw-semibold">Alchemy Modifier</div>
@@ -425,14 +522,14 @@ export default function ItemCard({
       </div>
     ) : null}
 
-    {potionDetails ? (
+    {potionDetails && !effectDuplicatesFlavor ? (
       <div className="sitem-section sitem-rules sitem-effect-panel mt-2">
         <div className="small text-muted mb-1 text-uppercase fw-semibold">Effect</div>
         <div>{potionDetails.effect}</div>
       </div>
     ) : null}
 
-    {!alchemyRuleDuplicatesFlavor ? (
+    {!isAlchemyComponent && !ruleDuplicatesFlavor ? (
       structuredRules ? <>
         {structuredRules.intro ? <div
           className="sitem-section sitem-rules mt-2"
@@ -464,7 +561,7 @@ export default function ItemCard({
       </div>
     ) : null}
 
-    {!alchemyModifierDetails && adaptiveFields.length ? (
+    {!isAlchemyComponent && adaptiveFields.length ? (
       <div className="sitem-field-grid mt-2">
         {adaptiveFields.map((field) => (
           <div className={`sitem-field ${field.span === 2 ? "is-wide" : ""}`} key={field.label}>
