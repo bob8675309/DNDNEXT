@@ -5,7 +5,7 @@
 .sitem-card {
   --sitem-rarity-color: rgba(156, 163, 175, 0.92);
   --sitem-rarity-wash: rgba(156, 163, 175, 0.14);
-  border: 1px solid var(--sitem-rarity-color) !important;
+  border: 3px solid var(--sitem-rarity-color) !important;
   border-radius: 1rem !important;
   background: #171021 !important;
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.32), inset 0 0 0 1px rgba(255,255,255,0.04) !important;
@@ -46,10 +46,18 @@
 
 .sitem-card .sitem-header {
   background:
-    linear-gradient(90deg, var(--sitem-rarity-wash) 0%, rgba(49, 29, 78, 0.86) 34%, rgba(35, 24, 55, 0.96) 100%) !important;
-  border-bottom: 2px solid var(--sitem-rarity-color) !important;
-  box-shadow: inset 0 1px 0 var(--sitem-rarity-color) !important;
-  color: #fff8df !important;
+    linear-gradient(
+      100deg,
+      color-mix(in srgb, var(--sitem-rarity-color) 82%, #24152f 18%) 0%,
+      color-mix(in srgb, var(--sitem-rarity-color) 72%, #1f142b 28%) 58%,
+      color-mix(in srgb, var(--sitem-rarity-color) 62%, #18111f 38%) 100%
+    ) !important;
+  border-bottom: 3px solid color-mix(in srgb, var(--sitem-rarity-color) 90%, white 10%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.24),
+    inset 0 -1px 0 color-mix(in srgb, var(--sitem-rarity-color) 68%, black 32%) !important;
+  color: #fffdf6 !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,.72);
 }
 
 .sitem-card .sitem-title {
@@ -58,7 +66,7 @@
 }
 
 .sitem-card .sitem-type {
-  background: rgba(255,255,255,0.12) !important;
+  background: rgba(8,7,13,0.38) !important;
   color: rgba(255,255,255,0.92) !important;
   border-radius: 0.38rem !important;
   font-weight: 850 !important;
@@ -226,4 +234,23 @@
 }
 .sitem-card.is-shop-variant .sitem-game-details > summary em {
   font-size: .51rem;
+}
+
+
+/* 2026-10-13 stronger ItemCard rarity frame.
+   Preserve the established card geometry while making rarity legible from the
+   full outline and a nearly solid rarity-colored header. */
+.sitem-card {
+  border-width: 3px !important;
+}
+.sitem-card .sitem-header {
+  min-height: 2.5rem;
+}
+.sitem-card .sitem-type {
+  border: 1px solid rgba(255,255,255,.20);
+}
+.sitem-card .sitem-alchemy-details {
+  border-style: solid !important;
+  border-color: color-mix(in srgb, var(--sitem-rarity-color) 32%, rgba(255,255,255,.10)) !important;
+  background: color-mix(in srgb, var(--sitem-rarity-color) 7%, rgba(255,255,255,.05)) !important;
 }
