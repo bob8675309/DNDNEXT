@@ -1,3 +1,17 @@
+## 2026-10-14 merchant-crafted alchemy authority + catalyst formatting + 90% MerchantPanel pass
+
+The latest merchant review exposed a distinction between base recipe text and the finished merchant-crafted stock result. Quill Ashborn's Bomb of Lightning is the calibration case: the stock payload contains the original 2d6 / 10-foot recipe flavor alongside the actual crafted result of 3d6 with a 15-foot area. ItemCard now treats the final merchant-crafted payload (`merchant_craft` / `alchemy_result` / final effect fields) as presentation authority for merchant-crafted alchemy. The top summary, adaptive fields, duration, area, save, and damage therefore describe one finished item instead of mixing base-recipe and enhanced values. The same rule prevents enhanced elixirs from showing their original duration in the summary while a later section shows the crafted duration.
+
+This is a renderer-authority correction only. Existing merchant stock rows were not rewritten and no alchemy formulas were changed.
+
+Alchemy Modifiers / catalysts now use the same compact field-grid language as the rest of ItemCard instead of a prose-heavy "Final brew" block. Cards such as Freedom Resin present Slot, Purpose, Family, Brew Theme, Craft DC impact, and Contribution as distinct fields. The physical description remains in the top description/thumbnail row.
+
+Normal MerchantPanel now explicitly uses `ItemCard variant="shop"`, matching Forge Equipment's compact storefront card presentation. This removes the extra internal price badge and keeps shop-only spacing consistent between the two storefronts.
+
+Merchant stock-row descriptions are now a single ellipsized line instead of two wrapped lines. The full description is retained as a native hover title. This increases scan density without discarding the text.
+
+For the embedded profile Shop view, the accepted desktop reference has shifted from the old 80% browser-zoom target to the current 90% view. The shop-active profile shell desktop width is therefore tightened from 920px to 840px at native 100% browser zoom. This is scoped to the embedded profile shop and does not alter the Forge Equipment shell or world-map behavior.
+
 ## 2026-10-14 alchemy ItemCard normalization + category-scrollbar correction
 
 Browser/video review exposed two shared MerchantPanel issues after the crafting-style ItemCard pass.
