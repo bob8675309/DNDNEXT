@@ -136,6 +136,95 @@ function typeFromBuilderCategory(category = "") {
 }
 
 
+function adaptiveItemFields(item = {}, type = "", norm = {}, potionDetails = null) {
+  const blob = [type, item.item_type, item.type, item.category, item.item_name, item.name]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  const weightValue = norm.weight != null ? `${norm.weight} lbs` : "";
+  const chargesValue = coalesce(
+    item.charges,
+    item.item_charges,
+    item.doses,
+    item.dose_count,
+    item.batch_output,
+    item?.card_payload?.charges,
+    item?.card_payload?.doses
+  );
+  const saveDcValue = coalesce(
+    item.save_dc,
+    item.saveDc,
+    item.saving_throw_dc,
+    item?.card_payload?.save_dc,
+    item?.card_payload?.saveDc
+  );
+  const strengthValue = coalesce(
+    item.strength_requirement,
+    item.strengthRequirement,
+    item.strength,
+    item?.armor?.strength,
+    item?.card_payload?.strength_requirement
+  );
+  const stealthValue = coalesce(
+    item.stealth,
+    item.stealth_disadvantage,
+    item.stealthDisadvantage,
+    item?.armor?.stealth,
+    item?.card_payload?.stealth
+  );
+  const attunementValue = coalesce(
+    item.attunement,
+    item.requires_attunement,
+    item.requiresAttunement,
+    item?.card_payload?.attunement
+  );
+
+  const clean = (label, value, span = 1) => {
+    if (value == null || value === "" || value === false) return null;
+    const text = value === true ? "Yes" : String(value);
+    return { label, value: text, span };
+  };
+
+  if (potionDetails) {
+    return [
+      clean("Use", potionDetails.use),
+      clean("Duration", potionDetails.duration),
+      clean("Save DC", saveDcValue),
+      clean("Doses / Charges", chargesValue),
+    ].filter(Boolean);
+  }
+
+  if (/\b(armor|shield)\b/.test(blob)) {
+    return [
+      clean("Armor Class", norm.ac || "—"),
+      clean("Strength", strengthValue),
+      clean("Stealth", stealthValue),
+      clean("Weight", weightValue),
+      clean("Attunement", attunementValue),
+      clean("Properties", norm.props && norm.props !== "—" ? norm.props : null, 2),
+    ].filter(Boolean);
+  }
+
+  if (/\b(weapon|ammunition|melee|ranged)\b/.test(blob)) {
+    return [
+      clean("Damage", norm.dmg || "—"),
+      clean("Range", norm.rng || "—"),
+      clean("Weight", weightValue),
+      clean("Attunement", attunementValue),
+      clean("Properties", norm.props && norm.props !== "—" ? norm.props : null, 2),
+    ].filter(Boolean);
+  }
+
+  return [
+    clean("Weight", weightValue),
+    clean("Charges", chargesValue),
+    clean("Attunement", attunementValue),
+    clean("Properties", norm.props && norm.props !== "—" ? norm.props : null, 2),
+  ].filter(Boolean);
+}
+
+
 const POTION_DETAIL_OVERRIDES = {
   "Oil of Etherealness": { duration: "1 hour", use: "10 minutes to apply", effect: "One vial can cover one Medium or smaller creature and grants the effect of Etherealness." },
   "Oil of Sharpness": { duration: "1 hour", use: "1 minute to apply", effect: "A coated slashing or piercing weapon or ammunition gains a temporary bonus to attack and damage rolls by DM ruling." },
@@ -320,7 +409,7 @@ export default function ItemCard({
   };
 
   const rarityClass = `rarity-${(norm.rarity || "Common").toLowerCase().replace(/\s+/g, "-")}`;
-  const showRange = norm.rng && norm.rng !== "—";
+  const adaptiveFields = adaptiveItemFields(mergedItem, norm.type, norm, potionDetails);
 
   const detailContent = <>
     {alchemyModifierDetails ? (
@@ -337,13 +426,9 @@ export default function ItemCard({
     ) : null}
 
     {potionDetails ? (
-      <div className="sitem-section sitem-rules mt-2">
-        <div className="small text-muted mb-1 text-uppercase fw-semibold">Potion Details</div>
-        <div className="row g-2">
-          <div className="col-12 col-md-6"><strong>Use:</strong> {potionDetails.use}</div>
-          <div className="col-12 col-md-6"><strong>Duration:</strong> {potionDetails.duration}</div>
-          <div className="col-12"><strong>Effect:</strong> {potionDetails.effect}</div>
-        </div>
+      <div className="sitem-section sitem-rules sitem-effect-panel mt-2">
+        <div className="small text-muted mb-1 text-uppercase fw-semibold">Effect</div>
+        <div>{potionDetails.effect}</div>
       </div>
     ) : null}
 
@@ -379,26 +464,16 @@ export default function ItemCard({
       </div>
     ) : null}
 
-    {!alchemyModifierDetails ? <div className="row g-2 mt-2">
-      <div className="col-12 col-md-6">
-        <div className="sitem-section">
-          <div className="small text-muted mb-1">Damage</div>
-          <div className="text-wrap">{norm.dmg}</div>
-        </div>
+    {!alchemyModifierDetails && adaptiveFields.length ? (
+      <div className="sitem-field-grid mt-2">
+        {adaptiveFields.map((field) => (
+          <div className={`sitem-field ${field.span === 2 ? "is-wide" : ""}`} key={field.label}>
+            <div className="sitem-field__label">{field.label}</div>
+            <div className="sitem-field__value">{field.value}</div>
+          </div>
+        ))}
       </div>
-      <div className="col-12 col-md-6">
-        <div className="sitem-section">
-          <div className="small text-muted mb-1">Range / AC</div>
-          <div className="text-wrap">{showRange ? norm.rng : norm.ac}</div>
-        </div>
-      </div>
-      <div className="col-12">
-        <div className="sitem-section">
-          <div className="small text-muted mb-1">Properties</div>
-          <div className="text-wrap">{norm.props}</div>
-        </div>
-      </div>
-    </div> : null}
+    ) : null}
 
     <div className="d-flex justify-content-between align-items-center mt-2">
       <div className="d-flex gap-2 flex-wrap">
@@ -442,6 +517,8 @@ export default function ItemCard({
             </div>
           </div>
         </div>
+
+        <div className="sitem-rarity-divider" aria-hidden="true" />
 
         {detailsCollapsible ? <details className="sitem-game-details mt-2">
           <summary><span>Game Details</span><em>Rules, stats &amp; source</em></summary>
