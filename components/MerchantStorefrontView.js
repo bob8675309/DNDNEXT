@@ -57,6 +57,7 @@ export default function MerchantStorefrontView({
   quantityFor = null,
   itemCardProps = {},
   previewMetrics = [],
+  showPreviewHeader = true,
   actionLabel = "",
   actionDisabled = false,
   onAction = null,
@@ -166,13 +167,13 @@ export default function MerchantStorefrontView({
             <aside className="merchant-preview-pane">
               {selectedCard ? (
                 <>
-                  <div className="merchant-preview-head">
+                  {showPreviewHeader ? <div className="merchant-preview-head">
                     <div>
                       <div className="merchant-market-kicker">Selected item</div>
                       <h3>{selectedCard.item_name}</h3>
                     </div>
                     <span className="merchant-preview-price">{Number(selectedCard._price_gp || 0)} gp</span>
-                  </div>
+                  </div> : null}
                   <div className="merchant-preview-card-scroll">
                     <ItemCard item={selectedCard} {...itemCardProps} />
                   </div>
