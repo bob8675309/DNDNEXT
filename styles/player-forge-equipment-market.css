@@ -2186,3 +2186,35 @@ body > .npc-forge-equipment-summary-dock.is-floating {
       0 8px 22px rgba(0,0,0,.22);
   }
 }
+
+
+/* 2026-10-13 Equipment ItemCard readability bump.
+   MerchantStorefront shared density rules intentionally stay compact; Equipment
+   gets a slightly larger type floor because its selected-card pane is now wide
+   enough to support it without changing card dimensions. */
+@media (min-width: 981px) {
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-title {
+    font-size: 1.04rem;
+    line-height: 1.2;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-type {
+    font-size: .62rem;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-meta {
+    font-size: .73rem;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-rarity {
+    font-size: .75rem;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-section {
+    font-size: .74rem;
+    line-height: 1.52;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-section .small,
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .text-muted {
+    font-size: .64rem !important;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .badge {
+    font-size: .61rem;
+  }
+}
