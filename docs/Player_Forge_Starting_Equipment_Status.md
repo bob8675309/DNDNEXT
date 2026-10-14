@@ -1,3 +1,15 @@
+## 2026-10-13 ItemCard property-chevrons + Forge purchase-footer follow-up
+
+The Forge selected-item strip above the ItemCard is now removed. The ItemCard moves to the top of the preview pane, while purchase context is consolidated below it. Remaining gold is no longer repeated under the ItemCard because the Starting Cart already owns budget/spent/remaining tracking in greater detail. The purchase footer now shows only Price, Available quantity, and the Add/Buy action.
+
+The minimized Starting Cart keeps the same basic shape but now fills the complete top-right header action lane instead of sitting as a smaller control inside that space.
+
+Rarity treatment is more pronounced in two layers. ItemCards retain their existing geometry but now use a 4px rarity frame and a darker, more dimensional rarity-colored header built from layered radial/linear gradients. Merchant stock rows also carry strong rarity color at all times rather than only after selection: every row receives a rarity outline, left scan stripe, tinted wash, and subtle glow; the selected state increases the tint and glow further.
+
+Long rules text now supports named secondary-property disclosures without collapsing the whole ItemCard. When an item description contains multiple short named trait headings followed by body text, the main introductory description remains visible and each named trait renders as its own chevron disclosure. This is intended for items such as Leather Golem Armor, where traits like Immutable Form, Lightning Absorption, Curse, Aversion of Fire, and Berserk can be inspected individually instead of forcing the player through one extremely tall uninterrupted rules block. Simple items continue to render exactly as plain rule text.
+
+No item mechanics, merchant prices, cart authority, character currency, or crafting rules changed in this pass.
+
 ## 2026-10-13 ItemCard rarity/readability + Alchemy Modifier follow-up
 
 The selected ItemCard keeps its established dimensions and layout, but receives the requested visual-strength pass: the rarity border is now 3px around the full card, and the header is a near-solid rarity-colored gradient rather than a mostly-purple header with only a thin rarity accent. Equipment-only ItemCard text is also raised above the shared storefront compact floor for better readability without changing the card footprint.
