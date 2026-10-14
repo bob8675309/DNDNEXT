@@ -1,3 +1,13 @@
+## 2026-10-13 ItemCard rarity/readability + Alchemy Modifier follow-up
+
+The selected ItemCard keeps its established dimensions and layout, but receives the requested visual-strength pass: the rarity border is now 3px around the full card, and the header is a near-solid rarity-colored gradient rather than a mostly-purple header with only a thin rarity accent. Equipment-only ItemCard text is also raised above the shared storefront compact floor for better readability without changing the card footprint.
+
+Live data inspection clarified the Freedom Resin case. Freedom Resin is not a finished potion or consumable result; it is a canonical Rare `Alchemy Modifier` from the DNDNext Alchemy Codex. Its payload identifies it as a `Fourth-slot condition counteragent`, family `Enhancer / Catalyst`, with brew tag `Restraint`, zero Craft DC reduction, and `Recipe theme component` impact. The codex metadata explicitly says the selected recipe determines the finished brew behavior.
+
+ItemCard now recognizes this modifier payload. Instead of showing duplicate flavor text followed by meaningless Damage / Range / Properties dashes, an Alchemy Modifier section shows Role, Family, Brew tag, Craft DC impact, and a clear note that the selected recipe determines the final brew effect and duration. Finished potions/elixirs continue to use their existing Potion Details fields.
+
+No catalog rows or crafting formulas were modified in this pass; this is a presentation/normalization correction over existing canonical payload data.
+
 ## 2026-10-13 Equipment readability and rarity-outline follow-up
 
 The latest side-by-side review found two remaining Forge-only presentation issues before the planned ItemCard visual redesign.
