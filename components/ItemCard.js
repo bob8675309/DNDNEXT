@@ -477,7 +477,7 @@ export default function ItemCard({
 
     <div className="d-flex justify-content-between align-items-center mt-2">
       <div className="d-flex gap-2 flex-wrap">
-        <span className="badge text-bg-dark">{norm.cost != null ? `${norm.cost} gp` : "— gp"}</span>
+        {variant !== "shop" ? <span className="badge text-bg-dark">{norm.cost != null ? `${norm.cost} gp` : "— gp"}</span> : null}
         <span className="badge text-bg-dark">{norm.weight != null ? `${norm.weight} lbs` : "— lbs"}</span>
         <span className="badge text-bg-dark">{norm.type}{norm.typeHint ? ` • ${norm.typeHint}` : ""}</span>
         {norm.source && <span className="badge text-bg-secondary">{norm.source}</span>}
