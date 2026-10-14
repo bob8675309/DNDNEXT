@@ -192,6 +192,53 @@ function alchemyModifierDetailsForItem(item = {}) {
   };
 }
 
+function namedRuleSections(text = "") {
+  const source = String(text || "").replace(/\r\n/g, "\n").trim();
+  if (!source) return null;
+
+  const blocks = source
+    .split(/\n\s*\n+/)
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  if (blocks.length < 5) return null;
+
+  const looksLikeHeading = (value = "") => {
+    const clean = String(value || "").trim();
+    if (!clean || clean.length > 64) return false;
+    if (clean.split(/\s+/).length > 9) return false;
+    if (/[.!?;:]$/.test(clean)) return false;
+    if (/^(?:the|this|that|these|those|you|your|when|while|if|as|a|an)\b/i.test(clean)) return false;
+    return /^[A-Z0-9][A-Za-z0-9'’/&()\- ]+$/.test(clean);
+  };
+
+  const intro = [];
+  const traits = [];
+  let index = 0;
+
+  while (index < blocks.length) {
+    const block = blocks[index];
+    if (looksLikeHeading(block) && index + 1 < blocks.length) {
+      const body = [];
+      index += 1;
+      while (index < blocks.length && !looksLikeHeading(blocks[index])) {
+        body.push(blocks[index]);
+        index += 1;
+      }
+      if (body.length) {
+        traits.push({ title: block, body: body.join("\n\n") });
+        continue;
+      }
+    }
+
+    if (!traits.length) intro.push(block);
+    else traits[traits.length - 1].body += `\n\n${block}`;
+    index += 1;
+  }
+
+  return traits.length >= 2 ? { intro: intro.join("\n\n"), traits } : null;
+}
+
 function potionDetailsForItem(item = {}, type = "", ruleText = "", entriesText = "") {
   if (!isPotionLikeItem(item, type)) return null;
   const name = item.item_name || item.name || "";
@@ -236,6 +283,7 @@ export default function ItemCard({
   const hasItemDescription = !!rawRuleText;
   const potionDetails = potionDetailsForItem(mergedItem, uiType || mergedItem.type || mergedItem.item_type, rawRuleText, entriesText);
   const alchemyModifierDetails = alchemyModifierDetailsForItem(mergedItem);
+  const structuredRules = !alchemyModifierDetails && hasItemDescription ? namedRuleSections(rawRuleText) : null;
   const alchemyRuleDuplicatesFlavor = Boolean(
     alchemyModifierDetails &&
     rawRuleText &&
@@ -299,20 +347,37 @@ export default function ItemCard({
       </div>
     ) : null}
 
-    {!alchemyRuleDuplicatesFlavor ? <div
-      className="sitem-section sitem-rules mt-2"
-      style={{ whiteSpace: hasItemDescription ? "pre-line" : (pureStringBullets ? "normal" : "pre-line") }}
-    >
-      {hasItemDescription ? (
-        rawRuleText
-      ) : pureStringBullets ? (
-        <ul className="mb-0">
-          {pureStringBullets.map((ln, i) => <li key={i}>{ln}</li>)}
-        </ul>
-      ) : (
-        "—"
-      )}
-    </div> : null}
+    {!alchemyRuleDuplicatesFlavor ? (
+      structuredRules ? <>
+        {structuredRules.intro ? <div
+          className="sitem-section sitem-rules mt-2"
+          style={{ whiteSpace: "pre-line" }}
+        >
+          {structuredRules.intro}
+        </div> : null}
+        <div className="sitem-rule-traits mt-2" aria-label="Item traits">
+          {structuredRules.traits.map((trait) => (
+            <details className="sitem-rule-trait" key={trait.title}>
+              <summary>{trait.title}</summary>
+              <div className="sitem-rule-trait__body" style={{ whiteSpace: "pre-line" }}>{trait.body}</div>
+            </details>
+          ))}
+        </div>
+      </> : <div
+        className="sitem-section sitem-rules mt-2"
+        style={{ whiteSpace: hasItemDescription ? "pre-line" : (pureStringBullets ? "normal" : "pre-line") }}
+      >
+        {hasItemDescription ? (
+          rawRuleText
+        ) : pureStringBullets ? (
+          <ul className="mb-0">
+            {pureStringBullets.map((ln, i) => <li key={i}>{ln}</li>)}
+          </ul>
+        ) : (
+          "—"
+        )}
+      </div>
+    ) : null}
 
     {!alchemyModifierDetails ? <div className="row g-2 mt-2">
       <div className="col-12 col-md-6">
