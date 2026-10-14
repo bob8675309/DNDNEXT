@@ -215,7 +215,9 @@ export default function MerchantStorefrontView({
                       <span>Qty {qty}</span>
                       {showSource && card.source ? <span>{card.source}</span> : null}
                     </div>
-                    <p>{card.item_description || "No description is available for this item."}</p>
+                    <p title={card.item_description || "No description is available for this item."}>
+                      {card.item_description || "No description is available for this item."}
+                    </p>
                   </button>
                 );
               })}
