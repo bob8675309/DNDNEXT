@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import ItemCard from "./ItemCard";
 
 function safeText(value) {
@@ -17,6 +18,69 @@ function defaultRarityClass(value = "") {
 
 function defaultRarityBadgeClass(value = "") {
   return `is-rarity-${raritySlug(value)}`;
+}
+
+function MerchantCategoryScroller({ categories = [], typeFilter = "All", onTypeFilterChange = null }) {
+  const topRef = useRef(null);
+  const rowRef = useRef(null);
+  const syncingRef = useRef(false);
+  const [scrollWidth, setScrollWidth] = useState(0);
+  const [hasOverflow, setHasOverflow] = useState(false);
+
+  useEffect(() => {
+    const row = rowRef.current;
+    if (!row) return undefined;
+
+    const update = () => {
+      setScrollWidth(Math.max(row.scrollWidth, row.clientWidth));
+      setHasOverflow(row.scrollWidth > row.clientWidth + 1);
+      if (topRef.current) topRef.current.scrollLeft = row.scrollLeft;
+    };
+
+    update();
+    const observer = typeof ResizeObserver !== "undefined" ? new ResizeObserver(update) : null;
+    observer?.observe(row);
+    window.addEventListener("resize", update);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, [categories]);
+
+  const syncScroll = (source, target) => {
+    if (!source || !target || syncingRef.current) return;
+    syncingRef.current = true;
+    target.scrollLeft = source.scrollLeft;
+    window.requestAnimationFrame(() => { syncingRef.current = false; });
+  };
+
+  return <div className="merchant-category-stack">
+    <div
+      ref={topRef}
+      className={`merchant-category-scrollbar${hasOverflow ? " is-active" : ""}`}
+      aria-hidden="true"
+      onScroll={(event) => syncScroll(event.currentTarget, rowRef.current)}
+    >
+      <div className="merchant-category-scrollbar__spacer" style={{ width: scrollWidth || "100%" }} />
+    </div>
+    <div
+      ref={rowRef}
+      className="merchant-category-row"
+      aria-label="Stock categories"
+      onScroll={(event) => syncScroll(event.currentTarget, topRef.current)}
+    >
+      {categories.map((category) => (
+        <button
+          key={category}
+          type="button"
+          className={`merchant-category-chip${typeFilter === category ? " active" : ""}`}
+          onClick={() => onTypeFilterChange?.(category)}
+        >
+          {category}
+        </button>
+      ))}
+    </div>
+  </div>;
 }
 
 export default function MerchantStorefrontView({
@@ -116,18 +180,11 @@ export default function MerchantStorefrontView({
                 placeholder={searchPlaceholder}
               />
             </label>
-            <div className="merchant-category-row" aria-label="Stock categories">
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  type="button"
-                  className={`merchant-category-chip${typeFilter === category ? " active" : ""}`}
-                  onClick={() => onTypeFilterChange?.(category)}
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
+            <MerchantCategoryScroller
+              categories={categories}
+              typeFilter={typeFilter}
+              onTypeFilterChange={onTypeFilterChange}
+            />
           </div>
 
           {error ? <div className="merchant-inline-error">{error}</div> : null}
