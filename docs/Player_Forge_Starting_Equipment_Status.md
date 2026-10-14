@@ -1,3 +1,15 @@
+## 2026-10-13 shared dark-rarity / breathing-selection / cart-edge pass
+
+The Forge and normal MerchantPanel now share the same darker rarity presentation for merchant inventory rows and selected ItemCards. The storefront palette is intentionally deeper and less neon: mundane/common use dark steel tones, Uncommon dark green, Rare dark blue, Very Rare dark violet, Legendary dark amber, and Artifact dark crimson. Those tokens are owned by the shared MerchantPanel storefront stylesheet so both normal merchant shops and Forge Equipment receive the same treatment.
+
+Rarity remains visible on every stock row at all times through the full outline, left scan stripe, dark tinted wash, and restrained glow. Hover/focus and the selected row now use a slow breathing scale animation, growing only slightly and then easing back without changing document flow. Selected rows receive the stronger glow. Reduced-motion users receive the same color treatment without animation.
+
+The selected ItemCard uses the same shared darker rarity tokens, so its 4px frame and layered rarity header are also darker in both Forge and normal MerchantPanel contexts. The long-trait chevron formatting from the prior pass is already shared through ItemCard and therefore remains available in both storefronts.
+
+The Forge Starting Cart is still Forge-only, but its minimized header presentation now fills the complete top-right merchant-header lane with no extra inset box around it. The remaining-gold value inside that cart header is larger, bold, and given a clearer high-contrast pill treatment.
+
+No merchant inventory data, rarity values, checkout authority, cart arithmetic, character currency, or item mechanics changed.
+
 ## 2026-10-13 ItemCard property-chevrons + Forge purchase-footer follow-up
 
 The Forge selected-item strip above the ItemCard is now removed. The ItemCard moves to the top of the preview pane, while purchase context is consolidated below it. Remaining gold is no longer repeated under the ItemCard because the Starting Cart already owns budget/spent/remaining tracking in greater detail. The purchase footer now shows only Price, Available quantity, and the Add/Buy action.
