@@ -1,3 +1,17 @@
+## 2026-10-14 crafting-preview ItemCard structure + deep rarity authority
+
+The shared ItemCard now borrows the information hierarchy demonstrated by the existing Alchemy/Smithing preview cards while preserving the accepted shop-card footprint. The title/type header and centered rarity label remain first, followed by the short description + thumbnail row. A dedicated 3px rarity divider now sits immediately below that row. The divider uses the darker rarity anchor color with a subtle center highlight and restrained outer glow rather than a flat line.
+
+Rarity now has two explicit visual tokens: a deep anchor color and a lighter accent. The deep color is authoritative for the ItemCard outer frame, header, divider, and merchant stock-row border. The lighter accent is reserved for rarity labels and glow. The shared merchant storefront uses the same deep/accent values, so normal MerchantPanel and Forge Equipment remain visually synchronized. Current deep anchors include Rare #204875, Uncommon #1f5937, Very Rare #4a276b, Legendary #734314, and Artifact #762b34.
+
+Below the divider, ItemCard now supports an adaptive two-column field grid sourced from the existing normalized payload rather than a second rules engine. Armor/shields prioritize Armor Class, Strength requirement, Stealth, Weight, Attunement, and Properties when present. Weapons/ammunition prioritize Damage, Range, Weight, Attunement, and Properties. Potions/elixirs keep their main Effect visible and place Use, Duration, Save DC, and Doses/Charges into the structured field grid when those values exist. General gear uses Weight, Charges, Attunement, and Properties as available. Alchemy Modifiers keep their dedicated crafting-role block.
+
+Long named secondary traits continue to use per-property chevrons, so the main description remains visible while complex items can expose individual properties without one giant uninterrupted rules block.
+
+Shop ItemCards no longer repeat the item price in their internal footer; the storefront purchase footer remains the sole shop price/availability/action presentation. Non-shop ItemCards retain their existing price badge.
+
+No item mechanics, crafting formulas, prices, stock data, or checkout authority changed.
+
 ## 2026-10-13 shared dark-rarity / breathing-selection / cart-edge pass
 
 The Forge and normal MerchantPanel now share the same darker rarity presentation for merchant inventory rows and selected ItemCards. The storefront palette is intentionally deeper and less neon: mundane/common use dark steel tones, Uncommon dark green, Rare dark blue, Very Rare dark violet, Legendary dark amber, and Artifact dark crimson. Those tokens are owned by the shared MerchantPanel storefront stylesheet so both normal merchant shops and Forge Equipment receive the same treatment.
