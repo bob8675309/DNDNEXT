@@ -294,15 +294,17 @@ function alchemyModifierDetailsForItem(item = {}) {
   const brewTags = Array.isArray(alchemy.brewTags)
     ? uniqueList(alchemy.brewTags.map((value) => String(value || "").trim()).filter(Boolean))
     : [];
-
   const reduction = Number(alchemy.craftDcReduction || 0);
+  const rawSlot = String(alchemy.slot || "").trim();
+  const purpose = rawSlot.replace(/^fourth[- ]slot\s*/i, "").trim();
+
   return {
-    role: alchemy.slot || "Alchemy modifier",
+    slot: /^fourth[- ]slot/i.test(rawSlot) ? "Fourth slot" : (rawSlot || "Modifier slot"),
+    purpose: purpose ? titleCase(purpose) : "Recipe modifier",
     family: alchemy.familyLabel || titleCase(alchemy.family || "Enhancer / Catalyst"),
     brewTags,
-    brewImpact: alchemy.brewImpact || "Recipe component",
+    brewImpact: alchemy.brewImpact || "Recipe theme component",
     dcReduction: Number.isFinite(reduction) ? reduction : 0,
-    note: alchemy.mergeNote || "",
   };
 }
 
@@ -325,7 +327,7 @@ function alchemyIngredientDetailsForItem(item = {}) {
   };
 }
 
-function bombDetailsForItem(item = {}, type = "") {
+function bombDetailsForItem(item = {}, type = "", craftedAlchemy = null) {
   const blob = [type, item.item_type, item.type, item.category, item.item_name, item.name]
     .filter(Boolean)
     .join(" ")
@@ -333,21 +335,20 @@ function bombDetailsForItem(item = {}, type = "") {
   if (!/\bbomb\b/.test(blob)) return null;
 
   const alchemy = item?.alchemy && typeof item.alchemy === "object" ? item.alchemy : {};
-  const saveAbility = coalesce(item.save_ability, item.saveAbility, alchemy.save_ability, alchemy.saveAbility);
-  const saveDc = coalesce(item.save_dc, item.saveDc, alchemy.save_dc, alchemy.saveDc);
-  const area = coalesce(item.area_text, item.areaText, alchemy.area_text, alchemy.areaText);
-  const duration = coalesce(item.duration, item.duration_text, alchemy.duration, "Instant");
-  const use = coalesce(item.use, item.use_text, alchemy.use, "Use as described");
+  const saveAbility = craftedAlchemy?.saveAbility || coalesce(item.save_ability, item.saveAbility, alchemy.save_ability, alchemy.saveAbility);
+  const saveDc = craftedAlchemy?.saveDc || coalesce(item.save_dc, item.saveDc, alchemy.save_dc, alchemy.saveDc);
+  const area = craftedAlchemy?.area || coalesce(item.area_text, item.areaText, alchemy.area_text, alchemy.areaText);
+  const duration = craftedAlchemy?.duration || coalesce(item.duration_text, item.duration, alchemy.duration, "Instant");
+  const use = craftedAlchemy?.use || coalesce(item.use_text, item.use, alchemy.use, "Use as described");
   const repeatSave = coalesce(item.rider_repeat_save, alchemy.rider_repeat_save);
   const conditions = Array.isArray(alchemy.condition_riders)
     ? uniqueList(alchemy.condition_riders.map((value) => String(value || "").trim()).filter(Boolean))
     : [];
   const count = Number(alchemy.base_dice_count || 0);
   const die = Number(alchemy.base_die_size || 0);
-  const theme = coalesce(alchemy.themeTag, alchemy.tag_label);
-  const damage = count > 0 && die > 0
-    ? `${count}d${die}${theme ? ` ${String(theme).toLowerCase()}` : ""}`
-    : "";
+  const theme = craftedAlchemy?.theme || coalesce(alchemy.themeTag, alchemy.tag_label);
+  const effectDice = craftedAlchemy?.effectDice || (count > 0 && die > 0 ? `${count}d${die}` : "");
+  const damage = effectDice ? `${effectDice}${theme ? ` ${String(theme).toLowerCase()}` : ""}` : "";
 
   return { saveAbility, saveDc, area, duration, use, repeatSave, conditions, damage };
 }
@@ -357,6 +358,30 @@ function normalizedComparableText(value = "") {
     .replace(/\s+/g, " ")
     .trim()
     .toLowerCase();
+}
+
+function merchantCraftedAlchemyDetails(item = {}) {
+  const alchemy = item?.alchemy && typeof item.alchemy === "object" ? item.alchemy : {};
+  const merchantCraft = item?.merchant_craft && typeof item.merchant_craft === "object" ? item.merchant_craft : {};
+  const alchemyResult = item?.alchemy_result && typeof item.alchemy_result === "object" ? item.alchemy_result : {};
+  const isCraftedProduct = String(alchemy.kind || "").toLowerCase() === "crafted_product";
+  const isMerchantCrafted = Boolean(item.merchant_crafted || item.merchantCrafted || merchantCraft.crafted || alchemy.merchantCrafted);
+  if (!isCraftedProduct || !isMerchantCrafted) return null;
+
+  const effect = coalesce(item.effect_text, item.item_description, item.effect, alchemyResult.effect, merchantCraft.effect, alchemy.effect);
+  const duration = coalesce(item.duration_text, item.duration, merchantCraft.duration, alchemyResult.duration, alchemy.duration);
+  const use = coalesce(item.use_text, item.use, merchantCraft.use, alchemyResult.use, alchemy.use);
+  const areaFeet = Number(coalesce(merchantCraft.area_feet, alchemyResult.areaFeet, item.area_feet, alchemy.areaFeet, alchemy.base_area_feet) || 0);
+  const areaShape = coalesce(item.area_shape, alchemy.area_shape);
+  const area = areaFeet > 0
+    ? `${areaFeet}-foot ${String(areaShape || "area").replace(/_/g, " ")}`
+    : coalesce(item.area_text, item.areaText, alchemyResult.areaText, merchantCraft.area_text, alchemy.area_text, alchemy.areaText);
+  const effectDice = coalesce(item.effect_dice, merchantCraft.effect_dice, alchemyResult.effectDice, alchemy.effectDice);
+  const saveAbility = coalesce(merchantCraft.save_ability, alchemyResult?.saveDcPreview?.saveAbility, item.save_ability, item.saveAbility, alchemy.save_ability, alchemy.saveAbility);
+  const saveDc = coalesce(merchantCraft.save_dc, alchemyResult?.saveDcPreview?.dc, item.save_dc, item.saveDc, alchemy.save_dc, alchemy.saveDc);
+  const theme = coalesce(alchemy.themeTag, alchemy.tag_label);
+
+  return { effect, duration, use, area, effectDice, saveAbility, saveDc, theme };
 }
 
 function namedRuleSections(text = "") {
@@ -445,11 +470,12 @@ export default function ItemCard({
 
   const entriesText = flattenEntries(mergedItem.entries);
   const overrideFlavor = (flavorIndex && flavorIndex.get(mergedItem.item_name || mergedItem.name)) || null;
-  const flavorText = mergedItem.flavor || overrideFlavor || entriesText || "";
-  const rawRuleText = coalesce(mergedItem.item_description, mergedItem.rulesText, mergedItem.rules, "");
+  const craftedAlchemy = merchantCraftedAlchemyDetails(mergedItem);
+  const flavorText = craftedAlchemy?.effect || mergedItem.flavor || overrideFlavor || entriesText || "";
+  const rawRuleText = craftedAlchemy?.effect || coalesce(mergedItem.item_description, mergedItem.rulesText, mergedItem.rules, "");
   const hasItemDescription = !!rawRuleText;
   const potionDetails = potionDetailsForItem(mergedItem, uiType || mergedItem.type || mergedItem.item_type, rawRuleText, entriesText);
-  const bombDetails = bombDetailsForItem(mergedItem, uiType || mergedItem.type || mergedItem.item_type);
+  const bombDetails = bombDetailsForItem(mergedItem, uiType || mergedItem.type || mergedItem.item_type, craftedAlchemy);
   const alchemyModifierDetails = alchemyModifierDetailsForItem(mergedItem);
   const alchemyIngredientDetails = alchemyIngredientDetailsForItem(mergedItem);
   const isAlchemyComponent = Boolean(alchemyModifierDetails || alchemyIngredientDetails);
@@ -510,15 +536,13 @@ export default function ItemCard({
     ) : null}
 
     {alchemyModifierDetails ? (
-      <div className="sitem-section sitem-alchemy-details mt-2">
-        <div className="small text-muted mb-1 text-uppercase fw-semibold">Alchemy Modifier</div>
-        <div className="row g-2">
-          <div className="col-12 col-md-6"><strong>Role:</strong> {alchemyModifierDetails.role}</div>
-          <div className="col-12 col-md-6"><strong>Family:</strong> {alchemyModifierDetails.family}</div>
-          <div className="col-12 col-md-6"><strong>Brew tag:</strong> {alchemyModifierDetails.brewTags.join(", ") || "—"}</div>
-          <div className="col-12 col-md-6"><strong>Craft DC:</strong> {alchemyModifierDetails.dcReduction > 0 ? `−${alchemyModifierDetails.dcReduction}` : "No reduction"}</div>
-          <div className="col-12"><strong>Final brew:</strong> The selected recipe determines the finished brew's effect and duration; this modifier contributes its listed brew tag.</div>
-        </div>
+      <div className="sitem-field-grid sitem-alchemy-modifier-grid mt-2">
+        <div className="sitem-field"><div className="sitem-field__label">Slot</div><div className="sitem-field__value">{alchemyModifierDetails.slot}</div></div>
+        <div className="sitem-field"><div className="sitem-field__label">Purpose</div><div className="sitem-field__value">{alchemyModifierDetails.purpose}</div></div>
+        <div className="sitem-field"><div className="sitem-field__label">Family</div><div className="sitem-field__value">{alchemyModifierDetails.family}</div></div>
+        <div className="sitem-field"><div className="sitem-field__label">Brew Theme</div><div className="sitem-field__value">{alchemyModifierDetails.brewTags.join(", ") || "Neutral"}</div></div>
+        <div className="sitem-field"><div className="sitem-field__label">Craft DC</div><div className="sitem-field__value">{alchemyModifierDetails.dcReduction > 0 ? `−${alchemyModifierDetails.dcReduction}` : "No reduction"}</div></div>
+        <div className="sitem-field"><div className="sitem-field__label">Contribution</div><div className="sitem-field__value">{alchemyModifierDetails.brewImpact}</div></div>
       </div>
     ) : null}
 
