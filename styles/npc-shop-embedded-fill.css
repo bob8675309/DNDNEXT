@@ -63,11 +63,11 @@
 
 
 /* Merchant storefront native-density pass.
-   The accepted visual reference is the old 80% browser-zoom view. Keep this
-   profile shell compact at native 100% instead of asking the browser to scale it. */
+   The current accepted visual reference is the 90% browser-zoom view. Keep the
+   embedded profile shop close to that footprint at native 100% without browser scaling. */
 @media (min-width: 981px) {
   .npc-page-profile-panel-shell:has(.npc-panel-shop-view) {
-    width: min(920px, calc(100vw - 1.25rem));
+    width: min(840px, calc(100vw - 1.25rem));
   }
 
   .npc-panel-shop-view .merchant-market-shell {
