@@ -350,3 +350,195 @@
 .sitem-card.is-shop-variant .sitem-rule-trait__body {
   font-size: .66rem;
 }
+
+
+/* 2026-10-14 crafting-preview ItemCard structure + deep rarity tokens.
+   One deep rarity anchor drives the border/header/divider; a lighter companion
+   accent is reserved for readable labels and restrained glow. */
+.sitem-card {
+  --sitem-rarity-deep: #434b55;
+  --sitem-rarity-accent: #8a95a3;
+  --sitem-rarity-color: var(--sitem-rarity-deep);
+}
+
+.sitem-card:has(.sitem-header.rarity-none),
+.sitem-card:has(.sitem-header.rarity-mundane) {
+  --sitem-rarity-deep: #434b55;
+  --sitem-rarity-accent: #8a95a3;
+  --sitem-rarity-color: var(--sitem-rarity-deep);
+}
+.sitem-card:has(.sitem-header.rarity-common) {
+  --sitem-rarity-deep: #59636f;
+  --sitem-rarity-accent: #a1acb8;
+  --sitem-rarity-color: var(--sitem-rarity-deep);
+}
+.sitem-card:has(.sitem-header.rarity-uncommon) {
+  --sitem-rarity-deep: #1f5937;
+  --sitem-rarity-accent: #51ad72;
+  --sitem-rarity-color: var(--sitem-rarity-deep);
+}
+.sitem-card:has(.sitem-header.rarity-rare) {
+  --sitem-rarity-deep: #204875;
+  --sitem-rarity-accent: #4d8fd4;
+  --sitem-rarity-color: var(--sitem-rarity-deep);
+}
+.sitem-card:has(.sitem-header.rarity-very-rare) {
+  --sitem-rarity-deep: #4a276b;
+  --sitem-rarity-accent: #9162bf;
+  --sitem-rarity-color: var(--sitem-rarity-deep);
+}
+.sitem-card:has(.sitem-header.rarity-legendary) {
+  --sitem-rarity-deep: #734314;
+  --sitem-rarity-accent: #c07a2e;
+  --sitem-rarity-color: var(--sitem-rarity-deep);
+}
+.sitem-card:has(.sitem-header.rarity-artifact) {
+  --sitem-rarity-deep: #762b34;
+  --sitem-rarity-accent: #c5535e;
+  --sitem-rarity-color: var(--sitem-rarity-deep);
+}
+
+.sitem-card {
+  border-color: var(--sitem-rarity-deep) !important;
+  box-shadow:
+    0 18px 48px rgba(0,0,0,.36),
+    0 0 14px color-mix(in srgb, var(--sitem-rarity-accent) 15%, transparent),
+    inset 0 0 0 1px rgba(255,255,255,.035) !important;
+}
+
+.sitem-card .sitem-header {
+  background:
+    radial-gradient(circle at 10% -50%,
+      color-mix(in srgb, var(--sitem-rarity-accent) 18%, transparent) 0%,
+      transparent 43%),
+    linear-gradient(
+      110deg,
+      color-mix(in srgb, var(--sitem-rarity-deep) 84%, #090b10 16%) 0%,
+      color-mix(in srgb, var(--sitem-rarity-deep) 74%, #0b0d13 26%) 58%,
+      color-mix(in srgb, var(--sitem-rarity-deep) 62%, #080a0f 38%) 100%
+    ) !important;
+  border-bottom-color: color-mix(in srgb, var(--sitem-rarity-deep) 88%, #07090d 12%) !important;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--sitem-rarity-accent) 24%, transparent),
+    inset 0 -10px 24px rgba(0,0,0,.24),
+    0 4px 14px color-mix(in srgb, var(--sitem-rarity-accent) 10%, transparent) !important;
+}
+
+.sitem-card .sitem-meta,
+.sitem-card .sitem-rarity {
+  color: var(--sitem-rarity-accent) !important;
+}
+
+.sitem-rarity-divider {
+  position: relative;
+  height: 3px;
+  margin: .68rem -.12rem .58rem;
+  border-radius: 999px;
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in srgb, var(--sitem-rarity-deep) 88%, transparent) 10%,
+      var(--sitem-rarity-deep) 34%,
+      color-mix(in srgb, var(--sitem-rarity-accent) 62%, var(--sitem-rarity-deep) 38%) 58%,
+      var(--sitem-rarity-deep) 82%,
+      transparent 100%
+    );
+  box-shadow:
+    0 0 5px color-mix(in srgb, var(--sitem-rarity-accent) 34%, transparent),
+    0 0 12px color-mix(in srgb, var(--sitem-rarity-deep) 22%, transparent);
+}
+
+.sitem-rarity-divider::after {
+  content: "";
+  position: absolute;
+  inset: -3px 13% -3px 13%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--sitem-rarity-accent) 14%, transparent),
+    transparent
+  );
+  filter: blur(4px);
+  pointer-events: none;
+}
+
+.sitem-field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: .48rem;
+}
+
+.sitem-field {
+  min-width: 0;
+  padding: .56rem .62rem;
+  border: 1px solid color-mix(in srgb, var(--sitem-rarity-deep) 26%, rgba(255,255,255,.08));
+  border-radius: .58rem;
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--sitem-rarity-deep) 7%, rgba(255,255,255,.055)),
+      rgba(255,255,255,.035)
+    );
+}
+
+.sitem-field.is-wide {
+  grid-column: 1 / -1;
+}
+
+.sitem-field__label {
+  margin-bottom: .22rem;
+  color: color-mix(in srgb, var(--sitem-rarity-accent) 72%, rgba(255,255,255,.58));
+  font-size: .68em;
+  font-weight: 780;
+  letter-spacing: .035em;
+  text-transform: uppercase;
+}
+
+.sitem-field__value {
+  color: rgba(255,255,255,.90);
+  font-weight: 680;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.sitem-effect-panel {
+  border-color: color-mix(in srgb, var(--sitem-rarity-deep) 34%, rgba(255,255,255,.10)) !important;
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--sitem-rarity-deep) 9%, rgba(255,255,255,.05)),
+      rgba(255,255,255,.035)
+    ) !important;
+}
+
+.sitem-card.is-shop-variant .sitem-rarity-divider {
+  margin-top: .54rem;
+  margin-bottom: .48rem;
+}
+
+.sitem-card.is-shop-variant .sitem-field-grid {
+  gap: .38rem;
+}
+
+.sitem-card.is-shop-variant .sitem-field {
+  padding: .46rem .52rem;
+}
+
+.sitem-card.is-shop-variant .sitem-field__label {
+  font-size: .62rem;
+}
+
+.sitem-card.is-shop-variant .sitem-field__value {
+  font-size: .69rem;
+}
+
+@media (max-width: 520px) {
+  .sitem-field-grid {
+    grid-template-columns: minmax(0,1fr);
+  }
+  .sitem-field.is-wide {
+    grid-column: auto;
+  }
+}
