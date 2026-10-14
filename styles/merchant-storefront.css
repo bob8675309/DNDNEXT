@@ -1648,3 +1648,73 @@
   --sitem-rarity-accent: var(--merchant-rarity-artifact-accent);
   --sitem-rarity-color: var(--sitem-rarity-deep);
 }
+
+
+/* 2026-10-14 category-scrollbar + alchemy-card readability pass.
+   Horizontal category scrolling is exposed above the chips instead of overlaying
+   them. The chip row keeps pointer/touch scrolling, but hides its native bottom
+   scrollbar; the synchronized top track owns the visible scrollbar. */
+.merchant-storefront-shared .merchant-category-stack {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.merchant-storefront-shared .merchant-category-scrollbar {
+  width: 100%;
+  height: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  opacity: 0;
+  pointer-events: none;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(168,108,255,.72) rgba(255,255,255,.04);
+}
+
+.merchant-storefront-shared .merchant-category-scrollbar.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.merchant-storefront-shared .merchant-category-scrollbar__spacer {
+  height: 1px;
+}
+
+.merchant-storefront-shared .merchant-category-scrollbar::-webkit-scrollbar {
+  height: 7px;
+}
+.merchant-storefront-shared .merchant-category-scrollbar::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: rgba(255,255,255,.035);
+}
+.merchant-storefront-shared .merchant-category-scrollbar::-webkit-scrollbar-thumb {
+  border: 1px solid rgba(10,8,17,.70);
+  border-radius: 999px;
+  background: rgba(168,108,255,.62);
+}
+.merchant-storefront-shared .merchant-category-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(190,144,255,.84);
+}
+
+.merchant-storefront-shared .merchant-category-row {
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-top: 0;
+  padding-bottom: 1px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.merchant-storefront-shared .merchant-category-row::-webkit-scrollbar {
+  display: none;
+}
+
+.sitem-card .sitem-alchemy-ingredient-grid .sitem-field.is-wide {
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--sitem-rarity-deep) 10%, rgba(255,255,255,.055)),
+      rgba(255,255,255,.035)
+    );
+}
