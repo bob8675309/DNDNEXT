@@ -1524,3 +1524,127 @@
     transform: none !important;
   }
 }
+
+
+/* 2026-10-14 shared deep/accent rarity authority.
+   The deep end of each rarity gradient is authoritative for borders, headers,
+   dividers, and merchant stock rows. Accent is reserved for readable labels and glow. */
+.merchant-storefront-shared {
+  --merchant-rarity-mundane: #434b55;
+  --merchant-rarity-mundane-accent: #8a95a3;
+  --merchant-rarity-common: #59636f;
+  --merchant-rarity-common-accent: #a1acb8;
+  --merchant-rarity-uncommon: #1f5937;
+  --merchant-rarity-uncommon-accent: #51ad72;
+  --merchant-rarity-rare: #204875;
+  --merchant-rarity-rare-accent: #4d8fd4;
+  --merchant-rarity-very-rare: #4a276b;
+  --merchant-rarity-very-rare-accent: #9162bf;
+  --merchant-rarity-legendary: #734314;
+  --merchant-rarity-legendary-accent: #c07a2e;
+  --merchant-rarity-artifact: #762b34;
+  --merchant-rarity-artifact-accent: #c5535e;
+}
+
+.merchant-storefront-shared .merchant-stock-row {
+  --rarity-accent: var(--merchant-rarity-mundane-accent);
+}
+
+.merchant-storefront-shared .merchant-stock-row.rarity-none,
+.merchant-storefront-shared .merchant-stock-row.rarity-mundane {
+  --rarity-color: var(--merchant-rarity-mundane);
+  --rarity-accent: var(--merchant-rarity-mundane-accent);
+}
+.merchant-storefront-shared .merchant-stock-row.rarity-common {
+  --rarity-color: var(--merchant-rarity-common);
+  --rarity-accent: var(--merchant-rarity-common-accent);
+}
+.merchant-storefront-shared .merchant-stock-row.rarity-uncommon {
+  --rarity-color: var(--merchant-rarity-uncommon);
+  --rarity-accent: var(--merchant-rarity-uncommon-accent);
+}
+.merchant-storefront-shared .merchant-stock-row.rarity-rare {
+  --rarity-color: var(--merchant-rarity-rare);
+  --rarity-accent: var(--merchant-rarity-rare-accent);
+}
+.merchant-storefront-shared .merchant-stock-row.rarity-very-rare {
+  --rarity-color: var(--merchant-rarity-very-rare);
+  --rarity-accent: var(--merchant-rarity-very-rare-accent);
+}
+.merchant-storefront-shared .merchant-stock-row.rarity-legendary {
+  --rarity-color: var(--merchant-rarity-legendary);
+  --rarity-accent: var(--merchant-rarity-legendary-accent);
+}
+.merchant-storefront-shared .merchant-stock-row.rarity-artifact {
+  --rarity-color: var(--merchant-rarity-artifact);
+  --rarity-accent: var(--merchant-rarity-artifact-accent);
+}
+
+.merchant-storefront-shared .merchant-stock-row,
+.merchant-storefront-shared .merchant-stock-row:hover,
+.merchant-storefront-shared .merchant-stock-row:focus-visible,
+.merchant-storefront-shared .merchant-stock-row.selected {
+  border-color: var(--rarity-color);
+}
+
+.merchant-storefront-shared .merchant-stock-row {
+  box-shadow:
+    inset 4px 0 0 var(--rarity-color),
+    0 0 0 1px color-mix(in srgb, var(--rarity-color) 20%, transparent),
+    0 0 12px color-mix(in srgb, var(--rarity-accent) 22%, transparent),
+    0 7px 18px rgba(0,0,0,.22);
+}
+
+.merchant-storefront-shared .merchant-stock-row:hover,
+.merchant-storefront-shared .merchant-stock-row:focus-visible {
+  box-shadow:
+    inset 4px 0 0 var(--rarity-color),
+    0 0 0 1px color-mix(in srgb, var(--rarity-accent) 34%, transparent),
+    0 0 18px color-mix(in srgb, var(--rarity-accent) 38%, transparent),
+    0 9px 24px rgba(0,0,0,.27);
+}
+
+.merchant-storefront-shared .merchant-stock-row.selected {
+  box-shadow:
+    inset 5px 0 0 var(--rarity-color),
+    0 0 0 2px color-mix(in srgb, var(--rarity-accent) 42%, transparent),
+    0 0 23px color-mix(in srgb, var(--rarity-accent) 50%, transparent),
+    0 10px 28px rgba(0,0,0,.30);
+}
+
+.merchant-storefront-shared .sitem-card:has(.sitem-header.rarity-none),
+.merchant-storefront-shared .sitem-card:has(.sitem-header.rarity-mundane) {
+  --sitem-rarity-deep: var(--merchant-rarity-mundane);
+  --sitem-rarity-accent: var(--merchant-rarity-mundane-accent);
+  --sitem-rarity-color: var(--sitem-rarity-deep);
+}
+.merchant-storefront-shared .sitem-card:has(.sitem-header.rarity-common) {
+  --sitem-rarity-deep: var(--merchant-rarity-common);
+  --sitem-rarity-accent: var(--merchant-rarity-common-accent);
+  --sitem-rarity-color: var(--sitem-rarity-deep);
+}
+.merchant-storefront-shared .sitem-card:has(.sitem-header.rarity-uncommon) {
+  --sitem-rarity-deep: var(--merchant-rarity-uncommon);
+  --sitem-rarity-accent: var(--merchant-rarity-uncommon-accent);
+  --sitem-rarity-color: var(--sitem-rarity-deep);
+}
+.merchant-storefront-shared .sitem-card:has(.sitem-header.rarity-rare) {
+  --sitem-rarity-deep: var(--merchant-rarity-rare);
+  --sitem-rarity-accent: var(--merchant-rarity-rare-accent);
+  --sitem-rarity-color: var(--sitem-rarity-deep);
+}
+.merchant-storefront-shared .sitem-card:has(.sitem-header.rarity-very-rare) {
+  --sitem-rarity-deep: var(--merchant-rarity-very-rare);
+  --sitem-rarity-accent: var(--merchant-rarity-very-rare-accent);
+  --sitem-rarity-color: var(--sitem-rarity-deep);
+}
+.merchant-storefront-shared .sitem-card:has(.sitem-header.rarity-legendary) {
+  --sitem-rarity-deep: var(--merchant-rarity-legendary);
+  --sitem-rarity-accent: var(--merchant-rarity-legendary-accent);
+  --sitem-rarity-color: var(--sitem-rarity-deep);
+}
+.merchant-storefront-shared .sitem-card:has(.sitem-header.rarity-artifact) {
+  --sitem-rarity-deep: var(--merchant-rarity-artifact);
+  --sitem-rarity-accent: var(--merchant-rarity-artifact-accent);
+  --sitem-rarity-color: var(--sitem-rarity-deep);
+}
