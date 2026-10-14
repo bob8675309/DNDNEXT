@@ -173,6 +173,25 @@ function extractDuration(text = "") {
   }
   return "";
 }
+function alchemyModifierDetailsForItem(item = {}) {
+  const alchemy = item?.alchemy && typeof item.alchemy === "object" ? item.alchemy : null;
+  if (!alchemy || String(alchemy.kind || "").toLowerCase() !== "modifier") return null;
+
+  const brewTags = Array.isArray(alchemy.brewTags)
+    ? uniqueList(alchemy.brewTags.map((value) => String(value || "").trim()).filter(Boolean))
+    : [];
+
+  const reduction = Number(alchemy.craftDcReduction || 0);
+  return {
+    role: alchemy.slot || "Alchemy modifier",
+    family: alchemy.familyLabel || titleCase(alchemy.family || "Enhancer / Catalyst"),
+    brewTags,
+    brewImpact: alchemy.brewImpact || "Recipe component",
+    dcReduction: Number.isFinite(reduction) ? reduction : 0,
+    note: alchemy.mergeNote || "",
+  };
+}
+
 function potionDetailsForItem(item = {}, type = "", ruleText = "", entriesText = "") {
   if (!isPotionLikeItem(item, type)) return null;
   const name = item.item_name || item.name || "";
@@ -216,6 +235,13 @@ export default function ItemCard({
   const rawRuleText = coalesce(mergedItem.item_description, mergedItem.rulesText, mergedItem.rules, "");
   const hasItemDescription = !!rawRuleText;
   const potionDetails = potionDetailsForItem(mergedItem, uiType || mergedItem.type || mergedItem.item_type, rawRuleText, entriesText);
+  const alchemyModifierDetails = alchemyModifierDetailsForItem(mergedItem);
+  const alchemyRuleDuplicatesFlavor = Boolean(
+    alchemyModifierDetails &&
+    rawRuleText &&
+    flavorText &&
+    String(rawRuleText).trim().toLowerCase() === String(flavorText).trim().toLowerCase()
+  );
 
   const gp = parseValueToGp(coalesce(mergedItem.item_cost, mergedItem.cost, mergedItem.value));
   const weight = coalesce(mergedItem.item_weight, mergedItem.weight, mergedItem?.card_payload?.weight, null);
@@ -249,6 +275,19 @@ export default function ItemCard({
   const showRange = norm.rng && norm.rng !== "—";
 
   const detailContent = <>
+    {alchemyModifierDetails ? (
+      <div className="sitem-section sitem-alchemy-details mt-2">
+        <div className="small text-muted mb-1 text-uppercase fw-semibold">Alchemy Modifier</div>
+        <div className="row g-2">
+          <div className="col-12 col-md-6"><strong>Role:</strong> {alchemyModifierDetails.role}</div>
+          <div className="col-12 col-md-6"><strong>Family:</strong> {alchemyModifierDetails.family}</div>
+          <div className="col-12 col-md-6"><strong>Brew tag:</strong> {alchemyModifierDetails.brewTags.join(", ") || "—"}</div>
+          <div className="col-12 col-md-6"><strong>Craft DC:</strong> {alchemyModifierDetails.dcReduction > 0 ? `−${alchemyModifierDetails.dcReduction}` : "No reduction"}</div>
+          <div className="col-12"><strong>Final brew:</strong> The selected recipe determines the finished brew's effect and duration; this modifier contributes its listed brew tag.</div>
+        </div>
+      </div>
+    ) : null}
+
     {potionDetails ? (
       <div className="sitem-section sitem-rules mt-2">
         <div className="small text-muted mb-1 text-uppercase fw-semibold">Potion Details</div>
@@ -260,7 +299,7 @@ export default function ItemCard({
       </div>
     ) : null}
 
-    <div
+    {!alchemyRuleDuplicatesFlavor ? <div
       className="sitem-section sitem-rules mt-2"
       style={{ whiteSpace: hasItemDescription ? "pre-line" : (pureStringBullets ? "normal" : "pre-line") }}
     >
@@ -273,9 +312,9 @@ export default function ItemCard({
       ) : (
         "—"
       )}
-    </div>
+    </div> : null}
 
-    <div className="row g-2 mt-2">
+    {!alchemyModifierDetails ? <div className="row g-2 mt-2">
       <div className="col-12 col-md-6">
         <div className="sitem-section">
           <div className="small text-muted mb-1">Damage</div>
@@ -294,7 +333,7 @@ export default function ItemCard({
           <div className="text-wrap">{norm.props}</div>
         </div>
       </div>
-    </div>
+    </div> : null}
 
     <div className="d-flex justify-content-between align-items-center mt-2">
       <div className="d-flex gap-2 flex-wrap">
