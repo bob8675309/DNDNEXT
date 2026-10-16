@@ -1,3 +1,13 @@
+## 2026-10-15 locked ItemCard families implemented
+
+The eight approved ItemCard visual families are now represented in the shared source renderer instead of existing only as mockup/documentation targets. Weapon, Armor, Material, Recipe, Potion/Elixir, Bomb, Wondrous wearable, and Charged Wondrous/Rod cards receive family-specific field ordering while still consuming canonical item payloads.
+
+The same pass adds player-facing source-tag cleanup, armor AC/Dex presentation, default melee reach presentation, canonical crafted-by provenance support, a centered rarity-divider crystal, subtle textured card interiors, common/mundane visual parity, and a no-redundant-footer shop presentation.
+
+Merchant stock rows now keep their one-line ellipsized description but also surface up to two compact type-aware game facts so readability improves without discarding useful mechanics. Forge Equipment gives the selected card slightly more width and raises the type floor while retaining a usable middle stock column.
+
+Crafting-material art remains intentionally provisional. Material/reagent/catalyst/recipe fallbacks are generic family icons until the Smithing → Alchemy → Enchanting redesign is complete.
+
 ## 2026-10-14 merchant-crafted alchemy authority + catalyst formatting + 90% MerchantPanel pass
 
 The latest merchant review exposed a distinction between base recipe text and the finished merchant-crafted stock result. Quill Ashborn's Bomb of Lightning is the calibration case: the stock payload contains the original 2d6 / 10-foot recipe flavor alongside the actual crafted result of 3d6 with a 15-foot area. ItemCard now treats the final merchant-crafted payload (`merchant_craft` / `alchemy_result` / final effect fields) as presentation authority for merchant-crafted alchemy. The top summary, adaptive fields, duration, area, save, and damage therefore describe one finished item instead of mixing base-recipe and enhanced values. The same rule prevents enhanced elixirs from showing their original duration in the summary while a later section shows the crafted duration.
