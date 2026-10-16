@@ -1,4 +1,4 @@
-import { merchantInitials, merchantShopLabel, merchantTagline, resolveMerchantPortrait } from "../utils/merchantStorefrontMedia";
+import { merchantInitials, merchantShopLabel, resolveMerchantPortrait } from "../utils/merchantStorefrontMedia";
 import { themeFromMerchant } from "../utils/merchantTheme";
 
 export default function MerchantRail({
@@ -17,7 +17,6 @@ export default function MerchantRail({
       {!loading && !merchants.length ? <div className="merchant-rail__empty">No storefront merchants are currently available.</div> : null}
       {merchants.map((merchant) => {
         const active = String(merchant.id) === String(activeMerchantId);
-        const tagline = merchantTagline(merchant);
         const portrait = resolveMerchantPortrait(merchant);
         const theme = themeFromMerchant(merchant);
         return <button
@@ -31,7 +30,6 @@ export default function MerchantRail({
           <span className="merchant-rail__merchant-copy">
             <strong>{merchant.name || "Merchant"}</strong>
             <em>{merchantShopLabel(merchant)}</em>
-            {tagline ? <small>{tagline}</small> : <small>Campaign storefront</small>}
           </span>
           <span className="merchant-rail__status" aria-label="Storefront available" title="Storefront available" />
         </button>;

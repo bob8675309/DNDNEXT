@@ -226,6 +226,9 @@ for (const token of [
 
 for (const token of ["MerchantAmbientBackdrop", "merchantShopLabel", "merchantTagline", "forge-merchant-workshop", "showBackdrop = true", "showBackdrop ? <MerchantAmbientBackdrop"]) need(workshopPane, token, "merchant workshop pane");
 for (const token of ["resolveMerchantPortrait", "merchantInitials", "themeFromMerchant", "Campaign merchants", "merchant-rail__merchant", "merchant-rail__portrait-fallback"]) need(merchantRail, token, "merchant rail");
+forbid(merchantRail, "merchantTagline", "unreadable third-line merchant rail tagline");
+need(equipmentStyles, "font-size: .58rem;", "larger Forge merchant role label");
+need(equipmentStyles, "font-size: .72rem;\n    line-height: 1.32;\n    white-space: nowrap;", "larger single-line Forge stock summary");
 for (const token of ["resolveItemVisual", "raritySlug", "rarityClass", "rarityRowClass", "rarity-", "merchant-stock-row", "Search stock", "Sort", "merchant-category-chip", "is-rarity-"]) need(waresList, token, "merchant-overlay wares list");
 forbid(waresList, "resolveMerchantStorefrontMedia", "duplicate per-column storefront background");
 forbid(waresList, "forge-merchant-wares__scene", "duplicate Wares scene background");
