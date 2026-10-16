@@ -20,6 +20,66 @@ function defaultRarityBadgeClass(value = "") {
   return `is-rarity-${raritySlug(value)}`;
 }
 
+function playerFacingItemText(value = "") {
+  return String(value || "")
+    .replace(/\{@dc\s+([^}]+)\}/gi, (_, valueText) => `DC ${String(valueText).split("|")[0].trim()}`)
+    .replace(/\{@(?:damage|dice)\s+([^}]+)\}/gi, (_, valueText) => String(valueText).split("|")[0].trim())
+    .replace(/\{#itemEntry\s+([^}]+)\}/gi, (_, valueText) => String(valueText).split("|")[0].trim())
+    .replace(/\{@(?:spell|condition|skill|item|itemEntry|action|status|sense)\s+([^}]+)\}/gi, (_, valueText) => String(valueText).split("|")[0].trim())
+    .replace(/\{@[^\s}]+\s+([^}]+)\}/gi, (_, valueText) => String(valueText).split("|")[0].trim())
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function stockFactsForCard(card = {}) {
+  const payload = card.card_payload && typeof card.card_payload === "object" ? card.card_payload : {};
+  const item = { ...payload, ...card };
+  const type = String(item.item_type || item.uiType || item.type || "").toLowerCase();
+  const name = String(item.item_name || item.name || "").toLowerCase();
+  const facts = [];
+
+  const add = (value) => {
+    const clean = playerFacingItemText(value);
+    if (clean && !facts.some((entry) => entry.toLowerCase() === clean.toLowerCase())) facts.push(clean);
+  };
+
+  if (/melee weapon|ranged weapon|ammunition/.test(type)) {
+    add(item.damageText || item.damage_text || (item.dmg1 ? `${item.dmg1} ${item.dmgType || ""}`.trim() : ""));
+    if (item.rangeText || item.range) add(item.rangeText || item.range);
+    else if (/melee weapon/.test(type)) {
+      const props = Array.isArray(item.property) ? item.property.join(" ") : String(item.propertiesText || "");
+      add(/\bR\b|\breach\b/i.test(props) ? "10 ft reach" : "5 ft reach");
+    }
+  } else if (/armor|shield/.test(type)) {
+    const baseAc = Number(item.ac);
+    const bonusMatch = String(item.bonusAc || "").match(/[+-]?\d+/);
+    const bonus = bonusMatch ? Number(bonusMatch[0]) : 0;
+    if (Number.isFinite(baseAc)) add(`AC ${baseAc + bonus}`);
+  } else if (/bomb/.test(type) || /\bbomb\b/.test(name)) {
+    add(item.effect_dice || item?.alchemy_result?.effectDice || item?.alchemy?.effectDice || "");
+    const saveAbility = item.save_ability || item.saveAbility || item?.alchemy_result?.saveDcPreview?.saveAbility || item?.alchemy?.saveAbility;
+    const saveDc = item.save_dc || item.saveDc || item?.alchemy_result?.saveDcPreview?.dc || item?.alchemy?.saveDc;
+    if (saveAbility && saveDc) add(`${saveAbility} DC ${saveDc}`);
+    add(item.area_text || item.areaText || item?.alchemy_result?.areaText || "");
+  } else if (/potion|elixir|oil|poison/.test(type) || /potion|elixir|oil|poison/.test(name)) {
+    add(item.duration_text || item.duration || item?.alchemy_result?.duration || item?.alchemy?.duration || "");
+    const doses = item.doses || item.charges || item?.alchemy_result?.doses || item?.alchemy?.doses;
+    if (doses) add(`${doses} dose${Number(doses) === 1 ? "" : "s"}`);
+  } else if (/rod|wand|wondrous/.test(type)) {
+    const charges = item.charges || item.item_charges;
+    if (charges) add(`${charges} charge${Number(charges) === 1 ? "" : "s"}`);
+    if (item.uiSubKind) add(item.uiSubKind);
+  } else if (/material|ore|reagent|catalyst|plant|monster part/.test(type)) {
+    add(item.quality || item?.smithing?.quality || item?.alchemy?.familyLabel || item?.alchemy?.family || "");
+    add(item?.smithing?.materialClass || item?.alchemy?.brewImpact || "");
+  } else if (/recipe/.test(type) || item.recipe_item) {
+    add(item?.recipe_unlock?.discipline ? `${item.recipe_unlock.discipline} recipe` : "Recipe");
+    if (item?.recipe_unlock?.base_dc) add(`DC ${item.recipe_unlock.base_dc}`);
+  }
+
+  return facts.slice(0, 2);
+}
+
 function MerchantCategoryScroller({ categories = [], typeFilter = "All", onTypeFilterChange = null }) {
   const topRef = useRef(null);
   const rowRef = useRef(null);
@@ -196,6 +256,8 @@ export default function MerchantStorefrontView({
               {items.map((card) => {
                 const selected = String(selectedCard?.id) === String(card.id);
                 const qty = resolvedQuantity(card);
+                const stockFacts = stockFactsForCard(card);
+                const rowDescription = playerFacingItemText(card.item_description || card.flavor || "No description is available for this item.");
                 return (
                   <button
                     key={card.id}
@@ -212,11 +274,12 @@ export default function MerchantStorefrontView({
                     <div className="merchant-stock-row-meta">
                       <span className={rarityBadgeClassFor(card.item_rarity)}>{card.item_rarity || "Mundane"}</span>
                       <span>{card.item_type || "Item"}</span>
+                      {stockFacts.map((fact) => <span className="merchant-stock-row-fact" key={fact}>{fact}</span>)}
                       <span>Qty {qty}</span>
                       {showSource && card.source ? <span>{card.source}</span> : null}
                     </div>
-                    <p title={card.item_description || "No description is available for this item."}>
-                      {card.item_description || "No description is available for this item."}
+                    <p title={rowDescription}>
+                      {rowDescription}
                     </p>
                   </button>
                 );
