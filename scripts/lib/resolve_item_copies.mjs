@@ -5,6 +5,27 @@
 const cloneJson = (value) => value == null ? value : JSON.parse(JSON.stringify(value));
 const asArray = (value) => Array.isArray(value) ? cloneJson(value) : value == null ? [] : [cloneJson(value)];
 const copyKey = (name, source) => `${String(name || "").trim().toLowerCase()}|${String(source || "UNK").trim().toUpperCase()}`;
+const SOURCE_SUCCESSOR = Object.freeze({ DMG: "XDMG", PHB: "XPHB", MM: "XMM" });
+
+// These legacy campaign/adventure variants are known to be compatible with the
+// current 2024 successor base used by DNDNext. Do not apply DMG -> XDMG/PHB ->
+// XPHB blindly: some legacy copies (notably Book of Vile Darkness (Variant))
+// materially diverge from the 2024 base.
+const LEGACY_SUCCESSOR_COPY_ALLOWLIST = new Set([
+  "+2 ring of protection|tdcsr",
+  "charred wand of magic missiles|wdh",
+  "devlin's staff of striking|toa",
+  "enchanted three-dragon ante set|llk",
+  "horn of the endless maze|wdmm",
+  "jakarion's staff of frost|cos",
+]);
+
+function sourceCandidates(source = "", child = {}) {
+  const key = String(source || "UNK").trim().toUpperCase();
+  const childKey = `${String(child?.name || child?.item_name || "").trim().toLowerCase()}|${String(child?.source || child?.item_source || "").trim().toLowerCase()}`;
+  const successor = LEGACY_SUCCESSOR_COPY_ALLOWLIST.has(childKey) ? SOURCE_SUCCESSOR[key] : null;
+  return [key, successor].filter(Boolean);
+}
 
 export function flattenItemEntryText(node) {
   if (node == null) return "";
@@ -42,7 +63,15 @@ function applyEntryMods(entries = [], mods) {
 }
 
 export function resolveItemCopies(rows = [], { warn = console.warn } = {}) {
-  const byKey = new Map((rows || []).filter(Boolean).map((row) => [copyKey(row.name || row.item_name, row.source || row.item_source), row]));
+  const sourceRows = (rows || []).filter(Boolean);
+  const byKey = new Map(sourceRows.map((row) => [copyKey(row.name || row.item_name, row.source || row.item_source), row]));
+  const byName = new Map();
+  for (const row of sourceRows) {
+    const nameKey = String(row.name || row.item_name || "").trim().toLowerCase();
+    if (!nameKey) continue;
+    if (!byName.has(nameKey)) byName.set(nameKey, []);
+    byName.get(nameKey).push(row);
+  }
   const memo = new Map();
   const resolving = new Set();
 
@@ -60,10 +89,12 @@ export function resolveItemCopies(rows = [], { warn = console.warn } = {}) {
     }
 
     resolving.add(key);
-    const baseKey = copyKey(row._copy.name, row._copy.source || row.source || row.item_source);
-    const baseRow = byKey.get(baseKey);
+    const requestedSource = row._copy.source || row.source || row.item_source;
+    const baseName = row._copy.name;
+    const candidateKeys = sourceCandidates(requestedSource, row).map((source) => copyKey(baseName, source));
+    const baseRow = candidateKeys.map((candidateKey) => byKey.get(candidateKey)).find(Boolean) || null;
     if (!baseRow) {
-      warn?.(`[resolveItemCopies] Item copy base not found: ${baseKey}`);
+      warn?.(`[resolveItemCopies] Item copy base not found: ${candidateKeys.join(" or ")}`);
       resolving.delete(key);
       const unresolved = cloneJson(row);
       memo.set(key, unresolved);
@@ -81,13 +112,27 @@ export function resolveItemCopies(rows = [], { warn = console.warn } = {}) {
       resolved.entries = applyEntryMods(base.entries || [], mods.entries);
       const flattened = flattenItemEntryText(resolved.entries).trim();
       const baseDescription = String(base.item_description || base.rulesText || "").trim();
-      const modText = flattenItemEntryText(asArray(mods.entries).flatMap((operation) => asArray(operation?.items))).trim();
-      // Prefer the already-resolved base description plus only this state's
-      // appended copy text. That preserves recursive Dormant -> Awakened ->
-      // Exalted chains without duplicating earlier stages. Raw source builds
-      // still have "entries" as a full fallback when no normalized description
-      // exists yet.
-      resolved.item_description = [baseDescription, modText].filter(Boolean).join("\n\n") || flattened;
+      const operations = asArray(mods.entries).filter(Boolean);
+      const modText = flattenItemEntryText(operations.flatMap((operation) => asArray(operation?.items))).trim();
+      let derivedDescription = baseDescription;
+
+      for (const operation of operations) {
+        if (operation.mode === "replaceTxt") {
+          const pattern = new RegExp(operation.replace || "", operation.flags || "g");
+          derivedDescription = String(derivedDescription || "").replace(pattern, operation.with || "");
+        } else if (operation.mode === "prependArr" && modText) {
+          derivedDescription = [modText, derivedDescription].filter(Boolean).join("\n\n");
+        } else if (operation.mode === "appendArr" && modText) {
+          derivedDescription = [derivedDescription, modText].filter(Boolean).join("\n\n");
+        } else if (operation.mode === "replaceArr" && modText && !flattened) {
+          derivedDescription = modText;
+        }
+      }
+
+      // Raw source rows normally have entries, so the fully modified entry tree
+      // is the best text. Normalized fixtures/legacy rows can lack entries; in
+      // that case apply the copy operations to the inherited description.
+      resolved.item_description = flattened || derivedDescription || baseDescription;
       resolved.rulesShort = resolved.item_description;
     } else if (!resolved.item_description && base.item_description) {
       resolved.item_description = base.item_description;

@@ -13,6 +13,7 @@
     "check:large-file-source-bake-readiness": "node scripts/validate_large_file_source_bake_readiness.mjs",
     "check:handoff-docs": "node scripts/validate_handoff_docs_runner_alignment.mjs",
     "check:campaign-item-pool": "node scripts/validate_campaign_item_pool_and_rule_references.mjs",
+    "check:item-card-text": "node scripts/validate_item_card_text_catalog.mjs",
     "check:security-hardening": "node scripts/validate_security_hardening_roadmap.mjs",
     "check:town-crafter-handoff-pipeline": "node scripts/validate_town_crafter_handoff_pipeline.mjs",
     "check:map-profile": "node scripts/validate_map_profile_offcanvas_handoff.mjs",

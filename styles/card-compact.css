@@ -710,3 +710,72 @@
   border-bottom-style:solid;
   outline:none;
 }
+
+
+/* 2026-10-16 full-catalog ItemCard text formatting pass.
+   Preserve source wording while giving long rules, lists, and source roll tables
+   readable rhythm instead of a single dense wall of text. */
+.sitem-card .sitem-rule-paragraphs{
+  display:grid;
+  gap:.48rem;
+}
+.sitem-card .sitem-rule-paragraphs p{
+  margin:0;
+}
+.sitem-card .sitem-rule-collections{
+  display:grid;
+  gap:.42rem;
+}
+.sitem-card .sitem-rule-list ul{
+  display:grid;
+  gap:.48rem;
+  margin:0;
+  padding:.6rem .75rem .72rem 1.55rem;
+}
+.sitem-card .sitem-rule-list li{
+  color:rgba(255,255,255,.82);
+}
+.sitem-card .sitem-rule-list li > strong{
+  display:block;
+  margin-bottom:.16rem;
+  color:rgba(255,255,255,.94);
+}
+.sitem-card .sitem-rule-table__scroll{
+  overflow-x:auto;
+  padding:.45rem .55rem .62rem;
+}
+.sitem-card .sitem-rule-table table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:.72rem;
+}
+.sitem-card .sitem-rule-table th,
+.sitem-card .sitem-rule-table td{
+  padding:.34rem .42rem;
+  border-bottom:1px solid rgba(255,255,255,.09);
+  text-align:left;
+  vertical-align:top;
+}
+.sitem-card .sitem-rule-table th{
+  color:var(--sitem-rarity-accent);
+  font-size:.62rem;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+}
+.sitem-card .sitem-rule-table tbody tr:last-child td{
+  border-bottom:0;
+}
+.sitem-card.is-shop-variant .sitem-rule-paragraphs{
+  gap:.38rem;
+}
+.sitem-card.is-shop-variant .sitem-rule-list ul{
+  gap:.34rem;
+  padding:.5rem .6rem .58rem 1.35rem;
+  font-size:.66rem;
+}
+.sitem-card.is-shop-variant .sitem-rule-table table{
+  font-size:.64rem;
+}
+.sitem-card.is-shop-variant .sitem-rule-table th{
+  font-size:.56rem;
+}
