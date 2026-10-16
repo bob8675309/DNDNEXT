@@ -1733,3 +1733,68 @@
   -webkit-line-clamp: unset !important;
   -webkit-box-orient: initial !important;
 }
+
+
+/* 2026-10-15 merchant readability + shared baseline rarity pass. */
+.merchant-storefront-shared {
+  --merchant-rarity-common: var(--merchant-rarity-mundane);
+  --merchant-rarity-common-accent: var(--merchant-rarity-mundane-accent);
+}
+
+.merchant-storefront-shared .merchant-stock-row.rarity-common {
+  --rarity-color: var(--merchant-rarity-mundane);
+  --rarity-accent: var(--merchant-rarity-mundane-accent);
+}
+
+.merchant-storefront-shared .sitem-card:has(.sitem-header.rarity-common) {
+  --sitem-rarity-deep: var(--merchant-rarity-mundane);
+  --sitem-rarity-accent: var(--merchant-rarity-mundane-accent);
+  --sitem-rarity-color: var(--sitem-rarity-deep);
+}
+
+.merchant-storefront-shared .merchant-stock-row-head strong {
+  font-size: .77rem;
+  line-height: 1.18;
+}
+
+.merchant-storefront-shared .merchant-stock-row-head > span {
+  font-size: .71rem;
+}
+
+.merchant-storefront-shared .merchant-stock-row-meta {
+  gap: .28rem;
+  margin-top: .28rem;
+}
+
+.merchant-storefront-shared .merchant-stock-row-meta span {
+  font-size: .56rem;
+  line-height: 1.15;
+}
+
+.merchant-storefront-shared .merchant-stock-row-meta .merchant-stock-row-fact {
+  border-color: color-mix(in srgb, var(--rarity-accent) 30%, rgba(255,255,255,.08));
+  background: color-mix(in srgb, var(--rarity-color) 12%, rgba(255,255,255,.045));
+  color: rgba(255,255,255,.84);
+  font-weight: 720;
+}
+
+.merchant-storefront-shared .merchant-stock-row p {
+  margin-top: .34rem;
+  font-size: .64rem;
+  line-height: 1.28;
+}
+
+.merchant-storefront-shared .merchant-preview-card-scroll > .sitem-card {
+  min-height: 100%;
+}
+
+.merchant-storefront-shared .sitem-card.is-shop-variant .sitem-section,
+.merchant-storefront-shared .sitem-card.is-shop-variant .sitem-field__value,
+.merchant-storefront-shared .sitem-card.is-shop-variant .sitem-rule-trait__body {
+  font-size: .74rem;
+}
+
+.merchant-storefront-shared .sitem-card.is-shop-variant .sitem-field__label,
+.merchant-storefront-shared .sitem-card.is-shop-variant .sitem-rule-trait > summary {
+  font-size: .66rem;
+}
