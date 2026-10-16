@@ -1,3 +1,5 @@
+import { useRef, useState } from "react";
+import NpcForgeClassFeatureDock from "./NpcForgeClassFeatureDock";
 import MerchantAmbientBackdrop from "./MerchantAmbientBackdrop";
 import MerchantStorefrontView from "./MerchantStorefrontView";
 import {
@@ -47,6 +49,14 @@ export default function NpcForgeMerchantMarket({
   selectedActionLabel = "Add to Starting Cart",
   headerActions = null,
 }) {
+  const [ruleDetail, setRuleDetail] = useState(null);
+  const ruleDetailSequence = useRef(0);
+  const openRuleDetail = (detail) => {
+    if (!detail) return;
+    ruleDetailSequence.current += 1;
+    setRuleDetail({ ...detail, __itemCardInstance: ruleDetailSequence.current });
+  };
+
   if (!merchant) {
     return <section className="merchant-panel-inner merchant-market merchant-panel-forge forge-equipment-merchant-panel is-loading">
       <div className="merchant-market-empty">Loading campaign storefront…</div>
@@ -72,7 +82,8 @@ export default function NpcForgeMerchantMarket({
   const selectedAvailable = Math.max(0, Number(selectedCard?._available_qty || 0));
   const addEnabled = Boolean(selectedCard) && (typeof canAddItem !== "function" || canAddItem(selectedCard));
 
-  return <MerchantStorefrontView
+  return <>
+  <MerchantStorefrontView
     merchant={merchant}
     rootClassName="merchant-panel-inner merchant-market merchant-storefront-shared merchant-panel-forge forge-equipment-merchant-panel"
     headerKicker="Starting equipment merchant"
@@ -106,7 +117,7 @@ export default function NpcForgeMerchantMarket({
     rarityBadgeClassFor={rarityBadgeClass}
     showSource
     quantityFor={(card) => Math.max(0, Number(card?._available_qty ?? card?._stock_qty ?? 0))}
-    itemCardProps={{ variant: "shop", detailsCollapsible: false }}
+    itemCardProps={{ variant: "shop", detailsCollapsible: false, onReferenceDetail: openRuleDetail }}
     showPreviewHeader={false}
     previewMetrics={[
       { label: "Price", value: selectedCard ? `${Number(selectedCard._price_gp || 0)} gp` : "—" },
@@ -115,5 +126,12 @@ export default function NpcForgeMerchantMarket({
     actionLabel={selectedActionLabel}
     actionDisabled={!addEnabled}
     onAction={onAdd}
-  />;
+  />
+  {ruleDetail ? <NpcForgeClassFeatureDock
+    key={ruleDetail.__itemCardInstance}
+    panelRole="feature"
+    detail={ruleDetail}
+    selectedClass={null}
+  /> : null}
+  </>;
 }

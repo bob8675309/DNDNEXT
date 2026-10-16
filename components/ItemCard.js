@@ -4,7 +4,7 @@ import { classifyUi, titleCase } from "../utils/itemsIndex";
 import { resolveItemVisual } from "../utils/itemVisuals";
 import { loadFlavorIndex } from "../utils/flavorIndex";
 import { ITEM_RULE_REFERENCE_TERMS, itemRuleReferenceForLabel } from "../utils/itemRuleReferences";
-import { canonicalItemMechanicFields, deriveReferenceOnlyEffect, extractItemEntryPresentation, formatItemCardText, leadingItemEntryReference, looksMechanicalItemText, parseLabeledItemFields, parseNamedItemSections, splitItemCardParagraphs, stripLeadingItemEntryReference } from "../utils/itemCardText";
+import { canonicalItemMechanicFields, deriveReferenceOnlyEffect, extractItemEntryPresentation, formatItemCardText, leadingItemEntryReference, looksMechanicalItemText, parseLabeledItemFields, parseNamedItemSections, splitItemCardParagraphs, stripLeadingItemEntryReference, structureKnownItemRuleText } from "../utils/itemCardText";
 
 /* ---------- helpers ---------- */
 const humanRarity = (r) =>
@@ -711,7 +711,10 @@ export default function ItemCard({
   const craftedAlchemy = merchantCraftedAlchemyDetails(mergedItem);
   const rawSourceRuleText = String(craftedAlchemy?.effect || coalesce(mergedItem.item_description, mergedItem.rulesText, mergedItem.rules, "") || "");
   const sharedRuleReference = leadingItemEntryReference(rawSourceRuleText);
-  const sourceRuleText = playerText(stripLeadingItemEntryReference(rawSourceRuleText));
+  const sourceRuleText = structureKnownItemRuleText(
+    mergedItem.item_name || mergedItem.name || "",
+    playerText(stripLeadingItemEntryReference(rawSourceRuleText))
+  );
   const sourceFlavorText = craftedAlchemy
     ? craftedAlchemyFlavorText(mergedItem, flavorIndex, overrideFlavor)
     : playerText(mergedItem.flavor || overrideFlavor || entryParagraphText || entriesText || "");

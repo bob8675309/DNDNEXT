@@ -1,3 +1,15 @@
+## 2026-10-16 resistance-ring balance + staged Petrification + rule-link repair
+
+Merchant review found one stale stock row rather than a bad canonical item: `+2 Ring of Protection` was already Rare / 5,000 gp in `items_catalog` with its +2 Armor Class and +2 saving-throw rules, but Ilyra Glasshand still held an older Mundane / 1 gp stock payload from before item-copy inheritance was repaired. Existing stock is reconciled to the canonical catalog row, and future rerolls continue to source the corrected catalog payload.
+
+The ten elemental `Ring of X Resistance` variants are now DNDNext campaign variants rather than the upstream Rare / 5,000 gp reference-only rows. They are Uncommon / 2,000 gp Wondrous Item rings. Each ring grants Resistance to its named damage type and also reduces each matching damage instance by 10 before Resistance halves the remainder. The catalog carries explicit `damageReductionByType` and `damageReductionBeforeResistance` metadata plus complete player-facing descriptions. The full catalog build/seeder applies the same campaign override so a future source refresh cannot silently revert the campaign balance.
+
+`Bomb of Petrification` now uses the staged resolution requested for the campaign. The initial Constitution save does nothing on a success and applies Restrained on a failure. At the end of each affected creature's turns it repeats the Constitution save; successes and failures are tracked independently, three successes end the effect, and three failures turn the creature to stone and apply Petrified. The recipe and item payload use `Until resolved` rather than a fixed duration. Existing merchant-crafted stock keeps its selected ingredients and save DC while dropping obsolete duration scaling from the finished result and price.
+
+Forge Equipment ItemCard rule links now open the movable feature/rule window through a direct local callback instead of relying only on the global custom-event bridge. The global bridge also remounts repeated references, so reopening the same condition after closing it works. Restrained and Petrified remain shared rule-reference definitions.
+
+The long-text presentation pass also now gives Iron Flask explicit `Trap a Creature`, `Release or Command`, and `Identify the Contents` sections without rewriting its source mechanics. This establishes a safe presentation-override path for additional long-form items found during visual review.
+
 ## 2026-10-16 merchant-crafted final-stat text + realized-stat pricing
 
 Video review exposed that merchant-crafted bombs could still show the catalog recipe's base mechanics in the top description while the structured fields showed the enhanced merchant result. The concrete calibration cases were Quill Ashborn's Bomb of Lightning and Bomb of Thunder: base 2d6 / 10-foot recipe prose could sit above final 5d6 / 17.5-foot or 4d6 / 15-foot fields.

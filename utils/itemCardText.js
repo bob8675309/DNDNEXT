@@ -279,6 +279,23 @@ function titleWord(value = "") {
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
+const KNOWN_RULE_SECTION_HEADINGS = Object.freeze({
+  "iron flask": ["Trap a Creature", "Release or Command", "Identify the Contents"],
+});
+
+export function structureKnownItemRuleText(itemName = "", value = "") {
+  const cleaned = clean(value);
+  const headings = KNOWN_RULE_SECTION_HEADINGS[safe(itemName).toLowerCase()];
+  if (!headings?.length || !cleaned) return cleaned;
+
+  const blocks = cleaned.split(/\n\s*\n+/).map((part) => part.trim()).filter(Boolean);
+  if (blocks.length !== headings.length) return cleaned;
+
+  return blocks
+    .map((block, index) => `${headings[index]}\n\n${block}`)
+    .join("\n\n");
+}
+
 export function canonicalItemMechanicFields(item = {}) {
   const fields = [];
   const push = (label, value, span = 1) => {
@@ -290,8 +307,26 @@ export function canonicalItemMechanicFields(item = {}) {
   const resist = arrayish(item.resist ?? item?.card_payload?.resist).map(titleWord);
   const immune = arrayish(item.immune ?? item?.card_payload?.immune).map(titleWord);
   const conditionImmune = arrayish(item.conditionImmune ?? item.condition_immune ?? item?.card_payload?.conditionImmune).map(titleWord);
+  const damageReductionByType = item.damageReductionByType
+    ?? item.damage_reduction_by_type
+    ?? item?.card_payload?.damageReductionByType
+    ?? item?.card_payload?.damage_reduction_by_type;
+  const reductionBeforeResistance = item.damageReductionBeforeResistance
+    ?? item.damage_reduction_before_resistance
+    ?? item?.card_payload?.damageReductionBeforeResistance
+    ?? item?.card_payload?.damage_reduction_before_resistance;
 
   if (resist.length) push("Resistance", resist.map((value) => `${value} damage`).join(", "), resist.length > 2 ? 2 : 1);
+  if (damageReductionByType && typeof damageReductionByType === "object" && !Array.isArray(damageReductionByType)) {
+    const reductions = Object.entries(damageReductionByType)
+      .map(([damageType, amount]) => {
+        const numeric = Number(amount);
+        if (!Number.isFinite(numeric) || numeric <= 0) return "";
+        return `${numeric} ${titleWord(damageType)} damage per instance${reductionBeforeResistance === false ? "" : " (before Resistance)"}`;
+      })
+      .filter(Boolean);
+    if (reductions.length) push("Damage Reduction", reductions.join(", "), reductions.length > 1 ? 2 : 1);
+  }
   if (immune.length) push("Damage Immunity", immune.map((value) => `${value} damage`).join(", "), immune.length > 2 ? 2 : 1);
   if (conditionImmune.length) push("Condition Immunity", conditionImmune.join(", "), conditionImmune.length > 2 ? 2 : 1);
 
