@@ -75,9 +75,8 @@ function coalesce(...vals) {
 }
 
 function escapeRuleReferenceTerm(value = "") {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\function playerText(value = "") {");
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
-
 const ITEM_RULE_REFERENCE_PATTERN = new RegExp(
   `\\b(${ITEM_RULE_REFERENCE_TERMS.map(escapeRuleReferenceTerm).join("|")})\\b`,
   "gi"
