@@ -1,7 +1,7 @@
 # ItemCard Visual Standards
 
 Status date: 2026-10-15  
-Status: **approved visual contract**  
+Status: **approved visual contract / source implementation in progress on PR #225**  
 Active implementation branch: `equipment-merchant-shared-storefront` / PR #225
 
 This document records the eight ItemCard variants approved during Character Forge / MerchantPanel browser review. These are presentation standards, not a second item-rules engine. Canonical item payloads, crafting outputs, prices, source identities, and merchant checkout authority remain unchanged.
@@ -238,3 +238,18 @@ The eight variants are standards, not eight hard-coded one-off components. `Item
 - Charged wondrous item: Rod of Retribution
 
 These eight examples are the current visual calibration set for future ItemCard implementation and browser review.
+
+## 2026-10-15 source implementation
+
+The shared `components/ItemCard.js` renderer now classifies canonical payloads into these approved families and changes section order by family rather than forcing one generic card stack. The implementation also:
+
+- renders player-facing source tags instead of exposing raw `{@...}` syntax;
+- derives melee reach as 5 feet by default or 10 feet for Reach weapons when no explicit range is supplied;
+- formats light armor as base AC + item bonus + Dex with no maximum, medium armor with Dex max 2, and heavy armor without a Dex addition;
+- keeps Armor fields above the mechanical effect and named trait disclosures;
+- keeps Weapon effects above the weapon-stat grid;
+- keeps Material/Recipe/crafting inputs on generic/provisional visual fallbacks until crafting redesign is accepted;
+- reads `Crafted by <name>` only from real payload provenance and does not infer a crafter from the merchant selling the item;
+- keeps shop cards free of redundant bottom badge rows;
+- gives the rarity divider the approved centered crystal treatment and card body a restrained arcane texture.
+
