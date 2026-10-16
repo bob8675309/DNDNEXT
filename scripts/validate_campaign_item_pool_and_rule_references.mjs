@@ -200,7 +200,7 @@ for (const token of [
   "damageReductionByType",
   "damageReductionBeforeResistance",
   "DNDNext elemental resistance ring",
-  "Bomb of Petrification",
+  "bomb of petrification",
   "Initial Saving Throw",
   "3 Successes",
   "3 Failures",
