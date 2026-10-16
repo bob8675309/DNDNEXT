@@ -3,6 +3,7 @@ import AssignItemButton from "../components/AssignItemButton";
 import { supabase } from "../utils/supabaseClient";
 import ItemCard from "../components/ItemCard";
 import { classifyUi, loadItemCatalogList, TYPE_PILLS, titleCase } from "../utils/itemsIndex";
+import { isFutureTechItem } from "../utils/campaignItemPool";
 import dynamic from "next/dynamic";
 
 // Small debounce hook to keep Search smooth and focused
@@ -57,6 +58,12 @@ export default function AdminPanel() {
   const [showBuilder, setShowBuilder] = useState(false);
   const [magicVariants, setMagicVariants] = useState(null);
   const [stagedCustom, setStagedCustom] = useState(null);
+
+  const [futureTechEnabled, setFutureTechEnabled] = useState(false);
+  const [futureTechLoaded, setFutureTechLoaded] = useState(false);
+  const [futureTechSaving, setFutureTechSaving] = useState(false);
+  const [futureTechMessage, setFutureTechMessage] = useState("");
+  const [futureTechError, setFutureTechError] = useState("");
 
   // Supabase admin operations use the shared browser singleton.
 
@@ -206,6 +213,53 @@ export default function AdminPanel() {
     return () => { dead = true; };
   }, []);
 
+  // Campaign-wide item-pool controls. The RPC is authoritative and rerolls
+  // active storefront shelves so disabling future tech takes effect immediately.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("campaign_item_pool_settings")
+          .select("future_tech_enabled")
+          .eq("id", 1)
+          .maybeSingle();
+        if (error) throw error;
+        if (!cancelled) setFutureTechEnabled(Boolean(data?.future_tech_enabled));
+      } catch (error) {
+        console.error("Failed to load campaign item-pool settings:", error);
+        if (!cancelled) setFutureTechError(error?.message || "Could not load campaign item-pool settings.");
+      } finally {
+        if (!cancelled) setFutureTechLoaded(true);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  async function changeFutureTechEnabled(nextEnabled) {
+    if (futureTechSaving) return;
+    setFutureTechSaving(true);
+    setFutureTechMessage("");
+    setFutureTechError("");
+    try {
+      const { data, error } = await supabase.rpc("set_campaign_future_tech_enabled_v1", {
+        p_enabled: Boolean(nextEnabled),
+      });
+      if (error) throw error;
+      const result = Array.isArray(data) ? data[0] : data;
+      setFutureTechEnabled(Boolean(result?.future_tech_enabled ?? nextEnabled));
+      const rerolled = Number(result?.rerolled_merchants || 0);
+      setFutureTechMessage(
+        `Future tech is now ${nextEnabled ? "enabled" : "disabled"} for campaign loot and merchant stock. ${rerolled} storefront${rerolled === 1 ? "" : "s"} rerolled.`
+      );
+    } catch (error) {
+      console.error("Failed to update future-tech campaign setting:", error);
+      setFutureTechError(error?.message || "Could not update future-tech campaign setting.");
+    } finally {
+      setFutureTechSaving(false);
+    }
+  }
+
   // Load players, NPCs and merchants for assigning items
   useEffect(() => {
     (async () => {
@@ -240,15 +294,9 @@ export default function AdminPanel() {
       if (/^orb of shielding\b/i.test(name)) cls.uiType = "Wondrous Item";
       else if (/^imbued wood\b/i.test(name)) cls.uiType = "Melee Weapon";
 
-      // Tech/age gating
-      const ageRaw = String(it.age || it.age_category || it.age_group || "").toLowerCase();
-      const nameL = name.toLowerCase();
-      const looksLikeFirearm = /(pistol|rifle|musket|revolver|firearm|shotgun|smg|carbine)/i.test(nameL);
-      const source = String(it.source || it.item_source || "").toUpperCase();
-      if (
-        ["futuristic", "renaissance", "modern", "contemporary", "industrial", "victorian"].includes(ageRaw) ||
-        (looksLikeFirearm && source !== "GRIMHOLLOWPG24")
-      ) cls.uiType = "Future";
+      // Keep Admin browsing aligned with the same classifier used by the
+      // campaign loot/merchant pool toggle.
+      if (isFutureTechItem(it)) cls.uiType = "Future";
 
       return { ...it, __cls: cls };
     });
@@ -291,6 +339,40 @@ export default function AdminPanel() {
     <AdminErrorBoundary>
       <div className="container my-4 admin-dark">
         <h1 className="h3 mb-3">🧭 Admin Dashboard</h1>
+
+        <section className="card bg-dark text-light border-secondary mb-3" aria-label="Campaign item pool settings">
+          <div className="card-body py-3 d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+            <div>
+              <div className="small text-uppercase text-info fw-bold mb-1">Campaign item pool</div>
+              <div className="fw-semibold">Future weapons &amp; armor</div>
+              <div className="small text-muted">
+                Controls pistols, rifles, grenades, powered armor, and other modern/futuristic gear in merchant and campaign loot pools.
+                Turning this off also rerolls active storefronts so restricted items disappear immediately.
+              </div>
+            </div>
+            <div className="d-flex align-items-center gap-3">
+              <span className={`badge ${futureTechEnabled ? "text-bg-success" : "text-bg-secondary"}`}>
+                {futureTechLoaded ? (futureTechEnabled ? "Enabled" : "Disabled") : "Loading…"}
+              </span>
+              <div className="form-check form-switch m-0">
+                <input
+                  id="campaign-future-tech"
+                  className="form-check-input"
+                  type="checkbox"
+                  role="switch"
+                  checked={futureTechEnabled}
+                  disabled={!futureTechLoaded || futureTechSaving}
+                  onChange={(event) => changeFutureTechEnabled(event.target.checked)}
+                />
+                <label className="form-check-label small" htmlFor="campaign-future-tech">
+                  {futureTechSaving ? "Updating…" : "Allow future tech"}
+                </label>
+              </div>
+            </div>
+          </div>
+          {futureTechMessage ? <div className="card-footer py-2 small text-success">{futureTechMessage}</div> : null}
+          {futureTechError ? <div className="card-footer py-2 small text-danger">{futureTechError}</div> : null}
+        </section>
 
         {/* Controls */}
         <div className="row g-2 align-items-end">

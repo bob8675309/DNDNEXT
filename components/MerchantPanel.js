@@ -11,64 +11,7 @@ import MerchantStorefrontView from "./MerchantStorefrontView";
 import useWallet from "../utils/useWallet";
 import { supabase } from "../utils/supabaseClient";
 import { themeFromMerchant as detectTheme } from "../utils/merchantTheme";
-
-/*     Theme → allow-list rules (kept for possible client-side fallback reroll) */
-const THEME_RULES = {
-  jeweler: (it, c) =>
-    (c?.uiType === "Wondrous Item" &&
-      ["Ring", "Amulet", "Necklace", "Ioun Stone", "Figurine", "Stone"].includes(
-        c.uiSubKind
-      )) ||
-    (c?.uiType === "Trade Goods" &&
-      /\b(gem|jewel|pearl|diamond)\b/i.test(it?.name || "")),
-
-  smith: (it, c) =>
-    ["Armor", "Shield", "Melee Weapon"].includes(c?.uiType) ||
-    /\b(mithral|adamantine|ingot|plate|chain|scale)\b/i.test(it?.name || ""),
-
-  weapons: (_it, c) =>
-    ["Melee Weapon", "Ranged Weapon", "Ammunition"].includes(c?.uiType),
-
-  alchemy: (_it, c) => c?.uiType === "Potions & Poisons",
-
-  herbalist: (it, c) =>
-    c?.uiType === "Potions & Poisons" &&
-    /\b(herb|salve|balm|elixir)\b/i.test(
-      ((it?.name || "") + " " + (it?.item_description || "")).trim()
-    ),
-
-  arcanist: (it, c) =>
-    c?.uiType === "Scroll & Focus" ||
-    (c?.uiType === "Wondrous Item" &&
-      /\b(staff|wand|rod)\b/i.test(it?.name || "")),
-
-  clothier: (_it, c) =>
-    c?.uiType === "Wondrous Item" &&
-    [
-      "Cloak",
-      "Boots",
-      "Gloves",
-      "Belt",
-      "Bracers",
-      "Helm",
-      "Mask",
-      "Goggles",
-      "Wraps",
-      "Girdle",
-    ].includes(c.uiSubKind),
-
-  stable: (it, c) =>
-    c?.uiType === "Vehicles & Structures" ||
-    /\b(saddle|tack|bridle|harness)\b/i.test(it?.name || ""),
-
-  caravan: (it, c) =>
-    c?.uiType === "Adventuring Gear" ||
-    /\b(tent|rations|pack|rope|wagon|cart)\b/i.test(
-      ((it?.name || "") + " " + (it?.item_description || "")).trim()
-    ),
-
-  general: () => true,
-};
+import { campaignLootEligible, merchantRarityBucket, merchantThemeAllowsItem } from "../utils/campaignItemPool";
 
 const MERCHANT_THEME_CHOICES = [
   { value: "general", label: "General Goods" },
@@ -418,16 +361,6 @@ export default function MerchantPanel({
     return /No function|does not exist|PGRST202/i.test(msg);
   }
 
-  function normalizeRarity(r) {
-    const s = String(r || "").toLowerCase().replace(/\s+/g, "").replace(/[-_]/g, "");
-    if (s in { common: 1 }) return "Common";
-    if (s in { uncommon: 1 }) return "Uncommon";
-    if (s in { rare: 1 }) return "Rare";
-    if (s in { veryrare: 1, veryrareitem: 1 }) return "Very Rare";
-    if (s in { legendary: 1 }) return "Legendary";
-    return null;
-  }
-
   function sample(arr, k) {
     if (!Array.isArray(arr) || arr.length === 0 || k <= 0) return [];
     const a = arr.slice();
@@ -438,92 +371,120 @@ export default function MerchantPanel({
     return a.slice(0, Math.min(k, a.length));
   }
 
+  function sampleDiverse(arr, k) {
+    if (!Array.isArray(arr) || arr.length === 0 || k <= 0) return [];
+    const groups = new Map();
+    for (const item of arr) {
+      const type = String(item.item_type || item.payload?.item_type || item.payload?.uiType || "Other");
+      if (!groups.has(type)) groups.set(type, []);
+      groups.get(type).push(item);
+    }
+    const queues = [...groups.values()].map((rows) => sample(rows, rows.length));
+    const out = [];
+    while (out.length < k && queues.some((rows) => rows.length)) {
+      for (const queue of sample(queues.filter((rows) => rows.length), queues.length)) {
+        if (out.length >= k) break;
+        const next = queue.shift();
+        if (next) out.push(next);
+      }
+    }
+    return out;
+  }
+
   async function rerollThemedFallback() {
-    // Client-side reroll (when the RPC isn't installed):
-    // - dump existing stock
-    // - select items from items_catalog by theme tag
-    // - insert a 28–32 item mundane/common + uncommon + rare mix
+    // Emergency browser fallback for older databases without the reroll RPC.
+    // It mirrors the campaign-wide eligibility, merchant specialty, and
+    // 15% mundane / 50% uncommon / 25% rare / 10% very-rare+ distribution.
     if (!merchant?.id) return;
 
     const count = 28 + Math.floor(Math.random() * 5); // 28..32
 
-    // 1) Clear stock
-    {
-      const { error } = await supabase
-        .from("character_stock")
-        .delete()
-        .eq("character_id", merchant.id);
+    let futureTechEnabled = false;
+    try {
+      const { data: settings } = await supabase
+        .from("campaign_item_pool_settings")
+        .select("future_tech_enabled")
+        .eq("id", 1)
+        .maybeSingle();
+      futureTechEnabled = Boolean(settings?.future_tech_enabled);
+    } catch {
+      futureTechEnabled = false;
+    }
+
+    const rows = [];
+    const pageSize = 1000;
+    for (let offset = 0; ; offset += pageSize) {
+      const { data, error } = await supabase
+        .from("items_catalog")
+        .select("id,item_key,item_name,item_type,item_rarity,price_gp,payload,merchant_tags")
+        .range(offset, offset + pageSize - 1);
       if (error) throw error;
+      rows.push(...(data || []));
+      if (!data || data.length < pageSize) break;
     }
 
-    // 2) Pull candidates
-    let q = supabase
-      .from("items_catalog")
-      .select("id,item_name,item_type,item_rarity,price_gp,payload,merchant_tags")
-      .limit(1200);
+    const candidates = rows
+      .filter((row) => campaignLootEligible(row, { futureTechEnabled }))
+      .filter((row) => merchantThemeAllowsItem(theme, row))
+      .map((row) => ({ ...row, _rarityBucket: merchantRarityBucket(row) }));
 
-    if (theme && theme !== "general") {
-      q = q.contains("merchant_tags", [theme]);
-    }
+    const low = candidates.filter((row) => row._rarityBucket === "mundane");
+    const uncommon = candidates.filter((row) => row._rarityBucket === "uncommon");
+    const rare = candidates.filter((row) => row._rarityBucket === "rare");
+    const high = candidates.filter((row) => row._rarityBucket === "high");
 
-    const { data: rows, error: qErr } = await q;
-    if (qErr) throw qErr;
-
-    const candidates = (rows || []).map((r) => {
-      const rarity = normalizeRarity(r.item_rarity || r.payload?.item_rarity || r.payload?.rarity);
-      return { ...r, _rarity: rarity };
-    });
-
-    // Match the server distribution: most stock is mundane/common, with a
-    // healthy uncommon shelf and only a few rares. Routine shops do not roll
-    // Very Rare, Legendary, or Artifact items.
-    const low = candidates.filter((r) => !r._rarity || r._rarity === "Common");
-    const uncommon = candidates.filter((r) => r._rarity === "Uncommon");
-    const rare = candidates.filter((r) => r._rarity === "Rare");
-
-    const nLow = Math.max(1, Math.round(count * 0.57));
-    const nUncommon = Math.max(1, Math.round(count * 0.33));
-    const nRare = Math.max(0, count - nLow - nUncommon);
+    const nLow = Math.max(0, Math.round(count * 0.15));
+    const nUncommon = Math.max(0, Math.round(count * 0.50));
+    const nHigh = Math.max(0, Math.round(count * 0.10));
+    const nRare = Math.max(0, count - nLow - nUncommon - nHigh);
 
     let picked = [
-      ...sample(low, nLow),
-      ...sample(uncommon, nUncommon),
-      ...sample(rare, nRare),
+      ...sampleDiverse(low, nLow),
+      ...sampleDiverse(uncommon, nUncommon),
+      ...sampleDiverse(rare, nRare),
+      ...sampleDiverse(high, nHigh),
     ];
 
     if (picked.length < count) {
-      const pool = [...low, ...uncommon, ...rare];
-      const already = new Set(picked.map((p) => p.item_name));
-      const extra = pool.filter((p) => !already.has(p.item_name));
+      const pool = [...low, ...uncommon, ...rare, ...high];
+      const already = new Set(picked.map((row) => row.item_key || row.id));
+      const extra = pool.filter((row) => !already.has(row.item_key || row.id));
       picked = picked.concat(sample(extra, count - picked.length));
     }
 
-    if (!picked.length) return;
+    if (!picked.length) throw new Error(`No eligible stock exists for merchant theme ${theme}.`);
 
-    // 3) Insert stock rows
     const stockRows = picked.map((it) => {
       const payload = (it.payload && typeof it.payload === "object") ? it.payload : {};
       const display_name = it.item_name || payload.item_name || payload.name || "Item";
       const price_gp = Number(it.price_gp ?? payload.price_gp ?? payload.price ?? 0) || 0;
-
+      const itemKey = it.item_key || payload.item_key || payload.item_id || it.id || null;
       const mergedPayload = {
         ...payload,
-        item_id: payload.item_id || it.id || null,
+        item_id: payload.item_id || itemKey,
+        item_key: payload.item_key || itemKey,
         item_name: payload.item_name || display_name,
         item_type: payload.item_type || it.item_type || payload.type || null,
         item_rarity: payload.item_rarity || it.item_rarity || payload.rarity || null,
         price_gp,
       };
-
       return {
         character_id: merchant.id,
-        item_id: (mergedPayload && mergedPayload.item_id) ? String(mergedPayload.item_id) : (it?.id ? String(it.id) : null),
+        item_id: itemKey ? String(itemKey) : null,
         display_name,
         price_gp,
         qty: 1,
         card_payload: mergedPayload,
       };
     });
+
+    // Build the full candidate shelf first; only replace live stock once we know
+    // the fallback has a usable result.
+    const { error: delErr } = await supabase
+      .from("character_stock")
+      .delete()
+      .eq("character_id", merchant.id);
+    if (delErr) throw delErr;
 
     const { error: insErr } = await supabase.from("character_stock").insert(stockRows);
     if (insErr) throw insErr;

@@ -689,3 +689,24 @@
 .sitem-legacy-footer {
   margin-top: .15rem;
 }
+
+/* 2026-10-16 item rules: inline definitions open the shared movable feature window. */
+.sitem-rule-reference-button{
+  display:inline;
+  margin:0;
+  padding:0;
+  border:0;
+  border-bottom:1px dotted currentColor;
+  background:transparent;
+  color:inherit;
+  font:inherit;
+  font-weight:800;
+  line-height:inherit;
+  cursor:pointer;
+  text-decoration:none;
+}
+.sitem-rule-reference-button:hover,.sitem-rule-reference-button:focus-visible{
+  color:#f2d37d;
+  border-bottom-style:solid;
+  outline:none;
+}

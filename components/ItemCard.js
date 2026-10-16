@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { classifyUi, titleCase } from "../utils/itemsIndex";
 import { resolveItemVisual } from "../utils/itemVisuals";
 import { loadFlavorIndex } from "../utils/flavorIndex";
+import { ITEM_RULE_REFERENCE_TERMS, itemRuleReferenceForLabel } from "../utils/itemRuleReferences";
 
 /* ---------- helpers ---------- */
 const humanRarity = (r) =>
@@ -73,6 +74,51 @@ function coalesce(...vals) {
   return null;
 }
 
+function escapeRuleReferenceTerm(value = "") {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\function playerText(value = "") {");
+}
+
+const ITEM_RULE_REFERENCE_PATTERN = new RegExp(
+  `\\b(${ITEM_RULE_REFERENCE_TERMS.map(escapeRuleReferenceTerm).join("|")})\\b`,
+  "gi"
+);
+
+function openRuleReference(detail, onReferenceDetail = null) {
+  if (!detail) return;
+  if (typeof onReferenceDetail === "function") {
+    onReferenceDetail(detail);
+    return;
+  }
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("dndnext:rule-reference", { detail }));
+  }
+}
+
+function RuleLinkedText({ text = "", item = {}, onReferenceDetail = null }) {
+  const value = String(text || "");
+  if (!value) return null;
+  const parts = value.split(ITEM_RULE_REFERENCE_PATTERN);
+  return <>{parts.map((part, index) => {
+    const detail = itemRuleReferenceForLabel(part, item);
+    if (!detail) return <React.Fragment key={`${index}:${part}`}>{part}</React.Fragment>;
+    return <button
+      key={`${index}:${part}`}
+      type="button"
+      className="sitem-rule-reference-button"
+      onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        openRuleReference(detail, onReferenceDetail);
+      }}
+      title={`Open ${detail.reference.title} definition`}
+    >{part}</button>;
+  })}</>;
+}
+
+function relicStateForItem(item = {}) {
+  const match = String(item.item_name || item.name || "").match(/\((Dormant|Awakened|Exalted)\)\s*$/i);
+  return match ? `${match[1][0].toUpperCase()}${match[1].slice(1).toLowerCase()}` : "";
+}
 function playerText(value = "") {
   return String(value || "")
     .replace(/\{@dc\s+([^}]+)\}/gi, (_, valueText) => `DC ${stripTag(valueText).trim()}`)
@@ -333,10 +379,14 @@ function adaptiveItemFields(item = {}, type = "", norm = {}, potionDetails = nul
   if (family === "weapon") {
     const isAmmunition = /\bammunition\b/i.test([type, item.item_type, item.uiType, item.type].filter(Boolean).join(" "));
     const ammunition = isAmmunition ? ammunitionMechanics(item, ruleText) : null;
+    const directMasteryRaw = coalesce(item.mastery, item.weapon_mastery, item.weaponMastery, item?.card_payload?.mastery);
+    const directMastery = Array.isArray(directMasteryRaw)
+      ? directMasteryRaw.map((value) => stripTag(value)).filter(Boolean).join(", ")
+      : stripTag(directMasteryRaw || "");
     return [
       clean("Damage", norm.dmg),
       clean("Damage Type", ammunition?.damageType),
-      clean("Mastery", ammunition?.mastery),
+      clean("Mastery", ammunition?.mastery || directMastery),
       clean("Range", ammunition?.rangeRule || weaponRangeDisplay(item, norm.rng, norm.props)),
       clean("Weight", weightValue),
       clean("Properties", norm.props),
@@ -595,6 +645,7 @@ export default function ItemCard({
   variant = "default",
   detailsCollapsible = false,
   action = null,
+  onReferenceDetail = null,
 }) {
   const mergedItem = {
     ...(item.card_payload && typeof item.card_payload === "object" ? item.card_payload : {}),
@@ -678,14 +729,18 @@ export default function ItemCard({
   const rarityClass = `rarity-${(norm.rarity || "Common").toLowerCase().replace(/\s+/g, "-")}`;
   const cardFamily = cardFamilyForItem(mergedItem, norm.type, norm.typeHint, potionDetails, bombDetails);
   const crafterName = playerText(craftedByName(mergedItem));
-  const adaptiveFields = adaptiveItemFields(mergedItem, norm.type, norm, potionDetails, bombDetails, cardFamily, rawRuleText);
+  const relicState = relicStateForItem(mergedItem);
+  const adaptiveFields = [
+    ...(relicState ? [{ label: "Relic State", value: relicState }] : []),
+    ...adaptiveItemFields(mergedItem, norm.type, norm, potionDetails, bombDetails, cardFamily, rawRuleText),
+  ];
 
   const renderFieldGrid = (fields = adaptiveFields, extraClass = "") => fields.length ? (
     <div className={`sitem-field-grid ${extraClass}`.trim()}>
       {fields.map((field) => (
         <div className={`sitem-field ${field.span === 2 ? "is-wide" : ""}`} key={field.label}>
           <div className="sitem-field__label">{field.label}</div>
-          <div className="sitem-field__value">{field.value}</div>
+          <div className="sitem-field__value"><RuleLinkedText text={field.value} item={mergedItem} onReferenceDetail={onReferenceDetail} /></div>
         </div>
       ))}
     </div>
@@ -716,7 +771,7 @@ export default function ItemCard({
   const effectPanel = primaryEffectText ? (
     <div className="sitem-section sitem-rules sitem-effect-panel">
       <div className="small text-muted mb-1 text-uppercase fw-semibold">{effectLabel}</div>
-      <div style={{ whiteSpace: "pre-line" }}>{primaryEffectText}</div>
+      <div style={{ whiteSpace: "pre-line" }}><RuleLinkedText text={primaryEffectText} item={mergedItem} onReferenceDetail={onReferenceDetail} /></div>
     </div>
   ) : null;
 
@@ -725,7 +780,7 @@ export default function ItemCard({
       {structuredRules.traits.map((trait) => (
         <details className="sitem-rule-trait" key={trait.title}>
           <summary>{playerText(trait.title)}</summary>
-          <div className="sitem-rule-trait__body" style={{ whiteSpace: "pre-line" }}>{playerText(trait.body)}</div>
+          <div className="sitem-rule-trait__body" style={{ whiteSpace: "pre-line" }}><RuleLinkedText text={playerText(trait.body)} item={mergedItem} onReferenceDetail={onReferenceDetail} /></div>
         </details>
       ))}
     </div>
@@ -783,7 +838,7 @@ export default function ItemCard({
         <div className="row g-2 align-items-start">
           {norm.flavor ? <div className="col-8">
             <div className="sitem-section sitem-desc" style={{ whiteSpace: "pre-line" }}>
-              {norm.flavor}
+              <RuleLinkedText text={norm.flavor} item={mergedItem} onReferenceDetail={onReferenceDetail} />
             </div>
           </div> : null}
           <div className={norm.flavor ? "col-4" : "col-4 ms-auto"}>

@@ -14,6 +14,7 @@ import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createClient } from "@supabase/supabase-js";
+import { resolveItemCopies } from "./lib/resolve_item_copies.mjs";
 
 /* ---------- ENV + SUPABASE CLIENT ---------- */
 
@@ -299,7 +300,7 @@ async function loadItems() {
     console.warn(`Alchemy catalog skipped: ${err?.message || err}`);
   }
 
-  return [...coreItems, ...grimHollowItems, ...alchemyRows];
+  return resolveItemCopies([...coreItems, ...grimHollowItems, ...alchemyRows]);
 }
 
 /* ---------- MAIN: build rows + UPSERT items_catalog ---------- */
