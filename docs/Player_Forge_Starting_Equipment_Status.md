@@ -1,3 +1,37 @@
+## 2026-10-16 tactical mitigation authority follow-up
+
+The DNDNext Resistance Ring mechanics are no longer card/catalog-only metadata. After explicit tactical review, the server-authoritative encounter damage resolver now reads structured mitigation from currently equipped inventory and matching canonical catalog rows. An equipped elemental Resistance Ring therefore applies its Resistance first and then subtracts its 10-point matching-element reduction from the resisted damage during real tactical damage resolution. The tactical path uses structured `resist` / `damageReductionByType` fields only and does not infer mechanics from prose.
+
+The dedicated runtime contract and validation evidence live in `docs/Tactical_Encounter_Equipped_Damage_Mitigation_Status.md`.
+
+## 2026-10-16 resistance-ring balance + staged Petrification + rule-link repair
+
+Merchant review found one stale stock row rather than a bad canonical item: `+2 Ring of Protection` was already Rare / 5,000 gp in `items_catalog` with its +2 Armor Class and +2 saving-throw rules, but Ilyra Glasshand still held an older Mundane / 1 gp stock payload from before item-copy inheritance was repaired. Existing stock is reconciled to the canonical catalog row, and future rerolls continue to source the corrected catalog payload.
+
+The ten elemental `Ring of X Resistance` variants are now DNDNext campaign variants rather than the upstream Rare / 5,000 gp reference-only rows. They are Uncommon / 2,000 gp Wondrous Item rings. Each ring grants Resistance to its named damage type and then reduces the resisted damage by 10 per matching damage instance. The catalog carries explicit `damageReductionByType` metadata plus `damageReductionBeforeResistance=false`, matching the Resistance-first campaign order, along with complete player-facing descriptions. The full catalog build/seeder applies the same campaign override so a future source refresh cannot silently revert the campaign balance.
+
+`Bomb of Petrification` now uses the staged resolution requested for the campaign. The initial Constitution save does nothing on a success and applies Restrained on a failure. At the end of each affected creature's turns it repeats the Constitution save; successes and failures are tracked independently, three successes end the effect, and three failures turn the creature to stone and apply Petrified. The recipe and item payload use `Until resolved` rather than a fixed duration. Existing merchant-crafted stock keeps its selected ingredients and save DC while dropping obsolete duration scaling from the finished result and price.
+
+Forge Equipment ItemCard rule links now open the movable feature/rule window through a direct local callback instead of relying only on the global custom-event bridge. The global bridge also remounts repeated references, so reopening the same condition after closing it works. Restrained and Petrified remain shared rule-reference definitions.
+
+The long-text presentation pass also now gives Iron Flask explicit `Trap a Creature`, `Release or Command`, and `Identify the Contents` sections without rewriting its source mechanics. This establishes a safe presentation-override path for additional long-form items found during visual review.
+
+## 2026-10-16 merchant-crafted final-stat text + realized-stat pricing
+
+Video review exposed that merchant-crafted bombs could still show the catalog recipe's base mechanics in the top description while the structured fields showed the enhanced merchant result. The concrete calibration cases were Quill Ashborn's Bomb of Lightning and Bomb of Thunder: base 2d6 / 10-foot recipe prose could sit above final 5d6 / 17.5-foot or 4d6 / 15-foot fields.
+
+Merchant-crafted alchemy now treats the finished craft as one authoritative object. The database finalizer rewrites the finished effect text to the final area as well as final dice/duration, reconciles duplicate save/area metadata, and ItemCard suppresses stale mechanical recipe flavor. When no item-specific non-mechanical flavor exists, the renderer may use the existing generic family flavor (for example the existing Bomb flavor) rather than presenting obsolete base stats as flavor.
+
+Merchant-crafted alchemy sale prices now scale from the catalog base price using only realized improvements: damage/output gain, area/range gain, duration gain, extra doses, and save-DC bonuses. The premium is capped at 4× base price and rounded upward to a 5 gp shelf price. The payload records base price, crafted price, multiplier, and the pricing breakdown; a character_stock trigger keeps the checkout price synchronized with the crafted payload. Existing merchant stock is reconciled without rerolling its selected ingredients.
+
+The live calibration after this migration is:
+- Bomb of Lightning: 5d6 lightning, 17.5-foot burst, DC 15, 355 gp from a 150 gp base;
+- Bomb of Thunder: 4d6 thunder, 15-foot burst, DC 14, 270 gp from a 150 gp base;
+- Bomb of Necrotic: 5d6 necrotic, two doses, DC 17, about 1,000 gp from a 500 gp base;
+- Bomb of Petrification: 2 minutes 15 seconds, DC 18, 1,970 gp from a 1,500 gp base.
+
+This changes merchant-crafted alchemy presentation/economy only. It does not alter player crafting formulas, ingredient-selection rules, world/town map behavior, or tactical authority.
+
 ## 2026-10-15 locked ItemCard families implemented
 
 The eight approved ItemCard visual families are now represented in the shared source renderer instead of existing only as mockup/documentation targets. Weapon, Armor, Material, Recipe, Potion/Elixir, Bomb, Wondrous wearable, and Charged Wondrous/Rod cards receive family-specific field ordering while still consuming canonical item payloads.

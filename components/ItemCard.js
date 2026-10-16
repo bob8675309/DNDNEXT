@@ -4,6 +4,7 @@ import { classifyUi, titleCase } from "../utils/itemsIndex";
 import { resolveItemVisual } from "../utils/itemVisuals";
 import { loadFlavorIndex } from "../utils/flavorIndex";
 import { ITEM_RULE_REFERENCE_TERMS, itemRuleReferenceForLabel } from "../utils/itemRuleReferences";
+import { canonicalItemMechanicFields, deriveReferenceOnlyEffect, extractItemEntryPresentation, formatItemCardText, leadingItemEntryReference, looksMechanicalItemText, parseLabeledItemFields, parseNamedItemSections, splitItemCardParagraphs, stripLeadingItemEntryReference, structureKnownItemRuleText } from "../utils/itemCardText";
 
 /* ---------- helpers ---------- */
 const humanRarity = (r) =>
@@ -114,20 +115,34 @@ function RuleLinkedText({ text = "", item = {}, onReferenceDetail = null }) {
   })}</>;
 }
 
+function RuleParagraphs({ text = "", item = {}, onReferenceDetail = null, className = "" }) {
+  const paragraphs = splitItemCardParagraphs(text);
+  if (!paragraphs.length) return null;
+  return <div className={`sitem-rule-paragraphs ${className}`.trim()}>
+    {paragraphs.map((paragraph, index) => <p key={`${index}:${paragraph.slice(0, 48)}`}>
+      <RuleLinkedText text={paragraph} item={item} onReferenceDetail={onReferenceDetail} />
+    </p>)}
+  </div>;
+}
+
+function mergeCardFields(...groups) {
+  const seen = new Set();
+  const out = [];
+  for (const field of groups.flat().filter(Boolean)) {
+    const key = String(field?.label || "").trim().toLowerCase();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    out.push(field);
+  }
+  return out;
+}
+
 function relicStateForItem(item = {}) {
   const match = String(item.item_name || item.name || "").match(/\((Dormant|Awakened|Exalted)\)\s*$/i);
   return match ? `${match[1][0].toUpperCase()}${match[1].slice(1).toLowerCase()}` : "";
 }
 function playerText(value = "") {
-  return String(value || "")
-    .replace(/\{@dc\s+([^}]+)\}/gi, (_, valueText) => `DC ${stripTag(valueText).trim()}`)
-    .replace(/\{@(?:damage|dice)\s+([^}]+)\}/gi, (_, valueText) => stripTag(valueText).trim())
-    .replace(/\{#itemEntry\s+([^}]+)\}/gi, (_, valueText) => stripTag(valueText).trim())
-    .replace(/\{@(?:spell|condition|skill|item|itemEntry|action|status|sense)\s+([^}]+)\}/gi, (_, valueText) => stripTag(valueText).trim())
-    .replace(/\{@[^\s}]+\s+([^}]+)\}/gi, (_, valueText) => stripTag(valueText).trim())
-    .replace(/[ \t]+\n/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+  return formatItemCardText(value);
 }
 
 function craftedByName(item = {}) {
@@ -556,6 +571,33 @@ function normalizedComparableText(value = "") {
     .toLowerCase();
 }
 
+function craftedAlchemyFlavorText(item = {}, flavorIndex = null, exactOverride = "") {
+  const exact = playerText(exactOverride || "");
+  if (exact && !looksMechanicalItemText(exact)) return exact;
+
+  const stored = playerText(item.flavor || "");
+  if (stored && !looksMechanicalItemText(stored)) return stored;
+
+  const blob = [item.item_type, item.type, item.category, item.item_name, item.name]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  const familyName = /\bbomb\b/.test(blob)
+    ? "Bomb"
+    : /\belixir\b/.test(blob)
+      ? "Elixir"
+      : /\boil\b/.test(blob)
+        ? "Oil"
+        : /\bpoison\b/.test(blob)
+          ? "Poison"
+          : /\bpotion\b/.test(blob)
+            ? "Potion"
+            : "";
+
+  const family = familyName && flavorIndex ? playerText(flavorIndex.get(familyName) || "") : "";
+  return family && !looksMechanicalItemText(family) ? family : "";
+}
+
 function merchantCraftedAlchemyDetails(item = {}) {
   const alchemy = item?.alchemy && typeof item.alchemy === "object" ? item.alchemy : {};
   const merchantCraft = item?.merchant_craft && typeof item.merchant_craft === "object" ? item.merchant_craft : {};
@@ -564,7 +606,9 @@ function merchantCraftedAlchemyDetails(item = {}) {
   const isMerchantCrafted = Boolean(item.merchant_crafted || item.merchantCrafted || merchantCraft.crafted || alchemy.merchantCrafted);
   if (!isCraftedProduct || !isMerchantCrafted) return null;
 
-  const effect = coalesce(item.effect_text, item.item_description, item.effect, alchemyResult.effect, merchantCraft.effect, alchemy.effect);
+  // Finished craft metadata is authoritative. Outer item fields can retain the
+  // recipe's base text after merchant enhancement, so only use them as fallback.
+  const effect = coalesce(alchemyResult.effect, merchantCraft.effect, alchemy.effect, item.effect_text, item.item_description, item.effect);
   const duration = coalesce(item.duration_text, item.duration, merchantCraft.duration, alchemyResult.duration, alchemy.duration);
   const use = coalesce(item.use_text, item.use, merchantCraft.use, alchemyResult.use, alchemy.use);
   const areaFeet = Number(coalesce(merchantCraft.area_feet, alchemyResult.areaFeet, item.area_feet, alchemy.areaFeet, alchemy.base_area_feet) || 0);
@@ -660,29 +704,24 @@ export default function ItemCard({
     return () => { ok = false; };
   }, []);
 
-  const pureStringBullets =
-    Array.isArray(mergedItem.entries) && mergedItem.entries.every((e) => typeof e === "string")
-      ? uniqueList(mergedItem.entries)
-      : null;
-
+  const entryPresentation = extractItemEntryPresentation(mergedItem.entries);
   const entriesText = playerText(flattenEntries(mergedItem.entries));
+  const entryParagraphText = entryPresentation.paragraphs.join("\n\n");
   const overrideFlavor = playerText((flavorIndex && flavorIndex.get(mergedItem.item_name || mergedItem.name)) || "");
   const craftedAlchemy = merchantCraftedAlchemyDetails(mergedItem);
-  const sourceRuleText = playerText(craftedAlchemy?.effect || coalesce(mergedItem.item_description, mergedItem.rulesText, mergedItem.rules, ""));
-  const sourceFlavorText = playerText(mergedItem.flavor || overrideFlavor || entriesText || "");
-  const narrativeLead = splitNarrativeLead(sourceRuleText);
-  const itemBlob = [uiType, mergedItem.item_type, mergedItem.type, mergedItem.item_name, mergedItem.name].filter(Boolean).join(" ").toLowerCase();
-  const consumableLike = isPotionLikeItem(mergedItem, uiType || mergedItem.item_type || mergedItem.type) || /\bbomb\b/.test(itemBlob);
-  const ammunitionLike = /\bammunition\b/.test(itemBlob);
-  const duplicateSourceFlavor = Boolean(sourceFlavorText && sourceRuleText && normalizedComparableText(sourceFlavorText) === normalizedComparableText(sourceRuleText));
-  const ammunitionRulesOnly = Boolean(
-    ammunitionLike &&
-    duplicateSourceFlavor &&
-    /\b(?:works like|deals?\b[^.]{0,48}\bdamage|maximum range|ammunition)\b/i.test(sourceRuleText)
+  const rawSourceRuleText = String(craftedAlchemy?.effect || coalesce(mergedItem.item_description, mergedItem.rulesText, mergedItem.rules, "") || "");
+  const sharedRuleReference = leadingItemEntryReference(rawSourceRuleText);
+  const sourceRuleText = structureKnownItemRuleText(
+    mergedItem.item_name || mergedItem.name || "",
+    playerText(stripLeadingItemEntryReference(rawSourceRuleText))
   );
-  const flavorText = narrativeLead.description || (((consumableLike && duplicateSourceFlavor) || ammunitionRulesOnly) ? "" : sourceFlavorText);
+  const sourceFlavorText = craftedAlchemy
+    ? craftedAlchemyFlavorText(mergedItem, flavorIndex, overrideFlavor)
+    : playerText(mergedItem.flavor || overrideFlavor || entryParagraphText || entriesText || "");
+  const narrativeLead = splitNarrativeLead(sourceRuleText);
+  const duplicateSourceFlavor = Boolean(sourceFlavorText && sourceRuleText && normalizedComparableText(sourceFlavorText) === normalizedComparableText(sourceRuleText));
+  const flavorText = narrativeLead.description || ((duplicateSourceFlavor && looksMechanicalItemText(sourceRuleText)) ? "" : sourceFlavorText);
   const rawRuleText = narrativeLead.rules || sourceRuleText;
-  const hasItemDescription = Boolean(rawRuleText);
   const potionDetails = potionDetailsForItem(mergedItem, uiType || mergedItem.type || mergedItem.item_type, rawRuleText, entriesText);
   const bombDetails = bombDetailsForItem(mergedItem, uiType || mergedItem.type || mergedItem.item_type, craftedAlchemy);
   const alchemyModifierDetails = alchemyModifierDetailsForItem(mergedItem);
@@ -693,8 +732,9 @@ export default function ItemCard({
     flavorText &&
     normalizedComparableText(rawRuleText) === normalizedComparableText(flavorText)
   );
-  const structuredRules = !isAlchemyComponent && hasItemDescription && !ruleDuplicatesFlavor
-    ? namedRuleSections(rawRuleText)
+  const labeledRules = !isAlchemyComponent ? parseLabeledItemFields(rawRuleText) : { fields: [], remainingText: rawRuleText };
+  const structuredRules = !isAlchemyComponent && labeledRules.remainingText && !ruleDuplicatesFlavor
+    ? parseNamedItemSections(labeledRules.remainingText)
     : null;
 
   const gp = parseValueToGp(coalesce(mergedItem.item_cost, mergedItem.cost, mergedItem.value));
@@ -729,10 +769,14 @@ export default function ItemCard({
   const cardFamily = cardFamilyForItem(mergedItem, norm.type, norm.typeHint, potionDetails, bombDetails);
   const crafterName = playerText(craftedByName(mergedItem));
   const relicState = relicStateForItem(mergedItem);
-  const adaptiveFields = [
-    ...(relicState ? [{ label: "Relic State", value: relicState }] : []),
-    ...adaptiveItemFields(mergedItem, norm.type, norm, potionDetails, bombDetails, cardFamily, rawRuleText),
-  ];
+  const canonicalFields = canonicalItemMechanicFields(mergedItem)
+    .filter((field) => !(cardFamily === "armor" && field.label === "Armor Class Bonus"));
+  const adaptiveFields = mergeCardFields(
+    relicState ? [{ label: "Relic State", value: relicState }] : [],
+    adaptiveItemFields(mergedItem, norm.type, norm, potionDetails, bombDetails, cardFamily, rawRuleText),
+    labeledRules.fields,
+    canonicalFields,
+  );
 
   const renderFieldGrid = (fields = adaptiveFields, extraClass = "") => fields.length ? (
     <div className={`sitem-field-grid ${extraClass}`.trim()}>
@@ -760,26 +804,72 @@ export default function ItemCard({
     { label: "Contribution", value: alchemyModifierDetails.brewImpact },
   ], "sitem-alchemy-modifier-grid") : null;
 
-  const rulesIntro = structuredRules?.intro || (!ruleDuplicatesFlavor ? rawRuleText : "");
-  const primaryEffectText = playerText(
-    potionDetails?.effect && normalizedComparableText(potionDetails.effect) !== normalizedComparableText(norm.flavor)
+  const referenceEffect = deriveReferenceOnlyEffect(mergedItem, sharedRuleReference, { hasOwnRules: Boolean(rawRuleText) });
+  const rulesIntro = structuredRules?.intro || (!ruleDuplicatesFlavor ? labeledRules.remainingText : "");
+  const potionEffect = potionDetails?.effect && !/^see item text\.?$/i.test(String(potionDetails.effect || ""))
+    && normalizedComparableText(potionDetails.effect) !== normalizedComparableText(norm.flavor)
       ? potionDetails.effect
-      : rulesIntro
-  );
+      : "";
+  const primaryEffectText = playerText(referenceEffect || potionEffect || rulesIntro);
   const effectLabel = cardFamily === "recipe" ? "Recipe" : "Effect";
   const effectPanel = primaryEffectText ? (
     <div className="sitem-section sitem-rules sitem-effect-panel">
       <div className="small text-muted mb-1 text-uppercase fw-semibold">{effectLabel}</div>
-      <div style={{ whiteSpace: "pre-line" }}><RuleLinkedText text={primaryEffectText} item={mergedItem} onReferenceDetail={onReferenceDetail} /></div>
+      <RuleParagraphs text={primaryEffectText} item={mergedItem} onReferenceDetail={onReferenceDetail} />
     </div>
   ) : null;
 
-  const traitList = structuredRules?.traits?.length ? (
+  const entrySectionKeys = new Set();
+  const combinedTraits = [];
+  for (const trait of [...(entryPresentation.sections || []), ...(structuredRules?.sections || [])]) {
+    const title = playerText(trait?.title || "");
+    const body = playerText(trait?.body || "");
+    const key = `${normalizedComparableText(title)}|${normalizedComparableText(body)}`;
+    if (!title || !body || entrySectionKeys.has(key)) continue;
+    entrySectionKeys.add(key);
+    combinedTraits.push({ title, body });
+  }
+
+  const traitList = combinedTraits.length ? (
     <div className="sitem-rule-traits" aria-label="Item traits">
-      {structuredRules.traits.map((trait) => (
-        <details className="sitem-rule-trait" key={trait.title}>
-          <summary>{playerText(trait.title)}</summary>
-          <div className="sitem-rule-trait__body" style={{ whiteSpace: "pre-line" }}><RuleLinkedText text={playerText(trait.body)} item={mergedItem} onReferenceDetail={onReferenceDetail} /></div>
+      {combinedTraits.map((trait) => (
+        <details className="sitem-rule-trait" key={`${trait.title}:${trait.body.slice(0, 42)}`}>
+          <summary><RuleLinkedText text={trait.title} item={mergedItem} onReferenceDetail={onReferenceDetail} /></summary>
+          <div className="sitem-rule-trait__body"><RuleParagraphs text={trait.body} item={mergedItem} onReferenceDetail={onReferenceDetail} /></div>
+        </details>
+      ))}
+    </div>
+  ) : null;
+
+  const listBlocks = entryPresentation.lists?.length ? (
+    <div className="sitem-rule-collections" aria-label="Item option lists">
+      {entryPresentation.lists.map((list, listIndex) => (
+        <details className="sitem-rule-trait sitem-rule-list" key={`${list.title || "Options"}:${listIndex}`}>
+          <summary>{playerText(list.title || "Options")}</summary>
+          <ul>
+            {list.items.map((entry, itemIndex) => <li key={`${entry.title}:${itemIndex}`}>
+              {entry.title ? <strong><RuleLinkedText text={playerText(entry.title)} item={mergedItem} onReferenceDetail={onReferenceDetail} /></strong> : null}
+              {entry.body ? <RuleParagraphs text={playerText(entry.body)} item={mergedItem} onReferenceDetail={onReferenceDetail} /> : null}
+            </li>)}
+          </ul>
+        </details>
+      ))}
+    </div>
+  ) : null;
+
+  const tableBlocks = entryPresentation.tables?.length ? (
+    <div className="sitem-rule-collections" aria-label="Item roll tables">
+      {entryPresentation.tables.map((table, tableIndex) => (
+        <details className="sitem-rule-trait sitem-rule-table" key={`${table.title || "Roll Table"}:${tableIndex}`}>
+          <summary>{playerText(table.title || "Roll Table")}</summary>
+          <div className="sitem-rule-table__scroll">
+            <table>
+              {table.columns?.length ? <thead><tr>{table.columns.map((column, columnIndex) => <th key={`${column}:${columnIndex}`}><RuleLinkedText text={playerText(column)} item={mergedItem} onReferenceDetail={onReferenceDetail} /></th>)}</tr></thead> : null}
+              <tbody>
+                {table.rows.map((row, rowIndex) => <tr key={rowIndex}>{row.map((cell, cellIndex) => <td key={cellIndex}><RuleLinkedText text={playerText(cell)} item={mergedItem} onReferenceDetail={onReferenceDetail} /></td>)}</tr>)}
+              </tbody>
+            </table>
+          </div>
         </details>
       ))}
     </div>
@@ -793,16 +883,22 @@ export default function ItemCard({
       {renderFieldGrid()}
       {effectPanel}
       {traitList}
+      {listBlocks}
+      {tableBlocks}
     </>;
   } else if (cardFamily === "material") {
     orderedDetails = <>
       {renderFieldGrid()}
       {effectPanel}
+      {listBlocks}
+      {tableBlocks}
     </>;
   } else {
     orderedDetails = <>
       {effectPanel}
       {traitList}
+      {listBlocks}
+      {tableBlocks}
       {renderFieldGrid()}
     </>;
   }
@@ -836,8 +932,8 @@ export default function ItemCard({
 
         <div className="row g-2 align-items-start">
           {norm.flavor ? <div className="col-8">
-            <div className="sitem-section sitem-desc" style={{ whiteSpace: "pre-line" }}>
-              <RuleLinkedText text={norm.flavor} item={mergedItem} onReferenceDetail={onReferenceDetail} />
+            <div className="sitem-section sitem-desc">
+              <RuleParagraphs text={norm.flavor} item={mergedItem} onReferenceDetail={onReferenceDetail} />
             </div>
           </div> : null}
           <div className={norm.flavor ? "col-4" : "col-4 ms-auto"}>

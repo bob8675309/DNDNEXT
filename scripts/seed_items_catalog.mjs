@@ -15,6 +15,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { createClient } from "@supabase/supabase-js";
 import { resolveItemCopies } from "./lib/resolve_item_copies.mjs";
+import { applyCampaignItemRuleOverrides } from "./lib/campaign_item_overrides.mjs";
 
 /* ---------- ENV + SUPABASE CLIENT ---------- */
 
@@ -300,7 +301,7 @@ async function loadItems() {
     console.warn(`Alchemy catalog skipped: ${err?.message || err}`);
   }
 
-  return resolveItemCopies([...coreItems, ...grimHollowItems, ...alchemyRows]);
+  return resolveItemCopies([...coreItems, ...grimHollowItems, ...alchemyRows]).map((item) => applyCampaignItemRuleOverrides(item));
 }
 
 /* ---------- MAIN: build rows + UPSERT items_catalog ---------- */
