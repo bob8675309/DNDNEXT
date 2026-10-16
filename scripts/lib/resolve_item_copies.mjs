@@ -117,22 +117,30 @@ export function resolveItemCopies(rows = [], { warn = console.warn } = {}) {
       let derivedDescription = baseDescription;
 
       for (const operation of operations) {
+        const operationText = flattenItemEntryText(asArray(operation?.items)).trim();
         if (operation.mode === "replaceTxt") {
           const pattern = new RegExp(operation.replace || "", operation.flags || "g");
           derivedDescription = String(derivedDescription || "").replace(pattern, operation.with || "");
-        } else if (operation.mode === "prependArr" && modText) {
-          derivedDescription = [modText, derivedDescription].filter(Boolean).join("\n\n");
-        } else if (operation.mode === "appendArr" && modText) {
-          derivedDescription = [derivedDescription, modText].filter(Boolean).join("\n\n");
-        } else if (operation.mode === "replaceArr" && modText && !flattened) {
-          derivedDescription = modText;
+        } else if (operation.mode === "prependArr" && operationText) {
+          derivedDescription = [operationText, derivedDescription].filter(Boolean).join("\n\n");
+        } else if ((operation.mode === "appendArr" || operation.mode === "insertArr") && operationText) {
+          // A flattened description cannot preserve an exact array insertion
+          // index, but it can preserve every inherited rule and every added
+          // state rule. ItemCard will recover named source sections separately
+          // from resolved.entries when structure is available.
+          derivedDescription = [derivedDescription, operationText].filter(Boolean).join("\n\n");
+        } else if (operation.mode === "replaceArr" && operationText) {
+          // replaceArr needs the structured entry tree for exact replacement.
+          // Use it when available; otherwise at least avoid silently dropping
+          // the replacement rule text.
+          derivedDescription = flattened || operationText;
         }
       }
 
-      // Raw source rows normally have entries, so the fully modified entry tree
-      // is the best text. Normalized fixtures/legacy rows can lack entries; in
-      // that case apply the copy operations to the inherited description.
-      resolved.item_description = flattened || derivedDescription || baseDescription;
+      // item_description is the canonical runtime rules authority. Some baked
+      // payload.entries values are deliberately flavor-only, so never let a
+      // short flavor entry overwrite a complete inherited description.
+      resolved.item_description = derivedDescription || flattened || baseDescription;
       resolved.rulesShort = resolved.item_description;
     } else if (!resolved.item_description && base.item_description) {
       resolved.item_description = base.item_description;
