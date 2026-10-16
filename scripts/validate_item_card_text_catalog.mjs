@@ -78,6 +78,25 @@ const ringEffect = deriveReferenceOnlyEffect(ringResistance, ringReference);
 if (!/radiant damage/i.test(ringEffect) || !canonicalItemMechanicFields(ringResistance).some((field) => field.label === "Resistance")) {
   throw new Error("Ring of Resistance variants still do not expose their canonical resistance.");
 }
+const sharedReferenceFixtures = [
+  [/^Fire Absorbing Tattoo$/i, /Resistance to Fire damage/i],
+  [/^Black Dragon Scale Mail$/i, /closest dragon within 30 miles/i],
+  [/^Black Chromatic Rose$/i, /20-foot cone/i],
+  [/^Scroll of Protection \(Fey\)$/i, /5-foot-radius/i],
+  [/^Ioun Stone, Awareness$/i, /Initiative rolls/i],
+  [/^Ioun Stone, Greater Absorption$/i, /level 8 or lower/i],
+  [/^Ioun Stone, Reserve$/i, /up to 4 total spell levels/i],
+  [/^Ioun Stone, Sustenance$/i, /don't need to eat or drink/i],
+  [/^Grenade Launcher$/i, /1,000 feet/i],
+];
+for (const [namePattern, effectPattern] of sharedReferenceFixtures) {
+  const fixture = rows.find((row) => namePattern.test(row.item_name || row.name || ""));
+  if (!fixture) throw new Error(`Catalog audit fixture missing ${namePattern}.`);
+  const reference = leadingItemEntryReference(fixture.item_description || fixture.rulesText || "");
+  const effect = deriveReferenceOnlyEffect(fixture, reference);
+  if (!effectPattern.test(effect)) throw new Error(`${fixture.item_name || fixture.name} still does not resolve its shared itemEntry mechanics.`);
+}
+
 
 const bag = rows.find((row) => /^Bag of Tricks, Tan$/i.test(row.item_name || row.name || ""));
 if (!bag || extractItemEntryPresentation(bag.entries).tables.length < 1) {
@@ -140,6 +159,10 @@ if (rawMarkup.length) {
 
 if (longWall.length) {
   throw new Error(`ItemCard audit found ${longWall.length} long descriptions with no usable paragraph/section/list/table structure; examples: ${sampleNames(longWall.map(({ row }) => row)).join(", ")}`);
+}
+
+if (unresolvedReference.length) {
+  throw new Error(`ItemCard audit found ${unresolvedReference.length} shared itemEntry references with no card-ready mechanic fallback; examples: ${sampleNames(unresolvedReference.map(({ row }) => row)).join(", ")}`);
 }
 
 console.log(JSON.stringify({

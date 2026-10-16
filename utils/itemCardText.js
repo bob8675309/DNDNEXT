@@ -273,19 +273,92 @@ export function canonicalItemMechanicFields(item = {}) {
   push("Saving Throw Bonus", item.bonusSavingThrow ?? item.bonus_saving_throw ?? item?.card_payload?.bonusSavingThrow);
   push("Spell Attack Bonus", item.bonusSpellAttack ?? item.bonus_spell_attack ?? item?.card_payload?.bonusSpellAttack);
   push("Spell Save DC Bonus", item.bonusSpellSaveDc ?? item.bonus_spell_save_dc ?? item?.card_payload?.bonusSpellSaveDc);
+  push("Proficiency Bonus", item.bonusProficiencyBonus ?? item.bonus_proficiency_bonus ?? item?.card_payload?.bonusProficiencyBonus);
+
+  const ability = item.ability ?? item?.card_payload?.ability;
+  if (ability && typeof ability === "object" && !Array.isArray(ability)) {
+    const labels = { str: "Strength", dex: "Dexterity", con: "Constitution", int: "Intelligence", wis: "Wisdom", cha: "Charisma" };
+    for (const [key, amount] of Object.entries(ability)) {
+      if (!labels[key] || amount == null || amount === "") continue;
+      const numeric = Number(amount);
+      const display = Number.isFinite(numeric) && numeric > 0 ? `+${numeric}` : String(amount);
+      push(labels[key], display);
+    }
+  }
 
   return fields;
 }
 
-export function deriveReferenceOnlyEffect(item = {}, referenceName = "") {
-  const reference = safe(referenceName).toLowerCase();
-  const resist = arrayish(item.resist ?? item?.card_payload?.resist).map((value) => safe(value).toLowerCase()).filter(Boolean);
-  if (resist.length && /^(ring|potion) of resistance$/.test(reference)) {
-    return `Resistance to ${resist.join(", ")} damage.`;
+function itemNameOf(item = {}) {
+  return safe(item.item_name || item.name || item.display_name || item?.card_payload?.item_name);
+}
+
+function iounStoneSpecificEffect(item = {}) {
+  const name = itemNameOf(item);
+  const subtype = safe(name.split(",").slice(1).join(",")).toLowerCase();
+  const ability = item.ability ?? item?.card_payload?.ability;
+  const abilityLabels = { str: "Strength", dex: "Dexterity", con: "Constitution", int: "Intelligence", wis: "Wisdom", cha: "Charisma" };
+
+  if (ability && typeof ability === "object" && !Array.isArray(ability)) {
+    const pair = Object.entries(ability)[0] || [];
+    const key = pair[0];
+    const amount = pair[1];
+    if (abilityLabels[key] && amount != null) return `While orbiting, this stone increases your ${abilityLabels[key]} by ${amount}, to a maximum of 20.`;
   }
+  if (/awareness/.test(subtype)) return "While orbiting, you have Advantage on Initiative rolls and Wisdom (Perception) checks.";
+  if (/greater absorption/.test(subtype)) return "Reaction: cancel a spell of level 8 or lower cast by a creature you can see. After the stone has canceled 20 total spell levels, it burns out and loses its magic.";
+  if (/absorption/.test(subtype)) return "Reaction: cancel a spell of level 4 or lower cast by a creature you can see. After the stone has canceled 20 total spell levels, it burns out and loses its magic.";
+  if (/mastery/.test(subtype)) return "While orbiting, your Proficiency Bonus increases by 1.";
+  if (/protection/.test(subtype)) return "While orbiting, you gain a +1 bonus to Armor Class.";
+  if (/regeneration/.test(subtype)) return "At the end of each hour the stone orbits you, regain 15 Hit Points if you have at least 1 Hit Point.";
+  if (/reserve/.test(subtype)) return "Stores up to 4 total spell levels. A creature can store a level 1–4 spell by touching the stone as the spell is cast; while the stone orbits you, you can cast a stored spell using the original caster's slot level, save DC, attack bonus, and spellcasting ability.";
+  if (/sustenance/.test(subtype)) return "While orbiting, you don't need to eat or drink.";
   return "";
 }
 
+export function deriveReferenceOnlyEffect(item = {}, referenceName = "", { hasOwnRules = false } = {}) {
+  if (hasOwnRules) return "";
+
+  const reference = safe(referenceName).toLowerCase();
+  const name = itemNameOf(item);
+  const resist = arrayish(item.resist ?? item?.card_payload?.resist).map((value) => safe(value).toLowerCase()).filter(Boolean);
+  const damageType = resist[0] ? titleWord(resist[0]) : "";
+
+  if (resist.length && /^(ring|potion) of resistance$/.test(reference)) {
+    return `Resistance to ${resist.join(", ")} damage.`;
+  }
+
+  if (reference === "absorbing tattoo" && damageType) {
+    return `While the tattoo is on your skin, you have Resistance to ${damageType} damage. Once per dawn when you take ${damageType} damage, you can use your Reaction to become immune to that instance of damage and regain Hit Points equal to half the damage you otherwise would have taken.`;
+  }
+
+  if (reference === "dragon scale mail" && damageType) {
+    return `While wearing the armor, you gain +1 Armor Class, have Advantage on saving throws against Dragon breath weapons, and have Resistance to ${damageType} damage. Once per dawn, a Magic action can reveal the distance and direction to the closest dragon within 30 miles that matches the armor's dragon type.`;
+  }
+
+  if (reference === "chromatic rose" && damageType) {
+    return `While holding the rose, you have Resistance to ${damageType} damage. If one source would deal more than 10 ${damageType} damage to you after Resistance, the rose disintegrates and prevents that remaining damage. You can also destroy the rose as an action to create a 20-foot cone; creatures make a DC 15 Constitution save against 3d10 ${damageType} damage, taking half on a success.`;
+  }
+
+  if (reference === "scroll of protection") {
+    const match = name.match(/\(([^)]+)\)\s*$/);
+    const target = safe(match?.[1] || "the named creature type");
+    return `Reading the scroll creates a moving 5-foot-radius, 10-foot-high barrier for 5 minutes that keeps ${target} creatures from entering or affecting creatures inside it. A creature of that type can use an action to make a DC 15 Charisma check to overcome the barrier.`;
+  }
+
+  if (reference === "ioun stone") {
+    const specific = iounStoneSpecificEffect(item);
+    const orbit = "Magic action: toss the stone into orbit 1d3 feet from your head; you can have up to three Ioun Stones orbiting at once. An orbiting stone counts as worn, avoids collisions and attempts to attack or snatch it, and can be stowed with a Utilize action.";
+    return [specific, orbit].filter(Boolean).join("\n\n");
+  }
+
+  if (reference === "grenade") {
+    if (/grenade launcher/i.test(name)) return "As an action, use the launcher to propel a grenade to a point up to 1,000 feet away; the grenade creates its listed effect in a 20-foot-radius Sphere.";
+    return "As an action, throw the grenade to a point up to 60 feet away; it explodes there and creates its listed effect in a 20-foot-radius Sphere.";
+  }
+
+  return "";
+}
 export function auditItemCardText(item = {}) {
   const raw = safe(item.item_description || item.rulesText || item.rules || "");
   const cleaned = clean(raw);
@@ -295,11 +368,12 @@ export function auditItemCardText(item = {}) {
   const named = parseNamedItemSections(stripped || cleaned);
   const labeled = parseLabeledItemFields(stripped || cleaned);
   const directFields = canonicalItemMechanicFields(item);
+  const derivedReferenceEffect = deriveReferenceOnlyEffect(item, ref, { hasOwnRules: Boolean(stripped) });
   const problems = [];
 
   if (!cleaned && !directFields.length && !safe(item.damageText) && !safe(item.ac)) problems.push("missing-player-facing-text");
   if (raw.includes("{@") && cleaned.includes("{@")) problems.push("raw-source-tag-remains");
-  if (ref && !stripped && !directFields.length) problems.push("reference-only-without-direct-mechanics");
+  if (ref && !stripped && !directFields.length && !derivedReferenceEffect) problems.push("reference-only-without-direct-mechanics");
   if (cleaned.length > 900 && !named?.sections?.length && !entryPresentation.sections.length && !entryPresentation.lists.length && !entryPresentation.tables.length && splitItemCardParagraphs(cleaned).length < 2) {
     problems.push("long-unstructured-wall");
   }

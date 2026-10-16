@@ -770,7 +770,7 @@ export default function ItemCard({
     { label: "Contribution", value: alchemyModifierDetails.brewImpact },
   ], "sitem-alchemy-modifier-grid") : null;
 
-  const referenceEffect = deriveReferenceOnlyEffect(mergedItem, sharedRuleReference);
+  const referenceEffect = deriveReferenceOnlyEffect(mergedItem, sharedRuleReference, { hasOwnRules: Boolean(rawRuleText) });
   const rulesIntro = structuredRules?.intro || (!ruleDuplicatesFlavor ? labeledRules.remainingText : "");
   const potionEffect = potionDetails?.effect && !/^see item text\.?$/i.test(String(potionDetails.effect || ""))
     && normalizedComparableText(potionDetails.effect) !== normalizedComparableText(norm.flavor)
