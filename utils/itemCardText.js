@@ -1,4 +1,4 @@
-import { formatPlayerFacingText } from "./playerFacingText";
+import { formatPlayerFacingText } from "./playerFacingText.js";
 
 const MECHANICAL_TEXT_RE = /\b(?:action|bonus action|reaction|attack|armor class|\bac\b|advantage|disadvantage|bonus|cast|charge|condition|damage|dc\s*\d+|hit points?|immune|immunity|range|resistance|saving throw|save|speed|spell|while|when|whenever|you gain|you have|you can|requires? attunement|until|duration)\b/i;
 const LABEL_BLOCK_RE = /^(Ability|Utilize|Craft|Includes|Activation|Use|Range|Duration|Recharge|Save|Saving Throw|Area|Damage|Charges?)\s*:?$/i;
