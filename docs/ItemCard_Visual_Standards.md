@@ -12,6 +12,7 @@ All approved variants share these rules:
 
 - dark fantasy / arcane textured card interior with the existing DNDNext rarity-driven frame;
 - deep rarity tone owns the outer border, header, divider, and principal section accents; the lighter rarity tone is reserved for labels and restrained glow;
+- **Mundane and Common are one baseline visual tier.** They use the same neutral rarity treatment for cards and art. Preserve the canonical/source label in data and display for now when useful, but do not spend visual or art-production budget distinguishing Mundane from Common unless a later rules pass explicitly creates a gameplay distinction;
 - title at upper left, type pill and price at upper right;
 - rarity line immediately below the header;
 - crafted Smithing or Alchemy results show `Crafted by <name>` beside the rarity when crafter provenance exists;
@@ -93,6 +94,8 @@ Typical fields:
 - Note / material behavior
 
 Material cards generally do not need a large effect panel unless the material has an actual standalone mechanical effect.
+
+**Provisional content note:** the Material card layout itself is approved, but the current Smithing/Alchemy/Enchanting material catalogs are not locked. Those systems are scheduled for a broader rules/content re-examination and may merge, rename, remove, or simplify material families. Do not treat the current material list as a final art-production manifest.
 
 ## Variant 4 — Recipe
 
