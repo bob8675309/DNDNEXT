@@ -10,7 +10,7 @@ import {
 import MerchantStorefrontView from "./MerchantStorefrontView";
 import useWallet from "../utils/useWallet";
 import { supabase } from "../utils/supabaseClient";
-import { themeFromMerchant as detectTheme, Pill } from "../utils/merchantTheme";
+import { themeFromMerchant as detectTheme } from "../utils/merchantTheme";
 
 /*     Theme → allow-list rules (kept for possible client-side fallback reroll) */
 const THEME_RULES = {
@@ -885,8 +885,6 @@ export default function MerchantPanel({
 
   if (!merchant) return null;
 
-  const merchantSubline = merchant.storefront_tagline || merchant.storefront_title || merchant.role || merchant.affiliation || "Traveling merchant";
-  const stockLabel = loading ? "Loading stock" : cards.length + " item" + (cards.length === 1 ? "" : "s") + " in stock";
   const rarityClassFor = (value) => {
     const slug = String(value || "common").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
     return `rarity-${slug || "common"}`;
@@ -935,10 +933,10 @@ export default function MerchantPanel({
     <MerchantStorefrontView
       merchant={merchant}
       rootClassName={"merchant-panel-inner merchant-market merchant-storefront-shared merchant-panel-" + presentation}
-      headerKicker="Merchant storefront"
+      headerKicker=""
       title={`${merchant.name}’s Wares`}
-      titleAddon={<Pill theme={theme} small />}
-      subline={`${merchantSubline} · ${stockLabel}`}
+      titleAddon={<span className="merchant-market-theme-pill">{themeLabel}</span>}
+      subline=""
       headerActions={<>
         {isAdmin ? (
           <button type="button" className={"btn btn-sm " + (showTravel ? "btn-warning" : "btn-outline-warning")} onClick={() => setShowTravel((value) => !value)}>
@@ -962,6 +960,7 @@ export default function MerchantPanel({
       theme={theme}
       sceneTitle={merchant.storefront_title || "Curated wares"}
       sceneTagline={merchant.storefront_tagline || "Browse the merchant’s current stock, inspect an item, and purchase without leaving the storefront."}
+      showSceneCopy={false}
       query={query}
       onQueryChange={setQuery}
       searchPlaceholder="Name, rarity, type, or description"

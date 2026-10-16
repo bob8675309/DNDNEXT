@@ -259,7 +259,7 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
   }
 
   if (!model) {
-    return <div className="npc-forge-body npc-forge-step-equipment is-player-mode"><section className="npc-forge-workspace"><div className="npc-forge-equipment-market-prereq"><strong>Starting market needs this Forge draft.</strong>Equipment needs a selected Class and Background to resolve its source purse. A saved Forge draft restores only on the same site origin where it was created; version-specific Vercel deployment hostnames do not share browser localStorage with dndnext.vercel.app. Choose Class and Background first, or open the review link on the same origin as the saved draft.</div></section></div>;
+    return <div className="npc-forge-body npc-forge-step-equipment is-player-mode"><section className="npc-forge-workspace"><div className="npc-forge-equipment-market-prereq"><strong>Preparing the starting market…</strong>Loading the current Forge draft.</div></section></div>;
   }
 
   if (!model.catalogReady) {
@@ -319,7 +319,9 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
             typeFilter={typeFilter}
             loading={loadingStock}
             error={marketError}
-            notice={notice}
+            notice={notice || (model?.sourceIncomplete && ruleset === "dndnext-homebrew"
+              ? "Using the DNDNext 300 gp starting-market floor for this preview. Class and Background source-purse details will reconcile automatically once both are selected."
+              : "")}
             remainingCopper={remainingCopper}
             headerActions={cartControl}
             onQueryChange={setQuery}

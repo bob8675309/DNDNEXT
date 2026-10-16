@@ -31,6 +31,22 @@ function playerFacingItemText(value = "") {
     .trim();
 }
 
+function ammunitionFactsForCard(item = {}) {
+  const name = safeText(item.item_name || item.name);
+  const rawEntries = Array.isArray(item.entries) ? item.entries.filter((entry) => typeof entry === "string").join(" ") : "";
+  const rules = playerFacingItemText(
+    item.item_description || item.rulesShort || item.rulesText || item.rules || rawEntries || ""
+  );
+  const facts = [];
+  const masteryMatch = rules.match(/\bworks like (?:an?\s+)?([A-Za-z][A-Za-z -]{1,40}?)\s+Melee weapon\b/i);
+  const damageMatch = name.match(/,\s*(acid|bludgeoning|cold|fire|force|lightning|necrotic|piercing|poison|psychic|radiant|slashing|thunder)\b/i);
+
+  if (masteryMatch?.[1]) facts.push(`${masteryMatch[1].trim()} mastery`);
+  if (damageMatch?.[1]) facts.push(`${damageMatch[1][0].toUpperCase()}${damageMatch[1].slice(1).toLowerCase()} damage`);
+  if (/maximum range[^.]*halved/i.test(rules)) facts.push("Max range halved");
+  return facts;
+}
+
 function stockFactsForCard(card = {}) {
   const payload = card.card_payload && typeof card.card_payload === "object" ? card.card_payload : {};
   const item = { ...payload, ...card };
@@ -43,7 +59,11 @@ function stockFactsForCard(card = {}) {
     if (clean && !facts.some((entry) => entry.toLowerCase() === clean.toLowerCase())) facts.push(clean);
   };
 
-  if (/melee weapon|ranged weapon|ammunition/.test(type)) {
+  if (/ammunition/.test(type)) {
+    ammunitionFactsForCard(item).forEach(add);
+    add(item.damageText || item.damage_text || (item.dmg1 ? `${item.dmg1} ${item.dmgType || ""}`.trim() : ""));
+    if (item.rangeText || item.range) add(item.rangeText || item.range);
+  } else if (/melee weapon|ranged weapon/.test(type)) {
     add(item.damageText || item.damage_text || (item.dmg1 ? `${item.dmg1} ${item.dmgType || ""}`.trim() : ""));
     if (item.rangeText || item.range) add(item.rangeText || item.range);
     else if (/melee weapon/.test(type)) {
@@ -69,6 +89,9 @@ function stockFactsForCard(card = {}) {
     const charges = item.charges || item.item_charges;
     if (charges) add(`${charges} charge${Number(charges) === 1 ? "" : "s"}`);
     if (item.uiSubKind) add(item.uiSubKind);
+  } else if (/tools?/.test(type)) {
+    if (item.bonusSpellAttack) add(`Spell attacks ${item.bonusSpellAttack}`);
+    if (item.bonusSpellSaveDc) add(`Spell save DC ${item.bonusSpellSaveDc}`);
   } else if (/material|ore|reagent|catalyst|plant|monster part/.test(type)) {
     add(item.quality || item?.smithing?.quality || item?.alchemy?.familyLabel || item?.alchemy?.family || "");
     add(item?.smithing?.materialClass || item?.alchemy?.brewImpact || "");
@@ -162,6 +185,7 @@ export default function MerchantStorefrontView({
   theme = "general",
   sceneTitle = "",
   sceneTagline = "",
+  showSceneCopy = true,
   workspaceClassName = "",
   query = "",
   onQueryChange = null,
@@ -222,11 +246,11 @@ export default function MerchantStorefrontView({
         <section className={`merchant-scene${sceneClassName ? ` ${sceneClassName}` : ""}`} style={sceneStyle}>
           {sceneMedia}
           <div className="merchant-scene-scrim" />
-          <div className="merchant-scene-copy">
+          {showSceneCopy ? <div className="merchant-scene-copy">
             <span className="merchant-scene-theme">{theme}</span>
             <h3>{sceneTitle || merchant.storefront_title || "Curated wares"}</h3>
             <p>{sceneTagline || merchant.storefront_tagline || "Browse the merchant’s current stock and inspect an item without leaving the storefront."}</p>
-          </div>
+          </div> : null}
         </section>
 
         <section className={`merchant-stock-workspace${workspaceClassName ? ` ${workspaceClassName}` : ""}`}>

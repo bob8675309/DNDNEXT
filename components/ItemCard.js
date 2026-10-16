@@ -177,6 +177,19 @@ function ruleMetrics(text = "") {
   };
 }
 
+function ammunitionMechanics(item = {}, ruleText = "") {
+  const name = playerText(item.item_name || item.name || "");
+  const rules = playerText(ruleText || item.item_description || item.rulesShort || item.rulesText || item.rules || "");
+  const masteryMatch = rules.match(/\bworks like (?:an?\s+)?([A-Za-z][A-Za-z -]{1,40}?)\s+Melee weapon\b/i);
+  const damageMatch = name.match(/,\s*(acid|bludgeoning|cold|fire|force|lightning|necrotic|piercing|poison|psychic|radiant|slashing|thunder)\b/i);
+
+  return {
+    mastery: masteryMatch?.[1]?.trim() || "",
+    damageType: damageMatch?.[1] ? `${damageMatch[1][0].toUpperCase()}${damageMatch[1].slice(1).toLowerCase()}` : "",
+    rangeRule: /maximum range[^.]*halved/i.test(rules) ? "Maximum range halved" : "",
+  };
+}
+
 function buildDamageText(raw) {
   // MagicVariantBuilder emits damageText. Catalog rows usually emit dmg1/dmgType.
   // Support both so admin-built variants, catalog items, and craft-completed items
@@ -318,9 +331,13 @@ function adaptiveItemFields(item = {}, type = "", norm = {}, potionDetails = nul
   }
 
   if (family === "weapon") {
+    const isAmmunition = /\bammunition\b/i.test([type, item.item_type, item.uiType, item.type].filter(Boolean).join(" "));
+    const ammunition = isAmmunition ? ammunitionMechanics(item, ruleText) : null;
     return [
       clean("Damage", norm.dmg),
-      clean("Range", weaponRangeDisplay(item, norm.rng, norm.props)),
+      clean("Damage Type", ammunition?.damageType),
+      clean("Mastery", ammunition?.mastery),
+      clean("Range", ammunition?.rangeRule || weaponRangeDisplay(item, norm.rng, norm.props)),
       clean("Weight", weightValue),
       clean("Properties", norm.props),
     ].filter(Boolean);
@@ -371,6 +388,8 @@ function adaptiveItemFields(item = {}, type = "", norm = {}, potionDetails = nul
   }
 
   return [
+    clean("Spell Attack Bonus", item.bonusSpellAttack || item.bonus_spell_attack),
+    clean("Spell Save DC Bonus", item.bonusSpellSaveDc || item.bonus_spell_save_dc),
     clean("Weight", weightValue),
     clean("Charges", chargesValue),
     clean("Attunement", attunementValue),
@@ -604,8 +623,14 @@ export default function ItemCard({
   const narrativeLead = splitNarrativeLead(sourceRuleText);
   const itemBlob = [uiType, mergedItem.item_type, mergedItem.type, mergedItem.item_name, mergedItem.name].filter(Boolean).join(" ").toLowerCase();
   const consumableLike = isPotionLikeItem(mergedItem, uiType || mergedItem.item_type || mergedItem.type) || /\bbomb\b/.test(itemBlob);
+  const ammunitionLike = /\bammunition\b/.test(itemBlob);
   const duplicateSourceFlavor = Boolean(sourceFlavorText && sourceRuleText && normalizedComparableText(sourceFlavorText) === normalizedComparableText(sourceRuleText));
-  const flavorText = narrativeLead.description || ((consumableLike && duplicateSourceFlavor) ? "" : sourceFlavorText);
+  const ammunitionRulesOnly = Boolean(
+    ammunitionLike &&
+    duplicateSourceFlavor &&
+    /\b(?:works like|deals?\b[^.]{0,48}\bdamage|maximum range|ammunition)\b/i.test(sourceRuleText)
+  );
+  const flavorText = narrativeLead.description || (((consumableLike && duplicateSourceFlavor) || ammunitionRulesOnly) ? "" : sourceFlavorText);
   const rawRuleText = narrativeLead.rules || sourceRuleText;
   const hasItemDescription = Boolean(rawRuleText);
   const potionDetails = potionDetailsForItem(mergedItem, uiType || mergedItem.type || mergedItem.item_type, rawRuleText, entriesText);
@@ -639,7 +664,7 @@ export default function ItemCard({
     type: uiType || typeFromBuilderCategory(mergedItem.category) || titleCase(stripTag(mergedItem.type || mergedItem.item_type || "Item")),
     typeHint: uiType === "Wondrous Item" ? uiSubKind : null,
     rarity,
-    flavor: playerText(flavorText || "—"),
+    flavor: playerText(flavorText || ""),
     cost: gp,
     weight: weight != null ? weight : null,
     source: playerText(mergedItem.source || mergedItem.item_source || ""),
@@ -756,12 +781,12 @@ export default function ItemCard({
         </div>
 
         <div className="row g-2 align-items-start">
-          <div className="col-8">
+          {norm.flavor ? <div className="col-8">
             <div className="sitem-section sitem-desc" style={{ whiteSpace: "pre-line" }}>
               {norm.flavor}
             </div>
-          </div>
-          <div className="col-4">
+          </div> : null}
+          <div className={norm.flavor ? "col-4" : "col-4 ms-auto"}>
             <div className={`sitem-thumb ratio ratio-1x1 ${!norm.visual.hasImage ? `sitem-thumb-fallback ${norm.visual.className}` : ""}`}>
               {norm.visual.hasImage ? <img
                 src={norm.image}
