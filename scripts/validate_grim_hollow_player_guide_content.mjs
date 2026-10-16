@@ -62,7 +62,7 @@ for (const token of [
 
 assert(itemsIndex.includes('"/items/grim-hollow-pg24.json"') && itemsIndex.includes("loadItemCatalogList"), "shared item loader does not include the Grim Hollow pack");
 assert(itemsIndex.includes('raw === "AdvEq"'), "Advanced Equipment classification is missing");
-assert(admin.includes("loadItemCatalogList") && admin.includes('source !== "GRIMHOLLOWPG24"'), "Admin item browser does not expose Grim Hollow blackpowder equipment as campaign content");
+assert(admin.includes("loadItemCatalogList") && admin.includes("isFutureTechItem") && admin.includes("campaign_item_pool_settings") && admin.includes("set_campaign_future_tech_enabled_v1"), "Admin item browser does not route firearm/future gear through the campaign future-tech control while keeping the content browseable to admins");
 assert(admin.includes('"/items/magicvariants.grim-hollow-pg24.json"'), "Admin variant loader is missing Hunter's Armor");
 assert(town.includes("loadItemCatalogList"), "Town item catalogue does not use the shared merged item loader");
 assert(town.includes("isWorkshopFutureItem") && town.includes("FIREARM_WORKSHOP_NAME"), "Town smith firearm exclusion was removed");

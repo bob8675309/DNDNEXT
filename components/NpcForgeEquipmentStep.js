@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import MerchantAmbientBackdrop from "./MerchantAmbientBackdrop";
 import MerchantRail from "./MerchantRail";
 import NpcForgeMerchantMarket from "./NpcForgeMerchantMarket";
 import NpcForgeEquipmentSummaryDock from "./NpcForgeEquipmentSummaryDock";
@@ -258,7 +259,7 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
   }
 
   if (!model) {
-    return <div className="npc-forge-body npc-forge-step-equipment is-player-mode"><section className="npc-forge-workspace"><div className="npc-forge-equipment-market-prereq"><strong>Starting market needs this Forge draft.</strong>Equipment needs a selected Class and Background to resolve its source purse. A saved Forge draft restores only on the same site origin where it was created; version-specific Vercel deployment hostnames do not share browser localStorage with dndnext.vercel.app. Choose Class and Background first, or open the review link on the same origin as the saved draft.</div></section></div>;
+    return <div className="npc-forge-body npc-forge-step-equipment is-player-mode"><section className="npc-forge-workspace"><div className="npc-forge-equipment-market-prereq"><strong>Preparing the starting market…</strong>Loading the current Forge draft.</div></section></div>;
   }
 
   if (!model.catalogReady) {
@@ -271,9 +272,36 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
       ? "Not enough gold"
       : `Add to Starting Cart (${selectedCard._price_gp} gp)`;
 
+  const cartControl = <NpcForgeEquipmentSummaryDock
+    presentation="header"
+    ruleset={ruleset}
+    budgetCopper={budgetCopper}
+    spentCopper={spentCopper}
+    remainingCopper={remainingCopper}
+    vanillaSourceCopper={vanillaSourceCopper}
+    classCashCopper={classCash}
+    backgroundCashCopper={backgroundCash}
+    level={model.level}
+    purchases={purchases}
+    keepStartingGold={keepingFullPurse}
+    wealthRoll={selection.wealthRoll || null}
+    rollRequired={rule.rollRequired}
+    onRollWealth={() => onChange?.({
+      ...selection,
+      mode: "market",
+      wealthRoll: 1 + Math.floor(Math.random() * 10),
+      marketPurchases: purchases,
+      keepStartingGold: keepingFullPurse,
+    })}
+    onKeepFullPurse={keepFullPurse}
+    onRemovePurchase={removePurchase}
+  />;
+
   return <div className="npc-forge-body npc-forge-step-equipment is-player-mode">
     <section className="npc-forge-workspace">
       <div className="npc-forge-equipment-storefront is-merchant-panel-pivot">
+        {activeMerchant ? <MerchantAmbientBackdrop merchant={activeMerchant} className="forge-equipment-stage-backdrop" /> : null}
+
         <div className="forge-equipment-vendor-frame">
           <MerchantRail
             merchants={merchants}
@@ -291,8 +319,11 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
             typeFilter={typeFilter}
             loading={loadingStock}
             error={marketError}
-            notice={notice}
+            notice={notice || (model?.sourceIncomplete && ruleset === "dndnext-homebrew"
+              ? "Using the DNDNext 300 gp starting-market floor for this preview. Class and Background source-purse details will reconcile automatically once both are selected."
+              : "")}
             remainingCopper={remainingCopper}
+            headerActions={cartControl}
             onQueryChange={setQuery}
             onTypeFilterChange={setTypeFilter}
             onSelect={(id) => {
@@ -304,31 +335,6 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
             selectedActionLabel={selectedActionLabel}
           />
         </div>
-
-        <NpcForgeEquipmentSummaryDock
-          presentation="floating"
-          ruleset={ruleset}
-          budgetCopper={budgetCopper}
-          spentCopper={spentCopper}
-          remainingCopper={remainingCopper}
-          vanillaSourceCopper={vanillaSourceCopper}
-          classCashCopper={classCash}
-          backgroundCashCopper={backgroundCash}
-          level={model.level}
-          purchases={purchases}
-          keepStartingGold={keepingFullPurse}
-          wealthRoll={selection.wealthRoll || null}
-          rollRequired={rule.rollRequired}
-          onRollWealth={() => onChange?.({
-            ...selection,
-            mode: "market",
-            wealthRoll: 1 + Math.floor(Math.random() * 10),
-            marketPurchases: purchases,
-            keepStartingGold: keepingFullPurse,
-          })}
-          onKeepFullPurse={keepFullPurse}
-          onRemovePurchase={removePurchase}
-        />
       </div>
     </section>
   </div>;

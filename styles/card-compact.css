@@ -5,7 +5,7 @@
 .sitem-card {
   --sitem-rarity-color: rgba(156, 163, 175, 0.92);
   --sitem-rarity-wash: rgba(156, 163, 175, 0.14);
-  border: 1px solid var(--sitem-rarity-color) !important;
+  border: 3px solid var(--sitem-rarity-color) !important;
   border-radius: 1rem !important;
   background: #171021 !important;
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.32), inset 0 0 0 1px rgba(255,255,255,0.04) !important;
@@ -46,10 +46,18 @@
 
 .sitem-card .sitem-header {
   background:
-    linear-gradient(90deg, var(--sitem-rarity-wash) 0%, rgba(49, 29, 78, 0.86) 34%, rgba(35, 24, 55, 0.96) 100%) !important;
-  border-bottom: 2px solid var(--sitem-rarity-color) !important;
-  box-shadow: inset 0 1px 0 var(--sitem-rarity-color) !important;
-  color: #fff8df !important;
+    linear-gradient(
+      100deg,
+      color-mix(in srgb, var(--sitem-rarity-color) 82%, #24152f 18%) 0%,
+      color-mix(in srgb, var(--sitem-rarity-color) 72%, #1f142b 28%) 58%,
+      color-mix(in srgb, var(--sitem-rarity-color) 62%, #18111f 38%) 100%
+    ) !important;
+  border-bottom: 3px solid color-mix(in srgb, var(--sitem-rarity-color) 90%, white 10%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.24),
+    inset 0 -1px 0 color-mix(in srgb, var(--sitem-rarity-color) 68%, black 32%) !important;
+  color: #fffdf6 !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,.72);
 }
 
 .sitem-card .sitem-title {
@@ -58,7 +66,7 @@
 }
 
 .sitem-card .sitem-type {
-  background: rgba(255,255,255,0.12) !important;
+  background: rgba(8,7,13,0.38) !important;
   color: rgba(255,255,255,0.92) !important;
   border-radius: 0.38rem !important;
   font-weight: 850 !important;
@@ -226,4 +234,479 @@
 }
 .sitem-card.is-shop-variant .sitem-game-details > summary em {
   font-size: .51rem;
+}
+
+
+/* 2026-10-13 stronger ItemCard rarity frame.
+   Preserve the established card geometry while making rarity legible from the
+   full outline and a nearly solid rarity-colored header. */
+.sitem-card {
+  border-width: 3px !important;
+}
+.sitem-card .sitem-header {
+  min-height: 2.5rem;
+}
+.sitem-card .sitem-type {
+  border: 1px solid rgba(255,255,255,.20);
+}
+.sitem-card .sitem-alchemy-details {
+  border-style: solid !important;
+  border-color: color-mix(in srgb, var(--sitem-rarity-color) 32%, rgba(255,255,255,.10)) !important;
+  background: color-mix(in srgb, var(--sitem-rarity-color) 7%, rgba(255,255,255,.05)) !important;
+}
+
+
+/* 2026-10-13 ItemCard dark-rarity art pass + trait chevrons.
+   Preserve card geometry while deepening rarity color and formatting long
+   named secondary traits as independent disclosures. */
+.sitem-card {
+  border-width: 4px !important;
+  border-color: color-mix(in srgb, var(--sitem-rarity-color) 82%, #0a0b10 18%) !important;
+  box-shadow:
+    0 18px 48px rgba(0,0,0,.34),
+    0 0 18px color-mix(in srgb, var(--sitem-rarity-color) 16%, transparent),
+    inset 0 0 0 1px rgba(255,255,255,.04) !important;
+}
+
+.sitem-card .sitem-header {
+  background:
+    radial-gradient(circle at 14% -35%,
+      color-mix(in srgb, var(--sitem-rarity-color) 44%, white 10%) 0%,
+      transparent 42%),
+    linear-gradient(
+      110deg,
+      color-mix(in srgb, var(--sitem-rarity-color) 58%, #0b111b 42%) 0%,
+      color-mix(in srgb, var(--sitem-rarity-color) 46%, #10101a 54%) 54%,
+      color-mix(in srgb, var(--sitem-rarity-color) 34%, #090b12 66%) 100%
+    ) !important;
+  border-bottom-width: 4px !important;
+  border-bottom-color: color-mix(in srgb, var(--sitem-rarity-color) 84%, #0b0d13 16%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.20),
+    inset 0 -10px 22px rgba(0,0,0,.18),
+    0 5px 16px color-mix(in srgb, var(--sitem-rarity-color) 12%, transparent) !important;
+}
+
+.sitem-card .sitem-rule-traits {
+  display: grid;
+  gap: .42rem;
+}
+
+.sitem-card .sitem-rule-trait {
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--sitem-rarity-color) 30%, rgba(255,255,255,.09));
+  border-radius: .58rem;
+  background: color-mix(in srgb, var(--sitem-rarity-color) 5%, rgba(255,255,255,.045));
+}
+
+.sitem-card .sitem-rule-trait > summary {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: .48rem 1.9rem .48rem .62rem;
+  color: rgba(255,255,255,.92);
+  font-weight: 760;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.sitem-card .sitem-rule-trait > summary::-webkit-details-marker {
+  display: none;
+}
+
+.sitem-card .sitem-rule-trait > summary::after {
+  content: "›";
+  position: absolute;
+  right: .66rem;
+  top: 50%;
+  color: var(--sitem-rarity-color);
+  font-size: 1.18em;
+  font-weight: 900;
+  transform: translateY(-50%);
+  transition: transform .14s ease;
+}
+
+.sitem-card .sitem-rule-trait[open] > summary::after {
+  transform: translateY(-50%) rotate(90deg);
+}
+
+.sitem-card .sitem-rule-trait[open] > summary {
+  background: color-mix(in srgb, var(--sitem-rarity-color) 10%, rgba(255,255,255,.03));
+  border-bottom: 1px solid color-mix(in srgb, var(--sitem-rarity-color) 22%, rgba(255,255,255,.07));
+}
+
+.sitem-card .sitem-rule-trait__body {
+  padding: .56rem .64rem .64rem;
+  color: rgba(255,255,255,.82);
+  line-height: 1.48;
+}
+
+.sitem-card.is-shop-variant .sitem-rule-trait > summary {
+  font-size: .69rem;
+}
+
+.sitem-card.is-shop-variant .sitem-rule-trait__body {
+  font-size: .66rem;
+}
+
+
+/* 2026-10-14 crafting-preview ItemCard structure + deep rarity tokens.
+   One deep rarity anchor drives the border/header/divider; a lighter companion
+   accent is reserved for readable labels and restrained glow. */
+.sitem-card {
+  --sitem-rarity-deep: #434b55;
+  --sitem-rarity-accent: #8a95a3;
+  --sitem-rarity-color: var(--sitem-rarity-deep);
+}
+
+.sitem-card:has(.sitem-header.rarity-none),
+.sitem-card:has(.sitem-header.rarity-mundane) {
+  --sitem-rarity-deep: #434b55;
+  --sitem-rarity-accent: #8a95a3;
+  --sitem-rarity-color: var(--sitem-rarity-deep);
+}
+.sitem-card:has(.sitem-header.rarity-common) {
+  --sitem-rarity-deep: #59636f;
+  --sitem-rarity-accent: #a1acb8;
+  --sitem-rarity-color: var(--sitem-rarity-deep);
+}
+.sitem-card:has(.sitem-header.rarity-uncommon) {
+  --sitem-rarity-deep: #1f5937;
+  --sitem-rarity-accent: #51ad72;
+  --sitem-rarity-color: var(--sitem-rarity-deep);
+}
+.sitem-card:has(.sitem-header.rarity-rare) {
+  --sitem-rarity-deep: #204875;
+  --sitem-rarity-accent: #4d8fd4;
+  --sitem-rarity-color: var(--sitem-rarity-deep);
+}
+.sitem-card:has(.sitem-header.rarity-very-rare) {
+  --sitem-rarity-deep: #4a276b;
+  --sitem-rarity-accent: #9162bf;
+  --sitem-rarity-color: var(--sitem-rarity-deep);
+}
+.sitem-card:has(.sitem-header.rarity-legendary) {
+  --sitem-rarity-deep: #734314;
+  --sitem-rarity-accent: #c07a2e;
+  --sitem-rarity-color: var(--sitem-rarity-deep);
+}
+.sitem-card:has(.sitem-header.rarity-artifact) {
+  --sitem-rarity-deep: #762b34;
+  --sitem-rarity-accent: #c5535e;
+  --sitem-rarity-color: var(--sitem-rarity-deep);
+}
+
+.sitem-card {
+  border-color: var(--sitem-rarity-deep) !important;
+  box-shadow:
+    0 18px 48px rgba(0,0,0,.36),
+    0 0 14px color-mix(in srgb, var(--sitem-rarity-accent) 15%, transparent),
+    inset 0 0 0 1px rgba(255,255,255,.035) !important;
+}
+
+.sitem-card .sitem-header {
+  background:
+    radial-gradient(circle at 10% -50%,
+      color-mix(in srgb, var(--sitem-rarity-accent) 18%, transparent) 0%,
+      transparent 43%),
+    linear-gradient(
+      110deg,
+      color-mix(in srgb, var(--sitem-rarity-deep) 84%, #090b10 16%) 0%,
+      color-mix(in srgb, var(--sitem-rarity-deep) 74%, #0b0d13 26%) 58%,
+      color-mix(in srgb, var(--sitem-rarity-deep) 62%, #080a0f 38%) 100%
+    ) !important;
+  border-bottom-color: color-mix(in srgb, var(--sitem-rarity-deep) 88%, #07090d 12%) !important;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--sitem-rarity-accent) 24%, transparent),
+    inset 0 -10px 24px rgba(0,0,0,.24),
+    0 4px 14px color-mix(in srgb, var(--sitem-rarity-accent) 10%, transparent) !important;
+}
+
+.sitem-card .sitem-meta,
+.sitem-card .sitem-rarity {
+  color: var(--sitem-rarity-accent) !important;
+}
+
+.sitem-rarity-divider {
+  position: relative;
+  height: 3px;
+  margin: .68rem -.12rem .58rem;
+  border-radius: 999px;
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in srgb, var(--sitem-rarity-deep) 88%, transparent) 10%,
+      var(--sitem-rarity-deep) 34%,
+      color-mix(in srgb, var(--sitem-rarity-accent) 62%, var(--sitem-rarity-deep) 38%) 58%,
+      var(--sitem-rarity-deep) 82%,
+      transparent 100%
+    );
+  box-shadow:
+    0 0 5px color-mix(in srgb, var(--sitem-rarity-accent) 34%, transparent),
+    0 0 12px color-mix(in srgb, var(--sitem-rarity-deep) 22%, transparent);
+}
+
+.sitem-rarity-divider::after {
+  content: "";
+  position: absolute;
+  inset: -3px 13% -3px 13%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--sitem-rarity-accent) 14%, transparent),
+    transparent
+  );
+  filter: blur(4px);
+  pointer-events: none;
+}
+
+.sitem-field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: .48rem;
+}
+
+.sitem-field {
+  min-width: 0;
+  padding: .56rem .62rem;
+  border: 1px solid color-mix(in srgb, var(--sitem-rarity-deep) 26%, rgba(255,255,255,.08));
+  border-radius: .58rem;
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--sitem-rarity-deep) 7%, rgba(255,255,255,.055)),
+      rgba(255,255,255,.035)
+    );
+}
+
+.sitem-field.is-wide {
+  grid-column: 1 / -1;
+}
+
+.sitem-field__label {
+  margin-bottom: .22rem;
+  color: color-mix(in srgb, var(--sitem-rarity-accent) 72%, rgba(255,255,255,.58));
+  font-size: .68em;
+  font-weight: 780;
+  letter-spacing: .035em;
+  text-transform: uppercase;
+}
+
+.sitem-field__value {
+  color: rgba(255,255,255,.90);
+  font-weight: 680;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.sitem-effect-panel {
+  border-color: color-mix(in srgb, var(--sitem-rarity-deep) 34%, rgba(255,255,255,.10)) !important;
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--sitem-rarity-deep) 9%, rgba(255,255,255,.05)),
+      rgba(255,255,255,.035)
+    ) !important;
+}
+
+.sitem-card.is-shop-variant .sitem-rarity-divider {
+  margin-top: .54rem;
+  margin-bottom: .48rem;
+}
+
+.sitem-card.is-shop-variant .sitem-field-grid {
+  gap: .38rem;
+}
+
+.sitem-card.is-shop-variant .sitem-field {
+  padding: .46rem .52rem;
+}
+
+.sitem-card.is-shop-variant .sitem-field__label {
+  font-size: .62rem;
+}
+
+.sitem-card.is-shop-variant .sitem-field__value {
+  font-size: .69rem;
+}
+
+@media (max-width: 520px) {
+  .sitem-field-grid {
+    grid-template-columns: minmax(0,1fr);
+  }
+  .sitem-field.is-wide {
+    grid-column: auto;
+  }
+}
+
+
+/* 2026-10-15 approved eight-family ItemCard standard.
+   Final override layer for the locked weapon/armor/material/recipe/consumable/
+   bomb/wondrous/charged-wondrous presentation contract. */
+.sitem-card:has(.sitem-header.rarity-common),
+.sitem-card:has(.sitem-header.rarity-mundane),
+.sitem-card:has(.sitem-header.rarity-none) {
+  --sitem-rarity-deep: #434b55;
+  --sitem-rarity-accent: #8a95a3;
+  --sitem-rarity-color: var(--sitem-rarity-deep);
+}
+
+.sitem-card {
+  background:
+    radial-gradient(circle at 16% 8%, color-mix(in srgb, var(--sitem-rarity-deep) 7%, transparent) 0%, transparent 34%),
+    radial-gradient(circle at 86% 72%, rgba(112,72,139,.08) 0%, transparent 34%),
+    repeating-linear-gradient(122deg, rgba(255,255,255,.018) 0 1px, transparent 1px 8px),
+    #110d19 !important;
+}
+
+.sitem-card .card-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background:
+    radial-gradient(circle at 14% 12%, color-mix(in srgb, var(--sitem-rarity-deep) 5%, transparent), transparent 33%),
+    radial-gradient(circle at 84% 88%, rgba(107,64,134,.07), transparent 36%),
+    linear-gradient(180deg, rgba(12,9,19,.08), rgba(7,6,12,.24));
+}
+
+.sitem-card .sitem-crafted-by {
+  color: rgba(255,255,255,.78);
+  font-size: .92em;
+  font-style: italic;
+  font-weight: 600;
+}
+
+.sitem-rarity-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+.sitem-rarity-divider__crystal {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 1.05rem;
+  height: 1.05rem;
+  margin-top: -0.4rem;
+  color: var(--sitem-rarity-accent);
+  font-size: .62rem;
+  line-height: 1;
+  text-shadow:
+    0 0 4px color-mix(in srgb, var(--sitem-rarity-accent) 78%, transparent),
+    0 0 10px color-mix(in srgb, var(--sitem-rarity-accent) 48%, transparent);
+}
+
+.sitem-detail-stack {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+  gap: .52rem;
+}
+
+.sitem-detail-stack > .sitem-field-grid,
+.sitem-detail-stack > .sitem-section,
+.sitem-detail-stack > .sitem-rule-traits {
+  margin-top: 0 !important;
+}
+
+.sitem-effect-panel {
+  border-style: solid !important;
+  border-color: color-mix(in srgb, var(--sitem-rarity-accent) 38%, rgba(255,255,255,.10)) !important;
+  background:
+    radial-gradient(circle at 6% 18%, color-mix(in srgb, var(--sitem-rarity-accent) 13%, transparent), transparent 30%),
+    linear-gradient(145deg,
+      color-mix(in srgb, var(--sitem-rarity-deep) 17%, rgba(255,255,255,.055)),
+      color-mix(in srgb, var(--sitem-rarity-deep) 9%, rgba(15,12,23,.92))
+    ) !important;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--sitem-rarity-accent) 12%, transparent),
+    0 0 12px color-mix(in srgb, var(--sitem-rarity-accent) 8%, transparent);
+}
+
+.sitem-detail-stack--weapon .sitem-field-grid,
+.sitem-detail-stack--material .sitem-field-grid,
+.sitem-detail-stack--recipe .sitem-field-grid,
+.sitem-detail-stack--consumable .sitem-field-grid,
+.sitem-detail-stack--bomb .sitem-field-grid,
+.sitem-detail-stack--wondrous .sitem-field-grid,
+.sitem-detail-stack--charged-wondrous .sitem-field-grid {
+  flex: 1 1 auto;
+  grid-auto-rows: minmax(2.9rem, 1fr);
+  align-content: stretch;
+}
+
+.sitem-detail-stack--armor .sitem-rule-traits {
+  flex: 1 1 auto;
+  grid-auto-rows: minmax(2rem, 1fr);
+  align-content: stretch;
+}
+
+.sitem-detail-stack--armor .sitem-rule-trait > summary {
+  height: 100%;
+}
+
+.sitem-card.is-shop-variant {
+  min-height: 100%;
+  margin-bottom: 0 !important;
+}
+
+.sitem-card.is-shop-variant .card-body {
+  min-height: 100%;
+}
+
+.sitem-card.is-shop-variant .sitem-title {
+  font-size: 1.03rem;
+}
+
+.sitem-card.is-shop-variant .sitem-meta {
+  font-size: .76rem;
+}
+
+.sitem-card.is-shop-variant .sitem-section,
+.sitem-card.is-shop-variant .sitem-field__value,
+.sitem-card.is-shop-variant .sitem-rule-trait__body {
+  font-size: .74rem;
+  line-height: 1.48;
+}
+
+.sitem-card.is-shop-variant .sitem-field__label,
+.sitem-card.is-shop-variant .sitem-rule-trait > summary {
+  font-size: .66rem;
+}
+
+.sitem-card.is-shop-variant .sitem-field {
+  padding: .52rem .58rem;
+}
+
+.sitem-legacy-footer {
+  margin-top: .15rem;
+}
+
+/* 2026-10-16 item rules: inline definitions open the shared movable feature window. */
+.sitem-rule-reference-button{
+  display:inline;
+  margin:0;
+  padding:0;
+  border:0;
+  border-bottom:1px dotted currentColor;
+  background:transparent;
+  color:inherit;
+  font:inherit;
+  font-weight:800;
+  line-height:inherit;
+  cursor:pointer;
+  text-decoration:none;
+}
+.sitem-rule-reference-button:hover,.sitem-rule-reference-button:focus-visible{
+  color:#f2d37d;
+  border-bottom-style:solid;
+  outline:none;
 }

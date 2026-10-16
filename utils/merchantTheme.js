@@ -42,17 +42,33 @@ export function backgroundForTheme(theme) {
 
 export function themeFromMerchant(m = {}) {
   const merchantRecord = m && typeof m === "object" ? m : {};
-  // Explicit icon/theme wins first; then inspect the full storefront identity.
   const explicit = normalizeTheme(merchantRecord.icon || merchantRecord.theme || merchantRecord.merchant_theme);
   if (explicit !== "general") return explicit;
-  const tags = Array.isArray(merchantRecord.tags) ? merchantRecord.tags.join(" ") : String(merchantRecord.tags || "");
+
+  // Exact tags outrank fuzzy identity prose. This order mirrors the database
+  // so the storefront art/theme and stock-selection RPC cannot disagree.
+  const tagList = (Array.isArray(merchantRecord.tags) ? merchantRecord.tags : String(merchantRecord.tags || "").split(","))
+    .map((value) => String(value || "").trim().toLowerCase())
+    .filter(Boolean);
+  const tagged = (value) => tagList.includes(value);
+  if (tagged("herbalist")) return "herbalist";
+  if (tagged("smith")) return "smith";
+  if (tagged("weapons")) return "weapons";
+  if (tagged("jeweler")) return "jeweler";
+  if (tagged("arcanist")) return "arcanist";
+  if (tagged("alchemy") || tagList.some((value) => value.startsWith("profession:alchemy"))) return "alchemy";
+  if (tagged("stable")) return "stable";
+  if (tagged("caravan")) return "caravan";
+  if (tagged("clothier")) return "clothier";
+  if (tagged("general")) return "general";
+
   const identity = [
     merchantRecord.name,
     merchantRecord.role,
     merchantRecord.affiliation,
     merchantRecord.storefront_title,
     merchantRecord.storefront_tagline,
-    tags,
+    tagList.join(" "),
   ].filter(Boolean).join(" ");
   return normalizeTheme(identity);
 }

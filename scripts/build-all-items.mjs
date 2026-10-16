@@ -10,6 +10,7 @@
 
 import fs from "node:fs/promises";
 import path from "node:path";
+import { resolveItemCopies } from "./lib/resolve_item_copies.mjs";
 
 const ROOT = path.join(process.cwd(), "public", "items");
 
@@ -156,6 +157,10 @@ function normalizeBase(it, fluffBy, foundryDescBy) {
   const range = it.range || null;
 
   const obj = {
+    // Preserve source fields that do not need normalization (for example bonusAc,
+    // charges, attunement metadata, and other magic-item mechanics).
+    ...it,
+
     // identity/meta
     name: it.name,
     source: it.source || null,
@@ -234,7 +239,8 @@ function normalizeBase(it, fluffBy, foundryDescBy) {
   });
 
   // Prefer edition “one” when duplicates exist (by name)
-  const baseMerged = dedupePreferOne([...(base0 || []), ...(base1 || []), ...hbItems]);
+  const sourceItems = resolveItemCopies([...(base0 || []), ...(base1 || []), ...hbItems]);
+  const baseMerged = dedupePreferOne(sourceItems);
 
   // Normalize + derive
   const normalized = baseMerged.map((it) => normalizeBase(it, fluffBy, foundryDescBy));

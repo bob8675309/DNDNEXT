@@ -98,12 +98,27 @@ export default function useNpcForgeController({ show, onClose, onCreated, locati
   } = derived;
 
   useEffect(() => {
-    if (!show || !playerMode || !selectedClass?.id || !selectedBackground?.id) {
+    if (!show || !playerMode) {
       setEquipmentModel(null);
       return undefined;
     }
+    const equipmentLevel = Number(draft.level || 1);
+    if (!selectedClass?.id || !selectedBackground?.id) {
+      setEquipmentModel({
+        catalogReady: true,
+        loading: false,
+        sourceIncomplete: true,
+        missingClass: !selectedClass?.id,
+        missingBackground: !selectedBackground?.id,
+        classOptions: [],
+        backgroundOptions: [],
+        choiceOptions: {},
+        level: equipmentLevel,
+      });
+      return undefined;
+    }
     let active = true;
-    setEquipmentModel({ catalogReady: false, loading: true, level: Number(draft.level || 1) });
+    setEquipmentModel({ catalogReady: false, loading: true, level: equipmentLevel });
     supabase.rpc("get_player_forge_starting_equipment_v1", {
       p_class_id: selectedClass.id,
       p_background_id: selectedBackground.id,

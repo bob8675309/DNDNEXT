@@ -14,6 +14,7 @@ const steps = [
   ["node", ["scripts/validate_town_merchant_storefront_handoff.mjs"]],
   ["node", ["scripts/validate_town_merchant_portrait_fields.mjs"]],
   ["node", ["scripts/validate_merchant_market_ui_handoff.mjs"]],
+  ["npm", ["run", "check:campaign-item-pool"]],
   ["node", ["scripts/validate_crafter_shop_presentation_handoff.mjs"]],
   ["node", ["scripts/validate_map_profile_offcanvas_handoff.mjs"]],
   ["node", ["scripts/validate_townsheet_patch_anchors.mjs"]],

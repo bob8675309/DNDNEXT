@@ -7,68 +7,11 @@ import {
   useCallback,
   useRef,
 } from "react";
-import ItemCard from "./ItemCard";
+import MerchantStorefrontView from "./MerchantStorefrontView";
 import useWallet from "../utils/useWallet";
 import { supabase } from "../utils/supabaseClient";
-import { themeFromMerchant as detectTheme, Pill } from "../utils/merchantTheme";
-
-/*     Theme → allow-list rules (kept for possible client-side fallback reroll) */
-const THEME_RULES = {
-  jeweler: (it, c) =>
-    (c?.uiType === "Wondrous Item" &&
-      ["Ring", "Amulet", "Necklace", "Ioun Stone", "Figurine", "Stone"].includes(
-        c.uiSubKind
-      )) ||
-    (c?.uiType === "Trade Goods" &&
-      /\b(gem|jewel|pearl|diamond)\b/i.test(it?.name || "")),
-
-  smith: (it, c) =>
-    ["Armor", "Shield", "Melee Weapon"].includes(c?.uiType) ||
-    /\b(mithral|adamantine|ingot|plate|chain|scale)\b/i.test(it?.name || ""),
-
-  weapons: (_it, c) =>
-    ["Melee Weapon", "Ranged Weapon", "Ammunition"].includes(c?.uiType),
-
-  alchemy: (_it, c) => c?.uiType === "Potions & Poisons",
-
-  herbalist: (it, c) =>
-    c?.uiType === "Potions & Poisons" &&
-    /\b(herb|salve|balm|elixir)\b/i.test(
-      ((it?.name || "") + " " + (it?.item_description || "")).trim()
-    ),
-
-  arcanist: (it, c) =>
-    c?.uiType === "Scroll & Focus" ||
-    (c?.uiType === "Wondrous Item" &&
-      /\b(staff|wand|rod)\b/i.test(it?.name || "")),
-
-  clothier: (_it, c) =>
-    c?.uiType === "Wondrous Item" &&
-    [
-      "Cloak",
-      "Boots",
-      "Gloves",
-      "Belt",
-      "Bracers",
-      "Helm",
-      "Mask",
-      "Goggles",
-      "Wraps",
-      "Girdle",
-    ].includes(c.uiSubKind),
-
-  stable: (it, c) =>
-    c?.uiType === "Vehicles & Structures" ||
-    /\b(saddle|tack|bridle|harness)\b/i.test(it?.name || ""),
-
-  caravan: (it, c) =>
-    c?.uiType === "Adventuring Gear" ||
-    /\b(tent|rations|pack|rope|wagon|cart)\b/i.test(
-      ((it?.name || "") + " " + (it?.item_description || "")).trim()
-    ),
-
-  general: () => true,
-};
+import { themeFromMerchant as detectTheme } from "../utils/merchantTheme";
+import { campaignLootEligible, merchantRarityBucket, merchantThemeAllowsItem } from "../utils/campaignItemPool";
 
 const MERCHANT_THEME_CHOICES = [
   { value: "general", label: "General Goods" },
@@ -418,16 +361,6 @@ export default function MerchantPanel({
     return /No function|does not exist|PGRST202/i.test(msg);
   }
 
-  function normalizeRarity(r) {
-    const s = String(r || "").toLowerCase().replace(/\s+/g, "").replace(/[-_]/g, "");
-    if (s in { common: 1 }) return "Common";
-    if (s in { uncommon: 1 }) return "Uncommon";
-    if (s in { rare: 1 }) return "Rare";
-    if (s in { veryrare: 1, veryrareitem: 1 }) return "Very Rare";
-    if (s in { legendary: 1 }) return "Legendary";
-    return null;
-  }
-
   function sample(arr, k) {
     if (!Array.isArray(arr) || arr.length === 0 || k <= 0) return [];
     const a = arr.slice();
@@ -438,91 +371,120 @@ export default function MerchantPanel({
     return a.slice(0, Math.min(k, a.length));
   }
 
+  function sampleDiverse(arr, k) {
+    if (!Array.isArray(arr) || arr.length === 0 || k <= 0) return [];
+    const groups = new Map();
+    for (const item of arr) {
+      const type = String(item.item_type || item.payload?.item_type || item.payload?.uiType || "Other");
+      if (!groups.has(type)) groups.set(type, []);
+      groups.get(type).push(item);
+    }
+    const queues = [...groups.values()].map((rows) => sample(rows, rows.length));
+    const out = [];
+    while (out.length < k && queues.some((rows) => rows.length)) {
+      for (const queue of sample(queues.filter((rows) => rows.length), queues.length)) {
+        if (out.length >= k) break;
+        const next = queue.shift();
+        if (next) out.push(next);
+      }
+    }
+    return out;
+  }
+
   async function rerollThemedFallback() {
-    // Client-side reroll (when the RPC isn't installed):
-    // - dump existing stock
-    // - select items from items_catalog by theme tag
-    // - insert 12–20 themed items into character_stock
+    // Emergency browser fallback for older databases without the reroll RPC.
+    // It mirrors the campaign-wide eligibility, merchant specialty, and
+    // 15% mundane / 50% uncommon / 25% rare / 10% very-rare+ distribution.
     if (!merchant?.id) return;
 
-    const count = 12 + Math.floor(Math.random() * 9); // 12..20
+    const count = 28 + Math.floor(Math.random() * 5); // 28..32
 
-    // 1) Clear stock
-    {
-      const { error } = await supabase
-        .from("character_stock")
-        .delete()
-        .eq("character_id", merchant.id);
+    let futureTechEnabled = false;
+    try {
+      const { data: settings } = await supabase
+        .from("campaign_item_pool_settings")
+        .select("future_tech_enabled")
+        .eq("id", 1)
+        .maybeSingle();
+      futureTechEnabled = Boolean(settings?.future_tech_enabled);
+    } catch {
+      futureTechEnabled = false;
+    }
+
+    const rows = [];
+    const pageSize = 1000;
+    for (let offset = 0; ; offset += pageSize) {
+      const { data, error } = await supabase
+        .from("items_catalog")
+        .select("id,item_key,item_name,item_type,item_rarity,price_gp,payload,merchant_tags")
+        .range(offset, offset + pageSize - 1);
       if (error) throw error;
+      rows.push(...(data || []));
+      if (!data || data.length < pageSize) break;
     }
 
-    // 2) Pull candidates
-    let q = supabase
-      .from("items_catalog")
-      .select("id,item_name,item_type,item_rarity,price_gp,payload,merchant_tags")
-      .limit(1200);
+    const candidates = rows
+      .filter((row) => campaignLootEligible(row, { futureTechEnabled }))
+      .filter((row) => merchantThemeAllowsItem(theme, row))
+      .map((row) => ({ ...row, _rarityBucket: merchantRarityBucket(row) }));
 
-    if (theme && theme !== "general") {
-      q = q.contains("merchant_tags", [theme]);
-    }
+    const low = candidates.filter((row) => row._rarityBucket === "mundane");
+    const uncommon = candidates.filter((row) => row._rarityBucket === "uncommon");
+    const rare = candidates.filter((row) => row._rarityBucket === "rare");
+    const high = candidates.filter((row) => row._rarityBucket === "high");
 
-    const { data: rows, error: qErr } = await q;
-    if (qErr) throw qErr;
-
-    const candidates = (rows || []).map((r) => {
-      const rarity = normalizeRarity(r.item_rarity || r.payload?.item_rarity || r.payload?.rarity);
-      return { ...r, _rarity: rarity };
-    });
-
-    // Prefer Uncommon/Rare, with a small chance of Very Rare.
-    const uncommon = candidates.filter((r) => r._rarity === "Uncommon");
-    const rare = candidates.filter((r) => r._rarity === "Rare");
-    const veryRare = candidates.filter((r) => r._rarity === "Very Rare");
-    const fallback = candidates.filter((r) => !r._rarity || r._rarity === "Common");
-
-    const nUncommon = Math.max(0, Math.round(count * 0.6));
-    const nRare = Math.max(0, Math.round(count * 0.35));
-    const nVeryRare = Math.max(0, count - nUncommon - nRare);
+    const nLow = Math.max(0, Math.round(count * 0.15));
+    const nUncommon = Math.max(0, Math.round(count * 0.50));
+    const nHigh = Math.max(0, Math.round(count * 0.10));
+    const nRare = Math.max(0, count - nLow - nUncommon - nHigh);
 
     let picked = [
-      ...sample(uncommon, nUncommon),
-      ...sample(rare, nRare),
-      ...sample(veryRare, nVeryRare),
+      ...sampleDiverse(low, nLow),
+      ...sampleDiverse(uncommon, nUncommon),
+      ...sampleDiverse(rare, nRare),
+      ...sampleDiverse(high, nHigh),
     ];
 
     if (picked.length < count) {
-      const pool = [...uncommon, ...rare, ...veryRare, ...fallback];
-      const already = new Set(picked.map((p) => p.item_name));
-      const extra = pool.filter((p) => !already.has(p.item_name));
+      const pool = [...low, ...uncommon, ...rare, ...high];
+      const already = new Set(picked.map((row) => row.item_key || row.id));
+      const extra = pool.filter((row) => !already.has(row.item_key || row.id));
       picked = picked.concat(sample(extra, count - picked.length));
     }
 
-    if (!picked.length) return;
+    if (!picked.length) throw new Error(`No eligible stock exists for merchant theme ${theme}.`);
 
-    // 3) Insert stock rows
     const stockRows = picked.map((it) => {
       const payload = (it.payload && typeof it.payload === "object") ? it.payload : {};
       const display_name = it.item_name || payload.item_name || payload.name || "Item";
       const price_gp = Number(it.price_gp ?? payload.price_gp ?? payload.price ?? 0) || 0;
-
+      const itemKey = it.item_key || payload.item_key || payload.item_id || it.id || null;
       const mergedPayload = {
         ...payload,
-        item_id: payload.item_id || it.id || null,
+        item_id: payload.item_id || itemKey,
+        item_key: payload.item_key || itemKey,
         item_name: payload.item_name || display_name,
         item_type: payload.item_type || it.item_type || payload.type || null,
         item_rarity: payload.item_rarity || it.item_rarity || payload.rarity || null,
         price_gp,
       };
-
       return {
         character_id: merchant.id,
-        item_id: (mergedPayload && mergedPayload.item_id) ? String(mergedPayload.item_id) : (it?.id ? String(it.id) : null),
+        item_id: itemKey ? String(itemKey) : null,
         display_name,
         price_gp,
         qty: 1,
         card_payload: mergedPayload,
       };
     });
+
+    // Build the full candidate shelf first; only replace live stock once we know
+    // the fallback has a usable result.
+    const { error: delErr } = await supabase
+      .from("character_stock")
+      .delete()
+      .eq("character_id", merchant.id);
+    if (delErr) throw delErr;
 
     const { error: insErr } = await supabase.from("character_stock").insert(stockRows);
     if (insErr) throw insErr;
@@ -564,8 +526,9 @@ export default function MerchantPanel({
     try {
       // IMPORTANT: pass p_count to disambiguate overloaded functions in PostgREST
       // (your DB can have both a 2-arg and 3-arg overload of reroll_merchant_inventory_v2).
-      // Target 12-20 items, matching the merchant inventory expectation.
-      const desiredCount = 12 + Math.floor(Math.random() * 9);
+      // Keep routine storefronts broad enough to browse without becoming a
+      // full catalogue dump. The server enforces the rarity distribution.
+      const desiredCount = 28 + Math.floor(Math.random() * 5);
 
       let rpcError = null;
       let rpcData = null;
@@ -596,7 +559,7 @@ export default function MerchantPanel({
       // Supabase returns a 1-row array for SETOF/TABLE-returning functions.
       const insertedCount = Array.isArray(rpcData) ? rpcData?.[0]?.inserted_count : rpcData?.inserted_count;
       if (typeof insertedCount === "number" && insertedCount === 0) {
-        setError(
+        setErr(
           "Reroll completed but inserted 0 items. This usually means your items_catalog is missing merchant_tags for the selected theme (or the theme is too restrictive)."
         );
       }
@@ -883,160 +846,105 @@ export default function MerchantPanel({
 
   if (!merchant) return null;
 
-  const merchantSubline = merchant.storefront_tagline || merchant.storefront_title || merchant.role || merchant.affiliation || "Traveling merchant";
-  const stockLabel = loading ? "Loading stock" : cards.length + " item" + (cards.length === 1 ? "" : "s") + " in stock";
   const rarityClassFor = (value) => {
     const slug = String(value || "common").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
     return `rarity-${slug || "common"}`;
   };
+  const rarityBadgeClassFor = (value) => {
+    const slug = String(value || "common").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    return `is-rarity-${slug || "common"}`;
+  };
+
+  const adminConsole = isAdmin && showTravel ? (
+    <section className="merchant-admin-console">
+      <div className="merchant-admin-console-head">
+        <div>
+          <div className="merchant-market-kicker">Admin controls</div>
+          <strong>Stock, type, and travel</strong>
+        </div>
+        <button type="button" className="btn btn-sm btn-outline-light" onClick={() => setShowTravel(false)}>Done</button>
+      </div>
+
+      <div className="merchant-admin-restock-row">
+        <label className="merchant-theme-field d-flex flex-column gap-1">
+          <span className="small text-muted">Merchant type</span>
+          <select className="form-select form-select-sm" value={theme} onChange={(event) => setStockTheme(event.target.value)}>
+            {MERCHANT_THEME_CHOICES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+          </select>
+        </label>
+        <input type="text" className="form-control form-control-sm" placeholder="Paste JSON or type an item name…" value={restockText} onChange={(event) => setRestockText(event.target.value)} />
+        <button type="button" className="btn btn-sm btn-outline-light" onClick={handlePasteFromClipboard} disabled={busyId === "paste"}>Paste</button>
+        <button type="button" className="btn btn-sm btn-outline-success" onClick={addItem} disabled={busyId === "add"}>{busyId === "add" ? "Adding…" : "Add item"}</button>
+        <button type="button" className="btn btn-sm btn-outline-warning" onClick={rerollThemed} disabled={busyId === "reroll"}>{busyId === "reroll" ? "Rerolling…" : "Reroll " + themeLabel}</button>
+        <button type="button" className="btn btn-sm btn-outline-danger" onClick={dumpAll} disabled={busyId === "dump"}>Dump stock</button>
+      </div>
+
+      <div className="merchant-admin-grid">
+        <label><span>Trade route</span><select className="form-select form-select-sm" value={tradeRouteId || ""} onChange={(event) => setTradeRouteId(event.target.value ? Number(event.target.value) : null)}><option value="">— none —</option>{routes.filter((route) => route.route_type === "trade").map((route) => <option key={route.id} value={route.id}>{route.name || route.code}</option>)}</select><button type="button" className="btn btn-sm btn-outline-light" onClick={setTradeRoute} disabled={savingTravel || !tradeRouteId}>Set trade route</button></label>
+        <label><span>Excursion route</span><select className="form-select form-select-sm" value={excursionRouteId || ""} onChange={(event) => setExcursionRouteId(event.target.value ? Number(event.target.value) : null)}><option value="">— none —</option>{routes.filter((route) => route.route_type === "excursion").map((route) => <option key={route.id} value={route.id}>{route.name || route.code}</option>)}</select><button type="button" className="btn btn-sm btn-outline-warning" onClick={sendOnExcursion} disabled={savingTravel || !excursionRouteId}>Send on excursion</button></label>
+        <label><span>Next destination</span><select className="form-select form-select-sm" value={nextLocationId || ""} onChange={(event) => setNextLocationId(event.target.value ? Number(event.target.value) : null)}><option value="">— none —</option>{locations.filter((loc) => loc?.id).map((loc) => <option key={loc.id} value={loc.id}>{loc.name}</option>)}</select><button type="button" className="btn btn-sm btn-outline-info" onClick={setNextDestination} disabled={savingTravel || !nextLocationId}>Set destination</button></label>
+        <label><span>Move speed · {Number(draftMoveSpeed).toFixed(3)} pct/sec</span><input type="range" className="form-range" min={0.001} max={0.05} step={0.001} value={draftMoveSpeed} onChange={(event) => setDraftMoveSpeed(parseFloat(event.target.value))} /></label>
+        <label><span>Dwell time · {Number(draftDwellHours).toFixed(0)} hours</span><input type="range" className="form-range" min={1} max={24} step={1} value={draftDwellHours} onChange={(event) => setDraftDwellHours(parseInt(event.target.value, 10))} /></label>
+        <div className="merchant-admin-save"><button type="button" className="btn btn-sm btn-success" onClick={saveMovementSettings} disabled={savingTravel}>{savingTravel ? "Saving…" : "Save movement"}</button></div>
+      </div>
+    </section>
+  ) : null;
 
   return (
-    <div className={"merchant-panel-inner merchant-market merchant-panel-" + presentation}>
-      <header className="merchant-market-header">
-        <div className="merchant-market-heading">
-          <div className="merchant-market-kicker">Merchant storefront</div>
-          <div className="d-flex align-items-center gap-2 flex-wrap">
-            <h2 className="merchant-market-title">{merchant.name}’s Wares</h2>
-            <Pill theme={theme} small />
-          </div>
-          <div className="merchant-market-subline">{merchantSubline} · {stockLabel}</div>
-        </div>
-
-        <div className="merchant-market-header-actions">
-          {isAdmin ? (
-            <button type="button" className={"btn btn-sm " + (showTravel ? "btn-warning" : "btn-outline-warning")} onClick={() => setShowTravel((value) => !value)}>
-              Merchant tools
-            </button>
-          ) : null}
-          <button
-            type="button"
-            className="btn-close btn-close-white"
-            data-bs-dismiss="offcanvas"
-            aria-label="Close storefront"
-            onClick={() => onClose?.()}
-          />
-        </div>
-      </header>
-
-      {notice?.message ? (
-        <div className={"merchant-market-notice merchant-market-notice-" + notice.kind} role="status">
-          <span>{notice.message}</span>
-          <button type="button" aria-label="Dismiss notice" onClick={() => setNotice(null)}>×</button>
-        </div>
-      ) : null}
-
-      {isAdmin && showTravel ? (
-        <section className="merchant-admin-console">
-          <div className="merchant-admin-console-head">
-            <div>
-              <div className="merchant-market-kicker">Admin controls</div>
-              <strong>Stock, type, and travel</strong>
-            </div>
-            <button type="button" className="btn btn-sm btn-outline-light" onClick={() => setShowTravel(false)}>Done</button>
-          </div>
-
-          <div className="merchant-admin-restock-row">
-            <label className="merchant-theme-field d-flex flex-column gap-1">
-              <span className="small text-muted">Merchant type</span>
-              <select className="form-select form-select-sm" value={theme} onChange={(event) => setStockTheme(event.target.value)}>
-                {MERCHANT_THEME_CHOICES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-              </select>
-            </label>
-            <input type="text" className="form-control form-control-sm" placeholder="Paste JSON or type an item name…" value={restockText} onChange={(event) => setRestockText(event.target.value)} />
-            <button type="button" className="btn btn-sm btn-outline-light" onClick={handlePasteFromClipboard} disabled={busyId === "paste"}>Paste</button>
-            <button type="button" className="btn btn-sm btn-outline-success" onClick={addItem} disabled={busyId === "add"}>{busyId === "add" ? "Adding…" : "Add item"}</button>
-            <button type="button" className="btn btn-sm btn-outline-warning" onClick={rerollThemed} disabled={busyId === "reroll"}>{busyId === "reroll" ? "Rerolling…" : "Reroll " + themeLabel}</button>
-            <button type="button" className="btn btn-sm btn-outline-danger" onClick={dumpAll} disabled={busyId === "dump"}>Dump stock</button>
-          </div>
-
-          <div className="merchant-admin-grid">
-            <label><span>Trade route</span><select className="form-select form-select-sm" value={tradeRouteId || ""} onChange={(event) => setTradeRouteId(event.target.value ? Number(event.target.value) : null)}><option value="">— none —</option>{routes.filter((route) => route.route_type === "trade").map((route) => <option key={route.id} value={route.id}>{route.name || route.code}</option>)}</select><button type="button" className="btn btn-sm btn-outline-light" onClick={setTradeRoute} disabled={savingTravel || !tradeRouteId}>Set trade route</button></label>
-            <label><span>Excursion route</span><select className="form-select form-select-sm" value={excursionRouteId || ""} onChange={(event) => setExcursionRouteId(event.target.value ? Number(event.target.value) : null)}><option value="">— none —</option>{routes.filter((route) => route.route_type === "excursion").map((route) => <option key={route.id} value={route.id}>{route.name || route.code}</option>)}</select><button type="button" className="btn btn-sm btn-outline-warning" onClick={sendOnExcursion} disabled={savingTravel || !excursionRouteId}>Send on excursion</button></label>
-            <label><span>Next destination</span><select className="form-select form-select-sm" value={nextLocationId || ""} onChange={(event) => setNextLocationId(event.target.value ? Number(event.target.value) : null)}><option value="">— none —</option>{locations.filter((loc) => loc?.id).map((loc) => <option key={loc.id} value={loc.id}>{loc.name}</option>)}</select><button type="button" className="btn btn-sm btn-outline-info" onClick={setNextDestination} disabled={savingTravel || !nextLocationId}>Set destination</button></label>
-            <label><span>Move speed · {Number(draftMoveSpeed).toFixed(3)} pct/sec</span><input type="range" className="form-range" min={0.001} max={0.05} step={0.001} value={draftMoveSpeed} onChange={(event) => setDraftMoveSpeed(parseFloat(event.target.value))} /></label>
-            <label><span>Dwell time · {Number(draftDwellHours).toFixed(0)} hours</span><input type="range" className="form-range" min={1} max={24} step={1} value={draftDwellHours} onChange={(event) => setDraftDwellHours(parseInt(event.target.value, 10))} /></label>
-            <div className="merchant-admin-save"><button type="button" className="btn btn-sm btn-success" onClick={saveMovementSettings} disabled={savingTravel}>{savingTravel ? "Saving…" : "Save movement"}</button></div>
-          </div>
-        </section>
-      ) : null}
-
-      <main className="merchant-market-shell">
-        <section className="merchant-scene" style={hasVideo ? undefined : { "--merchant-bg": "url(" + bgUrl + ")" }}>
-          {hasVideo ? <div className="merchant-bg-video-wrap"><video ref={videoRef} className="merchant-bg-video" src={videoUrl} playsInline loop={false} /></div> : null}
-          <div className="merchant-scene-scrim" />
-          <div className="merchant-scene-copy">
-            <span className="merchant-scene-theme">{theme}</span>
-            <h3>{merchant.storefront_title || "Curated wares"}</h3>
-            <p>{merchant.storefront_tagline || "Browse the merchant’s current stock, inspect an item, and purchase without leaving the storefront."}</p>
-          </div>
-        </section>
-
-        <section className="merchant-stock-workspace">
-          <div className="merchant-stock-toolbar">
-            <label className="merchant-search-field">
-              <span>Search stock</span>
-              <input className="form-control form-control-sm" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Name, rarity, type, or description" />
-            </label>
-            <div className="merchant-category-row" aria-label="Stock categories">
-              {categories.map((category) => (
-                <button key={category} type="button" className={"merchant-category-chip" + (typeFilter === category ? " active" : "")} onClick={() => setTypeFilter(category)}>{category}</button>
-              ))}
-            </div>
-          </div>
-
-          {err ? <div className="merchant-inline-error">{err}</div> : null}
-
-          <div className="merchant-stock-layout">
-            <div className="merchant-stock-list" role="listbox" aria-label="Merchant stock">
-              {loading ? <div className="merchant-market-empty">Loading stock…</div> : null}
-              {!loading && !filteredCards.length ? <div className="merchant-market-empty">No items match the current search and category.</div> : null}
-              {filteredCards.map((card) => (
-                <button
-                  key={card.id}
-                  type="button"
-                  role="option"
-                  aria-selected={String(selectedCard?.id) === String(card.id)}
-                  className={"merchant-stock-row " + rarityClassFor(card.item_rarity) + (String(selectedCard?.id) === String(card.id) ? " selected" : "")}
-                  onClick={() => setSelectedId(card.id)}
-                >
-                  <div className="merchant-stock-row-head">
-                    <strong>{card.item_name}</strong>
-                    <span>{card._price_gp} gp</span>
-                  </div>
-                  <div className="merchant-stock-row-meta">
-                    <span>{card.item_rarity || "Mundane"}</span>
-                    <span>{card.item_type || "Item"}</span>
-                    <span>Qty {card._qty}</span>
-                  </div>
-                  <p>{card.item_description || "No description is available for this item."}</p>
-                </button>
-              ))}
-            </div>
-
-            <aside className="merchant-preview-pane">
-              {selectedCard ? (
-                <>
-                  <div className="merchant-preview-head">
-                    <div>
-                      <div className="merchant-market-kicker">Selected item</div>
-                      <h3>{selectedCard.item_name}</h3>
-                    </div>
-                    <span className="merchant-preview-price">{selectedCard._price_gp} gp</span>
-                  </div>
-                  <div className="merchant-preview-card-scroll"><ItemCard item={selectedCard} /></div>
-                  <div className="merchant-preview-purchase">
-                    <div><span>Available</span><strong>{selectedCard._qty}</strong></div>
-                    <div><span>Your wallet</span><strong>{walletLoading ? "…" : gp === -1 ? "∞ gp" : (gp ?? 0) + " gp"}</strong></div>
-                    <button type="button" className="btn btn-success" onClick={() => handleBuy(selectedCard)} disabled={busyId === selectedCard.id || selectedCard._qty <= 0}>
-                      {busyId === selectedCard.id ? "Purchasing…" : selectedCard._qty <= 0 ? "Sold out" : "Buy for " + selectedCard._price_gp + " gp"}
-                    </button>
-                  </div>
-                </>
-              ) : <div className="merchant-market-empty">Select an item to inspect it.</div>}
-            </aside>
-          </div>
-        </section>
-      </main>
-    </div>
+    <MerchantStorefrontView
+      merchant={merchant}
+      rootClassName={"merchant-panel-inner merchant-market merchant-storefront-shared merchant-panel-" + presentation}
+      headerKicker=""
+      title={`${merchant.name}’s Wares`}
+      titleAddon={<span className="merchant-market-theme-pill">{themeLabel}</span>}
+      subline=""
+      headerActions={<>
+        {isAdmin ? (
+          <button type="button" className={"btn btn-sm " + (showTravel ? "btn-warning" : "btn-outline-warning")} onClick={() => setShowTravel((value) => !value)}>
+            Merchant tools
+          </button>
+        ) : null}
+        <button
+          type="button"
+          className="btn-close btn-close-white"
+          data-bs-dismiss="offcanvas"
+          aria-label="Close storefront"
+          onClick={() => onClose?.()}
+        />
+      </>}
+      notice={notice?.message || ""}
+      noticeKind={notice?.kind || "success"}
+      onDismissNotice={() => setNotice(null)}
+      beforeMain={adminConsole}
+      sceneStyle={hasVideo ? undefined : { "--merchant-bg": "url(" + bgUrl + ")" }}
+      sceneMedia={hasVideo ? <div className="merchant-bg-video-wrap"><video ref={videoRef} className="merchant-bg-video" src={videoUrl} playsInline loop={false} /></div> : null}
+      theme={theme}
+      sceneTitle={merchant.storefront_title || "Curated wares"}
+      sceneTagline={merchant.storefront_tagline || "Browse the merchant’s current stock, inspect an item, and purchase without leaving the storefront."}
+      showSceneCopy={false}
+      query={query}
+      onQueryChange={setQuery}
+      searchPlaceholder="Name, rarity, type, or description"
+      categories={categories}
+      typeFilter={typeFilter}
+      onTypeFilterChange={setTypeFilter}
+      error={err}
+      loading={loading}
+      items={filteredCards}
+      selectedCard={selectedCard}
+      onSelect={setSelectedId}
+      stockAriaLabel="Merchant stock"
+      rarityClassFor={rarityClassFor}
+      rarityBadgeClassFor={rarityBadgeClassFor}
+      quantityFor={(card) => card?._qty}
+      itemCardProps={{ variant: "shop", detailsCollapsible: false }}
+      previewMetrics={[
+        { label: "Available", value: selectedCard?._qty ?? 0 },
+        { label: "Your wallet", value: walletLoading ? "…" : gp === -1 ? "∞ gp" : (gp ?? 0) + " gp" },
+      ]}
+      actionLabel={selectedCard ? (busyId === selectedCard.id ? "Purchasing…" : selectedCard._qty <= 0 ? "Sold out" : "Buy for " + selectedCard._price_gp + " gp") : ""}
+      actionDisabled={!selectedCard || busyId === selectedCard?.id || selectedCard?._qty <= 0}
+      onAction={handleBuy}
+    />
   );
 }

@@ -150,6 +150,7 @@ export function normalizeStartingEquipmentSelection(model = null, current = {}) 
 
 export function startingEquipmentSelectionComplete(model = null, selection = {}) {
   if (!model?.catalogReady) return false;
+  if (model?.sourceIncomplete && startingEquipmentRuleset(selection) === PLAYER_FORGE_EQUIPMENT_RULESETS.VANILLA) return false;
   const rule = higherLevelWealthRule(model?.level || 1);
   if (rule.rollRequired && (!Number.isInteger(Number(selection?.wealthRoll)) || Number(selection.wealthRoll) < 1 || Number(selection.wealthRoll) > 10)) return false;
   if (safeText(selection?.mode || "market") === "market") {

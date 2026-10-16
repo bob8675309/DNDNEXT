@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { classifyUi, titleCase } from "../utils/itemsIndex";
 import { resolveItemVisual } from "../utils/itemVisuals";
 import { loadFlavorIndex } from "../utils/flavorIndex";
+import { ITEM_RULE_REFERENCE_TERMS, itemRuleReferenceForLabel } from "../utils/itemRuleReferences";
 
 /* ---------- helpers ---------- */
 const humanRarity = (r) =>
@@ -73,6 +74,167 @@ function coalesce(...vals) {
   return null;
 }
 
+function escapeRuleReferenceTerm(value = "") {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+const ITEM_RULE_REFERENCE_PATTERN = new RegExp(
+  `\\b(${ITEM_RULE_REFERENCE_TERMS.map(escapeRuleReferenceTerm).join("|")})\\b`,
+  "gi"
+);
+
+function openRuleReference(detail, onReferenceDetail = null) {
+  if (!detail) return;
+  if (typeof onReferenceDetail === "function") {
+    onReferenceDetail(detail);
+    return;
+  }
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("dndnext:rule-reference", { detail }));
+  }
+}
+
+function RuleLinkedText({ text = "", item = {}, onReferenceDetail = null }) {
+  const value = String(text || "");
+  if (!value) return null;
+  const parts = value.split(ITEM_RULE_REFERENCE_PATTERN);
+  return <>{parts.map((part, index) => {
+    const detail = itemRuleReferenceForLabel(part, item);
+    if (!detail) return <React.Fragment key={`${index}:${part}`}>{part}</React.Fragment>;
+    return <button
+      key={`${index}:${part}`}
+      type="button"
+      className="sitem-rule-reference-button"
+      onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        openRuleReference(detail, onReferenceDetail);
+      }}
+      title={`Open ${detail.reference.title} definition`}
+    >{part}</button>;
+  })}</>;
+}
+
+function relicStateForItem(item = {}) {
+  const match = String(item.item_name || item.name || "").match(/\((Dormant|Awakened|Exalted)\)\s*$/i);
+  return match ? `${match[1][0].toUpperCase()}${match[1].slice(1).toLowerCase()}` : "";
+}
+function playerText(value = "") {
+  return String(value || "")
+    .replace(/\{@dc\s+([^}]+)\}/gi, (_, valueText) => `DC ${stripTag(valueText).trim()}`)
+    .replace(/\{@(?:damage|dice)\s+([^}]+)\}/gi, (_, valueText) => stripTag(valueText).trim())
+    .replace(/\{#itemEntry\s+([^}]+)\}/gi, (_, valueText) => stripTag(valueText).trim())
+    .replace(/\{@(?:spell|condition|skill|item|itemEntry|action|status|sense)\s+([^}]+)\}/gi, (_, valueText) => stripTag(valueText).trim())
+    .replace(/\{@[^\s}]+\s+([^}]+)\}/gi, (_, valueText) => stripTag(valueText).trim())
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function craftedByName(item = {}) {
+  return coalesce(
+    item.crafted_by,
+    item.craftedBy,
+    item.crafter_name,
+    item.crafterName,
+    item?.crafter?.name,
+    item?.craft?.crafter?.name,
+    item?.crafting?.crafter?.name,
+    item?.plan_payload?.crafter?.name,
+    item?.card_payload?.crafted_by,
+    item?.card_payload?.crafter_name,
+    item?.card_payload?.crafter?.name
+  ) || "";
+}
+
+function splitNarrativeLead(text = "") {
+  const source = playerText(text);
+  const match = source.match(/^(.+?[.!?])(?:\s+|\n+)([\s\S]+)$/);
+  if (!match) return { description: "", rules: source };
+
+  const first = match[1].trim();
+  const rest = match[2].trim();
+  const mechanical = /\b(?:while|when|whenever|you gain|you have|bonus|damage|saving throw|save|resistance|advantage|disadvantage|charges?|cast|spell|attack|armor class|\bac\b|hit points?|speed|immune|immunity|reduce|regain|attunement|requires?)\b/i;
+
+  if (!mechanical.test(first) && mechanical.test(rest)) {
+    return { description: first, rules: rest };
+  }
+  return { description: "", rules: source };
+}
+
+function cardFamilyForItem(item = {}, type = "", uiSubKind = "", potionDetails = null, bombDetails = null) {
+  const blob = [type, item.item_type, item.type, item.category, item.item_name, item.name]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  if (item.recipe_item || /\brecipe\b/.test(blob)) return "recipe";
+  if (bombDetails || /\bbomb\b/.test(blob)) return "bomb";
+  if (potionDetails) return "consumable";
+  if (/\b(armor|shield)\b/.test(blob)) return "armor";
+  if (/\b(melee weapon|ranged weapon|ammunition)\b/.test(blob)) return "weapon";
+  if (/\b(material|ore \/ metal|reagent|catalyst|alchemy modifier|plant \/ herb|monster part)\b/.test(blob)) return "material";
+  if (/\b(rods? & wands?|rod|wand)\b/.test(blob) || (String(type).toLowerCase() === "wondrous item" && Number(item.charges || item.item_charges || 0) > 0)) {
+    return "charged-wondrous";
+  }
+  if (String(type).toLowerCase() === "wondrous item" || uiSubKind) return "wondrous";
+  return "general";
+}
+
+function armorClassDisplay(item = {}, fallback = "—") {
+  const rawType = stripTag(item.type || item.item_type || "");
+  const base = Number(coalesce(item.ac, item?.armor?.ac, item?.card_payload?.ac));
+  const bonusMatch = String(coalesce(item.bonusAc, item.bonus_ac, item?.card_payload?.bonusAc, "")).match(/[+-]?\d+/);
+  const bonus = bonusMatch ? Number(bonusMatch[0]) : 0;
+  const total = Number.isFinite(base) ? base + bonus : null;
+
+  if (total == null) return fallback;
+  if (rawType === "LA") return `${total} + Dex (no max)`;
+  if (rawType === "MA") return `${total} + Dex (max 2)`;
+  if (rawType === "HA") return String(total);
+  return String(total);
+}
+
+function weaponRangeDisplay(item = {}, fallback = "—", propsText = "") {
+  if (fallback && fallback !== "—") return playerText(fallback);
+  const rawType = stripTag(item.type || item.item_type || "");
+  const isMelee = rawType === "M" || /melee weapon/i.test(String(item.item_type || item.uiType || ""));
+  if (!isMelee) return fallback || "—";
+  return /\breach\b/i.test(String(propsText || "")) ? "10 feet" : "5 feet";
+}
+
+function ruleMetrics(text = "") {
+  const source = playerText(text);
+  const rangeMatch = source.match(/(?:within|range(?: of)?|up to)\s+(\d+)\s*feet/i);
+  const saveMatch = source.match(/DC\s*(\d+)\s*(Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma)\s+saving throw/i)
+    || source.match(/(Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma)\s+saving throw[^.]{0,48}?DC\s*(\d+)/i);
+  const damageMatch = source.match(/(\d+d\d+(?:\s*[+-]\s*\d+)?)\s+([A-Za-z]+)\s+damage/i);
+
+  let save = "";
+  if (saveMatch) {
+    if (/^\d+$/.test(saveMatch[1])) save = `${saveMatch[2]} DC ${saveMatch[1]}`;
+    else save = `${saveMatch[1]} DC ${saveMatch[2]}`;
+  }
+
+  return {
+    range: rangeMatch ? `${rangeMatch[1]} feet` : "",
+    save,
+    damage: damageMatch ? `${damageMatch[1]} ${damageMatch[2].toLowerCase()}` : "",
+  };
+}
+
+function ammunitionMechanics(item = {}, ruleText = "") {
+  const name = playerText(item.item_name || item.name || "");
+  const rules = playerText(ruleText || item.item_description || item.rulesShort || item.rulesText || item.rules || "");
+  const masteryMatch = rules.match(/\bworks like (?:an?\s+)?([A-Za-z][A-Za-z -]{1,40}?)\s+Melee weapon\b/i);
+  const damageMatch = name.match(/,\s*(acid|bludgeoning|cold|fire|force|lightning|necrotic|piercing|poison|psychic|radiant|slashing|thunder)\b/i);
+
+  return {
+    mastery: masteryMatch?.[1]?.trim() || "",
+    damageType: damageMatch?.[1] ? `${damageMatch[1][0].toUpperCase()}${damageMatch[1].slice(1).toLowerCase()}` : "",
+    rangeRule: /maximum range[^.]*halved/i.test(rules) ? "Maximum range halved" : "",
+  };
+}
+
 function buildDamageText(raw) {
   // MagicVariantBuilder emits damageText. Catalog rows usually emit dmg1/dmgType.
   // Support both so admin-built variants, catalog items, and craft-completed items
@@ -136,6 +298,154 @@ function typeFromBuilderCategory(category = "") {
 }
 
 
+function adaptiveItemFields(item = {}, type = "", norm = {}, potionDetails = null, bombDetails = null, family = "general", ruleText = "") {
+  const weightValue = norm.weight != null ? `${norm.weight} lbs` : "";
+  const chargesValue = coalesce(
+    item.charges,
+    item.item_charges,
+    item.doses,
+    item.dose_count,
+    item.batch_output,
+    item?.alchemy?.doses,
+    item?.alchemy_result?.doses,
+    item?.merchant_craft?.doses,
+    item?.card_payload?.charges,
+    item?.card_payload?.doses
+  );
+  const saveDcValue = coalesce(
+    item.save_dc,
+    item.saveDc,
+    item.saving_throw_dc,
+    item?.alchemy?.save_dc,
+    item?.alchemy?.saveDc,
+    item?.card_payload?.save_dc,
+    item?.card_payload?.saveDc
+  );
+  const saveAbilityValue = coalesce(
+    item.save_ability,
+    item.saveAbility,
+    item.saving_throw_ability,
+    item?.alchemy?.save_ability,
+    item?.alchemy?.saveAbility,
+    item?.card_payload?.save_ability,
+    item?.card_payload?.saveAbility
+  );
+  const attunementValue = coalesce(
+    item.attunement,
+    item.requires_attunement,
+    item.requiresAttunement,
+    item?.card_payload?.attunement
+  );
+
+  const clean = (label, value, span = 1) => {
+    if (value == null || value === "" || value === false || value === "—") return null;
+    return { label, value: playerText(value === true ? "Yes" : String(value)), span };
+  };
+
+  if (family === "bomb" && bombDetails) {
+    const save = bombDetails.saveAbility && bombDetails.saveDc
+      ? `${bombDetails.saveAbility} DC ${bombDetails.saveDc}`
+      : (bombDetails.saveAbility || "");
+    return [
+      clean("Use", bombDetails.use),
+      clean("Area", bombDetails.area),
+      clean("Save", save),
+      clean("Damage", bombDetails.damage),
+      clean("Duration", bombDetails.duration),
+      clean("Charges", chargesValue),
+      clean("Condition", bombDetails.conditions?.join(", "), 2),
+      clean("Repeat Save", bombDetails.repeatSave, 2),
+    ].filter(Boolean);
+  }
+
+  if (family === "consumable" && potionDetails) {
+    return [
+      clean("Use", potionDetails.use),
+      clean("Duration", potionDetails.duration),
+      clean("Save", saveAbilityValue && saveDcValue ? `${saveAbilityValue} DC ${saveDcValue}` : null),
+      clean("Doses / Charges", chargesValue),
+      clean("Application", item.application || item.delivery || null, 2),
+    ].filter(Boolean);
+  }
+
+  if (family === "armor") {
+    return [
+      clean("Armor Class", armorClassDisplay(item, norm.ac)),
+      clean("Weight", weightValue),
+    ].filter(Boolean);
+  }
+
+  if (family === "weapon") {
+    const isAmmunition = /\bammunition\b/i.test([type, item.item_type, item.uiType, item.type].filter(Boolean).join(" "));
+    const ammunition = isAmmunition ? ammunitionMechanics(item, ruleText) : null;
+    const directMasteryRaw = coalesce(item.mastery, item.weapon_mastery, item.weaponMastery, item?.card_payload?.mastery);
+    const directMastery = Array.isArray(directMasteryRaw)
+      ? directMasteryRaw.map((value) => stripTag(value)).filter(Boolean).join(", ")
+      : stripTag(directMasteryRaw || "");
+    return [
+      clean("Damage", norm.dmg),
+      clean("Damage Type", ammunition?.damageType),
+      clean("Mastery", ammunition?.mastery || directMastery),
+      clean("Range", ammunition?.rangeRule || weaponRangeDisplay(item, norm.rng, norm.props)),
+      clean("Weight", weightValue),
+      clean("Properties", norm.props),
+    ].filter(Boolean);
+  }
+
+  if (family === "material") {
+    const smithing = item?.smithing && typeof item.smithing === "object" ? item.smithing : {};
+    const allowedKinds = Array.isArray(smithing.allowedItemKinds) ? smithing.allowedItemKinds.map(titleCase).join(", ") : "";
+    const allowedFamilies = Array.isArray(smithing.allowedWeaponFamilies) ? smithing.allowedWeaponFamilies.map(titleCase).join(", ") : "";
+    return [
+      clean("Category", item.crafting_category || smithing.materialClass || type),
+      clean("Quality", item.quality || smithing.quality),
+      clean("Used In", allowedFamilies || allowedKinds),
+      clean("Weight", weightValue),
+      clean("Trait", smithing.risk || smithing.offensive || smithing.defensive, 2),
+      clean("Note", smithing.flavor && normalizedComparableText(smithing.flavor) !== normalizedComparableText(norm.flavor) ? smithing.flavor : null, 2),
+    ].filter(Boolean);
+  }
+
+  if (family === "recipe") {
+    const unlock = item?.recipe_unlock && typeof item.recipe_unlock === "object" ? item.recipe_unlock : {};
+    return [
+      clean("Craft Type", unlock.discipline ? `${unlock.discipline} Recipe` : "Recipe"),
+      clean("Output", unlock.recipe_name || String(norm.name || "").replace(/^Recipe:\s*/i, "")),
+      clean("Base DC", unlock.base_dc),
+      clean("Recipe Family", unlock.alchemy_group || unlock.alchemy_section || unlock.template_key, 2),
+    ].filter(Boolean);
+  }
+
+  if (family === "charged-wondrous") {
+    const metrics = ruleMetrics(ruleText);
+    return [
+      clean("Charges", chargesValue),
+      clean("Range", metrics.range),
+      clean("Save", metrics.save),
+      clean("Damage", metrics.damage),
+      clean("Weight", weightValue),
+    ].filter(Boolean);
+  }
+
+  if (family === "wondrous") {
+    return [
+      clean("Slot", norm.typeHint),
+      clean("Attunement", attunementValue),
+      clean("Weight", weightValue),
+      clean("Charges", chargesValue),
+    ].filter(Boolean);
+  }
+
+  return [
+    clean("Spell Attack Bonus", item.bonusSpellAttack || item.bonus_spell_attack),
+    clean("Spell Save DC Bonus", item.bonusSpellSaveDc || item.bonus_spell_save_dc),
+    clean("Weight", weightValue),
+    clean("Charges", chargesValue),
+    clean("Attunement", attunementValue),
+    clean("Properties", norm.props && norm.props !== "—" ? norm.props : null, 2),
+  ].filter(Boolean);
+}
+
 const POTION_DETAIL_OVERRIDES = {
   "Oil of Etherealness": { duration: "1 hour", use: "10 minutes to apply", effect: "One vial can cover one Medium or smaller creature and grants the effect of Etherealness." },
   "Oil of Sharpness": { duration: "1 hour", use: "1 minute to apply", effect: "A coated slashing or piercing weapon or ammunition gains a temporary bonus to attack and damage rolls by DM ruling." },
@@ -173,14 +483,158 @@ function extractDuration(text = "") {
   }
   return "";
 }
+function alchemyModifierDetailsForItem(item = {}) {
+  const alchemy = item?.alchemy && typeof item.alchemy === "object" ? item.alchemy : null;
+  if (!alchemy || String(alchemy.kind || "").toLowerCase() !== "modifier") return null;
+
+  const brewTags = Array.isArray(alchemy.brewTags)
+    ? uniqueList(alchemy.brewTags.map((value) => String(value || "").trim()).filter(Boolean))
+    : [];
+  const reduction = Number(alchemy.craftDcReduction || 0);
+  const rawSlot = String(alchemy.slot || "").trim();
+  const purpose = rawSlot.replace(/^fourth[- ]slot\s*/i, "").trim();
+
+  return {
+    slot: /^fourth[- ]slot/i.test(rawSlot) ? "Fourth slot" : (rawSlot || "Modifier slot"),
+    purpose: purpose ? titleCase(purpose) : "Recipe modifier",
+    family: alchemy.familyLabel || titleCase(alchemy.family || "Enhancer / Catalyst"),
+    brewTags,
+    brewImpact: alchemy.brewImpact || "Recipe theme component",
+    dcReduction: Number.isFinite(reduction) ? reduction : 0,
+  };
+}
+
+function alchemyIngredientDetailsForItem(item = {}) {
+  const alchemy = item?.alchemy && typeof item.alchemy === "object" ? item.alchemy : null;
+  if (!alchemy || String(alchemy.kind || "").toLowerCase() !== "ingredient") return null;
+
+  const brewTags = Array.isArray(alchemy.brewTags)
+    ? uniqueList(alchemy.brewTags.map((value) => String(value || "").trim()).filter(Boolean))
+    : [];
+  const reduction = Number(alchemy.craftDcReduction || 0);
+
+  return {
+    role: alchemy.slot || "Alchemy ingredient",
+    family: alchemy.familyLabel || titleCase(alchemy.family || "Ingredient"),
+    brewTags,
+    brewImpact: alchemy.brewImpact || "Recipe component",
+    dcReduction: Number.isFinite(reduction) ? reduction : 0,
+    physicalDescription: alchemy.physicalDescription || "",
+  };
+}
+
+function bombDetailsForItem(item = {}, type = "", craftedAlchemy = null) {
+  const blob = [type, item.item_type, item.type, item.category, item.item_name, item.name]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  if (!/\bbomb\b/.test(blob)) return null;
+
+  const alchemy = item?.alchemy && typeof item.alchemy === "object" ? item.alchemy : {};
+  const saveAbility = craftedAlchemy?.saveAbility || coalesce(item.save_ability, item.saveAbility, alchemy.save_ability, alchemy.saveAbility);
+  const saveDc = craftedAlchemy?.saveDc || coalesce(item.save_dc, item.saveDc, alchemy.save_dc, alchemy.saveDc);
+  const area = craftedAlchemy?.area || coalesce(item.area_text, item.areaText, alchemy.area_text, alchemy.areaText);
+  const duration = craftedAlchemy?.duration || coalesce(item.duration_text, item.duration, alchemy.duration, "Instant");
+  const use = craftedAlchemy?.use || coalesce(item.use_text, item.use, alchemy.use, "Use as described");
+  const repeatSave = coalesce(item.rider_repeat_save, alchemy.rider_repeat_save);
+  const conditions = Array.isArray(alchemy.condition_riders)
+    ? uniqueList(alchemy.condition_riders.map((value) => String(value || "").trim()).filter(Boolean))
+    : [];
+  const count = Number(alchemy.base_dice_count || 0);
+  const die = Number(alchemy.base_die_size || 0);
+  const theme = craftedAlchemy?.theme || coalesce(alchemy.themeTag, alchemy.tag_label);
+  const effectDice = craftedAlchemy?.effectDice || (count > 0 && die > 0 ? `${count}d${die}` : "");
+  const damage = effectDice ? `${effectDice}${theme ? ` ${String(theme).toLowerCase()}` : ""}` : "";
+
+  return { saveAbility, saveDc, area, duration, use, repeatSave, conditions, damage };
+}
+
+function normalizedComparableText(value = "") {
+  return String(value || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+function merchantCraftedAlchemyDetails(item = {}) {
+  const alchemy = item?.alchemy && typeof item.alchemy === "object" ? item.alchemy : {};
+  const merchantCraft = item?.merchant_craft && typeof item.merchant_craft === "object" ? item.merchant_craft : {};
+  const alchemyResult = item?.alchemy_result && typeof item.alchemy_result === "object" ? item.alchemy_result : {};
+  const isCraftedProduct = String(alchemy.kind || "").toLowerCase() === "crafted_product";
+  const isMerchantCrafted = Boolean(item.merchant_crafted || item.merchantCrafted || merchantCraft.crafted || alchemy.merchantCrafted);
+  if (!isCraftedProduct || !isMerchantCrafted) return null;
+
+  const effect = coalesce(item.effect_text, item.item_description, item.effect, alchemyResult.effect, merchantCraft.effect, alchemy.effect);
+  const duration = coalesce(item.duration_text, item.duration, merchantCraft.duration, alchemyResult.duration, alchemy.duration);
+  const use = coalesce(item.use_text, item.use, merchantCraft.use, alchemyResult.use, alchemy.use);
+  const areaFeet = Number(coalesce(merchantCraft.area_feet, alchemyResult.areaFeet, item.area_feet, alchemy.areaFeet, alchemy.base_area_feet) || 0);
+  const areaShape = coalesce(item.area_shape, alchemy.area_shape);
+  const area = areaFeet > 0
+    ? `${areaFeet}-foot ${String(areaShape || "area").replace(/_/g, " ")}`
+    : coalesce(item.area_text, item.areaText, alchemyResult.areaText, merchantCraft.area_text, alchemy.area_text, alchemy.areaText);
+  const effectDice = coalesce(item.effect_dice, merchantCraft.effect_dice, alchemyResult.effectDice, alchemy.effectDice);
+  const saveAbility = coalesce(merchantCraft.save_ability, alchemyResult?.saveDcPreview?.saveAbility, item.save_ability, item.saveAbility, alchemy.save_ability, alchemy.saveAbility);
+  const saveDc = coalesce(merchantCraft.save_dc, alchemyResult?.saveDcPreview?.dc, item.save_dc, item.saveDc, alchemy.save_dc, alchemy.saveDc);
+  const theme = coalesce(alchemy.themeTag, alchemy.tag_label);
+
+  return { effect, duration, use, area, effectDice, saveAbility, saveDc, theme };
+}
+
+function namedRuleSections(text = "") {
+  const source = String(text || "").replace(/\r\n/g, "\n").trim();
+  if (!source) return null;
+
+  const blocks = source
+    .split(/\n\s*\n+/)
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  if (blocks.length < 5) return null;
+
+  const looksLikeHeading = (value = "") => {
+    const clean = String(value || "").trim();
+    if (!clean || clean.length > 64) return false;
+    if (clean.split(/\s+/).length > 9) return false;
+    if (/[.!?;:]$/.test(clean)) return false;
+    if (/^(?:the|this|that|these|those|you|your|when|while|if|as|a|an)\b/i.test(clean)) return false;
+    return /^[A-Z0-9][A-Za-z0-9'’/&()\- ]+$/.test(clean);
+  };
+
+  const intro = [];
+  const traits = [];
+  let index = 0;
+
+  while (index < blocks.length) {
+    const block = blocks[index];
+    if (looksLikeHeading(block) && index + 1 < blocks.length) {
+      const body = [];
+      index += 1;
+      while (index < blocks.length && !looksLikeHeading(blocks[index])) {
+        body.push(blocks[index]);
+        index += 1;
+      }
+      if (body.length) {
+        traits.push({ title: block, body: body.join("\n\n") });
+        continue;
+      }
+    }
+
+    if (!traits.length) intro.push(block);
+    else traits[traits.length - 1].body += `\n\n${block}`;
+    index += 1;
+  }
+
+  return traits.length >= 2 ? { intro: intro.join("\n\n"), traits } : null;
+}
+
 function potionDetailsForItem(item = {}, type = "", ruleText = "", entriesText = "") {
   if (!isPotionLikeItem(item, type)) return null;
   const name = item.item_name || item.name || "";
   const known = POTION_DETAIL_OVERRIDES[name] || {};
   const sourceText = [ruleText, entriesText, item.effect_text, item.effect, item.rulesText].filter(Boolean).join("\n");
-  const duration = item.duration || item.duration_text || known.duration || extractDuration(sourceText) || "By item text / DM ruling";
-  const use = item.use || item.use_text || item.activation || item.application || known.use || (/oil/i.test(name) ? "Apply as described" : "Action to drink/use");
-  const effect = item.effect_detail || item.effect_text || item.effect || known.effect || sourceText || "See item text.";
+  const duration = item.duration || item.duration_text || item?.alchemy?.duration || known.duration || extractDuration(sourceText) || "By item text / DM ruling";
+  const use = item.use || item.use_text || item.activation || item.application || item?.alchemy?.use || known.use || (/oil/i.test(name) ? "Apply as described" : "Action to drink/use");
+  const effect = item.effect_detail || item.effect_text || item.effect || item?.alchemy?.effect || known.effect || sourceText || "See item text.";
   return { use, duration, effect };
 }
 
@@ -190,6 +644,7 @@ export default function ItemCard({
   variant = "default",
   detailsCollapsible = false,
   action = null,
+  onReferenceDetail = null,
 }) {
   const mergedItem = {
     ...(item.card_payload && typeof item.card_payload === "object" ? item.card_payload : {}),
@@ -210,12 +665,37 @@ export default function ItemCard({
       ? uniqueList(mergedItem.entries)
       : null;
 
-  const entriesText = flattenEntries(mergedItem.entries);
-  const overrideFlavor = (flavorIndex && flavorIndex.get(mergedItem.item_name || mergedItem.name)) || null;
-  const flavorText = mergedItem.flavor || overrideFlavor || entriesText || "";
-  const rawRuleText = coalesce(mergedItem.item_description, mergedItem.rulesText, mergedItem.rules, "");
-  const hasItemDescription = !!rawRuleText;
+  const entriesText = playerText(flattenEntries(mergedItem.entries));
+  const overrideFlavor = playerText((flavorIndex && flavorIndex.get(mergedItem.item_name || mergedItem.name)) || "");
+  const craftedAlchemy = merchantCraftedAlchemyDetails(mergedItem);
+  const sourceRuleText = playerText(craftedAlchemy?.effect || coalesce(mergedItem.item_description, mergedItem.rulesText, mergedItem.rules, ""));
+  const sourceFlavorText = playerText(mergedItem.flavor || overrideFlavor || entriesText || "");
+  const narrativeLead = splitNarrativeLead(sourceRuleText);
+  const itemBlob = [uiType, mergedItem.item_type, mergedItem.type, mergedItem.item_name, mergedItem.name].filter(Boolean).join(" ").toLowerCase();
+  const consumableLike = isPotionLikeItem(mergedItem, uiType || mergedItem.item_type || mergedItem.type) || /\bbomb\b/.test(itemBlob);
+  const ammunitionLike = /\bammunition\b/.test(itemBlob);
+  const duplicateSourceFlavor = Boolean(sourceFlavorText && sourceRuleText && normalizedComparableText(sourceFlavorText) === normalizedComparableText(sourceRuleText));
+  const ammunitionRulesOnly = Boolean(
+    ammunitionLike &&
+    duplicateSourceFlavor &&
+    /\b(?:works like|deals?\b[^.]{0,48}\bdamage|maximum range|ammunition)\b/i.test(sourceRuleText)
+  );
+  const flavorText = narrativeLead.description || (((consumableLike && duplicateSourceFlavor) || ammunitionRulesOnly) ? "" : sourceFlavorText);
+  const rawRuleText = narrativeLead.rules || sourceRuleText;
+  const hasItemDescription = Boolean(rawRuleText);
   const potionDetails = potionDetailsForItem(mergedItem, uiType || mergedItem.type || mergedItem.item_type, rawRuleText, entriesText);
+  const bombDetails = bombDetailsForItem(mergedItem, uiType || mergedItem.type || mergedItem.item_type, craftedAlchemy);
+  const alchemyModifierDetails = alchemyModifierDetailsForItem(mergedItem);
+  const alchemyIngredientDetails = alchemyIngredientDetailsForItem(mergedItem);
+  const isAlchemyComponent = Boolean(alchemyModifierDetails || alchemyIngredientDetails);
+  const ruleDuplicatesFlavor = Boolean(
+    rawRuleText &&
+    flavorText &&
+    normalizedComparableText(rawRuleText) === normalizedComparableText(flavorText)
+  );
+  const structuredRules = !isAlchemyComponent && hasItemDescription && !ruleDuplicatesFlavor
+    ? namedRuleSections(rawRuleText)
+    : null;
 
   const gp = parseValueToGp(coalesce(mergedItem.item_cost, mergedItem.cost, mergedItem.value));
   const weight = coalesce(mergedItem.item_weight, mergedItem.weight, mergedItem?.card_payload?.weight, null);
@@ -234,10 +714,10 @@ export default function ItemCard({
     type: uiType || typeFromBuilderCategory(mergedItem.category) || titleCase(stripTag(mergedItem.type || mergedItem.item_type || "Item")),
     typeHint: uiType === "Wondrous Item" ? uiSubKind : null,
     rarity,
-    flavor: flavorText || "—",
+    flavor: playerText(flavorText || ""),
     cost: gp,
     weight: weight != null ? weight : null,
-    source: mergedItem.source || mergedItem.item_source || "",
+    source: playerText(mergedItem.source || mergedItem.item_source || ""),
     charges: mergedItem.charges ?? mergedItem.item_charges ?? null,
     dmg: dmgText,
     rng: rngText,
@@ -246,68 +726,100 @@ export default function ItemCard({
   };
 
   const rarityClass = `rarity-${(norm.rarity || "Common").toLowerCase().replace(/\s+/g, "-")}`;
-  const showRange = norm.rng && norm.rng !== "—";
+  const cardFamily = cardFamilyForItem(mergedItem, norm.type, norm.typeHint, potionDetails, bombDetails);
+  const crafterName = playerText(craftedByName(mergedItem));
+  const relicState = relicStateForItem(mergedItem);
+  const adaptiveFields = [
+    ...(relicState ? [{ label: "Relic State", value: relicState }] : []),
+    ...adaptiveItemFields(mergedItem, norm.type, norm, potionDetails, bombDetails, cardFamily, rawRuleText),
+  ];
 
-  const detailContent = <>
-    {potionDetails ? (
-      <div className="sitem-section sitem-rules mt-2">
-        <div className="small text-muted mb-1 text-uppercase fw-semibold">Potion Details</div>
-        <div className="row g-2">
-          <div className="col-12 col-md-6"><strong>Use:</strong> {potionDetails.use}</div>
-          <div className="col-12 col-md-6"><strong>Duration:</strong> {potionDetails.duration}</div>
-          <div className="col-12"><strong>Effect:</strong> {potionDetails.effect}</div>
+  const renderFieldGrid = (fields = adaptiveFields, extraClass = "") => fields.length ? (
+    <div className={`sitem-field-grid ${extraClass}`.trim()}>
+      {fields.map((field) => (
+        <div className={`sitem-field ${field.span === 2 ? "is-wide" : ""}`} key={field.label}>
+          <div className="sitem-field__label">{field.label}</div>
+          <div className="sitem-field__value"><RuleLinkedText text={field.value} item={mergedItem} onReferenceDetail={onReferenceDetail} /></div>
         </div>
-      </div>
-    ) : null}
-
-    <div
-      className="sitem-section sitem-rules mt-2"
-      style={{ whiteSpace: hasItemDescription ? "pre-line" : (pureStringBullets ? "normal" : "pre-line") }}
-    >
-      {hasItemDescription ? (
-        rawRuleText
-      ) : pureStringBullets ? (
-        <ul className="mb-0">
-          {pureStringBullets.map((ln, i) => <li key={i}>{ln}</li>)}
-        </ul>
-      ) : (
-        "—"
-      )}
+      ))}
     </div>
+  ) : null;
 
-    <div className="row g-2 mt-2">
-      <div className="col-12 col-md-6">
-        <div className="sitem-section">
-          <div className="small text-muted mb-1">Damage</div>
-          <div className="text-wrap">{norm.dmg}</div>
-        </div>
-      </div>
-      <div className="col-12 col-md-6">
-        <div className="sitem-section">
-          <div className="small text-muted mb-1">Range / AC</div>
-          <div className="text-wrap">{showRange ? norm.rng : norm.ac}</div>
-        </div>
-      </div>
-      <div className="col-12">
-        <div className="sitem-section">
-          <div className="small text-muted mb-1">Properties</div>
-          <div className="text-wrap">{norm.props}</div>
-        </div>
-      </div>
+  const alchemyComponentGrid = alchemyIngredientDetails ? renderFieldGrid([
+    { label: "Role", value: alchemyIngredientDetails.role },
+    { label: "Family", value: alchemyIngredientDetails.family },
+    { label: "Brew Impact", value: alchemyIngredientDetails.brewImpact, span: 2 },
+    { label: "Craft DC", value: alchemyIngredientDetails.dcReduction > 0 ? `−${alchemyIngredientDetails.dcReduction}` : "No reduction" },
+    { label: "Brew Tags", value: alchemyIngredientDetails.brewTags.join(", ") || "Neutral" },
+  ], "sitem-alchemy-ingredient-grid") : alchemyModifierDetails ? renderFieldGrid([
+    { label: "Slot", value: alchemyModifierDetails.slot },
+    { label: "Purpose", value: alchemyModifierDetails.purpose },
+    { label: "Family", value: alchemyModifierDetails.family },
+    { label: "Brew Theme", value: alchemyModifierDetails.brewTags.join(", ") || "Neutral" },
+    { label: "Craft DC", value: alchemyModifierDetails.dcReduction > 0 ? `−${alchemyModifierDetails.dcReduction}` : "No reduction" },
+    { label: "Contribution", value: alchemyModifierDetails.brewImpact },
+  ], "sitem-alchemy-modifier-grid") : null;
+
+  const rulesIntro = structuredRules?.intro || (!ruleDuplicatesFlavor ? rawRuleText : "");
+  const primaryEffectText = playerText(
+    potionDetails?.effect && normalizedComparableText(potionDetails.effect) !== normalizedComparableText(norm.flavor)
+      ? potionDetails.effect
+      : rulesIntro
+  );
+  const effectLabel = cardFamily === "recipe" ? "Recipe" : "Effect";
+  const effectPanel = primaryEffectText ? (
+    <div className="sitem-section sitem-rules sitem-effect-panel">
+      <div className="small text-muted mb-1 text-uppercase fw-semibold">{effectLabel}</div>
+      <div style={{ whiteSpace: "pre-line" }}><RuleLinkedText text={primaryEffectText} item={mergedItem} onReferenceDetail={onReferenceDetail} /></div>
     </div>
+  ) : null;
 
-    <div className="d-flex justify-content-between align-items-center mt-2">
+  const traitList = structuredRules?.traits?.length ? (
+    <div className="sitem-rule-traits" aria-label="Item traits">
+      {structuredRules.traits.map((trait) => (
+        <details className="sitem-rule-trait" key={trait.title}>
+          <summary>{playerText(trait.title)}</summary>
+          <div className="sitem-rule-trait__body" style={{ whiteSpace: "pre-line" }}><RuleLinkedText text={playerText(trait.body)} item={mergedItem} onReferenceDetail={onReferenceDetail} /></div>
+        </details>
+      ))}
+    </div>
+  ) : null;
+
+  let orderedDetails = null;
+  if (isAlchemyComponent) {
+    orderedDetails = alchemyComponentGrid;
+  } else if (cardFamily === "armor") {
+    orderedDetails = <>
+      {renderFieldGrid()}
+      {effectPanel}
+      {traitList}
+    </>;
+  } else if (cardFamily === "material") {
+    orderedDetails = <>
+      {renderFieldGrid()}
+      {effectPanel}
+    </>;
+  } else {
+    orderedDetails = <>
+      {effectPanel}
+      {traitList}
+      {renderFieldGrid()}
+    </>;
+  }
+
+  const detailContent = <div className={`sitem-detail-stack sitem-detail-stack--${cardFamily}`}>
+    {orderedDetails}
+    {variant !== "shop" ? <div className="sitem-legacy-footer d-flex justify-content-between align-items-center">
       <div className="d-flex gap-2 flex-wrap">
-        <span className="badge text-bg-dark">{norm.cost != null ? `${norm.cost} gp` : "— gp"}</span>
-        <span className="badge text-bg-dark">{norm.weight != null ? `${norm.weight} lbs` : "— lbs"}</span>
-        <span className="badge text-bg-dark">{norm.type}{norm.typeHint ? ` • ${norm.typeHint}` : ""}</span>
-        {norm.source && <span className="badge text-bg-secondary">{norm.source}</span>}
+        {norm.cost != null ? <span className="badge text-bg-dark">{norm.cost} gp</span> : null}
+        {norm.weight != null ? <span className="badge text-bg-dark">{norm.weight} lbs</span> : null}
+        {norm.source ? <span className="badge text-bg-secondary">{norm.source}</span> : null}
       </div>
-    </div>
-  </>;
+    </div> : null}
+  </div>;
 
   return (
-    <div className={`card sitem-card mb-4 ${variant === "shop" ? "is-shop-variant" : ""}`}>
+    <div className={`card sitem-card mb-4 sitem-family-${cardFamily} ${variant === "shop" ? "is-shop-variant" : ""}`}>
       <div className={`card-header sitem-header d-flex align-items-center justify-content-between ${rarityClass}`}>
         <div className="sitem-title fw-semibold">{norm.name}</div>
         <div className="sitem-type small text-uppercase">
@@ -318,16 +830,17 @@ export default function ItemCard({
       <div className="card-body">
         <div className="sitem-meta text-center mb-2">
           <span className="sitem-rarity">{norm.rarity}</span>
+          {crafterName ? <span className="sitem-crafted-by"> • Crafted by {crafterName}</span> : null}
           {norm.charges != null && <span className="ms-1 small text-muted">({norm.charges} charges)</span>}
         </div>
 
         <div className="row g-2 align-items-start">
-          <div className="col-8">
+          {norm.flavor ? <div className="col-8">
             <div className="sitem-section sitem-desc" style={{ whiteSpace: "pre-line" }}>
-              {norm.flavor}
+              <RuleLinkedText text={norm.flavor} item={mergedItem} onReferenceDetail={onReferenceDetail} />
             </div>
-          </div>
-          <div className="col-4">
+          </div> : null}
+          <div className={norm.flavor ? "col-4" : "col-4 ms-auto"}>
             <div className={`sitem-thumb ratio ratio-1x1 ${!norm.visual.hasImage ? `sitem-thumb-fallback ${norm.visual.className}` : ""}`}>
               {norm.visual.hasImage ? <img
                 src={norm.image}
@@ -338,6 +851,8 @@ export default function ItemCard({
             </div>
           </div>
         </div>
+
+        <div className="sitem-rarity-divider" aria-hidden="true"><span className="sitem-rarity-divider__crystal">◆</span></div>
 
         {detailsCollapsible ? <details className="sitem-game-details mt-2">
           <summary><span>Game Details</span><em>Rules, stats &amp; source</em></summary>

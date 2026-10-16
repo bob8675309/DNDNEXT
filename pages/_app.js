@@ -63,6 +63,7 @@ import ProfilePanelDragController from "../components/ProfilePanelDragController
 import TacticalCharacterResourceBridge from "../components/TacticalCharacterResourceBridge";
 import TacticalCoreActionGuide from "../components/TacticalCoreActionGuide";
 import TacticalAttackResultPanel from "../components/TacticalAttackResultPanel";
+import GlobalRuleReferenceDock from "../components/GlobalRuleReferenceDock";
 import Head from "next/head";
 import Script from "next/script";
 
@@ -86,6 +87,7 @@ export default function App({ Component, pageProps }) {
       <TacticalCoreActionGuide />
       <TacticalAttackResultPanel />
       <PlayerCharacterProfilePanel />
+      <GlobalRuleReferenceDock />
       <AdminBuildBadge />
     </>
   );

@@ -125,13 +125,15 @@ function StartingLevelControl({ level = 1, onLevelChange = null }) {
   return <label className="npc-forge-class-guide__level-control"><span>Starting Level</span><input type="number" min="1" max="20" value={level} aria-label="Starting character level" onChange={(event) => onLevelChange(Math.max(1, Math.min(20, Number(event.target.value) || 1)))} /></label>;
 }
 function ForgeSubclassSelection({ selectedClass, model, onSubclassDetail, level = 1, onLevelChange = null, detailed = false }) {
-  return <div className={`npc-forge-class-guide__subclass-stack${detailed ? " is-detailed" : ""}`}>
-    {!detailed && onLevelChange ? <div className="npc-forge-class-guide__subclass-level"><StartingLevelControl level={level} onLevelChange={onLevelChange} /></div> : null}
+  const hasSelectedSubclass = Boolean(model?.selected);
+  return <div className={`npc-forge-class-guide__subclass-stack${hasSelectedSubclass ? " has-selection" : ""}${detailed ? " is-detailed" : ""}`}>
+    {!detailed && onLevelChange && !hasSelectedSubclass ? <div className="npc-forge-class-guide__subclass-level"><StartingLevelControl level={level} onLevelChange={onLevelChange} /></div> : null}
     <ClassSubclassSection
       model={model}
       classKey={selectedClass?.class_key || ""}
       detailed={detailed}
       onInspectSubclass={(option, actions) => inspectSubclass(model, onSubclassDetail, option, actions)}
+      selectedSupplement={!detailed && onLevelChange && hasSelectedSubclass ? <div className="npc-forge-class-guide__subclass-level is-selected"><StartingLevelControl level={level} onLevelChange={onLevelChange} /></div> : null}
     />
   </div>;
 }

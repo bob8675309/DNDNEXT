@@ -136,7 +136,7 @@
 
 .class-subclass-selected-card__art {
   position: relative;
-  width: 78px;
+  width: 92px;
   aspect-ratio: 7 / 12;
   overflow: hidden;
   flex: 0 0 auto;
@@ -186,6 +186,15 @@
   font-weight: 800;
   line-height: 1;
   box-shadow: 0 5px 14px rgba(0,0,0,.16);
+}
+
+.class-subclass-selected-card__copy .npc-forge-class-guide__subclass-level {
+  margin-top: .08rem;
+  padding: 0;
+}
+
+.class-subclass-selected-card__copy .npc-forge-class-guide__level-control {
+  min-height: 32px;
 }
 
 .class-subclass-selected-card__copy button:hover,

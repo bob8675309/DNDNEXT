@@ -1,3 +1,167 @@
+## 2026-10-15 locked ItemCard families implemented
+
+The eight approved ItemCard visual families are now represented in the shared source renderer instead of existing only as mockup/documentation targets. Weapon, Armor, Material, Recipe, Potion/Elixir, Bomb, Wondrous wearable, and Charged Wondrous/Rod cards receive family-specific field ordering while still consuming canonical item payloads.
+
+The same pass adds player-facing source-tag cleanup, armor AC/Dex presentation, default melee reach presentation, canonical crafted-by provenance support, a centered rarity-divider crystal, subtle textured card interiors, common/mundane visual parity, and a no-redundant-footer shop presentation.
+
+Merchant stock rows now keep their one-line ellipsized description but also surface up to two compact type-aware game facts so readability improves without discarding useful mechanics. Forge Equipment gives the selected card slightly more width and raises the type floor while retaining a usable middle stock column.
+
+Crafting-material art remains intentionally provisional. Material/reagent/catalyst/recipe fallbacks are generic family icons until the Smithing → Alchemy → Enchanting redesign is complete.
+
+## 2026-10-14 merchant-crafted alchemy authority + catalyst formatting + 90% MerchantPanel pass
+
+The latest merchant review exposed a distinction between base recipe text and the finished merchant-crafted stock result. Quill Ashborn's Bomb of Lightning is the calibration case: the stock payload contains the original 2d6 / 10-foot recipe flavor alongside the actual crafted result of 3d6 with a 15-foot area. ItemCard now treats the final merchant-crafted payload (`merchant_craft` / `alchemy_result` / final effect fields) as presentation authority for merchant-crafted alchemy. The top summary, adaptive fields, duration, area, save, and damage therefore describe one finished item instead of mixing base-recipe and enhanced values. The same rule prevents enhanced elixirs from showing their original duration in the summary while a later section shows the crafted duration.
+
+This is a renderer-authority correction only. Existing merchant stock rows were not rewritten and no alchemy formulas were changed.
+
+Alchemy Modifiers / catalysts now use the same compact field-grid language as the rest of ItemCard instead of a prose-heavy "Final brew" block. Cards such as Freedom Resin present Slot, Purpose, Family, Brew Theme, Craft DC impact, and Contribution as distinct fields. The physical description remains in the top description/thumbnail row.
+
+Normal MerchantPanel now explicitly uses `ItemCard variant="shop"`, matching Forge Equipment's compact storefront card presentation. This removes the extra internal price badge and keeps shop-only spacing consistent between the two storefronts.
+
+Merchant stock-row descriptions are now a single ellipsized line instead of two wrapped lines. The full description is retained as a native hover title. This increases scan density without discarding the text.
+
+For the embedded profile Shop view, the accepted desktop reference has shifted from the old 80% browser-zoom target to the current 90% view. The shop-active profile shell desktop width is therefore tightened from 920px to 840px at native 100% browser zoom. This is scoped to the embedded profile shop and does not alter the Forge Equipment shell or world-map behavior.
+
+## 2026-10-14 alchemy ItemCard normalization + category-scrollbar correction
+
+Browser/video review exposed two shared MerchantPanel issues after the crafting-style ItemCard pass.
+
+Alchemy ingredients were rendering their physical description twice because the same canonical text exists as both `flavor` and `item_description`. Ingredient cards now recognize `alchemy.kind = ingredient`, keep the physical description once in the summary area, and use the details area for the actual brewing metadata already present in the catalog: Role/slot, Family, Brew Impact, Craft DC reduction, and Brew Tags.
+
+Finished alchemy products now distinguish beneficial consumables from offensive delivery items. Potion/elixir cards no longer display a Save field merely because a generic `save_dc` number exists; a save is shown only when the payload also supplies a real save ability. This removes misleading Save DC values from beneficial items such as Elixir of Fire Resistance and Potion of Comprehension. Repeated effect/rules text that is identical to the summary is also suppressed.
+
+Bomb cards now consume their existing canonical alchemy metadata instead of falling through to the generic item fields. Where available, the adaptive field grid exposes Use, Area, Save ability + DC, Damage dice/type, Duration, Condition, Repeat Save, and Charges. For example, Bomb of Lightning can surface its 10-foot burst, Dexterity save, enhanced save DC, 2d6 lightning damage, Instant duration, and use action without repeating the same effect paragraph twice.
+
+No catalog rows were rewritten; this is a renderer correction over existing payload data.
+
+The horizontal category scroller is also corrected. The chip row retains horizontal touch/wheel scrolling but hides its native bottom scrollbar. A synchronized scrollbar is rendered immediately above the chips, sized from the actual chip-row scroll width and kept in sync in both directions. This shared behavior applies to both normal MerchantPanel and Forge Equipment.
+
+## 2026-10-14 crafting-preview ItemCard structure + deep rarity authority
+
+The shared ItemCard now borrows the information hierarchy demonstrated by the existing Alchemy/Smithing preview cards while preserving the accepted shop-card footprint. The title/type header and centered rarity label remain first, followed by the short description + thumbnail row. A dedicated 3px rarity divider now sits immediately below that row. The divider uses the darker rarity anchor color with a subtle center highlight and restrained outer glow rather than a flat line.
+
+Rarity now has two explicit visual tokens: a deep anchor color and a lighter accent. The deep color is authoritative for the ItemCard outer frame, header, divider, and merchant stock-row border. The lighter accent is reserved for rarity labels and glow. The shared merchant storefront uses the same deep/accent values, so normal MerchantPanel and Forge Equipment remain visually synchronized. Current deep anchors include Rare #204875, Uncommon #1f5937, Very Rare #4a276b, Legendary #734314, and Artifact #762b34.
+
+Below the divider, ItemCard now supports an adaptive two-column field grid sourced from the existing normalized payload rather than a second rules engine. Armor/shields prioritize Armor Class, Strength requirement, Stealth, Weight, Attunement, and Properties when present. Weapons/ammunition prioritize Damage, Range, Weight, Attunement, and Properties. Potions/elixirs keep their main Effect visible and place Use, Duration, Save DC, and Doses/Charges into the structured field grid when those values exist. General gear uses Weight, Charges, Attunement, and Properties as available. Alchemy Modifiers keep their dedicated crafting-role block.
+
+Long named secondary traits continue to use per-property chevrons, so the main description remains visible while complex items can expose individual properties without one giant uninterrupted rules block.
+
+Shop ItemCards no longer repeat the item price in their internal footer; the storefront purchase footer remains the sole shop price/availability/action presentation. Non-shop ItemCards retain their existing price badge.
+
+No item mechanics, crafting formulas, prices, stock data, or checkout authority changed.
+
+## 2026-10-13 shared dark-rarity / breathing-selection / cart-edge pass
+
+The Forge and normal MerchantPanel now share the same darker rarity presentation for merchant inventory rows and selected ItemCards. The storefront palette is intentionally deeper and less neon: mundane/common use dark steel tones, Uncommon dark green, Rare dark blue, Very Rare dark violet, Legendary dark amber, and Artifact dark crimson. Those tokens are owned by the shared MerchantPanel storefront stylesheet so both normal merchant shops and Forge Equipment receive the same treatment.
+
+Rarity remains visible on every stock row at all times through the full outline, left scan stripe, dark tinted wash, and restrained glow. Hover/focus and the selected row now use a slow breathing scale animation, growing only slightly and then easing back without changing document flow. Selected rows receive the stronger glow. Reduced-motion users receive the same color treatment without animation.
+
+The selected ItemCard uses the same shared darker rarity tokens, so its 4px frame and layered rarity header are also darker in both Forge and normal MerchantPanel contexts. The long-trait chevron formatting from the prior pass is already shared through ItemCard and therefore remains available in both storefronts.
+
+The Forge Starting Cart is still Forge-only, but its minimized header presentation now fills the complete top-right merchant-header lane with no extra inset box around it. The remaining-gold value inside that cart header is larger, bold, and given a clearer high-contrast pill treatment.
+
+No merchant inventory data, rarity values, checkout authority, cart arithmetic, character currency, or item mechanics changed.
+
+## 2026-10-13 ItemCard property-chevrons + Forge purchase-footer follow-up
+
+The Forge selected-item strip above the ItemCard is now removed. The ItemCard moves to the top of the preview pane, while purchase context is consolidated below it. Remaining gold is no longer repeated under the ItemCard because the Starting Cart already owns budget/spent/remaining tracking in greater detail. The purchase footer now shows only Price, Available quantity, and the Add/Buy action.
+
+The minimized Starting Cart keeps the same basic shape but now fills the complete top-right header action lane instead of sitting as a smaller control inside that space.
+
+Rarity treatment is more pronounced in two layers. ItemCards retain their existing geometry but now use a 4px rarity frame and a darker, more dimensional rarity-colored header built from layered radial/linear gradients. Merchant stock rows also carry strong rarity color at all times rather than only after selection: every row receives a rarity outline, left scan stripe, tinted wash, and subtle glow; the selected state increases the tint and glow further.
+
+Long rules text now supports named secondary-property disclosures without collapsing the whole ItemCard. When an item description contains multiple short named trait headings followed by body text, the main introductory description remains visible and each named trait renders as its own chevron disclosure. This is intended for items such as Leather Golem Armor, where traits like Immutable Form, Lightning Absorption, Curse, Aversion of Fire, and Berserk can be inspected individually instead of forcing the player through one extremely tall uninterrupted rules block. Simple items continue to render exactly as plain rule text.
+
+No item mechanics, merchant prices, cart authority, character currency, or crafting rules changed in this pass.
+
+## 2026-10-13 ItemCard rarity/readability + Alchemy Modifier follow-up
+
+The selected ItemCard keeps its established dimensions and layout, but receives the requested visual-strength pass: the rarity border is now 3px around the full card, and the header is a near-solid rarity-colored gradient rather than a mostly-purple header with only a thin rarity accent. Equipment-only ItemCard text is also raised above the shared storefront compact floor for better readability without changing the card footprint.
+
+Live data inspection clarified the Freedom Resin case. Freedom Resin is not a finished potion or consumable result; it is a canonical Rare `Alchemy Modifier` from the DNDNext Alchemy Codex. Its payload identifies it as a `Fourth-slot condition counteragent`, family `Enhancer / Catalyst`, with brew tag `Restraint`, zero Craft DC reduction, and `Recipe theme component` impact. The codex metadata explicitly says the selected recipe determines the finished brew behavior.
+
+ItemCard now recognizes this modifier payload. Instead of showing duplicate flavor text followed by meaningless Damage / Range / Properties dashes, an Alchemy Modifier section shows Role, Family, Brew tag, Craft DC impact, and a clear note that the selected recipe determines the final brew effect and duration. Finished potions/elixirs continue to use their existing Potion Details fields.
+
+No catalog rows or crafting formulas were modified in this pass; this is a presentation/normalization correction over existing canonical payload data.
+
+## 2026-10-13 Equipment readability and rarity-outline follow-up
+
+The latest side-by-side review found two remaining Forge-only presentation issues before the planned ItemCard visual redesign.
+
+First, the Forge stock-browser text had remained below the normal MerchantPanel readability floor. The Equipment step now matches the MerchantPanel small-text sizing for merchant subline/kicker text, search/category controls, stock-row title/price/meta/description text, and the Campaign Merchants rail.
+
+Second, the active Forge stock bubbles were defaulting to the mundane gray `--rarity-color` because the current MerchantPanel-derived path did not define the canonical rarity variables for `rarity-uncommon`, `rarity-rare`, and higher classes. Equipment now uses the canonical merchant palette directly: Common `#ced4da`, Mundane `#aab2bd`, Uncommon `#55d17a`, Rare `#5aa7f3`, Very Rare `#a67cf3`, Legendary `#f3b24d`, and Artifact `#e85d5d`.
+
+The rarity color now outlines the entire middle-column stock bubble instead of appearing only as a left-side stripe. The left edge remains slightly stronger as a scan affordance, while hover/selected states preserve the same rarity color around the complete border.
+
+The ItemCard itself is intentionally unchanged in this pass. Its upcoming redesign remains a separate visual-only task after the Equipment storefront geometry is accepted.
+
+## 2026-10-13 MerchantPanel horizontal-balance follow-up
+
+The latest side-by-side comparison showed that the Forge Equipment selected ItemCard was still narrower than the normal MerchantPanel while the middle stock browser was substantially wider.
+
+Desktop Equipment now uses a roughly 54/46 stock-list-to-preview split instead of the previous approximately 62/38 split. This makes the selected ItemCard meaningfully wider for readability while preserving a 285px minimum stock-list column on large desktop layouts. That minimum is deliberate so the stock bubbles can later accommodate a small leading item icon without requiring another major layout reflow.
+
+The ItemCard itself is not visually redesigned in this pass. Its current expanded presentation and dimensions remain the baseline while the future card redesign is deferred until the Equipment storefront geometry is accepted.
+
+## 2026-10-13 MerchantPanel height-parity correction
+
+The latest side-by-side browser video showed that the previous “vertical balance” pass solved the wrong problem: it compressed content inside the existing short Forge window instead of matching the normal MerchantPanel’s taller canvas.
+
+The Character Forge modal now receives an explicit `is-step-equipment` class while the Equipment step is active. On desktop, a non-manually-resized Equipment Forge window fills the same usable vertical window envelope as the normal profile/merchant panel: `100dvh - navbar offset - 32px`. The Forge header, step bar, and footer remain intact; the Equipment body flexes to consume the remaining height.
+
+The last stock-row/chrome compression is intentionally overridden for the active Equipment step. MerchantPanel-like header padding, toolbar height, category chips, two-line stock descriptions, stock-row spacing, preview padding, and cart-header size are restored. The selected ItemCard remains fully expanded. Extra visible stock and taller merchant art now come from the taller outer Forge canvas rather than from making the storefront elements smaller.
+
+Manually dragged/resized app-window geometry remains respected because this default-height rule applies only while the Forge is not `is-app-windowed`.
+
+## 2026-10-13 MerchantPanel vertical-balance follow-up
+
+The normal MerchantPanel is now the accepted vertical-density reference for the Forge Equipment tab. The Forge keeps its narrower selected-item column and integrated merchant-art background, but now gives the vendor frame the full available Equipment body height.
+
+The previous storefront container still reserved an obsolete `auto` grid row from the older top-purse/cart layout even though the Starting Cart has moved into the merchant header. That dead row is removed; the storefront now uses a single `minmax(0,1fr)` row. Equipment workspace padding, vendor-frame padding, header/cart height, toolbar spacing, and preview chrome are also reduced slightly so those pixels become usable merchant art and stock-list height.
+
+The selected ItemCard remains fully expanded. The stock browser is denser instead: stock descriptions are clamped to one line in Forge, row/meta spacing is tightened, and the existing dedicated stock scrollbar remains authoritative. The intent is to expose roughly one to two additional stock rows at desktop heights while preserving the taller selected-card presentation.
+
+No normal MerchantPanel styling, commerce authority, stock generation, character currency, or protected world-map behavior changed in this pass.
+
+## 2026-10-13 sharp overlay / expanded ItemCard / stock-scroll follow-up
+
+The latest browser comparison showed three Forge-only defects after the integrated-background pass. The normal MerchantPanel's selected ItemCard was preferred because its rules/details are fully open; the Forge still passed `detailsCollapsible: true`. The Forge now passes `detailsCollapsible: false`, so selected starting-equipment ItemCards always render their complete rules/stat/source content and naturally use the taller preview presentation.
+
+The translucent Equipment composition is retained, but all Forge Equipment `backdrop-filter: blur(...)` effects have been removed. Merchant art remains visible behind the rail, stock, preview, and cart surfaces without optical blur; the stage media itself is also rendered with no filter override in the final desktop rule.
+
+The non-scrolling Equipment stock list was a height-ownership defect. The stock workspace remains the full-height grid cell, while exactly one child—the `merchant-stock-layout` flex region—now owns the remaining height using `flex: 1 1 0`, `height: 0`, and `min-height: 0`. The stock list then fills that bounded region with `height: 100%` and `overflow-y: auto`. This deliberately avoids restoring the earlier chained zero-height constraints that collapsed the storefront.
+
+No commerce, currency, stock-generation, materialization, or protected world-map authority changed in this follow-up.
+
+## 2026-10-13 integrated Equipment storefront composition
+
+A follow-up browser/video review established that the normal merchant panel was at an acceptable native scale, while the Forge Equipment tab still read too large and too segmented. The Forge-only presentation now treats the active merchant artwork as a full-stage background rather than confining atmosphere to the scene column.
+
+The active merchant is rendered through `MerchantAmbientBackdrop` behind the Campaign Merchants rail, storefront header, stock workspace, and selected-item preview. The scene itself remains the brightest/readable portion, while the rail, stock controls, rows, and preview use translucent dark surfaces and blur so the same merchant environment bleeds behind them without sacrificing legibility.
+
+Desktop proportions were rebalanced around the review target: the Campaign Merchants rail is slightly wider, the merchant scene receives most of the reclaimed width, and the selected-item preview is approximately one-third narrower than the prior Forge split. The stock list receives the rest of the reclaimed workspace.
+
+The Starting Cart no longer defaults to an expanded floating window. In the Forge it now uses `presentation="header"`, starts collapsed, and occupies the storefront's top-right header action position that previously showed only the remaining-GP badge. Expanding it opens an overlay below the header without changing the merchant scene, stock, or preview geometry. The existing floating and rail presentations remain available for other contexts.
+
+This pass is presentation-only. Starting-market purchases, server validation/materialization, character currency, merchant stock authority, and all protected world-map systems are unchanged.
+
+## 2026-10-12 shared storefront + balanced prototype merchant stock
+
+The Equipment storefront and the normal runtime merchant shop now render the same shared presentation component, `components/MerchantStorefrontView.js`. The transaction controllers remain separate: runtime `MerchantPanel` still owns the account wallet, `buy_from_merchant`, admin stock controls, and merchant travel controls; Player Forge still owns only the starting purse, staged `marketPurchases[]`, and the server-authoritative creation materializer.
+
+The Forge keeps Campaign Merchants as the separate left rail. Inside the active storefront, both contexts now share the merchant header, scene, Search Stock/category controls, scrollable stock list, selected ItemCard preview, rarity treatment, and layout hierarchy. Forge-specific actions substitute Starting Gold Remaining and Add to Starting Cart for the runtime wallet/purchase action.
+
+Unspent starting-market currency continues to be materialized server-side into `public.character_currency` by the deferred `character_progression` trigger. The Equipment summary now labels this explicitly as `Remaining → wallet`; no account-wide player wallet is used.
+
+Routine merchant stock generation now draws from the complete canonical `public.items_catalog` but uses explicit rarity shelves instead of allowing one global ranking to determine rarity accidentally. Prototype storefronts are regenerated at 30 rows each. The baseline target is approximately 57% Mundane/Common, 33% Uncommon, and the remaining few rows Rare; routine rerolls exclude Very Rare, Legendary, and Artifact stock. Specialist merchants may reserve one recipe row, but that recipe is also capped at Rare or below. Theme affinity and item-type diversity determine which catalog entries win inside each rarity shelf.
+
+Because no storefront inventory is manually curated in the prototype phase, all currently enabled storefronts were refreshed against the new rule. The live verification after the recipe cap shows 30 stock rows per enabled storefront and zero Very Rare/Legendary/Artifact rows.
+
+The merchant presentation also received a native 100%-browser-zoom density pass. The previous embedded merchant profile sizing was visually comfortable only around 80% browser zoom; the CSS now uses smaller desktop shell width, spacing, typography, stock-row padding, and preview padding instead of relying on browser zoom or CSS transforms. Forge Equipment receives the corresponding density reduction while preserving its bounded scroll regions and stable merchant-image framing.
+
+No world-map, route simulation, weather, combat, crafting formulas, account-wallet authority, or character-creation transaction boundaries were changed by this pass.
+
 ## 2026-10-12 stable merchant image framing
 
 The follow-up video showed that switching stock categories could still change the apparent merchant-image zoom. The image itself was not changing; the scene box was still allowed to follow the filtered workspace's content height, and `background-size: cover` recalculated the crop whenever that box changed.

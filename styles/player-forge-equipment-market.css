@@ -790,7 +790,7 @@ body > .npc-forge-equipment-summary-dock.is-floating {
   inset: 0;
   border: 0;
   background: rgba(2,4,8,.46);
-  backdrop-filter: blur(1.5px);
+  backdrop-filter: none;
 }
 .forge-starting-cart-drawer__panel {
   position: relative;
@@ -1248,8 +1248,8 @@ body > .npc-forge-equipment-summary-dock.is-floating {
 }
 .forge-equipment-vendor-frame {
   display: grid;
-  grid-template-columns: 188px minmax(0, 1fr);
-  gap: 8px;
+  grid-template-columns: 132px minmax(0, 1fr);
+  gap: 7px;
   height: 100%;
   min-height: 0;
 }
@@ -1270,22 +1270,22 @@ body > .npc-forge-equipment-summary-dock.is-floating {
   box-shadow: 0 16px 42px rgba(0,0,0,.28);
 }
 .forge-equipment-merchant-panel .merchant-market-header {
-  padding: 10px 14px;
+  padding: 8px 11px;
 }
 .forge-equipment-merchant-panel .merchant-market-title {
-  font-size: clamp(1.05rem, 1.45vw, 1.35rem);
+  font-size: clamp(.94rem, 1.18vw, 1.16rem);
 }
 .forge-equipment-merchant-panel .merchant-market-subline {
-  font-size: .76rem;
+  font-size: .66rem;
 }
 .forge-equipment-merchant-panel .merchant-wallet-badge {
-  min-height: 28px;
-  font-size: .72rem;
+  min-height: 24px;
+  font-size: .62rem;
 }
 .forge-equipment-merchant-market-shell {
-  flex: 1 1 0;
+  flex: 1 1 auto;
   min-height: 0;
-  height: 0;
+  height: auto;
   overflow: hidden;
 }
 .forge-equipment-vendor-scene {
@@ -1307,23 +1307,24 @@ body > .npc-forge-equipment-summary-dock.is-floating {
   transform: none;
 }
 .forge-equipment-merchant-stock {
-  flex: 1 1 0;
+  flex: 1 1 auto;
   min-height: 0;
-  height: 0;
+  height: auto;
   overflow: hidden;
 }
 .forge-equipment-merchant-panel .merchant-stock-toolbar {
-  grid-template-columns: minmax(230px,.78fr) minmax(0,1.22fr);
+  grid-template-columns: minmax(175px,.74fr) minmax(0,1.26fr);
 }
 .forge-equipment-merchant-panel .merchant-stock-layout {
-  flex: 1 1 0;
+  flex: 1 1 auto;
   min-height: 0;
-  height: 0;
+  height: auto;
   overflow: hidden;
+  grid-template-columns: minmax(220px,.78fr) minmax(300px,1.22fr);
 }
 .forge-equipment-merchant-panel .merchant-stock-list {
   min-height: 0;
-  height: 100%;
+  height: auto;
   overflow-y: auto !important;
   overflow-x: hidden;
   overscroll-behavior: contain;
@@ -1501,9 +1502,10 @@ body > .npc-forge-equipment-summary-dock.is-floating {
 
 
 /* 2026-10-12 stable merchant portrait framing.
-   Category/search changes must never alter the merchant image zoom. The MerchantPanel
-   shell is locked to the remaining Forge height, and merchant art uses the same
-   contain-style framing as the established vendor panel instead of cover-cropping. */
+   Category/search changes must never alter the merchant image zoom. The outer Forge
+   panel owns the fixed remaining height; nested storefront flex/grid children use
+   min-height:0 rather than chained height:0 constraints so the stock list can scroll
+   without collapsing. Merchant art keeps contain-style framing. */
 .forge-equipment-merchant-panel {
   max-height: 100%;
   overflow: hidden;
@@ -1511,4 +1513,1039 @@ body > .npc-forge-equipment-summary-dock.is-floating {
 .forge-equipment-vendor-scene {
   min-height: 0;
   height: 100%;
+}
+
+
+/* 2026-10-12 native 80%-reference Equipment density.
+   Shared storefront sizing now supplies the desktop scale. Forge overrides only
+   its rail and the bounded scrolling geometry needed inside the fixed Forge stage. */
+.forge-equipment-merchant-panel .merchant-stock-workspace {
+  padding: 9px;
+}
+.forge-equipment-vendor-frame > .merchant-rail .merchant-rail__head {
+  padding: 7px 8px 6px;
+}
+.forge-equipment-vendor-frame > .merchant-rail .merchant-rail__merchant {
+  grid-template-columns: 38px minmax(0,1fr) 6px;
+  min-height: 46px !important;
+  gap: 5px;
+  padding: 3px 5px 3px 3px !important;
+}
+.forge-equipment-vendor-frame > .merchant-rail .merchant-rail__merchant > img,
+.forge-equipment-vendor-frame > .merchant-rail .merchant-rail__portrait-fallback {
+  width: 38px;
+  height: 38px;
+}
+.forge-equipment-vendor-frame > .merchant-rail .merchant-rail__merchant-copy strong {
+  font-size: .55rem;
+}
+.forge-equipment-vendor-frame > .merchant-rail .merchant-rail__merchant-copy em {
+  font-size: .45rem;
+}
+.forge-equipment-vendor-frame > .merchant-rail .merchant-rail__merchant-copy small {
+  font-size: .39rem;
+}
+
+
+/* 2026-10-13 integrated Equipment storefront composition.
+   The active merchant scene is the stage background; rails, stock, preview, and
+   cart are translucent overlays rather than isolated opaque boxes. */
+@media (min-width: 1181px) {
+  .npc-forge-equipment-storefront.is-merchant-panel-pivot {
+    background: #080b12;
+  }
+
+  .npc-forge-equipment-storefront.is-merchant-panel-pivot > .forge-equipment-stage-backdrop {
+    opacity: .96;
+  }
+  .npc-forge-equipment-storefront.is-merchant-panel-pivot > .forge-equipment-stage-backdrop .merchant-ambient-backdrop__image,
+  .npc-forge-equipment-storefront.is-merchant-panel-pivot > .forge-equipment-stage-backdrop .merchant-ambient-backdrop__video {
+    object-position: center 30%;
+    filter: saturate(.92) contrast(1.02);
+  }
+  .npc-forge-equipment-storefront.is-merchant-panel-pivot > .forge-equipment-stage-backdrop .merchant-ambient-backdrop__shade {
+    background:
+      linear-gradient(90deg, rgba(4,6,10,.28) 0%, rgba(4,6,10,.20) 30%, rgba(7,6,12,.46) 59%, rgba(8,7,14,.68) 100%),
+      linear-gradient(180deg, rgba(5,6,10,.22), rgba(5,6,10,.12) 44%, rgba(5,6,10,.44));
+  }
+
+  .forge-equipment-vendor-frame {
+    grid-template-columns: 160px minmax(0,1fr);
+    gap: 5px;
+    padding: 5px;
+  }
+
+  .forge-equipment-vendor-frame > .merchant-rail {
+    border-color: rgba(255,255,255,.10);
+    border-radius: 10px;
+    background: linear-gradient(180deg, rgba(10,13,22,.70), rgba(6,9,15,.78));
+    box-shadow: 0 10px 28px rgba(0,0,0,.18);
+    backdrop-filter: none;
+  }
+
+  .forge-equipment-merchant-panel {
+    overflow: visible;
+    border-color: rgba(255,255,255,.08);
+    border-radius: 10px;
+    background: rgba(8,8,14,.22);
+    box-shadow: 0 12px 30px rgba(0,0,0,.18);
+  }
+  .forge-equipment-merchant-panel .merchant-market-header {
+    position: relative;
+    z-index: 50;
+    padding: 7px 9px;
+    border-bottom-color: rgba(255,255,255,.10);
+    background: linear-gradient(90deg, rgba(35,22,54,.76), rgba(54,34,82,.64));
+    box-shadow: 0 7px 22px rgba(0,0,0,.16);
+    backdrop-filter: none;
+  }
+  .forge-equipment-merchant-panel .merchant-market-title {
+    font-size: clamp(.86rem, 1.02vw, 1.02rem);
+  }
+  .forge-equipment-merchant-panel .merchant-market-subline {
+    font-size: .60rem;
+  }
+  .forge-equipment-merchant-panel .merchant-market-kicker {
+    font-size: .49rem;
+  }
+
+  /* Give the merchant art most of the width reclaimed from the preview. */
+  .forge-equipment-merchant-panel .merchant-market-shell {
+    grid-template-columns: minmax(330px, 1.12fr) minmax(0, 1.88fr);
+    border-radius: 0 0 10px 10px;
+    overflow: hidden;
+    background: transparent;
+  }
+  .forge-equipment-vendor-scene {
+    border-right-color: rgba(255,255,255,.09);
+    background-color: rgba(8,10,15,.20);
+  }
+  .forge-equipment-vendor-scene .merchant-scene-scrim {
+    background:
+      linear-gradient(90deg, rgba(7,7,11,.06), rgba(7,7,11,.12) 62%, rgba(7,7,11,.36)),
+      linear-gradient(180deg, rgba(7,7,11,.04), rgba(7,7,11,.12) 60%, rgba(7,7,11,.72));
+  }
+
+  .forge-equipment-merchant-stock {
+    padding: 8px;
+    background: linear-gradient(180deg, rgba(15,11,24,.58), rgba(8,8,14,.70));
+    backdrop-filter: none;
+  }
+  .forge-equipment-merchant-panel .merchant-stock-toolbar {
+    grid-template-columns: minmax(185px,.68fr) minmax(0,1.32fr);
+    gap: 7px;
+    margin-bottom: 7px;
+  }
+  .forge-equipment-merchant-panel .merchant-search-field .form-control {
+    background: rgba(7,9,15,.62);
+    border-color: rgba(255,255,255,.11);
+  }
+  .forge-equipment-merchant-panel .merchant-category-chip {
+    border-color: rgba(255,255,255,.10);
+    background: rgba(8,9,15,.50);
+    backdrop-filter: none;
+  }
+
+  /* Roughly one-third narrower preview than the previous Forge split. */
+  .forge-equipment-merchant-panel .merchant-stock-layout {
+    grid-template-columns: minmax(300px,1fr) minmax(220px,.60fr);
+    gap: 7px;
+  }
+  .forge-equipment-merchant-panel .merchant-stock-list {
+    gap: 5px;
+  }
+  .forge-equipment-merchant-panel .merchant-stock-row {
+    padding: 6px 7px;
+    border-color: rgba(255,255,255,.10);
+    border-radius: 8px;
+    background: linear-gradient(180deg, rgba(34,27,49,.62), rgba(19,17,30,.72));
+    backdrop-filter: none;
+  }
+  .forge-equipment-merchant-panel .merchant-stock-row:hover {
+    background: linear-gradient(180deg, rgba(48,36,70,.72), rgba(25,20,39,.82));
+  }
+  .forge-equipment-merchant-panel .merchant-stock-row-head strong {
+    font-size: .67rem;
+  }
+  .forge-equipment-merchant-panel .merchant-stock-row-head > span {
+    font-size: .60rem;
+  }
+  .forge-equipment-merchant-panel .merchant-stock-row-meta span {
+    padding: 2px 5px;
+    font-size: .47rem;
+  }
+  .forge-equipment-merchant-panel .merchant-stock-row p {
+    margin-top: 5px;
+    font-size: .55rem;
+    line-height: 1.31;
+  }
+
+  .forge-equipment-merchant-panel .merchant-preview-pane {
+    border-color: rgba(255,255,255,.11);
+    border-radius: 10px;
+    background:
+      radial-gradient(circle at top right, rgba(126,88,255,.10), transparent 35%),
+      rgba(10,9,17,.60);
+    backdrop-filter: none;
+  }
+  .forge-equipment-merchant-panel .merchant-preview-head {
+    padding: 7px 8px;
+    background: rgba(7,8,13,.44);
+  }
+  .forge-equipment-merchant-panel .merchant-preview-head h3 {
+    font-size: .76rem;
+  }
+  .forge-equipment-merchant-panel .merchant-preview-card-scroll {
+    padding: 7px;
+    background: rgba(6,7,12,.24);
+  }
+  .forge-equipment-merchant-panel .merchant-preview-purchase {
+    grid-template-columns: auto auto minmax(100px,1fr);
+    gap: 5px;
+    padding: 6px 7px;
+    background: rgba(7,8,13,.62);
+  }
+
+  /* The cart replaces the old standalone GP badge in the top-right. It starts
+     minimized and opens over the storefront without changing panel geometry. */
+  .forge-equipment-merchant-panel .merchant-market-header-actions {
+    position: relative;
+    flex: 0 0 auto;
+    overflow: visible;
+  }
+  .npc-forge-equipment-summary-dock.is-header {
+    position: relative;
+    z-index: 70;
+    display: block;
+    width: 250px;
+    min-width: 230px;
+    overflow: visible;
+    border-color: rgba(168,108,255,.26);
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(18,14,30,.82), rgba(9,12,20,.78));
+    box-shadow: 0 8px 22px rgba(0,0,0,.18);
+    backdrop-filter: none;
+  }
+  .npc-forge-equipment-summary-dock.is-header .npc-forge-equipment-summary-dock__head {
+    min-height: 38px;
+    padding: 5px 6px 5px 8px;
+    cursor: default;
+    border-radius: inherit;
+    background: linear-gradient(90deg, rgba(126,72,199,.08), rgba(88,214,199,.02));
+  }
+  .npc-forge-equipment-summary-dock.is-header .npc-forge-equipment-summary-dock__head span {
+    font-size: .42rem;
+  }
+  .npc-forge-equipment-summary-dock.is-header .npc-forge-equipment-summary-dock__head strong {
+    font-size: .69rem;
+  }
+  .npc-forge-equipment-summary-dock.is-header .npc-forge-equipment-summary-dock__head-actions em {
+    font-size: .43rem;
+  }
+  .npc-forge-equipment-summary-dock.is-header .npc-forge-equipment-summary-dock__head-actions button {
+    width: 22px;
+    height: 22px;
+    font-size: .70rem;
+  }
+  .npc-forge-equipment-summary-dock.is-header:not(.is-collapsed) .npc-forge-equipment-summary-dock__body {
+    position: absolute;
+    top: calc(100% + 5px);
+    right: 0;
+    z-index: 90;
+    width: min(370px, calc(100vw - 40px));
+    max-height: min(62vh, 590px);
+    overflow-y: auto;
+    padding: 8px;
+    border: 1px solid rgba(168,108,255,.30);
+    border-radius: 10px;
+    background: linear-gradient(155deg, rgba(15,18,28,.96), rgba(9,12,20,.97));
+    box-shadow: 0 20px 48px rgba(0,0,0,.44);
+    backdrop-filter: none;
+  }
+}
+
+@media (max-width: 1180px) and (min-width: 901px) {
+  .forge-equipment-vendor-frame {
+    grid-template-columns: 150px minmax(0,1fr);
+  }
+  .forge-equipment-merchant-panel .merchant-market-shell {
+    grid-template-columns: minmax(275px,.95fr) minmax(0,1.65fr);
+  }
+  .forge-equipment-merchant-panel .merchant-stock-layout {
+    grid-template-columns: minmax(270px,1fr) minmax(210px,.64fr);
+  }
+  .npc-forge-equipment-summary-dock.is-header {
+    width: 230px;
+  }
+}
+
+
+/* 2026-10-13 Forge sharpness + stock-scroll correction.
+   Keep the integrated transparent surfaces, but do not blur the merchant art
+   beneath them. One bounded stock-layout region owns the available list height. */
+@media (min-width: 901px) {
+  .npc-forge-equipment-storefront.is-merchant-panel-pivot > .forge-equipment-stage-backdrop .merchant-ambient-backdrop__image,
+  .npc-forge-equipment-storefront.is-merchant-panel-pivot > .forge-equipment-stage-backdrop .merchant-ambient-backdrop__video {
+    filter: none !important;
+  }
+
+  .forge-equipment-vendor-frame > .merchant-rail,
+  .forge-equipment-merchant-panel .merchant-market-header,
+  .forge-equipment-merchant-stock,
+  .forge-equipment-merchant-panel .merchant-category-chip,
+  .forge-equipment-merchant-panel .merchant-stock-row,
+  .forge-equipment-merchant-panel .merchant-preview-pane,
+  .npc-forge-equipment-summary-dock.is-header,
+  .npc-forge-equipment-summary-dock.is-header:not(.is-collapsed) .npc-forge-equipment-summary-dock__body {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .forge-equipment-merchant-panel .merchant-market-shell {
+    min-height: 0;
+  }
+
+  .forge-equipment-merchant-stock {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .forge-equipment-merchant-panel .merchant-stock-layout {
+    flex: 1 1 0;
+    min-height: 0;
+    height: 0;
+    max-height: 100%;
+    overflow: hidden;
+  }
+
+  .forge-equipment-merchant-panel .merchant-stock-list {
+    min-height: 0;
+    height: 100%;
+    max-height: 100%;
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+
+  .forge-equipment-merchant-panel .merchant-preview-pane {
+    min-height: 0;
+    height: 100%;
+    max-height: 100%;
+  }
+
+  .forge-equipment-merchant-panel .merchant-preview-card-scroll {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+
+
+/* 2026-10-13 MerchantPanel vertical-balance pass.
+   The cart now lives in the storefront header, so the old auto row is dead space.
+   Give the vendor frame the full Equipment body height, then spend that height on
+   taller merchant art and a denser scrollable stock list. Keep the selected
+   ItemCard fully expanded and independently scrollable. */
+@media (min-width: 901px) {
+  .unified-player-character-forge .npc-forge-body.npc-forge-step-equipment.is-player-mode > .npc-forge-workspace {
+    padding: 3px 5px 5px !important;
+  }
+
+  .npc-forge-equipment-storefront.is-merchant-panel-pivot {
+    grid-template-rows: minmax(0,1fr);
+    gap: 0;
+  }
+
+  .forge-equipment-vendor-frame {
+    height: 100%;
+    min-height: 0;
+    padding: 2px;
+    gap: 4px;
+  }
+
+  .forge-equipment-merchant-panel .merchant-market-header {
+    padding: 5px 8px;
+    min-height: 0;
+  }
+  .forge-equipment-merchant-panel .merchant-market-kicker {
+    line-height: 1.05;
+  }
+  .forge-equipment-merchant-panel .merchant-market-title {
+    margin-top: 1px;
+    line-height: 1.05;
+  }
+  .forge-equipment-merchant-panel .merchant-market-subline {
+    margin-top: 1px;
+    line-height: 1.1;
+  }
+
+  .npc-forge-equipment-summary-dock.is-header {
+    width: 238px;
+    min-width: 220px;
+  }
+  .npc-forge-equipment-summary-dock.is-header .npc-forge-equipment-summary-dock__head {
+    min-height: 32px;
+    padding: 3px 5px 3px 7px;
+  }
+  .npc-forge-equipment-summary-dock.is-header .npc-forge-equipment-summary-dock__head-actions button {
+    width: 20px;
+    height: 20px;
+  }
+
+  .forge-equipment-merchant-stock {
+    padding: 5px 6px 6px;
+  }
+  .forge-equipment-merchant-panel .merchant-stock-toolbar {
+    gap: 5px;
+    margin-bottom: 5px;
+  }
+  .forge-equipment-merchant-panel .merchant-search-field {
+    gap: 2px;
+  }
+  .forge-equipment-merchant-panel .merchant-search-field .form-control {
+    min-height: 25px;
+    padding-block: .18rem;
+  }
+  .forge-equipment-merchant-panel .merchant-category-row {
+    gap: 4px;
+    padding-bottom: 0;
+  }
+  .forge-equipment-merchant-panel .merchant-category-chip {
+    padding: 4px 7px;
+  }
+
+  .forge-equipment-merchant-panel .merchant-stock-list {
+    gap: 4px;
+  }
+  .forge-equipment-merchant-panel .merchant-stock-row {
+    padding: 5px 7px;
+  }
+  .forge-equipment-merchant-panel .merchant-stock-row-meta {
+    gap: 3px;
+    margin-top: 3px;
+  }
+  .forge-equipment-merchant-panel .merchant-stock-row p {
+    -webkit-line-clamp: 1;
+    margin-top: 3px;
+    line-height: 1.24;
+  }
+
+  .forge-equipment-merchant-panel .merchant-preview-head {
+    padding: 6px 8px;
+  }
+  .forge-equipment-merchant-panel .merchant-preview-card-scroll {
+    padding: 6px;
+  }
+  .forge-equipment-merchant-panel .merchant-preview-purchase {
+    padding: 5px 6px;
+  }
+
+  /* Let the merchant artwork use every reclaimed vertical pixel. */
+  .forge-equipment-vendor-scene,
+  .forge-equipment-vendor-scene > .forge-equipment-vendor-ambient,
+  .forge-equipment-vendor-scene > .forge-equipment-vendor-ambient .merchant-ambient-backdrop__image,
+  .forge-equipment-vendor-scene > .forge-equipment-vendor-ambient .merchant-ambient-backdrop__video {
+    height: 100%;
+    min-height: 0;
+  }
+}
+
+
+/* 2026-10-13 MerchantPanel-height parity correction.
+   The earlier pass compressed children inside a short Forge canvas. Instead,
+   make the Equipment Forge window itself fill the same usable desktop height as
+   the normal profile/merchant window, then restore MerchantPanel-like row/chrome
+   proportions inside that taller canvas. */
+@media (min-width: 981px) {
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment:not(.is-app-windowed) {
+    height: calc(100dvh - var(--dndnext-window-nav-offset, 58px) - 32px) !important;
+    max-height: calc(100dvh - var(--dndnext-window-nav-offset, 58px) - 32px) !important;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment > .npc-forge-body.npc-forge-step-equipment {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .npc-forge-body.npc-forge-step-equipment > .npc-forge-workspace {
+    height: 100%;
+    min-height: 0;
+    padding: 8px 10px 10px !important;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .npc-forge-equipment-storefront.is-merchant-panel-pivot {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-vendor-frame {
+    height: 100%;
+    min-height: 0;
+    padding: 5px;
+    gap: 5px;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-market-header {
+    padding: 7px 9px;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .npc-forge-equipment-summary-dock.is-header {
+    width: 250px;
+    min-width: 230px;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .npc-forge-equipment-summary-dock.is-header .npc-forge-equipment-summary-dock__head {
+    min-height: 38px;
+    padding: 5px 6px 5px 8px;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .npc-forge-equipment-summary-dock.is-header .npc-forge-equipment-summary-dock__head-actions button {
+    width: 22px;
+    height: 22px;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-stock {
+    padding: 8px;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-toolbar {
+    gap: 7px;
+    margin-bottom: 7px;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-search-field {
+    gap: 4px;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-search-field .form-control {
+    min-height: 28px;
+    padding-block: .25rem;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-category-row {
+    gap: 5px;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-category-chip {
+    padding: 5px 8px;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-list {
+    gap: 6px;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row {
+    padding: 7px 8px;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row-meta {
+    gap: 4px;
+    margin-top: 5px;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row p {
+    -webkit-line-clamp: 2;
+    margin-top: 6px;
+    line-height: 1.35;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-preview-head {
+    padding: 9px 10px;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-preview-card-scroll {
+    padding: 9px;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-preview-purchase {
+    padding: 8px 9px;
+    gap: 7px;
+  }
+}
+
+
+/* 2026-10-13 MerchantPanel horizontal-balance pass.
+   Equipment's middle stock column remained substantially wider than the normal
+   MerchantPanel while the selected ItemCard was narrower. Move toward the
+   MerchantPanel balance without making the stock bubbles too narrow for a
+   future small leading item-icon slot. */
+@media (min-width: 1181px) {
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-layout {
+    grid-template-columns: minmax(285px, 1.08fr) minmax(300px, .92fr);
+    gap: 8px;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row {
+    min-width: 0;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row-head,
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row-meta,
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row p {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 1180px) and (min-width: 981px) {
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-layout {
+    grid-template-columns: minmax(260px, 1fr) minmax(280px, .86fr);
+    gap: 7px;
+  }
+}
+
+
+/* 2026-10-13 Equipment readability + full rarity-outline pass.
+   Match the normal MerchantPanel's small-text floor and restore the canonical
+   rarity palette on the active Forge stock rows. The rarity accent surrounds
+   the whole stock bubble; the left edge remains slightly stronger for scanning. */
+@media (min-width: 981px) {
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-market-kicker {
+    font-size: .54rem;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-market-subline {
+    font-size: .66rem;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-search-field {
+    font-size: .60rem;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-search-field .form-control {
+    font-size: .70rem;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-category-chip {
+    font-size: .59rem;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row-head strong {
+    font-size: .72rem;
+    line-height: 1.22;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row-head > span {
+    font-size: .68rem;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row-meta span {
+    font-size: .52rem;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row p {
+    font-size: .60rem;
+    line-height: 1.35;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-vendor-frame > .merchant-rail .merchant-rail__head span {
+    font-size: .60rem !important;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-vendor-frame > .merchant-rail .merchant-rail__head small {
+    font-size: .49rem !important;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-vendor-frame > .merchant-rail .merchant-rail__merchant-copy strong {
+    font-size: .62rem;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-vendor-frame > .merchant-rail .merchant-rail__merchant-copy em {
+    font-size: .58rem;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-vendor-frame > .merchant-rail .merchant-rail__merchant-copy small {
+    font-size: .45rem;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row {
+    --rarity-color: #aab2bd;
+    border: 1px solid color-mix(in srgb, var(--rarity-color) 68%, rgba(255,255,255,.16));
+    border-left-width: 4px;
+    border-left-color: var(--rarity-color);
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.rarity-common {
+    --rarity-color: #ced4da;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.rarity-mundane,
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.rarity-none {
+    --rarity-color: #aab2bd;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.rarity-uncommon {
+    --rarity-color: #55d17a;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.rarity-rare {
+    --rarity-color: #5aa7f3;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.rarity-very-rare {
+    --rarity-color: #a67cf3;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.rarity-legendary {
+    --rarity-color: #f3b24d;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.rarity-artifact {
+    --rarity-color: #e85d5d;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row:hover {
+    border-color: color-mix(in srgb, var(--rarity-color) 80%, white);
+    border-left-color: var(--rarity-color);
+    box-shadow:
+      inset 4px 0 0 color-mix(in srgb, var(--rarity-color) 76%, transparent),
+      0 0 0 1px color-mix(in srgb, var(--rarity-color) 18%, transparent),
+      0 8px 22px rgba(0,0,0,.20);
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.selected {
+    border-color: color-mix(in srgb, var(--rarity-color) 88%, white);
+    border-left-color: var(--rarity-color);
+    background:
+      linear-gradient(180deg,
+        color-mix(in srgb, var(--rarity-color) 10%, rgba(34,27,49,.78)),
+        color-mix(in srgb, var(--rarity-color) 7%, rgba(19,17,30,.84)));
+    box-shadow:
+      inset 4px 0 0 var(--rarity-color),
+      0 0 0 1px color-mix(in srgb, var(--rarity-color) 28%, transparent),
+      0 8px 22px rgba(0,0,0,.22);
+  }
+}
+
+
+/* 2026-10-13 Equipment ItemCard readability bump.
+   MerchantStorefront shared density rules intentionally stay compact; Equipment
+   gets a slightly larger type floor because its selected-card pane is now wide
+   enough to support it without changing card dimensions. */
+@media (min-width: 981px) {
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-title {
+    font-size: 1.04rem;
+    line-height: 1.2;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-type {
+    font-size: .62rem;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-meta {
+    font-size: .73rem;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-rarity {
+    font-size: .75rem;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-section {
+    font-size: .74rem;
+    line-height: 1.52;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-section .small,
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .text-muted {
+    font-size: .64rem !important;
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .badge {
+    font-size: .61rem;
+  }
+}
+
+
+/* 2026-10-13 Equipment purchase-footer + rarity-energy pass.
+   Cart owns all budget tracking. Selected-item strip is removed in Forge, price
+   moves to the purchase footer, cart fills the header action lane, and every
+   stock row carries a strong always-on rarity treatment. */
+@media (min-width: 981px) {
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-market-header {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) minmax(270px, 32%);
+    align-items: stretch;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-market-header-actions {
+    width: 100%;
+    min-width: 0;
+    align-self: stretch;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .npc-forge-equipment-summary-dock.is-header {
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .npc-forge-equipment-summary-dock.is-header .npc-forge-equipment-summary-dock__head {
+    height: 100%;
+    min-height: 100%;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .merchant-preview-pane {
+    grid-template-rows: minmax(0,1fr) auto;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .merchant-preview-card-scroll {
+    padding-top: 7px;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .merchant-preview-purchase {
+    grid-template-columns: auto auto minmax(132px,1fr);
+    align-items: end;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .merchant-preview-purchase > div:first-child strong {
+    color: #f8d56b;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row {
+    border-color: color-mix(in srgb, var(--rarity-color) 90%, #171823 10%);
+    background:
+      radial-gradient(circle at 8% 0%,
+        color-mix(in srgb, var(--rarity-color) 15%, transparent) 0%,
+        transparent 42%),
+      linear-gradient(145deg,
+        color-mix(in srgb, var(--rarity-color) 14%, rgba(34,27,49,.86)) 0%,
+        color-mix(in srgb, var(--rarity-color) 9%, rgba(18,16,29,.91)) 62%,
+        rgba(12,12,20,.94) 100%);
+    box-shadow:
+      inset 4px 0 0 var(--rarity-color),
+      0 0 0 1px color-mix(in srgb, var(--rarity-color) 18%, transparent),
+      0 0 11px color-mix(in srgb, var(--rarity-color) 19%, transparent),
+      0 7px 18px rgba(0,0,0,.20);
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row:hover {
+    border-color: color-mix(in srgb, var(--rarity-color) 96%, white 4%);
+    background:
+      radial-gradient(circle at 8% 0%,
+        color-mix(in srgb, var(--rarity-color) 20%, transparent) 0%,
+        transparent 45%),
+      linear-gradient(145deg,
+        color-mix(in srgb, var(--rarity-color) 18%, rgba(42,31,60,.88)) 0%,
+        color-mix(in srgb, var(--rarity-color) 12%, rgba(21,17,34,.93)) 68%,
+        rgba(12,12,20,.95) 100%);
+    box-shadow:
+      inset 4px 0 0 var(--rarity-color),
+      0 0 0 1px color-mix(in srgb, var(--rarity-color) 30%, transparent),
+      0 0 14px color-mix(in srgb, var(--rarity-color) 26%, transparent),
+      0 8px 22px rgba(0,0,0,.24);
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.selected {
+    border-color: color-mix(in srgb, var(--rarity-color) 94%, white 6%);
+    background:
+      radial-gradient(circle at 9% -5%,
+        color-mix(in srgb, var(--rarity-color) 30%, transparent) 0%,
+        transparent 46%),
+      linear-gradient(145deg,
+        color-mix(in srgb, var(--rarity-color) 25%, rgba(45,31,64,.92)) 0%,
+        color-mix(in srgb, var(--rarity-color) 17%, rgba(22,17,36,.96)) 65%,
+        rgba(12,12,20,.97) 100%);
+    box-shadow:
+      inset 5px 0 0 var(--rarity-color),
+      0 0 0 2px color-mix(in srgb, var(--rarity-color) 38%, transparent),
+      0 0 20px color-mix(in srgb, var(--rarity-color) 38%, transparent),
+      0 10px 26px rgba(0,0,0,.28);
+    transform: translateY(-1px);
+  }
+}
+
+@media (max-width: 1180px) and (min-width: 981px) {
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-market-header {
+    grid-template-columns: minmax(0,1fr) minmax(235px, 34%);
+  }
+}
+
+
+/* 2026-10-13 Forge cart-edge + dark-rarity parity pass.
+   Shared MerchantPanel rarity styling lives in merchant-storefront.css; these
+   selectors only neutralize older Forge-specific bright overrides and remove
+   the remaining inset space around the header cart. */
+@media (min-width: 981px) {
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.rarity-none,
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.rarity-mundane {
+    --rarity-color: var(--merchant-rarity-mundane);
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.rarity-common {
+    --rarity-color: var(--merchant-rarity-common);
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.rarity-uncommon {
+    --rarity-color: var(--merchant-rarity-uncommon);
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.rarity-rare {
+    --rarity-color: var(--merchant-rarity-rare);
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.rarity-very-rare {
+    --rarity-color: var(--merchant-rarity-very-rare);
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.rarity-legendary {
+    --rarity-color: var(--merchant-rarity-legendary);
+  }
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.rarity-artifact {
+    --rarity-color: var(--merchant-rarity-artifact);
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row {
+    border-color: color-mix(in srgb, var(--rarity-color) 92%, #11131a 8%);
+    background:
+      radial-gradient(circle at 8% -12%,
+        color-mix(in srgb, var(--rarity-color) 24%, transparent) 0%,
+        transparent 44%),
+      linear-gradient(145deg,
+        color-mix(in srgb, var(--rarity-color) 22%, #221b31 78%) 0%,
+        color-mix(in srgb, var(--rarity-color) 13%, #161420 87%) 62%,
+        #0d0e15 100%);
+    box-shadow:
+      inset 4px 0 0 var(--rarity-color),
+      0 0 0 1px color-mix(in srgb, var(--rarity-color) 20%, transparent),
+      0 0 12px color-mix(in srgb, var(--rarity-color) 28%, transparent),
+      0 7px 18px rgba(0,0,0,.22);
+    transform: none;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row:hover,
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row:focus-visible {
+    border-color: color-mix(in srgb, var(--rarity-color) 90%, white 10%);
+    background:
+      radial-gradient(circle at 8% -12%,
+        color-mix(in srgb, var(--rarity-color) 31%, transparent) 0%,
+        transparent 46%),
+      linear-gradient(145deg,
+        color-mix(in srgb, var(--rarity-color) 29%, #281e38 71%) 0%,
+        color-mix(in srgb, var(--rarity-color) 18%, #181522 82%) 64%,
+        #0d0e15 100%);
+    box-shadow:
+      inset 4px 0 0 var(--rarity-color),
+      0 0 0 1px color-mix(in srgb, var(--rarity-color) 38%, transparent),
+      0 0 18px color-mix(in srgb, var(--rarity-color) 44%, transparent),
+      0 9px 24px rgba(0,0,0,.27);
+    animation: merchant-rarity-breathe 3.2s ease-in-out infinite;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.selected {
+    border-color: color-mix(in srgb, var(--rarity-color) 88%, white 12%);
+    background:
+      radial-gradient(circle at 10% -14%,
+        color-mix(in srgb, var(--rarity-color) 40%, transparent) 0%,
+        transparent 48%),
+      linear-gradient(145deg,
+        color-mix(in srgb, var(--rarity-color) 35%, #2a203b 65%) 0%,
+        color-mix(in srgb, var(--rarity-color) 22%, #191623 78%) 64%,
+        #0c0d14 100%);
+    box-shadow:
+      inset 5px 0 0 var(--rarity-color),
+      0 0 0 2px color-mix(in srgb, var(--rarity-color) 48%, transparent),
+      0 0 23px color-mix(in srgb, var(--rarity-color) 56%, transparent),
+      0 10px 28px rgba(0,0,0,.30);
+    animation: merchant-rarity-breathe 3.5s ease-in-out infinite;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-market-header {
+    padding: 0 !important;
+    overflow: visible;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-market-heading {
+    align-self: stretch;
+    padding: 7px 9px;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-market-header-actions {
+    align-self: stretch;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .npc-forge-equipment-summary-dock.is-header {
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    margin: 0;
+    border-radius: 0 9px 0 0;
+    border-top-width: 0;
+    border-right-width: 0;
+    border-bottom-width: 0;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .npc-forge-equipment-summary-dock.is-header .npc-forge-equipment-summary-dock__head {
+    height: 100%;
+    min-height: 100%;
+    padding: 7px 9px 7px 11px;
+    border-radius: inherit;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .npc-forge-equipment-summary-dock.is-header .npc-forge-equipment-summary-dock__head-actions {
+    gap: 8px;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .npc-forge-equipment-summary-dock.is-header .npc-forge-equipment-summary-dock__head-actions em {
+    padding: .22rem .5rem;
+    border: 1px solid rgba(91,224,201,.24);
+    border-radius: .5rem;
+    background: rgba(34,138,121,.16);
+    color: #bfffee;
+    font-size: .72rem;
+    font-style: normal;
+    font-weight: 850;
+    line-height: 1;
+    letter-spacing: .015em;
+    white-space: nowrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row:hover,
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row:focus-visible,
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row.selected {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
+
+/* 2026-10-15 Equipment 90%-view balance pass.
+   Give the selected ItemCard a little more horizontal room while preserving a
+   useful stock-list width, and raise the readable type floor rather than browser-scaling. */
+@media (min-width: 1181px) {
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-layout {
+    grid-template-columns: minmax(270px, 1.02fr) minmax(320px, .98fr);
+    gap: 7px;
+  }
+}
+
+@media (max-width: 1180px) and (min-width: 981px) {
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-layout {
+    grid-template-columns: minmax(245px, 1fr) minmax(295px, .92fr);
+    gap: 6px;
+  }
+}
+
+@media (min-width: 981px) {
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-vendor-frame {
+    gap: 3px;
+    padding: 1px;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row {
+    padding: .48rem .56rem;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row-head strong {
+    font-size: .77rem;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row-head > span {
+    font-size: .71rem;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row-meta span {
+    font-size: .56rem;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row p {
+    display: block !important;
+    min-width: 0;
+    margin-top: .34rem;
+    font-size: .72rem;
+    line-height: 1.32;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -webkit-line-clamp: unset !important;
+    -webkit-box-orient: initial !important;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-title {
+    font-size: 1.08rem;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-type {
+    font-size: .65rem;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-meta,
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-rarity {
+    font-size: .78rem;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-section,
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-field__value,
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-rule-trait__body {
+    font-size: .77rem;
+    line-height: 1.5;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-field__label,
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-rule-trait > summary {
+    font-size: .68rem;
+  }
 }

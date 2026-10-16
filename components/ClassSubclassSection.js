@@ -185,6 +185,7 @@ export default function ClassSubclassSection({
   classKey = "",
   onInspectSubclass = null,
   detailed = false,
+  selectedSupplement = null,
 }) {
   const options = model?.options || [];
   const selected = model?.selected || null;
@@ -590,6 +591,7 @@ export default function ClassSubclassSection({
             <div className="class-subclass-selected-card__copy">
               <strong>{selected.name}</strong>
               <button type="button" onClick={() => inspectOption(selected, true)} aria-label={`Open the ${selected.name} subclass Codex.`}>Open Codex</button>
+              {selectedSupplement}
             </div>
           </div>
         ) : (
