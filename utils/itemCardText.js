@@ -62,11 +62,33 @@ export function looksMechanicalItemText(value = "") {
   return MECHANICAL_TEXT_RE.test(clean(value));
 }
 
+function chunkLongItemParagraph(paragraph = "", target = 430) {
+  const source = safe(paragraph);
+  if (source.length <= 650) return source ? [source] : [];
+
+  const sentences = source.split(/(?<=[.!?])\s+(?=[A-Z0-9"'“])/).map((part) => part.trim()).filter(Boolean);
+  if (sentences.length < 2) return [source];
+
+  const chunks = [];
+  let current = "";
+  for (const sentence of sentences) {
+    if (current && current.length + sentence.length + 1 > target) {
+      chunks.push(current);
+      current = sentence;
+    } else {
+      current = [current, sentence].filter(Boolean).join(" ");
+    }
+  }
+  if (current) chunks.push(current);
+  return chunks;
+}
+
 export function splitItemCardParagraphs(value = "") {
   return clean(value)
     .split(/\n\s*\n+/)
     .map((part) => part.trim())
-    .filter(Boolean);
+    .filter(Boolean)
+    .flatMap((part) => chunkLongItemParagraph(part));
 }
 
 export function leadingItemEntryReference(value = "") {
