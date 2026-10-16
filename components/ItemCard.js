@@ -571,6 +571,33 @@ function normalizedComparableText(value = "") {
     .toLowerCase();
 }
 
+function craftedAlchemyFlavorText(item = {}, flavorIndex = null, exactOverride = "") {
+  const exact = playerText(exactOverride || "");
+  if (exact && !looksMechanicalItemText(exact)) return exact;
+
+  const stored = playerText(item.flavor || "");
+  if (stored && !looksMechanicalItemText(stored)) return stored;
+
+  const blob = [item.item_type, item.type, item.category, item.item_name, item.name]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  const familyName = /\bbomb\b/.test(blob)
+    ? "Bomb"
+    : /\belixir\b/.test(blob)
+      ? "Elixir"
+      : /\boil\b/.test(blob)
+        ? "Oil"
+        : /\bpoison\b/.test(blob)
+          ? "Poison"
+          : /\bpotion\b/.test(blob)
+            ? "Potion"
+            : "";
+
+  const family = familyName && flavorIndex ? playerText(flavorIndex.get(familyName) || "") : "";
+  return family && !looksMechanicalItemText(family) ? family : "";
+}
+
 function merchantCraftedAlchemyDetails(item = {}) {
   const alchemy = item?.alchemy && typeof item.alchemy === "object" ? item.alchemy : {};
   const merchantCraft = item?.merchant_craft && typeof item.merchant_craft === "object" ? item.merchant_craft : {};
@@ -579,7 +606,9 @@ function merchantCraftedAlchemyDetails(item = {}) {
   const isMerchantCrafted = Boolean(item.merchant_crafted || item.merchantCrafted || merchantCraft.crafted || alchemy.merchantCrafted);
   if (!isCraftedProduct || !isMerchantCrafted) return null;
 
-  const effect = coalesce(item.effect_text, item.item_description, item.effect, alchemyResult.effect, merchantCraft.effect, alchemy.effect);
+  // Finished craft metadata is authoritative. Outer item fields can retain the
+  // recipe's base text after merchant enhancement, so only use them as fallback.
+  const effect = coalesce(alchemyResult.effect, merchantCraft.effect, alchemy.effect, item.effect_text, item.item_description, item.effect);
   const duration = coalesce(item.duration_text, item.duration, merchantCraft.duration, alchemyResult.duration, alchemy.duration);
   const use = coalesce(item.use_text, item.use, merchantCraft.use, alchemyResult.use, alchemy.use);
   const areaFeet = Number(coalesce(merchantCraft.area_feet, alchemyResult.areaFeet, item.area_feet, alchemy.areaFeet, alchemy.base_area_feet) || 0);
@@ -683,7 +712,9 @@ export default function ItemCard({
   const rawSourceRuleText = String(craftedAlchemy?.effect || coalesce(mergedItem.item_description, mergedItem.rulesText, mergedItem.rules, "") || "");
   const sharedRuleReference = leadingItemEntryReference(rawSourceRuleText);
   const sourceRuleText = playerText(stripLeadingItemEntryReference(rawSourceRuleText));
-  const sourceFlavorText = playerText(mergedItem.flavor || overrideFlavor || entryParagraphText || entriesText || "");
+  const sourceFlavorText = craftedAlchemy
+    ? craftedAlchemyFlavorText(mergedItem, flavorIndex, overrideFlavor)
+    : playerText(mergedItem.flavor || overrideFlavor || entryParagraphText || entriesText || "");
   const narrativeLead = splitNarrativeLead(sourceRuleText);
   const duplicateSourceFlavor = Boolean(sourceFlavorText && sourceRuleText && normalizedComparableText(sourceFlavorText) === normalizedComparableText(sourceRuleText));
   const flavorText = narrativeLead.description || ((duplicateSourceFlavor && looksMechanicalItemText(sourceRuleText)) ? "" : sourceFlavorText);

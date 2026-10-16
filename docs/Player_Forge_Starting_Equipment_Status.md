@@ -1,3 +1,19 @@
+## 2026-10-16 merchant-crafted final-stat text + realized-stat pricing
+
+Video review exposed that merchant-crafted bombs could still show the catalog recipe's base mechanics in the top description while the structured fields showed the enhanced merchant result. The concrete calibration cases were Quill Ashborn's Bomb of Lightning and Bomb of Thunder: base 2d6 / 10-foot recipe prose could sit above final 5d6 / 17.5-foot or 4d6 / 15-foot fields.
+
+Merchant-crafted alchemy now treats the finished craft as one authoritative object. The database finalizer rewrites the finished effect text to the final area as well as final dice/duration, reconciles duplicate save/area metadata, and ItemCard suppresses stale mechanical recipe flavor. When no item-specific non-mechanical flavor exists, the renderer may use the existing generic family flavor (for example the existing Bomb flavor) rather than presenting obsolete base stats as flavor.
+
+Merchant-crafted alchemy sale prices now scale from the catalog base price using only realized improvements: damage/output gain, area/range gain, duration gain, extra doses, and save-DC bonuses. The premium is capped at 4× base price and rounded upward to a 5 gp shelf price. The payload records base price, crafted price, multiplier, and the pricing breakdown; a character_stock trigger keeps the checkout price synchronized with the crafted payload. Existing merchant stock is reconciled without rerolling its selected ingredients.
+
+The live calibration after this migration is:
+- Bomb of Lightning: 5d6 lightning, 17.5-foot burst, DC 15, 355 gp from a 150 gp base;
+- Bomb of Thunder: 4d6 thunder, 15-foot burst, DC 14, 270 gp from a 150 gp base;
+- Bomb of Necrotic: 5d6 necrotic, two doses, DC 17, about 1,000 gp from a 500 gp base;
+- Bomb of Petrification: 2 minutes 15 seconds, DC 18, 1,970 gp from a 1,500 gp base.
+
+This changes merchant-crafted alchemy presentation/economy only. It does not alter player crafting formulas, ingredient-selection rules, world/town map behavior, or tactical authority.
+
 ## 2026-10-15 locked ItemCard families implemented
 
 The eight approved ItemCard visual families are now represented in the shared source renderer instead of existing only as mockup/documentation targets. Weapon, Armor, Material, Recipe, Potion/Elixir, Bomb, Wondrous wearable, and Charged Wondrous/Rod cards receive family-specific field ordering while still consuming canonical item payloads.
