@@ -165,6 +165,14 @@ if (unresolvedReference.length) {
   throw new Error(`ItemCard audit found ${unresolvedReference.length} shared itemEntry references with no card-ready mechanic fallback; examples: ${sampleNames(unresolvedReference.map(({ row }) => row)).join(", ")}`);
 }
 
+if (missingText.length) {
+  throw new Error(`ItemCard audit found ${missingText.length} items with no player-facing description, derived reference effect, or canonical mechanic field; examples: ${sampleNames(missingText.map(({ row }) => row)).join(", ")}`);
+}
+
+if (copyWarnings.length) {
+  throw new Error(`Item copy resolution still has ${copyWarnings.length} unresolved source references: ${copyWarnings.slice(0, 8).join(" | ")}`);
+}
+
 console.log(JSON.stringify({
   audited_items: rows.length,
   source_rows_after_copy_resolution: sourceRows.length,
