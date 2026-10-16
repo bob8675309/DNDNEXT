@@ -1,3 +1,9 @@
+## 2026-10-16 tactical mitigation authority follow-up
+
+The DNDNext Resistance Ring mechanics are no longer card/catalog-only metadata. After explicit tactical review, the server-authoritative encounter damage resolver now reads structured mitigation from currently equipped inventory and matching canonical catalog rows. An equipped elemental Resistance Ring therefore applies its 10-point matching-element reduction first and its Resistance second during real tactical damage resolution. The tactical path uses structured `resist` / `damageReductionByType` fields only and does not infer mechanics from prose.
+
+The dedicated runtime contract and validation evidence live in `docs/Tactical_Encounter_Equipped_Damage_Mitigation_Status.md`.
+
 ## 2026-10-16 resistance-ring balance + staged Petrification + rule-link repair
 
 Merchant review found one stale stock row rather than a bad canonical item: `+2 Ring of Protection` was already Rare / 5,000 gp in `items_catalog` with its +2 Armor Class and +2 saving-throw rules, but Ilyra Glasshand still held an older Mundane / 1 gp stock payload from before item-copy inheritance was repaired. Existing stock is reconciled to the canonical catalog row, and future rerolls continue to source the corrected catalog payload.
