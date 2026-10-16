@@ -22,6 +22,7 @@ const copyResolver = read("scripts/lib/resolve_item_copies.mjs");
 const migration = read("sql/20261016_01_campaign_item_pool_final_constraints.sql");
 const balanceMigration = read("sql/20261016_05_resistance_rings_petrification_rules.sql");
 const balanceFixMigration = read("sql/20261016_06_fix_resistance_ring_element_labels.sql");
+const resistanceOrderMigration = read("sql/20261016_08_resistance_before_flat_reduction.sql");
 const campaignOverrides = read("scripts/lib/campaign_item_overrides.mjs");
 const forgeMerchant = read("components/NpcForgeMerchantMarket.js");
 const itemCardText = read("utils/itemCardText.js");
@@ -43,10 +44,10 @@ const fireRingFixture = applyCampaignItemRuleOverrides({
 if (fireRingFixture.item_rarity !== "uncommon" || Number(fireRingFixture.price_gp) !== 2000) {
   throw new Error("DNDNext Resistance Ring rarity/economy override failed.");
 }
-if (Number(fireRingFixture?.damageReductionByType?.fire) !== 10 || fireRingFixture.damageReductionBeforeResistance !== true) {
+if (Number(fireRingFixture?.damageReductionByType?.fire) !== 10 || fireRingFixture.damageReductionBeforeResistance !== false) {
   throw new Error("DNDNext Resistance Ring flat reduction override failed.");
 }
-if (!/reduce that damage by 10/i.test(fireRingFixture.item_description || "") || !/apply Resistance to the remaining damage/i.test(fireRingFixture.item_description || "")) {
+if (!/apply Resistance first/i.test(fireRingFixture.item_description || "") || !/reduce the remaining damage by 10/i.test(fireRingFixture.item_description || "")) {
   throw new Error("DNDNext Resistance Ring player-facing rule text failed.");
 }
 
@@ -232,7 +233,7 @@ for (const token of [
 ]) need(balanceMigration, token, "ring/bomb balance migration");
 need(balanceFixMigration, "split_part(split_part(item_name, 'Ring of ', 2), ' Resistance', 1)", "resistance-ring element hotfix");
 
-for (const source of [itemCard, references, globalDock, pool, merchant, merchantTheme, admin, buildItems, seedItems, copyResolver, migration, balanceMigration, balanceFixMigration, campaignOverrides, forgeMerchant, itemCardText]) {
+for (const source of [itemCard, references, globalDock, pool, merchant, merchantTheme, admin, buildItems, seedItems, copyResolver, migration, balanceMigration, balanceFixMigration, resistanceOrderMigration, campaignOverrides, forgeMerchant, itemCardText]) {
   for (const token of ["MapPageClient", "advance_all_characters_v3", "get_weather_for_biome_day_v1"]) {
     forbid(source, token, `protected world-map boundary ${token}`);
   }

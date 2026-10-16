@@ -322,7 +322,7 @@ export function canonicalItemMechanicFields(item = {}) {
       .map(([damageType, amount]) => {
         const numeric = Number(amount);
         if (!Number.isFinite(numeric) || numeric <= 0) return "";
-        return `${numeric} ${titleWord(damageType)} damage per instance${reductionBeforeResistance === false ? "" : " (before Resistance)"}`;
+        return `${numeric} ${titleWord(damageType)} damage per instance${reductionBeforeResistance === false ? " (after Resistance)" : " (before Resistance)"}`;
       })
       .filter(Boolean);
     if (reductions.length) push("Damage Reduction", reductions.join(", "), reductions.length > 1 ? 2 : 1);

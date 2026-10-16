@@ -38,8 +38,8 @@ The authoritative order is now:
 
 1. begin with non-negative raw typed damage;
 2. immunity reduces damage to 0;
-3. otherwise apply the highest equipped flat reduction for that damage type;
-4. apply Resistance to the remaining damage, rounding down;
+3. otherwise apply Resistance, rounding down;
+4. apply the highest equipped flat reduction for that damage type to the resisted damage;
 5. apply vulnerability to the remaining damage;
 6. temporary HP absorbs damage;
 7. remaining damage reduces current HP.
@@ -51,10 +51,10 @@ Flat reductions use the **highest applicable value**, not the sum of duplicate e
 An equipped `Ring of X Resistance` now functions exactly as its DNDNext campaign item data states:
 
 - Resistance to X damage;
-- reduce each matching damage instance by 10;
-- then halve the remaining damage through Resistance.
+- halve the matching damage first through Resistance;
+- then reduce the resisted damage by 10.
 
-Example: **30 Fire damage → 20 after the ring's flat reduction → 10 after Fire Resistance.**
+Example: **30 Fire damage → 15 after Fire Resistance → 5 after the ring's flat reduction.**
 
 The damage result now returns additional structured fields for later UI/log presentation:
 
@@ -75,10 +75,10 @@ A controlled runtime test used an existing archived encounter participant and a 
 Observed result:
 
 - raw Fire damage: 30;
-- catalog-derived flat reduction: 10;
-- damage after flat reduction: 20;
 - equipment-derived Fire Resistance: true;
-- final damage: 10;
+- damage after Resistance: 15;
+- catalog-derived flat reduction: 10;
+- final damage: 5;
 - mitigation source: `Ring of Fire Resistance`.
 
 A Cold lookup against the same ring returned no resistance and no flat reduction. The temporary test inventory row was removed and the encounter participant's original HP state was restored.
@@ -93,7 +93,7 @@ The guard verifies:
 - structured resistance/reduction keys;
 - catalog + inventory resolution;
 - maximum rather than additive flat reduction;
-- flat reduction occurs before Resistance;
+- Resistance occurs before flat reduction;
 - the new result envelope fields;
 - no item-prose inference;
 - no world-map movement/weather coupling.

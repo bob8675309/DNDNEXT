@@ -9,7 +9,7 @@ const clone = (value) => value == null ? value : JSON.parse(JSON.stringify(value
 function ringDescription(elementLabel) {
   return [
     `While wearing this ring, you have Resistance to ${elementLabel} damage.`,
-    `Each time you take ${elementLabel} damage, reduce that damage by 10 (minimum 0), then apply Resistance to the remaining damage.`,
+    `Each time you take ${elementLabel} damage, apply Resistance first, then reduce the remaining damage by 10 (minimum 0).`,
   ].join("\n\n");
 }
 
@@ -80,7 +80,7 @@ export function applyCampaignItemRuleOverrides(input = {}) {
     price_gp: 2000,
     resist: [element],
     damageReductionByType: { [element]: 10 },
-    damageReductionBeforeResistance: true,
+    damageReductionBeforeResistance: false,
     campaignRuleVariant: "DNDNext elemental resistance ring",
     item_description: description,
     rulesShort: description,

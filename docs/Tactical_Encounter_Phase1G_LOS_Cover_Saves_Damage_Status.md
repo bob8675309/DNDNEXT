@@ -12,7 +12,7 @@ This document extends the tactical encounter roadmap and Phase 1F weapon-combat 
 
 The original Phase 1G non-goal around canonical item affinity import has been partially superseded by an explicitly authorized follow-up. The tactical resolver now consumes **structured equipped-item** mitigation from `inventory_items` plus matching `items_catalog` rows. It does not scrape prose.
 
-For supported structured equipment, the current order is **immunity → flat reduction → Resistance → vulnerability → temporary HP → HP**. See `docs/Tactical_Encounter_Equipped_Damage_Mitigation_Status.md` for the exact contract and live verification.
+For supported structured equipment, the current order is **immunity → Resistance → flat reduction → vulnerability → temporary HP → HP**. See `docs/Tactical_Encounter_Equipped_Damage_Mitigation_Status.md` for the exact contract and live verification.
 
 ## Deterministic axial line tracing
 

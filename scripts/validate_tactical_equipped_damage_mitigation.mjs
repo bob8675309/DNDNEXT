@@ -1,6 +1,7 @@
 import fs from "node:fs";
 
 const source = fs.readFileSync("sql/20261016_07_equipped_item_damage_mitigation.sql", "utf8");
+const orderSource = fs.readFileSync("sql/20261016_08_resistance_before_flat_reduction.sql", "utf8");
 
 const need = (token, label = token) => {
   if (!source.includes(token)) throw new Error(`Missing ${label}: ${token}`);
@@ -29,10 +30,17 @@ for (const token of [
   "mitigationSources",
 ]) need(token);
 
-const flatIndex = source.indexOf("v_adjusted := greatest(0, v_adjusted - v_flat_reduction)");
-const resistanceIndex = source.indexOf("v_adjusted := floor(v_adjusted / 2.0)::integer");
-if (flatIndex < 0 || resistanceIndex < 0 || flatIndex >= resistanceIndex) {
-  throw new Error("Flat elemental reduction must be applied before Resistance.");
+const resistanceIndex = orderSource.indexOf("v_adjusted := floor(v_adjusted/2.0)::integer");
+const flatIndex = orderSource.indexOf("v_adjusted := greatest(0,v_adjusted-v_flat_reduction)");
+if (flatIndex < 0 || resistanceIndex < 0 || resistanceIndex >= flatIndex) {
+  throw new Error("Resistance must be applied before flat elemental reduction.");
+}
+for (const token of [
+  "damageAfterResistance",
+  "damageReductionBeforeResistance', false",
+  "apply Resistance first, then reduce the remaining damage by 10",
+]) {
+  if (!orderSource.includes(token)) throw new Error(`Missing resistance-first order guard: ${token}`);
 }
 
 for (const token of [
@@ -43,4 +51,4 @@ for (const token of [
   "get_weather_for_biome_day_v1",
 ]) forbid(token, "protected/prose inference boundary");
 
-console.log("Structured equipped-item damage mitigation and reduction-before-Resistance order validated.");
+console.log("Structured equipped-item damage mitigation and Resistance-before-reduction order validated.");
