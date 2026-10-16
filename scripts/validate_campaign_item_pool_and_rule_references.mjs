@@ -21,6 +21,53 @@ const seedItems = read("scripts/seed_items_catalog.mjs");
 const copyResolver = read("scripts/lib/resolve_item_copies.mjs");
 const migration = read("sql/20261016_01_campaign_item_pool_final_constraints.sql");
 
+
+const { resolveItemCopies } = await import("./lib/resolve_item_copies.mjs");
+const copyFixture = resolveItemCopies([
+  {
+    name: "Quest Plate (Dormant)",
+    source: "TEST",
+    uiType: "Armor",
+    rarity: "legendary",
+    item_rarity: "legendary",
+    price_gp: 15000,
+    item_description: "Dormant rules.",
+  },
+  {
+    name: "Quest Plate (Awakened)",
+    source: "TEST",
+    item_rarity: "mundane",
+    price_gp: 1,
+    _copy: {
+      name: "Quest Plate (Dormant)",
+      source: "TEST",
+      _mod: { entries: [{ mode: "appendArr", items: [{ name: "Awakened", entries: ["Awakened rules."] }] }] },
+    },
+  },
+  {
+    name: "Quest Plate (Exalted)",
+    source: "TEST",
+    item_rarity: "mundane",
+    price_gp: 1,
+    _copy: {
+      name: "Quest Plate (Awakened)",
+      source: "TEST",
+      _mod: { entries: [{ mode: "appendArr", items: [{ name: "Exalted", entries: ["Exalted rules."] }] }] },
+    },
+  },
+], { warn: () => {} });
+const awakenedFixture = copyFixture.find((row) => row.name.endsWith("(Awakened)"));
+const exaltedFixture = copyFixture.find((row) => row.name.endsWith("(Exalted)"));
+if (awakenedFixture?.item_rarity !== "legendary" || Number(awakenedFixture?.price_gp) !== 15000) {
+  throw new Error("Awakened copy did not inherit base rarity/economy.");
+}
+if (!/Dormant rules/.test(awakenedFixture?.item_description || "") || !/Awakened rules/.test(awakenedFixture?.item_description || "")) {
+  throw new Error("Awakened copy did not retain Dormant rules plus its appended state rules.");
+}
+if (!/Dormant rules/.test(exaltedFixture?.item_description || "") || !/Awakened rules/.test(exaltedFixture?.item_description || "") || !/Exalted rules/.test(exaltedFixture?.item_description || "")) {
+  throw new Error("Exalted copy chain did not accumulate all progression-state rules.");
+}
+
 for (const token of [
   "ITEM_RULE_REFERENCE_TERMS",
   "itemRuleReferenceForLabel",

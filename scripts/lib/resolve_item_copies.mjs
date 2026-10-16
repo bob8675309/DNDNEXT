@@ -82,7 +82,10 @@ export function resolveItemCopies(rows = [], { warn = console.warn } = {}) {
       const flattened = flattenItemEntryText(resolved.entries).trim();
       const baseDescription = String(base.item_description || base.rulesText || "").trim();
       const modText = flattenItemEntryText(asArray(mods.entries).flatMap((operation) => asArray(operation?.items))).trim();
-      resolved.item_description = flattened || [baseDescription, modText].filter(Boolean).join("\n\n");
+      const baseHasStructuredEntries = Array.isArray(base.entries) ? base.entries.length > 0 : Boolean(base.entries);
+      resolved.item_description = baseHasStructuredEntries && flattened
+        ? flattened
+        : [baseDescription, modText].filter(Boolean).join("\n\n");
       resolved.rulesShort = resolved.item_description;
     } else if (!resolved.item_description && base.item_description) {
       resolved.item_description = base.item_description;
