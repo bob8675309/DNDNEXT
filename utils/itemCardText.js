@@ -31,6 +31,10 @@ function sourceDisplay(parts = [], { preferLast = false } = {}) {
 
 function cleanItemSourceTags(value = "") {
   return String(value ?? "")
+    // A small number of upstream generic variants carry a malformed item tag
+    // with a closing parenthesis instead of "}". Recover the visible label so
+    // source markup can never leak onto a player card.
+    .replace(/\{@item\s+([^}\n]+)\)/gi, (_, payload) => sourceDisplay(String(payload).split("|"), { preferLast: true }))
     .replace(/\{@itemProperty\s+([^}|]+)(?:\|[^|}]*)?(?:\|([^}]+))?}/gi, (_, code, display) => safe(display) || ITEM_PROPERTY_LABELS[safe(code).toUpperCase()] || safe(code))
     .replace(/\{@dc\s+([^}|]+)(?:\|[^}]*)?}/gi, (_, amount) => `DC ${safe(amount)}`)
     .replace(/\{@(?:damage|dice|hit|chance)\s+([^}|]+)(?:\|[^}]*)?}/gi, (_, amount) => safe(amount))
