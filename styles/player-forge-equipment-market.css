@@ -2470,3 +2470,73 @@ body > .npc-forge-equipment-summary-dock.is-floating {
     transform: none !important;
   }
 }
+
+
+/* 2026-10-15 Equipment 90%-view balance pass.
+   Give the selected ItemCard a little more horizontal room while preserving a
+   useful stock-list width, and raise the readable type floor rather than browser-scaling. */
+@media (min-width: 1181px) {
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-layout {
+    grid-template-columns: minmax(270px, 1.02fr) minmax(320px, .98fr);
+    gap: 7px;
+  }
+}
+
+@media (max-width: 1180px) and (min-width: 981px) {
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-layout {
+    grid-template-columns: minmax(245px, 1fr) minmax(295px, .92fr);
+    gap: 6px;
+  }
+}
+
+@media (min-width: 981px) {
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-vendor-frame {
+    gap: 3px;
+    padding: 1px;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row {
+    padding: .48rem .56rem;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row-head strong {
+    font-size: .77rem;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row-head > span {
+    font-size: .71rem;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row-meta span {
+    font-size: .56rem;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row p {
+    font-size: .64rem;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-title {
+    font-size: 1.08rem;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-type {
+    font-size: .65rem;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-meta,
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-rarity {
+    font-size: .78rem;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-section,
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-field__value,
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-rule-trait__body {
+    font-size: .77rem;
+    line-height: 1.5;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-field__label,
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-rule-trait > summary {
+    font-size: .68rem;
+  }
+}
