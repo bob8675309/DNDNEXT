@@ -397,7 +397,7 @@ export function auditItemCardText(item = {}) {
   const derivedReferenceEffect = deriveReferenceOnlyEffect(item, ref, { hasOwnRules: Boolean(stripped) });
   const problems = [];
 
-  if (!cleaned && !directFields.length && !derivedReferenceEffect && !safe(item.damageText) && !safe(item.ac)) problems.push("missing-player-facing-text");
+  if (!cleaned && !directFields.length && !derivedReferenceEffect && !safe(item.damageText) && !safe(item.ac) && !safe(item.weight) && !safe(item.price_gp ?? item.price)) problems.push("missing-player-facing-text");
   if (raw.includes("{@") && cleaned.includes("{@")) problems.push("raw-source-tag-remains");
   if (ref && !stripped && !directFields.length && !derivedReferenceEffect) problems.push("reference-only-without-direct-mechanics");
   if (cleaned.length > 900 && !named?.sections?.length && !entryPresentation.sections.length && !entryPresentation.lists.length && !entryPresentation.tables.length && splitItemCardParagraphs(cleaned).length < 2) {
