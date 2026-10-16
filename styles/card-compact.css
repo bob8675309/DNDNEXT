@@ -542,3 +542,150 @@
     grid-column: auto;
   }
 }
+
+
+/* 2026-10-15 approved eight-family ItemCard standard.
+   Final override layer for the locked weapon/armor/material/recipe/consumable/
+   bomb/wondrous/charged-wondrous presentation contract. */
+.sitem-card:has(.sitem-header.rarity-common),
+.sitem-card:has(.sitem-header.rarity-mundane),
+.sitem-card:has(.sitem-header.rarity-none) {
+  --sitem-rarity-deep: #434b55;
+  --sitem-rarity-accent: #8a95a3;
+  --sitem-rarity-color: var(--sitem-rarity-deep);
+}
+
+.sitem-card {
+  background:
+    radial-gradient(circle at 16% 8%, color-mix(in srgb, var(--sitem-rarity-deep) 7%, transparent) 0%, transparent 34%),
+    radial-gradient(circle at 86% 72%, rgba(112,72,139,.08) 0%, transparent 34%),
+    repeating-linear-gradient(122deg, rgba(255,255,255,.018) 0 1px, transparent 1px 8px),
+    #110d19 !important;
+}
+
+.sitem-card .card-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background:
+    radial-gradient(circle at 14% 12%, color-mix(in srgb, var(--sitem-rarity-deep) 5%, transparent), transparent 33%),
+    radial-gradient(circle at 84% 88%, rgba(107,64,134,.07), transparent 36%),
+    linear-gradient(180deg, rgba(12,9,19,.08), rgba(7,6,12,.24));
+}
+
+.sitem-card .sitem-crafted-by {
+  color: rgba(255,255,255,.78);
+  font-size: .92em;
+  font-style: italic;
+  font-weight: 600;
+}
+
+.sitem-rarity-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+.sitem-rarity-divider__crystal {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 1.05rem;
+  height: 1.05rem;
+  margin-top: -0.4rem;
+  color: var(--sitem-rarity-accent);
+  font-size: .62rem;
+  line-height: 1;
+  text-shadow:
+    0 0 4px color-mix(in srgb, var(--sitem-rarity-accent) 78%, transparent),
+    0 0 10px color-mix(in srgb, var(--sitem-rarity-accent) 48%, transparent);
+}
+
+.sitem-detail-stack {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+  gap: .52rem;
+}
+
+.sitem-detail-stack > .sitem-field-grid,
+.sitem-detail-stack > .sitem-section,
+.sitem-detail-stack > .sitem-rule-traits {
+  margin-top: 0 !important;
+}
+
+.sitem-effect-panel {
+  border-style: solid !important;
+  border-color: color-mix(in srgb, var(--sitem-rarity-accent) 38%, rgba(255,255,255,.10)) !important;
+  background:
+    radial-gradient(circle at 6% 18%, color-mix(in srgb, var(--sitem-rarity-accent) 13%, transparent), transparent 30%),
+    linear-gradient(145deg,
+      color-mix(in srgb, var(--sitem-rarity-deep) 17%, rgba(255,255,255,.055)),
+      color-mix(in srgb, var(--sitem-rarity-deep) 9%, rgba(15,12,23,.92))
+    ) !important;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--sitem-rarity-accent) 12%, transparent),
+    0 0 12px color-mix(in srgb, var(--sitem-rarity-accent) 8%, transparent);
+}
+
+.sitem-detail-stack--weapon .sitem-field-grid,
+.sitem-detail-stack--material .sitem-field-grid,
+.sitem-detail-stack--recipe .sitem-field-grid,
+.sitem-detail-stack--consumable .sitem-field-grid,
+.sitem-detail-stack--bomb .sitem-field-grid,
+.sitem-detail-stack--wondrous .sitem-field-grid,
+.sitem-detail-stack--charged-wondrous .sitem-field-grid {
+  flex: 1 1 auto;
+  grid-auto-rows: minmax(2.9rem, 1fr);
+  align-content: stretch;
+}
+
+.sitem-detail-stack--armor .sitem-rule-traits {
+  flex: 1 1 auto;
+  grid-auto-rows: minmax(2rem, 1fr);
+  align-content: stretch;
+}
+
+.sitem-detail-stack--armor .sitem-rule-trait > summary {
+  height: 100%;
+}
+
+.sitem-card.is-shop-variant {
+  min-height: 100%;
+  margin-bottom: 0 !important;
+}
+
+.sitem-card.is-shop-variant .card-body {
+  min-height: 100%;
+}
+
+.sitem-card.is-shop-variant .sitem-title {
+  font-size: 1.03rem;
+}
+
+.sitem-card.is-shop-variant .sitem-meta {
+  font-size: .76rem;
+}
+
+.sitem-card.is-shop-variant .sitem-section,
+.sitem-card.is-shop-variant .sitem-field__value,
+.sitem-card.is-shop-variant .sitem-rule-trait__body {
+  font-size: .74rem;
+  line-height: 1.48;
+}
+
+.sitem-card.is-shop-variant .sitem-field__label,
+.sitem-card.is-shop-variant .sitem-rule-trait > summary {
+  font-size: .66rem;
+}
+
+.sitem-card.is-shop-variant .sitem-field {
+  padding: .52rem .58rem;
+}
+
+.sitem-legacy-footer {
+  margin-top: .15rem;
+}
