@@ -82,10 +82,12 @@ export function resolveItemCopies(rows = [], { warn = console.warn } = {}) {
       const flattened = flattenItemEntryText(resolved.entries).trim();
       const baseDescription = String(base.item_description || base.rulesText || "").trim();
       const modText = flattenItemEntryText(asArray(mods.entries).flatMap((operation) => asArray(operation?.items))).trim();
-      const baseHasStructuredEntries = Array.isArray(base.entries) ? base.entries.length > 0 : Boolean(base.entries);
-      resolved.item_description = baseHasStructuredEntries && flattened
-        ? flattened
-        : [baseDescription, modText].filter(Boolean).join("\n\n");
+      // Prefer the already-resolved base description plus only this state's
+      // appended copy text. That preserves recursive Dormant -> Awakened ->
+      // Exalted chains without duplicating earlier stages. Raw source builds
+      // still have "entries" as a full fallback when no normalized description
+      // exists yet.
+      resolved.item_description = [baseDescription, modText].filter(Boolean).join("\n\n") || flattened;
       resolved.rulesShort = resolved.item_description;
     } else if (!resolved.item_description && base.item_description) {
       resolved.item_description = base.item_description;
