@@ -175,7 +175,7 @@ for (const token of [
   "showPreviewHeader",
   "actionLabel",
   "quantityFor",
-  "title={card.item_description",
+  "title={rowDescription}",
 ]) need(sharedStorefront, token, "shared merchant storefront presentation");
 for (const token of [
   'import MerchantStorefrontView from "./MerchantStorefrontView";',
