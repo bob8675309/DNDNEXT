@@ -297,13 +297,39 @@ export default function NpcForgeSpellStep({ selectedClass, selectedSubclass = nu
               const atLimit = !selected && !canAddSpell(spell);
               const status = selected ? spellStatus(spell, selections, model.mode) : atLimit ? "Full" : "Available";
               const flags = [spell.concentration ? "Concentration" : "", spell.ritual ? "Ritual" : "", expanded ? "Background access" : ""].filter(Boolean);
-              return <button key={spell.id} type="button" aria-pressed={inspected} className={`profile-catalogue__row npc-forge-spell-table-row ${inspected ? "active" : ""} ${selected ? "is-selected" : ""}`} onClick={() => setInspectedSpellId(String(spell.id))} title={flags.length ? `${spell.name} • ${flags.join(" • ")}` : spell.name}>
+              return <div
+                key={spell.id}
+                role="button"
+                tabIndex={0}
+                aria-current={inspected ? "true" : undefined}
+                className={`profile-catalogue__row npc-forge-spell-table-row ${inspected ? "active" : ""} ${selected ? "is-selected" : ""}`}
+                onClick={() => setInspectedSpellId(String(spell.id))}
+                onKeyDown={(event) => {
+                  if (event.target !== event.currentTarget) return;
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    setInspectedSpellId(String(spell.id));
+                  }
+                }}
+                title={flags.length ? `${spell.name} • ${flags.join(" • ")}` : spell.name}
+              >
                 <span className="profile-catalogue__row-name">{spell.name}</span>
                 <span>{levelLabel(spell.level)}</span>
                 <span>{schoolLabel(spell)}</span>
                 <span>{spell.source || "—"}</span>
-                <span className={`npc-forge-spell-row-status is-${status.toLowerCase()}`}>{status}</span>
-              </button>;
+                <button
+                  type="button"
+                  aria-pressed={selected}
+                  disabled={atLimit}
+                  className={`npc-forge-spell-row-status is-${status.toLowerCase()}`}
+                  title={atLimit ? selectionLimitMessage(spell) : selected ? `Deselect ${spell.name}` : `Select ${spell.name}`}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    if (!atLimit) toggleSpell(spell);
+                  }}
+                >{status}</button>
+              </div>;
             })}
             {!displaySpells.length ? <div className="profile-catalogue__empty">No eligible spells match these filters.</div> : null}
           </div>
