@@ -778,3 +778,63 @@
 .sitem-card.is-shop-variant .sitem-field {
   padding: .44rem .50rem;
 }
+
+
+/* 2026-10-17 ItemCard typography readability pass.
+   Use a high-legibility UI face for body copy and a distinct but restrained
+   heading face so hierarchy does not depend on extremely heavy font weights. */
+.sitem-card,
+.sitem-card .card-body,
+.sitem-card .sitem-section,
+.sitem-card .sitem-field__value,
+.sitem-card .sitem-rule-trait__body,
+.sitem-card .sitem-bomb-rule > div {
+  font-family: "Segoe UI Variable", "Segoe UI", Tahoma, Arial, sans-serif;
+  font-weight: 500;
+  letter-spacing: .002em;
+}
+
+.sitem-card .sitem-title,
+.sitem-card .sitem-bomb-rule h5,
+.sitem-card .sitem-rule-trait > summary {
+  font-family: "Trebuchet MS", "Segoe UI Variable", "Segoe UI", Arial, sans-serif;
+}
+
+.sitem-card .sitem-title {
+  font-weight: 700 !important;
+  letter-spacing: .008em;
+}
+
+.sitem-card .sitem-type {
+  font-family: "Segoe UI Variable", "Segoe UI", Tahoma, Arial, sans-serif;
+  font-weight: 700 !important;
+  letter-spacing: .045em;
+}
+
+.sitem-card .sitem-field__label,
+.sitem-card .sitem-bomb-rule h5 {
+  font-weight: 700;
+  letter-spacing: .045em;
+}
+
+.sitem-card .sitem-rule-trait > summary {
+  font-weight: 700;
+  letter-spacing: .012em;
+}
+
+.sitem-rule-reference-button {
+  color: #f4d88a;
+  font-family: inherit;
+  font-weight: 650;
+  letter-spacing: .006em;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.sitem-rule-reference-button:hover,
+.sitem-rule-reference-button:focus-visible {
+  color: #ffe6a3;
+  text-decoration-style: solid;
+}
