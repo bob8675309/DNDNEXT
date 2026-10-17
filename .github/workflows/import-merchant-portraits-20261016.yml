@@ -1,4 +1,5 @@
 name: One-shot merchant portrait import 20261016
+# Trigger after workflow registration
 
 on:
   push:
