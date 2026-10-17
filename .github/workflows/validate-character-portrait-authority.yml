@@ -43,7 +43,7 @@ jobs:
 
 
   import_merchant_portraits_20261016:
-    if: github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'portrait-library-merchant-filters' && github.event.pull_request.head.sha == github.sha
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'portrait-library-merchant-filters'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
