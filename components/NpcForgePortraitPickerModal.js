@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import { NPC_PORTRAIT_BUCKET, publicPortraitUrl } from "../utils/characterPortraits";
 import SpriteSheetPreview, { DEFAULT_DIRECTIONS } from "./SpriteSheetPreview";
+import PortraitLibraryFilterPanel from "./PortraitLibraryFilterPanel";
+import { portraitCardTags, portraitMatchesFilters, sortPortraitRows, titlePortraitFacet } from "../utils/portraitLibraryFilters";
 
 function text(value) { return String(value ?? "").trim(); }
 
@@ -56,6 +58,7 @@ export default function NpcForgePortraitPickerModal({
   show = false,
   currentPortraitId = "",
   currentSpriteId = "",
+  preferredUseCase = "",
   onClose,
   onSelect,
 }) {
@@ -63,6 +66,14 @@ export default function NpcForgePortraitPickerModal({
   const [assets, setAssets] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
   const [portraitQuery, setPortraitQuery] = useState("");
+  const [portraitSort, setPortraitSort] = useState("library");
+  const [portraitFilters, setPortraitFilters] = useState({
+    species: "",
+    profession: "",
+    theme: "",
+    merchantOnly: false,
+    assignment: "all",
+  });
   const [spriteQuery, setSpriteQuery] = useState("");
   const [selectedPortraitId, setSelectedPortraitId] = useState("");
   const [selectedSpriteId, setSelectedSpriteId] = useState("");
@@ -76,6 +87,14 @@ export default function NpcForgePortraitPickerModal({
     setSelectedPortraitId(String(currentPortraitId || ""));
     setSelectedSpriteId(String(currentSpriteId || ""));
     setPortraitQuery("");
+    setPortraitSort("library");
+    setPortraitFilters({
+      species: "",
+      profession: "",
+      theme: "",
+      merchantOnly: String(preferredUseCase || "").toLowerCase() === "merchant",
+      assignment: "all",
+    });
     setSpriteQuery("");
     let active = true;
     (async () => {
@@ -110,13 +129,14 @@ export default function NpcForgePortraitPickerModal({
       setLoading(false);
     })();
     return () => { active = false; };
-  }, [currentPortraitId, currentSpriteId, show]);
+  }, [currentPortraitId, currentSpriteId, preferredUseCase, show]);
 
   const filteredPortraits = useMemo(() => {
-    const q = text(portraitQuery).toLowerCase();
-    if (!q) return portraits;
-    return portraits.filter((row) => searchablePortrait(row).includes(q));
-  }, [portraitQuery, portraits]);
+    const visible = portraits.filter((row) =>
+      portraitMatchesFilters(row, { ...portraitFilters, query: portraitQuery })
+    );
+    return sortPortraitRows(visible, portraitSort);
+  }, [portraitFilters, portraitQuery, portraitSort, portraits]);
 
   const suggestionMap = useMemo(() => {
     const map = new Map();
@@ -209,7 +229,22 @@ export default function NpcForgePortraitPickerModal({
         <div className="npc-forge-visual-picker-layout">
           <section className="npc-forge-visual-picker-pane">
             <div className="npc-forge-visual-picker-title"><strong>1. Portrait</strong><span>{selectedPortrait?.name || "Choose one"}</span></div>
-            <input className="form-control form-control-sm" value={portraitQuery} onChange={(event) => setPortraitQuery(event.target.value)} placeholder="Search portraits by name, species, profession, theme…" />
+            <div className="npc-forge-portrait-toolbar">
+              <input className="form-control form-control-sm" value={portraitQuery} onChange={(event) => setPortraitQuery(event.target.value)} placeholder="Search portraits by name, species, profession, theme…" />
+              <select className="form-select form-select-sm" value={portraitSort} onChange={(event) => setPortraitSort(event.target.value)} aria-label="Sort portraits">
+                <option value="library">Library order</option>
+                <option value="name">Name A–Z</option>
+                <option value="merchant">Merchant-friendly first</option>
+              </select>
+              <span>{filteredPortraits.length} shown</span>
+            </div>
+            <PortraitLibraryFilterPanel
+              rows={portraits}
+              filters={portraitFilters}
+              onChange={setPortraitFilters}
+              compact
+              showAssignment={false}
+            />
             <div className="portrait-picker-grid npc-forge-visual-picker-grid">
               {filteredPortraits.map((row) => {
                 const url = portraitUrl(row);
@@ -218,6 +253,7 @@ export default function NpcForgePortraitPickerModal({
                   <button key={row.id} type="button" className={`portrait-picker-card ${current ? "is-current" : ""}`} onClick={() => setSelectedPortraitId(String(row.id))}>
                     <span className="portrait-picker-image">{url ? <img src={url} alt="" loading="lazy" /> : <span>No image</span>}</span>
                     <span className="portrait-picker-name">{row.name || row.storage_path || "Portrait"}</span>
+                    {portraitCardTags(row, 2).length ? <span className="portrait-picker-meta">{portraitCardTags(row, 2).map((tag) => <small key={tag}>{titlePortraitFacet(tag)}</small>)}</span> : null}
                     {current ? <span className="portrait-picker-current">Selected</span> : null}
                   </button>
                 );
@@ -268,7 +304,7 @@ export default function NpcForgePortraitPickerModal({
         </div>
 
         <style jsx global>{`
-          .npc-forge-portrait-picker-backdrop{z-index:1095}.npc-forge-visual-picker{width:min(1180px,94vw);max-width:none}.npc-forge-visual-picker-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,.8fr);gap:14px;min-height:0}.npc-forge-visual-picker-pane{display:flex;flex-direction:column;min-width:0;min-height:0;gap:8px;border:1px solid rgba(176,132,255,.24);border-radius:12px;background:rgba(10,12,21,.72);padding:10px}.npc-forge-visual-picker-title{display:flex;justify-content:space-between;gap:12px;align-items:center}.npc-forge-visual-picker-title span{color:rgba(255,255,255,.62);font-size:.72rem;text-align:right}.npc-forge-visual-picker-grid{max-height:54vh;overflow:auto}.npc-forge-sprite-list{display:grid;gap:6px;max-height:30vh;overflow:auto;padding-right:3px}.npc-forge-sprite-card{display:flex;justify-content:space-between;gap:10px;text-align:left;border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.025);color:#eee;border-radius:9px;padding:9px 10px}.npc-forge-sprite-card:hover,.npc-forge-sprite-card.is-current{border-color:#aa66ff;background:rgba(137,75,255,.14)}.npc-forge-sprite-card span{display:grid;gap:3px}.npc-forge-sprite-card small{color:rgba(255,255,255,.58);font-size:.68rem}.npc-forge-sprite-card b{align-self:start;color:#84eadb;font-size:.64rem;text-transform:uppercase;letter-spacing:.04em}.npc-forge-sprite-preview-panel{display:grid;grid-template-columns:140px minmax(0,1fr);gap:12px;align-items:center;border-top:1px solid rgba(255,255,255,.1);padding-top:10px}.npc-forge-sprite-preview-stage{min-height:132px;display:grid;place-items:center;border-radius:10px;background:linear-gradient(135deg,rgba(49,39,68,.8),rgba(12,30,36,.78));overflow:hidden}.sprite-sheet-preview{position:relative;overflow:hidden}.sprite-sheet-preview.is-empty{display:grid;place-items:center;min-width:112px;min-height:112px;color:rgba(255,255,255,.45);font-size:.7rem}.npc-forge-sprite-preview-controls{display:grid;gap:8px}.npc-forge-sprite-preview-controls label{display:grid;gap:4px}.npc-forge-sprite-preview-controls select{width:100%}.npc-forge-preview-toggle{grid-template-columns:auto 1fr!important;align-items:center}.npc-forge-sprite-preview-controls small{color:rgba(255,255,255,.58)}.npc-forge-visual-picker-footer{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:12px}.npc-forge-visual-picker-footer>div{display:flex;gap:8px}.npc-forge-visual-picker-footer>span{color:rgba(255,255,255,.6);font-size:.72rem}@media(max-width:900px){.npc-forge-visual-picker-layout{grid-template-columns:1fr}.npc-forge-visual-picker-grid{max-height:34vh}.npc-forge-sprite-list{max-height:24vh}}@media(max-width:560px){.npc-forge-sprite-preview-panel{grid-template-columns:1fr}.npc-forge-visual-picker-footer{align-items:stretch;flex-direction:column}.npc-forge-visual-picker-footer>div{justify-content:flex-end}}
+          .npc-forge-portrait-picker-backdrop{z-index:1095}.npc-forge-visual-picker{width:min(1180px,94vw);max-width:none}.npc-forge-visual-picker-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,.8fr);gap:14px;min-height:0}.npc-forge-visual-picker-pane{display:flex;flex-direction:column;min-width:0;min-height:0;gap:8px;border:1px solid rgba(176,132,255,.24);border-radius:12px;background:rgba(10,12,21,.72);padding:10px}.npc-forge-visual-picker-title{display:flex;justify-content:space-between;gap:12px;align-items:center}.npc-forge-visual-picker-title span{color:rgba(255,255,255,.62);font-size:.72rem;text-align:right}.npc-forge-portrait-toolbar{display:grid;grid-template-columns:minmax(0,1fr) 170px auto;gap:7px;align-items:center}.npc-forge-portrait-toolbar>span{font-size:.66rem;color:rgba(255,255,255,.55);white-space:nowrap}.npc-forge-visual-picker-grid{max-height:54vh;overflow:auto}.npc-forge-sprite-list{display:grid;gap:6px;max-height:30vh;overflow:auto;padding-right:3px}.npc-forge-sprite-card{display:flex;justify-content:space-between;gap:10px;text-align:left;border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.025);color:#eee;border-radius:9px;padding:9px 10px}.npc-forge-sprite-card:hover,.npc-forge-sprite-card.is-current{border-color:#aa66ff;background:rgba(137,75,255,.14)}.npc-forge-sprite-card span{display:grid;gap:3px}.npc-forge-sprite-card small{color:rgba(255,255,255,.58);font-size:.68rem}.npc-forge-sprite-card b{align-self:start;color:#84eadb;font-size:.64rem;text-transform:uppercase;letter-spacing:.04em}.npc-forge-sprite-preview-panel{display:grid;grid-template-columns:140px minmax(0,1fr);gap:12px;align-items:center;border-top:1px solid rgba(255,255,255,.1);padding-top:10px}.npc-forge-sprite-preview-stage{min-height:132px;display:grid;place-items:center;border-radius:10px;background:linear-gradient(135deg,rgba(49,39,68,.8),rgba(12,30,36,.78));overflow:hidden}.sprite-sheet-preview{position:relative;overflow:hidden}.sprite-sheet-preview.is-empty{display:grid;place-items:center;min-width:112px;min-height:112px;color:rgba(255,255,255,.45);font-size:.7rem}.npc-forge-sprite-preview-controls{display:grid;gap:8px}.npc-forge-sprite-preview-controls label{display:grid;gap:4px}.npc-forge-sprite-preview-controls select{width:100%}.npc-forge-preview-toggle{grid-template-columns:auto 1fr!important;align-items:center}.npc-forge-sprite-preview-controls small{color:rgba(255,255,255,.58)}.npc-forge-visual-picker-footer{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:12px}.npc-forge-visual-picker-footer>div{display:flex;gap:8px}.npc-forge-visual-picker-footer>span{color:rgba(255,255,255,.6);font-size:.72rem}@media(max-width:900px){.npc-forge-portrait-toolbar{grid-template-columns:1fr 150px}.npc-forge-portrait-toolbar>span{display:none}.npc-forge-visual-picker-layout{grid-template-columns:1fr}.npc-forge-visual-picker-grid{max-height:34vh}.npc-forge-sprite-list{max-height:24vh}}@media(max-width:560px){.npc-forge-sprite-preview-panel{grid-template-columns:1fr}.npc-forge-visual-picker-footer{align-items:stretch;flex-direction:column}.npc-forge-visual-picker-footer>div{justify-content:flex-end}}
         `}</style>
       </div>
     </div>
