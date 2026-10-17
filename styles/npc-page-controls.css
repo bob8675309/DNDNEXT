@@ -463,3 +463,229 @@
     max-width: 44%;
   }
 }
+
+
+/* 2026-10-16 shared portrait-library browser */
+.portrait-picker-toolbar {
+  flex-wrap: wrap;
+}
+
+.portrait-picker-sort {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+}
+
+.portrait-picker-sort > span {
+  color: rgba(232,238,255,.58);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.portrait-picker-sort select {
+  min-width: 175px;
+}
+
+.portrait-picker-browser {
+  display: grid;
+  grid-template-columns: minmax(190px, 225px) minmax(0, 1fr);
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.portrait-picker-browser > .portrait-picker-grid {
+  height: 100%;
+  align-content: start;
+}
+
+.portrait-filter-panel {
+  min-height: 0;
+  overflow: auto;
+  padding: 13px 12px 18px;
+  border-right: 1px solid rgba(255,255,255,.08);
+  background: linear-gradient(180deg, rgba(58,37,83,.24), rgba(7,10,16,.2));
+}
+
+.portrait-filter-quick {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.portrait-filter-quick button,
+.portrait-filter-options button,
+.portrait-filter-clear {
+  border: 1px solid rgba(255,255,255,.11);
+  border-radius: 8px;
+  background: rgba(255,255,255,.035);
+  color: rgba(244,247,255,.82);
+  font-size: 11px;
+  line-height: 1.2;
+  padding: 7px 8px;
+  text-align: left;
+}
+
+.portrait-filter-quick button:hover,
+.portrait-filter-options button:hover,
+.portrait-filter-clear:hover,
+.portrait-filter-quick button.is-active,
+.portrait-filter-options button.is-active {
+  border-color: rgba(171,108,255,.76);
+  background: rgba(135,72,216,.18);
+  color: #fff;
+}
+
+.portrait-filter-panel details {
+  border-top: 1px solid rgba(255,255,255,.07);
+  padding: 8px 0;
+}
+
+.portrait-filter-panel summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+  cursor: pointer;
+  color: rgba(255,255,255,.78);
+  font-size: 11px;
+  font-weight: 700;
+  list-style: none;
+}
+
+.portrait-filter-panel summary::-webkit-details-marker {
+  display: none;
+}
+
+.portrait-filter-panel summary::after {
+  content: "›";
+  color: rgba(190,139,255,.78);
+  transform: rotate(90deg);
+  transition: transform .14s ease;
+}
+
+.portrait-filter-panel details[open] summary::after {
+  transform: rotate(270deg);
+}
+
+.portrait-filter-panel summary b {
+  margin-left: auto;
+  max-width: 105px;
+  overflow: hidden;
+  color: #d7b8ff;
+  font-size: 9px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.portrait-filter-options {
+  display: grid;
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.portrait-filter-options button {
+  padding: 6px 7px;
+}
+
+.portrait-filter-clear {
+  width: 100%;
+  margin-top: 10px;
+  color: rgba(255,214,165,.9);
+}
+
+.portrait-picker-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.portrait-picker-meta small {
+  display: inline-flex;
+  max-width: 100%;
+  border: 1px solid rgba(165,125,226,.22);
+  border-radius: 999px;
+  padding: 2px 5px;
+  background: rgba(113,67,166,.14);
+  color: rgba(225,211,248,.78);
+  font-size: 9px;
+  line-height: 1.15;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.portrait-filter-panel.is-compact {
+  flex: 0 0 auto;
+  max-height: 166px;
+  overflow: auto;
+  padding: 8px;
+  border: 1px solid rgba(176,132,255,.18);
+  border-radius: 9px;
+  background: rgba(21,17,31,.48);
+}
+
+.portrait-filter-panel.is-compact .portrait-filter-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 5px;
+}
+
+.portrait-filter-panel.is-compact .portrait-filter-quick button,
+.portrait-filter-panel.is-compact .portrait-filter-clear {
+  width: auto;
+}
+
+.portrait-filter-panel.is-compact details {
+  display: inline-block;
+  width: calc(33.333% - 5px);
+  margin-right: 5px;
+  vertical-align: top;
+  border-top: 0;
+  padding: 4px 0;
+}
+
+.portrait-filter-panel.is-compact details[open] {
+  width: 100%;
+  margin-right: 0;
+}
+
+.portrait-filter-panel.is-compact .portrait-filter-options {
+  grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+}
+
+@media (max-width: 760px) {
+  .portrait-picker-browser {
+    grid-template-columns: 1fr;
+    overflow: auto;
+  }
+
+  .portrait-filter-panel {
+    max-height: 220px;
+    border-right: 0;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+
+  .portrait-picker-browser > .portrait-picker-grid {
+    overflow: visible;
+    height: auto;
+  }
+
+  .portrait-picker-sort {
+    width: 100%;
+  }
+
+  .portrait-picker-sort select {
+    flex: 1 1 auto;
+  }
+
+  .portrait-filter-panel.is-compact details {
+    width: 100%;
+    margin-right: 0;
+  }
+}

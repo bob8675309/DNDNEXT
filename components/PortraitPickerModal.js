@@ -52,7 +52,7 @@ export default function PortraitPickerModal({
         const [libraryRes, assignedRes] = await Promise.all([
           supabase
             .from("npc_portrait_library")
-            .select("id,name,bucket,storage_path,public_url,category,tags,species_tags,profession_tags,theme_tags,width,height,sort_order,is_active")
+            .select("id,name,bucket,storage_path,public_url,category,tags,species_tags,profession_tags,theme_tags,width,height,recommended_use,sort_order,is_active")
             .eq("is_active", true)
             .order("sort_order", { ascending: true })
             .order("name", { ascending: true }),
