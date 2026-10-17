@@ -167,6 +167,7 @@ for (const token of [
   '{ label: "Price"',
   '{ label: "Available"',
 ]) need(forgeMerchantMarket, token, "shared MerchantPanel-derived Forge storefront");
+need(forgeMerchantMarket, 'itemCardProps={{ variant: "shop", detailsCollapsible: false, onReferenceDetail }}', "Equipment ItemCard rule-reference routing");
 for (const token of [
   "merchant-market-header",
   "merchant-market-shell",
@@ -194,7 +195,7 @@ for (const token of [
   "const nLow",
   "const nUncommon",
   "const nRare",
-  'itemCardProps={{ variant: "shop", detailsCollapsible: false, onReferenceDetail }}',
+  'itemCardProps={{ variant: "shop", detailsCollapsible: false }}',
   'headerKicker=""',
   "merchant-market-theme-pill",
   "showSceneCopy={false}",
