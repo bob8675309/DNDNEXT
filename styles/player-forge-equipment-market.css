@@ -2549,3 +2549,74 @@ body > .npc-forge-equipment-summary-dock.is-floating {
     font-size: .68rem;
   }
 }
+
+
+/* 2026-10-17 native 90%-reference density.
+   Reproduce the user's preferred 90% browser-zoom readability at native zoom by
+   tightening the selected-card chrome and stock rows without scaling the Forge
+   canvas or reducing the mechanical text below the established readability floor. */
+@media (min-width: 981px) {
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .merchant-preview-card-scroll {
+    padding: 6px;
+    align-items: start;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .merchant-preview-card-scroll > .sitem-card {
+    min-height: 0;
+    height: max-content;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .card-body {
+    padding: .64rem;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-header {
+    padding: .49rem .62rem;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-title {
+    font-size: .97rem;
+    line-height: 1.16;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-type {
+    font-size: .58rem;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-meta,
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-rarity {
+    font-size: .70rem;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-section,
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-field__value,
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-rule-trait__body,
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-bomb-rule > div {
+    font-size: .70rem;
+    line-height: 1.44;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-field__label,
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-rule-trait > summary,
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-bomb-rule h5 {
+    font-size: .62rem;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .sitem-card.is-shop-variant .sitem-field {
+    padding: .42rem .48rem;
+    min-height: 2.35rem;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row {
+    padding-block: 5px;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row-head strong {
+    font-size: .72rem;
+  }
+
+  .npc-forge-modal-v2.is-player-mode.is-step-equipment .forge-equipment-merchant-panel .merchant-stock-row p {
+    font-size: .65rem;
+    line-height: 1.28;
+  }
+}
