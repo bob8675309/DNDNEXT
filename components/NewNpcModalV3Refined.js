@@ -1,6 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import NpcForgeEquipmentStep from "./NpcForgeEquipmentStep";
+import NpcForgeClassFeatureDock from "./NpcForgeClassFeatureDock";
 import NpcForgeFeatChoiceRegistrar from "./NpcForgeFeatChoiceRegistrar";
 import NpcForgeHumanVersatileRegistrar from "./NpcForgeHumanVersatileRegistrar";
 import NpcForgePortraitPickerModal from "./NpcForgePortraitPickerModal";
@@ -46,6 +47,7 @@ export default function NewNpcModalV3Refined({ show, onClose, onCreated, locatio
   const controller = useNpcForgeTrainingRoutedController({ show, onClose, onCreated, locations, mode, createCharacter, onReset, draftStorageScope });
   const { playerMode, STEP_LABELS, step, setStep, setDetail, setError, stepKey, creating, loadingCatalogs, error, handleClose, handleReset, handleBack, handleNext, handleCreate, draft, equipmentModel, patch, portraitPickerOpen, setPortraitPickerOpen, choosePortrait, speciesOptions, chooseSpecies } = controller;
   const catalogLoadSeenRef = useRef(false);
+  const [equipmentRuleDetail, setEquipmentRuleDetail] = useState(null);
   const modalRef = useRef(null);
   const lastHeaderTapRef = useRef({ time: 0, x: 0, y: 0 });
   const debugStepAppliedRef = useRef(false);
@@ -116,6 +118,10 @@ export default function NewNpcModalV3Refined({ show, onClose, onCreated, locatio
   }, [show, playerMode, loadingCatalogs, STEP_LABELS, setStep, setDetail, setError]);
 
   useEffect(() => {
+    if (stepKey !== "equipment") setEquipmentRuleDetail(null);
+  }, [stepKey]);
+
+  useEffect(() => {
     if (!show || typeof document === "undefined") return undefined;
     function closeCompletedChoiceOnOutsidePointer(event) {
       const modal = modalRef.current;
@@ -162,7 +168,15 @@ export default function NewNpcModalV3Refined({ show, onClose, onCreated, locatio
     <NpcForgeHumanVersatileRegistrar playerMode={playerMode} controller={controller} />
     <header className="npc-forge-header" onDoubleClick={handleHeaderDoubleClick} onPointerUp={handleHeaderPointerUp}><div>{playerMode ? <h2 title="Double-click or double-tap this header to restore the Forge window">Character Forge</h2> : <><div className="npc-forge-kicker">Canonical character system</div><h2>NPC Forge</h2><p>Build the rules first, then finish identity and placement.</p></>}</div><div className="npc-forge-header-actions"><button type="button" className="btn btn-sm btn-outline-warning" onClick={handleReset} disabled={creating}>Reset</button><button type="button" className="btn btn-sm btn-outline-light" onClick={handleClose} disabled={creating}>Close</button></div></header>
     <nav className="npc-forge-steps" aria-label="Character creation steps">{STEP_LABELS.map((label, index) => <button key={label} type="button" className={`${index === step ? "is-current" : ""} ${index < step ? "is-complete" : ""}`} onClick={() => { if (index <= step) { setStep(index); setDetail(null); setError(""); } }} disabled={creating || index > step}><span>{index + 1}</span>{label}</button>)}</nav>
-    {stepKey === "equipment" ? <NpcForgeEquipmentStep model={equipmentModel} selection={draft.startingEquipment || {}} onChange={(startingEquipment) => patch({ startingEquipment })} /> : <NpcForgeStepContent controller={controller} />}
+    {stepKey === "equipment" ? <>
+      <NpcForgeEquipmentStep
+        model={equipmentModel}
+        selection={draft.startingEquipment || {}}
+        onChange={(startingEquipment) => patch({ startingEquipment })}
+        onReferenceDetail={setEquipmentRuleDetail}
+      />
+      <NpcForgeClassFeatureDock panelRole="feature" detail={equipmentRuleDetail} selectedClass={controller.selectedClass || null} />
+    </> : <NpcForgeStepContent controller={controller} />}
     {error ? <div className="npc-forge-error" role="alert">{error}</div> : null}
     <footer className="npc-forge-footer"><button type="button" className="btn btn-outline-light" onClick={handleClose} disabled={creating}>Cancel</button><div>{step > 0 ? <button type="button" className="btn btn-outline-light" onClick={handleBack} disabled={creating}>Back</button> : null}{step < STEP_LABELS.length - 1 ? <button type="button" className="btn btn-primary" onClick={handleNext} disabled={creating || loadingCatalogs}>Continue</button> : <button type="button" className="btn btn-success" onClick={handleCreate} disabled={creating}>{creating ? "Forging Character..." : playerMode ? "Create Player Character" : `Create ${draft.kind === "merchant" ? "Merchant" : "NPC"}`}</button>}</div></footer>
     <NpcForgePortraitPickerModal show={portraitPickerOpen} currentPortraitId={draft.portraitLibraryId} preferredUseCase={draft.kind} onClose={() => setPortraitPickerOpen(false)} onSelect={choosePortrait} />
