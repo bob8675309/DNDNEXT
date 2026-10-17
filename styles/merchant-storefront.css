@@ -1841,3 +1841,39 @@
 .merchant-storefront-shared .merchant-preview-card-scroll {
   align-items: start;
 }
+
+
+/* 2026-10-17 merchant typography hierarchy.
+   Keep the gold item-name cue, but reduce weight and use a more open face so
+   letters remain distinct at compact storefront sizes. */
+.merchant-storefront-shared .merchant-stock-row,
+.forge-merchant-wares__row {
+  font-family: "Segoe UI Variable", "Segoe UI", Tahoma, Arial, sans-serif;
+}
+
+.merchant-storefront-shared .merchant-stock-row-head strong,
+.forge-merchant-wares__row .merchant-stock-row-head strong {
+  color: #e8c978;
+  font-family: "Trebuchet MS", "Segoe UI Variable", "Segoe UI", Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: .01em;
+}
+
+.merchant-storefront-shared .merchant-stock-row-head > span,
+.forge-merchant-wares__row .merchant-stock-row-head > span {
+  font-weight: 650;
+}
+
+.merchant-storefront-shared .merchant-stock-row-meta span,
+.forge-merchant-wares__row .merchant-stock-row-meta span {
+  font-weight: 650;
+  letter-spacing: .018em;
+}
+
+.merchant-storefront-shared .merchant-stock-row p,
+.forge-merchant-wares__row p {
+  color: #f1eee8;
+  font-family: "Segoe UI Variable", "Segoe UI", Tahoma, Arial, sans-serif;
+  font-weight: 450;
+  letter-spacing: .004em;
+}
