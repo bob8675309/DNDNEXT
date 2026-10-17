@@ -118,3 +118,10 @@ PR #170 is historical and merged. This routing/source-magic authority remains ac
 ## 2026-10-17 source-spell status toggle
 
 Source-owned spell catalogue status pills are now direct selection controls. Clicking Available selects that spell; clicking Selected removes it; Full remains disabled when the field has reached its choice count. The catalogue row itself remains an inspect/focus target, so selection is deliberate and matches the direct-toggle behavior used by Feats and Skills.
+
+
+## 2026-10-17 direct-toggle interaction rule
+
+Selectable status pills are treated as controls, not decorative labels. In Forge catalogue/list surfaces, an **Available** status that represents a legal choice directly selects that option when clicked, and **Selected** directly removes it when removal is legal. **Full**, granted, fixed, or otherwise non-removable states remain disabled/informational. The surrounding row remains the inspect/focus target.
+
+This rule now applies to both source-owned spell-choice rows and the main class spell catalogue, matching the already-established Feats and Skills interaction pattern. Mouse and keyboard activation are kept separate from row inspection so Enter/Space on a nested status control does not get intercepted by the row.
