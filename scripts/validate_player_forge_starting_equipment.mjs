@@ -196,6 +196,7 @@ for (const token of [
   "const nUncommon",
   "const nRare",
   'itemCardProps={{ variant: "shop", detailsCollapsible: false }}',
+  'showPreviewHeader={false}',
   'headerKicker=""',
   "merchant-market-theme-pill",
   "showSceneCopy={false}",
