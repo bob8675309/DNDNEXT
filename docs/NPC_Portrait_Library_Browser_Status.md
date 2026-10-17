@@ -36,7 +36,18 @@ No new portrait table is introduced. The existing public.npc_portrait_library fi
 - theme_tags
 - recommended_use
 
-Migration 20261016_09_portrait_library_semantic_tags backfills semantic profession/theme tags from the existing curated portrait names/tags. It does not replace artwork or reassign any character portrait.
+Migration 20261016_09 introduced the semantic backfill and 20261016_10 applies the corrected scalar-array aggregation used by the live library. Neither migration replaces artwork or reassigns any character portrait.
+
+Live verification after the corrected backfill:
+- 185 active portraits total;
+- 111 now have semantic profession tags;
+- 57 are tagged Merchant-friendly;
+- 17 general Merchant portraits;
+- 6 Smith portraits;
+- 7 Apothecary portraits;
+- 4 Herbalist portraits;
+- 1 Jeweler portrait;
+- 11 Scribe portraits.
 
 Merchant-friendly roles currently include merchants, smiths, apothecaries, herbalists, alchemists, jewelers, scribes, hospitality portraits, and artisan portraits. This is a browsing/use-case tag, not an exclusivity rule; all portraits remain selectable.
 

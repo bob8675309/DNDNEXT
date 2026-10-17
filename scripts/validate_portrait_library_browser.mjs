@@ -10,6 +10,7 @@ const panel=read("components/PortraitLibraryFilterPanel.js");
 const filters=read("utils/portraitLibraryFilters.js");
 const css=read("styles/npc-page-controls.css");
 const migration=read("sql/20261016_09_portrait_library_semantic_tags.sql");
+const migrationFix=read("sql/20261016_10_portrait_library_semantic_tags_fix.sql");
 const forgeModal=read("components/NewNpcModalV3Refined.js");
 
 for(const token of [
@@ -66,7 +67,9 @@ for(const token of [
 
 need(forgeModal,"preferredUseCase={draft.kind}","merchant Forge smart default");
 
-for(const src of [picker,forge,panel,filters,css,migration,forgeModal]){
+for(const token of ["array_agg(DISTINCT x ORDER BY x)","merchant-friendly","profession_tags","theme_tags"]) need(migrationFix,token,"portrait metadata fix migration");
+
+for(const src of [picker,forge,panel,filters,css,migration,migrationFix,forgeModal]){
   for(const token of ["MapPageClient","advance_all_characters_v3","get_weather_for_biome_day_v1"]){
     forbid(src,token,`protected world-map boundary ${token}`);
   }
