@@ -1899,7 +1899,10 @@
     inset 0 1px 0 color-mix(in srgb, var(--rarity-accent) 24%, transparent),
     0 0 0 1px color-mix(in srgb, var(--rarity-accent) 20%, transparent),
     0 0 8px color-mix(in srgb, var(--rarity-accent) 22%, transparent);
+  padding: .18rem .44rem;
+  font-size: .59rem;
   font-weight: 800;
+  line-height: 1.05;
   letter-spacing: .035em;
   text-shadow: 0 1px 1px rgba(0,0,0,.55);
 }
