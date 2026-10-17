@@ -155,7 +155,20 @@ function SourceSpellField({ group, field, selected = [], blocked = [], onToggle,
             const active = focused?.key === option.key;
             const isSelected = selectedSet.has(option.key);
             const atLimit = !isSelected && complete;
-            return <button key={option.key} type="button" aria-pressed={active} className={`profile-catalogue__row npc-forge-source-spell-picker__row ${active ? "active" : ""} ${isSelected ? "is-selected" : ""}`} onClick={() => setFocusedKey(option.key)}>
+            return <div
+              key={option.key}
+              role="button"
+              tabIndex={0}
+              aria-current={active ? "true" : undefined}
+              className={`profile-catalogue__row npc-forge-source-spell-picker__row ${active ? "active" : ""} ${isSelected ? "is-selected" : ""}`}
+              onClick={() => setFocusedKey(option.key)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  setFocusedKey(option.key);
+                }
+              }}
+            >
               <span className="profile-catalogue__row-name">{option.label}</span>
               <span>{Number(spell.level || 0) === 0 ? "Cantrip" : `Level ${Number(spell.level || 0)}`}</span>
               <span>{spell.school || spell.school_code || "Spell"}</span>
@@ -171,7 +184,7 @@ function SourceSpellField({ group, field, selected = [], blocked = [], onToggle,
                   if (!atLimit) onToggle?.(group.id, field.id, option.key);
                 }}
               >{isSelected ? "Selected" : atLimit ? "Full" : "Available"}</button>
-            </button>;
+            </div>;
           })}
           {!filtered.length ? <div className="profile-catalogue__empty">No spells match this search.</div> : null}
         </div>
