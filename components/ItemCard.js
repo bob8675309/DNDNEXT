@@ -762,9 +762,11 @@ export default function ItemCard({
 
   const rulesIntro = structuredRules?.intro || (!ruleDuplicatesFlavor ? rawRuleText : "");
   const primaryEffectText = playerText(
-    potionDetails?.effect && normalizedComparableText(potionDetails.effect) !== normalizedComparableText(norm.flavor)
-      ? potionDetails.effect
-      : rulesIntro
+    cardFamily === "bomb" && structuredRules?.traits?.length
+      ? rulesIntro
+      : potionDetails?.effect && normalizedComparableText(potionDetails.effect) !== normalizedComparableText(norm.flavor)
+        ? potionDetails.effect
+        : rulesIntro
   );
   const effectLabel = cardFamily === "recipe" ? "Recipe" : "Effect";
   const effectPanel = primaryEffectText ? (
@@ -775,14 +777,25 @@ export default function ItemCard({
   ) : null;
 
   const traitList = structuredRules?.traits?.length ? (
-    <div className="sitem-rule-traits" aria-label="Item traits">
-      {structuredRules.traits.map((trait) => (
-        <details className="sitem-rule-trait" key={trait.title}>
-          <summary>{playerText(trait.title)}</summary>
-          <div className="sitem-rule-trait__body" style={{ whiteSpace: "pre-line" }}><RuleLinkedText text={playerText(trait.body)} item={mergedItem} onReferenceDetail={onReferenceDetail} /></div>
-        </details>
-      ))}
-    </div>
+    cardFamily === "bomb" ? (
+      <div className="sitem-bomb-rule-list" aria-label="Bomb rules">
+        {structuredRules.traits.map((trait) => (
+          <section className="sitem-bomb-rule" key={trait.title}>
+            <h5>{playerText(trait.title)}</h5>
+            <div style={{ whiteSpace: "pre-line" }}><RuleLinkedText text={playerText(trait.body)} item={mergedItem} onReferenceDetail={onReferenceDetail} /></div>
+          </section>
+        ))}
+      </div>
+    ) : (
+      <div className="sitem-rule-traits" aria-label="Item traits">
+        {structuredRules.traits.map((trait) => (
+          <details className="sitem-rule-trait" key={trait.title}>
+            <summary>{playerText(trait.title)}</summary>
+            <div className="sitem-rule-trait__body" style={{ whiteSpace: "pre-line" }}><RuleLinkedText text={playerText(trait.body)} item={mergedItem} onReferenceDetail={onReferenceDetail} /></div>
+          </details>
+        ))}
+      </div>
+    )
   ) : null;
 
   let orderedDetails = null;

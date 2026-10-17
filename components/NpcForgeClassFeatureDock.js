@@ -319,7 +319,7 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
     : null;
   const classIdentity = safeText(selectedClass?.id || selectedClass?.class_key || selectedClass?.class_name || "unselected");
   const featureIdentity = feature ? safeText(feature?.id || feature?.key || feature?.name || "feature") : "overview";
-  const currentDetailKey = `${isOverview ? "overview" : "feature"}:${classIdentity}:${featureIdentity}:${level}`;
+  const currentDetailKey = `${isOverview ? "overview" : "feature"}:${classIdentity}:${featureIdentity}:${level}:${safeText(detail?.instanceKey)}`;
   const dismissed = closedDetailKey === currentDetailKey;
 
   useEffect(() => {
@@ -332,6 +332,7 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
 
   useEffect(() => {
     setClosedDetailKey("");
+    if (detail?.type === "rulesReference") setFloatingPosition(null);
   }, [detail]);
 
   useEffect(() => {

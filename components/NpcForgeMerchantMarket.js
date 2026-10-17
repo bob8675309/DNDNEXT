@@ -46,6 +46,7 @@ export default function NpcForgeMerchantMarket({
   canAddItem = null,
   selectedActionLabel = "Add to Starting Cart",
   headerActions = null,
+  onReferenceDetail = null,
 }) {
   if (!merchant) {
     return <section className="merchant-panel-inner merchant-market merchant-panel-forge forge-equipment-merchant-panel is-loading">
@@ -106,7 +107,7 @@ export default function NpcForgeMerchantMarket({
     rarityBadgeClassFor={rarityBadgeClass}
     showSource
     quantityFor={(card) => Math.max(0, Number(card?._available_qty ?? card?._stock_qty ?? 0))}
-    itemCardProps={{ variant: "shop", detailsCollapsible: false }}
+    itemCardProps={{ variant: "shop", detailsCollapsible: false, onReferenceDetail }}
     showPreviewHeader={false}
     previewMetrics={[
       { label: "Price", value: selectedCard ? `${Number(selectedCard._price_gp || 0)} gp` : "—" },
