@@ -20,7 +20,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   validate:
@@ -40,66 +40,3 @@ jobs:
           node --check utils/characterPortraits.js
           node --check scripts/validate_character_forge_resilience.mjs
           node scripts/validate_character_forge_resilience.mjs
-
-
-  import_item_art_batch_01:
-    if: github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'item-art-foundation-batch-01-20261017'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Check out item art branch
-        uses: actions/checkout@v4
-        with:
-          ref: item-art-foundation-batch-01-20261017
-          fetch-depth: 0
-
-      - name: Import verified item art from Dropbox
-        env:
-          ITEM_ART_MANIFEST: '[{"name":"itemart_weapon_sword_plain_01.png","size":711356,"hash":"a98d80deced0195d15b2ca5c7021173221719e4092e701028e5978479575778d","url":"https://ucf4b895d82171ea221a095feb02.dl.dropboxusercontent.com/cd/0/get/DKOvdW79JW9uGV_IuCvs_c5V7hOB9snHgqdkyk7XVodPZ3jS_ZYvw_Jfiq8GNzD-a8r951d72O8G-wH5nMUx2LiWy8BC1lG2waSKW810Ou58WtVGZUWTtugbdav5X5KT2ON_w9HlBVYmz1bZxg0VC30q9l49OPZOo3G4DN-r73FXQg/file?c_luid=c335000c"},{"name":"itemart_weapon_dagger_plain_01.png","size":795994,"hash":"0487655be69b1104295eb91d59a818a12b22858d4542120fa0eb6b4f29f385d0","url":"https://uc4a12c877b17cd549711cc308c4.dl.dropboxusercontent.com/cd/0/get/DKPGnUq9kCOFBA2LnGGm1IzRFCgZUyL_Y9tcZJ_EJ3Td0Qt0Yi2MwGYuHRqNmGPgI45CE8ppkEgWduVGDK9qX7IMs5SByHVB5TmfxECFUDMKKLU32q2_WU83zGeprDxuT-WjK1GTsb0sdtevU3lXUTVseVItSD30Gce8UTA7EPrMxg/file?c_luid=c335000c"},{"name":"itemart_weapon_axe_plain_01.png","size":784781,"hash":"e5ca9bf4a5e44a591da9f049e250466b4bf802f7899c68dab126d7bd36fb770d","url":"https://uc95822d1e56b01cb1a2c9336f14.dl.dropboxusercontent.com/cd/0/get/DKMvAkeYKTaO2aKOCPUvdMkV0vgdKdg4-yrK17jaJqYqBI49qu6Z-HZJP_44D3wOK2u2wnla1abnVrkE5yYYreu87aI20-UdvVBgJrQ0AuzYtDr3iWgcfjjkjKVLHdXJQb5_QGDfXYnGb9s656lxmjcko11A2zwbzeBQWC_5qLZOfQ/file?c_luid=c335000c"},{"name":"itemart_weapon_mace_plain_01.png","size":742738,"hash":"0b5a5db8aa743ffc7209188ecbe90004a47c349c99d15fc902d5656464e65eed","url":"https://uc40fecf0f7f62a3b9c273c5b0e8.dl.dropboxusercontent.com/cd/0/get/DKOxkD4seVH76bL8G8wkOvSDD1WHPxfTuJWRJCUuG_YgiNCxXZ80gAmzxQV9YTC_ZcTZX5_KUYGtaZvZS_HSORS5lkp0USAWxAGEfTrxGCBwYXH5QAkapwJMsBLlTDqlLoB4NQvM3aRYVzjtMb2fhRn_9lWjJuxbDq5tTgXstMcdDQ/file?c_luid=c335000c"},{"name":"itemart_weapon_spear_plain_01.png","size":723603,"hash":"143da58677e48a9499a393fd58c03d75578ef81126108e714656574016917eac","url":"https://uc9c2ab01c4a05547abcb4c83beb.dl.dropboxusercontent.com/cd/0/get/DKPvdDlQUO4FUtbtUZvUo9CEE2i46pyG5W0PfJQ8BUB2nTIdskUWPS-ffF3Yx5R5adg9Lf7SaNa7lxDvScwNjkbWTB9r8iCg-E0WwzofzXpamQuyZ4zAwakCMR8mkS4CGnQvAtN25lB6bPgupju4BbnI7J04gcpDyn0qp9orBVdY3w/file?c_luid=c335000c"},{"name":"itemart_weapon_bow_plain_01.png","size":675213,"hash":"7be909563925bad04a27025c8f7209a26c87d0b9cf0b0afd065ea98413fdc887","url":"https://uc6c231c905d72eb545546a462d9.dl.dropboxusercontent.com/cd/0/get/DKN6K3NlUN0JtqSetknf4ROvcSIF3u892svGXALkgABNBXx71mZNLHZdhsHF3RU4BfFebnWk2h1aypTF5jItzIwUczeAO-KPytmL6KsE84otC-Ul1G1XAKhxMm6PwraKw-vhd1yMeyjNefu-bDIagUyQBt5KrennsPvwBH7mZg6Phg/file?c_luid=c335000c"},{"name":"itemart_weapon_crossbow_plain_01.png","size":814802,"hash":"c7e734b0cc804401645f0a03c61b1851e21a6ca6048b74965d71e8517886dbd6","url":"https://uc865527f4375bf1127d09e24df8.dl.dropboxusercontent.com/cd/0/get/DKOJGqX82qHbb1sd6BuU_GibNrfhyaXeZfiAykDhFH0MP0je5DDo-W1Z2hO0oymQ6xl-f0qHXh3jSMSBhMBqLDoc1THd-g_55a_64gXLlBD-EleSph53lGgNYUaiH4jw6WQ4-SPZxK4SlbxhRYoFlbfVbM3igiUYS3OaWNS3i7Kkbg/file?c_luid=c335000c"},{"name":"itemart_weapon_staff_plain_01.png","size":683247,"hash":"dc292de21d451fc2b6171a923fd369711d08749486398c204b305aa9320d4946","url":"https://uc4cf6ae36bfe196a93665b5426c.dl.dropboxusercontent.com/cd/0/get/DKMBhmy0aDmnhuV45wlnDXmc10xV7b25VgJaUmVqJ2dpX6rsa6iX8zTdMuruFDMw4FHlc0NroEi4HtZRhBxM7vAbgIW4QPmFz8R54NzN3ZfTHbDBfKJe8OvMxTX6I0vVSW1RqqOeFNIOPtDlplp_tDVeqyTtYCECrwDJEMux-ZWllA/file?c_luid=c335000c"},{"name":"itemart_armor_light_plain_01.png","size":903250,"hash":"b56ef39fd405f69077c55de931a5d3c605f5a1057cd9f48028ebfe1420bc5462","url":"https://ucc59cfee629ba0a487e8c4a8459.dl.dropboxusercontent.com/cd/0/get/DKOize4-y3OraNlBQhMqbfAr7qzPAnbjwxvrSaTJ8xMOpjVTDKpOcemjerUNk9LxgSaaHMnNIaKIJ3Rh5RQkuX99so77f7vsoV-UOabgqLI9HXnXFoGRn0DYvKyuJpRiKgrd_k-GgddQH-qCISKBFLv69m053rcRsliDVkNWRVmHnw/file?c_luid=c335000c"},{"name":"itemart_armor_medium_plain_01.png","size":1026325,"hash":"02cbc988a79662691ab495b01871b0d4986b38d8b3487e235be624e3bb6f0910","url":"https://uc8c6fa3665ce8c1cfbb3eec1633.dl.dropboxusercontent.com/cd/0/get/DKMUOd273fL8wYWbp7coXu7ACLSHVUGgBBwkLCBkDGLuYHCembWPHoACqRZ2mqcIAf21lfx9ujG0gfWYhov-_h2qwoD1cvIjfKQ9qrGGH1SKLqSXHDu1ntgG_wZwiZTrVPVruiDt68_GMk-yDrln09r_aBdcuHlSm7O2680i4b6ysA/file?c_luid=c335000c"}]'
-        run: |
-          set -euo pipefail
-          python - <<'PY'
-          import hashlib, json, os, struct, urllib.request
-          from pathlib import Path
-
-          manifest = json.loads(os.environ["ITEM_ART_MANIFEST"])
-          target = Path("public/item-art/masters/batch-01")
-          target.mkdir(parents=True, exist_ok=True)
-
-          def dropbox_hash(data: bytes) -> str:
-              block = 4 * 1024 * 1024
-              digests = b"".join(hashlib.sha256(data[i:i+block]).digest() for i in range(0, len(data), block))
-              return hashlib.sha256(digests).hexdigest()
-
-          for item in manifest:
-              req = urllib.request.Request(item["url"], headers={"User-Agent":"DNDNext-Item-Art-Import/1.0"})
-              with urllib.request.urlopen(req, timeout=120) as resp:
-                  data = resp.read()
-              if len(data) != int(item["size"]):
-                  raise SystemExit(f'{item["name"]}: size mismatch')
-              if dropbox_hash(data) != item["hash"]:
-                  raise SystemExit(f'{item["name"]}: Dropbox content hash mismatch')
-              if data[:8] != b"\x89PNG\r\n\x1a\n" or data[12:16] != b"IHDR":
-                  raise SystemExit(f'{item["name"]}: invalid PNG')
-              width, height = struct.unpack(">II", data[16:24])
-              if (width, height) != (1024, 1024):
-                  raise SystemExit(f'{item["name"]}: expected 1024x1024, got {width}x{height}')
-              (target / item["name"]).write_bytes(data)
-              print(f'OK {item["name"]}: {width}x{height} {len(data)} bytes')
-          PY
-
-      - name: Commit only verified item art
-        run: |
-          set -euo pipefail
-          unexpected="$(git status --porcelain --untracked-files=all | awk '$2 !~ /^public\/item-art\/masters\/batch-01\// {print}')"
-          if [ -n "$unexpected" ]; then
-            echo "Unexpected working tree changes:"
-            echo "$unexpected"
-            exit 1
-          fi
-          git add public/item-art/masters/batch-01
-          test "$(git diff --cached --name-only | wc -l)" -eq 10
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "Add foundational item art batch 01"
-          git push origin HEAD:item-art-foundation-batch-01-20261017
