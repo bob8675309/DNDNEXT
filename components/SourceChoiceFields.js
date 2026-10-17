@@ -163,6 +163,7 @@ function SourceSpellField({ group, field, selected = [], blocked = [], onToggle,
               className={`profile-catalogue__row npc-forge-source-spell-picker__row ${active ? "active" : ""} ${isSelected ? "is-selected" : ""}`}
               onClick={() => setFocusedKey(option.key)}
               onKeyDown={(event) => {
+                if (event.target !== event.currentTarget) return;
                 if (event.key === "Enter" || event.key === " ") {
                   event.preventDefault();
                   setFocusedKey(option.key);
