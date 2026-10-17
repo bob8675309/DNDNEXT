@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import { NPC_PORTRAIT_BUCKET, publicPortraitUrl } from "../utils/characterPortraits";
+import PortraitLibraryFilterPanel from "./PortraitLibraryFilterPanel";
+import { portraitCardTags, portraitMatchesFilters, sortPortraitRows, titlePortraitFacet } from "../utils/portraitLibraryFilters";
 
 function safeStr(value) {
   return String(value ?? "").trim();
@@ -31,6 +33,7 @@ export default function PortraitPickerModal({
   canEdit = false,
   currentStoragePath = "",
   currentUrl = "",
+  preferredUseCase = "",
   onClose,
   onSelected,
 }) {
@@ -40,9 +43,26 @@ export default function PortraitPickerModal({
   const [err, setErr] = useState("");
   const [savingKey, setSavingKey] = useState("");
   const [query, setQuery] = useState("");
+  const [sortMode, setSortMode] = useState("library");
+  const [filters, setFilters] = useState({
+    species: "",
+    profession: "",
+    theme: "",
+    merchantOnly: false,
+    assignment: "all",
+  });
 
   useEffect(() => {
     if (!show) return;
+    setQuery("");
+    setSortMode("library");
+    setFilters({
+      species: "",
+      profession: "",
+      theme: "",
+      merchantOnly: String(preferredUseCase || "").toLowerCase() === "merchant",
+      assignment: "all",
+    });
     let cancelled = false;
 
     async function load() {
@@ -52,7 +72,7 @@ export default function PortraitPickerModal({
         const [libraryRes, assignedRes] = await Promise.all([
           supabase
             .from("npc_portrait_library")
-            .select("id,name,bucket,storage_path,public_url,category,tags,species_tags,profession_tags,theme_tags,width,height,sort_order,is_active")
+            .select("id,name,bucket,storage_path,public_url,category,tags,species_tags,profession_tags,theme_tags,width,height,recommended_use,sort_order,is_active")
             .eq("is_active", true)
             .order("sort_order", { ascending: true })
             .order("name", { ascending: true }),
@@ -84,7 +104,7 @@ export default function PortraitPickerModal({
     return () => {
       cancelled = true;
     };
-  }, [show]);
+  }, [preferredUseCase, show]);
 
   const assignmentsByKey = useMemo(() => {
     const map = new Map();
@@ -105,28 +125,29 @@ export default function PortraitPickerModal({
     return map;
   }, [assignedRows]);
 
+  const currentKey = currentStoragePath ? `path:${currentStoragePath}` : currentUrl ? `url:${currentUrl}` : "";
+
   const filteredRows = useMemo(() => {
-    const q = safeStr(query).toLowerCase();
-    if (!q) return libraryRows;
-    return (libraryRows || []).filter((row) => {
-      const hay = [
-        row?.name,
-        row?.category,
-        ...(Array.isArray(row?.tags) ? row.tags : []),
-        ...(Array.isArray(row?.species_tags) ? row.species_tags : []),
-        ...(Array.isArray(row?.profession_tags) ? row.profession_tags : []),
-        ...(Array.isArray(row?.theme_tags) ? row.theme_tags : []),
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-      return hay.includes(q);
-    });
-  }, [libraryRows, query]);
+    const contextForRow = (row) => {
+      const key = assignmentKey(row) || String(row?.id || "");
+      return {
+        assignedCount: (assignmentsByKey.get(key) || []).length,
+        isCurrent: Boolean(key && key === currentKey),
+      };
+    };
+
+    const visible = (libraryRows || []).filter((row) =>
+      portraitMatchesFilters(
+        row,
+        { ...filters, query },
+        contextForRow(row)
+      )
+    );
+
+    return sortPortraitRows(visible, sortMode, contextForRow);
+  }, [assignmentsByKey, currentKey, filters, libraryRows, query, sortMode]);
 
   if (!show) return null;
-
-  const currentKey = currentStoragePath ? `path:${currentStoragePath}` : currentUrl ? `url:${currentUrl}` : "";
 
   async function choosePortrait(row) {
     if (!canEdit || !characterId || savingKey) return;
@@ -192,6 +213,15 @@ export default function PortraitPickerModal({
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search by name, species, profession, theme…"
           />
+          <label className="portrait-picker-sort">
+            <span>Sort</span>
+            <select className="form-select form-select-sm" value={sortMode} onChange={(event) => setSortMode(event.target.value)}>
+              <option value="library">Library order</option>
+              <option value="name">Name A–Z</option>
+              <option value="merchant">Merchant-friendly first</option>
+              <option value="unassigned">Unassigned first</option>
+            </select>
+          </label>
           <span>{filteredRows.length} shown</span>
         </div>
 
@@ -199,33 +229,43 @@ export default function PortraitPickerModal({
         {loading ? <div className="portrait-picker-empty">Loading portrait library…</div> : null}
 
         {!loading ? (
-          <div className="portrait-picker-grid">
-            {filteredRows.map((row) => {
-              const url = imageUrlFor(row);
-              const key = assignmentKey(row) || String(row.id);
-              const assigned = (assignmentsByKey.get(key) || []).filter((entry) => String(entry.id) !== String(characterId));
-              const isCurrent = key && key === currentKey;
-              const label = row.name || row.storage_path || "Portrait";
-              return (
-                <button
-                  key={row.id || key}
-                  type="button"
-                  className={`portrait-picker-card ${isCurrent ? "is-current" : ""}`}
-                  onClick={() => choosePortrait(row)}
-                  disabled={!canEdit || !!savingKey}
-                  title={assigned.length ? `Already assigned to: ${assigned.map((entry) => entry.name).join(", ")}` : label}
-                >
-                  <span className="portrait-picker-image">
-                    {url ? <img src={url} alt="" loading="lazy" /> : <span>No image</span>}
-                  </span>
-                  <span className="portrait-picker-name">{label}</span>
-                  {isCurrent ? <span className="portrait-picker-current">Current</span> : null}
-                  {assigned.length ? <span className="portrait-picker-bookmark">🔖 {assigned.map((entry) => entry.name).join(", ")}</span> : null}
-                  {savingKey === key ? <span className="portrait-picker-saving">Saving…</span> : null}
-                </button>
-              );
-            })}
-            {!filteredRows.length ? <div className="portrait-picker-empty">No portraits match that search.</div> : null}
+          <div className="portrait-picker-browser">
+            <PortraitLibraryFilterPanel
+              rows={libraryRows}
+              filters={filters}
+              onChange={setFilters}
+              showAssignment
+            />
+            <div className="portrait-picker-grid">
+              {filteredRows.map((row) => {
+                const url = imageUrlFor(row);
+                const key = assignmentKey(row) || String(row.id);
+                const assigned = (assignmentsByKey.get(key) || []).filter((entry) => String(entry.id) !== String(characterId));
+                const isCurrent = key && key === currentKey;
+                const label = row.name || row.storage_path || "Portrait";
+                const tags = portraitCardTags(row, 3);
+                return (
+                  <button
+                    key={row.id || key}
+                    type="button"
+                    className={`portrait-picker-card ${isCurrent ? "is-current" : ""}`}
+                    onClick={() => choosePortrait(row)}
+                    disabled={!canEdit || !!savingKey}
+                    title={assigned.length ? `Already assigned to: ${assigned.map((entry) => entry.name).join(", ")}` : label}
+                  >
+                    <span className="portrait-picker-image">
+                      {url ? <img src={url} alt="" loading="lazy" /> : <span>No image</span>}
+                    </span>
+                    <span className="portrait-picker-name">{label}</span>
+                    {tags.length ? <span className="portrait-picker-meta">{tags.map((tag) => <small key={tag}>{titlePortraitFacet(tag)}</small>)}</span> : null}
+                    {isCurrent ? <span className="portrait-picker-current">Current</span> : null}
+                    {assigned.length ? <span className="portrait-picker-bookmark">🔖 {assigned.map((entry) => entry.name).join(", ")}</span> : null}
+                    {savingKey === key ? <span className="portrait-picker-saving">Saving…</span> : null}
+                  </button>
+                );
+              })}
+              {!filteredRows.length ? <div className="portrait-picker-empty">No portraits match those filters.</div> : null}
+            </div>
           </div>
         ) : null}
       </div>

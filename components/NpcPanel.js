@@ -945,6 +945,7 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
         canEdit={canChangePortrait}
         currentStoragePath={view.portrait_storage_path || ""}
         currentUrl={portrait.url || ""}
+        preferredUseCase={view.storefront_enabled || view.kind === "merchant" ? "merchant" : view.kind || ""}
         onClose={() => setPortraitPickerOpen(false)}
         onSelected={handlePortraitSelected}
       />
