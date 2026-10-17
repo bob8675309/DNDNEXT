@@ -1785,7 +1785,8 @@
 }
 
 .merchant-storefront-shared .merchant-preview-card-scroll > .sitem-card {
-  min-height: 100%;
+  min-height: 0;
+  height: max-content;
 }
 
 .merchant-storefront-shared .sitem-card.is-shop-variant .sitem-section,
@@ -1818,4 +1819,25 @@
   letter-spacing: .08em;
   text-transform: uppercase;
   white-space: nowrap;
+}
+
+
+/* 2026-10-17 stock readability pass.
+   Keep rarity on borders/badges; use restrained parchment-gold for names and a
+   warm near-white for descriptions so mundane/common rows do not read as disabled. */
+.merchant-storefront-shared .merchant-stock-row-head strong,
+.forge-merchant-wares__row .merchant-stock-row-head strong {
+  color: #e8c978;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-weight: 800;
+  letter-spacing: .005em;
+}
+.merchant-storefront-shared .merchant-stock-row p,
+.forge-merchant-wares__row p {
+  color: #f1eee8;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-weight: 500;
+}
+.merchant-storefront-shared .merchant-preview-card-scroll {
+  align-items: start;
 }
