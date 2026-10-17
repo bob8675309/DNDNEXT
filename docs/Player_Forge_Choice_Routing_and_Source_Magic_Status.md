@@ -113,3 +113,8 @@ No world-map, town/city-map, route/travel/weather, unrelated crafting/inventory,
 ## Current continuation
 
 PR #170 is historical and merged. This routing/source-magic authority remains active beneath PR #171. Any new browser defect should be reproduced against the current PR #171 deployment; PR #171 remains open and must not be merged without explicit user approval.
+
+
+## 2026-10-17 source-spell status toggle
+
+Source-owned spell catalogue status pills are now direct selection controls. Clicking Available selects that spell; clicking Selected removes it; Full remains disabled when the field has reached its choice count. The catalogue row itself remains an inspect/focus target, so selection is deliberate and matches the direct-toggle behavior used by Feats and Skills.
