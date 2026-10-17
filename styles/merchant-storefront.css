@@ -1877,3 +1877,29 @@
   font-weight: 450;
   letter-spacing: .004em;
 }
+
+
+/* 2026-10-17 storefront rarity-chip and headerless-preview cleanup.
+   The ItemCard already owns item name/rarity/type, so headerless previews start
+   directly at the card. Rarity is the first metadata chip on every stock row. */
+.merchant-storefront-shared .merchant-preview-pane > .merchant-preview-card-scroll:first-child {
+  padding-top: 3px;
+}
+
+.merchant-storefront-shared .merchant-stock-row-meta > span:first-child {
+  border-color: color-mix(in srgb, var(--rarity-accent) 78%, white 8%);
+  color: color-mix(in srgb, var(--rarity-accent) 80%, white 20%);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--rarity-color) 52%, rgba(255,255,255,.10)),
+      color-mix(in srgb, var(--rarity-color) 38%, rgba(5,7,12,.92))
+    );
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--rarity-accent) 24%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--rarity-accent) 20%, transparent),
+    0 0 8px color-mix(in srgb, var(--rarity-accent) 22%, transparent);
+  font-weight: 800;
+  letter-spacing: .035em;
+  text-shadow: 0 1px 1px rgba(0,0,0,.55);
+}
