@@ -474,3 +474,14 @@ This work does not change:
 - equipment-derived AC/attack authority.
 
 The change is confined to Character Forge starting equipment, merchant storefront presentation, merchant stock checkout at character creation, character inventory, and character-scoped starting currency.
+
+
+## 2026-10-17 adaptive ItemCard density and stock readability
+
+The shared shop ItemCard no longer stretches sparse stat fields to fill the full preview height. Weapon, armor, material, recipe, consumable, bomb, and wondrous field grids now use content-sized rows with a modest minimum height, while dense rules naturally grow and continue to use the existing preview scroll container.
+
+Bombs with named rule sections now render those sections once in a compact visible bomb-rule stack. This specifically removes the duplicated giant Effect block previously seen on Bomb of Petrification while preserving its canonical Initial Saving Throw, Subsequent Saves, 3 Successes, and 3 Failures text from the catalogue payload.
+
+Merchant stock names use restrained parchment-gold and row descriptions use warm near-white with a system sans-serif readability stack. Rarity remains encoded by the existing borders and badges.
+
+The Equipment selected-card pane now uses a native-100%-zoom density calibrated to the accepted 90% browser-zoom reference, reducing padding/type chrome without browser scaling or changing game mechanics.
