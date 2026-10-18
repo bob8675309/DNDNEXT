@@ -1,49 +1,71 @@
 name: Validate Player Forge starting equipment
 
 on:
+  push:
+    paths:
+      - "components/NewNpcModalV3Refined.js"
+      - "components/NpcForgeCoreSupport.js"
+      - "components/NpcForgeEquipmentStep.js"
+      - "components/MerchantPanel.js"
+      - "components/MerchantStorefrontView.js"
+      - "components/NpcForgeMerchantMarket.js"
+      - "components/MerchantAmbientBackdrop.js"
+      - "components/NpcForgeEquipmentSummaryDock.js"
+      - "components/useNpcForgeController.js"
+      - "components/useNpcForgeDerivedModel.js"
+      - "utils/playerForgeStartingEquipment.js"
+      - "utils/merchantStorefrontMedia.js"
+      - "scripts/validate_player_forge_starting_equipment.mjs"
+      - "scripts/validate_merchant_market_ui_handoff.mjs"
+      - "sql/20260808_49_player_forge_starting_equipment_currency.sql"
+      - "styles/player-forge-equipment-market.css"
+      - "styles/merchant-storefront.css"
+      - "styles/npc-shop-embedded-fill.css"
+      - "sql/20261012_02_merchant_stock_distribution.sql"
+      - "sql/20261012_03_merchant_recipe_rarity_cap.sql"
+      - ".github/workflows/validate-player-forge-starting-equipment.yml"
   pull_request:
     paths:
-      - "components/NpcForgeEquipmentStep.js"
-      - "components/NpcForgeMerchantMarket.js"
-      - "components/NpcForgeStepContent.js"
-      - "components/NpcForgeClassFeatureDock.js"
       - "components/NewNpcModalV3Refined.js"
+      - "components/NpcForgeCoreSupport.js"
+      - "components/NpcForgeEquipmentStep.js"
       - "components/MerchantPanel.js"
-      - "components/ItemCard.js"
+      - "components/MerchantStorefrontView.js"
+      - "components/NpcForgeMerchantMarket.js"
+      - "components/MerchantAmbientBackdrop.js"
+      - "components/NpcForgeEquipmentSummaryDock.js"
+      - "components/useNpcForgeController.js"
+      - "components/useNpcForgeDerivedModel.js"
+      - "utils/playerForgeStartingEquipment.js"
+      - "utils/merchantStorefrontMedia.js"
+      - "scripts/validate_player_forge_starting_equipment.mjs"
+      - "scripts/validate_merchant_market_ui_handoff.mjs"
+      - "sql/20260808_49_player_forge_starting_equipment_currency.sql"
       - "styles/player-forge-equipment-market.css"
       - "styles/merchant-storefront.css"
-      - "styles/card-compact.css"
-      - "scripts/validate_player_forge_starting_equipment.mjs"
-      - ".github/workflows/validate-player-forge-starting-equipment.yml"
-  push:
-    branches:
-      - main
-    paths:
-      - "components/NpcForgeEquipmentStep.js"
-      - "components/NpcForgeMerchantMarket.js"
-      - "components/NpcForgeStepContent.js"
-      - "components/NpcForgeClassFeatureDock.js"
-      - "components/NewNpcModalV3Refined.js"
-      - "components/MerchantPanel.js"
-      - "components/ItemCard.js"
-      - "styles/player-forge-equipment-market.css"
-      - "styles/merchant-storefront.css"
-      - "styles/card-compact.css"
-      - "scripts/validate_player_forge_starting_equipment.mjs"
+      - "styles/npc-shop-embedded-fill.css"
+      - "sql/20261012_02_merchant_stock_distribution.sql"
+      - "sql/20261012_03_merchant_recipe_rarity_cap.sql"
       - ".github/workflows/validate-player-forge-starting-equipment.yml"
 
 jobs:
   validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
       - name: Install dependencies
         run: npm ci
       - name: Validate starting equipment authority
-        run: node scripts/validate_player_forge_starting_equipment.mjs
+        run: |
+          node scripts/validate_player_forge_starting_equipment.mjs
+          node scripts/validate_unified_character_forge.mjs
       - name: Run production build gate
-        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: validation-placeholder
+        run: npm run build:vercel
