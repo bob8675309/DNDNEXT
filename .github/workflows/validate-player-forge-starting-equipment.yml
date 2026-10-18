@@ -48,9 +48,6 @@ on:
       - "sql/20261012_03_merchant_recipe_rarity_cap.sql"
       - ".github/workflows/validate-player-forge-starting-equipment.yml"
 
-permissions:
-  contents: write
-
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -72,77 +69,3 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: validation-placeholder
         run: npm run build:vercel
-
-
-  import_native_item_art_batch_02_03:
-    if: github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'item-art-foundation-batch1'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: item-art-foundation-batch1
-          fetch-depth: 0
-      - name: Download and verify native Item Art Batch 02/03 archive
-        env:
-          ITEM_ART_URL: 'https://uccd1067b4931de05db47c41068c.dl.dropboxusercontent.com/cd/0/get/DKM_J7y8RtCAMdXuwUDmwM8AWKF6gMWdwdjpch6W6TrZDS_FEIf-HFBFvl8ssm_srEr4cPulSQDsw6Pzrqvel_3WIwwpDX6VpPxVA02B7kjt4hfTgNhFbUlDF8ydn8FdS_uh_ZJfUlq8YYI9NL-GKall0WL9qFXB84lLKcqZUuf1IQ/file?c_luid=c335000c'
-          ITEM_ART_EXPECTED: '["itemart_armor_heavy_plain_01.png","itemart_shield_round_plain_01.png","itemart_shield_kite_plain_01.png","itemart_potion_vial_red_01.png","itemart_elixir_bottle_arcane_01.png","itemart_bomb_flask_plain_01.png","itemart_scroll_arcane_plain_01.png","itemart_wand_plain_01.png","itemart_rod_plain_01.png","itemart_focus_arcane_plain_01.png","itemart_symbol_holy_plain_01.png","itemart_tools_kit_plain_01.png","itemart_container_backpack_plain_01.png","itemart_trade_coinpouch_plain_01.png","itemart_material_ingot_plain_01.png","itemart_ammo_arrow_bundle_plain_01.png","itemart_instrument_lute_plain_01.png"]'
-          ITEM_ART_DROPBOX_HASH: 'b1c36fd862e7a27be8a7d241cdf48cd1c60f83e6810a125d073db96c787b0410'
-          ITEM_ART_SIZE: '13585209'
-        run: |
-          set -euo pipefail
-          python - <<'PY'
-          import hashlib, json, os, struct, urllib.request, zipfile
-          from pathlib import Path
-          url=os.environ["ITEM_ART_URL"]
-          expected=json.loads(os.environ["ITEM_ART_EXPECTED"])
-          archive=Path("/tmp/native-item-art.zip")
-          req=urllib.request.Request(url,headers={"User-Agent":"DNDNext-Native-Item-Art-Import/1.0"})
-          with urllib.request.urlopen(req,timeout=120) as resp:
-              data=resp.read()
-          if len(data) != int(os.environ["ITEM_ART_SIZE"]):
-              raise SystemExit(f"archive size mismatch: {len(data)}")
-          block=4*1024*1024
-          digests=b"".join(hashlib.sha256(data[i:i+block]).digest() for i in range(0,len(data),block))
-          content_hash=hashlib.sha256(digests).hexdigest()
-          if content_hash != os.environ["ITEM_ART_DROPBOX_HASH"]:
-              raise SystemExit("Dropbox content hash mismatch")
-          archive.write_bytes(data)
-          stage=Path("/tmp/native-item-art")
-          stage.mkdir(exist_ok=True)
-          with zipfile.ZipFile(archive) as zf:
-              names=sorted(zf.namelist())
-              if names != sorted(expected):
-                  raise SystemExit(f"archive file list mismatch: {names}")
-              zf.extractall(stage)
-          b2=set(expected[:10])
-          b3=set(expected[10:])
-          out2=Path("public/item-art/masters/foundation-batch-02")
-          out3=Path("public/item-art/masters/foundation-batch-03")
-          out2.mkdir(parents=True,exist_ok=True)
-          out3.mkdir(parents=True,exist_ok=True)
-          for name in expected:
-              raw=(stage/name).read_bytes()
-              if raw[:8]!=b"\x89PNG\r\n\x1a\n" or raw[12:16]!=b"IHDR":
-                  raise SystemExit(f"{name}: invalid PNG")
-              width,height=struct.unpack(">II",raw[16:24])
-              if (width,height)!=(1024,1024):
-                  raise SystemExit(f"{name}: expected 1024x1024, got {width}x{height}")
-              target=(out2 if name in b2 else out3)/name
-              target.write_bytes(raw)
-              print(f"OK {name}: {width}x{height}, sha256={hashlib.sha256(raw).hexdigest()}")
-          PY
-      - name: Commit native Batch 02/03 replacements
-        run: |
-          set -euo pipefail
-          git add -f public/item-art/masters/foundation-batch-02 public/item-art/masters/foundation-batch-03
-          if git diff --cached --quiet; then
-            echo "Native replacements already present."
-            exit 0
-          fi
-          changed="$(git diff --cached --name-only | wc -l)"
-          test "$changed" -eq 17
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit --no-verify -m "Replace Batch 02 and 03 with native ChatGPT item art"
-          git push origin HEAD:item-art-foundation-batch1
