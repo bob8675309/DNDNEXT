@@ -454,7 +454,28 @@ The first stable ItemCard master-art foundation set is now produced on PR #230. 
 - `itemart_book_spellbook_arcane_01`
 - `itemart_ammo_quiver_plain_01`
 
-This is **37 masters total**. The foundation pass is intentionally limited to stable physical archetypes. It does not finalize Smithing, Alchemy, or Enchanting material/component art.
+### Foundation Batch 05
+- `itemart_container_satchel_plain_01`
+- `itemart_gear_bedroll_plain_01`
+- `itemart_gear_compass_plain_01`
+- `itemart_map_travel_plain_01`
+- `itemart_weapon_warhammer_plain_01`
+- `itemart_material_herb_bundle_plain_01`
+- `itemart_tools_healers_kit_plain_01`
+- `itemart_wondrous_astrolabe_plain_01`
+- `itemart_wondrous_scrying_orb_plain_01`
+- `itemart_tools_cauldron_plain_01`
+- `itemart_gear_torch_bundle_plain_01`
+- `itemart_wondrous_hourglass_plain_01`
+- `itemart_wondrous_censer_plain_01`
+- `itemart_gear_spyglass_plain_01`
+- `itemart_container_chest_plain_01`
+- `itemart_gear_grappling_hook_plain_01`
+- `itemart_wondrous_scepter_arcane_01`
+- `itemart_container_map_tube_plain_01`
+- `itemart_tools_climbers_kit_plain_01`
+
+This is **56 masters total**. The foundation pass is intentionally limited to stable physical archetypes. It does not finalize Smithing, Alchemy, or Enchanting material/component art.
 
 Production of the image files does **not** by itself make them a second item-rules authority. Runtime resolution still needs a bounded follow-up implementation for art-key mapping/fallback behavior. No `items_catalog` image/art columns were added during this production pass.
 
@@ -483,3 +504,44 @@ The production consistency target remains:
 - restrained environmental backdrop
 - consistent visual margins and scale
 - no baked-in UI, labels, or readable text
+
+
+## Production checklist and duplicate gate — 2026-10-18
+
+Use this gate before every new ItemCard-art generation batch.
+
+- [ ] Check the existing master list by physical form, not only by exact item name.
+- [ ] Generate a new image only when it adds a reusable silhouette, object form, or clearly useful visual role.
+- [ ] Do not generate another generic sword, bow, shield, potion, chest, spellbook, or other already-covered form merely for variety.
+- [ ] Prefer broad reusable masters over one-off named-item illustrations unless the named item is visually distinctive enough to justify unique art.
+- [ ] Keep canonical static art on ChatGPT native image generation unless the project owner explicitly approves another engine.
+- [ ] Standardize accepted production masters to 1024×1024 PNG.
+- [ ] Keep the hero object readable at ItemCard thumbnail size and useful elsewhere on the site.
+- [ ] Do not bake item names, UI chrome, prices, rarity labels, readable writing, or ownership/provenance into the image.
+- [ ] Do not create art centered on illicit or illegal activity. Exclude burglary/lockpicking kits, contraband, illicit drugs, counterfeit documents/currency, poison-making kits, or similar activity-focused props.
+- [ ] After each batch, stage accepted source art through Dropbox, validate the import, record accepted masters, and record rejected repeats so they are not generated again.
+
+### Latest repeat rejections
+
+The following recent shots were intentionally **not** added as new masters because equivalent coverage already exists:
+
+- extra round shield → covered by `itemart_shield_round_plain_01`
+- sheathed sword → covered by `itemart_weapon_sword_plain_01`
+- recurve bow → covered by `itemart_weapon_bow_plain_01`
+- crimson potion/elixir → covered by the existing potion/elixir masters
+- second treasure chest → Batch 05 already selected one chest master
+- second grimoire/spellbook → covered by `itemart_book_spellbook_arcane_01`
+
+### Useful broad-base gaps for future batches
+
+Prioritize these before making more variants of covered objects:
+
+- travel/survival: tent, blanket, mess kit, rations bundle, flint-and-steel, shovel, pickaxe
+- lawful/general tools: merchant scales, ink-and-quill set, sewing kit, carpenter tools, cook's utensils, smithing hand tools
+- instruments beyond lute: flute, hand drum, horn
+- wearable forms: cloak, belt, bracers, brooch, circlet/diadem
+- additional distinct weapon silhouettes only where the form materially differs: rapier, greatsword, halberd/glaive, sling, javelin
+- additional neutral containers: scroll case, document folio, strongbox, specimen jar
+- additional lawful utility magic forms: sending stone, crystal prism, enchanted key, magic mirror, rune tablet
+
+Smithing, Alchemy, and Enchanting material/component families remain provisional until their system redesigns are finalized.
