@@ -403,3 +403,45 @@ For now:
 - use current catalog counts only as an audit baseline;
 - use stable-family art for immediate UI work;
 - defer final crafting-art totals until the crafting redesign is complete.
+
+
+## Foundation master production status — 2026-10-17
+
+The first stable ItemCard master-art foundation set is now produced on PR #230. All assets are square PNG masters at **1024 × 1024** and live under `public/item-art/masters/`.
+
+### Foundation Batch 01
+- `itemart_weapon_sword_plain_01`
+- `itemart_weapon_dagger_plain_01`
+- `itemart_weapon_axe_plain_01`
+- `itemart_weapon_mace_plain_01`
+- `itemart_weapon_spear_plain_01`
+- `itemart_weapon_bow_plain_01`
+- `itemart_weapon_crossbow_plain_01`
+- `itemart_weapon_staff_plain_01`
+- `itemart_armor_light_plain_01`
+- `itemart_armor_medium_plain_01`
+
+### Foundation Batch 02
+- `itemart_armor_heavy_plain_01`
+- `itemart_shield_round_plain_01`
+- `itemart_shield_kite_plain_01`
+- `itemart_potion_vial_red_01`
+- `itemart_elixir_bottle_arcane_01`
+- `itemart_bomb_flask_plain_01`
+- `itemart_scroll_arcane_plain_01`
+- `itemart_wand_plain_01`
+- `itemart_rod_plain_01`
+- `itemart_focus_arcane_plain_01`
+
+### Foundation Batch 03
+- `itemart_symbol_holy_plain_01`
+- `itemart_tools_kit_plain_01`
+- `itemart_container_backpack_plain_01`
+- `itemart_trade_coinpouch_plain_01`
+- `itemart_material_ingot_plain_01`
+- `itemart_ammo_arrow_bundle_plain_01`
+- `itemart_instrument_lute_plain_01`
+
+This is **27 masters total**. The foundation pass is intentionally limited to stable physical archetypes. It does not finalize Smithing, Alchemy, or Enchanting material/component art.
+
+Production of the image files does **not** by itself make them a second item-rules authority. Runtime resolution still needs a bounded follow-up implementation for art-key mapping/fallback behavior. No `items_catalog` image/art columns were added during this production pass.
