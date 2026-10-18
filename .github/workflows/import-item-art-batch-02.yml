@@ -1,0 +1,55 @@
+name: Import Item Art Batch 02
+
+on:
+  push:
+    paths:
+      - ".github/workflows/import-item-art-batch-02.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    if: github.ref == 'refs/heads/item-art-foundation-batch1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: item-art-foundation-batch1
+          fetch-depth: 0
+      - name: Download and verify Batch 02
+        env:
+          ITEM_ART_MANIFEST: '[["itemart_armor_heavy_plain_01.png","https://dnznrvs05pmza.cloudfront.net/gemini/gemini-3-pro-image/images/7c023e08-3cb2-4a99-b137-126fb26e8ae2/721666ae-2b71-4237-acfb-1b51a5872a1f/A_single_standalone_suit_of_heavy_medieval_fantasy_plate_arm.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiZDM2ODNjN2Q0YjZmY2Y1YyIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MjM4NTQwNX0.rOC20GItYPu6CbOcTl8VOCvwsQkzP9bJNZsihOhAbP4"],["itemart_shield_round_plain_01.png","https://dnznrvs05pmza.cloudfront.net/gemini/gemini-3-pro-image/images/390b3155-1454-42f2-b2a7-96c4bd143748/86cc22ed-9d6f-42a9-802f-4d4607c3d465/A_single_standalone_round_medieval_fantasy_shield_displayed_.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiNGU3Mjg5MWYwOGIxNDIxOCIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MjQ1MjI1NX0.BWsOsZMhLB0FlcWzRTsrhA_hqwGUBPnYv9MLWj_mPdY"],["itemart_shield_kite_plain_01.png","https://dnznrvs05pmza.cloudfront.net/gemini/gemini-3-pro-image/images/dd4ac566-84be-4a3a-b29e-a687b1b38903/f04b7c11-5da7-4abe-9a91-d0c6772cda55/A_single_standalone_kite_shield_displayed_as_the_hero_object.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiZjBlOGE0NTAzNDUyMjRhMSIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MjQ0MDY1Nn0.HDmS-cRSo7iTrCdDabVRj36CGU8qtWnFYkgHWbjdS-E"],["itemart_potion_vial_red_01.png","https://dnznrvs05pmza.cloudfront.net/gemini/gemini-3-pro-image/images/a58f84c7-a32e-48d4-a6c6-3344b2132ab3/2417eb92-4cab-4c72-82e4-728e6df36d42/A_single_standalone_fantasy_potion_vial_displayed_as_the_her.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiMDI0NjdmZGYzMWFjZWFkOSIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MjQ0MDI4N30.ICixPwrml_SROcF3cf74eQzl5RRYm4Gl8aLYEgPbMkk"],["itemart_elixir_bottle_arcane_01.png","https://dnznrvs05pmza.cloudfront.net/gemini/gemini-3-pro-image/images/35783bb9-be9d-401a-9f66-d29f450b0717/1170e825-11b0-4e2c-a457-11797d370182/A_single_standalone_elegant_fantasy_elixir_flask_displayed_a.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiYjdjYTQ4MjBiZmQ0MjM3NiIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MjQxMjA2NH0.JmxV60Fo02-vz8RZJEUyHYj90jqhle_WsolknCUV31s"],["itemart_bomb_flask_plain_01.png","https://dnznrvs05pmza.cloudfront.net/gemini/gemini-3-pro-image/images/efcb8290-5508-40be-8a9d-180a3b22eeab/97beb0e7-3972-4098-b456-e51beb2f239a/A_single_standalone_throwable_alchemical_bomb_flask_displaye.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiZDlkMWYxMTQ3MWQxZmM5MSIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MjQwODIxMn0.BLqJJyBVA9wEZprDVow9c5lLUc0_pi2l1c7eZGHNBEc"],["itemart_scroll_arcane_plain_01.png","https://dnznrvs05pmza.cloudfront.net/gemini/gemini-3-pro-image/images/41a2b10e-7c98-42b0-b72f-76a67cf59b9b/626eed42-8ae4-4cf3-948b-40bb994d6ede/A_single_standalone_arcane_spell_scroll_displayed_as_the_her.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiNGY5YTBlYThhN2M1YTRhNiIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MjM3OTU2MH0.OxCCsu2tLFRgY4Czg13gjIbPoz6vQ_qEF6CJryPz8xE"],["itemart_wand_plain_01.png","https://dnznrvs05pmza.cloudfront.net/gemini/gemini-3-pro-image/images/22e5049f-d3c0-4c58-8622-c9425572a942/08265c50-ab66-4753-bad0-c580121d8b73/A_single_standalone_fantasy_wand_displayed_as_the_hero_objec.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiYTNkZTEwNjJmZTkwNWRlNSIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MjQ0NTc5NH0.S1blNc1tD3-390ttHMh4YbwDGDlempCtnhGUNLQGz5M"],["itemart_rod_plain_01.png","https://dnznrvs05pmza.cloudfront.net/gemini/gemini-3-pro-image/images/37bdaa5c-1021-4e0c-9e12-87bdba091b0a/f3970fd4-fada-4423-bc74-5f833cee9f1d/A_single_standalone_fantasy_rod_displayed_as_the_hero_object.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiZDNkNmVmNDdjYTcyMTAzNiIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MjM4MjUzNX0.9COurCRtbcpKBDRBi4BFjZgEQ6VUuhSSCjAA_NQwD8c"],["itemart_focus_arcane_plain_01.png","https://dnznrvs05pmza.cloudfront.net/gemini/gemini-3-pro-image/images/ae3becc3-3324-4763-be1e-7a2c76f78115/9a4b55a9-3e5c-4185-bd6f-b7b3ac2d2e8c/A_single_standalone_reusable_arcane_focus_displayed_as_the_h.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiOGU0ZmViYTBjODIzNTA1YSIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MjM5MjczNn0.bUjh4PdYyAIp8Dqn9fwwqMkdzO1h2p_JyiXrmoc6cJU"]]'
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib, json, os, struct, urllib.request
+          from pathlib import Path
+          entries=json.loads(os.environ["ITEM_ART_MANIFEST"])
+          if len(entries) != 10:
+              raise SystemExit(f"expected 10 entries, got {len(entries)}")
+          target=Path("public/item-art/masters/foundation-batch-02")
+          target.mkdir(parents=True,exist_ok=True)
+          for name,url in entries:
+              req=urllib.request.Request(url,headers={"User-Agent":"DNDNext-Item-Art-Import/2.0"})
+              with urllib.request.urlopen(req,timeout=120) as resp:
+                  data=resp.read()
+              if data[:8] != b"\x89PNG\r\n\x1a\n" or data[12:16] != b"IHDR":
+                  raise SystemExit(f"{name}: invalid PNG")
+              width,height=struct.unpack(">II",data[16:24])
+              if (width,height)!=(1024,1024):
+                  raise SystemExit(f"{name}: expected 1024x1024, got {width}x{height}")
+              out=target/name
+              out.write_bytes(data)
+              print(f"OK {name}: {width}x{height}, {len(data)} bytes, sha256={hashlib.sha256(data).hexdigest()}")
+          PY
+      - name: Commit verified Batch 02
+        run: |
+          set -euo pipefail
+          git add public/item-art/masters/foundation-batch-02
+          test "$(git diff --cached --name-only | wc -l)" -eq 10
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Add foundational item art batch 02"
+          git push origin HEAD:item-art-foundation-batch1
