@@ -48,6 +48,9 @@ on:
       - "sql/20261012_03_merchant_recipe_rarity_cap.sql"
       - ".github/workflows/validate-player-forge-starting-equipment.yml"
 
+permissions:
+  contents: write
+
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -69,3 +72,71 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: validation-placeholder
         run: npm run build:vercel
+
+
+  import_item_art_batch_04:
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'item-art-foundation-batch1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: item-art-foundation-batch1
+          fetch-depth: 0
+      - name: Download, verify, and standardize Item Art Batch 04
+        env:
+          ITEM_ART_MANIFEST: '[{"name":"itemart_armor_helmet_plain_01.png","url":"https://uc829e6b83db5aee89287022e8f2.dl.dropboxusercontent.com/cd/0/get/DKOQzXJA2X0YYuYQjgCFcMNDFUvw4Z3KV24cVpFkriiBcwFNt4n74rH88J7kIeSYAUCiVjm6pk15mBFr2ZEtUrSyE_naFRuK22JC1ymhNrtTphLx2SXgq3L1U9U3PiUE4PMTmncgXyDqbLBIpdl9ErB8rQ4MtpzGMsJOy4OL_AuJ-w/file?c_luid=c335000c","hash":"462dc14cfaea82af56eacca1234bb06f23c2c8f664b3a3bb70a560611a6db5a8","size":2743936},{"name":"itemart_armor_gauntlets_plain_01.png","url":"https://ucee54203efbb097cc84ea69e184.dl.dropboxusercontent.com/cd/0/get/DKPFYsVGZhcEbpEUeG2ePRxjPZO5A2jBkcgp-cw1auVQh6u4sGfiY4qWJbBz8DK00PhmcireORbENGoWCpFc37_w6nUnHCe2vq7nCM1sxz-gEuXlvM0gDymlBkXaziUbz2LqUCY-FEjP_smr8TvZ-fVa7YNWp-wXDZzSmgb7jokXsA/file?c_luid=c335000c","hash":"0d8627c09b99b19b45b5b1402fb54ca6f5b9698b1d5fe87bf3ec3f32aabcf388","size":2781297},{"name":"itemart_armor_boots_plain_01.png","url":"https://uc4c429fb1d6d80210d11cf78c45.dl.dropboxusercontent.com/cd/0/get/DKNFaTE5nQ624HCiqgrlN44Fdi6T5Qaip7Qi6qZfOAd-3w5QYG9eB_v12Ps1OBbcWROgKhZ2KX9dWk9h7SeP5e0lk6rsGx6TCrokHfdLgeyzKU1c5dSqHPNbXFR9w3ZOVkGMKukcoGw1Sr8WOJDPo6CCt6OqZSVbHL8DbnWHizk3Mw/file?c_luid=c335000c","hash":"f0d6a72aea1f68577d48d872257876b03a3f497b20219bc8b7337f6d1d267707","size":2646727},{"name":"itemart_wondrous_ring_ruby_01.png","url":"https://uc48ea0f919395a4c6ad8ea72e0d.dl.dropboxusercontent.com/cd/0/get/DKPIZY9lf9ngOhHVOpoYo0GOJsG-JEozRP0GBgMjbqiWfZbJMAopNDHkBlNNV47v0DEGR2Ut4AUPyerPWc74FYqs7_eIAqpIgB58btloraYNoqnWc9HkwM7gwgK8OG0Wik9MHrKayjpmzWDFzmmjF_LTvtpxqxHD854jDAklz6ew0Q/file?c_luid=c335000c","hash":"4f07ea9917c437fe92d0bc4c605faf7e2286d2501895829c42b7e02026dff7fa","size":2415897},{"name":"itemart_wondrous_amulet_sapphire_01.png","url":"https://uc34a6e44f103176254238048561.dl.dropboxusercontent.com/cd/0/get/DKNC2BbWyZsMgJngX2kYbAMXoQ5dB5KMeADXzVL4dQT7K5jSOk8SifJWAkTrqs2dGlQ1VrS0Rf_OYAw_qbfyl-_1HlDHsO9mVUPaEN82mN8YbxPFtQ2QKwl1Y4SXPLBMiaJ3AeMl-zXKqm5B1WJpe16SpKEKsTnXzXu-pZ7uVgKPMw/file?c_luid=c335000c","hash":"b2c0856a903725c072b4aabd2d4e5d07f8993e9d4609ae2731e619e291cb8265","size":2328337},{"name":"itemart_gear_lantern_plain_01.png","url":"https://ucc5b793d5c44cfe791376ce4212.dl.dropboxusercontent.com/cd/0/get/DKMtmEiWyEXkbtMvYPqNj7u46mgyDOmNembsvz491NHZOOWfDknFe0BAN9dmAy9U7cMLbBCB84wp6V9O-JzscnlAwgrGbkL8YfShIP5ISBH5Ey9m1RCyWiZQQUwmGdEuu54uA-axcu5CNuZ5ZkMiOinz7qfLVO0TBjF052EklZd3fw/file?c_luid=c335000c","hash":"4a824dff9df60cfe4b678ab8bad99b4b8d14b67b7ffb1c866134c80b2a760e65","size":2430313},{"name":"itemart_gear_rope_hook_plain_01.png","url":"https://uc7a0f2c02c977ffbbb80e313caf.dl.dropboxusercontent.com/cd/0/get/DKOfTbmj5G6N0zdLoTF8iQxHDYMK3Yjvi_eGNpwvUfnxkQ0o2TvoQL_HB5rGDGzJhY0YfhdI9WH72Lh-pzNoGKKevcqk6XKSlnbrKdEs8oIYKp7adGWm1iYfTNmiQH0KFQmRG92B8TIP227--hPlN4TB2-hTWFDY2VLWsUqpxYJCaA/file?c_luid=c335000c","hash":"8d29b63d95e1f716fc295019293f10bebad242bed2f473dd1779b09ec5e2347d","size":2696450},{"name":"itemart_container_waterskin_plain_01.png","url":"https://uc6cf3f5eacf9673ddaee8891710.dl.dropboxusercontent.com/cd/0/get/DKO2Sa1NmlFynhkjODWjb80Q8O-AytoKDBMMWKjCTMlllM5cBofKcjnjzEnz0pX0bkQFyv6uK1pvvqb8CMcdAvnPHUZwdlSjmEYWMvfjdzTuMze0wSlnU9uai1CtZeTPanw0CC0lThC5MxIZlEoruNMV7FKzFEy6Z-VYg4JQOkmUMw/file?c_luid=c335000c","hash":"4dd14c2327b1979fe1c48d7f80aa8ac18984eba5407a8affd871c0f248a08c02","size":2564725},{"name":"itemart_book_spellbook_arcane_01.png","url":"https://uc23b7a219695c17e4adc2a00de5.dl.dropboxusercontent.com/cd/0/get/DKNWFWz76aM7SJzK9WJ69u_oFjE6tKWmvWW3hb2hZy2SXbAZMZcXekLnYNcmKkNJNzs--eWXBUWTUxbBoLrirj8kNhbaIVau2EBVMsoHDVacRWWJ2g5t0d7dAxTkkeiN7rg8mBx3fyEjDqeuz1CvqKe9cm8Z06sj5hfMmFelwctzUQ/file?c_luid=c335000c","hash":"a38b09be7a9ef7b189b18f5e5a18c5860cb753d7e7761a89c4dbf3287e8805e2","size":2909987},{"name":"itemart_ammo_quiver_plain_01.png","url":"https://uc2211c46c9ce668e1812b757f1c.dl.dropboxusercontent.com/cd/0/get/DKMSuScrQzU2L5Ca3TU7jF17ARu03oVNCbL22IZP7D8EwctRK0dVLIdRSI2Pot7O0TVzSZFylwTD5rW4GblT8krZ_b8E9N8KcBngNGk6HJvk3bEbabYzuioddFhSGNTlJimtIJLV3jYJJmcxo0AMSgU7AkP3TDkbT0Bjo6JdxZMFKQ/file?c_luid=c335000c","hash":"6fab5fdc6a98eb433aebf675ee150dfda87aa1472d10188809a4aeed5d3a611d","size":2411580}]'
+        run: |
+          set -euo pipefail
+          python -m pip install --quiet pillow
+          python - <<'PY'
+          import hashlib, io, json, os, urllib.request
+          from pathlib import Path
+          from PIL import Image
+
+          manifest=json.loads(os.environ["ITEM_ART_MANIFEST"])
+          if len(manifest) != 10:
+              raise SystemExit(f"expected 10 images, got {len(manifest)}")
+          target=Path("public/item-art/masters/foundation-batch-04")
+          target.mkdir(parents=True,exist_ok=True)
+
+          def dropbox_hash(data):
+              block=4*1024*1024
+              digests=b"".join(hashlib.sha256(data[i:i+block]).digest() for i in range(0,len(data),block))
+              return hashlib.sha256(digests).hexdigest()
+
+          for item in manifest:
+              req=urllib.request.Request(item["url"],headers={"User-Agent":"DNDNext-Item-Art-Import/4.0"})
+              with urllib.request.urlopen(req,timeout=120) as resp:
+                  data=resp.read()
+              if len(data) != int(item["size"]):
+                  raise SystemExit(f'{item["name"]}: source size mismatch')
+              if dropbox_hash(data) != item["hash"]:
+                  raise SystemExit(f'{item["name"]}: Dropbox content hash mismatch')
+              with Image.open(io.BytesIO(data)) as image:
+                  if image.format != "PNG":
+                      raise SystemExit(f'{item["name"]}: expected PNG, got {image.format}')
+                  if image.width != image.height:
+                      raise SystemExit(f'{item["name"]}: source must be square, got {image.size}')
+                  image=image.convert("RGBA") if "A" in image.getbands() else image.convert("RGB")
+                  image=image.resize((1024,1024),Image.Resampling.LANCZOS)
+                  out=target/item["name"]
+                  image.save(out,format="PNG",optimize=True)
+              with Image.open(out) as check:
+                  if check.format != "PNG" or check.size != (1024,1024):
+                      raise SystemExit(f'{item["name"]}: output validation failed')
+              print(f'OK {item["name"]}: source verified, standardized to 1024x1024')
+          PY
+      - name: Commit verified Item Art Batch 04
+        run: |
+          set -euo pipefail
+          test "$(find public/item-art/masters/foundation-batch-04 -maxdepth 1 -type f -name '*.png' | wc -l)" -eq 10
+          git add -f public/item-art/masters/foundation-batch-04
+          if git diff --cached --quiet; then
+            echo "Batch already imported."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit --no-verify -m "Add foundational item art batch 04"
+          git push origin HEAD:item-art-foundation-batch1
