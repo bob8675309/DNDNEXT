@@ -442,7 +442,19 @@ The first stable ItemCard master-art foundation set is now produced on PR #230. 
 - `itemart_ammo_arrow_bundle_plain_01`
 - `itemart_instrument_lute_plain_01`
 
-This is **27 masters total**. The foundation pass is intentionally limited to stable physical archetypes. It does not finalize Smithing, Alchemy, or Enchanting material/component art.
+### Foundation Batch 04
+- `itemart_armor_helmet_plain_01`
+- `itemart_armor_gauntlets_plain_01`
+- `itemart_armor_boots_plain_01`
+- `itemart_wondrous_ring_ruby_01`
+- `itemart_wondrous_amulet_sapphire_01`
+- `itemart_gear_lantern_plain_01`
+- `itemart_gear_rope_hook_plain_01`
+- `itemart_container_waterskin_plain_01`
+- `itemart_book_spellbook_arcane_01`
+- `itemart_ammo_quiver_plain_01`
+
+This is **37 masters total**. The foundation pass is intentionally limited to stable physical archetypes. It does not finalize Smithing, Alchemy, or Enchanting material/component art.
 
 Production of the image files does **not** by itself make them a second item-rules authority. Runtime resolution still needs a bounded follow-up implementation for art-key mapping/fallback behavior. No `items_catalog` image/art columns were added during this production pass.
 
