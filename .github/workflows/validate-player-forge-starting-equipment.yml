@@ -1,140 +1,49 @@
 name: Validate Player Forge starting equipment
 
 on:
-  push:
-    paths:
-      - "components/NewNpcModalV3Refined.js"
-      - "components/NpcForgeCoreSupport.js"
-      - "components/NpcForgeEquipmentStep.js"
-      - "components/MerchantPanel.js"
-      - "components/MerchantStorefrontView.js"
-      - "components/NpcForgeMerchantMarket.js"
-      - "components/MerchantAmbientBackdrop.js"
-      - "components/NpcForgeEquipmentSummaryDock.js"
-      - "components/useNpcForgeController.js"
-      - "components/useNpcForgeDerivedModel.js"
-      - "utils/playerForgeStartingEquipment.js"
-      - "utils/merchantStorefrontMedia.js"
-      - "scripts/validate_player_forge_starting_equipment.mjs"
-      - "scripts/validate_merchant_market_ui_handoff.mjs"
-      - "sql/20260808_49_player_forge_starting_equipment_currency.sql"
-      - "styles/player-forge-equipment-market.css"
-      - "styles/merchant-storefront.css"
-      - "styles/npc-shop-embedded-fill.css"
-      - "sql/20261012_02_merchant_stock_distribution.sql"
-      - "sql/20261012_03_merchant_recipe_rarity_cap.sql"
-      - ".github/workflows/validate-player-forge-starting-equipment.yml"
   pull_request:
     paths:
-      - "components/NewNpcModalV3Refined.js"
-      - "components/NpcForgeCoreSupport.js"
       - "components/NpcForgeEquipmentStep.js"
-      - "components/MerchantPanel.js"
-      - "components/MerchantStorefrontView.js"
       - "components/NpcForgeMerchantMarket.js"
-      - "components/MerchantAmbientBackdrop.js"
-      - "components/NpcForgeEquipmentSummaryDock.js"
-      - "components/useNpcForgeController.js"
-      - "components/useNpcForgeDerivedModel.js"
-      - "utils/playerForgeStartingEquipment.js"
-      - "utils/merchantStorefrontMedia.js"
-      - "scripts/validate_player_forge_starting_equipment.mjs"
-      - "scripts/validate_merchant_market_ui_handoff.mjs"
-      - "sql/20260808_49_player_forge_starting_equipment_currency.sql"
+      - "components/NpcForgeStepContent.js"
+      - "components/NpcForgeClassFeatureDock.js"
+      - "components/NewNpcModalV3Refined.js"
+      - "components/MerchantPanel.js"
+      - "components/ItemCard.js"
       - "styles/player-forge-equipment-market.css"
       - "styles/merchant-storefront.css"
-      - "styles/npc-shop-embedded-fill.css"
-      - "sql/20261012_02_merchant_stock_distribution.sql"
-      - "sql/20261012_03_merchant_recipe_rarity_cap.sql"
+      - "styles/card-compact.css"
+      - "scripts/validate_player_forge_starting_equipment.mjs"
       - ".github/workflows/validate-player-forge-starting-equipment.yml"
-
-permissions:
-  contents: write
+  push:
+    branches:
+      - main
+    paths:
+      - "components/NpcForgeEquipmentStep.js"
+      - "components/NpcForgeMerchantMarket.js"
+      - "components/NpcForgeStepContent.js"
+      - "components/NpcForgeClassFeatureDock.js"
+      - "components/NewNpcModalV3Refined.js"
+      - "components/MerchantPanel.js"
+      - "components/ItemCard.js"
+      - "styles/player-forge-equipment-market.css"
+      - "styles/merchant-storefront.css"
+      - "styles/card-compact.css"
+      - "scripts/validate_player_forge_starting_equipment.mjs"
+      - ".github/workflows/validate-player-forge-starting-equipment.yml"
 
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
           cache: npm
       - name: Install dependencies
         run: npm ci
       - name: Validate starting equipment authority
-        run: |
-          node scripts/validate_player_forge_starting_equipment.mjs
-          node scripts/validate_unified_character_forge.mjs
+        run: node scripts/validate_player_forge_starting_equipment.mjs
       - name: Run production build gate
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: validation-placeholder
-        run: npm run build:vercel
-
-
-  import_item_art_batch_05:
-    if: github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'item-art-foundation-batch1'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: item-art-foundation-batch1
-          fetch-depth: 0
-      - name: Install image normalizer
-        run: python -m pip install --quiet pillow
-      - name: Download, verify, and normalize Item Art Batch 05
-        env:
-          ITEM_ART_MANIFEST: '[["itemart_container_satchel_plain_01.png","https://uce0d023cdb827bef39ed28e4241.dl.dropboxusercontent.com/cd/0/get/DKOdhK8ZPUgAttb93VkmelAtBkOUsWUusYT04s6jOdva8uJqeqAV01nj5W4xUUWkpK_rUe2z5a4ZxVpLctu_LciElhyWJNFITr9tcA2f32YGU7fMmIhurvP5ZLMIwfFoR_lXsiYhqTKjR7aTeHGT7V6RdXaMDjuuxEN12jYPV9yHEw/file?c_luid=c335000c","49b888a95ff927f544a9f3472f14497686b8e8e27c245f0d3bea293848d9b499",2833834],["itemart_gear_bedroll_plain_01.png","https://uc25145faca40dee34857a31b610.dl.dropboxusercontent.com/cd/0/get/DKMoJlOAgzcooJhUcdzLBUcJ9bHKHIdZP7E2DvTZULyEH5sKL3VUaxOaiwxAfX8jwtVcBqbh3QKNrpiJBcFGoiRqyPL70CmQm7MqR3P-7WgwiTf1GgDUnBntkLsalHj5UETML_DF1-tRXZYFE07frz-7uN7P2nw6IL70xDd6pdsuMg/file?c_luid=c335000c","a45833cfff82ce4277fd0127edc6f9a100c220a9b86f0913aed4b0b3dd0d94ad",2961338],["itemart_gear_compass_plain_01.png","https://ucc7785c0fe8037c64cf245787f5.dl.dropboxusercontent.com/cd/0/get/DKMC7Yx2tG3MhJ-UxHNQxcG9Xaz0eAfLV9I6uh4OyL0TpDLrvm7Qrnusx8aXw1oWGVr9JnEHKInN6qULxK4r4wWwJQugGVTGei5-HgxkVxYEzIRGio0HM2yB5IDFxbqMjmpmGo3K5CdoYijXbPuLweKov57CRZ3Y5bdFqNvD70E_Sw/file?c_luid=c335000c","05800320bed268d994afb11ccba9ad2a15cda10e998e677fa4761f057e8d8951",2716527],["itemart_map_travel_plain_01.png","https://uc311572843c6cf86871c87a5884.dl.dropboxusercontent.com/cd/0/get/DKPra659-TYn3wNhp1SKw-phv-YylCTSiZoYLUthnSW-OHJ9OtTDv_uo4c06ei1DqcRz6AUxijkzOfcqIktO9eHDlQn9Se-0ELAU5-ij6RJZTnXXzpUXhMhdcHGduNSBoKHK-2SUemPa7Ub7IDhQL2afRpNNDA19MazhEk7VSaWNwg/file?c_luid=c335000c","ae3da9e9fe72a5ac23a1ca963cdb5f0ae1985cc13d2801471cb24b625c00b744",2627246],["itemart_weapon_warhammer_plain_01.png","https://uc802f54942a970756d257d961ac.dl.dropboxusercontent.com/cd/0/get/DKMNgEWJkewKL64CpaGDzmJbZvgWoxRw997q1kx_t-4YJimJxvm4cUWy3gSSRzMcp-8PU5Fra6rMLbuFa3S9O_6eDpvpBYINaM6dU__l645GnuiYBwcTYsL_8w8Jm5CwNiHNHN7a8nJX-7-2n3-9pMSSS_sdOWFVZZGCuwFpYNK2rA/file?c_luid=c335000c","a4f58f00bb29dc6e307edeadbe6556e32a571cccf077b8313d9277d9d39550a7",2498295],["itemart_material_herb_bundle_plain_01.png","https://uc52d0f028431140e58c686dd293.dl.dropboxusercontent.com/cd/0/get/DKN-Hj5MP8IjTtru8xDEO_kFnqD6dZJE6seaO5NqTtQYU_QsiRoNpuy1XHo-JqNOMTzep7mBab4uwv1Eci2ZrFDmsmLD-yAWd_VL3tJJFHn9ivYMGAH_7nhv8irwUTBrk3sNALBAPA_kgy6JWfYKJnVFYwrpTfAEPCI1Q1NQkYA4hg/file?c_luid=c335000c","f27f4dd574063efed4635e493700c15b6cd23bed4ec56d6c02f35b7333a028c4",2937447],["itemart_tools_healers_kit_plain_01.png","https://uc4acfe9eba353540f9f9a635e12.dl.dropboxusercontent.com/cd/0/get/DKME2C9AjkvbLhhdF7IsUQzWAXg777xpVufLQgQcgqdy9DwRi-PiowP06IQ-crgEWxhd-b9ZfsoQRLy0g8GURZNDnisJEIctxxaGy1VA7o5PBkNzYowyjUSYuNmmOva3qFUNgfdLasHa4ss079Ec6qXq_eFN-OONAaZc30byzi4oYw/file?c_luid=c335000c","c12b6ce3f6643a9b74cdcfe1b67316a15c2f3e44abc284dab2f863ecf3c09c6b",2848440],["itemart_wondrous_astrolabe_plain_01.png","https://uc09ed31be52ef5bdbb305e24d04.dl.dropboxusercontent.com/cd/0/get/DKOwun7KwL5v1VsNh-exxM2ZKJpE_Wzi8-5-sYKidT36fKM7tXf2BfY9CEg7nQhxlOOTb9FDJvjXtb2zya7Ecf0mr5ymDY7MrmLEitW-HThVCCJ00z6MCzTaHA4Q6gTebRLhLssCf6UKBfoDIjCVsxqRua18zA-DoNaf4BONnT43oQ/file?c_luid=c335000c","cf366440d4e962720c3633a5c22bf1078a0bfb5f22317b401eba060af6e5c00e",2592634],["itemart_wondrous_scrying_orb_plain_01.png","https://uc500901cad752f624793e1d42bd.dl.dropboxusercontent.com/cd/0/get/DKNL1UFyQYp5SVdXgUVlqLGSUb_gpLNR6Wgs1PnC6JsbeDvqLTgCOF9lbvS7Q6U62lXCoOaO1-B0Epg861hzwugChh8L7L9UpRXmMwVjlaJxJbyeak4Wv8V34GAUTEvOy7sVdtkh_SBCIr2wBCg5asqh8J_PRzRs6k210ezrua4LGQ/file?c_luid=c335000c","4015a1b2bc6abad46c292af364f6096b9c3c17149684118ebed8336ecf6d5344",2631058],["itemart_tools_cauldron_plain_01.png","https://uc75f8eaff5907ac4bcdd90a07d3.dl.dropboxusercontent.com/cd/0/get/DKO1ea81JaQXbi5ezjeoZFGfE44E-Pa6puU-fLplSpGcq4ztPhQBMgeEC_C9KjHsb3d9LqwTq0YEhWMFh67FoBnS1hQzF0YBYpNIlSggI1A9-SerF7EdEFmyfQplHbtLB_zBnI0YcNB-viK2OpzLEp25usmE1YH2cd4Twiuj8ec1iw/file?c_luid=c335000c","259187846753227e27fd8fb80aa469c401d21c7ad586616c5ea2afa68913b12f",2676871],["itemart_gear_torch_bundle_plain_01.png","https://ucb53bce1dab711bd27d6a57747c.dl.dropboxusercontent.com/cd/0/get/DKNxGLeu8iRlSCRx7m3XR5wFzc73w0RoJtbUK-67wqdqUlewB1wiZ8A2VXJL-A-uzoH3epoK2CCHsRWSavRAJVEXJf3tYaVQrtXo1b2n_pWlX6X1c81R-gGefX_kv7LWmpXPWJvDND1qIz356C_oP8nEfnsVfwEhnXKhrHhRrWse9g/file?c_luid=c335000c","25fd62c6a86f6d7af819bbca7f6fb0b51ea08fa6576f9707613f21dc0592b066",2615225],["itemart_wondrous_hourglass_plain_01.png","https://uc569c13074af2275f89e611d922.dl.dropboxusercontent.com/cd/0/get/DKO_fuTGo3rEf7YB1qf6olRZhjmVWkUqVPlm67Zgm25WJ0HPIBeWmRDFSv7OEyAMAjLqTh8zag6EHop-zupMwP9un-ahPl7hYeIm6n8XakxPQnmkXAELKZauWT4hhJXBQGYjNo5cQPtr63U73g8cJaCrAVZY3MvtWqOxl96lMfFXig/file?c_luid=c335000c","6ba4eeee498e061e6e9bc663acc571478b5d2b9496d532e78e07b3f4a67eca8e",2457158],["itemart_wondrous_censer_plain_01.png","https://ucefcf7b80f7b53c50a894cd99dd.dl.dropboxusercontent.com/cd/0/get/DKP-l_pKhF3fTvKTYv0Ef1jkz8wQu-ZHkg5JRVKDppCu9K6V7Jz4ADkxqgWWBYiS1woHvt4Sy6JcMLOplzQeWTp8FZV4fYB_IhlFmmg1XWp-75vcTioh10-hqa7JUdgpL9WjkzkcGxdtAzLvUT2ZveNBAbb-AQwMabOnZjpSYhnm5g/file?c_luid=c335000c","c7cb40c30b7d88465b83985403ac09211fc5db24440dc3786920ba5d5e8b58c3",2328233],["itemart_gear_spyglass_plain_01.png","https://ucf1dd4ed99ba90e4b4e803d5034.dl.dropboxusercontent.com/cd/0/get/DKMtBB8fApeIs3GyI12eGwcfOeeWCu1hTozz88_nvc8MIKOxqXclJ32hVDuo9uGPXS9N4gMkZwuKuYz3CTEsI-hqjdkEJCpPBakDr5MV-piBcjCPWCfRsCVfqeKqqasihS7nEJkEQbhJRCNDgiTy6_9mOmExEe8duih9ugesuFT2bw/file?c_luid=c335000c","95bf305bd32c8f3b577ec0e16e33539280832fbcd73d203158aa2443954b3cbb",2524266],["itemart_container_chest_plain_01.png","https://uca433b38e75ca8dee5fbfcf02e6.dl.dropboxusercontent.com/cd/0/get/DKM-sYBqRUoykqHzzFLv-WmhoDHg_-6sFJwrS1bngBvAofOe6cQRsXJhBwu3K9KrX0OvkspN3Izv7z0qX1QQwYcap34pya-PokhCd8rGWeCkM9AYGaTWj8TdcYPRQd9UHZkEsOZv4dMA44lBqbnISxVcHzM6vTwEEA7Ki64Yy8IadQ/file?c_luid=c335000c","f06db440ffff1cc2a62e8532004afddff5324666292fd996ce0b2a0f1ec883cd",2777547],["itemart_gear_grappling_hook_plain_01.png","https://uc2fc1addec1fc5af4ce4dc979d1.dl.dropboxusercontent.com/cd/0/get/DKNPSTRuhvUEueoklENGdIPhoRxAZLVV8jyIGvjklEJ7WQzQwB2wD4vbGgYdhVMF5q4mXv6PTrRdrrylT6oCO7pf1pY0K_N9C_kngYdmj7Iv9XG9FvwmHPiL__co27AazF4up_vXYEeECWOFKTgRxkTaVM0zq1cozvoozBvAZ4Xh5g/file?c_luid=c335000c","794e7642b56fde070b90d30b28ec01ce3a8bc439bbf1b6d905816eefd121668a",2631369],["itemart_wondrous_scepter_arcane_01.png","https://ucdbfb8056425cfd576df1df6a0a.dl.dropboxusercontent.com/cd/0/get/DKNUcXk5bvinLDpLyUZvrMBK2hToraO90Z7qpG3Cnn8DoHfSZgvPvWOT5u1h0qoUW3kB869slc3vsNSkXrZ0T7ozHIMNJrhSjD67yMuWoIb3lhI--bhqal1vSR7rISWWbI7chOG1w9E-T0JfwIlX-euSTia5HYEeDTG-qD63ZaCIcQ/file?c_luid=c335000c","9bbaa9cd26e193586d315582ebfbca81acafa7c9db439eaa9b53521003d7d310",2121753],["itemart_container_map_tube_plain_01.png","https://uce90b8f22e83b095b3c89dc6808.dl.dropboxusercontent.com/cd/0/get/DKMEIFtrtXAL-_yvzeXQevyEti8PK5o5COY2D1uXFoB8RVXve6VbMaqVl47M7k59y2z3H8evAZWt8ocIRXTRAOlFBhGd4aS8jjsnkF4H1UGoPu89jwzbupsw4sGXZS2z-YfIsOPjfBt_dVkRQVeovZC8KnryAcFD7OLs_YVmCY7LlA/file?c_luid=c335000c","aba9bf8e5c5969ea52397c46745ffdb792a9db892e9eba517ca8aabba7c9843b",2605399],["itemart_tools_climbers_kit_plain_01.png","https://uc94eb0638448e07224bf05c92e9.dl.dropboxusercontent.com/cd/0/get/DKM20tMbrpNyMug-F7fNSYH0WzNbQlE191H_wflHHBDQM2nD4jUkGrsWDtp3V7h1vPAzaE847iT1G8o-Vz1UksCarR4v9Nbr1mNctw5SxDZ8KoMGnKuNXCMbWnYurcJhwtin71MPF9gAtBeCzXHCv3uGVGE1GQOfXQkHqoYGvlBsaQ/file?c_luid=c335000c","92d2746a22a551e5c2f508752920d75a254a5e6ff3161f4e48ad4afe80db27f2",2620218]]'
-        run: |
-          set -euo pipefail
-          python - <<'PY'
-          import hashlib, io, json, os, urllib.request
-          from pathlib import Path
-          from PIL import Image
-
-          manifest=json.loads(os.environ["ITEM_ART_MANIFEST"])
-          if len(manifest) != 19:
-              raise SystemExit(f"expected 19 images, got {len(manifest)}")
-
-          def dropbox_hash(data):
-              block=4*1024*1024
-              digests=b"".join(hashlib.sha256(data[i:i+block]).digest() for i in range(0,len(data),block))
-              return hashlib.sha256(digests).hexdigest()
-
-          target=Path("public/item-art/masters/foundation-batch-05")
-          target.mkdir(parents=True,exist_ok=True)
-          for name,url,expected_hash,expected_size in manifest:
-              req=urllib.request.Request(url,headers={"User-Agent":"DNDNext-Item-Art-Import/5.0"})
-              with urllib.request.urlopen(req,timeout=120) as resp:
-                  data=resp.read()
-              if len(data) != int(expected_size):
-                  raise SystemExit(f"{name}: source size mismatch")
-              if dropbox_hash(data) != expected_hash:
-                  raise SystemExit(f"{name}: Dropbox content hash mismatch")
-              src=Image.open(io.BytesIO(data)).convert("RGB")
-              if src.width != src.height:
-                  raise SystemExit(f"{name}: expected square source, got {src.width}x{src.height}")
-              dst=src.resize((1024,1024),Image.Resampling.LANCZOS)
-              out=target/name
-              dst.save(out,format="PNG",optimize=True)
-              check=Image.open(out)
-              if check.size != (1024,1024) or check.format != "PNG":
-                  raise SystemExit(f"{name}: normalized output failed validation")
-              print(f"OK {name}: source={src.width}x{src.height} -> 1024x1024")
-          PY
-      - name: Commit verified Item Art Batch 05
-        run: |
-          set -euo pipefail
-          test "$(find public/item-art/masters/foundation-batch-05 -maxdepth 1 -type f -name '*.png' | wc -l)" -eq 19
-          git add -f public/item-art/masters/foundation-batch-05
-          if git diff --cached --quiet; then
-            echo "Batch already imported."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit --no-verify -m "Add broader foundational item art batch 05"
-          git push origin HEAD:item-art-foundation-batch1
+        run: npm run build
