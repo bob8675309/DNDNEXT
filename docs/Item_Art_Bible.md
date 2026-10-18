@@ -445,3 +445,29 @@ The first stable ItemCard master-art foundation set is now produced on PR #230. 
 This is **27 masters total**. The foundation pass is intentionally limited to stable physical archetypes. It does not finalize Smithing, Alchemy, or Enchanting material/component art.
 
 Production of the image files does **not** by itself make them a second item-rules authority. Runtime resolution still needs a bounded follow-up implementation for art-key mapping/fallback behavior. No `items_catalog` image/art columns were added during this production pass.
+
+
+## Canonical static-art generation source — 2026-10-17
+
+DNDNext permanent static artwork uses **ChatGPT native image generation** as the canonical production source unless the project owner explicitly approves changing engines.
+
+This rule applies to:
+- character portraits
+- species and class artwork
+- merchant and NPC portraits
+- ItemCard artwork
+- crafting and item illustrations
+- other permanent site imagery
+
+External image/video tools may be used for experiments, animation, or explicitly approved exceptions, but they must not silently replace the canonical static-art pipeline.
+
+For the foundation ItemCard pass, the Batch 02 and Batch 03 candidate renders from the temporary alternate-engine experiment were replaced before runtime integration. The retained Batch 02/03 masters are derived from native ChatGPT-generated DNDNext artboards and standardized to 1024×1024 square PNG masters with full-object framing and dark-background extension.
+
+The production consistency target remains:
+- 1024×1024 square PNG master
+- dark cinematic fantasy realism
+- isolated hero object
+- strong silhouette at thumbnail size
+- restrained environmental backdrop
+- consistent visual margins and scale
+- no baked-in UI, labels, or readable text
