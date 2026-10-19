@@ -938,6 +938,7 @@ export default function MerchantPanel({
       rarityBadgeClassFor={rarityBadgeClassFor}
       quantityFor={(card) => card?._qty}
       itemCardProps={{ variant: "shop", detailsCollapsible: false }}
+      showPreviewHeader={false}
       previewMetrics={[
         { label: "Available", value: selectedCard?._qty ?? 0 },
         { label: "Your wallet", value: walletLoading ? "…" : gp === -1 ? "∞ gp" : (gp ?? 0) + " gp" },

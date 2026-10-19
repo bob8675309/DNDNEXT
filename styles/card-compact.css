@@ -638,28 +638,29 @@
 .sitem-detail-stack--bomb .sitem-field-grid,
 .sitem-detail-stack--wondrous .sitem-field-grid,
 .sitem-detail-stack--charged-wondrous .sitem-field-grid {
-  flex: 1 1 auto;
-  grid-auto-rows: minmax(2.9rem, 1fr);
-  align-content: stretch;
+  flex: 0 0 auto;
+  grid-auto-rows: minmax(2.45rem, auto);
+  align-content: start;
 }
 
 .sitem-detail-stack--armor .sitem-rule-traits {
-  flex: 1 1 auto;
-  grid-auto-rows: minmax(2rem, 1fr);
-  align-content: stretch;
+  flex: 0 0 auto;
+  grid-auto-rows: minmax(2rem, auto);
+  align-content: start;
 }
 
 .sitem-detail-stack--armor .sitem-rule-trait > summary {
-  height: 100%;
+  height: auto;
 }
 
 .sitem-card.is-shop-variant {
-  min-height: 100%;
+  min-height: 0;
+  height: max-content;
   margin-bottom: 0 !important;
 }
 
 .sitem-card.is-shop-variant .card-body {
-  min-height: 100%;
+  min-height: 0;
 }
 
 .sitem-card.is-shop-variant .sitem-title {
@@ -709,4 +710,131 @@
   color:#f2d37d;
   border-bottom-style:solid;
   outline:none;
+}
+
+
+/* 2026-10-17 adaptive ItemCard density and structured bomb rules.
+   Preview cards size to their content instead of stretching sparse fields to fill
+   the entire merchant pane. Dense items still grow naturally and remain scrollable
+   inside the existing preview container. */
+.sitem-card.is-shop-variant .sitem-detail-stack {
+  flex: 0 0 auto;
+  gap: .42rem;
+}
+.sitem-card.is-shop-variant .sitem-field-grid {
+  align-content: start;
+}
+.sitem-card.is-shop-variant .sitem-field {
+  min-height: 2.45rem;
+}
+.sitem-card.is-shop-variant .sitem-bomb-rule-list {
+  display: grid;
+  gap: .38rem;
+}
+.sitem-card.is-shop-variant .sitem-bomb-rule {
+  padding: .48rem .56rem;
+  border: 1px solid color-mix(in srgb, var(--sitem-rarity-accent) 30%, rgba(255,255,255,.09));
+  border-radius: .52rem;
+  background: color-mix(in srgb, var(--sitem-rarity-deep) 10%, rgba(255,255,255,.038));
+}
+.sitem-card.is-shop-variant .sitem-bomb-rule h5 {
+  margin: 0 0 .24rem;
+  color: color-mix(in srgb, var(--sitem-rarity-accent) 76%, #fff 24%);
+  font-size: .67rem;
+  font-weight: 850;
+  letter-spacing: .025em;
+}
+.sitem-card.is-shop-variant .sitem-bomb-rule > div {
+  color: rgba(255,255,255,.90);
+  font-size: .69rem;
+  line-height: 1.42;
+}
+
+/* Native 100% browser zoom now uses the density that previously felt best at
+   roughly 90% browser zoom: slightly tighter chrome, not smaller rule text. */
+.sitem-card.is-shop-variant .card-body {
+  padding: .68rem;
+}
+.sitem-card.is-shop-variant .sitem-header {
+  padding: .52rem .66rem;
+}
+.sitem-card.is-shop-variant .sitem-title {
+  font-size: .93rem;
+}
+.sitem-card.is-shop-variant .sitem-meta {
+  margin-bottom: .44rem !important;
+  font-size: .69rem;
+}
+.sitem-card.is-shop-variant .sitem-section,
+.sitem-card.is-shop-variant .sitem-field__value,
+.sitem-card.is-shop-variant .sitem-rule-trait__body {
+  font-size: .69rem;
+  line-height: 1.44;
+}
+.sitem-card.is-shop-variant .sitem-field__label,
+.sitem-card.is-shop-variant .sitem-rule-trait > summary {
+  font-size: .62rem;
+}
+.sitem-card.is-shop-variant .sitem-field {
+  padding: .44rem .50rem;
+}
+
+
+/* 2026-10-17 ItemCard typography readability pass.
+   Use a high-legibility UI face for body copy and a distinct but restrained
+   heading face so hierarchy does not depend on extremely heavy font weights. */
+.sitem-card,
+.sitem-card .card-body,
+.sitem-card .sitem-section,
+.sitem-card .sitem-field__value,
+.sitem-card .sitem-rule-trait__body,
+.sitem-card .sitem-bomb-rule > div {
+  font-family: "Segoe UI Variable", "Segoe UI", Tahoma, Arial, sans-serif;
+  font-weight: 500;
+  letter-spacing: .002em;
+}
+
+.sitem-card .sitem-title,
+.sitem-card .sitem-bomb-rule h5,
+.sitem-card .sitem-rule-trait > summary {
+  font-family: "Trebuchet MS", "Segoe UI Variable", "Segoe UI", Arial, sans-serif;
+}
+
+.sitem-card .sitem-title {
+  font-weight: 700 !important;
+  letter-spacing: .008em;
+}
+
+.sitem-card .sitem-type {
+  font-family: "Segoe UI Variable", "Segoe UI", Tahoma, Arial, sans-serif;
+  font-weight: 700 !important;
+  letter-spacing: .045em;
+}
+
+.sitem-card .sitem-field__label,
+.sitem-card .sitem-bomb-rule h5 {
+  font-weight: 700;
+  letter-spacing: .045em;
+}
+
+.sitem-card .sitem-rule-trait > summary {
+  font-weight: 700;
+  letter-spacing: .012em;
+}
+
+.sitem-rule-reference-button {
+  color: #f4d88a;
+  font-family: inherit;
+  font-weight: 650;
+  letter-spacing: .006em;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.sitem-rule-reference-button:hover,
+.sitem-rule-reference-button:focus-visible {
+  color: #ffe6a3;
+  text-decoration-style: solid;
 }

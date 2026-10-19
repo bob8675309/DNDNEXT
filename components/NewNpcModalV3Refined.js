@@ -1,6 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import NpcForgeEquipmentStep from "./NpcForgeEquipmentStep";
+import NpcForgeClassFeatureDock from "./NpcForgeClassFeatureDock";
 import NpcForgeFeatChoiceRegistrar from "./NpcForgeFeatChoiceRegistrar";
 import NpcForgeHumanVersatileRegistrar from "./NpcForgeHumanVersatileRegistrar";
 import NpcForgePortraitPickerModal from "./NpcForgePortraitPickerModal";
@@ -46,6 +47,7 @@ export default function NewNpcModalV3Refined({ show, onClose, onCreated, locatio
   const controller = useNpcForgeTrainingRoutedController({ show, onClose, onCreated, locations, mode, createCharacter, onReset, draftStorageScope });
   const { playerMode, STEP_LABELS, step, setStep, setDetail, setError, stepKey, creating, loadingCatalogs, error, handleClose, handleReset, handleBack, handleNext, handleCreate, draft, equipmentModel, patch, portraitPickerOpen, setPortraitPickerOpen, choosePortrait, speciesOptions, chooseSpecies } = controller;
   const catalogLoadSeenRef = useRef(false);
+  const [equipmentRuleDetail, setEquipmentRuleDetail] = useState(null);
   const modalRef = useRef(null);
   const lastHeaderTapRef = useRef({ time: 0, x: 0, y: 0 });
   const debugStepAppliedRef = useRef(false);
@@ -116,6 +118,10 @@ export default function NewNpcModalV3Refined({ show, onClose, onCreated, locatio
   }, [show, playerMode, loadingCatalogs, STEP_LABELS, setStep, setDetail, setError]);
 
   useEffect(() => {
+    if (stepKey !== "equipment") setEquipmentRuleDetail(null);
+  }, [stepKey]);
+
+  useEffect(() => {
     if (!show || typeof document === "undefined") return undefined;
     function closeCompletedChoiceOnOutsidePointer(event) {
       const modal = modalRef.current;
@@ -162,10 +168,18 @@ export default function NewNpcModalV3Refined({ show, onClose, onCreated, locatio
     <NpcForgeHumanVersatileRegistrar playerMode={playerMode} controller={controller} />
     <header className="npc-forge-header" onDoubleClick={handleHeaderDoubleClick} onPointerUp={handleHeaderPointerUp}><div>{playerMode ? <h2 title="Double-click or double-tap this header to restore the Forge window">Character Forge</h2> : <><div className="npc-forge-kicker">Canonical character system</div><h2>NPC Forge</h2><p>Build the rules first, then finish identity and placement.</p></>}</div><div className="npc-forge-header-actions"><button type="button" className="btn btn-sm btn-outline-warning" onClick={handleReset} disabled={creating}>Reset</button><button type="button" className="btn btn-sm btn-outline-light" onClick={handleClose} disabled={creating}>Close</button></div></header>
     <nav className="npc-forge-steps" aria-label="Character creation steps">{STEP_LABELS.map((label, index) => <button key={label} type="button" className={`${index === step ? "is-current" : ""} ${index < step ? "is-complete" : ""}`} onClick={() => { if (index <= step) { setStep(index); setDetail(null); setError(""); } }} disabled={creating || index > step}><span>{index + 1}</span>{label}</button>)}</nav>
-    {stepKey === "equipment" ? <NpcForgeEquipmentStep model={equipmentModel} selection={draft.startingEquipment || {}} onChange={(startingEquipment) => patch({ startingEquipment })} /> : <NpcForgeStepContent controller={controller} />}
+    {stepKey === "equipment" ? <>
+      <NpcForgeEquipmentStep
+        model={equipmentModel}
+        selection={draft.startingEquipment || {}}
+        onChange={(startingEquipment) => patch({ startingEquipment })}
+        onReferenceDetail={setEquipmentRuleDetail}
+      />
+      <NpcForgeClassFeatureDock panelRole="feature" detail={equipmentRuleDetail} selectedClass={controller.selectedClass || null} />
+    </> : <NpcForgeStepContent controller={controller} />}
     {error ? <div className="npc-forge-error" role="alert">{error}</div> : null}
     <footer className="npc-forge-footer"><button type="button" className="btn btn-outline-light" onClick={handleClose} disabled={creating}>Cancel</button><div>{step > 0 ? <button type="button" className="btn btn-outline-light" onClick={handleBack} disabled={creating}>Back</button> : null}{step < STEP_LABELS.length - 1 ? <button type="button" className="btn btn-primary" onClick={handleNext} disabled={creating || loadingCatalogs}>Continue</button> : <button type="button" className="btn btn-success" onClick={handleCreate} disabled={creating}>{creating ? "Forging Character..." : playerMode ? "Create Player Character" : `Create ${draft.kind === "merchant" ? "Merchant" : "NPC"}`}</button>}</div></footer>
-    <NpcForgePortraitPickerModal show={portraitPickerOpen} currentPortraitId={draft.portraitLibraryId} onClose={() => setPortraitPickerOpen(false)} onSelect={choosePortrait} />
+    <NpcForgePortraitPickerModal show={portraitPickerOpen} currentPortraitId={draft.portraitLibraryId} preferredUseCase={draft.kind} onClose={() => setPortraitPickerOpen(false)} onSelect={choosePortrait} />
     <style jsx global>{`
       .npc-forge-portal-root .npc-forge-backdrop{z-index:4900!important}
       .npc-forge-modal-v2 .npc-forge-body{grid-template-columns:minmax(0,57fr) minmax(470px,43fr)}.npc-forge-body.npc-forge-step-abilities{grid-template-columns:minmax(0,75fr) minmax(320px,25fr)}.npc-forge-body.npc-forge-step-spells{grid-template-columns:minmax(0,72fr) minmax(300px,28fr)}.npc-forge-body.npc-forge-step-identity,.npc-forge-body.npc-forge-step-story,.npc-forge-body.npc-forge-step-review{grid-template-columns:1fr}.npc-forge-body.npc-forge-step-identity .npc-forge-preview,.npc-forge-body.npc-forge-step-story .npc-forge-preview,.npc-forge-body.npc-forge-step-review .npc-forge-preview{display:none}.npc-forge-modal-v2.is-player-mode:not(.is-app-windowed){width:min(1540px,calc(100vw - 40px));max-width:none}.npc-forge-modal-v2.is-player-mode{border-radius:13px}.npc-forge-modal-v2.is-player-mode .npc-forge-header{align-items:center;padding:10px 14px}.npc-forge-modal-v2.is-player-mode .npc-forge-header>div:first-child{display:flex;align-items:center;min-height:32px}.npc-forge-modal-v2.is-player-mode .npc-forge-header h2{margin:0}.npc-forge-modal-v2.is-player-mode .npc-forge-steps{padding-inline:14px}.npc-forge-modal-v2.is-player-mode .npc-forge-workspace{padding:14px}.npc-forge-modal-v2.is-player-mode .npc-forge-preview{padding:12px 14px}.npc-forge-modal-v2.is-player-mode .npc-forge-footer{padding:10px 14px max(10px,env(safe-area-inset-bottom))}.npc-forge-workspace-note{padding:11px 13px;border-left:3px solid #58d6c7;border-radius:8px;color:rgba(255,255,255,.66);background:rgba(88,214,199,.07);font-size:.76rem;line-height:1.5}

@@ -2355,6 +2355,7 @@ const details = detailsDraft || {};
         canEdit={canEditCharacter}
         currentStoragePath={selected.portrait_storage_path || selectedPortrait.storagePath || ""}
         currentUrl={selectedPortrait.url || ""}
+        preferredUseCase={selected.storefront_enabled || selected.kind === "merchant" ? "merchant" : selected.kind || ""}
         onClose={() => setPortraitPickerOpen(false)}
         onSelected={applyPortraitPatchToSelected}
       />

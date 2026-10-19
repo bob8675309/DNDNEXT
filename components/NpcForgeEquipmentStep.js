@@ -53,7 +53,7 @@ function isStartingMarketStock(row = {}) {
   return Number(row.qty || 0) > 0;
 }
 
-export default function NpcForgeEquipmentStep({ model, selection = {}, onChange }) {
+export default function NpcForgeEquipmentStep({ model, selection = {}, onChange, onReferenceDetail = null }) {
   const [merchants, setMerchants] = useState([]);
   const [stock, setStock] = useState([]);
   const [loadingMerchants, setLoadingMerchants] = useState(true);
@@ -333,6 +333,7 @@ export default function NpcForgeEquipmentStep({ model, selection = {}, onChange 
             onAdd={addItem}
             canAddItem={canAddItem}
             selectedActionLabel={selectedActionLabel}
+            onReferenceDetail={onReferenceDetail}
           />
         </div>
       </div>

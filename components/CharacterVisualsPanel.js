@@ -103,6 +103,7 @@ export default function CharacterVisualsPanel({ character = null, canEdit = fals
         canEdit={canEdit}
         currentStoragePath={row?.portrait_storage_path || ""}
         currentUrl={portrait.url || ""}
+        preferredUseCase={row?.storefront_enabled || row?.kind === "merchant" || character?.kind === "merchant" ? "merchant" : row?.kind || character?.kind || ""}
         onClose={() => setPortraitOpen(false)}
         onSelected={handlePortraitSelected}
       />

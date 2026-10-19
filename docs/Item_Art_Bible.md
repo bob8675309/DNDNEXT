@@ -403,3 +403,177 @@ For now:
 - use current catalog counts only as an audit baseline;
 - use stable-family art for immediate UI work;
 - defer final crafting-art totals until the crafting redesign is complete.
+
+
+## Foundation master production status — 2026-10-17
+
+The first stable ItemCard master-art foundation set is now produced on PR #230. All assets are square PNG masters at **1024 × 1024** and live under `public/item-art/masters/`.
+
+### Foundation Batch 01
+- `itemart_weapon_sword_plain_01`
+- `itemart_weapon_dagger_plain_01`
+- `itemart_weapon_axe_plain_01`
+- `itemart_weapon_mace_plain_01`
+- `itemart_weapon_spear_plain_01`
+- `itemart_weapon_bow_plain_01`
+- `itemart_weapon_crossbow_plain_01`
+- `itemart_weapon_staff_plain_01`
+- `itemart_armor_light_plain_01`
+- `itemart_armor_medium_plain_01`
+
+### Foundation Batch 02
+- `itemart_armor_heavy_plain_01`
+- `itemart_shield_round_plain_01`
+- `itemart_shield_kite_plain_01`
+- `itemart_potion_vial_red_01`
+- `itemart_elixir_bottle_arcane_01`
+- `itemart_bomb_flask_plain_01`
+- `itemart_scroll_arcane_plain_01`
+- `itemart_wand_plain_01`
+- `itemart_rod_plain_01`
+- `itemart_focus_arcane_plain_01`
+
+### Foundation Batch 03
+- `itemart_symbol_holy_plain_01`
+- `itemart_tools_kit_plain_01`
+- `itemart_container_backpack_plain_01`
+- `itemart_trade_coinpouch_plain_01`
+- `itemart_material_ingot_plain_01`
+- `itemart_ammo_arrow_bundle_plain_01`
+- `itemart_instrument_lute_plain_01`
+
+### Foundation Batch 04
+- `itemart_armor_helmet_plain_01`
+- `itemart_armor_gauntlets_plain_01`
+- `itemart_armor_boots_plain_01`
+- `itemart_wondrous_ring_ruby_01`
+- `itemart_wondrous_amulet_sapphire_01`
+- `itemart_gear_lantern_plain_01`
+- `itemart_gear_rope_hook_plain_01`
+- `itemart_container_waterskin_plain_01`
+- `itemart_book_spellbook_arcane_01`
+- `itemart_ammo_quiver_plain_01`
+
+### Foundation Batch 05
+- `itemart_container_satchel_plain_01`
+- `itemart_gear_bedroll_plain_01`
+- `itemart_gear_compass_plain_01`
+- `itemart_map_travel_plain_01`
+- `itemart_weapon_warhammer_plain_01`
+- `itemart_material_herb_bundle_plain_01`
+- `itemart_tools_healers_kit_plain_01`
+- `itemart_wondrous_astrolabe_plain_01`
+- `itemart_wondrous_scrying_orb_plain_01`
+- `itemart_tools_cauldron_plain_01`
+- `itemart_gear_torch_bundle_plain_01`
+- `itemart_wondrous_hourglass_plain_01`
+- `itemart_wondrous_censer_plain_01`
+- `itemart_gear_spyglass_plain_01`
+- `itemart_container_chest_plain_01`
+- `itemart_gear_grappling_hook_plain_01`
+- `itemart_wondrous_scepter_arcane_01`
+- `itemart_container_map_tube_plain_01`
+- `itemart_tools_climbers_kit_plain_01`
+
+### Foundation Batch 06
+- `itemart_wondrous_chalice_moonlit_01`
+- `itemart_wondrous_pocket_watch_celestial_01`
+- `itemart_wondrous_wand_crystal_01`
+- `itemart_wondrous_reliquary_radiant_01`
+- `itemart_wondrous_moonstone_relic_01`
+- `itemart_instrument_lyre_celestial_01`
+- `itemart_wondrous_tuning_fork_runic_01`
+- `itemart_wondrous_dice_obsidian_01`
+- `itemart_wondrous_cube_arcane_01`
+- `itemart_wondrous_bell_crystal_01`
+
+This is **66 masters total**. The foundation pass is intentionally limited to stable physical archetypes. It does not finalize Smithing, Alchemy, or Enchanting material/component art.
+
+Production of the image files does **not** by itself make them a second item-rules authority. Runtime resolution still needs a bounded follow-up implementation for art-key mapping/fallback behavior. No `items_catalog` image/art columns were added during this production pass.
+
+
+## Canonical static-art generation source — 2026-10-17
+
+DNDNext permanent static artwork uses **ChatGPT native image generation** as the canonical production source unless the project owner explicitly approves changing engines.
+
+This rule applies to:
+- character portraits
+- species and class artwork
+- merchant and NPC portraits
+- ItemCard artwork
+- crafting and item illustrations
+- other permanent site imagery
+
+External image/video tools may be used for experiments, animation, or explicitly approved exceptions, but they must not silently replace the canonical static-art pipeline.
+
+For the foundation ItemCard pass, the Batch 02 and Batch 03 candidate renders from the temporary alternate-engine experiment were replaced before runtime integration. The retained Batch 02/03 masters are derived from native ChatGPT-generated DNDNext artboards and standardized to 1024×1024 square PNG masters with full-object framing and dark-background extension.
+
+The production consistency target remains:
+- 1024×1024 square PNG master
+- dark cinematic fantasy realism
+- isolated hero object
+- strong silhouette at thumbnail size
+- restrained environmental backdrop
+- consistent visual margins and scale
+- no baked-in UI, labels, or readable text
+
+
+## Production checklist and duplicate gate — 2026-10-18
+
+Use this gate before every new ItemCard-art generation batch.
+
+- [ ] Check the existing master list by physical form, not only by exact item name.
+- [ ] Generate a new image only when it adds a reusable silhouette, object form, or clearly useful visual role.
+- [ ] Do not generate another generic sword, bow, shield, potion, chest, spellbook, or other already-covered form merely for variety.
+- [ ] Prefer broad reusable masters over one-off named-item illustrations unless the named item is visually distinctive enough to justify unique art.
+- [ ] Keep canonical static art on ChatGPT native image generation unless the project owner explicitly approves another engine.
+- [ ] Standardize accepted production masters to 1024×1024 PNG.
+- [ ] Keep the hero object readable at ItemCard thumbnail size and useful elsewhere on the site.
+- [ ] Do not bake item names, UI chrome, prices, rarity labels, readable writing, or ownership/provenance into the image.
+- [ ] Do not create art centered on illicit or illegal activity. Exclude burglary/lockpicking kits, contraband, illicit drugs, counterfeit documents/currency, poison-making kits, or similar activity-focused props.
+- [ ] After each batch, stage accepted source art through Dropbox, validate the import, record accepted masters, and record rejected repeats so they are not generated again.
+
+### Latest repeat rejections
+
+The following recent shots were intentionally **not** added as new masters because equivalent coverage already exists:
+
+- extra round shield → covered by `itemart_shield_round_plain_01`
+- sheathed sword → covered by `itemart_weapon_sword_plain_01`
+- recurve bow → covered by `itemart_weapon_bow_plain_01`
+- crimson potion/elixir → covered by the existing potion/elixir masters
+- second treasure chest → Batch 05 already selected one chest master
+- second grimoire/spellbook → covered by `itemart_book_spellbook_arcane_01`
+
+### Useful broad-base gaps for future batches
+
+Prioritize these before making more variants of covered objects:
+
+- travel/survival: tent, blanket, mess kit, rations bundle, flint-and-steel, shovel, pickaxe
+- lawful/general tools: merchant scales, ink-and-quill set, sewing kit, carpenter tools, cook's utensils, smithing hand tools
+- instruments beyond lute: flute, hand drum, horn
+- wearable forms: cloak, belt, bracers, brooch, circlet/diadem
+- additional distinct weapon silhouettes only where the form materially differs: rapier, greatsword, halberd/glaive, sling, javelin
+- additional neutral containers: scroll case, document folio, strongbox, specimen jar
+- additional lawful utility magic forms: sending stone, crystal prism, enchanted key, magic mirror, rune tablet
+
+Smithing, Alchemy, and Enchanting material/component families remain provisional until their system redesigns are finalized.
+
+
+### 2026-10-18 checklist update — Batch 06 accepted
+
+The following physical forms are now covered and should be treated as existing art before generating another generic version:
+
+- [x] moonlit chalice / magical goblet
+- [x] celestial pocket watch / magical timepiece
+- [x] crystal wand variant
+- [x] radiant reliquary
+- [x] moonstone relic / oval arcane token
+- [x] celestial lyre
+- [x] runic tuning fork
+- [x] obsidian magical dice set
+- [x] arcane mechanical cube
+- [x] crystal magical bell
+
+Batch 06 source renders arrived as **1254 × 1254 square PNGs**. The guarded import verified the Dropbox source byte size/content hash, required a square source at least 1024 pixels, and normalized each accepted production master to **1024 × 1024 PNG** with Lanczos resampling before commit.
+
+For future generation, do not make another generic chalice, pocket watch, lyre, tuning fork, magical dice set, arcane cube, or magical bell simply for variety. Only add another instance when its physical construction or named-item identity is materially different enough to justify a bespoke override.
