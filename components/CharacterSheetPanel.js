@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import CharacterSheet5e from "./CharacterSheet5e";
 import CharacterSheetEnhancements from "./CharacterSheetEnhancements";
+import PrintableCharacterSheet from "./PrintableCharacterSheet";
 import CharacterAstralTrancePanel from "./CharacterAstralTrancePanel";
 import CharacterPrimalCompanionPanel from "./CharacterPrimalCompanionPanel";
 import CharacterSpeciesRestProficiencyPanel from "./CharacterSpeciesRestProficiencyPanel";
@@ -77,6 +78,10 @@ export default function CharacterSheetPanel({
   onActionCommand = null,
   actionBusyKey = "",
 
+  // Optional print-only presentation data already authorized and loaded by the owner page.
+  printProfile = null,
+  printNotes = null,
+
   // Optional map + location listing controls (saved outside the sheet JSON)
   mapVisible = null,
   onToggleMapVisible = null,
@@ -116,6 +121,7 @@ export default function CharacterSheetPanel({
 
   const [saving, setSaving] = useState(false);
   const [saveErr, setSaveErr] = useState("");
+  const [printSheetOpen, setPrintSheetOpen] = useState(false);
   const [authoritativeEffects, setAuthoritativeEffects] = useState(null);
   const characterId = useMemo(() => characterIdFromEffectsKey(effectsKey), [effectsKey]);
 
@@ -345,6 +351,16 @@ export default function CharacterSheetPanel({
             </button>
           ) : null}
 
+          <button
+            type="button"
+            className="btn btn-sm btn-outline-light me-2"
+            onClick={() => setPrintSheetOpen(true)}
+            disabled={!!actionsLoading}
+            title={actionsLoading ? "Loading character features and inventory…" : "Print a complete character sheet"}
+          >
+            Print Sheet
+          </button>
+
           <span className={`csheet-save-pill ${dirty ? "dirty" : ""}`}>{saveState}</span>
           {editable ? (
             <button className="btn btn-sm btn-outline-light ms-2" onClick={toggleEditOrSave} disabled={saving}>
@@ -387,6 +403,20 @@ export default function CharacterSheetPanel({
         actionBusyKey={actionBusyKey}
       />
       <CharacterSheetEnhancements rootRef={sheetRootRef} sheet={draft || {}} featureRows={featureRows || []} onSheetUpdated={(nextSheet) => nextSheet ? setDraft(deepClone(nextSheet)) : null} />
+
+      <PrintableCharacterSheet
+        open={printSheetOpen}
+        onClose={() => setPrintSheetOpen(false)}
+        sheet={runtimeDisplayDraft}
+        profile={printProfile || {}}
+        itemBonuses={resolvedItemBonuses}
+        inventoryItems={inventoryItems || []}
+        spellActions={spellActions || []}
+        featureRows={featureRows || []}
+        notes={printNotes || []}
+        locationLabel={locationLabel || ""}
+        equipmentBreakdown={equipmentBreakdown || []}
+      />
     </div>
   );
 }
