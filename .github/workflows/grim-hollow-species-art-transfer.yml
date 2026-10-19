@@ -90,7 +90,7 @@ jobs:
           public/media/species/cinematic-wechselkind.webp
           public/media/species/cinematic-wulven.webp
           EOF
-          git diff --name-only | sort > /tmp/actual.txt
+          git status --porcelain=v1 --untracked-files=all | sed -E 's/^.. //' | sort > /tmp/actual.txt
           sort /tmp/expected.txt -o /tmp/expected.txt
           diff -u /tmp/expected.txt /tmp/actual.txt
           git reset --quiet
