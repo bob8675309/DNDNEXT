@@ -5,6 +5,7 @@ import {
   resolveClassUnarmoredDefense,
 } from "./characterSheetRules.js";
 import { buildCharacterSheetActions } from "./characterSheetActions.js";
+import { formatPlayerFacingText } from "./playerFacingText.js";
 
 export const PRINTABLE_ABILITIES = Object.freeze([
   { key: "str", name: "Strength", short: "STR" },
@@ -40,6 +41,10 @@ function safeText(value) {
   return String(value ?? "").trim();
 }
 
+function playerFacingText(value, fallback = "") {
+  return formatPlayerFacingText(String(value ?? ""), fallback).trim();
+}
+
 function finiteNumber(value, fallback = 0) {
   const n = Number(value);
   return Number.isFinite(n) ? n : fallback;
@@ -61,19 +66,19 @@ function uniqueText(values) {
 
 function readableText(value, depth = 0) {
   if (value == null || depth > 5) return "";
-  if (typeof value === "string" || typeof value === "number") return safeText(value);
+  if (typeof value === "string" || typeof value === "number") return playerFacingText(value);
   if (Array.isArray(value)) {
-    return value
+    return playerFacingText(value
       .map((entry) => readableText(entry, depth + 1))
       .filter(Boolean)
-      .join("\n");
+      .join("\n"));
   }
   if (typeof value === "object") {
     if (value.entries) return readableText(value.entries, depth + 1);
     if (value.entry) return readableText(value.entry, depth + 1);
     if (value.text) return readableText(value.text, depth + 1);
     if (value.description) return readableText(value.description, depth + 1);
-    if (value.name && value.value) return `${safeText(value.name)}: ${readableText(value.value, depth + 1)}`;
+    if (value.name && value.value) return playerFacingText(`${safeText(value.name)}: ${readableText(value.value, depth + 1)}`);
   }
   return "";
 }
@@ -183,7 +188,7 @@ function notesForPrint(notes = []) {
   return (Array.isArray(notes) ? notes : [])
     .map((row) => ({
       id: safeText(row?.id || row?.created_at || row?.body),
-      body: safeText(row?.body),
+      body: playerFacingText(row?.body),
       scope: safeText(row?.scope),
       createdAt: safeText(row?.created_at),
     }))
@@ -233,19 +238,19 @@ function normalizeProfile(profile = {}, sheet = {}, locationLabel = "") {
     subclass: safeText(sheet?.subclass || meta.subclass),
     level: Math.max(0, finiteNumber(sheet?.level ?? meta.level, 0)),
     background: backgroundLabel(sheet, profile),
-    backgroundNarrative: safeText(profile?.backgroundNarrative || profile?.background_narrative || profile?.background || ""),
-    description: safeText(profile?.description),
-    appearance: safeText(sheet?.appearance),
-    motivation: safeText(profile?.motivation),
-    quirk: safeText(profile?.quirk),
-    mannerism: safeText(profile?.mannerism),
-    voice: safeText(profile?.voice),
-    secret: safeText(profile?.secret),
+    backgroundNarrative: playerFacingText(profile?.backgroundNarrative || profile?.background_narrative || profile?.background || ""),
+    description: playerFacingText(profile?.description),
+    appearance: playerFacingText(sheet?.appearance),
+    motivation: playerFacingText(profile?.motivation),
+    quirk: playerFacingText(profile?.quirk),
+    mannerism: playerFacingText(profile?.mannerism),
+    voice: playerFacingText(profile?.voice),
+    secret: playerFacingText(profile?.secret),
     tags: toList(profile?.tags),
-    traits: safeText(sheet?.traits ?? personality?.traits),
-    ideals: safeText(sheet?.ideals ?? personality?.ideals),
-    bonds: safeText(sheet?.bonds ?? personality?.bonds),
-    flaws: safeText(sheet?.flaws ?? personality?.flaws),
+    traits: playerFacingText(sheet?.traits ?? personality?.traits),
+    ideals: playerFacingText(sheet?.ideals ?? personality?.ideals),
+    bonds: playerFacingText(sheet?.bonds ?? personality?.bonds),
+    flaws: playerFacingText(sheet?.flaws ?? personality?.flaws),
     age: safeText(profile?.age || sheet?.age || meta.age),
     height: safeText(profile?.height || sheet?.height || meta.height),
     weight: safeText(profile?.weight || sheet?.weight || meta.weight),
@@ -475,11 +480,11 @@ export function buildPrintableCharacterSheetModel({
     inspiration: Boolean(s?.inspiration),
     equipmentBreakdown: uniqueText(equipmentBreakdown),
     legacy: {
-      attacks: safeText(s?.attacks),
-      equipment: safeText(s?.equipment),
-      treasure: safeText(s?.treasure),
-      spells: safeText(s?.spells),
-      featsTraits: safeText(s?.featsTraits),
+      attacks: playerFacingText(s?.attacks),
+      equipment: playerFacingText(s?.equipment),
+      treasure: playerFacingText(s?.treasure),
+      spells: playerFacingText(s?.spells),
+      featsTraits: playerFacingText(s?.featsTraits),
     },
   };
 }
