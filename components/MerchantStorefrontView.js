@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import ItemCard from "./ItemCard";
+import { formatItemCardText } from "../utils/itemCardText";
 
 function safeText(value) {
   return String(value ?? "").trim();
@@ -21,14 +22,7 @@ function defaultRarityBadgeClass(value = "") {
 }
 
 function playerFacingItemText(value = "") {
-  return String(value || "")
-    .replace(/\{@dc\s+([^}]+)\}/gi, (_, valueText) => `DC ${String(valueText).split("|")[0].trim()}`)
-    .replace(/\{@(?:damage|dice)\s+([^}]+)\}/gi, (_, valueText) => String(valueText).split("|")[0].trim())
-    .replace(/\{#itemEntry\s+([^}]+)\}/gi, (_, valueText) => String(valueText).split("|")[0].trim())
-    .replace(/\{@(?:spell|condition|skill|item|itemEntry|action|status|sense)\s+([^}]+)\}/gi, (_, valueText) => String(valueText).split("|")[0].trim())
-    .replace(/\{@[^\s}]+\s+([^}]+)\}/gi, (_, valueText) => String(valueText).split("|")[0].trim())
-    .replace(/\s+/g, " ")
-    .trim();
+  return formatItemCardText(value).replace(/\s+/g, " ").trim();
 }
 
 function ammunitionFactsForCard(item = {}) {
