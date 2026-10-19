@@ -53,6 +53,7 @@ function selectedRows(group = {}, selections = {}) {
 export default function NpcForgeHeritageTraitPicker({ group, selections = {}, onSet = null }) {
   const { registerGroups, toggleChoice, setChoice } = useNpcForgeSourceChoices();
   const setPrimaryChoice = onSet || setChoice;
+  const primaryReady = fields.length > 0 && catalog.length > 0;
   const [category, setCategory] = useState("C");
   const [query, setQuery] = useState("");
   const [focusedKey, setFocusedKey] = useState("");
@@ -144,21 +145,21 @@ export default function NpcForgeHeritageTraitPicker({ group, selections = {}, on
     if (currentCount >= repeatLimit(group, option)) return;
     const emptyField = fields.find((field) => selectedKeys(selections, group.id, field.id).length === 0);
     if (!emptyField) return;
-    setPrimaryChoice?.(group.id, emptyField.id, [option.key]);
+    setPrimaryChoice?.(stablePrimaryGroup, emptyField.id, [option.key]);
     setFocusedKey(option.key);
   };
 
   const removeTrait = (optionKey) => {
     const row = [...picks].reverse().find((entry) => entry.option.key === optionKey);
     if (!row) return;
-    setPrimaryChoice?.(group.id, row.field.id, []);
+    setPrimaryChoice?.(stablePrimaryGroup, row.field.id, []);
   };
 
   const resetTraditional = () => {
     fields.forEach((field) => {
       const key = safeText(field?.metadata?.defaultOptionKey);
-      if (key) setPrimaryChoice?.(group.id, field.id, [key]);
-      else setPrimaryChoice?.(group.id, field.id, []);
+      if (key) setPrimaryChoice?.(stablePrimaryGroup, field.id, [key]);
+      else setPrimaryChoice?.(stablePrimaryGroup, field.id, []);
     });
   };
 
@@ -180,7 +181,7 @@ export default function NpcForgeHeritageTraitPicker({ group, selections = {}, on
       <em aria-live="polite">{picks.length} / {maxPicks}</em>
     </header>
 
-    {catalogs.error ? <p className="npc-forge-heritage-picker__error">{catalogs.error}</p> : !catalogs.ready ? <p className="npc-forge-heritage-picker__loading">Loading Heritage Trait choices…</p> : null}
+    {catalogs.error ? <p className="npc-forge-heritage-picker__error">Trait-specific follow-up choices could not load: {catalogs.error}. You can still select the Heritage Trait itself.</p> : !catalogs.ready ? <p className="npc-forge-heritage-picker__loading">Loading trait-specific follow-up choices… Primary Heritage Traits remain selectable.</p> : null}
 
     {selectedOptions.length ? <div className="npc-forge-heritage-picker__selected"><div>{selectedOptions.map(({ option, count }) => <span key={option.key} className={`npc-forge-heritage-picker__selected-chip ${focused?.key === option.key ? "is-focused" : ""}`}><button type="button" className="npc-forge-heritage-picker__selected-focus" onClick={() => setFocusedKey(option.key)}><strong>{option.label}</strong>{count > 1 ? <small>{count} picks</small> : null}</button><button type="button" className="npc-forge-heritage-picker__selected-remove" aria-label={`Remove one ${option.label} Heritage Trait pick`} title={`Remove one ${option.label} pick`} onClick={() => removeTrait(option.key)}>×</button></span>)}</div>{traditionalSelections.length ? <button type="button" className="npc-forge-heritage-picker__reset" onClick={resetTraditional}>Reset to traditional traits</button> : null}</div> : null}
 
@@ -205,7 +206,7 @@ export default function NpcForgeHeritageTraitPicker({ group, selections = {}, on
           <header><div><span>{CATEGORY_LABELS[categoryFor(focused)]}</span><h4>{focused.label}</h4></div><em>{focusedCount ? `${focusedCount} / ${focusedLimit} picks` : `Up to ${focusedLimit}`}</em></header>
           <div className="npc-forge-heritage-picker__copy">{focusedParagraphs.map((paragraph, index) => <p key={`${focused.key}-${index}`}>{paragraph}</p>)}</div>
           <div className="npc-forge-heritage-picker__actions">
-            <button type="button" disabled={full || capped || !catalogs.ready} onClick={() => addTrait(focused)}>{focusedCount ? "Take again" : "Select trait"}</button>
+            <button type="button" disabled={full || capped || !primaryReady} onClick={() => addTrait(focused)}>{focusedCount ? "Take again" : "Select trait"}</button>
             {focusedCount ? <button type="button" className="is-remove" onClick={() => removeTrait(focused.key)}>Remove one pick</button> : null}
             <small>{full && traditionalSelections.length ? "All eight Heritage picks are filled. Remove one selected pick above, then choose its replacement from this catalogue." : focusedLimit > 1 ? `May be selected up to ${focusedLimit} times. A repeat spends another Heritage pick and activates the trait's improved or repeated benefit.` : "This trait can be selected once."}</small>
           </div>
