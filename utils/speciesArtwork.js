@@ -137,7 +137,7 @@ const CINEMATIC_SPECIES_HERO_ARTWORK = Object.freeze({
   tabaxi: "/media/species/cinematic-tabaxi.webp",
   tiefling: "/media/species/cinematic-tiefling.webp",
 });
-const SPECIES_RAW_NAME_ALIASES = { "genasi-air": "air-genasi", "genasi-earth": "earth-genasi", "genasi-fire": "fire-genasi", "genasi-water": "water-genasi", "aven-hawk-headed": "hawk-headed-aven", "aven-ibis-headed": "ibis-headed-aven" };
+const SPECIES_RAW_NAME_ALIASES = { "genasi-air": "air-genasi", "genasi-earth": "earth-genasi", "genasi-fire": "fire-genasi", "genasi-water": "water-genasi", "aven-hawk-headed": "hawk-headed-aven", "aven-ibis-headed": "ibis-headed-aven", "dhampir-grim-hollow": "dhampir", "dragonborn-grim-hollow": "dragonborn", "dwarf-grim-hollow": "dwarf", "elf-grim-hollow": "elf", "gnome-grim-hollow": "gnome", "halfling-grim-hollow": "halfling", "human-grim-hollow": "human" };
 
 export function normalizeSpeciesArtworkKey(value = "") {
   const key = String(value || "").trim().toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
@@ -146,7 +146,8 @@ export function normalizeSpeciesArtworkKey(value = "") {
 export function speciesArtworkFor(species = "") {
   const key = normalizeSpeciesArtworkKey(species);
   const artworkKey = SPECIES_ARTWORK.has(key) ? key : SPECIES_ARTWORK_ALIASES[key];
-  return artworkKey ? `/media/species/${artworkKey}.webp` : "/media/species/adventurer.webp";
+  if (artworkKey) return `/media/species/${artworkKey}.webp`;
+  return CINEMATIC_SPECIES_HERO_ARTWORK[key] || "/media/species/adventurer.webp";
 }
 export function speciesPortraitArtworkFor(species = "") {
   const key = normalizeSpeciesArtworkKey(species);
