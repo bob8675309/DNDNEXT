@@ -26,13 +26,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "d1016fafbfa5d8de219a70d239ff18ed52ec996a"
+          test "$(git rev-parse HEAD)" = "2f2e2fe0898291b7ae146e600280c83c1310a32e"
 
       - name: Download approved artwork bundle once
         shell: bash
         run: |
           set -euo pipefail
-          curl --fail --location --silent --show-error 'https://ucc83b62decdce42b82865b3be28.dl.dropboxusercontent.com/cd/0/get/DKRMqWteagKbR6yK097LFZBZ3pFkxnXp5pCQ_fF4W1VfU1vULioGGvcO2rVNTDE5wHGpu4Dt7b3j8e4KtWdzpysZDGnBcGVp4UNK6ugcgoSy7QtNp3GaTBlxAV1csFxktypjSuU2YOkeESeE5qkZXFw6aIbhMFGLijBourS4hZVyfg/file?c_luid=c335000c' --output /tmp/grim-hollow-species.zip
+          curl --fail --location --silent --show-error 'https://uc8a8d8eef01084ec7134b4962bb.dl.dropboxusercontent.com/cd/0/get/DKRO70dZPqmCFRxG-kAJcV70JneaY0lxu-QtwygOj8DQ-Xc6W67OvyOc_Ss79ZwqVNFLByCEUjX1BqcqW0-PhqFRgI7jjtXQpMvuPTC11Slm-8PBGm06i7HiJYnB4QOBqTn_mzhfvZCgLhASnTCZXUayQp_xKWOUrv7bolifa6k85A/file?c_luid=c335000c' --output /tmp/grim-hollow-species.zip
           echo '46f3c408dccc806883fb5d326dbb09738d6b3f82f6728cd0925821d128da1969  /tmp/grim-hollow-species.zip' | sha256sum -c -
           mkdir -p /tmp/grim-hollow-species
           unzip -q /tmp/grim-hollow-species.zip -d /tmp/grim-hollow-species
