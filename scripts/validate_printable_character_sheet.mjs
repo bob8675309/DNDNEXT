@@ -201,6 +201,17 @@ for (const token of [
   "spellLayout",
 ]) assert(generator.includes(token), `official character sheet generator missing ${token}`);
 
+for (const token of [
+  "Coordinates below are calibrated against the 612 × 792 official template",
+  "size: 17.5",
+  "size: 8.3",
+  "size: 8.2",
+  "size: 7.8",
+  "size: 7.4",
+  "size: 7.15",
+  "size: 13",
+]) assert(generator.includes(token), `official sheet readability calibration is missing ${token}`);
+
 assert(pkg.includes('"pdf-lib": "^1.17.1"') || pkg.includes('"pdf-lib": "1.17.1"'), "pdf-lib dependency is missing");
 assert(!generator.includes("supabase"), "official PDF generator must not start its own Supabase reads");
 assert(!modelSource.includes("supabase"), "print model must remain presentation-only");
@@ -211,4 +222,4 @@ for (const forbidden of ["MapPageClient", "map_routes", "map_route_points", "adv
 assert(runner.includes("validate_printable_character_sheet.mjs"), "production build runner must validate printable NPC sheets");
 assert(pkg.includes('"check:printable-character-sheet": "node scripts/validate_printable_character_sheet.mjs"'), "package script for printable sheet validator is missing");
 
-console.log("Printable NPC character sheet validated: canonical sheet math, authorized page-owned data handoff, official three-page D&D template generation, Features/Spellbook/inventory/narrative placement, and protected boundaries all pass.");
+console.log("Printable NPC character sheet validated: canonical sheet math, authorized page-owned data handoff, official three-page D&D template generation, calibrated alignment/readability, Features/Spellbook/inventory/narrative placement, and protected boundaries all pass.");
