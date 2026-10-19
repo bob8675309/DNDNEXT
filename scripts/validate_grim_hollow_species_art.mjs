@@ -21,7 +21,7 @@ const cases = [
 ];
 
 const sourceVariantCases = [
-  ["Dhampir (Grim Hollow)", "dhampir", "/media/species/cinematic-dhampir.webp", "/media/species/dhampir.webp"],
+  ["Dhampir (Grim Hollow)", "dhampir", "/media/species/dhampir.webp", "/media/species/dhampir.webp"],
   ["Dragonborn (Grim Hollow)", "dragonborn", "/media/species/cinematic-dragonborn.webp", "/media/species/dragonborn.webp"],
   ["Dwarf (Grim Hollow)", "dwarf", "/media/species/cinematic-dwarf.webp", "/media/species/dwarf.webp"],
   ["Elf (Grim Hollow)", "elf", "/media/species/cinematic-elf.webp", "/media/species/elf.webp"],
