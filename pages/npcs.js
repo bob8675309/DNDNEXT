@@ -1488,6 +1488,27 @@ const details = detailsDraft || {};
     sheetDraft,
   });
 
+  const printableProfile = {
+    name: safeStr(selected?.name) || "Character",
+    kind: safeStr(selected?.type || selected?.kind),
+    race: safeStr(selected?.race),
+    role: roleText,
+    affiliation: affiliationText,
+    status: safeStr(selected?.status),
+    location: selected?.location_id
+      ? (locationNameById.get(String(selected.location_id)) || "Unknown location")
+      : "Not listed",
+    description: descriptionText,
+    background: backgroundText,
+    motivation: safeStr(details?.motivation || selected?.motivation),
+    quirk: safeStr(details?.quirk || selected?.quirk),
+    mannerism: safeStr(details?.mannerism || selected?.mannerism),
+    voice: safeStr(details?.voice || selected?.voice),
+    secret: safeStr(details?.secret || selected?.secret),
+    tags: Array.isArray(selected?.tags) ? selected.tags : [],
+    portraitUrl: selectedPortrait?.url || "",
+  };
+
   // NOTE: Use a single root element instead of a top-level Fragment.
   // This avoids a class of build failures where a stale/partially-synced file
   // (or build cache) can manifest as a misleading "Expression expected" at a
@@ -2283,6 +2304,8 @@ const details = detailsDraft || {};
                       actionsLoading={npcSheetActions.loading}
                       onActionCommand={npcSheetActions.canCommand ? npcSheetActions.handleActionCommand : null}
                       actionBusyKey={npcSheetActions.busyKey}
+                      printProfile={printableProfile}
+                      printNotes={notes}
                       onSave={async (nextSheet) => {
                         if (!selected) return;
 
