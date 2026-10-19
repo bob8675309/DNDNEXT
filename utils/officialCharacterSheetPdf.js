@@ -1,4 +1,5 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import { formatPlayerFacingText } from "./playerFacingText.js";
 
 export const OFFICIAL_CHARACTER_SHEET_TEMPLATE_URL = "/forms/5E_CharacterSheet_Fillable.pdf";
 
@@ -15,7 +16,8 @@ function formatModifier(value) {
 }
 
 function sanitizePdfText(value) {
-  return safeText(value)
+  const playerFacing = formatPlayerFacingText(value, safeText(value));
+  return safeText(playerFacing)
     .replace(/[–—]/g, "-")
     .replace(/[’]/g, "'")
     .replace(/[“”]/g, '"')
