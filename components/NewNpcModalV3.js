@@ -9,7 +9,8 @@ import { clearPlayerForgeDraft, readPlayerForgeDraft, writePlayerForgeDraft } fr
 import NewNpcModalV3Refined from "./NewNpcModalV3Refined";
 import { EMPTY_SPECIES_CHOICE_STATE, NpcForgeSpeciesChoiceContext, serializeSpeciesChoiceState, speciesChoiceStateComplete, speciesFeatChoicesFromState, speciesSkillChoicesFromState, speciesSpellcastingFromChoiceState } from "./NpcForgeSpeciesChoiceContext";
 import { classChoiceSelectionSummary, classChoiceStateComplete, classChoiceStateRequiresSelection, classFeatureChoiceStateRequiresSelection, classStepChoiceStateComplete, EMPTY_CLASS_CHOICE_STATE, normalizedClassFeatureChoiceState, NpcForgeClassChoiceContext, selectedSubclassOption, serializeClassChoiceState, trainingClassChoiceStateComplete } from "./NpcForgeClassChoiceContext";
-import { applyDirectSourceChoiceSelection, EMPTY_SOURCE_CHOICE_STATE, normalizeSourceChoiceState, NpcForgeSourceChoiceContext, serializeSourceChoiceState, sourceChoiceSelectionSummary, sourceChoiceStateComplete } from "./NpcForgeSourceChoiceContext";
+import { EMPTY_SOURCE_CHOICE_STATE, normalizeSourceChoiceState, NpcForgeSourceChoiceContext, serializeSourceChoiceState, sourceChoiceSelectionSummary, sourceChoiceStateComplete } from "./NpcForgeSourceChoiceContext";
+import { applyDirectSourceChoiceSelection } from "../utils/directSourceChoiceState.js";
 
 const uniqueText = (values = []) => [...new Set((Array.isArray(values) ? values : []).map((value) => String(value ?? "").trim()).filter(Boolean))];
 const SOURCE_CHOICE_DRAFT_VERSION = 2;
