@@ -516,7 +516,7 @@
     page-break-inside: avoid;
   }
 
-  a {
+  .sheet a {
     color: inherit;
     text-decoration: none;
   }
