@@ -83,7 +83,22 @@ for (const token of [
   "heritagePickCount",
   "traditionalHeritageSelections",
   "traditionalCount",
+  "defaultOptionKey",
+  "traditionalName",
+  "source-traditional Heritage Traits are selected by default",
 ]) assert(speciesChoices.includes(token), `Grim Hollow Species source-choice routing is missing ${token}`);
+
+const heritagePicker = read("components/NpcForgeHeritageTraitPicker.js");
+const sourceChoiceContext = read("components/NpcForgeSourceChoiceContext.js");
+const sourceChoices = read("utils/playerForgeSourceChoices.js");
+for (const token of [
+  "same catalogue used by Custom Lineage",
+  "Remove one pick",
+  "Reset to traditional traits",
+]) assert(heritagePicker.includes(token), `Grim Hollow Heritage picker is missing Custom Lineage-style replacement behavior: ${token}`);
+assert(!heritagePicker.includes("replaceFieldId") && !heritagePicker.includes("Replace Trait"), "Grim Hollow Heritage swaps must reuse the Custom Lineage picker instead of a parallel swap UI");
+assert(sourceChoiceContext.includes("applySourceChoiceDefaults"), "Forge source-choice context must seed source-owned traditional defaults");
+assert(sourceChoices.includes("export function applySourceChoiceDefaults"), "Shared source-choice engine is missing default-selection support");
 
 assert(speciesStep.includes('source === "GRIMHOLLOWPG24"'), "Grim Hollow Human source variant must remain visible in player Species catalogue");
 
@@ -109,7 +124,7 @@ assert(subclassArtwork.includes("subclassArtUrl") && subclassArtwork.includes("T
 assert(subclassCompatibility.includes("GRIMHOLLOWPG24"), "subclass compatibility does not recognize the Grim Hollow supplement");
 assert(classGuide.includes("Grim Hollow: Player's Guide (2024)"), "Forge source label is not player-facing");
 
-const protectedText = [importer, speciesImporter, itemsIndex, admin, town, seed, subclassArtwork, subclassCompatibility, classGuide, speciesChoices, speciesStep, speciesMigration].join("\n").toLowerCase();
+const protectedText = [importer, speciesImporter, itemsIndex, admin, town, seed, subclassArtwork, subclassCompatibility, classGuide, speciesChoices, speciesStep, speciesMigration, heritagePicker, sourceChoiceContext, sourceChoices].join("\n").toLowerCase();
 for (const token of ["map_routes", "advance_all_characters", "world_state", "sim_tick_v1"]) {
   assert(!protectedText.includes(token), `content import unexpectedly references protected world-map authority: ${token}`);
 }
