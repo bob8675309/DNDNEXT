@@ -106,6 +106,16 @@ const SPECIES_DEDICATED_VARIANT_ARTWORK = new Set([
 ]);
 
 const CINEMATIC_SPECIES_HERO_ARTWORK = Object.freeze({
+  accursed: "/media/species/cinematic-accursed.webp",
+  arisen: "/media/species/cinematic-arisen.webp",
+  disembodied: "/media/species/cinematic-disembodied.webp",
+  downcast: "/media/species/cinematic-downcast.webp",
+  dreamer: "/media/species/cinematic-dreamer.webp",
+  grudgel: "/media/species/cinematic-grudgel.webp",
+  laneshi: "/media/species/cinematic-laneshi.webp",
+  ogresh: "/media/species/cinematic-ogresh.webp",
+  wechselkind: "/media/species/cinematic-wechselkind.webp",
+  wulven: "/media/species/cinematic-wulven.webp",
   aarakocra: "/media/species/cinematic-aarakocra.webp",
   aasimar: "/media/species/cinematic-aasimar.webp",
   aetherborn: "/media/species/cinematic-aetherborn.webp",
