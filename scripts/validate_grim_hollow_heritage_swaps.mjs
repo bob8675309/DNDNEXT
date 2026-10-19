@@ -142,10 +142,22 @@ for (const token of [
   "same catalogue used by Custom Lineage",
   "All eight Heritage picks are filled. Remove one selected pick above",
   "setPrimaryChoice = onSet || setChoice",
+  "primaryReady = fields.length > 0 && catalog.length > 0",
+  "setPrimaryChoice?.(stablePrimaryGroup, emptyField.id",
+  "Primary Heritage Traits remain selectable",
 ]) assert.ok(picker.includes(token), `Shared Custom Lineage-style Heritage picker is missing ${token}`);
+assert.ok(!picker.includes("disabled={full || capped || !catalogs.ready}"), "Primary Heritage selection must not be blocked by spell/item follow-up catalogue loading");
 for (const forbidden of ["replaceFieldId", "Replace Trait", "selected-swap", "is-replacing"]) {
   assert.ok(!picker.includes(forbidden), `Grim Hollow Heritage swapping must not fork into a separate swap UI: ${forbidden}`);
 }
+
+const modal = read("components/NewNpcModalV3.js");
+for (const token of [
+  "const setSourceChoice = useCallback((groupOrId, fieldId, optionKeys)",
+  "incomingGroup",
+  "existingIndex",
+  "setSourceChoiceSelection(groups",
+]) assert.ok(modal.includes(token), `Source-choice writer is missing registration-race protection: ${token}`);
 
 const sourceContext = read("components/NpcForgeSourceChoiceContext.js");
 for (const token of [
@@ -162,9 +174,9 @@ for (const token of [
   "source-traditional Heritage Traits are selected by default",
 ]) assert.ok(speciesChoices.includes(token), `Grim Hollow Species default builder is missing ${token}`);
 
-const protectedText = [picker, sourceContext, speciesChoices].join("\n").toLowerCase();
+const protectedText = [picker, modal, sourceContext, speciesChoices].join("\n").toLowerCase();
 for (const token of ["mappageclient", "map_routes", "advance_all_characters", "route_segment_progress", "world_state"]) {
   assert.ok(!protectedText.includes(token), `Heritage swap work crossed protected map/travel boundary: ${token}`);
 }
 
-console.log("Grim Hollow Heritage swaps validated: selectable empty slots, stale-draft traditional-default recovery, context-backed picker writes, Custom Lineage-style remove/select flow, repeat-limit authority, explicit-clear persistence, Accursed no-default behavior, and protected boundaries all pass.");
+console.log("Grim Hollow Heritage swaps validated: primary picks stay selectable while follow-up catalogues load, direct group-backed writes survive registration timing, stale-draft traditional-default recovery, Custom Lineage-style remove/select flow, repeat-limit authority, explicit-clear persistence, Accursed no-default behavior, and protected boundaries all pass.");
