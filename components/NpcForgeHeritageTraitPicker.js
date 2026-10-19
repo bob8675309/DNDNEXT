@@ -62,6 +62,10 @@ export default function NpcForgeHeritageTraitPicker({ group, selections = {}, on
   const stablePrimaryGroup = useMemo(() => group, [primaryIdentity]);
   const picks = selectedRows(group, selections);
   const maxPicks = Math.max(1, Number(group?.metadata?.totalPicks || fields.length || 8));
+  const traditionalSelections = Array.isArray(group?.metadata?.traditionalSelections) ? group.metadata.traditionalSelections : [];
+  const heritageDescription = traditionalSelections.length
+    ? `This species uses ${maxPicks} Grim Hollow Heritage Trait picks. Traditional suggestions are marked below, but you can replace them with any legal Heritage Trait.`
+    : CUSTOM_LINEAGE_DESCRIPTION;
   const counts = new Map();
   for (const row of picks) counts.set(row.option.key, Number(counts.get(row.option.key) || 0) + 1);
   const scope = `heritage-subchoices-${group.id}`;
@@ -117,7 +121,10 @@ export default function NpcForgeHeritageTraitPicker({ group, selections = {}, on
     const needle = query.trim().toLowerCase();
     if (!needle) return true;
     return `${option.label} ${heritageText(option.description)}`.toLowerCase().includes(needle);
-  }).sort((a, b) => a.label.localeCompare(b.label));
+  }).sort((a, b) => {
+    const traditionalDelta = Number(Boolean(b?.metadata?.traditionalCount)) - Number(Boolean(a?.metadata?.traditionalCount));
+    return traditionalDelta || a.label.localeCompare(b.label);
+  });
 
   useEffect(() => {
     if (visible.some((option) => option.key === focusedKey)) return;
@@ -160,7 +167,7 @@ export default function NpcForgeHeritageTraitPicker({ group, selections = {}, on
 
   return <section className={`npc-forge-heritage-picker ${picks.length === maxPicks ? "is-complete" : "is-required"}`}>
     <header className="npc-forge-heritage-picker__head">
-      <div><strong>Heritage Traits</strong><small>{CUSTOM_LINEAGE_DESCRIPTION}</small></div>
+      <div><strong>Heritage Traits</strong><small>{heritageDescription}</small></div>
       <em aria-live="polite">{picks.length} / {maxPicks}</em>
     </header>
 
@@ -179,7 +186,7 @@ export default function NpcForgeHeritageTraitPicker({ group, selections = {}, on
       <div className="npc-forge-heritage-picker__list" role="list" aria-label={`${CATEGORY_LABELS[category]} Heritage Traits`}>
         {visible.map((option) => {
           const count = Number(counts.get(option.key) || 0);
-          return <button key={option.key} type="button" role="listitem" className={`${focused?.key === option.key ? "is-focused" : ""} ${count ? "is-selected" : ""}`} onClick={() => setFocusedKey(option.key)}><span><strong>{option.label}</strong><small>{CATEGORY_LABELS[categoryFor(option)]}</small></span>{count ? <em>{count} pick{count === 1 ? "" : "s"}</em> : <em>View</em>}</button>;
+          return <button key={option.key} type="button" role="listitem" className={`${focused?.key === option.key ? "is-focused" : ""} ${count ? "is-selected" : ""}`} onClick={() => setFocusedKey(option.key)}><span><strong>{option.label}</strong><small>{option?.metadata?.traditionalCount ? `Traditional${Number(option.metadata.traditionalCount) > 1 ? ` ×${option.metadata.traditionalCount}` : ""} • ` : ""}{CATEGORY_LABELS[categoryFor(option)]}</small></span>{count ? <em>{count} pick{count === 1 ? "" : "s"}</em> : <em>View</em>}</button>;
         })}
         {!visible.length ? <p className="npc-forge-heritage-picker__empty">No {CATEGORY_LABELS[category]} traits match this search.</p> : null}
       </div>
