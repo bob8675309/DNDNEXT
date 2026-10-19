@@ -2,6 +2,7 @@ import { createContext, useContext } from "react";
 import { PROFESSION_DEFINITIONS, TRADE_SKILL_KEYS } from "../utils/craftingProfessions";
 import { normalizeFeatSourceChoiceGroups } from "../utils/featSourceChoiceNormalization";
 import {
+  applySourceChoiceDefaults,
   foundationChoiceSummary,
   normalizeSourceChoiceSelections,
   serializeSourceChoices,
@@ -276,7 +277,8 @@ export function normalizeSourceChoiceState(groups = [], catalogReady = true, pre
     [scope || "foundation"]: { groups: validGroups, catalogReady: Boolean(catalogReady) },
   };
   const combinedGroups = normalizeFeatSourceChoiceGroups(Object.values(scopes).flatMap((entry) => Array.isArray(entry?.groups) ? entry.groups : []));
-  const normalizedSelections = normalizeSourceChoiceSelections(combinedGroups, previous?.selections || {});
+  const seededSelections = applySourceChoiceDefaults(combinedGroups, previous?.selections || {});
+  const normalizedSelections = normalizeSourceChoiceSelections(combinedGroups, seededSelections);
   return {
     scopes,
     groups: combinedGroups,
