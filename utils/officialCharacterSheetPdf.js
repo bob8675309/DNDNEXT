@@ -617,31 +617,57 @@ function spellLayout(level) {
   return layouts[level] || null;
 }
 
-function pageThree(page, model, fonts) {
+function pageThree(page, model, fonts, fields) {
   const { regular, bold } = fonts;
   const casting = model.spellcasting || {};
   const profile = model.profile || {};
-  drawTextTop(page, casting.className || profile.className, 72, 69, { font: regular, size: 13, width: 170, minSize: 8.5 });
-  drawTextTop(page, casting.ability, 284, 67, { font: bold, size: 13, width: 60, align: "center" });
-  drawTextTop(page, casting.saveDc == null ? "" : casting.saveDc, 394, 67, { font: bold, size: 13, width: 60, align: "center" });
-  drawTextTop(page, casting.attackBonus == null ? "" : formatModifier(casting.attackBonus), 499, 67, { font: bold, size: 13, width: 60, align: "center" });
 
-  const slotPositions = {
-    1: [80, 310],
-    2: [80, 541],
-    3: [268, 149],
-    4: [268, 381],
-    5: [268, 614],
-    6: [456, 149],
-    7: [456, 323],
-    8: [456, 500],
-    9: [456, 640],
+  drawFieldText(page, fields, "Spellcasting Class 2", casting.className || profile.className, {
+    font: regular,
+    size: 13,
+    minSize: 8.5,
+    align: "left",
+    paddingX: 7,
+  });
+  drawFieldText(page, fields, "SpellcastingAbility 2", casting.ability, {
+    font: bold,
+    size: 13,
+    minSize: 9,
+    align: "center",
+  });
+  drawFieldText(page, fields, "SpellSaveDC  2", casting.saveDc == null ? "" : casting.saveDc, {
+    font: bold,
+    size: 13,
+    minSize: 9,
+    align: "center",
+  });
+  drawFieldText(page, fields, "SpellAtkBonus 2", casting.attackBonus == null ? "" : formatModifier(casting.attackBonus), {
+    font: bold,
+    size: 13,
+    minSize: 9,
+    align: "center",
+  });
+
+  const slotFieldNames = {
+    1: "SlotsTotal 19",
+    2: "SlotsTotal 20",
+    3: "SlotsTotal 21",
+    4: "SlotsTotal 22",
+    5: "SlotsTotal 23",
+    6: "SlotsTotal 24",
+    7: "SlotsTotal 25",
+    8: "SlotsTotal 26",
+    9: "SlotsTotal 27",
   };
   for (let level = 1; level <= 9; level += 1) {
     const total = Number(casting.slots?.[level - 1] || 0);
     if (!total) continue;
-    const [x, top] = slotPositions[level];
-    drawTextTop(page, total, x, top + 0.5, { font: bold, size: 9.3, width: 28, align: "center" });
+    drawFieldText(page, fields, slotFieldNames[level], total, {
+      font: bold,
+      size: 9.3,
+      minSize: 7.5,
+      align: "center",
+    });
   }
 
   const byLevel = new Map();
@@ -702,8 +728,10 @@ export async function buildOfficialCharacterSheetPdf({
 
   if (pdfDoc.getPageCount() < 3) throw new Error("The official character-sheet template must contain all three pages.");
 
+  let fieldGeometry = new Map();
   try {
     const form = pdfDoc.getForm();
+    fieldGeometry = captureFieldGeometry(form);
     form.flatten();
   } catch {
     // The user-provided/browser-printed edition may already be flattened.
@@ -714,9 +742,9 @@ export async function buildOfficialCharacterSheetPdf({
   const fonts = { regular, bold };
 
   const pages = pdfDoc.getPages();
-  const overflowFeatures = pageOne(pages[0], model, fonts);
-  await pageTwo(pdfDoc, pages[1], model, fonts, overflowFeatures, fetchImpl);
-  pageThree(pages[2], model, fonts);
+  const overflowFeatures = pageOne(pages[0], model, fonts, fieldGeometry);
+  await pageTwo(pdfDoc, pages[1], model, fonts, fieldGeometry, overflowFeatures, fetchImpl);
+  pageThree(pages[2], model, fonts, fieldGeometry);
 
   pdfDoc.setTitle(`${safeText(model.profile?.name) || "Character"} - DNDNext Character Sheet`);
   pdfDoc.setSubject("DNDNext printable character sheet");
