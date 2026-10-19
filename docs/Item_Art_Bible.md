@@ -487,7 +487,73 @@ The first stable ItemCard master-art foundation set is now produced on PR #230. 
 - `itemart_wondrous_cube_arcane_01`
 - `itemart_wondrous_bell_crystal_01`
 
-This is **66 masters total**. The foundation pass is intentionally limited to stable physical archetypes. It does not finalize Smithing, Alchemy, or Enchanting material/component art.
+### Foundation Batch 07 — recovered accepted broad-base set
+- `itemart_armor_bracers_leather_01`
+- `itemart_gear_camping_bundle_plain_01`
+- `itemart_gear_fireside_kit_plain_01`
+- `itemart_gear_mess_kit_plain_01`
+- `itemart_gear_rations_plain_01`
+- `itemart_gear_writing_kit_sealed_letters_01`
+- `itemart_instrument_flute_silver_01`
+- `itemart_instrument_horn_runic_blue_01`
+- `itemart_tools_carpenters_kit_plain_01`
+- `itemart_tools_merchant_scales_plain_01`
+- `itemart_tools_tailors_kit_plain_01`
+- `itemart_wondrous_amulet_feather_moonlit_01`
+- `itemart_wondrous_bag_holding_cosmic_01`
+- `itemart_wondrous_belt_runebound_crystal_01`
+- `itemart_wondrous_brooch_moonstone_crescent_01`
+- `itemart_wondrous_circlet_amethyst_elven_01`
+- `itemart_wondrous_cloak_midnight_celestial_01`
+- `itemart_wondrous_decanter_aquamarine_01`
+- `itemart_wondrous_driftglobe_moonstone_01`
+- `itemart_wondrous_figurine_owl_obsidian_01`
+- `itemart_wondrous_key_sapphire_arcane_01`
+- `itemart_wondrous_medallion_teal_runic_01`
+- `itemart_wondrous_mirror_moonlit_gothic_01`
+- `itemart_wondrous_music_box_celestial_01`
+- `itemart_wondrous_relic_prismatic_crystal_01`
+- `itemart_wondrous_ring_amethyst_runic_01`
+- `itemart_wondrous_rod_immovable_runic_01`
+- `itemart_wondrous_rune_stones_twin_01`
+- `itemart_wondrous_runes_twin_blue_01`
+- `itemart_wondrous_tablet_runic_glowing_01`
+
+### Foundation Batch 08 — recovered wondrous expansion
+- `itemart_elixir_moonstone_starlit_01`
+- `itemart_wondrous_amulet_vine_emerald_01`
+- `itemart_wondrous_boots_winged_celestial_01`
+- `itemart_wondrous_bracelet_jade_moonlit_01`
+- `itemart_wondrous_bracers_crystal_stormforged_01`
+- `itemart_wondrous_brooch_spider_crimson_01`
+- `itemart_wondrous_cloak_starweave_moonlit_01`
+- `itemart_wondrous_conch_pearl_moonlit_01`
+- `itemart_wondrous_cube_astral_crystal_01`
+- `itemart_wondrous_dreamcatcher_moonstone_01`
+- `itemart_wondrous_figurine_raven_sapphire_01`
+- `itemart_wondrous_lantern_celestial_01`
+- `itemart_wondrous_locket_celestial_01`
+- `itemart_wondrous_mask_amethyst_masquerade_01`
+- `itemart_wondrous_pendant_serpent_emerald_01`
+- `itemart_wondrous_prayer_wheel_sunstone_01`
+- `itemart_wondrous_ring_moonstone_celestial_01`
+- `itemart_wondrous_snowglobe_citadel_01`
+- `itemart_wondrous_staff_crystal_enchanted_01`
+- `itemart_wondrous_vial_copper_stormbound_01`
+
+### Foundation Batch 09 — recovered final single-item set
+- `itemart_armor_breastplate_runeforged_01`
+- `itemart_armor_chainmail_plain_01`
+- `itemart_elixir_frost_moonlit_01`
+- `itemart_shield_obsidian_runic_01`
+- `itemart_shield_tower_battleworn_01`
+- `itemart_wondrous_figurine_fox_silver_01`
+- `itemart_wondrous_figurine_wolf_jade_01`
+- `itemart_wondrous_monocle_crystal_01`
+- `itemart_wondrous_pouch_arcane_indigo_01`
+- `itemart_wondrous_relic_amber_glowing_01`
+
+This is **126 masters total**. The foundation pass is intentionally limited to stable physical archetypes. It does not finalize Smithing, Alchemy, or Enchanting material/component art.
 
 Production of the image files does **not** by itself make them a second item-rules authority. Runtime resolution still needs a bounded follow-up implementation for art-key mapping/fallback behavior. No `items_catalog` image/art columns were added during this production pass.
 
@@ -546,15 +612,16 @@ The following recent shots were intentionally **not** added as new masters becau
 
 ### Useful broad-base gaps for future batches
 
-Prioritize these before making more variants of covered objects:
+The recovery audit closed many earlier gaps. Prioritize these before making more variants of covered objects:
 
-- travel/survival: tent, blanket, mess kit, rations bundle, flint-and-steel, shovel, pickaxe
-- lawful/general tools: merchant scales, ink-and-quill set, sewing kit, carpenter tools, cook's utensils, smithing hand tools
-- instruments beyond lute: flute, hand drum, horn
-- wearable forms: cloak, belt, bracers, brooch, circlet/diadem
+- travel/survival still missing: tent, blanket, flint-and-steel as a dedicated single-item master, shovel, pickaxe
+- lawful/general tools still missing: cook's utensils, smithing hand tools, dedicated sewing kit if a materially different form is needed
+- instruments still missing: hand drum and other materially distinct instrument silhouettes
 - additional distinct weapon silhouettes only where the form materially differs: rapier, greatsword, halberd/glaive, sling, javelin
 - additional neutral containers: scroll case, document folio, strongbox, specimen jar
-- additional lawful utility magic forms: sending stone, crystal prism, enchanted key, magic mirror, rune tablet
+- additional lawful utility magic forms where materially distinct: sending stone, crystal prism, or a named-item override not already covered by the current key/mirror/tablet/cube/relic families
+
+Do not regenerate generic forms now covered by Batches 07–09: merchant scales, carpenter tools, tailor tools, flute, horn, cloak, belt, bracers, brooch, circlet, magical key, magic mirror, rune tablet, bag of holding, driftglobe, decanter, magical figurines, magical ring/amulet variants, magical cube, snow globe, prayer wheel, tower shield, obsidian shield, breastplate, or chainmail.
 
 Smithing, Alchemy, and Enchanting material/component families remain provisional until their system redesigns are finalized.
 
@@ -577,3 +644,22 @@ The following physical forms are now covered and should be treated as existing a
 Batch 06 source renders arrived as **1254 × 1254 square PNGs**. The guarded import verified the Dropbox source byte size/content hash, required a square source at least 1024 pixels, and normalized each accepted production master to **1024 × 1024 PNG** with Lanczos resampling before commit.
 
 For future generation, do not make another generic chalice, pocket watch, lyre, tuning fork, magical dice set, arcane cube, or magical bell simply for variety. Only add another instance when its physical construction or named-item identity is materially different enough to justify a bespoke override.
+
+
+## 2026-10-18 recovery audit — missed accepted art patched
+
+A full chat-to-repository reconciliation found that 60 previously accepted single-item images had not been included in the first merge to `main`. They were recovered without regeneration and installed as Foundation Batches 07–09.
+
+Recovery result:
+- pre-recovery repo count: **66** masters
+- recovered accepted images: **60**
+- post-recovery expected repo count: **126** masters
+- Batch 07: 30
+- Batch 08: 20
+- Batch 09: 10
+
+The recovery used the established Dropbox → one-shot GitHub Actions binary-art bridge. The transfer hard-guarded the expected recovery-branch head, ZIP SHA-256, every individual PNG SHA-256, exact filenames, exact 1024×1024 output dimensions, and an exact 60-file diff before the bot commit was pushed.
+
+Ten portrait-format source renders from the wondrous-expansion set were normalized without stretching: the complete source object was retained over a darkened/blurred square backdrop derived from the same image. All other recovered square sources were resampled directly to 1024×1024.
+
+The two rune-stone images `itemart_wondrous_rune_stones_twin_01` and `itemart_wondrous_runes_twin_blue_01` remain intentionally distinct accepted variants. Do not remove either as a duplicate unless the project owner explicitly chooses to collapse them.
