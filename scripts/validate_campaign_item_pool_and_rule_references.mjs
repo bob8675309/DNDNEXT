@@ -136,6 +136,7 @@ for (const token of [
   "GlobalRuleReferenceDock",
   "NpcForgeClassFeatureDock",
   "dndnext:rule-reference",
+  'key={detail?.instanceKey || "global-rule-reference-empty"}',
 ]) need(globalDock, token, "global movable feature-window bridge");
 need(app, "GlobalRuleReferenceDock", "global rule-reference mount");
 
@@ -220,6 +221,12 @@ for (const token of [
   "Release or Command",
   "Identify the Contents",
 ]) need(itemCardText, token, "ItemCard structured rule presentation");
+for (const token of [
+  "hasStructuredBombRules",
+  'const primaryEffectText = hasStructuredBombRules',
+  '? ""',
+  "sitem-bomb-rule-list",
+]) need(itemCard, token, "structured bomb rules must render once without a duplicate Effect block");
 
 for (const token of [
   "+2 Ring of Protection",
