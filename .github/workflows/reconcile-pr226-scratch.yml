@@ -91,6 +91,29 @@ jobs:
           p.write_text(s)
           PY
 
+            # Reconcile the PR #226 validator with the newer PR #230
+            # parent-routed ItemCard rule-reference architecture.
+            python3 - <<'PY'
+          from pathlib import Path
+          p = Path("scripts/validate_campaign_item_pool_and_rule_references.mjs")
+          s = p.read_text()
+          old = '''for (const token of [
+            "onReferenceDetail: openRuleDetail",
+            "NpcForgeClassFeatureDock",
+            "__itemCardInstance",
+          ]) need(forgeMerchant, token, "Forge Equipment direct rule-reference window");
+          '''
+          new = '''for (const token of [
+            "onReferenceDetail = null",
+            'itemCardProps={{ variant: "shop", detailsCollapsible: false, onReferenceDetail }}',
+          ]) need(forgeMerchant, token, "Forge Equipment direct rule-reference routing");
+          '''
+          if old not in s:
+              raise SystemExit("campaign-item validator Forge routing anchor missing")
+          p.write_text(s.replace(old, new, 1))
+          PY
+          git add scripts/validate_campaign_item_pool_and_rule_references.mjs
+
             # Keep current package/build gates and add the PR #226 checks.
             git checkout --ours package.json scripts/vercel_build_v2.mjs
             python3 - <<'PY'
