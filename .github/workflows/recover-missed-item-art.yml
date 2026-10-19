@@ -1,0 +1,83 @@
+name: Recover missed ItemCard art
+
+on:
+  pull_request:
+    branches:
+      - recover-missed-item-art-20261018
+
+permissions:
+  contents: write
+
+jobs:
+  recover_item_art:
+    if: github.event.pull_request.head.ref == 'scratch-recover-item-art-20261018'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out intended recovery branch
+        uses: actions/checkout@v4
+        with:
+          ref: recover-missed-item-art-20261018
+          fetch-depth: 0
+      - name: Guard exact recovery head
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "69a8cd27cc87706704e75417ff8ff0d082c7001f"
+      - name: Download and verify recovery bundles
+        env:
+          RECOVERY_MANIFEST: '{"fileHashes":{"foundation-batch-07":{"itemart_armor_bracers_leather_01.png":"fd5e57d9ff2271dc8fde2884c33b0bf57b5bab48d7bb41b6ab3adc3444d97773","itemart_gear_camping_bundle_plain_01.png":"9f6eed30357ac59ef15f4f690321cf18bc9fc81bc8a135fa31e3e3ee9d7356a7","itemart_gear_fireside_kit_plain_01.png":"c04c83be72b12b1f26c94dd421ffc74b8b927ce79005356ba84aa49422c2d12e","itemart_gear_mess_kit_plain_01.png":"a915a65f1e56d4f5ae6c06fe7613e8c18f47ca0c446e8c992b72c6d9bfc28ec1","itemart_gear_rations_plain_01.png":"dee05e1e8a556bc4aa3a21a65e755f26fdad12bcd22360ce42fc67bee13ace8a","itemart_gear_writing_kit_sealed_letters_01.png":"5bfa50074443c088602ade49d855328b4e64a69cf3dfeb4411beff7c353c85a6","itemart_instrument_flute_silver_01.png":"e3fc15d95868259e4807811f38b577f6ea1bc6fc28e83cc93a3d6348165eb62c","itemart_instrument_horn_runic_blue_01.png":"0fbd361431df91bc28cd7735134e601276bc13186a78b0cd836d925fb6fca693","itemart_tools_carpenters_kit_plain_01.png":"f0bcb2a774557b3ca5700f1c3baa7d55839f6a72ab298894fcb75d2ef09ecb98","itemart_tools_merchant_scales_plain_01.png":"b67a21a6757e308012bf07f53aa6bd21e5a74659f3d675cb73b3b0f3e9e9cd42","itemart_tools_tailors_kit_plain_01.png":"3924f13ab66f707dd2da74b639c1fef10d7cb4d86c3cd4be1122db857eaeafa6","itemart_wondrous_amulet_feather_moonlit_01.png":"f084be6126ebb29212c498d3749168dbe1b6e37ed8fe16c1a7abf885b8505298","itemart_wondrous_bag_holding_cosmic_01.png":"83a348576db2b24d0543d44388e6bdc7a66cd01ccf475db4f52376939a638ec2","itemart_wondrous_belt_runebound_crystal_01.png":"8b7cf08d9fc3b5d84a61b27178e0b2321c5fe357f0644a62df1fe8bb9320c15b","itemart_wondrous_brooch_moonstone_crescent_01.png":"f6c590d76aa0043db31fed52d0c45107fba6253f8019e207ccd43578efd9caa1","itemart_wondrous_circlet_amethyst_elven_01.png":"124d5b743e075b178897b43e1c9fb1707e11e600d51a5e3f2db90341a04787cd","itemart_wondrous_cloak_midnight_celestial_01.png":"720f4b26af899bc95e06fe75e1ffad3cdea1f69c2979505354bb4c5c8f2a891f","itemart_wondrous_decanter_aquamarine_01.png":"7ee1a505c9dd5aed422f090226751fb5774d71f9a1fac655812a29afe7af96e2","itemart_wondrous_driftglobe_moonstone_01.png":"9192e88901bf0e86034118a2c0bf7c92182215dd966bf3f2674437a15444c3e5","itemart_wondrous_figurine_owl_obsidian_01.png":"06a944b38d01d30ddac81d7b88337d73b9fe322d398a765e8b63028e760b8c9d","itemart_wondrous_key_sapphire_arcane_01.png":"98c8ad675fec914a03fe61bea2090ac0395ae32cfaadb2695545b561397d6722","itemart_wondrous_medallion_teal_runic_01.png":"631b3cba04b8c58d33bacbbd0f61e18abcd252d7d376bb9f95ee307ba19b88b6","itemart_wondrous_mirror_moonlit_gothic_01.png":"824b89168fe68cef6f6317e86581943a1930aeebeb66db25bc93bcb4c12ffaea","itemart_wondrous_music_box_celestial_01.png":"4e404cf1e56da35cdcbb25240ba52b3c09669482766ac3ef0aa6fb38e3b39368","itemart_wondrous_relic_prismatic_crystal_01.png":"7647665607afdb0af5db7c1b137f5cced061d19242ca37b39fa375746fa6e548","itemart_wondrous_ring_amethyst_runic_01.png":"3e2fa698711d56dab55d309cdc8f1402b03d4e58cdea78a7f8ff18fd89543e94","itemart_wondrous_rod_immovable_runic_01.png":"b4ff3cb86ed6e14d7d8b1f0ef258bb63bb13c37a1e1a74fc54fe6b975a78998d","itemart_wondrous_rune_stones_twin_01.png":"647335e921b69b8ef3ef7627d4568cee3d804d61edc47e0ba079d368714016dd","itemart_wondrous_runes_twin_blue_01.png":"63fcf54cc0d82d6f02496df36d39b530d4874c07719fafd0c1169e88f71d584e","itemart_wondrous_tablet_runic_glowing_01.png":"aa354a70d1b1c41214050d32dbb0a4a140ee0401519f98b983199ce1c02230a9"},"foundation-batch-08":{"itemart_elixir_moonstone_starlit_01.png":"4537c2d443def79cd19a8a7e0e874520c3d074f52f18741c351c1a4e0f9204db","itemart_wondrous_amulet_vine_emerald_01.png":"c0b712ed328feaa2862f4c0a3d5a9a91be14b9f7f9e3cc04ae50777bb2c506f9","itemart_wondrous_boots_winged_celestial_01.png":"e9797a5f2817d0e7ec3ef1aa1d44444a8c94798f6dbc3169fc7e8aedaabac623","itemart_wondrous_bracelet_jade_moonlit_01.png":"4e10edd7cfdc29e26ec305794683ace27e92131690af313c6e5efff103f78b36","itemart_wondrous_bracers_crystal_stormforged_01.png":"95240584edaee189807ed96fe9990bbeb1e96f0c3e3fba078b5ceee1c7906676","itemart_wondrous_brooch_spider_crimson_01.png":"77b0c431688e56c9a2b159082181254f72a2dde92e972fe8d708cf1bc1155310","itemart_wondrous_cloak_starweave_moonlit_01.png":"bc3741bfac17bf8447f595f12cae2e3aa3c1a162566cfa0f3a4473dff63f2faa","itemart_wondrous_conch_pearl_moonlit_01.png":"29bbaaedb71980953a073246cccc85a5b3a0678d8be9539f86a9d6c4516cf86e","itemart_wondrous_cube_astral_crystal_01.png":"3df91a9988a165659a686ffeae808024767f6e8f9d76d6d73a14363e4e3b6eef","itemart_wondrous_dreamcatcher_moonstone_01.png":"f355b7c5d5bc80f056896c80174ef8cb4d506ae30f080178193ecc5b45648654","itemart_wondrous_figurine_raven_sapphire_01.png":"905d5fcdc33787aee768fd9937c2c5477722504419934134f0e0ebc177d12629","itemart_wondrous_lantern_celestial_01.png":"93327c1b31311407bbb7598e48470c53157431ec9f57dfe09c193ab0ae2f57b2","itemart_wondrous_locket_celestial_01.png":"8626b667d7c55ff2be33c18f6c8c514215e4fc82abe9ec939387d2147431b107","itemart_wondrous_mask_amethyst_masquerade_01.png":"d85a1adc07f00e5af56d59e15a054467a18a5cb5bce667678b8c9c87376ce6c9","itemart_wondrous_pendant_serpent_emerald_01.png":"6b7b7c1f801fe86646dcd00ea71e113b033bdcfa85d72aa8a3679f567df78476","itemart_wondrous_prayer_wheel_sunstone_01.png":"4694e44f412e595dcd1db50ea3bc974d9e68c92e66dee496705d05aa7f0e2b3e","itemart_wondrous_ring_moonstone_celestial_01.png":"12834b5e901226fc9c4e79d2b3db1e2d16b7d8cc596c31cb3021fe601e3cd32a","itemart_wondrous_snowglobe_citadel_01.png":"342d51f8d93c40d5d00cbcd763b723065423a1bce2b87ae6de4bbbd1dc3794a2","itemart_wondrous_staff_crystal_enchanted_01.png":"963d8ed0cbcebb40138ffab8f21494c1f7101a24e481ebd0fc3daa1216044287","itemart_wondrous_vial_copper_stormbound_01.png":"e080ceb1a609384d4fe42784185dc1127623631c4fcbead0e904c8e8bbeafeee"},"foundation-batch-09":{"itemart_armor_breastplate_runeforged_01.png":"59be0232f69fa21cda70e334807ebd2d4a17136d6e0ad3ccfd43c05992dc3396","itemart_armor_chainmail_plain_01.png":"1cc0a346851aca6488af10086d694de571053d58b0816b2190090af016764d44","itemart_elixir_frost_moonlit_01.png":"61b66f276bced38ea866284e91d17c42380897036368767d2aa65f6e9d904ee7","itemart_shield_obsidian_runic_01.png":"184021129bf287ea33aa664e27fefb753ddd7d53ec4a07e53d2acfafc7ebc2ed","itemart_shield_tower_battleworn_01.png":"e67ba26eb214ea8a04317a1b31672f1647a32ef72761381de256d6d061f0d64d","itemart_wondrous_figurine_fox_silver_01.png":"d13f69b7af8c14fbe923d0854a7b0c7a0dd12ed5cf8867a3938887ff431e3647","itemart_wondrous_figurine_wolf_jade_01.png":"0e7f7cd3e84b3552edd9dc286f60d66f686176cc53f47dd16c399c25e90dabea","itemart_wondrous_monocle_crystal_01.png":"27e99d754ca3c10a1fc573c43089ebede7687725235e9b834582a9043ef9b797","itemart_wondrous_pouch_arcane_indigo_01.png":"918d0149dd62b2ebaa3dbc662c1c0482f7c95f14306d9aca6642c52ecc8824bd","itemart_wondrous_relic_amber_glowing_01.png":"8c1d11ba52a0b6520f884e7ee84f76d42026f05b6288484a2086b2f69fb79030"}},"urls":{"foundation-batch-07":"https://ucf7faa2da04362d4d50747c344f.dl.dropboxusercontent.com/cd/0/get/DKRk72JSOl_K0HEb1Idg4QVNHicTqlqclqEykWcLZXEzZIrTUkVjugS4wnaKLDUtEUnw1esXD83FmaGf7djLDkJhRLomZ1we_2tLopo1D90MXg8JXABqx1nheQGZYSF8o1Ds0tVNELxGW9k5Wu-sBI44vWbiN6MQeDLqpSFXYNCnQA/file?c_luid=c335000c","foundation-batch-08":"https://ucf5e8df09e96eb741bb8373bd18.dl.dropboxusercontent.com/cd/0/get/DKRUUXoWPylRZQfBFjY8TC3oYIMbMnLO0plYx2pU9bY62tEIysFwAz_km6E3yFN44Efs2yyD9m9Zl0VHEHnF4PTdFdhFY7JF0N_R-s01onM3OyuWvMvUJrC3QQt3lcRwQJE-S5EDfd33UrTa7vgQGszogbvtI6gBGhDKfAHJ3kVCSw/file?c_luid=c335000c","foundation-batch-09":"https://uce9b058aef4452127c03ee7e289.dl.dropboxusercontent.com/cd/0/get/DKTNQjxrvQ8Deh5PHmOTTQgXyFDFFHZJ_ukfV03Kq34Y_oGavYEGskYgg0_GMGgokUuh2LU5Hjf5HhkT82Zxji_JWaY9BffZyT4NgNJLwcZ3IaxC7P5gmQMOLMVNWYE4ZDdMsXocX_wKHFKnhQ0BJZ2yjBUGkYbKJmP1RGLNV0VBmg/file?c_luid=c335000c"},"zipMeta":{"foundation-batch-07":{"sha256":"84bf4807a7770378069f747be4b17e9970b817bad411237fa194882a1d3a3d97","count":30},"foundation-batch-08":{"sha256":"ac0dac9922e15ea9cf6a3e0ba93bb58f7fd3a04f1bc07bde1c6be822fc023432","count":20},"foundation-batch-09":{"sha256":"cb227e32e77b765c10c6d9184b61291e7f63eb4a22f907776580e8a6fc6f352f","count":10}}}'
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib, json, os, struct, urllib.request, zipfile
+          from pathlib import Path
+
+          cfg=json.loads(os.environ["RECOVERY_MANIFEST"])
+          root=Path("public/item-art/masters")
+          expected_paths=[]
+          for batch in ("foundation-batch-07","foundation-batch-08","foundation-batch-09"):
+              url=cfg["urls"][batch]
+              req=urllib.request.Request(url,headers={"User-Agent":"DNDNext-Item-Art-Recovery/1.0"})
+              with urllib.request.urlopen(req,timeout=180) as resp:
+                  data=resp.read()
+              got_zip=hashlib.sha256(data).hexdigest()
+              if got_zip != cfg["zipMeta"][batch]["sha256"]:
+                  raise SystemExit(f"{batch}: ZIP sha256 mismatch {got_zip}")
+              zpath=Path(f"/tmp/{batch}.zip")
+              zpath.write_bytes(data)
+              target=root/batch
+              target.mkdir(parents=True,exist_ok=True)
+              with zipfile.ZipFile(zpath) as z:
+                  names=sorted(n for n in z.namelist() if not n.endswith("/"))
+                  expected=sorted(cfg["fileHashes"][batch])
+                  if names != expected:
+                      raise SystemExit(f"{batch}: filename manifest mismatch")
+                  if len(names) != cfg["zipMeta"][batch]["count"]:
+                      raise SystemExit(f"{batch}: expected {cfg['zipMeta'][batch]['count']} files, got {len(names)}")
+                  for name in names:
+                      blob=z.read(name)
+                      got=hashlib.sha256(blob).hexdigest()
+                      if got != cfg["fileHashes"][batch][name]:
+                          raise SystemExit(f"{batch}/{name}: sha256 mismatch")
+                      if blob[:8] != b"\x89PNG\r\n\x1a\n" or blob[12:16] != b"IHDR":
+                          raise SystemExit(f"{batch}/{name}: invalid PNG")
+                      width,height=struct.unpack(">II",blob[16:24])
+                      if (width,height) != (1024,1024):
+                          raise SystemExit(f"{batch}/{name}: expected 1024x1024, got {width}x{height}")
+                      out=target/name
+                      out.write_bytes(blob)
+                      expected_paths.append(str(out))
+                      print("OK",out)
+          if len(expected_paths) != 60:
+              raise SystemExit(f"expected 60 output files, got {len(expected_paths)}")
+          PY
+      - name: Guard exact diff and commit recovery
+        run: |
+          set -euo pipefail
+          git add -f public/item-art/masters/foundation-batch-07 public/item-art/masters/foundation-batch-08 public/item-art/masters/foundation-batch-09
+          test "$(git diff --cached --name-only | wc -l)" -eq 60
+          test "$(git diff --cached --name-only | grep -vc '^public/item-art/masters/foundation-batch-0[789]/.*\.png$' || true)" -eq 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit --no-verify -m "Recover missed ItemCard art masters"
+          git push origin HEAD:recover-missed-item-art-20261018
