@@ -51,15 +51,19 @@ function fieldDefaultKeys(field = {}) {
  * remain empty, so removing every Heritage pick never causes the traditional
  * package to reappear on a later render.
  */
-export function applySourceChoiceDefaults(groups = [], selections = {}) {
+export function applySourceChoiceDefaults(groups = [], selections = {}, { forceEmptyGroupIds = [] } = {}) {
   const output = { ...(selections || {}) };
+  const forcedGroups = new Set(array(forceEmptyGroupIds).map(text).filter(Boolean));
   for (const group of array(groups)) {
     const existingGroup = output?.[group.id] && typeof output[group.id] === "object"
       ? output[group.id]
       : {};
+    const forceEmpty = forcedGroups.has(text(group.id));
     let nextGroup = existingGroup;
     for (const field of array(group?.fields)) {
-      if (Object.prototype.hasOwnProperty.call(existingGroup, field.id)) continue;
+      const current = Array.isArray(existingGroup?.[field.id]) ? existingGroup[field.id] : null;
+      const hasStoredField = Object.prototype.hasOwnProperty.call(existingGroup, field.id);
+      if (hasStoredField && !(forceEmpty && current?.length === 0)) continue;
       const defaults = fieldDefaultKeys(field);
       if (!defaults.length) continue;
       if (nextGroup === existingGroup) nextGroup = { ...existingGroup };
