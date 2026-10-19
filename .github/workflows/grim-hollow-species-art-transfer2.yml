@@ -1,0 +1,120 @@
+name: Install Grim Hollow species art v2
+
+on:
+  push:
+    branches:
+      - agent/grim-hollow-species-art-transfer2-20261019
+    paths:
+      - .github/workflows/grim-hollow-species-art-transfer2.yml
+
+permissions:
+  contents: write
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check out exact working branch
+        uses: actions/checkout@v4
+        with:
+          ref: grim-hollow-species-import-20261018
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Guard exact branch head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "2f2e2fe0898291b7ae146e600280c83c1310a32e"
+
+      - name: Download approved artwork bundle once
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error 'https://uccbf66b049ecc2c6a196ce8c964.dl.dropboxusercontent.com/cd/0/get/DKSBcCKXcHAdUag4-qYkLmttkJqWyS2LxYAmEVNFDhurqH0uqVEuZgrRucuwefBSNBeeg3oRkPWxv9GeX4NHmUKDoCM7UkRkhPQE11-kJIEHSddItZoYFBPhSlCU9dVDKf1QcMlARf9UDnC-cUt3g73uKDrwi54oGAkr1GJ1ra9iWA/file?c_luid=c335000c' --output /tmp/grim-hollow-species.zip
+          echo '46f3c408dccc806883fb5d326dbb09738d6b3f82f6728cd0925821d128da1969  /tmp/grim-hollow-species.zip' | sha256sum -c -
+          mkdir -p /tmp/grim-hollow-species
+          unzip -q /tmp/grim-hollow-species.zip -d /tmp/grim-hollow-species
+
+      - name: Verify approved assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/grim-hollow-species
+          cat > /tmp/species.sha256 <<'EOF'
+          87e329549499db3e2285cd01b4225901688ba6c4b803f8b773a8423783c4fe0c  cinematic-accursed.webp
+          1f3309e34e756d8b8d80d29a8d7c683c33ffb06614a4f4eebb14a904217954d0  cinematic-arisen.webp
+          5516c19f6b3bab3e40ed06fffb93fa82051073c16931f458eee2ede3a6daf2bd  cinematic-disembodied.webp
+          753075845d002460d142cd026ae654c5c0ea4ad5b0f1e8c04b4d30344f8e315c  cinematic-downcast.webp
+          7220b1dc6a52885f62ca27a6384198f958818fad73b3da9263a8ce0d754eacff  cinematic-dreamer.webp
+          0df960b361211786ec7a80ed9df5071396289e161771bddf34b5e147bf2089b5  cinematic-grudgel.webp
+          ba29a852f816a6b0c54e42b2dd2c96d5867f52b51fd198fc9fde875c261819bb  cinematic-laneshi.webp
+          58cf9a668e56c636baa0dbbb76c802be7c319ac61d455a93e7d5480605c41c1b  cinematic-ogresh.webp
+          374556de29f5756d273b230e71811eff6fb0ff3a3d3ab50ac10e68a484e670ae  cinematic-wechselkind.webp
+          aeaed2b73069e13c90a3e72c3cba453f98379e151a216321252bc34ddf5ebc6e  cinematic-wulven.webp
+          EOF
+          sha256sum -c /tmp/species.sha256
+          test "$(find . -maxdepth 1 -type f -name 'cinematic-*.webp' | wc -l)" -eq 10
+          for f in cinematic-*.webp; do
+            test "$(file -b --mime-type "$f")" = "image/webp"
+          done
+          python -m pip install --disable-pip-version-check --quiet pillow==11.3.0
+          python - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          files = sorted(Path("/tmp/grim-hollow-species").glob("cinematic-*.webp"))
+          assert len(files) == 10, len(files)
+          for path in files:
+              with Image.open(path) as image:
+                  assert image.format == "WEBP", (path, image.format)
+                  assert image.size == (720, 960), (path, image.size)
+          print("10/10 approved Grim Hollow species portraits are exact 720x960 WebP assets.")
+          PY
+
+      - name: Install only approved species artwork
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp /tmp/grim-hollow-species/cinematic-*.webp public/media/species/
+          cat > /tmp/expected.txt <<'EOF'
+          public/media/species/cinematic-accursed.webp
+          public/media/species/cinematic-arisen.webp
+          public/media/species/cinematic-disembodied.webp
+          public/media/species/cinematic-downcast.webp
+          public/media/species/cinematic-dreamer.webp
+          public/media/species/cinematic-grudgel.webp
+          public/media/species/cinematic-laneshi.webp
+          public/media/species/cinematic-ogresh.webp
+          public/media/species/cinematic-wechselkind.webp
+          public/media/species/cinematic-wulven.webp
+          EOF
+          git status --porcelain=v1 --untracked-files=all | sed -E 's/^.. //' | sort > /tmp/actual.txt
+          sort /tmp/expected.txt -o /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+
+      - name: Verify resolver mappings
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import assert from "node:assert/strict";
+          import { hasSpeciesPortraitArtwork, speciesPortraitArtworkFor } from "./utils/speciesArtwork.js";
+          const names = ["Accursed","Arisen","Disembodied","Downcast","Dreamer","Grudgel","Laneshi","Ogresh","Wechselkind","Wulven"];
+          for (const name of names) {
+            const key = name.toLowerCase();
+            assert.equal(speciesPortraitArtworkFor(name), `/media/species/cinematic-${key}.webp`);
+            assert.equal(hasSpeciesPortraitArtwork(name), true);
+          }
+          console.log("10/10 Grim Hollow species resolve to final cinematic art without neutral fallback.");
+          NODE
+
+      - name: Commit and push target branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/media/species/cinematic-*.webp
+          git commit -m "Install final Grim Hollow species portraits"
+          git push origin HEAD:grim-hollow-species-import-20261018
