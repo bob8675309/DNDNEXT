@@ -14,7 +14,7 @@ jobs:
           ref: reconcile-item-card-text-20261019
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Attempt three-way merge
+      - name: Merge and reconcile PR226
         shell: bash
         run: |
           set -euo pipefail
@@ -26,14 +26,152 @@ jobs:
           rc=$?
           set -e
           if [ "$rc" -ne 0 ]; then
-            echo "MERGE_CONFLICTS"
-            git diff --name-only --diff-filter=U
-            for f in $(git diff --name-only --diff-filter=U); do
-              echo "===== CONFLICT: $f ====="
-              git checkout --conflict=merge -- "$f" || true
-              sed -n '1,260p' "$f" || true
-            done
-            exit 1
+            conflicts="$(git diff --name-only --diff-filter=U)"
+            expected="$(printf '%s\n' \
+              components/GlobalRuleReferenceDock.js \
+              components/ItemCard.js \
+              components/NpcForgeMerchantMarket.js \
+              package.json \
+              scripts/vercel_build_v2.mjs \
+              styles/card-compact.css)"
+            if [ "$conflicts" != "$expected" ]; then
+              echo "Unexpected conflict set:"
+              printf '%s\n' "$conflicts"
+              exit 1
+            fi
+
+            # Later PR #230 owns the final repeated-reference routing shape.
+            git checkout --ours components/GlobalRuleReferenceDock.js
+            git checkout --ours components/NpcForgeMerchantMarket.js
+
+            # Start ItemCard from PR #226's full-catalog source parser, then layer
+            # the accepted PR #230 bomb-section presentation onto it.
+            git checkout --theirs components/ItemCard.js
+            python3 - <<'PY'
+          from pathlib import Path
+          p = Path("components/ItemCard.js")
+          s = p.read_text()
+          old = '''  const primaryEffectText = playerText(referenceEffect || potionEffect || rulesIntro);
+          const effectLabel = cardFamily === "recipe" ? "Recipe" : "Effect";
+          '''
+          new = '''  const primaryEffectText = playerText(
+            referenceEffect || (cardFamily === "bomb" && combinedTraits.length ? rulesIntro : (potionEffect || rulesIntro))
+          );
+          const effectLabel = cardFamily === "recipe" ? "Recipe" : "Effect";
+          '''
+          if old not in s:
+              raise SystemExit("ItemCard primary effect anchor missing")
+          s = s.replace(old, new, 1)
+          old = '''  const traitList = combinedTraits.length ? (
+            <div className="sitem-rule-traits" aria-label="Item traits">
+              {combinedTraits.map((trait) => (
+                <details className="sitem-rule-trait" key={`${trait.title}:${trait.body.slice(0, 42)}`}>
+                  <summary><RuleLinkedText text={trait.title} item={mergedItem} onReferenceDetail={onReferenceDetail} /></summary>
+                  <div className="sitem-rule-trait__body"><RuleParagraphs text={trait.body} item={mergedItem} onReferenceDetail={onReferenceDetail} /></div>
+                </details>
+              ))}
+            </div>
+          ) : null;
+          '''
+          new = '''  const traitList = combinedTraits.length ? (
+            cardFamily === "bomb" ? (
+              <div className="sitem-bomb-rule-list" aria-label="Bomb rules">
+                {combinedTraits.map((trait) => (
+                  <section className="sitem-bomb-rule" key={`${trait.title}:${trait.body.slice(0, 42)}`}>
+                    <h5><RuleLinkedText text={trait.title} item={mergedItem} onReferenceDetail={onReferenceDetail} /></h5>
+                    <div><RuleParagraphs text={trait.body} item={mergedItem} onReferenceDetail={onReferenceDetail} /></div>
+                  </section>
+                ))}
+              </div>
+            ) : (
+              <div className="sitem-rule-traits" aria-label="Item traits">
+                {combinedTraits.map((trait) => (
+                  <details className="sitem-rule-trait" key={`${trait.title}:${trait.body.slice(0, 42)}`}>
+                    <summary><RuleLinkedText text={trait.title} item={mergedItem} onReferenceDetail={onReferenceDetail} /></summary>
+                    <div className="sitem-rule-trait__body"><RuleParagraphs text={trait.body} item={mergedItem} onReferenceDetail={onReferenceDetail} /></div>
+                  </details>
+                ))}
+              </div>
+            )
+          ) : null;
+          '''
+          if old not in s:
+              raise SystemExit("ItemCard trait-list anchor missing")
+          p.write_text(s.replace(old, new, 1))
+          PY
+
+            # Keep current package/build gates and add the PR #226 checks.
+            git checkout --ours package.json scripts/vercel_build_v2.mjs
+            python3 - <<'PY'
+          from pathlib import Path
+          p = Path("package.json")
+          s = p.read_text()
+          anchor = '    "check:campaign-item-pool": "node scripts/validate_campaign_item_pool_and_rule_references.mjs",\n'
+          add = anchor + '    "check:item-card-text": "node scripts/validate_item_card_text_catalog.mjs",\n    "check:merchant-crafted-pricing": "node scripts/validate_merchant_crafted_pricing.mjs",\n'
+          if '"check:item-card-text"' not in s:
+              if anchor not in s: raise SystemExit("package campaign-item anchor missing")
+              s = s.replace(anchor, add, 1)
+          anchor2 = '    "check:npc-sheet-action-parity": "node scripts/validate_npc_sheet_action_parity.mjs",\n'
+          add2 = anchor2 + '    "check:tactical-equipped-mitigation": "node scripts/validate_tactical_equipped_damage_mitigation.mjs",\n'
+          if '"check:tactical-equipped-mitigation"' not in s:
+              if anchor2 not in s: raise SystemExit("package tactical anchor missing")
+              s = s.replace(anchor2, add2, 1)
+          p.write_text(s)
+
+          p = Path("scripts/vercel_build_v2.mjs")
+          s = p.read_text()
+          anchor = '  ["npm", ["run", "check:campaign-item-pool"]],\n'
+          add = anchor + '  ["npm", ["run", "check:item-card-text"]],\n  ["npm", ["run", "check:merchant-crafted-pricing"]],\n'
+          if '"check:item-card-text"' not in s:
+              if anchor not in s: raise SystemExit("vercel build campaign-item anchor missing")
+              s = s.replace(anchor, add, 1)
+          p.write_text(s)
+          PY
+
+            # Keep PR #230 density/typography, then append PR #226's independent
+            # long-text/list/table formatting block.
+            git checkout --ours styles/card-compact.css
+            git show origin/item-card-text-audit:styles/card-compact.css > /tmp/pr226-card.css
+            python3 - <<'PY'
+          from pathlib import Path
+          p = Path("styles/card-compact.css")
+          s = p.read_text()
+          theirs = Path("/tmp/pr226-card.css").read_text()
+          marker = "/* 2026-10-16 full-catalog ItemCard text formatting pass."
+          if marker not in theirs:
+              raise SystemExit("PR226 CSS marker missing")
+          block = theirs[theirs.index(marker):].strip()
+          if marker not in s:
+              s = s.rstrip() + "\n\n\n" + block + "\n"
+          p.write_text(s)
+          PY
+
+            git add components/GlobalRuleReferenceDock.js components/ItemCard.js components/NpcForgeMerchantMarket.js package.json scripts/vercel_build_v2.mjs styles/card-compact.css
+            unresolved="$(git diff --name-only --diff-filter=U)"
+            if [ -n "$unresolved" ]; then
+              echo "Unresolved conflicts:"
+              printf '%s\n' "$unresolved"
+              exit 1
+            fi
           fi
-          git commit -m "Reconcile PR #226 onto current main"
+
+          git diff --check
+          git status --short
+      - name: Install dependencies
+        run: npm ci
+      - name: Validate reconciled ItemCard work
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run check:item-card-text
+          npm run check:merchant-crafted-pricing
+          npm run check:campaign-item-pool
+          npm run check:player-forge-starting-equipment
+          npm run check:tactical-equipped-mitigation
+          npm run build:vercel
+      - name: Commit and push reconciled branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git commit -m "Reconcile ItemCard catalog audit onto current main"
           git push origin HEAD:reconcile-item-card-text-20261019
