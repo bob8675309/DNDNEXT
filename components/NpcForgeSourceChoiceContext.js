@@ -6,6 +6,7 @@ import {
   foundationChoiceSummary,
   normalizeSourceChoiceSelections,
   serializeSourceChoices,
+  setSourceChoiceSelection,
   sourceChoiceGroupsComplete,
 } from "../utils/playerForgeSourceChoices";
 
@@ -21,6 +22,47 @@ export const NpcForgeSourceChoiceContext = createContext({
 
 export function useNpcForgeSourceChoices() {
   return useContext(NpcForgeSourceChoiceContext);
+}
+
+export function applyDirectSourceChoiceSelection(current = EMPTY_SOURCE_CHOICE_STATE, groupOrId = null, fieldId = "", optionKeys = []) {
+  const incomingGroup = groupOrId && typeof groupOrId === "object" ? groupOrId : null;
+  const groupId = String(incomingGroup?.id || groupOrId || "");
+  let scopes = current?.scopes && typeof current.scopes === "object" ? { ...current.scopes } : {};
+  let groups = Array.isArray(current?.groups) ? current.groups : [];
+
+  if (incomingGroup?.id) {
+    let foundInScope = false;
+    scopes = Object.fromEntries(Object.entries(scopes).map(([scopeId, entry]) => {
+      const scopedGroups = Array.isArray(entry?.groups) ? entry.groups : [];
+      if (!scopedGroups.some((group) => String(group?.id || "") === groupId)) return [scopeId, entry];
+      foundInScope = true;
+      return [scopeId, {
+        ...entry,
+        groups: scopedGroups.map((group) => String(group?.id || "") === groupId ? incomingGroup : group),
+      }];
+    }));
+    if (!foundInScope) {
+      const directGroups = Array.isArray(scopes?.[DIRECT_SOURCE_CHOICE_SCOPE]?.groups)
+        ? scopes[DIRECT_SOURCE_CHOICE_SCOPE].groups.filter((group) => String(group?.id || "") !== groupId)
+        : [];
+      scopes[DIRECT_SOURCE_CHOICE_SCOPE] = {
+        groups: [...directGroups, incomingGroup],
+        catalogReady: true,
+      };
+    }
+
+    const existingIndex = groups.findIndex((entry) => String(entry?.id || "") === groupId);
+    groups = existingIndex >= 0
+      ? groups.map((entry, index) => index === existingIndex ? incomingGroup : entry)
+      : [...groups, incomingGroup];
+  }
+
+  return {
+    ...current,
+    scopes,
+    groups,
+    selections: setSourceChoiceSelection(groups, current?.selections || {}, groupId, fieldId, optionKeys),
+  };
 }
 
 function applyAutomaticSourceSelections(groups = [], selections = {}) {
