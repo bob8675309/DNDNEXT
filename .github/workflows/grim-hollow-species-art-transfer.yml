@@ -32,7 +32,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          curl --fail --location --silent --show-error 'https://uc8a8d8eef01084ec7134b4962bb.dl.dropboxusercontent.com/cd/0/get/DKRO70dZPqmCFRxG-kAJcV70JneaY0lxu-QtwygOj8DQ-Xc6W67OvyOc_Ss79ZwqVNFLByCEUjX1BqcqW0-PhqFRgI7jjtXQpMvuPTC11Slm-8PBGm06i7HiJYnB4QOBqTn_mzhfvZCgLhASnTCZXUayQp_xKWOUrv7bolifa6k85A/file?c_luid=c335000c' --output /tmp/grim-hollow-species.zip
+          curl --fail --location --silent --show-error 'https://ucd4fbe475a00c318be74bed4a3e.dl.dropboxusercontent.com/cd/0/get/DKRjMMYR5RLTpgwfmFGWFA4UDUXWprFrxHedZ1cv89SXnNBAOSjK-FUyGN2YYVTePVDLDMuzf2Xv8oJ63sGhzrZp6kI851G9qtMWdh4oWmVLi6QmC1xrE_OzSCN--TNqqR2kHk4AaxQ50JX8nw1KGbMV14cAN3O_5IJslQO0iE07nw/file?c_luid=c335000c' --output /tmp/grim-hollow-species.zip
           echo '46f3c408dccc806883fb5d326dbb09738d6b3f82f6728cd0925821d128da1969  /tmp/grim-hollow-species.zip' | sha256sum -c -
           mkdir -p /tmp/grim-hollow-species
           unzip -q /tmp/grim-hollow-species.zip -d /tmp/grim-hollow-species
