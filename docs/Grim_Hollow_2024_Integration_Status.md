@@ -196,3 +196,18 @@ All seventeen retain the Player's Guide Heritage model rather than being convert
 The Character Forge reuses its existing source-choice persistence and Heritage repeat-limit authority. No Grim-Hollow-only React state or second save path was introduced. Existing PHB/XPHB/VRGR Species rows remain intact.
 
 The source-backed regeneration script now emits a reviewed `species.json` alongside spells, subclasses, items, and variants, and the source manifest now guards the expected Species count at **17**.
+
+
+### Live Species import verification — 2026-10-19
+
+The reviewed Species migration was applied to live project `ucggczovhmauhshvhusx` as registered migration `20261019013551 grim_hollow_pg24_species_catalog`.
+
+Live verification after apply:
+
+- **17 / 17** `GrimHollowPG24` Species rows exist in `character_option_catalog`.
+- **17 / 17** are represented in `character_option_catalog_preferred` under their intended DNDNext display identities.
+- Every imported row embeds the full **107-entry** Heritage Trait catalogue.
+- Accursed correctly has no fixed traditional set; the other sixteen rows preserve **8** source traditional suggestions each.
+- All seventeen retain non-empty source lore and source-art provenance.
+- Existing XPHB/VRGR rows for Human, Dragonborn, Dwarf, Elf, Gnome, Halfling, and Dhampir remain present and unchanged.
+- The optional Small-size speed-for-extra-trait source rule is flagged on the applicable rows, but runtime automation of that ninth-pick tradeoff remains intentionally deferred.
