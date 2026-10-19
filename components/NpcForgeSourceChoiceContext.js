@@ -10,6 +10,7 @@ import {
 } from "../utils/playerForgeSourceChoices";
 
 export const EMPTY_SOURCE_CHOICE_STATE = Object.freeze({ groups: [], selections: {}, catalogReady: false, scopes: {}, defaultedGroups: {} });
+export const DIRECT_SOURCE_CHOICE_SCOPE = "__direct_source_choice__";
 
 export const NpcForgeSourceChoiceContext = createContext({
   state: EMPTY_SOURCE_CHOICE_STATE,
@@ -272,11 +273,46 @@ export function normalizeSourceChoiceState(groups = [], catalogReady = true, pre
     .map(normalizeCrafterProfessionChoices)
     .map(normalizeProficiencyFeatDecisionSurface);
   const previousScopes = previous?.scopes && typeof previous.scopes === "object" ? previous.scopes : {};
-  const scopes = {
+  let scopes = {
     ...previousScopes,
     [scope || "foundation"]: { groups: validGroups, catalogReady: Boolean(catalogReady) },
   };
-  const combinedGroups = normalizeFeatSourceChoiceGroups(Object.values(scopes).flatMap((entry) => Array.isArray(entry?.groups) ? entry.groups : []));
+
+  // Direct interactive writes can happen before the owning registrar effect has
+  // committed its scope (especially immediately after restoring a Forge draft).
+  // Keep those live groups in a short-lived direct scope, then retire the
+  // duplicate as soon as any canonical scope registers the same group ID.
+  const canonicalIds = new Set(Object.entries(scopes)
+    .filter(([scopeId]) => scopeId !== DIRECT_SOURCE_CHOICE_SCOPE)
+    .flatMap(([, entry]) => Array.isArray(entry?.groups) ? entry.groups : [])
+    .map((group) => String(group?.id || ""))
+    .filter(Boolean));
+  if (scopes[DIRECT_SOURCE_CHOICE_SCOPE]) {
+    const remainingDirect = (scopes[DIRECT_SOURCE_CHOICE_SCOPE].groups || [])
+      .filter((group) => group?.id && !canonicalIds.has(String(group.id)));
+    if (remainingDirect.length) {
+      scopes = {
+        ...scopes,
+        [DIRECT_SOURCE_CHOICE_SCOPE]: {
+          ...scopes[DIRECT_SOURCE_CHOICE_SCOPE],
+          groups: remainingDirect,
+          catalogReady: true,
+        },
+      };
+    } else {
+      const { [DIRECT_SOURCE_CHOICE_SCOPE]: _discarded, ...withoutDirect } = scopes;
+      scopes = withoutDirect;
+    }
+  }
+
+  const combinedById = new Map();
+  for (const entry of Object.values(scopes)) {
+    for (const group of Array.isArray(entry?.groups) ? entry.groups : []) {
+      if (!group?.id) continue;
+      combinedById.set(String(group.id), group);
+    }
+  }
+  const combinedGroups = normalizeFeatSourceChoiceGroups([...combinedById.values()]);
   const previousSelections = previous?.selections || {};
   const previousDefaultedGroups = previous?.defaultedGroups && typeof previous.defaultedGroups === "object"
     ? previous.defaultedGroups
