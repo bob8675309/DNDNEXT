@@ -453,7 +453,7 @@ function pageOne(page, model, fonts, fields) {
   });
 }
 
-async function embedPortrait(pdfDoc, page, url, fetchImpl) {
+async function embedPortrait(pdfDoc, page, fields, url, fetchImpl) {
   if (!url || typeof fetchImpl !== "function") return false;
   try {
     const response = await fetchImpl(url, { mode: "cors" });
@@ -481,57 +481,92 @@ async function embedPortrait(pdfDoc, page, url, fetchImpl) {
     }
 
     const image = kind.includes("png") ? await pdfDoc.embedPng(bytes) : await pdfDoc.embedJpg(bytes);
-    const fitted = image.scaleToFit(151, 188);
-    const x = 42 + (151 - fitted.width) / 2;
-    const top = 132 + (188 - fitted.height) / 2;
-    page.drawImage(image, {
-      x,
-      y: page.getHeight() - top - fitted.height,
-      width: fitted.width,
-      height: fitted.height,
-    });
+    const rect = fieldRect(fields, "CHARACTER IMAGE");
+    if (!rect) return false;
+    const padding = 6;
+    const fitted = image.scaleToFit(Math.max(1, rect.width - padding * 2), Math.max(1, rect.height - padding * 2));
+    const x = rect.x + (rect.width - fitted.width) / 2;
+    const y = rect.y + (rect.height - fitted.height) / 2;
+    page.drawImage(image, { x, y, width: fitted.width, height: fitted.height });
     return true;
   } catch {
     return false;
   }
 }
 
-async function pageTwo(pdfDoc, page, model, fonts, overflowFeatures, fetchImpl) {
+async function pageTwo(pdfDoc, page, model, fonts, fields, overflowFeatures, fetchImpl) {
   const { regular, bold } = fonts;
   const profile = model.profile || {};
 
-  drawTextTop(page, profile.name, 70, 68, { font: regular, size: 16.5, width: 180, minSize: 10 });
-  drawTextTop(page, profile.age, 266, 76, { font: regular, size: 9.5, width: 90, minSize: 7 });
-  drawTextTop(page, profile.height, 379, 76, { font: regular, size: 9.5, width: 80, minSize: 7 });
-  drawTextTop(page, profile.weight, 475, 76, { font: regular, size: 9.5, width: 85, minSize: 7 });
-  drawTextTop(page, profile.eyes, 266, 102, { font: regular, size: 9.5, width: 90, minSize: 7 });
-  drawTextTop(page, profile.skin, 379, 102, { font: regular, size: 9.5, width: 80, minSize: 7 });
-  drawTextTop(page, profile.hair, 475, 102, { font: regular, size: 9.5, width: 85, minSize: 7 });
+  drawFieldText(page, fields, "CharacterName 2", profile.name, { font: regular, size: 16.5, minSize: 10, align: "left", paddingX: 7 });
+  drawFieldText(page, fields, "Age", profile.age, { font: regular, size: 9.5, minSize: 7, align: "left", paddingX: 2.5 });
+  drawFieldText(page, fields, "Height", profile.height, { font: regular, size: 9.5, minSize: 7, align: "left", paddingX: 2.5 });
+  drawFieldText(page, fields, "Weight", profile.weight, { font: regular, size: 9.5, minSize: 7, align: "left", paddingX: 2.5 });
+  drawFieldText(page, fields, "Eyes", profile.eyes, { font: regular, size: 9.5, minSize: 7, align: "left", paddingX: 2.5 });
+  drawFieldText(page, fields, "Skin", profile.skin, { font: regular, size: 9.5, minSize: 7, align: "left", paddingX: 2.5 });
+  drawFieldText(page, fields, "Hair", profile.hair, { font: regular, size: 9.5, minSize: 7, align: "left", paddingX: 2.5 });
 
-  const portraitPlaced = await embedPortrait(pdfDoc, page, profile.portraitUrl, fetchImpl);
-  if (profile.appearance) {
-    drawWrappedTop(page, profile.appearance, 42, portraitPlaced ? 322 : 134, 151, portraitPlaced ? 23 : 200, {
-      font: regular,
-      size: portraitPlaced ? 6.4 : 7.8,
-      lineHeight: portraitPlaced ? 7.1 : 8.8,
-    });
+  const portraitPlaced = await embedPortrait(pdfDoc, page, fields, profile.portraitUrl, fetchImpl);
+  const imageRect = fieldRect(fields, "CHARACTER IMAGE");
+  if (profile.appearance && imageRect) {
+    if (portraitPlaced) {
+      const appearanceRect = {
+        x: imageRect.x + 6,
+        y: imageRect.y + 5,
+        width: imageRect.width - 12,
+        height: 26,
+      };
+      const top = page.getHeight() - appearanceRect.y - appearanceRect.height;
+      drawWrappedTop(page, profile.appearance, appearanceRect.x, top, appearanceRect.width, appearanceRect.height, {
+        font: regular,
+        size: 6.4,
+        lineHeight: 7.1,
+      });
+    } else {
+      drawFieldWrapped(page, fields, "CHARACTER IMAGE", profile.appearance, {
+        font: regular,
+        size: 7.8,
+        lineHeight: 8.8,
+        paddingX: 8,
+        paddingY: 8,
+      });
+    }
   }
 
+  drawFieldText(page, fields, "FactionName", profile.affiliation || profile.role, {
+    font: regular,
+    size: 8.8,
+    minSize: 6.4,
+    align: "left",
+    paddingX: 3,
+  });
+
   const alliesText = [
-    profile.affiliation ? `Affiliation: ${profile.affiliation}` : "",
     profile.role ? `Role: ${profile.role}` : "",
     profile.location ? `Location: ${profile.location}` : "",
     profile.tags?.length ? `Tags: ${profile.tags.join(", ")}` : "",
     model.notes?.length ? `Notes:\n${model.notes.map((note) => `- ${note.body}`).join("\n")}` : "",
   ].filter(Boolean).join("\n\n");
-  drawWrappedTop(page, alliesText, 233, 137, 334, 199, { font: regular, size: 7.4, lineHeight: 8.45 });
+  drawFieldWrapped(page, fields, "Allies", alliesText, {
+    font: regular,
+    size: 7.4,
+    lineHeight: 8.45,
+    paddingX: 7,
+    paddingY: 7,
+  });
 
-  drawFeatureBlocks(page, overflowFeatures || [], {
-    x: 233,
-    top: 393,
-    width: 334,
-    height: 180,
-  }, { font: regular, boldFont: bold, size: 7.15, lineHeight: 8.1 });
+  const overflowBox = fieldContentBox(page, fields, "Feat+Traits", 7, 7) || {
+    x: 230,
+    top: 388,
+    width: 340,
+    height: 188,
+  };
+  drawFeatureBlocks(page, overflowFeatures || [], overflowBox, {
+    font: regular,
+    boldFont: bold,
+    size: 7.15,
+    lineHeight: 8.1,
+  });
 
   const backstory = [
     profile.description ? `Description: ${profile.description}` : "",
@@ -542,7 +577,13 @@ async function pageTwo(pdfDoc, page, model, fonts, overflowFeatures, fetchImpl) 
     profile.voice ? `Voice: ${profile.voice}` : "",
     profile.secret ? `Secret: ${profile.secret}` : "",
   ].filter(Boolean).join("\n\n");
-  drawWrappedTop(page, backstory, 45, 393, 146, 345, { font: regular, size: 7.2, lineHeight: 8.2 });
+  drawFieldWrapped(page, fields, "Backstory", backstory, {
+    font: regular,
+    size: 7.2,
+    lineHeight: 8.2,
+    paddingX: 8,
+    paddingY: 8,
+  });
 
   const treasure = [
     model.legacy?.treasure ? model.legacy.treasure : "",
@@ -551,7 +592,13 @@ async function pageTwo(pdfDoc, page, model, fonts, overflowFeatures, fetchImpl) 
       : "",
     model.inventory.length ? `Inventory:\n${model.inventory.map(itemLine).join("\n")}` : "",
   ].filter(Boolean).join("\n\n");
-  drawWrappedTop(page, treasure, 233, 618, 334, 120, { font: regular, size: 7.2, lineHeight: 8.15 });
+  drawFieldWrapped(page, fields, "Treasure", treasure, {
+    font: regular,
+    size: 7.2,
+    lineHeight: 8.15,
+    paddingX: 8,
+    paddingY: 8,
+  });
 }
 
 function spellLayout(level) {
