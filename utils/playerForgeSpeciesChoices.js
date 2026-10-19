@@ -87,16 +87,19 @@ function customLineageHeritageGroups(species) {
     return traditionalDelta || categoryDelta || a.label.localeCompare(b.label);
   });
   const repeatLimits = Object.fromEntries(heritageOptions.map((entry) => [entry.key, Math.max(1, Number(entry.metadata?.repeatLimit || 2))]));
-  const fields = Array.from({ length: pickCount }, (_, index) => field({
+  const heritageField = (index, total) => field({
     id: `heritage-${index + 1}`,
-    label: `Heritage Trait ${index + 1} of ${pickCount}`,
+    label: `Heritage Trait ${index + 1} of ${total}`,
     kind: "heritage-trait",
     options: heritageOptions,
     helper: heritageOnly && traditionalSelections.length
       ? "Traditional suggestions are listed first. You can replace any suggestion with another Grim Hollow Heritage Trait."
       : "Select a trait again only when that trait allows an improved or repeated benefit.",
     metadata: { pickNumber: index + 1, system: "GrimHollowPG24" },
-  }));
+  });
+  const fields = isCustomLineage(species)
+    ? Array.from({ length: 8 }, (_, index) => heritageField(index, 8))
+    : Array.from({ length: pickCount }, (_, index) => heritageField(index, pickCount));
   const helper = heritageOnly
     ? `Choose exactly ${pickCount} Heritage Trait picks. Traditional suggestions are listed first when the source provides them; you may swap any of them for another Heritage Trait.`
     : `Choose exactly ${pickCount} Heritage Trait picks. Combat, Exploration, and Roleplaying organize the catalogue but do not impose quotas.`;
