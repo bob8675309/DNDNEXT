@@ -138,6 +138,96 @@ function drawDotTop(page, x, top, {
   });
 }
 
+function captureFieldGeometry(form) {
+  const fields = new Map();
+  for (const field of form.getFields()) {
+    const widgets = field?.acroField?.getWidgets?.() || [];
+    const rect = widgets[0]?.getRectangle?.();
+    if (!rect) continue;
+    fields.set(field.getName(), { ...rect });
+  }
+  return fields;
+}
+
+function fieldRect(fields, name) {
+  return fields?.get?.(name) || null;
+}
+
+function drawTextInRect(page, text, rect, {
+  font,
+  size = 9,
+  color = BLACK,
+  align = "center",
+  minSize = 5.5,
+  paddingX = 1.5,
+  verticalAdjust = 0,
+} = {}) {
+  let value = sanitizePdfText(text);
+  if (!value || !rect) return false;
+
+  const usableWidth = Math.max(1, rect.width - paddingX * 2);
+  let actualSize = size;
+  while (actualSize > minSize && font.widthOfTextAtSize(value, actualSize) > usableWidth) actualSize -= 0.25;
+  if (font.widthOfTextAtSize(value, actualSize) > usableWidth) {
+    const ellipsis = "...";
+    while (value.length > 1 && font.widthOfTextAtSize(value + ellipsis, actualSize) > usableWidth) value = value.slice(0, -1);
+    value += ellipsis;
+  }
+
+  const textWidth = font.widthOfTextAtSize(value, actualSize);
+  let x = rect.x + paddingX;
+  if (align === "center") x = rect.x + Math.max(0, (rect.width - textWidth) / 2);
+  if (align === "right") x = rect.x + rect.width - paddingX - textWidth;
+
+  // Helvetica's visual center sits about .255em above its baseline. Centering
+  // against the AcroForm widget rectangle eliminates the hand-tuned vertical drift
+  // that showed up in browser/PDF print previews.
+  const y = rect.y + rect.height / 2 - actualSize * 0.255 + verticalAdjust;
+  page.drawText(value, { x, y, size: actualSize, font, color });
+  return true;
+}
+
+function drawFieldText(page, fields, name, text, options = {}) {
+  return drawTextInRect(page, text, fieldRect(fields, name), options);
+}
+
+function fieldContentBox(page, fields, name, paddingX = 5, paddingY = 5) {
+  const rect = fieldRect(fields, name);
+  if (!rect) return null;
+  return {
+    x: rect.x + paddingX,
+    top: page.getHeight() - rect.y - rect.height + paddingY,
+    width: Math.max(1, rect.width - paddingX * 2),
+    height: Math.max(1, rect.height - paddingY * 2),
+  };
+}
+
+function drawFieldWrapped(page, fields, name, text, {
+  paddingX = 5,
+  paddingY = 5,
+  ...options
+} = {}) {
+  const box = fieldContentBox(page, fields, name, paddingX, paddingY);
+  if (!box) return { lines: [], usedLines: 0, overflow: 0 };
+  return drawWrappedTop(page, text, box.x, box.top, box.width, box.height, options);
+}
+
+function drawDotInRect(page, rect, {
+  radius = 2.35,
+  filled = true,
+} = {}) {
+  if (!rect) return false;
+  page.drawCircle({
+    x: rect.x + rect.width / 2,
+    y: rect.y + rect.height / 2,
+    size: radius,
+    color: filled ? BLACK : WHITE,
+    borderColor: BLACK,
+    borderWidth: 0.65,
+  });
+  return true;
+}
+
 function buildFeatureText(feature) {
   const name = safeText(feature?.name);
   const description = safeText(feature?.description);
@@ -219,56 +309,96 @@ function actionLine(action) {
   return [safeText(action?.label), parts.join(" - ")].filter(Boolean).join(": ");
 }
 
-function pageOne(page, model, fonts) {
+// Single-line values are centered against the template's actual AcroForm widget
+// rectangles. This is more reliable than hand-tuned coordinates across browser/PDF
+// renderers and keeps the print overlay visually centered inside the official boxes.
+function pageOne(page, model, fonts, fields) {
   const { regular, bold } = fonts;
   const profile = model.profile || {};
 
-  drawTextTop(page, profile.name, 70, 66, { font: regular, size: 16, width: 180, minSize: 10 });
+  drawFieldText(page, fields, "CharacterName", profile.name, { font: regular, size: 17.5, minSize: 11, align: "left", paddingX: 7 });
   const classLevel = [profile.className, profile.subclass, profile.level ? `Lvl ${profile.level}` : ""].filter(Boolean).join(" ");
-  drawTextTop(page, classLevel, 270, 70, { font: regular, size: 9, width: 105, minSize: 6.5 });
-  drawTextTop(page, profile.background, 383, 70, { font: regular, size: 9, width: 90, minSize: 6.5 });
-  drawTextTop(page, profile.playerName || "NPC", 480, 70, { font: regular, size: 9, width: 80, minSize: 6.5 });
-  drawTextTop(page, [profile.species, profile.lineage].filter(Boolean).join(" - "), 270, 91, { font: regular, size: 8.5, width: 105, minSize: 6 });
-  drawTextTop(page, profile.alignment, 383, 91, { font: regular, size: 8.5, width: 90, minSize: 6 });
-  drawTextTop(page, model.xp == null ? "" : String(model.xp), 480, 91, { font: regular, size: 8.5, width: 80, minSize: 6 });
+  drawFieldText(page, fields, "ClassLevel", classLevel, { font: regular, size: 10.5, minSize: 7, align: "left", paddingX: 2.5 });
+  drawFieldText(page, fields, "Background", profile.background, { font: regular, size: 10.5, minSize: 7, align: "left", paddingX: 2.5 });
+  drawFieldText(page, fields, "PlayerName", profile.playerName || "NPC", { font: regular, size: 10.5, minSize: 7, align: "left", paddingX: 2.5 });
+  drawFieldText(page, fields, "Race ", [profile.species, profile.lineage].filter(Boolean).join(" - "), { font: regular, size: 10, minSize: 6.5, align: "left", paddingX: 2.5 });
+  drawFieldText(page, fields, "Alignment", profile.alignment, { font: regular, size: 10, minSize: 6.5, align: "left", paddingX: 2.5 });
+  drawFieldText(page, fields, "XP", model.xp == null ? "" : String(model.xp), { font: regular, size: 10, minSize: 6.5, align: "left", paddingX: 2.5 });
 
-  const abilityScoreTop = [160, 232, 303, 375, 447, 518];
-  model.abilities.forEach((ability, index) => {
-    drawTextTop(page, ability.score, 45, abilityScoreTop[index], { font: regular, size: 16, width: 25, align: "center" });
-    drawTextTop(page, formatModifier(ability.modifier), 45, abilityScoreTop[index] + 27, { font: regular, size: 9, width: 25, align: "center" });
+  const abilityFields = {
+    str: { score: "STR", mod: "STRmod", save: "ST Strength", check: "Check Box 11" },
+    dex: { score: "DEX", mod: "DEXmod ", save: "ST Dexterity", check: "Check Box 18" },
+    con: { score: "CON", mod: "CONmod", save: "ST Constitution", check: "Check Box 19" },
+    int: { score: "INT", mod: "INTmod", save: "ST Intelligence", check: "Check Box 20" },
+    wis: { score: "WIS", mod: "WISmod", save: "ST Wisdom", check: "Check Box 21" },
+    cha: { score: "CHA", mod: "CHamod", save: "ST Charisma", check: "Check Box 22" },
+  };
+
+  model.abilities.forEach((ability) => {
+    const names = abilityFields[ability.key];
+    if (!names) return;
+    drawFieldText(page, fields, names.score, ability.score, { font: regular, size: 17, minSize: 13, align: "center" });
+    drawFieldText(page, fields, names.mod, formatModifier(ability.modifier), { font: regular, size: 10.2, minSize: 8.5, align: "center" });
+    drawFieldText(page, fields, names.save, formatModifier(ability.saveModifier), { font: bold, size: 8.1, minSize: 7.1, align: "center", paddingX: 0.3 });
+    if (ability.saveProficient) drawDotInRect(page, fieldRect(fields, names.check), { radius: 2.25 });
   });
 
-  if (model.inspiration) drawTextTop(page, "X", 106, 139, { font: bold, size: 11, width: 24, align: "center" });
-  drawTextTop(page, formatModifier(model.proficiencyBonus), 99, 174, { font: regular, size: 10, width: 26, align: "center" });
+  if (model.inspiration) drawFieldText(page, fields, "Inspiration", "X", { font: bold, size: 11, align: "center" });
+  drawFieldText(page, fields, "ProfBonus", formatModifier(model.proficiencyBonus), { font: regular, size: 10.5, minSize: 9, align: "center" });
 
-  const saveTops = [207.3, 220.8, 234.3, 247.8, 261.3, 274.8];
-  model.abilities.forEach((ability, index) => {
-    drawTextTop(page, formatModifier(ability.saveModifier), 114.5, saveTops[index], { font: regular, size: 7.5, width: 15, align: "right" });
-    if (ability.saveProficient) drawDotTop(page, 104.5, saveTops[index] + 4.2, { radius: 2.45 });
+  const skillFields = {
+    acrobatics: ["Acrobatics", "Check Box 23"],
+    animalHandling: ["Animal", "Check Box 24"],
+    arcana: ["Arcana", "Check Box 25"],
+    athletics: ["Athletics", "Check Box 26"],
+    deception: ["Deception ", "Check Box 27"],
+    history: ["History ", "Check Box 28"],
+    insight: ["Insight", "Check Box 29"],
+    intimidation: ["Intimidation", "Check Box 30"],
+    investigation: ["Investigation ", "Check Box 31"],
+    medicine: ["Medicine", "Check Box 32"],
+    nature: ["Nature", "Check Box 33"],
+    perception: ["Perception ", "Check Box 34"],
+    performance: ["Performance", "Check Box 35"],
+    persuasion: ["Persuasion", "Check Box 36"],
+    religion: ["Religion", "Check Box 37"],
+    sleightOfHand: ["SleightofHand", "Check Box 38"],
+    stealth: ["Stealth ", "Check Box 39"],
+    survival: ["Survival", "Check Box 40"],
+  };
+  model.skills.forEach((skill) => {
+    const names = skillFields[skill.key];
+    if (!names) return;
+    const [valueField, checkField] = names;
+    drawFieldText(page, fields, valueField, formatModifier(skill.modifier), { font: bold, size: 8, minSize: 7, align: "center", paddingX: 0.3 });
+    const checkRect = fieldRect(fields, checkField);
+    if (skill.proficient) drawDotInRect(page, checkRect, { radius: 2.2 });
+    if (skill.expertise && checkRect) {
+      drawTextInRect(page, "x2", { x: checkRect.x - 9.4, y: checkRect.y, width: 8.2, height: checkRect.height }, {
+        font: bold,
+        size: 5.1,
+        minSize: 4.7,
+        align: "center",
+        paddingX: 0,
+      });
+    }
   });
 
-  const skillTops = [322.6, 336.1, 349.6, 363.1, 376.6, 390.1, 403.6, 417.1, 430.6, 444.1, 457.6, 471.1, 484.6, 498.1, 511.6, 525.1, 538.6, 552.1];
-  model.skills.forEach((skill, index) => {
-    drawTextTop(page, formatModifier(skill.modifier), 114.5, skillTops[index], { font: regular, size: 7.5, width: 15, align: "right" });
-    if (skill.proficient) drawDotTop(page, 104.5, skillTops[index] + 4.2, { radius: 2.45 });
-    if (skill.expertise) drawTextTop(page, "x2", 96.5, skillTops[index] + 0.5, { font: bold, size: 4.5, width: 7, align: "right", minSize: 4 });
-  });
+  drawFieldText(page, fields, "AC", model.armorClass, { font: bold, size: 15, minSize: 12, align: "center" });
+  drawFieldText(page, fields, "Initiative", formatModifier(model.initiative), { font: bold, size: 14, minSize: 11, align: "center" });
+  drawFieldText(page, fields, "Speed", model.speed, { font: bold, size: 13.5, minSize: 9, align: "center" });
 
-  drawTextTop(page, model.armorClass, 225, 149, { font: bold, size: 14, width: 44, align: "center" });
-  drawTextTop(page, formatModifier(model.initiative), 280, 149, { font: bold, size: 13, width: 47, align: "center" });
-  drawTextTop(page, model.speed, 338, 149, { font: bold, size: 12.5, width: 45, align: "center", minSize: 8 });
+  drawFieldText(page, fields, "HPMax", model.hp.max || "", { font: bold, size: 9.8, minSize: 8, align: "center" });
+  drawFieldText(page, fields, "HPCurrent", model.hp.current || "", { font: regular, size: 17, minSize: 13, align: "center" });
+  drawFieldText(page, fields, "HPTemp", model.hp.temp || "", { font: regular, size: 17, minSize: 13, align: "center" });
+  drawFieldText(page, fields, "HD", model.hp.hitDice, { font: regular, size: 11, minSize: 8, align: "center" });
 
-  drawTextTop(page, model.hp.max || "", 320, 198, { font: regular, size: 9, width: 55, align: "right" });
-  drawTextTop(page, model.hp.current || "", 250, 218, { font: regular, size: 16, width: 110, align: "center" });
-  drawTextTop(page, model.hp.temp || "", 250, 270, { font: regular, size: 16, width: 110, align: "center" });
-  drawTextTop(page, model.hp.hitDice, 235, 333, { font: regular, size: 10, width: 60, align: "center" });
+  drawFieldWrapped(page, fields, "PersonalityTraits ", profile.traits, { font: regular, size: 7.8, lineHeight: 8.65, paddingX: 5, paddingY: 5 });
+  drawFieldWrapped(page, fields, "Ideals", profile.ideals, { font: regular, size: 7.8, lineHeight: 8.65, paddingX: 5, paddingY: 5 });
+  drawFieldWrapped(page, fields, "Bonds", profile.bonds, { font: regular, size: 7.8, lineHeight: 8.65, paddingX: 5, paddingY: 5 });
+  drawFieldWrapped(page, fields, "Flaws", profile.flaws, { font: regular, size: 7.8, lineHeight: 8.65, paddingX: 5, paddingY: 5 });
 
-  drawWrappedTop(page, profile.traits, 424, 148, 145, 42, { font: regular, size: 7 });
-  drawWrappedTop(page, profile.ideals, 424, 211, 145, 35, { font: regular, size: 7 });
-  drawWrappedTop(page, profile.bonds, 424, 267, 145, 35, { font: regular, size: 7 });
-  drawWrappedTop(page, profile.flaws, 424, 323, 145, 35, { font: regular, size: 7 });
-
-  drawTextTop(page, model.passivePerception, 34, 581.5, { font: bold, size: 10.5, width: 30, align: "center" });
+  drawFieldText(page, fields, "Passive", model.passivePerception, { font: bold, size: 11.5, minSize: 9, align: "center" });
 
   const trainingLines = [
     model.languages.length ? `Languages: ${model.languages.join(", ")}` : "",
@@ -277,31 +407,29 @@ function pageOne(page, model, fonts) {
     model.armorProficiencies.length ? `Armor: ${model.armorProficiencies.join(", ")}` : "",
     model.professions.length ? `Professions: ${model.professions.map((entry) => `${entry.name} rank ${entry.rank}`).join(", ")}` : "",
   ].filter(Boolean).join("\n");
-  drawWrappedTop(page, trainingLines, 42, 620, 148, 126, { font: regular, size: 6.7, lineHeight: 7.7 });
+  drawFieldWrapped(page, fields, "ProficienciesLang", trainingLines, { font: regular, size: 7.4, lineHeight: 8.45, paddingX: 8, paddingY: 6 });
 
   const currency = model.currency || {};
-  const coinRows = [
-    ["cp", 611],
-    ["sp", 636],
-    ["ep", 663],
-    ["gp", 690],
-    ["pp", 716],
-  ];
-  coinRows.forEach(([key, top]) => {
-    if (Number(currency[key] || 0) > 0) drawTextTop(page, currency[key], 226, top, { font: regular, size: 7.5, width: 34, align: "center" });
-  });
+  for (const [key, fieldName] of [["cp", "CP"], ["sp", "SP"], ["ep", "EP"], ["gp", "GP"], ["pp", "PP"]]) {
+    if (Number(currency[key] || 0) > 0) drawFieldText(page, fields, fieldName, currency[key], { font: bold, size: 8.2, minSize: 7, align: "center" });
+  }
 
   const equipmentLines = model.inventory.map(itemLine);
   if (model.legacy?.equipment) equipmentLines.push(model.legacy.equipment);
-  drawWrappedTop(page, equipmentLines.join("\n"), 268, 610, 120, 136, { font: regular, size: 6.7, lineHeight: 7.6 });
+  drawFieldWrapped(page, fields, "Equipment", equipmentLines.join("\n"), { font: regular, size: 7.3, lineHeight: 8.3, paddingX: 6, paddingY: 6 });
 
   const attacks = model.actions.filter((action) => action.attackBonus != null || safeText(action.damage)).slice(0, 3);
-  const attackTops = [398, 418, 438];
+  const attackFields = [
+    ["Wpn Name", "Wpn1 AtkBonus", "Wpn1 Damage"],
+    ["Wpn Name 2", "Wpn2 AtkBonus ", "Wpn2 Damage "],
+    ["Wpn Name 3", "Wpn3 AtkBonus  ", "Wpn3 Damage "],
+  ];
   attacks.forEach((action, index) => {
-    drawTextTop(page, action.label, 220, attackTops[index], { font: regular, size: 7.2, width: 75, minSize: 5.6 });
-    drawTextTop(page, action.attackBonus == null ? "" : formatModifier(action.attackBonus), 296, attackTops[index], { font: regular, size: 7.2, width: 31, align: "center" });
+    const [nameField, bonusField, damageField] = attackFields[index];
+    drawFieldText(page, fields, nameField, action.label, { font: bold, size: 7.9, minSize: 6, align: "left", paddingX: 2 });
+    drawFieldText(page, fields, bonusField, action.attackBonus == null ? "" : formatModifier(action.attackBonus), { font: bold, size: 7.9, minSize: 6, align: "center" });
     const damage = [action.damage, action.damageType].filter(Boolean).join(" ");
-    drawTextTop(page, damage, 330, attackTops[index], { font: regular, size: 6.8, width: 60, minSize: 5.2 });
+    drawFieldText(page, fields, damageField, damage, { font: regular, size: 7.4, minSize: 5.8, align: "left", paddingX: 2 });
   });
 
   const usedIds = new Set(attacks.map((action) => action.id));
@@ -309,17 +437,23 @@ function pageOne(page, model, fonts) {
     .filter((action) => !usedIds.has(action.id))
     .map(actionLine);
   if (model.legacy?.attacks) actionDetail.push(model.legacy.attacks);
-  drawWrappedTop(page, actionDetail.join("\n\n"), 220, 455, 168, 105, { font: regular, size: 6.1, lineHeight: 7 });
+  drawFieldWrapped(page, fields, "AttacksSpellcasting", actionDetail.join("\n\n"), { font: regular, size: 6.9, lineHeight: 7.8, paddingX: 4, paddingY: 4 });
 
-  return drawFeatureBlocks(page, model.features || [], {
-    x: 420,
-    top: 390,
-    width: 152,
-    height: 355,
-  }, { font: regular, boldFont: bold, size: 6.4, lineHeight: 7.25 });
+  const featureBox = fieldContentBox(page, fields, "Features and Traits", 6, 6) || {
+    x: 418,
+    top: 392,
+    width: 153,
+    height: 350,
+  };
+  return drawFeatureBlocks(page, model.features || [], featureBox, {
+    font: regular,
+    boldFont: bold,
+    size: 7.1,
+    lineHeight: 8.1,
+  });
 }
 
-async function embedPortrait(pdfDoc, page, url, fetchImpl) {
+async function embedPortrait(pdfDoc, page, fields, url, fetchImpl) {
   if (!url || typeof fetchImpl !== "function") return false;
   try {
     const response = await fetchImpl(url, { mode: "cors" });
@@ -347,57 +481,92 @@ async function embedPortrait(pdfDoc, page, url, fetchImpl) {
     }
 
     const image = kind.includes("png") ? await pdfDoc.embedPng(bytes) : await pdfDoc.embedJpg(bytes);
-    const fitted = image.scaleToFit(151, 188);
-    const x = 42 + (151 - fitted.width) / 2;
-    const top = 132 + (188 - fitted.height) / 2;
-    page.drawImage(image, {
-      x,
-      y: page.getHeight() - top - fitted.height,
-      width: fitted.width,
-      height: fitted.height,
-    });
+    const rect = fieldRect(fields, "CHARACTER IMAGE");
+    if (!rect) return false;
+    const padding = 6;
+    const fitted = image.scaleToFit(Math.max(1, rect.width - padding * 2), Math.max(1, rect.height - padding * 2));
+    const x = rect.x + (rect.width - fitted.width) / 2;
+    const y = rect.y + (rect.height - fitted.height) / 2;
+    page.drawImage(image, { x, y, width: fitted.width, height: fitted.height });
     return true;
   } catch {
     return false;
   }
 }
 
-async function pageTwo(pdfDoc, page, model, fonts, overflowFeatures, fetchImpl) {
+async function pageTwo(pdfDoc, page, model, fonts, fields, overflowFeatures, fetchImpl) {
   const { regular, bold } = fonts;
   const profile = model.profile || {};
 
-  drawTextTop(page, profile.name, 70, 69, { font: regular, size: 15, width: 180, minSize: 9 });
-  drawTextTop(page, profile.age, 266, 73, { font: regular, size: 8.5, width: 90 });
-  drawTextTop(page, profile.height, 379, 73, { font: regular, size: 8.5, width: 80 });
-  drawTextTop(page, profile.weight, 475, 73, { font: regular, size: 8.5, width: 85 });
-  drawTextTop(page, profile.eyes, 266, 99, { font: regular, size: 8.5, width: 90 });
-  drawTextTop(page, profile.skin, 379, 99, { font: regular, size: 8.5, width: 80 });
-  drawTextTop(page, profile.hair, 475, 99, { font: regular, size: 8.5, width: 85 });
+  drawFieldText(page, fields, "CharacterName 2", profile.name, { font: regular, size: 16.5, minSize: 10, align: "left", paddingX: 7 });
+  drawFieldText(page, fields, "Age", profile.age, { font: regular, size: 9.5, minSize: 7, align: "left", paddingX: 2.5 });
+  drawFieldText(page, fields, "Height", profile.height, { font: regular, size: 9.5, minSize: 7, align: "left", paddingX: 2.5 });
+  drawFieldText(page, fields, "Weight", profile.weight, { font: regular, size: 9.5, minSize: 7, align: "left", paddingX: 2.5 });
+  drawFieldText(page, fields, "Eyes", profile.eyes, { font: regular, size: 9.5, minSize: 7, align: "left", paddingX: 2.5 });
+  drawFieldText(page, fields, "Skin", profile.skin, { font: regular, size: 9.5, minSize: 7, align: "left", paddingX: 2.5 });
+  drawFieldText(page, fields, "Hair", profile.hair, { font: regular, size: 9.5, minSize: 7, align: "left", paddingX: 2.5 });
 
-  const portraitPlaced = await embedPortrait(pdfDoc, page, profile.portraitUrl, fetchImpl);
-  if (profile.appearance) {
-    drawWrappedTop(page, profile.appearance, 42, portraitPlaced ? 322 : 134, 151, portraitPlaced ? 23 : 200, {
-      font: regular,
-      size: portraitPlaced ? 5.7 : 7,
-      lineHeight: portraitPlaced ? 6.3 : 8,
-    });
+  const portraitPlaced = await embedPortrait(pdfDoc, page, fields, profile.portraitUrl, fetchImpl);
+  const imageRect = fieldRect(fields, "CHARACTER IMAGE");
+  if (profile.appearance && imageRect) {
+    if (portraitPlaced) {
+      const appearanceRect = {
+        x: imageRect.x + 6,
+        y: imageRect.y + 5,
+        width: imageRect.width - 12,
+        height: 26,
+      };
+      const top = page.getHeight() - appearanceRect.y - appearanceRect.height;
+      drawWrappedTop(page, profile.appearance, appearanceRect.x, top, appearanceRect.width, appearanceRect.height, {
+        font: regular,
+        size: 6.4,
+        lineHeight: 7.1,
+      });
+    } else {
+      drawFieldWrapped(page, fields, "CHARACTER IMAGE", profile.appearance, {
+        font: regular,
+        size: 7.8,
+        lineHeight: 8.8,
+        paddingX: 8,
+        paddingY: 8,
+      });
+    }
   }
 
+  drawFieldText(page, fields, "FactionName", profile.affiliation || profile.role, {
+    font: regular,
+    size: 8.8,
+    minSize: 6.4,
+    align: "left",
+    paddingX: 3,
+  });
+
   const alliesText = [
-    profile.affiliation ? `Affiliation: ${profile.affiliation}` : "",
     profile.role ? `Role: ${profile.role}` : "",
     profile.location ? `Location: ${profile.location}` : "",
     profile.tags?.length ? `Tags: ${profile.tags.join(", ")}` : "",
     model.notes?.length ? `Notes:\n${model.notes.map((note) => `- ${note.body}`).join("\n")}` : "",
   ].filter(Boolean).join("\n\n");
-  drawWrappedTop(page, alliesText, 230, 134, 340, 205, { font: regular, size: 6.7, lineHeight: 7.7 });
+  drawFieldWrapped(page, fields, "Allies", alliesText, {
+    font: regular,
+    size: 7.4,
+    lineHeight: 8.45,
+    paddingX: 7,
+    paddingY: 7,
+  });
 
-  drawFeatureBlocks(page, overflowFeatures || [], {
+  const overflowBox = fieldContentBox(page, fields, "Feat+Traits", 7, 7) || {
     x: 230,
-    top: 390,
+    top: 388,
     width: 340,
-    height: 185,
-  }, { font: regular, boldFont: bold, size: 6.3, lineHeight: 7.1 });
+    height: 188,
+  };
+  drawFeatureBlocks(page, overflowFeatures || [], overflowBox, {
+    font: regular,
+    boldFont: bold,
+    size: 7.15,
+    lineHeight: 8.1,
+  });
 
   const backstory = [
     profile.description ? `Description: ${profile.description}` : "",
@@ -408,7 +577,13 @@ async function pageTwo(pdfDoc, page, model, fonts, overflowFeatures, fetchImpl) 
     profile.voice ? `Voice: ${profile.voice}` : "",
     profile.secret ? `Secret: ${profile.secret}` : "",
   ].filter(Boolean).join("\n\n");
-  drawWrappedTop(page, backstory, 42, 390, 151, 350, { font: regular, size: 6.6, lineHeight: 7.5 });
+  drawFieldWrapped(page, fields, "Backstory", backstory, {
+    font: regular,
+    size: 7.2,
+    lineHeight: 8.2,
+    paddingX: 8,
+    paddingY: 8,
+  });
 
   const treasure = [
     model.legacy?.treasure ? model.legacy.treasure : "",
@@ -417,7 +592,13 @@ async function pageTwo(pdfDoc, page, model, fonts, overflowFeatures, fetchImpl) 
       : "",
     model.inventory.length ? `Inventory:\n${model.inventory.map(itemLine).join("\n")}` : "",
   ].filter(Boolean).join("\n\n");
-  drawWrappedTop(page, treasure, 230, 615, 340, 125, { font: regular, size: 6.5, lineHeight: 7.4 });
+  drawFieldWrapped(page, fields, "Treasure", treasure, {
+    font: regular,
+    size: 7.2,
+    lineHeight: 8.15,
+    paddingX: 8,
+    paddingY: 8,
+  });
 }
 
 function spellLayout(level) {
@@ -436,31 +617,57 @@ function spellLayout(level) {
   return layouts[level] || null;
 }
 
-function pageThree(page, model, fonts) {
+function pageThree(page, model, fonts, fields) {
   const { regular, bold } = fonts;
   const casting = model.spellcasting || {};
   const profile = model.profile || {};
-  drawTextTop(page, casting.className || profile.className, 72, 68, { font: regular, size: 12, width: 170, minSize: 8 });
-  drawTextTop(page, casting.ability, 284, 66, { font: bold, size: 12, width: 60, align: "center" });
-  drawTextTop(page, casting.saveDc == null ? "" : casting.saveDc, 394, 66, { font: bold, size: 12, width: 60, align: "center" });
-  drawTextTop(page, casting.attackBonus == null ? "" : formatModifier(casting.attackBonus), 499, 66, { font: bold, size: 12, width: 60, align: "center" });
 
-  const slotPositions = {
-    1: [80, 310],
-    2: [80, 541],
-    3: [268, 149],
-    4: [268, 381],
-    5: [268, 614],
-    6: [456, 149],
-    7: [456, 323],
-    8: [456, 500],
-    9: [456, 640],
+  drawFieldText(page, fields, "Spellcasting Class 2", casting.className || profile.className, {
+    font: regular,
+    size: 13,
+    minSize: 8.5,
+    align: "left",
+    paddingX: 7,
+  });
+  drawFieldText(page, fields, "SpellcastingAbility 2", casting.ability, {
+    font: bold,
+    size: 13,
+    minSize: 9,
+    align: "center",
+  });
+  drawFieldText(page, fields, "SpellSaveDC  2", casting.saveDc == null ? "" : casting.saveDc, {
+    font: bold,
+    size: 13,
+    minSize: 9,
+    align: "center",
+  });
+  drawFieldText(page, fields, "SpellAtkBonus 2", casting.attackBonus == null ? "" : formatModifier(casting.attackBonus), {
+    font: bold,
+    size: 13,
+    minSize: 9,
+    align: "center",
+  });
+
+  const slotFieldNames = {
+    1: "SlotsTotal 19",
+    2: "SlotsTotal 20",
+    3: "SlotsTotal 21",
+    4: "SlotsTotal 22",
+    5: "SlotsTotal 23",
+    6: "SlotsTotal 24",
+    7: "SlotsTotal 25",
+    8: "SlotsTotal 26",
+    9: "SlotsTotal 27",
   };
   for (let level = 1; level <= 9; level += 1) {
     const total = Number(casting.slots?.[level - 1] || 0);
     if (!total) continue;
-    const [x, top] = slotPositions[level];
-    drawTextTop(page, total, x, top, { font: bold, size: 8.5, width: 28, align: "center" });
+    drawFieldText(page, fields, slotFieldNames[level], total, {
+      font: bold,
+      size: 9.3,
+      minSize: 7.5,
+      align: "center",
+    });
   }
 
   const byLevel = new Map();
@@ -479,9 +686,9 @@ function pageThree(page, model, fonts) {
       const top = layout.top + index * layout.pitch;
       drawTextTop(page, spell.name, layout.x, top, {
         font: regular,
-        size: 7.6,
+        size: 8.2,
         width: layout.width,
-        minSize: 5.4,
+        minSize: 6.1,
       });
       if (layout.dotX != null && spell.prepared) drawDotTop(page, layout.dotX, top + 4.1, { radius: 2.15 });
       if (layout.dotX != null && spell.alwaysAvailable && !spell.prepared) {
@@ -498,7 +705,7 @@ function pageThree(page, model, fonts) {
       const top = layout.top + (layout.max - 1) * layout.pitch;
       drawTextTop(page, `+${spells.length - layout.max} more`, layout.x + 82, top, {
         font: bold,
-        size: 5.8,
+        size: 6.3,
         width: layout.width - 82,
         align: "right",
       });
@@ -521,8 +728,10 @@ export async function buildOfficialCharacterSheetPdf({
 
   if (pdfDoc.getPageCount() < 3) throw new Error("The official character-sheet template must contain all three pages.");
 
+  let fieldGeometry = new Map();
   try {
     const form = pdfDoc.getForm();
+    fieldGeometry = captureFieldGeometry(form);
     form.flatten();
   } catch {
     // The user-provided/browser-printed edition may already be flattened.
@@ -533,9 +742,9 @@ export async function buildOfficialCharacterSheetPdf({
   const fonts = { regular, bold };
 
   const pages = pdfDoc.getPages();
-  const overflowFeatures = pageOne(pages[0], model, fonts);
-  await pageTwo(pdfDoc, pages[1], model, fonts, overflowFeatures, fetchImpl);
-  pageThree(pages[2], model, fonts);
+  const overflowFeatures = pageOne(pages[0], model, fonts, fieldGeometry);
+  await pageTwo(pdfDoc, pages[1], model, fonts, fieldGeometry, overflowFeatures, fetchImpl);
+  pageThree(pages[2], model, fonts, fieldGeometry);
 
   pdfDoc.setTitle(`${safeText(model.profile?.name) || "Character"} - DNDNext Character Sheet`);
   pdfDoc.setSubject("DNDNext printable character sheet");
