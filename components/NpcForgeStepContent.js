@@ -16,7 +16,11 @@ import { useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
 
 function playerSpeciesRows(rows = [], playerMode = false) {
   if (!playerMode) return rows;
-  return rows.filter((row) => !/^human\s*\(/i.test(String(row?.name || "").trim()));
+  return rows.filter((row) => {
+    const name = String(row?.name || "").trim();
+    const source = String(row?.source || "").trim().toUpperCase();
+    return !/^human\s*\(/i.test(name) || source === "GRIMHOLLOWPG24";
+  });
 }
 
 function choiceSlug(value = "") {

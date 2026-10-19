@@ -173,3 +173,26 @@ Progress after final install:
 
 The dedicated-card queue is tracked in `docs/CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md`.
 
+
+
+## Player's Guide Species catalogue — October 18, 2026
+
+A follow-up audit of the pinned partnered Player's Guide source found that its `race` collection had not been included in the earlier source-content importer. The source defines **17 Species**.
+
+The import now adds all seventeen without replacing existing core/source rows:
+
+- New catalogue Species: **Accursed, Arisen, Disembodied, Downcast, Dreamer, Grudgel, Laneshi, Ogresh, Wechselkind, Wulven**.
+- Existing-name source variants are deliberately labeled in DNDNext as **Dhampir (Grim Hollow), Dragonborn (Grim Hollow), Dwarf (Grim Hollow), Elf (Grim Hollow), Gnome (Grim Hollow), Halfling (Grim Hollow), Human (Grim Hollow)**. Their original source names remain preserved in `metadata.sourceName` and `raw_payload`.
+
+All seventeen retain the Player's Guide Heritage model rather than being converted into PHB-style fixed trait packages:
+
+- exactly eight Heritage Trait picks are required;
+- the full **107-trait** `GrimHollowPG24` Heritage catalogue is available;
+- the source's traditional Heritage suggestions are retained in order, including repeated traits and their raw source annotations;
+- traditional suggestions are presented first, but players may replace them with any legal Heritage Trait as the source allows;
+- source Size, Speed, creature type, lore/art provenance, and the optional Small-size speed-for-extra-trait rule are preserved in metadata/raw source data;
+- the optional Small-size ninth-trait tradeoff is preserved as source data but is **not silently auto-applied** to runtime Speed in this patch.
+
+The Character Forge reuses its existing source-choice persistence and Heritage repeat-limit authority. No Grim-Hollow-only React state or second save path was introduced. Existing PHB/XPHB/VRGR Species rows remain intact.
+
+The source-backed regeneration script now emits a reviewed `species.json` alongside spells, subclasses, items, and variants, and the source manifest now guards the expected Species count at **17**.

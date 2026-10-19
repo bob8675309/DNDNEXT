@@ -2,12 +2,13 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { speciesRows } from "./grimHollowSpeciesImport.mjs";
 
 export const GRIM_HOLLOW_SOURCE = "GrimHollowPG24";
 export const GRIM_HOLLOW_SOURCE_COMMIT = "ab4012f136dc1224c45d6c13c1d8f71b543c34bb";
 export const GRIM_HOLLOW_SOURCE_PATH = "collection/Ghostfire Gaming; Grim Hollow - Player's Guide - 2024.json";
 export const GRIM_HOLLOW_SOURCE_URL = `https://raw.githubusercontent.com/TheGiddyLimit/homebrew/${GRIM_HOLLOW_SOURCE_COMMIT}/collection/Ghostfire%20Gaming%3B%20Grim%20Hollow%20-%20Player%27s%20Guide%20-%202024.json`;
-export const EXPECTED_COUNTS = Object.freeze({ spells: 101, subclasses: 40, subclassFeatures: 258, items: 106, itemVariants: 1 });
+export const EXPECTED_COUNTS = Object.freeze({ species: 17, spells: 101, subclasses: 40, subclassFeatures: 258, items: 106, itemVariants: 1 });
 
 const text = (value) => String(value ?? "").trim();
 const array = (value) => Array.isArray(value) ? value : [];
@@ -356,16 +357,17 @@ export function itemVariants(book = {}) {
 }
 
 export function buildGrimHollowImport(book = {}) {
+  const species = speciesRows(book);
   const spells = spellRows(book);
   const subclasses = subclassRows(book);
   const items = itemRows(book);
   const variants = itemVariants(book);
   const subclassCount = array(book.subclass).filter((entry) => entry?.source === GRIM_HOLLOW_SOURCE).length;
-  const actual = { spells: spells.rows.length, subclasses: subclassCount, subclassFeatures: subclasses.length, items: items.length, itemVariants: variants.length };
+  const actual = { species: species.length, spells: spells.rows.length, subclasses: subclassCount, subclassFeatures: subclasses.length, items: items.length, itemVariants: variants.length };
   for (const [key, expected] of Object.entries(EXPECTED_COUNTS)) {
     if (actual[key] !== expected) throw new Error(`Grim Hollow source count mismatch for ${key}: expected ${expected}, received ${actual[key]}`);
   }
-  return { spells, subclasses, items, variants, actual };
+  return { species, spells, subclasses, items, variants, actual };
 }
 
 async function loadSource(input = "") {
@@ -393,6 +395,7 @@ async function main() {
   const book = await loadSource(input);
   const built = buildGrimHollowImport(book);
   const resolved = path.resolve(outDir);
+  writeJson(path.join(resolved, "species.json"), { source: GRIM_HOLLOW_SOURCE, sourceCommit: GRIM_HOLLOW_SOURCE_COMMIT, rows: built.species });
   writeJson(path.join(resolved, "spells.json"), { source: GRIM_HOLLOW_SOURCE, sourceCommit: GRIM_HOLLOW_SOURCE_COMMIT, rows: built.spells.rows, effects: built.spells.effects });
   writeJson(path.join(resolved, "subclasses.json"), { source: GRIM_HOLLOW_SOURCE, sourceCommit: GRIM_HOLLOW_SOURCE_COMMIT, rows: built.subclasses });
   writeJson(path.join(resolved, "items.json"), built.items);
