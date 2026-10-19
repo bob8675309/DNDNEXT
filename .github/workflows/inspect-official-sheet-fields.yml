@@ -1,0 +1,34 @@
+name: Inspect official sheet fields
+
+on:
+  push:
+    branches:
+      - agent/inspect-official-sheet-fields-20261019
+    paths:
+      - .github/workflows/inspect-official-sheet-fields.yml
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: polish-official-sheet-alignment-20261019
+      - run: npm ci --ignore-scripts
+      - name: Inspect AcroForm fields
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          import { PDFDocument } from "pdf-lib";
+          const bytes=fs.readFileSync("public/forms/5E_CharacterSheet_Fillable.pdf");
+          const doc=await PDFDocument.load(bytes,{ignoreEncryption:true});
+          const form=doc.getForm();
+          const fields=form.getFields();
+          console.log("FIELD_COUNT",fields.length);
+          for (const field of fields) {
+            const widgets=field.acroField?.getWidgets?.() || [];
+            const rects=widgets.map((w)=>w.getRectangle?.()).filter(Boolean);
+            console.log("FIELD", JSON.stringify({name:field.getName(),type:field.constructor.name,rects}));
+          }
+          NODE
