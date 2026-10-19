@@ -189,7 +189,10 @@ All seventeen retain the Player's Guide Heritage model rather than being convert
 - exactly eight Heritage Trait picks are required;
 - the full **107-trait** `GrimHollowPG24` Heritage catalogue is available;
 - the source's traditional Heritage suggestions are retained in order, including repeated traits and their raw source annotations;
-- traditional suggestions are presented first, but players may replace them with any legal Heritage Trait as the source allows;
+- traditional suggestions are now **preselected** as the starting eight-pick package when the source provides them;
+- Grim Hollow Species use the **same Heritage Trait picker and source-choice authority as Custom Lineage**: remove any selected trait, then choose its replacement from the full 107-trait catalogue; repeat limits and required trait subchoices remain enforced;
+- **Accursed** remains the source exception with no traditional package, so its eight Heritage Trait slots start empty just like a Custom Lineage build;
+- a **Reset to traditional traits** control restores the source-recommended package after experimentation;
 - source Size, Speed, creature type, lore/art provenance, and the optional Small-size speed-for-extra-trait rule are preserved in metadata/raw source data;
 - the optional Small-size ninth-trait tradeoff is preserved as source data but is **not silently auto-applied** to runtime Speed in this patch.
 
@@ -208,6 +211,8 @@ Live verification after apply:
 - **17 / 17** are represented in `character_option_catalog_preferred` under their intended DNDNext display identities.
 - Every imported row embeds the full **107-entry** Heritage Trait catalogue.
 - Accursed correctly has no fixed traditional set; the other sixteen rows preserve **8** source traditional suggestions each.
+- The Forge seeds those sixteen traditional packages into the existing eight Heritage choice slots on first registration; it does not create a second Grim-Hollow-only selection state.
+- Players can remove and replace those picks through the same Custom Lineage Heritage browser, and an explicitly cleared slot stays cleared until the player selects a replacement or uses Reset to traditional traits.
 - All seventeen retain non-empty source lore and source-art provenance.
 - Existing XPHB/VRGR rows for Human, Dragonborn, Dwarf, Elf, Gnome, Halfling, and Dhampir remain present and unchanged.
 - The optional Small-size speed-for-extra-trait source rule is flagged on the applicable rows, but runtime automation of that ninth-pick tradeoff remains intentionally deferred.
