@@ -180,7 +180,7 @@ jobs:
           npm run check:item-card-text
           npm run check:merchant-crafted-pricing
           npm run check:campaign-item-pool
-          npm run check:player-forge-starting-equipment
+          node scripts/validate_player_forge_starting_equipment.mjs
           npm run check:tactical-equipped-mitigation
           npm run build:vercel
       - name: Commit and push reconciled branch
