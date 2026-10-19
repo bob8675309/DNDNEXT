@@ -1,11 +1,32 @@
 # DNDNext Next-Chat Handoff Brief
 
-Updated: 2026-10-11
+Updated: 2026-10-18
 
 Repository: `bob8675309/DNDNEXT`
 
 Stack: Next.js **Pages Router** 16.1.6, React 19, Supabase/Postgres, Bootstrap/SCSS, Vercel.
 
+
+## 2026-10-18 item-art recovery override — use this before older item-art notes
+
+Production `main` was consolidated by PR #230 at `69a8cd27cc87706704e75417ff8ff0d082c7001f`, including the portrait-library work, ItemCard/Forge readability fixes, and the first 66 ItemCard art masters.
+
+A full conversation-to-repository reconciliation then found **60 previously accepted ItemCard images** that had been generated/packaged but missed from that merge. PR #233 (`recover-missed-item-art-20261018`) is the bounded recovery pass.
+
+Recovery scope:
+- Foundation Batch 07: 30 masters
+- Foundation Batch 08: 20 masters
+- Foundation Batch 09: 10 masters
+- expected library after merge: **126 total masters**
+- all production files live under `public/item-art/masters/`
+- all recovered repo masters are exact 1024×1024 PNGs
+- no runtime item-rule, crafting, merchant-stock, economy, movement, world-map, town/city-map, or database-authority changes
+
+The recovery used the established Dropbox → one-shot GitHub Actions bridge. PR #232 was transfer-only and was closed without merge after the workflow verified the expected branch head, all three ZIP SHA-256 values, every individual PNG SHA-256, exact filenames, PNG signatures, exact dimensions, and the exact 60-file diff before pushing the binary commit to the recovery branch.
+
+The canonical checklist is `docs/Item_Art_Bible.md`. It now records all Foundation Batches 01–09 and the duplicate-prevention gate. The two rune-stone variants are intentionally retained as separate accepted masters unless Paul explicitly chooses to collapse them later.
+
+Always re-fetch current `main`, PR #233 exact head/checks, and Vercel before merge or further item-art mutation.
 
 ## 2026-10-11 authoritative override — use this before every older checkpoint below
 
