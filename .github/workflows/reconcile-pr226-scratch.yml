@@ -51,14 +51,13 @@ jobs:
           from pathlib import Path
           p = Path("components/ItemCard.js")
           s = p.read_text()
-          old = '''  const primaryEffectText = playerText(referenceEffect || potionEffect || rulesIntro);
-          const effectLabel = cardFamily === "recipe" ? "Recipe" : "Effect";
-          '''
-          new = '''  const primaryEffectText = playerText(
-            referenceEffect || (cardFamily === "bomb" && combinedTraits.length ? rulesIntro : (potionEffect || rulesIntro))
+          old = '  const primaryEffectText = playerText(referenceEffect || potionEffect || rulesIntro);'
+          new = '''  const hasStructuredBombRules = cardFamily === "bomb" && Boolean(
+            (structuredRules?.sections?.length || 0) + (entryPresentation.sections?.length || 0)
           );
-          const effectLabel = cardFamily === "recipe" ? "Recipe" : "Effect";
-          '''
+          const primaryEffectText = playerText(
+            referenceEffect || (hasStructuredBombRules ? rulesIntro : (potionEffect || rulesIntro))
+          );'''
           if old not in s:
               raise SystemExit("ItemCard primary effect anchor missing")
           s = s.replace(old, new, 1)
