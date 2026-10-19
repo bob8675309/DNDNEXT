@@ -219,23 +219,26 @@ function actionLine(action) {
   return [safeText(action?.label), parts.join(" - ")].filter(Boolean).join(": ");
 }
 
+// Coordinates below are calibrated against the 612 × 792 official template.
+ // Keep core numeric fields centered and favor readable text; long narrative/features
+ // should overflow to the official continuation areas rather than shrinking below print-safe sizes.
 function pageOne(page, model, fonts) {
   const { regular, bold } = fonts;
   const profile = model.profile || {};
 
-  drawTextTop(page, profile.name, 70, 66, { font: regular, size: 16, width: 180, minSize: 10 });
+  drawTextTop(page, profile.name, 70, 65, { font: regular, size: 17.5, width: 180, minSize: 11 });
   const classLevel = [profile.className, profile.subclass, profile.level ? `Lvl ${profile.level}` : ""].filter(Boolean).join(" ");
-  drawTextTop(page, classLevel, 270, 70, { font: regular, size: 9, width: 105, minSize: 6.5 });
-  drawTextTop(page, profile.background, 383, 70, { font: regular, size: 9, width: 90, minSize: 6.5 });
-  drawTextTop(page, profile.playerName || "NPC", 480, 70, { font: regular, size: 9, width: 80, minSize: 6.5 });
-  drawTextTop(page, [profile.species, profile.lineage].filter(Boolean).join(" - "), 270, 91, { font: regular, size: 8.5, width: 105, minSize: 6 });
-  drawTextTop(page, profile.alignment, 383, 91, { font: regular, size: 8.5, width: 90, minSize: 6 });
-  drawTextTop(page, model.xp == null ? "" : String(model.xp), 480, 91, { font: regular, size: 8.5, width: 80, minSize: 6 });
+  drawTextTop(page, classLevel, 270, 75, { font: regular, size: 10, width: 105, minSize: 7 });
+  drawTextTop(page, profile.background, 383, 75, { font: regular, size: 10, width: 90, minSize: 7 });
+  drawTextTop(page, profile.playerName || "NPC", 480, 75, { font: regular, size: 10, width: 80, minSize: 7 });
+  drawTextTop(page, [profile.species, profile.lineage].filter(Boolean).join(" - "), 270, 97, { font: regular, size: 9.3, width: 105, minSize: 6.5 });
+  drawTextTop(page, profile.alignment, 383, 97, { font: regular, size: 9.3, width: 90, minSize: 6.5 });
+  drawTextTop(page, model.xp == null ? "" : String(model.xp), 480, 97, { font: regular, size: 9.3, width: 80, minSize: 6.5 });
 
   const abilityScoreTop = [160, 232, 303, 375, 447, 518];
   model.abilities.forEach((ability, index) => {
-    drawTextTop(page, ability.score, 45, abilityScoreTop[index], { font: regular, size: 16, width: 25, align: "center" });
-    drawTextTop(page, formatModifier(ability.modifier), 45, abilityScoreTop[index] + 27, { font: regular, size: 9, width: 25, align: "center" });
+    drawTextTop(page, ability.score, 45, abilityScoreTop[index], { font: regular, size: 17, width: 25, align: "center" });
+    drawTextTop(page, formatModifier(ability.modifier), 45, abilityScoreTop[index] + 27, { font: regular, size: 10, width: 25, align: "center" });
   });
 
   if (model.inspiration) drawTextTop(page, "X", 106, 139, { font: bold, size: 11, width: 24, align: "center" });
@@ -243,32 +246,32 @@ function pageOne(page, model, fonts) {
 
   const saveTops = [207.3, 220.8, 234.3, 247.8, 261.3, 274.8];
   model.abilities.forEach((ability, index) => {
-    drawTextTop(page, formatModifier(ability.saveModifier), 114.5, saveTops[index], { font: regular, size: 7.5, width: 15, align: "right" });
+    drawTextTop(page, formatModifier(ability.saveModifier), 114, saveTops[index] + 0.4, { font: bold, size: 8.3, width: 16.5, align: "right", minSize: 7.2 });
     if (ability.saveProficient) drawDotTop(page, 104.5, saveTops[index] + 4.2, { radius: 2.45 });
   });
 
   const skillTops = [322.6, 336.1, 349.6, 363.1, 376.6, 390.1, 403.6, 417.1, 430.6, 444.1, 457.6, 471.1, 484.6, 498.1, 511.6, 525.1, 538.6, 552.1];
   model.skills.forEach((skill, index) => {
-    drawTextTop(page, formatModifier(skill.modifier), 114.5, skillTops[index], { font: regular, size: 7.5, width: 15, align: "right" });
+    drawTextTop(page, formatModifier(skill.modifier), 114, skillTops[index] + 0.3, { font: bold, size: 8.2, width: 16.5, align: "right", minSize: 7.1 });
     if (skill.proficient) drawDotTop(page, 104.5, skillTops[index] + 4.2, { radius: 2.45 });
-    if (skill.expertise) drawTextTop(page, "x2", 96.5, skillTops[index] + 0.5, { font: bold, size: 4.5, width: 7, align: "right", minSize: 4 });
+    if (skill.expertise) drawTextTop(page, "x2", 95.5, skillTops[index] + 0.3, { font: bold, size: 5.1, width: 8, align: "right", minSize: 4.7 });
   });
 
-  drawTextTop(page, model.armorClass, 225, 149, { font: bold, size: 14, width: 44, align: "center" });
-  drawTextTop(page, formatModifier(model.initiative), 280, 149, { font: bold, size: 13, width: 47, align: "center" });
-  drawTextTop(page, model.speed, 338, 149, { font: bold, size: 12.5, width: 45, align: "center", minSize: 8 });
+  drawTextTop(page, model.armorClass, 225, 150, { font: bold, size: 15, width: 44, align: "center" });
+  drawTextTop(page, formatModifier(model.initiative), 280, 150, { font: bold, size: 14, width: 47, align: "center" });
+  drawTextTop(page, model.speed, 338, 150, { font: bold, size: 13.5, width: 45, align: "center", minSize: 9 });
 
-  drawTextTop(page, model.hp.max || "", 320, 198, { font: regular, size: 9, width: 55, align: "right" });
-  drawTextTop(page, model.hp.current || "", 250, 218, { font: regular, size: 16, width: 110, align: "center" });
-  drawTextTop(page, model.hp.temp || "", 250, 270, { font: regular, size: 16, width: 110, align: "center" });
-  drawTextTop(page, model.hp.hitDice, 235, 333, { font: regular, size: 10, width: 60, align: "center" });
+  drawTextTop(page, model.hp.max || "", 320, 198.5, { font: bold, size: 9.8, width: 55, align: "right" });
+  drawTextTop(page, model.hp.current || "", 250, 219, { font: regular, size: 17, width: 110, align: "center" });
+  drawTextTop(page, model.hp.temp || "", 250, 271, { font: regular, size: 17, width: 110, align: "center" });
+  drawTextTop(page, model.hp.hitDice, 235, 333.5, { font: regular, size: 11, width: 60, align: "center" });
 
-  drawWrappedTop(page, profile.traits, 424, 148, 145, 42, { font: regular, size: 7 });
-  drawWrappedTop(page, profile.ideals, 424, 211, 145, 35, { font: regular, size: 7 });
-  drawWrappedTop(page, profile.bonds, 424, 267, 145, 35, { font: regular, size: 7 });
-  drawWrappedTop(page, profile.flaws, 424, 323, 145, 35, { font: regular, size: 7 });
+  drawWrappedTop(page, profile.traits, 426, 151, 141, 38, { font: regular, size: 7.8, lineHeight: 8.65 });
+  drawWrappedTop(page, profile.ideals, 426, 214, 141, 31, { font: regular, size: 7.8, lineHeight: 8.65 });
+  drawWrappedTop(page, profile.bonds, 426, 270, 141, 31, { font: regular, size: 7.8, lineHeight: 8.65 });
+  drawWrappedTop(page, profile.flaws, 426, 326, 141, 31, { font: regular, size: 7.8, lineHeight: 8.65 });
 
-  drawTextTop(page, model.passivePerception, 34, 581.5, { font: bold, size: 10.5, width: 30, align: "center" });
+  drawTextTop(page, model.passivePerception, 34, 582, { font: bold, size: 11.5, width: 30, align: "center" });
 
   const trainingLines = [
     model.languages.length ? `Languages: ${model.languages.join(", ")}` : "",
@@ -277,7 +280,7 @@ function pageOne(page, model, fonts) {
     model.armorProficiencies.length ? `Armor: ${model.armorProficiencies.join(", ")}` : "",
     model.professions.length ? `Professions: ${model.professions.map((entry) => `${entry.name} rank ${entry.rank}`).join(", ")}` : "",
   ].filter(Boolean).join("\n");
-  drawWrappedTop(page, trainingLines, 42, 620, 148, 126, { font: regular, size: 6.7, lineHeight: 7.7 });
+  drawWrappedTop(page, trainingLines, 44, 622, 145, 122, { font: regular, size: 7.4, lineHeight: 8.45 });
 
   const currency = model.currency || {};
   const coinRows = [
@@ -288,20 +291,20 @@ function pageOne(page, model, fonts) {
     ["pp", 716],
   ];
   coinRows.forEach(([key, top]) => {
-    if (Number(currency[key] || 0) > 0) drawTextTop(page, currency[key], 226, top, { font: regular, size: 7.5, width: 34, align: "center" });
+    if (Number(currency[key] || 0) > 0) drawTextTop(page, currency[key], 226, top + 0.5, { font: bold, size: 8.2, width: 34, align: "center" });
   });
 
   const equipmentLines = model.inventory.map(itemLine);
   if (model.legacy?.equipment) equipmentLines.push(model.legacy.equipment);
-  drawWrappedTop(page, equipmentLines.join("\n"), 268, 610, 120, 136, { font: regular, size: 6.7, lineHeight: 7.6 });
+  drawWrappedTop(page, equipmentLines.join("\n"), 270, 612, 116, 132, { font: regular, size: 7.3, lineHeight: 8.3 });
 
   const attacks = model.actions.filter((action) => action.attackBonus != null || safeText(action.damage)).slice(0, 3);
   const attackTops = [398, 418, 438];
   attacks.forEach((action, index) => {
-    drawTextTop(page, action.label, 220, attackTops[index], { font: regular, size: 7.2, width: 75, minSize: 5.6 });
-    drawTextTop(page, action.attackBonus == null ? "" : formatModifier(action.attackBonus), 296, attackTops[index], { font: regular, size: 7.2, width: 31, align: "center" });
+    drawTextTop(page, action.label, 223, attackTops[index] + 0.5, { font: bold, size: 7.9, width: 72, minSize: 6 });
+    drawTextTop(page, action.attackBonus == null ? "" : formatModifier(action.attackBonus), 297, attackTops[index] + 0.5, { font: bold, size: 7.9, width: 30, align: "center" });
     const damage = [action.damage, action.damageType].filter(Boolean).join(" ");
-    drawTextTop(page, damage, 330, attackTops[index], { font: regular, size: 6.8, width: 60, minSize: 5.2 });
+    drawTextTop(page, damage, 331, attackTops[index] + 0.5, { font: regular, size: 7.4, width: 58, minSize: 5.8 });
   });
 
   const usedIds = new Set(attacks.map((action) => action.id));
@@ -309,14 +312,14 @@ function pageOne(page, model, fonts) {
     .filter((action) => !usedIds.has(action.id))
     .map(actionLine);
   if (model.legacy?.attacks) actionDetail.push(model.legacy.attacks);
-  drawWrappedTop(page, actionDetail.join("\n\n"), 220, 455, 168, 105, { font: regular, size: 6.1, lineHeight: 7 });
+  drawWrappedTop(page, actionDetail.join("\n\n"), 223, 457, 164, 101, { font: regular, size: 6.9, lineHeight: 7.8 });
 
   return drawFeatureBlocks(page, model.features || [], {
-    x: 420,
-    top: 390,
-    width: 152,
-    height: 355,
-  }, { font: regular, boldFont: bold, size: 6.4, lineHeight: 7.25 });
+    x: 423,
+    top: 393,
+    width: 147,
+    height: 350,
+  }, { font: regular, boldFont: bold, size: 7.1, lineHeight: 8.1 });
 }
 
 async function embedPortrait(pdfDoc, page, url, fetchImpl) {
@@ -366,20 +369,20 @@ async function pageTwo(pdfDoc, page, model, fonts, overflowFeatures, fetchImpl) 
   const { regular, bold } = fonts;
   const profile = model.profile || {};
 
-  drawTextTop(page, profile.name, 70, 69, { font: regular, size: 15, width: 180, minSize: 9 });
-  drawTextTop(page, profile.age, 266, 73, { font: regular, size: 8.5, width: 90 });
-  drawTextTop(page, profile.height, 379, 73, { font: regular, size: 8.5, width: 80 });
-  drawTextTop(page, profile.weight, 475, 73, { font: regular, size: 8.5, width: 85 });
-  drawTextTop(page, profile.eyes, 266, 99, { font: regular, size: 8.5, width: 90 });
-  drawTextTop(page, profile.skin, 379, 99, { font: regular, size: 8.5, width: 80 });
-  drawTextTop(page, profile.hair, 475, 99, { font: regular, size: 8.5, width: 85 });
+  drawTextTop(page, profile.name, 70, 68, { font: regular, size: 16.5, width: 180, minSize: 10 });
+  drawTextTop(page, profile.age, 266, 76, { font: regular, size: 9.5, width: 90, minSize: 7 });
+  drawTextTop(page, profile.height, 379, 76, { font: regular, size: 9.5, width: 80, minSize: 7 });
+  drawTextTop(page, profile.weight, 475, 76, { font: regular, size: 9.5, width: 85, minSize: 7 });
+  drawTextTop(page, profile.eyes, 266, 102, { font: regular, size: 9.5, width: 90, minSize: 7 });
+  drawTextTop(page, profile.skin, 379, 102, { font: regular, size: 9.5, width: 80, minSize: 7 });
+  drawTextTop(page, profile.hair, 475, 102, { font: regular, size: 9.5, width: 85, minSize: 7 });
 
   const portraitPlaced = await embedPortrait(pdfDoc, page, profile.portraitUrl, fetchImpl);
   if (profile.appearance) {
     drawWrappedTop(page, profile.appearance, 42, portraitPlaced ? 322 : 134, 151, portraitPlaced ? 23 : 200, {
       font: regular,
-      size: portraitPlaced ? 5.7 : 7,
-      lineHeight: portraitPlaced ? 6.3 : 8,
+      size: portraitPlaced ? 6.4 : 7.8,
+      lineHeight: portraitPlaced ? 7.1 : 8.8,
     });
   }
 
@@ -390,14 +393,14 @@ async function pageTwo(pdfDoc, page, model, fonts, overflowFeatures, fetchImpl) 
     profile.tags?.length ? `Tags: ${profile.tags.join(", ")}` : "",
     model.notes?.length ? `Notes:\n${model.notes.map((note) => `- ${note.body}`).join("\n")}` : "",
   ].filter(Boolean).join("\n\n");
-  drawWrappedTop(page, alliesText, 230, 134, 340, 205, { font: regular, size: 6.7, lineHeight: 7.7 });
+  drawWrappedTop(page, alliesText, 233, 137, 334, 199, { font: regular, size: 7.4, lineHeight: 8.45 });
 
   drawFeatureBlocks(page, overflowFeatures || [], {
-    x: 230,
-    top: 390,
-    width: 340,
-    height: 185,
-  }, { font: regular, boldFont: bold, size: 6.3, lineHeight: 7.1 });
+    x: 233,
+    top: 393,
+    width: 334,
+    height: 180,
+  }, { font: regular, boldFont: bold, size: 7.15, lineHeight: 8.1 });
 
   const backstory = [
     profile.description ? `Description: ${profile.description}` : "",
@@ -408,7 +411,7 @@ async function pageTwo(pdfDoc, page, model, fonts, overflowFeatures, fetchImpl) 
     profile.voice ? `Voice: ${profile.voice}` : "",
     profile.secret ? `Secret: ${profile.secret}` : "",
   ].filter(Boolean).join("\n\n");
-  drawWrappedTop(page, backstory, 42, 390, 151, 350, { font: regular, size: 6.6, lineHeight: 7.5 });
+  drawWrappedTop(page, backstory, 45, 393, 146, 345, { font: regular, size: 7.2, lineHeight: 8.2 });
 
   const treasure = [
     model.legacy?.treasure ? model.legacy.treasure : "",
@@ -417,7 +420,7 @@ async function pageTwo(pdfDoc, page, model, fonts, overflowFeatures, fetchImpl) 
       : "",
     model.inventory.length ? `Inventory:\n${model.inventory.map(itemLine).join("\n")}` : "",
   ].filter(Boolean).join("\n\n");
-  drawWrappedTop(page, treasure, 230, 615, 340, 125, { font: regular, size: 6.5, lineHeight: 7.4 });
+  drawWrappedTop(page, treasure, 233, 618, 334, 120, { font: regular, size: 7.2, lineHeight: 8.15 });
 }
 
 function spellLayout(level) {
@@ -440,10 +443,10 @@ function pageThree(page, model, fonts) {
   const { regular, bold } = fonts;
   const casting = model.spellcasting || {};
   const profile = model.profile || {};
-  drawTextTop(page, casting.className || profile.className, 72, 68, { font: regular, size: 12, width: 170, minSize: 8 });
-  drawTextTop(page, casting.ability, 284, 66, { font: bold, size: 12, width: 60, align: "center" });
-  drawTextTop(page, casting.saveDc == null ? "" : casting.saveDc, 394, 66, { font: bold, size: 12, width: 60, align: "center" });
-  drawTextTop(page, casting.attackBonus == null ? "" : formatModifier(casting.attackBonus), 499, 66, { font: bold, size: 12, width: 60, align: "center" });
+  drawTextTop(page, casting.className || profile.className, 72, 69, { font: regular, size: 13, width: 170, minSize: 8.5 });
+  drawTextTop(page, casting.ability, 284, 67, { font: bold, size: 13, width: 60, align: "center" });
+  drawTextTop(page, casting.saveDc == null ? "" : casting.saveDc, 394, 67, { font: bold, size: 13, width: 60, align: "center" });
+  drawTextTop(page, casting.attackBonus == null ? "" : formatModifier(casting.attackBonus), 499, 67, { font: bold, size: 13, width: 60, align: "center" });
 
   const slotPositions = {
     1: [80, 310],
@@ -460,7 +463,7 @@ function pageThree(page, model, fonts) {
     const total = Number(casting.slots?.[level - 1] || 0);
     if (!total) continue;
     const [x, top] = slotPositions[level];
-    drawTextTop(page, total, x, top, { font: bold, size: 8.5, width: 28, align: "center" });
+    drawTextTop(page, total, x, top + 0.5, { font: bold, size: 9.3, width: 28, align: "center" });
   }
 
   const byLevel = new Map();
@@ -479,9 +482,9 @@ function pageThree(page, model, fonts) {
       const top = layout.top + index * layout.pitch;
       drawTextTop(page, spell.name, layout.x, top, {
         font: regular,
-        size: 7.6,
+        size: 8.2,
         width: layout.width,
-        minSize: 5.4,
+        minSize: 6.1,
       });
       if (layout.dotX != null && spell.prepared) drawDotTop(page, layout.dotX, top + 4.1, { radius: 2.15 });
       if (layout.dotX != null && spell.alwaysAvailable && !spell.prepared) {
@@ -498,7 +501,7 @@ function pageThree(page, model, fonts) {
       const top = layout.top + (layout.max - 1) * layout.pitch;
       drawTextTop(page, `+${spells.length - layout.max} more`, layout.x + 82, top, {
         font: bold,
-        size: 5.8,
+        size: 6.3,
         width: layout.width - 82,
         align: "right",
       });
