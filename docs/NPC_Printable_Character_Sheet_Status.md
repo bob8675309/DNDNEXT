@@ -5,76 +5,116 @@ Status: implementation branch; presentation-only NPC-page feature.
 
 ## Purpose
 
-The /npcs page now exposes a **Print Sheet** action from the existing character-sheet header. The action prints a dedicated, paper-oriented character sheet rather than trying to print the interactive NPC page itself.
+The `/npcs` page exposes a **Print Sheet** action from the existing Character Sheet header.
 
-The printable sheet is intended to be usable at the table and to include the currently authorized and loaded character information:
+The print action no longer renders a custom DNDNext paper layout. It now takes the currently loaded NPC/merchant Character Sheet data and writes that data into the official three-page D&D 5e character-sheet artwork stored at:
 
-- name, portrait, Species, lineage, size, alignment, class, subclass, level, Background, role, affiliation, status, and location;
-- Armor Class, Hit Points, temporary Hit Points, Speed, Initiative, Proficiency Bonus, Passive Perception, Hit Dice, and XP;
-- all six ability scores/modifiers and saving throws;
-- all skills, including proficiency, Expertise, and current Advantage/Disadvantage presentation;
-- resolved attacks, weapon modes, spell actions, and feature actions;
-- resolved Features & Traits with descriptions/source/origin when available;
-- Spellbook entries with preparation state, range, duration, damage/healing, save metadata, and limited-use state when loaded;
-- authorized inventory rows, equip state, item descriptions, and equipment-effect breakdown;
-- languages, tool/weapon/armor proficiencies, professions, legacy equipment/treasure fields;
-- Description, Appearance, Background, Motivation, personality fields, Quirk, Mannerism, Voice, Secret, and Tags when the NPC page already has access to them;
-- authorized character notes currently loaded by the NPC page.
+`public/forms/5E_CharacterSheet_Fillable.pdf`
 
-The browser print dialog can print to paper or save the sheet as PDF.
+The generated PDF opens in the browser's PDF viewer so the user can inspect it, print it, or save it as a PDF.
 
-## Ownership boundary
+## Page mapping
 
-pages/npcs.js remains the owner of selected-character identity, sheet state, narrative/profile data, equipped rows, notes, and permission-filtered supplemental action data.
+### Official page 1
 
-hooks/useNpcSheetActionData.js remains the owner of authorized full inventory rows, spell assignments, and resolved feature rows.
+The generator fills the normal play sheet with:
 
-components/CharacterSheetPanel.js only exposes the print action and passes already-loaded data to the print surface.
+- Character Name;
+- Class & Level, Background, Player Name/NPC marker, Race/Species, Alignment, and XP;
+- all six ability scores and modifiers;
+- Proficiency Bonus and Inspiration;
+- saving-throw modifiers and proficiency marks;
+- all skill modifiers, proficiency marks, and an Expertise `x2` marker;
+- Armor Class, Initiative, Speed, maximum/current/temporary HP, Hit Dice, and Passive Perception;
+- Personality Traits, Ideals, Bonds, and Flaws;
+- attack/action rows and additional combat-action text;
+- Other Proficiencies & Languages;
+- coin values when they exist in the sheet payload;
+- inventory/equipment;
+- as many resolved Features & Traits as fit without splitting a feature block.
 
-components/PrintableCharacterSheet.js performs no Supabase reads and no writes.
+### Official page 2
 
-utils/printableCharacterSheet.js is a pure presentation model. It reuses the canonical browser-side Character Sheet formula helpers for Armor Class, Initiative, Passive Perception, and the shared action builder rather than inventing a separate rules engine.
+The generator uses the official character-details page for:
 
-## Printing behavior
+- Character Name;
+- Age, Height, Weight, Eyes, Skin, and Hair when present;
+- portrait in Character Appearance when the current portrait can be fetched and converted to a PDF-compatible image;
+- Appearance text as a fallback or supplement;
+- role, affiliation, location, tags, and authorized loaded notes in Allies & Organizations;
+- overflow Features & Traits from page 1 in Additional Features & Traits;
+- Description, narrative Background, Motivation, Quirk, Mannerism, Voice, and Secret in Character Backstory;
+- treasure, coin summary, and inventory recap in Treasure.
 
-The print view is rendered through a React portal directly under document.body.
+### Official page 3
 
-While printing:
+The official spellcasting page receives:
 
-- the ordinary Next.js app root is hidden;
-- only the printable character sheet is shown;
-- Letter portrait paper is the default;
-- important cards/rows use print break guards;
-- Features & Traits begin on a fresh page;
-- colors are deliberately restrained so the form remains readable in grayscale.
+- Spellcasting Class;
+- Spellcasting Ability;
+- Spell Save DC;
+- Spell Attack Bonus;
+- known spell-slot totals from `sheet.spellSlots`;
+- known/assigned spells grouped into the official Cantrip and level 1-9 sections;
+- prepared-spell dots and always-available markers.
 
-The print portal is removed after the browser's afterprint event. Printing does not alter or persist character data.
+The persistent resource ledger remains authoritative for actual spent/remaining spell slots. Until that ledger is explicitly handed into the print path, the official sheet prints known maximum slot totals and does not invent expended-slot counts.
+
+## Data ownership boundary
+
+`pages/npcs.js` remains the owner of selected-character identity, controlled sheet state, narrative/profile data, equipped rows, notes, and permissions.
+
+`hooks/useNpcSheetActionData.js` remains the owner of authorized full inventory rows, spell assignments, and resolved feature rows.
+
+`components/CharacterSheetPanel.js` owns only the **Print Sheet** command. It builds the print model from already-loaded data and opens a blank browser tab synchronously before PDF generation so Firefox/Chrome pop-up blocking does not discard the result.
+
+`utils/printableCharacterSheet.js` is the pure normalized presentation model. It continues to reuse canonical Character Sheet formulas for Armor Class, Initiative, Passive Perception, saves, skills, and shared action construction.
+
+`utils/officialCharacterSheetPdf.js` owns PDF placement only. It:
+
+- loads the official three-page PDF template;
+- flattens any existing AcroForm fields when present;
+- overlays DNDNext values using `pdf-lib`;
+- attempts portrait embedding without failing the sheet when portrait conversion is unavailable;
+- performs no Supabase reads and no writes.
+
+## Template and dependency
+
+The branch includes:
+
+- `public/forms/5E_CharacterSheet_Fillable.pdf` — official D&D 5e three-page character-sheet template;
+- `pdf-lib@1.17.1` — client-side PDF stamping dependency.
+
+The template asset was downloaded from Wizards' public D&D media host by a one-time GitHub Actions transfer rather than being reconstructed in application code.
 
 ## Security and permission behavior
 
-The print feature never performs a new data fetch.
+Printing does not create a new data-disclosure path.
 
-It can only print values that the /npcs page and its existing guarded supplemental-data hook already loaded for the current user. Private notes or Secrets are therefore not a new disclosure path; if the current page does not possess them, the printable model cannot retrieve them.
+The generator can only print information the NPC page already possesses for the current user. It does not query Supabase, bypass RLS, inspect another character, or request protected data on its own. Secrets and private notes appear only when the existing NPC-page permission path already supplied them.
+
+Generating the PDF does not modify character state, equipment, spell resources, notes, encounters, or database rows.
 
 ## Regression gate
 
-scripts/validate_printable_character_sheet.mjs verifies:
+`scripts/validate_printable_character_sheet.mjs` is registered in the production build runner and verifies:
 
-- canonical AC, Initiative, and Passive Perception math;
-- saving-throw and skill calculations;
-- Features, Spellbook, inventory, notes, narrative, and portrait-data handoffs;
-- browser print portal and window.print() behavior;
-- Letter print CSS and page breaks;
-- absence of Supabase access inside the print component/model;
-- no world-map/travel code introduced by the feature;
-- registration in the production Vercel build runner.
+- canonical AC, Initiative, Passive Perception, save, and skill math;
+- normalized demographics and spellcasting metadata;
+- official template presence and nontrivial file size;
+- actual generation of a valid three-page PDF against the template;
+- NPC-page profile/note/portrait handoff;
+- official PDF generator wiring in `CharacterSheetPanel`;
+- `pdf-lib` dependency presence;
+- absence of Supabase access in the print model/generator;
+- protected world-map/travel boundaries.
 
 ## Protected boundaries
 
 This feature must not:
 
 - change sheet or inventory write authority;
-- alter encounter/tactical authority;
+- alter persistent spell-resource or encounter/tactical authority;
 - mutate merchant stock/economy/crafting state;
 - change NPC selection ownership;
 - introduce new authentication/data-loading paths;
