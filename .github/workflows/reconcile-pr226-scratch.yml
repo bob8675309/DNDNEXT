@@ -1,0 +1,39 @@
+name: Reconcile PR226 scratch
+on:
+  push:
+    branches:
+      - scratch-reconcile-pr226-20261019
+permissions:
+  contents: write
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: reconcile-item-card-text-20261019
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Attempt three-way merge
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin item-card-text-audit
+          set +e
+          git merge --no-ff --no-commit origin/item-card-text-audit
+          rc=$?
+          set -e
+          if [ "$rc" -ne 0 ]; then
+            echo "MERGE_CONFLICTS"
+            git diff --name-only --diff-filter=U
+            for f in $(git diff --name-only --diff-filter=U); do
+              echo "===== CONFLICT: $f ====="
+              git checkout --conflict=merge -- "$f" || true
+              sed -n '1,260p' "$f" || true
+            done
+            exit 1
+          fi
+          git commit -m "Reconcile PR #226 onto current main"
+          git push origin HEAD:reconcile-item-card-text-20261019
