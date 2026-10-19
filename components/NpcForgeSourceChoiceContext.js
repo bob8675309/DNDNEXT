@@ -6,12 +6,11 @@ import {
   foundationChoiceSummary,
   normalizeSourceChoiceSelections,
   serializeSourceChoices,
-  setSourceChoiceSelection,
   sourceChoiceGroupsComplete,
 } from "../utils/playerForgeSourceChoices";
+import { DIRECT_SOURCE_CHOICE_SCOPE, reconcileDirectSourceChoiceScope } from "../utils/directSourceChoiceState.js";
 
 export const EMPTY_SOURCE_CHOICE_STATE = Object.freeze({ groups: [], selections: {}, catalogReady: false, scopes: {}, defaultedGroups: {} });
-export const DIRECT_SOURCE_CHOICE_SCOPE = "__direct_source_choice__";
 
 export const NpcForgeSourceChoiceContext = createContext({
   state: EMPTY_SOURCE_CHOICE_STATE,
@@ -22,47 +21,6 @@ export const NpcForgeSourceChoiceContext = createContext({
 
 export function useNpcForgeSourceChoices() {
   return useContext(NpcForgeSourceChoiceContext);
-}
-
-export function applyDirectSourceChoiceSelection(current = EMPTY_SOURCE_CHOICE_STATE, groupOrId = null, fieldId = "", optionKeys = []) {
-  const incomingGroup = groupOrId && typeof groupOrId === "object" ? groupOrId : null;
-  const groupId = String(incomingGroup?.id || groupOrId || "");
-  let scopes = current?.scopes && typeof current.scopes === "object" ? { ...current.scopes } : {};
-  let groups = Array.isArray(current?.groups) ? current.groups : [];
-
-  if (incomingGroup?.id) {
-    let foundInScope = false;
-    scopes = Object.fromEntries(Object.entries(scopes).map(([scopeId, entry]) => {
-      const scopedGroups = Array.isArray(entry?.groups) ? entry.groups : [];
-      if (!scopedGroups.some((group) => String(group?.id || "") === groupId)) return [scopeId, entry];
-      foundInScope = true;
-      return [scopeId, {
-        ...entry,
-        groups: scopedGroups.map((group) => String(group?.id || "") === groupId ? incomingGroup : group),
-      }];
-    }));
-    if (!foundInScope) {
-      const directGroups = Array.isArray(scopes?.[DIRECT_SOURCE_CHOICE_SCOPE]?.groups)
-        ? scopes[DIRECT_SOURCE_CHOICE_SCOPE].groups.filter((group) => String(group?.id || "") !== groupId)
-        : [];
-      scopes[DIRECT_SOURCE_CHOICE_SCOPE] = {
-        groups: [...directGroups, incomingGroup],
-        catalogReady: true,
-      };
-    }
-
-    const existingIndex = groups.findIndex((entry) => String(entry?.id || "") === groupId);
-    groups = existingIndex >= 0
-      ? groups.map((entry, index) => index === existingIndex ? incomingGroup : entry)
-      : [...groups, incomingGroup];
-  }
-
-  return {
-    ...current,
-    scopes,
-    groups,
-    selections: setSourceChoiceSelection(groups, current?.selections || {}, groupId, fieldId, optionKeys),
-  };
 }
 
 function applyAutomaticSourceSelections(groups = [], selections = {}) {
@@ -324,28 +282,7 @@ export function normalizeSourceChoiceState(groups = [], catalogReady = true, pre
   // committed its scope (especially immediately after restoring a Forge draft).
   // Keep those live groups in a short-lived direct scope, then retire the
   // duplicate as soon as any canonical scope registers the same group ID.
-  const canonicalIds = new Set(Object.entries(scopes)
-    .filter(([scopeId]) => scopeId !== DIRECT_SOURCE_CHOICE_SCOPE)
-    .flatMap(([, entry]) => Array.isArray(entry?.groups) ? entry.groups : [])
-    .map((group) => String(group?.id || ""))
-    .filter(Boolean));
-  if (scopes[DIRECT_SOURCE_CHOICE_SCOPE]) {
-    const remainingDirect = (scopes[DIRECT_SOURCE_CHOICE_SCOPE].groups || [])
-      .filter((group) => group?.id && !canonicalIds.has(String(group.id)));
-    if (remainingDirect.length) {
-      scopes = {
-        ...scopes,
-        [DIRECT_SOURCE_CHOICE_SCOPE]: {
-          ...scopes[DIRECT_SOURCE_CHOICE_SCOPE],
-          groups: remainingDirect,
-          catalogReady: true,
-        },
-      };
-    } else {
-      const { [DIRECT_SOURCE_CHOICE_SCOPE]: _discarded, ...withoutDirect } = scopes;
-      scopes = withoutDirect;
-    }
-  }
+  scopes = reconcileDirectSourceChoiceScope(scopes);
 
   const combinedById = new Map();
   for (const entry of Object.values(scopes)) {
