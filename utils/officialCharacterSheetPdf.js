@@ -309,59 +309,96 @@ function actionLine(action) {
   return [safeText(action?.label), parts.join(" - ")].filter(Boolean).join(": ");
 }
 
-// Coordinates below are calibrated against the 612 × 792 official template.
- // Keep core numeric fields centered and favor readable text; long narrative/features
- // should overflow to the official continuation areas rather than shrinking below print-safe sizes.
-function pageOne(page, model, fonts) {
+// Single-line values are centered against the template's actual AcroForm widget
+// rectangles. This is more reliable than hand-tuned coordinates across browser/PDF
+// renderers and keeps the print overlay visually centered inside the official boxes.
+function pageOne(page, model, fonts, fields) {
   const { regular, bold } = fonts;
   const profile = model.profile || {};
 
-  drawTextTop(page, profile.name, 70, 65, { font: regular, size: 17.5, width: 180, minSize: 11 });
+  drawFieldText(page, fields, "CharacterName", profile.name, { font: regular, size: 17.5, minSize: 11, align: "left", paddingX: 7 });
   const classLevel = [profile.className, profile.subclass, profile.level ? `Lvl ${profile.level}` : ""].filter(Boolean).join(" ");
-  drawTextTop(page, classLevel, 270, 75, { font: regular, size: 10, width: 105, minSize: 7 });
-  drawTextTop(page, profile.background, 383, 75, { font: regular, size: 10, width: 90, minSize: 7 });
-  drawTextTop(page, profile.playerName || "NPC", 480, 75, { font: regular, size: 10, width: 80, minSize: 7 });
-  drawTextTop(page, [profile.species, profile.lineage].filter(Boolean).join(" - "), 270, 97, { font: regular, size: 9.3, width: 105, minSize: 6.5 });
-  drawTextTop(page, profile.alignment, 383, 97, { font: regular, size: 9.3, width: 90, minSize: 6.5 });
-  drawTextTop(page, model.xp == null ? "" : String(model.xp), 480, 97, { font: regular, size: 9.3, width: 80, minSize: 6.5 });
+  drawFieldText(page, fields, "ClassLevel", classLevel, { font: regular, size: 10.5, minSize: 7, align: "left", paddingX: 2.5 });
+  drawFieldText(page, fields, "Background", profile.background, { font: regular, size: 10.5, minSize: 7, align: "left", paddingX: 2.5 });
+  drawFieldText(page, fields, "PlayerName", profile.playerName || "NPC", { font: regular, size: 10.5, minSize: 7, align: "left", paddingX: 2.5 });
+  drawFieldText(page, fields, "Race ", [profile.species, profile.lineage].filter(Boolean).join(" - "), { font: regular, size: 10, minSize: 6.5, align: "left", paddingX: 2.5 });
+  drawFieldText(page, fields, "Alignment", profile.alignment, { font: regular, size: 10, minSize: 6.5, align: "left", paddingX: 2.5 });
+  drawFieldText(page, fields, "XP", model.xp == null ? "" : String(model.xp), { font: regular, size: 10, minSize: 6.5, align: "left", paddingX: 2.5 });
 
-  const abilityScoreTop = [160, 232, 303, 375, 447, 518];
-  model.abilities.forEach((ability, index) => {
-    drawTextTop(page, ability.score, 45, abilityScoreTop[index], { font: regular, size: 17, width: 25, align: "center" });
-    drawTextTop(page, formatModifier(ability.modifier), 45, abilityScoreTop[index] + 27, { font: regular, size: 10, width: 25, align: "center" });
+  const abilityFields = {
+    str: { score: "STR", mod: "STRmod", save: "ST Strength", check: "Check Box 11" },
+    dex: { score: "DEX", mod: "DEXmod ", save: "ST Dexterity", check: "Check Box 18" },
+    con: { score: "CON", mod: "CONmod", save: "ST Constitution", check: "Check Box 19" },
+    int: { score: "INT", mod: "INTmod", save: "ST Intelligence", check: "Check Box 20" },
+    wis: { score: "WIS", mod: "WISmod", save: "ST Wisdom", check: "Check Box 21" },
+    cha: { score: "CHA", mod: "CHamod", save: "ST Charisma", check: "Check Box 22" },
+  };
+
+  model.abilities.forEach((ability) => {
+    const names = abilityFields[ability.key];
+    if (!names) return;
+    drawFieldText(page, fields, names.score, ability.score, { font: regular, size: 17, minSize: 13, align: "center" });
+    drawFieldText(page, fields, names.mod, formatModifier(ability.modifier), { font: regular, size: 10.2, minSize: 8.5, align: "center" });
+    drawFieldText(page, fields, names.save, formatModifier(ability.saveModifier), { font: bold, size: 8.1, minSize: 7.1, align: "center", paddingX: 0.3 });
+    if (ability.saveProficient) drawDotInRect(page, fieldRect(fields, names.check), { radius: 2.25 });
   });
 
-  if (model.inspiration) drawTextTop(page, "X", 106, 139, { font: bold, size: 11, width: 24, align: "center" });
-  drawTextTop(page, formatModifier(model.proficiencyBonus), 99, 174, { font: regular, size: 10, width: 26, align: "center" });
+  if (model.inspiration) drawFieldText(page, fields, "Inspiration", "X", { font: bold, size: 11, align: "center" });
+  drawFieldText(page, fields, "ProfBonus", formatModifier(model.proficiencyBonus), { font: regular, size: 10.5, minSize: 9, align: "center" });
 
-  const saveTops = [207.3, 220.8, 234.3, 247.8, 261.3, 274.8];
-  model.abilities.forEach((ability, index) => {
-    drawTextTop(page, formatModifier(ability.saveModifier), 114, saveTops[index] + 0.4, { font: bold, size: 8.3, width: 16.5, align: "right", minSize: 7.2 });
-    if (ability.saveProficient) drawDotTop(page, 104.5, saveTops[index] + 4.2, { radius: 2.45 });
+  const skillFields = {
+    acrobatics: ["Acrobatics", "Check Box 23"],
+    animalHandling: ["Animal", "Check Box 24"],
+    arcana: ["Arcana", "Check Box 25"],
+    athletics: ["Athletics", "Check Box 26"],
+    deception: ["Deception ", "Check Box 27"],
+    history: ["History ", "Check Box 28"],
+    insight: ["Insight", "Check Box 29"],
+    intimidation: ["Intimidation", "Check Box 30"],
+    investigation: ["Investigation ", "Check Box 31"],
+    medicine: ["Medicine", "Check Box 32"],
+    nature: ["Nature", "Check Box 33"],
+    perception: ["Perception ", "Check Box 34"],
+    performance: ["Performance", "Check Box 35"],
+    persuasion: ["Persuasion", "Check Box 36"],
+    religion: ["Religion", "Check Box 37"],
+    sleightOfHand: ["SleightofHand", "Check Box 38"],
+    stealth: ["Stealth ", "Check Box 39"],
+    survival: ["Survival", "Check Box 40"],
+  };
+  model.skills.forEach((skill) => {
+    const names = skillFields[skill.key];
+    if (!names) return;
+    const [valueField, checkField] = names;
+    drawFieldText(page, fields, valueField, formatModifier(skill.modifier), { font: bold, size: 8, minSize: 7, align: "center", paddingX: 0.3 });
+    const checkRect = fieldRect(fields, checkField);
+    if (skill.proficient) drawDotInRect(page, checkRect, { radius: 2.2 });
+    if (skill.expertise && checkRect) {
+      drawTextInRect(page, "x2", { x: checkRect.x - 9.4, y: checkRect.y, width: 8.2, height: checkRect.height }, {
+        font: bold,
+        size: 5.1,
+        minSize: 4.7,
+        align: "center",
+        paddingX: 0,
+      });
+    }
   });
 
-  const skillTops = [322.6, 336.1, 349.6, 363.1, 376.6, 390.1, 403.6, 417.1, 430.6, 444.1, 457.6, 471.1, 484.6, 498.1, 511.6, 525.1, 538.6, 552.1];
-  model.skills.forEach((skill, index) => {
-    drawTextTop(page, formatModifier(skill.modifier), 114, skillTops[index] + 0.3, { font: bold, size: 8.2, width: 16.5, align: "right", minSize: 7.1 });
-    if (skill.proficient) drawDotTop(page, 104.5, skillTops[index] + 4.2, { radius: 2.45 });
-    if (skill.expertise) drawTextTop(page, "x2", 95.5, skillTops[index] + 0.3, { font: bold, size: 5.1, width: 8, align: "right", minSize: 4.7 });
-  });
+  drawFieldText(page, fields, "AC", model.armorClass, { font: bold, size: 15, minSize: 12, align: "center" });
+  drawFieldText(page, fields, "Initiative", formatModifier(model.initiative), { font: bold, size: 14, minSize: 11, align: "center" });
+  drawFieldText(page, fields, "Speed", model.speed, { font: bold, size: 13.5, minSize: 9, align: "center" });
 
-  drawTextTop(page, model.armorClass, 225, 150, { font: bold, size: 15, width: 44, align: "center" });
-  drawTextTop(page, formatModifier(model.initiative), 280, 150, { font: bold, size: 14, width: 47, align: "center" });
-  drawTextTop(page, model.speed, 338, 150, { font: bold, size: 13.5, width: 45, align: "center", minSize: 9 });
+  drawFieldText(page, fields, "HPMax", model.hp.max || "", { font: bold, size: 9.8, minSize: 8, align: "center" });
+  drawFieldText(page, fields, "HPCurrent", model.hp.current || "", { font: regular, size: 17, minSize: 13, align: "center" });
+  drawFieldText(page, fields, "HPTemp", model.hp.temp || "", { font: regular, size: 17, minSize: 13, align: "center" });
+  drawFieldText(page, fields, "HD", model.hp.hitDice, { font: regular, size: 11, minSize: 8, align: "center" });
 
-  drawTextTop(page, model.hp.max || "", 320, 198.5, { font: bold, size: 9.8, width: 55, align: "right" });
-  drawTextTop(page, model.hp.current || "", 250, 219, { font: regular, size: 17, width: 110, align: "center" });
-  drawTextTop(page, model.hp.temp || "", 250, 271, { font: regular, size: 17, width: 110, align: "center" });
-  drawTextTop(page, model.hp.hitDice, 235, 333.5, { font: regular, size: 11, width: 60, align: "center" });
+  drawFieldWrapped(page, fields, "PersonalityTraits ", profile.traits, { font: regular, size: 7.8, lineHeight: 8.65, paddingX: 5, paddingY: 5 });
+  drawFieldWrapped(page, fields, "Ideals", profile.ideals, { font: regular, size: 7.8, lineHeight: 8.65, paddingX: 5, paddingY: 5 });
+  drawFieldWrapped(page, fields, "Bonds", profile.bonds, { font: regular, size: 7.8, lineHeight: 8.65, paddingX: 5, paddingY: 5 });
+  drawFieldWrapped(page, fields, "Flaws", profile.flaws, { font: regular, size: 7.8, lineHeight: 8.65, paddingX: 5, paddingY: 5 });
 
-  drawWrappedTop(page, profile.traits, 426, 151, 141, 38, { font: regular, size: 7.8, lineHeight: 8.65 });
-  drawWrappedTop(page, profile.ideals, 426, 214, 141, 31, { font: regular, size: 7.8, lineHeight: 8.65 });
-  drawWrappedTop(page, profile.bonds, 426, 270, 141, 31, { font: regular, size: 7.8, lineHeight: 8.65 });
-  drawWrappedTop(page, profile.flaws, 426, 326, 141, 31, { font: regular, size: 7.8, lineHeight: 8.65 });
-
-  drawTextTop(page, model.passivePerception, 34, 582, { font: bold, size: 11.5, width: 30, align: "center" });
+  drawFieldText(page, fields, "Passive", model.passivePerception, { font: bold, size: 11.5, minSize: 9, align: "center" });
 
   const trainingLines = [
     model.languages.length ? `Languages: ${model.languages.join(", ")}` : "",
@@ -370,31 +407,29 @@ function pageOne(page, model, fonts) {
     model.armorProficiencies.length ? `Armor: ${model.armorProficiencies.join(", ")}` : "",
     model.professions.length ? `Professions: ${model.professions.map((entry) => `${entry.name} rank ${entry.rank}`).join(", ")}` : "",
   ].filter(Boolean).join("\n");
-  drawWrappedTop(page, trainingLines, 44, 622, 145, 122, { font: regular, size: 7.4, lineHeight: 8.45 });
+  drawFieldWrapped(page, fields, "ProficienciesLang", trainingLines, { font: regular, size: 7.4, lineHeight: 8.45, paddingX: 8, paddingY: 6 });
 
   const currency = model.currency || {};
-  const coinRows = [
-    ["cp", 611],
-    ["sp", 636],
-    ["ep", 663],
-    ["gp", 690],
-    ["pp", 716],
-  ];
-  coinRows.forEach(([key, top]) => {
-    if (Number(currency[key] || 0) > 0) drawTextTop(page, currency[key], 226, top + 0.5, { font: bold, size: 8.2, width: 34, align: "center" });
-  });
+  for (const [key, fieldName] of [["cp", "CP"], ["sp", "SP"], ["ep", "EP"], ["gp", "GP"], ["pp", "PP"]]) {
+    if (Number(currency[key] || 0) > 0) drawFieldText(page, fields, fieldName, currency[key], { font: bold, size: 8.2, minSize: 7, align: "center" });
+  }
 
   const equipmentLines = model.inventory.map(itemLine);
   if (model.legacy?.equipment) equipmentLines.push(model.legacy.equipment);
-  drawWrappedTop(page, equipmentLines.join("\n"), 270, 612, 116, 132, { font: regular, size: 7.3, lineHeight: 8.3 });
+  drawFieldWrapped(page, fields, "Equipment", equipmentLines.join("\n"), { font: regular, size: 7.3, lineHeight: 8.3, paddingX: 6, paddingY: 6 });
 
   const attacks = model.actions.filter((action) => action.attackBonus != null || safeText(action.damage)).slice(0, 3);
-  const attackTops = [398, 418, 438];
+  const attackFields = [
+    ["Wpn Name", "Wpn1 AtkBonus", "Wpn1 Damage"],
+    ["Wpn Name 2", "Wpn2 AtkBonus ", "Wpn2 Damage "],
+    ["Wpn Name 3", "Wpn3 AtkBonus  ", "Wpn3 Damage "],
+  ];
   attacks.forEach((action, index) => {
-    drawTextTop(page, action.label, 223, attackTops[index] + 0.5, { font: bold, size: 7.9, width: 72, minSize: 6 });
-    drawTextTop(page, action.attackBonus == null ? "" : formatModifier(action.attackBonus), 297, attackTops[index] + 0.5, { font: bold, size: 7.9, width: 30, align: "center" });
+    const [nameField, bonusField, damageField] = attackFields[index];
+    drawFieldText(page, fields, nameField, action.label, { font: bold, size: 7.9, minSize: 6, align: "left", paddingX: 2 });
+    drawFieldText(page, fields, bonusField, action.attackBonus == null ? "" : formatModifier(action.attackBonus), { font: bold, size: 7.9, minSize: 6, align: "center" });
     const damage = [action.damage, action.damageType].filter(Boolean).join(" ");
-    drawTextTop(page, damage, 331, attackTops[index] + 0.5, { font: regular, size: 7.4, width: 58, minSize: 5.8 });
+    drawFieldText(page, fields, damageField, damage, { font: regular, size: 7.4, minSize: 5.8, align: "left", paddingX: 2 });
   });
 
   const usedIds = new Set(attacks.map((action) => action.id));
@@ -402,14 +437,20 @@ function pageOne(page, model, fonts) {
     .filter((action) => !usedIds.has(action.id))
     .map(actionLine);
   if (model.legacy?.attacks) actionDetail.push(model.legacy.attacks);
-  drawWrappedTop(page, actionDetail.join("\n\n"), 223, 457, 164, 101, { font: regular, size: 6.9, lineHeight: 7.8 });
+  drawFieldWrapped(page, fields, "AttacksSpellcasting", actionDetail.join("\n\n"), { font: regular, size: 6.9, lineHeight: 7.8, paddingX: 4, paddingY: 4 });
 
-  return drawFeatureBlocks(page, model.features || [], {
-    x: 423,
-    top: 393,
-    width: 147,
+  const featureBox = fieldContentBox(page, fields, "Features and Traits", 6, 6) || {
+    x: 418,
+    top: 392,
+    width: 153,
     height: 350,
-  }, { font: regular, boldFont: bold, size: 7.1, lineHeight: 8.1 });
+  };
+  return drawFeatureBlocks(page, model.features || [], featureBox, {
+    font: regular,
+    boldFont: bold,
+    size: 7.1,
+    lineHeight: 8.1,
+  });
 }
 
 async function embedPortrait(pdfDoc, page, url, fetchImpl) {
