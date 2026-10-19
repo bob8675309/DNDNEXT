@@ -77,6 +77,7 @@ jobs:
         run: |
           set -euo pipefail
           cp /tmp/grim-hollow-species/cinematic-*.webp public/media/species/
+          git add -N public/media/species/cinematic-*.webp
           cat > /tmp/expected.txt <<'EOF'
           public/media/species/cinematic-accursed.webp
           public/media/species/cinematic-arisen.webp
@@ -92,6 +93,7 @@ jobs:
           git diff --name-only | sort > /tmp/actual.txt
           sort /tmp/expected.txt -o /tmp/expected.txt
           diff -u /tmp/expected.txt /tmp/actual.txt
+          git reset --quiet
 
       - name: Verify resolver mappings
         shell: bash
