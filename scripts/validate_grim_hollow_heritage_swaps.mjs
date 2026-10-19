@@ -17,6 +17,7 @@ const {
   DIRECT_SOURCE_CHOICE_SCOPE,
   EMPTY_SOURCE_CHOICE_STATE,
   normalizeSourceChoiceState,
+  sourceChoiceStateComplete,
 } = await import(pathToFileURL(path.join(root, "components/NpcForgeSourceChoiceContext.js")).href);
 
 const key = (name) => `heritage-trait:${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}|GRIMHOLLOWPG24`;
@@ -166,6 +167,37 @@ assert.equal(
 );
 assert.ok(!lifecycle?.scopes?.[DIRECT_SOURCE_CHOICE_SCOPE], "Canonical registration must retire the temporary direct scope once it owns the same Heritage group");
 
+let placementReady = normalizeSourceChoiceState([heritage], true, EMPTY_SOURCE_CHOICE_STATE, "species-extra");
+const unrelatedTrainingGroup = {
+  id: "probe-unrelated-training",
+  ownerType: "feat",
+  ownerKey: "probe",
+  label: "Unrelated Training Choice",
+  source: "XPHB",
+  placement: "training",
+  level: 1,
+  fields: [{
+    id: "choice",
+    label: "Training choice",
+    kind: "enum",
+    count: 1,
+    required: true,
+    options: [{ key: "one", value: "one", label: "One", source: "XPHB", kind: "enum" }],
+  }],
+};
+placementReady = normalizeSourceChoiceState([unrelatedTrainingGroup], false, placementReady, "probe-unrelated-not-ready");
+assert.equal(placementReady.catalogReady, false, "Probe setup requires a globally not-ready unrelated scope");
+assert.equal(
+  sourceChoiceStateComplete(placementReady, { placement: "species" }),
+  true,
+  "An unrelated not-ready Training/feat catalogue must not block an otherwise complete Species step"
+);
+assert.equal(
+  sourceChoiceStateComplete(placementReady),
+  false,
+  "Final all-choice completion must still wait for all registered source-choice catalogues"
+);
+
 const staleInvalidSelections = {
   [accursedHeritage.id]: Object.fromEntries(accursedHeritage.fields.map((field) => [field.id, ["legacy-invalid-heritage-key"]])),
 };
@@ -221,7 +253,8 @@ for (const token of [
   "applyDirectSourceChoiceSelection",
   "remainingDirect",
   "combinedById",
-]) assert.ok(sourceContext.includes(token), `Forge source-choice state is missing stale-draft/direct-write Heritage recovery: ${token}`);
+  "sourceChoiceScopesReadyForPlacement",
+]) assert.ok(sourceContext.includes(token), `Forge source-choice state is missing stale-draft/direct-write/placement-ready Heritage recovery: ${token}`);
 
 const registrar = read("components/NpcForgeFeatChoiceRegistrar.js");
 for (const token of [
@@ -242,4 +275,4 @@ for (const token of ["mappageclient", "map_routes", "advance_all_characters", "r
   assert.ok(!protectedText.includes(token), `Heritage swap work crossed protected map/travel boundary: ${token}`);
 }
 
-console.log("Grim Hollow Heritage swaps validated: direct clicks survive registrar/subchoice races, stale invalid draft keys are scrubbed, draft hydration discards volatile scopes/groups, traditional defaults migrate once, primary picks are independent of unrelated spell/item catalogue readiness, Custom Lineage-style replacement and repeat limits hold, and protected boundaries pass.");
+console.log("Grim Hollow Heritage swaps validated: direct clicks survive registrar/subchoice races, stale invalid draft keys are scrubbed, draft hydration discards volatile scopes/groups, traditional defaults migrate once, primary picks are independent of unrelated spell/item catalogue readiness, unrelated not-ready scopes no longer block the Species step, Custom Lineage-style replacement and repeat limits hold, and protected boundaries pass.");
