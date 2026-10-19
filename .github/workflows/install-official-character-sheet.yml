@@ -1,0 +1,63 @@
+name: Install official character sheet template
+
+on:
+  push:
+    branches:
+      - agent/official-character-sheet-assets-20261019
+    paths:
+      - .github/workflows/install-official-character-sheet.yml
+
+permissions:
+  contents: write
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check out target branch
+        uses: actions/checkout@v4
+        with:
+          ref: npc-printable-character-sheet-20261019
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Guard expected target head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "aacf1fc94195cf50c60a163db9fedde9e83bfc05"
+
+      - name: Install pdf-lib and refresh lockfile
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install pdf-lib@1.17.1 --save
+          node -e "require('pdf-lib'); console.log('pdf-lib ready')"
+
+      - name: Download official D&D 5e character sheet
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/forms
+          if ! curl --fail --location --silent --show-error \
+            'https://media.wizards.com/2016/dnd/downloads/5E_CharacterSheet_Fillable.pdf' \
+            --output public/forms/5E_CharacterSheet_Fillable.pdf; then
+            curl --fail --location --silent --show-error \
+              'https://media.wizards.com/2022/dnd/downloads/DnD_5E_CharacterSheet_FormFillable.pdf' \
+              --output public/forms/5E_CharacterSheet_Fillable.pdf
+          fi
+          test "$(head -c 4 public/forms/5E_CharacterSheet_Fillable.pdf)" = "%PDF"
+          test "$(wc -c < public/forms/5E_CharacterSheet_Fillable.pdf)" -gt 100000
+          file public/forms/5E_CharacterSheet_Fillable.pdf
+
+      - name: Commit generated assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json public/forms/5E_CharacterSheet_Fillable.pdf
+          git diff --cached --name-only
+          git commit -m "Add official character sheet PDF template and pdf-lib"
+          git push origin HEAD:npc-printable-character-sheet-20261019
