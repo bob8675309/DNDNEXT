@@ -12,6 +12,11 @@ const {
   setSourceChoiceSelection,
   sourceChoiceGroupComplete,
 } = await import(pathToFileURL(path.join(root, "utils/playerForgeSourceChoices.js")).href);
+const {
+  applyDirectSourceChoiceSelection,
+  DIRECT_SOURCE_CHOICE_SCOPE,
+  reconcileDirectSourceChoiceScope,
+} = await import(pathToFileURL(path.join(root, "utils/directSourceChoiceState.js")).href);
 
 const key = (name) => `heritage-trait:${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}|GRIMHOLLOWPG24`;
 const trait = (name, category, repeatLimit = 1) => ({
@@ -132,6 +137,57 @@ assert.ok(accursedHeritage, "Accursed must still expose the Heritage Trait picke
 assert.ok(accursedHeritage.fields.every((field) => !field.metadata?.defaultOptionKey), "Accursed must not invent traditional defaults");
 assert.ok(accursedHeritage.fields.every((field) => (accursedSeeded?.[accursedHeritage.id]?.[field.id] || []).length === 0), "Accursed must remain an empty eight-pick build");
 
+let lifecycle = {
+  groups: [],
+  selections: {},
+  scopes: {
+    foundation: { groups: [], catalogReady: true },
+  },
+};
+lifecycle = applyDirectSourceChoiceSelection(lifecycle, accursedHeritage, accursedHeritage.fields[0].id, [key("Centered")]);
+assert.equal(
+  lifecycle?.selections?.[accursedHeritage.id]?.[accursedHeritage.fields[0].id]?.[0],
+  key("Centered"),
+  "A direct Heritage click must commit even before the species registrar effect has established its canonical scope"
+);
+assert.ok(
+  (lifecycle?.scopes?.[DIRECT_SOURCE_CHOICE_SCOPE]?.groups || []).some((group) => group.id === accursedHeritage.id),
+  "Pre-registration Heritage clicks must be retained in the direct source-choice scope"
+);
+
+const unrelatedScope = {
+  ...lifecycle.scopes,
+  [`heritage-subchoices-${accursedHeritage.id}`]: { groups: [], catalogReady: false },
+};
+const afterUnrelatedRegistration = reconcileDirectSourceChoiceScope(unrelatedScope);
+assert.ok(
+  (afterUnrelatedRegistration?.[DIRECT_SOURCE_CHOICE_SCOPE]?.groups || []).some((group) => group.id === accursedHeritage.id),
+  "Registering an unrelated/empty Heritage subchoice scope must not retire a just-clicked primary Heritage group"
+);
+
+const withCanonicalSpecies = {
+  ...afterUnrelatedRegistration,
+  "species-extra": { groups: [accursedHeritage], catalogReady: true },
+};
+const afterCanonicalRegistration = reconcileDirectSourceChoiceScope(withCanonicalSpecies);
+assert.ok(!afterCanonicalRegistration?.[DIRECT_SOURCE_CHOICE_SCOPE], "Canonical species-extra registration must retire the temporary direct scope once it owns the same Heritage group");
+
+const staleInvalidSelections = {
+  [accursedHeritage.id]: Object.fromEntries(accursedHeritage.fields.map((field) => [field.id, ["legacy-invalid-heritage-key"]])),
+};
+const normalizedInvalid = setSourceChoiceSelection(
+  [accursedHeritage],
+  staleInvalidSelections,
+  accursedHeritage.id,
+  accursedHeritage.fields[0].id,
+  [key("Centered")]
+);
+assert.equal(
+  normalizedInvalid?.[accursedHeritage.id]?.[accursedHeritage.fields[0].id]?.[0],
+  key("Centered"),
+  "A valid Heritage write must replace a stale invalid key in the targeted slot"
+);
+
 const picker = read("components/NpcForgeHeritageTraitPicker.js");
 for (const token of [
   "NpcForgeHeritageTraitPicker",
@@ -145,6 +201,10 @@ for (const token of [
   "primaryReady = fields.length > 0 && catalog.length > 0",
   "setPrimaryChoice?.(stablePrimaryGroup, emptyField.id",
   "Primary Heritage Traits remain selectable",
+  "return !selected.some((key) => (field.options || []).some((candidate) => candidate.key === key))",
+  "spellsReady",
+  "itemsReady",
+  "subchoicesReady",
 ]) assert.ok(picker.includes(token), `Shared Custom Lineage-style Heritage picker is missing ${token}`);
 assert.ok(!picker.includes("disabled={full || capped || !catalogs.ready}"), "Primary Heritage selection must not be blocked by spell/item follow-up catalogue loading");
 for (const forbidden of ["replaceFieldId", "Replace Trait", "selected-swap", "is-replacing"]) {
@@ -153,11 +213,13 @@ for (const forbidden of ["replaceFieldId", "Replace Trait", "selected-swap", "is
 
 const modal = read("components/NewNpcModalV3.js");
 for (const token of [
-  "const setSourceChoice = useCallback((groupOrId, fieldId, optionKeys)",
-  "incomingGroup",
-  "existingIndex",
-  "setSourceChoiceSelection(groups",
-]) assert.ok(modal.includes(token), `Source-choice writer is missing registration-race protection: ${token}`);
+  "SOURCE_CHOICE_DRAFT_VERSION = 2",
+  "restoredSourceChoiceState",
+  "persistedSourceChoiceState",
+  "groups: []",
+  "scopes: {}",
+  "applyDirectSourceChoiceSelection(current, groupOrId, fieldId, optionKeys)",
+]) assert.ok(modal.includes(token), `Player Forge source-choice hydration/write path is missing deep Heritage-state hardening: ${token}`);
 
 const sourceContext = read("components/NpcForgeSourceChoiceContext.js");
 for (const token of [
@@ -165,7 +227,26 @@ for (const token of [
   "defaultedGroups",
   "forceEmptyGroupIds",
   "hasAnyStoredSelection",
-]) assert.ok(sourceContext.includes(token), `Forge source-choice state is missing stale-draft Heritage recovery: ${token}`);
+  "reconcileDirectSourceChoiceScope",
+  "combinedById",
+  "sourceChoiceScopesReadyForPlacement",
+]) assert.ok(sourceContext.includes(token), `Forge source-choice state is missing stale-draft/direct-write/placement-ready Heritage recovery: ${token}`);
+
+const directStateSource = read("utils/directSourceChoiceState.js");
+for (const token of [
+  "DIRECT_SOURCE_CHOICE_SCOPE",
+  "applyDirectSourceChoiceSelection",
+  "reconcileDirectSourceChoiceScope",
+  "foundInScope",
+  "remainingDirect",
+]) assert.ok(directStateSource.includes(token), `Pure direct source-choice transition is missing ${token}`);
+
+const registrar = read("components/NpcForgeFeatChoiceRegistrar.js");
+for (const token of [
+  "heritageSpeciesReady",
+  "speciesChoiceCatalogReady",
+  'registerGroups(playerMode ? speciesGroups : [], speciesChoiceCatalogReady, "species-extra")',
+]) assert.ok(registrar.includes(token), `Species registrar is still coupling Heritage primary choices to unrelated spell-catalog readiness: ${token}`);
 
 const speciesChoices = read("utils/playerForgeSpeciesChoices.js");
 for (const token of [
@@ -174,9 +255,9 @@ for (const token of [
   "source-traditional Heritage Traits are selected by default",
 ]) assert.ok(speciesChoices.includes(token), `Grim Hollow Species default builder is missing ${token}`);
 
-const protectedText = [picker, modal, sourceContext, speciesChoices].join("\n").toLowerCase();
+const protectedText = [picker, modal, sourceContext, directStateSource, registrar, speciesChoices].join("\n").toLowerCase();
 for (const token of ["mappageclient", "map_routes", "advance_all_characters", "route_segment_progress", "world_state"]) {
   assert.ok(!protectedText.includes(token), `Heritage swap work crossed protected map/travel boundary: ${token}`);
 }
 
-console.log("Grim Hollow Heritage swaps validated: primary picks stay selectable while follow-up catalogues load, direct group-backed writes survive registration timing, stale-draft traditional-default recovery, Custom Lineage-style remove/select flow, repeat-limit authority, explicit-clear persistence, Accursed no-default behavior, and protected boundaries all pass.");
+console.log("Grim Hollow Heritage swaps validated: direct clicks survive registrar/subchoice races, stale invalid draft keys are scrubbed, draft hydration discards volatile scopes/groups, traditional defaults migrate once, primary picks are independent of unrelated spell/item catalogue readiness, unrelated not-ready scopes no longer block the Species step, Custom Lineage-style replacement and repeat limits hold, and protected boundaries pass.");

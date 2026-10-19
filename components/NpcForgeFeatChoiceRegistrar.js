@@ -241,9 +241,12 @@ export default function NpcForgeFeatChoiceRegistrar({ playerMode = false, contro
     toolRows: controller?.toolRows || [],
   }), [baseSpeciesGroups, controller?.selectedSpecies, controller?.toolRows]);
 
+  const heritageSpeciesReady = Boolean(controller?.selectedSpecies?.metadata?.heritageOnly);
+  const speciesChoiceCatalogReady = !playerMode || heritageSpeciesReady || spellCatalogReady;
+
   useEffect(() => {
-    registerGroups(playerMode ? speciesGroups : [], !playerMode || spellCatalogReady, "species-extra");
-  }, [playerMode, registerGroups, speciesGroups, spellCatalogReady]);
+    registerGroups(playerMode ? speciesGroups : [], speciesChoiceCatalogReady, "species-extra");
+  }, [playerMode, registerGroups, speciesChoiceCatalogReady, speciesGroups]);
 
   const invocationSelectionSignature = JSON.stringify(Object.entries(sourceState.selections || {})
     .filter(([groupId]) => groupId.startsWith("warlock-invocation-slot-"))

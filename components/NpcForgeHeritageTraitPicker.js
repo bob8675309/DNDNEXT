@@ -56,7 +56,7 @@ export default function NpcForgeHeritageTraitPicker({ group, selections = {}, on
   const [category, setCategory] = useState("C");
   const [query, setQuery] = useState("");
   const [focusedKey, setFocusedKey] = useState("");
-  const [catalogs, setCatalogs] = useState({ spells: [], items: [], ready: false, error: "" });
+  const [catalogs, setCatalogs] = useState({ spells: [], items: [], spellsReady: false, itemsReady: false, errors: [] });
   const fields = heritageFields(group);
   const catalog = fields[0]?.options || [];
   const primaryReady = fields.length > 0 && catalog.length > 0;
@@ -79,29 +79,40 @@ export default function NpcForgeHeritageTraitPicker({ group, selections = {}, on
 
   useEffect(() => {
     let active = true;
-    setCatalogs({ spells: [], items: [], ready: false, error: "" });
-    Promise.all([
-      supabase.from("spells_catalog")
-        .select("id,spell_key,name,source,level,classes,description")
-        .lte("level", 1)
-        .order("level", { ascending: true })
-        .order("name", { ascending: true })
-        .limit(5000),
-      supabase.from("items_catalog")
-        .select("id,item_name,item_key,item_type,item_rarity,payload")
-        .eq("item_rarity", "mundane")
-        .in("item_type", ["Melee Weapon", "Ranged Weapon", "Tools", "Instrument"])
-        .order("item_name", { ascending: true })
-        .limit(5000),
-    ]).then(([spellResult, itemResult]) => {
-      if (!active) return;
-      const error = spellResult.error || itemResult.error;
-      if (error) {
-        setCatalogs({ spells: [], items: [], ready: false, error: error.message || "Could not load the Heritage Trait choice catalogues." });
-        return;
-      }
-      setCatalogs({ spells: spellResult.data || [], items: itemResult.data || [], ready: true, error: "" });
-    });
+    setCatalogs({ spells: [], items: [], spellsReady: false, itemsReady: false, errors: [] });
+
+    supabase.from("spells_catalog")
+      .select("id,spell_key,name,source,level,classes,description")
+      .lte("level", 1)
+      .order("level", { ascending: true })
+      .order("name", { ascending: true })
+      .limit(5000)
+      .then(({ data, error }) => {
+        if (!active) return;
+        setCatalogs((current) => ({
+          ...current,
+          spells: error ? [] : (data || []),
+          spellsReady: !error,
+          errors: error ? [...current.errors.filter((entry) => entry.kind !== "spells"), { kind: "spells", message: error.message || "Could not load spell choices." }] : current.errors.filter((entry) => entry.kind !== "spells"),
+        }));
+      });
+
+    supabase.from("items_catalog")
+      .select("id,item_name,item_key,item_type,item_rarity,payload")
+      .eq("item_rarity", "mundane")
+      .in("item_type", ["Melee Weapon", "Ranged Weapon", "Tools", "Instrument"])
+      .order("item_name", { ascending: true })
+      .limit(5000)
+      .then(({ data, error }) => {
+        if (!active) return;
+        setCatalogs((current) => ({
+          ...current,
+          items: error ? [] : (data || []),
+          itemsReady: !error,
+          errors: error ? [...current.errors.filter((entry) => entry.kind !== "items"), { kind: "items", message: error.message || "Could not load item choices." }] : current.errors.filter((entry) => entry.kind !== "items"),
+        }));
+      });
+
     return () => { active = false; };
   }, []);
 
@@ -112,9 +123,16 @@ export default function NpcForgeHeritageTraitPicker({ group, selections = {}, on
     itemRows: catalogs.items,
   }), [catalogs.items, catalogs.spells, relevantSelections, stablePrimaryGroup]);
 
+  const selectedTraitNames = new Set(picks.map((row) => safeText(row.option?.label).toLowerCase()));
+  const selectedNeedsSpellCatalog = selectedTraitNames.has("magical savvy");
+  const selectedNeedsItemCatalog = ["weapon aptitude", "artisanal focus", "instrumentalist", "masterful aptitude"]
+    .some((name) => selectedTraitNames.has(name));
+  const subchoicesReady = (!selectedNeedsSpellCatalog || catalogs.spellsReady)
+    && (!selectedNeedsItemCatalog || catalogs.itemsReady);
+
   useEffect(() => {
-    registerGroups(subchoiceGroups, catalogs.ready, scope);
-  }, [catalogs.ready, registerGroups, scope, subchoiceGroups]);
+    registerGroups(subchoiceGroups, subchoicesReady, scope);
+  }, [registerGroups, scope, subchoiceGroups, subchoicesReady]);
 
   useEffect(() => () => registerGroups([], true, scope), [registerGroups, scope]);
 
@@ -143,7 +161,11 @@ export default function NpcForgeHeritageTraitPicker({ group, selections = {}, on
     if (!option || picks.length >= maxPicks) return;
     const currentCount = Number(counts.get(option.key) || 0);
     if (currentCount >= repeatLimit(group, option)) return;
-    const emptyField = fields.find((field) => selectedKeys(selections, group.id, field.id).length === 0);
+    const emptyField = fields.find((field) => {
+      const selected = selectedKeys(selections, group.id, field.id);
+      if (!selected.length) return true;
+      return !selected.some((key) => (field.options || []).some((candidate) => candidate.key === key));
+    });
     if (!emptyField) return;
     setPrimaryChoice?.(stablePrimaryGroup, emptyField.id, [option.key]);
     setFocusedKey(option.key);
@@ -181,7 +203,7 @@ export default function NpcForgeHeritageTraitPicker({ group, selections = {}, on
       <em aria-live="polite">{picks.length} / {maxPicks}</em>
     </header>
 
-    {catalogs.error ? <p className="npc-forge-heritage-picker__error">Trait-specific follow-up choices could not load: {catalogs.error}. You can still select the Heritage Trait itself.</p> : !catalogs.ready ? <p className="npc-forge-heritage-picker__loading">Loading trait-specific follow-up choices… Primary Heritage Traits remain selectable.</p> : null}
+    {catalogs.errors.length ? <p className="npc-forge-heritage-picker__error">Some trait-specific follow-up catalogues could not load: {catalogs.errors.map((entry) => entry.message).join(" ")} Primary Heritage Traits remain selectable; only traits that require the failed catalogue are blocked from completion.</p> : (!catalogs.spellsReady || !catalogs.itemsReady) ? <p className="npc-forge-heritage-picker__loading">Loading trait-specific follow-up choices… Primary Heritage Traits remain selectable.</p> : null}
 
     {selectedOptions.length ? <div className="npc-forge-heritage-picker__selected"><div>{selectedOptions.map(({ option, count }) => <span key={option.key} className={`npc-forge-heritage-picker__selected-chip ${focused?.key === option.key ? "is-focused" : ""}`}><button type="button" className="npc-forge-heritage-picker__selected-focus" onClick={() => setFocusedKey(option.key)}><strong>{option.label}</strong>{count > 1 ? <small>{count} picks</small> : null}</button><button type="button" className="npc-forge-heritage-picker__selected-remove" aria-label={`Remove one ${option.label} Heritage Trait pick`} title={`Remove one ${option.label} pick`} onClick={() => removeTrait(option.key)}>×</button></span>)}</div>{traditionalSelections.length ? <button type="button" className="npc-forge-heritage-picker__reset" onClick={resetTraditional}>Reset to traditional traits</button> : null}</div> : null}
 

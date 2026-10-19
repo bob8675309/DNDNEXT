@@ -10,8 +10,35 @@ import NewNpcModalV3Refined from "./NewNpcModalV3Refined";
 import { EMPTY_SPECIES_CHOICE_STATE, NpcForgeSpeciesChoiceContext, serializeSpeciesChoiceState, speciesChoiceStateComplete, speciesFeatChoicesFromState, speciesSkillChoicesFromState, speciesSpellcastingFromChoiceState } from "./NpcForgeSpeciesChoiceContext";
 import { classChoiceSelectionSummary, classChoiceStateComplete, classChoiceStateRequiresSelection, classFeatureChoiceStateRequiresSelection, classStepChoiceStateComplete, EMPTY_CLASS_CHOICE_STATE, normalizedClassFeatureChoiceState, NpcForgeClassChoiceContext, selectedSubclassOption, serializeClassChoiceState, trainingClassChoiceStateComplete } from "./NpcForgeClassChoiceContext";
 import { EMPTY_SOURCE_CHOICE_STATE, normalizeSourceChoiceState, NpcForgeSourceChoiceContext, serializeSourceChoiceState, sourceChoiceSelectionSummary, sourceChoiceStateComplete } from "./NpcForgeSourceChoiceContext";
+import { applyDirectSourceChoiceSelection } from "../utils/directSourceChoiceState.js";
 
 const uniqueText = (values = []) => [...new Set((Array.isArray(values) ? values : []).map((value) => String(value ?? "").trim()).filter(Boolean))];
+const SOURCE_CHOICE_DRAFT_VERSION = 2;
+
+function restoredSourceChoiceState(value = null) {
+  const source = value && typeof value === "object" ? value : {};
+  const selections = source.selections && typeof source.selections === "object" ? source.selections : {};
+  const defaultedGroups = Number(source.draftVersion || 0) >= SOURCE_CHOICE_DRAFT_VERSION
+    && source.defaultedGroups && typeof source.defaultedGroups === "object"
+    ? source.defaultedGroups
+    : {};
+  return {
+    ...EMPTY_SOURCE_CHOICE_STATE,
+    groups: [],
+    scopes: {},
+    catalogReady: false,
+    selections,
+    defaultedGroups,
+  };
+}
+
+function persistedSourceChoiceState(state = EMPTY_SOURCE_CHOICE_STATE) {
+  return {
+    draftVersion: SOURCE_CHOICE_DRAFT_VERSION,
+    selections: state?.selections && typeof state.selections === "object" ? state.selections : {},
+    defaultedGroups: state?.defaultedGroups && typeof state.defaultedGroups === "object" ? state.defaultedGroups : {},
+  };
+}
 function normalizeSpeciesChoiceState(species, rules = [], previous = EMPTY_SPECIES_CHOICE_STATE) {
   if (!species) return { speciesId: "", speciesName: "", rules: [], selections: {} };
   const speciesId = String(species.id || species.name || "");
@@ -170,7 +197,7 @@ export default function NewNpcModalV3(props) {
   const restoredChoices = restoredPlayerDraftRef.current?.choices || {};
   const [speciesChoiceState, setSpeciesChoiceState] = useState(() => restoredChoices.species || ({ speciesId: "", speciesName: "", rules: [], selections: {} }));
   const [classChoiceState, setClassChoiceState] = useState(() => restoredChoices.class || ({ ...EMPTY_CLASS_CHOICE_STATE, options: [], featureGroups: [], featureSelections: {} }));
-  const [sourceChoiceState, setSourceChoiceState] = useState(() => restoredChoices.source || ({ ...EMPTY_SOURCE_CHOICE_STATE, groups: [], selections: {}, scopes: {} }));
+  const [sourceChoiceState, setSourceChoiceState] = useState(() => restoredSourceChoiceState(restoredChoices.source));
   const choiceStateRef = useRef(speciesChoiceState);
   const classChoiceStateRef = useRef(classChoiceState);
   const sourceChoiceStateRef = useRef(sourceChoiceState);
@@ -183,7 +210,7 @@ export default function NewNpcModalV3(props) {
       choices: {
         species: speciesChoiceState,
         class: classChoiceState,
-        source: sourceChoiceState,
+        source: persistedSourceChoiceState(sourceChoiceState),
       },
     }, draftStorageScope);
   }, [playerMode, draftStorageScope, speciesChoiceState, classChoiceState, sourceChoiceState]);
@@ -204,22 +231,9 @@ export default function NewNpcModalV3(props) {
   const toggleFeatureOption = useCallback((groupId, optionKey) => setClassChoiceState((current) => ({ ...current, featureSelections: toggleClassFeatureSelection(current.featureGroups || [], current.featureSelections || {}, groupId, optionKey) })), []);
   const registerSourceGroups = useCallback((groups = [], catalogReady = true, scope = "foundation") => setSourceChoiceState((current) => normalizeSourceChoiceState(groups, catalogReady, current, scope)), []);
   const toggleSourceChoice = useCallback((groupId, fieldId, optionKey) => setSourceChoiceState((current) => ({ ...current, selections: toggleSourceChoiceSelection(current.groups || [], current.selections || {}, groupId, fieldId, optionKey) })), []);
-  const setSourceChoice = useCallback((groupOrId, fieldId, optionKeys) => setSourceChoiceState((current) => {
-    const incomingGroup = groupOrId && typeof groupOrId === "object" ? groupOrId : null;
-    const groupId = String(incomingGroup?.id || groupOrId || "");
-    let groups = Array.isArray(current.groups) ? current.groups : [];
-    if (incomingGroup?.id) {
-      const existingIndex = groups.findIndex((entry) => String(entry?.id || "") === groupId);
-      groups = existingIndex >= 0
-        ? groups.map((entry, index) => index === existingIndex ? incomingGroup : entry)
-        : [...groups, incomingGroup];
-    }
-    return {
-      ...current,
-      groups,
-      selections: setSourceChoiceSelection(groups, current.selections || {}, groupId, fieldId, optionKeys),
-    };
-  }), []);
+  const setSourceChoice = useCallback((groupOrId, fieldId, optionKeys) => setSourceChoiceState((current) => (
+    applyDirectSourceChoiceSelection(current, groupOrId, fieldId, optionKeys)
+  )), []);
   const speciesContextValue = useMemo(() => ({ state: speciesChoiceState, registerSpecies, selectChoice }), [registerSpecies, selectChoice, speciesChoiceState]);
   const classContextValue = useMemo(() => ({ state: classChoiceState, registerClass, selectSubclass, registerFeatureGroups, toggleFeatureOption }), [classChoiceState, registerClass, registerFeatureGroups, selectSubclass, toggleFeatureOption]);
   const sourceContextValue = useMemo(() => ({ state: sourceChoiceState, registerGroups: registerSourceGroups, toggleChoice: toggleSourceChoice, setChoice: setSourceChoice }), [registerSourceGroups, setSourceChoice, sourceChoiceState, toggleSourceChoice]);
@@ -318,7 +332,7 @@ export default function NewNpcModalV3(props) {
     if (playerMode) clearPlayerForgeDraft(draftStorageScope);
     setSpeciesChoiceState({ speciesId: "", speciesName: "", rules: [], selections: {} });
     setClassChoiceState({ ...EMPTY_CLASS_CHOICE_STATE, options: [], featureGroups: [], featureSelections: {} });
-    setSourceChoiceState({ ...EMPTY_SOURCE_CHOICE_STATE, groups: [], selections: {}, scopes: {} });
+    setSourceChoiceState({ ...EMPTY_SOURCE_CHOICE_STATE, groups: [], selections: {}, scopes: {}, defaultedGroups: {} });
     await props.onCreated?.(created);
     if (!playerMode) Promise.race([persistSpeciesChoices(created, snapshot), new Promise((_, reject) => setTimeout(() => reject(new Error("species choice persistence timeout")), 5000))]).catch((error) => console.error("Could not persist species choices after character creation", error));
   }
@@ -326,7 +340,7 @@ export default function NewNpcModalV3(props) {
     if (playerMode) clearPlayerForgeDraft(draftStorageScope);
     setSpeciesChoiceState({ speciesId: "", speciesName: "", rules: [], selections: {} });
     setClassChoiceState({ ...EMPTY_CLASS_CHOICE_STATE, options: [], featureGroups: [], featureSelections: {} });
-    setSourceChoiceState({ ...EMPTY_SOURCE_CHOICE_STATE, groups: [], selections: {}, scopes: {} });
+    setSourceChoiceState({ ...EMPTY_SOURCE_CHOICE_STATE, groups: [], selections: {}, scopes: {}, defaultedGroups: {} });
   }
   return <NpcForgeSpeciesChoiceContext.Provider value={speciesContextValue}><NpcForgeClassChoiceContext.Provider value={classContextValue}><NpcForgeSourceChoiceContext.Provider value={sourceContextValue}><div className={playerMode ? "unified-player-character-forge" : undefined}><NewNpcModalV3Refined {...props} mode={playerMode ? "player" : "npc"} createCharacter={createCharacter} onReset={resetChoiceState} onCreated={handleCreated} /></div></NpcForgeSourceChoiceContext.Provider></NpcForgeClassChoiceContext.Provider><style jsx global>{`
     .npc-forge-context-row-details{width:100%!important;min-width:0!important;grid-template-columns:minmax(0,1fr)!important}.npc-forge-context-row.is-interactive:hover>.npc-forge-context-row-details,.npc-forge-context-row.is-interactive[open]>.npc-forge-context-row-details{display:flex!important;flex-direction:column!important}.npc-forge-context-row-details>*,.npc-forge-context-choice-grid,.npc-forge-context-choice-stack{width:100%!important;min-width:0!important;max-width:none!important}.player-character-forge-host .unified-player-character-forge .npc-forge-backdrop{position:static!important;inset:auto!important;display:block!important;width:100%!important;height:auto!important;min-height:0!important;padding:0!important;background:none!important;backdrop-filter:none!important}.player-character-forge-host .unified-player-character-forge .npc-forge-modal-v2{width:100%!important;max-width:none!important}
