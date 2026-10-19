@@ -138,6 +138,96 @@ function drawDotTop(page, x, top, {
   });
 }
 
+function captureFieldGeometry(form) {
+  const fields = new Map();
+  for (const field of form.getFields()) {
+    const widgets = field?.acroField?.getWidgets?.() || [];
+    const rect = widgets[0]?.getRectangle?.();
+    if (!rect) continue;
+    fields.set(field.getName(), { ...rect });
+  }
+  return fields;
+}
+
+function fieldRect(fields, name) {
+  return fields?.get?.(name) || null;
+}
+
+function drawTextInRect(page, text, rect, {
+  font,
+  size = 9,
+  color = BLACK,
+  align = "center",
+  minSize = 5.5,
+  paddingX = 1.5,
+  verticalAdjust = 0,
+} = {}) {
+  let value = sanitizePdfText(text);
+  if (!value || !rect) return false;
+
+  const usableWidth = Math.max(1, rect.width - paddingX * 2);
+  let actualSize = size;
+  while (actualSize > minSize && font.widthOfTextAtSize(value, actualSize) > usableWidth) actualSize -= 0.25;
+  if (font.widthOfTextAtSize(value, actualSize) > usableWidth) {
+    const ellipsis = "...";
+    while (value.length > 1 && font.widthOfTextAtSize(value + ellipsis, actualSize) > usableWidth) value = value.slice(0, -1);
+    value += ellipsis;
+  }
+
+  const textWidth = font.widthOfTextAtSize(value, actualSize);
+  let x = rect.x + paddingX;
+  if (align === "center") x = rect.x + Math.max(0, (rect.width - textWidth) / 2);
+  if (align === "right") x = rect.x + rect.width - paddingX - textWidth;
+
+  // Helvetica's visual center sits about .255em above its baseline. Centering
+  // against the AcroForm widget rectangle eliminates the hand-tuned vertical drift
+  // that showed up in browser/PDF print previews.
+  const y = rect.y + rect.height / 2 - actualSize * 0.255 + verticalAdjust;
+  page.drawText(value, { x, y, size: actualSize, font, color });
+  return true;
+}
+
+function drawFieldText(page, fields, name, text, options = {}) {
+  return drawTextInRect(page, text, fieldRect(fields, name), options);
+}
+
+function fieldContentBox(page, fields, name, paddingX = 5, paddingY = 5) {
+  const rect = fieldRect(fields, name);
+  if (!rect) return null;
+  return {
+    x: rect.x + paddingX,
+    top: page.getHeight() - rect.y - rect.height + paddingY,
+    width: Math.max(1, rect.width - paddingX * 2),
+    height: Math.max(1, rect.height - paddingY * 2),
+  };
+}
+
+function drawFieldWrapped(page, fields, name, text, {
+  paddingX = 5,
+  paddingY = 5,
+  ...options
+} = {}) {
+  const box = fieldContentBox(page, fields, name, paddingX, paddingY);
+  if (!box) return { lines: [], usedLines: 0, overflow: 0 };
+  return drawWrappedTop(page, text, box.x, box.top, box.width, box.height, options);
+}
+
+function drawDotInRect(page, rect, {
+  radius = 2.35,
+  filled = true,
+} = {}) {
+  if (!rect) return false;
+  page.drawCircle({
+    x: rect.x + rect.width / 2,
+    y: rect.y + rect.height / 2,
+    size: radius,
+    color: filled ? BLACK : WHITE,
+    borderColor: BLACK,
+    borderWidth: 0.65,
+  });
+  return true;
+}
+
 function buildFeatureText(feature) {
   const name = safeText(feature?.name);
   const description = safeText(feature?.description);
