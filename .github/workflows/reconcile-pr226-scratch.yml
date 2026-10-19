@@ -61,17 +61,11 @@ jobs:
           if old not in s:
               raise SystemExit("ItemCard primary effect anchor missing")
           s = s.replace(old, new, 1)
-          old = '''  const traitList = combinedTraits.length ? (
-            <div className="sitem-rule-traits" aria-label="Item traits">
-              {combinedTraits.map((trait) => (
-                <details className="sitem-rule-trait" key={`${trait.title}:${trait.body.slice(0, 42)}`}>
-                  <summary><RuleLinkedText text={trait.title} item={mergedItem} onReferenceDetail={onReferenceDetail} /></summary>
-                  <div className="sitem-rule-trait__body"><RuleParagraphs text={trait.body} item={mergedItem} onReferenceDetail={onReferenceDetail} /></div>
-                </details>
-              ))}
-            </div>
-          ) : null;
-          '''
+          start = s.find('  const traitList = combinedTraits.length ? (')
+          end_marker = '\n\n  const listBlocks = entryPresentation.lists?.length ? ('
+          end = s.find(end_marker, start)
+          if start < 0 or end < 0:
+              raise SystemExit("ItemCard trait-list range missing")
           new = '''  const traitList = combinedTraits.length ? (
             cardFamily === "bomb" ? (
               <div className="sitem-bomb-rule-list" aria-label="Bomb rules">
@@ -92,11 +86,9 @@ jobs:
                 ))}
               </div>
             )
-          ) : null;
-          '''
-          if old not in s:
-              raise SystemExit("ItemCard trait-list anchor missing")
-          p.write_text(s.replace(old, new, 1))
+          ) : null;'''
+          s = s[:start] + new + s[end:]
+          p.write_text(s)
           PY
 
             # Keep current package/build gates and add the PR #226 checks.
