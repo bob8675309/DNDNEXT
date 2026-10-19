@@ -384,8 +384,22 @@ export function normalizeSourceChoiceState(groups = [], catalogReady = true, pre
   };
 }
 
+function sourceChoiceScopesReadyForPlacement(state = EMPTY_SOURCE_CHOICE_STATE, filters = {}) {
+  const placement = String(filters?.placement || "").trim();
+  if (!placement) return Boolean(state.catalogReady);
+  const scopes = state?.scopes && typeof state.scopes === "object" ? Object.values(state.scopes) : [];
+  return scopes.every((entry) => {
+    const relevant = (entry?.groups || []).some((group) => {
+      if (filters.ownerType && group.ownerType !== filters.ownerType) return false;
+      if (filters.maxLevel && Number(group.level || 1) > Number(filters.maxLevel)) return false;
+      return (group.fields || []).some((field) => sourceChoiceFieldResolverPlacement(group, field) === placement);
+    });
+    return !relevant || Boolean(entry?.catalogReady);
+  });
+}
+
 export function sourceChoiceStateComplete(state = EMPTY_SOURCE_CHOICE_STATE, filters = {}) {
-  if (!state.catalogReady) return false;
+  if (!sourceChoiceScopesReadyForPlacement(state, filters)) return false;
   if (filters?.placement) {
     const groups = sourceChoiceGroupsForResolverPlacement(state, filters.placement);
     return sourceChoiceGroupsComplete(groups, state.selections || {}, { ...filters, placement: undefined });
