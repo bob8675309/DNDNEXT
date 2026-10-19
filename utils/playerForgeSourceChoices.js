@@ -39,6 +39,39 @@ function selectedFor(selections = {}, groupId, fieldId) {
   return unique(selections?.[groupId]?.[fieldId] || []);
 }
 
+function fieldDefaultKeys(field = {}) {
+  const single = text(field?.metadata?.defaultOptionKey);
+  const multiple = array(field?.metadata?.defaultOptionKeys).map(text).filter(Boolean);
+  return unique(single ? [single, ...multiple] : multiple).slice(0, Number(field?.count || 1));
+}
+
+/**
+ * Seed source-owned creation defaults only when a field has never had a
+ * selection entry. An explicit empty array is intentional user state and must
+ * remain empty, so removing every Heritage pick never causes the traditional
+ * package to reappear on a later render.
+ */
+export function applySourceChoiceDefaults(groups = [], selections = {}) {
+  const output = { ...(selections || {}) };
+  for (const group of array(groups)) {
+    const existingGroup = output?.[group.id] && typeof output[group.id] === "object"
+      ? output[group.id]
+      : {};
+    let nextGroup = existingGroup;
+    for (const field of array(group?.fields)) {
+      if (Object.prototype.hasOwnProperty.call(existingGroup, field.id)) continue;
+      const defaults = fieldDefaultKeys(field);
+      if (!defaults.length) continue;
+      if (nextGroup === existingGroup) nextGroup = { ...existingGroup };
+      nextGroup[field.id] = defaults;
+    }
+    if (nextGroup !== existingGroup || !Object.prototype.hasOwnProperty.call(output, group.id)) {
+      output[group.id] = nextGroup;
+    }
+  }
+  return output;
+}
+
 function activeRuleSatisfied(activeWhen, selections = {}) {
   if (!activeWhen) return true;
   const values = selectedFor(selections, activeWhen.groupId, activeWhen.fieldId).map(norm);

@@ -106,6 +106,16 @@ const SPECIES_DEDICATED_VARIANT_ARTWORK = new Set([
 ]);
 
 const CINEMATIC_SPECIES_HERO_ARTWORK = Object.freeze({
+  accursed: "/media/species/cinematic-accursed.webp",
+  arisen: "/media/species/cinematic-arisen.webp",
+  disembodied: "/media/species/cinematic-disembodied.webp",
+  downcast: "/media/species/cinematic-downcast.webp",
+  dreamer: "/media/species/cinematic-dreamer.webp",
+  grudgel: "/media/species/cinematic-grudgel.webp",
+  laneshi: "/media/species/cinematic-laneshi.webp",
+  ogresh: "/media/species/cinematic-ogresh.webp",
+  wechselkind: "/media/species/cinematic-wechselkind.webp",
+  wulven: "/media/species/cinematic-wulven.webp",
   aarakocra: "/media/species/cinematic-aarakocra.webp",
   aasimar: "/media/species/cinematic-aasimar.webp",
   aetherborn: "/media/species/cinematic-aetherborn.webp",
@@ -127,7 +137,7 @@ const CINEMATIC_SPECIES_HERO_ARTWORK = Object.freeze({
   tabaxi: "/media/species/cinematic-tabaxi.webp",
   tiefling: "/media/species/cinematic-tiefling.webp",
 });
-const SPECIES_RAW_NAME_ALIASES = { "genasi-air": "air-genasi", "genasi-earth": "earth-genasi", "genasi-fire": "fire-genasi", "genasi-water": "water-genasi", "aven-hawk-headed": "hawk-headed-aven", "aven-ibis-headed": "ibis-headed-aven" };
+const SPECIES_RAW_NAME_ALIASES = { "genasi-air": "air-genasi", "genasi-earth": "earth-genasi", "genasi-fire": "fire-genasi", "genasi-water": "water-genasi", "aven-hawk-headed": "hawk-headed-aven", "aven-ibis-headed": "ibis-headed-aven", "dhampir-grim-hollow": "dhampir", "dragonborn-grim-hollow": "dragonborn", "dwarf-grim-hollow": "dwarf", "elf-grim-hollow": "elf", "gnome-grim-hollow": "gnome", "halfling-grim-hollow": "halfling", "human-grim-hollow": "human" };
 
 export function normalizeSpeciesArtworkKey(value = "") {
   const key = String(value || "").trim().toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
@@ -136,7 +146,8 @@ export function normalizeSpeciesArtworkKey(value = "") {
 export function speciesArtworkFor(species = "") {
   const key = normalizeSpeciesArtworkKey(species);
   const artworkKey = SPECIES_ARTWORK.has(key) ? key : SPECIES_ARTWORK_ALIASES[key];
-  return artworkKey ? `/media/species/${artworkKey}.webp` : "/media/species/adventurer.webp";
+  if (artworkKey) return `/media/species/${artworkKey}.webp`;
+  return CINEMATIC_SPECIES_HERO_ARTWORK[key] || "/media/species/adventurer.webp";
 }
 export function speciesPortraitArtworkFor(species = "") {
   const key = normalizeSpeciesArtworkKey(species);

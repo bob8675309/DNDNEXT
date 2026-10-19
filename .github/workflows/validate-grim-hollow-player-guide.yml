@@ -7,8 +7,16 @@ on:
       - "public/items/grim-hollow-pg24.json"
       - "public/items/magicvariants.grim-hollow-pg24.json"
       - "scripts/import_grim_hollow_pg24.mjs"
+      - "scripts/grimHollowSpeciesImport.mjs"
+      - "utils/playerForgeSpeciesChoices.js"
+      - "utils/playerForgeSourceChoices.js"
+      - "components/NpcForgeSourceChoiceContext.js"
+      - "components/NpcForgeHeritageTraitPicker.js"
+      - "components/NpcForgeStepContent.js"
+      - "sql/20261018_01_grim_hollow_pg24_species_catalog.sql"
       - "scripts/seed_items_catalog.mjs"
       - "scripts/validate_grim_hollow_player_guide_content.mjs"
+      - "scripts/validate_grim_hollow_heritage_swaps.mjs"
       - "utils/itemsIndex.js"
       - "utils/classes/subclassArtwork.js"
       - "utils/classes/subclassCompatibility.js"
@@ -33,3 +41,10 @@ jobs:
           node-version: 22
       - name: Validate Grim Hollow Player Guide content
         run: node scripts/validate_grim_hollow_player_guide_content.mjs
+      - name: Validate Grim Hollow Heritage swaps
+        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_grim_hollow_heritage_swaps.mjs
+      - name: Regenerate pinned Grim Hollow source bundle
+        run: |
+          rm -rf /tmp/grim-hollow-pg24-import
+          node scripts/import_grim_hollow_pg24.mjs --out-dir /tmp/grim-hollow-pg24-import
+          node -e "const fs=require('fs'); const data=JSON.parse(fs.readFileSync('/tmp/grim-hollow-pg24-import/species.json','utf8')); if (!Array.isArray(data.rows) || data.rows.length !== 17) throw new Error('Expected 17 regenerated Grim Hollow Species rows');"

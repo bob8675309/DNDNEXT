@@ -27,6 +27,7 @@ on:
       - "public/media/species/dwarf-kaladesh.webp"
       - "public/media/species/goblin-dankwood.webp"
       - "public/media/species/orc-ixalan.webp"
+      - "public/media/species/cinematic-*.webp"
       - "scripts/import_5etools_character_options_refined.mjs"
       - "scripts/materialize_gem_dragonborn_art.py"
       - "scripts/validate_forge_source_presentation.mjs"
@@ -46,6 +47,7 @@ on:
       - "scripts/validate_forge_shifter_art.mjs"
       - "scripts/validate_forge_fairy_kithkin_art.mjs"
       - "scripts/validate_forge_setting_alias_art.mjs"
+      - "scripts/validate_grim_hollow_species_art.mjs"
       - "sql/20260811_91_genasi_subrace_catalog.sql"
       - "sql/20260811_92_genasi_source_detail_restore.sql"
       - "sql/20260812_93_aven_subrace_catalog.sql"
@@ -204,6 +206,9 @@ jobs:
 
       - name: Validate setting-variant dedicated artwork
         run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_setting_alias_art.mjs
+
+      - name: Validate Grim Hollow dedicated cinematic artwork
+        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_grim_hollow_species_art.mjs
 
       - name: Run production build gate
         run: node scripts/vercel_build_v2.mjs

@@ -53,9 +53,16 @@ function heritagePlayerText(value = "") {
     .trim();
 }
 function customLineageHeritageGroups(species) {
-  if (!isCustomLineage(species)) return [];
+  const heritageOnly = Boolean(species?.metadata?.heritageOnly);
+  if (!isCustomLineage(species) && !heritageOnly) return [];
   const catalog = array(species?.metadata?.heritageTraitCatalog).filter((entry) => entry?.key && entry?.name);
   if (!catalog.length) return [];
+  const pickCount = Math.max(1, Number(species?.metadata?.heritagePickCount || 8));
+  const traditionalSelections = array(species?.metadata?.traditionalHeritageSelections).filter((entry) => entry?.key);
+  const traditionalCounts = traditionalSelections.reduce((counts, entry) => {
+    counts[entry.key] = Number(counts[entry.key] || 0) + 1;
+    return counts;
+  }, {});
   const heritageOptions = catalog.map((entry) => {
     const category = String(entry.category || "R").toUpperCase();
     return {
@@ -71,24 +78,44 @@ function customLineageHeritageGroups(species) {
         categoryLabel: HERITAGE_CATEGORY_LABELS[category] || "Roleplaying",
         improvedName: entry.improvedName || null,
         repeatLimit: Math.max(1, Number(entry.repeatLimit || 2)),
+        traditionalCount: Number(traditionalCounts[entry.key] || 0),
       },
     };
   }).sort((a, b) => {
+    const traditionalDelta = Number(Boolean(b.metadata.traditionalCount)) - Number(Boolean(a.metadata.traditionalCount));
     const categoryDelta = Number(HERITAGE_CATEGORY_ORDER[a.metadata.category] ?? 9) - Number(HERITAGE_CATEGORY_ORDER[b.metadata.category] ?? 9);
-    return categoryDelta || a.label.localeCompare(b.label);
+    return traditionalDelta || categoryDelta || a.label.localeCompare(b.label);
   });
   const repeatLimits = Object.fromEntries(heritageOptions.map((entry) => [entry.key, Math.max(1, Number(entry.metadata?.repeatLimit || 2))]));
-  const fields = Array.from({ length: 8 }, (_, index) => field({
-    id: `heritage-${index + 1}`,
-    label: `Heritage Trait ${index + 1} of 8`,
-    kind: "heritage-trait",
-    options: heritageOptions,
-    helper: "Select a trait again only when that trait allows an improved or repeated benefit.",
-    metadata: { pickNumber: index + 1, system: "GrimHollowPG24" },
-  }));
-  const heritageGroup = group(species, "Heritage Traits", fields, 1,
-    "Choose exactly eight Heritage Trait picks. Combat, Exploration, and Roleplaying organize the catalogue but do not impose quotas.",
-    "species", { system: "GrimHollowPG24", totalPicks: 8, repeatLimits, heritageTraitGroup: true });
+  const heritageField = (index, total) => {
+    const traditional = traditionalSelections[index] || null;
+    return field({
+      id: `heritage-${index + 1}`,
+      label: `Heritage Trait ${index + 1} of ${total}`,
+      kind: "heritage-trait",
+      options: heritageOptions,
+      helper: heritageOnly && traditionalSelections.length
+        ? "This slot starts with the source's traditional Heritage Trait. You may swap it for any other legal Grim Hollow Heritage Trait."
+        : "Select a trait again only when that trait allows an improved or repeated benefit.",
+      metadata: {
+        pickNumber: index + 1,
+        system: "GrimHollowPG24",
+        defaultOptionKey: traditional?.key || null,
+        traditionalName: traditional?.name || null,
+        traditionalCategory: traditional?.category || null,
+      },
+    });
+  };
+  const fields = isCustomLineage(species)
+    ? Array.from({ length: 8 }, (_, index) => heritageField(index, 8))
+    : Array.from({ length: pickCount }, (_, index) => heritageField(index, pickCount));
+  const helper = heritageOnly
+    ? traditionalSelections.length
+      ? `Your ${pickCount} source-traditional Heritage Traits are selected by default. Swap any slot for another legal Heritage Trait; repeated traits still obey their source repeat limits.`
+      : `Choose exactly ${pickCount} Heritage Trait picks from the full Grim Hollow catalogue.`
+    : `Choose exactly ${pickCount} Heritage Trait picks. Combat, Exploration, and Roleplaying organize the catalogue but do not impose quotas.`;
+  const heritageGroup = group(species, "Heritage Traits", fields, 1, helper,
+    "species", { system: "GrimHollowPG24", totalPicks: pickCount, repeatLimits, heritageTraitGroup: true, traditionalSelections });
   return [heritageGroup];
 }
 function flattenStrings(node, output = []) {

@@ -173,3 +173,80 @@ Progress after final install:
 
 The dedicated-card queue is tracked in `docs/CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md`.
 
+
+
+## Player's Guide Species catalogue — October 18, 2026
+
+A follow-up audit of the pinned partnered Player's Guide source found that its `race` collection had not been included in the earlier source-content importer. The source defines **17 Species**.
+
+The import now adds all seventeen without replacing existing core/source rows:
+
+- New catalogue Species: **Accursed, Arisen, Disembodied, Downcast, Dreamer, Grudgel, Laneshi, Ogresh, Wechselkind, Wulven**.
+- Existing-name source variants are deliberately labeled in DNDNext as **Dhampir (Grim Hollow), Dragonborn (Grim Hollow), Dwarf (Grim Hollow), Elf (Grim Hollow), Gnome (Grim Hollow), Halfling (Grim Hollow), Human (Grim Hollow)**. Their original source names remain preserved in `metadata.sourceName` and `raw_payload`.
+
+All seventeen retain the Player's Guide Heritage model rather than being converted into PHB-style fixed trait packages:
+
+- exactly eight Heritage Trait picks are required;
+- the full **107-trait** `GrimHollowPG24` Heritage catalogue is available;
+- the source's traditional Heritage suggestions are retained in order, including repeated traits and their raw source annotations;
+- traditional suggestions are now **preselected** as the starting eight-pick package when the source provides them;
+- Grim Hollow Species use the **same Heritage Trait picker and source-choice authority as Custom Lineage**: remove any selected trait, then choose its replacement from the full 107-trait catalogue; repeat limits and required trait subchoices remain enforced;
+- **Accursed** remains the source exception with no traditional package, so its eight Heritage Trait slots start empty just like a Custom Lineage build;
+- a **Reset to traditional traits** control restores the source-recommended package after experimentation;
+- source Size, Speed, creature type, lore/art provenance, and the optional Small-size speed-for-extra-trait rule are preserved in metadata/raw source data;
+- the optional Small-size ninth-trait tradeoff is preserved as source data but is **not silently auto-applied** to runtime Speed in this patch.
+
+The Character Forge reuses its existing source-choice persistence and Heritage repeat-limit authority. No Grim-Hollow-only React state or second save path was introduced. Existing PHB/XPHB/VRGR Species rows remain intact.
+
+The source-backed regeneration script now emits a reviewed `species.json` alongside spells, subclasses, items, and variants, and the source manifest now guards the expected Species count at **17**.
+
+
+### Live Species import verification — 2026-10-19
+
+The reviewed Species migration was applied to live project `ucggczovhmauhshvhusx` as registered migration `20261019013551 grim_hollow_pg24_species_catalog`.
+
+Live verification after apply:
+
+- **17 / 17** `GrimHollowPG24` Species rows exist in `character_option_catalog`.
+- **17 / 17** are represented in `character_option_catalog_preferred` under their intended DNDNext display identities.
+- Every imported row embeds the full **107-entry** Heritage Trait catalogue.
+- Accursed correctly has no fixed traditional set; the other sixteen rows preserve **8** source traditional suggestions each.
+- The Forge seeds those sixteen traditional packages into the existing eight Heritage choice slots on first registration; it does not create a second Grim-Hollow-only selection state.
+- Players can remove and replace those picks through the same Custom Lineage Heritage browser, and an explicitly cleared slot stays cleared until the player selects a replacement or uses Reset to traditional traits.
+- All seventeen retain non-empty source lore and source-art provenance.
+- Existing XPHB/VRGR rows for Human, Dragonborn, Dwarf, Elf, Gnome, Halfling, and Dhampir remain present and unchanged.
+- The optional Small-size speed-for-extra-trait source rule is flagged on the applicable rows, but runtime automation of that ninth-pick tradeoff remains intentionally deferred.
+
+### Final Grim Hollow Species portrait set — October 19, 2026
+
+The ten genuinely new Player's Guide Species now have approved dedicated Character Forge portrait art:
+
+- Accursed — `public/media/species/cinematic-accursed.webp`
+- Arisen — `public/media/species/cinematic-arisen.webp`
+- Disembodied — `public/media/species/cinematic-disembodied.webp`
+- Downcast — `public/media/species/cinematic-downcast.webp`
+- Dreamer — `public/media/species/cinematic-dreamer.webp`
+- Grudgel — `public/media/species/cinematic-grudgel.webp`
+- Laneshi — `public/media/species/cinematic-laneshi.webp`
+- Ogresh — `public/media/species/cinematic-ogresh.webp`
+- Wechselkind — `public/media/species/cinematic-wechselkind.webp`
+- Wulven — `public/media/species/cinematic-wulven.webp`
+
+All ten are production WebP assets at exactly **720 × 960 (3:4)**, matching the established `cinematic-*.webp` Character Forge Species portrait dimensions. Their compositions were approved as a coherent hyper-realistic dark-fantasy cinematic set while retaining Species-specific visual identity.
+
+`utils/speciesArtwork.js` maps all ten through `CINEMATIC_SPECIES_HERO_ARTWORK`. The Forge list portraits and large Species hero both resolve through `speciesPortraitArtworkFor`, so the new Species no longer depend on `adventurer.webp`. The generic `speciesArtworkFor` resolver also falls back to approved cinematic art when a Species has cinematic-only coverage, preventing the same ten from showing the neutral placeholder in non-Forge consumers.
+
+The seven same-name Grim Hollow source variants deliberately reuse the established parent Species artwork identity rather than creating redundant near-duplicate portraits:
+
+- Dhampir (Grim Hollow) → Dhampir
+- Dragonborn (Grim Hollow) → Dragonborn
+- Dwarf (Grim Hollow) → Dwarf
+- Elf (Grim Hollow) → Elf
+- Gnome (Grim Hollow) → Gnome
+- Halfling (Grim Hollow) → Halfling
+- Human (Grim Hollow) → Human
+
+`scripts/validate_grim_hollow_species_art.mjs` guards the final artwork contract: ten unique files, exact 720 × 960 WebP dimensions, intentional resolver coverage, no Grim Hollow Species fall-through to the neutral adventurer placeholder, correct parent-art reuse for the seven source variants, and continued separation from protected map/travel systems. The Forge source-presentation workflow runs this validator whenever the relevant cinematic Species art, resolver, or validator changes.
+
+No Supabase write or Species rules change was required for this artwork pass.
+

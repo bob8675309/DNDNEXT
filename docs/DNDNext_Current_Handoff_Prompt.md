@@ -653,3 +653,13 @@ Use exact-head guarded, non-forced GitHub writes. After every coherent slice:
 5. confirm exact Vercel deployment if triggered;
 6. re-read PR head immediately before merge;
 7. merge only the validated expected head.
+
+## 2026-10-19 Grim Hollow Player's Guide Species checkpoint
+
+PR #234 (`grim-hollow-species-import-20261018`) imports the previously omitted Player's Guide Species catalogue. The live Supabase migration `20261019013551 grim_hollow_pg24_species_catalog` is applied and verified at 17/17 rows.
+
+Ten names are new catalogue Species: Accursed, Arisen, Disembodied, Downcast, Dreamer, Grudgel, Laneshi, Ogresh, Wechselkind, and Wulven. Seven existing-name identities are retained as separate source variants with explicit `(Grim Hollow)` labels: Dhampir, Dragonborn, Dwarf, Elf, Gnome, Halfling, and Human.
+
+Each row uses the existing Grim Hollow Heritage source-choice authority with the full 107-trait catalogue and eight required picks. Traditional source suggestions are preserved and marked in the picker; they are suggestions, not a forced package. The source's optional Small-size 5-foot Speed reduction for an additional traditional trait is preserved in metadata/raw source data but is not automatically executed by runtime yet.
+
+Exact validated PR head before this documentation checkpoint: `d32044570e10a6a191a51a6c125c3a755f136f30`. Re-fetch the live PR head before any write, validation claim, or merge. PR #234 remains open and must not be merged without explicit approval.
