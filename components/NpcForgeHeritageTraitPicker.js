@@ -53,13 +53,13 @@ function selectedRows(group = {}, selections = {}) {
 export default function NpcForgeHeritageTraitPicker({ group, selections = {}, onSet = null }) {
   const { registerGroups, toggleChoice, setChoice } = useNpcForgeSourceChoices();
   const setPrimaryChoice = onSet || setChoice;
-  const primaryReady = fields.length > 0 && catalog.length > 0;
   const [category, setCategory] = useState("C");
   const [query, setQuery] = useState("");
   const [focusedKey, setFocusedKey] = useState("");
   const [catalogs, setCatalogs] = useState({ spells: [], items: [], ready: false, error: "" });
   const fields = heritageFields(group);
   const catalog = fields[0]?.options || [];
+  const primaryReady = fields.length > 0 && catalog.length > 0;
   const primaryIdentity = `${group.id}|${fields.length}|${catalog.length}`;
   const stablePrimaryGroup = useMemo(() => group, [primaryIdentity]);
   const picks = selectedRows(group, selections);
