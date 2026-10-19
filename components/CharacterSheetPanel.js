@@ -6,6 +6,8 @@ import CharacterPrimalCompanionPanel from "./CharacterPrimalCompanionPanel";
 import CharacterSpeciesRestProficiencyPanel from "./CharacterSpeciesRestProficiencyPanel";
 import { supabase } from "../utils/supabaseClient";
 import { projectCharacterSheetRuntimeProficiencies } from "../utils/characterRuntimeProficiencies";
+import { buildPrintableCharacterSheetModel } from "../utils/printableCharacterSheet";
+import { buildOfficialCharacterSheetPdf, safeOfficialSheetFilename } from "../utils/officialCharacterSheetPdf";
 import {
   authoritativeEffectsRevision,
   characterIdFromEffectsKey,
@@ -77,6 +79,10 @@ export default function CharacterSheetPanel({
   onActionCommand = null,
   actionBusyKey = "",
 
+  // Optional print-only presentation data already authorized and loaded by the owner page.
+  printProfile = null,
+  printNotes = null,
+
   // Optional map + location listing controls (saved outside the sheet JSON)
   mapVisible = null,
   onToggleMapVisible = null,
@@ -116,6 +122,8 @@ export default function CharacterSheetPanel({
 
   const [saving, setSaving] = useState(false);
   const [saveErr, setSaveErr] = useState("");
+  const [printBusy, setPrintBusy] = useState(false);
+  const [printErr, setPrintErr] = useState("");
   const [authoritativeEffects, setAuthoritativeEffects] = useState(null);
   const characterId = useMemo(() => characterIdFromEffectsKey(effectsKey), [effectsKey]);
 
@@ -182,6 +190,47 @@ export default function CharacterSheetPanel({
   );
 
   const saveState = saving ? "Saving…" : dirty ? "Unsaved" : "Saved";
+
+  async function openOfficialPrintableSheet() {
+    if (typeof window === "undefined" || printBusy) return;
+
+    setPrintErr("");
+    const previewWindow = window.open("", "_blank");
+    if (!previewWindow) {
+      setPrintErr("The browser blocked the printable character sheet. Allow pop-ups for this site and try again.");
+      return;
+    }
+
+    previewWindow.document.write(`<!doctype html><html><head><title>Preparing character sheet…</title></head><body style="font-family:system-ui;background:#111;color:#eee;padding:24px"><h2 style="margin:0 0 8px">Preparing official character sheet…</h2><p style="margin:0;color:#bbb">DNDNext is placing the current character data into the three-page D&D character sheet.</p></body></html>`);
+    previewWindow.document.close();
+
+    setPrintBusy(true);
+    try {
+      const model = buildPrintableCharacterSheetModel({
+        sheet: runtimeDisplayDraft || {},
+        profile: printProfile || {},
+        itemBonuses: resolvedItemBonuses,
+        inventoryItems: inventoryItems || [],
+        spellActions: spellActions || [],
+        featureRows: featureRows || [],
+        notes: printNotes || [],
+        locationLabel: locationLabel || "",
+        equipmentBreakdown: equipmentBreakdown || [],
+      });
+      const pdfBytes = await buildOfficialCharacterSheetPdf({ model });
+      const blob = new Blob([pdfBytes], { type: "application/pdf" });
+      const objectUrl = URL.createObjectURL(blob);
+      previewWindow.location.replace(objectUrl);
+      previewWindow.document.title = safeOfficialSheetFilename(model.profile?.name);
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 5 * 60 * 1000);
+    } catch (error) {
+      console.error("Printable official character sheet failed", error);
+      try { previewWindow.close(); } catch {}
+      setPrintErr(error?.message || "Could not generate the official printable character sheet.");
+    } finally {
+      setPrintBusy(false);
+    }
+  }
 
   async function toggleEditOrSave() {
     if (!editable) return;
@@ -345,6 +394,16 @@ export default function CharacterSheetPanel({
             </button>
           ) : null}
 
+          <button
+            type="button"
+            className="btn btn-sm btn-outline-light me-2"
+            onClick={openOfficialPrintableSheet}
+            disabled={!!actionsLoading || printBusy}
+            title={actionsLoading ? "Loading character features and inventory…" : "Generate the official three-page character sheet for printing"}
+          >
+            {printBusy ? "Preparing…" : "Print Sheet"}
+          </button>
+
           <span className={`csheet-save-pill ${dirty ? "dirty" : ""}`}>{saveState}</span>
           {editable ? (
             <button className="btn btn-sm btn-outline-light ms-2" onClick={toggleEditOrSave} disabled={saving}>
@@ -366,6 +425,7 @@ export default function CharacterSheetPanel({
       </div>
 
       {saveErr ? <div className="alert alert-danger py-2 m-2">{saveErr}</div> : null}
+      {printErr ? <div className="alert alert-danger py-2 m-2">{printErr}</div> : null}
       <CharacterAstralTrancePanel characterId={characterId} sheet={draft || {}} onSheetUpdated={(nextSheet) => nextSheet ? setDraft(deepClone(nextSheet)) : null} />
       <CharacterSpeciesRestProficiencyPanel characterId={characterId} sheet={draft || {}} onSheetUpdated={(nextSheet) => nextSheet ? setDraft(deepClone(nextSheet)) : null} />
       <CharacterPrimalCompanionPanel characterId={characterId} sheet={draft || {}} onSheetUpdated={(nextSheet) => nextSheet ? setDraft(deepClone(nextSheet)) : null} />
@@ -387,6 +447,7 @@ export default function CharacterSheetPanel({
         actionBusyKey={actionBusyKey}
       />
       <CharacterSheetEnhancements rootRef={sheetRootRef} sheet={draft || {}} featureRows={featureRows || []} onSheetUpdated={(nextSheet) => nextSheet ? setDraft(deepClone(nextSheet)) : null} />
+
     </div>
   );
 }
