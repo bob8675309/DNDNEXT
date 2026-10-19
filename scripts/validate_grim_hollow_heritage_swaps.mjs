@@ -101,6 +101,18 @@ const explicitlyCleared = {
 const reseeded = applySourceChoiceDefaults(groups, explicitlyCleared);
 assert.deepEqual(reseeded[heritage.id][heritage.fields[0].id], [], "An explicitly cleared Heritage slot must not be auto-restored on a later render");
 
+const staleEmptyDraft = {
+  [heritage.id]: Object.fromEntries(heritage.fields.map((field) => [field.id, []])),
+};
+const migratedDefaults = applySourceChoiceDefaults(groups, staleEmptyDraft, { forceEmptyGroupIds: [heritage.id] });
+assert.deepEqual(
+  heritage.fields.map((field) => migratedDefaults?.[heritage.id]?.[field.id]?.[0] || ""),
+  traditional.map((entry) => entry.key),
+  "A pre-fix autosaved draft with eight explicit empty Heritage slots must receive the traditional package once"
+);
+const manualFromEmpty = setSourceChoiceSelection(groups, staleEmptyDraft, heritage.id, heritage.fields[0].id, [key("Centered")]);
+assert.equal(manualFromEmpty?.[heritage.id]?.[heritage.fields[0].id]?.[0], key("Centered"), "A Heritage Trait must be selectable from a completely empty eight-slot state");
+
 const accursed = {
   id: "species:accursed|GRIMHOLLOWPG24",
   name: "Accursed",
@@ -129,13 +141,19 @@ for (const token of [
   "Reset to traditional traits",
   "same catalogue used by Custom Lineage",
   "All eight Heritage picks are filled. Remove one selected pick above",
+  "setPrimaryChoice = onSet || setChoice",
 ]) assert.ok(picker.includes(token), `Shared Custom Lineage-style Heritage picker is missing ${token}`);
 for (const forbidden of ["replaceFieldId", "Replace Trait", "selected-swap", "is-replacing"]) {
   assert.ok(!picker.includes(forbidden), `Grim Hollow Heritage swapping must not fork into a separate swap UI: ${forbidden}`);
 }
 
 const sourceContext = read("components/NpcForgeSourceChoiceContext.js");
-assert.ok(sourceContext.includes("applySourceChoiceDefaults"), "Forge source-choice state must seed source-owned defaults before normalization");
+for (const token of [
+  "applySourceChoiceDefaults",
+  "defaultedGroups",
+  "forceEmptyGroupIds",
+  "hasAnyStoredSelection",
+]) assert.ok(sourceContext.includes(token), `Forge source-choice state is missing stale-draft Heritage recovery: ${token}`);
 
 const speciesChoices = read("utils/playerForgeSpeciesChoices.js");
 for (const token of [
@@ -149,4 +167,4 @@ for (const token of ["mappageclient", "map_routes", "advance_all_characters", "r
   assert.ok(!protectedText.includes(token), `Heritage swap work crossed protected map/travel boundary: ${token}`);
 }
 
-console.log("Grim Hollow Heritage swaps validated: source-traditional eight-pick defaults, the same remove/select picker flow used by Custom Lineage, repeat-limit authority, explicit-clear persistence, Accursed no-default behavior, and protected boundaries all pass.");
+console.log("Grim Hollow Heritage swaps validated: selectable empty slots, stale-draft traditional-default recovery, context-backed picker writes, Custom Lineage-style remove/select flow, repeat-limit authority, explicit-clear persistence, Accursed no-default behavior, and protected boundaries all pass.");

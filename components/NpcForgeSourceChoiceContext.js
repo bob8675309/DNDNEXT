@@ -9,7 +9,7 @@ import {
   sourceChoiceGroupsComplete,
 } from "../utils/playerForgeSourceChoices";
 
-export const EMPTY_SOURCE_CHOICE_STATE = Object.freeze({ groups: [], selections: {}, catalogReady: false, scopes: {} });
+export const EMPTY_SOURCE_CHOICE_STATE = Object.freeze({ groups: [], selections: {}, catalogReady: false, scopes: {}, defaultedGroups: {} });
 
 export const NpcForgeSourceChoiceContext = createContext({
   state: EMPTY_SOURCE_CHOICE_STATE,
@@ -277,13 +277,32 @@ export function normalizeSourceChoiceState(groups = [], catalogReady = true, pre
     [scope || "foundation"]: { groups: validGroups, catalogReady: Boolean(catalogReady) },
   };
   const combinedGroups = normalizeFeatSourceChoiceGroups(Object.values(scopes).flatMap((entry) => Array.isArray(entry?.groups) ? entry.groups : []));
-  const seededSelections = applySourceChoiceDefaults(combinedGroups, previous?.selections || {});
+  const previousSelections = previous?.selections || {};
+  const previousDefaultedGroups = previous?.defaultedGroups && typeof previous.defaultedGroups === "object"
+    ? previous.defaultedGroups
+    : {};
+  const groupsWithDefaults = combinedGroups.filter((group) => (group?.fields || []).some((field) => (
+    Boolean(field?.metadata?.defaultOptionKey)
+    || (Array.isArray(field?.metadata?.defaultOptionKeys) && field.metadata.defaultOptionKeys.length > 0)
+  )));
+  const forceEmptyGroupIds = groupsWithDefaults.flatMap((group) => {
+    if (previousDefaultedGroups[group.id]) return [];
+    const hasAnyStoredSelection = (group?.fields || []).some((field) => (
+      Array.isArray(previousSelections?.[group.id]?.[field.id])
+      && previousSelections[group.id][field.id].length > 0
+    ));
+    return hasAnyStoredSelection ? [] : [group.id];
+  });
+  const seededSelections = applySourceChoiceDefaults(combinedGroups, previousSelections, { forceEmptyGroupIds });
   const normalizedSelections = normalizeSourceChoiceSelections(combinedGroups, seededSelections);
+  const defaultedGroups = { ...previousDefaultedGroups };
+  groupsWithDefaults.forEach((group) => { defaultedGroups[group.id] = true; });
   return {
     scopes,
     groups: combinedGroups,
     selections: applyAutomaticSourceSelections(combinedGroups, normalizedSelections),
     catalogReady: Object.values(scopes).every((entry) => Boolean(entry?.catalogReady)),
+    defaultedGroups,
   };
 }
 

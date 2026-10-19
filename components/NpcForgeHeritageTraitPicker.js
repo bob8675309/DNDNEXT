@@ -52,6 +52,7 @@ function selectedRows(group = {}, selections = {}) {
 
 export default function NpcForgeHeritageTraitPicker({ group, selections = {}, onSet = null }) {
   const { registerGroups, toggleChoice, setChoice } = useNpcForgeSourceChoices();
+  const setPrimaryChoice = onSet || setChoice;
   const [category, setCategory] = useState("C");
   const [query, setQuery] = useState("");
   const [focusedKey, setFocusedKey] = useState("");
@@ -143,21 +144,21 @@ export default function NpcForgeHeritageTraitPicker({ group, selections = {}, on
     if (currentCount >= repeatLimit(group, option)) return;
     const emptyField = fields.find((field) => selectedKeys(selections, group.id, field.id).length === 0);
     if (!emptyField) return;
-    onSet?.(group.id, emptyField.id, [option.key]);
+    setPrimaryChoice?.(group.id, emptyField.id, [option.key]);
     setFocusedKey(option.key);
   };
 
   const removeTrait = (optionKey) => {
     const row = [...picks].reverse().find((entry) => entry.option.key === optionKey);
     if (!row) return;
-    onSet?.(group.id, row.field.id, []);
+    setPrimaryChoice?.(group.id, row.field.id, []);
   };
 
   const resetTraditional = () => {
     fields.forEach((field) => {
       const key = safeText(field?.metadata?.defaultOptionKey);
-      if (key) onSet?.(group.id, field.id, [key]);
-      else onSet?.(group.id, field.id, []);
+      if (key) setPrimaryChoice?.(group.id, field.id, [key]);
+      else setPrimaryChoice?.(group.id, field.id, []);
     });
   };
 
