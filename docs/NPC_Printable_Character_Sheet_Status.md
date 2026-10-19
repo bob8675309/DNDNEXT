@@ -13,6 +13,10 @@ The print action no longer renders a custom DNDNext paper layout. It now takes t
 
 The generated PDF opens in the browser's PDF viewer so the user can inspect it, print it, or save it as a PDF.
 
+### Readability calibration
+
+The official-template overlay is calibrated to the template's 612 × 792 point coordinate space. Core header values are positioned lower inside their labeled fields, numeric stats/saves/skills use larger print-safe type, and narrative/features use larger fonts with overflow pushed into the official continuation areas rather than shrinking excessively.
+
 ## Page mapping
 
 ### Official page 1
