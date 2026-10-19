@@ -219,6 +219,7 @@ function normalizeProfile(profile = {}, sheet = {}, locationLabel = "") {
   return {
     name: safeText(profile?.name || sheet?.name || "Character"),
     kind: safeText(profile?.kind || profile?.type),
+    playerName: safeText(profile?.playerName || profile?.player_name || (profile?.kind || profile?.type ? "NPC" : "")),
     role: safeText(profile?.role),
     affiliation: safeText(profile?.affiliation),
     status: safeText(profile?.status),
@@ -232,6 +233,7 @@ function normalizeProfile(profile = {}, sheet = {}, locationLabel = "") {
     subclass: safeText(sheet?.subclass || meta.subclass),
     level: Math.max(0, finiteNumber(sheet?.level ?? meta.level, 0)),
     background: backgroundLabel(sheet, profile),
+    backgroundNarrative: safeText(profile?.backgroundNarrative || profile?.background_narrative || profile?.background || ""),
     description: safeText(profile?.description),
     appearance: safeText(sheet?.appearance),
     motivation: safeText(profile?.motivation),
@@ -244,6 +246,12 @@ function normalizeProfile(profile = {}, sheet = {}, locationLabel = "") {
     ideals: safeText(sheet?.ideals ?? personality?.ideals),
     bonds: safeText(sheet?.bonds ?? personality?.bonds),
     flaws: safeText(sheet?.flaws ?? personality?.flaws),
+    age: safeText(profile?.age || sheet?.age || meta.age),
+    height: safeText(profile?.height || sheet?.height || meta.height),
+    weight: safeText(profile?.weight || sheet?.weight || meta.weight),
+    eyes: safeText(profile?.eyes || sheet?.eyes || meta.eyes),
+    skin: safeText(profile?.skin || sheet?.skin || meta.skin),
+    hair: safeText(profile?.hair || sheet?.hair || meta.hair),
   };
 }
 
@@ -396,6 +404,30 @@ export function buildPrintableCharacterSheetModel({
     }))
     .filter((entry) => entry.rank > 0 || entry.offersService);
 
+  const spellcasting = s?.spellcasting && typeof s.spellcasting === "object" ? s.spellcasting : {};
+  const castingAbilityKey = safeText(spellcasting?.ability || s?.spellcastingAbility || meta?.spellcastingAbility).toLowerCase();
+  const castingAbility = castingAbilityKey ? castingAbilityKey.slice(0, 3).toUpperCase() : "";
+  const castingMod = castingAbilityKey && abilityModifiers[castingAbilityKey] != null ? abilityModifiers[castingAbilityKey] : null;
+  const spellSaveDc = Number.isFinite(Number(spellcasting?.spellSaveDc ?? s?.spellSaveDc))
+    ? Number(spellcasting?.spellSaveDc ?? s?.spellSaveDc)
+    : (castingMod == null ? null : 8 + pb + castingMod);
+  const spellAttackBonus = Number.isFinite(Number(spellcasting?.spellAttackBonus ?? s?.spellAttackBonus))
+    ? Number(spellcasting?.spellAttackBonus ?? s?.spellAttackBonus)
+    : (castingMod == null ? null : pb + castingMod);
+  const rawSpellSlots = Array.isArray(s?.spellSlots)
+    ? s.spellSlots
+    : (Array.isArray(spellcasting?.spellSlots) ? spellcasting.spellSlots : []);
+  const spellSlots = Array.from({ length: 9 }, (_, index) => Math.max(0, finiteNumber(rawSpellSlots[index], 0)));
+
+  const currencySource = s?.currency && typeof s.currency === "object" ? s.currency : {};
+  const currency = {
+    cp: Math.max(0, finiteNumber(currencySource.cp ?? s?.cp, 0)),
+    sp: Math.max(0, finiteNumber(currencySource.sp ?? s?.sp, 0)),
+    ep: Math.max(0, finiteNumber(currencySource.ep ?? s?.ep, 0)),
+    gp: Math.max(0, finiteNumber(currencySource.gp ?? s?.gp, 0)),
+    pp: Math.max(0, finiteNumber(currencySource.pp ?? s?.pp, 0)),
+  };
+
   return {
     profile: normalizeProfile(profile, s, locationLabel),
     proficiencyBonus: pb,
@@ -432,6 +464,15 @@ export function buildPrintableCharacterSheetModel({
     weapons,
     armorProficiencies,
     professions,
+    spellcasting: {
+      className: classLabel(s),
+      ability: castingAbility,
+      saveDc: spellSaveDc,
+      attackBonus: spellAttackBonus,
+      slots: spellSlots,
+    },
+    currency,
+    inspiration: Boolean(s?.inspiration),
     equipmentBreakdown: uniqueText(equipmentBreakdown),
     legacy: {
       attacks: safeText(s?.attacks),
