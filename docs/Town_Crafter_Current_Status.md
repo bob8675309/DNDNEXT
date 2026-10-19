@@ -84,6 +84,7 @@ scripts/validate_character_interaction_panel.mjs
 scripts/validate_character_spellbook_profile.mjs
 scripts/validate_player_sheet_actions.mjs
 scripts/validate_npc_sheet_action_parity.mjs
+scripts/validate_printable_character_sheet.mjs
 scripts/test_background_mechanics.mjs
 scripts/validate_npc_forge_v2.mjs
 scripts/validate_unified_character_forge.mjs
@@ -111,6 +112,7 @@ npx next build
 - `npm run check:town-merchant-portraits` = validator-only portrait field check
 - `npm run check:crafter-shop-presentation` = crafter shop presentation handoff check
 - `npm run check:enchanting-bounds` = advisory enchanting bounds handoff check
+- `npm run check:printable-character-sheet` = printable NPC Character Sheet presentation/model guard
 
 ## Remaining high-value cleanup targets
 
