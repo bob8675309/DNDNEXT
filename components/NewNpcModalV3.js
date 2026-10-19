@@ -204,7 +204,22 @@ export default function NewNpcModalV3(props) {
   const toggleFeatureOption = useCallback((groupId, optionKey) => setClassChoiceState((current) => ({ ...current, featureSelections: toggleClassFeatureSelection(current.featureGroups || [], current.featureSelections || {}, groupId, optionKey) })), []);
   const registerSourceGroups = useCallback((groups = [], catalogReady = true, scope = "foundation") => setSourceChoiceState((current) => normalizeSourceChoiceState(groups, catalogReady, current, scope)), []);
   const toggleSourceChoice = useCallback((groupId, fieldId, optionKey) => setSourceChoiceState((current) => ({ ...current, selections: toggleSourceChoiceSelection(current.groups || [], current.selections || {}, groupId, fieldId, optionKey) })), []);
-  const setSourceChoice = useCallback((groupId, fieldId, optionKeys) => setSourceChoiceState((current) => ({ ...current, selections: setSourceChoiceSelection(current.groups || [], current.selections || {}, groupId, fieldId, optionKeys) })), []);
+  const setSourceChoice = useCallback((groupOrId, fieldId, optionKeys) => setSourceChoiceState((current) => {
+    const incomingGroup = groupOrId && typeof groupOrId === "object" ? groupOrId : null;
+    const groupId = String(incomingGroup?.id || groupOrId || "");
+    let groups = Array.isArray(current.groups) ? current.groups : [];
+    if (incomingGroup?.id) {
+      const existingIndex = groups.findIndex((entry) => String(entry?.id || "") === groupId);
+      groups = existingIndex >= 0
+        ? groups.map((entry, index) => index === existingIndex ? incomingGroup : entry)
+        : [...groups, incomingGroup];
+    }
+    return {
+      ...current,
+      groups,
+      selections: setSourceChoiceSelection(groups, current.selections || {}, groupId, fieldId, optionKeys),
+    };
+  }), []);
   const speciesContextValue = useMemo(() => ({ state: speciesChoiceState, registerSpecies, selectChoice }), [registerSpecies, selectChoice, speciesChoiceState]);
   const classContextValue = useMemo(() => ({ state: classChoiceState, registerClass, selectSubclass, registerFeatureGroups, toggleFeatureOption }), [classChoiceState, registerClass, registerFeatureGroups, selectSubclass, toggleFeatureOption]);
   const sourceContextValue = useMemo(() => ({ state: sourceChoiceState, registerGroups: registerSourceGroups, toggleChoice: toggleSourceChoice, setChoice: setSourceChoice }), [registerSourceGroups, setSourceChoice, sourceChoiceState, toggleSourceChoice]);
