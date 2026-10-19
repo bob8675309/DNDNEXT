@@ -9,7 +9,7 @@ import { clearPlayerForgeDraft, readPlayerForgeDraft, writePlayerForgeDraft } fr
 import NewNpcModalV3Refined from "./NewNpcModalV3Refined";
 import { EMPTY_SPECIES_CHOICE_STATE, NpcForgeSpeciesChoiceContext, serializeSpeciesChoiceState, speciesChoiceStateComplete, speciesFeatChoicesFromState, speciesSkillChoicesFromState, speciesSpellcastingFromChoiceState } from "./NpcForgeSpeciesChoiceContext";
 import { classChoiceSelectionSummary, classChoiceStateComplete, classChoiceStateRequiresSelection, classFeatureChoiceStateRequiresSelection, classStepChoiceStateComplete, EMPTY_CLASS_CHOICE_STATE, normalizedClassFeatureChoiceState, NpcForgeClassChoiceContext, selectedSubclassOption, serializeClassChoiceState, trainingClassChoiceStateComplete } from "./NpcForgeClassChoiceContext";
-import { DIRECT_SOURCE_CHOICE_SCOPE, EMPTY_SOURCE_CHOICE_STATE, normalizeSourceChoiceState, NpcForgeSourceChoiceContext, serializeSourceChoiceState, sourceChoiceSelectionSummary, sourceChoiceStateComplete } from "./NpcForgeSourceChoiceContext";
+import { applyDirectSourceChoiceSelection, EMPTY_SOURCE_CHOICE_STATE, normalizeSourceChoiceState, NpcForgeSourceChoiceContext, serializeSourceChoiceState, sourceChoiceSelectionSummary, sourceChoiceStateComplete } from "./NpcForgeSourceChoiceContext";
 
 const uniqueText = (values = []) => [...new Set((Array.isArray(values) ? values : []).map((value) => String(value ?? "").trim()).filter(Boolean))];
 const SOURCE_CHOICE_DRAFT_VERSION = 2;
@@ -230,46 +230,9 @@ export default function NewNpcModalV3(props) {
   const toggleFeatureOption = useCallback((groupId, optionKey) => setClassChoiceState((current) => ({ ...current, featureSelections: toggleClassFeatureSelection(current.featureGroups || [], current.featureSelections || {}, groupId, optionKey) })), []);
   const registerSourceGroups = useCallback((groups = [], catalogReady = true, scope = "foundation") => setSourceChoiceState((current) => normalizeSourceChoiceState(groups, catalogReady, current, scope)), []);
   const toggleSourceChoice = useCallback((groupId, fieldId, optionKey) => setSourceChoiceState((current) => ({ ...current, selections: toggleSourceChoiceSelection(current.groups || [], current.selections || {}, groupId, fieldId, optionKey) })), []);
-  const setSourceChoice = useCallback((groupOrId, fieldId, optionKeys) => setSourceChoiceState((current) => {
-    const incomingGroup = groupOrId && typeof groupOrId === "object" ? groupOrId : null;
-    const groupId = String(incomingGroup?.id || groupOrId || "");
-    let scopes = current?.scopes && typeof current.scopes === "object" ? { ...current.scopes } : {};
-    let groups = Array.isArray(current.groups) ? current.groups : [];
-
-    if (incomingGroup?.id) {
-      let foundInScope = false;
-      scopes = Object.fromEntries(Object.entries(scopes).map(([scopeId, entry]) => {
-        const scopedGroups = Array.isArray(entry?.groups) ? entry.groups : [];
-        if (!scopedGroups.some((group) => String(group?.id || "") === groupId)) return [scopeId, entry];
-        foundInScope = true;
-        return [scopeId, {
-          ...entry,
-          groups: scopedGroups.map((group) => String(group?.id || "") === groupId ? incomingGroup : group),
-        }];
-      }));
-      if (!foundInScope) {
-        const directGroups = Array.isArray(scopes?.[DIRECT_SOURCE_CHOICE_SCOPE]?.groups)
-          ? scopes[DIRECT_SOURCE_CHOICE_SCOPE].groups.filter((group) => String(group?.id || "") !== groupId)
-          : [];
-        scopes[DIRECT_SOURCE_CHOICE_SCOPE] = {
-          groups: [...directGroups, incomingGroup],
-          catalogReady: true,
-        };
-      }
-
-      const existingIndex = groups.findIndex((entry) => String(entry?.id || "") === groupId);
-      groups = existingIndex >= 0
-        ? groups.map((entry, index) => index === existingIndex ? incomingGroup : entry)
-        : [...groups, incomingGroup];
-    }
-
-    return {
-      ...current,
-      scopes,
-      groups,
-      selections: setSourceChoiceSelection(groups, current.selections || {}, groupId, fieldId, optionKeys),
-    };
-  }), []);
+  const setSourceChoice = useCallback((groupOrId, fieldId, optionKeys) => setSourceChoiceState((current) => (
+    applyDirectSourceChoiceSelection(current, groupOrId, fieldId, optionKeys)
+  )), []);
   const speciesContextValue = useMemo(() => ({ state: speciesChoiceState, registerSpecies, selectChoice }), [registerSpecies, selectChoice, speciesChoiceState]);
   const classContextValue = useMemo(() => ({ state: classChoiceState, registerClass, selectSubclass, registerFeatureGroups, toggleFeatureOption }), [classChoiceState, registerClass, registerFeatureGroups, selectSubclass, toggleFeatureOption]);
   const sourceContextValue = useMemo(() => ({ state: sourceChoiceState, registerGroups: registerSourceGroups, toggleChoice: toggleSourceChoice, setChoice: setSourceChoice }), [registerSourceGroups, setSourceChoice, sourceChoiceState, toggleSourceChoice]);
