@@ -83,14 +83,16 @@ jobs:
         with:
           ref: item-art-foundation-batch1
           fetch-depth: 0
-      - name: Download and verify Item Art Batch 06
+      - name: Download, normalize, and verify Item Art Batch 06
         env:
           ITEM_ART_MANIFEST: '[["itemart_wondrous_chalice_moonlit_01.png","https://ucad94de6491e7cfcd9522be8337.dl.dropboxusercontent.com/cd/0/get/DKQC3G9jSDuwuHKtDIvoSWqJdM1Q-h6jNRgglZrxUuvnrkfwBlzq6bdYq3B5EGDEYAB6olCxoMpdCUbtLyx6loXwaE3UIbMsX4-YeteCuklsQ6G1ori0zjMQgfaBgBXKIe5FnV-7Otl1uRNqaTFcA4aIhw7fF6Be1MaUkxA0reT-tw/file?c_luid=c335000c","09325c5346409693a2317aec8676bb99893a0a7c9ce8ffe6f1365daaaccfc14e",2497092],["itemart_wondrous_pocket_watch_celestial_01.png","https://uca95e433f4f61f8ad6858b80850.dl.dropboxusercontent.com/cd/0/get/DKQS_1ctZFEs2wMmwpjqtECfvKOQrIDbKTR4wg4TnFtUjAWpOr5e6B_hxZYbso_nHuPHHE9ZHO3_v777_gi_I8l9Xv4yjahJDpINKMqvlzVV18YvyhnkIEHsZCHy3MGp0XVtOHYLhF0-TNZQMu4qqkQm7azhAKychC8oBgPL-EMpgA/file?c_luid=c335000c","881edb73922d101cb865ddd3fa4da3f47187851b1c291be5b1db02d6ab5264cf",2569457],["itemart_wondrous_wand_crystal_01.png","https://uc517e658c0fd1928e551df2dc29.dl.dropboxusercontent.com/cd/0/get/DKROuRfUKlzURy6HfWkQ4eYeIz6yVg0mPk2nb-H2cevdp_0Q5B_GasrgdKGba4SsvOaJGabNwc9R1ahomuXK5hEE5-x8uZYofcYaHWsYJgw_MxDMfaVjUGiJZajVCl1HNW-pFMjMnBac5QAtuzadc3iSCgauXmcMaruRBSorThYhmA/file?c_luid=c335000c","251e2b13036cee80539bb95c53add9641edc8904bc99efe57f2c9c038410dcb6",2164003],["itemart_wondrous_reliquary_radiant_01.png","https://ucde4d5e864c14feb43a6e19af5f.dl.dropboxusercontent.com/cd/0/get/DKTvDHmMUAF693daNQQdL3Up_9saDPYIhS08DkfL3hVPvluNesjb3KibPmnv57up-Qz5-DnvWbf1-x1nNsECR6IWqJ4i_bYOLgB3Rah7CGxACPP_GpKXj8kYLVOkgNeowO7ZstCCxkloYZKbRUOlqxjopbhtG9BhsmfTKuSFCB7htQ/file?c_luid=c335000c","9a6484ffbf88c7559b5de09aa15552b27de709d4f3b28db48560e3a6e026026f",2466694],["itemart_wondrous_moonstone_relic_01.png","https://ucdbb25acabdfda12882175b6a0f.dl.dropboxusercontent.com/cd/0/get/DKR-ALwoltuArxJeeLvq6lQuqjaiOJHB0uP6ErybBXEd52mOL045eD9jWsWDv0wHm-hS69DbgHLX3AFcJKdy0t1LVVP72xT8F4qxeNNELp4cDJD7H8rS8r-qy64jZt4-R48hGnpvqBSVV0wXzlNr7cY4ZU1K8KnVCZbz8cYhZe7tmA/file?c_luid=c335000c","4adc98142ec060c143b8aa7851ffe8a42ff41b16ba38f6272462e72c4f434149",2573296],["itemart_instrument_lyre_celestial_01.png","https://uc7d26a83695ecd80c56209f4306.dl.dropboxusercontent.com/cd/0/get/DKS8KczoXIt9T-20DQAG15aCRh2z__8Fom4fY7iuDt76lvriyII7QqpvTba4r1X9vElLRcTRmIEEptD2wfhtfY6QA4wwD1h-65TY0mWCoYVhA0O-PUxlID2fF-BBpvNCcmGpTaEXVECzZBYymF_pFuL5H3oBcpTWrmvLbM_Du9y8xw/file?c_luid=c335000c","b9a207a1d977b8c55a85ed3723055d1b62b501220f646e962b7541cdfb4969af",2348615],["itemart_wondrous_tuning_fork_runic_01.png","https://uc0f66e5fa8b38e5cb79f5a10bd8.dl.dropboxusercontent.com/cd/0/get/DKTFhlwIwMI93_nMURhW5vfp-M8oNaGxV1enM6RMkWEKUX8tFyiFNQaq5z2rucLGP7qezy_kcp1xaPpnMuAaP2gwAz6vZWwxQAfL8Rk4Gmmgs3te77Vw3t7-aI1eUZ4oG1DkbOS4JcPBo31qoe7yYfYSZDCtjskWb58UKatcTQs3YQ/file?c_luid=c335000c","2f3128191f7bfdbb33ea5cf98be781a5be04e455c83ab39a4db57e0fb92323a4",2377953],["itemart_wondrous_dice_obsidian_01.png","https://uce87d35ba47d81f7f106ef7fa2a.dl.dropboxusercontent.com/cd/0/get/DKSJgw4Lf6jQ3ZA8lxUlpPnX0XOC3kUT7UD5hsKjDDzf06p8miJXwlV9veKe94CPuMSejDnWjsDNVuHHTEw2p3TO1sBn8oMjBNyyYfeexLoOOcU6ZtQeuCePHO9G7lpUkknii9omPOydwZJr6O25iYrF-TeWCXCJn8zmWrOIGwa_Lw/file?c_luid=c335000c","9e92a6be4fc104f11a2aaf66c534e568f1a129148f6b52c8817629a224b91595",2396866],["itemart_wondrous_cube_arcane_01.png","https://uc64639d5ab33865c82ecc28b90a.dl.dropboxusercontent.com/cd/0/get/DKR1V8z5KPRNeKsADhjfSJOXLEecM2tH2oxQGe2Glz5kpxgOpN-UNvNifnj8tmLlkDndt6bWqz3Yejp8ncB5ZS8BA5ImQ_g8WbzhQ0VaR3vByjauP54eeW-yLfQpOxtNlIN0uIfX5c0RZHvQbYCZ_1sU9NoI6A82bwjO3svk8OyNpg/file?c_luid=c335000c","c8634478d90bee900fa0c95da50a269af10ffda1b1d94ef3325f37c980dd98d7",2647369],["itemart_wondrous_bell_crystal_01.png","https://uc86e02aa790761fd964daabc431.dl.dropboxusercontent.com/cd/0/get/DKRbuwgDdgZ6gFqw6gUeOgfqEcxL7OmouJXWmZvX4ck7Nv3UsLlKY9sdzX0c9H_0WA23cWD1LYTYCiVGQZp6xN8V1D_o8vhtcvbboSWQLaD4hUCcae_CKiUSdXH_zkoWnrMZLlpxal7gNpcmiY8uJux1uLULM6ZXYqCeTkO5Eov02g/file?c_luid=c335000c","9bcda20ecd83c522e839f4a8b88ea7b40302c2da766cdeb3622b2c2727ac5113",2399562]]'
         run: |
           set -euo pipefail
+          python -m pip install --quiet pillow
           python - <<'PY'
-          import hashlib, json, os, struct, urllib.request
+          import hashlib, io, json, os, struct, urllib.request
           from pathlib import Path
+          from PIL import Image
           manifest=json.loads(os.environ["ITEM_ART_MANIFEST"])
           if len(manifest) != 10:
               raise SystemExit(f"expected 10 images, got {len(manifest)}")
@@ -111,10 +113,17 @@ jobs:
               if data[:8]!=b"\x89PNG\r\n\x1a\n" or data[12:16]!=b"IHDR":
                   raise SystemExit(f"{name}: invalid PNG")
               width,height=struct.unpack(">II",data[16:24])
-              if (width,height)!=(1024,1024):
-                  raise SystemExit(f"{name}: expected 1024x1024, got {width}x{height}")
-              (target/name).write_bytes(data)
-              print(f"OK {name}: {width}x{height}, {len(data)} bytes")
+              if width != height or width < 1024:
+                  raise SystemExit(f"{name}: expected square source at least 1024px, got {width}x{height}")
+              image=Image.open(io.BytesIO(data)).convert("RGB")
+              image=image.resize((1024,1024), Image.Resampling.LANCZOS)
+              out=target/name
+              image.save(out, format="PNG", optimize=True)
+              check=out.read_bytes()
+              out_width,out_height=struct.unpack(">II",check[16:24])
+              if (out_width,out_height)!=(1024,1024):
+                  raise SystemExit(f"{name}: normalized output is {out_width}x{out_height}")
+              print(f"OK {name}: source {width}x{height} -> 1024x1024, {len(check)} bytes")
           PY
       - name: Commit verified Item Art Batch 06
         run: |
