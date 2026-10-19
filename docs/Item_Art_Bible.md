@@ -475,7 +475,19 @@ The first stable ItemCard master-art foundation set is now produced on PR #230. 
 - `itemart_container_map_tube_plain_01`
 - `itemart_tools_climbers_kit_plain_01`
 
-This is **56 masters total**. The foundation pass is intentionally limited to stable physical archetypes. It does not finalize Smithing, Alchemy, or Enchanting material/component art.
+### Foundation Batch 06
+- `itemart_wondrous_chalice_moonlit_01`
+- `itemart_wondrous_pocket_watch_celestial_01`
+- `itemart_wondrous_wand_crystal_01`
+- `itemart_wondrous_reliquary_radiant_01`
+- `itemart_wondrous_moonstone_relic_01`
+- `itemart_instrument_lyre_celestial_01`
+- `itemart_wondrous_tuning_fork_runic_01`
+- `itemart_wondrous_dice_obsidian_01`
+- `itemart_wondrous_cube_arcane_01`
+- `itemart_wondrous_bell_crystal_01`
+
+This is **66 masters total**. The foundation pass is intentionally limited to stable physical archetypes. It does not finalize Smithing, Alchemy, or Enchanting material/component art.
 
 Production of the image files does **not** by itself make them a second item-rules authority. Runtime resolution still needs a bounded follow-up implementation for art-key mapping/fallback behavior. No `items_catalog` image/art columns were added during this production pass.
 
@@ -545,3 +557,23 @@ Prioritize these before making more variants of covered objects:
 - additional lawful utility magic forms: sending stone, crystal prism, enchanted key, magic mirror, rune tablet
 
 Smithing, Alchemy, and Enchanting material/component families remain provisional until their system redesigns are finalized.
+
+
+### 2026-10-18 checklist update — Batch 06 accepted
+
+The following physical forms are now covered and should be treated as existing art before generating another generic version:
+
+- [x] moonlit chalice / magical goblet
+- [x] celestial pocket watch / magical timepiece
+- [x] crystal wand variant
+- [x] radiant reliquary
+- [x] moonstone relic / oval arcane token
+- [x] celestial lyre
+- [x] runic tuning fork
+- [x] obsidian magical dice set
+- [x] arcane mechanical cube
+- [x] crystal magical bell
+
+Batch 06 source renders arrived as **1254 × 1254 square PNGs**. The guarded import verified the Dropbox source byte size/content hash, required a square source at least 1024 pixels, and normalized each accepted production master to **1024 × 1024 PNG** with Lanczos resampling before commit.
+
+For future generation, do not make another generic chalice, pocket watch, lyre, tuning fork, magical dice set, arcane cube, or magical bell simply for variety. Only add another instance when its physical construction or named-item identity is materially different enough to justify a bespoke override.
