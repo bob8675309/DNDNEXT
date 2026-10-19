@@ -109,10 +109,10 @@ const model = buildPrintableCharacterSheetModel({
     category: "Class",
     name: "Second Wind",
     level: 1,
-    description: "Recover hit points as a Bonus Action.",
+    description: "Recover hit points as a {@variantrule Bonus Action|XPHB}. If you have two {@variantrule Death Saving Throw|XPHB|Death Saving Throws} failures, you have {@variantrule Advantage|XPHB}.",
     source: "XPHB",
   }],
-  notes: [{ id: "note-1", scope: "private", body: "Meet the patrol at dusk.", created_at: "2026-10-19" }],
+  notes: [{ id: "note-1", scope: "private", body: "Meet the patrol at dusk after a {@variantrule Short Rest|XPHB}.", created_at: "2026-10-19" }],
   locationLabel: "North Gate",
   equipmentBreakdown: ["Scale Mail: base AC 14", "Shield: +2 AC"],
 });
@@ -129,7 +129,10 @@ assert.equal(model.inventory[0]?.name, "Longsword");
 assert.equal(model.inventory[0]?.equipped, true);
 assert.equal(model.spells[0]?.name, "Light");
 assert.equal(model.features[0]?.name, "Second Wind");
-assert.equal(model.notes[0]?.body, "Meet the patrol at dusk.");
+assert.equal(model.features[0]?.description, "Recover hit points as a Bonus Action. If you have two Death Saving Throw failures, you have Advantage.");
+assert.ok(!model.features[0]?.description.includes("{@") && !model.features[0]?.description.includes("|XPHB"), "printable feature rules must not expose source markup");
+assert.equal(model.notes[0]?.body, "Meet the patrol at dusk after a Short Rest.");
+assert.ok(!model.notes[0]?.body.includes("{@") && !model.notes[0]?.body.includes("|XPHB"), "printable notes must not expose source markup");
 assert.deepEqual(model.languages, ["Common", "Dwarvish"]);
 assert.equal(model.profile.age, "34");
 assert.equal(model.spellcasting.ability, "INT");
@@ -219,11 +222,15 @@ for (const token of [
   "Spellcasting Class 2",
   "SlotsTotal 19",
   "visual center sits about .255em above its baseline",
-]) assert(generator.includes(token), `official sheet field-geometry calibration is missing ${token}`);
+  'import { formatPlayerFacingText } from "./playerFacingText.js";',
+  "formatPlayerFacingText(value, safeText(value))",
+]) assert(generator.includes(token), `official sheet field-geometry/player-facing calibration is missing ${token}`);
 
 assert(pkg.includes('"pdf-lib": "^1.17.1"') || pkg.includes('"pdf-lib": "1.17.1"'), "pdf-lib dependency is missing");
 assert(!generator.includes("supabase"), "official PDF generator must not start its own Supabase reads");
 assert(!modelSource.includes("supabase"), "print model must remain presentation-only");
+assert(modelSource.includes('import { formatPlayerFacingText } from "./playerFacingText.js";'), "print model must scrub imported source markup before PDF layout");
+assert(modelSource.includes("playerFacingText"), "print model must keep a player-facing free-text boundary");
 for (const forbidden of ["MapPageClient", "map_routes", "map_route_points", "advance_all_characters", "route_segment_progress"]) {
   assert(!generator.includes(forbidden), `official PDF generator crossed protected map boundary: ${forbidden}`);
   assert(!modelSource.includes(forbidden), `print model crossed protected map boundary: ${forbidden}`);
@@ -231,4 +238,4 @@ for (const forbidden of ["MapPageClient", "map_routes", "map_route_points", "adv
 assert(runner.includes("validate_printable_character_sheet.mjs"), "production build runner must validate printable NPC sheets");
 assert(pkg.includes('"check:printable-character-sheet": "node scripts/validate_printable_character_sheet.mjs"'), "package script for printable sheet validator is missing");
 
-console.log("Printable NPC character sheet validated: canonical sheet math, authorized page-owned data handoff, official three-page D&D template generation, AcroForm-geometry centering/readability, Features/Spellbook/inventory/narrative placement, and protected boundaries all pass.");
+console.log("Printable NPC character sheet validated: canonical sheet math, authorized page-owned data handoff, official three-page D&D template generation, AcroForm geometry, player-facing source-markup scrubbing, Features/Spellbook/inventory/narrative placement, and protected boundaries all pass.");
