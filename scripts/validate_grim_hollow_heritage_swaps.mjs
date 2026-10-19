@@ -122,15 +122,17 @@ assert.ok(accursedHeritage.fields.every((field) => (accursedSeeded?.[accursedHer
 
 const picker = read("components/NpcForgeHeritageTraitPicker.js");
 for (const token of [
-  "replaceFieldId",
-  "Replace Trait",
-  "Swap",
-  "Reset all to traditional traits",
-  "replaceCapped",
-  "replacingSameTrait",
-  "defaultOptionKey",
-  "Swapped",
-]) assert.ok(picker.includes(token), `Heritage picker is missing swap UI contract: ${token}`);
+  "NpcForgeHeritageTraitPicker",
+  "selectedOptions",
+  "removeTrait",
+  "addTrait",
+  "Reset to traditional traits",
+  "same catalogue used by Custom Lineage",
+  "All eight Heritage picks are filled. Remove one selected pick above",
+]) assert.ok(picker.includes(token), `Shared Custom Lineage-style Heritage picker is missing ${token}`);
+for (const forbidden of ["replaceFieldId", "Replace Trait", "selected-swap", "is-replacing"]) {
+  assert.ok(!picker.includes(forbidden), `Grim Hollow Heritage swapping must not fork into a separate swap UI: ${forbidden}`);
+}
 
 const sourceContext = read("components/NpcForgeSourceChoiceContext.js");
 assert.ok(sourceContext.includes("applySourceChoiceDefaults"), "Forge source-choice state must seed source-owned defaults before normalization");
@@ -147,4 +149,4 @@ for (const token of ["mappageclient", "map_routes", "advance_all_characters", "r
   assert.ok(!protectedText.includes(token), `Heritage swap work crossed protected map/travel boundary: ${token}`);
 }
 
-console.log("Grim Hollow Heritage swaps validated: source-traditional eight-pick defaults, direct slot replacement, repeat-limit authority, explicit-clear persistence, Accursed no-default behavior, and protected boundaries all pass.");
+console.log("Grim Hollow Heritage swaps validated: source-traditional eight-pick defaults, the same remove/select picker flow used by Custom Lineage, repeat-limit authority, explicit-clear persistence, Accursed no-default behavior, and protected boundaries all pass.");
