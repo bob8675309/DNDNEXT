@@ -11,6 +11,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { resolveItemCopies } from "./lib/resolve_item_copies.mjs";
+import { applyCampaignItemRuleOverrides } from "./lib/campaign_item_overrides.mjs";
 
 const ROOT = path.join(process.cwd(), "public", "items");
 
@@ -286,7 +287,7 @@ function normalizeBase(it, fluffBy, foundryDescBy) {
   }
 
   // Final write
-  const final = normalized;
+  const final = normalized.map((item) => applyCampaignItemRuleOverrides(item));
   await fs.writeFile(
     path.join(ROOT, "all-items.json"),
     JSON.stringify(final, null, 0),

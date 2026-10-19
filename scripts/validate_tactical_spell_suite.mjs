@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 
 const validators = [
+  "scripts/validate_tactical_equipped_damage_mitigation.mjs",
   "scripts/validate_tactical_spell_foundation.mjs",
   "scripts/validate_tactical_spell_casting.mjs",
   "scripts/validate_tactical_spell_ui.mjs",
