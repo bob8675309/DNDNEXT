@@ -55,3 +55,104 @@
 .unified-player-character-forge .npc-forge-header h2[title*="Double-click"] {
   cursor: default;
 }
+
+
+/* Grim Hollow's full-length imported lore and source-traditional Heritage package
+   must not stretch the portrait viewport or hide the actual character choices.
+   This is scoped to Grim Hollow, leaving the established non-Grim cinematic art alone. */
+.unified-player-character-forge .npc-forge-context-card.is-species.is-grim-hollow .npc-forge-grim-heritage-surface {
+  display: grid;
+  gap: 13px;
+  min-width: 0;
+  padding: 18px 20px;
+  margin: 12px 0 6px;
+  border: 1px solid rgba(168,108,255,.42);
+  border-radius: 14px;
+  background: linear-gradient(135deg,rgba(69,40,102,.24),rgba(10,16,29,.95));
+}
+.unified-player-character-forge .npc-forge-grim-heritage-surface > header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.unified-player-character-forge .npc-forge-grim-heritage-surface > header > div { display: grid; gap: 5px; }
+.unified-player-character-forge .npc-forge-grim-heritage-surface > header span {
+  font-size: .65rem; font-weight: 800; color: #c9a8ff; text-transform: uppercase; letter-spacing: .08em;
+}
+.unified-player-character-forge .npc-forge-grim-heritage-surface > header h3 {
+  margin: 0; color: #fff; font-size: 1.2rem; line-height: 1.2;
+}
+.unified-player-character-forge .npc-forge-grim-heritage-surface > header p {
+  margin: 0; font-size: .82rem; line-height: 1.55; color: rgba(255,255,255,.78); max-width: 75ch;
+}
+.unified-player-character-forge .npc-forge-grim-heritage-surface > header > small {
+  color: #d8fff9; white-space: nowrap; font-size: .68rem; padding: 5px 9px;
+  border: 1px solid rgba(88,214,199,.25); border-radius: 999px;
+}
+.unified-player-character-forge .npc-forge-grim-heritage-surface__defaults {
+  display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px;
+}
+.unified-player-character-forge .npc-forge-grim-heritage-surface__defaults > span {
+  display: flex; gap: 8px; align-items: center; min-width: 0;
+  padding: 7px 9px; border: 1px solid rgba(168,108,255,.19);
+  border-radius: 8px; background: rgba(0,0,0,.2); color: #e8e0f8; font-size: .77rem;
+}
+.unified-player-character-forge .npc-forge-grim-heritage-surface__defaults b {
+  display: grid; flex: 0 0 22px; place-items: center;
+  width: 22px; height: 22px; border-radius: 6px;
+  background: rgba(168,108,255,.2); color: #e9d8ff; font-size: .68rem;
+}
+.unified-player-character-forge .npc-forge-grim-heritage-surface .npc-forge-embedded-choice {
+  margin-top: 0; min-width: 0;
+}
+.unified-player-character-forge .npc-forge-grim-lore {
+  display: grid; gap: 7px; min-width: 0;
+}
+.unified-player-character-forge .npc-forge-grim-lore > p {
+  margin: 0; color: rgba(255,255,255,.86); font-size: .91rem; line-height: 1.65;
+}
+.unified-player-character-forge .npc-forge-grim-lore > details {
+  min-width: 0; font-size: .8rem; color: rgba(255,255,255,.78);
+}
+.unified-player-character-forge .npc-forge-grim-lore > details > summary {
+  cursor: pointer; color: #d5b7ff; font-size: .76rem; font-weight: 750;
+}
+.unified-player-character-forge .npc-forge-grim-lore__full {
+  display: grid; gap: 12px; max-width: 65ch; padding: 9px 4px;
+}
+.unified-player-character-forge .npc-forge-grim-lore__full > p {
+  margin: 0; line-height: 1.65; font-size: .82rem;
+}
+@media (min-width: 901px) {
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-0 .npc-forge-context-card.is-species.is-grim-hollow .npc-forge-species-hero {
+    height: clamp(530px,calc(100dvh - 258px),630px) !important;
+    min-height: 530px !important;
+    max-height: 630px !important;
+  }
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-0 .npc-forge-context-card.is-species.is-grim-hollow .npc-forge-species-hero .npc-forge-species-artwork {
+    width: 53% !important;
+    max-width: 53% !important;
+    height: 100% !important;
+  }
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-0 .npc-forge-context-card.is-species.is-grim-hollow .npc-forge-species-hero .npc-forge-species-artwork img {
+    object-fit: contain !important;
+    object-position: center center !important;
+    background: #080b14;
+  }
+  .unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-0 .npc-forge-context-card.is-species.is-grim-hollow .npc-forge-species-hero .npc-forge-species-hero__copy {
+    inset: 0 0 0 50% !important;
+    align-content: start !important;
+    gap: 12px !important;
+    padding: 30px 25px 24px 28px !important;
+  }
+}
+@media (max-width: 900px) {
+  .unified-player-character-forge .npc-forge-grim-heritage-surface__defaults {
+    grid-template-columns: 1fr;
+  }
+  .unified-player-character-forge .npc-forge-context-card.is-grim-hollow .npc-forge-species-hero .npc-forge-species-artwork img {
+    object-fit: contain !important;
+    object-position: center center !important;
+  }
+}

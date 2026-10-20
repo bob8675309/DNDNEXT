@@ -250,3 +250,16 @@ The seven same-name Grim Hollow source variants deliberately reuse the establish
 
 No Supabase write or Species rules change was required for this artwork pass.
 
+
+
+## Species tab presentation and traditional Heritage visibility — October 20, 2026
+
+The Grim Hollow Player Guide import retains the actual source species lore, portrait files, traditional Heritage data, and shared 107-option Heritage catalogue. The Character Forge presentation now treats these as separate concerns:
+
+- The cinematic Species hero keeps the approved portrait in a stable frame at its original proportions. The first two lore sentences form the readable overview; the complete source text is available through **Read full species lore** and does not force the artwork into a stretched crop.
+- Grim Hollow's imported long **Heritage Trait** prose is no longer treated as a static feature card that obscures the actual selection controls.
+- The Species tab displays an explicit **Traditional Heritage** section with the eight species-specific source recommendations, ordered and labeled. **Accursed** correctly starts without a traditional package.
+- The section immediately mounts the existing Custom Lineage / Ancestral Heritage picker so a player can retain or change any of the eight choices from the same catalogue, using the same persistence and repeat-limit/subchoice authority. It also has a direct live-group fallback for instances where the species registrar has not yet populated the context. No new selection table or secondary state was introduced.
+- Existing non-Grim species, world map, town map, travel, and encounter systems are not altered by this presentation patch.
+
+The regression check `scripts/validate_grim_hollow_species_presentation.mjs` covers traditional defaults, replacement, live-group fallback, compact lore, source feature filtering, and scoped portrait styling.

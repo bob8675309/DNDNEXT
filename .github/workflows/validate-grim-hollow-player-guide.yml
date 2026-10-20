@@ -12,6 +12,11 @@ on:
       - "utils/playerForgeSourceChoices.js"
       - "components/NpcForgeSourceChoiceContext.js"
       - "components/NpcForgeHeritageTraitPicker.js"
+      - "components/NpcForgeContextPanelRefined.js"
+      - "utils/grimHollowSpeciesPresentation.js"
+      - "utils/speciesForgePresentation.js"
+      - "styles/character-forge-cinematic-final-corrections.css"
+      - "scripts/validate_grim_hollow_species_presentation.mjs"
       - "components/NpcForgeStepContent.js"
       - "sql/20261018_01_grim_hollow_pg24_species_catalog.sql"
       - "scripts/seed_items_catalog.mjs"
@@ -43,6 +48,8 @@ jobs:
         run: node scripts/validate_grim_hollow_player_guide_content.mjs
       - name: Validate Grim Hollow Heritage swaps
         run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_grim_hollow_heritage_swaps.mjs
+      - name: Validate Grim Hollow Species presentation
+        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_grim_hollow_species_presentation.mjs
       - name: Regenerate pinned Grim Hollow source bundle
         run: |
           rm -rf /tmp/grim-hollow-pg24-import
