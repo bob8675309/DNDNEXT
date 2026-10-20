@@ -7,8 +7,17 @@ export function isGrimHollowHeritageSpecies(species = null) {
     && Boolean(species?.metadata?.heritageOnly);
 }
 
-export function grimHollowLorePresentation(lore = "") {
-  const full = formatPlayerFacingText(lore).replace(/\n{3,}/g, "\n\n").trim();
+export function grimHollowLorePresentation(lore = "", species = null) {
+  const cleaned = formatPlayerFacingText(lore).replace(/\n{3,}/g, "\n\n").trim();
+  const isWechselkind = isGrimHollowHeritageSpecies(species)
+    && clean(species?.name).toLowerCase() === "wechselkind";
+  const paragraphs = cleaned.split(/\n\s*\n/).filter(Boolean);
+  const properIntro = isWechselkind
+    ? paragraphs.findIndex((paragraph) => /^a wechselkind is a construct crafted of wood, clay, and ceramic/i.test(paragraph))
+    : -1;
+  // Source text preceding the highlighted description was explicitly rejected
+  // for this Species. Do not display it elsewhere in the expandable full lore.
+  const full = properIntro >= 0 ? paragraphs.slice(properIntro).join("\n\n") : cleaned;
   if (!full) return { preview: "", full: "", hasMore: false };
   const sentences = full.replace(/\s+/g, " ").match(/[^.!?]+[.!?]+(?:[”"']|$)?|[^.!?]+$/g) || [];
   const preview = sentences.slice(0, 2).join(" ").trim();

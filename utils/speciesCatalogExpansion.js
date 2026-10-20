@@ -268,12 +268,16 @@ const TRAIT_FAMILIES = [
 ];
 
 const SETTING_FAMILIES = [
-  { parentName: "Human", parentSource: "XPHB", children: [["Human (Innistrad)", "PSI"], ["Human (Ixalan)", "PSX"], ["Human (Kaladesh)", "PSK"], ["Human (Zendikar)", "PSZ"]] },
-  { parentName: "Dwarf", parentSource: "XPHB", children: [["Dwarf (Kaladesh)", "PSK"]] },
+  { parentName: "Human", parentSource: "XPHB", children: [["Human (Innistrad)", "PSI"], ["Human (Ixalan)", "PSX"], ["Human (Kaladesh)", "PSK"], ["Human (Zendikar)", "PSZ"], ["Human (Grim Hollow)", "GRIMHOLLOWPG24"]] },
+  { parentName: "Dwarf", parentSource: "XPHB", children: [["Dwarf (Kaladesh)", "PSK"], ["Dwarf (Grim Hollow)", "GRIMHOLLOWPG24"]] },
+  { parentName: "Gnome", parentSource: "XPHB", children: [["Gnome (Grim Hollow)", "GRIMHOLLOWPG24"]], mergeWithLineage: true },
+  { parentName: "Dragonborn", parentSource: "XPHB", children: [["Dragonborn (Grim Hollow)", "GRIMHOLLOWPG24"]], mergeWithLineage: true },
+  { parentName: "Dhampir", parentSource: "VRGR", children: [["Dhampir (Grim Hollow)", "GRIMHOLLOWPG24"]] },
+  { parentName: "Halfling", parentSource: "XPHB", children: [["Halfling (Grim Hollow)", "GRIMHOLLOWPG24"]] },
   {
     parentName: "Elf",
     parentSource: "XPHB",
-    children: [["Elf (Kaladesh)", "PSK"]],
+    children: [["Elf (Kaladesh)", "PSK"], ["Elf (Grim Hollow)", "GRIMHOLLOWPG24"]],
     excludedChildren: [["Elf (Zendikar)", "PSZ"]],
     mergeWithLineage: true,
   },

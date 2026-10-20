@@ -128,11 +128,11 @@ function EmbeddedField({ group, field, selections, onToggle, onSet }) {
     : <><span>{field.label}</span><ButtonField group={group} field={field} selections={selections} onToggle={onToggle} /></>}{field.helper ? <small>{field.helper}</small> : null}{field.replacementCadence ? <small>May be replaced: {String(field.replacementCadence).replace(/-/g, " ")}.</small> : null}</div>;
 }
 
-export default function NpcForgeEmbeddedSourceChoices({ groups = [], selections = {}, onToggle = null, onSet = null, compact = false }) {
+export default function NpcForgeEmbeddedSourceChoices({ groups = [], selections = {}, onToggle = null, onSet = null, compact = false, focusRequest = null }) {
   const visibleGroups = (groups || []).filter((group) => activeChoiceFields(group, selections).length > 0);
   if (!visibleGroups.length) return null;
   return <div className={`npc-forge-embedded-choice${compact ? " is-compact" : ""}`}>{visibleGroups.map((group) => {
-    if (group?.metadata?.heritageTraitGroup) return <NpcForgeHeritageTraitPicker key={group.id} group={group} selections={selections} onSet={onSet} />;
+    if (group?.metadata?.heritageTraitGroup) return <NpcForgeHeritageTraitPicker key={group.id} group={group} selections={selections} onSet={onSet} focusRequest={focusRequest} />;
     const complete = activeChoiceFields(group, selections).every((field) => sourceChoiceFieldComplete(group, field, selections));
     return <section key={group.id} className={complete ? "is-complete" : "is-required"}>{!compact ? <header><div><strong>{group.label}</strong>{group.helper ? <small>{group.helper}</small> : null}</div><em>{complete ? "Selected" : "Required"}</em></header> : null}{activeChoiceFields(group, selections).map((field) => <EmbeddedField key={field.id} group={group} field={field} selections={selections} onToggle={onToggle} onSet={onSet} />)}</section>;
   })}<style jsx global>{`
