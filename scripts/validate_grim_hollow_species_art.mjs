@@ -21,26 +21,26 @@ const cases = [
 ];
 
 const approvedHashes = Object.freeze({
-  accursed: "87e329549499db3e2285cd01b4225901688ba6c4b803f8b773a8423783c4fe0c",
-  arisen: "1f3309e34e756d8b8d80d29a8d7c683c33ffb06614a4f4eebb14a904217954d0",
-  disembodied: "5516c19f6b3bab3e40ed06fffb93fa82051073c16931f458eee2ede3a6daf2bd",
-  downcast: "753075845d002460d142cd026ae654c5c0ea4ad5b0f1e8c04b4d30344f8e315c",
-  dreamer: "7220b1dc6a52885f62ca27a6384198f958818fad73b3da9263a8ce0d754eacff",
-  grudgel: "0df960b361211786ec7a80ed9df5071396289e161771bddf34b5e147bf2089b5",
-  laneshi: "ba29a852f816a6b0c54e42b2dd2c96d5867f52b51fd198fc9fde875c261819bb",
-  ogresh: "58cf9a668e56c636baa0dbbb76c802be7c319ac61d455a93e7d5480605c41c1b",
-  wechselkind: "374556de29f5756d273b230e71811eff6fb0ff3a3d3ab50ac10e68a484e670ae",
-  wulven: "aeaed2b73069e13c90a3e72c3cba453f98379e151a216321252bc34ddf5ebc6e",
+  accursed: "e068f559024d728911fdc01ef23ca750f53881e764f5694be04587efb5852715",
+  arisen: "25823b8765ae7c4666fe8eadf37f9039359be3b1f610cf0f23d05da7d42160af",
+  disembodied: "7e65fe0cc3ff6ecad8cb66feb42e3b7494471837b87104d297d10485837cdb8e",
+  downcast: "c83f706f9661aa11a59cebf45292fbe296dfc15123a1245b7ba220f6e8eb4472",
+  dreamer: "242bfc313114a96ac71b549b093af35e7bba56a08b9aa75171ec433e22c73174",
+  grudgel: "df3f30f651b74890aed6bcbf8967cd2008311ea7c3dce6a043530161f4dc44f7",
+  laneshi: "14ae95672cbd863d36300661b1feddbb13c117aef727f617f4ac127c63746c76",
+  ogresh: "580bd9e278dea0ec7f13d2980cdc28294fa6aa26a6ba149c1510411a1d705ee4",
+  wechselkind: "b154c7baaa372648747cd43cbc10b6d4988340250565c5ce7da7f032040a4f70",
+  wulven: "ddbe1f1c146c7d704995cb6dc0091356844fc7cbd1f878602768eb9d82cd2369",
 });
 
 const sourceVariantCases = [
-  ["Dhampir (Grim Hollow)", "dhampir", "/media/species/dhampir.webp", "/media/species/dhampir.webp"],
-  ["Dragonborn (Grim Hollow)", "dragonborn", "/media/species/cinematic-dragonborn.webp", "/media/species/dragonborn.webp"],
-  ["Dwarf (Grim Hollow)", "dwarf", "/media/species/cinematic-dwarf.webp", "/media/species/dwarf.webp"],
-  ["Elf (Grim Hollow)", "elf", "/media/species/cinematic-elf.webp", "/media/species/elf.webp"],
-  ["Gnome (Grim Hollow)", "gnome", "/media/species/cinematic-gnome.webp", "/media/species/gnome.webp"],
-  ["Halfling (Grim Hollow)", "halfling", "/media/species/cinematic-halfling.webp", "/media/species/halfling.webp"],
-  ["Human (Grim Hollow)", "human", "/media/species/cinematic-human.webp", "/media/species/human.webp"],
+  ["Dhampir (Grim Hollow)", "dhampir", "/media/species/cinematic-dhampir-grim-hollow.webp"],
+  ["Dragonborn (Grim Hollow)", "dragonborn", "/media/species/cinematic-dragonborn-grim-hollow.webp"],
+  ["Dwarf (Grim Hollow)", "dwarf", "/media/species/cinematic-dwarf-grim-hollow.webp"],
+  ["Elf (Grim Hollow)", "elf", "/media/species/cinematic-elf-grim-hollow.webp"],
+  ["Gnome (Grim Hollow)", "gnome", "/media/species/cinematic-gnome-grim-hollow.webp"],
+  ["Halfling (Grim Hollow)", "halfling", "/media/species/cinematic-halfling-grim-hollow.webp"],
+  ["Human (Grim Hollow)", "human", "/media/species/cinematic-human-grim-hollow.webp"],
 ];
 
 function webpDimensions(buffer) {
@@ -94,14 +94,17 @@ for (const [name, key] of cases) {
   hashes.add(hash);
 }
 
-for (const [name, key, portrait, canonical] of sourceVariantCases) {
-  assert.equal(normalizeSpeciesArtworkKey(name), key, `${name} must reuse its established parent Species artwork identity`);
-  assert.equal(speciesPortraitArtworkFor(name), portrait, `${name} must reuse the established cinematic parent portrait rather than a placeholder`);
-  assert.equal(speciesArtworkFor(name), canonical, `${name} must retain the established canonical non-Forge parent artwork`);
+for (const [name, key, portrait] of sourceVariantCases) {
+  assert.equal(normalizeSpeciesArtworkKey(name), `${key}-grim-hollow`, `${name} must retain a distinct Grim Hollow artwork key`);
+  assert.equal(speciesPortraitArtworkFor(name), portrait, `${name} must use its dedicated Grim Hollow cinematic portrait`);
+  assert.equal(speciesArtworkFor(name), portrait, `${name} must not silently fall back to the ordinary parent portrait`);
   assert.equal(hasSpeciesPortraitArtwork(name), true, `${name} must count as intentional portrait coverage`);
+  const file = path.join(root, "public", portrait.replace(/^\/+/, ""));
+  assert.ok(fs.existsSync(file) && fs.statSync(file).size > 20000, `${name} must have a real generated portrait file`);
+  assert.deepEqual(webpDimensions(fs.readFileSync(file)), { width: 720, height: 960 }, `${name} portrait must remain 720 × 960`);
 }
 
 const artworkSource = fs.readFileSync(path.join(root, "utils/speciesArtwork.js"), "utf8");
 assert.ok(!protectedPattern.test(artworkSource), "Grim Hollow Species artwork work crossed a protected map/travel boundary");
 
-console.log("Grim Hollow Species art validated: all 10 user-approved final portraits match their locked SHA-256 hashes and exact 720 × 960 cinematic WebP contract, all seven same-name source variants reuse established parent portraits, no Grim Hollow Species falls through to adventurer.webp, and protected map/travel boundaries remain untouched.");
+console.log("Grim Hollow Species art validated: all 10 user-approved final portraits match their locked SHA-256 hashes and exact 720 × 960 cinematic WebP contract, all seven source variants use their own dedicated Grim Hollow portraits, no Grim Hollow Species falls through to adventurer.webp, and protected map/travel boundaries remain untouched.");
