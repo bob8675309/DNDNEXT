@@ -18,9 +18,12 @@ export function grimHollowLorePresentation(lore = "") {
 
 export function heritageChoiceGroupForSpecies(species = null, registeredGroups = [], buildGroups = null) {
   if (!isGrimHollowHeritageSpecies(species)) return null;
-  const registered = (registeredGroups || []).find((group) => group?.metadata?.heritageTraitGroup
-    && (String(group.ownerKey || "") === String(species?.id || "")
-      || group.source === species?.source && String(group.label || "") === "Heritage Traits"));
+  // All Grim Hollow Species share the same source and group label. A match on
+  // those two values alone can accidentally show a previous Species' package.
+  const ownerKey = String(species?.id || species?.name || "");
+  const registered = (registeredGroups || []).find((group) =>
+    group?.metadata?.heritageTraitGroup
+    && String(group.ownerKey || "") === ownerKey);
   if (registered) return registered;
   if (typeof buildGroups !== "function") return null;
   return (buildGroups({ species }) || []).find((group) => group?.metadata?.heritageTraitGroup) || null;
