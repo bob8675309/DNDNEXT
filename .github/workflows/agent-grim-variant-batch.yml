@@ -109,10 +109,10 @@ jobs:
           s=content(path)
           s=s.replace('export function grimHollowLorePresentation(lore = "") {',
           '''export function grimHollowLorePresentation(lore = "", species = null) {''')
-          old='''  const full = formatPlayerFacingText(lore).replace(/\n{3,}/g, "\n\n").trim();
+          old=r'''  const full = formatPlayerFacingText(lore).replace(/\n{3,}/g, "\n\n").trim();
             if (!full) return { preview: "", full: "", hasMore: false };
             const sentences = full.replace(/\s+/g, " ").match(/[^.!?]+[.!?]+(?:[”"']|$)?|[^.!?]+$/g) || [];'''
-          new='''  const cleaned = formatPlayerFacingText(lore).replace(/\n{3,}/g, "\n\n").trim();
+          new=r'''  const cleaned = formatPlayerFacingText(lore).replace(/\n{3,}/g, "\n\n").trim();
             const isWechselkind = isGrimHollowHeritageSpecies(species)
               && clean(species?.name).toLowerCase() === "wechselkind";
             const paragraphs = cleaned.split(/\n\s*\n/).filter(Boolean);
@@ -341,7 +341,7 @@ jobs:
           for path,s in changes.items():
               (root/path).write_text(s)
               print("PATCHED",path)
-          assert len(changes)==8,(len(changes),sorted(changes))
+          assert len(changes)==9,(len(changes),sorted(changes))
           
           PY
 
