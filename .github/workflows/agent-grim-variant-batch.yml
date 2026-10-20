@@ -1,0 +1,385 @@
+name: Batch install Grim Hollow variants
+
+on:
+  push:
+    branches:
+      - agent/apply-grim-variant-batch-20261020
+    paths:
+      - .github/workflows/agent-grim-variant-batch.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - name: Checkout target feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix-grim-variant-tree-art-heritage-focus-20261020
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify expected base and clean worktree
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "f21aa38c8063ff52af722a5517f088eae3825938"
+          test -z "$(git status --porcelain)"
+
+      - name: Install dependencies
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          python -m pip install --quiet Pillow
+
+      - name: Apply consolidated tree, intro, Heritage navigation, and portrait patch
+        env:
+          PORTRAIT_ASSET_URLS: '{"dhampir":"https://dnznrvs05pmza.cloudfront.net/gemini/gemini-3.1-flash-lite-image/images/774a238f-e505-497d-8ae0-2108897390db/008b56ce-5c27-411c-af23-212f23f0082e/single_full_body_standing_Grim_Hollow_Dhampir_of_Etharis__mo.jpg?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiODEwYzU5N2FhOGM2MzlkNiIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MjY4NjIwMn0.N9MQhPLdQOB2TO55Uhr8NdnZitRmi21un1S4wEnG7gU","human":"https://dnznrvs05pmza.cloudfront.net/gemini/gemini-3.1-flash-lite-image/images/51d0202a-2c6f-4787-a61d-c8861b1095bd/98b330c9-a5e2-49ec-9743-1d51e0e589c6/single_full_body_standing_Grim_Hollow_human_of_Etharis__rugg.jpg?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiZmJhMGFmZjJkNTMwODdkZCIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MjY0ODgxOH0.uV5m57hr7gyVTWEjO-ojcggNCU6T9hd6NU9SnrpmaRE","halfling":"https://dnznrvs05pmza.cloudfront.net/gemini/gemini-3.1-flash-lite-image/images/1af2c1b0-855f-4536-9170-a056131b6ca1/84f9873b-5840-462b-8900-4a0cd3a1f3bc/single_full_body_standing_Grim_Hollow_halfling_from_Etharis_.jpg?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiNjExMmIwOWVjZjZkZTRjZCIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MjY4ODQxNH0.IF6qLu9fvGooEKa7gDvxsDjFKT8o6dLl7gwx58OYxFQ","elf":"https://dnznrvs05pmza.cloudfront.net/gemini/gemini-3.1-flash-lite-image/images/1a2840a9-d4a9-4a20-83df-2cb8dbcf9c7a/01ac02f6-1b5b-4b09-80ef-4308524bb37d/single_full_body_standing_Grim_Hollow_elf_from_Etharis_Charn.jpg?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiOGY2M2ZmN2M1OTBlODE1MiIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MjY4NzM1Nn0.0BEyS-fT-7O1BsAojdX3EM443qA8YNOx_IpvVBY3Xh0","dragonborn":"https://dnznrvs05pmza.cloudfront.net/gemini/gemini-3.1-flash-lite-image/images/20f07e81-6f9a-4fbb-b12c-9a6542031945/f9408ed1-0582-47b5-a2c2-27759d06bf1d/single_standing_Grim_Hollow_Dragonborn_warrior_from_Etharis_.jpg?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiNDAxNWIxZmE1MDI3YjllOCIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MjYyOTI0Mn0.e0VdEX1Ie-nzS7G1QXOTxzIuPUYFM_STPFbd1xuZWCg","dwarf":"https://dnznrvs05pmza.cloudfront.net/gemini/gemini-3.1-flash-lite-image/images/7a72d6ea-7832-4eec-9026-5ca05240e4c0/cb73b3d9-167f-44f8-970f-134516fba09e/Single_full_body_photoreal_dark_fantasy_RPG_character_portra.jpg?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiNWQ0ODI5MDVhYTljMWM4MCIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MjY3NDE4MX0._jrzfQeK_oGkr7N-BesAo6Xu5k3HcGU6GOxTHZa6McY","gnome":"https://dnznrvs05pmza.cloudfront.net/gemini/gemini-3-pro-image/images/0af80ec3-f15f-4a2f-ab41-428a9cb7c097/819d0070-1afd-4176-bf60-a5f354514ec5/One_single_full_body_character_portrait__of_a_Grim_Hollow__E.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiM2IzYmQ2ODdhNDQ2ZjQxYSIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MjYzMTY4N30.60lEENUkWeDNSNUuWt3mqfoE3_75AFfKDjhGBgOZgbw"}'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import io
+          import os
+          import re
+          import json
+          import hashlib
+          import pathlib
+          import urllib.request
+          from PIL import Image, ImageOps
+          
+          root = pathlib.Path(".")
+          changes = {}
+          
+          def content(path):
+              return changes.get(path, (root / path).read_text())
+          
+          def put(path, s):
+              changes[path] = s
+          
+          def replace(path, old, new):
+              s = content(path)
+              count = s.count(old)
+              if count != 1:
+                  raise RuntimeError(f"{path}: expected exactly one anchor, got {count}: {old[:100]!r}")
+              put(path, s.replace(old, new))
+          
+          # 1. Parent->child source-tree identity: preserve the original XPHB/VRGR parents
+          # and treat the seven Grim Hollow variants as selectable real catalog rows.
+          path = "utils/speciesCatalogExpansion.js"
+          s = content(path)
+          old = '''  { parentName: "Human", parentSource: "XPHB", children: [["Human (Innistrad)", "PSI"], ["Human (Ixalan)", "PSX"], ["Human (Kaladesh)", "PSK"], ["Human (Zendikar)", "PSZ"]] },
+            { parentName: "Dwarf", parentSource: "XPHB", children: [["Dwarf (Kaladesh)", "PSK"]] },'''
+          new = '''  { parentName: "Human", parentSource: "XPHB", children: [["Human (Innistrad)", "PSI"], ["Human (Ixalan)", "PSX"], ["Human (Kaladesh)", "PSK"], ["Human (Zendikar)", "PSZ"], ["Human (Grim Hollow)", "GrimHollowPG24"]] },
+            { parentName: "Dwarf", parentSource: "XPHB", children: [["Dwarf (Kaladesh)", "PSK"], ["Dwarf (Grim Hollow)", "GrimHollowPG24"]] },
+            { parentName: "Gnome", parentSource: "XPHB", children: [["Gnome (Grim Hollow)", "GrimHollowPG24"]], mergeWithLineage: true },
+            { parentName: "Dragonborn", parentSource: "XPHB", children: [["Dragonborn (Grim Hollow)", "GrimHollowPG24"]], mergeWithLineage: true },
+            { parentName: "Dhampir", parentSource: "VRGR", children: [["Dhampir (Grim Hollow)", "GrimHollowPG24"]] },
+            { parentName: "Halfling", parentSource: "XPHB", children: [["Halfling (Grim Hollow)", "GrimHollowPG24"]] },'''
+          assert s.count(old)==1, "setting families head"
+          s=s.replace(old,new)
+          old='''    children: [["Elf (Kaladesh)", "PSK"]],'''
+          new='''    children: [["Elf (Kaladesh)", "PSK"], ["Elf (Grim Hollow)", "GrimHollowPG24"]],'''
+          assert s.count(old)==1,"Elf source family"
+          s=s.replace(old,new)
+          put(path,s)
+          
+          # 2. Exactly seven dedicated Grim Hollow cinematic art keys, overriding previously
+          # applied aliases that incorrectly mapped them onto ordinary PHB portraits.
+          path="utils/speciesArtwork.js"
+          s=content(path)
+          anchor='const CINEMATIC_SPECIES_HERO_ARTWORK = Object.freeze({\n'
+          assert s.count(anchor)==1
+          newkeys=''.join(f'  "{name}-grim-hollow": "/media/species/cinematic-{name}-grim-hollow.webp",\n'
+                          for name in ("dhampir","dragonborn","dwarf","elf","gnome","halfling","human"))
+          s=s.replace(anchor,anchor+newkeys)
+          for name in ("dhampir","dragonborn","dwarf","elf","gnome","halfling"):
+              alias=f'"{name}-grim-hollow": "{name}", '
+              assert s.count(alias)==1,(name,"legacy art alias")
+              s=s.replace(alias,"")
+          assert s.count(', "human-grim-hollow": "human"')==1,"legacy Human art alias"
+          s=s.replace(', "human-grim-hollow": "human"',"")
+          put(path,s)
+          
+          # 3. Wechselkind's lore must START with the explicitly selected source paragraph,
+          # removing the mother's stolen-child anecdote from BOTH preview and full text.
+          path="utils/grimHollowSpeciesPresentation.js"
+          s=content(path)
+          s=s.replace('export function grimHollowLorePresentation(lore = "") {',
+          '''export function grimHollowLorePresentation(lore = "", species = null) {''')
+          old='''  const full = formatPlayerFacingText(lore).replace(/\n{3,}/g, "\n\n").trim();
+            if (!full) return { preview: "", full: "", hasMore: false };
+            const sentences = full.replace(/\s+/g, " ").match(/[^.!?]+[.!?]+(?:[”"']|$)?|[^.!?]+$/g) || [];'''
+          new='''  const cleaned = formatPlayerFacingText(lore).replace(/\n{3,}/g, "\n\n").trim();
+            const isWechselkind = isGrimHollowHeritageSpecies(species)
+              && clean(species?.name).toLowerCase() === "wechselkind";
+            const paragraphs = cleaned.split(/\n\s*\n/).filter(Boolean);
+            const properIntro = isWechselkind
+              ? paragraphs.findIndex((paragraph) => /^a wechselkind is a construct crafted of wood, clay, and ceramic/i.test(paragraph))
+              : -1;
+            // Source text preceding the highlighted description was explicitly rejected
+            // for this Species. Do not display it elsewhere in the expandable full lore.
+            const full = properIntro >= 0 ? paragraphs.slice(properIntro).join("\n\n") : cleaned;
+            if (!full) return { preview: "", full: "", hasMore: false };
+            const sentences = full.replace(/\s+/g, " ").match(/[^.!?]+[.!?]+(?:[”"']|$)?|[^.!?]+$/g) || [];'''
+          # Raw literal backslashes in Python script inside triple quote must correspond to JS \n etc
+          assert s.count(old)==1,"lore format anchor"
+          s=s.replace(old,new)
+          put(path,s)
+          
+          # 4. Traditional Heritage buttons focus (without silently changing selections)
+          # the existing shared Ancestral/Custom Lineage picker; no second trait state.
+          path="components/NpcForgeContextPanelRefined.js"
+          s=content(path)
+          old='''  const [speciesSpellHelp, setSpeciesSpellHelp] = useState({});'''
+          new='''  const [speciesSpellHelp, setSpeciesSpellHelp] = useState({});
+            const [heritageFocusRequest, setHeritageFocusRequest] = useState(null);'''
+          assert s.count(old)==1
+          s=s.replace(old,new)
+          assert s.count("grimHollowLorePresentation(lore)")==1
+          s=s.replace("grimHollowLorePresentation(lore)", "grimHollowLorePresentation(lore, option)")
+          pattern=r'\{traditionalTraits\.map\(\(trait, index\) => <span[^>]*><b>\{index \+ 1\}</b>\{trait\}</span>\)\}'
+          replacement='''{traditionalTraits.map((trait, index) => <button key={trait + "-" + index} type="button" title={"View and focus " + trait + " in the Heritage catalogue"} aria-label={"View Heritage Trait " + (index + 1) + ": " + trait} onClick={() => setHeritageFocusRequest((previous) => ({ key: option.metadata?.traditionalHeritageSelections?.[index]?.key || "", sequence: (previous?.sequence || 0) + 1 }))}><b>{index + 1}</b>{trait}</button>)}'''
+          s,n=re.subn(pattern,lambda _:replacement,s)
+          assert n==1,("traditional Heritage markup",n)
+          old='''<NpcForgeEmbeddedSourceChoices groups={[heritageGroup]} selections={sourceSelections} onSet={(_groupId, fieldId, keys) => setSourceChoice(heritageGroup, fieldId, keys)} compact />'''
+          new='''<NpcForgeEmbeddedSourceChoices groups={[heritageGroup]} selections={sourceSelections} onSet={(_groupId, fieldId, keys) => setSourceChoice(heritageGroup, fieldId, keys)} focusRequest={heritageFocusRequest} compact />'''
+          assert s.count(old)==1
+          s=s.replace(old,new)
+          put(path,s)
+          
+          path="components/NpcForgeEmbeddedSourceChoices.js"
+          old='''export default function NpcForgeEmbeddedSourceChoices({ groups = [], selections = {}, onToggle = null, onSet = null, compact = false }) {'''
+          new='''export default function NpcForgeEmbeddedSourceChoices({ groups = [], selections = {}, onToggle = null, onSet = null, compact = false, focusRequest = null }) {'''
+          replace(path,old,new)
+          old='''return <NpcForgeHeritageTraitPicker key={group.id} group={group} selections={selections} onSet={onSet} />;'''
+          new='''return <NpcForgeHeritageTraitPicker key={group.id} group={group} selections={selections} onSet={onSet} focusRequest={focusRequest} />;'''
+          replace(path,old,new)
+          
+          path="components/NpcForgeHeritageTraitPicker.js"
+          s=content(path)
+          old='''import { useEffect, useMemo, useState } from "react";'''
+          new='''import { useEffect, useMemo, useRef, useState } from "react";'''
+          assert s.count(old)==1
+          s=s.replace(old,new)
+          old='''export default function NpcForgeHeritageTraitPicker({ group, selections = {}, onSet = null }) {'''
+          new='''export default function NpcForgeHeritageTraitPicker({ group, selections = {}, onSet = null, focusRequest = null }) {'''
+          assert s.count(old)==1
+          s=s.replace(old,new)
+          old='''  const [focusedKey, setFocusedKey] = useState("");'''
+          new='''  const [focusedKey, setFocusedKey] = useState("");
+            const focusedDetailRef = useRef(null);'''
+          assert s.count(old)==1
+          s=s.replace(old,new)
+          old='''  const focused = visible.find((option) => option.key === focusedKey) || visible[0] || null;'''
+          new='''  useEffect(() => {
+              const targetKey = safeText(focusRequest?.key);
+              const selected = catalog.find((option) => option.key === targetKey);
+              if (!selected) return;
+              setCategory(categoryFor(selected));
+              setQuery("");
+              setFocusedKey(targetKey);
+            }, [focusRequest?.sequence, group.id]);
+          
+            useEffect(() => {
+              if (!focusRequest?.key || focusRequest.key !== focusedKey) return;
+              const requested = catalog.find((option) => option.key === focusRequest.key);
+              if (!requested || categoryFor(requested) !== category || query) return;
+              const frame = requestAnimationFrame(() => {
+                focusedDetailRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+                focusedDetailRef.current?.focus({ preventScroll: true });
+              });
+              return () => cancelAnimationFrame(frame);
+            }, [focusRequest?.sequence, focusRequest?.key, focusedKey, category, query]);
+          
+            const focused = visible.find((option) => option.key === focusedKey) || visible[0] || null;'''
+          assert s.count(old)==1
+          s=s.replace(old,new)
+          old='''<article className="npc-forge-heritage-picker__detail">'''
+          new='''<article ref={focusedDetailRef} tabIndex={-1} className="npc-forge-heritage-picker__detail">'''
+          assert s.count(old)==1
+          s=s.replace(old,new)
+          put(path,s)
+          
+          # 5. The eight source-default labels look and behave like navigation targets,
+          # preserving the original rest of the Species design.
+          path="styles/character-forge-cinematic-final-corrections.css"
+          s=content(path)
+          assert s.count(".npc-forge-grim-heritage-surface__defaults > span {")==1
+          s=s.replace(".npc-forge-grim-heritage-surface__defaults > span {", ".npc-forge-grim-heritage-surface__defaults > button {")
+          s+='''
+          
+          .unified-player-character-forge .npc-forge-grim-heritage-surface__defaults > button {
+            width: 100%;
+            color: #e8e0f8;
+            font: inherit;
+            text-align: left;
+            cursor: pointer;
+            transition: border-color .15s ease, background .15s ease;
+          }
+          .unified-player-character-forge .npc-forge-grim-heritage-surface__defaults > button:hover,
+          .unified-player-character-forge .npc-forge-grim-heritage-surface__defaults > button:focus-visible {
+            outline: 2px solid rgba(168,108,255,.7);
+            outline-offset: 1px;
+            border-color: rgba(168,108,255,.7);
+            background: rgba(126,72,199,.23);
+          }
+          .unified-player-character-forge .npc-forge-heritage-picker__detail:focus {
+            outline: 2px solid rgba(168,108,255,.85);
+            outline-offset: 2px;
+          }
+          .unified-player-character-forge .npc-forge-heritage-picker__detail {
+            scroll-margin-top: 70px;
+          }
+          '''
+          put(path,s)
+          
+          # 6. Regression gates expand to actual source-parent tree, name-specific artwork,
+          # source paragraph ownership, and focus bridge (no fake no-op button).
+          path="scripts/validate_grim_hollow_species_presentation.mjs"
+          s=content(path)
+          old='''const lore=grimHollowLorePresentation(longLore);'''
+          new='''const lore=grimHollowLorePresentation(longLore);
+          const rejectedAnecdote = "A mother hears a sound in the night. Nothing appears amiss.\\\\n\\\\nA wechselkind is a construct crafted of wood, clay, and ceramic in the form of a small child. Once the glamour fades, they are cast out.\\\\n\\\\nWhether nurtured or shunned, the wanderer seeks a home.";
+          const wechselLore = grimHollowLorePresentation(rejectedAnecdote.replaceAll("\\\\\\\\n", "\\\\n"), make("Wechselkind"));
+          assert(wechselLore.preview.startsWith("A wechselkind is a construct crafted of wood, clay, and ceramic"), "Wechselkind intro must start at the highlighted source description");
+          assert(!wechselLore.full.includes("A mother hears"), "Rejected Wechselkind source opening must not leak into the expanded lore");'''
+          # Simplify multiline escaping in source validator; replace check if still valid
+          assert s.count(old)==1
+          s=s.replace(old,new)
+          old='''const panel=read("components/NpcForgeContextPanelRefined.js");'''
+          new='''const { expandSpeciesCatalogFamilies } = await import(pathToFileURL(path.join(root, "utils/speciesCatalogExpansion.js")).href);
+          const { speciesPortraitArtworkFor } = await import(pathToFileURL(path.join(root, "utils/speciesArtwork.js")).href);
+          const variantNames=["Dwarf","Gnome","Elf","Human","Dragonborn","Dhampir","Halfling"];
+          for(const family of variantNames){
+            const parent={id:family+"-base",name:family,source:family==="Dhampir"?"VRGR":"XPHB",metadata:{traits:[]},traitDetails:[]};
+            const child={id:family+"-grim",name:family+" (Grim Hollow)",source:"GrimHollowPG24",metadata:{heritageOnly:true,traits:[]},traitDetails:[]};
+            const expanded=expandSpeciesCatalogFamilies([parent,child]);
+            const first=expanded.find(x=>x.id===parent.id);
+            const second=expanded.find(x=>x.id===child.id);
+            assert(first?.catalogSourceVariants?.some(x=>x.id===child.id), family+" Grim Hollow setting must appear under the existing parent");
+            assert(second?.catalogHidden, family+" duplicate top-level entry must be hidden while remaining selectable as a real species row");
+            assert.equal(speciesPortraitArtworkFor(child.name),"/media/species/cinematic-"+family.toLowerCase()+"-grim-hollow.webp", family+" requires its own dark fantasy portrait");
+          }
+          const panel=read("components/NpcForgeContextPanelRefined.js");'''
+          assert s.count(old)==1
+          s=s.replace(old,new)
+          old=''' "Read full species lore",'''
+          new=''' "Read full species lore",
+           "setHeritageFocusRequest",
+           "focusRequest={heritageFocusRequest}",'''
+          assert s.count(old)==1
+          s=s.replace(old,new)
+          old='''const featureSource=read("utils/speciesForgePresentation.js");'''
+          new='''const featureSource=read("utils/speciesForgePresentation.js");
+          const embedded=read("components/NpcForgeEmbeddedSourceChoices.js");
+          const picker=read("components/NpcForgeHeritageTraitPicker.js");
+          assert(embedded.includes("focusRequest={focusRequest}"), "The shared Heritage picker must receive the focus request");
+          for(const token of ["focusedDetailRef", "scrollIntoView", "setCategory(categoryFor(selected))", "setFocusedKey(targetKey)", "tabIndex={-1}"]){
+            assert(picker.includes(token), "Heritage default navigation missing picker focus behavior: "+token);
+          }'''
+          assert s.count(old)==1
+          s=s.replace(old,new)
+          put(path,s)
+          
+          # 7. Record target source and behavior (no DB migration or map-system changes).
+          path="docs/Grim_Hollow_2024_Integration_Status.md"
+          s=content(path)
+          s+='''
+          
+          ## October 20: shared-species variants, approved artwork and Heritage navigation
+          
+          Seven source variants now appear beneath their already-existing Species parents,
+          rather than as duplicate top-level entries: Dhampir, Dragonborn, Dwarf, Elf,
+          Gnome, Halfling, Human. The parent XPHB/VRGR options and all previous children
+          are unchanged; clicking a Grim Hollow child selects its real species option id,
+          retains its own Heritage catalogue, and displays its dedicated cinematic portrait.
+          
+          Wechselkind begins with the explicit source paragraph describing the wood, clay
+          and ceramic faerie-animated construct. The earlier stolen-child anecdote has
+          been excluded from both preview and expanded lore without modifying source DB.
+          
+          The eight traditional Heritage choices are accessible focus buttons. Each jumps
+          to and keyboard-focuses the corresponding live shared Heritage trait detail,
+          automatically changing Combat / Exploration / Roleplaying categories when needed.
+          These focus actions do not select or remove traits, and preserve repeat limits,
+          saved choices, and the single existing persistence authority.
+          
+          Approved Grim Hollow variant art is stored under
+          public/media/species/cinematic-{name}-grim-hollow.webp as 720x960 WebP images.
+          Other approved species portraits and the world/town map systems are untouched.
+          '''
+          put(path,s)
+          
+          # 8. Source art: verify each Runway-hosted output, resize without distortion, and
+          # keep a full-height cinematic 3:4 portrait with no filesystem side effects.
+          assets = json.loads(os.environ["PORTRAIT_ASSET_URLS"])
+          assert len(assets)==7
+          expected=set(("dhampir","dragonborn","dwarf","elf","gnome","halfling","human"))
+          assert set(assets)==expected
+          for name, url in sorted(assets.items()):
+              request=urllib.request.Request(url,headers={"User-Agent":"DNDNext-approved-portrait-transfer/1.0"})
+              with urllib.request.urlopen(request,timeout=60) as response:
+                  content=response.read()
+              assert len(content)>10000, (name,len(content))
+              image=Image.open(io.BytesIO(content)).convert("RGB")
+              if image.width < 600 or image.height < 800:
+                  raise RuntimeError(f"{name} generated art too small: {image.size}")
+              resized=ImageOps.contain(image,(720,960),Image.Resampling.LANCZOS)
+              canvas=Image.new("RGB",(720,960),(12,13,20))
+              canvas.paste(resized,((720-resized.width)//2,(960-resized.height)//2))
+              out=root / f"public/media/species/cinematic-{name}-grim-hollow.webp"
+              assert out.parent.is_dir(),out
+              canvas.save(out,format="WEBP",quality=89,method=6)
+              out_img=Image.open(out)
+              assert out_img.format=="WEBP" and out_img.size==(720,960)
+              out_img.verify()
+              print(name,len(content),image.size,"->",out.stat().st_size,"bytes","sha256",hashlib.sha256(out.read_bytes()).hexdigest())
+          
+          for path,s in changes.items():
+              (root/path).write_text(s)
+              print("PATCHED",path)
+          assert len(changes)==8,(len(changes),sorted(changes))
+          
+          PY
+
+      - name: Validate patched app and artwork
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_grim_hollow_species_presentation.mjs
+          node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_grim_hollow_heritage_swaps.mjs
+          node - <<'JS'
+          const fs=require("fs");
+          const parser=require("@babel/parser");
+          for(const f of ["components/NpcForgeContextPanelRefined.js","components/NpcForgeEmbeddedSourceChoices.js","components/NpcForgeHeritageTraitPicker.js"]){
+            parser.parse(fs.readFileSync(f,"utf8"),{sourceType:"module",plugins:["jsx"]});
+            console.log("JSX parsed:",f);
+          }
+          JS
+          node - <<'JS'
+          const fs=require("fs"), assert=require("assert");
+          const names=["dhampir","dragonborn","dwarf","elf","gnome","halfling","human"];
+          for(const name of names){
+            const file="public/media/species/cinematic-"+name+"-grim-hollow.webp";
+            const data=fs.readFileSync(file);
+            assert(data.length>15000);
+            assert.equal(data.toString("ascii",0,4),"RIFF");
+            assert.equal(data.toString("ascii",8,12),"WEBP");
+            console.log("Portrait valid",name,data.length);
+          }
+          JS
+
+      - name: Commit and push one reviewed batch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add -- utils/speciesCatalogExpansion.js utils/speciesArtwork.js utils/grimHollowSpeciesPresentation.js components/NpcForgeContextPanelRefined.js components/NpcForgeEmbeddedSourceChoices.js components/NpcForgeHeritageTraitPicker.js styles/character-forge-cinematic-final-corrections.css scripts/validate_grim_hollow_species_presentation.mjs docs/Grim_Hollow_2024_Integration_Status.md public/media/species/cinematic-{dhampir,dragonborn,dwarf,elf,gnome,halfling,human}-grim-hollow.webp
+          git diff --cached --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Organize Grim Hollow variants and install dedicated portraits and Heritage navigation"
+          git push origin HEAD:refs/heads/fix-grim-variant-tree-art-heritage-focus-20261020
