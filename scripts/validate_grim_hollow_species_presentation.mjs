@@ -45,6 +45,13 @@ assert(heritage?.metadata?.heritageTraitGroup,"Grim Hollow panel must recover a 
 assert.equal(heritage.fields.length,8);
 assert.deepEqual(traditionalHeritageLabels(arisen),arisen.metadata.traditionalHeritageSelections.map(x=>x.name));
 assert.equal(heritageChoiceGroupForSpecies(arisen,groups,buildSpeciesSourceChoiceGroups)?.id,heritage.id,"Registered choice groups must remain authoritative");
+const wrongSpecies=make("Wechselkind");
+const wrongGroup=buildSpeciesSourceChoiceGroups({species:wrongSpecies}).find(group=>group.metadata?.heritageTraitGroup);
+assert.equal(
+  heritageChoiceGroupForSpecies(arisen,[wrongGroup],buildSpeciesSourceChoiceGroups)?.id,
+  heritage.id,
+  "Shared Grim Hollow source/label must never reuse another Species' traditional Heritage group"
+);
 
 const seeded=applySourceChoiceDefaults([heritage],{});
 assert(sourceChoiceGroupComplete(heritage,seeded),"Default package must count as eight selected choices");
