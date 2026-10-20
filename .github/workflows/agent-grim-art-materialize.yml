@@ -1,0 +1,101 @@
+name: Install approved Grim Hollow species artwork
+
+on:
+  push:
+    branches:
+      - agent/grim-approved-art-materializer-20261020
+    paths:
+      - .github/workflows/agent-grim-art-materialize.yml
+
+permissions:
+  contents: write
+
+jobs:
+  transfer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout existing PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix-grim-hollow-species-layout-heritage-20261020
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Guard exact reviewed PR head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "96b8dbcc1651c2d0e3c1464d763235656d59801c"
+          git status --porcelain
+
+      - name: Download verified user-approved Dropbox ZIP
+        shell: bash
+        env:
+          ZIP_URL: "https://uccff282d71368f6d2be5b4210dc.dl.dropboxusercontent.com/cd/0/get/DKYg99GbFY8UiaXOmr3K0PXzzgDfB0kYXFOebBElAkf_mRJpGqfW2pZ_sZ1SBFY3_Oxvj7etkjPGf-1dG3pwAXmWaqRC-MTGypwWGLNknkVK4ZMgW_HlKU2ILqqM0zzJ6-pmuxkAr9IEX8TyXTyv3v4CUHLHfgkkOD538xU4mlDgUQ/file?c_luid=c335000c"
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error --retry 2 --connect-timeout 20 --max-time 150 \
+            "$ZIP_URL" --output /tmp/dndnext-grim-approved-art.zip
+          echo "fa629fc569e81d8a6c93a2b8d674ba3efb5bdfb134f19231a9acf1e7d8c1bca5  /tmp/dndnext-grim-approved-art.zip" | sha256sum --check
+          test "$(wc -c </tmp/dndnext-grim-approved-art.zip)" -eq 837188
+
+      - name: Validate and install exactly ten approved portraits
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --quiet --disable-pip-version-check Pillow
+          python - <<'PY'
+          import hashlib, io, json, pathlib, zipfile
+          from PIL import Image
+          archive='/tmp/dndnext-grim-approved-art.zip'
+          base=pathlib.Path('.')
+          species=('accursed','arisen','disembodied','downcast','dreamer',
+                   'grudgel','laneshi','ogresh','wulven','wechselkind')
+          expected={f'public/media/species/cinematic-{name}.webp' for name in species}
+          with zipfile.ZipFile(archive) as z:
+              actual=set(z.namelist())
+              assert actual == expected | {'manifest.json','INSTALL.md'}, (actual - expected, expected - actual)
+              manifest=json.loads(z.read('manifest.json'))
+              assert len(manifest)==10
+              assert {row['target_path'] for row in manifest} == expected
+              for row in manifest:
+                  dest=row['target_path']
+                  assert dest in expected and row['dimensions']=='720x960',row
+                  content=z.read(dest)
+                  assert len(content)==row['size_bytes']
+                  assert hashlib.sha256(content).hexdigest()==row['sha256'],dest
+                  assert content[:4]==b'RIFF' and content[8:12]==b'WEBP',dest
+                  image=Image.open(io.BytesIO(content))
+                  assert image.format=='WEBP' and image.size==(720,960),(dest,image.size)
+                  image.verify()
+                  out=base / dest
+                  assert out.parent.is_dir(),out
+                  out.write_bytes(content)
+                  print(dest, row['sha256'],len(content),'720x960 WEBP')
+          PY
+
+      - name: Guard exact image-only changeset
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add -- public/media/species/cinematic-{accursed,arisen,disembodied,downcast,dreamer,grudgel,laneshi,ogresh,wulven,wechselkind}.webp
+          python - <<'PY'
+          import subprocess
+          expected={f'public/media/species/cinematic-{x}.webp' for x in
+              ('accursed','arisen','disembodied','downcast','dreamer',
+               'grudgel','laneshi','ogresh','wulven','wechselkind')}
+          actual=set(subprocess.check_output(['git','diff','--cached','--name-only'],text=True).splitlines())
+          assert actual==expected,(sorted(actual),sorted(expected))
+          assert subprocess.check_output(['git','diff','--name-only'],text=True).strip()==''
+          print('Staged files: exactly 10 approved species portraits. All other files untouched.')
+          PY
+
+      - name: Commit and push one artwork batch to PR branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Install ten user-approved Grim Hollow cinematic species portraits"
+          git push origin HEAD:refs/heads/fix-grim-hollow-species-layout-heritage-20261020
