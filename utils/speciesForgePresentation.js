@@ -221,6 +221,15 @@ export function speciesFeaturePresentation(option = {}) {
     traits = traits.filter((trait) => !seasonLike(trait)).map((trait) => norm(trait) === "fey step" ? "Seasonal Fey Step" : trait);
   }
 
+  // Grim Hollow imports keep their traditional trait list as source data, not
+  // as a giant unformatted "Heritage Trait" paragraph. The shared Heritage
+  // picker displays those eight defaults and their replacement controls.
+  if (text(option?.source).toUpperCase() === "GRIMHOLLOWPG24" && option?.metadata?.heritageOnly) {
+    const heritageName = (name) => /^heritage traits?$/i.test(text(name));
+    details = details.filter((entry) => !heritageName(entry.name));
+    traits = traits.filter((entry) => !heritageName(entry));
+  }
+
   if (isCustomLineage(option)) {
     const legacy = new Set(["feat", "variable trait"]);
     details = details.filter((entry) => !legacy.has(norm(entry.name)) && norm(entry.name) !== "heritage traits");
