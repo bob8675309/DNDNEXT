@@ -52,7 +52,9 @@ for (const [name, fileName, parentKey, lorePattern] of cases) {
 }
 
 for (const token of [
-  '{ parentName: "Dwarf", parentSource: "XPHB", children: [["Dwarf (Kaladesh)", "PSK"]] }',
+  'parentName: "Dwarf", parentSource: "XPHB"',
+  '["Dwarf (Kaladesh)", "PSK"]',
+  '["Dwarf (Grim Hollow)", "GRIMHOLLOWPG24"]',
   '{ parentName: "Goblin", parentSource: "MPMM", children: [["Goblin (Dankwood)", "AWM"]] }',
   '{ parentName: "Orc", parentSource: "XPHB", children: [["Orc (Ixalan)", "PSX"]] }',
   "catalogSourceVariants: children.map",
