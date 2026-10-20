@@ -106,6 +106,13 @@ const SPECIES_DEDICATED_VARIANT_ARTWORK = new Set([
 ]);
 
 const CINEMATIC_SPECIES_HERO_ARTWORK = Object.freeze({
+  "dhampir-grim-hollow": "/media/species/cinematic-dhampir-grim-hollow.webp",
+  "dragonborn-grim-hollow": "/media/species/cinematic-dragonborn-grim-hollow.webp",
+  "dwarf-grim-hollow": "/media/species/cinematic-dwarf-grim-hollow.webp",
+  "elf-grim-hollow": "/media/species/cinematic-elf-grim-hollow.webp",
+  "gnome-grim-hollow": "/media/species/cinematic-gnome-grim-hollow.webp",
+  "halfling-grim-hollow": "/media/species/cinematic-halfling-grim-hollow.webp",
+  "human-grim-hollow": "/media/species/cinematic-human-grim-hollow.webp",
   accursed: "/media/species/cinematic-accursed.webp",
   arisen: "/media/species/cinematic-arisen.webp",
   disembodied: "/media/species/cinematic-disembodied.webp",
@@ -137,7 +144,7 @@ const CINEMATIC_SPECIES_HERO_ARTWORK = Object.freeze({
   tabaxi: "/media/species/cinematic-tabaxi.webp",
   tiefling: "/media/species/cinematic-tiefling.webp",
 });
-const SPECIES_RAW_NAME_ALIASES = { "genasi-air": "air-genasi", "genasi-earth": "earth-genasi", "genasi-fire": "fire-genasi", "genasi-water": "water-genasi", "aven-hawk-headed": "hawk-headed-aven", "aven-ibis-headed": "ibis-headed-aven", "dhampir-grim-hollow": "dhampir", "dragonborn-grim-hollow": "dragonborn", "dwarf-grim-hollow": "dwarf", "elf-grim-hollow": "elf", "gnome-grim-hollow": "gnome", "halfling-grim-hollow": "halfling", "human-grim-hollow": "human" };
+const SPECIES_RAW_NAME_ALIASES = { "genasi-air": "air-genasi", "genasi-earth": "earth-genasi", "genasi-fire": "fire-genasi", "genasi-water": "water-genasi", "aven-hawk-headed": "hawk-headed-aven", "aven-ibis-headed": "ibis-headed-aven" };
 
 export function normalizeSpeciesArtworkKey(value = "") {
   const key = String(value || "").trim().toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");

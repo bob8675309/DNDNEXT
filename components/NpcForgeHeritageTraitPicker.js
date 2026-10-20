@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { buildHeritageTraitSubchoiceGroups } from "../utils/playerForgeHeritageSubchoices";
 import { formatPlayerFacingText } from "../utils/playerFacingText";
 import { sourceChoiceFieldIsActive } from "../utils/playerForgeSourceChoices";
@@ -50,12 +50,13 @@ function selectedRows(group = {}, selections = {}) {
   });
 }
 
-export default function NpcForgeHeritageTraitPicker({ group, selections = {}, onSet = null }) {
+export default function NpcForgeHeritageTraitPicker({ group, selections = {}, onSet = null, focusRequest = null }) {
   const { registerGroups, toggleChoice, setChoice } = useNpcForgeSourceChoices();
   const setPrimaryChoice = onSet || setChoice;
   const [category, setCategory] = useState("C");
   const [query, setQuery] = useState("");
   const [focusedKey, setFocusedKey] = useState("");
+  const focusedDetailRef = useRef(null);
   const [catalogs, setCatalogs] = useState({ spells: [], items: [], spellsReady: false, itemsReady: false, errors: [] });
   const fields = heritageFields(group);
   const catalog = fields[0]?.options || [];
@@ -151,6 +152,26 @@ export default function NpcForgeHeritageTraitPicker({ group, selections = {}, on
     setFocusedKey(visible[0]?.key || "");
   }, [category, focusedKey, query, visible.map((option) => option.key).join("|")]);
 
+  useEffect(() => {
+    const targetKey = safeText(focusRequest?.key);
+    const selected = catalog.find((option) => option.key === targetKey);
+    if (!selected) return;
+    setCategory(categoryFor(selected));
+    setQuery("");
+    setFocusedKey(targetKey);
+  }, [focusRequest?.sequence, group.id]);
+
+  useEffect(() => {
+    if (!focusRequest?.key || focusRequest.key !== focusedKey) return;
+    const requested = catalog.find((option) => option.key === focusRequest.key);
+    if (!requested || categoryFor(requested) !== category || query) return;
+    const frame = requestAnimationFrame(() => {
+      focusedDetailRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      focusedDetailRef.current?.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [focusRequest?.sequence, focusRequest?.key, focusedKey, category, query]);
+
   const focused = visible.find((option) => option.key === focusedKey) || visible[0] || null;
   const focusedCount = focused ? Number(counts.get(focused.key) || 0) : 0;
   const focusedLimit = focused ? repeatLimit(group, focused) : 1;
@@ -223,7 +244,7 @@ export default function NpcForgeHeritageTraitPicker({ group, selections = {}, on
         {!visible.length ? <p className="npc-forge-heritage-picker__empty">No {CATEGORY_LABELS[category]} traits match this search.</p> : null}
       </div>
 
-      <article className="npc-forge-heritage-picker__detail">
+      <article ref={focusedDetailRef} tabIndex={-1} className="npc-forge-heritage-picker__detail">
         {focused ? <>
           <header><div><span>{CATEGORY_LABELS[categoryFor(focused)]}</span><h4>{focused.label}</h4></div><em>{focusedCount ? `${focusedCount} / ${focusedLimit} picks` : `Up to ${focusedLimit}`}</em></header>
           <div className="npc-forge-heritage-picker__copy">{focusedParagraphs.map((paragraph, index) => <p key={`${focused.key}-${index}`}>{paragraph}</p>)}</div>

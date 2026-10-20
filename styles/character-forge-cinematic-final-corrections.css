@@ -93,7 +93,7 @@
 .unified-player-character-forge .npc-forge-grim-heritage-surface__defaults {
   display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px;
 }
-.unified-player-character-forge .npc-forge-grim-heritage-surface__defaults > span {
+.unified-player-character-forge .npc-forge-grim-heritage-surface__defaults > button {
   display: flex; gap: 8px; align-items: center; min-width: 0;
   padding: 7px 9px; border: 1px solid rgba(168,108,255,.19);
   border-radius: 8px; background: rgba(0,0,0,.2); color: #e8e0f8; font-size: .77rem;
@@ -155,4 +155,28 @@
     object-fit: contain !important;
     object-position: center center !important;
   }
+}
+
+
+.unified-player-character-forge .npc-forge-grim-heritage-surface__defaults > button {
+  width: 100%;
+  color: #e8e0f8;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease;
+}
+.unified-player-character-forge .npc-forge-grim-heritage-surface__defaults > button:hover,
+.unified-player-character-forge .npc-forge-grim-heritage-surface__defaults > button:focus-visible {
+  outline: 2px solid rgba(168,108,255,.7);
+  outline-offset: 1px;
+  border-color: rgba(168,108,255,.7);
+  background: rgba(126,72,199,.23);
+}
+.unified-player-character-forge .npc-forge-heritage-picker__detail:focus {
+  outline: 2px solid rgba(168,108,255,.85);
+  outline-offset: 2px;
+}
+.unified-player-character-forge .npc-forge-heritage-picker__detail {
+  scroll-margin-top: 70px;
 }

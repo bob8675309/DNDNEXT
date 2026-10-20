@@ -263,3 +263,26 @@ The Grim Hollow Player Guide import retains the actual source species lore, port
 - Existing non-Grim species, world map, town map, travel, and encounter systems are not altered by this presentation patch.
 
 The regression check `scripts/validate_grim_hollow_species_presentation.mjs` covers traditional defaults, replacement, live-group fallback, compact lore, source feature filtering, and scoped portrait styling.
+
+
+## October 20: shared-species variants, approved artwork and Heritage navigation
+
+Seven source variants now appear beneath their already-existing Species parents,
+rather than as duplicate top-level entries: Dhampir, Dragonborn, Dwarf, Elf,
+Gnome, Halfling, Human. The parent XPHB/VRGR options and all previous children
+are unchanged; clicking a Grim Hollow child selects its real species option id,
+retains its own Heritage catalogue, and displays its dedicated cinematic portrait.
+
+Wechselkind begins with the explicit source paragraph describing the wood, clay
+and ceramic faerie-animated construct. The earlier stolen-child anecdote has
+been excluded from both preview and expanded lore without modifying source DB.
+
+The eight traditional Heritage choices are accessible focus buttons. Each jumps
+to and keyboard-focuses the corresponding live shared Heritage trait detail,
+automatically changing Combat / Exploration / Roleplaying categories when needed.
+These focus actions do not select or remove traits, and preserve repeat limits,
+saved choices, and the single existing persistence authority.
+
+Approved Grim Hollow variant art is stored under
+public/media/species/cinematic-{name}-grim-hollow.webp as 720x960 WebP images.
+Other approved species portraits and the world/town map systems are untouched.

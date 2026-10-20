@@ -72,13 +72,36 @@ assert(nonGrim.details.some(x=>x.name==="Heritage Trait"),"Non-Grim Species must
 const longLore = "A legend surrounds these people. Their journeys continue beyond the first encounter. "
   + "Many generations of history and intricacies follow. ".repeat(45);
 const lore=grimHollowLorePresentation(longLore);
+const rejectedAnecdote = ["A mother hears a sound in the night. Nothing appears amiss.", "A wechselkind is a construct crafted of wood, clay, and ceramic in the form of a small child. Once the glamour fades, they are cast out.", "Whether nurtured or shunned, the wanderer seeks a home."].join(String.fromCharCode(10, 10));
+const wechselLore = grimHollowLorePresentation(rejectedAnecdote, make("Wechselkind"));
+assert(wechselLore.preview.startsWith("A wechselkind is a construct crafted of wood, clay, and ceramic"), "Wechselkind intro must start at the highlighted source description");
+assert(!wechselLore.full.includes("A mother hears"), "Rejected Wechselkind source opening must not leak into the expanded lore");
 assert(lore.preview.length <= 441,"Lore preview must not stretch the portrait panel");
 assert(lore.hasMore && lore.full.length > lore.preview.length,"Full imported lore must remain accessible");
 assert(!grimHollowLorePresentation("A short description.").hasMore);
 
+const { expandSpeciesCatalogFamilies } = await import(pathToFileURL(path.join(root, "utils/speciesCatalogExpansion.js")).href);
+const { speciesPortraitArtworkFor } = await import(pathToFileURL(path.join(root, "utils/speciesArtwork.js")).href);
+const variantNames=["Dwarf","Gnome","Elf","Human","Dragonborn","Dhampir","Halfling"];
+for(const family of variantNames){
+  const parent={id:family+"-base",name:family,source:family==="Dhampir"?"VRGR":"XPHB",metadata:{traits:[]},traitDetails:[]};
+  const child={id:family+"-grim",name:family+" (Grim Hollow)",source:"GrimHollowPG24",metadata:{heritageOnly:true,traits:[]},traitDetails:[]};
+  const expanded=expandSpeciesCatalogFamilies([parent,child]);
+  const first=expanded.find(x=>x.id===parent.id);
+  const second=expanded.find(x=>x.id===child.id);
+  assert(first?.catalogSourceVariants?.some(x=>x.id===child.id), family+" Grim Hollow setting must appear under the existing parent");
+  assert(second?.catalogHidden, family+" duplicate top-level entry must be hidden while remaining selectable as a real species row");
+  assert.equal(speciesPortraitArtworkFor(child.name),"/media/species/cinematic-"+family.toLowerCase()+"-grim-hollow.webp", family+" requires its own dark fantasy portrait");
+}
 const panel=read("components/NpcForgeContextPanelRefined.js");
 const css=read("styles/character-forge-cinematic-final-corrections.css");
 const featureSource=read("utils/speciesForgePresentation.js");
+const embedded=read("components/NpcForgeEmbeddedSourceChoices.js");
+const picker=read("components/NpcForgeHeritageTraitPicker.js");
+assert(embedded.includes("focusRequest={focusRequest}"), "The shared Heritage picker must receive the focus request");
+for(const token of ["focusedDetailRef", "scrollIntoView", "setCategory(categoryFor(selected))", "setFocusedKey(targetKey)", "tabIndex={-1}"]){
+  assert(picker.includes(token), "Heritage default navigation missing picker focus behavior: "+token);
+}
 for(const token of [
  "heritageChoiceGroupForSpecies",
  "buildSpeciesSourceChoiceGroups",
@@ -89,6 +112,8 @@ for(const token of [
  "setSourceChoice(heritageGroup, fieldId, keys)",
  "grimHollowLorePresentation",
  "Read full species lore",
+ "setHeritageFocusRequest",
+ "focusRequest={heritageFocusRequest}",
  "sourceGroups.filter((group) => !grimHeritage || !group?.metadata?.heritageTraitGroup)",
 ]) assert(panel.includes(token),`Species panel missing explicit Heritage/lore contract: ${token}`);
 for(const token of [
