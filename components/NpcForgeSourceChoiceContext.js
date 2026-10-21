@@ -310,12 +310,28 @@ export function normalizeSourceChoiceState(groups = [], catalogReady = true, pre
   });
   const seededSelections = applySourceChoiceDefaults(combinedGroups, previousSelections, { forceEmptyGroupIds });
   const normalizedSelections = normalizeSourceChoiceSelections(combinedGroups, seededSelections);
+  const automaticSelections = applyAutomaticSourceSelections(combinedGroups, normalizedSelections);
+  // Registrars can briefly remove groups while switching tabs or loading catalogues.
+  // Preserve those dormant choices in the draft; only currently registered groups
+  // count toward completion or the generated character's source authority.
+  const pendingGroupIds = new Set(Object.values(scopes)
+    .filter((entry) => !entry?.catalogReady)
+    .flatMap((entry) => entry?.groups || [])
+    .map((group) => String(group?.id || ""))
+    .filter(Boolean));
+  const retainedSelections = { ...previousSelections, ...automaticSelections };
+  for (const groupId of pendingGroupIds) {
+    if (previousSelections?.[groupId]) {
+      // Never overwrite a user's selection with a loading-time empty catalogue.
+      retainedSelections[groupId] = { ...automaticSelections[groupId], ...previousSelections[groupId] };
+    }
+  }
   const defaultedGroups = { ...previousDefaultedGroups };
   groupsWithDefaults.forEach((group) => { defaultedGroups[group.id] = true; });
   return {
     scopes,
     groups: combinedGroups,
-    selections: applyAutomaticSourceSelections(combinedGroups, normalizedSelections),
+    selections: retainedSelections,
     catalogReady: Object.values(scopes).every((entry) => Boolean(entry?.catalogReady)),
     defaultedGroups,
   };
