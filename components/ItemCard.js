@@ -811,11 +811,11 @@ export default function ItemCard({
       ? potionDetails.effect
       : "";
   const hasStructuredBombRules = cardFamily === "bomb" && Boolean(
-  (structuredRules?.sections?.length || 0) + (entryPresentation.sections?.length || 0)
-);
-const primaryEffectText = playerText(
-  referenceEffect || (hasStructuredBombRules ? rulesIntro : (potionEffect || rulesIntro))
-);
+    (structuredRules?.sections?.length || 0) + (entryPresentation.sections?.length || 0)
+  );
+  const primaryEffectText = hasStructuredBombRules
+    ? ""
+    : playerText(referenceEffect || potionEffect || rulesIntro);
   const effectLabel = cardFamily === "recipe" ? "Recipe" : "Effect";
   const effectPanel = primaryEffectText ? (
     <div className="sitem-section sitem-rules sitem-effect-panel">

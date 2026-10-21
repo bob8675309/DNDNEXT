@@ -21,5 +21,5 @@ export default function GlobalRuleReferenceDock() {
     return () => window.removeEventListener("dndnext:rule-reference", handleReference);
   }, []);
 
-  return <NpcForgeClassFeatureDock panelRole="feature" detail={detail} selectedClass={null} />;
+  return <NpcForgeClassFeatureDock key={detail?.instanceKey || "global-rule-reference-empty"} panelRole="feature" detail={detail} selectedClass={null} />;
 }
