@@ -14,6 +14,11 @@ import { applyDirectSourceChoiceSelection } from "../utils/directSourceChoiceSta
 
 const uniqueText = (values = []) => [...new Set((Array.isArray(values) ? values : []).map((value) => String(value ?? "").trim()).filter(Boolean))];
 const SOURCE_CHOICE_DRAFT_VERSION = 2;
+const normalizedLanguage = (value) => String(value || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, " ");
+function echoingSoulLanguageGrant(choice = {}) {
+  return choice.ownerType === "feat" && choice.kind === "language"
+    && normalizedLanguage(choice.groupLabel) === "echoing soul";
+}
 
 function restoredSourceChoiceState(value = null) {
   const source = value && typeof value === "object" ? value : {};
@@ -167,7 +172,10 @@ function payloadWithSourceChoices(payload = {}, speciesChoiceState = EMPTY_SPECI
   const sourceExpertiseKeys = sourceChoiceSummary.filter((entry) => entry.kind === "expertise").map((entry) => canonicalSkillKey(entry.value));
   const expertiseKeys = uniqueText([...classExpertise.map(canonicalSkillKey), ...sourceExpertiseKeys, ...featAuthority.expertiseKeys.map(canonicalSkillKey)]);
   const proficientSkillKeys = uniqueText([...speciesSkillKeys, ...sourceSkillKeys, ...featAuthority.skillKeys.map(canonicalSkillKey)]);
-  const structuredLanguages = uniqueText(["Common", ...sourceChoiceSummary.filter((entry) => entry.kind === "language").map((entry) => entry.value)]);
+  // Echoing Soul is granted by the database feat-acquisition trigger.
+  // Do not pre-seed its extra language: the trigger checks the character's
+  // existing languages and then appends it exactly once.
+  const structuredLanguages = uniqueText(["Common", ...sourceChoiceSummary.filter((entry) => entry.kind === "language" && !echoingSoulLanguageGrant(entry)).map((entry) => entry.value)]);
   const existingConcreteTools = (Array.isArray(sheet.tools) ? sheet.tools : []).filter((value) => value && !/^any\b/i.test(String(value).trim()));
   const structuredTools = uniqueText([...existingConcreteTools, ...sourceChoiceSummary.filter((entry) => entry.kind === "tool").map((entry) => entry.value), ...featAuthority.tools]);
   const structuredSize = sourceChoiceSummary.find((entry) => entry.kind === "size")?.value || sheet.size;
@@ -249,6 +257,11 @@ export default function NewNpcModalV3(props) {
     if (playerMode && !sourceChoiceStateComplete(sourceChoiceStateRef.current)) return Promise.resolve({ data: null, error: { message: "Complete every required Origin, Background, Class, Ability, Advancement, and Training source choice before creating the character." } });
     const subclassPayload = payloadWithSubclass(originalPayload, classChoiceStateRef.current);
     const payload = payloadWithSourceChoices(subclassPayload, choiceStateRef.current, classChoiceStateRef.current, sourceChoiceStateRef.current);
+    if (playerMode) {
+      const alreadyKnown = new Set((payload?.sheet?.languages || []).map(normalizedLanguage));
+      const duplicate = (payload?.sheet?.sourceChoiceSummary || []).find((entry) => echoingSoulLanguageGrant(entry) && alreadyKnown.has(normalizedLanguage(entry.value)));
+      if (duplicate) return Promise.resolve({ data: null, error: { message: `Echoing Soul cannot grant ${duplicate.label || duplicate.value} because the character already knows it. Return to Background and select a different additional language.` } });
+    }
     if (!playerMode) return supabase.rpc("create_character_v1", { p_payload: payload });
     const magicSelections = Array.isArray(payload?.sheet?.startingMagicSelections) ? payload.sheet.startingMagicSelections : [];
     const proxySpellChoices = playerForgeProxySpellChoices(spellChoices, magicSelections);
