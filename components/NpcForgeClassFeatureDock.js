@@ -337,7 +337,10 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
 
   useEffect(() => {
     if (typeof window === "undefined" || typeof document === "undefined") return undefined;
-    const desktop = window.matchMedia("(min-width: 901px)");
+    // At narrower desktop widths (including Firefox/Chrome with DevTools open),
+    // an inline inspector was rendered after the entire Spells catalogue,
+    // effectively hiding rule-reference windows below the scroll area.
+    const desktop = window.matchMedia("(min-width: 540px)");
     let frame = null;
 
     function syncDockMode() {
