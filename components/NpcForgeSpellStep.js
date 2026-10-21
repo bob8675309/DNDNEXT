@@ -33,6 +33,30 @@ export default function NpcForgeSpellStep({ selectedClass, selectedSubclass = nu
   const [sortKey, setSortKey] = useState("level");
   const [sortDirection, setSortDirection] = useState("asc");
   const [inspectedSpellId, setInspectedSpellId] = useState("");
+  const showSpellReference = (detail) => {
+    if (!detail || !onReferenceDetail) return;
+    const reference = detail.reference;
+    if (detail.type === "rulesReference" && reference?.referenceKind === "spell") {
+      const key = safeText(reference.title).toLowerCase().replace(/[^a-z0-9]+/g, " ");
+      const target = spells.find((spell) => safeText(spell.name).toLowerCase().replace(/[^a-z0-9]+/g, " ") === key);
+      if (target) {
+        onReferenceDetail({
+          type: "classFeature",
+          feature: {
+            name: target.name,
+            source: target.source,
+            description: target.description,
+            entries: target.raw_payload?.entries || null,
+            level: Number(target.level || 0),
+            type: "listed-option",
+          },
+          instanceKey: `spell-reference-${target.id}`,
+        });
+        return;
+      }
+    }
+    onReferenceDetail(detail);
+  };
   const subclassModel = useMemo(() => subclassStartingSpellSelectionModel(selectedClass, selectedSubclass, level), [level, selectedClass, selectedSubclass]);
   const model = useMemo(() => subclassModel || startingSpellSelectionModel(selectedClass, levelRow, level), [level, levelRow, selectedClass, subclassModel]);
   const hasClassSpellSelection = Boolean(selectedClass && model.mode !== "none");
@@ -342,7 +366,7 @@ export default function NpcForgeSpellStep({ selectedClass, selectedSubclass = nu
               compact
               compressed
               headerAction={<div className="npc-forge-spell-card-actions">{inspectedCanPrepare ? <button type="button" disabled={inspectedPrepareBlocked} title={inspectedPrepareBlocked ? `Prepared spell limit reached (${model.prepared}/${model.prepared}). Unprepare a spell before preparing another.` : inspectedPrepared ? "Remove this spell from your prepared list while keeping it in the spellbook." : "Prepare this spell from your spellbook."} className={`npc-forge-spell-card-prepare ${inspectedPrepared ? "is-prepared" : ""}`} onClick={() => togglePrepared(inspectedSpell)}>{inspectedPrepareLabel}</button> : null}<button type="button" disabled={!inspectedSelected && !inspectedCanAdd} title={!inspectedSelected && !inspectedCanAdd ? selectionLimitMessage(inspectedSpell) : undefined} className={`npc-forge-spell-card-select ${inspectedSelected ? "is-selected" : ""}`} onClick={() => toggleSpell(inspectedSpell)}>{inspectedSelectLabel}</button></div>}
-              onReferenceDetail={onReferenceDetail}
+              onReferenceDetail={showSpellReference}
             />
           </> : <div className="profile-catalogue__empty">Select a spell from the catalogue to inspect its card.</div>}
         </section>
