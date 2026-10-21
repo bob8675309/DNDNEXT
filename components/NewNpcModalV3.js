@@ -60,9 +60,14 @@ function normalizeClassChoiceState(classRow, options = [], level = 1, catalogRea
   const resolvedLevel = Math.max(1, Math.min(20, Number(level || 1)));
   const validOptions = Array.isArray(options) ? options : [];
   const sameClass = classId && classId === previous.classId;
-  const selected = sameClass ? validOptions.find((option) => option.key === previous.selectedKey) : null;
+  // The class guide remounts with an empty catalogue, then loads asynchronously.
+  // An empty transient list is not an instruction to erase the selected subclass.
+  const resolvedOptions = sameClass && !catalogReady && !validOptions.length
+    ? previous.options || []
+    : validOptions;
+  const selected = sameClass ? resolvedOptions.find((option) => option.key === previous.selectedKey) : null;
   const featureGroups = sameClass ? previous.featureGroups || [] : [];
-  return { classId, classKey: classRow.class_key || "", className: classRow.class_name || "", classSource: classRow.source || "", level: resolvedLevel, options: validOptions, catalogReady: Boolean(catalogReady), selectedKey: selected && Number(selected.firstLevel || 1) <= resolvedLevel ? selected.key : "", featureGroups, featureSelections: normalizedClassFeatureChoiceState(featureGroups, sameClass ? previous.featureSelections || {} : {}), featureCatalogReady: sameClass ? Boolean(previous.featureCatalogReady) : false };
+  return { classId, classKey: classRow.class_key || "", className: classRow.class_name || "", classSource: classRow.source || "", level: resolvedLevel, options: resolvedOptions, catalogReady: Boolean(catalogReady), selectedKey: selected && Number(selected.firstLevel || 1) <= resolvedLevel ? selected.key : (sameClass && !catalogReady ? previous.selectedKey || "" : ""), featureGroups, featureSelections: normalizedClassFeatureChoiceState(featureGroups, sameClass ? previous.featureSelections || {} : {}), featureCatalogReady: sameClass ? Boolean(previous.featureCatalogReady) : false };
 }
 async function persistSpeciesChoices(created, choiceState) {
   if (!created?.id || !(choiceState.rules || []).length || !speciesChoiceStateComplete(choiceState)) return;
@@ -226,11 +231,12 @@ export default function NewNpcModalV3(props) {
     const classId = String(classRow?.id || classRow?.class_key || classRow?.class_name || "");
     if (!classId || classId !== current.classId) return current;
     const validGroups = Array.isArray(groups) ? groups : [];
+    if (!catalogReady && !validGroups.length) return { ...current, featureCatalogReady: false };
     return { ...current, level: Math.max(1, Math.min(20, Number(level || 1))), featureGroups: validGroups, featureSelections: normalizedClassFeatureChoiceState(validGroups, current.featureSelections || {}), featureCatalogReady: Boolean(catalogReady) };
   }), []);
   const toggleFeatureOption = useCallback((groupId, optionKey) => setClassChoiceState((current) => ({ ...current, featureSelections: toggleClassFeatureSelection(current.featureGroups || [], current.featureSelections || {}, groupId, optionKey) })), []);
   const registerSourceGroups = useCallback((groups = [], catalogReady = true, scope = "foundation") => setSourceChoiceState((current) => normalizeSourceChoiceState(groups, catalogReady, current, scope)), []);
-  const toggleSourceChoice = useCallback((groupId, fieldId, optionKey) => setSourceChoiceState((current) => ({ ...current, selections: toggleSourceChoiceSelection(current.groups || [], current.selections || {}, groupId, fieldId, optionKey) })), []);
+  const toggleSourceChoice = useCallback((groupId, fieldId, optionKey) => setSourceChoiceState((current) => ({ ...current, selections: { ...(current.selections || {}), ...toggleSourceChoiceSelection(current.groups || [], current.selections || {}, groupId, fieldId, optionKey) } })), []);
   const setSourceChoice = useCallback((groupOrId, fieldId, optionKeys) => setSourceChoiceState((current) => (
     applyDirectSourceChoiceSelection(current, groupOrId, fieldId, optionKeys)
   )), []);
@@ -329,10 +335,13 @@ export default function NewNpcModalV3(props) {
   }, [playerMode, show]);
   async function handleCreated(created) {
     const snapshot = choiceStateRef.current;
-    if (playerMode) clearPlayerForgeDraft(draftStorageScope);
-    setSpeciesChoiceState({ speciesId: "", speciesName: "", rules: [], selections: {} });
-    setClassChoiceState({ ...EMPTY_CLASS_CHOICE_STATE, options: [], featureGroups: [], featureSelections: {} });
-    setSourceChoiceState({ ...EMPTY_SOURCE_CHOICE_STATE, groups: [], selections: {}, scopes: {}, defaultedGroups: {} });
+    if (!playerMode) {
+      setSpeciesChoiceState({ speciesId: "", speciesName: "", rules: [], selections: {} });
+      setClassChoiceState({ ...EMPTY_CLASS_CHOICE_STATE, options: [], featureGroups: [], featureSelections: {} });
+      setSourceChoiceState({ ...EMPTY_SOURCE_CHOICE_STATE, groups: [], selections: {}, scopes: {}, defaultedGroups: {} });
+    }
+    // A player draft survives tab changes, closing the Forge, and successful
+    // creation until its owner explicitly invokes Reset.
     await props.onCreated?.(created);
     if (!playerMode) Promise.race([persistSpeciesChoices(created, snapshot), new Promise((_, reject) => setTimeout(() => reject(new Error("species choice persistence timeout")), 5000))]).catch((error) => console.error("Could not persist species choices after character creation", error));
   }
