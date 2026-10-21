@@ -98,9 +98,36 @@ function renderSection(section, index, onListItemDetail) {
 export default function ClassFeatureText({ text = "", entries = null, fallback = "", compact = false, onListItemDetail = null }) {
   const hasStructuredEntries = entries != null && (Array.isArray(entries) ? entries.length > 0 : true);
   const useStructuredEntries = hasStructuredEntries && !compact;
+  const sourceBenefitList = compact && Array.isArray(entries)
+    ? entries.find((entry) => entry?.type === "list"
+      && Array.isArray(entry.items) && entry.items.length >= 3
+      && entry.items.every((item) => typeof item === "string")) || null
+    : null;
   const sections = useMemo(() => useStructuredEntries ? [] : classFeatureSections(text, fallback), [fallback, text, useStructuredEntries]);
   const visibleSections = compact ? sections.slice(0, COMPACT_VISIBLE_SECTIONS) : sections;
   const hiddenSections = compact ? sections.slice(COMPACT_VISIBLE_SECTIONS) : [];
+
+  // Many subclass benefits are source-authored as a prose introduction followed
+  // by one actual option list. Compact cards should not flatten that structure
+  // into six paragraphs or expose half of it above "Full feature rules".
+  if (sourceBenefitList) {
+    const introduction = entries.filter((entry) => entry !== sourceBenefitList);
+    return <div className="class-feature-text class-feature-text--benefits">
+      <SourceRuleContent entries={introduction} text={text} fallback={fallback} onListItemDetail={onListItemDetail} />
+      <details className="class-feature-text__benefits">
+        <summary>Available benefits ({sourceBenefitList.items.length})</summary>
+        <SourceRuleContent entries={sourceBenefitList} onListItemDetail={onListItemDetail} />
+      </details>
+      <style jsx global>{`
+        .class-feature-text--benefits{display:grid;gap:.8rem}
+        .class-feature-text__benefits{padding:.65rem .8rem;border:1px solid rgba(168,108,255,.35);border-radius:10px;background:rgba(126,72,199,.08)}
+        .class-feature-text__benefits>summary{color:#e7d8ff;font-size:.8rem;font-weight:850;cursor:pointer}
+        .class-feature-text__benefits[open]>summary{margin-bottom:.65rem}
+        .class-feature-text__benefits .source-rule-content__list ul{margin:0;padding-left:1.3rem;columns:1;list-style:disc}
+        .class-feature-text__benefits .source-rule-content__list li{display:list-item;list-style:disc;margin:.3rem 0 .65rem}
+      `}</style>
+    </div>;
+  }
 
   if (useStructuredEntries) return <SourceRuleContent entries={entries} text={text} fallback={fallback} onListItemDetail={onListItemDetail} />;
 

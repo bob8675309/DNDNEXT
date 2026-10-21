@@ -39,7 +39,12 @@ export function applyDirectSourceChoiceSelection(current = {}, groupOrId = null,
     ...current,
     scopes,
     groups,
-    selections: setSourceChoiceSelection(groups, current?.selections || {}, groupId, fieldId, optionKeys),
+    // The normalizer returns active groups only. Keep selections for temporarily
+    // unmounted registrars so a tab change cannot discard prior work.
+    selections: {
+      ...(current?.selections || {}),
+      ...setSourceChoiceSelection(groups, current?.selections || {}, groupId, fieldId, optionKeys),
+    },
   };
 }
 
