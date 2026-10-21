@@ -34,6 +34,7 @@ on:
       - "utils/playerForgeSpeciesChoices.js"
       - "scripts/test_player_facing_text.mjs"
       - "scripts/validate_character_forge_nested_choices.mjs"
+      - "scripts/validate_forge_review_draft_runtime.mjs"
       - "sql/20260806_03_player_forge_nested_choice_validation.sql"
       - "sql/20260807_01_player_forge_runtime_choice_cadence.sql"
       - "sql/20260808_01_character_option_grant_instances.sql"
@@ -63,3 +64,9 @@ jobs:
           node --check scripts/validate_character_forge_nested_choices.mjs
           node scripts/validate_character_forge_nested_choices.mjs
           node scripts/test_player_facing_text.mjs
+
+      - name: Install dependencies for Forge lifecycle regression
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Validate persisted Heritage, subclass, feat grants and review
+        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_forge_review_draft_runtime.mjs
