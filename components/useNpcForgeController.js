@@ -240,7 +240,8 @@ export default function useNpcForgeController({ show, onClose, onCreated, locati
       else { if (result?.error) throw result.error; const id = typeof result?.data === "string" ? result.data : result?.data?.id || result?.data?.character_id || null; createdRow = { id, kind: createPayload.kind, name: createPayload.name }; }
       const created = { id: createdRow?.id, kind: createdRow?.kind || createPayload.kind, name: createdRow?.name || createPayload.name };
       const callback = onCreated?.(created);
-      resetForm();
+      if (!playerMode) resetForm();
+      else setCreating(false); // Keep the completed player draft until explicit Reset.
       Promise.resolve(callback).catch((callbackError) => console.error("NPC Forge post-create refresh failed", callbackError));
     } catch (cause) { setCreating(false); setError(String(cause?.message || cause || "Failed to create character.")); }
   }
