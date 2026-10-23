@@ -18,6 +18,8 @@ const prone = spellRuleReferenceDetail({kind:"condition",name:"Prone"},spell).re
 for (const term of ["half your Speed","Speed is 0","within 5 feet","Disadvantage","Advantage"]) assert.ok(prone.description.includes(term),`Prone omitted ${term}`);
 const inc = spellRuleReferenceDetail({name:"Incapacitated"},spell).reference;
 for (const term of ["Bonus Actions","Concentration","speak","Initiative"]) assert.ok(inc.description.includes(term));
+const stunned=spellRuleReferenceDetail({name:"Stunned"},spell).reference;
+assert.ok(stunned.description.includes("does not reduce Speed to 0"),"2024 Stunned must not incorrectly impose Speed 0.");
 for (const action of ["Attack","Dash","Disengage","Dodge","Help","Hide","Influence","Magic","Ready","Search","Study","Utilize"]) {
   const rule = spellRuleReferenceDetail({kind:"action",name:action},spell).reference;
   assert.equal(rule.kindLabel,"Action",action);

@@ -10,7 +10,7 @@ const CORE_RULE_REFERENCES = Object.freeze({
   dash: ["Dash", "Action", "Gain extra movement this turn equal to your current Speed after modifiers. You may use a special movement Speed instead."],
   disengage: ["Disengage", "Action", "Your movement doesn't provoke Opportunity Attacks for the remainder of this turn."],
   dodge: ["Dodge", "Action", "Until your next turn begins, attacks against you have Disadvantage if you can see the attacker, and you have Advantage on Dexterity saves. These benefits end if you're Incapacitated or your Speed becomes 0."],
-  help: ["Help", "Action", "Assist another creature with an eligible ability check or an attack against a nearby enemy, as described by the Help action."],
+  help: ["Help", "Action", "Either assist a nearby ally using one of your skill or tool proficiencies (giving Advantage on their next matching ability check before your next turn), or distract an enemy within 5 feet so an ally has Advantage on their next attack against it before your next turn."],
   hide: ["Hide", "Action", "Attempt a DC 15 Dexterity (Stealth) check while out of enemy sight and sufficiently obscured or behind cover. On success you gain the Invisible condition while hidden, until something reveals you."],
   influence: ["Influence", "Action", "Try to persuade, deceive, intimidate, or otherwise influence a creature. The DM determines its willingness and whether an ability check is needed."],
   magic: ["Magic", "Action", "Cast a spell with an action casting time, or activate a feature or magic item that requires the Magic action."],
