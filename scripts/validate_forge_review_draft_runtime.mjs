@@ -29,6 +29,8 @@ const controller = read("components/useNpcForgeController.js");
 const review = read("components/NpcForgeReviewPanel.js");
 const spells = read("components/NpcForgeSpellStep.js");
 const dock = read("components/NpcForgeClassFeatureDock.js");
+const browserCss = read("styles/character-forge-class-final-browser-fix.css");
+const sourceRule = read("components/SourceRuleContent.js");
 const featureText = read("components/ClassFeatureText.js");
 for (const [label, source, tokens] of [
   ["subclass restore", adapter, ["!catalogReady && !validOptions.length", "previous.selectedKey", "featureCatalogReady: false"]],
@@ -36,9 +38,12 @@ for (const [label, source, tokens] of [
   ["draft lifecycle", controller, ["if (!playerMode) resetForm()", "Keep the completed player draft"]],
   ["source-aware review", review, ['title="Species & Heritage"', "featSkillChoices", "All trained skills", "speciesFlavorLore"]],
   ["spell reference", spells, ["showSpellReference", "onReferenceDetail={showSpellReference}"]],
-  ["popup visibility", dock, ['min-width: 540px']],
+  ["popup visibility", dock, ['min-width: 540px', 'is-rule-reference']],
+  ["heritage gate", controller, ['heritagePickCount', 'heritageTraitGroup', 'Choose all ${required} Heritage Traits']],
+  ["reference link spacing", sourceRule, ['reference.kind === "action"', 'nodes.push(" ")']],
   ["benefit disclosure", featureText, ["sourceBenefitList", 'class-feature-text__benefits', "<summary>Available benefits ("]],
 ]) for (const token of tokens) assert(source.includes(token), label + " missing " + token);
+assert(browserCss.includes(".is-viewport-floating:not(.is-rule-reference)"), "Non-Class rules-reference windows must stay visible.");
 assert(!review.includes("<dt>Background choices</dt>"), "Instructional background choices must not pollute final review");
 
 const parser = (await import("@babel/parser")).parse;

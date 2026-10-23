@@ -97,6 +97,11 @@ function InlineRuleText({ value, onReferenceDetail = null }) {
         event.stopPropagation();
         onReferenceDetail(reference);
       }}>{reference.label}</button>);
+      // Imported texts sometimes concatenate an action link and its following noun
+      // (for example {@action Attack}action). Preserve word separation in the UI.
+      if (reference.kind === "action" && /^[A-Za-z]/.test(raw.slice(match.index + match[0].length))) {
+        nodes.push(" ");
+      }
     }
     cursor = match.index + match[0].length;
     match = matcher.exec(raw);

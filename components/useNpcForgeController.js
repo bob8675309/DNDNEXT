@@ -13,11 +13,13 @@ import { generateNpcName } from "../utils/npcNameGenerator";
 import { generateNpcStory, generatedStoryLocationLabel } from "../utils/npcStoryGenerator";
 import { backgroundFeatRule as getBackgroundFeatRule, backgroundFeatSummary, resolveBackgroundFeatOptions } from "../utils/backgroundMechanics";
 import { selectedSubclassOption, useNpcForgeClassChoice } from "./NpcForgeClassChoiceContext";
+import { useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
 import useNpcForgeDerivedModel from "./useNpcForgeDerivedModel";
 import { NPC_STEP_LABELS, PLAYER_STEP_LABELS, initialDraft, titleForSkill, abilityModifier, proficiencyBonus, maximumHitPoints, sourceLabel, standardScoresForClass, speciesTraits, optionId, assetSummary, toolProficiencyDescription, recoverCreatedCharacter } from "./NpcForgeCoreSupport";
 
 export default function useNpcForgeController({ show, onClose, onCreated, locations = [], mode = "npc", createCharacter = null, onReset = null, draftStorageScope = "" }) {
   const playerMode = mode === "player";
+  const { state: sourceChoiceState } = useNpcForgeSourceChoices();
   const STEP_LABELS = playerMode ? PLAYER_STEP_LABELS : NPC_STEP_LABELS;
   const restoredPlayerDraftRef = useRef(undefined);
   if (restoredPlayerDraftRef.current === undefined) restoredPlayerDraftRef.current = playerMode ? readPlayerForgeDraft(draftStorageScope) : null;
@@ -196,7 +198,24 @@ export default function useNpcForgeController({ show, onClose, onCreated, locati
   const stepKey = STEP_LABELS[step]?.toLowerCase();
   function stepErrors(key) {
     const errors = [];
-    if (key === "species") { if (!selectedSpecies) errors.push("Choose a species."); }
+    if (key === "species") {
+      if (!selectedSpecies) errors.push("Choose a species.");
+      if (playerMode && selectedSpecies?.metadata?.heritageOnly) {
+        const required = Math.max(1, Number(selectedSpecies.metadata.heritagePickCount || 8));
+        const speciesId = String(selectedSpecies.id || selectedSpecies.name || "");
+        const heritageGroup = (sourceChoiceState.groups || []).find((group) => (
+          group.metadata?.heritageTraitGroup && String(group.ownerKey) === speciesId
+        ));
+        const saved = sourceChoiceState.selections?.[heritageGroup?.id] || {};
+        const chosen = (heritageGroup?.fields || []).filter((field) => (
+          field.kind === "heritage-trait"
+          && Array.isArray(saved[field.id])
+          && saved[field.id].some((key) => (field.options || []).some((option) => option.key === key))
+        )).length;
+        if (!heritageGroup) errors.push("Heritage Trait choices have not loaded. Return to Species to complete them.");
+        else if (chosen !== required) errors.push(`Choose all ${required} Heritage Traits in Species (currently ${chosen} of ${required}).`);
+      }
+    }
     if (key === "background") { if (!selectedBackground) errors.push("Choose a background."); if (selectedBackgroundFeatRule.requiresChoice && !selectedBackgroundFeat) errors.push("Choose the feat granted by this background."); }
     if (key === "class") { if (!selectedClass) errors.push("Choose a class or No Adventuring Class."); if (Number(draft.level) < 1 || Number(draft.level) > 20) errors.push("Level must be between 1 and 20."); }
     if (key === "abilities") {
