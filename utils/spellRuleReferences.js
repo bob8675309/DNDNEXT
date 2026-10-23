@@ -1,32 +1,40 @@
+import { itemRuleReferenceForLabel } from "./itemRuleReferences.js";
+
 const safe = (value) => String(value ?? "").trim();
 const normalized = (value) => safe(value).toLowerCase().replace(/[’']/g, "'").replace(/[^a-z0-9]+/g, " ").trim();
 
-const SIMPLE_RULE_REFERENCES = Object.freeze({
-  deafened: {
-    title: "Deafened",
-    kindLabel: "Condition",
-    source: "Core Rules",
-    description: "A Deafened creature can't hear and automatically fails any ability check that requires hearing.",
-  },
-  incapacitated: {
-    title: "Incapacitated",
-    kindLabel: "Condition",
-    source: "Core Rules",
-    description: "An Incapacitated creature can't take actions, Bonus Actions, or Reactions, can't maintain Concentration, and can't speak.",
-  },
-  "difficult terrain": {
-    title: "Difficult Terrain",
-    kindLabel: "Movement Rule",
-    source: "Core Rules",
-    description: "Every foot of movement in Difficult Terrain costs 1 extra foot. Multiple sources of Difficult Terrain don't add together unless a rule says otherwise.",
-  },
-  dodge: {
-    title: "Dodge",
-    kindLabel: "Action",
-    source: "Core Rules",
-    description: "Until the start of your next turn, attack rolls against you have Disadvantage if you can see the attacker, and you make Dexterity saving throws with Advantage. You lose this benefit if you are Incapacitated or your Speed is 0.",
-  },
+// Shared conditions and weapon masteries live in itemRuleReferences.js.
+// This glossary supplies only the actions and core terms not covered there.
+const CORE_RULE_REFERENCES = Object.freeze({
+  attack: ["Attack", "Action", "Make a weapon attack or an Unarmed Strike. Class features such as Extra Attack can modify the number of attacks."],
+  dash: ["Dash", "Action", "Gain extra movement this turn equal to your current Speed after modifiers. You may use a special movement Speed instead."],
+  disengage: ["Disengage", "Action", "Your movement doesn't provoke Opportunity Attacks for the remainder of this turn."],
+  dodge: ["Dodge", "Action", "Until your next turn begins, attacks against you have Disadvantage if you can see the attacker, and you have Advantage on Dexterity saves. These benefits end if you're Incapacitated or your Speed becomes 0."],
+  help: ["Help", "Action", "Either assist a nearby ally using one of your skill or tool proficiencies (giving Advantage on their next matching ability check before your next turn), or distract an enemy within 5 feet so an ally has Advantage on their next attack against it before your next turn."],
+  hide: ["Hide", "Action", "Attempt a DC 15 Dexterity (Stealth) check while out of enemy sight and sufficiently obscured or behind cover. On success you gain the Invisible condition while hidden, until something reveals you."],
+  influence: ["Influence", "Action", "Try to persuade, deceive, intimidate, or otherwise influence a creature. The DM determines its willingness and whether an ability check is needed."],
+  magic: ["Magic", "Action", "Cast a spell with an action casting time, or activate a feature or magic item that requires the Magic action."],
+  ready: ["Ready", "Action", "Choose a perceptible trigger and an action or movement to carry out using your Reaction before your next turn. Readying a spell requires Concentration."],
+  search: ["Search", "Action", "Use a Wisdom check, such as Perception, to look for something not immediately obvious."],
+  study: ["Study", "Action", "Use an Intelligence check to recall or investigate information, according to the subject."],
+  utilize: ["Utilize", "Action", "Use an object that requires your action, rather than a simple free interaction."],
+  concentration: ["Concentration", "Spell Rule", "Maintain one Concentration effect at a time. Taking damage calls for a Constitution save (DC 10 or half the damage, whichever is higher, maximum 30). Starting another Concentration effect, becoming Incapacitated, or dying ends it."],
+  "difficult terrain": ["Difficult Terrain", "Movement Rule", "Moving 1 foot through Difficult Terrain costs 2 feet of movement. Multiple sources normally don't increase this further."],
+  crawling: ["Crawling", "Movement Rule", "Each foot crawled costs 1 extra foot of movement, or 2 extra feet in Difficult Terrain."],
+  advantage: ["Advantage", "D20 Test", "Roll two d20s and use the higher result. Multiple sources don't stack, and Disadvantage cancels Advantage."],
+  disadvantage: ["Disadvantage", "D20 Test", "Roll two d20s and use the lower result. Multiple sources don't stack, and Advantage cancels Disadvantage."],
+  "half cover": ["Half Cover", "Cover", "Gain +2 to AC and Dexterity saving throws against effects on the other side of the cover."],
+  "three quarters cover": ["Three-Quarters Cover", "Cover", "Gain +5 to AC and Dexterity saving throws against effects on the other side of the cover."],
+  "total cover": ["Total Cover", "Cover", "You normally can't be targeted directly by an attack or spell from behind Total Cover, although an area effect may reach you."],
+  "saving throw": ["Saving Throw", "D20 Test", "Roll a d20 to resist an effect and add the relevant ability modifier and any applicable proficiency bonus. The effect states what happens on success or failure."],
+  "unarmed strike": ["Unarmed Strike", "Attack", "Make a melee attack without a weapon, such as a punch, or attempt to Grapple or Shove a creature within 5 feet."],
+  "bonus action": ["Bonus Action", "Turn Rule", "You can take one Bonus Action on your turn, but only if a rule gives you one."],
+  reaction: ["Reaction", "Turn Rule", "Respond to a specified trigger, even on another creature's turn. You regain your Reaction at the start of your next turn."],
 });
+function coreRuleReference(key) {
+  const row = CORE_RULE_REFERENCES[key];
+  return row ? { title: row[0], kindLabel: row[1], source: "2024 core rules", description: row[2] } : null;
+}
 
 function bestialSpiritReference(source = "XPHB") {
   const xphb = safe(source).toUpperCase() === "XPHB";
@@ -89,7 +97,7 @@ export function spellRuleReferenceDetail(reference = {}, spell = {}) {
 
   if (key === "bestial spirit") resolved = bestialSpiritReference(reference.source || spell?.source || "XPHB");
   else if (key === "hindered" || key === "hinder") resolved = hinderedReference(spell);
-  else resolved = SIMPLE_RULE_REFERENCES[key] || null;
+  else resolved = itemRuleReferenceForLabel(rawName)?.reference || coreRuleReference(key);
 
   const fallback = {
     title: safe(reference.label || rawName) || "Rules Reference",
@@ -98,7 +106,7 @@ export function spellRuleReferenceDetail(reference = {}, spell = {}) {
         : reference.kind === "action" ? "Action"
           : "Rules Reference",
     source: safe(reference.source) || "Source Rule",
-    description: `This rule is referenced by ${safe(spell?.name) || "the selected spell"}. Its exact effect remains governed by the source text shown on the spell card.`,
+    description: `No standalone definition is indexed here for ${rawName || "this rule"}. Consult the named rule\'s source entry.`,
   };
 
   return {
