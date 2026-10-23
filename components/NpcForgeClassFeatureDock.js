@@ -159,7 +159,7 @@ function RulesReferenceContent({ reference = null }) {
   const statBlock = reference.statBlock;
   if (!statBlock) {
     return <div className="npc-forge-rules-reference">
-      <ClassFeatureText text={reference.description || ""} compact />
+      <p className="npc-forge-rules-reference__definition">{reference.description || "No standalone definition indexed."}</p>
       {Array.isArray(reference.notes) && reference.notes.length ? <ul>{reference.notes.map((note) => <li key={note}>{note}</li>)}</ul> : null}
     </div>;
   }
@@ -578,7 +578,7 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
             {!isOverview && !rulesReference && selectedClass?.class_name ? <span>{selectedClass.class_name}</span> : null}
             {feature?.type === "subclass" && detail?.subclassName ? <span>{detail.subclassName}</span> : null}
             {isListedOption && parentFeatureName ? <span>From {parentFeatureName}</span> : null}
-            {rulesReference?.spellName ? <span>From {rulesReference.spellName}</span> : null}
+            
           </div>
           <div className="npc-forge-class-feature-dock__summary">{rulesReference ? <RulesReferenceContent reference={rulesReference} /> : <ClassFeatureText text={description} entries={feature?.entries || null} compact />}</div>
           {listedOptions.length ? <section className="npc-forge-class-feature-dock__listed-options" aria-label={`${title} options`}>
@@ -594,7 +594,7 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
           {canonicalItem ? <div className="npc-forge-class-feature-dock__item-card" aria-label={`${title} canonical item card`}><ItemCard item={canonicalItem} /></div> : null}
           {!feature && !selectedClass ? <small>Feature descriptions will appear here as you move through the progression table or detailed guide.</small> : null}
           {isListedOption ? <div className="npc-forge-class-feature-dock__listed-note">This is a listed option inside <strong>{parentFeatureName || "the selected feature"}</strong>. The description comes from the normalized class-option or canonical item catalogue when a matching entry exists; otherwise the parent feature remains the mechanical authority.</div> : null}
-          {rulesReference ? <div className="npc-forge-class-feature-dock__routing-note">Select another highlighted rule term on the spell card to inspect it here.</div> : selectedClass ? <div className="npc-forge-class-feature-dock__routing-note">{feature ? "Select another feature or subclass to inspect it here." : "Select a feature or subclass to see more detail here."}</div> : null}
+          {!rulesReference && selectedClass ? <div className="npc-forge-class-feature-dock__routing-note">{feature ? "Select another feature or subclass to inspect it here." : "Select a feature or subclass to see more detail here."}</div> : null}
           {portalHost ? <div className="npc-forge-class-feature-dock__drag-cue" aria-hidden="true">Drag header to move <span>✥</span></div> : null}
         </>}
       </div>
