@@ -1,0 +1,28 @@
+name: Validate Heritage Persistence and Inline Links
+on:
+  pull_request:
+    paths:
+      - "components/NpcForgeContextPanelRefined.js"
+      - "components/useNpcForgeController.js"
+      - "styles/spell-card.css"
+      - "components/SourceRuleContent.js"
+      - "scripts/validate_heritage_tab_persistence_and_inline_links.mjs"
+      - ".github/workflows/validate-heritage-tab-persistence.yml"
+  push:
+    branches: [main]
+    paths:
+      - "components/NpcForgeContextPanelRefined.js"
+      - "components/useNpcForgeController.js"
+      - "styles/spell-card.css"
+      - "components/SourceRuleContent.js"
+      - "scripts/validate_heritage_tab_persistence_and_inline_links.mjs"
+      - ".github/workflows/validate-heritage-tab-persistence.yml"
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node scripts/validate_heritage_tab_persistence_and_inline_links.mjs
