@@ -25,4 +25,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - run: node scripts/validate_heritage_tab_persistence_and_inline_links.mjs
+      - name: Install dependencies for React choice-state lifecycle
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Check Heritage transitions and inline links
+        run: node --experimental-loader ./scripts/node_relative_js_loader.mjs scripts/validate_heritage_tab_persistence_and_inline_links.mjs
