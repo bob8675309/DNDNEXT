@@ -1,0 +1,25 @@
+name: Validate Source Rule Link Spacing
+on:
+  pull_request:
+    paths:
+      - "components/SourceRuleContent.js"
+      - "utils/sourceRuleTextSpacing.js"
+      - "scripts/test_source_rule_text_spacing.mjs"
+      - ".github/workflows/validate-source-rule-link-spacing.yml"
+  push:
+    branches: [main]
+    paths:
+      - "components/SourceRuleContent.js"
+      - "utils/sourceRuleTextSpacing.js"
+      - "scripts/test_source_rule_text_spacing.mjs"
+      - ".github/workflows/validate-source-rule-link-spacing.yml"
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify true text spacing around reference links
+        run: node scripts/test_source_rule_text_spacing.mjs

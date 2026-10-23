@@ -40,7 +40,7 @@ for (const [label, source, tokens] of [
   ["spell reference", spells, ["showSpellReference", "onReferenceDetail={showSpellReference}"]],
   ["popup visibility", dock, ['min-width: 540px', 'is-rule-reference']],
   ["heritage gate", controller, ['heritagePickCount', 'heritageTraitGroup', 'Choose all ${required} Heritage Traits']],
-  ["reference link spacing", sourceRule, ['["action", "condition", "quickref", "rule"]', 'nodes.push(" ")']],
+  ["reference link spacing", sourceRule, ['referenceTagBoundarySpacing(raw, match.index, match[0].length)', 'if (boundary.before', 'if (boundary.after) nodes.push(" ")']],
   ["benefit disclosure", featureText, ["sourceBenefitList", 'class-feature-text__benefits', "<summary>Available benefits ("]],
 ]) for (const token of tokens) assert(source.includes(token), label + " missing " + token);
 assert(browserCss.includes(".is-viewport-floating:not(.is-rule-reference)"), "Non-Class rules-reference windows must stay visible.");

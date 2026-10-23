@@ -1,4 +1,5 @@
 import { formatPlayerFacingInline, formatPlayerFacingText } from "../utils/playerFacingText";
+import { referenceTagBoundarySpacing } from "../utils/sourceRuleTextSpacing";
 
 const array = (value) => Array.isArray(value) ? value : value == null ? [] : [value];
 const safe = (value) => String(value ?? "").trim();
@@ -93,15 +94,16 @@ function InlineRuleText({ value, onReferenceDetail = null }) {
     }
     const reference = referenceFromTag(match[1].toLowerCase(), match[2]);
     if (reference) {
+      // formatPlayerFacingText() trims whitespace from each prose fragment.
+      // Reintroduce exactly one word boundary before/after the inline link,
+      // including when the imported markup is glued to its neighboring words.
+      const boundary = referenceTagBoundarySpacing(raw, match.index, match[0].length);
+      if (boundary.before && nodes[nodes.length - 1] !== " ") nodes.push(" ");
       nodes.push(<button type="button" key={`ref-${match.index}-${reference.name}`} className="source-rule-content__inline-reference" onClick={(event) => {
         event.stopPropagation();
         onReferenceDetail(reference);
       }}>{reference.label}</button>);
-      // Imported texts sometimes concatenate an action link and its following noun
-      // (for example {@action Attack}action). Preserve word separation in the UI.
-      if (["action", "condition", "quickref", "rule"].includes(reference.kind) && /^[A-Za-z]/.test(raw.slice(match.index + match[0].length))) {
-        nodes.push(" ");
-      }
+      if (boundary.after) nodes.push(" ");
     }
     cursor = match.index + match[0].length;
     match = matcher.exec(raw);
