@@ -13,7 +13,7 @@ import { EMPTY_SOURCE_CHOICE_STATE, normalizeSourceChoiceState, NpcForgeSourceCh
 import { applyDirectSourceChoiceSelection } from "../utils/directSourceChoiceState.js";
 
 const uniqueText = (values = []) => [...new Set((Array.isArray(values) ? values : []).map((value) => String(value ?? "").trim()).filter(Boolean))];
-const SOURCE_CHOICE_DRAFT_VERSION = 2;
+const SOURCE_CHOICE_DRAFT_VERSION = 3;
 const normalizedLanguage = (value) => String(value || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, " ");
 function echoingSoulLanguageGrant(choice = {}) {
   return choice.ownerType === "feat" && choice.kind === "language"

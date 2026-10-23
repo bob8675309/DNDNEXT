@@ -213,7 +213,7 @@ for (const forbidden of ["replaceFieldId", "Replace Trait", "selected-swap", "is
 
 const modal = read("components/NewNpcModalV3.js");
 for (const token of [
-  "SOURCE_CHOICE_DRAFT_VERSION = 2",
+  "SOURCE_CHOICE_DRAFT_VERSION = 3",
   "restoredSourceChoiceState",
   "persistedSourceChoiceState",
   "groups: []",

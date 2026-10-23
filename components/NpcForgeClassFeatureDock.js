@@ -440,7 +440,7 @@ export default function NpcForgeClassFeatureDock({ detail = null, selectedClass 
   } : undefined;
 
   const dock = (
-    <section ref={dockRef} style={floatingStyle} className={`npc-forge-class-feature-dock${feature ? " has-feature" : " is-placeholder"}${isSubclassInspector ? " is-subclass-inspector" : ""}${panelRole === "feature" ? " is-feature-panel" : " is-codex-panel"}${portalHost ? " is-floating is-viewport-floating" : ""}${dragging ? " is-dragging" : ""}`}>
+    <section ref={dockRef} style={floatingStyle} className={`npc-forge-class-feature-dock${feature ? " has-feature" : " is-placeholder"}${isSubclassInspector ? " is-subclass-inspector" : ""}${panelRole === "feature" ? " is-feature-panel" : " is-codex-panel"}${rulesReference || String(detail?.instanceKey || "").startsWith("spell-reference-") ? " is-rule-reference" : ""}${portalHost ? " is-floating is-viewport-floating" : ""}${dragging ? " is-dragging" : ""}`}>
       <div className="npc-forge-class-feature-dock__head" onPointerDown={handleDragStart} onPointerMove={handleDragMove} onPointerUp={handleDragEnd} onPointerCancel={handleDragEnd} title={portalHost ? "Drag to move this description window anywhere in the viewport" : undefined}>
         <div className="npc-forge-class-feature-dock__title-group">
           <span>{type}</span>

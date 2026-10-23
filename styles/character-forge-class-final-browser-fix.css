@@ -194,9 +194,9 @@
     overflow-wrap: anywhere !important;
   }
 
-  /* The feature inspector exists only while the Class step is actually mounted. A closed Forge,
-     Profile page, or another Forge tab must never leave the portal card behind. */
-  body:not(:has(.unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2)) > .npc-forge-class-feature-dock.is-viewport-floating {
+  /* Class-only feature inspectors close outside the Class tab, but rules-reference
+     inspectors opened from spell cards or item cards remain visible anywhere. */
+  body:not(:has(.unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2)) > .npc-forge-class-feature-dock.is-viewport-floating:not(.is-rule-reference) {
     display: none !important;
   }
 

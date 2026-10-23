@@ -22,6 +22,7 @@ for (const token of [
   "grid-template-columns: minmax(0, 1fr) 286px",
   "grid-template-columns: 42px 43px minmax(165px, 1.95fr) 55px 74px minmax(92px, .95fr)",
   "body:not(:has(.unified-player-character-forge .npc-forge-body.is-player-mode.npc-forge-step-2))",
+  ".is-viewport-floating:not(.is-rule-reference)",
   ".npc-forge-class-feature-dock.is-viewport-floating.is-placeholder",
   "width: min(308px, calc(100vw - 24px))",
 ]) assert(css.includes(token), `Final Class browser fix is missing ${token}`);
