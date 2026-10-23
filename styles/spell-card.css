@@ -478,3 +478,37 @@
     display: none !important;
   }
 }
+
+
+/* Source rule links must flow like ordinary spell prose, not UI chips. */
+.spell-card .source-rule-content__inline-reference {
+  display: inline !important;
+  vertical-align: baseline !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: none !important;
+  color: #aedbea !important;
+  font: inherit !important;
+  font-weight: 550 !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  letter-spacing: inherit !important;
+  text-transform: none !important;
+  text-decoration: underline dotted rgba(143,213,222,0.62) !important;
+  text-underline-offset: 2px !important;
+  cursor: pointer;
+}
+.spell-card .source-rule-content__inline-reference:hover {
+  color: #ecfcff !important;
+  text-decoration-color: #baf1ec !important;
+}
+.spell-card .source-rule-content__inline-reference:focus-visible {
+  color: #fff !important;
+  outline: 1px solid #baf1ec !important;
+  outline-offset: 2px !important;
+  text-decoration-color: #baf1ec !important;
+}

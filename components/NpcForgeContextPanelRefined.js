@@ -281,7 +281,7 @@ export default function NpcForgeContextPanel({ playerMode = false, step = 0, ste
   const activeSpecies = detail?.type === "species" && detail.option ? detail.option : stepKey === "species" || step === 0 ? selectedSpecies : null;
   const activeBackground = detail?.type === "background" && detail.option ? detail.option : stepKey === "background" || step === 1 ? selectedBackground : null;
   const { state: speciesChoiceState, registerSpecies, selectChoice } = useNpcForgeSpeciesChoices();
-  const { state: sourceChoiceState, toggleChoice: toggleSourceChoice, setChoice: setSourceChoice } = useNpcForgeSourceChoices();
+  const { state: sourceChoiceState, toggleChoice: toggleSourceChoice, setChoice: setSourceChoice, registerGroups: registerSourceGroups } = useNpcForgeSourceChoices();
   const speciesChoiceRules = useMemo(() => {
     if (!activeSpecies) return [];
     const rules = extractSpeciesTraitChoiceRules(activeSpecies);
@@ -289,6 +289,17 @@ export default function NpcForgeContextPanel({ playerMode = false, step = 0, ste
   }, [activeSpecies, playerMode]);
   const [speciesSpellHelp, setSpeciesSpellHelp] = useState({});
   const [heritageFocusRequest, setHeritageFocusRequest] = useState(null);
+  // The species preview can construct a Heritage picker before asynchronous
+  // species-extra catalogues register. Give this source-owned group a stable
+  // independent registration that survives navigation to Background/Class.
+  const selectedHeritageGroup = useMemo(() => (
+    playerMode && isGrimHollowHeritageSpecies(selectedSpecies)
+      ? heritageChoiceGroupForSpecies(selectedSpecies, [], buildSpeciesSourceChoiceGroups)
+      : null
+  ), [playerMode, selectedSpecies]);
+  useEffect(() => {
+    registerSourceGroups(selectedHeritageGroup ? [selectedHeritageGroup] : [], true, "heritage-primary");
+  }, [registerSourceGroups, selectedHeritageGroup]);
   const spellChoiceNames = useMemo(() => [...new Set(speciesChoiceRules.flatMap((rule) => (rule.fields || []).filter((field) => field.kind === "spell").flatMap((field) => (field.options || []).map((option) => safeText(option.label || option.value))).filter(Boolean)))], [speciesChoiceRules]);
   const activeSpeciesId = String(activeSpecies?.id || activeSpecies?.name || "");
   const speciesChoiceSelections = speciesChoiceState.speciesId === activeSpeciesId ? speciesChoiceState.selections || {} : {};

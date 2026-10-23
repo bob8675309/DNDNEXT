@@ -14,6 +14,7 @@ import { generateNpcStory, generatedStoryLocationLabel } from "../utils/npcStory
 import { backgroundFeatRule as getBackgroundFeatRule, backgroundFeatSummary, resolveBackgroundFeatOptions } from "../utils/backgroundMechanics";
 import { selectedSubclassOption, useNpcForgeClassChoice } from "./NpcForgeClassChoiceContext";
 import { useNpcForgeSourceChoices } from "./NpcForgeSourceChoiceContext";
+import { buildSpeciesSourceChoiceGroups } from "../utils/playerForgeSpeciesChoices";
 import useNpcForgeDerivedModel from "./useNpcForgeDerivedModel";
 import { NPC_STEP_LABELS, PLAYER_STEP_LABELS, initialDraft, titleForSkill, abilityModifier, proficiencyBonus, maximumHitPoints, sourceLabel, standardScoresForClass, speciesTraits, optionId, assetSummary, toolProficiencyDescription, recoverCreatedCharacter } from "./NpcForgeCoreSupport";
 
@@ -204,6 +205,8 @@ export default function useNpcForgeController({ show, onClose, onCreated, locati
         const required = Math.max(1, Number(selectedSpecies.metadata.heritagePickCount || 8));
         const speciesId = String(selectedSpecies.id || selectedSpecies.name || "");
         const heritageGroup = (sourceChoiceState.groups || []).find((group) => (
+          group.metadata?.heritageTraitGroup && String(group.ownerKey) === speciesId
+        )) || buildSpeciesSourceChoiceGroups({ species: selectedSpecies }).find((group) => (
           group.metadata?.heritageTraitGroup && String(group.ownerKey) === speciesId
         ));
         const saved = sourceChoiceState.selections?.[heritageGroup?.id] || {};
