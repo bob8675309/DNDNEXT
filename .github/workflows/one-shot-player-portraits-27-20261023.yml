@@ -1,0 +1,94 @@
+name: One-shot DNDNext player portraits 27 transfer
+on:
+  push:
+    branches:
+      - agent/player-portraits-transfer-20261023
+    paths:
+      - .github/workflows/one-shot-player-portraits-27-20261023.yml
+permissions:
+  contents: write
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout the exact working PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/forge-video-bugfixes-20261023
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Hard guard against a stale PR head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "383fbaa9108987529e0daa8968d5ff691c680447"
+          test "$(git status --porcelain)" = ""
+      - name: Download the verified transfer bundle once
+        shell: bash
+        env:
+          ARTWORK_ZIP_URL: "https://uc9c13e15d1923ec7cb2ef6ab63e.dl.dropboxusercontent.com/cd/0/get/DKgnJUZ2C8lMqui2SrUlrh4zXHQ7NVy30CGk6tiKwd8ZARv2ugYLbNJAnl3HDEkLSioRFD-rabqYiKAf4lJNvJrtl6rvT2a8B1qLjakCjpBRQq4rPjJpQCXuLJbwl-1LsS7HKYIrrTZm85anCDQNYHKxVAbKRc_MEZvdptHrUqrkZQ/file?c_luid=c335000c"
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --max-time 180 --output /tmp/portraits.zip "$ARTWORK_ZIP_URL"
+          echo "155aa58ce945043da745f29ca5769e1c68f80e2c8b2023d7b3ec7c7e2c682e26  /tmp/portraits.zip" | sha256sum -c -
+      - name: Verify each WebP and materialize the exact approved paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --disable-pip-version-check --user pillow==11.3.0
+          python3 - <<'PY'
+          import zipfile,json,hashlib,io,pathlib
+          from PIL import Image
+          archive=zipfile.ZipFile('/tmp/portraits.zip')
+          listing=set(archive.namelist())
+          info=json.loads(archive.read('transfer_manifest.json'))
+          items=info['paths']
+          sql=info['sql_path']
+          assert len(items)==27 and len(set(items))==27 and info['count']==27
+          assert sql=='sql/20261023_01_player_species_portrait_library.sql'
+          assert all(n.startswith('public/npc-portraits/library/player-species-20261021/profile-') and n.endswith('.webp') for n in items)
+          assert set(items)=={n for n in listing if n.startswith('public/')}
+          assert sql in listing
+          for name in items:
+              blob=archive.read(name)
+              assert hashlib.sha256(blob).hexdigest()==info['sha256'][name],name
+              assert blob[:4]==b'RIFF' and blob[8:12]==b'WEBP',name
+              with Image.open(io.BytesIO(blob)) as image:
+                  assert image.format=='WEBP' and image.size==(939,1252),(name,image.format,image.size)
+              path=pathlib.Path(name)
+              assert not path.exists(),f'Asset already exists; refusing overwrite: {name}'
+              path.parent.mkdir(parents=True,exist_ok=True)
+              path.write_bytes(blob)
+          sql_blob=archive.read(sql)
+          assert b'ON CONFLICT (bucket, storage_path) DO NOTHING;' in sql_blob
+          assert sql_blob.count(b"'repo-static'")==27
+          sql_path=pathlib.Path(sql)
+          assert not sql_path.exists(),f'SQL file already exists: {sql}'
+          sql_path.parent.mkdir(parents=True,exist_ok=True)
+          sql_path.write_bytes(sql_blob)
+          expected=sorted([*items,sql])
+          pathlib.Path('/tmp/portraits_expected.txt').write_text('\n'.join(expected)+'\n')
+          print('Validated',len(items),'new WebPs and a guarded idempotent registration SQL file.')
+          PY
+          test "$(find public/npc-portraits/library/player-species-20261021 -type f | wc -l)" = "27"
+          test "$(file -b --mime-type public/npc-portraits/library/player-species-20261021/*.webp | sort -u)" = "image/webp"
+      - name: Stage and validate the exact intended diff boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add -- public/npc-portraits/library/player-species-20261021 sql/20261023_01_player_species_portrait_library.sql
+          git diff --cached --name-only | sort > /tmp/portraits_actual.txt
+          diff -u /tmp/portraits_expected.txt /tmp/portraits_actual.txt
+          test "$(git diff --cached --numstat | wc -l)" = "28"
+          git diff --cached --check
+      - name: Commit and safely fast-forward only the intended PR branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin "agent/forge-video-bugfixes-20261023"
+          test "$(git rev-parse "origin/agent/forge-video-bugfixes-20261023")" = "383fbaa9108987529e0daa8968d5ff691c680447"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Add 27 approved species profile portraits and library registration"
+          git push origin "HEAD:refs/heads/agent/forge-video-bugfixes-20261023"
