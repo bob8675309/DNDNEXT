@@ -1,0 +1,25 @@
+name: Validate Player Species Portrait Library
+on:
+  pull_request:
+    paths:
+      - "public/npc-portraits/library/player-species-20261021/**"
+      - "sql/20261023_01_player_species_portrait_library.sql"
+      - "scripts/validate_player_profile_portrait_batch.mjs"
+      - ".github/workflows/validate-player-profile-portraits.yml"
+  push:
+    branches: [main]
+    paths:
+      - "public/npc-portraits/library/player-species-20261021/**"
+      - "sql/20261023_01_player_species_portrait_library.sql"
+      - "scripts/validate_player_profile_portrait_batch.mjs"
+      - ".github/workflows/validate-player-profile-portraits.yml"
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify all 27 bundled portraits
+        run: node scripts/validate_player_profile_portrait_batch.mjs
