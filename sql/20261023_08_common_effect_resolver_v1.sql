@@ -22,9 +22,9 @@ begin
  end if;
  for e in select value from jsonb_array_elements(p_effects) loop
    if jsonb_typeof(e) is distinct from 'object'
-      or coalesce(e->>'id','')=''
-      or coalesce(e->>'source','')=''
-      or coalesce(e->>'stackKey','')='' then
+      or coalesce(e->>'id','') !~ '^[a-zA-Z0-9_:/.-]{1,128}$'
+      or coalesce(e->>'source','') !~ '^[a-zA-Z0-9_:/.-]{1,128}$'
+      or coalesce(e->>'stackKey','') !~ '^[a-zA-Z0-9_:/.-]{1,128}$' then
      raise exception 'Each effect needs id, source and stackKey' using errcode='22023';
    end if;
    if exists(select 1 from jsonb_object_keys(e) x
@@ -33,12 +33,12 @@ begin
    end if;
    target:=e->>'target'; op:=e->>'op'; k:=e->>'stackKey';
    if op in ('advantage','disadvantage') then
-     if target not in ('saving_throw','ability_check','attack_roll')
+     if target is null or target not in ('saving_throw','ability_check','attack_roll')
         or e ? 'value' then
        raise exception 'Invalid roll-mode effect' using errcode='22023';
      end if;
    elsif op in ('add','minimum','multiply') then
-     if target not in ('max_hp','speed_ft','darkvision_ft','ac',
+     if target is null or target not in ('max_hp','speed_ft','darkvision_ft','ac',
        'initiative','athletics_check','acrobatics_check',
        'jump_multiplier','climb_speed_ft','saving_throw_bonus',
        'attack_roll_bonus','damage_bonus')
@@ -75,9 +75,15 @@ begin
      end if;
      duplicates:=duplicates+1;
      if op in ('add','minimum','multiply') then
-       if abs(val)>abs((previous->>'value')::numeric) then
+       if abs(val)>abs((previous->>'value')::numeric)
+         or (abs(val)=abs((previous->>'value')::numeric)
+           and (val>(previous->>'value')::numeric
+             or (val=(previous->>'value')::numeric
+               and e->>'id'<previous->>'id'))) then
          selected:=jsonb_set(selected,array[k],e,true);
        end if;
+     elsif e->>'id'<previous->>'id' then
+       selected:=jsonb_set(selected,array[k],e,true);
      end if;
    else
      selected:=jsonb_set(selected,array[k],e,true);
