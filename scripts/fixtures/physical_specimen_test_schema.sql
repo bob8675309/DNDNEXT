@@ -56,13 +56,19 @@ insert into public.class_catalog values
   ('11111111-1111-1111-1111-111111111111','warlock','XPHB');
 insert into public.character_progression values
   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa','11111111-1111-1111-1111-111111111111','The Parasite Patron','GrimHollowPG24',3),
-  ('dddddddd-dddd-dddd-dddd-dddddddddddd','11111111-1111-1111-1111-111111111111','Other Patron','GrimHollowPG24',3);
+  ('dddddddd-dddd-dddd-dddd-dddddddddddd','11111111-1111-1111-1111-111111111111','Other Patron','GrimHollowPG24',3),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee','11111111-1111-1111-1111-111111111111','The Parasite Patron','GrimHollowPG24',3);
 insert into public.character_sheets values
   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa','{"abilities":{"cha":{"score":20}}}'::jsonb),
-  ('dddddddd-dddd-dddd-dddd-dddddddddddd','{"abilities":{"cha":{"score":20}}}'::jsonb);
+  ('dddddddd-dddd-dddd-dddd-dddddddddddd','{"abilities":{"cha":{"score":20}}}'::jsonb),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee','{"abilities":{"cha":{"score":12}}}'::jsonb);
 insert into public.character_permissions values
   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa','bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',true),
-  ('dddddddd-dddd-dddd-dddd-dddddddddddd','bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',true);
+  ('dddddddd-dddd-dddd-dddd-dddddddddddd','bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',true),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee','bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',true);
+-- Simulate a participant in an active tactical encounter.
+insert into public.test_active_encounters(character_id)
+values ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee');
 insert into public.class_feature_catalog(
   id,feature_key,class_key,class_source,subclass_name,source,level,name,raw_payload
 ) values (
