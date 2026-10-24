@@ -243,7 +243,9 @@ declare v jsonb;
 begin
   v:=public.get_character_physical_specimen_effective_stats_v1(
     'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
-  if v #>> '{effectiveStats,currentHp}' <> '27'
+  -- Reactivation after the last Long Rest selected only Physical Aptitude,
+  -- so the previous +3 maximum-HP benefit is no longer active.
+  if v #>> '{effectiveStats,currentHp}' <> '24'
     or v->>'requiresHpReconciliation'<>'true' then
     raise exception 'Over-max HP not safely flagged and clamped: %',v;
   end if;
