@@ -54,15 +54,15 @@ begin
  ('20000000-0000-4000-8000-000000000006',c::text,'character',true,now(),'{"item_key":"leather"}','leather','Leather Armor',null,'body'),
  ('20000000-0000-4000-8000-000000000007',c::text,'character',true,now(),'{"item_key":"shield"}','shield','Shield',null,'offhand');
  e:=private.character_equipment_effects_v1(c);
- if e#>>'{ac,total}'<>'14' or e#>>'{ac,dexApplied}'<>'-1' then raise exception 'Light AC failed %',e; end if;
+ if e#>>'{ac,total}'<>'15' or e#>>'{ac,dexApplied}'<>'-1' then raise exception 'Light AC failed %',e; end if;
  update public.inventory_items set card_payload='{"item_key":"scale"}',item_id='scale',item_name='Scale Mail'
  where id='20000000-0000-4000-8000-000000000006';
  e:=private.character_equipment_effects_v1(c);
- if e#>>'{ac,total}'<>'17' or e#>>'{ac,dexApplied}'<>'-1' then raise exception 'Medium AC failed %',e; end if;
+ if e#>>'{ac,total}'<>'18' or e#>>'{ac,dexApplied}'<>'-1' then raise exception 'Medium AC failed %',e; end if;
  update public.inventory_items set card_payload='{"item_key":"chain"}',item_id='chain',item_name='Chain Mail'
  where id='20000000-0000-4000-8000-000000000006';
  e:=private.character_equipment_effects_v1(c);
- if e#>>'{ac,total}'<>'20' or e#>>'{ac,dexApplied}'<>'0' then raise exception 'Heavy AC failed %',e; end if;
+ if e#>>'{ac,total}'<>'21' or e#>>'{ac,dexApplied}'<>'0' then raise exception 'Heavy AC failed %',e; end if;
  update public.inventory_items set equip_slot='back'
  where id='20000000-0000-4000-8000-000000000006';
  e:=private.character_equipment_effects_v1(c);
