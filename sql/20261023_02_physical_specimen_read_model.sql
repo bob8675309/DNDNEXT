@@ -154,6 +154,7 @@ declare
   v_row public.character_runtime_feature_choices%rowtype;
   v_row_exists boolean:=false;
   v_active boolean:=false;
+  v_activation_spent boolean:=false;
   v_valid_keys boolean:=false;
   v_keys jsonb:='[]'::jsonb;
   v_activated_at timestamptz;
@@ -209,11 +210,13 @@ begin
   select max(completed_at) into v_latest_short_rest
     from public.character_rest_log
     where character_id=p_character_id and rest_type='short_rest';
-  v_active:=v_row_exists
+  v_activation_spent:=v_row_exists
     and coalesce((v_row.state->>'activated')::boolean,false)
     and v_activated_at is not null
-    and v_valid_keys
     and (v_latest_long_rest is null or v_latest_long_rest<=v_activated_at);
+  -- Do not make an already-spent activation available merely because its
+  -- persisted option list is malformed. Fail closed until reconciled.
+  v_active:=v_activation_spent and v_valid_keys;
   v_encounter:=private.character_active_encounter_v1(p_character_id);
   v_short_swap_ready:=v_active
     and v_latest_short_rest is not null
@@ -233,12 +236,14 @@ begin
     'options',v_options,
     'maxBenefits',v_context->'maxBenefits',
     'active',v_active,
+    'activationSpentThisRest',v_activation_spent,
+    'stateIntegrityOk',not v_activation_spent or v_valid_keys,
     'state',case when v_active then v_row.state else jsonb_build_object('active',false) end,
     'activeBenefitKeys',case when v_active then v_keys else '[]'::jsonb end,
     'lastActivatedAt',v_activated_at,
     'latestLongRestAt',v_latest_long_rest,
     'latestShortRestAt',v_latest_short_rest,
-    'canActivateOutsideEncounter',not v_active and v_encounter is null,
+    'canActivateOutsideEncounter',not v_activation_spent and v_encounter is null,
     'canSwapOutsideEncounter',v_short_swap_ready and v_encounter is null,
     'requiresActionIntegration',true,
     'effectiveStatsIntegrated',false,
