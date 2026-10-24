@@ -5,11 +5,14 @@ on:
       - "sql/20261023_02_physical_specimen_read_model.sql"
       - "sql/20261023_03_physical_specimen_guarded_actions.sql"
       - "sql/20261023_04_physical_specimen_stat_projection.sql"
+      - "sql/20261023_05_physical_specimen_tactical_action.sql"
       - "scripts/validate_physical_specimen_read_model.mjs"
       - "scripts/validate_physical_specimen_guarded_actions.mjs"
       - "scripts/validate_physical_specimen_stat_projection.mjs"
+      - "scripts/validate_physical_specimen_tactical.mjs"
       - "scripts/fixtures/physical_specimen_test_schema.sql"
       - "scripts/fixtures/physical_specimen_behavior.sql"
+      - "scripts/fixtures/physical_specimen_tactical_behavior.sql"
       - ".github/workflows/validate-physical-specimen-read-model.yml"
   push:
     branches: [main]
@@ -17,11 +20,14 @@ on:
       - "sql/20261023_02_physical_specimen_read_model.sql"
       - "sql/20261023_03_physical_specimen_guarded_actions.sql"
       - "sql/20261023_04_physical_specimen_stat_projection.sql"
+      - "sql/20261023_05_physical_specimen_tactical_action.sql"
       - "scripts/validate_physical_specimen_read_model.mjs"
       - "scripts/validate_physical_specimen_guarded_actions.mjs"
       - "scripts/validate_physical_specimen_stat_projection.mjs"
+      - "scripts/validate_physical_specimen_tactical.mjs"
       - "scripts/fixtures/physical_specimen_test_schema.sql"
       - "scripts/fixtures/physical_specimen_behavior.sql"
+      - "scripts/fixtures/physical_specimen_tactical_behavior.sql"
       - ".github/workflows/validate-physical-specimen-read-model.yml"
 jobs:
   validate-contracts:
@@ -34,6 +40,7 @@ jobs:
       - run: node scripts/validate_physical_specimen_read_model.mjs
       - run: node scripts/validate_physical_specimen_guarded_actions.mjs
       - run: node scripts/validate_physical_specimen_stat_projection.mjs
+      - run: node scripts/validate_physical_specimen_tactical.mjs
   verify-postgres-runtime:
     runs-on: ubuntu-latest
     services:
@@ -64,5 +71,8 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -f sql/20261023_02_physical_specimen_read_model.sql
           psql -X -v ON_ERROR_STOP=1 -f sql/20261023_03_physical_specimen_guarded_actions.sql
           psql -X -v ON_ERROR_STOP=1 -f sql/20261023_04_physical_specimen_stat_projection.sql
+          psql -X -v ON_ERROR_STOP=1 -f sql/20261023_05_physical_specimen_tactical_action.sql
       - name: Exercise authenticated actions and rest cycles
-        run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/physical_specimen_behavior.sql
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/physical_specimen_behavior.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/physical_specimen_tactical_behavior.sql
