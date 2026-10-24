@@ -3,8 +3,8 @@ import fs from "node:fs";
 const sql=fs.readFileSync("sql/20261024_01_common_equipment_bonus_adapter_v1.sql","utf8");
 const fixture=fs.readFileSync("scripts/fixtures/common_equipment_bonus_shadow_parity.sql","utf8");
 for(const token of ["normalize_equipment_bonus_effects_v1","immutable security invoker",
-"schemaVersion","savesAll","skillsAll","initiative","saving_throw_bonus","acrobatics_check",
-"athletics_check","revoke all on function private.normalize_equipment_bonus_effects_v1"])
+"schemaVersion","savesAll","skillsAll","initiative","saving_throw_bonus","v_skill||'_check'",
+"v_skill not in ('athletics','acrobatics')","revoke all on function private.normalize_equipment_bonus_effects_v1"])
 assert.ok(sql.toLowerCase().includes(token.toLowerCase()),`Missing isolated parity contract: ${token}`);
 for(const token of ["security definer","update public.","insert into public.","delete from public.","create trigger","create table"])
 assert.ok(!sql.toLowerCase().includes(token),`Shadow adapter changes gameplay authority: ${token}`);
