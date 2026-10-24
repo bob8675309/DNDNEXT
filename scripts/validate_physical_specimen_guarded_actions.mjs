@@ -29,6 +29,6 @@ for(const prohibited of [
 ]) assert.ok(!write.toLowerCase().includes(prohibited.toLowerCase()),`Forbidden cross-system mutation: ${prohibited}`);
 const a=write.match(/create or replace function/g)||[];
 assert.equal(a.length,4);
-assert.match(write,/grant execute on function public.activate_character_physical_specimen_v1(uuid,text[])/);
-assert.match(write,/grant execute on function public.swap_character_physical_specimen_benefit_v1(uuid,text,text)/);
+assert.ok(write.includes("grant execute on function public.activate_character_physical_specimen_v1(uuid,text[])"));
+assert.ok(write.includes("grant execute on function public.swap_character_physical_specimen_benefit_v1(uuid,text,text)"));
 console.log("Physical Specimen guarded activation, rest swaps and non-destructive stat projection boundaries verified.");
