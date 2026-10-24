@@ -79,10 +79,10 @@ begin
          or (abs(val)=abs((previous->>'value')::numeric)
            and (val>(previous->>'value')::numeric
              or (val=(previous->>'value')::numeric
-               and e->>'id'<previous->>'id'))) then
+               and e::text<previous::text))) then
          selected:=jsonb_set(selected,array[k],e,true);
        end if;
-     elsif e->>'id'<previous->>'id' then
+     elsif e::text<previous::text then
        selected:=jsonb_set(selected,array[k],e,true);
      end if;
    else

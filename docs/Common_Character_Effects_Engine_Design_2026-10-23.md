@@ -31,7 +31,7 @@ The adapter supplies **resolved numeric values**, e.g. Warlock class level 3 →
 
 - Duration, expiration, concentration, spell slots, activation timing, permission, item equipment rules, class/subclass eligibility, stacking exception clauses or rules-text interpretation.
 - Cross-stat dependency (`climb_speed_ft` equal to effective Speed), damage/healing/current-HP reconciliation, encounter movement legality, vision provenance or save/skill roll integration. Those need source-aware adapters and tactical regression tests.
-- Same-magnitude duplicate provenance currently retains the first; numeric values remain equivalent. Stable tie-breaking is required before broader adoption.
+- Equal-magnitude duplicate provenance is deterministic across input ordering using a canonical representation of each normalized effect. Different sources must still be assigned the correct stack groups by an authoritative adapter.
 - No existing sheet or combat calculation has been switched to this resolver; PR #250 is an **integration reference**, not a permanent pattern to copy into each class feature.
 
 ## Development order

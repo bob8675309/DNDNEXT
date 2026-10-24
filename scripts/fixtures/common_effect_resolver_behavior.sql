@@ -90,6 +90,90 @@ begin
    {"id":"b","source":"b","stackKey":"shared","target":"max_hp","op":"add","value":5}]'::jsonb);
  exception when sqlstate '22023' then rejected:=true; end;
  if not rejected then raise exception 'Mixed stacking group accepted'; end if;
+  -- The same magnitude and effect ID from two different sources must
+  -- choose deterministic provenance no matter their encounter load order.
+  effects:='[
+    {"id":"swing","source":"source:z","stackKey":"shared:damage","target":"damage_bonus","op":"add","value":3},
+    {"id":"swing","source":"source:a","stackKey":"shared:damage","target":"damage_bonus","op":"add","value":3}
+  ]'::jsonb;
+  v:=private.resolve_effect_bundle_v1('{}'::jsonb,effects);
+  v2:=private.resolve_effect_bundle_v1('{}'::jsonb,
+    jsonb_build_array(effects->1,effects->0));
+  if v->'appliedEffects' is distinct from v2->'appliedEffects'
+    or v #>> '{stats,damage_bonus}' <> '3'
+    or v #>> '{appliedEffects,0,source}' <> 'source:a' then
+    raise exception 'Equal-magnitude source provenance depends on input order';
+  end if;
+
+  -- Fixed arithmetic order: additions, minimum floor, then multiplier.
+  v:=private.resolve_effect_bundle_v1('{"speed_ft":10}'::jsonb,
+  '[{"id":"bonus","source":"source:feat","stackKey":"feat:speed","target":"speed_ft","op":"add","value":2},
+    {"id":"floor","source":"source:spell","stackKey":"spell:floor","target":"speed_ft","op":"minimum","value":15},
+    {"id":"factor","source":"source:spell","stackKey":"spell:factor","target":"speed_ft","op":"multiply","value":2}]'::jsonb);
+  if v #>> '{stats,speed_ft}'<>'30' then
+    raise exception 'Add/minimum/multiply order is not deterministic';
+  end if;
+
+  -- Conditional skill effects must apply to the selected skill only.
+  effects:='[
+    {"id":"skill:bonus","source":"feature:skill","stackKey":"feature:skill:athletics","target":"athletics_check","op":"add","value":4,"when":{"event":"ability_check","skill":"athletics"}}
+  ]'::jsonb;
+  v:=private.resolve_effect_bundle_v1('{"athletics_check":2}'::jsonb,effects,
+    '{"event":"ability_check","skill":"acrobatics"}'::jsonb);
+  if v #>> '{stats,athletics_check}'<>'2'
+    or v->>'skippedConditional'<>'1' then
+    raise exception 'Skill-specific effect leaked into a different check';
+  end if;
+  v:=private.resolve_effect_bundle_v1('{"athletics_check":2}'::jsonb,effects,
+    '{"event":"ability_check","skill":"athletics"}'::jsonb);
+  if v #>> '{stats,athletics_check}'<>'6' then
+    raise exception 'Matching skill-specific effect did not apply';
+  end if;
+
+  rejected:=false;
+  begin
+    perform private.resolve_effect_bundle_v1('{}'::jsonb,
+      '[{"id":"null-target","source":"x","stackKey":"x","op":"add","value":4}]'::jsonb);
+  exception when sqlstate '22023' then rejected:=true; end;
+  if not rejected then raise exception 'Missing numeric target accepted'; end if;
+
+  rejected:=false;
+  begin
+    perform private.resolve_effect_bundle_v1('{}'::jsonb,
+      '[{"id":"bad identifier!","source":"x","stackKey":"x","target":"speed_ft","op":"add","value":4}]'::jsonb);
+  exception when sqlstate '22023' then rejected:=true; end;
+  if not rejected then raise exception 'Malformed identifier accepted'; end if;
+
+  rejected:=false;
+  begin
+    perform private.resolve_effect_bundle_v1('{}'::jsonb,
+      '[{"id":"bogus","source":"x","stackKey":"x","target":"speed_ft","op":"add","value":4,"injected":true}]'::jsonb);
+  exception when sqlstate '22023' then rejected:=true; end;
+  if not rejected then raise exception 'Undeclared normalized field accepted'; end if;
+
+  rejected:=false;
+  begin
+    perform private.resolve_effect_bundle_v1('{}'::jsonb,
+      '[{"id":"bogus","source":"x","stackKey":"x","target":"saving_throw","op":"advantage","when":"poisoned"}]'::jsonb);
+  exception when sqlstate '22023' then rejected:=true; end;
+  if not rejected then raise exception 'Non-object condition accepted'; end if;
+
+  rejected:=false;
+  begin
+    perform private.resolve_effect_bundle_v1('{"speed_ft":"30"}'::jsonb,
+      '[{"id":"bonus","source":"x","stackKey":"x","target":"speed_ft","op":"add","value":5}]'::jsonb);
+  exception when sqlstate '22023' then rejected:=true; end;
+  if not rejected then raise exception 'Non-numeric base stat accepted'; end if;
+
+  rejected:=false;
+  begin
+    perform private.resolve_effect_bundle_v1('{}'::jsonb,
+      (select jsonb_agg(jsonb_build_object(
+        'id','id:'||g,'source','source:x','stackKey','key:'||g,
+        'target','speed_ft','op','add','value',1
+      )) from generate_series(1,129) g));
+  exception when sqlstate '22023' then rejected:=true; end;
+  if not rejected then raise exception 'Over-large effect bundle accepted'; end if;
 end;
 $test$;
 do $privileges$
