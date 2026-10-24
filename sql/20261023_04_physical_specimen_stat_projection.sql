@@ -70,9 +70,13 @@ begin
 
   -- Reuse the existing canonical tactical speed helper rather than inventing
   -- another base-Speed formula (it reads the saved sheet, with a 30ft default).
-  v_base_speed:=public.encounter_canonical_speed_ft_v1(p_character_id);
   v_hp_bonus:=greatest(0,coalesce((v_effects->>'hpMaxBonus')::integer,0));
   v_speed_bonus:=greatest(0,coalesce((v_effects->>'speedBonusFt')::integer,0));
+  -- The canonical tactical speed helper includes active Physical Specimen
+  -- bonuses after _06. Subtract this same delta before reporting base Speed.
+  v_base_speed:=greatest(0,
+    public.encounter_canonical_speed_ft_v1(p_character_id)-v_speed_bonus
+  );
   v_effective_max_hp:=v_base_max_hp+v_hp_bonus;
   -- Increasing only maximum HP does NOT heal current HP. Once a benefit
   -- expires, clamp the displayed current HP, but do not overwrite stored HP.

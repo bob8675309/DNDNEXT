@@ -140,41 +140,6 @@ begin
 end;
 $$;
 
--- _04's read-only paper-sheet projection must not double-count speed after
--- the canonical *tactical* helper becomes runtime-aware. Keep baseSpeedFt
--- derived from the canonical value minus the same active runtime delta.
-create or replace function public.get_character_physical_specimen_effective_stats_v2(
-  p_character_id uuid
-) returns jsonb
-language plpgsql stable security definer
-set search_path=pg_catalog,public,private,auth
-as $$
-declare
-  v_profile jsonb;
-  v_tactical_speed integer;
-  v_speed_bonus integer;
-  v_output jsonb;
-begin
-  -- Reuse the existing guarded effective-stat read model, then correct only
-  -- its base/effective speed figures after the tactical Speed helper was made
-  -- aware of Physical Specimen. No mutations; this is a compatibility getter.
-  v_output:=public.get_character_physical_specimen_effective_stats_v1(p_character_id);
-  if not coalesce((v_output->>'available')::boolean,false) then
-    return v_output;
-  end if;
-  v_profile:=public.get_character_physical_specimen_effects_v1(p_character_id);
-  v_speed_bonus:=coalesce((v_profile->>'speedBonusFt')::integer,0);
-  v_tactical_speed:=public.encounter_canonical_speed_ft_v1(p_character_id);
-  return jsonb_set(
-    jsonb_set(
-      v_output,
-      '{baseStats,speedFt}',to_jsonb(v_tactical_speed-v_speed_bonus),false
-    ),
-    '{effectiveStats,speedFt}',to_jsonb(v_tactical_speed),false
-  );
-end;
-$$;
-
 revoke all on function private.physical_specimen_active_bonuses_v1(uuid)
   from public,anon,authenticated;
 grant execute on function private.physical_specimen_active_bonuses_v1(uuid)
@@ -184,7 +149,3 @@ revoke all on function public.encounter_canonical_speed_ft_v1(uuid)
   from public,anon,authenticated;
 grant execute on function public.encounter_canonical_speed_ft_v1(uuid)
   to service_role;
-revoke all on function public.get_character_physical_specimen_effective_stats_v2(uuid)
-  from public,anon;
-grant execute on function public.get_character_physical_specimen_effective_stats_v2(uuid)
-  to authenticated,service_role;
