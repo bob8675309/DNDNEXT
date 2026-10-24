@@ -11,7 +11,7 @@ for (const phrase of [
  "v_existing_request.result->'benefitKeys' is distinct from to_jsonb(p_benefit_keys)",
  "v_participant.bonus_action_available",
  "v_encounter.active_participant_id is distinct from p_participant_id",
- "condition_key in ('incapacitated','paralyzed','stunned','unconscious')",
+ "condition_key in ('incapacitated','paralyzed','stunned','unconscious','petrified')",
  "for update",
  "max_hp=v_new_max_hp",
  "speed_ft=v_new_speed",

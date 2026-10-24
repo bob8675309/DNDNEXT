@@ -105,7 +105,7 @@ begin
   end if;
   if exists(select 1 from public.encounter_conditions c
       where c.participant_id=p_participant_id
-        and c.condition_key in ('incapacitated','paralyzed','stunned','unconscious')) then
+        and c.condition_key in ('incapacitated','paralyzed','stunned','unconscious','petrified')) then
     raise exception 'Current conditions prevent Bonus Actions.' using errcode='55000';
   end if;
   if jsonb_typeof(v_participant.state)='object'

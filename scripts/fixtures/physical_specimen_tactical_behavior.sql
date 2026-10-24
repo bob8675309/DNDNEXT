@@ -199,6 +199,28 @@ $guard$;
 reset role;
 delete from public.encounter_conditions where participant_id=
   '88888888-8888-8888-8888-888888888888';
+insert into public.encounter_conditions values(
+  '88888888-8888-8888-8888-888888888888','petrified'
+);
+set role authenticated;
+do $petrified$
+declare v_failed boolean:=false;
+begin
+  begin
+    perform public.encounter_activate_physical_specimen_v1(
+      '88888888-8888-8888-8888-888888888888',
+      array['enhanced-vitality'],
+      '11111111-0000-0000-0000-000000000005');
+  exception when sqlstate '55000' then v_failed:=true;
+  end;
+  if not v_failed then
+    raise exception 'Petrified character spent a Bonus Action';
+  end if;
+end
+$petrified$;
+reset role;
+delete from public.encounter_conditions where participant_id=
+  '88888888-8888-8888-8888-888888888888';
 set role authenticated;
 do $guard$
 declare v jsonb;
