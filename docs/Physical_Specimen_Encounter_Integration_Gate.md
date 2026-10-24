@@ -49,8 +49,16 @@ The current live database was inspected read-only before drafting an encounter f
 
 ### Remaining release gates
 
-1. **Staged-then-activated:** If a character is staged in a draft encounter **before** activating Physical Specimen, their initialized `max_hp` is not automatically recalculated by the current `admin_start_encounter_v1` procedure. Do not expose pre-encounter activation in the player UI until this has a safe, idempotent reconciliation at encounter start.
+1. **Staged-then-activated is now implemented in draft (`_07`):** An encounter-start status-transition trigger reconciles only the tracked Physical Specimen maximum-HP delta, without replacing `admin_start_encounter_v1`. It preserves GM maximum-HP overrides, prevents duplicate application when activated before staging, and removes expired bonuses (clamping current HP where needed). Isolated PostgreSQL behavioral tests pass. **Live schema compatibility and full release testing remain required.**
 2. **Remaining benefit consumers:** Poisoned saving throw advantage, vision range, Athletics/Acrobatics bonuses, jump distance and climbing movement must feed their actual resolution systems before claiming the six options fully work.
 3. **Turn/command integration:** Do not expose the staged tactical RPC until live schema compatibility, full downstream effects, and browser regression checks are complete.
 4. **Permission/production:** Keep the feature on a draft branch; current tests use isolated fixture grants, not production permissions. Confirm procedure owner and search-path constraints, source catalogue match, and staging/rest edge cases before migration.
 5. **No UI redesign:** Actual current Forge cards, overlays and the paper-style sheet must be reused, and a UI mock-up approved before implementing any player-facing control.
+
+### Encounter-start maximum-HP integration (`_07`, staging-only)
+
+- The existing participant HP guard stores `state.physicalSpecimenSnapshot.maxHpDeltaApplied` when it adds an active benefit at staging. It does not touch the permanent character sheet.
+- The new `BEFORE UPDATE OF status` encounter trigger fires only as staged encounters transition to `active`. It runs inside the original encounter-start transaction, after canonical Speed refresh, and does not replace existing initiative, position, turn, log, or admin permission logic.
+- An internal helper serializes against the canonical progression row, reads validated active selections, and performs `existing max HP − previously applied Physical Specimen delta + currently active delta`. It preserves unrelated and GM-set maximum HP adjustments; an explicit stale provenance marker fails closed.
+- Scenarios covered by isolated PostgreSQL: stage → activate → start, activate → stage → start, activate → stage → Long Rest → start, GM maximum HP override, repeated reconciliation, and stored source-sheet immutability. The expired-bonus test also verifies that current HP above the returning base maximum is capped.
+- The start hook's scope is **draft/ready/initiative → active** only. It does not recalculate combat snapshots during active turns. Subsequent HP/Speed changes retain their separate tactical authorities.
