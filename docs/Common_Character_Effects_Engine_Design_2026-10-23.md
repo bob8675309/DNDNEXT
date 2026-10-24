@@ -43,3 +43,11 @@ The adapter supplies **resolved numeric values**, e.g. Warlock class level 3 →
 5. User-approved **real-component** Forge/Profile mock-ups before any UI changes. Paper-style character sheet dimensions/artwork remain intact.
 
 All tests run in isolated PostgreSQL; no production migrations until compatibility and security review.
+
+## Shadow equipment numeric adapter (opt-in, no gameplay switch)
+
+`private.normalize_equipment_bonus_effects_v1(p_equipment,p_context)` accepts **only** the already-authoritative `character_equipment_effects_v1` JSON format (`schemaVersion=1`), and normalizes a deliberately narrow subset. It never loads an inventory row, guesses an item enchantment, or changes the existing numeric resolver.
+
+The first supported context-specific values are saving throws (`savesAll` and `saves[ability]`), Athletics/Acrobatics (`skillsAll` and `skills[skill]`), and initiative. Numeric source fields are treated as delta bonuses, never as a full stat. Crucially, final `ac.total`, ability-score formulas, armor restrictions, weapons, and all other skills are **not** mapped to avoid changing their trusted calculations prematurely. Unknown event fields and unsupported skills fail closed. The adapter's normalized array is safe to compose only after a server-owned caller fetches the equipment result and an authoritative event context.
+
+Dedicated isolated PostgreSQL parity fixtures compare these source-shaped output fields to the common effect resolver's results and prove that unrelated AC is not double-counted. This establishes *format-level arithmetic parity*, **not live-character parity**: future work must query both pipelines side by side for representative equipped characters and inspect actual class/spell/encounter consumers before rerouting any production calculation. Do not expose this helper or hand client-submitted JSON to it.
