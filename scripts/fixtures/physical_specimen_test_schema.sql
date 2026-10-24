@@ -155,6 +155,34 @@ create table public.encounter_combat_log(
 -- blocks running as authenticated. These GRANTs are NOT production migrations.
 grant select on public.encounter_participants, public.encounters,
   public.encounter_combat_log, public.character_sheets to authenticated;
+
+-- Simulate the existing production max-HP guard trigger, then replace only
+-- its function definition with the new migration.
+create function private.guard_encounter_participant_max_hp_v1()
+returns trigger language plpgsql security definer
+set search_path=pg_catalog,public,private
+as $
+declare v_sheet jsonb; v_max integer;
+begin
+  if new.max_hp is null then
+    select sheet into v_sheet from public.character_sheets
+      where character_id=new.character_id;
+    begin
+      v_max:=coalesce(nullif(v_sheet->>'maxHp','')::integer,
+        nullif(v_sheet->>'hp','')::integer,new.current_hp,1);
+    exception when others then v_max:=coalesce(new.current_hp,1); end;
+    new.max_hp:=greatest(0,coalesce(v_max,1));
+  end if;
+  if new.current_hp is not null and new.max_hp is not null
+     and new.current_hp>new.max_hp then new.current_hp:=new.max_hp; end if;
+  return new;
+end;
+$;
+create trigger encounter_participant_max_hp_guard
+before insert or update of character_id,current_hp,max_hp
+on public.encounter_participants
+for each row execute function private.guard_encounter_participant_max_hp_v1();
+
 create function public.encounter_can_control_participant_v1(p_participant_id uuid)
 returns boolean language sql stable security definer
 set search_path=pg_catalog,public,private,auth

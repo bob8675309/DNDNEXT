@@ -252,3 +252,138 @@ end
 $guard$;
 reset role;
 select 'Tactical Physical Specimen guarded Bonus Action fixture passed' as result;
+
+
+-- A rest-active feature used BEFORE an encounter must be reflected in
+-- staging, canonical Speed refresh and initial max-HP trigger.
+insert into public.character_progression values(
+  '76767676-7676-7676-7676-767676767676',
+  '11111111-1111-1111-1111-111111111111',
+  'The Parasite Patron','GrimHollowPG24',3
+);
+insert into public.character_sheets values(
+  '76767676-7676-7676-7676-767676767676',
+  '{"abilities":{"cha":{"score":20}},"hp":14,"maxHp":20,"speed":25}'::jsonb
+);
+insert into public.character_permissions values(
+  '76767676-7676-7676-7676-767676767676',
+  'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',true
+);
+select set_config('request.jwt.claim.sub','bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',false);
+set role authenticated;
+do $before$
+declare v jsonb;
+begin
+  v:=public.activate_character_physical_specimen_v1(
+    '76767676-7676-7676-7676-767676767676',
+    array['enhanced-vitality','increased-speed']);
+  if v->>'saved'<>'true' then raise exception 'Out-of-combat activation missing'; end if;
+  v:=public.get_character_physical_specimen_effective_stats_v1(
+    '76767676-7676-7676-7676-767676767676');
+  if v #>> '{baseStats,speedFt}' <> '25'
+    or v #>> '{effectiveStats,speedFt}' <> '30'
+    or v #>> '{effectiveStats,maxHp}' <> '23' then
+    raise exception 'Paper-sheet projection double-counted Speed: %',v;
+  end if;
+end
+$before$;
+reset role;
+insert into public.encounters(id,status,active_participant_id) values(
+  '25252525-2525-2525-2525-252525252525','draft',null
+);
+insert into public.encounter_participants(
+  id,encounter_id,character_id,display_name,controller_user_id,
+  current_hp,max_hp,speed_ft
+) values(
+  '26262626-2626-2626-2626-262626262626',
+  '25252525-2525-2525-2525-252525252525',
+  '76767676-7676-7676-7676-767676767676',
+  'Pre-Activated Warlock','bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+  14,null,public.encounter_canonical_speed_ft_v1(
+    '76767676-7676-7676-7676-767676767676')
+);
+do $before$
+declare v record; delta jsonb;
+begin
+  select * into v from public.encounter_participants
+    where id='26262626-2626-2626-2626-262626262626';
+  delta:=private.physical_specimen_active_bonuses_v1(
+    '76767676-7676-7676-7676-767676767676');
+  if v.max_hp<>23 or v.current_hp<>14 or v.speed_ft<>30
+    or delta->>'active'<>'true' then
+    raise exception 'Pre-activated Physical Specimen was lost at staging: %, %',v,delta;
+  end if;
+end
+$before$;
+-- Idempotent canonical refreshes: +5 should be retained, never multiplied.
+update public.encounter_participants
+set speed_ft=public.encounter_canonical_speed_ft_v1(character_id)
+where id='26262626-2626-2626-2626-262626262626';
+update public.encounter_participants
+set speed_ft=public.encounter_canonical_speed_ft_v1(character_id)
+where id='26262626-2626-2626-2626-262626262626';
+do $before$
+declare v record;
+begin
+  select max_hp,speed_ft into v from public.encounter_participants
+    where id='26262626-2626-2626-2626-262626262626';
+  if v.max_hp<>23 or v.speed_ft<>30 then
+    raise exception 'Repeated tactical Speed refresh removed or stacked bonus: %',v;
+  end if;
+end
+$before$;
+
+-- A later Long Rest expires the feature. A NEW encounter must start from the
+-- unmodified base sheet even if a previous draft staging row still exists.
+insert into public.character_rest_log values(
+  '27272727-2727-2727-2727-272727272727',
+  '76767676-7676-7676-7676-767676767676','long_rest',clock_timestamp()
+);
+insert into public.encounters(id,status,active_participant_id) values(
+  '28282828-2828-2828-2828-282828282828','draft',null
+);
+insert into public.encounter_participants(
+  id,encounter_id,character_id,display_name,controller_user_id,
+  current_hp,max_hp,speed_ft
+) values(
+  '29292929-2929-2929-2929-292929292929',
+  '28282828-2828-2828-2828-282828282828',
+  '76767676-7676-7676-7676-767676767676',
+  'Expired Feature Warlock','bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+  14,null,public.encounter_canonical_speed_ft_v1(
+    '76767676-7676-7676-7676-767676767676')
+);
+do $after$
+declare v record; delta jsonb;
+begin
+  select max_hp,speed_ft into v from public.encounter_participants
+    where id='29292929-2929-2929-2929-292929292929';
+  delta:=private.physical_specimen_active_bonuses_v1(
+    '76767676-7676-7676-7676-767676767676');
+  if v.max_hp<>20 or v.speed_ft<>25 or delta->>'active'<>'false' then
+    raise exception 'Long-Rest expired feature leaked into new encounter: %, %',v,delta;
+  end if;
+end
+$after$;
+
+-- Unknown benefit IDs must never be projected into canonical stat helpers.
+update public.character_runtime_feature_choices
+set state=jsonb_set(
+  jsonb_set(state,'{benefitKeys}',
+    '["bogus","increased-speed","enhanced-vitality"]'::jsonb),
+  '{activatedAt}',to_jsonb(clock_timestamp())
+)
+where character_id='76767676-7676-7676-7676-767676767676'
+  and feature_key='warlock-parasite-physical-specimen';
+do $after$
+declare delta jsonb;
+begin
+  delta:=private.physical_specimen_active_bonuses_v1(
+    '76767676-7676-7676-7676-767676767676');
+  if delta->>'active'<>'false' or delta->>'speedBonusFt'<>'0'
+    or delta->>'hpMaxBonus'<>'0' then
+    raise exception 'Malformed source choices generated live combat bonuses: %',delta;
+  end if;
+end
+$after$;
+select 'Pre-combat Physical Specimen HP/Speed carryover passed' as result;
