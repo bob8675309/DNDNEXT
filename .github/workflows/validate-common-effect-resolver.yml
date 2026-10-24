@@ -1,0 +1,66 @@
+name: Validate Common Character Effect Resolver
+on:
+  pull_request:
+    paths:
+      - "sql/20261023_08_common_effect_resolver_v1.sql"
+      - "sql/20261024_01_common_equipment_bonus_adapter_v1.sql"
+      - "scripts/fixtures/common_effect_resolver_behavior.sql"
+      - "scripts/fixtures/common_equipment_bonus_shadow_parity.sql"
+      - "scripts/validate_common_effect_resolver.mjs"
+      - "scripts/validate_common_equipment_bonus_adapter.mjs"
+      - "docs/Common_Character_Effects_Engine_Design_2026-10-23.md"
+      - ".github/workflows/validate-common-effect-resolver.yml"
+  push:
+    branches: [main]
+    paths:
+      - "sql/20261023_08_common_effect_resolver_v1.sql"
+      - "sql/20261024_01_common_equipment_bonus_adapter_v1.sql"
+      - "scripts/fixtures/common_effect_resolver_behavior.sql"
+      - "scripts/fixtures/common_equipment_bonus_shadow_parity.sql"
+      - "scripts/validate_common_effect_resolver.mjs"
+      - "scripts/validate_common_equipment_bonus_adapter.mjs"
+      - ".github/workflows/validate-common-effect-resolver.yml"
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node scripts/validate_common_effect_resolver.mjs
+      - run: node scripts/validate_common_equipment_bonus_adapter.mjs
+  isolated-postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: fixture-password-only
+          POSTGRES_DB: common_effect_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d common_effect_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGPASSWORD: fixture-password-only
+      PGDATABASE: common_effect_test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Provision isolated private schema and roles
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -c "create schema private; create role anon nologin; create role authenticated nologin; create role service_role nologin;"
+      - name: Compile pure effect evaluator
+        run: psql -X -v ON_ERROR_STOP=1 -f sql/20261023_08_common_effect_resolver_v1.sql
+      - name: Compile equipment shadow adapter
+        run: psql -X -v ON_ERROR_STOP=1 -f sql/20261024_01_common_equipment_bonus_adapter_v1.sql
+      - name: Validate numeric, stacking, conditions and ACL
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/common_effect_resolver_behavior.sql
+      - name: Verify equipment format-level arithmetic parity
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/common_equipment_bonus_shadow_parity.sql
