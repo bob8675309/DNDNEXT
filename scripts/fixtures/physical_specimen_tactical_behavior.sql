@@ -466,7 +466,7 @@ insert into public.encounter_participants(
  ('73737373-7373-7373-7373-737373737373',
   '70707070-7070-7070-7070-707070707070',
   '62626262-6262-6262-6262-626262626262','Warlock C',
-  'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',24,null,40);
+  'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',27,null,40);
 do $stage_check$
 declare a record; b record; c record; d record;
 begin
@@ -478,7 +478,7 @@ begin
     where id='73737373-7373-7373-7373-737373737373';
   select * into d from public.encounter_participants
     where id='74747474-7474-7474-7474-747474747474';
-  if a.max_hp<>20 or b.max_hp<>25 or c.max_hp<>27 or d.max_hp<>40
+  if a.max_hp<>20 or b.max_hp<>25 or c.max_hp<>27 or c.current_hp<>27 or d.max_hp<>40
     or b.state #>> '{physicalSpecimenSnapshot,maxHpDeltaApplied}' <> '3'
     or c.state #>> '{physicalSpecimenSnapshot,maxHpDeltaApplied}' <> '3' then
     raise exception 'Pre-start HP staging values or provenance incorrect';
