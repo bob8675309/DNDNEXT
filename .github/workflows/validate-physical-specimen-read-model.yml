@@ -3,16 +3,24 @@ on:
   pull_request:
     paths:
       - "sql/20261023_02_physical_specimen_read_model.sql"
+      - "sql/20261023_03_physical_specimen_guarded_actions.sql"
       - "scripts/validate_physical_specimen_read_model.mjs"
+      - "scripts/validate_physical_specimen_guarded_actions.mjs"
+      - "scripts/fixtures/physical_specimen_test_schema.sql"
+      - "scripts/fixtures/physical_specimen_behavior.sql"
       - ".github/workflows/validate-physical-specimen-read-model.yml"
   push:
     branches: [main]
     paths:
       - "sql/20261023_02_physical_specimen_read_model.sql"
+      - "sql/20261023_03_physical_specimen_guarded_actions.sql"
       - "scripts/validate_physical_specimen_read_model.mjs"
+      - "scripts/validate_physical_specimen_guarded_actions.mjs"
+      - "scripts/fixtures/physical_specimen_test_schema.sql"
+      - "scripts/fixtures/physical_specimen_behavior.sql"
       - ".github/workflows/validate-physical-specimen-read-model.yml"
 jobs:
-  validate:
+  validate-contracts:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,3 +28,35 @@ jobs:
         with:
           node-version: "22"
       - run: node scripts/validate_physical_specimen_read_model.mjs
+      - run: node scripts/validate_physical_specimen_guarded_actions.mjs
+  verify-postgres-runtime:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: test-only-password
+          POSTGRES_DB: feature_contract_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d feature_contract_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGPASSWORD: test-only-password
+      PGDATABASE: feature_contract_test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Provision isolated fixture
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/physical_specimen_test_schema.sql
+      - name: Compile Physical Specimen database functions
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f sql/20261023_02_physical_specimen_read_model.sql
+          psql -X -v ON_ERROR_STOP=1 -f sql/20261023_03_physical_specimen_guarded_actions.sql
+      - name: Exercise authenticated actions and rest cycles
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/physical_specimen_behavior.sql
