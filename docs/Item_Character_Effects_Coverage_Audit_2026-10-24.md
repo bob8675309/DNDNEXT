@@ -54,3 +54,7 @@ All counts come from a read-only JSON-key audit; an item may have multiple field
 
 ## Release gate
 **No production migration or consumer replacement** until executable isolated fixture tests exercise representative real source payloads and demonstrate unchanged established numeric/tactical outcomes. Implement missing consumers as separately reviewed slices only after eligibility/ownership verification. Keep the draft Physical Specimen PR #250 and common effects PR #251 unmerged during parity testing. No map changes.
+
+## Cross-conversation requirement addendum
+
+For additional verified source families (movement mode and score replacement keys, charged items, spell definitions, rest-expiring vs replaceable runtime features, current resistance sequencing), see [`Character_Effects_Cross_Conversation_Requirements_Audit_2026-10-24.md`](Character_Effects_Cross_Conversation_Requirements_Audit_2026-10-24.md). It explicitly distinguishes observed catalogue field presence from proven gameplay consumers and defines gates not covered by PR #253's synthetic fixture.
