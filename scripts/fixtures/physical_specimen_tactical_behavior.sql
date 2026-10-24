@@ -387,3 +387,161 @@ begin
 end
 $after$;
 select 'Pre-combat Physical Specimen HP/Speed carryover passed' as result;
+
+
+-- Encounter-start HP reconciliation:
+-- A: stage, then activate;
+-- B: activate, then stage (do not double-count);
+-- C: activate, stage, then Long Rest before encounter start;
+-- D: GM overrides staged maximum HP, then activates (preserve override).
+-- All mutations below are in the isolated PostgreSQL test fixture only.
+insert into public.character_progression values
+ ('60606060-6060-6060-6060-606060606060',
+  '11111111-1111-1111-1111-111111111111','The Parasite Patron','GrimHollowPG24',3),
+ ('61616161-6161-6161-6161-616161616161',
+  '11111111-1111-1111-1111-111111111111','The Parasite Patron','GrimHollowPG24',3),
+ ('62626262-6262-6262-6262-626262626262',
+  '11111111-1111-1111-1111-111111111111','The Parasite Patron','GrimHollowPG24',3),
+ ('63636363-6363-6363-6363-636363636363',
+  '11111111-1111-1111-1111-111111111111','The Parasite Patron','GrimHollowPG24',3);
+insert into public.character_sheets values
+ ('60606060-6060-6060-6060-606060606060',
+  '{"abilities":{"cha":{"score":20}},"hp":16,"maxHp":20,"speed":25}'::jsonb),
+ ('61616161-6161-6161-6161-616161616161',
+  '{"abilities":{"cha":{"score":20}},"hp":18,"maxHp":22,"speed":30}'::jsonb),
+ ('62626262-6262-6262-6262-626262626262',
+  '{"abilities":{"cha":{"score":20}},"hp":24,"maxHp":24,"speed":35}'::jsonb),
+ ('63636363-6363-6363-6363-636363636363',
+  '{"abilities":{"cha":{"score":20}},"hp":22,"maxHp":24,"speed":30}'::jsonb);
+insert into public.character_permissions values
+ ('60606060-6060-6060-6060-606060606060','bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',true),
+ ('61616161-6161-6161-6161-616161616161','bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',true),
+ ('62626262-6262-6262-6262-626262626262','bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',true),
+ ('63636363-6363-6363-6363-636363636363','bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',true);
+insert into public.encounters(id,status,active_participant_id) values
+ ('70707070-7070-7070-7070-707070707070','draft',null);
+-- Stage A and D before activating. D has a manual GM maximum of 40.
+insert into public.encounter_participants(
+  id,encounter_id,character_id,display_name,controller_user_id,
+  current_hp,max_hp,speed_ft
+) values
+ ('71717171-7171-7171-7171-717171717171',
+  '70707070-7070-7070-7070-707070707070',
+  '60606060-6060-6060-6060-606060606060','Warlock A',
+  'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',16,null,25),
+ ('74747474-7474-7474-7474-747474747474',
+  '70707070-7070-7070-7070-707070707070',
+  '63636363-6363-6363-6363-636363636363','Warlock D (GM override)',
+  'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',22,40,30);
+-- Activate B/C before staging and A/D afterward.
+select set_config('request.jwt.claim.sub','bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',false);
+set role authenticated;
+do $prepare$
+declare v jsonb; id uuid;
+begin
+  foreach id in array array[
+    '60606060-6060-6060-6060-606060606060'::uuid,
+    '61616161-6161-6161-6161-616161616161'::uuid,
+    '62626262-6262-6262-6262-626262626262'::uuid,
+    '63636363-6363-6363-6363-636363636363'::uuid
+  ] loop
+    v:=public.activate_character_physical_specimen_v1(
+      id,array['enhanced-vitality','increased-speed']);
+    if v->>'saved'<>'true' then
+      raise exception 'Fixture Physical Specimen activation failed: %',id;
+    end if;
+  end loop;
+end
+$prepare$;
+reset role;
+-- Stage the already-activated B/C.
+insert into public.encounter_participants(
+  id,encounter_id,character_id,display_name,controller_user_id,
+  current_hp,max_hp,speed_ft
+) values
+ ('72727272-7272-7272-7272-727272727272',
+  '70707070-7070-7070-7070-707070707070',
+  '61616161-6161-6161-6161-616161616161','Warlock B',
+  'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',18,null,35),
+ ('73737373-7373-7373-7373-737373737373',
+  '70707070-7070-7070-7070-707070707070',
+  '62626262-6262-6262-6262-626262626262','Warlock C',
+  'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',24,null,40);
+do $stage_check$
+declare a record; b record; c record; d record;
+begin
+  select * into a from public.encounter_participants
+    where id='71717171-7171-7171-7171-717171717171';
+  select * into b from public.encounter_participants
+    where id='72727272-7272-7272-7272-727272727272';
+  select * into c from public.encounter_participants
+    where id='73737373-7373-7373-7373-737373737373';
+  select * into d from public.encounter_participants
+    where id='74747474-7474-7474-7474-747474747474';
+  if a.max_hp<>20 or b.max_hp<>25 or c.max_hp<>27 or d.max_hp<>40
+    or b.state #>> '{physicalSpecimenSnapshot,maxHpDeltaApplied}' <> '3'
+    or c.state #>> '{physicalSpecimenSnapshot,maxHpDeltaApplied}' <> '3' then
+    raise exception 'Pre-start HP staging values or provenance incorrect';
+  end if;
+end
+$stage_check$;
+-- Long Rest on C removes active benefits before combat starts.
+insert into public.character_rest_log values(
+ '75757575-7575-7575-7575-757575757575',
+ '62626262-6262-6262-6262-626262626262',
+ 'long_rest',clock_timestamp()
+);
+-- Simulate only admin_start's canonical speed update followed by status
+-- transition, which fires the new HP start hook in the same transaction.
+update public.encounter_participants p set
+  speed_ft=public.encounter_canonical_speed_ft_v1(p.character_id)
+where p.encounter_id='70707070-7070-7070-7070-707070707070';
+update public.encounters set status='active',
+  active_participant_id='71717171-7171-7171-7171-717171717171'
+where id='70707070-7070-7070-7070-707070707070';
+do $verify$
+declare a record; b record; c record; d record; old_v bigint; result jsonb;
+begin
+  select * into a from public.encounter_participants
+    where id='71717171-7171-7171-7171-717171717171';
+  select * into b from public.encounter_participants
+    where id='72727272-7272-7272-7272-727272727272';
+  select * into c from public.encounter_participants
+    where id='73737373-7373-7373-7373-737373737373';
+  select * into d from public.encounter_participants
+    where id='74747474-7474-7474-7474-747474747474';
+  if a.max_hp<>23 or a.current_hp<>16 or a.speed_ft<>30 then
+    raise exception 'Stage then activate: encounter-start HP/Speed wrong: %',a;
+  end if;
+  if b.max_hp<>25 or b.current_hp<>18 or b.speed_ft<>35 then
+    raise exception 'Activate then stage: HP bonus was duplicated: %',b;
+  end if;
+  if c.max_hp<>24 or c.current_hp<>24 or c.speed_ft<>35 then
+    raise exception 'Expired staged benefit was not removed at encounter start: %',c;
+  end if;
+  if d.max_hp<>43 or d.current_hp<>22 or d.speed_ft<>35 then
+    raise exception 'GM max-HP override was overwritten instead of adjusted: %',d;
+  end if;
+  -- Calling the internal reconciliation again must be idempotent.
+  result:=private.reconcile_physical_specimen_at_encounter_start_v1(a.id);
+  if result->>'changed'<>'false' then
+    raise exception 'Second start reconciliation double-added HP: %',result;
+  end if;
+  select max_hp into old_v from public.encounter_participants where id=a.id;
+  if old_v<>23 then
+    raise exception 'Repeated reconciliation changed maximum HP: %',old_v;
+  end if;
+end
+$verify$;
+-- Character source sheets must never be rewritten by encounter reconciliation.
+do $source_check$
+begin
+  if (select sheet->>'maxHp' from public.character_sheets
+      where character_id='60606060-6060-6060-6060-606060606060')<>'20'
+    or (select sheet->>'maxHp' from public.character_sheets
+      where character_id='63636363-6363-6363-6363-636363636363')<>'24' then
+    raise exception 'Start reconciliation modified permanent source HP';
+  end if;
+end
+$source_check$;
+select 'Physical Specimen staged-before-activation/start reconciliation passed' as result;
