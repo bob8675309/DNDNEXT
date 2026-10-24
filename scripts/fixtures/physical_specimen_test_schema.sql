@@ -161,7 +161,7 @@ grant select on public.encounter_participants, public.encounters,
 create function private.guard_encounter_participant_max_hp_v1()
 returns trigger language plpgsql security definer
 set search_path=pg_catalog,public,private
-as $
+as $hp_guard$
 declare v_sheet jsonb; v_max integer;
 begin
   if new.max_hp is null then
@@ -177,7 +177,7 @@ begin
      and new.current_hp>new.max_hp then new.current_hp:=new.max_hp; end if;
   return new;
 end;
-$;
+$hp_guard$;
 create trigger encounter_participant_max_hp_guard
 before insert or update of character_id,current_hp,max_hp
 on public.encounter_participants
