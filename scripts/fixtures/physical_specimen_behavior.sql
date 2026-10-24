@@ -15,6 +15,26 @@ begin
   end if;
   v:=public.get_character_physical_specimen_v1('dddddddd-dddd-dddd-dddd-dddddddddddd');
   if v->>'available'<>'false' then raise exception 'Wrong-subclass character was eligible'; end if;
+  v:=public.get_character_physical_specimen_v1('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee');
+  if v #>> '{context,maxBenefits}' <> '1'
+    or v->>'canActivateOutsideEncounter'<>'false' then
+    raise exception 'Low-Charisma or encounter gating incorrect: %',v;
+  end if;
+  v_failed:=false;
+  begin
+    perform public.activate_character_physical_specimen_v1(
+      'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',array['enhanced-vitality']);
+  exception when sqlstate '55000' then v_failed:=true;
+  end;
+  if not v_failed then raise exception 'Encounter Bonus Action guard failed'; end if;
+  v_failed:=false;
+  begin
+    perform public.activate_character_physical_specimen_v1(
+      'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',
+      array['enhanced-vitality','enhanced-vision']);
+  exception when sqlstate '55000' then v_failed:=true;
+  end;
+  if not v_failed then raise exception 'Encounter gate must apply even before option validation'; end if;
   v_failed:=false;
   begin
     perform public.activate_character_physical_specimen_v1(
@@ -151,6 +171,28 @@ begin
     array['physical-aptitude']);
   if v->>'saved'<>'true' or jsonb_array_length(v->'benefitKeys')<>1
     then raise exception 'Reactivation after Long Rest failed'; end if;
+end
+$test$;
+reset role;
+
+-- Clear the test encounter; its character may now activate once with only one
+-- benefit because the canonical Charisma modifier is +1.
+delete from public.test_active_encounters
+where character_id='eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
+set role authenticated;
+do $test$
+declare v jsonb; v_failed boolean:=false;
+begin
+  begin
+    perform public.activate_character_physical_specimen_v1(
+      'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',
+      array['enhanced-vitality','enhanced-vision']);
+  exception when sqlstate '22023' then v_failed:=true;
+  end;
+  if not v_failed then raise exception 'Charisma +1 character could select two benefits'; end if;
+  v:=public.activate_character_physical_specimen_v1(
+    'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',array['enhanced-vitality']);
+  if v->>'saved'<>'true' then raise exception 'Low-Charisma character activation failed'; end if;
 end
 $test$;
 reset role;
