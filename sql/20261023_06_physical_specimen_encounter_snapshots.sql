@@ -32,9 +32,9 @@ begin
   where r.character_id=p_character_id
     and r.feature_key='warlock-parasite-physical-specimen';
   if not found
-     or jsonb_typeof(v_saved)<>'object'
-     or v_saved->>'activated'<>'true'
-     or jsonb_typeof(v_saved->'benefitKeys')<>'array' then
+     or jsonb_typeof(v_saved) is distinct from 'object'
+     or coalesce(v_saved->>'activated','')<>'true'
+     or jsonb_typeof(v_saved->'benefitKeys') is distinct from 'array' then
     return v_empty;
   end if;
   begin
