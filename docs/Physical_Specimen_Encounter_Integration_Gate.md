@@ -37,3 +37,20 @@ The current live database was inspected read-only before drafting an encounter f
 - Run in an isolated PostgreSQL fixture and separate browser-level tactical smoke before merging or deploying.
 
 **Do not infer that the staged stat projection or outside-encounter activation is already playable through a character UI.**
+
+
+## Verified staging/canonical refresh slice (migration `_06`, staged only)
+
+- `private.physical_specimen_active_bonuses_v1` reads canonical progression/source and the active, valid runtime selection, rejects invalid JSON or expired use, and reports only HP/Speed deltas to internal encounter consumers.
+- `encounter_canonical_speed_ft_v1` now includes the active +5 Speed benefit. The same helper is already called by participant staging, encounter start and multiple turn/spell Speed recalculations, eliminating loss or stacking of that particular bonus.
+- Existing `encounter_participant_max_hp_guard` continues to populate a **missing** `max_hp` field from the permanent sheet and now adds the active temporary Warlock-level bonus. It does not add again to an initialized encounter snapshot.
+- The existing paper-style sheet's `get_character_physical_specimen_effective_stats_v1` was adjusted to subtract that same active Speed bonus before reporting `baseStats.speedFt`, avoiding +5 being counted twice.
+- Isolated PostgreSQL 16 tests pass for activation before staging, first HP/Speed snapshot, repeated canonical Speed refresh, Long-Rest expiry in a newly staged encounter, and malformed benefit keys. These tests are in the scoped PR workflow; nothing has been run against live character data.
+
+### Remaining release gates
+
+1. **Staged-then-activated:** If a character is staged in a draft encounter **before** activating Physical Specimen, their initialized `max_hp` is not automatically recalculated by the current `admin_start_encounter_v1` procedure. Do not expose pre-encounter activation in the player UI until this has a safe, idempotent reconciliation at encounter start.
+2. **Remaining benefit consumers:** Poisoned saving throw advantage, vision range, Athletics/Acrobatics bonuses, jump distance and climbing movement must feed their actual resolution systems before claiming the six options fully work.
+3. **Turn/command integration:** Do not expose the staged tactical RPC until live schema compatibility, full downstream effects, and browser regression checks are complete.
+4. **Permission/production:** Keep the feature on a draft branch; current tests use isolated fixture grants, not production permissions. Confirm procedure owner and search-path constraints, source catalogue match, and staging/rest edge cases before migration.
+5. **No UI redesign:** Actual current Forge cards, overlays and the paper-style sheet must be reused, and a UI mock-up approved before implementing any player-facing control.
