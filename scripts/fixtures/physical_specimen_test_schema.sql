@@ -151,6 +151,10 @@ create table public.encounter_combat_log(
  actor_participant_id uuid references public.encounter_participants(id),
  event_type text not null,summary text not null,detail jsonb not null
 );
+-- Isolated fixture only: permit inspection of tactical snapshots inside assertion
+-- blocks running as authenticated. These GRANTs are NOT production migrations.
+grant select on public.encounter_participants, public.encounters,
+  public.encounter_combat_log, public.character_sheets to authenticated;
 create function public.encounter_can_control_participant_v1(p_participant_id uuid)
 returns boolean language sql stable security definer
 set search_path=pg_catalog,public,private,auth
