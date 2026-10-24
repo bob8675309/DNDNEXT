@@ -40,7 +40,7 @@ for (const [file, token] of required) assert.ok(files[file].includes(token), `Co
 const mapping = [
   {field:"bonusAc", producer:["importer","card"], consumers:["local","equipment"], status:"confirmed"},
   {field:"bonusSavingThrow", producer:["cardText"], consumers:["local","equipment"], status:"confirmed"},
-  {field:"bonusWeapon", producer:["importer"], consumers:["weapon"], status:"separate-weapon-path"},
+  {field:"bonusWeapon", producer:["weapon"], consumers:["weapon"], status:"separate-weapon-path"},
   {field:"bonusSpellAttack", producer:["cardText"], consumers:[], status:"no-verified-numeric-consumer"},
   {field:"bonusSpellSaveDc", producer:["cardText"], consumers:[], status:"no-verified-numeric-consumer"},
   {field:"bonusProficiencyBonus", producer:["cardText"], consumers:[], status:"no-verified-numeric-consumer"},
