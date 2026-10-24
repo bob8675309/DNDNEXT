@@ -87,3 +87,26 @@ insert into public.class_feature_catalog(
     ))
   ))
 );
+
+-- Canonical Speed dependency is the same saved-sheet interpretation as the
+-- production encounter_canonical_speed_ft_v1; no full encounter RPC is needed.
+create function public.encounter_canonical_speed_ft_v1(p_character_id uuid)
+returns integer language plpgsql stable security definer
+set search_path=pg_catalog,public
+as $$
+declare v_raw text;
+begin
+  select sheet->>'speed' into v_raw from public.character_sheets
+    where character_id=p_character_id;
+  if coalesce(v_raw,'') ~ '^[0-9]+$' and v_raw::integer>0 then
+    return v_raw::integer;
+  end if;
+  return 30;
+end;
+$$;
+update public.character_sheets set sheet=sheet||
+  '{"hp":24,"maxHp":24,"tempHp":0,"speed":30}'::jsonb
+where character_id='aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+update public.character_sheets set sheet=sheet||
+  '{"hp":12,"maxHp":12,"speed":30}'::jsonb
+where character_id='eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';

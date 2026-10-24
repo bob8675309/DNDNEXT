@@ -103,6 +103,25 @@ end
 $test$;
 reset role;
 
+set role authenticated;
+do $stats$
+declare v jsonb;
+begin
+  v:=public.get_character_physical_specimen_effective_stats_v1(
+    'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
+  if v #>> '{baseStats,maxHp}' <> '24'
+    or v #>> '{effectiveStats,maxHp}' <> '27'
+    or v #>> '{effectiveStats,currentHp}' <> '24'
+    or v #>> '{effectiveStats,tempHp}' <> '0'
+    or v #>> '{effectiveStats,speedFt}' <> '35'
+    or v #>> '{effectiveStats,climbSpeedFt}' <> '35'
+    or v->>'effectsIntegrated'<>'false' then
+    raise exception 'Active runtime overlays incorrect: %',v;
+  end if;
+end
+$stats$;
+reset role;
+
 insert into public.character_rest_log values
   ('33333333-3333-3333-3333-333333333333',
    'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa','short_rest',clock_timestamp());
@@ -118,6 +137,14 @@ begin
   if v->>'hpMaxBonus'<>'0' or v->>'athleticsCheckBonus'<>'5'
     or v->>'acrobaticsCheckBonus'<>'5' then
     raise exception 'Swap did not recalculate runtime deltas: %',v;
+  end if;
+  v:=public.get_character_physical_specimen_effective_stats_v1(
+    'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
+  if v #>> '{effectiveStats,maxHp}' <> '24'
+    or v #>> '{effectiveStats,athleticsCheckBonus}' <> '5'
+    or v #>> '{effectiveStats,acrobaticsCheckBonus}' <> '5'
+    or v #>> '{effectiveStats,climbSpeedFt}' <> '35' then
+    raise exception 'Stat projection failed to follow the Short Rest swap: %',v;
   end if;
   begin
     perform public.swap_character_physical_specimen_benefit_v1(
@@ -159,6 +186,14 @@ begin
   eff:=public.get_character_physical_specimen_effects_v1('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
   if eff->>'hpMaxBonus'<>'0' or eff->>'speedBonusFt'<>'0'
     then raise exception 'Expired feature retains stat bonuses'; end if;
+  v:=public.get_character_physical_specimen_effective_stats_v1(
+    'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
+  if v #>> '{effectiveStats,maxHp}' <> '24'
+    or v #>> '{effectiveStats,currentHp}' <> '24'
+    or v #>> '{effectiveStats,speedFt}' <> '30'
+    or v->>'active'<>'false' then
+    raise exception 'Long-Rest expiration retained a stale modifier: %',v;
+  end if;
   begin
     perform public.swap_character_physical_specimen_benefit_v1(
       'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
@@ -196,6 +231,33 @@ begin
 end
 $test$;
 reset role;
+
+-- Overhealing the temporary HP maximum must never cause the projection to
+-- rewrite the stored current HP when the feature eventually expires.
+update public.character_sheets
+set sheet=jsonb_set(sheet,'{hp}','28'::jsonb)
+where character_id='aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+set role authenticated;
+do $stats$
+declare v jsonb;
+begin
+  v:=public.get_character_physical_specimen_effective_stats_v1(
+    'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
+  if v #>> '{effectiveStats,currentHp}' <> '27'
+    or v->>'requiresHpReconciliation'<>'true' then
+    raise exception 'Over-max HP not safely flagged and clamped: %',v;
+  end if;
+end
+$stats$;
+reset role;
+do $integrity$
+begin
+  if (select sheet->>'hp' from public.character_sheets
+      where character_id='aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa') <> '28' then
+    raise exception 'Read-only stat projection modified persistent HP';
+  end if;
+end
+$integrity$;
 
 -- Even an administrator-provided broken saved choice list must not grant free uses.
 update public.character_runtime_feature_choices
