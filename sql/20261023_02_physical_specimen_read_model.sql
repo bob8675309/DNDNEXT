@@ -115,7 +115,7 @@ begin
   select sheet into v_sheet from public.character_sheets
     where character_id=p_character_id;
   if not found
-    or jsonb_typeof(v_sheet #> '{abilities,cha,score}')<>'number' then
+    or jsonb_typeof(v_sheet #> '{abilities,cha,score}') is distinct from 'number' then
     return jsonb_build_object(
       'eligible',false,'featureName','Physical Specimen','reason','missing_charisma_score'
     );
