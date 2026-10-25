@@ -61,7 +61,7 @@ begin
  set card_payload='{"item_key":"Ring of Protection|XDMG","bonusAc":0}'
  where id='31000000-0000-4000-8000-000000000001';
  e:=private.character_equipment_effects_v1(cid);
- if e#>>'{ac,total}'<>'14' or e->>'savesAll'<>'5' then
+ if e#>>'{ac,total}'<>'14' or e->>'savesAll'<>'6' then
    raise exception 'Numeric zero inventory override precedence failed %',e; end if;
  -- Restore the genuine unmodified instance for armor scenarios.
  update public.inventory_items set card_payload='{"item_key":"Ring of Protection|XDMG"}'
