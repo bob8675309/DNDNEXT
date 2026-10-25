@@ -13,6 +13,9 @@ on:
       - "sql/20261024_05_attunement_rest_class_evidence_readonly.sql"
       - "sql/20261024_06_attunement_world_focus_session_foundation.sql"
       - "sql/20261024_07_attunement_canonical_rest_log_bridge.sql"
+      - "sql/20261024_08_attunement_gm_review_and_transfer_invalidation.sql"
+      - "scripts/fixtures/attunement_gm_review_and_transfer_behavior.sql"
+      - "scripts/validate_attunement_gm_review.mjs"
       - "scripts/fixtures/attunement_canonical_rest_log_bridge_behavior.sql"
       - "scripts/validate_attunement_rest_log_bridge.mjs"
       - "scripts/fixtures/attunement_world_focus_session_behavior.sql"
@@ -48,6 +51,7 @@ jobs:
       - run: node scripts/validate_attunement_rest_class_evidence.mjs
       - run: node scripts/validate_attunement_world_focus_session.mjs
       - run: node scripts/validate_attunement_rest_log_bridge.mjs
+      - run: node scripts/validate_attunement_gm_review.mjs
   isolated-postgres:
     runs-on: ubuntu-latest
     services:
@@ -81,3 +85,5 @@ jobs:
       - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/attunement_world_focus_session_behavior.sql
       - run: psql -X -v ON_ERROR_STOP=1 -f sql/20261024_07_attunement_canonical_rest_log_bridge.sql
       - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/attunement_canonical_rest_log_bridge_behavior.sql
+      - run: psql -X -v ON_ERROR_STOP=1 -f sql/20261024_08_attunement_gm_review_and_transfer_invalidation.sql
+      - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/attunement_gm_review_and_transfer_behavior.sql
