@@ -3,6 +3,9 @@ on:
   pull_request:
     paths:
       - "components/CharacterSheetEnhancements.js"
+      - "components/CharacterRestActivityDialog.js"
+      - "styles/CharacterRestActivityDialog.module.css"
+      - "docs/Rest_Activity_Popup_Status_2026-10-25.md"
       - "components/CharacterSheetResourceTracker.js"
       - "scripts/validate_player_rest_buttons.mjs"
       - ".github/workflows/validate-player-rest-buttons.yml"

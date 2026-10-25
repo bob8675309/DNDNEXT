@@ -1,25 +1,48 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-const sheet=fs.readFileSync("components/CharacterSheetEnhancements.js","utf8");
-const panel=fs.readFileSync("components/CharacterSheetResourceTracker.js","utf8");
-const sql=fs.readFileSync("sql/20260810_90_rest_class_feature_restoration.sql","utf8");
-const guard=fs.readFileSync("sql/20260802_06_character_resource_active_encounter_lock.sql","utf8");
-for (const term of [
-'async function handleRest(restType)',
-'const isLong = restType === "long_rest";',
-'"complete_character_rest_v1"',
-'p_rest_type: restType',
-'Recover' // normalized below; see case test
-].slice(0,-1)) assert.ok(sheet.includes(term),"Rest action contract lost: "+term);
-assert.match(sheet,/Complete a Short Rest\? Restore eligible Pact Magic slots and abilities that recover on a Short Rest/);
-assert.match(sheet,/Complete a Long Rest\? Restore tracked spell slots and abilities that recover on a Short or Long Rest/);
-assert.ok(!sheet.includes("HP, Hit Dice, class features, and encounter state are not changed yet"),"Outdated class-feature rest warning remains");
-for (const label of ['onRest?.("short_rest")','onRest?.("long_rest")']) assert.ok(panel.includes(label),"Missing player rest button: "+label);
-assert.ok(panel.includes('const disabledByState = loading || Boolean(busyKey) || encounterLocked;'),"In-combat rest lock missing");
-assert.ok(panel.includes('disabled={disabledByState} onClick={() => onRest?.("short_rest")}'));
-assert.ok(panel.includes('disabled={disabledByState} onClick={() => onRest?.("long_rest")}'));
-assert.ok(sql.includes("private.restore_character_rest_action_state_v1"),"Canonical class-feature rest restoration was lost");
-assert.ok(guard.includes("character_rest_active_encounter_guard") || guard.includes("assert_character_resource_not_active_v1"),"Canonical in-combat rest guard no longer tracked");
-assert.ok(!sheet.includes("record_attunement_focused_short_rest_v1"),"Ordinary player rest incorrectly routed through GM attunement");
-assert.ok(!panel.includes("attunement_focus"),"Attunement status incorrectly coupled to buttons");
-console.log("Player Short/Long Rest two-button recovery + encounter lock contract passed.");
+const read = path => fs.readFileSync(path, "utf8");
+const sheet = read("components/CharacterSheetEnhancements.js");
+const panel = read("components/CharacterSheetResourceTracker.js");
+const dialog = read("components/CharacterRestActivityDialog.js");
+const dialogCss = read("styles/CharacterRestActivityDialog.module.css");
+const sql = read("sql/20260810_90_rest_class_feature_restoration.sql");
+const guard = read("sql/20260802_06_character_resource_active_encounter_lock.sql");
+const workflow = read(".github/workflows/validate-player-rest-buttons.yml");
+for (const call of ['onRest?.("short_rest")', 'onRest?.("long_rest")']) {
+  assert.ok(panel.includes(call), "Missing the player rest button: " + call);
+}
+assert.ok(panel.includes("const disabledByState = loading || Boolean(busyKey) || encounterLocked;"), "Combat must disable rest buttons");
+for (const restType of ["short_rest", "long_rest"]) {
+  assert.ok(panel.includes('disabled={disabledByState} onClick={() => onRest?.("' + restType + '")}'), "Rest button bypassed encounter lock: " + restType);
+}
+for (const token of [
+  'function handleRest(restType)', 'setRestDialogType(restType)',
+  '<CharacterRestActivityDialog', 'onRest={handleRest}',
+  'async function recoverDuringRest()', 'restSubmitInFlight.current = true',
+  'const completed = await runResourceRpc("complete_character_rest_v1"',
+  "if (completed) setRestDialogType(null)", 'p_rest_type: restDialogType',
+  'resourceProfile?.encounterLocked', 'return false;', 'return true;',
+  'attunementEnabled={false}',
+]) assert.ok(sheet.includes(token), "Rest/UI integration lost: " + token);
+assert.ok(!sheet.includes("window.confirm("), "Activity dialog must replace browser confirmation");
+assert.ok(!sheet.includes('"record_attunement_focused_short_rest_v1"'), "Rest was routed through GM attunement");
+for (const token of [
+  'role="dialog"', 'aria-modal="true"',
+  'aria-labelledby="character-rest-activity-title"',
+  'event.key === "Escape"', 'event.key !== "Tab"',
+  'primaryRef.current?.focus()', 'Rest &amp; Recover',
+  'Complete rest', 'Work on Crafting', 'Coming later',
+  'attunementEnabled ? (', 'Pending campaign-rule integration',
+  'disabled={unavailable}', 'onClick={onRecover}',
+  'onClick={onClose}', 'if (!busy && event.target === event.currentTarget)',
+]) assert.ok(dialog.includes(token), "Missing accessible or truthful option: " + token);
+assert.ok(!dialog.includes("supabase.rpc"), "Dialog should not fork the rest backend");
+assert.ok(!dialog.includes("set_character_item_attunement_v1"), "No placeholder attunement writes");
+assert.ok(dialogCss.includes("@media print"), "Activity overlay should not print");
+assert.ok(dialogCss.includes(":focus-visible"), "Keyboard focus styling must remain");
+assert.ok(sql.includes("private.restore_character_rest_action_state_v1"), "Class-feature recovery lost");
+assert.ok(guard.includes("character_rest_active_encounter_guard") || guard.includes("assert_character_resource_not_active_v1"), "Server encounter rest guard absent");
+for(const path of ["components/CharacterRestActivityDialog.js", "styles/CharacterRestActivityDialog.module.css", "scripts/validate_player_rest_buttons.mjs"]){
+  assert.ok(workflow.includes(path), "CI source missing "+path);
+}
+console.log("Short/Long Rest → accessible activities → guarded canonical recovery contract passed.");
