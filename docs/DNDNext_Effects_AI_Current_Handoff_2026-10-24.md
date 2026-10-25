@@ -69,7 +69,7 @@ The original requirement is **not just numerical equipment bonuses**. Allow sour
 - **Lifecycle/stacking:** passive, equipped/attuned, Action/Bonus Action/Reaction activation, per-use/charge, duration/concentration, per-turn/encounter, long/short-rest replacement or expiry, sourced nonstacking/most-beneficial stacking, exact provenance and request-id idempotency.
 - **Consumers:** sheet display + standalone roll math, tactical save/attack/spell/damage/heal/actions, movement/LoS/vision, active snapshots, crafted consumable use, NPC/DM later AI context. The engine never authors a free-form game-state change.
 
-**Draft PR #251 currently has only** add/minimum/multiply, condition-gated Advantage/Disadvantage, controlled stacking keys and 13 numeric targets plus three roll modes. Its equipment adapter supports saving throws, Athletics/Acrobatics, initiative only. This is a foundation, NOT evidence that the larger scope is implemented.
+**Draft PR #251 currently has only** add/minimum/multiply, condition-gated Advantage/Disadvantage, controlled stacking keys and 12 numeric targets plus three roll modes. Its equipment adapter supports saving throws, Athletics/Acrobatics, initiative only. This is a foundation, NOT evidence that the larger scope is implemented.
 
 ### Source-family examples that the first narrow audit omitted
 - Wild Heart Aspect of the Wilds: **Owl** 60-ft Darkvision grant OR existing Darkvision **+60 ft**, Panther climb = effective walking Speed, Salmon swim = effective walking Speed; selection survives Long Rest, later rest opens optional replacement.
