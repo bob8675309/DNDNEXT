@@ -118,3 +118,32 @@
   .dialog { padding: 0.9rem; }
 }
 @media print { .backdrop { display: none !important; } }
+
+.picker { display: grid; gap: 0.65rem; padding: 0.3rem 0; }
+.pickerTitle { font-size: 1.05rem; font-weight: 750; margin: 0; }
+.choiceList { display: grid; gap: 0.45rem; max-height: 15rem; overflow-y: auto; }
+.choiceRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.6rem;
+  border: 1px solid rgba(191,170,224,0.35);
+  border-radius: 0.5rem;
+  background: rgba(20,16,31,0.6);
+}
+.choiceRow input { margin-top: 0.22rem; accent-color: #c9a0f0; }
+.choiceRow input:focus-visible { outline: 3px solid #e3c5ff; outline-offset: 3px; }
+.choiceText { display: grid; gap: 0.22rem; }
+.choiceText strong { font-size: 0.81rem; }
+.choiceText small { color: #cfc0df; font-size: 0.72rem; line-height: 1.4; }
+.saveChoices {
+  border: 1px solid #c8a6ed;
+  border-radius: 0.5rem;
+  background: #6b4294;
+  color: #fff;
+  padding: 0.65rem 0.9rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+.saveChoices:disabled { opacity: 0.55; cursor: not-allowed; }
+.saveChoices:focus-visible { outline: 3px solid #e3c5ff; outline-offset: 2px; }

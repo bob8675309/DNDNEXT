@@ -500,10 +500,10 @@ export default function CharacterSheetEnhancements({ rootRef, sheet = {}, featur
       {restDialogType ? (
         <CharacterRestActivityDialog
           restType={restDialogType}
+          characterId={resolvedCharacterId}
           busy={restSubmitInFlight.current || resourceBusyKey.startsWith("rest:")}
           encounterLocked={Boolean(resourceProfile?.encounterLocked)}
           error={resourceError}
-          attunementEnabled={false}
           onRecover={recoverDuringRest}
           onClose={() => { if (!restSubmitInFlight.current) setRestDialogType(null); }}
         />
