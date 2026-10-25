@@ -135,6 +135,22 @@ begin
  update public.inventory_items set is_equipped=false where id=variant;
  if exists(select 1 from public.character_magic_item_selections_v1 where inventory_item_id=variant)
  then raise exception 'Unequip did not clear magic selection'; end if;
+ -- Changing a selected item's source identity, rarity or source payload
+ -- must revoke the saved choice without altering the equipped item.
+ perform public.set_character_rest_magic_choices_v1(c,array[b,d]);
+ update public.inventory_items set item_id='UNKNOWN' where id=b;
+ if exists(select 1 from public.character_magic_item_selections_v1 where inventory_item_id=b)
+ then raise exception 'Item identity edit retained stale magic selection'; end if;
+ if (select is_equipped from public.inventory_items where id=b) is not true
+ then raise exception 'Item identity edit unexpectedly unequipped gear'; end if;
+ update public.inventory_items set item_rarity='mundane' where id=d;
+ if exists(select 1 from public.character_magic_item_selections_v1 where inventory_item_id=d)
+ then raise exception 'Item rarity edit retained stale magic selection'; end if;
+ update public.inventory_items set is_equipped=true where id=variant;
+ perform public.set_character_rest_magic_choices_v1(c,array[variant]);
+ update public.inventory_items set card_payload='{"id":"VAR-12345","rarity":"uncommon"}'::jsonb where id=variant;
+ if exists(select 1 from public.character_magic_item_selections_v1 where inventory_item_id=variant)
+ then raise exception 'Item payload edit retained stale magic selection'; end if;
  perform set_config('fixture.uid','',true);
  blocked:=false;
  begin perform public.get_character_rest_magic_choices_v1(c);
