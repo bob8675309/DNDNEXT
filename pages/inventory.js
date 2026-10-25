@@ -16,6 +16,7 @@ import EquipmentDiagram, { EQUIPMENT_SLOTS, inferEquipmentSlot } from "@/compone
 import OfferTradeButton from "@/components/OfferTradeButton";
 import TradeRequestsPanel from "@/components/TradeRequestsPanel";
 import useWallet from "@/utils/useWallet";
+import useInventoryAttunement from "@/utils/useInventoryAttunement";
 
 
 const OWNER_TYPES = ["player", "npc", "merchant"];
@@ -76,6 +77,16 @@ export default function InventoryPage() {
   const isOwnInventory = useMemo(() => {
     return ownerType === "player" && session && ownerId === session.user.id;
   }, [ownerType, ownerId, session]);
+
+  const attunementContext = useInventoryAttunement({
+    ownerType,
+    ownerId,
+    sessionUserId: session?.user?.id,
+    requestedCharacterId: typeof query.characterId === "string" ? query.characterId : "",
+    restActivity: query.restActivity === "attunement",
+    canManage: Boolean(isOwnInventory && canManage),
+    inventoryRows: rows,
+  });
 
   const showTradePanel = isOwnInventory;
 
@@ -792,8 +803,40 @@ export default function InventoryPage() {
 
       {canView && (
         <>
+          {ownerType === "player" && attunementContext.isOwnPlayerInventory &&
+            (attunementContext.snapshot?.enabled || attunementContext.isRestActivity) ? (
+            <section className="card bg-dark text-light border-secondary mb-3" aria-label="Character attunement context">
+              <div className="card-body py-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div>
+                  <div className="fw-semibold">Magic Item Attunement</div>
+                  <div className="small text-muted">Inventory belongs to your account. Attunement belongs to the chosen character.</div>
+                  {attunementContext.snapshot?.enabled === false ? (
+                    <div className="small text-warning">The campaign's optional attunement rule is currently OFF.</div>
+                  ) : null}
+                  {attunementContext.isRestActivity && !attunementContext.attunement?.canChange &&
+                    attunementContext.snapshot?.enabled === true && !attunementContext.loading ? (
+                    <div className="small text-warning">To change items, open this character's Camp &amp; Downtime activity.</div>
+                  ) : null}
+                  {attunementContext.error ? <div className="small text-danger" role="alert">{attunementContext.error}</div> : null}
+                </div>
+                <label className="d-flex flex-column gap-1 small" htmlFor="inventory-attunement-character">
+                  Active character
+                  <select id="inventory-attunement-character" className="form-select form-select-sm"
+                    value={attunementContext.characterId}
+                    onChange={(event) => attunementContext.setCharacterId(event.target.value)}
+                    disabled={attunementContext.loading || attunementContext.attunement?.busy || !attunementContext.characters.length}>
+                    {!attunementContext.characters.length ? <option value="">No linked character</option> : null}
+                    {attunementContext.characters.map((entry) => (
+                      <option key={entry.id} value={entry.id}>{entry.name}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            </section>
+          ) : null}
           <EquipmentDiagram
             rows={rows}
+            attunement={attunementContext.attunement}
             ownerName={ownerMeta?.name || "Character"}
             canManage={isOwnInventory || canManage}
             canTransfer={isOwnInventory || canManage || canTransferOut}
