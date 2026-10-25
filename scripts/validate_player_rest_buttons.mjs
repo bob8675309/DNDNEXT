@@ -32,7 +32,7 @@ for (const token of [
   'event.key === "Escape"', 'event.key !== "Tab"',
   'primaryRef.current?.focus()', 'Rest &amp; Recover',
   'Complete rest', 'Work on Crafting', 'Coming later',
-  'attunementEnabled ? (', 'Review magic item choices',
+  'attunementEnabled ? (', 'Open Inventory', 'openAttunementInventory',
   'disabled={unavailable}', 'onClick={onRecover}',
   'onClick={onClose}', 'if (!combinedBusy && event.target === event.currentTarget)',
 ]) assert.ok(dialog.includes(token), "Missing accessible or truthful option: " + token);
