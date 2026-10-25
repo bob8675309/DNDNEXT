@@ -3,6 +3,15 @@
 Updated: 2026-08-02
 Status: required reading before changing character-sheet ability, save, skill, AC, Initiative, Passive Perception, or equipment-derived calculations.
 
+## 2026-10-24 effects-engine integration clarification
+
+The formulas below describe the **current character-sheet calculation contract**; the proposed common effect engine **has not replaced it**. Read [Character_Effects_Release_Readiness_Gates_2026-10-24.md](Character_Effects_Release_Readiness_Gates_2026-10-24.md) and the [equipment pipeline](Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md) before connecting new sources.
+
+- Existing authoritative equipment output can add **score** and **direct modifier** bonuses. A source item that **sets** a score (for example `ability.static.con=20`) requires separately reviewed eligibility and replacement math; do not misrepresent it as an additive bonus or claim the legacy resolver applies it.
+- An item may be **equipped without being attuned**. Draft PR #257 records separate character-item bonds but is not deployed or used by existing numeric consumers. Where magic requires a bond, the sheet must eventually gate the *magical* part while retaining any legitimate **mundane** armor/weapon effect. Do not change the current sheet solely to anticipate this draft.
+- The existing equipment SQL may count a Shield assigned an incorrect slot; the source-catalogue parity fixture in draft #255 documents that legacy behavior. It is a pending **correctness review**, not a new shield rule or an excuse to add an AC adjustment twice.
+- Temporary/rest-driven Advantage, Expertise, current HP/Speed, source-lifetime state and action uses require their authorized feature/encounter owners; do not persist these as base sheet JSON or apply them unconditionally in presentational helpers.
+
 ## Authority boundary
 
 - `character_sheets.sheet` stores base character data and optional explicit overrides.

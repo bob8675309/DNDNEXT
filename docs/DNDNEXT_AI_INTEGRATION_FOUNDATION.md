@@ -284,7 +284,7 @@ Any future AI implementation must be a bounded project with explicit review of i
 
 ## 2026-10-24 future authoritative effects tool — clarification, NOT a deployed AI capability
 
-**Source/priority:** [DNDNext_Effects_AI_Current_Handoff_2026-10-24.md](DNDNext_Effects_AI_Current_Handoff_2026-10-24.md) and draft PRs #250–#253. This section connects the existing AI foundation to the user-approved reusable Character Effects Engine. It **does not** authorize implementing AI yet and it does not add provider dependencies, AI tables, gameplay RPCs, or database credentials.
+**Source/priority:** [DNDNext_Effects_AI_Current_Handoff_2026-10-24.md](DNDNext_Effects_AI_Current_Handoff_2026-10-24.md) and the [effects-engine release-readiness matrix](Character_Effects_Release_Readiness_Gates_2026-10-24.md). Draft #250 is the Physical Specimen source integration, while #251 → #253 → #255 are the stacked common resolver/parity tests and #257 is a separate, still-unmerged attunement authority proposal. This section connects the existing AI foundation to the user-approved reusable Character Effects Engine. It **does not** authorize implementing AI yet and it does not add provider dependencies, AI tables, gameplay RPCs, or database credentials.
 
 The intended integration is an **AI-callable tool implemented by DNDNext** for bounded **read-only** character/rules/effect information. The model's narrative or action-selection reasoning may use the result; the game engine still decides whether the effect exists, whether it is active, who can see it, which numbers or roll modes apply, and what game-state writes are permitted.
 
@@ -298,4 +298,4 @@ Suggested **conceptual, not existing** server-level interfaces:
 
 **Visibility:** actor-known, viewer-visible, and DM-only data must be filtered **before** model inference. GM-only creature stats, hidden enemies, unpublished NPC memory, private character details, unrevealed trap/encounter state and campaign notes are not model prompt material for a player-facing response.
 
-**Delivery gate:** implement only after the source/consumer effects parity matrix and the current Forge/product priority are accepted, and only as a separately authorized AI workstream. Preserve local-first provider abstraction: Ollama / llama.cpp now conceptual, optional other providers later. AI Off remains valid.
+**Delivery gate:** implement only after the source/consumer effects parity matrix—including active/inactive item magic, proper attunement, source-specific rest/condition/target context, visibility-safe provenance and real gameplay consumer checks—has passed the [release gates](Character_Effects_Release_Readiness_Gates_2026-10-24.md), and only as a separately authorized AI workstream. Preserve local-first provider abstraction: Ollama / llama.cpp now conceptual, optional other providers later. AI Off remains valid.

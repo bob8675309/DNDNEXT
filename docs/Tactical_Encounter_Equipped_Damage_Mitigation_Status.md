@@ -2,6 +2,12 @@
 
 Last updated: 2026-10-16
 
+## 2026-10-24 shared effects / attunement boundary
+
+This document records the **existing, deployed typed-equipment mitigation behavior**. The draft common effects resolver (#251 → #253 → #255) has **not replaced** this helper; draft attunement policy #257 has **not been deployed** and does **not yet make current damage/weapon/spell consumers check bonds**. See [Character_Effects_Release_Readiness_Gates_2026-10-24.md](Character_Effects_Release_Readiness_Gates_2026-10-24.md).
+
+The current `private.encounter_equipped_damage_mitigation_v1` examines catalogue and inventory-instance structured fields separately, whereas `private.character_equipment_effects_v1` merges catalogue with instance overrides for numeric bonuses. Do not copy one pipeline's precedence into the other without behavior/source tests. Preserve the actual Resistance-before-highest-flat-reduction order, then vulnerability and temporary HP, as the current campaign authority. When adding attunement eligibility, preserve mundane Shield/armor rules, source-specific mitigation, versioned combat logs and active encounter snapshot boundaries.
+
 ## Status
 
 **Implemented in the live Supabase damage resolver and source-controlled on the ItemCard audit branch.**
