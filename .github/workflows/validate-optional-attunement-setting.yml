@@ -5,6 +5,9 @@ on:
       - "sql/20261025_01_optional_campaign_attunement_setting.sql"
       - "sql/20261025_02_optional_rest_magic_item_selection.sql"
       - "components/CharacterRestMagicItemSelector.js"
+      - "utils/useInventoryAttunement.js"
+      - "pages/inventory.js"
+      - "scripts/validate_inventory_attunement_integration.mjs"
       - "components/CharacterRestActivityDialog.js"
       - "components/CharacterSheetEnhancements.js"
       - "scripts/fixtures/optional_rest_magic_item_selection_behavior.sql"
@@ -27,6 +30,7 @@ jobs:
           node-version: "22"
       - run: node scripts/validate_optional_attunement_setting.mjs
       - run: node scripts/validate_optional_rest_magic_choices.mjs
+      - run: node scripts/validate_inventory_attunement_integration.mjs
   isolated-postgres:
     runs-on: ubuntu-latest
     services:
