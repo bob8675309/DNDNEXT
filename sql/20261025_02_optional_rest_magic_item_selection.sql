@@ -49,9 +49,11 @@ $magic$;
 revoke all on function private.optional_rest_item_is_magic_v1(uuid)
   from public,anon,authenticated;
 
--- Character-owned items have clear custody. An item assigned to a player
--- account may be in multiple editable characters' inventories; reject that
--- ambiguity until a per-character item allocation exists.
+-- Character-owned items have clear custody. Account-owned inventory can be
+-- shown on several editable character views; the specific selected character
+-- is authorized below, and the UNIQUE(inventory_item_id) selection prevents
+-- a single physical item from being attuned to two characters concurrently.
+-- This only assigns the attunement claim, never item custody or equip slots.
 create or replace function private.optional_rest_item_owner_matches_v1(
   p_character uuid,p_item uuid
 ) returns boolean
@@ -69,11 +71,6 @@ as $own$
           and exists(
             select 1 from public.character_permissions cp
             where cp.character_id=p_character
-              and cp.user_id::text=i.owner_id and cp.can_edit
-          )
-          and not exists(
-            select 1 from public.character_permissions cp
-            where cp.character_id<>p_character
               and cp.user_id::text=i.owner_id and cp.can_edit
           )
         )
@@ -116,13 +113,18 @@ begin
         'isSelected',a.inventory_item_id is not null,
         'selectable',
           private.optional_rest_item_is_magic_v1(i.id)
-          and private.optional_rest_item_owner_matches_v1(p_character_id,i.id),
+          and private.optional_rest_item_owner_matches_v1(p_character_id,i.id)
+          and not exists (select 1 from public.character_magic_item_selections_v1 other_choice
+            where other_choice.inventory_item_id=i.id and other_choice.character_id<>p_character_id),
         'reason',case
           when not i.is_equipped then 'Equip this item first'
           when not private.optional_rest_item_is_magic_v1(i.id)
              then 'Unverified magic item source or rarity'
           when not private.optional_rest_item_owner_matches_v1(p_character_id,i.id)
-             then 'Shared inventory needs a character allocation'
+             then 'Item is not assigned to an editable character'
+          when exists (select 1 from public.character_magic_item_selections_v1 other_choice
+            where other_choice.inventory_item_id=i.id and other_choice.character_id<>p_character_id)
+             then 'Already attuned to another character'
           else null end
       ) order by i.item_name,i.id
     ),'[]'::jsonb) into v_items
