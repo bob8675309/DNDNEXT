@@ -223,8 +223,8 @@ grant execute on function public.set_character_rest_magic_choices_v1(uuid,uuid[]
   to authenticated;
 
 -- Preserve normal equipment slot behavior: never auto-unequip or destroy
--- inventory. Only clear obsolete selections when a source is unequipped or
--- transferred to a different owner.
+-- inventory. Clear obsolete selections after transfers, unequips, or edits
+-- to the verified item identity/rarity/payload that qualified the choice.
 create or replace function private.clear_rest_magic_choice_on_item_change_v1()
 returns trigger
 language plpgsql volatile security definer
@@ -233,7 +233,10 @@ as $clear$
 begin
   if old.owner_id is distinct from new.owner_id
     or old.owner_type is distinct from new.owner_type
-    or (old.is_equipped is true and new.is_equipped is not true) then
+    or (old.is_equipped is true and new.is_equipped is not true)
+    or old.item_id is distinct from new.item_id
+    or old.item_rarity is distinct from new.item_rarity
+    or old.card_payload is distinct from new.card_payload then
     delete from public.character_magic_item_selections_v1
       where inventory_item_id=new.id;
   end if;
@@ -243,7 +246,7 @@ $clear$;
 drop trigger if exists clear_rest_magic_choice_on_item_change_v1
   on public.inventory_items;
 create trigger clear_rest_magic_choice_on_item_change_v1
-after update of owner_id,owner_type,is_equipped on public.inventory_items
+after update of owner_id,owner_type,is_equipped,item_id,item_rarity,card_payload on public.inventory_items
 for each row execute function private.clear_rest_magic_choice_on_item_change_v1();
 revoke all on function private.clear_rest_magic_choice_on_item_change_v1()
   from public,anon,authenticated;
