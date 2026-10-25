@@ -349,3 +349,56 @@
     display: block;
   }
 }
+
+/* Optional attunement presentation; the equipment stage and ItemCard remain unchanged. */
+.equipment-stage-slot.is-attuned::after {
+  content: "✦";
+  position: absolute;
+  right: 3px;
+  top: 0;
+  font-size: 11px;
+  line-height: 1;
+  color: #e5ce8a;
+  pointer-events: none;
+}
+.equipment-workbench__attunement-count { color: #e5ce8a; }
+.equipment-workbench__attunement {
+  margin-top: 0.65rem;
+  border: 1px solid rgba(213, 184, 111, 0.32);
+  border-radius: 8px;
+  padding: 0.65rem;
+  background: rgba(36, 27, 49, 0.68);
+  color: #efe9ff;
+}
+.equipment-workbench__attunement-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+}
+.equipment-workbench__attunement-header span,
+.equipment-workbench__attunement small {
+  color: #c0b2d0;
+  font-size: 0.72rem;
+}
+.equipment-workbench__attunement p {
+  margin: 0.4rem 0;
+  font-size: 0.76rem;
+}
+.equipment-workbench__attunement button {
+  display: block;
+  width: 100%;
+  margin: 0.55rem 0 0.35rem;
+  border: 1px solid rgba(213, 184, 111, 0.65);
+  border-radius: 5px;
+  background: rgba(69, 44, 81, 0.88);
+  color: #fff3c9;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.78rem;
+}
+.equipment-workbench__attunement button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
