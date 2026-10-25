@@ -1,0 +1,65 @@
+# Character Effects Engine — Integration and Release Readiness Gates
+**Reviewed 2026-10-24; documentation-only. Not a deployment or game-feature approval.**
+
+## Authority and intended end state
+
+DNDNext should gain a **reusable, source-aware effects calculation and explanation layer** shared by canonical character sheets/rolls, tactical mechanics, items/crafting, rest/feature state, and **eventually** permission-filtered AI context. This is **not** a promise to automate every spell/class ability in one PR or to replace existing equipment, combat, rest, spell or crafting ownership. The pure SQL resolver never decides eligibility or commits gameplay state.
+
+**Read in this order:** [current handoff](DNDNext_Effects_AI_Current_Handoff_2026-10-24.md) → this gate → [effects coverage](Item_Character_Effects_Coverage_Audit_2026-10-24.md) and [cross-chat requirements](Character_Effects_Cross_Conversation_Requirements_Audit_2026-10-24.md) → relevant source/consumer ledger. Live GitHub, live Supabase and exact-head CI supersede dated descriptions.
+
+### Verified repository and live anchors (point-in-time only)
+
+- Main was **863eb7d9809257d525af5c76be4b8d2289603052**, after merged #249, #252, #254, #256 and **#258** (documentation/coverage/handoff; #258 updated top-level status). Re-fetch.
+- DnDWeb Supabase (read-only): PostgreSQL 17.4; 2,739 catalogue items, 19 inventory instances, 15 characters, 1,037 spell-effect **definitions**. These counts are not coverage percentages. Legacy \`private.character_equipment_effects_v1(uuid)\` exists. The draft common resolver, adapter, Physical Specimen projection, and attunement table/admin setting are **not deployed**.
+- Draft dependency graph: **#251 → #253 → #255** (common private calculation → existing SQL synthetic parity → 16 real structured item-payload-subset parity). **#250** Physical Specimen and **#257** Standard-3/Unlimited attunement remain **independent draft** workstreams, not dependencies already merged into the chain. #255 exact head \`dda0f432d963a5b6a87b65e5f6f4bbd27a860602\` passed isolated PostgreSQL, contracts and validation. #257 exact head \`081b2892290e367ff99b6c96af947e2505029a5e\` passed source-contract and isolated PostgreSQL tests. Neither passing suite proves gameplay completeness.
+- PR #252's detailed audits are **merged into main**. #253/#255 test-gate documents and #251/#250/#257 designs are **in draft branches** until merged. Never infer that a draft migration or function is live because its file is available on GitHub.
+
+## What "implemented" means
+
+Use precise labels:
+- **Source present**: canonical JSON/source text describes an effect; no proof it is active.
+- **State supported**: progression/rest/attunement/condition record can hold a choice or bond; no proof the effect changes gameplay.
+- **Numeric calculation proved**: isolated arithmetic on documented inputs reproduces tested old behavior; no proof of permission/eligibility or a connected consumer.
+- **Authoritative consumer connected**: actual sheet/check/save/spell/weapon/damage/movement code applies only **eligible, active, context-appropriate** effects, verified against trusted source and requests.
+- **Release-ready**: security, lifecycle, duplicate/stacking, concurrency, data compatibility, UI smoke and in-encounter regression gates pass at the same reviewed head, and the owner approves the rollout.
+
+**Never describe an entire feature as implemented merely because it has an active selection, tooltip, structured catalogue key, or green isolated fixture.**
+
+## Current cross-system coverage / blockers
+
+| Workstream | Evidence | Remaining release gate |
+|---|---|---|
+| **Pure common resolver, PR #251** | Private pure arithmetic handles add/minimum/multiply, scoped Advantage/Disadvantage, fixed numeric/roll vocabulary, provenance and bounded stack keys | Trusted source adapters, rule-specific stacking and event context, no untrusted direct RPC; downstream consumers remain unchanged |
+| **Legacy equipment parity, PRs #253/#255** | Actual legacy SQL executes against synthetic inventory, with 16 selected **real structured catalogue subsets** in #255; saves/AC/armor/overrides tested | Actual character/production-shaped entitlement and attunement, all 18 skill contexts, alternative/unarmored AC, weapon/spell effects and tactical consumers; snapshot **omits prose and complete source payloads** |
+| **Item eligibility / attunement, PR #257** | Draft character-item bonds, standard cap of 3 vs unlimited, admin switch, owner/duplicate/cap/concurrency/transfer checks; isolated tests green | Standard Short Rest timing, source/class prerequisites, cursed/end conditions, Artificer capacity exceptions, *actual magic-bonus consumers*, multi-character/slot compatibility and UI approval. **Not deployed** |
+| **Physical Specimen, PR #250** | Six Grim Hollow benefits, source/selection/rest scaffolding, staged HP/speed/tactical calculation and encounter-start reconciliation | Poisoned-save Advantage, existing Darkvision +60 vs grant, CHA Athletics/Acrobatics, jumping, climbing, source/turn actions, end-to-end HP/rest/permission/encounter tests and approved controls |
+| **Existing numeric sheet/equipment** | Authoritative catalogue+instance merge computes legacy bonuses; sheet formulas belong to existing code | No double count, ability **score replacement** distinct from additive score/mod, proficiency and Expertise, no erroneous shield slot, original Monk/Barbarian unarmored rules; avoid overwriting persistent sheet or active encounter snapshots |
+| **Typed combat mitigation** | Existing live item Resistance and flat typed reduction; **Resistance before highest flat reduction**, then vulnerability/temp HP/HP | Cross-source affinity/immunity/condition immunity and lifecycle; do not interpret item prose or replace the specialized damage authority |
+| **Movement/vision** | Canonical features/items include Darkvision grants/extensions and effective-Speed-dependent climbing/swimming/flying/burrowing | Event-aware derived movement, legal tactical/path/LOS/check consumers and rest/encounter refresh; no world-map edits |
+| **Spells, conditions and per-use effects** | Live \`spell_effects\` definitions; specialized encounter condition/timed effect and charge/rest primitives | Cast legality, targets, concentration, event/turn expiry, reaction/bonus action, one-shot roll modes, healing, immunity and DC application per supported mechanic—not an automatic 1,037-spell integration |
+| **Crafting and consumables** | Smithing/Enchanting/Alchemy have their own build/budget/ingredient authority | Differentiate craft-time material tags/bonuses from **final** item/consumable runtime effects, doses, duration, grants, failure and inventory provenance |
+| **Future AI tool** | \`DNDNEXT_AI_INTEGRATION_FOUNDATION.md\` defines provider-neutral, future read-only context/legality architecture | After real authoritative effects parity: permission-filtered explanations/context and server-supplied legal actions only; AI cannot mint bonuses, bypass eligibility, query raw DB, or directly mutate combat |
+
+### Concrete regressions already exposed (do not silently "fix" through a new resolver)
+
+1. **An equipped Shield in an invalid \`back\` slot receives Shield AC in the legacy equipment SQL.** PR #255 pins that legacy observation; it is *not* approval of the rule. Enforcing allowed slots must also review equipment mutation, character sheet, tactical AC, and regression expectations.
+2. A magic item with \`ability.static.con=20\` does **not** get that stat replacement projected through the legacy numeric resolver. \`modifySpeed.equal.fly="walk"\`, \`bonusSpellSaveDc\` and \`bonusProficiencyBonus\` also lack matching legacy numeric projections in the sampled test. Do not claim that unrecognized keys have gameplay support.
+3. The numeric equipment resolver uses **catalogue || instance** (inventory same-name key overrides). Equipped damage mitigation examines catalogue and instance payloads independently; resistance/DR does **not** necessarily follow the same override rules.
+4. The old numeric resolver treats \`is_equipped\` as sufficient for some **magic** bonuses; the attunement work is not yet connected to the consumer. Correct bond tracking must not suppress mundane armor/shield/weapon behavior nor accidentally activate unbonded magic properties.
+5. The shared function's \`stackKey\` largest-magnitude behavior is a technical mechanism, **not** a universal 5e stacking rule. Source-specific nonstacking, repeated-item interactions and identical spells require validated keys and precedence.
+
+## Next recommended work, in dependency order
+
+1. **Read-only owner/state map:** inventory ownership across Player/NPC/merchant; canonical equipment slot/attunement/rest authorities and the active-consumer routes. Confirm live schema, source-edition precedence and class/feature eligibility. Review #257 separately before any merge.
+2. **Bounded eligibility contract + parity tests:** equip vs attuned vs carried; Short Rest receipt and status, three/unlimited and class-specific cap; migration/backfill policy, source per-item prerequisites, cancellation and transfer; rejected/unequipped/duplicate/foreign/old items. Isolate in Postgres first.
+3. **Prove one end-to-end eligible effect** against a real consumer at a time: representative saving-throw modifier first, then guarded spell attack/DC or ability replacement after source-based eligibility and derived-math parity. Include hit/damage, class- and target-specific spell bonuses, skill/save and affected event context. No bulk runtime replacement.
+4. **Complete Physical Specimen six-benefit parity** through the common source-aware interface where valid, preserving #250's action/HP and rest owner. Also test Wild Heart, Bestial Soul, Boon Resistance, Astral Trance and temporary/permanent Expertise distinctions as **different source lifecycles**, not copy-pasted feature handlers.
+5. **Combat regression gate:** immunity, Resistance-before-DR, vulnerability, shields/unarmored AC, max/current/temp HP, weapon profile, condition application, reaction/bonus actions, concentration, turn-start/end, duplicate request IDs and authoritative logs.
+6. **User-visible acceptance and rollout:** source-matched active/inactive/provenance explanations, existing sheet/Forge/NPC visual contracts, actual-component UI mock-up approval before re-layout, signed-in player/admin and active-encounter smoke, exact-head CI and security review. Do not merge/apply live SQL automatically.
+
+## Technical / security boundaries
+
+- Canonical: \`public.characters\`, \`character_sheets.sheet\` **base**, \`items_catalog\`, \`inventory_items\`, class/species/feat/spell sources, \`character_runtime_feature_choices\`, rest logs, spell state, encounter participants/commands/conditions. Preserve each system's owner; all protected reads and mutations require proper actor/controller context.
+- The **draft** \`private.resolve_effect_bundle_v1(jsonb,jsonb,jsonb)\` is not public browser or model API; its \`source/id/stackKey/when\` input is **not** a substitute for entitlement, usage or eligibility checks. Private arithmetic may be reused behind a *trusted server adapter* once proved.
+- No unsolicited SQL migrations, attunement backfill, encounter snapshot rewrite, character-sheet or Forge UI changes. **No map changes:** \`components/MapPageClient.js\`, world-route/time/weather/camps and separate town/city map behavior remain protected.
+- Use [CHATGPT_REPO_WRITE_PROCEDURE.md](CHATGPT_REPO_WRITE_PROCEDURE.md); branch from newly fetched main, compare exact files, no force-push, run relevant checks and obtain owner approval for any runtime merge/deployment.
