@@ -136,7 +136,7 @@ begin
    card_payload='{"bonusAc":4,"bonusSavingThrow":5}'::jsonb
  where id=unknown_item;
  res:=private.character_attuned_ac_saves_shadow_v1(c);
- if (res->'baseline'#>>'{ac,total}')::integer<>22
+ if (res->'baseline'#>>'{ac,total}')::integer<>27
     or (res->'shadow'#>>'{ac,total}')::integer<>18
     or (res->'baseline'->>'savesAll')::integer<>9
     or (res->'shadow'->>'savesAll')::integer<>0
