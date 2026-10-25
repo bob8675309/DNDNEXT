@@ -2,6 +2,17 @@
 
 **Owner clarification: 2026-10-25. Highest-priority requirement for rest and attunement UI.** This supersedes the proposed complexity of the #260–#265 attunement-evidence stack. It does not erase their historical tests or authorize any deployment.
 
+## Implemented draft UI checkpoint — PR #266
+
+Draft [PR #266](https://github.com/bob8675309/DNDNEXT/pull/266) is **independent of the superseded #257–#265 attunement stack** and based on main. Its current implementation at `cf40e453872af39e352e65baf3f2adb84c0570fc` passed both repository/build validation jobs and the Vercel Preview Comments check.
+
+- The existing Short/Long Rest buttons remain in `CharacterSheetResourceTracker`. `CharacterSheetEnhancements` opens a single **Camp & Downtime** activity dialog instead of `window.confirm`; **Rest & Recover** deliberately invokes the **unchanged** `complete_character_rest_v1` with the correct rest type.
+- Rest is still disabled by the existing Character Sheet encounter state and guarded by the server's canonical active-encounter rest protection. RPC failures leave the dialog open with an error; a synchronous submit lock prevents accidental rapid double submission.
+- **Crafting** is presented as a disabled coming-later activity. The component supports a gated informative attunement placeholder but passes `attunementEnabled=false` and exposes **no active attunement action** today. No admin ON/OFF toggle or magic cap is deployed.
+- The dialog uses purple/dark sheet styling, responsive layout, focus trap/return, Escape, cancel, backdrop dismissal and print exclusion. An actual player/admin browser visual and combat smoke test is **still required**. No SQL, crafting, NPC, encounter, map or AI changes were made.
+
+[PR #266 detailed implementation ledger](https://github.com/bob8675309/DNDNEXT/blob/fix/rest-button-copy-and-combat-contract-20261025/docs/Rest_Activity_Popup_Status_2026-10-25.md). Next separately draft the OFF-by-default **Enable Attunement** admin option and genuine three-magic-item capacity enforcement; do **not** repurpose the older `unlimited_attunement_enabled` prototype's default-on scheme.
+
 ## Experience the player should have
 
 - The Character Sheet already has **Short Rest** and **Long Rest** buttons. They call `complete_character_rest_v1`. Keep both as the primary player actions and use the existing restoration authority for eligible spells and class/other limited-use abilities. **Neither requires attunement, DM signoff, a running 60-minute timer, or a prior item-focused rest.**
