@@ -6,22 +6,17 @@ Repository: `bob8675309/DNDNEXT`
 
 Stack: Next.js **Pages Router** 16.1.6, React 19, Supabase/Postgres, Bootstrap/SCSS, Vercel.
 
-## 2026-10-24 authoritative active-work override — EFFECTS + future AI tool
+## 2026-10-24 current verified continuation — effects, attunement, and PR dependencies
 
-**READ FIRST:** [DNDNext_Effects_AI_Current_Handoff_2026-10-24.md](DNDNext_Effects_AI_Current_Handoff_2026-10-24.md). It is the primary current continuation brief, with source/consumer matrix, safe next tests, draft PR topology, AI relationship and links to every controlling ledger. This 2026-10-24 override supersedes older 2026-10-11/18/19 active-work queues **for the character-effects project only**; accepted Forge, artwork, economy and tactical behavior remain preserved.
+**Read [DNDNext_Effects_AI_Current_Handoff_2026-10-24.md](DNDNext_Effects_AI_Current_Handoff_2026-10-24.md) first**, then [docs/README.md](README.md). Earlier dated "authoritative" checkpoints below are **historical records**; they do not override this current branch/deployment ledger.
 
-- GitHub main at last observation: f55c224006dbc9c3613470cafa2cf65e7c350f00. Must re-fetch. Next.js Pages Router + Supabase; live project DnDWeb ucggczovhmauhshvhusx.
-- Four active **draft/unmerged** effects PRs: #250 Physical Specimen guarded read/tactical HP+Speed staging (other benefits unwired); #251 pure source-agnostic common effect resolver + narrow equipment normalization; #252 item/effects source and cross-conversation omission audit; #253 actual legacy SQL resolver plus **synthetic** catalogue payload parity fixture, **based on #251**, not main. #253 latest checked CI passed; no draft runtime SQL deployed. PR branch source docs are not on main.
-- Confirmed scope includes species, background/feat/class/subclass, spell/condition, magic item, crafting/enchantment and potion *effects*, source-defined activation, provenance, lifecycle/rest/concentration/charges, stacking, score replacement vs bonus, skill/save/attack/DC, immunity/resistance/DR, HP/Speed/vision/climb/swim/fly/jump, and event/target contexts. Calculations alone do not make actions/conditions legal or implement every consumer.
-- **Safety traps:** current tactical ring calculation is Resistance **before** flat reduction (latest sql/20261016_08); numeric equipment uses catalogue || instance override while typed mitigation examines both; attunement and charge authority are not yet established; current Wild Heart/Bestial Soul/Boon/Trance/Expertise runtime choices have different rest semantics. No blanket replacement of existing equipment, sheet or combat RPCs.
-- **AI intent:** docs/DNDNEXT_AI_INTEGRATION_FOUNDATION.md remains the original agreed local/provider-neutral architecture. The effects engine is intended as a future **read-only, visibility-filtered, authorized calculation/explanation tool** for that integration, **not** an AI-owned calculation or database-write authority. AI implementation is still deferred pending explicit scope.
-- Next safe work: executable parity against **actual catalogue source payloads** and production-shaped source/activation/consumer scenarios; improve incomplete source adapters only after gates. Do not merge, migrate or redesign UI without review/approval. The paper D&D character sheet and current Forge need actual-component mockups for any proposed UI.
-- Preserved boundaries: **do not touch components/MapPageClient.js or world-map behavior**, never mix world/town maps, no automatic overwriting of tactical encounter snapshots, no unapproved production DB mutation, no model-provided SQL/effect JSON as authority.
-
-**Other project history below remains relevant**, but its historical PR numbers and checkpoints do not supersede this active override.
-
-
-
+- Last verified `main` is `0e925958b49505e010a011b1de4d6de28f30b7b7`, updated after merging #249, #252, #254 and #256. Re-fetch before any change. Those four PRs are CLOSED/MERGED, not active drafts.
+- Open draft topology: **#250** Physical Specimen independently; **#251** pure effect calculation and equipment adapter → **#253** real legacy-resolver fixture → **#255** 16 genuine catalogue-source payloads. #255's isolated source/SQL checks were green at the last verified head but do not establish production-readiness.
+- **#257** independently stages the requested Admin Dashboard Standard D&D (three item) versus Unlimited attunement switch, character-specific attunement bonds, guarded commands and tests. The setting does not affect `is_equipped` or `equip_slot`; no live migration is deployed. Rest, class exceptions, full source prerequisites and all runtime-effect consumers remain required pre-merge gates.
+- Actual magic bonuses have multiple authorities: catalogue+instance `card_payload` numeric equipment; weapon profiles; typed tactical mitigation; spellcasting and conditioned runtimes. Never double count magic item bonuses or translate ItemCard prose directly into gameplay.
+- Source/provenance, permission, equip state, attunement, Short Rest, use/charges, concentration, encounter snapshots, class prerequisites and correct target are distinct obligations. Numerical effect parity does not imply legal activation.
+- AI design in [DNDNEXT_AI_INTEGRATION_FOUNDATION.md](DNDNEXT_AI_INTEGRATION_FOUNDATION.md) is **future** provider-neutral architecture. It can consume read-only, visibility-filtered effects/rules context later; do not implement AI or give it independent DB/gameplay authority as part of this work.
+- No uncontrolled changes to world-map vs town-map routes, Character Forge art/spacing, NPC/Player Forge parity, original paper character sheet, tactical encounter snapshots, or live Supabase. Any PR requires exact-head CI, comparison and owner review appropriate to its impact.
 
 ## 2026-10-18 item-art recovery override — use this before older item-art notes
 

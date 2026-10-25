@@ -4,18 +4,16 @@ Last reconciled: 2026-10-24 (latest active-work override; historical roadmap bel
 
 This is the current high-level handoff for DNDNext. It reconciles the living roadmap, phase ledgers, repository source, GitHub state, and deployed Supabase state. Historical phase ledgers remain useful implementation records, but this document controls current status when an older status header or unchecked master-roadmap task conflicts with deployed evidence.
 
-## 2026-10-24 active-work override — reusable effects first, AI later
+## 2026-10-24 reconciled active work — effects parity and campaign attunement
 
-**Current brief:** [DNDNext_Effects_AI_Current_Handoff_2026-10-24.md](DNDNext_Effects_AI_Current_Handoff_2026-10-24.md), the controlling current source for the active effects development line. Main was observed at f55c224006dbc9c3613470cafa2cf65e7c350f00; re-fetch before work.
+**Authoritative reference:** [DNDNext_Effects_AI_Current_Handoff_2026-10-24.md](DNDNext_Effects_AI_Current_Handoff_2026-10-24.md). Last verified main `0e925958b49505e010a011b1de4d6de28f30b7b7`; re-fetch.
 
-- Draft PR #250 has partially staged Physical Specimen gameplay, but full save/vision/check/jump/climb consumers remain gated.
-- Draft PR #251 adds source-agnostic private pure arithmetic and a narrow equipment adapter; no production caller replaced, no live SQL.
-- Draft PR #252 catalogs item fields and **broader omitted** source/feature families, including charge/attunement, ability-set and movement mode semantics and the separately documented rest families.
-- Draft PR #253 (based on #251, not main) exercises the actual legacy equipment SQL against synthetic fixture catalogue rows. Exact-head isolated Postgres and contract CI succeeded, but that does not complete real-catalogue or tactical parity.
-- The accepted long-term local/provider-neutral AI plan from DNDNEXT_AI_INTEGRATION_FOUNDATION.md gains a **future** requirement: a server-built, authorized, visibility-filtered read-only effects explanation/context tool. AI may select from server-provided legal encounter actions and draft items for admin review, never author canonical rules values or DB writes.
-- Next dependency is real-source payload parity and source-aware adapter/consumer coverage, **not** broad runtime replacement, AI deployment, live migration or visual redesign. See the new handoff for full release gates and safe source-map.
-
-The previous 2026-10-09 and earlier entries are retained as **historical cross-subsystem roadmaps**. Do not revive already merged Tarot queues or treat historical art/Forge checkpoints as current effects PR status. Production authority remains main; check actual live repo, database and permission contracts before changes.
+- **Merged documentation only:** #249 (Workspace), #252 (items/effects audit), #254 (cross-chat effects/AI handoff), #256 (PR status reconciliation). Do not count these as pending work or instruct a future developer to merge them.
+- **Draft gameplay work:** #250 Physical Specimen remains separate/incomplete. The common effects chain is #251 → #253 → #255 (stacked bases, not independent main PRs). #255 includes 16 authentic item-source subsets in isolated PostgreSQL parity tests, with known unsupported effects and attunement issues.
+- **New draft campaign configuration:** #257 adds standard three-item or unlimited attunement capacity beside future-tech control, with a separate per-character item-bond model; existing equip slots are unchanged. It is not deployed and does not yet enforce all Short Rest, class/source, magical-property suppression or tactical consumers. Refer to its status ledger.
+- **Next ordered tasks:** prove source-specific bond eligibility and rest requirements; verify per-character inventory across player/NPCs, attunement-aware canonical sheet/weapon/spell/damage consumers and class exceptions; then assess a minimal gameplay integration after parity and owner approval.
+- Future AI integration remains provider-neutral, read-only and permission-filtered as specified in the existing AI foundation. It is not an active deployment.
+- All older Forge, Tarot and tactical milestones below record accepted historical checkpoints rather than current effects-branch instructions. Preserve working systems and source-specific rest lifecycles.
 
 ## 2026-10-09 active-work override
 

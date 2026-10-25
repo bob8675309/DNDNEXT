@@ -14,21 +14,22 @@ For current work, trust sources in this order:
 
 If prose conflicts with live source/database state, live authority wins until documentation is corrected.
 
-## 2026-10-24 current effects / AI-tool checkpoint — read before older overrides
+## 2026-10-24 current PR / effects / attunement reconciliation
 
-Current main snapshot f55c224006dbc9c3613470cafa2cf65e7c350f00 (re-fetch before action). The **primary development brief** is [DNDNext_Effects_AI_Current_Handoff_2026-10-24.md](DNDNext_Effects_AI_Current_Handoff_2026-10-24.md), which supersedes the dated active-work queue below **for effects-engine work**.
+**Current source-of-truth briefing:** [DNDNext_Effects_AI_Current_Handoff_2026-10-24.md](DNDNext_Effects_AI_Current_Handoff_2026-10-24.md). Last verified main `0e925958b49505e010a011b1de4d6de28f30b7b7`; re-fetch. Do not use an earlier PR snapshot as the active work list.
 
-- Draft PR #250: Physical Specimen backend staging, incomplete save/vision/skill/movement consumers.
-- Draft PR #251: source-agnostic private pure resolver, narrow additive equipment adapter, **not wired to production**.
-- Draft PR #252: source-field inventory and cross-chat requirements audit. Its detailed new addendum is **only on the PR branch**: [Cross-Conversation Effects Audit](https://github.com/bob8675309/DNDNEXT/blob/audit/item-character-effects-coverage-20261024/docs/Character_Effects_Cross_Conversation_Requirements_Audit_2026-10-24.md).
-- Draft PR #253: actual legacy SQL + **synthetic** item catalogue fixtures, based on draft #251. Isolated Postgres/contract jobs succeeded at 5cfeef36541d6a882144ec00aed56d30bdc5a92a; no general/real-character parity claimed. All four remain unmerged.
-- Live Supabase read-only snapshot 2026-10-24: PostgreSQL 17.4, 2,739 catalogue items, 19 inventory rows, 1,037 normalized spell effects; staged resolver SQL **not installed**.
-- **AI compatibility:** [DNDNEXT_AI_INTEGRATION_FOUNDATION.md](DNDNEXT_AI_INTEGRATION_FOUNDATION.md) is the original local-model/provider-neutral architecture. Future server-authorized effect summaries/rule explanations may be AI tools; AI has **no direct SQL, raw effect-injection or state authority**. AI implementation remains deferred.
-- **Review before changing mechanics:** [Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md](Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md); [Character_Sheet_Formula_Reference.md](Character_Sheet_Formula_Reference.md); [Tactical_Encounter_Equipped_Damage_Mitigation_Status.md](Tactical_Encounter_Equipped_Damage_Mitigation_Status.md); [Unified_Character_Forge_Status.md](Unified_Character_Forge_Status.md), and specific feature/runtime ledgers. Latest live mitigation applies Resistance before flat reduction; do not use outdated earlier SQL as authority.
-- Older Forge/Tarot, dice, sprite, item-art, tactical and town documents remain appropriate **when that particular subsystem is requested**, not as the first active queue. Do not erase their accepted behavior or merge unrelated scopes.
+| PR | Current status | Notes |
+|---|---|---|
+| #249, #252, #254, #256 | **Merged to main** | Workspace audit; item/effects audit; full handoff; topology correction |
+| #250 | Draft | Physical Specimen staged gameplay, incomplete consumer integration |
+| #251 | Draft → #253 → #255 | Common pure calculation; real SQL resolver parity; genuine source catalogue parity |
+| #257 | Draft, standalone | Admin cap switch Standard 3/Unlimited and per-character attunement bonds; gameplay eligibility and consumers incomplete |
 
-
-
+- [Item_Character_Effects_Coverage_Audit_2026-10-24.md](Item_Character_Effects_Coverage_Audit_2026-10-24.md) and [Character_Effects_Cross_Conversation_Requirements_Audit_2026-10-24.md](Character_Effects_Cross_Conversation_Requirements_Audit_2026-10-24.md) are **already on main** after #252. Do not link them as draft-only.
+- #255 isolated PostgreSQL checks passed at the previous exact head; verify the latest head and re-run before merge. 16 real catalogue payload subsets do not prove all live effects or eligibility.
+- #257's [Campaign Attunement Policy status ledger](https://github.com/bob8675309/DNDNEXT/blob/feature/campaign-attunement-policy-20261024/docs/Campaign_Attunement_Policy_Status_2026-10-24.md) is **only on its draft branch** until merged. Do not run its migration against production. The three-item setting must never alter existing equip slots; standard D&D's Short Rest/class exceptions remain explicit integration gates.
+- DnDWeb live authority remains existing equipment, spells, rest and tactical RPCs. Future AI is still proposal-only. Preserve current Forge/Profile art and paper D&D sheet.
+- Everything below this section is preserved as **historical cross-subsystem evidence**, not a stale current-PR checklist.
 
 ## 2026-10-11 current checkpoint override
 

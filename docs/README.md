@@ -4,61 +4,27 @@ Updated: 2026-10-24
 
 This directory contains the project's living handoff, roadmap, architecture, subsystem, and evidence documents. For active work, **live Supabase + current GitHub source/validators/deployment state outrank prose** if they conflict.
 
-## Start here — authoritative 2026-10-24 reading order
+## Start here — current development and handoff (reconciled 2026-10-24)
 
-1. **[DNDNext_Effects_AI_Current_Handoff_2026-10-24.md](DNDNext_Effects_AI_Current_Handoff_2026-10-24.md)** — **CURRENT ACTIVE WORK** and fastest recovery: draft PR #250–253 topology, source/consumer gaps, future AI read-only tool, safety rules and next parity gates.
-2. [DNDNext_Current_Handoff_Prompt.md](DNDNext_Current_Handoff_Prompt.md) — project-wide handoff. Its dated 2026-10-24 override supersedes prior Oct 11–19 work queues. Older content remains architecture/history.
-3. [Documentation_Refresh_Manifest.md](Documentation_Refresh_Manifest.md) — live authority trust order and docs map.
-4. [DNDNEXT_AI_INTEGRATION_FOUNDATION.md](DNDNEXT_AI_INTEGRATION_FOUNDATION.md) — **future** provider-neutral local AI/Actor AI direction and proposed safe use of authoritative effect read models; not implemented.
-5. Draft [PR #250](https://github.com/bob8675309/DNDNEXT/pull/250) Physical Specimen feature and lifecycle gate; draft [PR #251](https://github.com/bob8675309/DNDNEXT/pull/251) common resolver; draft [PR #252](https://github.com/bob8675309/DNDNEXT/pull/252) effect-source coverage; draft [PR #253](https://github.com/bob8675309/DNDNEXT/pull/253) limited actual-SQL/synthetic-catalogue parity. **PR branch docs are not on main until merged**. Never merge without owner approval.
-6. [Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md](Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md), [Character_Sheet_Formula_Reference.md](Character_Sheet_Formula_Reference.md) and [Tactical_Encounter_Equipped_Damage_Mitigation_Status.md](Tactical_Encounter_Equipped_Damage_Mitigation_Status.md) — established numeric and combat authority.
-7. [Unified_Character_Forge_Status.md](Unified_Character_Forge_Status.md), [Character_Progression_and_Higher_Level_Forge.md](Character_Progression_and_Higher_Level_Forge.md), [Pending_Rest_Runtime_Choices_Status.md](Pending_Rest_Runtime_Choices_Status.md), source-specific runtime ledgers — creation/acquisition and rest behavior.
-8. [CHATGPT_REPO_WRITE_PROCEDURE.md](CHATGPT_REPO_WRITE_PROCEDURE.md) and [REPO_ACCESS_STANDING_RULE.md](REPO_ACCESS_STANDING_RULE.md) — safe direct GitHub/Supabase editing.
-9. For historic/resumed artwork only: [Next_Chat_Handoff_2026-10-07_Grim_Hollow_Tarot.md](Next_Chat_Handoff_2026-10-07_Grim_Hollow_Tarot.md) and relevant CHARACTER_FORGE_* art ledgers. Those are no longer the first stop for the active effects work.
+1. **[DNDNext_Effects_AI_Current_Handoff_2026-10-24.md](DNDNext_Effects_AI_Current_Handoff_2026-10-24.md)** — current system map, open PR dependency graph, effect owners and release gates. The dated live status at the top overrides old snapshot tables.
+2. [DNDNext_Current_Handoff_Prompt.md](DNDNext_Current_Handoff_Prompt.md) — cross-subsystem recovery and protected boundaries. Everything beneath its current opening section is historical unless independently reverified.
+3. [Documentation_Refresh_Manifest.md](Documentation_Refresh_Manifest.md) and [Current_Development_Status_and_Roadmap.md](Current_Development_Status_and_Roadmap.md) — trust hierarchy and current priorities, with old checkpoints preserved as history.
+4. **Merged into `main`:** [#249](https://github.com/bob8675309/DNDNEXT/pull/249) Workspace preflight, [#252](https://github.com/bob8675309/DNDNEXT/pull/252) effects coverage and cross-chat audit, [#254](https://github.com/bob8675309/DNDNEXT/pull/254) effects/AI handoff, [#256](https://github.com/bob8675309/DNDNEXT/pull/256) PR reconciliation. Their documents are **on main**; do not call them open drafts.
+5. **Still draft/unmerged:** [#250](https://github.com/bob8675309/DNDNEXT/pull/250) Physical Specimen independently; [#251](https://github.com/bob8675309/DNDNEXT/pull/251) common effects resolver → [#253](https://github.com/bob8675309/DNDNEXT/pull/253) actual equipment-resolver parity → [#255](https://github.com/bob8675309/DNDNEXT/pull/255) genuine catalogue-source parity. Green isolated tests do not authorize gameplay deployment.
+6. **New staged attunement:** [#257](https://github.com/bob8675309/DNDNEXT/pull/257) offers an admin **Standard (three)/Unlimited** cap toggle and character-item bonds while preserving existing equip slots. SQL and UI are **not deployed**; Short Rest, prerequisites, class exceptions and gameplay-consumer gates remain pending. Its detailed [status ledger](https://github.com/bob8675309/DNDNEXT/blob/feature/campaign-attunement-policy-20261024/docs/Campaign_Attunement_Policy_Status_2026-10-24.md) resides on the draft branch.
+7. [Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md](Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md), [Character_Sheet_Formula_Reference.md](Character_Sheet_Formula_Reference.md), [Tactical_Encounter_Equipped_Damage_Mitigation_Status.md](Tactical_Encounter_Equipped_Damage_Mitigation_Status.md) — existing numeric and tactical authority.
+8. [Unified_Character_Forge_Status.md](Unified_Character_Forge_Status.md), [Character_Progression_and_Higher_Level_Forge.md](Character_Progression_and_Higher_Level_Forge.md), [Pending_Rest_Runtime_Choices_Status.md](Pending_Rest_Runtime_Choices_Status.md) and specific runtime ledgers — creation/acquisition and rest semantics.
+9. [CHATGPT_REPO_WRITE_PROCEDURE.md](CHATGPT_REPO_WRITE_PROCEDURE.md), [REPO_ACCESS_STANDING_RULE.md](REPO_ACCESS_STANDING_RULE.md) — exact-head safe GitHub/Supabase procedure.
 
-## 2026-10-24 live/source checkpoint — overrides older sections below
+## Reconciled main / live database checkpoint
 
-- Production authority: main. Last observed main head f55c224006dbc9c3613470cafa2cf65e7c350f00; **always re-fetch** current head. Current work is in **draft, unmerged** PR #250 Physical Specimen, #251 common effect calculation, #252 source coverage audit, #253 synthetic-payload/real-SQL parity (base #251).
-- Live DnDWeb Supabase read-only sample (2026-10-24): PostgreSQL 17.4; items_catalog 2,739; inventory_items 19; spell_effects 1,037. Draft PR #250/#251 SQL is **not deployed**.
-- PR #253's relevant isolated PostgreSQL, contracts and validation jobs succeeded at head 5cfeef36541d6a882144ec00aed56d30bdc5a92a. Do **not** claim full real-catalogue parity or tactical integration from those synthetic fixtures.
-- User-confirmed future AI integration should consume server-authorized effect/rules **read models** and later server-provided legal actions; it must **not** compute trusted bonuses or execute state writes from model output. See the linked current handoff and AI foundation.
-- All dates/SHAs and preexisting implementation descriptions below remain useful **historical snapshots**, not current PR/deployment status. Confirm live repo, DB, CI and Vercel before action. World map and town/city map are separate protected systems.
+- Last verified `main`: `0e925958b49505e010a011b1de4d6de28f30b7b7` after #249/#252/#254/#256 merges. **Always re-fetch**; this is an anchor, not a promise of current HEAD.
+- DnDWeb Supabase `ucggczovhmauhshvhusx` continues using the original equipment/tactical/rest implementations. Neither the draft effects SQL nor the attunement migration was applied during this audit.
+- Read-only catalogue sample: 2,739 `items_catalog` entries, 19 inventory instances and 1,037 spell-effect records (point-in-time figures).
+- Existing numeric equipment resolver merges catalogue payload then item-instance overrides; tactical weapon bonuses and typed resistance/DR have specialized consumers. The current tactical order follows `20261016_08_resistance_before_flat_reduction.sql`: Resistance before flat damage reduction.
+- Important: *equipped*, *attuned*, *rest-eligible* and *active magic effects* are separate states. Unlimited attunement must never loosen helmet/boots/body/weapon slot restrictions.
 
-## Current code checkpoint
-
-Current production authority is `main`.
-
-Consolidated state as of 2026-10-11:
-
-- PRs #199, #202, #203/#204, #206, #207, and #208 are merged into current `main`.
-- Current production code checkpoint: `5937d5e960e8de117be6f5605754306137f0ae0a` (PR #208).
-- Exact PR #208 head passed **17 / 17** triggered workflows; Vercel production deployment `dpl_3f2vpd1AcmgWXkLEpc4Kv8swJ1tF` is **READY**, and `/profile` returned HTTP 200.
-- Live migration `20261011142727 player_forge_homebrew_starting_budget` establishes the DNDNext/vanilla starting-equipment ruleset seam.
-- DNDNext Homebrew currently uses a **300 gp minimum** starting market purse while preserving vanilla class/background cash, Package A/B/C source data, higher-level wealth logic, transactional merchant checkout, and character-scoped inventory/currency.
-- Starting Level no longer overlays Class hero art; Feat rows have direct Select/Deselect controls with selected/granted visual parity; source-owned Spell choice groups auto-collapse when complete; `?forgeStep=equipment` supports direct browser-review navigation.
-- Runtime-visible subclass choices remain **185 / 185** covered by dedicated approved Tarot cards; the Grim Hollow Tarot creation queue remains **0**.
-- Next broad product priority remains completion/reconciliation of the ten-step Character Forge, with merchant NPC/portrait expansion available as a separate content/art pass and future AI implementation still deferred until Forge completion.
-
-Live Grim Hollow catalogue checkpoint: **101 spells, 40 subclasses / 258 subclass-feature rows, 106 items**. The full item seeder preserves generated `price_gp` values so raw 5etools copper-piece values cannot inflate catalog prices by 100×.
-
-Always re-fetch current `main` and live Supabase when requested work is database-backed.
-
-## Current live database checkpoint
-
-Supabase project: `DnDWeb` / `ucggczovhmauhshvhusx`.
-
-Latest relevant registered migrations include:
-
-- `20260921152546 admin_site_activity_v1`;
-- `20260921153151 admin_site_activity_acl_fix`;
-- `20260921153328 admin_site_activity_retention_v1`;
-- `20260921185225 admin_site_activity_hardening_v1`;
-- `20261011060110 fighting_initiate_2024_adaptation`;
-- `20261011142727 player_forge_homebrew_starting_budget`.
-
-Read `Auth_Navigation_Admin_Activity_Status.md` for the privacy model, grants, rate-bound anonymous ingestion, and signed-out attribution fix.
-
-The planned Realistic Dice Phase 1 still does **not** require a Supabase migration. Later tactical dice presentation should consume existing authoritative encounter RPC/combat-log outcomes rather than introduce client-side combat authority.
+Older archive sections and former dated "active" queues in other files remain useful for chronology, but are not active merge/deployment instructions.
 
 ## Realistic Dice future subsystem
 
