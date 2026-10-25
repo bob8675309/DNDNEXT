@@ -1,6 +1,15 @@
 # DNDNext — Current Effects Engine + Future AI Tool Handoff
 Updated: 2026-10-24. **Read this first when taking over the effects-engine work.**
 
+## 2026-10-24 continuation — genuine catalogue fixture verified
+
+- Draft [PR #255](https://github.com/bob8675309/DNDNEXT/pull/255) (branch `test/common-effect-catalog-source-parity-20261024`) is stacked on **#253**, which is stacked on **#251**, not `main`. Recorded exact head: `dda0f432d963a5b6a87b65e5f6f4bbd27a860602`.
+- Captures **16 genuine structured item payload subsets** from DnDWeb with full-payload MD5 fingerprints; no personal inventory or descriptive item prose. Uses actual legacy SQL resolver and synthetic character/inventory rows in isolated PostgreSQL.
+- Exact-head **isolated-postgres, contracts and validate checks all passed**. Supported outcomes: global saving bonuses, AC and real XPHB armor/shield structures, instance numeric override precedence, unequipped and foreign-owner isolation. This is **not** proof of live-character/every-item or tactical parity.
+- **Unresolved, evidenced gaps:** the existing equipment SQL counts an `is_equipped` shield even in a non-shield slot (`back`); attunement eligibility not verified; source `ability.static`, `modifySpeed`, `bonusSpellSaveDc`, `bonusProficiencyBonus` are not projected by the legacy numeric resolver. Do not silently make these effects active or change slots/attunement without scoped tests.
+- Detailed gate is on the PR branch: [`Common_Equipment_Live_Catalog_Parity_Gate_2026-10-24.md`](https://github.com/bob8675309/DNDNEXT/blob/test/common-effect-catalog-source-parity-20261024/docs/Common_Equipment_Live_Catalog_Parity_Gate_2026-10-24.md).
+- #250–#255 remain **draft and unmerged**, including this documentation-only PR #254. All live database/UI/map behavior remains unchanged. Recheck current status at next takeover.
+
 ## Purpose and verification limit
 This is the compact takeover authority for the work spanning three ChatGPT conversations, supported by the currently available earlier-chat handoff/video excerpts, source-controlled documents and code, GitHub PR status and read-only DnDWeb Supabase checks. It **does not claim** to contain every verbatim message from the two previous chats. Where an older design document conflicts with live source, the live source wins. Re-fetch exact GitHub branch heads, latest PR status, migration ledger and database functions before acting.
 
@@ -23,7 +32,7 @@ Repository: bob8675309/DNDNEXT. Production/default: main (recorded SHA f55c22400
 | [#252](https://github.com/bob8675309/DNDNEXT/pull/252) | audit/item-character-effects-coverage-20261024 | 8b603115182d54f1520e48c54379901e9f91dc31 | Read-only item/effect coverage + cross-chat omission audit; counts are source **field presence**, not gameplay proofs |
 | [#253](https://github.com/bob8675309/DNDNEXT/pull/253) | agent/common-effect-real-source-parity-20261024 | 5cfeef36541d6a882144ec00aed56d30bdc5a92a | **Base is #251, not main**; isolated Postgres invokes actual legacy equipment SQL on **synthetic item payloads** and compares supported save/Athletics/Acrobatics/initiative fields. The contracts, Postgres and validation checks passed at this exact head. **Not full real-catalogue or live-character parity.** |
 
-All four PRs are **open/draft/unmerged** as of the snapshot. The separate effects/AI documentation PR that introduces this handoff is documentation-only and based on main; check its status independently. Do not collapse, merge or deploy the draft PRs because a test-only slice is green. PR #249 was an architecture preflight; check its live status before assuming it is active.
+The five effects PRs #250–#253 and #255 are **open/draft/unmerged** as of the continuation snapshot; docs PR #254 is separate. The separate effects/AI documentation PR that introduces this handoff is documentation-only and based on main; check its status independently. Do not collapse, merge or deploy the draft PRs because a test-only slice is green. PR #249 was an architecture preflight; check its live status before assuming it is active.
 
 ## Data and authority map
 
