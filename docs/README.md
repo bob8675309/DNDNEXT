@@ -1,8 +1,12 @@
 # DNDNext Living Documentation Index
 
-Updated: 2026-10-24
+Updated: 2026-10-25
 
 This directory contains the project's living handoff, roadmap, architecture, subsystem, and evidence documents. For active work, **live Supabase + current GitHub source/validators/deployment state outrank prose** if they conflict.
+
+> **2026-10-25 USER PRODUCT DIRECTION — SUPERSEDES ATTUNEMENT PLAN BELOW:** [Player Rest Activities and Optional Attunement](Player_Rest_Activities_Optional_Attunement_2026-10-25.md). The game already has two combat-guarded Short/Long Rest recovery buttons. Future single rest activity dialog offers Rest & Recover, optional Attune/Change Magic Items, and later Crafting. **Attunement OFF by default**; ON is a simple three-magic-item capacity option. Normal resting and magic while OFF must **not** depend on #260–#265's hour-long focus/DM-approval stack. Those PRs are historical experimental drafts, **not approved release dependencies**. Do not merge/deploy them based on passing isolated CI. Draft #257 currently defaults Standard-3 and needs redesign. Independent draft #266 corrects rest confirmation copy only. Re-fetch live branches and deployed state.
+
+
 
 ## Start here — current development and handoff (reconciled 2026-10-24)
 

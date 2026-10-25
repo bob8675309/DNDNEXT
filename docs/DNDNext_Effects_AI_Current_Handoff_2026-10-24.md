@@ -1,6 +1,10 @@
 # DNDNext — Current Effects Engine + Future AI Tool Handoff
 Updated: 2026-10-24. **Read this first when taking over the effects-engine work.**
 
+> **2026-10-25 USER PRODUCT DIRECTION — SUPERSEDES ATTUNEMENT PLAN BELOW:** [Player Rest Activities and Optional Attunement](Player_Rest_Activities_Optional_Attunement_2026-10-25.md). The game already has two combat-guarded Short/Long Rest recovery buttons. Future single rest activity dialog offers Rest & Recover, optional Attune/Change Magic Items, and later Crafting. **Attunement OFF by default**; ON is a simple three-magic-item capacity option. Normal resting and magic while OFF must **not** depend on #260–#265's hour-long focus/DM-approval stack. Those PRs are historical experimental drafts, **not approved release dependencies**. Do not merge/deploy them based on passing isolated CI. Draft #257 currently defaults Standard-3 and needs redesign. Independent draft #266 corrects rest confirmation copy only. Re-fetch live branches and deployed state.
+
+
+
 > **2026-10-24 reconciled live status — read this first.** PRs **#249, #252, #254, #256 and #258 were merged into main**. Latest verified `main`: `863eb7d9809257d525af5c76be4b8d2289603052` (re-fetch before acting). Remaining **draft, unmerged, undeployed** work: independently #250 Physical Specimen; stacked **#251 → #253 → #255** generic effects and source parity; independently **#257** campaign attunement Standard-3/Unlimited policy and character-specific bonds. #255's isolated PostgreSQL test suite passed at its latest observed head. #257 remains an implementation draft until rest/prerequisite, existing magic-effect consumer, and class-exception integration are verified. No live DnDWeb SQL deployment. See [#257 attunement status](https://github.com/bob8675309/DNDNEXT/blob/feature/campaign-attunement-policy-20261024/docs/Campaign_Attunement_Policy_Status_2026-10-24.md).
 
 ## 2026-10-24 effects-engine release-readiness checkpoint

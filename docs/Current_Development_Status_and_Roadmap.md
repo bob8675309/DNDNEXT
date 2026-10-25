@@ -4,6 +4,10 @@ Last reconciled: 2026-10-24 (latest active-work override; historical roadmap bel
 
 This is the current high-level handoff for DNDNext. It reconciles the living roadmap, phase ledgers, repository source, GitHub state, and deployed Supabase state. Historical phase ledgers remain useful implementation records, but this document controls current status when an older status header or unchecked master-roadmap task conflicts with deployed evidence.
 
+> **2026-10-25 USER PRODUCT DIRECTION — SUPERSEDES ATTUNEMENT PLAN BELOW:** [Player Rest Activities and Optional Attunement](Player_Rest_Activities_Optional_Attunement_2026-10-25.md). The game already has two combat-guarded Short/Long Rest recovery buttons. Future single rest activity dialog offers Rest & Recover, optional Attune/Change Magic Items, and later Crafting. **Attunement OFF by default**; ON is a simple three-magic-item capacity option. Normal resting and magic while OFF must **not** depend on #260–#265's hour-long focus/DM-approval stack. Those PRs are historical experimental drafts, **not approved release dependencies**. Do not merge/deploy them based on passing isolated CI. Draft #257 currently defaults Standard-3 and needs redesign. Independent draft #266 corrects rest confirmation copy only. Re-fetch live branches and deployed state.
+
+
+
 ## 2026-10-24 reconciled active work — effects parity and campaign attunement
 
 **Authoritative reference:** [DNDNext_Effects_AI_Current_Handoff_2026-10-24.md](DNDNext_Effects_AI_Current_Handoff_2026-10-24.md). Last verified main `863eb7d9809257d525af5c76be4b8d2289603052`; re-fetch.

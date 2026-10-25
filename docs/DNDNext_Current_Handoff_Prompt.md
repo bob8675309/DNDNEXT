@@ -1,8 +1,12 @@
 # DNDNext Next-Chat Handoff Brief
 
-Updated: 2026-10-24
+Updated: 2026-10-25
 
 Repository: `bob8675309/DNDNEXT`
+
+> **2026-10-25 USER PRODUCT DIRECTION — SUPERSEDES ATTUNEMENT PLAN BELOW:** [Player Rest Activities and Optional Attunement](Player_Rest_Activities_Optional_Attunement_2026-10-25.md). The game already has two combat-guarded Short/Long Rest recovery buttons. Future single rest activity dialog offers Rest & Recover, optional Attune/Change Magic Items, and later Crafting. **Attunement OFF by default**; ON is a simple three-magic-item capacity option. Normal resting and magic while OFF must **not** depend on #260–#265's hour-long focus/DM-approval stack. Those PRs are historical experimental drafts, **not approved release dependencies**. Do not merge/deploy them based on passing isolated CI. Draft #257 currently defaults Standard-3 and needs redesign. Independent draft #266 corrects rest confirmation copy only. Re-fetch live branches and deployed state.
+
+
 
 Stack: Next.js **Pages Router** 16.1.6, React 19, Supabase/Postgres, Bootstrap/SCSS, Vercel.
 
