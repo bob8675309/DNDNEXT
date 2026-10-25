@@ -87,6 +87,19 @@ DNDNext's `world_state(id=1).world_time` uses an accelerated campaign clock (rea
 
 **Unresolved integration:** #262's evidence parser currently compares **real** rest timestamps against one hour; a future guarded rest producer must define/test the clock conversion and validated attunement focus, interruption, identification and Short Rest action together. Do not modify world-map movement or time simulation to solve this. [Full PR #263 gate](https://github.com/bob8675309/DNDNEXT/blob/agent/attunement-world-clock-focus-sessions-20261024/docs/Attunement_World_Clock_Focus_Status_2026-10-24.md).
 
+
+### Canonical focused Short Rest correlation — staged draft PR #264
+
+[PR #264](https://github.com/bob8675309/DNDNEXT/pull/264) is **draft/unmerged/undeployed**, stacked on **#263 → #262 → #261 → #260 → #257** and separate from the arithmetic chain **#251 → #253 → #255**. Exact tested head: `b731a9644c2c217fb8f95332eb0c107d88c20c6c`. Its isolated PostgreSQL, source-contract, repository and Vercel checks **passed**.
+
+- The canonical `public.complete_character_rest_v1(uuid,text)` logic is preserved exactly with only **additive** `restResult.restLogId`. A source-parity validator compares the copied function to `sql/20260810_90_rest_class_feature_restoration.sql` to prevent accidental restoration changes.
+- Private, **service-only** `record_attunement_focused_short_rest_v1(character,attempt)` requires an actual authenticated **admin** principal, ordinary character progression authority, character/item locks, source/owner/class and **game-world hour** eligibility. It calls the canonical rest and atomically stores a **unique exact rest-log ID** on that focus attempt, then labels it `rest_logged_unverified`. Replays return the same ID without another resource restoration.
+- Failure at the canonical rest's active-encounter guard rolls back spell-slot and limited-use restoration **and** the focus link. Tests validate canonical slot/use amounts and safe transactional rollback.
+- **No attunement bond and no magic effect are authorized by a completed rest link.** Physical item contact, interruptions during the elapsed period, separate identification, curses, transfer-out-and-back, class/cap exceptions and DM attestation remain unresolved. The world-clock link does **not** satisfy #262's older **real-timestamp** `attunementFocus` parser. Do not infer one game hour from `character_rest_log.completed_at`.
+- The canonical rest RPC is a current production authority and its new return field would be a **real API contract change** if merged. This change still requires owner review, production-shaped schema/role compatibility, actual signed-in admin/player browser tests and an active tactical encounter check before merging/deploying.
+
+[PR #264 source/risks ledger](https://github.com/bob8675309/DNDNEXT/blob/agent/canonical-attunement-rest-log-bridge-20261024/docs/Attunement_Canonical_Rest_Bridge_Gate_2026-10-24.md).
+
 ## Next recommended work, in dependency order
 
 1. **Read-only owner/state map:** inventory ownership across Player/NPC/merchant; canonical equipment slot/attunement/rest authorities and the active-consumer routes. Confirm live schema, source-edition precedence and class/feature eligibility. Review #257 separately before any merge.
