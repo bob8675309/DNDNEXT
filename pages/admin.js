@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import AssignItemButton from "../components/AssignItemButton";
+import AdminAttunementSetting from "../components/AdminAttunementSetting";
 import { supabase } from "../utils/supabaseClient";
 import ItemCard from "../components/ItemCard";
 import { classifyUi, loadItemCatalogList, TYPE_PILLS, titleCase } from "../utils/itemsIndex";
@@ -373,6 +374,8 @@ export default function AdminPanel() {
           {futureTechMessage ? <div className="card-footer py-2 small text-success">{futureTechMessage}</div> : null}
           {futureTechError ? <div className="card-footer py-2 small text-danger">{futureTechError}</div> : null}
         </section>
+
+        <AdminAttunementSetting />
 
         {/* Controls */}
         <div className="row g-2 align-items-end">
