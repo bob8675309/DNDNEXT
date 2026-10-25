@@ -66,6 +66,18 @@ Read-only live source sampling identified a critical ingestion gap: `Ring of Pro
 - The read-only projection distinguishes verified required, unknown and explicit source conflicts, and **always returns `eligibleForPassiveMagic=false`**, regardless of bond state. Its private registry is not the player-facing attunement write RPC: Short Rest, eligibility, class prerequisites, transfer/end lifecycle and *actual* effect consumers are still incomplete. See [draft PR #261's gate ledger](https://github.com/bob8675309/DNDNEXT/blob/agent/verified-attunement-source-rules-20261024/docs/Verified_Attunement_Source_Rules_Gate_2026-10-24.md).
 - **Remaining dependency:** normalize these verified source facts into the guarded attunement **bond creation/rest workflow** and eventual #251 effects adapter without weakening the fail-closed gate. Test source conflict, 2014/2024 aliases, genuine characters/encounters and preexisting Resistance-before-flat-DR behavior before any production merge.
 
+
+### Tested focused-rest and canonical-class evidence — draft PR #262
+
+**Draft [PR #262](https://github.com/bob8675309/DNDNEXT/pull/262)** is stacked on #261 → #260 → #257. Exact head `50f7cbd6a7d92061eedb4e0d3269edc766fe31fd` passed isolated PostgreSQL, source-contract and validation checks.
+
+- A service-only read model uses `character_progression.class_id` → `class_catalog` to check the exact class prerequisites from verified #261 item keys (e.g. Staff of Power). It rejects Fighter, recognizes Wizard, and treats Boots of Speed as having no class prerequisite.
+- The current authoritative `complete_character_rest_v1` only records a generic rest/resource log. **It does not attest focused item contact, exclusive attention, a distinct identification rest, interruption or a full attunement hour.** Read-only live inspection found 7 historical rest rows, none bearing focus evidence. **No existing Short Rest automatically creates a magic-item bond.**
+- A separate private parser can classify an explicitly server-authored `details.attunementFocus` future receipt with one item, 60+ uninterrupted minutes, contact and separate identification. Fixtures reject false/incomplete/foreign/second-item/Long-Rest/short-duration/interrupted cases. The future rest writer has **not** been implemented, so no production rest currently satisfies that protocol.
+- The helper always reports `attunementReady=false`. It never writes an attunement bond, changes a combat sheet, validates the Artificer 4/5/6 exception, or grants magical bonuses. Keep all affected drafts unmerged/undeployed. [#262 detailed gate](https://github.com/bob8675309/DNDNEXT/blob/agent/attunement-rest-and-class-evidence-20261024/docs/Attunement_Rest_Class_Evidence_Gate_2026-10-24.md).
+
+**Next actual integration:** design a trusted rest-focus begin/complete flow and event-time model with owner review; test against canonical Short/Long Rest log triggers/active-encounter guard. Then enforce the verified source+class+one-rest rules in #257's attunement write RPC; connect to #251's effects adapter only after source/consumer parity. No user-authored rest evidence or AI-owned state changes.
+
 ## Next recommended work, in dependency order
 
 1. **Read-only owner/state map:** inventory ownership across Player/NPC/merchant; canonical equipment slot/attunement/rest authorities and the active-consumer routes. Confirm live schema, source-edition precedence and class/feature eligibility. Review #257 separately before any merge.
