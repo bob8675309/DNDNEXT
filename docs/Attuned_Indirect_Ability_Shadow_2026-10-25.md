@@ -23,6 +23,8 @@ The fixture imports the real, byte-verified legacy equipment resolver, player in
 - custom manual sheet AC: remain unchanged and explicitly unresolved;
 - standard unarmored AC: 10+DEX is properly recomputed;
 - fake/unverified rare item with DEX ability bonuses cannot contribute when campaign rule ON;
+- a base Dexterity of 28 with item bonuses reaching the score cap of 30 is recomputed from base 28 rather than subtracting from the clamped result;
+- Heavy Armor AC 18 stays unaffected by either the selected or suppressed Dexterity modifier;
 - revoking selection and toggling OFF returns exact original output.
 
 ## Release gate
