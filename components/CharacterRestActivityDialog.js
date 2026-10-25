@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
-import CharacterRestMagicItemSelector from "./CharacterRestMagicItemSelector";
+import { useRouter } from "next/router";
 import { createPortal } from "react-dom";
 import styles from "../styles/CharacterRestActivityDialog.module.css";
 
@@ -19,14 +19,13 @@ export default function CharacterRestActivityDialog({
   onClose,
 }) {
   const primaryRef = useRef(null);
-  const pickerBackRef = useRef(null);
+  const router = useRouter();
   const dialogRef = useRef(null);
   const [selectionState, setSelectionState] = useState(null);
   const [selectionError, setSelectionError] = useState("");
-  const [selectionBusy, setSelectionBusy] = useState(false);
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const [selectionNotice, setSelectionNotice] = useState("");
-  const combinedBusy = busy || selectionBusy;
+  const [navigationBusy, setNavigationBusy] = useState(false);
+  const [navigationError, setNavigationError] = useState("");
+  const combinedBusy = busy || navigationBusy;
   const onCloseRef = useRef(onClose);
   const busyRef = useRef(busy);
   onCloseRef.current = onClose;
@@ -49,11 +48,6 @@ export default function CharacterRestActivityDialog({
     })();
     return () => { mounted = false; };
   }, [characterId]);
-
-  useEffect(() => {
-    if (pickerOpen) pickerBackRef.current?.focus();
-    else primaryRef.current?.focus();
-  }, [pickerOpen]);
 
   useEffect(() => {
     const previouslyFocused = document.activeElement;
@@ -87,6 +81,36 @@ export default function CharacterRestActivityDialog({
       }
     };
   }, []);
+
+  async function openAttunementInventory() {
+    if (!characterId || encounterLocked || combinedBusy || selectionState?.enabled !== true) return;
+    setNavigationError("");
+    setNavigationBusy(true);
+    try {
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError || !authData?.user?.id) throw new Error("Sign in to manage your inventory.");
+      const { data: roster, error: rosterError } = await supabase.rpc("get_my_player_characters_v2");
+      if (rosterError) throw rosterError;
+      // Rest may be opened for NPCs by admins; never redirect that character
+      // to the signed-in player's unrelated account inventory.
+      if (!Array.isArray(roster) || !roster.some((entry) => String(entry?.id) === String(characterId))) {
+        throw new Error("This character is not linked to your player inventory.");
+      }
+      await router.push({
+        pathname: "/inventory",
+        query: {
+          ownerType: "player",
+          ownerId: authData.user.id,
+          characterId,
+          restActivity: "attunement",
+        },
+      });
+    } catch (err) {
+      setNavigationError(err?.message || "Could not open this character's inventory.");
+    } finally {
+      setNavigationBusy(false);
+    }
+  }
 
   if (typeof document === "undefined") return null;
 
@@ -126,22 +150,7 @@ export default function CharacterRestActivityDialog({
           Choose what your character will do during this rest.
         </p>
 
-        {pickerOpen && attunementEnabled ? (
-          <CharacterRestMagicItemSelector
-            characterId={characterId}
-            snapshot={selectionState}
-            encounterLocked={encounterLocked}
-            onSaved={(updated) => {
-              setSelectionState(updated);
-              setPickerOpen(false);
-              setSelectionNotice("Magic item choices saved. Existing magical bonuses are unchanged.");
-            }}
-            onBack={() => setPickerOpen(false)}
-            onBusyChange={setSelectionBusy}
-            backRef={pickerBackRef}
-          />
-        ) : (
-          <div className={styles.activities}>
+        <div className={styles.activities}>
             <button
               type="button"
               ref={primaryRef}
@@ -159,11 +168,11 @@ export default function CharacterRestActivityDialog({
                 type="button"
                 className={styles.recover}
                 disabled={unavailable}
-                onClick={() => { setSelectionNotice(""); setPickerOpen(true); }}
+                onClick={openAttunementInventory}
               >
                 <span className={styles.activityTitle}>Attune / Change Magic Items</span>
-                <span className={styles.activityDescription}>Choose up to {selectionState.maxItems} equipped magic items for the optional campaign rule.</span>
-                <span className={styles.actionLabel}>Review magic item choices</span>
+                <span className={styles.activityDescription}>Open the existing Equipment Manager and choose up to {selectionState.maxItems} equipped magic items.</span>
+                <span className={styles.actionLabel}>Open Inventory</span>
               </button>
             ) : null}
 
@@ -173,14 +182,13 @@ export default function CharacterRestActivityDialog({
               <span className={styles.soon}>Coming later</span>
             </div>
           </div>
-        )}
-        {selectionNotice ? <p role="status" className={styles.note}>{selectionNotice}</p> : null}
 
         <p className={styles.note}>
           Rest &amp; Recover restores tracked spells and abilities, not HP or Hit Dice. Item selection does not yet change magical bonuses.
         </p>
         {encounterLocked ? <p role="alert" className={styles.error}>Resting is unavailable during active combat.</p> : null}
         {error ? <p role="alert" className={styles.error}>{error}</p> : null}
+        {navigationError ? <p role="alert" className={styles.error}>{navigationError}</p> : null}
         {selectionError && !attunementEnabled ? <p className={styles.note}>Optional magic-item choices are unavailable; normal rest still works.</p> : null}
         <footer className={styles.footer}>
           <button type="button" onClick={onClose} disabled={combinedBusy} className={styles.cancel}>Cancel</button>
