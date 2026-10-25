@@ -47,6 +47,7 @@ declare
  other uuid:='cccccccc-0000-4000-8000-000000000002';
  ring uuid:='eeeeeeee-0000-4000-8000-000000000001';
  shared uuid:='eeeeeeee-0000-4000-8000-000000000009';
+ foreign_ring uuid:='eeeeeeee-0000-4000-8000-000000000010';
  result jsonb;
  base jsonb;
  projected jsonb;
@@ -103,8 +104,18 @@ begin
     or result->'shadow'->>'resistant'<>'false'
     or (result->'shadow'->>'flatReduction')::integer<>0
     or result->'baseline'->>'resistant'<>'true'
-    or (result->'baseline'->>'flatReduction')::integer<>4
+    or (result->'baseline'->>'flatReduction')::integer<>10
  then raise exception 'Shared account magic mitigation leaked across characters %',result; end if;
+ -- The second character may select its OWN ring independently; the
+ -- shared cloak selected by character C must still be excluded.
+ perform public.set_character_rest_magic_choices_v1(other,array[foreign_ring]);
+ result:=private.encounter_attuned_damage_mitigation_shadow_v1(other,'fire');
+ if result->'shadow'->>'resistant'<>'true'
+    or (result->'shadow'->>'flatReduction')::integer<>10
+    or exists(select 1 from jsonb_array_elements_text(result->'shadow'->'sources') x
+      where x='Shared Cloak')
+ then raise exception 'Other character own Ring reused shared attunement rider %',result; end if;
+ perform public.set_character_rest_magic_choices_v1(other,array[]::uuid[]);
 
  perform public.set_character_rest_magic_choices_v1(c,array[]::uuid[]);
  result:=private.encounter_attuned_damage_mitigation_shadow_v1(c,'fire');
