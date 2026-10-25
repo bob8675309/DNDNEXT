@@ -1,0 +1,18 @@
+name: Validate inventory attunement UI
+on:
+  pull_request:
+    paths:
+      - "components/EquipmentDiagram.js"
+      - "styles/equipment-diagram-three-column.css"
+      - "scripts/validate_inventory_attunement_ui.mjs"
+      - ".github/workflows/validate-inventory-attunement-ui.yml"
+  workflow_dispatch:
+jobs:
+  source-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node scripts/validate_inventory_attunement_ui.mjs
