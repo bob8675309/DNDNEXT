@@ -25,3 +25,13 @@ The Admin control loads authoritative values, reports errors rather than pretend
 ## Verification
 
 An isolated PostgreSQL16 fixture tests default OFF, max 3 check, admin-only mutation (including service context without auth.uid), denied player and NULL input, idempotent OFF, preserving future_tech_enabled, and no claimed magic enforcement. A Node validator asserts SQL, ACL, admin UI and workflow contracts. No live DB write or production rollout.
+
+## Admin Dashboard readiness refinement — stacked draft (2026-10-25)
+
+A later draft stacked on #271 adds `public.get_campaign_attunement_rule_status_v1()`, a read-only, admin-authorized RPC. It returns the configured ON/OFF value, fixed three-item cap, and separate **selection_ready** and **effects_enforced** server flags. Both flags deliberately remain `false` while the per-character inventory selection and all spell/weapon/AC/tactical consumers are still under review. The dashboard does not infer readiness from source-file presence or a Vercel preview.
+
+The dashboard now reloads this authoritative status instead of silently guessing the migration is installed. A failed or malformed status response disables the switch and shows a retry action. It explains that turning ON the setting **does not yet suppress a fourth magic item's effects**. Attempting to switch ON while effects enforcement is unavailable opens an explicit configuration-only confirmation rather than silently activating unfinished gameplay rules. Switching OFF remains available through the same authenticated admin setter. Any unverified response to a setter fails closed until status is refreshed; no optimistic success assumption.
+
+The isolated Postgres16 fixture now verifies the new read RPC denies anonymous/player accounts, preserves the existing campaign item-pool state, and reports configuration ON/OFF accurately without claiming selection/effect enforcement. It does not apply any SQL to the live project.
+
+**Integration boundaries:** PR #268 introduced a staged selection interface, PR #269 moved presentation into the existing EquipmentDiagram, PR #270 wired verified character inventory selection, and PR #271 staged a shadow effect eligibility filter. These are **draft research/development layers**, not evidence that server-authoritative rest opportunity or real consumer parity is complete. The public user-facing item effect behavior should not be changed until the documented release gates are satisfied. The Admin Dashboard and inventory presentation must not alter world/town maps, equipment custody, equipped slots, or NPC/Forge styling.
