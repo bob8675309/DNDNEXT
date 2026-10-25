@@ -18,7 +18,7 @@ for(const token of [
 "old.item_rarity is distinct from new.item_rarity","old.card_payload is distinct from new.card_payload",
 "'effectsEnforced',false",
 "i.item_id like 'VAR-%'","i.card_payload->>'id'=i.item_id",
-"cp.character_id<>p_character"
+"other_choice.inventory_item_id=i.id and other_choice.character_id<>p_character_id"
 ]) assert.ok(sql.includes(token),"SQL selector contract missing: "+token);
 assert.ok(!sql.includes("set is_equipped="),"Selector cannot unequip gear");
 assert.ok(!sql.includes("private.character_equipment_effects_v1"),"No premature magic consumer integration");
@@ -39,7 +39,10 @@ for(const token of [
 ]) assert.ok(picker.includes(token),"Picker gate missing: "+token);
 for(const token of [
 'Four magic items bypassed','Duplicate selected item',
-'Variant replacement','Shared inventory selected ambiguously',
+'Variant replacement','Explicit account-owned item attunement was rejected',
+'Two characters attuned one physical item',
+'Other character did not see attunement claim',
+'Relinquished claim could not be moved',
 'Unknown source selected as magic','Unequipped item selected',
 'Foreign-owned magic selected','Active combat did not block',
 'Selector unexpectedly unequipped','Transfer-out-and-back reactivated',
