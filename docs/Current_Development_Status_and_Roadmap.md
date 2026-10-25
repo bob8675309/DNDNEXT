@@ -6,12 +6,13 @@ This is the current high-level handoff for DNDNext. It reconciles the living roa
 
 ## 2026-10-24 reconciled active work — effects parity and campaign attunement
 
-**Authoritative reference:** [DNDNext_Effects_AI_Current_Handoff_2026-10-24.md](DNDNext_Effects_AI_Current_Handoff_2026-10-24.md). Last verified main `0e925958b49505e010a011b1de4d6de28f30b7b7`; re-fetch.
+**Authoritative reference:** [DNDNext_Effects_AI_Current_Handoff_2026-10-24.md](DNDNext_Effects_AI_Current_Handoff_2026-10-24.md). Last verified main `863eb7d9809257d525af5c76be4b8d2289603052`; re-fetch.
 
-- **Merged documentation only:** #249 (Workspace), #252 (items/effects audit), #254 (cross-chat effects/AI handoff), #256 (PR status reconciliation). Do not count these as pending work or instruct a future developer to merge them.
+- **Merged documentation and audits only:** #249 (Workspace), #252 (items/effects audit), #254 (cross-chat effects/AI handoff), #256 (PR status reconciliation) and **#258 (attunement/current-doc refresh)**. Do not count these as pending work or instruct a future developer to merge them.
 - **Draft gameplay work:** #250 Physical Specimen remains separate/incomplete. The common effects chain is #251 → #253 → #255 (stacked bases, not independent main PRs). #255 includes 16 authentic item-source subsets in isolated PostgreSQL parity tests, with known unsupported effects and attunement issues.
 - **New draft campaign configuration:** #257 adds standard three-item or unlimited attunement capacity beside future-tech control, with a separate per-character item-bond model; existing equip slots are unchanged. It is not deployed and does not yet enforce all Short Rest, class/source, magical-property suppression or tactical consumers. Refer to its status ledger.
-- **Next ordered tasks:** prove source-specific bond eligibility and rest requirements; verify per-character inventory across player/NPCs, attunement-aware canonical sheet/weapon/spell/damage consumers and class exceptions; then assess a minimal gameplay integration after parity and owner approval.
+- **Current completion gate:** [Character_Effects_Release_Readiness_Gates_2026-10-24.md](Character_Effects_Release_Readiness_Gates_2026-10-24.md). Passing a calculation fixture is not proof that the effect applies to an eligible actor, under the right duration/action/rest/source rules, in sheet rolls or tactical combat.
+- **Next ordered tasks:** source-accurate equip/attunement ownership and Short Rest eligibility **before** magic effects can be trusted; genuine-source + production-shaped sheet/weapon/spell/mitigation regression; targeted source-aware consumer adapters; remaining Physical Specimen Poisoned/Darkvision/skill/jump/climb mechanics; signed-in UI and active-encounter tests after owner review. Unlimited attunement affects bond capacity **only**, never equipped body/head/boots/weapon slots.
 - Future AI integration remains provider-neutral, read-only and permission-filtered as specified in the existing AI foundation. It is not an active deployment.
 - All older Forge, Tarot and tactical milestones below record accepted historical checkpoints rather than current effects-branch instructions. Preserve working systems and source-specific rest lifecycles.
 
