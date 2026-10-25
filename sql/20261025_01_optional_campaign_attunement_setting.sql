@@ -65,4 +65,41 @@ grant execute on function public.set_campaign_attunement_rule_v1(boolean)
 comment on function public.set_campaign_attunement_rule_v1(boolean) is
 'Authenticated-admin only; stores OFF-by-default optional three-item limit. It does not yet enforce magic selections or modify gear/effects.';
 
+-- Read-only, admin-authenticated rule status. The readiness flags are
+-- intentionally false until both selector provenance and all gameplay
+-- consumers have passed the required release gates. Config ON != enforced.
+create or replace function public.get_campaign_attunement_rule_status_v1()
+returns table (
+  enabled boolean,
+  max_items smallint,
+  selection_ready boolean,
+  effects_enforced boolean
+)
+language plpgsql
+stable
+security definer
+set search_path = pg_catalog, public, private, auth
+as $status$
+begin
+  if auth.uid() is null or not coalesce(private.current_user_is_admin(),false) then
+    raise exception 'Only an authenticated admin can inspect attunement readiness'
+      using errcode = '42501';
+  end if;
+  return query
+  select s.attunement_enabled,s.attunement_max_items,
+         false::boolean,false::boolean
+  from public.campaign_item_pool_settings s where s.id=1;
+  if not found then
+    raise exception 'Campaign settings row is missing'
+      using errcode = 'P0002';
+  end if;
+end
+$status$;
+revoke all on function public.get_campaign_attunement_rule_status_v1()
+  from public, anon, authenticated;
+grant execute on function public.get_campaign_attunement_rule_status_v1()
+  to authenticated;
+comment on function public.get_campaign_attunement_rule_status_v1() is
+'Admin-only read. Readiness false until inventory selection source/consumer enforcement is validated. ON is configuration, not effect suppression.';
+
 commit;
