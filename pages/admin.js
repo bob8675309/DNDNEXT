@@ -64,6 +64,11 @@ export default function AdminPanel() {
   const [futureTechSaving, setFutureTechSaving] = useState(false);
   const [futureTechMessage, setFutureTechMessage] = useState("");
   const [futureTechError, setFutureTechError] = useState("");
+  const [unlimitedAttunementEnabled, setUnlimitedAttunementEnabled] = useState(false);
+  const [attunementLoaded, setAttunementLoaded] = useState(false);
+  const [attunementSaving, setAttunementSaving] = useState(false);
+  const [attunementMessage, setAttunementMessage] = useState("");
+  const [attunementError, setAttunementError] = useState("");
 
   // Supabase admin operations use the shared browser singleton.
 
@@ -236,6 +241,52 @@ export default function AdminPanel() {
     return () => { cancelled = true; };
   }, []);
 
+  // Load independently so the older future-tech control still works before
+  // the attunement migration is deployed.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("campaign_item_pool_settings")
+          .select("unlimited_attunement_enabled")
+          .eq("id", 1)
+          .maybeSingle();
+        if (error) throw error;
+        if (!cancelled) {
+          setUnlimitedAttunementEnabled(Boolean(data?.unlimited_attunement_enabled));
+          setAttunementLoaded(true);
+        }
+      } catch (error) {
+        if (!cancelled) setAttunementError("Attunement settings are unavailable until the campaign migration is deployed.");
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  async function changeUnlimitedAttunement(nextEnabled) {
+    if (attunementSaving || !attunementLoaded) return;
+    setAttunementSaving(true);
+    setAttunementError("");
+    setAttunementMessage("");
+    try {
+      const { data, error } = await supabase.rpc("set_campaign_unlimited_attunement_v1", {
+        p_enabled: Boolean(nextEnabled),
+      });
+      if (error) throw error;
+      setUnlimitedAttunementEnabled(Boolean(data));
+      setAttunementMessage(
+        data
+          ? "Unlimited attunement enabled. Equipment-slot restrictions are unchanged."
+          : "Standard three-item attunement limit enabled. Equipment-slot restrictions are unchanged."
+      );
+    } catch (error) {
+      setAttunementError(error?.message || "Could not change attunement rules.");
+    } finally {
+      setAttunementSaving(false);
+    }
+  }
+
   async function changeFutureTechEnabled(nextEnabled) {
     if (futureTechSaving) return;
     setFutureTechSaving(true);
@@ -372,6 +423,38 @@ export default function AdminPanel() {
           </div>
           {futureTechMessage ? <div className="card-footer py-2 small text-success">{futureTechMessage}</div> : null}
           {futureTechError ? <div className="card-footer py-2 small text-danger">{futureTechError}</div> : null}
+          <div className="card-body border-top border-secondary py-3 d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+            <div>
+              <div className="small text-uppercase text-info fw-bold mb-1">Magic item rules</div>
+              <div className="fw-semibold">Attunement capacity</div>
+              <div className="small text-muted">
+                Standard D&amp;D allows up to three attuned magic items per character.
+                Unlimited removes only that cap. Helmets, boots, armor, shields and other
+                equipment still follow their existing equip-slot restrictions.
+              </div>
+            </div>
+            <div className="d-flex align-items-center gap-3">
+              <span className={`badge ${unlimitedAttunementEnabled ? "text-bg-info" : "text-bg-secondary"}`}>
+                {!attunementLoaded ? "Unavailable" : unlimitedAttunementEnabled ? "Unlimited" : "Standard (3)"}
+              </span>
+              <div className="form-check form-switch m-0">
+                <input
+                  id="campaign-unlimited-attunement"
+                  className="form-check-input"
+                  type="checkbox"
+                  role="switch"
+                  checked={unlimitedAttunementEnabled}
+                  disabled={!attunementLoaded || attunementSaving}
+                  onChange={(event) => changeUnlimitedAttunement(event.target.checked)}
+                />
+                <label className="form-check-label small" htmlFor="campaign-unlimited-attunement">
+                  {attunementSaving ? "Updating…" : "Unlimited attunement"}
+                </label>
+              </div>
+            </div>
+          </div>
+          {attunementMessage ? <div className="card-footer py-2 small text-success">{attunementMessage}</div> : null}
+          {attunementError ? <div className="card-footer py-2 small text-danger">{attunementError}</div> : null}
         </section>
 
         {/* Controls */}
