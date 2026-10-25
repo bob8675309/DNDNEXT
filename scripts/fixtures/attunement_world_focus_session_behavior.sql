@@ -15,7 +15,8 @@ declare
  c uuid:='aaaaaaaa-0000-4000-8000-000000000001';
  other uuid:='aaaaaaaa-0000-4000-8000-000000000002';
  staff uuid:='dddddddd-0000-4000-8000-000000000002';
- ring uuid:='eeeeeeee-0000-4000-8000-000000000003';
+ cloak uuid:='dddddddd-0000-4000-8000-000000000005';
+ conflicted_ring uuid:='eeeeeeee-0000-4000-8000-000000000003';
  shield uuid:='dddddddd-0000-4000-8000-000000000003';
  unknown_item uuid:='eeeeeeee-0000-4000-8000-000000000002';
  request_id uuid:='99999999-0000-4000-8000-000000000001';
@@ -107,14 +108,19 @@ begin
   perform private.begin_attunement_world_focus_v1(c,unknown_item,second_id);
  exception when check_violation then blocked:=true; end;
  if not blocked then raise exception 'Unknown edition source began attunement'; end if;
- v:=private.begin_attunement_world_focus_v1(c,ring,second_id);
+ blocked:=false;
+ begin
+  perform private.begin_attunement_world_focus_v1(c,conflicted_ring,second_id);
+ exception when check_violation then blocked:=true; end;
+ if not blocked then raise exception 'Conflicting source requirement allowed focus to begin'; end if;
+ v:=private.begin_attunement_world_focus_v1(c,cloak,second_id);
  if v->>'status'<>'focus_started_unverified'
- then raise exception 'Verified ring failed to start fresh attempt %',v; end if;
+ then raise exception 'Verified cloak failed to start fresh attempt %',v; end if;
  v:=private.inspect_attunement_world_focus_v1(c,second_id);
  if v->>'status'<>'world_hour_not_elapsed'
  then raise exception 'New item inherited another focus hour %',v; end if;
  if not private.abort_attunement_world_focus_v1(c,second_id)
- then raise exception 'Could not abort fresh ring focus'; end if;
+ then raise exception 'Could not abort fresh cloak focus'; end if;
  -- Owner ambiguity remains fail-closed even with valid item source.
  blocked:=false;
  begin
