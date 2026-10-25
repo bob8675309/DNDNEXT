@@ -2,6 +2,18 @@
 
 **Owner clarification: 2026-10-25. Highest-priority requirement for rest and attunement UI.** This supersedes the proposed complexity of the #260–#265 attunement-evidence stack. It does not erase their historical tests or authorize any deployment.
 
+## Player magic-item selector — validated draft PR #268
+
+[Draft PR #268](https://github.com/bob8675309/DNDNEXT/pull/268), based on [#267](https://github.com/bob8675309/DNDNEXT/pull/267), integrates the tested rest-activity popup from separate [#266](https://github.com/bob8675309/DNDNEXT/pull/266). **All five exact-head checks passed** at `14ff07e331723022a489ecb811ffc1ea26e4fb77` (PostgreSQL16, source contracts, app/build validations, Vercel comments). It is **draft/unmerged/undeployed**.
+
+- With optional attunement OFF (default), the player sees no magic-item selection activity, and Short/Long Rest continues to call the ordinary canonical recovery RPC. The ON-only **Attune / Change Magic Items** activity lists equipped magic sources and permits selecting up to **three**.
+- New guarded PostgreSQL commands `get_character_rest_magic_choices_v1` / `set_character_rest_magic_choices_v1` check authenticated character permissions, per-item equipped status, catalogue/VAR source-key coherence, unique character inventory custody, active combat, campaign ON mode, and a maximum of **three distinct selected IDs** under serialized transactions. Ownership transfer or unequipping clears stale selections. No inventory or slot mutations are performed; shared-account ambiguous items and unknown sources are disabled.
+- **Current consumer boundary:** saved selections **do not yet change any magical bonuses**. RPC responds `effectsEnforced=false`. When Admin turns ON with more than three already-equipped magical items, no items are deleted/unequipped and no bonuses are silently suppressed. The later effect-source consumer pass must honor OFF-mode parity and ON-mode item eligibility across sheet/spells/tactical before this is a complete gameplay rule.
+- Reconcile overlapping independent rest popup PR #266 and Admin configuration PR #267 before merge; PR #268 intentionally carries #266 UI code because its base is #267, but it must **not** generate duplicate PR merges. Keep strict attunement #257–#265 as superseded research, not dependencies.
+
+[PR #268 detailed source/readiness status](https://github.com/bob8675309/DNDNEXT/blob/feature/rest-magic-selection-20261025/docs/Optional_Rest_Magic_Item_Selection_2026-10-25.md).
+
+
 ## Admin optional-attunement setting — validated draft PR #267
 
 [Draft PR #267](https://github.com/bob8675309/DNDNEXT/pull/267) is a **main-based, separate replacement setting** for the superseded #257 capacity prototype. Tested head `ab54907259974288bba5855d60703e19f4a17458` passed **five** exact-head checks (PostgreSQL16, source contract, application builds and preview comments).

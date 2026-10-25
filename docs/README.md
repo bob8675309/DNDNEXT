@@ -4,6 +4,7 @@ Updated: 2026-10-25
 
 This directory contains the project's living handoff, roadmap, architecture, subsystem, and evidence documents. For active work, **live Supabase + current GitHub source/validators/deployment state outrank prose** if they conflict.
 
+**Rest-time magic-item selection:** draft [#268](https://github.com/bob8675309/DNDNEXT/pull/268) integrates separate draft #266 popup + #267 admin configuration and adds the **ON-only, three-item guarded selection**; all checks passed. It does **not yet enforce bonus suppression**. [Current product specification](Player_Rest_Activities_Optional_Attunement_2026-10-25.md).
 **Admin optional attunement configuration:** draft [#267](https://github.com/bob8675309/DNDNEXT/pull/267) implements the **OFF-by-default**, admin-only three-item policy switch in isolation. All five exact-head checks passed. **Item selection and effect enforcement are not yet connected.** [Current requirements and release gates](Player_Rest_Activities_Optional_Attunement_2026-10-25.md).
 
 **Current rest UI checkpoint:** draft [#266](https://github.com/bob8675309/DNDNEXT/pull/266) now contains the Character Sheet **Camp & Downtime** activity dialog, with working **Rest & Recover**, disabled future Crafting and **attunement OFF**. All exact-head checks passed. This is a reviewable UI draft, not deployed. Read [rest/attunement owner direction](Player_Rest_Activities_Optional_Attunement_2026-10-25.md) first; the original #257–#265 stack is **not** a release prerequisite.
