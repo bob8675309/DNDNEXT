@@ -1,6 +1,8 @@
 # DNDNext — Current Effects Engine + Future AI Tool Handoff
 Updated: 2026-10-24. **Read this first when taking over the effects-engine work.**
 
+> **2026-10-24 PR reconciliation — read this first.** PR #249 (workspace preflight), #252 (item effects coverage and cross-chat audit), and #254 (this consolidated handoff) have been **merged into main** through commits `f50782e831b12155d32e351700d2295a51e530e1`, `b6b9043a373c3ae4faea09847dc9318d0294d9a4`, and `665a953ca57985b7fa0bc367beb8422ac156125c`. The older open-PR snapshot below is historical and must not be treated as current. Remaining drafts: **#250** Physical Specimen → independent, **#251** common pure effects foundation → **#253** actual legacy resolver parity (base #251) → **#255** genuine catalogue parity (base #253). At handoff, #255's PostgreSQL workflow was still **in progress** at `dda0f432d963a5b6a87b65e5f6f4bbd27a860602`. Neither runtime chain is deployed or safe to merge until explicit remaining release gates are resolved. Re-fetch all heads/checks before any merge. No world/town map or production Supabase mutations were made in this reconciliation.
+
 ## Purpose and verification limit
 This is the compact takeover authority for the work spanning three ChatGPT conversations, supported by the currently available earlier-chat handoff/video excerpts, source-controlled documents and code, GitHub PR status and read-only DnDWeb Supabase checks. It **does not claim** to contain every verbatim message from the two previous chats. Where an older design document conflicts with live source, the live source wins. Re-fetch exact GitHub branch heads, latest PR status, migration ledger and database functions before acting.
 
