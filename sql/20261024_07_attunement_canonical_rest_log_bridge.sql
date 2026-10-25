@@ -94,7 +94,7 @@ begin
     )
   );
 end;
-$;
+$$;
 revoke all on function public.complete_character_rest_v1(uuid,text) from public,anon;
 grant execute on function public.complete_character_rest_v1(uuid,text) to authenticated,service_role;
 
