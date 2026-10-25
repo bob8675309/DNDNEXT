@@ -112,8 +112,8 @@ begin
  result:=private.encounter_attuned_damage_mitigation_shadow_v1(other,'fire');
  if result->'shadow'->>'resistant'<>'true'
     or (result->'shadow'->>'flatReduction')::integer<>10
-    or exists(select 1 from jsonb_array_elements_text(result->'shadow'->'sources') x
-      where x='Shared Cloak')
+    or exists(select 1 from jsonb_array_elements_text(result->'shadow'->'sources') as x(value)
+      where x.value='Shared Cloak')
  then raise exception 'Other character own Ring reused shared attunement rider %',result; end if;
  perform public.set_character_rest_magic_choices_v1(other,array[]::uuid[]);
 
