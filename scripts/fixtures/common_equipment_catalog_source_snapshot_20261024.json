@@ -1,0 +1,322 @@
+{
+  "snapshotVersion": 1,
+  "source": "DnDWeb public.items_catalog / ucggczovhmauhshvhusx",
+  "sampledDate": "2026-10-24",
+  "selection": "Exact item_name; one row each",
+  "note": "Selected structured payload fields are verbatim live JSON values; descriptive prose omitted. fullPayloadMd5 fingerprints full original payload.",
+  "rows": [
+    {
+      "itemKey": "+1 All-Purpose Tool|TCE",
+      "itemName": "+1 All-Purpose Tool",
+      "fullPayloadMd5": "52aa871965794a8376993fdaff790c53",
+      "payload": {
+        "name": "+1 All-Purpose Tool",
+        "focus": [
+          "Artificer"
+        ],
+        "rarity": "uncommon",
+        "source": "TCE",
+        "uiType": "Tools",
+        "item_key": "+1 All-Purpose Tool|TCE",
+        "item_name": "+1 All-Purpose Tool",
+        "item_type": "Tools",
+        "reqAttuneTags": [
+          {
+            "class": "artificer|tce"
+          }
+        ],
+        "bonusSpellAttack": "+1",
+        "bonusSpellSaveDc": "+1"
+      }
+    },
+    {
+      "itemKey": "+2 Ring of Protection|TDCSR",
+      "itemName": "+2 Ring of Protection",
+      "fullPayloadMd5": "de7178375343f21e92bad0c64e3774c7",
+      "payload": {
+        "name": "+2 Ring of Protection",
+        "type": "RG|XDMG",
+        "rarity": "rare",
+        "source": "TDCSR",
+        "uiType": "Wondrous Item",
+        "bonusAc": "+2",
+        "item_key": "+2 Ring of Protection|TDCSR",
+        "item_name": "+2 Ring of Protection",
+        "item_type": "Wondrous Item",
+        "bonusSavingThrow": "+2"
+      }
+    },
+    {
+      "itemKey": "Ascendant Scaled Ornament|FTD",
+      "itemName": "Ascendant Scaled Ornament",
+      "fullPayloadMd5": "79e0eb75750a849052d0d28208cbcc8f",
+      "payload": {
+        "name": "Ascendant Scaled Ornament",
+        "rarity": "uncommon",
+        "source": "FTD",
+        "uiType": "Wondrous Item",
+        "bonusAc": "+1",
+        "item_key": "Ascendant Scaled Ornament|FTD",
+        "item_name": "Ascendant Scaled Ornament",
+        "item_type": "Wondrous Item",
+        "modifySpeed": {
+          "equal": {
+            "fly": "walk"
+          }
+        }
+      }
+    },
+    {
+      "itemKey": "Chain Mail|XPHB",
+      "itemName": "Chain Mail",
+      "fullPayloadMd5": "d040c4158549a94a63c359954e84c84d",
+      "payload": {
+        "ac": 16,
+        "name": "Chain Mail",
+        "type": "HA|XPHB",
+        "rarity": "none",
+        "source": "XPHB",
+        "uiType": "Armor",
+        "edition": "one",
+        "item_key": "Chain Mail|XPHB",
+        "item_name": "Chain Mail",
+        "item_type": "Armor"
+      }
+    },
+    {
+      "itemKey": "Cloak of Protection|XDMG",
+      "itemName": "Cloak of Protection",
+      "fullPayloadMd5": "16057b97b9734fbd69d7746eaa9b46f6",
+      "payload": {
+        "name": "Cloak of Protection",
+        "rarity": "uncommon",
+        "source": "XDMG",
+        "uiType": "Wondrous Item",
+        "bonusAc": "+1",
+        "item_key": "Cloak of Protection|XDMG",
+        "item_name": "Cloak of Protection",
+        "item_type": "Wondrous Item",
+        "bonusSavingThrow": "+1"
+      }
+    },
+    {
+      "itemKey": "Gloves of Soul Catching|CM",
+      "itemName": "Gloves of Soul Catching",
+      "fullPayloadMd5": "1b3877611ed395829b9db4123a75d17f",
+      "payload": {
+        "name": "Gloves of Soul Catching",
+        "rarity": "legendary",
+        "source": "CM",
+        "uiType": "Wondrous Item",
+        "ability": {
+          "static": {
+            "con": 20
+          }
+        },
+        "item_key": "Gloves of Soul Catching|CM",
+        "item_name": "Gloves of Soul Catching",
+        "item_type": "Wondrous Item"
+      }
+    },
+    {
+      "itemKey": "Ioun Stone, Mastery|XDMG",
+      "itemName": "Ioun Stone, Mastery",
+      "fullPayloadMd5": "ee9449ccc81f36d05bb80c5292c2e305",
+      "payload": {
+        "name": "Ioun Stone, Mastery",
+        "rarity": "legendary",
+        "source": "XDMG",
+        "uiType": "Wondrous Item",
+        "item_key": "Ioun Stone, Mastery|XDMG",
+        "item_name": "Ioun Stone, Mastery",
+        "item_type": "Wondrous Item",
+        "bonusProficiencyBonus": "+1"
+      }
+    },
+    {
+      "itemKey": "Leather Armor|XPHB",
+      "itemName": "Leather Armor",
+      "fullPayloadMd5": "988a704b2d613b209a3962b7fb7eb058",
+      "payload": {
+        "ac": 11,
+        "name": "Leather Armor",
+        "type": "LA|XPHB",
+        "rarity": "none",
+        "source": "XPHB",
+        "uiType": "Armor",
+        "edition": "one",
+        "item_key": "Leather Armor|XPHB",
+        "item_name": "Leather Armor",
+        "item_type": "Armor"
+      }
+    },
+    {
+      "itemKey": "Ring of Fire Resistance|XDMG",
+      "itemName": "Ring of Fire Resistance",
+      "fullPayloadMd5": "4223f58b92373c6f6fb700ff8e7cda0a",
+      "payload": {
+        "name": "Ring of Fire Resistance",
+        "type": "RG|XDMG",
+        "rarity": "uncommon",
+        "resist": [
+          "fire"
+        ],
+        "source": "XDMG",
+        "uiType": "Wondrous Item",
+        "item_key": "Ring of Fire Resistance|XDMG",
+        "item_name": "Ring of Fire Resistance",
+        "item_type": "Wondrous Item",
+        "damageReductionByType": {
+          "fire": 10
+        }
+      }
+    },
+    {
+      "itemKey": "Ring of Protection|XDMG",
+      "itemName": "Ring of Protection",
+      "fullPayloadMd5": "5be20c0c58da9e7b0d44a8f55367d2d2",
+      "payload": {
+        "name": "Ring of Protection",
+        "type": "RG|XDMG",
+        "rarity": "rare",
+        "source": "XDMG",
+        "uiType": "Wondrous Item",
+        "bonusAc": "+1",
+        "item_key": "Ring of Protection|XDMG",
+        "item_name": "Ring of Protection",
+        "item_type": "Wondrous Item",
+        "bonusSavingThrow": "+1"
+      }
+    },
+    {
+      "itemKey": "Robe of the Archmagi|XDMG",
+      "itemName": "Robe of the Archmagi",
+      "fullPayloadMd5": "85933c7bf9402476df2a1a53be08fa55",
+      "payload": {
+        "name": "Robe of the Archmagi",
+        "rarity": "legendary",
+        "source": "XDMG",
+        "uiType": "Wondrous Item",
+        "item_key": "Robe of the Archmagi|XDMG",
+        "item_name": "Robe of the Archmagi",
+        "item_type": "Wondrous Item",
+        "reqAttuneTags": [
+          {
+            "class": "sorcerer"
+          },
+          {
+            "class": "warlock"
+          },
+          {
+            "class": "wizard"
+          }
+        ],
+        "bonusSpellAttack": "+2",
+        "bonusSpellSaveDc": "+2"
+      }
+    },
+    {
+      "itemKey": "Scale Mail|XPHB",
+      "itemName": "Scale Mail",
+      "fullPayloadMd5": "933939f5c3c9c43a69b082ec6f6ced5e",
+      "payload": {
+        "ac": 14,
+        "name": "Scale Mail",
+        "type": "MA|XPHB",
+        "rarity": "none",
+        "source": "XPHB",
+        "uiType": "Armor",
+        "edition": "one",
+        "item_key": "Scale Mail|XPHB",
+        "item_name": "Scale Mail",
+        "item_type": "Armor"
+      }
+    },
+    {
+      "itemKey": "Shield|XPHB",
+      "itemName": "Shield",
+      "fullPayloadMd5": "e8c5a9f67e7dfb72976388626e7048a4",
+      "payload": {
+        "ac": 2,
+        "name": "Shield",
+        "type": "S|XPHB",
+        "rarity": "none",
+        "source": "XPHB",
+        "uiType": "Shield",
+        "edition": "one",
+        "item_key": "Shield|XPHB",
+        "item_name": "Shield",
+        "item_type": "Shield"
+      }
+    },
+    {
+      "itemKey": "Spellguard Shield|XDMG",
+      "itemName": "Spellguard Shield",
+      "fullPayloadMd5": "f3c9b392219601b039e699b30efb636a",
+      "payload": {
+        "ac": 2,
+        "name": "Spellguard Shield",
+        "type": "S|XPHB",
+        "rarity": "very rare",
+        "source": "XDMG",
+        "uiType": "Shield",
+        "item_key": "Spellguard Shield|XDMG",
+        "item_name": "Spellguard Shield",
+        "item_type": "Shield"
+      }
+    },
+    {
+      "itemKey": "Staff of Power|XDMG",
+      "itemName": "Staff of Power",
+      "fullPayloadMd5": "c89fb6648d28f9b8c720fa1ab9fa2006",
+      "payload": {
+        "name": "Staff of Power",
+        "type": "M|XPHB",
+        "rarity": "very rare",
+        "source": "XDMG",
+        "uiType": "Melee Weapon",
+        "bonusAc": "+2",
+        "item_key": "Staff of Power|XDMG",
+        "item_name": "Staff of Power",
+        "item_type": "Melee Weapon",
+        "bonusWeapon": "+2",
+        "reqAttuneTags": [
+          {
+            "class": "sorcerer"
+          },
+          {
+            "class": "warlock"
+          },
+          {
+            "class": "wizard"
+          }
+        ],
+        "bonusSavingThrow": "+2",
+        "bonusSpellAttack": "+2"
+      }
+    },
+    {
+      "itemKey": "Stormgirdle (Exalted)|EGW",
+      "itemName": "Stormgirdle (Exalted)",
+      "fullPayloadMd5": "95c0da7f313f0fe0173555e726d4093c",
+      "payload": {
+        "name": "Stormgirdle (Exalted)",
+        "rarity": "legendary",
+        "resist": [
+          "lightning",
+          "thunder"
+        ],
+        "source": "EGW",
+        "uiType": "Wondrous Item",
+        "ability": {
+          "static": {
+            "str": 21
+          }
+        },
+        "item_key": "Stormgirdle (Exalted)|EGW",
+        "item_name": "Stormgirdle (Exalted)",
+        "item_type": "Wondrous Item"
+      }
+    }
+  ]
+}
