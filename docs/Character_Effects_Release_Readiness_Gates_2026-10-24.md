@@ -78,6 +78,15 @@ Read-only live source sampling identified a critical ingestion gap: `Ring of Pro
 
 **Next actual integration:** design a trusted rest-focus begin/complete flow and event-time model with owner review; test against canonical Short/Long Rest log triggers/active-encounter guard. Then enforce the verified source+class+one-rest rules in #257's attunement write RPC; connect to #251's effects adapter only after source/consumer parity. No user-authored rest evidence or AI-owned state changes.
 
+
+### Verified staged world-clock focus sessions — draft PR #263
+
+Draft [PR #263](https://github.com/bob8675309/DNDNEXT/pull/263) stacks on **#262 → #261 → #260 → #257**, independent of the #251 → #253 → #255 arithmetic/parity chain. Exact head `9f3ec8aa67047b108ce1c881783e6fb747dead69` passed isolated PostgreSQL, source-contract, repository and Vercel comment checks.
+
+DNDNext's `world_state(id=1).world_time` uses an accelerated campaign clock (read-only snapshot `time_scale=4`), whereas `character_rest_log.completed_at` uses server wall time. **They are not interchangeable.** The new service-only private focus-attempt model records an authoritative **world-time** start, enforces one active attempt per character and request-id replay protection, checks exact source/ownership/class and the existing active-encounter resource guard, and can inspect whether **one game-world hour** has passed. It rejects wrong item/owner, conflicts, time regression, item transfer and aborted sessions. It **does not** produce a canonical completed-rest receipt, detect later interruptions, verify physical contact or separate item identification, bind items, or activate magic; `attunementQualified=false` and `canCreateBond=false` are unconditional.
+
+**Unresolved integration:** #262's evidence parser currently compares **real** rest timestamps against one hour; a future guarded rest producer must define/test the clock conversion and validated attunement focus, interruption, identification and Short Rest action together. Do not modify world-map movement or time simulation to solve this. [Full PR #263 gate](https://github.com/bob8675309/DNDNEXT/blob/agent/attunement-world-clock-focus-sessions-20261024/docs/Attunement_World_Clock_Focus_Status_2026-10-24.md).
+
 ## Next recommended work, in dependency order
 
 1. **Read-only owner/state map:** inventory ownership across Player/NPC/merchant; canonical equipment slot/attunement/rest authorities and the active-consumer routes. Confirm live schema, source-edition precedence and class/feature eligibility. Review #257 separately before any merge.
