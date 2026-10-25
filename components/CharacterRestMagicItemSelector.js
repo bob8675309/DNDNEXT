@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import styles from "../styles/CharacterRestActivityDialog.module.css";
 
@@ -18,6 +18,11 @@ export default function CharacterRestMagicItemSelector({
   const [chosen, setChosen] = useState(() =>
     items.filter((i) => i?.isSelected).map((i) => String(i.itemId))
   );
+  // A refreshed server snapshot is authoritative, including after transfers or unequips.
+  useEffect(() => {
+    setChosen(items.filter((item) => item?.isSelected && item?.selectable).map((item) => String(item.itemId)));
+    setError("");
+  }, [snapshot, characterId]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -36,8 +41,8 @@ export default function CharacterRestMagicItemSelector({
 
   async function save() {
     if (saving || encounterLocked || !snapshot?.enabled || !characterId) return;
-    if (chosen.length > cap) {
-      setError("The selected items exceed the campaign limit.");
+    if (chosen.length > cap || chosen.some((id) => !items.some((item) => String(item.itemId) === id && item.selectable))) {
+      setError("Refresh your selections: an item is no longer eligible or the campaign limit changed.");
       return;
     }
     setSaving(true);
