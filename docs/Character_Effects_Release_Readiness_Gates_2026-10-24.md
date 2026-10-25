@@ -48,6 +48,15 @@ Use precise labels:
 4. The old numeric resolver treats `is_equipped` as sufficient for some **magic** bonuses; the attunement work is not yet connected to the consumer. Correct bond tracking must not suppress mundane armor/shield/weapon behavior nor accidentally activate unbonded magic properties.
 5. The shared function's `stackKey` largest-magnitude behavior is a technical mechanism, **not** a universal 5e stacking rule. Source-specific nonstacking, repeated-item interactions and identical spells require validated keys and precedence.
 
+
+### New verified staged eligibility bridge — PR #260 (still NOT active)
+
+Draft [PR #260](https://github.com/bob8675309/DNDNEXT/pull/260) is **based on draft #257**, not on main or #251. Recorded head `d3f8825d9ca2df308abcf902d8cf3c4ef7a01a9e` passed exact-head source-contracts, isolated PostgreSQL and validation tests. It adds a private, `SECURITY INVOKER`, **service-role-only, read-only** `private.passive_equipment_source_gate_v1(character_id,item_id)` source projection. It checks actual character ownership, ambiguity when two editable characters share a player-owned item, structured source identity, conservative item-slot compatibility, and recorded character-item bonds.
+
+**Crucially, it returns `eligibleForPassiveMagic=false` in every case.** Source-specific Short Rest, class/item prerequisites and actual gameplay consumers remain unwired. It independently identifies an eligible **mundane armor/shield AC candidate** and does not rewrite existing AC calculations. The existing `set_character_inventory_equipment_v1` validates a legal **slot name**, not item-category compatibility; valid-slotted gear authority still needs targeted repair.
+
+Read-only live source sampling identified a critical ingestion gap: `Ring of Protection|XDMG`, `Cloak of Protection|XDMG`, `Boots of Speed|XDMG` and `Ring of Fire Resistance|XDMG` lack structured `reqAttune`, `reqAttuneTags` and `attunement`; `Staff of Power|XDMG` has structured class-specific `reqAttuneTags`. Absence of metadata is **unknown**, not proof attunement is unnecessary. This blocks approval of #257/#260 as an effect activation system until source facts are verified and normalized. Refer to [PR #260 status ledger](https://github.com/bob8675309/DNDNEXT/blob/agent/passive-equipment-eligibility-readonly-20261024/docs/Passive_Equipment_Effect_Eligibility_Gate_2026-10-24.md).
+
 ## Next recommended work, in dependency order
 
 1. **Read-only owner/state map:** inventory ownership across Player/NPC/merchant; canonical equipment slot/attunement/rest authorities and the active-consumer routes. Confirm live schema, source-edition precedence and class/feature eligibility. Review #257 separately before any merge.
