@@ -100,6 +100,18 @@ DNDNext's `world_state(id=1).world_time` uses an accelerated campaign clock (rea
 
 [PR #264 source/risks ledger](https://github.com/bob8675309/DNDNEXT/blob/agent/canonical-attunement-rest-log-bridge-20261024/docs/Attunement_Canonical_Rest_Bridge_Gate_2026-10-24.md).
 
+
+### Manual GM attestation and custody continuity — draft PR #265
+
+Draft [PR #265](https://github.com/bob8675309/DNDNEXT/pull/265) stacks on **#264 → #263 → #262 → #261 → #260 → #257**, separate from the effects math chain **#251 → #253 → #255**. Tested head `df8b311153b707ad2ee2f6a3a1d27282b9922597` passed isolated PostgreSQL, source-contract, repo and Vercel checks. **Unmerged and undeployed.**
+
+- A private service-only, **authenticated-admin** review ledger binds a DM decision to the **exact canonical Short Rest** already recorded in #264. Positive and negative outcomes record a responsible reviewer, contact continuity and identification-separate confirmations, an accountable reason, and review time in the campaign world clock. A player or service key without an actual admin principal cannot approve. Recorded decisions are immutable and replay-idempotent.
+- This is **human DM adjudication**, not automated proof of continuity or absence of interruption. The live event tables do **not** establish continuous physical item contact throughout the world-time hour. The 2024 rules specify interruptions including Initiative, taking damage and non-cantrip spellcasting; the DM must assess events the server cannot fully establish. [2024 Short Rest](https://www.dndbeyond.com/sources/dnd/br-2024/rules-glossary/), [2024 Attunement](https://www.dndbeyond.com/sources/dnd/br-2024/equipment).
+- A targeted transfer trigger now marks active/rest-logged focus **invalidated on any ownership transfer**, including transfer-away-then-back: a matching start/end owner cannot revive historical focus. Tests cover player/service refusal, admin approvals and denials, active-encounter block, contradictory-review rejection, source/rest ID, irreversible custody invalidation and no extra rest or bond.
+- **Hard stop remains:** `attunementReady=false`, `canCreateBond=false`, and no magic effects, even after an admin approves. A review must **not** silently activate the original #257 boolean-only attunement writer. That writer requires replacement/guarding, Artificer capacity/source/curse/lifecycle proof, signed-in UI and combat consumer parity before deployment.
+
+[PR #265 detailed gate](https://github.com/bob8675309/DNDNEXT/blob/agent/attunement-gm-adjudication-and-transfer-20261024/docs/Attunement_GM_Review_Transfer_Gate_2026-10-24.md).
+
 ## Next recommended work, in dependency order
 
 1. **Read-only owner/state map:** inventory ownership across Player/NPC/merchant; canonical equipment slot/attunement/rest authorities and the active-consumer routes. Confirm live schema, source-edition precedence and class/feature eligibility. Review #257 separately before any merge.
