@@ -22,7 +22,7 @@ for (const token of [
   'const completed = await runResourceRpc("complete_character_rest_v1"',
   "if (completed) setRestDialogType(null)", 'p_rest_type: restDialogType',
   'resourceProfile?.encounterLocked', 'return false;', 'return true;',
-  'attunementEnabled={false}',
+  'characterId={resolvedCharacterId}',
 ]) assert.ok(sheet.includes(token), "Rest/UI integration lost: " + token);
 assert.ok(!sheet.includes("window.confirm("), "Activity dialog must replace browser confirmation");
 assert.ok(!sheet.includes('"record_attunement_focused_short_rest_v1"'), "Rest was routed through GM attunement");
@@ -32,11 +32,12 @@ for (const token of [
   'event.key === "Escape"', 'event.key !== "Tab"',
   'primaryRef.current?.focus()', 'Rest &amp; Recover',
   'Complete rest', 'Work on Crafting', 'Coming later',
-  'attunementEnabled ? (', 'Pending campaign-rule integration',
+  'attunementEnabled ? (', 'Review magic item choices',
   'disabled={unavailable}', 'onClick={onRecover}',
-  'onClick={onClose}', 'if (!busy && event.target === event.currentTarget)',
+  'onClick={onClose}', 'if (!combinedBusy && event.target === event.currentTarget)',
 ]) assert.ok(dialog.includes(token), "Missing accessible or truthful option: " + token);
-assert.ok(!dialog.includes("supabase.rpc"), "Dialog should not fork the rest backend");
+assert.ok(dialog.includes('supabase.rpc("get_character_rest_magic_choices_v1"'), "Magic choices must be read server-side");
+assert.ok(!dialog.includes('supabase.rpc("complete_character_rest_v1"'), "Recovery still belongs to the canonical sheet handler");
 assert.ok(!dialog.includes("set_character_item_attunement_v1"), "No placeholder attunement writes");
 assert.ok(dialogCss.includes("@media print"), "Activity overlay should not print");
 assert.ok(dialogCss.includes(":focus-visible"), "Keyboard focus styling must remain");

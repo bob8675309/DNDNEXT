@@ -4,6 +4,8 @@ on:
     paths:
       - "components/CharacterSheetEnhancements.js"
       - "components/CharacterRestActivityDialog.js"
+      - "components/CharacterRestMagicItemSelector.js"
+      - "sql/20261025_02_optional_rest_magic_item_selection.sql"
       - "styles/CharacterRestActivityDialog.module.css"
       - "docs/Rest_Activity_Popup_Status_2026-10-25.md"
       - "components/CharacterSheetResourceTracker.js"

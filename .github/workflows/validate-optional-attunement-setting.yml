@@ -3,6 +3,13 @@ on:
   pull_request:
     paths:
       - "sql/20261025_01_optional_campaign_attunement_setting.sql"
+      - "sql/20261025_02_optional_rest_magic_item_selection.sql"
+      - "components/CharacterRestMagicItemSelector.js"
+      - "components/CharacterRestActivityDialog.js"
+      - "components/CharacterSheetEnhancements.js"
+      - "scripts/fixtures/optional_rest_magic_item_selection_behavior.sql"
+      - "scripts/validate_optional_rest_magic_choices.mjs"
+      - "docs/Optional_Rest_Magic_Item_Selection_2026-10-25.md"
       - "pages/admin.js"
       - "components/AdminAttunementSetting.js"
       - "scripts/fixtures/optional_attunement_setting_behavior.sql"
@@ -19,6 +26,7 @@ jobs:
         with:
           node-version: "22"
       - run: node scripts/validate_optional_attunement_setting.mjs
+      - run: node scripts/validate_optional_rest_magic_choices.mjs
   isolated-postgres:
     runs-on: ubuntu-latest
     services:
@@ -42,3 +50,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/optional_attunement_setting_behavior.sql
+      - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/optional_rest_magic_item_selection_behavior.sql

@@ -1,0 +1,13 @@
+# Optional Rest-Time Magic-Item Selection — draft (2026-10-25)
+
+**Unmerged / undeployed.** This draft builds on PR #267 (Admin Attunement OFF by default) and includes the rest-popup sources from independent PR #266. Merge integration must be reconciled before deployment; the overengineered PRs #257–#265 remain superseded.
+
+The Character Sheet retains Short Rest and Long Rest. **Rest & Recover** still uses the original canonical recovery RPC. When Admin enables attunement, the same Camp & Downtime popup offers **Attune / Change Magic Items** with up to three selected equipped magic items. Crafting remains a future placeholder. When Admin disables attunement, that choice is hidden and existing item effects do not need bonds.
+
+The new server-only selection table is protected by RLS and no direct browser table write grants. The two authenticated, character-authorized RPCs list and atomically replace selections. They enforce the campaign ON setting, three distinct item IDs, equipped status, item magic source, per-character ownership, no ambiguous shared-player assignment, active-encounter lock, concurrent character writes and transfer/unequip cleanup. They never delete, transfer, or unequip items.
+
+**Important incomplete behavior:** `effectsEnforced=false` is explicitly returned. Choosing three items does not yet suppress bonuses on others. Existing characters wearing four or more magic items are never silently stripped of equipment/effects. Source-normalization (including editable item payloads) and every character-sheet/tactical effect consumer need parity and enforcement work before production activation.
+
+Isolated PostgreSQL16 fixture tests OFF, ON, three-item cap, duplicate/foreign/unsupported/unequipped/shared-account rejection, custom exact-key VAR variants, combat locks, transfer/unequip cleanup, unchanged gear and unchanged OFF-mode consumer behavior. Node contracts plus repository build must pass at the exact PR head.
+
+Next: canonical source hardening, non-destructive ON migration for >3 items, proper consumer eligibility in the common effects engine and signed-in browser validation. No world or town map changes.
