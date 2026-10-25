@@ -10,6 +10,9 @@ on:
       - "scripts/validate_campaign_attunement_policy.mjs"
       - "sql/20261024_03_passive_equipment_effect_gate_readonly.sql"
       - "sql/20261024_04_verified_attunement_source_rules.sql"
+      - "sql/20261024_05_attunement_rest_class_evidence_readonly.sql"
+      - "scripts/fixtures/attunement_rest_class_evidence_behavior.sql"
+      - "scripts/validate_attunement_rest_class_evidence.mjs"
       - "scripts/fixtures/verified_item_attunement_2024.json"
       - "scripts/fixtures/verified_attunement_source_rules_behavior.sql"
       - "scripts/validate_verified_attunement_sources.mjs"
@@ -36,6 +39,7 @@ jobs:
       - run: node scripts/validate_campaign_attunement_policy.mjs
       - run: node scripts/validate_passive_equipment_source_gate.mjs
       - run: node scripts/validate_verified_attunement_sources.mjs
+      - run: node scripts/validate_attunement_rest_class_evidence.mjs
   isolated-postgres:
     runs-on: ubuntu-latest
     services:
@@ -63,3 +67,5 @@ jobs:
       - run: psql -X -v ON_ERROR_STOP=1 -f sql/20261024_03_passive_equipment_effect_gate_readonly.sql
       - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/passive_equipment_source_gate_behavior.sql
       - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/verified_attunement_source_rules_behavior.sql
+      - run: psql -X -v ON_ERROR_STOP=1 -f sql/20261024_05_attunement_rest_class_evidence_readonly.sql
+      - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/attunement_rest_class_evidence_behavior.sql
