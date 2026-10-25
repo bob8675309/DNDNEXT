@@ -58,6 +58,17 @@ begin
     or exists (select 1 from jsonb_array_elements(result->'effects') x
       where x->>'id'='shield-rider')
  then raise exception 'Unchosen magical riders must be suppressed without removing shield base %',result; end if;
+ -- Numeric compatibility illustration: physical shield + mundane armor
+ -- remain present under ON, while unchosen magic +1 bonus disappears.
+ if (select coalesce(sum((x->>'value')::integer),0)
+    from jsonb_array_elements(result->'effects') x
+    where x->>'target'='ac')<>6
+ then raise exception 'Selected magic + physical armor/shield AC shadow diverged %',result; end if;
+ result:=private.filter_rest_magic_effect_candidates_v1(candidates,true,array[]::uuid[]);
+ if (select coalesce(sum((x->>'value')::integer),0)
+    from jsonb_array_elements(result->'effects') x
+    where x->>'target'='ac')<>4
+ then raise exception 'Unattuned magic bonus removal also damaged physical AC %',result; end if;
  result:=private.filter_rest_magic_effect_candidates_v1(candidates,false,array[a,b,e]);
  if jsonb_array_length(result->'effects')<>7
  then raise exception 'OFF retained selection changed legacy effects %',result; end if;
