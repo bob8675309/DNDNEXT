@@ -3,6 +3,7 @@ import CharacterSheet5e from "./CharacterSheet5e";
 import CharacterSheetEnhancements from "./CharacterSheetEnhancements";
 import CharacterAstralTrancePanel from "./CharacterAstralTrancePanel";
 import CharacterPrimalCompanionPanel from "./CharacterPrimalCompanionPanel";
+import CharacterAttunementPanel from "./CharacterAttunementPanel";
 import CharacterSpeciesRestProficiencyPanel from "./CharacterSpeciesRestProficiencyPanel";
 import { supabase } from "../utils/supabaseClient";
 import { projectCharacterSheetRuntimeProficiencies } from "../utils/characterRuntimeProficiencies";
@@ -429,6 +430,7 @@ export default function CharacterSheetPanel({
       <CharacterAstralTrancePanel characterId={characterId} sheet={draft || {}} onSheetUpdated={(nextSheet) => nextSheet ? setDraft(deepClone(nextSheet)) : null} />
       <CharacterSpeciesRestProficiencyPanel characterId={characterId} sheet={draft || {}} onSheetUpdated={(nextSheet) => nextSheet ? setDraft(deepClone(nextSheet)) : null} />
       <CharacterPrimalCompanionPanel characterId={characterId} sheet={draft || {}} onSheetUpdated={(nextSheet) => nextSheet ? setDraft(deepClone(nextSheet)) : null} />
+      <CharacterAttunementPanel characterId={characterId} canManage={editable} />
 
       <CharacterSheet5e
         sheet={runtimeDisplayDraft}
