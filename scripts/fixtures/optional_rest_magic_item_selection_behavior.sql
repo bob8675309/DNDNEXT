@@ -83,7 +83,7 @@ begin
  or private.optional_rest_item_is_magic_v1(mundane)
  or private.optional_rest_item_is_magic_v1(unknown_item)
  or private.optional_rest_item_is_magic_v1(unequipped)
- or private.optional_rest_item_owner_matches_v1(c,shared)
+ or not private.optional_rest_item_owner_matches_v1(c,shared)
  or private.optional_rest_item_owner_matches_v1(c,foreign_item)
  then raise exception 'Source / shared owner / unequipped item classification failed'; end if;
  blocked:=false;
@@ -102,10 +102,24 @@ begin
  v:=public.set_character_rest_magic_choices_v1(c,array[a,b,variant]);
  if v->>'count'<>'3' or exists(select 1 from public.character_magic_item_selections_v1
  where inventory_item_id=d) then raise exception 'Replacing an attuned choice failed %',v; end if;
+ -- An account can edit multiple characters, but a physical item can only
+ -- be attuned to the one explicitly selected character at a time.
+ v:=public.set_character_rest_magic_choices_v1(c,array[a,shared]);
+ if v->>'count'<>'2'
+ then raise exception 'Explicit account-owned item attunement was rejected %',v; end if;
  blocked:=false;
- begin perform public.set_character_rest_magic_choices_v1(c,array[a,shared]);
+ begin perform public.set_character_rest_magic_choices_v1(other,array[shared]);
  exception when check_violation then blocked:=true; end;
- if not blocked then raise exception 'Shared inventory selected ambiguously'; end if;
+ if not blocked then raise exception 'Two characters attuned one physical item'; end if;
+ v:=public.get_character_rest_magic_choices_v1(other);
+ if not exists (select 1 from jsonb_array_elements(v->'items') x
+     where x->>'itemId'=shared::text and x->>'selectable'='false'
+       and x->>'reason'='Already attuned to another character')
+ then raise exception 'Other character did not see attunement claim %',v; end if;
+ v:=public.set_character_rest_magic_choices_v1(c,array[a,b,variant]);
+ v:=public.set_character_rest_magic_choices_v1(other,array[shared]);
+ if v->>'count'<>'1' then raise exception 'Relinquished claim could not be moved %',v; end if;
+ perform public.set_character_rest_magic_choices_v1(other,array[]::uuid[]);
  blocked:=false;
  begin perform public.set_character_rest_magic_choices_v1(c,array[a,unknown_item]);
  exception when check_violation then blocked:=true; end;
