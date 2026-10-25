@@ -16,15 +16,16 @@ If prose conflicts with live source/database state, live authority wins until do
 
 ## 2026-10-24 current PR / effects / attunement reconciliation
 
-**Current source-of-truth briefing:** [DNDNext_Effects_AI_Current_Handoff_2026-10-24.md](DNDNext_Effects_AI_Current_Handoff_2026-10-24.md). Last verified main `0e925958b49505e010a011b1de4d6de28f30b7b7`; re-fetch. Do not use an earlier PR snapshot as the active work list.
+**Current source-of-truth briefing:** [DNDNext_Effects_AI_Current_Handoff_2026-10-24.md](DNDNext_Effects_AI_Current_Handoff_2026-10-24.md). Last verified main `863eb7d9809257d525af5c76be4b8d2289603052`; re-fetch. Do not use an earlier PR snapshot as the active work list.
 
 | PR | Current status | Notes |
 |---|---|---|
-| #249, #252, #254, #256 | **Merged to main** | Workspace audit; item/effects audit; full handoff; topology correction |
+| #249, #252, #254, #256, #258 | **Merged to main** | Workspace audit; item/effects audit; full handoff; topology correction; refreshed attunement/top-level documentation |
 | #250 | Draft | Physical Specimen staged gameplay, incomplete consumer integration |
 | #251 | Draft → #253 → #255 | Common pure calculation; real SQL resolver parity; genuine source catalogue parity |
 | #257 | Draft, standalone | Admin cap switch Standard 3/Unlimited and per-character attunement bonds; gameplay eligibility and consumers incomplete |
 
+- **[Character_Effects_Release_Readiness_Gates_2026-10-24.md](Character_Effects_Release_Readiness_Gates_2026-10-24.md)** now controls what can be claimed as source present, state configured, numerically proved, consumer-connected, or release-ready. It covers #250/#251/#253/#255/#257 dependencies, known slot/attunement gaps, source lifecycle and end-to-end acceptance.
 - [Item_Character_Effects_Coverage_Audit_2026-10-24.md](Item_Character_Effects_Coverage_Audit_2026-10-24.md) and [Character_Effects_Cross_Conversation_Requirements_Audit_2026-10-24.md](Character_Effects_Cross_Conversation_Requirements_Audit_2026-10-24.md) are **already on main** after #252. Do not link them as draft-only.
 - #255 isolated PostgreSQL checks passed at the previous exact head; verify the latest head and re-run before merge. 16 real catalogue payload subsets do not prove all live effects or eligibility.
 - #257's [Campaign Attunement Policy status ledger](https://github.com/bob8675309/DNDNEXT/blob/feature/campaign-attunement-policy-20261024/docs/Campaign_Attunement_Policy_Status_2026-10-24.md) is **only on its draft branch** until merged. Do not run its migration against production. The three-item setting must never alter existing equip slots; standard D&D's Short Rest/class exceptions remain explicit integration gates.
