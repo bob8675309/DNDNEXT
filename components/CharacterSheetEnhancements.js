@@ -348,8 +348,8 @@ export default function CharacterSheetEnhancements({ rootRef, sheet = {}, featur
   async function handleRest(restType) {
     const isLong = restType === "long_rest";
     const prompt = isLong
-      ? "Complete a Long Rest? This restores all tracked spell slots and short/long-rest limited spell uses. HP, Hit Dice, class features, and encounter state are not changed yet."
-      : "Complete a Short Rest? This restores Pact Magic and other short-rest spell resources. HP, Hit Dice, class features, and encounter state are not changed yet.";
+      ? "Complete a Long Rest? Restore tracked spell slots and abilities that recover on a Short or Long Rest. HP and Hit Dice are not restored by this control."
+      : "Complete a Short Rest? Restore eligible Pact Magic slots and abilities that recover on a Short Rest. HP and Hit Dice are not restored by this control.";
     if (typeof window !== "undefined" && !window.confirm(prompt)) return;
     await runResourceRpc("complete_character_rest_v1", {
       p_character_id: resolvedCharacterId,
