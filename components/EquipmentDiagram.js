@@ -182,6 +182,8 @@ export default function EquipmentDiagram({
   onTransferItem,
   onUnequip,
   onAssignEquipSlot,
+  // Optional character-scoped, server-verified selection state. No DB writes here.
+  attunement = null,
 }) {
   const assigned = useMemo(() => assignEquipmentSlots(rows), [rows]);
   const browserRows = useMemo(() => sortRowsForBrowser(rows), [rows]);
@@ -221,6 +223,20 @@ export default function EquipmentDiagram({
   }, [browserRows, filter, showEquippedInBackpack]);
 
   const equippedCount = equippedRows.length;
+  const attunementEnabled = attunement?.enabled === true;
+  const attunementChoices = useMemo(
+    () => new Map((Array.isArray(attunement?.items) ? attunement.items : [])
+      .filter((entry) => entry?.itemId)
+      .map((entry) => [String(entry.itemId), entry])),
+    [attunement?.items]
+  );
+  const attunedCount = [...attunementChoices.values()].filter((entry) => entry.isSelected).length;
+  const attunementCap = Number(attunement?.maxItems) || 3;
+  const selectedAttunementChoice = selectedRow?.id
+    ? attunementChoices.get(String(selectedRow.id)) : null;
+  const attunementCanChange = canManage && attunement?.canChange === true
+    && !attunement?.busy && typeof attunement?.onToggle === "function";
+
 
   function selectRow(row) {
     if (!row?.id) return;
@@ -297,7 +313,10 @@ export default function EquipmentDiagram({
             <h2>{ownerName || "Character"}</h2>
             <p>Drag backpack items into slots. Drag equipped slot items out to unequip.</p>
           </div>
-          <div className="equipment-workbench__summary">{equippedCount} equipped</div>
+          <div className="equipment-workbench__summary">
+            {equippedCount} equipped
+            {attunementEnabled ? <span className="equipment-workbench__attunement-count"> · {attunedCount}/{attunementCap} attuned</span> : null}
+          </div>
         </header>
 
         <div className="equipment-workbench__stage">
@@ -325,7 +344,7 @@ export default function EquipmentDiagram({
               <button
                 key={slot.key}
                 type="button"
-                className={`equipment-stage-slot equipment-stage-slot--${slot.key} ${filled ? "is-filled" : "is-empty"} ${isActive ? "is-active" : ""} ${dragState?.rowId ? "is-drop-target" : ""} ${filled ? `rarity-${rarityClass(row)}` : ""}`}
+                className={`equipment-stage-slot equipment-stage-slot--${slot.key} ${filled ? "is-filled" : "is-empty"} ${isActive ? "is-active" : ""} ${dragState?.rowId ? "is-drop-target" : ""} ${filled ? `rarity-${rarityClass(row)}` : ""} ${attunementEnabled && row && attunementChoices.get(String(row.id))?.isSelected ? "is-attuned" : ""}`}
                 style={{ left: `${slot.x}%`, top: `${slot.y}%` }}
                 draggable={canManage && filled}
                 onDragStart={(event) => filled ? beginDrag(event, row, slot.key) : event.preventDefault()}
@@ -398,6 +417,7 @@ export default function EquipmentDiagram({
                 <span className="equipment-inventory-card__rarity">{shortRarity(row)}</span>
                 <span className="equipment-inventory-card__meta">
                   {row.is_equipped ? `${slotLabelForRow(row)} • equipped` : "carried"}
+                  {attunementEnabled && attunementChoices.get(String(row.id))?.isSelected ? " • attuned" : null}
                 </span>
                 {row.is_equipped ? <span className="equipment-inventory-card__badge">Equipped</span> : null}
               </button>
@@ -443,6 +463,25 @@ export default function EquipmentDiagram({
             <div className="equipment-workbench__item-preview card-compact">
               <ItemCard item={equipmentItemForCard(selectedRow)} />
             </div>
+            {attunementEnabled && selectedAttunementChoice ? (
+              <section className="equipment-workbench__attunement" aria-label={`Magic attunement: ${itemName(selectedRow)}`}>
+                <div className="equipment-workbench__attunement-header">
+                  <strong>{selectedAttunementChoice.isSelected ? "Attuned" : "Not attuned"}</strong>
+                  <span>{attunedCount} / {attunementCap} selected</span>
+                </div>
+                {selectedAttunementChoice.reason ? <p>{selectedAttunementChoice.reason}</p> : null}
+                <button
+                  type="button"
+                  disabled={!attunementCanChange || !selectedAttunementChoice.selectable ||
+                    (!selectedAttunementChoice.isSelected && attunedCount >= attunementCap)}
+                  onClick={() => attunement.onToggle(String(selectedRow.id), !selectedAttunementChoice.isSelected)}
+                >
+                  {attunement?.busy ? "Saving…" : selectedAttunementChoice.isSelected ? "Unattune item" : "Attune item"}
+                </button>
+                {!attunement?.canChange ? <small>Change attunement during an eligible rest.</small> : null}
+                {attunement?.error ? <p role="alert">{attunement.error}</p> : null}
+              </section>
+            ) : null}
             <div className="equipment-workbench__drag-help">
               Drag a backpack item into a slot to equip or move it. Drag an equipped slot item out of the stage to return it to inventory.
             </div>
