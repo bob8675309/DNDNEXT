@@ -43,8 +43,9 @@ insert into public.items_catalog(item_key,item_rarity,item_name,payload) values
  ('AnimatedShield|XDMG','very rare','Animated Shield','{"ac":2,"type":"S|XDMG"}'),
  ('CloakProtection|XDMG','uncommon','Cloak of Protection','{"bonusAc":1,"bonusSavingThrow":1}');
 
--- Compile ONLY the original, unchanged legacy calculation function:
--- the rest of its migration includes unrelated live tactical wrappers.
+-- Compile the exact legacy resolver (copy compared byte-for-byte by CI),
+-- then the new read-only direct bonus comparison function.
+\i scripts/fixtures/legacy_character_equipment_resolver_v1.sql
 \i sql/20261025_06_character_attuned_ac_saves_shadow.sql
 
 do $test$
