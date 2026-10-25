@@ -7,6 +7,9 @@ on:
       - "scripts/fixtures/common_effect_resolver_behavior.sql"
       - "scripts/fixtures/common_equipment_bonus_shadow_parity.sql"
       - "scripts/fixtures/common_equipment_real_resolver_parity.sql"
+      - "scripts/fixtures/common_equipment_catalog_source_snapshot_20261024.json"
+      - "scripts/fixtures/common_equipment_live_catalog_parity.sql"
+      - "scripts/seed_common_equipment_live_catalog.mjs"
       - "scripts/validate_common_effect_resolver.mjs"
       - "scripts/validate_common_equipment_bonus_adapter.mjs"
       - "docs/Common_Character_Effects_Engine_Design_2026-10-23.md"
@@ -19,6 +22,9 @@ on:
       - "scripts/fixtures/common_effect_resolver_behavior.sql"
       - "scripts/fixtures/common_equipment_bonus_shadow_parity.sql"
       - "scripts/fixtures/common_equipment_real_resolver_parity.sql"
+      - "scripts/fixtures/common_equipment_catalog_source_snapshot_20261024.json"
+      - "scripts/fixtures/common_equipment_live_catalog_parity.sql"
+      - "scripts/seed_common_equipment_live_catalog.mjs"
       - "scripts/validate_common_effect_resolver.mjs"
       - "scripts/validate_common_equipment_bonus_adapter.mjs"
       - ".github/workflows/validate-common-effect-resolver.yml"
@@ -32,6 +38,7 @@ jobs:
           node-version: "22"
       - run: node scripts/validate_common_effect_resolver.mjs
       - run: node scripts/validate_common_equipment_bonus_adapter.mjs
+      - run: node scripts/seed_common_equipment_live_catalog.mjs --verify
   isolated-postgres:
     runs-on: ubuntu-latest
     services:
@@ -68,5 +75,9 @@ jobs:
         run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/common_effect_resolver_behavior.sql
       - name: Verify actual equipment resolver output against draft adapter
         run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/common_equipment_real_resolver_parity.sql
+      - name: Load genuine DnDWeb catalogue source fields (synthetic characters only)
+        run: node scripts/seed_common_equipment_live_catalog.mjs | psql -X -v ON_ERROR_STOP=1
+      - name: Verify real catalogue numeric parity and record legacy gaps
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/common_equipment_live_catalog_parity.sql
       - name: Verify equipment format-level arithmetic parity
         run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/common_equipment_bonus_shadow_parity.sql
