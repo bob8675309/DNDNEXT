@@ -11,6 +11,9 @@ on:
       - "sql/20261024_03_passive_equipment_effect_gate_readonly.sql"
       - "sql/20261024_04_verified_attunement_source_rules.sql"
       - "sql/20261024_05_attunement_rest_class_evidence_readonly.sql"
+      - "sql/20261024_06_attunement_world_focus_session_foundation.sql"
+      - "scripts/fixtures/attunement_world_focus_session_behavior.sql"
+      - "scripts/validate_attunement_world_focus_session.mjs"
       - "scripts/fixtures/attunement_rest_class_evidence_behavior.sql"
       - "scripts/validate_attunement_rest_class_evidence.mjs"
       - "scripts/fixtures/verified_item_attunement_2024.json"
@@ -40,6 +43,7 @@ jobs:
       - run: node scripts/validate_passive_equipment_source_gate.mjs
       - run: node scripts/validate_verified_attunement_sources.mjs
       - run: node scripts/validate_attunement_rest_class_evidence.mjs
+      - run: node scripts/validate_attunement_world_focus_session.mjs
   isolated-postgres:
     runs-on: ubuntu-latest
     services:
@@ -69,3 +73,5 @@ jobs:
       - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/verified_attunement_source_rules_behavior.sql
       - run: psql -X -v ON_ERROR_STOP=1 -f sql/20261024_05_attunement_rest_class_evidence_readonly.sql
       - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/attunement_rest_class_evidence_behavior.sql
+      - run: psql -X -v ON_ERROR_STOP=1 -f sql/20261024_06_attunement_world_focus_session_foundation.sql
+      - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/attunement_world_focus_session_behavior.sql
