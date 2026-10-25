@@ -6,6 +6,7 @@ const base=read("sql/20261016_07_equipped_item_damage_mitigation.sql");
 const current=read("sql/20261016_08_resistance_before_flat_reduction.sql");
 const shadow=read("sql/20261025_05_tactical_attuned_mitigation_shadow.sql");
 const fixture=read("scripts/fixtures/attuned_tactical_mitigation_shadow.sql");
+const sourceFixture=read("scripts/fixtures/character_magic_source_gate_shadow.sql");
 const workflow=read(".github/workflows/validate-attuned-tactical-mitigation-shadow.yml");
 
 for (const token of [
@@ -39,8 +40,6 @@ for(const token of [
 assert.ok(base.includes("private.encounter_equipped_damage_mitigation_v1"),
   "Existing unchanged mitigation helper must be available for comparison");
 for (const token of [
-  "optional_attunement_setting_behavior.sql",
-  "optional_rest_magic_item_selection_behavior.sql",
   "character_magic_source_gate_shadow.sql",
   "sql/20261016_07_equipped_item_damage_mitigation.sql",
   "sql/20261025_05_tactical_attuned_mitigation_shadow.sql",
@@ -49,6 +48,8 @@ for (const token of [
   "Unverified rare Cold source obtained",
   "Unequipped item affected baseline"
 ]) assert.ok(fixture.includes(token), "Isolated tactical parity scenario missing: "+token);
+for(const token of ["optional_attunement_setting_behavior.sql","optional_rest_magic_item_selection_behavior.sql"])
+  assert.ok(sourceFixture.includes(token), "Composed source fixture missing: "+token);
 for(const token of [
   "scripts/validate_attuned_tactical_shadow.mjs",
   "validate_tactical_equipped_damage_mitigation.mjs",
