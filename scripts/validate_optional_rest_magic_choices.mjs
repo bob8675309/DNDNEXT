@@ -14,7 +14,9 @@ for(const token of [
 "private.assert_character_resource_not_active_v1",
 "pg_advisory_xact_lock","for update","for share",
 "cardinality(p_item_ids)","count(distinct u.item_id)",
-"clear_rest_magic_choice_on_item_change_v1","'effectsEnforced',false",
+"clear_rest_magic_choice_on_item_change_v1","old.item_id is distinct from new.item_id",
+"old.item_rarity is distinct from new.item_rarity","old.card_payload is distinct from new.card_payload",
+"'effectsEnforced',false",
 "i.item_id like 'VAR-%'","i.card_payload->>'id'=i.item_id",
 "cp.character_id<>p_character"
 ]) assert.ok(sql.includes(token),"SQL selector contract missing: "+token);
@@ -41,7 +43,9 @@ for(const token of [
 'Unknown source selected as magic','Unequipped item selected',
 'Foreign-owned magic selected','Active combat did not block',
 'Selector unexpectedly unequipped','Transfer-out-and-back reactivated',
-'Unequip did not clear','OFF state lost effect parity'
+'Unequip did not clear','Item identity edit retained stale magic selection',
+'Item rarity edit retained stale magic selection','Item payload edit retained stale magic selection',
+'OFF state lost effect parity'
 ]) {
   // Real fixture uses a mixture of stable message variants.
   if(token==='Variant replacement') continue;
