@@ -63,6 +63,52 @@ begin
  v:=private.attunement_rest_class_evidence_v1(c,boots);
  if v->>'shortRestEvidenceVerified'<>'false'
  then raise exception 'Another item reused focused rest %',v; end if;
+ -- A server-looking receipt still fails when the qualifying hour is absent.
+ insert into public.character_rest_log values
+ ('77777777-0000-4000-8000-000000000006',c,'short_rest',
+ jsonb_build_object('attunementFocus',jsonb_build_object(
+ 'itemId',staff::text,'authority','canonical_rest_server_v1',
+ 'contactVerified',true,'exclusiveFocus',true,'interrupted',false,
+ 'identificationRestSeparate',true,
+ 'startedEpoch',extract(epoch from now()-interval '20 minutes'),
+ 'focusedItems',jsonb_build_array(staff::text))),now()+interval '10 seconds');
+ v:=private.attunement_rest_class_evidence_v1(c,staff);
+ if v->>'shortRestEvidenceStatus'<>'insufficient_or_invalid_rest_duration'
+ then raise exception 'Attunement accepted insufficient duration %',v; end if;
+ -- Interruption invalidates even a full hour of apparent elapsed time.
+ insert into public.character_rest_log values
+ ('77777777-0000-4000-8000-000000000007',c,'short_rest',
+ jsonb_build_object('attunementFocus',jsonb_build_object(
+ 'itemId',staff::text,'authority','canonical_rest_server_v1',
+ 'contactVerified',true,'exclusiveFocus',true,'interrupted',true,
+ 'identificationRestSeparate',true,
+ 'startedEpoch',extract(epoch from now()-interval '70 minutes'),
+ 'focusedItems',jsonb_build_array(staff::text))),now()+interval '20 seconds');
+ v:=private.attunement_rest_class_evidence_v1(c,staff);
+ if v->>'shortRestEvidenceStatus'<>'incomplete_or_untrusted_focus_evidence'
+ then raise exception 'Interrupted attunement Short Rest accepted %',v; end if;
+ insert into public.character_rest_log values
+ ('77777777-0000-4000-8000-000000000008',c,'short_rest',
+ jsonb_build_object('attunementFocus',jsonb_build_object(
+ 'itemId',staff::text,'authority','canonical_rest_server_v1',
+ 'contactVerified',true,'exclusiveFocus',true,'interrupted',false,
+ 'identificationRestSeparate',false,
+ 'startedEpoch',extract(epoch from now()-interval '70 minutes'),
+ 'focusedItems',jsonb_build_array(staff::text))),now()+interval '30 seconds');
+ v:=private.attunement_rest_class_evidence_v1(c,staff);
+ if v->>'shortRestEvidenceStatus'<>'incomplete_or_untrusted_focus_evidence'
+ then raise exception 'Item identification used same attunement rest %',v; end if;
+ insert into public.character_rest_log values
+ ('77777777-0000-4000-8000-000000000009',c,'short_rest',
+ jsonb_build_object('attunementFocus',jsonb_build_object(
+ 'itemId',staff::text,'authority','canonical_rest_server_v1',
+ 'contactVerified',false,'exclusiveFocus',true,'interrupted',false,
+ 'identificationRestSeparate',true,
+ 'startedEpoch',extract(epoch from now()-interval '70 minutes'),
+ 'focusedItems',jsonb_build_array(staff::text))),now()+interval '40 seconds');
+ v:=private.attunement_rest_class_evidence_v1(c,staff);
+ if v->>'shortRestEvidenceStatus'<>'incomplete_or_untrusted_focus_evidence'
+ then raise exception 'Attunement accepted without physical contact %',v; end if;
  insert into public.character_rest_log values
  ('77777777-0000-4000-8000-000000000004',c,'short_rest',
  jsonb_build_object('attunementFocus',jsonb_build_object(
