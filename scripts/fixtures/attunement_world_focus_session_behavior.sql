@@ -42,7 +42,7 @@ begin
  if v->>'replayed'<>'true' then raise exception 'Same-request replay reset rest clock %',v; end if;
  blocked:=false;
  begin
-  perform private.begin_attunement_world_focus_v1(c,ring,second_id);
+  perform private.begin_attunement_world_focus_v1(c,cloak,second_id);
  exception when check_violation then blocked:=true; end;
  if not blocked then raise exception 'Simultaneous second attunement focus started'; end if;
  blocked:=false;
