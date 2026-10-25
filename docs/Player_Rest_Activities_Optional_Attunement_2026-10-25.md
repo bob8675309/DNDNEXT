@@ -2,6 +2,17 @@
 
 **Owner clarification: 2026-10-25. Highest-priority requirement for rest and attunement UI.** This supersedes the proposed complexity of the #260–#265 attunement-evidence stack. It does not erase their historical tests or authorize any deployment.
 
+## Admin optional-attunement setting — validated draft PR #267
+
+[Draft PR #267](https://github.com/bob8675309/DNDNEXT/pull/267) is a **main-based, separate replacement setting** for the superseded #257 capacity prototype. Tested head `ab54907259974288bba5855d60703e19f4a17458` passed **five** exact-head checks (PostgreSQL16, source contract, application builds and preview comments).
+
+- Adds `campaign_item_pool_settings.attunement_enabled` (default **false**) and a database-constrained `attunement_max_items = 3`, preserving `future_tech_enabled`. Admin Dashboard gets an **Enable attunement limit** switch showing authoritative ON/OFF and cap.
+- The update RPC `set_campaign_attunement_rule_v1` demands a signed-in admin; ordinary players, anonymous callers and service credentials without an admin principal cannot change it. Direct browser UPDATE grants remain denied. Missing migrations or request errors are reported, not silently treated as a successful OFF state.
+- **This is configuration, not enforcement.** At this checkpoint a GM can store ON (three-item policy configured), but no player attunement choices, magic-effect suppression, NPC equipment rules, or existing inventory/bonus calculations are changed. The Admin card states this limitation explicitly. Keep the PR **draft/undeployed** until the user has reviewed non-destructive ON transition, picker, cap enforcement and consumer parity.
+- PR #266's rest-activity popup is a separate draft with `attunementEnabled=false` until a real eligible item-selection action exists. Ordinary Rest & Recover stays independent of the toggle.
+
+[PR #267 implementation and outstanding gates](https://github.com/bob8675309/DNDNEXT/blob/feature/optional-attunement-admin-setting-20261025/docs/Optional_Attunement_Admin_Setting_2026-10-25.md).
+
 ## Implemented draft UI checkpoint — PR #266
 
 Draft [PR #266](https://github.com/bob8675309/DNDNEXT/pull/266) is **independent of the superseded #257–#265 attunement stack** and based on main. Its current implementation at `cf40e453872af39e352e65baf3f2adb84c0570fc` passed both repository/build validation jobs and the Vercel Preview Comments check.
