@@ -1,0 +1,10 @@
+import fs from "node:fs";
+import assert from "node:assert/strict";
+const sql = fs.readFileSync("sql/20261024_03_passive_equipment_effect_gate_readonly.sql","utf8");
+const fixture=fs.readFileSync("scripts/fixtures/passive_equipment_source_gate_behavior.sql","utf8");
+const workflow=fs.readFileSync(".github/workflows/validate-campaign-attunement-policy.yml","utf8");
+for(const phrase of ["security invoker","eligibleForPassiveMagic',false","reqAttuneTags","character_item_attunements","playerOwnerAmbiguous","eligibleMundaneBaseAc","revoke all on function private.passive_equipment_source_gate_v1","to service_role"]) assert.ok(sql.includes(phrase), "Missing internal fail-closed gate: "+phrase);
+for(const phrase of ["Shared player owner granted magic","Staff of Power source requirement erased","Shield in invalid back slot accepted","Unknown edition/source accepted","Recorded bond incorrectly treated","Private eligibility probe executable"]) assert.ok(fixture.includes(phrase),"Missing behavioral proof: "+phrase);
+assert.ok(workflow.includes("passive_equipment_source_gate_behavior.sql"));
+assert.ok(workflow.includes("20261024_03_passive_equipment_effect_gate_readonly.sql"));
+console.log("Passive source eligibility gate code/test contract passes; requires PostgreSQL isolated CI.");

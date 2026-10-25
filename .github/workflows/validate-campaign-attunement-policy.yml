@@ -8,6 +8,9 @@ on:
       - "components/CharacterSheetPanel.js"
       - "scripts/fixtures/campaign_attunement_policy_behavior.sql"
       - "scripts/validate_campaign_attunement_policy.mjs"
+      - "sql/20261024_03_passive_equipment_effect_gate_readonly.sql"
+      - "scripts/fixtures/passive_equipment_source_gate_behavior.sql"
+      - "scripts/validate_passive_equipment_source_gate.mjs"
       - ".github/workflows/validate-campaign-attunement-policy.yml"
   push:
     branches: [main]
@@ -27,6 +30,7 @@ jobs:
         with:
           node-version: "22"
       - run: node scripts/validate_campaign_attunement_policy.mjs
+      - run: node scripts/validate_passive_equipment_source_gate.mjs
   isolated-postgres:
     runs-on: ubuntu-latest
     services:
@@ -50,3 +54,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/campaign_attunement_policy_behavior.sql
+      - run: psql -X -v ON_ERROR_STOP=1 -f sql/20261024_03_passive_equipment_effect_gate_readonly.sql
+      - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/passive_equipment_source_gate_behavior.sql
