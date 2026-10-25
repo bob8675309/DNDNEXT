@@ -1,31 +1,33 @@
 # DNDNext — Current Effects Engine + Future AI Tool Handoff
 Updated: 2026-10-24. **Read this first when taking over the effects-engine work.**
 
-> **2026-10-24 PR reconciliation — read this first.** PR #249 (workspace preflight), #252 (item effects coverage and cross-chat audit), and #254 (this consolidated handoff) have been **merged into main** through commits `f50782e831b12155d32e351700d2295a51e530e1`, `b6b9043a373c3ae4faea09847dc9318d0294d9a4`, and `665a953ca57985b7fa0bc367beb8422ac156125c`. The older open-PR snapshot below is historical and must not be treated as current. Remaining drafts: **#250** Physical Specimen → independent, **#251** common pure effects foundation → **#253** actual legacy resolver parity (base #251) → **#255** genuine catalogue parity (base #253). At handoff, #255's PostgreSQL workflow was still **in progress** at `dda0f432d963a5b6a87b65e5f6f4bbd27a860602`. Neither runtime chain is deployed or safe to merge until explicit remaining release gates are resolved. Re-fetch all heads/checks before any merge. No world/town map or production Supabase mutations were made in this reconciliation.
+> **2026-10-24 reconciled live status — read this first.** PRs **#249, #252, #254, and #256 were merged into main**. Latest verified `main`: `0e925958b49505e010a011b1de4d6de28f30b7b7` (re-fetch before acting). Remaining **draft, unmerged, undeployed** work: independently #250 Physical Specimen; stacked **#251 → #253 → #255** generic effects and source parity; independently **#257** campaign attunement Standard-3/Unlimited policy and character-specific bonds. #255's isolated PostgreSQL test suite passed at its latest observed head. #257 remains an implementation draft until rest/prerequisite, existing magic-effect consumer, and class-exception integration are verified. No live DnDWeb SQL deployment. See [#257 attunement status](https://github.com/bob8675309/DNDNEXT/blob/feature/campaign-attunement-policy-20261024/docs/Campaign_Attunement_Policy_Status_2026-10-24.md).
 
 ## Purpose and verification limit
 This is the compact takeover authority for the work spanning three ChatGPT conversations, supported by the currently available earlier-chat handoff/video excerpts, source-controlled documents and code, GitHub PR status and read-only DnDWeb Supabase checks. It **does not claim** to contain every verbatim message from the two previous chats. Where an older design document conflicts with live source, the live source wins. Re-fetch exact GitHub branch heads, latest PR status, migration ledger and database functions before acting.
 
-Repository: bob8675309/DNDNEXT. Production/default: main (recorded SHA f55c224006dbc9c3613470cafa2cf65e7c350f00; **historical anchor only**, re-fetch). Next.js **Pages Router**, React, Supabase/Postgres, Vercel. Supabase project DnDWeb: ucggczovhmauhshvhusx. Read-only 2026-10-24: PostgreSQL 17.4, items_catalog 2,739, inventory_items 19, spell_effects 1,037.
+Repository: bob8675309/DNDNEXT. Production/default: main (last verified SHA 0e925958b49505e010a011b1de4d6de28f30b7b7; **re-fetch before work**). Next.js **Pages Router**, React, Supabase/Postgres, Vercel. Supabase project DnDWeb: ucggczovhmauhshvhusx. Read-only 2026-10-24: PostgreSQL 17.4, items_catalog 2,739, inventory_items 19, spell_effects 1,037.
 
 **Neither the draft common resolver nor the draft Physical Specimen SQL is deployed to production.** Existing equipment, tactical spells, conditions, inventory and rest authorities remain live. This is primarily a rules/integration effort, not a Character Forge redesign.
 
-## Five-minute recovery procedure
-1. Read this file, docs/README.md, docs/Documentation_Refresh_Manifest.md and the dated **top override** of docs/DNDNext_Current_Handoff_Prompt.md.
-2. Read the full draft PR docs: #250 Physical_Specimen_Encounter_Integration_Gate.md; #251 Common_Character_Effects_Engine_Design_2026-10-23.md; #252 Item_Character_Effects_Coverage_Audit_2026-10-24.md and Character_Effects_Cross_Conversation_Requirements_Audit_2026-10-24.md; #253 Common_Equipment_Actual_Resolver_Parity_Gate_2026-10-24.md. **These draft-only documents are on their PR branches and will not show up in the default main docs listing before merge.**
-3. Confirm the current main and PR #250–253 heads, CI, bases, changed files, and live Supabase schema/permissions. Check docs/CHATGPT_REPO_WRITE_PROCEDURE.md. No merges without explicit user approval.
-4. Trace each proposed source adapter against the actual source payload, current effective-stat authority, character-sheet consumer, tactical consumer, and rest/encounter lifecycle. Do not infer mechanics from item-description prose or any model output.
-5. Add isolated, real-source numeric/behavioral parity fixtures, then integrate only one bounded consumer after exact-head reviews and regression gates. No blanket replacement of existing systems.
+## Five-minute recovery and current PR topology
 
-## Open draft PR topology (snapshot: 2026-10-24)
-| PR | Branch | Recorded head | Role and current limits |
-|---|---|---|---|
-| [#250](https://github.com/bob8675309/DNDNEXT/pull/250) | agent/physical-specimen-read-foundation-20261023 | 132b0484ccc45bbcc87827db0eb483896ae446e1 | Parasite Patron Physical Specimen, six source-derived choices, guarded activation/replace and staged HP/Speed reconciliation; **other consumer effects and live compatibility not complete** |
-| [#251](https://github.com/bob8675309/DNDNEXT/pull/251) | agent/common-character-effects-foundation-20261023 | 68526d451722b1f35ccdf30b42ed42171ee86d90 | Pure private common effect bundle calculation + **narrow** authoritative equipment numeric adapter; no gameplay consumers switched |
-| [#252](https://github.com/bob8675309/DNDNEXT/pull/252) | audit/item-character-effects-coverage-20261024 | 8b603115182d54f1520e48c54379901e9f91dc31 | Read-only item/effect coverage + cross-chat omission audit; counts are source **field presence**, not gameplay proofs |
-| [#253](https://github.com/bob8675309/DNDNEXT/pull/253) | agent/common-effect-real-source-parity-20261024 | 5cfeef36541d6a882144ec00aed56d30bdc5a92a | **Base is #251, not main**; isolated Postgres invokes actual legacy equipment SQL on **synthetic item payloads** and compares supported save/Athletics/Acrobatics/initiative fields. The contracts, Postgres and validation checks passed at this exact head. **Not full real-catalogue or live-character parity.** |
+1. Read this file, `docs/README.md`, `docs/Documentation_Refresh_Manifest.md` and the opening current override of `docs/DNDNext_Current_Handoff_Prompt.md`. All older "current" sections beneath these overrides are historical checkpoints.
+2. Read **main-merged** `Item_Character_Effects_Coverage_Audit_2026-10-24.md` and `Character_Effects_Cross_Conversation_Requirements_Audit_2026-10-24.md` (#252). Do **not** call these draft-only.
+3. Inspect current PR descriptions, base/head, changed files, exact-head GitHub Actions and read-only live DB. Read `docs/CHATGPT_REPO_WRITE_PROCEDURE.md` before writing; approval and end-to-end compatibility gates still apply to unmerged runtime branches.
+4. Follow the source catalogue → inventory/feature grant → permission/ownership/equip/attunement/rest → canonical numeric/tactical consumer → sheet/AI display pipeline. Never replace an authoritative resolver because isolated arithmetic matches.
+5. For attunement, check the draft #257 source and migration status; `campaign_item_pool_settings.unlimited_attunement_enabled` does **not** exist in production until explicitly deployed. A three-vs-unlimited switch changes only attunement capacity, not gear slots.
 
-All four PRs are **open/draft/unmerged** as of the snapshot. The separate effects/AI documentation PR that introduces this handoff is documentation-only and based on main; check its status independently. Do not collapse, merge or deploy the draft PRs because a test-only slice is green. PR #249 was an architecture preflight; check its live status before assuming it is active.
+| PR | Status | Branch dependency and purpose |
+|---|---|---|
+| [#249](https://github.com/bob8675309/DNDNEXT/pull/249), [#252](https://github.com/bob8675309/DNDNEXT/pull/252), [#254](https://github.com/bob8675309/DNDNEXT/pull/254), [#256](https://github.com/bob8675309/DNDNEXT/pull/256) | **Merged main** | Workspace preflight; item/effects coverage; comprehensive handoff; current PR reconciliation |
+| [#250](https://github.com/bob8675309/DNDNEXT/pull/250) | Draft | Independent Physical Specimen backend with incomplete save/vision/check/movement consumers |
+| [#251](https://github.com/bob8675309/DNDNEXT/pull/251) | Draft | Common private effect evaluator + narrow equipment read model; base of #253 |
+| [#253](https://github.com/bob8675309/DNDNEXT/pull/253) | Draft, base #251 | Actual legacy equipment resolver parity tests using synthetic catalogue records |
+| [#255](https://github.com/bob8675309/DNDNEXT/pull/255) | Draft, base #253 | 16 genuine item-source payload subsets; isolated CI green, known gaps preserved |
+| [#257](https://github.com/bob8675309/DNDNEXT/pull/257) | Draft, base main | Standard D&D 3 vs Unlimited attunement, character-item bonds, Admin switch, isolated tests. **Not yet consumer-ready or deployed** |
+
+No current draft is authorized for production because a CI fixture passes. Any merge/deployment must preserve existing paper sheet, character Forge, equipment placements and separated world/town systems.
 
 ## Data and authority map
 
@@ -68,7 +70,7 @@ The original requirement is **not just numerical equipment bonuses**. Allow sour
 - Alchemy: distinguish ingredient modifier or craft-time Effect %/Die Step/Duration/Extra Dose changes from final consumable's applied effect and doses. A mushroom with Effect +100% is not a passive character buff.
 - Current live item presence includes ability (49), modifySpeed (41), attachedSpells (354), charges (220), recharge (258), reqAttuneTags (221), positive_effects (232), saveDc (114), stealth (37); plus bonusSpellAttack (40), bonusSpellSaveDc (27), bonusProficiencyBonus (1), immune (14), conditionImmune (18) **without verified matching equipped gameplay consumers**. These are counts of keys, **not proof of missing gameplay**.
 
-Read the deeper matrix at [draft PR #252 addendum](https://github.com/bob8675309/DNDNEXT/blob/audit/item-character-effects-coverage-20261024/docs/Character_Effects_Cross_Conversation_Requirements_Audit_2026-10-24.md).
+Read the deeper matrix in [the main-merged cross-conversation audit](Character_Effects_Cross_Conversation_Requirements_Audit_2026-10-24.md).
 
 ## Physical Specimen remains the first strict feature integration test
 Draft #250 covers source eligibility (Grim Hollow PG24 Parasite Patron XPHB Warlock 3+), six benefit options, Charisma-dependent choice count, once/Long Rest Bonus Action activation, once/Short Rest replacement, selected max HP/Speed and guarded combat HP synchronization. **Unwired or unproven** downstream consumers include poisoned-save Advantage, vision with existing Darkvision extension, Athletics/Acrobatics bonuses, jump distance, climbing movement. Do not ship the player selector until mechanics, source identity, ACL, rest and tactical consumers are validated. Mock up against **actual** Forge/Profile components first; preserve paper-style sheet and accepted art/spacing.
