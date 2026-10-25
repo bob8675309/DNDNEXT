@@ -4,7 +4,8 @@ const read=p=>fs.readFileSync(p,"utf8");
 const sql=read("sql/20261025_02_optional_rest_magic_item_selection.sql");
 const test=read("scripts/fixtures/optional_rest_magic_item_selection_behavior.sql");
 const dialog=read("components/CharacterRestActivityDialog.js");
-const picker=read("components/CharacterRestMagicItemSelector.js");
+const inventory=read("pages/inventory.js");
+const hook=read("utils/useInventoryAttunement.js");
 const workflow=read(".github/workflows/validate-optional-attunement-setting.yml");
 for(const token of [
 "character_magic_item_selections_v1","enable row level security",
@@ -23,20 +24,17 @@ for(const token of [
 assert.ok(!sql.includes("set is_equipped="),"Selector cannot unequip gear");
 assert.ok(!sql.includes("private.character_equipment_effects_v1"),"No premature magic consumer integration");
 for(const token of [
-'<CharacterRestMagicItemSelector','"get_character_rest_magic_choices_v1"',
+'openAttunementInventory','"get_character_rest_magic_choices_v1"',
 'const attunementEnabled = selectionState?.enabled === true',
 'Rest &amp; Recover','Work on Crafting'
 ]) assert.ok(dialog.includes(token),"Rest dialog picker missing: "+token);
-for(const token of [
-'useEffect(() => {',
-'setChosen(items.filter((item) => item?.isSelected && item?.selectable)',
-'[snapshot, characterId]',
-'chosen.some((id) => !items.some(',
-'"set_character_rest_magic_choices_v1"','Select no more than ',
-'Select up to {cap} equipped magic items','Boolean(item.selectable)',
-'if (saving || encounterLocked || !snapshot?.enabled || !characterId) return',
-'Applying the limit to magical'
-]) assert.ok(picker.includes(token),"Picker gate missing: "+token);
+for(const token of ['useInventoryAttunement','attunement={attunementContext.attunement}'])
+  assert.ok(inventory.includes(token), "Inventory attunement not wired: "+token);
+for(const token of ['"set_character_rest_magic_choices_v1"','"get_my_player_characters_v2"',
+  'requestedCharacterId','attunement: snapshot?.enabled === true',
+  'requestedCharacterId) === characterId','candidate?.selectable'])
+  assert.ok(hook.includes(token), "Character-scoped inventory selector missing: "+token);
+assert.ok(!dialog.includes("CharacterRestMagicItemSelector"), "Duplicated rest item picker is still mounted");
 for(const token of [
 'Four magic items bypassed','Duplicate selected item',
 'Variant replacement','Explicit account-owned item attunement was rejected',
@@ -58,4 +56,4 @@ for(const name of [
 '20261025_02_optional_rest_magic_item_selection.sql',
 'optional_rest_magic_item_selection_behavior.sql','validate_optional_rest_magic_choices.mjs'
 ]) assert.ok(workflow.includes(name),"CI missing "+name);
-console.log("Rest magic choice + DB cap/owner/source/encounter safety contracts passed.");
+console.log("Inventory-owned rest magic choices, exclusive per-character claim, source/combat rules passed.");
