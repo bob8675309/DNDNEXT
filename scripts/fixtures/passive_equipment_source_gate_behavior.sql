@@ -30,12 +30,13 @@ declare c uuid:='aaaaaaaa-0000-4000-8000-000000000001';
   v jsonb;
 begin
   v:=private.passive_equipment_source_gate_v1(c,'dddddddd-0000-4000-8000-000000000001');
-  if v->>'sourceStatus'<>'unknown_source_attunement'
-      or v->>'attunementSource'<>'unknown'
+  if v->>'sourceStatus'<>'not_attuned'
+      or v->>'attunementSource'<>'required'
+      or v->>'attunementEvidence'<>'verified_br_2024_exact_item_key'
       or v->>'sourceKind'<>'ring'
       or v->>'slotStatus'<>'valid'
       or (v->>'eligibleForPassiveMagic')::boolean then
-    raise exception 'Imported Ring of Protection missing attunement metadata was trusted: %',v;
+    raise exception 'Ring of Protection exact-source requirement not normalized: %',v;
   end if;
 
   v:=private.passive_equipment_source_gate_v1(c,'dddddddd-0000-4000-8000-000000000002');
@@ -74,8 +75,9 @@ begin
     raise exception 'Wrong-slot body armor accepted: %',v; end if;
 
   v:=private.passive_equipment_source_gate_v1(c,'dddddddd-0000-4000-8000-000000000005');
-  if v->>'attunementSource'<>'unknown' or v->>'sourceStatus'<>'unknown_source_attunement'
-  then raise exception 'Cloak missing attunement source treated as no requirement: %',v; end if;
+  if v->>'attunementSource'<>'required' or v->>'sourceStatus'<>'not_attuned'
+       or v->>'attunementEvidence'<>'verified_br_2024_exact_item_key'
+  then raise exception 'Cloak of Protection 2024 source requirement not normalized: %',v; end if;
   v:=private.passive_equipment_source_gate_v1(c,'dddddddd-0000-4000-8000-000000000006');
   if v->>'sourceStatus'<>'consumer_rule_unverified'
       or v->>'attunementSource'<>'explicitly_not_required'
