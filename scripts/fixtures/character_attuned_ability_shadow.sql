@@ -127,6 +127,34 @@ begin
     or (res->'shadow'#>>'{ac,total}')::integer<>17
  then raise exception 'Unverified abilities bypassed source eligibility %',res; end if;
 
+ -- Ability score cap: source bonuses are applied BEFORE clamp to 30.
+ -- Removing source bonuses must recompute from the original base 28,
+ -- not subtract from a previously clamped effective score of 30.
+ update public.character_sheets set
+   sheet=jsonb_set(sheet,'{abilities,dex,score}','28'::jsonb,true)
+ where character_id=c;
+ res:=private.character_attuned_ability_shadow_v1(c);
+ if (res->'baseline'#>>'{abilities,dex,effectiveScore}')::integer<>30
+    or (res->'baseline'#>>'{abilities,dex,effectiveMod}')::integer<>13
+    or (res->'shadow'#>>'{abilities,dex,effectiveScore}')::integer<>28
+    or (res->'shadow'#>>'{abilities,dex,effectiveMod}')::integer<>9
+    or (res->'shadow'#>>'{ac,base}')::integer<>19
+ then raise exception 'Ability cap not recomputed from base and source deltas %',res; end if;
+
+ -- Heavy Armor ignores Dexterity, even when magical sources grant +4
+ -- ability score and +1 direct modifier.
+ update public.inventory_items
+ set is_equipped=true,item_id='Plate|XPHB',item_name='Plate Armor',
+     card_payload='{"ac":18,"type":"HA|XPHB"}'::jsonb
+ where id=breastplate;
+ res:=private.character_attuned_ability_shadow_v1(c);
+ if (res->'shadow'#>>'{ac,armorCategory}')<>'heavy'
+    or (res->'shadow'#>>'{ac,base}')::integer<>18
+    or (res->'shadow'#>>'{ac,total}')::integer<>22
+    or (res->'shadow'#>>'{ac,dexApplied}')::integer<>0
+    or res->>'acDexRecalculationComplete'<>'true'
+ then raise exception 'Heavy armor wrongly counted magic Dexterity bonus %',res; end if;
+
  perform set_config('fixture.uid','aaaaaaaa-0000-4000-8000-000000000001',true);
  perform public.set_campaign_attunement_rule_v1(false);
  res:=private.character_attuned_ability_shadow_v1(c);
