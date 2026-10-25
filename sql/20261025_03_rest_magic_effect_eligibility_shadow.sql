@@ -1,5 +1,5 @@
 -- Shadow-only boundary between authoritative equipment custody and common effects.
--- Caller MUST build candidate records using verified DB inventory/catalogue state.
+-- Each verified item may provide SEPARATE physical equipment contributions\n-- and magical riders. Attunement gates riders, NEVER physical protection.\n-- Caller MUST build candidate records using verified DB inventory/catalogue state.
 -- NEVER accept browser-provided candidates as authoritative; this function
 -- deliberately performs no character queries and changes no gameplay consumer.
 create or replace function private.filter_rest_magic_effect_candidates_v1(
@@ -32,10 +32,10 @@ begin
   for c in select value from jsonb_array_elements(p_candidates) loop
     if jsonb_typeof(c) is distinct from 'object'
       or exists(select 1 from jsonb_object_keys(c) as k
-        where k not in ('inventoryItemId','equipped','magic','effect'))
+        where k not in ('inventoryItemId','equipped','magic','effectChannel','effect'))
       or jsonb_typeof(c->'equipped') is distinct from 'boolean'
       or jsonb_typeof(c->'magic') is distinct from 'boolean'
-      or jsonb_typeof(c->'effect') is distinct from 'object'
+      or c->>'effectChannel' not in ('physical','magical')\n      or not (c ? 'effectChannel')\n      or jsonb_typeof(c->'effect') is distinct from 'object'
       or not (c ? 'inventoryItemId')
     then
       raise exception 'Candidate requires verified identity, state, and effect'
@@ -49,9 +49,9 @@ begin
     if v_id is null then
       raise exception 'Missing candidate item identity' using errcode='22023';
     end if;
-    v_effect:=c->'effect';
+    -- A magical rider must carry a verified magical source identity;\n    -- physical AC/armor/weapon mechanics remain independent of attunement.\n    if c->>'effectChannel'='magical' and c->>'magic'='false' then\n      raise exception 'Magical rider requires verified magic source' using errcode='22023';\n    end if;\n    v_effect:=c->'effect';
     if c->>'equipped'='false' then v_reason:='not_equipped';
-    elsif p_rule_enabled and c->>'magic'='true'
+    elsif p_rule_enabled and c->>'effectChannel'='magical'
        and not (v_id=any(p_selected_item_ids)) then
       v_reason:='not_selected';
     else v_reason:=null;
@@ -60,7 +60,7 @@ begin
       v_active:=v_active||jsonb_build_array(v_effect);
     else
       v_suppressed:=v_suppressed||jsonb_build_array(
-        jsonb_build_object('inventoryItemId',v_id,'reason',v_reason));
+        jsonb_build_object('inventoryItemId',v_id,\n          'effectChannel',c->>'effectChannel','reason',v_reason));
     end if;
   end loop;
   return jsonb_build_object('schemaVersion',1,'effects',v_active,
