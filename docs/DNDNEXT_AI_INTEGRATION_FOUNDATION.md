@@ -1,6 +1,6 @@
 # DNDNext AI Integration Foundation
 
-Status date: 2026-10-09
+Original architecture decision: 2026-10-09. Latest effects-tool clarification: 2026-10-24.
 
 Status: **architecture direction only; implementation intentionally deferred until the current Character Forge completion pass is finished.**
 
@@ -280,3 +280,22 @@ This future direction does not authorize current changes to:
 - Supabase schema/data.
 
 Any future AI implementation must be a bounded project with explicit review of its affected authority and data visibility.
+
+
+## 2026-10-24 future authoritative effects tool — clarification, NOT a deployed AI capability
+
+**Source/priority:** [DNDNext_Effects_AI_Current_Handoff_2026-10-24.md](DNDNext_Effects_AI_Current_Handoff_2026-10-24.md) and draft PRs #250–#253. This section connects the existing AI foundation to the user-approved reusable Character Effects Engine. It **does not** authorize implementing AI yet and it does not add provider dependencies, AI tables, gameplay RPCs, or database credentials.
+
+The intended integration is an **AI-callable tool implemented by DNDNext** for bounded **read-only** character/rules/effect information. The model's narrative or action-selection reasoning may use the result; the game engine still decides whether the effect exists, whether it is active, who can see it, which numbers or roll modes apply, and what game-state writes are permitted.
+
+Suggested **conceptual, not existing** server-level interfaces:
+- getAuthorizedCharacterEffectContext(characterId, viewerId, eventContext): authorization + visibility filter → server-owned source adapters → effective stats/effects, provenance and remaining uncertainty. Never trust the model to supply a character grant, activation, attunement or arbitrary modifier list.
+- explainAuthorizedEffectResolution(actorId, targetId, actionOrEffectId, viewerId): permissioned, event-scoped explanation of *already authorized* action/effect mechanics, not an attack/damage/healing command. No hidden player/DM information in model-visible output.
+- listLegalEncounterActions(actorId, encounterId, viewerId): existing tactical authority supplies legal actions, filtered by controller, turn, resources, targeting and information visibility. dndnextAI.chooseAction(request, legalActions) chooses **only** from this exact returned set; the same game authority revalidates and executes the chosen action with idempotent request identity and canonical logs.
+- generateStructured for magic-item drafts is **proposal-only**: source-aware effect budget, rarity, charges, materials and crafting DC are checked by existing item/crafting validators and require deliberate admin Save. An AI-produced effect/rider is never accepted as canonical merely because it matches a JSON schema.
+
+**Two essential separations:** (1) private.resolve_effect_bundle_v1 from draft #251 is a server-internal pure **calculation**, **not** a public AI tool or a rules-eligibility engine; (2) item/feature/spell source adapters and guarded tactical/creation/rest commands own **activation, persistence and legality**. The future AI interface consumes their output, not their internal, untrusted input format. Do not expose database-level execute access or raw Supabase table retrieval to a model or to unauthenticated clients.
+
+**Visibility:** actor-known, viewer-visible, and DM-only data must be filtered **before** model inference. GM-only creature stats, hidden enemies, unpublished NPC memory, private character details, unrevealed trap/encounter state and campaign notes are not model prompt material for a player-facing response.
+
+**Delivery gate:** implement only after the source/consumer effects parity matrix and the current Forge/product priority are accepted, and only as a separately authorized AI workstream. Preserve local-first provider abstraction: Ollama / llama.cpp now conceptual, optional other providers later. AI Off remains valid.
