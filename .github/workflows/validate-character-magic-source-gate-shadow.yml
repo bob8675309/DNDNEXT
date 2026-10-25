@@ -1,0 +1,32 @@
+name: Validate Character Magic Source Gate Shadow
+on:
+  pull_request:
+    paths:
+      - "sql/20261025_04_character_effect_source_gate_shadow.sql"
+      - "scripts/fixtures/character_magic_source_gate_shadow.sql"
+      - ".github/workflows/validate-character-magic-source-gate-shadow.yml"
+  workflow_dispatch:
+jobs:
+  isolated-postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: fixture-only
+          POSTGRES_DB: source_gate_shadow
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d source_gate_shadow"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGPASSWORD: fixture-only
+      PGDATABASE: source_gate_shadow
+    steps:
+      - uses: actions/checkout@v4
+      - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/character_magic_source_gate_shadow.sql
