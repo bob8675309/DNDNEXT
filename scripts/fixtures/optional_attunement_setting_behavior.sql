@@ -44,6 +44,9 @@ begin
  if settings.attunement_enabled is distinct from false or settings.attunement_max_items<>3
     or settings.future_tech_enabled is distinct from true
  then raise exception 'OFF default or existing campaign setting changed: %',to_jsonb(settings); end if;
+ if has_function_privilege('anon','public.get_campaign_attunement_rule_status_v1()','EXECUTE')
+    or not has_function_privilege('authenticated','public.get_campaign_attunement_rule_status_v1()','EXECUTE')
+ then raise exception 'Attunement status RPC grants are incorrect'; end if;
  if has_function_privilege('anon','public.set_campaign_attunement_rule_v1(boolean)','EXECUTE')
     or not has_function_privilege('authenticated','public.set_campaign_attunement_rule_v1(boolean)','EXECUTE')
     or has_table_privilege('authenticated','public.campaign_item_pool_settings','UPDATE')
@@ -54,13 +57,25 @@ begin
   perform public.set_campaign_attunement_rule_v1(true);
  exception when insufficient_privilege then denied:=true; end;
  if not denied then raise exception 'Anonymous call toggled attunement'; end if;
+ denied:=false;
+ begin perform public.get_campaign_attunement_rule_status_v1();
+ exception when insufficient_privilege then denied:=true; end;
+ if not denied then raise exception 'Anonymous read attunement dashboard readiness'; end if;
  perform set_config('fixture.uid','aaaaaaaa-0000-4000-8000-000000000002',true);
  denied:=false;
  begin
   perform public.set_campaign_attunement_rule_v1(true);
  exception when insufficient_privilege then denied:=true; end;
  if not denied then raise exception 'Player toggled attunement'; end if;
+ denied:=false;
+ begin perform public.get_campaign_attunement_rule_status_v1();
+ exception when insufficient_privilege then denied:=true; end;
+ if not denied then raise exception 'Player read admin attunement dashboard readiness'; end if;
  perform set_config('fixture.uid','aaaaaaaa-0000-4000-8000-000000000001',true);
+ select * into outcome from public.get_campaign_attunement_rule_status_v1();
+ if outcome.enabled is distinct from false or outcome.max_items<>3
+    or outcome.selection_ready or outcome.effects_enforced
+ then raise exception 'Read-only status falsely claimed enforcement %',to_jsonb(outcome); end if;
  denied:=false;
  begin
   perform public.set_campaign_attunement_rule_v1(null);
@@ -70,6 +85,10 @@ begin
  if outcome.enabled is distinct from true or outcome.max_items<>3
     or outcome.selection_ready or outcome.effects_enforced
  then raise exception 'ON result falsely claimed magic enforcement: %',to_jsonb(outcome); end if;
+ select * into outcome from public.get_campaign_attunement_rule_status_v1();
+ if outcome.enabled is distinct from true or outcome.max_items<>3
+    or outcome.selection_ready or outcome.effects_enforced
+ then raise exception 'Configured ON falsely advertised enforcement %',to_jsonb(outcome); end if;
  select * into settings from public.campaign_item_pool_settings where id=1;
  if not settings.attunement_enabled or not settings.future_tech_enabled
     or settings.updated_by<>'aaaaaaaa-0000-4000-8000-000000000001'
@@ -79,6 +98,9 @@ begin
  then raise exception 'Admin could not turn OFF optional attunement: %',to_jsonb(outcome); end if;
  select * into outcome from public.set_campaign_attunement_rule_v1(false);
  if outcome.enabled is distinct from false then raise exception 'OFF replay failed'; end if;
+ select * into outcome from public.get_campaign_attunement_rule_status_v1();
+ if outcome.enabled is distinct from false or outcome.selection_ready or outcome.effects_enforced
+ then raise exception 'Read-only status did not reflect OFF %',to_jsonb(outcome); end if;
 end $tests$;
 
 select 'Optional attunement OFF default, three-item config, admin-only ACL, future-tech independence passed' result;
