@@ -1,6 +1,6 @@
 # Crafting → Equipment → Character Sheet → Tactical Combat Pipeline
 
-Updated: 2026-08-01  
+Original equipment pipeline: 2026-08-01. Latest non-mutating effects integration note: 2026-10-24.  
 Status: living architecture handoff; required reading before changing Smithing completion, canonical inventory/equip state, character-sheet item bonuses, encounter participant staging, or tactical weapon profiles.
 
 ## 2026-10-24 current integration note — preserve this pipeline

@@ -1,6 +1,6 @@
 # DNDNext Current Development Status and Roadmap
 
-Last reconciled: 2026-10-09
+Last reconciled: 2026-10-24 (latest active-work override; historical roadmap below)
 
 This is the current high-level handoff for DNDNext. It reconciles the living roadmap, phase ledgers, repository source, GitHub state, and deployed Supabase state. Historical phase ledgers remain useful implementation records, but this document controls current status when an older status header or unchecked master-roadmap task conflicts with deployed evidence.
 

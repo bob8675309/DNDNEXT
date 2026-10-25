@@ -1,6 +1,6 @@
 # DNDNext AI Integration Foundation
 
-Status date: 2026-10-09
+Original architecture decision: 2026-10-09. Latest effects-tool clarification: 2026-10-24.
 
 Status: **architecture direction only; implementation intentionally deferred until the current Character Forge completion pass is finished.**
 
