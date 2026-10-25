@@ -7,20 +7,25 @@ const fixture=fs.readFileSync("scripts/fixtures/optional_attunement_setting_beha
 const workflow=fs.readFileSync(".github/workflows/validate-optional-attunement-setting.yml","utf8");
 for(const token of ["attunement_enabled boolean not null default false",
 "attunement_max_items smallint not null default 3","attunement_max_items = 3",
-"public.set_campaign_attunement_rule_v1","auth.uid() is null",
+"public.set_campaign_attunement_rule_v1","public.get_campaign_attunement_rule_status_v1","auth.uid() is null",
 "private.current_user_is_admin()","security definer",
 "from public, anon, authenticated","to authenticated",
 "false::boolean,false::boolean"]){
  assert.ok(sql.toLowerCase().includes(token.toLowerCase()),"Missing policy/ACL: "+token);
 }
 for(const token of ['<AdminAttunementSetting />','import AdminAttunementSetting']) assert.ok(admin.includes(token));
-for(const token of ['"campaign_item_pool_settings"','"attunement_enabled,attunement_max_items"',
-'"set_campaign_attunement_rule_v1"','role="switch"','checked={enabled}',
-'disabled={!loaded || loadFailed || saving}',
-'requestInFlight.current','does not currently disable any equipped magic items or bonuses']){
+for(const token of ['"get_campaign_attunement_rule_status_v1"',
+'"set_campaign_attunement_rule_v1"','role="switch"','checked={configuredOn}',
+'disabled={!ready || saving}',
+'requestInFlight.current','selection_ready','effects_enforced',
+'confirmIncompleteEnable','Enable configuration only','Refresh status',
+'It does not prevent additional equipped magic items from granting bonuses.']){
  assert.ok(ui.includes(token),"Missing honest, safe admin control: "+token);
 }
-for(const token of ["Anonymous call toggled","Player toggled","three-item config","Null rule","future_tech_enabled"]) assert.ok(fixture.includes(token));
+for(const token of ["Anonymous call toggled","Player toggled","three-item config","Null rule","future_tech_enabled",
+"Anonymous read attunement dashboard readiness","Player read admin attunement dashboard readiness",
+"Read-only status falsely claimed enforcement","Configured ON falsely advertised enforcement",
+"Read-only status did not reflect OFF"]) assert.ok(fixture.includes(token));
 for(const token of ["scripts/fixtures/optional_attunement_setting_behavior.sql","scripts/validate_optional_attunement_setting.mjs","sql/20261025_01_optional_campaign_attunement_setting.sql"]){
  assert.ok(workflow.includes(token),"Missing workflow tracking: "+token);
 }
