@@ -23,6 +23,8 @@ declare
   v_slot text;
   v_slot_state text := 'unclassified';
   v_source_attune text := 'unknown';
+  v_source_evidence text := 'unverified';
+  v_verified jsonb := '{}'::jsonb;
   v_status text;
   v_owned boolean := false;
   v_ambiguous boolean := false;
@@ -112,6 +114,7 @@ begin
   );
 
   if v_catalog_found then
+    v_verified := private.verified_item_attunement_rule_v1(v_key);
     -- Source and instance positive requirements are monotone: an inventory
     -- override saying "false" cannot erase a catalogue's "required".
     v_required:=
@@ -133,6 +136,22 @@ begin
       when v_cat->'reqAttune'='false'::jsonb or v_cat->'attunement'='false'::jsonb
            then 'explicitly_not_required'
       else 'unknown' end;
+    v_source_evidence:=case when v_required then 'structured_source_positive'
+                       when v_mundane then 'canonical_mundane'
+                       when v_source_attune='explicitly_not_required' then 'structured_source_negative'
+                       else 'missing_source_requirement' end;
+    -- Verified 2024 exact-key corrections fill omissions. If a future
+    -- catalogue explicitly contradicts a verified rule, record a conflict
+    -- rather than silently activating or suppressing magic.
+    if v_verified->>'attunement'='required' then
+      if v_source_attune='explicitly_not_required' then
+        v_source_attune:='source_conflict';
+        v_source_evidence:='verified_2024_conflicts_with_catalogue';
+      else
+        v_source_attune:='required';
+        v_source_evidence:='verified_br_2024_exact_item_key';
+      end if;
+    end if;
   end if;
 
   v_mundane_ac:=v_owned and v_equipped and v_slot_state='valid'
@@ -145,6 +164,7 @@ begin
     when v_slot_state='invalid' then 'wrong_slot'
     when v_slot_state='unclassified' then 'unclassified_slot'
     when v_source_attune='unknown' then 'unknown_source_attunement'
+    when v_source_attune='source_conflict' then 'source_metadata_conflict'
     when v_source_attune='required' and not v_bond then 'not_attuned'
     when v_source_attune='required' then 'rest_and_prerequisites_unverified'
     else 'consumer_rule_unverified'
@@ -161,6 +181,8 @@ begin
     'sourceKind',v_kind,
     'slotStatus',v_slot_state,
     'attunementSource',v_source_attune,
+    'attunementEvidence',v_source_evidence,
+    'attunementSourceClassKeys',coalesce(v_verified->'classKeys','[]'::jsonb),
     'bondPresent',v_bond,
     'restAndPrerequisitesVerified',false,
     'eligibleMundaneBaseAc',v_mundane_ac,

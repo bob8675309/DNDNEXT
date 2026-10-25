@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "edition": "2024",
+  "basis": "D&D Beyond 2024 Basic Rules, Magic Items A–Z",
+  "sourceUrl": "https://www.dndbeyond.com/sources/dnd/br-2024/magic-items-a-z",
+  "dataPolicy": "Exact keys only; no broad name, rarity, ring type, or fuzzy alias inference. Verified data is descriptive until runtime prerequisites are enforced.",
+  "rules": [
+    {
+      "itemKey": "Ring of Protection|XDMG",
+      "attunement": "required",
+      "sourceHeading": "Ring of Protection",
+      "requiredClassKeys": []
+    },
+    {
+      "itemKey": "Cloak of Protection|XDMG",
+      "attunement": "required",
+      "sourceHeading": "Cloak of Protection",
+      "requiredClassKeys": []
+    },
+    {
+      "itemKey": "Boots of Speed|XDMG",
+      "attunement": "required",
+      "sourceHeading": "Boots of Speed",
+      "requiredClassKeys": []
+    },
+    {
+      "itemKey": "Staff of Power|XDMG",
+      "attunement": "required",
+      "sourceHeading": "Staff of Power",
+      "requiredClassKeys": [
+        "sorcerer",
+        "warlock",
+        "wizard"
+      ]
+    }
+  ]
+}
