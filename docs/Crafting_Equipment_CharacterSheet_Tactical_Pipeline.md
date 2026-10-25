@@ -3,6 +3,19 @@
 Updated: 2026-08-01  
 Status: living architecture handoff; required reading before changing Smithing completion, canonical inventory/equip state, character-sheet item bonuses, encounter participant staging, or tactical weapon profiles.
 
+## 2026-10-24 current integration note — preserve this pipeline
+
+The current Character Effects Engine program is summarized in [DNDNext_Effects_AI_Current_Handoff_2026-10-24.md](DNDNext_Effects_AI_Current_Handoff_2026-10-24.md), with broader source/consumer coverage in draft PR #252. Draft PR #251 **does not replace** the canonical equipment resolution, sheet formulas, weapon profile or tactical mitigation described below. It supplies a private pure arithmetic resolver and a **very narrow** saving throw/Athletics/Acrobatics/initiative shadow adapter. Draft #253's isolated PostgreSQL parity currently uses the real legacy SQL on **synthetic** catalogue payload examples; full source/instance/attunement and tactical parity remain gated.
+
+**Notable untouched authority traps:**
+- Preserve the established catalogue || inventory card **instance override** precedence for numeric effects. The separate equipped typed-damage helper instead checks catalog and card payload individually; that difference must be tested before any unification.
+- Preserve the **latest deployed** Resistance Rings damage sequence in sql/20261016_08_resistance_before_flat_reduction.sql: Resistance then the highest matching flat typed reduction, followed by vulnerability. The earlier _07 source ordering is superseded.
+- Equipped is not inherently **attuned**. ReqAttuneTags are present in the catalogue, but a trusted attunement-state authority has not been verified. Do not turn all magic item text into automatic equipped benefits.
+- Score replacement (item.ability), special movement modes (item.modifySpeed), item-granted spells/charges, class-specific saving throw roll modes, conditions and Rest-choice changes need their own authorized adapters and existing action/resource/expiry owners.
+- This pipeline may later supply **read-only, permission-filtered context** to the planned DNDNext AI integration (DNDNEXT_AI_INTEGRATION_FOUNDATION.md). The AI never owns item effects, combat math, crafting budgets, validation, rolls or state writes.
+
+No SQL migrations or combat/Forge/Inventory/UI behavior are approved by this documentation note.
+
 ## Purpose
 
 These systems form one pipeline:

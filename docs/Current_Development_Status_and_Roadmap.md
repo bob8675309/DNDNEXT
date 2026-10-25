@@ -4,6 +4,19 @@ Last reconciled: 2026-10-09
 
 This is the current high-level handoff for DNDNext. It reconciles the living roadmap, phase ledgers, repository source, GitHub state, and deployed Supabase state. Historical phase ledgers remain useful implementation records, but this document controls current status when an older status header or unchecked master-roadmap task conflicts with deployed evidence.
 
+## 2026-10-24 active-work override — reusable effects first, AI later
+
+**Current brief:** [DNDNext_Effects_AI_Current_Handoff_2026-10-24.md](DNDNext_Effects_AI_Current_Handoff_2026-10-24.md), the controlling current source for the active effects development line. Main was observed at f55c224006dbc9c3613470cafa2cf65e7c350f00; re-fetch before work.
+
+- Draft PR #250 has partially staged Physical Specimen gameplay, but full save/vision/check/jump/climb consumers remain gated.
+- Draft PR #251 adds source-agnostic private pure arithmetic and a narrow equipment adapter; no production caller replaced, no live SQL.
+- Draft PR #252 catalogs item fields and **broader omitted** source/feature families, including charge/attunement, ability-set and movement mode semantics and the separately documented rest families.
+- Draft PR #253 (based on #251, not main) exercises the actual legacy equipment SQL against synthetic fixture catalogue rows. Exact-head isolated Postgres and contract CI succeeded, but that does not complete real-catalogue or tactical parity.
+- The accepted long-term local/provider-neutral AI plan from DNDNEXT_AI_INTEGRATION_FOUNDATION.md gains a **future** requirement: a server-built, authorized, visibility-filtered read-only effects explanation/context tool. AI may select from server-provided legal encounter actions and draft items for admin review, never author canonical rules values or DB writes.
+- Next dependency is real-source payload parity and source-aware adapter/consumer coverage, **not** broad runtime replacement, AI deployment, live migration or visual redesign. See the new handoff for full release gates and safe source-map.
+
+The previous 2026-10-09 and earlier entries are retained as **historical cross-subsystem roadmaps**. Do not revive already merged Tarot queues or treat historical art/Forge checkpoints as current effects PR status. Production authority remains main; check actual live repo, database and permission contracts before changes.
+
 ## 2026-10-09 active-work override
 
 Current production authority is consolidated on `main`.
