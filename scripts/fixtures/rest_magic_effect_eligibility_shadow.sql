@@ -1,5 +1,8 @@
 \set ON_ERROR_STOP on
 create schema if not exists private;
+create role anon nologin;
+create role authenticated nologin;
+create role service_role nologin;
 \i sql/20261025_03_rest_magic_effect_eligibility_shadow.sql
 do $test$
 declare
