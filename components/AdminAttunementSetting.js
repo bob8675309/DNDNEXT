@@ -9,6 +9,7 @@ export default function AdminAttunementSetting() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [loadFailed, setLoadFailed] = useState(false);
   const requestInFlight = useRef(false);
 
   useEffect(() => {
@@ -27,7 +28,10 @@ export default function AdminAttunementSetting() {
           setMaxItems(Number(data.attunement_max_items) || 3);
         }
       } catch (err) {
-        if (active) setError(err?.message || "Unable to load the attunement setting.");
+        if (active) {
+          setError(err?.message || "Unable to load the attunement setting.");
+          setLoadFailed(true);
+        }
       } finally {
         if (active) setLoaded(true);
       }
@@ -36,10 +40,11 @@ export default function AdminAttunementSetting() {
   }, []);
 
   async function changeRule(nextEnabled) {
-    if (!loaded || error || requestInFlight.current) return;
+    if (!loaded || loadFailed || requestInFlight.current) return;
     requestInFlight.current = true;
     setSaving(true);
     setMessage("");
+    setError("");
     try {
       const { data, error: saveError } = await supabase.rpc("set_campaign_attunement_rule_v1", {
         p_enabled: Boolean(nextEnabled),
@@ -79,7 +84,7 @@ export default function AdminAttunementSetting() {
         </div>
         <div className="d-flex align-items-center gap-3">
           <span className={enabled ? "badge text-bg-warning" : "badge text-bg-secondary"}>
-            {!loaded || error ? "Unavailable" : enabled ? "ON · " + maxItems + " items configured" : "OFF"}
+            {!loaded || loadFailed ? "Unavailable" : enabled ? "ON · " + maxItems + " items configured" : "OFF"}
           </span>
           <div className="form-check form-switch m-0">
             <input
@@ -88,7 +93,7 @@ export default function AdminAttunementSetting() {
               role="switch"
               className="form-check-input"
               checked={enabled}
-              disabled={!loaded || Boolean(error) || saving}
+              disabled={!loaded || loadFailed || saving}
               onChange={(event) => changeRule(event.target.checked)}
               aria-label="Enable optional magic item attunement limit"
             />

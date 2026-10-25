@@ -16,7 +16,7 @@ for(const token of ["attunement_enabled boolean not null default false",
 for(const token of ['<AdminAttunementSetting />','import AdminAttunementSetting']) assert.ok(admin.includes(token));
 for(const token of ['"campaign_item_pool_settings"','"attunement_enabled,attunement_max_items"',
 '"set_campaign_attunement_rule_v1"','role="switch"','checked={enabled}',
-'disabled={!loaded || Boolean(error) || saving}',
+'disabled={!loaded || loadFailed || saving}',
 'requestInFlight.current','does not currently disable any equipped magic items or bonuses']){
  assert.ok(ui.includes(token),"Missing honest, safe admin control: "+token);
 }
