@@ -22,8 +22,12 @@ as $f$ select null::integer $f$;
 
 -- Existing staff source adds +3 AC, +2 global saves, +1 Dex save;
 -- all three must disappear together while the staff remains equipped.
+-- The inherited selection fixture deliberately mutates the Staff key to
+-- UNKNOWN when testing provenance invalidation. Reset this fixture-only
+-- source identity before using the real catalogue-backed Staff again.
 update public.inventory_items
-set card_payload='{"bonusAc":3,"bonusSavingThrow":2,"modifiers":{"saves":{"dex":1}}}'::jsonb
+set item_id='Staff|XDMG',item_rarity='very rare',
+    card_payload='{"bonusAc":3,"bonusSavingThrow":2,"modifiers":{"saves":{"dex":1}}}'::jsonb
 where id='eeeeeeee-0000-4000-8000-000000000002';
 
 -- Ordinary mundane Breastplate physically provides AC14 + up to 2 DEX.
