@@ -1,10 +1,26 @@
 # DNDNext Next-Chat Handoff Brief
 
-Updated: 2026-10-18
+Updated: 2026-10-24
 
 Repository: `bob8675309/DNDNEXT`
 
 Stack: Next.js **Pages Router** 16.1.6, React 19, Supabase/Postgres, Bootstrap/SCSS, Vercel.
+
+## 2026-10-24 authoritative active-work override — EFFECTS + future AI tool
+
+**READ FIRST:** [DNDNext_Effects_AI_Current_Handoff_2026-10-24.md](DNDNext_Effects_AI_Current_Handoff_2026-10-24.md). It is the primary current continuation brief, with source/consumer matrix, safe next tests, draft PR topology, AI relationship and links to every controlling ledger. This 2026-10-24 override supersedes older 2026-10-11/18/19 active-work queues **for the character-effects project only**; accepted Forge, artwork, economy and tactical behavior remain preserved.
+
+- GitHub main at last observation: f55c224006dbc9c3613470cafa2cf65e7c350f00. Must re-fetch. Next.js Pages Router + Supabase; live project DnDWeb ucggczovhmauhshvhusx.
+- Four active **draft/unmerged** effects PRs: #250 Physical Specimen guarded read/tactical HP+Speed staging (other benefits unwired); #251 pure source-agnostic common effect resolver + narrow equipment normalization; #252 item/effects source and cross-conversation omission audit; #253 actual legacy SQL resolver plus **synthetic** catalogue payload parity fixture, **based on #251**, not main. #253 latest checked CI passed; no draft runtime SQL deployed. PR branch source docs are not on main.
+- Confirmed scope includes species, background/feat/class/subclass, spell/condition, magic item, crafting/enchantment and potion *effects*, source-defined activation, provenance, lifecycle/rest/concentration/charges, stacking, score replacement vs bonus, skill/save/attack/DC, immunity/resistance/DR, HP/Speed/vision/climb/swim/fly/jump, and event/target contexts. Calculations alone do not make actions/conditions legal or implement every consumer.
+- **Safety traps:** current tactical ring calculation is Resistance **before** flat reduction (latest sql/20261016_08); numeric equipment uses catalogue || instance override while typed mitigation examines both; attunement and charge authority are not yet established; current Wild Heart/Bestial Soul/Boon/Trance/Expertise runtime choices have different rest semantics. No blanket replacement of existing equipment, sheet or combat RPCs.
+- **AI intent:** docs/DNDNEXT_AI_INTEGRATION_FOUNDATION.md remains the original agreed local/provider-neutral architecture. The effects engine is intended as a future **read-only, visibility-filtered, authorized calculation/explanation tool** for that integration, **not** an AI-owned calculation or database-write authority. AI implementation is still deferred pending explicit scope.
+- Next safe work: executable parity against **actual catalogue source payloads** and production-shaped source/activation/consumer scenarios; improve incomplete source adapters only after gates. Do not merge, migrate or redesign UI without review/approval. The paper D&D character sheet and current Forge need actual-component mockups for any proposed UI.
+- Preserved boundaries: **do not touch components/MapPageClient.js or world-map behavior**, never mix world/town maps, no automatic overwriting of tactical encounter snapshots, no unapproved production DB mutation, no model-provided SQL/effect JSON as authority.
+
+**Other project history below remains relevant**, but its historical PR numbers and checkpoints do not supersede this active override.
+
+
 
 
 ## 2026-10-18 item-art recovery override — use this before older item-art notes

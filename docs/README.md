@@ -1,21 +1,28 @@
 # DNDNext Living Documentation Index
 
-Updated: 2026-10-11
+Updated: 2026-10-24
 
 This directory contains the project's living handoff, roadmap, architecture, subsystem, and evidence documents. For active work, **live Supabase + current GitHub source/validators/deployment state outrank prose** if they conflict.
 
-## Start here
+## Start here — authoritative 2026-10-24 reading order
 
-1. `DNDNext_Current_Handoff_Prompt.md` — canonical long-form takeover brief. Read the **2026-10-11 override** first.
-2. `Next_Chat_Handoff_2026-10-07_Grim_Hollow_Tarot.md` — focused Grim Hollow/Tarot completion handoff, updated 2026-10-09.
-3. `CHARACTER_FORGE_SUBCLASS_ARTWORK_STATUS.md` — current Tarot coverage/resolver/selector status.
-4. `CHARACTER_FORGE_TAROT_SUBCLASS_ARTWORK_CHECKLIST.md` — approved and remaining Grim Hollow card queue.
-5. `CHARACTER_FORGE_TAROT_SUBCLASS_CARD_STANDARD.md` — authoritative card dimensions, layout, art direction, and QA contract.
-6. `CHARACTER_FORGE_TAROT_SUBCLASS_ART_HANDOFF.md` — current artwork maintenance workflow.
-7. `Character_Progression_v3_Implementation_Status.md` — progression authority pointer plus merged PR #202 reconciliation.
-8. `Documentation_Refresh_Manifest.md` — trust order and current queue.
-9. `DNDNEXT_AI_INTEGRATION_FOUNDATION.md` — post-Forge local-AI architecture direction for item drafting, NPC/monster dialogue, and future bounded decisions.
-10. `CHATGPT_REPO_WRITE_PROCEDURE.md` before direct GitHub/Supabase mutation.
+1. **[DNDNext_Effects_AI_Current_Handoff_2026-10-24.md](DNDNext_Effects_AI_Current_Handoff_2026-10-24.md)** — **CURRENT ACTIVE WORK** and fastest recovery: draft PR #250–253 topology, source/consumer gaps, future AI read-only tool, safety rules and next parity gates.
+2. [DNDNext_Current_Handoff_Prompt.md](DNDNext_Current_Handoff_Prompt.md) — project-wide handoff. Its dated 2026-10-24 override supersedes prior Oct 11–19 work queues. Older content remains architecture/history.
+3. [Documentation_Refresh_Manifest.md](Documentation_Refresh_Manifest.md) — live authority trust order and docs map.
+4. [DNDNEXT_AI_INTEGRATION_FOUNDATION.md](DNDNEXT_AI_INTEGRATION_FOUNDATION.md) — **future** provider-neutral local AI/Actor AI direction and proposed safe use of authoritative effect read models; not implemented.
+5. Draft [PR #250](https://github.com/bob8675309/DNDNEXT/pull/250) Physical Specimen feature and lifecycle gate; draft [PR #251](https://github.com/bob8675309/DNDNEXT/pull/251) common resolver; draft [PR #252](https://github.com/bob8675309/DNDNEXT/pull/252) effect-source coverage; draft [PR #253](https://github.com/bob8675309/DNDNEXT/pull/253) limited actual-SQL/synthetic-catalogue parity. **PR branch docs are not on main until merged**. Never merge without owner approval.
+6. [Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md](Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md), [Character_Sheet_Formula_Reference.md](Character_Sheet_Formula_Reference.md) and [Tactical_Encounter_Equipped_Damage_Mitigation_Status.md](Tactical_Encounter_Equipped_Damage_Mitigation_Status.md) — established numeric and combat authority.
+7. [Unified_Character_Forge_Status.md](Unified_Character_Forge_Status.md), [Character_Progression_and_Higher_Level_Forge.md](Character_Progression_and_Higher_Level_Forge.md), [Pending_Rest_Runtime_Choices_Status.md](Pending_Rest_Runtime_Choices_Status.md), source-specific runtime ledgers — creation/acquisition and rest behavior.
+8. [CHATGPT_REPO_WRITE_PROCEDURE.md](CHATGPT_REPO_WRITE_PROCEDURE.md) and [REPO_ACCESS_STANDING_RULE.md](REPO_ACCESS_STANDING_RULE.md) — safe direct GitHub/Supabase editing.
+9. For historic/resumed artwork only: [Next_Chat_Handoff_2026-10-07_Grim_Hollow_Tarot.md](Next_Chat_Handoff_2026-10-07_Grim_Hollow_Tarot.md) and relevant CHARACTER_FORGE_* art ledgers. Those are no longer the first stop for the active effects work.
+
+## 2026-10-24 live/source checkpoint — overrides older sections below
+
+- Production authority: main. Last observed main head f55c224006dbc9c3613470cafa2cf65e7c350f00; **always re-fetch** current head. Current work is in **draft, unmerged** PR #250 Physical Specimen, #251 common effect calculation, #252 source coverage audit, #253 synthetic-payload/real-SQL parity (base #251).
+- Live DnDWeb Supabase read-only sample (2026-10-24): PostgreSQL 17.4; items_catalog 2,739; inventory_items 19; spell_effects 1,037. Draft PR #250/#251 SQL is **not deployed**.
+- PR #253's relevant isolated PostgreSQL, contracts and validation jobs succeeded at head 5cfeef36541d6a882144ec00aed56d30bdc5a92a. Do **not** claim full real-catalogue parity or tactical integration from those synthetic fixtures.
+- User-confirmed future AI integration should consume server-authorized effect/rules **read models** and later server-provided legal actions; it must **not** compute trusted bonuses or execute state writes from model output. See the linked current handoff and AI foundation.
+- All dates/SHAs and preexisting implementation descriptions below remain useful **historical snapshots**, not current PR/deployment status. Confirm live repo, DB, CI and Vercel before action. World map and town/city map are separate protected systems.
 
 ## Current code checkpoint
 
