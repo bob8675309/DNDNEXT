@@ -26,6 +26,10 @@ for(const token of [
 'Rest &amp; Recover','Work on Crafting'
 ]) assert.ok(dialog.includes(token),"Rest dialog picker missing: "+token);
 for(const token of [
+'useEffect(() => {',
+'setChosen(items.filter((item) => item?.isSelected && item?.selectable)',
+'[snapshot, characterId]',
+'chosen.some((id) => !items.some(',
 '"set_character_rest_magic_choices_v1"','Select no more than ',
 'Select up to {cap} equipped magic items','Boolean(item.selectable)',
 'if (saving || encounterLocked || !snapshot?.enabled || !characterId) return',
