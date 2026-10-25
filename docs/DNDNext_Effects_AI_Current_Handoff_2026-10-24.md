@@ -1,0 +1,102 @@
+# DNDNext — Current Effects Engine + Future AI Tool Handoff
+Updated: 2026-10-24. **Read this first when taking over the effects-engine work.**
+
+## Purpose and verification limit
+This is the compact takeover authority for the work spanning three ChatGPT conversations, supported by the currently available earlier-chat handoff/video excerpts, source-controlled documents and code, GitHub PR status and read-only DnDWeb Supabase checks. It **does not claim** to contain every verbatim message from the two previous chats. Where an older design document conflicts with live source, the live source wins. Re-fetch exact GitHub branch heads, latest PR status, migration ledger and database functions before acting.
+
+Repository: bob8675309/DNDNEXT. Production/default: main (recorded SHA f55c224006dbc9c3613470cafa2cf65e7c350f00; **historical anchor only**, re-fetch). Next.js **Pages Router**, React, Supabase/Postgres, Vercel. Supabase project DnDWeb: ucggczovhmauhshvhusx. Read-only 2026-10-24: PostgreSQL 17.4, items_catalog 2,739, inventory_items 19, spell_effects 1,037.
+
+**Neither the draft common resolver nor the draft Physical Specimen SQL is deployed to production.** Existing equipment, tactical spells, conditions, inventory and rest authorities remain live. This is primarily a rules/integration effort, not a Character Forge redesign.
+
+## Five-minute recovery procedure
+1. Read this file, docs/README.md, docs/Documentation_Refresh_Manifest.md and the dated **top override** of docs/DNDNext_Current_Handoff_Prompt.md.
+2. Read the full draft PR docs: #250 Physical_Specimen_Encounter_Integration_Gate.md; #251 Common_Character_Effects_Engine_Design_2026-10-23.md; #252 Item_Character_Effects_Coverage_Audit_2026-10-24.md and Character_Effects_Cross_Conversation_Requirements_Audit_2026-10-24.md; #253 Common_Equipment_Actual_Resolver_Parity_Gate_2026-10-24.md. **These draft-only documents are on their PR branches and will not show up in the default main docs listing before merge.**
+3. Confirm the current main and PR #250–253 heads, CI, bases, changed files, and live Supabase schema/permissions. Check docs/CHATGPT_REPO_WRITE_PROCEDURE.md. No merges without explicit user approval.
+4. Trace each proposed source adapter against the actual source payload, current effective-stat authority, character-sheet consumer, tactical consumer, and rest/encounter lifecycle. Do not infer mechanics from item-description prose or any model output.
+5. Add isolated, real-source numeric/behavioral parity fixtures, then integrate only one bounded consumer after exact-head reviews and regression gates. No blanket replacement of existing systems.
+
+## Open draft PR topology (snapshot: 2026-10-24)
+| PR | Branch | Recorded head | Role and current limits |
+|---|---|---|---|
+| [#250](https://github.com/bob8675309/DNDNEXT/pull/250) | agent/physical-specimen-read-foundation-20261023 | 132b0484ccc45bbcc87827db0eb483896ae446e1 | Parasite Patron Physical Specimen, six source-derived choices, guarded activation/replace and staged HP/Speed reconciliation; **other consumer effects and live compatibility not complete** |
+| [#251](https://github.com/bob8675309/DNDNEXT/pull/251) | agent/common-character-effects-foundation-20261023 | 68526d451722b1f35ccdf30b42ed42171ee86d90 | Pure private common effect bundle calculation + **narrow** authoritative equipment numeric adapter; no gameplay consumers switched |
+| [#252](https://github.com/bob8675309/DNDNEXT/pull/252) | audit/item-character-effects-coverage-20261024 | 8b603115182d54f1520e48c54379901e9f91dc31 | Read-only item/effect coverage + cross-chat omission audit; counts are source **field presence**, not gameplay proofs |
+| [#253](https://github.com/bob8675309/DNDNEXT/pull/253) | agent/common-effect-real-source-parity-20261024 | 5cfeef36541d6a882144ec00aed56d30bdc5a92a | **Base is #251, not main**; isolated Postgres invokes actual legacy equipment SQL on **synthetic item payloads** and compares supported save/Athletics/Acrobatics/initiative fields. The contracts, Postgres and validation checks passed at this exact head. **Not full real-catalogue or live-character parity.** |
+
+All four PRs are **open/draft/unmerged** as of the snapshot. The separate effects/AI documentation PR that introduces this handoff is documentation-only and based on main; check its status independently. Do not collapse, merge or deploy the draft PRs because a test-only slice is green. PR #249 was an architecture preflight; check its live status before assuming it is active.
+
+## Data and authority map
+
+Source + validated import (5etools/Grim Hollow/campaign overrides)
+→ canonical species/class/subclass/feat/spell/item catalogues and source IDs
+→ character creation/progression grant instances or inventory ownership/equip; special runtime feature choices; spell/condition state
+→ **source-aware entitlement, activation, duration, usage, attunement and event-context adapters**
+→ optional pure common arithmetic/roll-mode resolver
+→ existing **authoritative consumer** (sheet formulas, tactical RPC/action/save/attack/healing/damage, movement/vision, crafting)
+→ projection, logs and Realtime to UI/AI context.
+
+Do not turn this into a new general-purpose persistent effects table or alternate character-sheet save path without a separate design and migration gate.
+
+**Current live equipment authority:** private.character_equipment_effects_v1(uuid) merges items_catalog.payload || inventory_items.card_payload (instance wins same-name keys), computes ability score/mod bonuses, AC/armor/Dex/shield, saves/checks, initiative. Authorized public wrapper: character_equipment_effects_v1(uuid). Client: utils/equipmentEffects.js (descriptive hints), utils/authoritativeEquipmentEffects.js, components/CharacterSheetPanel.js and CharacterSheet5e.js. Tactical weapons separately use encounter_weapon_profile_internal_v1 and bonusWeapon. Do not double count total equipment AC or persist computed overlays in character_sheets.sheet.
+
+**Current live damage authority:** private.encounter_equipped_damage_mitigation_v1 and public.encounter_apply_damage_internal_v1. Actual latest campaign order is **immunity → Resistance (round down) → highest matching flat typed reduction → vulnerability → temp HP → HP**, with source-aware order and without item-prose inference. Example: 30 fire damage, Fire Resistance and flat fire reduction 10 = 5 damage. Migration sql/20261016_08_resistance_before_flat_reduction.sql overrides the order in older migration _07. Unlike the numeric resolver, mitigation examines catalogue and instance separately and combines matching sources; therefore numeric override semantics cannot be blindly reused.
+
+**Live schema caveat:** inventory_items has is_equipped/equip_slot/card_payload but no dedicated is_attuned column. At least 221 catalogue items carry reqAttuneTags. No eligibility implementation or authoritative attunement-state path was verified; investigate rather than assuming equipped = attuned. No dedicated inventory charge column was verified; charge state may live in payload or elsewhere.
+
+**Current rest/condition authority:** character_runtime_feature_choices, character_rest_log, encounter_conditions and encounter_timed_effects. Source-specific triggers and guarded RPCs own lifecycle. Current tactical RPC snapshots must not silently recompute persistent sheet bonuses or be rewritten by a getter.
+
+## Complete scope of the proposed common system
+The original requirement is **not just numerical equipment bonuses**. Allow source-specific adapters for:
+- **Source/provenance:** species, feats, background, class/subclass, spell, item, crafted equipment, potion, enchanter, encounter condition; edition/source/level, grant-instance identity and equipped/attuned/active state.
+- **Kinds/targets:** ability **score replacement** vs score bonus vs modifier, proficiency and Expertise, all 18 skills/saves, AC and variant unarmored defenses, initiative, HP/current/temp/max, Speed and movement modes, Darkvision grant vs range **extension**, attacks/weapon-specific hit and damage, spell attack/Spell Save DC, save DC of an item effect, damage dice/size/die-step, condition application/immunity, typed resistance/immunity/vulnerability/flat reduction, Advantage/Disadvantage, action-specific riders and weapon masteries.
+- **Trigger/context:** affected actor/target, saving-throw ability, skill and condition, weapon/spell identity, attack subtype, damage type, creature/condition/location, one-shot uses, duration and source-specific advantage context. An item making attackers roll at Disadvantage is not a permanent bearer attack penalty.
+- **Operations:** add/subtract, min/max/replace, multiplier/derived equality, choose/selection, canceling roll modes, guarded conditional effects, typed damage sequencing and authoritative events. Some effects require rule-specific RPC logic rather than a generic scalar.
+- **Lifecycle/stacking:** passive, equipped/attuned, Action/Bonus Action/Reaction activation, per-use/charge, duration/concentration, per-turn/encounter, long/short-rest replacement or expiry, sourced nonstacking/most-beneficial stacking, exact provenance and request-id idempotency.
+- **Consumers:** sheet display + standalone roll math, tactical save/attack/spell/damage/heal/actions, movement/LoS/vision, active snapshots, crafted consumable use, NPC/DM later AI context. The engine never authors a free-form game-state change.
+
+**Draft PR #251 currently has only** add/minimum/multiply, condition-gated Advantage/Disadvantage, controlled stacking keys and 13 numeric targets plus three roll modes. Its equipment adapter supports saving throws, Athletics/Acrobatics, initiative only. This is a foundation, NOT evidence that the larger scope is implemented.
+
+### Source-family examples that the first narrow audit omitted
+- Wild Heart Aspect of the Wilds: **Owl** 60-ft Darkvision grant OR existing Darkvision **+60 ft**, Panther climb = effective walking Speed, Salmon swim = effective walking Speed; selection survives Long Rest, later rest opens optional replacement.
+- Bestial Soul: swimming + underwater breathing, climbing with special surfaces, once-per-turn jumping skill check; natural weapons count as magical for overcoming resistance/immunity. Choice expires at **next** Short/Long Rest.
+- Boon of Energy Resistance: two typed resistances, each feat acquisition instance owns its chosen pair, Long Rest may replace. Dread Allegiance/Fiendish Resilience share an existing runtime-resistance projection. Tactical consumption still needs parity proof.
+- Astral Trance/Eladrin Trance: skill/weapon/tool proficiencies expire at next Long Rest; Eladrin seasonal identity instead persists and can be replaced after rest; seasonal Fey Step combat effect deferred.
+- Echoing Soul: permanent acquired skills/language, and **persisting** replaceable Expertise. Zhentarim Tactics: Expertise acquired after Long Rest **expires** at next Long Rest. Expertise depends on effective proficiency; must never permanently write a temporary bonus to Forge.
+- Source-owned actions: Hunter's Prey, Bestial Soul, Goliath ancestry, Aasimar, subclass riders, spell-specific conditions, weapon masteries and healing/damage stages may need their own adapters or commands. Do not conflate 'choice configured' with 'combat mechanic wired'.
+- Alchemy: distinguish ingredient modifier or craft-time Effect %/Die Step/Duration/Extra Dose changes from final consumable's applied effect and doses. A mushroom with Effect +100% is not a passive character buff.
+- Current live item presence includes ability (49), modifySpeed (41), attachedSpells (354), charges (220), recharge (258), reqAttuneTags (221), positive_effects (232), saveDc (114), stealth (37); plus bonusSpellAttack (40), bonusSpellSaveDc (27), bonusProficiencyBonus (1), immune (14), conditionImmune (18) **without verified matching equipped gameplay consumers**. These are counts of keys, **not proof of missing gameplay**.
+
+Read the deeper matrix at [draft PR #252 addendum](https://github.com/bob8675309/DNDNEXT/blob/audit/item-character-effects-coverage-20261024/docs/Character_Effects_Cross_Conversation_Requirements_Audit_2026-10-24.md).
+
+## Physical Specimen remains the first strict feature integration test
+Draft #250 covers source eligibility (Grim Hollow PG24 Parasite Patron XPHB Warlock 3+), six benefit options, Charisma-dependent choice count, once/Long Rest Bonus Action activation, once/Short Rest replacement, selected max HP/Speed and guarded combat HP synchronization. **Unwired or unproven** downstream consumers include poisoned-save Advantage, vision with existing Darkvision extension, Athletics/Acrobatics bonuses, jump distance, climbing movement. Do not ship the player selector until mechanics, source identity, ACL, rest and tactical consumers are validated. Mock up against **actual** Forge/Profile components first; preserve paper-style sheet and accepted art/spacing.
+
+## Planned future AI integration — a consumer, never an authority
+Source of truth: docs/DNDNEXT_AI_INTEGRATION_FOUNDATION.md (2026-10-09). The AI service itself is **not implemented**; code search found the conceptual dndnextAI interface in that document, not a connected runtime. Existing agreed direction: one provider-neutral service, initial local Ollama/llama.cpp-style text, later optional providers/desktop packaging; admin-reviewed magic item drafting first, then NPC text, then shared Actor AI, and eventually selection only among server-supplied legal tactical actions. Preserve the agreed sequence; **do not begin AI implementation because effects are being refactored**.
+
+The shared effect system should eventually provide **read-only, server-owned tools / context builders**. Proposed **future contract, not an existing function**:
+1. Authorized, visibility-filtered current-character/effect projection with sources, eligible active effects, targets and suppressed reasons. Any DM-only/actor-only facts are removed **before** model inference; AI cannot query arbitrary Supabase rows or reveal hidden encounter opponents.
+2. Event-specific authoritative preview or rule explanation (e.g. why a Poisoned save is advantaged, why a ring reduced Fire damage) using the **same** server rules logic as UI/gameplay. Explain provenance, conditional eligibility, and missing support; avoid inventing final outcomes for unsupported features.
+3. For magic-item drafting, AI proposes a **draft**, while existing schema, rarity/effect budgets, Smithing/Enchanting/Alchemy rules, material constraints and admin Save validate/persist. AI output is untrusted and never directly converted to trusted effect JSON.
+4. For tactical decisions, encounter engine returns filtered **legalActions**, AI may suggest/choose one; the already authorized action RPC revalidates target, controller permission, range/turn/resources/state and commits/logs. The AI cannot provide arbitrary effect payloads, RNG outcomes, SQL, HP mutation or a direct state write.
+
+The pure private SQL function from #251 is an **internal component**, not an RPC that should be exposed to models or browser users. Add a permissioned adapter and safe read model later after gameplay parity and explicit AI scope approval.
+
+## Parity gates before any merge/integration
+1. **Genuine catalogue-source payloads** + inventory instance overrides, copies/unequipped/wrong slot, attunement authority, player/NPC ownership, source edition and normalized feat grant instance. PR #253 only proves a **synthetic** payload path through the actual legacy resolver.
+2. AC and dependencies: base and score replacement, raw score vs direct modifier, all 18 skills, Expertise and temporary proficiency, unarmored Monk/Barbarian, light/medium/heavy, negative Dex, shield, alternative AC, additive item ring with source-correct stacking.
+3. Combat: specific weapon/ranged/natural attacks, magic bonus hit AND damage, spell attacks/DCs and item save DC, typed Resistance/flat reduction/vulnerability/immunity/condition immunity, condition consequences, one-shot advantage and source-target contexts.
+4. Movement and HP: effective walking speed, climb/swim/fly/burrow, jump multiplier/check/rules, vision grant/extend, stage/activate/start/turn/rest expiry, HP reconciliation/repeated loads/concurrency, healing/temp HP, client UI/standalone rolls.
+5. Rest/resources: persistent replacement vs automatic expiration; spell/concentration, charge spending and refill, potion dose/use, action/bonus/reaction economy, request-id dedup and log/version.
+6. Isolation: compile/test against production-shaped PostgreSQL, compare established outputs, verify permissions/search paths and wrappers, run focused + broader CI and browser smoke. No production SQL until explicitly reviewed; no unapproved merge.
+
+## Documentation routing / avoid stale status
+- Current topology: **this handoff** → docs/README.md → docs/Documentation_Refresh_Manifest.md → specific PR document and live GitHub/Supabase.
+- AI design: docs/DNDNEXT_AI_INTEGRATION_FOUNDATION.md.
+- Source/equip/sheet: docs/Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md; docs/Character_Sheet_Formula_Reference.md; docs/Tactical_Encounter_Equipped_Damage_Mitigation_Status.md.
+- Creation and rest: docs/Unified_Character_Forge_Status.md, docs/Character_Progression_and_Higher_Level_Forge.md, docs/Pending_Rest_Runtime_Choices_Status.md, all relevant *Runtime_Status.md ledgers.
+- Combat: docs/Tactical_Encounter_Combat_Roadmap_Blueprint.md, docs/Tactical_Encounter_Phase1H_Reactions_Effects_Status.md and latest tactical spell/turn ledgers, always inspect live RPC implementations.
+- Items/crafting: docs/Player_Forge_Starting_Equipment_Status.md, docs/ItemCard_Visual_Standards.md, docs/Item_Art_Bible.md; docs/alchemy-brew-guide-v10.json is latest versioned JSON, while older v4–v9 guides and six .xlsx codices are **historical versions**, not equivalent active rule authorities.
+- Changes: docs/CHATGPT_REPO_WRITE_PROCEDURE.md; docs/REPO_ACCESS_STANDING_RULE.md. Use exact-head GitHub blob/tree/commit with fast-forward ref update, never force, and preserve draft PR and deployment boundaries.
+
+**World map is protected**: never touch components/MapPageClient.js, routes/movement/clock/weather/camping unless specifically approved. Town/city map is a separate surface. Character Forge and paper-style character sheet designs are protected; new UI requires actual-component mockups first. No browser-owned combat authority, no AI model-owned rules or state.
