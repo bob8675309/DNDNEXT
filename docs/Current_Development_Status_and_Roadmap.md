@@ -1,6 +1,18 @@
 # DNDNext Current Development Status and Roadmap
 
-Last reconciled: 2026-10-24 (latest active-work override; historical roadmap below)
+Last reconciled: 2026-10-26 (newest active-work override first; older roadmaps historical)
+
+## 2026-10-26 active development override — optional attunement/effect consumers
+
+**Current technical release authority:** [Attunement_Effects_Integration_Current_Handoff_2026-10-26.md](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md). The previous October 24 section below is retained only as a historical checkpoint. Verify GitHub PR heads and live Supabase before mutation.
+
+- Staged **OFF-by-default max-three attunement**: draft [#267](https://github.com/bob8675309/DNDNEXT/pull/267) (Admin rule) → #268 selection → #269/#270 **existing Inventory/Equipment view + Camp/Downtime link** → #271–#274 eligibility/dashboard/source gate → #275–#283 numerical and tactical consumer **shadows** → #284 focused held/worn and spell-source signal audit. Independent #266 Short/Long Rest popup must be reconciled. Superseded [#257](https://github.com/bob8675309/DNDNEXT/pull/257) standard/unlimited prototype must not be deployed.
+- Shadow regression coverage: physical armor/AC/saves/ability, Resistance-before-flat-DR, tactical and sheet weapons (including Rage/Pact), player and tactical spell profiles, per-spell overrides and focus candidates. **No shadow is wired into live rolls, slot spending, HP or sheet calculation**; all enforcement/readiness flags remain false.
+- Separate staged generic-effect chain #251 → #253 → #255 needs integration later; Physical Specimen #250 is independent.
+- **Next phase, in order:** prove server rest authorization; actively held/worn rather than merely equipped weapon/neck slots; class list/multiclass/item spell provenance and legal stacking; per-consumer source-aware adapter parity; multi-character and signed-in combat regression; only then seek release approval. No live SQL migration or main merge authorized yet.
+- Do not touch world/town maps, Forge presentation, paper character sheets, physical equipment slots, existing rest recovery or persistent spell resources while doing this work.
+
+
 
 This is the current high-level handoff for DNDNext. It reconciles the living roadmap, phase ledgers, repository source, GitHub state, and deployed Supabase state. Historical phase ledgers remain useful implementation records, but this document controls current status when an older status header or unchecked master-roadmap task conflicts with deployed evidence.
 
