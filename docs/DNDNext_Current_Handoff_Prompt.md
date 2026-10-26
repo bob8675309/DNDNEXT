@@ -1,5 +1,11 @@
 # DNDNext Next-Chat Handoff Brief
 
+## Most recent staged work — #286 (2026-10-26)
+
+Current leaf [#286](https://github.com/bob8675309/DNDNEXT/pull/286) stages a user's **precombat hand intentions** using separate `main`/`off` records referencing exact equipped inventory IDs; it does not change physical `weapon_1`–`weapon_3` equipment positions or authorize spell-focus effects. The loadout write checks actual character permissions, item ownership and exclusivity, server combat lock and item-row concurrency; updates to an item invalidate stale declarations. **No action-time holding verification or game consumers exist**. Leave Admin `effectsEnforced`/readiness false, and do not merge/deploy this draft independently. Full scope and tests: [Character_Hand_Loadout_Staging_2026-10-26.md](Character_Hand_Loadout_Staging_2026-10-26.md) and [current effects ledger](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md).
+
+
+
 ## 2026-10-26 continuation — #285
 
 The next stacked draft, [#285](https://github.com/bob8675309/DNDNEXT/pull/285), adds an exact `spells_catalog.classes text[]` check and an inventory hand-slot collision audit in private, service-only diagnostic SQL. A catalogue class match is *not* proof of a character class spell grant; an equipped main/off-hand or weapon slot is *not* proof the item is actively held. Do not enable magic focus bonuses, assume stacking, rewrite spell-slot snapshots or mark Admin readiness true. See [Attuned_Spell_List_Hand_Evidence_2026-10-26.md](Attuned_Spell_List_Hand_Evidence_2026-10-26.md) and [the current ledger](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md).
