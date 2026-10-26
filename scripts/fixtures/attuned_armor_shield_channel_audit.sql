@@ -59,6 +59,9 @@ begin
  perform set_config('fixture.uid','aaaaaaaa-0000-4000-8000-000000000001',true);
  perform public.set_campaign_attunement_rule_v1(true);
  perform set_config('fixture.uid','aaaaaaaa-0000-4000-8000-000000000002',true);
+ -- Prior nested fixtures intentionally leave a Cloak selection saved.
+ -- Reset character-specific selections explicitly for the no-choice case.
+ perform public.set_character_rest_magic_choices_v1(c,array[]::uuid[]);
  -- Magic plate and shield remain physically equipped with no attunement
  -- selected, while their separate +2/+2 magical riders are filtered.
  r:=private.character_attuned_armor_channel_audit_v1(c);
