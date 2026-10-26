@@ -85,6 +85,20 @@ export function compareAttunedPlayerSheetWeaponActions({
     throw new Error("Incompatible server-side shadow and source-gate contracts");
   }
   const baselineModifiers = numericModifiers(abilityShadow.baseline, "abilityShadow.baseline");
+  const args = { sheet, featureRows, proficiencyBonus, spellRows: [] };
+  const baselineActions = buildCharacterSheetActions({
+    ...args, inventoryRows, abilityModifiers: baselineModifiers,
+  });
+  // OFF must be exact player-sheet parity, even if no selection/source rows
+  // have been migrated. The optional rule must not depend on item claims.
+  if (!sourceGate.attunementEnabled) {
+    return {
+      schemaVersion: 1, characterId, attunementEnabled: false,
+      consumerEnforced: false, sheetWeaponParityReady: false,
+      baselineActions, shadowActions: baselineActions,
+      changes: [], unresolvedSources: [],
+    };
+  }
   const projectedModifiers = numericModifiers(abilityShadow.shadow, "abilityShadow.shadow");
   const choices = new Map();
   for (const item of sourceGate.items) {
@@ -128,18 +142,6 @@ export function compareAttunedPlayerSheetWeaponActions({
     return maskMagicWeaponBonus(row);
   });
 
-  const args = { sheet, featureRows, proficiencyBonus, spellRows: [] };
-  const baselineActions = buildCharacterSheetActions({
-    ...args, inventoryRows, abilityModifiers: baselineModifiers,
-  });
-  if (!sourceGate.attunementEnabled) {
-    return {
-      schemaVersion: 1, characterId, attunementEnabled: false,
-      consumerEnforced: false, sheetWeaponParityReady: false,
-      baselineActions, shadowActions: baselineActions,
-      changes: [], unresolvedSources,
-    };
-  }
   const shadowActions = buildCharacterSheetActions({
     ...args, inventoryRows: candidateInventory, abilityModifiers: projectedModifiers,
   });
