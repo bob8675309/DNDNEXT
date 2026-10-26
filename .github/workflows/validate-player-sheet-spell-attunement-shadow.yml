@@ -1,0 +1,44 @@
+name: Validate Player Sheet Spell Attunement Shadow
+on:
+  pull_request:
+    paths:
+      - "utils/attunedPlayerSheetSpellShadow.js"
+      - "scripts/validate_attuned_player_sheet_spells_shadow.mjs"
+      - "scripts/validate_player_sheet_actions.mjs"
+      - ".github/workflows/validate-player-sheet-spell-attunement-shadow.yml"
+  workflow_dispatch:
+jobs:
+  original-and-shadow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node scripts/validate_player_sheet_actions.mjs
+      - run: node scripts/validate_attuned_player_sheet_weapon_shadow.mjs
+      - run: node scripts/validate_attuned_player_sheet_spells_shadow.mjs
+      - name: Block live spellcasting consumer imports
+        run: |
+          node --input-type=module -e '
+            import fs from "node:fs";
+            const source=fs.readFileSync("utils/attunedPlayerSheetSpellShadow.js","utf8");
+            for(const token of [
+              "consumerEnforced: false",
+              "sheetSpellParityReady: false",
+              "tacticalSpellParityReady: false",
+              "equipmentSpellBonusProvenanceVerified: false",
+            ]) if(!source.includes(token)) throw new Error("Spell shadow readiness claim missing: "+token);
+            for(const forbidden of ["supabase.rpc(","fetch(","Date.now(","Math.random("]) {
+              if(source.includes(forbidden)) throw new Error("Spell shadow cannot fetch/roll: "+forbidden);
+            }
+            for(const path of [
+              "utils/characterSheetActions.js",
+              "components/CharacterSheet5e.js",
+              "components/NpcPanel.js",
+              "pages/encounters/combat.js",
+            ]) {
+              if(fs.readFileSync(path,"utf8").includes("attunedPlayerSheetSpellShadow"))
+                throw new Error("Unverified spell shadow imported by live consumer: "+path);
+            }
+          '
