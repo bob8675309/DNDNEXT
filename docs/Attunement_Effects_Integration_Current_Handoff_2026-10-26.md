@@ -1,0 +1,82 @@
+# DNDNext — Current Attunement, Equipment Effects and Spell Focus Handoff
+**Reconciled 2026-10-26. Current active continuation for draft PR #284.**
+
+> **Start here when resuming effects work.** This ledger supersedes the October 24 *active-work* sections of `DNDNext_Effects_AI_Current_Handoff_2026-10-24.md`, `DNDNext_Current_Handoff_Prompt.md`, `Current_Development_Status_and_Roadmap.md` and the top of `README.md` for this feature only. Their architecture, protected boundaries and historical records remain valid. **GitHub current state + exact branch head + read-only live Supabase checks outrank this static ledger.** Do not interpret a passing fixture or Vercel preview as production deployment.
+
+Repository: `bob8675309/DNDNEXT`. Next.js **Pages Router** / React / Supabase Postgres / Vercel. Live DB project: `ucggczovhmauhshvhusx`. This work is **draft-only and unmerged**, with no attunement or effects SQL deployed to live DB. The optional attunement campaign rule remains **OFF by default**. No world-map or town/city-map code should be changed as part of this work.
+
+## 1. Active PR graph — do not merge an intermediate stacked head into main
+
+The current branch/PRs were verified open, draft and unmerged on 2026-10-26. The later draft branches contain the earlier branch changes because their **PR base is the previous draft branch**, not `main`. Always confirm each head and base afresh before merging or retargeting. A single green leaf PR does not certify its ancestors for production.
+
+| PR | Function and current status |
+| --- | --- |
+| [#266](https://github.com/bob8675309/DNDNEXT/pull/266) | **Independent draft**, guarded Short/Long Rest activity popup and canonical recovery. Needs eventual coordination with #267+. |
+| [#267](https://github.com/bob8675309/DNDNEXT/pull/267) | Stages Admin optional attunement ON/OFF, default OFF, limit **three**; not live. Replaces **superseded [#257](https://github.com/bob8675309/DNDNEXT/pull/257)** standard/unlimited prototype (also still open draft; don't deploy both designs). |
+| [#268](https://github.com/bob8675309/DNDNEXT/pull/268) | Server-side character selection, max three unique eligible equipped magic IDs, RLS/auth/RPC, combat guard, per-character ownership and shared-account claim exclusion. `effectsEnforced=false`. |
+| [#269](https://github.com/bob8675309/DNDNEXT/pull/269) | Attune/Unattune and count integrated into **existing player Equipment Diagram / ItemCard**, avoiding a redundant inventory picker. |
+| [#270](https://github.com/bob8675309/DNDNEXT/pull/270) | Rest activity navigates to the existing **character-scoped Inventory/Equipment Manager**. Rest URL/context is presentation, **not** server-rest authorization. |
+| [#271](https://github.com/bob8675309/DNDNEXT/pull/271) | Read-only item effect eligibility shadow, fourth-item regression. **Not** a consuming resolver. |
+| [#272](https://github.com/bob8675309/DNDNEXT/pull/272) | Admin Dashboard attunement readiness display and guarded configuration. Do not change readiness to “enforced” prematurely. |
+| [#273](https://github.com/bob8675309/DNDNEXT/pull/273) | Physical armor/shield preservation versus separate magical riders, read-only checks. |
+| [#274](https://github.com/bob8675309/DNDNEXT/pull/274) | **Private trusted source gate** `character_magic_effect_source_gate_shadow_v1` uses real inventory, source identity, per-character selection, character versus account ownership, and conservative shared-account ambiguity. |
+| [#275](https://github.com/bob8675309/DNDNEXT/pull/275) | Tactical Resistance + flat damage reduction shadow. Preserves canonical **Resistance before DR** (30 Fire → 15 resisted → 5 after DR10). Writer untouched. |
+| [#276](https://github.com/bob8675309/DNDNEXT/pull/276) | Direct numeric AC and saving throw shadow against original equipment resolver; physical protection remains. |
+| [#277](https://github.com/bob8675309/DNDNEXT/pull/277) | Ability score/modifier + STR/DEX effects shadow; medium/light/heavy and unarmored DEX AC, manual AC override unresolved. |
+| [#278](https://github.com/bob8675309/DNDNEXT/pull/278) | Magic armor/shield physical `ac` versus magical `bonusAc` catalogue/instance source audit. Dwarven Plate and Arrow-Catching Shield tested; unknown physical enhancement provenance remains blocked. |
+| [#279](https://github.com/bob8675309/DNDNEXT/pull/279) | Tactical weapon attack/damage comparison. Ranged, finesse, proficiencies, actual dice/range, shared ownership and unclassified `smith_tier`. |
+| [#280](https://github.com/bob8675309/DNDNEXT/pull/280) | **Separate player-sheet weapon builder** comparison: Rage, Pact/Hexblade CHA, finesse, thrown modes, and no caller-inventory mutation. OFF works without selection rows. |
+| [#281](https://github.com/bob8675309/DNDNEXT/pull/281) | **Separate player-sheet spell action builder** comparison: cast stat/proficiency, cantrips, prepared spells, healing/damage metadata, override precedence including 0. Not a tactical writer. |
+| [#282](https://github.com/bob8675309/DNDNEXT/pull/282) | Tactical aggregate spellcasting profile and focus raw bonus audit. Class/condition/stacking not applied; spell slot snapshot preserved. |
+| [#283](https://github.com/bob8675309/DNDNEXT/pull/283) | **One spell assignment** tactical preflight, exact character ownership, casting ability, per-spell attack/DC overrides, Warlock Rod/Wizard Grimoire/Wand/Amulet scopes. Neither casts nor invokes profile v2. |
+| **#284 (this branch)** | **Private read-only focus physical condition and spell origin signal audit**, plus up-to-date project documentation. Item slot is a **hint**, not active-held or worn proof; class-label match is not spell-list membership proof; multiple sources are not automatically stacked. |
+
+**Parallel, separate work:** [#250](https://github.com/bob8675309/DNDNEXT/pull/250) Physical Specimen; common numeric effects [#251](https://github.com/bob8675309/DNDNEXT/pull/251) → [#253](https://github.com/bob8675309/DNDNEXT/pull/253) → [#255](https://github.com/bob8675309/DNDNEXT/pull/255). The common chain has genuine catalogue parity fixtures but does **not** replace the authoritative runtime consumer, and must be reconciled with the optional attunement branch before integration. Superseded [#257](https://github.com/bob8675309/DNDNEXT/pull/257)–[#265](https://github.com/bob8675309/DNDNEXT/pull/265) should never be treated as a second active attunement implementation.
+
+## 2. What existing live gameplay still does
+
+- **Character/Inventory:** the authoritative `inventory_items` plus `items_catalog.payload || inventory_items.card_payload`; item instance overrides matching keys. `is_equipped` and `equip_slot` are *physical* state; they do not prove per-turn active held state nor consume an attunement slot. Existing physical equipment slot restrictions remain unchanged.
+- **Campaign configuration:** OFF means all current equipment and magic effects behave normally. ON is still **not wired into live effect consumers**. The selection RPC allows three candidate bonds when staged, but choosing IDs is not itself magic-effect suppression.
+- **Character sheet:** `private.character_equipment_effects_v1` remains authoritative for abilities/AC/saves. `utils/characterSheetActions.js` independently builds player weapon and spell quick actions. Pact, Rage, thrown/finesse, ability choices and explicit per-spell overrides must be preserved.
+- **Tactical weapons:** `public.encounter_weapon_profile_internal_v1` computes attack and magic bonuses; actual weapon attack writer remains unchanged. `smith_tier` may be a physical craft/temper bonus; do not classify it magically without evidence.
+- **Damage:** tactical Resistance → flat DR → remaining consequences is the current corrected consumer order. Item resistance/DR shadows are comparisons, not replacement damage writers.
+- **Tactical spells:** `public.encounter_spellcasting_profile_v1` is a read-only profile; `v2` calls `private.sync_character_spell_slots_v1` and therefore **is not safe for a read-only diagnostic**. `pages/encounters/combat.js` dispatches spell-specific `encounter_cast_spell_v1`–`v13` plus other area/effect RPCs. Reviewed writers sometimes compute their own raw-score attack/DC and honor `character_spells.attack_bonus_override` / `save_dc_override`; aggregate profile parity does not prove execution parity.
+- **Rest:** canonical Short/Long Rest recovery RPC remains intact. An inventory link from the Camp & Downtime popup is not a server-side proof that an attunement change occurs at a valid rest opportunity. A solution must avoid introducing arbitrary hour timers if the owner has not requested them.
+- **Shared accounts:** an account-owned item may appear in multiple editable characters' legacy equipment. A selected magic rider belongs to **one** character, but that alone does not solve physical custody/visibility in legacy consumers.
+
+## 3. Current magic focus evidence and conservative signals
+
+Read-only live catalogue evidence: `+1 Rod of the Pact Keeper|XDMG` carries `bonusSpellAttack=+1` and `bonusSpellSaveDc=+1`; its description says **while holding** and Warlock spells. `+1 Wand of the War Mage|XDMG` carries an attack-only bonus and requires **holding**; it must not increase save DCs or save-only spells. `+1 Arcane Grimoire|TCE` applies to **Wizard spells while holding**. `+1 Amulet of the Devout|TCE` describes a **worn** holy symbol. These descriptions provide *rules context*, not machine-proven entitlement. Existing spell catalogue assignments have `source_type`, `source_label`, and `casting_stat`, but an assignment label alone does not prove the spell is on the named class's list (multiclass, item-granted and exceptions exist).
+
+Read-only production inventory aggregate on 2026-10-26 shows equipped sources in `weapon_1`, `weapon_2`, `weapon_3`, `off_hand`, `body`, and `shoulders` (among others). **A slot named `weapon_1` does not prove a rod is actively held**. The new `private.encounter_attuned_focus_provenance_shadow_v1` returns *signals*:
+- `main_hand`/`off_hand`: `hand_slot_candidate_not_active_hold_proof`;
+- `weapon_N`: `weapon_slot_does_not_prove_active_hold`;
+- plausible neck/accessory worn slots: `wear_slot_candidate_not_worn_proof`;
+- incompatible slot: `slot_not_sufficient_for_required_condition`.
+It also compares class progression and spell assignment source label, but returns `class_label_matches_progression_but_spell_list_unverified` even on an apparent match. All `heldOrWornVerified`, `spellSourceVerified`, `stackingVerified`, `focusBonusApplied`, and `consumerEnforced` remain **false**. Multiple selected plausible foci are flagged for a future stacking rule, **never summed**.
+
+## 4. Verified tests and strict limits
+
+The stacked drafts carry isolated PostgreSQL16 suites and Node source-parity/contract validators. Observed passing checkpoints:
+- #275: legacy mitigation parity and selected-source removal without changing damage writer;
+- #276–#278: physical armor/DEX/saves and catalogue `ac` vs `bonusAc`;
+- #279–#280: tactical/player sheet weapons, Pact/Hexblade, Rage, finesse, smithing warnings;
+- #281–#283: player/tactical spell profiles, class-conditional focus *candidates*, override preservation, unchanged encounter slot snapshots;
+- #284: source provenance and equip-slot signals, class assignment label, shared state and no stacking (*verify exact HEAD CI before marking passed*).
+
+All CI cases so far use staged PR branches and synthetic/disposable fixture records informed by actual catalogue structures. Passing checks do not establish real browser/production execution behavior; no signed-in end-to-end gameplay attunement tests or actual ON effects enforcement have been completed. Vercel READY only means the preview built.
+
+## 5. Release blockers in dependency order
+
+1. Reconcile #266 independent rest dialog with #267→#284 chain, and implement **server-authorized rest opportunity** for attunement changes that cannot be bypassed via a URL. Preserve battle/combat locks and canonical rest recovery.
+2. Establish authoritative **current actively held/worn state**, hands, equipment slot consistency, item/VAR provenance, and shared-account physical custody before applying focus magic.
+3. Verify spell-list/provenance for class, subclass, multiclass, species and item-granted spells; classify source-specific focus requirements and legal stacking/bonus types **per exact spell/action**.
+4. Reconcile common effect resolver #251→#255 with actual equipment/weapon/spell consumers. Special class effects, magic armor archetype bonuses, smith tier, rider dice and duration/charge state remain open.
+5. Build safe, server-side **consumer** adapters for sheet, tactical attacks/damage, spell attack/DC/cast handlers and action/slot/condition/status paths. Do not rewrite active encounter snapshots or synchronize persistent slots in shadow/preview code. Attunement OFF must retain exact existing behavior; ON must gate **only eligible magical properties**, not physical equipment.
+6. Run signed-in Admin and player browser verification, multiple characters/account-shared items, tactical HP/log/turn/slot/cast/resistance/cover regression, equipment drag/drop, rest recovery and UI states. Confirm exact-head GitHub Actions and Vercel preview, then seek explicit release approval.
+
+## 6. Non-negotiable maintenance discipline
+
+Read this file and `docs/README.md` before touching the attunement code. Inspect live Supabase **read-only first**; use isolated PostgreSQL fixtures for staged SQL. Update this ledger, the top of `docs/DNDNext_Current_Handoff_Prompt.md`, `docs/Current_Development_Status_and_Roadmap.md`, `docs/DNDNext_Effects_AI_Current_Handoff_2026-10-24.md`, `docs/Documentation_Refresh_Manifest.md` and `docs/README.md` whenever active state changes. Link the exact draft PR, head and test result. Do not silently rename/migrate live SQL, claim readiness, merge to `main`, or touch world-map/town-map or Character Forge without a separate scoped approval.
+
+**Next sensible slice after #284:** design explicit held/worn event authority and assignment spell-source claims without bypassing character permissions or duplicating physical equipment. Only then plan a narrowly guarded spell focus consumer, initially OFF parity and no automatic focus stacking.
