@@ -1,0 +1,37 @@
+name: Validate Player Sheet Weapon Attunement Shadow
+on:
+  pull_request:
+    paths:
+      - "utils/attunedPlayerSheetWeaponShadow.js"
+      - "scripts/validate_attuned_player_sheet_weapon_shadow.mjs"
+      - "scripts/validate_player_sheet_actions.mjs"
+      - ".github/workflows/validate-player-sheet-weapon-attunement-shadow.yml"
+  workflow_dispatch:
+jobs:
+  original-and-shadow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node scripts/validate_player_sheet_actions.mjs
+      - run: node scripts/validate_attuned_player_sheet_weapon_shadow.mjs
+      - name: Guard against production component integration
+        run: |
+          node --input-type=module -e '
+            import fs from "node:fs";
+            const code = fs.readFileSync("utils/attunedPlayerSheetWeaponShadow.js", "utf8");
+            if (!code.includes("consumerEnforced: false") ||
+                !code.includes("sheetWeaponParityReady: false") ||
+                code.includes("supabase.rpc(") ||
+                code.includes("fetch(")) throw new Error("Weapon shadow must remain inert");
+            for (const path of [
+              "components/CharacterSheet5e.js",
+              "components/NpcPanel.js",
+              "utils/characterSheetActions.js",
+            ]) {
+              const live = fs.readFileSync(path,"utf8");
+              if (live.includes("attunedPlayerSheetWeaponShadow")) throw new Error(path+" imports diagnostic shadow");
+            }
+          '
