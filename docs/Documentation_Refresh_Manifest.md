@@ -1,6 +1,14 @@
 # Documentation Refresh Manifest
 
-Updated: 2026-10-24
+Updated: 2026-10-26
+
+## 2026-10-26 active documentation reconciliation
+
+**Start with [Attunement_Effects_Integration_Current_Handoff_2026-10-26.md](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md)** for the full #266–#284 inventory/attunement/equipment/spellcasting draft dependency ledger, exact sources, tested invariants, and unresolved blockers. It supersedes the October 24 **active PR lists** below, not the historical architecture. The refreshed active-work headers are also in [README.md](README.md), [DNDNext_Current_Handoff_Prompt.md](DNDNext_Current_Handoff_Prompt.md), [Current_Development_Status_and_Roadmap.md](Current_Development_Status_and_Roadmap.md), and [DNDNext_Effects_AI_Current_Handoff_2026-10-24.md](DNDNext_Effects_AI_Current_Handoff_2026-10-24.md).
+
+The old #257 standard/unlimited attunement draft was superseded by #267 OFF-by-default three-item configuration. Subsequent drafts (#268–#284) use existing Inventory/Equipment UI, stage selection and readiness, and shadow-test physical armor, resistance/DR, weapons, sheet spells, tactical spell execution and focus held/worn provenance. **No production consumer enforcement, SQL migration or merge** is established by these docs or isolated CI. Re-fetch exact PR heads/status before asserting readiness. The independent #266 rest-popup branch, generic effects #251→#253→#255, and Physical Specimen #250 remain separate.
+
+
 
 ## Trust order
 
