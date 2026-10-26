@@ -1,5 +1,11 @@
 # DNDNext — Current Effects Engine + Future AI Tool Handoff
-Updated: 2026-10-24. **Read this first when taking over the effects-engine work.**
+Updated: 2026-10-26 (active status override; original 2026-10-24 audit preserved below).
+
+> **CURRENT active effects/attunement handoff:** [Attunement_Effects_Integration_Current_Handoff_2026-10-26.md](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md). Read the new ledger first for draft topology and blockers. The 2026-10-24 status immediately below is a **historical snapshot**, not a current PR list. Existing effect-ownership architecture and AI future-only design remain valid.
+
+**Current status:** the superseded #257 Standard/Unlimited draft is not the active configuration. The active staged OFF-by-default **three-item** chain runs #267–#284 (with #266 rest-popup separately), covering Inventory UI reuse, selection and Admin readiness, trusted source-gate, numeric/weapon/spell shadows, and held/worn + class source *signals*. It remains **draft, undeployed, unenforced**. Magic focus bonuses, authenticated server-rest eligibility, per-spell source, shared physical item custody and consumer wiring are not complete. Exact documentation and PR links are in the ledger. **No live Supabase write or production gameplay change was made in this continuation.**
+
+
 
 > **2026-10-24 reconciled live status — read this first.** PRs **#249, #252, #254, and #256 were merged into main**. Latest verified `main`: `0e925958b49505e010a011b1de4d6de28f30b7b7` (re-fetch before acting). Remaining **draft, unmerged, undeployed** work: independently #250 Physical Specimen; stacked **#251 → #253 → #255** generic effects and source parity; independently **#257** campaign attunement Standard-3/Unlimited policy and character-specific bonds. #255's isolated PostgreSQL test suite passed at its latest observed head. #257 remains an implementation draft until rest/prerequisite, existing magic-effect consumer, and class-exception integration are verified. No live DnDWeb SQL deployment. See [#257 attunement status](https://github.com/bob8675309/DNDNEXT/blob/feature/campaign-attunement-policy-20261024/docs/Campaign_Attunement_Policy_Status_2026-10-24.md).
 
