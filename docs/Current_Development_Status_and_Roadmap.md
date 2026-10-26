@@ -1,5 +1,11 @@
 # DNDNext Current Development Status and Roadmap
 
+## Latest roadmap extension — 2026-10-26 draft #286
+
+[PR #286](https://github.com/bob8675309/DNDNEXT/pull/286) introduces a separate authenticated staging record for a character's intended main/off hand items, backed by exact inventory ID and existing canonical `weapon_1`–`weapon_3` slots. Isolated checks guard ownership, ambiguous multi-character player inventory, duplicated physical item, active-combat reconfiguration, source/slot invalidation and unchanged tactical spell slots. **Not live, not action-time holding evidence, not focus effect enforcement.** Next critical design is a character/encounter-controlled active-hand action lifecycle with draw/stow swaps, two-hand and focus/somatic rules; then exact spell grants, stacking and server-rest authorization. See [Character_Hand_Loadout_Staging_2026-10-26.md](Character_Hand_Loadout_Staging_2026-10-26.md). All maps, Forge UI and existing equipment semantics remain unchanged.
+
+
+
 ## 2026-10-26 latest extension — draft #285 spell-list and hand evidence
 
 Stacked [#285](https://github.com/bob8675309/DNDNEXT/pull/285) uses the live `spells_catalog.classes` array for exact class-list membership, distinguishing that evidence from actual character spell grants. It separately identifies contradictory `main_hand`/`off_hand` equipped items and shared-account custody while refusing to infer what is *actively held*. All flags remain fail-closed. No live spells, equip slots, game effects, persistent slot snapshots or production migration changed. Details: [Attuned_Spell_List_Hand_Evidence_2026-10-26.md](Attuned_Spell_List_Hand_Evidence_2026-10-26.md). The next priority is an authenticated active-hand/worn state and spell acquisition authority design with nonregressive, independently testable lifecycle and RLS.
