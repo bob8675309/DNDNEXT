@@ -70,6 +70,8 @@ begin
         using errcode='22023';
     end if;
     v_eligible_mod:=(v_ability_result#>>array['shadow','abilities',v_casting,'effectiveMod'])::integer;
+    v_candidate:=jsonb_set(v_candidate,'{castingAbilityScore}',
+      to_jsonb((v_ability_result#>>array['shadow','abilities',v_casting,'effectiveScore'])::integer),true);
     v_candidate:=jsonb_set(v_candidate,'{castingAbilityModifier}',to_jsonb(v_eligible_mod),true);
     v_candidate:=jsonb_set(v_candidate,'{spellAttackBonus}',to_jsonb(v_prof+v_eligible_mod),true);
     v_candidate:=jsonb_set(v_candidate,'{spellSaveDc}',to_jsonb(8+v_prof+v_eligible_mod),true);
