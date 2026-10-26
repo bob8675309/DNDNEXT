@@ -27,8 +27,8 @@ for (const token of [
   "'physicalChannelSourceProofReady',false",
   "'fullEffectConsumerParityReady',false",
   "'consumerEnforced',false",
-  "'catalogue_instance_ac_mismatch'",
-  "'magic_physical_base_unverified'",
+  "catalogue_instance_ac_mismatch",
+  "magic_physical_base_unverified",
   "revoke all on function private.character_attuned_armor_channel_audit_v1",
   "to service_role",
 ]) assert.ok(source.includes(token),"Armor/shield source audit missing: "+token);
