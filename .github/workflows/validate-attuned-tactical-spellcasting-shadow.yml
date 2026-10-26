@@ -1,0 +1,44 @@
+name: Validate Attuned Tactical Spellcasting Shadow
+on:
+  pull_request:
+    paths:
+      - "sql/20261026_01_attuned_tactical_spellcasting_shadow.sql"
+      - "scripts/fixtures/legacy_tactical_spellcasting_profile_v1.sql"
+      - "scripts/fixtures/attuned_tactical_spellcasting_shadow.sql"
+      - "scripts/validate_attuned_tactical_spellcasting_shadow.mjs"
+      - ".github/workflows/validate-attuned-tactical-spellcasting-shadow.yml"
+  workflow_dispatch:
+jobs:
+  tactical-profile-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node scripts/validate_player_sheet_actions.mjs
+      - run: node scripts/validate_attuned_player_sheet_spells_shadow.mjs
+      - run: node scripts/validate_attuned_tactical_spellcasting_shadow.mjs
+  isolated-postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: fixture-only
+          POSTGRES_DB: attuned_tactical_spell
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d attuned_tactical_spell"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGPASSWORD: fixture-only
+      PGDATABASE: attuned_tactical_spell
+    steps:
+      - uses: actions/checkout@v4
+      - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/attuned_tactical_spellcasting_shadow.sql
