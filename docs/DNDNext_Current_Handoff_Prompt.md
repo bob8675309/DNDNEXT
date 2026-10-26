@@ -1,5 +1,11 @@
 # DNDNext Next-Chat Handoff Brief
 
+## 2026-10-26 continuation — #285
+
+The next stacked draft, [#285](https://github.com/bob8675309/DNDNEXT/pull/285), adds an exact `spells_catalog.classes text[]` check and an inventory hand-slot collision audit in private, service-only diagnostic SQL. A catalogue class match is *not* proof of a character class spell grant; an equipped main/off-hand or weapon slot is *not* proof the item is actively held. Do not enable magic focus bonuses, assume stacking, rewrite spell-slot snapshots or mark Admin readiness true. See [Attuned_Spell_List_Hand_Evidence_2026-10-26.md](Attuned_Spell_List_Hand_Evidence_2026-10-26.md) and [the current ledger](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md).
+
+
+
 Updated: 2026-10-26
 
 ## ACTIVE 2026-10-26 handoff override — effects and optional attunement
