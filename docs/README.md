@@ -1,5 +1,11 @@
 # DNDNext Living Documentation Index
 
+## Latest continuation (2026-10-26) — PR #286
+
+The current leaf [#286](https://github.com/bob8675309/DNDNEXT/pull/286) stages **separate, exact-character hand-item intentions** without converting `weapon_1`–`weapon_3` equipment slots into actual held hands. See [Character_Hand_Loadout_Staging_2026-10-26.md](Character_Hand_Loadout_Staging_2026-10-26.md) and the [current integration ledger](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md). All consumer, cast-time holding, spell provenance and attunement readiness flags remain **false**; this is an isolated draft SQL migration, not deployed production functionality.
+
+
+
 ## 2026-10-26 next continuation — exact class spell-list and hand-collision evidence
 
 [PR #285](https://github.com/bob8675309/DNDNEXT/pull/285) extends the draft #284 focus audit with [exact spell catalogue class-list checks and explicit hand-slot collision diagnostics](Attuned_Spell_List_Hand_Evidence_2026-10-26.md). It still cannot prove how a character acquired a spell or which focus is held during combat. The [central current ledger](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md) now includes this continuation. **All attunement, source readiness and focus consumer flags stay false; no production rollout.**
