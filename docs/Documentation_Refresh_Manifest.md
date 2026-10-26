@@ -1,5 +1,11 @@
 # Documentation Refresh Manifest
 
+## 2026-10-26 continuation documentation — #285
+
+New [Attuned_Spell_List_Hand_Evidence_2026-10-26.md](Attuned_Spell_List_Hand_Evidence_2026-10-26.md) documents exact catalogued class-list source evidence and equipped-hand collisions from draft #285. This is a pure staged audit, **not** verified class acquisition or held/worn gameplay truth. All live spell writers, persistent spell slots, inventory/attunement enforcement and production DB remain unchanged; preserve earlier design and architecture documents. Read [Attunement_Effects_Integration_Current_Handoff_2026-10-26.md](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md) for current dependencies.
+
+
+
 Updated: 2026-10-26
 
 ## 2026-10-26 active documentation reconciliation
