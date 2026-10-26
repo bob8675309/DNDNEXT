@@ -1,5 +1,11 @@
 # DNDNext Current Development Status and Roadmap
 
+## 2026-10-26 latest extension — draft #285 spell-list and hand evidence
+
+Stacked [#285](https://github.com/bob8675309/DNDNEXT/pull/285) uses the live `spells_catalog.classes` array for exact class-list membership, distinguishing that evidence from actual character spell grants. It separately identifies contradictory `main_hand`/`off_hand` equipped items and shared-account custody while refusing to infer what is *actively held*. All flags remain fail-closed. No live spells, equip slots, game effects, persistent slot snapshots or production migration changed. Details: [Attuned_Spell_List_Hand_Evidence_2026-10-26.md](Attuned_Spell_List_Hand_Evidence_2026-10-26.md). The next priority is an authenticated active-hand/worn state and spell acquisition authority design with nonregressive, independently testable lifecycle and RLS.
+
+
+
 Last reconciled: 2026-10-26 (newest active-work override first; older roadmaps historical)
 
 ## 2026-10-26 active development override — optional attunement/effect consumers
