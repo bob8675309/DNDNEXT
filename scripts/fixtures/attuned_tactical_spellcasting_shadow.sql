@@ -75,7 +75,8 @@ where character_id in (
  'cccccccc-0000-4000-8000-000000000001',
  'cccccccc-0000-4000-8000-000000000002');
 update public.inventory_items
- set card_payload=jsonb_set(card_payload,'{modifiers,abilities,cha}','4'::jsonb,true)
+ set card_payload=jsonb_set(card_payload,'{modifiers}',
+   coalesce(card_payload->'modifiers','{}'::jsonb) || '{"abilities":{"cha":4}}'::jsonb,true)
 where id='eeeeeeee-0000-4000-8000-000000000002';
 
 -- Real catalogue field shapes: Rod has +1 attack/DC, Wand only +1
