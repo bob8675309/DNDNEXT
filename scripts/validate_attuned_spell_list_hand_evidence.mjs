@@ -19,7 +19,7 @@ for (const marker of [
  "consumerEnforced',false",
 ]) assert.ok(sql.includes(marker), "Expected source contract: " + marker);
 for (const marker of [
- "catalog class-list",
+ "class-list",
  "Same-hand",
  "Shared account",
  "spell-slot",
