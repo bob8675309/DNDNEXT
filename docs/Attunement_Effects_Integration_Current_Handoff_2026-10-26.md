@@ -1,5 +1,11 @@
 # DNDNext — Current Attunement, Equipment Effects and Spell Focus Handoff
 
+## 2026-10-26 next staged layer — PR #286
+
+The current leaf is draft [#286](https://github.com/bob8675309/DNDNEXT/pull/286), stacked on #285. Directly inspected canonical `set_character_inventory_equipment_v1` and `EquipmentDiagram`: physical gear slots are `weapon_1`–`weapon_3`, not actual main/off hands. `character_hand_loadout_staging_v1` now stages exact equipped inventory UUIDs as explicit **main/off hand intentions**, via character-permissioned RPCs and an active-combat lock. Ambiguous shared-account custody is rejected, duplicate same-item hands are rejected, and slot/owner/equip/source edits invalidate declarations without touching physical equipment or combat. **A staged hand intention is NOT action-time active holding or authorization to use a focus:** `activeHoldVerified=false`, `combatSnapshotVerified=false` and `focusConsumerEnforced=false` remain mandatory. No production SQL or UI integration. Tests, migration and later RLS/action-time work are documented in [Character_Hand_Loadout_Staging_2026-10-26.md](Character_Hand_Loadout_Staging_2026-10-26.md). The draft chain #267→#286 remains unmerged; rest authorization, physical custody, cast-time swaps, spell acquisition and stacking are still blocking.
+
+
+
 ## 7. 2026-10-26 continuation — #285 exact spell catalogue list and hand-slot conflict evidence
 
 **Draft #285**, stacked on #284, adds a private read-only exact-spell catalogue membership/hand-slot comparison. Live `spells_catalog.classes text[]` includes Warlock on both `eldritch-blast|PHB` and `eldritch-blast|XPHB`. This can **confirm a spell is listed for a class in that exact catalogue entry**, not that the character earned it from that class. `classGrantVerified=false` remains mandatory. The new read model checks exact spell ID, progressions and assignment source, and distinguishes missing class list, membership mismatch, class/source mismatch and nonclass acquisition.
