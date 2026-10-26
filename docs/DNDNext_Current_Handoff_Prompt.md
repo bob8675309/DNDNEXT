@@ -1,6 +1,21 @@
 # DNDNext Next-Chat Handoff Brief
 
-Updated: 2026-10-24
+Updated: 2026-10-26
+
+## ACTIVE 2026-10-26 handoff override — effects and optional attunement
+
+**Read [Attunement_Effects_Integration_Current_Handoff_2026-10-26.md](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md) before any attunement/effects/Inventory/Rest/weapon/spellcasting change.** This is the current status ledger and supersedes the *old active-status dates* below without erasing historical implementation records.
+
+- Stacked **draft** PRs [#267](https://github.com/bob8675309/DNDNEXT/pull/267)–[#283](https://github.com/bob8675309/DNDNEXT/pull/283), new **#284** for held/worn and spell-source evidence; standalone [#266](https://github.com/bob8675309/DNDNEXT/pull/266) rest popup to integrate. [#257](https://github.com/bob8675309/DNDNEXT/pull/257) is **superseded**, still draft; never merge its standard/unlimited attunement model with the OFF-by-default three-item model.
+- Existing player Inventory/Equipment Manager is the attunement selector, not a recreated picker. A rest navigation link is **not** a signed server rest authorization. Selection can be saved in the staged model, but its `effectsEnforced`/consumer readiness remains **false**; no production SQL has been applied.
+- All later effect math, AC/DEX, Resistance/DR, weapons, sheet spells, tactical spellcasting/foci and slot/override comparisons are *read-only diagnostic branches*. Existing live resolvers/writers and original rest/encounter resources are authoritative; no actual three-item magic-property suppression occurs in production.
+- In real inventory, `weapon_1`, `weapon_2`, `off_hand` and accessory slots are physical evidence **not** active held/worn proof. Exact spell class list, focus stacking, account ownership/custody, rest privilege and damage/conditions all remain release blockers. `encounter_spellcasting_profile_v2` may sync persistent spell slots; never call it from an inert test/probe.
+- Keep world travel/weather/time simulation separate from town/city maps and tactical encounters. No uncontrolled Forge, paper sheet, ItemCard or equipment-drag redesign.
+- Re-fetch current `main`, draft base/head, exact-head CI, Vercel and read-only Supabase before any implementation; no merge/deployment until owner approves a fully verified, source-aware integration.
+
+**All “authoritative” headings below are historical checkpoints for earlier dates.**
+
+
 
 Repository: `bob8675309/DNDNEXT`
 
