@@ -1,4 +1,13 @@
 # DNDNext — Current Attunement, Equipment Effects and Spell Focus Handoff
+
+## 7. 2026-10-26 continuation — #285 exact spell catalogue list and hand-slot conflict evidence
+
+**Draft #285**, stacked on #284, adds a private read-only exact-spell catalogue membership/hand-slot comparison. Live `spells_catalog.classes text[]` includes Warlock on both `eldritch-blast|PHB` and `eldritch-blast|XPHB`. This can **confirm a spell is listed for a class in that exact catalogue entry**, not that the character earned it from that class. `classGrantVerified=false` remains mandatory. The new read model checks exact spell ID, progressions and assignment source, and distinguishes missing class list, membership mismatch, class/source mismatch and nonclass acquisition.
+
+It also inspects all items equipped in explicit `main_hand`/`off_hand` slots, catches multiple records claiming one hand and shared-account item ambiguity, and marks `weapon_N` focus slots as unresolved rather than assuming active holding. **`activeHandsVerified=false` even when an item is the only occupant.** No focus math, spell slots, combat or inventory state changed. Full fixture/details: [Attuned_Spell_List_Hand_Evidence_2026-10-26.md](Attuned_Spell_List_Hand_Evidence_2026-10-26.md). Stacked #267→#285 remains entirely draft. The old next-slice wording above is historical once #285 is opened; the new next task is designing real held/worn-at-execution authority and per-spell acquisition provenance with RLS and concurrency acceptance before any consumer activation.
+
+**Exact-head PR #285 verification must be checked independently; this prose is not evidence of deployment.**
+
 **Reconciled 2026-10-26. Current active continuation for draft PR #284.**
 
 > **Start here when resuming effects work.** This ledger supersedes the October 24 *active-work* sections of `DNDNext_Effects_AI_Current_Handoff_2026-10-24.md`, `DNDNext_Current_Handoff_Prompt.md`, `Current_Development_Status_and_Roadmap.md` and the top of `README.md` for this feature only. Their architecture, protected boundaries and historical records remain valid. **GitHub current state + exact branch head + read-only live Supabase checks outrank this static ledger.** Do not interpret a passing fixture or Vercel preview as production deployment.
