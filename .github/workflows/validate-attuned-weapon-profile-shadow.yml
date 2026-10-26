@@ -1,0 +1,46 @@
+name: Validate Attuned Tactical Weapon Profile Shadow
+on:
+  pull_request:
+    paths:
+      - "sql/20261025_09_attuned_weapon_profile_shadow.sql"
+      - "scripts/fixtures/legacy_tactical_weapon_profile_v1.sql"
+      - "scripts/fixtures/attuned_weapon_profile_shadow.sql"
+      - "scripts/validate_attuned_weapon_profile_shadow.mjs"
+      - ".github/workflows/validate-attuned-weapon-profile-shadow.yml"
+  workflow_dispatch:
+jobs:
+  canonical-weapon-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node scripts/validate_shared_equipment_effects_pipeline.mjs
+      - run: node scripts/validate_attuned_ac_saves_shadow.mjs
+      - run: node scripts/validate_attuned_ability_shadow.mjs
+      - run: node scripts/validate_attuned_armor_shield_channels.mjs
+      - run: node scripts/validate_attuned_weapon_profile_shadow.mjs
+  isolated-postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: fixture-only
+          POSTGRES_DB: weapon_shadow
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d weapon_shadow"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGPASSWORD: fixture-only
+      PGDATABASE: weapon_shadow
+    steps:
+      - uses: actions/checkout@v4
+      - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/attuned_weapon_profile_shadow.sql
