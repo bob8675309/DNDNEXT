@@ -1,0 +1,43 @@
+name: Validate Character Hand Loadout Staging
+on:
+  pull_request:
+    paths:
+      - "sql/20261026_05_character_hand_loadout_staging.sql"
+      - "scripts/fixtures/character_hand_loadout_staging.sql"
+      - "scripts/validate_character_hand_loadout_staging.mjs"
+      - ".github/workflows/validate-character-hand-loadout-staging.yml"
+      - "docs/**"
+  workflow_dispatch:
+jobs:
+  source-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node scripts/validate_attuned_spell_list_hand_evidence.mjs
+      - run: node scripts/validate_character_hand_loadout_staging.mjs
+  isolated-postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: fixture-only
+          POSTGRES_DB: character_hand_loadout_staging
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d character_hand_loadout_staging"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGPASSWORD: fixture-only
+      PGDATABASE: character_hand_loadout_staging
+    steps:
+      - uses: actions/checkout@v4
+      - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/character_hand_loadout_staging.sql
