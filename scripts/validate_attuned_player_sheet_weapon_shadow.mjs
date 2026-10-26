@@ -119,6 +119,23 @@ const canonical = buildCharacterSheetActions({
 assert.deepEqual(off.baselineActions, canonical);
 assert.deepEqual(off.shadowActions, canonical);
 assert.equal(off.changes.length, 0);
+// The optional OFF state must not require a populated selection table/source
+// gate for each equipped item. It still renders canonical action math.
+const offBeforeSelectionMigration = compare({
+  ...input, abilityShadow: ability(baseline, baseline, false),
+  sourceGate: selection([], false),
+});
+assert.deepEqual(offBeforeSelectionMigration.shadowActions, canonical);
+
+// Carried enchanted weapons are still shown by the legacy builder. Report
+// them as unresolved instead of silently inventing an equip operation.
+const carried = compare({
+  ...input,
+  inventoryRows: [weapon(swordId,"Carried enchanted sword",{bonusWeapon:"+2"},{is_equipped:false})],
+  sourceGate:selection([]),
+});
+assert.ok(carried.unresolvedSources.some(s=>
+  s.inventoryItemId===swordId && s.reason==="carried_weapon_not_equipped"));
 
 // Selecting both a sword and a bow retains their own enhancements, while
 // not restoring unrelated ability-score boosters.
