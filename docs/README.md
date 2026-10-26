@@ -1,6 +1,19 @@
 # DNDNext Living Documentation Index
 
-Updated: 2026-10-24
+Updated: 2026-10-26
+
+## CURRENT active attunement/effects continuation (2026-10-26)
+
+**Read [Attunement_Effects_Integration_Current_Handoff_2026-10-26.md](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md) first** when working on inventory attunement, equipment magic effects, tactical attacks, sheet spells, focus eligibility, or rest authorization. It supersedes the **active PR status only** of the October 24 sections below; their architecture/history remains intact.
+
+- Current draft stack: [#267](https://github.com/bob8675309/DNDNEXT/pull/267) → ... → [#283](https://github.com/bob8675309/DNDNEXT/pull/283) → **#284** (focus physical/equipment and spell-source provenance), with [#266](https://github.com/bob8675309/DNDNEXT/pull/266) rest-popup separately to reconcile. [#257](https://github.com/bob8675309/DNDNEXT/pull/257) is **superseded draft**, not the release path. Details and per-PR purposes are in the linked ledger.
+- The player reuses the existing **Equipment/Inventory** view for attunement selection; the Admin readiness status remains **NOT ENFORCED**. The max-three selection RPC is a staged **candidate**, not a deployed effects engine; attunement remains OFF by default. No live Supabase migrations, gameplay writer swaps or production merge were performed in the staged effects chain.
+- Highest remaining gates: authenticated server rest opportunity, active held/worn truth (equip slots only hint), legal spell-list source and focus stacking, account-shared physical custody, full canonical effect consumers, and signed-in player/admin/tactical regression.
+- Protected boundaries: do not change world-map travel/weather/clock, town/city maps, Character Forge visuals or existing spell-slot/canonical rest recovery authority as part of this work.
+
+**The prior “Start here — reconciled 2026-10-24” and #257 queue below are historical snapshots.**
+
+
 
 This directory contains the project's living handoff, roadmap, architecture, subsystem, and evidence documents. For active work, **live Supabase + current GitHub source/validators/deployment state outrank prose** if they conflict.
 
