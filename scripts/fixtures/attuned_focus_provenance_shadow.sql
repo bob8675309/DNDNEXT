@@ -42,7 +42,10 @@ begin
  perform set_config('fixture.role','service_role',true);
  select coalesce(jsonb_agg(to_jsonb(s) order by s.participant_id,s.slot_level),'[]'::jsonb)
  into original_slots from public.encounter_spell_slots s;
- -- Inherited fixture ended with attunement OFF.
+ -- The imported per-spell preflight test leaves attunement ON. Explicitly
+ -- toggle OFF in this disposable fixture before asserting OFF parity.
+ perform set_config('fixture.uid','aaaaaaaa-0000-4000-8000-000000000001',true);
+ perform public.set_campaign_attunement_rule_v1(false);
  r:=private.encounter_attuned_focus_provenance_shadow_v1(p,blast);
  if r->>'attunementEnabled'<>'false'
  or r->>'consumerEnforced'<>'false'
