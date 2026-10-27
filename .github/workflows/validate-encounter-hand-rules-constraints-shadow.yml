@@ -1,0 +1,43 @@
+name: Validate Encounter Hand Rules Constraints Shadow
+on:
+  pull_request:
+    paths:
+      - "sql/20261026_08_encounter_hand_rules_constraints_shadow.sql"
+      - "scripts/fixtures/encounter_hand_rules_constraints_shadow.sql"
+      - "scripts/validate_encounter_hand_rules_constraints_shadow.mjs"
+      - ".github/workflows/validate-encounter-hand-rules-constraints-shadow.yml"
+      - "docs/**"
+  workflow_dispatch:
+jobs:
+  unchanged-consumers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node scripts/validate_encounter_hand_transition_shadow.mjs
+      - run: node scripts/validate_encounter_hand_rules_constraints_shadow.mjs
+  isolated-postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: fixture-only
+          POSTGRES_DB: encounter_hand_rules_shadow
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d encounter_hand_rules_shadow"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGPASSWORD: fixture-only
+      PGDATABASE: encounter_hand_rules_shadow
+    steps:
+      - uses: actions/checkout@v4
+      - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/encounter_hand_rules_constraints_shadow.sql
