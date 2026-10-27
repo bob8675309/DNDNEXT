@@ -1,5 +1,11 @@
 # DNDNext Current Development Status and Roadmap
 
+## Latest 2026-10-27 — #292 canonical weapon resolver parity preflight
+
+Draft [#292](https://github.com/bob8675309/DNDNEXT/pull/292) uses the actual stable canonical weapon-profile and LOS/cover/range read surfaces to preflight a #291 ordinal before any irreversible side effects. It requires exact catalogue source identity and character-specific equipped custody. Real attack roll helper `private.encounter_resolve_attack_roll_v1` **consumes one-shot Guiding Bolt**; no preview may call it. No attack, HP, Action, spell slot, effect or combat-log writer touched. Next reviewed phase: a true transactional Attack-event resolver that reserves a source-verified attack slot, consumes one Action, performs each roll/effect/damage exactly once, and preserves existing one-attack RPC compatibility. [Full audit](Attack_Resolver_Preflight_Parity_2026-10-27.md).
+
+
+
 ## 2026-10-27 — PR #291 Attack-action source-budget sequence (shadow only)
 
 [PR #291](https://github.com/bob8675309/DNDNEXT/pull/291) stages a server-derived Attack-action slot budget from exact PHB/XPHB class and base-class feature source IDs; Fighter 5/11/20 and four standard level-5 classes are regression tested. A guarded one-per-turn session and replay-safe per-attack ordinal ledger exercise concurrency/source bounds **without touching actual Action, damage, spell slots or battleboard**. Critical next release work: reconcile special subclasses, multiclass and Attack replacements; integrate one real action expenditure with multiple authoritative attack-event transactions; then connect weapon interaction timing, shields and spell focus. [Technical scope](Attack_Action_Source_Budget_Shadow_2026-10-27.md). Readiness remains false and production unchanged.
