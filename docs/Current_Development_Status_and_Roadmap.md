@@ -1,5 +1,11 @@
 # DNDNext Current Development Status and Roadmap
 
+## Latest 2026-10-26 action-cost evidence — draft #289
+
+Draft [#289](https://github.com/bob8675309/DNDNEXT/pull/289) resolves several **data-source** questions, not gameplay costs: exact `payload.property` weapon codes distinguish Two-Handed (`2H`) from Versatile (`V`), Shield type requires distinct Utilize don/doff modeling, and normalized `spells_catalog.components_s/components_m` allow somatic/material hand signals. The #288 shadow one-change-per-turn limit is **not** a 2024 D&D rule; Attack action per-attack weapon interactions must be integrated with the real battleboard attack event lifecycle. Everything remains read-only/unenforced; canonical actions/HP/slots/items unchanged. [Detailed technical audit](Encounter_Hand_Rules_Constraints_Shadow_2026-10-26.md). Next: action-time Attack event/Shield Utilize + components exceptions, then consumer and signed-in acceptance.
+
+
+
 ## Newest staged step — PR #288 transactional shadow hand request ledger (2026-10-26)
 
 Draft [#288](https://github.com/bob8675309/DNDNEXT/pull/288) adds a guarded, atomic encounter hand *shadow state* mutation using participant/encounter locks, ordered source item checks, exact turn identity, unique request UUID/idempotent replay and full-snapshot version updates. The experimental one-applied-change-per-turn constraint **does not impose any official gameplay action cost**, and no main combat Action, Bonus Action, Reaction, equipment, spell focus effect, HP, combat log or slot resource changes. Next milestone: source-reviewed live action-economy and two-hand/shield/caster material-component design and its guarded, fully consumer-integrated real action, plus character-grant/physical custody/rest authorization. [Technical details](Encounter_Hand_Transition_Command_Shadow_2026-10-26.md).
