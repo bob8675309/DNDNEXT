@@ -1,5 +1,11 @@
 # DNDNext Current Development Status and Roadmap
 
+## 2026-10-26 encounter-hand continuation — draft #287
+
+[PR #287](https://github.com/bob8675309/DNDNEXT/pull/287) implements draft-only participant-scoped precombat hand snapshots plus active-turn **read-only preview** of draw/stow/replace. Control, undefeated active turn, snapshot version, exclusive inventory custody and item changes fail closed; physical mutations invalidate the entire capture. No action cost, draw/stow change, spell effect, HP, slot or log writer is called. The next release dependency is a reviewed **actual action-time hand transition model** with draw/stow, two-handed/shield and action economy rules, tested against existing battle-board operations. Details: [Encounter_Hand_Snapshot_Transition_Preflight_2026-10-26.md](Encounter_Hand_Snapshot_Transition_Preflight_2026-10-26.md). No live SQL or production merge.
+
+
+
 ## Latest roadmap extension — 2026-10-26 draft #286
 
 [PR #286](https://github.com/bob8675309/DNDNEXT/pull/286) introduces a separate authenticated staging record for a character's intended main/off hand items, backed by exact inventory ID and existing canonical `weapon_1`–`weapon_3` slots. Isolated checks guard ownership, ambiguous multi-character player inventory, duplicated physical item, active-combat reconfiguration, source/slot invalidation and unchanged tactical spell slots. **Not live, not action-time holding evidence, not focus effect enforcement.** Next critical design is a character/encounter-controlled active-hand action lifecycle with draw/stow swaps, two-hand and focus/somatic rules; then exact spell grants, stacking and server-rest authorization. See [Character_Hand_Loadout_Staging_2026-10-26.md](Character_Hand_Loadout_Staging_2026-10-26.md). All maps, Forge UI and existing equipment semantics remain unchanged.
