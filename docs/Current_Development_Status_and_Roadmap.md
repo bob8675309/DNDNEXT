@@ -1,5 +1,11 @@
 # DNDNext Current Development Status and Roadmap
 
+## Newest staged step — PR #288 transactional shadow hand request ledger (2026-10-26)
+
+Draft [#288](https://github.com/bob8675309/DNDNEXT/pull/288) adds a guarded, atomic encounter hand *shadow state* mutation using participant/encounter locks, ordered source item checks, exact turn identity, unique request UUID/idempotent replay and full-snapshot version updates. The experimental one-applied-change-per-turn constraint **does not impose any official gameplay action cost**, and no main combat Action, Bonus Action, Reaction, equipment, spell focus effect, HP, combat log or slot resource changes. Next milestone: source-reviewed live action-economy and two-hand/shield/caster material-component design and its guarded, fully consumer-integrated real action, plus character-grant/physical custody/rest authorization. [Technical details](Encounter_Hand_Transition_Command_Shadow_2026-10-26.md).
+
+
+
 ## 2026-10-26 encounter-hand continuation — draft #287
 
 [PR #287](https://github.com/bob8675309/DNDNEXT/pull/287) implements draft-only participant-scoped precombat hand snapshots plus active-turn **read-only preview** of draw/stow/replace. Control, undefeated active turn, snapshot version, exclusive inventory custody and item changes fail closed; physical mutations invalidate the entire capture. No action cost, draw/stow change, spell effect, HP, slot or log writer is called. The next release dependency is a reviewed **actual action-time hand transition model** with draw/stow, two-handed/shield and action economy rules, tested against existing battle-board operations. Details: [Encounter_Hand_Snapshot_Transition_Preflight_2026-10-26.md](Encounter_Hand_Snapshot_Transition_Preflight_2026-10-26.md). No live SQL or production merge.
