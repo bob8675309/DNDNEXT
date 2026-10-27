@@ -1,5 +1,11 @@
 # Documentation Refresh Manifest
 
+## 2026-10-26 documentation continuation — draft #287
+
+Added [Encounter_Hand_Snapshot_Transition_Preflight_2026-10-26.md](Encounter_Hand_Snapshot_Transition_Preflight_2026-10-26.md), covering participant-scoped precombat snapshot capture, versioned active-turn-only read-only transition proposals, collision/authorization checks, and whole-capture invalidation when physical inventory changes. Draft [#287](https://github.com/bob8675309/DNDNEXT/pull/287) is stacked on #286. No actual combat hand actions, spell focus bonus, HP, slot spending or production schema deployment. The [current effects ledger](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md) reflects #267–#287.
+
+
+
 ## Added documentation — 2026-10-26 PR #286
 
 [Character_Hand_Loadout_Staging_2026-10-26.md](Character_Hand_Loadout_Staging_2026-10-26.md) documents staged authenticated hand-intentions, canonical physical gear slot mismatches, account-shared custody rejection, inactive-combat-only writes and mandatory invalidation. Draft [#286](https://github.com/bob8675309/DNDNEXT/pull/286) extends [#285](https://github.com/bob8675309/DNDNEXT/pull/285); **neither provides spell focus effects or proof of which items were held during any cast**. Production and world/town maps untouched. Living central source: [Attunement_Effects_Integration_Current_Handoff_2026-10-26.md](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md).
