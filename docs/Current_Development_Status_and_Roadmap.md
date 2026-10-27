@@ -1,5 +1,11 @@
 # DNDNext Current Development Status and Roadmap
 
+## 2026-10-27 — PR #291 Attack-action source-budget sequence (shadow only)
+
+[PR #291](https://github.com/bob8675309/DNDNEXT/pull/291) stages a server-derived Attack-action slot budget from exact PHB/XPHB class and base-class feature source IDs; Fighter 5/11/20 and four standard level-5 classes are regression tested. A guarded one-per-turn session and replay-safe per-attack ordinal ledger exercise concurrency/source bounds **without touching actual Action, damage, spell slots or battleboard**. Critical next release work: reconcile special subclasses, multiclass and Attack replacements; integrate one real action expenditure with multiple authoritative attack-event transactions; then connect weapon interaction timing, shields and spell focus. [Technical scope](Attack_Action_Source_Budget_Shadow_2026-10-27.md). Readiness remains false and production unchanged.
+
+
+
 ## Latest release dependency — draft #290 canonical Attack-action sequence gap (2026-10-26)
 
 [PR #290](https://github.com/bob8675309/DNDNEXT/pull/290) verifies the live `encounter_weapon_attack_v1` and unarmed writer consume the only `action_available` flag for a single attack. No per-Attack-action Extra Attack budget, per-attack weapon equip event or verified Shield Utilize RPC exists in the inspected runtime. **Do not attach real draw/stow costs to #288's one-per-turn shadow hand limit.** First design/validate the canonical Attack action and authoritative multiattack sequence with idempotency, class-feature attack counts, and exact one-Action spending; then support per-attack weapon interactions, Shield Utilize and somatic/focus action prerequisites. Service-only read-only log auditing and PG16 regression only; no production change. [Detailed audit](Canonical_Attack_Action_Sequence_Gap_2026-10-26.md).
