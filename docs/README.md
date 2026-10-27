@@ -1,5 +1,11 @@
 # DNDNext Living Documentation Index
 
+## Most recent effects/combat work — draft #291 (2026-10-27)
+
+[PR #291](https://github.com/bob8675309/DNDNEXT/pull/291) derives baseline Attack-action attack slots from exact PHB/XPHB class-feature catalogue grants and tests an idempotent per-attack **shadow** sequence. The canonical combat writer still spends the Action on ONE attack. This branch is **not** an Extra Attack gameplay fix or a live hand/focus consumer. See [Attack_Action_Source_Budget_Shadow_2026-10-27.md](Attack_Action_Source_Budget_Shadow_2026-10-27.md) and [current effects handoff](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md). No production merge/deployment.
+
+
+
 ## Latest active development — draft #290 Attack action blocker (2026-10-26)
 
 [PR #290](https://github.com/bob8675309/DNDNEXT/pull/290) documents and tests a live tactical **Extra Attack integration gap**: current canonical weapon/unarmed RPCs spend the whole Action on a single attack and do not expose an Attack-action subattack sequence. Shield Utilize also lacks a verified canonical handler. The new SQL is only a private, read-only event-log audit; no combat/effects behavior changed. Start with [Canonical_Attack_Action_Sequence_Gap_2026-10-26.md](Canonical_Attack_Action_Sequence_Gap_2026-10-26.md) and [current effects handoff](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md) before implementing real draw/stow rules.
