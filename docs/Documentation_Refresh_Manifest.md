@@ -1,5 +1,11 @@
 # Documentation Refresh Manifest
 
+## 2026-10-27 #292 canonical weapon preflight source parity
+
+Added [Attack_Resolver_Preflight_Parity_2026-10-27.md](Attack_Resolver_Preflight_Parity_2026-10-27.md) and refreshed the master integration handoff, current developer prompt, roadmap and README. Documents live canonical profile/targeting inputs, exact item source requirement, the Guiding Bolt advantage-consumption risk in the roll helper, and no live action/damage/slot or effect writes. #292 stacked on #291 remains draft; actual Extra Attack and hand action consumers still blocked.
+
+
+
 ## 2026-10-27 staged Attack source provenance — PR #291
 
 New [Attack_Action_Source_Budget_Shadow_2026-10-27.md](Attack_Action_Source_Budget_Shadow_2026-10-27.md) covers exact class-feature Attack budgets, excluded subclass/source spoofing, transactional replay/ordinal shadow sequence and strict separation from canonical action/damage/spell writers. [Current effects handoff](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md) and README/roadmap/developer prompt updated. The older #290 gap audit remains correct until actual Attack writers are changed and tested. No production schema deployment.
