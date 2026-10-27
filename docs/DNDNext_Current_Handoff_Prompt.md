@@ -1,5 +1,11 @@
 # DNDNext Next-Chat Handoff Brief
 
+## Latest action rules evidence — PR #289 (2026-10-26)
+
+Draft [#289](https://github.com/bob8675309/DNDNEXT/pull/289) adds private exact-source `2H` versus `V`/Shield and typed S/M spell component diagnostics. It does NOT charge Attack/Utilize, declare cast legality, prove two-hand attack grip, authorize a spell focus, or replace battleboard writers. 2024 Attack action equip/unequip interactions occur per attack; the #288 single-transition-per-turn **test quota is not canonical action economy**. Required post-shadow work: transactional actual Attack/Shield action costs, two-hand and somatic/material exceptions, source magic and rest permissions. Read [Encounter_Hand_Rules_Constraints_Shadow_2026-10-26.md](Encounter_Hand_Rules_Constraints_Shadow_2026-10-26.md) and [current master handoff](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md).
+
+
+
 ## Newest hand-state work — draft #288 (2026-10-26)
 
 After #287 precombat snapshot and dry-run, staged [#288](https://github.com/bob8675309/DNDNEXT/pull/288) now writes **only shadow participant-hand rows** in a locked transaction, with exact UUID idempotency, turn/version guards, source item custody and stale rejection. It is a concurrency/invalidation proof, **NOT** active-held authorization, a 2024 D&D action-spending implementation, or gameplay focus/attunement enforcement. Its experimental quota is one applied change per participant-turn but cannot be used as canonical action economy. See [Encounter_Hand_Transition_Command_Shadow_2026-10-26.md](Encounter_Hand_Transition_Command_Shadow_2026-10-26.md); Admin readiness flags must stay false and production DB/world/town maps remain untouched.
