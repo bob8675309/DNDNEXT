@@ -1,5 +1,11 @@
 # Documentation Refresh Manifest
 
+## 2026-10-27 staged Attack source provenance — PR #291
+
+New [Attack_Action_Source_Budget_Shadow_2026-10-27.md](Attack_Action_Source_Budget_Shadow_2026-10-27.md) covers exact class-feature Attack budgets, excluded subclass/source spoofing, transactional replay/ordinal shadow sequence and strict separation from canonical action/damage/spell writers. [Current effects handoff](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md) and README/roadmap/developer prompt updated. The older #290 gap audit remains correct until actual Attack writers are changed and tested. No production schema deployment.
+
+
+
 ## New staged diagnostic and handoff — PR #290 (2026-10-26)
 
 [Canonical_Attack_Action_Sequence_Gap_2026-10-26.md](Canonical_Attack_Action_Sequence_Gap_2026-10-26.md) records live canonical weapon/unarmed one-attack-per-Action behavior, absent Extra Attack sequencing and missing Shield Utilize action source. A new private read-only attack-event/command linkage audit is tested in isolated PG16; all gameplay writers remain unchanged. This document supersedes the earlier assumption that the next step should immediately implement hand action charges. Reconcile Attack-action event authority **first**. Current chain and blockers: [Attunement_Effects_Integration_Current_Handoff_2026-10-26.md](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md).
