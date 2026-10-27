@@ -1,5 +1,11 @@
 # DNDNext Next-Chat Handoff Brief
 
+## Newest hand-state work — draft #288 (2026-10-26)
+
+After #287 precombat snapshot and dry-run, staged [#288](https://github.com/bob8675309/DNDNEXT/pull/288) now writes **only shadow participant-hand rows** in a locked transaction, with exact UUID idempotency, turn/version guards, source item custody and stale rejection. It is a concurrency/invalidation proof, **NOT** active-held authorization, a 2024 D&D action-spending implementation, or gameplay focus/attunement enforcement. Its experimental quota is one applied change per participant-turn but cannot be used as canonical action economy. See [Encounter_Hand_Transition_Command_Shadow_2026-10-26.md](Encounter_Hand_Transition_Command_Shadow_2026-10-26.md); Admin readiness flags must stay false and production DB/world/town maps remain untouched.
+
+
+
 ## Current continuation — #287 encounter hand lifecycle preflight (2026-10-26)
 
 The latest leaf [#287](https://github.com/bob8675309/DNDNEXT/pull/287) is **draft-only**. It captures #286 character hand staging into an encounter participant **before combat**, separately from the canonical equipped `weapon_1`–`weapon_3` slots. Active-turn `preview_encounter_hand_transition_shadow_v1` checks control/turn, exact inventory ID and snapshot version but **never executes** draw/stow/switch or spends action resources. Item owner/slot/source changes invalidate the entire captured version and cannot be recaptured while combat is active. See [Encounter_Hand_Snapshot_Transition_Preflight_2026-10-26.md](Encounter_Hand_Snapshot_Transition_Preflight_2026-10-26.md) and [master effects handoff](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md). All magic focus, held-state and attunement consumer readiness remain false.
