@@ -1,0 +1,43 @@
+name: Validate Canonical Attack Resolver Preflight Shadow
+on:
+  pull_request:
+    paths:
+      - "sql/20261027_02_attack_resolver_preflight_parity_shadow.sql"
+      - "scripts/fixtures/attack_resolver_preflight_parity_shadow.sql"
+      - "scripts/validate_attack_resolver_preflight_parity_shadow.mjs"
+      - ".github/workflows/validate-attack-resolver-preflight-shadow.yml"
+      - "docs/**"
+  workflow_dispatch:
+jobs:
+  unchanged-canonical-writers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node scripts/validate_attack_action_source_budget_shadow.mjs
+      - run: node scripts/validate_attack_resolver_preflight_parity_shadow.mjs
+  isolated-postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: fixture-only
+          POSTGRES_DB: attack_resolver_preflight
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d attack_resolver_preflight"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGPASSWORD: fixture-only
+      PGDATABASE: attack_resolver_preflight
+    steps:
+      - uses: actions/checkout@v4
+      - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/attack_resolver_preflight_parity_shadow.sql
