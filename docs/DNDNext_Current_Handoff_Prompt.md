@@ -1,5 +1,11 @@
 # DNDNext Next-Chat Handoff Brief
 
+## Latest source-aligned combat handoff — #292 (2026-10-27)
+
+Current stacked draft [#292](https://github.com/bob8675309/DNDNEXT/pull/292) introduces a service-only **read-only** bridge between #291 simulated Attack ordinal and the real `encounter_weapon_profile_internal_v1` / `encounter_targeting_context_internal_v1` outputs. It does not call the real attack roll helper because that consumes Guiding Bolt one-shot advantage; it also does not reserve attacks, roll, spend Action or damage. Exact catalogue ID matches and character custody guard more strictly than the legacy weapon profile's item-name fallback. [Attack_Resolver_Preflight_Parity_2026-10-27.md](Attack_Resolver_Preflight_Parity_2026-10-27.md). No production SQL, and combat/attunement readiness remains false.
+
+
+
 ## 2026-10-27 continuation — #291 source-derived Extra Attack budget SHADOW
 
 Newest stacked draft [#291](https://github.com/bob8675309/DNDNEXT/pull/291) introduces a server-sourced class/feature capacity check and ordered idempotent *simulated* attack slots, never trusting browser-supplied counts. Fighter PHB/XPHB 5/11/20 and standard base-class level-5 Extra Attack tiers are probed; subclass grants/Attack replacements and multiclass remain explicitly unsupported. Existing real `encounter_weapon_attack_v1` still spends an Action per attack; this branch does not replace it, charge an Action or roll damage. Exact staging details in [Attack_Action_Source_Budget_Shadow_2026-10-27.md](Attack_Action_Source_Budget_Shadow_2026-10-27.md) and [master handoff](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md). All #267→#291 PRs remain draft; no production migration.
