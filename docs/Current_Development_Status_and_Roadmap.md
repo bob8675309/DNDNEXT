@@ -1,5 +1,11 @@
 # DNDNext Current Development Status and Roadmap
 
+## Latest release dependency — draft #290 canonical Attack-action sequence gap (2026-10-26)
+
+[PR #290](https://github.com/bob8675309/DNDNEXT/pull/290) verifies the live `encounter_weapon_attack_v1` and unarmed writer consume the only `action_available` flag for a single attack. No per-Attack-action Extra Attack budget, per-attack weapon equip event or verified Shield Utilize RPC exists in the inspected runtime. **Do not attach real draw/stow costs to #288's one-per-turn shadow hand limit.** First design/validate the canonical Attack action and authoritative multiattack sequence with idempotency, class-feature attack counts, and exact one-Action spending; then support per-attack weapon interactions, Shield Utilize and somatic/focus action prerequisites. Service-only read-only log auditing and PG16 regression only; no production change. [Detailed audit](Canonical_Attack_Action_Sequence_Gap_2026-10-26.md).
+
+
+
 ## Latest 2026-10-26 action-cost evidence — draft #289
 
 Draft [#289](https://github.com/bob8675309/DNDNEXT/pull/289) resolves several **data-source** questions, not gameplay costs: exact `payload.property` weapon codes distinguish Two-Handed (`2H`) from Versatile (`V`), Shield type requires distinct Utilize don/doff modeling, and normalized `spells_catalog.components_s/components_m` allow somatic/material hand signals. The #288 shadow one-change-per-turn limit is **not** a 2024 D&D rule; Attack action per-attack weapon interactions must be integrated with the real battleboard attack event lifecycle. Everything remains read-only/unenforced; canonical actions/HP/slots/items unchanged. [Detailed technical audit](Encounter_Hand_Rules_Constraints_Shadow_2026-10-26.md). Next: action-time Attack event/Shield Utilize + components exceptions, then consumer and signed-in acceptance.
