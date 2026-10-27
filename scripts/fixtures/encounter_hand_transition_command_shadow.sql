@@ -160,7 +160,7 @@ begin
  -- the stored result instead of charging it again or changing current hands.
  replay:=public.commit_encounter_hand_transition_shadow_v1(
  p,'main',null,version0,1,0,req_first);
- if replay->>'snapshotVersion'<>>(version0+1)::text then
+ if replay->>'snapshotVersion'<>(version0+1)::text then
    raise exception 'Old request replay changed its return value'; end if;
 
  -- Invalidated captures cannot be used even with a new fresh request ID.
