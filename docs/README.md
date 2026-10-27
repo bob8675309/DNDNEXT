@@ -1,5 +1,11 @@
 # DNDNext Living Documentation Index
 
+## Latest attunement work — #287 encounter hand snapshot (2026-10-26)
+
+[PR #287](https://github.com/bob8675309/DNDNEXT/pull/287) stages a precombat **participant-scoped** copy of #286 main/off hand intentions and an **active-turn-only dry-run** for draw/stow/replace. Physical changes invalidate the **entire snapshot**; no actual hand transition, action economy, spell effect or live combat is changed. See [Encounter_Hand_Snapshot_Transition_Preflight_2026-10-26.md](Encounter_Hand_Snapshot_Transition_Preflight_2026-10-26.md) and [current effects ledger](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md). All readiness flags still false.
+
+
+
 ## Latest continuation (2026-10-26) — PR #286
 
 The current leaf [#286](https://github.com/bob8675309/DNDNEXT/pull/286) stages **separate, exact-character hand-item intentions** without converting `weapon_1`–`weapon_3` equipment slots into actual held hands. See [Character_Hand_Loadout_Staging_2026-10-26.md](Character_Hand_Loadout_Staging_2026-10-26.md) and the [current integration ledger](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md). All consumer, cast-time holding, spell provenance and attunement readiness flags remain **false**; this is an isolated draft SQL migration, not deployed production functionality.
