@@ -1,5 +1,11 @@
 # Documentation Refresh Manifest
 
+## Added docs — transactional SHADOW hand transition PR #288 (2026-10-26)
+
+New [Encounter_Hand_Transition_Command_Shadow_2026-10-26.md](Encounter_Hand_Transition_Command_Shadow_2026-10-26.md) covers request replay, atomic participant/encounter/physical inventory locks, full snapshot versioning, turn identity, test quota, and strict isolation from live action economy/effects. Draft #288 extends #287; all #267→#288 release blockers and the separate #266 rest, #251/#253/#255 effects integration remain recorded in [the active handoff](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md). No production deployment.
+
+
+
 ## 2026-10-26 documentation continuation — draft #287
 
 Added [Encounter_Hand_Snapshot_Transition_Preflight_2026-10-26.md](Encounter_Hand_Snapshot_Transition_Preflight_2026-10-26.md), covering participant-scoped precombat snapshot capture, versioned active-turn-only read-only transition proposals, collision/authorization checks, and whole-capture invalidation when physical inventory changes. Draft [#287](https://github.com/bob8675309/DNDNEXT/pull/287) is stacked on #286. No actual combat hand actions, spell focus bonus, HP, slot spending or production schema deployment. The [current effects ledger](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md) reflects #267–#287.
