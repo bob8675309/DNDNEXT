@@ -1,5 +1,11 @@
 # DNDNext Next-Chat Handoff Brief
 
+## Current continuation — #287 encounter hand lifecycle preflight (2026-10-26)
+
+The latest leaf [#287](https://github.com/bob8675309/DNDNEXT/pull/287) is **draft-only**. It captures #286 character hand staging into an encounter participant **before combat**, separately from the canonical equipped `weapon_1`–`weapon_3` slots. Active-turn `preview_encounter_hand_transition_shadow_v1` checks control/turn, exact inventory ID and snapshot version but **never executes** draw/stow/switch or spends action resources. Item owner/slot/source changes invalidate the entire captured version and cannot be recaptured while combat is active. See [Encounter_Hand_Snapshot_Transition_Preflight_2026-10-26.md](Encounter_Hand_Snapshot_Transition_Preflight_2026-10-26.md) and [master effects handoff](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md). All magic focus, held-state and attunement consumer readiness remain false.
+
+
+
 ## Most recent staged work — #286 (2026-10-26)
 
 Current leaf [#286](https://github.com/bob8675309/DNDNEXT/pull/286) stages a user's **precombat hand intentions** using separate `main`/`off` records referencing exact equipped inventory IDs; it does not change physical `weapon_1`–`weapon_3` equipment positions or authorize spell-focus effects. The loadout write checks actual character permissions, item ownership and exclusivity, server combat lock and item-row concurrency; updates to an item invalidate stale declarations. **No action-time holding verification or game consumers exist**. Leave Admin `effectsEnforced`/readiness false, and do not merge/deploy this draft independently. Full scope and tests: [Character_Hand_Loadout_Staging_2026-10-26.md](Character_Hand_Loadout_Staging_2026-10-26.md) and [current effects ledger](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md).
