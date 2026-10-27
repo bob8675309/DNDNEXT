@@ -1,5 +1,11 @@
 # Documentation Refresh Manifest
 
+## New staged diagnostic and handoff — PR #290 (2026-10-26)
+
+[Canonical_Attack_Action_Sequence_Gap_2026-10-26.md](Canonical_Attack_Action_Sequence_Gap_2026-10-26.md) records live canonical weapon/unarmed one-attack-per-Action behavior, absent Extra Attack sequencing and missing Shield Utilize action source. A new private read-only attack-event/command linkage audit is tested in isolated PG16; all gameplay writers remain unchanged. This document supersedes the earlier assumption that the next step should immediately implement hand action charges. Reconcile Attack-action event authority **first**. Current chain and blockers: [Attunement_Effects_Integration_Current_Handoff_2026-10-26.md](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md).
+
+
+
 ## Added 2026-10-26 #289 hand-rules and spell-component source audit
 
 New [Encounter_Hand_Rules_Constraints_Shadow_2026-10-26.md](Encounter_Hand_Rules_Constraints_Shadow_2026-10-26.md) records live `items_catalog.payload.property` (`2H`/`V`) and typed spell `components_s/components_m/material_text`, official 2024 Attack/Shield/Spell components references, immutable shadow SQL and PG16 fixtures. Draft #289 is stacked on #288. No canonical Attack/Utilize, hands, spell focus effects or production database changed. For full topology consult [Attunement_Effects_Integration_Current_Handoff_2026-10-26.md](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md).
