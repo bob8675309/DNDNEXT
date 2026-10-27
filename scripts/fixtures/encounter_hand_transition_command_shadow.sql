@@ -139,7 +139,7 @@ begin
  if not blocked then raise exception 'Outdated turn identity was accepted'; end if;
  blocked:=false;
  begin perform public.commit_encounter_hand_transition_shadow_v1(
- p,'off',wand,version0+1,2,0,req_third);
+ p,'main',wand,version0+1,2,0,req_third);
  exception when check_violation then blocked:=true; end;
  if not blocked then raise exception 'Other-hand duplicate item was accepted'; end if;
 
