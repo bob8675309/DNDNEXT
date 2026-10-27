@@ -5,7 +5,6 @@ const sql=read("sql/20261027_02_attack_resolver_preflight_parity_shadow.sql");
 const fixture=read("scripts/fixtures/attack_resolver_preflight_parity_shadow.sql");
 const wf=read(".github/workflows/validate-attack-resolver-preflight-shadow.yml");
 const canonical=read("sql/20260729_03_tactical_attack_roll_modifiers.sql");
-const profiles=read("sql/20260801_04_tactical_weapon_profile_snapshot.sql");
 const prior=read("sql/20261027_01_attack_action_source_budget_shadow.sql");
 for(const marker of [
  "private.encounter_weapon_event_resolver_preflight_shadow_v1",
