@@ -1,5 +1,11 @@
 # DNDNext Living Documentation Index
 
+## Latest development — draft #289 hand rules audit (2026-10-26)
+
+[PR #289](https://github.com/bob8675309/DNDNEXT/pull/289) adds **read-only exact-source** Two-Handed/Versatile weapon, Shield don/doff and somatic/material spell component checks, based on real `items_catalog.payload.property` and typed `spells_catalog.components_*` fields. These are **signals**, not real action or focus eligibility. See [Encounter_Hand_Rules_Constraints_Shadow_2026-10-26.md](Encounter_Hand_Rules_Constraints_Shadow_2026-10-26.md) and [the active dependency handoff](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md). Action economy, active grip, focus and spell source rules remain unenforced.
+
+
+
 ## Latest continuation — #288 shadow encounter hand commands (2026-10-26)
 
 The newest stacked [PR #288](https://github.com/bob8675309/DNDNEXT/pull/288) atomically records **shadow-only** participant hand draw/stow/replace choices with exact request replay, turn/version checks and no gameplay spending. It is **not** a live hand action or verified focus-casting source. See [Encounter_Hand_Transition_Command_Shadow_2026-10-26.md](Encounter_Hand_Transition_Command_Shadow_2026-10-26.md) and [current effects ledger](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md). All enforcement flags remain false; nothing merged to production.
