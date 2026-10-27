@@ -1,5 +1,11 @@
 # DNDNext Living Documentation Index
 
+## Latest continuation — #288 shadow encounter hand commands (2026-10-26)
+
+The newest stacked [PR #288](https://github.com/bob8675309/DNDNEXT/pull/288) atomically records **shadow-only** participant hand draw/stow/replace choices with exact request replay, turn/version checks and no gameplay spending. It is **not** a live hand action or verified focus-casting source. See [Encounter_Hand_Transition_Command_Shadow_2026-10-26.md](Encounter_Hand_Transition_Command_Shadow_2026-10-26.md) and [current effects ledger](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md). All enforcement flags remain false; nothing merged to production.
+
+
+
 ## Latest attunement work — #287 encounter hand snapshot (2026-10-26)
 
 [PR #287](https://github.com/bob8675309/DNDNEXT/pull/287) stages a precombat **participant-scoped** copy of #286 main/off hand intentions and an **active-turn-only dry-run** for draw/stow/replace. Physical changes invalidate the **entire snapshot**; no actual hand transition, action economy, spell effect or live combat is changed. See [Encounter_Hand_Snapshot_Transition_Preflight_2026-10-26.md](Encounter_Hand_Snapshot_Transition_Preflight_2026-10-26.md) and [current effects ledger](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md). All readiness flags still false.
