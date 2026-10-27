@@ -9,6 +9,7 @@ create table if not exists public.encounter_hand_snapshot_header_shadow_v1 (
   participant_id uuid primary key references public.encounter_participants(id)
     on delete cascade,
   version integer not null default 1 check(version>0),
+  invalidated boolean not null default false,
   captured_by uuid not null,
   captured_at timestamptz not null default timezone('utc',now())
 );
@@ -76,6 +77,7 @@ begin
    'characterId',v_p.character_id,
    'initialized',v_header.participant_id is not null,
    'snapshotVersion',v_header.version,
+   'snapshotInvalidated',v_header.invalidated,
    'capturedAt',v_header.captured_at,
    'hands',v_items,
    'activeHandsVerified',false,
@@ -148,6 +150,7 @@ begin
  values(p_participant_id,1,auth.uid())
  on conflict(participant_id) do update set
    version=public.encounter_hand_snapshot_header_shadow_v1.version+1,
+   invalidated=false,
    captured_by=excluded.captured_by,
    captured_at=timezone('utc',now())
  returning version into v_version;
@@ -212,6 +215,7 @@ begin
  end if;
  v_snapshot:=public.get_encounter_hand_snapshot_shadow_v1(p_participant_id);
  if v_snapshot->>'initialized'<>'true'
+    or v_snapshot->>'snapshotInvalidated'='true'
     or (v_snapshot->>'snapshotVersion')::integer<>p_expected_snapshot_version then
    raise exception 'Encounter hand snapshot is absent or stale'
      using errcode='55000'; end if;
@@ -282,6 +286,13 @@ begin
  or old.item_id is distinct from new.item_id
  or old.item_rarity is distinct from new.item_rarity
  or old.card_payload is distinct from new.card_payload then
+   -- Invalidate the entire capture/version before clearing the changed
+   -- hand item, so a partial snapshot cannot silently become active truth.
+   update public.encounter_hand_snapshot_header_shadow_v1 h set
+     invalidated=true,version=h.version+1
+   where exists(select 1 from public.encounter_hand_snapshot_items_shadow_v1 x
+       where x.participant_id=h.participant_id
+         and x.inventory_item_id=new.id);
    delete from public.encounter_hand_snapshot_items_shadow_v1
      where inventory_item_id=new.id;
  end if;
