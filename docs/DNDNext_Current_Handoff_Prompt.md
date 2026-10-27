@@ -1,5 +1,11 @@
 # DNDNext Next-Chat Handoff Brief
 
+## Newest verified architectural gap — #290 Attack action sequence (2026-10-26)
+
+Before implementing an active hand/focus consumer, review [PR #290](https://github.com/bob8675309/DNDNEXT/pull/290) and [Canonical_Attack_Action_Sequence_Gap_2026-10-26.md](Canonical_Attack_Action_Sequence_Gap_2026-10-26.md). Read-only production source inspection confirms the existing weapon/unarmed RPC consumes the whole Action on **one** resolved attack, with no Extra Attack per-action event ledger or weapon interaction count. Core action RPC supports Dash, Disengage and Dodge, not Shield Utilize. The new private event-log audit merely reports existing events and preserves `extraAttackExecutionSupported=false`, `combatConsumerEnforced=false`; it does not spend or create actions. All optional attunement/source/hand/effects PRs #267→#290 remain staged drafts, never merged or applied live.
+
+
+
 ## Latest action rules evidence — PR #289 (2026-10-26)
 
 Draft [#289](https://github.com/bob8675309/DNDNEXT/pull/289) adds private exact-source `2H` versus `V`/Shield and typed S/M spell component diagnostics. It does NOT charge Attack/Utilize, declare cast legality, prove two-hand attack grip, authorize a spell focus, or replace battleboard writers. 2024 Attack action equip/unequip interactions occur per attack; the #288 single-transition-per-turn **test quota is not canonical action economy**. Required post-shadow work: transactional actual Attack/Shield action costs, two-hand and somatic/material exceptions, source magic and rest permissions. Read [Encounter_Hand_Rules_Constraints_Shadow_2026-10-26.md](Encounter_Hand_Rules_Constraints_Shadow_2026-10-26.md) and [current master handoff](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md).
