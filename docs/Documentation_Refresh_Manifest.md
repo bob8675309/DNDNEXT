@@ -1,5 +1,11 @@
 # Documentation Refresh Manifest
 
+## Added 2026-10-26 #289 hand-rules and spell-component source audit
+
+New [Encounter_Hand_Rules_Constraints_Shadow_2026-10-26.md](Encounter_Hand_Rules_Constraints_Shadow_2026-10-26.md) records live `items_catalog.payload.property` (`2H`/`V`) and typed spell `components_s/components_m/material_text`, official 2024 Attack/Shield/Spell components references, immutable shadow SQL and PG16 fixtures. Draft #289 is stacked on #288. No canonical Attack/Utilize, hands, spell focus effects or production database changed. For full topology consult [Attunement_Effects_Integration_Current_Handoff_2026-10-26.md](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md).
+
+
+
 ## Added docs — transactional SHADOW hand transition PR #288 (2026-10-26)
 
 New [Encounter_Hand_Transition_Command_Shadow_2026-10-26.md](Encounter_Hand_Transition_Command_Shadow_2026-10-26.md) covers request replay, atomic participant/encounter/physical inventory locks, full snapshot versioning, turn identity, test quota, and strict isolation from live action economy/effects. Draft #288 extends #287; all #267→#288 release blockers and the separate #266 rest, #251/#253/#255 effects integration remain recorded in [the active handoff](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md). No production deployment.
