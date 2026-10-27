@@ -1,0 +1,43 @@
+name: Validate Encounter Hand Snapshot and Transition Preflight
+on:
+  pull_request:
+    paths:
+      - "sql/20261026_06_encounter_hand_snapshot_transition_shadow.sql"
+      - "scripts/fixtures/encounter_hand_snapshot_transition_shadow.sql"
+      - "scripts/validate_encounter_hand_snapshot_shadow.mjs"
+      - ".github/workflows/validate-encounter-hand-snapshot-shadow.yml"
+      - "docs/**"
+  workflow_dispatch:
+jobs:
+  unchanged-consumers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node scripts/validate_character_hand_loadout_staging.mjs
+      - run: node scripts/validate_encounter_hand_snapshot_shadow.mjs
+  isolated-postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: fixture-only
+          POSTGRES_DB: encounter_hand_shadow
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d encounter_hand_shadow"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGPASSWORD: fixture-only
+      PGDATABASE: encounter_hand_shadow
+    steps:
+      - uses: actions/checkout@v4
+      - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/encounter_hand_snapshot_transition_shadow.sql
