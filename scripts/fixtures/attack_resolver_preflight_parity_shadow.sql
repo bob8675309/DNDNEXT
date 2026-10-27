@@ -2,6 +2,10 @@
 -- Disposable PG16 suite. Inherits all attack-budget + hand/source regression
 -- fixtures, including the original legacy weapon profile implementation.
 \i scripts/fixtures/attack_action_source_budget_shadow.sql
+-- Canonical tactical participant schema includes dodging; the inherited
+-- narrow hand/attack fixture did not need this until target preflight.
+alter table public.encounter_participants
+  add column dodging boolean not null default false;
 
 -- Only target geometry is a fixture double. Production code calls the
 -- ACTUAL encounter_targeting_context_internal_v1 unmodified.
