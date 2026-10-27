@@ -1,5 +1,11 @@
 # DNDNext Living Documentation Index
 
+## Latest active development — draft #290 Attack action blocker (2026-10-26)
+
+[PR #290](https://github.com/bob8675309/DNDNEXT/pull/290) documents and tests a live tactical **Extra Attack integration gap**: current canonical weapon/unarmed RPCs spend the whole Action on a single attack and do not expose an Attack-action subattack sequence. Shield Utilize also lacks a verified canonical handler. The new SQL is only a private, read-only event-log audit; no combat/effects behavior changed. Start with [Canonical_Attack_Action_Sequence_Gap_2026-10-26.md](Canonical_Attack_Action_Sequence_Gap_2026-10-26.md) and [current effects handoff](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md) before implementing real draw/stow rules.
+
+
+
 ## Latest development — draft #289 hand rules audit (2026-10-26)
 
 [PR #289](https://github.com/bob8675309/DNDNEXT/pull/289) adds **read-only exact-source** Two-Handed/Versatile weapon, Shield don/doff and somatic/material spell component checks, based on real `items_catalog.payload.property` and typed `spells_catalog.components_*` fields. These are **signals**, not real action or focus eligibility. See [Encounter_Hand_Rules_Constraints_Shadow_2026-10-26.md](Encounter_Hand_Rules_Constraints_Shadow_2026-10-26.md) and [the active dependency handoff](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md). Action economy, active grip, focus and spell source rules remain unenforced.
