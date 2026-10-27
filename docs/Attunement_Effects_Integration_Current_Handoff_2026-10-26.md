@@ -1,5 +1,11 @@
 # DNDNext — Current Attunement, Equipment Effects and Spell Focus Handoff
 
+## 2026-10-27 leaf #292 — canonical weapon resolver read-only preflight
+
+Draft [#292](https://github.com/bob8675309/DNDNEXT/pull/292), on #291, adds `private.encounter_weapon_event_resolver_preflight_shadow_v1`, a service-only stable preflight for the next source-derived Attack slot. It calls only canonical **read-only** `encounter_weapon_profile_internal_v1` and `encounter_targeting_context_internal_v1`, reproducing range, cover/LOS and dodging context without reserving an attack slot. **Critical hazard found:** real `private.encounter_resolve_attack_roll_v1` CONSUMES one-shot Guiding Bolt advantage and logs `effect_consumed` before damage, so the preview must NEVER call it or existing attack/damage writers. Exact catalogue source key is required because the current canonical weapon profile can fall back to item display-name matching; physical custody is narrower than the legacy shared-account view. This is NOT real Multiattack, Action spending, attack or focus enforcement. See [Attack_Resolver_Preflight_Parity_2026-10-27.md](Attack_Resolver_Preflight_Parity_2026-10-27.md). All #267→#292 work remains staged and undeployed.
+
+
+
 ## 2026-10-27 next leaf — PR #291 server-derived Attack slot sequence SHADOW
 
 Draft [#291](https://github.com/bob8675309/DNDNEXT/pull/291) extends #290's canonical Extra Attack gap audit with a **server-derived, idempotent shadow attack-action sequence**. `character_progression` + EXACT `class_catalog.source` and `class_feature_catalog` base-class feature records resolve Fighter PHB/XPHB 5/11/20 into 2/3/4 attack slots, plus Barbarian/Monk/Paladin/Ranger base level-5 grant. Mismatched source, forged subclass features, missing required tier and unsupported classes fail closed. Two guarded authenticated RPCs open one participant-turn shadow session and record ordered simulated slots with exact request replay; there is **no** real roll, target, HP/damage, action spend, equipment swap, spell, focus bonus or canonical combat writer integration. Class/subclass exception parity, Action Surge, multiclass, per-attack draw/stow, Shield Utilize and signed-in tactical testing remain blockers. [Full technical document](Attack_Action_Source_Budget_Shadow_2026-10-27.md). #267→#291 remain staged drafts, no production migration.
