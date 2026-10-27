@@ -5,7 +5,8 @@
 -- Canonical tactical participant schema includes dodging; the inherited
 -- narrow hand/attack fixture did not need this until target preflight.
 alter table public.encounter_participants
-  add column dodging boolean not null default false;
+  add column dodging boolean not null default false,
+  add column armor_class integer not null default 12;
 
 -- Only target geometry is a fixture double. Production code calls the
 -- ACTUAL encounter_targeting_context_internal_v1 unmodified.
