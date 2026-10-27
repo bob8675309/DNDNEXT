@@ -1,5 +1,11 @@
 # DNDNext Next-Chat Handoff Brief
 
+## 2026-10-27 continuation — #291 source-derived Extra Attack budget SHADOW
+
+Newest stacked draft [#291](https://github.com/bob8675309/DNDNEXT/pull/291) introduces a server-sourced class/feature capacity check and ordered idempotent *simulated* attack slots, never trusting browser-supplied counts. Fighter PHB/XPHB 5/11/20 and standard base-class level-5 Extra Attack tiers are probed; subclass grants/Attack replacements and multiclass remain explicitly unsupported. Existing real `encounter_weapon_attack_v1` still spends an Action per attack; this branch does not replace it, charge an Action or roll damage. Exact staging details in [Attack_Action_Source_Budget_Shadow_2026-10-27.md](Attack_Action_Source_Budget_Shadow_2026-10-27.md) and [master handoff](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md). All #267→#291 PRs remain draft; no production migration.
+
+
+
 ## Newest verified architectural gap — #290 Attack action sequence (2026-10-26)
 
 Before implementing an active hand/focus consumer, review [PR #290](https://github.com/bob8675309/DNDNEXT/pull/290) and [Canonical_Attack_Action_Sequence_Gap_2026-10-26.md](Canonical_Attack_Action_Sequence_Gap_2026-10-26.md). Read-only production source inspection confirms the existing weapon/unarmed RPC consumes the whole Action on **one** resolved attack, with no Extra Attack per-action event ledger or weapon interaction count. Core action RPC supports Dash, Disengage and Dodge, not Shield Utilize. The new private event-log audit merely reports existing events and preserves `extraAttackExecutionSupported=false`, `combatConsumerEnforced=false`; it does not spend or create actions. All optional attunement/source/hand/effects PRs #267→#290 remain staged drafts, never merged or applied live.
