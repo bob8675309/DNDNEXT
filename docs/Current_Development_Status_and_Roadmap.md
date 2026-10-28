@@ -1,5 +1,10 @@
 # DNDNext Current Development Status and Roadmap
 
+## Latest draft #294 — production helper parity
+
+**2026-10-27 #294 — actual roll/damage parity before real multiattack rollout.** Read-only live schema fingerprints and latest versioned SQL establish dual Guiding Bolt/Vicious Mockery one-use effects plus equipment resistance/flat reduction applied in resistance-first order. New isolated PG16 integration loads those exact helpers, validates dice cancellation, immunity/resistance/flat/vulnerability/temp HP sequencing, failure rollback and #293 candidate exact replay; candidate event now carries full mitigation data. Do not treat #293 deterministic stubs as sufficient for production. Remaining: true signed-in service-role caller identity, special class/action/hand rules, full encounter LOS, rollout gates and explicit merge approval. [Detailed audit](Canonical_Roll_Damage_Parity_2026-10-27.md).
+
+
 ## 2026-10-27 Atomic Attack candidate, draft #293
 
 Newest #293 candidate: service-role-only, unconnected, transactionally stages one Attack action with per-attack rolls/damage, exact request replay, canonical helper calls and failed-transaction rollback. Its isolated tests cover three Fighter attacks, one Action expenditure and one-shot effect consumption; the tests use deterministic helper doubles. **Not production-ready**: subclass/bonus/multiclass features, real roll/damage/cover parity, hand/shield interactions, account-owned custody and signed-in UI acceptance remain blockers. [Candidate technical notes](Attack_Action_Atomic_Weapon_Candidate_2026-10-27.md).
