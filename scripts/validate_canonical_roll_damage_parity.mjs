@@ -12,8 +12,9 @@ for(const [path,key] of paths){
  const start=source.toLowerCase().indexOf("create or replace function "+key);
  assert.ok(start>=0,"Missing canonical source "+path);
  const rest=source.slice(start);
- const terminator=rest.indexOf("$function$;")>=0?"$function$;":"$$;";
- const stop=rest.indexOf(terminator);
+ const ends=["$function$;","$;"].map(token=>({token,at:rest.indexOf(token)})).filter(x=>x.at>=0).sort((a,b)=>a.at-b.at);
+ assert.ok(ends.length>0,"Missing source terminator "+path);
+ const {token:terminator,at:stop}=ends[0];
  assert.ok(stop>0,"Missing source terminator "+path);
  assert.ok(bundle.includes(rest.slice(0,stop+terminator.length)),"Fixture source differs "+path);
 }
