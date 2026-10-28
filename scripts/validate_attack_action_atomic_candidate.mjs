@@ -1,0 +1,13 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+const read = p => fs.readFileSync(p,"utf8");
+const sql=read("sql/20261027_03_attack_action_atomic_weapon_candidate.sql");
+const fixture=read("scripts/fixtures/attack_action_atomic_weapon_candidate.sql");
+const workflow=read(".github/workflows/validate-attack-action-atomic-candidate.yml");
+const original=read("sql/20260729_03_tactical_attack_roll_modifiers.sql");
+for(const marker of ["private.encounter_weapon_attack_atomic_candidate_v1","public.encounter_weapon_action_candidate_sessions_v1","public.encounter_weapon_action_candidate_events_v1","enable row level security","to service_role","public.encounter_can_control_participant_v1","private.encounter_attack_capacity_source_shadow_v1","private.character_staged_hand_item_valid_v1","public.encounter_weapon_profile_internal_v1","public.encounter_targeting_context_internal_v1","private.encounter_resolve_attack_roll_v1","public.encounter_apply_damage_internal_v1","set action_available=false","insert into public.encounter_command_requests","insert into public.encounter_combat_log","'actionSpentThisEvent',p_expected_ordinal=1","'battleboardConsumerEnabled',false"]) assert.ok(sql.includes(marker),"Missing source contract "+marker);
+for(const marker of ["create or replace function public.encounter_weapon_attack_v1","create or replace function public.encounter_unarmed_strike_v1"]) assert.ok(!sql.includes(marker),"Cannot override existing writer");
+assert.ok(original.includes("private.encounter_resolve_attack_roll_v1(v_a.id,v_t.id,v_base_disadvantage)"),"Canonical helper changed");
+for(const marker of ["attack_resolver_preflight_parity_shadow.sql","20261027_03_attack_action_atomic_weapon_candidate.sql","Injected damage failure for rollback verification","Failed attack partially spent Action, effect, HP or log","First attack replay changed saved roll/result","Skipped attack ordinal accepted","Unverified catalogue source accepted","Attack exceeded Fighter 11 source capacity","Other user replayed an authorized attack"]) assert.ok(fixture.includes(marker),"Missing fixture "+marker);
+assert.ok(workflow.includes("validate_attack_action_atomic_candidate.mjs"),"CI script missing");
+console.log("Atomic candidate source isolation and reversible failure test contracts verified");
