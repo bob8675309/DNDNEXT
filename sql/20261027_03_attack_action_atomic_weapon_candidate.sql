@@ -247,7 +247,6 @@ begin
  -- All validation above is reversible. From here onwards the SAME database
  -- transaction owns the Action, attack roll/one-shot effect, damage and log.
  -- PostgreSQL rolls back them ALL on any exception.
- if not found then null; end if; -- PL/pgSQL FOUND is not used as session state.
  if v_session.action_id is null then
    insert into public.encounter_weapon_action_candidate_sessions_v1(
     action_id,encounter_id,participant_id,character_id,round,turn_index,
