@@ -301,6 +301,10 @@ begin
        (v_roll_info->>'guidingBoltAdvantage')::boolean,false),
    'guidingBoltEffectConsumed',coalesce(
        (v_roll_info->>'guidingBoltEffectConsumed')::boolean,false),
+   'viciousMockeryDisadvantage',coalesce(
+       (v_roll_info->>'viciousMockeryDisadvantage')::boolean,false),
+   'viciousMockeryEffectConsumed',coalesce(
+       (v_roll_info->>'viciousMockeryEffectConsumed')::boolean,false),
    'advantageCanceledByDisadvantage',coalesce(
        (v_roll_info->>'advantageCanceledByDisadvantage')::boolean,false),
    'longRangeDisadvantage',v_long_disadvantage,
@@ -317,6 +321,7 @@ begin
    'targetHp',(v_damage_info->>'targetHp')::integer,
    'targetTempHp',(v_damage_info->>'targetTempHp')::integer,
    'defeated',(v_damage_info->>'defeated')::boolean,
+   'damageMitigation',v_damage_info,
    'targeting',v_targeting,'profile',v_profile,'attackRoll',v_roll_info,
    'canonicalActionSpentOnce',true,
    'actionSpentThisEvent',p_expected_ordinal=1,
