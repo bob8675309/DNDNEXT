@@ -1,5 +1,10 @@
 # DNDNext Current Development Status and Roadmap
 
+## Latest #295 — authenticated Attack authorization preflight
+
+**2026-10-27 #295 identity release gate.** Live `encounter_can_control_participant_v1` has a deliberate service_role bypass; the #293 atomic candidate's service_role-only grant does NOT itself attest which player issued the request. The new authenticated-only `encounter_attack_caller_preflight_shadow_v1` verifies caller JWT-context identity, canonical participant control and exact current Attack turn/budget, but never invokes an attack writer. PG16 checks actual SQL roles + simulated JWT context, not signature validity. Next: design a safe signed-in execution adapter, test real tokens, revocation, concurrency and feature-gated rollout only after full grip/subclass/attunement checks. [Detailed design](Authenticated_Attack_Caller_Boundary_2026-10-27.md).
+
+
 ## Latest draft #294 — production helper parity
 
 **2026-10-27 #294 — actual roll/damage parity before real multiattack rollout.** Read-only live schema fingerprints and latest versioned SQL establish dual Guiding Bolt/Vicious Mockery one-use effects plus equipment resistance/flat reduction applied in resistance-first order. New isolated PG16 integration loads those exact helpers, validates dice cancellation, immunity/resistance/flat/vulnerability/temp HP sequencing, failure rollback and #293 candidate exact replay; candidate event now carries full mitigation data. Do not treat #293 deterministic stubs as sufficient for production. Remaining: true signed-in service-role caller identity, special class/action/hand rules, full encounter LOS, rollout gates and explicit merge approval. [Detailed audit](Canonical_Roll_Damage_Parity_2026-10-27.md).
