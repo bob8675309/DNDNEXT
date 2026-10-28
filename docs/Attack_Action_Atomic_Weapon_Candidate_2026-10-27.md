@@ -33,3 +33,7 @@ This is an isolated, unconnected candidate, **not the deployed Extra Attack feat
 All readiness flags remain false. Production Supabase, active combat writers, Forge, Equipment UI, and world/town maps are unchanged.
 
 See [current effects integration handoff](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md).
+
+### Caller identity is not yet integrated
+
+The candidate is **service-role-only** yet also checks `auth.uid()` and participant control. A typical server call using only a service-role token may have **no end-user UID**, so the candidate deliberately fails closed in that context. The disposable fixture injects a test UID and does **not** demonstrate a valid production server-to-user authorization bridge. Before any API route can call this function, design and test a trusted server-side actor identity and permission protocol that cannot be forged by an untrusted browser; do not remove the UID check simply to make the call work.
