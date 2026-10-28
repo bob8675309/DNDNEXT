@@ -1,5 +1,10 @@
 # DNDNext — Current Attunement, Equipment Effects and Spell Focus Handoff
 
+## Latest draft #294 — production helper parity
+
+**Draft #294 (2026-10-27): live-sourced attack-roll/damage parity.** Read-only production inspection confirmed later versions of the tactical helpers than the July foundational migration: roll consumes both Guiding Bolt Advantage (target) and Vicious Mockery Disadvantage (attacker); damage consults structured equipped-item resistance and highest flat typed reduction, with **immunity → resistance (floor) → flat → vulnerability → temp HP → HP**. #294 installs exact current helper bodies in an isolated PG16 fixture (never production), tests cancellation, damage ordering, savepoint rollback and idempotent multiattack via the private #293 candidate, and exposes full mitigation/Vicious Mockery fields in the candidate result. This **does not** activate Extra Attack or a public combat endpoint. The #293 service-role versus auth.uid identity blocker and item custody ambiguities persist. See [Canonical_Roll_Damage_Parity_2026-10-27.md](Canonical_Roll_Damage_Parity_2026-10-27.md). #267→#294 remain unmerged drafts.
+
+
 ## 2026-10-27 Atomic Attack candidate, draft #293
 
 Draft [#293](https://github.com/bob8675309/DNDNEXT/pull/293), stacked on #292, adds a **service-role-only, unconnected atomic weapon attack execution candidate** with source-budgeted attack ordinals, a single Action spend on the first weapon attack, exact request replay, canonical roll/damage helper calls and transactional log/effect/HP rollback. Unlike #291-#292 read-only shadows, this candidate performs writes **only when explicitly invoked in an isolated test environment**; it is NOT deployed, callable by browser roles or wired into combat. Tests use deterministic roll/damage doubles and synthetic targeting, not full production parity. Attunement, hand interaction costs, class/subclass/multiclass features and full signed-in combat tests remain blockers. [Technical document](Attack_Action_Atomic_Weapon_Candidate_2026-10-27.md). Keep readiness false and all #267→#293 unmerged.
