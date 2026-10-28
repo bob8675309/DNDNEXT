@@ -1,5 +1,10 @@
 # DNDNext Next-Chat Handoff Brief
 
+## Latest draft #294 — production helper parity
+
+**Latest draft #294 (2026-10-27):** Source-audited live roll/damage helpers differ from old July baseline. Final roll helper consumes next-attack Guiding Bolt Advantage and Vicious Mockery Disadvantage and cancels them together; final damage helper reads equipped-item resistance/highest typed flat reduction, applying Resistance first then flat before Vulnerability and temp HP. Exact helper bodies now tested in disposable PG16 including effect/HP/log rollback and #293 idempotent candidate. No live code or production migration, no browser RPC or complete class/focus/hand enforcement. The private candidate still requires a trusted user identity not established for service-role callers. Read [Canonical_Roll_Damage_Parity_2026-10-27.md](Canonical_Roll_Damage_Parity_2026-10-27.md) before attempting endpoint integration.
+
+
 ## 2026-10-27 Atomic Attack candidate, draft #293
 
 Current leaf [#293](https://github.com/bob8675309/DNDNEXT/pull/293) (stacked on #292) contains a **private service-role-only atomic weapon attack candidate** with one Action spend and per-attack event ledger, tested using isolated deterministic helper doubles. It is NOT accessible to browser callers, never deployed, and does not replace the legacy weapon/unarmed writers. Do not merge or activate without complete class/grip/hand/attunement rules, real effect/damage parity and signed-in combat regression. [New technical handoff](Attack_Action_Atomic_Weapon_Candidate_2026-10-27.md).
