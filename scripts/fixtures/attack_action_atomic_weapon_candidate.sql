@@ -100,7 +100,7 @@ declare
  sword uuid:='eeeeeeee-0000-4000-8000-000000000050';
  bow uuid:='eeeeeeee-0000-4000-8000-000000000051';
  unknown_weapon uuid:='eeeeeeee-0000-4000-8000-000000000052';
- action_id uuid:='eeeeaa00-0000-4000-8000-000000000001';
+ v_action_id uuid:='eeeeaa00-0000-4000-8000-000000000001';
  event1 uuid:='eeeebb00-0000-4000-8000-000000000001';
  event2 uuid:='eeeebb00-0000-4000-8000-000000000002';
  event3 uuid:='eeeebb00-0000-4000-8000-000000000003';
@@ -152,7 +152,7 @@ begin
  blocked:=false;
  begin
    perform private.encounter_weapon_attack_atomic_candidate_v1(
-      a,t,sword,action_id,event1,6,0,1);
+      a,t,sword,v_action_id,event1,6,0,1);
  exception when raise_exception then blocked:=true; end;
  if not blocked then raise exception 'Fault injection failed to abort attack'; end if;
  update public.fixture_damage_fault set should_fail=false where id=1;
@@ -160,7 +160,7 @@ begin
  or (select action_available from public.encounter_participants where id=a) is distinct from true
  or (select current_hp from public.encounter_participants where id=t)<>hp_before
  or (select temp_hp from public.encounter_participants where id=t)<>temp_before
- or exists(select 1 from public.encounter_weapon_action_candidate_sessions_v1 where action_id=action_id)
+ or exists(select 1 from public.encounter_weapon_action_candidate_sessions_v1 where action_id=v_action_id)
  or exists(select 1 from public.encounter_weapon_action_candidate_events_v1 where request_id=event1)
  or (select count(*) from public.encounter_command_requests)<>req_before
  or (select count(*) from public.encounter_combat_log)<>log_before then
@@ -168,7 +168,7 @@ begin
  end if;
 
  first_result:=private.encounter_weapon_attack_atomic_candidate_v1(
-      a,t,sword,action_id,event1,6,0,1);
+      a,t,sword,v_action_id,event1,6,0,1);
  if first_result->>'attacksAllowed'<>'3'
  or first_result->>'actionSpentThisEvent'<>'true'
  or first_result->>'guidingBoltEffectConsumed'<>'true'
@@ -177,11 +177,11 @@ begin
  or (select action_available from public.encounter_participants where id=a) is distinct from false
  or (select count(*) from public.encounter_timed_effects where id=effect)<>0
  or (select attacks_resolved from public.encounter_weapon_action_candidate_sessions_v1
-  where action_id=action_id)<>1 then
+  where action_id=v_action_id)<>1 then
   raise exception 'First atomic attack did not spend exactly one Action/effect %',first_result;
  end if;
  duplicate_result:=private.encounter_weapon_attack_atomic_candidate_v1(
-      a,t,sword,action_id,event1,6,0,1);
+      a,t,sword,v_action_id,event1,6,0,1);
  if duplicate_result is distinct from first_result then
    raise exception 'First attack replay changed saved roll/result'; end if;
  if (select count(*) from public.encounter_combat_log
@@ -192,36 +192,36 @@ begin
 
  blocked:=false;
  begin perform private.encounter_weapon_attack_atomic_candidate_v1(
-   a,t,bow,action_id,event1,6,0,1);
+   a,t,bow,v_action_id,event1,6,0,1);
  exception when unique_violation then blocked:=true; end;
  if not blocked then raise exception 'Request UUID reused against a different weapon'; end if;
  blocked:=false;
  begin perform private.encounter_weapon_attack_atomic_candidate_v1(
-   a,t,bow,action_id,event3,6,0,3);
+   a,t,bow,v_action_id,event3,6,0,3);
  exception when object_not_in_prerequisite_state then blocked:=true; end;
  if not blocked then raise exception 'Skipped attack ordinal accepted'; end if;
  blocked:=false;
  begin perform private.encounter_weapon_attack_atomic_candidate_v1(
-   a,t,unknown_weapon,action_id,event2,6,0,2);
+   a,t,unknown_weapon,v_action_id,event2,6,0,2);
  exception when object_not_in_prerequisite_state then blocked:=true; end;
  if not blocked then raise exception 'Unverified catalogue source accepted'; end if;
 
  v:=private.encounter_weapon_attack_atomic_candidate_v1(
-   a,t,bow,action_id,event2,6,0,2);
+   a,t,bow,v_action_id,event2,6,0,2);
  if v->>'attackOrdinal'<>'2'
  or v->>'actionSpentThisEvent'<>'false'
  or v->>'guidingBoltEffectConsumed'<>'false'
  then raise exception 'Second attack spent Action or reused one-shot effect %',v; end if;
  v:=private.encounter_weapon_attack_atomic_candidate_v1(
-   a,t,sword,action_id,event3,6,0,3);
+   a,t,sword,v_action_id,event3,6,0,3);
  if v->>'attackOrdinal'<>'3'
  or v->>'actionSpentThisEvent'<>'false'
  or (select attacks_resolved from public.encounter_weapon_action_candidate_sessions_v1
-  where action_id=action_id)<>3
+  where action_id=v_action_id)<>3
  then raise exception 'Third sourced attack failed %',v; end if;
  blocked:=false;
  begin perform private.encounter_weapon_attack_atomic_candidate_v1(
-   a,t,sword,action_id,event4,6,0,4);
+   a,t,sword,v_action_id,event4,6,0,4);
  exception when object_not_in_prerequisite_state then blocked:=true; end;
  if not blocked then raise exception 'Attack exceeded Fighter 11 source capacity'; end if;
  if (select count(*) from public.encounter_combat_log
@@ -229,18 +229,18 @@ begin
  or (select count(*) from public.encounter_command_requests
    where request_id in(event1,event2,event3))<>3
  or (select count(*) from public.encounter_weapon_action_candidate_events_v1
-   where action_id=action_id)<>3 then
+   where action_id=v_action_id)<>3 then
    raise exception 'Atomic executor did not make precisely three combat events'; end if;
  -- Replaying after turn end still returns unchanged stored result.
  update public.encounters set round=7,turn_index=1,active_participant_id=t where id=e;
  duplicate_result:=private.encounter_weapon_attack_atomic_candidate_v1(
-   a,t,sword,action_id,event1,6,0,1);
+   a,t,sword,v_action_id,event1,6,0,1);
  if duplicate_result is distinct from first_result then
    raise exception 'Old attack replay rerolled after the turn advanced'; end if;
  perform set_config('fixture.uid','aaaaaaaa-0000-4000-8000-000000000009',true);
  blocked:=false;
  begin perform private.encounter_weapon_attack_atomic_candidate_v1(
-   a,t,sword,action_id,event1,6,0,1);
+   a,t,sword,v_action_id,event1,6,0,1);
  exception when insufficient_privilege then blocked:=true; end;
  if not blocked then raise exception 'Other user replayed an authorized attack'; end if;
 
