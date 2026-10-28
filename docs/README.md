@@ -1,5 +1,10 @@
 # DNDNext Living Documentation Index
 
+## Latest draft #294 — production helper parity
+
+**Current combat/effects continuation: draft #294.** The actual production damage helper applies Resistance **before** structured flat equipment reduction, and the roll helper consumes both Guiding Bolt Advantage and Vicious Mockery Disadvantage, which cancel if simultaneous. Latest PR #294 tests original source function bodies in isolated PG16 and preserves complete mitigation in the private multiattack candidate result. No real game UI/RPC or production DB was modified. See [Canonical Roll/Damage Parity](Canonical_Roll_Damage_Parity_2026-10-27.md) and [master handoff](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md).
+
+
 ## 2026-10-27 Atomic Attack candidate, draft #293
 
 Latest staged [PR #293](https://github.com/bob8675309/DNDNEXT/pull/293) adds an **unconnected service-role-only transactional Attack-action candidate** following the source-budget shadow sequence in #291 and read-only resolver preflight in #292. It can spend one Action and resolve separate attacks in isolated tests, while rolling back a failed attack and preventing duplicate requests. It is **NOT deployed gameplay**; no public attack RPC was replaced. See [technical documentation](Attack_Action_Atomic_Weapon_Candidate_2026-10-27.md) and [integration handoff](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md).
