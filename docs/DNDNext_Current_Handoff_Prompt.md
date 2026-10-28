@@ -1,5 +1,10 @@
 # DNDNext Next-Chat Handoff Brief
 
+## Latest #295 — authenticated Attack authorization preflight
+
+**Current leaf #295 (2026-10-27):** Authenticated-only, read-only `encounter_attack_caller_preflight_shadow_v1` checks `auth.role()='authenticated'`, nonnull `auth.uid()`, canonical participant-control permissions, exact encounter/turn and source attack budget. It is **not** an executor wrapper and never rolls, spends or damages. Exact live control function allows service-role bypass; using a service token with a browser-provided `user_id` is NOT valid authorization. PG16 role/JWT simulation does not prove real signature verification or signed-in parity. [Auth handoff](Authenticated_Attack_Caller_Boundary_2026-10-27.md). Leave #267→#295 drafts, no migration or live consumer.
+
+
 ## Latest draft #294 — production helper parity
 
 **Latest draft #294 (2026-10-27):** Source-audited live roll/damage helpers differ from old July baseline. Final roll helper consumes next-attack Guiding Bolt Advantage and Vicious Mockery Disadvantage and cancels them together; final damage helper reads equipped-item resistance/highest typed flat reduction, applying Resistance first then flat before Vulnerability and temp HP. Exact helper bodies now tested in disposable PG16 including effect/HP/log rollback and #293 idempotent candidate. No live code or production migration, no browser RPC or complete class/focus/hand enforcement. The private candidate still requires a trusted user identity not established for service-role callers. Read [Canonical_Roll_Damage_Parity_2026-10-27.md](Canonical_Roll_Damage_Parity_2026-10-27.md) before attempting endpoint integration.
