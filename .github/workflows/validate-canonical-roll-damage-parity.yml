@@ -1,0 +1,46 @@
+name: Validate Canonical Roll and Damage Helper Parity
+on:
+  pull_request:
+    paths:
+      - "scripts/fixtures/canonical_live_roll_damage_helpers_pg16.sql"
+      - "scripts/fixtures/canonical_roll_damage_parity_candidate.sql"
+      - "scripts/validate_canonical_roll_damage_parity.mjs"
+      - "sql/20261027_03_attack_action_atomic_weapon_candidate.sql"
+      - ".github/workflows/validate-canonical-roll-damage-parity.yml"
+      - "docs/**"
+  workflow_dispatch:
+jobs:
+  source-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node scripts/validate_attack_action_atomic_candidate.mjs
+      - run: node scripts/validate_canonical_roll_damage_parity.mjs
+      - run: node scripts/validate_tactical_vicious_mockery.mjs
+      - run: node scripts/validate_tactical_equipped_damage_mitigation.mjs
+  isolated-postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: fixture-only
+          POSTGRES_DB: canonical_roll_damage_parity
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d canonical_roll_damage_parity"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGPASSWORD: fixture-only
+      PGDATABASE: canonical_roll_damage_parity
+    steps:
+      - uses: actions/checkout@v4
+      - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/canonical_roll_damage_parity_candidate.sql
