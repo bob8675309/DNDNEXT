@@ -1,5 +1,10 @@
 # DNDNext Living Documentation Index
 
+## 2026-10-27 Atomic Attack candidate, draft #293
+
+Latest staged [PR #293](https://github.com/bob8675309/DNDNEXT/pull/293) adds an **unconnected service-role-only transactional Attack-action candidate** following the source-budget shadow sequence in #291 and read-only resolver preflight in #292. It can spend one Action and resolve separate attacks in isolated tests, while rolling back a failed attack and preventing duplicate requests. It is **NOT deployed gameplay**; no public attack RPC was replaced. See [technical documentation](Attack_Action_Atomic_Weapon_Candidate_2026-10-27.md) and [integration handoff](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md).
+
+
 ## Latest Attack resolver safety audit — #292 (2026-10-27)
 
 [PR #292](https://github.com/bob8675309/DNDNEXT/pull/292) connects a **read-only shadow attack-slot preflight** to the real canonical weapon profile and targeting context. Its tests block unowned/unknown sources, bad range/LOS, stale slots and spent Actions while leaving all rolls/damage/logs untouched. The actual roll helper consumes Guiding Bolt's one-shot advantage, so calling it before committed execution would be unsafe. Read [Attack_Resolver_Preflight_Parity_2026-10-27.md](Attack_Resolver_Preflight_Parity_2026-10-27.md) and [master handoff](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md). No live multiattack change.
