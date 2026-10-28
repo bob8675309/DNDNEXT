@@ -1,0 +1,43 @@
+name: Validate Atomic Weapon Attack Candidate
+on:
+  pull_request:
+    paths:
+      - "sql/20261027_03_attack_action_atomic_weapon_candidate.sql"
+      - "scripts/fixtures/attack_action_atomic_weapon_candidate.sql"
+      - "scripts/validate_attack_action_atomic_candidate.mjs"
+      - ".github/workflows/validate-attack-action-atomic-candidate.yml"
+      - "docs/**"
+  workflow_dispatch:
+jobs:
+  source-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node scripts/validate_attack_resolver_preflight_parity_shadow.mjs
+      - run: node scripts/validate_attack_action_atomic_candidate.mjs
+  isolated-postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: fixture-only
+          POSTGRES_DB: atomic_weapon_candidate
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d atomic_weapon_candidate"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGPASSWORD: fixture-only
+      PGDATABASE: atomic_weapon_candidate
+    steps:
+      - uses: actions/checkout@v4
+      - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/attack_action_atomic_weapon_candidate.sql
