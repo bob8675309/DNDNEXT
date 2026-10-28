@@ -1,5 +1,10 @@
 # DNDNext Living Documentation Index
 
+## Latest #295 — authenticated Attack authorization preflight
+
+**Latest draft #295 — player authentication gate before multiattack.** Real encounter-control SQL contains a service-role shortcut and the private attack candidate cannot assume an end-user `auth.uid()` when called through service credentials. A new authenticated-only, read-only Attack caller preflight checks player/admin control, exact turn and derived capacity without executing combat. [Authorization boundary and tests](Authenticated_Attack_Caller_Boundary_2026-10-27.md) and [master handoff](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md). No live gameplay or production migration.
+
+
 ## Latest draft #294 — production helper parity
 
 **Current combat/effects continuation: draft #294.** The actual production damage helper applies Resistance **before** structured flat equipment reduction, and the roll helper consumes both Guiding Bolt Advantage and Vicious Mockery Disadvantage, which cancel if simultaneous. Latest PR #294 tests original source function bodies in isolated PG16 and preserves complete mitigation in the private multiattack candidate result. No real game UI/RPC or production DB was modified. See [Canonical Roll/Damage Parity](Canonical_Roll_Damage_Parity_2026-10-27.md) and [master handoff](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md).
