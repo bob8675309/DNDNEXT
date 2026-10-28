@@ -6,7 +6,10 @@
 
 alter table public.encounter_participants
  add column display_name text not null default 'Fixture Combatant',
- add column temp_hp integer not null default 0;
+ add column temp_hp integer not null default 0,
+ add column updated_at timestamptz not null default timezone('utc',now());
+alter table public.encounters
+ add column updated_at timestamptz not null default timezone('utc',now());
 alter table public.encounter_combat_log
  add column target_participant_id uuid,
  add column summary text;
