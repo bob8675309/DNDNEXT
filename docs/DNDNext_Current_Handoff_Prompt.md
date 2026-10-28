@@ -1,5 +1,10 @@
 # DNDNext Next-Chat Handoff Brief
 
+## 2026-10-27 Atomic Attack candidate, draft #293
+
+Current leaf [#293](https://github.com/bob8675309/DNDNEXT/pull/293) (stacked on #292) contains a **private service-role-only atomic weapon attack candidate** with one Action spend and per-attack event ledger, tested using isolated deterministic helper doubles. It is NOT accessible to browser callers, never deployed, and does not replace the legacy weapon/unarmed writers. Do not merge or activate without complete class/grip/hand/attunement rules, real effect/damage parity and signed-in combat regression. [New technical handoff](Attack_Action_Atomic_Weapon_Candidate_2026-10-27.md).
+
+
 ## Latest source-aligned combat handoff — #292 (2026-10-27)
 
 Current stacked draft [#292](https://github.com/bob8675309/DNDNEXT/pull/292) introduces a service-only **read-only** bridge between #291 simulated Attack ordinal and the real `encounter_weapon_profile_internal_v1` / `encounter_targeting_context_internal_v1` outputs. It does not call the real attack roll helper because that consumes Guiding Bolt one-shot advantage; it also does not reserve attacks, roll, spend Action or damage. Exact catalogue ID matches and character custody guard more strictly than the legacy weapon profile's item-name fallback. [Attack_Resolver_Preflight_Parity_2026-10-27.md](Attack_Resolver_Preflight_Parity_2026-10-27.md). No production SQL, and combat/attunement readiness remains false.
