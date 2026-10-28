@@ -1,5 +1,10 @@
 # Documentation Refresh Manifest
 
+## Latest draft #294 — production helper parity
+
+**2026-10-27 new source parity stage #294:** Added [Canonical_Roll_Damage_Parity_2026-10-27.md](Canonical_Roll_Damage_Parity_2026-10-27.md), source-identical PG16 roll/mitigation helpers and a full-helper integration/rollback regression, including Vicious Mockery cancellation, equipped resistance-before-flat damage, immunity and temp HP. Updated master effects handoff, roadmap and developer README. All draft stages #267–#294 are unmerged; no production combat effects or maps altered.
+
+
 ## 2026-10-27 Atomic Attack candidate, draft #293
 
 Added [Attack_Action_Atomic_Weapon_Candidate_2026-10-27.md](Attack_Action_Atomic_Weapon_Candidate_2026-10-27.md) for stacked PR #293, with server-source budgets, atomic single-Action multiattack, replay and Guiding Bolt rollback tests. Test doubles are disclosed; no live combat or production deployment. Updated integration handoff, developer prompt, roadmap and docs index.
