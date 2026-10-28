@@ -96,6 +96,14 @@ begin
    raise exception 'Actor/target and action/event IDs must be distinct'
      using errcode='22023';
  end if;
+ -- Identity boundary (draft): the legacy control helper grants service_role
+ -- unconditional access, so a synthetic auth.uid in that role is NOT proof
+ -- of user control. Fail closed until a verified authenticated-role execution
+ -- protocol and separate, independently tested grant design exist.
+ if coalesce(auth.role(),'') <> 'authenticated' then
+   raise exception 'Trusted authenticated-user execution context required'
+     using errcode='42501';
+ end if;
  if v_uid is null
  or not coalesce(public.encounter_can_control_participant_v1(p_attacker_id),false) then
    raise exception 'Unauthorized attack controller' using errcode='42501';

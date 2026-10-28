@@ -1,5 +1,10 @@
 # DNDNext Next-Chat Handoff Brief
 
+## NEW DRAFT — atomic Attack identity security hold (2026-10-27)
+
+On a child branch of #294, the candidate now rejects `service_role` execution before participant locking because live `encounter_can_control_participant_v1` trusts that role unconditionally. Only an `authenticated` request context can pass the new guard, while the EXECUTE grant remains service-role-only: this **intentionally prevents candidate execution**, not a completed user authorization bridge. See [Attack_Action_Identity_Boundary_2026-10-27.md](Attack_Action_Identity_Boundary_2026-10-27.md). Existing #294 test results must not be attributed to this new branch. No production SQL or browser API changes.
+
+
 ## Latest draft #294 — production helper parity
 
 **Latest draft #294 (2026-10-27):** Source-audited live roll/damage helpers differ from old July baseline. Final roll helper consumes next-attack Guiding Bolt Advantage and Vicious Mockery Disadvantage and cancels them together; final damage helper reads equipped-item resistance/highest typed flat reduction, applying Resistance first then flat before Vulnerability and temp HP. Exact helper bodies now tested in disposable PG16 including effect/HP/log rollback and #293 idempotent candidate. No live code or production migration, no browser RPC or complete class/focus/hand enforcement. The private candidate still requires a trusted user identity not established for service-role callers. Read [Canonical_Roll_Damage_Parity_2026-10-27.md](Canonical_Roll_Damage_Parity_2026-10-27.md) before attempting endpoint integration.

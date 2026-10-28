@@ -1,5 +1,10 @@
 # DNDNext Living Documentation Index
 
+## DRAFT IDENTITY SECURITY HOLD — staged child of #294 (2026-10-27)
+
+A source audit of live `encounter_can_control_participant_v1` confirmed that its `service_role` path bypasses participant permission checks. The still-service-role-only atomic Attack candidate now rejects all contexts except `authenticated` *before locks/writes*. That intentionally makes it unavailable until a separately verified signed-in transactional identity bridge and compatible grant are built; **this is not a working authenticated executor**. See [Attack Identity Boundary](Attack_Action_Identity_Boundary_2026-10-27.md). No production migration or endpoint activation.
+
+
 ## Latest draft #294 — production helper parity
 
 **Current combat/effects continuation: draft #294.** The actual production damage helper applies Resistance **before** structured flat equipment reduction, and the roll helper consumes both Guiding Bolt Advantage and Vicious Mockery Disadvantage, which cancel if simultaneous. Latest PR #294 tests original source function bodies in isolated PG16 and preserves complete mitigation in the private multiattack candidate result. No real game UI/RPC or production DB was modified. See [Canonical Roll/Damage Parity](Canonical_Roll_Damage_Parity_2026-10-27.md) and [master handoff](Attunement_Effects_Integration_Current_Handoff_2026-10-26.md).

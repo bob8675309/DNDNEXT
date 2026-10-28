@@ -1,0 +1,13 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const candidate=fs.readFileSync(new URL('../sql/20261027_03_attack_action_atomic_weapon_candidate.sql',import.meta.url),'utf8');
+const auth=candidate.indexOf("if coalesce(auth.role(),'') <> 'authenticated' then");
+const ctrl=candidate.indexOf("public.encounter_can_control_participant_v1(p_attacker_id)");
+const lock=candidate.indexOf("select * into v_a from public.encounter_participants");
+assert(auth>0 && ctrl>auth && lock>ctrl,'role rejection must precede authorization and row locks');
+assert.match(candidate.slice(auth,ctrl),/errcode='42501'/,'reject non-user contexts');
+assert.match(candidate,/revoke all on function private\.encounter_weapon_attack_atomic_candidate_v1\([\s\S]*?from public,anon,authenticated;/);
+assert.match(candidate,/grant execute on function private\.encounter_weapon_attack_atomic_candidate_v1\([\s\S]*?to service_role;/);
+assert.match(candidate,/'battleboardConsumerEnabled',false/);
+assert.doesNotMatch(candidate,/set_config\s*\(\s*'request\.jwt\.claims'/i,'do not manufacture caller claims');
+console.log('Atomic Attack identity boundary source guard PASS; candidate deliberately unavailable to its granted role.');
