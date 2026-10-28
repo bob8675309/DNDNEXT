@@ -1,5 +1,10 @@
 # DNDNext — Current Attunement, Equipment Effects and Spell Focus Handoff
 
+## 2026-10-27 Atomic Attack candidate, draft #293
+
+Draft [#293](https://github.com/bob8675309/DNDNEXT/pull/293), stacked on #292, adds a **service-role-only, unconnected atomic weapon attack execution candidate** with source-budgeted attack ordinals, a single Action spend on the first weapon attack, exact request replay, canonical roll/damage helper calls and transactional log/effect/HP rollback. Unlike #291-#292 read-only shadows, this candidate performs writes **only when explicitly invoked in an isolated test environment**; it is NOT deployed, callable by browser roles or wired into combat. Tests use deterministic roll/damage doubles and synthetic targeting, not full production parity. Attunement, hand interaction costs, class/subclass/multiclass features and full signed-in combat tests remain blockers. [Technical document](Attack_Action_Atomic_Weapon_Candidate_2026-10-27.md). Keep readiness false and all #267→#293 unmerged.
+
+
 ## 2026-10-27 leaf #292 — canonical weapon resolver read-only preflight
 
 Draft [#292](https://github.com/bob8675309/DNDNEXT/pull/292), on #291, adds `private.encounter_weapon_event_resolver_preflight_shadow_v1`, a service-only stable preflight for the next source-derived Attack slot. It calls only canonical **read-only** `encounter_weapon_profile_internal_v1` and `encounter_targeting_context_internal_v1`, reproducing range, cover/LOS and dodging context without reserving an attack slot. **Critical hazard found:** real `private.encounter_resolve_attack_roll_v1` CONSUMES one-shot Guiding Bolt advantage and logs `effect_consumed` before damage, so the preview must NEVER call it or existing attack/damage writers. Exact catalogue source key is required because the current canonical weapon profile can fall back to item display-name matching; physical custody is narrower than the legacy shared-account view. This is NOT real Multiattack, Action spending, attack or focus enforcement. See [Attack_Resolver_Preflight_Parity_2026-10-27.md](Attack_Resolver_Preflight_Parity_2026-10-27.md). All #267→#292 work remains staged and undeployed.
