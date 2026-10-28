@@ -13,6 +13,11 @@ as $f$
  select exists(select 1 from public.user_profiles
   where id=p_user_id and role='admin')
 $f$;
+-- PostgreSQL cannot rename a function input argument via CREATE OR REPLACE:
+-- the prior narrow fixture used (p uuid), whereas production uses
+-- (p_participant_id uuid). Drop only that disposable mock before restoring
+-- the byte-identical canonical function. NEVER do this on production.
+drop function public.encounter_can_control_participant_v1(uuid);
 -- Restore actual canonical participant controller logic, no shortcut that
 -- returns TRUE just because a fixture service-role setting was present.
 \i scripts/fixtures/canonical_controller_acl_pg16.sql
