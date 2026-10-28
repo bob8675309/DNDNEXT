@@ -1,0 +1,19 @@
+name: Validate Atomic Attack Identity Boundary
+on:
+  pull_request:
+    paths:
+      - 'sql/20261027_03_attack_action_atomic_weapon_candidate.sql'
+      - 'scripts/validate_attack_identity_boundary.mjs'
+      - '.github/workflows/validate-attack-identity-boundary.yml'
+  workflow_dispatch:
+jobs:
+  identity-guard:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/validate_attack_identity_boundary.mjs
