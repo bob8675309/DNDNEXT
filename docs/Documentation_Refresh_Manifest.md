@@ -1,5 +1,10 @@
 # Documentation Refresh Manifest
 
+## 2026-10-27 Atomic Attack candidate, draft #293
+
+Added [Attack_Action_Atomic_Weapon_Candidate_2026-10-27.md](Attack_Action_Atomic_Weapon_Candidate_2026-10-27.md) for stacked PR #293, with server-source budgets, atomic single-Action multiattack, replay and Guiding Bolt rollback tests. Test doubles are disclosed; no live combat or production deployment. Updated integration handoff, developer prompt, roadmap and docs index.
+
+
 ## 2026-10-27 #292 canonical weapon preflight source parity
 
 Added [Attack_Resolver_Preflight_Parity_2026-10-27.md](Attack_Resolver_Preflight_Parity_2026-10-27.md) and refreshed the master integration handoff, current developer prompt, roadmap and README. Documents live canonical profile/targeting inputs, exact item source requirement, the Guiding Bolt advantage-consumption risk in the roll helper, and no live action/damage/slot or effect writes. #292 stacked on #291 remains draft; actual Extra Attack and hand action consumers still blocked.
