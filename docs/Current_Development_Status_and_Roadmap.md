@@ -1,5 +1,10 @@
 # DNDNext Current Development Status and Roadmap
 
+## 2026-10-27 Atomic Attack candidate, draft #293
+
+Newest #293 candidate: service-role-only, unconnected, transactionally stages one Attack action with per-attack rolls/damage, exact request replay, canonical helper calls and failed-transaction rollback. Its isolated tests cover three Fighter attacks, one Action expenditure and one-shot effect consumption; the tests use deterministic helper doubles. **Not production-ready**: subclass/bonus/multiclass features, real roll/damage/cover parity, hand/shield interactions, account-owned custody and signed-in UI acceptance remain blockers. [Candidate technical notes](Attack_Action_Atomic_Weapon_Candidate_2026-10-27.md).
+
+
 ## Latest 2026-10-27 — #292 canonical weapon resolver parity preflight
 
 Draft [#292](https://github.com/bob8675309/DNDNEXT/pull/292) uses the actual stable canonical weapon-profile and LOS/cover/range read surfaces to preflight a #291 ordinal before any irreversible side effects. It requires exact catalogue source identity and character-specific equipped custody. Real attack roll helper `private.encounter_resolve_attack_roll_v1` **consumes one-shot Guiding Bolt**; no preview may call it. No attack, HP, Action, spell slot, effect or combat-log writer touched. Next reviewed phase: a true transactional Attack-event resolver that reserves a source-verified attack slot, consumes one Action, performs each roll/effect/damage exactly once, and preserves existing one-attack RPC compatibility. [Full audit](Attack_Resolver_Preflight_Parity_2026-10-27.md).
