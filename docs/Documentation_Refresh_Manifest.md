@@ -1,5 +1,10 @@
 # Documentation Refresh Manifest
 
+## Latest #295 — authenticated Attack authorization preflight
+
+**2026-10-27 #295:** Added [Authenticated_Attack_Caller_Boundary_2026-10-27.md](Authenticated_Attack_Caller_Boundary_2026-10-27.md), an authenticated-only private-data-safe read-only Attack caller RPC, exact production controller SQL test fixture, and role/JWT-context PG16 regression. Updated master integration handoff, roadmap, README and developer handoff. Service-role/user identity handoff still unresolved for executing actual attacks; do not merge/deploy.
+
+
 ## Latest draft #294 — production helper parity
 
 **2026-10-27 new source parity stage #294:** Added [Canonical_Roll_Damage_Parity_2026-10-27.md](Canonical_Roll_Damage_Parity_2026-10-27.md), source-identical PG16 roll/mitigation helpers and a full-helper integration/rollback regression, including Vicious Mockery cancellation, equipped resistance-before-flat damage, immunity and temp HP. Updated master effects handoff, roadmap and developer README. All draft stages #267–#294 are unmerged; no production combat effects or maps altered.
