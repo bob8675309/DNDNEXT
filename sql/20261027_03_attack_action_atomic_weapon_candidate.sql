@@ -117,6 +117,22 @@ begin
  if not found or v_a.character_id is null then
    raise exception 'Attacker must have a character' using errcode='55000';
  end if;
+ -- Revalidate *after* locking the participant, not only via the legacy
+ -- pre-lock helper. The old helper grants service_role unconditional control.
+ -- A signed-in user must be current controller, an authorized editor, or
+ -- an admin; privilege revocation must not be skipped on retries.
+ if v_a.controller_user_id is distinct from v_uid
+    and not public.is_admin(v_uid)
+    and not exists (
+      select 1 from public.character_permissions cp
+      where cp.character_id=v_a.character_id
+        and cp.user_id=v_uid and coalesce(cp.can_edit,false)
+      for share
+    )
+ then
+   raise exception 'Attack permission no longer valid'
+     using errcode='42501';
+ end if;
  select * into v_t from public.encounter_participants
    where id=p_target_id and encounter_id=v_a.encounter_id for update;
  if not found then raise exception 'Target outside encounter' using errcode='55000'; end if;

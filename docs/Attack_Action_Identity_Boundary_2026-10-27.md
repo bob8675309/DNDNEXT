@@ -29,3 +29,9 @@ The next task is implementing and independently testing a true authenticated-rol
 ## Next isolated fixture reconciliation (child of #296)
 
 The previous #296 isolated PG16 workflows failed because the old synthetic fixture did not provide an `authenticated` role context. This follow-up replaces `auth.role()` **only inside disposable PG16** with a `fixture.role` test value, asserts that `service_role` is rejected without mutating candidate state, and runs the existing rollback/idempotency/damage tests with the synthetic authenticated role. This is simulation, **not Supabase Auth JWT verification, a grant change, or a production authorization bridge**. The real candidate SQL and live grants remain unchanged. A green fixture establishes compatibility with the guard in isolated tests only.
+
+## Post-lock authorization hardening (new stacked draft)
+
+The atomic candidate previously used the legacy participant-control helper **before** locking the participant row. This draft adds a second check **after the attacker row lock**, directly using current `controller_user_id`, `character_permissions.can_edit` (matching rows locked `FOR SHARE`) or `public.is_admin`. A revoked character editor fails rather than relying on a prior helper result. No service-role bypass is used in this second check, and role/EXECUTE deadlock-by-design remains unchanged.
+
+**Limits:** Admin status is still checked through the existing live helper, JWT authenticity is not proven by these synthetic fixtures, and concurrent administrative role revocation or controller changes require dedicated two-session signed-in integration tests. This is a defense-in-depth candidate, not a deployable authenticated RPC. New source-contract validation checks ordering and fields; existing isolated PG16 attack regressions must be rerun on this exact head.

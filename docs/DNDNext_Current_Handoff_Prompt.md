@@ -1,5 +1,10 @@
 # DNDNext Next-Chat Handoff Brief
 
+## Latest isolated Attack permission hardening — stacked draft (2026-10-28)
+
+Following green #298 regression jobs, the atomic Attack candidate stages a **post-participant-lock** authorization check against current controller, character edit permission (matching row locked `FOR SHARE`), or admin. The service-only execution grant and fail-closed authenticated-role hold remain unchanged. No production RPC, API endpoint, role grant or live combat path is enabled. See [identity boundary](Attack_Action_Identity_Boundary_2026-10-27.md).
+
+
 ## 2026-10-28 isolated Attack identity regression follow-up
 
 The #296 fail-closed role guard caused expected PG16 fixture failures because old tests lacked a synthetic authenticated role. A stacked follow-up now restores isolated regression execution by mocking `auth.role()` only within disposable PG16, while adding explicit service-role rejection and no-write checks. This proves no signed-in JWT authentication or production authorization. Do not deploy or enable the atomic Attack candidate. See [identity boundary handoff](Attack_Action_Identity_Boundary_2026-10-27.md).

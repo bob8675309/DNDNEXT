@@ -11,3 +11,11 @@ assert.match(candidate,/grant execute on function private\.encounter_weapon_atta
 assert.match(candidate,/'battleboardConsumerEnabled',false/);
 assert.doesNotMatch(candidate,/set_config\s*\(\s*'request\.jwt\.claims'/i,'do not manufacture caller claims');
 console.log('Atomic Attack identity boundary source guard PASS; candidate deliberately unavailable to its granted role.');
+
+const lockCheck=candidate.indexOf('Attack permission no longer valid');
+const targetLock=candidate.indexOf('select * into v_t from public.encounter_participants');
+assert(lockCheck>lock && lockCheck<targetLock,'permission must be revalidated after participant lock, before target lock');
+assert.match(candidate.slice(lock,lockCheck),/controller_user_id is distinct from v_uid/);
+assert.match(candidate.slice(lock,lockCheck),/cp\.user_id=v_uid and coalesce\(cp\.can_edit,false\)/);
+assert.match(candidate.slice(lock,lockCheck),/for share/);
+console.log('Post-lock participant permission revalidation source contract PASS');

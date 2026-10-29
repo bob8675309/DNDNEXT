@@ -1,5 +1,10 @@
 # DNDNext Living Documentation Index
 
+## Latest isolated Attack permission hardening — stacked draft (2026-10-28)
+
+Following green #298 regression jobs, the atomic Attack candidate stages a **post-participant-lock** authorization check against current controller, character edit permission (matching row locked `FOR SHARE`), or admin. The service-only execution grant and fail-closed authenticated-role hold remain unchanged. No production RPC, API endpoint, role grant or live combat path is enabled. See [identity boundary](Attack_Action_Identity_Boundary_2026-10-27.md).
+
+
 ## New isolated authentication-role regression (draft child of #296)
 
 The atomic Attack fixture now explicitly simulates an authenticated caller and asserts that a privileged service-role call is rejected before any state write. This is **fixture-only**, not a real server-user identity bridge; production and browser execution remain disabled. See [Attack identity boundary](Attack_Action_Identity_Boundary_2026-10-27.md).
