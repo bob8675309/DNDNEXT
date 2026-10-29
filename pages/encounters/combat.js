@@ -109,9 +109,10 @@ function magicMissileAffinityLabel(targetResult) {
   return "";
 }
 
-export default function EncounterCombatPage() {
+export default function EncounterCombatPage({ workspaceSessionId = "", onWorkspaceSessionChange } = {}) {
   const [sessions, setSessions] = useState([]);
-  const [sessionId, setSessionId] = useState("");
+  const [sessionId, setSessionId] = useState(workspaceSessionId || "");
+  useEffect(() => { if (workspaceSessionId) setSessionId(workspaceSessionId); }, [workspaceSessionId]);
   const [encounter, setEncounter] = useState(null);
   const [mapData, setMapData] = useState(null);
   const [terrain, setTerrain] = useState([]);
@@ -415,8 +416,8 @@ export default function EncounterCombatPage() {
     setSessions(rows);
     setSessionId((current) => current && rows.some((r) => String(r.id) === String(current))
       ? current
-      : (rows.find((r) => r.status === "active")?.id || rows[0]?.id || ""));
-  }, []);
+      : (rows.find((r) => String(r.id) === String(workspaceSessionId))?.id || rows.find((r) => r.status === "active")?.id || rows[0]?.id || ""));
+  }, [workspaceSessionId]);
 
   const loadEncounter = useCallback(async (id) => {
     if (!id) {
@@ -944,7 +945,7 @@ export default function EncounterCombatPage() {
         <aside className="sidebar">
           <div className="panel">
             <div className="kicker">Encounter</div>
-            <select value={sessionId} onChange={(e) => setSessionId(e.target.value)}>
+            <select value={sessionId} onChange={(e) => { setSessionId(e.target.value); onWorkspaceSessionChange?.(e.target.value); }}>
               <option value="">Select encounter</option>
               {sessions.map((s) => <option key={s.id} value={s.id}>{s.name} • {s.status}</option>)}
             </select>

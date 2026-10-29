@@ -1,0 +1,21 @@
+.workspace{max-width:1800px;margin:0 auto;padding:18px 18px 60px;color:#f5f1e8;background:radial-gradient(ellipse at 10% 0%,#30263d 0%,#171722 55%,#11151d 100%);min-height:100vh}
+.header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;padding:24px 28px;border:1px solid #60516b;border-radius:18px;background:linear-gradient(130deg,#343046,#201f2b)}
+.header h1{font-size:clamp(27px,3vw,42px);margin:6px 0;color:#fff3d6;font-weight:700}
+.header p{color:#cfc4d5;max-width:690px;margin:0}
+.eyebrow{font-size:11px;letter-spacing:1.8px;font-weight:800;color:#d7ad67}
+.status{display:grid;gap:7px;width:min(100%,350px)}
+.status select{width:100%;background:#171824;color:#f9f4ec;border:1px solid #a89169;border-radius:8px;padding:12px}
+.status button{justify-self:start;border:1px solid #a28b65;background:transparent;color:#f1dcc0;padding:5px 10px;border-radius:6px}
+.meta{font-size:12px;color:#dfc18c;font-weight:700}
+.nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:16px 0}
+.nav button{display:grid;gap:7px;text-align:left;cursor:pointer;color:#e4dce8;padding:15px 17px;min-height:92px;background:#262734;border:1px solid #4a4558;border-radius:12px}
+.nav button:hover{border-color:#c3a36c;background:#323146}
+.nav button.selected{background:#51405d;border-color:#e7c17b;box-shadow:inset 0 3px #e7c17b}
+.nav small{color:#c7bdcd;font-size:12px;line-height:1.4}
+.guide{display:flex;align-items:center;flex-wrap:wrap;gap:12px;padding:13px 18px;border:1px solid #52465e;background:#25212c;border-radius:10px;margin-bottom:14px}
+.guide strong{color:#f1cb83}.guide span{flex:1;min-width:240px;color:#ded7de;font-size:13px}.guide a{color:#f1ca85}
+.surface{background:#171821;border:1px solid #433f4f;border-radius:14px;overflow:hidden}
+.surface :global(main){margin:0 auto;max-width:none}
+.error{padding:10px 16px;margin-top:12px;color:#ffd1cb;background:#562a30;border-radius:8px}
+@media(max-width:920px){.nav{grid-template-columns:repeat(2,minmax(0,1fr))}.header{padding:18px}}
+@media(max-width:560px){.nav{grid-template-columns:1fr}.workspace{padding:8px}.header{padding:16px}.nav button{min-height:70px}}
