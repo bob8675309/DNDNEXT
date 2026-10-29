@@ -97,7 +97,7 @@ $damage$;
 -- Existing fixture.uid remains a synthetic user; it is NOT a verified JWT.
 create or replace function auth.role() returns text
 language sql stable
-as $select nullif(current_setting('fixture.role',true),'')$;
+as $fixture_role$select nullif(current_setting('fixture.role',true),'')$fixture_role$;
 \i sql/20261027_03_attack_action_atomic_weapon_candidate.sql
 
 -- Prove the privileged role fails BEFORE any attack/session mutation.
