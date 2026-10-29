@@ -1,0 +1,20 @@
+name: Validate Unified Encounter Workspace
+on:
+  pull_request:
+    paths:
+      - 'pages/encounters/**'
+      - 'styles/EncounterWorkspace.module.css'
+      - 'scripts/validate_unified_encounter_workspace.mjs'
+      - '.github/workflows/validate-unified-encounter-workspace.yml'
+  workflow_dispatch:
+jobs:
+  source-contracts:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/validate_unified_encounter_workspace.mjs

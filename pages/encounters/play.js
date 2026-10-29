@@ -281,7 +281,7 @@ export default function EncounterPlayPage({ workspaceSessionId = "", onWorkspace
     <main className="play-page">
       <header className="play-header">
         <div><div className="kicker">TACTICAL ENCOUNTER • PHASE 1H</div><h1>Turn Movement & Reactions</h1><p>One hex is 5 feet. The server validates movement and pauses threatened movement for authoritative opportunity reactions.</p></div>
-        <nav><Link href="/encounters/combat">Combat</Link><Link href="/encounters/live">GM Staging</Link><Link href="/encounters">Map Workshop</Link></nav>
+        <nav><Link href="/encounters/workspace">Unified Workspace</Link><Link href="/encounters/combat">Combat</Link><Link href="/encounters/live">GM Staging</Link><Link href="/encounters">Map Workshop</Link></nav>
       </header>
       {message ? <div className="message">{message}</div> : null}
       <section className="layout">

@@ -234,7 +234,7 @@ export default function LiveEncounterPage({ workspaceSessionId = "", onWorkspace
     <main className="live-page">
       <header className="live-header">
         <div><div className="kicker">TACTICAL ENCOUNTER SYSTEM • MILESTONE 2</div><h1>Encounter Staging & Control</h1><p>Stage encounter-local participants, set initiative, then start server-authoritative turn play. Tactical state never changes world travel or town position.</p></div>
-        <div className="header-links"><Link href="/encounters/play">Turn Play</Link><Link href="/encounters/combat">Combat</Link><Link href="/encounters">Map Workshop</Link><span>{isAdmin ? "GM Control" : "Realtime Viewer"}</span></div>
+        <div className="header-links"><Link href="/encounters/workspace">Unified Workspace</Link><Link href="/encounters/play">Turn Play</Link><Link href="/encounters/combat">Combat</Link><Link href="/encounters">Map Workshop</Link><span>{isAdmin ? "GM Control" : "Realtime Viewer"}</span></div>
       </header>
       {message ? <div className="message">{message}</div> : null}
       <section className="layout">

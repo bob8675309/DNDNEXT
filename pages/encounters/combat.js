@@ -935,7 +935,7 @@ export default function EncounterCombatPage({ workspaceSessionId = "", onWorkspa
           <p>Weapons, reviewed spell attacks and saves, caster-centered Emanations, point-targeted Spheres, timed effects, healing, and one-shot attack/save modifiers resolve through server-authoritative combat RPCs. Guiding Bolt grants next-attack Advantage while Vicious Mockery imposes next-attack Disadvantage, with normal cancellation and one-shot consumption. Acid Splash derives every creature in its selected area on the server. Healing Word spends a Bonus Action while the 2024 one-spell-slot-per-turn rule remains server enforced. Movement remains authoritative on the Turn Movement surface.</p>
         </div>
         <nav>
-          <Link href="/encounters/play">Turn Movement</Link>
+          <Link href="/encounters/workspace">Unified Workspace</Link><Link href="/encounters/play">Turn Movement</Link>
           <Link href="/encounters/live">GM Staging</Link>
           <Link href="/encounters">Map Workshop</Link>
         </nav>
