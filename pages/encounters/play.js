@@ -13,9 +13,10 @@ function requestId() {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}-0000-4000-8000-000000000000`.slice(0, 36);
 }
 
-export default function EncounterPlayPage() {
+export default function EncounterPlayPage({ workspaceSessionId = "", onWorkspaceSessionChange } = {}) {
   const [sessions, setSessions] = useState([]);
-  const [sessionId, setSessionId] = useState("");
+  const [sessionId, setSessionId] = useState(workspaceSessionId || "");
+  useEffect(() => { if (workspaceSessionId) setSessionId(workspaceSessionId); }, [workspaceSessionId]);
   const [encounter, setEncounter] = useState(null);
   const [mapData, setMapData] = useState(null);
   const [terrain, setTerrain] = useState([]);
@@ -50,8 +51,8 @@ export default function EncounterPlayPage() {
     if (error) throw error;
     const rows = data || [];
     setSessions(rows);
-    setSessionId((current) => current && rows.some((row) => String(row.id) === String(current)) ? current : (rows.find((row) => row.status === "active")?.id || rows[0]?.id || ""));
-  }, []);
+    setSessionId((current) => current && rows.some((row) => String(row.id) === String(current)) ? current : (rows.find((row) => String(row.id) === String(workspaceSessionId))?.id || rows.find((row) => row.status === "active")?.id || rows[0]?.id || ""));
+  }, [workspaceSessionId]);
 
   const loadEncounter = useCallback(async (nextId) => {
     if (!nextId) {
@@ -280,12 +281,12 @@ export default function EncounterPlayPage() {
     <main className="play-page">
       <header className="play-header">
         <div><div className="kicker">TACTICAL ENCOUNTER • PHASE 1H</div><h1>Turn Movement & Reactions</h1><p>One hex is 5 feet. The server validates movement and pauses threatened movement for authoritative opportunity reactions.</p></div>
-        <nav><Link href="/encounters/combat">Combat</Link><Link href="/encounters/live">GM Staging</Link><Link href="/encounters">Map Workshop</Link></nav>
+        <nav><Link href="/encounters/workspace">Unified Workspace</Link><Link href="/encounters/combat">Combat</Link><Link href="/encounters/live">GM Staging</Link><Link href="/encounters">Map Workshop</Link></nav>
       </header>
       {message ? <div className="message">{message}</div> : null}
       <section className="layout">
         <aside className="sidebar">
-          <div className="panel"><div className="kicker">Encounter</div><select value={sessionId} onChange={(event) => setSessionId(event.target.value)}><option value="">Select encounter</option>{sessions.map((row) => <option key={row.id} value={row.id}>{row.name} • {row.status}</option>)}</select>{encounter ? <div className="meta"><strong>{encounter.name}</strong><span>{encounter.status} • Round {encounter.round}</span></div> : null}</div>
+          <div className="panel"><div className="kicker">Encounter</div><select value={sessionId} onChange={(event) => { setSessionId(event.target.value); onWorkspaceSessionChange?.(event.target.value); }}><option value="">Select encounter</option>{sessions.map((row) => <option key={row.id} value={row.id}>{row.name} • {row.status}</option>)}</select>{encounter ? <div className="meta"><strong>{encounter.name}</strong><span>{encounter.status} • Round {encounter.round}</span></div> : null}</div>
           <div className="panel"><div className="kicker">Active turn</div>{activeParticipant ? <><h2>{activeParticipant.display_name}</h2><div className="read"><span>Team</span><strong>{activeParticipant.team}</strong></div><div className="read"><span>Speed</span><strong>{speedFt} ft.</strong></div>{movementBonusFt ? <div className="read"><span>Dash bonus</span><strong>+{movementBonusFt} ft.</strong></div> : null}<div className="read"><span>Spent</span><strong>{spentFt} ft.</strong></div><div className="read"><span>Remaining</span><strong>{remainingFt} ft.</strong></div>{activeParticipant.disengaged ? <div className="effect-chip">Disengaged • opportunity attacks suppressed</div> : null}<div className={`control ${canControl ? "yes" : "no"}`}>{canControl ? "You control this turn" : "View only"}</div></> : <p>No active participant.</p>}</div>
           {reactionWindow ? <div className="panel reaction-panel"><div className="kicker">Opportunity reaction</div><h2>{reactor?.display_name || "Reactor"} → {reactionMover?.display_name || "Mover"}</h2><p>Movement from {reactionWindow.from_q},{reactionWindow.from_r} to {reactionWindow.to_q},{reactionWindow.to_r} leaves hostile melee reach. Movement is paused until this window resolves.</p>{canResolveReaction ? <><select value={reactionWeaponId} onChange={(event) => setReactionWeaponId(event.target.value)}><option value="">Unarmed Strike</option>{reactionWeapons.map((row) => <option key={row.inventoryItemId} value={row.inventoryItemId}>{row.name} • reach {row.reachFt} ft.</option>)}</select><button className="reaction" onClick={() => resolveReaction("attack")} disabled={saving}>Opportunity Attack</button><button className="pass" onClick={() => resolveReaction("pass")} disabled={saving}>Pass</button></> : <div className="waiting">Waiting for {reactor?.display_name || "the reactor"}'s controller.</div>}</div> : null}
           {activeParticipant ? <div className="panel"><div className="kicker">Proposed route</div><h2>{path.length} steps • {pathCostFt} ft.</h2><p>Click adjacent hexes to build the route. A legal route can be partially accepted up to the hex where an opportunity reaction triggers.</p><button onClick={submitMove} disabled={!canControl || !path.length || saving || pendingForActiveMover || encounter?.status !== "active"}>Move</button><button className="end" onClick={endTurn} disabled={!canControl || saving || pendingForActiveMover || encounter?.status !== "active"}>End Turn</button></div> : null}

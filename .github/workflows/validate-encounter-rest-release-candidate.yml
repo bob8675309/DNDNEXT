@@ -1,0 +1,39 @@
+name: Validate Encounter and Rest Release Candidate
+on:
+  pull_request:
+    paths:
+      - 'pages/encounters/**'
+      - 'components/CharacterSheetEnhancements.js'
+      - 'components/CharacterRestActivityDialog.js'
+      - 'styles/EncounterWorkspace.module.css'
+      - 'styles/CharacterRestActivityDialog.module.css'
+      - 'scripts/validate_unified_encounter_workspace.mjs'
+      - 'scripts/validate_player_rest_buttons.mjs'
+      - '.github/workflows/validate-encounter-rest-release-candidate.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contract-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/validate_unified_encounter_workspace.mjs
+      - run: node scripts/validate_player_rest_buttons.mjs
+  production-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      CI: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run build

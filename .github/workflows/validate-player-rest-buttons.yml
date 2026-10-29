@@ -1,0 +1,21 @@
+name: Validate player rest buttons
+on:
+  pull_request:
+    paths:
+      - "components/CharacterSheetEnhancements.js"
+      - "components/CharacterRestActivityDialog.js"
+      - "styles/CharacterRestActivityDialog.module.css"
+      - "docs/Rest_Activity_Popup_Status_2026-10-25.md"
+      - "components/CharacterSheetResourceTracker.js"
+      - "scripts/validate_player_rest_buttons.mjs"
+      - ".github/workflows/validate-player-rest-buttons.yml"
+  workflow_dispatch:
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node scripts/validate_player_rest_buttons.mjs

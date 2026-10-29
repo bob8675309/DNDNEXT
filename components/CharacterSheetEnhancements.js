@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ABILITY_KEYS, ABILITY_LABELS } from "../utils/characterCreation";
 import { ABILITY_DESCRIPTIONS, FALLBACK_SKILL_DESCRIPTIONS } from "../utils/characterCreationGuidance";
 import { useCharacterInteractionContext } from "./character/CharacterInteractionContext";
 import CharacterSheetResourceTracker from "./CharacterSheetResourceTracker";
+import CharacterRestActivityDialog from "./CharacterRestActivityDialog";
 import { supabase } from "../utils/supabaseClient";
 
 function safeText(value) {
@@ -212,11 +213,15 @@ export default function CharacterSheetEnhancements({ rootRef, sheet = {}, featur
   const [resourceAccessible, setResourceAccessible] = useState(null);
   const [pinnedInfo, setPinnedInfo] = useState(null);
   const [hpOpen, setHpOpen] = useState(false);
+  const [restDialogType, setRestDialogType] = useState(null);
+  const restSubmitInFlight = useRef(false);
 
   const classKey = sheetClassKey(sheet);
   const classSource = sheetClassSource(sheet);
   const speciesName = safeText(sheet.species || sheet.race || sheet.meta?.species);
   const resolvedCharacterId = sheetCharacterId(sheet, contextCharacterId);
+  // Switching characters cannot carry an unfinished rest dialog to another sheet.
+  useEffect(() => { setRestDialogType(null); }, [resolvedCharacterId]);
 
   useEffect(() => {
     let active = true;
@@ -309,7 +314,7 @@ export default function CharacterSheetEnhancements({ rootRef, sheet = {}, featur
   }, [descriptions, featureRows, sheet.featsTraits, speciesDescription]);
 
   async function runResourceRpc(rpcName, args, busyKey) {
-    if (!resolvedCharacterId || resourceBusyKey) return;
+    if (!resolvedCharacterId || resourceBusyKey) return false;
     setResourceBusyKey(busyKey);
     setResourceError("");
     try {
@@ -317,8 +322,10 @@ export default function CharacterSheetEnhancements({ rootRef, sheet = {}, featur
       if (error) throw error;
       setResourceProfile(data && typeof data === "object" ? data : null);
       setResourceAccessible(true);
+      return true;
     } catch (error) {
       setResourceError(error?.message || "Could not update spell resources.");
+      return false;
     } finally {
       setResourceBusyKey("");
     }
@@ -345,16 +352,30 @@ export default function CharacterSheetEnhancements({ rootRef, sheet = {}, featur
     }, `spell:${assignmentId}:${operation}`);
   }
 
-  async function handleRest(restType) {
-    const isLong = restType === "long_rest";
-    const prompt = isLong
-      ? "Complete a Long Rest? This restores all tracked spell slots and short/long-rest limited spell uses. HP, Hit Dice, class features, and encounter state are not changed yet."
-      : "Complete a Short Rest? This restores Pact Magic and other short-rest spell resources. HP, Hit Dice, class features, and encounter state are not changed yet.";
-    if (typeof window !== "undefined" && !window.confirm(prompt)) return;
-    await runResourceRpc("complete_character_rest_v1", {
-      p_character_id: resolvedCharacterId,
-      p_rest_type: restType,
-    }, `rest:${restType}`);
+  function handleRest(restType) {
+    if (!["short_rest", "long_rest"].includes(restType)) return;
+    if (!resolvedCharacterId || resourceBusyKey || restSubmitInFlight.current) return;
+    if (resourceProfile?.encounterLocked) return;
+    setResourceError("");
+    setRestDialogType(restType);
+  }
+
+  async function recoverDuringRest() {
+    if (!restDialogType || restSubmitInFlight.current) return;
+    if (resourceProfile?.encounterLocked) {
+      setResourceError("Resting is unavailable during an active encounter.");
+      return;
+    }
+    restSubmitInFlight.current = true;
+    try {
+      const completed = await runResourceRpc("complete_character_rest_v1", {
+        p_character_id: resolvedCharacterId,
+        p_rest_type: restDialogType,
+      }, `rest:${restDialogType}`);
+      if (completed) setRestDialogType(null);
+    } finally {
+      restSubmitInFlight.current = false;
+    }
   }
 
   const applyDomEnhancements = useCallback(() => {
@@ -475,6 +496,17 @@ export default function CharacterSheetEnhancements({ rootRef, sheet = {}, featur
           onRest={handleRest}
         />,
         resourceTarget
+      ) : null}
+      {restDialogType ? (
+        <CharacterRestActivityDialog
+          restType={restDialogType}
+          busy={restSubmitInFlight.current || resourceBusyKey.startsWith("rest:")}
+          encounterLocked={Boolean(resourceProfile?.encounterLocked)}
+          error={resourceError}
+          attunementEnabled={false}
+          onRecover={recoverDuringRest}
+          onClose={() => { if (!restSubmitInFlight.current) setRestDialogType(null); }}
+        />
       ) : null}
       {hpOpen && canManageCharacter && resolvedCharacterId ? (
         <div className="sheet-hp-popover-backdrop" onMouseDown={(event) => event.target === event.currentTarget ? setHpOpen(false) : null}>

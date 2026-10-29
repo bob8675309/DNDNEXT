@@ -5,13 +5,14 @@ import { supabase } from "../../utils/supabaseClient";
 
 const TEAMS = ["players", "allies", "enemies", "neutral"];
 
-export default function LiveEncounterPage() {
+export default function LiveEncounterPage({ workspaceSessionId = "", onWorkspaceSessionChange } = {}) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [maps, setMaps] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [characters, setCharacters] = useState([]);
   const [controllerOptions, setControllerOptions] = useState([]);
-  const [sessionId, setSessionId] = useState("");
+  const [sessionId, setSessionId] = useState(workspaceSessionId || "");
+  useEffect(() => { if (workspaceSessionId) setSessionId(workspaceSessionId); }, [workspaceSessionId]);
   const [mapData, setMapData] = useState(null);
   const [terrain, setTerrain] = useState([]);
   const [objects, setObjects] = useState([]);
@@ -65,8 +66,8 @@ export default function LiveEncounterPage() {
     setCharacters(charRes.data || []);
     setCreateMapId((current) => current || mapRes.data?.[0]?.id || "");
     setStageCharacterId((current) => current || charRes.data?.[0]?.id || "");
-    setSessionId((current) => current && encounterRes.data?.some((row) => String(row.id) === String(current)) ? current : (encounterRes.data?.[0]?.id || ""));
-  }, []);
+    setSessionId((current) => current && encounterRes.data?.some((row) => String(row.id) === String(current)) ? current : (encounterRes.data?.find((row) => String(row.id) === String(workspaceSessionId))?.id || encounterRes.data?.[0]?.id || ""));
+  }, [workspaceSessionId]);
 
   const loadSession = useCallback(async (nextSessionId) => {
     if (!nextSessionId) {
@@ -233,14 +234,14 @@ export default function LiveEncounterPage() {
     <main className="live-page">
       <header className="live-header">
         <div><div className="kicker">TACTICAL ENCOUNTER SYSTEM • MILESTONE 2</div><h1>Encounter Staging & Control</h1><p>Stage encounter-local participants, set initiative, then start server-authoritative turn play. Tactical state never changes world travel or town position.</p></div>
-        <div className="header-links"><Link href="/encounters/play">Turn Play</Link><Link href="/encounters/combat">Combat</Link><Link href="/encounters">Map Workshop</Link><span>{isAdmin ? "GM Control" : "Realtime Viewer"}</span></div>
+        <div className="header-links"><Link href="/encounters/workspace">Unified Workspace</Link><Link href="/encounters/play">Turn Play</Link><Link href="/encounters/combat">Combat</Link><Link href="/encounters">Map Workshop</Link><span>{isAdmin ? "GM Control" : "Realtime Viewer"}</span></div>
       </header>
       {message ? <div className="message">{message}</div> : null}
       <section className="layout">
         <aside className="sidebar">
           <div className="panel">
             <div className="kicker">Session library</div><h2>Encounter</h2>
-            <select value={sessionId} onChange={(e) => setSessionId(e.target.value)}><option value="">No encounter selected</option>{sessions.map((row) => <option key={row.id} value={row.id}>{row.name} • {row.status}</option>)}</select>
+            <select value={sessionId} onChange={(e) => { setSessionId(e.target.value); onWorkspaceSessionChange?.(e.target.value); }}><option value="">No encounter selected</option>{sessions.map((row) => <option key={row.id} value={row.id}>{row.name} • {row.status}</option>)}</select>
             {activeSession ? <div className="session-meta"><strong>{activeSession.name}</strong><span>Status {activeSession.status} • Round {activeSession.round} • v{activeSession.version}</span><span>Phase {activeSession.phase}</span></div> : null}
             {isAdmin ? <div className="create"><select value={createMapId} onChange={(e) => setCreateMapId(e.target.value)}>{maps.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select><input value={createName} onChange={(e) => setCreateName(e.target.value)} /><button onClick={createEncounter} disabled={saving || !createMapId}>Create session</button></div> : null}
           </div>

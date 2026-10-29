@@ -109,9 +109,10 @@ function magicMissileAffinityLabel(targetResult) {
   return "";
 }
 
-export default function EncounterCombatPage() {
+export default function EncounterCombatPage({ workspaceSessionId = "", onWorkspaceSessionChange } = {}) {
   const [sessions, setSessions] = useState([]);
-  const [sessionId, setSessionId] = useState("");
+  const [sessionId, setSessionId] = useState(workspaceSessionId || "");
+  useEffect(() => { if (workspaceSessionId) setSessionId(workspaceSessionId); }, [workspaceSessionId]);
   const [encounter, setEncounter] = useState(null);
   const [mapData, setMapData] = useState(null);
   const [terrain, setTerrain] = useState([]);
@@ -415,8 +416,8 @@ export default function EncounterCombatPage() {
     setSessions(rows);
     setSessionId((current) => current && rows.some((r) => String(r.id) === String(current))
       ? current
-      : (rows.find((r) => r.status === "active")?.id || rows[0]?.id || ""));
-  }, []);
+      : (rows.find((r) => String(r.id) === String(workspaceSessionId))?.id || rows.find((r) => r.status === "active")?.id || rows[0]?.id || ""));
+  }, [workspaceSessionId]);
 
   const loadEncounter = useCallback(async (id) => {
     if (!id) {
@@ -934,7 +935,7 @@ export default function EncounterCombatPage() {
           <p>Weapons, reviewed spell attacks and saves, caster-centered Emanations, point-targeted Spheres, timed effects, healing, and one-shot attack/save modifiers resolve through server-authoritative combat RPCs. Guiding Bolt grants next-attack Advantage while Vicious Mockery imposes next-attack Disadvantage, with normal cancellation and one-shot consumption. Acid Splash derives every creature in its selected area on the server. Healing Word spends a Bonus Action while the 2024 one-spell-slot-per-turn rule remains server enforced. Movement remains authoritative on the Turn Movement surface.</p>
         </div>
         <nav>
-          <Link href="/encounters/play">Turn Movement</Link>
+          <Link href="/encounters/workspace">Unified Workspace</Link><Link href="/encounters/play">Turn Movement</Link>
           <Link href="/encounters/live">GM Staging</Link>
           <Link href="/encounters">Map Workshop</Link>
         </nav>
@@ -944,7 +945,7 @@ export default function EncounterCombatPage() {
         <aside className="sidebar">
           <div className="panel">
             <div className="kicker">Encounter</div>
-            <select value={sessionId} onChange={(e) => setSessionId(e.target.value)}>
+            <select value={sessionId} onChange={(e) => { setSessionId(e.target.value); onWorkspaceSessionChange?.(e.target.value); }}>
               <option value="">Select encounter</option>
               {sessions.map((s) => <option key={s.id} value={s.id}>{s.name} • {s.status}</option>)}
             </select>
