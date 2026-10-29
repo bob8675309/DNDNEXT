@@ -1,5 +1,10 @@
 # DNDNext Living Documentation Index
 
+## New isolated authentication-role regression (draft child of #296)
+
+The atomic Attack fixture now explicitly simulates an authenticated caller and asserts that a privileged service-role call is rejected before any state write. This is **fixture-only**, not a real server-user identity bridge; production and browser execution remain disabled. See [Attack identity boundary](Attack_Action_Identity_Boundary_2026-10-27.md).
+
+
 ## DRAFT IDENTITY SECURITY HOLD — staged child of #294 (2026-10-27)
 
 A source audit of live `encounter_can_control_participant_v1` confirmed that its `service_role` path bypasses participant permission checks. The still-service-role-only atomic Attack candidate now rejects all contexts except `authenticated` *before locks/writes*. That intentionally makes it unavailable until a separately verified signed-in transactional identity bridge and compatible grant are built; **this is not a working authenticated executor**. See [Attack Identity Boundary](Attack_Action_Identity_Boundary_2026-10-27.md). No production migration or endpoint activation.

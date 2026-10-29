@@ -92,7 +92,34 @@ begin
  );
 end;
 $damage$;
+-- Disposable fixture-only identity simulation. This must never become a
+-- production auth.role override or a browser-controlled user-identity input.
+-- Existing fixture.uid remains a synthetic user; it is NOT a verified JWT.
+create or replace function auth.role() returns text
+language sql stable
+as $select nullif(current_setting('fixture.role',true),'')$;
 \i sql/20261027_03_attack_action_atomic_weapon_candidate.sql
+
+-- Prove the privileged role fails BEFORE any attack/session mutation.
+do $identity_denial$
+declare blocked boolean:=false;
+begin
+ perform set_config('fixture.uid','aaaaaaaa-0000-4000-8000-000000000002',true);
+ perform set_config('fixture.role','service_role',true);
+ begin
+   perform private.encounter_weapon_attack_atomic_candidate_v1(
+     'dddddddd-0000-4000-8000-000000000001',
+     'dddddddd-0000-4000-8000-000000000002',
+     'eeeeeeee-0000-4000-8000-000000000050',
+     'eeeeaa00-0000-4000-8000-000000000001',
+     'eeeebb00-0000-4000-8000-000000000001',6,0,1);
+ exception when insufficient_privilege then blocked:=true;
+ end;
+ if not blocked then raise exception 'Privileged role bypassed identity hold'; end if;
+ if exists(select 1 from public.encounter_weapon_action_candidate_sessions_v1)
+ or exists(select 1 from public.encounter_weapon_action_candidate_events_v1)
+ then raise exception 'Privileged rejection changed candidate state'; end if;
+end $identity_denial$;
 
 do $test$
 declare
@@ -128,6 +155,7 @@ begin
    'private.encounter_weapon_attack_atomic_candidate_v1(uuid,uuid,uuid,uuid,uuid,integer,integer,integer)','EXECUTE')
  then raise exception 'Atomic candidate exposed to browser roles'; end if;
  perform set_config('fixture.uid','aaaaaaaa-0000-4000-8000-000000000002',true);
+ perform set_config('fixture.role','authenticated',true);
  update public.character_progression
  set class_id='eeeeeeee-aaaa-4000-8000-000000000011',class_level=11
  where character_id=c;

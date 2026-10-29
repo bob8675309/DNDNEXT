@@ -1,5 +1,10 @@
 # DNDNext Next-Chat Handoff Brief
 
+## 2026-10-28 isolated Attack identity regression follow-up
+
+The #296 fail-closed role guard caused expected PG16 fixture failures because old tests lacked a synthetic authenticated role. A stacked follow-up now restores isolated regression execution by mocking `auth.role()` only within disposable PG16, while adding explicit service-role rejection and no-write checks. This proves no signed-in JWT authentication or production authorization. Do not deploy or enable the atomic Attack candidate. See [identity boundary handoff](Attack_Action_Identity_Boundary_2026-10-27.md).
+
+
 ## NEW DRAFT — atomic Attack identity security hold (2026-10-27)
 
 On a child branch of #294, the candidate now rejects `service_role` execution before participant locking because live `encounter_can_control_participant_v1` trusts that role unconditionally. Only an `authenticated` request context can pass the new guard, while the EXECUTE grant remains service-role-only: this **intentionally prevents candidate execution**, not a completed user authorization bridge. See [Attack_Action_Identity_Boundary_2026-10-27.md](Attack_Action_Identity_Boundary_2026-10-27.md). Existing #294 test results must not be attributed to this new branch. No production SQL or browser API changes.
