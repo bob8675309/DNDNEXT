@@ -29,6 +29,10 @@ jobs:
     env:
       NEXT_TELEMETRY_DISABLED: '1'
       CI: '1'
+      # CI-only syntactically valid placeholders; no real Supabase access or credentials.
+      # Next.js imports the Supabase client while collecting pages even for a static build.
+      NEXT_PUBLIC_SUPABASE_URL: 'https://ci-placeholder.supabase.co'
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: 'ci-build-only-not-a-real-supabase-key'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

@@ -33,3 +33,7 @@ The rest dialog does not implement attunement, crafting or HP/Hit Dice recovery.
 ## Follow-on development
 
 After this release checkpoint, build the persistent shared battlefield and contextual combat controls as a separate feature branch. Do not add unfinished atomic Attack executor work to this release to compensate for the present UI limitations.
+
+## CI build environment note (2026-10-28)
+
+The first GitHub Actions `next build` reached **Compiled successfully** but failed while collecting `/admin` page data because the standalone GitHub worker had no `NEXT_PUBLIC_SUPABASE_URL` or anon key. Vercel deploys use their configured environment. The candidate's CI-only production-build job supplies **deliberately fake**, non-secret Supabase URL and anon key values to permit static module initialization. This is a compilation check only; it never authenticates, connects to production or proves any Supabase-backed interaction. Do not substitute real keys into the workflow or ship the placeholders as runtime configuration.
