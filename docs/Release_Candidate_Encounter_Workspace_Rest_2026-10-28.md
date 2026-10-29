@@ -37,3 +37,13 @@ After this release checkpoint, build the persistent shared battlefield and conte
 ## CI build environment note (2026-10-28)
 
 The first GitHub Actions `next build` reached **Compiled successfully** but failed while collecting `/admin` page data because the standalone GitHub worker had no `NEXT_PUBLIC_SUPABASE_URL` or anon key. Vercel deploys use their configured environment. The candidate's CI-only production-build job supplies **deliberately fake**, non-secret Supabase URL and anon key values to permit static module initialization. This is a compilation check only; it never authenticates, connects to production or proves any Supabase-backed interaction. Do not substitute real keys into the workflow or ship the placeholders as runtime configuration.
+
+## Browser acceptance bug: tactical resource-link flicker (2026-10-28)
+
+The owner recorded a ~5-second clip at `/encounters/workspace` showing the Character Resource Link card repeatedly alternating between `Checking linked Sheet & Rolls resources…` and synchronized Pact slot counts while no spell was cast. The card changes height during refresh and destabilizes the surrounding scroll layout.
+
+**Verified via live read-only SQL function-definition review:** `public.encounter_spellcasting_profile_v2` calls `private.sync_character_spell_slots_v1`, whose existing `ON CONFLICT DO UPDATE` emits `character_spell_slots` change events even if the slot counts are unchanged. The global `TacticalCharacterResourceBridge` subscribes to that table and previously called `load` for every event, causing a self-triggered refresh loop. This is not proof of game-state modification by the user.
+
+**Scoped release-candidate remediation:** Only filter an `UPDATE` notification when same-character, same pool/level, remaining/max and recharge key match the latest fetched profile snapshot. Genuine resource changes, INSERT and DELETE still reload. Keep already-valid resource details visible while refreshing rather than collapsing them into a spinner. Add a focused static regression validator. Does not modify Supabase functions, resource amounts, attack logic, or other encounter components.
+
+**Backend follow-up:** The profile-reading RPC currently performs a write-through sync and generates no-op UPSERT updates. Consider a separately reviewed migration to add `WHERE ... IS DISTINCT FROM ...` to the UPSERT, after checking affected consumers, triggers and concurrency. Not included in this release. Verify zero repeated profile requests on an idle encounter in browser DevTools after one consolidated preview, plus real changes from character sheet, cast and turn transition.

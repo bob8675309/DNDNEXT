@@ -47,6 +47,8 @@ export default function TacticalCharacterResourceBridge() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const requestRef = useRef(0);
+  // Realtime events can arrive before React commits a profile update.
+  const latestProfileRef = useRef(null);
 
   useEffect(() => {
     if (typeof document === "undefined") return undefined;
@@ -90,6 +92,7 @@ export default function TacticalCharacterResourceBridge() {
     requestRef.current = requestId;
 
     if (!id) {
+      latestProfileRef.current = null;
       setEncounter(null);
       setProfile(null);
       setError("");
@@ -111,6 +114,7 @@ export default function TacticalCharacterResourceBridge() {
 
       const participantId = text(encounterRow?.active_participant_id);
       if (!participantId) {
+        latestProfileRef.current = null;
         setProfile(null);
         return;
       }
@@ -120,9 +124,12 @@ export default function TacticalCharacterResourceBridge() {
       });
       if (profileError) throw profileError;
       if (requestRef.current !== requestId) return;
-      setProfile(data && typeof data === "object" ? data : null);
+      const nextProfile = data && typeof data === "object" ? data : null;
+      latestProfileRef.current = nextProfile;
+      setProfile(nextProfile);
     } catch (loadError) {
       if (requestRef.current !== requestId) return;
+      latestProfileRef.current = null;
       setProfile(null);
       setError(loadError?.message || "Could not load linked character spell resources.");
     } finally {
@@ -158,7 +165,25 @@ export default function TacticalCharacterResourceBridge() {
         schema: "public",
         table: "character_spell_slots",
         filter: `character_id=eq.${characterId}`,
-      }, load);
+      }, (change) => {
+        // profile_v2 runs a spell-slot sync. Its UPSERT currently emits UPDATE
+        // events even when all slot values are unchanged. Reloading on those
+        // echoes would cause a perpetual RPC / Realtime / loading loop.
+        const row = change?.new;
+        const current = latestProfileRef.current;
+        const unchanged = change?.eventType === "UPDATE"
+          && row
+          && text(current?.characterId) === characterId
+          && Array.isArray(current?.persistentSlotState)
+          && current.persistentSlotState.some((slot) =>
+            text(slot?.poolKey) === text(row.pool_key)
+            && number(slot?.slotLevel) === number(row.slot_level)
+            && number(slot?.remaining) === number(row.slots_remaining)
+            && number(slot?.max) === number(row.slots_max)
+            && text(slot?.rechargeKey) === text(row.recharge_key)
+          );
+        if (!unchanged) void load();
+      });
     }
 
     channel.subscribe();
@@ -178,13 +203,17 @@ export default function TacticalCharacterResourceBridge() {
     }));
   }, [profile]);
 
+  const currentProfile = Boolean(profile
+    && text(encounter?.id) === text(sessionId)
+    && text(profile?.participantId) === text(encounter?.active_participant_id));
+
   if (!target) return null;
 
   return createPortal(
     <section className={styles.root} aria-label="Linked character spell resources">
-      {loading ? <div className={styles.message}>Checking linked Sheet &amp; Rolls resources…</div> : null}
+      {loading && !currentProfile ? <div className={styles.message}>Checking linked Sheet &amp; Rolls resources…</div> : null}
       {error ? <div className={`${styles.message} ${styles.error}`} role="alert">{error}</div> : null}
-      {!loading && !error && profile?.persistentResourcesLinked ? (
+      {!error && currentProfile && profile?.persistentResourcesLinked ? (
         <>
           <div className={styles.header}>
             <strong>Character Resource Link</strong>

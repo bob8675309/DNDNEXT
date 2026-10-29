@@ -5,6 +5,8 @@ on:
       - 'pages/encounters/**'
       - 'components/CharacterSheetEnhancements.js'
       - 'components/CharacterRestActivityDialog.js'
+      - 'components/TacticalCharacterResourceBridge.js'
+      - 'scripts/validate_tactical_resource_bridge_refresh.mjs'
       - 'styles/EncounterWorkspace.module.css'
       - 'styles/CharacterRestActivityDialog.module.css'
       - 'scripts/validate_unified_encounter_workspace.mjs'
@@ -23,6 +25,7 @@ jobs:
           node-version: '22'
       - run: node scripts/validate_unified_encounter_workspace.mjs
       - run: node scripts/validate_player_rest_buttons.mjs
+      - run: node scripts/validate_tactical_resource_bridge_refresh.mjs
   production-build:
     runs-on: ubuntu-latest
     timeout-minutes: 25
