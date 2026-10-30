@@ -15,6 +15,7 @@ The consolidation commit is an intentional **multi-parent history-preservation c
 - [#295](https://github.com/bob8675309/DNDNEXT/pull/295) — `ffa8120bd0e0b72edfac18484d80a45c9e06c542`: Separate authenticated Attack caller boundary fork; non-release
 - [#265](https://github.com/bob8675309/DNDNEXT/pull/265) — `df8b311153b707ad2ee2f6a3a1d27282b9922597`: Attunement world-clock and rest research branch lineage; non-release
 - [#259](https://github.com/bob8675309/DNDNEXT/pull/259) — `38e4441052c7b4e41058ca646464017fb01bb139`: Effects release-readiness and authority docs draft; non-release
+- [#250](https://github.com/bob8675309/DNDNEXT/pull/250) — `132b0484ccc45bbcc87827db0eb483896ae446e1`: Physical Specimen Warlock/Grim Hollow Patron staged runtime and encounter HP reconciliation; non-release.
 - [#255](https://github.com/bob8675309/DNDNEXT/pull/255) — `dda0f432d963a5b6a87b65e5f6f4bbd27a860602`: Common effects resolver & source-parity tests lineage; non-release
 
 ### Ancestry relationships checked before archiving
@@ -41,3 +42,6 @@ The consolidation commit is an intentional **multi-parent history-preservation c
 
 ### Restoration
 Use the exact commit SHA above in `git show <sha>:<path>` or `git checkout <sha> -- <path>` in a disposable worktree after reviewing dependencies. The multi-parent graph preserves the commits, not the old branch names or Vercel preview builds.
+
+### Audit addendum
+All **46** open draft PR heads were individually compared with this consolidation ancestry. The first archive preserved **45**, but #250 was independent, so its exact head was added as an extra parent of the follow-up archive commit. Verify final ancestry before closing PRs.
