@@ -16,6 +16,7 @@ assert.equal(agonizingBlastModifier({...grant,charismaScore:8}),-1);
 for(const marker of [
  "v_role<>'authenticated' or v_uid is null",
  "v_c.controller_user_id is distinct from v_uid",
+ "not coalesce(public.is_admin(v_uid),false)",
  "cp.user_id=v_uid and coalesce(cp.can_edit,false)",
  "for share",
  "v_beams:=case when v_level>=17 then 4 when v_level>=11 then 3",

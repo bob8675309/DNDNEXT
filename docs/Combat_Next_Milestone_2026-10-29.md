@@ -34,3 +34,7 @@ A source review found a duplicate cast would be rejected after the first cast sp
 ## Disposable PG16 execution fixture and replay-intent hardening (draft)
 
 The candidate now stores ordered `targetIds` in its result and validates `spellKey`, `assignmentId`, and the exact target array on every duplicate request path. A request ID cannot be reused with different targets or a different spell assignment. A disposable PostgreSQL 16 service CI job loads a minimal schema and deterministic mocks and tests: revoke grants, service-role rejection, level 3/5/11/17 beams, selected vs unselected invocation, action spending, hit/miss, Force immunity, out-of-range, hidden target, unauthorized controller, replay after turn change, and two separate PostgreSQL clients racing on the same request ID. **Synthetic `auth.uid()` and `auth.role()` settings are not verified user JWTs**. Real signed-in integration, multiclass, other invocations and production ACL review remain blockers.
+
+## First PG16 red test: fail-closed authorization fix
+
+The actual PostgreSQL fixture revealed an authorization flaw rather than a syntax error: with a null admin lookup, `NOT public.is_admin(uid)` is SQL UNKNOWN and an IF condition could skip denial. Fixed both controller and hidden-target checks to use `NOT COALESCE(public.is_admin(uid),false)`. The disposable fixture intentionally leaves the admin function null for nonadmins to prevent regression. Rerun the full executable and two-client replay tests; do not apply this SQL live.

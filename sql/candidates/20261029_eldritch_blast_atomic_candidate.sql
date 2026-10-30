@@ -62,7 +62,7 @@ begin
   select * into v_e from public.encounters where id=v_c.encounter_id for update;
   if not found then raise exception 'Encounter not found'; end if;
   if v_c.controller_user_id is distinct from v_uid
-     and not public.is_admin(v_uid)
+     and not coalesce(public.is_admin(v_uid),false)
      and not exists (
        select 1 from public.character_permissions cp
        where cp.character_id=v_c.character_id and cp.user_id=v_uid and coalesce(cp.can_edit,false)
@@ -160,7 +160,7 @@ begin
       raise exception 'Each beam must target another active encounter creature';
     end if;
     if v_t.is_hidden and v_t.controller_user_id is distinct from v_uid
-       and not public.is_admin(v_uid) then
+       and not coalesce(public.is_admin(v_uid),false) then
       raise exception 'Hidden target is not authorized' using errcode='42501';
     end if;
   end loop;
