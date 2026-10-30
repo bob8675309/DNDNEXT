@@ -159,7 +159,12 @@ export default function LiveEncounterPage({ workspaceSessionId = "", onWorkspace
       if (res.error) throw res.error;
       createdId = res.data;
     }, "Encounter session created.");
-    if (createdId) setSessionId(createdId);
+    if (createdId) {
+      // Keep the workspace selector aligned with this newly created encounter.
+      // The staging page still manages its own selection when used standalone.
+      setSessionId(createdId);
+      onWorkspaceSessionChange?.(createdId);
+    }
   }
 
   function setStatus(status) {

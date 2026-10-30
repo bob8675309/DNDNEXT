@@ -4,6 +4,8 @@ const read=(path)=>fs.readFileSync(new URL("../"+path,import.meta.url),"utf8");
 const shell=read("pages/encounters/workspace.js");
 assert.match(shell,/Encounter Workspace/);
 assert.match(shell,/workspaceSessionId=\{sessionId\}/);
+const setup=read("pages/encounters/live.js");
+assert.match(setup,/onWorkspaceSessionChange\?\.\(createdId\)/,"New encounter must update shared workspace selector");
 assert.match(shell,/onWorkspaceSessionChange=\{selection\}/);
 for(const name of ["live","play","combat"]){
  const source=read("pages/encounters/"+name+".js");
