@@ -6,6 +6,8 @@ on:
       - 'sql/candidates/20261030_warlock_cantrip_damage_bonus_candidate.sql'
       - 'sql/candidates/20261030_eldritch_blast_authenticated_bridge_candidate.sql'
       - 'scripts/fixtures/eldritch_blast_auth_bridge_pg16.sql'
+      - 'scripts/test_eldritch_blast_real_auth.mjs'
+      - 'scripts/validate_eldritch_blast_auth_harness.mjs'
       - 'utils/eldritchBlastRules.mjs'
       - 'scripts/validate_eldritch_blast_candidate.mjs'
       - 'scripts/fixtures/eldritch_blast_candidate_pg16.sql'
@@ -23,6 +25,8 @@ jobs:
         with:
           node-version: '22'
       - run: node scripts/validate_eldritch_blast_candidate.mjs
+      - run: node --check scripts/test_eldritch_blast_real_auth.mjs
+      - run: node scripts/validate_eldritch_blast_auth_harness.mjs
   postgres-integration:
     runs-on: ubuntu-latest
     services:

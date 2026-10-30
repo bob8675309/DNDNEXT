@@ -60,3 +60,13 @@ Added **non-deployed** wrapper `public.encounter_cast_eldritch_blast_candidate_v
 ### Nullable armor class and mitigation parity (final regression)
 
 Production's `encounter_participants.armor_class` is nullable. The candidate now matches the existing weapon resolver's `COALESCE(armor_class,10)` fallback. Its PostgreSQL fixture tests null AC and a critical Force hit against resistance with the existing damage-mitigation helper, in addition to the earlier cover case.
+
+## Genuine signed-in acceptance harness — gated staging only
+
+`scripts/test_eldritch_blast_real_auth.mjs` is a **manual** executable harness for a separate Supabase staging project and **two normal test accounts**. It uses `@supabase/supabase-js` to sign in through the real Supabase Auth server, checks `getUser()` and verified JWT `getClaims()`, and rejects the production project ref `ucggczovhmauhshvhusx`. It accepts **no service-role key**, does not display passwords or access tokens, and defaults to a non-mutating authentication preflight.
+
+Environment variables for preflight: `DNDNEXT_EB_STAGING_URL`, `DNDNEXT_EB_STAGING_PUBLISHABLE_KEY`, `DNDNEXT_EB_TEST_A_EMAIL`, `DNDNEXT_EB_TEST_A_PASSWORD`, `DNDNEXT_EB_TEST_B_EMAIL`, `DNDNEXT_EB_TEST_B_PASSWORD`. Run `node scripts/test_eldritch_blast_real_auth.mjs` only on a non-production checkout with two disposable accounts.
+
+**Optional mutating test:** only after provisioned staging with the candidate/private helpers, reviewed SECURITY DEFINER ownership and an explicitly staged `GRANT EXECUTE ... TO authenticated`, configure `DNDNEXT_EB_MUTATING_TEST_CONFIRM=YES_DISPOSABLE_STAGING_CAST_ONLY`, `DNDNEXT_EB_DISPOSABLE_ENCOUNTER_ID`, `DNDNEXT_EB_CASTER_ID`, `DNDNEXT_EB_ASSIGNMENT_ID`, `DNDNEXT_EB_TARGET_IDS` (comma-separated beam targets), and `DNDNEXT_EB_TEST_OWNER_UID` (the test controller's verified ID). This exercises rejection of Player B, Player A's authorized cast, replay and request-intent mismatch. Only use a clearly disposable encounter. No actual staging branch currently exists and the repository CI **does not** run the real-auth harness without secrets. No live grant or SQL was applied.
+
+**Negative SQL tests added:** PG16 editor can cast only while `character_permissions.can_edit=true` and denial after permission removal leaves no command row. These mock-role tests improve coverage but are **not equivalent** to a genuine signed-in PostgREST two-session test. Run a separate revoke-while-concurrent test before enabling a production permission grant. Continue to keep Eldritch Blast disabled in the UI until these checks and the broader spell rules pass.

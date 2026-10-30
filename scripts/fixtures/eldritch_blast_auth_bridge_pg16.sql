@@ -65,3 +65,44 @@ begin
  raise notice 'Draft bridge PG-role/permissions and mock auth tests PASS (NOT JWT verified)';
 end $auth_tests$;
 reset role;
+
+-- Test post-grant permission revocation inside a disposable DB only.
+update public.encounter_participants
+  set controller_user_id=public.fixture_uuid(42),action_available=true
+  where id=public.fixture_uuid(11);
+insert into public.character_permissions(character_id,user_id,can_edit)
+  values(public.fixture_uuid(31),public.fixture_uuid(41),true);
+set role authenticated;
+do $editor$
+declare result jsonb;
+begin
+ result:=public.encounter_cast_eldritch_blast_candidate_v1(
+  public.fixture_uuid(11),public.fixture_uuid(51),
+  array[public.fixture_uuid(21)],public.fixture_uuid(304));
+ if (result->>'beamCount')::integer<>1
+ then raise exception 'Approved editor cannot cast'; end if;
+end $editor$;
+reset role;
+delete from public.character_permissions where character_id=public.fixture_uuid(31)
+  and user_id=public.fixture_uuid(41);
+update public.encounter_participants set action_available=true
+ where id=public.fixture_uuid(11);
+set role authenticated;
+do $revocation$
+declare denied boolean:=false;
+begin
+ begin
+ perform public.encounter_cast_eldritch_blast_candidate_v1(
+  public.fixture_uuid(11),public.fixture_uuid(51),
+  array[public.fixture_uuid(21)],public.fixture_uuid(305));
+ exception when insufficient_privilege then denied:=true; end;
+ if not denied then raise exception 'Revoked editor retained permission'; end if;
+end $revocation$;
+reset role;
+do $audit$
+begin
+ if exists(select 1 from public.encounter_command_requests
+   where request_id=public.fixture_uuid(305))
+ then raise exception 'Revoked user created an effectful command'; end if;
+ raise notice 'PG16 mock permission editor-grant and revocation tests PASS';
+end $audit$;
