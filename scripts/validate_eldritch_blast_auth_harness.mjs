@@ -7,6 +7,8 @@ for(const marker of [
  'signInWithPassword','auth.getUser()','auth.getClaims()',
  'DNDNEXT_EB_MUTATING_TEST_CONFIRM','YES_DISPOSABLE_STAGING_CAST_ONLY',
  'DNDNEXT_EB_TEST_OWNER_UID','DNDNEXT_EB_DISPOSABLE_ENCOUNTER_ID',
+ "startsWith('EB TEST - ')", "encounter.active_participant_id!==actor",
+ "participant.encounter_id!==encounter.id", "participant.controller_user_id!==a.uid",
  'assert.deepEqual(repeat.data,cast','isDenied(foreignReplay.error)'
 ]) assert.ok(script.includes(marker),'Missing real session safety contract: '+marker);
 assert.ok(!script.includes('service_role_key'));

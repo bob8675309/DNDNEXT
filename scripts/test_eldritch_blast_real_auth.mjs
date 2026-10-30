@@ -58,6 +58,21 @@ try {
      throw new Error('Missing valid disposable actor/assignment/targets or controller identity mismatch.');
    if(!e.DNDNEXT_EB_DISPOSABLE_ENCOUNTER_ID||!uuid.test(e.DNDNEXT_EB_DISPOSABLE_ENCOUNTER_ID))
      throw new Error('Disposable staging encounter ID must be provided.');
+   // The confirmation UUID is not enough: verify the caster belongs to this
+   // named disposable encounter, under the signed-in player's own RLS.
+   const {data:encounter,error:encounterError}=await a.client.from('encounters')
+     .select('id,name,status,active_participant_id')
+     .eq('id',e.DNDNEXT_EB_DISPOSABLE_ENCOUNTER_ID).single();
+   if(encounterError||!encounter||!String(encounter.name||'').startsWith('EB TEST - ')||
+      encounter.status!=='active'||encounter.active_participant_id!==actor)
+     throw new Error('Staging encounter must be active, named EB TEST - ..., and have the test caster on turn.');
+   const {data:participant,error:participantError}=await a.client.from('encounter_participants')
+     .select('id,encounter_id,controller_user_id,is_defeated,action_available')
+     .eq('id',actor).single();
+   if(participantError||!participant||participant.encounter_id!==encounter.id||
+      participant.controller_user_id!==a.uid||participant.is_defeated||
+      !participant.action_available)
+     throw new Error('Test caster must be controlled by Player A, eligible and inside the disposable encounter.');
    const rpc='encounter_cast_eldritch_blast_candidate_v1';
    const request=(requestId,targetIds=targets)=>({
       p_caster_id:actor,p_assignment_id:spell,p_target_ids:targetIds,p_request_id:requestId
