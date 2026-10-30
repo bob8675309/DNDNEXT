@@ -109,9 +109,10 @@ function magicMissileAffinityLabel(targetResult) {
   return "";
 }
 
-export default function EncounterCombatPage() {
+export default function EncounterCombatPage({ workspaceSessionId = "", onWorkspaceSessionChange } = {}) {
   const [sessions, setSessions] = useState([]);
-  const [sessionId, setSessionId] = useState("");
+  const [sessionId, setSessionId] = useState(workspaceSessionId || "");
+  useEffect(() => { if (workspaceSessionId) setSessionId(workspaceSessionId); }, [workspaceSessionId]);
   const [encounter, setEncounter] = useState(null);
   const [mapData, setMapData] = useState(null);
   const [terrain, setTerrain] = useState([]);
@@ -152,6 +153,8 @@ export default function EncounterCombatPage() {
     ),
     [spellProfile]
   );
+  const knownSpells = useMemo(() => Array.isArray(spellProfile?.knownSpells) ? spellProfile.knownSpells : [], [spellProfile]);
+  const manualSpells = useMemo(() => knownSpells.filter((row) => !(row?.source === "XPHB" && row?.sourceType === "class" && SUPPORTED_SPELL_KEYS.has(spellKey(row)))), [knownSpells]);
   const selectedSpell = useMemo(
     () => supportedSpells.find((row) => String(row.assignmentId) === String(spellAssignmentId)) || supportedSpells[0] || null,
     [supportedSpells, spellAssignmentId]
@@ -415,8 +418,8 @@ export default function EncounterCombatPage() {
     setSessions(rows);
     setSessionId((current) => current && rows.some((r) => String(r.id) === String(current))
       ? current
-      : (rows.find((r) => r.status === "active")?.id || rows[0]?.id || ""));
-  }, []);
+      : (rows.find((r) => String(r.id) === String(workspaceSessionId))?.id || rows.find((r) => r.status === "active")?.id || rows[0]?.id || ""));
+  }, [workspaceSessionId]);
 
   const loadEncounter = useCallback(async (id) => {
     if (!id) {
@@ -934,7 +937,7 @@ export default function EncounterCombatPage() {
           <p>Weapons, reviewed spell attacks and saves, caster-centered Emanations, point-targeted Spheres, timed effects, healing, and one-shot attack/save modifiers resolve through server-authoritative combat RPCs. Guiding Bolt grants next-attack Advantage while Vicious Mockery imposes next-attack Disadvantage, with normal cancellation and one-shot consumption. Acid Splash derives every creature in its selected area on the server. Healing Word spends a Bonus Action while the 2024 one-spell-slot-per-turn rule remains server enforced. Movement remains authoritative on the Turn Movement surface.</p>
         </div>
         <nav>
-          <Link href="/encounters/play">Turn Movement</Link>
+          <Link href="/encounters/workspace">Unified Workspace</Link><Link href="/encounters/play">Turn Movement</Link>
           <Link href="/encounters/live">GM Staging</Link>
           <Link href="/encounters">Map Workshop</Link>
         </nav>
@@ -944,7 +947,7 @@ export default function EncounterCombatPage() {
         <aside className="sidebar">
           <div className="panel">
             <div className="kicker">Encounter</div>
-            <select value={sessionId} onChange={(e) => setSessionId(e.target.value)}>
+            <select value={sessionId} onChange={(e) => { setSessionId(e.target.value); onWorkspaceSessionChange?.(e.target.value); }}>
               <option value="">Select encounter</option>
               {sessions.map((s) => <option key={s.id} value={s.id}>{s.name} • {s.status}</option>)}
             </select>
@@ -1029,6 +1032,8 @@ export default function EncounterCombatPage() {
                   ? spellProfile.slotSnapshot.map((row) => <span key={`${row.poolKey}-${row.slotLevel}`}>L{row.slotLevel} {row.remaining}/{row.max}</span>)
                   : <span>Cantrips / no slot pool</span>}
               </div>
+              <div className="spell-rule" role="status">{knownSpells.length} assigned spell{knownSpells.length === 1 ? "" : "s"} • {supportedSpells.length} automated here. Spells without a reviewed adapter cannot be cast on this battleboard yet.</div>
+              {manualSpells.length ? <details className="manual-spell-list" open={!supportedSpells.length}><summary>{manualSpells.length} assigned spell{manualSpells.length === 1 ? "" : "s"} requiring GM-assisted play</summary><ul>{manualSpells.map((row) => <li key={row.assignmentId || `${row.spellKey}:${row.name}`}><strong>{row.name}</strong> <span>— {row.sourceType === "class" && row.source === "XPHB" ? "Tactical adapter not yet implemented" : "Source or acquisition not supported by this tactical adapter"}</span></li>)}</ul></details> : null}
               {supportedSpells.length ? <>
                 <select value={spellAssignmentId} onChange={(e) => setSpellAssignmentId(e.target.value)}>
                   {supportedSpells.map((row) => <option key={row.assignmentId} value={row.assignmentId}>{row.name} • {Number(row.level || 0) === 0 ? "Cantrip" : `Level ${row.level}`}{Number(row.level || 0) > 0 && !(row.prepared || row.alwaysAvailable) ? " • not prepared" : ""}</option>)}
@@ -1246,7 +1251,7 @@ export default function EncounterCombatPage() {
                   {selectedSpellUsesSlot && hasSpentSpellSlotThisTurn ? <p className="warn-text">A spell slot has already been expended to cast a spell on this turn. Cantrips remain available if their normal action resource is available.</p> : null}
                   <p>Fire Bolt, Cure Wounds, Sacred Flame, Toll the Dead, Poison Spray, False Life, Inflict Wounds, Shocking Grasp, Ray of Frost, Chill Touch, Mind Sliver, Word of Radiance, Guiding Bolt, Vicious Mockery, Healing Word, and Acid Splash are the current reviewed tactical adapters. Magic Missile is also reviewed through its separate allocated-dart path. Burning Hands is reviewed through its separate directional Cone path. Lightning Bolt is reviewed through its separate directional Line path. Other Known spells stay available through Spellbook/GM-assisted play until their rules are validated.</p>
                 </> : null}
-              </> : <p>No currently assigned Known spell has an approved tactical adapter. The full spellbook remains unchanged.</p>}
+              </> : <p>No assigned spell has an approved tactical adapter. Your known spells are listed above for GM-assisted play; spellbook assignments remain unchanged.</p>}
             </>}
           </div> : null}
 

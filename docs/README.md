@@ -1,5 +1,10 @@
 # DNDNext Living Documentation Index
 
+## Draft combined release candidate — Encounter Workspace + Rest dialog (2026-10-28)
+
+A clean, isolated candidate combines draft PR #300 (unified encounter navigation) and #266 (Camp & Downtime rest dialog) on `main`. This is **not merged or deployed**. It excludes all unfinished experimental combat/attunement branches. GitHub Actions runs both focused validators and a Next.js production build without an intentional Vercel deployment. Browser/admin/player acceptance remains required before any promotion. Details: [Release_Candidate_Encounter_Workspace_Rest_2026-10-28.md](Release_Candidate_Encounter_Workspace_Rest_2026-10-28.md).
+
+
 Updated: 2026-10-24
 
 This directory contains the project's living handoff, roadmap, architecture, subsystem, and evidence documents. For active work, **live Supabase + current GitHub source/validators/deployment state outrank prose** if they conflict.

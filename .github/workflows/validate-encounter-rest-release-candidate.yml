@@ -1,0 +1,48 @@
+name: Validate Encounter and Rest Release Candidate
+on:
+  pull_request:
+    paths:
+      - 'pages/encounters/**'
+      - 'components/CharacterSheetEnhancements.js'
+      - 'components/CharacterRestActivityDialog.js'
+      - 'components/TacticalCharacterResourceBridge.js'
+      - 'scripts/validate_tactical_resource_bridge_refresh.mjs'
+      - 'scripts/validate_encounter_team_spell_visibility.mjs'
+      - 'styles/EncounterWorkspace.module.css'
+      - 'styles/CharacterRestActivityDialog.module.css'
+      - 'scripts/validate_unified_encounter_workspace.mjs'
+      - 'scripts/validate_player_rest_buttons.mjs'
+      - '.github/workflows/validate-encounter-rest-release-candidate.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contract-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/validate_unified_encounter_workspace.mjs
+      - run: node scripts/validate_player_rest_buttons.mjs
+      - run: node scripts/validate_tactical_resource_bridge_refresh.mjs
+      - run: node scripts/validate_encounter_team_spell_visibility.mjs
+  production-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      CI: '1'
+      # CI-only syntactically valid placeholders; no real Supabase access or credentials.
+      # Next.js imports the Supabase client while collecting pages even for a static build.
+      NEXT_PUBLIC_SUPABASE_URL: 'https://ci-placeholder.supabase.co'
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: 'ci-build-only-not-a-real-supabase-key'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run build
