@@ -26,3 +26,7 @@ Production `main` remains at `75c387e9276739f04b56d7fa96e4041931b3d9f4` (merged 
 - **Combat**: Repeat a successful weapon hit and HP decrement in the newest production UI, not just historical combat log.
 - **Persistent battlefield**: Next UI milestone is a shared encounter versioned store with one persistent `EncounterTurnBoard`, initiative dock, action palette and reaction drawer. Existing world-map and town-map components must remain isolated. Extract shared board first, move individual actions into it only behind parity gates, and avoid duplicate realtime subscriptions.
 - **Vercel storage**: Keep draft branch batch commits infrequent; let 24-hour previews expire. No docs-only release.
+
+## Replay-order correction
+
+A source review found a duplicate cast would be rejected after the first cast spent the Action or the turn advanced. The candidate now returns the same user's and actor's stored request result **before** spent-Action and stale-turn checks. The unauthorized caller/actor check stays active. Full PG16 replay and two-session concurrency tests are required before any release.

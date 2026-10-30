@@ -60,9 +60,7 @@ begin
     raise exception 'Caster must be a linked encounter character' using errcode='22023';
   end if;
   select * into v_e from public.encounters where id=v_c.encounter_id for update;
-  if not found or v_e.status<>'active' or v_e.active_participant_id is distinct from v_c.id then
-    raise exception 'Not the active encounter turn';
-  end if;
+  if not found then raise exception 'Encounter not found'; end if;
   if v_c.controller_user_id is distinct from v_uid
      and not public.is_admin(v_uid)
      and not exists (
@@ -72,6 +70,20 @@ begin
      )
   then
     raise exception 'Not authorized to cast with this participant' using errcode='42501';
+  end if;
+  -- Authorized idempotent replay is valid even after the Action was spent
+  -- or the turn advanced. Only the same authenticated user/actor/type can
+  -- retrieve an existing result; replay does not mutate combat state.
+  select * into v_prev from public.encounter_command_requests
+    where request_id=p_request_id for update;
+  if found then
+    if v_prev.command_type<>'spell_cast'
+      or v_prev.participant_id<>v_c.id or v_prev.requested_by is distinct from v_uid
+    then raise exception 'Request id belongs to another command' using errcode='42501'; end if;
+    return coalesce(v_prev.result,jsonb_build_object('duplicate',true,'pending',true));
+  end if;
+  if v_e.status<>'active' or v_e.active_participant_id is distinct from v_c.id then
+    raise exception 'Not the active encounter turn';
   end if;
   if v_c.is_defeated or not v_c.action_available then
     raise exception 'Caster is defeated or Action is unavailable';

@@ -38,4 +38,5 @@ for(const marker of [
 ]) assert.ok(sql.includes(marker),"Missing SQL contract: "+marker);
 assert.ok(!/grant execute on function private\.encounter_eldritch_blast_candidate_v1/i.test(sql));
 assert.ok(!sql.includes("service_role' then return true"));
+assert.ok(sql.indexOf("select * into v_prev from public.encounter_command_requests") < sql.indexOf("if v_c.is_defeated or not v_c.action_available"),"Authorized duplicate must replay before spent Action");
 console.log("Eldritch Blast beam and Agonizing Blast rules + candidate contract PASS");
