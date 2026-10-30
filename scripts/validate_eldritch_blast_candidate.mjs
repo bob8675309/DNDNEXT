@@ -20,6 +20,7 @@ assert.equal(agonizingBlastModifier({...grant,charismaScore:8}),-1);
 for(const marker of [
  "v_role<>'authenticated' or v_uid is null",
  "v_c.controller_user_id is distinct from v_uid",
+ "not coalesce(v_assignment.known,false)",
  "not coalesce(public.is_admin(v_uid),false)",
  "cp.user_id=v_uid and coalesce(cp.can_edit,false)",
  "for share",
@@ -34,7 +35,7 @@ for(const marker of [
  "v_roll_data->>'roll'",
  "v_natural<>1",
  "v_natural=20",
- "v_t.ac+coalesce((v_targeting->>'coverAcBonus')",
+ "v_t.armor_class+coalesce((v_targeting->>'coverAcBonus')",
  "v_raw+v_invocation_bonus",
  "action_available=false",
  "on conflict(request_id) do nothing",
@@ -62,3 +63,13 @@ assert.ok(!/grant execute on function private\.encounter_eldritch_blast_candidat
 assert.ok(!sql.includes("service_role' then return true"));
 assert.ok(sql.indexOf("select * into v_prev from public.encounter_command_requests") < sql.indexOf("if v_c.is_defeated or not v_c.action_available"),"Authorized duplicate must replay before spent Action");
 console.log("Eldritch Blast beam and Agonizing Blast rules + candidate contract PASS");
+
+const bridge=fs.readFileSync("sql/candidates/20261030_eldritch_blast_authenticated_bridge_candidate.sql","utf8");
+assert.match(bridge,/public\.encounter_cast_eldritch_blast_candidate_v1/);
+assert.match(bridge,/private\.encounter_eldritch_blast_candidate_v1/);
+assert.match(bridge,/auth\.uid\(\)/);
+assert.match(bridge,/auth\.jwt\(\)/);
+assert.match(bridge,/is_anonymous/);
+assert.match(bridge,/revoke all on function public\.encounter_cast_eldritch_blast_candidate_v1/);
+assert.doesNotMatch(bridge,/grant execute/i);
+assert.doesNotMatch(sql,/v_t\.ac\b/);

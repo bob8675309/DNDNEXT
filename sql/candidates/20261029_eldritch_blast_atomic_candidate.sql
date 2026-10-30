@@ -104,7 +104,8 @@ begin
 
   select * into v_assignment from public.character_spells
   where id=p_assignment_id and character_id=v_c.character_id;
-  if not found or lower(coalesce(v_assignment.source_type,''))<>'class'
+  if not found or not coalesce(v_assignment.known,false)
+     or lower(coalesce(v_assignment.source_type,''))<>'class'
      or lower(coalesce(v_assignment.source_label,''))<>'warlock' then
     raise exception 'A canonical Warlock Eldritch Blast assignment is required';
   end if;
@@ -209,7 +210,7 @@ begin
     );
     v_natural:=(v_roll_data->>'roll')::integer;
     v_total:=v_natural+v_spell_bonus;
-    v_target_ac:=v_t.ac+coalesce((v_targeting->>'coverAcBonus')::integer,0);
+    v_target_ac:=v_t.armor_class+coalesce((v_targeting->>'coverAcBonus')::integer,0);
     v_crit:=v_natural=20;
     v_hit:=v_crit or (v_natural<>1 and v_total>=v_target_ac);
     v_raw:=0;

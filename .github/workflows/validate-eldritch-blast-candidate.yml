@@ -4,6 +4,8 @@ on:
     paths:
       - 'sql/candidates/20261029_eldritch_blast_atomic_candidate.sql'
       - 'sql/candidates/20261030_warlock_cantrip_damage_bonus_candidate.sql'
+      - 'sql/candidates/20261030_eldritch_blast_authenticated_bridge_candidate.sql'
+      - 'scripts/fixtures/eldritch_blast_auth_bridge_pg16.sql'
       - 'utils/eldritchBlastRules.mjs'
       - 'scripts/validate_eldritch_blast_candidate.mjs'
       - 'scripts/fixtures/eldritch_blast_candidate_pg16.sql'
@@ -46,3 +48,4 @@ jobs:
       - uses: actions/checkout@v4
       - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/eldritch_blast_candidate_pg16.sql
       - run: bash scripts/fixtures/eldritch_blast_candidate_race.sh
+      - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/eldritch_blast_auth_bridge_pg16.sql

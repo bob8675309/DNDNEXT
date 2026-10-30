@@ -9,7 +9,7 @@ as $f$select nullif(current_setting('fixture.uid',true),'')::uuid$f$;
 create function auth.role() returns text language sql stable
 as $f$select nullif(current_setting('fixture.role',true),'')$f$;
 create table public.encounters(id uuid primary key,status text,active_participant_id uuid,round int default 1,turn_index int default 0,version int default 1,updated_at timestamptz);
-create table public.encounter_participants(id uuid primary key,encounter_id uuid,character_id uuid,controller_user_id uuid,display_name text,team text,q int default 0,r int default 0,ac int default 14,current_hp int default 1000,is_hidden bool default false,is_defeated bool default false,action_available bool default true,damage_resistances text[] default '{}',damage_immunities text[] default '{}',updated_at timestamptz);
+create table public.encounter_participants(id uuid primary key,encounter_id uuid,character_id uuid,controller_user_id uuid,display_name text,team text,q int default 0,r int default 0,armor_class int default 14,current_hp int default 1000,is_hidden bool default false,is_defeated bool default false,action_available bool default true,damage_resistances text[] default '{}',damage_immunities text[] default '{}',updated_at timestamptz);
 create table public.character_permissions(character_id uuid,user_id uuid,can_edit bool);
 create table public.encounter_conditions(participant_id uuid,condition_key text);
 create table public.character_spells(id uuid primary key,character_id uuid,spell_id uuid,source_type text,source_label text,known boolean default true);
@@ -36,7 +36,8 @@ begin
  select * into a from public.encounter_participants where id=p_actor;
  select * into t from public.encounter_participants where id=p_target;
  return jsonb_build_object('distanceFt',5*greatest(abs(a.q-t.q),abs(a.r-t.r),abs((a.q-t.q)+(a.r-t.r))),
-  'hasLineOfSight',coalesce(current_setting('fixture.blocked',true),'no')<>'yes','coverAcBonus',0);
+  'hasLineOfSight',coalesce(current_setting('fixture.blocked',true),'no')<>'yes',
+  'coverAcBonus',coalesce(nullif(current_setting('fixture.cover',true),'')::int,0));
 end $f$;
 create function private.encounter_resolve_attack_roll_v1(p_actor uuid,p_target uuid,p_base_disadvantage boolean default false)
 returns jsonb language plpgsql as $f$
@@ -255,3 +256,41 @@ begin
  if not denied then raise exception 'Unauthorized controller permitted';end if;
  raise notice 'PG16 mock-auth candidate behavior PASS (NOT JWT-verified)';
 end $test$;
+
+-- Production-compatible armor_class and prepared known spell assertions.
+do $schema_checks$
+declare r jsonb; denied boolean;
+begin
+ if not exists(select 1 from information_schema.columns
+      where table_schema='public' and table_name='encounter_participants'
+      and column_name='armor_class') then
+   raise exception 'Fixture drift: canonical armor_class missing'; end if;
+ perform set_config('fixture.role','authenticated',true);
+ perform set_config('fixture.uid',public.fixture_uuid(41)::text,true);
+ update public.encounters set active_participant_id=public.fixture_uuid(11);
+ update public.encounter_participants set action_available=true,
+   armor_class=14 where id=public.fixture_uuid(11);
+ update public.encounter_participants set armor_class=14
+   where id=public.fixture_uuid(21);
+ update public.character_spells set known=false where id=public.fixture_uuid(51);
+ denied:=false;
+ begin
+   perform private.encounter_eldritch_blast_candidate_v1(
+     public.fixture_uuid(11),public.fixture_uuid(51),
+     array[public.fixture_uuid(21)],public.fixture_uuid(401));
+ exception when others then denied:=true;end;
+ if not denied then raise exception 'Unknown cantrip accepted';end if;
+ update public.character_spells set known=true where id=public.fixture_uuid(51);
+ perform set_config('fixture.cover','10',true);
+ insert into public.fixture_rolls(roll) values (10);
+ r:=private.encounter_eldritch_blast_candidate_v1(
+     public.fixture_uuid(11),public.fixture_uuid(51),
+     array[public.fixture_uuid(21)],public.fixture_uuid(402));
+ if (r#>>'{beams,0,hit}')::boolean is distinct from false
+    or (r#>>'{beams,0,targetAc}')::int<>24 then
+   raise exception 'Target armor_class plus cover not honored: %',r;end if;
+ update public.encounter_participants set action_available=true
+   where id=public.fixture_uuid(11);
+ perform set_config('fixture.cover','0',true);
+ raise notice 'Live schema column parity, known spell and cover PG16 PASS';
+end $schema_checks$;
