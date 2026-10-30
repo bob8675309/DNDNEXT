@@ -36,7 +36,13 @@ begin
  select * into a from public.encounter_participants where id=p_actor;
  select * into t from public.encounter_participants where id=p_target;
  return jsonb_build_object('distanceFt',5*greatest(abs(a.q-t.q),abs(a.r-t.r),abs((a.q-t.q)+(a.r-t.r))),
-  'hasLineOfSight',coalesce(current_setting('fixture.blocked',true),'no')<>'yes',
+  'hasLineOfSight',case
+     when current_setting('fixture.asymmetric_los',true)='caster_cannot_see_enemy'
+       and p_actor=public.fixture_uuid(11) and p_target=public.fixture_uuid(22) then false
+     when current_setting('fixture.asymmetric_los',true)='enemy_cannot_see_caster'
+       and p_actor=public.fixture_uuid(22) and p_target=public.fixture_uuid(11) then false
+     else coalesce(current_setting('fixture.blocked',true),'no')<>'yes'
+   end,
   'coverAcBonus',coalesce(nullif(current_setting('fixture.cover',true),'')::int,0));
 end $f$;
 create function private.encounter_resolve_attack_roll_v1(p_actor uuid,p_target uuid,p_base_disadvantage boolean default false)
@@ -311,5 +317,25 @@ begin
     or (r#>>'{beams,0,damage,damage}')::integer
        <>floor((r#>>'{beams,0,rawDamage}')::integer/2.0)::integer
  then raise exception 'Critical hit or force resistance incorrect: %',r;end if;
- raise notice 'Live schema parity, known spell, cover, NULL AC, Force resistance PG16 PASS';
+ -- 2024 close-combat disadvantage depends on adjacent ENEMY seeing caster.
+ update public.encounter_participants set action_available=true where id=public.fixture_uuid(11);
+ update public.encounter_participants set q=1,r=0 where id=public.fixture_uuid(22);
+ perform set_config('fixture.asymmetric_los','caster_cannot_see_enemy',true);
+ insert into public.fixture_rolls(roll) values (15);
+ r:=private.encounter_eldritch_blast_candidate_v1(
+   public.fixture_uuid(11),public.fixture_uuid(51),
+   array[public.fixture_uuid(21)],public.fixture_uuid(405));
+ if (r#>>'{beams,0,attackRoll,baseDisadvantage}')::boolean is distinct from true
+ then raise exception 'Enemy sees caster: missing ranged disadvantage: %',r; end if;
+ update public.encounter_participants set action_available=true where id=public.fixture_uuid(11);
+ perform set_config('fixture.asymmetric_los','enemy_cannot_see_caster',true);
+ insert into public.fixture_rolls(roll) values (15);
+ r:=private.encounter_eldritch_blast_candidate_v1(
+   public.fixture_uuid(11),public.fixture_uuid(51),
+   array[public.fixture_uuid(21)],public.fixture_uuid(406));
+ if (r#>>'{beams,0,attackRoll,baseDisadvantage}')::boolean is distinct from false
+ then raise exception 'Enemy cannot see caster: false ranged disadvantage: %',r; end if;
+ perform set_config('fixture.asymmetric_los','no',true);
+ update public.encounter_participants set q=5,r=0 where id=public.fixture_uuid(22);
+ raise notice 'Live schema parity, known spell, cover, NULL AC, Force resistance, directional LOS PG16 PASS';
 end $schema_checks$;

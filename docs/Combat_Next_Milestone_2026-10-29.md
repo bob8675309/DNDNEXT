@@ -74,3 +74,7 @@ Environment variables for preflight: `DNDNEXT_EB_STAGING_URL`, `DNDNEXT_EB_STAGI
 ### Fail-closed staging session identity preflight
 
 The real-account harness now uses the test user's RLS-filtered `encounters` and `encounter_participants` reads to assert the test caster belongs to the specified active encounter **named `EB TEST - ...`**, is the active participant, is controlled by Player A and has an unspent Action. A supplied UUID alone is insufficient proof of disposable intent. If any read or comparison fails, the harness refuses to cast. This is a safety guard for future staging acceptance; not a substitute for an isolated database or cleanup plan.
+
+## Directional close-combat sight regression (held draft, 2026-10-30)
+
+The 2024 rule checks whether an adjacent non-Incapacitated enemy can see the caster. The held Eldritch Blast candidate instead checked the caster's sight toward that enemy. The deployed sight helper is directional because it skips the attacker's start hex. This draft corrects the direction to `near.id -> v_c.id` and tests both asymmetric cases in disposable PG16. It does not resolve the wider mixed-RPC lock-order risks, implement full sensory modeling, install a Supabase function, grant EXECUTE, or wire the UI. Real signed-in staging and all other release gates remain mandatory.

@@ -30,6 +30,7 @@ for(const marker of [
  "private.encounter_warlock_agonizing_bonus_candidate_v1",
  "v_damage_features",
  "private.encounter_resolve_attack_roll_v1",
+ "public.encounter_targeting_context_internal_v1(near.id,v_c.id)",
  "public.encounter_apply_damage_internal_v1",
  "'force'",
  "v_roll_data->>'roll'",
@@ -61,6 +62,14 @@ for(const marker of [
 assert.ok(!/grant execute on function private\.encounter_warlock_agonizing_bonus_candidate_v1/i.test(shared));
 assert.ok(!/grant execute on function private\.encounter_eldritch_blast_candidate_v1/i.test(sql));
 assert.ok(!sql.includes("service_role' then return true"));
+assert.ok(!sql.includes("public.encounter_targeting_context_internal_v1(v_c.id,near.id)"),
+  "Close-combat visibility must be from enemy toward caster");
+const directionFixture=fs.readFileSync("scripts/fixtures/eldritch_blast_candidate_pg16.sql","utf8");
+for(const marker of ["caster_cannot_see_enemy","enemy_cannot_see_caster",
+  "Enemy sees caster: missing ranged disadvantage",
+  "Enemy cannot see caster: false ranged disadvantage"]) {
+  assert.ok(directionFixture.includes(marker),"Missing asymmetric sight test "+marker);
+}
 assert.ok(sql.indexOf("select * into v_prev from public.encounter_command_requests") < sql.indexOf("if v_c.is_defeated or not v_c.action_available"),"Authorized duplicate must replay before spent Action");
 console.log("Eldritch Blast beam and Agonizing Blast rules + candidate contract PASS");
 

@@ -190,6 +190,7 @@ begin
     end if;
     -- A visible, non-incapacitated enemy within 5 ft imposes disadvantage
     -- on any ranged attack roll, independent of the chosen target.
+    -- The adjacent ENEMY must see the caster; LOS can be directional.
     v_base_disadvantage:=exists (
       select 1 from public.encounter_participants near
       where near.encounter_id=v_e.id and near.id<>v_c.id and not near.is_defeated
@@ -202,7 +203,7 @@ begin
             ('incapacitated','paralyzed','stunned','unconscious')
         )
         and coalesce(
-          (public.encounter_targeting_context_internal_v1(v_c.id,near.id)
+          (public.encounter_targeting_context_internal_v1(near.id,v_c.id)
             ->>'hasLineOfSight')::boolean,false)
     );
     v_roll_data:=private.encounter_resolve_attack_roll_v1(
