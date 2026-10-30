@@ -1,0 +1,25 @@
+name: Retire Verified Archived Preview Branches
+on:
+  push:
+    branches:
+      - work/consolidated-encounter-research-20261030
+permissions:
+  contents: read
+jobs:
+  retire:
+    if: github.event.head_commit.message == 'maintenance: retire verified covered preview branches'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      DNDNEXT_BRANCH_CLEANUP_EXECUTE: YES_ARCHIVED_AND_VERIFIED
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Retire only exact-head-verified covered branches
+        run: node scripts/retire_archived_preview_branches.mjs
