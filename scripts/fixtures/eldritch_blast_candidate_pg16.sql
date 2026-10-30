@@ -292,5 +292,24 @@ begin
  update public.encounter_participants set action_available=true
    where id=public.fixture_uuid(11);
  perform set_config('fixture.cover','0',true);
- raise notice 'Live schema column parity, known spell and cover PG16 PASS';
+ update public.encounter_participants set armor_class=null where id=public.fixture_uuid(21);
+ insert into public.fixture_rolls(roll) values (10);
+ r:=private.encounter_eldritch_blast_candidate_v1(
+   public.fixture_uuid(11),public.fixture_uuid(51),
+   array[public.fixture_uuid(21)],public.fixture_uuid(403));
+ if (r#>>'{beams,0,targetAc}')::integer<>10
+   or (r#>>'{beams,0,hit}')::boolean is distinct from true
+ then raise exception 'Nullable armor_class should use AC10 fallback: %',r;end if;
+ update public.encounter_participants set action_available=true where id=public.fixture_uuid(11);
+ update public.encounter_participants set armor_class=14,
+   damage_resistances=array['force']::text[] where id=public.fixture_uuid(21);
+ insert into public.fixture_rolls(roll) values (20);
+ r:=private.encounter_eldritch_blast_candidate_v1(
+   public.fixture_uuid(11),public.fixture_uuid(51),
+   array[public.fixture_uuid(21)],public.fixture_uuid(404));
+ if (r#>>'{beams,0,critical}')::boolean is distinct from true
+    or (r#>>'{beams,0,damage,damage}')::integer
+       <>floor((r#>>'{beams,0,rawDamage}')::integer/2.0)::integer
+ then raise exception 'Critical hit or force resistance incorrect: %',r;end if;
+ raise notice 'Live schema parity, known spell, cover, NULL AC, Force resistance PG16 PASS';
 end $schema_checks$;

@@ -210,7 +210,7 @@ begin
     );
     v_natural:=(v_roll_data->>'roll')::integer;
     v_total:=v_natural+v_spell_bonus;
-    v_target_ac:=v_t.armor_class+coalesce((v_targeting->>'coverAcBonus')::integer,0);
+    v_target_ac:=coalesce(v_t.armor_class,10)+coalesce((v_targeting->>'coverAcBonus')::integer,0);
     v_crit:=v_natural=20;
     v_hit:=v_crit or (v_natural<>1 and v_total>=v_target_ac);
     v_raw:=0;

@@ -35,7 +35,7 @@ for(const marker of [
  "v_roll_data->>'roll'",
  "v_natural<>1",
  "v_natural=20",
- "v_t.armor_class+coalesce((v_targeting->>'coverAcBonus')",
+ "coalesce(v_t.armor_class,10)+coalesce((v_targeting->>'coverAcBonus')",
  "v_raw+v_invocation_bonus",
  "action_available=false",
  "on conflict(request_id) do nothing",
