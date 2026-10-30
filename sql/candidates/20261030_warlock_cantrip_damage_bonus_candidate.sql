@@ -34,6 +34,7 @@ begin
   where cs.character_id=p_character_id and cs.spell_id=p_spell_id
     and lower(coalesce(cs.source_type,''))='class'
     and lower(coalesce(cs.source_label,''))='warlock'
+    and coalesce(cs.known,false)
   limit 1;
   if not found or not coalesce(v_cantrip_eligible,false)
      or coalesce(v_level,0)<2 then

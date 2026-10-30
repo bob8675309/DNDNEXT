@@ -12,7 +12,7 @@ create table public.encounters(id uuid primary key,status text,active_participan
 create table public.encounter_participants(id uuid primary key,encounter_id uuid,character_id uuid,controller_user_id uuid,display_name text,team text,q int default 0,r int default 0,ac int default 14,current_hp int default 1000,is_hidden bool default false,is_defeated bool default false,action_available bool default true,damage_resistances text[] default '{}',damage_immunities text[] default '{}',updated_at timestamptz);
 create table public.character_permissions(character_id uuid,user_id uuid,can_edit bool);
 create table public.encounter_conditions(participant_id uuid,condition_key text);
-create table public.character_spells(id uuid primary key,character_id uuid,spell_id uuid,source_type text,source_label text);
+create table public.character_spells(id uuid primary key,character_id uuid,spell_id uuid,source_type text,source_label text,known boolean default true);
 create table public.spells_catalog(id uuid primary key,spell_key text,source text,level int,
  classes text[] default '{}',damage_types text[] default '{}');
 create table public.character_progression(character_id uuid primary key,class_level int);
@@ -120,6 +120,17 @@ begin
   if coalesce((r->>'damageModifier')::int,0)<>5 then
     raise exception 'Duplicate invocation overstacked';
   end if;
+  -- A class assignment that is no longer known is ineligible even if the
+  -- invocation's stored choice still references the cantrip.
+  update public.character_spells set known=false
+    where character_id=c and spell_id=toll;
+  r:=private.encounter_warlock_agonizing_bonus_candidate_v1(c,toll);
+  if coalesce((r->>'damageModifier')::int,0)<>0
+    or coalesce((r->>'eligibleWarlockCantrip')::boolean,false) then
+    raise exception 'Removed/unknown Warlock cantrip retained invocation benefit';
+  end if;
+  update public.character_spells set known=true
+    where character_id=c and spell_id=toll;
   r:=private.encounter_warlock_agonizing_bonus_candidate_v1(c,other);
   if coalesce((r->>'damageModifier')::int,0)<>0
     or coalesce((r->>'eligibleWarlockCantrip')::boolean,false) then

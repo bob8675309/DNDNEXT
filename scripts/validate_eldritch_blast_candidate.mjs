@@ -50,6 +50,7 @@ for(const marker of [
  "coalesce(cardinality(s.damage_types),0)>0",
  "lower(cls)='warlock'",
  "lower(coalesce(cs.source_label,''))='warlock'",
+ "coalesce(cs.known,false)",
  "select exists (",
  "coalesce(v_level,0)<2",
  "v_modifier:=floor((v_score-10)/2.0)::integer",
