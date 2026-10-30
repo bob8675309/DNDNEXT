@@ -7,7 +7,7 @@ permissions:
   contents: read
 jobs:
   retire:
-    if: github.event.head_commit.message == 'maintenance: retire verified covered preview branches'
+    if: "${{ github.event.head_commit.message == 'maintenance: retire verified covered preview branches' }}"
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
