@@ -79,7 +79,11 @@ begin
   if found then
     if v_prev.command_type<>'spell_cast'
       or v_prev.participant_id<>v_c.id or v_prev.requested_by is distinct from v_uid
-    then raise exception 'Request id belongs to another command' using errcode='42501'; end if;
+      or lower(coalesce(v_prev.result->>'spellKey',''))<>'eldritch-blast|xphb'
+      or coalesce(v_prev.result->>'assignmentId','')<>p_assignment_id::text
+      or v_prev.result->'targetIds' is distinct from to_jsonb(p_target_ids)
+    then raise exception 'Request id belongs to another command or changed cast intent'
+      using errcode='42501'; end if;
     return coalesce(v_prev.result,jsonb_build_object('duplicate',true,'pending',true));
   end if;
   if v_e.status<>'active' or v_e.active_participant_id is distinct from v_c.id then
@@ -171,6 +175,9 @@ begin
       where request_id=p_request_id for update;
     if not found or v_prev.command_type<>'spell_cast'
        or v_prev.participant_id<>v_c.id or v_prev.requested_by is distinct from v_uid
+       or lower(coalesce(v_prev.result->>'spellKey',''))<>'eldritch-blast|xphb'
+       or coalesce(v_prev.result->>'assignmentId','')<>p_assignment_id::text
+       or v_prev.result->'targetIds' is distinct from to_jsonb(p_target_ids)
     then
       raise exception 'Request id belongs to another command' using errcode='42501';
     end if;
@@ -235,6 +242,7 @@ begin
   v_result:=jsonb_build_object(
     'requestId',p_request_id,'casterId',v_c.id,'assignmentId',v_assignment.id,
     'spellId',v_spell.id,'spellKey',v_spell.spell_key,'spell','Eldritch Blast',
+    'targetIds',to_jsonb(p_target_ids),
     'actionType','action','slotLevel',null,'beamCount',v_beams,'beams',v_results,
     'characterLevel',v_level,'castingAbilityModifier',v_cha_mod,
     'agonizingBlastBoundToEldritchBlast',v_agonizing

@@ -34,6 +34,8 @@ for(const marker of [
  "action_available=false",
  "on conflict(request_id) do nothing",
  "v_prev.requested_by is distinct from v_uid",
+ "v_prev.result->'targetIds' is distinct from to_jsonb(p_target_ids)",
+ "'targetIds',to_jsonb(p_target_ids)",
  "revoke all on function private.encounter_eldritch_blast_candidate_v1"
 ]) assert.ok(sql.includes(marker),"Missing SQL contract: "+marker);
 assert.ok(!/grant execute on function private\.encounter_eldritch_blast_candidate_v1/i.test(sql));

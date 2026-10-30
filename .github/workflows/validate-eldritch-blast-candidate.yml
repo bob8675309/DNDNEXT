@@ -5,6 +5,8 @@ on:
       - 'sql/candidates/20261029_eldritch_blast_atomic_candidate.sql'
       - 'utils/eldritchBlastRules.mjs'
       - 'scripts/validate_eldritch_blast_candidate.mjs'
+      - 'scripts/fixtures/eldritch_blast_candidate_pg16.sql'
+      - 'scripts/fixtures/eldritch_blast_candidate_race.sh'
       - '.github/workflows/validate-eldritch-blast-candidate.yml'
   workflow_dispatch:
 permissions:
@@ -18,3 +20,28 @@ jobs:
         with:
           node-version: '22'
       - run: node scripts/validate_eldritch_blast_candidate.mjs
+  postgres-integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+        ports: [ "5432:5432" ]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/eldritch_blast_candidate_pg16.sql
+      - run: bash scripts/fixtures/eldritch_blast_candidate_race.sh
