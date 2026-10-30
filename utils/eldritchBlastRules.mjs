@@ -6,9 +6,9 @@ export const eldritchBlastBeamCount = (characterLevel) => {
   }
   return characterLevel >= 17 ? 4 : characterLevel >= 11 ? 3 : characterLevel >= 5 ? 2 : 1;
 };
-export const agonizingBlastModifier = ({ invocationOptionKey, chosenSpellKey, charismaScore }) => {
+export const agonizingBlastModifier = ({ invocationOptionKey, chosenSpellKey, spellKey, charismaScore }) => {
   if (String(invocationOptionKey).toLowerCase() !== "optional-feature:agonizing-blast|xphb") return 0;
-  if (String(chosenSpellKey).toLowerCase() !== "eldritch-blast|xphb") return 0;
+  if (!spellKey || !chosenSpellKey || String(chosenSpellKey).toLowerCase() !== String(spellKey).toLowerCase()) return 0;
   if (!Number.isInteger(charismaScore) || charismaScore < 1 || charismaScore > 30) {
     throw new RangeError("Canonical Charisma score required");
   }

@@ -13,7 +13,8 @@ create table public.encounter_participants(id uuid primary key,encounter_id uuid
 create table public.character_permissions(character_id uuid,user_id uuid,can_edit bool);
 create table public.encounter_conditions(participant_id uuid,condition_key text);
 create table public.character_spells(id uuid primary key,character_id uuid,spell_id uuid,source_type text,source_label text);
-create table public.spells_catalog(id uuid primary key,spell_key text,source text,level int);
+create table public.spells_catalog(id uuid primary key,spell_key text,source text,level int,
+ classes text[] default '{}',damage_types text[] default '{}');
 create table public.character_progression(character_id uuid primary key,class_level int);
 create table public.character_class_option_grant_instances(character_id uuid,option_catalog_id uuid,option_type text,acquired_level int,choices jsonb);
 create table public.class_feature_option_catalog(id uuid primary key,option_key text,source text);
@@ -64,11 +65,93 @@ values
 (public.fixture_uuid(23),public.fixture_uuid(1),public.fixture_uuid(34),public.fixture_uuid(42),'Target 3','enemies',6,0),
 (public.fixture_uuid(24),public.fixture_uuid(1),public.fixture_uuid(35),public.fixture_uuid(42),'Target 4','enemies',7,0);
 insert into public.character_spells values(public.fixture_uuid(51),public.fixture_uuid(31),public.fixture_uuid(61),'class','warlock');
-insert into public.spells_catalog values(public.fixture_uuid(61),'eldritch-blast|XPHB','XPHB',0);
+insert into public.spells_catalog(id,spell_key,source,level,classes,damage_types) values
+(public.fixture_uuid(61),'eldritch-blast|XPHB','XPHB',0,array['Warlock'],array['force']),
+(public.fixture_uuid(62),'toll-the-dead|XPHB','XPHB',0,array['Warlock'],array['necrotic']),
+(public.fixture_uuid(63),'fire-bolt|XPHB','XPHB',0,array['Wizard'],array['fire']),
+(public.fixture_uuid(64),'prest igitation|XPHB','XPHB',0,array['Warlock'],'{}'::text[]);
+insert into public.character_spells values
+(public.fixture_uuid(52),public.fixture_uuid(31),public.fixture_uuid(62),'class','warlock'),
+(public.fixture_uuid(53),public.fixture_uuid(31),public.fixture_uuid(63),'class','warlock'),
+(public.fixture_uuid(54),public.fixture_uuid(31),public.fixture_uuid(64),'class','warlock');
 insert into public.character_progression values(public.fixture_uuid(31),3);
 insert into public.class_feature_option_catalog values(public.fixture_uuid(71),'optional-feature:agonizing-blast|XPHB','XPHB');
 insert into public.character_class_option_grant_instances values(public.fixture_uuid(31),public.fixture_uuid(71),'eldritch-invocation',2,'{"child":{"metadata":{"spellKey":"eldritch-blast|XPHB"}}}');
+\i sql/candidates/20261030_warlock_cantrip_damage_bonus_candidate.sql
 \i sql/candidates/20261029_eldritch_blast_atomic_candidate.sql
+-- Reusable source-bound invocation primitive, entirely independent
+-- of the specific Eldritch Blast casting resolver.
+do $invocation_tests$
+declare
+  c uuid:=public.fixture_uuid(31);
+  eb uuid:=public.fixture_uuid(61);
+  toll uuid:=public.fixture_uuid(62);
+  other uuid:=public.fixture_uuid(63);
+  nondmg uuid:=public.fixture_uuid(64);
+  r jsonb;
+begin
+  r:=private.encounter_warlock_agonizing_bonus_candidate_v1(c,eb);
+  if coalesce((r->>'damageModifier')::int,0)<>5 then
+    raise exception 'Eldritch Blast did not inherit sourced modifier: %',r;
+  end if;
+  r:=private.encounter_warlock_agonizing_bonus_candidate_v1(c,toll);
+  if coalesce((r->>'damageModifier')::int,0)<>0 then
+    raise exception 'Unchosen Warlock cantrip inherited modifier';
+  end if;
+  -- The same repeatable invocation may select *another* Warlock cantrip.
+  insert into public.character_class_option_grant_instances values(
+    c,public.fixture_uuid(71),'eldritch-invocation',2,
+    '{"child":{"metadata":{"spellKey":"toll-the-dead|XPHB"}}}'::jsonb
+  );
+  r:=private.encounter_warlock_agonizing_bonus_candidate_v1(c,toll);
+  if coalesce((r->>'damageModifier')::int,0)<>5 then
+    raise exception 'Selected Toll the Dead missing repeatable invocation: %',r;
+  end if;
+  r:=private.encounter_warlock_agonizing_bonus_candidate_v1(c,eb);
+  if coalesce((r->>'damageModifier')::int,0)<>5 then
+    raise exception 'Repeatable invocation changed original cantrip';
+  end if;
+  -- Even malformed duplicate grants on one cantrip must not stack +CHA.
+  insert into public.character_class_option_grant_instances values(
+    c,public.fixture_uuid(71),'eldritch-invocation',2,
+    '{"child":{"metadata":{"spellKey":"eldritch-blast|XPHB"}}}'::jsonb
+  );
+  r:=private.encounter_warlock_agonizing_bonus_candidate_v1(c,eb);
+  if coalesce((r->>'damageModifier')::int,0)<>5 then
+    raise exception 'Duplicate invocation overstacked';
+  end if;
+  r:=private.encounter_warlock_agonizing_bonus_candidate_v1(c,other);
+  if coalesce((r->>'damageModifier')::int,0)<>0
+    or coalesce((r->>'eligibleWarlockCantrip')::boolean,false) then
+    raise exception 'Non-Warlock catalog cantrip granted bonus';
+  end if;
+  r:=private.encounter_warlock_agonizing_bonus_candidate_v1(c,nondmg);
+  if coalesce((r->>'damageModifier')::int,0)<>0
+    or coalesce((r->>'eligibleWarlockCantrip')::boolean,false) then
+    raise exception 'Non-damaging cantrip granted bonus';
+  end if;
+  update public.character_progression set class_level=1 where character_id=c;
+  r:=private.encounter_warlock_agonizing_bonus_candidate_v1(c,eb);
+  if coalesce((r->>'damageModifier')::int,0)<>0 then
+    raise exception 'Level 1 Warlock activated level 2+ invocation';
+  end if;
+  update public.character_progression set class_level=3 where character_id=c;
+  delete from public.character_class_option_grant_instances
+    where character_id=c and option_catalog_id=public.fixture_uuid(71);
+  r:=private.encounter_warlock_agonizing_bonus_candidate_v1(c,eb);
+  if coalesce((r->>'damageModifier')::int,0)<>0 then
+    raise exception 'Revoked invocation continued to apply';
+  end if;
+  insert into public.character_class_option_grant_instances values(
+    c,public.fixture_uuid(71),'eldritch-invocation',2,
+    '{"child":{"metadata":{"spellKey":"eldritch-blast|XPHB"}}}'::jsonb
+  );
+  if has_function_privilege('authenticated','private.encounter_warlock_agonizing_bonus_candidate_v1(uuid,uuid)','EXECUTE')
+  or has_function_privilege('anon','private.encounter_warlock_agonizing_bonus_candidate_v1(uuid,uuid)','EXECUTE')
+  or has_function_privilege('service_role','private.encounter_warlock_agonizing_bonus_candidate_v1(uuid,uuid)','EXECUTE')
+  then raise exception 'Invocation helper unexpectedly callable by API roles'; end if;
+  raise notice 'Shared Warlock cantrip Agonizing Blast eligibility, repeatable grants, revocation, no stacking PASS';
+end $invocation_tests$;
 do $test$
 declare a uuid:=public.fixture_uuid(11); s uuid:=public.fixture_uuid(51);
  t1 uuid:=public.fixture_uuid(21);t2 uuid:=public.fixture_uuid(22);

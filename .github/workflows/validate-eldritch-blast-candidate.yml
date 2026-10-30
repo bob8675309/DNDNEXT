@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'sql/candidates/20261029_eldritch_blast_atomic_candidate.sql'
+      - 'sql/candidates/20261030_warlock_cantrip_damage_bonus_candidate.sql'
       - 'utils/eldritchBlastRules.mjs'
       - 'scripts/validate_eldritch_blast_candidate.mjs'
       - 'scripts/fixtures/eldritch_blast_candidate_pg16.sql'

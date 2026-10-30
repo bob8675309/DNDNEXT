@@ -28,6 +28,8 @@ declare
   v_cha_score integer;
   v_cha_mod integer;
   v_agonizing boolean:=false;
+  v_damage_features jsonb:='{}'::jsonb;
+  v_invocation_bonus integer:=0;
   v_spell_bonus integer;
   v_target_ac integer;
   v_natural integer;
@@ -134,20 +136,13 @@ begin
   v_cha_score:=private.encounter_ability_score_v1(v_c.character_id,'cha');
   v_cha_mod:=floor((coalesce(v_cha_score,10)-10)/2.0)::integer;
   v_spell_bonus:=coalesce((v_profile->>'spellAttackBonus')::integer,0);
-  -- One signed-off invocation with the *specific chosen cantrip*; no global
-  -- bonus to all spells or trusting a client-provided damage modifier.
-  select exists (
-    select 1 from public.character_class_option_grant_instances grant_row
-    join public.class_feature_option_catalog catalog
-      on catalog.id=grant_row.option_catalog_id
-    where grant_row.character_id=v_c.character_id
-      and grant_row.option_type='eldritch-invocation'
-      and lower(catalog.option_key)='optional-feature:agonizing-blast|xphb'
-      and catalog.source='XPHB'
-      and grant_row.acquired_level<=v_level
-      and lower(coalesce(grant_row.choices#>>'{child,metadata,spellKey}',''))
-           = 'eldritch-blast|xphb'
-  ) into v_agonizing;
+  -- Reusable invocation rule: source-bound to any eligible Warlock cantrip.
+  -- Its application here is once per successful *beam damage roll*.
+  v_damage_features:=private.encounter_warlock_agonizing_bonus_candidate_v1(
+    v_c.character_id,v_spell.id
+  );
+  v_agonizing:=coalesce((v_damage_features->>'applies')::boolean,false);
+  v_invocation_bonus:=coalesce((v_damage_features->>'damageModifier')::integer,0);
 
   -- Sort all referenced target locks once, before dealing any damage. Never
   -- touch the world/town map. Only existing encounter creatures are targets.
@@ -224,7 +219,7 @@ begin
       for v_die in 1..v_dice loop
         v_raw:=v_raw+floor(random()*10)::integer+1;
       end loop;
-      if v_agonizing then v_raw:=greatest(0,v_raw+v_cha_mod); end if;
+      if v_agonizing then v_raw:=greatest(0,v_raw+v_invocation_bonus); end if;
       v_damage:=public.encounter_apply_damage_internal_v1(v_target_id,v_raw,'force');
     end if;
     v_results:=v_results||jsonb_build_array(jsonb_build_object(
@@ -233,7 +228,7 @@ begin
       'targetAc',v_target_ac,'natural',v_natural,'hit',v_hit,'critical',v_crit,
       'rawDamage',v_raw,'damage',v_damage,'targeting',v_targeting,
       'agonizingBlastApplied',v_agonizing and v_hit,
-      'agonizingBlastDamageModifier',case when v_agonizing and v_hit then v_cha_mod else 0 end
+      'agonizingBlastDamageModifier',case when v_agonizing and v_hit then v_invocation_bonus else 0 end
     ));
   end loop;
   update public.encounter_participants
@@ -245,7 +240,8 @@ begin
     'targetIds',to_jsonb(p_target_ids),
     'actionType','action','slotLevel',null,'beamCount',v_beams,'beams',v_results,
     'characterLevel',v_level,'castingAbilityModifier',v_cha_mod,
-    'agonizingBlastBoundToEldritchBlast',v_agonizing
+    'agonizingBlastBoundToEldritchBlast',v_agonizing,
+    'damageFeatures',v_damage_features
   );
   insert into public.encounter_combat_log(
     encounter_id,round,turn_index,actor_participant_id,
