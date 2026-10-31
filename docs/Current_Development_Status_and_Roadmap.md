@@ -1,5 +1,10 @@
 # DNDNext Current Development Status and Roadmap
 
+> **2026-10-31 docs-only main promotion:** Stable spell-engine product decisions and developer recovery docs are now on `main` at [START_HERE_ACTIVE_HANDOFF.md](START_HERE_ACTIVE_HANDOFF.md) and [SPELL_ENGINE_DECISIONS.md](SPELL_ENGINE_DECISIONS.md). The new engine is **not deployed**. This document retains dated historical statuses below, including obsolete PR listings; confirm their present GitHub and Supabase state before coding.
+
+
+> **CURRENT RECOVERY OVERRIDE (2026-10-31):** Read [START_HERE_ACTIVE_HANDOFF.md](START_HERE_ACTIVE_HANDOFF.md) and the approved [SPELL_ENGINE_DECISIONS.md](SPELL_ENGINE_DECISIONS.md) before treating any older workstream list below as actionable. The spell engine is the current design/research effort; approved plan is source-qualified XPHB-first spells, a small typed recipe vocabulary and existing server-authoritative action/effect systems, not a deployed rewrite. Earlier “active PR” lists are historical. Always verify exact GitHub/Supabase authority, especially archive versus working tree and #301 merged versus #266/#300 superseded.
+
 Last reconciled: 2026-10-24 (latest active-work override; historical roadmap below)
 
 This is the current high-level handoff for DNDNext. It reconciles the living roadmap, phase ledgers, repository source, GitHub state, and deployed Supabase state. Historical phase ledgers remain useful implementation records, but this document controls current status when an older status header or unchecked master-roadmap task conflicts with deployed evidence.
