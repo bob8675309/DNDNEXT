@@ -17,6 +17,9 @@ on:
       - 'scripts/validate_eldritch_blast_planner.mjs'
       - 'utils/eldritchBlastStagingCast.mjs'
       - 'utils/tacticalKnownSpellAssignments.mjs'
+      - 'utils/tacticalSpellMechanicsReview.mjs'
+      - 'scripts/validate_tactical_spell_mechanics_review.mjs'
+      - 'docs/Tactical_Spell_Mechanics_Review_2026-10-31.md'
       - 'scripts/validate_tactical_known_spell_metadata.mjs'
       - 'sql/candidates/20261031_tactical_spell_profile_known_metadata_candidate.sql'
       - 'scripts/validate_eldritch_blast_staging_cast.mjs'
@@ -41,6 +44,7 @@ jobs:
       - run: node scripts/validate_eldritch_blast_planner.mjs
       - run: node scripts/validate_eldritch_blast_staging_cast.mjs
       - run: node scripts/validate_tactical_known_spell_metadata.mjs
+      - run: node scripts/validate_tactical_spell_mechanics_review.mjs
       - run: node --check scripts/test_eldritch_blast_real_auth.mjs
       - run: node scripts/validate_eldritch_blast_auth_harness.mjs
       - run: node scripts/validate_eldritch_blast_signed_in_assertions.mjs
