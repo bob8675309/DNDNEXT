@@ -1,0 +1,66 @@
+name: Validate Eldritch Blast Real Local Auth (Free CI)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/validate-eldritch-blast-local-auth.yml'
+      - 'scripts/fixtures/generate_eldritch_blast_local_auth_fixture.mjs'
+      - 'scripts/test_eldritch_blast_local_auth.mjs'
+      - 'scripts/lib/eldritchBlastSignedInAssertions.mjs'
+      - 'scripts/fixtures/eldritch_blast_candidate_pg16.sql'
+      - 'sql/candidates/20261029_eldritch_blast_atomic_candidate.sql'
+      - 'sql/candidates/20261030_warlock_cantrip_damage_bonus_candidate.sql'
+      - 'sql/candidates/20261030_eldritch_blast_authenticated_bridge_candidate.sql'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  signed-jwt-local-only:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      PGHOST: 127.0.0.1
+      PGPORT: '54322'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_EB_LOCAL_CI_CONFIRM: CI_DISPOSABLE_LOCAL_ONLY
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install test dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Create disposable local project
+        run: |
+          mkdir -p "$RUNNER_TEMP/eb-local/supabase"
+          cat > "$RUNNER_TEMP/eb-local/supabase/config.toml" <<'TOML'
+          project_id = "eb-jwt-disposable-gha"
+          [db]
+          port = 54322
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+      - name: Start local PostgreSQL, GoTrue and PostgREST
+        working-directory: ${{ runner.temp }}/eb-local
+        run: npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Exercise two signed-in JWT users against disposable combat
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd "$RUNNER_TEMP/eb-local" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/eb-env"
+          set -a
+          source "$RUNNER_TEMP/eb-env"
+          set +a
+          export DNDNEXT_EB_LOCAL_URL="http://127.0.0.1:54321"
+          export DNDNEXT_EB_LOCAL_ANON_KEY="${ANON_KEY}"
+          node scripts/fixtures/generate_eldritch_blast_local_auth_fixture.mjs "$RUNNER_TEMP/eb-fixture.sql"
+          psql -X -v ON_ERROR_STOP=1 -f "$RUNNER_TEMP/eb-fixture.sql"
+          node scripts/test_eldritch_blast_local_auth.mjs
+      - name: Destroy disposable local services
+        if: always()
+        working-directory: ${{ runner.temp }}/eb-local
+        run: npx --yes supabase@2.120.0 stop --no-backup || true
