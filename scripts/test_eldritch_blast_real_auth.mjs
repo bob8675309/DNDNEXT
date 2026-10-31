@@ -4,6 +4,8 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
+import { readEldritchSignedInState, assertNoEldritchCombatMutation,
+  assertEldritchCommittedOnce } from './lib/eldritchBlastSignedInAssertions.mjs';
 
 const e=process.env;
 const prodRef='ucggczovhmauhshvhusx';
@@ -83,25 +85,43 @@ try {
      assert.ok(error.code==='42501'||/permission|not authorized|not permitted|access denied/i.test(error.message||''),
        'Expected permission rejection, got '+String(error.code));
    };
-   // Rejection before action spending or HP changes. Not a service_role call.
+   // Read combat state through the SAME ordinary authenticated client used
+   // to cast. Unexposed command ledger rows are checked separately by a
+   // staging administrator; never use service_role to fabricate RLS here.
+   const requestId=randomUUID();
+   const stateContext={
+     encounterId:encounter.id,actorId:actor,targets,requestId,
+   };
+   const before=await readEldritchSignedInState(a.client,stateContext);
+   assert.equal(before.logs.length,0,'Request ID was not fresh');
    let result=await b.client.rpc(rpc,request(randomUUID()));
    isDenied(result.error);
-   const requestId=randomUUID();
+   const afterUnauthorized=await readEldritchSignedInState(a.client,stateContext);
+   assertNoEldritchCombatMutation(before,afterUnauthorized,'Foreign player rejection');
    result=await a.client.rpc(rpc,request(requestId));
    if(result.error) throw new Error('Authorized cast rejected: '+result.error.code+' '+result.error.message);
    const cast=result.data;
    assert.ok(cast?.spellKey?.toLowerCase()==='eldritch-blast|xphb');
    assert.equal(cast?.beamCount,targets.length);
    assert.deepEqual(cast?.targetIds,targets);
+   const afterCast=await readEldritchSignedInState(a.client,stateContext);
+   assertEldritchCommittedOnce(before,afterCast,cast,targets,requestId);
    const repeat=await a.client.rpc(rpc,request(requestId));
    if(repeat.error) throw new Error('Exact signed-in replay rejected: '+repeat.error.code);
    assert.deepEqual(repeat.data,cast,'Replay must preserve exact outcome with no second damage');
+   assertNoEldritchCombatMutation(afterCast,
+     await readEldritchSignedInState(a.client,stateContext),'Idempotent replay');
    const foreignReplay=await b.client.rpc(rpc,request(requestId));
    isDenied(foreignReplay.error);
+   assertNoEldritchCombatMutation(afterCast,
+     await readEldritchSignedInState(a.client,stateContext),'Foreign request replay');
    const changed=await a.client.rpc(rpc,request(requestId,[randomUUID(),...targets.slice(1)]));
    isDenied(changed.error);
-   console.log('PASS: authorized cast, unrelated caller denied, exact replay and changed-target rejection.');
-   console.log('NOTE: Inspect disposable DB log/HP once for exactly one mutation; permission-revocation test remains separate.');
+   assertNoEldritchCombatMutation(afterCast,
+     await readEldritchSignedInState(a.client,stateContext),'Changed target intent');
+   console.log('PASS: actual JWT/RLS cast, exactly one version/Action/log, target HP/temp HP match each beam, unauthorized denial, exact replay and changed-intent rejection.');
+   console.log('NOTE: Command-request ledger has no client SELECT RLS. Verify exactly one row separately on disposable staging via admin SQL.');
+   console.log('NOTE: Revoked editor must be tested separately after staging permission changes; mock revocation is not real JWT acceptance.');
  }
 } finally {
  await Promise.allSettled([a.client.auth.signOut(),b.client.auth.signOut()]);

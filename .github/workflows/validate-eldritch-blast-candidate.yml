@@ -8,6 +8,8 @@ on:
       - 'scripts/fixtures/eldritch_blast_auth_bridge_pg16.sql'
       - 'scripts/test_eldritch_blast_real_auth.mjs'
       - 'scripts/validate_eldritch_blast_auth_harness.mjs'
+      - 'scripts/lib/eldritchBlastSignedInAssertions.mjs'
+      - 'scripts/validate_eldritch_blast_signed_in_assertions.mjs'
       - 'utils/eldritchBlastRules.mjs'
       - 'scripts/validate_eldritch_blast_candidate.mjs'
       - 'components/encounter/EldritchBlastPlanner.js'
@@ -37,6 +39,7 @@ jobs:
       - run: node scripts/validate_eldritch_blast_staging_cast.mjs
       - run: node --check scripts/test_eldritch_blast_real_auth.mjs
       - run: node scripts/validate_eldritch_blast_auth_harness.mjs
+      - run: node scripts/validate_eldritch_blast_signed_in_assertions.mjs
   postgres-integration:
     runs-on: ubuntu-latest
     services:
