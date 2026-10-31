@@ -6,6 +6,9 @@ create or replace function private.encounter_eldritch_blast_candidate_v1(
 ) returns jsonb
 language plpgsql security definer
 set search_path=pg_catalog,public,private,auth
+-- Bounded waits: caster lock, pending request-id unique conflict and any
+-- nested attack-effect locks not covered by NOWAIT; restored at function exit.
+set lock_timeout='2000ms'
 as $candidate$
 declare
   v_uid uuid:=auth.uid();

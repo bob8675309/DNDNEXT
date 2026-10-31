@@ -40,6 +40,7 @@ for(const marker of [
  "v_raw+v_invocation_bonus",
  "action_available=false",
  "on conflict(request_id) do nothing",
+ "set lock_timeout='2000ms'",
  "where id=v_c.encounter_id for update nowait;",
  "where id=v_target_id and encounter_id=v_e.id for update nowait;",
  "where request_id=p_request_id for update nowait;",
@@ -69,6 +70,12 @@ assert.ok(!sql.includes("public.encounter_targeting_context_internal_v1(v_c.id,n
   "Close-combat visibility must be from enemy toward caster");
 const directionFixture=fs.readFileSync("scripts/fixtures/eldritch_blast_candidate_pg16.sql","utf8");
 const lockFixture=fs.readFileSync("scripts/fixtures/eldritch_blast_lock_contention.sh","utf8");
+const pendingFixture=fs.readFileSync("scripts/fixtures/eldritch_blast_pending_lock_timeout.sh","utf8");
+for(const marker of ["for mode in caster request","pg_try_advisory_lock",
+  "pg_sleep(5)","ROLLBACK","55P03","canceling statement due to lock timeout",
+  "command_count","version_after","hp_after","log_count","action"]) {
+  assert.ok(pendingFixture.includes(marker),"Missing pending-lock timeout fixture: "+marker);
+}
 for(const marker of ["pg_try_advisory_lock","could not obtain lock",
   "n=610; lock_key=480610","n=611; lock_key=480611",
   "command_count","version_after","hp_after","log_count","action"]) {
