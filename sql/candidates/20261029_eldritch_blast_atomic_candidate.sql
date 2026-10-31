@@ -6,6 +6,9 @@ create or replace function private.encounter_eldritch_blast_candidate_v1(
 ) returns jsonb
 language plpgsql security definer
 set search_path=pg_catalog,public,private,auth
+-- Bounded waits: caster lock, pending request-id unique conflict and any
+-- nested attack-effect locks not covered by NOWAIT; restored at function exit.
+set lock_timeout='2000ms'
 as $candidate$
 declare
   v_uid uuid:=auth.uid();
@@ -61,14 +64,17 @@ begin
   if not found or v_c.character_id is null then
     raise exception 'Caster must be a linked encounter character' using errcode='22023';
   end if;
-  select * into v_e from public.encounters where id=v_c.encounter_id for update;
+  -- Deployed attacks may hold a target row while waiting for encounter.
+  -- Never wait here after locking the caster; a contended encounter fails
+  -- with 55P03, rolling back this entire attempt before any effect.
+  select * into v_e from public.encounters where id=v_c.encounter_id for update nowait;
   if not found then raise exception 'Encounter not found'; end if;
   if v_c.controller_user_id is distinct from v_uid
      and not coalesce(public.is_admin(v_uid),false)
      and not exists (
        select 1 from public.character_permissions cp
        where cp.character_id=v_c.character_id and cp.user_id=v_uid and coalesce(cp.can_edit,false)
-       for share
+       for share nowait
      )
   then
     raise exception 'Not authorized to cast with this participant' using errcode='42501';
@@ -77,7 +83,7 @@ begin
   -- or the turn advanced. Only the same authenticated user/actor/type can
   -- retrieve an existing result; replay does not mutate combat state.
   select * into v_prev from public.encounter_command_requests
-    where request_id=p_request_id for update;
+    where request_id=p_request_id for update nowait;
   if found then
     if v_prev.command_type<>'spell_cast'
       or v_prev.participant_id<>v_c.id or v_prev.requested_by is distinct from v_uid
@@ -150,8 +156,10 @@ begin
   for v_target_id in
     select distinct unnest(p_target_ids) order by 1
   loop
+    -- Other deployed commands can lock target before encounter. The candidate
+    -- must fail instead of waiting with caster + encounter already held.
     select * into v_t from public.encounter_participants
-      where id=v_target_id and encounter_id=v_e.id for update;
+      where id=v_target_id and encounter_id=v_e.id for update nowait;
     if not found or v_t.is_defeated or v_target_id=v_c.id then
       raise exception 'Each beam must target another active encounter creature';
     end if;
@@ -168,7 +176,7 @@ begin
   get diagnostics v_inserted=row_count;
   if v_inserted=0 then
     select * into v_prev from public.encounter_command_requests
-      where request_id=p_request_id for update;
+      where request_id=p_request_id for update nowait;
     if not found or v_prev.command_type<>'spell_cast'
        or v_prev.participant_id<>v_c.id or v_prev.requested_by is distinct from v_uid
        or lower(coalesce(v_prev.result->>'spellKey',''))<>'eldritch-blast|xphb'
@@ -190,6 +198,7 @@ begin
     end if;
     -- A visible, non-incapacitated enemy within 5 ft imposes disadvantage
     -- on any ranged attack roll, independent of the chosen target.
+    -- The adjacent ENEMY must see the caster; LOS can be directional.
     v_base_disadvantage:=exists (
       select 1 from public.encounter_participants near
       where near.encounter_id=v_e.id and near.id<>v_c.id and not near.is_defeated
@@ -202,7 +211,7 @@ begin
             ('incapacitated','paralyzed','stunned','unconscious')
         )
         and coalesce(
-          (public.encounter_targeting_context_internal_v1(v_c.id,near.id)
+          (public.encounter_targeting_context_internal_v1(near.id,v_c.id)
             ->>'hasLineOfSight')::boolean,false)
     );
     v_roll_data:=private.encounter_resolve_attack_roll_v1(

@@ -1,9 +1,21 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import EncounterTurnBoard from "../../components/encounter/EncounterTurnBoard";
+import EldritchBlastPlanner from "../../components/encounter/EldritchBlastPlanner";
+import { tacticalKnownSpellAssignments, hasVerifiedKnownSpellAssignment } from "../../utils/tacticalKnownSpellAssignments.mjs";
+import { eldritchBlastPlanBeamCount, eldritchBlastPlanCandidates } from "../../utils/eldritchBlastPlanner.mjs";
+import { isEldritchBlastStagingCastAllowed, buildEldritchBlastStagingRequest,
+  summarizeEldritchBlastCast } from "../../utils/eldritchBlastStagingCast.mjs";
 import { CONE_DIRECTION_LABELS, hexDistance, makeHexCone15, makeHexLine100 } from "../../utils/encounterHex";
 import { supabase } from "../../utils/supabaseClient";
 
+// Both the opt-in flag and a separate, exact Supabase staging ref are required.
+const EB_STAGING_CAST_ENABLED = isEldritchBlastStagingCastAllowed({
+  enabled: process.env.NEXT_PUBLIC_DNDNEXT_EB_STAGING_CASTS === "true",
+  supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+  stagingProjectRef: process.env.NEXT_PUBLIC_DNDNEXT_EB_STAGING_PROJECT_REF,
+  vercelEnv: process.env.NEXT_PUBLIC_VERCEL_ENV,
+});
 const SUPPORTED_SPELL_KEYS = new Set([
   "fire-bolt|xphb",
   "cure-wounds|xphb",
@@ -147,14 +159,27 @@ export default function EncounterCombatPage({ workspaceSessionId = "", onWorkspa
   );
   const target = useMemo(() => targets.find((p) => String(p.id) === String(targetId)) || null, [targets, targetId]);
   const weapon = useMemo(() => weapons.find((row) => String(row.inventoryItemId) === String(weaponId)) || null, [weapons, weaponId]);
+  const knownSpells = useMemo(() => tacticalKnownSpellAssignments(spellProfile), [spellProfile]);
   const supportedSpells = useMemo(
-    () => (Array.isArray(spellProfile?.knownSpells) ? spellProfile.knownSpells : []).filter(
+    () => knownSpells.filter(
       (row) => row?.source === "XPHB" && row?.sourceType === "class" && SUPPORTED_SPELL_KEYS.has(spellKey(row))
     ),
-    [spellProfile]
+    [knownSpells]
   );
-  const knownSpells = useMemo(() => Array.isArray(spellProfile?.knownSpells) ? spellProfile.knownSpells : [], [spellProfile]);
   const manualSpells = useMemo(() => knownSpells.filter((row) => !(row?.source === "XPHB" && row?.sourceType === "class" && SUPPORTED_SPELL_KEYS.has(spellKey(row)))), [knownSpells]);
+  // Explicit GM-assisted planning only. Eldritch Blast is NOT an approved
+  // automated adapter and must not enter SUPPORTED_SPELL_KEYS before the
+  // authenticated, owner-bound RPC has passed isolated staging acceptance.
+  const eldritchBlastAssignment = useMemo(() => (
+    String(spellProfile?.className || "").toLowerCase() === "warlock"
+      ? manualSpells.find((row) => (
+        spellKey(row) === "eldritch-blast|xphb"
+        && row?.source === "XPHB"
+        && row?.sourceType === "class"
+        && row?.known !== false
+      )) || null
+      : null
+  ), [manualSpells, spellProfile?.className]);
   const selectedSpell = useMemo(
     () => supportedSpells.find((row) => String(row.assignmentId) === String(spellAssignmentId)) || supportedSpells[0] || null,
     [supportedSpells, spellAssignmentId]
@@ -699,6 +724,20 @@ export default function EncounterCombatPage({ workspaceSessionId = "", onWorkspa
     });
   }
 
+  function castEldritchBlast(targetIds) {
+    // A source-level safeguard, not a substitute for signed-in server checks.
+    if (!EB_STAGING_CAST_ENABLED || !canControl || !active?.action_available ||
+        !eldritchBlastAssignment?.assignmentId || !hasVerifiedKnownSpellAssignment(eldritchBlastAssignment) || !spellProfile || saving) return;
+    const beamCount = eldritchBlastPlanBeamCount(spellProfile.classLevel);
+    const candidates = eldritchBlastPlanCandidates(active, participants);
+    const request = buildEldritchBlastStagingRequest({
+      casterId: active.id, assignmentId: eldritchBlastAssignment.assignmentId,
+      targetIds, candidates, beamCount, requestId: requestId(),
+    });
+    if (!request) { setMessage("The beam plan is stale or incomplete. Select targets again."); return; }
+    return runRpc("encounter_cast_eldritch_blast_candidate_v1", request, summarizeEldritchBlastCast);
+  }
+
   function castSpell() {
     if (!active || !selectedSpell || !canCastSelectedSpell) return;
     const key = spellKey(selectedSpell);
@@ -1033,7 +1072,17 @@ export default function EncounterCombatPage({ workspaceSessionId = "", onWorkspa
                   : <span>Cantrips / no slot pool</span>}
               </div>
               <div className="spell-rule" role="status">{knownSpells.length} assigned spell{knownSpells.length === 1 ? "" : "s"} • {supportedSpells.length} automated here. Spells without a reviewed adapter cannot be cast on this battleboard yet.</div>
-              {manualSpells.length ? <details className="manual-spell-list" open={!supportedSpells.length}><summary>{manualSpells.length} assigned spell{manualSpells.length === 1 ? "" : "s"} requiring GM-assisted play</summary><ul>{manualSpells.map((row) => <li key={row.assignmentId || `${row.spellKey}:${row.name}`}><strong>{row.name}</strong> <span>— {row.sourceType === "class" && row.source === "XPHB" ? "Tactical adapter not yet implemented" : "Source or acquisition not supported by this tactical adapter"}</span></li>)}</ul></details> : null}
+              {manualSpells.length ? <details className="manual-spell-list" open={!supportedSpells.length}><summary>{manualSpells.length} assigned spell{manualSpells.length === 1 ? "" : "s"} requiring GM-assisted play</summary><ul>{manualSpells.map((row) => <li key={row.assignmentId || `${row.spellKey}:${row.name}`}><strong>{row.name}</strong> <span>— {spellKey(row) === "eldritch-blast|xphb" && row.source === "XPHB" ? "Beam target preview available; automated casting remains disabled" : row.sourceType === "class" && row.source === "XPHB" ? "Tactical adapter not yet implemented" : "Source or acquisition not supported by this tactical adapter"}</span></li>)}</ul></details> : null}
+              {eldritchBlastAssignment ? <EldritchBlastPlanner
+                key={`${sessionId}:${active.id}:${eldritchBlastAssignment.assignmentId}`}
+                caster={active}
+                participants={participants}
+                classLevel={spellProfile.classLevel}
+                spellAttackBonus={spellProfile.spellAttackBonus}
+                stagingEnabled={EB_STAGING_CAST_ENABLED && hasVerifiedKnownSpellAssignment(eldritchBlastAssignment)}
+                canStageCast={EB_STAGING_CAST_ENABLED && hasVerifiedKnownSpellAssignment(eldritchBlastAssignment) && canControl && Boolean(active.action_available) && !saving}
+                onCast={EB_STAGING_CAST_ENABLED && hasVerifiedKnownSpellAssignment(eldritchBlastAssignment) ? castEldritchBlast : undefined}
+              /> : null}
               {supportedSpells.length ? <>
                 <select value={spellAssignmentId} onChange={(e) => setSpellAssignmentId(e.target.value)}>
                   {supportedSpells.map((row) => <option key={row.assignmentId} value={row.assignmentId}>{row.name} • {Number(row.level || 0) === 0 ? "Cantrip" : `Level ${row.level}`}{Number(row.level || 0) > 0 && !(row.prepared || row.alwaysAvailable) ? " • not prepared" : ""}</option>)}
@@ -1330,6 +1379,18 @@ export default function EncounterCombatPage({ workspaceSessionId = "", onWorkspa
               {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "lightning-bolt|xphb" ? <>
                 <small>{row.detail?.directionLabel || "Line"} • {row.detail?.damageDice || "8d6"} lightning • one shared roll {row.detail?.sharedDamageRoll ?? "?"} • {row.detail?.visibleFailureCount ?? 0} failed / {row.detail?.visibleSuccessCount ?? 0} saved in visible results</small>
                 {(Array.isArray(row.detail?.targets) ? row.detail.targets : []).map((result) => <small key={`${row.id}-${result.targetId}`}>{result.targetName || "Target"} • DEX {result.saveTotal ?? "?"} vs DC {result.saveDc ?? row.detail?.saveDc ?? "?"}{result.coverSaveBonus ? ` • cover ${bonusLabel(result.coverSaveBonus)}` : ""} • {result.saveSuccess ? `${result?.damage?.damage ?? result.rawDamage ?? 0} lightning damage • saved for half` : `${result?.damage?.damage ?? result.rawDamage ?? 0} lightning damage • failed`}{mindSliverPenaltyText(result?.saveProfile)}{result?.damage?.immune ? " • immune" : result?.damage?.resistant ? " • resisted" : result?.damage?.vulnerable ? " • vulnerable" : ""}</small>)}
+              </> : null}
+              {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "eldritch-blast|xphb" ? <>
+                <small>{row.detail?.beamCount ?? "?"} independently rolled beams • Force • Action</small>
+                {(Array.isArray(row.detail?.beams) ? row.detail.beams : []).map((beam, index) =>
+                  <small key={`${row.id}-beam-${index}`}>Beam {beam?.beam ?? index+1} → {beam?.targetName || "Target"}:
+                    {beam?.hit ? ` hit • ${beam?.damage?.damage ?? "?"} Force` : " miss"}
+                    {beam?.total != null ? ` • ${beam.total} vs AC ${beam?.targetAc ?? "?"}` : ""}
+                    {beam?.critical ? " • critical" : ""}
+                    {beam?.agonizingBlastApplied ? ` • Agonizing Blast +${beam?.agonizingBlastDamageModifier ?? "?"}` : ""}
+                    {beam?.damage?.immune ? " • immune" : beam?.damage?.resistant ? " • resisted" : beam?.damage?.vulnerable ? " • vulnerable" : ""}
+                  </small>
+                )}
               </> : null}
               {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "magic-missile|xphb" ? <>
                 <small>{row.detail?.dartCount ?? "?"} independently rolled darts • {row.detail?.targetCount ?? 0} target{Number(row.detail?.targetCount || 0) === 1 ? "" : "s"} • {row.detail?.rawDamage ?? 0} raw → {row.detail?.damage ?? 0} force damage • simultaneous{row.detail?.slotLevel ? ` • level ${row.detail.slotLevel} slot` : ""}</small>

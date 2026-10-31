@@ -20,6 +20,11 @@ assert.match(combat,/Spells without a reviewed adapter cannot be cast/);
 assert.match(combat,/Tactical adapter not yet implemented/);
 assert.match(combat,/manualSpells\.map/);
 assert.match(combat,/supportedSpells\.length \? <>/);
-assert.doesNotMatch(combat,/SUPPORTED_SPELL_KEYS = new Set\(\[[\s\S]*?"eldritch-blast\|xphb"/);
+// Scope the assertion to the approved adapter declaration, not unrelated
+// GM-assisted planning references later in the file.
+const approvedKeys = combat.match(/const SUPPORTED_SPELL_KEYS = new Set\(\[([\s\S]*?)\]\);/)?.[1];
+assert.ok(approvedKeys, "Approved tactical spell set missing");
+assert.doesNotMatch(approvedKeys, /"eldritch-blast\|xphb"/, "Eldritch Blast must remain non-casting until authenticated acceptance");
+assert.match(combat, /const eldritchBlastAssignment = useMemo/, "GM-assisted target planner missing");
 assert.ok(workflow.includes("node scripts/validate_encounter_team_spell_visibility.mjs"));
 console.log("Encounter hostile-team staging and known-spell disclosure contracts passed");

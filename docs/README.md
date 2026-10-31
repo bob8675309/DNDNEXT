@@ -1,6 +1,12 @@
 # DNDNext Living Documentation Index
 
-## Draft combined release candidate — Encounter Workspace + Rest dialog (2026-10-28)
+## ACTIVE HANDOFF — read first (2026-10-31)
+
+**[START_HERE_ACTIVE_HANDOFF.md](START_HERE_ACTIVE_HANDOFF.md)** is the first step for every new development chat. It contains the *verification protocol*, the last **dated** GitHub/Supabase/CI snapshot, current workstream, exact next task, open risks and a copy-ready takeover instruction. **[SPELL_ENGINE_DECISIONS.md](SPELL_ENGINE_DECISIONS.md)** records the owner's six approved decisions, including XPHB-first, spells-first, safe GM-assisted fallback, Admin recipe authoring, shared human/future opt-in AI controls, and separately versioned house rules. These decisions are already answered; do not reopen them in subsequent chats without a concrete conflict.
+
+**Historical status warning:** All dated “current/open draft” claims below must be checked against GitHub. In particular, original draft PRs #266 and #300 were superseded by **merged PR #301**; #251/#253/#255 and #257 are closed/unmerged research preserved by the archive. Draft PR #309 is not a production merge. Existing live/source authority beats the prose below. The new recipe engine is **not deployed**.
+
+## Historical checkpoint — Encounter Workspace + Rest dialog (2026-10-28; subsequently merged through PR #301)
 
 A clean, isolated candidate combines draft PR #300 (unified encounter navigation) and #266 (Camp & Downtime rest dialog) on `main`. This is **not merged or deployed**. It excludes all unfinished experimental combat/attunement branches. GitHub Actions runs both focused validators and a Next.js production build without an intentional Vercel deployment. Browser/admin/player acceptance remains required before any promotion. Details: [Release_Candidate_Encounter_Workspace_Rest_2026-10-28.md](Release_Candidate_Encounter_Workspace_Rest_2026-10-28.md).
 
@@ -8,6 +14,11 @@ A clean, isolated candidate combines draft PR #300 (unified encounter navigation
 Updated: 2026-10-24
 
 This directory contains the project's living handoff, roadmap, architecture, subsystem, and evidence documents. For active work, **live Supabase + current GitHub source/validators/deployment state outrank prose** if they conflict.
+
+## Composable spell engine and future Actor AI — research design (2026-10-31)
+
+- [Spell_Engine_PrePivot_Audit_2026-10-31.md](Spell_Engine_PrePivot_Audit_2026-10-31.md) — **pre-implementation evidence, risk register and decisions**; checks archived PR topology, live catalogue, combat/Forge/rest/effects/AI authorities. Read this before implementing the new interpreter.
+- [Composable_Spell_Engine_AI_Readiness_2026-10-31.md](Composable_Spell_Engine_AI_Readiness_2026-10-31.md) — staged, AI-compatible spell action/geometry/effects architecture. **Research only**, no AI or engine implementation; canonical authorized legal actions remain the contract for both humans and future bots.
 
 ## Start here — current development and handoff (reconciled 2026-10-24)
 

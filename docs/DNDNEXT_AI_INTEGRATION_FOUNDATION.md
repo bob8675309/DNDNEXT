@@ -266,6 +266,10 @@ Allow AI to choose among encounter-engine-generated legal actions. Game engine r
 ### Phase 5 — downloadable local-AI packaging
 Optional local model downloads, hardware-aware quality presets, shared provider abstraction.
 
+## Composable spell-engine compatibility (design addendum, 2026-10-31)
+
+[Composable_Spell_Engine_AI_Readiness_2026-10-31.md](Composable_Spell_Engine_AI_Readiness_2026-10-31.md) formalizes the agreed shared tactical spell recipes and **human/AI action boundary**. Canonical, server-approved actions and parameters are the future AI interaction surface; the AI must not execute effect nodes, fabricate grants, inspect hidden data or write game-state mutations. The proposed spell interpreter is distinct from the pure character-effects arithmetic work in draft PR #251. This is an architectural constraint **only** and does not change the prior AI implementation sequencing or authorize an AI runtime.
+
 ## Protected boundaries
 
 This future direction does not authorize current changes to:
