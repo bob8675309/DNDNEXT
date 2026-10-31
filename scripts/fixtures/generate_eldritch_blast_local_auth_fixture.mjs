@@ -32,6 +32,9 @@ create table public.items_catalog(
  id uuid primary key default gen_random_uuid(),item_key text,item_name text not null,
  payload jsonb not null default '{}'::jsonb
 );
+-- DROP only the synthetic mock function in the disposable local fixture.
+-- Its old parameter names differ from the exact deployed function snapshot.
+drop function public.encounter_apply_damage_internal_v1(uuid,integer,text);
 \i scripts/fixtures/eldritch_blast_production_damage_pg17.sql
 create or replace function public.eb_ci_identity_v1() returns jsonb
 language sql stable security invoker set search_path=pg_catalog,auth
