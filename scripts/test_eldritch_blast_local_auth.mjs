@@ -259,5 +259,111 @@ try{
  assert.equal(Number(db("select count(*) from public.encounter_command_requests "+
   "where request_id='"+deniedId+"'")),0,"Total-cover denial wrote a command");
  console.log("PASS real JWT live LOS/cover/attack-roll parity: half/+2, three-quarter/+5, Guiding Bolt and Vicious Mockery effect consumption, Advantage/Disadvantage, directional nearby enemy, total-cover atomic rollback");
+ // Load exact deployed character ability / spellcasting profile / controller
+ // functions against minimal local canonical class + sheet fixtures.
+ const profileLoad=spawnSync("psql",["-X","-v","ON_ERROR_STOP=1","-f",
+  "scripts/fixtures/eldritch_blast_activate_profile_pg17.sql"],
+  {encoding:"utf8",env:{...e,PGUSER:"postgres"}});
+ assert.equal(profileLoad.status,0,
+  "Real local spellcasting profile fixture failed: "+profileLoad.stderr);
+ // SQL schema changes occur after PostgREST starts: refresh its RPC cache.
+ db("notify pgrst, 'reload schema'");
+ await new Promise(resolve=>setTimeout(resolve,1200));
+ const noSession=createClient(url,key,{
+  auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+ const unsignedProfile=await noSession.rpc("encounter_spellcasting_profile_v1",{
+  p_participant_id:actor});
+ assert.ok(unsignedProfile.error,"Anonymous profile RPC should be inaccessible");
+ const profileB=await b.client.rpc("encounter_spellcasting_profile_v1",{
+  p_participant_id:actor});
+ assert.ok(profileB.error,"Foreign player read a Warlock spellcasting profile");
+ const profileA=await a.client.rpc("encounter_spellcasting_profile_v1",{
+  p_participant_id:actor});
+ assert.ifError(profileA.error);
+ const firstProfile=profileA.data;
+ assert.equal(firstProfile.classKey,"warlock|XPHB");
+ assert.equal(firstProfile.className,"Warlock");
+ assert.equal(firstProfile.classSource,"XPHB");
+ assert.equal(firstProfile.ruleset,"2024");
+ assert.equal(firstProfile.classLevel,3);
+ assert.equal(firstProfile.castingAbility,"cha");
+ assert.equal(firstProfile.castingAbilityScore,20);
+ assert.equal(firstProfile.castingAbilityModifier,5);
+ assert.equal(firstProfile.proficiencyBonus,2);
+ assert.equal(firstProfile.spellAttackBonus,7);
+ assert.equal(firstProfile.spellSaveDc,15);
+ assert.ok(firstProfile.knownSpells.some(s=>s.assignmentId===assignment
+  && s.spellKey.toLowerCase()==="eldritch-blast|xphb"
+  && s.sourceType==="class" && s.sourceLabel==="warlock"));
+ assert.equal(firstProfile.slotSnapshot[0].remaining,1);
+ // A DB editor grant must allow profile access with same JWT, and a revoke
+ // must immediately remove it even though the existing token remains valid.
+ db("insert into public.character_permissions(character_id,user_id,can_edit) values("+
+  "public.fixture_uuid(31),'"+b.uid+"',true)");
+ const editorProfile=await b.client.rpc("encounter_spellcasting_profile_v1",{
+  p_participant_id:actor});
+ assert.ifError(editorProfile.error);
+ assert.equal(editorProfile.data.spellAttackBonus,7);
+ db("delete from public.character_permissions where character_id=public.fixture_uuid(31)"+
+  " and user_id='"+b.uid+"'");
+ const revokedProfile=await b.client.rpc("encounter_spellcasting_profile_v1",{
+  p_participant_id:actor});
+ assert.ok(revokedProfile.error,"Revoked editor still read spellcasting profile");
+ // Cast through REAL canonical profile, CHA score and class-level bonus.
+ db("delete from public.encounter_map_objects");
+ db("update public.encounter_participants set q=5 where id=public.fixture_uuid(22)");
+ db("update public.encounter_participants set action_available=true where id=public.fixture_uuid(11)");
+ const canonicalId=randomUUID(),canonicalCtx={...ctx,requestId:canonicalId};
+ const canonicalBefore=await readEldritchSignedInState(a.client,canonicalCtx);
+ const canonical=await a.client.rpc("encounter_cast_eldritch_blast_candidate_v1",{
+  ...req(canonicalId)});
+ assert.ifError(canonical.error);
+ const canonicalAfter=await readEldritchSignedInState(a.client,canonicalCtx);
+ assertEldritchCommittedOnce(canonicalBefore,canonicalAfter,canonical.data,[target],canonicalId);
+ assert.equal(canonical.data.castingAbilityModifier,5);
+ assert.equal(canonical.data.beams[0].attackBonus,7);
+ assert.equal(canonical.data.agonizingBlastBoundToEldritchBlast,true);
+ assert.equal(canonical.data.damageFeatures.damageModifier,5);
+ if(canonical.data.beams[0].hit){
+  assert.equal(canonical.data.beams[0].agonizingBlastDamageModifier,5);
+ }
+ // Exercise real score recalculation and Warlock level-5 proficiency + beams.
+ db("update public.character_sheets set sheet='"+
+  '{"abilities":{"cha":{"score":14}},"proficiencyBonus":2}'+
+  "'::jsonb where character_id=public.fixture_uuid(31)");
+ db("update public.character_progression set class_level=5 where character_id=public.fixture_uuid(31)");
+ db("update public.encounter_participants set action_available=true where id=public.fixture_uuid(11)");
+ const higherProfile=await a.client.rpc("encounter_spellcasting_profile_v1",{
+  p_participant_id:actor});
+ assert.ifError(higherProfile.error);
+ assert.equal(higherProfile.data.classLevel,5);
+ assert.equal(higherProfile.data.castingAbilityScore,14);
+ assert.equal(higherProfile.data.castingAbilityModifier,2);
+ assert.equal(higherProfile.data.proficiencyBonus,3);
+ assert.equal(higherProfile.data.spellAttackBonus,5);
+ assert.equal(higherProfile.data.spellSaveDc,13);
+ const level5Id=randomUUID(),level5Targets=[target,target];
+ const level5Ctx={...ctx,requestId:level5Id};
+ const level5Before=await readEldritchSignedInState(a.client,level5Ctx);
+ const level5=await a.client.rpc("encounter_cast_eldritch_blast_candidate_v1",{
+  ...req(level5Id),p_target_ids:level5Targets});
+ assert.ifError(level5.error);
+ const level5After=await readEldritchSignedInState(a.client,level5Ctx);
+ assertEldritchCommittedOnce(level5Before,level5After,level5.data,level5Targets,level5Id);
+ assert.equal(level5.data.castingAbilityModifier,2);
+ assert.equal(level5.data.beamCount,2);
+ assert.equal(level5.data.damageFeatures.damageModifier,2);
+ assert.equal(level5.data.agonizingBlastBoundToEldritchBlast,true);
+ for(const beam of level5.data.beams){
+  assert.equal(beam.attackBonus,5);
+  if(beam.hit)assert.equal(beam.agonizingBlastDamageModifier,2);
+ }
+ const again5=await a.client.rpc("encounter_cast_eldritch_blast_candidate_v1",{
+  ...req(level5Id),p_target_ids:level5Targets});
+ assert.ifError(again5.error);
+ assert.deepEqual(again5.data,level5.data);
+ assertNoEldritchCombatMutation(level5After,
+  await readEldritchSignedInState(a.client,level5Ctx),"Canonical profile replay");
+ console.log("PASS real JWT LIVE spellcasting profile: class/score/proficiency, spells/slots, CHA and invocation recomputation, level-5 beams, forbidden anonymous/foreign/revoked profile access");
  console.log("PASS real Supabase JWTs, signed-in RLS, unauthorized user, exactly one action/version/HP/log/ledger write, replay/intent denial");
 }finally{await Promise.allSettled(clients.map(x=>x.auth.signOut()));}
