@@ -38,6 +38,10 @@ This is a **mechanics audit**, not an implementation promise.
 | Healing Word / Mass Healing Word | Bonus Action, healing and target restrictions, no hostile attack |
 | Many buffs, summons, transformations, illusions | Dedicated duration, concentration, entity, condition or GM-adjudication family |
 
+## AI-compatible composable engine direction (2026-10-31)
+
+The campaign owner approved pivoting from adding more spell-specific casting functions to a **source-qualified, declarative spell recipe/interpreter** made from shared targeting, resolution, effect and lifecycle nodes. The human tactical UI and future local-first Actor AI must consume the **same server-generated legal actions** and guarded action executor; AI must never author spell-rule payloads or bypass permission, hidden-information or state-change authority. **Design-only research** is specified in [Composable_Spell_Engine_AI_Readiness_2026-10-31.md](Composable_Spell_Engine_AI_Readiness_2026-10-31.md). Before enabling new spells (including Scorching Ray), establish recipe/interpreter parity and reconcile the separate draft common character-effects resolver. Existing production RPCs remain intact.
+
 ## Implementation priority and separation of concerns
 - **Already has reviewed adapter:** Preserve existing 19 XPHB adapters; do not refactor their action logic merely to force them into Eldritch Blast architecture.
 - **Finish Eldritch Blast:** Complete remaining effects and user-interface release gates first.

@@ -9,6 +9,10 @@ Updated: 2026-10-24
 
 This directory contains the project's living handoff, roadmap, architecture, subsystem, and evidence documents. For active work, **live Supabase + current GitHub source/validators/deployment state outrank prose** if they conflict.
 
+## Composable spell engine and future Actor AI — research design (2026-10-31)
+
+- [Composable_Spell_Engine_AI_Readiness_2026-10-31.md](Composable_Spell_Engine_AI_Readiness_2026-10-31.md) — staged, AI-compatible spell action/geometry/effects architecture. **Research only**, no AI or engine implementation; canonical authorized legal actions remain the contract for both humans and future bots.
+
 ## Start here — current development and handoff (reconciled 2026-10-24)
 
 1. **[DNDNext_Effects_AI_Current_Handoff_2026-10-24.md](DNDNext_Effects_AI_Current_Handoff_2026-10-24.md)** — current system map, open PR dependency graph, effect owners and release gates. The dated live status at the top overrides old snapshot tables.
