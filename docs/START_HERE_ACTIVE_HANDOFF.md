@@ -62,11 +62,13 @@ Use `docs/README.md` and `docs/Documentation_Refresh_Manifest.md` for other subs
 
 **P1 structural contract introduced on draft research branch:** `utils/spellRecipes/validateSpellRecipe.mjs`, `scripts/fixtures/spell_recipe_p1_examples.mjs`, `scripts/validate_spell_recipe_schema_p1.mjs`, [Spell_Recipe_P1_Schema_2026-10-31.md](Spell_Recipe_P1_Schema_2026-10-31.md). Strict XPHB 2024 source-qualified, versioned, bounded recipe shapes for actions/slots, target geometry, attacks/saves/auto-hits, damage/healing/area, branch/repeat limits and explicit dice roll scopes. **Synthetic examples are NOT rules-complete nor deployed**. No execution, AI selection, RPC, UI, Auth, DB tables or map modifications.
 
-The old “P1 not started” and “create schema first” entries *below* are preserved as dated history. After running the new Node test at the actual updated commit, the next task is **P1 compiler-preflight design**: validate repeat/branch scoping, rollGroup reuse, recipe immutability/identity; no gameplay execution. Always verify exact GitHub commit and CI first.
+**P1 compiler preflight follow-up (new research milestone):** `utils/spellRecipes/preflightSpellRecipe.mjs` and `scripts/validate_spell_recipe_preflight_p1.mjs` check lexical isolation of repeat bodies versus after-continuations, legal same-scope hit/miss joins, same-path/cross-scope roll cache misuse, at most three nested loops, worst-case operation cap, canonical SHA-256 recipe content identity, and deeply frozen **non-executable** manifests. See [Spell_Recipe_P1_Schema_2026-10-31.md](Spell_Recipe_P1_Schema_2026-10-31.md). This milestone must be retested at the exact current commit before marking it verified.
+
+**Single next task AFTER this preflight passes:** P2 **shadow parity design** using existing server-backed Fire Bolt, Sacred Flame, Magic Missile, Acid Splash, Word of Radiance, Burning Hands, Lightning Bolt, and held Eldritch Blast reference contracts. First compare action/slot/target/roll scopes; *do not execute or migrate spells*. The older “P1 not started” items below are preserved only as historical dated entries.
 
 ## Current engineering task — SINGLE NEXT STEP
 
-**Create the Phase P1 *closed, versioned spell-recipe schema and pure validator* as a research-only artifact.** Start by reading exact old function definitions for Fire Bolt, Sacred Flame, Magic Missile, Acid Splash, Word of Radiance, Burning Hands, Lightning Bolt and the held Eldritch Blast candidate. Map reuse/ownership and reject unsupported operations and unbounded graphs. Supply synthetic valid/invalid recipes and property tests; compare them to **existing** adapter contracts. Keep effects arithmetic, cast authorization, actual RNG/HP/slots and timed effects authoritative in the current server paths. No gameplay route change or production migration at this step.
+**After validating the compiler preflight CI:** Design P2 *shadow parity contracts* against the exact working spell RPC families, starting with a read-only attack/save/damage/resource/roll-scope comparison matrix. Retain current server behavior as the golden reference, isolate test fixtures, and do not create a cast endpoint, database migration, gameplay UI change, AI provider dependency, or production write. The schema and preflight are *not* rules-complete; do not infer automation coverage from structural validation.
 
 **Do not start with:** adding Scorching Ray as a one-off public RPC; refactoring 19 existing adapters; writing a universal text-to-spell compiler; silently switching to a JS-only transaction processor; generating AI prompts to choose arbitrary effects; implementing AI autonomy now; or batch converting 1,037 records.
 
@@ -75,7 +77,7 @@ The old “P1 not started” and “create schema first” entries *below* are p
 | ID | Status at last check | Action before delivery |
 | --- | --- | --- |
 | P0 audit + user decisions | **Documented** | Owner answers captured in `SPELL_ENGINE_DECISIONS.md`, pre-pivot audit linked. |
-| P1 schema/validator | **Not started** | First substantive engineering work on the composable pivot. |
+| P1 schema/validator + graph preflight | **Research code committed; CI status depends on exact head** | Verify 12 synthetic shapes, malformed/unsafe inputs, isolated repeat/branch boundaries, budget and immutable identity; never mark executable. |
 | P2 pure shadow parity | **Not started** | Follow P1; use golden fixtures from old adapters. |
 | P3 hybrid/lifecycle | **Not started** | Explicit Scorching Ray/Ice Knife and persistent/reaction subtasks. |
 | P4 server + human integration | **Not started** | Require free local Auth tests and real signed-in browser approval. |

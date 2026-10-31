@@ -78,6 +78,22 @@ Only `2024` ruleset and exactly `|XPHB` source-qualified lowercase identifiers a
 
 These are intentionally **shape examples only**. Even when an example says “Fireball,” it is not canonical Fireball content and is not fully eligible for an `approved` status. Side effects, concentration, conditions and persistent durations are deliberately **not** representable in P1; the engine must stay GM-assisted for such cases until reviewed extensions are implemented.
 
+## P1 compiler preflight — scoped graph, roll identity and immutable manifest
+
+New research-only code:
+- `utils/spellRecipes/preflightSpellRecipe.mjs`: pure graph analyzer calling the P1 validator and returning either bounded errors or a **frozen, non-executable manifest**.
+- `scripts/validate_spell_recipe_preflight_p1.mjs`: positive fixtures, boundary injections, same-path roll-cache corruption, nesting/operation budgets and deterministic identity tests.
+
+**Lexical execution scopes:** `repeat.body` creates a named child scope (`loop:<step-id>`), and its `$end` returns control to the repeat *without* finishing the surrounding spell. The repeat's `after` belongs to its parent scope. A graph node may be shared across hit/miss or save-success/failure branches **within one scope**, but may never be referenced from both inside and outside a repeat. This admits Ice Knife's hit/miss explosion join and rejects an Eldritch Blast beam's damage being entered from the cast's outer path.
+
+**Bounded work and nesting:** P1 restricts lexical repeat depth to 3 and conservatively estimates the maximum node visits across branches and all allowed levels/slot upcasts. A recipe exceeding 256 potential operations fails preflight even if the schema itself was valid. This is a pre-execution cap and does not authorize resource spending.
+
+**Roll caching safety:** P1 refuses a `rollGroup` reused across separate loop scopes or on two nodes reachable on a *single sequential execution path*. Shared `rollGroup` on mutually exclusive save outcomes is valid (Fireball full/half), and the manifest records cache partitions (cast/target/attack/projectile) rather than making dice rolls. When implemented, the executor must use actual server-owned cast, target, attack or projectile identities to enforce the scope; the manifest alone cannot supply real die results.
+
+**Fingerprint / recipe revision:** SHA-256 of canonical JSON (object keys sorted, array order preserved), including source-qualified spell key, ruleset, schema version, recipeVersion, node definitions and order. Two semantically equivalent JavaScript key orderings hash identically; any approved version or dice change changes the fingerprint. The returned manifest is deeply frozen; it cannot be modified after preflight. **A fingerprint is not a cryptographic signature, publication permission, source entitlement, or a proof of D&D rules parity.** A future trusted review registry must explicitly approve a fingerprint per source version.
+
+**Remaining gaps:** No executable graph interpreter, no persisted recipe catalogue, no trusted publication workflow, no account auth, no geometric hex query, no actual roll cache, no resource actions or AI action discovery. Nested/multi-target semantics and spell-specific feature modifiers still require existing source/RPC behavior parity. Do not merge experimental gameplay code or insert SQL based on P1 alone.
+
 ## Safeguards, acceptance and continuation
 
 Structural invariants: strict JSON-only plain objects, no extra keys anywhere, no functions, prototypes, cycles, arbitrary code or source spoofing, <=32 steps, <=12 nesting, <=16 repetition, <=20 selected targets, finite ranges/quantities, no dangling or backward/cyclic graph references, no unreachable steps, compatible shared rollGroup definitions, canonical source/edition, appropriate slot/cantrip cost.
