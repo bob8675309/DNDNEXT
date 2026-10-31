@@ -72,7 +72,7 @@ reject("forbidden roll group",r=>r.steps[1].rollGroup="; rm -rf","rollGroup");
 reject("missing fraction",r=>delete r.steps[1].fraction,"fraction");
 reject("unsupported die",r=>r.steps[1].dice.sides=100,"die size");
 reject("unsupported roll scope",r=>r.steps[1].dice.rollScope="each-npc-secret","roll scope");
-reject("unbounded dice",r=>r.steps[1].dice.quantity.value=10000,"out of range");
+reject("unbounded dice",r=>r.steps[1].dice.quantity.tiers[0].value=10000,"invalid or unordered tier");
 reject("invalid tier",r=>r.steps[1].dice.quantity.tiers[1].minLevel=1,"invalid or unordered tier");
 reject("unknown quantity kind",r=>r.steps[1].dice.quantity.kind="prompt","unsupported quantity");
 reject("forged JavaScript",r=>r.steps[1].dice.quantity.value=()=>1,"non-JSON");
