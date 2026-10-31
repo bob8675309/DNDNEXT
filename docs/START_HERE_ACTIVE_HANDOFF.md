@@ -58,6 +58,12 @@ Use `docs/README.md` and `docs/Documentation_Refresh_Manifest.md` for other subs
 - **Designed/approved direction:** owner's intent is locked, but no executable implementation.
 - **Unknown/unverified:** no verified evidence. Do not silently promote to done.
 
+## Phase P1 implementation checkpoint — 2026-10-31 (research only)
+
+**P1 structural contract introduced on draft research branch:** `utils/spellRecipes/validateSpellRecipe.mjs`, `scripts/fixtures/spell_recipe_p1_examples.mjs`, `scripts/validate_spell_recipe_schema_p1.mjs`, [Spell_Recipe_P1_Schema_2026-10-31.md](Spell_Recipe_P1_Schema_2026-10-31.md). Strict XPHB 2024 source-qualified, versioned, bounded recipe shapes for actions/slots, target geometry, attacks/saves/auto-hits, damage/healing/area, branch/repeat limits and explicit dice roll scopes. **Synthetic examples are NOT rules-complete nor deployed**. No execution, AI selection, RPC, UI, Auth, DB tables or map modifications.
+
+The old “P1 not started” and “create schema first” entries *below* are preserved as dated history. After running the new Node test at the actual updated commit, the next task is **P1 compiler-preflight design**: validate repeat/branch scoping, rollGroup reuse, recipe immutability/identity; no gameplay execution. Always verify exact GitHub commit and CI first.
+
 ## Current engineering task — SINGLE NEXT STEP
 
 **Create the Phase P1 *closed, versioned spell-recipe schema and pure validator* as a research-only artifact.** Start by reading exact old function definitions for Fire Bolt, Sacred Flame, Magic Missile, Acid Splash, Word of Radiance, Burning Hands, Lightning Bolt and the held Eldritch Blast candidate. Map reuse/ownership and reject unsupported operations and unbounded graphs. Supply synthetic valid/invalid recipes and property tests; compare them to **existing** adapter contracts. Keep effects arithmetic, cast authorization, actual RNG/HP/slots and timed effects authoritative in the current server paths. No gameplay route change or production migration at this step.
