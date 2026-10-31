@@ -70,7 +70,7 @@ assert.ok(!sql.includes("public.encounter_targeting_context_internal_v1(v_c.id,n
 const directionFixture=fs.readFileSync("scripts/fixtures/eldritch_blast_candidate_pg16.sql","utf8");
 const lockFixture=fs.readFileSync("scripts/fixtures/eldritch_blast_lock_contention.sh","utf8");
 for(const marker of ["pg_try_advisory_lock","could not obtain lock",
-  "public.fixture_uuid(610)","public.fixture_uuid(611)",
+  "n=610; lock_key=480610","n=611; lock_key=480611",
   "command_count","version_after","hp_after","log_count","action"]) {
   assert.ok(lockFixture.includes(marker),"Missing lock-contention fixture contract: "+marker);
 }
