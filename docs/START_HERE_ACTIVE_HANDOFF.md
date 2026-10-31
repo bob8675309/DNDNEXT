@@ -1,7 +1,6 @@
 # DNDNext — START HERE: Active Development Handoff / Recovery Protocol
 
-> **Durability note (2026-10-31):** This file is stored on production `main` as documentation for future chats, but **the implementation under review remains on draft PR #309** based on the consolidated research archive. Never infer that held Eldritch Blast or composable-effect code was deployed because this document exists on `main`. The main SHA below was checked **before** the documentation-only promotion; fetch the latest branch/PR/DB state every session.
-
+> **Durable documentation on main (2026-10-31).** The *implementation* of the P1 validator, graph compiler and held Eldritch Blast candidate remains solely on [draft research PR #309](https://github.com/bob8675309/DNDNEXT/pull/309), not on deployed `main` or production Supabase. This main-branch copy of the handoff is documentation only. Revalidate branch/PR/CI status before relying on any timestamped checkpoint.
 _Last editorial checkpoint: 2026-10-31. This file is a **live handoff**, not a verified substitute for GitHub, Supabase or CI._
 
 > **For every new chat/assistant/developer:** Start here BEFORE editing code. Read the owner decision ledger and the pre-pivot audit, then verify the current exact branch, base, open PR, latest CI and live backend. Avoid asserting full understanding merely because a summary seems comprehensive. Write down any missing source or unresolved discrepancy. **Do not repeat completed work or promote unmerged research into production.**
@@ -31,11 +30,11 @@ Use `docs/README.md` and `docs/Documentation_Refresh_Manifest.md` for other subs
 | Item | Observed 2026-10-31 | Recheck / meaning |
 | --- | --- | --- |
 | Repository | `bob8675309/DNDNEXT` | Fetch GitHub head and PR metadata. |
-| Production `main` | `75c387e9276739f04b56d7fa96e4041931b3d9f4` | **Observation, not pinned truth.** Don't change without explicit approval. |
-| Research branch | `work/eldritch-blast-los-regression-20261030`; last pre-this-handoff verified head `2abce8b2821192678594324ff7cdbc3c06c521b9` | The commit adding this handoff supersedes that head; always fetch new SHA. |
+| Production `main` | `422c9bd62334907def93c90b1e2099af2b5d7fe7` (preceding P1 docs-only merge) | **Observation, not pinned truth.** Don't change without explicit approval. |
+| Research branch | `work/eldritch-blast-los-regression-20261030`; P1 compiler-preflight research head `a24006624380570bd693a768e97a0c689f1d42b5` (as of this checkpoint) | The commit adding this handoff supersedes that head; always fetch new SHA. |
 | Draft PR | [#309](https://github.com/bob8675309/DNDNEXT/pull/309), open/unmerged, base `work/consolidated-encounter-research-20261030` | Do not mistake the PR for a main-based release request. |
 | Historical archive | `work/consolidated-encounter-research-20261030`, head `c0a498a9121b317440804a40189ee885c830842d` | Multi-parent **history preservation**, not a merge of every old PR's files into the working tree. |
-| Previous CI | **6/6 GitHub workflows passed** at `2abce8b...` (before these handoff changes) | Do not transfer “green” status to a later SHA without exact-head checks. |
+| Previous CI | **6/6 GitHub workflows passed** at P1 graph preflight research head `a24006624380570bd693a768e97a0c689f1d42b5`; always recheck the exact current SHA | Do not transfer “green” status to a later SHA without exact-head checks. |
 | Live spell catalogue | **1,037** `spells_catalog` rows, **1,037** `spell_effects` rows, all `effect_index = 0` at read-only check | No executable recipe library is deployed. Data may change. |
 | Experimental engine state | No live `private.resolve_effect_bundle_v1` or `encounter_cast_eldritch_blast_candidate_v1` found | Archived pure-effect and EB SQL candidates are **research**, not permissions or installed features. |
 | Existing capabilities | 19 reviewed XPHB tactical UI adapters; 22 public `encounter_cast_%` function names at last audit | Counts describe different things; not 19 complete universal spell-family implementations. |
@@ -61,9 +60,17 @@ Use `docs/README.md` and `docs/Documentation_Refresh_Manifest.md` for other subs
 - **Designed/approved direction:** owner's intent is locked, but no executable implementation.
 - **Unknown/unverified:** no verified evidence. Do not silently promote to done.
 
+## Phase P1 implementation checkpoint — 2026-10-31 (research only)
+
+**P1 structural contract introduced on draft research branch:** `utils/spellRecipes/validateSpellRecipe.mjs`, `scripts/fixtures/spell_recipe_p1_examples.mjs`, `scripts/validate_spell_recipe_schema_p1.mjs`, [Spell_Recipe_P1_Schema_2026-10-31.md](Spell_Recipe_P1_Schema_2026-10-31.md). Strict XPHB 2024 source-qualified, versioned, bounded recipe shapes for actions/slots, target geometry, attacks/saves/auto-hits, damage/healing/area, branch/repeat limits and explicit dice roll scopes. **Synthetic examples are NOT rules-complete nor deployed**. No execution, AI selection, RPC, UI, Auth, DB tables or map modifications.
+
+**P1 compiler preflight implemented and passed its source-contract regression:** `utils/spellRecipes/preflightSpellRecipe.mjs` and `scripts/validate_spell_recipe_preflight_p1.mjs` check lexical isolation of repeat bodies versus after-continuations, legal same-scope hit/miss joins, same-path/cross-scope roll cache misuse, at most three nested loops, worst-case operation cap, canonical SHA-256 recipe content identity, and deeply frozen **non-executable** manifests. See [Spell_Recipe_P1_Schema_2026-10-31.md](Spell_Recipe_P1_Schema_2026-10-31.md). This milestone must be retested at the exact current commit before marking it verified.
+
+**Single next task AFTER this preflight passes:** P2 **shadow parity design** using existing server-backed Fire Bolt, Sacred Flame, Magic Missile, Acid Splash, Word of Radiance, Burning Hands, Lightning Bolt, and held Eldritch Blast reference contracts. First compare action/slot/target/roll scopes; *do not execute or migrate spells*. The older “P1 not started” items below are preserved only as historical dated entries.
+
 ## Current engineering task — SINGLE NEXT STEP
 
-**Create the Phase P1 *closed, versioned spell-recipe schema and pure validator* as a research-only artifact.** Start by reading exact old function definitions for Fire Bolt, Sacred Flame, Magic Missile, Acid Splash, Word of Radiance, Burning Hands, Lightning Bolt and the held Eldritch Blast candidate. Map reuse/ownership and reject unsupported operations and unbounded graphs. Supply synthetic valid/invalid recipes and property tests; compare them to **existing** adapter contracts. Keep effects arithmetic, cast authorization, actual RNG/HP/slots and timed effects authoritative in the current server paths. No gameplay route change or production migration at this step.
+**After validating the compiler preflight CI:** Design P2 *shadow parity contracts* against the exact working spell RPC families, starting with a read-only attack/save/damage/resource/roll-scope comparison matrix. Retain current server behavior as the golden reference, isolate test fixtures, and do not create a cast endpoint, database migration, gameplay UI change, AI provider dependency, or production write. The schema and preflight are *not* rules-complete; do not infer automation coverage from structural validation.
 
 **Do not start with:** adding Scorching Ray as a one-off public RPC; refactoring 19 existing adapters; writing a universal text-to-spell compiler; silently switching to a JS-only transaction processor; generating AI prompts to choose arbitrary effects; implementing AI autonomy now; or batch converting 1,037 records.
 
@@ -72,7 +79,7 @@ Use `docs/README.md` and `docs/Documentation_Refresh_Manifest.md` for other subs
 | ID | Status at last check | Action before delivery |
 | --- | --- | --- |
 | P0 audit + user decisions | **Documented** | Owner answers captured in `SPELL_ENGINE_DECISIONS.md`, pre-pivot audit linked. |
-| P1 schema/validator | **Not started** | First substantive engineering work on the composable pivot. |
+| P1 schema/validator + graph preflight | **Research code committed; CI status depends on exact head** | Verify 12 synthetic shapes, malformed/unsafe inputs, isolated repeat/branch boundaries, budget and immutable identity; never mark executable. |
 | P2 pure shadow parity | **Not started** | Follow P1; use golden fixtures from old adapters. |
 | P3 hybrid/lifecycle | **Not started** | Explicit Scorching Ray/Ice Knife and persistent/reaction subtasks. |
 | P4 server + human integration | **Not started** | Require free local Auth tests and real signed-in browser approval. |

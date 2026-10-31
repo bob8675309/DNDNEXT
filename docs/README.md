@@ -20,6 +20,8 @@ This directory contains the project's living handoff, roadmap, architecture, sub
 
 ## Composable spell engine and future Actor AI — research design (2026-10-31)
 
+- **[Spell_Recipe_P1_Schema_2026-10-31.md](Spell_Recipe_P1_Schema_2026-10-31.md)** — approved *research direction* for versioned spell shapes, lexical branch/repeat scoping, roll-cache safety and immutable recipe identities. Documentation is on main; P1 code is still unmerged on PR #309. Next work: P2 non-executing parity comparisons with existing spell authorities.
+
 - **[SPELL_ENGINE_DECISIONS.md](SPELL_ENGINE_DECISIONS.md)** — six product choices confirmed by the owner; do not re-open them without a concrete conflict.
 - **[START_HERE_ACTIVE_HANDOFF.md](START_HERE_ACTIVE_HANDOFF.md)** — exact recovery procedure and single next task for chat migrations.
 - [Tactical_Spell_Mechanics_Review_2026-10-31.md](Tactical_Spell_Mechanics_Review_2026-10-31.md) — catalogue mechanics families and the source-bound review gate.
