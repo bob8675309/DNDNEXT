@@ -23,7 +23,7 @@ for(const marker of [
  "not coalesce(v_assignment.known,false)",
  "not coalesce(public.is_admin(v_uid),false)",
  "cp.user_id=v_uid and coalesce(cp.can_edit,false)",
- "for share",
+ "for share nowait",
  "v_beams:=case when v_level>=17 then 4 when v_level>=11 then 3",
  "v_targets<>v_beams",
  "p_target_ids[v_i]",
@@ -40,6 +40,9 @@ for(const marker of [
  "v_raw+v_invocation_bonus",
  "action_available=false",
  "on conflict(request_id) do nothing",
+ "where id=v_c.encounter_id for update nowait;",
+ "where id=v_target_id and encounter_id=v_e.id for update nowait;",
+ "where request_id=p_request_id for update nowait;",
  "v_prev.requested_by is distinct from v_uid",
  "v_prev.result->'targetIds' is distinct from to_jsonb(p_target_ids)",
  "'targetIds',to_jsonb(p_target_ids)",
@@ -65,6 +68,12 @@ assert.ok(!sql.includes("service_role' then return true"));
 assert.ok(!sql.includes("public.encounter_targeting_context_internal_v1(v_c.id,near.id)"),
   "Close-combat visibility must be from enemy toward caster");
 const directionFixture=fs.readFileSync("scripts/fixtures/eldritch_blast_candidate_pg16.sql","utf8");
+const lockFixture=fs.readFileSync("scripts/fixtures/eldritch_blast_lock_contention.sh","utf8");
+for(const marker of ["pg_try_advisory_lock","could not obtain lock",
+  "public.fixture_uuid(610)","public.fixture_uuid(611)",
+  "command_count","version_after","hp_after","log_count","action"]) {
+  assert.ok(lockFixture.includes(marker),"Missing lock-contention fixture contract: "+marker);
+}
 for(const marker of ["caster_cannot_see_enemy","enemy_cannot_see_caster",
   "Enemy sees caster: missing ranged disadvantage",
   "Enemy cannot see caster: false ranged disadvantage"]) {

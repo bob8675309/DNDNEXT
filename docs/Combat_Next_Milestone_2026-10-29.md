@@ -78,3 +78,9 @@ The real-account harness now uses the test user's RLS-filtered `encounters` and 
 ## Directional close-combat sight regression (held draft, 2026-10-30)
 
 The 2024 rule checks whether an adjacent non-Incapacitated enemy can see the caster. The held Eldritch Blast candidate instead checked the caster's sight toward that enemy. The deployed sight helper is directional because it skips the attacker's start hex. This draft corrects the direction to `near.id -> v_c.id` and tests both asymmetric cases in disposable PG16. It does not resolve the wider mixed-RPC lock-order risks, implement full sensory modeling, install a Supabase function, grant EXECUTE, or wire the UI. Real signed-in staging and all other release gates remain mandatory.
+
+## Held Eldritch Blast fail-fast row locks (2026-10-30)
+
+Read-only inspection of deployed weapon/spell encounter functions confirmed opposing lock sequences: weapon attack can hold actor -> target -> encounter, while spell casting holds caster -> encounter -> target. This **draft-only** mitigation uses `FOR UPDATE NOWAIT` for the candidate's contested encounter/target and request rows and `FOR SHARE NOWAIT` on editor permission. A contested cast fails with PostgreSQL SQLSTATE `55P03`, rolling back the whole transaction. A new disposable PG16 fixture deliberately holds the target or encounter first and verifies rejection without HP, version, Action, command, or combat-log changes. On a future UI integration, any retry would need fresh authoritative state and a new request id; there is no active gameplay route today.
+
+This does **not** establish global deadlock freedom. Existing live attack/spell/reaction functions still use differing lock sequences; nested effect locks or pending unique request inserts can conflict. A separately reviewed engine-wide lock-order policy and real two-account Supabase Auth/PostgREST revocation-race tests are release blockers. Do not install the candidate or grant EXECUTE.

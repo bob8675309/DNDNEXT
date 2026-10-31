@@ -12,6 +12,7 @@ on:
       - 'scripts/validate_eldritch_blast_candidate.mjs'
       - 'scripts/fixtures/eldritch_blast_candidate_pg16.sql'
       - 'scripts/fixtures/eldritch_blast_candidate_race.sh'
+      - 'scripts/fixtures/eldritch_blast_lock_contention.sh'
       - '.github/workflows/validate-eldritch-blast-candidate.yml'
   workflow_dispatch:
 permissions:
@@ -52,4 +53,5 @@ jobs:
       - uses: actions/checkout@v4
       - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/eldritch_blast_candidate_pg16.sql
       - run: bash scripts/fixtures/eldritch_blast_candidate_race.sh
+      - run: bash scripts/fixtures/eldritch_blast_lock_contention.sh
       - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/eldritch_blast_auth_bridge_pg16.sql
