@@ -35,6 +35,20 @@ create table public.items_catalog(
 -- DROP only the synthetic mock function in the disposable local fixture.
 -- Its old parameter names differ from the exact deployed function snapshot.
 drop function public.encounter_apply_damage_internal_v1(uuid,integer,text);
+-- Synthetic table columns for live targeting/attack snapshots.
+alter table public.encounters add column map_id uuid;
+update public.encounters set map_id=public.fixture_uuid(81);
+create table public.encounter_map_objects(
+ id uuid primary key,map_id uuid not null,object_type text not null,
+ q integer not null,r integer not null,blocks_los boolean not null default false,
+ cover_level text not null default 'none'
+);
+create table public.encounter_timed_effects(
+ id uuid primary key,encounter_id uuid not null,participant_id uuid not null,
+ source_participant_id uuid,effect_key text not null,
+ remaining_target_turn_starts integer not null default 1,
+ created_at timestamptz not null default now()
+);
 \i scripts/fixtures/eldritch_blast_production_damage_pg17.sql
 create or replace function public.eb_ci_identity_v1() returns jsonb
 language sql stable security invoker set search_path=pg_catalog,auth

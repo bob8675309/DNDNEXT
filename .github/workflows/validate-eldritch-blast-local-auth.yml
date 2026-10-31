@@ -8,6 +8,8 @@ on:
       - 'scripts/lib/eldritchBlastSignedInAssertions.mjs'
       - 'scripts/fixtures/eldritch_blast_candidate_pg16.sql'
       - 'scripts/fixtures/eldritch_blast_production_damage_pg17.sql'
+      - 'scripts/fixtures/eldritch_blast_production_targeting_pg17.sql'
+      - 'scripts/fixtures/eldritch_blast_activate_targeting_pg17.sql'
       - 'sql/candidates/20261029_eldritch_blast_atomic_candidate.sql'
       - 'sql/candidates/20261030_warlock_cantrip_damage_bonus_candidate.sql'
       - 'sql/candidates/20261030_eldritch_blast_authenticated_bridge_candidate.sql'
