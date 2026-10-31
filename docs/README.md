@@ -1,6 +1,15 @@
 # DNDNext Living Documentation Index
 
-## Draft combined release candidate — Encounter Workspace + Rest dialog (2026-10-28)
+> **Permanent docs are on `main`; experimental implementations are not.** The owner-approved handoff, decisions, pre-pivot audit and AI-ready spell design were promoted separately from draft research. The live D&D engine has **not** been replaced, and the held Eldritch Blast SQL/UI remains on [research PR #309](https://github.com/bob8675309/DNDNEXT/pull/309). Recheck current GitHub/DB status instead of relying on this dated checkpoint.
+
+
+## ACTIVE HANDOFF — read first (2026-10-31)
+
+**[START_HERE_ACTIVE_HANDOFF.md](START_HERE_ACTIVE_HANDOFF.md)** is the first step for every new development chat. It contains the *verification protocol*, the last **dated** GitHub/Supabase/CI snapshot, current workstream, exact next task, open risks and a copy-ready takeover instruction. **[SPELL_ENGINE_DECISIONS.md](SPELL_ENGINE_DECISIONS.md)** records the owner's six approved decisions, including XPHB-first, spells-first, safe GM-assisted fallback, Admin recipe authoring, shared human/future opt-in AI controls, and separately versioned house rules. These decisions are already answered; do not reopen them in subsequent chats without a concrete conflict.
+
+**Historical status warning:** All dated “current/open draft” claims below must be checked against GitHub. In particular, original draft PRs #266 and #300 were superseded by **merged PR #301**; #251/#253/#255 and #257 are closed/unmerged research preserved by the archive. Draft PR #309 is not a production merge. Existing live/source authority beats the prose below. The new recipe engine is **not deployed**.
+
+## Historical checkpoint — Encounter Workspace + Rest dialog (2026-10-28; subsequently merged through PR #301)
 
 A clean, isolated candidate combines draft PR #300 (unified encounter navigation) and #266 (Camp & Downtime rest dialog) on `main`. This is **not merged or deployed**. It excludes all unfinished experimental combat/attunement branches. GitHub Actions runs both focused validators and a Next.js production build without an intentional Vercel deployment. Browser/admin/player acceptance remains required before any promotion. Details: [Release_Candidate_Encounter_Workspace_Rest_2026-10-28.md](Release_Candidate_Encounter_Workspace_Rest_2026-10-28.md).
 
@@ -8,6 +17,18 @@ A clean, isolated candidate combines draft PR #300 (unified encounter navigation
 Updated: 2026-10-24
 
 This directory contains the project's living handoff, roadmap, architecture, subsystem, and evidence documents. For active work, **live Supabase + current GitHub source/validators/deployment state outrank prose** if they conflict.
+
+## Composable spell engine and future Actor AI — research design (2026-10-31)
+
+- **[SPELL_ENGINE_DECISIONS.md](SPELL_ENGINE_DECISIONS.md)** — six product choices confirmed by the owner; do not re-open them without a concrete conflict.
+- **[START_HERE_ACTIVE_HANDOFF.md](START_HERE_ACTIVE_HANDOFF.md)** — exact recovery procedure and single next task for chat migrations.
+- [Tactical_Spell_Mechanics_Review_2026-10-31.md](Tactical_Spell_Mechanics_Review_2026-10-31.md) — catalogue mechanics families and the source-bound review gate.
+- [Combat_Next_Milestone_2026-10-29.md](Combat_Next_Milestone_2026-10-29.md) — **historical draft research ledger**; CI parity != deployed gameplay.
+- [Consolidated_Development_Archive_2026-10-30.md](Consolidated_Development_Archive_2026-10-30.md) and [Archived_Branch_Cleanup_Safety_2026-10-30.md](Archived_Branch_Cleanup_Safety_2026-10-30.md) — why historical PRs/commits remain recoverable, not present in main working tree.
+
+
+- [Spell_Engine_PrePivot_Audit_2026-10-31.md](Spell_Engine_PrePivot_Audit_2026-10-31.md) — **pre-implementation evidence, risk register and decisions**; checks archived PR topology, live catalogue, combat/Forge/rest/effects/AI authorities. Read this before implementing the new interpreter.
+- [Composable_Spell_Engine_AI_Readiness_2026-10-31.md](Composable_Spell_Engine_AI_Readiness_2026-10-31.md) — staged, AI-compatible spell action/geometry/effects architecture. **Research only**, no AI or engine implementation; canonical authorized legal actions remain the contract for both humans and future bots.
 
 ## Start here — current development and handoff (reconciled 2026-10-24)
 
