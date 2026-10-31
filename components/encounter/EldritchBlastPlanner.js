@@ -4,10 +4,11 @@ import {
   normalizeEldritchBlastPlan, isEldritchBlastPlanComplete,
 } from "../../utils/eldritchBlastPlanner.mjs";
 
-// A GM-assisted selection preview, never a combat action. The authoritative
-// server candidate remains uninstalled and this component performs zero RPCs.
+// GM-assisted on production. On isolated staging, a callback may cast using
+// the authenticated server route; this component has no Supabase access.
 export default function EldritchBlastPlanner({
   caster, participants = [], classLevel, spellAttackBonus,
+  stagingEnabled = false, canStageCast = false, onCast,
 }) {
   const [targetIds, setTargetIds] = useState([]);
   const beamCount = eldritchBlastPlanBeamCount(classLevel);
@@ -18,6 +19,7 @@ export default function EldritchBlastPlanner({
   const chosen = normalizeEldritchBlastPlan(targetIds, candidates, beamCount);
   const complete = isEldritchBlastPlanComplete(chosen, candidates, beamCount);
   const hasAttackBonus = Number.isFinite(Number(spellAttackBonus)) && spellAttackBonus != null;
+  const stagingAvailable = stagingEnabled && typeof onCast === "function";
 
   function selectBeam(index, id) {
     if (index < 0 || index >= beamCount) return;
@@ -32,10 +34,13 @@ export default function EldritchBlastPlanner({
     <section className="eb-planner" aria-label="Eldritch Blast GM-assisted targeting preview">
       <div className="eb-title">
         <strong>Eldritch Blast • Beam Planner</strong>
-        <span>GM-assisted only</span>
+        <span>{stagingAvailable ? "Isolated staging test" : "GM-assisted only"}</span>
       </div>
-      <p>This is a non-casting preview. It makes no dice rolls, spends no Action,
-        changes no HP, and sends no request to Supabase.</p>
+      {stagingAvailable
+        ? <p>Staging only: the server independently checks every selected target,
+          spends the Action and resolves each attack and damage roll.</p>
+        : <p>This is a non-casting preview. It makes no dice rolls, spends no Action,
+          changes no HP, and sends no request to Supabase.</p>}
       {beamCount ? <>
         <p>{beamCount} independent ranged spell attack{beamCount === 1 ? "" : "s"} • 120 ft. range •
           1d10 Force damage per hit{hasAttackBonus ? ` • displayed spell attack bonus ${spellAttackBonus >= 0 ? "+" : ""}${spellAttackBonus}` : ""}.
@@ -60,6 +65,10 @@ export default function EldritchBlastPlanner({
         <p role="status">{complete
           ? `GM target plan ready: ${chosen.map((id, i) => `beam ${i + 1} → ${candidates.find((p) => p.id === id)?.name || "creature"}`).join("; ")}.`
           : `Select a shown creature for each of the ${beamCount} beams.`}</p>
+        {stagingAvailable ? <button type="button" className="eb-cast"
+          disabled={!canStageCast || !complete}
+          onClick={() => { if (canStageCast && complete) onCast([...chosen]); }}
+        >Cast Eldritch Blast — staging only</button> : null}
         {!candidates.length ? <p>No eligible shown creatures within 120 ft.
           Object targeting or exceptional situations require GM adjudication.</p> : null}
       </> : <p>Cannot determine a supported single-class character level;
@@ -75,6 +84,8 @@ export default function EldritchBlastPlanner({
         .eb-beams{display:grid;gap:9px;margin:12px 0}
         .eb-beams label{display:grid;gap:5px;font-size:.74rem}
         .eb-beams select{width:100%;padding:8px;background:#101318;color:#f3f0e8;border:1px solid rgba(255,255,255,.22);border-radius:7px}
+        .eb-cast{margin:10px 0;padding:10px;width:100%;border:1px solid rgba(171,227,188,.55);background:rgba(37,112,65,.25);color:#e3ffe7;border-radius:8px;cursor:pointer}
+        .eb-cast:disabled{opacity:.4;cursor:not-allowed}
       `}</style>
     </section>
   );
