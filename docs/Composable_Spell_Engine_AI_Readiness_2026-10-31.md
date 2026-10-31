@@ -1,6 +1,10 @@
 # DNDNext — Composable Spell Engine with Human + Actor AI Compatibility
 _Date: 2026-10-31. Status: **approved architectural direction for research only**, not an implemented engine, AI service, migration, or deployment._
 
+## Approved owner decisions and handoff contract (2026-10-31)
+
+The six project decisions are fixed in [SPELL_ENGINE_DECISIONS.md](SPELL_ENGINE_DECISIONS.md); do **not** restart this discussion during a chat migration. Before writing any interpreter, use [START_HERE_ACTIVE_HANDOFF.md](START_HERE_ACTIVE_HANDOFF.md) to reverify live and draft status, trace the relevant existing helpers, record missing evidence, and continue the *single next task* rather than rebuild prior research. The owner explicitly requires honest disagreements and trade-off discussion instead of automatic agreement.
+
 ## Required pre-implementation audit
 
 Read [Spell_Engine_PrePivot_Audit_2026-10-31.md](Spell_Engine_PrePivot_Audit_2026-10-31.md) before implementing the recipe interpreter. It reconciles the archived common-effects work, real spell lifecycle and resource bridges, superseded optional attunement directions, and human/AI action authority. **This document alone is not permission to begin a runtime rewrite.**

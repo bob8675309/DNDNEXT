@@ -62,14 +62,18 @@ The proposed spell recipe interpreter is **distinct** from the historical pure c
 ### Hard rule: release evidence levels
 A catalogue effect record is **not** an executable spell. A validated recipe **is not** proof of source entitlement. A pure-calculation test **is not** proof of tactical behavior. Signed-JWT local fixtures **are not** a full production replica. Green CI **is not** browser acceptance or owner authorization to merge/deploy.
 
-## Decisions to confirm with project owner before runtime pivot
+## Owner decisions — resolved 2026-10-31 (do not re-ask)
 
-1. **Initial scope** — Recommend *2024 XPHB tactical spells* and a handful of representative families, while designing extension points for legacy PHB, Grim Hollow and homebrew. Do **not** promise all 1,037 catalogue spells automatically.
-2. **Automation policy** — Recommend *only fully validated spells are automated*; everything else remains explicitly GM-assisted. Should the GM have per-campaign overrides for partially automated effects, with visible audit trail?
-3. **Actor AI control** — Recommend initial **suggest-only or GM-approved tactical choices**, later opt-in bounded autonomous NPC/monster turns; manual and AI-off always available. Does the owner want NPC AI to act autonomously by default later?
-4. **Authoring** — Recommend immutable developer-reviewed JSON recipes first, with a future Admin visual spell-builder that submits proposals for validation rather than writing executable rules. Is a player/GM-facing homebrew recipe builder an eventual product goal?
-5. **House rules/editions** — Recommend source-qualified immutable base rules and campaign-level explicit, versioned optional policies rather than mutating source definitions. Which 2014/2024 rules and house-rule toggles must be supported first?
-6. **Delivery shape** — Recommend an **audit + design/spec + isolated parity test** before live engine replacement; no broad application refactor. Confirm this incremental approach and protections remain acceptable.
+The campaign owner answered all six. **[SPELL_ENGINE_DECISIONS.md](SPELL_ENGINE_DECISIONS.md) is the permanent, reviewed decision record** and [START_HERE_ACTIVE_HANDOFF.md](START_HERE_ACTIVE_HANDOFF.md) is the current resumption/checkpoint procedure.
+
+1. **Source:** 2024 XPHB first; only consult other source editions for missing information when needed; preserve source-qualified rule versions rather than silently mixing.
+2. **Scope:** Implement tactical spells first, designing reusable primitives for features, items and other consumers later; do not expand unrelated systems now.
+3. **Unsupported:** If a full spell mechanic is not implemented and validated, it remains GM-assisted. No partial cast presented as complete.
+4. **Authoring:** A future Admin visual spell/effect composition builder is approved, after a vetted recipe schema and publication/validation gates exist.
+5. **AI:** Future opt-in autonomous NPC/monster actions, GM controls, manual mode and AI-off; **same legal-action and guarded execution path as humans**, never model-authored rules or unrestricted data.
+6. **House rules:** Preserve source spell definitions; store explicit versioned campaign-specific overrides separately.
+
+**Important:** This audit's earlier recommendations and open questions have now been resolved as above. It still does not prove the engine has been implemented, nor does it authorize a production migration.
 
 ## Safeguards
 

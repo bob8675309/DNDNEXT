@@ -1,6 +1,12 @@
 # DNDNext Living Documentation Index
 
-## Draft combined release candidate — Encounter Workspace + Rest dialog (2026-10-28)
+## ACTIVE HANDOFF — read first (2026-10-31)
+
+**[START_HERE_ACTIVE_HANDOFF.md](START_HERE_ACTIVE_HANDOFF.md)** is the first step for every new development chat. It contains the *verification protocol*, the last **dated** GitHub/Supabase/CI snapshot, current workstream, exact next task, open risks and a copy-ready takeover instruction. **[SPELL_ENGINE_DECISIONS.md](SPELL_ENGINE_DECISIONS.md)** records the owner's six approved decisions, including XPHB-first, spells-first, safe GM-assisted fallback, Admin recipe authoring, shared human/future opt-in AI controls, and separately versioned house rules. These decisions are already answered; do not reopen them in subsequent chats without a concrete conflict.
+
+**Historical status warning:** All dated “current/open draft” claims below must be checked against GitHub. In particular, original draft PRs #266 and #300 were superseded by **merged PR #301**; #251/#253/#255 and #257 are closed/unmerged research preserved by the archive. Draft PR #309 is not a production merge. Existing live/source authority beats the prose below. The new recipe engine is **not deployed**.
+
+## Historical checkpoint — Encounter Workspace + Rest dialog (2026-10-28; subsequently merged through PR #301)
 
 A clean, isolated candidate combines draft PR #300 (unified encounter navigation) and #266 (Camp & Downtime rest dialog) on `main`. This is **not merged or deployed**. It excludes all unfinished experimental combat/attunement branches. GitHub Actions runs both focused validators and a Next.js production build without an intentional Vercel deployment. Browser/admin/player acceptance remains required before any promotion. Details: [Release_Candidate_Encounter_Workspace_Rest_2026-10-28.md](Release_Candidate_Encounter_Workspace_Rest_2026-10-28.md).
 
