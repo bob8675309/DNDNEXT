@@ -125,7 +125,7 @@ begin
     'sources', to_jsonb(v_sources)
   );
 end;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.encounter_apply_damage_internal_v1(p_target_id uuid, p_amount integer, p_damage_type text)
  RETURNS jsonb
@@ -233,5 +233,4 @@ BEGIN
     'defeated',v_hp<=0
   );
 END;
-$function$
-
+$function$;
