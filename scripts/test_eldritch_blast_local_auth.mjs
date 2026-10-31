@@ -60,5 +60,35 @@ try{
  assert.equal(altered.error?.code,"42501");
  assertNoEldritchCombatMutation(after,await readEldritchSignedInState(a.client,ctx),"Wrong intent");
  assert.equal(Number(db("select count(*) from public.encounter_command_requests where request_id='"+rid+"'")),1);
+ // A real revocation round trip with an unchanged signed JWT:
+ // grant editor -> successful cast -> revoke -> immediate denial.
+ db("insert into public.character_permissions(character_id,user_id,can_edit) values("+
+  "public.fixture_uuid(31),'"+b.uid+"',true)");
+ db("update public.encounter_participants set action_available=true where id=public.fixture_uuid(11)");
+ const editorId=randomUUID(),editorCtx={...ctx,requestId:editorId};
+ const beforeEditor=await readEldritchSignedInState(a.client,editorCtx);
+ const editorCast=await b.client.rpc("encounter_cast_eldritch_blast_candidate_v1",req(editorId));
+ assert.ifError(editorCast.error);
+ const afterEditor=await readEldritchSignedInState(a.client,editorCtx);
+ assertEldritchCommittedOnce(beforeEditor,afterEditor,editorCast.data,[target],editorId);
+ assert.equal(Number(db("select count(*) from public.encounter_command_requests where request_id='"+
+  editorId+"' and requested_by='"+b.uid+"'")),1,"Editor command ledger identity mismatch");
+ db("delete from public.character_permissions where character_id=public.fixture_uuid(31) and user_id='"+
+  b.uid+"'");
+ db("update public.encounter_participants set action_available=true where id=public.fixture_uuid(11)");
+ const revokedId=randomUUID(),revokedCtx={...ctx,requestId:revokedId};
+ const beforeRevoked=await readEldritchSignedInState(a.client,revokedCtx);
+ const stillSignedIn=await b.client.auth.getUser();
+ assert.ifError(stillSignedIn.error);
+ assert.equal(stillSignedIn.data.user.id,b.uid,"Revocation test changed the JWT session");
+ const revoked=await b.client.rpc("encounter_cast_eldritch_blast_candidate_v1",req(revokedId));
+ assert.equal(revoked.error?.code,"42501","Revoked editor still allowed a new cast");
+ assertNoEldritchCombatMutation(beforeRevoked,
+  await readEldritchSignedInState(a.client,revokedCtx),"Revoked permission");
+ assert.equal(Number(db("select count(*) from public.encounter_command_requests where request_id='"+
+  revokedId+"'")),0,"Revoked editor inserted a command");
+ const oldEditorReplay=await b.client.rpc("encounter_cast_eldritch_blast_candidate_v1",req(editorId));
+ assert.equal(oldEditorReplay.error?.code,"42501","Revoked editor could replay prior command");
+ console.log("PASS real JWT permission grant -> authorized editor cast -> revocation -> unchanged JWT denied, no unauthorized state/ledger mutation");
  console.log("PASS real Supabase JWTs, signed-in RLS, unauthorized user, exactly one action/version/HP/log/ledger write, replay/intent denial");
 }finally{await Promise.allSettled(clients.map(x=>x.auth.signOut()));}
