@@ -45,7 +45,7 @@ for(const token of [
  "NEXT_PUBLIC_SUPABASE_URL","NEXT_PUBLIC_VERCEL_ENV",
  "if (!EB_STAGING_CAST_ENABLED || !canControl || !active?.action_available ||",
  'runRpc("encounter_cast_eldritch_blast_candidate_v1", request, summarizeEldritchBlastCast)',
- "onCast={EB_STAGING_CAST_ENABLED ? castEldritchBlast : undefined}",
+ "onCast={EB_STAGING_CAST_ENABLED && hasVerifiedKnownSpellAssignment(eldritchBlastAssignment) ? castEldritchBlast : undefined}",
  'row.detail?.beams','beam?.agonizingBlastApplied',
 ]) assert.ok(page.includes(token),"Missing gated connection: "+token);
 assert.ok(!comp.includes("supabase.rpc(") && !comp.includes("runRpc("));

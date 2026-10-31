@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import EncounterTurnBoard from "../../components/encounter/EncounterTurnBoard";
 import EldritchBlastPlanner from "../../components/encounter/EldritchBlastPlanner";
+import { tacticalKnownSpellAssignments, hasVerifiedKnownSpellAssignment } from "../../utils/tacticalKnownSpellAssignments.mjs";
 import { eldritchBlastPlanBeamCount, eldritchBlastPlanCandidates } from "../../utils/eldritchBlastPlanner.mjs";
 import { isEldritchBlastStagingCastAllowed, buildEldritchBlastStagingRequest,
   summarizeEldritchBlastCast } from "../../utils/eldritchBlastStagingCast.mjs";
@@ -158,13 +159,13 @@ export default function EncounterCombatPage({ workspaceSessionId = "", onWorkspa
   );
   const target = useMemo(() => targets.find((p) => String(p.id) === String(targetId)) || null, [targets, targetId]);
   const weapon = useMemo(() => weapons.find((row) => String(row.inventoryItemId) === String(weaponId)) || null, [weapons, weaponId]);
+  const knownSpells = useMemo(() => tacticalKnownSpellAssignments(spellProfile), [spellProfile]);
   const supportedSpells = useMemo(
-    () => (Array.isArray(spellProfile?.knownSpells) ? spellProfile.knownSpells : []).filter(
+    () => knownSpells.filter(
       (row) => row?.source === "XPHB" && row?.sourceType === "class" && SUPPORTED_SPELL_KEYS.has(spellKey(row))
     ),
-    [spellProfile]
+    [knownSpells]
   );
-  const knownSpells = useMemo(() => Array.isArray(spellProfile?.knownSpells) ? spellProfile.knownSpells : [], [spellProfile]);
   const manualSpells = useMemo(() => knownSpells.filter((row) => !(row?.source === "XPHB" && row?.sourceType === "class" && SUPPORTED_SPELL_KEYS.has(spellKey(row)))), [knownSpells]);
   // Explicit GM-assisted planning only. Eldritch Blast is NOT an approved
   // automated adapter and must not enter SUPPORTED_SPELL_KEYS before the
@@ -726,7 +727,7 @@ export default function EncounterCombatPage({ workspaceSessionId = "", onWorkspa
   function castEldritchBlast(targetIds) {
     // A source-level safeguard, not a substitute for signed-in server checks.
     if (!EB_STAGING_CAST_ENABLED || !canControl || !active?.action_available ||
-        !eldritchBlastAssignment?.assignmentId || !spellProfile || saving) return;
+        !eldritchBlastAssignment?.assignmentId || !hasVerifiedKnownSpellAssignment(eldritchBlastAssignment) || !spellProfile || saving) return;
     const beamCount = eldritchBlastPlanBeamCount(spellProfile.classLevel);
     const candidates = eldritchBlastPlanCandidates(active, participants);
     const request = buildEldritchBlastStagingRequest({
@@ -1078,9 +1079,9 @@ export default function EncounterCombatPage({ workspaceSessionId = "", onWorkspa
                 participants={participants}
                 classLevel={spellProfile.classLevel}
                 spellAttackBonus={spellProfile.spellAttackBonus}
-                stagingEnabled={EB_STAGING_CAST_ENABLED}
-                canStageCast={EB_STAGING_CAST_ENABLED && canControl && Boolean(active.action_available) && !saving}
-                onCast={EB_STAGING_CAST_ENABLED ? castEldritchBlast : undefined}
+                stagingEnabled={EB_STAGING_CAST_ENABLED && hasVerifiedKnownSpellAssignment(eldritchBlastAssignment)}
+                canStageCast={EB_STAGING_CAST_ENABLED && hasVerifiedKnownSpellAssignment(eldritchBlastAssignment) && canControl && Boolean(active.action_available) && !saving}
+                onCast={EB_STAGING_CAST_ENABLED && hasVerifiedKnownSpellAssignment(eldritchBlastAssignment) ? castEldritchBlast : undefined}
               /> : null}
               {supportedSpells.length ? <>
                 <select value={spellAssignmentId} onChange={(e) => setSpellAssignmentId(e.target.value)}>

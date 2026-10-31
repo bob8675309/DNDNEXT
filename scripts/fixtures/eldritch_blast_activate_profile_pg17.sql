@@ -95,3 +95,6 @@ begin
  then raise exception 'Unsafe local profile fixture ACL';end if;
 end;
 $acl$;
+
+-- Only the disposable local JWT fixture gets the metadata candidate.
+\i sql/candidates/20261031_tactical_spell_profile_known_metadata_candidate.sql

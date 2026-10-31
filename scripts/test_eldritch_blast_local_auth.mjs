@@ -296,6 +296,22 @@ try{
   && s.spellKey.toLowerCase()==="eldritch-blast|xphb"
   && s.sourceType==="class" && s.sourceLabel==="warlock"));
  assert.equal(firstProfile.slotSnapshot[0].remaining,1);
+ assert.equal(firstProfile.knownSpells.find(s=>s.assignmentId===assignment)?.known,true);
+ db("update public.character_spells set known=false where id=public.fixture_uuid(51)");
+ const unlearned=await a.client.rpc("encounter_spellcasting_profile_v1",{p_participant_id:actor});
+ assert.ifError(unlearned.error);
+ assert.equal(unlearned.data.knownSpells.find(s=>s.assignmentId===assignment)?.known,false);
+ db("update public.encounter_participants set action_available=true where id=public.fixture_uuid(11)");
+ const unknownId=randomUUID(),unknownContext={...ctx,requestId:unknownId};
+ const beforeUnknown=await readEldritchSignedInState(a.client,unknownContext);
+ const deniedUnknown=await a.client.rpc("encounter_cast_eldritch_blast_candidate_v1",req(unknownId));
+ assert.ok(deniedUnknown.error,"Unlearned cantrip must be rejected");
+ assertNoEldritchCombatMutation(beforeUnknown,
+  await readEldritchSignedInState(a.client,unknownContext),"Unknown spell rejection");
+ assert.equal(Number(db("select count(*) from public.encounter_command_requests where request_id='"+
+  unknownId+"'")),0);
+ db("update public.character_spells set known=true where id=public.fixture_uuid(51)");
+
  // A DB editor grant must allow profile access with same JWT, and a revoke
  // must immediately remove it even though the existing token remains valid.
  db("insert into public.character_permissions(character_id,user_id,can_edit) values("+

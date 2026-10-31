@@ -45,7 +45,7 @@ assert.ok(supported.length>0,"Approved spell set missing");
 assert.ok(!supported.includes("eldritch-blast|xphb"),"Unreleased Eldritch Blast must NOT be in automated supported spell set");
 assert.ok(page.includes('if (!EB_STAGING_CAST_ENABLED || !canControl || !active?.action_available ||'));
 assert.ok(page.includes('return runRpc("encounter_cast_eldritch_blast_candidate_v1", request,'));
-assert.ok(page.includes('onCast={EB_STAGING_CAST_ENABLED ? castEldritchBlast : undefined}'));
+assert.ok(page.includes('onCast={EB_STAGING_CAST_ENABLED && hasVerifiedKnownSpellAssignment(eldritchBlastAssignment) ? castEldritchBlast : undefined}'));
 assert.ok(!component.includes("supabase") && !component.includes("runRpc(") && !component.includes("fetch("));
 for(const token of ["GM-assisted only","onChange={(event) => selectBeam(index, event.target.value)}",
   "No eligible shown creatures within 120 ft","This planner never applies the invocation",

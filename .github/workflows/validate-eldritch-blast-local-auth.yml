@@ -11,6 +11,7 @@ on:
       - 'scripts/fixtures/eldritch_blast_production_targeting_pg17.sql'
       - 'scripts/fixtures/eldritch_blast_production_profile_pg17.sql'
       - 'scripts/fixtures/eldritch_blast_activate_profile_pg17.sql'
+      - 'sql/candidates/20261031_tactical_spell_profile_known_metadata_candidate.sql'
       - 'scripts/fixtures/eldritch_blast_activate_targeting_pg17.sql'
       - 'sql/candidates/20261029_eldritch_blast_atomic_candidate.sql'
       - 'sql/candidates/20261030_warlock_cantrip_damage_bonus_candidate.sql'
