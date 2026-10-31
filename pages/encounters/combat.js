@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import EncounterTurnBoard from "../../components/encounter/EncounterTurnBoard";
+import EldritchBlastPlanner from "../../components/encounter/EldritchBlastPlanner";
 import { CONE_DIRECTION_LABELS, hexDistance, makeHexCone15, makeHexLine100 } from "../../utils/encounterHex";
 import { supabase } from "../../utils/supabaseClient";
 
@@ -155,6 +156,19 @@ export default function EncounterCombatPage({ workspaceSessionId = "", onWorkspa
   );
   const knownSpells = useMemo(() => Array.isArray(spellProfile?.knownSpells) ? spellProfile.knownSpells : [], [spellProfile]);
   const manualSpells = useMemo(() => knownSpells.filter((row) => !(row?.source === "XPHB" && row?.sourceType === "class" && SUPPORTED_SPELL_KEYS.has(spellKey(row)))), [knownSpells]);
+  // Explicit GM-assisted planning only. Eldritch Blast is NOT an approved
+  // automated adapter and must not enter SUPPORTED_SPELL_KEYS before the
+  // authenticated, owner-bound RPC has passed isolated staging acceptance.
+  const eldritchBlastAssignment = useMemo(() => (
+    String(spellProfile?.className || "").toLowerCase() === "warlock"
+      ? manualSpells.find((row) => (
+        spellKey(row) === "eldritch-blast|xphb"
+        && row?.source === "XPHB"
+        && row?.sourceType === "class"
+        && row?.known !== false
+      )) || null
+      : null
+  ), [manualSpells, spellProfile?.className]);
   const selectedSpell = useMemo(
     () => supportedSpells.find((row) => String(row.assignmentId) === String(spellAssignmentId)) || supportedSpells[0] || null,
     [supportedSpells, spellAssignmentId]
@@ -1034,6 +1048,13 @@ export default function EncounterCombatPage({ workspaceSessionId = "", onWorkspa
               </div>
               <div className="spell-rule" role="status">{knownSpells.length} assigned spell{knownSpells.length === 1 ? "" : "s"} • {supportedSpells.length} automated here. Spells without a reviewed adapter cannot be cast on this battleboard yet.</div>
               {manualSpells.length ? <details className="manual-spell-list" open={!supportedSpells.length}><summary>{manualSpells.length} assigned spell{manualSpells.length === 1 ? "" : "s"} requiring GM-assisted play</summary><ul>{manualSpells.map((row) => <li key={row.assignmentId || `${row.spellKey}:${row.name}`}><strong>{row.name}</strong> <span>— {row.sourceType === "class" && row.source === "XPHB" ? "Tactical adapter not yet implemented" : "Source or acquisition not supported by this tactical adapter"}</span></li>)}</ul></details> : null}
+              {eldritchBlastAssignment ? <EldritchBlastPlanner
+                key={`${sessionId}:${active.id}:${eldritchBlastAssignment.assignmentId}`}
+                caster={active}
+                participants={participants}
+                classLevel={spellProfile.classLevel}
+                spellAttackBonus={spellProfile.spellAttackBonus}
+              /> : null}
               {supportedSpells.length ? <>
                 <select value={spellAssignmentId} onChange={(e) => setSpellAssignmentId(e.target.value)}>
                   {supportedSpells.map((row) => <option key={row.assignmentId} value={row.assignmentId}>{row.name} • {Number(row.level || 0) === 0 ? "Cantrip" : `Level ${row.level}`}{Number(row.level || 0) > 0 && !(row.prepared || row.alwaysAvailable) ? " • not prepared" : ""}</option>)}

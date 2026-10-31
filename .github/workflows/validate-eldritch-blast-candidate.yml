@@ -10,6 +10,10 @@ on:
       - 'scripts/validate_eldritch_blast_auth_harness.mjs'
       - 'utils/eldritchBlastRules.mjs'
       - 'scripts/validate_eldritch_blast_candidate.mjs'
+      - 'components/encounter/EldritchBlastPlanner.js'
+      - 'utils/eldritchBlastPlanner.mjs'
+      - 'scripts/validate_eldritch_blast_planner.mjs'
+      - 'pages/encounters/combat.js'
       - 'scripts/fixtures/eldritch_blast_candidate_pg16.sql'
       - 'scripts/fixtures/eldritch_blast_candidate_race.sh'
       - 'scripts/fixtures/eldritch_blast_lock_contention.sh'
@@ -27,6 +31,7 @@ jobs:
         with:
           node-version: '22'
       - run: node scripts/validate_eldritch_blast_candidate.mjs
+      - run: node scripts/validate_eldritch_blast_planner.mjs
       - run: node --check scripts/test_eldritch_blast_real_auth.mjs
       - run: node scripts/validate_eldritch_blast_auth_harness.mjs
   postgres-integration:
