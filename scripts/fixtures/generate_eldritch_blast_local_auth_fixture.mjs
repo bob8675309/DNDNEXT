@@ -10,6 +10,10 @@ assert.ok(uuid.startsWith("create function public.fixture_uuid("));
 assert.ok(core.includes("\\i sql/candidates/20261029_eldritch_blast_atomic_candidate.sql"));
 let schema=core.replace("current_hp int default 1000,is_hidden","current_hp int default 1000,temp_hp int default 0,is_hidden");
 assert.notEqual(schema,core);
+schema=schema.replace("damage_immunities text[] default '{}',updated_at",
+ "damage_immunities text[] default '{}',damage_vulnerabilities text[] default '{}',updated_at");
+assert.ok(schema.includes("damage_vulnerabilities text[] default '{}',updated_at"),
+ "Production-shaped vulnerability array is required");
 schema=schema.replace("as $f$select current_setting('fixture.admin',true)='yes'$f$;","as $f$select false$f$;");
 assert.ok(schema.includes("as $f$select false$f$;"));
 const head=String.raw`\set ON_ERROR_STOP on
@@ -18,24 +22,17 @@ create schema if not exists private;
 revoke all on schema private from public,anon,authenticated;
 `;
 const tail=String.raw`
--- Minimal mitigation stub for JWT authorization/state smoke tests, not full engine parity.
-create or replace function public.encounter_apply_damage_internal_v1(
- p_target uuid,p_amount integer,p_type text) returns jsonb language plpgsql
- security definer set search_path=pg_catalog,public
-as $damage$
-declare t public.encounter_participants%rowtype; dmg int; absorbed int; hp int; thp int;
-begin
- select * into t from public.encounter_participants where id=p_target for update;
- if not found or p_amount<0 then raise exception 'Bad damage input';end if;
- dmg:=case when p_type=any(t.damage_immunities) then 0
-  when p_type=any(t.damage_resistances) then floor(p_amount/2.0)::int else p_amount end;
- absorbed:=least(coalesce(t.temp_hp,0),dmg);
- thp:=greatest(0,coalesce(t.temp_hp,0)-absorbed);
- hp:=greatest(0,t.current_hp-(dmg-absorbed));
- update public.encounter_participants set current_hp=hp,temp_hp=thp,is_defeated=(hp<=0) where id=p_target;
- return jsonb_build_object('damage',dmg,'targetHp',hp,'targetTempHp',thp);
-end;
-$damage$;
+-- Use the actual live damage/mitigation functions on disposable inventory.
+create table public.inventory_items(
+ id uuid primary key,item_id text not null,item_name text not null,
+ owner_type text,owner_id text,is_equipped boolean not null default false,
+ card_payload jsonb
+);
+create table public.items_catalog(
+ id uuid primary key default gen_random_uuid(),item_key text,item_name text not null,
+ payload jsonb not null default '{}'::jsonb
+);
+\i scripts/fixtures/eldritch_blast_production_damage_pg17.sql
 create or replace function public.eb_ci_identity_v1() returns jsonb
 language sql stable security invoker set search_path=pg_catalog,auth
 as $identity$
@@ -67,5 +64,6 @@ $acl$;
 `;
 const sql=head+uuid+schema+tail;
 assert.ok(!sql.includes("create function auth.uid()")&&!sql.includes("create function auth.role()"));
+assert.ok(sql.includes("\\i scripts/fixtures/eldritch_blast_production_damage_pg17.sql"));
 fs.writeFileSync(output,sql,{mode:0o600});
 console.log("Generated disposable Supabase SQL with real auth functions.");

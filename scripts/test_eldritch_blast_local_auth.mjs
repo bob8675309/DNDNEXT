@@ -90,5 +90,71 @@ try{
  const oldEditorReplay=await b.client.rpc("encounter_cast_eldritch_blast_candidate_v1",req(editorId));
  assert.equal(oldEditorReplay.error?.code,"42501","Revoked editor could replay prior command");
  console.log("PASS real JWT permission grant -> authorized editor cast -> revocation -> unchanged JWT denied, no unauthorized state/ledger mutation");
+ // Real LIVE damage resolver against synthetic equipment in the LOCAL DB:
+ // Resistance -> max flat reduction -> vulnerability -> temporary HP.
+ db("insert into public.items_catalog(item_key,item_name,payload) values("+
+  "'eb-ci-force-ward','CI Force Ward','{}'::jsonb)");
+ db("insert into public.inventory_items(id,item_id,item_name,owner_type,owner_id,is_equipped,card_payload) "+
+  "values(public.fixture_uuid(900),'eb-ci-force-ward','CI Force Ward','character',"+
+  "public.fixture_uuid(32)::text,true,'{\"resist\":[\"force\"],"+
+  "\"damageReductionByType\":{\"force\":3}}'::jsonb)");
+ db("update public.character_progression set class_level=5 where character_id=public.fixture_uuid(31)");
+ db("update public.encounter_participants set action_available=true where id=public.fixture_uuid(11)");
+ db("update public.encounter_participants set current_hp=200,temp_hp=4,is_defeated=false,"+
+  "damage_resistances='{}'::text[],damage_immunities='{}'::text[],"+
+  "damage_vulnerabilities=array['force'] where id=public.fixture_uuid(21)");
+ db("insert into public.fixture_rolls(roll) values(20),(15)");
+ const wardId=randomUUID(),wardTargets=[target,target];
+ const wardCtx={...ctx,requestId:wardId};
+ const wardBefore=await readEldritchSignedInState(a.client,wardCtx);
+ const wardResult=await a.client.rpc("encounter_cast_eldritch_blast_candidate_v1",{
+  ...req(wardId),p_target_ids:wardTargets});
+ assert.ifError(wardResult.error);
+ const wardAfter=await readEldritchSignedInState(a.client,wardCtx);
+ assertEldritchCommittedOnce(wardBefore,wardAfter,wardResult.data,wardTargets,wardId);
+ assert.equal(wardResult.data.beams.length,2);
+ for(const beam of wardResult.data.beams){
+  assert.equal(beam.hit,true,"Forced critical/regular beam must hit");
+  const damage=beam.damage,raw=beam.rawDamage;
+  assert.ok(Number.isInteger(raw)&&raw>=0);
+  assert.equal(damage.damageAfterResistance,Math.floor(raw/2));
+  assert.equal(damage.equipmentResistance,true);
+  assert.equal(damage.resistant,true);
+  assert.equal(damage.flatReductionAvailable,3);
+  assert.equal(damage.flatReductionApplied,Math.min(3,Math.floor(raw/2)));
+  assert.equal(damage.damageAfterFlatReduction,Math.max(0,Math.floor(raw/2)-3));
+  assert.equal(damage.vulnerable,true);
+  assert.equal(damage.damage,Math.max(0,Math.floor(raw/2)-3)*2,
+   "Force vulnerability must apply AFTER equipment reduction");
+  assert.deepEqual(damage.mitigationSources,["CI Force Ward"]);
+ }
+ const wardReplay=await a.client.rpc("encounter_cast_eldritch_blast_candidate_v1",{
+  ...req(wardId),p_target_ids:wardTargets});
+ assert.ifError(wardReplay.error);
+ assert.deepEqual(wardReplay.data,wardResult.data);
+ assertNoEldritchCombatMutation(wardAfter,
+  await readEldritchSignedInState(a.client,wardCtx),"Equipment-reduced beam replay");
+ // Immunity overrides ALL other affinities and cannot consume temporary HP.
+ db("update public.encounter_participants set action_available=true where id=public.fixture_uuid(11)");
+ db("update public.encounter_participants set current_hp=200,temp_hp=4,is_defeated=false,"+
+  "damage_immunities=array['force'] where id=public.fixture_uuid(21)");
+ db("insert into public.fixture_rolls(roll) values(20),(15)");
+ const immuneId=randomUUID(),immuneTargets=[target,target];
+ const immuneCtx={...ctx,requestId:immuneId};
+ const immuneBefore=await readEldritchSignedInState(a.client,immuneCtx);
+ const immuneCast=await a.client.rpc("encounter_cast_eldritch_blast_candidate_v1",{
+  ...req(immuneId),p_target_ids:immuneTargets});
+ assert.ifError(immuneCast.error);
+ const immuneAfter=await readEldritchSignedInState(a.client,immuneCtx);
+ assertEldritchCommittedOnce(immuneBefore,immuneAfter,immuneCast.data,immuneTargets,immuneId);
+ assert.deepEqual(immuneAfter.targetState,immuneBefore.targetState,
+  "Force immunity must preserve HP and temp HP");
+ for(const beam of immuneCast.data.beams){
+  assert.equal(beam.hit,true);
+  assert.equal(beam.damage.immune,true);
+  assert.equal(beam.damage.damage,0);
+  assert.equal(beam.damage.targetTempHp,4);
+ }
+ console.log("PASS real JWT two-beam repeated targets against LIVE damage SQL: equipment resistance, flat reduction, vulnerability, temporary HP, replay, immunity");
  console.log("PASS real Supabase JWTs, signed-in RLS, unauthorized user, exactly one action/version/HP/log/ledger write, replay/intent denial");
 }finally{await Promise.allSettled(clients.map(x=>x.auth.signOut()));}
