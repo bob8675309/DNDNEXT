@@ -1,6 +1,10 @@
 # DNDNext — Composable Spell Engine with Human + Actor AI Compatibility
 _Date: 2026-10-31. Status: **approved architectural direction for research only**, not an implemented engine, AI service, migration, or deployment._
 
+## Required pre-implementation audit
+
+Read [Spell_Engine_PrePivot_Audit_2026-10-31.md](Spell_Engine_PrePivot_Audit_2026-10-31.md) before implementing the recipe interpreter. It reconciles the archived common-effects work, real spell lifecycle and resource bridges, superseded optional attunement directions, and human/AI action authority. **This document alone is not permission to begin a runtime rewrite.**
+
 ## Decision and relevant source documents
 
 Treat direct-damage and other tactical spells as **source-qualified, versioned recipes composed of reusable geometry, targeting, resolution, effect, and lifecycle primitives**, rather than implementing a separate hardcoded spell cast RPC for every catalogue entry.

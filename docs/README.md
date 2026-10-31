@@ -11,6 +11,7 @@ This directory contains the project's living handoff, roadmap, architecture, sub
 
 ## Composable spell engine and future Actor AI — research design (2026-10-31)
 
+- [Spell_Engine_PrePivot_Audit_2026-10-31.md](Spell_Engine_PrePivot_Audit_2026-10-31.md) — **pre-implementation evidence, risk register and decisions**; checks archived PR topology, live catalogue, combat/Forge/rest/effects/AI authorities. Read this before implementing the new interpreter.
 - [Composable_Spell_Engine_AI_Readiness_2026-10-31.md](Composable_Spell_Engine_AI_Readiness_2026-10-31.md) — staged, AI-compatible spell action/geometry/effects architecture. **Research only**, no AI or engine implementation; canonical authorized legal actions remain the contract for both humans and future bots.
 
 ## Start here — current development and handoff (reconciled 2026-10-24)
