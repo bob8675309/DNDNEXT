@@ -60,13 +60,15 @@ end $committed$;
 set role authenticated;
 select set_config('request.jwt.claim.sub',public.p2_id(42)::text,false);
 do $replay_gap$
-declare x jsonb; saved jsonb;
+declare x jsonb;
 begin
-  select result into saved from public.encounter_command_requests
-    where request_id=public.p2_id(101);
+  -- The command-request ledger is intentionally *not readable* by an
+  -- authenticated caller. Compare returned public RPC fields instead.
   x:=public.encounter_cast_spell_v11(
     public.p2_id(11),public.p2_id(51),public.p2_id(21),null,public.p2_id(101));
-  if x is distinct from saved then raise exception 'Unexpected changed replay behavior: inspect before editing golden tests'; end if;
+  if x->>'spellKey'<>'fire-bolt|XPHB'
+     or x->>'requestId'<>public.p2_id(101)::text
+  then raise exception 'Unexpected changed replay behavior: inspect before editing golden tests'; end if;
   raise notice 'KNOWN BLOCKER: foreign identity can read a cached cast by reusing caster+request ID in this isolated v11 function';
 end $replay_gap$;
 reset role;
