@@ -66,6 +66,57 @@ try{
     "Non-admin must never change a delegated NPC grant");
   }
  }
+ // The protected profile must fail before a control grant.
+ for(const player of [a,b]){
+  const blocked=await player.client.rpc("encounter_spellcasting_profile_v1",{
+   p_participant_id:actor
+  });
+  assert.ok(blocked.error,"Unassigned player read a hidden NPC spell profile");
+ }
+ const gmProfile=await admin.client.rpc("encounter_spellcasting_profile_v1",{
+  p_participant_id:actor
+ });
+ assert.ifError(gmProfile.error);
+ assert.equal(gmProfile.data.visibilityScope,undefined);
+ assert.equal(gmProfile.data.knownSpells.length,5);
+ assert.ok(gmProfile.data.knownSpells.some(x=>x.spellKey==="secret-ritual|XPHB"));
+ const ownProfile=await a.client.rpc("encounter_spellcasting_profile_v1",{
+  p_participant_id:own
+ });
+ assert.ifError(ownProfile.error);
+ assert.equal(ownProfile.data.visibilityScope,undefined);
+ assert.equal(ownProfile.data.knownSpells.length,4,
+  "Legacy direct-controller PC must retain its full spell profile");
+ async function assertDelegatedProfile(player,allowed){
+  const r=await player.client.rpc("encounter_spellcasting_profile_v1",{
+   p_participant_id:actor
+  });
+  if(!allowed){
+   assert.ok(r.error,"Revoked/unassigned player received tactical spell data");
+   return;
+  }
+  assert.ifError(r.error);
+  const profile=r.data;
+  assert.equal(profile.visibilityScope,"delegated-combat");
+  assert.equal(profile.spellListFiltered,true);
+  for(const key of ["characterId","classId","classKey","classSource",
+   "canonicalSlotProgression","preparedSpellsFormula","casterProgression"]){
+   assert.equal(Object.hasOwn(profile,key),false,"Leaked extra metadata "+key);
+  }
+  assert.equal(profile.classLevel,5);
+  assert.equal(profile.className,"Wizard");
+  assert.equal(profile.spellAttackBonus,6);
+  assert.equal(profile.spellSaveDc,14);
+  assert.equal(profile.slotSnapshot.length,1);
+  assert.deepEqual(Object.keys(profile.slotSnapshot[0]).sort(),
+   ["max","poolKey","remaining","slotLevel"]);
+  assert.deepEqual(new Set(profile.knownSpells.map(x=>x.spellKey)),
+   new Set(["fire-bolt|XPHB","shield|XPHB","light|XPHB"]));
+  assert.ok(profile.knownSpells.every(x=>x.known===true));
+  assert.ok(!JSON.stringify(profile).includes("GM Secret Ritual"));
+  assert.ok(!JSON.stringify(profile).includes("GM Unknown Ritual"));
+  assert.ok(!JSON.stringify(profile).includes("sourceBook"));
+ }
  const ownRight=await a.client.rpc("encounter_can_control_participant_v1",
   {p_participant_id:own});assert.ifError(ownRight.error);
  assert.equal(ownRight.data,true,"Player retained own PC control");
@@ -130,8 +181,10 @@ try{
  }
  await setGrant(a,true);
  await Promise.all([verify(a,true),verify(b,false)]);
+ await Promise.all([assertDelegatedProfile(a,true),assertDelegatedProfile(b,false)]);
  await setGrant(b,true);
  await Promise.all([verify(a,true),verify(b,true)]);
+ await Promise.all([assertDelegatedProfile(a,true),assertDelegatedProfile(b,true)]);
  await Promise.all([assertNoHiddenSourceDisclosure(a),assertNoHiddenSourceDisclosure(b)]);
  const versionBefore=Number(db("select version from public.encounters where id=public.p2_id(81)"));
  const requests=[randomUUID(),randomUUID()];
@@ -169,6 +222,7 @@ try{
  await setGrant(winner,false);
  await Promise.all([verify(winner,false),verify(loser,true)]);
  await Promise.all([assertNoHiddenSourceDisclosure(winner),assertNoHiddenSourceDisclosure(loser)]);
+ await Promise.all([assertDelegatedProfile(winner,false),assertDelegatedProfile(loser,true)]);
  const stillSigned=await winner.client.auth.getUser();
  assert.ifError(stillSigned.error);assert.equal(stillSigned.data.user.id,winner.uid);
  const revoked=await cast({player:winner,request:winnerRequest});
@@ -180,7 +234,7 @@ try{
   "where event_type='spell_cast'")),1,"Denials added combat events");
  assert.equal(Number(db("select version from public.encounters where id=public.p2_id(81)")),
   versionBefore+1,"Denials changed encounter version");
- console.log("PASS LOCAL REAL GoTrue: 3 JWT identities, admin-only NPC grant, hidden token RLS, source sheet/spell/inventory confidentiality, two-player single-Action race, replay isolation and immediate revocation under unchanged JWT");
+ console.log("PASS LOCAL REAL GoTrue: delegated spell projection (PC/Admin full parity), source confidentiality, two-player single-Action race, replay isolation and revoked JWT denied");
 }finally{
  await Promise.allSettled(users.map(x=>x.client.auth.signOut()));
 }
