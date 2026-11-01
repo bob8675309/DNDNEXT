@@ -202,6 +202,20 @@ try{
   assert.ifError(playerCharacters.error);
   assert.deepEqual(playerCharacters.data,[],
    "Combat-only NPC delegation leaked a full sheet through multi-character RPC");
+  // All five source readers are the original production definitions.
+  // Even though the test NPC carries real source inventory/currency,
+  // a delegated *combat* controller must not see those resources.
+  for(const rpc of [
+    "character_sheet_resource_profile_v1",
+    "character_sheet_resource_profile_v2",
+    "get_character_currency_v1",
+    "get_character_inventory_v1",
+    "character_equipment_effects_v1"
+  ]){
+    const response=await player.client.rpc(rpc,{p_character_id:npc});
+    assert.equal(response.error?.code,"42501",
+      rpc+" leaked NPC source resources to combat-only delegate or failed unexpectedly");
+  }
  }
  const adminSheet=await admin.client.rpc("p2_local_can_access_character",{
    p_character_id:npc,p_permission:"read"
