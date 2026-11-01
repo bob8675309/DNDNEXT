@@ -38,7 +38,7 @@ assert.ok(panel.includes('.from("user_profiles").select("id,role")'));
 assert.ok(panel.includes('.from("players").select("user_id,name")'));
 assert.ok(panel.includes(".filter(row => String(row.role || \"player\").toLowerCase() === \"player\""));
 assert.ok(panel.includes(".eq(\"character_id\", characterId)"));
-assert.ok(panel.includes("if (!isAdmin || !characterId || busyUser || loading || error) return"));
+assert.ok(panel.includes("if (!isAdmin || !characterId || busyUser || loading) return"));
 assert.ok(panel.includes("setGrants(previous =>"));
 assert.ok(panel.includes("Turning this switch off revokes this delegated grant only"));
 assert.ok(panel.includes("onChange={event => { void setControl(player.id, event.target.checked); }}"));
