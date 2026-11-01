@@ -157,12 +157,34 @@ try{
         "Delegated combat control exposed source "+table+" record");
     }
   }
+  // These are the ACTUAL production-derived read RPC bodies in this local
+  // fixture, not client-side visibility filtering or synthetic boolean stubs.
+  const [secrets,oneCharacter,playerCharacters]=await Promise.all([
+    player.client.rpc("get_character_secrets_v1",{p_character_ids:[npc]}),
+    player.client.rpc("get_my_player_character_v1"),
+    player.client.rpc("get_my_player_characters_v2")
+  ]);
+  assert.ifError(secrets.error);
+  assert.deepEqual(secrets.data,[],
+   "Combat-only NPC delegation leaked character.secret via definer RPC");
+  assert.ifError(oneCharacter.error);
+  assert.equal(oneCharacter.data,null,
+   "Combat-only NPC delegation returned full character sheet via my-character RPC");
+  assert.ifError(playerCharacters.error);
+  assert.deepEqual(playerCharacters.data,[],
+   "Combat-only NPC delegation leaked a full sheet through multi-character RPC");
  }
  const adminSheet=await admin.client.rpc("p2_local_can_access_character",{
    p_character_id:npc,p_permission:"read"
  });
  assert.ifError(adminSheet.error);
  assert.equal(adminSheet.data,true,"Local Admin must retain sheet access");
+ const gmSecrets=await admin.client.rpc("get_character_secrets_v1",{
+  p_character_ids:[npc]
+ });
+ assert.ifError(gmSecrets.error);
+ assert.equal(gmSecrets.data.length,1,"Admin control secret access regression");
+ assert.equal(gmSecrets.data[0].secret,"NPC_SOURCE_SECRET_REDACTED");
  await assertNoHiddenSourceDisclosure(a);
  await assertNoHiddenSourceDisclosure(b);
  async function setGrant(player,allow){
@@ -238,7 +260,7 @@ try{
   "where event_type='spell_cast'")),1,"Denials added combat events");
  assert.equal(Number(db("select version from public.encounters where id=public.p2_id(81)")),
   versionBefore+1,"Denials changed encounter version");
- console.log("PASS LOCAL REAL GoTrue: delegated spell projection (PC/Admin full parity), source confidentiality, two-player single-Action race, replay isolation and revoked JWT denied");
+ console.log("PASS LOCAL REAL GoTrue: delegated spell projection (PC/Admin full parity), source confidentiality and definer secret/RPC denial, two-player single-Action race, replay isolation and revoked JWT denied");
 }finally{
  await Promise.allSettled(users.map(x=>x.client.auth.signOut()));
 }
