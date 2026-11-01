@@ -1,6 +1,6 @@
 # DNDNext — Append-only Development Handoff Log
 
-> See [PHASED_DEVELOPMENT_CHECKLIST.md](PHASED_DEVELOPMENT_CHECKLIST.md) for S0–S7 gate reporting and P0–P6 milestones. P0.1–P0.6 have dated review/CI evidence in this log; P0.7 requires separate post-merge verification.
+> See [PHASED_DEVELOPMENT_CHECKLIST.md](PHASED_DEVELOPMENT_CHECKLIST.md) for S0–S7 gate reporting and P0–P6 milestones. P0.1–P0.7 are recorded as complete on dated evidence below; repeat verification before any new deployment.
 
 > This log records what was verified or actually changed. Do **not** replace older entries when a new chat begins. Use [HANDOFF_RECEIPT_TEMPLATE.md](HANDOFF_RECEIPT_TEMPLATE.md); link exact PR/head, tests and deployment. The snapshot dates here are historical after publication.
 
@@ -33,3 +33,11 @@
 - **Approval:** Owner said `PROCEED` after being informed of the review/merge gate, authorizing the documentation review and merge contingent on passing checks. **No** approval was given to execute combat database migrations or deploy research code.
 - **P0 objective state:** P0.1–P0.6 evidenced as review, checkout validation, navigation, classification, preservation and approved PR. P0.7 remains explicitly open until PR merge, Vercel production SHA and final handoff receipt are verified.
 - **One next task:** `P0.7` — verify exact post-merge source and deployment and append receipt; then move to read-only `P1.1` command writer/lock-order inventory.
+
+## 2026-11-01 — P0.7 merged production documentation foundation; handoff to P1.1
+
+- **Review and merge:** [PR #313](https://github.com/bob8675309/DNDNEXT/pull/313) squash-merged into `main` at `de4cfb8c79264fa49aa12da0d1e3752f4a8ca03b` after final PR-head `97c819a3f646a0e11934cc922aafa3cc0a34d712` recorded four successful GitHub checks, including the dedicated full-checkout `handoff-registry` job.
+- **Production verification:** Vercel deployment `dpl_8LeoXePm93rcz69rABa3B5ZoadpG` was independently observed READY in production with Git SHA `de4cfb8c79264fa49aa12da0d1e3752f4a8ca03b`; post-merge GitHub `handoff-registry` also completed successfully at that SHA.
+- **Boundaries:** No gameplay JS, SQL migration, grant, Supabase data mutation, world/town map edit, AI action or research PR #309/#312 modification. Deployment occurred automatically because a documentation-only `main` merge triggers Vercel; READY does not imply owner browser acceptance.
+- **Closure:** P0.1–P0.7 checkboxes have been marked on documented evidence. The living one-next-task pointer in `ACTIVE_WORK.md` advances to `P1 / P1.1`: **read-only deployed encounter command writer/replay/lock order inventory**. Do not deploy private core-action or spell-recipe research in this milestone.
+- **Caveat:** This closeout receipt is committed in a separate docs-only follow-up, whose own SHA/deployment may supersede this observed checkpoint. Always verify the new branch and `main` after any follow-up merge.

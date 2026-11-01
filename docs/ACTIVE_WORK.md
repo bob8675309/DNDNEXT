@@ -2,25 +2,25 @@
 
 > **Planning snapshot:** 2026-11-01. Re-verify branches, CI and production before using these SHAs. This is the **one active-session task list**; it is not permission to deploy or merge. Product decisions remain in [SPELL_ENGINE_DECISIONS.md](SPELL_ENGINE_DECISIONS.md).
 
-## Current activity: P0 documentation acceptance and post-merge verification
+## Current activity: P1.1 read-only tactical command-authority inventory
 
-**Active phase / subphase:** `P0 / P0.7` — docs-only PR #313 has a verified full-checkout registry CI gate and owner approval to proceed with the reviewed merge; **post-merge main/deployment verification remains next**. Completed P0.1–P0.6 items and their dated evidence are recorded in [PHASED_DEVELOPMENT_CHECKLIST.md](PHASED_DEVELOPMENT_CHECKLIST.md) and [HANDOFF_LOG.md](HANDOFF_LOG.md).
+**Active phase / subphase:** `P1 / P1.1` — inventory the **deployed** tactical command writers, controlling permissions, idempotency/replay behavior, lock order and resource triggers. The documentation foundation P0 is complete through P0.7; read the recorded evidence in [PHASED_DEVELOPMENT_CHECKLIST.md](PHASED_DEVELOPMENT_CHECKLIST.md) and [HANDOFF_LOG.md](HANDOFF_LOG.md).
 
-**Status:** `VERIFIED IN ISOLATION` at the reviewed PR head; the PR merge and resulting `main`/production SHA must be independently checked. No gameplay or Supabase changes authorized.
+**Status:** `IN RESEARCH` — read-only inventory phase. Do not patch public combat RPCs or deploy private experimental executors as part of P1.1.
 
-**Objective:** Replace stale cross-chat 'current' claims with an evidence-indexed project-state register and durable receipt protocol without altering gameplay, schema, active combat research, Vercel or protected map systems.
+**Objective:** Document the complete server-authoritative tactical command graph and its security/transaction invariants. Identify replay-before-reauthorization flaws, conflicting lock order and shared-character cross-encounter resource behavior before choosing any migration.
 
-**Scope:** `AGENTS.md` and documentation routing/status ledgers; new `docs/PROJECT_STATE.md`, `docs/SYSTEM_REGISTRY.json`, `docs/ACTIVE_WORK.md`, `docs/HANDOFF_LOG.md`, `docs/DOCUMENT_LIFECYCLE.md`, `docs/HANDOFF_RECEIPT_TEMPLATE.md`, `docs/PHASED_DEVELOPMENT_CHECKLIST.md`, and `scripts/validate_handoff_registry.mjs` (read-only validator).
+**Scope:** Read-only current `public`/`private` Supabase function definitions, grants, relevant triggers and tables; existing `pages/encounters/*` command callers; held PR #312 JWT/replay fixtures and #309 ancestry; existing equipment/slot/rest authorities. Only documentation and isolated tests may be proposed after evidence gathering.
 
-**State:** Documentation-only PR [#313](https://github.com/bob8675309/DNDNEXT/pull/313), based on audited `main` `eb376a4e3a7b0a7201a0ecb8a98366c1bba4e00a`. A full-checkout GitHub registry-validation job passed on branch commit `6beb583770c3152f4fa5d7e848e5714d1b80ca19`; the final head and merge commit may differ, so re-fetch and verify current checks. This snapshot does not itself prove PR merge or production deployment.
+**Verified P0 release:** PR [#313](https://github.com/bob8675309/DNDNEXT/pull/313) merged at `de4cfb8c79264fa49aa12da0d1e3752f4a8ca03b`, Vercel production deployment `dpl_8LeoXePm93rcz69rABa3B5ZoadpG` READY at that SHA, and GitHub `handoff-registry` CI succeeded on both final PR head `97c819a3f646a0e11934cc922aafa3cc0a34d712` and merged SHA. This is a historical verification point; re-fetch all current heads before action.
 
-**Next single action:** Complete `P0.7`: verify PR #313's final green exact-head checks and merged `main` commit, inspect Vercel production state, append a post-merge receipt, then move `ACTIVE_WORK.md` to `P1 / P1.1` for a **read-only** tactical command writer/lock-order inventory. Do not treat documentation approval as permission for combat SQL or runtime deployments.
+**Next single action:** Complete `P1.1`: enumerate every **live** encounter command and resource mutation entry point (core actions, movement, end turn, attack, cast, reactions, logs, slot/rest resource guards) with actual function/grant, client caller, idempotency checks, lock sequence and known gaps in a source-linked **read-only** matrix. Do not implement P1.2 or change production SQL yet.
 
-**Acceptance:** Corrected printable/dice/workspace status; current #312 research topology; live-vs-research distinctions; no historical deletions; links and file paths check out; no runtime/source/db deployment changes; exact resulting branch/head/CI recorded on actual push.
+**Acceptance:** A complete enumerated command/ledger writer matrix against the live DB and current main; named caller/read/control dependencies; grants and privilege boundaries; lock/replay ordering conflicts recorded without unsupported conjecture; one next task P1.2 only after P1.1 evidence review.
 
-## Immediately following engineering objective (after docs acceptance)
+## Source starting point and subsequent P1 objective
 
-**Task:** **Global tactical command replay-ownership and lock-order matrix**, in isolated research only. Do not substitute an isolated private core-action executor for the whole live transaction system.
+**Task:** Continue the P1.1 command-graph and replay/lock-order audit in isolated research only. Do not substitute an isolated private core-action executor for the whole live transaction system.
 
 **Starting PRs:** #309 (`a24006624380570bd693a768e97a0c689f1d42b5`, draft), #312 (`26d2f278b9e85e8fc0b0c04307b7a87bdd2e8254`, stacked draft). Exact head/base may have changed; re-fetch.
 
