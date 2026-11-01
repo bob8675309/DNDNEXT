@@ -45,3 +45,11 @@ These are named consumers found via repository search and source inspection; not
 ## Next gate
 
 Verify all five exact-head CI workflows after the latest changes. Then audit **the remaining action/encounter RPCs that call tactical profile v1** for whether they use the profile strictly for eligibility (not source disclosure or stale replay), and reconcile a single transaction/lock contract **across every public command entry point**. Separately obtain GM approval of the conservative known/ready NPC spell disclosure and same-character overlapping-encounter policy. Keep research PR #312 unmerged, with all cutovers and rollbacks owner-reviewed.
+
+## Additional migration-lifecycle defect found and corrected
+
+The initial held delegated-control candidate unconditionally migrated every `character_permissions.can_edit=true` into `can_control=true`. This is **not** required for backward compatibility: the authoritative `encounter_can_control_participant_v1` predicate already grants combat access independently through `can_edit`. Copying it to `can_control` meant **revoking an editor's `can_edit` later would leave a latent combat-control grant**, even though the Admin never deliberately assigned the new toggle. This would be a security-relevant permission lifecycle regression in the proposed migration, not a currently deployed defect.
+
+The held `sql/candidates/20261101_npc_delegated_control_candidate.sql` has been corrected to **never automatically backfill** `can_control`; only the Admin RPC may deliberately turn that flag on. Existing edit-authorized controller behavior is retained through the unchanged OR check. Both the disposable PG16 fixture and a genuine local GoTrue signed-in flow now exercise editing-permission grant, use, removal, and no residual `can_control`. Do not reintroduce the backfill in a future combined migration.
+
+**Current test evidence limitation:** the PG16 editor-revocation test changes its sample `can_edit` through its privileged fixture setup role; it is **not** the production sheet-permission mutation API. Real GoTrue validates the resulting controller behavior under a signed JWT, while a fully production-shaped deployment must still test the Admin's ordinary edit-permission workflow. Any failed CI run is a failed gate; do not infer success from source checks alone.
