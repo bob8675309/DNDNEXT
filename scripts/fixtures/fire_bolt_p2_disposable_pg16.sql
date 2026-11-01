@@ -148,7 +148,7 @@ insert into public.spells_catalog values(public.p2_id(61),'fire-bolt|XPHB','Fire
   array['Wizard','Sorcerer','Artificer']);
 insert into public.character_spells values
   (public.p2_id(51),public.p2_id(31),public.p2_id(61),
-   'class','wizard','wizard',true,true,false,'int',null),
+   'class','wizard','wizard',true,false,false,'int',null),
   (public.p2_id(52),public.p2_id(31),public.p2_id(61),
    'feat','magic-initiate','magic-initiate',true,true,false,'int',null),
   -- Deliberately invalid imported grant, isolated to this test DB.
