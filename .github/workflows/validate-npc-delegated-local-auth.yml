@@ -10,6 +10,9 @@ on:
       - 'sql/20260729_04_tactical_guiding_bolt.sql'
       - 'sql/candidates/20261031_fire_bolt_transaction_integrated_candidate.sql'
       - 'sql/candidates/20261101_npc_delegated_control_candidate.sql'
+      - 'sql/candidates/20261101_npc_spell_profile_visibility_candidate.sql'
+      - 'scripts/fixtures/npc_spell_profile_source_shape_pg17.sql'
+      - 'scripts/fixtures/npc_control_source_visibility_pg17.sql'
   workflow_dispatch:
 permissions:
   contents: read
