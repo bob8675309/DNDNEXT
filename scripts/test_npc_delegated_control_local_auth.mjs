@@ -303,7 +303,27 @@ try{
   "where event_type='spell_cast'")),1,"Denials added combat events");
  assert.equal(Number(db("select version from public.encounters where id=public.p2_id(81)")),
   versionBefore+1,"Denials changed encounter version");
- console.log("PASS LOCAL REAL GoTrue: delegated spell projection (PC/Admin full parity), source confidentiality and definer secret/RPC denial, two-player single-Action race, replay isolation and revoked JWT denied");
+ // Real-JWT permission lifecycle: can_edit grants combat access by itself,
+ // but removing can_edit must NOT resurrect an automatic can_control backfill.
+ db("update public.character_permissions set can_edit=true "+
+  "where character_id='"+npc+"' and user_id='"+winner.uid+"'");
+ await verify(winner,true);
+ const editorProfile=await winner.client.rpc("encounter_spellcasting_profile_v1",{
+  p_participant_id:actor
+ });
+ assert.ifError(editorProfile.error);
+ assert.equal(editorProfile.data.visibilityScope,undefined,
+  "Original editor retained full source-authorized profile");
+ db("update public.character_permissions set can_edit=false "+
+  "where character_id='"+npc+"' and user_id='"+winner.uid+"'");
+ await verify(winner,false);
+ const latent=Number(db("select count(*) from public.character_permissions "+
+  "where character_id='"+npc+"' and user_id='"+winner.uid+"' "+
+  "and (can_edit or can_control)"));
+ assert.equal(latent,0,"Editor revocation left ghost permanent NPC control");
+ await assertDelegatedProfile(winner,false);
+ await verify(loser,true);
+ console.log("PASS LOCAL REAL GoTrue: delegated spell projection (PC/Admin full parity), source confidentiality and definer secret/RPC denial, two-player single-Action race, replay isolation, revoked JWT denied and no ghost editor permission");
 }finally{
  await Promise.allSettled(users.map(x=>x.client.auth.signOut()));
 }
