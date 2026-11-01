@@ -62,7 +62,7 @@ New files: `scripts/fixtures/fire_bolt_p2_shadow_cases.mjs` and `scripts/validat
 - **Done (this document):** exact-head source/CI context, read-only relevant live RPC and catalog checks, UI dispatch map, preliminary input/roll/action/slot/visibility comparison, explicit mismatch log. No database change.
 - **Source-contract test only:** `scripts/validate_spell_recipe_p2_shadow_contracts.mjs` checks that eight reviewed reference source paths, UI routes and synthetic P1 manifests stay anchored; it **does not prove deployed parity** or execute dice.
 - **Not done:** source-qualified prepared/invocation/multiclass ownership, real authoritative total-level derivation, reproducible SQL-behavior comparison in disposable Postgres with controlled RNG, independent fixtures for the other six production spell families, real JWT concurrency/idempotence, browser acceptance, production promotion.
-- **One next task:** trace the **authoritative total character level and class/source-grant eligibility** for Fire Bolt through `character_progression`, character sheet/source-grant state and `encounter_spellcasting_profile_v1`, then design an isolated signed-JWT/PG fixture that can test the current RPC under controlled data, without touching live characters or changing production execution.
+- **One next task (superseded by completed provenance audit):** source review and disposable SQL test identified replay authorization and malformed class-grant checks as release blockers. See [P2 Fire Bolt Authority and Auth Gate](Spell_Recipe_P2_Fire_Bolt_Authority_2026-10-31.md). **Current next task is a held, fail-closed authorization/source-grant hardening candidate**, not a production cast change; real GoTrue signed-in acceptance is still required.
 
 ## Delivery / safety
 
