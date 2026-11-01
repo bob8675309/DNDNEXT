@@ -39,6 +39,7 @@ on:
       - 'components/NpcControlPermissionsPanel.js'
       - 'pages/npcs.js'
       - 'scripts/fixtures/npc_delegated_control_p2_pg16_checks.sql'
+      - 'scripts/fixtures/npc_delegated_control_attack_race_p2_pg16.sh'
       - 'scripts/validate_npc_delegated_control_p2.mjs'
       - 'scripts/fixtures/encounter_nonledger_resource_snapshot_p2.mjs'
       - 'scripts/validate_encounter_nonledger_resource_p2.mjs'
@@ -137,4 +138,6 @@ jobs:
         run: PGDATABASE=fire_bolt_p2 bash scripts/fixtures/encounter_shared_character_slot_p2_pg16.sh
       - name: NPC delegated controller SQL + RLS + revocation (mock identity, disposable only)
         run: psql -X -v ON_ERROR_STOP=1 -d fire_bolt_p2 -f scripts/fixtures/npc_delegated_control_p2_pg16_checks.sql
+      - name: Two-player delegated companion cast race and revoked replay (mock Auth only)
+        run: PGDATABASE=fire_bolt_p2 bash scripts/fixtures/npc_delegated_control_attack_race_p2_pg16.sh
 
