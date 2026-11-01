@@ -3,8 +3,8 @@
 -- The candidate SQL is imported verbatim to prove its grants/functions.
 -- Mock auth.uid() is NOT signed-in Supabase Auth, nor production evidence.
 
--- Existing permissions include edit-only legacy NPC grants, which must keep
--- control after migrating to independent can_control.
+-- Existing edit-only NPC grant must keep control THROUGH can_edit, not a
+-- duplicated can_control flag that survives a later edit-permission revoke.
 insert into public.characters(id,kind) values
   (public.p2_id(32),'npc'),
   (public.p2_id(34),'merchant'),
@@ -54,8 +54,8 @@ begin
     raise exception 'Authenticated admin control RPC unexpectedly not executable'; end if;
   if (select can_control from public.character_permissions
       where character_id=public.p2_id(32) and user_id=public.p2_id(44))
-      is distinct from true then
-    raise exception 'Legacy editor lost NPC combat control during backfill'; end if;
+      is distinct from false then
+    raise exception 'Legacy edit permission was silently copied into permanent NPC combat control'; end if;
 end $pre$;
 
 set role authenticated;
@@ -167,14 +167,36 @@ begin
 end $legacy_editor$;
 reset role;
 
+-- Revoking pre-existing edit access must NOT leave a ghost delegated grant.
+set role authenticated;
+select set_config('request.jwt.claim.sub',public.p2_id(40)::text,false);
+update public.character_permissions
+set can_edit=false
+where character_id=public.p2_id(32) and user_id=public.p2_id(44);
+reset role;
+
+set role authenticated;
+select set_config('request.jwt.claim.sub',public.p2_id(44)::text,false);
+do $edit_revoked$
+begin
+  if public.encounter_can_control_participant_v1(public.p2_id(33)) is distinct from false then
+    raise exception 'Revoked legacy editor retained ghost NPC combat control'; end if;
+  if (select count(*) from public.encounter_participants where id=public.p2_id(33))<>0 then
+    raise exception 'Revoked editor still sees hidden companion token'; end if;
+end $edit_revoked$;
+reset role;
+
 do $audit$
 begin
  if (select count(*) from public.character_permissions
       where character_id=public.p2_id(32))<>3
   or (select count(*) from public.character_permissions
-      where character_id=public.p2_id(32) and can_edit)=0
+      where character_id=public.p2_id(32) and can_edit)<>0
   or (select count(*) from public.character_permissions
-      where character_id=public.p2_id(32) and can_control)=0
+      where character_id=public.p2_id(32) and can_control)<>1
+  or (select can_control from public.character_permissions
+      where character_id=public.p2_id(32) and user_id=public.p2_id(44))
+      is distinct from false
  then raise exception 'Delegated grant ledger unexpectedly changed edit or concurrent permission'; end if;
- raise notice 'PASS: two players can control same NPC, one can also control own PC; admin-only grant/revoke; hidden token RLS; editor compatibility; no sheet edit escalation (MOCK Auth only)';
+ raise notice 'PASS: two players can control same NPC, one can also control own PC; admin-only grant/revoke; hidden token RLS; editor grant revocation has no ghost control; no sheet edit escalation (MOCK Auth only)';
 end $audit$;
