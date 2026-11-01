@@ -184,3 +184,43 @@ begin
     where character_id=public.p2_id(31) and class_level=5)
   then raise exception 'single-class fixture invalid'; end if;
 end $verify$;
+
+
+-- Read-only live source parity: preserve the existing wrapper's slot-per-turn
+-- predicate within the disposable candidate (no production helper installed).
+-- Original authoritative helper also locks encounter FOR UPDATE for slotted
+-- casts. The candidate now acquires the caster lock BEFORE invoking it.
+create or replace function private.encounter_enforce_spell_slot_cast_turn_v1(
+  p_caster_id uuid,p_assignment_id uuid,p_request_id uuid
+) returns void language plpgsql security definer
+set search_path to 'pg_catalog','public','private'
+as $slotguard$
+declare
+  v_p public.encounter_participants%rowtype;
+  v_e public.encounters%rowtype;
+  v_level integer;
+  v_request_text text:=coalesce(p_request_id::text,'');
+begin
+  if p_caster_id is null or p_assignment_id is null then return; end if;
+  select s.level into v_level
+  from public.encounter_participants p
+  join public.character_spells cs on cs.character_id=p.character_id and cs.id=p_assignment_id
+  join public.spells_catalog s on s.id=cs.spell_id
+  where p.id=p_caster_id;
+  if not found or coalesce(v_level,0)<=0 then return; end if;
+  select * into v_p from public.encounter_participants where id=p_caster_id;
+  if not found then return; end if;
+  select * into v_e from public.encounters where id=v_p.encounter_id for update;
+  if not found then return; end if;
+  if exists(
+    select 1 from public.encounter_combat_log l
+    where l.encounter_id=v_e.id and l.round=v_e.round
+      and l.turn_index=v_e.turn_index
+      and l.actor_participant_id=v_p.id and l.event_type='spell_cast'
+      and coalesce(nullif(l.detail->>'slotLevel','')::integer,0)>0
+      and coalesce(l.detail->>'requestId','')<>v_request_text
+  ) then
+    raise exception 'A spell slot has already been expended to cast a spell on this turn';
+  end if;
+end
+$slotguard$;
