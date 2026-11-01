@@ -167,13 +167,14 @@ begin
 end $legacy_editor$;
 reset role;
 
--- Revoking pre-existing edit access must NOT leave a ghost delegated grant.
-set role authenticated;
-select set_config('request.jwt.claim.sub',public.p2_id(40)::text,false);
+-- Revoking pre-existing edit access must NOT leave ghost delegated control.
+-- Perform this fixture's existing edit-permission change as its owning
+-- privileged database setup role; the simplified fixture RLS UPDATE model
+-- is not the production editor mutation API. Verify behavior afterward as
+-- a separate authenticated controller.
 update public.character_permissions
 set can_edit=false
 where character_id=public.p2_id(32) and user_id=public.p2_id(44);
-reset role;
 
 set role authenticated;
 select set_config('request.jwt.claim.sub',public.p2_id(44)::text,false);
