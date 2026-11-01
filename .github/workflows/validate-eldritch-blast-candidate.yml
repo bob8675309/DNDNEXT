@@ -20,6 +20,61 @@ on:
       - 'utils/spellRecipes/validateSpellRecipe.mjs'
       - 'utils/spellRecipes/preflightSpellRecipe.mjs'
       - 'scripts/validate_spell_recipe_preflight_p1.mjs'
+      - 'scripts/validate_spell_recipe_p2_shadow_contracts.mjs'
+      - 'scripts/validate_spell_recipe_p2_fire_bolt_shadow.mjs'
+      - 'scripts/fixtures/fire_bolt_p2_shadow_cases.mjs'
+      - 'scripts/fixtures/fire_bolt_p2_disposable_pg16.sql'
+      - 'scripts/fixtures/fire_bolt_p2_disposable_pg16_checks.sql'
+      - 'scripts/fixtures/fire_bolt_p2_guarded_candidate_pg16_checks.sql'
+      - 'scripts/fixtures/fire_bolt_p2_transaction_candidate_pg16_checks.sql'
+      - 'scripts/fixtures/fire_bolt_p2_transaction_candidate_race.sh'
+      - 'scripts/fixtures/spell_cast_rpc_live_snapshot_p2.mjs'
+      - 'scripts/validate_spell_cast_rpc_inventory_p2.mjs'
+      - 'scripts/audits/spell_cast_rpc_order_readonly.sql'
+      - 'scripts/fixtures/encounter_nonspell_ledger_live_snapshot_p2.mjs'
+      - 'scripts/validate_encounter_shared_lock_audit_p2.mjs'
+      - 'scripts/fixtures/encounter_global_lock_order_p2_pg16.sh'
+      - 'scripts/fixtures/encounter_shared_character_slot_p2_pg16.sh'
+      - 'sql/candidates/20261101_npc_delegated_control_candidate.sql'
+      - 'components/NpcControlPermissionsPanel.js'
+      - 'pages/npcs.js'
+      - 'scripts/fixtures/npc_delegated_control_p2_pg16_checks.sql'
+      - 'scripts/fixtures/npc_delegated_control_attack_race_p2_pg16.sh'
+      - 'scripts/test_npc_delegated_control_real_auth.mjs'
+      - 'scripts/validate_npc_real_auth_harness_p2.mjs'
+      - 'scripts/validate_npc_delegated_control_p2.mjs'
+      - 'scripts/validate_npc_tactical_spell_profile_p2.mjs'
+      - 'sql/candidates/20261101_npc_spell_profile_visibility_candidate.sql'
+      - 'sql/candidates/20261101_npc_spell_profile_v2_visibility_candidate.sql'
+      - 'scripts/fixtures/npc_spell_profile_v2_source_shape_pg17.sql'
+      - 'scripts/fixtures/npc_source_read_rpc_parity_pg17.sql'
+      - 'scripts/fixtures/npc_indirect_resource_read_rpc_parity_pg17.sql'
+      - 'docs/Spell_Recipe_P2_NPC_Indirect_Read_Audit_2026-11-01.md'
+      - 'scripts/audits/npc_sensitive_rpc_readonly_p2.sql'
+      - 'scripts/audits/encounter_command_replay_lock_readonly_p2.sql'
+      - 'scripts/fixtures/encounter_core_action_live_replay_pg17.sql'
+      - 'scripts/validate_encounter_command_replay_baseline_p2.mjs'
+      - 'docs/Spell_Recipe_P2_Command_Replay_Baseline_2026-11-01.md'
+      - 'docs/Spell_Recipe_P2_NPC_RPC_Visibility_Rollout_2026-11-01.md'
+      - 'scripts/fixtures/npc_spell_profile_source_shape_pg17.sql'
+      - 'docs/Spell_Recipe_P2_NPC_Tactical_Spell_Profile_2026-11-01.md'
+      - 'scripts/fixtures/encounter_nonledger_resource_snapshot_p2.mjs'
+      - 'scripts/validate_encounter_nonledger_resource_p2.mjs'
+      - 'scripts/audits/encounter_nonledger_resource_readonly_p2.sql'
+      - 'docs/Spell_Recipe_P2_NonLedger_Resource_Audit_2026-11-01.md'
+      - 'docs/Spell_Recipe_P2_Shared_Encounter_Lock_Graph_2026-10-31.md'
+      - 'docs/Spell_Recipe_P2_Public_RPC_Lock_Audit_2026-10-31.md'
+      - 'sql/candidates/20261031_fire_bolt_transaction_integrated_candidate.sql'
+      - 'sql/candidates/20261101_core_action_encounter_first_private_candidate.sql'
+      - 'scripts/fixtures/encounter_core_action_candidate_pg16_checks.sql'
+      - 'scripts/fixtures/encounter_core_action_candidate_pg17.sql'
+      - 'scripts/validate_encounter_core_action_candidate_p2.mjs'
+      - 'docs/Spell_Recipe_P2_Core_Action_Candidate_2026-11-01.md'
+      - 'sql/candidates/20261031_fire_bolt_guarded_replay_candidate.sql'
+      - 'docs/Spell_Recipe_P2_Shadow_Parity_2026-10-31.md'
+      - 'docs/Spell_Recipe_P2_Fire_Bolt_Authority_2026-10-31.md'
+      - 'docs/Spell_Recipe_P2_Transaction_Candidate_2026-10-31.md'
+      - 'docs/START_HERE_ACTIVE_HANDOFF.md'
       - 'scripts/fixtures/spell_recipe_p1_examples.mjs'
       - 'scripts/validate_spell_recipe_schema_p1.mjs'
       - 'docs/Spell_Recipe_P1_Schema_2026-10-31.md'
@@ -53,6 +108,17 @@ jobs:
       - run: node scripts/validate_tactical_spell_mechanics_review.mjs
       - run: node scripts/validate_spell_recipe_schema_p1.mjs
       - run: node scripts/validate_spell_recipe_preflight_p1.mjs
+      - run: node scripts/validate_spell_recipe_p2_shadow_contracts.mjs
+      - run: node scripts/validate_spell_recipe_p2_fire_bolt_shadow.mjs
+      - run: node scripts/validate_spell_cast_rpc_inventory_p2.mjs
+      - run: node scripts/validate_encounter_shared_lock_audit_p2.mjs
+      - run: node scripts/validate_encounter_command_replay_baseline_p2.mjs
+      - run: node scripts/validate_encounter_core_action_candidate_p2.mjs
+      - run: node scripts/validate_encounter_nonledger_resource_p2.mjs
+      - run: node scripts/validate_npc_delegated_control_p2.mjs
+      - run: node scripts/validate_npc_tactical_spell_profile_p2.mjs
+      - run: node --check scripts/test_npc_delegated_control_real_auth.mjs
+      - run: node scripts/validate_npc_real_auth_harness_p2.mjs
       - run: node --check scripts/test_eldritch_blast_real_auth.mjs
       - run: node scripts/validate_eldritch_blast_auth_harness.mjs
       - run: node scripts/validate_eldritch_blast_signed_in_assertions.mjs
@@ -84,3 +150,23 @@ jobs:
       - run: bash scripts/fixtures/eldritch_blast_lock_contention.sh
       - run: bash scripts/fixtures/eldritch_blast_pending_lock_timeout.sh
       - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/eldritch_blast_auth_bridge_pg16.sql
+      - name: Isolated Fire Bolt v11 executable SQL fixture (mock roles, not signed JWT)
+        run: |
+          createdb fire_bolt_p2
+          psql -X -v ON_ERROR_STOP=1 -d fire_bolt_p2 -f scripts/fixtures/fire_bolt_p2_disposable_pg16.sql
+          psql -X -v ON_ERROR_STOP=1 -d fire_bolt_p2 -f scripts/fixtures/fire_bolt_p2_disposable_pg16_checks.sql
+          psql -X -v ON_ERROR_STOP=1 -d fire_bolt_p2 -f scripts/fixtures/fire_bolt_p2_guarded_candidate_pg16_checks.sql
+          psql -X -v ON_ERROR_STOP=1 -d fire_bolt_p2 -f scripts/fixtures/fire_bolt_p2_transaction_candidate_pg16_checks.sql
+      - name: Concurrent identical and competing Fire Bolt transaction candidates (disposable only)
+        run: PGDATABASE=fire_bolt_p2 bash scripts/fixtures/fire_bolt_p2_transaction_candidate_race.sh
+      - name: Encounter-first lock-order miniature, isolated from live RPCs
+        run: PGDATABASE=fire_bolt_p2 bash scripts/fixtures/encounter_global_lock_order_p2_pg16.sh
+      - name: Two-encounter shared character-slot atomicity miniature (disposable only)
+        run: PGDATABASE=fire_bolt_p2 bash scripts/fixtures/encounter_shared_character_slot_p2_pg16.sh
+      - name: NPC delegated controller SQL + RLS + revocation (mock identity, disposable only)
+        run: psql -X -v ON_ERROR_STOP=1 -d fire_bolt_p2 -f scripts/fixtures/npc_delegated_control_p2_pg16_checks.sql
+      - name: Two-player delegated companion cast race and revoked replay (mock Auth only)
+        run: PGDATABASE=fire_bolt_p2 bash scripts/fixtures/npc_delegated_control_attack_race_p2_pg16.sh
+      - name: Private encounter-first core-action effects and replay in isolated PostgreSQL 16
+        run: psql -X -v ON_ERROR_STOP=1 -d fire_bolt_p2 -f scripts/fixtures/encounter_core_action_candidate_pg16_checks.sql
+

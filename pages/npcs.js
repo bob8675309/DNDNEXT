@@ -11,6 +11,7 @@ import KindPicker from "../components/KindPicker";
 import NewNpcModal from "../components/NewNpcModal";
 import PortraitPickerModal from "../components/PortraitPickerModal";
 import NpcPanel from "../components/character/CharacterInteractionPanel";
+import NpcControlPermissionsPanel from "../components/NpcControlPermissionsPanel";
 import { MAP_ICONS_BUCKET, LOCAL_FALLBACK_ICON, mapIconDisplay } from "../utils/mapIcons";
 import { resolveCharacterPortrait } from "../utils/characterPortraits";
 import { loadCharacterSecrets, saveCharacterSecret } from "../utils/characterSecrets";
@@ -1674,6 +1675,10 @@ const details = detailsDraft || {};
                 </div>
 
                 <hr style={{ borderColor: BORDER }} />
+
+                {isAdmin && selected.type === "npc" ? (
+                  <NpcControlPermissionsPanel key={selected.id} characterId={selected.id} isAdmin={isAdmin} />
+                ) : null}
 
                 <div className="row g-3">
                   {/* Left */}

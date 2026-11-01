@@ -3,6 +3,10 @@ on:
   pull_request:
     paths:
       - 'pages/encounters/**'
+      - 'pages/npcs.js'
+      - 'components/NpcControlPermissionsPanel.js'
+      - 'sql/candidates/20261101_npc_delegated_control_candidate.sql'
+      - 'scripts/fixtures/npc_delegated_control_p2_pg16_checks.sql'
       - 'components/CharacterSheetEnhancements.js'
       - 'components/CharacterRestActivityDialog.js'
       - 'components/TacticalCharacterResourceBridge.js'
