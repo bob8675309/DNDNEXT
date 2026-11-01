@@ -6,6 +6,7 @@ on:
       - 'scripts/fixtures/fire_bolt_p2_disposable_pg16.sql'
       - 'scripts/fixtures/generate_npc_delegated_local_auth_fixture.mjs'
       - 'scripts/test_npc_delegated_control_local_auth.mjs'
+      - 'scripts/fixtures/npc_control_source_visibility_pg17.sql'
       - 'sql/20260729_04_tactical_guiding_bolt.sql'
       - 'sql/candidates/20261031_fire_bolt_transaction_integrated_candidate.sql'
       - 'sql/candidates/20261101_npc_delegated_control_candidate.sql'
