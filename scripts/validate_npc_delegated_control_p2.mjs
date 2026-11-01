@@ -10,7 +10,7 @@ const panel=read("components/NpcControlPermissionsPanel.js");
 const harness=read("scripts/fixtures/npc_delegated_control_p2_pg16_checks.sql");
 for (const s of [
  "add column if not exists can_control boolean not null default false",
- "where can_edit=true and can_control=false",
+ "Only explicit Admin assignments may ever set can_control=true",
  "public.admin_set_npc_control_v1(",
  "private.current_user_is_admin()",
  "v_kind not in ('npc','merchant')",
@@ -26,6 +26,7 @@ for (const s of [
  "create policy encounter_participants_authenticated_read",
  "for select to authenticated",
 ]) assert.ok(sql.includes(s),"Missing SQL candidate invariant: "+s);
+assert.ok(!sql.includes("set can_control=true\nwhere can_edit=true"),"Existing editors must not receive irreversible ghost NPC control");
 assert.ok(!sql.includes("alter table public.character_sheets"));
 assert.ok(!sql.includes("grant all on table"));
 assert.ok(!sql.includes("grant execute on function public.encounter_can_control_participant_v1(uuid)\n  to anon"));
@@ -52,7 +53,8 @@ for (const s of [
  "Ordinary player administered NPC permission",
  "Revoked player can still view hidden companion encounter token",
  "NPC-only admin API granted PC control",
- "Legacy editor lost NPC combat control during backfill",
+ "Legacy edit permission was silently copied into permanent NPC combat control",
+ "Revoked legacy editor retained ghost NPC combat control",
  "Battle control inadvertently granted edit",
 ]) assert.ok(harness.includes(s),"Missing disposable SQL test invariant: "+s);
-console.log("P2 delegated NPC battle control source contract PASS: independent admin toggle, two concurrent controllers, editor/backfill compatibility, server-authorized grants and visibility");
+console.log("P2 delegated NPC battle control source contract PASS: independent admin toggle, two concurrent controllers, editor-revoke compatibility without permission backfill, server-authorized grants and visibility");
