@@ -28,6 +28,10 @@ on:
       - 'scripts/fixtures/fire_bolt_p2_guarded_candidate_pg16_checks.sql'
       - 'scripts/fixtures/fire_bolt_p2_transaction_candidate_pg16_checks.sql'
       - 'scripts/fixtures/fire_bolt_p2_transaction_candidate_race.sh'
+      - 'scripts/fixtures/spell_cast_rpc_live_snapshot_p2.mjs'
+      - 'scripts/validate_spell_cast_rpc_inventory_p2.mjs'
+      - 'scripts/audits/spell_cast_rpc_order_readonly.sql'
+      - 'docs/Spell_Recipe_P2_Public_RPC_Lock_Audit_2026-10-31.md'
       - 'sql/candidates/20261031_fire_bolt_transaction_integrated_candidate.sql'
       - 'sql/candidates/20261031_fire_bolt_guarded_replay_candidate.sql'
       - 'docs/Spell_Recipe_P2_Shadow_Parity_2026-10-31.md'
@@ -69,6 +73,7 @@ jobs:
       - run: node scripts/validate_spell_recipe_preflight_p1.mjs
       - run: node scripts/validate_spell_recipe_p2_shadow_contracts.mjs
       - run: node scripts/validate_spell_recipe_p2_fire_bolt_shadow.mjs
+      - run: node scripts/validate_spell_cast_rpc_inventory_p2.mjs
       - run: node --check scripts/test_eldritch_blast_real_auth.mjs
       - run: node scripts/validate_eldritch_blast_auth_harness.mjs
       - run: node scripts/validate_eldritch_blast_signed_in_assertions.mjs
