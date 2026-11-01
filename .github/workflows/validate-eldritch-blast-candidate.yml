@@ -43,6 +43,10 @@ on:
       - 'scripts/test_npc_delegated_control_real_auth.mjs'
       - 'scripts/validate_npc_real_auth_harness_p2.mjs'
       - 'scripts/validate_npc_delegated_control_p2.mjs'
+      - 'scripts/validate_npc_tactical_spell_profile_p2.mjs'
+      - 'sql/candidates/20261101_npc_spell_profile_visibility_candidate.sql'
+      - 'scripts/fixtures/npc_spell_profile_source_shape_pg17.sql'
+      - 'docs/Spell_Recipe_P2_NPC_Tactical_Spell_Profile_2026-11-01.md'
       - 'scripts/fixtures/encounter_nonledger_resource_snapshot_p2.mjs'
       - 'scripts/validate_encounter_nonledger_resource_p2.mjs'
       - 'scripts/audits/encounter_nonledger_resource_readonly_p2.sql'
@@ -94,6 +98,7 @@ jobs:
       - run: node scripts/validate_encounter_shared_lock_audit_p2.mjs
       - run: node scripts/validate_encounter_nonledger_resource_p2.mjs
       - run: node scripts/validate_npc_delegated_control_p2.mjs
+      - run: node scripts/validate_npc_tactical_spell_profile_p2.mjs
       - run: node --check scripts/test_npc_delegated_control_real_auth.mjs
       - run: node scripts/validate_npc_real_auth_harness_p2.mjs
       - run: node --check scripts/test_eldritch_blast_real_auth.mjs
