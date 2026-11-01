@@ -38,6 +38,10 @@ assert.ok(fixture.includes("drop function public.encounter_spellcasting_profile_
 for(const s of ["gmProfile.data.knownSpells.length,5","ownProfile.data.knownSpells.length,4","assertDelegatedProfile(a,true)","assertDelegatedProfile(b,false)","assertDelegatedProfile(winner,false)","secret-ritual|XPHB","unlearned-ritual|XPHB"])
  assert.ok(jwt.includes(s),"Missing signed-in profile assertion: "+s);
 assert.ok(v2.includes("d2a41429785f5c55f6c5b941d6ed6d88"));
+assert.ok(v2.includes("$function$;\n\nrevoke all on function private.encounter_spellcasting_profile_v2_full_candidate_v1"),
+ "Copied production v2 definition must end before its EXECUTE revocation");
+assert.ok(sensitive.includes("$function$;\n\nrevoke all on function public.get_character_secrets_v1"),
+ "Copied live secret read function must end before its ACL");
 assert.ok(v2.includes("private.encounter_spellcasting_profile_v2_full_candidate_v1"));
 assert.ok(v2.includes("v_profile->>'visibilityScope'='delegated-combat'"));
 assert.ok(v2.includes("return v_profile;"));
