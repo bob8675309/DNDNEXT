@@ -51,6 +51,23 @@ Require a completely disposable **non-production** Supabase environment with GoT
 
 **Do not** mint a test JWT and label it a Supabase Auth session; PostgreSQL `set role` plus `request.jwt.claims` is a mock, not signature verification. No paid staging, live Auth accounts, prod test encounter or public exposed helper were created during this checkpoint.
 
+## Held private replay and grant guard — research candidate (2026-10-31)
+
+A narrowly scoped, **ungranted** candidate exists in `sql/candidates/20261031_fire_bolt_guarded_replay_candidate.sql` as `private.encounter_fire_bolt_guarded_candidate_v1`. It calls the original `public.encounter_cast_spell_v11` after independent, fail-closed checks; it changes **no** production RPC or migration. Only a disposable PostgreSQL test grants `authenticated` the right to execute this private function.
+
+New negative regression probes in `scripts/fixtures/fire_bolt_p2_guarded_candidate_pg16_checks.sql` include:
+
+- Previously valid caster and source-qualified, `known=true` unprepared cantrip: preserve successful cast and exact owner replay, without extra action/roll/log.
+- Foreign authenticated controller: reject replay and fresh casts; no disclosure of the cached result.
+- Same request ID with different target or different assignment: reject, rather than returning an unrelated cached cast.
+- Stored class grant with `known=false`, inconsistent source key or label, or a feat-owned grant: fail closed. Canonical XPHB class and `spells_catalog.classes` membership are required.
+- Target now hidden from caller, caller no longer controls caster, or ledger row is pending/unbound: fail closed before returning any cached result.
+- Original resolver, unchanged, owns attack rolls, cover, damage, action spending and command-log atomics. The negative probes must not add any combat logs or encounter version changes.
+
+**Critical limitation:** A wrapper cannot remove the existing public `v1`, `v11`, `v11_pre_1v` entry points or guarantee permission/target visibility remains stable between its preflight and the original transaction. It **does not fix production security**. A release candidate must put these checks into the actual server-authoritative transaction, preserve all existing spell-family delegates, lock order and exactly-once idempotency, and cover other affected RPC families. Neither mocked `SET ROLE` nor a locally forged JWT equals actual Supabase-issued signed-in proof.
+
+The prior public Fire Bolt RPC's replay and grant-acceptance behavior is separately characterized in a disposable PG test, but **known-failing historical behavior is not acceptable security evidence**. The candidate passes only when its own fail-closed regression cases pass at the exact GitHub head SHA.
+
 ## Single next engineering task
 
-**Resolve the Fire Bolt authorization/idempotent replay issue in a held research-only candidate, with regression tests for foreign replay, same-ID changed intent, and incomplete class grants, before attempting any executable generalized recipe or real Auth release.** Preserve working spell RPCs unchanged. Report the actual CI status for the exact head and seek explicit approval before a production patch.
+**NEXT: design a transaction-integrated, held resolver hardening patch (not a wrapper), preserve cross-spell behavior and lock ordering, and create two real-auth user tests in a completely separate non-production environment.** Verify exact-head GitHub CI, RLS, revocation, hidden targets, same-ID changed intent, legacy-function direct access and concurrent requests before requesting owner approval for any production change.
