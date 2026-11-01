@@ -178,6 +178,26 @@ begin
  if not denied then raise exception 'Guiding Bolt same-id changed-slot request accepted'; end if;
 end $guiding$;
 reset role;
+
+-- Emulate availability restored within the same turn: a second DIFFERENT
+-- slotted cast must still fail from the authoritative one-slot-per-turn guard.
+-- A test that only checks action_available would miss this invariant.
+update public.encounter_participants set action_available=true
+where id=public.p2_id(11);
+set role authenticated;
+do $slot_turn$
+declare denied boolean:=false;
+begin
+  begin
+    perform private.encounter_cast_spell_v11_transaction_candidate_v1(
+      public.p2_id(11),public.p2_id(56),public.p2_id(21),1,public.p2_id(114));
+  exception when others then
+    if sqlerrm like '%A spell slot has already been expended to cast a spell on this turn%'
+    then denied:=true; else raise; end if;
+  end;
+  if not denied then raise exception 'Integrated candidate allowed second slotted spell in same turn'; end if;
+end $slot_turn$;
+reset role;
 do $audit$
 begin
  if (select count(*) from public.encounter_combat_log where event_type='spell_cast')<>6
