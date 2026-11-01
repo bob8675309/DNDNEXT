@@ -69,6 +69,12 @@ begin
   -- idempotency/command ledger operation so same-caster casts serialize.
   select * into v_c from public.encounter_participants where id=p_caster_id for update;
   if not found then raise exception 'Caster not found'; end if;
+  -- Preserve the production wrapper's one-slotted-spell-per-turn invariant.
+  -- It must run AFTER the caster lock, not in an outer public wrapper that
+  -- takes the encounter lock first and reverses this candidate's order.
+  perform private.encounter_enforce_spell_slot_cast_turn_v1(
+    p_caster_id,p_assignment_id,p_request_id
+  );
   select * into v_assignment from public.character_spells where id=p_assignment_id and character_id=v_c.character_id for share;
   if not found then raise exception 'Spell assignment is not in this character''s spellbook'; end if;
   select * into v_spell from public.spells_catalog where id=v_assignment.spell_id;
