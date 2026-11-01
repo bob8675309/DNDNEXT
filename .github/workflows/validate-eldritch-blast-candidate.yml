@@ -20,6 +20,8 @@ on:
       - 'utils/spellRecipes/validateSpellRecipe.mjs'
       - 'utils/spellRecipes/preflightSpellRecipe.mjs'
       - 'scripts/validate_spell_recipe_preflight_p1.mjs'
+      - 'scripts/validate_spell_recipe_p2_shadow_contracts.mjs'
+      - 'docs/Spell_Recipe_P2_Shadow_Parity_2026-10-31.md'
       - 'scripts/fixtures/spell_recipe_p1_examples.mjs'
       - 'scripts/validate_spell_recipe_schema_p1.mjs'
       - 'docs/Spell_Recipe_P1_Schema_2026-10-31.md'
@@ -53,6 +55,7 @@ jobs:
       - run: node scripts/validate_tactical_spell_mechanics_review.mjs
       - run: node scripts/validate_spell_recipe_schema_p1.mjs
       - run: node scripts/validate_spell_recipe_preflight_p1.mjs
+      - run: node scripts/validate_spell_recipe_p2_shadow_contracts.mjs
       - run: node --check scripts/test_eldritch_blast_real_auth.mjs
       - run: node scripts/validate_eldritch_blast_auth_harness.mjs
       - run: node scripts/validate_eldritch_blast_signed_in_assertions.mjs
