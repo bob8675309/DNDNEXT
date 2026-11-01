@@ -1,5 +1,7 @@
 # DNDNext — Verified Project State
 
+> **2026-11-01 P0 closeout update:** [PR #313](https://github.com/bob8675309/DNDNEXT/pull/313) merged with production main `de4cfb8c79264fa49aa12da0d1e3752f4a8ca03b`; Vercel production `dpl_8LeoXePm93rcz69rABa3B5ZoadpG` was READY from the same SHA and the post-merge handoff registry GitHub CI passed. This top-level update supersedes only the earlier P0 *status*, not the dated source/database facts below. **Active objective: [P1.1, read-only combat command inventory](ACTIVE_WORK.md).** Recheck actual deployment and PR/DB state in each new chat.
+
 > **Point-in-time evidence:** 2026-11-01. **This file is not a live monitor.** Read [PHASED_DEVELOPMENT_CHECKLIST.md](PHASED_DEVELOPMENT_CHECKLIST.md) for the repeatable S0–S7 session gates and P0–P6 objective plan; read [ACTIVE_WORK.md](ACTIVE_WORK.md), the [system registry](SYSTEM_REGISTRY.json), the [handoff log](HANDOFF_LOG.md), and then verify the current GitHub/CI/Supabase/Vercel state. Source code, production database functions and deployed behavior outrank this snapshot. `AGENTS.md` and [SPELL_ENGINE_DECISIONS.md](SPELL_ENGINE_DECISIONS.md) remain mandatory instructions and approved product decisions.
 
 ## Snapshot identity and scope

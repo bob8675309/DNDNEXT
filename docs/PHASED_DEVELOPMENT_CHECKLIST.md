@@ -109,7 +109,7 @@ These represent planned work and known evidence **as of 2026-11-01**. Phase orde
 - [x] P0.4 Confirm the registry distinguishes implementation, deployment, executable tests and browser/owner acceptance; fix any unsupported “done” claims.
 - [x] P0.5 Preserve historical docs and source decisions. Make a deletion proposal **only** for a file with checked inbound references, extracted unique facts and specific owner approval.
 - [x] P0.6 On explicit approval, push/PR the docs-only commit and verify resulting exact head, CI and documentation links. **Do not merge without separate approval.**
-- [ ] P0.7 Verify the exact merged `main` SHA, new Vercel production status, and final PR CI; append a **post-merge receipt** and then set exactly one next research task (`P1.1`) in `ACTIVE_WORK.md`. This is intentionally open until actual merge and verification.
+- [x] P0.7 Verified PR #313 merged at `de4cfb8c79264fa49aa12da0d1e3752f4a8ca03b`, Vercel production `dpl_8LeoXePm93rcz69rABa3B5ZoadpG` READY from the same SHA, post-merge handoff-registry CI passed, appended release evidence to `HANDOFF_LOG.md`, and set `ACTIVE_WORK.md` to exactly one next read-only task: `P1.1`. This is dated evidence; always recheck current main.
 
 **P0 exit:** Self-contained source-linked status registry and checkable handoff files available on an approved branch; validation/review evidence recorded, and no gameplay/production mutations.
 
