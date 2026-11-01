@@ -16,7 +16,7 @@ export const P2_NON_LEDGER_PUBLIC_MUTATORS = Object.freeze([
 
 export const P2_NON_LEDGER_HELPERS = Object.freeze([
   ["private.character_active_encounter_v1","471838b1a30158586afce9b56cbe8a1c"],
-  ["private.assert_character_resource_not_active_v1","92f51ed74a189f085cab4f3cf9d179e9"],
+  ["private.assert_character_resource_not_active_v1","e5d73f1d0ec428b14f70070e17b3909d"],
   ["private.guard_character_rest_insert_v1","e7679b57650552c711d41f38beece2b8"],
   ["private.guard_character_spell_slot_update_v1","130473e9d8035c038a080362c6b4a2fd"],
   ["private.mirror_encounter_spell_slot_spend_v1","b30565d75b05b042c1ad8f9803284486"],
