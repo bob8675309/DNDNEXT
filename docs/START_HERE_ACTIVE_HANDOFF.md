@@ -1,5 +1,9 @@
 # DNDNext — START HERE: Active Development Handoff / Recovery Protocol
 
+> **2026-11-01 verified-project-state routing update:** This file retains its original 2026-10-31 P1/P2 research checkpoint below for historical reasons. For the **newest dated audit**, read [PROJECT_STATE.md](PROJECT_STATE.md), [SYSTEM_REGISTRY.json](SYSTEM_REGISTRY.json), [ACTIVE_WORK.md](ACTIVE_WORK.md), [HANDOFF_LOG.md](HANDOFF_LOG.md), [PHASED_DEVELOPMENT_CHECKLIST.md](PHASED_DEVELOPMENT_CHECKLIST.md), and [DOCUMENT_LIFECYCLE.md](DOCUMENT_LIFECYCLE.md). On audit, live `main` was `eb376a4e3a7b0a7201a0ecb8a98366c1bba4e00a`; PR #312 (stacked on #309) already had isolated P2/core-action research. The statement below that P2 was “not started” is a **past checkpoint, not current**. Re-fetch all exact heads, CI, schema/grants and deployments before acting. Printable sheets, Forge cube dice and merged encounter workspace/rest are implemented source features; do not recreate them based on old status docs.
+
+**Mandatory read order for each new chat:** `AGENTS.md` → this file → [PROJECT_STATE.md](PROJECT_STATE.md) → [ACTIVE_WORK.md](ACTIVE_WORK.md) → [PHASED_DEVELOPMENT_CHECKLIST.md](PHASED_DEVELOPMENT_CHECKLIST.md) → [SYSTEM_REGISTRY.json](SYSTEM_REGISTRY.json) → [SPELL_ENGINE_DECISIONS.md](SPELL_ENGINE_DECISIONS.md) → affected source, functions, fixtures and relevant historical ledgers. At the end, update affected registry entries and append a factual receipt to [HANDOFF_LOG.md](HANDOFF_LOG.md) using [HANDOFF_RECEIPT_TEMPLATE.md](HANDOFF_RECEIPT_TEMPLATE.md). The current single next action is in `ACTIVE_WORK.md`, **not** in a dated paragraph below.
+
 > **Durable documentation on main (2026-10-31).** The *implementation* of the P1 validator, graph compiler and held Eldritch Blast candidate remains solely on [draft research PR #309](https://github.com/bob8675309/DNDNEXT/pull/309), not on deployed `main` or production Supabase. This main-branch copy of the handoff is documentation only. Revalidate branch/PR/CI status before relying on any timestamped checkpoint.
 _Last editorial checkpoint: 2026-10-31. This file is a **live handoff**, not a verified substitute for GitHub, Supabase or CI._
 
@@ -68,7 +72,7 @@ Use `docs/README.md` and `docs/Documentation_Refresh_Manifest.md` for other subs
 
 **Single next task AFTER this preflight passes:** P2 **shadow parity design** using existing server-backed Fire Bolt, Sacred Flame, Magic Missile, Acid Splash, Word of Radiance, Burning Hands, Lightning Bolt, and held Eldritch Blast reference contracts. First compare action/slot/target/roll scopes; *do not execute or migrate spells*. The older “P1 not started” items below are preserved only as historical dated entries.
 
-## Current engineering task — SINGLE NEXT STEP
+## Historical 2026-10-31 engineering task — superseded by ACTIVE_WORK.md
 
 **After validating the compiler preflight CI:** Design P2 *shadow parity contracts* against the exact working spell RPC families, starting with a read-only attack/save/damage/resource/roll-scope comparison matrix. Retain current server behavior as the golden reference, isolate test fixtures, and do not create a cast endpoint, database migration, gameplay UI change, AI provider dependency, or production write. The schema and preflight are *not* rules-complete; do not infer automation coverage from structural validation.
 
@@ -80,7 +84,7 @@ Use `docs/README.md` and `docs/Documentation_Refresh_Manifest.md` for other subs
 | --- | --- | --- |
 | P0 audit + user decisions | **Documented** | Owner answers captured in `SPELL_ENGINE_DECISIONS.md`, pre-pivot audit linked. |
 | P1 schema/validator + graph preflight | **Research code committed; CI status depends on exact head** | Verify 12 synthetic shapes, malformed/unsafe inputs, isolated repeat/branch boundaries, budget and immutable identity; never mark executable. |
-| P2 pure shadow parity | **Not started** | Follow P1; use golden fixtures from old adapters. |
+| P2 pure shadow parity | **Historical as-of 2026-10-31; research started on stacked draft PR #312 by 2026-11-01** | Follow P1; use golden fixtures from old adapters. |
 | P3 hybrid/lifecycle | **Not started** | Explicit Scorching Ray/Ice Knife and persistent/reaction subtasks. |
 | P4 server + human integration | **Not started** | Require free local Auth tests and real signed-in browser approval. |
 | P5 Admin homebrew builder | **Approved goal, not built** | Only after reviewed recipe lifecycle and safe publishing. |

@@ -1,5 +1,7 @@
 # Documentation Refresh Manifest
 
+> **2026-11-01 verified-project-state routing update:** Use [PROJECT_STATE.md](PROJECT_STATE.md) + [SYSTEM_REGISTRY.json](SYSTEM_REGISTRY.json) for dated observed system reality, [ACTIVE_WORK.md](ACTIVE_WORK.md) for the single active task, [PHASED_DEVELOPMENT_CHECKLIST.md](PHASED_DEVELOPMENT_CHECKLIST.md) for the phased objectives and mandatory S0–S7 chat gates, [HANDOFF_LOG.md](HANDOFF_LOG.md) for append-only evidence, and [DOCUMENT_LIFECYCLE.md](DOCUMENT_LIFECYCLE.md) before removals. The 2026-10-24 PR and attunement status passages below are historical snapshots. No documents were deleted during this reconciliation.
+
 Updated: 2026-10-24
 
 ## Trust order
@@ -8,7 +10,7 @@ For current work, trust sources in this order:
 
 1. live Supabase schema, migration ledger, grants, RPC definitions, and relevant data;
 2. current GitHub `main`/active PR source, exact remote head, exact-head CI, and Vercel state;
-3. `DNDNext_Current_Handoff_Prompt.md` plus the dedicated active subsystem ledger;
+3. `PROJECT_STATE.md`, `ACTIVE_WORK.md`, `SYSTEM_REGISTRY.json`, owner decision ledger and the relevant source-qualified subsystem document;
 4. broader roadmap/history prose;
 5. raw exports and old PR ledgers as historical snapshots only.
 

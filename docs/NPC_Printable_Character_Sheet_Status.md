@@ -1,7 +1,10 @@
 # NPC Printable Character Sheet Status
 
-Updated: 2026-10-19  
-Status: implementation branch; presentation-only NPC-page feature.
+> **2026-11-01 verified-project-state routing update:** The original “implementation branch” header has been corrected: source integration and print validator are on production `main` (`eb376a4e3a7b0a7201a0ecb8a98366c1bba4e00a`). `CharacterSheetPanel.js` generates a PDF using `utils/printableCharacterSheet.js` and `utils/officialCharacterSheetPdf.js` over the three-page template; `/npcs` passes profile/notes. The validator is included in `scripts/vercel_build_v2.mjs`. **Do not restart printable sheets as an unfinished feature.** Remaining *possible enhancement*, not a blocker to printing: current printed slot totals come from sheet spellcasting arrays instead of directly from the spent/remaining persistent `character_spell_slots` resource ledger. Verify desired output and data-flow authorization before changing it.
+
+Originally updated: 2026-10-19  
+Verified on `main`: 2026-11-01  
+Status: **Implemented in production source and integrated into the NPC Character Sheet header**; browser acceptance not re-run in this audit.
 
 ## Purpose
 
