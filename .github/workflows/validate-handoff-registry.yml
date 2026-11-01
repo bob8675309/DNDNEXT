@@ -1,0 +1,36 @@
+name: Validate DNDNext handoff registry
+
+on:
+  pull_request:
+    paths:
+      - 'AGENTS.md'
+      - 'docs/**'
+      - 'scripts/validate_handoff_registry.mjs'
+      - '.github/workflows/validate-handoff-registry.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'AGENTS.md'
+      - 'docs/**'
+      - 'scripts/validate_handoff_registry.mjs'
+      - '.github/workflows/validate-handoff-registry.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  handoff-registry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out exact commit
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate registry and reference paths
+        run: node scripts/validate_handoff_registry.mjs
