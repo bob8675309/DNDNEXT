@@ -23,6 +23,8 @@ on:
       - 'scripts/validate_spell_recipe_p2_shadow_contracts.mjs'
       - 'scripts/validate_spell_recipe_p2_fire_bolt_shadow.mjs'
       - 'scripts/fixtures/fire_bolt_p2_shadow_cases.mjs'
+      - 'scripts/fixtures/fire_bolt_p2_disposable_pg16.sql'
+      - 'scripts/fixtures/fire_bolt_p2_disposable_pg16_checks.sql'
       - 'docs/Spell_Recipe_P2_Shadow_Parity_2026-10-31.md'
       - 'docs/START_HERE_ACTIVE_HANDOFF.md'
       - 'scripts/fixtures/spell_recipe_p1_examples.mjs'
@@ -91,3 +93,9 @@ jobs:
       - run: bash scripts/fixtures/eldritch_blast_lock_contention.sh
       - run: bash scripts/fixtures/eldritch_blast_pending_lock_timeout.sh
       - run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/eldritch_blast_auth_bridge_pg16.sql
+      - name: Isolated Fire Bolt v11 executable SQL fixture (mock roles, not signed JWT)
+        run: |
+          createdb fire_bolt_p2
+          psql -X -v ON_ERROR_STOP=1 -d fire_bolt_p2 -f scripts/fixtures/fire_bolt_p2_disposable_pg16.sql
+          psql -X -v ON_ERROR_STOP=1 -d fire_bolt_p2 -f scripts/fixtures/fire_bolt_p2_disposable_pg16_checks.sql
+
