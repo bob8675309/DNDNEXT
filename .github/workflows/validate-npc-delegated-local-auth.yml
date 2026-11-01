@@ -1,0 +1,69 @@
+name: Validate NPC Delegated Control Real Local Auth (Free CI)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/validate-npc-delegated-local-auth.yml'
+      - 'scripts/fixtures/fire_bolt_p2_disposable_pg16.sql'
+      - 'scripts/fixtures/generate_npc_delegated_local_auth_fixture.mjs'
+      - 'scripts/test_npc_delegated_control_local_auth.mjs'
+      - 'sql/20260729_04_tactical_guiding_bolt.sql'
+      - 'sql/candidates/20261031_fire_bolt_transaction_integrated_candidate.sql'
+      - 'sql/candidates/20261101_npc_delegated_control_candidate.sql'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  npc-local-real-jwt:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      PGHOST: 127.0.0.1
+      PGPORT: '54322'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_NPC_LOCAL_CI_CONFIRM: CI_DISPOSABLE_NPC_GOTRUE_ONLY
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned project dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Create isolated local Supabase project
+        run: |
+          mkdir -p "$RUNNER_TEMP/npc-local/supabase"
+          cat > "$RUNNER_TEMP/npc-local/supabase/config.toml" <<'TOML'
+          project_id = "npc-jwt-disposable-gha"
+          [db]
+          port = 54322
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+      - name: Start local Postgres, GoTrue and PostgREST
+        run: |
+          cd "$RUNNER_TEMP/npc-local"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Verify three real signed-in local accounts and delegated companion race
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd "$RUNNER_TEMP/npc-local" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/npc-local-env"
+          set -a
+          source "$RUNNER_TEMP/npc-local-env"
+          set +a
+          export DNDNEXT_NPC_LOCAL_URL="http://127.0.0.1:54321"
+          export DNDNEXT_NPC_LOCAL_ANON_KEY="$ANON_KEY"
+          node --check scripts/fixtures/generate_npc_delegated_local_auth_fixture.mjs
+          node --check scripts/test_npc_delegated_control_local_auth.mjs
+          node scripts/fixtures/generate_npc_delegated_local_auth_fixture.mjs "$RUNNER_TEMP/npc-local-fixture.sql"
+          psql -X -v ON_ERROR_STOP=1 -f "$RUNNER_TEMP/npc-local-fixture.sql"
+          node scripts/test_npc_delegated_control_local_auth.mjs
+      - name: Destroy disposable services without retaining any test data
+        if: always()
+        run: |
+          cd "$RUNNER_TEMP/npc-local"
+          npx --yes supabase@2.120.0 stop --no-backup || true
