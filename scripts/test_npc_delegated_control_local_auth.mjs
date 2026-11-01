@@ -366,6 +366,99 @@ try{
   "original public core_action leaks same cached result across controllers, "+
   "ignores changed action and still returns it after revocation; "+
   "one action/log/version only. No production functions were called.");
+ // NEW PRIVATE CANDIDATE: same signed-in principals, independent fresh IDs.
+ // The live old core_action and its cached wrong-owner behavior remain present
+ // above for contrast. No source permission or public production RPC is patched.
+ assert.equal(db("select has_function_privilege('authenticated', "+
+  "'private.encounter_core_action_transaction_candidate_v1(uuid,text,uuid)',"+
+  "'EXECUTE')"),"f");
+ await setGrant(winner,true);
+ db("update public.encounter_participants set "+
+  "action_available=true,movement_bonus_ft=0,disengaged=false,dodging=false "+
+  "where id=public.p2_id(33)");
+ const candidateCall=(who,action,request)=>who.client.rpc(
+  "p2_local_core_action_candidate",{
+   p_participant_id:actor,p_action:action,p_request_id:request
+  });
+ const candidateStartVersion=Number(db(
+  "select version from public.encounters where id=public.p2_id(81)"));
+ const candidateStartLog=Number(db(
+  "select count(*) from public.encounter_combat_log where event_type='core_action'"));
+ const candidateReq=randomUUID();
+ const [ownerOne,ownerTwo]=await Promise.all([
+  candidateCall(winner,"dash",candidateReq),
+  candidateCall(winner,"dash",candidateReq)
+ ]);
+ for(const r of [ownerOne,ownerTwo])assert.ifError(r.error);
+ assert.deepEqual(ownerOne.data,ownerTwo.data,
+  "Exact concurrent owner retry changed canonical Dash result");
+ assert.equal(ownerOne.data.action,"dash");
+ assert.equal(ownerOne.data.movementBonusFt,30);
+ assert.equal(Number(db("select version from public.encounters "+
+  "where id=public.p2_id(81)")),candidateStartVersion+1);
+ assert.equal(Number(db("select count(*) from public.encounter_combat_log "+
+  "where event_type='core_action'")),candidateStartLog+1);
+ assert.equal(db("select requested_by from public.encounter_command_requests "+
+  "where request_id='"+candidateReq+"'"),winner.uid);
+ assert.equal(db("select request_intent->>'action' "+
+  "from public.encounter_command_requests "+
+  "where request_id='"+candidateReq+"'"),"dash");
+ for(const [who,action,req,reason] of [
+  [loser,"dash",candidateReq,"different requester"],
+  [winner,"dodge",candidateReq,"changed action"],
+  [winner,"dash",coreRequest,"legacy null intent"]
+ ]){
+  const denied=await candidateCall(who,action,req);
+  assert.equal(denied.error?.code,"42501",
+   "Private candidate did not reject "+reason);
+ }
+ // Correctly-shaped but unfinished request fails closed (no pending placeholder).
+ const pendingId=randomUUID();
+ db("insert into public.encounter_command_requests "+
+  "(request_id,encounter_id,participant_id,command_type,requested_by,request_intent) "+
+  "values('"+pendingId+"',public.p2_id(81),public.p2_id(33),"+
+  "'core_action','"+winner.uid+"',"+
+  "jsonb_build_object('version',1,'encounterId',public.p2_id(81),"+
+  "'participantId',public.p2_id(33),"+
+  "'commandType','core_action','action','dash'))");
+ const pending=await candidateCall(winner,"dash",pendingId);
+ assert.equal(pending.error?.code,"55000",
+  "Pending typed request was returned as a completed command");
+ await setGrant(winner,false);
+ await verify(winner,false);
+ const candidateRevoked=await candidateCall(winner,"dash",candidateReq);
+ assert.equal(candidateRevoked.error?.code,"42501",
+  "Revoked owner with unchanged JWT saw completed candidate response");
+ // Two independent controller requests contend for ONE Action, regardless
+ // of their distinct UUIDs. No double-spend / duplicate event / extra ledger.
+ await setGrant(winner,true);
+ db("update public.encounter_participants "+
+  "set action_available=true,movement_bonus_ft=0,disengaged=false,dodging=false "+
+  "where id=public.p2_id(33)");
+ const raceBefore=Number(db("select version from public.encounters "+
+  "where id=public.p2_id(81)"));
+ const raceLogBefore=Number(db("select count(*) from public.encounter_combat_log "+
+  "where event_type='core_action'"));
+ const r1=randomUUID(),r2=randomUUID();
+ const [compA,compB]=await Promise.all([
+  candidateCall(winner,"dodge",r1),
+  candidateCall(loser,"disengage",r2)
+ ]);
+ const wins=[compA,compB].filter(x=>!x.error);
+ const losses=[compA,compB].filter(x=>x.error);
+ assert.equal(wins.length,1,"Different core requests spent same NPC Action twice");
+ assert.equal(losses.length,1);
+ assert.match(losses[0].error.message,/Action already spent/);
+ assert.equal(Number(db("select count(*) from public.encounter_command_requests "+
+  "where request_id in ('"+r1+"','"+r2+"')")),1);
+ assert.equal(Number(db("select count(*) from public.encounter_combat_log "+
+  "where event_type='core_action'")),raceLogBefore+1);
+ assert.equal(Number(db("select version from public.encounters "+
+  "where id=public.p2_id(81)")),raceBefore+1);
+ console.log("PASS LOCAL REAL GoTrue SAFE PRIVATE CORE CANDIDATE: "+
+  "concurrent exact owner replay, typed Dash intent, wrong user/action, "+
+  "legacy/pending/revoked denial and two controllers one Action; "+
+  "public old core action remains demonstrably unsafe.");
  console.log("PASS LOCAL REAL GoTrue: delegated spell projection (PC/Admin full parity), source confidentiality and definer secret/RPC denial, two-player single-Action race, replay isolation, revoked JWT denied and no ghost editor permission");
 }finally{
  await Promise.allSettled(users.map(x=>x.client.auth.signOut()));
