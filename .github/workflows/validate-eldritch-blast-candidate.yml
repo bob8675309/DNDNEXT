@@ -65,6 +65,11 @@ on:
       - 'docs/Spell_Recipe_P2_Shared_Encounter_Lock_Graph_2026-10-31.md'
       - 'docs/Spell_Recipe_P2_Public_RPC_Lock_Audit_2026-10-31.md'
       - 'sql/candidates/20261031_fire_bolt_transaction_integrated_candidate.sql'
+      - 'sql/candidates/20261101_core_action_encounter_first_private_candidate.sql'
+      - 'scripts/fixtures/encounter_core_action_candidate_pg16_checks.sql'
+      - 'scripts/fixtures/encounter_core_action_candidate_pg17.sql'
+      - 'scripts/validate_encounter_core_action_candidate_p2.mjs'
+      - 'docs/Spell_Recipe_P2_Core_Action_Candidate_2026-11-01.md'
       - 'sql/candidates/20261031_fire_bolt_guarded_replay_candidate.sql'
       - 'docs/Spell_Recipe_P2_Shadow_Parity_2026-10-31.md'
       - 'docs/Spell_Recipe_P2_Fire_Bolt_Authority_2026-10-31.md'
@@ -108,6 +113,7 @@ jobs:
       - run: node scripts/validate_spell_cast_rpc_inventory_p2.mjs
       - run: node scripts/validate_encounter_shared_lock_audit_p2.mjs
       - run: node scripts/validate_encounter_command_replay_baseline_p2.mjs
+      - run: node scripts/validate_encounter_core_action_candidate_p2.mjs
       - run: node scripts/validate_encounter_nonledger_resource_p2.mjs
       - run: node scripts/validate_npc_delegated_control_p2.mjs
       - run: node scripts/validate_npc_tactical_spell_profile_p2.mjs
@@ -161,4 +167,6 @@ jobs:
         run: psql -X -v ON_ERROR_STOP=1 -d fire_bolt_p2 -f scripts/fixtures/npc_delegated_control_p2_pg16_checks.sql
       - name: Two-player delegated companion cast race and revoked replay (mock Auth only)
         run: PGDATABASE=fire_bolt_p2 bash scripts/fixtures/npc_delegated_control_attack_race_p2_pg16.sh
+      - name: Private encounter-first core-action effects and replay in isolated PostgreSQL 16
+        run: psql -X -v ON_ERROR_STOP=1 -d fire_bolt_p2 -f scripts/fixtures/encounter_core_action_candidate_pg16_checks.sql
 
