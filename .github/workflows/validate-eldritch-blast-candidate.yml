@@ -26,6 +26,8 @@ on:
       - 'scripts/fixtures/fire_bolt_p2_disposable_pg16.sql'
       - 'scripts/fixtures/fire_bolt_p2_disposable_pg16_checks.sql'
       - 'scripts/fixtures/fire_bolt_p2_guarded_candidate_pg16_checks.sql'
+      - 'scripts/fixtures/fire_bolt_p2_transaction_candidate_pg16_checks.sql'
+      - 'sql/candidates/20261031_fire_bolt_transaction_integrated_candidate.sql'
       - 'sql/candidates/20261031_fire_bolt_guarded_replay_candidate.sql'
       - 'docs/Spell_Recipe_P2_Shadow_Parity_2026-10-31.md'
       - 'docs/Spell_Recipe_P2_Fire_Bolt_Authority_2026-10-31.md'
@@ -102,4 +104,5 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -d fire_bolt_p2 -f scripts/fixtures/fire_bolt_p2_disposable_pg16.sql
           psql -X -v ON_ERROR_STOP=1 -d fire_bolt_p2 -f scripts/fixtures/fire_bolt_p2_disposable_pg16_checks.sql
           psql -X -v ON_ERROR_STOP=1 -d fire_bolt_p2 -f scripts/fixtures/fire_bolt_p2_guarded_candidate_pg16_checks.sql
+          psql -X -v ON_ERROR_STOP=1 -d fire_bolt_p2 -f scripts/fixtures/fire_bolt_p2_transaction_candidate_pg16_checks.sql
 
