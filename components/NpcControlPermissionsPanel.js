@@ -123,6 +123,8 @@ export default function NpcControlPermissionsPanel({ characterId, isAdmin = fals
           const legacyEdit = Boolean(grant?.can_edit);
           const direct = directlyAssigned.has(player.id);
           const busy = busyUser === player.id;
+          const effectiveControl = granted || legacyEdit || direct;
+          const status = granted ? "Delegated ON" : effectiveControl ? "Other access" : "No access";
           return (
             <div key={player.id} className="d-flex justify-content-between align-items-center gap-2 py-2 border-top border-secondary">
               <div className="small">
@@ -138,19 +140,20 @@ export default function NpcControlPermissionsPanel({ characterId, isAdmin = fals
                 <input
                   className="form-check-input"
                   type="checkbox"
-                  aria-label={"Allow " + player.name + " to control this NPC"}
+                  aria-label={"Delegated NPC combat permission for " + player.name}
                   checked={granted}
                   disabled={Boolean(busyUser) || loading}
                   onChange={event => { void setControl(player.id, event.target.checked); }}
                 />
-                <span className="form-check-label small">{busy ? "Saving…" : granted ? "Granted" : "Off"}</span>
+                <span className="form-check-label small">{busy ? "Saving…" : status}</span>
               </label>
             </div>
           );
         })}
         <p className="small text-secondary mt-2 mb-0">
-          Turning this switch off revokes this delegated grant only. Existing sheet-edit rights
-          and direct encounter-controller assignments remain effective until changed separately.
+          This switch changes only delegated NPC battle-control permission. An "Other access" label means
+          the player can still control the NPC through sheet editing or an encounter-specific assignment.
+          Revoke those rights separately when complete control removal is intended.
         </p>
       </div>
     </section>
