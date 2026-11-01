@@ -92,6 +92,20 @@ for(const actor of [a,b]){
     {p_participant_id:participant});
   if(error||data!==false)
     throw new Error("Already controls NPC before opt-in: "+actor.label);
+  // The private encounter actor must not be visible BEFORE an assignment.
+  const {data:beforeRows,error:beforeError}=await actor.client
+    .from("encounter_participants").select("id").eq("id",participant);
+  if(beforeError||!Array.isArray(beforeRows)||beforeRows.length!==0)
+    throw new Error("Hidden NPC exposed before a delegated grant: "+actor.label);
+  // An ordinary authenticated player may neither grant nor revoke NPC access.
+  // A failed RPC is required; a successful no-op is not sufficient evidence.
+  for(const requested of [true,false]){
+    const {error:attemptError}=await actor.client.rpc("admin_set_npc_control_v1",{
+      p_character_id:npc,p_user_id:actor.uid,p_can_control:requested
+    });
+    if(!attemptError)
+      throw new Error("Non-Admin changed NPC permission: "+actor.label);
+  }
 }
 async function assign(actor,flag){
   const {data,error}=await admin.client.rpc("admin_set_npc_control_v1",{
@@ -116,11 +130,18 @@ let changed=false;
 try{
   await assign(a,true);
   changed=true;
+  await Promise.all([verify(a,true),verify(b,false)]);
   await assign(b,true);
   await Promise.all([verify(a,true),verify(b,true)]);
   await assign(a,false);
   await Promise.all([verify(a,false),verify(b,true)]);
-  console.log("PASS: real signed-in Admin granted 2 players one hidden NPC, revoked one, and server RLS preserved the other");
+  // A revoked player cannot use the Admin RPC to undo the revocation.
+  const {error:regrantError}=await a.client.rpc("admin_set_npc_control_v1",{
+    p_character_id:npc,p_user_id:a.uid,p_can_control:true
+  });
+  if(!regrantError) throw new Error("Revoked player regranted own NPC control");
+  await verify(a,false);
+  console.log("PASS: genuine Admin granted two separate players one hidden NPC; non-Admin grants denied; A's revocation removed visibility and control while B retained both");
 }finally{
   if(changed){
     const cleanups=await Promise.allSettled([assign(a,false),assign(b,false)]);
