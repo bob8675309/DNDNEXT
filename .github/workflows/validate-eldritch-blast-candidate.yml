@@ -31,6 +31,10 @@ on:
       - 'scripts/fixtures/spell_cast_rpc_live_snapshot_p2.mjs'
       - 'scripts/validate_spell_cast_rpc_inventory_p2.mjs'
       - 'scripts/audits/spell_cast_rpc_order_readonly.sql'
+      - 'scripts/fixtures/encounter_nonspell_ledger_live_snapshot_p2.mjs'
+      - 'scripts/validate_encounter_shared_lock_audit_p2.mjs'
+      - 'scripts/fixtures/encounter_global_lock_order_p2_pg16.sh'
+      - 'docs/Spell_Recipe_P2_Shared_Encounter_Lock_Graph_2026-10-31.md'
       - 'docs/Spell_Recipe_P2_Public_RPC_Lock_Audit_2026-10-31.md'
       - 'sql/candidates/20261031_fire_bolt_transaction_integrated_candidate.sql'
       - 'sql/candidates/20261031_fire_bolt_guarded_replay_candidate.sql'
@@ -74,6 +78,7 @@ jobs:
       - run: node scripts/validate_spell_recipe_p2_shadow_contracts.mjs
       - run: node scripts/validate_spell_recipe_p2_fire_bolt_shadow.mjs
       - run: node scripts/validate_spell_cast_rpc_inventory_p2.mjs
+      - run: node scripts/validate_encounter_shared_lock_audit_p2.mjs
       - run: node --check scripts/test_eldritch_blast_real_auth.mjs
       - run: node scripts/validate_eldritch_blast_auth_harness.mjs
       - run: node scripts/validate_eldritch_blast_signed_in_assertions.mjs
@@ -114,4 +119,6 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -d fire_bolt_p2 -f scripts/fixtures/fire_bolt_p2_transaction_candidate_pg16_checks.sql
       - name: Concurrent identical and competing Fire Bolt transaction candidates (disposable only)
         run: PGDATABASE=fire_bolt_p2 bash scripts/fixtures/fire_bolt_p2_transaction_candidate_race.sh
+      - name: Encounter-first lock-order miniature, isolated from live RPCs
+        run: PGDATABASE=fire_bolt_p2 bash scripts/fixtures/encounter_global_lock_order_p2_pg16.sh
 
