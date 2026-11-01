@@ -30,7 +30,7 @@ create function public.is_admin(p_user_id uuid) returns boolean language sql sta
 as $f$select false$f$;
 
 create table public.characters(id uuid primary key);
-create table public.class_catalog(id uuid primary key,class_name text,class_key text,spellcasting_ability text);
+create table public.class_catalog(id uuid primary key,class_name text,class_key text,spellcasting_ability text,source text);
 create table public.character_progression(
   character_id uuid primary key references public.characters(id),class_id uuid,
   class_level integer not null check(class_level between 1 and 20)
@@ -142,7 +142,7 @@ create function public.encounter_cast_spell_v10(
 begin raise exception 'Unreviewed spell denied in disposable P2 fixture'; end $f$;
 
 insert into public.characters(id) values(public.p2_id(31));
-insert into public.class_catalog values(public.p2_id(71),'Wizard','wizard','int');
+insert into public.class_catalog values(public.p2_id(71),'Wizard','wizard','int','XPHB');
 insert into public.character_progression values(public.p2_id(31),public.p2_id(71),5);
 insert into public.spells_catalog values(public.p2_id(61),'fire-bolt|XPHB','Fire Bolt','XPHB',0,
   array['Wizard','Sorcerer','Artificer']);
@@ -153,7 +153,9 @@ insert into public.character_spells values
    'feat','magic-initiate','magic-initiate',true,true,false,'int',null),
   -- Deliberately invalid imported grant, isolated to this test DB.
   (public.p2_id(53),public.p2_id(31),public.p2_id(61),
-   'class','cleric','cleric',false,false,false,'int',null);
+   'class','cleric','cleric',false,false,false,'int',null),
+  (public.p2_id(54),public.p2_id(31),public.p2_id(61),
+   'class','cleric','cleric',true,true,false,'int',null);
 insert into public.encounters values(public.p2_id(81),'active',public.p2_id(11),1,0,1,now());
 insert into public.encounter_participants(
   id,encounter_id,character_id,controller_user_id,display_name,team,q,r,
@@ -162,7 +164,9 @@ insert into public.encounter_participants(
   (public.p2_id(11),public.p2_id(81),public.p2_id(31),public.p2_id(41),
    'Research Wizard','allies',0,0,14,100,true),
   (public.p2_id(21),public.p2_id(81),null,public.p2_id(42),
-   'Research Target','enemies',3,0,14,100,true);
+   'Research Target','enemies',3,0,14,100,true),
+  (public.p2_id(22),public.p2_id(81),null,public.p2_id(42),
+   'Other Research Target','enemies',4,0,14,100,true);
 
 -- Import the actual repository SQL function rather than rewriting its
 -- decision tree in this fixture. Later live v11 is a wrapper of this body.
