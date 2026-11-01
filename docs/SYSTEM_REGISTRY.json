@@ -1,0 +1,561 @@
+{
+  "schema_version": 2,
+  "evidence_levels": [
+    "source-inspected",
+    "live-db-read",
+    "production-deployment-sha",
+    "static-validator-file-exists",
+    "executable-assertions-inspected",
+    "isolated-jwt-test-reported",
+    "owner-browser-accepted",
+    "research-pr-only",
+    "not-yet-verified"
+  ],
+  "disclaimer": "Evidence is per-surface. A source file or production SHA does not imply browser acceptance or complete mechanical behavior; tests require exact run SHA and result to claim passing.",
+  "systems": [
+    {
+      "id": "alchemy-v10",
+      "status": "source-db-deployed",
+      "code_paths": [
+        "public/items/alchemy-catalog.json",
+        "sql/20260612_20_alchemy_v10_recipes.sql",
+        "sql/20260612_30_alchemy_v10_catalog.sql"
+      ],
+      "tests": [],
+      "last_checked": "2026-11-01",
+      "open_gaps": [
+        "Old seed script header says v8 despite reading v10 source; sample does not prove universal catalog parity."
+      ],
+      "label": "Alchemy v10 catalogue and potions",
+      "scope_note": "v10 master catalogue, v10 SQL recipes and sampled live v10 potions / 3d6 breath rules.",
+      "verification": {
+        "source": "inspected-relevant-entry-points-on-main",
+        "live_database": "sampled-read-only",
+        "deployed_sha": "main-sha-matches-ready-vercel",
+        "test_status": "no-current-test-run-claimed",
+        "browser_acceptance": "unverified-this-audit",
+        "owner_approval": "not-claimed-from-source-or-ci"
+      },
+      "protected_boundaries": [
+        "No production SQL changes, grants, merge, or deployment without owner approval"
+      ]
+    },
+    {
+      "id": "character-forge",
+      "status": "source-deployed",
+      "code_paths": [
+        "components/NewNpcModalV3Refined.js",
+        "components/NpcForgeTrainingStepPlayerTabbed.js",
+        "components/PlayerCharacterForgeView.js"
+      ],
+      "tests": [
+        "scripts/validate_unified_character_forge.mjs"
+      ],
+      "last_checked": "2026-11-01",
+      "open_gaps": [
+        "Browser acceptance must be tied to specific scoped flows; not blanket proof of all source traits."
+      ],
+      "label": "Player/NPC character Forge",
+      "scope_note": "Large source-aware Forge, progression and choice-routing implementation on main.",
+      "verification": {
+        "source": "inspected-relevant-entry-points-on-main",
+        "live_database": "not-specific-to-surface",
+        "deployed_sha": "main-sha-matches-ready-vercel",
+        "test_status": "test-source-inspected-not-reexecuted",
+        "browser_acceptance": "unverified-this-audit",
+        "owner_approval": "not-claimed-from-source-or-ci"
+      },
+      "protected_boundaries": [
+        "No production SQL changes, grants, merge, or deployment without owner approval"
+      ]
+    },
+    {
+      "id": "composable-spell-recipes",
+      "status": "research-only",
+      "code_paths": [
+        "docs/SPELL_ENGINE_DECISIONS.md",
+        "docs/Spell_Recipe_P1_Schema_2026-10-31.md"
+      ],
+      "tests": [],
+      "last_checked": "2026-11-01",
+      "open_gaps": [
+        "No recipe interpreter or candidate private executor installed in production."
+      ],
+      "label": "Composable tactical spell recipe research",
+      "scope_note": "P1 research on #309 and P2 private shadow/core-action work on stacked #312.",
+      "verification": {
+        "source": "inspected-relevant-entry-points-on-main",
+        "live_database": "not-specific-to-surface",
+        "deployed_sha": "not-deployed-research-or-future",
+        "test_status": "no-current-test-run-claimed",
+        "browser_acceptance": "unverified-this-audit",
+        "owner_approval": "not-claimed-from-source-or-ci"
+      },
+      "protected_boundaries": [
+        "No production SQL changes, grants, merge, or deployment without owner approval",
+        "Server-authoritative actions/resources/damage/targeting; source-qualified mechanics"
+      ]
+    },
+    {
+      "id": "core-action-replay-hardening",
+      "status": "research-only",
+      "code_paths": [
+        "pages/encounters/combat.js",
+        "sql/20260727_06_core_combat_actions.sql"
+      ],
+      "tests": [],
+      "last_checked": "2026-11-01",
+      "open_gaps": [
+        "Global lock ordering, typed intent/replay binding, revocation, all writers and production cutover unresolved."
+      ],
+      "label": "Combat replay authorization",
+      "scope_note": "Private candidate executor tested on held PR #312; public legacy RPC still has early replay shortcut.",
+      "verification": {
+        "source": "inspected-relevant-entry-points-on-main",
+        "live_database": "sampled-read-only",
+        "deployed_sha": "not-deployed-research-or-future",
+        "test_status": "no-current-test-run-claimed",
+        "browser_acceptance": "unverified-this-audit",
+        "owner_approval": "not-claimed-from-source-or-ci"
+      },
+      "protected_boundaries": [
+        "No production SQL changes, grants, merge, or deployment without owner approval",
+        "Server-authoritative actions/resources/damage/targeting; source-qualified mechanics"
+      ]
+    },
+    {
+      "id": "craft-merchant-stock",
+      "label": "Crafting and merchant economy",
+      "status": "source-db-deployed",
+      "scope_note": "Shared crafting workspaces, merchant-stock pricing and finalized v10 alchemy presentation have active source+database authorities.",
+      "code_paths": [
+        "components/CraftingWorkspace.js",
+        "components/MerchantPanel.js",
+        "sql/20261016_04_merchant_alchemy_final_stats_pricing.sql"
+      ],
+      "tests": [
+        "scripts/validate_merchant_crafted_pricing.mjs"
+      ],
+      "last_checked": "2026-11-01",
+      "verification": {
+        "source": "inspected-relevant-entry-points-on-main",
+        "live_database": "market stock and alchemy catalog sampled",
+        "deployed_sha": "main-sha-matches-ready-vercel",
+        "test_status": "test-source-inspected-not-reexecuted",
+        "browser_acceptance": "unverified-this-audit",
+        "owner_approval": "not-claimed-from-source-or-ci"
+      },
+      "open_gaps": [
+        "Avoid changes to craft price formulas while refactoring combat or item-effect resolution."
+      ],
+      "protected_boundaries": [
+        "Server transactional commerce/inventory, no client-side source of truth"
+      ]
+    },
+    {
+      "id": "encounter-workspace",
+      "status": "source-deployed",
+      "code_paths": [
+        "pages/encounters/live.js",
+        "pages/encounters/play.js",
+        "pages/encounters/workspace.js"
+      ],
+      "tests": [
+        "scripts/validate_unified_encounter_workspace.mjs"
+      ],
+      "last_checked": "2026-11-01",
+      "open_gaps": [
+        "Full signed-in multi-user browser acceptance not re-established in this audit."
+      ],
+      "label": "Unified encounter workspace",
+      "scope_note": "Merged PR #301 interactive routing across staging, movement, combat and tactical map workshop.",
+      "verification": {
+        "source": "inspected-relevant-entry-points-on-main",
+        "live_database": "not-specific-to-surface",
+        "deployed_sha": "main-sha-matches-ready-vercel",
+        "test_status": "test-source-inspected-not-reexecuted",
+        "browser_acceptance": "unverified-this-audit",
+        "owner_approval": "not-claimed-from-source-or-ci"
+      },
+      "protected_boundaries": [
+        "No production SQL changes, grants, merge, or deployment without owner approval"
+      ]
+    },
+    {
+      "id": "forge-cube-dice",
+      "status": "source-deployed",
+      "code_paths": [
+        "components/dice/RealisticDiceTray.js",
+        "components/dice/adapters/ForgeAbilityDiceTray.js",
+        "utils/dice/physics/dicePhysicsEngine.js"
+      ],
+      "tests": [
+        "scripts/validate_realistic_dice_physics.mjs"
+      ],
+      "last_checked": "2026-11-01",
+      "open_gaps": [
+        "Not the full physical polyhedral set and not sitewide dice adapters."
+      ],
+      "label": "Forge cube dice",
+      "scope_note": "Seeded 2.5D cube-only physics tray with manual repositioning and Forge result adapter.",
+      "verification": {
+        "source": "inspected-relevant-entry-points-on-main",
+        "live_database": "not-specific-to-surface",
+        "deployed_sha": "main-sha-matches-ready-vercel",
+        "test_status": "test-source-inspected-not-reexecuted",
+        "browser_acceptance": "unverified-this-audit",
+        "owner_approval": "not-claimed-from-source-or-ci"
+      },
+      "protected_boundaries": [
+        "No production SQL changes, grants, merge, or deployment without owner approval",
+        "Do not change world-map travel/camping/weather or mix world/town and tactical maps"
+      ]
+    },
+    {
+      "id": "full-polyhedral-dice",
+      "status": "planned",
+      "code_paths": [
+        "docs/Realistic_Dice_Roller_Architecture_Roadmap.md",
+        "utils/dice/diceTypes.js"
+      ],
+      "tests": [],
+      "last_checked": "2026-11-01",
+      "open_gaps": [
+        "2.5D cube renderer must not be mistaken for the polyhedral completion milestone."
+      ],
+      "label": "Full realistic polyhedral dice",
+      "scope_note": "Roadmap targets real d4/d6/d8/d10/d12/d20 rigid bodies.",
+      "verification": {
+        "source": "inspected-relevant-entry-points-on-main",
+        "live_database": "not-specific-to-surface",
+        "deployed_sha": "not-deployed-research-or-future",
+        "test_status": "no-current-test-run-claimed",
+        "browser_acceptance": "unverified-this-audit",
+        "owner_approval": "not-claimed-from-source-or-ci"
+      },
+      "protected_boundaries": [
+        "No production SQL changes, grants, merge, or deployment without owner approval"
+      ]
+    },
+    {
+      "id": "npc-portrait-library",
+      "status": "source-db-deployed",
+      "code_paths": [
+        "components/NpcForgePortraitPickerModal.js",
+        "components/PortraitLibraryFilterPanel.js",
+        "components/PortraitPickerModal.js"
+      ],
+      "tests": [
+        "scripts/validate_portrait_library_browser.mjs"
+      ],
+      "last_checked": "2026-11-01",
+      "open_gaps": [
+        "Verify role-specific portrait selection and assignment in browser when changing it."
+      ],
+      "label": "NPC portrait library",
+      "scope_note": "Shared source picker and live library (241 rows observed).",
+      "verification": {
+        "source": "inspected-relevant-entry-points-on-main",
+        "live_database": "sampled-read-only",
+        "deployed_sha": "main-sha-matches-ready-vercel",
+        "test_status": "test-source-inspected-not-reexecuted",
+        "browser_acceptance": "unverified-this-audit",
+        "owner_approval": "not-claimed-from-source-or-ci"
+      },
+      "protected_boundaries": [
+        "No production SQL changes, grants, merge, or deployment without owner approval"
+      ]
+    },
+    {
+      "id": "printable-sheets",
+      "status": "source-deployed",
+      "code_paths": [
+        "components/CharacterSheetPanel.js",
+        "utils/officialCharacterSheetPdf.js",
+        "utils/printableCharacterSheet.js"
+      ],
+      "tests": [
+        "scripts/validate_printable_character_sheet.mjs"
+      ],
+      "last_checked": "2026-11-01",
+      "open_gaps": [
+        "Printer may display maximum spell slots rather than the persisted remaining resource ledger; verify separate fidelity requirement."
+      ],
+      "label": "NPC character sheets",
+      "scope_note": "CharacterSheetPanel generates the official three-page PDF using already authorized NPC data; no independent DB reads.",
+      "verification": {
+        "source": "inspected-relevant-entry-points-on-main",
+        "live_database": "not-specific-to-surface",
+        "deployed_sha": "main-sha-matches-ready-vercel",
+        "test_status": "test-source-inspected-not-reexecuted",
+        "browser_acceptance": "unverified-this-audit",
+        "owner_approval": "not-claimed-from-source-or-ci"
+      },
+      "protected_boundaries": [
+        "No production SQL changes, grants, merge, or deployment without owner approval"
+      ]
+    },
+    {
+      "id": "rest-dialog",
+      "status": "partial-feature-deployed",
+      "code_paths": [
+        "components/CharacterRestActivityDialog.js",
+        "components/CharacterSheetResourceTracker.js",
+        "sql/20260810_90_rest_class_feature_restoration.sql"
+      ],
+      "tests": [
+        "scripts/validate_player_rest_buttons.mjs"
+      ],
+      "last_checked": "2026-11-01",
+      "open_gaps": [
+        "Crafting and Attunement rest activities remain disabled pending separate approved contracts."
+      ],
+      "label": "Rest and downtime dialog",
+      "scope_note": "Rest & Recover is wired to existing rest authority.",
+      "verification": {
+        "source": "inspected-relevant-entry-points-on-main",
+        "live_database": "not-specific-to-surface",
+        "deployed_sha": "main-sha-matches-ready-vercel",
+        "test_status": "test-source-inspected-not-reexecuted",
+        "browser_acceptance": "unverified-this-audit",
+        "owner_approval": "not-claimed-from-source-or-ci"
+      },
+      "protected_boundaries": [
+        "No production SQL changes, grants, merge, or deployment without owner approval"
+      ]
+    },
+    {
+      "id": "runtime-feature-tactical-parity",
+      "status": "downstream-gap",
+      "code_paths": [
+        "components/CharacterDreadAllegiancePanel.js",
+        "components/CharacterFiendishResiliencePanel.js",
+        "docs/Character_Effects_Cross_Conversation_Requirements_Audit_2026-10-24.md"
+      ],
+      "tests": [],
+      "last_checked": "2026-11-01",
+      "open_gaps": [
+        "Trace actual damage consumers, expiry and source correctness before changing tactical behavior."
+      ],
+      "label": "Runtime class feature effects",
+      "scope_note": "Live runtime selection helpers and UI exist; shared damage function does not consume runtime resistance helper.",
+      "verification": {
+        "source": "inspected-relevant-entry-points-on-main",
+        "live_database": "sampled-read-only",
+        "deployed_sha": "main-sha-matches-ready-vercel",
+        "test_status": "no-current-test-run-claimed",
+        "browser_acceptance": "unverified-this-audit",
+        "owner_approval": "not-claimed-from-source-or-ci"
+      },
+      "protected_boundaries": [
+        "No production SQL changes, grants, merge, or deployment without owner approval",
+        "Server-authoritative actions/resources/damage/targeting; source-qualified mechanics"
+      ]
+    },
+    {
+      "id": "sprite-production-art",
+      "status": "visual-acceptance-pending",
+      "code_paths": [
+        "docs/Sprite_Production_Work_Map.md",
+        "tools/blender/dndnext_sprite_export_runner.py"
+      ],
+      "tests": [],
+      "last_checked": "2026-11-01",
+      "open_gaps": [
+        "Dawn quality-source South-facing prototype not approved; avoid producing full atlas prematurely."
+      ],
+      "label": "Tactical sprite production",
+      "scope_note": "Blender isolated render/export and automated QA have been proven.",
+      "verification": {
+        "source": "inspected-relevant-entry-points-on-main",
+        "live_database": "not-specific-to-surface",
+        "deployed_sha": "main-sha-matches-ready-vercel",
+        "test_status": "no-current-test-run-claimed",
+        "browser_acceptance": "unverified-this-audit",
+        "owner_approval": "not-claimed-from-source-or-ci"
+      },
+      "protected_boundaries": [
+        "No production SQL changes, grants, merge, or deployment without owner approval",
+        "Do not change world-map travel/camping/weather or mix world/town and tactical maps"
+      ]
+    },
+    {
+      "id": "standalone-sheet-resources",
+      "label": "Standalone resources and rests",
+      "status": "source-db-deployed",
+      "scope_note": "Persistent per-character spell slot/uses ledger, resource UI and rest guard exist; encounter snapshots remain separate.",
+      "code_paths": [
+        "components/CharacterSheetResourceTracker.js",
+        "components/CharacterSheetRestSyncBridge.js",
+        "hooks/useNpcSheetActionData.js"
+      ],
+      "tests": [
+        "scripts/validate_player_rest_buttons.mjs"
+      ],
+      "last_checked": "2026-11-01",
+      "verification": {
+        "source": "inspected-relevant-entry-points-on-main",
+        "live_database": "public.character_spell_slots and character_rest_log tables inspected",
+        "deployed_sha": "main-sha-matches-ready-vercel",
+        "test_status": "test-source-inspected-not-reexecuted",
+        "browser_acceptance": "unverified-this-audit",
+        "owner_approval": "not-claimed-from-source-or-ci"
+      },
+      "open_gaps": [
+        "Explicit shared-character-in-two-active-encounters resource policy unresolved."
+      ],
+      "protected_boundaries": [
+        "Do not mix live ledger with encounter spell-slot snapshot without reviewed transactional contract"
+      ]
+    },
+    {
+      "id": "supabase-security",
+      "label": "Supabase authorization and RLS",
+      "status": "security-review-needed",
+      "scope_note": "Most public tables have RLS; advisor flagged 12 anonymous SECURITY DEFINER EXECUTE privileges and mutable search_path on private normalization helper.",
+      "code_paths": [
+        "utils/supabaseClient.js",
+        "docs/Security_Hardening_Roadmap_Status.md"
+      ],
+      "tests": [
+        "scripts/validate_security_hardening_roadmap.mjs"
+      ],
+      "last_checked": "2026-11-01",
+      "verification": {
+        "source": "inspected-relevant-entry-points-on-main",
+        "live_database": "read-only security advisor and function definition",
+        "deployed_sha": "not-applicable-to-future-security-research",
+        "test_status": "test-source-inspected-not-reexecuted",
+        "browser_acceptance": "unverified-this-audit",
+        "owner_approval": "not-claimed-from-source-or-ci"
+      },
+      "open_gaps": [
+        "Authorize or revoke each function only after caller, RLS, and intended access review."
+      ],
+      "protected_boundaries": [
+        "Never blanket-revoke grants or assume private table RLS warning is externally exposed without verification"
+      ]
+    },
+    {
+      "id": "tactical-equipped-mitigation",
+      "status": "source-db-deployed",
+      "code_paths": [
+        "sql/20261016_07_equipped_item_damage_mitigation.sql",
+        "sql/20261016_08_resistance_before_flat_reduction.sql",
+        "utils/authoritativeEquipmentEffects.js"
+      ],
+      "tests": [
+        "scripts/validate_tactical_equipped_damage_mitigation.mjs"
+      ],
+      "last_checked": "2026-11-01",
+      "open_gaps": [
+        "Preserve server ordering; do not duplicate or bypass during effects work."
+      ],
+      "label": "Equipped-item tactical mitigation",
+      "scope_note": "Live shared damage RPC invokes equipped-item mitigation helper.",
+      "verification": {
+        "source": "inspected-relevant-entry-points-on-main",
+        "live_database": "sampled-read-only",
+        "deployed_sha": "main-sha-matches-ready-vercel",
+        "test_status": "test-source-inspected-not-reexecuted",
+        "browser_acceptance": "unverified-this-audit",
+        "owner_approval": "not-claimed-from-source-or-ci"
+      },
+      "protected_boundaries": [
+        "No production SQL changes, grants, merge, or deployment without owner approval"
+      ]
+    },
+    {
+      "id": "tactical-spells-19",
+      "status": "source-deployed",
+      "code_paths": [
+        "pages/encounters/combat.js",
+        "scripts/validate_tactical_spell_suite.mjs"
+      ],
+      "tests": [],
+      "last_checked": "2026-11-01",
+      "open_gaps": [
+        "Does not implement arbitrary spells, source-agnostic fallback or a full composable interpreter."
+      ],
+      "label": "XPHB tactical spell adapters",
+      "scope_note": "Nineteen explicit source-qualified spell keys in production combat component.",
+      "verification": {
+        "source": "inspected-relevant-entry-points-on-main",
+        "live_database": "not-specific-to-surface",
+        "deployed_sha": "main-sha-matches-ready-vercel",
+        "test_status": "no-current-test-run-claimed",
+        "browser_acceptance": "unverified-this-audit",
+        "owner_approval": "not-claimed-from-source-or-ci"
+      },
+      "protected_boundaries": [
+        "No production SQL changes, grants, merge, or deployment without owner approval",
+        "Server-authoritative actions/resources/damage/targeting; source-qualified mechanics"
+      ]
+    },
+    {
+      "id": "world-town-map",
+      "status": "protected-production",
+      "code_paths": [
+        "components/MapPageClient.js",
+        "pages/map.js",
+        "pages/town/[id].js"
+      ],
+      "tests": [],
+      "last_checked": "2026-11-01",
+      "open_gaps": [
+        "Do not change world map or conflate tactical grid movement with world travel."
+      ],
+      "label": "World and town map boundaries",
+      "scope_note": "Independent world map and town/city map surfaces exist.",
+      "verification": {
+        "source": "inspected-relevant-entry-points-on-main",
+        "live_database": "not-specific-to-surface",
+        "deployed_sha": "main-sha-matches-ready-vercel",
+        "test_status": "no-current-test-run-claimed",
+        "browser_acceptance": "unverified-this-audit",
+        "owner_approval": "not-claimed-from-source-or-ci"
+      },
+      "protected_boundaries": [
+        "No production SQL changes, grants, merge, or deployment without owner approval",
+        "Do not change world-map travel/camping/weather or mix world/town and tactical maps"
+      ]
+    }
+  ],
+  "research": {
+    "pull_requests": [
+      {
+        "number": 309,
+        "state": "open-draft-unmerged",
+        "head_sha": "a24006624380570bd693a768e97a0c689f1d42b5",
+        "base": "work/consolidated-encounter-research-20261030"
+      },
+      {
+        "number": 312,
+        "state": "open-draft-unmerged",
+        "head_sha": "26d2f278b9e85e8fc0b0c04307b7a87bdd2e8254",
+        "base": "work/eldritch-blast-los-regression-20261030"
+      }
+    ],
+    "deployed": "No candidate executor, typed request intent migration, or new composable spell interpreter deployed at last check."
+  },
+  "live_safety_observations": {
+    "date": "2026-11-01",
+    "core_action_legacy_replay_gap": "confirmed-live-function-code",
+    "active_encounters_count": 2,
+    "actors_in_multiple_active_encounters": 1,
+    "request_intent_column_present": false,
+    "character_can_control_column_present": false,
+    "security_definer_anon_advisor_count": 12,
+    "db_writes": "none",
+    "caveat": "Point-in-time read-only observation; no actual exploit attempt on live production."
+  },
+  "snapshot": {
+    "observed_on": "2026-11-01",
+    "repository": "bob8675309/DNDNEXT",
+    "main_sha": "eb376a4e3a7b0a7201a0ecb8a98366c1bba4e00a",
+    "production_deployment_id": "dpl_AxNyb2EhSRHNjz4U6Wjoz5ZHG6Ku",
+    "production_deployment_status": "READY",
+    "database_project": "ucggczovhmauhshvhusx",
+    "limits": "This registry indexes verified source and sampled live database state; no new browser acceptance or validator run was made during the 2026-11-01 audit. Re-verify before use."
+  }
+}

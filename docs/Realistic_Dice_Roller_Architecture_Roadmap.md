@@ -1,8 +1,10 @@
 # Realistic Dice Roller — Architecture, Integration, and Future Roadmap
 
+> **2026-11-01 verified-project-state routing update:** `components/dice/RealisticDiceTray.js`, `components/dice/adapters/ForgeAbilityDiceTray.js`, `utils/dice/physics/dicePhysicsEngine.js`, and result/seed helpers form a working source-connected **2.5D cube** simulation in the Forge. Collision/settling/drag code and `scripts/validate_realistic_dice_core.mjs` / `scripts/validate_realistic_dice_physics.mjs` exist; the numerical script contains 500 six-die test cases. The feature is deployed in `main` source, not merely a prototype waiting to be built. However, the `d4/d8/d10/d12/d20` polyhedral rendering and full Character Sheet/tactical adapters described in this future roadmap are **not established** by that cube implementation. No new browser acceptance was performed during this audit.
+
 Updated: 2026-08-30
 
-Status: **planned reusable subsystem; architecture agreed; implementation intentionally not started in this documentation pass.**
+Status: **reusable seeded cube/Forge dice subsystem implemented in production source**; full polyhedral physics and sitewide dice adapters remain separate planned phases. The original 2026-08-30 architecture below is historical where it describes implementation as not started.
 
 This document is the controlling handoff for the planned DNDNext **Realistic Dice Roller**. It exists so a future model can continue the work without reconstructing the design discussion from chat history.
 

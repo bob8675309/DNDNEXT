@@ -1,5 +1,7 @@
 # DNDNext Current Development Status and Roadmap
 
+> **2026-11-01 verified-project-state routing update:** This long roadmap is historical planning context, not the live work queue. Start with [PROJECT_STATE.md](PROJECT_STATE.md), [ACTIVE_WORK.md](ACTIVE_WORK.md), [SYSTEM_REGISTRY.json](SYSTEM_REGISTRY.json), [PHASED_DEVELOPMENT_CHECKLIST.md](PHASED_DEVELOPMENT_CHECKLIST.md), and [HANDOFF_LOG.md](HANDOFF_LOG.md). On verified `main`, official NPC printable sheets and reusable Forge cube dice are already implemented, encounter Workspace/Rest merged in #301, and PR #312 is **research only**. Prior claims that a specific PR is still open or an implemented feature is unfinished are time-stamped and must be checked against code/live DB.
+
 > **2026-10-31 docs-only main promotion:** Stable spell-engine product decisions and developer recovery docs are now on `main` at [START_HERE_ACTIVE_HANDOFF.md](START_HERE_ACTIVE_HANDOFF.md) and [SPELL_ENGINE_DECISIONS.md](SPELL_ENGINE_DECISIONS.md). The new engine is **not deployed**. This document retains dated historical statuses below, including obsolete PR listings; confirm their present GitHub and Supabase state before coding.
 
 

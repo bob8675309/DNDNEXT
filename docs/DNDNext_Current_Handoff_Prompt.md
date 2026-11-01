@@ -1,5 +1,7 @@
 # DNDNext Next-Chat Handoff Brief
 
+> **2026-11-01 verified-project-state routing update:** This is a **historical accumulated handoff**, not the current task registry. Start with [START_HERE_ACTIVE_HANDOFF.md](START_HERE_ACTIVE_HANDOFF.md), [PROJECT_STATE.md](PROJECT_STATE.md), [ACTIVE_WORK.md](ACTIVE_WORK.md), [SYSTEM_REGISTRY.json](SYSTEM_REGISTRY.json), [PHASED_DEVELOPMENT_CHECKLIST.md](PHASED_DEVELOPMENT_CHECKLIST.md), and [HANDOFF_LOG.md](HANDOFF_LOG.md). #301 merged the unified workspace/rest feature; PR #312 now contains held private core-action/P2 research stacked on draft #309; prior “open” assertions about #250/#251/#253/#255/#257 are obsolete. Do not delete this record: it preserves chronology, assumptions and earlier acceptance details.
+
 > **2026-10-31 docs-only main promotion:** The current handoff/decisions/design are now preserved on `main`; **this is not a merge of draft PR #309**. Recover research source from the PR's current head, then verify its branch/base and the current live DB independently. The historical “draft release candidate” paragraph below describes an older unmerged checkpoint; PR #301 later merged the combined workspace/rest work.
 
 
@@ -11,7 +13,7 @@
 
 ## Historical checkpoint — Encounter Workspace + Rest dialog (2026-10-28; subsequently merged through PR #301)
 
-A clean, isolated candidate combines draft PR #300 (unified encounter navigation) and #266 (Camp & Downtime rest dialog) on `main`. This is **not merged or deployed**. It excludes all unfinished experimental combat/attunement branches. GitHub Actions runs both focused validators and a Next.js production build without an intentional Vercel deployment. Browser/admin/player acceptance remains required before any promotion. Details: [Release_Candidate_Encounter_Workspace_Rest_2026-10-28.md](Release_Candidate_Encounter_Workspace_Rest_2026-10-28.md).
+Historical candidate only: the separate #300/#266 drafts were superseded by **merged and deployed PR #301** for the workspace/rest implementation. It excludes all unfinished experimental combat/attunement branches. GitHub Actions runs both focused validators and a Next.js production build without an intentional Vercel deployment. Browser/admin/player acceptance remains required before any promotion. Details: [Release_Candidate_Encounter_Workspace_Rest_2026-10-28.md](Release_Candidate_Encounter_Workspace_Rest_2026-10-28.md).
 
 
 Updated: 2026-10-24

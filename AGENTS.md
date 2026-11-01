@@ -4,6 +4,8 @@
 
 ## Mandatory recovery
 
+> **2026-11-01 verified-project-state routing update:** The durable [project snapshot](docs/PROJECT_STATE.md), [active task](docs/ACTIVE_WORK.md), [system registry](docs/SYSTEM_REGISTRY.json), [document lifecycle](docs/DOCUMENT_LIFECYCLE.md), and [append-only receipts](docs/HANDOFF_LOG.md), and the [phased objective checklist](docs/PHASED_DEVELOPMENT_CHECKLIST.md) now distinguish current source/deployment evidence from historical milestones. Read them after `START_HERE_ACTIVE_HANDOFF.md` and before changing a subsystem. Never treat this dated snapshot as live API state.
+
 1. Read **[docs/START_HERE_ACTIVE_HANDOFF.md](docs/START_HERE_ACTIVE_HANDOFF.md)** first. It contains the current workstream, last dated status snapshot, what is *not* implemented, one next task, links to the relevant SQL and Docs, and the required resumption protocol.
 2. Read **[docs/SPELL_ENGINE_DECISIONS.md](docs/SPELL_ENGINE_DECISIONS.md)** for six owner-approved, durable composable spell-engine decisions. Do not re-ask them without a concrete conflict.
 3. Read **[docs/Spell_Engine_PrePivot_Audit_2026-10-31.md](docs/Spell_Engine_PrePivot_Audit_2026-10-31.md)** and **[docs/Composable_Spell_Engine_AI_Readiness_2026-10-31.md](docs/Composable_Spell_Engine_AI_Readiness_2026-10-31.md)** for scope, existing authorities, uncovered mechanics and future human/AI contract.
