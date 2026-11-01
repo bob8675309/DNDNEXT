@@ -14,7 +14,7 @@ let body=source.slice(from);
 const old="create table public.characters(id uuid primary key,kind text not null default 'npc');";
 assert.ok(body.includes(old));
 body=body.replace(old,
- "create table public.characters(id uuid primary key,kind text not null default 'npc',name text not null default 'Fixture');");
+ "create table public.characters(id uuid primary key,kind text not null default 'npc',name text not null default 'Fixture',is_hidden boolean not null default false);");
 assert.ok(!body.includes("create function auth.uid()") && !body.includes("create function auth.role()"));
 const head=String.raw`
 \set ON_ERROR_STOP on
@@ -73,8 +73,8 @@ revoke all on function public.p2_local_npc_cast(uuid,uuid,uuid,integer,uuid)
  from public,anon,service_role;
 grant execute on function public.p2_local_npc_cast(uuid,uuid,uuid,integer,uuid)
  to authenticated;
-insert into public.characters(id,kind,name)
-values(public.p2_id(32),'npc','NPC CTRL TEST - Local Familiar');
+insert into public.characters(id,kind,name,is_hidden)
+values(public.p2_id(32),'npc','NPC CTRL TEST - Local Familiar',true);
 insert into public.character_progression(character_id,class_id,class_level)
 values(public.p2_id(32),public.p2_id(71),5);
 insert into public.character_spells(
