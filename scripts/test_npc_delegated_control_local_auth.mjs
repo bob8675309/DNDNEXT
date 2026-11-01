@@ -323,6 +323,49 @@ try{
  assert.equal(latent,0,"Editor revocation left ghost permanent NPC control");
  await assertDelegatedProfile(winner,false);
  await verify(loser,true);
+ // LEGACY BASELINE CHARACTERIZATION — NOT A FIX. The next RPC is the
+ // exact live core_action SQL imported in disposable local GoTrue; it must
+ // prove the old cached-result authorization problem under real JWTs.
+ // The same UUID must NEVER be usable as an entitlement by other users.
+ await setGrant(winner,true);
+ const coreRequest=randomUUID();
+ db("update public.encounter_participants "+
+  "set action_available=true,movement_bonus_ft=0,disengaged=false,dodging=false "+
+  "where id=public.p2_id(33)");
+ const coreVersionBefore=Number(db(
+  "select version from public.encounters where id=public.p2_id(81)"));
+ const coreCall=(controller,action)=>controller.client.rpc(
+  "encounter_use_core_action_v1",
+  {p_participant_id:actor,p_action:action,p_request_id:coreRequest});
+ const coreFirst=await coreCall(winner,"dash");
+ assert.ifError(coreFirst.error);
+ assert.equal(coreFirst.data.action,"dash");
+ assert.equal(coreFirst.data.movementBonusFt,30);
+ const otherOwner=await coreCall(loser,"dodge");
+ assert.ifError(otherOwner.error);
+ assert.deepEqual(otherOwner.data,coreFirst.data,
+  "Expected original legacy RPC to incorrectly disclose cached action "+
+  "across genuine signed-in controllers (source behavior characterization)");
+ await setGrant(winner,false);
+ await verify(winner,false);
+ const revokedReplay=await coreCall(winner,"dash");
+ assert.ifError(revokedReplay.error);
+ assert.deepEqual(revokedReplay.data,coreFirst.data,
+  "Original legacy RPC failed to reproduce its post-revocation cached-result leak");
+ assert.equal(Number(db("select version from public.encounters "+
+  "where id=public.p2_id(81)")),coreVersionBefore+1,
+  "Baseline cache replay unexpectedly mutated encounter version");
+ assert.equal(Number(db("select count(*) from public.encounter_combat_log "+
+  "where event_type='core_action'")),1,
+  "Baseline cross-controller replay created extra action logs");
+ assert.equal(db("select requested_by from public.encounter_command_requests "+
+  "where request_id='"+coreRequest+"'"),winner.uid);
+ assert.equal(db("select action_available from public.encounter_participants "+
+  "where id=public.p2_id(33)"),"f");
+ console.log("PASS LOCAL REAL GoTrue LEGACY BASELINE (KNOWN INSECURE): "+
+  "original public core_action leaks same cached result across controllers, "+
+  "ignores changed action and still returns it after revocation; "+
+  "one action/log/version only. No production functions were called.");
  console.log("PASS LOCAL REAL GoTrue: delegated spell projection (PC/Admin full parity), source confidentiality and definer secret/RPC denial, two-player single-Action race, replay isolation, revoked JWT denied and no ghost editor permission");
 }finally{
  await Promise.allSettled(users.map(x=>x.client.auth.signOut()));
