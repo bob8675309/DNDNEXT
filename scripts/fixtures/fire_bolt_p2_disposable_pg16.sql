@@ -4,9 +4,20 @@
 -- neither JWT signature verification nor full Supabase deployed behavior.
 create schema private;
 create schema auth;
-create role anon nologin;
-create role authenticated nologin;
-create role service_role nologin;
+-- PostgreSQL roles are cluster-wide: the separate Eldritch Blast test DB
+-- may already have created these roles. Never redefine or modify them.
+do $roles$
+begin
+  if not exists(select 1 from pg_roles where rolname='anon') then
+    create role anon nologin;
+  end if;
+  if not exists(select 1 from pg_roles where rolname='authenticated') then
+    create role authenticated nologin;
+  end if;
+  if not exists(select 1 from pg_roles where rolname='service_role') then
+    create role service_role nologin;
+  end if;
+end $roles$;
 grant usage on schema public,auth to anon,authenticated,service_role;
 
 create function public.p2_id(n integer) returns uuid language sql immutable
