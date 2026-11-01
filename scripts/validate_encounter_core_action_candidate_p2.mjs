@@ -35,7 +35,7 @@ for(const field of ["'version',1","'encounterId',v_e.id","'participantId',v_p.id
 assert.ok(local.includes("add column request_intent jsonb"));
 assert.ok(local.includes("revoke all on function public.p2_local_core_action_candidate"));
 assert.ok(local.includes("has_function_privilege('authenticated'"));
-assert.ok(mock.includes("private encounter-first") || mock.includes("Core-action"));
+assert.ok(mock.includes("sql/candidates/20261101_core_action_encounter_first_private_candidate.sql"));
 assert.ok(gen.includes("scripts/fixtures/encounter_core_action_candidate_pg17.sql"));
 for(const field of ["SAFE PRIVATE CORE CANDIDATE","candidateCall(winner,\"dash\",candidateReq)",
  "candidateCall(loser,\"disengage\",r2)",
