@@ -29,7 +29,7 @@ as $f$select coalesce(nullif(current_setting('request.jwt.claim.role',true),''),
 create function public.is_admin(p_user_id uuid) returns boolean language sql stable
 as $f$select false$f$;
 
-create table public.characters(id uuid primary key);
+create table public.characters(id uuid primary key,kind text not null default 'npc');
 create table public.class_catalog(id uuid primary key,class_name text,class_key text,spellcasting_ability text,source text);
 create table public.character_progression(
   character_id uuid primary key references public.characters(id),class_id uuid,
@@ -79,7 +79,7 @@ create table public.encounter_combat_log(
   actor_participant_id uuid,target_participant_id uuid,
   event_type text,summary text,detail jsonb
 );
-create table public.character_permissions(character_id uuid,user_id uuid,can_edit boolean);
+create table public.character_permissions(character_id uuid,user_id uuid,can_edit boolean not null default false,can_inventory boolean not null default false,can_convert boolean not null default false,primary key(character_id,user_id));
 
 -- Test-specific stubs. In particular, this casting profile is NOT the
 -- full deployed function. Its classLevel is sourced from the same
