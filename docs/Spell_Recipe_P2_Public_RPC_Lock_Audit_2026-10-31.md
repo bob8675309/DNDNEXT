@@ -62,6 +62,23 @@ This creates two classes of possible wait cycles during a mixed cutover:
 4. **Staging acceptance:** nonproduction isolated GoTrue/Auth + PostgREST, two genuine signed-in ordinary users, hidden and revoked actors, same-ID changed intent, multi-target and effect visibility, one-slot-per-turn, resource mirror, competing and duplicate commands, full database snapshots/rollbacks and client acceptance. The connected Supabase list only exposed **DnDWeb production** at review; no paid staging, live test users or database changes are authorized.
 5. **No premature spell-engine promotion:** P2 remains a compiler/shadow parity milestone. P3 hybrid spells and P4 authoritative executor still require separate design and acceptance; AI remains disabled.
 
+## Additional preliminary shared-ledger census (after the 22-cast inventory)
+
+A read-only `pg_proc` search for **other** function definitions touching `encounter_command_requests` found **eight** additional `public` functions, all currently `authenticated`-executable. These are not part of the 22-cast count. Source order was checked individually; **not all are equivalent**.
+
+| Non-spell function | Ledger vs first explicit `FOR UPDATE` | Source-review scope |
+| --- | --- | --- |
+| `encounter_end_turn_v1` | Ledger first | End-turn actor/round/expiry and transition to next participant |
+| `encounter_move_active_participant_v1` | Ledger first | Hex path, occupancy, movement budget, reaction windows |
+| `encounter_weapon_attack_v1` | Ledger first | Equipped weapon, target, action, damage and combat log |
+| `encounter_unarmed_strike_v1` | Ledger first | Unarmed/strike target and effect lifecycle |
+| `encounter_use_core_action_v1` | Ledger first | Dash/Disengage/Dodge action and replay |
+| `encounter_resolve_opportunity_reaction_v1` | An explicit row lock occurs **before** ledger | Reaction-window, actor and mover lock order; authorization occurs before ledger in inspected source |
+| `encounter_roll_save_v1` | No explicit `FOR UPDATE` in function body | Has an actor-control check before ledger; saving throw permissions/replay still require testing |
+| `admin_apply_encounter_effect_v1` | No explicit `FOR UPDATE` in function body | Admin-only effect action; role/DM visibility and idempotency are distinct from normal player moves |
+
+The five ledger-first combat/turn writer rows above, plus `encounter_end_turn_v1`, account for **six** non-spell ledger-first functions; the other two follow different code paths. This is a **preliminary source census**, not a complete lock analysis of called private helpers, triggers, multi-user Auth, or competing deployments. These eight expand the mandatory compatibility graph from 22 spell functions to **30 named functions touching the command ledger** in this read-only snapshot. Future shared lock-order work must include weapon attack, movement and end-turn, not merely all spell RPCs.
+
 ## Current single next task
 
-**Expand the lock graph beyond cast RPCs to every other authoritative encounter command writing `encounter_command_requests` or locking active caster/encounter rows.** Verify whether a central shared lock-order strategy can cover movement/weapon attack/turn/resource commands without regressions. Prepare real Auth acceptance design only for a truly isolated environment. Do not modify live SQL/roles/data, merge, run production casts or deploy a parallel engine without explicit owner approval.
+**Deepen the read-only shared-ledger graph for the eight newly identified non-spell commands and their private helper/trigger locks, then design a uniform lock order and request-intent contract spanning the 30 identified spell/non-spell functions.** Preserve actions, movement, reaction and DM authorization semantics; do not assume all eight have the same replay defect. Prepare real Auth acceptance design only for a truly isolated environment. Do not modify live SQL/roles/data, merge, run production casts or deploy a parallel engine without explicit owner approval.
