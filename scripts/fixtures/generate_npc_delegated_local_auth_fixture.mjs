@@ -38,6 +38,9 @@ revoke all on function public.is_admin(uuid),public.is_admin() from public,anon,
 grant execute on function public.is_admin(uuid),public.is_admin() to authenticated;
 `;
 const tail=String.raw`
+-- Ensure PostgREST SELECT really enforces the policy created below.
+-- A policy alone does not enforce anything unless RLS is enabled.
+alter table public.encounter_participants enable row level security;
 -- ACTUAL held SQL: no test-only reimplementation of delegation/resolver.
 \i sql/candidates/20261031_fire_bolt_transaction_integrated_candidate.sql
 \i sql/candidates/20261101_npc_delegated_control_candidate.sql
