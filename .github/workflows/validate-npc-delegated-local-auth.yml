@@ -11,6 +11,9 @@ on:
       - 'sql/candidates/20261031_fire_bolt_transaction_integrated_candidate.sql'
       - 'sql/candidates/20261101_npc_delegated_control_candidate.sql'
       - 'sql/candidates/20261101_npc_spell_profile_visibility_candidate.sql'
+      - 'sql/candidates/20261101_npc_spell_profile_v2_visibility_candidate.sql'
+      - 'scripts/fixtures/npc_spell_profile_v2_source_shape_pg17.sql'
+      - 'scripts/fixtures/npc_source_read_rpc_parity_pg17.sql'
       - 'scripts/fixtures/npc_spell_profile_source_shape_pg17.sql'
       - 'scripts/fixtures/npc_control_source_visibility_pg17.sql'
   workflow_dispatch:
