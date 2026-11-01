@@ -72,7 +72,7 @@ export default function NpcControlPermissionsPanel({ characterId, isAdmin = fals
   const directlyAssigned = useMemo(() => new Set(directControllers), [directControllers]);
 
   const setControl = async (userId, checked) => {
-    if (!isAdmin || !characterId || busyUser || loading || error) return;
+    if (!isAdmin || !characterId || busyUser || loading) return;
     setBusyUser(userId);
     setError("");
     // Deliberately avoid an optimistic authorization display: the RPC must
@@ -140,7 +140,7 @@ export default function NpcControlPermissionsPanel({ characterId, isAdmin = fals
                   type="checkbox"
                   aria-label={"Allow " + player.name + " to control this NPC"}
                   checked={granted}
-                  disabled={Boolean(busyUser) || loading || Boolean(error)}
+                  disabled={Boolean(busyUser) || loading}
                   onChange={event => { void setControl(player.id, event.target.checked); }}
                 />
                 <span className="form-check-label small">{busy ? "Saving…" : granted ? "Granted" : "Off"}</span>
