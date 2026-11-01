@@ -23,7 +23,7 @@ AS $function$
   from public.characters c
   where c.id = any(coalesce(p_character_ids, '{}'::uuid[]))
     and private.can_access_character_v1(c.id, 'edit');
-$function$
+$function$;
 
 revoke all on function public.get_character_secrets_v1(uuid[]) from public,anon;
 grant execute on function public.get_character_secrets_v1(uuid[]) to authenticated;
@@ -65,7 +65,7 @@ begin
       'permission', to_jsonb(v_permission)
     );
 end;
-$function$
+$function$;
 
 revoke all on function public.get_my_player_character_v1() from public,anon;
 grant execute on function public.get_my_player_character_v1() to authenticated;
@@ -91,7 +91,7 @@ AS $function$
   where cp.user_id = auth.uid()
     and (cp.can_edit or cp.can_inventory or cp.can_convert)
     and 'player-character' = any(coalesce(c.tags, '{}'::text[]));
-$function$
+$function$;
 
 revoke all on function public.get_my_player_characters_v2() from public,anon;
 grant execute on function public.get_my_player_characters_v2() to authenticated;
