@@ -40,7 +40,9 @@ assert.ok(panel.includes(".filter(row => String(row.role || \"player\").toLowerC
 assert.ok(panel.includes(".eq(\"character_id\", characterId)"));
 assert.ok(panel.includes("if (!isAdmin || !characterId || busyUser || loading) return"));
 assert.ok(panel.includes("setGrants(previous =>"));
-assert.ok(panel.includes("Turning this switch off revokes this delegated grant only"));
+assert.ok(panel.includes("This switch changes only delegated NPC battle-control permission"));
+assert.ok(panel.includes("const effectiveControl = granted || legacyEdit || direct"));
+assert.ok(panel.includes("Other access"));
 assert.ok(panel.includes("onChange={event => { void setControl(player.id, event.target.checked); }}"));
 for (const s of [
  "\\i sql/candidates/20261101_npc_delegated_control_candidate.sql",
