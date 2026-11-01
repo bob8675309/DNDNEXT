@@ -100,6 +100,6 @@ notify pgrst, 'reload schema';
 `;
 const sql=(head+"\n"+body+"\n"+tail);
 assert.ok(!sql.includes("create function auth.uid()"));
-assert.ok(sql.includes("\i sql/candidates/20261101_npc_delegated_control_candidate.sql"));
+assert.ok(sql.includes(String.raw`\i sql/candidates/20261101_npc_delegated_control_candidate.sql`));
 fs.writeFileSync(output,sql,{mode:0o600});
 console.log("Generated isolated NPC fixture; real Supabase auth.uid/auth.role preserved.");
