@@ -73,6 +73,43 @@ try{
   p_caster_id:actor,p_assignment_id:assignment,
   p_target_id:target,p_slot_level:null,p_request_id:randomUUID()});
  assert.equal(unauthorized.error?.code,"42501","Unassigned NPC cast accepted");
+ async function assertNoHiddenSourceDisclosure(player){
+  // The source character is *not* a granted sheet/inventory identity.
+  // A combat token is necessary; full spell rows and GM sheet JSON are not.
+  for(const permission of ["read","edit","inventory","convert"]){
+    const checked=await player.client.rpc("p2_local_can_access_character",{
+      p_character_id:npc,p_permission:permission
+    });
+    assert.ifError(checked.error);
+    assert.equal(checked.data,false,
+      "Delegated combat controller gained source "+permission+" rights");
+  }
+  for(const [table,filter,field] of [
+    ["characters","id","id"],
+    ["character_sheets","character_id","sheet"],
+    ["character_spells","character_id","id"],
+    ["inventory_items","id","item_name"]
+  ]){
+    const rowId=table==="inventory_items"?id(1998):npc;
+    const checked=await player.client.from(table).select(field).eq(filter,rowId);
+    // The production characters table lacks authenticated SELECT privilege;
+    // its dependent sheet/spell policy may therefore produce 42501.
+    if(checked.error){
+      assert.equal(checked.error.code,"42501",
+        table+" failed for a reason other than expected SQL permission denial");
+    }else{
+      assert.deepEqual(checked.data,[],
+        "Delegated combat control exposed source "+table+" record");
+    }
+  }
+ }
+ const adminSheet=await admin.client.rpc("p2_local_can_access_character",{
+   p_character_id:npc,p_permission:"read"
+ });
+ assert.ifError(adminSheet.error);
+ assert.equal(adminSheet.data,true,"Local Admin must retain sheet access");
+ await assertNoHiddenSourceDisclosure(a);
+ await assertNoHiddenSourceDisclosure(b);
  async function setGrant(player,allow){
   const response=await admin.client.rpc("admin_set_npc_control_v1",{
    p_character_id:npc,p_user_id:player.uid,p_can_control:allow});
@@ -95,6 +132,7 @@ try{
  await Promise.all([verify(a,true),verify(b,false)]);
  await setGrant(b,true);
  await Promise.all([verify(a,true),verify(b,true)]);
+ await Promise.all([assertNoHiddenSourceDisclosure(a),assertNoHiddenSourceDisclosure(b)]);
  const versionBefore=Number(db("select version from public.encounters where id=public.p2_id(81)"));
  const requests=[randomUUID(),randomUUID()];
  const cast=p=>p.player.client.rpc("p2_local_npc_cast",{
@@ -130,6 +168,7 @@ try{
  assert.equal(steal.error?.code,"42501","Foreign signed-in controller saw cached result");
  await setGrant(winner,false);
  await Promise.all([verify(winner,false),verify(loser,true)]);
+ await Promise.all([assertNoHiddenSourceDisclosure(winner),assertNoHiddenSourceDisclosure(loser)]);
  const stillSigned=await winner.client.auth.getUser();
  assert.ifError(stillSigned.error);assert.equal(stillSigned.data.user.id,winner.uid);
  const revoked=await cast({player:winner,request:winnerRequest});
@@ -141,7 +180,7 @@ try{
   "where event_type='spell_cast'")),1,"Denials added combat events");
  assert.equal(Number(db("select version from public.encounters where id=public.p2_id(81)")),
   versionBefore+1,"Denials changed encounter version");
- console.log("PASS LOCAL REAL GoTrue: 3 JWT identities, admin-only NPC grant, hidden token RLS, two-player single-Action race, replay isolation and immediate revocation under unchanged JWT");
+ console.log("PASS LOCAL REAL GoTrue: 3 JWT identities, admin-only NPC grant, hidden token RLS, source sheet/spell/inventory confidentiality, two-player single-Action race, replay isolation and immediate revocation under unchanged JWT");
 }finally{
  await Promise.allSettled(users.map(x=>x.client.auth.signOut()));
 }
