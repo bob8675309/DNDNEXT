@@ -97,15 +97,15 @@ reset role;
 set role authenticated;
 select set_config('fixture.attack_roll','1',false);
 do $grant_gap$
-declare x jsonb; hp_before integer;
+declare x jsonb;
 begin
-  select current_hp into hp_before from public.encounter_participants where id=public.p2_id(21);
+  -- A normal authenticated role cannot SELECT participant rows in this
+  -- minimal fixture. Inspect only RPC results here; the privileged audit
+  -- after RESET ROLE checks the final database state.
   x:=public.encounter_cast_spell_v11(
     public.p2_id(11),public.p2_id(53),public.p2_id(21),null,public.p2_id(103));
   if x->>'damageDice'<>'2d10' or (x->>'hit')::boolean is distinct from false
     or (x->>'rawDamage')::integer<>0
-    or (select current_hp from public.encounter_participants
-         where id=public.p2_id(21))<>hp_before
   then raise exception 'Current Fire Bolt source-grant or natural 1 behavior drift: %',x; end if;
   raise notice 'KNOWN BLOCKER: current v11 accepted deliberately mismatched/known=false class assignment in disposable fixture';
 end $grant_gap$;
