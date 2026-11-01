@@ -105,6 +105,7 @@ end $g$;
 \i scripts/fixtures/npc_spell_profile_v2_source_shape_pg17.sql
 \i scripts/fixtures/npc_indirect_resource_read_rpc_parity_pg17.sql
 \i scripts/fixtures/encounter_core_action_live_replay_pg17.sql
+\i scripts/fixtures/encounter_core_action_candidate_pg17.sql
 notify pgrst, 'reload schema';
 `;
 const sql=(head+"\n"+body+"\n"+tail);
@@ -116,5 +117,6 @@ assert.ok(sql.includes(String.raw`\i scripts/fixtures/npc_source_read_rpc_parity
 assert.ok(sql.includes(String.raw`\i scripts/fixtures/npc_spell_profile_v2_source_shape_pg17.sql`));
 assert.ok(sql.includes(String.raw`\i scripts/fixtures/npc_indirect_resource_read_rpc_parity_pg17.sql`));
 assert.ok(sql.includes(String.raw`\i scripts/fixtures/encounter_core_action_live_replay_pg17.sql`));
+assert.ok(sql.includes(String.raw`\i scripts/fixtures/encounter_core_action_candidate_pg17.sql`));
 fs.writeFileSync(output,sql,{mode:0o600});
 console.log("Generated isolated NPC fixture; real Supabase auth.uid/auth.role preserved.");
