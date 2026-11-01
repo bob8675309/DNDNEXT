@@ -27,7 +27,12 @@ for(const marker of [
   'await Promise.all([verify(a,false),verify(b,true)])',
   'Promise.allSettled([assign(a,false),assign(b,false)])',
   'STAGING CLEANUP FAILED',
-  'grant/RLS acceptance only'
+  'grant/RLS acceptance only',
+  'Hidden NPC exposed before a delegated grant',
+  'Non-Admin changed NPC permission',
+  'Revoked player regranted own NPC control',
+  'await Promise.all([verify(a,true),verify(b,false)])',
+  'await verify(a,false)'
 ]) assert.ok(code.includes(marker),"Missing real Auth staging safety/coverage: "+marker);
 for(const forbidden of ["service_role_key","createUser(", "auth.admin", ".from(\"character_permissions\").update(", "NEXT_PUBLIC_SUPABASE_SERVICE_ROLE"])
   assert.ok(!code.includes(forbidden),"Unsafe staging Auth harness pattern: "+forbidden);
