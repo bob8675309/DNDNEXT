@@ -84,11 +84,11 @@ create table public.character_permissions(character_id uuid,user_id uuid,can_edi
 -- Test-specific stubs. In particular, this casting profile is NOT the
 -- full deployed function. Its classLevel is sourced from the same
 -- character_progression.class_level column as the deployed function.
-create function public.encounter_can_control_participant_v1(p_participant uuid)
+create function public.encounter_can_control_participant_v1(p_participant_id uuid)
 returns boolean language sql stable
 as $f$select exists(
   select 1 from public.encounter_participants p
-  where p.id=p_participant and (p.controller_user_id=auth.uid() or exists(
+  where p.id=p_participant_id and (p.controller_user_id=auth.uid() or exists(
     select 1 from public.character_permissions cp
     where cp.character_id=p.character_id and cp.user_id=auth.uid() and cp.can_edit
   ))
