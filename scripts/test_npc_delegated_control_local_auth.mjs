@@ -80,6 +80,8 @@ try{
  assert.equal(gmProfile.data.visibilityScope,undefined);
  assert.equal(gmProfile.data.knownSpells.length,5);
  assert.ok(gmProfile.data.knownSpells.some(x=>x.spellKey==="secret-ritual|XPHB"));
+ assert.ok(gmProfile.data.knownSpells.some(x=>x.spellKey==="unlearned-ritual|XPHB"),
+  "Legacy Admin profile includes unknown spell assignments");
  const ownProfile=await a.client.rpc("encounter_spellcasting_profile_v1",{
   p_participant_id:own
  });
@@ -115,6 +117,8 @@ try{
   assert.ok(profile.knownSpells.every(x=>x.known===true));
   assert.ok(!JSON.stringify(profile).includes("GM Secret Ritual"));
   assert.ok(!JSON.stringify(profile).includes("GM Unknown Ritual"));
+  assert.ok(!profile.knownSpells.some(x=>x.spellKey==="unlearned-ritual|XPHB"),
+   "Delegated profile leaked unknown assignment");
   assert.ok(!JSON.stringify(profile).includes("sourceBook"));
  }
  const ownRight=await a.client.rpc("encounter_can_control_participant_v1",
