@@ -72,6 +72,10 @@ try{
    p_participant_id:actor
   });
   assert.ok(blocked.error,"Unassigned player read a hidden NPC spell profile");
+  const v2Before=await player.client.rpc("encounter_spellcasting_profile_v2",{
+   p_participant_id:actor
+  });
+  assert.ok(v2Before.error,"v2 exposed hidden NPC profile pre-grant");
  }
  const gmProfile=await admin.client.rpc("encounter_spellcasting_profile_v1",{
   p_participant_id:actor
@@ -79,6 +83,15 @@ try{
  assert.ifError(gmProfile.error);
  assert.equal(gmProfile.data.visibilityScope,undefined);
  assert.equal(gmProfile.data.knownSpells.length,5);
+ const gmV2=await admin.client.rpc("encounter_spellcasting_profile_v2",{
+  p_participant_id:actor
+ });
+ assert.ifError(gmV2.error);
+ assert.equal(gmV2.data.knownSpells.length,5);
+ assert.equal(gmV2.data.resourceBridgeVersion,1);
+ assert.equal(gmV2.data.persistentResourcesLinked,true);
+ assert.equal(gmV2.data.persistentSlotState.length,1);
+ assert.equal(gmV2.data.persistentSlotMismatch,false);
  assert.ok(gmProfile.data.knownSpells.some(x=>x.spellKey==="secret-ritual|XPHB"));
  assert.ok(gmProfile.data.knownSpells.some(x=>x.spellKey==="unlearned-ritual|XPHB"),
   "Legacy Admin profile includes unknown spell assignments");
@@ -89,15 +102,31 @@ try{
  assert.equal(ownProfile.data.visibilityScope,undefined);
  assert.equal(ownProfile.data.knownSpells.length,4,
   "Legacy direct-controller PC must retain its full spell profile");
+ const ownV2=await a.client.rpc("encounter_spellcasting_profile_v2",{
+  p_participant_id:own
+ });
+ assert.ifError(ownV2.error);
+ assert.equal(ownV2.data.knownSpells.length,4);
+ assert.equal(ownV2.data.resourceBridgeVersion,1);
+ assert.equal(ownV2.data.visibilityScope,undefined);
  async function assertDelegatedProfile(player,allowed){
-  const r=await player.client.rpc("encounter_spellcasting_profile_v1",{
-   p_participant_id:actor
-  });
+  const [r,v2]=await Promise.all([
+   player.client.rpc("encounter_spellcasting_profile_v1",{
+    p_participant_id:actor
+   }),
+   player.client.rpc("encounter_spellcasting_profile_v2",{
+    p_participant_id:actor
+   })
+  ]);
   if(!allowed){
    assert.ok(r.error,"Revoked/unassigned player received tactical spell data");
+   assert.ok(v2.error,"Revoked/unassigned caller bypassed via v2 tactical profile");
    return;
   }
   assert.ifError(r.error);
+  assert.ifError(v2.error);
+  assert.deepEqual(v2.data,r.data,
+   "Delegated v2 must not add persistent slot state or synchronize source resources");
   const profile=r.data;
   assert.equal(profile.visibilityScope,"delegated-combat");
   assert.equal(profile.spellListFiltered,true);
