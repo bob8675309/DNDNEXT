@@ -52,7 +52,7 @@ begin
     'persistentSlotMismatch',v_mismatch
   );
 end;
-$function$
+$function$;
 
 revoke all on function private.encounter_spellcasting_profile_v2_full_candidate_v1(uuid) from public,anon,authenticated;
 
