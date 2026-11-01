@@ -39,3 +39,30 @@ The admin can read `public.user_profiles(id,role)`, `public.players(user_id,name
 4. **Production rollout**: no live `can_control` column exists yet. The held UI will display a query error if deployed before the reviewed candidate schema/RPC; **do not merge UI alone into production**. Owner approval, staged migration, RLS and regression checks, and rollback/compatibility review are required.
 
 **Next task:** maintain the P2 spell/encounter authority effort and evaluate overlapping active-character resource policy, now including delegated controllers and their revocation semantics. Do not automatically collapse NPC control into `can_edit` or modify world/town movement.
+
+## P2 follow-up: two-player NPC Action race and real-Auth staging harness (2026-11-01)
+
+### Actual held SQL, independent mock player sessions
+
+- scripts/fixtures/npc_delegated_control_attack_race_p2_pg16.sh is executed AFTER the actual delegated-permission candidate SQL/RLS and held transactional v11 spell resolver have been installed in the **disposable PostgreSQL 16 database only**. It supplies a canonical Fire Bolt to a test NPC and makes that NPC the active turn.
+- Two independent PostgreSQL connections with simulated player A and B identity issue distinct cast requests for the same NPC. Exactly one should spend Action, write one log, and increment the encounter version. The other must receive Action already spent.
+- Winner may retry their completed request; the other user may not retrieve the winner's cached result using that request ID.
+- Admin revokes the winner's NPC delegated grant; winner must then be denied their own cached replay while the other user remains authorized.
+- Tests exercise actual **held research SQL**, not the live legacy combat RPCs or genuine Supabase Auth users. The longstanding public ledger-before-controller replay problem remains unresolved.
+
+### Genuine GoTrue/Auth staging acceptance harness, NOT YET RUN
+
+scripts/test_npc_delegated_control_real_auth.mjs was added for an eventual independent GoTrue/Auth/PostgREST test using three real **non-anonymous** identities: Admin, player A, and player B. It verifies each with signInWithPassword, getUser and getClaims.
+
+Safety contract:
+1. Require DNDNEXT_NPC_STAGING_URL and DNDNEXT_NPC_STAGING_PUBLISHABLE_KEY. Reject the production DnDWeb project ref (ucggczovhmauhshvhusx), unexpected hosted URLs and JWT/service-role keys. Explicitly opted-in isolated local GoTrue at port 54321 is also possible. The only project currently connected to these tools is DnDWeb production: **there is no real Auth acceptance evidence from this session**.
+2. Default to nonmutating sign-in and role preflight. Mutations require exactly DNDNEXT_NPC_MUTATING_TEST_CONFIRM=YES_DISPOSABLE_NPC_GRANTS_ONLY.
+3. Before any opt-in mutation require all three disposable NPC, participant, and encounter IDs, a character with kind npc and name starting with NPC CTRL TEST - , and a hidden encounter participant in that encounter without either player's direct control. Both players must start with no edit or delegated-control permission.
+4. Under those constraints, Admin grants both players combat control; verify both can control and view their own hidden NPC token; revoke A only; verify A loses control and visibility while B retains both.
+5. Always attempt to revert BOTH temporary delegated grants in finally and loudly report cleanup errors. An inert permission row can remain on the **disposable** fixture; never run this on a real campaign actor.
+
+The harness is not a completed genuine **two-player combat Action** acceptance test. That still requires a disposable staged encounter with live GoTrue-signed users, identical/competing command requests, revocation under contention, log accounting, and full hidden-source and character-sheet access checks.
+
+Free CI only runs the harness's JavaScript syntax and static safety-source validator; it must NOT run the real credentialed script. Do not commit credentials or echo them in CI logs.
+
+**Release still blocked:** the delegated control UI and SQL must be promoted as one reviewed bundle, stale public casting replay authorization must be fixed across all affected RPCs, and the same-character two-active-encounter resource policy must be settled. A person controlling multiple DIFFERENT characters is a separate, supported requirement.
