@@ -2,19 +2,19 @@
 
 > **Planning snapshot:** 2026-11-01. Re-verify branches, CI and production before using these SHAs. This is the **one active-session task list**; it is not permission to deploy or merge. Product decisions remain in [SPELL_ENGINE_DECISIONS.md](SPELL_ENGINE_DECISIONS.md).
 
-## Current activity: documentation reconciliation (review branch)
+## Current activity: P0 documentation acceptance and post-merge verification
 
-**Active phase / subphase:** `P0 / P0.6` — documentation-only branch submitted for review; phase checklist items remain unchecked until their individual evidence and approval gates are satisfied. See [PHASED_DEVELOPMENT_CHECKLIST.md](PHASED_DEVELOPMENT_CHECKLIST.md) for P0 exit gates and S0–S7 per-chat process.
+**Active phase / subphase:** `P0 / P0.7` — docs-only PR #313 has a verified full-checkout registry CI gate and owner approval to proceed with the reviewed merge; **post-merge main/deployment verification remains next**. Completed P0.1–P0.6 items and their dated evidence are recorded in [PHASED_DEVELOPMENT_CHECKLIST.md](PHASED_DEVELOPMENT_CHECKLIST.md) and [HANDOFF_LOG.md](HANDOFF_LOG.md).
 
-**Status:** `IN IMPLEMENTATION` / documentation-only review branch; not merged into `main` or released.
+**Status:** `VERIFIED IN ISOLATION` at the reviewed PR head; the PR merge and resulting `main`/production SHA must be independently checked. No gameplay or Supabase changes authorized.
 
 **Objective:** Replace stale cross-chat 'current' claims with an evidence-indexed project-state register and durable receipt protocol without altering gameplay, schema, active combat research, Vercel or protected map systems.
 
 **Scope:** `AGENTS.md` and documentation routing/status ledgers; new `docs/PROJECT_STATE.md`, `docs/SYSTEM_REGISTRY.json`, `docs/ACTIVE_WORK.md`, `docs/HANDOFF_LOG.md`, `docs/DOCUMENT_LIFECYCLE.md`, `docs/HANDOFF_RECEIPT_TEMPLATE.md`, `docs/PHASED_DEVELOPMENT_CHECKLIST.md`, and `scripts/validate_handoff_registry.mjs` (read-only validator).
 
-**State:** Documentation-only branch `docs/p0-handoff-registry-20261101`, based on audited `main` `eb376a4e3a7b0a7201a0ecb8a98366c1bba4e00a`. The branch commit SHA is tracked by GitHub; always re-fetch before action. This is not a merge or a production deployment.
+**State:** Documentation-only PR [#313](https://github.com/bob8675309/DNDNEXT/pull/313), based on audited `main` `eb376a4e3a7b0a7201a0ecb8a98366c1bba4e00a`. A full-checkout GitHub registry-validation job passed on branch commit `6beb583770c3152f4fa5d7e848e5714d1b80ca19`; the final head and merge commit may differ, so re-fetch and verify current checks. This snapshot does not itself prove PR merge or production deployment.
 
-**Next single action:** Complete `P0.6`: review the exact documentation branch diff and current checks, run `node scripts/validate_handoff_registry.mjs` in a full repository checkout when available, then request separate owner approval before merging to `main`.
+**Next single action:** Complete `P0.7`: verify PR #313's final green exact-head checks and merged `main` commit, inspect Vercel production state, append a post-merge receipt, then move `ACTIVE_WORK.md` to `P1 / P1.1` for a **read-only** tactical command writer/lock-order inventory. Do not treat documentation approval as permission for combat SQL or runtime deployments.
 
 **Acceptance:** Corrected printable/dice/workspace status; current #312 research topology; live-vs-research distinctions; no historical deletions; links and file paths check out; no runtime/source/db deployment changes; exact resulting branch/head/CI recorded on actual push.
 

@@ -1,6 +1,6 @@
 # DNDNext — Append-only Development Handoff Log
 
-> See [PHASED_DEVELOPMENT_CHECKLIST.md](PHASED_DEVELOPMENT_CHECKLIST.md) for required S0–S7 gate reporting and P0–P6 milestone IDs. The P0 preparation tasks remain unchecked until a clean checkout verifies the local patch and the owner authorizes subsequent GitHub operations.
+> See [PHASED_DEVELOPMENT_CHECKLIST.md](PHASED_DEVELOPMENT_CHECKLIST.md) for S0–S7 gate reporting and P0–P6 milestones. P0.1–P0.6 have dated review/CI evidence in this log; P0.7 requires separate post-merge verification.
 
 > This log records what was verified or actually changed. Do **not** replace older entries when a new chat begins. Use [HANDOFF_RECEIPT_TEMPLATE.md](HANDOFF_RECEIPT_TEMPLATE.md); link exact PR/head, tests and deployment. The snapshot dates here are historical after publication.
 
@@ -25,3 +25,11 @@
 - **Verification:** exact old text anchors matched on audited `main`; all 58 registry source/test references existed in the GitHub tree; staging fixture and structural validations passed. A complete local repository checkout and authenticated browser acceptance were **not** executed in this session.
 - **Release status:** documentation-only review branch, **not merged**. No live Supabase writes, grants, manual deployment, world/town map changes or gameplay modification.
 - **Remaining gate:** review actual branch diff, verify exact-head CI and run the registry validator in a complete checkout; obtain explicit approval before merging. Continue at `P0.6` in `ACTIVE_WORK.md`.
+
+## 2026-11-01 — P0.1–P0.6 review and exact-head validation
+
+- **Review:** PR [#313](https://github.com/bob8675309/DNDNEXT/pull/313) is a docs-only delta from audited `main` `eb376a4e3a7b0a7201a0ecb8a98366c1bba4e00a`, initially 16 paths: eight existing doc edits, seven new docs, one read-only validator; no deletion, SQL or gameplay modification. An additional scope-limited `.github/workflows/validate-handoff-registry.yml` was added to test the validator on actual GitHub checkout.
+- **CI evidence:** exact-head full-checkout validator succeeded at `6beb583770c3152f4fa5d7e848e5714d1b80ca19` ([run 41362632909](https://github.com/bob8675309/DNDNEXT/actions/runs/41362632909)); both other `validate` jobs also passed there. The verifier confirms all 18 system entries, linked source/test paths, phase headings and required document links. All latest-head results must be checked again before merge.
+- **Approval:** Owner said `PROCEED` after being informed of the review/merge gate, authorizing the documentation review and merge contingent on passing checks. **No** approval was given to execute combat database migrations or deploy research code.
+- **P0 objective state:** P0.1–P0.6 evidenced as review, checkout validation, navigation, classification, preservation and approved PR. P0.7 remains explicitly open until PR merge, Vercel production SHA and final handoff receipt are verified.
+- **One next task:** `P0.7` — verify exact post-merge source and deployment and append receipt; then move to read-only `P1.1` command writer/lock-order inventory.

@@ -1,6 +1,6 @@
 # DNDNext — Phased Objectives, Chat Workflow, and Release Gates
 
-> **Prepared 2026-11-01; documentation-only review-branch proposal, NOT merged or deployed.** This is a proposed process/roadmap, **not** approval to merge, run SQL, grant permissions, deploy, purchase services, alter the world map, or turn on AI. Reverify the current branch and real system state each session. Read [`AGENTS.md`](../AGENTS.md), [`START_HERE_ACTIVE_HANDOFF.md`](START_HERE_ACTIVE_HANDOFF.md), [`PROJECT_STATE.md`](PROJECT_STATE.md), [`ACTIVE_WORK.md`](ACTIVE_WORK.md), [`SYSTEM_REGISTRY.json`](SYSTEM_REGISTRY.json) and approved [`SPELL_ENGINE_DECISIONS.md`](SPELL_ENGINE_DECISIONS.md) first. Record evidence in [`HANDOFF_LOG.md`](HANDOFF_LOG.md).
+> **Prepared 2026-11-01; P0 documentation branch PR #313 submitted for review.** This is a dated process/roadmap checkpoint, **not** approval to run SQL, grant permissions, deploy gameplay, purchase services, alter the world map, or turn on AI. Reverify the current branch and real system state each session. Read [`AGENTS.md`](../AGENTS.md), [`START_HERE_ACTIVE_HANDOFF.md`](START_HERE_ACTIVE_HANDOFF.md), [`PROJECT_STATE.md`](PROJECT_STATE.md), [`ACTIVE_WORK.md`](ACTIVE_WORK.md), [`SYSTEM_REGISTRY.json`](SYSTEM_REGISTRY.json) and approved [`SPELL_ENGINE_DECISIONS.md`](SPELL_ENGINE_DECISIONS.md) first. Record evidence in [`HANDOFF_LOG.md`](HANDOFF_LOG.md).
 
 ## How to use this document
 
@@ -101,15 +101,15 @@ These represent planned work and known evidence **as of 2026-11-01**. Phase orde
 
 ### P0 — Reliable project truth and handoff infrastructure
 
-**Baseline:** Docs refresh locally prepared, **not yet pushed**, against main SHA `eb376a4e3a7b0a7201a0ecb8a98366c1bba4e00a`.
+**Baseline:** Documentation-only PR [#313](https://github.com/bob8675309/DNDNEXT/pull/313) was submitted against audited `main` `eb376a4e3a7b0a7201a0ecb8a98366c1bba4e00a`. The registry-validation workflow executed successfully on the full GitHub checkout (run `41362632909` at head `6beb583770c3152f4fa5d7e848e5714d1b80ca19`); **refresh current final head, CI, merge and deployment state every session**.
 
-- [ ] P0.1 Review staged documentation-only diff; confirm no application code, SQL or source-of-truth decisions changed.
-- [ ] P0.2 Apply the package in a clean checkout at its exact audited base, run handoff validator and inspect all diffs.
-- [ ] P0.3 Verify `AGENTS.md`, `START_HERE_ACTIVE_HANDOFF.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json`, `ACTIVE_WORK.md`, this checklist and `HANDOFF_LOG.md` consistently link to one another.
-- [ ] P0.4 Confirm the registry distinguishes implementation, deployment, executable tests and browser/owner acceptance; fix any unsupported “done” claims.
-- [ ] P0.5 Preserve historical docs and source decisions. Make a deletion proposal **only** for a file with checked inbound references, extracted unique facts and specific owner approval.
-- [ ] P0.6 On explicit approval, push/PR the docs-only commit and verify resulting exact head, CI and documentation links. **Do not merge without separate approval.**
-- [ ] P0.7 Append the first post-push receipt and update P0 status; set **one** next engineering task in `ACTIVE_WORK.md`.
+- [x] P0.1 Review staged documentation-only diff; confirm no application code, SQL or source-of-truth decisions changed.
+- [x] P0.2 Apply the package in a clean checkout at its exact audited base, run handoff validator and inspect all diffs.
+- [x] P0.3 Verify `AGENTS.md`, `START_HERE_ACTIVE_HANDOFF.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json`, `ACTIVE_WORK.md`, this checklist and `HANDOFF_LOG.md` consistently link to one another.
+- [x] P0.4 Confirm the registry distinguishes implementation, deployment, executable tests and browser/owner acceptance; fix any unsupported “done” claims.
+- [x] P0.5 Preserve historical docs and source decisions. Make a deletion proposal **only** for a file with checked inbound references, extracted unique facts and specific owner approval.
+- [x] P0.6 On explicit approval, push/PR the docs-only commit and verify resulting exact head, CI and documentation links. **Do not merge without separate approval.**
+- [ ] P0.7 Verify the exact merged `main` SHA, new Vercel production status, and final PR CI; append a **post-merge receipt** and then set exactly one next research task (`P1.1`) in `ACTIVE_WORK.md`. This is intentionally open until actual merge and verification.
 
 **P0 exit:** Self-contained source-linked status registry and checkable handoff files available on an approved branch; validation/review evidence recorded, and no gameplay/production mutations.
 
