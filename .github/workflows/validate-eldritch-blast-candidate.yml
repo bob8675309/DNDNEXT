@@ -51,6 +51,10 @@ on:
       - 'scripts/fixtures/npc_indirect_resource_read_rpc_parity_pg17.sql'
       - 'docs/Spell_Recipe_P2_NPC_Indirect_Read_Audit_2026-11-01.md'
       - 'scripts/audits/npc_sensitive_rpc_readonly_p2.sql'
+      - 'scripts/audits/encounter_command_replay_lock_readonly_p2.sql'
+      - 'scripts/fixtures/encounter_core_action_live_replay_pg17.sql'
+      - 'scripts/validate_encounter_command_replay_baseline_p2.mjs'
+      - 'docs/Spell_Recipe_P2_Command_Replay_Baseline_2026-11-01.md'
       - 'docs/Spell_Recipe_P2_NPC_RPC_Visibility_Rollout_2026-11-01.md'
       - 'scripts/fixtures/npc_spell_profile_source_shape_pg17.sql'
       - 'docs/Spell_Recipe_P2_NPC_Tactical_Spell_Profile_2026-11-01.md'
@@ -103,6 +107,7 @@ jobs:
       - run: node scripts/validate_spell_recipe_p2_fire_bolt_shadow.mjs
       - run: node scripts/validate_spell_cast_rpc_inventory_p2.mjs
       - run: node scripts/validate_encounter_shared_lock_audit_p2.mjs
+      - run: node scripts/validate_encounter_command_replay_baseline_p2.mjs
       - run: node scripts/validate_encounter_nonledger_resource_p2.mjs
       - run: node scripts/validate_npc_delegated_control_p2.mjs
       - run: node scripts/validate_npc_tactical_spell_profile_p2.mjs
