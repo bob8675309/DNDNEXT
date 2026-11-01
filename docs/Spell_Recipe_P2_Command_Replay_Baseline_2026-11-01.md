@@ -53,3 +53,13 @@ This is a design checklist, **not approved implementation**. A staged change tha
 ## Remaining blockers / single next task
 
 After exact-head CI verification, implement a **separate private ungranted encounter-first core-action transactional candidate** with canonical request owner/intent and test it in an isolated PG fixture against the frozen legacy baseline. Then inventory all remaining public RPC mutators and triggers for mixed lock cycles and determine a nonbreaking atomic release sequence. Never call the baseline a fixed vulnerability, never use live DnDWeb as staging, and do not merge/deploy without explicit owner approval. The delegated NPC ready-spell visibility default and overlapping-active-encounter resource policy remain GM decisions.
+
+## Verified local baseline evidence
+
+**Actual completed CI:** `41328979930`, free isolated real GoTrue/PostgREST (2026-11-01), code checkpoint `3761cc2013af54f1a08974962eee9b45ac2c16a1` (same test/source artifacts; later documentation-only commit followed). The log explicitly reports:
+
+> PASS LOCAL REAL GoTrue LEGACY BASELINE (KNOWN INSECURE): original public core_action leaks same cached result across controllers, ignores changed action and still returns it after revocation; one action/log/version only. No production functions were called.
+
+The local stack uses the unchanged current production function **body**, not its production roles/schema/data. **Never treat a passing baseline test of known-unsafe behavior as a secure runtime acceptance.** Companion Fire Bolt private held candidate still denies foreign/revoked replay in the same test; this intentionally contrasts current legacy public RPC with the separately scoped ungranted research command.
+
+The code-level source, PG16 integration, encounter, class and workspace workflows also passed at this test checkpoint. Recheck every workflow against the actual final PR head after documentation updates.
