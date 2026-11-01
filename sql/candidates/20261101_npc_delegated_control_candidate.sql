@@ -10,11 +10,12 @@
 alter table public.character_permissions
   add column if not exists can_control boolean not null default false;
 
--- Preserve existing edit-authorized controllers during the transition.
--- Do not silently strip their ability to act in encounters.
-update public.character_permissions
-set can_control=true
-where can_edit=true and can_control=false;
+-- IMPORTANT: Do not backfill can_edit into can_control.
+-- Existing can_edit users still control NPCs through the independent
+-- encounter_can_control_participant_v1 OR predicate below. Copying their
+-- grant into can_control would create latent combat permission persisting
+-- after a later can_edit revocation, contrary to least privilege.
+-- Only explicit Admin assignments may ever set can_control=true.
 
 create or replace function public.admin_set_npc_control_v1(
   p_character_id uuid,p_user_id uuid,p_can_control boolean
