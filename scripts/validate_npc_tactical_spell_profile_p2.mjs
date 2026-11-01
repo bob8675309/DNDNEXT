@@ -8,6 +8,7 @@ const ui=read("pages/encounters/combat.js");
 const v2=read("sql/candidates/20261101_npc_spell_profile_v2_visibility_candidate.sql");
 const v2Fixture=read("scripts/fixtures/npc_spell_profile_v2_source_shape_pg17.sql");
 const sensitive=read("scripts/fixtures/npc_source_read_rpc_parity_pg17.sql");
+const indirect=read("scripts/fixtures/npc_indirect_resource_read_rpc_parity_pg17.sql");
 const gen=read("scripts/fixtures/generate_npc_delegated_local_auth_fixture.mjs");
 const fixture=read("scripts/fixtures/npc_spell_profile_source_shape_pg17.sql");
 const jwt=read("scripts/test_npc_delegated_control_local_auth.mjs");
@@ -52,4 +53,15 @@ for(const s of ["get_character_secrets_v1","get_my_player_character_v1","get_my_
  assert.ok(sensitive.includes(s),"Lost source read RPC parity: "+s);
 for(const s of ["encounter_spellcasting_profile_v2","assert.deepEqual(v2.data,r.data","gmV2.data.persistentSlotState.length,1","ownV2.data.resourceBridgeVersion,1","get_character_secrets_v1","get_my_player_characters_v2"])
  assert.ok(jwt.includes(s),"Missing genuine JWT anti-bypass regression: "+s);
-console.log("P2 delegated NPC v1/v2 tactical profiles and sensitive read RPC contracts PASS; no production change");
+for(const p of ["character_sheet_resource_profile_v1","character_sheet_resource_profile_v2",
+ "get_character_currency_v1","get_character_inventory_v1","character_equipment_effects_v1"]){
+ assert.ok(indirect.includes("FUNCTION public."+p+"("),
+  "Missing actual public resource reader: "+p);
+ assert.ok(jwt.includes('"'+p+'"'),
+  "Missing signed-in resource read denial: "+p);
+}
+assert.ok(indirect.includes("FUNCTION private.can_manage_character_progression_v1"));
+assert.ok(gen.includes(String.fromCharCode(92)+"i scripts/fixtures/npc_indirect_resource_read_rpc_parity_pg17.sql"));
+assert.equal((indirect.match(/\$function\$;\n/g)||[]).length,6,
+ "All source-extracted SQL definitions must terminate before ACL statement");
+console.log("P2 delegated NPC v1/v2 profiles, secrets, currency, inventory and resource read RPC contracts PASS; research only");
