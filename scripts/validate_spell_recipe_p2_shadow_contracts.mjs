@@ -48,8 +48,11 @@ assert.equal(preflightSpellRecipe(structuredClone(eb)).manifest.executable, fals
 assert.ok(ui.includes("NEXT_PUBLIC_DNDNEXT_EB_STAGING_CASTS"));
 assert.ok(ui.includes("encounter_cast_eldritch_blast_candidate_v1"));
 assert.ok(read("sql/candidates/20261029_eldritch_blast_atomic_candidate.sql").includes(
-  "encounter_cast_eldritch_blast_candidate_v1"
-));
+  "private.encounter_eldritch_blast_candidate_v1"
+), "held private EB candidate missing");
+assert.ok(read("sql/candidates/20261030_eldritch_blast_authenticated_bridge_candidate.sql").includes(
+  "public.encounter_cast_eldritch_blast_candidate_v1"
+), "held public EB bridge missing");
 // Explicitly guard discovery: synthetic P1 class-level tiers are not proof of live level parity.
 const fixtureLevels = P1_SYNTHETIC_RECIPES.find(r => r.spell.key === "fire-bolt|XPHB")
   .steps.find(s => s.op === "damage").dice.quantity;
