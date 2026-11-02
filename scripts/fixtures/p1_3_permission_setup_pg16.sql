@@ -1,5 +1,5 @@
 -- Disposable source-derived permission-race model. Not a real authenticated session or RPC action.
-ALTER TABLE public.encounter_participants ADD COLUMN controller_user_id uuid;
+ALTER TABLE public.encounter_participants ADD COLUMN IF NOT EXISTS controller_user_id uuid;
 CREATE TABLE public.character_permissions(character_id uuid NOT NULL,user_id uuid NOT NULL,can_edit boolean NOT NULL,PRIMARY KEY(character_id,user_id));
 CREATE TABLE public.p13_auth_race_events(label text PRIMARY KEY,occurred_at timestamptz NOT NULL);
 CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $authuid$
