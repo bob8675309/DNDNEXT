@@ -116,3 +116,11 @@
 - **Additional SELECT-only source:** slot bridge S→C calls `sync_character_spell_slots_v1` before locking C; sync includes persistent pool upsert/deletion and can introduce unique waits. Not yet concurrently tested.
 - **Safety:** No live Supabase writes, runtime changes, map edits, AI or migrations. Draft PR #317 unmerged; P1.3/P1.5 unchecked. [Full evidence](P1_3_Turn_Start_Expiry_Lock_Race_2026-11-01.md).
 - **Next one task:** build source-derived S→C sync and authorization/revocation race fixtures with real two-session PG16 before selecting transaction order.
+
+## 2026-11-01 — P1.3 resource bridge and permission race model verified
+
+- **CI:** [run 41395991124](https://github.com/bob8675309/DNDNEXT/actions/runs/41395991124), job 125117310710, SHA 0ffcd12b066e578baf6a48ff705f7ec439c0c944, all seven GitHub checks success; slot cases 12–14 and permission cases 15–16 passed.
+- **Spell bridge:** Actual mirror/sync source prevented overspend across two snapshots in isolated PostgreSQL. The S-to-C bridge collided with a **synthetic** C-first transaction and produced a test-only deadlock with consistent rollback.
+- **Permission:** Exact control-helper approval became stale when grant revocation preceded a **simulated** actor action; explicit permission row locking serialized the comparison test. Neither is a confirmed exploit in a deployed command.
+- **Boundaries:** No real JWT, maintenance writer, combat command, live SQL, migration, grant or world/town map changes. TC1 Option A and historical overlap preservation remain intact. [Detailed evidence](P1_3_Spell_Slot_and_Revocation_PG16_2026-11-01.md).
+- **Next single action:** find production resource/permission writers and test actual source-derived mixed-command lock and revocation behavior; P1.3/P1.5 remain OPEN.

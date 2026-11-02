@@ -50,3 +50,8 @@ At start: complete session gates S0–S2 in [PHASED_DEVELOPMENT_CHECKLIST.md](PH
 ## Current next P1.3 evidence — turn-start expiry
 
 [Exact-source turn-start expiry PG16 test](P1_3_Turn_Start_Expiry_Lock_Race_2026-11-01.md) **PASS** on [GitHub run 41394548206](https://github.com/bob8675309/DNDNEXT/actions/runs/41394548206) at `b2db2f8`. The source-derived E→X→P expiry path deadlocked against a target P→E writer in scratch PostgreSQL; E-first prelocking avoided only this pair. **One next action:** build a source-derived `encounter_spell_slots` S→C bridge/sync and grant-revocation two-session test, then expand to legacy cast and reaction paths. No production SQL or release authorization.
+
+
+## Current P1.3 results: S/C sync and grant revocation
+
+[Slot and permission race evidence](P1_3_Spell_Slot_and_Revocation_PG16_2026-11-01.md) passed five scratch PG16 cases on run 41395991124, tested SHA 0ffcd12. Exact deployed mirror/sync and control helper bodies were used, but the C-first maintenance writer and post-check action were **synthetic**. **Next single task:** identify real resource-maintenance and grant-revocation writer lock orders, then run source-derived mixed-version/JWT concurrency tests. P1.3/P1.5 incomplete; no production SQL authorized.

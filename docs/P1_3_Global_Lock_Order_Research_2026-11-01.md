@@ -94,3 +94,7 @@ Hard blockers: expiry trigger E→X→P may access unanticipated P; spell S→C 
 ## Verified turn-start trigger E→X→P inversion in disposable PostgreSQL
 
 The exact live [turn-start expiry trigger race report](P1_3_Turn_Start_Expiry_Lock_Race_2026-11-01.md) documents two additional isolated PostgreSQL cases. [Run 41394548206](https://github.com/bob8675309/DNDNEXT/actions/runs/41394548206) on `b2db2f8` passed: a target P-first transaction and E-triggered X→P speed reset deadlocked on the **same target row**; an E-first positive control finished safely for that pair. This confirms another **source-derived** incompatible lock interleaving, not a live production incident. Slot bridge S→C, unique-index upserts and permission locks remain outstanding. **P1.3 stays open.**
+
+## Spell-slot S/C and permission-revocation fixture: verified
+
+[Five-case source-derived research report](P1_3_Spell_Slot_and_Revocation_PG16_2026-11-01.md) passed on [run 41395991124](https://github.com/bob8675309/DNDNEXT/actions/runs/41395991124), tested SHA 0ffcd12. Persistent slots rejected one overspend across two historical snapshots; two available spends succeeded. The original S-to-C bridge deadlocked against a **synthetic C-first** transaction. The original control helper demonstrated a stale permission check only when followed by a **simulated action**, while a row lock serialized the positive control. These are not production incidents or a safe universal order. P1.3 remains open.
