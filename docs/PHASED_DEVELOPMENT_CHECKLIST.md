@@ -117,7 +117,7 @@ These represent planned work and known evidence **as of 2026-11-01**. Phase orde
 
 **Baseline:** Deployed `encounter_use_core_action_v1` returns cached results before current authorization and does not bind original requester/action intent. Held PR #312 includes private research with isolated JWT tests but **not a safe isolated rollout**. Another character is in two active encounters in live data (observed at audit, no exploit inferred).
 
-- [ ] P1.1 Inventory live command writers: core actions, movement, opportunity/reactions, attack, cast, event log, resource changes, end turn and relevant triggers. Map their callers, grants and lock sequence.
+- [x] P1.1 Inventory live command writers: 22 spell-cast names (14 ledger processors plus eight wrappers), eight additional non-spell ledger writers, 14 directly mutating Admin encounter/map RPCs, character slot/rest/progression writers and trigger expansion; document current clients, grants, replay/lock gaps, with live read-only SQL and a dated P1.1 evidence matrix. **This is an audit milestone, not a security fix or comprehensive gameplay test.**
 - [ ] P1.2 Define the canonical idempotency key and immutable request ownership: encounter, participant/actor, requester, action and typed original intent; specify legacy/pending requests and revocation behavior.
 - [ ] P1.3 Standardize encounter → participant → request/ledger/resource lock ordering **across all affected commands**, including conflicts with current triggers. Identify rollback/deadlock cases.
 - [ ] P1.4 Establish current-controller checks **before** duplicate lookup/replay. Verify admin/service-role handling without broadening client privileges.
