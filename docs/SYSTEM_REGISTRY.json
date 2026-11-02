@@ -106,9 +106,9 @@
       "tests": [],
       "last_checked": "2026-11-01",
       "open_gaps": [
-        "P1.3 deployed Admin Start E->P versus staged participant update P->E **deadlock reproduced in scratch PG16**, run 41392432969 at 30c646e; same E-first prelock positive control passed. docs/P1_3_Staging_Start_Lock_Race_2026-11-01.md. NOT production incident or global fix.",
-        "Trigger/slot/permission/legacy action mixed locks still unproven, including E->X->P and S->C.",
-        "TC1 Option A approved but P1.5 guard not installed; preserve existing active encounter overlap for GM review."
+        "P1.3 source-derived turn-start trigger E->X->P versus target P->E deadlock reproduced in **disposable** PostgreSQL16 on run 41394548206 commit b2db2f8. Real original trigger source and same target P; NOT a production incident or a global lock solution. See docs/P1_3_Turn_Start_Expiry_Lock_Race_2026-11-01.md.",
+        "Slot bridge S->C includes sync_character_spell_slots_v1 upsert/deletes before FOR UPDATE C; full source-derived concurrent bridge/grant/legacy command proof still pending.",
+        "TC1 Option A approved but P1.5 guard unimplemented and one existing live overlapping character requires GM review."
       ],
       "label": "Combat replay authorization",
       "scope_note": "Private candidate executor tested on held PR #312; public legacy RPC still has early replay shortcut.",
@@ -116,7 +116,7 @@
         "source": "inspected-relevant-entry-points-on-main",
         "live_database": "read-only-function-grant-rls-trigger-constraint-inventory-2026-11-01",
         "deployed_sha": "not-deployed-research-or-future",
-        "test_status": "P1.3-exact-source-Start-Staging-PG16-deadlock-PASS-run-41392432969-not-production",
+        "test_status": "P1.3-source-expiry-PG16-cases-10-11-PASS-run-41394548206;global-order-not-proven",
         "browser_acceptance": "unverified-this-audit",
         "owner_approval": "TC1 Option A owner-approved product policy only; no SQL/merge/runtime grant approval"
       },

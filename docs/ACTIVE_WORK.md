@@ -45,3 +45,8 @@ At start: complete session gates S0–S2 in [PHASED_DEVELOPMENT_CHECKLIST.md](PH
 ## P1.3 source-derived row inversion confirmed (isolated)
 
 [Exact-source Start/Staging PG16 race](P1_3_Staging_Start_Lock_Race_2026-11-01.md) passed at run `41392432969`: PostgreSQL reported a deadlock for same-row E→P/P→E interleaving, while E-first prelock avoided this single cycle. **One next action:** model/verify trigger-expiry, slot bridge, permission revocation and legacy command lock ordering before selecting any production transaction design. P1.3/P1.5 remain open.
+
+
+## Current next P1.3 evidence — turn-start expiry
+
+[Exact-source turn-start expiry PG16 test](P1_3_Turn_Start_Expiry_Lock_Race_2026-11-01.md) **PASS** on [GitHub run 41394548206](https://github.com/bob8675309/DNDNEXT/actions/runs/41394548206) at `b2db2f8`. The source-derived E→X→P expiry path deadlocked against a target P→E writer in scratch PostgreSQL; E-first prelocking avoided only this pair. **One next action:** build a source-derived `encounter_spell_slots` S→C bridge/sync and grant-revocation two-session test, then expand to legacy cast and reaction paths. No production SQL or release authorization.

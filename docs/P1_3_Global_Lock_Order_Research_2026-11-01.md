@@ -90,3 +90,7 @@ Hard blockers: expiry trigger E→X→P may access unanticipated P; spell S→C 
 ## Verified same-row E/P inversion — disposable exact-source test
 
 [Run 41392432969](https://github.com/bob8675309/DNDNEXT/actions/runs/41392432969) at `30c646e` **passed** two new source-derived race tests: deployed Admin Start (E→P) and Admin Staging Update (P→E) deadlocked in a deliberately coordinated scratch PG16 transaction; E-first prelocking serialized only this pair. Full [evidence and limitations](P1_3_Staging_Start_Lock_Race_2026-11-01.md). **Not a live production deadlock and not a globally certified order.**
+
+## Verified turn-start trigger E→X→P inversion in disposable PostgreSQL
+
+The exact live [turn-start expiry trigger race report](P1_3_Turn_Start_Expiry_Lock_Race_2026-11-01.md) documents two additional isolated PostgreSQL cases. [Run 41394548206](https://github.com/bob8675309/DNDNEXT/actions/runs/41394548206) on `b2db2f8` passed: a target P-first transaction and E-triggered X→P speed reset deadlocked on the **same target row**; an E-first positive control finished safely for that pair. This confirms another **source-derived** incompatible lock interleaving, not a live production incident. Slot bridge S→C, unique-index upserts and permission locks remain outstanding. **P1.3 stays open.**

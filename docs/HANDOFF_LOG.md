@@ -108,3 +108,11 @@
 - **Exact evidence:** [run 41392432969](https://github.com/bob8675309/DNDNEXT/actions/runs/41392432969) / job `125106533413`, commit `30c646ee8a235e21036548f6f3796133fc1b4b2b`, all seven GitHub checks PASS. Logs explicitly report PostgreSQL `deadlock detected` for a scheduled same-row conflict using the original Start and Staging-Update bodies, plus a successful E-first prelock positive control.
 - **Safety:** This occurred only in isolated PG16 with mocked dependencies and explicitly orchestrated transactions; no live production incident, SQL write or database change. [Detailed evidence](P1_3_Staging_Start_Lock_Race_2026-11-01.md).
 - **Next task:** Expand to actual effect expiry and slot-bridge triggers, permission/authorization locking and old spell versions. No merge or production rollout.
+
+## 2026-11-01 — P1.3 source turn-start expiry deadlock verified (scratch PG16)
+
+- **CI evidence:** [run 41394548206](https://github.com/bob8675309/DNDNEXT/actions/runs/41394548206), job `125112944491`, commit `b2db2f8af7c5d2d745072422adf2e5317e65ba82`; all **7 GitHub checks PASSED**. Tests 10 and 11 complete on exact deployed turn-start trigger and speed-penalty helper source in mock schema.
+- **Observation:** Source-derived E→X→P trigger reached the **same target P** held by a participant-first transaction; PostgreSQL logged `deadlock detected` in disposable PG16. Transactional effect/log consistency asserted. Positive control using E-first prelock completed the expiry/log, **only for this pair**.
+- **Additional SELECT-only source:** slot bridge S→C calls `sync_character_spell_slots_v1` before locking C; sync includes persistent pool upsert/deletion and can introduce unique waits. Not yet concurrently tested.
+- **Safety:** No live Supabase writes, runtime changes, map edits, AI or migrations. Draft PR #317 unmerged; P1.3/P1.5 unchecked. [Full evidence](P1_3_Turn_Start_Expiry_Lock_Race_2026-11-01.md).
+- **Next one task:** build source-derived S→C sync and authorization/revocation race fixtures with real two-session PG16 before selecting transaction order.
