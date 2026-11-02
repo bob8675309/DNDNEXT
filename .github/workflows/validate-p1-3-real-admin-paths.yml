@@ -9,6 +9,9 @@ on:
       - 'scripts/fixtures/p1_3_staging_lock_race_pg16_setup.sql'
       - 'scripts/fixtures/p1_3_staging_lock_race_pg16_live_source.sql'
       - 'scripts/fixtures/p1_3_staging_lock_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_turn_expiry_live_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_turn_expiry_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_turn_expiry_race_pg16.sh'
       - 'docs/P1_3_Real_Admin_Activation_Resume_Test_2026-11-01.md'
       - '.github/workflows/validate-p1-3-real-admin-paths.yml'
   push:
@@ -21,6 +24,9 @@ on:
       - 'scripts/fixtures/p1_3_staging_lock_race_pg16_setup.sql'
       - 'scripts/fixtures/p1_3_staging_lock_race_pg16_live_source.sql'
       - 'scripts/fixtures/p1_3_staging_lock_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_turn_expiry_live_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_turn_expiry_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_turn_expiry_race_pg16.sh'
       - 'docs/P1_3_Real_Admin_Activation_Resume_Test_2026-11-01.md'
       - '.github/workflows/validate-p1-3-real-admin-paths.yml'
 permissions:
@@ -69,3 +75,9 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_staging_lock_race_pg16_live_source.sql
       - name: Reproduce source-derived Start versus Staging P/E inversion
         run: bash scripts/fixtures/p1_3_staging_lock_race_pg16.sh
+      - name: Load real turn-start effect trigger into scratch PG16
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_turn_expiry_setup_pg16.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_turn_expiry_live_source_pg16.sql
+      - name: Reproduce E-X-P versus P-E lock race with deployed effect trigger
+        run: bash scripts/fixtures/p1_3_turn_expiry_race_pg16.sh
