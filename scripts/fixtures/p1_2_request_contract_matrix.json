@@ -1,0 +1,899 @@
+{
+  "schema_version": 1,
+  "kind": "DECLARATIVE_DESIGN_ONLY_NOT_EXECUTABLE_SECURITY_TEST",
+  "base_main_sha": "7727d75a92abb5904fdb7fd4e109accfe8e4603f",
+  "families": [
+    {
+      "id": "core_action",
+      "typed_fields": [
+        "action"
+      ],
+      "rpc": "encounter_use_core_action_v1"
+    },
+    {
+      "id": "move",
+      "typed_fields": [
+        "orderedPath"
+      ],
+      "rpc": "encounter_move_active_participant_v1"
+    },
+    {
+      "id": "end_turn",
+      "typed_fields": [],
+      "rpc": "encounter_end_turn_v1"
+    },
+    {
+      "id": "weapon_attack",
+      "typed_fields": [
+        "targetId",
+        "inventoryItemId"
+      ],
+      "rpc": "encounter_weapon_attack_v1"
+    },
+    {
+      "id": "unarmed_strike",
+      "typed_fields": [
+        "targetId"
+      ],
+      "rpc": "encounter_unarmed_strike_v1"
+    },
+    {
+      "id": "reaction",
+      "typed_fields": [
+        "windowId",
+        "choice",
+        "inventoryItemId"
+      ],
+      "rpc": "encounter_resolve_opportunity_reaction_v1"
+    },
+    {
+      "id": "save",
+      "typed_fields": [
+        "ability",
+        "dc",
+        "sourceParticipantId"
+      ],
+      "rpc": "encounter_roll_save_v1"
+    },
+    {
+      "id": "admin_effect",
+      "typed_fields": [
+        "sourceId",
+        "targetId",
+        "effectVersion",
+        "effectPayload"
+      ],
+      "rpc": "admin_apply_encounter_effect_v1"
+    },
+    {
+      "id": "spell_single",
+      "typed_fields": [
+        "assignmentId",
+        "spellQualifiedKey",
+        "targetId",
+        "slotLevel",
+        "rulesVersion"
+      ],
+      "rpc": "encounter_cast_spell_v1..v13"
+    },
+    {
+      "id": "spell_selected_area",
+      "typed_fields": [
+        "assignmentId",
+        "spellQualifiedKey",
+        "targetIdsUniqueSorted",
+        "slotLevel"
+      ],
+      "rpc": "encounter_cast_area_spell_v1"
+    },
+    {
+      "id": "spell_allocated",
+      "typed_fields": [
+        "assignmentId",
+        "spellQualifiedKey",
+        "targetDartCounts",
+        "slotLevel"
+      ],
+      "rpc": "encounter_cast_allocated_spell_v1"
+    },
+    {
+      "id": "spell_point",
+      "typed_fields": [
+        "assignmentId",
+        "spellQualifiedKey",
+        "originQ",
+        "originR",
+        "slotLevel"
+      ],
+      "rpc": "encounter_cast_point_area_spell_v1"
+    },
+    {
+      "id": "spell_directional",
+      "typed_fields": [
+        "assignmentId",
+        "spellQualifiedKey",
+        "direction0To5",
+        "slotLevel"
+      ],
+      "rpc": "encounter_cast_directional_area_spell_v1/v2"
+    }
+  ],
+  "cases": [
+    {
+      "id": "core_action.valid_new",
+      "family": "core_action",
+      "scenario": "valid_new",
+      "expected": "EXECUTE_ONCE"
+    },
+    {
+      "id": "core_action.exact_authorized_completed_retry",
+      "family": "core_action",
+      "scenario": "exact_authorized_completed_retry",
+      "expected": "REPLAY_RESULT"
+    },
+    {
+      "id": "core_action.different_requester_same_uuid",
+      "family": "core_action",
+      "scenario": "different_requester_same_uuid",
+      "expected": "DENY"
+    },
+    {
+      "id": "core_action.different_intent_same_uuid",
+      "family": "core_action",
+      "scenario": "different_intent_same_uuid",
+      "expected": "CONFLICT"
+    },
+    {
+      "id": "core_action.revoked_controller",
+      "family": "core_action",
+      "scenario": "revoked_controller",
+      "expected": "DENY"
+    },
+    {
+      "id": "core_action.pending_result",
+      "family": "core_action",
+      "scenario": "pending_result",
+      "expected": "RETRY_LATER"
+    },
+    {
+      "id": "core_action.legacy_null_requester",
+      "family": "core_action",
+      "scenario": "legacy_null_requester",
+      "expected": "UNVERIFIABLE"
+    },
+    {
+      "id": "core_action.hidden_result_or_target",
+      "family": "core_action",
+      "scenario": "hidden_result_or_target",
+      "expected": "DENY_OR_REDACT"
+    },
+    {
+      "id": "core_action.old_turn_same_authorized_request",
+      "family": "core_action",
+      "scenario": "old_turn_same_authorized_request",
+      "expected": "REPLAY_RESULT"
+    },
+    {
+      "id": "move.valid_new",
+      "family": "move",
+      "scenario": "valid_new",
+      "expected": "EXECUTE_ONCE"
+    },
+    {
+      "id": "move.exact_authorized_completed_retry",
+      "family": "move",
+      "scenario": "exact_authorized_completed_retry",
+      "expected": "REPLAY_RESULT"
+    },
+    {
+      "id": "move.different_requester_same_uuid",
+      "family": "move",
+      "scenario": "different_requester_same_uuid",
+      "expected": "DENY"
+    },
+    {
+      "id": "move.different_intent_same_uuid",
+      "family": "move",
+      "scenario": "different_intent_same_uuid",
+      "expected": "CONFLICT"
+    },
+    {
+      "id": "move.revoked_controller",
+      "family": "move",
+      "scenario": "revoked_controller",
+      "expected": "DENY"
+    },
+    {
+      "id": "move.pending_result",
+      "family": "move",
+      "scenario": "pending_result",
+      "expected": "RETRY_LATER"
+    },
+    {
+      "id": "move.legacy_null_requester",
+      "family": "move",
+      "scenario": "legacy_null_requester",
+      "expected": "UNVERIFIABLE"
+    },
+    {
+      "id": "move.hidden_result_or_target",
+      "family": "move",
+      "scenario": "hidden_result_or_target",
+      "expected": "DENY_OR_REDACT"
+    },
+    {
+      "id": "move.old_turn_same_authorized_request",
+      "family": "move",
+      "scenario": "old_turn_same_authorized_request",
+      "expected": "REPLAY_RESULT"
+    },
+    {
+      "id": "end_turn.valid_new",
+      "family": "end_turn",
+      "scenario": "valid_new",
+      "expected": "EXECUTE_ONCE"
+    },
+    {
+      "id": "end_turn.exact_authorized_completed_retry",
+      "family": "end_turn",
+      "scenario": "exact_authorized_completed_retry",
+      "expected": "REPLAY_RESULT"
+    },
+    {
+      "id": "end_turn.different_requester_same_uuid",
+      "family": "end_turn",
+      "scenario": "different_requester_same_uuid",
+      "expected": "DENY"
+    },
+    {
+      "id": "end_turn.different_intent_same_uuid",
+      "family": "end_turn",
+      "scenario": "different_intent_same_uuid",
+      "expected": "CONFLICT"
+    },
+    {
+      "id": "end_turn.revoked_controller",
+      "family": "end_turn",
+      "scenario": "revoked_controller",
+      "expected": "DENY"
+    },
+    {
+      "id": "end_turn.pending_result",
+      "family": "end_turn",
+      "scenario": "pending_result",
+      "expected": "RETRY_LATER"
+    },
+    {
+      "id": "end_turn.legacy_null_requester",
+      "family": "end_turn",
+      "scenario": "legacy_null_requester",
+      "expected": "UNVERIFIABLE"
+    },
+    {
+      "id": "end_turn.hidden_result_or_target",
+      "family": "end_turn",
+      "scenario": "hidden_result_or_target",
+      "expected": "DENY_OR_REDACT"
+    },
+    {
+      "id": "end_turn.old_turn_same_authorized_request",
+      "family": "end_turn",
+      "scenario": "old_turn_same_authorized_request",
+      "expected": "REPLAY_RESULT"
+    },
+    {
+      "id": "weapon_attack.valid_new",
+      "family": "weapon_attack",
+      "scenario": "valid_new",
+      "expected": "EXECUTE_ONCE"
+    },
+    {
+      "id": "weapon_attack.exact_authorized_completed_retry",
+      "family": "weapon_attack",
+      "scenario": "exact_authorized_completed_retry",
+      "expected": "REPLAY_RESULT"
+    },
+    {
+      "id": "weapon_attack.different_requester_same_uuid",
+      "family": "weapon_attack",
+      "scenario": "different_requester_same_uuid",
+      "expected": "DENY"
+    },
+    {
+      "id": "weapon_attack.different_intent_same_uuid",
+      "family": "weapon_attack",
+      "scenario": "different_intent_same_uuid",
+      "expected": "CONFLICT"
+    },
+    {
+      "id": "weapon_attack.revoked_controller",
+      "family": "weapon_attack",
+      "scenario": "revoked_controller",
+      "expected": "DENY"
+    },
+    {
+      "id": "weapon_attack.pending_result",
+      "family": "weapon_attack",
+      "scenario": "pending_result",
+      "expected": "RETRY_LATER"
+    },
+    {
+      "id": "weapon_attack.legacy_null_requester",
+      "family": "weapon_attack",
+      "scenario": "legacy_null_requester",
+      "expected": "UNVERIFIABLE"
+    },
+    {
+      "id": "weapon_attack.hidden_result_or_target",
+      "family": "weapon_attack",
+      "scenario": "hidden_result_or_target",
+      "expected": "DENY_OR_REDACT"
+    },
+    {
+      "id": "weapon_attack.old_turn_same_authorized_request",
+      "family": "weapon_attack",
+      "scenario": "old_turn_same_authorized_request",
+      "expected": "REPLAY_RESULT"
+    },
+    {
+      "id": "unarmed_strike.valid_new",
+      "family": "unarmed_strike",
+      "scenario": "valid_new",
+      "expected": "EXECUTE_ONCE"
+    },
+    {
+      "id": "unarmed_strike.exact_authorized_completed_retry",
+      "family": "unarmed_strike",
+      "scenario": "exact_authorized_completed_retry",
+      "expected": "REPLAY_RESULT"
+    },
+    {
+      "id": "unarmed_strike.different_requester_same_uuid",
+      "family": "unarmed_strike",
+      "scenario": "different_requester_same_uuid",
+      "expected": "DENY"
+    },
+    {
+      "id": "unarmed_strike.different_intent_same_uuid",
+      "family": "unarmed_strike",
+      "scenario": "different_intent_same_uuid",
+      "expected": "CONFLICT"
+    },
+    {
+      "id": "unarmed_strike.revoked_controller",
+      "family": "unarmed_strike",
+      "scenario": "revoked_controller",
+      "expected": "DENY"
+    },
+    {
+      "id": "unarmed_strike.pending_result",
+      "family": "unarmed_strike",
+      "scenario": "pending_result",
+      "expected": "RETRY_LATER"
+    },
+    {
+      "id": "unarmed_strike.legacy_null_requester",
+      "family": "unarmed_strike",
+      "scenario": "legacy_null_requester",
+      "expected": "UNVERIFIABLE"
+    },
+    {
+      "id": "unarmed_strike.hidden_result_or_target",
+      "family": "unarmed_strike",
+      "scenario": "hidden_result_or_target",
+      "expected": "DENY_OR_REDACT"
+    },
+    {
+      "id": "unarmed_strike.old_turn_same_authorized_request",
+      "family": "unarmed_strike",
+      "scenario": "old_turn_same_authorized_request",
+      "expected": "REPLAY_RESULT"
+    },
+    {
+      "id": "reaction.valid_new",
+      "family": "reaction",
+      "scenario": "valid_new",
+      "expected": "EXECUTE_ONCE"
+    },
+    {
+      "id": "reaction.exact_authorized_completed_retry",
+      "family": "reaction",
+      "scenario": "exact_authorized_completed_retry",
+      "expected": "REPLAY_RESULT"
+    },
+    {
+      "id": "reaction.different_requester_same_uuid",
+      "family": "reaction",
+      "scenario": "different_requester_same_uuid",
+      "expected": "DENY"
+    },
+    {
+      "id": "reaction.different_intent_same_uuid",
+      "family": "reaction",
+      "scenario": "different_intent_same_uuid",
+      "expected": "CONFLICT"
+    },
+    {
+      "id": "reaction.revoked_controller",
+      "family": "reaction",
+      "scenario": "revoked_controller",
+      "expected": "DENY"
+    },
+    {
+      "id": "reaction.pending_result",
+      "family": "reaction",
+      "scenario": "pending_result",
+      "expected": "RETRY_LATER"
+    },
+    {
+      "id": "reaction.legacy_null_requester",
+      "family": "reaction",
+      "scenario": "legacy_null_requester",
+      "expected": "UNVERIFIABLE"
+    },
+    {
+      "id": "reaction.hidden_result_or_target",
+      "family": "reaction",
+      "scenario": "hidden_result_or_target",
+      "expected": "DENY_OR_REDACT"
+    },
+    {
+      "id": "reaction.old_turn_same_authorized_request",
+      "family": "reaction",
+      "scenario": "old_turn_same_authorized_request",
+      "expected": "REPLAY_RESULT"
+    },
+    {
+      "id": "save.valid_new",
+      "family": "save",
+      "scenario": "valid_new",
+      "expected": "EXECUTE_ONCE"
+    },
+    {
+      "id": "save.exact_authorized_completed_retry",
+      "family": "save",
+      "scenario": "exact_authorized_completed_retry",
+      "expected": "REPLAY_RESULT"
+    },
+    {
+      "id": "save.different_requester_same_uuid",
+      "family": "save",
+      "scenario": "different_requester_same_uuid",
+      "expected": "DENY"
+    },
+    {
+      "id": "save.different_intent_same_uuid",
+      "family": "save",
+      "scenario": "different_intent_same_uuid",
+      "expected": "CONFLICT"
+    },
+    {
+      "id": "save.revoked_controller",
+      "family": "save",
+      "scenario": "revoked_controller",
+      "expected": "DENY"
+    },
+    {
+      "id": "save.pending_result",
+      "family": "save",
+      "scenario": "pending_result",
+      "expected": "RETRY_LATER"
+    },
+    {
+      "id": "save.legacy_null_requester",
+      "family": "save",
+      "scenario": "legacy_null_requester",
+      "expected": "UNVERIFIABLE"
+    },
+    {
+      "id": "save.hidden_result_or_target",
+      "family": "save",
+      "scenario": "hidden_result_or_target",
+      "expected": "DENY_OR_REDACT"
+    },
+    {
+      "id": "save.old_turn_same_authorized_request",
+      "family": "save",
+      "scenario": "old_turn_same_authorized_request",
+      "expected": "REPLAY_RESULT"
+    },
+    {
+      "id": "admin_effect.valid_new",
+      "family": "admin_effect",
+      "scenario": "valid_new",
+      "expected": "EXECUTE_ONCE"
+    },
+    {
+      "id": "admin_effect.exact_authorized_completed_retry",
+      "family": "admin_effect",
+      "scenario": "exact_authorized_completed_retry",
+      "expected": "REPLAY_RESULT"
+    },
+    {
+      "id": "admin_effect.different_requester_same_uuid",
+      "family": "admin_effect",
+      "scenario": "different_requester_same_uuid",
+      "expected": "DENY"
+    },
+    {
+      "id": "admin_effect.different_intent_same_uuid",
+      "family": "admin_effect",
+      "scenario": "different_intent_same_uuid",
+      "expected": "CONFLICT"
+    },
+    {
+      "id": "admin_effect.revoked_controller",
+      "family": "admin_effect",
+      "scenario": "revoked_controller",
+      "expected": "DENY"
+    },
+    {
+      "id": "admin_effect.pending_result",
+      "family": "admin_effect",
+      "scenario": "pending_result",
+      "expected": "RETRY_LATER"
+    },
+    {
+      "id": "admin_effect.legacy_null_requester",
+      "family": "admin_effect",
+      "scenario": "legacy_null_requester",
+      "expected": "UNVERIFIABLE"
+    },
+    {
+      "id": "admin_effect.hidden_result_or_target",
+      "family": "admin_effect",
+      "scenario": "hidden_result_or_target",
+      "expected": "DENY_OR_REDACT"
+    },
+    {
+      "id": "admin_effect.old_turn_same_authorized_request",
+      "family": "admin_effect",
+      "scenario": "old_turn_same_authorized_request",
+      "expected": "REPLAY_RESULT"
+    },
+    {
+      "id": "spell_single.valid_new",
+      "family": "spell_single",
+      "scenario": "valid_new",
+      "expected": "EXECUTE_ONCE"
+    },
+    {
+      "id": "spell_single.exact_authorized_completed_retry",
+      "family": "spell_single",
+      "scenario": "exact_authorized_completed_retry",
+      "expected": "REPLAY_RESULT"
+    },
+    {
+      "id": "spell_single.different_requester_same_uuid",
+      "family": "spell_single",
+      "scenario": "different_requester_same_uuid",
+      "expected": "DENY"
+    },
+    {
+      "id": "spell_single.different_intent_same_uuid",
+      "family": "spell_single",
+      "scenario": "different_intent_same_uuid",
+      "expected": "CONFLICT"
+    },
+    {
+      "id": "spell_single.revoked_controller",
+      "family": "spell_single",
+      "scenario": "revoked_controller",
+      "expected": "DENY"
+    },
+    {
+      "id": "spell_single.pending_result",
+      "family": "spell_single",
+      "scenario": "pending_result",
+      "expected": "RETRY_LATER"
+    },
+    {
+      "id": "spell_single.legacy_null_requester",
+      "family": "spell_single",
+      "scenario": "legacy_null_requester",
+      "expected": "UNVERIFIABLE"
+    },
+    {
+      "id": "spell_single.hidden_result_or_target",
+      "family": "spell_single",
+      "scenario": "hidden_result_or_target",
+      "expected": "DENY_OR_REDACT"
+    },
+    {
+      "id": "spell_single.old_turn_same_authorized_request",
+      "family": "spell_single",
+      "scenario": "old_turn_same_authorized_request",
+      "expected": "REPLAY_RESULT"
+    },
+    {
+      "id": "spell_selected_area.valid_new",
+      "family": "spell_selected_area",
+      "scenario": "valid_new",
+      "expected": "EXECUTE_ONCE"
+    },
+    {
+      "id": "spell_selected_area.exact_authorized_completed_retry",
+      "family": "spell_selected_area",
+      "scenario": "exact_authorized_completed_retry",
+      "expected": "REPLAY_RESULT"
+    },
+    {
+      "id": "spell_selected_area.different_requester_same_uuid",
+      "family": "spell_selected_area",
+      "scenario": "different_requester_same_uuid",
+      "expected": "DENY"
+    },
+    {
+      "id": "spell_selected_area.different_intent_same_uuid",
+      "family": "spell_selected_area",
+      "scenario": "different_intent_same_uuid",
+      "expected": "CONFLICT"
+    },
+    {
+      "id": "spell_selected_area.revoked_controller",
+      "family": "spell_selected_area",
+      "scenario": "revoked_controller",
+      "expected": "DENY"
+    },
+    {
+      "id": "spell_selected_area.pending_result",
+      "family": "spell_selected_area",
+      "scenario": "pending_result",
+      "expected": "RETRY_LATER"
+    },
+    {
+      "id": "spell_selected_area.legacy_null_requester",
+      "family": "spell_selected_area",
+      "scenario": "legacy_null_requester",
+      "expected": "UNVERIFIABLE"
+    },
+    {
+      "id": "spell_selected_area.hidden_result_or_target",
+      "family": "spell_selected_area",
+      "scenario": "hidden_result_or_target",
+      "expected": "DENY_OR_REDACT"
+    },
+    {
+      "id": "spell_selected_area.old_turn_same_authorized_request",
+      "family": "spell_selected_area",
+      "scenario": "old_turn_same_authorized_request",
+      "expected": "REPLAY_RESULT"
+    },
+    {
+      "id": "spell_allocated.valid_new",
+      "family": "spell_allocated",
+      "scenario": "valid_new",
+      "expected": "EXECUTE_ONCE"
+    },
+    {
+      "id": "spell_allocated.exact_authorized_completed_retry",
+      "family": "spell_allocated",
+      "scenario": "exact_authorized_completed_retry",
+      "expected": "REPLAY_RESULT"
+    },
+    {
+      "id": "spell_allocated.different_requester_same_uuid",
+      "family": "spell_allocated",
+      "scenario": "different_requester_same_uuid",
+      "expected": "DENY"
+    },
+    {
+      "id": "spell_allocated.different_intent_same_uuid",
+      "family": "spell_allocated",
+      "scenario": "different_intent_same_uuid",
+      "expected": "CONFLICT"
+    },
+    {
+      "id": "spell_allocated.revoked_controller",
+      "family": "spell_allocated",
+      "scenario": "revoked_controller",
+      "expected": "DENY"
+    },
+    {
+      "id": "spell_allocated.pending_result",
+      "family": "spell_allocated",
+      "scenario": "pending_result",
+      "expected": "RETRY_LATER"
+    },
+    {
+      "id": "spell_allocated.legacy_null_requester",
+      "family": "spell_allocated",
+      "scenario": "legacy_null_requester",
+      "expected": "UNVERIFIABLE"
+    },
+    {
+      "id": "spell_allocated.hidden_result_or_target",
+      "family": "spell_allocated",
+      "scenario": "hidden_result_or_target",
+      "expected": "DENY_OR_REDACT"
+    },
+    {
+      "id": "spell_allocated.old_turn_same_authorized_request",
+      "family": "spell_allocated",
+      "scenario": "old_turn_same_authorized_request",
+      "expected": "REPLAY_RESULT"
+    },
+    {
+      "id": "spell_point.valid_new",
+      "family": "spell_point",
+      "scenario": "valid_new",
+      "expected": "EXECUTE_ONCE"
+    },
+    {
+      "id": "spell_point.exact_authorized_completed_retry",
+      "family": "spell_point",
+      "scenario": "exact_authorized_completed_retry",
+      "expected": "REPLAY_RESULT"
+    },
+    {
+      "id": "spell_point.different_requester_same_uuid",
+      "family": "spell_point",
+      "scenario": "different_requester_same_uuid",
+      "expected": "DENY"
+    },
+    {
+      "id": "spell_point.different_intent_same_uuid",
+      "family": "spell_point",
+      "scenario": "different_intent_same_uuid",
+      "expected": "CONFLICT"
+    },
+    {
+      "id": "spell_point.revoked_controller",
+      "family": "spell_point",
+      "scenario": "revoked_controller",
+      "expected": "DENY"
+    },
+    {
+      "id": "spell_point.pending_result",
+      "family": "spell_point",
+      "scenario": "pending_result",
+      "expected": "RETRY_LATER"
+    },
+    {
+      "id": "spell_point.legacy_null_requester",
+      "family": "spell_point",
+      "scenario": "legacy_null_requester",
+      "expected": "UNVERIFIABLE"
+    },
+    {
+      "id": "spell_point.hidden_result_or_target",
+      "family": "spell_point",
+      "scenario": "hidden_result_or_target",
+      "expected": "DENY_OR_REDACT"
+    },
+    {
+      "id": "spell_point.old_turn_same_authorized_request",
+      "family": "spell_point",
+      "scenario": "old_turn_same_authorized_request",
+      "expected": "REPLAY_RESULT"
+    },
+    {
+      "id": "spell_directional.valid_new",
+      "family": "spell_directional",
+      "scenario": "valid_new",
+      "expected": "EXECUTE_ONCE"
+    },
+    {
+      "id": "spell_directional.exact_authorized_completed_retry",
+      "family": "spell_directional",
+      "scenario": "exact_authorized_completed_retry",
+      "expected": "REPLAY_RESULT"
+    },
+    {
+      "id": "spell_directional.different_requester_same_uuid",
+      "family": "spell_directional",
+      "scenario": "different_requester_same_uuid",
+      "expected": "DENY"
+    },
+    {
+      "id": "spell_directional.different_intent_same_uuid",
+      "family": "spell_directional",
+      "scenario": "different_intent_same_uuid",
+      "expected": "CONFLICT"
+    },
+    {
+      "id": "spell_directional.revoked_controller",
+      "family": "spell_directional",
+      "scenario": "revoked_controller",
+      "expected": "DENY"
+    },
+    {
+      "id": "spell_directional.pending_result",
+      "family": "spell_directional",
+      "scenario": "pending_result",
+      "expected": "RETRY_LATER"
+    },
+    {
+      "id": "spell_directional.legacy_null_requester",
+      "family": "spell_directional",
+      "scenario": "legacy_null_requester",
+      "expected": "UNVERIFIABLE"
+    },
+    {
+      "id": "spell_directional.hidden_result_or_target",
+      "family": "spell_directional",
+      "scenario": "hidden_result_or_target",
+      "expected": "DENY_OR_REDACT"
+    },
+    {
+      "id": "spell_directional.old_turn_same_authorized_request",
+      "family": "spell_directional",
+      "scenario": "old_turn_same_authorized_request",
+      "expected": "REPLAY_RESULT"
+    }
+  ],
+  "special_cases": [
+    {
+      "id": "reaction.resolved_window_wrong_caller",
+      "family": "reaction",
+      "scenario": "resolved_window_wrong_caller",
+      "expected": "DENY"
+    },
+    {
+      "id": "end_turn.same_uuid_different_actor",
+      "family": "end_turn",
+      "scenario": "same_uuid_different_actor",
+      "expected": "CONFLICT"
+    },
+    {
+      "id": "move.same_hexes_different_order",
+      "family": "move",
+      "scenario": "same_hexes_different_order",
+      "expected": "CONFLICT"
+    },
+    {
+      "id": "spell_allocated.redistributed_dart_counts",
+      "family": "spell_allocated",
+      "scenario": "redistributed_dart_counts",
+      "expected": "CONFLICT"
+    },
+    {
+      "id": "spell_selected_area.duplicate_target_input",
+      "family": "spell_selected_area",
+      "scenario": "duplicate_target_input",
+      "expected": "INVALID"
+    },
+    {
+      "id": "spell_directional.different_facing_same_uuid",
+      "family": "spell_directional",
+      "scenario": "different_facing_same_uuid",
+      "expected": "CONFLICT"
+    },
+    {
+      "id": "spell_point.different_origin_hex_same_uuid",
+      "family": "spell_point",
+      "scenario": "different_origin_hex_same_uuid",
+      "expected": "CONFLICT"
+    },
+    {
+      "id": "spell_single.old_version_rpc_bypass",
+      "family": "spell_single",
+      "scenario": "old_version_rpc_bypass",
+      "expected": "DENY"
+    },
+    {
+      "id": "admin_effect.admin_impersonates_original_player",
+      "family": "admin_effect",
+      "scenario": "admin_impersonates_original_player",
+      "expected": "DENY"
+    },
+    {
+      "id": "core_action.two_controller_one_npc_new_uuid",
+      "family": "core_action",
+      "scenario": "two_controller_one_npc_new_uuid",
+      "expected": "EXECUTE_IF_ACTION_AVAILABLE"
+    },
+    {
+      "id": "spell_single.one_canonical_character_two_encounters",
+      "family": "spell_single",
+      "scenario": "one_canonical_character_two_encounters",
+      "expected": "BLOCKED_P1_5"
+    },
+    {
+      "id": "save.changed_dc_same_uuid",
+      "family": "save",
+      "scenario": "changed_dc_same_uuid",
+      "expected": "CONFLICT"
+    }
+  ]
+}

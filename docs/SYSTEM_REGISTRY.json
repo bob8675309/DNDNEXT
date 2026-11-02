@@ -106,9 +106,9 @@
       "tests": [],
       "last_checked": "2026-11-01",
       "open_gaps": [
-        "2026-11-01 P1.1 audited 22 public cast names (14 direct ledger processors, 8 wrappers), eight other ledger writers, admin/resource paths and live trigger graph. See docs/P1_1_Tactical_Command_Authority_Live_Audit_2026-11-01.md.",
-        "Current public replay paths do not compare original request-row requested_by; some return cached results before current control, while reaction/save/Admin effect have distinct guard orders. Immutable intent/pending/revocation/visibility handling remains P1.2 design work.",
-        "Same canonical character appears in two active encounters; cross-encounter resource locking and global mixed-version order remain undecided. Do not deploy a private single-core-action-only fix."
+        "2026-11-01 proposed P1.2 immutable requester/actor/intent/replay and fresh authorization contract (docs/P1_2_Command_Replay_Contract_2026-11-01.md); owner signoff R1–R4 pending.",
+        "Live command ledger aggregate: 78 rows and 20 null requested_by, no null results at checkpoint; historical typed original intent absent; fail-closed policy is proposed, not implemented.",
+        "P1.3 global mixed-version lock ordering, P1.5 same-character multiple-active-encounters, NPC delegated visibility, isolated genuine JWT races, and production rollout all unresolved."
       ],
       "label": "Combat replay authorization",
       "scope_note": "Private candidate executor tested on held PR #312; public legacy RPC still has early replay shortcut.",
@@ -116,7 +116,7 @@
         "source": "inspected-relevant-entry-points-on-main",
         "live_database": "read-only-function-grant-rls-trigger-constraint-inventory-2026-11-01",
         "deployed_sha": "not-deployed-research-or-future",
-        "test_status": "source-and-query-audit-only-no-new-signed-user-test-or-gameplay-changes",
+        "test_status": "P1.2-declarative-case-checker-not-runtime-test",
         "browser_acceptance": "unverified-this-audit",
         "owner_approval": "not-claimed-from-source-or-ci"
       },
