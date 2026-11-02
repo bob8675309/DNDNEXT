@@ -50,3 +50,11 @@
 - **Other boundary:** 2 active encounters, 4 character participations, 3 distinct characters, one present in two active encounters (aggregate only). No live double spend or deadlock observed. Client source traced in combat/play/live/workspace, sheet resource module. PR #312 evidence is research only, no public candidate installed.
 - **Status:** P1.1 read-only inventory evidenced complete; security defect **NOT remediated**. New documents prepared on an isolated docs research branch for review. No world/town map edits, prod SQL, auth grants, live data modifications, rollout or browser acceptance.
 - **Next single task:** P1.2 canonical typed immutable request and replay policy design across all relevant command/actor/resource families. Require explicit review before P1.3 lock-order changes.
+
+## 2026-11-01 — P1.2 proposed immutable command identity/replay policy (research only)
+
+- **Source:** merged P1.1 on main `7727d75a92abb5904fdb7fd4e109accfe8e4603f`; live SELECT-only command ledger count 78, 20 null requester and zero null result rows. This is an aggregate snapshot, not requester provenance.
+- **Proposal:** [P1.2 contract](P1_2_Command_Replay_Contract_2026-11-01.md) documents thirteen command-intent families, completed/pending/legacy/revoked replay decisions, same-NPC multi-controller isolation, role/visibility barriers and P1.3 locking dependencies.
+- **Evidence boundary:** Declarative acceptance-case matrix plus pure Node checker verify **document coverage only**; they do not test JWT/SQL concurrency or demonstrate a fixed security vulnerability.
+- **Owner gates:** R1 legacy fail-closed, R2 revoked-controller cache denial, R3 named trusted service principal, R4 same-character two-encounter resource policy (deferred to P1.5). P1.2 checklist intentionally remains unchecked until review.
+- **Next one task:** review and approve/amend P1.2 proposal before starting P1.3. No production SQL, grants, gameplay, world/town maps or NPC delegation deployed.

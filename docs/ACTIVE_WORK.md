@@ -6,7 +6,7 @@
 
 **Active phase / subphase:** `P1 / P1.2` — design the **immutable original request intent and cached replay authorization contract** using the dated [P1.1 live command census](P1_1_Tactical_Command_Authority_Live_Audit_2026-11-01.md). P1.1 inventory is complete as a read-only source/DB audit, not as a remediation or production exploit test.
 
-**Status:** `IN RESEARCH` — read-only inventory phase. Do not patch public combat RPCs or deploy private experimental executors as part of P1.1.
+**Status:** `IN RESEARCH / OWNER CONTRACT REVIEW PENDING` — P1.2 proposal exists in [P1.2 replay contract](P1_2_Command_Replay_Contract_2026-11-01.md), but decisions R1–R4 and P1.3 lock order remain unapproved. No production SQL or combat code changed.
 
 **Objective:** Define an enforceable replay identity per existing command family: encounter, original actor/requester, exact typed action inputs, current control/visibility checks, revocation semantics, and legacy/pending-row behavior. This is a **design-only** step ahead of P1.3 global lock ordering and candidate implementation.
 
@@ -14,9 +14,9 @@
 
 **Verified P0 release:** PR [#313](https://github.com/bob8675309/DNDNEXT/pull/313) merged at `de4cfb8c79264fa49aa12da0d1e3752f4a8ca03b`, Vercel production deployment `dpl_8LeoXePm93rcz69rABa3B5ZoadpG` READY at that SHA, and GitHub `handoff-registry` CI succeeded on both final PR head `97c819a3f646a0e11934cc922aafa3cc0a34d712` and merged SHA. This is a historical verification point; re-fetch all current heads before action.
 
-**Next single action:** Complete `P1.2`: draft a cross-command typed immutable request/replay authorization matrix for all 14 direct spell processors, eight non-spell command writers and interacting admin/resource routines. Specify original requester/intent, historical pending rows, revoked access, hidden result visibility and safe duplicate retry; collect explicit owner decisions where policy genuinely changes. **Do not change production SQL, migrate ledger columns, or partially deploy a private candidate.**
+**Next single action:** Review [the proposed P1.2 typed intent/authorization/replay contract](P1_2_Command_Replay_Contract_2026-11-01.md), particularly R1 fail-closed legacy requests, R2 revoked-controller replay, R3 named trusted service principals and R4 cross-encounter resource policy reserved for P1.5. Validate the declarative matrix and seek owner signoff before P1.3 global lock-order design. **No production SQL/gameplay changes.**
 
-**Acceptance:** Each command shape has a server-normalized canonical identity and replay decision table (same requester/intent, different intent, revoked controller, completed/pending/legacy record, hidden targets). The contract must cover permission freshness, privacy, and how P1.3 can coordinate legacy and candidate lock ordering; no undocumented authorization or release assumptions.
+**Acceptance:** Document 13 intent families, every existing ledger writer and cast wrapper, original identity/typed input binding, fresh authorization and projection, legacy/revoked/pending policy, plus executable *static coverage* checks. Record owner disposition of R1–R4; do not mark P1.2 complete from source checks alone.
 
 ## Source starting point and subsequent P1 objective
 

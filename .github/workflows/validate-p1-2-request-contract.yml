@@ -1,0 +1,30 @@
+name: Validate P1.2 declarative request contract
+on:
+  pull_request:
+    paths:
+      - 'docs/P1_2_Command_Replay_Contract_2026-11-01.md'
+      - 'scripts/fixtures/p1_2_request_contract_matrix.json'
+      - 'scripts/validate_p1_2_request_contract.mjs'
+      - '.github/workflows/validate-p1-2-request-contract.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/P1_2_Command_Replay_Contract_2026-11-01.md'
+      - 'scripts/fixtures/p1_2_request_contract_matrix.json'
+      - 'scripts/validate_p1_2_request_contract.mjs'
+      - '.github/workflows/validate-p1-2-request-contract.yml'
+permissions:
+  contents: read
+jobs:
+  contract-coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate declarative matrix (not gameplay behavior)
+        run: node scripts/validate_p1_2_request_contract.mjs
