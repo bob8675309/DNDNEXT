@@ -2,21 +2,21 @@
 
 > **Planning snapshot:** 2026-11-01. Re-verify branches, CI and production before using these SHAs. This is the **one active-session task list**; it is not permission to deploy or merge. Product decisions remain in [SPELL_ENGINE_DECISIONS.md](SPELL_ENGINE_DECISIONS.md).
 
-## Current activity: P1.2 immutable intent / replay / authorization contract — research only
+## Current activity: P1.3 global transaction and lock-order research
 
-**Active phase / subphase:** `P1 / P1.2` — design the **immutable original request intent and cached replay authorization contract** using the dated [P1.1 live command census](P1_1_Tactical_Command_Authority_Live_Audit_2026-11-01.md). P1.1 inventory is complete as a read-only source/DB audit, not as a remediation or production exploit test.
+**Active phase / subphase:** `P1 / P1.3` — investigate [deployed cross-command lock graph](P1_3_Global_Lock_Order_Research_2026-11-01.md) and prepare disposable two-session concurrency proof. P1.2 [contract](P1_2_Command_Replay_Contract_2026-11-01.md) was merged in PR #316 as research direction; it is **not deployed combat behavior**.
 
-**Status:** `IN RESEARCH / OWNER CONTRACT REVIEW PENDING` — P1.2 proposal exists in [P1.2 replay contract](P1_2_Command_Replay_Contract_2026-11-01.md), but decisions R1–R4 and P1.3 lock order remain unapproved. No production SQL or combat code changed.
+**Status:** `IN RESEARCH / NOT PROVEN` — current static evidence finds lock-class inversions; no actual production deadlock demonstrated and **no accepted universal order**.
 
-**Objective:** Define an enforceable replay identity per existing command family: encounter, original actor/requester, exact typed action inputs, current control/visibility checks, revocation semantics, and legacy/pending-row behavior. This is a **design-only** step ahead of P1.3 global lock ordering and candidate implementation.
+**Objective:** Establish source-complete, safe transaction and lock discipline across all 22 cast names, eight nonspell ledger writers, Admin/non-ledger resource writers, reaction and expiry triggers, and shared canonical slot pools before any migration.
 
-**Scope:** Research-only documentation/fixtures for public encounter command request family normalization, ownership, replay and safe retries; retain P1.1 live matrix and reference PR #312. Read-only validation is permitted; gameplay/SQL migration, grants, deployment and protected map changes are NOT.
+**Scope:** Read-only live definition/trigger/SQL audit, machine-readable class-order graph, static CI checks and proposed disposable PG race fixtures. **No live mutations, grants, public combat edits, world/town map work, or AI.**
 
-**Verified P0 release:** PR [#313](https://github.com/bob8675309/DNDNEXT/pull/313) merged at `de4cfb8c79264fa49aa12da0d1e3752f4a8ca03b`, Vercel production deployment `dpl_8LeoXePm93rcz69rABa3B5ZoadpG` READY at that SHA, and GitHub `handoff-registry` CI succeeded on both final PR head `97c819a3f646a0e11934cc922aafa3cc0a34d712` and merged SHA. This is a historical verification point; re-fetch all current heads before action.
+**Verified P0/P1 releases:** Documentation PRs #313/#314 and P1.1 #315, P1.2 #316 merged. Source baseline for P1.3: `51c351a142d03378dff8e47e05182afe21a15622`; refresh GitHub main, Supabase and deployments before relying on it. PRs #309/#312 remain held research.
 
-**Next single action:** Review [the proposed P1.2 typed intent/authorization/replay contract](P1_2_Command_Replay_Contract_2026-11-01.md), particularly R1 fail-closed legacy requests, R2 revoked-controller replay, R3 named trusted service principals and R4 cross-encounter resource policy reserved for P1.5. Validate the declarative matrix and seek owner signoff before P1.3 global lock-order design. **No production SQL/gameplay changes.**
+**Next single action:** Expand [P1.3 graph](P1_3_Global_Lock_Order_Research_2026-11-01.md) through remaining source branches, trigger/FK/permission-row lock paths and concrete row identities; then execute **disposable two-session PostgreSQL** L↔E, P↔E, W↔L, expiry, S→C and rollback tests. Keep P1.3 unchecked until concurrency and mixed-version behavior are proven.
 
-**Acceptance:** Document 13 intent families, every existing ledger writer and cast wrapper, original identity/typed input binding, fresh authorization and projection, legacy/revoked/pending policy, plus executable *static coverage* checks. Record owner disposition of R1–R4; do not mark P1.2 complete from source checks alone.
+**Acceptance:** One verified global, deadlock-safe transaction boundary across public versions and triggers, with exact-source evidence, real multi-session PG fixtures and signed-in authorization test plan. Source-class graph validation alone **does not satisfy P1.3**.
 
 ## Source starting point and subsequent P1 objective
 

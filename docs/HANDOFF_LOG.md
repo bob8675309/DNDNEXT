@@ -58,3 +58,11 @@
 - **Evidence boundary:** Declarative acceptance-case matrix plus pure Node checker verify **document coverage only**; they do not test JWT/SQL concurrency or demonstrate a fixed security vulnerability.
 - **Owner gates:** R1 legacy fail-closed, R2 revoked-controller cache denial, R3 named trusted service principal, R4 same-character two-encounter resource policy (deferred to P1.5). P1.2 checklist intentionally remains unchecked until review.
 - **Next one task:** review and approve/amend P1.2 proposal before starting P1.3. No production SQL, grants, gameplay, world/town maps or NPC delegation deployed.
+
+## 2026-11-01 — P1.3 global lock-order design started, not proven
+
+- **Source:** GitHub `main` `51c351a142d03378dff8e47e05182afe21a15622` after merged PR #316; held #309/#312 research remains unmerged. Supabase live SELECT-only fingerprints corroborate the sampled command and trigger definitions.
+- **New research:** [P1.3 graph](P1_3_Global_Lock_Order_Research_2026-11-01.md) and [machine data](../scripts/fixtures/p1_3_lock_order_graph.json) classify 14 direct/helper/trigger paths, including four **possible** conflicting class-order pairs. New static CI checks consistency, not actual deadlock freedom.
+- **Scope:** No combat/server code, production SQL, grants, mutating DB calls, world/town maps, AI enablement or migrations. Same canonical character may participate in two active encounters; P1.5 owner decision still open.
+- **Outcome:** P1.2 marked complete as **research contract acceptance only** based on owner progression; P1.3 remains unchecked while full source coverage, mixed-version PG races and rollback are absent.
+- **Single next task:** Expand true row-identity lock graph and run disposable two-session race fixtures before choosing a production transaction scheme. Owner manual testing not needed for this source-only branch.
