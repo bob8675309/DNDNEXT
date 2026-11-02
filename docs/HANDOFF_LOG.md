@@ -102,3 +102,9 @@
 - **Observed:** Two unguarded original Start Encounter function calls accepted separate encounters sharing one character in scratch tables; paused→active status function also allowed an overlapping character. A **test-only trigger** blocked concurrent conflicts and direct/resume status changes. Distinct characters succeeded; rollback restored state and prevented orphan logs. Log confirms seven cases.
 - **Boundary:** Mock DB tables/Auth, no real Supabase RLS/GoTrue, no actual server trigger graph and no production writes. This is **not** acceptance of test-only E/P/C ordering or an authorized migration; P1.3 global proof and P1.5 enforcement remain undone.
 - **Next one task:** Extend source-equivalent participant mutation/activation/expiry/slot bridge/permission tests and mixed-version two-client races in disposable PG before recommending any shared transaction scheme.
+
+## 2026-11-01 — P1.3 source-derived Start/Staging PG16 deadlock verified
+
+- **Exact evidence:** [run 41392432969](https://github.com/bob8675309/DNDNEXT/actions/runs/41392432969) / job `125106533413`, commit `30c646ee8a235e21036548f6f3796133fc1b4b2b`, all seven GitHub checks PASS. Logs explicitly report PostgreSQL `deadlock detected` for a scheduled same-row conflict using the original Start and Staging-Update bodies, plus a successful E-first prelock positive control.
+- **Safety:** This occurred only in isolated PG16 with mocked dependencies and explicitly orchestrated transactions; no live production incident, SQL write or database change. [Detailed evidence](P1_3_Staging_Start_Lock_Race_2026-11-01.md).
+- **Next task:** Expand to actual effect expiry and slot-bridge triggers, permission/authorization locking and old spell versions. No merge or production rollout.

@@ -40,3 +40,8 @@ At start: complete session gates S0–S2 in [PHASED_DEVELOPMENT_CHECKLIST.md](PH
 ## Current P1.3 exact-source admission proof — isolated CI passed
 
 [Live-source Admin Start/Resume PG16 fixture](P1_3_Real_Admin_Activation_Resume_Test_2026-11-01.md) **passed seven cases** in GitHub [run 41389394032](https://github.com/bob8675309/DNDNEXT/actions/runs/41389394032) at `2f8c42deee0d85b36793b74b1ea1b488ac2b220a`, with all other checks green. This is source-equivalent logic with mocked dependencies, **not** deployment safety. **Single next task:** trace and test production-derived participant mutation, activation/turn triggers and permission-row ordering in isolated PG16 alongside spell-slot and legacy command paths. P1.3/P1.5 stay open; no production SQL authorized.
+
+
+## P1.3 source-derived row inversion confirmed (isolated)
+
+[Exact-source Start/Staging PG16 race](P1_3_Staging_Start_Lock_Race_2026-11-01.md) passed at run `41392432969`: PostgreSQL reported a deadlock for same-row E→P/P→E interleaving, while E-first prelock avoided this single cycle. **One next action:** model/verify trigger-expiry, slot bridge, permission revocation and legacy command lock ordering before selecting any production transaction design. P1.3/P1.5 remain open.

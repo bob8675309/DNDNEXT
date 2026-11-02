@@ -86,3 +86,7 @@ Hard blockers: expiry trigger E→X→P may access unanticipated P; spell S→C 
 ## Exact-source Admin Start/Resume test — PASS in isolated PostgreSQL 16
 
 **Verified:** [exact-source test run 41389394032](https://github.com/bob8675309/DNDNEXT/actions/runs/41389394032), on `2f8c42d`, installed the **verbatim deployed** `admin_start_encounter_v1` and `admin_set_encounter_status_v1` bodies into a minimal mock schema. All seven cases PASS: unguarded baseline TC1 conflicts are possible; a **test-only** trigger rejects conflicting starts, paused resume and direct writes; independent characters remain valid; transaction rollback restores state. Mocked dependencies/Auth and absent full combat triggers mean there is still **no globally accepted E/P/L/W/S/C order**, no production TC1 guard, and no P1.3/P1.5 completion.
+
+## Verified same-row E/P inversion — disposable exact-source test
+
+[Run 41392432969](https://github.com/bob8675309/DNDNEXT/actions/runs/41392432969) at `30c646e` **passed** two new source-derived race tests: deployed Admin Start (E→P) and Admin Staging Update (P→E) deadlocked in a deliberately coordinated scratch PG16 transaction; E-first prelocking serialized only this pair. Full [evidence and limitations](P1_3_Staging_Start_Lock_Race_2026-11-01.md). **Not a live production deadlock and not a globally certified order.**
