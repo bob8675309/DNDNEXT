@@ -14,7 +14,7 @@ select proname,signature,md5(def) as definition_md5,
  has_function_privilege('authenticated',oid,'EXECUTE') as authenticated_execute,
  has_function_privilege('anon',oid,'EXECUTE') as anon_execute,
  position('v_existing.requested_by' in def)>0 as compares_original_requested_by
-from funcs where def ~* 'insert[[:space:]]+into[[:space:]]+public\\.encounter_command_requests'
+from funcs where def ~* 'insert[[:space:]]+into[[:space:]]+public[.]encounter_command_requests'
 order by proname;
 
 -- All visible public cast versions, including wrapper and historical direct variants.
@@ -32,8 +32,8 @@ with funcs as (
  where n.nspname='public' and has_function_privilege('authenticated',p.oid,'EXECUTE')
 )
 select proname,
- def ~* '(insert[[:space:]]+into|update|delete[[:space:]]+from)[[:space:]]+public\\.encounter' as direct_encounter_write,
- def ~* '(insert[[:space:]]+into|update|delete[[:space:]]+from)[[:space:]]+public\\.character_spell' as direct_character_spell_write
+ def ~* '(insert[[:space:]]+into|update|delete[[:space:]]+from)[[:space:]]+public[.]encounter' as direct_encounter_write,
+ def ~* '(insert[[:space:]]+into|update|delete[[:space:]]+from)[[:space:]]+public[.]character_spell' as direct_character_spell_write
 from funcs
 where def ~* '(insert[[:space:]]+into|update|delete[[:space:]]+from)[[:space:]]+public\\.(encounter|character_spell)'
 order by proname;
