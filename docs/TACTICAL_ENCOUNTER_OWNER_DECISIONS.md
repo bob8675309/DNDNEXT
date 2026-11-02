@@ -39,3 +39,7 @@ A cross-table uniqueness test is **not the same** as a simple partial unique ind
 - True signed-in user/GM tests and disposable PostgreSQL two-session races are required; static graph CI does **not** prove these behaviors.
 
 **Status:** TC1 is owner-approved as a *product rule*. **P1.5 implementation/enforcement remains incomplete**, and P1.3 still lacks full lock-order and concurrency proof. No manual user test is required to record this decision; later isolated tests will include exact setup instructions and expected outcomes.
+
+## TC1 implementation path confirmed by live source (read-only)
+
+`admin_set_encounter_status_v1` sends staged→active through `admin_start_encounter_v1`, but **paused→active** uses a separate direct update. Both must eventually apply the same concurrency-safe TC1 admission/serialization. The isolated [PG16 model test](P1_3_Option_A_Concurrency_Model_2026-11-01.md) passed eight synthetic scenarios; it does not authorize or validate deployed enforcement.

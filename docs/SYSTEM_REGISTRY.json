@@ -106,9 +106,9 @@
       "tests": [],
       "last_checked": "2026-11-01",
       "open_gaps": [
-        "P1.3 has proposed scratch PostgreSQL 16 TC1 Option A concurrency test (eight modeled cases) and synthetic L/E deadlock negative control; exact-head CI outcome pending. See docs/P1_3_Option_A_Concurrency_Model_2026-11-01.md.",
-        "Full production RPC/trigger/permission/legacy-wrapper mixed-version concurrency graph remains unproven; model cannot justify P1.3 complete or production SQL.",
-        "TC1 policy is approved; one existing live character overlap requires reviewed reconciliation and unimplemented P1.5 admission guard."
+        "2026-11-01 PG16 scratch Option A model passed 8 cases on GitHub run 41385726293 at cd2c070, including deliberately synthetic inverted L/E deadlock. This is NOT deployed RPC concurrency proof.",
+        "Live TC1 entry paths: admin_start_encounter_v1 and admin_set_encounter_status_v1 paused→active must both be guarded; Admin staging and resource triggers still need a safe common E/P/C order.",
+        "Existing same-character active overlap needs reviewed reconciliation; P1.5 enforcement unimplemented. P1.3 global source-derived lock/race proof and JWT tests remain outstanding."
       ],
       "label": "Combat replay authorization",
       "scope_note": "Private candidate executor tested on held PR #312; public legacy RPC still has early replay shortcut.",
@@ -116,7 +116,7 @@
         "source": "inspected-relevant-entry-points-on-main",
         "live_database": "read-only-function-grant-rls-trigger-constraint-inventory-2026-11-01",
         "deployed_sha": "not-deployed-research-or-future",
-        "test_status": "P1.3-disposable-PG16-new-model-CI-pending",
+        "test_status": "P1.3-synthetic-PostgreSQL16-8-cases-PASS-run-41385726293;real-RPC-not-tested",
         "browser_acceptance": "unverified-this-audit",
         "owner_approval": "TC1 Option A owner-approved product policy only; no SQL/merge/runtime grant approval"
       },

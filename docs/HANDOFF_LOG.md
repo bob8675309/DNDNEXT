@@ -81,3 +81,10 @@
 - **Test cases:** competing same-character activation, unrelated characters, inverted participant staging order, historic-overlap preservation, rollback/retry, idempotence, synthetic reversed lock deadlock and ordered positive control.
 - **Status at authoring:** New fixture **not yet tested by GitHub CI**; the next response must report actual exact-head run outcome and any patch. Passing a scratch model does not finish P1.3/P1.5.
 - **Next single action:** Verify CI, fix any test fixture issues and then extend coverage to real source-derived trigger and grant paths.
+
+## 2026-11-01 — P1.3 disposable PG16 model passed; live activation/resume path verified
+
+- **CI:** [run 41385726293](https://github.com/bob8675309/DNDNEXT/actions/runs/41385726293) job 125086003890 **SUCCESS** on commit `cd2c070ac6e64fdf28e7755d264d60ea6f8d3df8`. Logs show all eight synthetic cases, expected activation conflicts, forced rollback, and an actual PostgreSQL `deadlock detected` event in intentionally reversed **scratch** L/E locks. The uniform ordering positive control passed. All other exact-head checks passed.
+- **Live SELECT-only source:** `admin_start_encounter_v1` handles staged start; `admin_set_encounter_status_v1` delegates staged→active but has a separate paused→active UPDATE. Both need eventual TC1 admission. Participant staging/removal routines also have E/P lock differences.
+- **Boundary:** No deployed RPC or migration was exercised. No Supabase writes, privileges, production schema/data, maps or AI were changed. P1.3 and P1.5 remain incomplete; one observed live overlapping character remains for GM review.
+- **Next action:** Extend exact-production function and trigger fixture coverage including activation/resume, permission races and legacy wrappers; do not merge PR #317 without review.

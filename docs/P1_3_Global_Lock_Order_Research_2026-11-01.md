@@ -20,7 +20,7 @@ Establish a **single compatible transaction/lock discipline across all public co
 
 **Evidence classification:** [machine-readable graph](../scripts/fixtures/p1_3_lock_order_graph.json) records either `first-lock` (direct first ordering), `schematic` (selected trigger/helper expansion), or `partial`. Its [CI checker](../scripts/validate_p1_3_lock_graph.mjs) detects **source-class inversions only**; this is not a Postgres concurrency test.
 
-**Disposable two-session expansion:** [TC1 Option A PG16 isolated concurrency model](P1_3_Option_A_Concurrency_Model_2026-11-01.md) covers competing GM admission, rollback, historic overlap preservation, and a **synthetic** inverted-lock example. It does not run deployed DnDNext RPCs or resolve the global transaction lock root.
+**Disposable two-session expansion: PASS (model only).** [TC1 Option A PG16 isolated concurrency model](P1_3_Option_A_Concurrency_Model_2026-11-01.md) passed eight cases in [run 41385726293](https://github.com/bob8675309/DNDNEXT/actions/runs/41385726293). A synthetic reversed L/E path produced an actual PostgreSQL deadlock; consistent E/L order did not. No live combat RPC was run and P1.3 is still unproven.
 
 
 ## Deployed ordering observed in function definitions
@@ -73,3 +73,12 @@ Hard blockers: expiry trigger E→X→P may access unanticipated P; spell S→C 
 **Manual testing:** None required from the owner for this source-only pass. Once an isolated test candidate is actually available, provide an exact local/staging URL or command, two test-user setup instructions, expected results and what evidence to return. Do **not** request passwords or production game encounters.
 
 **One next action:** Expand the effective graph and disposable two-session concurrency schedules, **including two GM activations of distinct encounters containing the same canonical character under approved TC1 / Option A**. Design the candidate per-character reservation without bypassing the coordinated lock order. **Leave P1.3 unchecked; P1.5 enforcement is not implemented.**
+
+## Additional live TC1 entry paths (SELECT-only inspection, 2026-11-01)
+
+- `admin_start_encounter_v1`: locks E, validates participants, initiative, map/hex placement, updates participants and sets E active. Its inspected body has no cross-encounter canonical-character exclusivity guard; nested helpers must still be examined.
+- `admin_set_encounter_status_v1`: for **draft/ready/initiative → active** delegates to `admin_start_encounter_v1`; for **paused → active** it directly updates E through a separate path. A Start Encounter-only TC1 guard would miss this resume path.
+- `admin_add_encounter_participant_v1` locks E and stages only before active play. `admin_remove_encounter_participant_v1` and `admin_update_encounter_participant_staging_v1` lock P before updating E; their order must be included in the P1.3 lock graph.
+- At the SELECT-only checkpoint, two encounters were active and one canonical character appeared in both. No record was changed. TC1 requires reviewing this overlap before any future enforcement migration.
+
+**Research constraint:** The scratch fixture locks a canonical character row before E, proving only the modeled admission race. It does **not** prove that a C→E acquisition order can coexist safely with the live E→P and S→C/trigger paths; both activation and resume must be evaluated under the eventual unified order.
