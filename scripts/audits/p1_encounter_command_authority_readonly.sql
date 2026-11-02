@@ -35,7 +35,7 @@ select proname,
  def ~* '(insert[[:space:]]+into|update|delete[[:space:]]+from)[[:space:]]+public[.]encounter' as direct_encounter_write,
  def ~* '(insert[[:space:]]+into|update|delete[[:space:]]+from)[[:space:]]+public[.]character_spell' as direct_character_spell_write
 from funcs
-where def ~* '(insert[[:space:]]+into|update|delete[[:space:]]+from)[[:space:]]+public\\.(encounter|character_spell)'
+where def ~* '(insert[[:space:]]+into|update|delete[[:space:]]+from)[[:space:]]+public[.](encounter|character_spell)'
 order by proname;
 
 -- Ledger structure, grants and table RLS (never print live user data).
