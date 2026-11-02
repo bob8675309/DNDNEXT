@@ -96,6 +96,6 @@ P1.3 must test permission changes racing with command execution, request collisi
 - **R1 (proposed yes):** Reject cached retries for historic rows without provable requester and original typed intent, preserving their records for Admin audit.
 - **R2 (proposed yes):** A revoked controller cannot retrieve old private results through the command RPC even if they executed them originally.
 - **R3 (proposed):** Trusted service calls need explicit service identity and audited scope, never a null-user super-replay exception.
-- **R4 (separate P1.5 owner decision):** Allow one canonical character in two simultaneous active encounters with globally serialized resources, or forbid the overlap. No decision is presumed here.
+- **R4 (resolved 2026-11-01):** Owner chose **Option A / TC1: forbid one canonical character being active in two encounters at the same time**. The [permanent tactical decision](TACTICAL_ENCOUNTER_OWNER_DECISIONS.md) governs this later status update. The existing overlap requires review; P1.5 server enforcement, pause/resume semantics and P1.3 lock-order proof remain incomplete.
 
 **P1.2 is NOT marked complete until the owner reviews R1–R4 and contract details.** Next action: review this proposal and static matrix, approve or amend the proposed behaviors, then begin a **separate P1.3 global lock-order proof**. Do not change live SQL, public EXECUTE grants, NPC permissions, spell engine or world/town map as part of approval of these documents.

@@ -66,3 +66,11 @@
 - **Scope:** No combat/server code, production SQL, grants, mutating DB calls, world/town maps, AI enablement or migrations. Same canonical character may participate in two active encounters; P1.5 owner decision still open.
 - **Outcome:** P1.2 marked complete as **research contract acceptance only** based on owner progression; P1.3 remains unchecked while full source coverage, mixed-version PG races and rollback are absent.
 - **Single next task:** Expand true row-identity lock graph and run disposable two-session race fixtures before choosing a production transaction scheme. Owner manual testing not needed for this source-only branch.
+
+## 2026-11-01 — TC1 owner selection: Option A, no simultaneous active encounters for same canonical character
+
+- **Owner decision:** Explicitly selected **Option A** in chat. One canonical `public.characters.id` cannot be in two `encounters.status='active'` sessions at the same time. This is independent of multiple controllers per NPC or one controller of many NPCs. Durable specification: [Tactical Encounter Owner Decisions / TC1](TACTICAL_ENCOUNTER_OWNER_DECISIONS.md).
+- **Read-only DB evidence refreshed:** Two active encounters, four linked active participant rows, three distinct canonical characters; **one** canonical character presently appears in two active encounters. No names/IDs extracted. **No records altered, deleted, reassigned or auto-resolved.**
+- **Enforcement status:** Product policy approved; server-side guards, serialization, pause/resume classification, and historical reconciliation remain P1.3/P1.5 research and later explicitly authorized implementation. **Do not mark P1.5 complete** based solely on this decision.
+- **Repository target:** Append this receipt and update contract, P1.3 research, active work, phase checklist and registry on draft PR #317's documentation branch only; preserve main/production.
+- **Next single action:** Expand P1.3 lock proof and test competing same-character activation in disposable two-session PostgreSQL before selecting lock/root order or proposing migrations.

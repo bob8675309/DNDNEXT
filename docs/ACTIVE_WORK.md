@@ -6,7 +6,7 @@
 
 **Active phase / subphase:** `P1 / P1.3` — investigate [deployed cross-command lock graph](P1_3_Global_Lock_Order_Research_2026-11-01.md) and prepare disposable two-session concurrency proof. P1.2 [contract](P1_2_Command_Replay_Contract_2026-11-01.md) was merged in PR #316 as research direction; it is **not deployed combat behavior**.
 
-**Status:** `IN RESEARCH / NOT PROVEN` — current static evidence finds lock-class inversions; no actual production deadlock demonstrated and **no accepted universal order**.
+**Status:** `IN RESEARCH / NOT PROVEN` — current static evidence finds lock-class inversions; no actual production deadlock demonstrated and **no accepted universal order**. Owner selected **TC1 Option A** (one active encounter per canonical character), but no guard or live reconciliation has occurred.
 
 **Objective:** Establish source-complete, safe transaction and lock discipline across all 22 cast names, eight nonspell ledger writers, Admin/non-ledger resource writers, reaction and expiry triggers, and shared canonical slot pools before any migration.
 
@@ -14,7 +14,7 @@
 
 **Verified P0/P1 releases:** Documentation PRs #313/#314 and P1.1 #315, P1.2 #316 merged. Source baseline for P1.3: `51c351a142d03378dff8e47e05182afe21a15622`; refresh GitHub main, Supabase and deployments before relying on it. PRs #309/#312 remain held research.
 
-**Next single action:** Expand [P1.3 graph](P1_3_Global_Lock_Order_Research_2026-11-01.md) through remaining source branches, trigger/FK/permission-row lock paths and concrete row identities; then execute **disposable two-session PostgreSQL** L↔E, P↔E, W↔L, expiry, S→C and rollback tests. Keep P1.3 unchecked until concurrency and mixed-version behavior are proven.
+**Next single action:** Expand [P1.3 graph](P1_3_Global_Lock_Order_Research_2026-11-01.md) through remaining source branches, triggers/FK/permission locks and exact row identities; design a coordinated, concurrency-safe **TC1 Option A single-active-encounter admission gate** and prove disposable two-session competing activations, L↔E/P↔E/W↔L, expiry, S→C, and rollback. Keep [TC1 product decision](TACTICAL_ENCOUNTER_OWNER_DECISIONS.md) distinct from unimplemented P1.5 enforcement.
 
 **Acceptance:** One verified global, deadlock-safe transaction boundary across public versions and triggers, with exact-source evidence, real multi-session PG fixtures and signed-in authorization test plan. Source-class graph validation alone **does not satisfy P1.3**.
 
@@ -26,7 +26,7 @@
 
 **Required audit paths:** live `public.encounter_use_core_action_v1`; `encounter_command_requests`, encounter/participant rows, grants and control checks; cast routers and helpers; movement, attacks, reactions, log/ledger writers; character spell slot and rest resource bridge triggers; prior isolation fixtures under PR #312.
 
-**Blockers:** typed immutable intent and requester validation; lock order including existing legacy paths; revocation and stale/pending replay; signed-in multiple-controller concurrency; same canonical actor in more than one active encounter; NPC spell-profile visibility. No production cutover pending explicit scope and rollback approval.
+**Blockers:** typed immutable intent and requester validation; global order across legacy paths and triggers; revocation/stale replay; signed-in multiple-controller concurrency; **TC1 Option A is approved, but the existing active-character overlap and concurrency-safe admission guard remain unresolved**; NPC spell-profile visibility. No production cutover pending explicit scope and rollback approval.
 
 **Not included:** general AI, new one-off spells, feature-effect retrofits, attunement/crafting implementation, world/town-map changes, broad CSS or database schema cleanup.
 

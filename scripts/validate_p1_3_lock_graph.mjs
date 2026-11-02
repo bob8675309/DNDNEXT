@@ -24,4 +24,10 @@ for(const c of g.candidate_inversions){
 }
 assert.equal(g.candidate_inversions.length,4);
 for(const phrase of ['NOT observed deadlocks','P1.5','One next action','Not run for this proposal','Leave P1.3 unchecked']) assert(d.includes(phrase),'Missing caveat: '+phrase);
+const owner = fs.readFileSync('docs/TACTICAL_ENCOUNTER_OWNER_DECISIONS.md','utf8');
+assert(owner.includes('TC1 / Option A'),'Missing owner TC1 policy');
+assert(owner.includes('at most one `public.encounters.status = \'active\'` encounter'),'Owner policy not precise');
+assert(owner.includes('Do not automatically delete'),'Historical overlap preservation rule missing');
+assert(owner.includes('P1.5 implementation/enforcement remains incomplete'),'Owner policy confused with deployment');
+assert(d.includes('Owner policy TC1 (Option A, 2026-11-01)'),'P1.3 graph not linked to approved policy');
 console.log('P1.3 STATIC graph checks OK: '+g.paths.length+' source paths, '+g.candidate_inversions.length+' hypothetical class-order inversions. NO database concurrency test performed.');

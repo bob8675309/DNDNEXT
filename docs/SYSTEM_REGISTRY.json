@@ -108,7 +108,7 @@
       "open_gaps": [
         "P1.3 static source-class graph: 14 sampled paths and four potential inversions, NOT a reproduced deadlock or verified global lock order; see docs/P1_3_Global_Lock_Order_Research_2026-11-01.md.",
         "All legacy spell routes, Admin/trigger/foreign-key and permission-row side effects require full graph and disposable two-session PostgreSQL evidence.",
-        "P1.5 same-character multiple-encounter resource policy undecided; no production SQL authorization or security remediation."
+        "TC1 Option A owner-approved 2026-11-01: one canonical character in at most one active encounter; P1.5 admission guard, concurrency tests, lifecycle semantics, and one existing overlap review NOT implemented. No production SQL authorization or security remediation."
       ],
       "label": "Combat replay authorization",
       "scope_note": "Private candidate executor tested on held PR #312; public legacy RPC still has early replay shortcut.",
@@ -118,7 +118,7 @@
         "deployed_sha": "not-deployed-research-or-future",
         "test_status": "P1.3-static-graph-source-order-only-no-runtime-DB-concurrency-test",
         "browser_acceptance": "unverified-this-audit",
-        "owner_approval": "not-claimed-from-source-or-ci"
+        "owner_approval": "TC1 Option A owner-approved product policy only; no SQL/merge/runtime grant approval"
       },
       "protected_boundaries": [
         "No production SQL changes, grants, merge, or deployment without owner approval",
