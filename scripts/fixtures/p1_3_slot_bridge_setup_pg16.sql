@@ -50,15 +50,15 @@ INSERT INTO public.encounters(id,map_id,status) VALUES
 INSERT INTO public.encounter_participants(
  id,encounter_id,character_id,display_name,speed_ft)
 VALUES
-(public.fixture_uuid(1701),public.fixture_uuid(701),public.fixture_uuid(8),'Shared Slot A',30),
-(public.fixture_uuid(1702),public.fixture_uuid(702),public.fixture_uuid(8),'Shared Slot B',30),
-(public.fixture_uuid(1801),public.fixture_uuid(801),public.fixture_uuid(9),'Two Slot A',30),
-(public.fixture_uuid(1802),public.fixture_uuid(802),public.fixture_uuid(9),'Two Slot B',30),
-(public.fixture_uuid(1803),public.fixture_uuid(803),public.fixture_uuid(10),'Reverse Lock',30);
+(public.fixture_uuid(4701),public.fixture_uuid(701),public.fixture_uuid(8),'Shared Slot A',30),
+(public.fixture_uuid(4702),public.fixture_uuid(702),public.fixture_uuid(8),'Shared Slot B',30),
+(public.fixture_uuid(4801),public.fixture_uuid(801),public.fixture_uuid(9),'Two Slot A',30),
+(public.fixture_uuid(4802),public.fixture_uuid(802),public.fixture_uuid(9),'Two Slot B',30),
+(public.fixture_uuid(4803),public.fixture_uuid(803),public.fixture_uuid(10),'Reverse Lock',30);
 INSERT INTO public.encounter_spell_slots(id,participant_id,pool_key,slot_level,slots_max,slots_remaining)
 VALUES
-(public.fixture_uuid(3701),public.fixture_uuid(1701),'spellcasting',1,1,1),
-(public.fixture_uuid(3702),public.fixture_uuid(1702),'spellcasting',1,1,1),
-(public.fixture_uuid(3801),public.fixture_uuid(1801),'spellcasting',1,1,1),
-(public.fixture_uuid(3802),public.fixture_uuid(1802),'spellcasting',1,1,1),
-(public.fixture_uuid(3803),public.fixture_uuid(1803),'spellcasting',1,1,1);
+(public.fixture_uuid(3701),public.fixture_uuid(4701),'spellcasting',1,1,1),
+(public.fixture_uuid(3702),public.fixture_uuid(4702),'spellcasting',1,1,1),
+(public.fixture_uuid(3801),public.fixture_uuid(4801),'spellcasting',1,1,1),
+(public.fixture_uuid(3802),public.fixture_uuid(4802),'spellcasting',1,1,1),
+(public.fixture_uuid(3803),public.fixture_uuid(4803),'spellcasting',1,1,1);
