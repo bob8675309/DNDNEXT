@@ -36,3 +36,7 @@
 ## Handoff rules
 
 At start: complete session gates S0–S2 in [PHASED_DEVELOPMENT_CHECKLIST.md](PHASED_DEVELOPMENT_CHECKLIST.md); read `AGENTS.md`, `START_HERE_ACTIVE_HANDOFF.md`, [PROJECT_STATE.md](PROJECT_STATE.md), this file, the registry, owner decision ledger, and relevant original source; refresh SHA/PR/CI/Vercel/live SQL. At finish: complete S4–S7 gates; update only affected registry records, this task, and append a [handoff receipt](HANDOFF_RECEIPT_TEMPLATE.md) to [HANDOFF_LOG.md](HANDOFF_LOG.md) *on the same work branch as any implementation change*. Record a single next action, failures, exact checks and unknowns. Never infer browser acceptance from CI.
+
+## Current P1.3 test expansion (pending CI)
+
+[Live-source Admin Start/Resume PG16 fixture](P1_3_Real_Admin_Activation_Resume_Test_2026-11-01.md) was added to draft PR #317. Exact source bodies with mock dependencies provide stronger evidence of both admission entry paths, **not** deployment safety. Next step remains obtaining exact-head CI, completing trigger/permission dependency graph and source-derived mixed-command races. No production SQL changes approved.

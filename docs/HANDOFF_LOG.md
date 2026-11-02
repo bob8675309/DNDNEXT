@@ -88,3 +88,10 @@
 - **Live SELECT-only source:** `admin_start_encounter_v1` handles staged start; `admin_set_encounter_status_v1` delegates staged→active but has a separate paused→active UPDATE. Both need eventual TC1 admission. Participant staging/removal routines also have E/P lock differences.
 - **Boundary:** No deployed RPC or migration was exercised. No Supabase writes, privileges, production schema/data, maps or AI were changed. P1.3 and P1.5 remain incomplete; one observed live overlapping character remains for GM review.
 - **Next action:** Extend exact-production function and trigger fixture coverage including activation/resume, permission races and legacy wrappers; do not merge PR #317 without review.
+
+## 2026-11-01 — P1.3 exact-source Admin Start/Resume fixture staged (CI pending)
+
+- **Read-only live source:** `pg_get_functiondef` captured exact `admin_start_encounter_v1` and `admin_set_encounter_status_v1` bodies and MD5 fingerprints; no Supabase writes.
+- **CI target:** disposable PostgreSQL 16, mocked dependencies and test-only TC1 admission trigger. Seven cases include **baseline unguarded starts and paused resume**, candidate two-session start race, candidate resume/direct writes, independent characters, and rollback/retry. No real JWT or complete combat triggers.
+- **Evidence status:** New fixture CI **pending**; only earlier scratch 8-case suite is verified. P1.3/P1.5 still open; no merge or production migration.
+- **Single next action:** Inspect exact-head CI and repair fixture-only issues, then extend to actual trigger/permission/resource dependencies.

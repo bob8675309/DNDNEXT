@@ -82,3 +82,7 @@ Hard blockers: expiry trigger E→X→P may access unanticipated P; spell S→C 
 - At the SELECT-only checkpoint, two encounters were active and one canonical character appeared in both. No record was changed. TC1 requires reviewing this overlap before any future enforcement migration.
 
 **Research constraint:** The scratch fixture locks a canonical character row before E, proving only the modeled admission race. It does **not** prove that a C→E acquisition order can coexist safely with the live E→P and S→C/trigger paths; both activation and resume must be evaluated under the eventual unified order.
+
+## Exact-source Admin Start/Resume test (CI pending)
+
+A new [scratch PG16 source-fidelity fixture](P1_3_Real_Admin_Activation_Resume_Test_2026-11-01.md) installs the **verbatim deployed** `admin_start_encounter_v1` and `admin_set_encounter_status_v1` definitions into a minimal mock schema. It contrasts unguarded TC1 admission with a **test-only** status trigger including paused→active and direct status writes. No full DnDNext triggers/Auth or approved global lock order are involved; keep P1.3 and P1.5 open.

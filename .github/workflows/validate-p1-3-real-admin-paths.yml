@@ -1,0 +1,59 @@
+name: P1.3 exact-source admin activation and resume PG16
+on:
+  pull_request:
+    paths:
+      - 'scripts/fixtures/p1_3_live_admin_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_live_admin_stub_schema_pg16.sql'
+      - 'scripts/fixtures/p1_3_live_admin_source_pg16.sh'
+      - 'scripts/fixtures/p1_3_tc1_test_trigger_only.sql'
+      - 'docs/P1_3_Real_Admin_Activation_Resume_Test_2026-11-01.md'
+      - '.github/workflows/validate-p1-3-real-admin-paths.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/fixtures/p1_3_live_admin_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_live_admin_stub_schema_pg16.sql'
+      - 'scripts/fixtures/p1_3_live_admin_source_pg16.sh'
+      - 'scripts/fixtures/p1_3_tc1_test_trigger_only.sql'
+      - 'docs/P1_3_Real_Admin_Activation_Resume_Test_2026-11-01.md'
+      - '.github/workflows/validate-p1-3-real-admin-paths.yml'
+permissions:
+  contents: read
+jobs:
+  exact-source-model:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: p13_live_source_sandbox
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d p13_live_source_sandbox"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: p13_live_source_sandbox
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install PostgreSQL client if necessary
+        run: |
+          if ! command -v psql >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+      - name: Load source-compatible test schema and exact live function bodies
+        run: |
+          test "$PGDATABASE" = p13_live_source_sandbox
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_live_admin_stub_schema_pg16.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_live_admin_source_pg16.sql
+      - name: Exercise actual function bodies in mock dependencies using two PG sessions
+        run: bash scripts/fixtures/p1_3_live_admin_source_pg16.sh

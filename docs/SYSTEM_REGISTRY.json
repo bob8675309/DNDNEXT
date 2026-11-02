@@ -106,9 +106,9 @@
       "tests": [],
       "last_checked": "2026-11-01",
       "open_gaps": [
-        "2026-11-01 PG16 scratch Option A model passed 8 cases on GitHub run 41385726293 at cd2c070, including deliberately synthetic inverted L/E deadlock. This is NOT deployed RPC concurrency proof.",
-        "Live TC1 entry paths: admin_start_encounter_v1 and admin_set_encounter_status_v1 paused→active must both be guarded; Admin staging and resource triggers still need a safe common E/P/C order.",
-        "Existing same-character active overlap needs reviewed reconciliation; P1.5 enforcement unimplemented. P1.3 global source-derived lock/race proof and JWT tests remain outstanding."
+        "P1.3 new scratch PG16 exact-source Admin Start/Resume fixture in draft PR #317: live function body snapshots, mocked dependency schema, baseline TC1 gaps, test-only trigger. CI outcome pending.",
+        "Actual combat trigger/FK/revocation/slot bridge and mixed old-vs-new command lock order unproven; scratch source-fixture is not an approved production migration.",
+        "Owner TC1 Option A selected; existing overlapping live character preserved pending explicit GM review; P1.5 admission guard not installed."
       ],
       "label": "Combat replay authorization",
       "scope_note": "Private candidate executor tested on held PR #312; public legacy RPC still has early replay shortcut.",
@@ -116,7 +116,7 @@
         "source": "inspected-relevant-entry-points-on-main",
         "live_database": "read-only-function-grant-rls-trigger-constraint-inventory-2026-11-01",
         "deployed_sha": "not-deployed-research-or-future",
-        "test_status": "P1.3-synthetic-PostgreSQL16-8-cases-PASS-run-41385726293;real-RPC-not-tested",
+        "test_status": "P1.3-verbatim-admin-StartResume-PG16-CI-pending",
         "browser_acceptance": "unverified-this-audit",
         "owner_approval": "TC1 Option A owner-approved product policy only; no SQL/merge/runtime grant approval"
       },
