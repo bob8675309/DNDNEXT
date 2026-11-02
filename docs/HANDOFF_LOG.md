@@ -74,3 +74,10 @@
 - **Enforcement status:** Product policy approved; server-side guards, serialization, pause/resume classification, and historical reconciliation remain P1.3/P1.5 research and later explicitly authorized implementation. **Do not mark P1.5 complete** based solely on this decision.
 - **Repository target:** Append this receipt and update contract, P1.3 research, active work, phase checklist and registry on draft PR #317's documentation branch only; preserve main/production.
 - **Next single action:** Expand P1.3 lock proof and test competing same-character activation in disposable two-session PostgreSQL before selecting lock/root order or proposing migrations.
+
+## 2026-11-01 — P1.3 Option A disposable PG16 fixture staged; CI pending
+
+- **Scope:** New scratch PostgreSQL 16 schema, model-only admission function, two-process Bash race suite, GitHub service workflow and [eight-case evidence plan](P1_3_Option_A_Concurrency_Model_2026-11-01.md). Never calls Supabase or real combat RPCs.
+- **Test cases:** competing same-character activation, unrelated characters, inverted participant staging order, historic-overlap preservation, rollback/retry, idempotence, synthetic reversed lock deadlock and ordered positive control.
+- **Status at authoring:** New fixture **not yet tested by GitHub CI**; the next response must report actual exact-head run outcome and any patch. Passing a scratch model does not finish P1.3/P1.5.
+- **Next single action:** Verify CI, fix any test fixture issues and then extend coverage to real source-derived trigger and grant paths.

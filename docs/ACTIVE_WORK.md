@@ -12,6 +12,9 @@
 
 **Scope:** Read-only live definition/trigger/SQL audit, machine-readable class-order graph, static CI checks and proposed disposable PG race fixtures. **No live mutations, grants, public combat edits, world/town map work, or AI.**
 
+**Disposable fixture:** [PG16 Option A two-session test matrix](P1_3_Option_A_Concurrency_Model_2026-11-01.md) is a separate research model, not P1.3 or P1.5 production acceptance. Exact-head CI and source-derived trigger tests remain necessary.
+
+
 **Verified P0/P1 releases:** Documentation PRs #313/#314 and P1.1 #315, P1.2 #316 merged. Source baseline for P1.3: `51c351a142d03378dff8e47e05182afe21a15622`; refresh GitHub main, Supabase and deployments before relying on it. PRs #309/#312 remain held research.
 
 **Next single action:** Expand [P1.3 graph](P1_3_Global_Lock_Order_Research_2026-11-01.md) through remaining source branches, triggers/FK/permission locks and exact row identities; design a coordinated, concurrency-safe **TC1 Option A single-active-encounter admission gate** and prove disposable two-session competing activations, L↔E/P↔E/W↔L, expiry, S→C, and rollback. Keep [TC1 product decision](TACTICAL_ENCOUNTER_OWNER_DECISIONS.md) distinct from unimplemented P1.5 enforcement.

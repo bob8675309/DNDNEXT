@@ -20,6 +20,9 @@ Establish a **single compatible transaction/lock discipline across all public co
 
 **Evidence classification:** [machine-readable graph](../scripts/fixtures/p1_3_lock_order_graph.json) records either `first-lock` (direct first ordering), `schematic` (selected trigger/helper expansion), or `partial`. Its [CI checker](../scripts/validate_p1_3_lock_graph.mjs) detects **source-class inversions only**; this is not a Postgres concurrency test.
 
+**Disposable two-session expansion:** [TC1 Option A PG16 isolated concurrency model](P1_3_Option_A_Concurrency_Model_2026-11-01.md) covers competing GM admission, rollback, historic overlap preservation, and a **synthetic** inverted-lock example. It does not run deployed DnDNext RPCs or resolve the global transaction lock root.
+
+
 ## Deployed ordering observed in function definitions
 
 | Command family | Observed ordering and caveat |

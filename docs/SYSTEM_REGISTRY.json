@@ -106,9 +106,9 @@
       "tests": [],
       "last_checked": "2026-11-01",
       "open_gaps": [
-        "P1.3 static source-class graph: 14 sampled paths and four potential inversions, NOT a reproduced deadlock or verified global lock order; see docs/P1_3_Global_Lock_Order_Research_2026-11-01.md.",
-        "All legacy spell routes, Admin/trigger/foreign-key and permission-row side effects require full graph and disposable two-session PostgreSQL evidence.",
-        "TC1 Option A owner-approved 2026-11-01: one canonical character in at most one active encounter; P1.5 admission guard, concurrency tests, lifecycle semantics, and one existing overlap review NOT implemented. No production SQL authorization or security remediation."
+        "P1.3 has proposed scratch PostgreSQL 16 TC1 Option A concurrency test (eight modeled cases) and synthetic L/E deadlock negative control; exact-head CI outcome pending. See docs/P1_3_Option_A_Concurrency_Model_2026-11-01.md.",
+        "Full production RPC/trigger/permission/legacy-wrapper mixed-version concurrency graph remains unproven; model cannot justify P1.3 complete or production SQL.",
+        "TC1 policy is approved; one existing live character overlap requires reviewed reconciliation and unimplemented P1.5 admission guard."
       ],
       "label": "Combat replay authorization",
       "scope_note": "Private candidate executor tested on held PR #312; public legacy RPC still has early replay shortcut.",
@@ -116,7 +116,7 @@
         "source": "inspected-relevant-entry-points-on-main",
         "live_database": "read-only-function-grant-rls-trigger-constraint-inventory-2026-11-01",
         "deployed_sha": "not-deployed-research-or-future",
-        "test_status": "P1.3-static-graph-source-order-only-no-runtime-DB-concurrency-test",
+        "test_status": "P1.3-disposable-PG16-new-model-CI-pending",
         "browser_acceptance": "unverified-this-audit",
         "owner_approval": "TC1 Option A owner-approved product policy only; no SQL/merge/runtime grant approval"
       },
