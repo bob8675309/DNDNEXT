@@ -12,6 +12,9 @@ on:
       - 'scripts/fixtures/p1_3_turn_expiry_live_source_pg16.sql'
       - 'scripts/fixtures/p1_3_turn_expiry_setup_pg16.sql'
       - 'scripts/fixtures/p1_3_turn_expiry_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_slot_bridge_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_slot_bridge_live_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_slot_bridge_race_pg16.sh'
       - 'docs/P1_3_Real_Admin_Activation_Resume_Test_2026-11-01.md'
       - '.github/workflows/validate-p1-3-real-admin-paths.yml'
   push:
@@ -27,6 +30,9 @@ on:
       - 'scripts/fixtures/p1_3_turn_expiry_live_source_pg16.sql'
       - 'scripts/fixtures/p1_3_turn_expiry_setup_pg16.sql'
       - 'scripts/fixtures/p1_3_turn_expiry_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_slot_bridge_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_slot_bridge_live_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_slot_bridge_race_pg16.sh'
       - 'docs/P1_3_Real_Admin_Activation_Resume_Test_2026-11-01.md'
       - '.github/workflows/validate-p1-3-real-admin-paths.yml'
 permissions:
@@ -81,3 +87,9 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_turn_expiry_live_source_pg16.sql
       - name: Reproduce E-X-P versus P-E lock race with deployed effect trigger
         run: bash scripts/fixtures/p1_3_turn_expiry_race_pg16.sh
+      - name: Set up real spell-slot mirror and synchronization functions in scratch PG16
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_slot_bridge_setup_pg16.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_slot_bridge_live_source_pg16.sql
+      - name: Test source-derived slot shortage, double spend and C-first inversion
+        run: bash scripts/fixtures/p1_3_slot_bridge_race_pg16.sh
