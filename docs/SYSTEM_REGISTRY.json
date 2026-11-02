@@ -106,9 +106,9 @@
       "tests": [],
       "last_checked": "2026-11-01",
       "open_gaps": [
-        "P1.3 new scratch PG16 exact-source Admin Start/Resume fixture in draft PR #317: live function body snapshots, mocked dependency schema, baseline TC1 gaps, test-only trigger. CI outcome pending.",
-        "Actual combat trigger/FK/revocation/slot bridge and mixed old-vs-new command lock order unproven; scratch source-fixture is not an approved production migration.",
-        "Owner TC1 Option A selected; existing overlapping live character preserved pending explicit GM review; P1.5 admission guard not installed."
+        "P1.3 exact deployed Admin Start/Resume function bodies passed seven isolated PG16 tests on run 41389394032 at 2f8c42d. Baseline unguarded overlap possible, test-only TC1 trigger protects start/resume/direct status. Mock dependencies/Auth; NOT production implementation.",
+        "Still unproven: full trigger/FK and participant mutation graph, old spell/attack/reaction writers, revocation, multi-controller JWT, shared slot synchronization, and one globally compatible E/P/L/S/C order.",
+        "TC1 Option A approved and existing production overlap retained for GM review; P1.5 server guard NOT installed, P1.3 not finished."
       ],
       "label": "Combat replay authorization",
       "scope_note": "Private candidate executor tested on held PR #312; public legacy RPC still has early replay shortcut.",
@@ -116,7 +116,7 @@
         "source": "inspected-relevant-entry-points-on-main",
         "live_database": "read-only-function-grant-rls-trigger-constraint-inventory-2026-11-01",
         "deployed_sha": "not-deployed-research-or-future",
-        "test_status": "P1.3-verbatim-admin-StartResume-PG16-CI-pending",
+        "test_status": "P1.3-live-Admin-source-PG16-7-tests-PASS-run-41389394032;mock-dependencies-only",
         "browser_acceptance": "unverified-this-audit",
         "owner_approval": "TC1 Option A owner-approved product policy only; no SQL/merge/runtime grant approval"
       },

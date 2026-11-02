@@ -83,6 +83,6 @@ Hard blockers: expiry trigger E→X→P may access unanticipated P; spell S→C 
 
 **Research constraint:** The scratch fixture locks a canonical character row before E, proving only the modeled admission race. It does **not** prove that a C→E acquisition order can coexist safely with the live E→P and S→C/trigger paths; both activation and resume must be evaluated under the eventual unified order.
 
-## Exact-source Admin Start/Resume test (CI pending)
+## Exact-source Admin Start/Resume test — PASS in isolated PostgreSQL 16
 
-A new [scratch PG16 source-fidelity fixture](P1_3_Real_Admin_Activation_Resume_Test_2026-11-01.md) installs the **verbatim deployed** `admin_start_encounter_v1` and `admin_set_encounter_status_v1` definitions into a minimal mock schema. It contrasts unguarded TC1 admission with a **test-only** status trigger including paused→active and direct status writes. No full DnDNext triggers/Auth or approved global lock order are involved; keep P1.3 and P1.5 open.
+**Verified:** [exact-source test run 41389394032](https://github.com/bob8675309/DNDNEXT/actions/runs/41389394032), on `2f8c42d`, installed the **verbatim deployed** `admin_start_encounter_v1` and `admin_set_encounter_status_v1` bodies into a minimal mock schema. All seven cases PASS: unguarded baseline TC1 conflicts are possible; a **test-only** trigger rejects conflicting starts, paused resume and direct writes; independent characters remain valid; transaction rollback restores state. Mocked dependencies/Auth and absent full combat triggers mean there is still **no globally accepted E/P/L/W/S/C order**, no production TC1 guard, and no P1.3/P1.5 completion.

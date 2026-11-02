@@ -95,3 +95,10 @@
 - **CI target:** disposable PostgreSQL 16, mocked dependencies and test-only TC1 admission trigger. Seven cases include **baseline unguarded starts and paused resume**, candidate two-session start race, candidate resume/direct writes, independent characters, and rollback/retry. No real JWT or complete combat triggers.
 - **Evidence status:** New fixture CI **pending**; only earlier scratch 8-case suite is verified. P1.3/P1.5 still open; no merge or production migration.
 - **Single next action:** Inspect exact-head CI and repair fixture-only issues, then extend to actual trigger/permission/resource dependencies.
+
+## 2026-11-01 — P1.3 actual Admin function bodies executed in isolated PG16 (seven passes)
+
+- **Exact test:** [run 41389394032](https://github.com/bob8675309/DNDNEXT/actions/runs/41389394032) / [job 125097217840](https://github.com/bob8675309/DNDNEXT/actions/runs/41389394032/job/125097217840) **SUCCESS** at `2f8c42deee0d85b36793b74b1ea1b488ac2b220a`; original source definitions MD5 `admin_set_encounter_status_v1=ab4592dc22632d646886f0d808cfb95f`, `admin_start_encounter_v1=ce7bb040cb09d9dac85517ea8206b44e`. All six other exact-commit GitHub checks passed.
+- **Observed:** Two unguarded original Start Encounter function calls accepted separate encounters sharing one character in scratch tables; paused→active status function also allowed an overlapping character. A **test-only trigger** blocked concurrent conflicts and direct/resume status changes. Distinct characters succeeded; rollback restored state and prevented orphan logs. Log confirms seven cases.
+- **Boundary:** Mock DB tables/Auth, no real Supabase RLS/GoTrue, no actual server trigger graph and no production writes. This is **not** acceptance of test-only E/P/C ordering or an authorized migration; P1.3 global proof and P1.5 enforcement remain undone.
+- **Next one task:** Extend source-equivalent participant mutation/activation/expiry/slot bridge/permission tests and mixed-version two-client races in disposable PG before recommending any shared transaction scheme.
