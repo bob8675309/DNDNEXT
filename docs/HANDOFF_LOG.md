@@ -229,3 +229,8 @@
 - **Do not overclaim:** Synthetic geometry, conditions/timed effects, targeting/cover, spells/slots, Admin/RLS and helper tables; Attack branch untested; new End Turn/Move results may expose hidden next actor or hidden reactor. Exact source function bodies are only protected by scratch grants; **live unguarded versions are still callable**. Full E/P/W/L/X/S/C/grant lock protocol, TC1 Option A admission and R3 policy remain open.
 - **Production effects:** NONE — no production SQL/grants/rows, merges, gameplay, world/town maps, Vercel, AI, or browser acceptance. No manual tests or Docker for owner.
 - **Next single task:** Source-derived Opportunity Attack and hidden actor privacy tests, then full trigger/resource/permission lock integration in disposable PG/JWT before any release decision.
+## 2026-11-03 — Concealed tactical activity wording preference
+
+- Owner response to the hidden-turn UI question: Prefer **"Unknown Events"** over **"Unknown combatant's turn"** as an ambiguous player-facing label when a concealed tactical event needs acknowledgment. GM view retains the actual authorized detail.
+- Recorded in [TACTICAL_ENCOUNTER_OWNER_DECISIONS.md](TACTICAL_ENCOUNTER_OWNER_DECISIONS.md) and [P1.3 five-family report](P1_3_EndTurn_Move_Reaction_Guarded_2026-11-03.md). The label does **not** constitute consent to reveal hidden actors, action types, location, initiative timing or window results; first-execution privacy, presentation timing and viewer projection remain unresolved.
+- **Documentation-only on draft PR #317.** Production, `main`, Supabase, public grants, Vercel, world/town maps and gameplay unchanged. No owner manual test requested.

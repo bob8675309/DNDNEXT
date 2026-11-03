@@ -68,3 +68,13 @@ If a player or other human controller no longer has permission to control the re
 - **R3 remains unresolved:** the policy for trusted service calls, explicitly identified service principals and audited scope still requires separate review. **R4/TC1 Option A was already approved** on 2026-11-01; its P1.5 enforcement and reconciliation are not deployed.
 - The two-family guarded replay experiment on [draft PR #317](https://github.com/bob8675309/DNDNEXT/pull/317) has passing disposable real-JWT tests ([research report](P1_3_Guarded_Replay_Two_Family_Candidate_2026-11-03.md)), but it is **research only**. Original production RPCs and their grants are unchanged and the global P1.3 transaction/lock-order proof is incomplete.
 - **No production deployment, Supabase SQL/grant change, merge into `main`, or live character/encounter test has been authorized.**
+
+## Concealed tactical activity — player-facing wording (owner preference, 2026-11-03)
+
+When a combat event must be acknowledged in the **player** interface but the underlying participant or action is concealed, use the neutral display label **"Unknown Events"** rather than **"Unknown combatant's turn"**. This wording is intentionally ambiguous: the label itself should not tell players whether a hidden combatant, hazard, or another concealed event caused it.
+
+- The GM's authorized view continues to show the actual participant and event information.
+- This is a **presentation preference**, not authorization to reveal identifiers, team, initiative placement, coordinates, event type, action details, or reaction-window metadata to unauthorized players.
+- The exact timing, grouping and visibility projection of concealed events—including whether an indicator should appear for every hidden turn—remain **security/UX acceptance questions**, not settled policy. They require source-derived first-execution and replay privacy tests before deployment.
+- Applies only to the tactical encounter UI, not the world-map or town-map systems.
+- **No implementation, database/grant change, merge or production deployment is authorized by this preference.**

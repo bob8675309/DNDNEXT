@@ -50,3 +50,6 @@ Original resolved-window reaction code returns cached W.result **before current-
 5. R1/R2 are owner-approved policies (2026-11-03), **not deployed**. R3 service-principal policy remains open; TC1 Option A admission and P1.5 are undeployed.
 
 **Next single P1.3 task:** Source-trace and isolate exact Opportunity Attack/weapon/reaction resource authority, then test two-session contention and hidden next-participant/reactor visibility with real JWTs and full W/P/E/slot effects. Keep reaction Attack GM-assisted until proven. No user manual testing, Docker installation or production SQL is needed.
+## Owner guidance — concealed event presentation (2026-11-03)
+
+For the eventual **player** UI, the owner prefers **"Unknown Events"** over **"Unknown combatant's turn"** where a concealed event needs a placeholder. The GM still sees the authorized details. This **does not authorize sending concealed actor/event identifiers, timing, coordinates or reaction data to the browser**. Define whether, when, and how such an indicator is displayed only after first-execution privacy acceptance. Recorded in [TACTICAL_ENCOUNTER_OWNER_DECISIONS.md](TACTICAL_ENCOUNTER_OWNER_DECISIONS.md); research only.
