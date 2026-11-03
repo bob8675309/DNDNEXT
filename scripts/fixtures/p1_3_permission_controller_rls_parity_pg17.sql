@@ -15,6 +15,11 @@ ALTER TABLE public.encounter_participants ADD COLUMN state jsonb;
 GRANT SELECT ON public.characters,public.character_sheets,
  public.inventory_items,public.character_permissions TO authenticated;
 GRANT UPDATE ON public.character_permissions TO authenticated;
+-- Live DnDWeb grants authenticated EXECUTE on this RLS-only helper.
+-- The base synthetic fixture revoked it from authenticated, so restore only
+-- this exact helper (NOT blanket EXECUTE or any write capabilities).
+GRANT EXECUTE ON FUNCTION private.can_access_character_v1(uuid,text)
+ TO authenticated;
 ALTER TABLE public.characters ENABLE ROW LEVEL SECURITY;
 CREATE POLICY p13_live_char_visible ON public.characters
  FOR SELECT TO authenticated
