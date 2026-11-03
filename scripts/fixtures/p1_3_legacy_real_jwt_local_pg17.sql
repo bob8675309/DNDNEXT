@@ -81,7 +81,7 @@ begin
   ) then return true; end if;
   return false;
 end;
-$function$
+$function$;
 
 -- Original DnDWeb slot-turn guard (MD5 78195a807865efdbf74122a3d562a095):
 CREATE OR REPLACE FUNCTION private.encounter_enforce_spell_slot_cast_turn_v1(p_caster_id uuid, p_assignment_id uuid, p_request_id uuid)
@@ -124,7 +124,7 @@ begin
     raise exception 'A spell slot has already been expended to cast a spell on this turn';
   end if;
 end;
-$function$
+$function$;
 
 -- Only geometry/stat/healing dependencies are mocked: spell processors themselves are ORIGINAL.
 CREATE FUNCTION public.encounter_spellcasting_profile_v1(p_participant uuid)
