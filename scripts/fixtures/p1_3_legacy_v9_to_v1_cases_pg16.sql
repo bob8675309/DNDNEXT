@@ -80,29 +80,29 @@ BEGIN
  RAISE NOTICE 'PASS CASE 44: foreign assignment rejected';
 END $case44$;
 DO $case45$
-DECLARE result jsonb;
+DECLARE v_output jsonb;
 BEGIN
  RAISE NOTICE 'CASE 45: valid class Cure Wounds through exact original v9->v1 processor';
- result:=public.encounter_cast_spell_v9(public.fixture_uuid(5990),public.fixture_uuid(6990),public.fixture_uuid(5991),1,public.fixture_uuid(8990));
- IF result->>'spellKey'<>'cure-wounds|xphb'
-    OR result->>'targetId'<>public.fixture_uuid(5991)::text
+ v_output:=public.encounter_cast_spell_v9(public.fixture_uuid(5990),public.fixture_uuid(6990),public.fixture_uuid(5991),1,public.fixture_uuid(8990));
+ IF v_output->>'spellKey'<>'cure-wounds|xphb'
+    OR v_output->>'targetId'<>public.fixture_uuid(5991)::text
     OR (SELECT current_hp<=1 FROM public.encounter_participants WHERE id=public.fixture_uuid(5991))
     OR (SELECT action_available IS DISTINCT FROM false FROM public.encounter_participants WHERE id=public.fixture_uuid(5990))
     OR (SELECT slots_remaining<>0 FROM public.encounter_spell_slots WHERE id=public.fixture_uuid(4990))
     OR (SELECT count(*)<>1 FROM public.encounter_command_requests WHERE request_id=public.fixture_uuid(8990) AND result IS NOT NULL)
- THEN RAISE EXCEPTION 'CASE 45 Cure Wounds result/resource failure: %',result; END IF;
+ THEN RAISE EXCEPTION 'CASE 45 Cure Wounds result/resource failure: %',v_output; END IF;
  RAISE NOTICE 'PASS CASE 45: original v1 processed healing/action/slot/ledger once';
 END $case45$;
 DO $case46$
-DECLARE result jsonb;
+DECLARE v_output jsonb;
 BEGIN
  RAISE NOTICE 'CASE 46: same UUID changed target, assignment, slot returns cached v1 result';
- result:=public.encounter_cast_spell_v9(public.fixture_uuid(5990),public.fixture_uuid(6991),public.fixture_uuid(5992),2,public.fixture_uuid(8990));
- IF result->>'targetId'<>public.fixture_uuid(5991)::text
+ v_output:=public.encounter_cast_spell_v9(public.fixture_uuid(5990),public.fixture_uuid(6991),public.fixture_uuid(5992),2,public.fixture_uuid(8990));
+ IF v_output->>'targetId'<>public.fixture_uuid(5991)::text
     OR (SELECT current_hp<>2 FROM public.encounter_participants WHERE id=public.fixture_uuid(5992))
     OR (SELECT count(*)<>1 FROM public.encounter_command_requests WHERE request_id=public.fixture_uuid(8990))
     OR (SELECT count(*)<>1 FROM public.encounter_combat_log WHERE encounter_id=public.fixture_uuid(946) AND event_type='spell_cast')
- THEN RAISE EXCEPTION 'CASE 46 unexpected replay behavior %',result; END IF;
+ THEN RAISE EXCEPTION 'CASE 46 unexpected replay behavior %',v_output; END IF;
  RAISE NOTICE 'PASS CASE 46: v1 returned stale cached result for changed target/assignment/slot (known weakness)';
 END $case46$;
 -- Deliberately replace MOCK control helper, not live permissions.
@@ -110,7 +110,7 @@ END $case46$;
 CREATE OR REPLACE FUNCTION public.encounter_can_control_participant_v1(p_participant_id uuid)
 RETURNS boolean LANGUAGE sql STABLE AS $mock$ SELECT p_participant_id<>public.fixture_uuid(5990) $mock$;
 DO $case47$
-DECLARE result jsonb; err text;
+DECLARE v_output jsonb; err text;
 BEGIN
  RAISE NOTICE 'CASE 47: simulated revoked control blocks fresh v1 request but NOT cached replay';
  BEGIN
@@ -120,8 +120,8 @@ BEGIN
   GET STACKED DIAGNOSTICS err=MESSAGE_TEXT;
   IF err NOT LIKE '%Not authorized%' THEN RAISE EXCEPTION 'CASE 47 unexpected fresh error: %',err; END IF;
  END;
- result:=public.encounter_cast_spell_v9(public.fixture_uuid(5990),public.fixture_uuid(6991),public.fixture_uuid(5992),2,public.fixture_uuid(8990));
- IF result->>'targetId'<>public.fixture_uuid(5991)::text THEN RAISE EXCEPTION 'CASE 47 cached replay not reproduced: %',result; END IF;
+ v_output:=public.encounter_cast_spell_v9(public.fixture_uuid(5990),public.fixture_uuid(6991),public.fixture_uuid(5992),2,public.fixture_uuid(8990));
+ IF v_output->>'targetId'<>public.fixture_uuid(5991)::text THEN RAISE EXCEPTION 'CASE 47 cached replay not reproduced: %',v_output; END IF;
  IF EXISTS(SELECT 1 FROM public.encounter_command_requests WHERE request_id=public.fixture_uuid(8996))
  THEN RAISE EXCEPTION 'CASE 47 denied request left ledger'; END IF;
  RAISE NOTICE 'PASS CASE 47: mock revocation denied fresh request but not cached replay; NO genuine-user exploit proof';
