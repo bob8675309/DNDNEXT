@@ -78,3 +78,9 @@ When a combat event must be acknowledged in the **player** interface but the und
 - The exact timing, grouping and visibility projection of concealed events—including whether an indicator should appear for every hidden turn—remain **security/UX acceptance questions**, not settled policy. They require source-derived first-execution and replay privacy tests before deployment.
 - Applies only to the tactical encounter UI, not the world-map or town-map systems.
 - **No implementation, database/grant change, merge or production deployment is authorized by this preference.**
+
+## Open question — full visible NPC sheets for player accounts (research finding 2026-11-03, NOT DECIDED)
+
+Deployed `character_sheets_select_visible_or_assigned` and `characters_select_visible_or_assigned` RLS predicates permit a signed-in player to select the **entire sheet for a visible NPC** (source-faithful synthetic JWT case 151, [test report](P1_3_Grant_Revoke_Controller_and_RLS_2026-11-03.md)). Hidden NPC sheets were denied to unrelated JWT users in the modeled setup. **No live sheet was read and no real-world disclosure was established.**
+
+**Owner decision required:** Should all players be permitted to read full character sheets for visible NPCs, or should player access be limited to explicitly disclosed statistics/public summaries, with full sheets retained for GM/authorized editors? Do not assume either answer or adjust live RLS grants until explicitly approved and tested. This is separate from the `Unknown Events` concealment-wording preference. P1.3/P1.5 and production permissions remain unchanged.
