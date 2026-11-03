@@ -6,18 +6,21 @@
 -- 47: revoked controller with fresh request denied, prior cached request disclosed.
 \set ON_ERROR_STOP on
 INSERT INTO public.characters(id,name)
-SELECT public.fixture_uuid(i),'Legacy downstream fixture character '||i FROM generate_series(60,63) i;
+SELECT public.fixture_uuid(i),'Legacy downstream fixture character '||i FROM generate_series(60,64) i;
 INSERT INTO public.spells_catalog(id,spell_key,name,source,level,classes)
 VALUES(public.fixture_uuid(997),'cure-wounds|xphb','Cure Wounds','XPHB',1,ARRAY['cleric']::text[]),
       (public.fixture_uuid(998),'unsupported-spell|xphb','Unsupported','XPHB',0,ARRAY['cleric']::text[]),
       (public.fixture_uuid(999),'cure-wounds|phb','Cure Wounds legacy','PHB',1,ARRAY['cleric']::text[]);
 INSERT INTO public.character_progression(character_id,class_id,class_level)
-VALUES(public.fixture_uuid(60),public.fixture_uuid(991),1);
+VALUES(public.fixture_uuid(60),public.fixture_uuid(991),1),
+      (public.fixture_uuid(64),public.fixture_uuid(991),1);
 INSERT INTO public.character_spell_slots(character_id,pool_key,slot_level,slots_max,slots_remaining,recharge_key)
-VALUES(public.fixture_uuid(60),'spellcasting',1,1,1,'long_rest');
+VALUES(public.fixture_uuid(60),'spellcasting',1,1,1,'long_rest'),
+      (public.fixture_uuid(64),'spellcasting',1,1,1,'long_rest');
 INSERT INTO public.encounters(id,map_id,status,phase,round,turn_index,active_participant_id)
 VALUES(public.fixture_uuid(946),public.fixture_uuid(1),'active','turns',1,0,public.fixture_uuid(5990)),
-      (public.fixture_uuid(947),public.fixture_uuid(1),'active','turns',1,0,public.fixture_uuid(5993));
+      (public.fixture_uuid(947),public.fixture_uuid(1),'active','turns',1,0,public.fixture_uuid(5993)),
+      (public.fixture_uuid(948),public.fixture_uuid(1),'active','turns',1,0,public.fixture_uuid(5994));
 INSERT INTO public.encounter_participants(
  id,encounter_id,character_id,display_name,team,initiative,q,r,
  action_available,controller_user_id,speed_ft,current_hp,max_hp,armor_class,bonus_action_available)
@@ -25,14 +28,17 @@ VALUES
 (public.fixture_uuid(5990),public.fixture_uuid(946),public.fixture_uuid(60),'Legacy cleric','players',20,0,0,true,public.fixture_uuid(900),30,30,30,10,true),
 (public.fixture_uuid(5991),public.fixture_uuid(946),public.fixture_uuid(61),'Ally needing healing','players',10,1,0,true,public.fixture_uuid(900),30,1,30,10,true),
 (public.fixture_uuid(5992),public.fixture_uuid(946),public.fixture_uuid(62),'Other ally','players',5,0,1,true,public.fixture_uuid(900),30,2,30,10,true),
-(public.fixture_uuid(5993),public.fixture_uuid(947),public.fixture_uuid(63),'Unsupported spellcaster','players',20,0,0,true,public.fixture_uuid(900),30,10,10,10,true);
+(public.fixture_uuid(5993),public.fixture_uuid(947),public.fixture_uuid(63),'Unsupported spellcaster','players',20,0,0,true,public.fixture_uuid(900),30,10,10,10,true),
+(public.fixture_uuid(5994),public.fixture_uuid(948),public.fixture_uuid(64),'Fresh revoked caster','players',20,0,0,true,public.fixture_uuid(900),30,10,20,10,true);
 INSERT INTO public.character_spells(id,character_id,spell_id,source_type,source_label,prepared,always_available,casting_stat)
 VALUES(public.fixture_uuid(6990),public.fixture_uuid(60),public.fixture_uuid(997),'class','cleric',true,false,'wis'),
       (public.fixture_uuid(6991),public.fixture_uuid(60),public.fixture_uuid(997),'class','cleric',true,false,'wis'),
       (public.fixture_uuid(6993),public.fixture_uuid(63),public.fixture_uuid(998),'class','cleric',true,false,'wis'),
-      (public.fixture_uuid(6994),public.fixture_uuid(63),public.fixture_uuid(999),'class','cleric',true,false,'wis');
+      (public.fixture_uuid(6994),public.fixture_uuid(63),public.fixture_uuid(999),'class','cleric',true,false,'wis'),
+      (public.fixture_uuid(6995),public.fixture_uuid(64),public.fixture_uuid(997),'class','cleric',true,false,'wis');
 INSERT INTO public.encounter_spell_slots(id,participant_id,pool_key,slot_level,slots_max,slots_remaining)
-VALUES(public.fixture_uuid(4990),public.fixture_uuid(5990),'spellcasting',1,1,1);
+VALUES(public.fixture_uuid(4990),public.fixture_uuid(5990),'spellcasting',1,1,1),
+      (public.fixture_uuid(4994),public.fixture_uuid(5994),'spellcasting',1,1,1);
 DO $case42$
 DECLARE err text;
 BEGIN
@@ -108,13 +114,13 @@ END $case46$;
 -- Deliberately replace MOCK control helper, not live permissions.
 -- Simulates revocation after case 45; real JWT/GoTrue and per-NPC grants are NOT tested.
 CREATE OR REPLACE FUNCTION public.encounter_can_control_participant_v1(p_participant_id uuid)
-RETURNS boolean LANGUAGE sql STABLE AS $mock$ SELECT p_participant_id<>public.fixture_uuid(5990) $mock$;
+RETURNS boolean LANGUAGE sql STABLE AS $mock$ SELECT p_participant_id NOT IN (public.fixture_uuid(5990),public.fixture_uuid(5994)) $mock$;
 DO $case47$
 DECLARE v_output jsonb; err text;
 BEGIN
  RAISE NOTICE 'CASE 47: simulated revoked control blocks fresh v1 request but NOT cached replay';
  BEGIN
-  PERFORM public.encounter_cast_spell_v9(public.fixture_uuid(5990),public.fixture_uuid(6990),public.fixture_uuid(5991),1,public.fixture_uuid(8996));
+  PERFORM public.encounter_cast_spell_v9(public.fixture_uuid(5994),public.fixture_uuid(6995),public.fixture_uuid(5994),1,public.fixture_uuid(8996));
   RAISE EXCEPTION 'CASE 47 failed: fresh request accepted under mocked revocation';
  EXCEPTION WHEN OTHERS THEN
   GET STACKED DIAGNOSTICS err=MESSAGE_TEXT;
