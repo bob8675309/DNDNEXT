@@ -19,5 +19,26 @@ for(const family of source.families) {
 }
 assert(source.special_cases.length>=12);
 assert(source.special_cases.some(x=>x.expected==='BLOCKED_P1_5'));
-for(const needle of ['PROPOSED; OWNER REVIEW REQUIRED','78 rows','20 with `requested_by IS NULL`','R1','R2','R3','R4','P1.3']) assert(document.includes(needle),'Missing contract requirement: '+needle);
+const decisionLedger = fs.readFileSync('docs/TACTICAL_ENCOUNTER_OWNER_DECISIONS.md','utf8');
+for (const needle of [
+ 'DESIGN-ONLY CONTRACT; R1/R2 OWNER-APPROVED 2026-11-03; R3 OPEN; NOT DEPLOYED',
+ '78 rows',
+ '20 with `requested_by IS NULL`',
+ 'R1 (APPROVED 2026-11-03)',
+ 'R2 (APPROVED 2026-11-03)',
+ 'R3 (proposed)',
+ 'R4 (resolved 2026-11-01)',
+ 'P1.3'
+]) assert(document.includes(needle),'Missing contract requirement: '+needle);
+for (const needle of [
+ 'R1 and R2 APPROVED by the campaign owner on 2026-11-03',
+ 'R1 — Fail closed on unverifiable historical replay',
+ 'R2 — Revoke access to cached private combat results when control is lost',
+ 'R3 remains unresolved',
+ 'No production deployment'
+]) assert(decisionLedger.includes(needle),'Missing approved owner decision: '+needle);
+for (const obsolete of ['R1 (proposed yes)', 'R2 (proposed yes)']) {
+ assert(!document.includes(obsolete),'Obsolete pre-approval status retained: '+obsolete);
+}
+
 console.log('P1.2 STATIC contract coverage OK: '+source.families.length+' families; '+source.cases.length+' generic cases; '+source.special_cases.length+' special cases. NO runtime security tested.');
