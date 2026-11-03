@@ -70,6 +70,6 @@ check "(SELECT status='active' AND active_participant_id=public.fixture_uuid(592
  AND (SELECT slots_remaining=0 FROM public.character_spell_slots WHERE character_id=public.fixture_uuid(16))
  AND (SELECT slots_remaining=0 FROM public.encounter_spell_slots WHERE participant_id=public.fixture_uuid(5922))
  AND (SELECT bonus_action_available=false FROM public.encounter_participants WHERE id=public.fixture_uuid(5922))
- AND (SELECT count(*)=1 FROM public.encounter_combat_log WHERE encounter_id=public.fixture_uuid(922) AND event_type='spell_cast')" "resume serialized before the cast's active-turn validation"
+ AND (SELECT count(*)=1 FROM public.encounter_combat_log WHERE encounter_id=public.fixture_uuid(922) AND event_type='spell_cast')" "resume committed before cast active turn validation"
 echo "PASS: resume E lock serialized cast; valid turn after resume, snapshot and C spend consistent"
 echo "PASS exact public Start/Resume + Healing Word v13 integration cases 19-21; not real GoTrue auth."
