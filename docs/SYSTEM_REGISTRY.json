@@ -106,9 +106,9 @@
       "tests": [],
       "last_checked": "2026-11-02",
       "open_gaps": [
-        "2026-11-02 exact public Reaction Attack and v13->v12 Vicious Mockery cases 30-35 PASS in scratch PG16 run 41564947213 at beba0cb. Resolved reaction window returns cached Attack result for changed choice/request/mock caller before authorization; v12 cast returns original result for different target and slot argument. Both mock Auth and mechanics; NOT proven real cross-user exploits. See docs/P1_3_Opportunity_Attack_Delegated_Spell_Replay_2026-11-02.md.",
-        "Actual legacy v11 public wrapper, v11_pre, v10/v9/v8 descendants, slotted cast and hidden result authorization still need source-derived concurrency tests; true GoTrue JWT PC/GM/delegated NPC revocation/replay acceptance remains undone.",
-        "Global E/P/W/L/X/S/C/permission lock-order proof and P1.5 TC1 Option A admission not implemented; one historical live character overlap needs explicit GM reconciliation."
+        "P1.3 original public v11 Guiding Bolt and v10 Mind Sliver paths cases 36–41 PASS scratch PG16 run 41566917343 SHA 1f39532. v11 E->P vs original End Turn P->E deadlock reproduced under forced concurrent active-turn requests. Both cast versions return cached prior result for changed target/slot. Source-derived not production/JWT exploit. docs/P1_3_Legacy_v11_Guiding_Bolt_v10_Mind_Sliver_2026-11-02.md.",
+        "Public authenticated v9/v8 legacy cast entry execution, GM-assisted fallback, full source-qualified spell/proficiency/damage/targeting semantics, real JWT current-authorization/revocation/cached-result visibility and hidden targets remain unproven.",
+        "Global E/P/L/W/X/S/C/grant lock-order proof not complete; P1.5 TC1 Option A one-active-character guard not deployed, existing live overlap preserved for explicit GM review."
       ],
       "label": "Combat replay authorization",
       "scope_note": "Private candidate executor tested on held PR #312; public legacy RPC still has early replay shortcut.",
@@ -116,7 +116,7 @@
         "source": "inspected-relevant-entry-points-on-main",
         "live_database": "read-only-function-grant-rls-trigger-constraint-inventory-2026-11-01",
         "deployed_sha": "not-deployed-research-or-future",
-        "test_status": "P1.3-exact-opportunity-attack-and-delegated-v13-v12-replay-6-PASS-run-41564947213;real-JWT-NOT-tested",
+        "test_status": "P1.3-public-v11-Guiding-Bolt-v10-Mind-Sliver-six-PASS-run-41566917343;real-auth-production-not-tested",
         "browser_acceptance": "unverified-this-audit",
         "owner_approval": "TC1 Option A owner-approved product policy only; no SQL/merge/runtime grant approval"
       },
