@@ -172,6 +172,14 @@ BEGIN
  UPDATE private.p13_guarded_commands SET result=v_result WHERE request_id=p_request_id;
  RETURN v_result;
 END $core$;
+-- PostgreSQL grants EXECUTE to PUBLIC by default on CREATE FUNCTION; close that
+-- gap before any authenticated grant, even in this disposable candidate model.
+REVOKE ALL ON FUNCTION private.p13_guard_enter_v1(uuid,uuid,uuid,text,jsonb)
+  FROM PUBLIC,anon,authenticated;
+REVOKE ALL ON FUNCTION public.p13_candidate_cast_spell_v1(uuid,uuid,uuid,integer,uuid)
+  FROM PUBLIC,anon,authenticated;
+REVOKE ALL ON FUNCTION public.p13_candidate_core_action_v1(uuid,text,uuid)
+  FROM PUBLIC,anon,authenticated;
 -- The scratch "cutover" MUST deny direct authenticated bypass of originals,
 -- including versions/wrappers. Do not copy any of this grant action to live SQL.
 REVOKE ALL ON FUNCTION public.encounter_cast_spell_v9(uuid,uuid,uuid,integer,uuid)
