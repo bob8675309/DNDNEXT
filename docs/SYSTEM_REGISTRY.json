@@ -103,11 +103,14 @@
         "pages/encounters/combat.js",
         "sql/20260727_06_core_combat_actions.sql"
       ],
-      "tests": [],
-      "last_checked": "2026-11-02",
+      "tests": [
+        "scripts/test_p1_3_legacy_real_jwt_local.mjs",
+        "scripts/fixtures/p1_3_legacy_real_jwt_local_pg17.sql"
+      ],
+      "last_checked": "2026-11-03",
       "open_gaps": [
         "P1.3 original public v11 Guiding Bolt and v10 Mind Sliver paths cases 36–41 PASS scratch PG16 run 41566917343 SHA 1f39532. v11 E->P vs original End Turn P->E deadlock reproduced under forced concurrent active-turn requests. Both cast versions return cached prior result for changed target/slot. Source-derived not production/JWT exploit. docs/P1_3_Legacy_v11_Guiding_Bolt_v10_Mind_Sliver_2026-11-02.md.",
-        "Public authenticated v9/v8 legacy cast entry execution, GM-assisted fallback, full source-qualified spell/proficiency/damage/targeting semantics, real JWT current-authorization/revocation/cached-result visibility and hidden targets remain unproven.",
+        "P1.3 exact v9→v1 cast functions plus genuine local GoTrue JWTs proved unsafe changed-target/assignment/slot cross-user cached replay and post-revocation result disclosure (cases 48–55, run 41635156191, SHA 16424aab). Local healing/profile/targeting, Admin and RLS were modeled; no live exploit/mitigation claim.",
         "Global E/P/L/W/X/S/C/grant lock-order proof not complete; P1.5 TC1 Option A one-active-character guard not deployed, existing live overlap preserved for explicit GM review."
       ],
       "label": "Combat replay authorization",
@@ -116,7 +119,7 @@
         "source": "inspected-relevant-entry-points-on-main",
         "live_database": "read-only-function-grant-rls-trigger-constraint-inventory-2026-11-01",
         "deployed_sha": "not-deployed-research-or-future",
-        "test_status": "P1.3-public-v11-Guiding-Bolt-v10-Mind-Sliver-six-PASS-run-41566917343;real-auth-production-not-tested",
+        "test_status": "P1.3-legacy-v9-to-v1-real-local-GoTrue-JWT-8-PASS-run-41635156191-sha-16424aab;expected-unsafe-replay-reproduced;production-not-tested",
         "browser_acceptance": "unverified-this-audit",
         "owner_approval": "TC1 Option A owner-approved product policy only; no SQL/merge/runtime grant approval"
       },
