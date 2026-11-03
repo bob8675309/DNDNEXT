@@ -18,6 +18,9 @@ on:
       - 'scripts/fixtures/p1_3_permission_setup_pg16.sql'
       - 'scripts/fixtures/p1_3_permission_live_source_pg16.sql'
       - 'scripts/fixtures/p1_3_permission_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_real_refresh_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_real_refresh_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_real_refresh_race_pg16.sh'
       - 'docs/P1_3_Real_Admin_Activation_Resume_Test_2026-11-01.md'
       - '.github/workflows/validate-p1-3-real-admin-paths.yml'
   push:
@@ -39,6 +42,9 @@ on:
       - 'scripts/fixtures/p1_3_permission_setup_pg16.sql'
       - 'scripts/fixtures/p1_3_permission_live_source_pg16.sql'
       - 'scripts/fixtures/p1_3_permission_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_real_refresh_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_real_refresh_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_real_refresh_race_pg16.sh'
       - 'docs/P1_3_Real_Admin_Activation_Resume_Test_2026-11-01.md'
       - '.github/workflows/validate-p1-3-real-admin-paths.yml'
 permissions:
@@ -105,3 +111,9 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_permission_live_source_pg16.sql
       - name: Test grant-revocation stale-read and permission-row lock control
         run: bash scripts/fixtures/p1_3_permission_race_pg16.sh
+      - name: Load exact deployed C-to-S refresh source and separate scratch resources
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_real_refresh_setup_pg16.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_real_refresh_source_pg16.sql
+      - name: Test source-derived refresh C-to-S against snapshot spend S-to-C
+        run: bash scripts/fixtures/p1_3_real_refresh_race_pg16.sh
