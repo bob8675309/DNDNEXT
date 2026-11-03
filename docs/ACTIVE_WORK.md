@@ -19,7 +19,7 @@
 
 **Verified P0/P1 releases:** Documentation PRs #313/#314 and P1.1 #315, P1.2 #316 merged. Source baseline for P1.3: `51c351a142d03378dff8e47e05182afe21a15622`; refresh GitHub main, Supabase and deployments before relying on it. PRs #309/#312 remain held research.
 
-**Next single action (2026-11-02):** Trace **real encounter activation E→C→S** through `admin_start_encounter_v1`/`admin_set_encounter_status_v1` and real cast **S→C** through the public spell commands with valid status/turn gates; test reachable transaction overlap in disposable PG16, then signed-in permission revocation. **Do not assume case 17 is a production-reachable deadlock.** Keep [TC1 Option A](TACTICAL_ENCOUNTER_OWNER_DECISIONS.md) and unimplemented P1.5 guard separate; no production SQL.
+**Next single action:** (Updated 2026-11-02) Trace **real encounter activation E→C→S** through `admin_start_encounter_v1`/`admin_set_encounter_status_v1` and real cast **S→C** through the public spell commands with valid status/turn gates; test reachable transaction overlap in disposable PG16, then signed-in permission revocation. **Do not assume case 17 is a production-reachable deadlock.** Keep [TC1 Option A](TACTICAL_ENCOUNTER_OWNER_DECISIONS.md) and unimplemented P1.5 guard separate; no production SQL.
 
 **Acceptance:** One verified global, deadlock-safe transaction boundary across public versions and triggers, with exact-source evidence, real multi-session PG fixtures and signed-in authorization test plan. Source-class graph validation alone **does not satisfy P1.3**.
 
