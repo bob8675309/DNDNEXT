@@ -30,6 +30,9 @@ on:
       - 'scripts/fixtures/p1_3_weapon_attack_setup_pg16.sql'
       - 'scripts/fixtures/p1_3_weapon_attack_live_source_pg16.sql'
       - 'scripts/fixtures/p1_3_weapon_attack_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_opportunity_attack_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_opportunity_attack_live_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_opportunity_attack_race_pg16.sh'
       - 'docs/P1_3_Real_Admin_Activation_Resume_Test_2026-11-01.md'
       - '.github/workflows/validate-p1-3-real-admin-paths.yml'
   push:
@@ -63,6 +66,9 @@ on:
       - 'scripts/fixtures/p1_3_weapon_attack_setup_pg16.sql'
       - 'scripts/fixtures/p1_3_weapon_attack_live_source_pg16.sql'
       - 'scripts/fixtures/p1_3_weapon_attack_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_opportunity_attack_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_opportunity_attack_live_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_opportunity_attack_race_pg16.sh'
       - 'docs/P1_3_Real_Admin_Activation_Resume_Test_2026-11-01.md'
       - '.github/workflows/validate-p1-3-real-admin-paths.yml'
 permissions:
@@ -153,3 +159,9 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_weapon_attack_live_source_pg16.sql
       - name: Verify Weapon Attack against End Turn and competing Dodge action
         run: bash scripts/fixtures/p1_3_weapon_attack_race_pg16.sh
+      - name: Load deployed opportunity attack branch and source helper into scratch PG16
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_opportunity_attack_setup_pg16.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_opportunity_attack_live_source_pg16.sql
+      - name: Verify opportunity Attack, End Turn and resolved-window replay races
+        run: bash scripts/fixtures/p1_3_opportunity_attack_race_pg16.sh
