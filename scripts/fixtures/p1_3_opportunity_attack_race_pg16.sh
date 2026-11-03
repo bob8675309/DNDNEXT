@@ -14,9 +14,11 @@ move 5950 8950 "$tmp/30.move"
 window30=$(psqlq -c "SELECT id FROM public.encounter_reaction_windows WHERE encounter_id=public.fixture_uuid(937) AND status='pending'")
 [[ -n "$window30" ]] || { cat "$tmp/30.move";exit 1; }
 attack "$window30" 8951 "$tmp/30.attack"
+check "(SELECT reaction_available=false FROM public.encounter_participants WHERE id=public.fixture_uuid(5951))
+ AND (SELECT current_hp=9 FROM public.encounter_participants WHERE id=public.fixture_uuid(5950))" "attack spent reaction before next turn"
 endturn 5950 8952 "$tmp/30.end"
 check "(SELECT status='resolved' AND choice='attack' AND (result->'attack'->>'hit')::boolean=true FROM public.encounter_reaction_windows WHERE id='$window30'::uuid)
- AND (SELECT reaction_available=false FROM public.encounter_participants WHERE id=public.fixture_uuid(5951))
+ AND (SELECT reaction_available=true FROM public.encounter_participants WHERE id=public.fixture_uuid(5951))
  AND (SELECT current_hp=9 FROM public.encounter_participants WHERE id=public.fixture_uuid(5950))
  AND (SELECT active_participant_id=public.fixture_uuid(5951) FROM public.encounters WHERE id=public.fixture_uuid(937))
  AND (SELECT count(*)=1 FROM public.encounter_combat_log WHERE encounter_id=public.fixture_uuid(937) AND event_type='opportunity_attack')
@@ -41,8 +43,9 @@ endturn 5952 8955 "$tmp/31.end" & pb=$!
 wait "$pa";wait "$pb"
 check "(SELECT status='resolved' AND choice='attack' FROM public.encounter_reaction_windows WHERE id='$window31'::uuid)
  AND (SELECT current_hp=9 FROM public.encounter_participants WHERE id=public.fixture_uuid(5952))
- AND (SELECT reaction_available=false FROM public.encounter_participants WHERE id=public.fixture_uuid(5953))
+ AND (SELECT reaction_available=true FROM public.encounter_participants WHERE id=public.fixture_uuid(5953))
  AND (SELECT active_participant_id=public.fixture_uuid(5953) FROM public.encounters WHERE id=public.fixture_uuid(938))
+ AND (SELECT (result->>'reactionSpent')::boolean=true FROM public.encounter_reaction_windows WHERE id='$window31'::uuid)
  AND (SELECT count(*)=1 FROM public.encounter_combat_log WHERE encounter_id=public.fixture_uuid(938) AND event_type='opportunity_attack')
  AND (SELECT count(*)=3 FROM public.encounter_command_requests WHERE encounter_id=public.fixture_uuid(938) AND result IS NOT NULL)" "attack and end race must serialize"
 echo 'PASS: original reaction Attack serialized before End Turn on shared W/P'
