@@ -169,9 +169,12 @@ db("INSERT INTO public.character_permissions(character_id,user_id,can_edit,can_c
    "DO UPDATE SET can_edit=true");
 const revokerSql="BEGIN; UPDATE public.character_permissions SET can_edit=false WHERE character_id='"+
   id(614)+"' AND user_id='"+c.uid+"'; SELECT 'REVOCATION_LOCKED'; SELECT pg_sleep(2.5); COMMIT;";
-const worker=spawn("psql",["-X","-v","ON_ERROR_STOP=1","-qAt","-c",revokerSql],{
-  env:{...e,PGUSER:"postgres"},stdio:["ignore","pipe","pipe"]
+const worker=spawn("psql",["-X","-v","ON_ERROR_STOP=1","-qAt"],{
+  env:{...e,PGUSER:"postgres"},stdio:["pipe","pipe","pipe"]
 });
+// Feed independent SQL statements so the marker is flushed before the sleep;
+// a single libpq multi-statement -c command may hide intermediate results.
+worker.stdin.end(revokerSql.replaceAll("; ",";\n"));
 let workerError="";
 worker.stderr.setEncoding("utf8");
 worker.stderr.on("data",x=>{workerError+=x;});
