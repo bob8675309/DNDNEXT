@@ -111,7 +111,13 @@
         "scripts/test_p1_3_guarded_candidate_local_jwt.mjs",
         "scripts/fixtures/p1_3_turn_move_reaction_live_pg17.sql",
         "scripts/fixtures/p1_3_turn_move_reaction_guarded_pg17.sql",
-        "scripts/test_p1_3_turn_move_reaction_local_jwt.mjs"
+        "scripts/test_p1_3_turn_move_reaction_local_jwt.mjs",
+        "scripts/fixtures/p1_3_hidden_activity_setup_pg17.sql",
+        "scripts/fixtures/p1_3_hidden_activity_projection_pg17.sql",
+        "scripts/test_p1_3_hidden_activity_local_jwt.mjs",
+        "scripts/fixtures/p1_3_reaction_attack_damage_live_pg17.sql",
+        "scripts/fixtures/p1_3_unarmed_reaction_attack_research_pg17.sql",
+        "scripts/test_p1_3_unarmed_reaction_attack_local_jwt.mjs"
       ],
       "last_checked": "2026-11-03",
       "open_gaps": [
@@ -119,15 +125,16 @@
         "P1.3 exact v9→v1 cast functions plus genuine local GoTrue JWTs proved unsafe changed-target/assignment/slot cross-user cached replay and post-revocation result disclosure (cases 48–55, run 41635156191, SHA 16424aab). Local healing/profile/targeting, Admin and RLS were modeled; no live exploit/mitigation claim.",
         "Global E/P/L/W/X/S/C/grant lock-order proof not complete; P1.5 TC1 Option A one-active-character guard not deployed, existing live overlap preserved for explicit GM review.",
         "P1.3 signed JWT two-family guarded candidate 56–69 PASS, run 41638042390 SHA 62a0cf01; exact v9→v1 spell + live core action guarded E-first with typed request ownership, hidden/revoked replay and controlled grant race. RESEARCH ONLY: old production direct RPC grants still open; no global lock/no live fix.",
-        "Five-family local JWT guarded model cases 70–81 PASS run 41679603374 SHA 82cb4481: original End Turn/Move/Reaction Pass, bounded E-first races and R1/R2. Attack/damage/reaction budget and first-run hidden next/reactor visibility UNTESTED. Production direct originals still callable; global E/P/W/L/X/S/C not proven."
+        "Five-family local JWT guarded model cases 70–81 PASS run 41679603374 SHA 82cb4481: original End Turn/Move/Reaction Pass, bounded E-first races and R1/R2. Attack/damage/reaction budget and first-run hidden next/reactor visibility UNTESTED. Production direct originals still callable; global E/P/W/L/X/S/C not proven.",
+        "P1.3 genuine-JWT first-execution cases 83/84 reproduced hidden next actor and hidden reactor/window IDs from source-derived guarded research RPC; scratch Unknown Events response projection passed cases 85–92 (run 41690025288). Concealed timing still leaks a signal; not owner-approved or deployed. Original unarmed reaction/HP/damage source cases 93–105 PASS run 41692165016 SHA 4cdfd5b5 with synthetic deterministic roll, gear and stats. Real weapon/advantage/timed-effect X/resource path still UNTESTED; no global lock certificate."
       ],
       "label": "Combat replay authorization",
-      "scope_note": "Draft PR #317 five-family research-only JWT candidate: spell, core, Move, End Turn, Reaction Pass; not global, not live.",
+      "scope_note": "Research PR #317: five-family guarded JWT candidate plus optional scratch-only Unknown Events viewer projection and separately isolated original unarmed Attack. Full equipped weapons, original random/FX and global lock/remediation are NOT implemented in production.",
       "verification": {
         "source": "inspected-relevant-entry-points-on-main",
         "live_database": "read-only-function-grant-rls-trigger-constraint-inventory-2026-11-01",
         "deployed_sha": "not-deployed-research-or-future",
-        "test_status": "P1.3-5-family-signed-JWT-cases-56-to-81-PASS-run-41679603374-sha-82cb4481;legacy-unsafe-baseline-retained;Attack-and-global-lock-UNVERIFIED",
+        "test_status": "P1.3-hidden-privacy-JWT-cases-82-to-92-PASS-run-41690025288;unarmed-original-attack-JWT-cases-93-to-105-PASS-run-41692165016-sha-4cdfd5b5;8-of-8-source-head-checks-green;global-security-UNPROVEN",
         "browser_acceptance": "unverified-this-audit",
         "owner_approval": "TC1 Option A (2026-11-01) and P1.2 R1/R2 (2026-11-03) owner-approved policy only; R3 still open; no SQL/merge/runtime grant/deployment approval"
       },
