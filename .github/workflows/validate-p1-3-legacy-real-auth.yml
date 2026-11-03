@@ -1,11 +1,69 @@
-name: P1.3 disposable real Auth pending test
+name: P1.3 legacy spell real local GoTrue/JWT (disposable)
 on:
+  pull_request:
+    paths:
+      - '.github/workflows/validate-p1-3-legacy-real-auth.yml'
+      - 'scripts/fixtures/p1_3_legacy_real_jwt_local_pg17.sql'
+      - 'scripts/fixtures/p1_3_legacy_v9_to_v1_live_source_pg16.sql'
+      - 'scripts/test_p1_3_legacy_real_jwt_local.mjs'
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  pending:
-    if: false
+  disposable-real-auth:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      PGHOST: 127.0.0.1
+      PGPORT: '54322'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_P13_LOCAL_CI_CONFIRM: P13_DISPOSABLE_REAL_GOTRUE_ONLY
     steps:
-      - run: echo 'Runner not installed yet'
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned project dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Configure ephemeral Supabase project
+        run: |
+          mkdir -p "$RUNNER_TEMP/p13-real-auth/supabase"
+          cat > "$RUNNER_TEMP/p13-real-auth/supabase/config.toml" <<'TOML'
+          project_id = "p13-legacy-real-auth-ci"
+          [db]
+          port = 54322
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+      - name: Start disposable PostgreSQL 17, GoTrue and PostgREST
+        run: |
+          cd "$RUNNER_TEMP/p13-real-auth"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Load original deployed SQL against local Auth-only database and verify signed-in behavior
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = '127.0.0.1'
+          test "$PGPORT" = '54322'
+          test "$PGDATABASE" = 'postgres'
+          (cd "$RUNNER_TEMP/p13-real-auth" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/p13-local-env"
+          set -a
+          source "$RUNNER_TEMP/p13-local-env"
+          set +a
+          export DNDNEXT_P13_LOCAL_URL="http://127.0.0.1:54321"
+          export DNDNEXT_P13_LOCAL_ANON_KEY="$ANON_KEY"
+          node --check scripts/test_p1_3_legacy_real_jwt_local.mjs
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_legacy_real_jwt_local_pg17.sql
+          node scripts/test_p1_3_legacy_real_jwt_local.mjs
+      - name: Destroy disposable services and discard test users
+        if: always()
+        run: |
+          cd "$RUNNER_TEMP/p13-real-auth"
+          npx --yes supabase@2.120.0 stop --no-backup || true
