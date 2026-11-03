@@ -123,7 +123,10 @@
         "scripts/test_p1_3_original_roll_timed_effect_local_jwt.mjs",
         "scripts/fixtures/p1_3_original_weapon_profile_live_pg17.sql",
         "scripts/fixtures/p1_3_original_equipped_weapon_research_pg17.sql",
-        "scripts/test_p1_3_original_equipped_weapon_local_jwt.mjs"
+        "scripts/test_p1_3_original_equipped_weapon_local_jwt.mjs",
+        "scripts/fixtures/p1_3_equipment_mutation_live_pg17.sql",
+        "scripts/fixtures/p1_3_inventory_race_combat_only_pg17.sql",
+        "scripts/test_p1_3_inventory_race_combat_only_local_jwt.mjs"
       ],
       "last_checked": "2026-11-03",
       "open_gaps": [
@@ -133,15 +136,16 @@
         "P1.3 signed JWT two-family guarded candidate 56–69 PASS, run 41638042390 SHA 62a0cf01; exact v9→v1 spell + live core action guarded E-first with typed request ownership, hidden/revoked replay and controlled grant race. RESEARCH ONLY: old production direct RPC grants still open; no global lock/no live fix.",
         "Five-family local JWT guarded model cases 70–81 PASS run 41679603374 SHA 82cb4481: original End Turn/Move/Reaction Pass, bounded E-first races and R1/R2. Attack/damage/reaction budget and first-run hidden next/reactor visibility UNTESTED. Production direct originals still callable; global E/P/W/L/X/S/C not proven.",
         "P1.3 genuine-JWT first-execution cases 83/84 reproduced hidden next actor and hidden reactor/window IDs from source-derived guarded research RPC; scratch Unknown Events response projection passed cases 85–92 (run 41690025288). Concealed timing still leaks a signal; not owner-approved or deployed. Original unarmed reaction/HP/damage source cases 93–105 PASS run 41692165016 SHA 4cdfd5b5 with synthetic deterministic roll, gear and stats. Real weapon/advantage/timed-effect X/resource path still UNTESTED; no global lock certificate.",
-        "P1.3 real source D20/Guiding Bolt/Vicious Mockery X + real equipped-profile JWT cases 106–128 PASS combined run 41698384117 source SHA b6acf77e. Original player-owned gear source requires can_edit, can_control-only insufficient (case 126). No sheet-permission expansion authorized. Inventory-row equip/transfer race, true equipment mitigation, cross-trigger S/C/X global locks and hidden-event timing still UNVERIFIED."
+        "P1.3 real source D20/Guiding Bolt/Vicious Mockery X + real equipped-profile JWT cases 106–128 PASS combined run 41698384117 source SHA b6acf77e. Original player-owned gear source requires can_edit, can_control-only insufficient (case 126). No sheet-permission expansion authorized. Inventory-row equip/transfer race, true equipment mitigation, cross-trigger S/C/X global locks and hidden-event timing still UNVERIFIED.",
+        "P1.3 source exact signed-JWT equip/transfer vs Attack I race cases 129-141 PASS run 41701093404 SHA e1fa0982: original uncommitted equip-row stale read baseline; E/P/L/I/W bounded guarded candidate waits/rejects; combat controller can use owner-associated gear via scratch can_inventory-aware private clone without can_edit. Original profile remains live; scratch grants/RLS stricter than production, live character-sheet SELECT RLS requires separate audit. Complete I/G/C/S/X global lock proof and production cutover UNVERIFIED."
       ],
       "label": "Combat replay authorization",
-      "scope_note": "Research-only PR #317: original source W/Attack/Damage/D20/X and equipped weapon-profile rights tested in disposable PG17 real JWTs, 106–128. Underlying inventory/item/catalog/stat/mitigation tables synthetic; normal Attack remains GM-assisted in guarded candidate. No production security fix.",
+      "scope_note": "Draft PR #317 research-only: five-family guarded replay plus optional scratch viewer projection, original D20/weapon source, and E/P/L/I/W equipment mutation contention using an intentionally modified private combat-only weapon helper. Not production.",
       "verification": {
         "source": "inspected-relevant-entry-points-on-main",
         "live_database": "read-only-function-grant-rls-trigger-constraint-inventory-2026-11-01",
         "deployed_sha": "not-deployed-research-or-future",
-        "test_status": "P1.3-source-roll-X-JWT-106-to-116-PASS-run-41697462487;equipped-source-JWT-117-to-128-PASS-run-41698384117-sha-b6acf77e;global-lock-UNVERIFIED",
+        "test_status": "P1.3-source-equip-transfer-JWT-cases-129-to-141-PASS-run-41701093404-sha-e1fa0982;original-nonlocking-I-read-reproduced-before-unequip-commit;global-lock-and-production-RLS-UNPROVEN",
         "browser_acceptance": "unverified-this-audit",
         "owner_approval": "TC1 Option A (2026-11-01) and P1.2 R1/R2 (2026-11-03) owner-approved policy only; R3 still open; no SQL/merge/runtime grant/deployment approval"
       },
