@@ -133,3 +133,13 @@
 - **Other maintenance:** `update_character_spell_slot_v1` and `complete_character_rest_v1` write C but are not shown to write S directly; do not mislabel them C→S writers. Permission grant RLS is Admin-write/self-select, but command-authorization serialization remains unresolved.
 - **No side effects:** No production Supabase writes, grants, migrations, gameplay/map changes or research PR merge. P1.3/P1.5 remain open; existing active overlap untouched for GM decision.
 - **Next single task:** Test whether valid concurrent activation/refresh and actual public spell casting can reach opposing locks under genuine status/turn constraints; then cover signed-in grant revocation and full mixed-version lock graph before any lock-order proposal.
+
+## 2026-11-02 — Exact public Start/Resume versus Healing Word v13 integration verified (scratch PG16)
+
+- **Exact CI:** [run 41560428459](https://github.com/bob8675309/DNDNEXT/actions/runs/41560428459), job `125669464564`, tested SHA `cebc04adcc2651ea9e38db1a9d815798d8cfcd3d`: cases **19–21 all PASS**, all seven GitHub checks succeeded.
+- **Live source snapshots:** `encounter_cast_spell_v13` MD5 `03ea7bd00bcd9734ef70ebc035c54a8d`; slot-turn guard `78195a807865efdbf74122a3d562a095`; Admin Start `ce7bb040cb09d9dac85517ea8206b44e`; Admin status `ab4592dc22632d646886f0d808cfb95f`; refresh `d16af751b63fc3214b2b5d6cc9621160`; mirror `b30565d75b05b042c1ad8f9803284486`.
+- **Results:** Sequential *valid active-turn* Start→Healing Word consumes one S/C slot and logs once. A public v13 cast *attempted while Start was still staged/uncommitted* deadlocks against original Start E→P via caster P→E; abort leaves no partial slot/action/log. Paused→active public Resume then queued v13 cast commits correctly without deadlock in that pair.
+- **Precision:** The pre-start cast attempt was not yet a committed valid active-turn action; do not claim deadlock among two already-valid turns or that private C↔S inversion is proven reachable through valid public actions. Healing/profile/Auth schema dependencies remain mocked. No user data or production RPC executed. [Full report](P1_3_Public_Activation_Cast_Reachability_2026-11-02.md).
+- **Test repair:** first run `41560249154` failed only due to a quote in an assertion message after cases 19–20; fixed fixture and rerun green at exact test SHA.
+- **No production change:** PR #317 draft and unmerged, main unchanged, no live migrations/grants/gameplay/map changes, TC1 Option A not deployed, existing one-character overlap preserved for GM review.
+- **One next task:** Test real attack/movement/reaction/end-turn and v10–v13 delegated spell writers under valid turn and status transitions, then verify real NPC grant revocation with JWTs; keep P1.3/P1.5 unchecked.

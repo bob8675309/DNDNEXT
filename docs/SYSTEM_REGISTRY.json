@@ -104,11 +104,11 @@
         "sql/20260727_06_core_combat_actions.sql"
       ],
       "tests": [],
-      "last_checked": "2026-11-01",
+      "last_checked": "2026-11-02",
       "open_gaps": [
-        "2026-11-02 two real-source opposing slot paths: refresh_encounter_spell_slots_from_characters_v1 C->S and mirror_encounter_spell_slot_spend_v1 S->C, deliberately scheduled same-row scratch PG16 deadlock plus scoped positive control PASS (run 41558043789 SHA 4831a8e). NOT proof of legitimate activation/cast overlap. docs/P1_3_Refresh_vs_Spend_Source_Lock_2026-11-02.md.",
-        "Need real public activation-vs-spell reachability, all legacy version/trigger/FK/grant lock orders, complete JWT revocation test, and universally coordinated E/P/L/W/X/S/C/permission transaction order before any runtime migration.",
-        "Owner TC1 Option A approved; P1.5 single-active-character admission guard not installed and one historic live overlap requires explicit GM reconciliation."
+        "P1.3 public Admin Start/Resume plus Healing Word v13 exact source integration: 3 scratch PG16 cases PASS run 41560428459 SHA cebc04a. Valid Start->Cast, early cast attempt vs uncommitted Start E/P deadlock, queued Resume->Cast. Early attempt NOT already-valid active turn, so do not claim production incident. docs/P1_3_Public_Activation_Cast_Reachability_2026-11-02.md.",
+        "Private helper C<->S deadlock is not proven reachable between valid public activation/cast RPCs; complete P1.3 cross-version attack/reaction/movement/turn/permission/trigger/ledger lock graph and signed-in JWT revoked-controller tests before choosing universal order.",
+        "Owner TC1 Option A approved; P1.5 server admission guard unimplemented and one historical active overlap requires explicit GM review."
       ],
       "label": "Combat replay authorization",
       "scope_note": "Private candidate executor tested on held PR #312; public legacy RPC still has early replay shortcut.",
@@ -116,7 +116,7 @@
         "source": "inspected-relevant-entry-points-on-main",
         "live_database": "read-only-function-grant-rls-trigger-constraint-inventory-2026-11-01",
         "deployed_sha": "not-deployed-research-or-future",
-        "test_status": "P1.3-exact-refresh-vs-spend-C-S-PG16-cases-17-18-PASS-run-41558043789;actual-public-RPC-race-NOT-proven",
+        "test_status": "P1.3-public-v13-activation-resume-PG16-cases-19-to-21-PASS-41560428459;valid-postactivation-cast-confirmed;public-early-attempt-E-P-deadlock",
         "browser_acceptance": "unverified-this-audit",
         "owner_approval": "TC1 Option A owner-approved product policy only; no SQL/merge/runtime grant approval"
       },
