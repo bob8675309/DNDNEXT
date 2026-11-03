@@ -54,7 +54,13 @@ async function beginWriter(operation,label,lockId){
  let settled=false;
  const pending=operation().then(x=>{settled=true;return x;},err=>{settled=true;throw err;});
  for(let tries=0;tries<80&&!barrierActive(lockId);tries++){
-   if(settled)throw Error(label+" completed before the held-lock observation");
+   if(settled){
+     const early=await pending;
+     throw Error(label+" completed before held G lock: "+JSON.stringify({
+       error:early?.error?.message,code:early?.error?.code,
+       rows:early?.data?.length,count:early?.count
+     }));
+   }
    await sleep(35);
  }
  assert.ok(barrierActive(lockId),label+" held lock never observed");
@@ -84,6 +90,14 @@ db("UPDATE public.inventory_items SET owner_type='player',owner_id='"+owner.uid+
  "',user_id='"+owner.uid+"' WHERE id IN ("+
  [48,49,51,52,53].map(n=>"'"+item(n)+"'").join(",")+")");
 assert.equal(count("SELECT count(*) FROM public.character_permissions WHERE user_id='"+a.uid+"'"),0);
+// Confirm the source-like signed-in Admin UPDATE policy works *before*
+// attempting a held-lock timing assertion. This is an idempotent fixture row.
+const adminCheck=await gm.who.from("character_permissions")
+ .update({can_inventory:true}).eq("character_id",char(55))
+ .eq("user_id",owner.uid).select("character_id,can_inventory");
+assert.ifError(adminCheck.error);
+assert.equal(adminCheck.data.length,1,"Live-policy Admin test cannot update owner grant");
+assert.equal(adminCheck.data[0].can_inventory,true);
 console.log("PASS 142: 5 genuine signed JWTs and source-policy RLS provisioned; actor controls no inventory/sheet grants");
 
 const revoke=n=>gm.who.from("character_permissions").update({can_inventory:false})
