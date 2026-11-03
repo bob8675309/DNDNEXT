@@ -1,4 +1,6 @@
 -- Disposable local PostgreSQL 16 only, after the existing Admin/Slot/Permission source tests.
+-- Match live encounter_spell_slots.id default verified SELECT-only on 2026-11-02.
+ALTER TABLE public.encounter_spell_slots ALTER COLUMN id SET DEFAULT gen_random_uuid();
 ALTER TABLE public.encounter_spell_slots ADD COLUMN recharge_key text NOT NULL DEFAULT 'long_rest';
 ALTER TABLE public.encounter_spell_slots ADD COLUMN source_class_id uuid;
 ALTER TABLE public.encounter_spell_slots ADD COLUMN source_class_key text;
