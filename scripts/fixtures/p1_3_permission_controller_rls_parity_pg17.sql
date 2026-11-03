@@ -52,8 +52,8 @@ CREATE OR REPLACE FUNCTION private.p13_grant_revocation_barrier_v1()
 RETURNS trigger LANGUAGE plpgsql AS $barrier$
 BEGIN
  IF old.can_inventory AND NOT new.can_inventory
-  AND new.character_id IN (public.p13_auth_uuid(1121),
-                           public.p13_auth_uuid(1131)) THEN
+  AND new.character_id IN ('00000000-0000-0000-0000-000000001121'::uuid,
+                           '00000000-0000-0000-0000-000000001131'::uuid) THEN
   PERFORM pg_advisory_xact_lock(131307);
   PERFORM pg_sleep(1.1);
  END IF;
@@ -92,7 +92,7 @@ GRANT EXECUTE ON FUNCTION public.p13_reassign_active_controller_research_v1(uuid
 CREATE OR REPLACE FUNCTION private.p13_controller_reassignment_barrier_v1()
 RETURNS trigger LANGUAGE plpgsql AS $barrier$
 BEGIN
- IF new.id=public.p13_auth_uuid(1501)
+ IF new.id='00000000-0000-0000-0000-000000001501'::uuid
  AND new.controller_user_id IS DISTINCT FROM old.controller_user_id THEN
    PERFORM pg_advisory_xact_lock(131308);
    PERFORM pg_sleep(1.1);
