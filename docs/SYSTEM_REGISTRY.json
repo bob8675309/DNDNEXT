@@ -125,7 +125,7 @@
         "deployed_sha": "not-deployed-research-or-future",
         "test_status": "P1.3-two-family-guarded-candidate-14-JWT-PASS-run-41638042390-sha-62a0cf01;source-legacy-unsafe-baseline-retained;global-security-UNPROVEN",
         "browser_acceptance": "unverified-this-audit",
-        "owner_approval": "TC1 Option A owner-approved product policy only; no SQL/merge/runtime grant approval"
+        "owner_approval": "TC1 Option A (2026-11-01) and P1.2 R1/R2 (2026-11-03) owner-approved policy only; R3 still open; no SQL/merge/runtime grant/deployment approval"
       },
       "protected_boundaries": [
         "No production SQL changes, grants, merge, or deployment without owner approval",

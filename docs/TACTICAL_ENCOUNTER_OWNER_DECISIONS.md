@@ -1,4 +1,6 @@
-# Tactical Encounter Owner Decisions — Canonical Character Concurrency
+# Tactical Encounter Owner Decisions — Character Concurrency and Command Replay
+
+> **Approved tactical policies:** TC1 / Option A (2026-11-01); P1.2 R1 and R2 (2026-11-03). **Policy approval is not implementation or deployment authorization.**
 
 > **Approved product policy, 2026-11-01: TC1 / Option A.** This is the campaign owner's choice made during P1.3 research. It supersedes earlier statements that the shared-character policy was undecided. **Policy approval is not permission to run SQL, change production combat logic, remove participant records, or merge research PRs.** See [P1.3 research](P1_3_Global_Lock_Order_Research_2026-11-01.md) and [ACTIVE_WORK](ACTIVE_WORK.md).
 
@@ -43,3 +45,26 @@ A cross-table uniqueness test is **not the same** as a simple partial unique ind
 ## TC1 implementation path confirmed by live source (read-only)
 
 `admin_set_encounter_status_v1` sends staged→active through `admin_start_encounter_v1`, but **paused→active** uses a separate direct update. Both must eventually apply the same concurrency-safe TC1 admission/serialization. The isolated [PG16 model test](P1_3_Option_A_Concurrency_Model_2026-11-01.md) passed eight synthetic scenarios; it does not authorize or validate deployed enforcement.
+
+## P1.2 — Immutable combat-command replay and revocation (owner-approved 2026-11-03)
+
+**Status: R1 and R2 APPROVED by the campaign owner on 2026-11-03.** These are binding security policies for future tactical-command implementation. They do **not** approve a SQL migration, `EXECUTE` grant or revocation, application deployment, PR merge, live data alteration, or rollout. The authoritative technical envelope remains the [P1.2 command replay contract](P1_2_Command_Replay_Contract_2026-11-01.md); validation and global locking remain under [P1.3 research](ACTIVE_WORK.md).
+
+### R1 — Fail closed on unverifiable historical replay
+
+When an existing/historical command-request row lacks sufficient trustworthy evidence to prove **both its original requester and its exact original typed command intent**, **refuse to replay that request**. Preserve its original database record for Admin/audit review; do not delete it, invent a requester, reconstruct original intent from the result alone, silently grant ownership of the request UUID, or rerun/spend the Action, reaction, spell slot or other resource through that UUID. A new valid command must use a fresh request ID and satisfy current authorization and action rules. The user-facing failure must not disclose private record content.
+
+**Owner decision:** Approve — fail closed while preserving the historic record for audit.
+
+### R2 — Revoke access to cached private combat results when control is lost
+
+If a player or other human controller no longer has permission to control the relevant actor, **deny access to the previously cached private combat-command result via the command API**, even if that same controller originally executed the command. Every replay must recheck **current** actor/encounter authority and result visibility before returning cached JSON. A previously valid request ID is not a permanent entitlement to hidden combat data. No replay denial may execute the original action again or spend additional resources.
+
+**Owner decision:** Approve — revoke cached-result access with loss of control.
+
+### Explicit limits of this approval
+
+- These approvals settle **R1 and R2 only**, not every detail of the P1.2 envelope, API error-code design, visibility redaction/projection, service-principal handling, or production migration.
+- **R3 remains unresolved:** the policy for trusted service calls, explicitly identified service principals and audited scope still requires separate review. **R4/TC1 Option A was already approved** on 2026-11-01; its P1.5 enforcement and reconciliation are not deployed.
+- The two-family guarded replay experiment on [draft PR #317](https://github.com/bob8675309/DNDNEXT/pull/317) has passing disposable real-JWT tests ([research report](P1_3_Guarded_Replay_Two_Family_Candidate_2026-11-03.md)), but it is **research only**. Original production RPCs and their grants are unchanged and the global P1.3 transaction/lock-order proof is incomplete.
+- **No production deployment, Supabase SQL/grant change, merge into `main`, or live character/encounter test has been authorized.**
