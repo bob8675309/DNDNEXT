@@ -125,12 +125,12 @@ INSERT INTO public.encounter_participants(
  is_hidden,controller_user_id,initiative,q,r,team,action_available,reaction_available)
 SELECT public.p13_auth_uuid(1000+10*x),public.p13_auth_uuid(900+x),
  public.p13_auth_uuid(720+10*(x-12)),'Unarmed target '||x,20,20,
- false,NULL,20,0,0,'players',true,true
+ false,NULL::uuid,20,0,0,'players',true,true
 FROM generate_series(12,19) x
 UNION ALL
 SELECT public.p13_auth_uuid(1001+10*x),public.p13_auth_uuid(900+x),
  public.p13_auth_uuid(721+10*(x-12)),'Unarmed attacker '||x,20,20,
- false,NULL,10,1,0,'enemy',true,true
+ false,NULL::uuid,10,1,0,'enemy',true,true
 FROM generate_series(12,19) x;
 INSERT INTO public.encounter_reaction_windows(
  id,encounter_id,mover_participant_id,reactor_participant_id,
