@@ -1,7 +1,7 @@
 -- P1.3 disposable PG16 only, follows earlier exact-source Admin/refresh/permission fixtures.
 -- Adds the minimum mock dependencies for the EXACT deployed public Healing Word v13 branch.
 -- Does NOT represent actual signed-in users, full application schema, RLS or all combat triggers.
-ALTER TABLE public.encounter_participants ADD COLUMN is_hidden boolean DEFAULT false;
+-- is_hidden already present in the preceding staged-update test fixture.
 ALTER TABLE public.encounter_participants ADD COLUMN current_hp integer DEFAULT 6;
 ALTER TABLE public.encounter_participants ADD COLUMN max_hp integer DEFAULT 14;
 CREATE TABLE public.character_spells (
