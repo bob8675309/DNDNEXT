@@ -24,6 +24,9 @@ on:
       - 'scripts/fixtures/p1_3_public_cast_start_setup_pg16.sql'
       - 'scripts/fixtures/p1_3_public_cast_v13_source_pg16.sql'
       - 'scripts/fixtures/p1_3_public_cast_start_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_turnflow_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_turnflow_public_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_turnflow_race_pg16.sh'
       - 'docs/P1_3_Real_Admin_Activation_Resume_Test_2026-11-01.md'
       - '.github/workflows/validate-p1-3-real-admin-paths.yml'
   push:
@@ -51,6 +54,9 @@ on:
       - 'scripts/fixtures/p1_3_public_cast_start_setup_pg16.sql'
       - 'scripts/fixtures/p1_3_public_cast_v13_source_pg16.sql'
       - 'scripts/fixtures/p1_3_public_cast_start_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_turnflow_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_turnflow_public_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_turnflow_race_pg16.sh'
       - 'docs/P1_3_Real_Admin_Activation_Resume_Test_2026-11-01.md'
       - '.github/workflows/validate-p1-3-real-admin-paths.yml'
 permissions:
@@ -129,3 +135,9 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_public_cast_v13_source_pg16.sql
       - name: Test valid public Start/Resume vs Healing Word spell transactions
         run: bash scripts/fixtures/p1_3_public_cast_start_race_pg16.sh
+      - name: Prepare exact public movement, end-turn, core-action and reaction in scratch PG16
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_turnflow_setup_pg16.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_turnflow_public_source_pg16.sql
+      - name: Test exact Move, Dodge, End Turn and Opportunity Reaction concurrency
+        run: bash scripts/fixtures/p1_3_turnflow_race_pg16.sh
