@@ -143,3 +143,12 @@
 - **Test repair:** first run `41560249154` failed only due to a quote in an assertion message after cases 19–20; fixed fixture and rerun green at exact test SHA.
 - **No production change:** PR #317 draft and unmerged, main unchanged, no live migrations/grants/gameplay/map changes, TC1 Option A not deployed, existing one-character overlap preserved for GM review.
 - **One next task:** Test real attack/movement/reaction/end-turn and v10–v13 delegated spell writers under valid turn and status transitions, then verify real NPC grant revocation with JWTs; keep P1.3/P1.5 unchecked.
+
+## 2026-11-02 — Public Move/Dodge/End/Reaction/Weapon and cached-replay research verified in PG16
+
+- **Exact CI evidence:** [run 41563202836](https://github.com/bob8675309/DNDNEXT/actions/runs/41563202836), job `125678417863`, SHA `e508649689e7b4a2f2c41823ceb0dbf86974d973`: cases **22–29 all PASS** and **all seven checks PASSED**.
+- **Deployed source snapshots:** movement `1f7fc81b307800f70ab412872473aa14`, end-turn `2785f688af8e200f64f18b6c421f19a6`, core action `74a43a001247f5fa491b057c97ca4014`, reaction `70cbfda404644c1000a6541ce8bf9c30`, weapon `14433e4e379ae811edd9d9d8345711f8`.
+- **Positive results:** Correct movement/turn advancement, competing Dodge/End serialization, actual movement-generated pending reaction gate, concurrent Reaction Pass/End serialization, and original weapon-attack Action consumption/End/competing Dodge behavior.
+- **New replay integrity evidence:** Reusing a **completed End Turn request_id** with a *different actor and encounter* returns prior result under mock Admin identity. Original branch checks only `command_type`, before participant or current control check. This is a demonstrated source-level identity gap, **not a real signed-in privilege exploit test**.
+- **Fixture boundaries:** Original command bodies and hostility predicate; synthetic actors, mocked reach/LOS/weapon/damage roll and damage implementation, fixed mock Admin identity, no true JWT/GoTrue, no live data/SQL writes. [Detailed report](P1_3_Public_Turnflow_Weapon_Replay_PG16_2026-11-02.md).
+- **Next single action:** Test original Reaction Attack branch and legacy/delegated spell wrappers, extend replay authorization across commands, then run real signed-in revocation; keep P1.3/P1.5 OPEN and PR #317 draft.

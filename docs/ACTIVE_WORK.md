@@ -8,7 +8,7 @@
 
 **Status:** `IN RESEARCH / NOT PROVEN` — current static evidence finds lock-class inversions; no actual production deadlock demonstrated and **no accepted universal order**. Owner selected **TC1 Option A** (one active encounter per canonical character), but no guard or live reconciliation has occurred.
 
-**Latest validated research (2026-11-02):** [Exact public Start/Resume versus Healing Word v13 tests](P1_3_Public_Activation_Cast_Reachability_2026-11-02.md) passed three scratch PG16 cases in [run 41560428459](https://github.com/bob8675309/DNDNEXT/actions/runs/41560428459), SHA `cebc04a`. Valid Start→Cast and queued Resume→Cast work, while an **early cast attempt racing uncommitted Start** deadlocks via E→P versus P→E; no partial spell spend. The prior direct helper C↔S race remains **unproven as a legitimate public-command interleaving**. All seven checks passed.
+**Latest validated research (2026-11-02):** [Eight-case public movement/reaction/turn/weapon/replay report](P1_3_Public_Turnflow_Weapon_Replay_PG16_2026-11-02.md) passed in [run 41563202836](https://github.com/bob8675309/DNDNEXT/actions/runs/41563202836), SHA `e508649`. Reproduced expected action/turn and reaction gating; End Turn incorrectly returns another actor's prior cached result if supplied the same request UUID (mock authentication only). Weapon profile/damage and geometry helpers remain mocked. Previous [public Start/Healing Word research](P1_3_Public_Activation_Cast_Reachability_2026-11-02.md) remains valid. **No production exploit or globally safe lock order has been established.**
 
 **Objective:** Establish source-complete, safe transaction and lock discipline across all 22 cast names, eight nonspell ledger writers, Admin/non-ledger resource writers, reaction and expiry triggers, and shared canonical slot pools before any migration.
 
@@ -19,7 +19,7 @@
 
 **Verified P0/P1 releases:** Documentation PRs #313/#314 and P1.1 #315, P1.2 #316 merged. Source baseline for P1.3: `51c351a142d03378dff8e47e05182afe21a15622`; refresh GitHub main, Supabase and deployments before relying on it. PRs #309/#312 remain held research.
 
-**Next single action:** (Updated 2026-11-02) Expand **real valid-turn and status-transition concurrency** across public attack, movement, reaction, end-turn and delegated slotted cast branches, including participant-target P ordering and E triggers; identify actual permission-grant/revocation caller paths and design true signed-in JWT acceptance. Do **not** overgeneralize the early-cast case 20 or claim case 17's C↔S deadlock occurs in production. [TC1 Option A](TACTICAL_ENCOUNTER_OWNER_DECISIONS.md) is approved but P1.5 not implemented. No production SQL.
+**Next single action:** (Updated 2026-11-02) Extend source-faithful tests to **reaction Attack**, old/delegated spell wrappers v10–v13, multi-target participant P lock ordering and original replay authorization across all direct writers. Prepare a *true signed-in JWT* GM/PC/delegated-NPC grant/revocation test plan, including different actor/encounter request replay. P1.3/P1.5 are incomplete, [TC1 Option A](TACTICAL_ENCOUNTER_OWNER_DECISIONS.md) is owner-approved policy only, and **no production SQL or merge is authorized**.
 
 **Acceptance:** One verified global, deadlock-safe transaction boundary across public versions and triggers, with exact-source evidence, real multi-session PG fixtures and signed-in authorization test plan. Source-class graph validation alone **does not satisfy P1.3**.
 
