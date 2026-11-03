@@ -254,4 +254,34 @@ INSERT INTO public.encounter_timed_effects(
  remaining_target_turn_starts)
 VALUES(public.p13_auth_uuid(903),public.p13_auth_uuid(1030),
  public.p13_auth_uuid(1031),'target_turn_end','test_expiring_effect',1);
+-- Separate synthetic encounter for Move versus End Turn contention.
+INSERT INTO public.characters VALUES
+ (public.p13_auth_uuid(640),'TEST Race Mover','npc'),
+ (public.p13_auth_uuid(641),'TEST Race Next','npc'),
+ (public.p13_auth_uuid(650),'TEST Reaction Race Mover','npc'),
+ (public.p13_auth_uuid(651),'TEST Reaction Race Reactor','npc');
+INSERT INTO public.encounters(id,status,round,turn_index,active_participant_id,map_id)
+VALUES
+ (public.p13_auth_uuid(904),'active',1,0,public.p13_auth_uuid(1040),public.p13_auth_uuid(333)),
+ (public.p13_auth_uuid(905),'active',1,0,public.p13_auth_uuid(1050),public.p13_auth_uuid(333));
+INSERT INTO public.encounter_participants(
+ id,encounter_id,character_id,display_name,current_hp,max_hp,is_hidden,
+ controller_user_id,initiative,q,r,team,action_available)
+VALUES
+ (public.p13_auth_uuid(1040),public.p13_auth_uuid(904),public.p13_auth_uuid(640),
+ 'TEST Race Mover',20,20,false,NULL,20,0,0,'players',true),
+ (public.p13_auth_uuid(1041),public.p13_auth_uuid(904),public.p13_auth_uuid(641),
+ 'TEST Race Next',20,20,false,NULL,10,3,0,'players',true),
+ (public.p13_auth_uuid(1050),public.p13_auth_uuid(905),public.p13_auth_uuid(650),
+ 'TEST Reaction Race Mover',20,20,false,NULL,20,0,0,'players',true),
+ (public.p13_auth_uuid(1051),public.p13_auth_uuid(905),public.p13_auth_uuid(651),
+ 'TEST Reaction Race Reactor',20,20,false,NULL,10,1,0,'enemy',true);
+INSERT INTO public.encounter_reaction_windows(
+ id,encounter_id,mover_participant_id,reactor_participant_id,
+ round,turn_index,from_q,from_r,to_q,to_r)
+VALUES
+ (public.p13_auth_uuid(5050),public.p13_auth_uuid(905),
+ public.p13_auth_uuid(1050),public.p13_auth_uuid(1051),1,0,0,0,-1,0),
+ (public.p13_auth_uuid(5051),public.p13_auth_uuid(905),
+ public.p13_auth_uuid(1050),public.p13_auth_uuid(1051),1,0,0,0,0,-1);
 NOTIFY pgrst,'reload schema';
