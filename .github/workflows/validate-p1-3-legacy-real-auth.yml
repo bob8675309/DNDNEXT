@@ -27,6 +27,10 @@ on:
       - 'scripts/fixtures/p1_3_equipment_mutation_live_pg17.sql'
       - 'scripts/fixtures/p1_3_inventory_race_combat_only_pg17.sql'
       - 'scripts/test_p1_3_inventory_race_combat_only_local_jwt.mjs'
+      - 'scripts/fixtures/p1_3_admin_staging_source_pg17.sql'
+      - 'scripts/fixtures/p1_3_permission_controller_rls_parity_pg17.sql'
+      - 'scripts/fixtures/p1_3_permission_row_lock_candidate_pg17.sql'
+      - 'scripts/test_p1_3_permission_controller_rls_local_jwt.mjs'
   workflow_dispatch:
 permissions:
   contents: read
@@ -108,6 +112,9 @@ jobs:
           node --check scripts/test_p1_3_inventory_race_combat_only_local_jwt.mjs
           psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_inventory_race_combat_only_pg17.sql
           node scripts/test_p1_3_inventory_race_combat_only_local_jwt.mjs
+          node --check scripts/test_p1_3_permission_controller_rls_local_jwt.mjs
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_permission_controller_rls_parity_pg17.sql
+          node scripts/test_p1_3_permission_controller_rls_local_jwt.mjs
       - name: Destroy disposable services and discard test users
         if: always()
         run: |
