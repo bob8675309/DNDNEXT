@@ -8,6 +8,8 @@
 
 **Status:** `IN RESEARCH / NOT PROVEN` — current static evidence finds lock-class inversions; no actual production deadlock demonstrated and **no accepted universal order**. Owner selected **TC1 Option A** (one active encounter per canonical character), but no guard or live reconciliation has occurred.
 
+**Latest validated research (2026-11-02):** [Source-derived refresh/spend report](P1_3_Refresh_vs_Spend_Source_Lock_2026-11-02.md) passed two isolated cases in [GitHub run 41558043789](https://github.com/bob8675309/DNDNEXT/actions/runs/41558043789) at `4831a8e`, including a deliberately scheduled C↔S deadlock and same-order control. All seven checks passed; **actual activation/cast reachability is unproven**.
+
 **Objective:** Establish source-complete, safe transaction and lock discipline across all 22 cast names, eight nonspell ledger writers, Admin/non-ledger resource writers, reaction and expiry triggers, and shared canonical slot pools before any migration.
 
 **Scope:** Read-only live definition/trigger/SQL audit, machine-readable class-order graph, static CI checks and proposed disposable PG race fixtures. **No live mutations, grants, public combat edits, world/town map work, or AI.**
@@ -17,7 +19,7 @@
 
 **Verified P0/P1 releases:** Documentation PRs #313/#314 and P1.1 #315, P1.2 #316 merged. Source baseline for P1.3: `51c351a142d03378dff8e47e05182afe21a15622`; refresh GitHub main, Supabase and deployments before relying on it. PRs #309/#312 remain held research.
 
-**Next single action:** Expand [P1.3 graph](P1_3_Global_Lock_Order_Research_2026-11-01.md) through remaining source branches, triggers/FK/permission locks and exact row identities; design a coordinated, concurrency-safe **TC1 Option A single-active-encounter admission gate** and prove disposable two-session competing activations, L↔E/P↔E/W↔L, expiry, S→C, and rollback. Keep [TC1 product decision](TACTICAL_ENCOUNTER_OWNER_DECISIONS.md) distinct from unimplemented P1.5 enforcement.
+**Next single action (2026-11-02):** Trace **real encounter activation E→C→S** through `admin_start_encounter_v1`/`admin_set_encounter_status_v1` and real cast **S→C** through the public spell commands with valid status/turn gates; test reachable transaction overlap in disposable PG16, then signed-in permission revocation. **Do not assume case 17 is a production-reachable deadlock.** Keep [TC1 Option A](TACTICAL_ENCOUNTER_OWNER_DECISIONS.md) and unimplemented P1.5 guard separate; no production SQL.
 
 **Acceptance:** One verified global, deadlock-safe transaction boundary across public versions and triggers, with exact-source evidence, real multi-session PG fixtures and signed-in authorization test plan. Source-class graph validation alone **does not satisfy P1.3**.
 

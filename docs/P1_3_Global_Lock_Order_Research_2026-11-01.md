@@ -98,3 +98,7 @@ The exact live [turn-start expiry trigger race report](P1_3_Turn_Start_Expiry_Lo
 ## Spell-slot S/C and permission-revocation fixture: verified
 
 [Five-case source-derived research report](P1_3_Spell_Slot_and_Revocation_PG16_2026-11-01.md) passed on [run 41395991124](https://github.com/bob8675309/DNDNEXT/actions/runs/41395991124), tested SHA 0ffcd12. Persistent slots rejected one overspend across two historical snapshots; two available spends succeeded. The original S-to-C bridge deadlocked against a **synthetic C-first** transaction. The original control helper demonstrated a stale permission check only when followed by a **simulated action**, while a row lock serialized the positive control. These are not production incidents or a safe universal order. P1.3 remains open.
+
+## Source-derived refresh C→S against spend S→C — two isolated PG16 cases PASS
+
+[Detailed source and exact CI evidence](P1_3_Refresh_vs_Spend_Source_Lock_2026-11-02.md), [run 41558043789](https://github.com/bob8675309/DNDNEXT/actions/runs/41558043789) at `4831a8e`: unlike the earlier synthetic C-first writer, the **deployed `refresh_encounter_spell_slots_from_characters_v1`** function itself takes C before upserting S. Opposing original spend S→C deadlocked on the same rows under deliberately scheduled external C prelock; scoped S-first prelock was a positive control. **This does NOT prove both paths overlap during valid activation/casting or select a universal order.** Exact active-status/turn/trigger reachability and real JWT races remain P1.3 blockers.
