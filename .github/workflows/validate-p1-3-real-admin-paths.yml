@@ -33,6 +33,9 @@ on:
       - 'scripts/fixtures/p1_3_opportunity_attack_setup_pg16.sql'
       - 'scripts/fixtures/p1_3_opportunity_attack_live_source_pg16.sql'
       - 'scripts/fixtures/p1_3_opportunity_attack_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_spell_v13_to_v12_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_spell_v13_to_v12_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_spell_v13_to_v12_race_pg16.sh'
       - 'docs/P1_3_Real_Admin_Activation_Resume_Test_2026-11-01.md'
       - '.github/workflows/validate-p1-3-real-admin-paths.yml'
   push:
@@ -69,6 +72,9 @@ on:
       - 'scripts/fixtures/p1_3_opportunity_attack_setup_pg16.sql'
       - 'scripts/fixtures/p1_3_opportunity_attack_live_source_pg16.sql'
       - 'scripts/fixtures/p1_3_opportunity_attack_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_spell_v13_to_v12_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_spell_v13_to_v12_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_spell_v13_to_v12_race_pg16.sh'
       - 'docs/P1_3_Real_Admin_Activation_Resume_Test_2026-11-01.md'
       - '.github/workflows/validate-p1-3-real-admin-paths.yml'
 permissions:
@@ -165,3 +171,9 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_opportunity_attack_live_source_pg16.sql
       - name: Verify opportunity Attack, End Turn and resolved-window replay races
         run: bash scripts/fixtures/p1_3_opportunity_attack_race_pg16.sh
+      - name: Load deployed v12 Vicious Mockery delegation and effect source in scratch PG16
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_spell_v13_to_v12_setup_pg16.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_spell_v13_to_v12_source_pg16.sql
+      - name: Verify delegated Vicious Mockery cast, changed-target replay and End Turn race
+        run: bash scripts/fixtures/p1_3_spell_v13_to_v12_race_pg16.sh
