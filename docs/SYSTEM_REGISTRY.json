@@ -105,21 +105,25 @@
       ],
       "tests": [
         "scripts/test_p1_3_legacy_real_jwt_local.mjs",
-        "scripts/fixtures/p1_3_legacy_real_jwt_local_pg17.sql"
+        "scripts/fixtures/p1_3_legacy_real_jwt_local_pg17.sql",
+        "scripts/fixtures/p1_3_guarded_replay_candidate_pg17.sql",
+        "scripts/fixtures/p1_3_legacy_core_action_live_pg17.sql",
+        "scripts/test_p1_3_guarded_candidate_local_jwt.mjs"
       ],
       "last_checked": "2026-11-03",
       "open_gaps": [
         "P1.3 original public v11 Guiding Bolt and v10 Mind Sliver paths cases 36–41 PASS scratch PG16 run 41566917343 SHA 1f39532. v11 E->P vs original End Turn P->E deadlock reproduced under forced concurrent active-turn requests. Both cast versions return cached prior result for changed target/slot. Source-derived not production/JWT exploit. docs/P1_3_Legacy_v11_Guiding_Bolt_v10_Mind_Sliver_2026-11-02.md.",
         "P1.3 exact v9→v1 cast functions plus genuine local GoTrue JWTs proved unsafe changed-target/assignment/slot cross-user cached replay and post-revocation result disclosure (cases 48–55, run 41635156191, SHA 16424aab). Local healing/profile/targeting, Admin and RLS were modeled; no live exploit/mitigation claim.",
-        "Global E/P/L/W/X/S/C/grant lock-order proof not complete; P1.5 TC1 Option A one-active-character guard not deployed, existing live overlap preserved for explicit GM review."
+        "Global E/P/L/W/X/S/C/grant lock-order proof not complete; P1.5 TC1 Option A one-active-character guard not deployed, existing live overlap preserved for explicit GM review.",
+        "P1.3 signed JWT two-family guarded candidate 56–69 PASS, run 41638042390 SHA 62a0cf01; exact v9→v1 spell + live core action guarded E-first with typed request ownership, hidden/revoked replay and controlled grant race. RESEARCH ONLY: old production direct RPC grants still open; no global lock/no live fix."
       ],
       "label": "Combat replay authorization",
-      "scope_note": "Private candidate executor tested on held PR #312; public legacy RPC still has early replay shortcut.",
+      "scope_note": "Held PR #312 and research PR #317: verified two-family signed-JWT guarded replay model. Production legacy direct RPCs and early replay shortcuts remain unmodified.",
       "verification": {
         "source": "inspected-relevant-entry-points-on-main",
         "live_database": "read-only-function-grant-rls-trigger-constraint-inventory-2026-11-01",
         "deployed_sha": "not-deployed-research-or-future",
-        "test_status": "P1.3-legacy-v9-to-v1-real-local-GoTrue-JWT-8-PASS-run-41635156191-sha-16424aab;expected-unsafe-replay-reproduced;production-not-tested",
+        "test_status": "P1.3-two-family-guarded-candidate-14-JWT-PASS-run-41638042390-sha-62a0cf01;source-legacy-unsafe-baseline-retained;global-security-UNPROVEN",
         "browser_acceptance": "unverified-this-audit",
         "owner_approval": "TC1 Option A owner-approved product policy only; no SQL/merge/runtime grant approval"
       },
