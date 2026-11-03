@@ -1,0 +1,11 @@
+name: P1.3 disposable real Auth pending test
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pending:
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'Runner not installed yet'
