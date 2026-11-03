@@ -117,7 +117,13 @@
         "scripts/test_p1_3_hidden_activity_local_jwt.mjs",
         "scripts/fixtures/p1_3_reaction_attack_damage_live_pg17.sql",
         "scripts/fixtures/p1_3_unarmed_reaction_attack_research_pg17.sql",
-        "scripts/test_p1_3_unarmed_reaction_attack_local_jwt.mjs"
+        "scripts/test_p1_3_unarmed_reaction_attack_local_jwt.mjs",
+        "scripts/fixtures/p1_3_original_attack_roll_live_pg17.sql",
+        "scripts/fixtures/p1_3_original_roll_timed_effect_pg17.sql",
+        "scripts/test_p1_3_original_roll_timed_effect_local_jwt.mjs",
+        "scripts/fixtures/p1_3_original_weapon_profile_live_pg17.sql",
+        "scripts/fixtures/p1_3_original_equipped_weapon_research_pg17.sql",
+        "scripts/test_p1_3_original_equipped_weapon_local_jwt.mjs"
       ],
       "last_checked": "2026-11-03",
       "open_gaps": [
@@ -126,15 +132,16 @@
         "Global E/P/L/W/X/S/C/grant lock-order proof not complete; P1.5 TC1 Option A one-active-character guard not deployed, existing live overlap preserved for explicit GM review.",
         "P1.3 signed JWT two-family guarded candidate 56–69 PASS, run 41638042390 SHA 62a0cf01; exact v9→v1 spell + live core action guarded E-first with typed request ownership, hidden/revoked replay and controlled grant race. RESEARCH ONLY: old production direct RPC grants still open; no global lock/no live fix.",
         "Five-family local JWT guarded model cases 70–81 PASS run 41679603374 SHA 82cb4481: original End Turn/Move/Reaction Pass, bounded E-first races and R1/R2. Attack/damage/reaction budget and first-run hidden next/reactor visibility UNTESTED. Production direct originals still callable; global E/P/W/L/X/S/C not proven.",
-        "P1.3 genuine-JWT first-execution cases 83/84 reproduced hidden next actor and hidden reactor/window IDs from source-derived guarded research RPC; scratch Unknown Events response projection passed cases 85–92 (run 41690025288). Concealed timing still leaks a signal; not owner-approved or deployed. Original unarmed reaction/HP/damage source cases 93–105 PASS run 41692165016 SHA 4cdfd5b5 with synthetic deterministic roll, gear and stats. Real weapon/advantage/timed-effect X/resource path still UNTESTED; no global lock certificate."
+        "P1.3 genuine-JWT first-execution cases 83/84 reproduced hidden next actor and hidden reactor/window IDs from source-derived guarded research RPC; scratch Unknown Events response projection passed cases 85–92 (run 41690025288). Concealed timing still leaks a signal; not owner-approved or deployed. Original unarmed reaction/HP/damage source cases 93–105 PASS run 41692165016 SHA 4cdfd5b5 with synthetic deterministic roll, gear and stats. Real weapon/advantage/timed-effect X/resource path still UNTESTED; no global lock certificate.",
+        "P1.3 real source D20/Guiding Bolt/Vicious Mockery X + real equipped-profile JWT cases 106–128 PASS combined run 41698384117 source SHA b6acf77e. Original player-owned gear source requires can_edit, can_control-only insufficient (case 126). No sheet-permission expansion authorized. Inventory-row equip/transfer race, true equipment mitigation, cross-trigger S/C/X global locks and hidden-event timing still UNVERIFIED."
       ],
       "label": "Combat replay authorization",
-      "scope_note": "Research PR #317: five-family guarded JWT candidate plus optional scratch-only Unknown Events viewer projection and separately isolated original unarmed Attack. Full equipped weapons, original random/FX and global lock/remediation are NOT implemented in production.",
+      "scope_note": "Research-only PR #317: original source W/Attack/Damage/D20/X and equipped weapon-profile rights tested in disposable PG17 real JWTs, 106–128. Underlying inventory/item/catalog/stat/mitigation tables synthetic; normal Attack remains GM-assisted in guarded candidate. No production security fix.",
       "verification": {
         "source": "inspected-relevant-entry-points-on-main",
         "live_database": "read-only-function-grant-rls-trigger-constraint-inventory-2026-11-01",
         "deployed_sha": "not-deployed-research-or-future",
-        "test_status": "P1.3-hidden-privacy-JWT-cases-82-to-92-PASS-run-41690025288;unarmed-original-attack-JWT-cases-93-to-105-PASS-run-41692165016-sha-4cdfd5b5;8-of-8-source-head-checks-green;global-security-UNPROVEN",
+        "test_status": "P1.3-source-roll-X-JWT-106-to-116-PASS-run-41697462487;equipped-source-JWT-117-to-128-PASS-run-41698384117-sha-b6acf77e;global-lock-UNVERIFIED",
         "browser_acceptance": "unverified-this-audit",
         "owner_approval": "TC1 Option A (2026-11-01) and P1.2 R1/R2 (2026-11-03) owner-approved policy only; R3 still open; no SQL/merge/runtime grant/deployment approval"
       },
