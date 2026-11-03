@@ -106,9 +106,9 @@
       "tests": [],
       "last_checked": "2026-11-02",
       "open_gaps": [
-        "2026-11-02 exact deployed Move/Core/End/Reaction Pass/Weapon public source tests cases 22-29 (8 PASS), GitHub run 41563202836 SHA e508649. End Turn request replay returns cached result for different actor/encounter in mock Admin session: verifies unbound source cache, NOT external exploit. docs/P1_3_Public_Turnflow_Weapon_Replay_PG16_2026-11-02.md.",
-        "Reaction attack choice, true weapon/profile/damage helper effects, multi-target P ordering, v10-v13 slotted delegated spell wrappers, cross-command typed replay/current-grant and real signed-in JWT permission/revocation tests remain incomplete.",
-        "Owner TC1 Option A policy approved but P1.5 server admission guard not deployed. Existing same-character active overlap retained for explicit GM reconciliation; globally safe L/W/E/P/X/S/C/grant order unproven."
+        "2026-11-02 exact public Reaction Attack and v13->v12 Vicious Mockery cases 30-35 PASS in scratch PG16 run 41564947213 at beba0cb. Resolved reaction window returns cached Attack result for changed choice/request/mock caller before authorization; v12 cast returns original result for different target and slot argument. Both mock Auth and mechanics; NOT proven real cross-user exploits. See docs/P1_3_Opportunity_Attack_Delegated_Spell_Replay_2026-11-02.md.",
+        "Actual legacy v11 public wrapper, v11_pre, v10/v9/v8 descendants, slotted cast and hidden result authorization still need source-derived concurrency tests; true GoTrue JWT PC/GM/delegated NPC revocation/replay acceptance remains undone.",
+        "Global E/P/W/L/X/S/C/permission lock-order proof and P1.5 TC1 Option A admission not implemented; one historical live character overlap needs explicit GM reconciliation."
       ],
       "label": "Combat replay authorization",
       "scope_note": "Private candidate executor tested on held PR #312; public legacy RPC still has early replay shortcut.",
@@ -116,7 +116,7 @@
         "source": "inspected-relevant-entry-points-on-main",
         "live_database": "read-only-function-grant-rls-trigger-constraint-inventory-2026-11-01",
         "deployed_sha": "not-deployed-research-or-future",
-        "test_status": "P1.3-exact-public-turnflow-weapon-and-end-replay-8-PASS-run-41563202836;mock-auth-and-damage",
+        "test_status": "P1.3-exact-opportunity-attack-and-delegated-v13-v12-replay-6-PASS-run-41564947213;real-JWT-NOT-tested",
         "browser_acceptance": "unverified-this-audit",
         "owner_approval": "TC1 Option A owner-approved product policy only; no SQL/merge/runtime grant approval"
       },
