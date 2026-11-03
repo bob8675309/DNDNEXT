@@ -39,6 +39,9 @@ on:
       - 'scripts/fixtures/p1_3_spell_v11_guiding_bolt_setup_pg16.sql'
       - 'scripts/fixtures/p1_3_spell_v11_guiding_bolt_source_pg16.sql'
       - 'scripts/fixtures/p1_3_spell_v11_guiding_bolt_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_spell_v10_mind_sliver_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_spell_v10_mind_sliver_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_spell_v10_mind_sliver_race_pg16.sh'
       - 'docs/P1_3_Real_Admin_Activation_Resume_Test_2026-11-01.md'
       - '.github/workflows/validate-p1-3-real-admin-paths.yml'
   push:
@@ -81,6 +84,9 @@ on:
       - 'scripts/fixtures/p1_3_spell_v11_guiding_bolt_setup_pg16.sql'
       - 'scripts/fixtures/p1_3_spell_v11_guiding_bolt_source_pg16.sql'
       - 'scripts/fixtures/p1_3_spell_v11_guiding_bolt_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_spell_v10_mind_sliver_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_spell_v10_mind_sliver_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_spell_v10_mind_sliver_race_pg16.sh'
       - 'docs/P1_3_Real_Admin_Activation_Resume_Test_2026-11-01.md'
       - '.github/workflows/validate-p1-3-real-admin-paths.yml'
 permissions:
@@ -189,3 +195,9 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_spell_v11_guiding_bolt_source_pg16.sql
       - name: Verify real Guiding Bolt slot/replay and v11 versus End Turn inversion
         run: bash scripts/fixtures/p1_3_spell_v11_guiding_bolt_race_pg16.sh
+      - name: Load original Mind Sliver v10 source and separate scratch actors
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_spell_v10_mind_sliver_setup_pg16.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_spell_v10_mind_sliver_source_pg16.sql
+      - name: Verify Mind Sliver legacy delegation, replay and End Turn
+        run: bash scripts/fixtures/p1_3_spell_v10_mind_sliver_race_pg16.sh
