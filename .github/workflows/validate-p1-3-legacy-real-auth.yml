@@ -15,6 +15,9 @@ on:
       - 'scripts/fixtures/p1_3_hidden_activity_setup_pg17.sql'
       - 'scripts/fixtures/p1_3_hidden_activity_projection_pg17.sql'
       - 'scripts/test_p1_3_hidden_activity_local_jwt.mjs'
+      - 'scripts/fixtures/p1_3_reaction_attack_damage_live_pg17.sql'
+      - 'scripts/fixtures/p1_3_unarmed_reaction_attack_research_pg17.sql'
+      - 'scripts/test_p1_3_unarmed_reaction_attack_local_jwt.mjs'
   workflow_dispatch:
 permissions:
   contents: read
@@ -83,6 +86,10 @@ jobs:
           node --check scripts/test_p1_3_hidden_activity_local_jwt.mjs
           psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_hidden_activity_setup_pg17.sql
           node scripts/test_p1_3_hidden_activity_local_jwt.mjs
+          # Attack source research runs after prior privacy baseline/opt-in projection.
+          node --check scripts/test_p1_3_unarmed_reaction_attack_local_jwt.mjs
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_unarmed_reaction_attack_research_pg17.sql
+          node scripts/test_p1_3_unarmed_reaction_attack_local_jwt.mjs
       - name: Destroy disposable services and discard test users
         if: always()
         run: |
