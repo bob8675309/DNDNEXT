@@ -6,6 +6,9 @@ on:
       - 'scripts/fixtures/p1_3_legacy_real_jwt_local_pg17.sql'
       - 'scripts/fixtures/p1_3_legacy_v9_to_v1_live_source_pg16.sql'
       - 'scripts/test_p1_3_legacy_real_jwt_local.mjs'
+      - 'scripts/fixtures/p1_3_guarded_replay_candidate_pg17.sql'
+      - 'scripts/fixtures/p1_3_legacy_core_action_live_pg17.sql'
+      - 'scripts/test_p1_3_guarded_candidate_local_jwt.mjs'
   workflow_dispatch:
 permissions:
   contents: read
@@ -62,6 +65,11 @@ jobs:
           node --check scripts/test_p1_3_legacy_real_jwt_local.mjs
           psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_legacy_real_jwt_local_pg17.sql
           node scripts/test_p1_3_legacy_real_jwt_local.mjs
+          # The source-exact legacy baseline above MUST run before modeled
+          # privilege cutover to the two-family gated candidate.
+          node --check scripts/test_p1_3_guarded_candidate_local_jwt.mjs
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_guarded_replay_candidate_pg17.sql
+          node scripts/test_p1_3_guarded_candidate_local_jwt.mjs
       - name: Destroy disposable services and discard test users
         if: always()
         run: |
