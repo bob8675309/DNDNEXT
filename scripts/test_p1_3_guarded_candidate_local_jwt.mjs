@@ -3,7 +3,7 @@
 // Runs AFTER the original-source unsafe baseline; all IDs are scratch test rows.
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
-import { spawnSync } from "node:child_process";
+import { spawnSync, spawn } from "node:child_process";
 import { createClient } from "@supabase/supabase-js";
 const e=process.env;
 assert.equal(e.GITHUB_ACTIONS,"true");
@@ -151,4 +151,67 @@ const bypass=await c.client.rpc("encounter_use_core_action_v1",{
 });
 assert.ok(bypass.error);assert.equal(bypass.error.code,"42501");
 console.log("PASS 66: candidate denies anonymous access and original direct legacy bypass paths");
-console.log("P1.3 guarded candidate cases 56-66 PASS; LIMITED two-family proof, NOT global P1.3 acceptance or production mitigation.");
+
+// Post-cast visibility changes must invalidate otherwise exact cached results.
+db("UPDATE public.encounter_participants SET is_hidden=true WHERE id='"+target2+"'");
+fail(await ccast(c.client,p2,spell2,target2,1,raceId),/P13_REQUEST_REJECTED/,
+  "Previously visible result became hidden");
+db("UPDATE public.encounter_participants SET is_hidden=false WHERE id='"+target2+"'");
+console.log("PASS 67: hidden-result visibility rechecked on every exact replay");
+
+// Overlapping revocation: the revoker's SQL transaction locks the editor grant
+// before signed-in Cast tries FOR SHARE. The cast must see revocation after wait.
+db("UPDATE public.encounter_participants SET controller_user_id=NULL,action_available=true WHERE id='"+p2+"'");
+db("UPDATE public.encounter_spell_slots SET slots_remaining=1 WHERE participant_id='"+p2+"'");
+db("UPDATE public.encounters SET round=round+1 WHERE id='"+id(902)+"'");
+db("INSERT INTO public.character_permissions(character_id,user_id,can_edit,can_control) "+
+   "VALUES('"+id(614)+"','"+c.uid+"',true,false) ON CONFLICT(character_id,user_id) "+
+   "DO UPDATE SET can_edit=true");
+const revokerSql="BEGIN; UPDATE public.character_permissions SET can_edit=false WHERE character_id='"+
+  id(614)+"' AND user_id='"+c.uid+"'; SELECT 'REVOCATION_LOCKED'; SELECT pg_sleep(2.5); COMMIT;";
+const worker=spawn("psql",["-X","-v","ON_ERROR_STOP=1","-qAt","-c",revokerSql],{
+  env:{...e,PGUSER:"postgres"},stdio:["ignore","pipe","pipe"]
+});
+let workerError="";
+worker.stderr.setEncoding("utf8");
+worker.stderr.on("data",x=>{workerError+=x;});
+await new Promise((resolve,reject)=>{
+ let output="";
+ const timeout=setTimeout(()=>reject(Error("Revocation lock readiness timeout: "+workerError)),7000);
+ worker.stdout.setEncoding("utf8");
+ worker.stdout.on("data",chunk=>{
+  output+=chunk;
+  if(output.includes("REVOCATION_LOCKED")){clearTimeout(timeout);resolve();}
+ });
+ worker.on("error",err=>{clearTimeout(timeout);reject(err);});
+ worker.on("exit",(code)=>{if(!output.includes("REVOCATION_LOCKED")){clearTimeout(timeout);reject(Error("Revoker ended early "+code+" "+workerError));}});
+});
+const countBefore=number("SELECT count(*) FROM public.encounter_combat_log WHERE actor_participant_id='"+p2+"'");
+const rejectedUUID=randomUUID();
+const duringRevoke=await ccast(c.client,p2,spell2,target2,1,rejectedUUID);
+fail(duringRevoke,/P13_ACCESS_DENIED/,"Cast after concurrent editor revocation");
+await new Promise((resolve,reject)=>{
+ if(worker.exitCode!==null)return worker.exitCode===0?resolve():reject(Error(workerError));
+ worker.on("exit",code=>code===0?resolve():reject(Error("Revoker failure "+workerError)));
+});
+assert.equal(number("SELECT count(*) FROM private.p13_guarded_commands WHERE request_id='"+rejectedUUID+"'"),0);
+assert.equal(number("SELECT count(*) FROM public.encounter_combat_log WHERE actor_participant_id='"+p2+"'"),countBefore);
+assert.equal(number("SELECT slots_remaining FROM public.encounter_spell_slots WHERE participant_id='"+p2+"'"),1);
+console.log("PASS 68: overlapping grant revocation serialized; late cast denied without side effects");
+
+// An unresolved committed request row is not authorization to reroll/spend.
+const pendingId=randomUUID();
+const pendingIntent=JSON.stringify({
+ family:"spell_single",version:"candidate-v1",legacyHandler:"v9",
+ assignmentId:spell2,targetId:target2,slotLevel:1,spellKey:"cure-wounds|xphb"
+}).replaceAll("'","''");
+db("UPDATE public.encounter_participants SET controller_user_id='"+c.uid+"' WHERE id='"+p2+"'");
+db("INSERT INTO private.p13_guarded_commands(request_id,encounter_id,actor_id,requested_by,family,canonical_intent) "+
+ "VALUES('"+pendingId+"','"+id(902)+"','"+p2+"','"+c.uid+"','spell_single','"+pendingIntent+"'::jsonb)");
+fail(await ccast(c.client,p2,spell2,target2,1,pendingId),/P13_PENDING_REQUEST/,
+  "Persisted result-null pending command");
+assert.equal(number("SELECT count(*) FROM public.encounter_command_requests WHERE request_id='"+pendingId+"'"),0);
+assert.equal(number("SELECT slots_remaining FROM public.encounter_spell_slots WHERE participant_id='"+p2+"'"),1);
+console.log("PASS 69: committed pending request fails closed without executing a second command");
+
+console.log("P1.3 guarded candidate cases 56-69 PASS; LIMITED two-family proof, NOT global P1.3 acceptance or production mitigation.");
