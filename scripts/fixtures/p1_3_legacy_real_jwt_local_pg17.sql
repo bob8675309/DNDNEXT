@@ -151,15 +151,20 @@ RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
 INSERT INTO public.characters VALUES
 (public.p13_auth_uuid(611),'TEST NPC CAST ACTOR','npc'),
 (public.p13_auth_uuid(612),'TEST Ally','npc'),
-(public.p13_auth_uuid(613),'TEST Other Ally','npc');
+(public.p13_auth_uuid(613),'TEST Other Ally','npc'),
+(public.p13_auth_uuid(614),'TEST Separate Actor','npc'),
+(public.p13_auth_uuid(615),'TEST Separate Target','npc');
 INSERT INTO public.encounters(id,status,round,turn_index,active_participant_id)
-VALUES(public.p13_auth_uuid(901),'active',1,0,public.p13_auth_uuid(1011));
+VALUES(public.p13_auth_uuid(901),'active',1,0,public.p13_auth_uuid(1011)),
+(public.p13_auth_uuid(902),'active',1,0,public.p13_auth_uuid(1014));
 INSERT INTO public.encounter_participants(
  id,encounter_id,character_id,display_name,current_hp,max_hp,is_hidden,controller_user_id)
 VALUES
 (public.p13_auth_uuid(1011),public.p13_auth_uuid(901),public.p13_auth_uuid(611),'Test Caster',20,20,false,null),
 (public.p13_auth_uuid(1012),public.p13_auth_uuid(901),public.p13_auth_uuid(612),'Test Ally',1,20,false,null),
-(public.p13_auth_uuid(1013),public.p13_auth_uuid(901),public.p13_auth_uuid(613),'Test Hidden Ally',2,20,true,null);
+(public.p13_auth_uuid(1013),public.p13_auth_uuid(901),public.p13_auth_uuid(613),'Test Hidden Ally',2,20,true,null),
+(public.p13_auth_uuid(1014),public.p13_auth_uuid(902),public.p13_auth_uuid(614),'Test Unused Caster',20,20,false,null),
+(public.p13_auth_uuid(1015),public.p13_auth_uuid(902),public.p13_auth_uuid(615),'Test Unused Target',1,20,false,null);
 INSERT INTO public.spells_catalog VALUES
 (public.p13_auth_uuid(2011),'cure-wounds|xphb','Cure Wounds','XPHB',1),
 (public.p13_auth_uuid(2012),'unsupported-spell|xphb','GM-assisted Spell','XPHB',0),
@@ -168,9 +173,11 @@ INSERT INTO public.character_spells VALUES
 (public.p13_auth_uuid(3011),public.p13_auth_uuid(611),public.p13_auth_uuid(2011),'class','cleric',true,false,'wis'),
 (public.p13_auth_uuid(3012),public.p13_auth_uuid(611),public.p13_auth_uuid(2011),'class','cleric',true,false,'wis'),
 (public.p13_auth_uuid(3013),public.p13_auth_uuid(611),public.p13_auth_uuid(2012),'class','cleric',true,false,'wis'),
-(public.p13_auth_uuid(3014),public.p13_auth_uuid(611),public.p13_auth_uuid(2013),'class','cleric',true,false,'wis');
+(public.p13_auth_uuid(3014),public.p13_auth_uuid(611),public.p13_auth_uuid(2013),'class','cleric',true,false,'wis'),
+(public.p13_auth_uuid(3015),public.p13_auth_uuid(614),public.p13_auth_uuid(2011),'class','cleric',true,false,'wis');
 INSERT INTO public.encounter_spell_slots(id,participant_id,pool_key,slot_level,slots_max,slots_remaining)
-VALUES(public.p13_auth_uuid(4011),public.p13_auth_uuid(1011),'spellcasting',1,1,1);
+VALUES(public.p13_auth_uuid(4011),public.p13_auth_uuid(1011),'spellcasting',1,1,1),
+(public.p13_auth_uuid(4014),public.p13_auth_uuid(1014),'spellcasting',1,1,1);
 -- Only authenticated signed-in clients can invoke legacy v9; no anon direct EXECUTE.
 REVOKE ALL ON ALL FUNCTIONS IN SCHEMA public FROM PUBLIC,anon,authenticated;
 REVOKE ALL ON ALL FUNCTIONS IN SCHEMA private FROM PUBLIC,anon,authenticated;
@@ -183,7 +190,7 @@ GRANT EXECUTE ON FUNCTION public.encounter_cast_spell_v9(uuid,uuid,uuid,integer,
 ALTER TABLE public.encounter_participants ENABLE ROW LEVEL SECURITY;
 CREATE POLICY p13_local_participant_read ON public.encounter_participants
 FOR SELECT TO authenticated
-USING (controller_user_id=auth.uid() OR public.is_admin(auth.uid()));
+USING (is_hidden=false OR controller_user_id=auth.uid() OR public.is_admin(auth.uid()));
 REVOKE ALL ON ALL TABLES IN SCHEMA public FROM anon,authenticated;
 GRANT SELECT ON public.encounter_participants TO authenticated;
 DO $assert$
