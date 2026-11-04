@@ -76,7 +76,7 @@ assert.equal(linked.character_id,charA);
 assert.equal(linked.character_name,"JWT Underling");
 assert.equal(linked.creator_email,player.email);
 assert.ok(!("details" in linked));
-assert.ok(!("GM_SECRET" in JSON.stringify(initial.data)));
+assert.ok(!JSON.stringify(initial.data).includes("GM_SECRET"));
 console.log("PASS N01: genuine GM JWT reads two committed creation notices; no hidden event details");
 
 const outsiderList=await list(outsider.who);
