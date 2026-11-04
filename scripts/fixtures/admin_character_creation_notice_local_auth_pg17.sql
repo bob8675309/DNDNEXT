@@ -32,6 +32,11 @@ AS $function$
 $function$;
 REVOKE ALL ON FUNCTION private.current_user_is_admin()
 FROM PUBLIC, anon, authenticated;
+-- Live DnDWeb allows authenticated clients to execute this boolean RLS
+-- helper, but not anonymous callers. Mirror those exact ACL boundaries
+-- here because character_permissions policies invoke it as authenticated.
+GRANT USAGE ON SCHEMA private TO authenticated;
+GRANT EXECUTE ON FUNCTION private.current_user_is_admin() TO authenticated;
 
 -- Source-shaped existing permission flags. This is the same Admin/self RLS
 -- design verified read-only on DnDWeb, reproduced only in the disposable DB.
