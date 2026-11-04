@@ -45,4 +45,16 @@ for(const token of [
  "v_repeat IS DISTINCT FROM v_reviewed",
  "ROLLBACK;",
 ]) assert.ok(fixture.includes(token),`Missing disposable assertion: ${token}`);
+const authSql=fs.readFileSync("scripts/fixtures/admin_character_creation_notice_local_auth_pg17.sql","utf8");
+const authTest=fs.readFileSync("scripts/test_admin_character_creation_notice_local_auth.mjs","utf8");
+for(const token of [
+ "EPHEMERAL_LOCAL_GOTRUE_ONLY",
+ "127\\.0\\.0\\.1:54321",
+ "PASS N01:", "PASS N02:", "PASS N03:", "PASS N04:",
+]) assert.ok(authTest.includes(token),`Missing real-JWT test scope: ${token}`);
+for(const token of [
+ "REVOKE ALL ON TABLE public.character_level_events",
+ "private.admin_notice_auth_fixture_admins",
+ "NOTIFY pgrst,'reload schema'",
+]) assert.ok(authSql.includes(token),`Missing disposable local Auth-only schema setup: ${token}`);
 console.log("Additive Admin character-creation notice candidate source/ACL contracts PASS. Database/browser release is NOT implied.");

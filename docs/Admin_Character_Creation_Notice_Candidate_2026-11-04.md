@@ -37,3 +37,9 @@ Before live installation, verify current deployed function signatures, event con
 **No destructive SQL is planned in this candidate.** The owner requires approval before any large destructive database operation; for this feature, all live DB changes still need a reviewed release action and post-apply verification. No merge or deployment was performed.
 
 **Future enhancement:** Display an unread badge outside `/admin/activity` if needed, but do not add global frequent polling without performance review. This version gives an Admin inbox and manual refresh, not push notifications.
+
+## Additional genuine signed-in local JWT gate — pending exact-head CI
+
+The held candidate now includes a *separate* free Supabase CLI/GoTrue/PostgREST GitHub workflow job, not merely simulated SQL claim checks. `scripts/fixtures/admin_character_creation_notice_local_auth_pg17.sql` prepares a throwaway local schema with real `auth.users`; `scripts/test_admin_character_creation_notice_local_auth.mjs` signs in **two GMs, a creating player and an unrelated player** with real GoTrue JWTs, then asserts (N01–N04) Admin-only notice projection, denial of unauthorized/anonymous API calls, idempotent per-Admin reviews, distinct unread totals and no raw event read by the creating player.
+
+All local test credentials are generated in ephemeral CI; no DnDWeb production URL or access key is used. The `private.current_user_is_admin()` helper is an intentionally **reduced local role fixture**, not a claim that the entire production user-profile/permission system is represented. Exact-head results are **pending**, and genuine local JWT tests still do not substitute for a final owner browser review or a reviewed live migration.
