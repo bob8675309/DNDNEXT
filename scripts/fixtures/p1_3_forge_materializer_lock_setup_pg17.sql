@@ -115,7 +115,8 @@ VALUES
   '{"classKey":"fighter","level":1,"meta":{"creator":"shared_character_forge_player_v2"},
      "startingEquipmentSelections":{"mode":"package","classOption":"A","ruleset":"vanilla"}}'::jsonb),
  ('00000000-0000-0000-0000-000000003012',
-  '{"classKey":"fighter","level":1,"meta":{"creator":"shared_character_forge_player_v2"}}'::jsonb);
+  '{"classKey":"fighter","level":1,"meta":{"creator":"shared_character_forge_player_v2"},
+     "startingEquipmentSelections":{"mode":"package","classOption":"A","ruleset":"vanilla"}}'::jsonb);
 
 -- Exact two original trigger definitions for the *relevant* slice.
 -- Other live character_progression triggers deliberately NOT installed.
@@ -160,8 +161,12 @@ BEGIN
 END $verify$;
 \echo 'PASS F01 original deferred materializer writes exactly one item/currency at COMMIT'
 
--- Source-like second character, no starting selections. The original deferred
--- trigger legitimately returns "no starting equipment selection" after P->S locks.
+-- Second character with a source-valid completed selection. The original
+-- deferred trigger materializes it at COMMIT. A later original helper call
+-- still acquires CP->CS before its already-materialized currency return.
+-- CAUTION: a missing startingEquipmentSelections field does NOT reliably
+-- early-return in deployed source, because jsonb_typeof(NULL) <> 'object'
+-- evaluates to NULL (not TRUE). See the paired research report.
 INSERT INTO public.character_progression(character_id,class_id,class_level,created_by)
 VALUES ('00000000-0000-0000-0000-000000003012',
  '00000000-0000-0000-0000-000000003001',1,

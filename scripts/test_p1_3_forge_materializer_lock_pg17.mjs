@@ -79,7 +79,11 @@ assert.match(failures[0],/(40P01|deadlock detected)/i,
 assert.equal(db("SELECT count(*) FROM public.character_progression"+
  " WHERE character_id='"+charB+"'::uuid"),"1");
 assert.equal(db("SELECT count(*) FROM public.inventory_items"+
- " WHERE owner_id='"+charB+"'"),"0");
+ " WHERE owner_id='"+charB+"'"),"1",
+ "Second materializer call must not duplicate already committed inventory");
+assert.equal(db("SELECT count(*) FROM public.character_currency"+
+ " WHERE character_id='"+charB+"'::uuid"),"1",
+ "Exactly one currency row must survive test-only contention");
 console.log("PASS F02 PostgreSQL REAL P/S deadlock using both ORIGINAL functions."+
  " T1 P-before-S with test-only prelock timing; T2 sheet trigger S-before-P."+
  " Production reachability is NOT established.");
