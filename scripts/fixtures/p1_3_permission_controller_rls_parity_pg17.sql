@@ -58,7 +58,11 @@ RETURNS trigger LANGUAGE plpgsql AS $barrier$
 BEGIN
  IF old.can_inventory AND NOT new.can_inventory
   AND new.character_id IN ('00000000-0000-0000-0000-000000001121'::uuid,
-                           '00000000-0000-0000-0000-000000001131'::uuid) THEN
+                           '00000000-0000-0000-0000-000000001131'::uuid,
+                           -- Extra fixture rows for original equip/transfer competing
+                           -- with the same signed-in Admin G revocation.
+                           '00000000-0000-0000-0000-000000001181'::uuid,
+                           '00000000-0000-0000-0000-000000001191'::uuid) THEN
   PERFORM pg_advisory_xact_lock(131307);
   PERFORM pg_sleep(1.1);
  END IF;

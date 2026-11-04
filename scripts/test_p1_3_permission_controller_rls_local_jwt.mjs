@@ -247,4 +247,63 @@ assert.deepEqual(one.data,two.data);
 assert.equal(count("SELECT count(*) FROM private.p13_guarded_commands WHERE request_id='"+
  sameId+"' AND result IS NOT NULL"),1);
 console.log("PASS 156: G-locked attack preserves immutable same-ID replay and single reaction");
-console.log("P1.3 cases 142-156 PASS in disposable genuine GoTrue: G-row revocation, modeled active reassignment, and source-like RLS. Global release security still UNPROVEN.");
+// Original source writer G/I evidence: these calls are NOT the research
+// locked combat candidate. The grant UPDATE uses a REAL Admin JWT and holds
+// the source-shaped G row via the test-only advisory/sleep trigger. Confirm
+// both original PostgREST writer RPCs can finish while G remains uncommitted.
+// These are observed stale-permission windows, NOT proof of a live exploit:
+// in this schedule the original writer can linearize before grant revocation.
+const originalEquip=(n,equipped)=>owner.who.rpc(
+ "set_character_inventory_equipment_v1",{
+  p_character_id:char(n),p_item_id:item(n),
+  p_is_equipped:equipped,p_equip_slot:equipped?"weapon_1":null
+ });
+const originalTransfer=(n,destination)=>owner.who.rpc(
+ "transfer_inventory_item_v1",{
+  p_item_id:item(n),p_target_type:"npc",p_target_id:destination
+ });
+const originalEquipRevoke=await beginWriter(
+ ()=>revoke(55),"source original equip / GM G revoke",131307);
+const originalEquipBefore=await originalEquip(55,false);
+assert.ifError(originalEquipBefore.error);
+assert.equal(originalEquipBefore.data.is_equipped,false);
+assert.equal(originalEquipRevoke.wasSettled(),false,
+ "Original equip unexpectedly waited for uncommitted Admin G revocation");
+const equipRevokeCommitted=await originalEquipRevoke.pending;
+assert.ifError(equipRevokeCommitted.error);
+assert.equal(equipRevokeCommitted.data.length,1);
+assert.equal(equipRevokeCommitted.data[0].can_inventory,false);
+assert.equal(db("SELECT is_equipped FROM public.inventory_items WHERE id='"+
+ item(55)+"'"),"f");
+console.log("PASS 157 [SOURCE TIMING]: real-JWT original equip completed during an uncommitted Admin G revocation (G read is not G row lock)");
+
+const originalTransferRevoke=await beginWriter(
+ ()=>revoke(54),"source original transfer / GM G revoke",131307);
+const transferBefore=await originalTransfer(54,char(53));
+assert.ifError(transferBefore.error);
+assert.equal(transferBefore.data.owner_type,"npc");
+assert.equal(transferBefore.data.owner_id,char(53));
+assert.equal(originalTransferRevoke.wasSettled(),false,
+ "Original transfer unexpectedly waited for uncommitted Admin G revocation");
+const transferRevokeCommitted=await originalTransferRevoke.pending;
+assert.ifError(transferRevokeCommitted.error);
+assert.equal(transferRevokeCommitted.data.length,1);
+assert.equal(transferRevokeCommitted.data[0].can_inventory,false);
+assert.equal(db("SELECT owner_id FROM public.inventory_items WHERE id='"+
+ item(54)+"'"),char(53));
+console.log("PASS 158 [SOURCE TIMING]: original item-I-locked transfer read old G entitlement during uncommitted Admin revoke");
+
+const equipAfterRevoke=await originalEquip(55,true);
+reject(equipAfterRevoke,/Not authorized to equip/i,
+ "Original equip after committed G revocation");
+const transferAfterRevoke=await originalTransfer(55,char(53));
+reject(transferAfterRevoke,/Not authorized to transfer/i,
+ "Original transfer after committed G revocation");
+assert.equal(db("SELECT is_equipped FROM public.inventory_items WHERE id='"+
+ item(55)+"'"),"f");
+assert.equal(db("SELECT owner_id FROM public.inventory_items WHERE id='"+
+ item(55)+"'"),char(55));
+assert.equal(db("SELECT can_inventory FROM public.character_permissions WHERE character_id='"+
+ char(55)+"' AND user_id='"+owner.uid+"'"),"f");
+console.log("PASS 159 [SOURCE AFTER-COMMIT]: original equip and transfer both deny new calls after G revocation commits");
+console.log("P1.3 cases 142-159 PASS with real local JWTs. G/I scheduling evidence is bounded; global deadlock-freedom and production authorization remain UNPROVEN.");

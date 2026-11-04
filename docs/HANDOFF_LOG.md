@@ -293,3 +293,11 @@
 - **Current security caution:** legacy creator grant can_edit+can_inventory and full source-read `get_my_player_characters_v2` must be preserved for existing PCs while GM secrets get separate server-private storage/projections. An Admin notice must not expose sensitive sheet/event details to other players, and must be idempotent across retries.
 - **Documentation:** new [owner contract](CHARACTER_CREATION_ADMIN_NOTICE_AND_DELEGATED_RIGHTS_2026-11-04.md), updated owner ledger + ACTIVE_WORK, correction banner on historical P1.3 report, test matrix D05–D06 amended and D25–D32 added (32 proposed, **none executed**). Prior research/frozen CI evidence remains unchanged.
 - **Production effects: NONE**. No schema, RLS, grants, user data, production UI, world/town map, `main`, or deployment changes. Continue P1.3 source-derived G/I/slot concurrency research in disposable GoTrue/PG17 before planning live permission cutover.
+
+## 2026-11-04 — Original equip / transfer vs Admin G revocation, disposable extension
+
+- **Design/test only:** Added expected cases 157–159 on draft PR #317 under the existing genuine GoTrue disposable PG17 workflow. These cases intentionally call **original deployed** equip and transfer implementations while a separately signed-in Admin's G UPDATE is held by a scratch-only trigger. They demonstrate MVCC read timing and post-commit revocation denial; no real-world exploit or G↔I deadlock is claimed.
+- **Live source SHA/MD5 rechecked read-only**: `set_character_inventory_equipment_v1` `84331bea`, `transfer_inventory_item_v1` `8c373a9d`, `private.can_access_character_v1` `97b5e6b0`. No production RPC called for these tests.
+- **Files:** `scripts/fixtures/p1_3_permission_controller_rls_parity_pg17.sql`, `scripts/test_p1_3_permission_controller_rls_local_jwt.mjs`, [source/test design and limitation report](P1_3_Original_Equipment_Grant_Revocation_2026-11-04.md). Exact-head PASS **pending GitHub CI**, not inferred from existing earlier green runs.
+- **Live/production effects:** **NONE**. Only draft source/CI. No production migration, character/permission edit, merge, deployment, map or gameplay change.
+- **Next one task:** source-derived deferred Forge materializer/trigger lock and table/foreign-key waits under Admin sheet/permission operations in disposable PG17, then full E/P/L/I/G/W/X/S/C authorization/order review.
