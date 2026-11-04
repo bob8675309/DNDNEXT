@@ -1,5 +1,7 @@
 # P1.3 — Historical Research Recovery, G/I Writer Audit and Delegated-Character Acceptance (2026-11-04)
 
+> **SUPERSEDING OWNER DECISION, later on 2026-11-04:** [Character creation and Admin notices](CHARACTER_CREATION_ADMIN_NOTICE_AND_DELEGATED_RIGHTS_2026-11-04.md) removes the pending-GM-approval requirement for underlings. Reuse the existing Forge, create immediately, notify Admin, then allow GM notes/permission edits in the NPC page. Keep earlier pending-gate statements below as historical research assumptions, not implementation authority.
+
 > **RESEARCH ONLY / NO PRODUCTION SECURITY FIX.** Read-only live `DnDWeb` PostgreSQL 17 source/trigger/ACL inspection on 2026-11-04. The production `main` reference was `51c351a142d03378dff8e47e05182afe21a15622`; active draft #317 started this checkpoint at `56095f80e335fba7e35cda19e627f62e2a1cd1c9`. The research tests from earlier commits remain distinct from tests of any new artifacts. No live SQL mutations, player data writes, grants, gameplay changes, merges, or manual deployments.
 
 ## 1. Historical pull requests: don't lose source or mistake archived work for release

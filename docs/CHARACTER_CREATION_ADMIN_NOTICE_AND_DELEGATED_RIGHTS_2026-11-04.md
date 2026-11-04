@@ -1,0 +1,49 @@
+# Character Creation, Admin Notices and Delegated Rights — Owner Decision (2026-11-04)
+
+> **OWNER PRODUCT DECISION, NOT A DEPLOYMENT APPROVAL.** This supersedes the 2026-11-04 draft P1.3 statement that every player-created underling must remain pending until GM approval. Preserve the original research wording as historical context; use this document for current implementation intent. Existing P1.3 global transaction and permission-security gates still apply.
+
+## 1. Reuse the established Forge and create immediately
+
+- Continue using the unified `components/NewNpcModalV3.js` / `NewNpcModalV3Refined.js` presentation and the **server-authoritative `public.create_player_character_v3`** RPC for a player creating a primary PC, an alternate, or an underling. The owner **does not require creation-time GM approval**. Preserve all ten current Forge steps, source-choice validation, species/class progression, original idempotency and starting-equipment/rules behavior.
+- The existing player creation stores the canonical character in `public.characters` with `kind='npc'`, `player-character` tags and `is_hidden=true`; `create_player_character_v3` invokes v2, whose current permissions and side effects include immediate `can_edit=true`, `can_inventory=true`, progression/starting gear and a `character_level_events` event. **Do not arbitrarily strip current creator access or create a separate half-built draft character.** Existing one-character assumptions in account/Profile/Forge consumers need testing before allowing multiple same-player alternates.
+- After creation, the GM must be able to find that canonical record in **`/npcs`**, including hidden player-created records, inspect the available sheet, set/revoke independently scoped controls, and add GM-private notes **without rebuilding the character**. Any separate NPC/PC labels are presentation/ownership classifications, not a duplicate character row.
+- The NPC roster in `pages/npcs.js` currently loads `kind='npc'`, which matches Forge player records, but authenticated `characters` table SELECT privileges require genuine JWT verification. Do not claim that an Admin can already reach every such record merely because the query exists.
+
+## 2. Admin notice on each successful player creation — informational, not approval
+
+- Show an **Admin-area new character notice** when an authenticated player creates a character. The notice must include creator display identity (when authorized), character name/type, creation timestamp, and a direct `/npcs?focus=npc:<character-uuid>` deep link. Provide an unread/new indicator and reviewed/dismissed behavior scoped to each GM/Admin. The notice **must not block creation** or change grants.
+- **Reuse existing transactional evidence rather than trusting the browser:** `public.create_player_character_v3` calls v2; v2 inserts `public.character_level_events` with `event_type='player_character_created'`, `created_by` and `character_id`. This row is durable, tied to successful creation, and protected from direct authenticated SELECT/INSERT by current privileges/RLS. On 2026-11-04 live SELECT-only count showed **five such events**, not a user audit.
+- Prefer a small **Admin-only projection/read RPC** over `character_level_events`, with per-admin reviewed/read receipts if persistent unread state is required. Authenticate GM server-side in the RPC, return only display-safe metadata, and do not expose raw event `details` or private sheet/notes. Avoid a second player-writable creation-notification API.
+- Repeated calls with the same `creation_request_id` / idempotent `create_player_character_v2` result must produce only one creation event and **one notice**. Failed/rolled-back Forge submissions must produce none. Test concurrent duplicate retries and player-created alternates. Do not reuse the existing `get_recent_site_activity_v1` visitor tracker as a creation event source: it only summarizes account/site visits.
+- Admin display may reuse the visual surface of `pages/admin/activity.js` or add a focused Admin inbox; retain the existing privacy-minimized visitor tracking and its RLS. Avoid unnecessary user-profile or character payload duplication.
+
+## 3. Post-creation GM notes and permission management
+
+- `pages/npcs.js` already has `character_notes` with `private` and `shared` scope. Live `character_notes_select_audience` allows Admin or author for private notes; unrelated players cannot read them under that policy. Treat **GM-authored private notes** as the starting implementation for GM-only information. Existing private notes by a player are not the same as GM notes, even though Admin can see them.
+- Keep GM secrets in explicitly protected fields/notes. **Do not place new GM notes in `characters.secret` or unrestricted `character_sheets.sheet`** without correcting and proving all source-reader projections. Current signed-in `get_my_player_characters_v2` returns `to_jsonb(c)` plus the entire sheet to qualifying tagged player-character users; `encounter_spellcasting_profile_v1/v2` are separate read/side-effect paths.
+- Admin management should present **effective access**, including separate `can_edit`, `can_inventory`, `can_convert`, research `can_control`, active encounter `controller_user_id`, and any future scoped grants, rather than falsely implying a single delegated toggle fully revokes a player's controls.
+- A change to combat delegation must not silently change sheet editing, progression, raw inventory or GM notes. Temporary companion control needs explicit expiration/revocation; full handoff can grant more rights deliberately. Multiple players may share control of one NPC, but cannot double-spend its Action/Reaction/resources.
+
+## 4. Owner authorizes evaluating an efficient permissions rework
+
+**Design authorization:** The GM supports reworking/replacing the permission architecture where this improves safety, clarity and efficiency. **Not permission to apply a production migration or remove legacy grants unreviewed.**
+
+Preferred candidate: a centrally evaluated **capability-based grant** model scoped by canonical character and authenticated user, with explicitly named rights (`combat.control`, `sheet.view`, `sheet.edit`, `inventory.view`, `inventory.manage`, `progression.manage`, `notes.gm.view` if GM, `notes.shared.view`) and, where necessary, encounter/character-specific scope, `expires_at`, `granted_by`, `revoked_at` and audit metadata. The full set is a **proposal**, not an approved database schema. GM status must be separately verified, not granted by a player-controlled field.
+
+**Migration discipline:** inventory and audit the current `character_permissions` flags, direct encounter controller links, RPCs, RLS and SECURITY DEFINER functions; define a compatibility evaluator for existing grants; add new capabilities without automatic broadening; transition one consumer/read surface at a time in a reviewed coordinated cutover; test full and temporary grants against real signed-in JWTs and global E/P/L/I/G/W/X/S/C locks; perform an exact authorization-diff and reversible rollback. **Do not backfill `can_edit` to `can_control` by default**, prematurely delete existing grants or expose source sheet data through a UI-only concealment rule.
+
+## 5. Source-verified checkpoint and remaining gates
+
+| Source | Read-only observation 2026-11-04 |
+| --- | --- |
+| `components/NewNpcModalV3.js` | Player mode calls `create_player_character_v3` and preserves existing Forge payload validation. |
+| `public.create_player_character_v3` | MD5 `6ba73e6f12fcf826cc0a739cce45ff40`; invokes `create_player_character_v2` (MD5 `0351f0a00acae023278e1b8b065b00c9`). |
+| `public.character_level_events` | Event has `character_id`, `created_by`, `event_type`, `created_at`; `player_character_created` has five live rows at checkpoint. Authenticated table SELECT/INSERT are disabled. |
+| `pages/npcs.js` | Queries `characters.kind='npc'`; has selection and private/shared note editor. No shipped unified delegated permission editor was verified on this page. |
+| `character_notes` | Private author/Admin read; shared scoped audiences. Live Admin/author authorization is on the database, not only React. |
+| `pages/admin/activity.js` | Reads `get_recent_site_activity_v1` for 30-day site visitors/accounts; not character-created notices. |
+| `get_my_player_characters_v2` | MD5 `deca87aaad0dce214743c87cdca03f36`, full `to_jsonb(c)` and `character_sheet` response; must not be confused with private GM projection. |
+
+New and revised **proposed, not executed** test cases reside in `scripts/fixtures/p1_3_delegation_acceptance_matrix.json`, particularly D05–D06 and D25–D32. They must test nonblocking creation, Admin notices, idempotency, GM notes, effective rights and backwards compatibility.
+
+**Current next engineering task remains P1.3**: source-derived G-revocation versus original inventory operations under two-session disposable PG17/GoTrue, including legacy grant semantics; integrate the above capability model into the authorization acceptance plan. Do not touch live permissions, `main`, combat, maps or production deployments without a separate reviewed release decision.

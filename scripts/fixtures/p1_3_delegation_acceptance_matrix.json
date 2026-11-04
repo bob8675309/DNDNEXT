@@ -1,5 +1,5 @@
 {
-  "status": "proposed acceptance tests, NOT executed",
+  "status": "proposed acceptance tests, NOT executed; owner corrected underling creation to immediate/nonblocking on 2026-11-04",
   "prepared": "2026-11-04",
   "research_pr": 317,
   "scope": "P1.3 and future delegated-character authorization",
@@ -27,12 +27,12 @@
     {
       "id": "D05",
       "family": "underling",
-      "assertion": "Player-submitted underling remains pending GM approval and has no immediate full PC ownership."
+      "assertion": "A player can create a primary PC, alternate, or underling through existing Forge without an approval gate; standard account and character source permissions remain consistent until the GM edits them."
     },
     {
       "id": "D06",
       "family": "underling",
-      "assertion": "GM approval materializes one canonical underling idempotently and assigns rights once."
+      "assertion": "Creating an alternate/underling via create_player_character_v3 invokes v2 only once for each creation_request_id and produces one canonical character, progression, starting equipment and creation event; retry does not duplicate any."
     },
     {
       "id": "D07",
@@ -123,6 +123,46 @@
       "id": "D24",
       "family": "service-principal",
       "assertion": "R3 service principal policy explicitly approved before privileged automation."
+    },
+    {
+      "id": "D25",
+      "family": "admin-notice",
+      "assertion": "A successful player character creation creates exactly one durable GM-visible notice from committed player_character_created event and never blocks/changes the creation."
+    },
+    {
+      "id": "D26",
+      "family": "admin-notice",
+      "assertion": "Failed or rolled-back creation produces no Admin notice; concurrent same-request retries produce one notice."
+    },
+    {
+      "id": "D27",
+      "family": "admin-notice",
+      "assertion": "Admin can see new/unread creation notices and mark reviewed; other player JWTs cannot call/read Admin-only event projection or receipts."
+    },
+    {
+      "id": "D28",
+      "family": "admin-navigation",
+      "assertion": "Notice shows safe creator/name/time metadata and links to the canonical character in /npcs?focus=npc:<uuid>, including a hidden player-created kind=npc character."
+    },
+    {
+      "id": "D29",
+      "family": "gm-notes",
+      "assertion": "GM can add private notes after creation, which remain inaccessible to the creating player, other authorized combat controllers, raw sheet getters, and print/export."
+    },
+    {
+      "id": "D30",
+      "family": "permissions",
+      "assertion": "GM can view, add and remove effective separately scoped control/edit/inventory/progression rights after creation; legacy grants/direct controller are correctly displayed."
+    },
+    {
+      "id": "D31",
+      "family": "permissions",
+      "assertion": "A proposed capability migration preserves legacy PCs' active permissions until explicit audited change; no automatic can_edit→can_control backfill or unintended grants."
+    },
+    {
+      "id": "D32",
+      "family": "multi-character",
+      "assertion": "A user can hold multiple characters without players/profile/Forge overwriting prior characters or their grants; new creation leaves existing characters usable."
     }
   ]
 }
