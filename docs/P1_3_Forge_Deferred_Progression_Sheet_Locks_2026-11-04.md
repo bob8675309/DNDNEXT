@@ -1,5 +1,7 @@
 # P1.3 — Deferred Forge Materializer vs Character-Sheet Progression Sync (2026-11-04)
 
+> **Verified isolated result — 2026-11-04:** At draft head `fc178c5f772d0ec16891d55c9a2f5624ea88c573`, [GitHub run 41935090198](https://github.com/bob8675309/DNDNEXT/actions/runs/41935090198) **passed F01–F03**. F02 observed `Lock:transactionid` on the original sheet-sync transaction and PostgreSQL logged a genuine `deadlock detected` (40P01) under deliberately timed same-character contention. All nine exact-head PR checks passed. **Production reachability, complete triggers and a safe global lock order are still UNPROVEN.**
+
 > **RESEARCH ONLY / NO LIVE DB WRITES / NO PRODUCT FIX.** This report compares original, deployed SQL via SELECT-only Supabase introspection on 2026-11-04 and proposes a two-session PostgreSQL 17 race fixture. An intentionally created deadlock in a reduced, isolated fixture **does not demonstrate that arbitrary players or current production Forge can drive one**. Source evidence and CI execution status must be kept separate.
 
 ## 1. New concrete lock-class inversion found in live definitions
@@ -46,3 +48,16 @@ Trace **production-reachable CP↔CS/stock/I write entry points** (existing leve
 The first new-workflow run [41934716777](https://github.com/bob8675309/DNDNEXT/actions/runs/41934716777) **failed before F02**, but **F01 passed** with source-exact deferred inventory and currency writes. The second scratch character had no `startingEquipmentSelections` field. Deployed materializer source checks `IF jsonb_typeof(v_sheet->'startingEquipmentSelections') <> 'object' THEN RETURN ...`; when the key is absent, `jsonb_typeof(NULL) <> 'object'` is `NULL`, so PL/pgSQL does **not** enter the IF branch. The helper later raises `Choose a valid source-backed class starting equipment package` against a class with a nonempty starting-equipment catalogue. This is a **confirmed source semantics observation**, not proof that the normal Forge submits an invalid sheet; no deployed code changed.
 
 The corrected scratch character now has a **valid package selection**, and its original deferred helper materializes exactly one inventory/currency record before the concurrency test. The F02 re-invocation still locks CP then CS, but should return `already materialized` after that prefix. Check no duplicate item or currency when one race transaction aborts. **F02/F03 remain pending retest until exact-head CI passes.**
+
+## 2026-11-04 execution result and next-source routing
+
+**Exact-head run:** [Validate P1.3 Forge deferred materializer lock-order research #41935090198](https://github.com/bob8675309/DNDNEXT/actions/runs/41935090198) **SUCCESS** at `fc178c5f772d0ec16891d55c9a2f5624ea88c573`. The job log confirms:
+
+- `PASS F01 original deferred materializer writes exactly one item/currency at COMMIT`.
+- `Observed F02 sheet sync source transaction wait event: Lock:transactionid` followed by `PASS F02 PostgreSQL REAL P/S deadlock using both ORIGINAL functions`; PostgreSQL's own log contains `ERROR: deadlock detected`. Test-specific prelock/timing and reduced schema were used, so do not assert the normal application is deadlocking.
+- `PASS F03 two sessions using same P->S order complete without deadlock`. This control proves only the isolated schedule; **it is not an adopted global lock order**.
+- All **nine** triggered checks on that SHA passed, including legacy real JWT, static lock graph, Admin activation/resume and the new fixture.
+
+**New public-route evidence (SELECT-only live inspection):** `public.complete_character_level_up_v5` (MD5 `02d74b97...`) is authenticated EXECUTE and locks CP before calling v4. Source chain `v5 → v4 → v3 → private.complete_character_level_up_base_v3` (MD5 `e33639d5...`) contains **CP FOR UPDATE → CS FOR UPDATE**. Separately, the existing NPC sheet editor upserts `character_sheets`, whose live authenticated UPDATE policy requires `private.can_access_character_v1(id,'edit')`; the AFTER UPDATE sheet trigger performs **CS → CP**. `character_progression` itself has RPC-only, deny-direct-write RLS. These facts make simultaneous signed-in level-up versus authorized sheet-edit an important **candidate for a true entry-point race test**, but no production shared-character two-session invocation or user-impact reproduction was performed.
+
+**Next exact test:** execute source-authentic `complete_character_level_up_v5` versus the ordinary `character_sheets` update using distinct genuine local GoTrue JWT sessions and as many full source triggers/FKs as needed to prove the first reachable schedule. Record whether old contracts reject the operation before locking, and only then select a remedial protocol. Preserve the full 19-trigger inventory and current GM delegation/visibility requirements.
