@@ -32,6 +32,30 @@ AS $function$
 $function$;
 REVOKE ALL ON FUNCTION private.current_user_is_admin()
 FROM PUBLIC, anon, authenticated;
+
+-- Source-shaped existing permission flags. This is the same Admin/self RLS
+-- design verified read-only on DnDWeb, reproduced only in the disposable DB.
+CREATE TABLE public.character_permissions (
+  character_id uuid NOT NULL REFERENCES public.characters(id),
+  user_id uuid NOT NULL REFERENCES auth.users(id),
+  can_edit boolean NOT NULL DEFAULT false,
+  can_inventory boolean NOT NULL DEFAULT false,
+  can_convert boolean NOT NULL DEFAULT false,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY(character_id,user_id)
+);
+ALTER TABLE public.character_permissions ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.character_permissions FROM PUBLIC,anon,authenticated;
+GRANT SELECT,INSERT,UPDATE ON public.character_permissions TO authenticated;
+CREATE POLICY character_permissions_admin_write
+ON public.character_permissions FOR ALL TO authenticated
+USING ((SELECT private.current_user_is_admin()))
+WITH CHECK ((SELECT private.current_user_is_admin()));
+CREATE POLICY character_permissions_select_self
+ON public.character_permissions FOR SELECT TO authenticated
+USING (user_id = (SELECT auth.uid()) OR
+       (SELECT private.current_user_is_admin()));
+
 ALTER TABLE public.character_level_events ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE public.character_level_events FROM PUBLIC, anon, authenticated;
 \i sql/candidates/20261104_admin_character_creation_notices_v1.sql

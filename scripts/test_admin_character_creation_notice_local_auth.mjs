@@ -111,4 +111,58 @@ assert.ok(forbiddenEvent.error || (Array.isArray(forbiddenEvent.data) &&
  forbiddenEvent.data.length===0));
 assert.equal(db("SELECT count(*) FROM public.character_level_events"),"2");
 console.log("PASS N04: no raw event access for player; creation event count unchanged");
-console.log("Admin creation-notice candidate GoTrue JWT N01-N04 PASS in isolated local Supabase. NOT production readiness.");
+// Existing-source character_permissions contract for the new NPC Admin editor.
+// All tests run in disposable GoTrue with exact Admin/self RLS predicates.
+const addGrant=await gmA.who.from("character_permissions")
+ .insert({character_id:charA,user_id:player.uid,can_edit:true,can_inventory:true,can_convert:false})
+ .select("character_id,user_id,can_edit,can_inventory,can_convert").single();
+assert.ifError(addGrant.error);
+assert.equal(addGrant.data.user_id,player.uid);
+const ownGrant=await player.who.from("character_permissions")
+ .select("character_id,can_edit,can_inventory").eq("character_id",charA);
+assert.ifError(ownGrant.error);
+assert.equal(ownGrant.data.length,1);
+const outsiderGrants=await outsider.who.from("character_permissions")
+ .select("character_id").eq("character_id",charA);
+assert.ifError(outsiderGrants.error);
+assert.deepEqual(outsiderGrants.data,[]);
+console.log("PASS N05: GM INSERT new character-scoped grant, creator sees own flags, outsider denied");
+
+const outsiderEdit=await outsider.who.from("character_permissions")
+ .update({can_edit:false}).eq("character_id",charA)
+ .eq("user_id",player.uid).select("character_id");
+assert.ifError(outsiderEdit.error);
+assert.deepEqual(outsiderEdit.data,[]);
+const outsiderInsert=await outsider.who.from("character_permissions")
+ .insert({character_id:charB,user_id:outsider.uid,can_edit:true})
+ .select("character_id");
+assert.ok(outsiderInsert.error);
+const protectedGrant=await gmA.who.from("character_permissions")
+ .select("can_edit,can_inventory").eq("character_id",charA)
+ .eq("user_id",player.uid).single();
+assert.ifError(protectedGrant.error);
+assert.equal(protectedGrant.data.can_edit,true);
+assert.equal(protectedGrant.data.can_inventory,true);
+console.log("PASS N06: outsider cannot update existing grant or insert elevated rights");
+
+const secondAdmin=await gmB.who.from("character_permissions")
+ .update({can_inventory:false}).eq("character_id",charA)
+ .eq("user_id",player.uid).select("can_inventory").single();
+assert.ifError(secondAdmin.error);
+assert.equal(secondAdmin.data.can_inventory,false);
+const staleAdmin=await gmA.who.from("character_permissions")
+ .update({can_edit:false,can_inventory:true,can_convert:false})
+ .eq("character_id",charA).eq("user_id",player.uid)
+ .eq("can_edit",true).eq("can_inventory",true).eq("can_convert",false)
+ .select("character_id,user_id").maybeSingle();
+assert.ifError(staleAdmin.error);
+assert.equal(staleAdmin.data,null,
+ "Stale Admin compare-and-update must affect zero rows");
+const afterConflict=await gmA.who.from("character_permissions")
+ .select("can_edit,can_inventory").eq("character_id",charA)
+ .eq("user_id",player.uid).single();
+assert.ifError(afterConflict.error);
+assert.equal(afterConflict.data.can_edit,true);
+assert.equal(afterConflict.data.can_inventory,false);
+console.log("PASS N07: stale Admin edit refused after another GM changed flags, preserving newer values");
+console.log("Admin creation notices and legacy editor GoTrue JWT N01-N07 PASS in isolated local Supabase; NOT production readiness.");

@@ -7,6 +7,9 @@ on:
       - 'scripts/fixtures/admin_character_creation_notice_candidate_pg17.sql'
       - 'scripts/validate_admin_character_creation_notices_candidate.mjs'
       - 'pages/admin/activity.js'
+      - 'pages/npcs.js'
+      - 'components/character/AdminCharacterPermissionsPanel.js'
+      - 'scripts/validate_npc_character_permission_editor.mjs'
       - 'scripts/fixtures/admin_character_creation_notice_local_auth_pg17.sql'
       - 'scripts/test_admin_character_creation_notice_local_auth.mjs'
   workflow_dispatch:
@@ -48,6 +51,8 @@ jobs:
         run: |
           node --check scripts/validate_admin_character_creation_notices_candidate.mjs
           node scripts/validate_admin_character_creation_notices_candidate.mjs
+          node --check scripts/validate_npc_character_permission_editor.mjs
+          node scripts/validate_npc_character_permission_editor.mjs
       - name: Execute isolated PostgreSQL 17 candidate + Admin/outsider assertions
         run: |
           test "$PGHOST" = 127.0.0.1

@@ -11,6 +11,7 @@ import KindPicker from "../components/KindPicker";
 import NewNpcModal from "../components/NewNpcModal";
 import PortraitPickerModal from "../components/PortraitPickerModal";
 import NpcPanel from "../components/character/CharacterInteractionPanel";
+import AdminCharacterPermissionsPanel from "../components/character/AdminCharacterPermissionsPanel";
 import { MAP_ICONS_BUCKET, LOCAL_FALLBACK_ICON, mapIconDisplay } from "../utils/mapIcons";
 import { resolveCharacterPortrait } from "../utils/characterPortraits";
 import { loadCharacterSecrets, saveCharacterSecret } from "../utils/characterSecrets";
@@ -1674,6 +1675,17 @@ const details = detailsDraft || {};
                 </div>
 
                 <hr style={{ borderColor: BORDER }} />
+
+                {/* Existing Admin-only grants, independent of future delegated combat control.
+                    key prevents a stale previous selection from mutating this panel. */}
+                {isAdmin && selected?.id ? (
+                  <AdminCharacterPermissionsPanel
+                    key={String(selected.id)}
+                    isAdmin={isAdmin}
+                    characterId={selected.id}
+                    players={players}
+                  />
+                ) : null}
 
                 <div className="row g-3">
                   {/* Left */}
