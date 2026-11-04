@@ -1,0 +1,60 @@
+name: Validate Admin character creation notice candidate
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/validate-admin-character-creation-notices.yml'
+      - 'sql/candidates/20261104_admin_character_creation_notices_v1.sql'
+      - 'scripts/fixtures/admin_character_creation_notice_candidate_pg17.sql'
+      - 'scripts/validate_admin_character_creation_notices_candidate.mjs'
+      - 'pages/admin/activity.js'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  disposable-pg17-and-build:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 8
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verify source, UI and permissions contract
+        run: |
+          node --check scripts/validate_admin_character_creation_notices_candidate.mjs
+          node scripts/validate_admin_character_creation_notices_candidate.mjs
+      - name: Execute isolated PostgreSQL 17 candidate + Admin/outsider assertions
+        run: |
+          test "$PGHOST" = 127.0.0.1
+          test "$PGDATABASE" = postgres
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/admin_character_creation_notice_candidate_pg17.sql
+      - name: Install project dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Production build compilation gate (not deployment)
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: validation-placeholder
+        run: npm run build:vercel
