@@ -50,7 +50,7 @@ New `scripts/fixtures/forge_owner_constraint_deferred_creation_local_auth_pg17.s
 
 ## Architectural implications
 
-The original data model expects character-owned Forge equipment: original `public.get_player_character_inventory_v1` and other inventory readers recognize `owner_type='character'`; source SQL for package and starting-market equipment inserts that value. The old constraint therefore appears to be stale schema, not an intentional restriction for new Forge equipment. Nevertheless, **do not remove any live constraint without checking all migration history, existing data, transfer/crafting/send RPCs, security policies, old consumers, and rollback strategy**.
+The original data model expects character-owned Forge equipment: verified live `public.get_character_inventory_v1` and other inventory readers recognize `owner_type='character'`; source SQL for package and starting-market equipment inserts that value. The old constraint therefore appears to be stale schema, not an intentional restriction for new Forge equipment. Nevertheless, **do not remove any live constraint without checking all migration history, existing data, transfer/crafting/send RPCs, security policies, old consumers, and rollback strategy**.
 
 ### Release blockers and one next task
 

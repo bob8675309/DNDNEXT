@@ -1193,7 +1193,7 @@ const stateCounts=()=>sql("SELECT jsonb_build_object("
 const blockedBefore=stateCounts();
 const blockedOld=await call2(people.PLAYER.client,blockedOwnerCreate);
 denied(blockedOld,"23514","Exact source-original deferred Forge character-owned I blocked at COMMIT");
-assert.match(blockedOld.error.message||"","inventory_items_owner_type_chk",
+assert.match(blockedOld.error.message||"",/inventory_items_owner_type_chk/,
  "Expected OLD NOT VALID CHECK, not a different deferred failure");
 assert.equal(stateCounts(),blockedBefore,"Deferred 23514 did not fully roll back original creation, nonce, feat grants, item and currency");
 assert.equal(sql("SELECT count(*) FROM public.characters WHERE name='J79 blocked original Forge feat and gear'"),"0");
@@ -1261,7 +1261,7 @@ blockedAgain.creation_request_id=id(9383);
 const restoredBaseline=stateCounts();
 const blockedAgainResult=await call2(people.OUTSIDER.client,blockedAgain);
 denied(blockedAgainResult,"23514","Restored old CHECK blocks independent signed creator too");
-assert.match(blockedAgainResult.error.message||"","inventory_items_owner_type_chk");
+assert.match(blockedAgainResult.error.message||"",/inventory_items_owner_type_chk/);
 assert.equal(stateCounts(),restoredBaseline);
 assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+id(9383)+"'"),"0");
 assert.equal(sql("SELECT count(*) FROM public.characters WHERE name='J83 restored obsolete CHECK rejects new Forge I'"),"0");

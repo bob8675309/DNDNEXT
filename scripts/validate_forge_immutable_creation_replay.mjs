@@ -288,4 +288,8 @@ for(const unsafe of ["ucggczovhmauhshvhusx","SERVICE_ROLE_KEY","SUPABASE_SERVICE
  assert.ok(!ownerHandlers.includes(unsafe)&&!ownerSetup.includes(unsafe),
  "No production project IDs or privileged API keys allowed in owner CHECK scratch source");
 }
+for(const token of [
+ 'assert.match(blockedOld.error.message||"",/inventory_items_owner_type_chk/',
+ 'assert.match(blockedAgainResult.error.message||"",/inventory_items_owner_type_chk/'
+]) assert.ok(localAuth.includes(token),"Test harness must pass an actual RegExp to Node assert.match: "+token);
 console.log("PASS STATIC J78-J84 source-original inventory handlers, exact old/new live owner-type CHECKs, signed creator deferred-COMMIT failure/clean rollback/scratch-only cause-control. DATABASE ACCEPTANCE MUST BE SEPARATE.");
