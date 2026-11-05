@@ -250,6 +250,26 @@ BEGIN
  RETURN jsonb_build_object('updated',true);
 END $f$;
 
+-- Test-only authenticated wrapper: acquire CP FIRST using explicit
+-- SELECT FOR UPDATE and publish a transaction advisory marker, sleep,
+-- then execute the UNCHANGED complete_character_level_up_v5 RPC.
+-- Only this test wrapper contains synthetic timing/locking; it is NOT
+-- a proposed production lock-order implementation or full service path.
+CREATE FUNCTION public.p13_test_levelup_cp_prelock_v1(p_character_id uuid)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
+SET search_path TO 'pg_catalog','public','private','auth'
+AS $f$
+BEGIN
+ IF auth.uid() IS NULL OR NOT private.can_manage_character_progression_v1(p_character_id)
+ THEN RAISE EXCEPTION 'No current level-up editor permission' USING ERRCODE='42501'; END IF;
+ PERFORM 1 FROM public.character_progression
+ WHERE character_id=p_character_id FOR UPDATE;
+ IF NOT FOUND THEN RAISE EXCEPTION 'Character progression unavailable' USING ERRCODE='P0002'; END IF;
+ PERFORM pg_advisory_xact_lock(9313,1);
+ PERFORM pg_sleep(2.5);
+ RETURN public.complete_character_level_up_v5(p_character_id,'{"hp_method":"fixed"}'::jsonb);
+END $f$;
+
 -- Editor-only permissions, do not grant full sheet to unrelated players.
 ALTER TABLE public.character_sheets ENABLE ROW LEVEL SECURITY;
 CREATE POLICY p13_sheet_editor_read ON public.character_sheets
@@ -270,8 +290,10 @@ CREATE POLICY p13_own_permissions_read ON public.character_permissions
  FOR SELECT TO authenticated USING(user_id=auth.uid());
 REVOKE ALL ON FUNCTION public.complete_character_level_up_v5(uuid,jsonb) FROM PUBLIC,anon;
 REVOKE ALL ON FUNCTION public.p13_test_sheet_edit_hold_v1(uuid,text) FROM PUBLIC,anon;
+REVOKE ALL ON FUNCTION public.p13_test_levelup_cp_prelock_v1(uuid) FROM PUBLIC,anon;
 GRANT EXECUTE ON FUNCTION public.complete_character_level_up_v5(uuid,jsonb),
- public.p13_test_sheet_edit_hold_v1(uuid,text) TO authenticated;
+ public.p13_test_sheet_edit_hold_v1(uuid,text),
+ public.p13_test_levelup_cp_prelock_v1(uuid) TO authenticated;
 REVOKE EXECUTE ON FUNCTION public.complete_character_level_up_v3(uuid,jsonb),
  public.complete_character_level_up_v4(uuid,jsonb) FROM PUBLIC,anon,authenticated;
 REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA private FROM PUBLIC,anon,authenticated;
@@ -282,6 +304,7 @@ BEGIN
  IF has_function_privilege('anon','public.complete_character_level_up_v5(uuid,jsonb)','EXECUTE')
  OR NOT has_function_privilege('authenticated','public.complete_character_level_up_v5(uuid,jsonb)','EXECUTE')
  OR has_function_privilege('anon','public.p13_test_sheet_edit_hold_v1(uuid,text)','EXECUTE')
+ OR has_function_privilege('anon','public.p13_test_levelup_cp_prelock_v1(uuid)','EXECUTE')
  THEN RAISE EXCEPTION 'P13 source level-up test-only ACL not restricted'; END IF;
 END $assert_acl$;
 NOTIFY pgrst,'reload schema';
