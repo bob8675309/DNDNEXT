@@ -461,3 +461,129 @@ assert.equal(pass(await call3(people.OUTSIDER.client,wizardPostGuard,spell(fire)
 console.log("PASS J30 original player v3 RPC and spells succeed through immediate guard/tag sync; nonce retry remains inert");
 console.log("PASS LOCAL REAL GoTrue J00-J30: original-sheet authority/tag handlers, nonce/PR319, deferred equipment with reduced ACL/catalogue.");
 
+// J31+: source-exact progression authority validator with original helpers and
+// source-preferred catalog view. The local catalog specimens are limited; no
+// other missing production progression/source grants are bypassed in the handler.
+sqlFile("scripts/fixtures/forge_progression_authority_local_auth_extension_pg17.sql");
+const validAuthority=fighter("JWT Forge exact authority and feat",id(9131));
+validAuthority.sheet.background="Soldier";
+validAuthority.sheet.meta={backgroundSource:"XPHB",speciesKey:"Elf"};
+validAuthority.sheet.startingEquipmentSelections={
+ mode:"package",ruleset:"vanilla",classOption:"A",backgroundId:id(9150)
+};
+validAuthority.sheet.featGrantInstances=[{
+ instanceId:"origin-lucky-1",optionId:id(9154),name:"Lucky",source:"XPHB",
+ optionType:"feat",acquisitionLevel:1,choices:{},fixedEffects:[]
+}];
+validAuthority.sheet.feats=["Lucky"];
+validAuthority.sheet.classFeatureChoices={
+ fightingStyle:{kind:"fighting-style",count:1,level:1,label:"Fighting Style",
+ selections:[{name:"Defense",key:"defense",source:"XPHB"}]}
+};
+validAuthority.sheet.classFeatureChoiceSummary=[
+ {groupId:"fightingStyle",key:"defense",name:"Defense",source:"XPHB"}
+];
+const verifiedAuthority=pass(await call2(people.PLAYER.client,validAuthority),
+ "original Forge source-validated feat and fighting-style");
+assert.equal(sql("SELECT count(*) FROM public.character_currency WHERE character_id='"+verifiedAuthority+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_id='"+verifiedAuthority+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_level_events WHERE character_id='"+verifiedAuthority+"'"),"1");
+const selectedFeats=sql("SELECT sheet->'feats'->>0 FROM public.character_sheets WHERE character_id='"+verifiedAuthority+"'");
+assert.equal(selectedFeats,"Lucky");
+const verifiedSheetHash=sql("SELECT md5(sheet::text) FROM public.character_sheets WHERE character_id='"+verifiedAuthority+"'");
+assert.equal(pass(await call2(people.PLAYER.client,validAuthority),"same source-qualified feat nonce"),verifiedAuthority);
+assert.equal(sql("SELECT md5(sheet::text) FROM public.character_sheets WHERE character_id='"+verifiedAuthority+"'"),verifiedSheetHash);
+console.log("PASS J31 original deferred progression validator accepts canonical Lucky feat instance plus Defense fighting-style option and inert retry");
+
+const unsupportedFeat=JSON.parse(JSON.stringify(validAuthority));
+unsupportedFeat.name="JWT unsupported standalone feat summary";
+unsupportedFeat.creation_request_id=id(9132);
+unsupportedFeat.sheet.featGrantInstances=[];
+unsupportedFeat.sheet.feats=["Unsupported Feat"];
+const beforeFeatGear=sql("SELECT count(*) FROM public.inventory_items");
+const invalidFeat=await call2(people.PLAYER.client,unsupportedFeat);
+assert.ok(invalidFeat.error,"Unsupported source feat summary was accepted");
+assert.match(invalidFeat.error.message,/feats must exactly match their validated source-owned feat grants/i);
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE name='JWT unsupported standalone feat summary'"),"0");
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+id(9132)+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items"),beforeFeatGear);
+console.log("PASS J32 mismatched source-owned feat summary fails original deferred validator and atomically rolls back equipment and nonce");
+
+const badGrant=JSON.parse(JSON.stringify(validAuthority));
+badGrant.name="JWT missing canonical feat instance ID";
+badGrant.creation_request_id=id(9133);
+badGrant.sheet.featGrantInstances=[{name:"Lucky",optionId:id(9154),source:"XPHB"}];
+const invalidGrant=await call2(people.PLAYER.client,badGrant);
+assert.ok(invalidGrant.error,"Original feat grant instance validator unexpectedly accepted absent instanceId");
+assert.match(invalidGrant.error.message,/requires an instanceId/i);
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+id(9133)+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE name='JWT missing canonical feat instance ID'"),"0");
+console.log("PASS J33 original feat-instance helper rejects missing canonical instanceId without partial character/nonce");
+
+const invalidStyle=JSON.parse(JSON.stringify(validAuthority));
+invalidStyle.name="JWT invalid fighting style";
+invalidStyle.creation_request_id=id(9134);
+invalidStyle.sheet.classFeatureChoices.fightingStyle.selections[0].name="Impossible Style";
+invalidStyle.sheet.classFeatureChoiceSummary[0].name="Impossible Style";
+const rejectedStyle=await call2(people.PLAYER.client,invalidStyle);
+assert.ok(rejectedStyle.error,"Original preferred-option fighting-style validator accepted nonexistent option");
+assert.match(rejectedStyle.error.message,/not valid for this class, subclass, source, or level/i);
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+id(9134)+"'"),"0");
+console.log("PASS J34 source-original preferred-option view and validator reject nonexistent fighting style, rollback nonce");
+
+const fakeSpellSheet=JSON.parse(JSON.stringify(validAuthority));
+fakeSpellSheet.name="JWT false canonical spell summary";
+fakeSpellSheet.creation_request_id=id(9135);
+fakeSpellSheet.sheet.featGrantInstances=[];
+fakeSpellSheet.sheet.feats=[];
+fakeSpellSheet.sheet.classFeatureChoices={};
+fakeSpellSheet.sheet.classFeatureChoiceSummary=[];
+fakeSpellSheet.sheet.spells=["Fire Bolt"];
+const rejectedSpellSheet=await call2(people.PLAYER.client,fakeSpellSheet);
+assert.ok(rejectedSpellSheet.error,"Original deferred authority validator accepted spell summary without canonical class spell");
+assert.match(rejectedSpellSheet.error.message,/spell summary must exactly match its validated starting spell assignments/i);
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+id(9135)+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE name='JWT false canonical spell summary'"),"0");
+console.log("PASS J35 fake sheet spell summary without source-qualified class spell is rejected and transaction fully rolled back");
+
+const correctMagic=wizard("JWT v3 canonical spell summary",id(9136));
+correctMagic.sheet.spells=["Fire Bolt"];
+const magicId=pass(await call3(people.OUTSIDER.client,correctMagic,spell(fire)),
+ "original v3 with matching spell sheet summary");
+assert.equal(sql("SELECT count(*) FROM public.character_spells WHERE character_id='"+magicId+"' AND source_type='class'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_level_events WHERE character_id='"+magicId+"'"),"1");
+assert.equal(pass(await call3(people.OUTSIDER.client,correctMagic,spell(fire)),"matching v3 nonce"),magicId);
+assert.equal(sql("SELECT count(*) FROM public.character_spells WHERE character_id='"+magicId+"'"),"1");
+console.log("PASS J36 source-original v3 and deferred spell-summary authority validator agree on actual Fire Bolt class spell; nonce inert");
+
+const alteredMagicSummary=wizard("JWT v3 incorrect spell summary",id(9137));
+alteredMagicSummary.sheet.spells=["Ray of Frost"];
+const rejectedMagicSummary=await call3(people.OUTSIDER.client,alteredMagicSummary,spell(fire));
+assert.ok(rejectedMagicSummary.error,"Original deferred authority validator accepted mismatched v3 spell summary");
+assert.match(rejectedMagicSummary.error.message,/spell summary must exactly match its validated starting spell assignments/i);
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+id(9137)+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE name='JWT v3 incorrect spell summary'"),"0");
+console.log("PASS J37 mismatched v3 class spell sheet summary vs canonical granted spell rejects with full source rollback");
+
+const competingAuthority=JSON.parse(JSON.stringify(validAuthority));
+competingAuthority.name="JWT concurrent source authority";
+competingAuthority.creation_request_id=id(9138);
+const bothAuthority=await Promise.all([
+ call2(people.PLAYER.client,competingAuthority),
+ call2(people.PLAYER.client,competingAuthority)
+]);
+const authorityRaceIds=bothAuthority.map((x,i)=>pass(x,"source-authority racing identical nonce "+i));
+assert.equal(authorityRaceIds[0],authorityRaceIds[1]);
+const one=authorityRaceIds[0];
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_id='"+one+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_currency WHERE character_id='"+one+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_level_events WHERE character_id='"+one+"'"),"1");
+const differentAuthority=JSON.parse(JSON.stringify(competingAuthority));
+differentAuthority.sheet.feats=["Changed Feat"];
+denied(await call2(people.PLAYER.client,differentAuthority),"22023",
+ "Changed source feat summary on claimed nonce");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_id='"+one+"'"),"1");
+console.log("PASS J38 two real concurrent canonical feat/gear JWT requests serialize to one event/item/currency; changed feat nonce rejected");
+console.log("PASS LOCAL REAL GoTrue J00-J38: original progression authority validator, feat-instance/source-choice helpers and preferred views source-pinned, reduced catalog and RLS.");
+
+
