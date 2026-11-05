@@ -621,7 +621,19 @@
         "base": "work/eldritch-blast-los-regression-20261030"
       }
     ],
-    "deployed": "No candidate executor, typed request intent migration, or new composable spell interpreter deployed at last check."
+    "deployed": "No candidate executor, typed request intent migration, or new composable spell interpreter deployed at last check.",
+    "p1_3_admin_cp_cs_source_race": {
+      "status": "held-research-not-deployed",
+      "pr_number": 317,
+      "tested_source_sha": "c7ba39df492bce3b64a5547aa1da0fbaee10aefa",
+      "evidence": "GitHub Actions 42049546692, genuine PostgreSQL17 40P01 F04 original Admin CP-before-CS vs original sheet CS-before-CP; F05 synthetic CP-first control PASS, reduced Admin role/helpers",
+      "original_admin_md5": "eb467b7c7a8d548581a36cfcb0d8f77b",
+      "original_sheet_sync_md5": "bb1a3a2d1600ce33cd4fcadac5e0f3a9",
+      "report": "docs/P1_3_Admin_Progression_Sheet_CP_CS_Race_2026-11-05.md",
+      "caveats": "Not actual signed-in production Admin/player collision, not complete level-up, not global G/I/encounter lock order",
+      "next_gate": "Actual source-original complete_character_level_up_v5→v4→v3 with genuine local GoTrue sheet editing and G/I triggers; preserve held PR324 creator seed separately",
+      "production_effects": "none"
+    }
   },
   "live_safety_observations": {
     "date": "2026-11-01",
