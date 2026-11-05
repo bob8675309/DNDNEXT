@@ -13,7 +13,7 @@ import PortraitPickerModal from "../components/PortraitPickerModal";
 import NpcPanel from "../components/character/CharacterInteractionPanel";
 import { MAP_ICONS_BUCKET, LOCAL_FALLBACK_ICON, mapIconDisplay } from "../utils/mapIcons";
 import { resolveCharacterPortrait } from "../utils/characterPortraits";
-import { loadCharacterSecrets, saveCharacterSecret } from "../utils/characterSecrets";
+import { saveCharacterSecret } from "../utils/characterSecrets";
 import { isCurrentNpcSelectionRequest, normalizeNpcSelectionKey } from "../utils/npcSelectionGuard";
 import { settleWithDeadline } from "../utils/settleWithDeadline";
 
@@ -198,6 +198,7 @@ export default function NpcsPage() {
   const [npcs, setNpcs] = useState([]);
   const [merchants, setMerchants] = useState([]);
   const [merchantProfiles, setMerchantProfiles] = useState(new Map());
+  const [selectedGmDossier, setSelectedGmDossier] = useState(null);
   const [mapIcons, setMapIcons] = useState([]);
   const [charPerm, setCharPerm] = useState(null);
  // merchant_id -> profile row
@@ -429,11 +430,6 @@ export default function NpcsPage() {
           "location_id",
           "tags",
           "description",
-          "background",
-          "motivation",
-          "quirk",
-          "mannerism",
-          "voice",
           "map_icon_id",
           "portrait_url",
           "portrait_storage_path",
@@ -473,15 +469,10 @@ export default function NpcsPage() {
       return;
     }
 
-    let secretById = new Map();
-    try {
-      secretById = await loadCharacterSecrets(supabase, (data || []).map((row) => row.id));
-    } catch (secretError) {
-      console.warn("Could not load protected NPC secrets", secretError);
-    }
+    // Basic roster is safe for both players and GM. Private narrative and
+    // GM secrets are loaded only for the selected row via the Admin dossier.
     const rows = (data || []).map((r) => ({
       ...r,
-      secret: secretById.get(String(r.id)) || "",
       status: r.is_hidden ? "hidden" : r.status || "alive",
     }));
 
@@ -558,11 +549,6 @@ export default function NpcsPage() {
           "role",
           "affiliation",
           "description",
-          "background",
-          "motivation",
-          "quirk",
-          "mannerism",
-          "voice",
           "tags",
           "status",
           "portrait_url",
@@ -584,17 +570,8 @@ export default function NpcsPage() {
       return;
     }
 
-    let secretById = new Map();
-    try {
-      secretById = await loadCharacterSecrets(supabase, (data || []).map((row) => row.id));
-    } catch (secretError) {
-      console.warn("Could not load protected merchant secrets", secretError);
-    }
     const m = new Map();
-    for (const row of data || []) {
-      row.secret = secretById.get(String(row.id)) || "";
-      m.set(String(row.id), row);
-    }
+    for (const row of data || []) m.set(String(row.id), row);
     setMerchantProfiles(m);
   }, []);
 
@@ -719,6 +696,28 @@ export default function NpcsPage() {
     const { type, id } = parseKey(selectedKey);
     return roster.find((r) => r.type === type && String(r.id) === String(id)) || null;
   }, [selectedKey, roster]);
+
+  // The GM manager loads a selected private dossier through a server-side
+  // Admin authorization check. The basic roster no longer reads protected
+  // narrative columns or all GM Secrets for every NPC/merchant.
+  useEffect(() => {
+    let cancelled = false;
+    setSelectedGmDossier(null);
+    if (!isAdmin || !selected?.id) return;
+    (async () => {
+      const { data, error } = await supabase.rpc("get_npc_dossier_admin_v1", {
+        p_character_id: selected.id,
+      });
+      if (cancelled) return;
+      if (error) {
+        console.error("GM dossier unavailable", error);
+        setSelectedGmDossier(null);
+      } else {
+        setSelectedGmDossier(data || null);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [isAdmin, selected?.id]);
 
   // Resolve the selected character's map icon record (for showing next to the name).
   const selectedMapIcon = useMemo(() => {
@@ -977,7 +976,8 @@ export default function NpcsPage() {
       if (!sel) return null;
 
       if (sel.type === "npc") {
-        const row = (npcs || []).find((n) => String(n.id) === String(sel.id)) || sel;
+        const rosterRow = (npcs || []).find((n) => String(n.id) === String(sel.id)) || sel;
+        const row = selectedGmDossier?.id === sel.id ? { ...rosterRow, ...selectedGmDossier } : rosterRow;
         return {
           role: safeStr(row.role),
           affiliation: safeStr(row.affiliation),
@@ -992,7 +992,8 @@ export default function NpcsPage() {
       }
 
       if (sel.type === "merchant") {
-        const prof = merchantProfiles.get(String(sel.id)) || {};
+        const basicProfile = merchantProfiles.get(String(sel.id)) || {};
+        const prof = selectedGmDossier?.id === sel.id ? { ...basicProfile, ...selectedGmDossier } : basicProfile;
         return {
           role: safeStr(prof.role || sel.role),
           affiliation: safeStr(prof.affiliation || sel.affiliation),
@@ -1008,7 +1009,7 @@ export default function NpcsPage() {
 
       return null;
     },
-    [npcs, merchantProfiles]
+    [npcs, merchantProfiles, selectedGmDossier]
   );
 
   useEffect(() => {
@@ -2327,7 +2328,9 @@ const details = detailsDraft || {};
 
                           const upd = await supabase.from("characters").update(patch).eq("id", selected.id);
                           if (upd.error) throw upd.error;
-                          await saveCharacterSecret(supabase, selected.id, detailsDraft.secret);
+                          if (isAdmin) {
+                            await saveCharacterSecret(supabase, selected.id, detailsDraft.secret);
+                          }
                         }
 
                         // Save sheet overlay

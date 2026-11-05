@@ -33,7 +33,7 @@ for(const forbidden of ["DROP TABLE","TRUNCATE","DELETE FROM public","ALTER TABL
 for(const marker of [
  "PASS V00","PASS V01","PASS V02","PASS V03",
  "PASS V04","PASS V05","PASS V06","PASS V07","PASS V08",
- "PASS V09","PASS V10","PASS V11","PASS V12","PASS V13","PASS V14","PASS V15","PASS V16","PASS V17","PASS V18","PASS V19","PASS V20","PASS V21","PASS V22","PASS V23",
+ "PASS V09","PASS V10","PASS V11","PASS V12","PASS V13","PASS V14","PASS V15","PASS V16","PASS V17","PASS V18","PASS V19","PASS V20","PASS V21","PASS V22","PASS V23","PASS V24",
  "EXPECTED UNSAFE BASELINE","RELEASE BLOCKER",
  "DISPOSABLE_LOCAL_GOTRUE_ONLY",
  "readCharacters(people.OUTSIDER.who,visible)",
@@ -67,6 +67,9 @@ for(const required of [
  "IF auth.uid() IS NOT NULL THEN",
  "REVOKE ALL ON FUNCTION private.record_character_creator_v1(uuid)",
  "CREATE OR REPLACE FUNCTION private.can_access_creator_backstory_v1",
+ "CREATE OR REPLACE FUNCTION public.can_edit_creator_backstory_v1",
+ "REVOKE ALL ON FUNCTION public.can_edit_creator_backstory_v1(uuid)",
+ "GRANT EXECUTE ON FUNCTION public.can_edit_creator_backstory_v1(uuid)",
  "private.can_access_character_v1(p_character_id,'edit')",
  "attr.creator_user_id=auth.uid()",
  "private.current_user_is_admin()",

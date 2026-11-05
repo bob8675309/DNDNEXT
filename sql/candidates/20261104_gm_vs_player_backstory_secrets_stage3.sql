@@ -104,6 +104,21 @@ FROM PUBLIC,anon;
 GRANT EXECUTE ON FUNCTION private.can_access_creator_backstory_v1(uuid)
 TO authenticated;
 
+-- UI may ask for permission status, never a claimed creator ID. The private
+-- helper enforces current creator provenance and grant, so this only reports
+-- whether the current signed-in actor may open the private backstory editor.
+CREATE OR REPLACE FUNCTION public.can_edit_creator_backstory_v1(p_character_id uuid)
+RETURNS boolean LANGUAGE sql STABLE SECURITY INVOKER
+SET search_path TO 'pg_catalog','public','private','auth'
+AS $can$
+ SELECT auth.uid() IS NOT NULL
+    AND private.can_access_creator_backstory_v1(p_character_id);
+$can$;
+REVOKE ALL ON FUNCTION public.can_edit_creator_backstory_v1(uuid)
+FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.can_edit_creator_backstory_v1(uuid)
+TO authenticated;
+
 -- Player/authored backstory is its own record and never maps to old GM secret.
 CREATE TABLE public.character_backstory_secrets (
  character_id uuid PRIMARY KEY REFERENCES public.characters(id) ON DELETE CASCADE,

@@ -7,10 +7,10 @@ import { supabase } from "../utils/supabaseClient";
 import { resolveCharacterPortrait } from "../utils/characterPortraits";
 import CharacterSheetPanel from "./CharacterSheetPanel";
 import CharacterSheetRollResult from "./CharacterSheetRollResult";
+import CreatorBackstoryPanel from "./CreatorBackstoryPanel";
 import PortraitPickerModal from "./PortraitPickerModal";
 import EquipmentDiagram, { EQUIPMENT_SLOTS, inferEquipmentSlot } from "./EquipmentDiagram";
 import { deriveEquippedItemEffects, hashEquippedRowsForKey } from "../utils/equipmentEffects";
-import { loadCharacterSecrets } from "../utils/characterSecrets";
 import { formatInventoryEquipmentText } from "../utils/characterSheetActions";
 import { buildCharacterSheetFeatures } from "../utils/characterSheetFeatures";
 
@@ -129,59 +129,22 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
     const run = async () => {
       if (!npcId) return;
       setLoading(true);
+      setFullNpc(null);
       setErr("");
 
-      const { data, error } = await supabase
-        .from("characters")
-        .select(
-          [
-            "id",
-            "name",
-            "kind",
-            "race",
-            "role",
-            "description",
-            "affiliation",
-            "status",
-            "background",
-            "motivation",
-            "quirk",
-            "mannerism",
-            "voice",
-            "tags",
-            "x",
-            "y",
-            "location_id",
-            "last_known_location_id",
-            "projected_destination_id",
-            "is_hidden",
-            "map_icon_id",
-            "portrait_url",
-            "portrait_storage_path",
-            "portrait_thumb_url",
-            "portrait_shop_url",
-            "portrait_source",
-            "image_url",
-          ].join(",")
-        )
-        .eq("id", npcId)
-        .single();
-
+      // The only general NPC read path: player-safe server projection.
+      // GM-only full dossier access is checked inside a separate SQL RPC.
+      // Do not fall back to a raw characters/character_sheets SELECT on error.
+      const { data, error } = await supabase.rpc(
+        isAdmin ? "get_npc_dossier_admin_v1" : "get_npc_profile_visible_v1",
+        { p_character_id: npcId }
+      );
       if (cancelled) return;
-      if (error) {
-        setErr(error.message || "Failed to load NPC");
+      if (error || !data) {
+        setErr(error?.message || "This character's Profile is not available to your account.");
         setFullNpc(null);
       } else {
-        let resolved = data || null;
-        if (resolved?.id) {
-          try {
-            const secrets = await loadCharacterSecrets(supabase, [resolved.id]);
-            if (secrets.has(String(resolved.id))) resolved = { ...resolved, secret: secrets.get(String(resolved.id)) };
-          } catch (secretError) {
-            console.warn("Could not load protected character secret", secretError);
-          }
-        }
-        setFullNpc(resolved);
+        setFullNpc(data);
       }
       setLoading(false);
     };
@@ -189,7 +152,7 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
     return () => {
       cancelled = true;
     };
-  }, [npcId]);
+  }, [npcId, isAdmin]);
 
   useEffect(() => {
     let cancelled = false;
@@ -202,6 +165,15 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
         setSpellActions([]);
         setSheetFeatures([]);
         setLastRoll(null);
+        return;
+      }
+
+      // A public Profile never needs canonical raw sheet JSON. Only GM or
+      // a current can_edit editor may ask for it; SQL RLS remains authoritative.
+      if (!isAdmin && (!inventoryAccess.checked || !inventoryAccess.canEdit)) {
+        setSheet(null);
+        setSheetErr("");
+        setSheetLoading(false);
         return;
       }
 
@@ -227,7 +199,7 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
     return () => {
       cancelled = true;
     };
-  }, [npcId, fullNpc?.kind, npc?.kind, npc?.type]);
+  }, [npcId, isAdmin, inventoryAccess.checked, inventoryAccess.canEdit]);
 
   const ownerType = ownerTypeFor(fullNpc || npc, npc);
   const isMerchantView = String((fullNpc || npc)?.kind || (fullNpc || npc)?.type || "").toLowerCase() === "merchant";
@@ -523,13 +495,24 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
   const sheetMetaLine = [view.race, role, affiliation].filter(Boolean).join(" • ");
 
   const profileReveal = useMemo(() => profileRevealFromSheet(sheet), [sheet]);
-  const loreFields = useMemo(() => loreFieldsFor(view, sheet), [view, sheet]);
+  const loreFields = useMemo(() => {
+    if (isAdmin) return loreFieldsFor(view, sheet);
+    // Non-GM lore is already filtered inside get_npc_profile_visible_v1.
+    // Never derive private descriptions, secrets or reveal flags from raw sheet.
+    const publicLore = view?.lore && typeof view.lore === "object" ? view.lore : {};
+    return {
+      description: safeStr(view?.description),
+      ...Object.fromEntries(PROFILE_REVEAL_KEYS
+        .filter((entry) => entry.key !== "description")
+        .map((entry) => [entry.key, safeStr(publicLore[entry.key])]))
+    };
+  }, [view, sheet, isAdmin]);
   const visibleLoreFields = useMemo(() => {
     return PROFILE_REVEAL_KEYS.filter((entry) => {
       const value = loreFields[entry.key];
       if (isAdmin) return true;
       if (!value) return false;
-      return !!entry.alwaysPublic || !!profileReveal[entry.key];
+      return true; // The server has already selected public/revealed lore.
     });
   }, [isAdmin, loreFields, profileReveal]);
   const filledLoreCount = useMemo(() => PROFILE_REVEAL_KEYS.filter((entry) => !!loreFields[entry.key]).length, [loreFields]);
@@ -540,7 +523,7 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
   }
 
   async function toggleReveal(key) {
-    if (!isAdmin || !npcId || !key) return;
+    if (!isAdmin || !npcId || !key || key === "secret") return;
 
     setRevealBusyKey(key);
     const nextSheet = deepClone(sheet || {});
@@ -696,6 +679,10 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
                       {isAdmin ? (
                         entry.alwaysPublic ? (
                           <span className="badge bg-secondary">Public</span>
+                        ) : entry.key === "secret" ? (
+                          <span className="badge bg-secondary" title="Publish a separate, curated clue from NPC Admin; never publish the private GM Secret">
+                            GM-only source
+                          </span>
                         ) : hasValue ? (
                           <button
                             type="button"
@@ -935,6 +922,7 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
           </div>
 
           {renderLoreCard()}
+          <CreatorBackstoryPanel key={npcId} characterId={npcId} />
         </div>
       )}
 
