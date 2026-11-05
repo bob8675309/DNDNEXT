@@ -48,3 +48,9 @@ Despite J49–J62 passing in isolated genuine Auth, this design still requires s
 Historical grant `granted_by` rows are **not reconstructed automatically**. That requires separate owner approval on whether and how archival provenance may be recovered. An original creator does not automatically prove who later granted a feat.
 
 **Production effects: NONE.**
+
+## P1.3 original Admin CP/CS race — separate research, not fixed here
+
+[Held #317 exact-original PostgreSQL17 run 42049546692](https://github.com/bob8675309/DNDNEXT/actions/runs/42049546692) **SUCCESS**, tested source SHA `c7ba39df492bce3b64a5547aa1da0fbaee10aefa`. F04 reproduced a PostgreSQL **40P01** collision between deployed `public.set_character_progression_v1` (**CP first, then CS**) and the original CS AFTER UPDATE `private.sync_character_progression_from_sheet_v1` (**CS first, then CP**) under a test-only CP row prelock/sleep. F05 synthetic CP-first ordering control completed without deadlock. [Full original-source lock and fixture report](https://github.com/bob8675309/DNDNEXT/blob/docs/p1-3-global-lock-order-design-20261101/docs/P1_3_Admin_Progression_Sheet_CP_CS_Race_2026-11-05.md).
+
+This verified-source inversion **predates** this creator candidate. The new `seed_verified_forge_progression_creator_v1` is `BEFORE INSERT` on CP **only** and is **not invoked** by F04's existing-row CP UPDATE path. **No creator-seed source was installed in the #317 F04 test**, so this observation neither invalidates J49–J62's isolated actor-binding success nor grants a global lock-order acceptance. Real signed-in player level-up/GM coediting, all 24 omitted original Forge triggers, source grant G/inventory I paths and production ACL/RLS/browser acceptance remain separate release gates. Do not merge/release until a coordinated P1.3 lock solution is tested.
