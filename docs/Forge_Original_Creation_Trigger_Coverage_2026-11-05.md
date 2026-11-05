@@ -68,3 +68,11 @@ The 26 omitted original triggers include progression source-authority checks, su
 - Binding owner decision: same nonce, different character/starting spell/equipment intent **must reject**; same nonce with exact intent is an inert retry.
 - All SQL and tests under [draft #324](https://github.com/bob8675309/DNDNEXT/pull/324) remain research, stacked on unmerged #321, and include PR #319's *single guard clause* only inside the private v2 copy. #317 global locks, GM/NPC and service actor nonce cases are separate held work.
 - Production RLS/grants/character data/legacy GM secrets unchanged. **No merge, migration, deployment, browser acceptance or global lock-order proof.**
+
+
+### Next validator dependency reconnaissance (read-only; not yet tested)
+
+The live deferred `character_progression_validate_player_forge_authority_v1` trigger's original handler is `private.validate_player_forge_authority_payload_v1()`, full `md5(pg_get_functiondef)` **`48006f8db76e9b32c96fcd2b6a4b3080`** (10,002 source characters, inspected read-only on November 5). Its source is **not installed** in the disposable fixture.
+
+That function depends on `private.player_forge_source_choice_legacy_v1`, `private.validate_player_forge_feat_instances_v1(jsonb)`, `private.normalize_player_choice_name_v1`, `public.character_option_catalog_preferred`, `private.player_forge_choice_option_is_valid_v1`, source-valid `character_spells` and `spells_catalog`, and progression `subclass_name`. The reduced local progression table omits `subclass_name`; its reduced catalogue does not include the preferred-option view or all listed validation helpers. It also checks that the sheet's array summaries of feats and spells exactly correspond to source-granted canonical records. **Do not** substitute permissive stubs or call this source-covered until those dependencies and class-specific normalizations are reproduced and real signed-in positive/negative cases pass.
+
