@@ -32,11 +32,11 @@ for(const forbidden of ["DROP TABLE","TRUNCATE","DELETE FROM public","ALTER TABL
 for(const marker of [
  "PASS V00","PASS V01","PASS V02","PASS V03",
  "PASS V04","PASS V05","PASS V06","PASS V07","PASS V08",
- "PASS V09","PASS V10","PASS V11","PASS V12","PASS V13","PASS V14","PASS V15",
+ "PASS V09","PASS V10","PASS V11","PASS V12","PASS V13","PASS V14","PASS V15","PASS V16","PASS V17","PASS V18",
  "EXPECTED UNSAFE BASELINE","RELEASE BLOCKER",
  "DISPOSABLE_LOCAL_GOTRUE_ONLY",
  "readCharacters(people.OUTSIDER.who,visible)",
- "people.CONVERT_ONLY","people.INV_ONLY","people.EDITOR","people.ADMIN"
+ "people.CONVERT_ONLY","people.INV_ONLY","people.EDITOR","people.COEDITOR","people.ADMIN"
 ]) assert.ok(jwt.includes(marker),"Missing JWT coverage: "+marker);
 for(const required of [
  "CREATE POLICY characters_select_visible_or_assigned",
@@ -55,6 +55,16 @@ for(const required of [
  "GRANT EXECUTE ON FUNCTION public.get_npc_dossier_admin_v1(uuid)"
 ]) assert.ok(stage2.includes(required),"Stage2 Admin/ACL contract missing "+required);
 for(const required of [
+ "CREATE TABLE private.character_creator_attribution",
+ "creator_user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL",
+ "REVOKE ALL ON private.character_creator_attribution FROM PUBLIC,anon,authenticated",
+ "CREATE OR REPLACE FUNCTION private.record_character_creator_v1",
+ "REVOKE ALL ON FUNCTION private.record_character_creator_v1(uuid)",
+ "CREATE OR REPLACE FUNCTION private.can_access_creator_backstory_v1",
+ "private.can_access_character_v1(p_character_id,'edit')",
+ "attr.creator_user_id=auth.uid()",
+ "private.current_user_is_admin()",
+ "private.can_access_creator_backstory_v1(character_id)",
  "CREATE TABLE public.character_backstory_secrets",
  "CREATE TABLE public.character_public_secret_revelations",
  "character_backstory_secrets_select_editor",
@@ -75,7 +85,9 @@ for(const required of [
  "Legacy values in characters.secret remain untouched"
 ]) assert.ok(stage3.includes(required),"Stage3 split-secret contract absent "+required);
 for(const forbidden of ["DROP TABLE","TRUNCATE","DELETE FROM public.characters",
- "UPDATE public.characters SET secret", "GRANT SELECT ON public.characters TO anon"])
+ "UPDATE public.characters SET secret", "GRANT SELECT ON public.characters TO anon",
+ "GRANT INSERT ON private.character_creator_attribution TO authenticated",
+ "GRANT EXECUTE ON FUNCTION private.record_character_creator_v1(uuid) TO authenticated"])
  assert.ok(!stage3.includes(forbidden),"Destructive or disclosure operation in research stage3: "+forbidden);
 for(const source of [setup,jwt,candidate,stage2,stage3]){
  assert.ok(!source.includes("ucggczovhmauhshvhusx"),"Production project in scratch files");

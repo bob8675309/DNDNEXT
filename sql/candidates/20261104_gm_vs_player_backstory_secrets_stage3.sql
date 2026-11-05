@@ -20,6 +20,66 @@ BEGIN
  THEN RAISE EXCEPTION 'Player-character v2 reader is not stage-one restricted source'; END IF;
 END $gate$;
 
+-- Creator attribution is trusted provenance, NOT an editable permission grant.
+-- No client may choose a creator_user_id, claim someone else's character, or
+-- reassign origin after receiving can_edit or temporary control.
+CREATE TABLE private.character_creator_attribution (
+ character_id uuid PRIMARY KEY REFERENCES public.characters(id) ON DELETE CASCADE,
+ creator_user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+ recorded_at timestamptz NOT NULL DEFAULT now()
+);
+REVOKE ALL ON private.character_creator_attribution FROM PUBLIC,anon,authenticated;
+
+-- Call from the same trusted SECURITY DEFINER transaction as character
+-- creation, *after* the canonical character INSERT; never expose this helper
+-- to the browser. Existing rows are deliberately NOT auto-attributed.
+CREATE OR REPLACE FUNCTION private.record_character_creator_v1(p_character_id uuid)
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER
+SET search_path TO 'pg_catalog','public','private','auth'
+AS $creator$
+DECLARE v_caller uuid := auth.uid();
+BEGIN
+ IF v_caller IS NULL THEN
+   RAISE EXCEPTION 'Authenticated creator required' USING errcode='42501';
+ END IF;
+ INSERT INTO private.character_creator_attribution(character_id,creator_user_id)
+ VALUES (p_character_id,v_caller)
+ ON CONFLICT (character_id) DO NOTHING;
+ IF NOT EXISTS (
+   SELECT 1 FROM private.character_creator_attribution
+   WHERE character_id=p_character_id AND creator_user_id=v_caller
+ ) THEN
+   RAISE EXCEPTION 'Character creator attribution is immutable' USING errcode='42501';
+ END IF;
+END;
+$creator$;
+REVOKE ALL ON FUNCTION private.record_character_creator_v1(uuid)
+FROM PUBLIC,anon,authenticated;
+
+-- A creator must *also* retain current can_edit authority for the character.
+-- Other can_edit collaborators cannot see this author's private backstory.
+-- The GM can always access it. Missing legacy attribution => GM only.
+CREATE OR REPLACE FUNCTION private.can_access_creator_backstory_v1(p_character_id uuid)
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path TO 'pg_catalog','public','private','auth'
+AS $access$
+ SELECT auth.uid() IS NOT NULL AND (
+   private.current_user_is_admin()
+   OR (
+     private.can_access_character_v1(p_character_id,'edit')
+     AND EXISTS (
+       SELECT 1 FROM private.character_creator_attribution attr
+       WHERE attr.character_id=p_character_id
+         AND attr.creator_user_id=auth.uid()
+     )
+   )
+ );
+$access$;
+REVOKE ALL ON FUNCTION private.can_access_creator_backstory_v1(uuid)
+FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION private.can_access_creator_backstory_v1(uuid)
+TO authenticated;
+
 -- Player/authored backstory is its own record and never maps to old GM secret.
 CREATE TABLE public.character_backstory_secrets (
  character_id uuid PRIMARY KEY REFERENCES public.characters(id) ON DELETE CASCADE,
@@ -31,14 +91,14 @@ REVOKE ALL ON public.character_backstory_secrets FROM PUBLIC,anon,authenticated;
 GRANT SELECT,INSERT,UPDATE ON public.character_backstory_secrets TO authenticated;
 CREATE POLICY character_backstory_secrets_select_editor
  ON public.character_backstory_secrets FOR SELECT TO authenticated
- USING (auth.uid() IS NOT NULL AND private.can_access_character_v1(character_id,'edit'));
+ USING (auth.uid() IS NOT NULL AND private.can_access_creator_backstory_v1(character_id));
 CREATE POLICY character_backstory_secrets_insert_editor
  ON public.character_backstory_secrets FOR INSERT TO authenticated
- WITH CHECK (auth.uid() IS NOT NULL AND private.can_access_character_v1(character_id,'edit'));
+ WITH CHECK (auth.uid() IS NOT NULL AND private.can_access_creator_backstory_v1(character_id));
 CREATE POLICY character_backstory_secrets_update_editor
  ON public.character_backstory_secrets FOR UPDATE TO authenticated
- USING (auth.uid() IS NOT NULL AND private.can_access_character_v1(character_id,'edit'))
- WITH CHECK (auth.uid() IS NOT NULL AND private.can_access_character_v1(character_id,'edit'));
+ USING (auth.uid() IS NOT NULL AND private.can_access_creator_backstory_v1(character_id))
+ WITH CHECK (auth.uid() IS NOT NULL AND private.can_access_creator_backstory_v1(character_id));
 
 -- GM has a separate and deliberate "published clue" record.
 -- Changing editable sheet.profileReveal.secret does NOT publish GM secrets.

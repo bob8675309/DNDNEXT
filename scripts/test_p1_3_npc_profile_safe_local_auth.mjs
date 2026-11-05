@@ -43,7 +43,7 @@ async function rpc(who,name,args) {
  throw Error("Local PostgREST schema did not load candidate "+name);
 }
 
-const roles=["ADMIN","EDITOR","INV_ONLY","CONVERT_ONLY","OUTSIDER"];
+const roles=["ADMIN","EDITOR","COEDITOR","INV_ONLY","CONVERT_ONLY","OUTSIDER"];
 const pwd="SafeProfile-"+randomUUID()+"-X4!";
 const people={};
 for(const name of roles){
@@ -83,6 +83,7 @@ sql("INSERT INTO public.character_sheets(character_id,sheet) VALUES "+
  "('"+pc+"','{\"gmNotes\":\""+secrets.pc+"\"}'::jsonb)");
 sql("INSERT INTO public.character_permissions(character_id,user_id,can_edit,can_inventory,can_convert) VALUES "+
  "('"+visible+"','"+people.EDITOR.id+"',true,false,false),"+
+ "('"+visible+"','"+people.COEDITOR.id+"',true,true,false),"+
  "('"+hidden+"','"+people.EDITOR.id+"',true,false,false),"+
  "('"+visible+"','"+people.INV_ONLY.id+"',false,true,false),"+
  "('"+pc+"','"+people.INV_ONLY.id+"',false,true,false),"+
@@ -243,6 +244,17 @@ console.log("PASS V09 [EXPECTED UNSAFE BASELINE]: editor reads/changes GM secret
 
 sqlFile("sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql");
 sql("NOTIFY pgrst,'reload schema'");
+// A local privileged fixture represents the trusted, transaction-owned
+// Forge creation receipt. The authenticated collaborator did NOT create this
+// character; the database never infers provenance from can_edit.
+sql("BEGIN; SELECT set_config('request.jwt.claim.sub','"+people.EDITOR.id+"',true); "+
+ "SELECT private.record_character_creator_v1('"+visible+"'::uuid); COMMIT;");
+assert.equal(sql("SELECT creator_user_id::text FROM private.character_creator_attribution "+
+ "WHERE character_id='"+visible+"'"),people.EDITOR.id);
+assert.equal(sql("SELECT has_table_privilege('authenticated',"+
+ "'private.character_creator_attribution','INSERT')"),"f");
+assert.equal(sql("SELECT has_function_privilege('authenticated',"+
+ "'private.record_character_creator_v1(uuid)','EXECUTE')"),"f");
 
 // V10: GM-only legacy secret and exact RPC names (no data migration).
 const deniedGet=await rpc(people.EDITOR.who,"get_character_secrets_v1",
@@ -287,6 +299,13 @@ console.log("PASS V11: tagged-PC v1/v2 editor serialization strips legacy GM Sec
 // V12: player backstory is stored independently from GM secret and
 // all callers are current JWT + grant scoped. No raw GM content is copied.
 const storyTable="character_backstory_secrets";
+const coeditorFullSheet=await readSheet(people.COEDITOR.who,visible);
+assert.ifError(coeditorFullSheet.error);
+assert.equal(coeditorFullSheet.data.sheet.spellbook.secret,secrets.sheet);
+const coeditorStoryBefore=await people.COEDITOR.who.from(storyTable)
+ .select("secret_text").eq("character_id",visible);
+assert.ifError(coeditorStoryBefore.error);
+assert.deepEqual(coeditorStoryBefore.data,[]);
 const storyPut=await people.EDITOR.who.from(storyTable).insert({
  character_id:visible,secret_text:"CHARACTER_AUTHORED_HIDDEN_PAST"
 }).select("character_id,secret_text").single();
@@ -297,6 +316,13 @@ const storyEdit=await people.EDITOR.who.from(storyTable).update({
 }).eq("character_id",visible).select("secret_text").single();
 assert.ifError(storyEdit.error);
 assert.equal(storyEdit.data.secret_text,"PLAYER_REVISED_BACKSTORY");
+const coeditorStory=await people.COEDITOR.who.from(storyTable)
+ .select("secret_text").eq("character_id",visible);
+assert.ifError(coeditorStory.error);assert.deepEqual(coeditorStory.data,[]);
+const coeditorStoryEdit=await people.COEDITOR.who.from(storyTable)
+ .update({secret_text:"COEDITOR_ATTEMPTED_REWRITE"}).eq("character_id",visible)
+ .select("secret_text");
+assert.ifError(coeditorStoryEdit.error);assert.deepEqual(coeditorStoryEdit.data,[]);
 const gmStory=await people.ADMIN.who.from(storyTable).select("secret_text")
  .eq("character_id",visible).single();
 assert.ifError(gmStory.error);assert.equal(gmStory.data.secret_text,"PLAYER_REVISED_BACKSTORY");
@@ -313,7 +339,7 @@ const gmNotCopied=await rpc(people.ADMIN.who,"get_character_secrets_v1",
  {p_character_ids:[visible]});
 assert.ifError(gmNotCopied.error);
 assert.equal(gmNotCopied.data[0].secret,secrets.npc);
-console.log("PASS V12: player backstory has isolated can_edit + GM record; "+
+console.log("PASS V12: creator-attributed player backstory is private to creator + GM; "+
  "inventory-only and outsider cannot read/write; old GM secret unchanged");
 
 // V13: sheet.profileReveal.secret=true is no longer permission to publish
@@ -385,6 +411,58 @@ assert.ifError(afterRevocationGM.error);
 assert.equal(afterRevocationGM.data.secret_text,"PLAYER_REVISED_BACKSTORY");
 console.log("PASS V15: delegated editor grant revocation cuts backstory access; "+
  "GM data and character row preserved");
-console.log("P1.3 staged secrets V00–V15 genuine GoTrue local JWT PASS. "+
- "Research-only: all stage-one/two/three client cutovers pending, live DB untouched.");
+// V16: a fully authorized co-editor retains normal canonical sheet access,
+// including any unrelated sheet features, but never this creator's backstory.
+const coeditorAfterCreatorRevoke=await readSheet(people.COEDITOR.who,visible);
+assert.ifError(coeditorAfterCreatorRevoke.error);
+assert.equal(coeditorAfterCreatorRevoke.data.sheet.spellbook.secret,secrets.sheet);
+const coeditorBackstoryAfterRevocation=await people.COEDITOR.who.from(storyTable)
+ .select("secret_text").eq("character_id",visible);
+assert.ifError(coeditorBackstoryAfterRevocation.error);
+assert.deepEqual(coeditorBackstoryAfterRevocation.data,[]);
+const coeditorInsertUnclaimed=await people.COEDITOR.who.from(storyTable).insert({
+ character_id:hidden,secret_text:"CLAIMED_BY_OTHER_EDITOR"
+});
+assert.ok(coeditorInsertUnclaimed.error);
+console.log("PASS V16: second player with can_edit (+ inventory) cannot read/edit/claim "+
+ "creator-only backstory while still allowed to read the ordinary sheet");
+
+// V17: origin is immutable; a non-creator cannot claim it even if a trusted
+// creation helper is mistakenly invoked later with their JWT subject.
+const attemptRebind="BEGIN; SELECT set_config('request.jwt.claim.sub','"+
+ people.COEDITOR.id+"',true); SELECT private.record_character_creator_v1('"+
+ visible+"'::uuid); COMMIT;";
+assert.throws(()=>sql(attemptRebind),/immutable/i);
+assert.equal(sql("SELECT creator_user_id::text FROM private.character_creator_attribution "+
+ "WHERE character_id='"+visible+"'"),people.EDITOR.id);
+const coeditorPublicClaim=await people.COEDITOR.who.rpc("record_character_creator_v1",{
+ p_character_id:visible
+});
+assert.ok(coeditorPublicClaim.error,"Private creation receipt must not be a public RPC");
+console.log("PASS V17: non-creator cannot rebind immutable creator identity; "+
+ "trusted creation attribution is not callable through public Data API");
+
+// V18: no reliable provenance on a historical NPC must fail closed to GM.
+const gmLegacyStory=await people.ADMIN.who.from(storyTable).insert({
+ character_id:hidden,secret_text:"GM_KEEPS_UNCLAIMED_NPC_STORY"
+}).select("secret_text").single();
+assert.ifError(gmLegacyStory.error);
+assert.equal(gmLegacyStory.data.secret_text,"GM_KEEPS_UNCLAIMED_NPC_STORY");
+const otherEditorLegacy=await people.EDITOR.who.from(storyTable)
+ .select("secret_text").eq("character_id",hidden);
+assert.ifError(otherEditorLegacy.error);
+assert.deepEqual(otherEditorLegacy.data,[]);
+const legacyEditorWrite=await people.EDITOR.who.from(storyTable).update({
+ secret_text:"LEGACY_EDITOR_TAKEOVER"
+}).eq("character_id",hidden).select("secret_text");
+assert.ifError(legacyEditorWrite.error);assert.deepEqual(legacyEditorWrite.data,[]);
+const gmLegacyConfirm=await people.ADMIN.who.from(storyTable)
+ .select("secret_text").eq("character_id",hidden).single();
+assert.ifError(gmLegacyConfirm.error);
+assert.equal(gmLegacyConfirm.data.secret_text,"GM_KEEPS_UNCLAIMED_NPC_STORY");
+console.log("PASS V18: un-attributed legacy NPC backstory defaults to GM only, "+
+ "including against an unrelated current can_edit sheet editor");
+
+console.log("P1.3 staged secrets V00–V18 genuine GoTrue local JWT PASS. "+
+ "Research-only: creator binding in live Forge and all client cutovers pending, live DB untouched.");
 
