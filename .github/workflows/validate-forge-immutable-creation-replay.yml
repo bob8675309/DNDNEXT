@@ -1,0 +1,57 @@
+name: Validate Forge immutable creation-request replay research
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/validate-forge-immutable-creation-replay.yml'
+      - 'sql/candidates/20261105_player_creation_immutable_intent_v1.sql'
+      - 'scripts/fixtures/forge_creation_original_functions_pg17.sql'
+      - 'scripts/fixtures/forge_creator_trigger_original_stage3_pg17.sql'
+      - 'scripts/fixtures/forge_creation_replay_candidate_pg17.sql'
+      - 'scripts/validate_forge_immutable_creation_replay.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  original-pg17-replay:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 8
+    env:
+      CI: 'true'
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_FORGE_REPLAY_CONFIRM: DISPOSABLE_PG17_ONLY
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Original-function fidelity and scoped candidate source guard
+        run: |
+          node --check scripts/validate_forge_immutable_creation_replay.mjs
+          node scripts/validate_forge_immutable_creation_replay.mjs
+          node scripts/validate_unified_character_forge.mjs
+      - name: Confirm unsafe original, then candidate replay contract in disposable PG17
+        run: |
+          test "$DNDNEXT_FORGE_REPLAY_CONFIRM" = DISPOSABLE_PG17_ONLY
+          test "$PGHOST" = 127.0.0.1
+          test "$PGDATABASE" = postgres
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/forge_creation_replay_candidate_pg17.sql
