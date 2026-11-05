@@ -4,13 +4,13 @@
 
 ## Distinct original trigger coverage
 
-| Public table | Live noninternal triggers | Source-installed in the combined PR #324 local JWT J12–J16 fixture | Still omitted |
+| Public table | Live noninternal triggers | Source-installed through local JWT J22–J30 | Still omitted |
 |---|---:|---:|---:|
 | `character_progression` | 19 | 1 (deferred starting-equipment materializer) | 18 |
-| `character_sheets` | 4 | 2 (sheet→progression sync; deferred source equipment validator) | 2 |
+| `character_sheets` | 4 | 4 (sheet→progression; deferred equipment validator; immediate authority guard; immediate tag sync) | 0 |
 | `characters` | 6 | 0 originals; separate **unapplied** #321 creator-attribution INSERT trigger loaded | 6 |
 | `inventory_items` | 2 | 0 | 2 |
-| **Total** | **31** | **3 original** + one new held creator trigger | **28 original** |
+| **Total** | **31** | **5 original** + one new held creator trigger | **26 original** |
 
 Original functions `materialize_player_forge_starting_equipment_trigger_v1`, `materialize_player_forge_starting_equipment_v1`, and `sync_character_progression_from_sheet_v1` have independently revalidated full live `md5(pg_get_functiondef)` hashes `23fa54dd0a6d7b42b802d613f39ea27c`, `653e1b9d7cc47dcff2cef33a674b97f4`, `bb1a3a2d1600ce33cd4fcadac5e0f3a9`. Their **function bodies** were copied intact from held #317 into the PR #324 fixture. The other six supporting source functions are **simplified test stubs**; item source metadata and RLS are reduced. The source-local JWT fixture's original `create_player_character_v2/v3` bodies are preserved apart from private routing and the reviewed one-clause #319 legacy snapshot safeguard.
 
@@ -37,8 +37,8 @@ Original functions `materialize_player_forge_starting_equipment_trigger_v1`, `ma
 | `character_progression` | `character_progression_validate_player_forge_nested_choices_v1` | `validate_player_forge_nested_choice_payload_v1` | `df2861cc76b0b74bb7cd57fbe61c9a05` | Deferred | Not installed in research fixture |
 | `character_progression` | `character_progression_validate_player_forge_spells_v1` | `validate_player_forge_starting_spells_v1` | `6870e810de909209c44aecd02f5c72e2` | Deferred | Not installed in research fixture |
 | `character_progression` | `character_progression_validate_player_forge_starting_magic_exac` | `validate_player_forge_starting_magic_exactness_v1` | `ba645ad0f2c17addad0b40e0602c2ac8` | Deferred | Not installed in research fixture |
-| `character_sheets` | `character_sheets_authority_fields_guard_v1` | `guard_direct_character_authority_mutation_v1` | `04596b0a3fdfb71c1b357056e8c6023b` | Immediate | Not installed in research fixture |
-| `character_sheets` | `character_sheets_sync_player_tags_v1` | `sync_player_character_tags_from_sheet_v1` | `a135ca951f81d2a9546d783afe665c52` | Immediate | Not installed in research fixture |
+| `character_sheets` | `character_sheets_authority_fields_guard_v1` | `guard_direct_character_authority_mutation_v1` | `04596b0a3fdfb71c1b357056e8c6023b` | Immediate | **Source-loaded J22–J30** |
+| `character_sheets` | `character_sheets_sync_player_tags_v1` | `sync_player_character_tags_from_sheet_v1` | `a135ca951f81d2a9546d783afe665c52` | Immediate | **Source-loaded J22–J30** |
 | `character_sheets` | `character_sheets_validate_player_forge_starting_equipment_v1` | `validate_player_forge_starting_equipment_sheet_v1` | `41cb1758bd2e1eb9b3998389deabb49b` | Deferred | **Source-loaded in J17–J21** |
 | `character_sheets` | `sync_character_progression_from_sheet_v1` | `sync_character_progression_from_sheet_v1` | `bb1a3a2d1600ce33cd4fcadac5e0f3a9` | Immediate | **Source-loaded in J12–J16** |
 | `characters` | `characters_guard_player_tags_v1` | `guard_player_character_tag_update_v1` | `b8b0008a718de1aa3e74d66b30f1a679` | Immediate | Not installed in research fixture |
@@ -52,11 +52,13 @@ Original functions `materialize_player_forge_starting_equipment_trigger_v1`, `ma
 
 ### Why these gaps matter
 
-The 28 omitted original triggers include progression source-authority checks, subclass/maneuver/feat and spell materialization, sheet validation and the NPC/portrait/movement/inventory asset guards. Even though the original two-function deferred-equipment path succeeds in isolation, that **does not prove** that its transaction, lock order, authorization or RLS behavior remains valid with the full deployed trigger and catalog graph. In particular, the P1.3 character progression (CP) / character sheet (CS) lock inversion is still a held research finding; it is **not** solved by immutable nonce serialization across different request IDs.
+The 26 omitted original triggers include progression source-authority checks, subclass/maneuver/feat and spell materialization, sheet validation and the NPC/portrait/movement/inventory asset guards. Even though the original equipment and immediate-sheet source subset succeeds in isolation, that **does not prove** that its transaction, lock order, authorization or RLS behavior remains valid with the full deployed trigger and catalog graph. In particular, the P1.3 character progression (CP) / character sheet (CS) lock inversion is still a held research finding; it is **not** solved by immutable nonce serialization across different request IDs.
 
 **Latest additional source acceptance:** [true local GoTrue run 42031055348](https://github.com/bob8675309/DNDNEXT/actions/runs/42031055348) **SUCCESS** at code SHA `1ec4d6fa6b0b39d3f898763d3d8de6b90a23a71b`. Source-exact deferred sheet validator `private.validate_player_forge_starting_equipment_sheet_v1` (MD5 `41cb1758bd2e1eb9b3998389deabb49b`) and its original deferred trigger were installed **after** J12–J16. Authenticated J17–J21 PASS: source-matched Soldier/XPHB Background package, inert nonce replay, missing/mismatched Background rejected with atomic rollback of item/currency/creator/reservation, two real concurrent identical nonce calls yield one result, changed Background nonce fails before any gear write.
 
-**Next one source expansion:** inspect the original `character_sheets_authority_fields_guard_v1` and `character_sheets_sync_player_tags_v1` immediate sheet triggers, and their existing source-catalogue/account owner dependencies, before loading them into the true-JWT fixture. Then evaluate additional progression source-authority and class/feat/spell/materialization triggers by class eligibility, with full original source instead of stubbed validations. The six existing equipment helper functions and source catalogue still use test stubs; avoid inferring full production or global CP/CS lock safety from this three-trigger slice.
+**Latest J22–J30 source acceptance:** [real local GoTrue/PostgREST run 42033204780](https://github.com/bob8675309/DNDNEXT/actions/runs/42033204780) **SUCCESS** at code SHA `9e8d479bfdc5f354f2fcd0a4c5f81fecabdcc641`. The exact deployed `private.guard_direct_character_authority_mutation_v1` (MD5 `04596b0a3fdfb71c1b357056e8c6023b`) and `private.sync_player_character_tags_from_sheet_v1` (MD5 `a135ca951f81d2a9546d783afe665c52`), plus exact tag derivation `d62bab7f326330ddbeb6ccede172d19f` and slug helper `aba97a1c7478159d182e38cda4ca8383`, were added with their original trigger timing **after** J21. J22–J30 PASS: Forge creation & idempotent replay, tag derivation from class/species/background/profession, campaign tag retention, player protected-field INSERT/UPDATE denial (42501), ordinary editor note allowed, outsider/anon reduced-RLS denial, Admin source guard bypass for GM's explicitly editor-granted NPC, non-GM co-editor protected-field denial, current-grant revocation, and original v3 spell creation. These genuine auth tests use **reduced local editor-only sheet RLS** and a stubbed Admin user table, **not the original production `can_access_character_v1` RLS policies**.
+
+**Next one source expansion:** source-audit and selectively test the original deferred `character_progression_validate_player_forge_authority_v1` validator, starting with its actual required helper and catalogue dependencies, under genuine local Auth/PG17. All **26 remaining original triggers** (18 progression, 6 character, 2 inventory) and full production ACL/RLS, including GM creator/private backstory rules, remain unverified. P1.3 cross-character lock order is still held research. Avoid wholesale trigger installation or production claims.
 
 ## Boundaries and policy
 
