@@ -187,8 +187,15 @@ for (const token of [
   "printProfile={printableProfile}",
   "printNotes={notes}",
   "portraitUrl: selectedPortrait?.url ||",
-  "secret: safeStr(details?.secret || selected?.secret)",
 ]) assert(page.includes(token), `NPC page printable data handoff missing ${token}`);
+assert(
+  page.includes('secret: isAdmin ? safeStr(details?.secret || selected?.secret) : ""'),
+  "GM Secret must only be handed to the printable PDF model when Admin is verified"
+);
+assert(
+  !page.includes("secret: safeStr(details?.secret || selected?.secret),"),
+  "Unguarded legacy GM Secret must never be included in a non-Admin PDF"
+);
 
 for (const token of [
   'from "pdf-lib"',

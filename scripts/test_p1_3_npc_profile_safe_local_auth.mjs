@@ -534,7 +534,26 @@ const anonCreate=await rpc(client(),createName,{p_payload:{
 }});
 assert.ok(anonCreate.error);
 console.log("PASS V23: no verified auth.uid creates no creator provenance, remains GM-only; anon creation denied");
-console.log("P1.3 staged secrets V00–V23 genuine local GoTrue PASS. "+
+// V24: the UI permission-check RPC only answers whether this JWT can edit
+// the private backstory. It reveals neither creator identity nor secret text.
+const accessOf=async(who,id)=>{
+ const result=await rpc(who,"can_edit_creator_backstory_v1",{p_character_id:id});
+ assert.ifError(result.error);return result.data;
+};
+assert.equal(await accessOf(people.EDITOR.who,freshId),true);
+assert.equal(await accessOf(people.ADMIN.who,freshId),true);
+assert.equal(await accessOf(people.COEDITOR.who,freshId),false);
+assert.equal(await accessOf(people.INV_ONLY.who,freshId),false);
+assert.equal(await accessOf(people.OUTSIDER.who,freshId),false);
+assert.equal(await accessOf(people.EDITOR.who,visible),false); // revoked at V15
+assert.equal(await accessOf(people.EDITOR.who,hidden),false); // no creator
+assert.equal(await accessOf(people.ADMIN.who,hidden),true);
+const anonymousGate=await rpc(client(),"can_edit_creator_backstory_v1",
+ {p_character_id:freshId});
+assert.ok(anonymousGate.error);
+console.log("PASS V24: Profile gate returns true only to current verified creator and GM; "+
+ "co-editor/inventory/outsider, revoked creator and anonymous denied");
+console.log("P1.3 staged secrets V00–V24 genuine local GoTrue PASS. "+
  "Creation V19–V23 use reduced wrapper, not deployed Forge functions; production database untouched.");
 
 
