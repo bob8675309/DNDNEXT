@@ -103,9 +103,17 @@ assert.equal(sql("SELECT class_level FROM public.character_progression WHERE cha
 console.log("PASS F09 original permission helper enforces current edit-grant revocation for signed JWT");
 
 const sleeping=(ms)=>new Promise(resolve=>setTimeout(resolve,ms));
+const levelPromise=owner.client.rpc("p13_test_levelup_cp_prelock_v1",{p_character_id:cRace});
+const deadline=Date.now()+3500;
+let observedPrelock=false;
+while(Date.now()<deadline){
+ const held=sql("SELECT count(*) FROM pg_locks WHERE locktype='advisory'"+
+ " AND classid='9313'::oid AND objid='1'::oid AND granted='t'");
+ if(held==="1"){observedPrelock=true;break;}
+ await sleeping(80);
+}
+assert.ok(observedPrelock,"Test-only signed-in owner CP prelock marker not observed");
 const sheetPromise=edit(coeditor,cRace,"original sheet CS-first hold");
-await sleeping(380);
-const levelPromise=level(owner,cRace);
 const both=await Promise.all([sheetPromise,levelPromise]);
 const failures=both.filter(x=>x.error);
 const successful=both.filter(x=>!x.error);
@@ -122,6 +130,6 @@ assert.equal(sql("SELECT class_level FROM public.character_progression WHERE cha
 assert.equal(sql("SELECT sheet->>'level' FROM public.character_sheets WHERE character_id='"+cRace+"'"),"2");
 assert.equal(sql("SELECT count(*) FROM public.character_level_events WHERE character_id='"+cRace+"' AND event_type='level_up_completed'"),"1");
 assert.equal(sql("SELECT count(*) FROM public.character_level_up_sessions WHERE character_id='"+cRace+"' AND status='completed'"),"1");
-console.log("PASS F10 real JWT owner original v5 levelup CP→CS versus real JWT coeditor original CS→CP note: 40P01, one victim, retry produces exactly one level/event");
+console.log("PASS F10 synthetic CP prelock + original signed JWT v5 CP→CS versus original signed JWT CS→CP sheet edit produces real 40P01, one victim and exactly one level/event; production timing NOT established");
 
 console.log("P1.3 original full source v5-v4-v3/base F06-F10 accepted for a Fighter lv1→2 using REDUCED class-choice helpers and local editor RLS; not global grant/inventory or production trigger proof.");
