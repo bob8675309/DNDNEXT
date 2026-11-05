@@ -223,5 +223,168 @@ assert.ifError(editorAfter.error);
 assert.equal(editorAfter.data.sheet.secret,secrets.hidden);
 console.log("PASS V08: GM-only dossier returns full hidden character and canonical sheet; "+
  "other signed-in editors and outsiders denied dossier, editor still can use authorized sheet");
-console.log("P1.3 isolated genuine GoTrue player-safe profile V00–V08 PASS. "+
- "No production ACL change and NO deployable frontend migration.");
+// V09 reproduces the original broad editor->GM secret authority in scratch.
+const legacySecretEditor=await rpc(people.EDITOR.who,"get_character_secrets_v1",
+ {p_character_ids:[hidden]});
+assert.ifError(legacySecretEditor.error);
+assert.equal(legacySecretEditor.data.find(x=>x.character_id===hidden)?.secret,secrets.hidden);
+const editorSet=await rpc(people.EDITOR.who,"set_character_secret_v1",{
+ p_character_id:hidden,p_secret:"LEGACY_EDITOR_CHANGED_GM_SECRET_TEST_ONLY"
+});
+assert.ifError(editorSet.error);
+const unsafeV1=await rpc(people.EDITOR.who,"get_my_player_character_v1",{});
+assert.ifError(unsafeV1.error);
+assert.equal(unsafeV1.data.secret,"PC_SECRET_DO_NOT_EXPOSE");
+const unsafeV2=await rpc(people.EDITOR.who,"get_my_player_characters_v2",{});
+assert.ifError(unsafeV2.error);
+assert.equal(unsafeV2.data.find(x=>x.id===pc).secret,"PC_SECRET_DO_NOT_EXPOSE");
+console.log("PASS V09 [EXPECTED UNSAFE BASELINE]: editor reads/changes GM secret, and editor "+
+ "receives characters.secret through both tagged-PC full-read RPCs");
+
+sqlFile("sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql");
+sql("NOTIFY pgrst,'reload schema'");
+
+// V10: GM-only legacy secret and exact RPC names (no data migration).
+const deniedGet=await rpc(people.EDITOR.who,"get_character_secrets_v1",
+ {p_character_ids:[hidden]});
+assert.ifError(deniedGet.error);
+assert.deepEqual(deniedGet.data,[]);
+const deniedSet=await rpc(people.EDITOR.who,"set_character_secret_v1",{
+ p_character_id:hidden,p_secret:"FORBIDDEN_EDITOR_GM_SECRET_MODIFICATION"
+});
+assert.ok(deniedSet.error);assert.equal(deniedSet.error.code,"42501");
+const gmGet=await rpc(people.ADMIN.who,"get_character_secrets_v1",
+ {p_character_ids:[hidden]});
+assert.ifError(gmGet.error);
+assert.equal(gmGet.data[0].secret,"LEGACY_EDITOR_CHANGED_GM_SECRET_TEST_ONLY");
+const gmSet=await rpc(people.ADMIN.who,"set_character_secret_v1",{
+ p_character_id:hidden,p_secret:secrets.hidden
+});
+assert.ifError(gmSet.error);
+const gmVerified=await rpc(people.ADMIN.who,"get_character_secrets_v1",
+ {p_character_ids:[hidden]});
+assert.ifError(gmVerified.error);assert.equal(gmVerified.data[0].secret,secrets.hidden);
+const anonSecret=await rpc(client(),"get_character_secrets_v1",{p_character_ids:[hidden]});
+assert.ok(anonSecret.error);
+console.log("PASS V10: signed-in GM retains legacy seven-value style read/write, "+
+ "delegated can_edit cannot read/write GM Secret through old RPCs");
+
+// V11: legacy single and multi-character tagged-PC API cannot serialize
+// characters.secret for editors, without blanking any other canonical sheet.
+const safeV1=await rpc(people.EDITOR.who,"get_my_player_character_v1",{});
+assert.ifError(safeV1.error);assert.ok(safeV1.data);
+assert.ok(!("secret" in safeV1.data));
+assert.equal(safeV1.data.character_sheet.gmNotes,secrets.pc);
+const safeV2=await rpc(people.EDITOR.who,"get_my_player_characters_v2",{});
+assert.ifError(safeV2.error);
+const safePlayer=safeV2.data.find(x=>x.id===pc);
+assert.ok(safePlayer);assert.ok(!("secret" in safePlayer));
+assert.equal(safePlayer.character_sheet.gmNotes,secrets.pc);
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE secret IS NOT NULL"),"3");
+console.log("PASS V11: tagged-PC v1/v2 editor serialization strips legacy GM Secret, "+
+ "but retains canonical sheet as before; old character data unchanged");
+
+// V12: player backstory is stored independently from GM secret and
+// all callers are current JWT + grant scoped. No raw GM content is copied.
+const storyTable="character_backstory_secrets";
+const storyPut=await people.EDITOR.who.from(storyTable).insert({
+ character_id:visible,secret_text:"CHARACTER_AUTHORED_HIDDEN_PAST"
+}).select("character_id,secret_text").single();
+assert.ifError(storyPut.error);
+assert.equal(storyPut.data.secret_text,"CHARACTER_AUTHORED_HIDDEN_PAST");
+const storyEdit=await people.EDITOR.who.from(storyTable).update({
+ secret_text:"PLAYER_REVISED_BACKSTORY"
+}).eq("character_id",visible).select("secret_text").single();
+assert.ifError(storyEdit.error);
+assert.equal(storyEdit.data.secret_text,"PLAYER_REVISED_BACKSTORY");
+const gmStory=await people.ADMIN.who.from(storyTable).select("secret_text")
+ .eq("character_id",visible).single();
+assert.ifError(gmStory.error);assert.equal(gmStory.data.secret_text,"PLAYER_REVISED_BACKSTORY");
+const invStory=await people.INV_ONLY.who.from(storyTable).select("secret_text")
+ .eq("character_id",visible);
+assert.ifError(invStory.error);assert.deepEqual(invStory.data,[]);
+const outsiderStory=await people.OUTSIDER.who.from(storyTable).select("secret_text");
+assert.ifError(outsiderStory.error);assert.deepEqual(outsiderStory.data,[]);
+const unauthorizedUpsert=await people.INV_ONLY.who.from(storyTable).insert({
+ character_id:hidden,secret_text:"FORBIDDEN"
+});
+assert.ok(unauthorizedUpsert.error);
+const gmNotCopied=await rpc(people.ADMIN.who,"get_character_secrets_v1",
+ {p_character_ids:[visible]});
+assert.ifError(gmNotCopied.error);
+assert.equal(gmNotCopied.data[0].secret,secrets.npc);
+console.log("PASS V12: player backstory has isolated can_edit + GM record; "+
+ "inventory-only and outsider cannot read/write; old GM secret unchanged");
+
+// V13: sheet.profileReveal.secret=true is no longer permission to publish
+// actual GM secret. Only an independently Admin-authored published clue works.
+const beforePublic=await rpc(people.OUTSIDER.who,"get_npc_profile_visible_v1",
+ {p_character_id:visible});
+assert.ifError(beforePublic.error);
+assert.ok(!JSON.stringify(beforePublic.data).includes(secrets.npc));
+assert.ok(!JSON.stringify(beforePublic.data).includes("PLAYER_REVISED_BACKSTORY"));
+const publishTable="character_public_secret_revelations";
+const unpublished=await people.ADMIN.who.from(publishTable).insert({
+ character_id:visible,public_text:"GM_APPROVED_REVEAL_CLUE",is_revealed:false
+}).select("public_text,is_revealed").single();
+assert.ifError(unpublished.error);assert.equal(unpublished.data.is_revealed,false);
+const stillConcealed=await rpc(people.OUTSIDER.who,"get_npc_profile_visible_v1",
+ {p_character_id:visible});
+assert.ifError(stillConcealed.error);
+assert.ok(!JSON.stringify(stillConcealed.data).includes("GM_APPROVED_REVEAL_CLUE"));
+const editPublish=await people.EDITOR.who.from(publishTable).update({
+ is_revealed:true
+}).eq("character_id",visible).select("character_id");
+assert.ifError(editPublish.error);assert.deepEqual(editPublish.data,[]);
+const editorPublishRead=await people.EDITOR.who.from(publishTable).select("public_text");
+assert.ifError(editorPublishRead.error);assert.deepEqual(editorPublishRead.data,[]);
+const gmPublish=await people.ADMIN.who.from(publishTable).update({
+ is_revealed:true
+}).eq("character_id",visible).select("is_revealed").single();
+assert.ifError(gmPublish.error);assert.equal(gmPublish.data.is_revealed,true);
+const publicClue=await rpc(people.OUTSIDER.who,"get_npc_profile_visible_v1",
+ {p_character_id:visible});
+assert.ifError(publicClue.error);
+assert.equal(publicClue.data.lore.secret,"GM_APPROVED_REVEAL_CLUE");
+assert.ok(!JSON.stringify(publicClue.data).includes(secrets.npc));
+const gmUnpublish=await people.ADMIN.who.from(publishTable).update({
+ is_revealed:false
+}).eq("character_id",visible).select("is_revealed").single();
+assert.ifError(gmUnpublish.error);assert.equal(gmUnpublish.data.is_revealed,false);
+const afterUnpublish=await rpc(people.OUTSIDER.who,"get_npc_profile_visible_v1",
+ {p_character_id:visible});
+assert.ifError(afterUnpublish.error);
+assert.ok(!JSON.stringify(afterUnpublish.data).includes("GM_APPROVED_REVEAL_CLUE"));
+console.log("PASS V13: old NPC sheet reveal flag cannot publish GM Secret; "+
+ "only independent GM-authored clue can be published/retracted");
+
+// V14: GM-only dossier retains legacy secret, but canonical sheet and
+// signed-in editor access stay separate; test after staged RLS.
+const gmHiddenAgain=await rpc(people.ADMIN.who,"get_npc_dossier_admin_v1",
+ {p_character_id:hidden});
+assert.ifError(gmHiddenAgain.error);assert.equal(gmHiddenAgain.data.secret,secrets.hidden);
+const editorFullSheet=await readSheet(people.EDITOR.who,hidden);
+assert.ifError(editorFullSheet.error);
+assert.equal(editorFullSheet.data.sheet.secret,secrets.hidden); // Legacy sheet data is NOT a GM secret store.
+console.log("PASS V14: GM dossier retains original protected character Secret; "+
+ "canonical sheet remains separate and requires an independent future content audit");
+
+// V15: live-style grant revocation immediately removes player backstory access.
+sql("DELETE FROM public.character_permissions WHERE character_id='"+visible+
+ "' AND user_id='"+people.EDITOR.id+"'");
+const revokedStory=await people.EDITOR.who.from(storyTable).select("secret_text")
+ .eq("character_id",visible);
+assert.ifError(revokedStory.error);assert.deepEqual(revokedStory.data,[]);
+const revokedStoryEdit=await people.EDITOR.who.from(storyTable).update({
+ secret_text:"REVOKED_STILL_EDITING"
+}).eq("character_id",visible).select("character_id");
+assert.ifError(revokedStoryEdit.error);assert.deepEqual(revokedStoryEdit.data,[]);
+const afterRevocationGM=await people.ADMIN.who.from(storyTable).select("secret_text")
+ .eq("character_id",visible).single();
+assert.ifError(afterRevocationGM.error);
+assert.equal(afterRevocationGM.data.secret_text,"PLAYER_REVISED_BACKSTORY");
+console.log("PASS V15: delegated editor grant revocation cuts backstory access; "+
+ "GM data and character row preserved");
+console.log("P1.3 staged secrets V00–V15 genuine GoTrue local JWT PASS. "+
+ "Research-only: all stage-one/two/three client cutovers pending, live DB untouched.");
+

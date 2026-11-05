@@ -16,7 +16,8 @@ CREATE TABLE public.characters (
  id uuid PRIMARY KEY,name text NOT NULL,kind text NOT NULL DEFAULT 'npc',
  race text,role text,affiliation text,status text,description text,
  background text,motivation text,quirk text,mannerism text,voice text,
- secret text,location_id bigint, is_hidden boolean DEFAULT true,
+ secret text, updated_at timestamptz NOT NULL DEFAULT now(),
+ location_id bigint, is_hidden boolean DEFAULT true,
  storefront_enabled boolean DEFAULT false,
  portrait_url text,portrait_storage_path text,portrait_thumb_url text,
  portrait_shop_url text,portrait_source text,image_url text,tags text[]

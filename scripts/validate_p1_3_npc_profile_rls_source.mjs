@@ -6,6 +6,7 @@ const original=read("scripts/fixtures/p1_3_npc_visible_sheet_original_functions_
 const setup=read("scripts/fixtures/p1_3_npc_safe_profile_local_auth_pg17.sql");
 const candidate=read("sql/candidates/20261104_npc_player_safe_profile_rls_v1.sql");
 const stage2=read("sql/candidates/20261104_npc_gm_dossier_column_acl_stage2.sql");
+const stage3=read("sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql");
 const jwt=read("scripts/test_p1_3_npc_profile_safe_local_auth.mjs");
 for(const h of ["97b5e6b059e6467e24c4283fe420c83e","deca87aaad0dce214743c87cdca03f36"]){
  assert.ok(original.includes(h),"Original function fingerprint absent: "+h);
@@ -31,6 +32,7 @@ for(const forbidden of ["DROP TABLE","TRUNCATE","DELETE FROM public","ALTER TABL
 for(const marker of [
  "PASS V00","PASS V01","PASS V02","PASS V03",
  "PASS V04","PASS V05","PASS V06","PASS V07","PASS V08",
+ "PASS V09","PASS V10","PASS V11","PASS V12","PASS V13","PASS V14","PASS V15",
  "EXPECTED UNSAFE BASELINE","RELEASE BLOCKER",
  "DISPOSABLE_LOCAL_GOTRUE_ONLY",
  "readCharacters(people.OUTSIDER.who,visible)",
@@ -52,8 +54,29 @@ for(const required of [
  "REVOKE ALL ON FUNCTION public.get_npc_dossier_admin_v1(uuid)",
  "GRANT EXECUTE ON FUNCTION public.get_npc_dossier_admin_v1(uuid)"
 ]) assert.ok(stage2.includes(required),"Stage2 Admin/ACL contract missing "+required);
-for(const content of [setup,jwt,candidate,stage2]){
- assert.ok(!content.includes("ucggczovhmauhshvhusx"),"Production project in scratch files");
- assert.ok(!content.includes("service_role"),"Service credentials forbidden");
+for(const required of [
+ "CREATE TABLE public.character_backstory_secrets",
+ "CREATE TABLE public.character_public_secret_revelations",
+ "character_backstory_secrets_select_editor",
+ "character_backstory_secrets_insert_editor",
+ "character_backstory_secrets_update_editor",
+ "character_public_secret_revelations_gm_only",
+ "CREATE OR REPLACE FUNCTION public.get_character_secrets_v1",
+ "private.current_user_is_admin()",
+ "CREATE OR REPLACE FUNCTION public.set_character_secret_v1",
+ "(to_jsonb(v_character) - 'secret')",
+ "(to_jsonb(c) - 'secret')",
+ "CREATE OR REPLACE FUNCTION public.get_npc_profile_visible_v1",
+ "public.character_public_secret_revelations reveal",
+ "reveal.is_revealed=true",
+ "Legacy secret RPC source changed",
+ "Legacy values in characters.secret remain untouched"
+]) assert.ok(stage3.includes(required),"Stage3 split-secret contract absent "+required);
+for(const forbidden of ["DROP TABLE","TRUNCATE","DELETE FROM public.characters",
+ "UPDATE public.characters SET secret", "GRANT SELECT ON public.characters TO anon"])
+ assert.ok(!stage3.includes(forbidden),"Destructive or disclosure operation in research stage3: "+forbidden);
+for(const source of [setup,jwt,candidate,stage2,stage3]){
+ assert.ok(!source.includes("ucggczovhmauhshvhusx"),"Production project in scratch files");
+ assert.ok(!source.includes("service_role"),"Service credentials forbidden");
 }
 console.log("P1.3 NPC full-sheet RLS, restricted RPC, safe profile candidate static contracts PASS");
