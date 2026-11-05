@@ -103,7 +103,9 @@ assert.equal(sql("SELECT class_level FROM public.character_progression WHERE cha
 console.log("PASS F09 original permission helper enforces current edit-grant revocation for signed JWT");
 
 const sleeping=(ms)=>new Promise(resolve=>setTimeout(resolve,ms));
-const levelPromise=owner.client.rpc("p13_test_levelup_cp_prelock_v1",{p_character_id:cRace});
+// Supabase PostgREST builders are lazy: .then() starts the authenticated HTTP
+// request before polling pg_locks. Without this, no prelock can be observed.
+const levelPromise=owner.client.rpc("p13_test_levelup_cp_prelock_v1",{p_character_id:cRace}).then(x=>x);
 const deadline=Date.now()+3500;
 let observedPrelock=false;
 while(Date.now()<deadline){
@@ -113,7 +115,7 @@ while(Date.now()<deadline){
  await sleeping(80);
 }
 assert.ok(observedPrelock,"Test-only signed-in owner CP prelock marker not observed");
-const sheetPromise=edit(coeditor,cRace,"original sheet CS-first hold");
+const sheetPromise=edit(coeditor,cRace,"original sheet CS-first hold").then(x=>x);
 const both=await Promise.all([sheetPromise,levelPromise]);
 const failures=both.filter(x=>x.error);
 const successful=both.filter(x=>!x.error);
