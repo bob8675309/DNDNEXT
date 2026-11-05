@@ -8,6 +8,8 @@ on:
       - 'scripts/fixtures/forge_creator_trigger_original_stage3_pg17.sql'
       - 'scripts/fixtures/forge_creation_replay_candidate_pg17.sql'
       - 'scripts/fixtures/forge_creation_replay_local_auth_pg17.sql'
+      - 'scripts/fixtures/forge_materializer_original_functions_pg17.sql'
+      - 'scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql'
       - 'scripts/test_forge_immutable_creation_replay_local_auth.mjs'
       - 'scripts/validate_forge_immutable_creation_replay.mjs'
   workflow_dispatch:
