@@ -798,6 +798,110 @@ assert.equal(sql("SELECT granted_by::text FROM public.character_option_grant_ins
 assert.equal(sql("SELECT granted_by::text FROM public.character_option_grants WHERE character_id='"+noNonceId+"'"),uid("PLAYER"));
 console.log("PASS J52 original v2 new character with no nonce still binds source feat actor from same-transaction immutable creator record");
 
+// Source v3 invokes the private original v2; verified feat actor should
+// propagate without modifying any spell-selection/creation source function.
+const sourcedWizardFeat=JSON.parse(JSON.stringify(correctMagic));
+sourcedWizardFeat.name="JWT v3 Wizard source verified Lucky";
+sourcedWizardFeat.creation_request_id=id(9163);
+sourcedWizardFeat.sheet.featGrantInstances=JSON.parse(JSON.stringify(mintedPayload.sheet.featGrantInstances));
+sourcedWizardFeat.sheet.feats=["Lucky"];
+const wizardWithFeat=pass(await call3(people.OUTSIDER.client,sourcedWizardFeat,spell(fire)),
+ "signed v3 Wizard source spell and feat grant with actor seed");
+assert.equal(sql("SELECT granted_by::text FROM public.character_option_grant_instances WHERE character_id='"+wizardWithFeat+"'"),uid("OUTSIDER"));
+assert.equal(sql("SELECT granted_by::text FROM public.character_option_grants WHERE character_id='"+wizardWithFeat+"'"),uid("OUTSIDER"));
+assert.equal(sql("SELECT count(*) FROM public.character_spells WHERE character_id='"+wizardWithFeat+"' AND source_type='class'"),"1");
+assert.equal(pass(await call3(people.OUTSIDER.client,sourcedWizardFeat,spell(fire)),
+ "signed v3 feat replay"),wizardWithFeat);
+assert.equal(sql("SELECT count(*) FROM public.character_option_grant_instances WHERE character_id='"+wizardWithFeat+"'"),"1");
+console.log("PASS J53 original source v3 magic + canonical feat both retain signed creator and inert immutable retry");
+
+const raceVerified=JSON.parse(JSON.stringify(mintedPayload));
+raceVerified.name="JWT racing verified feat creator";
+raceVerified.creation_request_id=id(9164);
+const sameTime=await Promise.all([
+ call2(people.PLAYER.client,raceVerified),
+ call2(people.PLAYER.client,raceVerified)
+]);
+const sameTimeIds=sameTime.map((v,i)=>pass(v,"verified creator same-nonce race "+i));
+assert.equal(sameTimeIds[0],sameTimeIds[1]);
+const winnerId=sameTimeIds[0];
+assert.equal(sql("SELECT granted_by::text FROM public.character_option_grant_instances WHERE character_id='"+winnerId+"'"),uid("PLAYER"));
+assert.equal(sql("SELECT granted_by::text FROM public.character_option_grants WHERE character_id='"+winnerId+"'"),uid("PLAYER"));
+assert.equal(sql("SELECT count(*) FROM public.character_option_grant_instances WHERE character_id='"+winnerId+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_option_grants WHERE character_id='"+winnerId+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_currency WHERE character_id='"+winnerId+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_id='"+winnerId+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_level_events WHERE character_id='"+winnerId+"'"),"1");
+console.log("PASS J54 true JWT concurrent same nonce mints one correctly attributed feat grant/event/item/currency");
+
+const failedCreatorPayload=JSON.parse(JSON.stringify(mintedPayload));
+failedCreatorPayload.name="JWT malformed after creator seed";
+failedCreatorPayload.creation_request_id=id(9165);
+failedCreatorPayload.sheet.featGrantInstances[0].fixedSpellTokens={invalid:true};
+const badCreator=await call2(people.PLAYER.client,failedCreatorPayload);
+assert.ok(badCreator.error,"Invalid feat grant table shape accepted after actor seed");
+assert.equal(badCreator.error.code,"23514","Grant JSONB constraint must still reject malformed shape");
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE name='JWT malformed after creator seed'"),"0");
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+id(9165)+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM private.character_creator_attribution ca JOIN public.characters c ON c.id=ca.character_id WHERE c.name='JWT malformed after creator seed'"),"0");
+console.log("PASS J55 invalid feat grant after binding actor rolls back original character, creator attribution, nonce and canonical grant");
+
+const independentVerified=JSON.parse(JSON.stringify(mintedPayload));
+independentVerified.name="JWT independent verified source owner";
+independentVerified.creation_request_id=id(9166);
+const otherOwner=pass(await call2(people.OUTSIDER.client,independentVerified),
+ "another real JWT creates distinct feat and actor binding");
+assert.notEqual(otherOwner,verifiedGrantId);
+assert.equal(sql("SELECT granted_by::text FROM public.character_option_grant_instances WHERE character_id='"+otherOwner+"'"),uid("OUTSIDER"));
+assert.equal(sql("SELECT granted_by::text FROM public.character_option_grants WHERE character_id='"+otherOwner+"'"),uid("OUTSIDER"));
+assert.equal(sql("SELECT creator_user_id::text FROM private.character_creator_attribution WHERE character_id='"+otherOwner+"'"),uid("OUTSIDER"));
+console.log("PASS J56 distinct real JWT identity produces separate correctly attributed original feat grant");
+
+const gmAfterSeedPayload={
+ name:"JWT GM NPC creator seed unaffected",kind:"npc",creation_request_id:id(9167),
+ sheet:{classKey:"fighter",level:1,note:"Admin NPC sheet no Forge marker"}
+};
+const gmAfterSeed=pass(await rpc(people.ADMIN.client,"create_character_v1",
+ {p_payload:gmAfterSeedPayload}),"Admin NPC original RPC after Forge-only creator binding");
+assert.equal(sql("SELECT creator_user_id::text FROM private.character_creator_attribution WHERE character_id='"+gmAfterSeed+"'"),uid("ADMIN"));
+assert.equal(sql("SELECT count(*) FROM public.character_option_grant_instances WHERE character_id='"+gmAfterSeed+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM public.character_option_grants WHERE character_id='"+gmAfterSeed+"'"),"0");
+console.log("PASS J57 original Admin NPC creation remains separate from player-Forge-only attribution and grant rules");
+
+// Old NULL grant rows must NEVER be backfilled by the new BEFORE INSERT trigger
+// or by later creation, even when the original progression row has an actor.
+assert.equal(sql("SELECT coalesce(granted_by::text,'') FROM public.character_option_grant_instances WHERE character_id='"+minted+"'"),"");
+assert.equal(sql("SELECT coalesce(granted_by::text,'') FROM public.character_option_grants WHERE character_id='"+minted+"'"),"");
+assert.equal(sql("SELECT created_by::text FROM public.character_progression WHERE character_id='"+minted+"'"),uid("PLAYER"));
+console.log("PASS J58 existing original-source NULL grant provenance remains untouched, no historical data backfill");
+
+sql("UPDATE public.character_permissions SET can_edit=false WHERE character_id='"+verifiedGrantId+"' AND user_id='"+uid("PLAYER")+"'");
+denied(await call2(people.PLAYER.client,verifiedGrantPayload),"42501",
+ "Existing cached nonce cannot be reread by creator with revoked editor grant");
+assert.equal(grantFingerprint(verifiedGrantId),verifiedInstanceHash);
+assert.equal(aggFingerprint(verifiedGrantId),verifiedAggHash);
+console.log("PASS J59 revoking current edit grant does not rewrite provenance and blocks same-nonce replay");
+
+// A current coeditor can safely edit an ordinary note, but can neither alter
+// protected feat instance fields nor impersonate the original actor.
+sql("INSERT INTO public.character_permissions(character_id,user_id,can_inventory,can_edit,can_convert) VALUES('"+otherOwner+"','"+uid("PLAYER")+"',true,true,false)");
+const otherOriginalSheet=JSON.parse(sql("SELECT sheet::text FROM public.character_sheets WHERE character_id='"+otherOwner+"'"));
+const coeditorNote=await sheetWrite(people.PLAYER.client,otherOwner,
+ {...otherOriginalSheet,note:"Coeditor ordinary journal, not source grants"});
+assert.ifError(coeditorNote.error);
+assert.equal(coeditorNote.data?.length,1);
+assert.equal(sql("SELECT granted_by::text FROM public.character_option_grant_instances WHERE character_id='"+otherOwner+"'"),uid("OUTSIDER"));
+assert.equal(sql("SELECT granted_by::text FROM public.character_option_grants WHERE character_id='"+otherOwner+"'"),uid("OUTSIDER"));
+const forgedCoedit={...otherOriginalSheet,featGrantInstances:[
+ {...otherOriginalSheet.featGrantInstances[0],instanceId:"coeditor-false-instance"}]};
+denied(await sheetWrite(people.PLAYER.client,otherOwner,forgedCoedit),"42501",
+ "Coeditor cannot rewrite original feat authority after verified creator binding");
+assert.equal(sql("SELECT count(*) FROM public.character_option_grant_instances WHERE character_id='"+otherOwner+"'"),"1");
+console.log("PASS J60 signed-in coeditor note cannot overwrite verified creator grant attribution or protected source choices");
+
+console.log("PASS LOCAL REAL GoTrue J00-J60: source-original Forge grant gap baseline then isolated same-transaction verified creator BEFORE INSERT candidate; full production P1.3 locks/RLS remain unproven.");
+
+
 
 
 
