@@ -192,3 +192,76 @@ assert.equal(pass(await call2(people.OUTSIDER.client,altPayload),"alternate retr
 assert.equal(Number(sql("SELECT count(*) FROM public.character_level_events WHERE character_id IN ('"+primary+"','"+alt+"')")),2);
 console.log("PASS J11 signed-in new account seeds primary snapshot once and retains distinct alternate canonical sheets/grants");
 console.log("PASS LOCAL REAL GoTrue: J00-J11 plus composed PR319 legacy snapshot accepted in reduced local PG17.");
+
+// Late attach: all original source-authenticated J00-J11 happened BEFORE
+// enabling the source-exact deferred-equipment and sheet-sync triggers.
+sqlFile("scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql");
+const equipPayload=fighter("JWT deferred fighter",id(9110));
+equipPayload.sheet.startingEquipmentSelections={
+ mode:"package",classOption:"A",ruleset:"vanilla"
+};
+const equipped=pass(await call2(people.PLAYER.client,equipPayload),"deferred equipment create");
+const equipmentRows=()=>Number(sql(
+ "SELECT count(*) FROM public.inventory_items WHERE owner_type='character' AND owner_id='"+equipped+"' AND card_payload->>'startingEquipment'='true'"));
+const currencyRows=()=>Number(sql(
+ "SELECT count(*) FROM public.character_currency WHERE character_id='"+equipped+"'"));
+assert.equal(equipmentRows(),1,"Original deferred materializer did not insert item at COMMIT");
+assert.equal(currencyRows(),1,"Original deferred materializer did not insert currency at COMMIT");
+assert.equal(sql("SELECT sheet->'startingEquipmentSummary'->0->>'itemKey' FROM public.character_sheets WHERE character_id='"+equipped+"'"),
+ "training-dagger","Original materializer did not update canonical sheet summary");
+assert.equal(sql("SELECT created_by FROM public.character_progression WHERE character_id='"+equipped+"'"),uid("PLAYER"));
+assert.equal(sql("SELECT count(*) FROM public.character_level_events WHERE character_id='"+equipped+"'"),"1");
+console.log("PASS J12 genuine JWT original v2 + sheet sync + deferred source materializer commits one item/currency and canonical summary");
+
+const beforeItem=sql("SELECT md5(coalesce(jsonb_agg(to_jsonb(i) ORDER BY id)::text,'[]')) FROM public.inventory_items i WHERE owner_id='"+equipped+"'");
+const beforeSummary=sql("SELECT md5(sheet::text) FROM public.character_sheets WHERE character_id='"+equipped+"'");
+assert.equal(pass(await call2(people.PLAYER.client,equipPayload),"equipped exact replay"),equipped);
+assert.equal(equipmentRows(),1);
+assert.equal(currencyRows(),1);
+assert.equal(sql("SELECT md5(coalesce(jsonb_agg(to_jsonb(i) ORDER BY id)::text,'[]')) FROM public.inventory_items i WHERE owner_id='"+equipped+"'"),beforeItem);
+assert.equal(sql("SELECT md5(sheet::text) FROM public.character_sheets WHERE character_id='"+equipped+"'"),beforeSummary);
+denied(await call2(people.PLAYER.client,{
+ ...equipPayload,sheet:{...equipPayload.sheet,
+  startingEquipmentSelections:{...equipPayload.sheet.startingEquipmentSelections,classOption:"B"}}
+}),"22023","same nonce with different starting equipment selection");
+assert.equal(equipmentRows(),1);
+console.log("PASS J13 identical equipped nonce is inert; altered package rejected; no item/currency duplicated");
+
+const invalidEquip=fighter("JWT invalid deferred package",id(9111));
+invalidEquip.sheet.startingEquipmentSelections={
+ mode:"package",classOption:"Z",ruleset:"vanilla"
+};
+const failedEquip=await call2(people.PLAYER.client,invalidEquip);
+assert.ok(failedEquip.error,"Invalid source package unexpectedly accepted");
+assert.match(failedEquip.error.message,/Choose a valid source-backed class starting equipment package/i);
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE name='JWT invalid deferred package'"),"0");
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+id(9111)+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE item_name='JWT invalid deferred package'"),"0");
+console.log("PASS J14 source-original deferred package rejection rolls back character, attribution and nonce");
+
+const equipRace=fighter("JWT concurrent equipped",id(9112));
+equipRace.sheet.startingEquipmentSelections={mode:"package",classOption:"A",ruleset:"vanilla"};
+const both=await Promise.all([
+ call2(people.PLAYER.client,equipRace),
+ call2(people.PLAYER.client,equipRace)
+]);
+const raceIds=both.map((result,i)=>pass(result,"equipped concurrent "+i));
+assert.equal(raceIds[0],raceIds[1]);
+const equipRaceId=raceIds[0];
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_id='"+equipRaceId+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_currency WHERE character_id='"+equipRaceId+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_level_events WHERE character_id='"+equipRaceId+"'"),"1");
+console.log("PASS J15 concurrent identical JWT equipped nonce serializes to one original deferred item/currency/event");
+
+const alternateEquip=fighter("JWT alternate equipped",id(9113));
+alternateEquip.sheet.startingEquipmentSelections={mode:"package",classOption:"A",ruleset:"vanilla"};
+alternateEquip.sheet.marker="gear-alternate";
+const snapshotBefore=sql("SELECT md5(sheet::text) FROM public.players WHERE user_id='"+uid("OUTSIDER")+"'");
+const separateEquip=pass(await call2(people.OUTSIDER.client,alternateEquip),"equipped alternate");
+assert.equal(sql("SELECT md5(sheet::text) FROM public.players WHERE user_id='"+uid("OUTSIDER")+"'"),snapshotBefore,
+ "Combined deferred gear and PR319 fix overwrote primary account-wide snapshot");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_id='"+separateEquip+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_currency WHERE character_id='"+separateEquip+"'"),"1");
+assert.equal(sql("SELECT sheet->>'marker' FROM public.character_sheets WHERE character_id='"+separateEquip+"'"),"gear-alternate");
+console.log("PASS J16 equipped alternate preserves PR319 legacy account snapshot while retaining canonical sheet/equipment");
+console.log("PASS LOCAL REAL GoTrue J00-J16: source exact deferred materializer+sync subset, PR319 snapshot, immutable replay; remaining 17+ progression triggers omitted.");
