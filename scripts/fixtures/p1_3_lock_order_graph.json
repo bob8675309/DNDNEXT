@@ -1,0 +1,246 @@
+{
+  "schema_version": 1,
+  "scope": "SOURCE LOCK CLASS ORDER; NOT DEADLOCK PROOF",
+  "base_main_sha": "51c351a142d03378dff8e47e05182afe21a15622",
+  "live_source_checked": "2026-11-01",
+  "legend": {
+    "L": "globally unique request ledger row/unique index",
+    "E": "encounters row",
+    "P": "participant row (actor/target/reactor/mover may differ)",
+    "W": "reaction-window row",
+    "X": "condition or timed-effect row",
+    "S": "encounter slot snapshot",
+    "C": "persistent canonical character pool"
+  },
+  "paths": [
+    {
+      "id": "core_action",
+      "source": "public.encounter_use_core_action_v1",
+      "md5": "74a43a001247f5fa491b057c97ca4014",
+      "order": [
+        "L",
+        "P",
+        "E"
+      ],
+      "confidence": "first-lock"
+    },
+    {
+      "id": "move",
+      "source": "public.encounter_move_active_participant_v1",
+      "md5": "1f7fc81b307800f70ab412872473aa14",
+      "order": [
+        "L",
+        "P",
+        "E"
+      ],
+      "confidence": "first-lock"
+    },
+    {
+      "id": "end_turn",
+      "source": "public.encounter_end_turn_v1",
+      "md5": "2785f688af8e200f64f18b6c421f19a6",
+      "order": [
+        "L",
+        "P",
+        "E",
+        "X"
+      ],
+      "confidence": "schematic"
+    },
+    {
+      "id": "weapon_attack",
+      "source": "public.encounter_weapon_attack_v1",
+      "md5": "14433e4e379ae811edd9d9d8345711f8",
+      "order": [
+        "L",
+        "P",
+        "P",
+        "E"
+      ],
+      "confidence": "first-lock"
+    },
+    {
+      "id": "unarmed_strike",
+      "source": "public.encounter_unarmed_strike_v1",
+      "md5": "44f0dad7e8ae9f6d8002c07e025ff0b7",
+      "order": [
+        "L",
+        "P",
+        "P",
+        "E"
+      ],
+      "confidence": "first-lock"
+    },
+    {
+      "id": "reaction",
+      "source": "public.encounter_resolve_opportunity_reaction_v1",
+      "md5": "70cbfda404644c1000a6541ce8bf9c30",
+      "order": [
+        "W",
+        "P",
+        "P",
+        "E",
+        "L"
+      ],
+      "confidence": "first-lock"
+    },
+    {
+      "id": "save",
+      "source": "public.encounter_roll_save_v1",
+      "md5": "337065c8f21bc89bc0ed2ee353c2d269",
+      "order": [
+        "L"
+      ],
+      "confidence": "partial"
+    },
+    {
+      "id": "admin_effect",
+      "source": "public.admin_apply_encounter_effect_v1",
+      "md5": "5a7da1de8fbb5764c12ed21e24aa0560",
+      "order": [
+        "L",
+        "P",
+        "E"
+      ],
+      "confidence": "schematic"
+    },
+    {
+      "id": "admin_start",
+      "source": "public.admin_start_encounter_v1",
+      "md5": "ce7bb040cb09d9dac85517ea8206b44e",
+      "order": [
+        "E",
+        "P",
+        "S"
+      ],
+      "confidence": "schematic"
+    },
+    {
+      "id": "spell_wrapper_v11",
+      "source": "public.encounter_cast_spell_v11",
+      "md5": "73b12d083ef540d308932f2b89a11d88",
+      "order": [
+        "E",
+        "L",
+        "P"
+      ],
+      "confidence": "schematic"
+    },
+    {
+      "id": "spell_allocated",
+      "source": "public.encounter_cast_allocated_spell_v1",
+      "md5": "467fa475b7f61f97e358013884eb2475",
+      "order": [
+        "L",
+        "P",
+        "E",
+        "P",
+        "S",
+        "C"
+      ],
+      "confidence": "schematic"
+    },
+    {
+      "id": "spell_v13",
+      "source": "public.encounter_cast_spell_v13",
+      "md5": "03ea7bd00bcd9734ef70ebc035c54a8d",
+      "order": [
+        "L",
+        "P",
+        "E",
+        "P",
+        "S",
+        "C"
+      ],
+      "confidence": "schematic"
+    },
+    {
+      "id": "turn_start_trigger",
+      "source": "private.expire_encounter_timed_effects_on_turn_start_v1",
+      "md5": "e8e898f3a427897863f31c64b2e1a4ea",
+      "order": [
+        "E",
+        "X",
+        "P"
+      ],
+      "confidence": "schematic"
+    },
+    {
+      "id": "slot_spend_bridge",
+      "source": "private.mirror_encounter_spell_slot_spend_v1",
+      "md5": "b30565d75b05b042c1ad8f9803284486",
+      "order": [
+        "S",
+        "C"
+      ],
+      "confidence": "schematic"
+    }
+  ],
+  "candidate_inversions": [
+    {
+      "name": "L-versus-E",
+      "a": "core_action",
+      "b": "spell_wrapper_v11",
+      "a_edge": [
+        "L",
+        "E"
+      ],
+      "b_edge": [
+        "E",
+        "L"
+      ],
+      "note": "Guard in wrapper acquires E before legacy ledger L; timing overlap unproven"
+    },
+    {
+      "name": "P-versus-E",
+      "a": "core_action",
+      "b": "admin_start",
+      "a_edge": [
+        "P",
+        "E"
+      ],
+      "b_edge": [
+        "E",
+        "P"
+      ],
+      "note": "Status gating/participant identity may rule out a real overlap"
+    },
+    {
+      "name": "trigger-P-versus-E",
+      "a": "weapon_attack",
+      "b": "turn_start_trigger",
+      "a_edge": [
+        "P",
+        "E"
+      ],
+      "b_edge": [
+        "E",
+        "P"
+      ],
+      "note": "Another participant P can be updated by E turn-start trigger"
+    },
+    {
+      "name": "reaction-E-versus-L",
+      "a": "core_action",
+      "b": "reaction",
+      "a_edge": [
+        "L",
+        "E"
+      ],
+      "b_edge": [
+        "E",
+        "L"
+      ],
+      "note": "Requires pending-window and same-encounter interleaving to demonstrate"
+    }
+  ],
+  "not_proven": [
+    "P identity equality across paths",
+    "All spell routers and non-ledger writer branch lock sequences",
+    "FK and trigger implicit locks",
+    "Actual concurrent wait-cycle/deadlock",
+    "True signed-JWT and revocation race",
+    "Same canonical character in two active encounters policy P1.5",
+    "P1.8 migration and rollback"
+  ]
+}

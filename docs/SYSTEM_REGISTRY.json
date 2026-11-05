@@ -51,8 +51,11 @@
       "tests": [
         "scripts/validate_unified_character_forge.mjs"
       ],
-      "last_checked": "2026-11-01",
+      "last_checked": "2026-11-05",
       "open_gaps": [
+        "Read-only live 2026-11-05: inventory_items_owner_type_check validates 'character' but overlapping NOT VALID inventory_items_owner_type_chk excludes 'character', enforced on new inserts. Original Forge equipment materializer writes owner_type='character'. F22/F28 scratch-only 23514 control test pending CI. Do not drop constraint in production absent owner-approved migration and browser/auth acceptance.",
+        "Research-only signed-in source-earned G/GI level4 Fighter fixture F17-F21 is staged on #317, not deployed nor a complete Forge RLS/trigger/feat/inventory proof.",
+        "Draft #317 F11–F16 source Admin canonical G grant against signed-in Fighter v5 is not player-level feat G and has not passed new exact-head CI; full original creation trigger/RLS/gear parity is not established.",
         "Browser acceptance must be tied to specific scoped flows; not blanket proof of all source traits."
       ],
       "label": "Player/NPC character Forge",
@@ -101,24 +104,75 @@
       "status": "research-only",
       "code_paths": [
         "pages/encounters/combat.js",
-        "sql/20260727_06_core_combat_actions.sql"
+        "sql/20260727_06_core_combat_actions.sql",
+        "scripts/fixtures/p1_3_admin_grant_original_source_pg17.sql",
+        "scripts/fixtures/p1_3_admin_grant_levelup_extension_pg17.sql",
+        "scripts/fixtures/p1_3_level4_advancement_original_pg17.sql",
+        "scripts/fixtures/p1_3_level4_advancement_extension_pg17.sql",
+        "scripts/fixtures/p1_3_original_merchant_inventory_source_pg17.sql",
+        "scripts/fixtures/p1_3_original_merchant_inventory_extension_pg17.sql"
       ],
-      "tests": [],
-      "last_checked": "2026-11-01",
+      "tests": [
+        "scripts/test_p1_3_legacy_real_jwt_local.mjs",
+        "scripts/fixtures/p1_3_legacy_real_jwt_local_pg17.sql",
+        "scripts/fixtures/p1_3_guarded_replay_candidate_pg17.sql",
+        "scripts/fixtures/p1_3_legacy_core_action_live_pg17.sql",
+        "scripts/test_p1_3_guarded_candidate_local_jwt.mjs",
+        "scripts/fixtures/p1_3_turn_move_reaction_live_pg17.sql",
+        "scripts/fixtures/p1_3_turn_move_reaction_guarded_pg17.sql",
+        "scripts/test_p1_3_turn_move_reaction_local_jwt.mjs",
+        "scripts/fixtures/p1_3_hidden_activity_setup_pg17.sql",
+        "scripts/fixtures/p1_3_hidden_activity_projection_pg17.sql",
+        "scripts/test_p1_3_hidden_activity_local_jwt.mjs",
+        "scripts/fixtures/p1_3_reaction_attack_damage_live_pg17.sql",
+        "scripts/fixtures/p1_3_unarmed_reaction_attack_research_pg17.sql",
+        "scripts/test_p1_3_unarmed_reaction_attack_local_jwt.mjs",
+        "scripts/fixtures/p1_3_original_attack_roll_live_pg17.sql",
+        "scripts/fixtures/p1_3_original_roll_timed_effect_pg17.sql",
+        "scripts/test_p1_3_original_roll_timed_effect_local_jwt.mjs",
+        "scripts/fixtures/p1_3_original_weapon_profile_live_pg17.sql",
+        "scripts/fixtures/p1_3_original_equipped_weapon_research_pg17.sql",
+        "scripts/test_p1_3_original_equipped_weapon_local_jwt.mjs",
+        "scripts/fixtures/p1_3_equipment_mutation_live_pg17.sql",
+        "scripts/fixtures/p1_3_inventory_race_combat_only_pg17.sql",
+        "scripts/test_p1_3_inventory_race_combat_only_local_jwt.mjs",
+        "scripts/fixtures/p1_3_admin_staging_source_pg17.sql",
+        "scripts/fixtures/p1_3_permission_controller_rls_parity_pg17.sql",
+        "scripts/fixtures/p1_3_permission_row_lock_candidate_pg17.sql",
+        "scripts/test_p1_3_permission_controller_rls_local_jwt.mjs",
+        "scripts/test_p1_3_levelup_v5_real_jwt_local.mjs"
+      ],
+      "last_checked": "2026-11-05",
       "open_gaps": [
-        "2026-11-01 proposed P1.2 immutable requester/actor/intent/replay and fresh authorization contract (docs/P1_2_Command_Replay_Contract_2026-11-01.md); owner signoff R1–R4 pending.",
-        "Live command ledger aggregate: 78 rows and 20 null requested_by, no null results at checkpoint; historical typed original intent absent; fail-closed policy is proposed, not implemented.",
-        "P1.3 global mixed-version lock ordering, P1.5 same-character multiple-active-encounters, NPC delegated visibility, isolated genuine JWT races, and production rollout all unresolved."
+        "2026-11-05 F22-F28 candidate original merchant S→W→user-owned I concurrently with original signed level4 earned CP/CS/G/GI, exact-head CI pending; independent table ownership means no demonstrated common G/I row lock. Found live inventory owner_type contradictory checks; see docs/P1_3_Original_Merchant_I_vs_Earned_G_and_Owner_Constraint_2026-11-05.md.",
+        "2026-11-05: F17–F21 on held #317 candidate source-original v5 Fighter 3→4 earned G+GI vs signed Admin G contention. Exact-head CI pending; no full original inventory I/deferred gear/RLS/Forge trigger graph. docs/P1_3_Source_Original_Player_Level4_Grant_vs_Admin_G_2026-11-05.md",
+        "2026-11-05 draft #317 original Admin grant G→CS→CP vs owner signed-in v5 CP→CS: F11–F16 source-exact/authenticated timed fixture prepared, not yet CI-accepted; valid player advancement G and full G/I/24 original omitted Forge triggers still missing. docs/P1_3_Original_Admin_Grant_G_vs_Levelup_CP_CS_Research_2026-11-05.md",
+        "P1.3 original public v11 Guiding Bolt and v10 Mind Sliver paths cases 36–41 PASS scratch PG16 run 41566917343 SHA 1f39532. v11 E->P vs original End Turn P->E deadlock reproduced under forced concurrent active-turn requests. Both cast versions return cached prior result for changed target/slot. Source-derived not production/JWT exploit. docs/P1_3_Legacy_v11_Guiding_Bolt_v10_Mind_Sliver_2026-11-02.md.",
+        "P1.3 exact v9→v1 cast functions plus genuine local GoTrue JWTs proved unsafe changed-target/assignment/slot cross-user cached replay and post-revocation result disclosure (cases 48–55, run 41635156191, SHA 16424aab). Local healing/profile/targeting, Admin and RLS were modeled; no live exploit/mitigation claim.",
+        "Global E/P/L/W/X/S/C/grant lock-order proof not complete; P1.5 TC1 Option A one-active-character guard not deployed, existing live overlap preserved for explicit GM review.",
+        "P1.3 signed JWT two-family guarded candidate 56–69 PASS, run 41638042390 SHA 62a0cf01; exact v9→v1 spell + live core action guarded E-first with typed request ownership, hidden/revoked replay and controlled grant race. RESEARCH ONLY: old production direct RPC grants still open; no global lock/no live fix.",
+        "Five-family local JWT guarded model cases 70–81 PASS run 41679603374 SHA 82cb4481: original End Turn/Move/Reaction Pass, bounded E-first races and R1/R2. Attack/damage/reaction budget and first-run hidden next/reactor visibility UNTESTED. Production direct originals still callable; global E/P/W/L/X/S/C not proven.",
+        "P1.3 genuine-JWT first-execution cases 83/84 reproduced hidden next actor and hidden reactor/window IDs from source-derived guarded research RPC; scratch Unknown Events response projection passed cases 85–92 (run 41690025288). Concealed timing still leaks a signal; not owner-approved or deployed. Original unarmed reaction/HP/damage source cases 93–105 PASS run 41692165016 SHA 4cdfd5b5 with synthetic deterministic roll, gear and stats. Real weapon/advantage/timed-effect X/resource path still UNTESTED; no global lock certificate.",
+        "P1.3 real source D20/Guiding Bolt/Vicious Mockery X + real equipped-profile JWT cases 106–128 PASS combined run 41698384117 source SHA b6acf77e. Original player-owned gear source requires can_edit, can_control-only insufficient (case 126). No sheet-permission expansion authorized. Inventory-row equip/transfer race, true equipment mitigation, cross-trigger S/C/X global locks and hidden-event timing still UNVERIFIED.",
+        "P1.3 source exact signed-JWT equip/transfer vs Attack I race cases 129-141 PASS run 41701093404 SHA e1fa0982: original uncommitted equip-row stale read baseline; E/P/L/I/W bounded guarded candidate waits/rejects; combat controller can use owner-associated gear via scratch can_inventory-aware private clone without can_edit. Original profile remains live; scratch grants/RLS stricter than production, live character-sheet SELECT RLS requires separate audit. Complete I/G/C/S/X global lock proof and production cutover UNVERIFIED.",
+        "P1.3 real GoTrue grant/controller/RLS cases 142–156 PASS run 41709639824 SHA 04b8d784: uncommitted Admin G revocation let prior I-only candidate attack; research I→G lock denies after commit. Exact Admin staging rejects active; active reassignment only modeled, not deployed. Modeled live RLS allows unrelated JWT full VISIBLE NPC sheet SELECT (case 151), no owner policy yet; hidden sheet unreadable to strangers. Global G/I/E/P/L/W/X/S/C graph and privacy production/browser acceptance UNPROVEN.",
+        "2026-11-04 P1.3 research-only: older unmerged effects/attack/EB/held NPC delegation reconciled; source-backed inventory grant G/I read-vs-lock evidence, tagged PC full-sheet RPC and pending-underling creation gap documented in docs/P1_3_Historical_Recovery_Inventory_Grant_Delegation_2026-11-04.md. 24 proposed acceptance cases NOT executed; G/I/slot global protocol and NPC private-data rollout remain unproven.",
+        "2026-11-04 owner update supersedes pending-underling gate: reuse Forge v3, Admin notification via committed level event, GM NPC post-creation rights/notes; evaluate capability-based authorization redesign. D05–D06 revised plus D25–D32 proposed; no runtime tests/deployment. See docs/CHARACTER_CREATION_ADMIN_NOTICE_AND_DELEGATED_RIGHTS_2026-11-04.md.",
+        "2026-11-04: source-exact equip/transfer vs in-flight Admin G revocation disposable real-JWT cases 157–159 added on #317; exact-head test pending. No global deadlock/order proof; see docs/P1_3_Original_Equipment_Grant_Revocation_2026-11-04.md.",
+        "2026-11-04: original Forge deferred materializer uses character progression CP before sheet CS, while original sheet-sync trigger uses CS before CP upsert. Isolated source-exact PG17 F01-F03 test pending, production two-session reachability and other 17 progression triggers unverified. Docs P1_3_Forge_Deferred_Progression_Sheet_Locks_2026-11-04.md.",
+        "2026-11-04: original materializer (CP→CS) vs source sheet-sync (CS→CP) induced REAL PG17 40P01 under manufactured same-character schedule, F01-F03 PASS at fc178c5f/run 41935090198 (9/9 CI). Public level-up v5→v4→v3→private base and authorized sheet UPDATE are candidate entry points; genuine JWT collision and full trigger parity NOT proven. Continue P1.3.",
+        "2026-11-04 NPC privacy: stage-one and disruptive stage-two SQL candidates under separate draft #321, real local JWT V00–V08 PASS run 41944321941 SHA a8db0b3f. Full visible-NPC sheet and legacy get_my_player_characters_v2 limited-grant bypass reproduced in synthetic baseline; direct unrevealed column ACL leak remains until coordinated client/DB cutover. NO production changes.",
+        "Independent research PR #321 staged GM-vs-player secret separation V00–V15 PASS local GoTrue run 41956440837 SHA 14358405; no production cutover, source-global lock order remains open. V14 still exposes deliberately synthetic raw sheet.secret to editors."
       ],
       "label": "Combat replay authorization",
-      "scope_note": "Private candidate executor tested on held PR #312; public legacy RPC still has early replay shortcut.",
+      "scope_note": "Draft PR #317 only: source-derived five-family command guard and scoped I/G row-lock research; signed-in RLS predicate recreation and explicit modeled active controller reassignment. Not production, not universal security proof.",
       "verification": {
         "source": "inspected-relevant-entry-points-on-main",
         "live_database": "read-only-function-grant-rls-trigger-constraint-inventory-2026-11-01",
         "deployed_sha": "not-deployed-research-or-future",
-        "test_status": "P1.2-declarative-case-checker-not-runtime-test",
+        "test_status": "P1.3-source-Admin-grant-revoke-controller-model-JWT-cases-142-to-156-PASS-run-41709639824-sha-04b8d784;visible-NPC-full-sheet-RLS-OPEN-owner-policy;global-lock-and-deploy-UNPROVEN",
         "browser_acceptance": "unverified-this-audit",
-        "owner_approval": "not-claimed-from-source-or-ci"
+        "owner_approval": "TC1 Option A (2026-11-01) and P1.2 R1/R2 (2026-11-03) owner-approved policy only; R3 still open; no SQL/merge/runtime grant/deployment approval"
       },
       "protected_boundaries": [
         "No production SQL changes, grants, merge, or deployment without owner approval",
@@ -138,7 +192,7 @@
       "tests": [
         "scripts/validate_merchant_crafted_pricing.mjs"
       ],
-      "last_checked": "2026-11-01",
+      "last_checked": "2026-11-05",
       "verification": {
         "source": "inspected-relevant-entry-points-on-main",
         "live_database": "market stock and alchemy catalog sampled",
@@ -148,6 +202,7 @@
         "owner_approval": "not-claimed-from-source-or-ci"
       },
       "open_gaps": [
+        "F22-F28 source original merchant user-owned I vs signed earned G/GI on draft #317 pending exact-head CI; full production RLS and inventory crafted-material trigger branches untested.",
         "Avoid changes to craft price formulas while refactoring combat or item-effect resolution."
       ],
       "protected_boundaries": [
@@ -422,7 +477,7 @@
       "tests": [
         "scripts/validate_security_hardening_roadmap.mjs"
       ],
-      "last_checked": "2026-11-01",
+      "last_checked": "2026-11-05",
       "verification": {
         "source": "inspected-relevant-entry-points-on-main",
         "live_database": "read-only security advisor and function definition",
@@ -432,6 +487,7 @@
         "owner_approval": "not-claimed-from-source-or-ci"
       },
       "open_gaps": [
+        "Potential integrity blocker: two conflicting inventory_items owner_type CHECKs, one old NOT VALID but still enforced against new character items; authenticated Forge creation+deferred COMMIT remains unverified. No live constraint changes authorized.",
         "Authorize or revoke each function only after caller, RLS, and intended access review."
       ],
       "protected_boundaries": [
@@ -521,6 +577,48 @@
         "No production SQL changes, grants, merge, or deployment without owner approval",
         "Do not change world-map travel/camping/weather or mix world/town and tactical maps"
       ]
+    },
+    {
+      "id": "npc-profile-visibility",
+      "label": "NPC public-safe Profile, GM dossier, restricted sheet/secret data",
+      "status": "research-only",
+      "code_paths": [
+        "components/NpcPanel.js",
+        "components/character/CharacterInteractionPanel.js",
+        "pages/npcs.js",
+        "components/PlayerCharacterProfilePanelUnified.js",
+        "utils/charactersDb.js"
+      ],
+      "tests": [],
+      "last_checked": "2026-11-04",
+      "open_gaps": [
+        "Research-only PR #321 V00–V08 PASS real disposable GoTrue/PG17, run 41944321941, exact SHA a8db0b3f. V00 intentionally unsafe baseline; V06 intentionally shows direct characters lore-column leak under stage one. Stage-two GM dossier/ACL model requires coordinated UI/DB migration and browser acceptance.",
+        "Existing Admin NPC page, shared NpcPanel, PlayerCharacterProfilePanelUnified fallback and charactersDb direct lore reads would break after column-level SELECT revocation. No live SQL, migration, merge, grants or deployment permitted without source/rollback/owner review.",
+        "GM-private character.secret versus delegated can_edit full-sheet authority unresolved; private character_notes audience and remaining SECURITY DEFINER character serializers require review.",
+        "World-map sprites/route/drag behavior must stay untouched; the centered wide Profile is separately held draft #320.",
+        "2026-11-04 handoff registry correction: all local test-path links removed from registry arrays because these artifacts live ONLY on independent draft PR #321 at a8db0b3f; source on PR #317 must not pretend its tests/files are present. CI 41944959939 failed as expected before correction.",
+        "Owner confirmed 2026-11-04 GM Secrets versus player backstory. PR #321 exact test head 14358405 GoTrue V00-V15 PASS run 41956440837, 3/3 CI. Original editor secret leak reproduced V09; GM-only API and public clue, v1/v2 server redaction, backstory grant revocation passed in disposable PG17. V14 demonstrates synthetic raw sheet.secret remains editor-readable, so NOT production safe. All four create RPC paths and frontend editor need coordinated cutover; preserve 7 live existing legacy secret values. No live data/policy edits or deploy.",
+        "2026-11-04 GM clarified authored private backstory accessible ONLY by original verified creator + GM. Other can_edit co-editors denied. Creator retains access only while active can_edit grant; unattributed legacy NPC GM-only. No trusted creator field currently deployed. PR #321 research stage3 adds private immutable attribution and six-identity true JWT V16-V18 tests; actual Forge/underling creation binding and UI migration unimplemented. No production data/grant changes.",
+        "2026-11-04 verified research #321 source 56c8e17f CI run 41958983495: six local GoTrue users, 19/19 V00-V18 PASS (V00/V06/V09 expected unsafe baselines). V16 coeditor can_edit + can_inventory shares full NPC sheet but cannot see/edit creator private backstory. V17 creator origin immutable and no client API. V18 legacy unattributed GM-only. Binding in trusted actual Forge creation RPC still UNIMPLEMENTED, no production changes.",
+        "2026-11-04 PR321 source 07498d54 local GoTrue V00–V23 PASS run 41965391804; 3/3 CI. Common public.characters AFTER INSERT trigger binds immutable creator auth.uid atomically (replay/rollback/anon/source test). Actual original create_character_v1/player v1/v2/v3 and all full Forge/progression triggers NOT executed with new trigger. Stacked UI PR322 at 8570322c has 4/4 CI incl Next build and V00–V24, with GM dossier, safe Profile, creator-only backstory UI. Latest Secret GM-only renderer patch 95d93f3a awaiting exact-head CI. All SQL unapplied, no live changes.",
+        "2026-11-04 PR322 final head 4f4b8788: 4/4 CI PASS, Next build 41967869150, six-role real local GoTrue V00–V24 41967868938. Source-guarded Admin-only GM Secret printable and editor, safe public NPC Profile vs GM dossier, creator-only backstory UI. Intermediate print validator had expected failure and was updated to require GM-only secret. Database tables/RPCs remain NOT deployed live. Complete original Forge, other API reader, GM clue edit, centered PR320 integration and browser acceptance still missing.",
+        "2026-11-04 interruption recovered; stacked centered+safe NPC draft PR #323 source 9bf04f20 passed 5/5 CI including integrated source+build run 41969888434 and safe reader 41969888372. Existing #320 UI and #322 security source joined without replacing protected NpcPanel, only conditional Drawer difference. Map change class/backdrop only. No original Forge+trigger executable tests or browser acceptance; SQL stages 1/2/3 never deployed, no live effects. Next original Forge v1/v2/v3 GoTrue source-parity tests."
+      ],
+      "scope_note": "Independent main-based P1.3 PR #321 contains source-faithful candidate SQL and actual signed-in synthetic local tests only, not a completed safe Profile. NPC/merchant Profile-first centered UI on #320 is not deployed. No player-safe projection is installed live. Test scripts/SQL under separate draft PR #321 are intentionally not included in this PR source tree; refer to exact-head run and PR URL.",
+      "verification": {
+        "source": "live-SELECT-only-NPC-RLS-characters-column-ACL-and-player-rpc-2026-11-04",
+        "live_database": "read-only-source-policy-and-ACL-verified",
+        "deployed_sha": "not-deployed-research-only",
+        "test_status": "PR323 integrated code SHA 9bf04f20 5/5 CI PASS, centered + Next build 41969888434, safe reader 41969888372; inherited #322 GoTrue source 4f4b8788 V00-V24 PASS 41967868938. No true-original creation RPC trigger test or browser acceptance; V00/V06/V09 expected unsafe baseline.",
+        "browser_acceptance": "PR323 source/compile green, no real GM/creator/coeditor map/town/inventory/merchant browser interaction run yet.",
+        "owner_approval": "GM confirmed creator plus GM only for player-authored backstory, not any co-editor. GM Secret stays GM only. Database RLS/source cutover and deployment NOT approved."
+      },
+      "protected_boundaries": [
+        "No live Supabase SQL, grants, migration or deployment without owner approval",
+        "Protect GM-private notes; do not conflate can_inventory/can_convert/can_control with full-sheet edit",
+        "Never expose unrevealed NPC fields directly to clients or through SECURITY DEFINER RPCs",
+        "Do not modify world/town map movement as incidental Profile UI work"
+      ]
     }
   ],
   "research": {
@@ -538,7 +636,39 @@
         "base": "work/eldritch-blast-los-regression-20261030"
       }
     ],
-    "deployed": "No candidate executor, typed request intent migration, or new composable spell interpreter deployed at last check."
+    "deployed": "No candidate executor, typed request intent migration, or new composable spell interpreter deployed at last check.",
+    "p1_3_admin_cp_cs_source_race": {
+      "status": "held-research-not-deployed",
+      "pr_number": 317,
+      "tested_source_sha": "c7ba39df492bce3b64a5547aa1da0fbaee10aefa",
+      "evidence": "GitHub Actions 42049546692, genuine PostgreSQL17 40P01 F04 original Admin CP-before-CS vs original sheet CS-before-CP; F05 synthetic CP-first control PASS, reduced Admin role/helpers",
+      "original_admin_md5": "eb467b7c7a8d548581a36cfcb0d8f77b",
+      "original_sheet_sync_md5": "bb1a3a2d1600ce33cd4fcadac5e0f3a9",
+      "report": "docs/P1_3_Admin_Progression_Sheet_CP_CS_Race_2026-11-05.md",
+      "caveats": "Not actual signed-in production Admin/player collision, not complete level-up, not global G/I/encounter lock order",
+      "next_gate": "Actual source-original complete_character_level_up_v5→v4→v3 with genuine local GoTrue sheet editing and G/I triggers; preserve held PR324 creator seed separately",
+      "production_effects": "none"
+    },
+    "p1_3_player_levelup_v5_signed_cp_cs_race": {
+      "status": "held-research-not-deployed",
+      "pr_number": 317,
+      "tested_executable_sha": "d09b3981f04ceceb09ff0a1489f589041a441164",
+      "run_id": 42055043840,
+      "source_original_md5": {
+        "public.complete_character_level_up_v5": "02d74b973a763c53c595be20e35e512f",
+        "public.complete_character_level_up_v4": "f8338ef170c6e27b972e777eeae406b8",
+        "public.complete_character_level_up_v3": "4467e166234c67fc12dd73da0e46b379",
+        "private.complete_character_level_up_base_v3": "e33639d549ef557976a3970ea51f5238",
+        "private.can_manage_character_progression_v1": "ac70e4ec033d86c4e0a254d50d429a45",
+        "private.sync_player_forge_class_spell_summary_v1": "5b1b275a268a57591a2e35a05ce7480d",
+        "private.sync_character_progression_from_sheet_v1": "bb1a3a2d1600ce33cd4fcadac5e0f3a9"
+      },
+      "result": "Original full levelup v5→v4→v3→base Fighter 1→2 authenticated owner works (F08); outsider and revoked editor denied F07/F09; two genuinely signed-in users' test-timed CP prelock/CS hold produce PostgreSQL 40P01 F10 with one victim and exactly one level-up event after retry.",
+      "boundary": "Controlled explicit CP prelock + advisory lock marker, CS hold, reduced class helpers limited Fighter level 2/no choices, scratch editor-only RLS and incomplete 19-trigger G/I graph; natural unforced calls previously completed successfully. Not production deadlock frequency or global lock-order proof.",
+      "report": "docs/P1_3_Player_Levelup_V5_Signed_Editor_CP_CS_Race_2026-11-05.md",
+      "next_gate": "Original feat grant G + inventory I materializer/trigger graph in genuine local Auth CP/CS schedule with deferred commit and nonce/revocation, owner-reviewed P1.3 global lock order; full RLS/browser.",
+      "production_effects": "none"
+    }
   },
   "live_safety_observations": {
     "date": "2026-11-01",

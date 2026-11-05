@@ -1,6 +1,6 @@
 # P1.2 — Canonical Tactical Command Intent, Authorization and Replay Contract
 
-> **PROPOSED; OWNER REVIEW REQUIRED.** Prepared 2026-11-01 from `main` `7727d75a92abb5904fdb7fd4e109accfe8e4603f` and live **SELECT-only** DnDWeb metadata. This document does **not** describe an installed fix, passing signed-in behavior, or permission to change production SQL. Read the [P1.1 live census](P1_1_Tactical_Command_Authority_Live_Audit_2026-11-01.md) and [owner spell-engine decisions](SPELL_ENGINE_DECISIONS.md) first. Held [PR #312](https://github.com/bob8675309/DNDNEXT/pull/312) remains research-only.
+> **DESIGN-ONLY CONTRACT; R1/R2 OWNER-APPROVED 2026-11-03; R3 OPEN; NOT DEPLOYED.** Initial proposal prepared 2026-11-01 from `main` `7727d75a92abb5904fdb7fd4e109accfe8e4603f` and live **SELECT-only** DnDWeb metadata. This document does **not** describe an installed fix, passing signed-in behavior, or permission to change production SQL. Read the [P1.1 live census](P1_1_Tactical_Command_Authority_Live_Audit_2026-11-01.md) and [owner spell-engine decisions](SPELL_ENGINE_DECISIONS.md) first. Held [PR #312](https://github.com/bob8675309/DNDNEXT/pull/312) remains research-only.
 
 ## A. Non-negotiable rules and current evidence
 
@@ -55,7 +55,7 @@ The example contains descriptive placeholders, **not valid values**. A client ma
 
 1. **First execution:** verify authenticated identity, current actor controller/GM authority, encounter and turn/window status, target legality, server spell assignment/source, action budget and resources *inside* the agreed atomic transaction. Client `canControl` is display state only.
 2. **Every replay:** before reading/disclosing any cached result or resolved-window payload, check the caller's current permission for that actor, encounter and result visibility. Also require the *same original human requester* and identical canonical envelope. Replayed results are **not** transferable between two users authorized for one companion.
-3. **Revocation:** if control was revoked, do not return the cached private result even if the original caller once had permission. This is **proposed**, to be ratified under decision R2.
+3. **Revocation:** if control was revoked, do not return the cached private result even if the original caller once had permission. **R2 was approved by the owner on 2026-11-03; implementation is not deployed.**
 4. **Already completed:** a legitimate same-owner, same-intent retry after the turn/round advanced should return the stored result if current authority/visibility still permits it. Do **not** re-require unused action economy for a historical duplicate and do **not** reroll, move, spend slots or write a second log.
 5. **Privacy:** raw result JSON may contain hidden enemy info, NPC spell profiles, GM-only effects or allocation targets. A current controller may still lack permission to see all original fields. Provide a server-owned visibility projection or deny the cached replay where safe projection has not been proven. A SECURITY DEFINER RPC cannot rely on table RLS to sanitize its result.
 6. **Permissions concurrency:** live `encounter_can_control_participant_v1` checks the single direct `controller_user_id`, Admin status or `character_permissions.can_edit`; the **new per-player NPC `can_control` permission is held on PR #312 only**. Future authority needs transaction-safe revocation (P1.3) and must preserve existing player ownership while separating NPC combat control from editing.
@@ -73,7 +73,7 @@ The example contains descriptive placeholders, **not valid values**. A client ma
 | Result exists but currently hidden/private content cannot be projected safely | Redact via proven projection or deny | **None** |
 | Same original authorized retry after turn advanced or encounter resolved | Return past authorized result, **not a new turn action**, subject to current visibility | **None** |
 | Committed request row with `result IS NULL` | Bounded wait / retry-later; no false duplicate success; explicit recovery only | **None** |
-| Old committed row lacks original requester OR provable typed intent | `LEGACY_REQUEST_UNVERIFIABLE` (R1 proposed) | **None** |
+| Old committed row lacks original requester OR provable typed intent | `LEGACY_REQUEST_UNVERIFIABLE` (**R1 owner-approved**, proposed error code) | **None** |
 | Prior attempt rolled back and **no ledger row committed** | Only re-execute after fresh current checks and proper serialization | At most one |
 | Service/Admin calls | Separate identified privileged event, audited; never silently impersonate prior human request | Policy-specific |
 
@@ -93,9 +93,9 @@ P1.3 must test permission changes racing with command execution, request collisi
 
 ## H. Decision gates and release blockers
 
-- **R1 (proposed yes):** Reject cached retries for historic rows without provable requester and original typed intent, preserving their records for Admin audit.
-- **R2 (proposed yes):** A revoked controller cannot retrieve old private results through the command RPC even if they executed them originally.
+- **R1 (APPROVED 2026-11-03):** Reject cached retries for historic rows without provable requester and original typed intent; fail closed, preserve records for Admin audit, and do not rerun or assign an inferred owner.
+- **R2 (APPROVED 2026-11-03):** A revoked controller cannot retrieve cached private combat results through the command API even if they executed the command originally; current authority/visibility must be checked before replay disclosure.
 - **R3 (proposed):** Trusted service calls need explicit service identity and audited scope, never a null-user super-replay exception.
-- **R4 (separate P1.5 owner decision):** Allow one canonical character in two simultaneous active encounters with globally serialized resources, or forbid the overlap. No decision is presumed here.
+- **R4 (resolved 2026-11-01):** Owner chose **Option A / TC1: forbid one canonical character being active in two encounters at the same time**. The [permanent tactical decision](TACTICAL_ENCOUNTER_OWNER_DECISIONS.md) governs this later status update. The existing overlap requires review; P1.5 server enforcement, pause/resume semantics and P1.3 lock-order proof remain incomplete.
 
-**P1.2 is NOT marked complete until the owner reviews R1–R4 and contract details.** Next action: review this proposal and static matrix, approve or amend the proposed behaviors, then begin a **separate P1.3 global lock-order proof**. Do not change live SQL, public EXECUTE grants, NPC permissions, spell engine or world/town map as part of approval of these documents.
+**Owner decision checkpoint, 2026-11-03:** R1 and R2 are **approved**; R4/TC1 Option A was approved 2026-11-01; **R3 remains open**, as do remaining detailed implementation, privacy, error handling and full P1.3 lock-order acceptance gates. This contract remains **research/design direction, not an installed secure replay implementation**. The [permanent owner decision ledger](TACTICAL_ENCOUNTER_OWNER_DECISIONS.md) records the exact approvals. Continue the [P1.3 source-complete global lock/authorization proof](ACTIVE_WORK.md). **No approval to merge, run live SQL, change public EXECUTE grants, modify NPC permissions, deploy gameplay, or affect world/town maps** is implied.
