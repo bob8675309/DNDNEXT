@@ -10,6 +10,9 @@ const gear=readFileSync("scripts/fixtures/forge_materializer_original_functions_
 const gearExtension=readFileSync("scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql","utf8");
 const originalEquipmentValidator=readFileSync("scripts/fixtures/forge_equipment_validator_original_pg17.sql","utf8");
 const equipmentValidatorExtension=readFileSync("scripts/fixtures/forge_equipment_validator_local_auth_extension_pg17.sql","utf8");
+const originalSheetAuthority=readFileSync("scripts/fixtures/forge_sheet_authority_tags_original_pg17.sql","utf8");
+const sheetAuthorityExtension=readFileSync("scripts/fixtures/forge_sheet_authority_tags_local_auth_extension_pg17.sql","utf8");
+
 
 const localAuth=readFileSync("scripts/test_forge_immutable_creation_replay_local_auth.mjs","utf8");
 
@@ -90,11 +93,32 @@ assert.ok(originalEquipmentValidator.includes("CREATE OR REPLACE FUNCTION privat
  "Original sheet equipment validator source missing");
 assert.ok(equipmentValidatorExtension.includes("EXECUTE FUNCTION private.validate_player_forge_starting_equipment_sheet_v1()"),
  "Missing exact deferred sheet validator trigger");
+for(const [fn,hash] of [
+ ["guard_direct_character_authority_mutation_v1","04596b0a3fdfb71c1b357056e8c6023b"],
+ ["sync_player_character_tags_from_sheet_v1","a135ca951f81d2a9546d783afe665c52"],
+ ["derive_player_character_tags_v1","d62bab7f326330ddbeb6ccede172d19f"],
+ ["player_character_tag_slug_v1","aba97a1c7478159d182e38cda4ca8383"]
+]) {
+ assert.ok(originalSheetAuthority.includes("CREATE OR REPLACE FUNCTION private."+fn+"("),
+ "Original sheet authority/tag helper missing "+fn);
+ assert.ok(originalSheetAuthority.includes(hash),
+ "Live source fingerprint lost for "+fn);
+}
+assert.ok(sheetAuthorityExtension.includes("BEFORE INSERT OR UPDATE OF sheet ON public.character_sheets"),
+ "Missing original pre-write sheet authority guard trigger timing");
+assert.ok(sheetAuthorityExtension.includes("AFTER INSERT OR UPDATE OF sheet ON public.character_sheets"),
+ "Missing original tag sync trigger timing");
+assert.ok(sheetAuthorityExtension.includes("EXECUTE FUNCTION private.guard_direct_character_authority_mutation_v1()"),
+ "Missing original authority trigger handler");
+assert.ok(sheetAuthorityExtension.includes("EXECUTE FUNCTION private.sync_player_character_tags_from_sheet_v1()"),
+ "Missing original tag trigger handler");
+assert.ok(sheetAuthorityExtension.includes("CREATE POLICY local_forge_sheet_update_editor"),
+ "Missing local editor-only auth write fixture (not production RLS)");
 assert.ok(gearExtension.includes("DEFERRABLE INITIALLY DEFERRED FOR EACH ROW"),
  "Original equipment trigger must remain deferred");
 assert.ok(gearExtension.includes("EXECUTE FUNCTION private.sync_character_progression_from_sheet_v1()"),
  "Original sheet/progression trigger must be installed in supplemental slice");
-for (const token of ["J10","J11","J12","J13","J14","J15","J16","J17","J18","J19","J20","J21",
+for (const token of ["J10","J11","J12","J13","J14","J15","J16","J17","J18","J19","J20","J21","J22","J23","J24","J25","J26","J27","J28","J29","J30",
  "forge_materializer_local_auth_extension_pg17.sql","startingEquipmentSelections"])
  assert.ok(localAuth.includes(token), "Missing signed-in creation and gear regression "+token);
 console.log("PASS source: original Admin/v2/v3 snapshots, v2/v3 source-pinned private wrappers with one PR319 snapshot safeguard, nonce fingerprint and authorization static contract.");
