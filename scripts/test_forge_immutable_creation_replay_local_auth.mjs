@@ -586,4 +586,149 @@ assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_id='"+
 console.log("PASS J38 two real concurrent canonical feat/gear JWT requests serialize to one event/item/currency; changed feat nonce rejected");
 console.log("PASS LOCAL REAL GoTrue J00-J38: original progression authority validator, feat-instance/source-choice helpers and preferred views source-pinned, reduced catalog and RLS.");
 
+// J39+: materializer/authority hooks now run in their original order after
+// source-validated J31–J38. The new local tables reproduce the exact deployed
+// columns, constraints and FK behavior, and have no browser grants or RLS
+// policies. The Lucky specimen does not enter specialized downstream branches.
+sqlFile("scripts/fixtures/forge_feat_materializer_local_auth_extension_pg17.sql");
+const mintedPayload=JSON.parse(JSON.stringify(validAuthority));
+mintedPayload.name="JWT original persistent Lucky";
+mintedPayload.creation_request_id=id(9139);
+mintedPayload.sheet.featGrantInstances[0].acquisitionOwnerType="background";
+mintedPayload.sheet.featGrantInstances[0].acquisitionOwnerKey="soldier-xphb";
+mintedPayload.sheet.featGrantInstances[0].acquisitionLabel="Soldier background";
+const minted=pass(await call2(people.PLAYER.client,mintedPayload),
+ "original materializer must persist source-owned Lucky grant instance");
+assert.equal(sql("SELECT count(*) FROM public.character_option_grant_instances WHERE character_id='"+minted+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_option_grants WHERE character_id='"+minted+"'"),"1");
+const expectedSource=JSON.stringify({
+ option_id:id(9154),name:"Lucky",type:"feat",source:"XPHB",instance:"origin-lucky-1",
+ owner_type:"background",owner_key:"soldier-xphb",owner_label:"Soldier background",level:1,
+ repeatable:false,granted_by:uid("PLAYER")
+});
+const mintedInstance=sql("SELECT jsonb_build_object("+
+ "'option_id',option_id,'name',option_name,'type',option_type,'source',option_source,"+
+ "'instance',instance_key,'owner_type',acquisition_owner_type,'owner_key',acquisition_owner_key,"+
+ "'owner_label',acquisition_label,'level',acquisition_level,'repeatable',repeatable,"+
+ "'granted_by',granted_by)::text FROM public.character_option_grant_instances WHERE character_id='"+minted+"'");
+assert.deepEqual(JSON.parse(mintedInstance),JSON.parse(expectedSource),
+ "Canonical original grant instance did not preserve validated source, ownership or actor");
+assert.equal(sql("SELECT option_id::text FROM public.character_option_grants WHERE character_id='"+minted+"'"),id(9154));
+assert.equal(sql("SELECT granted_by::text FROM public.character_option_grants WHERE character_id='"+minted+"'"),uid("PLAYER"));
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_id='"+minted+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_level_events WHERE character_id='"+minted+"'"),"1");
+console.log("PASS J39 original immediate feat materializer writes canonical source-grant instance + aggregate grant, provenance and gear");
+
+const snapshotGrantInstance=sql("SELECT md5(coalesce(jsonb_agg(to_jsonb(g) ORDER BY id)::text,'[]')) FROM public.character_option_grant_instances g WHERE character_id='"+minted+"'");
+const snapshotGrant=sql("SELECT md5(coalesce(jsonb_agg(to_jsonb(g) ORDER BY id)::text,'[]')) FROM public.character_option_grants g WHERE character_id='"+minted+"'");
+const snapshotGear=sql("SELECT md5(coalesce(jsonb_agg(to_jsonb(i) ORDER BY id)::text,'[]')) FROM public.inventory_items i WHERE owner_id='"+minted+"'");
+assert.equal(pass(await call2(people.PLAYER.client,mintedPayload),"canonical feat immutable retry"),minted);
+assert.equal(sql("SELECT md5(coalesce(jsonb_agg(to_jsonb(g) ORDER BY id)::text,'[]')) FROM public.character_option_grant_instances g WHERE character_id='"+minted+"'"),snapshotGrantInstance);
+assert.equal(sql("SELECT md5(coalesce(jsonb_agg(to_jsonb(g) ORDER BY id)::text,'[]')) FROM public.character_option_grants g WHERE character_id='"+minted+"'"),snapshotGrant);
+assert.equal(sql("SELECT md5(coalesce(jsonb_agg(to_jsonb(i) ORDER BY id)::text,'[]')) FROM public.inventory_items i WHERE owner_id='"+minted+"'"),snapshotGear);
+assert.equal(sql("SELECT count(*) FROM public.character_level_events WHERE character_id='"+minted+"'"),"1");
+console.log("PASS J40 identical nonce returns original canonical feat grants and gear with unchanged full row hashes");
+
+const changedGrant=JSON.parse(JSON.stringify(mintedPayload));
+changedGrant.sheet.featGrantInstances[0].acquisitionOwnerKey="other-background";
+denied(await call2(people.PLAYER.client,changedGrant),"22023",
+ "Source ownership changed on existing creation nonce");
+assert.equal(sql("SELECT acquisition_owner_key FROM public.character_option_grant_instances WHERE character_id='"+minted+"'"),"soldier-xphb");
+console.log("PASS J41 changed feat source owner under reused nonce rejects without grant mutation");
+
+const duplicateInstance=JSON.parse(JSON.stringify(mintedPayload));
+duplicateInstance.name="JWT duplicated instance key";
+duplicateInstance.creation_request_id=id(9142);
+duplicateInstance.sheet.featGrantInstances.push(JSON.parse(JSON.stringify(duplicateInstance.sheet.featGrantInstances[0])));
+const baselineTotalGrants=sql("SELECT count(*) FROM public.character_option_grant_instances");
+const duplicateResult=await call2(people.PLAYER.client,duplicateInstance);
+assert.ok(duplicateResult.error,"Duplicate feat instanceId unexpectedly accepted");
+assert.match(duplicateResult.error.message,/Duplicate feat or boon grant instance/i);
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE name='JWT duplicated instance key'"),"0");
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+id(9142)+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM public.character_option_grant_instances"),baselineTotalGrants);
+console.log("PASS J42 duplicate original feat instance key fails and rolls back character/nonce/canonical grant");
+
+const malformedTokens=JSON.parse(JSON.stringify(mintedPayload));
+malformedTokens.name="JWT invalid fixed spell tokens";
+malformedTokens.creation_request_id=id(9143);
+malformedTokens.sheet.featGrantInstances[0].fixedSpellTokens={invalid:true};
+const beforeTokens=sql("SELECT count(*) FROM public.character_option_grants");
+const badTokenResult=await call2(people.PLAYER.client,malformedTokens);
+assert.ok(badTokenResult.error,"Original fixed_spell_tokens CHECK accepted object");
+assert.equal(badTokenResult.error.code,"23514",
+ "Original grant-instance table constraint should enforce fixed_spell_tokens array");
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE name='JWT invalid fixed spell tokens'"),"0");
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+id(9143)+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM public.character_option_grants"),beforeTokens);
+console.log("PASS J43 source-original materializer plus real grant table CHECK rejects malformed fixedSpellTokens with atomic rollback");
+
+const repeatForbidden=JSON.parse(JSON.stringify(mintedPayload));
+repeatForbidden.name="JWT duplicate nonrepeatable Lucky";
+repeatForbidden.creation_request_id=id(9144);
+repeatForbidden.sheet.featGrantInstances.push({
+ ...repeatForbidden.sheet.featGrantInstances[0],instanceId:"origin-lucky-2"
+});
+const nonrepeatable=await call2(people.PLAYER.client,repeatForbidden);
+assert.ok(nonrepeatable.error,"Same nonrepeatable feat with distinct instanceId was accepted");
+assert.match(nonrepeatable.error.message,/not repeatable/i);
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+id(9144)+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE name='JWT duplicate nonrepeatable Lucky'"),"0");
+console.log("PASS J44 canonical nonrepeatable option cannot be minted twice even with unique instance keys");
+
+const concurrentGrantPayload=JSON.parse(JSON.stringify(mintedPayload));
+concurrentGrantPayload.name="JWT simultaneous source feat grant";
+concurrentGrantPayload.creation_request_id=id(9145);
+const concurrentGrant=await Promise.all([
+ call2(people.PLAYER.client,concurrentGrantPayload),
+ call2(people.PLAYER.client,concurrentGrantPayload)
+]);
+const grantIds=concurrentGrant.map((x,i)=>pass(x,"two signed-in source grant creations "+i));
+assert.equal(grantIds[0],grantIds[1]);
+const grantRace=grantIds[0];
+assert.equal(sql("SELECT count(*) FROM public.character_option_grant_instances WHERE character_id='"+grantRace+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_option_grants WHERE character_id='"+grantRace+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_level_events WHERE character_id='"+grantRace+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_currency WHERE character_id='"+grantRace+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_id='"+grantRace+"'"),"1");
+console.log("PASS J45 concurrent signed-in identical nonce materializes one source-instance/grant/event/item/currency");
+
+const independent=JSON.parse(JSON.stringify(mintedPayload));
+independent.name="JWT independent Lucky owner";
+independent.creation_request_id=id(9146);
+const otherId=pass(await call2(people.OUTSIDER.client,independent),"other account same source feat");
+assert.notEqual(otherId,minted);
+assert.equal(sql("SELECT count(*) FROM public.character_option_grant_instances WHERE character_id IN ('"+minted+"','"+otherId+"')"),"2");
+assert.equal(sql("SELECT count(*) FROM public.character_option_grants WHERE character_id IN ('"+minted+"','"+otherId+"')"),"2");
+assert.equal(sql("SELECT granted_by::text FROM public.character_option_grant_instances WHERE character_id='"+otherId+"'"),uid("OUTSIDER"));
+assert.equal(sql("SELECT count(*) FROM public.character_permissions WHERE character_id='"+otherId+"' AND user_id='"+uid("OUTSIDER")+"' AND can_edit"),"1");
+console.log("PASS J46 independent signed-in account owns distinct feat instance and aggregate grant without cross-character collision");
+
+// The published Data API must not expose private canonical grant mutations
+// just because the original privileged internal creation RPC can write them.
+const deniedInstance=await people.PLAYER.client.from("character_option_grant_instances")
+ .insert({character_id:minted,option_id:id(9154),option_name:"Lucky",instance_key:"intruder"})
+ .select("id");
+assert.ok(deniedInstance.error,"Authenticated direct canonical instance insert should be denied");
+const deniedAggregate=await people.PLAYER.client.from("character_option_grants")
+ .insert({character_id:minted,option_id:id(9154)})
+ .select("id");
+assert.ok(deniedAggregate.error,"Authenticated direct aggregate grant insert should be denied");
+assert.equal(sql("SELECT count(*) FROM public.character_option_grant_instances WHERE character_id='"+minted+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_option_grants WHERE character_id='"+minted+"'"),"1");
+console.log("PASS J47 authenticated browser token cannot directly insert source grant tables in restricted local ACL/RLS");
+
+// No feat instances means original materializer creates no synthetic grants,
+// even when a normal class spell is assigned through original source v3.
+const zeroFeatWizard=wizard("JWT no feat materialization",id(9148));
+zeroFeatWizard.sheet.spells=["Fire Bolt"];
+const zeroFeatId=pass(await call3(people.OUTSIDER.client,zeroFeatWizard,spell(fire)),
+ "v3 source spell with no feat grant request");
+assert.equal(sql("SELECT count(*) FROM public.character_option_grant_instances WHERE character_id='"+zeroFeatId+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM public.character_option_grants WHERE character_id='"+zeroFeatId+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM public.character_spells WHERE character_id='"+zeroFeatId+"'"),"1");
+console.log("PASS J48 exact original feat materializer adds no grant for no-feat source v3 Wizard");
+console.log("PASS LOCAL REAL GoTrue J00-J48: source-original feat instance persistence and grant-table authority hooks; specialized feat families and full production trigger graph still untested.");
+
+
 
