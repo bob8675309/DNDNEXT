@@ -54,8 +54,13 @@ function addCharacter(char,name){
  });
  sql("INSERT INTO public.characters(id,name,kind) VALUES('"+char+"','"+name+"','npc');"+
  "INSERT INTO public.character_sheets(character_id,sheet) VALUES('"+char+"','"+initSheet.replaceAll("'","''")+"'::jsonb);"+
+ // Original sheet AFTER INSERT has ALREADY seeded character_progression with NULL
+ // created_by. Match the original Forge v2 finalization with UPSERT, not INSERT.
  "INSERT INTO public.character_progression(character_id,class_id,class_level,experience_points,pending_level_up,created_by)"+
- " VALUES('"+char+"','"+cClass+"',1,300,true,'"+owner.uid+"');"+
+ " VALUES('"+char+"','"+cClass+"',1,300,true,'"+owner.uid+"')"+
+ " ON CONFLICT(character_id) DO UPDATE SET class_id=excluded.class_id,"+
+ " class_level=excluded.class_level,experience_points=excluded.experience_points,"+
+ " pending_level_up=excluded.pending_level_up,created_by=excluded.created_by;"+
  "INSERT INTO public.character_level_up_sessions(character_id,from_level,to_level,metadata_ready,status,created_by)"+
  " VALUES('"+char+"',1,2,true,'open','"+owner.uid+"');"+
  "INSERT INTO public.character_permissions(character_id,user_id,can_edit) VALUES"+
