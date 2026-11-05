@@ -8,6 +8,9 @@ const fixture=readFileSync("scripts/fixtures/forge_creation_replay_candidate_pg1
 const creator=readFileSync("scripts/fixtures/forge_creator_trigger_original_stage3_pg17.sql","utf8");
 const gear=readFileSync("scripts/fixtures/forge_materializer_original_functions_pg17.sql","utf8");
 const gearExtension=readFileSync("scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql","utf8");
+const originalEquipmentValidator=readFileSync("scripts/fixtures/forge_equipment_validator_original_pg17.sql","utf8");
+const equipmentValidatorExtension=readFileSync("scripts/fixtures/forge_equipment_validator_local_auth_extension_pg17.sql","utf8");
+
 const localAuth=readFileSync("scripts/test_forge_immutable_creation_replay_local_auth.mjs","utf8");
 
 function source(name) {
@@ -81,11 +84,17 @@ for (const [fn,digest] of [
  assert.ok(gear.includes("CREATE OR REPLACE FUNCTION private."+fn+"("),
  "Missing original deployed function body "+fn);
 }
+assert.ok(originalEquipmentValidator.includes("41cb1758bd2e1eb9b3998389deabb49b"),
+ "Missing independently rechecked original deferred sheet equipment validator hash");
+assert.ok(originalEquipmentValidator.includes("CREATE OR REPLACE FUNCTION private.validate_player_forge_starting_equipment_sheet_v1()"),
+ "Original sheet equipment validator source missing");
+assert.ok(equipmentValidatorExtension.includes("EXECUTE FUNCTION private.validate_player_forge_starting_equipment_sheet_v1()"),
+ "Missing exact deferred sheet validator trigger");
 assert.ok(gearExtension.includes("DEFERRABLE INITIALLY DEFERRED FOR EACH ROW"),
  "Original equipment trigger must remain deferred");
 assert.ok(gearExtension.includes("EXECUTE FUNCTION private.sync_character_progression_from_sheet_v1()"),
  "Original sheet/progression trigger must be installed in supplemental slice");
-for (const token of ["J10","J11","J12","J13","J14","J15","J16",
+for (const token of ["J10","J11","J12","J13","J14","J15","J16","J17","J18","J19","J20","J21",
  "forge_materializer_local_auth_extension_pg17.sql","startingEquipmentSelections"])
  assert.ok(localAuth.includes(token), "Missing signed-in creation and gear regression "+token);
 console.log("PASS source: original Admin/v2/v3 snapshots, v2/v3 source-pinned private wrappers with one PR319 snapshot safeguard, nonce fingerprint and authorization static contract.");
