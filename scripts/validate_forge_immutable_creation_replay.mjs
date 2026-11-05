@@ -32,7 +32,14 @@ const privateV3=v3.replace(
  "public.create_player_character_v2(p_payload, v_proxy)",
  "private.create_player_character_v2_source_20261105(p_payload, v_proxy)"
 );
-assert.ok(candidate.includes(privateV2),"Private v2 changed more than approved function name");
+const originalLegacyClause="insert into public.players(user_id, name, sheet, updated_at) values(v_user, v_name, v_sheet, now()) on conflict (user_id) do update set sheet = excluded.sheet, updated_at = now();";
+const preservedLegacyClause="insert into public.players(user_id, name, sheet, updated_at) values(v_user, v_name, v_sheet, now()) on conflict (user_id) do update set sheet = excluded.sheet, updated_at = now() where public.players.sheet = '{}'::jsonb;";
+assert.equal(privateV2.split(originalLegacyClause).length,2,
+ "Private source v2 original legacy update must have exactly one anchor");
+assert.ok(candidate.includes(privateV2.replace(originalLegacyClause,preservedLegacyClause)),
+ "Private v2 must equal original except private name and PR319's ONE legacy-sheet clause");
+assert.ok(!candidate.includes(privateV2),
+ "Unprotected legacy snapshot source must not survive in the candidate");
 assert.ok(candidate.includes(privateV3),"Private v3 changed more than approved private name + nested call");
 for (const [name,hash] of [
  ["v2","0351f0a00acae023278e1b8b065b00c9"],
@@ -52,7 +59,7 @@ for (const str of [
  "CREATE OR REPLACE FUNCTION public.create_player_character_v2(",
  "CREATE OR REPLACE FUNCTION public.create_player_character_v3("
 ]) assert.ok(candidate.toLowerCase().includes(str.toLowerCase()),"Missing immutable request guard: "+str);
-for (const str of ["FCR-B00","FCR-01","FCR-02","FCR-03","FCR-04",
+for (const str of ["FCR-B00","FCR-01","FCR-02","FCR-03","FCR-04","FCR-05",
  "create_player_character_v3","create_player_character_v2","create_character_v1",
  "Changed v3 magic accepted","Legacy unverified nonce incorrectly accepted",
  "Revoked creator re-read cached creation","characters_capture_creator_at_insert_v1"
@@ -61,4 +68,4 @@ for (const str of ["INSERT INTO private.character_creator_attribution","CREATE T
  "auth.uid() IS NOT NULL"])
  assert.ok(creator.includes(str),"Creator trigger lost source candidate contract: "+str);
 assert.ok(!candidate.includes("https://") && !candidate.includes("SUPABASE_SERVICE_ROLE_KEY"),"Candidate unexpectedly embeds URLs/secret names");
-console.log("PASS source: original Admin/v2/v3 snapshots, v2/v3 private exact-source wrappers, nonce fingerprint and authorization static contract.");
+console.log("PASS source: original Admin/v2/v3 snapshots, v2/v3 source-pinned private wrappers with one PR319 snapshot safeguard, nonce fingerprint and authorization static contract.");
