@@ -541,9 +541,9 @@
         "number": 324,
         "state": "open-draft-unmerged",
         "base": "research/p1-3-npc-profile-safe-rls-20261104",
-        "tested_source_sha": "9245ad4a59e8452e13ea1f103af46fc98f36b901",
-        "evidence": "Genuine local GoTrue JWT J00–J38 and original PG17 FCR tests PASS, run 42036764115; source-exact deferred progression authority, five helpers and original preferred views, reduced catalogue/RLS.",
-        "status_note": "Immutable nonce + #319 legacy-sheet guard; 6/31 original trigger coverage, immediate feat grant materializer not installed, 25 omitted and no production/browser acceptance."
+        "tested_source_sha": "d297ebd56f03368cacc813086d62f20bbc682749",
+        "evidence": "True local JWT J00–J48 + original PG17 FCR PASS GitHub 42041040368; canonical feat grants persist, source actor provenance NULL (gap), reduced fixture",
+        "status_note": "7/31 original triggers, five additional grant table hooks, 24 omitted; creator attribution source-order bug remains, no live SQL/browser acceptance"
       }
     ],
     "forge_creation_replay_candidate": {
@@ -551,14 +551,16 @@
       "source": "sql/candidates/20261105_player_creation_immutable_intent_v1.sql",
       "source_md5_v2": "0351f0a00acae023278e1b8b065b00c9",
       "source_md5_v3": "6ba73e6f12fcf826cc0a739cce45ff40",
-      "test": "Genuine local GoTrue J00-J38 and original PG17 FCR regression passed in GitHub Actions run 42036764115 at executable SHA 9245ad4a59e8452e13ea1f103af46fc98f36b901.",
+      "test": "Genuine local GoTrue J00–J48 and original PG17 FCR-B00–05 regression PASS in CI run 42041040368 at executable SHA d297ebd56f03368cacc813086d62f20bbc682749. Original feat grant actor attribution is reproduced as NULL, NOT fixed.",
       "production_effects": "none",
-      "next_gate": "Original immediate character_progression_materialize_player_forge_feat_instances_v1 with canonical grant/instance persistence; then 25 remaining original triggers and real RLS/browser/P1.3 locks.",
+      "next_gate": "Research server-trustworthy grant provenance fix respecting P1.3 CP/CS/G/I lock order, #321 creator attribution and immutable nonce; then remaining 24 original triggers, full production RLS/browser.",
       "legacy_sheet_pr319": "Integrated ONE held PR319 preservation clause into source-pinned private v2; original live v2/fixture unchanged; alternate canonical sheets and account snapshot passed real JWT",
-      "deferred_equipment_source": "Original deferred equipment, sheet sync and Background equipment validator plus immediate sheet guard/tag sync and deferred progression authority validator; 6 of 31 original creation-adjacent triggers installed in local disposable test; 25 original omitted, six equipment helpers and RLS reduced.",
+      "deferred_equipment_source": "Source-exact original starting equipment, sheet authority/tag, Background validator, deferred progression authority and immediate canonical feat grant materializer. 7 of 31 original creation-adjacent triggers source-loaded; 24 original still omitted. Six equipment helpers and RLS reduced.",
       "gap_matrix": "docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md",
       "sheet_guard_and_tag_sync": "Original live functions and timing, 4 function source MD5 checks; 5 of 31 original triggers loaded with reduced editor RLS, not production.",
-      "deferred_progression_source": "Source-exact original validate_player_forge_authority_payload_v1 and original feat-instance, normalization, choice eligibility, source priority helpers and preferred-option views; J31-J38 real JWT PASS using synthetic Lucky/Defense catalogue. No original feat materializer yet."
+      "deferred_progression_source": "Source-exact original validate_player_forge_authority_payload_v1 and original feat-instance, normalization, choice eligibility, source priority helpers and preferred-option views; J31-J38 real JWT PASS using synthetic Lucky/Defense catalogue. No original feat materializer yet.",
+      "feat_instance_persistence": "Original immediate materialize_player_forge_feat_instances_v1 source MD5 c27c4181a51cfd018bbb8244e9931550, exact canonical instance/aggregate grant tables, source-restricted local ACL and five original downstream grant triggers. J39–J48 PASS for Lucky feat persistence, idempotency and rollback; specialized feat families not tested.",
+      "source_provenance_gap": "Production read-only 3/3 canonical grant-instance rows have NULL granted_by while linked current progression.created_by are all set; signed-in original source test reproduces ordering: sheet sync early progression insert lacks created_by. No fix/backfill installed. docs/Forge_Feat_Grant_Provenance_Gap_2026-11-05.md"
     },
     "deployed": "No candidate executor, typed request intent migration, or new composable spell interpreter deployed at last check."
   },
