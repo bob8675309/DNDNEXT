@@ -7,6 +7,8 @@ on:
       - 'scripts/fixtures/forge_creation_original_functions_pg17.sql'
       - 'scripts/fixtures/forge_creator_trigger_original_stage3_pg17.sql'
       - 'scripts/fixtures/forge_creation_replay_candidate_pg17.sql'
+      - 'scripts/fixtures/forge_creation_replay_local_auth_pg17.sql'
+      - 'scripts/test_forge_immutable_creation_replay_local_auth.mjs'
       - 'scripts/validate_forge_immutable_creation_replay.mjs'
   workflow_dispatch:
 permissions:
@@ -55,3 +57,64 @@ jobs:
           test "$PGHOST" = 127.0.0.1
           test "$PGDATABASE" = postgres
           psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/forge_creation_replay_candidate_pg17.sql
+
+  true-local-supabase-jwt:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+      PGHOST: 127.0.0.1
+      PGPORT: '54322'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_FORGE_REPLAY_LOCAL_CONFIRM: DISPOSABLE_LOCAL_GOTRUE_ONLY
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned repository dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify real JWT fixture syntax and exact source contract
+        run: |
+          node --check scripts/test_forge_immutable_creation_replay_local_auth.mjs
+          node scripts/validate_forge_immutable_creation_replay.mjs
+      - name: Configure ephemeral local Supabase PostgreSQL17 and GoTrue
+        run: |
+          mkdir -p "$RUNNER_TEMP/forge-replay-local/supabase"
+          cat > "$RUNNER_TEMP/forge-replay-local/supabase/config.toml" <<'TOML'
+          project_id = "forge-replay-local-research"
+          [db]
+          port = 54322
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+      - name: Start local Auth + PostgREST, never production
+        run: |
+          cd "$RUNNER_TEMP/forge-replay-local"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Run original Forge through genuine local JWT, then guarded candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          (cd "$RUNNER_TEMP/forge-replay-local" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/forge-replay-auth-env"
+          set -a
+          source "$RUNNER_TEMP/forge-replay-auth-env"
+          set +a
+          export DNDNEXT_FORGE_REPLAY_LOCAL_URL="http://127.0.0.1:54321"
+          export DNDNEXT_FORGE_REPLAY_LOCAL_ANON_KEY="$ANON_KEY"
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/forge_creation_replay_local_auth_pg17.sql
+          node scripts/test_forge_immutable_creation_replay_local_auth.mjs
+      - name: Stop and destroy disposable local services
+        if: always()
+        run: |
+          cd "$RUNNER_TEMP/forge-replay-local"
+          npx --yes supabase@2.120.0 stop --no-backup || true
