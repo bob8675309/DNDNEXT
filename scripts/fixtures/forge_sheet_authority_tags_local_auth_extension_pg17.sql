@@ -23,6 +23,27 @@ END $local_guard$;
 --   player_character_tag_slug_v1: aba97a1c7478159d182e38cda4ca8383
 \i scripts/fixtures/forge_sheet_authority_tags_original_pg17.sql
 
+-- Runtime fidelity: compare PostgreSQL's canonical emitted function definitions
+-- with READ-ONLY hashes from deployed DnDWeb PG17.4. Abort test on drift.
+DO $source_hash_gate$
+DECLARE v_actual text;
+BEGIN
+ SELECT md5(pg_get_functiondef('private.guard_direct_character_authority_mutation_v1()'::regprocedure)) INTO v_actual;
+ IF v_actual <> '04596b0a3fdfb71c1b357056e8c6023b' THEN
+    RAISE EXCEPTION 'Original sheet authority guard source mismatch: %',v_actual; END IF;
+ SELECT md5(pg_get_functiondef('private.sync_player_character_tags_from_sheet_v1()'::regprocedure)) INTO v_actual;
+ IF v_actual <> 'a135ca951f81d2a9546d783afe665c52' THEN
+    RAISE EXCEPTION 'Original sheet tag-sync source mismatch: %',v_actual; END IF;
+ SELECT md5(pg_get_functiondef('private.derive_player_character_tags_v1(jsonb,text[],boolean)'::regprocedure)) INTO v_actual;
+ IF v_actual <> 'd62bab7f326330ddbeb6ccede172d19f' THEN
+    RAISE EXCEPTION 'Original derived-tags source mismatch: %',v_actual; END IF;
+ SELECT md5(pg_get_functiondef('private.player_character_tag_slug_v1(text)'::regprocedure)) INTO v_actual;
+ IF v_actual <> 'aba97a1c7478159d182e38cda4ca8383' THEN
+    RAISE EXCEPTION 'Original tag-slug source mismatch: %',v_actual; END IF;
+END $source_hash_gate$;
+\echo 'PASS local PG17 source hash parity for four original sheet authority and tag functions'
+
+
 CREATE TRIGGER character_sheets_authority_fields_guard_v1
  BEFORE INSERT OR UPDATE OF sheet ON public.character_sheets
  FOR EACH ROW EXECUTE FUNCTION private.guard_direct_character_authority_mutation_v1();
