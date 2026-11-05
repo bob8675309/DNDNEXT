@@ -1049,7 +1049,111 @@ assert.equal(rowFingerprint("public.inventory_items","owner_id='"+giChar+"'"),gi
 assert.equal(sql("SELECT md5(to_jsonb(c)::text) FROM public.character_currency c WHERE character_id='"+giChar+"'"),giCashBefore);
 console.log("PASS J69 original creation nonce replay after authenticated G/I concurrency remains one immutable character/grant/item/currency");
 
-console.log("PASS LOCAL REAL GoTrue J00-J69: exact original materializers G/I under two signed JWT CP/CS source lock contention; original level-up v5 and all 31 original triggers still separate scope.");
+// J70–J77: for the first time in this research suite, concurrent real
+// signed-in requests ACTUALLY WRITE inventory I, merchant stock and wallets.
+// This source-original shop RPC is distinct from level-up and Forge starting
+// equipment; feat grant G rows remain stable controls, NOT concurrent G writes.
+sqlFile("scripts/fixtures/forge_merchant_inventory_live_writer_local_auth_pg17.sql");
+assert.equal(sql("SELECT md5(pg_get_functiondef("+
+ "'public.buy_from_merchant(uuid,uuid,integer)'::regprocedure))"),
+ "1dbe8c24c4c718396d7256f6f7465354");
+const shop=id(9361),singleStock=id(9362),pairStock=id(9363),failureStock=id(9364);
+sql("INSERT INTO public.characters(id,name,kind,storefront_enabled) VALUES"+
+ "('"+shop+"','Local source writer seller','merchant',true);"+
+ "INSERT INTO public.character_stock(id,character_id,qty,display_name,card_payload,price_gp,item_id) VALUES"+
+ "('"+singleStock+"','"+shop+"',1,'Scratch Dagger','{\"item_type\":\"weapon\",\"item_rarity\":\"mundane\"}'::jsonb,5,'p13-inventory-concurrency-dagger'),"+
+ "('"+pairStock+"','"+shop+"',2,'Scratch Rope','{\"item_type\":\"gear\",\"item_rarity\":\"mundane\"}'::jsonb,5,'p13-inventory-concurrency-rope'),"+
+ "('"+failureStock+"','"+shop+"',1,'Scratch Lantern','{\"item_type\":\"gear\",\"item_rarity\":\"mundane\"}'::jsonb,5,'p13-inventory-concurrency-lantern');"+
+ "INSERT INTO public.player_wallets(user_id,gp) VALUES"+
+ "('"+uid("PLAYER")+"',20),('"+uid("OUTSIDER")+"',20)");
+const buy=(who,stockId,qty)=>who.client.rpc("buy_from_merchant",{
+ p_merchant_id:shop,p_stock_uuid:stockId,p_qty:qty
+}).then(x=>x);
+const soldCount=(item)=>sql("SELECT count(*) FROM public.inventory_items"+
+ " WHERE item_id='"+item+"' AND owner_type='player'");
+const wallet=(who)=>sql("SELECT gp::text FROM public.player_wallets WHERE user_id='"+uid(who)+"'");
+console.log("PASS J70 source-original buy_from_merchant compiled and hash-matched live PG17; three bounded stock rows and two authenticated buyer wallets provisioned");
+
+const guest=makeClient();
+const guestPurchase=await rpc(guest,"buy_from_merchant",{
+ p_merchant_id:shop,p_stock_uuid:singleStock,p_qty:1
+});
+assert.ok(guestPurchase.error,"Anonymous merchant purchase should be denied");
+assert.equal(guestPurchase.error.code,"42501");
+assert.equal(sql("SELECT qty FROM public.character_stock WHERE id='"+singleStock+"'"),"1");
+assert.equal(soldCount("p13-inventory-concurrency-dagger"),"0");
+console.log("PASS J71 unauthenticated buy RPC denied with untouched original stock and inventory");
+
+sql("UPDATE public.player_wallets SET gp=0 WHERE user_id='"+uid("OUTSIDER")+"'");
+const insufficient=await buy(people.OUTSIDER,failureStock,1);
+assert.ok(insufficient.error,"Insufficient wallet funds accepted by original merchant RPC");
+assert.match(insufficient.error.message,/Insufficient funds/i);
+assert.equal(sql("SELECT qty FROM public.character_stock WHERE id='"+failureStock+"'"),"1");
+assert.equal(soldCount("p13-inventory-concurrency-lantern"),"0");
+assert.equal(wallet("OUTSIDER"),"0");
+sql("UPDATE public.player_wallets SET gp=20 WHERE user_id='"+uid("OUTSIDER")+"'");
+console.log("PASS J72 real signed-in insufficient wallet raises error and rolls back original stock/I/wallet changes");
+
+const oneRace=await Promise.all([
+ buy(people.PLAYER,singleStock,1),buy(people.OUTSIDER,singleStock,1)
+]);
+const oneWinner=oneRace.filter(x=>!x.error),oneLoser=oneRace.filter(x=>x.error);
+assert.equal(oneWinner.length,1,
+ "Concurrent original stock qty=1 must have one sale: "+JSON.stringify(oneRace));
+assert.equal(oneWinner[0].data,1);
+assert.equal(oneLoser.length,1);
+assert.match(oneLoser[0].error.message,/Stock not found|Not enough stock/i);
+assert.equal(sql("SELECT count(*) FROM public.character_stock WHERE id='"+singleStock+"'"),"0");
+assert.equal(soldCount("p13-inventory-concurrency-dagger"),"1");
+assert.equal(Number(wallet("PLAYER"))+Number(wallet("OUTSIDER")),35);
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE item_id='p13-inventory-concurrency-dagger'"+
+ " AND user_id in ('"+uid("PLAYER")+"','"+uid("OUTSIDER")+"')"),"1");
+console.log("PASS J73 two truly concurrent signed-in original stock FOR UPDATE buyers produce exactly one wallet debit and one actual inventory I INSERT for last unit");
+
+const lastReplay=await buy(people.PLAYER,singleStock,1);
+assert.ok(lastReplay.error,"Depleted stock could be repurchased");
+assert.match(lastReplay.error.message,/Stock not found/i);
+assert.equal(soldCount("p13-inventory-concurrency-dagger"),"1");
+assert.equal(Number(wallet("PLAYER"))+Number(wallet("OUTSIDER")),35);
+console.log("PASS J74 repeated request for deleted original stock does not create an extra item or debit another wallet");
+
+const twoRace=await Promise.all([
+ buy(people.PLAYER,pairStock,1),buy(people.OUTSIDER,pairStock,1)
+]);
+for(const result of twoRace){assert.ifError(result.error);assert.equal(result.data,1);}
+assert.equal(sql("SELECT count(*) FROM public.character_stock WHERE id='"+pairStock+"'"),"0");
+assert.equal(soldCount("p13-inventory-concurrency-rope"),"2");
+assert.equal(Number(wallet("PLAYER"))+Number(wallet("OUTSIDER")),25);
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE item_id='p13-inventory-concurrency-rope'"+
+ " AND user_id='"+uid("PLAYER")+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE item_id='p13-inventory-concurrency-rope'"+
+ " AND user_id='"+uid("OUTSIDER")+"'"),"1");
+console.log("PASS J75 two concurrent signed-in original inventory writes for qty=2 sell one each, conserve stock and debit exactly two wallets");
+
+const overBuy=await buy(people.PLAYER,failureStock,2);
+assert.ok(overBuy.error,"Overstock request unexpectedly succeeded");
+assert.match(overBuy.error.message,/Not enough stock/i);
+assert.equal(sql("SELECT qty FROM public.character_stock WHERE id='"+failureStock+"'"),"1");
+assert.equal(soldCount("p13-inventory-concurrency-lantern"),"0");
+assert.equal(Number(wallet("PLAYER"))+Number(wallet("OUTSIDER")),25);
+const afterBad=await buy(people.OUTSIDER,failureStock,1);
+assert.ifError(afterBad.error);assert.equal(afterBad.data,1);
+assert.equal(soldCount("p13-inventory-concurrency-lantern"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_stock WHERE id='"+failureStock+"'"),"0");
+assert.equal(Number(wallet("PLAYER"))+Number(wallet("OUTSIDER")),20);
+console.log("PASS J76 original stock quantity rejection rolls back safely and next valid signed buyer completes with conserved inventory and wallet");
+
+assert.equal(grantFingerprint(giChar),giInstBefore);
+assert.equal(aggFingerprint(giChar),giAggBefore);
+assert.equal(rowFingerprint("public.inventory_items","owner_id='"+giChar+"'"),giInvBefore);
+assert.equal(sql("SELECT md5(to_jsonb(c)::text) FROM public.character_currency c WHERE character_id='"+giChar+"'"),giCashBefore);
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_type='player'"+
+ " AND item_id like 'p13-inventory-concurrency-%'"),"4");
+assert.equal(sql("SELECT count(*) FROM public.character_stock WHERE character_id='"+shop+"'"),"0");
+console.log("PASS J77 real JWT original merchant inventory I stock/wallet writes preserve separate canonical Forge G/I/currency snapshots; 4 items sold, zero leftover stock, exact total debit");
+
+console.log("PASS LOCAL REAL GoTrue J00-J77: source-original Forge G/I under controlled CP-CS 40P01, plus actual original merchant stock FOR UPDATE and inventory INSERT in competing real JWT transactions. Direct G-row concurrency and global lock order still unproven.");
+
 
 
 
