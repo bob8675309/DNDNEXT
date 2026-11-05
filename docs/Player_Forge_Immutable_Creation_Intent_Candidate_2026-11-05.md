@@ -37,7 +37,7 @@ The `scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql` installs
 - **J15:** Two genuine concurrent same-ID equipped creation calls produce one canonical item/currency/event (no duplicate).
 - **J16:** Equipped alternate creation preserves the separate existing `players.sheet` legacy snapshot through the composed PR #319 guard, alongside independent canonical sheet/equipment.
 
-**Coverage limit after J22–J30:** Only **5 of 31 original** creation-adjacent triggers are installed; the extra #321 creator INSERT trigger is a research addition. **26 original triggers and authentic six helper implementations remain absent.** This is source-exact behavior *for a bounded package-equipment path*, not complete Forge, real production-RLS, live actor or browser acceptance. [Full live-source trigger matrix](Forge_Original_Creation_Trigger_Coverage_2026-11-05.md) records the names and hashes.
+**Coverage limit after J31–J38:** Only **6 of 31 original** creation-adjacent triggers are installed; the extra #321 creator INSERT trigger is a research addition. **25 original triggers and the six authentic equipment helper implementations remain absent.** This is source-exact behavior *for a bounded package-equipment path*, not complete Forge, real production-RLS, live actor or browser acceptance. [Full live-source trigger matrix](Forge_Original_Creation_Trigger_Coverage_2026-11-05.md) records the names and hashes.
 
 ## Deferred sheet Background validation — genuine local JWT J17–J21 PASS
 
@@ -66,7 +66,26 @@ The bounded genuine local Auth [GitHub Actions run 42033204780](https://github.c
 
 **Important RLS boundary:** To exercise the INVOKER guard as `current_user='authenticated'`, this local fixture installs narrowly scoped **editor-only test RLS** and temporary SELECT grants on its scratch `character_permissions` table. It does **not** reproduce the live `private.can_access_character_v1` helper, full production sheet-visibility policies, service actors, or real Admin profile roles. Original sheet-tag helper runs in the local test's deliberately reduced creator/account context. No production permissions are changed; none of these results proves player-safe full-sheet visibility or the full security cutover.
 
-The [31-trigger gap matrix](Forge_Original_Creation_Trigger_Coverage_2026-11-05.md) now records **5 original loaded / 26 original omitted** (18 progression, 6 character, 2 inventory) plus one unmerged candidate creator INSERT trigger.
+The [31-trigger gap matrix](Forge_Original_Creation_Trigger_Coverage_2026-11-05.md) now records **6 original loaded / 25 original omitted** (17 progression, 6 character, 2 inventory) plus one unmerged candidate creator INSERT trigger.
+
+## Deferred progression authority and canonical feat/spell summaries — true local JWT J31–J38 PASS
+
+[GitHub Actions 42036764115](https://github.com/bob8675309/DNDNEXT/actions/runs/42036764115) **SUCCESS** at **exact executable SHA `9245ad4a59e8452e13ea1f103af46fc98f36b901`**, both original PG17 and genuine local GoTrue/PostgREST jobs. The original `character_progression_validate_player_forge_authority_v1` **DEFERRABLE INITIALLY DEFERRED** trigger was installed **after J30**, with the deployed handler and original source helpers copied without rewriting validations. Source MD5s: deferred handler `48006f8db76e9b32c96fcd2b6a4b3080`; feat-instance source validator `409802af8c5255171ff41bb4a0da694f`; normalizer `dd8cdd5b47efe99b1cfff9c2bf7635dd`; source-choice eligibility `586637a9e0e55e19ee335c3efd6ea2b9`; source-priority function `fdcc080cd95e6ce282631191869893c1`. The local preferred-option views are built from live `pg_get_viewdef` outputs, not permissive substitutes.
+
+J31–J38 prove the following in the bounded fixture:
+
+- **J31:** Canonical XPHB Lucky feat instance plus source-preferred Defense Fighting Style passes the original deferred validator with equipped Fighter and an inert identical nonce retry.
+- **J32:** Unsupported feat summary with no legitimate source grant rejects and rolls back already materialized gear, character and nonce reservation.
+- **J33:** Malformed source feat instance without required `instanceId` rejects through the original feat-instance helper, leaving no character or nonce.
+- **J34:** Nonexistent Fighting Style fails the original preferred-option/source-choice eligibility test and atomically rolls back the nonce.
+- **J35:** Sheet listing a spell without a corresponding class-authoritative `character_spells` row fails and rolls back.
+- **J36:** Source-original v3 Wizard correctly commits its Fire Bolt assignment when its sheet spells summary matches; immutable nonce replay remains inert.
+- **J37:** Source-original v3 with mismatched sheet spell summary vs actual class spell fails and rolls back the character and nonce.
+- **J38:** Two concurrent genuine JWT calls with the same source-qualified feat/gear intent resolve to one character, event, item and currency record; a changed feat summary on that nonce rejects with `22023`.
+
+**Scope boundary:** This is one positive feat-source and Fighting Style specimen from a **deliberately tiny synthetic source-qualified catalogue**, with the exact handler and five helper function bodies. It does not install all class/subclass source grants or the original feat grant-instance persistence trigger, and uses the previously disclosed reduced equipment helpers, Admin role and editor-only RLS. In particular, J31 proves only the original deferred payload validator accepts the input; it **does not prove the missing source-owned feat materializer or all production feature grants have executed**. The original v3 test was made consistent with the validator by supplying the matching `sheet.spells` summary; it does not establish that every real browser-generated sheet is already consistent.
+
+**Files:** `scripts/fixtures/forge_progression_authority_original_pg17.sql`, `scripts/fixtures/forge_progression_authority_local_auth_extension_pg17.sql`, `scripts/test_forge_immutable_creation_replay_local_auth.mjs`; [31-trigger gap matrix](Forge_Original_Creation_Trigger_Coverage_2026-11-05.md) records **6 original loaded, 25 omitted**.
 
 ## Mandatory compatibility and release blockers
 
@@ -80,4 +99,4 @@ The [31-trigger gap matrix](Forge_Original_Creation_Trigger_Coverage_2026-11-05.
 
 **Exact-source runtime revalidation:** [GitHub Actions run 42033593609](https://github.com/bob8675309/DNDNEXT/actions/runs/42033593609), at tested executable SHA `bbc327e01158ffcaa6db4a0e7ff2c45eaa192936`, **SUCCESS** for both PostgreSQL and genuine local JWT jobs. The local SQL install now fails closed unless `md5(pg_get_functiondef)` of **all four loaded original authority/tag helpers** matches the read-only live PG17 fingerprints; all J00–J30 previously established outcomes remain passing. This SHA is the latest verified executable checkpoint. It is *not* a production database change.
 
-**Next bounded engineering action:** source-audit the deferred `character_progression_validate_player_forge_authority_v1` trigger/handler, gather its exact deployed helper and catalogue dependencies, then add signed-in passing and failing Forge creation cases in isolated PG17/GoTrue. Confirm current creator attribution, immutable replay and source-lock behavior remain intact. Still outstanding: 26 original progression/character/inventory triggers, live production ACL/RLS, Admin NPC creation nonce policy, browser Forge, GM/private backstory and P1.3 CP/CS/I/G global lock order. Do not merge, deploy, or treat this reduced test as full production acceptance.
+**Next bounded engineering action:** source-audit and selectively install the original immediate `character_progression_materialize_player_forge_feat_instances_v1` trigger, its grant/instance tables, and required source-catalogue/helper graph. Check the earlier J31 feat instance is materially persisted only when the actual original materializer allows it, and that invalid/replayed submissions roll back in signed-in local PG17. Then address the other 25 original triggers, production-source RLS/ACL, Admin NPC nonce/service policy, real browser Forge, private GM/creator backstory cutover and P1.3 global CP/CS/I/G lock ordering. These bounded tests are **not** production migration authorization.
