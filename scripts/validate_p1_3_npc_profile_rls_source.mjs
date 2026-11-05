@@ -8,6 +8,7 @@ const candidate=read("sql/candidates/20261104_npc_player_safe_profile_rls_v1.sql
 const stage2=read("sql/candidates/20261104_npc_gm_dossier_column_acl_stage2.sql");
 const stage3=read("sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql");
 const jwt=read("scripts/test_p1_3_npc_profile_safe_local_auth.mjs");
+const createFixture=read("scripts/fixtures/p1_3_npc_creator_replay_fixture_pg17.sql");
 for(const h of ["97b5e6b059e6467e24c4283fe420c83e","deca87aaad0dce214743c87cdca03f36"]){
  assert.ok(original.includes(h),"Original function fingerprint absent: "+h);
  assert.ok(candidate.includes(h),"Candidate source drift guard absent: "+h);
@@ -32,7 +33,7 @@ for(const forbidden of ["DROP TABLE","TRUNCATE","DELETE FROM public","ALTER TABL
 for(const marker of [
  "PASS V00","PASS V01","PASS V02","PASS V03",
  "PASS V04","PASS V05","PASS V06","PASS V07","PASS V08",
- "PASS V09","PASS V10","PASS V11","PASS V12","PASS V13","PASS V14","PASS V15","PASS V16","PASS V17","PASS V18",
+ "PASS V09","PASS V10","PASS V11","PASS V12","PASS V13","PASS V14","PASS V15","PASS V16","PASS V17","PASS V18","PASS V19","PASS V20","PASS V21","PASS V22","PASS V23",
  "EXPECTED UNSAFE BASELINE","RELEASE BLOCKER",
  "DISPOSABLE_LOCAL_GOTRUE_ONLY",
  "readCharacters(people.OUTSIDER.who,visible)",
@@ -59,6 +60,11 @@ for(const required of [
  "creator_user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL",
  "REVOKE ALL ON private.character_creator_attribution FROM PUBLIC,anon,authenticated",
  "CREATE OR REPLACE FUNCTION private.record_character_creator_v1",
+ "CREATE OR REPLACE FUNCTION private.capture_character_creator_on_insert_v1",
+ "CREATE TRIGGER characters_capture_creator_at_insert_v1",
+ "AFTER INSERT ON public.characters",
+ "PERFORM private.record_character_creator_v1(NEW.id)",
+ "IF auth.uid() IS NOT NULL THEN",
  "REVOKE ALL ON FUNCTION private.record_character_creator_v1(uuid)",
  "CREATE OR REPLACE FUNCTION private.can_access_creator_backstory_v1",
  "private.can_access_character_v1(p_character_id,'edit')",
@@ -89,7 +95,21 @@ for(const forbidden of ["DROP TABLE","TRUNCATE","DELETE FROM public.characters",
  "GRANT INSERT ON private.character_creator_attribution TO authenticated",
  "GRANT EXECUTE ON FUNCTION private.record_character_creator_v1(uuid) TO authenticated"])
  assert.ok(!stage3.includes(forbidden),"Destructive or disclosure operation in research stage3: "+forbidden);
-for(const source of [setup,jwt,candidate,stage2,stage3]){
+for(const q of [
+ "CREATE OR REPLACE FUNCTION public.test_authoritative_character_create_v1(p_payload jsonb)",
+ "WHERE c.creation_request_id",
+ "INSERT INTO public.characters",
+ "INSERT INTO public.character_permissions",
+ "GRANT EXECUTE ON FUNCTION public.test_authoritative_character_create_v1(jsonb) TO authenticated"
+]) {
+ if(q==="WHERE c.creation_request_id") {
+   assert.ok(createFixture.includes("creation_request_id=nonce"),"Missing idempotency lookup");
+ } else assert.ok(createFixture.includes(q),"Reduced creation fixture missing "+q);
+}
+for(const token of ["creation_request_id uuid UNIQUE","PASS V19","PASS V20","PASS V21","PASS V22","PASS V23"]) {
+ assert.ok((setup+jwt).includes(token),"Creation/replay test boundary missing "+token);
+}
+for(const source of [setup,createFixture,jwt,candidate,stage2,stage3]){
  assert.ok(!source.includes("ucggczovhmauhshvhusx"),"Production project in scratch files");
  assert.ok(!source.includes("service_role"),"Service credentials forbidden");
 }

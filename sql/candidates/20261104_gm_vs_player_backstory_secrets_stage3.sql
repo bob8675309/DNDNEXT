@@ -56,6 +56,30 @@ $creator$;
 REVOKE ALL ON FUNCTION private.record_character_creator_v1(uuid)
 FROM PUBLIC,anon,authenticated;
 
+-- All canonical character insertions, including the original Admin NPC
+-- create_character_v1 and player-character v1/v2/v3 Forge families, pass
+-- through public.characters. Bind provenance at AFTER INSERT in that SAME
+-- transaction, without changing complex existing RPC sources or permitting
+-- a forged creator_user_id payload. No hard-coded row/account creator grants.
+-- Service-side creations with no validated signed-in auth.uid() have no
+-- attribution and remain GM-only until an explicitly reviewed workflow.
+CREATE OR REPLACE FUNCTION private.capture_character_creator_on_insert_v1()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER
+SET search_path TO 'pg_catalog','public','private','auth'
+AS $capture$
+BEGIN
+  IF auth.uid() IS NOT NULL THEN
+    PERFORM private.record_character_creator_v1(NEW.id);
+  END IF;
+  RETURN NEW;
+END;
+$capture$;
+REVOKE ALL ON FUNCTION private.capture_character_creator_on_insert_v1()
+FROM PUBLIC,anon,authenticated;
+CREATE TRIGGER characters_capture_creator_at_insert_v1
+AFTER INSERT ON public.characters
+FOR EACH ROW EXECUTE FUNCTION private.capture_character_creator_on_insert_v1();
+
 -- A creator must *also* retain current can_edit authority for the character.
 -- Other can_edit collaborators cannot see this author's private backstory.
 -- The GM can always access it. Missing legacy attribution => GM only.

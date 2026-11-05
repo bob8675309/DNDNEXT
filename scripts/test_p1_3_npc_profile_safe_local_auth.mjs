@@ -463,6 +463,78 @@ assert.equal(gmLegacyConfirm.data.secret_text,"GM_KEEPS_UNCLAIMED_NPC_STORY");
 console.log("PASS V18: un-attributed legacy NPC backstory defaults to GM only, "+
  "including against an unrelated current can_edit sheet editor");
 
-console.log("P1.3 staged secrets V00–V18 genuine GoTrue local JWT PASS. "+
- "Research-only: creator binding in live Forge and all client cutovers pending, live DB untouched.");
+// V19-V23: exercise the same trigger path used by every canonical character
+// INSERT with a reduced authenticated creation wrapper. NOT full Forge parity.
+sqlFile("scripts/fixtures/p1_3_npc_creator_replay_fixture_pg17.sql");
+sql("NOTIFY pgrst,'reload schema'");
+const createName="test_authoritative_character_create_v1";
+const nonce=randomUUID();
+const craftedPayload={name:"Creator-replay-synthetic",creation_request_id:nonce,
+  creator_user_id:people.COEDITOR.id,created_by:people.COEDITOR.id};
+const created=await rpc(people.EDITOR.who,createName,{p_payload:craftedPayload});
+assert.ifError(created.error);const freshId=created.data;
+assert.match(freshId,/^[0-9a-f-]{36}$/i);
+const provenance=sql("SELECT creator_user_id::text FROM private.character_creator_attribution WHERE character_id='"+freshId+"'");
+assert.equal(provenance,people.EDITOR.id);
+const recorded=sql("SELECT count(*) FROM private.character_creator_attribution WHERE character_id='"+freshId+"'");
+assert.equal(recorded,"1");
+console.log("PASS V19: authenticated creator bound by AFTER INSERT in same creation transaction; client creator claim ignored");
+
+const replay=await rpc(people.EDITOR.who,createName,{p_payload:{
+ name:"Changed replay name",creation_request_id:nonce,creator_user_id:people.ADMIN.id
+}});
+assert.ifError(replay.error);assert.equal(replay.data,freshId);
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE creation_request_id='"+nonce+"'"),"1");
+assert.equal(sql("SELECT creator_user_id::text FROM private.character_creator_attribution WHERE character_id='"+freshId+"'"),people.EDITOR.id);
+const stolenReplay=await rpc(people.COEDITOR.who,createName,{p_payload:craftedPayload});
+assert.ok(stolenReplay.error);
+assert.equal(stolenReplay.error.code,"42501");
+console.log("PASS V20: same-creator idempotent replay preserves immutable origin; another user cannot replay/claim request");
+
+sql("INSERT INTO public.character_permissions(character_id,user_id,can_edit,can_inventory) VALUES ('"+
+ freshId+"','"+people.COEDITOR.id+"',true,true)");
+const anotherEditorSheet=await readSheet(people.COEDITOR.who,freshId);
+assert.ifError(anotherEditorSheet.error);
+assert.equal(anotherEditorSheet.data.sheet.classKey,"fighter");
+const newSecret=await people.EDITOR.who.from(storyTable).insert({
+ character_id:freshId,secret_text:"CREATOR_ONLY_FROM_NEW_CHARACTER"
+}).select("secret_text").single();
+assert.ifError(newSecret.error);
+const otherSecret=await people.COEDITOR.who.from(storyTable)
+ .select("secret_text").eq("character_id",freshId);
+assert.ifError(otherSecret.error);assert.deepEqual(otherSecret.data,[]);
+const admSecret=await people.ADMIN.who.from(storyTable)
+ .select("secret_text").eq("character_id",freshId).single();
+assert.ifError(admSecret.error);
+assert.equal(admSecret.data.secret_text,"CREATOR_ONLY_FROM_NEW_CHARACTER");
+console.log("PASS V21: newly created NPC shared with second editor keeps ordinary sheet shared, authored backstory creator/GM-only");
+
+const rolledBackId=randomUUID();
+const rolledBackNonce=randomUUID();
+sql("BEGIN; SELECT set_config('request.jwt.claim.sub','"+people.EDITOR.id+"',true);"+
+ " INSERT INTO public.characters(id,name,kind,creation_request_id,is_hidden) VALUES ('"+
+ rolledBackId+"','Rollback fixture NPC','npc','"+rolledBackNonce+"',true); ROLLBACK;");
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE id='"+rolledBackId+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM private.character_creator_attribution WHERE character_id='"+rolledBackId+"'"),"0");
+console.log("PASS V22: rolled-back creation transaction also rolls back immutable creator attribution");
+
+const noAuthId=randomUUID();
+sql("INSERT INTO public.characters(id,name,kind,is_hidden) VALUES ('"+
+ noAuthId+"','Unattributed service creation','npc',true)");
+assert.equal(sql("SELECT count(*) FROM private.character_creator_attribution WHERE character_id='"+noAuthId+"'"),"0");
+const gmOnly=await people.ADMIN.who.from(storyTable).insert({
+ character_id:noAuthId,secret_text:"GM_UNATTRIBUTED_SERVICE_NPC"
+}).select("secret_text").single();
+assert.ifError(gmOnly.error);
+const deniedOther=await people.COEDITOR.who.from(storyTable)
+ .select("secret_text").eq("character_id",noAuthId);
+assert.ifError(deniedOther.error);assert.deepEqual(deniedOther.data,[]);
+const anonCreate=await rpc(client(),createName,{p_payload:{
+ name:"No anonymous creator",creation_request_id:randomUUID()
+}});
+assert.ok(anonCreate.error);
+console.log("PASS V23: no verified auth.uid creates no creator provenance, remains GM-only; anon creation denied");
+console.log("P1.3 staged secrets V00–V23 genuine local GoTrue PASS. "+
+ "Creation V19–V23 use reduced wrapper, not deployed Forge functions; production database untouched.");
+
 

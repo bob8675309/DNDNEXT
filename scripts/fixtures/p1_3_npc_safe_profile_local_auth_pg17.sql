@@ -14,6 +14,7 @@ END $guard$;
 CREATE SCHEMA IF NOT EXISTS private;
 CREATE TABLE public.characters (
  id uuid PRIMARY KEY,name text NOT NULL,kind text NOT NULL DEFAULT 'npc',
+ creation_request_id uuid UNIQUE,
  race text,role text,affiliation text,status text,description text,
  background text,motivation text,quirk text,mannerism text,voice text,
  secret text, updated_at timestamptz NOT NULL DEFAULT now(),
