@@ -553,7 +553,7 @@
       "source_md5_v3": "6ba73e6f12fcf826cc0a739cce45ff40",
       "test": "Free original PostgreSQL17 baseline FCR-B00–05 plus genuine local GoTrue/PostgREST J00–J62 PASS, GitHub Actions 42046427282 at executable SHA 57ec8c1357c3dece4629c41c3111ea7a33bb0588.",
       "production_effects": "none",
-      "next_gate": "Real GoTrue/JWT source-authenticated complete_character_level_up_v5→v4→v3 vs authorized sheet coeditor CP/CS lock races and G/I dependency graph; P1.3 #317 lock order, #321 creator and full RLS/browser acceptance; no historic grant auto-backfill.",
+      "next_gate": "Compose original G feat grants and I inventory/deferred equipment with signed-in CP/CS v5 levelup/coeditor schedule, all original triggers/RLS/rollback and P1.3 global order, preserving #321/#324 creator/no-backfill semantics.",
       "legacy_sheet_pr319": "Integrated ONE held PR319 preservation clause into source-pinned private v2; original live v2/fixture unchanged; alternate canonical sheets and account snapshot passed real JWT",
       "deferred_equipment_source": "Seven of 31 original creation-adjacent triggers loaded in local PG17 fixture, 24 original omitted. Held #321 creator capture plus NEW verified creator seed are additional proposed triggers, not counted; five original grant-table hooks exercise Lucky limited path; RLS and equipment helpers reduced.",
       "gap_matrix": "docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md",
@@ -563,7 +563,7 @@
       "source_provenance_gap": "Original source J39 emits NULL granted_by on both canonical feat tables despite eventual CP.created_by set. Read-only live 3/3 grant instances NULL while linked current CP creator non-NULL; only the new held candidate corrects new local Forge creation, not production. docs/Forge_Feat_Grant_Provenance_Gap_2026-11-05.md",
       "creator_seed_candidate": "sql/candidates/20261105_forge_progression_verified_creator_seed_v1.sql — NEW unapplied BEFORE INSERT character_progression trigger; uses signed-in auth.uid + same-transaction held #321 immutable creator and Forge sheet marker, with source-unchanged immediate canonical feat materializer; J49–J62 real local Auth PASS, historical rows untouched.",
       "creator_seed_design_report": "docs/Forge_Verified_Progression_Creator_Candidate_2026-11-05.md",
-      "p1_3_lock_order_cross_branch": "Held #317 original Admin set_character_progression_v1 CP→CS versus original CS sync CS→CP produces PostgreSQL 40P01 in test-timed two-session F04, original-source PG17 CI 42049546692 at c7ba39df492bce3b64a5547aa1da0fbaee10aefa; F05 synthetic CP-first control passes. New creator seed BEFORE INSERT does not fix existing CP UPDATE inversion."
+      "p1_3_lock_order_cross_branch": "Original Admin F04 CP→CS vs CS→CP source 40P01 under scratch timings; NEW original player v5→v4→v3/base real signed owner vs signed coeditor CP/CS 40P01 under observed test-only CP prelock/CS hold at GitHub 42055043840, executable d09b3981f04ceceb09ff0a1489f589041a441164. Authentic outsider/revocation denial and Fighter lv1→2 accepted; no natural frequency or global G/I proof. #324 creator seed BEFORE INSERT does not fix v5 CP UPDATE inversion."
     },
     "deployed": "No candidate executor, typed request intent migration, or new composable spell interpreter deployed at last check."
   },
