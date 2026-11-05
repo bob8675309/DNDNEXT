@@ -4,6 +4,7 @@ on:
     paths:
       - ".github/workflows/validate-p1-3-npc-profile-rls.yml"
       - "sql/candidates/20261104_npc_player_safe_profile_rls_v1.sql"
+      - "sql/candidates/20261104_npc_gm_dossier_column_acl_stage2.sql"
       - "scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql"
       - "scripts/fixtures/p1_3_npc_safe_profile_local_auth_pg17.sql"
       - "scripts/test_p1_3_npc_profile_safe_local_auth.mjs"

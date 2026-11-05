@@ -181,4 +181,47 @@ assert.equal(stillLeaky.data.motivation,"MOTIVATION_UNREVEALED");
 assert.equal(stillLeaky.data.background,secrets.background);
 console.log("PASS V06 [RELEASE BLOCKER]: current characters column-level grants STILL expose unrevealed motivation/quirk. "+
  "Full production cutover MUST include column ACL and all Admin/Forge RPC consumers; this candidate is NOT shippable.");
-console.log("P1.3 isolated genuine GoTrue player-safe profile V00–V06 PASS. NO production access-policy change.");
+// Stage two is deliberately NOT production-ready: it revokes columns used by
+// unconverted GM/browser consumers. This is a disposable AUTH/ACL proof only.
+sqlFile("sql/candidates/20261104_npc_gm_dossier_column_acl_stage2.sql");
+sql("NOTIFY pgrst,'reload schema'");
+const blockedColumns=await readCharacters(people.OUTSIDER.who,visible);
+assert.ok(blockedColumns.error,"Unrevealed character columns still directly accessible");
+assert.equal(blockedColumns.error.code,"42501");
+const adminDirectColumns=await readCharacters(people.ADMIN.who,visible);
+assert.ok(adminDirectColumns.error,"Admin direct table SELECT should also lose revoked columns");
+const safeAfterStage2=await rpc(people.OUTSIDER.who,
+ "get_npc_profile_visible_v1",{p_character_id:visible});
+assert.ifError(safeAfterStage2.error);
+assert.equal(safeAfterStage2.data.lore.background,secrets.background);
+assert.equal(safeAfterStage2.data.lore.secret,secrets.npc); // explicit GM reveal
+const basicAfterStage2=await people.OUTSIDER.who.from("characters")
+ .select("id,name,kind").eq("id",visible).maybeSingle();
+assert.ifError(basicAfterStage2.error);
+assert.equal(basicAfterStage2.data.name,"Visible NPC");
+console.log("PASS V07: staged private-lore column ACL denies direct outsider/Admin table SELECT, "+
+ "but public-safe RPC and basic roster identity still work; frontend consumers MUST be migrated");
+
+const gmDossier=await rpc(people.ADMIN.who,"get_npc_dossier_admin_v1",
+ {p_character_id:hidden});
+assert.ifError(gmDossier.error);
+assert.equal(gmDossier.data.secret,secrets.hidden);
+assert.equal(gmDossier.data.character_sheet.secret,secrets.hidden);
+const outsiderDossier=await rpc(people.OUTSIDER.who,"get_npc_dossier_admin_v1",
+ {p_character_id:visible});
+assert.ok(outsiderDossier.error);
+assert.equal(outsiderDossier.error.code,"42501");
+const editorDossier=await rpc(people.EDITOR.who,"get_npc_dossier_admin_v1",
+ {p_character_id:hidden});
+assert.ok(editorDossier.error);
+assert.equal(editorDossier.error.code,"42501");
+const anonDossier=await rpc(client(),"get_npc_dossier_admin_v1",
+ {p_character_id:visible});
+assert.ok(anonDossier.error);
+const editorAfter=await readSheet(people.EDITOR.who,hidden);
+assert.ifError(editorAfter.error);
+assert.equal(editorAfter.data.sheet.secret,secrets.hidden);
+console.log("PASS V08: GM-only dossier returns full hidden character and canonical sheet; "+
+ "other signed-in editors and outsiders denied dossier, editor still can use authorized sheet");
+console.log("P1.3 isolated genuine GoTrue player-safe profile V00–V08 PASS. "+
+ "No production ACL change and NO deployable frontend migration.");
