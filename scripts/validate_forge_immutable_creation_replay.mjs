@@ -14,6 +14,9 @@ const originalSheetAuthority=readFileSync("scripts/fixtures/forge_sheet_authorit
 const sheetAuthorityExtension=readFileSync("scripts/fixtures/forge_sheet_authority_tags_local_auth_extension_pg17.sql","utf8");
 const progressionOriginal=readFileSync("scripts/fixtures/forge_progression_authority_original_pg17.sql","utf8");
 const progressionExtension=readFileSync("scripts/fixtures/forge_progression_authority_local_auth_extension_pg17.sql","utf8");
+const featSource=readFileSync("scripts/fixtures/forge_feat_materializer_original_pg17.sql","utf8");
+const featSupport=readFileSync("scripts/fixtures/forge_feat_materializer_discriminators_original_pg17.sql","utf8");
+const featSetup=readFileSync("scripts/fixtures/forge_feat_materializer_local_auth_extension_pg17.sql","utf8");
 
 
 
@@ -137,11 +140,20 @@ for(const token of ["CREATE VIEW public.character_option_catalog_all_preferred",
  "DEFERRABLE INITIALLY DEFERRED FOR EACH ROW"]) {
  assert.ok(progressionExtension.includes(token),"Missing full source-aware progression fixture element: "+token);
 }
+for(const hash of ["c27c4181a51cfd018bbb8244e9931550","35cb3d6560ffde5a94b019a9f373f65d","30939673464de80a0791a89017d48065","c56af0b4f49f024a18baf396eeb2d1e2"]) {
+ assert.ok(featSource.includes(hash) && featSetup.includes(hash),"Missing source-exact original feat grant function/hash "+hash);
+}
+for(const hash of ["3801761f8bc46c5af10fca5e5ae73e60","be000f9e6d6e129cb9505b110a1021ed"]) {
+ assert.ok(featSupport.includes(hash) && featSetup.includes(hash),"Missing original feat family discriminator "+hash);
+}
+for(const token of ["CREATE TABLE public.character_option_grant_instances","CREATE TABLE public.character_option_grants","ENABLE ROW LEVEL SECURITY","materialize_player_forge_feat_instances_v1()","guard_direct_character_authority_mutation_v1()"]) {
+ assert.ok(featSetup.includes(token),"Missing original feat materializer fixture contract "+token);
+}
 assert.ok(gearExtension.includes("DEFERRABLE INITIALLY DEFERRED FOR EACH ROW"),
  "Original equipment trigger must remain deferred");
 assert.ok(gearExtension.includes("EXECUTE FUNCTION private.sync_character_progression_from_sheet_v1()"),
  "Original sheet/progression trigger must be installed in supplemental slice");
-for (const token of ["J10","J11","J12","J13","J14","J15","J16","J17","J18","J19","J20","J21","J22","J23","J24","J25","J26","J27","J28","J29","J30","J31","J32","J33","J34","J35","J36","J37","J38",
+for (const token of ["J10","J11","J12","J13","J14","J15","J16","J17","J18","J19","J20","J21","J22","J23","J24","J25","J26","J27","J28","J29","J30","J31","J32","J33","J34","J35","J36","J37","J38","J39","J40","J41","J42","J43","J44","J45","J46","J47","J48",
  "forge_materializer_local_auth_extension_pg17.sql","startingEquipmentSelections"])
  assert.ok(localAuth.includes(token), "Missing signed-in creation and gear regression "+token);
 console.log("PASS source: original Admin/v2/v3 snapshots, v2/v3 source-pinned private wrappers with one PR319 snapshot safeguard, nonce fingerprint and authorization static contract.");
