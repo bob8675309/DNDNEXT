@@ -6,6 +6,10 @@ const original=readFileSync("scripts/fixtures/forge_creation_original_functions_
 const candidate=readFileSync("sql/candidates/20261105_player_creation_immutable_intent_v1.sql","utf8");
 const fixture=readFileSync("scripts/fixtures/forge_creation_replay_candidate_pg17.sql","utf8");
 const creator=readFileSync("scripts/fixtures/forge_creator_trigger_original_stage3_pg17.sql","utf8");
+const gear=readFileSync("scripts/fixtures/forge_materializer_original_functions_pg17.sql","utf8");
+const gearExtension=readFileSync("scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql","utf8");
+const localAuth=readFileSync("scripts/test_forge_immutable_creation_replay_local_auth.mjs","utf8");
+
 function source(name) {
  const marker="CREATE OR REPLACE FUNCTION public."+name+"(";
  const from=original.indexOf(marker);
@@ -68,4 +72,20 @@ for (const str of ["INSERT INTO private.character_creator_attribution","CREATE T
  "auth.uid() IS NOT NULL"])
  assert.ok(creator.includes(str),"Creator trigger lost source candidate contract: "+str);
 assert.ok(!candidate.includes("https://") && !candidate.includes("SUPABASE_SERVICE_ROLE_KEY"),"Candidate unexpectedly embeds URLs/secret names");
+for (const [fn,digest] of [
+ ["materialize_player_forge_starting_equipment_trigger_v1","23fa54dd0a6d7b42b802d613f39ea27c"],
+ ["materialize_player_forge_starting_equipment_v1","653e1b9d7cc47dcff2cef33a674b97f4"],
+ ["sync_character_progression_from_sheet_v1","bb1a3a2d1600ce33cd4fcadac5e0f3a9"]
+]) {
+ assert.ok(gear.includes(digest), "Missing original deployed MD5 annotation "+fn);
+ assert.ok(gear.includes("CREATE OR REPLACE FUNCTION private."+fn+"("),
+ "Missing original deployed function body "+fn);
+}
+assert.ok(gearExtension.includes("DEFERRABLE INITIALLY DEFERRED FOR EACH ROW"),
+ "Original equipment trigger must remain deferred");
+assert.ok(gearExtension.includes("EXECUTE FUNCTION private.sync_character_progression_from_sheet_v1()"),
+ "Original sheet/progression trigger must be installed in supplemental slice");
+for (const token of ["J10","J11","J12","J13","J14","J15","J16",
+ "forge_materializer_local_auth_extension_pg17.sql","startingEquipmentSelections"])
+ assert.ok(localAuth.includes(token), "Missing signed-in creation and gear regression "+token);
 console.log("PASS source: original Admin/v2/v3 snapshots, v2/v3 source-pinned private wrappers with one PR319 snapshot safeguard, nonce fingerprint and authorization static contract.");
