@@ -1200,16 +1200,24 @@ assert.equal(sql("SELECT count(*) FROM public.characters WHERE name='J79 blocked
 assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+id(9380)+"'"),"0");
 console.log("PASS J79 real signed original v2 feat+gear CREATE fails 23514 at deferred materialization COMMIT with exact obsolete CHECK; all creator/nonce/CS/CP/G/GI/I/C rolled back");
 
-// Scope: this is an EQUIPMENT-INSERT barrier, not an assertion that all
-// Player Forge creation modes fail. A no-starting-equipment creator can commit.
-const noGearPayload=fighter("J80 no-starting-gear control with old CHECK",id(9381));
-const noGearCreated=pass(await call2(people.PLAYER.client,noGearPayload),
- "Original Forge without starting equipment while old CHECK remains");
-assert.equal(sql("SELECT count(*) FROM public.character_currency WHERE character_id='"+noGearCreated+"'"),"0");
-assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_id='"+noGearCreated+"'"),"0");
-assert.equal(sql("SELECT count(*) FROM public.character_level_events WHERE character_id='"+noGearCreated+"'"),"1");
-assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+id(9381)+"' AND character_id='"+noGearCreated+"'"),"1");
-console.log("PASS J80 valid signed v2 creation without starting equipment still commits under old NOT VALID check; scope is character-owned inventory insertion");
+// Scope control: original source Admin NPC creation is not Player Forge and
+// never requests character-owned starting inventory. Earlier J57 proves this
+// RPC already works with the full held creator/feat triggers. An unselected
+// Forge package is INVALID, so DO NOT use it as a false positive control.
+const gmNoGearPayload={
+ name:"J80 valid non-Forge GM NPC with old CHECK",kind:"npc",
+ creation_request_id:id(9381),
+ sheet:{classKey:"fighter",level:1,note:"J80 NPC source control, no Forge marker"}
+};
+const gmNoGear=pass(await rpc(people.ADMIN.client,"create_character_v1",{
+ p_payload:gmNoGearPayload
+}),"Source-original GM NPC creation with contradictory old inventory CHECK");
+assert.equal(sql("SELECT count(*) FROM public.character_currency WHERE character_id='"+gmNoGear+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_id='"+gmNoGear+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM public.character_option_grant_instances WHERE character_id='"+gmNoGear+"'"),"0");
+assert.equal(sql("SELECT creator_user_id::text FROM private.character_creator_attribution WHERE character_id='"+gmNoGear+"'"),uid("ADMIN"));
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+id(9381)+"'"),"0");
+console.log("PASS J80 source-authenticated Admin non-Forge NPC creation still commits with contradictory old CHECK; no I/C or source player-grants involved");
 
 // Explicit TEST-ONLY schema control: temporarily drop just the obsolete
 // constraint on disposable PG17, rerun THE SAME genuine JWT failed nonce.

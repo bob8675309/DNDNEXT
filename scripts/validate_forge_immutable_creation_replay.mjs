@@ -292,4 +292,8 @@ for(const token of [
  'assert.match(blockedOld.error.message||"",/inventory_items_owner_type_chk/',
  'assert.match(blockedAgainResult.error.message||"",/inventory_items_owner_type_chk/'
 ]) assert.ok(localAuth.includes(token),"Test harness must pass an actual RegExp to Node assert.match: "+token);
+assert.ok(localAuth.includes("gmNoGearPayload") &&
+ localAuth.includes('rpc(people.ADMIN.client,"create_character_v1"') &&
+ !localAuth.includes('noGearPayload=fighter('),
+ "J80 control must use valid original GM non-Forge NPC RPC, not invalid unselected Forge package");
 console.log("PASS STATIC J78-J84 source-original inventory handlers, exact old/new live owner-type CHECKs, signed creator deferred-COMMIT failure/clean rollback/scratch-only cause-control. DATABASE ACCEPTANCE MUST BE SEPARATE.");
