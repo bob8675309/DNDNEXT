@@ -3966,9 +3966,9 @@ const locById = useMemo(() => {
 
       {/* NPC Offcanvas (RIGHT — player-facing) */}
       <div
-        className="offcanvas offcanvas-end loc-panel"
+        className="offcanvas offcanvas-end loc-panel map-npc-profile-centered"
         id="npcPanel"
-        data-bs-backdrop="false"
+        data-bs-backdrop="true"
         data-bs-scroll="true"
         data-bs-keyboard="true"
         tabIndex="-1"
