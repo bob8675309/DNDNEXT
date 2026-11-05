@@ -163,13 +163,17 @@ for(const token of [
  "'c27c4181a51cfd018bbb8244e9931550'",
  "REVOKE ALL ON FUNCTION private.seed_verified_forge_progression_creator_v1()"
 ]) assert.ok(creatorSeed.includes(token),"Creator provenance research candidate missing "+token);
+// Inspect executable SQL, not explanatory comments that explicitly say
+// there is no FOR UPDATE or historical DML. A real lock clause still fails.
+const creatorSeedExecutable=creatorSeed.split("\\n").filter(line=>
+ !line.trimStart().startsWith("--")).join("\\n");
 for(const unsafe of [
  "FOR UPDATE","FOR SHARE",
  "UPDATE public.character_option_grants",
  "UPDATE public.character_option_grant_instances",
  "ALTER TABLE public.character_progression",
  "GRANT EXECUTE ON FUNCTION private.seed_verified_forge_progression_creator_v1"
-]) assert.ok(!creatorSeed.includes(unsafe),"Creator provenance candidate unexpectedly expands row locks/grants: "+unsafe);
+]) assert.ok(!creatorSeedExecutable.includes(unsafe),"Creator provenance candidate unexpectedly expands row locks/grants: "+unsafe);
 assert.ok(gearExtension.includes("DEFERRABLE INITIALLY DEFERRED FOR EACH ROW"),
  "Original equipment trigger must remain deferred");
 assert.ok(gearExtension.includes("EXECUTE FUNCTION private.sync_character_progression_from_sheet_v1()"),
