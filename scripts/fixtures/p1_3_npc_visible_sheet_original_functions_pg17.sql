@@ -57,7 +57,7 @@ AS $function$
   from public.characters c
   where c.id = any(coalesce(p_character_ids, '{}'::uuid[]))
     and private.can_access_character_v1(c.id, 'edit');
-$function$
+$function$;
 
 -- get_my_player_character_v1 source MD5=b6049deb0b4d59daf15d7dd6e8ac1079; exact 2026-11-04 live function text
 CREATE OR REPLACE FUNCTION public.get_my_player_character_v1()
@@ -96,7 +96,7 @@ begin
       'permission', to_jsonb(v_permission)
     );
 end;
-$function$
+$function$;
 
 -- set_character_secret_v1 source MD5=13bdb65758552362bc7049b65131c9aa; exact 2026-11-04 live function text
 CREATE OR REPLACE FUNCTION public.set_character_secret_v1(p_character_id uuid, p_secret text)
@@ -118,4 +118,4 @@ begin
     raise exception 'Character not found' using errcode = 'P0002';
   end if;
 end;
-$function$
+$function$;

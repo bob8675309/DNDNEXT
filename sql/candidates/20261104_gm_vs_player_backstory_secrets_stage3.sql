@@ -68,7 +68,7 @@ AS $function$
   from public.characters c
   where c.id = any(coalesce(p_character_ids, '{}'::uuid[]))
     and auth.uid() is not null and private.current_user_is_admin();
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.set_character_secret_v1(p_character_id uuid, p_secret text)
  RETURNS void
@@ -89,7 +89,7 @@ begin
     raise exception 'Character not found' using errcode = 'P0002';
   end if;
 end;
-$function$
+$function$;
 
 
 -- Keep existing source identity / tagged-PC reader behavior but prevent
@@ -130,7 +130,7 @@ begin
       'permission', to_jsonb(v_permission)
     );
 end;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.get_my_player_characters_v2()
 RETURNS jsonb
