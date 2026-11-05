@@ -4,7 +4,7 @@
 
 ## Distinct original trigger coverage
 
-| Public table | Live noninternal triggers | Source-installed through local JWT J39–J48 | Still omitted |
+| Public table | Live noninternal triggers | Original source-installed through local JWT J00–J62 | Still omitted |
 |---|---:|---:|---:|
 | `character_progression` | 19 | 3 (deferred starting equipment; deferred authority validator; immediate feat grant materializer) | 16 |
 | `character_sheets` | 4 | 4 (sheet→progression; deferred equipment validator; immediate authority guard; immediate tag sync) | 0 |
@@ -69,7 +69,9 @@ The 24 omitted original triggers include additional progression materializers an
 
 **Expanded but still bounded grant-table graph:** In addition to the **7/31** originally inventoried triggers, the local Lucky fixture installs five other live grant-table triggers: original direct-authority guards on `character_option_grant_instances` and `character_option_grants`, plus source-exact boon-energy-resistance, Cartomancer, and runtime-expertise handlers. The latter three return without specialized side effects for Lucky; **those three special feat families were not acceptance-tested**. Two original family-discriminator helpers were imported. All six existing equipment/support helpers, original production ACL/RLS, and the full feat catalogue remain reduced.
 
-**Next bounded engineering gate:** reproduce and propose a provenance fix based on a **server-verified creator identity** that does not reassign unrelated/historical grants or introduce P1.3 CP/CS/G/I lock inversions. Test the fix in a separate disposable patch before editing the held immutable replay candidate. All **24 remaining original creation-adjacent triggers** (16 progression, 6 characters, 2 inventory) and the full source/RLS/browser cutover remain unverified. No merge, migration or production write authorized.
+**Separate provenance correction candidate (new, not an original trigger):** [Authenticated CI 42046427282](https://github.com/bob8675309/DNDNEXT/actions/runs/42046427282) **SUCCESS** at executable SHA `57ec8c1357c3dece4629c41c3111ea7a33bb0588`: old source J39 keeps NULL `granted_by` as negative baseline; installing **new `character_progression_seed_verified_forge_creator_v1` BEFORE INSERT** binds `NEW.created_by` to #321's same-transaction immutable signed-in creator, so unchanged original feat-grant materialization records the correct actor in both canonical tables. J49–J62 cover player v2/v3 (including null nonce), replay/races, rollback, Admin NPC separation, historical non-backfill, coeditor/permission boundaries, source-original no-UID Forge service rejection and spoofed caller `creator_user_id`. [Detailed candidate ledger](Forge_Verified_Progression_Creator_Candidate_2026-11-05.md). This seed is **new research code**, so **do not raise the 7/31 original trigger coverage count** or claim source-unchanged production. The other proposed #321 creator-attribution INSERT trigger is likewise new.
+
+**Next bounded engineering gate:** jointly review this locally verified provenance seed with PR #317's global original **CP/CS/G/I concurrency and lock-order schedules**, plus #321 server-safe privacy and immutable-creator integration. Extend the other **24 original creation-adjacent triggers** (16 progression, 6 characters, 2 inventory), real production RLS/ACL, source catalogue and browser acceptance. Do not backfill any historical NULL grant attribution without an explicit owner data policy. No merge, production migration/grant/data change or deployment authorized.
 
 ## Boundaries and policy
 
