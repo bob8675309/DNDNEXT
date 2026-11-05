@@ -633,6 +633,26 @@
       "caveats": "Not actual signed-in production Admin/player collision, not complete level-up, not global G/I/encounter lock order",
       "next_gate": "Actual source-original complete_character_level_up_v5→v4→v3 with genuine local GoTrue sheet editing and G/I triggers; preserve held PR324 creator seed separately",
       "production_effects": "none"
+    },
+    "p1_3_player_levelup_v5_signed_cp_cs_race": {
+      "status": "held-research-not-deployed",
+      "pr_number": 317,
+      "tested_executable_sha": "d09b3981f04ceceb09ff0a1489f589041a441164",
+      "run_id": 42055043840,
+      "source_original_md5": {
+        "public.complete_character_level_up_v5": "02d74b973a763c53c595be20e35e512f",
+        "public.complete_character_level_up_v4": "f8338ef170c6e27b972e777eeae406b8",
+        "public.complete_character_level_up_v3": "4467e166234c67fc12dd73da0e46b379",
+        "private.complete_character_level_up_base_v3": "e33639d549ef557976a3970ea51f5238",
+        "private.can_manage_character_progression_v1": "ac70e4ec033d86c4e0a254d50d429a45",
+        "private.sync_player_forge_class_spell_summary_v1": "5b1b275a268a57591a2e35a05ce7480d",
+        "private.sync_character_progression_from_sheet_v1": "bb1a3a2d1600ce33cd4fcadac5e0f3a9"
+      },
+      "result": "Original full levelup v5→v4→v3→base Fighter 1→2 authenticated owner works (F08); outsider and revoked editor denied F07/F09; two genuinely signed-in users' test-timed CP prelock/CS hold produce PostgreSQL 40P01 F10 with one victim and exactly one level-up event after retry.",
+      "boundary": "Controlled explicit CP prelock + advisory lock marker, CS hold, reduced class helpers limited Fighter level 2/no choices, scratch editor-only RLS and incomplete 19-trigger G/I graph; natural unforced calls previously completed successfully. Not production deadlock frequency or global lock-order proof.",
+      "report": "docs/P1_3_Player_Levelup_V5_Signed_Editor_CP_CS_Race_2026-11-05.md",
+      "next_gate": "Original feat grant G + inventory I materializer/trigger graph in genuine local Auth CP/CS schedule with deferred commit and nonce/revocation, owner-reviewed P1.3 global lock order; full RLS/browser.",
+      "production_effects": "none"
     }
   },
   "live_safety_observations": {
