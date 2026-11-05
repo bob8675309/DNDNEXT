@@ -28,12 +28,14 @@ for(const token of [
  "AFTER INSERT OR UPDATE OF sheet",
  "SECURITY INVOKER","ENABLE ROW LEVEL SECURITY",
  "character_permissions","GRANT SELECT,UPDATE(sheet,updated_at)",
+ "p13_test_levelup_cp_prelock_v1","pg_advisory_xact_lock(9313,1)",
  "NOTIFY pgrst,'reload schema'"])
  assert.ok(setup.includes(token),"Missing guarded local source fixture: "+token);
 for(const token of ["PASS F07","PASS F08","PASS F09","PASS F10",
  "40P01","@supabase/supabase-js",
  "auth.getClaims","complete_character_level_up_v5",
- "p13_test_sheet_edit_hold_v1",
+ "p13_test_sheet_edit_hold_v1","p13_test_levelup_cp_prelock_v1",
+ "observedPrelock","40P01",
  "character_level_events","character_level_up_sessions"])
  assert.ok(runner.includes(token),"Missing real JWT source-levelup test assertion: "+token);
 for(const unsafe of ["ucggczovhmauhshvhusx","SUPABASE_SERVICE_ROLE_KEY","SERVICE_ROLE_KEY"]){
@@ -44,4 +46,4 @@ for(const unsafe of ["ucggczovhmauhshvhusx","SUPABASE_SERVICE_ROLE_KEY","SERVICE
 assert.ok(workflow.includes("supabase@2.120.0"),"Supabase CLI version should stay pinned to installed legacy Auth CI");
 assert.ok(workflow.includes("PGPORT: '54322'"),"This suite must use the disposable local Auth-only port");
 assert.ok(workflow.includes("stop --no-backup"),"Scratch users and data must be destroyed after completion");
-console.log("PASS STATIC P1.3: seven original levelup/sheet source hashes, scoped Fighter-only helper stubs, real JWT + RLS fixture and two-session 40P01 test; NOT runtime acceptance.");
+console.log("PASS STATIC P1.3: seven original levelup/sheet source hashes, scoped Fighter-only helper stubs, real JWT + RLS, observable test-only CP advisory prelock and two-session 40P01; NOT runtime acceptance.");
