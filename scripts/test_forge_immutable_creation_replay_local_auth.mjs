@@ -333,3 +333,131 @@ denied(await call2(people.PLAYER.client,changedBg),"22023",
 assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_id='"+soldier+"'"),"1");
 console.log("PASS J21 changed original Background selection under existing nonce denied with no gear mutation");
 console.log("PASS LOCAL REAL GoTrue J00-J21: composed immutable nonce, legacy snapshot, original equipment materializer, sheet sync, deferred Background validator subset.");
+
+// Third source expansion: original SECURITY INVOKER authority guard and
+// SECURITY DEFINER sheet-to-character tag sync. Local RLS below is intentionally
+// reduced to editor-only, NOT production's can_access_character_v1 function.
+sqlFile("scripts/fixtures/forge_sheet_authority_tags_local_auth_extension_pg17.sql");
+const sheetWrite=(client,characterId,sheet)=>client
+ .from("character_sheets").update({sheet}).eq("character_id",characterId)
+ .select("character_id,sheet");
+
+const tagged=fighter("JWT immediate sheet trigger fighter",id(9120));
+tagged.sheet.background="Soldier";
+tagged.sheet.meta={backgroundSource:"XPHB",speciesKey:"Elf"};
+tagged.sheet.startingEquipmentSelections={
+ mode:"package",ruleset:"vanilla",classOption:"A",backgroundId:id(9150)
+};
+const taggedId=pass(await call2(people.PLAYER.client,tagged),"new original-tagged Forge");
+assert.equal(sql("SELECT tags @> ARRAY['player-character','species:elf','class:fighter','background:soldier']::text[] FROM public.characters WHERE id='"+taggedId+"'"),"t",
+ "Original tag sync did not derive player class/species/background");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_id='"+taggedId+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_currency WHERE character_id='"+taggedId+"'"),"1");
+assert.equal(pass(await call2(people.PLAYER.client,tagged),"new tagged same-nonce retry"),taggedId);
+console.log("PASS J22 signed-in original Forge creation runs both immediate sheet triggers and derives tags without duplicating equipment");
+
+// Live-original tag derivation preserves campaign tags on UPDATE. Direct
+// editor-only JWT UPDATE of non-authoritative note/professions remains allowed.
+sql("UPDATE public.characters SET tags=array_append(tags,'campaign:keepers') WHERE id='"+taggedId+"'");
+const priorSheet=JSON.parse(sql("SELECT sheet::text FROM public.character_sheets WHERE character_id='"+taggedId+"'"));
+const noteSheet={...priorSheet,marker:"authorized journal edit",
+ professions:{"Cartographer":{rank:1}}};
+const noteEdit=await sheetWrite(people.PLAYER.client,taggedId,noteSheet);
+assert.ifError(noteEdit.error);
+assert.equal(noteEdit.data?.length,1,"Editor could not write permitted sheet note");
+assert.equal(sql("SELECT tags @> ARRAY['campaign:keepers','profession:cartographer','class:fighter','background:soldier']::text[] FROM public.characters WHERE id='"+taggedId+"'"),"t");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_id='"+taggedId+"'"),"1");
+console.log("PASS J23 authenticated editor updates harmless sheet content; tag sync preserves campaign tag and derives profession");
+
+// Original invoker guard must reject direct authoritative mutations, without
+// rewriting any sheet/tags or item. Test BOTH top-level and protected meta.
+const protectedSpell={...noteSheet,spells:[{id:fire,name:"Fire Bolt"}]};
+const blockSpell=await sheetWrite(people.PLAYER.client,taggedId,protectedSpell);
+denied(blockSpell,"42501","Direct player spell authority write");
+const protectedMeta={...noteSheet,meta:{...noteSheet.meta,featGrantInstances:[{grantId:"unapproved"}]}};
+const blockMeta=await sheetWrite(people.PLAYER.client,taggedId,protectedMeta);
+denied(blockMeta,"42501","Direct player feat grant metadata write");
+assert.equal(sql("SELECT sheet->>'marker' FROM public.character_sheets WHERE character_id='"+taggedId+"'"),"authorized journal edit");
+assert.equal(sql("SELECT coalesce(jsonb_array_length(sheet->'spells'),0) FROM public.character_sheets WHERE character_id='"+taggedId+"'"),"0");
+console.log("PASS J24 original SECURITY INVOKER guard rejects editor direct spells and meta feat grants, 42501, with no sheet mutation");
+
+// Separate GoTrue JWT with no current editor grant should see zero rows, even
+// if submitted protected sheet data. This RLS predicate is a REDUCED local
+// surrogate for production private.can_access_character_v1, not full parity.
+const outsiderWrite=await sheetWrite(people.OUTSIDER.client,taggedId,
+ {...noteSheet,marker:"intruding author"});
+assert.ifError(outsiderWrite.error);
+assert.equal(outsiderWrite.data?.length,0,"Noneditor unexpectedly updated a canonical character sheet");
+const anonymousWrite=await sheetWrite(makeClient(),taggedId,{...noteSheet,marker:"anonymous intrusion"});
+assert.ok(anonymousWrite.error,"Anon unexpectedly allowed direct sheet UPDATE");
+assert.equal(sql("SELECT sheet->>'marker' FROM public.character_sheets WHERE character_id='"+taggedId+"'"),"authorized journal edit");
+console.log("PASS J25 separate signed-in noneditor cannot update sheet; anon has no table access (reduced local editor RLS)");
+
+// Current Admin signs with the same normal authenticated JWT role, but source
+// original private.current_user_is_admin permits authoritative edits. Local
+// sheet RLS needs an explicit editor grant for this GM NPC (not production ACL).
+sql("INSERT INTO public.character_permissions(character_id,user_id,can_inventory,can_edit,can_convert) VALUES('"+gm+"','"+uid("ADMIN")+"',true,true,false)");
+const gmOriginal=JSON.parse(sql("SELECT sheet::text FROM public.character_sheets WHERE character_id='"+gm+"'"));
+const gmProtected={...gmOriginal,spells:[{id:fire,source:"GM-only override"}]};
+const gmWrite=await sheetWrite(people.ADMIN.client,gm,gmProtected);
+assert.ifError(gmWrite.error);
+assert.equal(gmWrite.data?.length,1,"GM source guard should permit original privileged sheet edit");
+assert.equal(sql("SELECT jsonb_array_length(sheet->'spells') FROM public.character_sheets WHERE character_id='"+gm+"'"),"1");
+assert.notEqual(sql("SELECT tags::text FROM public.characters WHERE id='"+gm+"'").includes("player-character"),true);
+console.log("PASS J26 genuine GM authenticated identity bypasses original protected-field guard on editor-granted NPC, no player tag pollution");
+
+// Merely granting can_edit on the same GM NPC must NOT grant its full
+// authoritative field-write privilege to a non-Admin ordinary editor.
+sql("INSERT INTO public.character_permissions(character_id,user_id,can_inventory,can_edit,can_convert) VALUES('"+gm+"','"+uid("PLAYER")+"',false,true,false)");
+const playerNpcSheet=JSON.parse(sql("SELECT sheet::text FROM public.character_sheets WHERE character_id='"+gm+"'"));
+denied(await sheetWrite(people.PLAYER.client,gm,
+ {...playerNpcSheet,meta:{classChoiceFeats:[{id:"forged"}]}}),"42501",
+ "NonAdmin editor tried to write GM NPC feat choice metadata");
+const playerNpcNote=await sheetWrite(people.PLAYER.client,gm,
+ {...playerNpcSheet,note:"editor ordinary NPC note"});
+assert.ifError(playerNpcNote.error);
+assert.equal(playerNpcNote.data?.length,1,"NonAdmin editor should be able to edit ordinary NPC note");
+assert.equal(sql("SELECT sheet->>'note' FROM public.character_sheets WHERE character_id='"+gm+"'"),"editor ordinary NPC note");
+console.log("PASS J27 ordinary editor on GM NPC can edit note but cannot impersonate Admin's source-authority write");
+
+// Direct sheet INSERT is subject to the original BEFORE trigger and the
+// deliberately reduced editor-only local RLS insert policy.
+const bareId=id(9190);
+sql("INSERT INTO public.characters(id,name,tags,kind) VALUES('"+bareId+"','JWT scratch character insert',ARRAY['player-character'],'npc')");
+sql("INSERT INTO public.character_permissions(character_id,user_id,can_inventory,can_edit,can_convert) VALUES('"+bareId+"','"+uid("OUTSIDER")+"',true,true,false)");
+const rejectedInsert=await people.OUTSIDER.client.from("character_sheets")
+ .insert({character_id:bareId,sheet:{classKey:"fighter",feats:[{name:"Injected Feat"}]}})
+ .select("character_id");
+denied(rejectedInsert,"42501","Editor direct unauthorized feat INSERT");
+assert.equal(sql("SELECT count(*) FROM public.character_sheets WHERE character_id='"+bareId+"'"),"0");
+const allowedInsert=await people.OUTSIDER.client.from("character_sheets")
+ .insert({character_id:bareId,sheet:{classKey:"fighter",meta:{creator:"manual-local-fixture"},note:"safe editor init"}})
+ .select("character_id");
+assert.ifError(allowedInsert.error);
+assert.equal(allowedInsert.data?.length,1);
+assert.equal(sql("SELECT tags @> ARRAY['player-character','class:fighter']::text[] FROM public.characters WHERE id='"+bareId+"'"),"t");
+console.log("PASS J28 original guard blocks direct authoritative sheet INSERT but ordinary authorized sheet insert derives tags");
+
+// Editor revocation is checked by RLS on subsequent direct updates. The
+// original source authority guard is not a substitute for RLS or grants.
+sql("UPDATE public.character_permissions SET can_edit=false WHERE character_id='"+taggedId+"' AND user_id='"+uid("PLAYER")+"'");
+const revokedWrite=await sheetWrite(people.PLAYER.client,taggedId,
+ {...noteSheet,marker:"revoked editor journal"});
+assert.ifError(revokedWrite.error);
+assert.equal(revokedWrite.data?.length,0);
+assert.equal(sql("SELECT sheet->>'marker' FROM public.character_sheets WHERE character_id='"+taggedId+"'"),"authorized journal edit");
+console.log("PASS J29 revoking current edit grant blocks future direct sheet updates in local editor-only RLS");
+
+// Original v3 source-qualified spells must still be writable through server
+// creation RPC after immediate sheet authority guard is attached.
+const wizardPostGuard=wizard("JWT wizard after sheet guard",id(9121));
+wizardPostGuard.sheet.species="Gnome";
+const wizardId=pass(await call3(people.OUTSIDER.client,wizardPostGuard,spell(fire)),
+ "original v3 under both immediate sheet triggers");
+assert.equal(sql("SELECT count(*) FROM public.character_spells WHERE character_id='"+wizardId+"'"),"1");
+assert.equal(sql("SELECT tags @> ARRAY['player-character','class:wizard','species:gnome']::text[] FROM public.characters WHERE id='"+wizardId+"'"),"t");
+assert.equal(pass(await call3(people.OUTSIDER.client,wizardPostGuard,spell(fire)),
+ "v3 tagged retry"),wizardId);
+console.log("PASS J30 original player v3 RPC and spells succeed through immediate guard/tag sync; nonce retry remains inert");
+console.log("PASS LOCAL REAL GoTrue J00-J30: original-sheet authority/tag handlers, nonce/PR319, deferred equipment with reduced ACL/catalogue.");
+
