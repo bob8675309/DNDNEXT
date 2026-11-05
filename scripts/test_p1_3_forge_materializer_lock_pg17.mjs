@@ -112,3 +112,74 @@ console.log("PASS F03 two sessions using same P->S order complete without deadlo
  " Reduced control only, NOT accepted global order.");
 console.log("P1.3 Forge F01-F03 PASS in disposable PostgreSQL 17."+
  " No production DB mutations and no production-deadlock claim.");
+
+// F04: SAME character, distinct real original deployed functions:
+// Admin set_character_progression_v1 updates CP first, then CS.
+// Original sheet AFTER UPDATE trigger updates CS first, then CP.
+// Test-only explicit CP prelock / 3-second hold makes the interleaving
+// deterministic; it does not show how often a real browser reaches it.
+assert.equal(db("SELECT md5(pg_get_functiondef("+
+ "'public.set_character_progression_v1(uuid,text,text,integer,bigint,text,text)'::regprocedure))"),
+ "eb467b7c7a8d548581a36cfcb0d8f77b");
+const adminProgressionCall="SELECT public.set_character_progression_v1('"+charB+
+ "'::uuid,'fighter','XPHB',1,0,NULL,NULL);";
+const adminT1=launch("original Admin progression CP->CS",
+ "SET application_name='dndnext_p13_admin_cp_first';"+
+ " BEGIN; SET deadlock_timeout='150ms'; SET lock_timeout='7s';"+
+ " SELECT 1 FROM public.character_progression WHERE character_id='"+charB+"'::uuid FOR UPDATE;"+
+ " SELECT pg_advisory_xact_lock(31904,1); SELECT pg_sleep(3.2);"+
+ adminProgressionCall+" COMMIT;"
+);
+await until("Admin progression CP prelock",()=>db(
+ "SELECT count(*) FROM pg_locks WHERE locktype='advisory'"+
+ " AND classid='31904'::oid AND objid='1'::oid AND granted='t';")==="1",2200);
+const sheetT2=launch("original CS note -> CP sync",
+ "SET application_name='dndnext_p13_sheet_sync_edit';"+
+ " BEGIN; SET deadlock_timeout='150ms'; SET lock_timeout='7s';"+
+ " UPDATE public.character_sheets"+
+ " SET sheet=sheet||'{\"adminProgressionRaceNote\":\"original sheet edit\"}'::jsonb"+
+ " WHERE character_id='"+charB+"'::uuid; COMMIT;"
+);
+const observed=await until("sheet trigger CS->CP blocked by original Admin source CP lock",
+ ()=>{const w=getWait("dndnext_p13_sheet_sync_edit");return w.startsWith("Lock:")?w:null;},2500);
+console.log("Observed F04 genuine source-path wait:",observed);
+const bothDeadlock=await Promise.all([adminT1.done,sheetT2.done]);
+const deadlockVictims=bothDeadlock.filter(x=>x.code!==0);
+assert.equal(deadlockVictims.length,1,
+ "F04 expected exactly one deadlock victim in original Admin CP->CS versus original CS->CP: "+JSON.stringify(bothDeadlock));
+assert.match(deadlockVictims[0].stderr,/(40P01|deadlock detected)/i);
+assert.equal(db("SELECT count(*) FROM public.character_progression WHERE character_id='"+charB+"'::uuid"),"1");
+assert.equal(db("SELECT count(*) FROM public.inventory_items WHERE owner_id='"+charB+"'"),"1");
+assert.equal(db("SELECT count(*) FROM public.character_currency WHERE character_id='"+charB+"'::uuid"),"1");
+console.log("PASS F04 40P01 deadlock original Admin progression CP->CS versus original player CS->CP sync, test-timed interleaving; production timing not established");
+
+// F05: A deliberately SYNTHETIC CP-first prelock on BOTH transactions
+// serializes same-row source operations. It prevents THIS inversion, but
+// using this lock order in production needs a coordinated P1.3 owner decision.
+const safeA=launch("CP-first Admin controlled",
+ "SET application_name='dndnext_p13_admin_control';"+
+ " BEGIN; SET lock_timeout='7s';"+
+ " SELECT 1 FROM public.character_progression WHERE character_id='"+charB+"'::uuid FOR UPDATE;"+
+ " SELECT pg_advisory_xact_lock(31905,1); SELECT pg_sleep(1.0);"+
+ adminProgressionCall+" COMMIT;"
+);
+await until("CP-first control marker",()=>db(
+ "SELECT count(*) FROM pg_locks WHERE locktype='advisory'"+
+ " AND classid='31905'::oid AND objid='1'::oid AND granted='t';")==="1",1500);
+const safeB=launch("CP-first sheet edit controlled",
+ "SET application_name='dndnext_p13_sheet_control';"+
+ " BEGIN; SET lock_timeout='7s';"+
+ " SELECT 1 FROM public.character_progression WHERE character_id='"+charB+"'::uuid FOR UPDATE;"+
+ " UPDATE public.character_sheets"+
+ " SET sheet=sheet||'{\"adminProgressionControlNote\":\"serialized CP before CS\"}'::jsonb"+
+ " WHERE character_id='"+charB+"'::uuid; COMMIT;"
+);
+const safeResult=await Promise.all([safeA.done,safeB.done]);
+for(const result of safeResult)assert.equal(result.code,0,
+ "F05 synthetic CP-first control must finish source operations: "+JSON.stringify(result));
+assert.equal(db("SELECT sheet->>'adminProgressionControlNote' FROM public.character_sheets"+
+ " WHERE character_id='"+charB+"'::uuid"),"serialized CP before CS");
+assert.equal(db("SELECT count(*) FROM public.inventory_items WHERE owner_id='"+charB+"'"),"1");
+assert.equal(db("SELECT count(*) FROM public.character_currency WHERE character_id='"+charB+"'::uuid"),"1");
+console.log("PASS F05 CP-first prelock (synthetic for both sessions) serializes original Admin progression and original sheet sync, no duplicate equipment; NOT global lock proof");
+console.log("P1.3 Forge F01-F05 PASS on disposable PG17. Original v1 Admin CP->CS / CS->CP collision is demonstrable with timed prelock; authenticated player level-up, full triggers, G/I and provenance seed integration not yet tested.");
