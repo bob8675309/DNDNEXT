@@ -19,6 +19,8 @@ const featSupport=readFileSync("scripts/fixtures/forge_feat_materializer_discrim
 const featSetup=readFileSync("scripts/fixtures/forge_feat_materializer_local_auth_extension_pg17.sql","utf8");
 const creatorSeed=readFileSync("sql/candidates/20261105_forge_progression_verified_creator_seed_v1.sql","utf8");
 const giRaceFixture=readFileSync("scripts/fixtures/forge_gi_cp_cs_local_jwt_race_pg17.sql","utf8");
+const originalMerchantBuy=readFileSync("scripts/fixtures/forge_original_merchant_buy_source_pg17.sql","utf8");
+const merchantWriterSetup=readFileSync("scripts/fixtures/forge_merchant_inventory_live_writer_local_auth_pg17.sql","utf8");
 
 
 
@@ -206,6 +208,37 @@ for(const j of ["J63","J64","J65","J66","J67","J68","J69"])
 assert.ok(localAuth.includes("40P01")&&localAuth.includes("giInstBefore")&&
  localAuth.includes("giInvBefore")&&localAuth.includes("independentVerified"),
  "G/I original source concurrency must preserve grant/inventory fingerprints and nonce retry");
+for(const token of [
+ "CREATE OR REPLACE FUNCTION public.buy_from_merchant(",
+ "1dbe8c24c4c718396d7256f6f7465354",
+ "from public.character_stock",
+ "for update",
+ "insert into public.player_wallets",
+ "insert into public.inventory_items",
+ "update public.character_stock",
+ "delete from public.character_stock"
+]) assert.ok(originalMerchantBuy.toLowerCase().includes(token.toLowerCase()),
+ "Missing source-exact original stock/wallet/item purchase path: "+token);
+for(const token of [
+ "CREATE TABLE public.player_wallets","CREATE TABLE public.player_recipes",
+ "ALTER TABLE public.character_stock","updated_at timestamptz",
+ "scripts/fixtures/forge_original_merchant_buy_source_pg17.sql",
+ "md5(pg_get_functiondef",
+ "1dbe8c24c4c718396d7256f6f7465354",
+ "REVOKE ALL ON FUNCTION public.buy_from_merchant",
+ "GRANT EXECUTE ON FUNCTION public.buy_from_merchant",
+ "NOTIFY pgrst,'reload schema'"
+]) assert.ok(merchantWriterSetup.includes(token),
+ "Missing isolated original merchant inventory writer source/ACL gate: "+token);
+for(const token of ["J70","J71","J72","J73","J74","J75","J76","J77",
+ "p13-inventory-concurrency-dagger","p13-inventory-concurrency-rope",
+ "Not enough stock","Insufficient funds","Stock not found",
+ "FOR UPDATE","oneRace","twoRace"])
+ assert.ok(localAuth.includes(token),"Missing real JWT original I-write concurrency assertion "+token);
+for(const forbidden of ["ucggczovhmauhshvhusx","SUPABASE_SERVICE_ROLE_KEY"]){
+ assert.ok(!merchantWriterSetup.includes(forbidden)&&!originalMerchantBuy.includes(forbidden),
+ "Merchant stock test fixtures must not contain production project/key references");
+}
 for (const token of ["J10","J11","J12","J13","J14","J15","J16","J17","J18","J19","J20","J21","J22","J23","J24","J25","J26","J27","J28","J29","J30","J31","J32","J33","J34","J35","J36","J37","J38","J39","J40","J41","J42","J43","J44","J45","J46","J47","J48","J49","J50","J51","J52","J53","J54","J55","J56","J57","J58","J59","J60","J61","J62",
  "forge_materializer_local_auth_extension_pg17.sql","startingEquipmentSelections"])
  assert.ok(localAuth.includes(token), "Missing signed-in creation and gear regression "+token);
