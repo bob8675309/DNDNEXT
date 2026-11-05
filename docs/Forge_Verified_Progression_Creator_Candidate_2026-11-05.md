@@ -16,20 +16,34 @@ The candidate deliberately has **no dependency on creation_request_id** because 
 
 The trigger code makes **only plain MVCC SELECTs** from the already-created sheet and immutable creator-attribution table; no `FOR UPDATE`, DML update, additional grant-row locking or new `CP → G` backfill is introduced by the candidate itself. This is a *bounded source-level lock observation*, **not a global CP/CS/I/G proof**. The existing original Forge sync/materializer already exercise CS→CP→G and deferred CP→CS/I. P1.3 #317 requires an independent coordinated multi-session lock schedule and all remaining original triggers before any release.
 
-## Exact test order and acceptance contract
+## Verified original-source and corrected-path test order
 
-The full original-source real GoTrue J00–J48 fixture is run **unchanged first**, including J39's expected NULL `granted_by` baseline. Then the candidate is installed only in the disposable local PostgreSQL17 database. J49+ must establish:
+[GitHub Actions run 42046427282](https://github.com/bob8675309/DNDNEXT/actions/runs/42046427282) **SUCCESS**, original PG17 and real GoTrue/PostgREST jobs at exact tested executable SHA **`57ec8c1357c3dece4629c41c3111ea7a33bb0588`**. The original-source J00–J48 fixture runs **unchanged first**, including J39's expected NULL `granted_by` baseline. Only then is the new BEFORE INSERT candidate installed on disposable PostgreSQL17. Authenticated J49–J62 establish:
 
 - New, genuine signed-in player v2 with a valid XPHB Lucky feat has matching `auth.uid()` in progression `created_by`, immutable captured creator, *both* canonical grant tables `granted_by`, and unchanged original feat/equipment materialization.
 - Identical nonce retry is inert, changed nonce intent rejects and never updates the attributed grants; new creations **without a nonce** also receive verified attribution.
 - Original v3 (nested v2) with source-validated spell + feat, independent account creation, and concurrent same-nonce requests retain one canonical grant/event/item/currency with the correct actor.
 - Failed canonical feat constraint rolls back character, immutable creator capture, grant and nonce; Admin NPC and no-identity service paths remain separate; previously NULL historical grant actors are **not backfilled**.
 - Current `can_edit` revocation denies cached nonce replay; a current co-editor can edit ordinary sheet notes but cannot rewrite feat authority or become grant creator.
-- **NO PASS may be claimed until the exact executable-head local JWT and original PG17 workflows finish successfully.** All other live original trigger graph, real production RLS/ACL, specialized feat runtimes and P1.3 locks remain release blockers.
+- **J49–J62 PASS at the exact tested source head**, with old J39 still demonstrating the original bug. The five existing additional grant-table hooks and seven original creation-adjacent triggers remain source-limited. All other original trigger graph, real production RLS/ACL, specialized feat runtimes, all-source catalogues and P1.3 locks remain release blockers.
+
+### Executed test-case ledger
+
+- **J49** signed-in original v2 source-valid Lucky feat: `character_progression.created_by` **and both canonical grant-table `granted_by` fields** match the immutable creator captured by #321 in the same transaction.
+- **J50–J51** identical request ID leaves both grant-row hashes and event count unchanged; changed feat ownership selection under that ID is rejected without mutation.
+- **J52** a valid player v2 creation with **no `creation_request_id`** still receives the signed-in source creator; the candidate does not require nonce reservations to identify a new creator.
+- **J53** original v3 nested v2 source properly attributes a Wizard's Lucky feat and preserves Fire Bolt's canonical spell with inert retry.
+- **J54–J55** two concurrent real JWT same-nonce calls create one attributed grant/event/item/currency; an invalid grant JSONB shape rolls back the character, private creator record, reservation and grants.
+- **J56–J58** two independent authenticated accounts obtain separate actor attributions; original Admin NPC creation remains distinct; original historic NULL source-grant actors are **not** backfilled.
+- **J59–J60** revoking current edit permission prevents cached same-nonce replay and an authorized coeditor's ordinary note cannot change feat authority or become the original grant creator.
+- **J61** original Forge equipment rejects a privileged local service-style **no-UID** attempt, atomically rolling it back; a genuine plain service NPC without Forge marker stays unattributed. The local service test is **not** a separately authenticated GoTrue session.
+- **J62** passing an attacker-controlled `creator_user_id` with a genuinely signed-in player's v2 payload cannot rewrite immutable creator capture or either grant-table actor.
+
+No production `private.seed_verified_forge_progression_creator_v1` function/trigger exists. The scoped candidate has no grant-table UPDATE, row-locking `FOR UPDATE`, historical data repair, or modification to deployed v2/v3/materializer source. These new tests prove bounded actor binding and nonce behavior, **not global P1.3 deadlock freedom**.
 
 ## Additional review decisions before any release
 
-Even when J49+ passes, this design must undergo source/auth review for legacy player v1 and Admin NPC creation; genuine signed-in browser acceptance for all Forge tabs; full current source-catalogue/deferred equipment behavior; actual original trigger graph; CP/CS/G/I cross-character and level-up/sheet-edit contention; explicit rollback order; and GM/creator-only backstory and private `characters.secret` coordination.
+Despite J49–J62 passing in isolated genuine Auth, this design still requires source/auth review for legacy player v1 and Admin NPC creation; genuine signed-in browser acceptance for all Forge tabs; full current source-catalogue/deferred equipment behavior; actual original trigger graph; CP/CS/G/I cross-character and level-up/sheet-edit contention; explicit rollback order; and GM/creator-only backstory and private `characters.secret` coordination.
 
 Historical grant `granted_by` rows are **not reconstructed automatically**. That requires separate owner approval on whether and how archival provenance may be recovered. An original creator does not automatically prove who later granted a feat.
 
