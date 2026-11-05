@@ -165,8 +165,8 @@ for(const token of [
 ]) assert.ok(creatorSeed.includes(token),"Creator provenance research candidate missing "+token);
 // Inspect executable SQL, not explanatory comments that explicitly say
 // there is no FOR UPDATE or historical DML. A real lock clause still fails.
-const creatorSeedExecutable=creatorSeed.split("\\n").filter(line=>
- !line.trimStart().startsWith("--")).join("\\n");
+const creatorSeedExecutable=creatorSeed.split("\n").filter(line=>
+ !line.trimStart().startsWith("--")).join("\n");
 for(const unsafe of [
  "FOR UPDATE","FOR SHARE",
  "UPDATE public.character_option_grants",
