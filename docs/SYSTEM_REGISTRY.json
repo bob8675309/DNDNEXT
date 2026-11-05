@@ -51,8 +51,9 @@
       "tests": [
         "scripts/validate_unified_character_forge.mjs"
       ],
-      "last_checked": "2026-11-01",
+      "last_checked": "2026-11-05",
       "open_gaps": [
+        "Read-only live 2026-11-05: inventory_items_owner_type_check validates 'character' but overlapping NOT VALID inventory_items_owner_type_chk excludes 'character', enforced on new inserts. Original Forge equipment materializer writes owner_type='character'. F22/F28 scratch-only 23514 control test pending CI. Do not drop constraint in production absent owner-approved migration and browser/auth acceptance.",
         "Research-only signed-in source-earned G/GI level4 Fighter fixture F17-F21 is staged on #317, not deployed nor a complete Forge RLS/trigger/feat/inventory proof.",
         "Draft #317 F11–F16 source Admin canonical G grant against signed-in Fighter v5 is not player-level feat G and has not passed new exact-head CI; full original creation trigger/RLS/gear parity is not established.",
         "Browser acceptance must be tied to specific scoped flows; not blanket proof of all source traits."
@@ -107,7 +108,9 @@
         "scripts/fixtures/p1_3_admin_grant_original_source_pg17.sql",
         "scripts/fixtures/p1_3_admin_grant_levelup_extension_pg17.sql",
         "scripts/fixtures/p1_3_level4_advancement_original_pg17.sql",
-        "scripts/fixtures/p1_3_level4_advancement_extension_pg17.sql"
+        "scripts/fixtures/p1_3_level4_advancement_extension_pg17.sql",
+        "scripts/fixtures/p1_3_original_merchant_inventory_source_pg17.sql",
+        "scripts/fixtures/p1_3_original_merchant_inventory_extension_pg17.sql"
       ],
       "tests": [
         "scripts/test_p1_3_legacy_real_jwt_local.mjs",
@@ -141,6 +144,7 @@
       ],
       "last_checked": "2026-11-05",
       "open_gaps": [
+        "2026-11-05 F22-F28 candidate original merchant S→W→user-owned I concurrently with original signed level4 earned CP/CS/G/GI, exact-head CI pending; independent table ownership means no demonstrated common G/I row lock. Found live inventory owner_type contradictory checks; see docs/P1_3_Original_Merchant_I_vs_Earned_G_and_Owner_Constraint_2026-11-05.md.",
         "2026-11-05: F17–F21 on held #317 candidate source-original v5 Fighter 3→4 earned G+GI vs signed Admin G contention. Exact-head CI pending; no full original inventory I/deferred gear/RLS/Forge trigger graph. docs/P1_3_Source_Original_Player_Level4_Grant_vs_Admin_G_2026-11-05.md",
         "2026-11-05 draft #317 original Admin grant G→CS→CP vs owner signed-in v5 CP→CS: F11–F16 source-exact/authenticated timed fixture prepared, not yet CI-accepted; valid player advancement G and full G/I/24 original omitted Forge triggers still missing. docs/P1_3_Original_Admin_Grant_G_vs_Levelup_CP_CS_Research_2026-11-05.md",
         "P1.3 original public v11 Guiding Bolt and v10 Mind Sliver paths cases 36–41 PASS scratch PG16 run 41566917343 SHA 1f39532. v11 E->P vs original End Turn P->E deadlock reproduced under forced concurrent active-turn requests. Both cast versions return cached prior result for changed target/slot. Source-derived not production/JWT exploit. docs/P1_3_Legacy_v11_Guiding_Bolt_v10_Mind_Sliver_2026-11-02.md.",
@@ -188,7 +192,7 @@
       "tests": [
         "scripts/validate_merchant_crafted_pricing.mjs"
       ],
-      "last_checked": "2026-11-01",
+      "last_checked": "2026-11-05",
       "verification": {
         "source": "inspected-relevant-entry-points-on-main",
         "live_database": "market stock and alchemy catalog sampled",
@@ -198,6 +202,7 @@
         "owner_approval": "not-claimed-from-source-or-ci"
       },
       "open_gaps": [
+        "F22-F28 source original merchant user-owned I vs signed earned G/GI on draft #317 pending exact-head CI; full production RLS and inventory crafted-material trigger branches untested.",
         "Avoid changes to craft price formulas while refactoring combat or item-effect resolution."
       ],
       "protected_boundaries": [
@@ -472,7 +477,7 @@
       "tests": [
         "scripts/validate_security_hardening_roadmap.mjs"
       ],
-      "last_checked": "2026-11-01",
+      "last_checked": "2026-11-05",
       "verification": {
         "source": "inspected-relevant-entry-points-on-main",
         "live_database": "read-only security advisor and function definition",
@@ -482,6 +487,7 @@
         "owner_approval": "not-claimed-from-source-or-ci"
       },
       "open_gaps": [
+        "Potential integrity blocker: two conflicting inventory_items owner_type CHECKs, one old NOT VALID but still enforced against new character items; authenticated Forge creation+deferred COMMIT remains unverified. No live constraint changes authorized.",
         "Authorize or revoke each function only after caller, RLS, and intended access review."
       ],
       "protected_boundaries": [

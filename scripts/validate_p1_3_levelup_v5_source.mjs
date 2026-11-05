@@ -111,3 +111,42 @@ for(const unsafe of ["ucggczovhmauhshvhusx","SUPABASE_SERVICE_ROLE_KEY","SERVICE
  assert.ok(!level4Source.includes(unsafe)&&!level4Setup.includes(unsafe),"Forbidden live project or secret in Lv4 scratch fixture");
 }
 console.log("PASS STATIC P1.3 F17-F21 original live source/MD5, signed-in Fighter Lv4 ASI G/GI grant + Admin G race, scoped reductions only (NOT runtime acceptance).");
+
+const merchantSource=read("scripts/fixtures/p1_3_original_merchant_inventory_source_pg17.sql");
+const merchantSetup=read("scripts/fixtures/p1_3_original_merchant_inventory_extension_pg17.sql");
+for(const [name,hash] of [
+ ["public.buy_from_merchant","1dbe8c24c4c718396d7256f6f7465354"],
+ ["private.apply_structured_crafting_traits_v1","108bfc2599d75e7298f65ce326f16173"],
+ ["private.apply_smithing_affinity_polish_v4","5d51cf335ff880939ae0df4c4152bdbd"],
+ ["public.set_wallet_updated_at","979427428c72842b842b35db11334a3d"]
+]){
+ assert.ok(merchantSource.includes("CREATE OR REPLACE FUNCTION "+name+"("),
+  "Missing unchanged original inventory source "+name);
+ assert.ok(merchantSource.includes(hash),"Missing source function MD5 "+name);
+ assert.ok(merchantSetup.includes(hash),"No scratch-only live source runtime MD5 gate "+name);
+}
+for(const token of [
+ "inventory_items_owner_type_check","inventory_items_owner_type_chk",
+ "NOT VALID","EXCEPTION WHEN check_violation","GET STACKED DIAGNOSTICS",
+ "v_constraint <> 'inventory_items_owner_type_chk'",
+ "CREATE TRIGGER inventory_items_apply_structured_crafting_traits_v1",
+ "CREATE TRIGGER zz_inventory_items_apply_smithing_affinity_polish_v4",
+ "FROM PUBLIC,anon,authenticated","p13_levelup_case_guard",
+ "current_database()<>'postgres'","NOTIFY pgrst,'reload schema'"
+]) assert.ok(merchantSetup.includes(token),"Missing owner-type or original source safety gate "+token);
+for(const token of [
+ "PASS F22","PASS F23","PASS F24","PASS F25","PASS F26","PASS F27","PASS F28",
+ "buy_from_merchant","p13_test_level4_advancement_cp_prelock_v1",
+ "playerEarnedPromise","merchantPurchasePromise","stockQty(stockRaceI)",
+ "snapshotEarned","DROP CONSTRAINT inventory_items_owner_type_chk",
+ "ROLLBACK","assert.equal(gpOf(owner),28)"
+]) assert.ok(runner.includes(token),"Missing executable signed-source G/I proof "+token);
+for(const path of [
+ "p1_3_original_merchant_inventory_source_pg17.sql",
+ "p1_3_original_merchant_inventory_extension_pg17.sql"
+])assert.ok(workflow.includes(path),"No workflow trigger for "+path);
+for(const unsafe of ["ucggczovhmauhshvhusx","SUPABASE_SERVICE_ROLE_KEY","SERVICE_ROLE_KEY"]){
+ assert.ok(!merchantSource.includes(unsafe)&&!merchantSetup.includes(unsafe),
+ "Forbidden live project or secret reference in merchant fixture");
+}
+console.log("PASS STATIC P1.3 F22–F28: source-original merchant I writer and live I triggers, conflicting NOT VALID ownership constraints, real JWT buyer vs earned G/GI concurrency assertions (DB acceptance separate).");

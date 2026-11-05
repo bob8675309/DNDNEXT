@@ -327,3 +327,115 @@ assert.equal(sql("SELECT class_level FROM public.character_progression WHERE cha
 assert.equal(sql("SELECT count(*) FROM public.character_level_events WHERE character_id='"+l4Race+"' AND event_type='level_up_completed'"),"1");
 assert.equal(sql("SELECT count(*) FROM public.character_level_up_sessions WHERE character_id='"+l4Race+"' AND status='completed'"),"1");
 console.log("PASS F21 retry converges to exactly one owner-earned source G instance/aggregate plus one Admin G and one level-up event, preserved provenance and ASI stat; NOT full live-trigger or I acceptance");
+
+
+// F22–F28 actual merchant inventory I vs owner-earned advancement G/GI;
+// genuine local GoTrue for both actors, source-original buy and inventory
+// crafting triggers; no claim of a cross-table deadlock where no lock exists.
+const f22setup=spawnSync("psql",["-X","-v","ON_ERROR_STOP=1","-f",
+ "scripts/fixtures/p1_3_original_merchant_inventory_extension_pg17.sql"],{
+ encoding:"utf8",timeout:20000,env:{...e,PGUSER:"postgres"}
+});
+assert.equal(f22setup.status,0,"F22 real source merchant inventory fixture: "+f22setup.stderr);
+assert.equal(sql("SELECT count(*) FROM public.inventory_items"),"0");
+console.log("PASS F22 original merchant/I source MD5s, two source inventory triggers, real new-row owner CHECK 23514 reproduced (scratch only)");
+const merchantI=id(8491), stockSoloI=id(8492),stockFundsI=id(8493),stockRaceI=id(8494),stockCompeteI=id(8495);
+sql("INSERT INTO public.characters(id,name,kind) VALUES('"+merchantI+"','P13 Inventory Source Research Merchant','merchant');"
+ +"INSERT INTO public.player_wallets(user_id,gp) VALUES('"+owner.uid+"',40),('"+coeditor.uid+"',20),('"+outsider.uid+"',0);"
+ +"INSERT INTO public.character_stock(id,character_id,display_name,item_id,qty,price_gp,card_payload) VALUES"
+ +"('"+stockSoloI+"','"+merchantI+"','Plain Source Dagger','p13-dagger',1,5,'{\"item_type\":\"weapon\"}'::jsonb),"
+ +"('"+stockFundsI+"','"+merchantI+"','Plain Source Rope','p13-rope',1,5,'{\"item_type\":\"gear\"}'::jsonb),"
+ +"('"+stockRaceI+"','"+merchantI+"','Plain Source Lantern','p13-lantern',1,7,'{\"item_type\":\"gear\"}'::jsonb),"
+ +"('"+stockCompeteI+"','"+merchantI+"','Plain Source Torch','p13-torch',1,4,'{\"item_type\":\"gear\"}'::jsonb);");
+const buyI=(who,stockId,qty=1)=>who.rpc("buy_from_merchant",{
+ p_merchant_id:merchantI,p_stock_uuid:stockId,p_qty:qty
+});
+const itemCount=(stockId)=>Number(sql("SELECT count(*) FROM public.inventory_items WHERE card_payload->>'stock_id'='"+stockId+"'"));
+const gpOf=(who)=>Number(sql("SELECT gp FROM public.player_wallets WHERE user_id='"+who.uid+"'"));
+const stockQty=(stockId)=>Number(sql("SELECT coalesce((SELECT qty FROM public.character_stock WHERE id='"+stockId+"'),0)"));
+const goodI=await buyI(owner.client,stockSoloI);
+assert.ifError(goodI.error);
+assert.equal(goodI.data,1);
+assert.equal(itemCount(stockSoloI),1);
+assert.equal(stockQty(stockSoloI),0);
+assert.equal(gpOf(owner),35);
+assert.equal(sql("SELECT owner_type FROM public.inventory_items WHERE card_payload->>'stock_id'='"+stockSoloI+"'"),"player");
+assert.equal(sql("SELECT owner_id FROM public.inventory_items WHERE card_payload->>'stock_id'='"+stockSoloI+"'"),owner.uid);
+assert.equal(sql("SELECT user_id FROM public.inventory_items WHERE card_payload->>'stock_id'='"+stockSoloI+"'"),owner.uid);
+console.log("PASS F23 signed owner original merchant stock->wallet->I purchase creates actual player-owned item through two installed source BEFORE triggers");
+const noAuthI=await buyI(api(),stockFundsI);
+assert.ok(noAuthI.error,"Anonymous original merchant purchase was accepted");
+const noFundsI=await buyI(outsider.client,stockFundsI);
+assert.ok(noFundsI.error,"Zero-wallet buyer was granted inventory");
+assert.equal(itemCount(stockFundsI),0);assert.equal(stockQty(stockFundsI),1);
+assert.equal(gpOf(outsider),0);
+const unauthorizedClientI=await outsider.client.from("inventory_items").insert({
+ user_id:outsider.uid,item_id:"free-inventory",item_name:"Direct Forger",
+ owner_type:"player",owner_id:outsider.uid
+});
+assert.ok(unauthorizedClientI.error,"Scratch direct inventory INSERT unexpectedly allowed");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items"),"1");
+console.log("PASS F24 unsigned/underfunded source purchase and direct client INSERT denied without phantom I, wallet, or stock writes");
+
+const lv4InventoryRace=id(8496);
+addLevel4Fighter(lv4InventoryRace,"P13 Level4 Earned GI Concurrent Merchant I");
+const playerEarnedPromise=owner.client.rpc("p13_test_level4_advancement_cp_prelock_v1",{
+ p_character_id:lv4InventoryRace,p_instance:asiChoice
+}).then(x=>x);
+assert.ok(await pollMarker(9316,Date.now()+3500),"P13 actual source earned-G CP prelock marker not seen");
+const merchantPurchasePromise=buyI(owner.client,stockRaceI).then(x=>x);
+const [earnedOutcome,merchantOutcome]=await Promise.all([playerEarnedPromise,merchantPurchasePromise]);
+assert.ifError(earnedOutcome.error);
+assert.ifError(merchantOutcome.error);
+assert.equal(merchantOutcome.data,1);
+assert.equal(giCount(lv4InventoryRace),1);
+assert.equal(gCount(lv4InventoryRace,asiOption),1);
+assert.equal(by(lv4InventoryRace,asiOption,true),owner.uid);
+assert.equal(itemCount(stockRaceI),1);assert.equal(stockQty(stockRaceI),0);
+assert.equal(gpOf(owner),28);
+assert.equal(sql("SELECT class_level FROM public.character_progression WHERE character_id='"+lv4InventoryRace+"'"),"4");
+assert.equal(sql("SELECT count(*) FROM public.character_level_events WHERE character_id='"+lv4InventoryRace+"' AND event_type='level_up_completed'"),"1");
+console.log("PASS F25 original signed owner earned G+GI in flight alongside source merchant I purchase: both commit, exact wallets/stock/level conserved; no shared character-owned I lock inferred");
+
+const snapshotEarned=sql("SELECT md5(row_to_json(g)::text || '|' || row_to_json(gi)::text) FROM "
+ +"public.character_option_grants g JOIN public.character_option_grant_instances gi "
+ +"ON gi.character_id=g.character_id AND gi.option_id=g.option_id "
+ +"WHERE g.character_id='"+lv4InventoryRace+"' AND g.option_id='"+asiOption+"'");
+const buyers=await Promise.all([buyI(owner.client,stockCompeteI).then(x=>x),buyI(coeditor.client,stockCompeteI).then(x=>x)]);
+const winner=buyers.filter(x=>!x.error),loser=buyers.filter(x=>x.error);
+assert.equal(winner.length,1,"Expected one stock winner: "+JSON.stringify(buyers));
+assert.equal(loser.length,1,"Expected one stock loser");
+assert.equal(itemCount(stockCompeteI),1);assert.equal(stockQty(stockCompeteI),0);
+assert.equal((40-gpOf(owner))+(20-gpOf(coeditor)),16,
+ "Total owner/coeditor purchases should have charged 5+7+4 GP");
+assert.equal(sql("SELECT md5(row_to_json(g)::text || '|' || row_to_json(gi)::text) FROM "
+ +"public.character_option_grants g JOIN public.character_option_grant_instances gi "
+ +"ON gi.character_id=g.character_id AND gi.option_id=g.option_id "
+ +"WHERE g.character_id='"+lv4InventoryRace+"' AND g.option_id='"+asiOption+"'"),snapshotEarned);
+console.log("PASS F26 two signed JWT buyers serialize original merchant stock S->wallet W->I: one winner/one loser, 4GP only once; earned G/GI row hashes unchanged");
+
+const againI=await buyI(owner.client,stockCompeteI);
+assert.ok(againI.error,"Repeat against exhausted stock was granted");
+const badMulti=await buyI(owner.client,stockFundsI,2);
+assert.ok(badMulti.error,"Oversell against one-unit stock succeeded");
+assert.equal(itemCount(stockFundsI),0);assert.equal(stockQty(stockFundsI),1);
+assert.equal(sql("SELECT count(*) FROM public.inventory_items"),"3");
+console.log("PASS F27 source repeat/oversell rejects, no extra inventory or wallet debit and F25 original player-earned grant remains unchanged");
+
+// Opposing live constraints: owner_type='character' is allowed by the newer
+// validated check, but the OLD NOT VALID CHECK still rejects new rows.
+// In a ROLLED-BACK SCRATCH TRANSACTION ONLY, dropping the old check makes the
+// same source-shaped INSERT legal: a causal constraint reproduction.
+const oldStill=sql("SELECT count(*) FROM pg_constraint WHERE conrelid='public.inventory_items'::regclass AND conname='inventory_items_owner_type_chk' AND NOT convalidated");
+assert.equal(oldStill,"1");
+const probeInsert="INSERT INTO public.inventory_items(user_id,item_id,item_name,card_payload,owner_type,owner_id)"
+ +" VALUES('"+owner.uid+"','p13-owner-check-control','Forge Character Ownership Control','{}'::jsonb,'character','"+lv4InventoryRace+"');";
+const beforeOwnerCount=sql("SELECT count(*) FROM public.inventory_items WHERE owner_type='character'");
+assert.equal(beforeOwnerCount,"0");
+const scratchControl=sql("BEGIN; ALTER TABLE public.inventory_items DROP CONSTRAINT inventory_items_owner_type_chk;"
+ +probeInsert+" SELECT count(*) FROM public.inventory_items WHERE owner_type='character'; ROLLBACK;");
+assert.equal(scratchControl.split("\n").filter(Boolean).at(-1),"1",
+ "The new validated check should allow character-owned I when old check is dropped *in rolled-back scratch transaction*");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_type='character'"),"0");
+assert.equal(sql("SELECT count(*) FROM pg_constraint WHERE conrelid='public.inventory_items'::regclass AND conname='inventory_items_owner_type_chk' AND NOT convalidated"),"1");
+console.log("PASS F28 old unvalidated owner_type check is the sole reproduced character-owned I INSERT blocker: temporary scratch-only DROP permits INSERT, ROLLBACK fully restores constraints; production NOT touched");
