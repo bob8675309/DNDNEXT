@@ -1,5 +1,13 @@
 # DNDNext — Repository Instructions for AI Coding Assistants
 
+> **2026-11-05 recovery routing:** Use [the reusable new-chat prompt](docs/NEXT_CHAT_START_PROMPT.txt), then the canonical handoff/registry and the latest **research branch** evidence. Production main remains a dated baseline; the latest P1.3 lock-order and Forge creation research is on **draft PR #317 and stacked #324**, not deployed. Never mistake a passing disposable SQL/JWT test for a production fix.
+
+## Deployment / Git push budget
+
+**Conserve Vercel deployments.** GitHub pushes can create Vercel previews automatically and the free daily deployment cap was reached on 2026-11-05. Batch documentation, fixtures, code changes and final receipts into the fewest reviewed pushes practical; run local/CI/disposable-Postgres tests before pushing, and do not deploy docs-only work merely to validate text. Check project Git integration before each branch push. A commit message `[skip ci]` is **not** proof that Vercel skipped a build. See [deployment-budget policy](docs/DEVELOPMENT_DEPLOYMENT_BUDGET.md); seek owner approval before changing Vercel settings, build-ignore rules or production branch policy. Preserve essential CI verification and exact-head evidence. This does not authorize avoiding required tests.
+
+
+
 **Read this before making code, database, deployment or documentation changes.** This project has many historical status files. A confident summary is not evidence of the current implementation.
 
 ## Mandatory recovery

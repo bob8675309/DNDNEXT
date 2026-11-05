@@ -51,8 +51,9 @@
       "tests": [
         "scripts/validate_unified_character_forge.mjs"
       ],
-      "last_checked": "2026-11-01",
+      "last_checked": "2026-11-05",
       "open_gaps": [
+        "2026-11-05: draft #324 immutable player Forge creation/replay, verified creator seed and 7/31 original trigger source coverage are local genuine JWT research only; #319 legacy snapshot compatibility, full RLS, all 31 original creation triggers and browser acceptance remain release blockers.",
         "Browser acceptance must be tied to specific scoped flows; not blanket proof of all source traits."
       ],
       "label": "Player/NPC character Forge",
@@ -104,8 +105,9 @@
         "sql/20260727_06_core_combat_actions.sql"
       ],
       "tests": [],
-      "last_checked": "2026-11-01",
+      "last_checked": "2026-11-05",
       "open_gaps": [
+        "2026-11-05: P1.2 docs contract merged on main via #316; P1.3 global lock/replay fixes are still isolated on draft #317 (10/10 CI) and not deployed. Shared-resource same-character two-encounter policy remains unresolved.",
         "2026-11-01 proposed P1.2 immutable requester/actor/intent/replay and fresh authorization contract (docs/P1_2_Command_Replay_Contract_2026-11-01.md); owner signoff R1–R4 pending.",
         "Live command ledger aggregate: 78 rows and 20 null requested_by, no null results at checkpoint; historical typed original intent absent; fail-closed policy is proposed, not implemented.",
         "P1.3 global mixed-version lock ordering, P1.5 same-character multiple-active-encounters, NPC delegated visibility, isolated genuine JWT races, and production rollout all unresolved."
@@ -138,7 +140,7 @@
       "tests": [
         "scripts/validate_merchant_crafted_pricing.mjs"
       ],
-      "last_checked": "2026-11-01",
+      "last_checked": "2026-11-05",
       "verification": {
         "source": "inspected-relevant-entry-points-on-main",
         "live_database": "market stock and alchemy catalog sampled",
@@ -148,6 +150,7 @@
         "owner_approval": "not-claimed-from-source-or-ci"
       },
       "open_gaps": [
+        "2026-11-05: unchanged original buy_from_merchant signed JWT J70-J77 in draft #324 proved concurrent actual I inserts and stock/wallet conservation in reduced local fixture, not production lock-safety proof.",
         "Avoid changes to craft price formulas while refactoring combat or item-effect resolution."
       ],
       "protected_boundaries": [
@@ -422,7 +425,7 @@
       "tests": [
         "scripts/validate_security_hardening_roadmap.mjs"
       ],
-      "last_checked": "2026-11-01",
+      "last_checked": "2026-11-05",
       "verification": {
         "source": "inspected-relevant-entry-points-on-main",
         "live_database": "read-only security advisor and function definition",
@@ -432,6 +435,7 @@
         "owner_approval": "not-claimed-from-source-or-ci"
       },
       "open_gaps": [
+        "2026-11-05: source-matched read-only function hashes; Supabase advisor still reports 12 anon-executable public SECURITY DEFINER RPCs and mutable private search_path; full authorization, direct NPC lore-column and full-sheet access coordination remains unremediated.",
         "Authorize or revoke each function only after caller, RLS, and intended access review."
       ],
       "protected_boundaries": [
@@ -521,6 +525,90 @@
         "No production SQL changes, grants, merge, or deployment without owner approval",
         "Do not change world-map travel/camping/weather or mix world/town and tactical maps"
       ]
+    },
+    {
+      "id": "p1-3-cross-system-lock-research",
+      "label": "P1.3 global command/progression/Forge lock-order research",
+      "status": "research-only",
+      "code_paths": [
+        "docs/ACTIVE_WORK.md",
+        "docs/START_HERE_ACTIVE_HANDOFF.md"
+      ],
+      "tests": [],
+      "last_checked": "2026-11-05",
+      "open_gaps": [
+        "No production release, full original RLS/trigger parity or signed-in browser acceptance.",
+        "Check live draft heads and exact executable CI; branch-only files are not present on main."
+      ],
+      "scope_note": "Held draft PR #317 head a6d334f6, 10/10 exact-head Actions success; source-original signed-in timed CP/CS deadlocks reproduced, global CP/CS/G/I/S/W order not proven.",
+      "verification": {
+        "source": "draft-PR-metadata-and-research-ledgers-cross-checked",
+        "live_database": "select-only-source-fingerprints-2026-11-05",
+        "deployed_sha": "not-deployed-research-or-future",
+        "test_status": "reported-exact-head-ci-reviewed-not-production",
+        "browser_acceptance": "unverified-this-audit",
+        "owner_approval": "research-scope-only-not-release-approval"
+      },
+      "protected_boundaries": [
+        "No live SQL, grants, merge, deployment or world/town-map changes without express owner approval",
+        "Do not generalize reduced fixture tests into production or natural deadlock frequency"
+      ]
+    },
+    {
+      "id": "forge-immutable-replay-research",
+      "label": "Immutable player Forge request and creator provenance research",
+      "status": "research-only",
+      "code_paths": [
+        "docs/ACTIVE_WORK.md",
+        "docs/START_HERE_ACTIVE_HANDOFF.md"
+      ],
+      "tests": [],
+      "last_checked": "2026-11-05",
+      "open_gaps": [
+        "No production release, full original RLS/trigger parity or signed-in browser acceptance.",
+        "Check live draft heads and exact executable CI; branch-only files are not present on main."
+      ],
+      "scope_note": "Held draft PR #324 head 3daa79c2, stacked on draft #321; genuine JWT J00-J77 replay, original grant/equipment and merchant I writes checked, without simultaneous original G mutation.",
+      "verification": {
+        "source": "draft-PR-metadata-and-research-ledgers-cross-checked",
+        "live_database": "select-only-source-fingerprints-2026-11-05",
+        "deployed_sha": "not-deployed-research-or-future",
+        "test_status": "reported-exact-head-ci-reviewed-not-production",
+        "browser_acceptance": "unverified-this-audit",
+        "owner_approval": "research-scope-only-not-release-approval"
+      },
+      "protected_boundaries": [
+        "No live SQL, grants, merge, deployment or world/town-map changes without express owner approval",
+        "Do not generalize reduced fixture tests into production or natural deadlock frequency"
+      ]
+    },
+    {
+      "id": "npc-profile-privacy-research",
+      "label": "Creator-private NPC backstory and secure Profile research",
+      "status": "research-only",
+      "code_paths": [
+        "docs/ACTIVE_WORK.md",
+        "docs/START_HERE_ACTIVE_HANDOFF.md"
+      ],
+      "tests": [],
+      "last_checked": "2026-11-05",
+      "open_gaps": [
+        "No production release, full original RLS/trigger parity or signed-in browser acceptance.",
+        "Check live draft heads and exact executable CI; branch-only files are not present on main."
+      ],
+      "scope_note": "Held drafts #321/#322/#323/#318/#319 require coordinated permissions, direct column/RPC exposure review, browser acceptance and release authorization; creator+GM backstory, GM-only secret, Profile-first UX.",
+      "verification": {
+        "source": "draft-PR-metadata-and-research-ledgers-cross-checked",
+        "live_database": "select-only-source-fingerprints-2026-11-05",
+        "deployed_sha": "not-deployed-research-or-future",
+        "test_status": "reported-exact-head-ci-reviewed-not-production",
+        "browser_acceptance": "unverified-this-audit",
+        "owner_approval": "research-scope-only-not-release-approval"
+      },
+      "protected_boundaries": [
+        "No live SQL, grants, merge, deployment or world/town-map changes without express owner approval",
+        "Do not generalize reduced fixture tests into production or natural deadlock frequency"
+      ]
     }
   ],
   "research": {
@@ -554,10 +642,11 @@
   "snapshot": {
     "observed_on": "2026-11-01",
     "repository": "bob8675309/DNDNEXT",
-    "main_sha": "eb376a4e3a7b0a7201a0ecb8a98366c1bba4e00a",
-    "production_deployment_id": "dpl_AxNyb2EhSRHNjz4U6Wjoz5ZHG6Ku",
+    "main_sha": "51c351a142d03378dff8e47e05182afe21a15622",
+    "production_deployment_id": "dpl_7RHKpiQuQ9AuiUS7xSXA9krRtT9K",
     "production_deployment_status": "READY",
     "database_project": "ucggczovhmauhshvhusx",
-    "limits": "This registry indexes verified source and sampled live database state; no new browser acceptance or validator run was made during the 2026-11-01 audit. Re-verify before use."
+    "limits": "This registry indexes verified source and sampled live database state; no new browser acceptance or validator run was made during the 2026-11-01 audit. Re-verify before use.",
+    "last_read_only_verification": "2026-11-05"
   }
 }

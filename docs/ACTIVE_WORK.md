@@ -1,5 +1,25 @@
 # DNDNext — Active Work Contract
 
+## CURRENT 2026-11-05 OVERRIDE — P1.3 cross-system source/JWT research (not deployed)
+
+**Active phase / subphase:** `P1 / P1.3` — original source-authorized grant/inventory and progression/sheet lock-order verification. Historical P1.2 text below is preserved as an earlier checkpoint; **P1.2 documentation was merged into `main` via PR #316**, while the runtime security remediation has NOT been deployed.
+
+**Exact dated identity:** `main` `51c351a142d03378dff8e47e05182afe21a15622`; Vercel production `dpl_7RHKpiQuQ9AuiUS7xSXA9krRtT9K` READY at same SHA; DnDWeb live function source MD5s matched the held research fixtures in a SELECT-only 2026-11-05 check. Draft [#317](https://github.com/bob8675309/DNDNEXT/pull/317) head `a6d334f611075791359429822acfab83608370fd`, 10/10 Actions passed; separate stacked draft [#324](https://github.com/bob8675309/DNDNEXT/pull/324) head `3daa79c2cecf0a62831e8e3d7eac157e37a6c707`, 3/3 Actions passed. Check again before code changes.
+
+**What the research actually proves:** Original Admin `set_character_progression_v1` CP→CS versus original sheet-trigger CS→CP and original signed-in level-up v5 versus co-editor sheet edit can produce true PostgreSQL `40P01` in **deliberately timed disposable** transactions; natural production frequency is unknown. PR #324 confirms source-original Forge feats/equipment creation with immutable replay and genuine JWT test cases; its J65 deadlock operates on **already-materialized** grants and gear. Original `buy_from_merchant` J70–J77 did create actual inventory I items while competing JWT buyers correctly serialized stock/wallet writes; it did NOT concurrently mutate grant G. Only 7/31 original Forge creation-adjacent triggers have been source-loaded in the cited local acceptance fixture; 24 remain.
+
+**Next single action:** Read original `public.grant_character_option_v1` and/or `private.apply_character_level_advancement_v1` plus original G grant writer, triggers, permissions and dependencies; reproduce a truly authorized **concurrent G write** against a signed-in level-up/sheet operation using disposable PG17 + real GoTrue/PostgREST. Observe genuine locks; validate revocation, deferred COMMIT, rollback, unchanged I/currency, grant attribution, nonce replay and exactly-once events. Carry the resulting graph into #317; **do not declare CP-first a global production lock protocol**.
+
+**Related held work:** #321 NPC creator/privacy/RLS; #318 GM creation notices; #319 populated legacy `players.sheet` retention; #320/#322/#323 centered secure Profile; #309/#312 isolated spell P1/P2 research. Check PR heads/merges before assuming state. Owner behavior: primary/alternate/underling creation without GM pre-approval, GM notification, verified creator+GM private backstory access (creator requires current edit), GM-only secrets, Profile-first NPC/merchant UX.
+
+**Hard release/coverage gates:** full source grant G & I writer graph, original trigger/RLS/role parity, multi-controller/cross-encounter replay policy, signed-in browser acceptance, authorization/security review, reviewed coordinated migration and rollback. Production remains unchanged. Do not merge, deploy, mutate Supabase, or touch world/town maps.
+
+**Vercel budget:** 2026-11-05 preview attempts hit `api-deployments-free-per-day`. Batch changes and documentation into few deliberate pushes; validate via free local/CI fixtures, not repeated Vercel previews. See [DEVELOPMENT_DEPLOYMENT_BUDGET.md](DEVELOPMENT_DEPLOYMENT_BUDGET.md).
+
+---
+
+
+
 > **Planning snapshot:** 2026-11-01. Re-verify branches, CI and production before using these SHAs. This is the **one active-session task list**; it is not permission to deploy or merge. Product decisions remain in [SPELL_ENGINE_DECISIONS.md](SPELL_ENGINE_DECISIONS.md).
 
 ## Current activity: P1.2 immutable intent / replay / authorization contract — research only
