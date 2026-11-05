@@ -37,7 +37,7 @@ The `scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql` installs
 - **J15:** Two genuine concurrent same-ID equipped creation calls produce one canonical item/currency/event (no duplicate).
 - **J16:** Equipped alternate creation preserves the separate existing `players.sheet` legacy snapshot through the composed PR #319 guard, alongside independent canonical sheet/equipment.
 
-**Coverage limit after J17–J21:** Only **3 of 31 original** creation-adjacent triggers are installed; the extra #321 creator INSERT trigger is a research addition. **28 original triggers and authentic six helper implementations remain absent.** This is source-exact behavior *for a bounded package-equipment path*, not complete Forge, real production-RLS, live actor or browser acceptance. [Full live-source trigger matrix](Forge_Original_Creation_Trigger_Coverage_2026-11-05.md) records the names and hashes.
+**Coverage limit after J22–J30:** Only **5 of 31 original** creation-adjacent triggers are installed; the extra #321 creator INSERT trigger is a research addition. **26 original triggers and authentic six helper implementations remain absent.** This is source-exact behavior *for a bounded package-equipment path*, not complete Forge, real production-RLS, live actor or browser acceptance. [Full live-source trigger matrix](Forge_Original_Creation_Trigger_Coverage_2026-11-05.md) records the names and hashes.
 
 ## Deferred sheet Background validation — genuine local JWT J17–J21 PASS
 
@@ -51,6 +51,23 @@ In [GitHub Actions run 42031055348](https://github.com/bob8675309/DNDNEXT/action
 
 Source files: `scripts/fixtures/forge_equipment_validator_original_pg17.sql`, `scripts/fixtures/forge_equipment_validator_local_auth_extension_pg17.sql`. Full [31-trigger matrix](Forge_Original_Creation_Trigger_Coverage_2026-11-05.md) tracks remaining 28 original dependencies.
 
+## Immediate sheet-authority guard and tag synchronization — genuine local JWT J22–J30 PASS
+
+The bounded genuine local Auth [GitHub Actions run 42033204780](https://github.com/bob8675309/DNDNEXT/actions/runs/42033204780) **SUCCESS** at tested code SHA `9e8d479bfdc5f354f2fcd0a4c5f81fecabdcc641`. It installs original immediate `character_sheets_authority_fields_guard_v1` and `character_sheets_sync_player_tags_v1` **after** the earlier J00–J21 cases, so earlier fixture scope remains unchanged. Original deployed functions were captured read-only at live source fingerprints: `guard_direct_character_authority_mutation_v1` `04596b0a3fdfb71c1b357056e8c6023b` (SECURITY INVOKER), `sync_player_character_tags_from_sheet_v1` `a135ca951f81d2a9546d783afe665c52` (SECURITY DEFINER), `derive_player_character_tags_v1` `d62bab7f326330ddbeb6ccede172d19f`, and `player_character_tag_slug_v1` `aba97a1c7478159d182e38cda4ca8383`. The source text is preserved in `scripts/fixtures/forge_sheet_authority_tags_original_pg17.sql`, and exact trigger timings are in `scripts/fixtures/forge_sheet_authority_tags_local_auth_extension_pg17.sql`.
+
+- **J22:** Original player Forge v2 continues creating equipped characters; tag sync derives player-character, class, species, and Background tags. Identical nonce retry remains inert.
+- **J23:** Editor's ordinary sheet journal edit is accepted under genuine JWT; tag sync derives profession tag and preserves pre-existing campaign tag, with no duplicate gear.
+- **J24:** Original INVOKER guard rejects direct authoritative top-level spells and `meta.featGrantInstances` edits with SQLSTATE `42501`; canonical sheet remains unchanged.
+- **J25:** Signed-in outsider with no current editor grant cannot modify the sheet; anonymous token has no table grant in the reduced local fixture.
+- **J26–J27:** Genuine signed-in GM with explicit editor grant on test NPC can perform privileged authoritative change; non-GM co-editor of that same NPC may write an ordinary note but cannot insert authoritative feat-choice metadata. Does not prove production Admin RLS.
+- **J28:** Direct JWT sheet INSERT with authoritative feat content is rejected; allowed ordinary INSERT derives player tags.
+- **J29:** Revocation of current edit grant blocks subsequent direct sheet UPDATE.
+- **J30:** Original player Forge v3's source-qualified spell creation still succeeds after original immediate triggers; same nonce remains inert.
+
+**Important RLS boundary:** To exercise the INVOKER guard as `current_user='authenticated'`, this local fixture installs narrowly scoped **editor-only test RLS** and temporary SELECT grants on its scratch `character_permissions` table. It does **not** reproduce the live `private.can_access_character_v1` helper, full production sheet-visibility policies, service actors, or real Admin profile roles. Original sheet-tag helper runs in the local test's deliberately reduced creator/account context. No production permissions are changed; none of these results proves player-safe full-sheet visibility or the full security cutover.
+
+The [31-trigger gap matrix](Forge_Original_Creation_Trigger_Coverage_2026-11-05.md) now records **5 original loaded / 26 original omitted** (18 progression, 6 character, 2 inventory) plus one unmerged candidate creator INSERT trigger.
+
 ## Mandatory compatibility and release blockers
 
 1. Full original `character_progression` **19 triggers**, `character_sheets` **4**, `characters` **6** before adding candidate trigger, and `inventory_items` **2** were inventoried live, but the first fixture does **not** load every deferred validation/equipment/attunement/feature materializer. This is exact original RPC function behavior on a deliberately **reduced schema**, not complete production transaction parity.
@@ -60,4 +77,4 @@ Source files: `scripts/fixtures/forge_equipment_validator_original_pg17.sql`, `s
 5. Source-full original trigger/catalogue parity, Admin and Player browser Forge, original creator-on-INSERT trigger, source spell/gear materialization and rollback, exact live source ACL and RLS, and P1.3 CP/CS/I/G global lock discipline remain release gates.
 6. PR #321 player-safe Profile/GM dossier/creator-authored private backstory stages 1–3 and PR #323 centered secure Profile need a coordinated client/schema rollout. Never use this candidate to expose GM-only `characters.secret` or a raw player sheet. Creator-only provenance is independent of general `can_edit`.
 
-**Next bounded engineering action:** source-audit and test the two original immediate sheet triggers, `character_sheets_authority_fields_guard_v1` and `character_sheets_sync_player_tags_v1`, together with the existing three source-original gear/sheet triggers under genuine local JWT. Preserve the exact live function hashes and identify original dependencies, not bypassing unknown source validators. Then expand progression, character and inventory triggers by actor/class, reconcile production RLS/ACL, browser Forge, GM/private backstory, and P1.3 CP/CS/I/G global lock order. No live migration, release or browser acceptance is authorized by these bounded passing tests.
+**Next bounded engineering action:** source-audit the deferred `character_progression_validate_player_forge_authority_v1` trigger/handler, gather its exact deployed helper and catalogue dependencies, then add signed-in passing and failing Forge creation cases in isolated PG17/GoTrue. Confirm current creator attribution, immutable replay and source-lock behavior remain intact. Still outstanding: 26 original progression/character/inventory triggers, live production ACL/RLS, Admin NPC creation nonce policy, browser Forge, GM/private backstory and P1.3 CP/CS/I/G global lock order. Do not merge, deploy, or treat this reduced test as full production acceptance.
