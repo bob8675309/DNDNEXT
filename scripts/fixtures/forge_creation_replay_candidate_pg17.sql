@@ -291,3 +291,45 @@ BEGIN
  EXCEPTION WHEN SQLSTATE '42501' THEN NULL; END;
 END $test$;
 \echo 'PASS FCR-04: original Admin create executes creator trigger without player-event or unauthorized create'
+
+-- FCR-05 compose held #319 legacy-snapshot rule with immutable nonce.
+-- Owner 111 is distinct from the first testcase's owner 110; a new canonical
+-- primary creates account snapshot and an alternate must preserve it.
+DO $legacy$
+DECLARE
+ v_first uuid;v_alt uuid;v_same uuid;v_snapshot jsonb;v_name text;
+BEGIN
+ PERFORM set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000111',true);
+ v_first:=public.create_player_character_v2(
+  '{"creation_request_id":"00000000-0000-0000-0000-000000009105","name":"Legacy First",
+    "sheet":{"classKey":"fighter","level":1,"marker":"canonical-primary"}}','[]'::jsonb);
+ SELECT sheet,name INTO v_snapshot,v_name FROM public.players
+ WHERE user_id='00000000-0000-0000-0000-000000000111';
+ IF v_snapshot->>'marker' IS DISTINCT FROM 'canonical-primary'
+    OR v_name IS DISTINCT FROM 'Legacy First'
+ THEN RAISE EXCEPTION 'First character must seed empty account-wide snapshot'; END IF;
+ v_alt:=public.create_player_character_v2(
+  '{"creation_request_id":"00000000-0000-0000-0000-000000009106","name":"Legacy Alternate",
+    "sheet":{"classKey":"fighter","level":1,"marker":"canonical-alternate"}}','[]'::jsonb);
+ SELECT sheet,name INTO v_snapshot,v_name FROM public.players
+ WHERE user_id='00000000-0000-0000-0000-000000000111';
+ IF v_snapshot->>'marker' IS DISTINCT FROM 'canonical-primary'
+    OR v_name IS DISTINCT FROM 'Legacy First'
+ THEN RAISE EXCEPTION 'Alternate overwrote protected legacy player snapshot'; END IF;
+ IF v_first=v_alt OR (SELECT count(*) FROM public.character_sheets
+    WHERE character_id IN (v_first,v_alt) AND
+          sheet->>'marker' IN ('canonical-primary','canonical-alternate'))<>2
+ THEN RAISE EXCEPTION 'Alternate did not preserve independent canonical sheets'; END IF;
+ v_same:=public.create_player_character_v2(
+  '{"creation_request_id":"00000000-0000-0000-0000-000000009106","name":"Legacy Alternate",
+    "sheet":{"classKey":"fighter","level":1,"marker":"canonical-alternate"}}','[]'::jsonb);
+ IF v_same<>v_alt OR (SELECT count(*) FROM public.character_level_events
+   WHERE character_id IN (v_first,v_alt))<>2
+ THEN RAISE EXCEPTION 'Alternate identical nonce created duplicate event'; END IF;
+ IF (SELECT count(*) FROM public.character_permissions
+   WHERE character_id IN (v_first,v_alt) AND user_id='00000000-0000-0000-0000-000000000111'
+     AND can_edit AND can_inventory)<>2
+ THEN RAISE EXCEPTION 'Alternate corrupted player grants'; END IF;
+END;
+$legacy$;
+\echo 'PASS FCR-05: PR319 composed, first snapshot seed, alternate preservation, separate canonical sheets/grants, inert nonce retry'
