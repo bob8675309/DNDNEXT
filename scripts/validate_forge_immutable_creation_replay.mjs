@@ -245,6 +245,7 @@ for (const token of ["J10","J11","J12","J13","J14","J15","J16","J17","J18","J19"
 console.log("PASS source: original Admin/v2/v3 snapshots, v2/v3 source-pinned private wrappers with one PR319 snapshot safeguard, nonce fingerprint and authorization static contract.");
 
 
+const workflow=readFileSync(".github/workflows/validate-forge-immutable-creation-replay.yml","utf8");
 const ownerHandlers=readFileSync("scripts/fixtures/forge_owner_constraint_original_inventory_handlers_pg17.sql","utf8");
 const ownerSetup=readFileSync("scripts/fixtures/forge_owner_constraint_deferred_creation_local_auth_pg17.sql","utf8");
 for(const [fn,md5] of [
