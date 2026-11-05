@@ -582,7 +582,8 @@
         "GM-private character.secret versus delegated can_edit full-sheet authority unresolved; private character_notes audience and remaining SECURITY DEFINER character serializers require review.",
         "World-map sprites/route/drag behavior must stay untouched; the centered wide Profile is separately held draft #320.",
         "2026-11-04 handoff registry correction: all local test-path links removed from registry arrays because these artifacts live ONLY on independent draft PR #321 at a8db0b3f; source on PR #317 must not pretend its tests/files are present. CI 41944959939 failed as expected before correction.",
-        "Owner confirmed 2026-11-04 GM Secrets versus player backstory. PR #321 exact test head 14358405 GoTrue V00-V15 PASS run 41956440837, 3/3 CI. Original editor secret leak reproduced V09; GM-only API and public clue, v1/v2 server redaction, backstory grant revocation passed in disposable PG17. V14 demonstrates synthetic raw sheet.secret remains editor-readable, so NOT production safe. All four create RPC paths and frontend editor need coordinated cutover; preserve 7 live existing legacy secret values. No live data/policy edits or deploy."
+        "Owner confirmed 2026-11-04 GM Secrets versus player backstory. PR #321 exact test head 14358405 GoTrue V00-V15 PASS run 41956440837, 3/3 CI. Original editor secret leak reproduced V09; GM-only API and public clue, v1/v2 server redaction, backstory grant revocation passed in disposable PG17. V14 demonstrates synthetic raw sheet.secret remains editor-readable, so NOT production safe. All four create RPC paths and frontend editor need coordinated cutover; preserve 7 live existing legacy secret values. No live data/policy edits or deploy.",
+        "2026-11-04 GM clarified authored private backstory accessible ONLY by original verified creator + GM. Other can_edit co-editors denied. Creator retains access only while active can_edit grant; unattributed legacy NPC GM-only. No trusted creator field currently deployed. PR #321 research stage3 adds private immutable attribution and six-identity true JWT V16-V18 tests; actual Forge/underling creation binding and UI migration unimplemented. No production data/grant changes."
       ],
       "scope_note": "Independent main-based P1.3 PR #321 contains source-faithful candidate SQL and actual signed-in synthetic local tests only, not a completed safe Profile. NPC/merchant Profile-first centered UI on #320 is not deployed. No player-safe projection is installed live. Test scripts/SQL under separate draft PR #321 are intentionally not included in this PR source tree; refer to exact-head run and PR URL.",
       "verification": {
@@ -591,7 +592,7 @@
         "deployed_sha": "not-deployed-research-only",
         "test_status": "real-local-GoTrue-V00-through-V08-PASS-run-41944321941-sha-a8db0b3f;negative-V00-and-residual-V06-expected",
         "browser_acceptance": "not-yet-browser-tested",
-        "owner_approval": "Profile-first everywhere and GM-managed reveals approved as product direction; no production policy/ACL deployment approval"
+        "owner_approval": "GM confirmed creator plus GM only for player-authored backstory, not any co-editor. GM Secret stays GM only. Database RLS/source cutover and deployment NOT approved."
       },
       "protected_boundaries": [
         "No live Supabase SQL, grants, migration or deployment without owner approval",
