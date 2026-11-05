@@ -7,6 +7,7 @@ on:
       - "components/CreatorBackstoryPanel.js"
       - "pages/npcs.js"
       - "scripts/validate_npc_private_profile_cutover.mjs"
+      - "scripts/validate_printable_character_sheet.mjs"
       - "sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql"
       - "scripts/test_p1_3_npc_profile_safe_local_auth.mjs"
   workflow_dispatch:
