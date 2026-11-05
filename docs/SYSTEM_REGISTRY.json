@@ -147,7 +147,8 @@
         "2026-11-04 owner update supersedes pending-underling gate: reuse Forge v3, Admin notification via committed level event, GM NPC post-creation rights/notes; evaluate capability-based authorization redesign. D05–D06 revised plus D25–D32 proposed; no runtime tests/deployment. See docs/CHARACTER_CREATION_ADMIN_NOTICE_AND_DELEGATED_RIGHTS_2026-11-04.md.",
         "2026-11-04: source-exact equip/transfer vs in-flight Admin G revocation disposable real-JWT cases 157–159 added on #317; exact-head test pending. No global deadlock/order proof; see docs/P1_3_Original_Equipment_Grant_Revocation_2026-11-04.md.",
         "2026-11-04: original Forge deferred materializer uses character progression CP before sheet CS, while original sheet-sync trigger uses CS before CP upsert. Isolated source-exact PG17 F01-F03 test pending, production two-session reachability and other 17 progression triggers unverified. Docs P1_3_Forge_Deferred_Progression_Sheet_Locks_2026-11-04.md.",
-        "2026-11-04: original materializer (CP→CS) vs source sheet-sync (CS→CP) induced REAL PG17 40P01 under manufactured same-character schedule, F01-F03 PASS at fc178c5f/run 41935090198 (9/9 CI). Public level-up v5→v4→v3→private base and authorized sheet UPDATE are candidate entry points; genuine JWT collision and full trigger parity NOT proven. Continue P1.3."
+        "2026-11-04: original materializer (CP→CS) vs source sheet-sync (CS→CP) induced REAL PG17 40P01 under manufactured same-character schedule, F01-F03 PASS at fc178c5f/run 41935090198 (9/9 CI). Public level-up v5→v4→v3→private base and authorized sheet UPDATE are candidate entry points; genuine JWT collision and full trigger parity NOT proven. Continue P1.3.",
+        "2026-11-04 NPC privacy: stage-one and disruptive stage-two SQL candidates under separate draft #321, real local JWT V00–V08 PASS run 41944321941 SHA a8db0b3f. Full visible-NPC sheet and legacy get_my_player_characters_v2 limited-grant bypass reproduced in synthetic baseline; direct unrevealed column ACL leak remains until coordinated client/DB cutover. NO production changes."
       ],
       "label": "Combat replay authorization",
       "scope_note": "Draft PR #317 only: source-derived five-family command guard and scoped I/G row-lock research; signed-in RLS predicate recreation and explicit modeled active controller reassignment. Not production, not universal security proof.",
@@ -559,6 +560,48 @@
       "protected_boundaries": [
         "No production SQL changes, grants, merge, or deployment without owner approval",
         "Do not change world-map travel/camping/weather or mix world/town and tactical maps"
+      ]
+    },
+    {
+      "id": "npc-profile-visibility",
+      "label": "NPC public-safe Profile, GM dossier, restricted sheet/secret data",
+      "status": "research-only",
+      "code_paths": [
+        "components/NpcPanel.js",
+        "components/character/CharacterInteractionPanel.js",
+        "pages/npcs.js",
+        "components/PlayerCharacterProfilePanelUnified.js",
+        "utils/charactersDb.js",
+        "sql/candidates/20261104_npc_player_safe_profile_rls_v1.sql",
+        "sql/candidates/20261104_npc_gm_dossier_column_acl_stage2.sql"
+      ],
+      "tests": [
+        "scripts/test_p1_3_npc_profile_safe_local_auth.mjs",
+        "scripts/fixtures/p1_3_npc_safe_profile_local_auth_pg17.sql",
+        "scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql",
+        "scripts/validate_p1_3_npc_profile_rls_source.mjs"
+      ],
+      "last_checked": "2026-11-04",
+      "open_gaps": [
+        "Research-only PR #321 V00–V08 PASS real disposable GoTrue/PG17, run 41944321941, exact SHA a8db0b3f. V00 intentionally unsafe baseline; V06 intentionally shows direct characters lore-column leak under stage one. Stage-two GM dossier/ACL model requires coordinated UI/DB migration and browser acceptance.",
+        "Existing Admin NPC page, shared NpcPanel, PlayerCharacterProfilePanelUnified fallback and charactersDb direct lore reads would break after column-level SELECT revocation. No live SQL, migration, merge, grants or deployment permitted without source/rollback/owner review.",
+        "GM-private character.secret versus delegated can_edit full-sheet authority unresolved; private character_notes audience and remaining SECURITY DEFINER character serializers require review.",
+        "World-map sprites/route/drag behavior must stay untouched; the centered wide Profile is separately held draft #320."
+      ],
+      "scope_note": "Independent main-based P1.3 PR #321 contains source-faithful candidate SQL and actual signed-in synthetic local tests only, not a completed safe Profile. NPC/merchant Profile-first centered UI on #320 is not deployed. No player-safe projection is installed live.",
+      "verification": {
+        "source": "live-SELECT-only-NPC-RLS-characters-column-ACL-and-player-rpc-2026-11-04",
+        "live_database": "read-only-source-policy-and-ACL-verified",
+        "deployed_sha": "not-deployed-research-only",
+        "test_status": "real-local-GoTrue-V00-through-V08-PASS-run-41944321941-sha-a8db0b3f;negative-V00-and-residual-V06-expected",
+        "browser_acceptance": "not-yet-browser-tested",
+        "owner_approval": "Profile-first everywhere and GM-managed reveals approved as product direction; no production policy/ACL deployment approval"
+      },
+      "protected_boundaries": [
+        "No live Supabase SQL, grants, migration or deployment without owner approval",
+        "Protect GM-private notes; do not conflate can_inventory/can_convert/can_control with full-sheet edit",
+        "Never expose unrevealed NPC fields directly to clients or through SECURITY DEFINER RPCs",
+        "Do not modify world/town map movement as incidental Profile UI work"
       ]
     }
   ],
