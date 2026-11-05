@@ -139,3 +139,12 @@
 - **One next bounded task:** coordinate this same-transaction provenance seed with P1.3 #317 original two-session CP/CS/G/I lock schedules, review creator trust/service GM contract and source grant locks, test full original graph and browser authorization before proposing a reviewed migration. Separately ask owner whether legacy null-grant provenance should remain unknown or ever be audited/backfilled; **no automatic repair**.
 - **Production effects NONE:** DnDWeb functions/triggers/rows/auth grants/secrets unchanged, `main` unmerged, no Vercel deploy or world/town map/AI work.
 
+
+
+## 2026-11-05 — P1.3 exact-source Admin CP/CS inversion cross-branch receipt
+
+- **Location:** Separate [held draft PR #317](https://github.com/bob8675309/DNDNEXT/pull/317), **not** this #324 creator-provenance source stack. No cross-branch SQL/code copied, no merges.
+- **Exact evidence:** [PostgreSQL17 CI 42049546692](https://github.com/bob8675309/DNDNEXT/actions/runs/42049546692), source SHA `c7ba39df492bce3b64a5547aa1da0fbaee10aefa` **SUCCESS** original-source Admin progression v1 (MD5 `eb467b7c7a8d548581a36cfcb0d8f77b`, **CP→CS**) versus original sheet trigger (MD5 `bb1a3a2d1600ce33cd4fcadac5e0f3a9`, **CS→CP**). Two sessions with synthetic timed CP prelock produce actual PostgreSQL `40P01` deadlock in F04; F05 both-CP-first synthetic control serializes. [Precise scope report](https://github.com/bob8675309/DNDNEXT/blob/docs/p1-3-global-lock-order-design-20261101/docs/P1_3_Admin_Progression_Sheet_CP_CS_Race_2026-11-05.md).
+- **#324 implication:** Proposed verified progression seed is **BEFORE INSERT** only, cannot itself fix F04's UPDATE/UPDATE inversion and was not installed in #317 test. J49–J62 remain bounded real local JWT actor-binding acceptance, but **global P1.3 CP/CS/G/I concurrent lock and rollback policy remains UNPROVEN**. Neither F04 nor F05 reproduces complete authenticated player level-up or live Admin/RLS policy.
+- **Next bounded task:** source-authentic `complete_character_level_up_v5` → v4/v3 valid Fighter case against real signed-in coeditor sheet update on disposable GoTrue/PG17, then grant/inventory lock order with original triggers/creator seed. Live DB/permissions/rows/secrets, production main, deployment, map and AI unchanged.
+
