@@ -37,7 +37,19 @@ The `scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql` installs
 - **J15:** Two genuine concurrent same-ID equipped creation calls produce one canonical item/currency/event (no duplicate).
 - **J16:** Equipped alternate creation preserves the separate existing `players.sheet` legacy snapshot through the composed PR #319 guard, alongside independent canonical sheet/equipment.
 
-**Coverage limit:** Only **2 of 31 original** creation-adjacent triggers are installed; the extra #321 creator INSERT trigger is a research addition. **29 original triggers and authentic six helper implementations remain absent.** This is source-exact behavior *for a bounded package-equipment path*, not complete Forge, real production-RLS, live actor or browser acceptance. [Full live-source trigger matrix](Forge_Original_Creation_Trigger_Coverage_2026-11-05.md) records the names and hashes.
+**Coverage limit after J17–J21:** Only **3 of 31 original** creation-adjacent triggers are installed; the extra #321 creator INSERT trigger is a research addition. **28 original triggers and authentic six helper implementations remain absent.** This is source-exact behavior *for a bounded package-equipment path*, not complete Forge, real production-RLS, live actor or browser acceptance. [Full live-source trigger matrix](Forge_Original_Creation_Trigger_Coverage_2026-11-05.md) records the names and hashes.
+
+## Deferred sheet Background validation — genuine local JWT J17–J21 PASS
+
+In [GitHub Actions run 42031055348](https://github.com/bob8675309/DNDNEXT/actions/runs/42031055348), **SUCCESS** at tested source SHA `1ec4d6fa6b0b39d3f898763d3d8de6b90a23a71b`, the actual original `private.validate_player_forge_starting_equipment_sheet_v1` (MD5 `41cb1758bd2e1eb9b3998389deabb49b`) and its original **deferred** sheet trigger were installed only **after** J00–J16, preserving their previous baseline. Test catalogue adds a single controlled, source-matched XPHB Soldier Background. This is the third of 31 original triggers installed, **not** real source catalogue completeness.
+
+- **J17:** Signed-in matched Background and equipment package succeeds with original deferred validator, source materializer and sheet/progression sync; equal-intent retry is inert.
+- **J18:** Missing `backgroundId` rejected at deferred commit. Post-materializer inventory/currency, canonical character, creator attribution and nonce reservation roll back.
+- **J19:** Background name mismatch rejects without leaked character or nonce.
+- **J20:** Two genuinely signed-in concurrent identical request IDs for source-matched Background yield one character, event, item and currency row.
+- **J21:** Changing a Background ID under an already used nonce rejects before writing equipment.
+
+Source files: `scripts/fixtures/forge_equipment_validator_original_pg17.sql`, `scripts/fixtures/forge_equipment_validator_local_auth_extension_pg17.sql`. Full [31-trigger matrix](Forge_Original_Creation_Trigger_Coverage_2026-11-05.md) tracks remaining 28 original dependencies.
 
 ## Mandatory compatibility and release blockers
 
@@ -48,4 +60,4 @@ The `scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql` installs
 5. Source-full original trigger/catalogue parity, Admin and Player browser Forge, original creator-on-INSERT trigger, source spell/gear materialization and rollback, exact live source ACL and RLS, and P1.3 CP/CS/I/G global lock discipline remain release gates.
 6. PR #321 player-safe Profile/GM dossier/creator-authored private backstory stages 1–3 and PR #323 centered secure Profile need a coordinated client/schema rollout. Never use this candidate to expose GM-only `characters.secret` or a raw player sheet. Creator-only provenance is independent of general `can_edit`.
 
-**Next bounded engineering action:** load the exact deployed `private.validate_player_forge_starting_equipment_sheet_v1` deferred sheet validator (source MD5 `41cb1758bd2e1eb9b3998389deabb49b`) into the genuine local JWT fixture with source-backed catalogue dependencies, and run both valid/invalid package and concurrent nonce cases. Consult the [31-trigger gap matrix](Forge_Original_Creation_Trigger_Coverage_2026-11-05.md). Full 19-progression/4-sheet/character/inventory original trigger graph, real source ACL/RLS, browser Forge, GM/private backstory, and P1.3 CP/CS/I/G global lock order remain release gates. No live migration, release or browser acceptance is authorized by the bounded passing tests.
+**Next bounded engineering action:** source-audit and test the two original immediate sheet triggers, `character_sheets_authority_fields_guard_v1` and `character_sheets_sync_player_tags_v1`, together with the existing three source-original gear/sheet triggers under genuine local JWT. Preserve the exact live function hashes and identify original dependencies, not bypassing unknown source validators. Then expand progression, character and inventory triggers by actor/class, reconcile production RLS/ACL, browser Forge, GM/private backstory, and P1.3 CP/CS/I/G global lock order. No live migration, release or browser acceptance is authorized by these bounded passing tests.
