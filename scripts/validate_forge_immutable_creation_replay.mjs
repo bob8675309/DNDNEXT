@@ -44,7 +44,6 @@ for (const str of [
  "FOR UPDATE",
  "Creation request ID already used for different character or spell selections",
  "historical",
- "legacy",
  "creation_api IN ('player-v2','player-v3')",
  "character_id uuid UNIQUE REFERENCES public.characters(id) ON DELETE SET NULL",
  "REVOKE ALL ON private.player_creation_intent_reservations_v1 FROM PUBLIC,anon,authenticated",
