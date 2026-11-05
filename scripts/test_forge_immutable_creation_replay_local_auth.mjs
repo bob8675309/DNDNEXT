@@ -899,7 +899,33 @@ denied(await sheetWrite(people.PLAYER.client,otherOwner,forgedCoedit),"42501",
 assert.equal(sql("SELECT count(*) FROM public.character_option_grant_instances WHERE character_id='"+otherOwner+"'"),"1");
 console.log("PASS J60 signed-in coeditor note cannot overwrite verified creator grant attribution or protected source choices");
 
-console.log("PASS LOCAL REAL GoTrue J00-J60: source-original Forge grant gap baseline then isolated same-transaction verified creator BEFORE INSERT candidate; full production P1.3 locks/RLS remain unproven.");
+// A privileged service-side SQL transaction has no verified auth.uid().
+// Even a Forge-like marker MUST NOT invent a creator attribution. This is an
+// explicitly local SUPERUSER service simulation, NOT a true JWT actor call.
+const noAuthServiceCharacter=id(9171);
+sql("BEGIN; INSERT INTO public.characters(id,name,tags,kind) VALUES('"+noAuthServiceCharacter+"','JWT local service no auth uid',ARRAY['player-character']::text[],'npc'); "+
+ "INSERT INTO public.character_sheets(character_id,sheet) VALUES('"+noAuthServiceCharacter+"',"+
+ "'{\"classKey\":\"fighter\",\"level\":1,\"meta\":{\"creator\":\"shared_character_forge_player_v2\"}}'::jsonb); COMMIT;");
+assert.equal(sql("SELECT count(*) FROM private.character_creator_attribution WHERE character_id='"+noAuthServiceCharacter+"'"),"0");
+assert.equal(sql("SELECT coalesce(created_by::text,'') FROM public.character_progression WHERE character_id='"+noAuthServiceCharacter+"'"),"");
+assert.equal(sql("SELECT count(*) FROM public.character_option_grant_instances WHERE character_id='"+noAuthServiceCharacter+"'"),"0");
+console.log("PASS J61 local privileged service-side creation without JWT leaves creator and grants unattributed, even with Forge-like marker");
+
+// User-controlled creator_user_id is ignored by the original player v2 RPC,
+// while the new progression seed reads only immutable private provenance.
+const spoofedCreator=JSON.parse(JSON.stringify(mintedPayload));
+spoofedCreator.name="JWT forged top-level creator ignored";
+spoofedCreator.creation_request_id=id(9172);
+spoofedCreator.creator_user_id=uid("OUTSIDER");
+const spoofedCharacter=pass(await call2(people.PLAYER.client,spoofedCreator),
+ "forged caller-supplied creator_user_id ignored by original source v2");
+assert.equal(sql("SELECT creator_user_id::text FROM private.character_creator_attribution WHERE character_id='"+spoofedCharacter+"'"),uid("PLAYER"));
+assert.equal(sql("SELECT created_by::text FROM public.character_progression WHERE character_id='"+spoofedCharacter+"'"),uid("PLAYER"));
+assert.equal(sql("SELECT granted_by::text FROM public.character_option_grant_instances WHERE character_id='"+spoofedCharacter+"'"),uid("PLAYER"));
+assert.equal(sql("SELECT granted_by::text FROM public.character_option_grants WHERE character_id='"+spoofedCharacter+"'"),uid("PLAYER"));
+console.log("PASS J62 signed-in player forged creator_user_id cannot impersonate another actor in immutable or grant provenance");
+
+console.log("PASS LOCAL REAL GoTrue J00-J62: original source gap then isolated verified creator BEFORE INSERT candidate; local service and payload-forgery denials; full production lock and RLS acceptance still open.");
 
 
 
