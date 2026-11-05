@@ -225,7 +225,7 @@ CREATE FUNCTION private.p13_sheet_hold_after_update() RETURNS trigger
 LANGUAGE plpgsql AS $f$
 BEGIN
  IF coalesce(current_setting('p13.test_hold',true),'')='on'
- THEN PERFORM pg_sleep(2.2); END IF;
+ THEN PERFORM pg_sleep(3.4); END IF;
  RETURN NEW;
 END $f$;
 CREATE TRIGGER p13_hold_before_original_sheet_sync
