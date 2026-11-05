@@ -162,4 +162,33 @@ console.log("PASS J08 concurrent changed-intent same nonce commits exactly one a
 
 assert.equal(Number(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE octet_length(intent_sha256)<>32")),0);
 console.log("PASS J09 request table stores only SHA-256 fingerprints, not raw private character selections");
-console.log("PASS LOCAL REAL GoTrue: J00-J09 original source v2/v3/Admin, creator trigger, immutable request authorization, transaction rollback and contention.");
+// J10: existing populated account-wide snapshot survives new alternate
+// creations; this is the combined held PR #319 behavior.
+const originalAccountMarker=sql("SELECT sheet->>'classKey' FROM public.players WHERE user_id='"+uid("PLAYER")+"'");
+assert.equal(originalAccountMarker,"wizard",
+ "Guarded alternate must not overwrite populated initial legacy account sheet");
+const seededSnapshotName=sql("SELECT name FROM public.players WHERE user_id='"+uid("PLAYER")+"'");
+assert.equal(seededSnapshotName,"JWT unsafe baseline",
+ "Guarded creations must not change existing account legacy display name");
+console.log("PASS J10 protected original populated players.sheet survives v2/v3 additional characters");
+
+// J11: a new account creates its primary and alternate through guarded v2,
+// preserving two separate canonical sheets and grants with a stable legacy
+// snapshot, despite signed-in nonce retry.
+const firstAlternatePayload=fighter("JWT second account primary",id(9108));
+firstAlternatePayload.sheet.marker="primary-owned";
+const altPayload=fighter("JWT second account alternate",id(9109));
+altPayload.sheet.marker="alternate-owned";
+const primary=pass(await call2(people.OUTSIDER.client,firstAlternatePayload),"second-account primary");
+assert.equal(sql("SELECT sheet->>'marker' FROM public.players WHERE user_id='"+uid("OUTSIDER")+"'"),
+ "primary-owned");
+const alt=pass(await call2(people.OUTSIDER.client,altPayload),"second-account alternate");
+assert.notEqual(primary,alt);
+assert.equal(sql("SELECT sheet->>'marker' FROM public.players WHERE user_id='"+uid("OUTSIDER")+"'"),
+ "primary-owned","Alternate overwrote account legacy snapshot");
+assert.equal(Number(sql("SELECT count(*) FROM public.character_sheets WHERE character_id IN ('"+primary+"','"+alt+"') AND sheet->>'marker' IN ('primary-owned','alternate-owned')")),2);
+assert.equal(Number(sql("SELECT count(*) FROM public.character_permissions WHERE character_id IN ('"+primary+"','"+alt+"') AND user_id='"+uid("OUTSIDER")+"' AND can_edit AND can_inventory")),2);
+assert.equal(pass(await call2(people.OUTSIDER.client,altPayload),"alternate retry"),alt);
+assert.equal(Number(sql("SELECT count(*) FROM public.character_level_events WHERE character_id IN ('"+primary+"','"+alt+"')")),2);
+console.log("PASS J11 signed-in new account seeds primary snapshot once and retains distinct alternate canonical sheets/grants");
+console.log("PASS LOCAL REAL GoTrue: J00-J11 plus composed PR319 legacy snapshot accepted in reduced local PG17.");
