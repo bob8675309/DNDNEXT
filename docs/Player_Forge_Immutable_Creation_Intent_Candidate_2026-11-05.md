@@ -37,7 +37,7 @@ The `scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql` installs
 - **J15:** Two genuine concurrent same-ID equipped creation calls produce one canonical item/currency/event (no duplicate).
 - **J16:** Equipped alternate creation preserves the separate existing `players.sheet` legacy snapshot through the composed PR #319 guard, alongside independent canonical sheet/equipment.
 
-**Coverage limit after J31–J38:** Only **6 of 31 original** creation-adjacent triggers are installed; the extra #321 creator INSERT trigger is a research addition. **25 original triggers and the six authentic equipment helper implementations remain absent.** This is source-exact behavior *for a bounded package-equipment path*, not complete Forge, real production-RLS, live actor or browser acceptance. [Full live-source trigger matrix](Forge_Original_Creation_Trigger_Coverage_2026-11-05.md) records the names and hashes.
+**Coverage limit after J39–J48:** Only **7 of 31 original** creation-adjacent triggers are installed; the extra #321 creator INSERT trigger is a research addition. **24 original triggers and the six authentic equipment helper implementations remain absent.** This is source-exact behavior *for a bounded package-equipment path*, not complete Forge, real production-RLS, live actor or browser acceptance. [Full live-source trigger matrix](Forge_Original_Creation_Trigger_Coverage_2026-11-05.md) records the names and hashes.
 
 ## Deferred sheet Background validation — genuine local JWT J17–J21 PASS
 
@@ -66,7 +66,7 @@ The bounded genuine local Auth [GitHub Actions run 42033204780](https://github.c
 
 **Important RLS boundary:** To exercise the INVOKER guard as `current_user='authenticated'`, this local fixture installs narrowly scoped **editor-only test RLS** and temporary SELECT grants on its scratch `character_permissions` table. It does **not** reproduce the live `private.can_access_character_v1` helper, full production sheet-visibility policies, service actors, or real Admin profile roles. Original sheet-tag helper runs in the local test's deliberately reduced creator/account context. No production permissions are changed; none of these results proves player-safe full-sheet visibility or the full security cutover.
 
-The [31-trigger gap matrix](Forge_Original_Creation_Trigger_Coverage_2026-11-05.md) now records **6 original loaded / 25 original omitted** (17 progression, 6 character, 2 inventory) plus one unmerged candidate creator INSERT trigger.
+The [31-trigger gap matrix](Forge_Original_Creation_Trigger_Coverage_2026-11-05.md) now records **7 original loaded / 24 original omitted** (16 progression, 6 character, 2 inventory) plus one unmerged candidate creator INSERT trigger.
 
 ## Deferred progression authority and canonical feat/spell summaries — true local JWT J31–J38 PASS
 
@@ -87,6 +87,26 @@ J31–J38 prove the following in the bounded fixture:
 
 **Files:** `scripts/fixtures/forge_progression_authority_original_pg17.sql`, `scripts/fixtures/forge_progression_authority_local_auth_extension_pg17.sql`, `scripts/test_forge_immutable_creation_replay_local_auth.mjs`; [31-trigger gap matrix](Forge_Original_Creation_Trigger_Coverage_2026-11-05.md) records **6 original loaded, 25 omitted**.
 
+## Original feat-grant persistence + source provenance gap — genuine local JWT J39–J48 PASS
+
+[GitHub Actions 42041040368](https://github.com/bob8675309/DNDNEXT/actions/runs/42041040368) **SUCCESS** at exact executable SHA `d297ebd56f03368cacc813086d62f20bbc682749` for the original PG17 and real local Supabase GoTrue/PostgREST jobs. Original immediate `character_progression_materialize_player_forge_feat_instances_v1` (MD5 `c27c4181a51cfd018bbb8244e9931550`) now runs after the original source-aware validators in the disposable test. Two real canonical grant tables were recreated with live column shapes, unique keys, FKs to the source option/character and actual local `auth.users`, and JSONB shape constraints; exact original downstream grant-table triggers were also installed.
+
+**Ten new cases passed as bounded persistence and rollback checks:**
+
+- **J39:** Lucky XPHB instance and aggregate grant created with the expected feat ID, source, owner labels, acquisition level, instance key and attached equipment. **Provenance is a source-gap finding, NOT PASS:** original immediate trigger inserts `granted_by = NULL` even though the signed-in creator is later present in the character's progression row. The actual CI log says `SOURCE GAP J39` for both canonical grant tables.
+- **J40–J41:** Identical same-ID replay preserves complete grant, sheet and equipment rows without updates; changed source ownership under that ID returns `22023` without overwriting grants.
+- **J42–J44:** Duplicate grant instance, invalid `fixedSpellTokens` JSONB CHECK, and repeated nonrepeatable Lucky feat all reject atomically without canonical character/grant/nonce leftovers.
+- **J45:** Two concurrent valid same-ID signed-in calls resolve to one canonical source instance/aggregate grant, creation event, equipment and currency.
+- **J46:** Independent signed-in account receives separate character and feat grant records, with owner identity correctly retained in `character_progression.created_by`. The source-grant `granted_by` gap is recorded separately.
+- **J47:** Direct browser-user mutation of grant tables is refused under the isolated grant-table ACL/RLS; **does not prove production grants/RLS**.
+- **J48:** A no-feat source v3 Wizard receives no phantom grant while its canonical starting class spell is retained.
+
+**Source fidelity and boundaries:** Original source bodies are preserved in `scripts/fixtures/forge_feat_materializer_original_pg17.sql` (also the special Boon of Energy Resistance, Cartomancer and runtime expertise grant handlers) and `forge_feat_materializer_discriminators_original_pg17.sql` (two original feat-family detectors); source-hash guards run on installation. `forge_feat_materializer_local_auth_extension_pg17.sql` installs both source grant tables and the original five downstream grant-table triggers, in addition to the seventh original trigger counted in the 31 creation-adjacent inventory. The three specialized grant handlers return early for Lucky and **do not establish Boon/Cartomancer/Echoing Soul/other feat-effect acceptance**. The grant tables use explicitly restricted **local** RLS/grants, and the catalogue and six equipment helpers remain reduced.
+
+**Release blocker:** [Detailed feat-grant provenance finding](Forge_Feat_Grant_Provenance_Gap_2026-11-05.md) correlates the original sheet→progression trigger insert (`created_by` initially NULL) with materializer source `NEW.created_by`. Read-only live production aggregate: **3/3 grant instances have NULL `granted_by`**, though all three current progression rows have non-NULL `created_by`. The source-exact test reproduces the mismatch; no data backfill or function modification is authorized by these results.
+
+**Remaining trigger coverage:** **7 of 31 original creation-adjacent triggers tested, 24 omitted** (16 progression, 6 characters, 2 inventory), plus the held #321 new creator trigger and the five separate grant-table hooks installed for this limited path. Full campaign source catalogue, grant runtime feat families, production RLS/ACL, browser Forge, GM/private backstory and P1.3 CP/CS/G/I global locks remain release gates.
+
 ## Mandatory compatibility and release blockers
 
 1. Full original `character_progression` **19 triggers**, `character_sheets` **4**, `characters` **6** before adding candidate trigger, and `inventory_items` **2** were inventoried live, but the first fixture does **not** load every deferred validation/equipment/attunement/feature materializer. This is exact original RPC function behavior on a deliberately **reduced schema**, not complete production transaction parity.
@@ -99,4 +119,4 @@ J31–J38 prove the following in the bounded fixture:
 
 **Exact-source runtime revalidation:** [GitHub Actions run 42033593609](https://github.com/bob8675309/DNDNEXT/actions/runs/42033593609), at tested executable SHA `bbc327e01158ffcaa6db4a0e7ff2c45eaa192936`, **SUCCESS** for both PostgreSQL and genuine local JWT jobs. The local SQL install now fails closed unless `md5(pg_get_functiondef)` of **all four loaded original authority/tag helpers** matches the read-only live PG17 fingerprints; all J00–J30 previously established outcomes remain passing. This SHA is the latest verified executable checkpoint. It is *not* a production database change.
 
-**Next bounded engineering action:** source-audit and selectively install the original immediate `character_progression_materialize_player_forge_feat_instances_v1` trigger, its grant/instance tables, and required source-catalogue/helper graph. Check the earlier J31 feat instance is materially persisted only when the actual original materializer allows it, and that invalid/replayed submissions roll back in signed-in local PG17. Then address the other 25 original triggers, production-source RLS/ACL, Admin NPC nonce/service policy, real browser Forge, private GM/creator backstory cutover and P1.3 global CP/CS/I/G lock ordering. These bounded tests are **not** production migration authorization.
+**Next bounded engineering action:** analyze and stage a separate, source-correct **server-verifiable grant provenance** fix in disposable PG17/GoTrue, considering #321 immutable creator attribution and **P1.3 CP/CS/G/I lock order** before choosing trigger reordering or a restricted in-transaction finalization. Preserve historical rows pending an explicit owner backfill decision, and require no anonymous/co-editor impersonation and idempotent replay tests. Then continue the 24 omitted original creation-adjacent triggers and full class/campaign source/grants/RLS/browser coverage. These bounded tests and the identified source gap are **not** permission to merge or apply production SQL.
