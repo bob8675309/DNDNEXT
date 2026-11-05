@@ -746,5 +746,58 @@ assert.equal(sql("SELECT count(*) FROM public.character_spells WHERE character_i
 console.log("PASS J48 exact original feat materializer adds no grant for no-feat source v3 Wizard");
 console.log("PASS LOCAL REAL GoTrue J00-J48: source-original feat instance persistence and grant-table authority hooks; specialized feat families and full production trigger graph still untested.");
 
+// J49+: separate UNAPPLIED grant-attribution repair candidate. Prior J39 source
+// baseline MUST remain with its observed NULL granted_by; no historical repair.
+// Identity comes only from the same-transaction immutable creator INSERT #321.
+sqlFile("sql/candidates/20261105_forge_progression_verified_creator_seed_v1.sql");
+
+const verifiedGrantPayload=JSON.parse(JSON.stringify(mintedPayload));
+verifiedGrantPayload.name="JWT verified initial actor feat";
+verifiedGrantPayload.creation_request_id=id(9149);
+const verifiedGrantId=pass(await call2(people.PLAYER.client,verifiedGrantPayload),
+ "authenticated source original v2 with BEFORE INSERT verified creator seed");
+assert.equal(sql("SELECT created_by::text FROM public.character_progression WHERE character_id='"+verifiedGrantId+"'"),uid("PLAYER"));
+assert.equal(sql("SELECT granted_by::text FROM public.character_option_grant_instances WHERE character_id='"+verifiedGrantId+"'"),uid("PLAYER"));
+assert.equal(sql("SELECT granted_by::text FROM public.character_option_grants WHERE character_id='"+verifiedGrantId+"'"),uid("PLAYER"));
+assert.equal(sql("SELECT creator_user_id::text FROM private.character_creator_attribution WHERE character_id='"+verifiedGrantId+"'"),uid("PLAYER"));
+assert.equal(sql("SELECT count(*) FROM public.character_option_grant_instances WHERE character_id='"+verifiedGrantId+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_option_grants WHERE character_id='"+verifiedGrantId+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_id='"+verifiedGrantId+"'"),"1");
+console.log("PASS J49 verified original creator bound before progression INSERT; original immediate feat materializer now persists actor in BOTH canonical grant tables");
+
+const grantFingerprint=(characterId)=>sql(
+ "SELECT md5(coalesce(jsonb_agg(to_jsonb(g) ORDER BY id)::text,'[]')) FROM public.character_option_grant_instances g WHERE character_id='"+characterId+"'");
+const aggFingerprint=(characterId)=>sql(
+ "SELECT md5(coalesce(jsonb_agg(to_jsonb(g) ORDER BY id)::text,'[]')) FROM public.character_option_grants g WHERE character_id='"+characterId+"'");
+const verifiedInstanceHash=grantFingerprint(verifiedGrantId);
+const verifiedAggHash=aggFingerprint(verifiedGrantId);
+assert.equal(pass(await call2(people.PLAYER.client,verifiedGrantPayload),"same signed creation request"),verifiedGrantId);
+assert.equal(grantFingerprint(verifiedGrantId),verifiedInstanceHash);
+assert.equal(aggFingerprint(verifiedGrantId),verifiedAggHash);
+assert.equal(sql("SELECT count(*) FROM public.character_level_events WHERE character_id='"+verifiedGrantId+"'"),"1");
+console.log("PASS J50 signed-in identical nonce replay preserves attributed original source grants without edits");
+
+const forgedOwnerIntent=JSON.parse(JSON.stringify(verifiedGrantPayload));
+forgedOwnerIntent.sheet.featGrantInstances[0].acquisitionOwnerKey="forged-other-owner";
+denied(await call2(people.PLAYER.client,forgedOwnerIntent),"22023","changed attributed feat creation intent");
+assert.equal(grantFingerprint(verifiedGrantId),verifiedInstanceHash);
+assert.equal(aggFingerprint(verifiedGrantId),verifiedAggHash);
+console.log("PASS J51 reusing attributed nonce with changed grant source owner rejects; original actor/grants unchanged");
+
+// Fresh player creation may omit a creation_request_id, as the held wrapper
+// explicitly supports null nonce. The attribution guard must not rely on a
+// reservation row to bind this source-authenticated new character.
+const noNonceFeat=JSON.parse(JSON.stringify(mintedPayload));
+noNonceFeat.name="JWT verified original actor no nonce";
+delete noNonceFeat.creation_request_id;
+const noNonceId=pass(await call2(people.PLAYER.client,noNonceFeat),
+ "signed in new v2 character without a request nonce");
+assert.equal(sql("SELECT creation_request_id IS NULL FROM public.characters WHERE id='"+noNonceId+"'"),"t");
+assert.equal(sql("SELECT creator_user_id::text FROM private.character_creator_attribution WHERE character_id='"+noNonceId+"'"),uid("PLAYER"));
+assert.equal(sql("SELECT granted_by::text FROM public.character_option_grant_instances WHERE character_id='"+noNonceId+"'"),uid("PLAYER"));
+assert.equal(sql("SELECT granted_by::text FROM public.character_option_grants WHERE character_id='"+noNonceId+"'"),uid("PLAYER"));
+console.log("PASS J52 original v2 new character with no nonce still binds source feat actor from same-transaction immutable creator record");
+
+
 
 
