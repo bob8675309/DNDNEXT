@@ -344,3 +344,10 @@
 - First documentation-only commit `f1c4fa62fb5d1873f490b2cce729475d94b861fa` produced failed handoff [CI run 41944959939](https://github.com/bob8675309/DNDNEXT/actions/runs/41944959939): `scripts/validate_handoff_registry.mjs` correctly rejected six SQL/test paths referenced under `npc-profile-visibility` that exist **only on independent, unmerged draft #321** and are **not present** in #317 worktree.
 - Corrected `SYSTEM_REGISTRY.json` to list only source files that exist on this research branch under `code_paths`, and an empty local `tests` list; the cross-PR source, SHA and 3/3 GoTrue CI evidence remain in `verification` and `open_gaps` as provenance, not implied local files.
 - This correction is **documentation only**. No live Supabase DB actions, grants, game logic, maps, `main` merge or deployment.
+
+## 2026-11-04 — GM approved distinct private GM vs editable character secret authority
+
+- Owner said YES to splitting GM Secrets and character backstory secrets, with GM-only access to legacy `characters.secret` regardless of delegated `can_edit`, and separately player-editable backstory. No automatic GM-private visibility on temporary NPC combat, inventory or conversion access. GM-controlled publication must be a separate curated clue; existing sheet reveal toggle cannot authorize raw GM-secret release.
+- SELECT-only DnDWeb 2026-11-04: 15 character rows, 7 with non-empty legacy secret, 10 sheets, zero top-level sheet.secret; no private text read. Source inspection confirms current `get/set_character_secret_v1`, tagged-PC v1/v2 reader and `create_player_character_v2` source all require coordinated change. No data movement/clearing authorized.
+- New draft #321 stage-three SQL + local GoTrue V09–V15 is **unapplied pending exact-head CI**. Draft #320 centered Profile UI and #317 global lock research remain separate. No live DB writes/grants, map edits, main merge or deployment.
+- Next bounded task: finish signed-in stage-three test, audit Forge create/GM secret UI/legacy raw-sheet consumers and prepare coordinated client/server rollback. Do not skip global P1.3 CP/CS/I/G/encounter release gate.
