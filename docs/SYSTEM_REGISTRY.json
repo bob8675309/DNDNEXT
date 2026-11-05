@@ -536,8 +536,25 @@
         "state": "open-draft-unmerged",
         "head_sha": "26d2f278b9e85e8fc0b0c04307b7a87bdd2e8254",
         "base": "work/eldritch-blast-los-regression-20261030"
+      },
+      {
+        "number": 324,
+        "state": "open-draft-unmerged",
+        "base": "research/p1-3-npc-profile-safe-rls-20261104",
+        "tested_source_sha": "4cb4f6c41ef357acc6ba374667c4b4a0ebd66dbb",
+        "evidence": "Genuine local GoTrue/PostgREST J00-J09 PASS on GitHub Actions 41979085727; reduced schema, not live rollout",
+        "status_note": "Player v2/v3 nonce SHA-256 immutable intent candidate, staged only; real full Forge triggers and PR319 legacy-sheet integration pending"
       }
     ],
+    "forge_creation_replay_candidate": {
+      "policy": "Same creation_request_id and identical original character/spell intent is inert; altered intent is rejected and requires a new request",
+      "source": "sql/candidates/20261105_player_creation_immutable_intent_v1.sql",
+      "source_md5_v2": "0351f0a00acae023278e1b8b065b00c9",
+      "source_md5_v3": "6ba73e6f12fcf826cc0a739cce45ff40",
+      "test": "Source-original PG17 41978655925 and genuine local GoTrue JWT J00-J09 41979085727: PASS; browser/full triggers not tested",
+      "production_effects": "none",
+      "next_gate": "Full original Forge deferred progression/gear trigger and RLS parity plus joint PR319 integration"
+    },
     "deployed": "No candidate executor, typed request intent migration, or new composable spell interpreter deployed at last check."
   },
   "live_safety_observations": {
