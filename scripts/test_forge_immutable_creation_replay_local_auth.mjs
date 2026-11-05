@@ -903,13 +903,29 @@ console.log("PASS J60 signed-in coeditor note cannot overwrite verified creator 
 // Even a Forge-like marker MUST NOT invent a creator attribution. This is an
 // explicitly local SUPERUSER service simulation, NOT a true JWT actor call.
 const noAuthServiceCharacter=id(9171);
-sql("BEGIN; INSERT INTO public.characters(id,name,tags,kind) VALUES('"+noAuthServiceCharacter+"','JWT local service no auth uid',ARRAY['player-character']::text[],'npc'); "+
+const forgedServiceSql="BEGIN; INSERT INTO public.characters(id,name,tags,kind) VALUES('"+noAuthServiceCharacter+"','JWT local service Forge marker with no auth uid',ARRAY['player-character']::text[],'npc'); "+
  "INSERT INTO public.character_sheets(character_id,sheet) VALUES('"+noAuthServiceCharacter+"',"+
- "'{\"classKey\":\"fighter\",\"level\":1,\"meta\":{\"creator\":\"shared_character_forge_player_v2\"}}'::jsonb); COMMIT;");
+ "'{\"classKey\":\"fighter\",\"level\":1,\"meta\":{\"creator\":\"shared_character_forge_player_v2\"}}'::jsonb); COMMIT;";
+const rejectedService=spawnSync("psql",["-X","-v","ON_ERROR_STOP=1","-qAt","-c",forgedServiceSql],
+ {env:{...e,PGUSER:"postgres"},encoding:"utf8",timeout:20000});
+assert.notEqual(rejectedService.status,0,
+ "Original source should reject Forge-marked service character with no owner");
+assert.match(rejectedService.stderr,/Starting equipment could not resolve the owning user/i,
+ "Unexpected original source failure for unauthenticated Forge materializer");
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE id='"+noAuthServiceCharacter+"'"),"0");
 assert.equal(sql("SELECT count(*) FROM private.character_creator_attribution WHERE character_id='"+noAuthServiceCharacter+"'"),"0");
-assert.equal(sql("SELECT coalesce(created_by::text,'') FROM public.character_progression WHERE character_id='"+noAuthServiceCharacter+"'"),"");
-assert.equal(sql("SELECT count(*) FROM public.character_option_grant_instances WHERE character_id='"+noAuthServiceCharacter+"'"),"0");
-console.log("PASS J61 local privileged service-side creation without JWT leaves creator and grants unattributed, even with Forge-like marker");
+assert.equal(sql("SELECT count(*) FROM public.character_progression WHERE character_id='"+noAuthServiceCharacter+"'"),"0");
+
+// A genuine service-like NPC has no Forge marker, and should remain separate
+// and unattributed. The fixture runs as localhost superuser, NOT a forged JWT.
+const plainServiceNPC=id(9173);
+sql("BEGIN; INSERT INTO public.characters(id,name,tags,kind) VALUES('"+plainServiceNPC+"','JWT local service plain NPC',ARRAY[]::text[],'npc'); "+
+ "INSERT INTO public.character_sheets(character_id,sheet) VALUES('"+plainServiceNPC+"',"+
+ "'{\"classKey\":\"fighter\",\"level\":1,\"note\":\"service NPC not Forge\"}'::jsonb); COMMIT;");
+assert.equal(sql("SELECT count(*) FROM private.character_creator_attribution WHERE character_id='"+plainServiceNPC+"'"),"0");
+assert.equal(sql("SELECT coalesce(created_by::text,'') FROM public.character_progression WHERE character_id='"+plainServiceNPC+"'"),"");
+assert.equal(sql("SELECT count(*) FROM public.character_option_grant_instances WHERE character_id='"+plainServiceNPC+"'"),"0");
+console.log("PASS J61 original unauthenticated Forge-like service creation rejects atomically; genuine service NPC remains unattributed");
 
 // User-controlled creator_user_id is ignored by the original player v2 RPC,
 // while the new progression seed reads only immutable private provenance.
