@@ -74,10 +74,17 @@ CREATE INDEX character_option_grants_option_id_idx
 -- The following original source functions may create feature-specific side
 -- effects for OTHER feat families. The Lucky XPHB specimen doesn't enter
 -- those branches. No general "all feat runtime effects" claim is made.
+\i scripts/fixtures/forge_feat_materializer_discriminators_original_pg17.sql
 \i scripts/fixtures/forge_feat_materializer_original_pg17.sql
 DO $source_hash_gate$
 BEGIN
  IF md5(pg_get_functiondef(
+  'private.cartomancer_family_v1(text,text)'::regprocedure))
+       <> '3801761f8bc46c5af10fca5e5ae73e60'
+ OR md5(pg_get_functiondef(
+  'private.feat_runtime_expertise_family_v1(text,text)'::regprocedure))
+       <> 'be000f9e6d6e129cb9505b110a1021ed'
+ OR md5(pg_get_functiondef(
   'private.materialize_player_forge_feat_instances_v1()'::regprocedure))
        <> 'c27c4181a51cfd018bbb8244e9931550'
  OR md5(pg_get_functiondef(
