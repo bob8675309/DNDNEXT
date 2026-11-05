@@ -541,9 +541,9 @@
         "number": 324,
         "state": "open-draft-unmerged",
         "base": "research/p1-3-npc-profile-safe-rls-20261104",
-        "tested_source_sha": "57ec8c1357c3dece4629c41c3111ea7a33bb0588",
-        "evidence": "Genuine local Auth J00–J62 and original PG17 FCR source tests success in Actions 42046427282; original J39 missing grant actor reproduced, new seed verified for J49–J62; reduced test fixture.",
-        "status_note": "Immutable nonce + held #319 legacy sheet, source-original 7/31 trigger coverage, separate new #321 creator and verified creator seed triggers; prod unchanged, 24 omitted, P1.3 lock and RLS/browser release gates."
+        "tested_source_sha": "639d1cfa3f51bb35e0258c0073e7b39a81442f63",
+        "evidence": "Original PG17 and real local Auth J00–J69 pass GitHub 42058859598; J65 original gear CP→CS vs coeditor CS→CP controlled 40P01, J66–J69 G/I byte hashes preserved/repair/revoke/replay.",
+        "status_note": "7/31 source-original creation-adjacent handlers; original Lucky G and deferred I already materialized, tested conserved during CP/CS deadlock but concurrent original G/I row writes untested. Held creator seed JWT PASS; production untouched."
       }
     ],
     "forge_creation_replay_candidate": {
@@ -551,9 +551,9 @@
       "source": "sql/candidates/20261105_player_creation_immutable_intent_v1.sql",
       "source_md5_v2": "0351f0a00acae023278e1b8b065b00c9",
       "source_md5_v3": "6ba73e6f12fcf826cc0a739cce45ff40",
-      "test": "Free original PostgreSQL17 baseline FCR-B00–05 plus genuine local GoTrue/PostgREST J00–J62 PASS, GitHub Actions 42046427282 at executable SHA 57ec8c1357c3dece4629c41c3111ea7a33bb0588.",
+      "test": "Original PG17 and genuine local GoTrue/PostgREST J00–J69 PASS, exact source SHA 639d1cfa3f51bb35e0258c0073e7b39a81442f63 (Actions 42058859598); held creator seed plus original Lucky G, deferred I under JWT CP/CS timed deadlock.",
       "production_effects": "none",
-      "next_gate": "Compose original G feat grants and I inventory/deferred equipment with signed-in CP/CS v5 levelup/coeditor schedule, all original triggers/RLS/rollback and P1.3 global order, preserving #321/#324 creator/no-backfill semantics.",
+      "next_gate": "Read-only identify exact original G or I concurrent writer (market character_stock FOR UPDATE/inventory INSERT or valid level-up feat grant), then true JWT two-session changed-row item/stock conservation under original lock graph, full production RLS and P1.3 #317 global precedence; no historical grant backfill.",
       "legacy_sheet_pr319": "Integrated ONE held PR319 preservation clause into source-pinned private v2; original live v2/fixture unchanged; alternate canonical sheets and account snapshot passed real JWT",
       "deferred_equipment_source": "Seven of 31 original creation-adjacent triggers loaded in local PG17 fixture, 24 original omitted. Held #321 creator capture plus NEW verified creator seed are additional proposed triggers, not counted; five original grant-table hooks exercise Lucky limited path; RLS and equipment helpers reduced.",
       "gap_matrix": "docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md",
@@ -563,7 +563,9 @@
       "source_provenance_gap": "Original source J39 emits NULL granted_by on both canonical feat tables despite eventual CP.created_by set. Read-only live 3/3 grant instances NULL while linked current CP creator non-NULL; only the new held candidate corrects new local Forge creation, not production. docs/Forge_Feat_Grant_Provenance_Gap_2026-11-05.md",
       "creator_seed_candidate": "sql/candidates/20261105_forge_progression_verified_creator_seed_v1.sql — NEW unapplied BEFORE INSERT character_progression trigger; uses signed-in auth.uid + same-transaction held #321 immutable creator and Forge sheet marker, with source-unchanged immediate canonical feat materializer; J49–J62 real local Auth PASS, historical rows untouched.",
       "creator_seed_design_report": "docs/Forge_Verified_Progression_Creator_Candidate_2026-11-05.md",
-      "p1_3_lock_order_cross_branch": "Original Admin F04 CP→CS vs CS→CP source 40P01 under scratch timings; NEW original player v5→v4→v3/base real signed owner vs signed coeditor CP/CS 40P01 under observed test-only CP prelock/CS hold at GitHub 42055043840, executable d09b3981f04ceceb09ff0a1489f589041a441164. Authentic outsider/revocation denial and Fighter lv1→2 accepted; no natural frequency or global G/I proof. #324 creator seed BEFORE INSERT does not fix v5 CP UPDATE inversion."
+      "p1_3_lock_order_cross_branch": "Original Admin F04 CP→CS vs CS→CP source 40P01 under scratch timings; NEW original player v5→v4→v3/base real signed owner vs signed coeditor CP/CS 40P01 under observed test-only CP prelock/CS hold at GitHub 42055043840, executable d09b3981f04ceceb09ff0a1489f589041a441164. Authentic outsider/revocation denial and Fighter lv1→2 accepted; no natural frequency or global G/I proof. #324 creator seed BEFORE INSERT does not fix v5 CP UPDATE inversion.",
+      "g_i_source_concurrency": "J63–J69 actual authenticated original source gear CP→CS vs coeditor original sync CS→CP yields 40P01 under test-only CP prelock/CS pause; canonical grant instances and aggregate G, I inventory and currency full hashes unchanged after abort and retries, revocation/replay preserved. G/I rows were materialized before contest; source gear already-materialized early return during race, not new G/I write contention. docs/Forge_GI_JWT_Source_Concurrency_2026-11-05.md",
+      "g_i_race_report": "docs/Forge_GI_JWT_Source_Concurrency_2026-11-05.md"
     },
     "deployed": "No candidate executor, typed request intent migration, or new composable spell interpreter deployed at last check."
   },
