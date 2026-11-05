@@ -941,7 +941,116 @@ assert.equal(sql("SELECT granted_by::text FROM public.character_option_grant_ins
 assert.equal(sql("SELECT granted_by::text FROM public.character_option_grants WHERE character_id='"+spoofedCharacter+"'"),uid("PLAYER"));
 console.log("PASS J62 signed-in player forged creator_user_id cannot impersonate another actor in immutable or grant provenance");
 
-console.log("PASS LOCAL REAL GoTrue J00-J62: original source gap then isolated verified creator BEFORE INSERT candidate; local service and payload-forgery denials; full production lock and RLS acceptance still open.");
+// J63–J69: source-original G feat + deferred I equipment already created
+// by true signed-in Forge v2; now exercise competing real JWT source equipment
+// CP→CS and ordinary editor CS→CP with test-only timed prelocks.
+// This is NOT full live G-row write contention or all original 31 triggers.
+sqlFile("scripts/fixtures/forge_gi_cp_cs_local_jwt_race_pg17.sql");
+const giChar=otherOwner,giCreator=people.OUTSIDER,giEditor=people.PLAYER;
+const giGranted=sql("SELECT count(*) FROM public.character_option_grant_instances WHERE character_id='"+giChar+"'");
+const giAggregate=sql("SELECT count(*) FROM public.character_option_grants WHERE character_id='"+giChar+"'");
+const giInventory=sql("SELECT count(*) FROM public.inventory_items WHERE owner_type='character' AND owner_id='"+giChar+"'");
+const giCurrency=sql("SELECT count(*) FROM public.character_currency WHERE character_id='"+giChar+"'");
+assert.deepEqual([giGranted,giAggregate,giInventory,giCurrency],["1","1","1","1"],
+ "Source original creation must have stored one feat G instance/aggregate and one inventory I/currency");
+assert.equal(sql("SELECT granted_by::text FROM public.character_option_grant_instances WHERE character_id='"+giChar+"'"),uid("OUTSIDER"));
+assert.equal(sql("SELECT granted_by::text FROM public.character_option_grants WHERE character_id='"+giChar+"'"),uid("OUTSIDER"));
+assert.equal(sql("SELECT updated_by::text FROM public.character_currency WHERE character_id='"+giChar+"'"),uid("OUTSIDER"));
+const rowFingerprint=(table,condition)=>sql("SELECT md5(coalesce(jsonb_agg(to_jsonb(t) ORDER BY id)::text,'[]')) FROM "+table+" t WHERE "+condition);
+const giInstBefore=grantFingerprint(giChar),giAggBefore=aggFingerprint(giChar);
+const giInvBefore=rowFingerprint("public.inventory_items","owner_id='"+giChar+"'");
+const giCashBefore=sql("SELECT md5(to_jsonb(c)::text) FROM public.character_currency c WHERE character_id='"+giChar+"'");
+console.log("PASS J63 same signed Forge character has canonical original G instance+aggregate, deferred I item+currency and verified original actor provenance");
+
+const deniedGear=await rpc(people.ADMIN.client,"test_forge_gear_cp_prelock_v1",{p_character_id:giChar});
+assert.ok(deniedGear.error,"Unrelated signed-in ADMIN without current can_edit must not run test-only gear wrapper");
+assert.equal(deniedGear.error.code,"42501");
+const deniedNote=await rpc(people.ADMIN.client,"test_forge_sheet_note_hold_v1",
+ {p_character_id:giChar,p_note:"unrelated JWT should never write"});
+assert.ok(deniedNote.error,"Unrelated signed-in JWT cannot run test-only sheet updater");
+assert.equal(deniedNote.error.code,"42501");
+assert.equal(giInstBefore,grantFingerprint(giChar));
+assert.equal(giInvBefore,rowFingerprint("public.inventory_items","owner_id='"+giChar+"'"));
+console.log("PASS J64 test-only G/I source and sheet adapters reject unrelated real JWT without modifying grants or inventory");
+
+// Force a deterministic real PostgreSQL 40P01 with original deployed gear
+// helper (CP then CS) and original deployed AFTER sheet UPDATE sync (CS then CP).
+// The explicit CP prelock / advisory marker / sleeps are TEST-ONLY.
+const gearInFlight=giCreator.client.rpc("test_forge_gear_cp_prelock_v1",
+ {p_character_id:giChar}).then(x=>x);
+await pause(65); // let the lazy PostgREST HTTP request actually start
+let sawGearCP=false;
+const deadlineGI=Date.now()+5200;
+while(Date.now()<deadlineGI){
+ if(sql("SELECT count(*) FROM pg_locks WHERE locktype='advisory'"+
+ " AND classid='9360'::oid AND objid='1'::oid AND granted='t'")==="1"){
+   sawGearCP=true;break;
+ }
+ await pause(90);
+}
+assert.ok(sawGearCP,"Authenticated source-gear transaction did not publish its test-only CP lock");
+const noteInFlight=giEditor.client.rpc("test_forge_sheet_note_hold_v1",
+ {p_character_id:giChar,p_note:"two-user tested G/I race"}).then(x=>x);
+const giRace=await Promise.all([gearInFlight,noteInFlight]);
+const giVictims=giRace.filter(r=>r.error);
+assert.equal(giVictims.length,1,
+ "Expected one 40P01 victim for actual original CP→CS equipment vs CS→CP sheet sync: "+JSON.stringify(giRace));
+assert.equal(giVictims[0].error.code,"40P01",
+ "Original G/I source race failure was not a PostgreSQL deadlock: "+JSON.stringify(giRace));
+assert.equal(giRace.filter(r=>!r.error).length,1);
+console.log("PASS J65 original deferred gear helper CP→CS versus real coeditor CS→CP: genuine signed-in 40P01 with synthetic prelock; exactly one victim");
+
+assert.equal(grantFingerprint(giChar),giInstBefore);
+assert.equal(aggFingerprint(giChar),giAggBefore);
+assert.equal(rowFingerprint("public.inventory_items","owner_id='"+giChar+"'"),giInvBefore);
+assert.equal(sql("SELECT md5(to_jsonb(c)::text) FROM public.character_currency c WHERE character_id='"+giChar+"'"),giCashBefore);
+assert.deepEqual([
+ sql("SELECT count(*) FROM public.character_option_grant_instances WHERE character_id='"+giChar+"'"),
+ sql("SELECT count(*) FROM public.character_option_grants WHERE character_id='"+giChar+"'"),
+ sql("SELECT count(*) FROM public.inventory_items WHERE owner_id='"+giChar+"'"),
+ sql("SELECT count(*) FROM public.character_currency WHERE character_id='"+giChar+"'")
+],["1","1","1","1"]);
+console.log("PASS J66 original source G and I rows remain byte-identical after aborted concurrent transaction; no duplicate item, currency or canonical grant");
+
+const recoveryNote=await rpc(giEditor.client,"test_forge_sheet_note_hold_v1",
+ {p_character_id:giChar,p_note:"retry completed with one canonical G/I grant"});
+assert.ifError(recoveryNote.error);
+assert.equal(sql("SELECT sheet->>'note' FROM public.character_sheets WHERE character_id='"+giChar+"'"),
+ "retry completed with one canonical G/I grant");
+const recoveryGear=await rpc(giCreator.client,"test_forge_gear_cp_prelock_v1",
+ {p_character_id:giChar});
+assert.ifError(recoveryGear.error);
+assert.equal(recoveryGear.data?.applied,false,
+ "Original equipment helper must be inert after materialized currency marker");
+assert.equal(grantFingerprint(giChar),giInstBefore);
+assert.equal(aggFingerprint(giChar),giAggBefore);
+assert.equal(rowFingerprint("public.inventory_items","owner_id='"+giChar+"'"),giInvBefore);
+assert.equal(sql("SELECT md5(to_jsonb(c)::text) FROM public.character_currency c WHERE character_id='"+giChar+"'"),giCashBefore);
+console.log("PASS J67 both signed-in operations retry successfully, original equipment guard prevents duplicate grants/items/currency");
+
+sql("UPDATE public.character_permissions SET can_edit=false WHERE character_id='"+giChar+"' AND user_id='"+uid("PLAYER")+"'");
+const revokedNote=await rpc(giEditor.client,"test_forge_sheet_note_hold_v1",
+ {p_character_id:giChar,p_note:"revoked test author"});
+assert.ok(revokedNote.error,"Revoked signed-in coeditor note should be rejected");
+assert.equal(revokedNote.error.code,"42501");
+const revokedGear=await rpc(giEditor.client,"test_forge_gear_cp_prelock_v1",{p_character_id:giChar});
+assert.ok(revokedGear.error,"Revoked signed-in coeditor cannot prelock original gear");
+assert.equal(revokedGear.error.code,"42501");
+assert.equal(grantFingerprint(giChar),giInstBefore);
+assert.equal(rowFingerprint("public.inventory_items","owner_id='"+giChar+"'"),giInvBefore);
+console.log("PASS J68 current coeditor revocation blocks new CP/CS operations without altering original G/I materialized state");
+
+const giReplay=pass(await call2(giCreator.client,independentVerified),
+ "original immutable player Forge creation nonce replay after G/I race and editor note");
+assert.equal(giReplay,giChar);
+assert.equal(grantFingerprint(giChar),giInstBefore);
+assert.equal(aggFingerprint(giChar),giAggBefore);
+assert.equal(rowFingerprint("public.inventory_items","owner_id='"+giChar+"'"),giInvBefore);
+assert.equal(sql("SELECT md5(to_jsonb(c)::text) FROM public.character_currency c WHERE character_id='"+giChar+"'"),giCashBefore);
+console.log("PASS J69 original creation nonce replay after authenticated G/I concurrency remains one immutable character/grant/item/currency");
+
+console.log("PASS LOCAL REAL GoTrue J00-J69: exact original materializers G/I under two signed JWT CP/CS source lock contention; original level-up v5 and all 31 original triggers still separate scope.");
+
 
 
 
