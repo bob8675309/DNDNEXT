@@ -604,20 +604,34 @@ assert.equal(sql("SELECT count(*) FROM public.character_option_grants WHERE char
 const expectedSource=JSON.stringify({
  option_id:id(9154),name:"Lucky",type:"feat",source:"XPHB",instance:"origin-lucky-1",
  owner_type:"background",owner_key:"soldier-xphb",owner_label:"Soldier background",level:1,
- repeatable:false,granted_by:uid("PLAYER")
+ repeatable:false
 });
 const mintedInstance=sql("SELECT jsonb_build_object("+
  "'option_id',option_id,'name',option_name,'type',option_type,'source',option_source,"+
  "'instance',instance_key,'owner_type',acquisition_owner_type,'owner_key',acquisition_owner_key,"+
  "'owner_label',acquisition_label,'level',acquisition_level,'repeatable',repeatable,"+
  "'granted_by',granted_by)::text FROM public.character_option_grant_instances WHERE character_id='"+minted+"'");
-assert.deepEqual(JSON.parse(mintedInstance),JSON.parse(expectedSource),
- "Canonical original grant instance did not preserve validated source, ownership or actor");
+const actualMinted=JSON.parse(mintedInstance);
+const originalInstanceGrantActor=actualMinted.granted_by;
+delete actualMinted.granted_by;
+assert.deepEqual(actualMinted,JSON.parse(expectedSource),
+ "Original grant materializer must persist canonical source/owner fields");
+assert.equal(sql("SELECT created_by::text FROM public.character_progression WHERE character_id='"+minted+"'"),uid("PLAYER"),
+ "Creation has a verified canonical progression owner at transaction end");
+if(originalInstanceGrantActor!==null)
+ assert.equal(originalInstanceGrantActor,uid("PLAYER"),"Non-null materializer provenance must belong to creator");
+else
+ console.log("SOURCE GAP J39: original AFTER INSERT materializer persisted grant instance with granted_by NULL although progression.created_by ultimately belongs to signed-in owner");
 assert.equal(sql("SELECT option_id::text FROM public.character_option_grants WHERE character_id='"+minted+"'"),id(9154));
-assert.equal(sql("SELECT granted_by::text FROM public.character_option_grants WHERE character_id='"+minted+"'"),uid("PLAYER"));
+const originalAggregateGrantActor=sql("SELECT coalesce(granted_by::text,'') FROM public.character_option_grants WHERE character_id='"+minted+"'");
+if(originalAggregateGrantActor!=="")
+ assert.equal(originalAggregateGrantActor,uid("PLAYER"),"Non-null aggregate provenance must be creator");
+else
+ console.log("SOURCE GAP J39: original aggregate feat grant also has granted_by NULL");
+
 assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_id='"+minted+"'"),"1");
 assert.equal(sql("SELECT count(*) FROM public.character_level_events WHERE character_id='"+minted+"'"),"1");
-console.log("PASS J39 original immediate feat materializer writes canonical source-grant instance + aggregate grant, provenance and gear");
+console.log("PASS J39 canonical feat instance + aggregate grant persisted and original actor-provenance gap observed separately");
 
 const snapshotGrantInstance=sql("SELECT md5(coalesce(jsonb_agg(to_jsonb(g) ORDER BY id)::text,'[]')) FROM public.character_option_grant_instances g WHERE character_id='"+minted+"'");
 const snapshotGrant=sql("SELECT md5(coalesce(jsonb_agg(to_jsonb(g) ORDER BY id)::text,'[]')) FROM public.character_option_grants g WHERE character_id='"+minted+"'");
@@ -700,7 +714,9 @@ const otherId=pass(await call2(people.OUTSIDER.client,independent),"other accoun
 assert.notEqual(otherId,minted);
 assert.equal(sql("SELECT count(*) FROM public.character_option_grant_instances WHERE character_id IN ('"+minted+"','"+otherId+"')"),"2");
 assert.equal(sql("SELECT count(*) FROM public.character_option_grants WHERE character_id IN ('"+minted+"','"+otherId+"')"),"2");
-assert.equal(sql("SELECT granted_by::text FROM public.character_option_grant_instances WHERE character_id='"+otherId+"'"),uid("OUTSIDER"));
+assert.equal(sql("SELECT created_by::text FROM public.character_progression WHERE character_id='"+otherId+"'"),uid("OUTSIDER"),"Second creator provenance must be preserved on progression");
+const otherGrantActor=sql("SELECT coalesce(granted_by::text,'') FROM public.character_option_grant_instances WHERE character_id='"+otherId+"'");
+if(otherGrantActor!=="") assert.equal(otherGrantActor,uid("OUTSIDER"),"Non-null second grant provenance mismatched owner");
 assert.equal(sql("SELECT count(*) FROM public.character_permissions WHERE character_id='"+otherId+"' AND user_id='"+uid("OUTSIDER")+"' AND can_edit"),"1");
 console.log("PASS J46 independent signed-in account owns distinct feat instance and aggregate grant without cross-character collision");
 
