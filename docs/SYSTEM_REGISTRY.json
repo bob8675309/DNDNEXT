@@ -51,8 +51,9 @@
       "tests": [
         "scripts/validate_unified_character_forge.mjs"
       ],
-      "last_checked": "2026-11-01",
+      "last_checked": "2026-11-05",
       "open_gaps": [
+        "2026-11-05 J78-J84 candidate real JWT original v2 Forge creation+deferred COMMIT with conflicting live inventory owner CHECKs: obsolete NOT VALID inventory_items_owner_type_chk rejects new owner_type=character; staged negative 23514 + scratch-only remove/re-add cause-control; CI PENDING; full original triggers/RLS/browser still missing. docs/Forge_Original_Deferred_Creation_Owner_Check_2026-11-05.md",
         "Browser acceptance must be tied to specific scoped flows; not blanket proof of all source traits."
       ],
       "label": "Player/NPC character Forge",
@@ -138,7 +139,7 @@
       "tests": [
         "scripts/validate_merchant_crafted_pricing.mjs"
       ],
-      "last_checked": "2026-11-01",
+      "last_checked": "2026-11-05",
       "verification": {
         "source": "inspected-relevant-entry-points-on-main",
         "live_database": "market stock and alchemy catalog sampled",
@@ -148,6 +149,7 @@
         "owner_approval": "not-claimed-from-source-or-ci"
       },
       "open_gaps": [
+        "2026-11-05: source-original merchant buyer I is user-owned vs Forge deferred I is character-owned; old overlapping NOT VALID CHECK blocks new character-owned rows, not necessarily merchant sales. J78-J84 scratch test pending; no global lock-order claim.",
         "Avoid changes to craft price formulas while refactoring combat or item-effect resolution."
       ],
       "protected_boundaries": [
@@ -422,7 +424,7 @@
       "tests": [
         "scripts/validate_security_hardening_roadmap.mjs"
       ],
-      "last_checked": "2026-11-01",
+      "last_checked": "2026-11-05",
       "verification": {
         "source": "inspected-relevant-entry-points-on-main",
         "live_database": "read-only security advisor and function definition",
@@ -432,6 +434,7 @@
         "owner_approval": "not-claimed-from-source-or-ci"
       },
       "open_gaps": [
+        "2026-11-05 read-only: live inventory_items has two overlapping CHECKs; old NOT VALID excludes 'character' despite validated newer CHECK permitting it. Source original Forge deferred equipment requires 'character'. J78-J84 authentic JWT full creation test staged on #324, CI pending; no production constraint change authorized.",
         "Authorize or revoke each function only after caller, RLS, and intended access review."
       ],
       "protected_boundaries": [

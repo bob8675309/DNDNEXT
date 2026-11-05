@@ -1160,3 +1160,125 @@ console.log("PASS LOCAL REAL GoTrue J00-J77: source-original Forge G/I under con
 
 
 
+
+
+
+// J78–J84: source-authenticated original Forge CREATE + deferred COMMIT with
+// *both* live inventory owner-type CHECKs and both original inventory triggers.
+// This is an actual creation-RPC proof, not an isolated direct table insert.
+// Removing the old check is done ONLY on the throwaway local PG17 database.
+sqlFile("scripts/fixtures/forge_owner_constraint_deferred_creation_local_auth_pg17.sql");
+assert.equal(sql("SELECT count(*) FROM pg_constraint WHERE conrelid='public.inventory_items'::regclass"
+  +" AND conname='inventory_items_owner_type_chk' AND NOT convalidated"),"1");
+assert.ok(Number(sql("SELECT count(*) FROM public.inventory_items WHERE owner_type='character'"))>=1,
+ "Existing character-owned equipment J12-J77 was unexpectedly lost");
+console.log("PASS J78 both original inventory crafting triggers and contradictory live owner-type constraints loaded after existing char-owned rows");
+
+// A known-good original v2 Forge payload from J49/J54 creates BOTH source
+// Lucky grant (G/GI) and character-owned equipment (I) + currency (C).
+const blockedOwnerCreate=JSON.parse(JSON.stringify(verifiedGrantPayload));
+blockedOwnerCreate.name="J79 blocked original Forge feat and gear";
+blockedOwnerCreate.creation_request_id=id(9380);
+const stateCounts=()=>sql("SELECT jsonb_build_object("
+ +"'characters',(SELECT count(*) FROM public.characters),"
+ +"'creator',(SELECT count(*) FROM private.character_creator_attribution),"
+ +"'intents',(SELECT count(*) FROM private.player_creation_intent_reservations_v1),"
+ +"'sheets',(SELECT count(*) FROM public.character_sheets),"
+ +"'progression',(SELECT count(*) FROM public.character_progression),"
+ +"'events',(SELECT count(*) FROM public.character_level_events),"
+ +"'grant_instances',(SELECT count(*) FROM public.character_option_grant_instances),"
+ +"'grants',(SELECT count(*) FROM public.character_option_grants),"
+ +"'inventory',(SELECT count(*) FROM public.inventory_items),"
+ +"'currency',(SELECT count(*) FROM public.character_currency))::text");
+const blockedBefore=stateCounts();
+const blockedOld=await call2(people.PLAYER.client,blockedOwnerCreate);
+denied(blockedOld,"23514","Exact source-original deferred Forge character-owned I blocked at COMMIT");
+assert.match(blockedOld.error.message||"","inventory_items_owner_type_chk",
+ "Expected OLD NOT VALID CHECK, not a different deferred failure");
+assert.equal(stateCounts(),blockedBefore,"Deferred 23514 did not fully roll back original creation, nonce, feat grants, item and currency");
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE name='J79 blocked original Forge feat and gear'"),"0");
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+id(9380)+"'"),"0");
+console.log("PASS J79 real signed original v2 feat+gear CREATE fails 23514 at deferred materialization COMMIT with exact obsolete CHECK; all creator/nonce/CS/CP/G/GI/I/C rolled back");
+
+// Scope: this is an EQUIPMENT-INSERT barrier, not an assertion that all
+// Player Forge creation modes fail. A no-starting-equipment creator can commit.
+const noGearPayload=fighter("J80 no-starting-gear control with old CHECK",id(9381));
+const noGearCreated=pass(await call2(people.PLAYER.client,noGearPayload),
+ "Original Forge without starting equipment while old CHECK remains");
+assert.equal(sql("SELECT count(*) FROM public.character_currency WHERE character_id='"+noGearCreated+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_id='"+noGearCreated+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM public.character_level_events WHERE character_id='"+noGearCreated+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+id(9381)+"' AND character_id='"+noGearCreated+"'"),"1");
+console.log("PASS J80 valid signed v2 creation without starting equipment still commits under old NOT VALID check; scope is character-owned inventory insertion");
+
+// Explicit TEST-ONLY schema control: temporarily drop just the obsolete
+// constraint on disposable PG17, rerun THE SAME genuine JWT failed nonce.
+// The original creator, materializer, grant writers, handlers stay unchanged.
+sql("ALTER TABLE public.inventory_items DROP CONSTRAINT inventory_items_owner_type_chk");
+assert.equal(sql("SELECT count(*) FROM pg_constraint WHERE conrelid='public.inventory_items'::regclass"
+ +" AND conname='inventory_items_owner_type_chk'"),"0");
+const recoveredOwner=pass(await call2(people.PLAYER.client,blockedOwnerCreate),
+ "Exactly same originally failed nonce, now source-exact Forge commit");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_type='character' AND owner_id='"+recoveredOwner+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_currency WHERE character_id='"+recoveredOwner+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_option_grant_instances WHERE character_id='"+recoveredOwner+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_option_grants WHERE character_id='"+recoveredOwner+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_level_events WHERE character_id='"+recoveredOwner+"'"),"1");
+assert.equal(sql("SELECT granted_by::text FROM public.character_option_grant_instances WHERE character_id='"+recoveredOwner+"'"),uid("PLAYER"));
+assert.equal(sql("SELECT granted_by::text FROM public.character_option_grants WHERE character_id='"+recoveredOwner+"'"),uid("PLAYER"));
+assert.equal(sql("SELECT updated_by::text FROM public.character_currency WHERE character_id='"+recoveredOwner+"'"),uid("PLAYER"));
+assert.equal(sql("SELECT user_id::text FROM public.inventory_items WHERE owner_type='character' AND owner_id='"+recoveredOwner+"'"),uid("PLAYER"));
+assert.equal(sql("SELECT sheet->'startingEquipmentSummary'->0->>'itemKey' FROM public.character_sheets WHERE character_id='"+recoveredOwner+"'"),"training-dagger");
+console.log("PASS J81 dropping ONLY old owner CHECK in disposable PG17 allows original authenticated Forge feat G/GI and deferred character-owned I/C COMMIT with actor provenance");
+
+// Original immutable replay must remain inert after recovery; altered request
+// must reject without new materialization or changed sheet/provenance.
+const recoveredInvHash=rowFingerprint("public.inventory_items","owner_id='"+recoveredOwner+"'");
+const recoveredGrantHash=grantFingerprint(recoveredOwner);
+const recoveredAggHash=aggFingerprint(recoveredOwner);
+const recoveredCurrencyHash=sql("SELECT md5(to_jsonb(c)::text) FROM public.character_currency c WHERE character_id='"+recoveredOwner+"'");
+assert.equal(pass(await call2(people.PLAYER.client,blockedOwnerCreate),
+ "Identical nonce after scratch-only original Forge recovery"),recoveredOwner);
+denied(await call2(people.PLAYER.client,{
+ ...blockedOwnerCreate,name:"J82 changed original nonce after recovered Forge create"
+}),"22023","Changing original request intent after successful recovery");
+assert.equal(rowFingerprint("public.inventory_items","owner_id='"+recoveredOwner+"'"),recoveredInvHash);
+assert.equal(grantFingerprint(recoveredOwner),recoveredGrantHash);
+assert.equal(aggFingerprint(recoveredOwner),recoveredAggHash);
+assert.equal(sql("SELECT md5(to_jsonb(c)::text) FROM public.character_currency c WHERE character_id='"+recoveredOwner+"'"),recoveredCurrencyHash);
+assert.equal(sql("SELECT count(*) FROM public.character_level_events WHERE character_id='"+recoveredOwner+"'"),"1");
+console.log("PASS J82 same original nonce inert and changed intent rejected after scratch-control fix, no duplicated grants/items/currency");
+
+// Restore live-style overlapping NOT VALID constraint in scratch even though
+// historical rows include character-owned items. NOT VALID is not DISABLED.
+sql("ALTER TABLE public.inventory_items ADD CONSTRAINT inventory_items_owner_type_chk"
+ +" CHECK ((owner_type = ANY (ARRAY['player'::text,'npc'::text,'merchant'::text]))) NOT VALID");
+assert.equal(sql("SELECT count(*) FROM pg_constraint WHERE conrelid='public.inventory_items'::regclass"
+ +" AND conname='inventory_items_owner_type_chk' AND NOT convalidated"),"1");
+const blockedAgain=JSON.parse(JSON.stringify(blockedOwnerCreate));
+blockedAgain.name="J83 restored obsolete CHECK rejects new Forge I";
+blockedAgain.creation_request_id=id(9383);
+const restoredBaseline=stateCounts();
+const blockedAgainResult=await call2(people.OUTSIDER.client,blockedAgain);
+denied(blockedAgainResult,"23514","Restored old CHECK blocks independent signed creator too");
+assert.match(blockedAgainResult.error.message||"","inventory_items_owner_type_chk");
+assert.equal(stateCounts(),restoredBaseline);
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+id(9383)+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE name='J83 restored obsolete CHECK rejects new Forge I'"),"0");
+assert.equal(rowFingerprint("public.inventory_items","owner_id='"+recoveredOwner+"'"),recoveredInvHash);
+assert.equal(grantFingerprint(recoveredOwner),recoveredGrantHash);
+assert.equal(aggFingerprint(recoveredOwner),recoveredAggHash);
+console.log("PASS J83 restored NOT VALID check rejects NEW signed original Forge equipment again, old character-owned rows persist; rollback all aggregates and nonce");
+
+// Confirm exact parity is restored for the final disposable research snapshot.
+assert.equal(sql("SELECT count(*) FROM pg_constraint WHERE conrelid='public.inventory_items'::regclass"
+ +" AND conname='inventory_items_owner_type_check' AND convalidated"),"1");
+assert.equal(sql("SELECT count(*) FROM pg_constraint WHERE conrelid='public.inventory_items'::regclass"
+ +" AND conname='inventory_items_owner_type_chk' AND NOT convalidated"),"1");
+assert.equal(sql("SELECT count(*) FROM pg_trigger WHERE tgrelid='public.inventory_items'::regclass"
+ +" AND NOT tgisinternal AND tgname IN ('inventory_items_apply_structured_crafting_traits_v1','zz_inventory_items_apply_smithing_affinity_polish_v4')"),"2");
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.materialize_player_forge_starting_equipment_v1(uuid)'::regprocedure))"),"653e1b9d7cc47dcff2cef33a674b97f4");
+assert.equal(sql("SELECT count(*) FROM public.character_currency WHERE character_id='"+recoveredOwner+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_type='character' AND owner_id='"+recoveredOwner+"'"),"1");
+console.log("PASS J84 original Forge J79 23514 is causally attributable to obsolete owner CHECK; scratch-only reversible schema control, original deferred/G+I source remains unchanged; production NEVER mutated");
+console.log("PASS LOCAL REAL GoTrue J00-J84: original JWT Forge creation / real deferred COMMIT / immutable replay, source inventory handler parity, and legacy NOT VALID owner CHECK bug proven in disposable PG17 (limited trigger/RLS coverage; no production fix).");

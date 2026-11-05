@@ -243,3 +243,48 @@ for (const token of ["J10","J11","J12","J13","J14","J15","J16","J17","J18","J19"
  "forge_materializer_local_auth_extension_pg17.sql","startingEquipmentSelections"])
  assert.ok(localAuth.includes(token), "Missing signed-in creation and gear regression "+token);
 console.log("PASS source: original Admin/v2/v3 snapshots, v2/v3 source-pinned private wrappers with one PR319 snapshot safeguard, nonce fingerprint and authorization static contract.");
+
+
+const ownerHandlers=readFileSync("scripts/fixtures/forge_owner_constraint_original_inventory_handlers_pg17.sql","utf8");
+const ownerSetup=readFileSync("scripts/fixtures/forge_owner_constraint_deferred_creation_local_auth_pg17.sql","utf8");
+for(const [fn,md5] of [
+ ["apply_structured_crafting_traits_v1","108bfc2599d75e7298f65ce326f16173"],
+ ["apply_smithing_affinity_polish_v4","5d51cf335ff880939ae0df4c4152bdbd"]
+]){
+ assert.ok(ownerHandlers.includes("CREATE OR REPLACE FUNCTION private."+fn+"("),
+ "Missing unmodified live original inventory trigger handler "+fn);
+ assert.ok(ownerHandlers.includes(md5),"Live original inventory handler hash absent: "+fn);
+ assert.ok(ownerSetup.includes(md5),"Runtime original inventory handler MD5 drift gate missing "+fn);
+}
+for(const token of [
+ "current_database()<>'postgres'",
+ "private.player_creation_intent_reservations_v1",
+ "private.materialize_player_forge_starting_equipment_v1(uuid)",
+ "23fa54dd0a6d7b42b802d613f39ea27c",
+ "653e1b9d7cc47dcff2cef33a674b97f4",
+ "inventory_items_owner_type_check",
+ "inventory_items_owner_type_chk",
+ "NOT VALID",
+ "ADD CONSTRAINT",
+ "t.tgdeferrable",
+ "CREATE TRIGGER inventory_items_apply_structured_crafting_traits_v1",
+ "CREATE TRIGGER zz_inventory_items_apply_smithing_affinity_polish_v4",
+ "DO $gate$","DO $source$","DO $parity$"
+]) assert.ok(ownerSetup.includes(token),"Missing owner CHECK/deferred original source safety gate: "+token);
+for(const token of [
+ "PASS J78","PASS J79","PASS J80","PASS J81","PASS J82","PASS J83","PASS J84",
+ "blockedOwnerCreate","verifiedGrantPayload","call2(people.PLAYER.client,blockedOwnerCreate)",
+ "DROP CONSTRAINT inventory_items_owner_type_chk",
+ "ADD CONSTRAINT inventory_items_owner_type_chk",
+ "23514","stateCounts","inventory_items_owner_type_chk",
+ "grantFingerprint","aggFingerprint","rowFingerprint","PASS LOCAL REAL GoTrue J00-J84"
+]) assert.ok(localAuth.includes(token),"Missing authenticated end-to-end original Forge owner CHECK case: "+token);
+for(const path of [
+ "forge_owner_constraint_original_inventory_handlers_pg17.sql",
+ "forge_owner_constraint_deferred_creation_local_auth_pg17.sql"
+])assert.ok(workflow.includes(path),"Workflow must trigger on new owner CHECK research fixture: "+path);
+for(const unsafe of ["ucggczovhmauhshvhusx","SERVICE_ROLE_KEY","SUPABASE_SERVICE_ROLE_KEY"]){
+ assert.ok(!ownerHandlers.includes(unsafe)&&!ownerSetup.includes(unsafe),
+ "No production project IDs or privileged API keys allowed in owner CHECK scratch source");
+}
+console.log("PASS STATIC J78-J84 source-original inventory handlers, exact old/new live owner-type CHECKs, signed creator deferred-COMMIT failure/clean rollback/scratch-only cause-control. DATABASE ACCEPTANCE MUST BE SEPARATE.");

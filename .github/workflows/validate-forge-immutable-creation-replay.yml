@@ -23,6 +23,8 @@ on:
       - 'scripts/fixtures/forge_gi_cp_cs_local_jwt_race_pg17.sql'
       - 'scripts/fixtures/forge_original_merchant_buy_source_pg17.sql'
       - 'scripts/fixtures/forge_merchant_inventory_live_writer_local_auth_pg17.sql'
+      - 'scripts/fixtures/forge_owner_constraint_original_inventory_handlers_pg17.sql'
+      - 'scripts/fixtures/forge_owner_constraint_deferred_creation_local_auth_pg17.sql'
       - 'scripts/test_forge_immutable_creation_replay_local_auth.mjs'
       - 'scripts/validate_forge_immutable_creation_replay.mjs'
   workflow_dispatch:
