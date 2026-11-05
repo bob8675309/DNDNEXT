@@ -265,3 +265,71 @@ assert.equal(sql("SELECT count(*) FROM public.character_currency WHERE character
 assert.equal(sql("SELECT sheet->>'marker' FROM public.character_sheets WHERE character_id='"+separateEquip+"'"),"gear-alternate");
 console.log("PASS J16 equipped alternate preserves PR319 legacy account snapshot while retaining canonical sheet/equipment");
 console.log("PASS LOCAL REAL GoTrue J00-J16: source exact deferred materializer+sync subset, PR319 snapshot, immutable replay; remaining 17+ progression triggers omitted.");
+
+// The original deferred sheet validator is installed only now, after J16.
+sqlFile("scripts/fixtures/forge_equipment_validator_local_auth_extension_pg17.sql");
+const validBg=fighter("JWT validated equipped soldier",id(9115));
+validBg.sheet.background="Soldier";
+validBg.sheet.meta={backgroundSource:"XPHB"};
+validBg.sheet.startingEquipmentSelections={
+ mode:"package",ruleset:"vanilla",classOption:"A",backgroundId:id(9150)
+};
+const soldier=pass(await call2(people.PLAYER.client,validBg),"source-validated equipment");
+assert.equal(sql("SELECT count(*) FROM public.character_currency WHERE character_id='"+soldier+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_id='"+soldier+"'"),"1");
+assert.equal(sql("SELECT sheet->'startingEquipmentSummary'->0->>'itemKey' FROM public.character_sheets WHERE character_id='"+soldier+"'"),"training-dagger");
+assert.equal(sql("SELECT count(*) FROM public.character_level_events WHERE character_id='"+soldier+"'"),"1");
+const soldierSheet=sql("SELECT md5(sheet::text) FROM public.character_sheets WHERE character_id='"+soldier+"'");
+assert.equal(pass(await call2(people.PLAYER.client,validBg),"source-validated identical retry"),soldier);
+assert.equal(sql("SELECT md5(sheet::text) FROM public.character_sheets WHERE character_id='"+soldier+"'"),soldierSheet);
+console.log("PASS J17 original deferred sheet validator + materializer accept source-matched Background and inert retry");
+
+const invalidBg=JSON.parse(JSON.stringify(validBg));
+invalidBg.name="JWT missing required Background id";
+invalidBg.creation_request_id=id(9116);
+delete invalidBg.sheet.startingEquipmentSelections.backgroundId;
+const inventoryCountBefore=sql("SELECT count(*) FROM public.inventory_items");
+const currencyCountBefore=sql("SELECT count(*) FROM public.character_currency");
+const missingBg=await call2(people.PLAYER.client,invalidBg);
+assert.ok(missingBg.error,"Missing background ID was accepted");
+assert.match(missingBg.error.message,/Starting equipment must reference the selected Background/i);
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE name='JWT missing required Background id'"),"0");
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+id(9116)+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items"),inventoryCountBefore,
+ "Deferred sheet validator failure leaked item before rollback");
+assert.equal(sql("SELECT count(*) FROM public.character_currency"),currencyCountBefore,
+ "Deferred sheet validator failure leaked copper before rollback");
+console.log("PASS J18 original deferred Background-id validation rolls back prior materializer writes and nonce");
+
+const mismatchedBg=JSON.parse(JSON.stringify(validBg));
+mismatchedBg.name="JWT mismatched Background";
+mismatchedBg.creation_request_id=id(9117);
+mismatchedBg.sheet.background="Noble";
+const mismatch=await call2(people.PLAYER.client,mismatchedBg);
+assert.ok(mismatch.error,"Mismatch Background name was accepted");
+assert.match(mismatch.error.message,/Starting equipment Background does not match/i);
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+id(9117)+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE name='JWT mismatched Background'"),"0");
+console.log("PASS J19 source-exact deferred Background-name mismatch fails closed without character/nonce");
+
+const validatedRace=JSON.parse(JSON.stringify(validBg));
+validatedRace.name="JWT concurrent source-validated soldier";
+validatedRace.creation_request_id=id(9118);
+const concurrentValidated=await Promise.all([
+ call2(people.PLAYER.client,validatedRace),
+ call2(people.PLAYER.client,validatedRace)
+]);
+const validatedIds=concurrentValidated.map((v,i)=>pass(v,"source-validated same-nonce concurrent "+i));
+assert.equal(validatedIds[0],validatedIds[1]);
+assert.equal(sql("SELECT count(*) FROM public.character_level_events WHERE character_id='"+validatedIds[0]+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_id='"+validatedIds[0]+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_currency WHERE character_id='"+validatedIds[0]+"'"),"1");
+console.log("PASS J20 real JWT concurrent validated-Background creation yields one character/item/currency/event");
+
+const changedBg=JSON.parse(JSON.stringify(validBg));
+changedBg.sheet.startingEquipmentSelections.backgroundId=id(9151);
+denied(await call2(people.PLAYER.client,changedBg),"22023",
+ "same nonce changed selected Background must reject before validator");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_id='"+soldier+"'"),"1");
+console.log("PASS J21 changed original Background selection under existing nonce denied with no gear mutation");
+console.log("PASS LOCAL REAL GoTrue J00-J21: composed immutable nonce, legacy snapshot, original equipment materializer, sheet sync, deferred Background validator subset.");
