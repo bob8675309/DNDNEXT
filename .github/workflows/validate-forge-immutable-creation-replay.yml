@@ -20,6 +20,7 @@ on:
       - 'scripts/fixtures/forge_feat_materializer_original_pg17.sql'
       - 'scripts/fixtures/forge_feat_materializer_discriminators_original_pg17.sql'
       - 'scripts/fixtures/forge_feat_materializer_local_auth_extension_pg17.sql'
+      - 'scripts/fixtures/forge_gi_cp_cs_local_jwt_race_pg17.sql'
       - 'scripts/test_forge_immutable_creation_replay_local_auth.mjs'
       - 'scripts/validate_forge_immutable_creation_replay.mjs'
   workflow_dispatch:
