@@ -134,7 +134,7 @@ export default function GlobalNpcProfileOverlay() {
       if (event.currentTarget === event.target) close();
     }}>
       <section
-        className="app-npc-profile-shell"
+        className="town-profile-sidepanel app-npc-profile-shell"
         role="dialog"
         aria-modal="true"
         aria-label={character?.name ? `${character.name} character profile` : "Character profile"}

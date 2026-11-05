@@ -72,6 +72,7 @@ requireTokens("global host", globalHost, [
   'initialView="profile"',
   'role="dialog"',
   'aria-modal="true"',
+  'className="town-profile-sidepanel app-npc-profile-shell"',
   'event.key === "Escape"',
   'onClose={close}',
   '<CharacterInteractionPanel',
