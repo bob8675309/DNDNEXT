@@ -5,6 +5,8 @@ on:
       - ".github/workflows/validate-p1-3-forge-materializer-locks.yml"
       - "scripts/fixtures/p1_3_forge_materializer_original_functions_pg17.sql"
       - "scripts/fixtures/p1_3_forge_materializer_lock_setup_pg17.sql"
+      - "scripts/fixtures/p1_3_admin_progression_original_pg17.sql"
+      - "scripts/fixtures/p1_3_admin_progression_race_extension_pg17.sql"
       - "scripts/test_p1_3_forge_materializer_lock_pg17.mjs"
       - "scripts/validate_p1_3_forge_materializer_source.mjs"
   workflow_dispatch:
@@ -53,6 +55,7 @@ jobs:
           test "$PGHOST" = "127.0.0.1"
           test "$PGDATABASE" = postgres
           psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_forge_materializer_lock_setup_pg17.sql
-      - name: Run real two-session source lock wait and deadlock diagnostic
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_admin_progression_race_extension_pg17.sql
+      - name: Run original two-session Forge and Admin progression CP/CS deadlock diagnostics
         run: |
           node scripts/test_p1_3_forge_materializer_lock_pg17.mjs
