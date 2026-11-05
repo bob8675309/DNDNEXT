@@ -4,6 +4,7 @@ on:
     paths:
       - '.github/workflows/validate-forge-immutable-creation-replay.yml'
       - 'sql/candidates/20261105_player_creation_immutable_intent_v1.sql'
+      - 'sql/candidates/20261105_forge_progression_verified_creator_seed_v1.sql'
       - 'scripts/fixtures/forge_creation_original_functions_pg17.sql'
       - 'scripts/fixtures/forge_creator_trigger_original_stage3_pg17.sql'
       - 'scripts/fixtures/forge_creation_replay_candidate_pg17.sql'
