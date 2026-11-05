@@ -78,7 +78,8 @@ export default function TownCrafterInteractionPanel({ crafter = null, isAdmin = 
       React.createElement(CharacterInteractionPanel, {
         npc: townCrafterInteractionCharacter(crafter),
         isAdmin,
-        initialView: "craft",
+        // Profile-first even when launched from a crafter entry; Craft is a tab.
+        initialView: "profile",
         onClose,
       })
     )
