@@ -92,6 +92,13 @@ end;
 $function$;
 
 
+-- Anonymous callers must not execute the old GM-secret APIs, even though
+-- the secure body already fails closed when auth.uid() is NULL.
+REVOKE ALL ON FUNCTION public.get_character_secrets_v1(uuid[]) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.get_character_secrets_v1(uuid[]) TO authenticated;
+REVOKE ALL ON FUNCTION public.set_character_secret_v1(uuid,text) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.set_character_secret_v1(uuid,text) TO authenticated;
+
 -- Keep existing source identity / tagged-PC reader behavior but prevent
 -- server-side to_jsonb(c) from bypassing the column's denied SELECT.
 CREATE OR REPLACE FUNCTION public.get_my_player_character_v1()

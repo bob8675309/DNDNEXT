@@ -70,6 +70,8 @@ for(const required of [
  "public.character_public_secret_revelations reveal",
  "reveal.is_revealed=true",
  "Legacy secret RPC source changed",
+ "REVOKE ALL ON FUNCTION public.get_character_secrets_v1(uuid[]) FROM PUBLIC,anon",
+ "REVOKE ALL ON FUNCTION public.set_character_secret_v1(uuid,text) FROM PUBLIC,anon",
  "Legacy values in characters.secret remain untouched"
 ]) assert.ok(stage3.includes(required),"Stage3 split-secret contract absent "+required);
 for(const forbidden of ["DROP TABLE","TRUNCATE","DELETE FROM public.characters",
