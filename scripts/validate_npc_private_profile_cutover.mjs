@@ -33,6 +33,8 @@ expect(admin,"GM NPC manager",[
  'selectedGmDossier?.id === sel.id',
  'if (isAdmin) {',
  'saveCharacterSecret(supabase, selected.id, detailsDraft.secret)',
+ 'GM Secret (private to GM)',
+ 'secret: isAdmin ? safeStr(details?.secret || selected?.secret) : ""',
  'loadSelectedSheet',
  'setShowNewNpcModal(true)',
 ]);

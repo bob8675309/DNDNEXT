@@ -1505,7 +1505,7 @@ const details = detailsDraft || {};
     quirk: safeStr(details?.quirk || selected?.quirk),
     mannerism: safeStr(details?.mannerism || selected?.mannerism),
     voice: safeStr(details?.voice || selected?.voice),
-    secret: safeStr(details?.secret || selected?.secret),
+    secret: isAdmin ? safeStr(details?.secret || selected?.secret) : "",
     tags: Array.isArray(selected?.tags) ? selected.tags : [],
     portraitUrl: selectedPortrait?.url || "",
   };
@@ -1857,12 +1857,14 @@ const details = detailsDraft || {};
                           </div>
                           <input className="form-control form-control-sm" value={details.voice || ""} onChange={(e) => setDetailsField("voice", e.target.value)} />
                         </div>
-                        <div className="col-12">
-                          <div className="small" style={{ color: MUTED }}>
-                            Secret (optional)
+                        {isAdmin ? (
+                          <div className="col-12">
+                            <div className="small" style={{ color: MUTED }}>
+                              GM Secret (private to GM)
+                            </div>
+                            <input className="form-control form-control-sm" value={details.secret || ""} onChange={(e) => setDetailsField("secret", e.target.value)} />
                           </div>
-                          <input className="form-control form-control-sm" value={details.secret || ""} onChange={(e) => setDetailsField("secret", e.target.value)} />
-                        </div>
+                        ) : null}
                       </div>
                     ) : (
                       <>
@@ -1889,12 +1891,14 @@ const details = detailsDraft || {};
                           </div>
                         </div>
 
-                        <div className="mb-2">
-                          <div className="small" style={{ color: MUTED }}>
-                            Secret (optional)
+                        {isAdmin ? (
+                          <div className="mb-2">
+                            <div className="small" style={{ color: MUTED }}>
+                              GM Secret (private to GM)
+                            </div>
+                            <div style={{ color: "rgba(255,255,255,0.92)" }}>{details.secret || <span className="npc-muted">—</span>}</div>
                           </div>
-                          <div style={{ color: "rgba(255,255,255,0.92)" }}>{selected.secret || <span className="npc-muted">—</span>}</div>
-                        </div>
+                        ) : null}
                       </>
                     )}
 
