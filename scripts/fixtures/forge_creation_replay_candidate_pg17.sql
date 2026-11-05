@@ -9,6 +9,8 @@ BEGIN
 END $guard$;
 CREATE SCHEMA auth;
 CREATE SCHEMA private;
+CREATE ROLE anon NOLOGIN;
+CREATE ROLE authenticated NOLOGIN;
 CREATE FUNCTION auth.uid() RETURNS uuid
 LANGUAGE sql STABLE
 AS $uid$ SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $uid$;
