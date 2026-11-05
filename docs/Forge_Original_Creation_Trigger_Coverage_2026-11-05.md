@@ -4,13 +4,13 @@
 
 ## Distinct original trigger coverage
 
-| Public table | Live noninternal triggers | Source-installed through local JWT J22–J30 | Still omitted |
+| Public table | Live noninternal triggers | Source-installed through local JWT J31–J38 | Still omitted |
 |---|---:|---:|---:|
-| `character_progression` | 19 | 1 (deferred starting-equipment materializer) | 18 |
+| `character_progression` | 19 | 2 (deferred starting equipment and progression-authority validators) | 17 |
 | `character_sheets` | 4 | 4 (sheet→progression; deferred equipment validator; immediate authority guard; immediate tag sync) | 0 |
 | `characters` | 6 | 0 originals; separate **unapplied** #321 creator-attribution INSERT trigger loaded | 6 |
 | `inventory_items` | 2 | 0 | 2 |
-| **Total** | **31** | **5 original** + one new held creator trigger | **26 original** |
+| **Total** | **31** | **6 original** + one new held creator trigger | **25 original** |
 
 Original functions `materialize_player_forge_starting_equipment_trigger_v1`, `materialize_player_forge_starting_equipment_v1`, and `sync_character_progression_from_sheet_v1` have independently revalidated full live `md5(pg_get_functiondef)` hashes `23fa54dd0a6d7b42b802d613f39ea27c`, `653e1b9d7cc47dcff2cef33a674b97f4`, `bb1a3a2d1600ce33cd4fcadac5e0f3a9`. Their **function bodies** were copied intact from held #317 into the PR #324 fixture. The other six supporting source functions are **simplified test stubs**; item source metadata and RLS are reduced. The source-local JWT fixture's original `create_player_character_v2/v3` bodies are preserved apart from private routing and the reviewed one-clause #319 legacy snapshot safeguard.
 
@@ -31,7 +31,7 @@ Original functions `materialize_player_forge_starting_equipment_trigger_v1`, `ma
 | `character_progression` | `character_progression_materialize_species_cantrip_v1` | `materialize_player_forge_species_replaceable_cantrip_v1` | `a09198d8e12df12371647fccd8479489` | Deferred | Not installed in research fixture |
 | `character_progression` | `character_progression_reject_unmarked_legacy_warlock_invocation` | `reject_unmarked_legacy_warlock_invocations_v1` | `631fbb585f47e71a619ca8ac8e212407` | Deferred | Not installed in research fixture |
 | `character_progression` | `character_progression_validate_battle_master_maneuvers_v1` | `validate_existing_battle_master_maneuvers_v1` | `8bc8a467e95b07e93df833bcfc585e80` | Deferred | Not installed in research fixture |
-| `character_progression` | `character_progression_validate_player_forge_authority_v1` | `validate_player_forge_authority_payload_v1` | `48006f8db76e9b32c96fcd2b6a4b3080` | Deferred | Not installed in research fixture |
+| `character_progression` | `character_progression_validate_player_forge_authority_v1` | `validate_player_forge_authority_payload_v1` | `48006f8db76e9b32c96fcd2b6a4b3080` | Deferred | **Source-loaded in J31–J38** |
 | `character_progression` | `character_progression_validate_player_forge_class_options_v1` | `validate_and_materialize_player_forge_class_options_v1` | `6df5aee6f0519c9c77758d6e887ed8e4` | Deferred | Not installed in research fixture |
 | `character_progression` | `character_progression_validate_player_forge_class_options_v2` | `validate_existing_normalized_warlock_invocations_v2` | `4f1752db655b6ba490113f604c7583ef` | Deferred | Not installed in research fixture |
 | `character_progression` | `character_progression_validate_player_forge_nested_choices_v1` | `validate_player_forge_nested_choice_payload_v1` | `df2861cc76b0b74bb7cd57fbe61c9a05` | Deferred | Not installed in research fixture |
@@ -52,7 +52,7 @@ Original functions `materialize_player_forge_starting_equipment_trigger_v1`, `ma
 
 ### Why these gaps matter
 
-The 26 omitted original triggers include progression source-authority checks, subclass/maneuver/feat and spell materialization, sheet validation and the NPC/portrait/movement/inventory asset guards. Even though the original equipment and immediate-sheet source subset succeeds in isolation, that **does not prove** that its transaction, lock order, authorization or RLS behavior remains valid with the full deployed trigger and catalog graph. In particular, the P1.3 character progression (CP) / character sheet (CS) lock inversion is still a held research finding; it is **not** solved by immutable nonce serialization across different request IDs.
+The 25 omitted original triggers include additional progression materializers and source checks, subclass/maneuver/feat and spell materialization, and NPC/portrait/movement/inventory asset guards. Even though the original equipment and immediate-sheet source subset succeeds in isolation, that **does not prove** that its transaction, lock order, authorization or RLS behavior remains valid with the full deployed trigger and catalog graph. In particular, the P1.3 character progression (CP) / character sheet (CS) lock inversion is still a held research finding; it is **not** solved by immutable nonce serialization across different request IDs.
 
 **Latest additional source acceptance:** [true local GoTrue run 42031055348](https://github.com/bob8675309/DNDNEXT/actions/runs/42031055348) **SUCCESS** at code SHA `1ec4d6fa6b0b39d3f898763d3d8de6b90a23a71b`. Source-exact deferred sheet validator `private.validate_player_forge_starting_equipment_sheet_v1` (MD5 `41cb1758bd2e1eb9b3998389deabb49b`) and its original deferred trigger were installed **after** J12–J16. Authenticated J17–J21 PASS: source-matched Soldier/XPHB Background package, inert nonce replay, missing/mismatched Background rejected with atomic rollback of item/currency/creator/reservation, two real concurrent identical nonce calls yield one result, changed Background nonce fails before any gear write.
 
@@ -61,7 +61,9 @@ The 26 omitted original triggers include progression source-authority checks, su
 
 **Exact-source runtime revalidation:** [GitHub Actions run 42033593609](https://github.com/bob8675309/DNDNEXT/actions/runs/42033593609), at tested executable SHA `bbc327e01158ffcaa6db4a0e7ff2c45eaa192936`, **SUCCESS** for both PostgreSQL and genuine local JWT jobs. The local SQL install now fails closed unless `md5(pg_get_functiondef)` of **all four loaded original authority/tag helpers** matches the read-only live PG17 fingerprints; all J00–J30 previously established outcomes remain passing. This SHA is the latest verified executable checkpoint. It is *not* a production database change.
 
-**Next one source expansion:** source-audit and selectively test the original deferred `character_progression_validate_player_forge_authority_v1` validator, starting with its actual required helper and catalogue dependencies, under genuine local Auth/PG17. All **26 remaining original triggers** (18 progression, 6 character, 2 inventory) and full production ACL/RLS, including GM creator/private backstory rules, remain unverified. P1.3 cross-character lock order is still held research. Avoid wholesale trigger installation or production claims.
+**Latest deferred progression-source acceptance:** [GitHub Actions run 42036764115](https://github.com/bob8675309/DNDNEXT/actions/runs/42036764115) **SUCCESS at exact executable SHA `9245ad4a59e8452e13ea1f103af46fc98f36b901`**, with source-original PG17 and genuine GoTrue/PostgREST J00–J38 PASS. Original `private.validate_player_forge_authority_payload_v1()` (MD5 `48006f8db76e9b32c96fcd2b6a4b3080`), original feat-instance validator (`409802af8c5255171ff41bb4a0da694f`), normalization (`dd8cdd5b47efe99b1cfff9c2bf7635dd`), choice eligibility (`586637a9e0e55e19ee335c3efd6ea2b9`), and source-priority (`fdcc080cd95e6ce282631191869893c1`) are copied **unchanged** from live Postgres 17.4. The two preferred-option views are constructed from exact read-only `pg_get_viewdef` output. J31–J38 verify a valid source-backed Lucky feat instance and Defense Fighting Style, invalid feat summary/grant instance/Fighting Style, canonical spell-summary mismatch, v3 matching/mismatching summary, atomic deferred rollback and same-nonce concurrent creation. This is source-faithful logic with **two synthetic feat catalogue entries and reduced supporting database/RLS**, not full campaign data.
+
+**Next one source expansion:** inspect and selectively load the original `character_progression_materialize_player_forge_feat_instances_v1` immediate trigger and its source-grant/instance persistence graph, then verify correct positive and negative signed-in Forge creation. Reconcile its interaction with the now-loaded deferred validator, without assuming the current isolated canonical feat instance proves all grants are stored. All **25 remaining original triggers** (17 progression, 6 character, 2 inventory) and full production ACL/RLS, GM/creator-private backstory, browser acceptance and P1.3 global lock order remain unverified. No production migration or branch merge is authorized by these research tests.
 
 ## Boundaries and policy
 
@@ -70,9 +72,9 @@ The 26 omitted original triggers include progression source-authority checks, su
 - Production RLS/grants/character data/legacy GM secrets unchanged. **No merge, migration, deployment, browser acceptance or global lock-order proof.**
 
 
-### Next validator dependency reconnaissance (read-only; not yet tested)
+### Prior validator dependency reconnaissance (superseded by J31–J38 test results above)
 
-The live deferred `character_progression_validate_player_forge_authority_v1` trigger's original handler is `private.validate_player_forge_authority_payload_v1()`, full `md5(pg_get_functiondef)` **`48006f8db76e9b32c96fcd2b6a4b3080`** (10,002 source characters, inspected read-only on November 5). Its source is **not installed** in the disposable fixture.
+The live deferred `character_progression_validate_player_forge_authority_v1` trigger's original handler is `private.validate_player_forge_authority_payload_v1()`, full `md5(pg_get_functiondef)` **`48006f8db76e9b32c96fcd2b6a4b3080`** (10,002 source characters, inspected read-only on November 5). At the earlier reconnaissance checkpoint its source was **not installed**; the later J31–J38 source-exact fixture now installs it with the original helper/view definitions and reduced specimen catalogue.
 
 That function depends on `private.player_forge_source_choice_legacy_v1`, `private.validate_player_forge_feat_instances_v1(jsonb)`, `private.normalize_player_choice_name_v1`, `public.character_option_catalog_preferred`, `private.player_forge_choice_option_is_valid_v1`, source-valid `character_spells` and `spells_catalog`, and progression `subclass_name`. The reduced local progression table omits `subclass_name`; its reduced catalogue does not include the preferred-option view or all listed validation helpers. It also checks that the sheet's array summaries of feats and spells exactly correspond to source-granted canonical records. **Do not** substitute permissive stubs or call this source-covered until those dependencies and class-specific normalizations are reproduced and real signed-in positive/negative cases pass.
 
