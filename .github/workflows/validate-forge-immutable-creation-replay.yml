@@ -14,6 +14,8 @@ on:
       - 'scripts/fixtures/forge_equipment_validator_local_auth_extension_pg17.sql'
       - 'scripts/fixtures/forge_sheet_authority_tags_original_pg17.sql'
       - 'scripts/fixtures/forge_sheet_authority_tags_local_auth_extension_pg17.sql'
+      - 'scripts/fixtures/forge_progression_authority_original_pg17.sql'
+      - 'scripts/fixtures/forge_progression_authority_local_auth_extension_pg17.sql'
       - 'scripts/test_forge_immutable_creation_replay_local_auth.mjs'
       - 'scripts/validate_forge_immutable_creation_replay.mjs'
   workflow_dispatch:
