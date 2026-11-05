@@ -4,6 +4,8 @@ on:
     paths:
       - '.github/workflows/validate-p1-3-levelup-v5-auth-locks.yml'
       - 'scripts/fixtures/p1_3_levelup_v5_original_source_pg17.sql'
+      - 'scripts/fixtures/p1_3_admin_grant_original_source_pg17.sql'
+      - 'scripts/fixtures/p1_3_admin_grant_levelup_extension_pg17.sql'
       - 'scripts/fixtures/p1_3_levelup_v5_local_auth_pg17.sql'
       - 'scripts/test_p1_3_levelup_v5_real_jwt_local.mjs'
       - 'scripts/validate_p1_3_levelup_v5_source.mjs'

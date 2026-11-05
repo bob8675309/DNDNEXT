@@ -135,3 +135,88 @@ assert.equal(sql("SELECT count(*) FROM public.character_level_up_sessions WHERE 
 console.log("PASS F10 synthetic CP prelock + original signed JWT v5 CP→CS versus original signed JWT CS→CP sheet edit produces real 40P01, one victim and exactly one level/event; production timing NOT established");
 
 console.log("P1.3 original full source v5-v4-v3/base F06-F10 accepted for a Fighter lv1→2 using REDUCED class-choice helpers and local editor RLS; not global grant/inventory or production trigger proof.");
+
+// F11-F16 original Admin G grant vs v5 CP/CS, genuine Admin/owner JWTs.
+// Source originals, timing and reduced-RLS limits documented in matching report.
+const originalGrantFixture=spawnSync('psql',[
+ '-X','-v','ON_ERROR_STOP=1','-f',
+ 'scripts/fixtures/p1_3_admin_grant_levelup_extension_pg17.sql'
+],{encoding:'utf8',timeout:15000,env:{...e,PGUSER:'postgres'}});
+assert.equal(originalGrantFixture.status,0,'F11 Admin grant fixture: '+originalGrantFixture.stderr);
+console.log('PASS F11 original Admin G/CS source fingerprint and scratch ACL gates installed');
+const adminClient=api(),adminEmail='p13-original-grant-'+randomUUID()+'@example.invalid';
+const adminSignup=await adminClient.auth.signUp({email:adminEmail,password});assert.ifError(adminSignup.error);
+const adminLogin=await adminClient.auth.signInWithPassword({email:adminEmail,password});assert.ifError(adminLogin.error);
+const adminClaims=await adminClient.auth.getClaims();assert.ifError(adminClaims.error);
+assert.equal(adminClaims.data.claims.sub,adminLogin.data.user.id);
+assert.equal(adminClaims.data.claims.role,'authenticated');
+const adminUid=adminLogin.data.user.id;
+assert.ok(!signed.some(x=>x.uid===adminUid));
+sql(`INSERT INTO public.user_profiles(id,role) VALUES('${adminUid}','admin')`);
+const aOption=id(8292),aSolo=id(8293),aRace=id(8294);
+addCharacter(aSolo,'P13 Source Admin Grant Solo');
+addCharacter(aRace,'P13 Source Admin Grant and Level-up Race');
+const g=(client,char,note)=>client.rpc('grant_character_option_v1',{
+ p_character_id:char,p_option_id:aOption,p_notes:note
+});
+const gc=char=>Number(sql(`SELECT count(*) FROM public.character_option_grants WHERE character_id='${char}' AND option_id='${aOption}'`));
+const gb=char=>sql(`SELECT granted_by FROM public.character_option_grants WHERE character_id='${char}' AND option_id='${aOption}'`);
+const fc=char=>Number(sql(`SELECT count(*) FROM public.character_sheets cs, LATERAL jsonb_array_elements_text(coalesce(cs.sheet->'adminGrantedFeats','[]'::jsonb)) f(name) WHERE cs.character_id='${char}' AND f.name='Lucky'`));
+const anonymousGrant=await g(api(),aSolo,'anonymous');
+assert.ok(anonymousGrant.error,'Anonymous original grant unexpectedly succeeded');
+for(const other of signed){
+ const denied=await g(other.client,aSolo,'not-admin');
+ assert.ok(denied.error,`Non-admin ${other.name} granted feat`);
+ assert.equal(denied.error.code,'42501');
+}
+assert.equal(gc(aSolo),0);assert.equal(fc(aSolo),0);
+console.log('PASS F12 anonymous/three player JWTs denied source Admin grant without changing G/CS');
+const normalGrant=await g(adminClient,aSolo,'source original Admin');
+assert.ifError(normalGrant.error);
+assert.equal(gc(aSolo),1);assert.equal(fc(aSolo),1);assert.equal(gb(aSolo),adminUid);
+const repeatedGrant=await g(adminClient,aSolo,'updated original grant note');
+assert.ifError(repeatedGrant.error);
+assert.equal(gc(aSolo),1);assert.equal(fc(aSolo),1);
+assert.equal(sql(`SELECT notes FROM public.character_option_grants WHERE character_id='${aSolo}'`),'updated original grant note');
+console.log('PASS F13 original signed Admin actual G insert/upsert, one projected feat, verified grant attribution; no immutable replay claimed');
+sql(`UPDATE public.user_profiles SET role='player' WHERE id='${adminUid}'`);
+const revokedAdmin=await g(adminClient,aSolo,'after-revocation');
+assert.ok(revokedAdmin.error);assert.equal(revokedAdmin.error.code,'42501');
+assert.equal(gc(aSolo),1);assert.equal(fc(aSolo),1);
+sql(`UPDATE public.user_profiles SET role='admin' WHERE id='${adminUid}'`);
+console.log('PASS F14 current DB-admin revocation denies same signed JWT; unchanged grant and sheet');
+
+// All unchanged production functions run directly. Only the CP prelock and
+// the separate AFTER-CS probe impose repeatable, artificial timing.
+const gLevelPromise=owner.client.rpc('p13_test_grant_race_levelup_prelock_v1',{
+ p_character_id:aRace
+}).then(x=>x);
+const pollMarker=async(key,deadline)=>{
+ while(Date.now()<deadline){
+  if(sql(`SELECT count(*) FROM pg_locks WHERE locktype='advisory' AND classid='${key}'::oid AND objid='1'::oid AND granted`)==='1') return true;
+  await sleeping(85);
+ }
+ return false;
+};
+assert.ok(await pollMarker(9315,Date.now()+3500),'Source v5 CP prelock marker not observed');
+const gGrantPromise=g(adminClient,aRace,'G contention').then(x=>x);
+assert.ok(await pollMarker(9314,Date.now()+2700),'Admin source G->CS lock probe not observed');
+const [gLevelResult,gGrantResult]=await Promise.all([gLevelPromise,gGrantPromise]);
+const gFailures=[gLevelResult,gGrantResult].filter(x=>x.error);
+assert.equal(gFailures.length,1,'Expected one real 40P01 deadlock victim: '+JSON.stringify([gLevelResult,gGrantResult]));
+assert.equal(gFailures[0].error.code,'40P01','Expected actual PG17 SQLSTATE 40P01');
+if(gGrantResult.error){assert.equal(gc(aRace),0);assert.equal(fc(aRace),0);}
+else{assert.equal(gc(aRace),1);assert.equal(fc(aRace),1);}
+if(gLevelResult.error){
+ assert.equal(sql(`SELECT class_level FROM public.character_progression WHERE character_id='${aRace}'`),'1');
+ assert.equal(sql(`SELECT count(*) FROM public.character_level_events WHERE character_id='${aRace}' AND event_type='level_up_completed'`),'0');
+}else assert.equal(sql(`SELECT class_level FROM public.character_progression WHERE character_id='${aRace}'`),'2');
+console.log('PASS F15 source-original Admin G->CS->CP versus signed owner source-original v5 CP->CS: genuine test-timed 40P01 and rollback');
+if(gLevelResult.error){const retry=await level(owner,aRace);assert.ifError(retry.error);}
+if(gGrantResult.error){const retry=await g(adminClient,aRace,'G contention');assert.ifError(retry.error);}
+assert.equal(gc(aRace),1);assert.equal(fc(aRace),1);assert.equal(gb(aRace),adminUid);
+assert.equal(sql(`SELECT class_level FROM public.character_progression WHERE character_id='${aRace}'`),'2');
+assert.equal(sql(`SELECT sheet->>'level' FROM public.character_sheets WHERE character_id='${aRace}'`),'2');
+assert.equal(sql(`SELECT count(*) FROM public.character_level_events WHERE character_id='${aRace}' AND event_type='level_up_completed'`),'1');
+assert.equal(sql(`SELECT count(*) FROM public.character_level_up_sessions WHERE character_id='${aRace}' AND status='completed'`),'1');
+console.log('PASS F16 retry converges to one canonical G, sheet feat, level event/session, correct Admin provenance; no inventory or full trigger parity claimed');

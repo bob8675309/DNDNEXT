@@ -47,3 +47,30 @@ assert.ok(workflow.includes("supabase@2.120.0"),"Supabase CLI version should sta
 assert.ok(workflow.includes("PGPORT: '54322'"),"This suite must use the disposable local Auth-only port");
 assert.ok(workflow.includes("stop --no-backup"),"Scratch users and data must be destroyed after completion");
 console.log("PASS STATIC P1.3: seven original levelup/sheet source hashes, scoped Fighter-only helper stubs, real JWT + RLS, observable test-only CP advisory prelock and two-session 40P01; NOT runtime acceptance.");
+
+const grantSource=read("scripts/fixtures/p1_3_admin_grant_original_source_pg17.sql");
+const grantExtension=read("scripts/fixtures/p1_3_admin_grant_levelup_extension_pg17.sql");
+for(const [name,md5] of [
+ ["private.current_user_is_admin","1fc5fbcb121b2862eeab869edfb3a209"],
+ ["public.is_admin","629e70fee675bf18f353a19d807e4416"],
+ ["private.guard_direct_character_authority_mutation_v1","04596b0a3fdfb71c1b357056e8c6023b"],
+ ["private.sync_admin_feature_array_v1","f2b6190ecc9400772e054892f63cdc47"],
+ ["public.grant_character_option_v1","aa0f6a0c6c6a6f2b9aacf57bd40e434c"]
+]){
+ assert.ok(grantSource.includes("CREATE OR REPLACE FUNCTION "+name+"("),"Missing original grant source "+name);
+ assert.ok(grantSource.includes(md5),"Missing grant original MD5 "+name);
+ assert.ok(grantExtension.includes(md5),"Missing runtime drift check for original grant "+name);
+}
+for(const token of ["private.p13_admin_grant_cs_hold_probe_v1","pg_advisory_xact_lock(9314,1)",
+ "p13_test_grant_race_levelup_prelock_v1","pg_advisory_xact_lock(9315,1)",
+ "public.grant_character_option_v1(uuid,uuid,text)","RLS parity","ENABLE ROW LEVEL SECURITY"])
+ assert.ok(grantExtension.includes(token),"Missing guarded Admin G fixture token "+token);
+for(const token of ["PASS F11","PASS F12","PASS F13","PASS F14","PASS F15","PASS F16",
+ "grant_character_option_v1","auth.getClaims","gFailures","gGrantResult.error","gc(aRace)","gb(aRace)"])
+ assert.ok(runner.includes(token),"Missing actual authenticated G/CP/CS assertion "+token);
+for(const token of ["p1_3_admin_grant_original_source_pg17.sql","p1_3_admin_grant_levelup_extension_pg17.sql"])
+ assert.ok(workflow.includes(token),"Workflow missing Admin G concurrency coverage path "+token);
+for(const unsafe of ["ucggczovhmauhshvhusx","SUPABASE_SERVICE_ROLE_KEY","SERVICE_ROLE_KEY"]){
+ assert.ok(!grantSource.includes(unsafe)&&!grantExtension.includes(unsafe),"No production secret/project refs allowed in G fixture");
+}
+console.log("PASS STATIC P1.3 Admin G F11-F16: exact original grant/guard/source hash declarations, scratch-only timed CS/CP probes, true JWT test cases present (NOT DB acceptance).");

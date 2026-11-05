@@ -458,3 +458,12 @@
 - **One next bounded action:** compose source-exact canonical grant G and inventory I trigger/materializer graph into isolated genuine GoTrue CP/CS interleaving, including deferred COMMIT, authenticated owner/coeditor/GM/revocation, original fixed equipment and feat grants, rollback and nonce idempotence. Do not assume universal CP-first ordering; coordinate P1.3 global locks and PR #321/#324 cutover.
 - **Production effects: NONE:** Main last reviewed `51c351a142d03378dff8e47e05182afe21a15622`; no DnDWeb schema/data/role/grants, Vercel, world/town map, secrets, Actor AI or autonomous changes.
 
+
+## 2026-11-05 — P1.3 original Admin G/source-authenticated race candidate (F11–F16)
+
+- **Base:** held PR #317 pre-change head `a6d334f611075791359429822acfab83608370fd`; no main merge. Confirm the exact new head and its CI when branch ref advances.
+- **Live read-only evidence:** original public `grant_character_option_v1` writes G then calls original `sync_admin_feature_array_v1` CS `FOR UPDATE`, with original sheet→CP trigger. Five original complete SQL definitions plus runtime hashes captured from DnDWeb without mutation; original v5 CP→CS source unchanged.
+- **Change:** add isolated PG17 source-shaped Admin G/guard/auth extension to existing F06–F10 local GoTrue fixture; original grant and progress/source functions preserved, two genuinely signed-in users in an explicitly timed race; F11–F16 test expected JWT denial/authorization/revocation/G mutation, test-timed deadlock, atomic rollback and exact-once retry. Original Admin/profile RLS/remaining 24 original Forge creation triggers and actual player advancement grant/I not covered.
+- **Verification:** runner JavaScript syntax prechecked locally; SQL requires real isolated CI to establish behavior. **F11–F16 CI result pending at this receipt.** No claim of PASS or source defect from unexecuted assertions.
+- **Production:** no DnDWeb writes/SQL/RLS/grants, deployment, production app code, map, AI, or main changes authorized. Research commit should be a single consolidated branch update to conserve automatic Vercel previews.
+- **Single next action:** inspect the exact new branch-head GitHub Actions F06–F16 logs; only if accepted proceed to a legitimate player level-4 feat grant `private.apply_character_level_advancement_v1` with source grant-instance + G/I/CP/CS graph, revocation and deferred transaction boundary.

@@ -53,6 +53,7 @@
       ],
       "last_checked": "2026-11-01",
       "open_gaps": [
+        "Draft #317 F11–F16 source Admin canonical G grant against signed-in Fighter v5 is not player-level feat G and has not passed new exact-head CI; full original creation trigger/RLS/gear parity is not established.",
         "Browser acceptance must be tied to specific scoped flows; not blanket proof of all source traits."
       ],
       "label": "Player/NPC character Forge",
@@ -101,7 +102,9 @@
       "status": "research-only",
       "code_paths": [
         "pages/encounters/combat.js",
-        "sql/20260727_06_core_combat_actions.sql"
+        "sql/20260727_06_core_combat_actions.sql",
+        "scripts/fixtures/p1_3_admin_grant_original_source_pg17.sql",
+        "scripts/fixtures/p1_3_admin_grant_levelup_extension_pg17.sql"
       ],
       "tests": [
         "scripts/test_p1_3_legacy_real_jwt_local.mjs",
@@ -130,10 +133,12 @@
         "scripts/fixtures/p1_3_admin_staging_source_pg17.sql",
         "scripts/fixtures/p1_3_permission_controller_rls_parity_pg17.sql",
         "scripts/fixtures/p1_3_permission_row_lock_candidate_pg17.sql",
-        "scripts/test_p1_3_permission_controller_rls_local_jwt.mjs"
+        "scripts/test_p1_3_permission_controller_rls_local_jwt.mjs",
+        "scripts/test_p1_3_levelup_v5_real_jwt_local.mjs"
       ],
-      "last_checked": "2026-11-04",
+      "last_checked": "2026-11-05",
       "open_gaps": [
+        "2026-11-05 draft #317 original Admin grant G→CS→CP vs owner signed-in v5 CP→CS: F11–F16 source-exact/authenticated timed fixture prepared, not yet CI-accepted; valid player advancement G and full G/I/24 original omitted Forge triggers still missing. docs/P1_3_Original_Admin_Grant_G_vs_Levelup_CP_CS_Research_2026-11-05.md",
         "P1.3 original public v11 Guiding Bolt and v10 Mind Sliver paths cases 36–41 PASS scratch PG16 run 41566917343 SHA 1f39532. v11 E->P vs original End Turn P->E deadlock reproduced under forced concurrent active-turn requests. Both cast versions return cached prior result for changed target/slot. Source-derived not production/JWT exploit. docs/P1_3_Legacy_v11_Guiding_Bolt_v10_Mind_Sliver_2026-11-02.md.",
         "P1.3 exact v9→v1 cast functions plus genuine local GoTrue JWTs proved unsafe changed-target/assignment/slot cross-user cached replay and post-revocation result disclosure (cases 48–55, run 41635156191, SHA 16424aab). Local healing/profile/targeting, Admin and RLS were modeled; no live exploit/mitigation claim.",
         "Global E/P/L/W/X/S/C/grant lock-order proof not complete; P1.5 TC1 Option A one-active-character guard not deployed, existing live overlap preserved for explicit GM review.",
