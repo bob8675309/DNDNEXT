@@ -220,3 +220,110 @@ assert.equal(sql(`SELECT sheet->>'level' FROM public.character_sheets WHERE char
 assert.equal(sql(`SELECT count(*) FROM public.character_level_events WHERE character_id='${aRace}' AND event_type='level_up_completed'`),'1');
 assert.equal(sql(`SELECT count(*) FROM public.character_level_up_sessions WHERE character_id='${aRace}' AND status='completed'`),'1');
 console.log('PASS F16 retry converges to one canonical G, sheet feat, level event/session, correct Admin provenance; no inventory or full trigger parity claimed');
+
+
+ 
+// F17-F21: source-qualified XPHB Fighter Champion 3->4, ACTUAL player-earned
+// advancement G-instance+G writes through original public v5->v4->v3->private
+// apply_character_level_advancement_v1 under genuine signed GoTrue JWTs.
+const f17Setup=spawnSync("psql",["-X","-v","ON_ERROR_STOP=1","-f",
+ "scripts/fixtures/p1_3_level4_advancement_extension_pg17.sql"],{
+ encoding:"utf8",timeout:20000,env:{...e,PGUSER:"postgres"}
+});
+assert.equal(f17Setup.status,0,"F17 source-original level4 test setup failed: "+f17Setup.stderr);
+console.log("PASS F17 original source MD5 gate, subclass and ASI level4 specimen, G/GI trigger graph loaded (reduced local schema)");
+const asiOption="7fea59fa-064e-40dd-8f25-dcebe28f1e9d";
+const asiChoice={
+ optionId:asiOption, optionType:"feat", source:"XPHB",
+ name:"Ability Score Improvement", acquisitionLevel:4,
+ choices:{"asi-mode":[{kind:"asi-mode",value:"plus-two"}],
+          "asi-plus-two":[{kind:"ability",value:"str"}]}
+};
+const l4Solo=id(8391),l4Race=id(8392),l4Revoked=id(8393);
+function addLevel4Fighter(char,name){
+ const init=JSON.stringify({
+  classKey:"fighter",rulesetSource:"XPHB",ruleset:"2024",level:3,
+  subclass:"Champion",subclassName:"Champion",subclassSource:"XPHB",
+  hp:30,maxHp:30,abilities:{str:{score:12},con:{score:12}},
+  meta:{classKey:"fighter",rulesetSource:"XPHB",level:3}
+ });
+ sql("INSERT INTO public.characters(id,name,kind) VALUES('"+char+"','"+name+"','npc');"
+ +"INSERT INTO public.character_sheets(character_id,sheet) VALUES('"+char+"','"+init+"');"
+ +"INSERT INTO public.character_progression(character_id,class_id,class_level,experience_points,pending_level_up,subclass_name,subclass_source,created_by)"
+ +" VALUES('"+char+"','"+cClass+"',3,2700,true,'Champion','XPHB','"+owner.uid+"')"
+ +" ON CONFLICT(character_id) DO UPDATE SET class_id=excluded.class_id,class_level=excluded.class_level,"
+ +" experience_points=excluded.experience_points,pending_level_up=excluded.pending_level_up,"
+ +" subclass_name=excluded.subclass_name,subclass_source=excluded.subclass_source,created_by=excluded.created_by;"
+ +"INSERT INTO public.character_level_up_sessions(character_id,from_level,to_level,status,metadata_ready,created_by)"
+ +" VALUES('"+char+"',3,4,'open',true,'"+owner.uid+"');"
+ +"INSERT INTO public.character_permissions(character_id,user_id,can_edit) VALUES"
+ +"('"+char+"','"+owner.uid+"',true),('"+char+"','"+coeditor.uid+"',true);");
+}
+addLevel4Fighter(l4Solo,"P13 Lv4 XPHB Champion ASI Solo");
+addLevel4Fighter(l4Race,"P13 Lv4 XPHB Champion ASI vs Admin G");
+addLevel4Fighter(l4Revoked,"P13 Lv4 XPHB Champion Revoked");
+const level4=(who,char)=>who.client.rpc("complete_character_level_up_v5",{
+ p_character_id:char,p_selections:{hp_method:"fixed",advancement_instance:asiChoice}
+});
+const giCount=char=>Number(sql("SELECT count(*) FROM public.character_option_grant_instances WHERE character_id='"+char+"' AND option_id='"+asiOption+"'"));
+const gCount=(char,opt)=>Number(sql("SELECT count(*) FROM public.character_option_grants WHERE character_id='"+char+"' AND option_id='"+opt+"'"));
+const sheetCount=(char,key,value)=>Number(sql("SELECT count(*) FROM public.character_sheets cs, LATERAL jsonb_array_elements_text(coalesce(cs.sheet->'"+key+"','[]'::jsonb)) x(v) WHERE cs.character_id='"+char+"' AND x.v='"+value+"'"));
+const by=(char,opt,instance)=>sql("SELECT granted_by FROM public."+ (instance?"character_option_grant_instances":"character_option_grants")+" WHERE character_id='"+char+"' AND option_id='"+opt+"'");
+const solo4=await level4(owner,l4Solo);
+assert.ifError(solo4.error);
+assert.equal(sql("SELECT class_level FROM public.character_progression WHERE character_id='"+l4Solo+"'"),"4");
+assert.equal(sql("SELECT sheet #>> '{abilities,str,score}' FROM public.character_sheets WHERE character_id='"+l4Solo+"'"),"14");
+assert.equal(giCount(l4Solo),1);assert.equal(gCount(l4Solo,asiOption),1);
+assert.equal(by(l4Solo,asiOption,true),owner.uid);
+assert.equal(by(l4Solo,asiOption,false),owner.uid);
+assert.equal(sheetCount(l4Solo,"feats","Ability Score Improvement"),1);
+assert.equal(sql("SELECT count(*) FROM public.character_level_events WHERE character_id='"+l4Solo+"' AND event_type='level_up_completed'"),"1");
+const soloReplay=await level4(owner,l4Solo);
+assert.ok(soloReplay.error,"Repeated Lv4 completion was not rejected");
+assert.equal(giCount(l4Solo),1);assert.equal(gCount(l4Solo,asiOption),1);
+console.log("PASS F18 signed owner original v5->v3->advancement produces ASI sheet/stat +2, one actual G instance and aggregate G, owner provenance; repeat blocked");
+const outsider4=await level4(outsider,l4Revoked);
+assert.ok(outsider4.error);assert.equal(outsider4.error.code,"42501");
+sql("UPDATE public.character_permissions SET can_edit=false WHERE character_id='"+l4Revoked+"' AND user_id='"+owner.uid+"'");
+const revoked4=await level4(owner,l4Revoked);
+assert.ok(revoked4.error);assert.equal(revoked4.error.code,"42501");
+assert.equal(giCount(l4Revoked),0);assert.equal(gCount(l4Revoked,asiOption),0);
+const forbiddenInsert=await owner.client.from("character_option_grant_instances").insert({
+ character_id:l4Solo,option_id:asiOption,option_key:"feat:ability-score-improvement|XPHB",
+ option_type:"feat",option_name:"Ability Score Improvement",option_source:"XPHB",instance_key:"forged-by-client"
+});
+assert.ok(forbiddenInsert.error,"Direct player canonical G instance INSERT unexpectedly succeeded");
+assert.equal(giCount(l4Solo),1);
+console.log("PASS F19 signed outsider/revoked player blocked; direct client G-instance table write denied");
+
+const lvl4Promise=owner.client.rpc("p13_test_level4_advancement_cp_prelock_v1",{
+ p_character_id:l4Race,p_instance:asiChoice
+}).then(x=>x);
+assert.ok(await pollMarker(9316,Date.now()+3700),"Lv4 original source owner CP prelock not observed");
+const adminGPromise=g(adminClient,l4Race,"Concurrent Admin Lucky").then(x=>x);
+assert.ok(await pollMarker(9314,Date.now()+2900),"Actual original Admin G->CS lock probe not observed");
+const [lv4Result,adminResult]=await Promise.all([lvl4Promise,adminGPromise]);
+const l4Failures=[lv4Result,adminResult].filter(x=>x.error);
+assert.equal(l4Failures.length,1,"Expected a real source-timed G/CP/CS PostgreSQL deadlock: "+JSON.stringify([lv4Result,adminResult]));
+assert.equal(l4Failures[0].error.code,"40P01","Expected PG SQLSTATE 40P01");
+if(lv4Result.error){
+ assert.equal(giCount(l4Race),0,"Rolled-back earned G instance remained");
+ assert.equal(gCount(l4Race,asiOption),0,"Rolled-back earned G aggregate remained");
+ assert.equal(sql("SELECT class_level FROM public.character_progression WHERE character_id='"+l4Race+"'"),"3");
+}else{assert.equal(giCount(l4Race),1);assert.equal(gCount(l4Race,asiOption),1);}
+if(adminResult.error){assert.equal(gCount(l4Race,aOption),0);}
+else assert.equal(gCount(l4Race,aOption),1);
+console.log("PASS F20 independent signed Admin original G insert vs signed owner original Lv4 earned G insertion induces real test-timed 40P01; losing transaction atomic");
+
+if(lv4Result.error){const retry=await level4(owner,l4Race);assert.ifError(retry.error);}
+if(adminResult.error){const retry=await g(adminClient,l4Race,"Concurrent Admin Lucky");assert.ifError(retry.error);}
+assert.equal(giCount(l4Race),1);assert.equal(gCount(l4Race,asiOption),1);assert.equal(gCount(l4Race,aOption),1);
+assert.equal(by(l4Race,asiOption,true),owner.uid);assert.equal(by(l4Race,asiOption,false),owner.uid);
+assert.equal(by(l4Race,aOption,false),adminUid);
+assert.equal(sheetCount(l4Race,"feats","Ability Score Improvement"),1);
+assert.equal(sheetCount(l4Race,"adminGrantedFeats","Lucky"),1);
+assert.equal(sql("SELECT sheet #>> '{abilities,str,score}' FROM public.character_sheets WHERE character_id='"+l4Race+"'"),"14");
+assert.equal(sql("SELECT class_level FROM public.character_progression WHERE character_id='"+l4Race+"'"),"4");
+assert.equal(sql("SELECT count(*) FROM public.character_level_events WHERE character_id='"+l4Race+"' AND event_type='level_up_completed'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_level_up_sessions WHERE character_id='"+l4Race+"' AND status='completed'"),"1");
+console.log("PASS F21 retry converges to exactly one owner-earned source G instance/aggregate plus one Admin G and one level-up event, preserved provenance and ASI stat; NOT full live-trigger or I acceptance");

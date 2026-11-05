@@ -74,3 +74,40 @@ for(const unsafe of ["ucggczovhmauhshvhusx","SUPABASE_SERVICE_ROLE_KEY","SERVICE
  assert.ok(!grantSource.includes(unsafe)&&!grantExtension.includes(unsafe),"No production secret/project refs allowed in G fixture");
 }
 console.log("PASS STATIC P1.3 Admin G F11-F16: exact original grant/guard/source hash declarations, scratch-only timed CS/CP probes, true JWT test cases present (NOT DB acceptance).");
+
+const level4Source=read("scripts/fixtures/p1_3_level4_advancement_original_pg17.sql");
+const level4Setup=read("scripts/fixtures/p1_3_level4_advancement_extension_pg17.sql");
+for(const [name,hash] of [
+ ["private.apply_character_level_advancement_v1","46dd0af4f6ca816422a75e91a292c634"],
+ ["private.level_up_advancement_option_id_v1","ee7e6204a499abfe69aaa0c7f304aed2"],
+ ["private.level_up_ability_increases_v1","6ac310ae1358a3e827e6b15446d3d5f0"],
+ ["private.materialize_level_up_advancement_spells_v1","805b8ea43cdc2b9e4f88f7adb637f0fb"],
+ ["private.character_option_prerequisites_met_v1","21f370cac373521d64a55eebbd61d1bd"],
+ ["private.level_has_feature_v1","7616660880fb69db21c4d9b2416c1694"],
+ ["private.resolve_subclass_choice_v1","df25069121f0889de0574e0a28151301"],
+ ["private.materialize_boon_energy_resistance_instance_v1","35cb3d6560ffde5a94b019a9f373f65d"],
+ ["private.materialize_cartomancer_instance_v1","30939673464de80a0791a89017d48065"],
+ ["private.materialize_feat_runtime_expertise_instance_v1","c56af0b4f49f024a18baf396eeb2d1e2"]
+]){
+ assert.ok(level4Source.includes("CREATE OR REPLACE FUNCTION "+name+"("),"Missing source-original level4 function "+name);
+ assert.ok(level4Source.includes(hash),"Missing original level4 MD5 "+name);
+ assert.ok(level4Setup.includes(hash),"Missing original-source level4 runtime MD5 drift gate "+name);
+}
+for(const token of ["p13_test_level4_advancement_cp_prelock_v1","pg_advisory_xact_lock(9316,1)",
+ "private.p13_only_plain_fighter","'Champion'","Ability Score Improvement",
+ "character_option_catalog_preferred","character_option_grant_instances_character_id_instance_key_key",
+ "CREATE TRIGGER character_option_grant_instance_feat_runtime_expertise_v1",
+ "RLS","DO $source_check$","DO $acl$"])
+ assert.ok(level4Setup.includes(token),"Missing reduced source-backed Fighter Lv4 setup "+token);
+for(const token of ["PASS F17","PASS F18","PASS F19","PASS F20","PASS F21",
+ "asiChoice","gCount(l4Race","giCount(l4Race","pg_locks","40P01",
+ "character_option_grant_instances","level4(owner,l4Solo)","by(l4Race,asiOption",
+ "assert.equal(giCount(l4Race),1)"])
+ assert.ok(runner.includes(token) || (token==="pg_locks"&&runner.includes("pollMarker")),
+ "Missing signed-in player earned G assertions "+token);
+for(const path of ["p1_3_level4_advancement_original_pg17.sql","p1_3_level4_advancement_extension_pg17.sql"])
+ assert.ok(workflow.includes(path),"No CI trigger for "+path);
+for(const unsafe of ["ucggczovhmauhshvhusx","SUPABASE_SERVICE_ROLE_KEY","SERVICE_ROLE_KEY"]){
+ assert.ok(!level4Source.includes(unsafe)&&!level4Setup.includes(unsafe),"Forbidden live project or secret in Lv4 scratch fixture");
+}
+console.log("PASS STATIC P1.3 F17-F21 original live source/MD5, signed-in Fighter Lv4 ASI G/GI grant + Admin G race, scoped reductions only (NOT runtime acceptance).");

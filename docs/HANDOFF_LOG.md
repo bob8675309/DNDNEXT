@@ -467,3 +467,12 @@
 - **Verification:** runner JavaScript syntax prechecked locally; SQL requires real isolated CI to establish behavior. **F11–F16 CI result pending at this receipt.** No claim of PASS or source defect from unexecuted assertions.
 - **Production:** no DnDWeb writes/SQL/RLS/grants, deployment, production app code, map, AI, or main changes authorized. Research commit should be a single consolidated branch update to conserve automatic Vercel previews.
 - **Single next action:** inspect the exact new branch-head GitHub Actions F06–F16 logs; only if accepted proceed to a legitimate player level-4 feat grant `private.apply_character_level_advancement_v1` with source grant-instance + G/I/CP/CS graph, revocation and deferred transaction boundary.
+
+## 2026-11-05 — F17–F21 player-earned level-4 G/GI, source-authenticated disposable candidate
+
+- **Parent evidence:** held draft #317 head `83d0b52f8a8aaee87c59e3c1fd4386ec43600a45`, F06–F16 accepted in [Actions 42085003186](https://github.com/bob8675309/DNDNEXT/actions/runs/42085003186), existing 10/10 checks green. **New F17–F21 are not yet verified at this handoff.**
+- **Read-only source:** source-exact `apply_character_level_advancement_v1` and eleven other advancement and feat-instance handler definitions/MD5 fingerprints loaded from live DnDWeb (plus two original family helpers), no live data writes. Actual XPHB ASI `7fea59fa-064e-40dd-8f25-dcebe28f1e9d`, category G, level 4 and Champion level 3 verified from read-only catalogue.
+- **Changes:** add source fixture and reduced local PG17/GoTrue extension; retain unchanged production source v5/v4/v3/base, three original GI AFTER triggers and original G/CS guard, independently signed Admin/owner test for actual player-earned G+GI, rollback/retry and provenance. Scoped test-only helper adaptations, no production patch.
+- **Verification:** syntactic preflight of ESM runner/validator in V8 parser, exact local PG17/GoTrue CI outcome PENDING. Historical F06–F16 receipts not superseded. Check new head/run logs before calling F17–F21 PASS.
+- **Remaining:** full original production catalogue/RLS, original Forge 31-trigger graph, inventory I/currency/deferred COMMIT, valid other classes/feats, browser flow, global locks and release ordering not proven. Draft branches stay held.
+- **Single next task:** inspect F17–F21 exact-head Actions and handle any fixture error; on green extend one real authorized I versus new earned G contention in free disposable test environment. No main, prod DB or Vercel release.
