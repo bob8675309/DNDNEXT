@@ -571,24 +571,18 @@
         "components/character/CharacterInteractionPanel.js",
         "pages/npcs.js",
         "components/PlayerCharacterProfilePanelUnified.js",
-        "utils/charactersDb.js",
-        "sql/candidates/20261104_npc_player_safe_profile_rls_v1.sql",
-        "sql/candidates/20261104_npc_gm_dossier_column_acl_stage2.sql"
+        "utils/charactersDb.js"
       ],
-      "tests": [
-        "scripts/test_p1_3_npc_profile_safe_local_auth.mjs",
-        "scripts/fixtures/p1_3_npc_safe_profile_local_auth_pg17.sql",
-        "scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql",
-        "scripts/validate_p1_3_npc_profile_rls_source.mjs"
-      ],
+      "tests": [],
       "last_checked": "2026-11-04",
       "open_gaps": [
         "Research-only PR #321 V00–V08 PASS real disposable GoTrue/PG17, run 41944321941, exact SHA a8db0b3f. V00 intentionally unsafe baseline; V06 intentionally shows direct characters lore-column leak under stage one. Stage-two GM dossier/ACL model requires coordinated UI/DB migration and browser acceptance.",
         "Existing Admin NPC page, shared NpcPanel, PlayerCharacterProfilePanelUnified fallback and charactersDb direct lore reads would break after column-level SELECT revocation. No live SQL, migration, merge, grants or deployment permitted without source/rollback/owner review.",
         "GM-private character.secret versus delegated can_edit full-sheet authority unresolved; private character_notes audience and remaining SECURITY DEFINER character serializers require review.",
-        "World-map sprites/route/drag behavior must stay untouched; the centered wide Profile is separately held draft #320."
+        "World-map sprites/route/drag behavior must stay untouched; the centered wide Profile is separately held draft #320.",
+        "2026-11-04 handoff registry correction: all local test-path links removed from registry arrays because these artifacts live ONLY on independent draft PR #321 at a8db0b3f; source on PR #317 must not pretend its tests/files are present. CI 41944959939 failed as expected before correction."
       ],
-      "scope_note": "Independent main-based P1.3 PR #321 contains source-faithful candidate SQL and actual signed-in synthetic local tests only, not a completed safe Profile. NPC/merchant Profile-first centered UI on #320 is not deployed. No player-safe projection is installed live.",
+      "scope_note": "Independent main-based P1.3 PR #321 contains source-faithful candidate SQL and actual signed-in synthetic local tests only, not a completed safe Profile. NPC/merchant Profile-first centered UI on #320 is not deployed. No player-safe projection is installed live. Test scripts/SQL under separate draft PR #321 are intentionally not included in this PR source tree; refer to exact-head run and PR URL.",
       "verification": {
         "source": "live-SELECT-only-NPC-RLS-characters-column-ACL-and-player-rpc-2026-11-04",
         "live_database": "read-only-source-policy-and-ACL-verified",
