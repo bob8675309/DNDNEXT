@@ -178,7 +178,7 @@ assert.ok(gearExtension.includes("DEFERRABLE INITIALLY DEFERRED FOR EACH ROW"),
  "Original equipment trigger must remain deferred");
 assert.ok(gearExtension.includes("EXECUTE FUNCTION private.sync_character_progression_from_sheet_v1()"),
  "Original sheet/progression trigger must be installed in supplemental slice");
-for (const token of ["J10","J11","J12","J13","J14","J15","J16","J17","J18","J19","J20","J21","J22","J23","J24","J25","J26","J27","J28","J29","J30","J31","J32","J33","J34","J35","J36","J37","J38","J39","J40","J41","J42","J43","J44","J45","J46","J47","J48","J49","J50","J51","J52","J53","J54","J55","J56","J57","J58","J59","J60",
+for (const token of ["J10","J11","J12","J13","J14","J15","J16","J17","J18","J19","J20","J21","J22","J23","J24","J25","J26","J27","J28","J29","J30","J31","J32","J33","J34","J35","J36","J37","J38","J39","J40","J41","J42","J43","J44","J45","J46","J47","J48","J49","J50","J51","J52","J53","J54","J55","J56","J57","J58","J59","J60","J61","J62",
  "forge_materializer_local_auth_extension_pg17.sql","startingEquipmentSelections"])
  assert.ok(localAuth.includes(token), "Missing signed-in creation and gear regression "+token);
 console.log("PASS source: original Admin/v2/v3 snapshots, v2/v3 source-pinned private wrappers with one PR319 snapshot safeguard, nonce fingerprint and authorization static contract.");
