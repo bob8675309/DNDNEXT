@@ -13,7 +13,7 @@ const required = [
   'craft_profession: craftProfession,',
   'profession: craftProfession || crafter?.profession || "",',
   'export default function TownCrafterInteractionPanel',
-  'initialView: "craft"',
+  'initialView: "profile"',
   'onClose,',
 ];
 

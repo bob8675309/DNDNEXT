@@ -821,7 +821,7 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
             {isAdmin ? (
               <>
                 <button type="button" className="btn btn-sm btn-outline-light" onClick={() => { if (npcId) router.push(`/npcs?focus=npc:${encodeURIComponent(npcId)}`); }}>Open NPC page</button>
-                <button type="button" className="btn btn-sm btn-outline-light" onClick={() => { if (npcId) onOpenDrawer?.(npcId); }} title="Open Character Drawer">Drawer</button>
+                {typeof onOpenDrawer === "function" ? <button type="button" className="btn btn-sm btn-outline-light" onClick={() => { if (npcId) onOpenDrawer(npcId); }} title="Open Character Drawer">Drawer</button> : null}
               </>
             ) : null}
 
