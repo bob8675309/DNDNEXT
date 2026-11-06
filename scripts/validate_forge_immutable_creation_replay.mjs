@@ -519,3 +519,58 @@ for(const token of ["ucggczovhmauhshvhusx","SUPABASE_SERVICE_ROLE_KEY","SERVICE_
  assert.ok(!warlockHelpers.includes(token) && !warlockStage.includes(token),
  "No live project id or secret embedded in disposable Warlock source");
 console.log("PASS STATIC J109–J116 source-original Warlock level-1 invocation count and catalog, true JWT v3 positive/negative, nonce, G/GI/I/C/S contract; full browser remains a separate gate.");
+
+const originalSpeciesLight=readFileSync("scripts/fixtures/forge_species_light_original_helpers_pg17.sql","utf8");
+const speciesLightFixture=readFileSync("scripts/fixtures/forge_species_light_positive_local_auth_pg17.sql","utf8");
+for(const [func,hash] of [
+ ["player_forge_best_casting_ability_v1","3dce158c3dfe14ff6776855b1ead5022"],
+ ["player_forge_json_spell_min_level_v1","c6770a82adc7ee3b79151262474b7aed"],
+ ["player_forge_species_spell_choice_limit_v1","c9bc6081a43c52c44c1cf192886456df"],
+ ["player_forge_trait_has_spell_v1","deb38940c6249808a39aeb2380e09c16"],
+ ["upsert_player_forge_source_magic_spell_v1","2a880d642809146678bd391304d9777c"]
+]){
+ assert.ok(originalSpeciesLight.includes("CREATE OR REPLACE FUNCTION private."+func+"("),
+  "Missing exact original live positive species-magic helper: "+func);
+ assert.ok(originalSpeciesLight.includes(hash)&&speciesLightFixture.includes(hash),
+  "Missing MD5 live original helper guard: "+func);
+}
+for(const token of [
+ "current_database()<>'postgres'",
+ "private.test_admins",
+ "public.create_player_character_v3(jsonb,jsonb,jsonb)",
+ "4c35eaab8dff7d3d15b64ed71881d4a6",
+ "ADD COLUMN uses_max integer",
+ "ADD COLUMN uses_remaining integer",
+ "ADD COLUMN recharge text",
+ "8a29f32a-0695-4aed-b968-9e1616c47a15",
+ "species:aasimar|XPHB",
+ "Light Bearer",
+ "{@spell Light|XPHB}",
+ "2b78bd2c-8d8f-4891-814d-a19631bb6b9f",
+ "private.player_forge_trait_has_spell_v1(v_trait,'Light')",
+ "NOTIFY pgrst,'reload schema'"
+])assert.ok(speciesLightFixture.includes(token),"Missing source-positive Aasimar fixture gate: "+token);
+for(let i=117;i<=124;i++)assert.ok(localAuth.includes("PASS J"+i),
+ "Missing genuine source-positive species JWT runtime contract J"+i);
+for(const token of [
+ "species-light-bearer",
+ "lightSourceGroup",
+ "source_type='species'",
+ "raw_payload->>'sourceOptionId'",
+ "observedCastingStat",
+ "KNOWN SOURCE GAP",
+ "15000",
+ "speciesAbortCounts",
+ "Fire Bolt is not granted by species feature Light Bearer",
+ "Species feature Light Bearer requires all 1",
+ "PASS LOCAL REAL GoTrue J00-J124"
+])assert.ok(localAuth.includes(token),"Missing source-magic acceptance assertion: "+token);
+for(const f of [
+ "forge_species_light_original_helpers_pg17.sql",
+ "forge_species_light_positive_local_auth_pg17.sql"
+])assert.ok(workflow.includes(f),"CI must re-run source-positive species test on path "+f);
+for(const unsafe of ["ucggczovhmauhshvhusx","SUPABASE_SERVICE_ROLE_KEY","SERVICE_ROLE_KEY"]){
+ assert.ok(!originalSpeciesLight.includes(unsafe)&&!speciesLightFixture.includes(unsafe),
+ "No production project ID or secret in source-positive species fixtures");
+}
+console.log("PASS STATIC J117–J124 original source species Light Bearer and five helper MD5s, real JWT positive/negative, nonce, deferred spell source/I/C/S, explicit casting ability release gap.");

@@ -1815,3 +1815,144 @@ assert.equal(getStock(warlockStock),"1");
 assert.equal(rowFingerprint("public.character_class_option_grant_instances","character_id='"+approvedWarlockId+"'"),warlockGiFingerprint);
 console.log("PASS J116 separate signed original Warlock Eldritch Mind Invocation mints one source-catalog grant + 9gp market I/C and consumes one stock; first Warlock unaffected");
 console.log("PASS LOCAL REAL GoTrue J00-J116: source-positive original level-1 XPHB Warlock Invocation GIs, prerequisites, atomic rollback, nonce and v3 market source. Full class spell/feature catalogs, real browser, 31 triggers still NOT covered.");
+
+
+
+// J117–J124: positive source-original XPHB Aasimar Light Bearer -> Light.
+// Source metadata is exact original Light Bearer trait text; original 5
+// helper bodies + source-magic deferred trigger are unmodified. The local
+// preferred-spell helper remains reduced, so this is NOT full spell-catalog
+// version parity or real browser acceptance.
+sqlFile("scripts/fixtures/forge_species_light_positive_local_auth_pg17.sql");
+const lightSpeciesId="8a29f32a-0695-4aed-b968-9e1616c47a15";
+const lightSpellId="2b78bd2c-8d8f-4891-814d-a19631bb6b9f";
+for(const [fn,hash] of [
+ ["player_forge_best_casting_ability_v1(jsonb,text[],text)","3dce158c3dfe14ff6776855b1ead5022"],
+ ["player_forge_json_spell_min_level_v1(jsonb,text,integer)","c6770a82adc7ee3b79151262474b7aed"],
+ ["player_forge_species_spell_choice_limit_v1(jsonb)","c9bc6081a43c52c44c1cf192886456df"],
+ ["player_forge_trait_has_spell_v1(jsonb,text)","deb38940c6249808a39aeb2380e09c16"],
+ ["upsert_player_forge_source_magic_spell_v1(uuid,uuid,text,text,text,text,integer,text,jsonb)","2a880d642809146678bd391304d9777c"]
+]){
+ assert.equal(sql("SELECT md5(pg_get_functiondef('private."+fn+"'::regprocedure))"),hash);
+}
+assert.equal(sql("SELECT count(*) FROM public.spells_catalog WHERE id='"+lightSpellId+"' AND level=0 AND source='XPHB'"),"1");
+console.log("PASS J117 original 5 source-magic helpers and exact Aasimar Light Bearer/Light XPHB source data installed after J116");
+
+const aasimarMerchantStock=id(9610);
+sql("INSERT INTO public.character_stock(id,character_id,qty,display_name,card_payload,price_gp,item_id) VALUES"
+ +"('"+aasimarMerchantStock+"','"+marketMerchant+"',3,'J118 Aasimar original market lantern',"
+ +"'{\"item_type\":\"gear\",\"item_rarity\":\"mundane\"}'::jsonb,5,'p13-aasimar-lantern')");
+const lightGroupKey="species-light-bearer";
+const lightSourceGroup=(spellId=lightSpellId,label="Light Bearer",ownerKey=lightSpeciesId,includeSpell=true)=>({
+ placement:"spells",ownerType:"species",ownerKey,label,
+ fields:{innateSpell:{
+  kind:"spell",
+  selections:includeSpell?[{
+    key:spellId,value:spellId,metadata:{spellId},label:"Light"
+  }]:[]
+ }}
+});
+const aasimarPayload=(name,nonce)=>{
+ const draft=JSON.parse(JSON.stringify(verifiedGrantPayload));
+ draft.name=name;draft.creation_request_id=nonce;
+ draft.sheet.species="Aasimar";
+ draft.sheet.meta={...draft.sheet.meta,speciesSource:"XPHB",speciesKey:"Aasimar"};
+ draft.sheet.sourceChoices={[lightGroupKey]:lightSourceGroup()};
+ draft.sheet.startingEquipmentSelections={
+  mode:"market",ruleset:"vanilla",backgroundId:id(9150),
+  marketMerchantId:marketMerchant,keepStartingGold:false,
+  marketPurchases:[{merchantId:marketMerchant,stockId:aasimarMerchantStock,
+    qty:1,itemId:"p13-aasimar-lantern",priceGp:5}]
+ };
+ return draft;
+};
+const validAasimar=aasimarPayload("J118 original Aasimar Light Bearer",id(9611));
+const lightCharacter=pass(await v3market(validAasimar),
+ "Genuine JWT source original Aasimar Light Bearer+starting-market");
+assert.equal(sql("SELECT count(*) FROM public.character_spells WHERE character_id='"+lightCharacter+"' AND spell_id='"+lightSpellId+"' AND source_type='species' AND source_key='"+lightGroupKey+"'"),"1");
+assert.equal(sql("SELECT coalesce(source_label,'') FROM public.character_spells WHERE character_id='"+lightCharacter+"' AND source_type='species'"),"Light Bearer");
+assert.equal(sql("SELECT known AND prepared AND always_available FROM public.character_spells WHERE character_id='"+lightCharacter+"' AND source_type='species'"),"t");
+assert.equal(sql("SELECT raw_payload->>'creator' FROM public.character_spells WHERE character_id='"+lightCharacter+"' AND source_type='species'"),"shared_character_forge_source_magic_v1");
+assert.equal(sql("SELECT raw_payload->>'sourceOwner' FROM public.character_spells WHERE character_id='"+lightCharacter+"' AND source_type='species'"),"species");
+assert.equal(sql("SELECT raw_payload->>'sourceOptionId' FROM public.character_spells WHERE character_id='"+lightCharacter+"' AND source_type='species'"),lightSpeciesId);
+assert.equal(sql("SELECT raw_payload->>'sourceFeature' FROM public.character_spells WHERE character_id='"+lightCharacter+"' AND source_type='species'"),"Light Bearer");
+assert.equal(sql("SELECT raw_payload->>'grantedAtLevel' FROM public.character_spells WHERE character_id='"+lightCharacter+"' AND source_type='species'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_spells WHERE character_id='"+lightCharacter+"' AND source_type='class'"),"0");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_type='character' AND owner_id='"+lightCharacter+"'"),"1");
+assert.equal(sql("SELECT copper_value FROM public.character_currency WHERE character_id='"+lightCharacter+"'"),"15000");
+assert.equal(getStock(aasimarMerchantStock),"2");
+assert.equal(sql("SELECT count(*) FROM public.character_option_grant_instances WHERE character_id='"+lightCharacter+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE character_id='"+lightCharacter+"'"),"1");
+// Source discrepancy: XPHB Light Bearer specifies Charisma; original materializer
+// only sets an automatic casting stat when trait includes all INT/WIS/CHA.
+// Do not hide this as a fully valid spellcasting stat result.
+const observedCastingStat=sql("SELECT coalesce(casting_stat,'<NULL>') FROM public.character_spells WHERE character_id='"+lightCharacter+"' AND source_type='species'");
+assert.equal(observedCastingStat,"<NULL>","If source casting-stat behavior changes, review original trait and update release-gate report");
+console.log("PASS J118 genuine signed Aasimar original source-magic handler materializes Light as species-owned, prepared/always available; original 5gp market I/S/C and feat G/GI survive. KNOWN SOURCE GAP: Light Bearer states Charisma but casting_stat is NULL");
+
+const speciesSpellFingerprint=sql("SELECT md5(coalesce(jsonb_agg(to_jsonb(t) ORDER BY spell_id,source_type,source_key)::text,'[]')) FROM public.character_spells t WHERE character_id='"+lightCharacter+"'");
+const speciesItemFingerprint=rowFingerprint("public.inventory_items","owner_id='"+lightCharacter+"'");
+const speciesCurrencyFingerprint=sql("SELECT md5(to_jsonb(c)::text) FROM public.character_currency c WHERE character_id='"+lightCharacter+"'");
+assert.equal(pass(await v3market(validAasimar),"source-Aasimar unchanged replay"),lightCharacter);
+assert.equal(sql("SELECT md5(coalesce(jsonb_agg(to_jsonb(t) ORDER BY spell_id,source_type,source_key)::text,'[]')) FROM public.character_spells t WHERE character_id='"+lightCharacter+"'"),speciesSpellFingerprint);
+assert.equal(rowFingerprint("public.inventory_items","owner_id='"+lightCharacter+"'"),speciesItemFingerprint);
+assert.equal(sql("SELECT md5(to_jsonb(c)::text) FROM public.character_currency c WHERE character_id='"+lightCharacter+"'"),speciesCurrencyFingerprint);
+assert.equal(getStock(aasimarMerchantStock),"2");
+const alteredLight=JSON.parse(JSON.stringify(validAasimar));
+alteredLight.sheet.sourceChoices[lightGroupKey].fields.innateSpell.selections[0]={
+ key:id(901),value:id(901),metadata:{spellId:id(901)},label:"Fire Bolt"
+};
+denied(await v3market(alteredLight),"22023","Changed original species source spell with same nonce");
+assert.equal(sql("SELECT count(*) FROM public.character_spells WHERE character_id='"+lightCharacter+"' AND source_type='species'"),"1");
+console.log("PASS J119 original v3 immutable source-magic replay inert on spells/I/C/S; altered source spell with same nonce rejected 22023");
+
+const speciesAbortCounts=()=>sql("SELECT jsonb_build_object("
+ +"'characters',(SELECT count(*) FROM public.characters),"
+ +"'nonce',(SELECT count(*) FROM private.player_creation_intent_reservations_v1),"
+ +"'sheets',(SELECT count(*) FROM public.character_sheets),"
+ +"'cp',(SELECT count(*) FROM public.character_progression),"
+ +"'events',(SELECT count(*) FROM public.character_level_events),"
+ +"'G',(SELECT count(*) FROM public.character_option_grants),"
+ +"'GI',(SELECT count(*) FROM public.character_option_grant_instances),"
+ +"'classGI',(SELECT count(*) FROM public.character_class_option_grant_instances),"
+ +"'spells',(SELECT count(*) FROM public.character_spells),"
+ +"'items',(SELECT count(*) FROM public.inventory_items),"
+ +"'currency',(SELECT count(*) FROM public.character_currency),"
+ +"'stock',(SELECT coalesce(sum(qty),0) FROM public.character_stock))::text");
+async function rejectSpecies(payload,originalMessage,tag){
+ const before=speciesAbortCounts(),stockBefore=getStock(aasimarMerchantStock);
+ const result=await v3market(payload);
+ assert.ok(result.error,tag+" unexpectedly succeeded");
+ assert.match(result.error.message||"",originalMessage,
+   tag+" did not reach original species source-magic handler");
+ assert.equal(speciesAbortCounts(),before,tag+" left partial source write");
+ assert.equal(getStock(aasimarMerchantStock),stockBefore);
+ assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+payload.creation_request_id+"'"),"0");
+}
+const mislabeledSpecies=aasimarPayload("J120 mismatch selected species",id(9612));
+mislabeledSpecies.sheet.species="Elf";
+await rejectSpecies(mislabeledSpecies,/Species source magic does not match the selected species/i,"J120");
+console.log("PASS J120 original species source-magic handler refuses selected Elf with Aasimar owner; nonce/spells/I/C/S rollback");
+
+const unknownSpecies=aasimarPayload("J121 unknown canonical species owner",id(9613));
+unknownSpecies.sheet.sourceChoices[lightGroupKey].ownerKey=id(9999);
+await rejectSpecies(unknownSpecies,/Species source magic does not reference a canonical species/i,"J121");
+console.log("PASS J121 original species source-magic handler rejects nonexistent canonical source owner; atomic rollback");
+
+const invalidTrait=aasimarPayload("J122 nonexistent source trait",id(9614));
+invalidTrait.sheet.sourceChoices[lightGroupKey].label="Unapproved Arcane Aptitude";
+await rejectSpecies(invalidTrait,/Species source magic feature Unapproved Arcane Aptitude was not found in the canonical species/i,"J122");
+console.log("PASS J122 original species source-magic handler rejects fake species feature, no spells/nonce/inventory leak");
+
+const invalidSpell=aasimarPayload("J123 unearned species cantrip",id(9615));
+invalidSpell.sheet.sourceChoices[lightGroupKey].fields.innateSpell.selections[0]={
+ key:id(901),value:id(901),metadata:{spellId:id(901)},label:"Fire Bolt"
+};
+await rejectSpecies(invalidSpell,/Fire Bolt is not granted by species feature Light Bearer/i,"J123");
+console.log("PASS J123 original source-magic handler denies spell not present in Aasimar Light Bearer canonical trait and rolls back all writes");
+
+const missingLight=aasimarPayload("J124 missing expected Light spell",id(9616));
+missingLight.sheet.sourceChoices[lightGroupKey].fields.innateSpell.selections=[];
+await rejectSpecies(missingLight,/Species feature Light Bearer requires all 1 currently granted spell\(s\)/i,"J124");
+console.log("PASS J124 original species source-magic handler enforces exactly one currently granted Light, no partial creation");
+console.log("PASS LOCAL REAL GoTrue J00-J124: original Aasimar Light Bearer species positive source spell and negative owner/trait/spell/required-count checks; original casting-stat gap observed; full preferred spell catalog and browser remain UNTESTED.");
