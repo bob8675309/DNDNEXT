@@ -29,3 +29,38 @@ jobs:
       - name: Assert agent/research previews are opted out by configuration
         run: |
           node --input-type=module -e "import {readFileSync} from 'node:fs'; import assert from 'node:assert/strict'; const c=JSON.parse(readFileSync('vercel.json','utf8')); for (const p of ['agent/**','research/**']) assert.equal(c.git?.deploymentEnabled?.[p], false, p); assert.equal(c.ignoreCommand, 'node scripts/vercel_ignore_build.mjs'); console.log('PASS agent/research Vercel git auto-deploy opt-out (config only)')"
+
+  forge-trigger-census:
+    name: Offline original Forge trigger coverage on held PR #324
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - name: Checkout review-only bot controller from this PR
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Checkout held Forge research without write credentials
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: research/forge-immutable-creation-replay-20261105
+          path: target
+          persist-credentials: false
+      - name: Verify source revisions, then produce free trigger report
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Agent controller SHA: $(git rev-parse HEAD)"
+          echo "Held Forge PR #324 SHA: $(git -C target rev-parse HEAD)"
+          node --check scripts/agents/forge_trigger_audit.mjs
+          node scripts/agents/forge_trigger_audit.mjs target
+      - name: Upload read-only coverage report (no API/model invocation)
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: forge-original-trigger-coverage-${{ github.run_id }}
+          path: |
+            research-agent-artifact/FORGE_TRIGGER_COVERAGE.md
+            research-agent-artifact/FORGE_TRIGGER_COVERAGE.json
+          if-no-files-found: warn
+          retention-days: 7

@@ -49,3 +49,9 @@ The **optional** `RUN_RESEARCH` mode can use that report to prepare a review-onl
 At the dated PR #324 review, original live table census was 19 progression + 4 sheets + 6 characters + 2 inventory. The then-current disposable Forge fixtures contained DDL for 12 of those original 31, leaving 19 original triggers not yet staged. Additional original grant-table triggers are separate and do not count toward these 31. A staged trigger is not proof that its branch, surrounding schema, transaction ordering, or all original RLS was exercised.
 
 This proposal does **not** add a paid API key, dispatch a workflow, install SQL, merge, deploy, or configure Vercel. After owner-reviewed approval/merge, run the free mode first, inspect the report, then optionally fund and dispatch one narrowly specified research attempt. Preserve the user's preview-deployment budget.
+
+## Proof without merging the research bot (2026-11-05 continuation)
+
+The free PR validator now has a second **pull-request-only** job that checks out the current held Forge research branch and runs the same 31-trigger static audit on the exact checked-out source. It prints the target commit SHA, fails closed if the dated original census is incomplete or fixture metadata mismatches, and uploads Markdown/JSON artifacts. This does not require merging the bot to `main`, any OpenAI API key, a paid invocation, database writes or a Vercel deployment.
+
+This is an audit of original trigger **DDL coverage**, not a source-body parity or signed JWT acceptance run. Follow the latest PR CI artifact rather than copying the older 7/31 historical status. The next single fixture candidate should be selected from that report and the live `pg_get_functiondef`/trigger metadata, preserving the exact source and staging only on held research.
