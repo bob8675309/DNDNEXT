@@ -50,6 +50,7 @@ on:
       - 'components/NpcPanel.js'
       - 'sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql'
       - 'scripts/test_forge_immutable_creation_replay_local_auth.mjs'
+      - 'docs/Forge_Seeded_Scenario_Runner_2026-11-06.md'
       - 'scripts/agents/forge_seeded_scenarios.mjs'
       - 'scripts/fixtures/forge_seeded_scenarios_v1.json'
       - 'scripts/validate_forge_seeded_scenarios.mjs'

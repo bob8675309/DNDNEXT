@@ -1,6 +1,18 @@
 # Forge seeded deterministic scenarios — first executable research slice
 
-**Decision:** 2026-11-06. **Status:** reviewed *implementation candidate*, NOT an accepted/executed real JWT result until new exact-head CI passes. Work branch `research/forge-seeded-scenarios-20261106`, based on held draft PR #324 at `f1a2c564046ab93a0bfa0732e3acc2179da9c064` (itself stacked on unmerged creator/privacy PR #321). Current `main` checkpoint when prepared: `79a6340c08e743e71e1072e40e6ba7204f735a29`. No production SQL, model, deployment or feature changes.
+**Decision:** 2026-11-06. **Status:** **VERIFIED IN DISPOSABLE REAL LOCAL JWT/PG17 TESTS** at exact source SHA `c2a52ac1bac4a164b1ee6d50f95bde228509f33c` via [run 42300851501](https://github.com/bob8675309/DNDNEXT/actions/runs/42300851501) (both jobs SUCCESS); not production, RLS or browser acceptance. Work branch `research/forge-seeded-scenarios-20261106`, based on held draft PR #324 at `f1a2c564046ab93a0bfa0732e3acc2179da9c064` (itself stacked on unmerged creator/privacy PR #321). Current `main` checkpoint when prepared: `79a6340c08e743e71e1072e40e6ba7204f735a29`. No production SQL, model, deployment or feature changes.
+
+## First independent acceptance receipt (2026-11-06)
+
+**Source:** `c2a52ac1bac4a164b1ee6d50f95bde228509f33c`. [Authenticated GoTrue/PG17 workflow 42300851501](https://github.com/bob8675309/DNDNEXT/actions/runs/42300851501) **SUCCESS** in both original source PG17 and genuine local JWT jobs. The log confirms J00–J153 first and then:
+
+- S001 `champion-xphb-v2`, seed 61021 — **PASS** signed-in source-qualified Fighter Champion, original class/subclass + grant/materialized item/currency persistence; same-ID replay inert; changed source denied `22023`; unknown fresh subclass atomically rolls back.
+- S002 same reviewed source v2 contract with seed 61022 — **PASS** an independent deterministic valid creation with the same canonical invariants; different nonce/name and no extra rows after replay.
+- S003 `champion-xphb-v3`, seed 61022 — **PASS** real signed original v3 to original v2 chain, identical replay, changed-source rejection and fresh invalid rollback.
+
+Static validator, including two separate Node invocations for seed stability, passed in both jobs. Read-only [trigger audit 42300851428](https://github.com/bob8675309/DNDNEXT/actions/runs/42300851428), [handoff 42300851417](https://github.com/bob8675309/DNDNEXT/actions/runs/42300851417), [Class 42300851414](https://github.com/bob8675309/DNDNEXT/actions/runs/42300851414), and [automated docs 42300801139](https://github.com/bob8675309/DNDNEXT/actions/runs/42300801139) passed. Sanitized JSON report is included in short-retention `forge-jwt-diagnostics-42300851501` artifact; GitHub logs show all three case receipts. No independently verified production browser acceptance or full RLS/catalog parity.
+
+**Follow-up after this receipt:** Because the new documentation evidence and narrow workflow docs-path trigger themselves change the HEAD, re-run exact-head CI and report that source SHA separately; do not borrow the earlier head's pass if a new executable regression occurs.
 
 ## What is executable
 
@@ -28,4 +40,4 @@
 
 This minimal runner only compiles predetermined, **source catalog-validated** existing real cases. It does not guess an edition, generate missing grants, perform SQL source migration, provide an AI NPC, write to production, or invoke a paid model. Expand only after signed-in exact-head acceptance: the next bounded slice should add one original missing deferred trigger (e.g. Forge starting-spell validator) as an explicitly hash-pinned, authentic scenario with its own receipt and retained fixture gates. Preserve separate held #317 CP/CS global lock research and #321 RLS.
 
-**Next gate:** inspect exact new CI jobs and artifact; if the live-auth job fails, diagnose the **actual** error, correct only fixture-interface/test assertions without editing original SQL bodies, and append factual results to `docs/HANDOFF_LOG.md` plus update `docs/ACTIVE_WORK.md`.
+**Next gate:** Verify the CI for the updated documentation/trigger-path commit at its exact SHA. Then perform read-only source fingerprint introspection of the original deferred player starting-spells validator, and add one focused hash-gated authenticated scenario without modifying source handler SQL. Append the next factual HANDOFF_LOG receipt and update ACTIVE_WORK in the same reviewed patch.
