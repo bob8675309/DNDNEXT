@@ -1290,3 +1290,161 @@ assert.equal(sql("SELECT count(*) FROM public.character_currency WHERE character
 assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_type='character' AND owner_id='"+recoveredOwner+"'"),"1");
 console.log("PASS J84 original Forge J79 23514 is causally attributable to obsolete owner CHECK; scratch-only reversible schema control, original deferred/G+I source remains unchanged; production NEVER mutated");
 console.log("PASS LOCAL REAL GoTrue J00-J84: original JWT Forge creation / real deferred COMMIT / immutable replay, source inventory handler parity, and legacy NOT VALID owner CHECK bug proven in disposable PG17 (limited trigger/RLS coverage; no production fix).");
+
+
+
+// J85–J93 review-only inventory ownership release security gates.
+// The SOURCE owner CHECK bug is established in J78–J84. Now replay the actual
+// live inventory RLS role predicates with real GoTrue JWTs before/after a
+// combined RLS+constraint candidate, still in DISPOSABLE PG17 only.
+sqlFile("scripts/fixtures/forge_inventory_policy_source_local_auth_pg17.sql");
+const invApi=(who)=>who.client.from("inventory_items");
+const invFixture=(key, ownerType, ownerId, userId)=>({
+ item_id:key,item_name:key,item_type:"gear",item_rarity:"mundane",
+ card_payload:{},owner_type:ownerType,owner_id:ownerId,user_id:userId
+});
+const beforeDirect=sql("SELECT count(*) FROM public.inventory_items WHERE item_id LIKE 'p13-j8%-test-%'");
+assert.equal(beforeDirect,"0");
+console.log("PASS J85 four source-live inventory RLS policies and genuine authenticated direct-DML grants installed in isolated GoTrue PG17");
+
+const forgedKey="p13-j86-test-forged-foreign-character";
+const forgedPayload=invFixture(forgedKey,"character",otherOwner,uid("PLAYER"));
+const originalBlocked=await invApi(people.PLAYER).insert(forgedPayload).select("id");
+assert.ok(originalBlocked.error,"Old live CHECK must still block forged character owner before scratch removal");
+assert.equal(originalBlocked.error.code,"23514");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE item_id='"+forgedKey+"'"),"0");
+sql("ALTER TABLE public.inventory_items DROP CONSTRAINT inventory_items_owner_type_chk");
+const newDirect=await invApi(people.PLAYER).insert(forgedPayload).select("id");
+assert.ifError(newDirect.error);
+assert.equal(newDirect.data?.length,1);
+const illegalCharRow=newDirect.data[0].id;
+assert.equal(sql("SELECT owner_id FROM public.inventory_items WHERE id='"+illegalCharRow+"'"),otherOwner);
+assert.equal(sql("SELECT user_id::text FROM public.inventory_items WHERE id='"+illegalCharRow+"'"),uid("PLAYER"));
+console.log("PASS J86 UNMODIFIED live-style direct INSERT RLS permits signed user to mint item owned by an unrelated character once obsolete CHECK removed; original source gap reproduced in disposable PG17");
+
+// Verify BOTH INSERT and UPDATE routes need protection. This fresh item is
+// player-owned and available to the signed-in owner before candidate change.
+const playerTestKey="p13-j87-test-original-player-item";
+const playerTest=await invApi(people.PLAYER).insert(
+ invFixture(playerTestKey,"player",uid("PLAYER"),uid("PLAYER"))).select("id");
+assert.ifError(playerTest.error);
+assert.equal(playerTest.data?.length,1);
+const playerItem=playerTest.data[0].id;
+const uncheckedConvert=await invApi(people.PLAYER).update({
+ owner_type:"character",owner_id:otherOwner
+}).eq("id",playerItem).select("id");
+assert.ifError(uncheckedConvert.error);
+assert.equal(uncheckedConvert.data?.length,1);
+assert.equal(sql("SELECT owner_type FROM public.inventory_items WHERE id='"+playerItem+"'"),"character");
+console.log("PASS J87 pre-candidate source UPDATE policy also allows user-owned I -> unrelated character-owned I laundering, independent of direct INSERT");
+
+// Remove only test-created unauthorized rows, then restore exact live checks
+// before applying the review candidate. All production records are untouched.
+sql("DELETE FROM public.inventory_items WHERE id IN ('"+illegalCharRow+"','"+playerItem+"')");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE item_id LIKE 'p13-j8%-test-%'"),"0");
+sql("ALTER TABLE public.inventory_items ADD CONSTRAINT inventory_items_owner_type_chk"
+ +" CHECK ((owner_type = ANY (ARRAY['player'::text,'npc'::text,'merchant'::text]))) NOT VALID");
+assert.equal(sql("SELECT count(*) FROM pg_constraint WHERE conrelid='public.inventory_items'::regclass"
+ +" AND conname='inventory_items_owner_type_chk' AND NOT convalidated"),"1");
+sqlFile("sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql");
+assert.equal(sql("SELECT count(*) FROM pg_constraint WHERE conrelid='public.inventory_items'::regclass"
+ +" AND conname='inventory_items_owner_type_chk'"),"0");
+assert.equal(sql("SELECT count(*) FROM pg_constraint WHERE conrelid='public.inventory_items'::regclass"
+ +" AND conname='inventory_items_owner_type_check' AND convalidated"),"1");
+assert.equal(sql("SELECT count(*) FROM pg_policy WHERE polrelid='public.inventory_items'::regclass"),"4");
+console.log("PASS J88 guarded single-transaction review-only candidate updates all four RLS policies and drops only old CHECK; newer validated CHECK remains intact");
+
+// Direct client attempts can no longer create or launder a character item.
+const directForbidden=await invApi(people.PLAYER).insert(forgedPayload).select("id");
+assert.ok(directForbidden.error,"Hardened RLS allowed direct forged character item INSERT");
+assert.equal(directForbidden.error.code,"42501");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE item_id='"+forgedKey+"'"),"0");
+const legitimate=await invApi(people.PLAYER).insert(
+ invFixture(playerTestKey,"player",uid("PLAYER"),uid("PLAYER"))).select("id");
+assert.ifError(legitimate.error);
+const playerItemAfter=legitimate.data[0].id;
+const blockedConversion=await invApi(people.PLAYER).update({
+ owner_type:"character",owner_id:otherOwner
+}).eq("id",playerItemAfter).select("id");
+assert.ok(blockedConversion.error,"Hardened RLS allowed player->character UPDATE");
+assert.equal(blockedConversion.error.code,"42501");
+assert.equal(sql("SELECT owner_type FROM public.inventory_items WHERE id='"+playerItemAfter+"'"),"player");
+console.log("PASS J89 hardened four-policy candidate blocks real signed non-admin direct character-owned I INSERT and player->character UPDATE without altering legitimate player row");
+
+// Unmodified original privileged creation + deferred equipment materializer
+// must STILL work, proving hardening does not break authoritative Forge.
+const secureForge=JSON.parse(JSON.stringify(verifiedGrantPayload));
+secureForge.name="J90 source original Forge under DML RLS hardening";
+secureForge.creation_request_id=id(9390);
+const secureCharacter=pass(await call2(people.PLAYER.client,secureForge),
+ "original authentic source Forge feat and deferred gear after inventory DML RLS hardening");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_type='character' AND owner_id='"+secureCharacter+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_currency WHERE character_id='"+secureCharacter+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_option_grant_instances WHERE character_id='"+secureCharacter+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_option_grants WHERE character_id='"+secureCharacter+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_level_events WHERE character_id='"+secureCharacter+"'"),"1");
+assert.equal(sql("SELECT granted_by::text FROM public.character_option_grants WHERE character_id='"+secureCharacter+"'"),uid("PLAYER"));
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE character_id='"+secureCharacter+"'"),"1");
+assert.equal(pass(await call2(people.PLAYER.client,secureForge),
+ "same source nonce under hardened inventory policy"),secureCharacter);
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_id='"+secureCharacter+"'"),"1");
+console.log("PASS J90 unchanged privileged source Forge player feat+deferred I/C creation and nonce replay work with all four hardened direct-table RLS policies");
+
+// Direct char-owned UPDATE/DELETE require source-authorized RPC or Admin:
+// non-admin client cannot change its ownership to player or delete it.
+const secureItemId=sql("SELECT id::text FROM public.inventory_items WHERE owner_type='character' AND owner_id='"+secureCharacter+"'");
+const stolen=await invApi(people.PLAYER).update({
+ owner_type:"player",owner_id:uid("PLAYER")
+}).eq("id",secureItemId).select("id");
+assert.ifError(stolen.error); // zero selected when UPDATE USING denies source row
+assert.equal(stolen.data?.length,0);
+const discarded=await invApi(people.PLAYER).delete().eq("id",secureItemId).select("id");
+assert.ifError(discarded.error);
+assert.equal(discarded.data?.length,0);
+assert.equal(sql("SELECT owner_type FROM public.inventory_items WHERE id='"+secureItemId+"'"),"character");
+const visibleBefore=await invApi(people.PLAYER).select("id").eq("id",secureItemId);
+assert.ifError(visibleBefore.error);
+assert.equal(visibleBefore.data?.length,1,"Original current owner must see char item before revoked");
+sql("UPDATE public.character_permissions SET can_edit=false,can_inventory=false"
+ +" WHERE character_id='"+secureCharacter+"' AND user_id='"+uid("PLAYER")+"'");
+const revokedInventory=await invApi(people.PLAYER).select("id").eq("id",secureItemId);
+assert.ifError(revokedInventory.error);
+assert.equal(revokedInventory.data?.length,0,"Revoked original creator can still read private character inventory directly");
+sql("UPDATE public.character_permissions SET can_inventory=true"
+ +" WHERE character_id='"+secureCharacter+"' AND user_id='"+uid("PLAYER")+"'");
+const visibleAgain=await invApi(people.PLAYER).select("id").eq("id",secureItemId);
+assert.ifError(visibleAgain.error);
+assert.equal(visibleAgain.data?.length,1);
+console.log("PASS J91 signed user cannot launder/delete character I; original source current inventory permission revocation immediately hides char I and subsequent authorized access works");
+
+// Existing ordinary player-owned direct CRUD remains functional after RLS
+// patch and its ownership remains the signed-in user's own account.
+const playerPatch=await invApi(people.PLAYER).update({
+ item_name:"p13-j92-test-player-updated"
+}).eq("id",playerItemAfter).select("id");
+assert.ifError(playerPatch.error);assert.equal(playerPatch.data?.length,1);
+const normalDelete=await invApi(people.PLAYER).delete()
+ .eq("id",playerItemAfter).select("id");
+assert.ifError(normalDelete.error);assert.equal(normalDelete.data?.length,1);
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE id='"+playerItemAfter+"'"),"0");
+const anonymousAttempt=await invApi({client:makeClient()}).insert(
+ invFixture("p13-j92-test-unsigned","player",uid("PLAYER"),uid("PLAYER"))).select("id");
+assert.ok(anonymousAttempt.error,"Anonymous inventory insert bypassed role");
+console.log("PASS J92 real signed owner can still direct create/modify/delete own player-owned item; anonymous write denied");
+
+// GM/Admin direct CHARACTER assignment remains allowed by the *existing*
+// Admin predicate, an explicit operator authority preserved by this candidate.
+const adminAssigned=await invApi(people.ADMIN).insert(invFixture(
+ "p13-j93-test-admin-character-assign","character",otherOwner,null)).select("id");
+assert.ifError(adminAssigned.error);
+assert.equal(adminAssigned.data?.length,1);
+const gmDirectId=adminAssigned.data[0].id;
+assert.equal(sql("SELECT owner_type FROM public.inventory_items WHERE id='"+gmDirectId+"'"),"character");
+assert.equal(sql("SELECT user_id IS NULL FROM public.inventory_items WHERE id='"+gmDirectId+"'"),"t");
+sql("DELETE FROM public.inventory_items WHERE id='"+gmDirectId+"'");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE item_id LIKE 'p13-j8%-test-%'"),"0");
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.materialize_player_forge_starting_equipment_v1(uuid)'::regprocedure))"),"653e1b9d7cc47dcff2cef33a674b97f4");
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.can_access_character_v1(uuid,text)'::regprocedure))"),"97b5e6b059e6467e24c4283fe420c83e");
+assert.equal(sql("SELECT count(*) FROM pg_policy WHERE polrelid='public.inventory_items'::regclass"),"4");
+console.log("PASS J93 original Admin direct character assignment still allowed; exact original source functions intact, no additional privileges/policies/table writes retained");
+console.log("PASS LOCAL REAL GoTrue J00-J93: owner CHECK 23514 causal fix plus signed-in original RLS security gap and four-policy review candidate in disposable PG17. Full UI / original 31 triggers / production release remain PENDING.");

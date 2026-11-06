@@ -53,6 +53,7 @@
       ],
       "last_checked": "2026-11-05",
       "open_gaps": [
+        "2026-11-05: verified J78–J84 authenticated Forge gear COMMIT 23514 caused by obsolete inventory owner CHECK. J85–J93 pending true-JWT review-only combined four RLS policy + obsolete CHECK candidate on #324; no production migration, full 31 original triggers or browser acceptance. docs/Forge_Character_Inventory_Owner_Check_RLS_Release_Review_2026-11-05.md",
         "2026-11-05 J78-J84 candidate real JWT original v2 Forge creation+deferred COMMIT with conflicting live inventory owner CHECKs: obsolete NOT VALID inventory_items_owner_type_chk rejects new owner_type=character; staged negative 23514 + scratch-only remove/re-add cause-control; CI PENDING; full original triggers/RLS/browser still missing. docs/Forge_Original_Deferred_Creation_Owner_Check_2026-11-05.md",
         "Browser acceptance must be tied to specific scoped flows; not blanket proof of all source traits."
       ],
@@ -149,6 +150,7 @@
         "owner_approval": "not-claimed-from-source-or-ci"
       },
       "open_gaps": [
+        "2026-11-05: original merchant buy remains user-owned I; proposed character-owner RLS/constraint change must regress player buy/sell, NPC/merchant transfer, town crafting and admin assignment. Signed J85–J93 partial tests pending. No production change.",
         "2026-11-05: source-original merchant buyer I is user-owned vs Forge deferred I is character-owned; old overlapping NOT VALID CHECK blocks new character-owned rows, not necessarily merchant sales. J78-J84 scratch test pending; no global lock-order claim.",
         "Avoid changes to craft price formulas while refactoring combat or item-effect resolution."
       ],
@@ -434,6 +436,7 @@
         "owner_approval": "not-claimed-from-source-or-ci"
       },
       "open_gaps": [
+        "2026-11-05: releasing character-owned inventory by standalone DROP CHECK would expose existing direct auth inventory INSERT/UPDATE and user_id-only SELECT/DELETE to arbitrary or revoked character ownership. Four-policy combined guard candidate and original source current-access helper test J85–J93 pending CI; no production change. docs/Forge_Character_Inventory_Owner_Check_RLS_Release_Review_2026-11-05.md",
         "2026-11-05 read-only: live inventory_items has two overlapping CHECKs; old NOT VALID excludes 'character' despite validated newer CHECK permitting it. Source original Forge deferred equipment requires 'character'. J78-J84 authentic JWT full creation test staged on #324, CI pending; no production constraint change authorized.",
         "Authorize or revoke each function only after caller, RLS, and intended access review."
       ],

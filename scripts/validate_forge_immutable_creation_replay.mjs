@@ -297,3 +297,56 @@ assert.ok(localAuth.includes("gmNoGearPayload") &&
  !localAuth.includes('noGearPayload=fighter('),
  "J80 control must use valid original GM non-Forge NPC RPC, not invalid unselected Forge package");
 console.log("PASS STATIC J78-J84 source-original inventory handlers, exact old/new live owner-type CHECKs, signed creator deferred-COMMIT failure/clean rollback/scratch-only cause-control. DATABASE ACCEPTANCE MUST BE SEPARATE.");
+
+
+const ownerPermissionOriginal=readFileSync("scripts/fixtures/forge_inventory_access_original_pg17.sql","utf8");
+const ownerLiveRls=readFileSync("scripts/fixtures/forge_inventory_policy_source_local_auth_pg17.sql","utf8");
+const ownerReviewCandidate=readFileSync("sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql","utf8");
+assert.ok(ownerPermissionOriginal.includes("CREATE OR REPLACE FUNCTION private.can_access_character_v1(") &&
+ ownerPermissionOriginal.includes("97b5e6b059e6467e24c4283fe420c83e"),
+ "J85+ source-original character inventory access helper fingerprint required");
+for(const token of [
+ "current_database()<>'postgres'",
+ "inventory_items_owner_type_chk",
+ "private.test_admins",
+ "ALTER TABLE public.inventory_items ENABLE ROW LEVEL SECURITY",
+ "CREATE POLICY inventory_items_insert_owner_or_admin",
+ "CREATE POLICY inventory_items_select_owner_or_admin",
+ "CREATE POLICY inventory_items_update_owner_or_admin",
+ "CREATE POLICY inventory_items_delete_owner_or_admin",
+ "GRANT SELECT,INSERT,UPDATE,DELETE ON public.inventory_items TO authenticated",
+ "GRANT EXECUTE ON FUNCTION private.can_access_character_v1(uuid,text) TO authenticated",
+ "NOTIFY pgrst,'reload schema'"
+])assert.ok(ownerLiveRls.includes(token),"Missing original reduced live policy fixture "+token);
+for(const token of [
+ "NOT A MIGRATION","BEGIN;","COMMIT;","lock_timeout = '2s'",
+ "DO $preflight$","DO $postflight$",
+ "inventory_items_owner_type_chk","DROP CONSTRAINT inventory_items_owner_type_chk",
+ "private.can_access_character_v1(owner_id::uuid, 'inventory')",
+ "owner_id ~* '^[0-9a-f]{8}",
+ "ALTER POLICY inventory_items_insert_owner_or_admin",
+ "ALTER POLICY inventory_items_update_owner_or_admin",
+ "ALTER POLICY inventory_items_delete_owner_or_admin",
+ "ALTER POLICY inventory_items_select_owner_or_admin",
+ "owner_type IS DISTINCT FROM 'character'",
+ "97b5e6b059e6467e24c4283fe420c83e",
+ "653e1b9d7cc47dcff2cef33a674b97f4"
+])assert.ok(ownerReviewCandidate.includes(token),"Missing review candidate release guard "+token);
+for(const token of [
+ "PASS J85","PASS J86","PASS J87","PASS J88","PASS J89",
+ "PASS J90","PASS J91","PASS J92","PASS J93",
+ "sqlFile(\"sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql\")",
+ "public.inventory_items WHERE id","revokedInventory",
+ "directForbidden","blockedConversion","secureForge",
+ "adminAssigned","PASS LOCAL REAL GoTrue J00-J93"
+])assert.ok(localAuth.includes(token),"Missing signed-in RLS acceptance "+token);
+for(const path of [
+ "forge_inventory_access_original_pg17.sql",
+ "forge_inventory_policy_source_local_auth_pg17.sql",
+ "20261105_inventory_character_owner_constraint_and_dml_review_v1.sql"
+])assert.ok(workflow.includes(path),"CI must follow owner security fixture "+path);
+for(const unsafe of ["ucggczovhmauhshvhusx","SUPABASE_SERVICE_ROLE_KEY","SERVICE_ROLE_KEY"]){
+ assert.ok(!ownerReviewCandidate.includes(unsafe)&&!ownerLiveRls.includes(unsafe)&&
+ !ownerPermissionOriginal.includes(unsafe),"Forbidden production project or API key "+unsafe);
+}
+console.log("PASS STATIC J85-J93 exact source character authorization helper, live four RLS policies, guarded combined owner CHECK and policy review SQL, original JWT insert/update/read/revocation/Admin and creation checks (runtime separate).");

@@ -1,5 +1,8 @@
 # J78–J84 — Original Forge creation / deferred COMMIT under conflicting inventory owner CHECKs
 
+> **Accepted since preparation:** [CI 42101294746](https://github.com/bob8675309/DNDNEXT/actions/runs/42101294746) at exact code `293986cc88d328e9d2dda8d4bcd4f8c5be3a5558` **PASSED genuine JWT J78–J84 and 3/3 workflows**. The historical text below preserves candidate-at-writing status. New release review discovered **direct inventory RLS authorizations must be hardened with the obsolete CHECK removal**; see [combined security review](Forge_Character_Inventory_Owner_Check_RLS_Release_Review_2026-11-05.md). No production change.
+
+
 **2026-11-05 research-only, held draft PR #324 stacked on #321.** This document was prepared before the new branch-head GoTrue/PostgreSQL 17 run. **J78–J84 are CANDIDATE, NOT PASS until exact-head CI logs confirm them.** These tests must never run on the live DnDWeb instance. No release permission is implied.
 
 ## Production facts verified read-only
