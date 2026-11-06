@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/forge-immutable-creation-replay-20261105` |
-| Exact source commit represented by this archive snapshot | `2cb408c784b2a46699eca82574eeeb4dffb1562a` |
+| Exact source commit represented by this archive snapshot | `3a95cf24615a231564eeff20586b1a813cb765ea` |
 | Compared with | `51c351a142d03378dff8e47e05182afe21a15622` (main comparison base) |
-| Last source commit title | ci(forge): enable free source-linked docs archive + current authored handoff |
-| Files changed relative to main | 85 (61 non-docs; 24 docs) |
-| Last source commit | 8 files (3 non-docs; 5 authored docs) |
+| Last source commit title | ci(forge): mirror zero-cost project-health snapshot and prototype Work-on-demand policy |
+| Files changed relative to main | 87 (63 non-docs; 24 docs) |
+| Last source commit | 8 files (4 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
 
@@ -20,10 +20,10 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/research-docs-maintenance.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/Legacy_PHB_Optional_Content_Design_2026-11-06.md`
 - `docs/README.md`
 - `docs/Research_Docs_Maintenance_2026-11-06.md`
-- `scripts/agents/research_docs_maintainer.mjs`
+- `scripts/agents/project_health.mjs`
+- `scripts/agents/validate_project_health.mjs`
 - `scripts/agents/validate_research_docs_maintainer.mjs`
 
 ## Research-branch change inventory versus main
@@ -61,7 +61,9 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/agents/forge_trigger_acceptance_ledger.mjs`
 - `scripts/agents/forge_trigger_acceptance_receipts.json`
 - `scripts/agents/forge_trigger_audit.mjs`
+- `scripts/agents/project_health.mjs`
 - `scripts/agents/research_docs_maintainer.mjs`
+- `scripts/agents/validate_project_health.mjs`
 - `scripts/agents/validate_research_docs_maintainer.mjs`
 - `scripts/fixtures/forge_characters_portrait_sync_local_auth_pg17.sql`
 - `scripts/fixtures/forge_characters_portrait_sync_original_pg17.sql`
@@ -76,9 +78,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/fixtures/forge_feat_materializer_discriminators_original_pg17.sql`
 - `scripts/fixtures/forge_feat_materializer_local_auth_extension_pg17.sql`
 - `scripts/fixtures/forge_feat_materializer_original_pg17.sql`
-- `scripts/fixtures/forge_gi_cp_cs_local_jwt_race_pg17.sql`
-- `scripts/fixtures/forge_high_risk_original_progression_triggers_pg17.sql`
-- … 35 more
+- … 37 more
 
 ## Forge source and authenticated evidence (branch-local only)
 
