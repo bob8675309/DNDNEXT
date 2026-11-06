@@ -17,6 +17,14 @@
       "actionsRunId": 42165452281,
       "tests": "J133-J141",
       "scope": "Original active/inactive library matching, path priority, real GoTrue; reduced catalog/editor RLS."
+    },
+    {
+      "trigger": "character_progression_apply_forge_subclass_v1",
+      "sourceMd5": "273be29420a7274d997642e302604cb7",
+      "testedHead": "29d8700ead5db3a7f2292aa6f9be8eb3b859471c",
+      "actionsRunId": 42223567299,
+      "tests": "J142-J153",
+      "scope": "Original BEFORE INSERT subclass choice; genuine signed v2/v3 JWT, explicit XPHB/PHB, level-3 denial, rollback/replay. Reduced Fighter catalog/RLS. Source-omitted Champion selected PHB in fixture; 2024 source precedence unresolved."
     }
   ]
 }
