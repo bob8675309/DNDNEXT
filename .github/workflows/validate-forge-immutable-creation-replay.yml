@@ -31,6 +31,8 @@ on:
       - 'scripts/fixtures/forge_v3_market_source_local_auth_extension_pg17.sql'
       - 'scripts/fixtures/forge_high_risk_original_progression_triggers_pg17.sql'
       - 'scripts/fixtures/forge_high_risk_progression_local_auth_pg17.sql'
+      - 'scripts/fixtures/forge_warlock_invocation_original_slot_helpers_pg17.sql'
+      - 'scripts/fixtures/forge_warlock_invocation_positive_local_auth_pg17.sql'
       - 'scripts/validate_forge_inventory_ui_release_contract.mjs'
       - 'components/NewNpcModalV3.js'
       - 'components/NpcForgeEquipmentStep.js'

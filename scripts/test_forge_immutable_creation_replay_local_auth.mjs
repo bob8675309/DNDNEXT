@@ -1676,3 +1676,142 @@ assert.equal(getStock(extraStock),"1");
 assert.equal(sql("SELECT count(*) FROM public.character_class_option_grant_instances"),"0");
 console.log("PASS J108 immutable original v2/v3 replay with three additional source triggers remains inert; no duplicate source-owned G/GI/I/C, no Warlock instances minted");
 console.log("PASS LOCAL REAL GoTrue J00-J108: three original omitted deferred trigger handlers staged, valid Fighter v2/v3 and negative misowned class/source magic source checks; actual Warlock and positive species/feat source magic still NOT COVERED.");
+
+
+
+// J109–J116 positive source-XPHB Warlock invocation creation through actual
+// signed creator RPC and original deferred CP class-option handler.
+// Original live Warlock class, source option keys, and exact slot math.
+// Reduced source catalog: NOT complete Warlock class spells/feature grammar.
+sqlFile("scripts/fixtures/forge_warlock_invocation_positive_local_auth_pg17.sql");
+assert.equal(sql("SELECT private.xphb_warlock_invocation_count_v1(1)"),"1");
+assert.equal(sql("SELECT private.xphb_warlock_invocation_slot_level_v1(1)"),"1");
+console.log("PASS J109 source XPHB Warlock level 1 original Invocation slot and unchanged catalogs/helpers installed");
+
+const warlockInvocationSlot=(optionKey,optionName)=>({
+ placement:"class",ownerType:"class-option",ownerKey:"warlock",
+ label:"Eldritch Invocation",level:1,
+ metadata:{family:"eldritch-invocation",slot:1,acquisitionLevel:1},
+ fields:{invocation:{kind:"option",selections:[{
+   key:optionKey,name:optionName,source:"XPHB"
+ }]}}
+});
+const warlockInvocationKey="warlock-invocation-slot-1";
+const armorOfShadowsKey="optional-feature:armor-of-shadows|XPHB";
+const eldritchMindKey="optional-feature:eldritch-mind|XPHB";
+const devilsSightKey="optional-feature:devils-sight|XPHB";
+const warlockStock=id(9520);
+sql("INSERT INTO public.character_stock(id,character_id,qty,display_name,card_payload,price_gp,item_id) VALUES"
+ +"('"+warlockStock+"','"+marketMerchant+"',3,'J109 Warlock source merchant torch',"
+ +"'{\"item_type\":\"gear\",\"item_rarity\":\"mundane\"}'::jsonb,9,'p13-warlock-torch')");
+const warlockPayload=(name,nonce,optionKey=armorOfShadowsKey,optionName="Armor of Shadows")=>{
+ const draft=JSON.parse(JSON.stringify(verifiedGrantPayload));
+ draft.name=name;draft.creation_request_id=nonce;
+ draft.sheet.classKey="warlock";
+ draft.sheet.classFeatureChoices={};
+ draft.sheet.classFeatureChoiceSummary=[];
+ draft.sheet.sourceChoices={
+  [warlockInvocationKey]:warlockInvocationSlot(optionKey,optionName)
+ };
+ draft.sheet.startingEquipmentSelections={
+  mode:"market",ruleset:"vanilla",backgroundId:id(9150),
+  marketMerchantId:marketMerchant,keepStartingGold:false,
+  marketPurchases:[{
+    merchantId:marketMerchant,stockId:warlockStock,qty:1,
+    itemId:"p13-warlock-torch",priceGp:9
+  }]
+ };
+ return draft;
+};
+const invocationSourceBefore=sql("SELECT count(*) FROM public.character_class_option_grant_instances");
+const approvedWarlock=warlockPayload("J110 real XPHB Warlock Armor of Shadows",id(9521));
+const approvedWarlockId=pass(await v3market(approvedWarlock),
+ "Source-original signed Warlock level-1 Armor of Shadows + market creator");
+assert.equal(sql("SELECT cc.class_key FROM public.character_progression cp JOIN public.class_catalog cc ON cc.id=cp.class_id WHERE cp.character_id='"+approvedWarlockId+"'"),"warlock");
+assert.equal(sql("SELECT count(*) FROM public.character_class_option_grant_instances WHERE character_id='"+approvedWarlockId+"'"),"1");
+assert.equal(sql("SELECT instance_key FROM public.character_class_option_grant_instances WHERE character_id='"+approvedWarlockId+"'"),warlockInvocationKey);
+assert.equal(sql("SELECT option_catalog_id::text FROM public.character_class_option_grant_instances WHERE character_id='"+approvedWarlockId+"'"),"3abe1beb-5669-46a8-9743-49a47b8de126");
+assert.equal(sql("SELECT acquired_level FROM public.character_class_option_grant_instances WHERE character_id='"+approvedWarlockId+"'"),"1");
+assert.equal(sql("SELECT choices::text FROM public.character_class_option_grant_instances WHERE character_id='"+approvedWarlockId+"'"),"{}");
+assert.equal(sql("SELECT metadata->>'family' FROM public.character_class_option_grant_instances WHERE character_id='"+approvedWarlockId+"'"),"eldritch-invocation");
+assert.equal(sql("SELECT count(*) FROM public.character_option_grant_instances WHERE character_id='"+approvedWarlockId+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_option_grants WHERE character_id='"+approvedWarlockId+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_type='character' AND owner_id='"+approvedWarlockId+"'"),"1");
+assert.equal(sql("SELECT copper_value FROM public.character_currency WHERE character_id='"+approvedWarlockId+"'"),"9100");
+assert.equal(sql("SELECT source_breakdown->>'classMarketCopper' FROM public.character_currency WHERE character_id='"+approvedWarlockId+"'"),"10000");
+assert.equal(getStock(warlockStock),"2");
+assert.equal(sql("SELECT count(*) FROM public.character_level_events WHERE character_id='"+approvedWarlockId+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE character_id='"+approvedWarlockId+"'"),"1");
+console.log("PASS J110 original signed Warlock v3 source Armor of Shadows Invocation minted ONE real class-option grant; Lucky G/GI, 9gp I, 100gp Warlock cash, 91gp balance, S=2, one event/nonce");
+
+const warlockGiFingerprint=rowFingerprint("public.character_class_option_grant_instances","character_id='"+approvedWarlockId+"'");
+const warlockInvFingerprint=rowFingerprint("public.inventory_items","owner_id='"+approvedWarlockId+"'");
+const warlockCurrencyFingerprint=sql("SELECT md5(to_jsonb(c)::text) FROM public.character_currency c WHERE character_id='"+approvedWarlockId+"'");
+assert.equal(pass(await v3market(approvedWarlock),"Warlock same-nonce v3 replay"),approvedWarlockId);
+assert.equal(rowFingerprint("public.character_class_option_grant_instances","character_id='"+approvedWarlockId+"'"),warlockGiFingerprint);
+assert.equal(rowFingerprint("public.inventory_items","owner_id='"+approvedWarlockId+"'"),warlockInvFingerprint);
+assert.equal(sql("SELECT md5(to_jsonb(c)::text) FROM public.character_currency c WHERE character_id='"+approvedWarlockId+"'"),warlockCurrencyFingerprint);
+assert.equal(getStock(warlockStock),"2");
+const alteredOption=JSON.parse(JSON.stringify(approvedWarlock));
+alteredOption.sheet.sourceChoices[warlockInvocationKey].fields.invocation.selections[0]={
+ key:eldritchMindKey,name:"Eldritch Mind",source:"XPHB"
+};
+denied(await v3market(alteredOption),"22023",
+ "Changing Warlock Invocation with same original nonce must be rejected before grant write");
+assert.equal(sql("SELECT count(*) FROM public.character_class_option_grant_instances WHERE character_id='"+approvedWarlockId+"'"),"1");
+console.log("PASS J111 immutable Warlock v3 same nonce replay is inert on class GI/I/C/S; changed Invocation same-nonce rejects 22023");
+
+const warlockCounts=()=>sql("SELECT jsonb_build_object("
+ +"'characters',(SELECT count(*) FROM public.characters),"
+ +"'nonce',(SELECT count(*) FROM private.player_creation_intent_reservations_v1),"
+ +"'sheets',(SELECT count(*) FROM public.character_sheets),"
+ +"'cp',(SELECT count(*) FROM public.character_progression),"
+ +"'events',(SELECT count(*) FROM public.character_level_events),"
+ +"'G',(SELECT count(*) FROM public.character_option_grants),"
+ +"'GI',(SELECT count(*) FROM public.character_option_grant_instances),"
+ +"'classGI',(SELECT count(*) FROM public.character_class_option_grant_instances),"
+ +"'items',(SELECT count(*) FROM public.inventory_items),"
+ +"'currency',(SELECT count(*) FROM public.character_currency),"
+ +"'stock',(SELECT coalesce(sum(qty),0) FROM public.character_stock))::text");
+const rejectWarlock=async (payload,message,caseLabel)=>{
+ const before=warlockCounts();
+ const result=await v3market(payload);
+ assert.ok(result.error,caseLabel+" unexpectedly succeeded");
+ assert.match(result.error.message||"",message,caseLabel+" did not reach original class-option validator");
+ assert.equal(warlockCounts(),before,caseLabel+" leaked state");
+ assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+payload.creation_request_id+"'"),"0");
+};
+const missingWarlock=warlockPayload("J112 missing source Invocation",id(9522));
+missingWarlock.sheet.sourceChoices={};
+await rejectWarlock(missingWarlock,/Warlock level 1 requires exactly 1 source-owned Eldritch Invocation instance\(s\); received 0/i,"J112");
+console.log("PASS J112 signed Warlock missing required original Invocation rejected atomically at deferred handler, no nonce/G/GI/I/C/S");
+
+const tooEarly=warlockPayload("J113 prereq Devil's Sight too early",id(9523),devilsSightKey,"Devil's Sight");
+await rejectWarlock(tooEarly,/Devil.s Sight is not available at the acquisition level for Invocation slot 1/i,"J113");
+console.log("PASS J113 source original Invocation level-2 prerequisite blocks Devil's Sight in level-1 slot; no partial creation");
+
+const unknownWarlock=warlockPayload("J114 fabricated invocation option",id(9524),"optional-feature:not-a-valid-warlock-choice|XPHB","Forged Choice");
+await rejectWarlock(unknownWarlock,/Warlock Invocation instance 1 contains an unknown Invocation option/i,"J114");
+console.log("PASS J114 original class-option catalog rejects unknown source Invocation key at COMMIT, atomic rollback");
+
+const improperDependent=warlockPayload("J115 permanent dependent data without schema",id(9525));
+improperDependent.sheet.sourceChoices[warlockInvocationKey].fields.invalidPermanent={
+ kind:"origin-feat",selections:[{value:"unearned-extra"}]
+};
+await rejectWarlock(improperDependent,/Armor of Shadows does not accept a permanent dependent creation choice/i,"J115");
+console.log("PASS J115 original Armor of Shadows Invocation refuses invented dependent creation choice, no leaked GI/I/C/nonce");
+
+const secondValid=warlockPayload("J116 real Warlock Eldritch Mind alternative",id(9526),eldritchMindKey,"Eldritch Mind");
+const secondWarlockId=pass(await v3market(secondValid),"Signed original v3 Warlock Eldritch Mind choice");
+assert.notEqual(secondWarlockId,approvedWarlockId);
+assert.equal(sql("SELECT option_catalog_id::text FROM public.character_class_option_grant_instances WHERE character_id='"+secondWarlockId+"'"),"c6f61c62-d36c-4a9b-b44a-cbafd4ff47d0");
+assert.equal(sql("SELECT count(*) FROM public.character_class_option_grant_instances WHERE character_id='"+secondWarlockId+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_id='"+secondWarlockId+"'"),"1");
+assert.equal(sql("SELECT copper_value FROM public.character_currency WHERE character_id='"+secondWarlockId+"'"),"9100");
+assert.equal(getStock(warlockStock),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_class_option_grant_instances"),String(Number(invocationSourceBefore)+2));
+assert.equal(pass(await v3market(secondValid),"Eldritch Mind identical original replay"),secondWarlockId);
+assert.equal(getStock(warlockStock),"1");
+assert.equal(rowFingerprint("public.character_class_option_grant_instances","character_id='"+approvedWarlockId+"'"),warlockGiFingerprint);
+console.log("PASS J116 separate signed original Warlock Eldritch Mind Invocation mints one source-catalog grant + 9gp market I/C and consumes one stock; first Warlock unaffected");
+console.log("PASS LOCAL REAL GoTrue J00-J116: source-positive original level-1 XPHB Warlock Invocation GIs, prerequisites, atomic rollback, nonce and v3 market source. Full class spell/feature catalogs, real browser, 31 triggers still NOT covered.");

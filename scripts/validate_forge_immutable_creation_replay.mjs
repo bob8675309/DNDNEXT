@@ -468,3 +468,54 @@ for(const unsafe of ["ucggczovhmauhshvhusx","SERVICE_ROLE_KEY","SUPABASE_SERVICE
  "Production project or privileged key forbidden in scratch source");
 }
 console.log("PASS STATIC J103–J108 original live source handler fingerprints and deferred trigger timing, real JWT v2/v3 positive and source-choice negative contract. Not full 31-trigger parity.");
+
+const warlockHelpers=readFileSync("scripts/fixtures/forge_warlock_invocation_original_slot_helpers_pg17.sql","utf8");
+const warlockStage=readFileSync("scripts/fixtures/forge_warlock_invocation_positive_local_auth_pg17.sql","utf8");
+for(const [fn,hash] of [
+ ["xphb_warlock_invocation_count_v1","61c83f0172b33386f0a50435c2fe1ddb"],
+ ["xphb_warlock_invocation_slot_level_v1","942dd3a4e08b8874f3e42cbbb8323038"]
+]){
+ assert.ok(warlockHelpers.includes("CREATE OR REPLACE FUNCTION private."+fn+"("),
+ "J109 original live Warlock helper body missing "+fn);
+ assert.ok(warlockHelpers.includes(hash)&&warlockStage.includes(hash),
+ "J109 live original helper PG17 MD5 gate missing "+fn);
+}
+for(const token of [
+ "current_database()<>'postgres'",
+ "private.test_admins",
+ "private.player_creation_intent_reservations_v1",
+ "public.character_class_option_grant_instances",
+ "character_progression_validate_player_forge_class_options_v1",
+ "6df5aee6f0519c9c77758d6e887ed8e4",
+ "INSERT INTO public.class_catalog",
+ "INSERT INTO public.class_feature_option_catalog",
+ "3abe1beb-5669-46a8-9743-49a47b8de126",
+ "391a8820-aea1-495a-a532-05f9811b14d4",
+ "c6f61c62-d36c-4a9b-b44a-cbafd4ff47d0",
+ "6792abd0-1fd9-44fb-ae4c-56c307ab791a",
+ "v_cash->>'key'<>'B'","<>10000",
+ "NOTIFY pgrst,'reload schema'"
+])assert.ok(warlockStage.includes(token),"J109 source Warlock fixture gate missing "+token);
+for(let i=109;i<=116;i++)assert.ok(localAuth.includes("PASS J"+i),"Missing real JWT J109–J116 contract "+i);
+for(const token of [
+ "warlockInvocationSlot",
+ "warlock-invocation-slot-1",
+ "optional-feature:armor-of-shadows|XPHB",
+ "optional-feature:devils-sight|XPHB",
+ "optional-feature:eldritch-mind|XPHB",
+ "v3market(approvedWarlock)",
+ "Source-original signed Warlock",
+ "character_class_option_grant_instances",
+ "Warlock level 1 requires exactly 1",
+ "not available at the acquisition level",
+ "permanent dependent creation choice",
+ "PASS LOCAL REAL GoTrue J00-J116"
+])assert.ok(localAuth.includes(token),"Missing original authenticated Warlock positive/negative proof "+token);
+for(const file of [
+ "forge_warlock_invocation_original_slot_helpers_pg17.sql",
+ "forge_warlock_invocation_positive_local_auth_pg17.sql"
+])assert.ok(workflow.includes(file),"GitHub Actions must re-run on Warlock fixture "+file);
+for(const token of ["ucggczovhmauhshvhusx","SUPABASE_SERVICE_ROLE_KEY","SERVICE_ROLE_KEY"])
+ assert.ok(!warlockHelpers.includes(token) && !warlockStage.includes(token),
+ "No live project id or secret embedded in disposable Warlock source");
+console.log("PASS STATIC J109–J116 source-original Warlock level-1 invocation count and catalog, true JWT v3 positive/negative, nonce, G/GI/I/C/S contract; full browser remains a separate gate.");
