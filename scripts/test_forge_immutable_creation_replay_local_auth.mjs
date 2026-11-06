@@ -1468,8 +1468,12 @@ sql("INSERT INTO public.characters(id,name,kind,storefront_enabled) VALUES"
  + "('"+recipeStock+"','"+marketMerchant+"',1,'J94 Forbidden Recipe','{\"item_type\":\"recipe\",\"item_rarity\":\"mundane\"}'::jsonb,2,'p13-market-recipe');");
 const marketDraft=(name,nonce,stockId,qty=1,ruleset="dndnext-homebrew")=>{
  const draft=fighter(name,nonce);
+ // Source-original deferred validator requires the selected Background name,
+ // source and ID, identical to the verified J17 XPHB Soldier specimen.
+ draft.sheet.background="Soldier";
+ draft.sheet.meta={backgroundSource:"XPHB"};
  draft.sheet.startingEquipmentSelections={
-  mode:"market",ruleset,marketMerchantId:marketMerchant,
+  mode:"market",ruleset,backgroundId:id(9150),marketMerchantId:marketMerchant,
   marketPurchases:[{
    merchantId:marketMerchant,stockId,qty,
    itemId:stockId===marketStock?"p13-market-rope":"p13-market-armor",

@@ -415,5 +415,9 @@ for(const path of [
 for(const unsafe of ["ucggczovhmauhshvhusx","SERVICE_ROLE_KEY","SUPABASE_SERVICE_ROLE_KEY"]){
  assert.ok(!sourceCash.includes(unsafe)&&!sourceMarket.includes(unsafe),"Live credentials forbidden in J94");
 }
+assert.ok(localAuth.includes('draft.sheet.background="Soldier"') &&
+ localAuth.includes('draft.sheet.meta={backgroundSource:"XPHB"}') &&
+ localAuth.includes('backgroundId:id(9150)'),
+ "J94+ market input must satisfy unchanged original sheet Background name/source/ID validator (J17 fixture)");
 console.log("PASS STATIC J94-J102 source-original Fighter C cash alternative, unchanged market/formatter helpers, real JWT source v3 and hardened RLS acceptance contract. Browser execution remains a separate gate.");
 

@@ -1,5 +1,8 @@
 # J94–J102 — Real JWT Forge v3 starting-market inventory under four-policy security candidate
 
+> **First-run qualification:** [Actions 42143862139](https://github.com/bob8675309/DNDNEXT/actions/runs/42143862139) passed original PG17, prior J00–J93 and J94 source cash validation; J95 fixture was rejected because it omitted the required source Background selection. The corrected test carries the already source-verified J17 XPHB Soldier name, source and id(9150), with a static gate. **J95–J102 have not yet passed CI.**
+
+
 **November 5, 2026 • draft research PR #324, stacked on #321 • NO PRODUCTION CHANGES.** The source original Forge creation and its deferred equipment trigger have prior authenticated acceptance through J93. New **J94–J102 are executable candidates, NOT PASS until exact-head GitHub Actions logs confirm them**.
 
 ## Starting baseline: J85–J93 succeeded
