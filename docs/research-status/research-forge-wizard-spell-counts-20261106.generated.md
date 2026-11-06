@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/forge-wizard-spell-counts-20261106` |
-| Exact source commit represented by this archive snapshot | `4db908faf5fc4b90e0847314d6e3a87775cc91f9` |
+| Exact source commit represented by this archive snapshot | `38edc02f66f17e73a16fd0b62329c161ade4f6a2` |
 | Compared with | `51c351a142d03378dff8e47e05182afe21a15622` (main comparison base) |
-| Last source commit title | test(forge): add source-identified level-1 Wizard prepared-spell seeded JWT scenarios |
+| Last source commit title | test(forge): honor original starting-magic exactness for source Wizard fixture |
 | Files changed relative to main | 100 (73 non-docs; 27 docs) |
-| Last source commit | 9 files (6 non-docs; 3 authored docs) |
+| Last source commit | 4 files (1 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,15 +17,10 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-forge-immutable-creation-replay.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/Forge_Wizard_Starting_Spell_Counts_2026-11-06.md`
 - `docs/HANDOFF_LOG.md`
-- `scripts/agents/forge_seeded_scenarios.mjs`
-- `scripts/fixtures/forge_seeded_wizard_spells_v1.json`
-- `scripts/fixtures/forge_wizard_starting_spells_local_auth_pg17.sql`
 - `scripts/test_forge_immutable_creation_replay_local_auth.mjs`
-- `scripts/validate_forge_seeded_wizard_spells.mjs`
 
 ## Research-branch change inventory versus main
 
