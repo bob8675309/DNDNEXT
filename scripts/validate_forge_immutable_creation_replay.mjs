@@ -700,3 +700,27 @@ for(const forbidden of ["ucggczovhmauhshvhusx","SUPABASE_SERVICE_ROLE_KEY","SERV
  assert.ok(!subclassOriginal.includes(forbidden)&&!subclassStage.includes(forbidden),
  "Original subclass fixture cannot include deployed project or privileged token");
 console.log("PASS STATIC J142-J153 original subclass source-hash, before-insert trigger, reduced PHB/XPHB catalog and real signed JWT tests; full edition policy, permission graph and browser UNPROVEN.");
+
+
+// J154 static player UI regression tripwire: prevent dropping source-qualified
+// subclass selection before the original database function; NOT browser testing.
+const forgeModal=readFileSync("components/NewNpcModalV3.js","utf8");
+const subclassResolver=readFileSync("utils/classes/subclassCompatibility.js","utf8");
+const classChoiceContext=readFileSync("components/NpcForgeClassChoiceContext.js","utf8");
+for(const token of [
+ "payloadWithSubclass(originalPayload, classChoiceStateRef.current)",
+ "subclassName: selected.name",
+ "subclassSource: selected.source",
+ "p_payload: playerPayload(payload, proxySpellChoices, magicSelections)",
+ "classChoiceStateComplete(classChoiceStateRef.current)"
+])assert.ok(forgeModal.includes(token),"Player Forge must keep subclass name/source-qualified request "+token);
+for(const token of [
+ "const source = safeText(row.source)",
+ "const classSource = safeText(row.class_source)",
+ "if (!name || !source || !classSource) continue"
+])assert.ok(subclassResolver.includes(token),"Class catalog source qualification is missing "+token);
+for(const token of [
+ "eligibleSubclassOptions(state)",
+ "Boolean(selectedSubclassOption(state))"
+])assert.ok(classChoiceContext.includes(token),"Original selection-completeness gate missing "+token);
+console.log("PASS STATIC J154 player Forge normally carries explicit subclassSource through selected catalog option and v3 payload; direct RPC missing source remains unguarded.");
