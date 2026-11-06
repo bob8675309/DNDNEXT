@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-06T22:20:15Z | research/forge-starting-spells-seeded-20261106 (5ab887fe9293fcf0cb4c67eee62ec43949b5e01a) | 79a6340c08e743e71e1072e40e6ba7204f735a29 |
+| 2026-11-06T22:25:25Z | research/forge-starting-spells-seeded-20261106 (53af54feaba747696facf0a1dfb1fb8d67d1e43b) | 79a6340c08e743e71e1072e40e6ba7204f735a29 |
 
 ## Exact PR heads and latest captured GitHub Actions
 

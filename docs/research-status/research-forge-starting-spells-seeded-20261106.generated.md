@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/forge-starting-spells-seeded-20261106` |
-| Exact source commit represented by this archive snapshot | `5ab887fe9293fcf0cb4c67eee62ec43949b5e01a` |
+| Exact source commit represented by this archive snapshot | `53af54feaba747696facf0a1dfb1fb8d67d1e43b` |
 | Compared with | `51c351a142d03378dff8e47e05182afe21a15622` (main comparison base) |
-| Last source commit title | test(forge): stage exact original deferred starting-spell handler with seeded JWT cases |
+| Last source commit title | test(forge): preserve early class-list rejection and distinguish original deferred spell coverage |
 | Files changed relative to main | 96 (70 non-docs; 26 docs) |
-| Last source commit | 9 files (6 non-docs; 3 authored docs) |
+| Last source commit | 4 files (1 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,15 +17,10 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-forge-immutable-creation-replay.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/Forge_Seeded_Starting_Spells_2026-11-06.md`
 - `docs/HANDOFF_LOG.md`
-- `scripts/fixtures/forge_seeded_starting_spells_v1.json`
-- `scripts/fixtures/forge_starting_spells_local_auth_pg17.sql`
-- `scripts/fixtures/forge_starting_spells_original_pg17.sql`
 - `scripts/test_forge_immutable_creation_replay_local_auth.mjs`
-- `scripts/validate_forge_seeded_starting_spells.mjs`
 
 ## Research-branch change inventory versus main
 
