@@ -68,10 +68,10 @@ try {
 const workflow = readFileSync(path.join(ROOT,".github/workflows/dndnext-research-agent.yml"),"utf8");
 for (const token of [
  "workflow_dispatch:", "contents: read", "actions: read",
- "persist-credentials: false", "openai/codex-action@v1",
- "sandbox: workspace-write", "scripts/agents/research_agent.mjs",
- "upload-artifact@v4", "source_run_id:", "target_ref:",
- "max_passes:", "OPENAI_API_KEY",
+ "persist-credentials: false", "openai/codex-action@bdf19a4a223ec2549a3e2274a0cf61556bc07675",
+ "permission-profile: \":workspace\"", "scripts/agents/research_agent.mjs",
+ "upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02", "source_run_id:", "target_ref:",
+ "OPENAI_API_KEY",
  "AGENT_TARGET_DIR: target"
 ])assert.ok(workflow.includes(token), "Missing workflow safety/setup: " + token);
 for (const disallowed of [
@@ -80,6 +80,8 @@ for (const disallowed of [
  "SUPABASE_SERVICE_ROLE_KEY", "VERCEL_TOKEN", "danger-full-access",
  "--yolo", "git push", "gh pr merge"
 ])assert.ok(!workflow.includes(disallowed), "Unexpected privileged or automatic action: " + disallowed);
+assert.equal(workflow.split("uses: openai/codex-action@").length-1,1,"Exactly one paid model invocation allowed");
+assert.ok(!workflow.includes("max_passes:") && !workflow.includes("SECOND_PASS_OK"));
 const freeWorkflow = readFileSync(path.join(ROOT,".github/workflows/validate-dndnext-research-agent.yml"),"utf8");
 assert.ok(freeWorkflow.includes("pull_request:") && freeWorkflow.includes("contents: read"));
 assert.ok(!freeWorkflow.includes("openai/codex-action@v1"),"No paid model in automatic PR validation");
