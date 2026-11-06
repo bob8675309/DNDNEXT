@@ -8,7 +8,8 @@ export function diagnose(raw){
  const passes=[...log.matchAll(/(?:^|\n)PASS J(\d+)\b/g)].map(x=>Number(x[1]));
  const last=passes.length?Math.max(...passes):null;
  const complete=/PASS LOCAL REAL GoTrue J00-J141\b/.test(log);
- const category=/source (?:hash|md5)|source drift|source mismatch/i.test(log)?"source-fingerprint":
+ const category=complete?"test-terminal-marker-seen":
+   /(?:source|hash|md5) (?:drift|mismatch)|source-fingerprint mismatch/i.test(log)?"source-fingerprint":
    /AssertionError|ERR_ASSERTION/i.test(log)?"assertion":
    /deadlock detected|40P01/i.test(log)?"concurrency-deadlock":
    /permission denied|42501|row-level security/i.test(log)?"auth-or-rls":
