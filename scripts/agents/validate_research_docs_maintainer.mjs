@@ -37,3 +37,13 @@ for(const forbidden of ["pull_request_target:","schedule:","openai/codex-action"
  assert.ok(!wf.includes(forbidden),"Forbidden docs workflow authority: "+forbidden);
 assert.equal((wf.match(/contents: write/g)||[]).length,1,"Only docs publisher may write");
 console.log("PASS research docs job exact-source automation, owner-only branch scope and single-path atomic publication");
+
+const healthWorkflow = readFileSync(".github/workflows/research-docs-maintenance.yml","utf8");
+for(const token of ["node scripts/agents/validate_project_health.mjs","node scripts/agents/project_health.mjs",
+ "docs/PROJECT_HEALTH.generated.md","for id in 317 321 324 325",
+ "actions/runs?head_sha=$sha","expectedHeadOid:$sha","docs/agent-status",
+ "pull-requests: read","actions: read"])
+ assert.ok(healthWorkflow.includes(token),"Missing free project-health scope or evidence guard: "+token);
+for(const forbidden of ["openai/codex-action","SUPABASE_SERVICE_ROLE_KEY","VERCEL_TOKEN","schedule:","pull_request_target:"])
+ assert.ok(!healthWorkflow.includes(forbidden),"Forbidden paid/live project-health privilege: "+forbidden);
+console.log("PASS zero-cost exact-head GitHub-only health collector, archive write scope and on-demand Work policy");

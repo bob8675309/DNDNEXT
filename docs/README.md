@@ -1,5 +1,7 @@
 # DNDNext Living Documentation Index
 
+> **Free GitHub project health:** [Consolidated PR heads, exact-head CI, and documentation freshness](https://github.com/bob8675309/DNDNEXT/blob/docs/agent-status/docs/PROJECT_HEALTH.generated.md) is assembled from GitHub read-only APIs on owner research pushes. It is a snapshot, not production readiness or a scheduled Work task.
+>
 > **New chat?** Begin with the [DNDNext Research Agent Touchstone](https://github.com/bob8675309/DNDNEXT/blob/docs/agent-status/docs/AGENT_TOUCHSTONE.md), then follow the main/active-source handoff order below. It is a navigation point, not a separate deployed AI or approval to merge.
 
 > **Research-branch freshness:** [Automatically reconciled research status archive](https://github.com/bob8675309/DNDNEXT/tree/docs/agent-status/docs/research-status) is maintained by the free docs-only GitHub workflow when the branch changes. This file distinguishes reviewed exact-head JWT receipts from merely staged trigger definitions. It does not replace [ACTIVE_WORK.md](ACTIVE_WORK.md), [SYSTEM_REGISTRY.json](SYSTEM_REGISTRY.json), or the append-only [HANDOFF_LOG.md](HANDOFF_LOG.md); those still require factual authored updates with engineering changes. See [docs maintainer policy](Research_Docs_Maintenance_2026-11-06.md).

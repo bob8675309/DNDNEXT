@@ -11,6 +11,8 @@ jobs:
     if: github.repository == 'bob8675309/DNDNEXT' && github.actor == 'bob8675309' && github.event_name == 'push'
     permissions:
       contents: write
+      actions: read
+      pull-requests: read
     runs-on: ubuntu-latest
     timeout-minutes: 6
     concurrency:
@@ -31,6 +33,8 @@ jobs:
           set -euo pipefail
           node --check scripts/agents/research_docs_maintainer.mjs
           node scripts/agents/validate_research_docs_maintainer.mjs
+          node --check scripts/agents/project_health.mjs
+          node scripts/agents/validate_project_health.mjs
       - name: Generate branch status from exact local source
         env:
           DOCS_TARGET_BRANCH: ${{ github.ref_name }}
@@ -39,6 +43,42 @@ jobs:
           node scripts/agents/research_docs_maintainer.mjs "$RUNNER_TEMP/RESEARCH_BRANCH_STATUS.generated.md"
           test -s "$RUNNER_TEMP/RESEARCH_BRANCH_STATUS.generated.md"
           cat "$RUNNER_TEMP/RESEARCH_BRANCH_STATUS.generated.md" >> "$GITHUB_STEP_SUMMARY"
+      - name: Assemble free exact-head research project health
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ github.sha }}
+          TARGET_BRANCH: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/dndnext-health"
+          mkdir -p "$dir"
+          main_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')"
+          [[ "$main_sha" =~ ^[a-f0-9]{40}$ ]] || exit 1
+          for id in 317 321 324 325; do
+            gh api "repos/$GITHUB_REPOSITORY/pulls/$id" \
+              --jq '{number,title,state,draft,head:{sha:.head.sha,ref:.head.ref},base:{ref:.base.ref}}' > "$dir/pr-$id.json"
+            sha="$(jq -r '.head.sha' "$dir/pr-$id.json")"
+            [[ "$sha" =~ ^[a-f0-9]{40}$ ]] || exit 1
+            gh api "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$sha&per_page=100" \
+              --jq '{workflow_runs:[.workflow_runs[]? | {id,workflow_id,name,head_sha,status,conclusion,updated_at}]}' > "$dir/runs-$id.json"
+            gh api "repos/$GITHUB_REPOSITORY/commits/$sha" \
+              --jq '{files:[.files[]? | {filename:.filename}]}' > "$dir/commit-$id.json"
+          done
+          gh api "repos/$GITHUB_REPOSITORY/contents/docs/research-status/research-forge-immutable-creation-replay-20261105.generated.md?ref=docs/agent-status" \
+            --jq .content | base64 -d > "$dir/forge.md"
+          gh api "repos/$GITHUB_REPOSITORY/contents/docs/research-status/agent-research-orchestrator-20261105.generated.md?ref=docs/agent-status" \
+            --jq .content | base64 -d > "$dir/agent.md"
+          if [[ "$TARGET_BRANCH" == 'research/forge-immutable-creation-replay-20261105' ]]; then
+            cp "$RUNNER_TEMP/RESEARCH_BRANCH_STATUS.generated.md" "$dir/forge.md"
+          elif [[ "$TARGET_BRANCH" == 'agent/research-orchestrator-20261105' ]]; then
+            cp "$RUNNER_TEMP/RESEARCH_BRANCH_STATUS.generated.md" "$dir/agent.md"
+          fi
+          jq -n --arg mainSha "$main_sha" --arg sourceSha "$SOURCE_SHA" \
+            --arg sourceBranch "$TARGET_BRANCH" --arg generatedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '{mainSha:$mainSha,sourceSha:$sourceSha,sourceBranch:$sourceBranch,generatedAt:$generatedAt}' > "$dir/meta.json"
+          node scripts/agents/project_health.mjs "$dir" "$RUNNER_TEMP/PROJECT_HEALTH.generated.md"
+          cat "$RUNNER_TEMP/PROJECT_HEALTH.generated.md" >> "$GITHUB_STEP_SUMMARY"
       - name: Publish source snapshot into separate docs archive branch only
         env:
           GH_TOKEN: ${{ github.token }}
@@ -53,26 +93,33 @@ jobs:
           [[ "$SOURCE_SHA" =~ ^[a-f0-9]{40}$ ]] || exit 1
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
           output="$RUNNER_TEMP/RESEARCH_BRANCH_STATUS.generated.md"
+          health="$RUNNER_TEMP/PROJECT_HEALTH.generated.md"
+          test -s "$health"
           archive_branch='docs/agent-status'
           safe_name="$(printf '%s' "$TARGET_BRANCH" | tr '/' '-')"
           snapshot="docs/research-status/$safe_name.generated.md"
           old_content="$(gh api "repos/$GITHUB_REPOSITORY/contents/$snapshot?ref=$archive_branch" --jq .content 2>/dev/null || true)"
-          if [[ -n "$old_content" ]] && printf '%s' "$old_content" | base64 -d | cmp -s - "$output"; then
-            echo 'Research status already synchronized.'
+          health_old="$(gh api "repos/$GITHUB_REPOSITORY/contents/docs/PROJECT_HEALTH.generated.md?ref=$archive_branch" --jq .content 2>/dev/null || true)"
+          if [[ -n "$old_content" && -n "$health_old" ]] &&
+             printf '%s' "$old_content" | base64 -d | cmp -s - "$output" &&
+             printf '%s' "$health_old" | base64 -d | cmp -s - "$health"; then
+            echo 'Status and project health already synchronized.'
             exit 0
           fi
           archive_head="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$archive_branch" --jq .object.sha)"
           [[ "$archive_head" =~ ^[a-f0-9]{40}$ ]] || exit 1
           data="$(base64 -w0 "$output")"
+          health_data="$(base64 -w0 "$health")"
           jq -n \
             --arg query 'mutation($input:CreateCommitOnBranchInput!){createCommitOnBranch(input:$input){commit{oid}}}' \
             --arg repo "$GITHUB_REPOSITORY" \
             --arg branch "$archive_branch" \
             --arg sha "$archive_head" \
             --arg content "$data" \
+            --arg health "$health_data" \
             --arg file "$snapshot" \
             --arg title "docs(bot): update source evidence for $TARGET_BRANCH" \
-            '{query:$query,variables:{input:{branch:{repositoryNameWithOwner:$repo,branchName:$branch},expectedHeadOid:$sha,message:{headline:$title},fileChanges:{additions:[{path:$file,contents:$content}]}}}}' \
+            '{query:$query,variables:{input:{branch:{repositoryNameWithOwner:$repo,branchName:$branch},expectedHeadOid:$sha,message:{headline:$title},fileChanges:{additions:[{path:$file,contents:$content},{path:"docs/PROJECT_HEALTH.generated.md",contents:$health}]}}}}' \
             > "$RUNNER_TEMP/docs-only-graphql.json"
           gh api graphql --input "$RUNNER_TEMP/docs-only-graphql.json" --jq '.data.createCommitOnBranch.commit.oid'
-          echo "Snapshot published to $archive_branch/$snapshot without changing the research PR head."
+          echo "Status and project-health snapshots published without changing research PR heads."
