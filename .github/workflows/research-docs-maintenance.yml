@@ -4,8 +4,6 @@ on:
     branches:
       - 'research/**'
       - 'agent/**'
-    paths-ignore:
-      - 'docs/RESEARCH_BRANCH_STATUS.generated.md'
 permissions:
   contents: read
 jobs:
@@ -16,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 6
     concurrency:
-      group: research-docs-maintainer-${{ github.ref }}
+      group: dndnext-research-status-publisher
       cancel-in-progress: false
     steps:
       - name: Checkout exact source SHA without persisted write credentials
@@ -41,7 +39,7 @@ jobs:
           node scripts/agents/research_docs_maintainer.mjs "$RUNNER_TEMP/RESEARCH_BRANCH_STATUS.generated.md"
           test -s "$RUNNER_TEMP/RESEARCH_BRANCH_STATUS.generated.md"
           cat "$RUNNER_TEMP/RESEARCH_BRANCH_STATUS.generated.md" >> "$GITHUB_STEP_SUMMARY"
-      - name: Publish only generated docs, atomically, never main
+      - name: Publish source snapshot into separate docs archive branch only
         env:
           GH_TOKEN: ${{ github.token }}
           SOURCE_SHA: ${{ github.sha }}
@@ -55,21 +53,26 @@ jobs:
           [[ "$SOURCE_SHA" =~ ^[a-f0-9]{40}$ ]] || exit 1
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
           output="$RUNNER_TEMP/RESEARCH_BRANCH_STATUS.generated.md"
-          if git cat-file -e "HEAD:docs/RESEARCH_BRANCH_STATUS.generated.md" 2>/dev/null; then
-            git show "HEAD:docs/RESEARCH_BRANCH_STATUS.generated.md" > "$RUNNER_TEMP/previous-doc.md"
-            if cmp -s "$RUNNER_TEMP/previous-doc.md" "$output"; then
-              echo 'Generated doc unchanged; no commit'
-              exit 0
-            fi
+          archive_branch='docs/agent-status'
+          safe_name="$(printf '%s' "$TARGET_BRANCH" | tr '/' '-')"
+          snapshot="docs/research-status/$safe_name.generated.md"
+          old_content="$(gh api "repos/$GITHUB_REPOSITORY/contents/$snapshot?ref=$archive_branch" --jq .content 2>/dev/null || true)"
+          if [[ -n "$old_content" ]] && printf '%s' "$old_content" | base64 -d | cmp -s - "$output"; then
+            echo 'Research status already synchronized.'
+            exit 0
           fi
+          archive_head="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$archive_branch" --jq .object.sha)"
+          [[ "$archive_head" =~ ^[a-f0-9]{40}$ ]] || exit 1
           data="$(base64 -w0 "$output")"
           jq -n \
             --arg query 'mutation($input:CreateCommitOnBranchInput!){createCommitOnBranch(input:$input){commit{oid}}}' \
             --arg repo "$GITHUB_REPOSITORY" \
-            --arg branch "$TARGET_BRANCH" \
-            --arg sha "$SOURCE_SHA" \
+            --arg branch "$archive_branch" \
+            --arg sha "$archive_head" \
             --arg content "$data" \
-            '{query:$query,variables:{input:{branch:{repositoryNameWithOwner:$repo,branchName:$branch},expectedHeadOid:$sha,message:{headline:"docs(bot): refresh research-branch evidence snapshot"},fileChanges:{additions:[{path:"docs/RESEARCH_BRANCH_STATUS.generated.md",contents:$content}]}}}}' \
+            --arg file "$snapshot" \
+            --arg title "docs(bot): update source evidence for $TARGET_BRANCH" \
+            '{query:$query,variables:{input:{branch:{repositoryNameWithOwner:$repo,branchName:$branch},expectedHeadOid:$sha,message:{headline:$title},fileChanges:{additions:[{path:$file,contents:$content}]}}}}' \
             > "$RUNNER_TEMP/docs-only-graphql.json"
           gh api graphql --input "$RUNNER_TEMP/docs-only-graphql.json" --jq '.data.createCommitOnBranch.commit.oid'
-          echo 'Docs-only research commit published; no model or production access.'
+          echo "Snapshot published to $archive_branch/$snapshot without changing the research PR head."
