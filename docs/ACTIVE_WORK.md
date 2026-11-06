@@ -1,5 +1,7 @@
 # DNDNext — Active Work Contract
 
+> **2026-11-06 exact-head promotion verification:** `main` now contains documentation continuity PR #326 (merge `0c522ac6`) and free no-model research status publisher PR #327 (merge `79a6340c`); both exact-source Vercel production deployments were verified READY, and their exact-head CI passed. The permanent Touchstone stays on `docs/agent-status`. Paid Codex on held #325 remains disabled; security/Forge research #317/#321/#324 remains unmerged. The `main` work contract now has the scenario-testing priority at its top, so do not repeat the old P1.2 next-task instruction. **Next research task unchanged:** minimal seeded deterministic Forge scenario contract and runner with real local GoTrue/PostgreSQL 17. See the dated receipt at the end of this branch's `HANDOFF_LOG.md`.
+
 > **Mandatory session-close directive (owner, November 6):** Every substantial development session must update this branch's `docs/ACTIVE_WORK.md` and append a dated receipt to `docs/HANDOFF_LOG.md` before claiming completion. Record rationale, exact evidence, boundaries and one next task. Auto-generated Project Health alone does not meet this requirement. The current scenario-testing objective below is unchanged by this policy clarification.
 
 ## 2026-11-06 — Owner-directed next RESEARCH milestone (supersedes the old P1.2 next-task wording below for agent/Forge continuation)
