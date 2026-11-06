@@ -1,4 +1,11 @@
 {
   "buildCommand": "npm run build:vercel",
-  "ignoreCommand": "node scripts/vercel_ignore_build.mjs"
+  "ignoreCommand": "node scripts/vercel_ignore_build.mjs",
+  "git": {
+    "deploymentEnabled": {
+      "agent/**": false,
+      "research/**": false,
+      "docs/**": false
+    }
+  }
 }

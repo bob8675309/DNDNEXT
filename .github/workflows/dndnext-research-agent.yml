@@ -1,0 +1,140 @@
+name: DNDNext supervised research agent (manual, review-only)
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: "Explicit API-cost opt-in for this run; never automatic"
+        type: choice
+        required: true
+        default: "NO"
+        options: ["NO", "RUN_RESEARCH"]
+      target_ref:
+        description: "Existing trusted research/* or agent/* branch; NEVER main"
+        type: string
+        required: true
+        default: "research/forge-immutable-creation-replay-20261105"
+      task:
+        description: "One bounded research/test task (no production operations)"
+        type: string
+        required: true
+        default: "Diagnose the next failing disposable Forge research validator without changing authoritative source functions."
+      source_run_id:
+        description: "Optional GitHub Actions run ID to import failed-job log as untrusted evidence"
+        type: string
+        required: false
+        default: ""
+      suite:
+        description: "Source-local Node validator. Full PostgreSQL/JWT CI remains separate."
+        type: choice
+        required: true
+        default: forge-static
+        options: [forge-static, security-static, handoff-static]
+      max_passes:
+        description: "Hard maximum paid Codex passes per manual dispatch"
+        type: choice
+        required: true
+        default: "1"
+        options: ["1", "2"]
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: dndnext-research-agent-${{ inputs.target_ref }}
+  cancel-in-progress: false
+
+jobs:
+  research:
+    if: github.event_name == 'workflow_dispatch' && inputs.confirmation == 'RUN_RESEARCH'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      TARGET_REF: ${{ inputs.target_ref }}
+      RESEARCH_TASK: ${{ inputs.task }}
+      SOURCE_RUN_ID: ${{ inputs.source_run_id }}
+      AGENT_SUITE: ${{ inputs.suite }}
+      AGENT_TARGET_DIR: target
+    steps:
+      - name: Confirm API key was intentionally configured
+        env:
+          OPENAI_KEY_PRESENT: ${{ secrets.OPENAI_API_KEY != '' }}
+        shell: bash
+        run: |
+          if [[ "$OPENAI_KEY_PRESENT" != 'true' ]]; then
+            echo "::error::OPENAI_API_KEY is not configured. No paid AI work was started."
+            exit 1
+          fi
+      - name: Checkout trusted agent controller from main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Checkout research branch without write credentials
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref }}
+          path: target
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate branch boundary and agent control scripts
+        run: |
+          node scripts/agents/validate_research_agent.mjs
+          node scripts/agents/research_agent.mjs preflight
+      - name: Capture task and optional failed-job evidence (no DB credentials)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/agents/research_agent.mjs context
+      - name: Baseline bounded static test
+        id: baseline
+        run: node scripts/agents/research_agent.mjs check
+      - name: Codex research and repair pass 1 (paid, manually dispatched)
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt-file: .github/codex/prompts/dndnext-research-agent.md
+          sandbox: workspace-write
+          codex-args: '["-C", "target", "--ephemeral"]'
+          output-file: research-agent-pass1.txt
+      - name: Enforce research-only patch allowlist after pass 1
+        run: node scripts/agents/research_agent.mjs scope
+      - name: Retest after pass 1
+        id: verify1
+        run: node scripts/agents/research_agent.mjs check
+      - name: Codex focused repair pass 2 (only when validator failed and opted in)
+        if: steps.verify1.outputs.passed != 'true' && inputs.max_passes == '2'
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt-file: .github/codex/prompts/dndnext-research-agent.md
+          sandbox: workspace-write
+          codex-args: '["-C", "target", "--ephemeral"]'
+          output-file: research-agent-pass2.txt
+      - name: Enforce patch allowlist after pass 2
+        if: steps.verify1.outputs.passed != 'true' && inputs.max_passes == '2'
+        run: node scripts/agents/research_agent.mjs scope
+      - name: Retest after pass 2
+        if: steps.verify1.outputs.passed != 'true' && inputs.max_passes == '2'
+        id: verify2
+        run: node scripts/agents/research_agent.mjs check
+      - name: Package review-only patch; never commit or push
+        run: node scripts/agents/research_agent.mjs pack
+      - name: Upload human-review patch and sanitized test result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dndnext-research-agent-review-${{ github.run_id }}
+          path: research-agent-artifact/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Report bounded test failure rather than claim success
+        if: always()
+        env:
+          FIRST_PASS_OK: ${{ steps.verify1.outputs.passed }}
+          SECOND_PASS_OK: ${{ steps.verify2.outputs.passed }}
+        run: |
+          if [[ "$FIRST_PASS_OK" != 'true' && "$SECOND_PASS_OK" != 'true' ]]; then
+            echo "::error::Static test remains failing or the agent stopped before completion. Review artifacts. No production change."
+            exit 1
+          fi

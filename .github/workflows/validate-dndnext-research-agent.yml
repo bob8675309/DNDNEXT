@@ -1,0 +1,31 @@
+name: Validate DNDNext supervised research agent (no API cost)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/dndnext-research-agent.yml'
+      - '.github/workflows/validate-dndnext-research-agent.yml'
+      - '.github/codex/prompts/dndnext-research-agent.md'
+      - 'scripts/agents/**'
+      - 'docs/DNDNext_Research_Agent_Setup.md'
+      - 'docs/DNDNext_Agent_Opportunities_Audit_2026-11-05.md'
+      - 'vercel.json'
+permissions:
+  contents: read
+jobs:
+  policy:
+    name: Scope, permissions, artifact, and Vercel protection audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check scripts/agents/research_agent.mjs
+      - run: node --check scripts/agents/validate_research_agent.mjs
+      - run: node scripts/agents/validate_research_agent.mjs
+      - name: Assert agent/research previews are opted out by configuration
+        run: |
+          node --input-type=module -e "import {readFileSync} from 'node:fs'; import assert from 'node:assert/strict'; const c=JSON.parse(readFileSync('vercel.json','utf8')); for (const p of ['agent/**','research/**']) assert.equal(c.git?.deploymentEnabled?.[p], false, p); assert.equal(c.ignoreCommand, 'node scripts/vercel_ignore_build.mjs'); console.log('PASS agent/research Vercel git auto-deploy opt-out (config only)')"
