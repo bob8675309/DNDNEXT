@@ -27,6 +27,8 @@ export function isAllowedTargetRef(ref) {
 
 export function isAllowedChange(name) {
   const file = String(name || "");
+  // Historical trigger census is an input authority, never an agent-edit target.
+  if (file === "docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md") return false;
   if (file.includes("..") || file.includes("\\") || file.startsWith("/") || file.includes("\0")) return false;
   return [
     /^docs\/[A-Za-z0-9_.-]+\.md$/,
@@ -146,6 +148,7 @@ function scope() {
   console.log("PASS: allowlisted research-only patch: " + result.files.join(", "));
 }
 const suites = {
+  "forge-triggers": ["scripts/validate_forge_immutable_creation_replay.mjs"],
   "forge-static": ["scripts/validate_forge_immutable_creation_replay.mjs"],
   "security-static": ["scripts/validate_security_hardening_roadmap.mjs"],
   "handoff-static": ["scripts/validate_handoff_docs_runner_alignment.mjs"]

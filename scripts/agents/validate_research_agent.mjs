@@ -8,6 +8,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { isAllowedTargetRef, isAllowedChange, redactOutput } from "./research_agent.mjs";
+import { parseOriginalInventory, scanFixtureTriggers, compareCoverage } from "./forge_trigger_audit.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const script = path.join(ROOT, "scripts/agents/research_agent.mjs");
@@ -27,7 +28,8 @@ for (const valid of ["docs/Forge_Case.md","scripts/fixtures/source.sql",
 for (const invalid of ["pages/map.js","pages/encounters/play.js","AGENTS.md",
  ".github/workflows/research.yml","vercel.json","sql/20261105_live.sql",
  "scripts/patch_runtime.mjs","src/unsafe.js","docs/../../pages/map.js",
- "../secrets.sql","scripts/fixtures/source.sh","docs/evil.md/../../x"])
+ "../secrets.sql","scripts/fixtures/source.sh","docs/evil.md/../../x",
+ "docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md"])
   assert.equal(isAllowedChange(invalid), false, invalid);
 assert.ok(redactOutput("Bearer abcdefghijklmnopqrstuvwxyz").includes("[REDACTED]"));
 assert.ok(redactOutput("sk-proj-abcdefghijklmnopqrstuvwxyzABCDEFG").includes("[REDACTED_OPENAI_KEY]"));
@@ -64,6 +66,22 @@ try {
   rmSync(path.join(ROOT, "research-agent-artifact"), { recursive: true, force: true });
 }
 
+// Source-grounded original 31-trigger census must fail closed on incomplete lists.
+const sections = [["character_progression",19],["character_sheets",4],["characters",6],["inventory_items",2]];
+const rows = [];
+for (const [table,n] of sections) for(let i=0;i<n;i++)
+  rows.push("| `"+table+"` | `"+table+"_test_"+i+"` | `handler_"+i+"` | `"+("a".repeat(32))+"` | "+(i===0?"Deferred":"Immediate")+" | Not installed |");
+const md = ["| Live table | Trigger | Handler | Handler source MD5 | Timing | Status |","|---|---|---|---|---|---|",...rows].join("\n");
+const inventory = parseOriginalInventory(md);
+assert.equal(inventory.length,31);
+const good = scanFixtureTriggers("CREATE CONSTRAINT TRIGGER character_progression_test_0 AFTER INSERT ON public.character_progression DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION private.handler_0();","fixture.sql");
+const coverage = compareCoverage(inventory,good);
+assert.equal(coverage.stagedCount,1);
+assert.equal(coverage.missingCount,30);
+const bad = scanFixtureTriggers("CREATE TRIGGER character_progression_test_0 BEFORE INSERT ON public.characters FOR EACH ROW EXECUTE FUNCTION private.wrong();","bad.sql");
+assert.equal(compareCoverage(inventory,bad).mismatchCount,1);
+assert.throws(()=>parseOriginalInventory(md.replace(rows[0],"")),/incomplete/);
+
 // Workflow check is source-static, separate from executing a paid Codex job.
 const workflow = readFileSync(path.join(ROOT,".github/workflows/dndnext-research-agent.yml"),"utf8");
 for (const token of [
@@ -81,6 +99,9 @@ for (const disallowed of [
  "--yolo", "git push", "gh pr merge"
 ])assert.ok(!workflow.includes(disallowed), "Unexpected privileged or automatic action: " + disallowed);
 assert.equal(workflow.split("uses: openai/codex-action@").length-1,1,"Exactly one paid model invocation allowed");
+assert.ok(workflow.includes("RUN_AUDIT") && workflow.includes("forge-triggers"),"Missing free manual Forge trigger audit");
+assert.ok(workflow.includes("if: inputs.confirmation == 'RUN_RESEARCH'"),"Paid model invocation must be manually gated");
+assert.ok(workflow.includes("forge_trigger_audit.mjs target"),"Missing source-grounded trigger audit invocation");
 assert.ok(!workflow.includes("max_passes:") && !workflow.includes("SECOND_PASS_OK"));
 const freeWorkflow = readFileSync(path.join(ROOT,".github/workflows/validate-dndnext-research-agent.yml"),"utf8");
 assert.ok(freeWorkflow.includes("pull_request:") && freeWorkflow.includes("contents: read"));

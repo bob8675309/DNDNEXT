@@ -7,7 +7,7 @@ on:
         type: choice
         required: true
         default: "NO"
-        options: ["NO", "RUN_RESEARCH"]
+        options: ["NO", "RUN_AUDIT", "RUN_RESEARCH"]
       target_ref:
         description: "Existing trusted research/* or agent/* branch; NEVER main"
         type: string
@@ -17,7 +17,7 @@ on:
         description: "One bounded research/test task (no production operations)"
         type: string
         required: true
-        default: "Diagnose the next failing disposable Forge research validator without changing authoritative source functions."
+        default: "Audit the 31 original Forge creation-adjacent triggers; propose ONE source-exact disposable fixture improvement without changing original functions."
       source_run_id:
         description: "Optional GitHub Actions run ID to import failed-job log as untrusted evidence"
         type: string
@@ -27,8 +27,8 @@ on:
         description: "Source-local Node validator. Full PostgreSQL/JWT CI remains separate."
         type: choice
         required: true
-        default: forge-static
-        options: [forge-static, security-static, handoff-static]
+        default: forge-triggers
+        options: [forge-triggers, forge-static, security-static, handoff-static]
 
 permissions:
   contents: read
@@ -40,7 +40,7 @@ concurrency:
 
 jobs:
   research:
-    if: github.event_name == 'workflow_dispatch' && inputs.confirmation == 'RUN_RESEARCH'
+    if: github.event_name == 'workflow_dispatch' && (inputs.confirmation == 'RUN_RESEARCH' || (inputs.confirmation == 'RUN_AUDIT' && inputs.suite == 'forge-triggers'))
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
@@ -51,6 +51,7 @@ jobs:
       AGENT_TARGET_DIR: target
     steps:
       - name: Confirm API key was intentionally configured
+        if: inputs.confirmation == 'RUN_RESEARCH'
         env:
           OPENAI_KEY_PRESENT: ${{ secrets.OPENAI_API_KEY != '' }}
         shell: bash
@@ -80,10 +81,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: node scripts/agents/research_agent.mjs context
+      - name: Read-only original Forge trigger coverage (no API cost)
+        if: inputs.suite == 'forge-triggers'
+        run: node scripts/agents/forge_trigger_audit.mjs target
       - name: Baseline bounded static test
         id: baseline
         run: node scripts/agents/research_agent.mjs check
       - name: Codex bounded research (one paid run with up to two local corrections)
+        if: inputs.confirmation == 'RUN_RESEARCH'
         uses: openai/codex-action@bdf19a4a223ec2549a3e2274a0cf61556bc07675
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
@@ -93,11 +98,17 @@ jobs:
           codex-args: '["--ephemeral"]'
           output-file: research-agent-pass1.txt
       - name: Enforce research-only patch allowlist after pass 1
+        if: inputs.confirmation == 'RUN_RESEARCH'
         run: node scripts/agents/research_agent.mjs scope
       - name: Retest after pass 1
+        if: inputs.confirmation == 'RUN_RESEARCH'
         id: verify1
         run: node scripts/agents/research_agent.mjs check
+      - name: Refresh Forge trigger coverage after proposed research patch
+        if: inputs.confirmation == 'RUN_RESEARCH' && inputs.suite == 'forge-triggers'
+        run: node scripts/agents/forge_trigger_audit.mjs target
       - name: Package review-only patch; never commit or push
+        if: inputs.confirmation == 'RUN_RESEARCH'
         run: node scripts/agents/research_agent.mjs pack
       - name: Upload human-review patch and sanitized test result
         if: always()
@@ -108,7 +119,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
       - name: Report bounded test failure rather than claim success
-        if: always()
+        if: always() && inputs.confirmation == 'RUN_RESEARCH'
         env:
           FIRST_PASS_OK: ${{ steps.verify1.outputs.passed }}
         run: |

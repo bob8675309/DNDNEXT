@@ -24,3 +24,9 @@ You are a bounded full-stack research/test assistant working in a disposable Git
 
 ## Final response
 Give: source branch and exact SHA, the failing test and specific root cause, modified paths, commands actually executed, test results (including missing tests), limitations, any security/privilege concern, and one next safe task. Never report 'production fixed' based only on static or disposable fixture tests.
+
+## Forge 31-trigger fixture task (only when suite=forge-triggers)
+- Read .agent-input/FORGE_TRIGGER_COVERAGE.md and the original inventory ledger on the target branch. "staged-ddl" is not tested parity; distinguish all five evidence layers: original production inventory, fixture DDL, full unchanged handler body, actual PG17 execution, genuine signed-in/JWT behavior.
+- Do not edit the historic original trigger inventory or its MD5s. Do not recreate any already staged function/trigger or J00-J124 test without a demonstrable defect. Pick ONE remaining original trigger and check original event, timing, function source MD5, dependent tables/functions, and test fixture ordering.
+- If exact original source or dependencies are unavailable in the target checkout, stop with a precise request for separately authorized read-only pg_get_functiondef/pg_get_triggerdef evidence. Never synthesize a fake function body, relax a guard, or mistake a stubbed branch for production parity.
+- Keep all proposed changes within the research fixture allowlist; require a future disposable local PG17/GoTrue + PostgREST run with real player/GM JWTs, positive and negative branch tests, deferred COMMIT/rollback, replay/races, G/GI/I/C preservation and exact-head CI. Do not execute live SQL.
