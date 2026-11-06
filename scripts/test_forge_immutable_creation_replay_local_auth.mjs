@@ -6,6 +6,7 @@ import { randomUUID } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { createClient } from "@supabase/supabase-js";
 import { loadManifest, runSeededForgeScenarios } from "./agents/forge_seeded_scenarios.mjs";
+import { loadStartingSpellPlans } from "./validate_forge_seeded_starting_spells.mjs";
 import { mkdirSync, writeFileSync } from "node:fs";
 const e=process.env;
 for(const [key,value] of Object.entries({
@@ -2335,3 +2336,81 @@ writeFileSync("research-agent-artifact/FORGE_SEEDED_SCENARIOS.json",
 assert.equal(seededReport.cases.length,3);
 assert.equal(seededReport.baseline,"existing-J00-J153-passed-in-same-process");
 console.log("PASS SEEDED S001-S003 signed-in XPHB Fighter/Champion v2/v3 creation, distinct-seed identity, identical replay, changed-intent rejection and source handler rollback; sanitized JSON report saved. Full production permissions and browser UNVERIFIED.");
+
+
+// J154-J157: source-original starting-spell deferred validator, installed
+// AFTER verified S001-S003 and original J00-J153, no mutation of those cases.
+sqlFile("scripts/fixtures/forge_starting_spells_local_auth_pg17.sql");
+const spellHandlerHash=sql(
+ "SELECT md5(pg_get_functiondef('private.validate_player_forge_starting_spells_v1()'::regprocedure))");
+assert.equal(spellHandlerHash,"6870e810de909209c44aecd02f5c72e2");
+assert.equal(sql("SELECT count(*) FROM pg_trigger WHERE tgname='character_progression_validate_player_forge_spells_v1' AND tgrelid='public.character_progression'::regclass AND tgdeferrable AND tginitdeferred AND NOT tgisinternal"),"1");
+console.log("PASS J154 original deferred starting-spell handler+trigger source hash/event/deferrability verified in disposable PG17");
+
+const spellCases=loadStartingSpellPlans();
+assert.deepEqual(spellCases.map(x=>x.mode),[
+ "legal-empty-magic-v2","invalid-magic-array-v2","invalid-noncaster-spell-v2"]);
+const spellPayload=(x)=>subclassDraft(x.name,x.requestId,x.source.level,
+ x.source.subclassName,x.source.subclassSource);
+const reportCases=[];
+const legalSpellPlan=spellCases[0];
+const legalSpellPayload=spellPayload(legalSpellPlan);
+legalSpellPayload.sheet.startingMagicSelections=[];
+const legalSpellId=pass(await call2(people.PLAYER.client,legalSpellPayload),
+ "J155 source-valid noncasting Fighter3 with empty startingMagicSelections");
+const legalSpellState=scenarioSnapshot(legalSpellId);
+assert.deepEqual(legalSpellState.source,legalSpellPlan.source);
+assert.equal(legalSpellState.editorAuthenticated,true);
+for(const [key,expected] of Object.entries(legalSpellPlan.expectedCounts))
+ assert.equal(legalSpellState.counts[key],expected,"J155 canonical "+key);
+assert.equal(sql("SELECT count(*) FROM public.character_spells WHERE character_id='"+legalSpellId+"' AND source_type='class'"),"0");
+const legalGlobal=speciesAbortCounts();
+assert.equal(pass(await call2(people.PLAYER.client,legalSpellPayload),
+ "J155 identical v2 noncaster source spell-intent replay"),legalSpellId);
+assert.deepEqual(scenarioSnapshot(legalSpellId),legalSpellState);
+assert.equal(speciesAbortCounts(),legalGlobal);
+reportCases.push({scenarioId:legalSpellPlan.scenarioId,seed:legalSpellPlan.seed,source:legalSpellPlan.source,
+ mode:legalSpellPlan.mode,realSignedV2:true,sourceHandlerMd5Verified:true,canonicalRowCounts:legalSpellState.counts,
+ noClassSpells:true,replayInert:true});
+console.log("PASS J155 signed XPHB Fighter3 v2 has no class starting spells, accepts [] selections; same nonce/source replay inert and original grants/gear/cash remain");
+
+const malformedPlan=spellCases[1],malformedPayload=spellPayload(malformedPlan);
+malformedPayload.sheet.startingMagicSelections={notAnArray:true};
+const beforeMalformed=speciesAbortCounts();
+const malformedOutcome=await call2(people.PLAYER.client,malformedPayload);
+assert.ok(malformedOutcome.error,"J156 original source unexpectedly allowed non-array startingMagicSelections");
+assert.match(malformedOutcome.error.message||"",/startingMagicSelections must be a JSON array\./i,
+ "J156 must reach the source-original deferred handler's exact error");
+assert.equal(speciesAbortCounts(),beforeMalformed,"J156 rejected original deferred write leaked canonical state/stock");
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+malformedPlan.requestId+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE name='"+malformedPlan.name+"'"),"0");
+reportCases.push({scenarioId:malformedPlan.scenarioId,seed:malformedPlan.seed,mode:malformedPlan.mode,
+ sourceHandlerMd5Verified:true,realSignedV2:true,originalDeferredMessageMatched:true,
+ failedCreationRolledBack:true,nonceReservationAbsent:true});
+console.log("PASS J156 genuine signed creation rejects malformed startingMagicSelections in original deferred handler, no CP/CS/G/GI/I/C/S/nonce leak");
+
+const unearnedPlan=spellCases[2],unearnedPayload=spellPayload(unearnedPlan);
+const beforeUnearned=speciesAbortCounts();
+const unearnedOutcome=await call2(people.PLAYER.client,unearnedPayload,spell(fire));
+assert.ok(unearnedOutcome.error,"J157 source original non-spellcaster unexpectedly accepted class cantrip");
+assert.match(unearnedOutcome.error.message||"",/This class does not grant starting spell choices at level 3\./i,
+ "J157 must reach original deferred non-spellcaster starting-spell validator, not an unrelated rejection");
+assert.equal(speciesAbortCounts(),beforeUnearned,"J157 source class spell rejection leaked canonical changes");
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+unearnedPlan.requestId+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE name='"+unearnedPlan.name+"'"),"0");
+reportCases.push({scenarioId:unearnedPlan.scenarioId,seed:unearnedPlan.seed,mode:unearnedPlan.mode,
+ sourceHandlerMd5Verified:true,realSignedV2:true,sourceSpellDenialMatched:true,
+ failedCreationRolledBack:true,nonceReservationAbsent:true});
+console.log("PASS J157 genuine signed Fighter3 class Fire Bolt denied by original deferred no-starting-spells source, atomic CP/CS/G/GI/I/C/nonce rollback");
+
+writeFileSync("research-agent-artifact/FORGE_STARTING_SPELL_SCENARIOS.json",
+ JSON.stringify({schemaVersion:1,suite:"forge-original-starting-spells-v1",
+ fixture:"disposable-pg17-real-local-gotrue-postgrest",
+ trigger:"character_progression_validate_player_forge_spells_v1",
+ originalHandlerMd5:spellHandlerHash,
+ cases:reportCases,
+ baseline:"existing-J00-J153-and-seeded-S001-S003-passed-in-same-process",
+ limitations:["reduced local XPHB class catalogue/view and RLS; not full spellcaster coverage",
+ "original handler unchanged; 16 other original triggers remain absent at baseline",
+ "no live-production/browser/full prepared spell acceptance or rule-authority release"]},null,2)+"\n","utf8");
+console.log("PASS J154-J157 original source-starting-spell deferred trigger real GoTrue scope; report sanitized; production/browser/catalog completeness UNVERIFIED");

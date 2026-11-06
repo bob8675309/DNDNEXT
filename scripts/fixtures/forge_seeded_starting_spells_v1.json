@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "suite": "forge-original-starting-spells-v1",
+  "scenarios": [
+    {
+      "scenarioId": "fighter-no-starting-magic",
+      "seed": 63154,
+      "mode": "legal-empty-magic-v2"
+    },
+    {
+      "scenarioId": "fighter-magic-wrong-json-type",
+      "seed": 63155,
+      "mode": "invalid-magic-array-v2"
+    },
+    {
+      "scenarioId": "fighter-illegal-class-cantrip",
+      "seed": 63156,
+      "mode": "invalid-noncaster-spell-v2"
+    }
+  ]
+}
