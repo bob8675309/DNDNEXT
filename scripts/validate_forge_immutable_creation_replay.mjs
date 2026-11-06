@@ -612,3 +612,44 @@ for(const forbidden of ["ucggczovhmauhshvhusx","SUPABASE_SERVICE_ROLE_KEY","SERV
  assert.ok(!originalCharacterTagGuard.includes(forbidden)&&!localCharacterTagGuard.includes(forbidden),
   "Original tag guard fixture contains forbidden live identifier or credential");
 console.log("PASS STATIC J125-J132 original source/MD5, trigger timing, reduced local RLS and genuine JWT test contract; no production or full RLS parity.");
+
+
+// J133–J141: source-original character portrait library ID synchronization.
+const portraitSource=readFileSync("scripts/fixtures/forge_characters_portrait_sync_original_pg17.sql","utf8");
+const portraitStage=readFileSync("scripts/fixtures/forge_characters_portrait_sync_local_auth_pg17.sql","utf8");
+for(const token of [
+ "CREATE OR REPLACE FUNCTION private.sync_character_portrait_library_id_v1()",
+ "74cb0bf9d7a614a860344f12cf787e05",
+ "new.portrait_library_id := null",
+ "new.portrait_library_id := v_match",
+ "p.storage_path = new.portrait_storage_path",
+ "p.public_url = new.portrait_url",
+ "p.sort_order, p.name"
+])assert.ok(portraitSource.includes(token),"Original portrait library sync source changed: "+token);
+for(const token of [
+ "current_database()<>'postgres'","170000 AND 179999",
+ "private.test_admins","public.npc_portrait_library",
+ "md5(pg_get_functiondef('private.sync_character_portrait_library_id_v1()'",
+ "74cb0bf9d7a614a860344f12cf787e05",
+ "ADD COLUMN name text NOT NULL DEFAULT 'local-fixture'",
+ "ADD COLUMN sort_order integer NOT NULL DEFAULT 0",
+ "BEFORE INSERT OR UPDATE OF portrait_storage_path, portrait_url, portrait_source ON public.characters",
+ "EXECUTE FUNCTION private.sync_character_portrait_library_id_v1()",
+ "GRANT UPDATE(portrait_source,portrait_storage_path,portrait_url)",
+ "NOTIFY pgrst,'reload schema'"
+])assert.ok(portraitStage.includes(token),"Original portrait acceptance fixture missing: "+token);
+for(let i=133;i<=141;i++)
+ assert.ok(localAuth.includes("PASS J"+i),"Missing original portrait signed JWT acceptance J"+i);
+for(const token of [
+ "portraitASet","conflictingUrl","urlOnly","inactiveOnly","nonLibrary",
+ "gmPortrait","outsiderPortrait","anonPortrait","portraitOwnedBefore",
+ "portraitOwnedAfter","PASS LOCAL REAL GoTrue J00-J141"
+])assert.ok(localAuth.includes(token),"Missing signed-in portrait source test "+token);
+for(const file of [
+ "forge_characters_portrait_sync_original_pg17.sql",
+ "forge_characters_portrait_sync_local_auth_pg17.sql"
+])assert.ok(workflow.includes(file),"PR CI does not watch portrait fixture "+file);
+for(const forbidden of ["ucggczovhmauhshvhusx","SUPABASE_SERVICE_ROLE_KEY","SERVICE_ROLE_KEY"])
+ assert.ok(!portraitSource.includes(forbidden)&&!portraitStage.includes(forbidden),
+  "Original portrait fixture contains live project identifier/secret");
+console.log("PASS STATIC J133-J141 original portrait source, MD5, trigger timing, reduced catalog, authenticated JWT tests; production ACL/browser remain separate.");

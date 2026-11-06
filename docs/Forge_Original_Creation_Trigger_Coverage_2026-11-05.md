@@ -86,3 +86,9 @@ The live deferred `character_progression_validate_player_forge_authority_v1` tri
 
 That function depends on `private.player_forge_source_choice_legacy_v1`, `private.validate_player_forge_feat_instances_v1(jsonb)`, `private.normalize_player_choice_name_v1`, `public.character_option_catalog_preferred`, `private.player_forge_choice_option_is_valid_v1`, source-valid `character_spells` and `spells_catalog`, and progression `subclass_name`. The reduced local progression table omits `subclass_name`; its reduced catalogue does not include the preferred-option view or all listed validation helpers. It also checks that the sheet's array summaries of feats and spells exactly correspond to source-granted canonical records. **Do not** substitute permissive stubs or call this source-covered until those dependencies and class-specific normalizations are reproduced and real signed-in positive/negative cases pass.
 
+
+## 2026-11-05 continuation — source-original tag guard accepted; portrait-sync pending
+
+[Exact-head authenticated run 42164951469](https://github.com/bob8675309/DNDNEXT/actions/runs/42164951469) at `8b247ebe9df2d77410b087cb9370d3dea3f938e9` passed existing J00–J124 and new original source/trigger J125–J132 under genuine local GoTrue/PostgREST + PG17. The initial J126 miss was caused by the deliberate earlier J29 editor revocation; the fixture now asserts prior revocation before restoring local editor permission. Both the original 42501 and nested tag sync were verified. **13/31 original table triggers installed** at this checkpoint; 18 absent, with reduced RLS and catalog limitations.
+
+Further J133–J141 original portrait-library sync fixture is staged on this work branch and requires independent exact-head CI. Its source function MD5 is `74cb0bf9d7a614a860344f12cf787e05`, with original trigger event/timing. Do NOT mark it accepted until real signed-in checks pass; do not rewrite the earlier 7/31 historic snapshot as if it had not occurred.

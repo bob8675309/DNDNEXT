@@ -2048,3 +2048,99 @@ assert.deepEqual(originalTagResources(taggedId),tagResourceBeforeRevocation);
 sql("UPDATE public.character_permissions SET can_edit=true WHERE character_id='"+taggedId+"' AND user_id='"+uid("PLAYER")+"'");
 console.log("PASS J132 revoked editor denied via local RLS with no additional G/GI/I/C/CP/CS side effects");
 console.log("PASS LOCAL REAL GoTrue J00-J132: original characters player-tags guard and nested sync. Production RLS, full 31-trigger coverage and browser acceptance NOT PROVEN.");
+
+// J133–J141: original portrait-library sync AFTER the accepted J132 tag guard.
+sqlFile("scripts/fixtures/forge_characters_portrait_sync_local_auth_pg17.sql");
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.sync_character_portrait_library_id_v1()'::regprocedure))"),
+ "74cb0bf9d7a614a860344f12cf787e05");
+assert.equal(sql("SELECT count(*) FROM pg_trigger WHERE tgname='sync_character_portrait_library_id_v1' AND tgrelid='public.characters'::regclass AND NOT tgisinternal"),"1");
+console.log("PASS J133 original portrait sync source hash and BEFORE INSERT/UPDATE event installed in disposable PG17");
+
+const portraitA=id(9951),portraitB=id(9952),portraitInactive=id(9953);
+const pathA="forge-fixture/verified-a.png",pathB="forge-fixture/verified-b.png",pathInactive="forge-fixture/inactive.png";
+const urlA="https://portrait-fixture.invalid/a.png",urlB="https://portrait-fixture.invalid/b.png";
+sql("INSERT INTO public.npc_portrait_library(id,name,is_active,storage_path,public_url,sort_order) VALUES"
+ +"('"+portraitA+"','Approved A',true,'"+pathA+"','"+urlA+"',9),"
+ +"('"+portraitB+"','Approved B',true,'"+pathB+"','"+urlB+"',1),"
+ +"('"+portraitInactive+"','Inactive C',false,'"+pathInactive+"','https://portrait-fixture.invalid/c.png',0)");
+assert.equal(sql("SELECT count(*) FROM public.npc_portrait_library WHERE id IN ('"+portraitA+"','"+portraitB+"','"+portraitInactive+"')"),"3");
+console.log("PASS J134 locally reduced, source-shaped active/inactive portrait catalog specimens added");
+
+const setPortrait=(client,data)=>client.from("characters").update(data)
+ .eq("id",taggedId).select("id,portrait_library_id,portrait_source");
+const portraitOwnedBefore=({
+ sheet:sql("SELECT md5(to_jsonb(t)::text) FROM public.character_sheets t WHERE character_id='"+taggedId+"'"),
+ cp:sql("SELECT md5(to_jsonb(t)::text) FROM public.character_progression t WHERE character_id='"+taggedId+"'"),
+ grants:rowFingerprint("public.character_option_grants","character_id='"+taggedId+"'"),
+ instances:rowFingerprint("public.character_option_grant_instances","character_id='"+taggedId+"'"),
+ items:rowFingerprint("public.inventory_items","owner_id='"+taggedId+"'"),
+ currency:sql("SELECT md5(to_jsonb(t)::text) FROM public.character_currency t WHERE character_id='"+taggedId+"'"),
+ counts:speciesAbortCounts()
+});
+const portraitASet=await setPortrait(people.PLAYER.client,{
+ portrait_source:"library",portrait_storage_path:pathA,portrait_url:urlA
+});
+assert.ifError(portraitASet.error);
+assert.equal(portraitASet.data?.length,1);
+assert.equal(portraitASet.data[0].portrait_library_id,portraitA);
+console.log("PASS J135 real signed-in editor sets original approved library portrait using storage path");
+
+const conflictingUrl=await setPortrait(people.PLAYER.client,{
+ portrait_source:"library",portrait_storage_path:pathA,portrait_url:urlB
+});
+assert.ifError(conflictingUrl.error);
+assert.equal(conflictingUrl.data[0]?.portrait_library_id,portraitA,
+ "Original source storage-path match must precede conflicting public URL and sort order");
+console.log("PASS J136 source-exact portrait path priority wins over a different valid URL");
+
+const urlOnly=await setPortrait(people.PLAYER.client,{
+ portrait_source:"library",portrait_storage_path:null,portrait_url:urlB
+});
+assert.ifError(urlOnly.error);
+assert.equal(urlOnly.data[0]?.portrait_library_id,portraitB);
+console.log("PASS J137 original portrait library URL fallback resolves approved active source record");
+
+const inactiveOnly=await setPortrait(people.PLAYER.client,{
+ portrait_source:"library",portrait_storage_path:pathInactive,portrait_url:null
+});
+assert.ifError(inactiveOnly.error);
+assert.equal(inactiveOnly.data[0]?.portrait_library_id,null);
+console.log("PASS J138 inactive portrait source cannot resolve library ID, no fabricated catalog choice");
+
+const nonLibrary=await setPortrait(people.PLAYER.client,{
+ portrait_source:"upload",portrait_storage_path:pathA,portrait_url:urlA
+});
+assert.ifError(nonLibrary.error);
+assert.equal(nonLibrary.data[0]?.portrait_library_id,null);
+console.log("PASS J139 original non-library portrait source clears stale library ID");
+
+const gmPortrait=await setPortrait(people.ADMIN.client,{
+ portrait_source:"library",portrait_storage_path:pathB,portrait_url:urlB
+});
+assert.ifError(gmPortrait.error);
+assert.equal(gmPortrait.data[0]?.portrait_library_id,portraitB);
+const outsiderPortrait=await setPortrait(people.OUTSIDER.client,{
+ portrait_source:"library",portrait_storage_path:pathA,portrait_url:urlA
+});
+assert.ifError(outsiderPortrait.error);
+assert.equal(outsiderPortrait.data?.length,0);
+const anonPortrait=await setPortrait(makeClient(),{
+ portrait_source:"library",portrait_storage_path:pathA,portrait_url:urlA
+});
+assert.ok(anonPortrait.error,"Anonymous portrait edit unexpectedly received table privileges");
+assert.equal(sql("SELECT portrait_library_id FROM public.characters WHERE id='"+taggedId+"'"),portraitB);
+console.log("PASS J140 Admin with editor grant allowed; outsider and anon denied under reduced local character RLS");
+
+const portraitOwnedAfter=({
+ sheet:sql("SELECT md5(to_jsonb(t)::text) FROM public.character_sheets t WHERE character_id='"+taggedId+"'"),
+ cp:sql("SELECT md5(to_jsonb(t)::text) FROM public.character_progression t WHERE character_id='"+taggedId+"'"),
+ grants:rowFingerprint("public.character_option_grants","character_id='"+taggedId+"'"),
+ instances:rowFingerprint("public.character_option_grant_instances","character_id='"+taggedId+"'"),
+ items:rowFingerprint("public.inventory_items","owner_id='"+taggedId+"'"),
+ currency:sql("SELECT md5(to_jsonb(t)::text) FROM public.character_currency t WHERE character_id='"+taggedId+"'"),
+ counts:speciesAbortCounts()
+});
+assert.deepEqual(portraitOwnedAfter,portraitOwnedBefore,
+ "Original portrait sync unexpectedly changed canonical G/GI/I/C/CP/CS or stock/nonce counts");
+console.log("PASS J141 portrait source transitions leave original Forge item, cash, grant, progression and sheet state untouched");
+console.log("PASS LOCAL REAL GoTrue J00-J141: original source-hashed player tags guard plus library portrait source transitions. Full production RLS, full catalog and browser still UNVERIFIED.");
