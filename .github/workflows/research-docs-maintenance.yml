@@ -69,7 +69,7 @@ jobs:
             --arg branch "$TARGET_BRANCH" \
             --arg sha "$SOURCE_SHA" \
             --arg content "$data" \
-            '{query:$query,variables:{input:{branch:{repositoryNameWithOwner:$repo,refName:$branch},expectedHeadOid:$sha,message:{headline:"docs(bot): refresh research-branch evidence snapshot"},fileChanges:{additions:[{path:"docs/RESEARCH_BRANCH_STATUS.generated.md",contents:$content}]}}}}' \
+            '{query:$query,variables:{input:{branch:{repositoryNameWithOwner:$repo,branchName:$branch},expectedHeadOid:$sha,message:{headline:"docs(bot): refresh research-branch evidence snapshot"},fileChanges:{additions:[{path:"docs/RESEARCH_BRANCH_STATUS.generated.md",contents:$content}]}}}}' \
             > "$RUNNER_TEMP/docs-only-graphql.json"
           gh api graphql --input "$RUNNER_TEMP/docs-only-graphql.json" --jq '.data.createCommitOnBranch.commit.oid'
           echo 'Docs-only research commit published; no model or production access.'
