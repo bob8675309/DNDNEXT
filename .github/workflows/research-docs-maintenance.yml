@@ -1,0 +1,78 @@
+name: Research docs auto-maintainer (no AI, docs-only)
+on:
+  push:
+    branches:
+      - 'research/**'
+      - 'agent/**'
+permissions:
+  contents: read
+jobs:
+  docs-only:
+    if: github.repository == 'bob8675309/DNDNEXT' && github.actor == 'bob8675309' && github.event_name == 'push'
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    concurrency:
+      group: dndnext-research-status-publisher
+      cancel-in-progress: false
+    steps:
+      - name: Checkout exact source SHA without persisted write credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Node without network/package installation
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Test free docs maintainer scope and evidence rules
+        run: |
+          set -euo pipefail
+          node --check scripts/agents/research_docs_maintainer.mjs
+          node scripts/agents/validate_research_docs_maintainer.mjs
+      - name: Generate branch status from exact local source
+        env:
+          DOCS_TARGET_BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          node scripts/agents/research_docs_maintainer.mjs "$RUNNER_TEMP/RESEARCH_BRANCH_STATUS.generated.md"
+          test -s "$RUNNER_TEMP/RESEARCH_BRANCH_STATUS.generated.md"
+          cat "$RUNNER_TEMP/RESEARCH_BRANCH_STATUS.generated.md" >> "$GITHUB_STEP_SUMMARY"
+      - name: Publish source snapshot into separate docs archive branch only
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ github.sha }}
+          TARGET_BRANCH: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = 'bob8675309/DNDNEXT'
+          [[ "$TARGET_BRANCH" =~ ^(research|agent)/[A-Za-z0-9_-]+(/[A-Za-z0-9._-]+)*$ ]] || exit 1
+          [[ "$TARGET_BRANCH" != *'..'* ]] || exit 1
+          [[ "$SOURCE_SHA" =~ ^[a-f0-9]{40}$ ]] || exit 1
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          output="$RUNNER_TEMP/RESEARCH_BRANCH_STATUS.generated.md"
+          archive_branch='docs/agent-status'
+          safe_name="$(printf '%s' "$TARGET_BRANCH" | tr '/' '-')"
+          snapshot="docs/research-status/$safe_name.generated.md"
+          old_content="$(gh api "repos/$GITHUB_REPOSITORY/contents/$snapshot?ref=$archive_branch" --jq .content 2>/dev/null || true)"
+          if [[ -n "$old_content" ]] && printf '%s' "$old_content" | base64 -d | cmp -s - "$output"; then
+            echo 'Research status already synchronized.'
+            exit 0
+          fi
+          archive_head="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$archive_branch" --jq .object.sha)"
+          [[ "$archive_head" =~ ^[a-f0-9]{40}$ ]] || exit 1
+          data="$(base64 -w0 "$output")"
+          jq -n \
+            --arg query 'mutation($input:CreateCommitOnBranchInput!){createCommitOnBranch(input:$input){commit{oid}}}' \
+            --arg repo "$GITHUB_REPOSITORY" \
+            --arg branch "$archive_branch" \
+            --arg sha "$archive_head" \
+            --arg content "$data" \
+            --arg file "$snapshot" \
+            --arg title "docs(bot): update source evidence for $TARGET_BRANCH" \
+            '{query:$query,variables:{input:{branch:{repositoryNameWithOwner:$repo,branchName:$branch},expectedHeadOid:$sha,message:{headline:$title},fileChanges:{additions:[{path:$file,contents:$content}]}}}}' \
+            > "$RUNNER_TEMP/docs-only-graphql.json"
+          gh api graphql --input "$RUNNER_TEMP/docs-only-graphql.json" --jq '.data.createCommitOnBranch.commit.oid'
+          echo "Snapshot published to $archive_branch/$snapshot without changing the research PR head."

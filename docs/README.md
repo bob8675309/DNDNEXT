@@ -1,5 +1,8 @@
 # DNDNext Living Documentation Index
 
+> **Forge research status (automatically reconciled):** [Open the no-cost branch snapshot](https://github.com/bob8675309/DNDNEXT/blob/docs/agent-status/docs/research-status/research-forge-immutable-creation-replay-20261105.generated.md). It records the exact source SHA, staged trigger DDL and only independently verified JWT receipts. Consult [ACTIVE_WORK.md](ACTIVE_WORK.md), [HANDOFF_LOG.md](HANDOFF_LOG.md) and [research docs policy](Research_Docs_Maintenance_2026-11-06.md) for the authored contracts; neither CI success nor a docs snapshot constitutes a production merge.
+
+
 > **2026-11-05 J117–J124 POSITIVE XPHB AASIMAR SOURCE SPELL (NEW CI PENDING):** Draft #324 previous [J109–J116 exact-head PASS](https://github.com/bob8675309/DNDNEXT/actions/runs/42148409154) at `8102ebcce73f67b25abcb040c5b3852d3d4fa641`, 4/4 workflows. New original live 5 source-magic helper bodies/MD5s, source-exact **Aasimar → Light Bearer → XPHB Light** species grant via signed `create_player_character_v3` plus Fighter/Soldier/Lucky 5gp market I/S/C and nonce. J117–J124 test positive grant, replay, mismatched canonical species, wrong trait, unauthorized Fire Bolt, missing Light with exact deferred handler messages + atomic rollback. **Source-level casting ability release gap:** Light Bearer specifies CHA, but original species materializer likely persists NULL; J118 explicitly verifies/flags, does not silently fix. Reduced spell version preference/catalog; no complete original 31 triggers/browser. [Research evidence/limits](Forge_Aasimar_Light_Bearer_Positive_Source_2026-11-05.md). **J117–J124 pending exact JWT CI.** No main/production SQL/deploy/merge, keep Vercel pushes bundled.
 
 
