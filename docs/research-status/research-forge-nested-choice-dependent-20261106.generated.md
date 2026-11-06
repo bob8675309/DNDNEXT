@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/forge-nested-choice-dependent-20261106` |
-| Exact source commit represented by this archive snapshot | `b6824276488d790d11e9728b2857b6e32c519194` |
+| Exact source commit represented by this archive snapshot | `7f092ab329653e02dd5436dc7caf4a547d91ce73` |
 | Compared with | `51c351a142d03378dff8e47e05182afe21a15622` (main comparison base) |
-| Last source commit title | test(forge): stage original deferred nested-choice dependency guard with signed seeds |
+| Last source commit title | docs(forge): receipt original nested-choice JWT acceptance and updated trigger matrix |
 | Files changed relative to main | 105 (77 non-docs; 28 docs) |
-| Last source commit | 9 files (6 non-docs; 3 authored docs) |
+| Last source commit | 4 files (0 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,15 +17,10 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-forge-immutable-creation-replay.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/Forge_Nested_Choice_Dependencies_2026-11-06.md`
+- `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
 - `docs/HANDOFF_LOG.md`
-- `scripts/fixtures/forge_nested_choices_local_auth_pg17.sql`
-- `scripts/fixtures/forge_nested_choices_original_pg17.sql`
-- `scripts/fixtures/forge_seeded_nested_choices_v1.json`
-- `scripts/test_forge_immutable_creation_replay_local_auth.mjs`
-- `scripts/validate_forge_seeded_nested_choices.mjs`
 
 ## Research-branch change inventory versus main
 

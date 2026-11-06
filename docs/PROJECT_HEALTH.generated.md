@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-06T23:23:50Z | research/forge-nested-choice-dependent-20261106 (b6824276488d790d11e9728b2857b6e32c519194) | 79a6340c08e743e71e1072e40e6ba7204f735a29 |
+| 2026-11-06T23:29:12Z | research/forge-nested-choice-dependent-20261106 (7f092ab329653e02dd5436dc7caf4a547d91ce73) | 79a6340c08e743e71e1072e40e6ba7204f735a29 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
