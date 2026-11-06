@@ -539,6 +539,44 @@
         "No production SQL changes, grants, merge, or deployment without owner approval",
         "Do not change world-map travel/camping/weather or mix world/town and tactical maps"
       ]
+    },
+    {
+      "id": "prototype-project-health",
+      "status": "research-only",
+      "code_paths": [
+        ".github/workflows/research-docs-maintenance.yml",
+        "scripts/agents/project_health.mjs",
+        "scripts/agents/validate_project_health.mjs",
+        "scripts/agents/research_docs_maintainer.mjs",
+        "scripts/agents/validate_research_docs_maintainer.mjs",
+        "docs/Research_Docs_Maintenance_2026-11-06.md"
+      ],
+      "tests": [
+        "scripts/agents/validate_project_health.mjs",
+        "scripts/agents/validate_research_docs_maintainer.mjs"
+      ],
+      "last_checked": "2026-11-06",
+      "open_gaps": [
+        "Research branch only, not merged to main or deployed.",
+        "Only GitHub PR/CI/source-snapshot evidence; no production Supabase, Vercel SHA or browser verification.",
+        "Snapshots run on owner research pushes; workflows that complete after capture may display in progress until the next refresh.",
+        "Full original Forge table triggers, concurrency, privilege and source-catalog parity are separate release gates."
+      ],
+      "label": "Free prototype research project-health monitor",
+      "scope_note": "Prototype testing; Work is on-demand only. GitHub read-only PR, exact-sha run and docs data; atomic archive-only generated Markdown. No paid AI or production changes.",
+      "verification": {
+        "source": "source-checked-against-held-agent-and-forge-branches",
+        "live_database": "not-used",
+        "deployed_sha": "not-released-main-unchanged",
+        "test_status": "source-3a95cf2: Forge docs 42268108481, original trigger 42268117940, full JWT+PG17 42268118300 SUCCESS",
+        "browser_acceptance": "unverified",
+        "owner_approval": "owner-approved-no-extra-cost-project-health-prototype-automation; no merge"
+      },
+      "protected_boundaries": [
+        "Never edit main, protected world/town maps, live Supabase, player state or runtime code",
+        "Generated archive only: docs/research-status/*.generated.md and docs/PROJECT_HEALTH.generated.md",
+        "No paid Work schedule, Codex, API key, autonomous merging or Vercel deploy"
+      ]
     }
   ],
   "research": {
