@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/forge-wizard-spell-counts-20261106` |
-| Exact source commit represented by this archive snapshot | `38edc02f66f17e73a16fd0b62329c161ade4f6a2` |
+| Exact source commit represented by this archive snapshot | `8bdc77a8eecacaf15c9e94c2828d64f03dbee34a` |
 | Compared with | `51c351a142d03378dff8e47e05182afe21a15622` (main comparison base) |
-| Last source commit title | test(forge): honor original starting-magic exactness for source Wizard fixture |
+| Last source commit title | docs(forge): receipt real JWT Wizard source-count acceptance and next trigger gate |
 | Files changed relative to main | 100 (73 non-docs; 27 docs) |
-| Last source commit | 4 files (1 non-docs; 3 authored docs) |
+| Last source commit | 4 files (0 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
 
@@ -18,9 +18,9 @@ The latest source commit includes authored documentation. Verify correctness and
 ## Latest source commit paths
 
 - `docs/ACTIVE_WORK.md`
+- `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
 - `docs/Forge_Wizard_Starting_Spell_Counts_2026-11-06.md`
 - `docs/HANDOFF_LOG.md`
-- `scripts/test_forge_immutable_creation_replay_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
