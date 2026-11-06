@@ -1,6 +1,6 @@
 # Original XPHB Wizard starting spells — seeded source/GoTrue research
 
-**Research-only candidate — 2026-11-06; real CI PENDING.** Held branch `research/forge-wizard-spell-counts-20261106` directly based on draft [#329](https://github.com/bob8675309/DNDNEXT/pull/329) source `dbf701d87db738ccaefe4f179f006319b132a3e9`; upstream draft #328, #324 and #321 remain unmerged. No source-original handler changes or production DB writes.
+**Research-only candidate — 2026-11-06; first CI failed at J159 original starting-magic exactness; corrected real CI pending.** Held branch `research/forge-wizard-spell-counts-20261106` directly based on draft [#329](https://github.com/bob8675309/DNDNEXT/pull/329) source `dbf701d87db738ccaefe4f179f006319b132a3e9`; upstream draft #328, #324 and #321 remain unmerged. No source-original handler changes or production DB writes.
 
 ## Live source of truth (read-only observations)
 
@@ -33,3 +33,11 @@ This is a **nine-spell source specimen**, not full `class_catalog_preferred` sou
 Before completion: exact-head source-original PG17+real local GoTrue CI, handoff registry, Class and trigger inventory; check sanitized diagnostics and Vercel preview avoidance; append `HANDOFF_LOG.md` and update `ACTIVE_WORK.md` with accepted/rejected status, exact SHA and one bounded next task.
 
 **One next task:** execute and diagnose the exact-head Wizard J158–J160 research CI, then update the permanent handoff on this branch without releasing to production.
+
+## First authenticated Wizard attempt — exactness guard failure (2026-11-06)
+
+At source commit `4db908faf5fc4b90e0847314d6e3a87775cc91f9`, [CI 42307389384](https://github.com/bob8675309/DNDNEXT/actions/runs/42307389384) passed the source/PG17 static job and J00–J157 plus S001–S003; J158 installed and verified the actual source-identified Wizard spell/progression fixture. J159 **FAILED**, returning `Starting magic summary does not match authoritative starting spell rows.` This error is not from the new Wizard prepared-count test. The installed exact original deferred `private.validate_player_forge_starting_magic_exactness_v1()` (source MD5 `ba645ad0f2c17addad0b40e0602c2ac8`) checks `sheet.startingMagicSelections` against every actual v3 `character_spells` row, including `spell_id`, `source_type`, `source_key`, and `prepared`. The first Wizard test provided `[]` while the original v3 function materialized nine spells. This is correctly rejected, and it demonstrates source-original protection rather than a game bug.
+
+**Corrective fixture (pending new exact-head CI):** Require the sheet summary and signed-in `p_magic_selections` to hold the same nine source-qualified `spell_id/source_type=class/source_key=wizard/prepared` choices. For the failing case, preserve all nine entries but mark Shield unprepared, so both original exactness and source/summary authority validators should accept the structure while the **unchanged** original starting-spell count validator must reject 3 prepared. Hash-pin the original exactness handler and its deferred trigger as well. No original function, canonical spell identity, required counts, or new permissions altered.
+
+The original coverage remains **16/31 triggers staged, 15 missing** on the held stack; the starting-magic exactness trigger was previously source-staged at J103 and does not represent newly installed DDL.

@@ -2424,6 +2424,11 @@ const wizardPlan=loadWizardPlans(); // strict read-only live spell IDs + genuine
 assert.deepEqual(wizardPlan.cases.map(x=>x.mode),["complete","underprepared"]);
 assert.equal(sql("SELECT md5(pg_get_functiondef('private.validate_player_forge_starting_spells_v1()'::regprocedure))"),
  "6870e810de909209c44aecd02f5c72e2");
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.validate_player_forge_starting_magic_exactness_v1()'::regprocedure))"),
+ "ba645ad0f2c17addad0b40e0602c2ac8");
+assert.equal(sql("SELECT count(*) FROM pg_trigger WHERE tgrelid='public.character_progression'::regclass "+
+ "AND tgname='character_progression_validate_player_forge_starting_magic_exac' "+
+ "AND tgdeferrable AND tginitdeferred AND NOT tgisinternal"),"1");
 assert.equal(sql("SELECT count(*) FROM public.class_catalog_preferred WHERE class_key='wizard' AND source='XPHB' AND spellcasting_ability='int'"),"1");
 const idCounts=wizardPlan.spells.map(s=>({
  id:s.id,name:s.name,level:s.level,source:s.source,classes:s.classes
@@ -2442,7 +2447,7 @@ const prepareWizardSelections=(mode)=>{
  const prepared=new Set(wizardPlan.preparedSpellNames);
  if(mode==="underprepared")prepared.delete("Shield");
  const choices=wizardPlan.spells.map(s=>({
-  spell_id:s.id,source_type:"class",access_type:"class-list",
+  spell_id:s.id,source_type:"class",source_key:"wizard",access_type:"class-list",
   prepared:s.level===0 || prepared.has(s.name)
  }));
  assert.equal(choices.filter((v,i)=>wizardPlan.spells[i].level===0).length,3);
@@ -2451,9 +2456,12 @@ const prepareWizardSelections=(mode)=>{
    mode==="complete"?4:3);
  return choices;
 };
-const wizardPayload=(plan)=>{
+const wizardPayload=(plan,selections)=>{
  const p=wizard(plan.name,plan.requestId);
- p.sheet.startingMagicSelections=[]; // presence activates original v3 startingMagic path
+ // Exact source-original startingMagicExactness requires the full expected
+ // spell_id/source_type/source_key/prepared summary to match v3 rows at COMMIT.
+ // An empty [] is valid only for no-magic Fighter, never for Wizard.
+ p.sheet.startingMagicSelections=JSON.parse(JSON.stringify(selections));
  p.sheet.spells=wizardPlan.spells.map(s=>s.name);
  p.sheet.rulesetSource="XPHB";
  return p;
@@ -2469,8 +2477,8 @@ const wizardCounts=(cid)=>JSON.parse(sql(
  ")::text FROM public.character_spells cs JOIN public.spells_catalog s ON s.id=cs.spell_id "+
  "WHERE cs.character_id='"+cid+"'"));
 const liveWizardCases=[];
-const wizardValidPlan=wizardPlan.cases[0],wizardValidPayload=wizardPayload(wizardValidPlan);
-const wizardSelections=prepareWizardSelections("complete");
+const wizardValidPlan=wizardPlan.cases[0],wizardSelections=prepareWizardSelections("complete");
+const wizardValidPayload=wizardPayload(wizardValidPlan,wizardSelections);
 const wizardValidId=pass(await call3(people.PLAYER.client,wizardValidPayload,wizardSelections),
  "J159 signed v3 source-XPHB Wizard L1 with 3 legal cantrips, 6 book spells, 4 prepared");
 const wizardState=scenarioSnapshot(wizardValidId);
@@ -2496,7 +2504,8 @@ assert.deepEqual(scenarioSnapshot(wizardValidId),wizardState);
 assert.deepEqual(wizardCounts(wizardValidId),wizardSpellCounts);
 assert.equal(speciesAbortCounts(),wizardGlobalAfter);
 const changedPreparation=prepareWizardSelections("underprepared");
-const changedNonce=await call3(people.PLAYER.client,wizardValidPayload,changedPreparation);
+const changedNonce=await call3(people.PLAYER.client,
+ wizardPayload(wizardValidPlan,changedPreparation),changedPreparation);
 denied(changedNonce,"22023","J159 modified prepared selections on existing immutable nonce");
 assert.deepEqual(scenarioSnapshot(wizardValidId),wizardState);
 assert.equal(speciesAbortCounts(),wizardGlobalAfter);
@@ -2508,7 +2517,8 @@ liveWizardCases.push({
 });
 console.log("PASS J159 genuine signed-in XPHB Wizard v3 3 legal cantrips + 6 book spells + 4 prepared; canonical source/slots/creator and exact-intent replay accepted, changed prepared selection nonce rejected 22023");
 
-const wizardInvalidPlan=wizardPlan.cases[1],wizardInvalidPayload=wizardPayload(wizardInvalidPlan);
+const wizardInvalidPlan=wizardPlan.cases[1];
+const wizardInvalidPayload=wizardPayload(wizardInvalidPlan,changedPreparation);
 const globalBeforeWizardFailure=speciesAbortCounts();
 const underprepared=await call3(people.PLAYER.client,wizardInvalidPayload,changedPreparation);
 assert.ok(underprepared.error,"J160 original deferred Wizard prepared-count validator incorrectly accepted 3 prepared");
