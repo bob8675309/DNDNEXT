@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/forge-immutable-creation-replay-20261105` |
-| Exact source commit represented by this archive snapshot | `3a95cf24615a231564eeff20586b1a813cb765ea` |
+| Exact source commit represented by this archive snapshot | `f1a2c564046ab93a0bfa0732e3acc2179da9c064` |
 | Compared with | `51c351a142d03378dff8e47e05182afe21a15622` (main comparison base) |
-| Last source commit title | ci(forge): mirror zero-cost project-health snapshot and prototype Work-on-demand policy |
+| Last source commit title | docs(forge): register free health collector, J153 replay and source receipt |
 | Files changed relative to main | 87 (63 non-docs; 24 docs) |
-| Last source commit | 8 files (4 non-docs; 4 authored docs) |
+| Last source commit | 2 files (0 non-docs; 2 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,14 +17,8 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/research-docs-maintenance.yml`
-- `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/README.md`
-- `docs/Research_Docs_Maintenance_2026-11-06.md`
-- `scripts/agents/project_health.mjs`
-- `scripts/agents/validate_project_health.mjs`
-- `scripts/agents/validate_research_docs_maintainer.mjs`
+- `docs/SYSTEM_REGISTRY.json`
 
 ## Research-branch change inventory versus main
 
