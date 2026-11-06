@@ -1,6 +1,19 @@
 # Forge original nested-choice dependency validator — disposable signed-in research
 
-**Status:** IMPLEMENTATION CANDIDATE, NOT CI ACCEPTED (2026-11-06). Branch `research/forge-nested-choice-dependent-20261106` stacked directly on draft [#330](https://github.com/bob8675309/DNDNEXT/pull/330) exact source `8bdc77a8eecacaf15c9e94c2828d64f03dbee34a`. No release, production SQL or game runtime changes.
+**Status:** **VERIFIED in disposable original PG17 + genuine signed-in local GoTrue/PostgREST** at `b6824276488d790d11e9728b2857b6e32c519194` via [run #42311633352](https://github.com/bob8675309/DNDNEXT/actions/runs/42311633352); NOT production/RLS/browser acceptance. Branch `research/forge-nested-choice-dependent-20261106` stacked directly on draft [#330](https://github.com/bob8675309/DNDNEXT/pull/330) exact source `8bdc77a8eecacaf15c9e94c2828d64f03dbee34a`. No release, production SQL or game runtime changes.
+
+## First exact-head authenticated acceptance (2026-11-06)
+
+**Verified candidate SHA `b6824276488d790d11e9728b2857b6e32c519194`:** [Forge original PG17 + genuine local JWT run #42311633352](https://github.com/bob8675309/DNDNEXT/actions/runs/42311633352) **SUCCESS both jobs**. Original J00–J160 and S001–S003 all passed without edits, followed by:
+- **J161 PASS:** captured unchanged original `private.validate_player_forge_nested_choice_payload_v1()` MD5 `df2861cc76b0b74bb7cd57fbe61c9a05` and original deferrable trigger event shape; original upstream authority and choice-name normalizer unchanged.
+- **J162 PASS:** genuine signed-in level1 XPHB Fighter original v2 with the live-source-legal Defense FS option and properly matching `classFeatureChoiceSummary`; canonical feat grant, grant instance, inventory, cash, CP, sheet, level event, authenticated creator. Identical nonce replay was inert.
+- **J163 PASS:** genuine signed original v2 XPHB Fighter kept the legal Defense selection but fabricated `activeWhen.optionNames=['Agonizing Blast']`, an *unselected parent*, triggering precisely `Dependent class choice group fightingStyle is active without its required parent option.` in the **source-original deferred nested validator**, with full global table, stock and nonce rollback. Earlier source group/option summary guards were NOT bypassed.
+
+Other exact executable SHA checks [trigger inventory #42311633295](https://github.com/bob8675309/DNDNEXT/actions/runs/42311633295), [registry #42311633181](https://github.com/bob8675309/DNDNEXT/actions/runs/42311633181), [Class #42311633362](https://github.com/bob8675309/DNDNEXT/actions/runs/42311633362), and [free docs #42311577834](https://github.com/bob8675309/DNDNEXT/actions/runs/42311577834) all SUCCESS. `FORGE_NESTED_CHOICE_SCENARIOS.json` machine-readable report (no actual character/account UUIDs/JWTs/PII) uploaded to three-day `forge-jwt-diagnostics-42311633352` artifact.
+
+**Coverage:** 17/31 original DDL definitions source-staged, 14 missing; 5 independently receipted real-JWT original handlers. This is narrowly the **generic `activeWhen` missing-parent branch**, not Warlock invocation child completeness or full authentic preferred option catalogue. Source-original function/trigger, source permissions, prod code and live database stayed unchanged.
+
+**One next task:** verify real Warlock level-2 Invocations and legal child-source choices before attempting the separate original child-completion branch through the same signed-in harness. Any later docs update changes SHA and requires new exact-head CI.
 
 ## Direct read-only live-source verification
 
