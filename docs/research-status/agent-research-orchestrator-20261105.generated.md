@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/research-orchestrator-20261105` |
-| Exact source commit represented by this archive snapshot | `f6d132ae2efc63134df69ebaca6b46dbe7c96c3c` |
+| Exact source commit represented by this archive snapshot | `4e7a6563b9ea119f75766d58de21f4919faeb684` |
 | Compared with | `51c351a142d03378dff8e47e05182afe21a15622` (main comparison base) |
-| Last source commit title | ci(agent): add free consolidated PR/CI health snapshot to research touchstone |
+| Last source commit title | docs(agent): register verified free project-health collector and exact-head receipts |
 | Files changed relative to main | 23 (12 non-docs; 11 docs) |
-| Last source commit | 10 files (5 non-docs; 5 authored docs) |
+| Last source commit | 2 files (0 non-docs; 2 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,16 +17,8 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/research-docs-maintenance.yml`
-- `.github/workflows/validate-dndnext-research-agent.yml`
-- `docs/ACTIVE_WORK.md`
-- `docs/AGENT_TOUCHSTONE.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/README.md`
-- `docs/Research_Docs_Maintenance_2026-11-06.md`
-- `scripts/agents/project_health.mjs`
-- `scripts/agents/validate_project_health.mjs`
-- `scripts/agents/validate_research_docs_maintainer.mjs`
+- `docs/SYSTEM_REGISTRY.json`
 
 ## Research-branch change inventory versus main
 
