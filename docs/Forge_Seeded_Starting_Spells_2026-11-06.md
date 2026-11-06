@@ -1,6 +1,21 @@
 # Forge original deferred starting spells — seeded signed-in research
 
-**Date:** 2026-11-06. **Status:** initial genuine JWT CI **FAILED at J157**, correction scoped, full new-head CI **PENDING**; not production/test acceptance. Branch `research/forge-starting-spells-seeded-20261106` stacked on [draft PR #328](https://github.com/bob8675309/DNDNEXT/pull/328) exact source `16ebd9ba1b952d8f21505c91782d0d18aa0c8263`, transitively on Forge #324 and privacy #321; no game release implied.
+**Date:** 2026-11-06. **Status:** **VERIFIED in disposable genuine local GoTrue/PostgREST + PostgreSQL 17** at executable `53af54feaba747696facf0a1dfb1fb8d67d1e43b` via [run #42304562290](https://github.com/bob8675309/DNDNEXT/actions/runs/42304562290); not live RLS/browser/full-spellcaster acceptance. Previous failing J157 attribution retained below. Branch `research/forge-starting-spells-seeded-20261106` stacked on [draft PR #328](https://github.com/bob8675309/DNDNEXT/pull/328) exact source `16ebd9ba1b952d8f21505c91782d0d18aa0c8263`, transitively on Forge #324 and privacy #321; no game release implied.
+
+## Exact-head acceptance 2026-11-06 — VERIFIED
+
+**Executable commit `53af54feaba747696facf0a1dfb1fb8d67d1e43b`** passed BOTH source-original PG17 and local genuine GoTrue/PostgREST in [run 42304562290](https://github.com/bob8675309/DNDNEXT/actions/runs/42304562290). The existing J00–J153 and S001–S003 all passed unchanged, followed by explicit log receipts:
+
+- **J154 PASS:** original untouched source handler hash `6870e810de909209c44aecd02f5c72e2`, original `AFTER INSERT OR UPDATE OF class_id, class_level DEFERRABLE INITIALLY DEFERRED` trigger installed at exact local source.
+- **J155 PASS:** genuine signed-in XPHB level-3 Fighter Champion with an *empty starting magic array*, source-qualified progression, canonical CP/CS/G/GI/I/C/level-event, no class spells and inert same-nonce replay.
+- **J156 PASS:** genuine signed-in malformed non-array `startingMagicSelections` fails at the original deferred handler with the exact message, fully rolling back nonce, all canonical table deltas and stock. This is the focused **new original-handler negative coverage**.
+- **J157 PASS:** original v2 class-list guard rejects attempted Fighter Fire Bolt with the exact earlier message and full rollback. It does **NOT** reach the deferred starting-spell handler, as proven by the initial failed CI and corrected test.
+
+Additional [trigger inventory 42304562358](https://github.com/bob8675309/DNDNEXT/actions/runs/42304562358), [registry 42304562289](https://github.com/bob8675309/DNDNEXT/actions/runs/42304562289), [Class 42304562311](https://github.com/bob8675309/DNDNEXT/actions/runs/42304562311) and [free status 42304555202](https://github.com/bob8675309/DNDNEXT/actions/runs/42304555202) passed. [Three-day sanitized diagnostic artifact](https://github.com/bob8675309/DNDNEXT/actions/runs/42304562290) was uploaded, containing `FORGE_STARTING_SPELL_SCENARIOS.json` without user/character UUIDs, tokens or raw sheets.
+
+**Updated held-fixture coverage:** original DDL **16/31 staged**, **15 absent**; *four independently receipted* source-original real-JWT handlers. Only the noncaster/no-spell and malformed array branch of this particular handler was exercised. No Wizard spell-count/prepared-count, Eldritch Knight, Arcane Trickster, Warlock full progression or live RLS/catalog/browser parity claimed. No production writes, live rule changes or paid model calls.
+
+**One next research task:** inspect live XPHB Wizard source cantrip and starting prepared/known count semantics read-only; stage one real signed-in Wizard positive/count-invalid test on the same source-hash gate. Do not alter original source or grant unauthorized Fighter spells.
 
 ## Source authority verified read-only
 

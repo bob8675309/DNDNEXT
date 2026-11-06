@@ -51,6 +51,8 @@ on:
       - 'sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql'
       - 'scripts/test_forge_immutable_creation_replay_local_auth.mjs'
       - 'docs/Forge_Seeded_Scenario_Runner_2026-11-06.md'
+      - 'docs/Forge_Seeded_Starting_Spells_2026-11-06.md'
+      - 'docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md'
       - 'scripts/agents/forge_seeded_scenarios.mjs'
       - 'scripts/fixtures/forge_seeded_scenarios_v1.json'
       - 'scripts/fixtures/forge_starting_spells_original_pg17.sql'
