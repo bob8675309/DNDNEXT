@@ -1,0 +1,78 @@
+# DNDNext — automatically reconciled project health
+
+**Prototype development only.** Free GitHub metadata snapshot; not production acceptance, an autonomous AI worker, or a Vercel deployment. No Work, Codex or paid API invocation.
+
+| Captured UTC | Trigger source | GitHub main (NOT verified production) |
+|---|---|---|
+| 2026-11-06T18:06:52Z | agent/research-orchestrator-20261105 (f6d132ae2efc63134df69ebaca6b46dbe7c96c3c) | 51c351a142d03378dff8e47e05182afe21a15622 |
+
+## Exact PR heads and latest captured GitHub Actions
+
+| PR | Branch/base | Exact head SHA | Workflow status | Documentation signal |
+|---|---|---|---|---|
+| [#317](https://github.com/bob8675309/DNDNEXT/pull/317) draft | docs/p1-3-global-lock-order-design-20261101 → main | 69e741d7c7d8874c22467e2d30791e30c009ff6e | RECORDED RUNS GREEN (10 workflows) | authored docs present |
+| [#321](https://github.com/bob8675309/DNDNEXT/pull/321) draft | research/p1-3-npc-profile-safe-rls-20261104 → main | b220fb5ecbc9570f63bd85a95da8706340abd153 | RECORDED RUNS GREEN (3 workflows) | authored docs present |
+| [#324](https://github.com/bob8675309/DNDNEXT/pull/324) draft | research/forge-immutable-creation-replay-20261105 → research/p1-3-npc-profile-safe-rls-20261104 | 2cb408c784b2a46699eca82574eeeb4dffb1562a | RECORDED RUNS GREEN (6 workflows) | authored docs present |
+| [#325](https://github.com/bob8675309/DNDNEXT/pull/325) draft | agent/research-orchestrator-20261105 → main | f6d132ae2efc63134df69ebaca6b46dbe7c96c3c | CHECKS RUNNING (5 workflows) | authored docs present |
+
+### PR #317 — docs(security): P1.3 cross-command lock graph and concurrency proof gates
+
+- P1.3 disposable PG16 concurrency model: **success** ([run 42095751215](https://github.com/bob8675309/DNDNEXT/actions/runs/42095751215))
+- P1.3 exact-source admin activation and resume PG16: **success** ([run 42095751085](https://github.com/bob8675309/DNDNEXT/actions/runs/42095751085))
+- P1.3 legacy spell real local GoTrue/JWT (disposable): **success** ([run 42095751316](https://github.com/bob8675309/DNDNEXT/actions/runs/42095751316))
+- P1.3 legacy v9/v8 exact routing PG16: **success** ([run 42095751217](https://github.com/bob8675309/DNDNEXT/actions/runs/42095751217))
+- P1.3 source-original level-up v5 vs sheet edit real GoTrue race (disposable): **success** ([run 42095751266](https://github.com/bob8675309/DNDNEXT/actions/runs/42095751266))
+- Validate Class browser polish: **success** ([run 42095751169](https://github.com/bob8675309/DNDNEXT/actions/runs/42095751169))
+- Validate DNDNext handoff registry: **success** ([run 42095751487](https://github.com/bob8675309/DNDNEXT/actions/runs/42095751487))
+- Validate P1.2 declarative request contract: **success** ([run 42095751295](https://github.com/bob8675309/DNDNEXT/actions/runs/42095751295))
+- Validate P1.3 Forge deferred materializer lock-order research: **success** ([run 42095751238](https://github.com/bob8675309/DNDNEXT/actions/runs/42095751238))
+- Validate P1.3 static lock graph: **success** ([run 42095751104](https://github.com/bob8675309/DNDNEXT/actions/runs/42095751104))
+
+### PR #321 — Draft: signed-in NPC safe Profile projection and full-sheet RLS research
+
+- P1.3 NPC visible-sheet privacy genuine local JWT research: **success** ([run 41965991312](https://github.com/bob8675309/DNDNEXT/actions/runs/41965991312))
+- Validate Class browser polish: **success** ([run 41965991303](https://github.com/bob8675309/DNDNEXT/actions/runs/41965991303))
+- Validate DNDNext handoff registry: **success** ([run 41965991341](https://github.com/bob8675309/DNDNEXT/actions/runs/41965991341))
+
+### PR #324 — Draft research: immutable player Forge creation request replay with original RPC fixtures
+
+- Forge original trigger acceptance inventory (no AI, no DB): **success** ([run 42242128039](https://github.com/bob8675309/DNDNEXT/actions/runs/42242128039))
+- Research docs auto-maintainer (no AI, docs-only): **success** ([run 42242114281](https://github.com/bob8675309/DNDNEXT/actions/runs/42242114281))
+- Validate Class browser polish: **success** ([run 42242127935](https://github.com/bob8675309/DNDNEXT/actions/runs/42242127935))
+- Validate DNDNext handoff registry: **success** ([run 42242127864](https://github.com/bob8675309/DNDNEXT/actions/runs/42242127864))
+- Validate Forge immutable creation-request replay research: **success** ([run 42242127957](https://github.com/bob8675309/DNDNEXT/actions/runs/42242127957))
+- Validate Species rest proficiency runtime: **success** ([run 42242127972](https://github.com/bob8675309/DNDNEXT/actions/runs/42242127972))
+
+### PR #325 — Draft: supervised research agent + DNDNext agent opportunities audit
+
+- Research docs auto-maintainer (no AI, docs-only): **in_progress** ([run 42267675682](https://github.com/bob8675309/DNDNEXT/actions/runs/42267675682))
+- Validate Class browser polish: **in_progress** ([run 42267688498](https://github.com/bob8675309/DNDNEXT/actions/runs/42267688498))
+- Validate DNDNext handoff registry: **in_progress** ([run 42267688451](https://github.com/bob8675309/DNDNEXT/actions/runs/42267688451))
+- Validate DNDNext supervised research agent (no API cost): **in_progress** ([run 42267688447](https://github.com/bob8675309/DNDNEXT/actions/runs/42267688447))
+- Validate Species rest proficiency runtime: **in_progress** ([run 42267688606](https://github.com/bob8675309/DNDNEXT/actions/runs/42267688606))
+- **Pending:** some checks were in progress when this snapshot was captured.
+
+## Source-linked archive status
+
+- [Forge status](https://github.com/bob8675309/DNDNEXT/blob/docs/agent-status/docs/research-status/research-forge-immutable-creation-replay-20261105.generated.md): CURRENT vs PR #324 head (archive SHA 2cb408c784b2a46699eca82574eeeb4dffb1562a)
+- [Research agent status](https://github.com/bob8675309/DNDNEXT/blob/docs/agent-status/docs/research-status/agent-research-orchestrator-20261105.generated.md): CURRENT vs PR #325 head (archive SHA f6d132ae2efc63134df69ebaca6b46dbe7c96c3c)
+
+### Original Forge trigger evidence (source-aligned)
+
+- 15/31 staged DDL; 16 unstaged; 0 DDL mismatches; 3 specifically receipted authenticated suites.
+- DDL presence and bounded signed-in fixtures do NOT establish full production RLS, concurrency, catalog or browser parity.
+
+## Review queue and limits
+
+- CI needs review for #325 (CHECKS RUNNING).
+- Held #317 cross-table G/CP/CS/GI lock research, #321 privacy, #324 Forge and #325 agent remain separate release gates.
+- 2014 PHB optional-content toggle is DESIGNED ONLY; 2024 XPHB default. Do not rewrite source rules.
+- The site is a **prototype**; game content is test data, but never reset shared production-like records without a separately reviewed boundary.
+- ChatGPT Work stays **on demand for difficult investigations**. No Work schedule, paid Codex execution, API credits or automatic purchases.
+- These statuses are a **time-stamped snapshot**. When CI finishes afterward, view the live PR and GitHub Actions; no continuous polling is claimed.
+- No production SQL, deployment, automatic merge, protected map edits or paid model calls are authorized.
+
+## Safe next research task
+
+If a CI check fails, diagnose its exact source SHA first; otherwise select ONE unverified original Forge trigger for isolated, source-exact signed-JWT fixtures, update the authored handoff and retain separate lock-order gates.
+

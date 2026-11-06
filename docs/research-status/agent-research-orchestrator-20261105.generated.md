@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/research-orchestrator-20261105` |
-| Exact source commit represented by this archive snapshot | `e832d807d1b4a8a7dc98d60e1a22706b84518dea` |
+| Exact source commit represented by this archive snapshot | `f6d132ae2efc63134df69ebaca6b46dbe7c96c3c` |
 | Compared with | `51c351a142d03378dff8e47e05182afe21a15622` (main comparison base) |
-| Last source commit title | docs(agent): add stable cross-chat DNDNext touchstone and safety guard |
-| Files changed relative to main | 21 (10 non-docs; 11 docs) |
-| Last source commit | 7 files (2 non-docs; 5 authored docs) |
+| Last source commit title | ci(agent): add free consolidated PR/CI health snapshot to research touchstone |
+| Files changed relative to main | 23 (12 non-docs; 11 docs) |
+| Last source commit | 10 files (5 non-docs; 5 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,13 +17,16 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/research-docs-maintenance.yml`
 - `.github/workflows/validate-dndnext-research-agent.yml`
+- `docs/ACTIVE_WORK.md`
 - `docs/AGENT_TOUCHSTONE.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/README.md`
 - `docs/Research_Docs_Maintenance_2026-11-06.md`
-- `docs/START_HERE_ACTIVE_HANDOFF.md`
-- `scripts/agents/validate_research_agent.mjs`
+- `scripts/agents/project_health.mjs`
+- `scripts/agents/validate_project_health.mjs`
+- `scripts/agents/validate_research_docs_maintainer.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -43,8 +46,10 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/START_HERE_ACTIVE_HANDOFF.md`
 - `docs/SYSTEM_REGISTRY.json`
 - `scripts/agents/forge_trigger_audit.mjs`
+- `scripts/agents/project_health.mjs`
 - `scripts/agents/research_agent.mjs`
 - `scripts/agents/research_docs_maintainer.mjs`
+- `scripts/agents/validate_project_health.mjs`
 - `scripts/agents/validate_research_agent.mjs`
 - `scripts/agents/validate_research_docs_maintainer.mjs`
 - `vercel.json`
