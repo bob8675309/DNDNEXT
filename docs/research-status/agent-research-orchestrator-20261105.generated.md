@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/research-orchestrator-20261105` |
-| Exact source commit represented by this archive snapshot | `a324a6bfd39325ab75c86e1add9f60ae93a4fc05` |
+| Exact source commit represented by this archive snapshot | `449f6871a1d2f630355a1d1f2d8cb9ba46060a3c` |
 | Compared with | `51c351a142d03378dff8e47e05182afe21a15622` (main comparison base) |
-| Last source commit title | docs(handoff): require authored active-work updates and append-only session receipts |
+| Last source commit title | docs(handoff): reconcile merged no-cost docs releases and current main priority |
 | Files changed relative to main | 26 (13 non-docs; 13 docs) |
-| Last source commit | 5 files (1 non-docs; 4 authored docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,11 +17,9 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `AGENTS.md`
 - `docs/ACTIVE_WORK.md`
 - `docs/AGENT_TOUCHSTONE.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/HANDOFF_RECEIPT_TEMPLATE.md`
 
 ## Research-branch change inventory versus main
 
