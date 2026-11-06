@@ -1,6 +1,20 @@
 # Original XPHB Wizard starting spells — seeded source/GoTrue research
 
-**Research-only candidate — 2026-11-06; first CI failed at J159 original starting-magic exactness; corrected real CI pending.** Held branch `research/forge-wizard-spell-counts-20261106` directly based on draft [#329](https://github.com/bob8675309/DNDNEXT/pull/329) source `dbf701d87db738ccaefe4f179f006319b132a3e9`; upstream draft #328, #324 and #321 remain unmerged. No source-original handler changes or production DB writes.
+**Research-only, VERIFIED at executable SHA `38edc02f66f17e73a16fd0b62329c161ade4f6a2` via [CI 42308163095](https://github.com/bob8675309/DNDNEXT/actions/runs/42308163095).** First J159 failed at original exactness and its diagnosis is preserved below; full live production/RLS/browser acceptance is NOT claimed. Held branch `research/forge-wizard-spell-counts-20261106` directly based on draft [#329](https://github.com/bob8675309/DNDNEXT/pull/329) source `dbf701d87db738ccaefe4f179f006319b132a3e9`; upstream draft #328, #324 and #321 remain unmerged. No source-original handler changes or production DB writes.
+
+## Final source-exact authenticated Wizard acceptance (2026-11-06)
+
+At `38edc02f66f17e73a16fd0b62329c161ade4f6a2`, [Forge run 42308163095](https://github.com/bob8675309/DNDNEXT/actions/runs/42308163095) completed **SUCCESS in both disposable source-original PG17 and true local JWT GoTrue/PostgREST jobs**, preserving the earlier entire J00–J157 and S001–S003 suite. The test log explicitly confirms:
+
+- **J158 PASS:** all nine XPHB Wizard spell IDs, names, source/class membership and canonical level-1 3/6/4/2 source progression from read-only live data are installed in the guarded disposable specimen. Original starting-spell validator MD5 `6870e810de909209c44aecd02f5c72e2` and *already staged* exactness validator MD5 `ba645ad0f2c17addad0b40e0602c2ac8` are both verified.
+- **J159 PASS:** genuine signed-in `create_player_character_v3` creates 3 legal cantrips, 6 legal first-level spellbook entries (4 prepared), original `character_spells` `source_key=wizard` and complete `startingMagicSelections` summary. Assert original source class/level, actor, slots and canonical rows, inert unchanged replay, and changed preparation on the same nonce rejected SQLSTATE `22023`, no extra writes.
+- **J160 PASS:** same nine source-valid spells, exactly **3** prepared, rejected by the original **deferred Wizard prepared-count validator** with `Mark exactly 4 starting leveled spell(s) as prepared; received 3.`; no character/CP/CS/G/GI/I/C/spell/stock/nonce leak or mutation of earlier valid Wizard.
+
+The first [failing J159 run 42307389384](https://github.com/bob8675309/DNDNEXT/actions/runs/42307389384) remains a factual regression receipt; the correction filled the complete canonical summary, *not* a change to the source validator. Static deterministic compiler, full baseline, original trigger inventory, Class and handoff registry passed. The short-lived `FORGE_WIZARD_STARTING_SPELLS.json` was uploaded in `forge-jwt-diagnostics-42308163095`, sanitized of actual account/character IDs and JWTs.
+
+**Count unchanged:** `character_progression_validate_player_forge_starting_magic_exac` was already original source-loaded at J103, and starting-spell validator was already source-loaded at J154. This work adds **real Wizard prepared-count branch evidence**, not a seventeenth distinct DDL. Thus still **16/31 original triggers staged, 15 unstaged; four independently receipted handler suites** conservatively. The fixture still uses reduced XPHB-only preferred class view, synthetic local Wizard class UUID with live counts, nine live spell specimens, reduced RLS, and no production browser/global lock-order evidence.
+
+**Next gated engineering action:** independently verify live source/dependencies for `character_progression_validate_player_forge_nested_choices_v1` before attempting any next original-trigger installation. Preserve authoritative handler, existing J00–J160/S001–S003 and original source fingerprints.
 
 ## Live source of truth (read-only observations)
 
