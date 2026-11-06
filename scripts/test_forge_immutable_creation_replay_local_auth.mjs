@@ -1448,3 +1448,116 @@ assert.equal(sql("SELECT md5(pg_get_functiondef('private.can_access_character_v1
 assert.equal(sql("SELECT count(*) FROM pg_policy WHERE polrelid='public.inventory_items'::regclass"),"4");
 console.log("PASS J93 original Admin direct character assignment still allowed; exact original source functions intact, no additional privileges/policies/table writes retained");
 console.log("PASS LOCAL REAL GoTrue J00-J93: owner CHECK 23514 causal fix plus signed-in original RLS security gap and four-policy review candidate in disposable PG17. Full UI / original 31 triggers / production release remain PENDING.");
+
+
+
+// J94–J102: Source-qualified browser-compatible v3 Fighter starting-market
+// selections through unchanged original v3->v2 and deferred source equipment.
+// The live XPHB Fighter startingEquipment cash option C (15500 copper) and
+// live helper functions are loaded AFTER the J85–J93 hardened RLS acceptance.
+sqlFile("scripts/fixtures/forge_v3_market_source_local_auth_extension_pg17.sql");
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.player_forge_cash_equipment_option_v1(jsonb)'::regprocedure))"),"78231b02e56477cedd90992e42826597");
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.format_copper_currency_v1(bigint)'::regprocedure))"),"f7f8dce93e3d20a5c35fccee0bcf374b");
+console.log("PASS J94 original XPHB Fighter 155-gp cash option, source currency formatter and valid v3 source market fixture installed");
+const marketMerchant=id(9490),marketStock=id(9491),excessiveStock=id(9492),recipeStock=id(9493);
+sql("INSERT INTO public.characters(id,name,kind,storefront_enabled) VALUES"
+ + "('"+marketMerchant+"','J94 original market merchant','merchant',true);"
+ + "INSERT INTO public.character_stock(id,character_id,qty,display_name,card_payload,price_gp,item_id) VALUES"
+ + "('"+marketStock+"','"+marketMerchant+"',3,'J94 Source Market Rope','{\"item_type\":\"gear\",\"item_rarity\":\"mundane\"}'::jsonb,9,'p13-market-rope'),"
+ + "('"+excessiveStock+"','"+marketMerchant+"',1,'J94 Source Market Armor','{\"item_type\":\"armor\",\"item_rarity\":\"mundane\"}'::jsonb,350,'p13-market-armor'),"
+ + "('"+recipeStock+"','"+marketMerchant+"',1,'J94 Forbidden Recipe','{\"item_type\":\"recipe\",\"item_rarity\":\"mundane\"}'::jsonb,2,'p13-market-recipe');");
+const marketDraft=(name,nonce,stockId,qty=1,ruleset="dndnext-homebrew")=>{
+ const draft=fighter(name,nonce);
+ draft.sheet.startingEquipmentSelections={
+  mode:"market",ruleset,marketMerchantId:marketMerchant,
+  marketPurchases:[{
+   merchantId:marketMerchant,stockId,qty,
+   itemId:stockId===marketStock?"p13-market-rope":"p13-market-armor",
+   priceGp:stockId===marketStock?9:350
+  }],keepStartingGold:false
+ };
+ return draft;
+};
+const v3market=(payload,who=people.PLAYER)=>call3(who.client,payload,[]);
+const getStock=n=>sql("SELECT coalesce((SELECT qty::text FROM public.character_stock WHERE id='"+n+"'),'0')");
+const marketGood=marketDraft("J95 true source v3 earned market gear",id(9495),marketStock,2);
+const marketGoodCharacter=pass(await v3market(marketGood),"signed v3 market purchase");
+assert.equal(getStock(marketStock),"1","Source-original market materializer did not reserve exactly two stock units");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_type='character' AND owner_id='"+marketGoodCharacter+"'"),"1");
+assert.equal(sql("SELECT quantity FROM public.inventory_items WHERE owner_id='"+marketGoodCharacter+"'"),"2");
+assert.equal(sql("SELECT card_payload->>'startingMarket' FROM public.inventory_items WHERE owner_id='"+marketGoodCharacter+"'"),"true");
+assert.equal(sql("SELECT card_payload->>'stock_id' FROM public.inventory_items WHERE owner_id='"+marketGoodCharacter+"'"),marketStock);
+assert.equal(sql("SELECT copper_value FROM public.character_currency WHERE character_id='"+marketGoodCharacter+"'"),"28200");
+assert.equal(sql("SELECT source_breakdown->>'classMarketCopper' FROM public.character_currency WHERE character_id='"+marketGoodCharacter+"'"),"15500");
+assert.equal(sql("SELECT source_breakdown->>'marketBudgetCopper' FROM public.character_currency WHERE character_id='"+marketGoodCharacter+"'"),"30000");
+assert.equal(sql("SELECT source_breakdown->>'marketSpentCopper' FROM public.character_currency WHERE character_id='"+marketGoodCharacter+"'"),"1800");
+assert.equal(sql("SELECT sheet->'startingEquipmentSummary'->0->>'scope' FROM public.character_sheets WHERE character_id='"+marketGoodCharacter+"'"),"market");
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE character_id='"+marketGoodCharacter+"'"),"1");
+console.log("PASS J95 signed original v3 starting market commits 2 source items as ONE character-owned I quantity, stock 3->1, 300gp homebrew budget less 18gp, correct sheet/ledger/nonce");
+
+const stockAfterMarket=getStock(marketStock);
+const marketInvBefore=rowFingerprint("public.inventory_items","owner_id='"+marketGoodCharacter+"'");
+const marketCurrencyBefore=sql("SELECT md5(to_jsonb(c)::text) FROM public.character_currency c WHERE character_id='"+marketGoodCharacter+"'");
+assert.equal(pass(await v3market(marketGood),"v3 original market identical replay"),marketGoodCharacter);
+assert.equal(getStock(marketStock),stockAfterMarket);
+assert.equal(rowFingerprint("public.inventory_items","owner_id='"+marketGoodCharacter+"'"),marketInvBefore);
+assert.equal(sql("SELECT md5(to_jsonb(c)::text) FROM public.character_currency c WHERE character_id='"+marketGoodCharacter+"'"),marketCurrencyBefore);
+denied(await v3market({...marketGood,name:"J96 changed market nonce"}),"22023","Market changed intent with same nonce");
+console.log("PASS J96 original v3 market identical nonce is inert on S/I/C, mutated original intent rejects 22023");
+
+const failMarket=(name,nonce,purchase)=>marketDraft(name,id(nonce),purchase.stockId||marketStock,purchase.qty||1,purchase.ruleset||"dndnext-homebrew");
+const untouchedCounts=()=>sql("SELECT jsonb_build_object('characters',(SELECT count(*) FROM public.characters),'nonce',(SELECT count(*) FROM private.player_creation_intent_reservations_v1),'inventory',(SELECT count(*) FROM public.inventory_items),'currency',(SELECT count(*) FROM public.character_currency),'stock',(SELECT coalesce(sum(qty),0) FROM public.character_stock))::text");
+const badStock=failMarket("J97 invalid source-stock",9497,{stockId:marketStock,qty:1});
+badStock.sheet.startingEquipmentSelections.marketPurchases[0].stockId=id(9497);
+const beforeInvalid=untouchedCounts();
+const invalidResult=await v3market(badStock);
+assert.ok(invalidResult.error);assert.match(invalidResult.error.message||"",/no longer sold by that merchant/i);
+assert.equal(untouchedCounts(),beforeInvalid);
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+id(9497)+"'"),"0");
+console.log("PASS J97 v3 source invalid merchant/stock rejects at deferred COMMIT and atomically rolls back creator/nonce/I/C and market S");
+
+const overMarket=marketDraft("J98 oversell source market",id(9498),marketStock,2);
+const beforeOversell=untouchedCounts();
+const oversell=await v3market(overMarket);
+assert.ok(oversell.error);assert.match(oversell.error.message||"",/Not enough stock remains/i);
+assert.equal(untouchedCounts(),beforeOversell);
+assert.equal(getStock(marketStock),"1");
+console.log("PASS J98 original v3 stock oversell rejects with zero new reservations, items or currency");
+
+const expensiveMarket=marketDraft("J99 over-budget homebrew",id(9499),excessiveStock,1);
+const beforeBudget=untouchedCounts();
+const expensive=await v3market(expensiveMarket);
+assert.ok(expensive.error);assert.match(expensive.error.message||"",/exceed.*starting budget/i);
+assert.equal(untouchedCounts(),beforeBudget);
+assert.equal(getStock(excessiveStock),"1");
+console.log("PASS J99 original source 350gp homebrew shopping exceeds 300gp budget; stock/items/nonce rolled back");
+
+const recipeMarket=marketDraft("J100 source recipe rejection",id(9500),recipeStock,1);
+const beforeRecipe=untouchedCounts();
+const recipe=await v3market(recipeMarket);
+assert.ok(recipe.error);assert.match(recipe.error.message||"",/Recipes are not starting-equipment purchases/i);
+assert.equal(untouchedCounts(),beforeRecipe);
+console.log("PASS J100 original Forge market source refuses recipe stock and leaves all inventories/currency/nonce unchanged");
+
+const vanillaExpensive=marketDraft("J101 XPHB vanilla cash budget",id(9501),excessiveStock,1,"vanilla");
+const beforeVanilla=untouchedCounts();
+const vanilla=await v3market(vanillaExpensive);
+assert.ok(vanilla.error);assert.match(vanilla.error.message||"",/exceed.*starting budget/i);
+assert.equal(untouchedCounts(),beforeVanilla);
+console.log("PASS J101 source-qualified XPHB vanilla 155gp cash alternative rejects 350gp market purchase, unchanged all canonical writes");
+
+// Merchant user-owned purchases still use original source writer after
+// character ownership RLS changes and source-original v3 market consumption.
+sql("INSERT INTO public.player_wallets(user_id,gp) VALUES('"+uid("PLAYER")+"',20)"
+ +" ON CONFLICT(user_id) DO UPDATE SET gp=EXCLUDED.gp;");
+const merchantBuy=await rpc(people.PLAYER.client,"buy_from_merchant",{
+ p_merchant_id:marketMerchant,p_stock_uuid:marketStock,p_qty:1
+});
+assert.ifError(merchantBuy.error);
+assert.equal(merchantBuy.data,1);
+assert.equal(getStock(marketStock),"0");
+assert.equal(sql("SELECT gp FROM public.player_wallets WHERE user_id='"+uid("PLAYER")+"'"),"11");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_type='player' AND item_id='p13-market-rope' AND user_id='"+uid("PLAYER")+"'"),"1");
+assert.equal(rowFingerprint("public.inventory_items","owner_id='"+marketGoodCharacter+"'"),marketInvBefore);
+console.log("PASS J102 signed original merchant purchase consumes remaining stock into user-owned inventory; source v3 market character-owned gear unchanged");
+console.log("PASS LOCAL REAL GoTrue J00-J102: v3 source-equivalent starting market + actual S/I/C and negative controls under four-policy candidate; full original triggers/browser still NOT accepted.");

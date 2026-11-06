@@ -27,6 +27,13 @@ on:
       - 'scripts/fixtures/forge_owner_constraint_deferred_creation_local_auth_pg17.sql'
       - 'scripts/fixtures/forge_inventory_access_original_pg17.sql'
       - 'scripts/fixtures/forge_inventory_policy_source_local_auth_pg17.sql'
+      - 'scripts/fixtures/forge_market_cash_original_functions_pg17.sql'
+      - 'scripts/fixtures/forge_v3_market_source_local_auth_extension_pg17.sql'
+      - 'scripts/validate_forge_inventory_ui_release_contract.mjs'
+      - 'components/NewNpcModalV3.js'
+      - 'components/NpcForgeEquipmentStep.js'
+      - 'components/useNpcForgeDerivedModel.js'
+      - 'components/NpcPanel.js'
       - 'sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql'
       - 'scripts/test_forge_immutable_creation_replay_local_auth.mjs'
       - 'scripts/validate_forge_immutable_creation_replay.mjs'
@@ -71,6 +78,7 @@ jobs:
           node --check scripts/validate_forge_immutable_creation_replay.mjs
           node scripts/validate_forge_immutable_creation_replay.mjs
           node scripts/validate_unified_character_forge.mjs
+          node scripts/validate_forge_inventory_ui_release_contract.mjs
       - name: Confirm unsafe original, then candidate replay contract in disposable PG17
         run: |
           test "$DNDNEXT_FORGE_REPLAY_CONFIRM" = DISPOSABLE_PG17_ONLY

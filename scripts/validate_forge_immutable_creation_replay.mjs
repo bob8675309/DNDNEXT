@@ -377,3 +377,43 @@ assert.ok(afterOwnerCommit.startsWith("-- NOT IN THIS CANDIDATE") &&
  "No executable DDL or duplicate postflight SQL after COMMIT");
 
 console.log("PASS STATIC J85-J93 exact source character authorization helper, live four RLS policies, guarded combined owner CHECK and policy review SQL, original JWT insert/update/read/revocation/Admin and creation checks (runtime separate).");
+
+const sourceCash=readFileSync("scripts/fixtures/forge_market_cash_original_functions_pg17.sql","utf8");
+const sourceMarket=readFileSync("scripts/fixtures/forge_v3_market_source_local_auth_extension_pg17.sql","utf8");
+for(const [name,hash] of [
+ ["private.player_forge_cash_equipment_option_v1","78231b02e56477cedd90992e42826597"],
+ ["private.format_copper_currency_v1","f7f8dce93e3d20a5c35fccee0bcf374b"]
+]){
+ assert.ok(sourceCash.includes("CREATE OR REPLACE FUNCTION "+name+"("),"Missing unchanged source cash helper: "+name);
+ assert.ok(sourceCash.includes(hash)&&sourceMarket.includes(hash),"Missing source cash/format live MD5 gate: "+name);
+}
+for(const t of [
+ "current_database()<>'postgres'","private.test_admins",
+ "public.create_player_character_v3(jsonb,jsonb,jsonb)",
+ "653e1b9d7cc47dcff2cef33a674b97f4",
+ "startingEquipment","class_key='fighter'","source='XPHB'",
+ "dndnext-homebrew","NOTIFY pgrst,'reload schema'",
+ "v_cash->>'key'<>'C'","<>15500"
+])assert.ok(sourceMarket.includes(t),"Missing J94 original source market gate "+t);
+for(let i=94;i<=102;i++){
+ const t="PASS J"+i;
+ assert.ok(localAuth.includes(t),"Missing live JWT source market test "+t);
+}
+for(const t of [
+ "call3(who.client,payload,[])",
+ "marketPurchases","merchantId","stockId",
+ "getStock(marketStock)","rowFingerprint",
+ "source_breakdown->>'marketBudgetCopper'",
+ "Recipes are not starting-equipment purchases",
+ "Not enough stock remains","PASS LOCAL REAL GoTrue J00-J102"
+])assert.ok(localAuth.includes(t),"Missing original market test assertion "+t);
+for(const path of [
+ "forge_market_cash_original_functions_pg17.sql",
+ "forge_v3_market_source_local_auth_extension_pg17.sql",
+ "validate_forge_inventory_ui_release_contract.mjs"
+])assert.ok(workflow.includes(path),"Missing Vercel-free workflow change for source market path "+path);
+for(const unsafe of ["ucggczovhmauhshvhusx","SERVICE_ROLE_KEY","SUPABASE_SERVICE_ROLE_KEY"]){
+ assert.ok(!sourceCash.includes(unsafe)&&!sourceMarket.includes(unsafe),"Live credentials forbidden in J94");
+}
+console.log("PASS STATIC J94-J102 source-original Fighter C cash alternative, unchanged market/formatter helpers, real JWT source v3 and hardened RLS acceptance contract. Browser execution remains a separate gate.");
+
