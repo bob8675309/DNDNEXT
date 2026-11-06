@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/research-orchestrator-20261105` |
-| Exact source commit represented by this archive snapshot | `5a98ab29b8b6294a72ccc1b6a84835a8e8d7017e` |
+| Exact source commit represented by this archive snapshot | `1726549ac5640664ba32f2c2d3300bb4fa645a8b` |
 | Compared with | `51c351a142d03378dff8e47e05182afe21a15622` (main comparison base) |
-| Last source commit title | docs(agent): reconcile living handoffs and registry with verified Nov 6 automation |
+| Last source commit title | fix(docs): match handoff registry allowed research status and tracked test paths |
 | Files changed relative to main | 20 (10 non-docs; 10 docs) |
-| Last source commit | 5 files (0 non-docs; 5 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,10 +17,6 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/PROJECT_STATE.md`
-- `docs/START_HERE_ACTIVE_HANDOFF.md`
 - `docs/SYSTEM_REGISTRY.json`
 
 ## Research-branch change inventory versus main
