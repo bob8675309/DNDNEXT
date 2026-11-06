@@ -80,7 +80,7 @@ assert.equal(coverage.stagedCount,1);
 assert.equal(coverage.missingCount,30);
 const bad = scanFixtureTriggers("CREATE TRIGGER character_progression_test_0 BEFORE INSERT ON public.characters FOR EACH ROW EXECUTE FUNCTION private.wrong();","bad.sql");
 assert.equal(compareCoverage(inventory,bad).mismatchCount,1);
-assert.throws(()=>parseOriginalInventory(md.replace(rows[0],"")),/incomplete/);
+assert.throws(()=>parseOriginalInventory(md.replace(rows[0],"")) ,/incomplete/i);
 
 // Workflow check is source-static, separate from executing a paid Codex job.
 const workflow = readFileSync(path.join(ROOT,".github/workflows/dndnext-research-agent.yml"),"utf8");
