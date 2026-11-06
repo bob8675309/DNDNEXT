@@ -1,5 +1,7 @@
 # DNDNext — Active Work Contract
 
+> **Mandatory session-close directive (owner, November 6):** Every substantial development session must update this branch's `docs/ACTIVE_WORK.md` and append a dated receipt to `docs/HANDOFF_LOG.md` before claiming completion. Record rationale, exact evidence, boundaries and one next task. Auto-generated Project Health alone does not meet this requirement. The current scenario-testing objective below is unchanged by this policy clarification.
+
 ## 2026-11-06 — Owner-directed next RESEARCH milestone (supersedes the old P1.2 next-task wording below for agent/Forge continuation)
 
 **Single next engineering task:** Start the [deterministic seeded scenario-testing first slice](Deterministic_Scenario_Testing_Next_Phase_2026-11-06.md). Inspect/reuse current #324 source-original PostgreSQL 17 + genuine GoTrue/PostgREST J00–J153 fixtures and add a small schema, seed and machine-readable runner proof on a bounded research continuation; no replacement of existing source handlers/tests. The existing 16 missing original trigger DDL cases are later focused scenarios, not grounds to repeat the 3 independently accepted trigger suites. This is NOT implemented or released yet.

@@ -1,5 +1,7 @@
 # DNDNext — End-of-chat handoff receipt (copy once per session)
 
+> **REQUIRED FOR EVERY SUBSTANTIAL SESSION:** Update `docs/ACTIVE_WORK.md` and append (never replace) a dated, source-evidenced receipt to `docs/HANDOFF_LOG.md` on the active work branch before declaring the session complete. Generated health/status snapshots do not replace authored rationale. If edits are blocked, report the exact missing entries and mark the handoff incomplete. Do not fabricate tests, CI, production status or commit SHAs.
+
 ## Identity and authority
 - UTC timestamp:
 - Production `main` SHA (read live):
