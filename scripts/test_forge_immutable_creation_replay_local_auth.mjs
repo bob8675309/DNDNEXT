@@ -1565,3 +1565,114 @@ assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_type='
 assert.equal(rowFingerprint("public.inventory_items","owner_id='"+marketGoodCharacter+"'"),marketInvBefore);
 console.log("PASS J102 signed original merchant purchase consumes remaining stock into user-owned inventory; source v3 market character-owned gear unchanged");
 console.log("PASS LOCAL REAL GoTrue J00-J102: v3 source-equivalent starting market + actual S/I/C and negative controls under four-policy candidate; full original triggers/browser still NOT accepted.");
+
+
+
+// J103–J108 high-risk original CP deferred trigger gate. These THREE trigger
+// bodies are unchanged live PostgreSQL17 source, with only scoped local catalog
+// skeletons for unused Warlock/spell branches. NOT full 31-trigger parity.
+sqlFile("scripts/fixtures/forge_high_risk_progression_local_auth_pg17.sql");
+for(const [fn,expected] of [
+ ["materialize_player_forge_source_magic_v1()","4c35eaab8dff7d3d15b64ed71881d4a6"],
+ ["validate_and_materialize_player_forge_class_options_v1()","6df5aee6f0519c9c77758d6e887ed8e4"],
+ ["validate_player_forge_starting_magic_exactness_v1()","ba645ad0f2c17addad0b40e0602c2ac8"]
+]){
+ assert.equal(sql("SELECT md5(pg_get_functiondef('private."+fn+"'::regprocedure))"),expected);
+}
+assert.equal(sql("SELECT count(*) FROM pg_trigger WHERE tgrelid='public.character_progression'::regclass"
+ +" AND NOT tgisinternal AND tgname IN ('character_progression_materialize_player_forge_source_magic_v1',"
+ +" 'character_progression_validate_player_forge_class_options_v1',"
+ +" 'character_progression_validate_player_forge_starting_magic_exac')"
+ +" AND tgenabled='O' AND tgdeferrable AND tginitdeferred"),"3");
+console.log("PASS J103 source-exact class-options, source-magic and starting-magic exactness constraints compiled and attached with original deferred timing");
+
+const threeTriggerFighter=JSON.parse(JSON.stringify(verifiedGrantPayload));
+threeTriggerFighter.creation_request_id=id(9510);
+threeTriggerFighter.name="J104 signed Fighter original high-risk trigger regression";
+const threeTriggerCharacter=pass(await call2(people.PLAYER.client,threeTriggerFighter),
+ "Original Fighter/Lucky/package v2 with additional class+magic triggers");
+assert.equal(sql("SELECT count(*) FROM public.character_option_grant_instances WHERE character_id='"+threeTriggerCharacter+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_option_grants WHERE character_id='"+threeTriggerCharacter+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_type='character' AND owner_id='"+threeTriggerCharacter+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_currency WHERE character_id='"+threeTriggerCharacter+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_class_option_grant_instances WHERE character_id='"+threeTriggerCharacter+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM public.character_spells WHERE character_id='"+threeTriggerCharacter+"'"),"0");
+console.log("PASS J104 genuine signed original v2 Fighter Lucky G/GI and source deferred package I/C commit with three additional original triggers; no spurious invocation or source spell rows");
+
+const originalStockAfterJ102=getStock(marketStock);
+assert.equal(originalStockAfterJ102,"0");
+const extraStock=id(9511);
+sql("INSERT INTO public.character_stock(id,character_id,qty,display_name,card_payload,price_gp,item_id)"
+ +" VALUES('"+extraStock+"','"+marketMerchant+"',2,'J105 untouched stock for three original triggers',"
+ +" '{\"item_type\":\"gear\",\"item_rarity\":\"mundane\"}'::jsonb,8,'p13-extra-source-rope')");
+const threeTriggerMarket=marketDraft("J105 signed v3 market with three original triggers",id(9512),extraStock,1);
+threeTriggerMarket.sheet.startingEquipmentSelections.marketPurchases[0].priceGp=0; // Deliberately untrusted UI display value
+const sourceMarketCharacter=pass(await v3market(threeTriggerMarket),
+ "Signed original v3 starting market with additional three source constraints");
+assert.equal(getStock(extraStock),"1");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_id='"+sourceMarketCharacter+"' AND owner_type='character'"),"1");
+assert.equal(sql("SELECT source_breakdown->>'marketSpentCopper' FROM public.character_currency WHERE character_id='"+sourceMarketCharacter+"'"),"800");
+assert.equal(sql("SELECT copper_value FROM public.character_currency WHERE character_id='"+sourceMarketCharacter+"'"),"29200");
+assert.equal(sql("SELECT count(*) FROM public.character_class_option_grant_instances WHERE character_id='"+sourceMarketCharacter+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM public.character_spells WHERE character_id='"+sourceMarketCharacter+"'"),"0");
+console.log("PASS J105 genuine v3 Fighter source market S/I/C after original class+magic triggers; authoritative stock price 8gp wins over forged client priceGp=0");
+
+const triggerAbortCounts=()=>sql("SELECT jsonb_build_object("
+ +"'characters',(SELECT count(*) FROM public.characters),"
+ +"'intents',(SELECT count(*) FROM private.player_creation_intent_reservations_v1),"
+ +"'sheets',(SELECT count(*) FROM public.character_sheets),"
+ +"'progression',(SELECT count(*) FROM public.character_progression),"
+ +"'events',(SELECT count(*) FROM public.character_level_events),"
+ +"'G',(SELECT count(*) FROM public.character_option_grants),"
+ +"'GI',(SELECT count(*) FROM public.character_option_grant_instances),"
+ +"'classGI',(SELECT count(*) FROM public.character_class_option_grant_instances),"
+ +"'spells',(SELECT count(*) FROM public.character_spells),"
+ +"'I',(SELECT count(*) FROM public.inventory_items),"
+ +"'C',(SELECT count(*) FROM public.character_currency),"
+ +"'S',(SELECT coalesce(sum(qty),0) FROM public.character_stock))::text");
+const forgedClass=JSON.parse(JSON.stringify(threeTriggerFighter));
+forgedClass.name="J106 source misowned Invocation on Fighter";
+forgedClass.creation_request_id=id(9513);
+forgedClass.sheet.sourceChoices={
+ "warlock-invocation-slot-1": {
+  placement:"class",ownerType:"class-option",
+  metadata:{family:"eldritch-invocation",slot:1,acquisitionLevel:1},
+  level:1,fields:{invocation:{kind:"option",selections:[]}}
+ }
+};
+const beforeInvalidClass=triggerAbortCounts();
+const invalidClass=await call2(people.PLAYER.client,forgedClass);
+assert.ok(invalidClass.error,"Original class options allowed an Invocation group for Fighter");
+assert.match(invalidClass.error.message||"",/Eldritch Invocation source choices are only valid for an XPHB Warlock/i,
+ "Need original live handler rejection, not a different upstream check");
+assert.equal(triggerAbortCounts(),beforeInvalidClass);
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+id(9513)+"'"),"0");
+console.log("PASS J106 genuine JWT original class-option trigger rejects invalid Fighter-owned Eldritch Invocation group and atomically aborts nonce/G/GI/I/C");
+
+const forgedMagic=JSON.parse(JSON.stringify(threeTriggerFighter));
+forgedMagic.name="J107 unsupported source-owned spell group";
+forgedMagic.creation_request_id=id(9514);
+forgedMagic.sheet.sourceChoices={
+ "fake-spell-group": {placement:"spells",ownerType:"alchemy",ownerKey:"test-wrong-owner",fields:{}}
+};
+const beforeInvalidMagic=triggerAbortCounts();
+const invalidMagic=await call2(people.PLAYER.client,forgedMagic);
+assert.ok(invalidMagic.error,"Original source magic accepted unsupported source-owned spell group");
+assert.match(invalidMagic.error.message||"",/Unsupported Forge source-magic owner type alchemy/i,
+ "Need original live source-magic handler rejection, not an unrelated preflight error");
+assert.equal(triggerAbortCounts(),beforeInvalidMagic);
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+id(9514)+"'"),"0");
+console.log("PASS J107 genuine JWT original source-magic trigger rejects unsupported spell owner and rolls back all CP/CS/G/I/C and nonce");
+
+const afterTriggerFighter=grantFingerprint(threeTriggerCharacter);
+const afterTriggerMarket=rowFingerprint("public.inventory_items","owner_id='"+sourceMarketCharacter+"'");
+const afterMarketCash=sql("SELECT md5(to_jsonb(c)::text) FROM public.character_currency c WHERE character_id='"+sourceMarketCharacter+"'");
+assert.equal(pass(await call2(people.PLAYER.client,threeTriggerFighter),"source-trigger v2 exact replay"),threeTriggerCharacter);
+assert.equal(pass(await v3market(threeTriggerMarket),"source-trigger v3 exact replay"),sourceMarketCharacter);
+assert.equal(grantFingerprint(threeTriggerCharacter),afterTriggerFighter);
+assert.equal(rowFingerprint("public.inventory_items","owner_id='"+sourceMarketCharacter+"'"),afterTriggerMarket);
+assert.equal(sql("SELECT md5(to_jsonb(c)::text) FROM public.character_currency c WHERE character_id='"+sourceMarketCharacter+"'"),afterMarketCash);
+assert.equal(getStock(extraStock),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_class_option_grant_instances"),"0");
+console.log("PASS J108 immutable original v2/v3 replay with three additional source triggers remains inert; no duplicate source-owned G/GI/I/C, no Warlock instances minted");
+console.log("PASS LOCAL REAL GoTrue J00-J108: three original omitted deferred trigger handlers staged, valid Fighter v2/v3 and negative misowned class/source magic source checks; actual Warlock and positive species/feat source magic still NOT COVERED.");

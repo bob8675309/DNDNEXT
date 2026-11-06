@@ -421,3 +421,50 @@ assert.ok(localAuth.includes('draft.sheet.background="Soldier"') &&
  "J94+ market input must satisfy unchanged original sheet Background name/source/ID validator (J17 fixture)");
 console.log("PASS STATIC J94-J102 source-original Fighter C cash alternative, unchanged market/formatter helpers, real JWT source v3 and hardened RLS acceptance contract. Browser execution remains a separate gate.");
 
+
+
+const highRiskOriginal=readFileSync("scripts/fixtures/forge_high_risk_original_progression_triggers_pg17.sql","utf8");
+const highRiskFixture=readFileSync("scripts/fixtures/forge_high_risk_progression_local_auth_pg17.sql","utf8");
+for(const [fn,hash] of [
+ ["materialize_player_forge_source_magic_v1","4c35eaab8dff7d3d15b64ed71881d4a6"],
+ ["validate_and_materialize_player_forge_class_options_v1","6df5aee6f0519c9c77758d6e887ed8e4"],
+ ["validate_player_forge_starting_magic_exactness_v1","ba645ad0f2c17addad0b40e0602c2ac8"]
+]){
+ assert.ok(highRiskOriginal.includes("CREATE OR REPLACE FUNCTION private."+fn+"("),
+ "J103 original trigger source body absent: "+fn);
+ assert.ok(highRiskOriginal.includes(hash)&&highRiskFixture.includes(hash),
+ "J103 original trigger pg_get_functiondef fingerprint gate missing: "+fn);
+}
+for(const token of [
+ "current_database()<>'postgres'",
+ "private.test_admins",
+ "player_creation_intent_reservations_v1",
+ "character_option_grant_instances",
+ "CREATE TABLE public.class_feature_option_catalog",
+ "CREATE TABLE public.character_class_option_grant_instances",
+ "NOT a database migration",
+ "DEFERRABLE INITIALLY DEFERRED",
+ "CREATE CONSTRAINT TRIGGER character_progression_materialize_player_forge_source_magic_v1",
+ "CREATE CONSTRAINT TRIGGER character_progression_validate_player_forge_class_options_v1",
+ "CREATE CONSTRAINT TRIGGER character_progression_validate_player_forge_starting_magic_exac",
+ "AND tgenabled='O' AND tgdeferrable AND tginitdeferred)<>3"
+])assert.ok(highRiskFixture.includes(token),"Missing J103 source trigger/staging safety gate "+token);
+for(let i=103;i<=108;i++)
+ assert.ok(localAuth.includes("PASS J"+i),"Missing J103–J108 authentic acceptance "+i);
+for(const token of [
+ "invalidClass.error.message","invalidMagic.error.message",
+ "Eldritch Invocation source choices are only valid for an XPHB Warlock",
+ "Unsupported Forge source-magic owner type alchemy",
+ "source_market","marketDraft","threeTriggerFighter",
+ "triggerAbortCounts","PASS LOCAL REAL GoTrue J00-J108"
+])assert.ok(localAuth.includes(token) || (token==="source_market"&&localAuth.includes("sourceMarketCharacter")),
+ "Missing high-risk regression contract: "+token);
+for(const path of [
+ "forge_high_risk_original_progression_triggers_pg17.sql",
+ "forge_high_risk_progression_local_auth_pg17.sql"
+])assert.ok(workflow.includes(path),"Missing high-risk original workflow path: "+path);
+for(const unsafe of ["ucggczovhmauhshvhusx","SERVICE_ROLE_KEY","SUPABASE_SERVICE_ROLE_KEY"]){
+ assert.ok(!highRiskOriginal.includes(unsafe) && !highRiskFixture.includes(unsafe),
+ "Production project or privileged key forbidden in scratch source");
+}
+console.log("PASS STATIC J103–J108 original live source handler fingerprints and deferred trigger timing, real JWT v2/v3 positive and source-choice negative contract. Not full 31-trigger parity.");
