@@ -24,3 +24,7 @@ The existing Codex research workflow remains manual, draft, non-funded, review-o
 On each owner push inspect the `Research docs auto-maintainer (no AI, docs-only)` job and its generated file. Confirm that only the generated Markdown was appended to the separate status archive. Compare source commit and GitHub CI conclusions; separately check that authored living docs/handoff receipts were included with the engineering changes. Do not auto-merge this draft policy into main.
 
 See `Legacy_PHB_Optional_Content_Design_2026-11-06.md` for the separate owner-requested future Admin setting.
+
+## Stable new-chat entry point
+
+The stable [Agent Touchstone](https://github.com/bob8675309/DNDNEXT/blob/docs/agent-status/docs/AGENT_TOUCHSTONE.md) is curated navigation. It links the generated Forge and agent source-status snapshots, main handoff rules, exact PR heads and original research/CI receipts. It is not an autonomous worker or substitute for replaying current source checks. It is intentionally separate from automatically generated snapshots and is mirrored in held PR #325 as `docs/AGENT_TOUCHSTONE.md`.

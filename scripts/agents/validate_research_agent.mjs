@@ -126,3 +126,13 @@ assert.ok(prompt.includes("No production database"));
 assert.ok(prompt.includes("Never edit the world map"));
 assert.ok(prompt.includes("research patch"));
 console.log("PASS: research-agent path/ref allowlist, credential redaction, dry-run patch artifact, forbidden world-map edit, main guard and workflow privilege contract");
+
+// Static navigation guard: a new chat must have a stable touchstone that does not overclaim autonomy.
+const touchstone = readFileSync(path.join(ROOT,"docs/AGENT_TOUCHSTONE.md"),"utf8");
+for(const token of ["AGENT_TOUCHSTONE.md","docs/agent-status","PR #325","PR #324","15 staged","16 unstaged","3 individually","AGENTS.md","START_HERE_ACTIVE_HANDOFF.md","SYSTEM_REGISTRY.json","HANDOFF_LOG.md","RUN_RESEARCH","J153","main","no UI/RPC/SQL toggle deployed"])
+ assert.ok(touchstone.includes(token),"Touchstone missing provenance or boundary "+token);
+for(const forbidden of ["will automatically merge","runs continuously in the background","all 31 triggers accepted"])
+ assert.ok(!touchstone.includes(forbidden),"Misleading autonomous touchstone claim "+forbidden);
+assert.ok(readFileSync(path.join(ROOT,"docs/README.md"),"utf8").includes("AGENT_TOUCHSTONE.md"));
+assert.ok(readFileSync(path.join(ROOT,"docs/START_HERE_ACTIVE_HANDOFF.md"),"utf8").includes("AGENT_TOUCHSTONE.md"));
+console.log("PASS stable new-chat agent touchstone, evidence routing and research boundaries");
