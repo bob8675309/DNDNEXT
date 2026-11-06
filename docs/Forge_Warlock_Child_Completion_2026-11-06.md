@@ -1,6 +1,6 @@
 # Warlock invocation completed-child rule — original signed-in research
 
-**Date:** 2026-11-06. **Status:** CANDIDATE, exact-head real CI PENDING. **Branch:** `research/forge-warlock-child-completion-20261106` stacked on held draft PR #331 `7f092ab329653e02dd5436dc7caf4a547d91ce73`. No production release/change.
+**Date:** 2026-11-06. **Status:** first authentic run failed J164 local source fidelity, original preferred-view/function correction pending fresh exact-head CI. **Branch:** `research/forge-warlock-child-completion-20261106` stacked on held draft PR #331 `7f092ab329653e02dd5436dc7caf4a547d91ce73`. No production release/change.
 
 ## Why this is the next slice
 
@@ -27,3 +27,9 @@ Manifest `forge_seeded_warlock_child_completion_v1.json` is source-verified and 
 This tests a **Warlock level2 source-owned Invocation plus legacy nested summary** in isolated signed local PostgreSQL17, not full 2024 catalogue, production RLS or full current UI, global concurrency, every Invocation, live player profiles, or a release. Still **17/31 original DDL staged, 14 missing; five separately receipted handler suites** if this is accepted. No live DnDWeb SQL/grants/data or application/Vercel changes.
 
 **One next task:** Run actual CI at exact branch head, diagnose and fix source-faithful fixture assumptions only (no source handler edits or suppressing original checks), then update both living handoff documents with actual tests, SHA, run IDs, remaining limits and the next missing original trigger priority.
+
+## First genuine local CI failure: original preferred spell source missing
+
+Executable `549fb210a864009566b7911445abc91df949c3ec` [run 42314143444](https://github.com/bob8675309/DNDNEXT/actions/runs/42314143444) kept all J00–J163 and S001–S003 green. J164 local source gate rejected the **existing reduced local helper** `public.is_preferred_spell_version_v1`. The earlier J00 fixture uses a simple `exists(select 1 from public.spells_catalog where id=p_id)` function, which is **not** live-source-identical; the source-original Warlock materializer calls the live signature. The original `public.is_preferred_spell_version_v1(p_spell_id uuid)` has MD5 `68993ebe31db168b77329aea0f466c5d`, and invokes live `public.spells_catalog_preferred` with view definition MD5 `84e356955cf21dca1df26ee3c1cd227a`. Read-only live information schema identifies 47 view columns.
+
+The corrective `scripts/fixtures/forge_warlock_preferred_spell_original_pg17.sql` installs only disposable compatible missing projections, **verbatim live view SQL and original helper SQL** (after removing the differently named **local** stub without CASCADE), and exact runtime fingerprint checks. The original class-option materializer, nested validator, authoritative source/catalog permissions, positive/negative spell selections, and all earlier tests remain unchanged. **J165/J166 were not reached** on first run; do not report them as passing. The new projection is not complete live row population/RLS/browser equivalence.

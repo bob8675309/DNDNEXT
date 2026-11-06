@@ -2,6 +2,7 @@
 -- Read-only DnDWeb select snapshot 2026-11-06; NEVER apply to production.
 -- Only disposable local GoTrue/PostgREST PostgreSQL 17 AFTER J163.
 \set ON_ERROR_STOP on
+\i scripts/fixtures/forge_warlock_preferred_spell_original_pg17.sql
 DO $guard$
 BEGIN
  IF current_database()<>'postgres'
