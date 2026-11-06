@@ -9,28 +9,30 @@ SET LOCAL lock_timeout = '2s';
 SET LOCAL statement_timeout = '20s';
 
 DO $preflight$
-DECLARE
-  v_old record;
-  v_new record;
-  v_tab record;
 BEGIN
-  IF current_setting('server_version_num')::integer NOT BETWEEN 170000 AND 179999
-  THEN RAISE EXCEPTION 'Inventory candidate reviewed only against PostgreSQL 17'; END IF;
-  SELECT relrowsecurity,relforcerowsecurity INTO v_tab
-    FROM pg_class WHERE oid='public.inventory_items'::regclass;
-  IF v_tab.relrowsecurity IS DISTINCT FROM true OR v_tab.relforcerowsecurity
-  THEN RAISE EXCEPTION 'Unexpected inventory RLS flags; refuse migration'; END IF;
-  SELECT convalidated,contype,pg_get_constraintdef(oid,true) definition
-    INTO v_old FROM pg_constraint WHERE conrelid='public.inventory_items'::regclass
-      AND conname='inventory_items_owner_type_chk';
-  SELECT convalidated,contype,pg_get_constraintdef(oid,true) definition
-    INTO v_new FROM pg_constraint WHERE conrelid='public.inventory_items'::regclass
-      AND conname='inventory_items_owner_type_check';
-  IF v_old.convalidated IS DISTINCT FROM false OR v_old.contype<>'c'
-    OR v_old.definition<>'CHECK (owner_type = ANY (ARRAY[''player''::text, ''npc''::text, ''merchant''::text])) NOT VALID'
-    OR v_new.convalidated IS DISTINCT FROM true OR v_new.contype<>'c'
-    OR v_new.definition<>'CHECK (owner_type = ANY (ARRAY[''player''::text, ''npc''::text, ''merchant''::text, ''character''::text]))'
-  THEN RAISE EXCEPTION 'Inventory owner CHECK source/validation changed; refuse migration'; END IF;
+ IF current_setting('server_version_num')::integer NOT BETWEEN 170000 AND 179999
+ THEN RAISE EXCEPTION 'Inventory candidate reviewed only against PostgreSQL 17'; END IF;
+ IF NOT EXISTS (
+   SELECT 1 FROM pg_class c
+   WHERE c.oid='public.inventory_items'::regclass
+     AND c.relrowsecurity AND NOT c.relforcerowsecurity
+ ) THEN RAISE EXCEPTION 'Unexpected inventory RLS flags; refuse migration'; END IF;
+ -- Explicit catalog EXISTS guards avoid ambiguous SELECT ... INTO record aliases.
+ IF NOT EXISTS (
+   SELECT 1 FROM pg_constraint c
+   WHERE c.conrelid='public.inventory_items'::regclass
+     AND c.conname='inventory_items_owner_type_chk'
+     AND c.contype='c' AND NOT c.convalidated
+     AND pg_get_constraintdef(c.oid,true)
+       = 'CHECK (owner_type = ANY (ARRAY[''player''::text, ''npc''::text, ''merchant''::text])) NOT VALID'
+ ) OR NOT EXISTS (
+   SELECT 1 FROM pg_constraint c
+   WHERE c.conrelid='public.inventory_items'::regclass
+     AND c.conname='inventory_items_owner_type_check'
+     AND c.contype='c' AND c.convalidated
+     AND pg_get_constraintdef(c.oid,true)
+       = 'CHECK (owner_type = ANY (ARRAY[''player''::text, ''npc''::text, ''merchant''::text, ''character''::text]))'
+ ) THEN RAISE EXCEPTION 'Inventory owner CHECK source/validation changed; refuse migration'; END IF;
   IF (SELECT count(*) FROM pg_policy WHERE polrelid='public.inventory_items'::regclass)<>4
     OR (SELECT count(*) FROM pg_policy WHERE polrelid='public.inventory_items'::regclass
       AND polpermissive AND polroles=ARRAY['authenticated'::regrole::oid]
@@ -162,7 +164,7 @@ BEGIN
 END $postflight$;
 COMMIT;
 
--- NOT IN THIS CANDIDATE: inventory SELECT revocation semantics, full production
--- browser, direct NPC/merchant transfer permissions, all Forge trigger graphs,
+-- NOT IN THIS CANDIDATE: full production browser, direct NPC/merchant
+-- transfer permissions, all Forge trigger graphs,
 -- inventory-crafting game authority, RLS/role hardening of other tables.
 -- THIS DOES NOT AUTHORIZE A PRODUCTION RELEASE.

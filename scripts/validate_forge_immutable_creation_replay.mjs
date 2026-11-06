@@ -349,4 +349,8 @@ for(const unsafe of ["ucggczovhmauhshvhusx","SUPABASE_SERVICE_ROLE_KEY","SERVICE
  assert.ok(!ownerReviewCandidate.includes(unsafe)&&!ownerLiveRls.includes(unsafe)&&
  !ownerPermissionOriginal.includes(unsafe),"Forbidden production project or API key "+unsafe);
 }
+assert.ok(ownerReviewCandidate.includes("IF NOT EXISTS (") &&
+ !ownerReviewCandidate.includes("v_old record") &&
+ !ownerReviewCandidate.includes("definition INTO"),
+ "J85+ guard uses catalog EXISTS, not error-prone SELECT INTO record alias");
 console.log("PASS STATIC J85-J93 exact source character authorization helper, live four RLS policies, guarded combined owner CHECK and policy review SQL, original JWT insert/update/read/revocation/Admin and creation checks (runtime separate).");
