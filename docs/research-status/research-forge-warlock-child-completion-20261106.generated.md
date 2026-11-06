@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/forge-warlock-child-completion-20261106` |
-| Exact source commit represented by this archive snapshot | `7f092ab329653e02dd5436dc7caf4a547d91ce73` |
+| Exact source commit represented by this archive snapshot | `549fb210a864009566b7911445abc91df949c3ec` |
 | Compared with | `51c351a142d03378dff8e47e05182afe21a15622` (main comparison base) |
-| Last source commit title | docs(forge): receipt original nested-choice JWT acceptance and updated trigger matrix |
-| Files changed relative to main | 105 (77 non-docs; 28 docs) |
-| Last source commit | 4 files (0 non-docs; 4 authored docs) |
+| Last source commit title | test(forge): cover original Warlock Invocation completed-child branch via signed seeds |
+| Files changed relative to main | 109 (80 non-docs; 29 docs) |
+| Last source commit | 8 files (5 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,10 +17,14 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-forge-immutable-creation-replay.yml`
 - `docs/ACTIVE_WORK.md`
-- `docs/Forge_Nested_Choice_Dependencies_2026-11-06.md`
-- `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
+- `docs/Forge_Warlock_Child_Completion_2026-11-06.md`
 - `docs/HANDOFF_LOG.md`
+- `scripts/fixtures/forge_seeded_warlock_child_completion_v1.json`
+- `scripts/fixtures/forge_warlock_child_completion_local_auth_pg17.sql`
+- `scripts/test_forge_immutable_creation_replay_local_auth.mjs`
+- `scripts/validate_forge_seeded_warlock_child_completion.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -45,6 +49,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/Forge_Subclass_Original_Acceptance_2026-11-06.md`
 - `docs/Forge_V3_Source_Market_Inventory_RLS_Research_2026-11-05.md`
 - `docs/Forge_Verified_Progression_Creator_Candidate_2026-11-05.md`
+- `docs/Forge_Warlock_Child_Completion_2026-11-06.md`
 - `docs/Forge_Warlock_Invocation_Positive_Source_2026-11-05.md`
 - `docs/Forge_Wizard_Starting_Spell_Counts_2026-11-06.md`
 - `docs/Forge_Zero_Cost_Acceptance_Automation_2026-11-06.md`
@@ -73,8 +78,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/fixtures/forge_creation_original_functions_pg17.sql`
 - `scripts/fixtures/forge_creation_replay_candidate_pg17.sql`
 - `scripts/fixtures/forge_creation_replay_local_auth_pg17.sql`
-- `scripts/fixtures/forge_creator_trigger_original_stage3_pg17.sql`
-- … 55 more
+- … 59 more
 
 ## Forge source and authenticated evidence (branch-local only)
 
