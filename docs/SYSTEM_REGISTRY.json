@@ -521,6 +521,45 @@
         "No production SQL changes, grants, merge, or deployment without owner approval",
         "Do not change world-map travel/camping/weather or mix world/town and tactical maps"
       ]
+    },
+    {
+      "id": "research-docs-automation",
+      "status": "research-pr-only",
+      "code_paths": [
+        ".github/workflows/research-docs-maintenance.yml",
+        "scripts/agents/research_docs_maintainer.mjs",
+        "scripts/agents/validate_research_docs_maintainer.mjs",
+        "scripts/agents/research_agent.mjs",
+        ".github/workflows/validate-dndnext-research-agent.yml",
+        "docs/Research_Docs_Maintenance_2026-11-06.md"
+      ],
+      "tests": [
+        "https://github.com/bob8675309/DNDNEXT/actions/runs/42241801501",
+        "https://github.com/bob8675309/DNDNEXT/actions/runs/42241789973",
+        "https://github.com/bob8675309/DNDNEXT/actions/runs/42242114281"
+      ],
+      "last_checked": "2026-11-06",
+      "open_gaps": [
+        "Both research PRs remain drafts and unmerged; the docs agent workflow is NOT deployed to main.",
+        "Only deterministic source snapshot publication is automated. Authored living docs require the researcher/agent to update them in the same reviewed patch; source code semantics cannot be inferred safely.",
+        "Project-level preview suppression temporarily affects all preview branches; restore deliberately before next UI browser acceptance.",
+        "Original Forge triggers 15/31 staged, three targeted signed JWT receipts; full production RLS, concurrency and browser acceptance remain unverified."
+      ],
+      "label": "No-cost research documentation maintainer",
+      "scope_note": "Owner research pushes publish exactly one generated status file per branch to docs/agent-status using an atomic expected-head check. Research-only patch scope guard also requires factual handoff receipt and affected living Markdown. No automatic main updates or paid AI execution.",
+      "verification": {
+        "source": "inspected-relevant-entry-points-on-draft-PR-325",
+        "live_database": "not-used",
+        "deployed_sha": "main-unchanged-no-release",
+        "test_status": "agent-static-and-independent-archive-docs-writes-success-on-exact-SHA",
+        "browser_acceptance": "unverified-this-audit",
+        "owner_approval": "owner-requested-free-research-documentation-automation; no merge approval"
+      },
+      "protected_boundaries": [
+        "Never auto-write main, production database SQL, protected world/town maps or application runtime",
+        "Only docs/research-status/*.generated.md on dedicated docs/agent-status branch; never alter active research PR head automatically",
+        "No paid Codex, service-role secrets, broad PAT, or GitHub token repo write outside the controlled docs-only job"
+      ]
     }
   ],
   "research": {
