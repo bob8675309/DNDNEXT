@@ -1964,6 +1964,15 @@ assert.equal(sql("SELECT md5(pg_get_functiondef('private.guard_player_character_
 assert.equal(sql("SELECT count(*) FROM pg_trigger WHERE tgname='characters_guard_player_tags_v1' AND tgrelid='public.characters'::regclass AND NOT tgisinternal"),"1");
 console.log("PASS J125 original player tags handler hash and BEFORE UPDATE OF tags DDL installed in PG17");
 
+// Existing J29 intentionally revoked this same player's editor grant, and
+// verified that revocation BEFORE J125. Restore only in disposable scratch
+// so J126 reaches the ORIGINAL trigger rather than being masked by RLS.
+assert.equal(sql("SELECT can_edit FROM public.character_permissions WHERE character_id='"+taggedId+"' AND user_id='"+uid("PLAYER")+"'"),
+ "f","J29 revocation must remain effective before J126 fixture re-grant");
+sql("UPDATE public.character_permissions SET can_edit=true WHERE character_id='"+taggedId+"' AND user_id='"+uid("PLAYER")+"'");
+assert.equal(sql("SELECT can_edit FROM public.character_permissions WHERE character_id='"+taggedId+"' AND user_id='"+uid("PLAYER")+"'"),
+ "t","J126 needs a real current editor grant for the source guard to execute");
+
 const originalCharTags=(cid)=>JSON.parse(sql("SELECT to_jsonb(tags)::text FROM public.characters WHERE id='"+cid+"'"));
 const signedTagUpdate=(client,cid,tags)=>client.from("characters")
  .update({tags}).eq("id",cid).select("id,tags");
