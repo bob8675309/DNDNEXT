@@ -94,19 +94,27 @@ ALTER POLICY inventory_items_delete_owner_or_admin ON public.inventory_items
   );
 
 -- Tighten direct READ access to newly materialized character-owned rows
--- using the existing ORIGINAL current character permission predicate.
--- Unlike user_id alone, this revokes direct SELECT when can_inventory/can_edit
--- is removed. The CASE protects UUID casting against malformed legacy owner IDs.
--- Player-, NPC- and merchant-owned SELECT semantics are unchanged.
+-- using unchanged source-original private.can_access_character_v1.
+-- A revoked user_id owner may no longer SELECT the character-owned item.
+-- CASE guards malformed owner_id before UUID cast.
 ALTER POLICY inventory_items_select_owner_or_admin ON public.inventory_items
-  USING (
-    (SELECT private.current_user_is_admin())
-    OR (
-      user_id = (SELECT auth.uid())
-      AND CASE
-        WHEN owner_type = 'character' THEN
-          CASE
-            WHEN owner_id ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
+ USING (
+   (SELECT private.current_user_is_admin())
+   OR (
+     user_id = (SELECT auth.uid())
+     AND CASE
+       WHEN owner_type = 'character' THEN
+         CASE
+           WHEN owner_id ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+             THEN private.can_access_character_v1(owner_id::uuid, 'inventory')
+           ELSE false
+         END
+       ELSE true
+     END
+   )
+ );
+
+-- After RLS hardening, the already VALID newer owner CHECK remains authoritative.
 -- No CASCADE. ACCESS EXCLUSIVE lock is acquired; 2s timeout aborts atomically.
 ALTER TABLE public.inventory_items DROP CONSTRAINT inventory_items_owner_type_chk;
 
@@ -125,41 +133,6 @@ BEGIN
     'inventory_items_select_owner_or_admin')
    AND (coalesce(pg_get_expr(polqual,polrelid),'') LIKE '%character%'
      OR coalesce(pg_get_expr(polwithcheck,polrelid),'') LIKE '%character%'))<>4
- THEN RAISE EXCEPTION 'Inventory postflight policy/constraint invariant failed'; END IF;
-END $postflight$;
-COMMIT;
-
--- NOT IN THIS CANDIDATE: full production browser, direct NPC/merchant
--- transfer permissions, all Forge trigger graphs,
--- inventory-crafting game authority, RLS/role hardening of other tables.
--- THIS DOES NOT AUTHORIZE A PRODUCTION RELEASE.
-
-              THEN private.can_access_character_v1(owner_id::uuid, 'inventory')
-            ELSE false
-          END
-        ELSE true
-      END
-    )
-  );
-
--- After RLS hardening, the already VALID newer owner CHECK remains authoritative.
--- No CASCADE. ACCESS EXCLUSIVE lock is acquired; 2s timeout aborts atomically.
-ALTER TABLE public.inventory_items DROP CONSTRAINT inventory_items_owner_type_chk;
-
-DO $postflight$
-BEGIN
- IF EXISTS (SELECT 1 FROM pg_constraint
-   WHERE conrelid='public.inventory_items'::regclass
-   AND conname='inventory_items_owner_type_chk')
- OR NOT EXISTS (SELECT 1 FROM pg_constraint
-   WHERE conrelid='public.inventory_items'::regclass
-   AND conname='inventory_items_owner_type_check' AND convalidated)
- OR (SELECT count(*) FROM pg_policy WHERE polrelid='public.inventory_items'::regclass)<>4
- OR (SELECT count(*) FROM pg_policy WHERE polrelid='public.inventory_items'::regclass
-   AND polname IN ('inventory_items_insert_owner_or_admin',
-    'inventory_items_update_owner_or_admin','inventory_items_delete_owner_or_admin')
-   AND (coalesce(pg_get_expr(polqual,polrelid),'') LIKE '%character%'
-     OR coalesce(pg_get_expr(polwithcheck,polrelid),'') LIKE '%character%'))<>3
  THEN RAISE EXCEPTION 'Inventory postflight policy/constraint invariant failed'; END IF;
 END $postflight$;
 COMMIT;

@@ -353,4 +353,27 @@ assert.ok(ownerReviewCandidate.includes("IF NOT EXISTS (") &&
  !ownerReviewCandidate.includes("v_old record") &&
  !ownerReviewCandidate.includes("definition INTO"),
  "J85+ guard uses catalog EXISTS, not error-prone SELECT INTO record alias");
+// Catch SQL string-generation hazards before spending a free GoTrue CI run.
+// In particular, using String.replace with a replacement containing "$'"
+// can splice the original suffix into a UUID regex and duplicate migration DDL.
+const onlyOne=(pattern,description,expected)=>assert.equal(
+ (ownerReviewCandidate.match(pattern)||[]).length,expected,description);
+onlyOne(/^BEGIN;$/gm,"Owner candidate must have one transaction BEGIN",1);
+onlyOne(/^COMMIT;$/gm,"Owner candidate must have one transaction COMMIT",1);
+onlyOne(/^DO \$preflight\$$/gm,"One source preflight DO block",1);
+onlyOne(/^DO \$postflight\$$/gm,"One source postflight DO block",1);
+onlyOne(/^END \$postflight\$;$/gm,"One postflight DO terminator",1);
+onlyOne(/^ALTER TABLE public\.inventory_items DROP CONSTRAINT inventory_items_owner_type_chk;$/gm,
+ "Only one obsolete CHECK DROP",1);
+onlyOne(/^ALTER POLICY inventory_items_/gm,"Exactly four inventory policy mutations",4);
+onlyOne(/^ALTER POLICY inventory_items_select_owner_or_admin/gm,
+ "Exactly one SELECT policy mutation",1);
+assert.ok(ownerReviewCandidate.includes("owner_id ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'"),
+ "Full guarded UUID regex required; no string-substitution truncation");
+const afterOwnerCommit=ownerReviewCandidate.slice(
+ ownerReviewCandidate.indexOf("\nCOMMIT;")+"\nCOMMIT;".length).trim();
+assert.ok(afterOwnerCommit.startsWith("-- NOT IN THIS CANDIDATE") &&
+ !/\bALTER POLICY\b|\bDO \$postflight\$/.test(afterOwnerCommit),
+ "No executable DDL or duplicate postflight SQL after COMMIT");
+
 console.log("PASS STATIC J85-J93 exact source character authorization helper, live four RLS policies, guarded combined owner CHECK and policy review SQL, original JWT insert/update/read/revocation/Admin and creation checks (runtime separate).");
