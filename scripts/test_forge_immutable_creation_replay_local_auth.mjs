@@ -8,6 +8,7 @@ import { createClient } from "@supabase/supabase-js";
 import { loadManifest, runSeededForgeScenarios } from "./agents/forge_seeded_scenarios.mjs";
 import { loadStartingSpellPlans } from "./validate_forge_seeded_starting_spells.mjs";
 import { loadWizardPlans } from "./validate_forge_seeded_wizard_spells.mjs";
+import { loadNestedPlans } from "./validate_forge_seeded_nested_choices.mjs";
 import { mkdirSync, writeFileSync } from "node:fs";
 const e=process.env;
 for(const [key,value] of Object.entries({
@@ -2552,3 +2553,93 @@ writeFileSync("research-agent-artifact/FORGE_WIZARD_STARTING_SPELLS.json",
    "other 15 original triggers, cross-command concurrency and production release remain open"]
  },null,2)+"\n","utf8");
 console.log("PASS J158-J160 Wizard original deferred source spell-count acceptance in genuine local signed GoTrue; source rows and report audited, production/browser UNVERIFIED");
+
+
+// J161–J163: exact deployed deferred nested class choices validator (not a new
+// gameplay permission). All existing J00–J160 + S001–S003 complete FIRST.
+sqlFile("scripts/fixtures/forge_nested_choices_local_auth_pg17.sql");
+const nestedPlans=loadNestedPlans();
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.validate_player_forge_nested_choice_payload_v1()'::regprocedure))"),
+ nestedPlans.source&&"df2861cc76b0b74bb7cd57fbe61c9a05");
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.normalize_player_choice_name_v1(text)'::regprocedure))"),
+ "dd8cdd5b47efe99b1cfff9c2bf7635dd");
+assert.equal(sql("SELECT count(*) FROM pg_trigger WHERE "+
+ "tgname='character_progression_validate_player_forge_nested_choices_v1' "+
+ "AND tgrelid='public.character_progression'::regclass "+
+ "AND tgdeferrable AND tginitdeferred AND NOT tgisinternal"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_option_catalog_preferred "+
+ "WHERE name='Defense' AND source='XPHB' AND option_type='feat' AND category='FS'"),"1");
+console.log("PASS J161 live-identical deferred nested-choice original handler+normalizer MD5, trigger events, legal XPHB Defense specimen source");
+
+// Reuse the already-proven real signed Fighter Level1 + canonical Lucky
+// feat and Defense fighting-style source selection (J31). Do not construct a
+// fictitious class, permission, child feat or local substitute rule.
+const nestedDraft=(plan)=>{
+ const draft=subclassDraft(plan.name,plan.requestId,1);
+ draft.sheet.classFeatureChoices=JSON.parse(JSON.stringify(validAuthority.sheet.classFeatureChoices));
+ draft.sheet.classFeatureChoiceSummary=JSON.parse(JSON.stringify(validAuthority.sheet.classFeatureChoiceSummary));
+ assert.equal(draft.sheet.classFeatureChoices.fightingStyle.selections[0].name,nestedPlans.source.selectionName);
+ assert.equal(draft.sheet.classFeatureChoiceSummary[0].name,nestedPlans.source.selectionName);
+ if(plan.mode==="missing-parent-active-when"){
+  // Deliberately malformed dependency *metadata*; the Defense option remains
+  // truly eligible, but the selected Fighter does not have this Warlock parent.
+  // The earlier original group shape/catalog/summary validators should pass;
+  // the newly staged ORIGINAL nested handler must reject this reference.
+  draft.sheet.classFeatureChoices.fightingStyle.activeWhen={
+   optionNames:[nestedPlans.source.missingParentOptionName]
+  };
+ }
+ return draft;
+};
+const nestedResults=[];
+const nestedValidPlan=nestedPlans.cases[0],nestedValidPayload=nestedDraft(nestedValidPlan);
+const nestedValidId=pass(await call2(people.PLAYER.client,nestedValidPayload),
+ "J162 genuine signed XPHB Fighter1 canonical Defense choice with original nested trigger installed");
+const nestedValidState=scenarioSnapshot(nestedValidId);
+assert.equal(nestedValidState.editorAuthenticated,true);
+assert.deepEqual(nestedValidState.source,{
+ classKey:"fighter",classSource:"XPHB",level:1,subclassName:null,subclassSource:null
+});
+for(const t of ["characters","sheets","progression","events","grants","instances","items","currency"])
+ assert.equal(nestedValidState.counts[t],1,"J162 canonical "+t);
+assert.equal(sql("SELECT sheet#>>'{classFeatureChoices,fightingStyle,selections,0,name}' FROM public.character_sheets WHERE character_id='"+nestedValidId+"'"),"Defense");
+assert.equal(sql("SELECT sheet#>>'{classFeatureChoiceSummary,0,name}' FROM public.character_sheets WHERE character_id='"+nestedValidId+"'"),"Defense");
+const nestedAfter=speciesAbortCounts();
+assert.equal(pass(await call2(people.PLAYER.client,nestedValidPayload),
+ "J162 same request/source group immutable replay"),nestedValidId);
+assert.deepEqual(scenarioSnapshot(nestedValidId),nestedValidState);
+assert.equal(speciesAbortCounts(),nestedAfter);
+nestedResults.push({scenarioId:nestedValidPlan.scenarioId,seed:nestedValidPlan.seed,
+ mode:nestedValidPlan.mode,actualSignedV2:true,sourceNestedTriggerInstalled:true,
+ validSourceGroup:true,canonicalCounts:nestedValidState.counts,replayInert:true});
+console.log("PASS J162 genuine signed Fighter1 canonical Defense plus original nested handler accepts legal base group; all CP/CS/G/GI/I/C and inert replay");
+
+const nestedInvalidPlan=nestedPlans.cases[1],nestedInvalidPayload=nestedDraft(nestedInvalidPlan);
+const beforeNestedInvalid=speciesAbortCounts();
+const nestedRejected=await call2(people.PLAYER.client,nestedInvalidPayload);
+assert.ok(nestedRejected.error,"J163 original nested dependency handler incorrectly accepted forged activeWhen parent");
+assert.match(nestedRejected.error.message||"",
+ /^Dependent class choice group fightingStyle is active without its required parent option\.$/i,
+ "J163 MUST reach deployed nested dependency validator, not earlier source group guard");
+assert.equal(speciesAbortCounts(),beforeNestedInvalid,
+ "J163 rejected dependent group leaked global character/CP/CS/feat/grant/items/currency/stock/nonce");
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+nestedInvalidPlan.requestId+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE name='"+nestedInvalidPlan.name+"'"),"0");
+assert.deepEqual(scenarioSnapshot(nestedValidId),nestedValidState,
+ "J163 invalid dependency modified prior valid Fighter identity");
+nestedResults.push({scenarioId:nestedInvalidPlan.scenarioId,seed:nestedInvalidPlan.seed,
+ mode:nestedInvalidPlan.mode,actualSignedV2:true,sourceNestedTriggerInstalled:true,
+ exactOriginalDependencyError:true,transactionRolledBack:true,nonceAbsent:true});
+console.log("PASS J163 genuine signed Fighter Defense choice with invalid activeWhen Agonizing Blast parent denied by ORIGINAL deferred nested handler; complete nonce/stock/canonical rollback");
+
+writeFileSync("research-agent-artifact/FORGE_NESTED_CHOICE_SCENARIOS.json",
+ JSON.stringify({schemaVersion:1,suite:nestedPlans.suite,
+  fixture:"disposable-pg17-genuine-local-gotrue-postgrest",
+  originalNestedHandlerMd5:"df2861cc76b0b74bb7cd57fbe61c9a05",
+  originalChoiceNormalizationMd5:"dd8cdd5b47efe99b1cfff9c2bf7635dd",
+  cases:nestedResults,baseline:"original-J00-J160-plus-seeded-S001-S003-passed",
+  limitations:["Covers valid Fighter style and invalid activeWhen dependency only, NOT Warlock four-invocation child completion",
+   "source-Fighter option view is reduced local specimen, not full production preferred catalog or RLS",
+   "remaining 14 source-trigger DDL, production browser, cross-transaction locks and live data unverified"]
+ },null,2)+"\n","utf8");
+console.log("PASS J161-J163 nested choice source-original dependency branch via genuine GoTrue; missing-child invocation branch remains UNTESTED");

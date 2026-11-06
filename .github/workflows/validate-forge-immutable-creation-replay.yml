@@ -62,6 +62,11 @@ on:
       - 'scripts/fixtures/forge_seeded_wizard_spells_v1.json'
       - 'scripts/fixtures/forge_wizard_starting_spells_local_auth_pg17.sql'
       - 'scripts/validate_forge_seeded_wizard_spells.mjs'
+      - 'scripts/fixtures/forge_nested_choices_original_pg17.sql'
+      - 'scripts/fixtures/forge_nested_choices_local_auth_pg17.sql'
+      - 'scripts/fixtures/forge_seeded_nested_choices_v1.json'
+      - 'scripts/validate_forge_seeded_nested_choices.mjs'
+      - 'docs/Forge_Nested_Choice_Dependencies_2026-11-06.md'
       - 'docs/Forge_Wizard_Starting_Spell_Counts_2026-11-06.md'
       - 'scripts/validate_forge_seeded_scenarios.mjs'
       - 'scripts/validate_forge_immutable_creation_replay.mjs'
@@ -112,6 +117,8 @@ jobs:
           node scripts/validate_forge_seeded_starting_spells.mjs
           node --check scripts/validate_forge_seeded_wizard_spells.mjs
           node scripts/validate_forge_seeded_wizard_spells.mjs
+          node --check scripts/validate_forge_seeded_nested_choices.mjs
+          node scripts/validate_forge_seeded_nested_choices.mjs
           node scripts/validate_unified_character_forge.mjs
           node scripts/validate_forge_inventory_ui_release_contract.mjs
       - name: Confirm unsafe original, then candidate replay contract in disposable PG17
@@ -153,6 +160,8 @@ jobs:
           node scripts/validate_forge_seeded_starting_spells.mjs
           node --check scripts/validate_forge_seeded_wizard_spells.mjs
           node scripts/validate_forge_seeded_wizard_spells.mjs
+          node --check scripts/validate_forge_seeded_nested_choices.mjs
+          node scripts/validate_forge_seeded_nested_choices.mjs
       - name: Configure ephemeral local Supabase PostgreSQL17 and GoTrue
         run: |
           mkdir -p "$RUNNER_TEMP/forge-replay-local/supabase"
@@ -202,6 +211,7 @@ jobs:
             research-agent-artifact/FORGE_SEEDED_SCENARIOS.json
             research-agent-artifact/FORGE_STARTING_SPELL_SCENARIOS.json
             research-agent-artifact/FORGE_WIZARD_STARTING_SPELLS.json
+            research-agent-artifact/FORGE_NESTED_CHOICE_SCENARIOS.json
           if-no-files-found: warn
           retention-days: 3
       - name: Stop and destroy disposable local services
