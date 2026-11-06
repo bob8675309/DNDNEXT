@@ -653,3 +653,50 @@ for(const forbidden of ["ucggczovhmauhshvhusx","SUPABASE_SERVICE_ROLE_KEY","SERV
  assert.ok(!portraitSource.includes(forbidden)&&!portraitStage.includes(forbidden),
   "Original portrait fixture contains live project identifier/secret");
 console.log("PASS STATIC J133-J141 original portrait source, MD5, trigger timing, reduced catalog, authenticated JWT tests; production ACL/browser remain separate.");
+
+
+// J142-J153: original source-exact Fighter subclass timing, edition and real JWT fixture.
+const subclassOriginal=readFileSync("scripts/fixtures/forge_subclass_choice_original_pg17.sql","utf8");
+const subclassStage=readFileSync("scripts/fixtures/forge_subclass_choice_local_auth_pg17.sql","utf8");
+assert.ok(subclassOriginal.includes("CREATE OR REPLACE FUNCTION private.apply_character_forge_subclass_choice_v1()"));
+assert.ok(subclassOriginal.includes("273be29420a7274d997642e302604cb7"));
+for(const token of [
+ "v_creator = 'shared_character_forge_player_v2'",
+ "new.class_level >= v_first_available_level",
+ "raise exception 'Choose a subclass",
+ "v_requested_name",
+ "v_requested_source",
+ "v_subclass_name",
+ "v_subclass_source",
+ "new.level_choices",
+ "'startingSubclass'"
+]) assert.ok(subclassOriginal.includes(token),"Original subclass source drift "+token);
+for(const token of [
+ "current_database()<>'postgres'",
+ "170000 AND 179999",
+ "private.player_creation_intent_reservations_v1",
+ "private.guard_player_character_tag_update_v1()",
+ "private.sync_character_portrait_library_id_v1()",
+ "ADD COLUMN level_choices jsonb NOT NULL DEFAULT '{}'::jsonb",
+ "'subclass:fighter:xphb:champion:champion:xphb:3'",
+ "'subclass:fighter:phb:champion:champion:phb:3'",
+ "md5(pg_get_functiondef('private.apply_character_forge_subclass_choice_v1()'",
+ "273be29420a7274d997642e302604cb7",
+ "BEFORE INSERT ON public.character_progression",
+ "EXECUTE FUNCTION private.apply_character_forge_subclass_choice_v1()",
+ "NOTIFY pgrst,'reload schema'"
+])assert.ok(subclassStage.includes(token),"Original subclass fixture safety/fidelity missing "+token);
+for(let i=142;i<=153;i++)
+ assert.ok(localAuth.includes("PASS J"+i),"Original subclass signed-JWT case missing J"+i);
+for(const token of [
+ "subclassDraft","originalSubclassReject","people.PLAYER.client","people.OUTSIDER.client",
+ "Choose a subclass for fighter level 3","subclassSource",
+ "level_choices#>>'{startingSubclass,creator}'","speciesAbortCounts",
+ "replayBefore","PASS LOCAL REAL GoTrue J00-J153"
+])assert.ok(localAuth.includes(token),"Original subclass JWT acceptance contract missing "+token);
+for(const file of ["forge_subclass_choice_original_pg17.sql","forge_subclass_choice_local_auth_pg17.sql"])
+ assert.ok(workflow.includes(file),"PR CI missing subclass path "+file);
+for(const forbidden of ["ucggczovhmauhshvhusx","SUPABASE_SERVICE_ROLE_KEY","SERVICE_ROLE_KEY"])
+ assert.ok(!subclassOriginal.includes(forbidden)&&!subclassStage.includes(forbidden),
+ "Original subclass fixture cannot include deployed project or privileged token");
+console.log("PASS STATIC J142-J153 original subclass source-hash, before-insert trigger, reduced PHB/XPHB catalog and real signed JWT tests; full edition policy, permission graph and browser UNPROVEN.");

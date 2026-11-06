@@ -2144,3 +2144,120 @@ assert.deepEqual(portraitOwnedAfter,portraitOwnedBefore,
  "Original portrait sync unexpectedly changed canonical G/GI/I/C/CP/CS or stock/nonce counts");
 console.log("PASS J141 portrait source transitions leave original Forge item, cash, grant, progression and sheet state untouched");
 console.log("PASS LOCAL REAL GoTrue J00-J141: original source-hashed player tags guard plus library portrait source transitions. Full production RLS, full catalog and browser still UNVERIFIED.");
+
+// J142-J153: original source-qualified Fighter subclass BEFORE INSERT on progression.
+// AFTER J141 only; earlier real JWT/PG17 cases are unchanged.
+sqlFile("scripts/fixtures/forge_subclass_choice_local_auth_pg17.sql");
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.apply_character_forge_subclass_choice_v1()'::regprocedure))"),
+ "273be29420a7274d997642e302604cb7");
+assert.equal(sql("SELECT count(*) FROM pg_trigger WHERE tgname='character_progression_apply_forge_subclass_v1' AND tgrelid='public.character_progression'::regclass AND NOT tgisinternal"),"1");
+assert.equal(sql("SELECT count(*) FROM public.class_feature_catalog WHERE feature_type='subclass' AND class_key='fighter' AND level=3"),"3");
+console.log("PASS J142 live-identical subclass handler MD5, original BEFORE INSERT trigger, and three source-qualified Fighter specimens");
+
+const subclassDraft=(name,nonce,level,subclass=null,source=null)=>{
+ const payload=JSON.parse(JSON.stringify(verifiedGrantPayload));
+ payload.name=name;payload.creation_request_id=nonce;payload.sheet.level=level;
+ delete payload.sheet.subclassName;delete payload.sheet.subclassSource;
+ if(subclass!==null)payload.sheet.subclassName=subclass;
+ if(source!==null)payload.sheet.subclassSource=source;
+ return payload;
+};
+const originalSubclassState=(cid)=>({
+ name:sql("SELECT coalesce(subclass_name,'<NULL>') FROM public.character_progression WHERE character_id='"+cid+"'"),
+ source:sql("SELECT coalesce(subclass_source,'<NULL>') FROM public.character_progression WHERE character_id='"+cid+"'"),
+ meta:sql("SELECT level_choices::text FROM public.character_progression WHERE character_id='"+cid+"'")
+});
+const originalSubclassReject=async(payload,regex,caseLabel)=>{
+ const before=speciesAbortCounts();
+ const outcome=await call2(people.PLAYER.client,payload);
+ assert.ok(outcome.error,caseLabel+" unexpectedly accepted");
+ assert.match(outcome.error.message||"",regex,caseLabel+" did not reach original BEFORE INSERT subclass handler");
+ assert.equal(speciesAbortCounts(),before,caseLabel+" mutated CP/CS/G/GI/I/C, stock, or nonce");
+ assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+payload.creation_request_id+"'"),"0");
+ assert.equal(sql("SELECT count(*) FROM public.characters WHERE name='"+payload.name+"'"),"0");
+};
+const noSubclassOne=subclassDraft("J143 Fighter 1 no subclass",id(9711),1);
+const noSubclassOneId=pass(await call2(people.PLAYER.client,noSubclassOne),"source Fighter L1 no subclass");
+assert.equal(originalSubclassState(noSubclassOneId).name,"<NULL>");
+assert.equal(originalSubclassState(noSubclassOneId).source,"<NULL>");
+assert.equal(originalSubclassState(noSubclassOneId).meta,"{}");
+console.log("PASS J143 actual signed v2 source Fighter level 1 does not require an early subclass");
+
+const noSubclassTwo=subclassDraft("J144 Fighter 2 no subclass",id(9712),2);
+const noSubclassTwoId=pass(await call2(people.PLAYER.client,noSubclassTwo),"source Fighter L2 no subclass");
+assert.equal(originalSubclassState(noSubclassTwoId).name,"<NULL>");
+console.log("PASS J144 genuine JWT Fighter 2 remains below source subclass level 3");
+
+await originalSubclassReject(subclassDraft("J145 missing L3 subclass",id(9713),3),
+ /Choose a subclass for fighter level 3 before creating this character/i,"J145");
+console.log("PASS J145 original source requires subclass for genuine Forge Fighter level 3 and atomically rolls back");
+
+await originalSubclassReject(subclassDraft("J146 premature Champion",id(9714),2,"Champion","XPHB"),
+ /Champion becomes available at class level 3, but this character starts at level 2/i,"J146");
+console.log("PASS J146 original source refuses early XPHB Champion level-2 start and rolls back");
+
+const xChampion=subclassDraft("J147 XPHB Champion",id(9715),3,"Champion","XPHB");
+const xChampionId=pass(await call2(people.PLAYER.client,xChampion),"real source XPHB Champion at level 3");
+assert.equal(originalSubclassState(xChampionId).name,"Champion");
+assert.equal(originalSubclassState(xChampionId).source,"XPHB");
+assert.equal(sql("SELECT level_choices#>>'{startingSubclass,entryLevel}' FROM public.character_progression WHERE character_id='"+xChampionId+"'"),"3");
+assert.equal(sql("SELECT level_choices#>>'{startingSubclass,creator}' FROM public.character_progression WHERE character_id='"+xChampionId+"'"),"shared_character_forge_player_v2");
+assert.equal(sql("SELECT count(*) FROM public.character_option_grant_instances WHERE character_id='"+xChampionId+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_id='"+xChampionId+"'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_currency WHERE character_id='"+xChampionId+"'"),"1");
+console.log("PASS J147 genuine v2 source-XPHB Champion persists subclass name/source/entryLevel/creator with Lucky G/GI and I/C");
+
+const phbChampion=subclassDraft("J148 explicit PHB Champion",id(9716),3,"Champion","PHB");
+const phbChampionId=pass(await call2(people.PLAYER.client,phbChampion),"source-original explicit PHB Champion");
+assert.equal(originalSubclassState(phbChampionId).source,"PHB");
+assert.equal(sql("SELECT level_choices#>>'{startingSubclass,source}' FROM public.character_progression WHERE character_id='"+phbChampionId+"'"),"PHB");
+console.log("PASS J148 original handler accepts explicitly requested legacy PHB Champion on XPHB Fighter; edition policy beyond this handler NOT proven");
+
+await originalSubclassReject(subclassDraft("J149 nonexistent subclass",id(9717),3,"Purple Dragon","XPHB"),
+ /The selected subclass Purple Dragon is not available for the fighter class/i,"J149");
+console.log("PASS J149 original handler rejects unknown selected subclass and atomically reverts all source transactions");
+
+await originalSubclassReject(subclassDraft("J150 incorrect source",id(9718),3,"Champion","TCE"),
+ /The selected subclass Champion is not available for the fighter class/i,"J150");
+console.log("PASS J150 original handler rejects unmatched explicit source, no cross-edition silent fallback");
+
+const noSourceChoice=subclassDraft("J151 source-unspecified Champion",id(9719),3,"Champion",null);
+const noSourceId=pass(await call2(people.PLAYER.client,noSourceChoice),"source-unspecified Champion under original handler");
+const chosenUnqualified=originalSubclassState(noSourceId).source;
+assert.ok(["XPHB","PHB"].includes(chosenUnqualified),
+ "Original source-unspecified candidate result is outside approved fixture sources");
+console.log("PASS J151 original source-unspecified Champion selects existing "+chosenUnqualified+
+ " source; NO guarantee of 2024 preference is asserted (original ORDER BY ties).");
+
+const replayBefore={
+ progression:sql("SELECT md5(to_jsonb(p)::text) FROM public.character_progression p WHERE character_id='"+xChampionId+"'"),
+ sheet:sql("SELECT md5(to_jsonb(s)::text) FROM public.character_sheets s WHERE character_id='"+xChampionId+"'"),
+ grants:rowFingerprint("public.character_option_grants","character_id='"+xChampionId+"'"),
+ instances:rowFingerprint("public.character_option_grant_instances","character_id='"+xChampionId+"'"),
+ items:rowFingerprint("public.inventory_items","owner_id='"+xChampionId+"'"),
+ currency:sql("SELECT md5(to_jsonb(c)::text) FROM public.character_currency c WHERE character_id='"+xChampionId+"'")
+};
+assert.equal(pass(await call2(people.PLAYER.client,xChampion),"J152 unchanged XPHB Champion nonce"),xChampionId);
+const changedSource=JSON.parse(JSON.stringify(xChampion));
+changedSource.sheet.subclassSource="PHB";
+denied(await call2(people.PLAYER.client,changedSource),"22023","Changed subclass source on original immutable creation nonce");
+assert.deepEqual({
+ progression:sql("SELECT md5(to_jsonb(p)::text) FROM public.character_progression p WHERE character_id='"+xChampionId+"'"),
+ sheet:sql("SELECT md5(to_jsonb(s)::text) FROM public.character_sheets s WHERE character_id='"+xChampionId+"'"),
+ grants:rowFingerprint("public.character_option_grants","character_id='"+xChampionId+"'"),
+ instances:rowFingerprint("public.character_option_grant_instances","character_id='"+xChampionId+"'"),
+ items:rowFingerprint("public.inventory_items","owner_id='"+xChampionId+"'"),
+ currency:sql("SELECT md5(to_jsonb(c)::text) FROM public.character_currency c WHERE character_id='"+xChampionId+"'")
+},replayBefore,"Original immutable subclass nonce mutated CP/CS/G/GI/I/C");
+console.log("PASS J152 signed Fighter subclass nonce replay inert; changed source rejected without progression or equipment drift");
+
+const xChampionV3=subclassDraft("J153 genuine v3 Champion",id(9720),3,"Champion","XPHB");
+const xChampionV3Id=pass(await call3(people.OUTSIDER.client,xChampionV3,[]),
+ "original v3 wrapper creates XPHB Fighter Champion via original v2");
+assert.equal(originalSubclassState(xChampionV3Id).source,"XPHB");
+assert.equal(sql("SELECT level_choices#>>'{startingSubclass,creator}' FROM public.character_progression WHERE character_id='"+xChampionV3Id+"'"),"shared_character_forge_player_v2",
+ "v3 must exercise actual v2 creator marker before the source-original trigger");
+assert.equal(pass(await call3(people.OUTSIDER.client,xChampionV3,[]),
+ "immutable v3 Champion retry"),xChampionV3Id);
+console.log("PASS J153 real v3->v2 signed Forge path runs original subclass trigger at level 3 and retains a single immutable character");
+console.log("PASS LOCAL REAL GoTrue J00-J153: source-original Forge subclass BEFORE INSERT, positive/negative XPHB/PHB and original nonce. Production RLS, complete source catalogs and browser UNVERIFIED.");

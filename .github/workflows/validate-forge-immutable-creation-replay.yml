@@ -39,6 +39,8 @@ on:
       - 'scripts/fixtures/forge_characters_tag_guard_local_auth_pg17.sql'
       - 'scripts/fixtures/forge_characters_portrait_sync_original_pg17.sql'
       - 'scripts/fixtures/forge_characters_portrait_sync_local_auth_pg17.sql'
+      - 'scripts/fixtures/forge_subclass_choice_original_pg17.sql'
+      - 'scripts/fixtures/forge_subclass_choice_local_auth_pg17.sql'
       - 'scripts/agents/forge_ci_diagnostics.mjs'
       - 'scripts/agents/forge_automation_selftest.mjs'
       - 'scripts/validate_forge_inventory_ui_release_contract.mjs'
