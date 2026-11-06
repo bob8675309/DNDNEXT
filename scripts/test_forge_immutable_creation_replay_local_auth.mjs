@@ -9,6 +9,7 @@ import { loadManifest, runSeededForgeScenarios } from "./agents/forge_seeded_sce
 import { loadStartingSpellPlans } from "./validate_forge_seeded_starting_spells.mjs";
 import { loadWizardPlans } from "./validate_forge_seeded_wizard_spells.mjs";
 import { loadNestedPlans } from "./validate_forge_seeded_nested_choices.mjs";
+import { loadWarlockChildPlans } from "./validate_forge_seeded_warlock_child_completion.mjs";
 import { mkdirSync, writeFileSync } from "node:fs";
 const e=process.env;
 for(const [key,value] of Object.entries({
@@ -2643,3 +2644,140 @@ writeFileSync("research-agent-artifact/FORGE_NESTED_CHOICE_SCENARIOS.json",
    "remaining 14 source-trigger DDL, production browser, cross-transaction locks and live data unverified"]
  },null,2)+"\n","utf8");
 console.log("PASS J161-J163 nested choice source-original dependency branch via genuine GoTrue; missing-child invocation branch remains UNTESTED");
+
+
+// J164-J167: another ORIGINAL branch of the already-stage nested validator.
+// Local live-source XPHB Warlock L2 specimen; sourceChoices are the current
+// canonical class option source while classFeatureChoices exercises the older
+// nested summary boundary. This is BACKEND COMPATIBILITY, not browser parity.
+// All original J00-J163 + S001-S003 run unmodified before this block.
+sqlFile("scripts/fixtures/forge_warlock_child_completion_local_auth_pg17.sql");
+const warlockChildSuite=loadWarlockChildPlans();
+const wc=warlockChildSuite.source;
+const wcBlast=wc.spells.find(s=>s.name==="Eldritch Blast");
+const wcAg=wc.invocations[1];
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.validate_player_forge_nested_choice_payload_v1()'::regprocedure))"),
+ "df2861cc76b0b74bb7cd57fbe61c9a05");
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.validate_and_materialize_player_forge_class_options_v1()'::regprocedure))"),
+ "6df5aee6f0519c9c77758d6e887ed8e4");
+assert.equal(sql("SELECT private.xphb_warlock_invocation_count_v1(2)"),"3");
+assert.equal(sql("SELECT count(*) FROM public.spells_catalog WHERE id='"+wcBlast.id+"' AND level=0 AND 'Warlock'=ANY(classes) AND damage_dice='1d10'"),"1");
+assert.equal(sql("SELECT public.is_preferred_spell_version_v1('"+wcBlast.id+"'::uuid)"),"t");
+assert.equal(sql("SELECT count(*) FROM public.class_feature_option_catalog WHERE id='"+wcAg.id+"'::uuid AND option_key='"+wcAg.key+"' AND choice_schema->>'kind'='warlock-damage-cantrip' AND (prerequisites->>'minClassLevel')::integer=2"),"1");
+console.log("PASS J164 source-exact XPHB Warlock L2 3 Invocation slots, 2+3 spells, Agonizing Blast prerequisite, preferred Eldritch Blast child and original materializer/nested handler");
+
+const wcStock=id(9790);
+sql("INSERT INTO public.character_stock(id,character_id,qty,display_name,card_payload,price_gp,item_id) VALUES "+
+ "('"+wcStock+"','"+marketMerchant+"',3,'J164 Warlock child fixture source torch','{\"item_type\":\"gear\",\"item_rarity\":\"mundane\"}'::jsonb,9,'p13-warlock-torch')");
+const wcChild=(entry,withSummary)=>{
+ const options=wc.invocations.map((option)=>{
+  const source=warlockInvocationSlot(option.key,option.name);
+  source.level=option.acquisitionLevel;
+  source.metadata.slot=option.slot;
+  source.metadata.acquisitionLevel=option.acquisitionLevel;
+  source.ownerKey="warlock-invocation-"+option.slot;
+  if(option.name==="Agonizing Blast"){
+   source.fields["child-agonizing-blast"]={
+    kind:"spell",count:1,required:true,
+    activeWhen:{groupId:"warlock-invocation-slot-2",fieldId:"invocation",values:[option.key]},
+    selections:[{key:wcBlast.id,value:wcBlast.id,name:wcBlast.name,source:wcBlast.source}]
+   };
+  }
+  return {key:"warlock-invocation-slot-"+option.slot,source};
+ });
+ const selections=wc.spells.map(s=>({
+  spell_id:s.id,source_type:"class",source_key:"warlock",access_type:"class-list",prepared:true
+ }));
+ const payload=warlockPayload(entry.name,entry.requestId);
+ payload.sheet.level=2;
+ payload.sheet.classKey="warlock";
+ payload.sheet.sourceChoices=Object.fromEntries(options.map(o=>[o.key,o.source]));
+ payload.sheet.classFeatureChoices={
+  invocations:{
+   kind:"eldritch-invocation",label:wc.feature.name,sourceFeature:wc.feature.name,
+   level:2,count:3,selections:wc.invocations.map(inv=>({
+    key:inv.key,name:inv.name,source:"XPHB",kind:"eldritch-invocation"
+   }))
+  }
+ };
+ if(withSummary){
+  payload.sheet.classFeatureChoices.agonizingChild={
+   kind:"spell",label:"Agonizing Blast: affected cantrip",
+   sourceFeature:"Agonizing Blast",level:2,count:1,
+   activeWhen:{optionNames:["Agonizing Blast"]},
+   constraints:{spellLevel:0,spellClasses:["Warlock"],damageOnly:true},
+   selections:[{key:wcBlast.id,name:"Eldritch Blast",source:"XPHB",kind:"spell"}]
+  };
+ }
+ payload.sheet.classFeatureChoiceSummary=Object.entries(payload.sheet.classFeatureChoices)
+  .flatMap(([groupId,group])=>group.selections.map(s=>({
+    groupId,key:s.key,name:s.name,source:s.source
+  })));
+ payload.sheet.startingMagicSelections=JSON.parse(JSON.stringify(selections));
+ payload.sheet.spells=wc.spells.map(s=>s.name);
+ payload.sheet.startingEquipmentSelections.marketPurchases[0].stockId=wcStock;
+ payload.sheet.startingEquipmentSelections.marketPurchases[0].itemId="p13-warlock-torch";
+ return {payload,selections};
+};
+const wcReports=[];
+const wcPositivePlan=warlockChildSuite.cases[0];
+const wcPositive=wcChild(wcPositivePlan,true);
+const wcPositiveId=pass(await call3(people.PLAYER.client,wcPositive.payload,wcPositive.selections),
+ "J165 original signed Warlock2 three source owned Invocations plus Agonizing Blast and canonical dependent Eldritch Blast");
+const wcState=scenarioSnapshot(wcPositiveId);
+assert.equal(wcState.editorAuthenticated,true);
+assert.equal(wcState.source.classKey,"warlock");
+assert.equal(wcState.source.classSource,"XPHB");
+assert.equal(wcState.source.level,2);
+for(const t of ["characters","sheets","progression","events","grants","instances","items","currency"])
+ assert.equal(wcState.counts[t],1,"J165 "+t+" original canonical row");
+assert.equal(sql("SELECT count(*) FROM public.character_class_option_grant_instances WHERE character_id='"+wcPositiveId+"'"),"3");
+assert.equal(sql("SELECT count(*) FROM public.character_spells WHERE character_id='"+wcPositiveId+"' AND source_type='class'"),"5");
+assert.equal(sql("SELECT count(*) FROM public.character_spells WHERE character_id='"+wcPositiveId+"' AND prepared AND source_type='class'"),"5");
+assert.equal(sql("SELECT choices#>>'{child,value}' FROM public.character_class_option_grant_instances WHERE character_id='"+wcPositiveId+"' AND instance_key='warlock-invocation-slot-2'"),wcBlast.id);
+assert.equal(sql("SELECT option_catalog_id::text FROM public.character_class_option_grant_instances WHERE character_id='"+wcPositiveId+"' AND instance_key='warlock-invocation-slot-2'"),wcAg.id);
+assert.equal(sql("SELECT count(*) FROM public.character_class_option_grant_instances WHERE character_id='"+wcPositiveId+"' AND acquired_level=2"),"2");
+assert.equal(sql("SELECT count(*) FROM public.character_sheets WHERE character_id='"+wcPositiveId+"' AND sheet#>>'{classFeatureChoices,agonizingChild,activeWhen,optionNames,0}'='Agonizing Blast'"),"1");
+assert.equal(getStock(wcStock),"2");
+const wcGlobal=warlockCounts(),wcStockAfter=getStock(wcStock);
+assert.equal(pass(await call3(people.PLAYER.client,wcPositive.payload,wcPositive.selections),
+ "J165 canonical same nonce invocation and dependent magic replay"),wcPositiveId);
+assert.deepEqual(scenarioSnapshot(wcPositiveId),wcState);
+assert.equal(warlockCounts(),wcGlobal);assert.equal(getStock(wcStock),wcStockAfter);
+wcReports.push({scenarioId:wcPositivePlan.scenarioId,seed:wcPositivePlan.seed,mode:wcPositivePlan.mode,
+ localSignedV3:true,sourceOwnedInvocationGIs:3,warlockCantrips:2,warlockSpells:3,
+ originalNestedHandlerAccepted:true,originalClassOptionsAccepted:true,
+ identicalReplayInert:true,canonicalCounts:wcState.counts});
+console.log("PASS J165 genuine signed XPHB Warlock2 3 source Invocation GIs, legal Agonizing Blast/Eldritch Blast child, 2 cantrips + 3 spells, canonical market/creator/nonce and replay inert");
+
+const wcNegativePlan=warlockChildSuite.cases[1];
+const wcNegative=wcChild(wcNegativePlan,false);
+const beforeWC=warlockCounts(),beforeWCGlobal=speciesAbortCounts();
+const wcRejected=await call3(people.PLAYER.client,wcNegative.payload,wcNegative.selections);
+assert.ok(wcRejected.error,"J166 source original nested validator incorrectly accepted missing Agonizing Blast child group");
+assert.match(wcRejected.error.message||"",
+ /^Class choice Agonizing Blast requires its dependent selection group to be complete\.$/i,
+ "J166 MUST originate from original nested Warlock required-child branch, not class options or spell-count validator");
+assert.equal(warlockCounts(),beforeWC,"J166 rejected creation leaked canonical class GI / stock / nonce");
+assert.equal(speciesAbortCounts(),beforeWCGlobal,"J166 rejected creation leaked CP/CS/G/GI/I/C");
+assert.equal(getStock(wcStock),wcStockAfter);
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+wcNegativePlan.requestId+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE name='"+wcNegativePlan.name+"'"),"0");
+assert.deepEqual(scenarioSnapshot(wcPositiveId),wcState,
+ "J166 rejection modified previous source-valid Warlock");
+wcReports.push({scenarioId:wcNegativePlan.scenarioId,seed:wcNegativePlan.seed,mode:wcNegativePlan.mode,
+ localSignedV3:true,sourceOwnedChildStillValid:true,originalRequiredChildErrorMatched:true,
+ noCanonicalOrStockWrites:true,nonceAbsent:true});
+console.log("PASS J166 genuine signed Warlock2 with source-owned Agonizing Blast/Eldritch Blast child but omitted legacy classFeatureChoices child was denied by ORIGINAL nested completed-child handler, atomic full rollback");
+
+writeFileSync("research-agent-artifact/FORGE_WARLOCK_CHILD_COMPLETION.json",JSON.stringify({
+ schemaVersion:1,suite:warlockChildSuite.suite,fixture:"disposable-pg17-genuine-local-gotrue-postgrest",
+ originalNestedHandlerMd5:"df2861cc76b0b74bb7cd57fbe61c9a05",
+ originalClassOptionHandlerMd5:"6df5aee6f0519c9c77758d6e887ed8e4",
+ liveSourceLevel:2, cases:wcReports,
+ baseline:"existing-J00-J163-and-S001-S003-passed-before-candidate",
+ limitations:["hybrid sourceChoices + classFeatureChoices compatibility representation, NOT browser UI parity",
+ "source-original level2 Warlock 3 slots/5 starting spell catalog specimens only",
+ "production source RLS/browser, 14 absent original triggers, global lock ordering NOT proven"]
+},null,2)+"\n","utf8");
+console.log("PASS J164-J166 original nested-choice completed dependent Warlock Invocation branch real signed GoTrue; 17/31 trigger DDL unchanged, not a new trigger");
