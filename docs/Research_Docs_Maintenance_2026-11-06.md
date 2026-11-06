@@ -24,3 +24,17 @@ The existing Codex research workflow remains manual, draft, non-funded, review-o
 On each owner push inspect the `Research docs auto-maintainer (no AI, docs-only)` job and its generated file. Confirm that only the generated Markdown was appended to the separate status archive. Compare source commit and GitHub CI conclusions; separately check that authored living docs/handoff receipts were included with the engineering changes. Do not auto-merge this draft policy into main.
 
 See `Legacy_PHB_Optional_Content_Design_2026-11-06.md` for the separate owner-requested future Admin setting.
+
+## Stable new-chat entry point
+
+The stable [Agent Touchstone](https://github.com/bob8675309/DNDNEXT/blob/docs/agent-status/docs/AGENT_TOUCHSTONE.md) is curated navigation. It links the generated Forge and agent source-status snapshots, main handoff rules, exact PR heads and original research/CI receipts. It is not an autonomous worker or substitute for replaying current source checks. It is intentionally separate from automatically generated snapshots and is mirrored in held PR #325 as `docs/AGENT_TOUCHSTONE.md`.
+
+## Free consolidated project health — prototype-phase extension (research only)
+
+`scripts/agents/project_health.mjs` and `scripts/agents/validate_project_health.mjs` provide a deterministic **GitHub-only** status report. On the owner research-branch push, the existing docs maintenance workflow fetches only PR metadata, latest exact-head GitHub Actions runs, last-commit file names, and generated research status archives for #317, #321, #324, and #325. It writes [`PROJECT_HEALTH.generated.md`](https://github.com/bob8675309/DNDNEXT/blob/docs/agent-status/docs/PROJECT_HEALTH.generated.md) **beside** the per-branch source snapshot in the independent `docs/agent-status` branch through the existing atomic expected-head publishing operation.
+
+**Evidence limits:** GitHub `main` SHA is not Vercel production verification. A successful run for one branch is not a merge. The report is captured while other Actions may still be running; completion after capture requires checking GitHub directly or a later owner push. It never fabricates current Forge trigger counts when the source archive SHA does not match PR #324 HEAD. A failed read fails closed; the live project and authored handoff documents are never modified by the collector.
+
+**Usage policy:** DNDNext is still a prototype; all game content is testing/fixture content rather than active players. **ChatGPT Work is on demand only for difficult investigations**, not a scheduled monitor. No OpenAI API key, Codex paid invocation, Work event task, extra credits, production SQL or Vercel deployment is involved. Source health generation runs on GitHub's standard public-repository hosted runners. The separate project-health status is factual navigation; accepted changes still require source-specific authored Markdown and handoff receipts.
+
+**Activation boundary:** This is staged on held research PRs, not yet merged into default `main`. No automatic daily or workflow-completion refresh should be claimed until a separately reviewed default-branch trigger is activated.

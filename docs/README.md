@@ -1,5 +1,7 @@
 # DNDNext Living Documentation Index
 
+> **Prototype research project health:** [Free consolidated GitHub PR/CI and source-archive report](https://github.com/bob8675309/DNDNEXT/blob/docs/agent-status/docs/PROJECT_HEALTH.generated.md). It updates on owner research pushes, may capture CI while still running, and is not production/browser evidence. No scheduled ChatGPT Work; request Work only for difficult investigations.
+
 > **Forge research status (automatically reconciled):** [Open the no-cost branch snapshot](https://github.com/bob8675309/DNDNEXT/blob/docs/agent-status/docs/research-status/research-forge-immutable-creation-replay-20261105.generated.md). It records the exact source SHA, staged trigger DDL and only independently verified JWT receipts. Consult [ACTIVE_WORK.md](ACTIVE_WORK.md), [HANDOFF_LOG.md](HANDOFF_LOG.md) and [research docs policy](Research_Docs_Maintenance_2026-11-06.md) for the authored contracts; neither CI success nor a docs snapshot constitutes a production merge.
 
 
