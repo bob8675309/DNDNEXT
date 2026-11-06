@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/forge-wizard-spell-counts-20261106` |
-| Exact source commit represented by this archive snapshot | `dbf701d87db738ccaefe4f179f006319b132a3e9` |
+| Exact source commit represented by this archive snapshot | `4db908faf5fc4b90e0847314d6e3a87775cc91f9` |
 | Compared with | `51c351a142d03378dff8e47e05182afe21a15622` (main comparison base) |
-| Last source commit title | docs(forge): record exact signed source-spell evidence and 16-of-31 held trigger matrix |
-| Files changed relative to main | 96 (70 non-docs; 26 docs) |
-| Last source commit | 5 files (1 non-docs; 4 authored docs) |
+| Last source commit title | test(forge): add source-identified level-1 Wizard prepared-spell seeded JWT scenarios |
+| Files changed relative to main | 100 (73 non-docs; 27 docs) |
+| Last source commit | 9 files (6 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -19,9 +19,13 @@ The latest source commit includes authored documentation. Verify correctness and
 
 - `.github/workflows/validate-forge-immutable-creation-replay.yml`
 - `docs/ACTIVE_WORK.md`
-- `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
-- `docs/Forge_Seeded_Starting_Spells_2026-11-06.md`
+- `docs/Forge_Wizard_Starting_Spell_Counts_2026-11-06.md`
 - `docs/HANDOFF_LOG.md`
+- `scripts/agents/forge_seeded_scenarios.mjs`
+- `scripts/fixtures/forge_seeded_wizard_spells_v1.json`
+- `scripts/fixtures/forge_wizard_starting_spells_local_auth_pg17.sql`
+- `scripts/test_forge_immutable_creation_replay_local_auth.mjs`
+- `scripts/validate_forge_seeded_wizard_spells.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -46,6 +50,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/Forge_V3_Source_Market_Inventory_RLS_Research_2026-11-05.md`
 - `docs/Forge_Verified_Progression_Creator_Candidate_2026-11-05.md`
 - `docs/Forge_Warlock_Invocation_Positive_Source_2026-11-05.md`
+- `docs/Forge_Wizard_Starting_Spell_Counts_2026-11-06.md`
 - `docs/Forge_Zero_Cost_Acceptance_Automation_2026-11-06.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/Legacy_PHB_Optional_Content_Design_2026-11-06.md`
@@ -74,8 +79,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/fixtures/forge_creation_replay_local_auth_pg17.sql`
 - `scripts/fixtures/forge_creator_trigger_original_stage3_pg17.sql`
 - `scripts/fixtures/forge_equipment_validator_local_auth_extension_pg17.sql`
-- `scripts/fixtures/forge_equipment_validator_original_pg17.sql`
-- … 46 more
+- … 50 more
 
 ## Forge source and authenticated evidence (branch-local only)
 

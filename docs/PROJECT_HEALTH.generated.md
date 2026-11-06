@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-06T22:42:01Z | research/forge-wizard-spell-counts-20261106 (dbf701d87db738ccaefe4f179f006319b132a3e9) | 79a6340c08e743e71e1072e40e6ba7204f735a29 |
+| 2026-11-06T22:47:52Z | research/forge-wizard-spell-counts-20261106 (4db908faf5fc4b90e0847314d6e3a87775cc91f9) | 79a6340c08e743e71e1072e40e6ba7204f735a29 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
