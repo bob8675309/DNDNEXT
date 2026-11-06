@@ -29,7 +29,7 @@ const wf=readFileSync(".github/workflows/research-docs-maintenance.yml","utf8");
 for(const token of [
  "on:\n  push:", "'research/**'","'agent/**'","github.actor == 'bob8675309'",
  "contents: write", "persist-credentials: false", "expectedHeadOid:",
- "docs/RESEARCH_BRANCH_STATUS.generated.md",
+ "docs/research-status/", "docs/agent-status", "branchName:$branch",
  "createCommitOnBranch", "node scripts/agents/validate_research_docs_maintainer.mjs"
 ])assert.ok(wf.includes(token),"Missing docs-only automation guard: "+token);
 for(const forbidden of ["pull_request_target:","schedule:","openai/codex-action",

@@ -31,7 +31,7 @@ export function renderBranchStatus(info) {
  "",
  "| Field | Observed repository evidence |","|---|---|",
  "| Source branch | \`"+md(info.branch)+"\` |",
- "| Source commit before docs-only bot commit | \`"+info.sha+"\` |",
+ "| Exact source commit represented by this archive snapshot | \`"+info.sha+"\` |",
  "| Compared with | \`"+info.baseSha+"\` (main comparison base) |",
  "| Last source commit title | "+md(info.title)+" |",
  "| Files changed relative to main | "+changed.length+" ("+source.length+" non-docs; "+docs.length+" docs) |",
@@ -63,10 +63,10 @@ export function renderBranchStatus(info) {
   }
  }
  summary.push("","## Trust and update procedure","",
- "- The source SHA above identifies the code being summarized; a later bot-generated docs-only commit changes the PR head but **not code**. GitHub's default \`GITHUB_TOKEN\` does not start a second CI run for that docs-only commit.",
+ "- The source SHA above identifies the code being summarized; a later bot-generated status commit is written to a SEPARATE docs archive branch and does not change the source PR head. GitHub's default \`GITHUB_TOKEN\` does not start a second CI run for that docs-only commit.",
  "- For exact test status, inspect Actions results on the recorded **source SHA**. Do not assume CI passed, infer main deployment, or mark an original trigger as fully accepted from this snapshot.",
  "- Manual/AI-assisted changes must update the relevant living documents and append a factual \`HANDOFF_LOG.md\` receipt as part of the **same source patch**; the bot snapshot helps identify omissions but does not invent claims.",
- "- Owner-approved docs-only publishing is permitted **only** to this path on \`research/*\` or \`agent/*\` with atomic expected-head verification; never to \`main\`, production SQL, runtime code or historical logs.",
+ "- Owner-approved docs-only publishing is permitted **only** to the dedicated \`docs/agent-status\` archive branch, never directly to the source research PR with atomic expected-head verification; never to \`main\`, production SQL, runtime code or historical logs.",
  "- See [DOCUMENT_LIFECYCLE.md](DOCUMENT_LIFECYCLE.md) before changing or retiring historical documents. No automatic deletion.",
  "");
  return summary.join("\n");
