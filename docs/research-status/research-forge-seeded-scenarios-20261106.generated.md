@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/forge-seeded-scenarios-20261106` |
-| Exact source commit represented by this archive snapshot | `c2a52ac1bac4a164b1ee6d50f95bde228509f33c` |
+| Exact source commit represented by this archive snapshot | `16ebd9ba1b952d8f21505c91782d0d18aa0c8263` |
 | Compared with | `51c351a142d03378dff8e47e05182afe21a15622` (main comparison base) |
-| Last source commit title | test(forge): add seeded source-authenticated scenario runner after J153 |
+| Last source commit title | docs(forge): record exact-head seeded JWT acceptance and enforce focused doc retest |
 | Files changed relative to main | 91 (66 non-docs; 25 docs) |
-| Last source commit | 8 files (5 non-docs; 3 authored docs) |
+| Last source commit | 4 files (1 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -21,10 +21,6 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/ACTIVE_WORK.md`
 - `docs/Forge_Seeded_Scenario_Runner_2026-11-06.md`
 - `docs/HANDOFF_LOG.md`
-- `scripts/agents/forge_seeded_scenarios.mjs`
-- `scripts/fixtures/forge_seeded_scenarios_v1.json`
-- `scripts/test_forge_immutable_creation_replay_local_auth.mjs`
-- `scripts/validate_forge_seeded_scenarios.mjs`
 
 ## Research-branch change inventory versus main
 

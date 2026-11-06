@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-06T21:57:00Z | research/forge-seeded-scenarios-20261106 (c2a52ac1bac4a164b1ee6d50f95bde228509f33c) | 79a6340c08e743e71e1072e40e6ba7204f735a29 |
+| 2026-11-06T22:03:09Z | research/forge-seeded-scenarios-20261106 (16ebd9ba1b952d8f21505c91782d0d18aa0c8263) | 79a6340c08e743e71e1072e40e6ba7204f735a29 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
