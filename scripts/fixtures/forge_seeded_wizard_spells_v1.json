@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 1,
+  "suite": "forge-xphb-wizard-starting-spells-v1",
+  "wizard": {
+    "liveClassId": "2995248c-c199-4f44-a400-06ae30d4ec8b",
+    "classKey": "wizard",
+    "classSource": "XPHB",
+    "classLevel": 1,
+    "spellcastingAbility": "int",
+    "expected": {
+      "cantrips": 3,
+      "leveled": 6,
+      "prepared": 4,
+      "spellSlots": [
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "spells": [
+    {
+      "id": "fe27551a-bebb-4140-8dc0-2ab904f99955",
+      "name": "Fire Bolt",
+      "level": 0,
+      "source": "XPHB",
+      "classes": [
+        "Artificer",
+        "Sorcerer",
+        "Wizard"
+      ]
+    },
+    {
+      "id": "4b84d266-3847-45f9-b154-77fd26695b55",
+      "name": "Mage Hand",
+      "level": 0,
+      "source": "XPHB",
+      "classes": [
+        "Artificer",
+        "Bard",
+        "Sorcerer",
+        "Warlock",
+        "Wizard"
+      ]
+    },
+    {
+      "id": "38ccd26c-f6dc-4bcc-a86d-dc83fb61f177",
+      "name": "Ray of Frost",
+      "level": 0,
+      "source": "XPHB",
+      "classes": [
+        "Artificer",
+        "Sorcerer",
+        "Wizard"
+      ]
+    },
+    {
+      "id": "d05171bc-855f-4e03-a074-c3f8f6fc09bf",
+      "name": "Detect Magic",
+      "level": 1,
+      "source": "XPHB",
+      "classes": [
+        "Artificer",
+        "Bard",
+        "Cleric",
+        "Druid",
+        "Paladin",
+        "Ranger",
+        "Sorcerer",
+        "Warlock",
+        "Wizard"
+      ]
+    },
+    {
+      "id": "6c7a0380-a32a-4df5-871c-abf42400b045",
+      "name": "Feather Fall",
+      "level": 1,
+      "source": "XPHB",
+      "classes": [
+        "Artificer",
+        "Bard",
+        "Sorcerer",
+        "Wizard"
+      ]
+    },
+    {
+      "id": "c9803497-bd5c-4800-aa79-01dbb80922fe",
+      "name": "Mage Armor",
+      "level": 1,
+      "source": "XPHB",
+      "classes": [
+        "Sorcerer",
+        "Wizard"
+      ]
+    },
+    {
+      "id": "b975c0a7-8b4d-439b-85ff-3e0094656e2f",
+      "name": "Magic Missile",
+      "level": 1,
+      "source": "XPHB",
+      "classes": [
+        "Sorcerer",
+        "Wizard"
+      ]
+    },
+    {
+      "id": "4d757f8f-88fd-4b6a-9bf2-b6d20788f928",
+      "name": "Shield",
+      "level": 1,
+      "source": "XPHB",
+      "classes": [
+        "Sorcerer",
+        "Wizard"
+      ]
+    },
+    {
+      "id": "0fec723c-1a3a-42d9-bdfb-1d338c745676",
+      "name": "Sleep",
+      "level": 1,
+      "source": "XPHB",
+      "classes": [
+        "Bard",
+        "Sorcerer",
+        "Wizard"
+      ]
+    }
+  ],
+  "preparedSpellNames": [
+    "Detect Magic",
+    "Mage Armor",
+    "Magic Missile",
+    "Shield"
+  ],
+  "scenarios": [
+    {
+      "scenarioId": "wizard-xphb-complete-v3",
+      "seed": 64158,
+      "mode": "complete"
+    },
+    {
+      "scenarioId": "wizard-xphb-underprepared-v3",
+      "seed": 64159,
+      "mode": "underprepared"
+    }
+  ]
+}

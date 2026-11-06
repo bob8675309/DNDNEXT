@@ -7,6 +7,7 @@ import { spawnSync } from "node:child_process";
 import { createClient } from "@supabase/supabase-js";
 import { loadManifest, runSeededForgeScenarios } from "./agents/forge_seeded_scenarios.mjs";
 import { loadStartingSpellPlans } from "./validate_forge_seeded_starting_spells.mjs";
+import { loadWizardPlans } from "./validate_forge_seeded_wizard_spells.mjs";
 import { mkdirSync, writeFileSync } from "node:fs";
 const e=process.env;
 for(const [key,value] of Object.entries({
@@ -2414,3 +2415,130 @@ writeFileSync("research-agent-artifact/FORGE_STARTING_SPELL_SCENARIOS.json",
  "original handler unchanged; 16 other original triggers remain absent at baseline",
  "no live-production/browser/full prepared spell acceptance or rule-authority release"]},null,2)+"\n","utf8");
 console.log("PASS J154-J157: source-original deferred trigger installed/hashed, J155 positive + J156 negative original handler; J157 earlier class-list defense only. Real GoTrue, reduced catalog and RLS; production/browser UNVERIFIED.");
+
+
+// J158-J160: LIVE XPHB Wizard level-1 source-catalog/slot specimen is added
+// ONLY AFTER original J00-J157 and S001-S003. Original SQL handler unchanged.
+sqlFile("scripts/fixtures/forge_wizard_starting_spells_local_auth_pg17.sql");
+const wizardPlan=loadWizardPlans(); // strict read-only live spell IDs + genuine source count contract
+assert.deepEqual(wizardPlan.cases.map(x=>x.mode),["complete","underprepared"]);
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.validate_player_forge_starting_spells_v1()'::regprocedure))"),
+ "6870e810de909209c44aecd02f5c72e2");
+assert.equal(sql("SELECT count(*) FROM public.class_catalog_preferred WHERE class_key='wizard' AND source='XPHB' AND spellcasting_ability='int'"),"1");
+const idCounts=wizardPlan.spells.map(s=>({
+ id:s.id,name:s.name,level:s.level,source:s.source,classes:s.classes
+}));
+for(const s of idCounts) {
+ const actual=JSON.parse(sql("SELECT jsonb_build_object("+
+  "'id',id,'name',name,'level',level,'source',source,'classes',classes)::text "+
+  "FROM public.spells_catalog WHERE id='"+s.id+"'"));
+ assert.deepEqual(actual,s,"J158 spell metadata not source-verified: "+s.name);
+}
+assert.equal(sql("SELECT count(*) FROM public.class_level_progression WHERE class_id='00000000-0000-0000-0000-000000000002' AND class_level=1 AND cantrips_known=3 AND spells_known=4 AND spell_slots='[2,0,0,0,0,0,0,0,0]'::jsonb"),"1");
+console.log("PASS J158 nine live-identified XPHB Wizard source spell IDs + level1 3-cantrip/6-book/4-prepared original-rule/2-slot local fixture verified");
+
+const prepareWizardSelections=(mode)=>{
+ assert.ok(mode==="complete" || mode==="underprepared");
+ const prepared=new Set(wizardPlan.preparedSpellNames);
+ if(mode==="underprepared")prepared.delete("Shield");
+ const choices=wizardPlan.spells.map(s=>({
+  spell_id:s.id,source_type:"class",access_type:"class-list",
+  prepared:s.level===0 || prepared.has(s.name)
+ }));
+ assert.equal(choices.filter((v,i)=>wizardPlan.spells[i].level===0).length,3);
+ assert.equal(choices.filter((v,i)=>wizardPlan.spells[i].level===1).length,6);
+ assert.equal(choices.filter((v,i)=>wizardPlan.spells[i].level===1&&v.prepared).length,
+   mode==="complete"?4:3);
+ return choices;
+};
+const wizardPayload=(plan)=>{
+ const p=wizard(plan.name,plan.requestId);
+ p.sheet.startingMagicSelections=[]; // presence activates original v3 startingMagic path
+ p.sheet.spells=wizardPlan.spells.map(s=>s.name);
+ p.sheet.rulesetSource="XPHB";
+ return p;
+};
+const wizardCounts=(cid)=>JSON.parse(sql(
+ "SELECT jsonb_build_object("+
+ "'total',count(*),"+
+ "'cantrips',count(*) FILTER(WHERE s.level=0),"+
+ "'leveled',count(*) FILTER(WHERE s.level=1),"+
+ "'prepared',count(*) FILTER(WHERE s.level=1 AND cs.prepared),"+
+ "'sourceV3',count(*) FILTER(WHERE coalesce(cs.raw_payload->>'startingMagic','')='true'),"+
+ "'classOwner',count(*) FILTER(WHERE cs.source_type='class' AND cs.source_key='wizard')"+
+ ")::text FROM public.character_spells cs JOIN public.spells_catalog s ON s.id=cs.spell_id "+
+ "WHERE cs.character_id='"+cid+"'"));
+const liveWizardCases=[];
+const wizardValidPlan=wizardPlan.cases[0],wizardValidPayload=wizardPayload(wizardValidPlan);
+const wizardSelections=prepareWizardSelections("complete");
+const wizardValidId=pass(await call3(people.PLAYER.client,wizardValidPayload,wizardSelections),
+ "J159 signed v3 source-XPHB Wizard L1 with 3 legal cantrips, 6 book spells, 4 prepared");
+const wizardState=scenarioSnapshot(wizardValidId);
+assert.equal(wizardState.editorAuthenticated,true,"Wizard signed-in creator attribution changed");
+assert.equal(wizardState.source.classKey,"wizard");
+assert.equal(wizardState.source.classSource,"XPHB");
+assert.equal(wizardState.source.level,1);
+assert.equal(wizardState.counts.characters,1);
+assert.equal(wizardState.counts.sheets,1);
+assert.equal(wizardState.counts.progression,1);
+assert.equal(wizardState.counts.events,1);
+const wizardSpellCounts=wizardCounts(wizardValidId);
+assert.deepEqual(wizardSpellCounts,{
+ total:9,cantrips:3,leveled:6,prepared:4,sourceV3:9,classOwner:9
+});
+assert.deepEqual(JSON.parse(sql("SELECT (sheet->'spellSlots')::text "+
+  "FROM public.character_sheets WHERE character_id='"+wizardValidId+"'")),
+ wizardPlan.source.expected.spellSlots,"Sheet slots differ from canonical Wizard progression");
+const wizardGlobalAfter=speciesAbortCounts();
+assert.equal(pass(await call3(people.PLAYER.client,wizardValidPayload,wizardSelections),
+ "J159 same legal original v3 starting spell intent replay"),wizardValidId);
+assert.deepEqual(scenarioSnapshot(wizardValidId),wizardState);
+assert.deepEqual(wizardCounts(wizardValidId),wizardSpellCounts);
+assert.equal(speciesAbortCounts(),wizardGlobalAfter);
+const changedPreparation=prepareWizardSelections("underprepared");
+const changedNonce=await call3(people.PLAYER.client,wizardValidPayload,changedPreparation);
+denied(changedNonce,"22023","J159 modified prepared selections on existing immutable nonce");
+assert.deepEqual(scenarioSnapshot(wizardValidId),wizardState);
+assert.equal(speciesAbortCounts(),wizardGlobalAfter);
+liveWizardCases.push({
+ scenarioId:wizardValidPlan.scenarioId,seed:wizardValidPlan.seed,mode:wizardValidPlan.mode,
+ sourceQualified:true,originalDeferredHandlerPassed:true,realAuthenticatedV3:true,
+ selected:wizardSpellCounts,canonicalCounts:wizardState.counts,
+ trueCreator:true,immutableReplay:true,changedPreparationNonceRejected:true
+});
+console.log("PASS J159 genuine signed-in XPHB Wizard v3 3 legal cantrips + 6 book spells + 4 prepared; canonical source/slots/creator and exact-intent replay accepted, changed prepared selection nonce rejected 22023");
+
+const wizardInvalidPlan=wizardPlan.cases[1],wizardInvalidPayload=wizardPayload(wizardInvalidPlan);
+const globalBeforeWizardFailure=speciesAbortCounts();
+const underprepared=await call3(people.PLAYER.client,wizardInvalidPayload,changedPreparation);
+assert.ok(underprepared.error,"J160 original deferred Wizard prepared-count validator incorrectly accepted 3 prepared");
+assert.match(underprepared.error.message||"",/Mark exactly 4 starting leveled spell\(s\) as prepared; received 3\./i,
+ "J160 must reach ORIGINAL deferred Wizard prepared-count validator, not earlier authority");
+assert.equal(speciesAbortCounts(),globalBeforeWizardFailure,
+ "J160 rejected Wizard creation leaked CP/CS/G/GI/I/C/spells/stock/nonce");
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+wizardInvalidPlan.requestId+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE name='"+wizardInvalidPlan.name+"'"),"0");
+assert.deepEqual(scenarioSnapshot(wizardValidId),wizardState,
+ "J160 denied Wizard request mutated earlier signed-in Wizard");
+liveWizardCases.push({
+ scenarioId:wizardInvalidPlan.scenarioId,seed:wizardInvalidPlan.seed,mode:wizardInvalidPlan.mode,
+ sourceQualified:true,realAuthenticatedV3:true,
+ originalDeferredPreparedCountMessage:true,failedCreationRolledBack:true,
+ nonceReservationAbsent:true
+});
+console.log("PASS J160 genuine signed XPHB Wizard with 3 (not 4) prepared spells rejected by ORIGINAL deferred handler; all canonical state, stock and reservation rolled back");
+
+writeFileSync("research-agent-artifact/FORGE_WIZARD_STARTING_SPELLS.json",
+ JSON.stringify({
+  schemaVersion:1,suite:wizardPlan.suite,
+  fixture:"disposable-pg17-genuine-local-gotrue-postgrest",
+  originalStartingSpellsHandlerMd5:"6870e810de909209c44aecd02f5c72e2",
+  catalogSource:"read-only-live-XPHB-wizard-level1-2026-11-06",
+  expected:wizardPlan.source.expected,
+  cases:liveWizardCases,
+  baseline:"original-J00-J157-and-seeded-S001-S003-passed-in-same-process",
+  limitations:["local-only 9 live-identified source spell specimens; not full production source priority view",
+   "original Wizard v3 source handler preserved; no full source-RLS or browser parity",
+   "other 15 original triggers, cross-command concurrency and production release remain open"]
+ },null,2)+"\n","utf8");
+console.log("PASS J158-J160 Wizard original deferred source spell-count acceptance in genuine local signed GoTrue; source rows and report audited, production/browser UNVERIFIED");

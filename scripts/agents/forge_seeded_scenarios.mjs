@@ -66,25 +66,39 @@ function requestUuid(hex) {
   return hex.slice(0, 8) + "-" + hex.slice(8, 12) + "-4" + hex.slice(13, 16)
     + "-a" + hex.slice(17, 20) + "-" + hex.slice(20, 32);
 }
-export function compileScenario(item, offset = 0) {
+// Shared, pure identity compiler. This produces fixture request identities only;
+// the original GoTrue/PG17 handlers determine whether class/spell choices are legal.
+export function compileSeededIdentity(scenarioId, inputSeed, offset = 0) {
+  assert.match(scenarioId, IDS);
   assert.ok(Number.isSafeInteger(offset) && offset >= 0 && offset <= 1000);
-  const seed = item.seed + offset;
+  assert.ok(Number.isSafeInteger(inputSeed) && inputSeed > 0 && inputSeed <= 4294967000);
+  const seed = inputSeed + offset;
   assert.ok(Number.isSafeInteger(seed) && seed <= 4294967295);
-  const normal = digest(item.scenarioId, seed, "create");
-  const invalid = digest(item.scenarioId, seed, "invalid-new-request");
+  const normal = digest(scenarioId, seed, "create");
+  const invalid = digest(scenarioId, seed, "invalid-new-request");
+  return {
+    scenarioId, seed,
+    requestId: requestUuid(normal),
+    name: "Scenario " + scenarioId + " " + normal.slice(0, 8),
+    invalidRequestId: requestUuid(invalid),
+    invalidName: "Scenario invalid " + scenarioId + " " + invalid.slice(0, 8)
+  };
+}
+export function compileScenario(item, offset = 0) {
+  const identity = compileSeededIdentity(item.scenarioId, item.seed, offset);
   return {
     schemaVersion: SCHEMA_VERSION,
-    scenarioId: item.scenarioId,
-    seed,
+    scenarioId: identity.scenarioId,
+    seed: identity.seed,
     actor: item.actor,
     rpc: item.rpc,
     source: plain(item.source),
     negative: plain(item.negative),
     expectedCounts: plain(item.expectedCounts),
-    requestId: requestUuid(normal),
-    name: "Scenario " + item.scenarioId + " " + normal.slice(0, 8),
-    invalidRequestId: requestUuid(invalid),
-    invalidName: "Scenario invalid " + item.scenarioId + " " + invalid.slice(0, 8)
+    requestId: identity.requestId,
+    name: identity.name,
+    invalidRequestId: identity.invalidRequestId,
+    invalidName: identity.invalidName
   };
 }
 export function compileSuite(data, offset = 0) {
