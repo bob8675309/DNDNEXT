@@ -60,6 +60,17 @@ The paid Codex fixture-research step remains **manual and inactive**; it is not 
 
 **Stop conditions:** original deployed function hashes cannot be silently changed; test failures cannot be made green by weakening assertions; don't merge/release, enable paid tools, grant live SQL access, or modify protected world/town-map systems without explicit owner approval. Preserve Next.js Pages Router, Bootstrap/SCSS, and the distinction between source research, draft CI evidence, and deployed gameplay.
 
+## Mandatory end-of-session documentation directive — owner requirement (2026-11-06)
+
+**MUST, not optional:** Before declaring any **substantial DNDNext development session** complete, the developer/assistant **must update BOTH** files on the appropriate active work/research branch, preferably in the same reviewable commit as the change:
+
+1. **`docs/ACTIVE_WORK.md`** — update its current top-level task/status to reflect what actually changed, **why** the priority/implementation decision was made, what remains unverified or blocked, dependencies, and **one precise next bounded action**. Preserve older historical checkpoints; never present an obsolete task as newly current. If the next task is unchanged, explicitly state that it was reconfirmed and why.
+2. **`docs/HANDOFF_LOG.md`** — **append**, never overwrite or silently revise, a factual dated receipt covering the branch/base/exact tested SHA or pending-SHA verification, files actually changed, decision and rationale, tests with exact run IDs/conclusions, signed-in/production/browser evidence levels, unresolved failures/uncertainties, release approvals and whether live SQL/merges/deployments/paid calls occurred (write **none** when none), plus the same **single next action**.
+
+A **substantial session** includes code/SQL/fixture/test changes; a source investigation that changes understanding, priorities, or acceptance; important architecture/product decisions; CI diagnosis with concrete outcomes; and meaningful documentation or automation work. A trivial Q&A or read-only lookup with no new decision or development state need not create a fabricated receipt.
+
+**The generated `PROJECT_HEALTH.generated.md` and automatic branch snapshots do NOT satisfy this requirement.** They are machine-captured evidence, not the developer's explanation of **why** decisions were made. Align the two authored documents with actual GitHub evidence before stopping, run relevant documentation validators and exact-head checks, and link the receipt in the final chat response. Never claim updates or completed tests that were not executed. If GitHub writes or CI are unavailable, say so, provide the exact outstanding handoff entries and mark the session **handoff incomplete** rather than implying continuity is secured. Never use this rule as permission to merge to `main`, deploy, modify live Supabase, or pay for APIs.
+
 ## 5. At the end of each chat
 
 Record: exact branch/HEAD/base, main and production SHAs if verified, actual code/doc changes, exact CI run IDs and conclusions, signed-in fixture scope and missing gates, any paid/deployment actions (or **none**), and **one next bounded task**. Append the source-branch handoff receipt; do not rewrite historical documents to hide failures. The next chat repeats source verification, then resumes at the recorded gate.
