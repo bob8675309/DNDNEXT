@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-06T18:15:35Z | research/forge-immutable-creation-replay-20261105 (f1a2c564046ab93a0bfa0732e3acc2179da9c064) | 51c351a142d03378dff8e47e05182afe21a15622 |
+| 2026-11-06T19:17:44Z | agent/research-orchestrator-20261105 (70d5b5ae1bd46c42b31db4f43b8ddaeb2e9ffb24) | 51c351a142d03378dff8e47e05182afe21a15622 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
@@ -12,8 +12,8 @@
 |---|---|---|---|---|
 | [#317](https://github.com/bob8675309/DNDNEXT/pull/317) draft | docs/p1-3-global-lock-order-design-20261101 → main | 69e741d7c7d8874c22467e2d30791e30c009ff6e | RECORDED RUNS GREEN (10 workflows) | authored docs present |
 | [#321](https://github.com/bob8675309/DNDNEXT/pull/321) draft | research/p1-3-npc-profile-safe-rls-20261104 → main | b220fb5ecbc9570f63bd85a95da8706340abd153 | RECORDED RUNS GREEN (3 workflows) | authored docs present |
-| [#324](https://github.com/bob8675309/DNDNEXT/pull/324) draft | research/forge-immutable-creation-replay-20261105 → research/p1-3-npc-profile-safe-rls-20261104 | f1a2c564046ab93a0bfa0732e3acc2179da9c064 | CHECKS RUNNING (6 workflows) | authored docs present |
-| [#325](https://github.com/bob8675309/DNDNEXT/pull/325) draft | agent/research-orchestrator-20261105 → main | 4e7a6563b9ea119f75766d58de21f4919faeb684 | RECORDED RUNS GREEN (5 workflows) | authored docs present |
+| [#324](https://github.com/bob8675309/DNDNEXT/pull/324) draft | research/forge-immutable-creation-replay-20261105 → research/p1-3-npc-profile-safe-rls-20261104 | f1a2c564046ab93a0bfa0732e3acc2179da9c064 | RECORDED RUNS GREEN (6 workflows) | authored docs present |
+| [#325](https://github.com/bob8675309/DNDNEXT/pull/325) draft | agent/research-orchestrator-20261105 → main | 70d5b5ae1bd46c42b31db4f43b8ddaeb2e9ffb24 | CHECKS RUNNING (5 workflows) | authored docs present |
 
 ### PR #317 — docs(security): P1.3 cross-command lock graph and concurrency proof gates
 
@@ -37,25 +37,25 @@
 ### PR #324 — Draft research: immutable player Forge creation request replay with original RPC fixtures
 
 - Forge original trigger acceptance inventory (no AI, no DB): **success** ([run 42268921973](https://github.com/bob8675309/DNDNEXT/actions/runs/42268921973))
-- Research docs auto-maintainer (no AI, docs-only): **in_progress** ([run 42268912078](https://github.com/bob8675309/DNDNEXT/actions/runs/42268912078))
+- Research docs auto-maintainer (no AI, docs-only): **success** ([run 42268912078](https://github.com/bob8675309/DNDNEXT/actions/runs/42268912078))
 - Validate Class browser polish: **success** ([run 42268922087](https://github.com/bob8675309/DNDNEXT/actions/runs/42268922087))
 - Validate DNDNext handoff registry: **success** ([run 42268921992](https://github.com/bob8675309/DNDNEXT/actions/runs/42268921992))
-- Validate Forge immutable creation-request replay research: **in_progress** ([run 42268921989](https://github.com/bob8675309/DNDNEXT/actions/runs/42268921989))
+- Validate Forge immutable creation-request replay research: **success** ([run 42268921989](https://github.com/bob8675309/DNDNEXT/actions/runs/42268921989))
 - Validate Species rest proficiency runtime: **success** ([run 42268921972](https://github.com/bob8675309/DNDNEXT/actions/runs/42268921972))
-- **Pending:** some checks were in progress when this snapshot was captured.
 
 ### PR #325 — Draft: supervised research agent + DNDNext agent opportunities audit
 
-- Research docs auto-maintainer (no AI, docs-only): **success** ([run 42268898405](https://github.com/bob8675309/DNDNEXT/actions/runs/42268898405))
-- Validate Class browser polish: **success** ([run 42268908317](https://github.com/bob8675309/DNDNEXT/actions/runs/42268908317))
-- Validate DNDNext handoff registry: **success** ([run 42268908629](https://github.com/bob8675309/DNDNEXT/actions/runs/42268908629))
-- Validate DNDNext supervised research agent (no API cost): **success** ([run 42268908625](https://github.com/bob8675309/DNDNEXT/actions/runs/42268908625))
-- Validate Species rest proficiency runtime: **success** ([run 42268908320](https://github.com/bob8675309/DNDNEXT/actions/runs/42268908320))
+- Research docs auto-maintainer (no AI, docs-only): **in_progress** ([run 42278290364](https://github.com/bob8675309/DNDNEXT/actions/runs/42278290364))
+- Validate Class browser polish: **success** ([run 42278297572](https://github.com/bob8675309/DNDNEXT/actions/runs/42278297572))
+- Validate DNDNext handoff registry: **success** ([run 42278297565](https://github.com/bob8675309/DNDNEXT/actions/runs/42278297565))
+- Validate DNDNext supervised research agent (no API cost): **in_progress** ([run 42278297578](https://github.com/bob8675309/DNDNEXT/actions/runs/42278297578))
+- Validate Species rest proficiency runtime: **in_progress** ([run 42278297697](https://github.com/bob8675309/DNDNEXT/actions/runs/42278297697))
+- **Pending:** some checks were in progress when this snapshot was captured.
 
 ## Source-linked archive status
 
 - [Forge status](https://github.com/bob8675309/DNDNEXT/blob/docs/agent-status/docs/research-status/research-forge-immutable-creation-replay-20261105.generated.md): CURRENT vs PR #324 head (archive SHA f1a2c564046ab93a0bfa0732e3acc2179da9c064)
-- [Research agent status](https://github.com/bob8675309/DNDNEXT/blob/docs/agent-status/docs/research-status/agent-research-orchestrator-20261105.generated.md): CURRENT vs PR #325 head (archive SHA 4e7a6563b9ea119f75766d58de21f4919faeb684)
+- [Research agent status](https://github.com/bob8675309/DNDNEXT/blob/docs/agent-status/docs/research-status/agent-research-orchestrator-20261105.generated.md): CURRENT vs PR #325 head (archive SHA 70d5b5ae1bd46c42b31db4f43b8ddaeb2e9ffb24)
 
 ### Original Forge trigger evidence (source-aligned)
 
@@ -64,7 +64,7 @@
 
 ## Review queue and limits
 
-- CI needs review for #324 (CHECKS RUNNING).
+- CI needs review for #325 (CHECKS RUNNING).
 - Held #317 cross-table G/CP/CS/GI lock research, #321 privacy, #324 Forge and #325 agent remain separate release gates.
 - 2014 PHB optional-content toggle is DESIGNED ONLY; 2024 XPHB default. Do not rewrite source rules.
 - The site is a **prototype**; game content is test data, but never reset shared production-like records without a separately reviewed boundary.

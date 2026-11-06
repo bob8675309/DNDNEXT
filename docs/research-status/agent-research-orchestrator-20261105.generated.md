@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/research-orchestrator-20261105` |
-| Exact source commit represented by this archive snapshot | `4e7a6563b9ea119f75766d58de21f4919faeb684` |
+| Exact source commit represented by this archive snapshot | `70d5b5ae1bd46c42b31db4f43b8ddaeb2e9ffb24` |
 | Compared with | `51c351a142d03378dff8e47e05182afe21a15622` (main comparison base) |
-| Last source commit title | docs(agent): register verified free project-health collector and exact-head receipts |
-| Files changed relative to main | 23 (12 non-docs; 11 docs) |
-| Last source commit | 2 files (0 non-docs; 2 authored docs) |
+| Last source commit title | docs(agent): make scenario-testing next phase explicit in future-chat touchstone |
+| Files changed relative to main | 24 (12 non-docs; 12 docs) |
+| Last source commit | 4 files (0 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,8 +17,10 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `docs/ACTIVE_WORK.md`
+- `docs/AGENT_TOUCHSTONE.md`
+- `docs/Deterministic_Scenario_Testing_Next_Phase_2026-11-06.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/SYSTEM_REGISTRY.json`
 
 ## Research-branch change inventory versus main
 
@@ -30,6 +32,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/AGENT_TOUCHSTONE.md`
 - `docs/DNDNext_Agent_Opportunities_Audit_2026-11-05.md`
 - `docs/DNDNext_Research_Agent_Setup.md`
+- `docs/Deterministic_Scenario_Testing_Next_Phase_2026-11-06.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/Legacy_PHB_Optional_Content_Design_2026-11-06.md`
 - `docs/PROJECT_STATE.md`
