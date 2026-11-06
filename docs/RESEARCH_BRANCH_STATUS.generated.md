@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/research-orchestrator-20261105` |
-| Source commit before docs-only bot commit | `595eec780dcf42985df8f3716c74c4dc53a5135e` |
+| Source commit before docs-only bot commit | `e3faaeebd6da6d02f7fe224223a566b93b400bd3` |
 | Compared with | `51c351a142d03378dff8e47e05182afe21a15622` (main comparison base) |
-| Last source commit title | fix(agent-docs): use branchName in atomic GitHub createCommitOnBranch mutation |
+| Last source commit title | fix(agent): enforce path safety before docs-required patch gate |
 | Files changed relative to main | 15 (10 non-docs; 5 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `.github/workflows/research-docs-maintenance.yml`
+- `scripts/agents/research_agent.mjs`
 
 ## Research-branch change inventory versus main
 
