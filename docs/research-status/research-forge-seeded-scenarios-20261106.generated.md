@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/forge-seeded-scenarios-20261106` |
-| Exact source commit represented by this archive snapshot | `f1a2c564046ab93a0bfa0732e3acc2179da9c064` |
+| Exact source commit represented by this archive snapshot | `c2a52ac1bac4a164b1ee6d50f95bde228509f33c` |
 | Compared with | `51c351a142d03378dff8e47e05182afe21a15622` (main comparison base) |
-| Last source commit title | docs(forge): register free health collector, J153 replay and source receipt |
-| Files changed relative to main | 87 (63 non-docs; 24 docs) |
-| Last source commit | 2 files (0 non-docs; 2 authored docs) |
+| Last source commit title | test(forge): add seeded source-authenticated scenario runner after J153 |
+| Files changed relative to main | 91 (66 non-docs; 25 docs) |
+| Last source commit | 8 files (5 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,8 +17,14 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-forge-immutable-creation-replay.yml`
+- `docs/ACTIVE_WORK.md`
+- `docs/Forge_Seeded_Scenario_Runner_2026-11-06.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/SYSTEM_REGISTRY.json`
+- `scripts/agents/forge_seeded_scenarios.mjs`
+- `scripts/fixtures/forge_seeded_scenarios_v1.json`
+- `scripts/test_forge_immutable_creation_replay_local_auth.mjs`
+- `scripts/validate_forge_seeded_scenarios.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -37,6 +43,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
 - `docs/Forge_Original_Deferred_Creation_Owner_Check_2026-11-05.md`
 - `docs/Forge_Original_Merchant_Inventory_Concurrent_Writes_2026-11-05.md`
+- `docs/Forge_Seeded_Scenario_Runner_2026-11-06.md`
 - `docs/Forge_Subclass_Original_Acceptance_2026-11-06.md`
 - `docs/Forge_V3_Source_Market_Inventory_RLS_Research_2026-11-05.md`
 - `docs/Forge_Verified_Progression_Creator_Candidate_2026-11-05.md`
@@ -52,6 +59,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/SYSTEM_REGISTRY.json`
 - `scripts/agents/forge_automation_selftest.mjs`
 - `scripts/agents/forge_ci_diagnostics.mjs`
+- `scripts/agents/forge_seeded_scenarios.mjs`
 - `scripts/agents/forge_trigger_acceptance_ledger.mjs`
 - `scripts/agents/forge_trigger_acceptance_receipts.json`
 - `scripts/agents/forge_trigger_audit.mjs`
@@ -70,9 +78,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/fixtures/forge_equipment_validator_local_auth_extension_pg17.sql`
 - `scripts/fixtures/forge_equipment_validator_original_pg17.sql`
 - `scripts/fixtures/forge_feat_materializer_discriminators_original_pg17.sql`
-- `scripts/fixtures/forge_feat_materializer_local_auth_extension_pg17.sql`
-- `scripts/fixtures/forge_feat_materializer_original_pg17.sql`
-- … 37 more
+- … 41 more
 
 ## Forge source and authenticated evidence (branch-local only)
 
