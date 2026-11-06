@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Only individually verified target-JWT receipts, NOT full production parity or automatic status from DDL.",
+  "receipts": [
+    {
+      "trigger": "characters_guard_player_tags_v1",
+      "sourceMd5": "b8b0008a718de1aa3e74d66b30f1a679",
+      "testedHead": "8b247ebe9df2d77410b087cb9370d3dea3f938e9",
+      "actionsRunId": 42164951469,
+      "tests": "J125-J132",
+      "scope": "Original 42501 tag denial, nested sheet sync, genuine GoTrue; reduced local editor RLS."
+    },
+    {
+      "trigger": "sync_character_portrait_library_id_v1",
+      "sourceMd5": "74cb0bf9d7a614a860344f12cf787e05",
+      "testedHead": "c616209ced727f04cff06923ba9b2237a9c59bd4",
+      "actionsRunId": 42165452281,
+      "tests": "J133-J141",
+      "scope": "Original active/inactive library matching, path priority, real GoTrue; reduced catalog/editor RLS."
+    }
+  ]
+}

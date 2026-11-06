@@ -39,6 +39,8 @@ on:
       - 'scripts/fixtures/forge_characters_tag_guard_local_auth_pg17.sql'
       - 'scripts/fixtures/forge_characters_portrait_sync_original_pg17.sql'
       - 'scripts/fixtures/forge_characters_portrait_sync_local_auth_pg17.sql'
+      - 'scripts/agents/forge_ci_diagnostics.mjs'
+      - 'scripts/agents/forge_automation_selftest.mjs'
       - 'scripts/validate_forge_inventory_ui_release_contract.mjs'
       - 'components/NewNpcModalV3.js'
       - 'components/NpcForgeEquipmentStep.js'
@@ -150,7 +152,25 @@ jobs:
           export DNDNEXT_FORGE_REPLAY_LOCAL_URL="http://127.0.0.1:54321"
           export DNDNEXT_FORGE_REPLAY_LOCAL_ANON_KEY="$ANON_KEY"
           psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/forge_creation_replay_local_auth_pg17.sql
-          node scripts/test_forge_immutable_creation_replay_local_auth.mjs
+          node scripts/test_forge_immutable_creation_replay_local_auth.mjs 2>&1 | tee -a "$RUNNER_TEMP/forge-jwt-output.log"
+      - name: Summarize authenticated fixture output without exposing raw logs
+        if: always()
+        shell: bash
+        run: |
+          node scripts/agents/forge_ci_diagnostics.mjs "$RUNNER_TEMP/forge-jwt-output.log" research-agent-artifact
+          if test -f research-agent-artifact/FORGE_JWT_DIAGNOSTICS.md; then
+            cat research-agent-artifact/FORGE_JWT_DIAGNOSTICS.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Upload three-day safe diagnostic only, never raw JWT logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: forge-jwt-diagnostics-${{ github.run_id }}
+          path: |
+            research-agent-artifact/FORGE_JWT_DIAGNOSTICS.md
+            research-agent-artifact/FORGE_JWT_DIAGNOSTICS.json
+          if-no-files-found: warn
+          retention-days: 3
       - name: Stop and destroy disposable local services
         if: always()
         run: |
