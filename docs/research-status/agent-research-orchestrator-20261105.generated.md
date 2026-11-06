@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/research-orchestrator-20261105` |
-| Exact source commit represented by this archive snapshot | `70d5b5ae1bd46c42b31db4f43b8ddaeb2e9ffb24` |
+| Exact source commit represented by this archive snapshot | `a324a6bfd39325ab75c86e1add9f60ae93a4fc05` |
 | Compared with | `51c351a142d03378dff8e47e05182afe21a15622` (main comparison base) |
-| Last source commit title | docs(agent): make scenario-testing next phase explicit in future-chat touchstone |
-| Files changed relative to main | 24 (12 non-docs; 12 docs) |
-| Last source commit | 4 files (0 non-docs; 4 authored docs) |
+| Last source commit title | docs(handoff): require authored active-work updates and append-only session receipts |
+| Files changed relative to main | 26 (13 non-docs; 13 docs) |
+| Last source commit | 5 files (1 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,10 +17,11 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `AGENTS.md`
 - `docs/ACTIVE_WORK.md`
 - `docs/AGENT_TOUCHSTONE.md`
-- `docs/Deterministic_Scenario_Testing_Next_Phase_2026-11-06.md`
 - `docs/HANDOFF_LOG.md`
+- `docs/HANDOFF_RECEIPT_TEMPLATE.md`
 
 ## Research-branch change inventory versus main
 
@@ -28,12 +29,14 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/dndnext-research-agent.yml`
 - `.github/workflows/research-docs-maintenance.yml`
 - `.github/workflows/validate-dndnext-research-agent.yml`
+- `AGENTS.md`
 - `docs/ACTIVE_WORK.md`
 - `docs/AGENT_TOUCHSTONE.md`
 - `docs/DNDNext_Agent_Opportunities_Audit_2026-11-05.md`
 - `docs/DNDNext_Research_Agent_Setup.md`
 - `docs/Deterministic_Scenario_Testing_Next_Phase_2026-11-06.md`
 - `docs/HANDOFF_LOG.md`
+- `docs/HANDOFF_RECEIPT_TEMPLATE.md`
 - `docs/Legacy_PHB_Optional_Content_Design_2026-11-06.md`
 - `docs/PROJECT_STATE.md`
 - `docs/README.md`

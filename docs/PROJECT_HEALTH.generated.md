@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-06T19:17:44Z | agent/research-orchestrator-20261105 (70d5b5ae1bd46c42b31db4f43b8ddaeb2e9ffb24) | 51c351a142d03378dff8e47e05182afe21a15622 |
+| 2026-11-06T21:26:18Z | agent/research-orchestrator-20261105 (a324a6bfd39325ab75c86e1add9f60ae93a4fc05) | 51c351a142d03378dff8e47e05182afe21a15622 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
@@ -13,7 +13,7 @@
 | [#317](https://github.com/bob8675309/DNDNEXT/pull/317) draft | docs/p1-3-global-lock-order-design-20261101 → main | 69e741d7c7d8874c22467e2d30791e30c009ff6e | RECORDED RUNS GREEN (10 workflows) | authored docs present |
 | [#321](https://github.com/bob8675309/DNDNEXT/pull/321) draft | research/p1-3-npc-profile-safe-rls-20261104 → main | b220fb5ecbc9570f63bd85a95da8706340abd153 | RECORDED RUNS GREEN (3 workflows) | authored docs present |
 | [#324](https://github.com/bob8675309/DNDNEXT/pull/324) draft | research/forge-immutable-creation-replay-20261105 → research/p1-3-npc-profile-safe-rls-20261104 | f1a2c564046ab93a0bfa0732e3acc2179da9c064 | RECORDED RUNS GREEN (6 workflows) | authored docs present |
-| [#325](https://github.com/bob8675309/DNDNEXT/pull/325) draft | agent/research-orchestrator-20261105 → main | 70d5b5ae1bd46c42b31db4f43b8ddaeb2e9ffb24 | CHECKS RUNNING (5 workflows) | authored docs present |
+| [#325](https://github.com/bob8675309/DNDNEXT/pull/325) draft | agent/research-orchestrator-20261105 → main | a324a6bfd39325ab75c86e1add9f60ae93a4fc05 | CHECKS RUNNING (5 workflows) | authored docs present |
 
 ### PR #317 — docs(security): P1.3 cross-command lock graph and concurrency proof gates
 
@@ -45,17 +45,17 @@
 
 ### PR #325 — Draft: supervised research agent + DNDNext agent opportunities audit
 
-- Research docs auto-maintainer (no AI, docs-only): **in_progress** ([run 42278290364](https://github.com/bob8675309/DNDNEXT/actions/runs/42278290364))
-- Validate Class browser polish: **success** ([run 42278297572](https://github.com/bob8675309/DNDNEXT/actions/runs/42278297572))
-- Validate DNDNext handoff registry: **success** ([run 42278297565](https://github.com/bob8675309/DNDNEXT/actions/runs/42278297565))
-- Validate DNDNext supervised research agent (no API cost): **in_progress** ([run 42278297578](https://github.com/bob8675309/DNDNEXT/actions/runs/42278297578))
-- Validate Species rest proficiency runtime: **in_progress** ([run 42278297697](https://github.com/bob8675309/DNDNEXT/actions/runs/42278297697))
+- Research docs auto-maintainer (no AI, docs-only): **in_progress** ([run 42296671501](https://github.com/bob8675309/DNDNEXT/actions/runs/42296671501))
+- Validate Class browser polish: **in_progress** ([run 42296681452](https://github.com/bob8675309/DNDNEXT/actions/runs/42296681452))
+- Validate DNDNext handoff registry: **in_progress** ([run 42296681341](https://github.com/bob8675309/DNDNEXT/actions/runs/42296681341))
+- Validate DNDNext supervised research agent (no API cost): **in_progress** ([run 42296681194](https://github.com/bob8675309/DNDNEXT/actions/runs/42296681194))
+- Validate Species rest proficiency runtime: **in_progress** ([run 42296681325](https://github.com/bob8675309/DNDNEXT/actions/runs/42296681325))
 - **Pending:** some checks were in progress when this snapshot was captured.
 
 ## Source-linked archive status
 
 - [Forge status](https://github.com/bob8675309/DNDNEXT/blob/docs/agent-status/docs/research-status/research-forge-immutable-creation-replay-20261105.generated.md): CURRENT vs PR #324 head (archive SHA f1a2c564046ab93a0bfa0732e3acc2179da9c064)
-- [Research agent status](https://github.com/bob8675309/DNDNEXT/blob/docs/agent-status/docs/research-status/agent-research-orchestrator-20261105.generated.md): CURRENT vs PR #325 head (archive SHA 70d5b5ae1bd46c42b31db4f43b8ddaeb2e9ffb24)
+- [Research agent status](https://github.com/bob8675309/DNDNEXT/blob/docs/agent-status/docs/research-status/agent-research-orchestrator-20261105.generated.md): CURRENT vs PR #325 head (archive SHA a324a6bfd39325ab75c86e1add9f60ae93a4fc05)
 
 ### Original Forge trigger evidence (source-aligned)
 
