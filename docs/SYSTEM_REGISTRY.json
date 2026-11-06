@@ -524,7 +524,7 @@
     },
     {
       "id": "research-docs-automation",
-      "status": "research-pr-only",
+      "status": "research-only",
       "code_paths": [
         ".github/workflows/research-docs-maintenance.yml",
         "scripts/agents/research_docs_maintainer.mjs",
@@ -534,9 +534,8 @@
         "docs/Research_Docs_Maintenance_2026-11-06.md"
       ],
       "tests": [
-        "https://github.com/bob8675309/DNDNEXT/actions/runs/42241801501",
-        "https://github.com/bob8675309/DNDNEXT/actions/runs/42241789973",
-        "https://github.com/bob8675309/DNDNEXT/actions/runs/42242114281"
+        "scripts/agents/validate_research_agent.mjs",
+        "scripts/agents/validate_research_docs_maintainer.mjs"
       ],
       "last_checked": "2026-11-06",
       "open_gaps": [
