@@ -1,5 +1,7 @@
 # DNDNext — End-of-chat handoff receipt (copy once per session)
 
+> **MANDATORY:** At the end of *every substantial development session*, update the active branch's `docs/ACTIVE_WORK.md` and **append** a dated factual receipt to `docs/HANDOFF_LOG.md` using this template. Include both *what* changed and *why*, exact source/check evidence, limitations, and the single next task. Generated health snapshots are not a substitute; if write access or CI fails, explicitly declare the handoff incomplete instead of inventing a receipt. No merge, deployment, database write or paid API activation is implied by this requirement.
+
 ## Identity and authority
 - UTC timestamp:
 - Production `main` SHA (read live):
