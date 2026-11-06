@@ -528,6 +528,8 @@
       "code_paths": [
         ".github/workflows/research-docs-maintenance.yml",
         "scripts/agents/research_docs_maintainer.mjs",
+        "scripts/agents/project_health.mjs",
+        "scripts/agents/validate_project_health.mjs",
         "scripts/agents/validate_research_docs_maintainer.mjs",
         "scripts/agents/research_agent.mjs",
         ".github/workflows/validate-dndnext-research-agent.yml",
@@ -535,28 +537,30 @@
       ],
       "tests": [
         "scripts/agents/validate_research_agent.mjs",
-        "scripts/agents/validate_research_docs_maintainer.mjs"
+        "scripts/agents/validate_research_docs_maintainer.mjs",
+        "scripts/agents/validate_project_health.mjs"
       ],
       "last_checked": "2026-11-06",
       "open_gaps": [
         "Both research PRs remain drafts and unmerged; the docs agent workflow is NOT deployed to main.",
-        "Only deterministic source snapshot publication is automated. Authored living docs require the researcher/agent to update them in the same reviewed patch; source code semantics cannot be inferred safely.",
+        "Only deterministic source and GitHub PR/CI snapshots are automated. Authored living docs require reviewed changes; source code semantics cannot be inferred safely.",
+        "Project-health snapshots are captured at owner push time; later CI completion requires a live GitHub check or a later refresh.",
         "Project-level preview suppression temporarily affects all preview branches; restore deliberately before next UI browser acceptance.",
         "Original Forge triggers 15/31 staged, three targeted signed JWT receipts; full production RLS, concurrency and browser acceptance remain unverified."
       ],
       "label": "No-cost research documentation maintainer",
-      "scope_note": "Owner research pushes publish exactly one generated status file per branch to docs/agent-status using an atomic expected-head check. Research-only patch scope guard also requires factual handoff receipt and affected living Markdown. No automatic main updates or paid AI execution.",
+      "scope_note": "Owner research pushes publish the branch status plus a GitHub-only project-health snapshot to docs/agent-status using one atomic expected-head commit. Research-only patch scope guard also requires factual handoff receipt and affected living Markdown. No automatic main updates or paid AI execution.",
       "verification": {
         "source": "inspected-relevant-entry-points-on-draft-PR-325",
         "live_database": "not-used",
         "deployed_sha": "main-unchanged-no-release",
-        "test_status": "agent-static-and-independent-archive-docs-writes-success-on-exact-SHA",
+        "test_status": "source-f6d132ae docs-run-42267675682 and agent-static-42267688447 both SUCCESS; verify later docs-only registry commit separately",
         "browser_acceptance": "unverified-this-audit",
         "owner_approval": "owner-requested-free-research-documentation-automation; no merge approval"
       },
       "protected_boundaries": [
         "Never auto-write main, production database SQL, protected world/town maps or application runtime",
-        "Only docs/research-status/*.generated.md on dedicated docs/agent-status branch; never alter active research PR head automatically",
+        "Only docs/research-status/*.generated.md and docs/PROJECT_HEALTH.generated.md on dedicated archive branch; never alter active research PR head automatically",
         "No paid Codex, service-role secrets, broad PAT, or GitHub token repo write outside the controlled docs-only job"
       ]
     }
