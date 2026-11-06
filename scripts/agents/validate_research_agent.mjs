@@ -59,6 +59,17 @@ try {
   assert.notEqual(result.status, 0, "Protected world-map file MUST be rejected");
   assert.match(result.stderr, /out-of-scope path: pages\/map\.js/);
   rmSync(path.join(temp, "pages/map.js"));
+  // Non-doc changes without BOTH durable handoff and affected contract fail closed.
+  mkdirSync(path.join(temp,"scripts","fixtures"),{recursive:true});
+  writeFileSync(path.join(temp,"scripts","fixtures","research.sql"),"SELECT 1;\n");
+  result = run(ROOT, process.execPath, [script,"scope"], env);
+  assert.notEqual(result.status,0,"Undocumented fixture patch must be rejected");
+  assert.match(result.stderr,/HANDOFF_LOG.md receipt/);
+  writeFileSync(path.join(temp,"docs","HANDOFF_LOG.md"),"# Research receipt\n");
+  result = run(ROOT, process.execPath, [script,"scope"], env);
+  assert.equal(result.status,0,result.stderr); // Existing docs/Review_Only.md is the affected contract.
+  rmSync(path.join(temp,"scripts","fixtures","research.sql"));
+  rmSync(path.join(temp,"docs","HANDOFF_LOG.md"));
   result = run(ROOT, process.execPath, [script, "preflight"], { ...env, TARGET_REF: "main" });
   assert.notEqual(result.status, 0, "main ref MUST be rejected");
 } finally {

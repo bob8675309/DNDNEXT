@@ -120,6 +120,16 @@ function verifyDiff(root, allowEmpty = true) {
   const info = pathsChanged(root);
   if (info.deleted.length) fail("file deletion denied: " + info.deleted.join(", "));
   if (info.names.length > MAX_FILES) fail("too many edited files (" + info.names.length + " > " + MAX_FILES + ")");
+  // The agent must maintain durable handoffs in the SAME proposed source patch.
+  // The free docs bot is only a factual snapshot, not a substitute for living docs.
+  const changedCode=info.names.filter(x=>!x.startsWith("docs/"));
+  if (changedCode.length) {
+    if (!info.names.includes("docs/HANDOFF_LOG.md"))
+      fail("research implementation changes require an append-only docs/HANDOFF_LOG.md receipt");
+    if (!info.names.some(x=>x.startsWith("docs/") && x.endsWith(".md") && x!=="docs/HANDOFF_LOG.md"))
+      fail("research implementation changes require an affected living docs/*.md update");
+  }
+
   if (!allowEmpty && !info.names.length) fail("no proposed changes");
   let bytes = 0;
   for (const rel of info.names) {

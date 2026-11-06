@@ -9,6 +9,9 @@ on:
       - 'docs/DNDNext_Research_Agent_Setup.md'
       - 'docs/DNDNext_Agent_Opportunities_Audit_2026-11-05.md'
       - 'vercel.json'
+      - '.github/workflows/research-docs-maintenance.yml'
+      - 'docs/Research_Docs_Maintenance_2026-11-06.md'
+      - 'docs/Legacy_PHB_Optional_Content_Design_2026-11-06.md'
 permissions:
   contents: read
 jobs:
@@ -26,6 +29,8 @@ jobs:
       - run: node --check scripts/agents/research_agent.mjs
       - run: node --check scripts/agents/validate_research_agent.mjs
       - run: node scripts/agents/validate_research_agent.mjs
+      - run: node --check scripts/agents/research_docs_maintainer.mjs
+      - run: node scripts/agents/validate_research_docs_maintainer.mjs
       - name: Assert agent/research previews are opted out by configuration
         run: |
           node --input-type=module -e "import {readFileSync} from 'node:fs'; import assert from 'node:assert/strict'; const c=JSON.parse(readFileSync('vercel.json','utf8')); for (const p of ['agent/**','research/**']) assert.equal(c.git?.deploymentEnabled?.[p], false, p); assert.equal(c.ignoreCommand, 'node scripts/vercel_ignore_build.mjs'); console.log('PASS agent/research Vercel git auto-deploy opt-out (config only)')"

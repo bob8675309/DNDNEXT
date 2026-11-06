@@ -1,0 +1,75 @@
+name: Research docs auto-maintainer (no AI, docs-only)
+on:
+  push:
+    branches:
+      - 'research/**'
+      - 'agent/**'
+    paths-ignore:
+      - 'docs/RESEARCH_BRANCH_STATUS.generated.md'
+permissions:
+  contents: read
+jobs:
+  docs-only:
+    if: github.repository == 'bob8675309/DNDNEXT' && github.actor == 'bob8675309' && github.event_name == 'push'
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    concurrency:
+      group: research-docs-maintainer-${{ github.ref }}
+      cancel-in-progress: false
+    steps:
+      - name: Checkout exact source SHA without persisted write credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Node without network/package installation
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Test free docs maintainer scope and evidence rules
+        run: |
+          set -euo pipefail
+          node --check scripts/agents/research_docs_maintainer.mjs
+          node scripts/agents/validate_research_docs_maintainer.mjs
+      - name: Generate branch status from exact local source
+        env:
+          DOCS_TARGET_BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          node scripts/agents/research_docs_maintainer.mjs "$RUNNER_TEMP/RESEARCH_BRANCH_STATUS.generated.md"
+          test -s "$RUNNER_TEMP/RESEARCH_BRANCH_STATUS.generated.md"
+          cat "$RUNNER_TEMP/RESEARCH_BRANCH_STATUS.generated.md" >> "$GITHUB_STEP_SUMMARY"
+      - name: Publish only generated docs, atomically, never main
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ github.sha }}
+          TARGET_BRANCH: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = 'bob8675309/DNDNEXT'
+          [[ "$TARGET_BRANCH" =~ ^(research|agent)/[A-Za-z0-9_-]+(/[A-Za-z0-9._-]+)*$ ]] || exit 1
+          [[ "$TARGET_BRANCH" != *'..'* ]] || exit 1
+          [[ "$SOURCE_SHA" =~ ^[a-f0-9]{40}$ ]] || exit 1
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          output="$RUNNER_TEMP/RESEARCH_BRANCH_STATUS.generated.md"
+          if git cat-file -e "HEAD:docs/RESEARCH_BRANCH_STATUS.generated.md" 2>/dev/null; then
+            git show "HEAD:docs/RESEARCH_BRANCH_STATUS.generated.md" > "$RUNNER_TEMP/previous-doc.md"
+            if cmp -s "$RUNNER_TEMP/previous-doc.md" "$output"; then
+              echo 'Generated doc unchanged; no commit'
+              exit 0
+            fi
+          fi
+          data="$(base64 -w0 "$output")"
+          jq -n \
+            --arg query 'mutation($input:CreateCommitOnBranchInput!){createCommitOnBranch(input:$input){commit{oid}}}' \
+            --arg repo "$GITHUB_REPOSITORY" \
+            --arg branch "$TARGET_BRANCH" \
+            --arg sha "$SOURCE_SHA" \
+            --arg content "$data" \
+            '{query:$query,variables:{input:{branch:{repositoryNameWithOwner:$repo,refName:$branch},expectedHeadOid:$sha,message:{headline:"docs(bot): refresh research-branch evidence snapshot"},fileChanges:{additions:[{path:"docs/RESEARCH_BRANCH_STATUS.generated.md",contents:$content}]}}}}' \
+            > "$RUNNER_TEMP/docs-only-graphql.json"
+          gh api graphql --input "$RUNNER_TEMP/docs-only-graphql.json" --jq '.data.createCommitOnBranch.commit.oid'
+          echo 'Docs-only research commit published; no model or production access.'
