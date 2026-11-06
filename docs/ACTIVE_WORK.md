@@ -1,5 +1,15 @@
 # DNDNext — Active Work Contract
 
+## Owner-directed research continuation — verified handoff priority 2026-11-06
+
+**One current next engineering task (not implemented):** plan and implement the *first isolated, seeded deterministic scenario-runner slice* by reusing PR #324's existing PostgreSQL 17 / real local GoTrue/PostgREST authenticated Forge fixtures and J00–J153 regression cases. Start with a versioned scenario input/expected-output contract and no-model runner proof, not the next one-off missing trigger. Source-qualified 2024 XPHB-first creation and immutable replay must remain real server-authoritative tests rather than fake JS success. See [first-slice research plan](Deterministic_Scenario_Testing_Next_Phase_2026-11-06.md).
+
+**Reason for priority:** The free agent/Forge GitHub status and accepted trigger research have reduced repeated investigation. The goal now is reusable, reproducible scenario coverage with minimal AI cost. Unmerged privacy/RLS (#321), Forge replay (#324), global lock/transaction (#317), and research automation (#325) retain separate release gates. This `main` document records the owner's research-next decision; it does NOT merge those branches, mark the scenario runner implemented, or resolve tactical security issues. If later owner direction changes, update this top section and the corresponding `HANDOFF_LOG.md` receipt on the active work branch.
+
+**Mandatory closeout:** After each substantial development session, update this branch's `docs/ACTIVE_WORK.md` and append a dated, decision/rationale/evidence receipt to `docs/HANDOFF_LOG.md`. Generated Project Health alone is insufficient. Future chats must consult the [permanent Touchstone](https://github.com/bob8675309/DNDNEXT/blob/docs/agent-status/docs/AGENT_TOUCHSTONE.md) and verify live exact-head source, not blindly follow the older P1.2 task below.
+
+---
+
 > **Planning snapshot:** 2026-11-01. Re-verify branches, CI and production before using these SHAs. This is the **one active-session task list**; it is not permission to deploy or merge. Product decisions remain in [SPELL_ENGINE_DECISIONS.md](SPELL_ENGINE_DECISIONS.md).
 
 ## Current activity: P1.2 immutable intent / replay / authorization contract — research only

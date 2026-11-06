@@ -1,5 +1,16 @@
 # DNDNext — Repository Instructions for AI Coding Assistants
 
+## Mandatory session-close policy — owner directive, 2026-11-06
+
+**Every substantial development session MUST update BOTH the branch-local `docs/ACTIVE_WORK.md` and the append-only `docs/HANDOFF_LOG.md` before being described as complete.** Do this on the relevant working/research branch, ideally alongside the implementation; generated status reports alone never satisfy the rule.
+
+- **ACTIVE_WORK:** record current status, the **reason** for decisions and changed priorities, tested versus unverified scope, blockers/dependencies, and exactly one next bounded task. If the task did not change, state that it was reconfirmed. Keep older checkpoints as historical evidence, not current marching orders.
+- **HANDOFF_LOG:** append (never silently rewrite) a dated factual receipt: work branch/base/actual head or pending head verification, files and decisions, exact CI run IDs and results, source/auth/production/browser evidence limits, outstanding failures and release gates, whether SQL writes/merges/deployments/paid calls occurred (**none** if none), and that same next task.
+- Substantial means implementation, fixtures, tests, meaningful research, source/CI investigations affecting conclusions, architectural decisions, or material documentation/automation. Trivial Q&A with no state change needs no fictional receipt.
+- **Verify actual GitHub changes and exact-head checks before claiming completion.** If repository editing or CI is unavailable, report the missing entries and explicitly mark the handoff incomplete. The generated Project Health report and its research snapshots are evidence, not a substitute for authored engineering rationale. Never fabricate outcomes to satisfy this policy.
+
+**New-chat entry point:** [permanent Agent Touchstone](https://github.com/bob8675309/DNDNEXT/blob/docs/agent-status/docs/AGENT_TOUCHSTONE.md) (archive branch `docs/agent-status`, **not** `main`), then current PR source, branch-local handoff and live exact-head checks. Preserve all production, authorization, map, and release boundaries below; the handoff rule grants no new deployment or database permission.
+
 **Read this before making code, database, deployment or documentation changes.** This project has many historical status files. A confident summary is not evidence of the current implementation.
 
 ## Mandatory recovery
