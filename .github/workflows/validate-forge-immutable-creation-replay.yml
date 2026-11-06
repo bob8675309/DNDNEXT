@@ -35,6 +35,8 @@ on:
       - 'scripts/fixtures/forge_warlock_invocation_positive_local_auth_pg17.sql'
       - 'scripts/fixtures/forge_species_light_original_helpers_pg17.sql'
       - 'scripts/fixtures/forge_species_light_positive_local_auth_pg17.sql'
+      - 'scripts/fixtures/forge_characters_tag_guard_original_pg17.sql'
+      - 'scripts/fixtures/forge_characters_tag_guard_local_auth_pg17.sql'
       - 'scripts/validate_forge_inventory_ui_release_contract.mjs'
       - 'components/NewNpcModalV3.js'
       - 'components/NpcForgeEquipmentStep.js'

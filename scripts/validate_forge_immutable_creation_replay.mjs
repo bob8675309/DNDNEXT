@@ -574,3 +574,41 @@ for(const unsafe of ["ucggczovhmauhshvhusx","SUPABASE_SERVICE_ROLE_KEY","SERVICE
  "No production project ID or secret in source-positive species fixtures");
 }
 console.log("PASS STATIC J117–J124 original source species Light Bearer and five helper MD5s, real JWT positive/negative, nonce, deferred spell source/I/C/S, explicit casting ability release gap.");
+
+
+// J125–J132: source-original character tag guard with disposable authenticated JWTs.
+const originalCharacterTagGuard=readFileSync("scripts/fixtures/forge_characters_tag_guard_original_pg17.sql","utf8");
+const localCharacterTagGuard=readFileSync("scripts/fixtures/forge_characters_tag_guard_local_auth_pg17.sql","utf8");
+assert.ok(originalCharacterTagGuard.includes("CREATE OR REPLACE FUNCTION private.guard_player_character_tag_update_v1()"));
+assert.ok(originalCharacterTagGuard.includes("b8b0008a718de1aa3e74d66b30f1a679"));
+for(const token of [
+ "pg_trigger_depth() = 1","auth.uid() is not null",
+ "not private.current_user_is_admin()",
+ "Player character tags are managed by campaign authority.","errcode = '42501'"
+])assert.ok(originalCharacterTagGuard.includes(token),"Original tag guard body changed: "+token);
+for(const token of [
+ "current_database()<>'postgres'","170000 AND 179999",
+ "private.test_admins","private.sync_player_character_tags_from_sheet_v1",
+ "md5(pg_get_functiondef('private.guard_player_character_tag_update_v1()'",
+ "b8b0008a718de1aa3e74d66b30f1a679",
+ "BEFORE UPDATE OF tags ON public.characters",
+ "EXECUTE FUNCTION private.guard_player_character_tag_update_v1()",
+ "ALTER TABLE public.characters ENABLE ROW LEVEL SECURITY",
+ "CREATE POLICY j125_characters_update_tags_editor",
+ "NOTIFY pgrst,'reload schema'"
+])assert.ok(localCharacterTagGuard.includes(token),"Original guard or local fixture safety gate missing: "+token);
+for(let i=125;i<=132;i++)
+ assert.ok(localAuth.includes("PASS J"+i),"Missing signed-in guard acceptance J"+i);
+for(const token of [
+ "originalTagResources","taggedId","people.PLAYER.client",
+ "people.ADMIN.client","people.OUTSIDER.client","makeClient()",
+ "sheetWrite","42501","campaign:gm-approved","campaign:keepers",
+ "PASS LOCAL REAL GoTrue J00-J132"
+])assert.ok(localAuth.includes(token),"Signed-in tag guard coverage missing: "+token);
+for(const file of ["forge_characters_tag_guard_original_pg17.sql",
+                    "forge_characters_tag_guard_local_auth_pg17.sql"])
+ assert.ok(workflow.includes(file),"CI path trigger for new original guard fixture missing: "+file);
+for(const forbidden of ["ucggczovhmauhshvhusx","SUPABASE_SERVICE_ROLE_KEY","SERVICE_ROLE_KEY"])
+ assert.ok(!originalCharacterTagGuard.includes(forbidden)&&!localCharacterTagGuard.includes(forbidden),
+  "Original tag guard fixture contains forbidden live identifier or credential");
+console.log("PASS STATIC J125-J132 original source/MD5, trigger timing, reduced local RLS and genuine JWT test contract; no production or full RLS parity.");

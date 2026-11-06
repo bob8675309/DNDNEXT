@@ -1956,3 +1956,86 @@ missingLight.sheet.sourceChoices[lightGroupKey].fields.innateSpell.selections=[]
 await rejectSpecies(missingLight,/Species feature Light Bearer requires all 1 currently granted spell\(s\)/i,"J124");
 console.log("PASS J124 original species source-magic handler enforces exactly one currently granted Light, no partial creation");
 console.log("PASS LOCAL REAL GoTrue J00-J124: original Aasimar Light Bearer species positive source spell and negative owner/trait/spell/required-count checks; original casting-stat gap observed; full preferred spell catalog and browser remain UNTESTED.");
+
+// J125–J132: source-original characters guard, installed AFTER existing J00–J124.
+sqlFile("scripts/fixtures/forge_characters_tag_guard_local_auth_pg17.sql");
+assert.equal(sql("SELECT md5(pg_get_functiondef('private.guard_player_character_tag_update_v1()'::regprocedure))"),
+ "b8b0008a718de1aa3e74d66b30f1a679");
+assert.equal(sql("SELECT count(*) FROM pg_trigger WHERE tgname='characters_guard_player_tags_v1' AND tgrelid='public.characters'::regclass AND NOT tgisinternal"),"1");
+console.log("PASS J125 original player tags handler hash and BEFORE UPDATE OF tags DDL installed in PG17");
+
+const originalCharTags=(cid)=>JSON.parse(sql("SELECT to_jsonb(tags)::text FROM public.characters WHERE id='"+cid+"'"));
+const signedTagUpdate=(client,cid,tags)=>client.from("characters")
+ .update({tags}).eq("id",cid).select("id,tags");
+const originalTagResources=(cid)=>({
+ char:sql("SELECT md5(to_jsonb(t)::text) FROM public.characters t WHERE id='"+cid+"'"),
+ sheet:sql("SELECT md5(to_jsonb(t)::text) FROM public.character_sheets t WHERE character_id='"+cid+"'"),
+ cp:sql("SELECT md5(to_jsonb(t)::text) FROM public.character_progression t WHERE character_id='"+cid+"'"),
+ grants:rowFingerprint("public.character_option_grants","character_id='"+cid+"'"),
+ instances:rowFingerprint("public.character_option_grant_instances","character_id='"+cid+"'"),
+ items:rowFingerprint("public.inventory_items","owner_id='"+cid+"'"),
+ currency:sql("SELECT md5(to_jsonb(t)::text) FROM public.character_currency t WHERE character_id='"+cid+"'"),
+ counts:speciesAbortCounts()
+});
+const charTagsBefore=originalCharTags(taggedId),originalGuardBefore=originalTagResources(taggedId);
+assert.ok(charTagsBefore.includes("player-character"));
+const refusedDirect=await signedTagUpdate(people.PLAYER.client,taggedId,
+ [...charTagsBefore,"campaign:unapproved-direct"]);
+denied(refusedDirect,"42501","Signed-in original direct player tags guard");
+assert.match(refusedDirect.error.message||"",/Player character tags are managed by campaign authority\./);
+assert.deepEqual(originalTagResources(taggedId),originalGuardBefore,
+ "Original 42501 tag rejection changed character/CP/CS/G/GI/I/C or counts");
+console.log("PASS J126 real Player JWT reaches exact original 42501/message and atomic resource rollback");
+
+const nestedOriginalSheet=JSON.parse(sql("SELECT sheet::text FROM public.character_sheets WHERE character_id='"+taggedId+"'"));
+const nextNestedSheet={...nestedOriginalSheet,marker:"J127 nested source tag-sync",
+ professions:{...nestedOriginalSheet.professions,"Astrologer":{rank:1}}};
+const nestedSheetWrite=await sheetWrite(people.PLAYER.client,taggedId,nextNestedSheet);
+assert.ifError(nestedSheetWrite.error);
+assert.equal(nestedSheetWrite.data?.length,1);
+const tagsAfterNested=originalCharTags(taggedId);
+assert.ok(tagsAfterNested.includes("profession:astrologer"));
+assert.ok(tagsAfterNested.includes("campaign:keepers"));
+assert.ok(tagsAfterNested.includes("player-character"));
+console.log("PASS J127 signed-in sheet update runs original nested tag-sync (trigger depth>1), preserving campaign tags");
+
+const noopTags=originalCharTags(taggedId);
+const noopWrite=await signedTagUpdate(people.PLAYER.client,taggedId,noopTags);
+assert.ifError(noopWrite.error);
+assert.equal(noopWrite.data?.length,1);
+assert.deepEqual(originalCharTags(taggedId),noopTags);
+console.log("PASS J128 same-value signed-in UPDATE is valid under original IS DISTINCT FROM guard");
+
+sql("INSERT INTO public.character_permissions(character_id,user_id,can_inventory,can_edit,can_convert)"
+ +" VALUES('"+taggedId+"','"+uid("ADMIN")+"',true,true,false)"
+ +" ON CONFLICT(character_id,user_id) DO UPDATE SET can_edit=true");
+const gmChoiceTags=[...originalCharTags(taggedId),"campaign:gm-approved"];
+const approvedAdmin=await signedTagUpdate(people.ADMIN.client,taggedId,gmChoiceTags);
+assert.ifError(approvedAdmin.error);
+assert.equal(approvedAdmin.data?.length,1);
+assert.ok(originalCharTags(taggedId).includes("campaign:gm-approved"));
+console.log("PASS J129 real Admin JWT with explicit editor access changes player-character campaign tags");
+
+const outsiderEdit=await signedTagUpdate(people.OUTSIDER.client,taggedId,
+ [...gmChoiceTags,"campaign:outsider"]);
+assert.ifError(outsiderEdit.error);
+assert.equal(outsiderEdit.data?.length,0,"Outsider reached player-character tag mutation");
+assert.ok(!originalCharTags(taggedId).includes("campaign:outsider"));
+console.log("PASS J130 separate GoTrue outsider JWT cannot update guarded character under local editor RLS");
+
+const anonEdit=await signedTagUpdate(makeClient(),taggedId,
+ [...gmChoiceTags,"campaign:anonymous"]);
+assert.ok(anonEdit.error,"Anon unexpectedly granted tags UPDATE");
+assert.ok(!originalCharTags(taggedId).includes("campaign:anonymous"));
+console.log("PASS J131 anonymous role denied characters UPDATE in reduced fixture");
+
+const tagResourceBeforeRevocation=originalTagResources(taggedId);
+sql("UPDATE public.character_permissions SET can_edit=false WHERE character_id='"+taggedId+"' AND user_id='"+uid("PLAYER")+"'");
+const revokedEditor=await signedTagUpdate(people.PLAYER.client,taggedId,
+ [...gmChoiceTags,"campaign:revoked"]);
+assert.ifError(revokedEditor.error);
+assert.equal(revokedEditor.data?.length,0,"Revoked editor must see no writable row");
+assert.deepEqual(originalTagResources(taggedId),tagResourceBeforeRevocation);
+sql("UPDATE public.character_permissions SET can_edit=true WHERE character_id='"+taggedId+"' AND user_id='"+uid("PLAYER")+"'");
+console.log("PASS J132 revoked editor denied via local RLS with no additional G/GI/I/C/CP/CS side effects");
+console.log("PASS LOCAL REAL GoTrue J00-J132: original characters player-tags guard and nested sync. Production RLS, full 31-trigger coverage and browser acceptance NOT PROVEN.");
