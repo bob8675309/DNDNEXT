@@ -5,6 +5,8 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { createClient } from "@supabase/supabase-js";
+import { loadManifest, runSeededForgeScenarios } from "./agents/forge_seeded_scenarios.mjs";
+import { mkdirSync, writeFileSync } from "node:fs";
 const e=process.env;
 for(const [key,value] of Object.entries({
  GITHUB_ACTIONS:"true",CI:"true",
@@ -2261,3 +2263,75 @@ assert.equal(pass(await call3(people.OUTSIDER.client,xChampionV3,[]),
  "immutable v3 Champion retry"),xChampionV3Id);
 console.log("PASS J153 real v3->v2 signed Forge path runs original subclass trigger at level 3 and retains a single immutable character");
 console.log("PASS LOCAL REAL GoTrue J00-J153: source-original Forge subclass BEFORE INSERT, positive/negative XPHB/PHB and original nonce. Production RLS, complete source catalogs and browser UNVERIFIED.");
+
+
+// S001-S003: bounded reusable deterministic seed contract. This runs only
+// AFTER successful existing J00-J153 in the SAME real local JWT/PG17 process.
+// It does not replace original handler bodies or bypass signed-in PostgREST.
+const scenarioSnapshot=(cid)=>{
+ assert.match(cid,/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i);
+ const where="'"+cid+"'";
+ const tables={
+  characters:"SELECT count(*) FROM public.characters WHERE id="+where,
+  sheets:"SELECT count(*) FROM public.character_sheets WHERE character_id="+where,
+  progression:"SELECT count(*) FROM public.character_progression WHERE character_id="+where,
+  events:"SELECT count(*) FROM public.character_level_events WHERE character_id="+where,
+  grants:"SELECT count(*) FROM public.character_option_grants WHERE character_id="+where,
+  instances:"SELECT count(*) FROM public.character_option_grant_instances WHERE character_id="+where,
+  items:"SELECT count(*) FROM public.inventory_items WHERE owner_id="+where,
+  currency:"SELECT count(*) FROM public.character_currency WHERE character_id="+where
+ };
+ const counts=JSON.parse(sql("SELECT jsonb_build_object("+
+  Object.entries(tables).map(([key,q])=>"'"+key+"',("+q+")").join(",")+")::text"));
+ const sourceAndActor=JSON.parse(sql(
+  "SELECT jsonb_build_object("+
+  "'classKey',cc.class_key,'classSource',cc.source,'level',cp.class_level,"+
+  "'subclassName',cp.subclass_name,'subclassSource',cp.subclass_source,"+
+  "'creatorVerified', EXISTS(SELECT 1 FROM private.character_creator_attribution ca "+
+  "WHERE ca.character_id=cp.character_id AND ca.creator_user_id='"+uid("PLAYER")+"'))::text "+
+  "FROM public.character_progression cp JOIN public.class_catalog cc ON cc.id=cp.class_id "+
+  "WHERE cp.character_id="+where));
+ const rows=[
+  ["characters","id"],["character_sheets","character_id"],
+  ["character_progression","character_id"],["character_level_events","character_id"],
+  ["character_option_grants","character_id"],["character_option_grant_instances","character_id"],
+  ["character_class_option_grant_instances","character_id"],["character_spells","character_id"],
+  ["inventory_items","owner_id"],["character_currency","character_id"]
+ ];
+ const fingerprint=sql("SELECT md5(jsonb_build_object("+
+  rows.map(([table,key])=>"'"+table+"',(SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text),'[]'::jsonb) "+
+  "FROM public."+table+" t WHERE t."+key+"="+where+")").join(",")+
+  ")::text)");
+ return {
+  counts,
+  source:{
+   classKey:sourceAndActor.classKey,
+   classSource:sourceAndActor.classSource,
+   level:sourceAndActor.level,
+   subclassName:sourceAndActor.subclassName,
+   subclassSource:sourceAndActor.subclassSource
+  },
+  editorAuthenticated:sourceAndActor.creatorVerified,
+  fingerprint
+ };
+};
+const seededReport=await runSeededForgeScenarios(loadManifest(),{
+ originalSourceHash:()=>sql(
+  "SELECT md5(pg_get_functiondef('private.apply_character_forge_subclass_choice_v1()'::regprocedure))"),
+ makePayload:(casePlan)=>subclassDraft(
+  casePlan.name,casePlan.requestId,casePlan.source.level,
+  casePlan.source.subclassName,casePlan.source.subclassSource),
+ rpc:(casePlan,payload)=>casePlan.rpc==="create_player_character_v2"
+  ? call2(people.PLAYER.client,payload)
+  : call3(people.PLAYER.client,payload,[]),
+ snapshot:scenarioSnapshot,
+ globalCounts:()=>JSON.parse(speciesAbortCounts()),
+ hasReservation:(nonce)=>sql(
+  "SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+nonce+"'")!=="0"
+});
+mkdirSync("research-agent-artifact",{recursive:true});
+writeFileSync("research-agent-artifact/FORGE_SEEDED_SCENARIOS.json",
+ JSON.stringify(seededReport,null,2)+"\n","utf8");
+assert.equal(seededReport.cases.length,3);
+assert.equal(seededReport.baseline,"existing-J00-J153-passed-in-same-process");
+console.log("PASS SEEDED S001-S003 signed-in XPHB Fighter/Champion v2/v3 creation, distinct-seed identity, identical replay, changed-intent rejection and source handler rollback; sanitized JSON report saved. Full production permissions and browser UNVERIFIED.");
