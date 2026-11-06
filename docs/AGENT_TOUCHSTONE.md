@@ -3,6 +3,8 @@
 > **Stable navigation page, not a running chat or a deployed developer agent.**
 > This page is maintained as an entry point in the separate `docs/agent-status` archive branch. It links to generated source snapshots and the actual GitHub PRs; the linked evidence must be reverified at the time of use.
 > **No paid OpenAI API calls, production SQL, gameplay changes, merges, or Vercel previews are authorized by this page.**
+>
+> **Free consolidated project-health snapshot:** [Current GitHub PR/CI and documentation checks](https://github.com/bob8675309/DNDNEXT/blob/docs/agent-status/docs/PROJECT_HEALTH.generated.md). This is a time-stamped status at the LAST OWNER RESEARCH PUSH, not continuous CI streaming; always verify the latest exact-head GitHub runs. Work stays ON DEMAND for difficult investigations, never scheduled during the prototype stage.
 
 ## 1. Start a new development conversation here
 
