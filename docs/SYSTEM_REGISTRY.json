@@ -51,8 +51,14 @@
       "tests": [
         "scripts/validate_unified_character_forge.mjs"
       ],
-      "last_checked": "2026-11-01",
+      "last_checked": "2026-11-05",
       "open_gaps": [
+        "2026-11-05 draft #324 J117–J124 genuine local JWT positive Aasimar Light Bearer -> XPHB Light source spell under original materializer; five original helper MD5s and exact trait/specimen; v3 signed I/C/S/nonce/rejection atomicity. Pending exact-head CI. Source fixed-CHA species casting_stat may persist NULL (release gap). Reduced spell preference/full triggers/browser remain. docs/Forge_Aasimar_Light_Bearer_Positive_Source_2026-11-05.md",
+        "2026-11-05 held draft #324 J109–J116 source-positive XPHB Warlock level1 Invocation class grant under original signed v3 + hardened inventory review candidate; exact source armor of shadows/eldritch mind/Devils Sight and slot helpers, original G/GI/I/C/stock/nonce negative guards. Pending exact-head JWT CI; not full spells/31-trigger/browser. docs/Forge_Warlock_Invocation_Positive_Source_2026-11-05.md",
+        "2026-11-05 held #324 J103–J108: original source-exact CP class option, source magic and starting-magic exactness triggers staged with original deferred timing in disposable PG17; valid Fighter v2/v3 and negative owner-authz tests pending CI. 31 live original triggers total; incomplete specialist triggers/Warlock/source magic positive/browser/lock-order release gates. docs/Forge_High_Risk_Progression_Trigger_Parity_2026-11-05.md",
+        "2026-11-05 held draft #324: J85–J93 source-original JWT RLS+obsolete CHECK acceptance passed exact head 5417dde7 [Actions 42140111002]; J94–J102 source-original v3 market S/I/C and merchant purchase under candidate pending exact-head CI; main UI static contract verified but browser/31 original creation trigger full parity not accepted. docs/Forge_V3_Source_Market_Inventory_RLS_Research_2026-11-05.md",
+        "2026-11-05: verified J78–J84 authenticated Forge gear COMMIT 23514 caused by obsolete inventory owner CHECK. J85–J93 pending true-JWT review-only combined four RLS policy + obsolete CHECK candidate on #324; no production migration, full 31 original triggers or browser acceptance. docs/Forge_Character_Inventory_Owner_Check_RLS_Release_Review_2026-11-05.md",
+        "2026-11-05 J78-J84 candidate real JWT original v2 Forge creation+deferred COMMIT with conflicting live inventory owner CHECKs: obsolete NOT VALID inventory_items_owner_type_chk rejects new owner_type=character; staged negative 23514 + scratch-only remove/re-add cause-control; CI PENDING; full original triggers/RLS/browser still missing. docs/Forge_Original_Deferred_Creation_Owner_Check_2026-11-05.md",
         "Browser acceptance must be tied to specific scoped flows; not blanket proof of all source traits."
       ],
       "label": "Player/NPC character Forge",
@@ -138,7 +144,7 @@
       "tests": [
         "scripts/validate_merchant_crafted_pricing.mjs"
       ],
-      "last_checked": "2026-11-01",
+      "last_checked": "2026-11-05",
       "verification": {
         "source": "inspected-relevant-entry-points-on-main",
         "live_database": "market stock and alchemy catalog sampled",
@@ -148,6 +154,12 @@
         "owner_approval": "not-claimed-from-source-or-ci"
       },
       "open_gaps": [
+        "2026-11-05 draft #324 J117–J124 genuine local JWT positive Aasimar Light Bearer -> XPHB Light source spell under original materializer; five original helper MD5s and exact trait/specimen; v3 signed I/C/S/nonce/rejection atomicity. Pending exact-head CI. Source fixed-CHA species casting_stat may persist NULL (release gap). Reduced spell preference/full triggers/browser remain. docs/Forge_Aasimar_Light_Bearer_Positive_Source_2026-11-05.md",
+        "2026-11-05 held draft #324 J109–J116 source-positive XPHB Warlock level1 Invocation class grant under original signed v3 + hardened inventory review candidate; exact source armor of shadows/eldritch mind/Devils Sight and slot helpers, original G/GI/I/C/stock/nonce negative guards. Pending exact-head JWT CI; not full spells/31-trigger/browser. docs/Forge_Warlock_Invocation_Positive_Source_2026-11-05.md",
+        "2026-11-05 held #324 J103–J108: original source-exact CP class option, source magic and starting-magic exactness triggers staged with original deferred timing in disposable PG17; valid Fighter v2/v3 and negative owner-authz tests pending CI. 31 live original triggers total; incomplete specialist triggers/Warlock/source magic positive/browser/lock-order release gates. docs/Forge_High_Risk_Progression_Trigger_Parity_2026-11-05.md",
+        "2026-11-05 held draft #324: J85–J93 source-original JWT RLS+obsolete CHECK acceptance passed exact head 5417dde7 [Actions 42140111002]; J94–J102 source-original v3 market S/I/C and merchant purchase under candidate pending exact-head CI; main UI static contract verified but browser/31 original creation trigger full parity not accepted. docs/Forge_V3_Source_Market_Inventory_RLS_Research_2026-11-05.md",
+        "2026-11-05: original merchant buy remains user-owned I; proposed character-owner RLS/constraint change must regress player buy/sell, NPC/merchant transfer, town crafting and admin assignment. Signed J85–J93 partial tests pending. No production change.",
+        "2026-11-05: source-original merchant buyer I is user-owned vs Forge deferred I is character-owned; old overlapping NOT VALID CHECK blocks new character-owned rows, not necessarily merchant sales. J78-J84 scratch test pending; no global lock-order claim.",
         "Avoid changes to craft price formulas while refactoring combat or item-effect resolution."
       ],
       "protected_boundaries": [
@@ -422,7 +434,7 @@
       "tests": [
         "scripts/validate_security_hardening_roadmap.mjs"
       ],
-      "last_checked": "2026-11-01",
+      "last_checked": "2026-11-05",
       "verification": {
         "source": "inspected-relevant-entry-points-on-main",
         "live_database": "read-only security advisor and function definition",
@@ -432,6 +444,12 @@
         "owner_approval": "not-claimed-from-source-or-ci"
       },
       "open_gaps": [
+        "2026-11-05 draft #324 J117–J124 genuine local JWT positive Aasimar Light Bearer -> XPHB Light source spell under original materializer; five original helper MD5s and exact trait/specimen; v3 signed I/C/S/nonce/rejection atomicity. Pending exact-head CI. Source fixed-CHA species casting_stat may persist NULL (release gap). Reduced spell preference/full triggers/browser remain. docs/Forge_Aasimar_Light_Bearer_Positive_Source_2026-11-05.md",
+        "2026-11-05 held draft #324 J109–J116 source-positive XPHB Warlock level1 Invocation class grant under original signed v3 + hardened inventory review candidate; exact source armor of shadows/eldritch mind/Devils Sight and slot helpers, original G/GI/I/C/stock/nonce negative guards. Pending exact-head JWT CI; not full spells/31-trigger/browser. docs/Forge_Warlock_Invocation_Positive_Source_2026-11-05.md",
+        "2026-11-05 held #324 J103–J108: original source-exact CP class option, source magic and starting-magic exactness triggers staged with original deferred timing in disposable PG17; valid Fighter v2/v3 and negative owner-authz tests pending CI. 31 live original triggers total; incomplete specialist triggers/Warlock/source magic positive/browser/lock-order release gates. docs/Forge_High_Risk_Progression_Trigger_Parity_2026-11-05.md",
+        "2026-11-05 held draft #324: J85–J93 source-original JWT RLS+obsolete CHECK acceptance passed exact head 5417dde7 [Actions 42140111002]; J94–J102 source-original v3 market S/I/C and merchant purchase under candidate pending exact-head CI; main UI static contract verified but browser/31 original creation trigger full parity not accepted. docs/Forge_V3_Source_Market_Inventory_RLS_Research_2026-11-05.md",
+        "2026-11-05: releasing character-owned inventory by standalone DROP CHECK would expose existing direct auth inventory INSERT/UPDATE and user_id-only SELECT/DELETE to arbitrary or revoked character ownership. Four-policy combined guard candidate and original source current-access helper test J85–J93 pending CI; no production change. docs/Forge_Character_Inventory_Owner_Check_RLS_Release_Review_2026-11-05.md",
+        "2026-11-05 read-only: live inventory_items has two overlapping CHECKs; old NOT VALID excludes 'character' despite validated newer CHECK permitting it. Source original Forge deferred equipment requires 'character'. J78-J84 authentic JWT full creation test staged on #324, CI pending; no production constraint change authorized.",
         "Authorize or revoke each function only after caller, RLS, and intended access review."
       ],
       "protected_boundaries": [
@@ -521,6 +539,44 @@
         "No production SQL changes, grants, merge, or deployment without owner approval",
         "Do not change world-map travel/camping/weather or mix world/town and tactical maps"
       ]
+    },
+    {
+      "id": "prototype-project-health",
+      "status": "research-only",
+      "code_paths": [
+        ".github/workflows/research-docs-maintenance.yml",
+        "scripts/agents/project_health.mjs",
+        "scripts/agents/validate_project_health.mjs",
+        "scripts/agents/research_docs_maintainer.mjs",
+        "scripts/agents/validate_research_docs_maintainer.mjs",
+        "docs/Research_Docs_Maintenance_2026-11-06.md"
+      ],
+      "tests": [
+        "scripts/agents/validate_project_health.mjs",
+        "scripts/agents/validate_research_docs_maintainer.mjs"
+      ],
+      "last_checked": "2026-11-06",
+      "open_gaps": [
+        "Research branch only, not merged to main or deployed.",
+        "Only GitHub PR/CI/source-snapshot evidence; no production Supabase, Vercel SHA or browser verification.",
+        "Snapshots run on owner research pushes; workflows that complete after capture may display in progress until the next refresh.",
+        "Full original Forge table triggers, concurrency, privilege and source-catalog parity are separate release gates."
+      ],
+      "label": "Free prototype research project-health monitor",
+      "scope_note": "Prototype testing; Work is on-demand only. GitHub read-only PR, exact-sha run and docs data; atomic archive-only generated Markdown. No paid AI or production changes.",
+      "verification": {
+        "source": "source-checked-against-held-agent-and-forge-branches",
+        "live_database": "not-used",
+        "deployed_sha": "not-released-main-unchanged",
+        "test_status": "source-3a95cf2: Forge docs 42268108481, original trigger 42268117940, full JWT+PG17 42268118300 SUCCESS",
+        "browser_acceptance": "unverified",
+        "owner_approval": "owner-approved-no-extra-cost-project-health-prototype-automation; no merge"
+      },
+      "protected_boundaries": [
+        "Never edit main, protected world/town maps, live Supabase, player state or runtime code",
+        "Generated archive only: docs/research-status/*.generated.md and docs/PROJECT_HEALTH.generated.md",
+        "No paid Work schedule, Codex, API key, autonomous merging or Vercel deploy"
+      ]
     }
   ],
   "research": {
@@ -536,8 +592,39 @@
         "state": "open-draft-unmerged",
         "head_sha": "26d2f278b9e85e8fc0b0c04307b7a87bdd2e8254",
         "base": "work/eldritch-blast-los-regression-20261030"
+      },
+      {
+        "number": 324,
+        "state": "open-draft-unmerged",
+        "base": "research/p1-3-npc-profile-safe-rls-20261104",
+        "tested_source_sha": "2addc96496d399458ff6992b953b528e5384f03d",
+        "evidence": "Source original PostgreSQL17 and real GoTrue J00–J77 PASS run 42060615672: J65 40P01 with unchanged G/I; J73/J75 actual concurrent original merchant inventory INSERT stock/wallet debit; 4 items, 20 GP exact debit and no source Forge G/I mutation.",
+        "status_note": "Original 7/31 creation-adjacent trigger coverage; actual I merchant stock source writes verified but actual G grant row-write concurrency, production RLS and global P1.3 locks still open, no production changes."
       }
     ],
+    "forge_creation_replay_candidate": {
+      "policy": "Same creation_request_id and identical original character/spell intent is inert; altered intent is rejected and requires a new request",
+      "source": "sql/candidates/20261105_player_creation_immutable_intent_v1.sql",
+      "source_md5_v2": "0351f0a00acae023278e1b8b065b00c9",
+      "source_md5_v3": "6ba73e6f12fcf826cc0a739cce45ff40",
+      "test": "Original PG17 + genuine local GoTrue J00–J77 PASS at executable SHA 2addc96496d399458ff6992b953b528e5384f03d in GitHub Actions 42060615672, held draft #324; latest doc/source-gate heads require separate exact CI verification.",
+      "production_effects": "none",
+      "next_gate": "G actual signed-in original grant writer (public.grant_character_option_v1 live MD5 aa0f6a0c6c6a6f2b9aacf57bd40e434c or private.apply_character_level_advancement_v1 46dd0af4f6ca816422a75e91a292c634) versus original coeditor sheet/level-up with grant guards/current GM rights, rollback and replay; verify all original CP/CS/G/I/W/S locks/production RLS.",
+      "legacy_sheet_pr319": "Integrated ONE held PR319 preservation clause into source-pinned private v2; original live v2/fixture unchanged; alternate canonical sheets and account snapshot passed real JWT",
+      "deferred_equipment_source": "Seven of 31 original creation-adjacent triggers loaded in local PG17 fixture, 24 original omitted. Held #321 creator capture plus NEW verified creator seed are additional proposed triggers, not counted; five original grant-table hooks exercise Lucky limited path; RLS and equipment helpers reduced.",
+      "gap_matrix": "docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md",
+      "sheet_guard_and_tag_sync": "Original live functions and timing, 4 function source MD5 checks; 5 of 31 original triggers loaded with reduced editor RLS, not production.",
+      "deferred_progression_source": "Source-exact original validate_player_forge_authority_payload_v1 and original feat-instance, normalization, choice eligibility, source priority helpers and preferred-option views; J31-J38 real JWT PASS using synthetic Lucky/Defense catalogue. No original feat materializer yet.",
+      "feat_instance_persistence": "Original immediate materialize_player_forge_feat_instances_v1 source MD5 c27c4181a51cfd018bbb8244e9931550, exact canonical instance/aggregate grant tables, source-restricted local ACL and five original downstream grant triggers. J39–J48 PASS for Lucky feat persistence, idempotency and rollback; specialized feat families not tested.",
+      "source_provenance_gap": "Original source J39 emits NULL granted_by on both canonical feat tables despite eventual CP.created_by set. Read-only live 3/3 grant instances NULL while linked current CP creator non-NULL; only the new held candidate corrects new local Forge creation, not production. docs/Forge_Feat_Grant_Provenance_Gap_2026-11-05.md",
+      "creator_seed_candidate": "sql/candidates/20261105_forge_progression_verified_creator_seed_v1.sql — NEW unapplied BEFORE INSERT character_progression trigger; uses signed-in auth.uid + same-transaction held #321 immutable creator and Forge sheet marker, with source-unchanged immediate canonical feat materializer; J49–J62 real local Auth PASS, historical rows untouched.",
+      "creator_seed_design_report": "docs/Forge_Verified_Progression_Creator_Candidate_2026-11-05.md",
+      "p1_3_lock_order_cross_branch": "Original Admin F04 CP→CS vs CS→CP source 40P01 under scratch timings; NEW original player v5→v4→v3/base real signed owner vs signed coeditor CP/CS 40P01 under observed test-only CP prelock/CS hold at GitHub 42055043840, executable d09b3981f04ceceb09ff0a1489f589041a441164. Authentic outsider/revocation denial and Fighter lv1→2 accepted; no natural frequency or global G/I proof. #324 creator seed BEFORE INSERT does not fix v5 CP UPDATE inversion.",
+      "g_i_source_concurrency": "J63–J69 actual authenticated original source gear CP→CS vs coeditor original sync CS→CP yields 40P01 under test-only CP prelock/CS pause; canonical grant instances and aggregate G, I inventory and currency full hashes unchanged after abort and retries, revocation/replay preserved. G/I rows were materialized before contest; source gear already-materialized early return during race, not new G/I write contention. docs/Forge_GI_JWT_Source_Concurrency_2026-11-05.md Original actual I writes separately PASS J70–J77 through buy_from_merchant; no concurrent original G writes, and global CP/CS/G/I lock order still open.",
+      "g_i_race_report": "docs/Forge_GI_JWT_Source_Concurrency_2026-11-05.md",
+      "actual_inventory_writer_source": "public.buy_from_merchant(uuid,uuid,integer), live MD5 1dbe8c24c4c718396d7256f6f7465354, stored unchanged as scripts/fixtures/forge_original_merchant_buy_source_pg17.sql; JWT J70–J77 actual original stock FOR UPDATE, wallet update and inventory INSERT competing real buyers, atomically conserved 4 items and 20 GP with no leftover stock. Scratch wallet/recipe/RLS reduced.",
+      "actual_inventory_writer_report": "docs/Forge_Original_Merchant_Inventory_Concurrent_Writes_2026-11-05.md"
+    },
     "deployed": "No candidate executor, typed request intent migration, or new composable spell interpreter deployed at last check."
   },
   "live_safety_observations": {
