@@ -2393,15 +2393,15 @@ const unearnedPlan=spellCases[2],unearnedPayload=spellPayload(unearnedPlan);
 const beforeUnearned=speciesAbortCounts();
 const unearnedOutcome=await call2(people.PLAYER.client,unearnedPayload,spell(fire));
 assert.ok(unearnedOutcome.error,"J157 source original non-spellcaster unexpectedly accepted class cantrip");
-assert.match(unearnedOutcome.error.message||"",/This class does not grant starting spell choices at level 3\./i,
- "J157 must reach original deferred non-spellcaster starting-spell validator, not an unrelated rejection");
+assert.match(unearnedOutcome.error.message||"",/^Fire Bolt is not on the Fighter class spell list\.$/i,
+ "J157 existing source-original class-list guard must reject the noncaster before deferred trigger");
 assert.equal(speciesAbortCounts(),beforeUnearned,"J157 source class spell rejection leaked canonical changes");
 assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+unearnedPlan.requestId+"'"),"0");
 assert.equal(sql("SELECT count(*) FROM public.characters WHERE name='"+unearnedPlan.name+"'"),"0");
 reportCases.push({scenarioId:unearnedPlan.scenarioId,seed:unearnedPlan.seed,mode:unearnedPlan.mode,
- sourceHandlerMd5Verified:true,realSignedV2:true,sourceSpellDenialMatched:true,
- failedCreationRolledBack:true,nonceReservationAbsent:true});
-console.log("PASS J157 genuine signed Fighter3 class Fire Bolt denied by original deferred no-starting-spells source, atomic CP/CS/G/GI/I/C/nonce rollback");
+ sourceHandlerMd5Verified:true,realSignedV2:true,originalClassListGuardMatched:true,
+ deferredStartingSpellHandlerReached:false,failedCreationRolledBack:true,nonceReservationAbsent:true});
+console.log("PASS J157 genuine signed Fighter3 class Fire Bolt rejected by ORIGINAL EARLIER class-list guard, BEFORE deferred starting-spell handler; atomic CP/CS/G/GI/I/C/nonce rollback. Only J156 reaches the deferred source handler negative path.");
 
 writeFileSync("research-agent-artifact/FORGE_STARTING_SPELL_SCENARIOS.json",
  JSON.stringify({schemaVersion:1,suite:"forge-original-starting-spells-v1",
@@ -2413,4 +2413,4 @@ writeFileSync("research-agent-artifact/FORGE_STARTING_SPELL_SCENARIOS.json",
  limitations:["reduced local XPHB class catalogue/view and RLS; not full spellcaster coverage",
  "original handler unchanged; 16 other original triggers remain absent at baseline",
  "no live-production/browser/full prepared spell acceptance or rule-authority release"]},null,2)+"\n","utf8");
-console.log("PASS J154-J157 original source-starting-spell deferred trigger real GoTrue scope; report sanitized; production/browser/catalog completeness UNVERIFIED");
+console.log("PASS J154-J157: source-original deferred trigger installed/hashed, J155 positive + J156 negative original handler; J157 earlier class-list defense only. Real GoTrue, reduced catalog and RLS; production/browser UNVERIFIED.");
