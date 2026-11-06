@@ -1,0 +1,40 @@
+name: Validate free research documentation publisher (no AI)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/research-docs-maintenance.yml'
+      - '.github/workflows/validate-free-research-docs.yml'
+      - 'scripts/agents/research_docs_maintainer.mjs'
+      - 'scripts/agents/validate_research_docs_maintainer.mjs'
+      - 'scripts/agents/project_health.mjs'
+      - 'scripts/agents/validate_project_health.mjs'
+      - 'docs/Research_Docs_Maintenance_2026-11-06.md'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/research-docs-maintenance.yml'
+      - '.github/workflows/validate-free-research-docs.yml'
+      - 'scripts/agents/research_docs_maintainer.mjs'
+      - 'scripts/agents/validate_research_docs_maintainer.mjs'
+      - 'scripts/agents/project_health.mjs'
+      - 'scripts/agents/validate_project_health.mjs'
+permissions:
+  contents: read
+jobs:
+  publisher-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Verify source and no-paid/no-live constraints
+        run: |
+          set -euo pipefail
+          node --check scripts/agents/research_docs_maintainer.mjs
+          node --check scripts/agents/project_health.mjs
+          node scripts/agents/validate_research_docs_maintainer.mjs
+          node scripts/agents/validate_project_health.mjs

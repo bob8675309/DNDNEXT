@@ -1,5 +1,7 @@
 # DNDNext — Active Work Contract
 
+> **Research docs automation review (2026-11-06):** A separate candidate PR isolates the **free, GitHub-only** docs-status publisher from held #325. No Codex agent, model, Vercel change, Forge gameplay, production SQL or data is included. Its source/check contracts require their own exact-head CI and an observed future owner push before claiming ongoing publication. **The single next engineering task is still the seeded deterministic Forge scenario runner below.** Generated status never replaces authored `ACTIVE_WORK` / `HANDOFF_LOG` receipts.
+
 ## Owner-directed research continuation — verified handoff priority 2026-11-06
 
 **One current next engineering task (not implemented):** plan and implement the *first isolated, seeded deterministic scenario-runner slice* by reusing PR #324's existing PostgreSQL 17 / real local GoTrue/PostgREST authenticated Forge fixtures and J00–J153 regression cases. Start with a versioned scenario input/expected-output contract and no-model runner proof, not the next one-off missing trigger. Source-qualified 2024 XPHB-first creation and immutable replay must remain real server-authoritative tests rather than fake JS success. See [first-slice research plan](Deterministic_Scenario_Testing_Next_Phase_2026-11-06.md).
