@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "suite": "forge-player-source-seeded-v1",
+  "scenarios": [
+    {
+      "scenarioId": "champion-xphb-v2",
+      "seed": 61021,
+      "rpc": "create_player_character_v2",
+      "actor": "PLAYER",
+      "source": {
+        "classKey": "fighter",
+        "classSource": "XPHB",
+        "level": 3,
+        "subclassName": "Champion",
+        "subclassSource": "XPHB"
+      },
+      "negative": {
+        "changedSource": "PHB",
+        "invalidSubclass": "Purple Dragon",
+        "changedIntentSqlstate": "22023",
+        "invalidMessageContains": "The selected subclass Purple Dragon is not available for the fighter class"
+      },
+      "expectedCounts": {
+        "characters": 1,
+        "sheets": 1,
+        "progression": 1,
+        "events": 1,
+        "grants": 1,
+        "instances": 1,
+        "items": 1,
+        "currency": 1
+      }
+    },
+    {
+      "scenarioId": "champion-xphb-v3",
+      "seed": 61022,
+      "rpc": "create_player_character_v3",
+      "actor": "PLAYER",
+      "source": {
+        "classKey": "fighter",
+        "classSource": "XPHB",
+        "level": 3,
+        "subclassName": "Champion",
+        "subclassSource": "XPHB"
+      },
+      "negative": {
+        "changedSource": "PHB",
+        "invalidSubclass": "Purple Dragon",
+        "changedIntentSqlstate": "22023",
+        "invalidMessageContains": "The selected subclass Purple Dragon is not available for the fighter class"
+      },
+      "expectedCounts": {
+        "characters": 1,
+        "sheets": 1,
+        "progression": 1,
+        "events": 1,
+        "grants": 1,
+        "instances": 1,
+        "items": 1,
+        "currency": 1
+      }
+    }
+  ]
+}

@@ -1,5 +1,17 @@
 # DNDNext — Active Work Contract
 
+## 2026-11-06 — First deterministic seeded scenario runner (held Forge research continuation)
+
+**Current single next task after this candidate:** Verify the new seed contract and real local signed-in PostgreSQL 17/GoTrue replay/rollback scenarios at **this branch's exact head**, then review the normalized scenario report and any failures before expanding into one missing original trigger. Do NOT merge/release merely because static source validation passes.
+
+**Purpose / progress:** A separate continuation of draft [Forge PR #324](https://github.com/bob8675309/DNDNEXT/pull/324) now proposes a versioned, strict JSON seed manifest, pure reproducible compiler, no-cost offline schema validator and 3 additional post-J153 authenticated cases (v2, same-v2 with different seed, v3). The new cases call the **existing** real local GoTrue clients, `create_player_character_v2/v3` wrappers, and source-original Fighter Champion trigger through PostgREST. They assert original handler hash, XPHB-qualified source, CP/CS/G/GI/I/C one-row persistence, authenticated creator, byte-fingerprint inert replay, altered intent SQLSTATE 22023 and fresh invalid-subclass total rollback. Machine-readable output is sanitized (no user/token/character UUIDs) and uploaded with existing diagnostics.
+
+**Boundary:** This is not a parallel rules engine; `subclassDraft` and original PostgreSQL/catalogue data remain the authority. Fixture is a deliberately reduced source/permission test environment, not production RLS, full edition catalogue, or browser proof. J00-J153 remains intact and must pass before S001-S003. PR #321 privacy, #317 global locks, #324 missing 16 trigger DDL, #325 paid option remain held. No production SQL, API spend, Vercel preview or gameplay changes. See [focused implementation and gates](Forge_Seeded_Scenario_Runner_2026-11-06.md).
+
+**Closeout gate:** This is a candidate until exact-head CI supplies new green static + source PG17 + genuine GoTrue runs; record actual IDs/conclusions in the next factual log receipt, not guessed outcomes. The authored `ACTIVE_WORK` + append-only `HANDOFF_LOG` must both be updated on each substantial continuation.
+
+---
+
 > **Prototype automation policy (2026-11-06):** The site is pre-play; game content is test data, but shared Supabase records still require explicit isolated recovery boundaries. **ChatGPT Work remains on demand for difficult investigations only** (no scheduled Work). Draft Forge PR #324 is adding free GitHub-only [project-health reporting](https://github.com/bob8675309/DNDNEXT/blob/docs/agent-status/docs/PROJECT_HEALTH.generated.md) on owner pushes; this monitors exact GitHub PR/CI/source snapshots without rewriting game runtime or production DB. Do not call a source branch CI report a production or browser acceptance. [Authoritative source-bound Forge status](https://github.com/bob8675309/DNDNEXT/blob/docs/agent-status/docs/research-status/research-forge-immutable-creation-replay-20261105.generated.md) remains distinct.
 
 

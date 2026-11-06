@@ -50,6 +50,9 @@ on:
       - 'components/NpcPanel.js'
       - 'sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql'
       - 'scripts/test_forge_immutable_creation_replay_local_auth.mjs'
+      - 'scripts/agents/forge_seeded_scenarios.mjs'
+      - 'scripts/fixtures/forge_seeded_scenarios_v1.json'
+      - 'scripts/validate_forge_seeded_scenarios.mjs'
       - 'scripts/validate_forge_immutable_creation_replay.mjs'
   workflow_dispatch:
 permissions:
@@ -91,6 +94,9 @@ jobs:
         run: |
           node --check scripts/validate_forge_immutable_creation_replay.mjs
           node scripts/validate_forge_immutable_creation_replay.mjs
+          node --check scripts/agents/forge_seeded_scenarios.mjs
+          node --check scripts/validate_forge_seeded_scenarios.mjs
+          node scripts/validate_forge_seeded_scenarios.mjs
           node scripts/validate_unified_character_forge.mjs
           node scripts/validate_forge_inventory_ui_release_contract.mjs
       - name: Confirm unsafe original, then candidate replay contract in disposable PG17
@@ -125,6 +131,9 @@ jobs:
         run: |
           node --check scripts/test_forge_immutable_creation_replay_local_auth.mjs
           node scripts/validate_forge_immutable_creation_replay.mjs
+          node --check scripts/agents/forge_seeded_scenarios.mjs
+          node --check scripts/validate_forge_seeded_scenarios.mjs
+          node scripts/validate_forge_seeded_scenarios.mjs
       - name: Configure ephemeral local Supabase PostgreSQL17 and GoTrue
         run: |
           mkdir -p "$RUNNER_TEMP/forge-replay-local/supabase"
@@ -171,6 +180,7 @@ jobs:
           path: |
             research-agent-artifact/FORGE_JWT_DIAGNOSTICS.md
             research-agent-artifact/FORGE_JWT_DIAGNOSTICS.json
+            research-agent-artifact/FORGE_SEEDED_SCENARIOS.json
           if-no-files-found: warn
           retention-days: 3
       - name: Stop and destroy disposable local services
