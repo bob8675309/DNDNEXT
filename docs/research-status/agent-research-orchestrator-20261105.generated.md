@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/research-orchestrator-20261105` |
-| Exact source commit represented by this archive snapshot | `1726549ac5640664ba32f2c2d3300bb4fa645a8b` |
+| Exact source commit represented by this archive snapshot | `e832d807d1b4a8a7dc98d60e1a22706b84518dea` |
 | Compared with | `51c351a142d03378dff8e47e05182afe21a15622` (main comparison base) |
-| Last source commit title | fix(docs): match handoff registry allowed research status and tracked test paths |
-| Files changed relative to main | 20 (10 non-docs; 10 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | docs(agent): add stable cross-chat DNDNext touchstone and safety guard |
+| Files changed relative to main | 21 (10 non-docs; 11 docs) |
+| Last source commit | 7 files (2 non-docs; 5 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,13 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/SYSTEM_REGISTRY.json`
+- `.github/workflows/validate-dndnext-research-agent.yml`
+- `docs/AGENT_TOUCHSTONE.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/README.md`
+- `docs/Research_Docs_Maintenance_2026-11-06.md`
+- `docs/START_HERE_ACTIVE_HANDOFF.md`
+- `scripts/agents/validate_research_agent.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -26,6 +32,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `.github/workflows/research-docs-maintenance.yml`
 - `.github/workflows/validate-dndnext-research-agent.yml`
 - `docs/ACTIVE_WORK.md`
+- `docs/AGENT_TOUCHSTONE.md`
 - `docs/DNDNext_Agent_Opportunities_Audit_2026-11-05.md`
 - `docs/DNDNext_Research_Agent_Setup.md`
 - `docs/HANDOFF_LOG.md`
