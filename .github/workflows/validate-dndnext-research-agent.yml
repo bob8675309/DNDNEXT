@@ -54,6 +54,7 @@ jobs:
           echo "Held Forge PR #324 SHA: $(git -C target rev-parse HEAD)"
           node --check scripts/agents/forge_trigger_audit.mjs
           node scripts/agents/forge_trigger_audit.mjs target
+          node target/scripts/agents/forge_trigger_acceptance_ledger.mjs target research-agent-artifact
       - name: Upload read-only coverage report (no API/model invocation)
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

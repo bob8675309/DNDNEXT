@@ -84,6 +84,9 @@ jobs:
       - name: Read-only original Forge trigger coverage (no API cost)
         if: inputs.suite == 'forge-triggers'
         run: node scripts/agents/forge_trigger_audit.mjs target
+      - name: Reconcile actual checked-out Forge JWT receipt ledger
+        if: inputs.suite == 'forge-triggers'
+        run: node target/scripts/agents/forge_trigger_acceptance_ledger.mjs target research-agent-artifact
       - name: Baseline bounded static test
         id: baseline
         run: node scripts/agents/research_agent.mjs check

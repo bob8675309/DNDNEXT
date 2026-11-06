@@ -102,9 +102,12 @@ assert.equal(workflow.split("uses: openai/codex-action@").length-1,1,"Exactly on
 assert.ok(workflow.includes("RUN_AUDIT") && workflow.includes("forge-triggers"),"Missing free manual Forge trigger audit");
 assert.ok(workflow.includes("if: inputs.confirmation == 'RUN_RESEARCH'"),"Paid model invocation must be manually gated");
 assert.ok(workflow.includes("forge_trigger_audit.mjs target"),"Missing source-grounded trigger audit invocation");
+assert.ok(workflow.includes("target/scripts/agents/forge_trigger_acceptance_ledger.mjs target"),"Missing Forge JWT receipt reconciliation");
 assert.ok(!workflow.includes("max_passes:") && !workflow.includes("SECOND_PASS_OK"));
 const freeWorkflow = readFileSync(path.join(ROOT,".github/workflows/validate-dndnext-research-agent.yml"),"utf8");
 assert.ok(freeWorkflow.includes("pull_request:") && freeWorkflow.includes("contents: read"));
+assert.ok(freeWorkflow.includes("target/scripts/agents/forge_trigger_acceptance_ledger.mjs target"),"Cross-PR no-cost evidence check missing");
+assert.ok(!freeWorkflow.includes("checkout@11d5960a326750d5838078e36cf38b85af683"),"Nonresolving checkout pin");
 assert.ok(!freeWorkflow.includes("openai/codex-action@v1"),"No paid model in automatic PR validation");
 const prompt = readFileSync(path.join(ROOT,".github/codex/prompts/dndnext-research-agent.md"),"utf8");
 assert.ok(prompt.includes(".agent-input/REQUEST.md"));

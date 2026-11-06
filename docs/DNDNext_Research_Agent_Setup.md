@@ -4,7 +4,7 @@
 
 ## Scope and authority
 
-The research agent is a **developer-side GitHub Actions tool**, entirely separate from the future **in-game local-first Actor AI** in [DNDNEXT_AI_INTEGRATION_FOUNDATION.md](DNDNEXT_AI_INTEGRATION_FOUNDATION.md). It can read a chosen existing \`research/*\` or \`agent/*\` branch, inspect optional **failed** GitHub Actions logs, carry out a single bounded research/test task, make at most two Codex attempts in a GitHub runner workspace, rerun one local Node source validator, and upload a human-review patch artifact. It does **not** auto-push, merge, open a PR, run live SQL, deploy, write production data, or turn on gameplay AI.
+The research agent is a **developer-side GitHub Actions tool**, entirely separate from the future **in-game local-first Actor AI** in [DNDNEXT_AI_INTEGRATION_FOUNDATION.md](DNDNEXT_AI_INTEGRATION_FOUNDATION.md). It can read a chosen existing \`research/*\` or \`agent/*\` branch, inspect optional **failed** GitHub Actions logs, carry out a single bounded research/test task, make one paid Codex invocation in a GitHub runner workspace, rerun one local Node source validator, and upload a human-review patch artifact. It does **not** auto-push, merge, open a PR, run live SQL, deploy, write production data, or turn on gameplay AI.
 
 **PR branch:** \`agent/research-orchestrator-20261105\` (to be checked at creation).
 **Runtime:** \`.github/workflows/dndnext-research-agent.yml\` using official \`openai/codex-action@v1\`, \`scripts/agents/research_agent.mjs\`, and \`.github/codex/prompts/dndnext-research-agent.md\`. No automatic \`schedule\`, \`workflow_run\`, \`pull_request_target\`, issue-comment trigger, or background AI cost. A separate **free static validator** \`.github/workflows/validate-dndnext-research-agent.yml\` runs on a relevant pull request (no key).
@@ -74,3 +74,11 @@ This is an audit of original trigger **DDL coverage**, not a source-body parity 
 - A subsequent Forge PR #324 draft commit `c616209ced727f04cff06923ba9b2237a9c59bd4` stages unchanged original portrait-library sync and signed-in **J133–J141**. That set of tests requires its *own* exact-head success before counting authenticated acceptance. DDL audit is expected to see 14/31 installed, 17 absent if its original definition matches.
 - The bot's **free** cross-branch PR workflow will independently audit PR #324's newest DDL when this receipt is committed to PR #325; no paid model run or API key.
 - **Next single step:** verify J133–J141 exact-head authenticated PG17/GoTrue outcomes; diagnose original source/fixture discrepancies without changing deployed code. Both PRs remain held and draft.
+
+## 2026-11-06 no-cost Forge acceptance automation update
+
+- Forge PR #324 now runs `forge-trigger-acceptance-audit.yml` automatically on relevant PR file changes. [Successful run 42221162716](https://github.com/bob8675309/DNDNEXT/actions/runs/42221162716) on `0852c693eba4508420d4e512a1e44ee058e7193d` reported 14/31 original trigger DDL staged, 17 missing, 0 mismatch and **two individual targeted real-JWT acceptance receipts**.
+- Existing true-local PostgreSQL17/GoTrue J00–J141 tests continue unchanged; the full JWT workflow now provides metadata-only failure classification, without uploading raw secret-bearing logs.
+- The agent's free PR audit reads the **actual target checkout's** acceptance ledger alongside its separate historical DDL audit. This does not perform paid AI research. Manual workflow code stays draft until reviewed/merged to default branch.
+- The formerly unresolved checkout-action revision is replaced with resolvable pinned v4.2.2. One Codex invocation exists behind `RUN_RESEARCH`; no automatic paid retry loop is active.
+- Project-level Vercel previews were temporarily disabled to avoid research-branch deployment consumption. The proposed narrow branch exclusion remains unmerged; production and previous preview URLs are unaffected.
