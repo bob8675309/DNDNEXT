@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/forge-starting-spells-seeded-20261106` |
-| Exact source commit represented by this archive snapshot | `16ebd9ba1b952d8f21505c91782d0d18aa0c8263` |
+| Exact source commit represented by this archive snapshot | `5ab887fe9293fcf0cb4c67eee62ec43949b5e01a` |
 | Compared with | `51c351a142d03378dff8e47e05182afe21a15622` (main comparison base) |
-| Last source commit title | docs(forge): record exact-head seeded JWT acceptance and enforce focused doc retest |
-| Files changed relative to main | 91 (66 non-docs; 25 docs) |
-| Last source commit | 4 files (1 non-docs; 3 authored docs) |
+| Last source commit title | test(forge): stage exact original deferred starting-spell handler with seeded JWT cases |
+| Files changed relative to main | 96 (70 non-docs; 26 docs) |
+| Last source commit | 9 files (6 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -19,8 +19,13 @@ The latest source commit includes authored documentation. Verify correctness and
 
 - `.github/workflows/validate-forge-immutable-creation-replay.yml`
 - `docs/ACTIVE_WORK.md`
-- `docs/Forge_Seeded_Scenario_Runner_2026-11-06.md`
+- `docs/Forge_Seeded_Starting_Spells_2026-11-06.md`
 - `docs/HANDOFF_LOG.md`
+- `scripts/fixtures/forge_seeded_starting_spells_v1.json`
+- `scripts/fixtures/forge_starting_spells_local_auth_pg17.sql`
+- `scripts/fixtures/forge_starting_spells_original_pg17.sql`
+- `scripts/test_forge_immutable_creation_replay_local_auth.mjs`
+- `scripts/validate_forge_seeded_starting_spells.mjs`
 
 ## Research-branch change inventory versus main
 
@@ -40,6 +45,7 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/Forge_Original_Deferred_Creation_Owner_Check_2026-11-05.md`
 - `docs/Forge_Original_Merchant_Inventory_Concurrent_Writes_2026-11-05.md`
 - `docs/Forge_Seeded_Scenario_Runner_2026-11-06.md`
+- `docs/Forge_Seeded_Starting_Spells_2026-11-06.md`
 - `docs/Forge_Subclass_Original_Acceptance_2026-11-06.md`
 - `docs/Forge_V3_Source_Market_Inventory_RLS_Research_2026-11-05.md`
 - `docs/Forge_Verified_Progression_Creator_Candidate_2026-11-05.md`
@@ -73,14 +79,13 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/fixtures/forge_creator_trigger_original_stage3_pg17.sql`
 - `scripts/fixtures/forge_equipment_validator_local_auth_extension_pg17.sql`
 - `scripts/fixtures/forge_equipment_validator_original_pg17.sql`
-- `scripts/fixtures/forge_feat_materializer_discriminators_original_pg17.sql`
-- … 41 more
+- … 46 more
 
 ## Forge source and authenticated evidence (branch-local only)
 
 | Original trigger census | Staged DDL | Missing DDL | Mismatched definitions | Explicit targeted JWT receipts |
 |---:|---:|---:|---:|---:|
-| 31 | 15 | 16 | 0 | 3 |
+| 31 | 16 | 15 | 0 | 3 |
 
 A staged definition is **not** a full source-body, JWT, COMMIT, concurrency, production RLS or browser acceptance claim.
 - `character_progression_apply_forge_subclass_v1`: `J142-J153` at independently verified `29d8700ead5db3a7f2292aa6f9be8eb3b859471c` ([CI run](https://github.com/bob8675309/DNDNEXT/actions/runs/42223567299)). Original BEFORE INSERT subclass choice; genuine signed v2/v3 JWT, explicit XPHB/PHB, level-3 denial, rollback/replay. Reduced Fighter catalog/RLS. Source-omitted Champion selected PHB in fixture; 2024 source precedence unresolved.
