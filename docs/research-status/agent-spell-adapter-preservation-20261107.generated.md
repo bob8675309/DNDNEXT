@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/spell-adapter-preservation-20261107` |
-| Exact source commit represented by this archive snapshot | `585d87db23c4b1470de73eba720be7a9e599728e` |
+| Exact source commit represented by this archive snapshot | `89e74c1c1108b564e9ff83b56c595d4218c3a359` |
 | Compared with | `2d2135ced24bcb4fbb4d8ccefc27bda70e91eb05` (main comparison base) |
-| Last source commit title | docs(research): append actual failing-then-passing CI receipt and release limits |
+| Last source commit title | docs(research): record composable pivot, Acid Splash held taxonomy mismatch and multiclass scaling audit risk |
 | Files changed relative to main | 7 (4 non-docs; 3 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `scripts/data/tactical_spell_preservation_20261107.json`
 
 ## Research-branch change inventory versus main
 
