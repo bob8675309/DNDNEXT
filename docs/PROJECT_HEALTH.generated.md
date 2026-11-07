@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-07T17:30:28Z | agent/forge-warlock-react-choice-ui-j169-20261107 (19d7275d24d26f9641c9e6d98ea24cf9431f4d81) | dbc7006919f35c8f7b12921bf468c4f949ca77ad |
+| 2026-11-07T18:14:56Z | research/forge-isolated-source-tests-20261107 (1ccde22f57c37dfed2e26473e8f28b11f639c8db) | 1ccde22f57c37dfed2e26473e8f28b11f639c8db |
 
 ## Exact PR heads and latest captured GitHub Actions
 
@@ -67,7 +67,9 @@
 - These statuses are a **time-stamped snapshot**. When CI finishes afterward, view the live PR and GitHub Actions; no continuous polling is claimed.
 - No production SQL, deployment, automatic merge, protected map edits or paid model calls are authorized.
 
-## Safe next research task
+## Owner-current task: do not infer it from this snapshot
 
-If a CI check fails, diagnose its exact source SHA first; otherwise select ONE unverified original Forge trigger for isolated, source-exact signed-JWT fixtures, update the authored handoff and retain separate lock-order gates.
+- **START HERE:** [NEXT_CHAT_START_HERE.md](https://github.com/bob8675309/DNDNEXT/blob/main/docs/NEXT_CHAT_START_HERE.md), then [ACTIVE_WORK.md](https://github.com/bob8675309/DNDNEXT/blob/main/docs/ACTIVE_WORK.md) and its last HANDOFF_LOG receipt. Those human-authored files, with live PR HEAD/CI, control the current owner task.
+- This free collector intentionally queries only **four anchor PRs: #317, #321, #324, #325**. It does **not** summarize newer stacked Forge #328–#335, Spell Engine #309/#312, or every open PR. Use the [workstream dependency index](https://github.com/bob8675309/DNDNEXT/blob/main/docs/WORKSTREAMS_AND_PR_DEPENDENCIES.md) and current GitHub.
+- A previous generated next-trigger recommendation was a **historical 2026-11-06 research checkpoint**, not an instruction to override newer owner directions. No automatic priority selection, paid model calls, continuous monitoring, gameplay, deployment or production SQL are performed by this publisher.
 
