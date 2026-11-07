@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/spell-adapter-preservation-20261107` |
-| Exact source commit represented by this archive snapshot | `6858f2a9bda25d58f8505f48246d1e4bde91b4fd` |
+| Exact source commit represented by this archive snapshot | `00026995e3e5e7b162fd8ada99f7591223da3642` |
 | Compared with | `2d2135ced24bcb4fbb4d8ccefc27bda70e91eb05` (main comparison base) |
-| Last source commit title | test(preservation): pin all 48 original validation entries without blocking future additions |
+| Last source commit title | test(preservation): pin original 19 keys and all 48 validator identities; preserve positive and negative CI evidence |
 | Files changed relative to main | 7 (4 non-docs; 3 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/data/tactical_spell_preservation_20261107.json`
+- `scripts/validate_tactical_spell_preservation.mjs`
 
 ## Research-branch change inventory versus main
 
