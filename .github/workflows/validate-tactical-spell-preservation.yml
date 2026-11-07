@@ -11,6 +11,9 @@ on:
       - "sql/**"
       - "docs/Tactical_Encounter_Phase1*_Status.md"
       - "docs/Deployed_Tactical_Spell_Effects_Smoke_Recovery_2026-11-07.md"
+      - "docs/ACTIVE_WORK.md"
+      - "docs/HANDOFF_LOG.md"
+      - "docs/Tactical_Spell_Adapter_Preservation_Gate_2026-11-07.md"
   pull_request:
     paths:
       - ".github/workflows/validate-tactical-spell-preservation.yml"
@@ -22,6 +25,9 @@ on:
       - "sql/**"
       - "docs/Tactical_Encounter_Phase1*_Status.md"
       - "docs/Deployed_Tactical_Spell_Effects_Smoke_Recovery_2026-11-07.md"
+      - "docs/ACTIVE_WORK.md"
+      - "docs/HANDOFF_LOG.md"
+      - "docs/Tactical_Spell_Adapter_Preservation_Gate_2026-11-07.md"
   workflow_dispatch:
 
 permissions:
