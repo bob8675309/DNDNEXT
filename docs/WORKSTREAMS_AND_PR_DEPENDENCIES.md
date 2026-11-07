@@ -1,10 +1,12 @@
 # DNDNext — Live PR dependency map and closeout queue
 
-**Owner-reconciled November 7, 2026; dated, not continuously monitored.** Re-fetch actual GitHub PR HEAD/base/mergeability/CI on each action. [NEXT_CHAT_START_HERE](NEXT_CHAT_START_HERE.md) defines the single current task, [ACTIVE_WORK](ACTIVE_WORK.md) identifies its phase, and [C0–C5 closeout plan](PHASE_CLOSEOUT_AND_PR_CONSOLIDATION_ORDER_2026-11-07.md) defines ordered work. This replaces a prior "build the 19-spell checker" instruction, because its source already exists on held #337.
+**Owner-reconciled November 7, 2026; dated, not continuously monitored.** Re-fetch actual GitHub PR HEAD/base/mergeability/CI on each action. [NEXT_CHAT_START_HERE](NEXT_CHAT_START_HERE.md) defines the single current task, [ACTIVE_WORK](ACTIVE_WORK.md) identifies its phase, and [C0–C5 closeout plan](PHASE_CLOSEOUT_AND_PR_CONSOLIDATION_ORDER_2026-11-07.md) defines ordered work. This replaces the old per-spell checker and C2 reproducer queues; #337 is **merged**, C3.0 inventoried all held PRs.
 
 ## ONE current task
 
-**C3 / P1.3:** Build a read-only PR/file/CI consolidation crosswalk for held Forge [#324→#335](https://github.com/bob8675309/DNDNEXT/pull/335), NPC privacy [#321→#323](https://github.com/bob8675309/DNDNEXT/pull/323) plus #320 Profile-first, and P1.3 security [#317](https://github.com/bob8675309/DNDNEXT/pull/317). Preserve original source/unique JWT fixture evidence and name clean-main destinations. **C1 source baseline merged #337**; **C2 signed original v2 J79 + v3 J79B 23514 reproduce and scratch RLS/CHECK candidate passed**, [#335 CI 42396598675](https://github.com/bob8675309/DNDNEXT/actions/runs/42396598675). C2 *production migration* remains unapproved; **never drop old inventory CHECK alone**. See [C2 report](C2_FORGE_CONSTRAINT_AND_RLS_CLOSEOUT_2026-11-07.md). Do not merge or close held research without owner approval.
+**C3.0 COMPLETE** — [file-by-file 19-PR source/CI/ancestry audit](C3_RESEARCH_PR_CONSOLIDATION_CROSSWALK_2026-11-07.md), with full nine-Forge and ten-other-pr per-file inventories under `docs/evidence/`. Active **C3.1**: build a minimal, dependency-closed **Forge-only original-source disposable test** branch from *latest main*, extracting source-verified fixtures and GoTrue/PG17/isolated Chromium J169 acceptance out of held [#324→#335](https://github.com/bob8675309/DNDNEXT/pull/335). Do not import outdated #321 NPC secrets, do not replace the newer #322/#323 secure `NpcPanel.js`, and do not overwrite canonical handoff files. No held research PR merge/closure, live SQL/role changes or paid AI authorized. [C2 proof](C2_FORGE_CONSTRAINT_AND_RLS_CLOSEOUT_2026-11-07.md) remains a **non-installed** RLS+constraint fix candidate.
+
+**Overlaps verified:** #320's 11/13 UI files are byte-identical to #323; #323's secure NpcPanel differs. #335 inherits #321's **older** stage3 secrets SQL and its validation/test, not #322's revised security code. #317 is `mergeable_state=dirty` despite 10 green workflows and needs selectively extracted source tests. [Held spell #309](https://github.com/bob8675309/DNDNEXT/pull/309)/[#312](https://github.com/bob8675309/DNDNEXT/pull/312) still await separate pure recipe extraction; the deployed **19-spell** baseline #337 is already merged. Paid #325 remains optional/unmerged.
 
 ## Open research draft PRs — original 20 minus merged #337; re-fetch live
 
@@ -26,4 +28,4 @@
 
 **Live safety note, checked read-only 2026-11-07:** production `inventory_items` has two conflicting CHECKs for `owner_type='character'`; original Forge deferred materializer contains matching insert. This is not yet a complete source-authentic v3 failure replay; prioritize disposable reproducer C2, not a live constraint change.
 
-**ONE next task is C3 clean-main consolidation/source-unique fixture crosswalk**. C2 diagnostic signed JWT original v2/v3 defect proof passed at J79/J79B; do NOT apply held inventory candidate directly or bulk-merge research.
+**ONE next task: C3.1 dependency-closed Forge-only source test extraction on new main.** File/CI/PR crosswalk C3.0 completed, no held merges/SQL release.
