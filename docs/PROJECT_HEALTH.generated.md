@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-07T05:31:26Z | agent/forge-warlock-client-wire-j168-20261107 (0527f945269b6df32ad1f5c32fbe0434082d52f8) | 79a6340c08e743e71e1072e40e6ba7204f735a29 |
+| 2026-11-07T05:56:25Z | agent/forge-warlock-react-choice-ui-j169-20261107 (0527f945269b6df32ad1f5c32fbe0434082d52f8) | 79a6340c08e743e71e1072e40e6ba7204f735a29 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
