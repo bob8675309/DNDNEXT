@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/spell-adapter-preservation-20261107` |
-| Exact source commit represented by this archive snapshot | `5fb459ee85cfe2932aa0efa38d8b918637248901` |
+| Exact source commit represented by this archive snapshot | `e00128482b0c29c1d5ea58ae475d66c788e167ec` |
 | Compared with | `2d2135ced24bcb4fbb4d8ccefc27bda70e91eb05` (main comparison base) |
-| Last source commit title | test(research): negative controls for 2024 Acid Splash shape and held taxonomy warning |
+| Last source commit title | docs(research): reconcile owner video, pivot, and held Acid Splash taxonomy contradiction |
 | Files changed relative to main | 7 (4 non-docs; 3 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `scripts/test_tactical_spell_preservation.mjs`
+- `docs/Tactical_Spell_Adapter_Preservation_Gate_2026-11-07.md`
 
 ## Research-branch change inventory versus main
 
