@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/spell-adapter-preservation-20261107` |
-| Exact source commit represented by this archive snapshot | `e10fed97936e03c7c6fd416ef64dbb5d2605f58c` |
+| Exact source commit represented by this archive snapshot | `6858f2a9bda25d58f8505f48246d1e4bde91b4fd` |
 | Compared with | `2d2135ced24bcb4fbb4d8ccefc27bda70e91eb05` (main comparison base) |
-| Last source commit title | docs(research): append owner-video audit, taxonomy discrepancy and test receipt |
+| Last source commit title | test(preservation): pin all 48 original validation entries without blocking future additions |
 | Files changed relative to main | 7 (4 non-docs; 3 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/HANDOFF_LOG.md`
+- `scripts/data/tactical_spell_preservation_20261107.json`
 
 ## Research-branch change inventory versus main
 
