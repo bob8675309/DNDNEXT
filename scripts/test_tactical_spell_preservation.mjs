@@ -42,5 +42,12 @@ try {
   check("guarded RPC route drift",mutate(ui,t=>t.replace('if (key === "lightning-bolt|xphb") {\n      return runRpc("encounter_cast_directional_area_spell_v2"', 'if (key === "lightning-bolt|xphb") {\n      return runRpc("encounter_cast_directional_area_spell_v1"')),"special UI RPC drift");
   check("historical failed CI wrongly marked green",mutate(data,t=>t.replace('"pr": 299,\n      "head"', '"pr": 299,\n      "head"').replace(/("pr": 299,[\s\S]*?"result": )"failure"/,'$1"success"')),"Negative #299 result must be retained");
   check("original SQL function lost",mutate("sql/20260730_07_tactical_lightning_bolt.sql",t=>t.replace(/create or replace function public\.encounter_cast_directional_area_spell_v2\(/i,"create or replace function public.deleted_function(")),"original RPC definition missing");
+  check("held classifier conflict erased",
+    mutate(data,t=>t.replace('"status": "open-review-required"','"status": "closed-without-review"')),
+    "Held Acid Splash taxonomy conflict must remain explicit");
+  check("Acid Splash sphere radius silently changed",
+    mutate("sql/20260730_04_tactical_acid_splash.sql",
+      t=>t.replace("'areaRadiusFt',5","'areaRadiusFt',10")),
+    "XPHB Acid Splash must retain a 5-ft sphere");
   console.log("PASS deterministic mutation tests; disposable temp files only");
 } finally { fs.rmSync(dir,{recursive:true,force:true}); }
