@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/spell-adapter-preservation-20261107` |
-| Exact source commit represented by this archive snapshot | `d26e0550e5b107747a608170cfa065962a7ad795` |
+| Exact source commit represented by this archive snapshot | `088b0fafb619726c400d23db837f81aee492259a` |
 | Compared with | `2d2135ced24bcb4fbb4d8ccefc27bda70e91eb05` (main comparison base) |
-| Last source commit title | test(preservation): copy all 48 source baselines into mutation fixture, test non-spell and positive-receipt drift |
+| Last source commit title | fix(preservation): make positive historical receipt mutation match across JSON lines |
 | Files changed relative to main | 7 (4 non-docs; 3 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
