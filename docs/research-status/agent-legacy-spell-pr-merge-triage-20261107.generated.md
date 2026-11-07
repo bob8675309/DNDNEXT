@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/legacy-spell-pr-merge-triage-20261107` |
-| Exact source commit represented by this archive snapshot | `5bafe9a0c4fb51857aff1091848a71712081c4ce` |
+| Exact source commit represented by this archive snapshot | `9e497b2b64128f3fe4f6cb11869a5552caa35cca` |
 | Compared with | `79a6340c08e743e71e1072e40e6ba7204f735a29` (main comparison base) |
-| Last source commit title | docs(handoff): receipt exact-head legacy PR triage checks |
-| Files changed relative to main | 6 (0 non-docs; 6 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit title | docs(tactical): recover live spell effects, Round 6 smoke proof and archived parity suites |
+| Files changed relative to main | 7 (0 non-docs; 7 docs) |
+| Last source commit | 7 files (0 non-docs; 7 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,11 +17,18 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `docs/ACTIVE_WORK.md`
+- `docs/Deployed_Tactical_Spell_Effects_Smoke_Recovery_2026-11-07.md`
 - `docs/HANDOFF_LOG.md`
+- `docs/Legacy_PR_Spell_Engine_Merge_Readiness_2026-11-07.md`
+- `docs/PROJECT_STATE.md`
+- `docs/README.md`
+- `docs/SYSTEM_REGISTRY.json`
 
 ## Research-branch change inventory versus main
 
 - `docs/ACTIVE_WORK.md`
+- `docs/Deployed_Tactical_Spell_Effects_Smoke_Recovery_2026-11-07.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/Legacy_PR_Spell_Engine_Merge_Readiness_2026-11-07.md`
 - `docs/PROJECT_STATE.md`
