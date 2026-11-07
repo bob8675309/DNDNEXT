@@ -65,14 +65,35 @@ export function compileWarlockChildPlans(data){
  assert.equal(blast.range_unit,"feet");assert.equal(Number(blast.range_distance),120);
  assert.equal(l.spells.filter(s=>s.level===0).length,2);
  assert.equal(l.spells.filter(s=>s.level===1).length,3);
+ // Inspect actual Forge source serialization; not a rendered browser acceptance.
+ const forge=readFileSync("components/NewNpcModalV3.js","utf8");
+ const guide=readFileSync("components/NpcForgeClassGuideModel.js","utf8");
+ const registrar=readFileSync("components/NpcForgeFeatChoiceRegistrar.js","utf8");
+ const invocation=readFileSync("utils/warlockInvocationChoices.js","utf8");
+ const nested=readFileSync("scripts/fixtures/forge_nested_choices_original_pg17.sql","utf8");
+ for(const token of [
+   "const classFeatureChoices = serializeClassChoiceState(classChoiceState);",
+   "const sourceChoices = serializeSourceChoiceState(sourceChoiceState);",
+   "payloadWithSourceChoices(subclassPayload, choiceStateRef.current, classChoiceStateRef.current, sourceChoiceStateRef.current)",
+   'supabase.rpc("create_player_character_v3"'
+ ]) assert.ok(forge.includes(token),"Forge browser-to-RPC source drift: "+token);
+ assert.ok(guide.includes('.filter((group) => !(invocationSourceActive && group.kind === "eldritch-invocation"))'),
+  "Original client suppression of historic Invocation parent has changed");
+ assert.ok(registrar.includes("buildWarlockInvocationSourceGroups") && registrar.includes('"class-options"'),
+  "Warlock source-only choice registration changed");
+ assert.ok(invocation.includes("child-") && invocation.includes('fieldId: "invocation", values: [invocation.key]'),
+  "Warlock source-owned Invocation dependent child changed");
+ assert.ok(nested.includes("v_sheet -> 'classFeatureChoices'") &&
+  nested.includes("Class choice % requires its dependent selection group to be complete."),
+  "Original historic nested choice validator contract changed");
  const sourceSql=readFileSync(SQL,"utf8");
  for(const s of l.spells)assert.ok(sourceSql.includes(s.id)&&sourceSql.includes(s.name),
   "missing actual source row in local SQL fixture: "+s.name);
  assert.ok(sourceSql.includes(l.invocations[1].id) && sourceSql.includes(l.feature.key));
  assert.ok(sourceSql.includes("md5(pg_get_functiondef('private.validate_player_forge_nested_choice_payload_v1()'::regprocedure)) <> 'df2861cc76b0b74bb7cd57fbe61c9a05'"));
  assert.ok(sourceSql.includes("private.xphb_warlock_invocation_count_v1(2)<>3"));
- assert.equal(data.cases.length,2);
- const modes=["complete-both-representations","missing-legacy-child-group"];
+ assert.equal(data.cases.length,3);
+ const modes=["complete-both-representations","missing-legacy-child-group","source-owned-browser-shape"];
  const ids=new Set();
  const cases=data.cases.map((x,i)=>{
   exact(x,["scenarioId","seed","mode"],"case");
@@ -81,7 +102,7 @@ export function compileWarlockChildPlans(data){
   assert.ok(!ids.has(x.scenarioId));ids.add(x.scenarioId);
   return {...compileSeededIdentity(x.scenarioId,x.seed),mode:x.mode};
  });
- assert.notEqual(cases[0].requestId,cases[1].requestId);
+ assert.equal(new Set(cases.map(x=>x.requestId)).size,3,"All scenario identities must be distinct");
  return {schemaVersion:1,suite:data.suite,source:plain(l),cases};
 }
 export function loadWarlockChildPlans(){return compileWarlockChildPlans(readWarlockManifest());}

@@ -1,5 +1,15 @@
 # DNDNext — Active Work Contract
 
+## 2026-11-06 — J167 source-only Warlock browser-shaped signed RPC (CI pending)
+
+**Research branch:** `research/forge-warlock-browser-source-only-20261106`, based exactly on draft #332 `8f7647535b8e7b900d5884b9256f3465d0933a5e`, transitive stack #331/#330/#329/#328/#324/#321. Existing S001–S003 and J00–J166 research retained. The client suppresses the historical Invocation parent when canonical `sourceChoices` are active; backend J165's dual historical payload does not establish normal browser parity.
+
+**Change:** one original-source Warlock2 J167 using canonical `sourceChoices` and no historical Invocation parent; exact original class GI, spells, CP/CS/G/GI/I/C, merchant stock and idempotent replay. Adds source guards to existing manifest validator only. No changes to actual Forge/SQL/map/production. Exact-head new CI **pending**, previous #332 [PG17+real JWT workflow #42316268268](https://github.com/bob8675309/DNDNEXT/actions/runs/42316268268) green. Original trigger inventory 17/31 (14 missing).
+
+**ONE NEXT TASK:** verify J167 exact-head free PG17 and signed local GoTrue CI; then compare actual browser request shape using a controlled test identity without production writes. If failure, record original error before further changes.
+
+---
+
 ## 2026-11-06 — Warlock Agonizing Blast required-child path VERIFIED in genuine signed GoTrue/PG17
 
 **Exact executable source head:** `1f1468df82bbd0edc1270167a1e3b07eff8a4831` at [Forge run #42315489043](https://github.com/bob8675309/DNDNEXT/actions/runs/42315489043) — **both source-original PostgreSQL 17 and real local GoTrue/PostgREST authenticated jobs SUCCESS**. Preexisting J00–J163/S001–S003 all remained green. **J164** original source Warlock L2 3 Invocation slots, 2 cantrips, 3 spells, source Agonizing Blast (min Warlock level2) and preferred Eldritch Blast verified. **J165** genuine signed v3 Warlock2 successfully acquired three source-owned Invocation grant instances (Armor of Shadows L1, Agonizing Blast+Eldritch Blast L2, Eldritch Mind L2), 2/3 source-qualified starting spells, canonical original equipment/grants/currency and immutable same-nonce replay. **J166** kept the source-owned Agonizing/Eldritch Blast child valid but omitted the historical `classFeatureChoices` dependent group; the **original deferred nested-choice handler** rejected its required-child branch with exact message and full class GI/CP/CS/G/GI/I/C/spells/stock/nonce rollback.

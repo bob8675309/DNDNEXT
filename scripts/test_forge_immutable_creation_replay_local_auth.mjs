@@ -2770,14 +2770,54 @@ wcReports.push({scenarioId:wcNegativePlan.scenarioId,seed:wcNegativePlan.seed,mo
  noCanonicalOrStockWrites:true,nonceAbsent:true});
 console.log("PASS J166 genuine signed Warlock2 with source-owned Agonizing Blast/Eldritch Blast child but omitted legacy classFeatureChoices child was denied by ORIGINAL nested completed-child handler, atomic full rollback");
 
+
+// J167 uses the current source-owned Forge payload shape, not J165's
+// intentionally dual historical-parent compatibility specimen. This tests
+// a genuine local JWT v3 RPC, NOT a rendered browser network request.
+const wcSourcePlan=warlockChildSuite.cases[2];
+const wcSource=wcChild(wcSourcePlan,false);
+wcSource.payload.sheet.classFeatureChoices={};
+wcSource.payload.sheet.classFeatureChoiceSummary=[];
+assert.equal(wcSourcePlan.mode,"source-owned-browser-shape");
+assert.equal(Object.keys(wcSource.payload.sheet.classFeatureChoices).length,0);
+assert.equal(Object.keys(wcSource.payload.sheet.sourceChoices).length,3);
+assert.equal(wcSource.payload.sheet.sourceChoices["warlock-invocation-slot-2"]
+ .fields["child-agonizing-blast"].selections[0].value,wcBlast.id);
+const wcSourceStockBefore=getStock(wcStock);
+const wcSourceId=pass(await call3(people.PLAYER.client,wcSource.payload,wcSource.selections),
+ "J167 signed original v3 Warlock2 source-only Invocation payload");
+const wcSourceState=scenarioSnapshot(wcSourceId);
+assert.equal(wcSourceState.editorAuthenticated,true);
+assert.equal(wcSourceState.source.classKey,"warlock");
+assert.equal(wcSourceState.source.classSource,"XPHB");
+assert.equal(wcSourceState.source.level,2);
+for(const t of ["characters","sheets","progression","events","grants","instances","items","currency"])
+ assert.equal(wcSourceState.counts[t],1,"J167 "+t+" canonical row");
+assert.equal(sql("SELECT count(*) FROM public.character_class_option_grant_instances WHERE character_id='"+wcSourceId+"'"),"3");
+assert.equal(sql("SELECT count(*) FROM public.character_spells WHERE character_id='"+wcSourceId+"' AND source_type='class'"),"5");
+assert.equal(sql("SELECT choices#>>'{child,value}' FROM public.character_class_option_grant_instances WHERE character_id='"+wcSourceId+"' AND instance_key='warlock-invocation-slot-2'"),wcBlast.id);
+assert.equal(sql("SELECT option_catalog_id::text FROM public.character_class_option_grant_instances WHERE character_id='"+wcSourceId+"' AND instance_key='warlock-invocation-slot-2'"),wcAg.id);
+assert.equal(Number(getStock(wcStock)),Number(wcSourceStockBefore)-1);
+const wcSourceGlobal=warlockCounts(),wcSourceStockAfter=getStock(wcStock);
+assert.equal(pass(await call3(people.PLAYER.client,wcSource.payload,wcSource.selections),
+ "J167 same nonce source-only replay"),wcSourceId);
+assert.deepEqual(scenarioSnapshot(wcSourceId),wcSourceState,"J167 source-only replay mutated rows");
+assert.equal(warlockCounts(),wcSourceGlobal,"J167 replay duplicate write");
+assert.equal(getStock(wcStock),wcSourceStockAfter,"J167 replay consumed stock");
+wcReports.push({scenarioId:wcSourcePlan.scenarioId,seed:wcSourcePlan.seed,mode:wcSourcePlan.mode,
+ localSignedV3:true,legacyInvocationParentIncluded:false,sourceOwnedInvocationGIs:3,
+ sourceOwnedAgonizingChildPersisted:true,originalHandlersAccepted:true,
+ identicalReplayInert:true,canonicalCounts:wcSourceState.counts});
+console.log("PASS J167 genuine signed source-only Warlock2 v3, Agonizing Blast/Eldritch Blast source child, 3 GI/5 spells, atomic grants and replay inert");
+
 writeFileSync("research-agent-artifact/FORGE_WARLOCK_CHILD_COMPLETION.json",JSON.stringify({
  schemaVersion:1,suite:warlockChildSuite.suite,fixture:"disposable-pg17-genuine-local-gotrue-postgrest",
  originalNestedHandlerMd5:"df2861cc76b0b74bb7cd57fbe61c9a05",
  originalClassOptionHandlerMd5:"6df5aee6f0519c9c77758d6e887ed8e4",
  liveSourceLevel:2, cases:wcReports,
  baseline:"existing-J00-J163-and-S001-S003-passed-before-candidate",
- limitations:["hybrid sourceChoices + classFeatureChoices compatibility representation, NOT browser UI parity",
+ limitations:["J165/J166 intentionally dual historical specimen; J167 browser-shaped source-only signed RPC, NOT rendered browser acceptance",
  "source-original level2 Warlock 3 slots/5 starting spell catalog specimens only",
  "production source RLS/browser, 14 absent original triggers, global lock ordering NOT proven"]
 },null,2)+"\n","utf8");
-console.log("PASS J164-J166 original nested-choice completed dependent Warlock Invocation branch real signed GoTrue; 17/31 trigger DDL unchanged, not a new trigger");
+console.log("PASS J164-J167 source-original Warlock nested and source-only browser-shaped RPC under real signed GoTrue; 17/31 staged trigger DDL unchanged");

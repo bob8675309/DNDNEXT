@@ -1,5 +1,16 @@
 # Warlock invocation completed-child rule — original signed-in research
 
+## 2026-11-06 — Warlock browser-to-RPC source-only J167 (research candidate; exact-head CI pending)
+
+**Source review:** `NewNpcModalV3.js` serializes both `sourceChoices` and `classFeatureChoices` independently, then calls original `create_player_character_v3`. `NpcForgeFeatChoiceRegistrar.js` registers XPHB Warlock source-owned Invocation groups, with `child-agonizing-blast` and its preferred Eldritch Blast UUID in `warlockInvocationChoices.js`. `NpcForgeClassGuideModel.js` filters the legacy `eldritch-invocation` parent when source-owned Invocations exist. The source-original nested validator checks the historical `classFeatureChoices` parent only; it does not require inventing a duplicate historical parent for every source-owned invocation. J165's dual representation was intentional test coverage of that historical handler, **not browser parity**.
+
+**Bounded implementation:** On isolated `research/forge-warlock-browser-source-only-20261106` based on #332 `8f7647535b8e7b900d5884b9256f3465d0933a5e`, append one versioned deterministic manifest mode `source-owned-browser-shape`, static client/source alignment assertions and J167 genuine signed local v3 Warlock2 positive. J167 submits 3 source-owned invocations with a real Agonizing Blast/Eldritch Blast dependent child, but empty historical Invocation choices, asserting canonical 3 class GI, 5 spells, CP/CS/G/GI/I/C, merchant stock and inert identical nonce replay. Original J00–J166/S001–S003, SQL handlers and source fingerprints unchanged. Sanitized report only.
+
+**Evidence:** #332 exact `8f7647535b8e7b900d5884b9256f3465d0933a5e` [workflow #42316268268](https://github.com/bob8675309/DNDNEXT/actions/runs/42316268268) has both original PG17 and true local JWT SUCCESS for *previous* J164–J166. **New J167 exact-head CI pending; no browser, live RLS or full catalogue acceptance.** Trigger inventory unchanged at 17/31 staged, 14 absent; five separately receipted signed original handler suites.
+
+**One next action:** verify actual J167 GitHub Actions original PG17 and real local GoTrue jobs at the new SHA; investigate original error if any, then compare an actual rendered-browser Warlock2 request to this source-shaped fixture before any gameplay patch.
+
+
 **Date:** 2026-11-06. **Status:** **VERIFIED** in disposable original PostgreSQL 17 and genuine local GoTrue/PostgREST at `1f1468df82bbd0edc1270167a1e3b07eff8a4831` via [CI #42315489043](https://github.com/bob8675309/DNDNEXT/actions/runs/42315489043). First two J164 failures are preserved below. No production, live RLS or browser parity claimed. **Branch:** `research/forge-warlock-child-completion-20261106` stacked on held draft PR #331 `7f092ab329653e02dd5436dc7caf4a547d91ce73`. No production release/change.
 
 ## Verified exact-head authenticated acceptance, 2026-11-06
