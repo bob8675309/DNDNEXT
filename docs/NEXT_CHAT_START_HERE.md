@@ -16,7 +16,7 @@
 
 **ONE NEXT ACTION:** audit all actual original direct `characters`/`character_sheets` column readers and SECURITY DEFINER serializers affected by stage1 sheet RLS + stage2 five-column revocation, including Admin, player Profile, Forge v2/v3 and post-create consumers, merchants, map/town/inventory, printing. Verify all roles in disposable signed Auth, document needed compatibility patches, then full original Forge creator-attribution transaction and real signed browser before **separate owner-approved joint SQL+UI migration and rollback**. **Do not merge #345 yet**, deploy its client against missing RPCs or apply SQL stages independently. Old #320–#323 research PRs remain open.
 
-The research-only #341/#319/#343 packages and original 19 XPHB adapter preservation are already merged; P1 global command replay/locks and production Forge inventory correction remain separate security releases.
+The **19 currently deployed XPHB** spell adapters are preserved regression oracles, not the next engine. The research-only #341/#319/#343 packages and original 19 XPHB adapter preservation are already merged; P1 global command replay/locks and production Forge inventory correction remain separate security releases.
 
 ## Reality map — implemented milestones are not unfinished new engines
 

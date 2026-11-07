@@ -10,4 +10,4 @@
 
 **Other standing blockers:** inventory old NOT VALID owner CHECK + four RLS policies must be changed together if separately approved; P1 global request replay/locks not deployed; only 17/31 Forge creation trigger definitions staged in research; future composable spell interpreter not deployed. Original 19 XPHB adapters/48 validators, and merged research-only #341/#319/#343, are preserved. Do not alter map movement/sprites/roster, approved Profile-first merchant behavior or paid agents. Older #320–#323 drafts stay open until all unique evidence is preserved and owner approves retirement.
 
-**Handoff:** append exact results to [HANDOFF_LOG](HANDOFF_LOG.md) and follow S0–S7.
+**Handoff:** append exact results to [HANDOFF_LOG](HANDOFF_LOG.md) and follow [PHASED_DEVELOPMENT_CHECKLIST.md](PHASED_DEVELOPMENT_CHECKLIST.md) S0–S7.
