@@ -2,6 +2,11 @@
 
 **Use exactly one live task entry:** [NEXT_CHAT_START_HERE.md](NEXT_CHAT_START_HERE.md) → [ACTIVE_WORK.md](ACTIVE_WORK.md) → [C0–C5 phase/PR closeout plan](PHASE_CLOSEOUT_AND_PR_CONSOLIDATION_ORDER_2026-11-07.md) → [workstream/PR dependencies](WORKSTREAMS_AND_PR_DEPENDENCIES.md) → most recent [HANDOFF_LOG.md](HANDOFF_LOG.md). All statuses are dated and must be rechecked against live GitHub/CI, deployed source and relevant read-only Supabase. **Do not use older 'Current Handoff' documents as active work orders.**
 
+## Latest safe research merges and pending privacy release
+
+- [#341 Forge source fixture and real JWT acceptance](https://github.com/bob8675309/DNDNEXT/pull/341) **MERGED research-only**; [#319 legacy player-sheet PG17 candidate](https://github.com/bob8675309/DNDNEXT/pull/319) **MERGED but SQL unapplied**; [#343 P1.3 original lock/replay source-JWT research](https://github.com/bob8675309/DNDNEXT/pull/343) **MERGED**, all exact-head checks green.
+- **Next task C3.3:** coordinate NPC Profile privacy server-reader/source roles and integrated UI from revised #322 and #323; no live SQL or UI-only #320 merge.
+
 ## Current research consolidation evidence
 
 - [C3 crosswalk: all 19 PRs, exact source ancestry, overlap, CI and next extraction](C3_RESEARCH_PR_CONSOLIDATION_CROSSWALK_2026-11-07.md) plus [nine-PR Forge file inventory](evidence/C3_FORGE_STACK_CHANGED_FILES_2026-11-07.json) and [ten-other-PR file inventory](evidence/C3_NONFORGE_OPEN_PR_CHANGED_FILES_2026-11-07.json). These are dated source records, not release authorizations. C3.1 Forge isolated test dependency extraction is the one next action.

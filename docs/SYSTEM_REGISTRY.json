@@ -53,6 +53,7 @@
       ],
       "last_checked": "2026-11-01",
       "open_gaps": [
+        "C3.1 original Forge PG17/JWT/isolated Chromium research #341 MERGED main 70b96cfb; 20261105 combined owner-CHECK+RLS candidate remains UNAPPLIED, 14 original trigger DDL omitted, and full NewNpcModalV3 signed browser-to-RPC unaccepted. Independent #319 legacy-sheet single-clause SQL candidate MERGED as test only, not installed.",
         "C3.1 isolated source research extraction exact CI SUCCESS on held draft #341 3a1536754359af0bdab23c0764f49e85ea7d0d2d: 66 byte-identical Forge original fixtures/tests/workflows transferred to independent current-main branch without old #321 NPC secrets/handoffs. Requires separate owner merge approval before main; production inventory RLS+CHECK still unapproved, 14/31 original triggers absent and full Auth/browser not accepted.",
         "C3.0: all nine stacked Forge PR change-lists/ancestry catalogued in docs/evidence/C3_FORGE_STACK_CHANGED_FILES_2026-11-07.json; #335 tip retains older #321 NPC secret SQL/validator, not revised #322; cannot bulk-merge. Next C3.1 independent Forge original PG17/GoTrue/isolated browser source-test extraction, 17/31 original creation trigger DDL staged and other 14 remain unaccepted. No SQL/RLS installed.",
         "C2 2026-11-07: genuine local signed original PostgreSQL17 J79 v2 deferred COMMIT fails 23514 under old NOT VALID CHECK; scratch-only removal permits source Forge gear/currency; J86–J87 proves old direct inventory RLS would allow unrelated character item mint/update if constraint dropped alone. J88–J93 combined four-policy RLS/CHECK candidate is test-only; original v3 source market J95 passes after candidate; J79B direct v3 negative PASSED exact-head real JWT/PG17 CI 42396598675; full production release still unapproved. Release not approved: full 31 triggers, original role/browsers, all inventory consumers, lock/rollback.",
@@ -116,6 +117,7 @@
       "tests": [],
       "last_checked": "2026-11-01",
       "open_gaps": [
+        "C3.2 P1.3 original PG16/17/real local GoTrue/JWT lock/replay test research #343 MERGED 4adfb895 with all nine exact-head workflows green; actual production global lock discipline, immutable original intent/revocation and 2-active-encounter R4 remain unimplemented/unreleased.",
         "2026-11-01 proposed P1.2 immutable requester/actor/intent/replay and fresh authorization contract (docs/P1_2_Command_Replay_Contract_2026-11-01.md); owner signoff R1–R4 pending.",
         "Live command ledger aggregate: 78 rows and 20 null requested_by, no null results at checkpoint; historical typed original intent absent; fail-closed policy is proposed, not implemented.",
         "P1.3 global mixed-version lock ordering, P1.5 same-character multiple-active-encounters, NPC delegated visibility, isolated genuine JWT races, and production rollout all unresolved."
@@ -610,10 +612,10 @@
   "snapshot": {
     "observed_on": "2026-11-07",
     "repository": "bob8675309/DNDNEXT",
-    "main_sha": "dbc7006919f35c8f7b12921bf468c4f949ca77ad",
+    "main_sha": "4adfb89568636afc9b326842a769f220b61707c1",
     "production_deployment_id": "dpl_7CMJFxVDkK1hzuBE7AZKG68BbRsn",
     "production_deployment_status": "READY",
     "database_project": "ucggczovhmauhshvhusx",
-    "limits": "2026-11-07 latest: C3.1 clean-main source-authentic Forge extraction draft #341 at 3a1536754359af0bdab23c0764f49e85ea7d0d2d (base 1ccde22f57c37dfed2e26473e8f28b11f639c8db) with 66 original blob files + two provenance docs; five exact-head CI green including real local signed v2/v3 J79/J79B, combined RLS/owner CHECK scratch J86–J102 and isolated Chromium J169. Research-only, not merged or production. Next single task owner merge decision for #341; then C3.2 P1.3 fixture extraction. Current live inventory RLS/obsolete CHECK unchanged, original 31 triggers only 17 staged, no full NewNpcModalV3 browser acceptance."
+    "limits": "2026-11-07: C3.1 Forge #341 research-only merged 70b96cfb (5 CI green), independent legacy-sheet #319 source/PG17 candidate merged 537b5700 (3 CI green), C3.2 P1.3 security-source tests #343 merged 4adfb895 (9 CI green). Production SQL/RLS/grants, live replay/lock authority and old NPC secrets unchanged. Original historical #317/#324-#335 drafts remain open. One next C3.3 coordinated revised NPC #322 server privacy + #323 secure Profile-first UI, genuine role/Auth/browser/rollback review. Recheck actual deployed Vercel SHA before calling it READY."
   }
 }

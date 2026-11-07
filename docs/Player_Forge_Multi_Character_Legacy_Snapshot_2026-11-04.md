@@ -1,5 +1,7 @@
 # Multi-Character Forge: Protect Legacy `players.sheet` (2026-11-04)
 
+> **NEWER 2026-11-07 STATUS:** [#319](https://github.com/bob8675309/DNDNEXT/pull/319) **MERGED research-only** to main `537b570083b3f18faad6d3038c131bee61af273c` after exact-head 3 CI passes and unchanged current main application source dependencies. The earlier “UNMERGED” refers to the old November 4 snapshot. **The guarded SQL candidate itself is NOT DEPLOYED:** the production `public.create_player_character_v2` function and existing `players.sheet` values were not changed by this merge.
+
 > **UNMERGED / NOT DEPLOYED.** Exact live SQL source inspected by SELECT-only introspection on 2026-11-04, original `public.create_player_character_v2(jsonb,jsonb)` definition MD5 `0351f0a00acae023278e1b8b065b00c9`. `create_player_character_v3` delegates to v2. This is a candidate, not a production permission migration, Character Forge rewrite, or consent to alter live data.
 
 ## Verified original behavior
