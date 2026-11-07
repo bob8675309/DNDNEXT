@@ -2,6 +2,10 @@
 
 **Use exactly one live task entry:** [NEXT_CHAT_START_HERE.md](NEXT_CHAT_START_HERE.md) → [ACTIVE_WORK.md](ACTIVE_WORK.md) → [C0–C5 phase/PR closeout plan](PHASE_CLOSEOUT_AND_PR_CONSOLIDATION_ORDER_2026-11-07.md) → [workstream/PR dependencies](WORKSTREAMS_AND_PR_DEPENDENCIES.md) → most recent [HANDOFF_LOG.md](HANDOFF_LOG.md). All statuses are dated and must be rechecked against live GitHub/CI, deployed source and relevant read-only Supabase. **Do not use older 'Current Handoff' documents as active work orders.**
 
+## Current research consolidation evidence
+
+- [C3 crosswalk: all 19 PRs, exact source ancestry, overlap, CI and next extraction](C3_RESEARCH_PR_CONSOLIDATION_CROSSWALK_2026-11-07.md) plus [nine-PR Forge file inventory](evidence/C3_FORGE_STACK_CHANGED_FILES_2026-11-07.json) and [ten-other-PR file inventory](evidence/C3_NONFORGE_OPEN_PR_CHANGED_FILES_2026-11-07.json). These are dated source records, not release authorizations. C3.1 Forge isolated test dependency extraction is the one next action.
+
 ## Authority and release records
 
 - [AI/repo instructions](../AGENTS.md), [session and P0–P6 checklist](PHASED_DEVELOPMENT_CHECKLIST.md), [system evidence registry](SYSTEM_REGISTRY.json), [observed production/project state](PROJECT_STATE.md), [document lifecycle](DOCUMENT_LIFECYCLE.md), [last handoff receipts](HANDOFF_LOG.md).
