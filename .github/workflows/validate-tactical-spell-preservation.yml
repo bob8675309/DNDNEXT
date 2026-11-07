@@ -1,0 +1,42 @@
+name: Validate tactical spell preservation (read-only)
+on:
+  push:
+    paths:
+      - ".github/workflows/validate-tactical-spell-preservation.yml"
+      - "pages/encounters/combat.js"
+      - "scripts/validate_tactical_spell_*.mjs"
+      - "scripts/test_tactical_spell_preservation.mjs"
+      - "scripts/data/tactical_spell_preservation_20261107.json"
+      - "scripts/validate_tactical_spell_suite.mjs"
+      - "sql/**"
+      - "docs/Tactical_Encounter_Phase1*_Status.md"
+      - "docs/Deployed_Tactical_Spell_Effects_Smoke_Recovery_2026-11-07.md"
+  pull_request:
+    paths:
+      - ".github/workflows/validate-tactical-spell-preservation.yml"
+      - "pages/encounters/combat.js"
+      - "scripts/validate_tactical_spell_*.mjs"
+      - "scripts/test_tactical_spell_preservation.mjs"
+      - "scripts/data/tactical_spell_preservation_20261107.json"
+      - "scripts/validate_tactical_spell_suite.mjs"
+      - "sql/**"
+      - "docs/Tactical_Encounter_Phase1*_Status.md"
+      - "docs/Deployed_Tactical_Spell_Effects_Smoke_Recovery_2026-11-07.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preservation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check original XPHB sources, routes, RPCs, validators, and evidence
+        run: node scripts/validate_tactical_spell_preservation.mjs
+      - name: Verify drift fails closed, including historical negative evidence
+        run: node scripts/test_tactical_spell_preservation.mjs
