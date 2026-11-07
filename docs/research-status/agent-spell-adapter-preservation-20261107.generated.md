@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/spell-adapter-preservation-20261107` |
-| Exact source commit represented by this archive snapshot | `b32de46e06790ec3847d9d3af4fcc6e733d56e72` |
+| Exact source commit represented by this archive snapshot | `93c56518dbd5cbf3f7d25428e6cb3c64caba7824` |
 | Compared with | `52c5ef1ce2830869545963ba47378fd5249b9f21` (main comparison base) |
-| Last source commit title | research(preservation): reconcile #337 with canonical main handoff and pin 19 keys / 48 validators |
+| Last source commit title | docs(preservation): format C1 review receipt as true Markdown section |
 | Files changed relative to main | 7 (4 non-docs; 3 docs) |
-| Last source commit | 0 files (0 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-The latest commit did not change non-docs source files. Do not infer a technical behavior change.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- No changed paths found
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
