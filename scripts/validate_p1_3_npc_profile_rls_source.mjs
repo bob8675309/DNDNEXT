@@ -32,7 +32,7 @@ for(const forbidden of ["DROP TABLE","TRUNCATE","DELETE FROM public","ALTER TABL
  assert.ok(!candidate.includes(forbidden),"Unsafe SQL: "+forbidden);
 for(const marker of [
  "PASS V00","PASS V01","PASS V02","PASS V03",
- "PASS V04","PASS V05","PASS V06","PASS V07","PASS V08",
+ "PASS V04","PASS V05","PASS V06","PASS V07","PASS V08","PASS V08A",
  "PASS V09","PASS V10","PASS V11","PASS V12","PASS V13","PASS V14","PASS V15","PASS V16","PASS V17","PASS V18","PASS V19","PASS V20","PASS V21","PASS V22","PASS V23","PASS V24",
  "EXPECTED UNSAFE BASELINE","RELEASE BLOCKER",
  "DISPOSABLE_LOCAL_GOTRUE_ONLY",
@@ -53,7 +53,11 @@ for(const required of [
  "auth.uid() IS NULL OR NOT private.current_user_is_admin()",
  "RAISE EXCEPTION 'GM-only NPC dossier access denied'",
  "REVOKE ALL ON FUNCTION public.get_npc_dossier_admin_v1(uuid)",
- "GRANT EXECUTE ON FUNCTION public.get_npc_dossier_admin_v1(uuid)"
+ "GRANT EXECUTE ON FUNCTION public.get_npc_dossier_admin_v1(uuid)",
+ "CREATE OR REPLACE FUNCTION public.get_character_editor_narrative_v1(p_character_id uuid)",
+ "private.can_access_character_v1(c.id,'edit')",
+ "REVOKE ALL ON FUNCTION public.get_character_editor_narrative_v1(uuid)",
+ "GRANT EXECUTE ON FUNCTION public.get_character_editor_narrative_v1(uuid)"
 ]) assert.ok(stage2.includes(required),"Stage2 Admin/ACL contract missing "+required);
 for(const required of [
  "CREATE TABLE private.character_creator_attribution",

@@ -224,6 +224,31 @@ assert.ifError(editorAfter.error);
 assert.equal(editorAfter.data.sheet.secret,secrets.hidden);
 console.log("PASS V08: GM-only dossier returns full hidden character and canonical sheet; "+
  "other signed-in editors and outsiders denied dossier, editor still can use authorized sheet");
+// V08A: distinct current edit permissions do not grant GM dossier/secret.
+const editorNarrative=await rpc(people.EDITOR.who,"get_character_editor_narrative_v1",{p_character_id:visible});
+assert.ifError(editorNarrative.error);
+assert.equal(editorNarrative.data.id,visible);
+assert.equal(editorNarrative.data.background,secrets.background);
+assert.equal(editorNarrative.data.motivation,"MOTIVATION_UNREVEALED");
+for(const forbidden of [secrets.npc,secrets.sheet,"character_sheet","creator_user_id","profileReveal"])
+ assert.ok(!JSON.stringify(editorNarrative.data).includes(forbidden),"Editor narrative leaked "+forbidden);
+const coeditorNarrative=await rpc(people.COEDITOR.who,"get_character_editor_narrative_v1",{p_character_id:visible});
+assert.ifError(coeditorNarrative.error);
+assert.equal(coeditorNarrative.data.motivation,"MOTIVATION_UNREVEALED");
+const hiddenEditorNarrative=await rpc(people.EDITOR.who,"get_character_editor_narrative_v1",{p_character_id:hidden});
+assert.ifError(hiddenEditorNarrative.error);
+assert.equal(hiddenEditorNarrative.data.background,"HIDDEN_BACKGROUND");
+const gmNarrative=await rpc(people.ADMIN.who,"get_character_editor_narrative_v1",{p_character_id:hidden});
+assert.ifError(gmNarrative.error);
+assert.equal(gmNarrative.data.motivation,"HIDDEN_MOTIVATION");
+for(const role of ["OUTSIDER","INV_ONLY","CONVERT_ONLY"]){
+ const denied=await rpc(people[role].who,"get_character_editor_narrative_v1",{p_character_id:visible});
+ assert.ifError(denied.error);
+ assert.equal(denied.data,null,role+" must not obtain narrative");
+}
+const anonNarrative=await rpc(client(),"get_character_editor_narrative_v1",{p_character_id:visible});
+assert.ok(anonNarrative.error);
+console.log("PASS V08A: signed GM/editor/co-editor narrative; outsider/inventory/convert/anon denied, no GM secret");
 // V09 reproduces the original broad editor->GM secret authority in scratch.
 const legacySecretEditor=await rpc(people.EDITOR.who,"get_character_secrets_v1",
  {p_character_ids:[hidden]});

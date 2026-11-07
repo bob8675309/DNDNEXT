@@ -26,4 +26,9 @@ assert(stage3.includes("to_jsonb(c) - 'secret'"),
 assert(npc.includes('get_npc_profile_visible_v1') && npc.includes('get_npc_dossier_admin_v1'),
   "NPC Profile server-safe reader split removed");
 assert(admin.includes("get_npc_dossier_admin_v1"), "GM dossier reader removed from admin page");
+assert(admin.includes("get_character_editor_narrative_v1"), "Non-GM editor reader missing");
+assert(admin.includes("const selectedCharPerm = charPerm?.character_id"), "Character selection must scope can_edit");
+assert(admin.includes("canEditCharacter && hasNarrative && detailsDraft"), "Narrative save can overwrite unread data");
+assert(admin.includes("isAdmin={isAdmin}") && !admin.includes("isAdmin={isAdmin || canEditCharacter}"),
+  "Edit rights must not be promoted to GM permissions");
 console.log("PASS C3.3 unified player fallback honors role-wide private-lore ACL; editor RPC remains sanitized");

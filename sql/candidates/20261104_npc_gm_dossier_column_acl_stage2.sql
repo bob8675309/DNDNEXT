@@ -54,4 +54,30 @@ REVOKE ALL ON FUNCTION public.get_npc_dossier_admin_v1(uuid)
 FROM PUBLIC,anon;
 GRANT EXECUTE ON FUNCTION public.get_npc_dossier_admin_v1(uuid)
 TO authenticated;
+
+-- Editor-only non-secret narrative projection required by the role-wide
+-- column SELECT revoke. A user must have CURRENT can_edit authority;
+-- inventory-only, convert-only and visible outsiders cannot read this.
+CREATE OR REPLACE FUNCTION public.get_character_editor_narrative_v1(p_character_id uuid)
+RETURNS jsonb
+LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path TO 'pg_catalog','public','private','auth'
+AS $fn$
+  SELECT jsonb_build_object(
+    'id',c.id,
+    'background',c.background,
+    'motivation',c.motivation,
+    'quirk',c.quirk,
+    'mannerism',c.mannerism,
+    'voice',c.voice
+  )
+  FROM public.characters c
+  WHERE c.id=p_character_id
+    AND auth.uid() IS NOT NULL
+    AND private.can_access_character_v1(c.id,'edit');
+$fn$;
+REVOKE ALL ON FUNCTION public.get_character_editor_narrative_v1(uuid)
+FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.get_character_editor_narrative_v1(uuid)
+TO authenticated;
 COMMIT;
