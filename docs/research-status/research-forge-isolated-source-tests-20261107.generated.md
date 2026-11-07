@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/forge-isolated-source-tests-20261107` |
-| Exact source commit represented by this archive snapshot | `1ccde22f57c37dfed2e26473e8f28b11f639c8db` |
+| Exact source commit represented by this archive snapshot | `3a1536754359af0bdab23c0764f49e85ea7d0d2d` |
 | Compared with | `1ccde22f57c37dfed2e26473e8f28b11f639c8db` (main comparison base) |
-| Last source commit title | docs: complete C3 research PR file/CI crosswalk and route C3.1 (#340) |
-| Files changed relative to main | 0 (0 non-docs; 0 docs) |
-| Last source commit | 12 files (1 non-docs; 11 authored docs) |
+| Last source commit title | test(forge research): extract 66 original source/PG17/JWT/browser dependencies without old NPC inheritance |
+| Files changed relative to main | 68 (66 non-docs; 2 docs) |
+| Last source commit | 68 files (66 non-docs; 2 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,21 +17,101 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `AGENTS.md`
-- `docs/ACTIVE_WORK.md`
-- `docs/C3_RESEARCH_PR_CONSOLIDATION_CROSSWALK_2026-11-07.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/NEXT_CHAT_START_HERE.md`
-- `docs/PHASE_CLOSEOUT_AND_PR_CONSOLIDATION_ORDER_2026-11-07.md`
-- `docs/PROJECT_STATE.md`
-- `docs/README.md`
-- `docs/SYSTEM_REGISTRY.json`
-- `docs/WORKSTREAMS_AND_PR_DEPENDENCIES.md`
-- `docs/evidence/C3_FORGE_STACK_CHANGED_FILES_2026-11-07.json`
-- `docs/evidence/C3_NONFORGE_OPEN_PR_CHANGED_FILES_2026-11-07.json`
+- `.github/workflows/validate-forge-browser-warlock-choice.yml`
+- `.github/workflows/validate-forge-immutable-creation-replay.yml`
+- `docs/C3_1_FORGE_EXTRACTED_BLOBS_2026-11-07.json`
+- `docs/C3_1_FORGE_ISOLATED_SOURCE_ACCEPTANCE_2026-11-07.md`
+- `scripts/agents/forge_ci_diagnostics.mjs`
+- `scripts/agents/forge_seeded_scenarios.mjs`
+- `scripts/agents/forge_warlock_client_wire.mjs`
+- `scripts/browser/forge_warlock_choice_dom.jsx`
+- `scripts/browser/verify_forge_warlock_choice_dom.mjs`
+- `scripts/fixtures/forge_characters_portrait_sync_local_auth_pg17.sql`
+- `scripts/fixtures/forge_characters_portrait_sync_original_pg17.sql`
+- `scripts/fixtures/forge_characters_tag_guard_local_auth_pg17.sql`
+- `scripts/fixtures/forge_characters_tag_guard_original_pg17.sql`
+- `scripts/fixtures/forge_creation_original_functions_pg17.sql`
+- `scripts/fixtures/forge_creation_replay_candidate_pg17.sql`
+- `scripts/fixtures/forge_creation_replay_local_auth_pg17.sql`
+- `scripts/fixtures/forge_creator_trigger_original_stage3_pg17.sql`
+- `scripts/fixtures/forge_equipment_validator_local_auth_extension_pg17.sql`
+- `scripts/fixtures/forge_equipment_validator_original_pg17.sql`
+- `scripts/fixtures/forge_feat_materializer_discriminators_original_pg17.sql`
+- `scripts/fixtures/forge_feat_materializer_local_auth_extension_pg17.sql`
+- `scripts/fixtures/forge_feat_materializer_original_pg17.sql`
+- `scripts/fixtures/forge_gi_cp_cs_local_jwt_race_pg17.sql`
+- `scripts/fixtures/forge_high_risk_original_progression_triggers_pg17.sql`
+- `scripts/fixtures/forge_high_risk_progression_local_auth_pg17.sql`
+- `scripts/fixtures/forge_inventory_access_original_pg17.sql`
+- `scripts/fixtures/forge_inventory_policy_source_local_auth_pg17.sql`
+- `scripts/fixtures/forge_market_cash_original_functions_pg17.sql`
+- `scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql`
+- `scripts/fixtures/forge_materializer_original_functions_pg17.sql`
+- `scripts/fixtures/forge_merchant_inventory_live_writer_local_auth_pg17.sql`
+- `scripts/fixtures/forge_nested_choices_local_auth_pg17.sql`
+- `scripts/fixtures/forge_nested_choices_original_pg17.sql`
+- `scripts/fixtures/forge_original_merchant_buy_source_pg17.sql`
+- `scripts/fixtures/forge_owner_constraint_deferred_creation_local_auth_pg17.sql`
+- `scripts/fixtures/forge_owner_constraint_original_inventory_handlers_pg17.sql`
+- `scripts/fixtures/forge_progression_authority_local_auth_extension_pg17.sql`
+- `scripts/fixtures/forge_progression_authority_original_pg17.sql`
+- `scripts/fixtures/forge_seeded_nested_choices_v1.json`
+- `scripts/fixtures/forge_seeded_scenarios_v1.json`
+- … 28 more
 
 ## Research-branch change inventory versus main
 
+- `.github/workflows/validate-forge-browser-warlock-choice.yml`
+- `.github/workflows/validate-forge-immutable-creation-replay.yml`
+- `docs/C3_1_FORGE_EXTRACTED_BLOBS_2026-11-07.json`
+- `docs/C3_1_FORGE_ISOLATED_SOURCE_ACCEPTANCE_2026-11-07.md`
+- `scripts/agents/forge_ci_diagnostics.mjs`
+- `scripts/agents/forge_seeded_scenarios.mjs`
+- `scripts/agents/forge_warlock_client_wire.mjs`
+- `scripts/browser/forge_warlock_choice_dom.jsx`
+- `scripts/browser/verify_forge_warlock_choice_dom.mjs`
+- `scripts/fixtures/forge_characters_portrait_sync_local_auth_pg17.sql`
+- `scripts/fixtures/forge_characters_portrait_sync_original_pg17.sql`
+- `scripts/fixtures/forge_characters_tag_guard_local_auth_pg17.sql`
+- `scripts/fixtures/forge_characters_tag_guard_original_pg17.sql`
+- `scripts/fixtures/forge_creation_original_functions_pg17.sql`
+- `scripts/fixtures/forge_creation_replay_candidate_pg17.sql`
+- `scripts/fixtures/forge_creation_replay_local_auth_pg17.sql`
+- `scripts/fixtures/forge_creator_trigger_original_stage3_pg17.sql`
+- `scripts/fixtures/forge_equipment_validator_local_auth_extension_pg17.sql`
+- `scripts/fixtures/forge_equipment_validator_original_pg17.sql`
+- `scripts/fixtures/forge_feat_materializer_discriminators_original_pg17.sql`
+- `scripts/fixtures/forge_feat_materializer_local_auth_extension_pg17.sql`
+- `scripts/fixtures/forge_feat_materializer_original_pg17.sql`
+- `scripts/fixtures/forge_gi_cp_cs_local_jwt_race_pg17.sql`
+- `scripts/fixtures/forge_high_risk_original_progression_triggers_pg17.sql`
+- `scripts/fixtures/forge_high_risk_progression_local_auth_pg17.sql`
+- `scripts/fixtures/forge_inventory_access_original_pg17.sql`
+- `scripts/fixtures/forge_inventory_policy_source_local_auth_pg17.sql`
+- `scripts/fixtures/forge_market_cash_original_functions_pg17.sql`
+- `scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql`
+- `scripts/fixtures/forge_materializer_original_functions_pg17.sql`
+- `scripts/fixtures/forge_merchant_inventory_live_writer_local_auth_pg17.sql`
+- `scripts/fixtures/forge_nested_choices_local_auth_pg17.sql`
+- `scripts/fixtures/forge_nested_choices_original_pg17.sql`
+- `scripts/fixtures/forge_original_merchant_buy_source_pg17.sql`
+- `scripts/fixtures/forge_owner_constraint_deferred_creation_local_auth_pg17.sql`
+- `scripts/fixtures/forge_owner_constraint_original_inventory_handlers_pg17.sql`
+- `scripts/fixtures/forge_progression_authority_local_auth_extension_pg17.sql`
+- `scripts/fixtures/forge_progression_authority_original_pg17.sql`
+- `scripts/fixtures/forge_seeded_nested_choices_v1.json`
+- `scripts/fixtures/forge_seeded_scenarios_v1.json`
+- `scripts/fixtures/forge_seeded_starting_spells_v1.json`
+- `scripts/fixtures/forge_seeded_warlock_child_completion_v1.json`
+- `scripts/fixtures/forge_seeded_wizard_spells_v1.json`
+- `scripts/fixtures/forge_sheet_authority_tags_local_auth_extension_pg17.sql`
+- `scripts/fixtures/forge_sheet_authority_tags_original_pg17.sql`
+- `scripts/fixtures/forge_species_light_original_helpers_pg17.sql`
+- `scripts/fixtures/forge_species_light_positive_local_auth_pg17.sql`
+- `scripts/fixtures/forge_starting_spells_local_auth_pg17.sql`
+- `scripts/fixtures/forge_starting_spells_original_pg17.sql`
+- `scripts/fixtures/forge_subclass_choice_local_auth_pg17.sql`
+- … 18 more
 
 ## Trust and update procedure
 
