@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/forge-warlock-j167-ci-20261107` |
-| Exact source commit represented by this archive snapshot | `d8363b5d5a78fd01518b2d49d88b2391cf2e9a16` |
+| Exact source commit represented by this archive snapshot | `a34e1f23579b2a669004deed022fa6b41287bd97` |
 | Compared with | `51c351a142d03378dff8e47e05182afe21a15622` (main comparison base) |
-| Last source commit title | test(forge): signed J167 source-only Warlock browser-shaped replay |
+| Last source commit title | docs(forge): receipt signed J167 source-only acceptance and browser parity gap |
 | Files changed relative to main | 110 (81 non-docs; 29 docs) |
-| Last source commit | 6 files (3 non-docs; 3 authored docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -20,9 +20,6 @@ The latest source commit includes authored documentation. Verify correctness and
 - `docs/ACTIVE_WORK.md`
 - `docs/Forge_Warlock_Child_Completion_2026-11-06.md`
 - `docs/HANDOFF_LOG.md`
-- `scripts/fixtures/forge_seeded_warlock_child_completion_v1.json`
-- `scripts/test_forge_immutable_creation_replay_local_auth.mjs`
-- `scripts/validate_forge_seeded_warlock_child_completion.mjs`
 
 ## Research-branch change inventory versus main
 
