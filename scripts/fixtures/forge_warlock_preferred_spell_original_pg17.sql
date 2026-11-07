@@ -23,6 +23,9 @@ END $gate$;
 -- Add only the missing type-compatible local projections. This is NOT full
 -- production spell catalog, schema defaults, grants, RLS, or source inventory.
 ALTER TABLE public.spells_catalog
+ ADD COLUMN IF NOT EXISTS range_unit text,
+ ADD COLUMN IF NOT EXISTS range_distance numeric,
+ ADD COLUMN IF NOT EXISTS attack_type text,
  ADD COLUMN IF NOT EXISTS spell_key text,
  ADD COLUMN IF NOT EXISTS slug text,
  ADD COLUMN IF NOT EXISTS source_file text,

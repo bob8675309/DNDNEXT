@@ -23,7 +23,7 @@ BEGIN
   OR EXISTS(SELECT 1 FROM public.class_level_progression WHERE class_id='6792abd0-1fd9-44fb-ae4c-56c307ab791a'::uuid AND class_level=2)
   OR EXISTS(SELECT 1 FROM public.class_feature_catalog WHERE feature_key='class:warlock:xphb::eldritch-invocation-options:xphb:1')
   OR EXISTS(SELECT 1 FROM public.class_feature_option_catalog WHERE id='a0968ca9-deab-4bef-a8b0-05e11d4b3e0a'::uuid)
-  OR EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='spells_catalog' AND column_name IN ('range_unit','range_distance','attack_type'))
+  OR (SELECT count(*) FROM information_schema.columns WHERE table_schema='public' AND table_name='spells_catalog' AND column_name IN ('range_unit','range_distance','attack_type'))<>3
  THEN RAISE EXCEPTION 'J164 isolated Warlock level2 dependency fixture source/scope baseline mismatch';
  END IF;
 END $guard$;
@@ -104,9 +104,8 @@ VALUES
  ('a0968ca9-deab-4bef-a8b0-05e11d4b3e0a'::uuid,'optional-feature:agonizing-blast|XPHB','eldritch-invocation','Agonizing Blast','XPHB','warlock','{"minClassLevel":2}'::jsonb,true,'{"kind":"warlock-damage-cantrip","distinctPerRepeat":true}'::jsonb,'{"sourceFile":"data/optionalfeatures.json","descriptionAuthority":"5etools:optionalfeature","descriptionReviewedAt":"2026-10-09","descriptionSourceFile":"data/optionalfeatures.json","descriptionSourceCommit":"8c026b807fac21862a309379a0c3228a0683198b"}'::jsonb,'{"normalizedFrom":"5etools_optionalfeature"}'::jsonb);
 
 -- The earlier reduced spells table omitted these original handler columns.
-ALTER TABLE public.spells_catalog ADD COLUMN range_unit text;
-ALTER TABLE public.spells_catalog ADD COLUMN range_distance numeric;
-ALTER TABLE public.spells_catalog ADD COLUMN attack_type text;
+-- Source-original preferred view fixture already created the three exact range
+-- projections before installing that immutable view; no duplicate ALTER here.
 
 -- Five exact live-identified source-eligible Warlock starting-spell specimens.
 INSERT INTO public.spells_catalog
