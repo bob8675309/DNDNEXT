@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/forge-warlock-react-choice-ui-j169-20261107` |
-| Exact source commit represented by this archive snapshot | `45946b25637a052eebbb91df0b382fe3ebf746d6` |
+| Exact source commit represented by this archive snapshot | `d3168539b203f5394177df0f343111ba89418807` |
 | Compared with | `51c351a142d03378dff8e47e05182afe21a15622` (main comparison base) |
-| Last source commit title | test(forge): J169 isolated Chromium React Warlock source-choice UI parity |
+| Last source commit title | docs(forge): receipt exact-head Chromium J169 and source-original JWT acceptance |
 | Files changed relative to main | 114 (85 non-docs; 29 docs) |
-| Last source commit | 6 files (3 non-docs; 3 authored docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,12 +17,9 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-forge-browser-warlock-choice.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/Forge_Warlock_Child_Completion_2026-11-06.md`
 - `docs/HANDOFF_LOG.md`
-- `scripts/browser/forge_warlock_choice_dom.jsx`
-- `scripts/browser/verify_forge_warlock_choice_dom.mjs`
 
 ## Research-branch change inventory versus main
 
