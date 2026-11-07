@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/forge-warlock-client-wire-j168-20261107` |
-| Exact source commit represented by this archive snapshot | `4b799ad362456fe2c65a9bef143f1cc0d4c25063` |
+| Exact source commit represented by this archive snapshot | `0527f945269b6df32ad1f5c32fbe0434082d52f8` |
 | Compared with | `51c351a142d03378dff8e47e05182afe21a15622` (main comparison base) |
-| Last source commit title | test(forge): J168 real Warlock client source wire through original signed v3 |
+| Last source commit title | docs(forge): receipt authenticated J168 pure frontend serializer acceptance |
 | Files changed relative to main | 111 (82 non-docs; 29 docs) |
-| Last source commit | 8 files (5 non-docs; 3 authored docs) |
+| Last source commit | 3 files (0 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,14 +17,9 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-forge-immutable-creation-replay.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/Forge_Warlock_Child_Completion_2026-11-06.md`
 - `docs/HANDOFF_LOG.md`
-- `scripts/agents/forge_warlock_client_wire.mjs`
-- `scripts/fixtures/forge_seeded_warlock_child_completion_v1.json`
-- `scripts/test_forge_immutable_creation_replay_local_auth.mjs`
-- `scripts/validate_forge_seeded_warlock_child_completion.mjs`
 
 ## Research-branch change inventory versus main
 
