@@ -244,5 +244,13 @@
     "full NewNpcModalV3 original creation & legacy player sheet compatibility",
     "full app browser GM/merchant/town/map interactions",
     "source-drift guards, ACL/definer/RLS/grants including backstory trigger, rollback and Supabase migration"
-  ]
+  ],
+  "additional_current_main_compatibility_patch": {
+    "path": "components/PlayerCharacterProfilePanelUnified.js",
+    "base_blob_sha": "8a561e51eafd9e8507db7a4d3f15fd4699d6d1b8",
+    "reason": "Remove 5 role-wide private-narrative SELECT columns from legacy Player Profile fallback while preserving authorized sanitized v2 RPC",
+    "changes_exclusively_fallback_projection": true
+  },
+  "additional_source_validator": "scripts/validate_npc_profile_consumer_acl.mjs",
+  "additional_workflow_change": ".github/workflows/validate-npc-private-profile-cutover.yml adds new validator and changed-path triggers; original workflow source no longer byte-identical"
 }

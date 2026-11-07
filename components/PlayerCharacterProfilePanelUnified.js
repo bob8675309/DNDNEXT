@@ -25,11 +25,15 @@ function isEditableTarget(target) {
 }
 
 function characterSelectColumns() {
+  // Fallback account/legacy roster reads use only columns available to every
+  // authenticated reader after the coordinated NPC private-lore column ACL.
+  // Authorized editors still receive their full, sanitized details through
+  // get_my_player_characters_v2(); never request GM-private narrative directly.
   return [
-    "id", "name", "kind", "status", "race", "role", "description", "background",
-    "motivation", "quirk", "mannerism", "voice", "affiliation", "location_id",
-    "last_known_location_id", "storefront_enabled", "storefront_title", "storefront_tagline",
-    "storefront_bg_url", "storefront_bg_video_url", "storefront_bg_image_url", "portrait_url",
+    "id", "name", "kind", "status", "race", "role", "description",
+    "affiliation", "location_id", "last_known_location_id", "storefront_enabled",
+    "storefront_title", "storefront_tagline", "storefront_bg_url",
+    "storefront_bg_video_url", "storefront_bg_image_url", "portrait_url",
     "portrait_thumb_url", "portrait_library_id", "visual_asset_id", "tags",
   ].join(",");
 }
