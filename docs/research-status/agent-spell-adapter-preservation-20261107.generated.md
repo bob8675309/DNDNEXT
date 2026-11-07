@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/spell-adapter-preservation-20261107` |
-| Exact source commit represented by this archive snapshot | `f2f3804b83d6908245846205b96f3d22407317be` |
+| Exact source commit represented by this archive snapshot | `2c89466768fb91156c18d9be42d5de314b887057` |
 | Compared with | `2d2135ced24bcb4fbb4d8ccefc27bda70e91eb05` (main comparison base) |
-| Last source commit title | test(research): exercise preservation fail-closed mutations without database access |
-| Files changed relative to main | 3 (3 non-docs; 0 docs) |
+| Last source commit title | ci(research): run free source-only 19-spell preservation gate |
+| Files changed relative to main | 4 (4 non-docs; 0 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
@@ -17,10 +17,11 @@
 
 ## Latest source commit paths
 
-- `scripts/test_tactical_spell_preservation.mjs`
+- `.github/workflows/validate-tactical-spell-preservation.yml`
 
 ## Research-branch change inventory versus main
 
+- `.github/workflows/validate-tactical-spell-preservation.yml`
 - `scripts/data/tactical_spell_preservation_20261107.json`
 - `scripts/test_tactical_spell_preservation.mjs`
 - `scripts/validate_tactical_spell_preservation.mjs`
