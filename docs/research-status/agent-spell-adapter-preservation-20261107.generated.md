@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/spell-adapter-preservation-20261107` |
-| Exact source commit represented by this archive snapshot | `fa6f2c6a27b61a681c6f2122ed5f720c98f818d8` |
+| Exact source commit represented by this archive snapshot | `a013c90b437571c7a39ca4b2fa3260402d786045` |
 | Compared with | `2d2135ced24bcb4fbb4d8ccefc27bda70e91eb05` (main comparison base) |
-| Last source commit title | fix(research): recognize transaction-only original phase evidence without inventing rollback wording |
+| Last source commit title | ci(research): revalidate exact handoff receipt revision on source-only preservation branch |
 | Files changed relative to main | 7 (4 non-docs; 3 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/validate_tactical_spell_preservation.mjs`
+- `.github/workflows/validate-tactical-spell-preservation.yml`
 
 ## Research-branch change inventory versus main
 

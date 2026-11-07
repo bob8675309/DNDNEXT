@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-07T15:24:22Z | agent/spell-adapter-preservation-20261107 (fa6f2c6a27b61a681c6f2122ed5f720c98f818d8) | 2d2135ced24bcb4fbb4d8ccefc27bda70e91eb05 |
+| 2026-11-07T15:25:30Z | agent/spell-adapter-preservation-20261107 (a013c90b437571c7a39ca4b2fa3260402d786045) | 2d2135ced24bcb4fbb4d8ccefc27bda70e91eb05 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
