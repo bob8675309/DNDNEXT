@@ -5,37 +5,23 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/spell-adapter-preservation-20261107` |
-| Exact source commit represented by this archive snapshot | `2d2135ced24bcb4fbb4d8ccefc27bda70e91eb05` |
+| Exact source commit represented by this archive snapshot | `f9a6e0953223a5ee215c199bbba82d40355231a7` |
 | Compared with | `2d2135ced24bcb4fbb4d8ccefc27bda70e91eb05` (main comparison base) |
-| Last source commit title | docs: consolidate spell-effects history and durable new-chat handoff (#336) |
-| Files changed relative to main | 0 (0 non-docs; 0 docs) |
-| Last source commit | 16 files (4 non-docs; 12 authored docs) |
+| Last source commit title | test(research): inventory 19 XPHB tactical spell adapters and evidence boundaries |
+| Files changed relative to main | 1 (1 non-docs; 0 docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `AGENTS.md`
-- `docs/ACTIVE_WORK.md`
-- `docs/DOCUMENT_LIFECYCLE.md`
-- `docs/Deployed_Tactical_Spell_Effects_Smoke_Recovery_2026-11-07.md`
-- `docs/HANDOFF_LOG.md`
-- `docs/Legacy_PR_Spell_Engine_Merge_Readiness_2026-11-07.md`
-- `docs/NEXT_CHAT_START_HERE.md`
-- `docs/PHASED_DEVELOPMENT_CHECKLIST.md`
-- `docs/PROJECT_STATE.md`
-- `docs/README.md`
-- `docs/START_HERE_ACTIVE_HANDOFF.md`
-- `docs/SYSTEM_REGISTRY.json`
-- `docs/WORKSTREAMS_AND_PR_DEPENDENCIES.md`
-- `scripts/agents/project_health.mjs`
-- `scripts/agents/validate_project_health.mjs`
-- `scripts/validate_handoff_registry.mjs`
+- `scripts/data/tactical_spell_preservation_20261107.json`
 
 ## Research-branch change inventory versus main
 
+- `scripts/data/tactical_spell_preservation_20261107.json`
 
 ## Trust and update procedure
 
