@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/spell-adapter-preservation-20261107` |
-| Exact source commit represented by this archive snapshot | `e00128482b0c29c1d5ea58ae475d66c788e167ec` |
+| Exact source commit represented by this archive snapshot | `e66766b19cc7c2457a1e3bebfbf76d7a176cd0fe` |
 | Compared with | `2d2135ced24bcb4fbb4d8ccefc27bda70e91eb05` (main comparison base) |
-| Last source commit title | docs(research): reconcile owner video, pivot, and held Acid Splash taxonomy contradiction |
+| Last source commit title | docs(research): reaffirm shared Spell Engine pivot and source-parity review gates |
 | Files changed relative to main | 7 (4 non-docs; 3 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/Tactical_Spell_Adapter_Preservation_Gate_2026-11-07.md`
+- `docs/ACTIVE_WORK.md`
 
 ## Research-branch change inventory versus main
 
