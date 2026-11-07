@@ -5,19 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/spell-adapter-preservation-20261107` |
-| Exact source commit represented by this archive snapshot | `a013c90b437571c7a39ca4b2fa3260402d786045` |
+| Exact source commit represented by this archive snapshot | `585d87db23c4b1470de73eba720be7a9e599728e` |
 | Compared with | `2d2135ced24bcb4fbb4d8ccefc27bda70e91eb05` (main comparison base) |
-| Last source commit title | ci(research): revalidate exact handoff receipt revision on source-only preservation branch |
+| Last source commit title | docs(research): append actual failing-then-passing CI receipt and release limits |
 | Files changed relative to main | 7 (4 non-docs; 3 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-tactical-spell-preservation.yml`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
