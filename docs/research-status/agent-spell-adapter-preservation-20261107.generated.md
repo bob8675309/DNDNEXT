@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/spell-adapter-preservation-20261107` |
-| Exact source commit represented by this archive snapshot | `f9a6e0953223a5ee215c199bbba82d40355231a7` |
+| Exact source commit represented by this archive snapshot | `e5c265197ba830270a0f0f840eef5ed9a51543b3` |
 | Compared with | `2d2135ced24bcb4fbb4d8ccefc27bda70e91eb05` (main comparison base) |
-| Last source commit title | test(research): inventory 19 XPHB tactical spell adapters and evidence boundaries |
+| Last source commit title | fix(research): preserve canonical Phase 1I–1Z ledger paths |
 | Files changed relative to main | 1 (1 non-docs; 0 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
