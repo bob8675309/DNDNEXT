@@ -82,7 +82,12 @@
       "ledger": "docs/Tactical_Encounter_Phase1I_Spell_Foundation_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "named-persisted",
-      "sourceReviewGap": "Current full signed-in multi-controller browser parity is unverified"
+      "sourceReviewGap": "Current full signed-in multi-controller browser parity is unverified; classLevel-based cantrip tier in original SQL requires character-level/multiclass parity review",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
     },
     {
       "key": "cure-wounds|xphb",
@@ -98,7 +103,12 @@
       "ledger": "docs/Tactical_Encounter_Phase1I_Spell_Foundation_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "unconfirmed",
-      "sourceReviewGap": "Not named in the resolved smoke log examples"
+      "sourceReviewGap": "Not named in the resolved smoke log examples",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
     },
     {
       "key": "sacred-flame|xphb",
@@ -114,7 +124,12 @@
       "ledger": "docs/Tactical_Encounter_Phase1J_Save_Spells_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "named-persisted",
-      "sourceReviewGap": "No modern full-catalogue signed-in browser parity"
+      "sourceReviewGap": "No modern full-catalogue signed-in browser parity",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
     },
     {
       "key": "toll-the-dead|xphb",
@@ -130,7 +145,12 @@
       "ledger": "docs/Tactical_Encounter_Phase1K_Toll_the_Dead_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "unconfirmed",
-      "sourceReviewGap": "Not named in resolved persisted smoke examples"
+      "sourceReviewGap": "Not named in resolved persisted smoke examples",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
     },
     {
       "key": "poison-spray|xphb",
@@ -146,7 +166,12 @@
       "ledger": "docs/Tactical_Encounter_Phase1L_Poison_Spray_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "unconfirmed",
-      "sourceReviewGap": "Not named in resolved persisted smoke examples"
+      "sourceReviewGap": "Not named in resolved persisted smoke examples",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
     },
     {
       "key": "false-life|xphb",
@@ -162,7 +187,12 @@
       "ledger": "docs/Tactical_Encounter_Phase1M_False_Life_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "named-persisted",
-      "sourceReviewGap": "Current signed-in cross-account reuse unverified"
+      "sourceReviewGap": "Current signed-in cross-account reuse unverified",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
     },
     {
       "key": "inflict-wounds|xphb",
@@ -178,7 +208,12 @@
       "ledger": "docs/Tactical_Encounter_Phase1N_Inflict_Wounds_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "unconfirmed",
-      "sourceReviewGap": "Not named in resolved persisted smoke examples"
+      "sourceReviewGap": "Not named in resolved persisted smoke examples",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
     },
     {
       "key": "shocking-grasp|xphb",
@@ -194,7 +229,12 @@
       "ledger": "docs/Tactical_Encounter_Phase1O_Shocking_Grasp_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "unconfirmed",
-      "sourceReviewGap": "Not named in resolved persisted smoke examples"
+      "sourceReviewGap": "Not named in resolved persisted smoke examples",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
     },
     {
       "key": "ray-of-frost|xphb",
@@ -210,7 +250,12 @@
       "ledger": "docs/Tactical_Encounter_Phase1P_Ray_of_Frost_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "unconfirmed",
-      "sourceReviewGap": "Not named in resolved persisted smoke examples"
+      "sourceReviewGap": "Not named in resolved persisted smoke examples",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
     },
     {
       "key": "chill-touch|xphb",
@@ -226,7 +271,12 @@
       "ledger": "docs/Tactical_Encounter_Phase1Q_Chill_Touch_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "unconfirmed",
-      "sourceReviewGap": "Not named in resolved persisted smoke examples"
+      "sourceReviewGap": "Not named in resolved persisted smoke examples",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
     },
     {
       "key": "mind-sliver|xphb",
@@ -242,7 +292,12 @@
       "ledger": "docs/Tactical_Encounter_Phase1R_Mind_Sliver_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "unconfirmed",
-      "sourceReviewGap": "Not named in resolved persisted smoke examples"
+      "sourceReviewGap": "Not named in resolved persisted smoke examples",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
     },
     {
       "key": "word-of-radiance|xphb",
@@ -258,7 +313,12 @@
       "ledger": "docs/Tactical_Encounter_Phase1S_Word_of_Radiance_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "unconfirmed",
-      "sourceReviewGap": "Not named in resolved persisted smoke examples"
+      "sourceReviewGap": "Not named in resolved persisted smoke examples",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
     },
     {
       "key": "guiding-bolt|xphb",
@@ -274,7 +334,12 @@
       "ledger": "docs/Tactical_Encounter_Phase1T_Guiding_Bolt_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "unconfirmed",
-      "sourceReviewGap": "Not named in resolved persisted smoke examples"
+      "sourceReviewGap": "Not named in resolved persisted smoke examples",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
     },
     {
       "key": "vicious-mockery|xphb",
@@ -290,7 +355,12 @@
       "ledger": "docs/Tactical_Encounter_Phase1U_Vicious_Mockery_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "unconfirmed",
-      "sourceReviewGap": "Hearing-only targeting not fully automated; not named in persisted smoke"
+      "sourceReviewGap": "Hearing-only targeting not fully automated; not named in persisted smoke",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
     },
     {
       "key": "healing-word|xphb",
@@ -306,14 +376,19 @@
       "ledger": "docs/Tactical_Encounter_Phase1V_Healing_Word_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "named-persisted",
-      "sourceReviewGap": "Modern signed-in simultaneous-controller coverage unverified"
+      "sourceReviewGap": "Modern signed-in simultaneous-controller coverage unverified",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
     },
     {
       "key": "acid-splash|xphb",
       "source": "XPHB",
       "phase": "Phase 1W",
-      "mechanicsFamily": "point-area-save",
-      "exception": "Point-radius target assembly, cover and hidden-target masking, shared roll",
+      "mechanicsFamily": "point-origin-sphere-save",
+      "exception": "XPHB point within 60 ft; ALL server-derived eligible creatures within 5-ft-radius Sphere independently save DEX against one shared Acid roll; cover and concealed identities handled by server",
       "ui": "pages/encounters/combat.js",
       "rpc": "public.encounter_cast_point_area_spell_v1",
       "sql": "sql/20260730_04_tactical_acid_splash.sql",
@@ -322,7 +397,12 @@
       "ledger": "docs/Tactical_Encounter_Phase1W_Acid_Splash_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "named-persisted",
-      "sourceReviewGap": "Modern full hidden-target multi-account browser coverage unverified"
+      "sourceReviewGap": "Modern full hidden-target multi-account browser coverage unverified; held #309 research taxonomy wrongly labels it limited-number-of-targets; do not reuse that tag as an executable source rule; classLevel-based cantrip tier in original SQL requires character-level/multiclass parity review",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
     },
     {
       "key": "magic-missile|xphb",
@@ -338,7 +418,12 @@
       "ledger": "docs/Tactical_Encounter_Phase1X_Magic_Missile_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "named-persisted",
-      "sourceReviewGap": "Shield reaction interaction remains GM-assisted"
+      "sourceReviewGap": "Shield reaction interaction remains GM-assisted",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
     },
     {
       "key": "burning-hands|xphb",
@@ -354,7 +439,12 @@
       "ledger": "docs/Tactical_Encounter_Phase1Y_Burning_Hands_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "unconfirmed",
-      "sourceReviewGap": "Not named in resolved persisted smoke examples"
+      "sourceReviewGap": "Not named in resolved persisted smoke examples",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
     },
     {
       "key": "lightning-bolt|xphb",
@@ -370,7 +460,51 @@
       "ledger": "docs/Tactical_Encounter_Phase1Z_Lightning_Bolt_Status.md",
       "transactionEvidence": "rollback-only eligible-caster synthetic fixture (no eligible persistent caster at rollout)",
       "persistedSmokeEvidence": "unconfirmed",
-      "sourceReviewGap": "No persistent eligible caster at rollout; transaction-only eligible-caster evidence, not live persisted cast"
+      "sourceReviewGap": "No persistent eligible caster at rollout; transaction-only eligible-caster evidence, not live persisted cast",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
+    }
+  ],
+  "architectureBoundary": {
+    "approvedPivotDate": "2026-10-31",
+    "oldAdapters": "19 deployed source-qualified XPHB per-spell RPC routes are regression oracles, NOT a mandate to author one new RPC per imported spell",
+    "futureDirection": "versioned reviewed closed-vocabulary mechanics-family recipe engine reusing existing server authority, only after one-spell-at-a-time parity and explicit release approval",
+    "heldReferences": [
+      {
+        "pr": 309,
+        "scope": "research-only 24 attack-type signals / 22 manually listed attack exceptions; P1 structural schema + preflight / synthetic examples; NOT a deployed interpreter"
+      },
+      {
+        "pr": 312,
+        "scope": "research-only seven-reference-spell P2 shadow parity; NOT a deployed interpreter"
+      }
+    ],
+    "classificationBoundary": "mechanicsFamily below is a descriptive preservation label for the deployed adapter, NOT the classifier vocabulary, a canonical source rule, a trusted recipe, or a casting authorization"
+  },
+  "reviewConflicts": [
+    {
+      "id": "xphb-acid-splash-held-classifier",
+      "status": "open-review-required",
+      "heldResearch": "PR #309 utils/tacticalSpellMechanicsReview.mjs XPHB_NON_ATTACK_EXCEPTIONS['acid-splash|XPHB'] includes selected-target-area-save/limited-number-of-targets",
+      "deployedSource": "sql/20260730_04_tactical_acid_splash.sql",
+      "deployedLedger": "docs/Tactical_Encounter_Phase1W_Acid_Splash_Status.md",
+      "mainP1Spec": "docs/Spell_Recipe_P1_Schema_2026-10-31.md",
+      "reason": "The deployed reviewed XPHB spell selects a point within 60 ft, derives EVERY eligible creature inside a 5-ft-radius Sphere, and rolls independent Dex saves. The held taxonomy's limited-number-of-targets tag is inconsistent with that mechanic; the held classifier must not be used as execution truth.",
+      "requiredFollowup": "Correct/review taxonomy in a separately reviewed P1 research extraction without modifying deployed Phase 1W behavior or pulling held PR #309 wholesale"
+    },
+    {
+      "id": "cantrip-total-level-parity",
+      "status": "source-review-required-not-a-confirmed-runtime-defect",
+      "sourceFiles": [
+        "sql/20260727_13_tactical_spell_casting_slice.sql",
+        "sql/20260730_04_tactical_acid_splash.sql"
+      ],
+      "ownerDecision": "docs/SPELL_ENGINE_DECISIONS.md",
+      "reason": "Original cantrip damage scaling reads spellcasting profile 'classLevel' at 5/11/17 in these SQL bodies, while the original Phase 1W ledger documents character-level scaling. Confirm how that profile value is defined for multiclass characters before claiming full source-rule parity or migrating effects.",
+      "requiredFollowup": "Trace source-owned spellcasting profile and true character-level semantics with isolated multiclass fixture; do not change live SQL from source-only evidence"
     }
   ]
 }
