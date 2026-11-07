@@ -269,4 +269,123 @@ const anonCreate=await rpc(makeClient(),"create_player_character_v2",
  {p_payload:{name:"C33 anonymous",sheet:{classKey:"fighter",level:1}},p_spell_choices:[]});
 assert.ok(anonCreate.error,"Anonymous cannot call original Forge v2");
 console.log("PASS C3J11: anonymous GM/creation APIs remain blocked; original sources and staged privacy integrate with genuine JWTs");
-console.log("C3.3 ORIGINAL FORGE + PRIVACY JOINT TEST PASS (C3J00–C3J11). Scope: true original create_character_v1, create_player_character_v2/v3, stage1–3 and signed Auth, but NOT the 31-trigger/market/full-NewNpcModalV3-browser release gate.");
+console.log("PASS C3J00–C3J11 joint original Forge + staged privacy pre-inventory phase accepted");
+// C3I: Research the source-original deferred equipment CHECK bug + guarded
+// four-policy candidate within THIS SAME genuine signed-in original Forge v2/v3
+// + three-stage NPC privacy database. Standalone J78–J102 remains untouched.
+sqlFile("scripts/fixtures/c33_forge_privacy_inventory_join_setup_pg17.sql");
+const equip=(name,nonce)=>({
+ name,creation_request_id:nonce,
+ sheet:{classKey:"fighter",level:1,
+  startingEquipmentSelections:{mode:"package",classOption:"A",ruleset:"vanilla"}}
+});
+const firstEquipment=ok(await call2(equip("C33 prior-check starter",id(7410))),
+ "original v2 equipment before legacy CHECK");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_type='character' AND owner_id='"+
+ firstEquipment+"' AND card_payload->>'startingEquipment'='true'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_currency WHERE character_id='"+firstEquipment+"'"),"1");
+assert.equal(sql("SELECT creator_user_id FROM private.character_creator_attribution WHERE character_id='"+
+ firstEquipment+"'"),people.CREATOR.id);
+console.log("PASS C3I01: original deferred equipment commits with staged NPC privacy before obsolete owner CHECK is recreated");
+
+sqlFile("scripts/fixtures/forge_owner_constraint_deferred_creation_local_auth_pg17.sql");
+sqlFile("scripts/fixtures/forge_inventory_policy_source_local_auth_pg17.sql");
+assert.equal(sql("SELECT count(*) FROM pg_constraint WHERE conrelid='public.inventory_items'::regclass "+
+ "AND conname IN ('inventory_items_owner_type_check','inventory_items_owner_type_chk')"),"2");
+assert.equal(sql("SELECT count(*) FROM pg_policy WHERE polrelid='public.inventory_items'::regclass"),"4");
+console.log("PASS C3I02: both original inventory owner CHECKs, two original item triggers and four pre-hardening RLS policies");
+
+const oldChecksPayload=equip("C33 legacy blocked v2",id(7411));
+const attrsBeforeBlocked=sql("SELECT count(*) FROM private.character_creator_attribution");
+const accountBeforeBlocked=sql("SELECT md5(sheet::text) FROM public.players WHERE user_id='"+
+ people.CREATOR.id+"'");
+const oldChecks=await call2(oldChecksPayload);
+assert.equal(reject(oldChecks,"original signed v2 under old owner CHECK").code,"23514");
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE creation_request_id='"+id(7411)+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM private.character_creator_attribution"),attrsBeforeBlocked);
+assert.equal(sql("SELECT md5(sheet::text) FROM public.players WHERE user_id='"+
+ people.CREATOR.id+"'"),accountBeforeBlocked);
+const oldChecksV3=await call3(equip("C33 legacy blocked v3",id(7412)),[]);
+assert.equal(reject(oldChecksV3,"original signed v3 under old owner CHECK").code,"23514");
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE creation_request_id='"+id(7412)+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM private.character_creator_attribution"),attrsBeforeBlocked);
+console.log("PASS C3I03: signed original v2 and nested v3 fail 23514 at deferred COMMIT; character/creator/account rollback");
+
+sqlFile("sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql");
+sql("NOTIFY pgrst,'reload schema'");
+assert.equal(sql("SELECT count(*) FROM pg_constraint WHERE conrelid='public.inventory_items'::regclass "+
+ "AND conname='inventory_items_owner_type_chk'"),"0");
+assert.equal(sql("SELECT convalidated FROM pg_constraint WHERE conrelid='public.inventory_items'::regclass "+
+ "AND conname='inventory_items_owner_type_check'"),"t");
+console.log("PASS C3I04: exact guarded combined inventory policy + CHECK candidate applied only to disposable NPC privacy database");
+
+const afterHardening=ok(await call2(oldChecksPayload),"original v2 after combined fix");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_type='character' "+
+ "AND owner_id='"+afterHardening+"' AND card_payload->>'startingEquipment'='true'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_currency WHERE character_id='"+afterHardening+"'"),"1");
+assert.equal(sql("SELECT creator_user_id FROM private.character_creator_attribution WHERE character_id='"+
+ afterHardening+"'"),people.CREATOR.id);
+const afterHardeningV3=ok(await call3(equip("C33 fixed nested v3",id(7413)),[]),
+ "original nested v3 after combined fix");
+assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_type='character' "+
+ "AND owner_id='"+afterHardeningV3+"' AND card_payload->>'startingEquipment'='true'"),"1");
+assert.equal(sql("SELECT count(*) FROM public.character_currency WHERE character_id='"+afterHardeningV3+"'"),"1");
+assert.equal(sql("SELECT creator_user_id FROM private.character_creator_attribution WHERE character_id='"+
+ afterHardeningV3+"'"),people.CREATOR.id);
+console.log("PASS C3I05: signed original v2/v3 now atomically create character-owned item/currency/immutable creator under privacy stages 1–3");
+
+const itemId=sql("SELECT id FROM public.inventory_items WHERE owner_type='character' "+
+ "AND owner_id='"+afterHardening+"' ORDER BY id LIMIT 1");
+const creatorItem=await people.CREATOR.who.from("inventory_items")
+ .select("id,owner_type,owner_id").eq("id",itemId).maybeSingle();
+assert.ifError(creatorItem.error);
+assert.equal(creatorItem.data.owner_type,"character");
+const outsiderItem=await people.OUTSIDER.who.from("inventory_items")
+ .select("id").eq("id",itemId);
+assert.ifError(outsiderItem.error);assert.deepEqual(outsiderItem.data,[]);
+const forgedDirect=await people.CREATOR.who.from("inventory_items").insert({
+ user_id:people.CREATOR.id,owner_type:"character",owner_id:created2,
+ card_payload:{startingEquipment:false},item_name:"C33 unauthorized character inventory"
+});
+assert.ok(forgedDirect.error,"Direct character-owned INSERT was unexpectedly authorized");
+const forcedUpdate=await people.CREATOR.who.from("inventory_items")
+ .update({owner_type:"player",owner_id:people.CREATOR.id}).eq("id",itemId).select("id");
+assert.ifError(forcedUpdate.error);assert.deepEqual(forcedUpdate.data,[]);
+const forcedDelete=await people.CREATOR.who.from("inventory_items")
+ .delete().eq("id",itemId).select("id");
+assert.ifError(forcedDelete.error);assert.deepEqual(forcedDelete.data,[]);
+assert.equal(sql("SELECT owner_type FROM public.inventory_items WHERE id='"+itemId+"'"),"character");
+console.log("PASS C3I06: creator reads its materialized character gear but cannot directly mint, launder or delete character-owned inventory");
+
+const playerOwned=await people.CREATOR.who.from("inventory_items").insert({
+ user_id:people.CREATOR.id,owner_type:"player",owner_id:people.CREATOR.id,
+ card_payload:{},item_name:"C33 legitimate player-owned"
+}).select("id,owner_type").single();
+assert.ifError(playerOwned.error);assert.equal(playerOwned.data.owner_type,"player");
+const editedPlayerOwned=await people.CREATOR.who.from("inventory_items")
+ .update({item_name:"C33 legitimate renamed player-owned"})
+ .eq("id",playerOwned.data.id).select("item_name").single();
+assert.ifError(editedPlayerOwned.error);
+assert.equal(editedPlayerOwned.data.item_name,"C33 legitimate renamed player-owned");
+const adminDirect=await people.ADMIN.who.from("inventory_items").insert({
+ user_id:people.ADMIN.id,owner_type:"character",owner_id:afterHardening,
+ card_payload:{},item_name:"C33 GM-granted item"
+}).select("id,owner_type").single();
+assert.ifError(adminDirect.error);assert.equal(adminDirect.data.owner_type,"character");
+console.log("PASS C3I07: regular player-owned DML and explicit Admin character-owned item path preserved");
+
+sql("UPDATE public.character_permissions SET can_edit=false,can_inventory=false "+
+ "WHERE user_id='"+people.CREATOR.id+"' AND character_id='"+afterHardening+"'");
+const nowDeniedItem=await people.CREATOR.who.from("inventory_items")
+ .select("id").eq("id",itemId);
+assert.ifError(nowDeniedItem.error);assert.deepEqual(nowDeniedItem.data,[]);
+const adminStillReads=await people.ADMIN.who.from("inventory_items")
+ .select("id").eq("id",itemId).single();
+assert.ifError(adminStillReads.error);assert.equal(adminStillReads.data.id,itemId);
+const stillCreator=sql("SELECT creator_user_id FROM private.character_creator_attribution WHERE character_id='"+
+ afterHardening+"'");
+assert.equal(stillCreator,people.CREATOR.id);
+console.log("PASS C3I08: revoked character access hides source-owned gear; Admin retains read, immutable creator receipt unchanged");
+
+console.log("C3.3 ORIGINAL FORGE + PRIVACY + COMBINED INVENTORY CHECK/RLS JOINT TEST PASS (C3J00–C3J11, C3I00–C3I08). Source-original materializer/handlers, reduced helper/catalogues, NOT full production 31-trigger/browser parity.");
+
