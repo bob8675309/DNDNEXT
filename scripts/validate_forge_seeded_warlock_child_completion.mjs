@@ -92,8 +92,8 @@ export function compileWarlockChildPlans(data){
  assert.ok(sourceSql.includes(l.invocations[1].id) && sourceSql.includes(l.feature.key));
  assert.ok(sourceSql.includes("md5(pg_get_functiondef('private.validate_player_forge_nested_choice_payload_v1()'::regprocedure)) <> 'df2861cc76b0b74bb7cd57fbe61c9a05'"));
  assert.ok(sourceSql.includes("private.xphb_warlock_invocation_count_v1(2)<>3"));
- assert.equal(data.cases.length,3);
- const modes=["complete-both-representations","missing-legacy-child-group","source-owned-browser-shape"];
+ assert.equal(data.cases.length,4);
+ const modes=["complete-both-representations","missing-legacy-child-group","source-owned-browser-shape","production-source-choice-serializer"];
  const ids=new Set();
  const cases=data.cases.map((x,i)=>{
   exact(x,["scenarioId","seed","mode"],"case");
@@ -102,7 +102,7 @@ export function compileWarlockChildPlans(data){
   assert.ok(!ids.has(x.scenarioId));ids.add(x.scenarioId);
   return {...compileSeededIdentity(x.scenarioId,x.seed),mode:x.mode};
  });
- assert.equal(new Set(cases.map(x=>x.requestId)).size,3,"All scenario identities must be distinct");
+ assert.equal(new Set(cases.map(x=>x.requestId)).size,4,"All scenario identities must be distinct");
  return {schemaVersion:1,suite:data.suite,source:plain(l),cases};
 }
 export function loadWarlockChildPlans(){return compileWarlockChildPlans(readWarlockManifest());}

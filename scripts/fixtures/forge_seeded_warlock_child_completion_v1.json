@@ -161,6 +161,11 @@
       "scenarioId": "warlock-agblast-source-only-v3",
       "seed": 66166,
       "mode": "source-owned-browser-shape"
+    },
+    {
+      "scenarioId": "warlock-agblast-production-serializer-v3",
+      "seed": 66167,
+      "mode": "production-source-choice-serializer"
     }
   ]
 }

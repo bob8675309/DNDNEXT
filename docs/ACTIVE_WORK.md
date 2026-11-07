@@ -1,5 +1,21 @@
 # DNDNext — Active Work Contract
 
+## 2026-11-07 — J168 actual pure client serializer → genuine signed original RPC candidate (CI PENDING)
+
+**Branch/stack:** `agent/forge-warlock-client-wire-j168-20261107` starts at verified #333 `a34e1f23579b2a669004deed022fa6b41287bd97` (held atop #332 and the immutable seeded Forge chain). This continues, rather than substitutes for, confirmed [J167 original PG17+GoTrue #42340563084](https://github.com/bob8675309/DNDNEXT/actions/runs/42340563084) exact-head passing receipt.
+
+**Narrow source-level gap:** J167 manually authored source-owned Invocation `selections` with `name` and an abbreviated `kind`, whereas the actual browser source-choice adapter `serializeSourceChoices` emits `key/value/label/source/kind/metadata`; the frontend also derives groups and conditional children using `buildWarlockInvocationSourceGroups`, `toggleSourceChoiceSelection`, normalization and completion functions. Original class-option RPC may validate only canonical keys, but client-to-backend compatibility must be exercised instead of presumed.
+
+**Candidate:** `scripts/agents/forge_warlock_client_wire.mjs` dynamically imports the **unaltered** production pure JS modules `utils/warlockInvocationChoices.js` and `utils/playerForgeSourceChoices.js` (only extensionless import specifiers are mapped to in-memory ESM `data:` URLs); builds real XPHB Warlock2 source groups from the existing pinned five original source spells/three Invocations, toggles each using production handlers, completes Agonizing Blast's source-owned Eldritch Blast child, normalizes and serializes the original `sourceChoices`/`sourceChoiceSummary`. Selftest exercises deterministic repeated results, missing-preferred-spell rejection and acquisition-level prerequisite rejection, without emitting raw character payloads.
+
+**J168 signed scenario:** Fourth deterministic seed `66167` is appended to the existing manifest, following unchanged S001–S003 and J00–J167. J168 uses those production-generated source fields in signed original `create_player_character_v3` with no historical Invocation parent; asserts canonical class GI=3, spells=5, source child, CP/CS/G/GI/I/C, market stock and identical-intent nonce replay. The existing original PG17, true local GoTrue/PostgREST and static workflow checks run again, plus the new pure source-execution gate. No external rule parser, no original SQL changes, no React component modifications, no new live data, and no extra paid service.
+
+**Current status:** candidate committed; **new exact-head J168 CI unverified** as of this receipt. Do not treat J167 green as evidence for J168. Even a successful J168 proves the pure production source-choice serialization and original RPC integration for a **source-limited fixture**, not the actual React-rendered interaction, full browser network request, every imported catalogue option, full production RLS, or #317 concurrency. Original 17/31 creation-adjacent trigger definitions staged, 14 absent, five specifically receipted source-original handler suites.
+
+**One next bounded task:** inspect the first exact-head signed J168 result and any source-original rejection without weakening original validators. Only after green, plan a controlled rendered-browser request capture on disposable identities; production, deployment, maps, AI and unrelated functionality remain untouched.
+
+---
+
 ## 2026-11-07 — J167 source-only Warlock2 authenticated RPC acceptance VERIFIED
 
 **Exact executable commit:** `d8363b5d5a78fd01518b2d49d88b2391cf2e9a16` on held draft [PR #333](https://github.com/bob8675309/DNDNEXT/pull/333), `agent/forge-warlock-j167-ci-20261107`, stacked directly on held #332 `8f7647535b8e7b900d5884b9256f3465d0933a5e` (and transitively #331/#330/#329/#328/#324/#321). This CI mirror contains the same executable source as `research/forge-warlock-browser-source-only-20261106`; the `agent/` ref is used to suppress automatic Vercel preview under `scripts/vercel_ignore_build.mjs` without touching the preserved research source branch.

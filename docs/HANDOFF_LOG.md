@@ -433,3 +433,13 @@
 - **This documentation-only follow-up is a new SHA; earlier executable exact-head PASS must not be misrepresented as that new SHA passing.** Verify new-head checks after pushing this receipt.
 - **ONE NEXT BOUNDED TASK:** genuine controlled browser-to-RPC payload capture versus canonical serializer/J167 accepted source-only schema without live writes or preview; correct a reproduced mismatch only after separate review. Keep #317 lock / #321 privacy gates independent.
 
+
+## 2026-11-07 — J168 true frontend pure-source serialization → original signed Forge v3 candidate (CI pending)
+
+- **Branch/base:** `agent/forge-warlock-client-wire-j168-20261107` from verified #333 `a34e1f23579b2a669004deed022fa6b41287bd97`; no change to `main` or prior research branches. Existing [J167 exact final-head run #42340563084](https://github.com/bob8675309/DNDNEXT/actions/runs/42340563084) PG17+real signed GoTrue succeeded, but is NOT J168 evidence.
+- **New paths:** `scripts/agents/forge_warlock_client_wire.mjs` plus versioned fixture, its existing static validator, original JWT runner, isolated Forge workflow and living docs. No runtime components or original SQL modified.
+- **Engineering target:** J168 source-driven `buildWarlockInvocationSourceGroups` / `toggleSourceChoiceSelection` / `normalizeSourceChoiceSelections` / `sourceChoiceGroupsComplete` / `serializeSourceChoices` / `foundationChoiceSummary` from unmodified production modules, not a copied rules engine or the manually assembled J167 sourceChoices. Select pinned 3 Warlock2 Invocations including Agonizing Blast/Eldritch Blast dependent cantrip, assert exact client `label/value/kind/metadata` source-qualified wire shape, then original signed v3 canonical GI/spells/CP/CS/G/GI/I/C/stock/replay. Offline deterministic and invalid spell/prerequisite tests run in both original PG17 and local JWT workflow jobs.
+- **Evidence at candidate writing:** new exact-head J168 CI PENDING; no assertions of real rendered browser/session, full live RLS/catalogue, concurrency or production acceptance. 17/31 original triggers staged, 14 missing and five signed original handler suites remain previously established.
+- **Boundaries:** no merged PR, deployment, production DB/grants/data, world/town maps, paid models, AI activation or original validator edits. Candidate research remains draft until exact-head CI and owner review.
+- **ONE NEXT BOUNDED TASK:** check genuine original PG17 + local GoTrue J168 at the exact commit, record first failure if any, and only then consider controlled browser capture without live writes.
+

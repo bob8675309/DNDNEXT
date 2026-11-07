@@ -10,6 +10,7 @@ import { loadStartingSpellPlans } from "./validate_forge_seeded_starting_spells.
 import { loadWizardPlans } from "./validate_forge_seeded_wizard_spells.mjs";
 import { loadNestedPlans } from "./validate_forge_seeded_nested_choices.mjs";
 import { loadWarlockChildPlans } from "./validate_forge_seeded_warlock_child_completion.mjs";
+import { compileWarlockClientWire } from "./agents/forge_warlock_client_wire.mjs";
 import { mkdirSync, writeFileSync } from "node:fs";
 const e=process.env;
 for(const [key,value] of Object.entries({
@@ -2810,14 +2811,72 @@ wcReports.push({scenarioId:wcSourcePlan.scenarioId,seed:wcSourcePlan.seed,mode:w
  identicalReplayInert:true,canonicalCounts:wcSourceState.counts});
 console.log("PASS J167 genuine signed source-only Warlock2 v3, Agonizing Blast/Eldritch Blast source child, 3 GI/5 spells, atomic grants and replay inert");
 
+
+// J168: execute actual client builder, selection guards and serializer
+// rather than reproducing J167's hand-authored sourceChoice fields.
+// Authenticated original v3 remains the authority; no rendered React/browser
+// or full source catalog/RLS equivalence is asserted by this test.
+const wcWirePlan=warlockChildSuite.cases[3];
+assert.equal(wcWirePlan.mode,"production-source-choice-serializer");
+const wcWireData=await compileWarlockClientWire(wc);
+const wcWire=wcChild(wcWirePlan,false);
+wcWire.payload.sheet.classFeatureChoices={};
+wcWire.payload.sheet.classFeatureChoiceSummary=[];
+wcWire.payload.sheet.sourceChoices=wcWireData.sourceChoices;
+wcWire.payload.sheet.sourceChoiceSummary=wcWireData.sourceChoiceSummary;
+wcWire.payload.sheet.meta={
+ ...(wcWire.payload.sheet.meta||{}),
+ classFeatureChoices:{},classFeatureChoiceSummary:[],
+ sourceChoices:wcWireData.sourceChoices,sourceChoiceSummary:wcWireData.sourceChoiceSummary
+};
+assert.deepEqual(wcWire.payload.sheet.classFeatureChoices,{});
+assert.equal(Object.keys(wcWireData.sourceChoices).length,3);
+assert.equal(wcWireData.sourceChoiceSummary.length,4);
+const wcWireAg=wcWireData.sourceChoices["warlock-invocation-slot-2"];
+assert.equal(wcWireAg.fields.invocation.kind,"eldritch-invocation");
+assert.equal(wcWireAg.fields.invocation.selections[0].key,wcAg.key);
+assert.equal(wcWireAg.fields.invocation.selections[0].label,"Agonizing Blast");
+assert.ok(!Object.hasOwn(wcWireAg.fields.invocation.selections[0],"name"),
+ "J168 must really use client serializer, not J167 hand-authored option selection");
+assert.equal(wcWireAg.fields["child-agonizing-blast"].selections[0].value,wcBlast.id);
+assert.equal(wcWireAg.fields["child-agonizing-blast"].selections[0].metadata.spellId,wcBlast.id);
+const wcWireStockBefore=getStock(wcStock);
+const wcWireId=pass(await call3(people.PLAYER.client,wcWire.payload,wcWire.selections),
+ "J168 genuine signed v3 built with unmodified original frontend source serializer");
+const wcWireState=scenarioSnapshot(wcWireId);
+assert.equal(wcWireState.editorAuthenticated,true);
+assert.equal(wcWireState.source.classKey,"warlock");
+assert.equal(wcWireState.source.classSource,"XPHB");
+assert.equal(wcWireState.source.level,2);
+for(const t of ["characters","sheets","progression","events","grants","instances","items","currency"])
+ assert.equal(wcWireState.counts[t],1,"J168 "+t+" original canonical count");
+assert.equal(sql("SELECT count(*) FROM public.character_class_option_grant_instances WHERE character_id='"+wcWireId+"'"),"3");
+assert.equal(sql("SELECT count(*) FROM public.character_spells WHERE character_id='"+wcWireId+"' AND source_type='class'"),"5");
+assert.equal(sql("SELECT choices#>>'{child,value}' FROM public.character_class_option_grant_instances WHERE character_id='"+wcWireId+"' AND instance_key='warlock-invocation-slot-2'"),wcBlast.id);
+assert.equal(sql("SELECT option_catalog_id::text FROM public.character_class_option_grant_instances WHERE character_id='"+wcWireId+"' AND instance_key='warlock-invocation-slot-2'"),wcAg.id);
+assert.equal(Number(getStock(wcStock)),Number(wcWireStockBefore)-1);
+const wcWireGlobal=warlockCounts(),wcWireStockAfter=getStock(wcStock);
+assert.equal(pass(await call3(people.PLAYER.client,wcWire.payload,wcWire.selections),
+ "J168 original signed same-nonce real-serializer replay"),wcWireId);
+assert.deepEqual(scenarioSnapshot(wcWireId),wcWireState,
+ "J168 source-serialized replay altered original canonical row state");
+assert.equal(warlockCounts(),wcWireGlobal,"J168 repeated nonce duplicated canonical rows");
+assert.equal(getStock(wcStock),wcWireStockAfter,"J168 replay consumed merchant stock");
+wcReports.push({scenarioId:wcWirePlan.scenarioId,seed:wcWirePlan.seed,mode:wcWirePlan.mode,
+ localSignedV3:true,realFrontendPureBuilderAndSerializer:true,
+ historicalInvocationParentIncluded:false,sourceOwnedInvocationGIs:3,
+ sourceOwnedAgonizingChildPersisted:true,sourceChoiceSummaryCount:4,
+ originalHandlersAccepted:true,identicalReplayInert:true,canonicalCounts:wcWireState.counts});
+console.log("PASS J168 original signed Warlock2 v3 with real client source-builder/serializer fields, 3 GI/5 spells, Agonizing child and inert replay");
+
 writeFileSync("research-agent-artifact/FORGE_WARLOCK_CHILD_COMPLETION.json",JSON.stringify({
  schemaVersion:1,suite:warlockChildSuite.suite,fixture:"disposable-pg17-genuine-local-gotrue-postgrest",
  originalNestedHandlerMd5:"df2861cc76b0b74bb7cd57fbe61c9a05",
  originalClassOptionHandlerMd5:"6df5aee6f0519c9c77758d6e887ed8e4",
  liveSourceLevel:2, cases:wcReports,
  baseline:"existing-J00-J163-and-S001-S003-passed-before-candidate",
- limitations:["J165/J166 intentionally dual historical specimen; J167 browser-shaped source-only signed RPC, NOT rendered browser acceptance",
+ limitations:["J165/J166 dual historical specimen; J167 manually source-shaped; J168 unmodified pure client builder and serializer RPC, NOT rendered browser acceptance",
  "source-original level2 Warlock 3 slots/5 starting spell catalog specimens only",
  "production source RLS/browser, 14 absent original triggers, global lock ordering NOT proven"]
 },null,2)+"\n","utf8");
-console.log("PASS J164-J167 source-original Warlock nested and source-only browser-shaped RPC under real signed GoTrue; 17/31 staged trigger DDL unchanged");
+console.log("PASS J164-J168 original-source Warlock nested, source-only and actual pure client serialized RPC under signed GoTrue; 17/31 staged trigger DDL unchanged");
