@@ -16,7 +16,7 @@ assert(player.includes('supabase.rpc("get_my_player_characters_v2")'),
   "Primary player Profile must use server-authorized v2 reader");
 for (const col of ["background", "motivation", "quirk", "mannerism", "voice"]) {
   assert(stage2.includes(col), "Expected private-lore SQL column revoke missing "+col);
-  assert(!new RegExp('["\\\']'+col+'["\\\']').test(fallback),
+  assert(!fallback.includes(`"${col}"`) && !fallback.includes(`'${col}'`),
     "Fallback directly requests revoked private lore column: "+col);
 }
 assert(!fallback.includes("*"), "No wildcard fallback projection allowed");
