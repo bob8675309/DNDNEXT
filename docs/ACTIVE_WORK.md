@@ -1,5 +1,19 @@
 # DNDNext — Active Work Contract
 
+## 2026-11-07 — J169 actual Chromium-rendered Warlock source-choice UI (CI candidate, not yet accepted)
+
+**Branch/stack:** `agent/forge-warlock-react-choice-ui-j169-20261107` from verified held draft [PR #334](https://github.com/bob8675309/DNDNEXT/pull/334) exact `0527f945269b6df32ad1f5c32fbe0434082d52f8`, stacked transitively through #333/#332 and Forge source/security PRs. Original J168 production pure choice serializer → signed original v3 [CI #42343065824](https://github.com/bob8675309/DNDNEXT/actions/runs/42343065824) is **VERIFIED**; it did not click a rendered browser.
+
+**J169 isolated browser scope:** Add `scripts/browser/forge_warlock_choice_dom.jsx` which renders the **unaltered** `components/SourceChoiceFields.js` React UI and executes the unmodified `buildWarlockInvocationSourceGroups`, source toggle, conditional field gating, normalization, completion and `serializeSourceChoices` against the exact same pinned, source-original Warlock2 manifest. New `scripts/browser/verify_forge_warlock_choice_dom.mjs` uses pinned temporary `esbuild`/`playwright-core` and a local Chrome binary on GitHub's free runner. Browser clicks actual Armor of Shadows, Agonizing Blast → Eldritch Blast dependent spell and Eldritch Mind UI, asserts no prior completion before the child, compares the complete browser choice payload deeply with J168's accepted `compileWarlockClientWire` output, then removes/reselects Agonizing Blast to prove the stale dependent child is cleared. External network is blocked. Browser is local-only; no account, JWT, Supabase, gameplay or live database. Temporary test-only tooling is installed **outside the repo** at a pinned version, with no lockfile or application dependency change.
+
+**CI:** Separate research-only `.github/workflows/validate-forge-browser-warlock-choice.yml` is PR/path scoped, read-only, no secrets or deployment rights. A failed browser dependency/install must be recorded as a tooling failure, not reclassified as Forge success. J169 is **CI PENDING** at this candidate; J168's earlier green CI is not evidence of J169. Preserve existing J00–J168 and S001–S003, all original handler fingerprints, inventory 17/31 staged (14 absent) and five individually receipted signed handler suites.
+
+**Evidence boundary:** J169 renders `SourceChoiceFields`, **not** the full `NewNpcModalV3` or its registrar/preview tab/submit flow. Passing this test proves browser React interaction on the source-choice component and parity with signed J168 for one pinned legal Warlock source specimen; it **does not prove** full Forge form validation, actual browser-generated v3 RPC request, full live RLS/catalogue, concurrent writes, or release safety. It must NOT be described as end-to-end browser acceptance. No production, no Vercel preview, no maps/tactical/AI change.
+
+**ONE NEXT BOUNDED TASK:** verify J169 exact-head real Chromium runner and all triggered source/governance CI. If passing, follow with a separate controlled full `NewNpcModalV3` mount/request-capture harness using disposable catalogue/Auth state; diagnose a reproduced discrepancy instead of modifying the original validators speculatively.
+
+---
+
 ## 2026-11-07 — J168 production pure source-choice serializer accepted by original signed Forge v3 (VERIFIED)
 
 **Exact executable commit:** `4b799ad362456fe2c65a9bef143f1cc0d4c25063` on draft [PR #334](https://github.com/bob8675309/DNDNEXT/pull/334), stacked directly on held verified #333 `a34e1f23579b2a669004deed022fa6b41287bd97`, transitively #332 through #321. This is held research only, not merged, released or deployed.
