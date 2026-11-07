@@ -11,6 +11,30 @@ const suite = read("scripts/validate_tactical_spell_suite.mjs");
 const recovery = read("docs/Deployed_Tactical_Spell_Effects_Smoke_Recovery_2026-11-07.md");
 const phases = [...Array(18)].map((_, i) => "1" + String.fromCharCode(73 + i));
 const slugs = manifest.spells.map((s) => s.key);
+// Independent historical baseline: changing manifest and UI together must not silently swap out an original adapter.
+const BASELINE_XPHB_KEYS = [
+  "fire-bolt|xphb",
+  "cure-wounds|xphb",
+  "sacred-flame|xphb",
+  "toll-the-dead|xphb",
+  "poison-spray|xphb",
+  "false-life|xphb",
+  "inflict-wounds|xphb",
+  "shocking-grasp|xphb",
+  "ray-of-frost|xphb",
+  "chill-touch|xphb",
+  "mind-sliver|xphb",
+  "word-of-radiance|xphb",
+  "guiding-bolt|xphb",
+  "vicious-mockery|xphb",
+  "healing-word|xphb",
+  "acid-splash|xphb",
+  "magic-missile|xphb",
+  "burning-hands|xphb",
+  "lightning-bolt|xphb"
+];
+assert.deepEqual([...slugs].sort(), [...BASELINE_XPHB_KEYS].sort(), "Original 19 XPHB adapter identities changed; requires explicit source-rule review");
+
 const quotedWhitelist = ui.match(/const SUPPORTED_SPELL_KEYS = new Set\(\[([\s\S]*?)\]\);/);
 assert(quotedWhitelist, "Missing exact combat UI whitelist");
 const whitelist = [...quotedWhitelist[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]);
@@ -21,7 +45,17 @@ assert.deepEqual([...slugs].sort(), [...whitelist].sort(), "19-adapter UI whitel
 assert(ui.includes('row?.source === "XPHB" && row?.sourceType === "class"'), "XPHB class-owned filter changed");
 assert(ui.includes("function castSpell()"), "Guarded UI cast entry changed");
 assert(ui.includes('return runRpc(rpcName,'), "Single-target dispatch missing");
-assert.equal((suite.match(/"scripts\/validate_[^"]+\.mjs"/g) || []).length, 48, "Tactical regression suite size changed");
+// Pin the original 48 *identities*, not only their count; later additions are allowed.
+const registeredValidators = [...suite.matchAll(/"scripts\\/validate_[^"]+\\.mjs"/g)].map((m) => m[0].slice(1, -1));
+const originalValidators = manifest.baselineValidators?.paths;
+assert(Array.isArray(originalValidators) && originalValidators.length === 48, "48 original validator receipts missing");
+assert.equal(new Set(originalValidators).size, 48, "Original validator list duplicated");
+assert.equal(new Set(registeredValidators).size, registeredValidators.length, "Duplicate validator suite registrations");
+for (const rel of originalValidators) {
+  assert(rel.startsWith("scripts/validate_") && rel.endsWith(".mjs") && !rel.includes(".."), "Unsafe original validator path " + rel);
+  assert(fs.existsSync(path.resolve(root, rel)), "Original validator file missing " + rel);
+  assert(registeredValidators.includes(rel), "Original validator removed from tactical suite: " + rel);
+}
 assert.deepEqual([...new Set(manifest.spells.map((s) => s.phase))].sort(), phases.map((p) => "Phase " + p).sort(), "Historical phases missing");
 const declaredNames = new Set(manifest.spells.filter((s) => s.persistedSmokeEvidence === "named-persisted").map((s) => s.key));
 const claimedNames = new Set(manifest.historical.persisted.namedSpellKeys);
@@ -29,6 +63,7 @@ assert.deepEqual([...declaredNames].sort(), [...claimedNames].sort(), "Named smo
 assert.equal(manifest.historical.persisted.spellCastEvents, 8, "Persisted event-count receipt drift");
 assert.equal(manifest.historical.persisted.version, 64, "Historic resolved smoke version drift");
 assert.equal(manifest.historical.persisted.status, "resolved", "Historic smoke-state receipt drift");
+assert.equal(manifest.historical.archivedSourceChecks.find((x) => x.pr === 294)?.result, "success", "Positive #294 result must remain historically accurate");
 assert.equal(manifest.historical.archivedSourceChecks.find((x) => x.pr === 299)?.result, "failure", "Negative #299 result must be retained");
 assert(manifest.historical.archivedSourceChecks.find((x) => x.pr === 299)?.errorSignature.includes("controller_user_id"), "Original failure signature lost");
 assert(recovery.includes("48 individual validators"), "Recovery document/source suite disagreement");
@@ -106,4 +141,4 @@ for (const spell of manifest.spells) {
 }
 assert.equal(declaredNames.size, 6, "Historical documented smoke names are a subset, not 19");
 console.log("PASS historical: 8 recorded casts, 6 explicitly named spells, #294 pass, #299 failures retained");
-console.log("PASS preservation: 19 XPHB source-qualified adapters, 48 regression registrations; NO RPC/SQL/cast executed");
+console.log("PASS preservation: 19 original XPHB adapters, 48 pinned original validator identities, " + registeredValidators.length + " present registrations; NO RPC/SQL/cast executed");
