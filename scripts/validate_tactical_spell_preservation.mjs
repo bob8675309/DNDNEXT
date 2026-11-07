@@ -46,7 +46,7 @@ assert(ui.includes('row?.source === "XPHB" && row?.sourceType === "class"'), "XP
 assert(ui.includes("function castSpell()"), "Guarded UI cast entry changed");
 assert(ui.includes('return runRpc(rpcName,'), "Single-target dispatch missing");
 // Pin the original 48 *identities*, not only their count; later additions are allowed.
-const registeredValidators = [...suite.matchAll(/"scripts\\/validate_[^"]+\\.mjs"/g)].map((m) => m[0].slice(1, -1));
+const registeredValidators = [...suite.matchAll(/"scripts\/validate_[^"]+\.mjs"/g)].map((m) => m[0].slice(1, -1));
 const originalValidators = manifest.baselineValidators?.paths;
 assert(Array.isArray(originalValidators) && originalValidators.length === 48, "48 original validator receipts missing");
 assert.equal(new Set(originalValidators).size, 48, "Original validator list duplicated");
