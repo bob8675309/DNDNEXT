@@ -98,8 +98,10 @@ export function renderHealth(h){
  "- These statuses are a **time-stamped snapshot**. When CI finishes afterward, view the live PR and GitHub Actions; no continuous polling is claimed.",
  "- No production SQL, deployment, automatic merge, protected map edits or paid model calls are authorized.",
  "",
- "## Safe next research task","",
- "If a CI check fails, diagnose its exact source SHA first; otherwise select ONE unverified original Forge trigger for isolated, source-exact signed-JWT fixtures, update the authored handoff and retain separate lock-order gates.","");
+ "## Owner-current task: do not infer it from this snapshot","",
+ "- **START HERE:** [NEXT_CHAT_START_HERE.md](https://github.com/bob8675309/DNDNEXT/blob/main/docs/NEXT_CHAT_START_HERE.md), then [ACTIVE_WORK.md](https://github.com/bob8675309/DNDNEXT/blob/main/docs/ACTIVE_WORK.md) and its last HANDOFF_LOG receipt. Those human-authored files, with live PR HEAD/CI, control the current owner task.",
+ "- This free collector intentionally queries only **four anchor PRs: #317, #321, #324, #325**. It does **not** summarize newer stacked Forge #328–#335, Spell Engine #309/#312, or every open PR. Use the [workstream dependency index](https://github.com/bob8675309/DNDNEXT/blob/main/docs/WORKSTREAMS_AND_PR_DEPENDENCIES.md) and current GitHub.",
+ "- A previous generated next-trigger recommendation was a **historical 2026-11-06 research checkpoint**, not an instruction to override newer owner directions. No automatic priority selection, paid model calls, continuous monitoring, gameplay, deployment or production SQL are performed by this publisher.","");
  return lines.join("\n");
 }
 export function loadHealth(dir,meta){

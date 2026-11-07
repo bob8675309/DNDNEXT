@@ -1,5 +1,7 @@
 # DNDNext — Documentation Lifecycle and Preservation Rules
 
+> **2026-11-07 single-entry handoff consolidation — preservation policy:** [NEXT_CHAT_START_HERE.md](NEXT_CHAT_START_HERE.md) is the sole short new-chat navigation entry and contains the ONE owner-current next bounded task; [WORKSTREAMS_AND_PR_DEPENDENCIES.md](WORKSTREAMS_AND_PR_DEPENDENCIES.md) is a dated index, not live status. The lower original doc examples and historical task headings are retained for provenance. DO NOT delete/sweep old Phase 1I–1Z spell ledgers, smoke receipts, Common Character Effects archives, or failed #299 evidence to make the index cleaner. At each new substantial session update **authored ACTIVE_WORK** and **append-only HANDOFF_LOG**, then confirm exact PR SHA/CI; a generated Project Health snapshot can never supersede an owner task or claim all PRs are indexed.
+
 > **Policy approved?** This is a proposed maintainership procedure in the 2026-11-01 documentation-only review branch, not an independent approval for deleting project history.
 
 ## Status vocabulary
