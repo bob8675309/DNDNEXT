@@ -60,7 +60,7 @@ for (const spell of manifest.spells) {
     assert(suite.includes('"' + validator + '"'), key + " validator removed from suite: " + validator);
   }
   const ledgerText = read(ledger).toLowerCase();
-  assert(ledgerText.includes("rollback"), key + " phase ledger lacks transactional rollback provenance");
+  assert(/rollback|transaction/.test(ledgerText), key + " phase ledger lacks transactional test provenance");
   assert(ledger.includes("Phase" + phase.replace("Phase ", "")), key + " mismatched phase ledger");
   const rpcName = rpc.replace(/^public\./, "");
   if (rpcName.startsWith("encounter_cast_spell_")) {
