@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-07T18:16:21Z | research/forge-isolated-source-tests-20261107 (3a1536754359af0bdab23c0764f49e85ea7d0d2d) | 1ccde22f57c37dfed2e26473e8f28b11f639c8db |
+| 2026-11-07T18:49:47Z | research/p1-3-isolated-security-tests-20261107 (537b570083b3f18faad6d3038c131bee61af273c) | 537b570083b3f18faad6d3038c131bee61af273c |
 
 ## Exact PR heads and latest captured GitHub Actions
 
