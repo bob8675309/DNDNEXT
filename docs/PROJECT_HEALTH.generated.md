@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-07T18:49:47Z | research/p1-3-isolated-security-tests-20261107 (537b570083b3f18faad6d3038c131bee61af273c) | 537b570083b3f18faad6d3038c131bee61af273c |
+| 2026-11-07T18:51:11Z | research/p1-3-isolated-security-tests-20261107 (6563ded3fcce49429de4ffa92058a8389c8871bf) | 537b570083b3f18faad6d3038c131bee61af273c |
 
 ## Exact PR heads and latest captured GitHub Actions
 

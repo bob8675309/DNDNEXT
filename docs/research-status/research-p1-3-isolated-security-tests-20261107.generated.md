@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/p1-3-isolated-security-tests-20261107` |
-| Exact source commit represented by this archive snapshot | `537b570083b3f18faad6d3038c131bee61af273c` |
+| Exact source commit represented by this archive snapshot | `6563ded3fcce49429de4ffa92058a8389c8871bf` |
 | Compared with | `537b570083b3f18faad6d3038c131bee61af273c` (main comparison base) |
-| Last source commit title | test(forge): preserve legacy multi-character snapshot research (#319) |
-| Files changed relative to main | 0 (0 non-docs; 0 docs) |
-| Last source commit | 6 files (5 non-docs; 1 authored docs) |
+| Last source commit title | test(P1.3 research): isolate PG16/17 lock/replay/JWT source tests from older docs and runtime |
+| Files changed relative to main | 104 (100 non-docs; 4 docs) |
+| Last source commit | 104 files (100 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,15 +17,101 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-player-forge-multichar-legacy-snapshot.yml`
-- `docs/Player_Forge_Multi_Character_Legacy_Snapshot_2026-11-04.md`
-- `scripts/fixtures/player_character_multi_legacy_sheet_pg17.sql`
-- `scripts/fixtures/player_character_v2_live_source_pg17.sql`
-- `scripts/validate_player_forge_multi_legacy_sheet_candidate.mjs`
-- `sql/candidates/20261104_player_forge_preserve_legacy_sheet.sql`
+- `.github/workflows/validate-p1-3-forge-materializer-locks.yml`
+- `.github/workflows/validate-p1-3-legacy-real-auth.yml`
+- `.github/workflows/validate-p1-3-legacy-v9-v8.yml`
+- `.github/workflows/validate-p1-3-levelup-v5-auth-locks.yml`
+- `.github/workflows/validate-p1-3-lock-graph.yml`
+- `.github/workflows/validate-p1-3-pg16.yml`
+- `.github/workflows/validate-p1-3-real-admin-paths.yml`
+- `docs/C3_2_P1_3_ISOLATED_SECURITY_TESTS_2026-11-07.md`
+- `docs/C3_2_P1_3_SOURCE_PROVENANCE_2026-11-07.json`
+- `docs/archive/p1_3_source_evidence_2026-11-07/P1_3_Global_Lock_Order_Research_2026-11-01.md`
+- `docs/archive/p1_3_source_evidence_2026-11-07/TACTICAL_ENCOUNTER_OWNER_DECISIONS.md`
+- `scripts/audits/p1_3_inventory_grant_visibility_readonly.sql`
+- `scripts/audits/p1_3_live_lock_order_readonly.sql`
+- `scripts/fixtures/p1_3_admin_grant_levelup_extension_pg17.sql`
+- `scripts/fixtures/p1_3_admin_grant_original_source_pg17.sql`
+- `scripts/fixtures/p1_3_admin_progression_original_pg17.sql`
+- `scripts/fixtures/p1_3_admin_progression_race_extension_pg17.sql`
+- `scripts/fixtures/p1_3_admin_staging_source_pg17.sql`
+- `scripts/fixtures/p1_3_delegation_acceptance_matrix.json`
+- `scripts/fixtures/p1_3_equipment_mutation_live_pg17.sql`
+- `scripts/fixtures/p1_3_forge_materializer_lock_setup_pg17.sql`
+- `scripts/fixtures/p1_3_forge_materializer_original_functions_pg17.sql`
+- `scripts/fixtures/p1_3_guarded_replay_candidate_pg17.sql`
+- `scripts/fixtures/p1_3_hidden_activity_projection_pg17.sql`
+- `scripts/fixtures/p1_3_hidden_activity_setup_pg17.sql`
+- `scripts/fixtures/p1_3_inventory_race_combat_only_pg17.sql`
+- `scripts/fixtures/p1_3_legacy_core_action_live_pg17.sql`
+- `scripts/fixtures/p1_3_legacy_real_jwt_local_pg17.sql`
+- `scripts/fixtures/p1_3_legacy_v9_to_v1_cases_pg16.sql`
+- `scripts/fixtures/p1_3_legacy_v9_to_v1_live_source_pg16.sql`
+- `scripts/fixtures/p1_3_legacy_v9_v8_routing_pg16.sql`
+- `scripts/fixtures/p1_3_level4_advancement_extension_pg17.sql`
+- `scripts/fixtures/p1_3_level4_advancement_original_pg17.sql`
+- `scripts/fixtures/p1_3_levelup_v5_local_auth_pg17.sql`
+- `scripts/fixtures/p1_3_levelup_v5_original_source_pg17.sql`
+- `scripts/fixtures/p1_3_live_admin_source_pg16.sh`
+- `scripts/fixtures/p1_3_live_admin_source_pg16.sql`
+- `scripts/fixtures/p1_3_live_admin_stub_schema_pg16.sql`
+- `scripts/fixtures/p1_3_lock_order_graph.json`
+- `scripts/fixtures/p1_3_opportunity_attack_live_source_pg16.sql`
+- … 64 more
 
 ## Research-branch change inventory versus main
 
+- `.github/workflows/validate-p1-3-forge-materializer-locks.yml`
+- `.github/workflows/validate-p1-3-legacy-real-auth.yml`
+- `.github/workflows/validate-p1-3-legacy-v9-v8.yml`
+- `.github/workflows/validate-p1-3-levelup-v5-auth-locks.yml`
+- `.github/workflows/validate-p1-3-lock-graph.yml`
+- `.github/workflows/validate-p1-3-pg16.yml`
+- `.github/workflows/validate-p1-3-real-admin-paths.yml`
+- `docs/C3_2_P1_3_ISOLATED_SECURITY_TESTS_2026-11-07.md`
+- `docs/C3_2_P1_3_SOURCE_PROVENANCE_2026-11-07.json`
+- `docs/archive/p1_3_source_evidence_2026-11-07/P1_3_Global_Lock_Order_Research_2026-11-01.md`
+- `docs/archive/p1_3_source_evidence_2026-11-07/TACTICAL_ENCOUNTER_OWNER_DECISIONS.md`
+- `scripts/audits/p1_3_inventory_grant_visibility_readonly.sql`
+- `scripts/audits/p1_3_live_lock_order_readonly.sql`
+- `scripts/fixtures/p1_3_admin_grant_levelup_extension_pg17.sql`
+- `scripts/fixtures/p1_3_admin_grant_original_source_pg17.sql`
+- `scripts/fixtures/p1_3_admin_progression_original_pg17.sql`
+- `scripts/fixtures/p1_3_admin_progression_race_extension_pg17.sql`
+- `scripts/fixtures/p1_3_admin_staging_source_pg17.sql`
+- `scripts/fixtures/p1_3_delegation_acceptance_matrix.json`
+- `scripts/fixtures/p1_3_equipment_mutation_live_pg17.sql`
+- `scripts/fixtures/p1_3_forge_materializer_lock_setup_pg17.sql`
+- `scripts/fixtures/p1_3_forge_materializer_original_functions_pg17.sql`
+- `scripts/fixtures/p1_3_guarded_replay_candidate_pg17.sql`
+- `scripts/fixtures/p1_3_hidden_activity_projection_pg17.sql`
+- `scripts/fixtures/p1_3_hidden_activity_setup_pg17.sql`
+- `scripts/fixtures/p1_3_inventory_race_combat_only_pg17.sql`
+- `scripts/fixtures/p1_3_legacy_core_action_live_pg17.sql`
+- `scripts/fixtures/p1_3_legacy_real_jwt_local_pg17.sql`
+- `scripts/fixtures/p1_3_legacy_v9_to_v1_cases_pg16.sql`
+- `scripts/fixtures/p1_3_legacy_v9_to_v1_live_source_pg16.sql`
+- `scripts/fixtures/p1_3_legacy_v9_v8_routing_pg16.sql`
+- `scripts/fixtures/p1_3_level4_advancement_extension_pg17.sql`
+- `scripts/fixtures/p1_3_level4_advancement_original_pg17.sql`
+- `scripts/fixtures/p1_3_levelup_v5_local_auth_pg17.sql`
+- `scripts/fixtures/p1_3_levelup_v5_original_source_pg17.sql`
+- `scripts/fixtures/p1_3_live_admin_source_pg16.sh`
+- `scripts/fixtures/p1_3_live_admin_source_pg16.sql`
+- `scripts/fixtures/p1_3_live_admin_stub_schema_pg16.sql`
+- `scripts/fixtures/p1_3_lock_order_graph.json`
+- `scripts/fixtures/p1_3_opportunity_attack_live_source_pg16.sql`
+- `scripts/fixtures/p1_3_opportunity_attack_race_pg16.sh`
+- `scripts/fixtures/p1_3_opportunity_attack_setup_pg16.sql`
+- `scripts/fixtures/p1_3_option_a_pg16.sh`
+- `scripts/fixtures/p1_3_option_a_pg16.sql`
+- `scripts/fixtures/p1_3_original_attack_roll_live_pg17.sql`
+- `scripts/fixtures/p1_3_original_equipped_weapon_research_pg17.sql`
+- `scripts/fixtures/p1_3_original_merchant_inventory_extension_pg17.sql`
+- `scripts/fixtures/p1_3_original_merchant_inventory_source_pg17.sql`
+- `scripts/fixtures/p1_3_original_roll_timed_effect_pg17.sql`
+- `scripts/fixtures/p1_3_original_weapon_profile_live_pg17.sql`
+- … 54 more
 
 ## Trust and update procedure
 
