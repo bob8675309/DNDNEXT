@@ -118,3 +118,11 @@
 - **No production mutations, live SQL writes, merges, deployments, paid API/AI activation, old smoke reset or map changes.**
 - **ONE NEXT BOUNDED TASK remains:** a free read-only 19-spell deployed source→RPC→validator→historical smoke/effects preservation checker on a separate reviewable branch. Then consider a new-main-based pure P1 schema/preflight-only extraction with explicit owner merge approval.
 
+
+## 2026-11-07 — Archived atomic combat effects test provenance correction (still docs-only)
+
+- **Branch:** draft #336 `agent/legacy-spell-pr-merge-triage-20261107`; prior docs-only source head `bda11428c5c86d2cf0c3e32abe0e75356d070400` (new commit and CI pending). No app/SQL runtime changes.
+- **New exact-source review:** examined closed-unmerged original #275, #281–#285, #291–#299 PR bodies and exact-head workflow results; recovered real-source PG16 parity in #294 for Guiding Bolt + Vicious Mockery one-use attack-roll effects and Oct 16 typed Resistance-before-flat-DR equipment mitigation, alongside private multiattack candidate transaction replay/rollback. On #294 `8d37dc76e9561f63df73eba647353ff3a6cbaaa0`, [canonical helper #40628231333](https://github.com/bob8675309/DNDNEXT/actions/runs/40628231333) and [atomic candidate #40628231209](https://github.com/bob8675309/DNDNEXT/actions/runs/40628231209) both SUCCESS (and 11 other exact-head workflows green).
+- **Negative evidence preserved:** Final #299 head `c73075d92ca9361dc05bc901d2d6652a33ef857a` had **two** failed PG16 executions: [#40801549016](https://github.com/bob8675309/DNDNEXT/actions/runs/40801549016) and [#40801549033](https://github.com/bob8675309/DNDNEXT/actions/runs/40801549033). Exact logs show `scripts/fixtures/attack_action_atomic_weapon_candidate.sql:281`, record `v_a` missing `controller_user_id`. Distinguish test fixture/source-shape break from any proven deployed runtime bug. Do **not** infer fully green terminal archive from #294 green intermediate research.
+- **Research guidance unchanged:** keep these archived source and CI oracles, record both successes and failures in a free read-only mechanic→RPC→regression inventory before independent pure P1 extraction. No production writes, new encounters, merges, deployments, paid calls or model activation. New documentation commit/head checks need independent verification.
+
