@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/legacy-spell-pr-merge-triage-20261107` |
-| Exact source commit represented by this archive snapshot | `bda11428c5c86d2cf0c3e32abe0e75356d070400` |
+| Exact source commit represented by this archive snapshot | `b69e55ad99bcd05911f3aa61b782e9088817e21c` |
 | Compared with | `79a6340c08e743e71e1072e40e6ba7204f735a29` (main comparison base) |
-| Last source commit title | docs(handoff): receipt deployed spell-and-smoke evidence checks |
+| Last source commit title | docs(tactical): preserve archived spell effect parity and terminal CI failures |
 | Files changed relative to main | 7 (0 non-docs; 7 docs) |
-| Last source commit | 1 files (0 non-docs; 1 authored docs) |
+| Last source commit | 4 files (0 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,10 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `docs/ACTIVE_WORK.md`
+- `docs/Deployed_Tactical_Spell_Effects_Smoke_Recovery_2026-11-07.md`
 - `docs/HANDOFF_LOG.md`
+- `docs/Legacy_PR_Spell_Engine_Merge_Readiness_2026-11-07.md`
 
 ## Research-branch change inventory versus main
 
