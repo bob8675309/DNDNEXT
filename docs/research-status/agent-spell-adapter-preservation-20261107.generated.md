@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/spell-adapter-preservation-20261107` |
-| Exact source commit represented by this archive snapshot | `89e74c1c1108b564e9ff83b56c595d4218c3a359` |
+| Exact source commit represented by this archive snapshot | `aa4d4cd3c24e339c439d37cab6886fd076b688b7` |
 | Compared with | `2d2135ced24bcb4fbb4d8ccefc27bda70e91eb05` (main comparison base) |
-| Last source commit title | docs(research): record composable pivot, Acid Splash held taxonomy mismatch and multiclass scaling audit risk |
+| Last source commit title | test(research): fail closed on Acid Splash XPHB sphere and keep held-classifier conflict visible |
 | Files changed relative to main | 7 (4 non-docs; 3 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
@@ -17,7 +17,7 @@
 
 ## Latest source commit paths
 
-- `scripts/data/tactical_spell_preservation_20261107.json`
+- `scripts/validate_tactical_spell_preservation.mjs`
 
 ## Research-branch change inventory versus main
 
