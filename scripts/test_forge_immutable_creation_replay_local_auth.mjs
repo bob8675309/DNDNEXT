@@ -1207,6 +1207,25 @@ assert.equal(sql("SELECT count(*) FROM public.characters WHERE name='J79 blocked
 assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+id(9380)+"'"),"0");
 console.log("PASS J79 real signed original v2 feat+gear CREATE fails 23514 at deferred materialization COMMIT with exact obsolete CHECK; all creator/nonce/CS/CP/G/GI/I/C rolled back");
 
+// C2 exact v3 negative control: the real v3 RPC delegates to source-original v2,
+// so prove the same obsolete deferred inventory CHECK aborts v3 as well.
+// The existing J95 test separately proves a genuine v3 market commit AFTER
+// the reviewed scratch RLS+constraint candidate. Never run this on production.
+const blockedV3Create=JSON.parse(JSON.stringify(blockedOwnerCreate));
+blockedV3Create.name="J79B blocked original v3 Forge feat and gear";
+blockedV3Create.creation_request_id=id(9385);
+const beforeBlockedV3=stateCounts();
+const blockedOriginalV3=await call3(people.PLAYER.client,blockedV3Create,[]);
+denied(blockedOriginalV3,"23514","Original signed v3->v2 deferred Forge insert with old NOT VALID owner CHECK");
+assert.match(blockedOriginalV3.error.message||"",/inventory_items_owner_type_chk/,
+  "Original v3 must fail at the old CHECK, not an unrelated magic/catalogue gate");
+assert.equal(stateCounts(),beforeBlockedV3,
+  "Original v3 COMMIT failure must roll back character, creator, nonce, grants, inventory and currency");
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE name='J79B blocked original v3 Forge feat and gear'"),"0");
+assert.equal(sql("SELECT count(*) FROM private.player_creation_intent_reservations_v1 WHERE request_id='"+id(9385)+"'"),"0");
+console.log("PASS J79B real signed original v3->v2 feat+gear CREATE fails 23514 at deferred COMMIT under both old/new CHECKs; all writes rolled back");
+
+
 // Scope control: original source Admin NPC creation is not Player Forge and
 // never requests character-owned starting inventory. Earlier J57 proves this
 // RPC already works with the full held creator/feat triggers. An unselected
