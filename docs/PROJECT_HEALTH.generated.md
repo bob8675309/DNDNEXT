@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-07T07:19:40Z | agent/legacy-spell-pr-merge-triage-20261107 (5d0739c34eb28eed219720e1308c9dac0a81bbc7) | 79a6340c08e743e71e1072e40e6ba7204f735a29 |
+| 2026-11-07T15:17:48Z | agent/spell-adapter-preservation-20261107 (2d2135ced24bcb4fbb4d8ccefc27bda70e91eb05) | 2d2135ced24bcb4fbb4d8ccefc27bda70e91eb05 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
