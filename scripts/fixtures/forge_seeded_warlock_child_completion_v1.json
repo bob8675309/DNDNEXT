@@ -156,6 +156,11 @@
       "scenarioId": "warlock-agblast-child-missing",
       "seed": 66165,
       "mode": "missing-legacy-child-group"
+    },
+    {
+      "scenarioId": "warlock-agblast-source-only-v3",
+      "seed": 66166,
+      "mode": "source-owned-browser-shape"
     }
   ]
 }
