@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/legacy-spell-pr-merge-triage-20261107` |
-| Exact source commit represented by this archive snapshot | `c50ac1f134ec862fb4e0237cd100966450138b9d` |
+| Exact source commit represented by this archive snapshot | `5d0739c34eb28eed219720e1308c9dac0a81bbc7` |
 | Compared with | `79a6340c08e743e71e1072e40e6ba7204f735a29` (main comparison base) |
-| Last source commit title | docs(spells): confirm individual adapters to mechanics-family recipe pivot |
-| Files changed relative to main | 7 (0 non-docs; 7 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | docs(handoff): canonical next-chat entry, PR map and free-agent drift guards |
+| Files changed relative to main | 16 (4 non-docs; 12 docs) |
+| Last source commit | 14 files (4 non-docs; 10 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,19 +17,39 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `AGENTS.md`
 - `docs/ACTIVE_WORK.md`
-- `docs/Deployed_Tactical_Spell_Effects_Smoke_Recovery_2026-11-07.md`
+- `docs/DOCUMENT_LIFECYCLE.md`
 - `docs/HANDOFF_LOG.md`
+- `docs/NEXT_CHAT_START_HERE.md`
+- `docs/PHASED_DEVELOPMENT_CHECKLIST.md`
+- `docs/PROJECT_STATE.md`
+- `docs/README.md`
+- `docs/START_HERE_ACTIVE_HANDOFF.md`
+- `docs/SYSTEM_REGISTRY.json`
+- `docs/WORKSTREAMS_AND_PR_DEPENDENCIES.md`
+- `scripts/agents/project_health.mjs`
+- `scripts/agents/validate_project_health.mjs`
+- `scripts/validate_handoff_registry.mjs`
 
 ## Research-branch change inventory versus main
 
+- `AGENTS.md`
 - `docs/ACTIVE_WORK.md`
+- `docs/DOCUMENT_LIFECYCLE.md`
 - `docs/Deployed_Tactical_Spell_Effects_Smoke_Recovery_2026-11-07.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/Legacy_PR_Spell_Engine_Merge_Readiness_2026-11-07.md`
+- `docs/NEXT_CHAT_START_HERE.md`
+- `docs/PHASED_DEVELOPMENT_CHECKLIST.md`
 - `docs/PROJECT_STATE.md`
 - `docs/README.md`
+- `docs/START_HERE_ACTIVE_HANDOFF.md`
 - `docs/SYSTEM_REGISTRY.json`
+- `docs/WORKSTREAMS_AND_PR_DEPENDENCIES.md`
+- `scripts/agents/project_health.mjs`
+- `scripts/agents/validate_project_health.mjs`
+- `scripts/validate_handoff_registry.mjs`
 
 ## Trust and update procedure
 
