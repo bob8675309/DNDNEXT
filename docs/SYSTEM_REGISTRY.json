@@ -53,6 +53,7 @@
       ],
       "last_checked": "2026-11-01",
       "open_gaps": [
+        "2026-11-07 live SELECT-only confirmed conflicting inventory_items.owner_type CHECKs: validated owner_type_check permits 'character', older NOT VALID owner_type_chk excludes it; original private.materialize_player_forge_starting_equipment_v1 writes owner_type 'character'. Full original source-authenticated creation failure not yet reproduced; next after #337 review is disposable PG17 repro, scoped migration/rollback review.",
         "Browser acceptance must be tied to specific scoped flows; not blanket proof of all source traits."
       ],
       "label": "Player/NPC character Forge",
@@ -79,6 +80,7 @@
       "tests": [],
       "last_checked": "2026-11-07",
       "open_gaps": [
+        "Owner-approved C0–C5 closeout plan: source-only 19-spell preservation checker exists on held #337 at e10fed9 (3 exact-head Actions green); owner review/merge remains C1. Future P1 pure non-executing extraction is later, not permission to merge held #309/#312 or add individual-per-spell RPCs.",
         "New spell recipe compiler is a SEPARATE unmerged research layer: already-deployed Phase 1G–1Z per-spell tactical effects, 19 class XPHB adapters and 48 validators exist on main; no sequenced spell_effects import does not mean no functional effects.",
         "No executable recipe interpreter, registry or tested research candidate functions installed in production; 1037 spell_effects rows are descriptive, not sequenced.",
         "Held #309/#312 have archive-diverged ancestry, mixed non-executing P1, P2 and ungranted Eldritch Blast / NPC delegation / private core-action changes; isolate pure source utilities instead of bulk merging.",
@@ -523,6 +525,7 @@
       ],
       "last_checked": "2026-11-07",
       "open_gaps": [
+        "Original Phase 1I–1Z implementation milestone is historically deployed/complete. P1.3 authorization and P2 recipe generalization remain distinct unresolved release objectives; do not reopen the original adapter rollout.",
         "48 present source validators do not alone prove 19 current signed-in browser spell casts or complete 2024 source parity.",
         "Historical smoke Round 6/Version 63 owner acceptance; 2026-11-07 live read-only current row is resolved Round 6/Version 64 with 8 spell-cast log events, not all 19.",
         "Full three-user multiplayer smoke playthrough not observed by matching current encounter name/settings filter.",
@@ -603,10 +606,10 @@
   "snapshot": {
     "observed_on": "2026-11-07",
     "repository": "bob8675309/DNDNEXT",
-    "main_sha": "79a6340c08e743e71e1072e40e6ba7204f735a29",
-    "production_deployment_id": "dpl_4MKLuoTHpR3JJzxkENcpWsdfoYX1",
+    "main_sha": "2d2135ced24bcb4fbb4d8ccefc27bda70e91eb05",
+    "production_deployment_id": "dpl_4DT1FX8sc4NjGbFQYTWiUzVXu2Lc",
     "production_deployment_status": "READY",
     "database_project": "ucggczovhmauhshvhusx",
-    "limits": "DATED pre-documentation-merge audit: original Nov7 main/Vercel SHA, selected read-only PG17.4 function checks and historical evidence. Owner-approved docs consolidation will move main; reverify current refs/CI/deployment. One current task in docs/NEXT_CHAT_START_HERE.md and ACTIVE_WORK.md; automated health is a fixed-four-PR snapshot."
+    "limits": "Verified 2026-11-07 pre-phase-closeout merge: GitHub main 2d2135, Vercel READY deployment same SHA; source/isolated vs Auth/browser evidence separate. Recheck new main SHA/CI/deploy after docs merge. Owner next work is review open #337, then disposable Forge owner-type CHECK reproduction; no live schema change."
   }
 }
