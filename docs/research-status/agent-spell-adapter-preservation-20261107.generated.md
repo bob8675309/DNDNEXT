@@ -5,10 +5,10 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/spell-adapter-preservation-20261107` |
-| Exact source commit represented by this archive snapshot | `5269b0bd471f27a12228b889dd78899faaf21aba` |
+| Exact source commit represented by this archive snapshot | `e2a9c3a34aa6ef3d730c45d0844560e8065f66cb` |
 | Compared with | `2d2135ced24bcb4fbb4d8ccefc27bda70e91eb05` (main comparison base) |
-| Last source commit title | docs(research): record current preservation work and one review gate |
-| Files changed relative to main | 6 (4 non-docs; 2 docs) |
+| Last source commit title | docs(research): append factual source and evidence preservation receipt |
+| Files changed relative to main | 7 (4 non-docs; 3 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
@@ -17,12 +17,13 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
 - `.github/workflows/validate-tactical-spell-preservation.yml`
 - `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 - `docs/Tactical_Spell_Adapter_Preservation_Gate_2026-11-07.md`
 - `scripts/data/tactical_spell_preservation_20261107.json`
 - `scripts/test_tactical_spell_preservation.mjs`
