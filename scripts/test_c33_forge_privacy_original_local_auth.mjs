@@ -70,7 +70,18 @@ const oldNpc=ok(await rpc(people.ADMIN.who,"create_character_v1",{p_payload:gmPa
  "pre-stage GM NPC");
 sql("UPDATE public.characters SET is_hidden=false WHERE id='"+oldNpc+"'");
 assert.equal(sql("SELECT count(*) FROM public.characters WHERE id='"+oldNpc+"'"),"1");
-console.log("PASS C3J01: exact original Admin NPC creation before privacy, forged creator key ignored");
+// Original v2 accepts a browser-controlled GM-only secret at INSERT.
+// Preserve a concrete BEFORE-stage negative baseline; no existing data is
+// silently rewritten by the later security candidate.
+const oldPlayerWithForgedGmSecret=ok(await rpc(people.CREATOR.who,
+ "create_player_character_v2",{p_payload:{
+  name:"C33 legacy player-supplied GM secret",creation_request_id:id(7399),
+  secret:"C33_UNSAFE_PLAYER_GM_FIELD",
+  sheet:{classKey:"fighter",level:1}
+ },p_spell_choices:[]}),"pre-stage original player GM secret");
+assert.equal(sql("SELECT secret FROM public.characters WHERE id='"+oldPlayerWithForgedGmSecret+"'"),
+ "C33_UNSAFE_PLAYER_GM_FIELD");
+console.log("PASS C3J01: exact original NPC/Forge creation and EXPECTED UNSAFE original player-supplied GM secret baseline");
 
 for(const file of [
  "sql/candidates/20261104_npc_player_safe_profile_rls_v1.sql",
@@ -81,9 +92,20 @@ sql("NOTIFY pgrst,'reload schema'");
 assert.equal(sql("SELECT count(*) FROM private.character_creator_attribution WHERE character_id='"+oldNpc+"'"),"0",
  "Historical NPCs must NOT receive invented creator provenance");
 assert.equal(sql("SELECT count(*) FROM pg_trigger WHERE tgrelid='public.characters'::regclass AND tgname='characters_capture_creator_at_insert_v1' AND NOT tgisinternal"),"1");
+assert.equal(sql("SELECT count(*) FROM pg_trigger WHERE tgrelid='public.characters'::regclass AND tgname='characters_guard_player_gm_secret_at_insert_v1' AND NOT tgisinternal"),"1");
 assert.equal(sql("SELECT has_function_privilege('authenticated','private.record_character_creator_v1(uuid)','EXECUTE')"),"f");
 assert.equal(sql("SELECT has_table_privilege('authenticated','private.character_creator_attribution','INSERT')"),"f");
-console.log("PASS C3J02: all three exact staged privacy candidates applied locally; one immutable at-INSERT trigger; no legacy backfill");
+const forgedGmPayload={name:"C33 client attempts GM secret",creation_request_id:id(7406),
+ secret:"C33_FORGED_NEW_GM_SECRET",sheet:{classKey:"fighter",level:1}};
+const forgedGm=await rpc(people.CREATOR.who,"create_player_character_v2",{
+ p_payload:forgedGmPayload,p_spell_choices:[]
+});
+assert.equal(reject(forgedGm,"player-supplied GM secret at original v2").code,"42501");
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE creation_request_id='"+id(7406)+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM private.character_creator_attribution WHERE creator_user_id='"+people.CREATOR.id+"'"),"0");
+assert.equal(sql("SELECT secret FROM public.characters WHERE id='"+oldPlayerWithForgedGmSecret+"'"),
+ "C33_UNSAFE_PLAYER_GM_FIELD","No retroactive mutation of existing values");
+console.log("PASS C3J02: stages 1-3 installed, original creator trigger plus GM-insert guard; new player GM secret injection rejected and old records not silently rewritten");
 
 const wizard=id(901),missingSpell=id(9999999);
 const v2Payload={name:"C33 original v2 Fighter",creation_request_id:id(7402),
@@ -118,9 +140,10 @@ assert.equal(sql("SELECT creator_user_id FROM private.character_creator_attribut
 assert.equal(sql("SELECT count(*) FROM public.character_level_events WHERE character_id='"+created2+"'"),"1");
 const forgedNpc=ok(await rpc(people.ADMIN.who,"create_character_v1",{
  p_payload:{name:"C33 GM-created NPC",kind:"npc",creation_request_id:id(7404),
-  creator_user_id:people.OUTSIDER.id,sheet:{profileReveal:{background:false}}}
+  creator_user_id:people.OUTSIDER.id,secret:"C33_ADMIN_CREATED_GM_SECRET",sheet:{profileReveal:{background:false}}}
 }),"original Admin NPC");
 assert.equal(sql("SELECT creator_user_id FROM private.character_creator_attribution WHERE character_id='"+forgedNpc+"'"),people.ADMIN.id);
+assert.equal(sql("SELECT secret FROM public.characters WHERE id='"+forgedNpc+"'"),"C33_ADMIN_CREATED_GM_SECRET");
 console.log("PASS C3J04: original same-nonce v2 replay stays creator-bound, Admin-created NPC is attributed to signed GM not forged payload");
 
 const broken={...v3Payload,name:"C33 atomically rejected v3",creation_request_id:id(7405)};

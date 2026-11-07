@@ -80,6 +80,36 @@ CREATE TRIGGER characters_capture_creator_at_insert_v1
 AFTER INSERT ON public.characters
 FOR EACH ROW EXECUTE FUNCTION private.capture_character_creator_on_insert_v1();
 
+-- Existing original create_player_character_v2/v3 copy p_payload.secret into
+-- characters.secret at INSERT. Post-creation RPC/column ACLs alone cannot
+-- prevent an untrusted player from AUTHORING the GM-only field at creation.
+-- Fail closed for signed non-GM player-character creation without rewriting the
+-- complex source-original Forge functions or silently discarding entered text.
+-- Admin NPC creation, explicitly GM-created player characters and trusted
+-- service-side imports retain their original semantics. This is UNAPPLIED.
+CREATE OR REPLACE FUNCTION private.guard_player_gm_secret_at_insert_v1()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER
+SET search_path TO 'pg_catalog','public','private','auth'
+AS $gm_guard$
+BEGIN
+  IF auth.uid() IS NOT NULL
+     AND NOT private.current_user_is_admin()
+     AND 'player-character'=ANY(coalesce(NEW.tags,'{}'::text[]))
+     AND NULLIF(btrim(NEW.secret),'') IS NOT NULL
+  THEN
+    RAISE EXCEPTION
+      'GM Secret cannot be supplied during player creation; use private creator backstory after creation'
+      USING errcode='42501';
+  END IF;
+  RETURN NEW;
+END;
+$gm_guard$;
+REVOKE ALL ON FUNCTION private.guard_player_gm_secret_at_insert_v1()
+FROM PUBLIC,anon,authenticated;
+CREATE TRIGGER characters_guard_player_gm_secret_at_insert_v1
+BEFORE INSERT ON public.characters
+FOR EACH ROW EXECUTE FUNCTION private.guard_player_gm_secret_at_insert_v1();
+
 -- A creator must *also* retain current can_edit authority for the character.
 -- Other can_edit collaborators cannot see this author's private backstory.
 -- The GM can always access it. Missing legacy attribution => GM only.
