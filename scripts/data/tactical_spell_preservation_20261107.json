@@ -79,7 +79,7 @@
       "sql": "sql/20260727_13_tactical_spell_casting_slice.sql",
       "serverValidator": "scripts/validate_tactical_spell_casting.mjs",
       "uiValidator": "scripts/validate_tactical_spell_ui.mjs",
-      "ledger": "docs/Tactical_Encounter_PhaseI_Spell_Foundation_Status.md",
+      "ledger": "docs/Tactical_Encounter_Phase1I_Spell_Foundation_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "named-persisted",
       "sourceReviewGap": "Current full signed-in multi-controller browser parity is unverified"
@@ -95,7 +95,7 @@
       "sql": "sql/20260727_13_tactical_spell_casting_slice.sql",
       "serverValidator": "scripts/validate_tactical_spell_casting.mjs",
       "uiValidator": "scripts/validate_tactical_spell_ui.mjs",
-      "ledger": "docs/Tactical_Encounter_PhaseI_Spell_Foundation_Status.md",
+      "ledger": "docs/Tactical_Encounter_Phase1I_Spell_Foundation_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "unconfirmed",
       "sourceReviewGap": "Not named in the resolved smoke log examples"
@@ -111,7 +111,7 @@
       "sql": "sql/20260727_14_tactical_single_target_save_spell.sql",
       "serverValidator": "scripts/validate_tactical_save_spell.mjs",
       "uiValidator": "scripts/validate_tactical_save_spell_ui.mjs",
-      "ledger": "docs/Tactical_Encounter_PhaseJ_Save_Spells_Status.md",
+      "ledger": "docs/Tactical_Encounter_Phase1J_Save_Spells_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "named-persisted",
       "sourceReviewGap": "No modern full-catalogue signed-in browser parity"
@@ -127,7 +127,7 @@
       "sql": "sql/20260728_01_tactical_toll_the_dead.sql",
       "serverValidator": "scripts/validate_tactical_toll_the_dead.mjs",
       "uiValidator": "scripts/validate_tactical_toll_the_dead_ui.mjs",
-      "ledger": "docs/Tactical_Encounter_PhaseK_Toll_the_Dead_Status.md",
+      "ledger": "docs/Tactical_Encounter_Phase1K_Toll_the_Dead_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "unconfirmed",
       "sourceReviewGap": "Not named in resolved persisted smoke examples"
@@ -143,7 +143,7 @@
       "sql": "sql/20260728_02_tactical_poison_spray.sql",
       "serverValidator": "scripts/validate_tactical_poison_spray.mjs",
       "uiValidator": "scripts/validate_tactical_poison_spray_ui.mjs",
-      "ledger": "docs/Tactical_Encounter_PhaseL_Poison_Spray_Status.md",
+      "ledger": "docs/Tactical_Encounter_Phase1L_Poison_Spray_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "unconfirmed",
       "sourceReviewGap": "Not named in resolved persisted smoke examples"
@@ -159,7 +159,7 @@
       "sql": "sql/20260728_03_tactical_false_life.sql",
       "serverValidator": "scripts/validate_tactical_false_life.mjs",
       "uiValidator": "scripts/validate_tactical_false_life_ui.mjs",
-      "ledger": "docs/Tactical_Encounter_PhaseM_False_Life_Status.md",
+      "ledger": "docs/Tactical_Encounter_Phase1M_False_Life_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "named-persisted",
       "sourceReviewGap": "Current signed-in cross-account reuse unverified"
@@ -175,7 +175,7 @@
       "sql": "sql/20260728_04_tactical_inflict_wounds.sql",
       "serverValidator": "scripts/validate_tactical_inflict_wounds.mjs",
       "uiValidator": "scripts/validate_tactical_inflict_wounds_ui.mjs",
-      "ledger": "docs/Tactical_Encounter_PhaseN_Inflict_Wounds_Status.md",
+      "ledger": "docs/Tactical_Encounter_Phase1N_Inflict_Wounds_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "unconfirmed",
       "sourceReviewGap": "Not named in resolved persisted smoke examples"
@@ -191,7 +191,7 @@
       "sql": "sql/20260728_05_tactical_shocking_grasp.sql",
       "serverValidator": "scripts/validate_tactical_shocking_grasp.mjs",
       "uiValidator": "scripts/validate_tactical_shocking_grasp_ui.mjs",
-      "ledger": "docs/Tactical_Encounter_PhaseO_Shocking_Grasp_Status.md",
+      "ledger": "docs/Tactical_Encounter_Phase1O_Shocking_Grasp_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "unconfirmed",
       "sourceReviewGap": "Not named in resolved persisted smoke examples"
@@ -207,7 +207,7 @@
       "sql": "sql/20260728_06_tactical_ray_of_frost.sql",
       "serverValidator": "scripts/validate_tactical_ray_of_frost.mjs",
       "uiValidator": "scripts/validate_tactical_ray_of_frost_ui.mjs",
-      "ledger": "docs/Tactical_Encounter_PhaseP_Ray_of_Frost_Status.md",
+      "ledger": "docs/Tactical_Encounter_Phase1P_Ray_of_Frost_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "unconfirmed",
       "sourceReviewGap": "Not named in resolved persisted smoke examples"
@@ -223,7 +223,7 @@
       "sql": "sql/20260728_07_tactical_chill_touch.sql",
       "serverValidator": "scripts/validate_tactical_chill_touch.mjs",
       "uiValidator": "scripts/validate_tactical_chill_touch_ui.mjs",
-      "ledger": "docs/Tactical_Encounter_PhaseQ_Chill_Touch_Status.md",
+      "ledger": "docs/Tactical_Encounter_Phase1Q_Chill_Touch_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "unconfirmed",
       "sourceReviewGap": "Not named in resolved persisted smoke examples"
@@ -239,7 +239,7 @@
       "sql": "sql/20260728_08_tactical_mind_sliver.sql",
       "serverValidator": "scripts/validate_tactical_mind_sliver.mjs",
       "uiValidator": "scripts/validate_tactical_mind_sliver_ui.mjs",
-      "ledger": "docs/Tactical_Encounter_PhaseR_Mind_Sliver_Status.md",
+      "ledger": "docs/Tactical_Encounter_Phase1R_Mind_Sliver_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "unconfirmed",
       "sourceReviewGap": "Not named in resolved persisted smoke examples"
@@ -255,7 +255,7 @@
       "sql": "sql/20260729_02_tactical_word_of_radiance.sql",
       "serverValidator": "scripts/validate_tactical_word_of_radiance.mjs",
       "uiValidator": "scripts/validate_tactical_word_of_radiance_ui.mjs",
-      "ledger": "docs/Tactical_Encounter_PhaseS_Word_of_Radiance_Status.md",
+      "ledger": "docs/Tactical_Encounter_Phase1S_Word_of_Radiance_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "unconfirmed",
       "sourceReviewGap": "Not named in resolved persisted smoke examples"
@@ -271,7 +271,7 @@
       "sql": "sql/20260729_04_tactical_guiding_bolt.sql",
       "serverValidator": "scripts/validate_tactical_guiding_bolt.mjs",
       "uiValidator": "scripts/validate_tactical_guiding_bolt_ui.mjs",
-      "ledger": "docs/Tactical_Encounter_PhaseT_Guiding_Bolt_Status.md",
+      "ledger": "docs/Tactical_Encounter_Phase1T_Guiding_Bolt_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "unconfirmed",
       "sourceReviewGap": "Not named in resolved persisted smoke examples"
@@ -287,7 +287,7 @@
       "sql": "sql/20260730_02_tactical_vicious_mockery.sql",
       "serverValidator": "scripts/validate_tactical_vicious_mockery.mjs",
       "uiValidator": "scripts/validate_tactical_vicious_mockery_ui.mjs",
-      "ledger": "docs/Tactical_Encounter_PhaseU_Vicious_Mockery_Status.md",
+      "ledger": "docs/Tactical_Encounter_Phase1U_Vicious_Mockery_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "unconfirmed",
       "sourceReviewGap": "Hearing-only targeting not fully automated; not named in persisted smoke"
@@ -303,7 +303,7 @@
       "sql": "sql/20260730_03_tactical_healing_word.sql",
       "serverValidator": "scripts/validate_tactical_healing_word.mjs",
       "uiValidator": "scripts/validate_tactical_healing_word_ui.mjs",
-      "ledger": "docs/Tactical_Encounter_PhaseV_Healing_Word_Status.md",
+      "ledger": "docs/Tactical_Encounter_Phase1V_Healing_Word_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "named-persisted",
       "sourceReviewGap": "Modern signed-in simultaneous-controller coverage unverified"
@@ -319,7 +319,7 @@
       "sql": "sql/20260730_04_tactical_acid_splash.sql",
       "serverValidator": "scripts/validate_tactical_acid_splash.mjs",
       "uiValidator": "scripts/validate_tactical_acid_splash_ui.mjs",
-      "ledger": "docs/Tactical_Encounter_PhaseW_Acid_Splash_Status.md",
+      "ledger": "docs/Tactical_Encounter_Phase1W_Acid_Splash_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "named-persisted",
       "sourceReviewGap": "Modern full hidden-target multi-account browser coverage unverified"
@@ -335,7 +335,7 @@
       "sql": "sql/20260730_05_tactical_magic_missile.sql",
       "serverValidator": "scripts/validate_tactical_magic_missile.mjs",
       "uiValidator": "scripts/validate_tactical_magic_missile_ui.mjs",
-      "ledger": "docs/Tactical_Encounter_PhaseX_Magic_Missile_Status.md",
+      "ledger": "docs/Tactical_Encounter_Phase1X_Magic_Missile_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "named-persisted",
       "sourceReviewGap": "Shield reaction interaction remains GM-assisted"
@@ -351,7 +351,7 @@
       "sql": "sql/20260730_06_tactical_burning_hands.sql",
       "serverValidator": "scripts/validate_tactical_burning_hands.mjs",
       "uiValidator": "scripts/validate_tactical_burning_hands_ui.mjs",
-      "ledger": "docs/Tactical_Encounter_PhaseY_Burning_Hands_Status.md",
+      "ledger": "docs/Tactical_Encounter_Phase1Y_Burning_Hands_Status.md",
       "transactionEvidence": "phase-ledger documented transactional/rollback checks",
       "persistedSmokeEvidence": "unconfirmed",
       "sourceReviewGap": "Not named in resolved persisted smoke examples"
@@ -367,7 +367,7 @@
       "sql": "sql/20260730_07_tactical_lightning_bolt.sql",
       "serverValidator": "scripts/validate_tactical_lightning_bolt.mjs",
       "uiValidator": "scripts/validate_tactical_lightning_bolt_ui.mjs",
-      "ledger": "docs/Tactical_Encounter_PhaseZ_Lightning_Bolt_Status.md",
+      "ledger": "docs/Tactical_Encounter_Phase1Z_Lightning_Bolt_Status.md",
       "transactionEvidence": "rollback-only eligible-caster synthetic fixture (no eligible persistent caster at rollout)",
       "persistedSmokeEvidence": "unconfirmed",
       "sourceReviewGap": "No persistent eligible caster at rollout; transaction-only eligible-caster evidence, not live persisted cast"
