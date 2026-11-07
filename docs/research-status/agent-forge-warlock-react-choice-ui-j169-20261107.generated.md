@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/forge-warlock-react-choice-ui-j169-20261107` |
-| Exact source commit represented by this archive snapshot | `0527f945269b6df32ad1f5c32fbe0434082d52f8` |
+| Exact source commit represented by this archive snapshot | `45946b25637a052eebbb91df0b382fe3ebf746d6` |
 | Compared with | `51c351a142d03378dff8e47e05182afe21a15622` (main comparison base) |
-| Last source commit title | docs(forge): receipt authenticated J168 pure frontend serializer acceptance |
-| Files changed relative to main | 111 (82 non-docs; 29 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit title | test(forge): J169 isolated Chromium React Warlock source-choice UI parity |
+| Files changed relative to main | 114 (85 non-docs; 29 docs) |
+| Last source commit | 6 files (3 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,14 +17,18 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
+- `.github/workflows/validate-forge-browser-warlock-choice.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/Forge_Warlock_Child_Completion_2026-11-06.md`
 - `docs/HANDOFF_LOG.md`
+- `scripts/browser/forge_warlock_choice_dom.jsx`
+- `scripts/browser/verify_forge_warlock_choice_dom.mjs`
 
 ## Research-branch change inventory versus main
 
 - `.github/workflows/forge-trigger-acceptance-audit.yml`
 - `.github/workflows/research-docs-maintenance.yml`
+- `.github/workflows/validate-forge-browser-warlock-choice.yml`
 - `.github/workflows/validate-forge-immutable-creation-replay.yml`
 - `.github/workflows/validate-p1-3-npc-profile-rls.yml`
 - `docs/ACTIVE_WORK.md`
@@ -67,13 +71,12 @@ The latest source commit includes authored documentation. Verify correctness and
 - `scripts/agents/research_docs_maintainer.mjs`
 - `scripts/agents/validate_project_health.mjs`
 - `scripts/agents/validate_research_docs_maintainer.mjs`
+- `scripts/browser/forge_warlock_choice_dom.jsx`
+- `scripts/browser/verify_forge_warlock_choice_dom.mjs`
 - `scripts/fixtures/forge_characters_portrait_sync_local_auth_pg17.sql`
 - `scripts/fixtures/forge_characters_portrait_sync_original_pg17.sql`
 - `scripts/fixtures/forge_characters_tag_guard_local_auth_pg17.sql`
-- `scripts/fixtures/forge_characters_tag_guard_original_pg17.sql`
-- `scripts/fixtures/forge_creation_original_functions_pg17.sql`
-- `scripts/fixtures/forge_creation_replay_candidate_pg17.sql`
-- … 61 more
+- … 64 more
 
 ## Forge source and authenticated evidence (branch-local only)
 
