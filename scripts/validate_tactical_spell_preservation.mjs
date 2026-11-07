@@ -35,6 +35,15 @@ assert(recovery.includes("48 individual validators"), "Recovery document/source 
 assert(recovery.includes("Version **64**"), "Historical live smoke snapshot changed; reconcile deliberately");
 assert(recovery.includes("40801549016") && recovery.includes("40801549033"), "Archived failed CI receipts missing");
 
+assert(manifest.architectureBoundary?.approvedPivotDate === "2026-10-31", "Approved mechanics-family pivot record missing");
+assert(manifest.architectureBoundary?.futureDirection?.includes("recipe engine"), "Future composable engine direction lost");
+const acidConflict = manifest.reviewConflicts?.find(x => x.id === "xphb-acid-splash-held-classifier");
+assert(acidConflict?.status === "open-review-required", "Held Acid Splash taxonomy conflict must remain explicit pending review");
+assert(acidConflict.heldResearch.includes("limited-number-of-targets"), "Original held-classifier discrepancy evidence missing");
+const levelConflict = manifest.reviewConflicts?.find(x => x.id === "cantrip-total-level-parity");
+assert(levelConflict?.status === "source-review-required-not-a-confirmed-runtime-defect", "Cantrip scaling audit gap must stay visible");
+
+
 const branch = ui.slice(ui.indexOf("function castSpell()"), ui.indexOf("return runRpc(rpcName,"));
 assert(branch.length > 500, "Cast route block not found");
 const rpcSelection = ui.slice(ui.indexOf("const rpcName = key === "), ui.indexOf("return runRpc(rpcName,"));
@@ -75,6 +84,16 @@ for (const spell of manifest.spells) {
     assert(keyPosition >= 0, key + " missing special UI route");
     const route = branch.slice(keyPosition, keyPosition + 240);
     assert(route.includes('runRpc("' + rpcName + '"'), key + " special UI RPC drift");
+  }
+  if (key === "acid-splash|xphb") {
+    // Preserve the reviewed XPHB geometry instead of a held research label implying a limited creature count.
+    assert(spell.mechanicsFamily === "point-origin-sphere-save", "Acid Splash must use deployed point-origin Sphere mechanics");
+    assert(sqlText.includes("'arearadiusft',5") && sqlText.includes("'serverderivedmembership',true"),
+      "XPHB Acid Splash must retain a 5-ft sphere with server-derived creature membership");
+    assert(sqlText.includes("p_origin_q") && sqlText.includes("for v_t in") &&
+      sqlText.includes("public.encounter_saving_throw_profile_internal_v1(v_t.id,'dex')"),
+      "XPHB Acid Splash point/creature/save authority changed");
+    assert(ledgerText.includes("every creature in the sphere"), "Original XPHB area-target requirement lost");
   }
   if (key === "lightning-bolt|xphb") {
     assert(spell.transactionEvidence.includes("rollback-only") && spell.sourceReviewGap.includes("No persistent eligible caster"), "Lightning Bolt evidence must remain rollback-only");
