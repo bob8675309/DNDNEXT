@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/spell-adapter-preservation-20261107` |
-| Exact source commit represented by this archive snapshot | `e66766b19cc7c2457a1e3bebfbf76d7a176cd0fe` |
+| Exact source commit represented by this archive snapshot | `e10fed97936e03c7c6fd416ef64dbb5d2605f58c` |
 | Compared with | `2d2135ced24bcb4fbb4d8ccefc27bda70e91eb05` (main comparison base) |
-| Last source commit title | docs(research): reaffirm shared Spell Engine pivot and source-parity review gates |
+| Last source commit title | docs(research): append owner-video audit, taxonomy discrepancy and test receipt |
 | Files changed relative to main | 7 (4 non-docs; 3 docs) |
 | Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
@@ -17,7 +17,7 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
 
 ## Research-branch change inventory versus main
 
