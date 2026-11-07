@@ -1,0 +1,248 @@
+{
+  "schema": "dndnext-c3-3-integration-provenance-v1",
+  "audit_date": "2026-11-07",
+  "main_base_sha": "997902aafe2facd8a492b005f8da4acb8342aeb2",
+  "approved_original_source_tip": {
+    "pr": 323,
+    "sha": "07ff6a4f68418a37d89527be79925922cb1a6775"
+  },
+  "upstream_drafts": [
+    {
+      "pr": 321,
+      "head": "b220fb5ecbc9570f63bd85a95da8706340abd153"
+    },
+    {
+      "pr": 322,
+      "head": "4f4b8788744754ccf19af0e29546944f8ed8b3a3"
+    },
+    {
+      "pr": 320,
+      "head": "e7a64e827bfb2458bdfc5323b9d8706f44c100b4"
+    }
+  ],
+  "copied_paths": [
+    {
+      "path": ".github/workflows/validate-centered-npc-profile.yml",
+      "source_blob_sha": "565419d081144869754de43856a9ab8483f4be03",
+      "main_blob_sha": null,
+      "source_differs_from_main": true
+    },
+    {
+      "path": ".github/workflows/validate-npc-private-profile-cutover.yml",
+      "source_blob_sha": "2be8b3352802fd677693c59b14fcd6d8075f3020",
+      "main_blob_sha": null,
+      "source_differs_from_main": true
+    },
+    {
+      "path": ".github/workflows/validate-p1-3-npc-profile-rls.yml",
+      "source_blob_sha": "93f94bbb4d5debc59a682b2fa46bab8bf2fd2e20",
+      "main_blob_sha": null,
+      "source_differs_from_main": true
+    },
+    {
+      "path": "components/CreatorBackstoryPanel.js",
+      "source_blob_sha": "23b0e86aab7a80b7243365ba107c1d37a5ec5812",
+      "main_blob_sha": null,
+      "source_differs_from_main": true
+    },
+    {
+      "path": "components/GlobalNpcProfileOverlay.js",
+      "source_blob_sha": "b2f05c458eb294bba2cc3d2a2befc9473f7b8b3b",
+      "main_blob_sha": null,
+      "source_differs_from_main": true
+    },
+    {
+      "path": "components/MapPageClient.js",
+      "source_blob_sha": "3e6bf39d48de6f28aac90f6bac1400fa9a00bf1f",
+      "main_blob_sha": "61f8738da2ca3d8635b5a413bfdc18c094228a0a",
+      "source_differs_from_main": true
+    },
+    {
+      "path": "components/NpcPanel.js",
+      "source_blob_sha": "5ddfc5b031d5728f45639bdefc4ea14e51ed3a05",
+      "main_blob_sha": "e4cde1ae8bf8d9bb7b03fdf855cdb0ef9e6cb1db",
+      "source_differs_from_main": true
+    },
+    {
+      "path": "components/town/TownCrafterInteractionPanel.js",
+      "source_blob_sha": "6be8eb9e041d74f784d136e672c0df9d2d27774d",
+      "main_blob_sha": "345629409b45cd5da5bf305a8124fbbe46ec0d15",
+      "source_differs_from_main": true
+    },
+    {
+      "path": "pages/_app.js",
+      "source_blob_sha": "5a1981d58af0f0b99519538093157d27a0d60d35",
+      "main_blob_sha": "e5f68c0abb293089d6ad09d4e3e4035612eac598",
+      "source_differs_from_main": true
+    },
+    {
+      "path": "pages/inventory.js",
+      "source_blob_sha": "b3d71b65f38b37cae8eeb44c6882e493ae6c33b3",
+      "main_blob_sha": "02d52821d0f22aa82ad92263c5014712906ee385",
+      "source_differs_from_main": true
+    },
+    {
+      "path": "pages/npcs.js",
+      "source_blob_sha": "ed7c825e38f54138e55b0e3c71f8529a107fc4dd",
+      "main_blob_sha": "7fc00b9b3ace6233d1648a3d017f8a05e072d722",
+      "source_differs_from_main": true
+    },
+    {
+      "path": "pages/town/[id].js",
+      "source_blob_sha": "3c84f8f538844bc179317e58673362f0d28b7059",
+      "main_blob_sha": "a4e790e5941afb16660a112ee9189e4a84d4afb7",
+      "source_differs_from_main": true
+    },
+    {
+      "path": "scripts/fixtures/p1_3_npc_creator_replay_fixture_pg17.sql",
+      "source_blob_sha": "7fc70929c7b7b21f836a8347139e356ed7e906dd",
+      "main_blob_sha": null,
+      "source_differs_from_main": true
+    },
+    {
+      "path": "scripts/fixtures/p1_3_npc_safe_profile_local_auth_pg17.sql",
+      "source_blob_sha": "2355ceaf306d6dde1ec90c634f71e919894d3859",
+      "main_blob_sha": null,
+      "source_differs_from_main": true
+    },
+    {
+      "path": "scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql",
+      "source_blob_sha": "9c479d3f044268f73da3a5515d229096ce03f94a",
+      "main_blob_sha": null,
+      "source_differs_from_main": true
+    },
+    {
+      "path": "scripts/test_p1_3_npc_profile_safe_local_auth.mjs",
+      "source_blob_sha": "ed6c44f55360626e8dd65a8d2f1a2210c986a96f",
+      "main_blob_sha": null,
+      "source_differs_from_main": true
+    },
+    {
+      "path": "scripts/validate_centered_npc_profile_entrypoints.mjs",
+      "source_blob_sha": "b814ff42ff4cfb349b42d2072cffe2f574bcae60",
+      "main_blob_sha": null,
+      "source_differs_from_main": true
+    },
+    {
+      "path": "scripts/validate_npc_private_profile_cutover.mjs",
+      "source_blob_sha": "b1920ce1a68e43e848f959e3aefff57200d524fb",
+      "main_blob_sha": null,
+      "source_differs_from_main": true
+    },
+    {
+      "path": "scripts/validate_npc_secure_centered_integration.mjs",
+      "source_blob_sha": "5d841ac6efa7914f0b7e5b33defc8c55f03e8d46",
+      "main_blob_sha": null,
+      "source_differs_from_main": true
+    },
+    {
+      "path": "scripts/validate_p1_3_npc_profile_rls_source.mjs",
+      "source_blob_sha": "24d6d8b0653175a454bef6679637cd04cb36c446",
+      "main_blob_sha": null,
+      "source_differs_from_main": true
+    },
+    {
+      "path": "scripts/validate_printable_character_sheet.mjs",
+      "source_blob_sha": "1d3825a0a540eb6fb42482376b018c05d7d79917",
+      "main_blob_sha": "5f2580d6c3b559d9b3c1459f28c3625d2b6138de",
+      "source_differs_from_main": true
+    },
+    {
+      "path": "scripts/validate_town_crafter_interaction_component.mjs",
+      "source_blob_sha": "25d6d25e4b088d5f0f55be8e328343a163b4d401",
+      "main_blob_sha": "df5e99047c1d2b483e2c52085eb1e82cc500efb4",
+      "source_differs_from_main": true
+    },
+    {
+      "path": "sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql",
+      "source_blob_sha": "fa69665c7e89a15369a9e44e5db343e9ed981a7b",
+      "main_blob_sha": null,
+      "source_differs_from_main": true
+    },
+    {
+      "path": "sql/candidates/20261104_npc_gm_dossier_column_acl_stage2.sql",
+      "source_blob_sha": "542d87dcbd426fcd2191823514f8b4ff95d330aa",
+      "main_blob_sha": null,
+      "source_differs_from_main": true
+    },
+    {
+      "path": "sql/candidates/20261104_npc_player_safe_profile_rls_v1.sql",
+      "source_blob_sha": "9dfe44eee49df6ead8c8ccfc7a0454a996b8bee3",
+      "main_blob_sha": null,
+      "source_differs_from_main": true
+    },
+    {
+      "path": "styles/npc-profile-centered.css",
+      "source_blob_sha": "150eb9ad78aeba268be955e63c8451e3c0ed0e14",
+      "main_blob_sha": null,
+      "source_differs_from_main": true
+    },
+    {
+      "path": "utils/npcProfileOverlay.js",
+      "source_blob_sha": "3d809c47a9aaae18d0e7e5ec6500199a9266baac",
+      "main_blob_sha": null,
+      "source_differs_from_main": true
+    }
+  ],
+  "archived_original_docs": [
+    {
+      "source_path": "docs/NPC_Profile_First_Centered_Overlay_2026-11-04.md",
+      "archive_path": "docs/archive/npc_secure_profile_2026-11-04/NPC_Profile_First_Centered_Overlay_2026-11-04.md",
+      "original_blob_sha": "994cdbe09230cd71c652fe6d676d50b82e63f2de"
+    },
+    {
+      "source_path": "docs/P1_3_NPC_Profile_Server_Visibility_Research_2026-11-04.md",
+      "archive_path": "docs/archive/npc_secure_profile_2026-11-04/P1_3_NPC_Profile_Server_Visibility_Research_2026-11-04.md",
+      "original_blob_sha": "4c6fe3ea0918b15afc53a4707f5c2cfcc27cf748"
+    },
+    {
+      "source_path": "docs/NPC_Private_Reader_Client_Cutover_2026-11-04.md",
+      "archive_path": "docs/archive/npc_secure_profile_2026-11-04/NPC_Private_Reader_Client_Cutover_2026-11-04.md",
+      "original_blob_sha": "f13fe5ae3c26230fe7f0ed6adff9c9c6df4b69d4"
+    },
+    {
+      "source_path": "docs/Centered_Secure_NPC_Profile_Integration_2026-11-04.md",
+      "archive_path": "docs/archive/npc_secure_profile_2026-11-04/Centered_Secure_NPC_Profile_Integration_2026-11-04.md",
+      "original_blob_sha": "fd1f2282ca721c4eca26a932cfe44fb6a2d026c6"
+    }
+  ],
+  "excluded": [
+    "AGENTS.md",
+    "docs/ACTIVE_WORK.md",
+    "docs/HANDOFF_LOG.md",
+    "docs/NEXT_CHAT_START_HERE.md",
+    "docs/SYSTEM_REGISTRY.json",
+    "old standalone PR #320 NpcPanel.js",
+    "old #321 stage3 SQL and test/validator blobs",
+    "all production SQL migrations",
+    "world-map movement/route logic"
+  ],
+  "safety": "Draft-only combined integration candidate, source/candidate SQL not deployed. Production RPC/grants remain unchanged. Do not merge until coordinated SQL, Auth, browser + rollback release authorization.",
+  "live_read_only_observations": {
+    "postgres": "17.4",
+    "existing_rpc_hashes": {
+      "private.can_access_character_v1": "97b5e6b059e6467e24c4283fe420c83e",
+      "public.get_my_player_character_v1": "b6049deb0b4d59daf15d7dd6e8ac1079",
+      "public.get_my_player_characters_v2": "deca87aaad0dce214743c87cdca03f36",
+      "public.get_character_secrets_v1": "2f28c77dcda18aed1c654515b26ec438",
+      "public.set_character_secret_v1": "13bdb65758552362bc7049b65131c9aa"
+    },
+    "absent_live_rpc": [
+      "get_npc_profile_visible_v1",
+      "get_npc_dossier_admin_v1",
+      "can_edit_creator_backstory_v1"
+    ],
+    "char_sheet_select_policy": "character_sheets_select_visible_or_assigned currently allows if row exists in characters",
+    "direct_authenticated_character_secret_select": false,
+    "direct_authenticated_character_secret_update": false,
+    "direct_authenticated_character_motivation_select": true
+  },
+  "release_gates": [
+    "original-source pure and signed JWT V00-V24",
+    "build and existing app/town/map/merchant regression",
+    "real signed Admin/creator/coeditor/editor/outsider/anon + revocation",
+    "full NewNpcModalV3 original creation & legacy player sheet compatibility",
+    "full app browser GM/merchant/town/map interactions",
+    "source-drift guards, ACL/definer/RLS/grants including backstory trigger, rollback and Supabase migration"
+  ]
+}

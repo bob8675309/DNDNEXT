@@ -1,0 +1,51 @@
+name: Validate centered NPC Profile entry points
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/validate-centered-npc-profile.yml"
+      - "components/GlobalNpcProfileOverlay.js"
+      - "components/MapPageClient.js"
+      - "components/NpcPanel.js"
+      - "components/town/TownCrafterInteractionPanel.js"
+      - "pages/_app.js"
+      - "pages/inventory.js"
+      - "pages/town/[id].js"
+      - "styles/npc-profile-centered.css"
+      - "scripts/validate_centered_npc_profile_entrypoints.mjs"
+      - "scripts/validate_npc_secure_centered_integration.mjs"
+      - "components/CreatorBackstoryPanel.js"
+      - "scripts/validate_town_crafter_interaction_component.mjs"
+      - "utils/npcProfileOverlay.js"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  npc-profile-coverage-and-build:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verify Profile-first interaction and untouched map/merchant lifecycles
+        run: |
+          node --check scripts/validate_centered_npc_profile_entrypoints.mjs
+          node scripts/validate_centered_npc_profile_entrypoints.mjs
+          node scripts/validate_npc_secure_centered_integration.mjs
+          node scripts/validate_map_profile_offcanvas_handoff.mjs
+          node scripts/validate_map_profile_character_interaction.mjs
+          node scripts/validate_character_interaction_panel.mjs
+          node scripts/validate_town_crafter_handoff_pipeline.mjs
+          node scripts/validate_town_crafter_interaction_component.mjs
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Compile full Next.js Pages Router production build (no deployment)
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: static-test-placeholder
+        run: npm run build:vercel
