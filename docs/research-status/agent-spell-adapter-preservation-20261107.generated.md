@@ -5,9 +5,9 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/spell-adapter-preservation-20261107` |
-| Exact source commit represented by this archive snapshot | `00026995e3e5e7b162fd8ada99f7591223da3642` |
+| Exact source commit represented by this archive snapshot | `6466b2dba3c139371e4cde9f5432c9882ec98a91` |
 | Compared with | `2d2135ced24bcb4fbb4d8ccefc27bda70e91eb05` (main comparison base) |
-| Last source commit title | test(preservation): pin original 19 keys and all 48 validator identities; preserve positive and negative CI evidence |
+| Last source commit title | fix(preservation): correct escaped validator regex in baseline source reader |
 | Files changed relative to main | 7 (4 non-docs; 3 docs) |
 | Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
