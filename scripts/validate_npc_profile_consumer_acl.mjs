@@ -31,4 +31,50 @@ assert(admin.includes("const selectedCharPerm = charPerm?.character_id"), "Chara
 assert(admin.includes("canEditCharacter && hasNarrative && detailsDraft"), "Narrative save can overwrite unread data");
 assert(admin.includes("isAdmin={isAdmin}") && !admin.includes("isAdmin={isAdmin || canEditCharacter}"),
   "Edit rights must not be promoted to GM permissions");
+// Explicit character-reader projections across NPC, town, inventory, encounter,
+// visuals and map surfaces must stay compatible with stage2 role-wide SELECT
+// revocation. This static check does NOT prove dynamic SQL or signed browser roles.
+const protectedLore = new Set(["background","motivation","quirk","mannerism","voice","secret"]);
+const readerPaths = [
+  "pages/npcs.js",
+  "pages/inventory.js",
+  "pages/town/[id].js",
+  "pages/admin.js",
+  "pages/admin/character-visuals.js",
+  "pages/encounters/live.js",
+  "pages/encounters/smoke.js",
+  "pages/encounters/multiplayer-smoke.js",
+  "components/MapPageClient.js",
+  "components/LocationSideBar.js",
+  "components/CharacterVisualsPanel.js",
+  "components/PortraitPickerModal.js",
+  "components/NpcForgeEquipmentStep.js",
+  "components/NpcForgeCoreSupport.js",
+];
+let checkedProjections = 0;
+function assertSafeProjection(path, projection) {
+  const fields = [...projection.matchAll(/["']([^"']+)["']/g)].map((match) => match[1]);
+  for (const item of fields) {
+    const name = item.split(":").at(-1).split("(")[0].trim().toLowerCase();
+    assert(!protectedLore.has(name) && name !== "*",
+      path+": protected lore/wildcard added to public roster projection: "+item);
+  }
+  checkedProjections += 1;
+}
+for (const path of readerPaths) {
+  const source = read(path);
+  const rawText = /\.from\(\s*["']characters["']\s*\)\s*\.select\(\s*(["'])([^"']*)\1\s*\)/g;
+  for (const match of source.matchAll(rawText)) {
+    const columns = match[2].split(",").map((col) => JSON.stringify(col.trim())).join(",");
+    assertSafeProjection(path, columns);
+  }
+  const inlineArrays = /\.from\(\s*["']characters["']\s*\)\s*\.select\(\s*\[([\s\S]*?)\]\s*\.join\(\s*["'],["']\s*\)\s*\)/g;
+  for (const match of source.matchAll(inlineArrays)) assertSafeProjection(path, match[1]);
+  if (path === "components/MapPageClient.js" || path === "pages/town/[id].js") {
+    const namedArrays = /\b(?:const|let)\s+(?:selectWithMeta|selectNoMeta|merchantSelect)\s*=\s*\[([\s\S]*?)\]\s*\.join\(\s*["'],["']\s*\)/g;
+    for (const match of source.matchAll(namedArrays)) assertSafeProjection(path, match[1]);
+  }
+}
+assert(checkedProjections >= 17, "Character reader inventory lost projections; re-audit dynamic source selectors");
+console.log("PASS C3.3 "+checkedProjections+" direct character roster projections do not request role-wide private lore");
 console.log("PASS C3.3 unified player fallback honors role-wide private-lore ACL; editor RPC remains sanitized");
