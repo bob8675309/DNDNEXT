@@ -1,0 +1,81 @@
+name: Validate C3.3 original Forge and NPC privacy joint local JWT
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/validate-c3-3-forge-privacy-original.yml'
+      - 'scripts/fixtures/forge_creation_replay_local_auth_pg17.sql'
+      - 'scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql'
+      - 'scripts/test_c33_forge_privacy_original_local_auth.mjs'
+      - 'scripts/fixtures/forge_creation_original_functions_pg17.sql'
+      - 'scripts/fixtures/p1_3_npc_visible_sheet_original_functions_pg17.sql'
+      - 'sql/candidates/20261104_npc_player_safe_profile_rls_v1.sql'
+      - 'sql/candidates/20261104_npc_gm_dossier_column_acl_stage2.sql'
+      - 'sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  original-forge-joint-privacy:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+      PGHOST: 127.0.0.1
+      PGPORT: '54322'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_C33_FORGE_PRIVACY_LOCAL_CONFIRM: DISPOSABLE_LOCAL_GOTRUE_ONLY
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Check genuine JWT test and original staged SQL source guards
+        run: |
+          node --check scripts/test_c33_forge_privacy_original_local_auth.mjs
+          node scripts/validate_p1_3_npc_profile_rls_source.mjs
+          node scripts/validate_forge_immutable_creation_replay.mjs
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Configure disposable PG17 and GoTrue
+        run: |
+          mkdir -p "$RUNNER_TEMP/c33-forge-privacy-local/supabase"
+          cat > "$RUNNER_TEMP/c33-forge-privacy-local/supabase/config.toml" <<'TOML'
+          project_id = "c33-original-forge-privacy-test"
+          [db]
+          port = 54322
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+      - name: Start disposable Auth and PostgREST
+        run: |
+          cd "$RUNNER_TEMP/c33-forge-privacy-local"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Exercise source-original Forge v2/v3 against NPC privacy stage 1 to 3
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = '127.0.0.1'
+          test "$PGPORT" = '54322'
+          test "$PGDATABASE" = 'postgres'
+          test "$DNDNEXT_C33_FORGE_PRIVACY_LOCAL_CONFIRM" = DISPOSABLE_LOCAL_GOTRUE_ONLY
+          (cd "$RUNNER_TEMP/c33-forge-privacy-local" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/c33-forge-privacy-env"
+          set -a
+          source "$RUNNER_TEMP/c33-forge-privacy-env"
+          set +a
+          export DNDNEXT_C33_FORGE_PRIVACY_LOCAL_URL="http://127.0.0.1:54321"
+          export DNDNEXT_C33_FORGE_PRIVACY_LOCAL_ANON_KEY="$ANON_KEY"
+          psql -X -v ON_ERROR_STOP=1 -v DNDNEXT_C33_PRIVACY_STAGE3_CREATOR=1 -f scripts/fixtures/forge_creation_replay_local_auth_pg17.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql
+          node scripts/test_c33_forge_privacy_original_local_auth.mjs
+      - name: Stop and remove disposable services
+        if: always()
+        run: |
+          cd "$RUNNER_TEMP/c33-forge-privacy-local"
+          npx --yes supabase@2.120.0 stop --no-backup || true
