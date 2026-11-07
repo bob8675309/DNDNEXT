@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-06T23:54:56Z | research/forge-warlock-child-completion-20261106 (8c035c8bf4c4393da9df42d0102dc46c273095bc) | 79a6340c08e743e71e1072e40e6ba7204f735a29 |
+| 2026-11-07T00:00:32Z | research/forge-warlock-child-completion-20261106 (1f1468df82bbd0edc1270167a1e3b07eff8a4831) | 79a6340c08e743e71e1072e40e6ba7204f735a29 |
 
 ## Exact PR heads and latest captured GitHub Actions
 

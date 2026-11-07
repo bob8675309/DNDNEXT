@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/forge-warlock-child-completion-20261106` |
-| Exact source commit represented by this archive snapshot | `8c035c8bf4c4393da9df42d0102dc46c273095bc` |
+| Exact source commit represented by this archive snapshot | `1f1468df82bbd0edc1270167a1e3b07eff8a4831` |
 | Compared with | `51c351a142d03378dff8e47e05182afe21a15622` (main comparison base) |
-| Last source commit title | test(forge): use original preferred spell view/function instead of local stub |
+| Last source commit title | test(forge): stage source preferred-view range columns before original view DDL |
 | Files changed relative to main | 110 (81 non-docs; 29 docs) |
-| Last source commit | 6 files (3 non-docs; 3 authored docs) |
+| Last source commit | 5 files (2 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,7 +17,6 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-forge-immutable-creation-replay.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/Forge_Warlock_Child_Completion_2026-11-06.md`
 - `docs/HANDOFF_LOG.md`
