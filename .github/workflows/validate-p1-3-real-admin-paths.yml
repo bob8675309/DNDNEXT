@@ -1,0 +1,211 @@
+name: P1.3 exact-source admin activation and resume PG16
+on:
+  pull_request:
+    paths:
+      - 'scripts/fixtures/p1_3_live_admin_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_live_admin_stub_schema_pg16.sql'
+      - 'scripts/fixtures/p1_3_live_admin_source_pg16.sh'
+      - 'scripts/fixtures/p1_3_tc1_test_trigger_only.sql'
+      - 'scripts/fixtures/p1_3_staging_lock_race_pg16_setup.sql'
+      - 'scripts/fixtures/p1_3_staging_lock_race_pg16_live_source.sql'
+      - 'scripts/fixtures/p1_3_staging_lock_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_turn_expiry_live_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_turn_expiry_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_turn_expiry_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_slot_bridge_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_slot_bridge_live_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_slot_bridge_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_permission_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_permission_live_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_permission_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_real_refresh_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_real_refresh_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_real_refresh_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_public_cast_start_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_public_cast_v13_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_public_cast_start_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_turnflow_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_turnflow_public_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_turnflow_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_weapon_attack_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_weapon_attack_live_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_weapon_attack_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_opportunity_attack_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_opportunity_attack_live_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_opportunity_attack_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_spell_v13_to_v12_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_spell_v13_to_v12_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_spell_v13_to_v12_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_spell_v11_guiding_bolt_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_spell_v11_guiding_bolt_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_spell_v11_guiding_bolt_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_spell_v10_mind_sliver_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_spell_v10_mind_sliver_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_spell_v10_mind_sliver_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_legacy_v9_to_v1_live_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_legacy_v9_to_v1_cases_pg16.sql'
+      - 'docs/P1_3_Real_Admin_Activation_Resume_Test_2026-11-01.md'
+      - '.github/workflows/validate-p1-3-real-admin-paths.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/fixtures/p1_3_live_admin_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_live_admin_stub_schema_pg16.sql'
+      - 'scripts/fixtures/p1_3_live_admin_source_pg16.sh'
+      - 'scripts/fixtures/p1_3_tc1_test_trigger_only.sql'
+      - 'scripts/fixtures/p1_3_staging_lock_race_pg16_setup.sql'
+      - 'scripts/fixtures/p1_3_staging_lock_race_pg16_live_source.sql'
+      - 'scripts/fixtures/p1_3_staging_lock_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_turn_expiry_live_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_turn_expiry_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_turn_expiry_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_slot_bridge_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_slot_bridge_live_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_slot_bridge_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_permission_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_permission_live_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_permission_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_real_refresh_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_real_refresh_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_real_refresh_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_public_cast_start_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_public_cast_v13_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_public_cast_start_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_turnflow_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_turnflow_public_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_turnflow_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_weapon_attack_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_weapon_attack_live_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_weapon_attack_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_opportunity_attack_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_opportunity_attack_live_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_opportunity_attack_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_spell_v13_to_v12_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_spell_v13_to_v12_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_spell_v13_to_v12_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_spell_v11_guiding_bolt_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_spell_v11_guiding_bolt_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_spell_v11_guiding_bolt_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_spell_v10_mind_sliver_setup_pg16.sql'
+      - 'scripts/fixtures/p1_3_spell_v10_mind_sliver_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_spell_v10_mind_sliver_race_pg16.sh'
+      - 'scripts/fixtures/p1_3_legacy_v9_to_v1_live_source_pg16.sql'
+      - 'scripts/fixtures/p1_3_legacy_v9_to_v1_cases_pg16.sql'
+      - 'docs/P1_3_Real_Admin_Activation_Resume_Test_2026-11-01.md'
+      - '.github/workflows/validate-p1-3-real-admin-paths.yml'
+permissions:
+  contents: read
+jobs:
+  exact-source-model:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: p13_live_source_sandbox
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d p13_live_source_sandbox"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: p13_live_source_sandbox
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install PostgreSQL client if necessary
+        run: |
+          if ! command -v psql >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client
+          fi
+      - name: Load source-compatible test schema and exact live function bodies
+        run: |
+          test "$PGDATABASE" = p13_live_source_sandbox
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_live_admin_stub_schema_pg16.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_live_admin_source_pg16.sql
+      - name: Exercise actual function bodies in mock dependencies using two PG sessions
+        run: bash scripts/fixtures/p1_3_live_admin_source_pg16.sh
+      - name: Prepare exact-source staged mutation fixture
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_staging_lock_race_pg16_setup.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_staging_lock_race_pg16_live_source.sql
+      - name: Reproduce source-derived Start versus Staging P/E inversion
+        run: bash scripts/fixtures/p1_3_staging_lock_race_pg16.sh
+      - name: Load real turn-start effect trigger into scratch PG16
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_turn_expiry_setup_pg16.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_turn_expiry_live_source_pg16.sql
+      - name: Reproduce E-X-P versus P-E lock race with deployed effect trigger
+        run: bash scripts/fixtures/p1_3_turn_expiry_race_pg16.sh
+      - name: Set up real spell-slot mirror and synchronization functions in scratch PG16
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_slot_bridge_setup_pg16.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_slot_bridge_live_source_pg16.sql
+      - name: Test source-derived slot shortage, double spend and C-first inversion
+        run: bash scripts/fixtures/p1_3_slot_bridge_race_pg16.sh
+      - name: Load real control-helper source and mock grant table in isolated PG16
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_permission_setup_pg16.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_permission_live_source_pg16.sql
+      - name: Test grant-revocation stale-read and permission-row lock control
+        run: bash scripts/fixtures/p1_3_permission_race_pg16.sh
+      - name: Load exact deployed C-to-S refresh source and separate scratch resources
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_real_refresh_setup_pg16.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_real_refresh_source_pg16.sql
+      - name: Test source-derived refresh C-to-S against snapshot spend S-to-C
+        run: bash scripts/fixtures/p1_3_real_refresh_race_pg16.sh
+      - name: Set up exact public Healing Word v13 and live activation-trigger fixtures
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_public_cast_start_setup_pg16.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_public_cast_v13_source_pg16.sql
+      - name: Test valid public Start/Resume vs Healing Word spell transactions
+        run: bash scripts/fixtures/p1_3_public_cast_start_race_pg16.sh
+      - name: Prepare exact public movement, end-turn, core-action and reaction in scratch PG16
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_turnflow_setup_pg16.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_turnflow_public_source_pg16.sql
+      - name: Test exact Move, Dodge, End Turn and Opportunity Reaction concurrency
+        run: bash scripts/fixtures/p1_3_turnflow_race_pg16.sh
+      - name: Load exact public Weapon Attack with deterministic mock combat dependencies
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_weapon_attack_setup_pg16.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_weapon_attack_live_source_pg16.sql
+      - name: Verify Weapon Attack against End Turn and competing Dodge action
+        run: bash scripts/fixtures/p1_3_weapon_attack_race_pg16.sh
+      - name: Load deployed opportunity attack branch and source helper into scratch PG16
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_opportunity_attack_setup_pg16.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_opportunity_attack_live_source_pg16.sql
+      - name: Verify opportunity Attack, End Turn and resolved-window replay races
+        run: bash scripts/fixtures/p1_3_opportunity_attack_race_pg16.sh
+      - name: Load deployed v12 Vicious Mockery delegation and effect source in scratch PG16
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_spell_v13_to_v12_setup_pg16.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_spell_v13_to_v12_source_pg16.sql
+      - name: Verify delegated Vicious Mockery cast, changed-target replay and End Turn race
+        run: bash scripts/fixtures/p1_3_spell_v13_to_v12_race_pg16.sh
+      - name: Load exact v11 Guiding Bolt and source-turn-end effect in scratch PG16
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_spell_v11_guiding_bolt_setup_pg16.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_spell_v11_guiding_bolt_source_pg16.sql
+      - name: Verify real Guiding Bolt slot/replay and v11 versus End Turn inversion
+        run: bash scripts/fixtures/p1_3_spell_v11_guiding_bolt_race_pg16.sh
+      - name: Load original Mind Sliver v10 source and separate scratch actors
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_spell_v10_mind_sliver_setup_pg16.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_spell_v10_mind_sliver_source_pg16.sql
+      - name: Verify Mind Sliver legacy delegation, replay and End Turn
+        run: bash scripts/fixtures/p1_3_spell_v10_mind_sliver_race_pg16.sh
+      - name: Load exact source public legacy v9 through v1 processors
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_legacy_v9_to_v1_live_source_pg16.sql
+      - name: Prove Cure Wounds fallback, typed replay and simulated revoked-control response
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_legacy_v9_to_v1_cases_pg16.sql

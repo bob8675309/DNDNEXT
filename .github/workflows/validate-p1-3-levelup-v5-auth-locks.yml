@@ -1,0 +1,80 @@
+name: P1.3 source-original level-up v5 vs sheet edit real GoTrue race (disposable)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/validate-p1-3-levelup-v5-auth-locks.yml'
+      - 'scripts/fixtures/p1_3_levelup_v5_original_source_pg17.sql'
+      - 'scripts/fixtures/p1_3_admin_grant_original_source_pg17.sql'
+      - 'scripts/fixtures/p1_3_admin_grant_levelup_extension_pg17.sql'
+      - 'scripts/fixtures/p1_3_level4_advancement_original_pg17.sql'
+      - 'scripts/fixtures/p1_3_level4_advancement_extension_pg17.sql'
+      - 'scripts/fixtures/p1_3_original_merchant_inventory_source_pg17.sql'
+      - 'scripts/fixtures/p1_3_original_merchant_inventory_extension_pg17.sql'
+      - 'scripts/fixtures/p1_3_levelup_v5_local_auth_pg17.sql'
+      - 'scripts/test_p1_3_levelup_v5_real_jwt_local.mjs'
+      - 'scripts/validate_p1_3_levelup_v5_source.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  disposable-original-v5-real-jwt:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    env:
+      CI: 'true'
+      PGHOST: 127.0.0.1
+      PGPORT: '54322'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_P13_LEVELUP_LOCAL_CONFIRM: P13_SOURCE_V5_LOCAL_AUTH_ONLY
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Static original-source fingerprints, fixture safety and syntax
+        run: |
+          node --check scripts/test_p1_3_levelup_v5_real_jwt_local.mjs
+          node --check scripts/validate_p1_3_levelup_v5_source.mjs
+          node scripts/validate_p1_3_levelup_v5_source.mjs
+      - name: Install existing pinned project dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Configure isolated local Auth
+        run: |
+          mkdir -p "$RUNNER_TEMP/p13-levelup-auth/supabase"
+          cat > "$RUNNER_TEMP/p13-levelup-auth/supabase/config.toml" <<'TOML'
+          project_id = "p13-levelup-v5-source-race-ci"
+          [db]
+          port = 54322
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+      - name: Start disposable Supabase PostgreSQL 17 and real GoTrue/PostgREST
+        run: |
+          cd "$RUNNER_TEMP/p13-levelup-auth"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Original-source Fighter level-up v5 and signed-in coeditor 40P01 race
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = "127.0.0.1"
+          test "$PGPORT" = "54322"
+          test "$PGDATABASE" = postgres
+          (cd "$RUNNER_TEMP/p13-levelup-auth" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/p13-levelup-env"
+          set -a
+          source "$RUNNER_TEMP/p13-levelup-env"
+          set +a
+          export DNDNEXT_P13_LEVELUP_URL="http://127.0.0.1:54321"
+          export DNDNEXT_P13_LEVELUP_ANON_KEY="$ANON_KEY"
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_levelup_v5_local_auth_pg17.sql
+          node scripts/test_p1_3_levelup_v5_real_jwt_local.mjs
+      - name: Destroy all scratch services and users
+        if: always()
+        run: |
+          cd "$RUNNER_TEMP/p13-levelup-auth"
+          npx --yes supabase@2.120.0 stop --no-backup || true

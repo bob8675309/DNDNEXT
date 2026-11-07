@@ -1,0 +1,532 @@
+{
+  "schema": "dndnext-c3-2-isolated-security-v1",
+  "source_pr": 317,
+  "source_sha": "69e741d7c7d8874c22467e2d30791e30c009ff6e",
+  "base_main_sha": "537b570083b3f18faad6d3038c131bee61af273c",
+  "original_source_paths": [
+    {
+      "path": ".github/workflows/validate-p1-3-forge-materializer-locks.yml",
+      "original_blob_sha": "8f1ff34e6ce7c12c4ec0f1a7f6421abf02b9ebd9",
+      "adjusted": false
+    },
+    {
+      "path": ".github/workflows/validate-p1-3-legacy-real-auth.yml",
+      "original_blob_sha": "ccecd4cc41aca9675f5cc98130a1f6181c5cdfd2",
+      "adjusted": false
+    },
+    {
+      "path": ".github/workflows/validate-p1-3-legacy-v9-v8.yml",
+      "original_blob_sha": "95d10f833ece4dded56d0272a5c5ed29f8d2dab3",
+      "adjusted": false
+    },
+    {
+      "path": ".github/workflows/validate-p1-3-levelup-v5-auth-locks.yml",
+      "original_blob_sha": "6cd229b90ec07f050a9b0e68550d7af01bbfa72b",
+      "adjusted": false
+    },
+    {
+      "path": ".github/workflows/validate-p1-3-lock-graph.yml",
+      "original_blob_sha": "e439eaa1a07289b874e73ba73ae02a3b1087d96f",
+      "adjusted": true
+    },
+    {
+      "path": ".github/workflows/validate-p1-3-pg16.yml",
+      "original_blob_sha": "9bbeb447f4f6cdffa0c3bffc9cc58ca4edfc84e3",
+      "adjusted": false
+    },
+    {
+      "path": ".github/workflows/validate-p1-3-real-admin-paths.yml",
+      "original_blob_sha": "a25777b647cc09e6ae6380189681e56e7041d6bf",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/audits/p1_3_inventory_grant_visibility_readonly.sql",
+      "original_blob_sha": "5496671cbf610546891367ba28d53616f90bbb0a",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/audits/p1_3_live_lock_order_readonly.sql",
+      "original_blob_sha": "7f78709150e1c86726720fafd8efc993a44245c7",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_admin_grant_levelup_extension_pg17.sql",
+      "original_blob_sha": "d83cbc89d3b8c3a084f590a1876c2a5dff8ec99d",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_admin_grant_original_source_pg17.sql",
+      "original_blob_sha": "8269b57301a92751937c0a6a0c9529e8e7eb6848",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_admin_progression_original_pg17.sql",
+      "original_blob_sha": "160c9844c4aa661b41f3fc353ad3652318f33c27",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_admin_progression_race_extension_pg17.sql",
+      "original_blob_sha": "f570bba18c4bad268478aa10ef673dbc58c33936",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_admin_staging_source_pg17.sql",
+      "original_blob_sha": "079a91dc88291779f717ed11640d93992a10855e",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_delegation_acceptance_matrix.json",
+      "original_blob_sha": "f51ea3525a3ed1e2d35c869bf5ab7be7e71193cd",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_equipment_mutation_live_pg17.sql",
+      "original_blob_sha": "e1c0838d5d062d72b49f869e84a31d8735bd17c0",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_forge_materializer_lock_setup_pg17.sql",
+      "original_blob_sha": "7f7a30d23e456924bcf8d34917abbc885c2938ff",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_forge_materializer_original_functions_pg17.sql",
+      "original_blob_sha": "d6f5ac4f0cfd571edaa926b4168847eb85e18640",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_guarded_replay_candidate_pg17.sql",
+      "original_blob_sha": "8c4fc561b79910de0c9335e9f09bda999a7fee3c",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_hidden_activity_projection_pg17.sql",
+      "original_blob_sha": "bb82d5b785482d56585af46a3f6e8325db7ee389",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_hidden_activity_setup_pg17.sql",
+      "original_blob_sha": "1d47c3e57506e0c1a548cd310ecc74b0e5c827db",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_inventory_race_combat_only_pg17.sql",
+      "original_blob_sha": "6a5a840a7231b55c2ba6b1b23dda779c70c5842c",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_legacy_core_action_live_pg17.sql",
+      "original_blob_sha": "8e0a4f602d683cd899aa802e9b0545529f160605",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_legacy_real_jwt_local_pg17.sql",
+      "original_blob_sha": "a67f3c44c757dde5b18222bdb2d2087172634b05",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_legacy_v9_to_v1_cases_pg16.sql",
+      "original_blob_sha": "bf9204aefbfe9b501b40cf713e9744a0b585382c",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_legacy_v9_to_v1_live_source_pg16.sql",
+      "original_blob_sha": "47f7053a16a756d054feb6772027e311963001ff",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_legacy_v9_v8_routing_pg16.sql",
+      "original_blob_sha": "c41820a3bc334d0460813fc6922fb21317a4b8d5",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_level4_advancement_extension_pg17.sql",
+      "original_blob_sha": "a1d11bfabb3a4816bb2829b76a893d2bc466ab74",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_level4_advancement_original_pg17.sql",
+      "original_blob_sha": "4aa6961ea1521a0fa9901c6207ffeb9c1b44fd81",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_levelup_v5_local_auth_pg17.sql",
+      "original_blob_sha": "6619cc35a9e927696868bf13d3c8942116c9c8c3",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_levelup_v5_original_source_pg17.sql",
+      "original_blob_sha": "b3168d0c9ec92ae1c0c389ccf55655209f2841f8",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_live_admin_source_pg16.sh",
+      "original_blob_sha": "3cab71fc6aec1db7c70bc9db0f02eabceccc9d6c",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_live_admin_source_pg16.sql",
+      "original_blob_sha": "ba91eae0467cea47b7bbcb221f0691d386ba5c6d",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_live_admin_stub_schema_pg16.sql",
+      "original_blob_sha": "0f1107dd8dfe5eb68353a0c87b2ae57af73728ee",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_lock_order_graph.json",
+      "original_blob_sha": "f48bf48cef94c845cc8be5497f0ad9364926c829",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_opportunity_attack_live_source_pg16.sql",
+      "original_blob_sha": "62c76b301aa8cffa0a01dff71124f24fc78cea72",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_opportunity_attack_race_pg16.sh",
+      "original_blob_sha": "437553317cfcb4e7a2d3476c0bbcab90359b1557",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_opportunity_attack_setup_pg16.sql",
+      "original_blob_sha": "8c6a15a769782ba5e9ba57d5221c64e60bc14551",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_option_a_pg16.sh",
+      "original_blob_sha": "1d50ceff048086c84730f60e1b4a15157050e418",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_option_a_pg16.sql",
+      "original_blob_sha": "0a9380e94891590a7543d5185b185aedb3a247e4",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_original_attack_roll_live_pg17.sql",
+      "original_blob_sha": "b2c5a074068257bcc879c9156aa199d81a97c593",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_original_equipped_weapon_research_pg17.sql",
+      "original_blob_sha": "75e502f09a3e955bbdd93fa0aeaf0b3e27243e77",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_original_merchant_inventory_extension_pg17.sql",
+      "original_blob_sha": "cd2db6a6197fa706c14c42c20ea523daadfb0e73",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_original_merchant_inventory_source_pg17.sql",
+      "original_blob_sha": "422119d45b34457a0be697c5cef9b58dc9b80068",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_original_roll_timed_effect_pg17.sql",
+      "original_blob_sha": "756c7802f5aad73372fee29ed985cb2b5d1ab52f",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_original_weapon_profile_live_pg17.sql",
+      "original_blob_sha": "3ecea17f0ed8cad43554a1c416f2adb48a048888",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_permission_controller_rls_parity_pg17.sql",
+      "original_blob_sha": "7b896bc81e7764e80489d96032dca387970aea26",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_permission_live_source_pg16.sql",
+      "original_blob_sha": "425f987ef80b9ce7fdda2936369465272bda1db1",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_permission_race_pg16.sh",
+      "original_blob_sha": "7408b092c10b00a911a88e5b8d8d9fcee260a016",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_permission_row_lock_candidate_pg17.sql",
+      "original_blob_sha": "89b755ef7acf5e293590a1d94bebe4d735b6adc1",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_permission_setup_pg16.sql",
+      "original_blob_sha": "f32977bbd84bde0be59d84de633e89ce909c740c",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_public_cast_start_race_pg16.sh",
+      "original_blob_sha": "714a8cb0bd1fe806016cfcfb6e175869bb45c92c",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_public_cast_start_setup_pg16.sql",
+      "original_blob_sha": "67d006fe18b3675e587500378956663c02f36f52",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_public_cast_v13_source_pg16.sql",
+      "original_blob_sha": "81fe579c2053725cc6526538a7c46d81c2c98a7f",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_reaction_attack_damage_live_pg17.sql",
+      "original_blob_sha": "f70585c121d55211945e42034d60d623f610a699",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_real_refresh_race_pg16.sh",
+      "original_blob_sha": "5e616943dc34ff17e16ca79ad9c156c24af67627",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_real_refresh_setup_pg16.sql",
+      "original_blob_sha": "7dfaebafc95fe3db965dd438c7441dd9378a7a78",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_real_refresh_source_pg16.sql",
+      "original_blob_sha": "15e8a25bb029545052d236bb37f6c7585ecfbbbf",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_slot_bridge_live_source_pg16.sql",
+      "original_blob_sha": "b22a8ee32c81f9c0b16c8d478f538ab744a93079",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_slot_bridge_race_pg16.sh",
+      "original_blob_sha": "d02f23d372e9312823b92e9bff9180975964e774",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_slot_bridge_setup_pg16.sql",
+      "original_blob_sha": "fb907f9295ec6529548889dda59326809b884f60",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_spell_v10_mind_sliver_race_pg16.sh",
+      "original_blob_sha": "ea2f5becc2803157e0bc4dc9924f7eeddd49241e",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_spell_v10_mind_sliver_setup_pg16.sql",
+      "original_blob_sha": "1aab9d223c0da74e521c60f4cb3ef5554c57f979",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_spell_v10_mind_sliver_source_pg16.sql",
+      "original_blob_sha": "5e1e08251f4605c79e115824214bcf3e50d31b08",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_spell_v11_guiding_bolt_race_pg16.sh",
+      "original_blob_sha": "40211cd3b13295f04689bbc44097b26463775461",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_spell_v11_guiding_bolt_setup_pg16.sql",
+      "original_blob_sha": "3471dd1f465e53a1594ab54f9cc9a48f0d58be19",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_spell_v11_guiding_bolt_source_pg16.sql",
+      "original_blob_sha": "987671230ed760eeb01a336c4499eb237fb41006",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_spell_v13_to_v12_race_pg16.sh",
+      "original_blob_sha": "0a42b8e8ca49b14298912cdc6435dfaad016c21f",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_spell_v13_to_v12_setup_pg16.sql",
+      "original_blob_sha": "ad095619c5e0c64b61f39ee5637c40260b57a5ec",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_spell_v13_to_v12_source_pg16.sql",
+      "original_blob_sha": "9483b304ac81d60c97ef193c34b5ffbfd4c173dc",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_staging_lock_race_pg16.sh",
+      "original_blob_sha": "33fe16a74ee33c55ffe482714ef4501227edb2bd",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_staging_lock_race_pg16_live_source.sql",
+      "original_blob_sha": "72cefd5bd4193968e6af7e30a07ce7eadffb8bf8",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_staging_lock_race_pg16_setup.sql",
+      "original_blob_sha": "d76401dddb736beb62546ab6a236cc15529cb1b4",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_tc1_test_trigger_only.sql",
+      "original_blob_sha": "97ace83e47d8ffedc68a6ca8906431a31b1cc0b5",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_turn_expiry_live_source_pg16.sql",
+      "original_blob_sha": "0ba767d67b2ff08e1e0046cdd7b803471ba2a419",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_turn_expiry_race_pg16.sh",
+      "original_blob_sha": "374f59ebcdb186aa1bb2b6591557013a62127c69",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_turn_expiry_setup_pg16.sql",
+      "original_blob_sha": "35dc4f75954974d8536f26a50285f93fe050c2b8",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_turn_move_reaction_guarded_pg17.sql",
+      "original_blob_sha": "cf7914e95a1b9b36243689426c86cfb4fc12e7bd",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_turn_move_reaction_live_pg17.sql",
+      "original_blob_sha": "a68db51080e97da134b1985fb2a14b03323ad94d",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_turnflow_public_source_pg16.sql",
+      "original_blob_sha": "766d44881adf217add542c6429c2ea728c8a7d3d",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_turnflow_race_pg16.sh",
+      "original_blob_sha": "e0b9887e0de31b6d3d89545741b2efbf21196cb1",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_turnflow_setup_pg16.sql",
+      "original_blob_sha": "6b8087ca3f10c1f18e0a498bf91acfaa60e9d8b5",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_unarmed_reaction_attack_research_pg17.sql",
+      "original_blob_sha": "bef16ebbf3328119280573b42deecc5f86fa3415",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_weapon_attack_live_source_pg16.sql",
+      "original_blob_sha": "184387647eb2cd0391fac90afe1d119b946aa25c",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_weapon_attack_race_pg16.sh",
+      "original_blob_sha": "6bd0755b7a4de8460488a9d2acdb1f04ac723c7a",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/fixtures/p1_3_weapon_attack_setup_pg16.sql",
+      "original_blob_sha": "fddf3b362b9c2c62228f0cd9a10acad29c2b1cf6",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/test_p1_3_forge_materializer_lock_pg17.mjs",
+      "original_blob_sha": "eaaf6631df6e85c838d01a056e5fe11ba5135d0a",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/test_p1_3_guarded_candidate_local_jwt.mjs",
+      "original_blob_sha": "71219baf286a9fd12cb403dcb93d76defae55432",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/test_p1_3_hidden_activity_local_jwt.mjs",
+      "original_blob_sha": "66c70a62e6173aa1d2bb48165c0ab48b8d36eb4e",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/test_p1_3_inventory_race_combat_only_local_jwt.mjs",
+      "original_blob_sha": "2804a4df89386539b67030ed7299b3a624c77f48",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/test_p1_3_legacy_real_jwt_local.mjs",
+      "original_blob_sha": "70c42b593ff0d248be2debbeec149a11c27ba5a3",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/test_p1_3_levelup_v5_real_jwt_local.mjs",
+      "original_blob_sha": "e0eeb12ac6a7282f3cb5684645725340dd426f91",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/test_p1_3_original_equipped_weapon_local_jwt.mjs",
+      "original_blob_sha": "847317348d26baecb9c615c4bcd2367781b63f0c",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/test_p1_3_original_roll_timed_effect_local_jwt.mjs",
+      "original_blob_sha": "ae9551a67adc98004cfee594ffe0d86e28202651",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/test_p1_3_permission_controller_rls_local_jwt.mjs",
+      "original_blob_sha": "cbf75063127dc4578a7172c8b10cc7d546bc29ab",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/test_p1_3_turn_move_reaction_local_jwt.mjs",
+      "original_blob_sha": "a3cef4efadf826c765c8032497e7953e50dfebe5",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/test_p1_3_unarmed_reaction_attack_local_jwt.mjs",
+      "original_blob_sha": "563ab0bf9dc9bd82e3ceed316b2544035326ebcc",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/validate_p1_3_forge_materializer_source.mjs",
+      "original_blob_sha": "bb83037c80960f18fecc02028a26d6bb67c103e1",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/validate_p1_3_levelup_v5_source.mjs",
+      "original_blob_sha": "e6fd9c8ffe44b9a862f36c5d9a9e88ff2ca1e6b5",
+      "adjusted": false
+    },
+    {
+      "path": "scripts/validate_p1_3_lock_graph.mjs",
+      "original_blob_sha": "3475a503fded31979c450b0be7ba8a65271231b3",
+      "adjusted": true
+    }
+  ],
+  "archived_historical_docs": [
+    {
+      "original": "docs/P1_3_Global_Lock_Order_Research_2026-11-01.md",
+      "archived": "docs/archive/p1_3_source_evidence_2026-11-07/P1_3_Global_Lock_Order_Research_2026-11-01.md",
+      "blob_sha": "e9cce8ecac056f3e10326c56cb7a4da419bf565c"
+    },
+    {
+      "original": "docs/TACTICAL_ENCOUNTER_OWNER_DECISIONS.md",
+      "archived": "docs/archive/p1_3_source_evidence_2026-11-07/TACTICAL_ENCOUNTER_OWNER_DECISIONS.md",
+      "blob_sha": "da37c61cd641b46ecbf5630586deebcc94f0adef"
+    }
+  ],
+  "excluded": [
+    "scripts/validate_p1_2_request_contract.mjs (main already has later version)",
+    "docs/ACTIVE_WORK.md",
+    "docs/HANDOFF_LOG.md",
+    "docs/START_HERE_ACTIVE_HANDOFF.md",
+    "docs/PHASED_DEVELOPMENT_CHECKLIST.md",
+    "docs/P1_2_Command_Replay_Contract_2026-11-01.md",
+    "docs/SYSTEM_REGISTRY.json",
+    "all production SQL and application code"
+  ],
+  "limits": "Nonexecuting P1.3 PG16/17, signed local JWT, static source/graph tests only. No installed global lock order/replay authority; original 31 trigger and NPC privacy acceptance separate.",
+  "security": "SQL tests must target only Docker PG16/17 or local GoTrue at loopback. Do not execute source files against live Supabase or use production keys."
+}

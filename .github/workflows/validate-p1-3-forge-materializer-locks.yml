@@ -1,0 +1,61 @@
+name: Validate P1.3 Forge deferred materializer lock-order research
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/validate-p1-3-forge-materializer-locks.yml"
+      - "scripts/fixtures/p1_3_forge_materializer_original_functions_pg17.sql"
+      - "scripts/fixtures/p1_3_forge_materializer_lock_setup_pg17.sql"
+      - "scripts/fixtures/p1_3_admin_progression_original_pg17.sql"
+      - "scripts/fixtures/p1_3_admin_progression_race_extension_pg17.sql"
+      - "scripts/test_p1_3_forge_materializer_lock_pg17.mjs"
+      - "scripts/validate_p1_3_forge_materializer_source.mjs"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  disposable-pg17-source-locks:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 8
+    env:
+      CI: 'true'
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_FORGE_LOCK_CONFIRM: DISPOSABLE_PG17_ONLY
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify exact live source and immutable scope (static)
+        run: |
+          node --check scripts/test_p1_3_forge_materializer_lock_pg17.mjs
+          node --check scripts/validate_p1_3_forge_materializer_source.mjs
+          node scripts/validate_p1_3_forge_materializer_source.mjs
+      - name: Execute source-materializer deferred commit and insert tests on free PG17
+        run: |
+          test "$PGHOST" = "127.0.0.1"
+          test "$PGDATABASE" = postgres
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_forge_materializer_lock_setup_pg17.sql
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_admin_progression_race_extension_pg17.sql
+      - name: Run original two-session Forge and Admin progression CP/CS deadlock diagnostics
+        run: |
+          node scripts/test_p1_3_forge_materializer_lock_pg17.mjs
