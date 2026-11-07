@@ -5,23 +5,24 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/spell-adapter-preservation-20261107` |
-| Exact source commit represented by this archive snapshot | `2c89466768fb91156c18d9be42d5de314b887057` |
+| Exact source commit represented by this archive snapshot | `70c098fca6b5b83364658ea6519eb47760b13a2d` |
 | Compared with | `2d2135ced24bcb4fbb4d8ccefc27bda70e91eb05` (main comparison base) |
-| Last source commit title | ci(research): run free source-only 19-spell preservation gate |
-| Files changed relative to main | 4 (4 non-docs; 0 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit title | docs(research): document evidence tiers, positive and failed archival checks |
+| Files changed relative to main | 5 (4 non-docs; 1 docs) |
+| Last source commit | 1 files (0 non-docs; 1 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
 
 ## Latest source commit paths
 
-- `.github/workflows/validate-tactical-spell-preservation.yml`
+- `docs/Tactical_Spell_Adapter_Preservation_Gate_2026-11-07.md`
 
 ## Research-branch change inventory versus main
 
 - `.github/workflows/validate-tactical-spell-preservation.yml`
+- `docs/Tactical_Spell_Adapter_Preservation_Gate_2026-11-07.md`
 - `scripts/data/tactical_spell_preservation_20261107.json`
 - `scripts/test_tactical_spell_preservation.mjs`
 - `scripts/validate_tactical_spell_preservation.mjs`
