@@ -1,0 +1,424 @@
+{
+  "schema": "dndnext-c3-1-source-inventory-v1",
+  "kind": "disposable-nondeploying-research",
+  "from_pr": 335,
+  "from_exact_sha": "19d7275d24d26f9641c9e6d98ea24cf9431f4d81",
+  "main_base_exact_sha": "1ccde22f57c37dfed2e26473e8f28b11f639c8db",
+  "files": [
+    {
+      "path": ".github/workflows/validate-forge-browser-warlock-choice.yml",
+      "original_blob_sha": "f2c19df4eaf5955f02735c1326723fa80695ed12",
+      "exists_on_base_main": false
+    },
+    {
+      "path": ".github/workflows/validate-forge-immutable-creation-replay.yml",
+      "original_blob_sha": "839154a9c7c942e90fbb46b3d9c068ff056cc042",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/agents/forge_ci_diagnostics.mjs",
+      "original_blob_sha": "55cf7ab71d16aecada03c231bc4fe7491e7cd78a",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/agents/forge_seeded_scenarios.mjs",
+      "original_blob_sha": "55e64a7b7cf185f64370c6cc668884377657cc1a",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/agents/forge_warlock_client_wire.mjs",
+      "original_blob_sha": "a90013d3dbb590af4dfae76e87863453daa04d9b",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/browser/forge_warlock_choice_dom.jsx",
+      "original_blob_sha": "83a3b9653bd50aada19252358146b9904b9344fd",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/browser/verify_forge_warlock_choice_dom.mjs",
+      "original_blob_sha": "14e81cc8495f1d3a537e39e76f7427830dce9d88",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_characters_portrait_sync_local_auth_pg17.sql",
+      "original_blob_sha": "2517db705bdc1a19f59747c4d976cb437d9428c9",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_characters_portrait_sync_original_pg17.sql",
+      "original_blob_sha": "849ba03462e28c5d05b6bffd24a3384654af0393",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_characters_tag_guard_local_auth_pg17.sql",
+      "original_blob_sha": "3886459350b2fadc515d27c4801d0c7ae273ee22",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_characters_tag_guard_original_pg17.sql",
+      "original_blob_sha": "de29cc239ccaaf46241aa78d52e52a53e75f7637",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_creation_original_functions_pg17.sql",
+      "original_blob_sha": "6c64683e14ee148daf5c874a7e6e3c7ff606138c",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_creation_replay_candidate_pg17.sql",
+      "original_blob_sha": "590329eb87f5f86990829eb1b0ed496d0cbf9623",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_creation_replay_local_auth_pg17.sql",
+      "original_blob_sha": "3da82b85babbb37d4aee1744e22ec24716082997",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_creator_trigger_original_stage3_pg17.sql",
+      "original_blob_sha": "e31fff4ee3641cbf5388950d486ca5bf50bd2c96",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_equipment_validator_local_auth_extension_pg17.sql",
+      "original_blob_sha": "ef7c25d2bb3c83708e80eed0b244ded500f78772",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_equipment_validator_original_pg17.sql",
+      "original_blob_sha": "01c0a4e5f7ff48266e3e41c3a500de4592d122fe",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_feat_materializer_discriminators_original_pg17.sql",
+      "original_blob_sha": "b73e418b1f3b7fdbab528a9d52efe375af72e1e8",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_feat_materializer_local_auth_extension_pg17.sql",
+      "original_blob_sha": "e6d574baa68dea6ad93f997941b3f062a234ff98",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_feat_materializer_original_pg17.sql",
+      "original_blob_sha": "aa60a2699796fea20213dca55c5191e2beaa24ac",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_gi_cp_cs_local_jwt_race_pg17.sql",
+      "original_blob_sha": "203acdb3b8fa6362d2a7e666e1059d1af0a5dc0b",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_high_risk_original_progression_triggers_pg17.sql",
+      "original_blob_sha": "9da41b637b077ce5ab3f80e6308e0ca9b91fd002",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_high_risk_progression_local_auth_pg17.sql",
+      "original_blob_sha": "27345348ff4587e7dbd8b26f4e3e7c6f3cc8f8bb",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_inventory_access_original_pg17.sql",
+      "original_blob_sha": "930036668d4e889b85f1c5ad0abeed79793a5c09",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_inventory_policy_source_local_auth_pg17.sql",
+      "original_blob_sha": "e077a2b103fbbf1c1e5b5e437c8e877e6f619990",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_market_cash_original_functions_pg17.sql",
+      "original_blob_sha": "6cf2e51820166bc88bb24ee544a8bb1403a6ea41",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql",
+      "original_blob_sha": "dad4f97a1a9ba8a2ed99b8ba8b6ac6cdd534103e",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_materializer_original_functions_pg17.sql",
+      "original_blob_sha": "d6f5ac4f0cfd571edaa926b4168847eb85e18640",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_merchant_inventory_live_writer_local_auth_pg17.sql",
+      "original_blob_sha": "ca43da924a30deb9ca51e9606b237fe5ebfe80bd",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_nested_choices_local_auth_pg17.sql",
+      "original_blob_sha": "44e0fdf6257c5a3a982540fece96296af0046f9a",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_nested_choices_original_pg17.sql",
+      "original_blob_sha": "6eb50c0d0bd63da6ffd5d20c0e2fa09b8dcbf17a",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_original_merchant_buy_source_pg17.sql",
+      "original_blob_sha": "72fd9f0f80a83adaec67caf80a762e238f1dcd8c",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_owner_constraint_deferred_creation_local_auth_pg17.sql",
+      "original_blob_sha": "faa20bc3052b4529c00eb81deb2b7ef3d0f5d128",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_owner_constraint_original_inventory_handlers_pg17.sql",
+      "original_blob_sha": "aafbfea03d565dfaa1599875ab49c3c485611c51",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_progression_authority_local_auth_extension_pg17.sql",
+      "original_blob_sha": "413a82dc3c1913cb5f71c28531d31e19da89e02d",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_progression_authority_original_pg17.sql",
+      "original_blob_sha": "3a0b6caeb6712f67af7895433df15f1439b19581",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_seeded_nested_choices_v1.json",
+      "original_blob_sha": "1b913ceb8005880acfef31437227136e949cb1bd",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_seeded_scenarios_v1.json",
+      "original_blob_sha": "550f00899330fd7bec8d166047a4f70d1612cbe8",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_seeded_starting_spells_v1.json",
+      "original_blob_sha": "13c5858ae9b24e7df6efc91ca5a06f1fde745fb1",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_seeded_warlock_child_completion_v1.json",
+      "original_blob_sha": "f30c9d25f39acfaab214a3135c6b7be34d21aea6",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_seeded_wizard_spells_v1.json",
+      "original_blob_sha": "4d82a268d3e1bd51221836f90eeb7eb48ccefd08",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_sheet_authority_tags_local_auth_extension_pg17.sql",
+      "original_blob_sha": "f3bf99af569a45ea496e48d06db954d8ea1309fb",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_sheet_authority_tags_original_pg17.sql",
+      "original_blob_sha": "b02285f75d446f5874341cf3bc694ac256e1f732",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_species_light_original_helpers_pg17.sql",
+      "original_blob_sha": "860ea07abb4729c297ea2aaa391dabd4bd2b1b07",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_species_light_positive_local_auth_pg17.sql",
+      "original_blob_sha": "5ed4919ab84cad0a4b38bd7d1260ec6a75c8d225",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_starting_spells_local_auth_pg17.sql",
+      "original_blob_sha": "4b6eeecdbfba49cca5a74c26e2f88b6d83123897",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_starting_spells_original_pg17.sql",
+      "original_blob_sha": "d56ed5ea44289bbb20720c1323f9b22f362b31c5",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_subclass_choice_local_auth_pg17.sql",
+      "original_blob_sha": "6b34510b16b86aa4e06c40946732a83679cbea1c",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_subclass_choice_original_pg17.sql",
+      "original_blob_sha": "2b7da3a5e4f7c926c09312efb98f61a1244b0bc6",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_v3_market_source_local_auth_extension_pg17.sql",
+      "original_blob_sha": "7b592be1c2f177c15051e9c2156c865ddb20902d",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_warlock_child_completion_local_auth_pg17.sql",
+      "original_blob_sha": "94fa076d8e3e075aab551a5610bcff79393f3460",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_warlock_invocation_original_slot_helpers_pg17.sql",
+      "original_blob_sha": "4ee8fe49717f812f58140307b83d9f43d5c5a25e",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_warlock_invocation_positive_local_auth_pg17.sql",
+      "original_blob_sha": "cf6cfc99cfe6bb7498c81cda614ecc01dcd991ec",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_warlock_preferred_spell_original_pg17.sql",
+      "original_blob_sha": "f9bf748582986a452110f9b5c326cead61e76374",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/fixtures/forge_wizard_starting_spells_local_auth_pg17.sql",
+      "original_blob_sha": "bbf8cece98f46b1008d8e2ff79650647f89a5e20",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/test_forge_immutable_creation_replay_local_auth.mjs",
+      "original_blob_sha": "0535c5d1d5a60ca5b027b3cd3b7e36f19b7e51bf",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/validate_forge_immutable_creation_replay.mjs",
+      "original_blob_sha": "00d85baf34bac0813036724dfe57d29c32b712ad",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/validate_forge_inventory_ui_release_contract.mjs",
+      "original_blob_sha": "2f44b365b84ebe8611baad5299e2b7040a8cd81f",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/validate_forge_seeded_nested_choices.mjs",
+      "original_blob_sha": "0143ddff591831260723b435ac15b7525334f165",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/validate_forge_seeded_scenarios.mjs",
+      "original_blob_sha": "63ac8471f2974d3bddd9a10c6a62517ecc6cb2e7",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/validate_forge_seeded_starting_spells.mjs",
+      "original_blob_sha": "32273c1b4ab8f4c4719cfc23b450e6e0492585a4",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/validate_forge_seeded_warlock_child_completion.mjs",
+      "original_blob_sha": "86e6be9502fdc37ad1fc073ee2461198a414c463",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "scripts/validate_forge_seeded_wizard_spells.mjs",
+      "original_blob_sha": "c1f18766081d10d391682cb77bfd7ebe635f1d14",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "sql/candidates/20261105_forge_progression_verified_creator_seed_v1.sql",
+      "original_blob_sha": "ecddcd514917a4d379d14b02477dfb41dbf44f29",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql",
+      "original_blob_sha": "4532ddb8db642d0d0ab14646a3e87c034d4134c6",
+      "exists_on_base_main": false
+    },
+    {
+      "path": "sql/candidates/20261105_player_creation_immutable_intent_v1.sql",
+      "original_blob_sha": "99bceee24c1718570237e70a65fe3172f4c9fbc9",
+      "exists_on_base_main": false
+    }
+  ],
+  "intentionally_excluded": [
+    "scripts/agents/forge_automation_selftest.mjs",
+    "scripts/agents/forge_trigger_acceptance_ledger.mjs",
+    "scripts/agents/forge_trigger_acceptance_receipts.json",
+    "scripts/agents/forge_trigger_audit.mjs"
+  ],
+  "forbidden_imports": [
+    "docs/ACTIVE_WORK.md",
+    "docs/HANDOFF_LOG.md",
+    "docs/SYSTEM_REGISTRY.json",
+    "AGENTS.md",
+    "sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql",
+    "scripts/test_p1_3_npc_profile_safe_local_auth.mjs",
+    "scripts/validate_p1_3_npc_profile_rls_source.mjs",
+    "components/NpcPanel.js"
+  ],
+  "tested_live_source_dependencies": [
+    {
+      "path": "components/SourceChoiceFields.js",
+      "main_blob_sha": "31128be6bdded46542aea1b62f7ea3c78b6839a7",
+      "held_blob_sha": "31128be6bdded46542aea1b62f7ea3c78b6839a7",
+      "identical_to_held": true
+    },
+    {
+      "path": "components/NewNpcModalV3.js",
+      "main_blob_sha": "5b4f3cc4e56a0055b57d7ae792ed77c7d3fdcead",
+      "held_blob_sha": "5b4f3cc4e56a0055b57d7ae792ed77c7d3fdcead",
+      "identical_to_held": true
+    },
+    {
+      "path": "components/NpcPanel.js",
+      "main_blob_sha": "e4cde1ae8bf8d9bb7b03fdf855cdb0ef9e6cb1db",
+      "held_blob_sha": "e4cde1ae8bf8d9bb7b03fdf855cdb0ef9e6cb1db",
+      "identical_to_held": true
+    },
+    {
+      "path": "components/NpcForgeEquipmentStep.js",
+      "main_blob_sha": "9269c554d80fb1b02afd571d51f8d626e2a89c50",
+      "held_blob_sha": "9269c554d80fb1b02afd571d51f8d626e2a89c50",
+      "identical_to_held": true
+    },
+    {
+      "path": "components/useNpcForgeDerivedModel.js",
+      "main_blob_sha": "8768adbaf91c7bac0ba4c4b8ff2b0096c1fe61f9",
+      "held_blob_sha": "8768adbaf91c7bac0ba4c4b8ff2b0096c1fe61f9",
+      "identical_to_held": true
+    },
+    {
+      "path": "utils/warlockInvocationChoices.js",
+      "main_blob_sha": "ee5f016e1d21ca64ab683da6a4c250b8b5f982b4",
+      "held_blob_sha": "ee5f016e1d21ca64ab683da6a4c250b8b5f982b4",
+      "identical_to_held": true
+    },
+    {
+      "path": "utils/playerForgeSourceChoices.js",
+      "main_blob_sha": "90987911dd8743bf00a01b379998b552f9ae6da5",
+      "held_blob_sha": "90987911dd8743bf00a01b379998b552f9ae6da5",
+      "identical_to_held": true
+    },
+    {
+      "path": "components/NpcForgeClassGuideModel.js",
+      "main_blob_sha": "e01d61b8778bcab1124fe671bdf5cd2069e8bb5d",
+      "held_blob_sha": "e01d61b8778bcab1124fe671bdf5cd2069e8bb5d",
+      "identical_to_held": true
+    },
+    {
+      "path": "components/NpcForgeFeatChoiceRegistrar.js",
+      "main_blob_sha": "827f07eb9177ab6f180d9f20bd7de7ca67b2aa84",
+      "held_blob_sha": "827f07eb9177ab6f180d9f20bd7de7ca67b2aa84",
+      "identical_to_held": true
+    },
+    {
+      "path": "utils/classes/subclassCompatibility.js",
+      "main_blob_sha": "ae66c842edcabaceedb27a42b2b38fc96817c5dc",
+      "held_blob_sha": "ae66c842edcabaceedb27a42b2b38fc96817c5dc",
+      "identical_to_held": true
+    }
+  ],
+  "research_scope": "Two original source test workflows, all fixture dependencies, 2026-11-05 SQL candidates for disposable PG17 ONLY. Do not run against production. No runtime application or live SQL changes.",
+  "limitations": [
+    "Source candidate SQL paths are preserved only for scratch fixtures and reviewed against guard, not approved migrations",
+    "Source helper refs to untouched main runtime may drift independently and must be tested",
+    "Original corpus stages only 17/31 creation-adjacent trigger DDL, no full app/browser",
+    "J169 is isolated SourceChoiceFields React DOM only"
+  ]
+}

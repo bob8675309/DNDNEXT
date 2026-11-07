@@ -1,0 +1,236 @@
+name: Validate Forge immutable creation-request replay research
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/validate-forge-immutable-creation-replay.yml'
+      - 'sql/candidates/20261105_player_creation_immutable_intent_v1.sql'
+      - 'sql/candidates/20261105_forge_progression_verified_creator_seed_v1.sql'
+      - 'scripts/fixtures/forge_creation_original_functions_pg17.sql'
+      - 'scripts/fixtures/forge_creator_trigger_original_stage3_pg17.sql'
+      - 'scripts/fixtures/forge_creation_replay_candidate_pg17.sql'
+      - 'scripts/fixtures/forge_creation_replay_local_auth_pg17.sql'
+      - 'scripts/fixtures/forge_materializer_original_functions_pg17.sql'
+      - 'scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql'
+      - 'scripts/fixtures/forge_equipment_validator_original_pg17.sql'
+      - 'scripts/fixtures/forge_equipment_validator_local_auth_extension_pg17.sql'
+      - 'scripts/fixtures/forge_sheet_authority_tags_original_pg17.sql'
+      - 'scripts/fixtures/forge_sheet_authority_tags_local_auth_extension_pg17.sql'
+      - 'scripts/fixtures/forge_progression_authority_original_pg17.sql'
+      - 'scripts/fixtures/forge_progression_authority_local_auth_extension_pg17.sql'
+      - 'scripts/fixtures/forge_feat_materializer_original_pg17.sql'
+      - 'scripts/fixtures/forge_feat_materializer_discriminators_original_pg17.sql'
+      - 'scripts/fixtures/forge_feat_materializer_local_auth_extension_pg17.sql'
+      - 'scripts/fixtures/forge_gi_cp_cs_local_jwt_race_pg17.sql'
+      - 'scripts/fixtures/forge_original_merchant_buy_source_pg17.sql'
+      - 'scripts/fixtures/forge_merchant_inventory_live_writer_local_auth_pg17.sql'
+      - 'scripts/fixtures/forge_owner_constraint_original_inventory_handlers_pg17.sql'
+      - 'scripts/fixtures/forge_owner_constraint_deferred_creation_local_auth_pg17.sql'
+      - 'scripts/fixtures/forge_inventory_access_original_pg17.sql'
+      - 'scripts/fixtures/forge_inventory_policy_source_local_auth_pg17.sql'
+      - 'scripts/fixtures/forge_market_cash_original_functions_pg17.sql'
+      - 'scripts/fixtures/forge_v3_market_source_local_auth_extension_pg17.sql'
+      - 'scripts/fixtures/forge_high_risk_original_progression_triggers_pg17.sql'
+      - 'scripts/fixtures/forge_high_risk_progression_local_auth_pg17.sql'
+      - 'scripts/fixtures/forge_warlock_invocation_original_slot_helpers_pg17.sql'
+      - 'scripts/fixtures/forge_warlock_invocation_positive_local_auth_pg17.sql'
+      - 'scripts/fixtures/forge_species_light_original_helpers_pg17.sql'
+      - 'scripts/fixtures/forge_species_light_positive_local_auth_pg17.sql'
+      - 'scripts/fixtures/forge_characters_tag_guard_original_pg17.sql'
+      - 'scripts/fixtures/forge_characters_tag_guard_local_auth_pg17.sql'
+      - 'scripts/fixtures/forge_characters_portrait_sync_original_pg17.sql'
+      - 'scripts/fixtures/forge_characters_portrait_sync_local_auth_pg17.sql'
+      - 'scripts/fixtures/forge_subclass_choice_original_pg17.sql'
+      - 'scripts/fixtures/forge_subclass_choice_local_auth_pg17.sql'
+      - 'scripts/agents/forge_ci_diagnostics.mjs'
+      - 'scripts/agents/forge_automation_selftest.mjs'
+      - 'scripts/validate_forge_inventory_ui_release_contract.mjs'
+      - 'components/NewNpcModalV3.js'
+      - 'components/NpcForgeEquipmentStep.js'
+      - 'components/useNpcForgeDerivedModel.js'
+      - 'components/NpcPanel.js'
+      - 'sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql'
+      - 'scripts/test_forge_immutable_creation_replay_local_auth.mjs'
+      - 'docs/Forge_Seeded_Scenario_Runner_2026-11-06.md'
+      - 'docs/Forge_Seeded_Starting_Spells_2026-11-06.md'
+      - 'docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md'
+      - 'scripts/agents/forge_seeded_scenarios.mjs'
+      - 'scripts/fixtures/forge_seeded_scenarios_v1.json'
+      - 'scripts/fixtures/forge_starting_spells_original_pg17.sql'
+      - 'scripts/fixtures/forge_starting_spells_local_auth_pg17.sql'
+      - 'scripts/fixtures/forge_seeded_starting_spells_v1.json'
+      - 'scripts/validate_forge_seeded_starting_spells.mjs'
+      - 'scripts/fixtures/forge_seeded_wizard_spells_v1.json'
+      - 'scripts/fixtures/forge_wizard_starting_spells_local_auth_pg17.sql'
+      - 'scripts/validate_forge_seeded_wizard_spells.mjs'
+      - 'scripts/fixtures/forge_nested_choices_original_pg17.sql'
+      - 'scripts/fixtures/forge_nested_choices_local_auth_pg17.sql'
+      - 'scripts/fixtures/forge_seeded_nested_choices_v1.json'
+      - 'scripts/validate_forge_seeded_nested_choices.mjs'
+      - 'scripts/fixtures/forge_warlock_child_completion_local_auth_pg17.sql'
+      - 'scripts/fixtures/forge_warlock_preferred_spell_original_pg17.sql'
+      - 'scripts/fixtures/forge_seeded_warlock_child_completion_v1.json'
+      - 'scripts/validate_forge_seeded_warlock_child_completion.mjs'
+      - 'scripts/agents/forge_warlock_client_wire.mjs'
+      - 'docs/Forge_Warlock_Child_Completion_2026-11-06.md'
+      - 'docs/Forge_Nested_Choice_Dependencies_2026-11-06.md'
+      - 'docs/Forge_Wizard_Starting_Spell_Counts_2026-11-06.md'
+      - 'scripts/validate_forge_seeded_scenarios.mjs'
+      - 'scripts/validate_forge_immutable_creation_replay.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  original-pg17-replay:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 8
+    env:
+      CI: 'true'
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_FORGE_REPLAY_CONFIRM: DISPOSABLE_PG17_ONLY
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Original-function fidelity and scoped candidate source guard
+        run: |
+          node --check scripts/validate_forge_immutable_creation_replay.mjs
+          node scripts/validate_forge_immutable_creation_replay.mjs
+          node --check scripts/agents/forge_seeded_scenarios.mjs
+          node --check scripts/validate_forge_seeded_scenarios.mjs
+          node scripts/validate_forge_seeded_scenarios.mjs
+          node --check scripts/validate_forge_seeded_starting_spells.mjs
+          node scripts/validate_forge_seeded_starting_spells.mjs
+          node --check scripts/validate_forge_seeded_wizard_spells.mjs
+          node scripts/validate_forge_seeded_wizard_spells.mjs
+          node --check scripts/validate_forge_seeded_nested_choices.mjs
+          node scripts/validate_forge_seeded_nested_choices.mjs
+          node --check scripts/validate_forge_seeded_warlock_child_completion.mjs
+          node scripts/validate_forge_seeded_warlock_child_completion.mjs
+          node --check scripts/agents/forge_warlock_client_wire.mjs
+          node scripts/agents/forge_warlock_client_wire.mjs --selftest
+          node scripts/validate_unified_character_forge.mjs
+          node scripts/validate_forge_inventory_ui_release_contract.mjs
+      - name: Confirm unsafe original, then candidate replay contract in disposable PG17
+        run: |
+          test "$DNDNEXT_FORGE_REPLAY_CONFIRM" = DISPOSABLE_PG17_ONLY
+          test "$PGHOST" = 127.0.0.1
+          test "$PGDATABASE" = postgres
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/forge_creation_replay_candidate_pg17.sql
+
+  true-local-supabase-jwt:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+      PGHOST: 127.0.0.1
+      PGPORT: '54322'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+      DNDNEXT_FORGE_REPLAY_LOCAL_CONFIRM: DISPOSABLE_LOCAL_GOTRUE_ONLY
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned repository dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify real JWT fixture syntax and exact source contract
+        run: |
+          node --check scripts/test_forge_immutable_creation_replay_local_auth.mjs
+          node scripts/validate_forge_immutable_creation_replay.mjs
+          node --check scripts/agents/forge_seeded_scenarios.mjs
+          node --check scripts/validate_forge_seeded_scenarios.mjs
+          node scripts/validate_forge_seeded_scenarios.mjs
+          node --check scripts/validate_forge_seeded_starting_spells.mjs
+          node scripts/validate_forge_seeded_starting_spells.mjs
+          node --check scripts/validate_forge_seeded_wizard_spells.mjs
+          node scripts/validate_forge_seeded_wizard_spells.mjs
+          node --check scripts/validate_forge_seeded_nested_choices.mjs
+          node scripts/validate_forge_seeded_nested_choices.mjs
+          node --check scripts/validate_forge_seeded_warlock_child_completion.mjs
+          node scripts/validate_forge_seeded_warlock_child_completion.mjs
+          node --check scripts/agents/forge_warlock_client_wire.mjs
+          node scripts/agents/forge_warlock_client_wire.mjs --selftest
+      - name: Configure ephemeral local Supabase PostgreSQL17 and GoTrue
+        run: |
+          mkdir -p "$RUNNER_TEMP/forge-replay-local/supabase"
+          cat > "$RUNNER_TEMP/forge-replay-local/supabase/config.toml" <<'TOML'
+          project_id = "forge-replay-local-research"
+          [db]
+          port = 54322
+          major_version = 17
+          [auth.email]
+          enable_confirmations = false
+          TOML
+      - name: Start local Auth + PostgREST, never production
+        run: |
+          cd "$RUNNER_TEMP/forge-replay-local"
+          npx --yes supabase@2.120.0 start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Run original Forge through genuine local JWT, then guarded candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PGHOST" = 127.0.0.1
+          test "$PGPORT" = 54322
+          test "$PGDATABASE" = postgres
+          (cd "$RUNNER_TEMP/forge-replay-local" && npx --yes supabase@2.120.0 status -o env) > "$RUNNER_TEMP/forge-replay-auth-env"
+          set -a
+          source "$RUNNER_TEMP/forge-replay-auth-env"
+          set +a
+          export DNDNEXT_FORGE_REPLAY_LOCAL_URL="http://127.0.0.1:54321"
+          export DNDNEXT_FORGE_REPLAY_LOCAL_ANON_KEY="$ANON_KEY"
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/forge_creation_replay_local_auth_pg17.sql
+          node scripts/test_forge_immutable_creation_replay_local_auth.mjs 2>&1 | tee -a "$RUNNER_TEMP/forge-jwt-output.log"
+      - name: Summarize authenticated fixture output without exposing raw logs
+        if: always()
+        shell: bash
+        run: |
+          node scripts/agents/forge_ci_diagnostics.mjs "$RUNNER_TEMP/forge-jwt-output.log" research-agent-artifact
+          if test -f research-agent-artifact/FORGE_JWT_DIAGNOSTICS.md; then
+            cat research-agent-artifact/FORGE_JWT_DIAGNOSTICS.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Upload three-day safe diagnostic only, never raw JWT logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: forge-jwt-diagnostics-${{ github.run_id }}
+          path: |
+            research-agent-artifact/FORGE_JWT_DIAGNOSTICS.md
+            research-agent-artifact/FORGE_JWT_DIAGNOSTICS.json
+            research-agent-artifact/FORGE_SEEDED_SCENARIOS.json
+            research-agent-artifact/FORGE_STARTING_SPELL_SCENARIOS.json
+            research-agent-artifact/FORGE_WIZARD_STARTING_SPELLS.json
+            research-agent-artifact/FORGE_NESTED_CHOICE_SCENARIOS.json
+            research-agent-artifact/FORGE_WARLOCK_CHILD_COMPLETION.json
+          if-no-files-found: warn
+          retention-days: 3
+      - name: Stop and destroy disposable local services
+        if: always()
+        run: |
+          cd "$RUNNER_TEMP/forge-replay-local"
+          npx --yes supabase@2.120.0 stop --no-backup || true
