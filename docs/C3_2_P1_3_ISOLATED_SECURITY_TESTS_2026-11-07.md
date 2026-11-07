@@ -1,5 +1,7 @@
 # C3.2 — Source-only P1.3 command security research extraction
 
+> **NEWER 2026-11-07 MERGE STATUS:** [#343](https://github.com/bob8675309/DNDNEXT/pull/343) **MERGED research-only** to main `4adfb89568636afc9b326842a769f220b61707c1`, all **nine** exact-head workflows SUCCESS (including real local JWT/GoTrue/PG17 and PG16 lock/replay). The original “pending at branch creation” below is provenance only. No installed production P1.3 lock/replay/role fix, original #317 remains open for unique historical docs. Next C3.3 integrated NPC privacy review.
+
 **Research-only source package**, not a deployed P1.3 lock/replay/security fix.
 
 - Held source [#317](https://github.com/bob8675309/DNDNEXT/pull/317), exact old research head `69e741d7c7d8874c22467e2d30791e30c009ff6e`; new independent main baseline `537b570083b3f18faad6d3038c131bee61af273c`.

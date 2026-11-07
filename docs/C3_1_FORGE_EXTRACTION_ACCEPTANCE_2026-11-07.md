@@ -1,5 +1,7 @@
 # C3.1 — Independent Forge source/JWT/PG17/browser research extraction
 
+> **NEWER 2026-11-07 MERGE STATUS:** owner-approved **research-only [#341](https://github.com/bob8675309/DNDNEXT/pull/341) MERGED** to main `70b96cfb86a65c93c525239c623103f8df242844` after all five exact-head workflows green. The original draft/owner-review statements below are **historical pre-merge receipts**. No production SQL, inventory RLS, app runtime, full Forge browser or original 31-trigger acceptance was installed; old Forge #324–#335 remain open. NEXT is C3.3 NPC coordinated security review (after C3.2 #343 merged).
+
 **2026-11-07; research-only, not a release.** [Draft PR #341](https://github.com/bob8675309/DNDNEXT/pull/341) was created **directly from main** `1ccde22f57c37dfed2e26473e8f28b11f639c8db` at exact head `3a1536754359af0bdab23c0764f49e85ea7d0d2d`. This separates the Forge J00–J169 research tests from held #324→#335's **old #321 NPC secret/RLS research inheritance**. [C3 crosswalk](C3_RESEARCH_PR_CONSOLIDATION_CROSSWALK_2026-11-07.md) and [C2 source diagnosis](C2_FORGE_CONSTRAINT_AND_RLS_CLOSEOUT_2026-11-07.md) remain authoritative for outstanding release gates.
 
 ## What was copied — verified Git object identity
