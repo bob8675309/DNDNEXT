@@ -12,7 +12,8 @@ const required = new Set([
   "pages/encounters/combat.js",
   "scripts/validate_tactical_spell_suite.mjs",
   "docs/Deployed_Tactical_Spell_Effects_Smoke_Recovery_2026-11-07.md",
-  ...manifest.spells.flatMap(s => [s.sql,s.ledger,s.serverValidator,s.uiValidator])
+  ...manifest.spells.flatMap(s => [s.sql,s.ledger,s.serverValidator,s.uiValidator]),
+  ...manifest.baselineValidators.paths
 ]);
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), "spell-preservation-"));
 try {
@@ -49,5 +50,13 @@ try {
     mutate("sql/20260730_04_tactical_acid_splash.sql",
       t=>t.replace("'areaRadiusFt',5","'areaRadiusFt',10")),
     "XPHB Acid Splash must retain a 5-ft sphere");
+
+  check("original non-spell validator removed while total count otherwise preserved",
+    mutate("scripts/validate_tactical_spell_suite.mjs",
+      t=>t.replace('"scripts/validate_tactical_equipped_damage_mitigation.mjs"', '"scripts/validate_fake_unused_spare.mjs"')),
+    "Original validator removed from tactical suite");
+  check("archived positive CI receipt incorrectly flipped",
+    mutate(data,t=>t.replace(/("pr": 294,[\\s\\S]*?"result": )"success"/,'$1"failure"')),
+    "Positive #294 result must remain historically accurate");
   console.log("PASS deterministic mutation tests; disposable temp files only");
 } finally { fs.rmSync(dir,{recursive:true,force:true}); }
