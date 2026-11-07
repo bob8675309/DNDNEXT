@@ -53,15 +53,41 @@ for (const item of reg.systems || []) {
     fail(`${id}: browser acceptance claimed without acceptance_evidence_url`);
   }
 }
-const required = ['PHASED_DEVELOPMENT_CHECKLIST.md','PROJECT_STATE.md','ACTIVE_WORK.md','HANDOFF_LOG.md','DOCUMENT_LIFECYCLE.md','HANDOFF_RECEIPT_TEMPLATE.md','START_HERE_ACTIVE_HANDOFF.md','SPELL_ENGINE_DECISIONS.md','README.md'];
+const required = ['PHASED_DEVELOPMENT_CHECKLIST.md','PROJECT_STATE.md','ACTIVE_WORK.md','HANDOFF_LOG.md','DOCUMENT_LIFECYCLE.md','HANDOFF_RECEIPT_TEMPLATE.md','START_HERE_ACTIVE_HANDOFF.md','SPELL_ENGINE_DECISIONS.md','README.md','NEXT_CHAT_START_HERE.md','WORKSTREAMS_AND_PR_DEPENDENCIES.md'];
 required.forEach((p)=>pathCheck(`docs/${p}`,'navigation','document'));
 pathCheck('AGENTS.md','navigation','instructions');
+// Durable single entry point: protect next-chat routing from documentation drift.
+const nextChat = fs.readFileSync(here('docs/NEXT_CHAT_START_HERE.md'),'utf8');
+const workstreams = fs.readFileSync(here('docs/WORKSTREAMS_AND_PR_DEPENDENCIES.md'),'utf8');
+for (const term of ['ONE next bounded engineering task','19 currently deployed XPHB','WORKSTREAMS_AND_PR_DEPENDENCIES.md','AGENTS.md','ACTIVE_WORK.md','HANDOFF_LOG.md']) {
+  if (!nextChat.includes(term)) fail('NEXT_CHAT_START_HERE lacks current priority/entry contract: '+term);
+}
+for (const term of ['#309', '#312', '#317', '#321', '#324', '#335', '#325','19-spell']) {
+  if (!workstreams.includes(term)) fail('WORKSTREAMS_AND_PR_DEPENDENCIES missing research dependency: '+term);
+}
+// Only validate local links in the two human-authored short entry files.
+// External PR/CI URLs are live evidence pointers and require GitHub verification, not local filesystem checks.
+for (const [name, body] of [['NEXT_CHAT_START_HERE',nextChat],['WORKSTREAMS_AND_PR_DEPENDENCIES',workstreams]]) {
+  for (const found of body.matchAll(/\]\(([^)]+)\)/g)) {
+    const href=found[1].split('#')[0];
+    if (!href || /^(https?:|mailto:)/i.test(href)) continue;
+    if (href.includes('..') || path.isAbsolute(href)) {
+      if (href === '../AGENTS.md') { pathCheck('AGENTS.md',name,'referenced file'); continue; }
+      fail(name+': unsafe link '+href); continue;
+    }
+    pathCheck('docs/'+href,name,'referenced local link');
+  }
+}
 const state = fs.readFileSync(here('docs/PROJECT_STATE.md'),'utf8');
 const active = fs.readFileSync(here('docs/ACTIVE_WORK.md'),'utf8');
 const handoff = fs.readFileSync(here('docs/START_HERE_ACTIVE_HANDOFF.md'),'utf8');
 const phases = fs.readFileSync(here('docs/PHASED_DEVELOPMENT_CHECKLIST.md'),'utf8');
 const receipts = fs.readFileSync(here('docs/HANDOFF_RECEIPT_TEMPLATE.md'),'utf8');
 const agents = fs.readFileSync(here('AGENTS.md'),'utf8');
+for (const [name,text] of [['AGENTS',agents],['START_HERE_ACTIVE_HANDOFF',handoff],['README',fs.readFileSync(here('docs/README.md'),'utf8')],['ACTIVE_WORK',active]]) {
+ if (!text.includes('NEXT_CHAT_START_HERE.md')) fail(name+': missing canonical new-chat route');
+}
+
 for (const token of ['SYSTEM_REGISTRY.json','ACTIVE_WORK.md','HANDOFF_LOG.md']) {
   if (!state.includes(token)) fail(`PROJECT_STATE missing ${token}`);
   if (!handoff.includes(token)) fail(`START_HERE_ACTIVE_HANDOFF missing ${token}`);

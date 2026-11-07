@@ -1,5 +1,7 @@
 # DNDNext — Phased Objectives, Chat Workflow, and Release Gates
 
+> **2026-11-07 single-entry handoff consolidation:** Start at [NEXT_CHAT_START_HERE.md](NEXT_CHAT_START_HERE.md) (canonical owner task and short reality map), then [ACTIVE_WORK.md](ACTIVE_WORK.md) + latest [HANDOFF_LOG.md](HANDOFF_LOG.md) + relevant [WORKSTREAMS_AND_PR_DEPENDENCIES.md](WORKSTREAMS_AND_PR_DEPENDENCIES.md) row. This checklist remains the repeatable **S0–S7** gate process and **P0–P6** long-lived objectives, **not** a second independent next-task queue. Old phases and instructions are dated; full-source/role/lock/production evidence still decides actual release readiness.
+
 > **Prepared 2026-11-01; P0 documentation branch PR #313 submitted for review.** This is a dated process/roadmap checkpoint, **not** approval to run SQL, grant permissions, deploy gameplay, purchase services, alter the world map, or turn on AI. Reverify the current branch and real system state each session. Read [`AGENTS.md`](../AGENTS.md), [`START_HERE_ACTIVE_HANDOFF.md`](START_HERE_ACTIVE_HANDOFF.md), [`PROJECT_STATE.md`](PROJECT_STATE.md), [`ACTIVE_WORK.md`](ACTIVE_WORK.md), [`SYSTEM_REGISTRY.json`](SYSTEM_REGISTRY.json) and approved [`SPELL_ENGINE_DECISIONS.md`](SPELL_ENGINE_DECISIONS.md) first. Record evidence in [`HANDOFF_LOG.md`](HANDOFF_LOG.md).
 
 ## How to use this document

@@ -244,6 +244,44 @@
       ]
     },
     {
+      "id": "handoff-free-agent",
+      "status": "source-deployed",
+      "code_paths": [
+        "AGENTS.md",
+        "docs/NEXT_CHAT_START_HERE.md",
+        "docs/WORKSTREAMS_AND_PR_DEPENDENCIES.md",
+        "scripts/agents/project_health.mjs",
+        "scripts/agents/research_docs_maintainer.mjs",
+        ".github/workflows/research-docs-maintenance.yml"
+      ],
+      "tests": [
+        "scripts/validate_handoff_registry.mjs",
+        "scripts/agents/validate_project_health.mjs",
+        "scripts/agents/validate_research_docs_maintainer.mjs"
+      ],
+      "last_checked": "2026-11-07",
+      "label": "Single-entry owner handoff and free GitHub research status publisher",
+      "scope_note": "One human-authored latest-task/PR dependency entry; free push-triggered source snapshot to docs/agent-status, four anchor PRs only; #325 paid supervised agent held and inactive. Older handoff docs preserved as dated milestones.",
+      "open_gaps": [
+        "Free publisher is event-triggered, not real-time or proactive; only four fixed anchor PRs are queried.",
+        "Source/PR/CI/production states can change after documentation merge; new chat must confirm exact heads.",
+        "No end-to-end automatic content reconciliation of all historical Docs; only canonical navigation and offline guards are maintained."
+      ],
+      "verification": {
+        "source": "merged-327-source-and-owner-directed-navigation-inspected-2026-11-07",
+        "live_database": "not-a-database-authority-no-live-sql-by-publisher",
+        "deployed_sha": "free-status-publisher-merged-main-79a6340c-pre-doc-merge",
+        "test_status": "offline-source-ci-validation-triggered-on-docs-and-source-changes-final-head-pending",
+        "browser_acceptance": "not-applicable-navigation-static-validation-only",
+        "owner_approval": "2026-11-07-safe-doc-push-and-merge-approved;no-paid-AI-or-gameplay-merge-inference"
+      },
+      "protected_boundaries": [
+        "Free publisher writes to separate docs/agent-status branch only; cannot alter research PRs/main SQL or gameplay.",
+        "Human-authored ACTIVE_WORK/HANDOFF_LOG control owner task, exact-head CI must be checked.",
+        "Do not activate paid #325 agent or create an unapproved scheduled monitor."
+      ]
+    },
+    {
       "id": "npc-portrait-library",
       "status": "source-db-deployed",
       "code_paths": [
@@ -563,12 +601,12 @@
     "caveat": "Point-in-time read-only observation; no actual exploit attempt on live production."
   },
   "snapshot": {
-    "observed_on": "2026-11-01",
+    "observed_on": "2026-11-07",
     "repository": "bob8675309/DNDNEXT",
-    "main_sha": "eb376a4e3a7b0a7201a0ecb8a98366c1bba4e00a",
-    "production_deployment_id": "dpl_AxNyb2EhSRHNjz4U6Wjoz5ZHG6Ku",
+    "main_sha": "79a6340c08e743e71e1072e40e6ba7204f735a29",
+    "production_deployment_id": "dpl_4MKLuoTHpR3JJzxkENcpWsdfoYX1",
     "production_deployment_status": "READY",
     "database_project": "ucggczovhmauhshvhusx",
-    "limits": "This registry indexes verified source and sampled live database state; no new browser acceptance or validator run was made during the 2026-11-01 audit. Re-verify before use."
+    "limits": "DATED pre-documentation-merge audit: original Nov7 main/Vercel SHA, selected read-only PG17.4 function checks and historical evidence. Owner-approved docs consolidation will move main; reverify current refs/CI/deployment. One current task in docs/NEXT_CHAT_START_HERE.md and ACTIVE_WORK.md; automated health is a fixed-four-PR snapshot."
   }
 }
