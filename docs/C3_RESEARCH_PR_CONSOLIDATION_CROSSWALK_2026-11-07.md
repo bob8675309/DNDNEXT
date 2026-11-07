@@ -1,5 +1,7 @@
 # C3 — Open research PR consolidation: file, source, CI, and retirement crosswalk
 
+**2026-11-07 C3.1 status override:** [Draft #341](https://github.com/bob8675309/DNDNEXT/pull/341) is an independently main-based extracted Forge-only **66-original-blob** research package, with **five exact-head green checks** including genuine disposable GoTrue/PG17/J79B and isolated J169 Chromium. See [C3.1 executed receipt](C3_1_FORGE_EXTRACTION_ACCEPTANCE_2026-11-07.md). **NEXT is separate owner merge decision for #341, NOT creating another extraction.** Old C3.0 target tables below are historical planning, not authorization for a bulk merge.
+
 **Audit 2026-11-07; main baseline `4635817c78ebb453428fbdc89b1c19f0da3a6c0e`.** This is C3.0, a **read-only source/PR audit**, not an engineering merge, RLS change, migration, or completed release. There are **19 open PRs**, all drafts, as of this snapshot. Re-fetch live PRs, Git sources, and CI before extracting.
 
 ## The two complete file-level inventories
@@ -58,4 +60,4 @@ Each JSON entry records PR, exact head SHA, immediate parent/base ref and SHA, a
 3. On a new head re-run targeted original and negative-control checks; keep failed #299 tactical CI, Forge failed/green revisions and original JWT logs/receipts. Document which of 31 original creation-adjacent trigger families and which role/permissions remain absent.
 4. Do not merge any held branch directly, deploy candidate SQL, remove the old inventory CHECK alone, relax inventory/NPC RLS, merge UI without matching server security, alter world/town-map behavior, or activate a paid agent. Obtain **separate explicit owner approval** for actual research-PR closure and any non-documentation merge/release.
 
-**C3.0 inventory and crosswalk complete; C3.1 extraction is NOT yet executed. ONE NEXT TASK:** build a source-import/dependency closure plan and minimal clean-main branch for **Forge isolated source-authenticated research**, starting with #335 tip and the two exact per-PR file inventories. Re-run original disposable JWT/PG17 tests at the new head before claiming it is ready for separate owner-reviewed research merge. Do not close old PRs or deploy SQL.
+**C3.0 source crosswalk complete; C3.1 dependency-closed original Forge extraction and independent CI PASS in draft #341, NOT MERGED. ONE NEXT TASK:** obtain separate owner decision about merging [#341](https://github.com/bob8675309/DNDNEXT/pull/341) as a narrow non-deploying research-test package. After authorized merge and new-main confirmation, proceed C3.2 original P1.3 lock/replay source-acceptance extraction. Do not close old Forge PRs, apply candidate SQL, or treat partial local JWT as release.

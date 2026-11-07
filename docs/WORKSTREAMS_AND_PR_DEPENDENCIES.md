@@ -4,9 +4,7 @@
 
 ## ONE current task
 
-**C3.0 COMPLETE** — [file-by-file 19-PR source/CI/ancestry audit](C3_RESEARCH_PR_CONSOLIDATION_CROSSWALK_2026-11-07.md), with full nine-Forge and ten-other-pr per-file inventories under `docs/evidence/`. Active **C3.1**: build a minimal, dependency-closed **Forge-only original-source disposable test** branch from *latest main*, extracting source-verified fixtures and GoTrue/PG17/isolated Chromium J169 acceptance out of held [#324→#335](https://github.com/bob8675309/DNDNEXT/pull/335). Do not import outdated #321 NPC secrets, do not replace the newer #322/#323 secure `NpcPanel.js`, and do not overwrite canonical handoff files. No held research PR merge/closure, live SQL/role changes or paid AI authorized. [C2 proof](C2_FORGE_CONSTRAINT_AND_RLS_CLOSEOUT_2026-11-07.md) remains a **non-installed** RLS+constraint fix candidate.
-
-**Overlaps verified:** #320's 11/13 UI files are byte-identical to #323; #323's secure NpcPanel differs. #335 inherits #321's **older** stage3 secrets SQL and its validation/test, not #322's revised security code. #317 is `mergeable_state=dirty` despite 10 green workflows and needs selectively extracted source tests. [Held spell #309](https://github.com/bob8675309/DNDNEXT/pull/309)/[#312](https://github.com/bob8675309/DNDNEXT/pull/312) still await separate pure recipe extraction; the deployed **19-spell** baseline #337 is already merged. Paid #325 remains optional/unmerged.
+**C3.1 independent Forge research package ready for owner review, not merged:** [draft #341](https://github.com/bob8675309/DNDNEXT/pull/341) at `3a1536754359af0bdab23c0764f49e85ea7d0d2d`, based on main `1ccde22f57c37dfed2e26473e8f28b11f639c8db`, copied **66** exact original Forge source/fixture/test/workflow blobs plus two provenance records while omitting obsolete inherited #321 NPC secrets, old handoffs and application changes. All five exact-head CI green: signed real local GoTrue/PG17 [#42400448866](https://github.com/bob8675309/DNDNEXT/actions/runs/42400448866) (J79/J79B, J86/J87, J88/J95), isolated React Chromium [#42400448862](https://github.com/bob8675309/DNDNEXT/actions/runs/42400448862) and three source/regression checks. [Full source and release limitations](C3_1_FORGE_EXTRACTION_ACCEPTANCE_2026-11-07.md). **ONE NEXT TASK: request owner's distinct approval to merge research-only #341**; if approved rerun/recheck then merge, next C3.2 #317 extraction. No held Forge parent PR closure, inventory production RLS/constraint migration, NPC Profile merge or paid AI.
 
 ## Open research draft PRs — original 20 minus merged #337; re-fetch live
 
@@ -28,4 +26,4 @@
 
 **Live safety note, checked read-only 2026-11-07:** production `inventory_items` has two conflicting CHECKs for `owner_type='character'`; original Forge deferred materializer contains matching insert. This is not yet a complete source-authentic v3 failure replay; prioritize disposable reproducer C2, not a live constraint change.
 
-**ONE next task: C3.1 dependency-closed Forge-only source test extraction on new main.** File/CI/PR crosswalk C3.0 completed, no held merges/SQL release.
+**ONE next task:** review exact-head [#341](https://github.com/bob8675309/DNDNEXT/pull/341) and request owner research-only merge approval; after successful separately authorized merge, C3.2 P1.3 security test extraction.
