@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/forge-warlock-child-completion-20261106` |
-| Exact source commit represented by this archive snapshot | `1f1468df82bbd0edc1270167a1e3b07eff8a4831` |
+| Exact source commit represented by this archive snapshot | `8f7647535b8e7b900d5884b9256f3465d0933a5e` |
 | Compared with | `51c351a142d03378dff8e47e05182afe21a15622` (main comparison base) |
-| Last source commit title | test(forge): stage source preferred-view range columns before original view DDL |
+| Last source commit title | docs(forge): receipt Warlock child completion original JWT acceptance and prior fixture failures |
 | Files changed relative to main | 110 (81 non-docs; 29 docs) |
-| Last source commit | 5 files (2 non-docs; 3 authored docs) |
+| Last source commit | 4 files (0 non-docs; 4 authored docs) |
 
 ## Documentation freshness warning
 
@@ -18,10 +18,9 @@ The latest source commit includes authored documentation. Verify correctness and
 ## Latest source commit paths
 
 - `docs/ACTIVE_WORK.md`
+- `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
 - `docs/Forge_Warlock_Child_Completion_2026-11-06.md`
 - `docs/HANDOFF_LOG.md`
-- `scripts/fixtures/forge_warlock_child_completion_local_auth_pg17.sql`
-- `scripts/fixtures/forge_warlock_preferred_spell_original_pg17.sql`
 
 ## Research-branch change inventory versus main
 
