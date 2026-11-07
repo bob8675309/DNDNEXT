@@ -1,0 +1,565 @@
+{
+  "schemaVersion": 1,
+  "subject": "Deployed tactical spell preservation; NOT a recipe executor",
+  "sourcePriority": "2024 XPHB class-owned assignments only",
+  "baseline": {
+    "mainShaAtResearchStart": "2d2135ced24bcb4fbb4d8ccefc27bda70e91eb05",
+    "checkedDate": "2026-11-07",
+    "sourceDocs": [
+      "docs/Deployed_Tactical_Spell_Effects_Smoke_Recovery_2026-11-07.md",
+      "docs/SPELL_ENGINE_DECISIONS.md"
+    ],
+    "limits": "GitHub source and historical read-only smoke/transaction evidence; no newly executed production cast, signed-in browser acceptance or live SQL audit"
+  },
+  "sharedAuthority": {
+    "source": "docs/Deployed_Tactical_Spell_Effects_Smoke_Recovery_2026-11-07.md",
+    "operations": [
+      "server-owned LOS/cover and hex targeting",
+      "attack and saving throw profiles",
+      "typed mitigation including equipment",
+      "healing/temp HP and timed conditions",
+      "action/slot/reaction/command ledger"
+    ],
+    "scope": "Documented shared deployment; not a claim each spell invokes every listed function"
+  },
+  "historical": {
+    "persisted": {
+      "source": "docs/Deployed_Tactical_Spell_Effects_Smoke_Recovery_2026-11-07.md",
+      "status": "resolved",
+      "round": 6,
+      "version": 64,
+      "participantCount": 4,
+      "combatLogEvents": 18,
+      "commandRequests": 46,
+      "spellCastEvents": 8,
+      "namedSpellKeys": [
+        "fire-bolt|xphb",
+        "sacred-flame|xphb",
+        "false-life|xphb",
+        "magic-missile|xphb",
+        "acid-splash|xphb",
+        "healing-word|xphb"
+      ],
+      "interpretation": "Six named examples, eight events in total; not eight distinct spells, and not current end-to-end acceptance"
+    },
+    "archivedSourceChecks": [
+      {
+        "pr": 294,
+        "head": "8d37dc76e9561f63df73eba647353ff3a6cbaaa0",
+        "runs": [
+          40628231333,
+          40628231209
+        ],
+        "result": "success",
+        "scope": "isolated original helper/effect and candidate rollback parity; not deployed"
+      },
+      {
+        "pr": 299,
+        "head": "c73075d92ca9361dc05bc901d2d6652a33ef857a",
+        "runs": [
+          40801549016,
+          40801549033
+        ],
+        "result": "failure",
+        "errorSignature": "record \"v_a\" has no field \"controller_user_id\"",
+        "scope": "archived fixture error; not evidence deployed writer failed"
+      }
+    ],
+    "unverified": "No 19-spell modern signed-in multiuser acceptance and no recipe interpreter installed"
+  },
+  "spells": [
+    {
+      "key": "fire-bolt|xphb",
+      "source": "XPHB",
+      "phase": "Phase 1I",
+      "mechanicsFamily": "ranged-spell-attack",
+      "exception": "Attack roll, fire mitigation and scaling; original foundation guarded cast",
+      "ui": "pages/encounters/combat.js",
+      "rpc": "public.encounter_cast_spell_v1",
+      "sql": "sql/20260727_13_tactical_spell_casting_slice.sql",
+      "serverValidator": "scripts/validate_tactical_spell_casting.mjs",
+      "uiValidator": "scripts/validate_tactical_spell_ui.mjs",
+      "ledger": "docs/Tactical_Encounter_Phase1I_Spell_Foundation_Status.md",
+      "transactionEvidence": "phase-ledger documented transactional/rollback checks",
+      "persistedSmokeEvidence": "named-persisted",
+      "sourceReviewGap": "Current full signed-in multi-controller browser parity is unverified; classLevel-based cantrip tier in original SQL requires character-level/multiclass parity review",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
+    },
+    {
+      "key": "cure-wounds|xphb",
+      "source": "XPHB",
+      "phase": "Phase 1I",
+      "mechanicsFamily": "single-target-healing",
+      "exception": "Touch/slot-funded heal, 0 HP and Action/slot replay safeguards",
+      "ui": "pages/encounters/combat.js",
+      "rpc": "public.encounter_cast_spell_v1",
+      "sql": "sql/20260727_13_tactical_spell_casting_slice.sql",
+      "serverValidator": "scripts/validate_tactical_spell_casting.mjs",
+      "uiValidator": "scripts/validate_tactical_spell_ui.mjs",
+      "ledger": "docs/Tactical_Encounter_Phase1I_Spell_Foundation_Status.md",
+      "transactionEvidence": "phase-ledger documented transactional/rollback checks",
+      "persistedSmokeEvidence": "unconfirmed",
+      "sourceReviewGap": "Not named in the resolved smoke log examples",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
+    },
+    {
+      "key": "sacred-flame|xphb",
+      "source": "XPHB",
+      "phase": "Phase 1J",
+      "mechanicsFamily": "single-target-save",
+      "exception": "Dex save, Radiant, cover-specific rule",
+      "ui": "pages/encounters/combat.js",
+      "rpc": "public.encounter_cast_spell_v2",
+      "sql": "sql/20260727_14_tactical_single_target_save_spell.sql",
+      "serverValidator": "scripts/validate_tactical_save_spell.mjs",
+      "uiValidator": "scripts/validate_tactical_save_spell_ui.mjs",
+      "ledger": "docs/Tactical_Encounter_Phase1J_Save_Spells_Status.md",
+      "transactionEvidence": "phase-ledger documented transactional/rollback checks",
+      "persistedSmokeEvidence": "named-persisted",
+      "sourceReviewGap": "No modern full-catalogue signed-in browser parity",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
+    },
+    {
+      "key": "toll-the-dead|xphb",
+      "source": "XPHB",
+      "phase": "Phase 1K",
+      "mechanicsFamily": "single-target-save",
+      "exception": "Wis save, wounded target changes damage die",
+      "ui": "pages/encounters/combat.js",
+      "rpc": "public.encounter_cast_spell_v3",
+      "sql": "sql/20260728_01_tactical_toll_the_dead.sql",
+      "serverValidator": "scripts/validate_tactical_toll_the_dead.mjs",
+      "uiValidator": "scripts/validate_tactical_toll_the_dead_ui.mjs",
+      "ledger": "docs/Tactical_Encounter_Phase1K_Toll_the_Dead_Status.md",
+      "transactionEvidence": "phase-ledger documented transactional/rollback checks",
+      "persistedSmokeEvidence": "unconfirmed",
+      "sourceReviewGap": "Not named in resolved persisted smoke examples",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
+    },
+    {
+      "key": "poison-spray|xphb",
+      "source": "XPHB",
+      "phase": "Phase 1L",
+      "mechanicsFamily": "ranged-spell-attack",
+      "exception": "Poison damage, cover/Dodge and critical handling",
+      "ui": "pages/encounters/combat.js",
+      "rpc": "public.encounter_cast_spell_v4",
+      "sql": "sql/20260728_02_tactical_poison_spray.sql",
+      "serverValidator": "scripts/validate_tactical_poison_spray.mjs",
+      "uiValidator": "scripts/validate_tactical_poison_spray_ui.mjs",
+      "ledger": "docs/Tactical_Encounter_Phase1L_Poison_Spray_Status.md",
+      "transactionEvidence": "phase-ledger documented transactional/rollback checks",
+      "persistedSmokeEvidence": "unconfirmed",
+      "sourceReviewGap": "Not named in resolved persisted smoke examples",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
+    },
+    {
+      "key": "false-life|xphb",
+      "source": "XPHB",
+      "phase": "Phase 1M",
+      "mechanicsFamily": "self-temporary-hp",
+      "exception": "Self-only temp HP, upcast and existing temp HP handling",
+      "ui": "pages/encounters/combat.js",
+      "rpc": "public.encounter_cast_spell_v5",
+      "sql": "sql/20260728_03_tactical_false_life.sql",
+      "serverValidator": "scripts/validate_tactical_false_life.mjs",
+      "uiValidator": "scripts/validate_tactical_false_life_ui.mjs",
+      "ledger": "docs/Tactical_Encounter_Phase1M_False_Life_Status.md",
+      "transactionEvidence": "phase-ledger documented transactional/rollback checks",
+      "persistedSmokeEvidence": "named-persisted",
+      "sourceReviewGap": "Current signed-in cross-account reuse unverified",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
+    },
+    {
+      "key": "inflict-wounds|xphb",
+      "source": "XPHB",
+      "phase": "Phase 1N",
+      "mechanicsFamily": "touch-save",
+      "exception": "Constitution save, Necrotic half damage and slotted upcast",
+      "ui": "pages/encounters/combat.js",
+      "rpc": "public.encounter_cast_spell_v6",
+      "sql": "sql/20260728_04_tactical_inflict_wounds.sql",
+      "serverValidator": "scripts/validate_tactical_inflict_wounds.mjs",
+      "uiValidator": "scripts/validate_tactical_inflict_wounds_ui.mjs",
+      "ledger": "docs/Tactical_Encounter_Phase1N_Inflict_Wounds_Status.md",
+      "transactionEvidence": "phase-ledger documented transactional/rollback checks",
+      "persistedSmokeEvidence": "unconfirmed",
+      "sourceReviewGap": "Not named in resolved persisted smoke examples",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
+    },
+    {
+      "key": "shocking-grasp|xphb",
+      "source": "XPHB",
+      "phase": "Phase 1O",
+      "mechanicsFamily": "spell-attack-timed-rider",
+      "exception": "Suppress opportunity attacks until target turn start, not all Reactions",
+      "ui": "pages/encounters/combat.js",
+      "rpc": "public.encounter_cast_spell_v7",
+      "sql": "sql/20260728_05_tactical_shocking_grasp.sql",
+      "serverValidator": "scripts/validate_tactical_shocking_grasp.mjs",
+      "uiValidator": "scripts/validate_tactical_shocking_grasp_ui.mjs",
+      "ledger": "docs/Tactical_Encounter_Phase1O_Shocking_Grasp_Status.md",
+      "transactionEvidence": "phase-ledger documented transactional/rollback checks",
+      "persistedSmokeEvidence": "unconfirmed",
+      "sourceReviewGap": "Not named in resolved persisted smoke examples",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
+    },
+    {
+      "key": "ray-of-frost|xphb",
+      "source": "XPHB",
+      "phase": "Phase 1P",
+      "mechanicsFamily": "spell-attack-speed-rider",
+      "exception": "10-ft speed penalty until source next turn start",
+      "ui": "pages/encounters/combat.js",
+      "rpc": "public.encounter_cast_spell_v8",
+      "sql": "sql/20260728_06_tactical_ray_of_frost.sql",
+      "serverValidator": "scripts/validate_tactical_ray_of_frost.mjs",
+      "uiValidator": "scripts/validate_tactical_ray_of_frost_ui.mjs",
+      "ledger": "docs/Tactical_Encounter_Phase1P_Ray_of_Frost_Status.md",
+      "transactionEvidence": "phase-ledger documented transactional/rollback checks",
+      "persistedSmokeEvidence": "unconfirmed",
+      "sourceReviewGap": "Not named in resolved persisted smoke examples",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
+    },
+    {
+      "key": "chill-touch|xphb",
+      "source": "XPHB",
+      "phase": "Phase 1Q",
+      "mechanicsFamily": "spell-attack-healing-lock",
+      "exception": "No healing until source next turn end, including zero HP",
+      "ui": "pages/encounters/combat.js",
+      "rpc": "public.encounter_cast_spell_v9",
+      "sql": "sql/20260728_07_tactical_chill_touch.sql",
+      "serverValidator": "scripts/validate_tactical_chill_touch.mjs",
+      "uiValidator": "scripts/validate_tactical_chill_touch_ui.mjs",
+      "ledger": "docs/Tactical_Encounter_Phase1Q_Chill_Touch_Status.md",
+      "transactionEvidence": "phase-ledger documented transactional/rollback checks",
+      "persistedSmokeEvidence": "unconfirmed",
+      "sourceReviewGap": "Not named in resolved persisted smoke examples",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
+    },
+    {
+      "key": "mind-sliver|xphb",
+      "source": "XPHB",
+      "phase": "Phase 1R",
+      "mechanicsFamily": "single-target-save-rider",
+      "exception": "One-shot -1d4 next save, source-turn-end expiry and save-profile fix",
+      "ui": "pages/encounters/combat.js",
+      "rpc": "public.encounter_cast_spell_v10",
+      "sql": "sql/20260728_08_tactical_mind_sliver.sql",
+      "serverValidator": "scripts/validate_tactical_mind_sliver.mjs",
+      "uiValidator": "scripts/validate_tactical_mind_sliver_ui.mjs",
+      "ledger": "docs/Tactical_Encounter_Phase1R_Mind_Sliver_Status.md",
+      "transactionEvidence": "phase-ledger documented transactional/rollback checks",
+      "persistedSmokeEvidence": "unconfirmed",
+      "sourceReviewGap": "Not named in resolved persisted smoke examples",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
+    },
+    {
+      "key": "word-of-radiance|xphb",
+      "source": "XPHB",
+      "phase": "Phase 1S",
+      "mechanicsFamily": "chosen-emanation",
+      "exception": "Caster-origin chosen targets, shared damage roll and independent saves",
+      "ui": "pages/encounters/combat.js",
+      "rpc": "public.encounter_cast_area_spell_v1",
+      "sql": "sql/20260729_02_tactical_word_of_radiance.sql",
+      "serverValidator": "scripts/validate_tactical_word_of_radiance.mjs",
+      "uiValidator": "scripts/validate_tactical_word_of_radiance_ui.mjs",
+      "ledger": "docs/Tactical_Encounter_Phase1S_Word_of_Radiance_Status.md",
+      "transactionEvidence": "phase-ledger documented transactional/rollback checks",
+      "persistedSmokeEvidence": "unconfirmed",
+      "sourceReviewGap": "Not named in resolved persisted smoke examples",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
+    },
+    {
+      "key": "guiding-bolt|xphb",
+      "source": "XPHB",
+      "phase": "Phase 1T",
+      "mechanicsFamily": "spell-attack-timed-rider",
+      "exception": "Next eligible attack Advantage and Dodge/Vicious Mockery cancellation",
+      "ui": "pages/encounters/combat.js",
+      "rpc": "public.encounter_cast_spell_v11",
+      "sql": "sql/20260729_04_tactical_guiding_bolt.sql",
+      "serverValidator": "scripts/validate_tactical_guiding_bolt.mjs",
+      "uiValidator": "scripts/validate_tactical_guiding_bolt_ui.mjs",
+      "ledger": "docs/Tactical_Encounter_Phase1T_Guiding_Bolt_Status.md",
+      "transactionEvidence": "phase-ledger documented transactional/rollback checks",
+      "persistedSmokeEvidence": "unconfirmed",
+      "sourceReviewGap": "Not named in resolved persisted smoke examples",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
+    },
+    {
+      "key": "vicious-mockery|xphb",
+      "source": "XPHB",
+      "phase": "Phase 1U",
+      "mechanicsFamily": "single-target-save-rider",
+      "exception": "Next attack Disadvantage, target-turn-end expiry; hearing rule GM-assisted",
+      "ui": "pages/encounters/combat.js",
+      "rpc": "public.encounter_cast_spell_v12",
+      "sql": "sql/20260730_02_tactical_vicious_mockery.sql",
+      "serverValidator": "scripts/validate_tactical_vicious_mockery.mjs",
+      "uiValidator": "scripts/validate_tactical_vicious_mockery_ui.mjs",
+      "ledger": "docs/Tactical_Encounter_Phase1U_Vicious_Mockery_Status.md",
+      "transactionEvidence": "phase-ledger documented transactional/rollback checks",
+      "persistedSmokeEvidence": "unconfirmed",
+      "sourceReviewGap": "Hearing-only targeting not fully automated; not named in persisted smoke",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
+    },
+    {
+      "key": "healing-word|xphb",
+      "source": "XPHB",
+      "phase": "Phase 1V",
+      "mechanicsFamily": "bonus-action-healing",
+      "exception": "Bonus Action, slotted spell-per-turn/slot mirror and antihealing",
+      "ui": "pages/encounters/combat.js",
+      "rpc": "public.encounter_cast_spell_v13",
+      "sql": "sql/20260730_03_tactical_healing_word.sql",
+      "serverValidator": "scripts/validate_tactical_healing_word.mjs",
+      "uiValidator": "scripts/validate_tactical_healing_word_ui.mjs",
+      "ledger": "docs/Tactical_Encounter_Phase1V_Healing_Word_Status.md",
+      "transactionEvidence": "phase-ledger documented transactional/rollback checks",
+      "persistedSmokeEvidence": "named-persisted",
+      "sourceReviewGap": "Modern signed-in simultaneous-controller coverage unverified",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
+    },
+    {
+      "key": "acid-splash|xphb",
+      "source": "XPHB",
+      "phase": "Phase 1W",
+      "mechanicsFamily": "point-origin-sphere-save",
+      "exception": "XPHB point within 60 ft; ALL server-derived eligible creatures within 5-ft-radius Sphere independently save DEX against one shared Acid roll; cover and concealed identities handled by server",
+      "ui": "pages/encounters/combat.js",
+      "rpc": "public.encounter_cast_point_area_spell_v1",
+      "sql": "sql/20260730_04_tactical_acid_splash.sql",
+      "serverValidator": "scripts/validate_tactical_acid_splash.mjs",
+      "uiValidator": "scripts/validate_tactical_acid_splash_ui.mjs",
+      "ledger": "docs/Tactical_Encounter_Phase1W_Acid_Splash_Status.md",
+      "transactionEvidence": "phase-ledger documented transactional/rollback checks",
+      "persistedSmokeEvidence": "named-persisted",
+      "sourceReviewGap": "Modern full hidden-target multi-account browser coverage unverified; held #309 research taxonomy wrongly labels it limited-number-of-targets; do not reuse that tag as an executable source rule; classLevel-based cantrip tier in original SQL requires character-level/multiclass parity review",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
+    },
+    {
+      "key": "magic-missile|xphb",
+      "source": "XPHB",
+      "phase": "Phase 1X",
+      "mechanicsFamily": "allocated-auto-hit",
+      "exception": "Exact allocated darts, individual rolls, Force mitigation; Shield interaction GM-assisted",
+      "ui": "pages/encounters/combat.js",
+      "rpc": "public.encounter_cast_allocated_spell_v1",
+      "sql": "sql/20260730_05_tactical_magic_missile.sql",
+      "serverValidator": "scripts/validate_tactical_magic_missile.mjs",
+      "uiValidator": "scripts/validate_tactical_magic_missile_ui.mjs",
+      "ledger": "docs/Tactical_Encounter_Phase1X_Magic_Missile_Status.md",
+      "transactionEvidence": "phase-ledger documented transactional/rollback checks",
+      "persistedSmokeEvidence": "named-persisted",
+      "sourceReviewGap": "Shield reaction interaction remains GM-assisted",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
+    },
+    {
+      "key": "burning-hands|xphb",
+      "source": "XPHB",
+      "phase": "Phase 1Y",
+      "mechanicsFamily": "directional-cone-save",
+      "exception": "15-ft hex cone, shared roll, save for half and masked targets",
+      "ui": "pages/encounters/combat.js",
+      "rpc": "public.encounter_cast_directional_area_spell_v1",
+      "sql": "sql/20260730_06_tactical_burning_hands.sql",
+      "serverValidator": "scripts/validate_tactical_burning_hands.mjs",
+      "uiValidator": "scripts/validate_tactical_burning_hands_ui.mjs",
+      "ledger": "docs/Tactical_Encounter_Phase1Y_Burning_Hands_Status.md",
+      "transactionEvidence": "phase-ledger documented transactional/rollback checks",
+      "persistedSmokeEvidence": "unconfirmed",
+      "sourceReviewGap": "Not named in resolved persisted smoke examples",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
+    },
+    {
+      "key": "lightning-bolt|xphb",
+      "source": "XPHB",
+      "phase": "Phase 1Z",
+      "mechanicsFamily": "directional-line-save",
+      "exception": "100-ft server line, shared roll/half save, rollback-only level-eligible caster",
+      "ui": "pages/encounters/combat.js",
+      "rpc": "public.encounter_cast_directional_area_spell_v2",
+      "sql": "sql/20260730_07_tactical_lightning_bolt.sql",
+      "serverValidator": "scripts/validate_tactical_lightning_bolt.mjs",
+      "uiValidator": "scripts/validate_tactical_lightning_bolt_ui.mjs",
+      "ledger": "docs/Tactical_Encounter_Phase1Z_Lightning_Bolt_Status.md",
+      "transactionEvidence": "rollback-only eligible-caster synthetic fixture (no eligible persistent caster at rollout)",
+      "persistedSmokeEvidence": "unconfirmed",
+      "sourceReviewGap": "No persistent eligible caster at rollout; transaction-only eligible-caster evidence, not live persisted cast",
+      "evidenceTier": {
+        "js": "on-main filesystem/static contract validator registration; NOT an actual gameplay cast",
+        "pg": "historical phase-ledger transaction/rollback receipt; not independently re-executed by this checker",
+        "live": "original SQL and dated read-only installed-function survey; current deployed-function parity not retested"
+      }
+    }
+  ],
+  "architectureBoundary": {
+    "approvedPivotDate": "2026-10-31",
+    "oldAdapters": "19 deployed source-qualified XPHB per-spell RPC routes are regression oracles, NOT a mandate to author one new RPC per imported spell",
+    "futureDirection": "versioned reviewed closed-vocabulary mechanics-family recipe engine reusing existing server authority, only after one-spell-at-a-time parity and explicit release approval",
+    "heldReferences": [
+      {
+        "pr": 309,
+        "scope": "research-only 24 attack-type signals / 22 manually listed attack exceptions; P1 structural schema + preflight / synthetic examples; NOT a deployed interpreter"
+      },
+      {
+        "pr": 312,
+        "scope": "research-only seven-reference-spell P2 shadow parity; NOT a deployed interpreter"
+      }
+    ],
+    "classificationBoundary": "mechanicsFamily below is a descriptive preservation label for the deployed adapter, NOT the classifier vocabulary, a canonical source rule, a trusted recipe, or a casting authorization"
+  },
+  "reviewConflicts": [
+    {
+      "id": "xphb-acid-splash-held-classifier",
+      "status": "open-review-required",
+      "heldResearch": "PR #309 utils/tacticalSpellMechanicsReview.mjs XPHB_NON_ATTACK_EXCEPTIONS['acid-splash|XPHB'] includes selected-target-area-save/limited-number-of-targets",
+      "deployedSource": "sql/20260730_04_tactical_acid_splash.sql",
+      "deployedLedger": "docs/Tactical_Encounter_Phase1W_Acid_Splash_Status.md",
+      "mainP1Spec": "docs/Spell_Recipe_P1_Schema_2026-10-31.md",
+      "reason": "The deployed reviewed XPHB spell selects a point within 60 ft, derives EVERY eligible creature inside a 5-ft-radius Sphere, and rolls independent Dex saves. The held taxonomy's limited-number-of-targets tag is inconsistent with that mechanic; the held classifier must not be used as execution truth.",
+      "requiredFollowup": "Correct/review taxonomy in a separately reviewed P1 research extraction without modifying deployed Phase 1W behavior or pulling held PR #309 wholesale"
+    },
+    {
+      "id": "cantrip-total-level-parity",
+      "status": "source-review-required-not-a-confirmed-runtime-defect",
+      "sourceFiles": [
+        "sql/20260727_13_tactical_spell_casting_slice.sql",
+        "sql/20260730_04_tactical_acid_splash.sql"
+      ],
+      "ownerDecision": "docs/SPELL_ENGINE_DECISIONS.md",
+      "reason": "Original cantrip damage scaling reads spellcasting profile 'classLevel' at 5/11/17 in these SQL bodies, while the original Phase 1W ledger documents character-level scaling. Confirm how that profile value is defined for multiclass characters before claiming full source-rule parity or migrating effects.",
+      "requiredFollowup": "Trace source-owned spellcasting profile and true character-level semantics with isolated multiclass fixture; do not change live SQL from source-only evidence"
+    }
+  ],
+  "baselineValidators": {
+    "source": "scripts/validate_tactical_spell_suite.mjs",
+    "pinnedFromMain": "2d2135ced24bcb4fbb4d8ccefc27bda70e91eb05",
+    "meaning": "The 48 originally registered static regression validators must remain present; adding separately reviewed validators later does not invalidate the historical baseline",
+    "paths": [
+      "scripts/validate_tactical_equipped_damage_mitigation.mjs",
+      "scripts/validate_tactical_spell_foundation.mjs",
+      "scripts/validate_tactical_spell_casting.mjs",
+      "scripts/validate_tactical_spell_ui.mjs",
+      "scripts/validate_tactical_core_action_guides.mjs",
+      "scripts/validate_tactical_turn_reconciliation.mjs",
+      "scripts/validate_tactical_attack_result_ui.mjs",
+      "scripts/validate_shared_equipment_effects_pipeline.mjs",
+      "scripts/validate_character_sheet_rules.mjs",
+      "scripts/validate_npc_sheet_selection_reconciliation.mjs",
+      "scripts/validate_tactical_save_spell.mjs",
+      "scripts/validate_tactical_save_spell_ui.mjs",
+      "scripts/validate_tactical_toll_the_dead.mjs",
+      "scripts/validate_tactical_toll_the_dead_ui.mjs",
+      "scripts/validate_tactical_poison_spray.mjs",
+      "scripts/validate_tactical_poison_spray_ui.mjs",
+      "scripts/validate_tactical_false_life.mjs",
+      "scripts/validate_tactical_false_life_ui.mjs",
+      "scripts/validate_tactical_inflict_wounds.mjs",
+      "scripts/validate_tactical_inflict_wounds_ui.mjs",
+      "scripts/validate_tactical_shocking_grasp.mjs",
+      "scripts/validate_tactical_shocking_grasp_ui.mjs",
+      "scripts/validate_tactical_ray_of_frost.mjs",
+      "scripts/validate_tactical_ray_of_frost_ui.mjs",
+      "scripts/validate_tactical_chill_touch.mjs",
+      "scripts/validate_tactical_chill_touch_ui.mjs",
+      "scripts/validate_tactical_mind_sliver.mjs",
+      "scripts/validate_tactical_mind_sliver_ui.mjs",
+      "scripts/validate_tactical_word_of_radiance.mjs",
+      "scripts/validate_tactical_word_of_radiance_ui.mjs",
+      "scripts/validate_tactical_attack_roll_modifiers.mjs",
+      "scripts/validate_tactical_guiding_bolt.mjs",
+      "scripts/validate_tactical_guiding_bolt_ui.mjs",
+      "scripts/validate_tactical_legacy_attack_spell_hardening.mjs",
+      "scripts/validate_tactical_vicious_mockery.mjs",
+      "scripts/validate_tactical_vicious_mockery_ui.mjs",
+      "scripts/validate_tactical_healing_word.mjs",
+      "scripts/validate_tactical_healing_word_ui.mjs",
+      "scripts/validate_tactical_acid_splash.mjs",
+      "scripts/validate_tactical_acid_splash_ui.mjs",
+      "scripts/validate_tactical_magic_missile.mjs",
+      "scripts/validate_tactical_magic_missile_ui.mjs",
+      "scripts/validate_tactical_burning_hands.mjs",
+      "scripts/validate_tactical_burning_hands_ui.mjs",
+      "scripts/validate_tactical_lightning_bolt.mjs",
+      "scripts/validate_tactical_lightning_bolt_ui.mjs",
+      "scripts/validate_tactical_character_resource_bridge.mjs",
+      "scripts/validate_encounter_navigation_multiplayer_smoke.mjs"
+    ]
+  }
+}
