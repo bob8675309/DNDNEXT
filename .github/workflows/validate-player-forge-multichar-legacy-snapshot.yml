@@ -1,0 +1,55 @@
+name: Validate multi-character legacy player snapshot candidate
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/validate-player-forge-multichar-legacy-snapshot.yml'
+      - 'sql/candidates/20261104_player_forge_preserve_legacy_sheet.sql'
+      - 'scripts/fixtures/player_character_v2_live_source_pg17.sql'
+      - 'scripts/fixtures/player_character_multi_legacy_sheet_pg17.sql'
+      - 'scripts/validate_player_forge_multi_legacy_sheet_candidate.mjs'
+      - 'components/PlayerCharacterProfilePanelUnified.js'
+      - 'components/NewNpcModalV3.js'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  disposable-pg17:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 8
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify exact-original and single-clause change
+        run: |
+          node --check scripts/validate_player_forge_multi_legacy_sheet_candidate.mjs
+          node scripts/validate_player_forge_multi_legacy_sheet_candidate.mjs
+          node scripts/validate_unified_character_forge.mjs
+      - name: Confirm original bug, then test candidate on disposable PostgreSQL 17
+        run: |
+          test "$PGHOST" = "127.0.0.1"
+          test "$PGDATABASE" = postgres
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/player_character_multi_legacy_sheet_pg17.sql
