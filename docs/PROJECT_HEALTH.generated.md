@@ -4,7 +4,7 @@
 
 | Captured UTC | Trigger source | GitHub main (NOT verified production) |
 |---|---|---|
-| 2026-11-07T06:02:09Z | agent/forge-warlock-react-choice-ui-j169-20261107 (d3168539b203f5394177df0f343111ba89418807) | 79a6340c08e743e71e1072e40e6ba7204f735a29 |
+| 2026-11-07T06:21:04Z | agent/legacy-spell-pr-merge-triage-20261107 (79a6340c08e743e71e1072e40e6ba7204f735a29) | 79a6340c08e743e71e1072e40e6ba7204f735a29 |
 
 ## Exact PR heads and latest captured GitHub Actions
 
