@@ -1,0 +1,49 @@
+name: P1.3 legacy v9/v8 exact routing PG16
+on:
+  pull_request:
+    paths:
+      - 'scripts/fixtures/p1_3_legacy_v9_v8_routing_pg16.sql'
+      - '.github/workflows/validate-p1-3-legacy-v9-v8.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/fixtures/p1_3_legacy_v9_v8_routing_pg16.sql'
+      - '.github/workflows/validate-p1-3-legacy-v9-v8.yml'
+permissions:
+  contents: read
+jobs:
+  legacy-v9-v8-routing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: p13_legacy_routing_sandbox
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d p13_legacy_routing_sandbox"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGDATABASE: p13_legacy_routing_sandbox
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install PostgreSQL client if necessary
+        run: |
+          if ! command -v psql >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -qq -y postgresql-client
+          fi
+      - name: Run exact original public v9/v8 router bodies against isolated delegates
+        run: |
+          test "$PGHOST" = '127.0.0.1'
+          test "$PGDATABASE" = 'p13_legacy_routing_sandbox'
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_legacy_v9_v8_routing_pg16.sql

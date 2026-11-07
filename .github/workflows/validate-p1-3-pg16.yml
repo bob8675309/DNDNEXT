@@ -1,0 +1,55 @@
+name: P1.3 disposable PG16 concurrency model
+on:
+  pull_request:
+    paths:
+      - 'scripts/fixtures/p1_3_option_a_pg16.sql'
+      - 'scripts/fixtures/p1_3_option_a_pg16.sh'
+      - 'docs/P1_3_Option_A_Concurrency_Model_2026-11-01.md'
+      - '.github/workflows/validate-p1-3-pg16.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/fixtures/p1_3_option_a_pg16.sql'
+      - 'scripts/fixtures/p1_3_option_a_pg16.sh'
+      - 'docs/P1_3_Option_A_Concurrency_Model_2026-11-01.md'
+      - '.github/workflows/validate-p1-3-pg16.yml'
+permissions:
+  contents: read
+jobs:
+  disposable-pg16:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: p13_lock_sandbox
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d p13_lock_sandbox"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGDATABASE: p13_lock_sandbox
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install psql client only if absent
+        run: |
+          if ! command -v psql >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -qq -y postgresql-client
+          fi
+      - name: Create isolated fixture
+        run: |
+          test "$PGHOST" = '127.0.0.1'
+          test "$PGDATABASE" = 'p13_lock_sandbox'
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/p1_3_option_a_pg16.sql
+      - name: Execute two-client races
+        run: bash scripts/fixtures/p1_3_option_a_pg16.sh

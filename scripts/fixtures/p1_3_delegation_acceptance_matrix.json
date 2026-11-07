@@ -1,0 +1,168 @@
+{
+  "status": "proposed acceptance tests, NOT executed; owner corrected underling creation to immediate/nonblocking on 2026-11-04",
+  "prepared": "2026-11-04",
+  "research_pr": 317,
+  "scope": "P1.3 and future delegated-character authorization",
+  "cases": [
+    {
+      "id": "D01",
+      "family": "public-summary",
+      "assertion": "Unassigned visible NPC receives approved safe summary, never raw full sheet/GM fields."
+    },
+    {
+      "id": "D02",
+      "family": "public-summary",
+      "assertion": "Hidden unassigned NPC has no source-sheet/spell/notes/secret access."
+    },
+    {
+      "id": "D03",
+      "family": "full-handoff",
+      "assertion": "GM grants existing actor long-lived combat and independently specified edit, inventory and progression rights."
+    },
+    {
+      "id": "D04",
+      "family": "full-handoff",
+      "assertion": "Revoking one entitlement does not silently revoke or preserve other independent entitlements incorrectly."
+    },
+    {
+      "id": "D05",
+      "family": "underling",
+      "assertion": "A player can create a primary PC, alternate, or underling through existing Forge without an approval gate; standard account and character source permissions remain consistent until the GM edits them."
+    },
+    {
+      "id": "D06",
+      "family": "underling",
+      "assertion": "Creating an alternate/underling via create_player_character_v3 invokes v2 only once for each creation_request_id and produces one canonical character, progression, starting equipment and creation event; retry does not duplicate any."
+    },
+    {
+      "id": "D07",
+      "family": "temporary-control",
+      "assertion": "Temporary combat authority works without can_edit, can_inventory or can_convert."
+    },
+    {
+      "id": "D08",
+      "family": "temporary-control",
+      "assertion": "Scoped expiration or revocation denies previous cache replays under unchanged JWT."
+    },
+    {
+      "id": "D09",
+      "family": "shared-controller",
+      "assertion": "Two authorized players share one canonical actor Action/Reaction/HP/slot ledger."
+    },
+    {
+      "id": "D10",
+      "family": "replay",
+      "assertion": "Unverifiable original requester/intent fails closed without rerun or extra spend (R1)."
+    },
+    {
+      "id": "D11",
+      "family": "replay",
+      "assertion": "Wrong requester, changed target/slot/weapon/actor/encounter or lost control cannot replay."
+    },
+    {
+      "id": "D12",
+      "family": "source-privacy",
+      "assertion": "Spellcasting profile v1 and v2 restrict spells and slots to GM-approved player projection."
+    },
+    {
+      "id": "D13",
+      "family": "source-privacy",
+      "assertion": "get_my_player_character(s) raw to_jsonb(c) and full sheet do not leak GM secrets."
+    },
+    {
+      "id": "D14",
+      "family": "source-privacy",
+      "assertion": "Direct RLS, SECURITY DEFINER, print/export and Realtime cannot bypass safe projection."
+    },
+    {
+      "id": "D15",
+      "family": "inventory",
+      "assertion": "Combat-only equipped attack does not grant source inventory access/edit/transfer."
+    },
+    {
+      "id": "D16",
+      "family": "inventory",
+      "assertion": "Equip/transfer vs attack serializes I eligibility before Reaction/HP mutation."
+    },
+    {
+      "id": "D17",
+      "family": "grant-race",
+      "assertion": "G revocation before action recheck denies execution/private replay without spend."
+    },
+    {
+      "id": "D18",
+      "family": "grant-race",
+      "assertion": "G/I row locks, FK/unique waits and deferred triggers proven on exact shared rows."
+    },
+    {
+      "id": "D19",
+      "family": "resource-race",
+      "assertion": "Character C→S refresh vs S→C spend does not deadlock or double spend."
+    },
+    {
+      "id": "D20",
+      "family": "tc1",
+      "assertion": "Competing activation and paused→active resume cannot overlap canonical characters."
+    },
+    {
+      "id": "D21",
+      "family": "hidden-events",
+      "assertion": "Unknown Events projection avoids hidden IDs/metadata and receives separate timing acceptance."
+    },
+    {
+      "id": "D22",
+      "family": "admin",
+      "assertion": "GM retains full original source; authorized player uses safe projection."
+    },
+    {
+      "id": "D23",
+      "family": "cutover",
+      "assertion": "All directly executable legacy RPCs and readers are closed or guarded in one reviewed rollout."
+    },
+    {
+      "id": "D24",
+      "family": "service-principal",
+      "assertion": "R3 service principal policy explicitly approved before privileged automation."
+    },
+    {
+      "id": "D25",
+      "family": "admin-notice",
+      "assertion": "A successful player character creation creates exactly one durable GM-visible notice from committed player_character_created event and never blocks/changes the creation."
+    },
+    {
+      "id": "D26",
+      "family": "admin-notice",
+      "assertion": "Failed or rolled-back creation produces no Admin notice; concurrent same-request retries produce one notice."
+    },
+    {
+      "id": "D27",
+      "family": "admin-notice",
+      "assertion": "Admin can see new/unread creation notices and mark reviewed; other player JWTs cannot call/read Admin-only event projection or receipts."
+    },
+    {
+      "id": "D28",
+      "family": "admin-navigation",
+      "assertion": "Notice shows safe creator/name/time metadata and links to the canonical character in /npcs?focus=npc:<uuid>, including a hidden player-created kind=npc character."
+    },
+    {
+      "id": "D29",
+      "family": "gm-notes",
+      "assertion": "GM can add private notes after creation, which remain inaccessible to the creating player, other authorized combat controllers, raw sheet getters, and print/export."
+    },
+    {
+      "id": "D30",
+      "family": "permissions",
+      "assertion": "GM can view, add and remove effective separately scoped control/edit/inventory/progression rights after creation; legacy grants/direct controller are correctly displayed."
+    },
+    {
+      "id": "D31",
+      "family": "permissions",
+      "assertion": "A proposed capability migration preserves legacy PCs' active permissions until explicit audited change; no automatic can_edit→can_control backfill or unintended grants."
+    },
+    {
+      "id": "D32",
+      "family": "multi-character",
+      "assertion": "A user can hold multiple characters without players/profile/Forge overwriting prior characters or their grants; new creation leaves existing characters usable."
+    }
+  ]
+}

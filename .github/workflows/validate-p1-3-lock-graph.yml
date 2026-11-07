@@ -1,0 +1,30 @@
+name: Validate P1.3 static lock graph
+on:
+  pull_request:
+    paths:
+      - 'docs/archive/p1_3_source_evidence_2026-11-07/P1_3_Global_Lock_Order_Research_2026-11-01.md'
+      - 'scripts/fixtures/p1_3_lock_order_graph.json'
+      - 'scripts/validate_p1_3_lock_graph.mjs'
+      - '.github/workflows/validate-p1-3-lock-graph.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/archive/p1_3_source_evidence_2026-11-07/P1_3_Global_Lock_Order_Research_2026-11-01.md'
+      - 'scripts/fixtures/p1_3_lock_order_graph.json'
+      - 'scripts/validate_p1_3_lock_graph.mjs'
+      - '.github/workflows/validate-p1-3-lock-graph.yml'
+permissions:
+  contents: read
+jobs:
+  source-graph:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate static graph, not database concurrency
+        run: node scripts/validate_p1_3_lock_graph.mjs
