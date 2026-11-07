@@ -60,6 +60,7 @@ for(const role of names){
  people[role]={who,id:user.data.user.id};
 }
 sql("INSERT INTO private.test_admins(id) VALUES ('"+people.ADMIN.id+"')");
+sqlFile("scripts/fixtures/c33_forge_original_sprite_guard_local_pg17.sql");
 const gmPayload={
  name:"C33 preexisting legacy GM NPC",kind:"npc",creation_request_id:id(7401),
  creator_user_id:people.CREATOR.id,secret:"C33_GM_SECRET_NEVER_PUBLIC",
@@ -107,9 +108,36 @@ assert.equal(sql("SELECT secret FROM public.characters WHERE id='"+oldPlayerWith
  "C33_UNSAFE_PLAYER_GM_FIELD","No retroactive mutation of existing values");
 console.log("PASS C3J02: stages 1-3 installed, original creator trigger plus GM-insert guard; new player GM secret injection rejected and old records not silently rewritten");
 
+// C3V: a genuinely missing original creation BEFORE INSERT visual/sprite guard,
+// now installed alongside all three NPC privacy stages, not a frontend rewrite.
+const validAsset=id(7421),invalidAsset=id(7422),portrait=id(7420);
+const validVisualNpc=ok(await rpc(people.ADMIN.who,"create_character_v1",{
+ p_payload:{name:"C33 GM source-authentic 8dir sprite",kind:"npc",
+  creation_request_id:id(7423),visual_asset_id:validAsset,
+  portrait_library_id:portrait,sprite_path:"forged-client-override.png"}
+}),"Admin original NPC with valid 8dir visual asset");
+assert.equal(sql("SELECT sprite_path FROM public.characters WHERE id='"+validVisualNpc+"'"),
+ "c33/valid-8dir.png");
+assert.equal(sql("SELECT sprite_scale::text FROM public.characters WHERE id='"+validVisualNpc+"'"),"0.42");
+assert.equal(sql("SELECT creator_user_id FROM private.character_creator_attribution WHERE character_id='"+
+ validVisualNpc+"'"),people.ADMIN.id);
+console.log("PASS C3V01: source-original visual BEFORE INSERT normalizes Admin sprite path/scale, independent of untrusted payload");
+
+const beforeVisualAttrs=sql("SELECT count(*) FROM private.character_creator_attribution");
+const badVisualNpc=await rpc(people.ADMIN.who,"create_character_v1",{p_payload:{
+ name:"C33 bad sprite contract",kind:"npc",creation_request_id:id(7424),
+ visual_asset_id:invalidAsset,portrait_library_id:portrait
+}});
+const badSprite=reject(badVisualNpc,"source-original invalid active 8-direction sprite");
+assert.match(badSprite.message,/does not satisfy the DNDNext 8-direction runtime contract/);
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE creation_request_id='"+id(7424)+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM private.character_creator_attribution"),beforeVisualAttrs);
+console.log("PASS C3V02: source-original sprite trigger rejects invalid active asset contract atomically");
+
 const wizard=id(901),missingSpell=id(9999999);
 const v2Payload={name:"C33 original v2 Fighter",creation_request_id:id(7402),
- creator_user_id:people.OUTSIDER.id,
+ creator_user_id:people.OUTSIDER.id,visual_asset_id:validAsset,
+ portrait_library_id:portrait,
  background:"C33_PRIVATE_BACKGROUND",motivation:"C33_PRIVATE_MOTIVATION",
  sheet:{classKey:"fighter",level:1,marker:"C33_V2_SHEET",gmNotes:"C33_SHEET_NO_PUBLIC_PROFILE"}};
 const v3Payload={name:"C33 original v3 Wizard",creation_request_id:id(7403),
@@ -120,6 +148,10 @@ const call2=(p)=>rpc(people.CREATOR.who,"create_player_character_v2",
 const call3=(p,magic=[])=>rpc(people.CREATOR.who,"create_player_character_v3",
  {p_payload:p,p_spell_choices:[],p_magic_selections:magic});
 const created2=ok(await call2(v2Payload),"original v2");
+assert.equal(sql("SELECT sprite_path FROM public.characters WHERE id='"+created2+"'"),"c33/valid-8dir.png");
+assert.equal(sql("SELECT sprite_key FROM public.characters WHERE id='"+created2+"'"),validAsset);
+assert.equal(sql("SELECT sprite_scale::text FROM public.characters WHERE id='"+created2+"'"),"0.42");
+console.log("PASS C3V03: signed original player Forge v2 also enters unchanged sprite guard with canonically enforced 8dir asset");
 const created3=ok(await call3(v3Payload,[{
  spell_id:wizard,source_type:"class",access_type:"class-list"
 }]),"original v3");
@@ -387,5 +419,5 @@ const stillCreator=sql("SELECT creator_user_id FROM private.character_creator_at
 assert.equal(stillCreator,people.CREATOR.id);
 console.log("PASS C3I08: revoked character access hides source-owned gear; Admin retains read, immutable creator receipt unchanged");
 
-console.log("C3.3 ORIGINAL FORGE + PRIVACY + COMBINED INVENTORY CHECK/RLS JOINT TEST PASS (C3J00–C3J11, C3I00–C3I08). Source-original materializer/handlers, reduced helper/catalogues, NOT full production 31-trigger/browser parity.");
+console.log("C3.3 ORIGINAL FORGE + PRIVACY + COMBINED INVENTORY CHECK/RLS JOINT TEST PASS (C3J00–C3J11, C3I00–C3I08, C3V00–C3V03). Source-original materializer/handlers and additional 8dir sprite guard; reduced helper/catalogues, NOT full 31-trigger/browser parity.");
 
