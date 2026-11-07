@@ -5,21 +5,19 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/forge-warlock-react-choice-ui-j169-20261107` |
-| Exact source commit represented by this archive snapshot | `d3168539b203f5394177df0f343111ba89418807` |
+| Exact source commit represented by this archive snapshot | `19d7275d24d26f9641c9e6d98ea24cf9431f4d81` |
 | Compared with | `51c351a142d03378dff8e47e05182afe21a15622` (main comparison base) |
-| Last source commit title | docs(forge): receipt exact-head Chromium J169 and source-original JWT acceptance |
+| Last source commit title | test(forge): prove original signed v3 deferred creation fails old inventory owner CHECK in disposable PG17 |
 | Files changed relative to main | 114 (85 non-docs; 29 docs) |
-| Last source commit | 3 files (0 non-docs; 3 authored docs) |
+| Last source commit | 1 files (1 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-The latest source commit includes authored documentation. Verify correctness and any still-stale living docs against exact-head CI and deployed sources.
+**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
 
 ## Latest source commit paths
 
-- `docs/ACTIVE_WORK.md`
-- `docs/Forge_Warlock_Child_Completion_2026-11-06.md`
-- `docs/HANDOFF_LOG.md`
+- `scripts/test_forge_immutable_creation_replay_local_auth.mjs`
 
 ## Research-branch change inventory versus main
 
