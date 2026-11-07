@@ -4,11 +4,11 @@
 
 ## ONE current task
 
-**C3.1/C3.2 source-test consolidation MERGED** after user approval for independently safe PRs: [Forge #341](https://github.com/bob8675309/DNDNEXT/pull/341) `70b96cfb`, 5 exact-head workflows green; [legacy-sheet research #319](https://github.com/bob8675309/DNDNEXT/pull/319) `537b5700`, 3 CI green and no runtime files; [P1.3 security test #343](https://github.com/bob8675309/DNDNEXT/pull/343) `4adfb89568636afc9b326842a769f220b61707c1`, **all nine** CI green. None applied production SQL, RLS, grants or gameplay. Historical Forge #324→#335 and security #317 drafts **remain open** while their unique old docs/fixtures are reviewed before retirement. The previous 19-PR [source crosswalk](C3_RESEARCH_PR_CONSOLIDATION_CROSSWALK_2026-11-07.md) is a **historical dated inventory**, not current open PR count.
+**C3.3 integrated NPC secure Profile staged on clean main as [draft #345](https://github.com/bob8675309/DNDNEXT/pull/345)**, head `8ddbdbc6e3164be3857b1e738684b336a848a2a2`: revised #322 creator-only GM/backstory SQL research plus #323 centered Profile-first, real local JWT V00–V24 and full existing Forge/Next.js regressions; **all 12/12 exact-head CI SUCCESS**. Critical added consumer patch: `PlayerCharacterProfilePanelUnified` fallback no longer selects the five private narrative columns whose SELECT is revoked stage2. **All privacy SQL is UNAPPLIED**; production safe NPC/GM/creator reader APIs absent. Detailed scope: [C3.3 evidence](C3_3_NPC_PRIVACY_RELEASE_GATES_2026-11-07.md).
 
-**ONE NEXT TASK C3.3:** read #321→**revised #322**→integrated #323 against main. Plan a server-private GM dossier + creator backstory and safe `NpcPanel.js`/Profile-first release, preserving source-authenticated, signed multi-role and browser evidence. Do **not** merge #320's old `NpcPanel.js`, #335's inherited old #321 secrets, or standalone UI RLS/candidate SQL. No world-map behavior changes or paid agent.
+**ONE NEXT TASK:** full original direct character/sheet/definer reader and GM/creator/co-editor/inventory/outsider/anon compatibility review under stage1–3, including original Forge and all map/town/merchant/print consumers. Only after original full Forge and true signed browser/migration/rollback acceptance seek separate approval for joint SQL/UI release. Do not merge UI alone, old #320 NpcPanel, old #321 stage3 or stacked Forge security. Existing research-only #341/#319/#343 are already merged.
 
-## Open research draft PRs — original 20 minus merged #337; re-fetch live
+## Held original research PR stacks and new draft #345 — dated inventory; re-fetch live
 
 | Stack / open draft PRs | Dependency and verified research | Safe disposition; blocker |
 | --- | --- | --- |
@@ -28,4 +28,4 @@
 
 **Live safety note, checked read-only 2026-11-07:** production `inventory_items` has two conflicting CHECKs for `owner_type='character'`; original Forge deferred materializer contains matching insert. This is not yet a complete source-authentic v3 failure replay; prioritize disposable reproducer C2, not a live constraint change.
 
-**ONE next task: C3.3 coordinated NPC private Profile source, role/Auth and browser release gates.** #341/#319/#343 research tests are merged, not released gameplay or SQL; do not bulk merge original stacks.
+**ONE next task:** original character/sheet/definer reader + role-ACL compatibility audit for the 12/12-green but UNMERGED draft #345; no SQL/UI release.

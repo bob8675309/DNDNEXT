@@ -612,10 +612,10 @@
   "snapshot": {
     "observed_on": "2026-11-07",
     "repository": "bob8675309/DNDNEXT",
-    "main_sha": "4adfb89568636afc9b326842a769f220b61707c1",
+    "main_sha": "997902aafe2facd8a492b005f8da4acb8342aeb2",
     "production_deployment_id": "dpl_7CMJFxVDkK1hzuBE7AZKG68BbRsn",
     "production_deployment_status": "READY",
     "database_project": "ucggczovhmauhshvhusx",
-    "limits": "2026-11-07: C3.1 Forge #341 research-only merged 70b96cfb (5 CI green), independent legacy-sheet #319 source/PG17 candidate merged 537b5700 (3 CI green), C3.2 P1.3 security-source tests #343 merged 4adfb895 (9 CI green). Production SQL/RLS/grants, live replay/lock authority and old NPC secrets unchanged. Original historical #317/#324-#335 drafts remain open. One next C3.3 coordinated revised NPC #322 server privacy + #323 secure Profile-first UI, genuine role/Auth/browser/rollback review. Recheck actual deployed Vercel SHA before calling it READY."
+    "limits": "2026-11-07 C3.3: GitHub main 997902aafe2facd8a492b005f8da4acb8342aeb2 before docs receipt, draft #345 exact 8ddbdbc6e3164be3857b1e738684b336a848a2a2 with revised NPC privacy/centered Profile stage1-3 source and 12/12 CI PASS incl real local V00-V24 and Forge regression. New safe NPC/GM/creator RPCs/tables remain absent live, no production SQL or client deployment. Player Profile fallback stage2 revoked-column mismatch fixed in draft. ONE NEXT original direct character/sheet/definer reader + signed role compatibility, then full Forge/browser and separate owner authorized joint migration."
   }
 }
