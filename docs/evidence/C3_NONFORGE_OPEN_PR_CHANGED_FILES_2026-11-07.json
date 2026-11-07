@@ -10,7 +10,7 @@
       "pr": 309,
       "head_sha": "a24006624380570bd693a768e97a0c689f1d42b5",
       "base_ref": "work/consolidated-encounter-research-20261030",
-      "base_sha": null,
+      "base_sha": "c0a498a9121b317440804a40189ee885c830842d",
       "changed_paths": [
         ".github/workflows/validate-eldritch-blast-candidate.yml",
         ".github/workflows/validate-eldritch-blast-local-auth.yml",
