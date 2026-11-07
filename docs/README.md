@@ -6,6 +6,8 @@
 
 - [C3 crosswalk: all 19 PRs, exact source ancestry, overlap, CI and next extraction](C3_RESEARCH_PR_CONSOLIDATION_CROSSWALK_2026-11-07.md) plus [nine-PR Forge file inventory](evidence/C3_FORGE_STACK_CHANGED_FILES_2026-11-07.json) and [ten-other-PR file inventory](evidence/C3_NONFORGE_OPEN_PR_CHANGED_FILES_2026-11-07.json). These are dated source records, not release authorizations. C3.1 Forge isolated test dependency extraction is the one next action.
 
+- [C3.1 clean-main Forge research acceptance and exact-head CI](C3_1_FORGE_EXTRACTION_ACCEPTANCE_2026-11-07.md) — draft #341 owner merge decision next; original source/provenance, no production SQL or gameplay release.
+
 ## Authority and release records
 
 - [AI/repo instructions](../AGENTS.md), [session and P0–P6 checklist](PHASED_DEVELOPMENT_CHECKLIST.md), [system evidence registry](SYSTEM_REGISTRY.json), [observed production/project state](PROJECT_STATE.md), [document lifecycle](DOCUMENT_LIFECYCLE.md), [last handoff receipts](HANDOFF_LOG.md).
