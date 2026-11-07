@@ -56,7 +56,7 @@ try {
       t=>t.replace('"scripts/validate_tactical_equipped_damage_mitigation.mjs"', '"scripts/validate_fake_unused_spare.mjs"')),
     "Original validator removed from tactical suite");
   check("archived positive CI receipt incorrectly flipped",
-    mutate(data,t=>t.replace(/("pr": 294,[\\s\\S]*?"result": )"success"/,'$1"failure"')),
+    mutate(data,t=>t.replace(/("pr": 294,[\s\S]*?"result": )"success"/,'$1"failure"')),
     "Positive #294 result must remain historically accurate");
   console.log("PASS deterministic mutation tests; disposable temp files only");
 } finally { fs.rmSync(dir,{recursive:true,force:true}); }
