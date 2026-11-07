@@ -1,6 +1,22 @@
 # Warlock invocation completed-child rule — original signed-in research
 
-**Date:** 2026-11-06. **Status:** first authentic run failed J164 local source fidelity, original preferred-view/function correction pending fresh exact-head CI. **Branch:** `research/forge-warlock-child-completion-20261106` stacked on held draft PR #331 `7f092ab329653e02dd5436dc7caf4a547d91ce73`. No production release/change.
+**Date:** 2026-11-06. **Status:** **VERIFIED** in disposable original PostgreSQL 17 and genuine local GoTrue/PostgREST at `1f1468df82bbd0edc1270167a1e3b07eff8a4831` via [CI #42315489043](https://github.com/bob8675309/DNDNEXT/actions/runs/42315489043). First two J164 failures are preserved below. No production, live RLS or browser parity claimed. **Branch:** `research/forge-warlock-child-completion-20261106` stacked on held draft PR #331 `7f092ab329653e02dd5436dc7caf4a547d91ce73`. No production release/change.
+
+## Verified exact-head authenticated acceptance, 2026-11-06
+
+The latest code commit `1f1468df82bbd0edc1270167a1e3b07eff8a4831` [Forge run #42315489043](https://github.com/bob8675309/DNDNEXT/actions/runs/42315489043) passed both original source PG17 and true signed local GoTrue/PostgREST. The original full J00–J163 and S001–S003 suites passed unchanged, followed by the **actual explicit J164–J166 PASS logs**:
+
+- **J164 PASS:** original preferred-spell helper MD5 `68993ebe31db168b77329aea0f466c5d` and original preferred-spell view definition MD5 `84e356955cf21dca1df26ee3c1cd227a` were installed in the disposable local fixture. Warlock XPHB level2 3 invocation slots (at levels 1/2/2), 2+3 original eligible starting spells, Agonizing Blast option prerequisites and genuinely preferred Eldritch Blast verified under both original materializer/nested guards.
+- **J165 PASS:** real signed-in XPHB Warlock v3 acquires three canonical source-owned invocation GI records, including Agonizing Blast with valid dependent Eldritch Blast and matching complete historical group. All five canonical starting-spell records and original market equipment/currency/creator/nonce verified. Replaying identical source intent under the same nonce is inert.
+- **J166 PASS:** all source-owned invocation inputs remain eligible, including dependent Agonizing Blast + preferred Eldritch Blast; only the historical `classFeatureChoices` child group is omitted. The **unaltered original deferred nested-choice validator** issues exactly `Class choice Agonizing Blast requires its dependent selection group to be complete.`, with original character/classGI/CP/CS/G/GI/I/C/spell/stock/nonce rollback. It is NOT an early spell-list or materializer error.
+
+The failed [run #42314143444](https://github.com/bob8675309/DNDNEXT/actions/runs/42314143444) stopped at a hash gate because the earlier reduced local `is_preferred_spell_version_v1` was a stub. [Run #42314926804](https://github.com/bob8675309/DNDNEXT/actions/runs/42314926804) failed creating the **unaltered** original preferred view because the disposable spells table lacked `range_distance` at that point. Fixes used the genuine source preferred-view/function and installed required **local** projection fields first; original production SQL logic was never edited. The earlier failures remain as evidence, but are superseded by exact-head green results.
+
+Additional [trigger inventory #42315489034](https://github.com/bob8675309/DNDNEXT/actions/runs/42315489034), [Class #42315489032](https://github.com/bob8675309/DNDNEXT/actions/runs/42315489032), [handoff #42315489030](https://github.com/bob8675309/DNDNEXT/actions/runs/42315489030), and [free docs #42315481869](https://github.com/bob8675309/DNDNEXT/actions/runs/42315481869) passed. The result report is limited to sanitized scenario IDs/seeds, canonical counts and booleans, not actual tokens or character UUIDs.
+
+**Coverage unchanged:** 17/31 original creation-adjacent triggers installed in the reduced test fixture, 14 uninstalled, five separately documented source-original real-JWT handler suites; *one new branch* of the same nested-choice handler now tested. Hybrid `sourceChoices` + `classFeatureChoices` is a backend compatibility specimen, **not proof the current Forge browser emits both fields**, and production RLS/full source catalog/concurrency are still not tested.
+
+**Next bounded task:** trace actual frontend Warlock source-choice and class-feature summary payload assembly to establish whether the real browser path satisfies original nested required-child semantics. Record source evidence and propose (not deploy) a narrow remedy if incompatible.
 
 ## Why this is the next slice
 
