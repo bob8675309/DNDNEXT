@@ -61,6 +61,7 @@ for(const role of names){
 }
 sql("INSERT INTO private.test_admins(id) VALUES ('"+people.ADMIN.id+"')");
 sqlFile("scripts/fixtures/c33_forge_original_sprite_guard_local_pg17.sql");
+sqlFile("scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql");
 const gmPayload={
  name:"C33 preexisting legacy GM NPC",kind:"npc",creation_request_id:id(7401),
  creator_user_id:people.CREATOR.id,secret:"C33_GM_SECRET_NEVER_PUBLIC",
@@ -165,6 +166,31 @@ for(const [char,marker] of [[created2,"C33_V2_SHEET"],[created3,"C33_V3_SHEET"]]
 assert.equal(sql("SELECT count(*) FROM public.character_spells WHERE character_id='"+created3+"'"),"1");
 assert.equal(sql("SELECT count(*) FROM private.character_creator_attribution WHERE character_id IN ('"+created2+"','"+created3+"')"),"2");
 console.log("PASS C3J03: original v2/v3 SQL, signed GoTrue origin, canonical sheets/permissions/progression/events/spell and immutable creator captured inside creation");
+
+// Source-original level-up session cancellation trigger (historical missing
+// trigger #2 now staged in the C3.3 scratch suite). These privileged state
+// transitions isolate the trigger branch, NOT a user-facing progression API.
+sql("INSERT INTO public.character_level_up_sessions(id,character_id,status) VALUES('"+
+ id(7440)+"','"+created3+"','open')");
+sql("UPDATE public.character_progression SET pending_level_up=true "+
+ "WHERE character_id='"+created3+"'");
+assert.equal(sql("SELECT status FROM public.character_level_up_sessions WHERE id='"+id(7440)+"'"),
+ "open","Pending session should not be cancelled by the same-level true state");
+sql("UPDATE public.character_progression SET pending_level_up=false "+
+ "WHERE character_id='"+created3+"'");
+assert.equal(sql("SELECT status FROM public.character_level_up_sessions WHERE id='"+id(7440)+"'"),
+ "cancelled");
+console.log("PASS C3L01: source-original level-up cancel trigger preserves true pending, then cancels open session when pending is cleared");
+
+sql("INSERT INTO public.character_level_up_sessions(id,character_id,status) VALUES('"+
+ id(7441)+"','"+created3+"','open')");
+sql("UPDATE public.character_progression SET pending_level_up=true,class_level=2 "+
+ "WHERE character_id='"+created3+"'");
+assert.equal(sql("SELECT status FROM public.character_level_up_sessions WHERE id='"+id(7441)+"'"),
+ "cancelled","Changed class level must cancel an open session even when pending stays true");
+sql("UPDATE public.character_progression SET class_level=1,pending_level_up=false "+
+ "WHERE character_id='"+created3+"'");
+console.log("PASS C3L02: class-level change also cancels open session; disposable progression state restored");
 
 const v2Repeat=ok(await call2(v2Payload),"v2 same nonce");
 assert.equal(v2Repeat,created2);
@@ -419,5 +445,5 @@ const stillCreator=sql("SELECT creator_user_id FROM private.character_creator_at
 assert.equal(stillCreator,people.CREATOR.id);
 console.log("PASS C3I08: revoked character access hides source-owned gear; Admin retains read, immutable creator receipt unchanged");
 
-console.log("C3.3 ORIGINAL FORGE + PRIVACY + COMBINED INVENTORY CHECK/RLS JOINT TEST PASS (C3J00–C3J11, C3I00–C3I08, C3V00–C3V03). Source-original materializer/handlers and additional 8dir sprite guard; reduced helper/catalogues, NOT full 31-trigger/browser parity.");
+console.log("C3.3 ORIGINAL FORGE + PRIVACY + COMBINED INVENTORY CHECK/RLS JOINT TEST PASS (C3J00–C3J11, C3I00–C3I08, C3V00–C3V03, C3L00–C3L02). Source-original materializer/handlers, additional 8dir sprite guard and level-up cancel trigger; reduced helper/catalogues, NOT full 31-trigger/browser parity.");
 

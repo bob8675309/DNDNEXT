@@ -7,6 +7,7 @@ on:
       - 'scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql'
       - 'scripts/fixtures/c33_forge_privacy_inventory_join_setup_pg17.sql'
       - 'scripts/fixtures/c33_forge_original_sprite_guard_local_pg17.sql'
+      - 'scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql'
       - 'scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql'
       - 'scripts/fixtures/forge_materializer_original_functions_pg17.sql'
       - 'scripts/fixtures/forge_owner_constraint_deferred_creation_local_auth_pg17.sql'
