@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/legacy-spell-pr-merge-triage-20261107` |
-| Exact source commit represented by this archive snapshot | `79a6340c08e743e71e1072e40e6ba7204f735a29` |
+| Exact source commit represented by this archive snapshot | `e8b4b48685d6b5b0811c3bc9ab22b049a692f2c9` |
 | Compared with | `79a6340c08e743e71e1072e40e6ba7204f735a29` (main comparison base) |
-| Last source commit title | chore(docs): add free research project-health publisher (#327) |
-| Files changed relative to main | 0 (0 non-docs; 0 docs) |
-| Last source commit | 9 files (6 non-docs; 3 authored docs) |
+| Last source commit title | docs(release): audit legacy spell engine PRs and exact merge gates |
+| Files changed relative to main | 6 (0 non-docs; 6 docs) |
+| Last source commit | 6 files (0 non-docs; 6 authored docs) |
 
 ## Documentation freshness warning
 
@@ -17,18 +17,21 @@ The latest source commit includes authored documentation. Verify correctness and
 
 ## Latest source commit paths
 
-- `.github/workflows/research-docs-maintenance.yml`
-- `.github/workflows/validate-free-research-docs.yml`
 - `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
-- `docs/Research_Docs_Maintenance_2026-11-06.md`
-- `scripts/agents/project_health.mjs`
-- `scripts/agents/research_docs_maintainer.mjs`
-- `scripts/agents/validate_project_health.mjs`
-- `scripts/agents/validate_research_docs_maintainer.mjs`
+- `docs/Legacy_PR_Spell_Engine_Merge_Readiness_2026-11-07.md`
+- `docs/PROJECT_STATE.md`
+- `docs/README.md`
+- `docs/SYSTEM_REGISTRY.json`
 
 ## Research-branch change inventory versus main
 
+- `docs/ACTIVE_WORK.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/Legacy_PR_Spell_Engine_Merge_Readiness_2026-11-07.md`
+- `docs/PROJECT_STATE.md`
+- `docs/README.md`
+- `docs/SYSTEM_REGISTRY.json`
 
 ## Trust and update procedure
 
