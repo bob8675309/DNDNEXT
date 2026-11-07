@@ -5,11 +5,11 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `research/forge-warlock-browser-source-only-20261106` |
-| Exact source commit represented by this archive snapshot | `8f7647535b8e7b900d5884b9256f3465d0933a5e` |
+| Exact source commit represented by this archive snapshot | `d8363b5d5a78fd01518b2d49d88b2391cf2e9a16` |
 | Compared with | `51c351a142d03378dff8e47e05182afe21a15622` (main comparison base) |
-| Last source commit title | docs(forge): receipt Warlock child completion original JWT acceptance and prior fixture failures |
+| Last source commit title | test(forge): signed J167 source-only Warlock browser-shaped replay |
 | Files changed relative to main | 110 (81 non-docs; 29 docs) |
-| Last source commit | 4 files (0 non-docs; 4 authored docs) |
+| Last source commit | 6 files (3 non-docs; 3 authored docs) |
 
 ## Documentation freshness warning
 
@@ -18,9 +18,11 @@ The latest source commit includes authored documentation. Verify correctness and
 ## Latest source commit paths
 
 - `docs/ACTIVE_WORK.md`
-- `docs/Forge_Original_Creation_Trigger_Coverage_2026-11-05.md`
 - `docs/Forge_Warlock_Child_Completion_2026-11-06.md`
 - `docs/HANDOFF_LOG.md`
+- `scripts/fixtures/forge_seeded_warlock_child_completion_v1.json`
+- `scripts/test_forge_immutable_creation_replay_local_auth.mjs`
+- `scripts/validate_forge_seeded_warlock_child_completion.mjs`
 
 ## Research-branch change inventory versus main
 
