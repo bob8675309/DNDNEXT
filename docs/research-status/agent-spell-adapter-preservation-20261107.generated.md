@@ -5,26 +5,26 @@
 | Field | Observed repository evidence |
 |---|---|
 | Source branch | `agent/spell-adapter-preservation-20261107` |
-| Exact source commit represented by this archive snapshot | `088b0fafb619726c400d23db837f81aee492259a` |
-| Compared with | `2d2135ced24bcb4fbb4d8ccefc27bda70e91eb05` (main comparison base) |
-| Last source commit title | fix(preservation): make positive historical receipt mutation match across JSON lines |
+| Exact source commit represented by this archive snapshot | `b32de46e06790ec3847d9d3af4fcc6e733d56e72` |
+| Compared with | `52c5ef1ce2830869545963ba47378fd5249b9f21` (main comparison base) |
+| Last source commit title | research(preservation): reconcile #337 with canonical main handoff and pin 19 keys / 48 validators |
 | Files changed relative to main | 7 (4 non-docs; 3 docs) |
-| Last source commit | 1 files (1 non-docs; 0 authored docs) |
+| Last source commit | 0 files (0 non-docs; 0 authored docs) |
 
 ## Documentation freshness warning
 
-**Manual living-doc reconciliation may be needed:** the latest source commit changed implementation/tests but did not update another authored `docs/` file. This generated status alone does not replace `ACTIVE_WORK.md`, `PROJECT_STATE.md`, `SYSTEM_REGISTRY.json` or a factual `HANDOFF_LOG.md` receipt.
+The latest commit did not change non-docs source files. Do not infer a technical behavior change.
 
 ## Latest source commit paths
 
-- `scripts/test_tactical_spell_preservation.mjs`
+- No changed paths found
 
 ## Research-branch change inventory versus main
 
 - `.github/workflows/validate-tactical-spell-preservation.yml`
-- `docs/ACTIVE_WORK.md`
 - `docs/HANDOFF_LOG.md`
 - `docs/Tactical_Spell_Adapter_Preservation_Gate_2026-11-07.md`
+- `docs/archive/historical_handoffs/2026-11-07__PR337_BRANCH_ONLY_HANDOFF_RECEIPTS.md`
 - `scripts/data/tactical_spell_preservation_20261107.json`
 - `scripts/test_tactical_spell_preservation.mjs`
 - `scripts/validate_tactical_spell_preservation.mjs`
