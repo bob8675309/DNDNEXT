@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "suite": "forge-original-nested-choice-dependency-v1",
+  "originalHandlerMd5": "df2861cc76b0b74bb7cd57fbe61c9a05",
+  "originalNormalizationMd5": "dd8cdd5b47efe99b1cfff9c2bf7635dd",
+  "source": {
+    "classKey": "fighter",
+    "classSource": "XPHB",
+    "level": 1,
+    "groupId": "fightingStyle",
+    "groupKind": "fighting-style",
+    "selectionName": "Defense",
+    "selectionKey": "defense",
+    "selectionSource": "XPHB",
+    "liveDefenseOptionId": "91495e0f-0dcc-49ea-89ee-075cb182c64e",
+    "missingParentOptionName": "Agonizing Blast",
+    "missingParentOptionClass": "warlock",
+    "missingParentOptionSource": "XPHB"
+  },
+  "cases": [
+    {
+      "scenarioId": "fighter-defense-nested-positive",
+      "seed": 65161,
+      "mode": "valid-base-fighting-style"
+    },
+    {
+      "scenarioId": "fighter-defense-bad-active-when",
+      "seed": 65162,
+      "mode": "missing-parent-active-when"
+    }
+  ]
+}

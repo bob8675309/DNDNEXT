@@ -1,0 +1,171 @@
+{
+  "schemaVersion": 1,
+  "suite": "forge-warlock-dependent-invocation-v1",
+  "live": {
+    "classId": "6792abd0-1fd9-44fb-ae4c-56c307ab791a",
+    "classKey": "warlock",
+    "classSource": "XPHB",
+    "level": 2,
+    "slots": 3,
+    "cantrips": 2,
+    "spellsKnown": 3,
+    "spellSlots": [
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "feature": {
+      "key": "class:warlock:xphb::eldritch-invocation-options:xphb:1",
+      "name": "Eldritch Invocation Options"
+    },
+    "invocations": [
+      {
+        "name": "Armor of Shadows",
+        "key": "optional-feature:armor-of-shadows|XPHB",
+        "slot": 1,
+        "acquisitionLevel": 1,
+        "id": "3abe1beb-5669-46a8-9743-49a47b8de126"
+      },
+      {
+        "name": "Agonizing Blast",
+        "key": "optional-feature:agonizing-blast|XPHB",
+        "slot": 2,
+        "acquisitionLevel": 2,
+        "id": "a0968ca9-deab-4bef-a8b0-05e11d4b3e0a",
+        "choiceSchema": {
+          "kind": "warlock-damage-cantrip",
+          "distinctPerRepeat": true
+        },
+        "prerequisites": {
+          "minClassLevel": 2
+        }
+      },
+      {
+        "name": "Eldritch Mind",
+        "key": "optional-feature:eldritch-mind|XPHB",
+        "slot": 3,
+        "acquisitionLevel": 2,
+        "id": "c6f61c62-d36c-4a9b-b44a-cbafd4ff47d0"
+      }
+    ],
+    "spells": [
+      {
+        "id": "4dc8d2b8-40ad-4d7c-8a39-ec42f6eb513c",
+        "name": "Chill Touch",
+        "level": 0,
+        "source": "XPHB",
+        "classes": [
+          "Sorcerer",
+          "Warlock",
+          "Wizard"
+        ],
+        "damage_types": [
+          "necrotic"
+        ],
+        "damage_dice": "1d10",
+        "ritual": false,
+        "range_unit": "touch",
+        "range_distance": null,
+        "attack_type": "Melee Spell Attack"
+      },
+      {
+        "id": "47d3fd14-695b-4d54-a3fb-9c210ed59952",
+        "name": "Eldritch Blast",
+        "level": 0,
+        "source": "XPHB",
+        "classes": [
+          "Warlock"
+        ],
+        "damage_types": [
+          "force"
+        ],
+        "damage_dice": "1d10",
+        "ritual": false,
+        "range_unit": "feet",
+        "range_distance": "120",
+        "attack_type": "Ranged Spell Attack"
+      },
+      {
+        "id": "afa6d1fa-c238-4519-bc8e-3b80a5d55f75",
+        "name": "Armor of Agathys",
+        "level": 1,
+        "source": "XPHB",
+        "classes": [
+          "Warlock"
+        ],
+        "damage_types": [
+          "cold"
+        ],
+        "damage_dice": null,
+        "ritual": false,
+        "range_unit": "self",
+        "range_distance": null,
+        "attack_type": null
+      },
+      {
+        "id": "1e4007d8-c780-4e97-af58-f273ee1c73b4",
+        "name": "Hex",
+        "level": 1,
+        "source": "XPHB",
+        "classes": [
+          "Warlock"
+        ],
+        "damage_types": [
+          "necrotic"
+        ],
+        "damage_dice": "1d6",
+        "ritual": false,
+        "range_unit": "feet",
+        "range_distance": "90",
+        "attack_type": null
+      },
+      {
+        "id": "fabffecc-cacd-4595-85ec-dfa8b27ec9a4",
+        "name": "Witch Bolt",
+        "level": 1,
+        "source": "XPHB",
+        "classes": [
+          "Sorcerer",
+          "Warlock",
+          "Wizard"
+        ],
+        "damage_types": [
+          "lightning"
+        ],
+        "damage_dice": "2d12",
+        "ritual": false,
+        "range_unit": "feet",
+        "range_distance": "60",
+        "attack_type": "Ranged Spell Attack"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "scenarioId": "warlock-agblast-child-complete",
+      "seed": 66164,
+      "mode": "complete-both-representations"
+    },
+    {
+      "scenarioId": "warlock-agblast-child-missing",
+      "seed": 66165,
+      "mode": "missing-legacy-child-group"
+    },
+    {
+      "scenarioId": "warlock-agblast-source-only-v3",
+      "seed": 66166,
+      "mode": "source-owned-browser-shape"
+    },
+    {
+      "scenarioId": "warlock-agblast-production-serializer-v3",
+      "seed": 66167,
+      "mode": "production-source-choice-serializer"
+    }
+  ]
+}

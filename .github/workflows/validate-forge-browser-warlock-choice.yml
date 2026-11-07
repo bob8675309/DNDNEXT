@@ -1,0 +1,48 @@
+name: Validate Forge Warlock rendered choice UI (isolated browser)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/validate-forge-browser-warlock-choice.yml'
+      - 'scripts/browser/forge_warlock_choice_dom.jsx'
+      - 'scripts/browser/verify_forge_warlock_choice_dom.mjs'
+      - 'scripts/fixtures/forge_seeded_warlock_child_completion_v1.json'
+      - 'scripts/agents/forge_warlock_client_wire.mjs'
+      - 'utils/warlockInvocationChoices.js'
+      - 'utils/playerForgeSourceChoices.js'
+      - 'components/SourceChoiceFields.js'
+      - 'components/SpellCard.js'
+      - 'docs/Forge_Warlock_Child_Completion_2026-11-06.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  rendered-warlock-source-choice-ui:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CI: 'true'
+      DNDNEXT_FORGE_BROWSER_FIXTURE_ONLY: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install locked application packages for the real React choice UI
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install pinned disposable browser tooling outside repo
+        run: |
+          mkdir -p "$RUNNER_TEMP/forge-browser-tools"
+          npm install --prefix "$RUNNER_TEMP/forge-browser-tools" \
+            --no-save --package-lock=false --no-audit --no-fund \
+            --no-progress esbuild@0.25.12 playwright-core@1.56.1
+      - name: Real Chromium user clicks on original Warlock choice UI
+        run: |
+          node --check scripts/browser/verify_forge_warlock_choice_dom.mjs
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$CHROME" || { echo "No local Chromium available; do not use remote browser"; exit 1; }
+          FORGE_BROWSER_TOOL_ROOT="$RUNNER_TEMP/forge-browser-tools" \
+          FORGE_BROWSER_CHROME="$CHROME" \
+            node scripts/browser/verify_forge_warlock_choice_dom.mjs
