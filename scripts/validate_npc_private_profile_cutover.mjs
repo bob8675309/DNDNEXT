@@ -30,7 +30,12 @@ assert.ok(!profileLoad.includes('from("character_sheets")'),"Initial Profile loa
 expect(admin,"GM NPC manager",[
  'get_npc_dossier_admin_v1',
  'setSelectedGmDossier',
- 'selectedGmDossier?.id === sel.id',
+ 'const candidateNarrative = isAdmin ? selectedGmDossier : selectedEditorNarrative;',
+ 'const authorizedNarrative = String(candidateNarrative?.id || "") === String(sel.id)',
+ 'get_character_editor_narrative_v1',
+ 'const selectedCharPerm = charPerm?.character_id',
+ 'canEditCharacter && hasNarrative && detailsDraft',
+ 'isAdmin={isAdmin}',
  'if (isAdmin) {',
  'saveCharacterSecret(supabase, selected.id, detailsDraft.secret)',
  'GM Secret (private to GM)',
@@ -39,6 +44,7 @@ expect(admin,"GM NPC manager",[
  'setShowNewNpcModal(true)',
 ]);
 assert.ok(!admin.includes("loadCharacterSecrets"),"Admin roster must not bulk-read GM secrets");
+assert.ok(!admin.includes("isAdmin={isAdmin || canEditCharacter}"),"Editor rights cannot imply GM dossier authority");
 const npcRoster=admin.split("const loadNpcs = useCallback(async () => {")[1]?.split("const loadMerchants = useCallback")[0]||"";
 const merchantRoster=admin.split("const loadMerchantProfiles = useCallback(async () => {")[1]?.split("/* ------------------- roster merge")[0]||"";
 assert.ok(npcRoster && merchantRoster,"Admin roster query anchors missing");
