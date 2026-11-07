@@ -77,18 +77,21 @@
         "docs/Spell_Recipe_P1_Schema_2026-10-31.md"
       ],
       "tests": [],
-      "last_checked": "2026-11-01",
+      "last_checked": "2026-11-07",
       "open_gaps": [
-        "No recipe interpreter or candidate private executor installed in production."
+        "No executable recipe interpreter, registry or tested research candidate functions installed in production; 1037 spell_effects rows are descriptive, not sequenced.",
+        "Held #309/#312 have archive-diverged ancestry, mixed non-executing P1, P2 and ungranted Eldritch Blast / NPC delegation / private core-action changes; isolate pure source utilities instead of bulk merging.",
+        "Live command ledger has no request_intent column, character_permissions has no can_control, original known-unsafe replay baseline fingerprint unchanged; cross-command #317 lock, NPC v1/v2 visibility and owner policy remain release gates.",
+        "Exact-head green isolated research CI and J169 Forge choice-component browser acceptance are NOT Spell Engine full production auth/browser acceptance; explicit approval still required."
       ],
       "label": "Composable tactical spell recipe research",
-      "scope_note": "P1 research on #309 and P2 private shadow/core-action work on stacked #312.",
+      "scope_note": "2026-11-07 live-read audit: P1 pure schema/preflight and ungranted Eldritch Blast on held #309; P2 shadow parity plus delegated NPC/private encounter candidate on stacked held #312. Both are diverged from main, exact-head research CI green, and are NOT bulk-merge/production ready. See docs/Legacy_PR_Spell_Engine_Merge_Readiness_2026-11-07.md.",
       "verification": {
         "source": "inspected-relevant-entry-points-on-main",
-        "live_database": "not-specific-to-surface",
+        "live_database": "read-only-2026-11-07-pg17.4-1037-descriptive-effects-no-recipe-or-delegation-schema",
         "deployed_sha": "not-deployed-research-or-future",
-        "test_status": "no-current-test-run-claimed",
-        "browser_acceptance": "unverified-this-audit",
+        "test_status": "held-309-6-of-6-and-held-312-5-of-5-exact-head-research-CI-success-only",
+        "browser_acceptance": "full-spell-engine-browser-acceptance-not-verified",
         "owner_approval": "not-claimed-from-source-or-ci"
       },
       "protected_boundaries": [
