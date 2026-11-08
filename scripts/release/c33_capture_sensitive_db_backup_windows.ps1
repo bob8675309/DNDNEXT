@@ -31,7 +31,8 @@ foreach($name in @("PGHOST","PGPORT","PGUSER","PGDATABASE","PGSSLMODE","PGPASSWO
 }
 $now=(Get-Date).ToUniversalTime().ToString("yyyyMMddTHHmmssZ")
 $out=Join-Path $dest ("dndnext-sensitive-"+$now)
-New-Item -ItemType Directory -Path $out -Force | Out-Null
+if (Test-Path -LiteralPath $out) { throw "Existing backup directory must never be overwritten" }
+New-Item -ItemType Directory -Path $out | Out-Null
 $archive=Join-Path $out "postgres-full-custom.dump"
 $manifest=Join-Path $out "backup-structure.json"
 try {
