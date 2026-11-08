@@ -43,6 +43,13 @@ async function rpc(who,name,args) {
 function ok(v,label){assert.ifError(v.error);assert.ok(v.data,label+" missing data");return v.data}
 function reject(v,label){assert.ok(v.error,label+" unexpectedly succeeded");return v.error}
 const id=(n)=>"00000000-0000-0000-0000-"+String(n).padStart(12,"0");
+// Synthetic source-fixture integrity: report digests only, never extract data.
+// Dynamic identifier is constrained to the two hard-coded fixture catalog names.
+const catalogDigest=(catalog)=>{
+ assert.ok(["spells_catalog","items_catalog"].includes(catalog),"Invalid C3PRES catalog");
+ return sql("SELECT md5(coalesce(string_agg(md5(to_jsonb(t)::text),'' "+
+  "ORDER BY md5(to_jsonb(t)::text)),'')) FROM public."+catalog+" t");
+};
 const password="C33-Original-"+randomUUID()+"!";
 const names=["ADMIN","CREATOR","COEDITOR","INV_ONLY","CONV_ONLY","OUTSIDER"];
 const people={};
@@ -64,6 +71,7 @@ sql("INSERT INTO private.test_admins(id) VALUES ('"+people.ADMIN.id+"')");
 sqlFile("scripts/fixtures/c33_forge_original_sprite_guard_local_pg17.sql");
 sqlFile("scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql");
 sqlFile("scripts/fixtures/c33_forge_original_mog_guard_local_pg17.sql");
+const preservedSpellCatalogDigest=catalogDigest("spells_catalog");
 const gmPayload={
  name:"C33 preexisting legacy GM NPC",kind:"npc",creation_request_id:id(7401),
  creator_user_id:people.CREATOR.id,secret:"C33_GM_SECRET_NEVER_PUBLIC",
@@ -404,6 +412,12 @@ assert.equal(sql("SELECT count(*) FROM public.character_currency WHERE character
 assert.equal(sql("SELECT creator_user_id FROM private.character_creator_attribution WHERE character_id='"+
  firstEquipment+"'"),people.CREATOR.id);
 console.log("PASS C3I01: original deferred equipment commits with staged NPC privacy before obsolete owner CHECK is recreated");
+const preservedItemCatalogDigest=catalogDigest("items_catalog");
+const preservedPreexistingItemId=sql("SELECT id FROM public.inventory_items "+
+ "WHERE owner_type='character' AND owner_id='"+firstEquipment+"' ORDER BY id LIMIT 1");
+assert.ok(preservedPreexistingItemId,"C3PRES original baseline item missing");
+const preexistingItemDigest=sql("SELECT md5(to_jsonb(i)::text) FROM public.inventory_items i "+
+ "WHERE id='"+preservedPreexistingItemId+"'");
 
 sqlFile("scripts/fixtures/forge_owner_constraint_deferred_creation_local_auth_pg17.sql");
 sqlFile("scripts/fixtures/forge_inventory_policy_source_local_auth_pg17.sql");
@@ -473,6 +487,11 @@ assert.equal(sql("SELECT count(*) FROM pg_constraint WHERE conrelid='public.inve
 assert.equal(sql("SELECT convalidated FROM pg_constraint WHERE conrelid='public.inventory_items'::regclass "+
  "AND conname='inventory_items_owner_type_check'"),"t");
 console.log("PASS C3I04: exact guarded combined inventory policy + CHECK candidate applied only to disposable NPC privacy database");
+assert.equal(catalogDigest("items_catalog"),preservedItemCatalogDigest,
+ "C3PRES inventory schema change mutated catalog item records");
+assert.equal(sql("SELECT md5(to_jsonb(i)::text) FROM public.inventory_items i "+
+ "WHERE id='"+preservedPreexistingItemId+"'"),preexistingItemDigest,
+ "C3PRES inventory schema change modified/deleted existing equipment row");
 
 const afterHardening=ok(await call2(oldChecksPayload),"original v2 after combined fix");
 assert.equal(sql("SELECT count(*) FROM public.inventory_items WHERE owner_type='character' "+
@@ -560,5 +579,13 @@ sql("DELETE FROM public.characters WHERE id='"+regular+"'");
 assert.equal(sql("SELECT count(*) FROM public.characters WHERE id='"+regular+"'"),"0");
 console.log("PASS C3M01: original source prevents Mog name or immutable-id deletion and preserves normal delete");
 
+assert.equal(catalogDigest("spells_catalog"),preservedSpellCatalogDigest,
+ "C3PRES original Forge/NPC privacy stages changed spell catalog records");
+assert.equal(catalogDigest("items_catalog"),preservedItemCatalogDigest,
+ "C3PRES original Forge/inventory policy stages changed item catalog records");
+assert.equal(sql("SELECT md5(to_jsonb(i)::text) FROM public.inventory_items i "+
+ "WHERE id='"+preservedPreexistingItemId+"'"),preexistingItemDigest,
+ "C3PRES existing inventory item changed/deleted by staged policy and Forge tests");
+console.log("PASS C3PRES01: original source spell/item catalog and pre-existing inventory record byte-equivalent across staged privacy and inventory CHECK/RLS");
 console.log("C3.3 ORIGINAL FORGE + PRIVACY + COMBINED INVENTORY CHECK/RLS JOINT TEST PASS (C3J00–C3J11, C3I00–C3I08, C3V00–C3V03, C3L00–C3L02). Source-original materializer/handlers, additional 8dir sprite guard and level-up cancel trigger; reduced helper/catalogues, NOT full 31-trigger/browser parity.");
 
