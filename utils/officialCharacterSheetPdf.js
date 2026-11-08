@@ -246,22 +246,29 @@ function drawFeatureBlocks(page, features, box, {
   boldFont,
   size = 6.4,
   lineHeight = 7.25,
+  overflowSummary = false,
 } = {}) {
   let top = box.top;
   const remaining = [];
+  // Reserve one clearly labelled final line in the page-two continuation box.
+  // Without this, features beyond the official three pages silently disappear.
+  const endTop = box.top + box.height - (overflowSummary ? 13 : 0);
 
   for (let index = 0; index < features.length; index += 1) {
     const feature = features[index];
     const text = buildFeatureText(feature);
     if (!text) continue;
     const lines = wrapText(font, text, size, box.width);
-    const required = Math.max(lineHeight, lines.length * lineHeight + 3);
-    if (top + required > box.top + box.height) {
+    const heading = safeText(feature?.name);
+    const description = safeText(feature?.description);
+    const descriptionLines = description ? wrapText(font, description, size, box.width) : [];
+    const required = Math.max(lineHeight,
+      (heading ? lineHeight : 0) + (description ? descriptionLines.length * lineHeight : (!heading ? lines.length * lineHeight : 0)) + 3);
+    if (top + required > endTop) {
       remaining.push(...features.slice(index));
       break;
     }
 
-    const heading = safeText(feature?.name);
     if (heading) {
       drawTextTop(page, heading, box.x, top, {
         font: boldFont,
@@ -271,11 +278,9 @@ function drawFeatureBlocks(page, features, box, {
       top += lineHeight;
     }
 
-    const description = safeText(feature?.description);
     if (description) {
-      const descLines = wrapText(font, description, size, box.width);
-      for (const line of descLines) {
-        if (top + lineHeight > box.top + box.height) break;
+      for (const line of descriptionLines) {
+        if (top + lineHeight > endTop) break;
         drawTextTop(page, line, box.x, top, { font, size, width: box.width });
         top += lineHeight;
       }
@@ -288,6 +293,12 @@ function drawFeatureBlocks(page, features, box, {
     top += 3;
   }
 
+  if (overflowSummary && remaining.length) {
+    drawTextTop(page, `+${remaining.length} more features - see digital sheet`,
+      box.x, box.top + box.height - 11, {
+        font: bold, size: 6.8, width: box.width,
+      });
+  }
   return remaining;
 }
 
@@ -568,6 +579,7 @@ async function pageTwo(pdfDoc, page, model, fonts, fields, overflowFeatures, fet
     boldFont: bold,
     size: 7.15,
     lineHeight: 8.1,
+    overflowSummary: true,
   });
 
   const backstory = [
@@ -683,7 +695,10 @@ function pageThree(page, model, fonts, fields) {
     const layout = spellLayout(level);
     if (!layout) continue;
     const spells = byLevel.get(level) || [];
-    const visible = spells.slice(0, layout.max);
+    // A dedicated final row prevents the overflow counter from painting
+    // on top of a spell name in the last printed spell slot.
+    const hasOverflow = spells.length > layout.max;
+    const visible = spells.slice(0, hasOverflow ? layout.max - 1 : layout.max);
     visible.forEach((spell, index) => {
       const top = layout.top + index * layout.pitch;
       drawTextTop(page, spell.name, layout.x, top, {
@@ -703,13 +718,12 @@ function pageThree(page, model, fonts, fields) {
         });
       }
     });
-    if (spells.length > layout.max) {
+    if (hasOverflow) {
       const top = layout.top + (layout.max - 1) * layout.pitch;
-      drawTextTop(page, `+${spells.length - layout.max} more`, layout.x + 82, top, {
+      drawTextTop(page, `+${spells.length - visible.length} more spells (digital sheet)`, layout.x, top, {
         font: bold,
         size: 6.3,
-        width: layout.width - 82,
-        align: "right",
+        width: layout.width,
       });
     }
   }
