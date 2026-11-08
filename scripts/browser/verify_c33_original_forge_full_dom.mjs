@@ -138,9 +138,29 @@ try{
  console.log("PASS C3F01: actual original NewNpcModalV3 renders ten player steps, real signed session, draft hydration");
  const getCurrent=async()=>modal.locator(".npc-forge-steps button.is-current").innerText();
  const alert=async()=>modal.locator(".npc-forge-error").allTextContents();
+ const validation=async()=>modal.locator("[data-forge-validation-message]")
+   .evaluateAll(nodes=>nodes.map(node=>({message:node.dataset.forgeValidationMessage,
+     className:node.className})));
  for(let n=0;n<9;n++){
   const current=(await getCurrent()).trim();
   assert.ok(current.includes(expected[n]),"Wrong original current step "+n+": "+current);
+  if(n===0){
+   // Exercise the actual required source-owned origin language fields, rather
+   // than forging a pre-completed selection in the hydrated browser draft.
+   const languages=modal.locator('.npc-forge-species-fact-choice[data-icon-kind="languages"]');
+   await languages.waitFor({state:"visible",timeout:15000});
+   if(!(await languages.evaluate(el=>el.open)))await languages.locator("summary").click();
+   const slots=languages.locator(".npc-forge-embedded-choice__slots select");
+   await slots.first().waitFor({state:"visible",timeout:12000});
+   assert.equal(await slots.count(),2,"Original Species step must ask for two Standard languages");
+   await slots.nth(0).selectOption({label:"Dwarvish"});
+   await slots.nth(1).selectOption({label:"Elvish"});
+   await page.waitForFunction(()=>{
+     const node=document.querySelector('.npc-forge-species-fact-choice[data-icon-kind="languages"]');
+     return node?.classList.contains("is-complete")===true;
+   },null,{timeout:12000});
+   console.log("PASS C3F_ORIGIN_LANGUAGES: real Dwarf Species source-choice dropdowns accepted two distinct languages");
+  }
   if(n===8){
    const generate=modal.getByRole("button",{name:/Generate character story & world fit/i});
    await generate.click();
@@ -163,6 +183,8 @@ try{
   }catch(cause){
    throw new Error("Original Forge failed to advance "+expected[n]+"→"+expected[n+1]+
      " (current="+(await getCurrent())+", errors="+JSON.stringify(await alert())+
+     ", guidance="+JSON.stringify(await validation())+
+     ", incomplete="+JSON.stringify(await modal.locator(".npc-forge-source-choice-group.is-required, .npc-forge-species-fact-choice.is-required").allTextContents())+
      ", pageerrors="+JSON.stringify(pageErrors)+"): "+cause.message);
   }
   console.log("PASS C3F_STEP_"+String(n+1).padStart(2,"0")+": original "+expected[n]+" → "+expected[n+1]+" via Continue");
