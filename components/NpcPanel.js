@@ -507,6 +507,25 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
         .map((entry) => [entry.key, safeStr(publicLore[entry.key])]))
     };
   }, [view, sheet, isAdmin]);
+  // Only use the server-authorized public/revealed Profile for non-GMs.
+  // An editor's permission to print a sheet must never promote them to GM
+  // dossier/secret access. The NPC page passes this print metadata explicitly.
+  const printableProfile = {
+    name: safeStr(view.name) || "Character",
+    kind: ownerType,
+    race: safeStr(view.race),
+    role,
+    affiliation,
+    status,
+    description: blurb,
+    background: isAdmin ? safeStr(view.background) : safeStr(loreFields.background),
+    motivation: isAdmin ? safeStr(view.motivation) : safeStr(loreFields.motivation),
+    quirk: isAdmin ? safeStr(view.quirk) : safeStr(loreFields.quirk),
+    mannerism: isAdmin ? safeStr(view.mannerism) : safeStr(loreFields.mannerism),
+    voice: isAdmin ? safeStr(view.voice) : "",
+    secret: isAdmin ? safeStr(view.secret) : "",
+    portraitUrl: portrait.url || "",
+  };
   const visibleLoreFields = useMemo(() => {
     return PROFILE_REVEAL_KEYS.filter((entry) => {
       const value = loreFields[entry.key];
@@ -835,6 +854,7 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
                   sheet={sheet || {}}
                   characterName={view.name || "Character"}
                   metaLine={sheetMetaLine}
+                  printProfile={printableProfile}
                   inventoryHref=""
                   inventoryText="Inventory"
                   storeText="Shop"
