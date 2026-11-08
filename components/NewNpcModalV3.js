@@ -198,7 +198,7 @@ function playerPayload(payload = {}, spellChoices = [], magicSelections = []) {
   const casting = Boolean(sheet.spellcasting?.ability || sheet.spellcasting?.abilityLabel);
   const startingMagicSelections = Array.isArray(magicSelections) ? magicSelections : [];
   const hasStartingMagic = startingMagicSelections.length > 0 || (Array.isArray(spellChoices) && spellChoices.length > 0);
-  return { ...payload, kind: "npc", tags: [...new Set(tags)], storefront_enabled: false, storefront_title: null, storefront_tagline: null, location_id: null, home_location_id: null, is_hidden: true, state: "resting", role: String(payload.role || sheet.className || sheet.class || "Adventurer").trim() || "Adventurer", sheet: { ...sheet, startingMagicSelections, meta: { ...(sheet.meta || {}), creator: "shared_character_forge_player_v2", startingSpellSelectionPending: casting && !hasStartingMagic } } };
+  return { ...payload, secret: null, kind: "npc", tags: [...new Set(tags)], storefront_enabled: false, storefront_title: null, storefront_tagline: null, location_id: null, home_location_id: null, is_hidden: true, state: "resting", role: String(payload.role || sheet.className || sheet.class || "Adventurer").trim() || "Adventurer", sheet: { ...sheet, startingMagicSelections, meta: { ...(sheet.meta || {}), creator: "shared_character_forge_player_v2", startingSpellSelectionPending: casting && !hasStartingMagic } } };
 }
 
 export default function NewNpcModalV3(props) {
@@ -265,10 +265,15 @@ export default function NewNpcModalV3(props) {
     if (!playerMode) return supabase.rpc("create_character_v1", { p_payload: payload });
     const magicSelections = Array.isArray(payload?.sheet?.startingMagicSelections) ? payload.sheet.startingMagicSelections : [];
     const proxySpellChoices = playerForgeProxySpellChoices(spellChoices, magicSelections);
-    return supabase.rpc("create_player_character_v3", {
+    // Player Story "Private backstory" belongs to creator-only storage,
+    // never to the original GM-only characters.secret field.
+    // This single DB RPC wraps source-original v3 and the private story
+    // write atomically, so failures cannot orphan user-authored prose.
+    return supabase.rpc("create_player_character_with_private_backstory_v1", {
       p_payload: playerPayload(payload, proxySpellChoices, magicSelections),
       p_spell_choices: proxySpellChoices,
       p_magic_selections: magicSelections,
+      p_private_backstory: String(originalPayload?.secret || ""),
     });
   }, [playerMode]);
   useEffect(() => {

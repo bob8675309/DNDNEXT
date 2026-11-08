@@ -169,6 +169,56 @@ CREATE POLICY character_backstory_secrets_update_editor
  USING (auth.uid() IS NOT NULL AND private.can_access_creator_backstory_v1(character_id))
  WITH CHECK (auth.uid() IS NOT NULL AND private.can_access_creator_backstory_v1(character_id));
 
+-- Player Forge UI author text is not a GM Secret. This SECURITY INVOKER
+-- adapter composes the unchanged original Forge v3 RPC and a creator-only
+-- backstory upsert in ONE database transaction. It is the only client
+-- entrypoint for player Forge submissions with personal private story.
+-- Post-create browser upserts are not atomic: a failed or timed-out second
+-- request could silently lose user text after character creation.
+CREATE OR REPLACE FUNCTION public.create_player_character_with_private_backstory_v1(
+ p_payload jsonb,
+ p_spell_choices jsonb,
+ p_magic_selections jsonb,
+ p_private_backstory text
+)
+RETURNS uuid LANGUAGE plpgsql SECURITY INVOKER
+SET search_path TO 'pg_catalog','public','private','auth'
+AS $create_private$
+DECLARE
+ v_character_id uuid;
+BEGIN
+ IF auth.uid() IS NULL THEN
+   RAISE EXCEPTION 'Signed-in creator required' USING errcode='42501';
+ END IF;
+ IF p_payload IS NULL OR jsonb_typeof(p_payload) <> 'object' THEN
+   RAISE EXCEPTION 'Expected character creation payload object' USING errcode='22023';
+ END IF;
+ IF NULLIF(btrim(coalesce(p_payload->>'secret','')),'') IS NOT NULL THEN
+   RAISE EXCEPTION 'GM Secret cannot be supplied in the player Forge payload' USING errcode='42501';
+ END IF;
+ -- v3 remains source-original, including nonce/replay, spell and equipment
+ -- validation and its trusted private AFTER INSERT creator attribution.
+ v_character_id := public.create_player_character_v3(
+   p_payload,p_spell_choices,p_magic_selections
+ );
+ IF NULLIF(btrim(coalesce(p_private_backstory,'')),'') IS NOT NULL THEN
+   IF NOT private.can_access_creator_backstory_v1(v_character_id) THEN
+     RAISE EXCEPTION 'Original creator private-backstory access required'
+       USING errcode='42501';
+   END IF;
+   INSERT INTO public.character_backstory_secrets(character_id,secret_text)
+   VALUES (v_character_id,p_private_backstory)
+   ON CONFLICT (character_id) DO UPDATE
+     SET secret_text=excluded.secret_text,updated_at=now();
+ END IF;
+ RETURN v_character_id;
+END;
+$create_private$;
+REVOKE ALL ON FUNCTION public.create_player_character_with_private_backstory_v1(jsonb,jsonb,jsonb,text)
+FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.create_player_character_with_private_backstory_v1(jsonb,jsonb,jsonb,text)
+TO authenticated;
+
 -- GM has a separate and deliberate "published clue" record.
 -- Changing editable sheet.profileReveal.secret does NOT publish GM secrets.
 CREATE TABLE public.character_public_secret_revelations (

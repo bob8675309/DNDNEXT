@@ -109,6 +109,49 @@ assert.equal(sql("SELECT secret FROM public.characters WHERE id='"+oldPlayerWith
  "C33_UNSAFE_PLAYER_GM_FIELD","No retroactive mutation of existing values");
 console.log("PASS C3J02: stages 1-3 installed, original creator trigger plus GM-insert guard; new player GM secret injection rejected and old records not silently rewritten");
 
+const privateStoryPayload={
+  name:"C33 signed original v3 with private story",creation_request_id:id(7419),
+  secret:null, sheet:{classKey:"fighter",level:1,marker:"C33_ATOMIC_STORY"}
+};
+const createWithStory=(payload,secretText,who=people.CREATOR.who)=>rpc(
+ who,"create_player_character_with_private_backstory_v1",{
+  p_payload:payload,p_spell_choices:[],p_magic_selections:[],
+  p_private_backstory:secretText
+ });
+const storyText="C33 my authored secret is NOT GM secret, retained as creator-private";
+const storyCreated=ok(await createWithStory(privateStoryPayload,storyText),
+  "signed original v3 with creator-private story");
+assert.equal(sql("SELECT secret IS NULL FROM public.characters WHERE id='"+storyCreated+"'"),"t");
+assert.equal(sql("SELECT secret_text FROM public.character_backstory_secrets WHERE character_id='"+
+ storyCreated+"'"),storyText);
+assert.equal(sql("SELECT creator_user_id FROM private.character_creator_attribution WHERE character_id='"+
+ storyCreated+"'"),people.CREATOR.id);
+assert.equal(sql("SELECT sheet->>'marker' FROM public.character_sheets WHERE character_id='"+
+ storyCreated+"'"),"C33_ATOMIC_STORY");
+assert.equal(ok(await createWithStory(privateStoryPayload,storyText),
+ "same nonce private story replay"),storyCreated);
+assert.equal(sql("SELECT count(*) FROM public.character_backstory_secrets WHERE character_id='"+
+ storyCreated+"'"),"1");
+console.log("PASS C3S01: real signed v3 wrapper creates source-original sheet and creator-private story atomically without GM Secret; same-nonce replay retains one row");
+
+const unauthorizedReplay=await createWithStory(privateStoryPayload,"FORGED COEDITOR STORY",people.OUTSIDER.who);
+assert.ok(unauthorizedReplay.error,"Unrelated actor must not overwrite another creator private story");
+assert.equal(sql("SELECT secret_text FROM public.character_backstory_secrets WHERE character_id='"+
+ storyCreated+"'"),storyText);
+const injectedPayload={...privateStoryPayload,creation_request_id:id(7425),secret:"GM-SECRET-BY-CREATOR"};
+const injected=await createWithStory(injectedPayload,"CREATOR PRIVATE ONLY");
+assert.equal(reject(injected,"wrapper GM-secret injection").code,"42501");
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE creation_request_id='"+id(7425)+"'"),"0");
+const invalidPrivatePayload={...privateStoryPayload,creation_request_id:id(7426),
+ name:"C33 private story fails after original v3"};
+const beforeStoryAttrs=sql("SELECT count(*) FROM private.character_creator_attribution");
+const tooLongStory=await createWithStory(invalidPrivatePayload,"x".repeat(16001));
+assert.equal(reject(tooLongStory,"private story check rollback").code,"23514");
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE creation_request_id='"+id(7426)+"'"),"0");
+assert.equal(sql("SELECT count(*) FROM private.character_creator_attribution"),beforeStoryAttrs);
+console.log("PASS C3S02: forged replay and GM-secret injection blocked; invalid private text rolls back original v3 character, sheet and provenance");
+
+
 // C3V: a genuinely missing original creation BEFORE INSERT visual/sprite guard,
 // now installed alongside all three NPC privacy stages, not a frontend rewrite.
 const validAsset=id(7421),invalidAsset=id(7422),portrait=id(7420);

@@ -78,3 +78,18 @@ for (const path of readerPaths) {
 assert(checkedProjections >= 17, "Character reader inventory lost projections; re-audit dynamic source selectors");
 console.log("PASS C3.3 "+checkedProjections+" direct character roster projections do not request role-wide private lore");
 console.log("PASS C3.3 unified player fallback honors role-wide private-lore ACL; editor RPC remains sanitized");
+
+const forge = read("components/NewNpcModalV3.js");
+const story = read("components/NpcForgeStepContent.js");
+assert(forge.includes('supabase.rpc("create_player_character_with_private_backstory_v1"'),
+  "Actual player Forge must use atomic creator-backstory wrapper, not original unguarded v3");
+assert(forge.includes("return { ...payload, secret: null, kind:"),
+  "Player Forge must not populate the GM-only characters.secret field");
+assert(forge.includes('p_private_backstory: String(originalPayload?.secret || "")'),
+  "Player Forge must retain the generated/personal Story text in its private input");
+assert(story.includes("Private backstory (creator and GM only)"),
+  "Player Story input must be labelled as creator-private, not GM Secret");
+assert(stage3.includes("SECURITY INVOKER") && stage3.includes(
+  "public.create_player_character_with_private_backstory_v1"),
+  "Backstory creation must use the original Forge+private upsert in one invoker transaction");
+console.log("PASS C3.3 player generated Story securely routes to atomic creator-private backstory rather than GM secret");
