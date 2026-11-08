@@ -16,6 +16,9 @@ on:
       - 'scripts/fixtures/forge_inventory_access_original_pg17.sql'
       - 'sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql'
       - 'scripts/test_c33_forge_privacy_original_local_auth.mjs'
+      - 'scripts/browser/c33_creator_backstory_dom.jsx'
+      - 'scripts/browser/verify_c33_creator_backstory_dom.mjs'
+      - 'components/CreatorBackstoryPanel.js'
       - 'components/NewNpcModalV3.js'
       - 'components/NpcForgeStepContent.js'
       - 'scripts/validate_npc_profile_consumer_acl.mjs'
@@ -52,10 +55,17 @@ jobs:
       - name: Check genuine JWT test and original staged SQL source guards
         run: |
           node --check scripts/test_c33_forge_privacy_original_local_auth.mjs
+          node --check scripts/browser/verify_c33_creator_backstory_dom.mjs
           node scripts/validate_p1_3_npc_profile_rls_source.mjs
           node scripts/validate_forge_immutable_creation_replay.mjs
       - name: Install pinned dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install pinned local-only Chromium test tooling outside repository
+        run: |
+          mkdir -p "$RUNNER_TEMP/c33-browser-tools"
+          npm install --prefix "$RUNNER_TEMP/c33-browser-tools" \
+            --no-save --package-lock=false --no-audit --no-fund \
+            --no-progress esbuild@0.25.12 playwright-core@1.56.1
       - name: Configure disposable PG17 and GoTrue
         run: |
           mkdir -p "$RUNNER_TEMP/c33-forge-privacy-local/supabase"
@@ -88,6 +98,11 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -v DNDNEXT_C33_PRIVACY_STAGE3_CREATOR=1 -f scripts/fixtures/forge_creation_replay_local_auth_pg17.sql
           psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql
           node scripts/test_c33_forge_privacy_original_local_auth.mjs
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$CHROME" || { echo "Local Chromium missing; no remote browser fallback"; exit 1; }
+          C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/c33-browser-tools" \
+          C33_BROWSER_CHROME="$CHROME" \
+            node scripts/browser/verify_c33_creator_backstory_dom.mjs
       - name: Stop and remove disposable services
         if: always()
         run: |
