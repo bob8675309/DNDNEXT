@@ -14,7 +14,7 @@ const adminInventory=read("pages/inventory.js");
 const check=(source,needle,scope)=>assert.ok(source.includes(needle),
   scope+" source contract changed: "+needle);
 for(const t of [
- 'supabase.rpc("create_player_character_v3"',
+ 'supabase.rpc("create_player_character_with_private_backstory_v1"',
  'p_payload: playerPayload(payload, proxySpellChoices, magicSelections)',
  'p_magic_selections: magicSelections'
 ])check(create,t,"Forge player creation v3");

@@ -75,7 +75,7 @@ export function compileWarlockChildPlans(data){
    "const classFeatureChoices = serializeClassChoiceState(classChoiceState);",
    "const sourceChoices = serializeSourceChoiceState(sourceChoiceState);",
    "payloadWithSourceChoices(subclassPayload, choiceStateRef.current, classChoiceStateRef.current, sourceChoiceStateRef.current)",
-   'supabase.rpc("create_player_character_v3"'
+   'supabase.rpc("create_player_character_with_private_backstory_v1"'
  ]) assert.ok(forge.includes(token),"Forge browser-to-RPC source drift: "+token);
  assert.ok(guide.includes('.filter((group) => !(invocationSourceActive && group.kind === "eldritch-invocation"))'),
   "Original client suppression of historic Invocation parent has changed");

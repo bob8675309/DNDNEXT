@@ -39,6 +39,6 @@ for(const token of [
  'onChange={(event) => {',
  'Create another character'
 ]) assert.ok(profile.includes(token),`Missing existing multi-character profile contract: ${token}`);
-assert.ok(forge.includes('supabase.rpc("create_player_character_v3"'),
- "Must reuse original Forge v3 creation contract");
+assert.ok(forge.includes('supabase.rpc("create_player_character_with_private_backstory_v1"'),
+ "Player Forge must use atomic private-story adapter preserving original Forge v3");
 console.log("Player Forge legacy-snapshot candidate: exact-source one-clause change, canonical authorities and multi-character UI guards PASS.");

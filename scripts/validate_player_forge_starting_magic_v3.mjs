@@ -21,7 +21,7 @@ for (const token of [
   "playerForgeProxySpellChoices",
   'String(entry?.source_type || "class") === "class"',
   'String(entry?.access_type || "class-list") !== "background-expanded"',
-  'supabase.rpc("create_player_character_v3"',
+  'supabase.rpc("create_player_character_with_private_backstory_v1"',
   "p_spell_choices: proxySpellChoices",
   "p_magic_selections: magicSelections",
   "payload?.sheet?.startingMagicSelections",
