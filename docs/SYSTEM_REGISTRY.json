@@ -44,15 +44,20 @@
       "id": "character-forge",
       "status": "source-deployed",
       "code_paths": [
+        "components/NewNpcModalV3.js",
+        "components/CreatorBackstoryPanel.js",
         "components/NewNpcModalV3Refined.js",
         "components/NpcForgeTrainingStepPlayerTabbed.js",
         "components/PlayerCharacterForgeView.js"
       ],
       "tests": [
-        "scripts/validate_unified_character_forge.mjs"
+        "scripts/validate_unified_character_forge.mjs",
+        "scripts/test_c33_forge_privacy_original_local_auth.mjs",
+        "scripts/browser/verify_c33_creator_backstory_dom.mjs"
       ],
-      "last_checked": "2026-11-01",
+      "last_checked": "2026-11-07",
       "open_gaps": [
+        "CURRENT C3.3 2026-11-07: draft #345 source head 12a6891175f21df50ddeffb33799567c6d7d15fb passes 19/19 exact-head CI; original v3 + private Story atomic wrapper signed PG17 C3S01–02 and actual authenticated CreatorBackstoryPanel Chromium C3B00–07 verified. THIS IS ONLY a component browser acceptance, not complete 10-step NewNpcModalV3/browser/Profile/print/merchant acceptance; server client staged jointly but NOT merged or installed. C3/C3.3 is separate from tactical P1/P1.3. Full form/catalogs, security migration/rollback and owner approval remain open.",
         "C3.1 original Forge PG17/JWT/isolated Chromium research #341 MERGED main 70b96cfb; 20261105 combined owner-CHECK+RLS candidate remains UNAPPLIED, 14 original trigger DDL omitted, and full NewNpcModalV3 signed browser-to-RPC unaccepted. Independent #319 legacy-sheet single-clause SQL candidate MERGED as test only, not installed.",
         "C3.1 isolated source research extraction exact CI SUCCESS on held draft #341 3a1536754359af0bdab23c0764f49e85ea7d0d2d: 66 byte-identical Forge original fixtures/tests/workflows transferred to independent current-main branch without old #321 NPC secrets/handoffs. Requires separate owner merge approval before main; production inventory RLS+CHECK still unapproved, 14/31 original triggers absent and full Auth/browser not accepted.",
         "C3.0: all nine stacked Forge PR change-lists/ancestry catalogued in docs/evidence/C3_FORGE_STACK_CHANGED_FILES_2026-11-07.json; #335 tip retains older #321 NPC secret SQL/validator, not revised #322; cannot bulk-merge. Next C3.1 independent Forge original PG17/GoTrue/isolated browser source-test extraction, 17/31 original creation trigger DDL staged and other 14 remain unaccepted. No SQL/RLS installed.",
@@ -67,7 +72,7 @@
         "live_database": "not-specific-to-surface",
         "deployed_sha": "main-sha-matches-ready-vercel",
         "test_status": "test-source-inspected-not-reexecuted",
-        "browser_acceptance": "unverified-this-audit",
+        "browser_acceptance": "C3B00-07 signed original creator-private React panel accepted in isolated Chromium; full NewNpcModalV3 and integrated browser unverified",
         "owner_approval": "not-claimed-from-source-or-ci"
       },
       "protected_boundaries": [
