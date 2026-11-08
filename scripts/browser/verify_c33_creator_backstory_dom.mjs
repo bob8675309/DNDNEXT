@@ -101,6 +101,9 @@ try{
   path.resolve("scripts/browser/c33_creator_backstory_dom.jsx"),
   "--bundle","--platform=browser","--format=iife","--jsx=automatic",
   "--loader:.js=jsx","--target=chrome120","--log-level=error",
+  // esbuild is not the Next server bundler; swap ONLY framework machinery.
+  "--alias:next/router="+path.resolve("scripts/browser/c33_next_router_shim.js"),
+  "--alias:next/dynamic="+path.resolve("scripts/browser/c33_next_dynamic_shim.js"),
   "--define:process.env.NEXT_PUBLIC_SUPABASE_URL="+JSON.stringify(portOrigin),
   "--define:process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY="+JSON.stringify(env.DNDNEXT_C33_FORGE_PRIVACY_LOCAL_ANON_KEY),
   "--outfile="+bundle

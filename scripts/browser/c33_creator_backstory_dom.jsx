@@ -5,18 +5,10 @@ import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import CreatorBackstoryPanel from "../../components/CreatorBackstoryPanel";
 import NpcPanel from "../../components/NpcPanel";
-import { RouterContext } from "next/dist/shared/lib/router-context.shared-runtime";
 import { supabase } from "../../utils/supabaseClient";
 
-// Only Next.js routing is simulated here; all identity, role authority,
- // character, sheet and private-story reads remain genuine local GoTrue/RLS.
-const localRouter = {
-  pathname: "/town/[id]", route: "/town/[id]", asPath: "/town/fixture",
-  query: { id: "fixture" }, isReady: true, basePath: "",
-  push: async () => true, replace: async () => true,
-  prefetch: async () => {}, back: () => {},
-  events: { on: () => {}, off: () => {}, emit: () => {} }
-};
+// Only Next routing and unmounted dynamic views use browser-only test adapters.
+// Original NpcPanel, Sheet, Supabase Auth/RLS are never mocked.
 function PrivateStoryBrowserHost() {
   const [profileEnabled, setProfileEnabled] = useState(false);
   const [admin, setAdmin] = useState(false);
@@ -45,16 +37,14 @@ function PrivateStoryBrowserHost() {
   }, []);
   return <main><h1>C3.3 authenticated original private-backstory UI</h1>
     <CreatorBackstoryPanel key={characterId + ":" + sessionVersion} characterId={characterId}/>
-    {profileEnabled ? <RouterContext.Provider value={localRouter}>
-      <NpcPanel
+    {profileEnabled ? <NpcPanel
         key={"npc:"+sessionVersion}
         npc={{ id: String(window.__C33_PROFILE_ID__), name: "C3P source NPC", kind: "npc" }}
         isAdmin={admin}
         locations={[]}
         initialView="profile"
         onClose={() => setProfileEnabled(false)}
-      />
-    </RouterContext.Provider> : null}
+      /> : null}
   </main>;
 }
 

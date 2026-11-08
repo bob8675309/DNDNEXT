@@ -300,3 +300,9 @@
 - **Scope/owner boundary:** only `scripts/browser/c33_creator_backstory_dom.jsx`, `scripts/browser/verify_c33_creator_backstory_dom.mjs`, its CI workflow input triggers and branch Docs changed. This test adds no production user grants/migrations; no `main`, Vercel or world-map writes. **New exact-head CI NOT yet accepted.**
 - **ONE NEXT TASK:** verify C3P source-original signed Chromium run; if green, test merchant/town Profile-first role access and actual printable output, then separately plan/approve joint SQL+UI migration and rollback.
 
+## 2026-11-07 — C3P isolated original NPC Profile browser build correction (exact-head CI pending)
+
+- **Observed prior result:** draft `24003d0fff021456e175794da6148573477d259a`, [joint run 42442647916](https://github.com/bob8675309/DNDNEXT/actions/runs/42442647916) failed in standalone esbuild only: Next server compiled `gzip-size` tried to import Node `fs`, `stream`, `zlib`. The signed original GM NPC with private GM Secret, old `profileReveal.secret=true`, original sheet and role grants C3P00 passed; no actual browser C3P01–05 ran. 23/24 checks were green; the other signed C3J/C3I suites passed.
+- **Repair:** Add tiny test-only `c33_next_router_shim.js` (routing, NEVER Auth) and `c33_next_dynamic_shim.js` (explicitly throws if optional merchant/craft Next lazy view rendered), alias ONLY the framework Next imports during isolated esbuild. Remove direct Next RouterContext test import. Original NpcPanel, CharacterSheetPanel, CreatorBackstoryPanel, SQL, signed GoTrue, is_admin and RLS unchanged. C3P Profile/Sheet/Print-button verification is NOT actual Next route or PDF output acceptance.
+- **Status:** new exact-head CI PENDING. No production SQL/RLS/data, main, Vercel, world-map or paid changes. **ONE NEXT TASK:** finish C3P signed original NPC Profile role gate, then separately test real Next town/merchant/full print and owner-approved SQL/UI rollback.
+

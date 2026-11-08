@@ -17,6 +17,8 @@ on:
       - 'sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql'
       - 'scripts/test_c33_forge_privacy_original_local_auth.mjs'
       - 'scripts/browser/c33_creator_backstory_dom.jsx'
+      - 'scripts/browser/c33_next_router_shim.js'
+      - 'scripts/browser/c33_next_dynamic_shim.js'
       - 'scripts/browser/verify_c33_creator_backstory_dom.mjs'
       - 'scripts/browser/c33_original_forge_full_dom.jsx'
       - 'scripts/browser/verify_c33_original_forge_full_dom.mjs'
