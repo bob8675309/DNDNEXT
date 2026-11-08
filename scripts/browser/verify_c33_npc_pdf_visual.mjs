@@ -122,6 +122,10 @@ for (const sample of cases) {
     throw new Error("pdftotext is required for real PDF print-content QA: " + error.message);
   }
   assert(text.includes(model.profile.name), sample.key + " missing actual printed NPC identity");
+  if (sample.key === "public-dense") {
+    assert(/\+\d+ more features - see digital sheet/.test(text), "Dense feature overflow must be disclosed rather than silently dropped");
+    assert(/\+\d+ more spells \(digital sheet\)/.test(text), "Dense spell overflow must have a dedicated print row");
+  }
   if (sample.key === "gm-standard") {
     assert(text.includes("C33 GM ONLY PRINT MARKER 7426"), "GM's explicitly authorized secret missing from printed page");
   } else {
