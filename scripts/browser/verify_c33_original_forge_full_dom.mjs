@@ -146,6 +146,23 @@ try{
      className:node.className})));
  await page.evaluate(()=>{
   window.__C33F_VALIDATION_TRACE__=[];
+  window.__C33F_EVENT_TRACE__=[];
+  const matchContinue=(event)=>event.type==="click"
+    && event.target?.closest?.("button")?.textContent?.trim()==="Continue";
+  const originalPrevent=Event.prototype.preventDefault;
+  Event.prototype.preventDefault=function(...args){
+    if(matchContinue(this))window.__C33F_EVENT_TRACE__.push({
+      kind:"preventDefault",stack:(new Error()).stack?.slice(0,700)
+    });
+    return originalPrevent.apply(this,args);
+  };
+  const originalStop=Event.prototype.stopImmediatePropagation;
+  Event.prototype.stopImmediatePropagation=function(...args){
+    if(matchContinue(this))window.__C33F_EVENT_TRACE__.push({
+      kind:"stopImmediatePropagation",stack:(new Error()).stack?.slice(0,700)
+    });
+    return originalStop.apply(this,args);
+  };
   const root=document.querySelector(".npc-forge-modal-v2");
   new MutationObserver(changes=>{
    for(const change of changes){
@@ -195,6 +212,7 @@ try{
    await page.waitForTimeout(300);
    const trace=await page.evaluate(()=>({
     events:window.__C33F_VALIDATION_TRACE__,
+    nativeEvents:window.__C33F_EVENT_TRACE__,
     current:document.querySelector(".npc-forge-steps button.is-current")?.textContent
    }));
    console.log("C3F first-step click trace",JSON.stringify({trace,httpErrors}));
@@ -211,7 +229,8 @@ try{
      ", incomplete="+JSON.stringify(await modal.locator(".npc-forge-source-choice-group.is-required, .npc-forge-species-fact-choice.is-required").allTextContents())+
      ", pageerrors="+JSON.stringify(pageErrors)+
      ", httpErrors="+JSON.stringify(httpErrors)+
-     ", validationTrace="+JSON.stringify(await page.evaluate(()=>window.__C33F_VALIDATION_TRACE__))+"): "+cause.message);
+     ", validationTrace="+JSON.stringify(await page.evaluate(()=>window.__C33F_VALIDATION_TRACE__))+
+     ", eventTrace="+JSON.stringify(await page.evaluate(()=>window.__C33F_EVENT_TRACE__))+"): "+cause.message);
   }
   console.log("PASS C3F_STEP_"+String(n+1).padStart(2,"0")+": original "+expected[n]+" → "+expected[n+1]+" via Continue");
  }
