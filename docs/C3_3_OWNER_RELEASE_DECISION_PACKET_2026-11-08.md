@@ -28,6 +28,8 @@
 
 ## Protected backup / restore verification — **NOT COMPLETE**
 
+**Subscription check:** DnDWeb is on the Supabase **Free** plan. Do not rely on paid-plan automatic daily backup entitlement. Supabase CLI `db dump` excludes managed `auth` and `storage` in its default output. A [Windows owner-only raw PostgreSQL 17 backup script and strict 27-table TOC check](C3_3_FREE_PLAN_MANUAL_BACKUP_2026-11-08.md) are now available on the draft branch, but have **not been run against live data**, encrypted, restored or validated for Storage file bytes.
+
 Connected Supabase tools have no backup listing/download or object-byte export/restore action. Neither SQL digests nor a READY Vercel deployment are backups. Before any data/schema release, a project owner/operator must:
 
 1. Inspect **Supabase Dashboard → DnDWeb → Database → Backups** to confirm an actually restorable recovery point is available for the target project, including retention and restore method. Supabase daily backup eligibility depends on the project plan; do not assume it exists.
