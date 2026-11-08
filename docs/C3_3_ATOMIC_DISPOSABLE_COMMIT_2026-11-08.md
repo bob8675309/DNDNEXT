@@ -33,3 +33,7 @@ This is **new evidence** beyond the older C3R01–05 pre-COMMIT rollback-only te
 ## Decision
 
 **No merge now.** The best next bounded task is a verified backup/restore and migration-history reconciliation plan, followed by a production-safe migration in the **draft only** and dry-run release packet; request owner approval immediately before any live SQL/merge/deploy. Do not touch world map or any protected spell/item data. No project database, Vercel production or GitHub main mutation occurred in this rehearsal.
+
+## Additional PR scope and map approval gate
+
+PR #345 does include a small but user-visible world-map panel presentation change in `components/MapPageClient.js`: `#npcPanel` gains `map-npc-profile-centered` and switches Bootstrap `data-bs-backdrop` from `false` to `true`. `styles/npc-profile-centered.css` changes centered modal positioning and backdrop stacking. These are **not changes to world-map movement, routes, NPC sprites or rosters**, but can affect map clicks and modal interactions. User's separate world-map review constraint remains binding: obtain owner acceptance of centered NPC map panel before merging, or isolate it in a separately approved patch. No map source code was changed in documenting this finding.
