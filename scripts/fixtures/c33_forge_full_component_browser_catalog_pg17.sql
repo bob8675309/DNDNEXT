@@ -9,7 +9,8 @@ DO $guard$
 BEGIN
  IF current_database()<>'postgres'
    OR current_setting('server_version_num')::int NOT BETWEEN 170000 AND 179999
-   OR inet_server_port() <> 54322
+   -- The CLI forwards host 54322 to PostgreSQL's Docker-internal 5432;
+   -- PGHOST/PGPORT are verified by the signed workflow and Node runner.
    OR to_regclass('auth.users') IS NULL
    OR to_regclass('public.inventory_items') IS NULL
    OR to_regclass('public.character_backstory_secrets') IS NULL
@@ -46,6 +47,8 @@ ALTER TABLE public.spells_catalog
  ADD COLUMN IF NOT EXISTS subclasses text[],
  ADD COLUMN IF NOT EXISTS casting_time text,
  ADD COLUMN IF NOT EXISTS range_text text,
+ ADD COLUMN IF NOT EXISTS range_distance numeric,
+ ADD COLUMN IF NOT EXISTS range_unit text,
  ADD COLUMN IF NOT EXISTS duration_text text,
  ADD COLUMN IF NOT EXISTS ritual boolean,
  ADD COLUMN IF NOT EXISTS concentration boolean,
@@ -69,9 +72,16 @@ ALTER TABLE public.spells_catalog
  ADD COLUMN IF NOT EXISTS misc_tags text[],
  ADD COLUMN IF NOT EXISTS area_tags text[],
  ADD COLUMN IF NOT EXISTS raw_payload jsonb;
+ALTER TABLE public.characters
+ ADD COLUMN IF NOT EXISTS storefront_bg_url text,
+ ADD COLUMN IF NOT EXISTS storefront_bg_video_url text,
+ ADD COLUMN IF NOT EXISTS storefront_bg_image_url text;
+-- Public merchant media fields, only granted in disposable fixture.
+GRANT SELECT(storefront_bg_url,storefront_bg_video_url,storefront_bg_image_url)
+ ON public.characters TO authenticated;
 CREATE TABLE public.class_feature_catalog (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
- class_key text,feature_type text,name text,source text,class_source text,
+ class_key text,class_name text,feature_type text,name text,source text,class_source text,
  subclass_name text,subclass_short_name text,level integer,
  description text,entries jsonb,raw_payload jsonb
 );
