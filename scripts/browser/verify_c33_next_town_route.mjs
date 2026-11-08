@@ -73,7 +73,7 @@ try{
      const x=await window.__sb.auth.signInWithPassword({email:c.email,password:c.password});
      if(x.error)throw Error(x.error.message);
      return x.data.user.id;
-   },who);
+   },{email:who.email,password:who.password});
    assert.equal(uid,who.id);
    await page.reload({waitUntil:"domcontentloaded",timeout:100000});
    await page.getByRole("heading",{name:"C3T scratch town"}).waitFor({timeout:45000});

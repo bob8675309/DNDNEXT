@@ -336,3 +336,9 @@
 - **Workflow:** existing disposable JWT/PG17 C3.3 joint workflow invokes new `node --check`, local-only SQL fixture and original-Next Chromium test after previously accepted C3F/C3P; watches changed town/merchant files. This C3T integration has **NOT YET PASSED CI**. Possible failure is genuine Next auth/role stale display or omitted scratch dependency; diagnose rather than suppress.
 - **No approval/action:** No live SQL/RLS/grants/data, main merge, Vercel deploy, world-map movement, paid AI or gameplay authorizations. Draft branch only. **ONE NEXT TASK:** get exact-head original Next town/merchant route C3T green with GM logout fail-closed, then inventory and PDF visual QA, coordinated owner-approved SQL/UI migration+rollback.
 
+## 2026-11-07 — C3T first genuine Next startup succeeded; Playwright argument serialization error fixed in test only (CI pending)
+
+- Prior draft `1c06eb6e37d91d6280262c067d9b87e0f81787b5` [run 42445179730](https://github.com/bob8675309/DNDNEXT/actions/runs/42445179730) reached PASS C3T00 scratch town/merchant projections, PASS C3T01 signed original GM merchant and **actual Next.js dev /town/99001 compiled and served 200**. Before any role/Profile clicks, the test passed full `{who:SupabaseClient,email,password,id}` into `page.evaluate`, which Playwright correctly refused to serialize (`who.auth.logger`). This is solely a browser harness mistake, not proof of production app behavior.
+- Fix narrowly passes serializable `{email,password}` to browser; the authenticated user ID is still compared against the server-signed user. No backend/UI/source migration changes. Previous C3P06 PDF, C3F original creation and C3B roles remain preserved.
+- **Status:** new exact-head CI PENDING. No production Supabase, main, Vercel release, world map or paid actions. **ONE NEXT TASK:** finish real Next C3T Market→Profile→Shop→GM logout, then inventory/PDF visual and separately authorized SQL/UI rollback.
+
