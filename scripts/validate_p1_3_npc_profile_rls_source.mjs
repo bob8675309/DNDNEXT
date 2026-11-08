@@ -95,7 +95,7 @@ for(const required of [
  "v_character_id := public.create_player_character_v3(",
  "private.can_access_creator_backstory_v1(v_character_id)",
  "INSERT INTO public.character_backstory_secrets(character_id,secret_text)",
- "ON CONFLICT (character_id) DO UPDATE",
+ "ON CONFLICT (character_id) DO NOTHING",
  "REVOKE ALL ON FUNCTION public.create_player_character_with_private_backstory_v1(jsonb,jsonb,jsonb,text)",
  "GRANT EXECUTE ON FUNCTION public.create_player_character_with_private_backstory_v1(jsonb,jsonb,jsonb,text)",
  "character_public_secret_revelations_gm_only",

@@ -151,6 +151,20 @@ assert.equal(sql("SELECT count(*) FROM public.characters WHERE creation_request_
 assert.equal(sql("SELECT count(*) FROM private.character_creator_attribution"),beforeStoryAttrs);
 console.log("PASS C3S02: forged replay and GM-secret injection blocked; invalid private text rolls back original v3 character, sheet and provenance");
 
+const explicitlyEditedStory="C33 creator subsequently revised their own private Story";
+const savedStory=await people.CREATOR.who.from("character_backstory_secrets")
+  .update({secret_text:explicitlyEditedStory}).eq("character_id",storyCreated)
+  .select("secret_text").single();
+assert.ifError(savedStory.error);
+assert.equal(savedStory.data.secret_text,explicitlyEditedStory);
+assert.equal(ok(await createWithStory(privateStoryPayload,storyText),
+ "stale original nonce replay after creator Story edit"),storyCreated);
+assert.equal(sql("SELECT secret_text FROM public.character_backstory_secrets WHERE character_id='"+
+ storyCreated+"'"),explicitlyEditedStory,"Creation retry must never overwrite subsequent edits");
+assert.equal(sql("SELECT count(*) FROM public.character_backstory_secrets WHERE character_id='"+
+ storyCreated+"'"),"1");
+console.log("PASS C3S03: same-nonce original v3 retry cannot replace newer creator-authored private backstory");
+
 
 // C3V: a genuinely missing original creation BEFORE INSERT visual/sprite guard,
 // now installed alongside all three NPC privacy stages, not a frontend rewrite.

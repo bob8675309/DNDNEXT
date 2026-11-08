@@ -208,8 +208,9 @@ BEGIN
    END IF;
    INSERT INTO public.character_backstory_secrets(character_id,secret_text)
    VALUES (v_character_id,p_private_backstory)
-   ON CONFLICT (character_id) DO UPDATE
-     SET secret_text=excluded.secret_text,updated_at=now();
+   -- Same nonce/retry must not replace a creator's newer explicit edits
+   -- with stale creation-draft text. Later changes use creator-authorized UI.
+   ON CONFLICT (character_id) DO NOTHING;
  END IF;
  RETURN v_character_id;
 END;
