@@ -655,6 +655,23 @@ export default function TownPage() {
   const [activeTownProfileView, setActiveTownProfileView] = useState("profile");
   const townProfileRef = useRef(null);
 
+  // Profile/dossier data already rendered in React must not survive the
+  // identity that authorized it. RLS protects new reads, not stale open panels.
+  // Keep this synchronous: awaiting Supabase calls inside onAuthStateChange
+  // can block auth state transitions on the shared browser client.
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event !== "SIGNED_OUT") return;
+      setActiveTownProfileCharacter(null);
+      setActiveTownProfileView("profile");
+      setIsAdmin(false);
+      setPlayerUserId(null);
+      setPlayerInventory([]);
+      setPlayerPlants([]);
+    });
+    return () => subscription?.unsubscribe();
+  }, []);
+
   // Profile window is a real dialog, not a navigational side drawer.
   useEffect(() => {
     if (!activeTownProfileCharacter) return;

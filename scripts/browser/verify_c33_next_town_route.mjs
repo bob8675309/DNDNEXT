@@ -127,11 +127,13 @@ try{
  await d.getByText(gmSecret,{exact:true}).waitFor({timeout:30000});
  console.log("PASS C3T04: actual Next town signed GM sees privileged dossier");
  await page.evaluate(async()=>{const x=await window.__sb.auth.signOut();if(x.error)throw Error(x.error.message)});
- await page.waitForTimeout(500);
+ await d.waitFor({state:"hidden",timeout:15000});
  assert.equal(await d.getByText(gmSecret,{exact:true}).count(),0,
    "C3T05: GM secret remains on screen after sign-out");
+ assert.equal(await page.getByRole("button",{name:"Show Admin Tools"}).count(),0,
+   "C3T05: signed-out town still exposes GM map/admin controls");
  assert.deepEqual(errors,[],"Next route browser runtime exceptions");
- console.log("PASS C3T05: signed-out town hides previously opened GM dossier");
+ console.log("PASS C3T05: original Next town closes privileged Profile and revokes GM controls on real sign-out");
 }finally{
  if(browser)await browser.close();
  if(dev){
