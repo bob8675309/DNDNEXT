@@ -8,6 +8,8 @@ Connected Supabase PostgreSQL 17.4 reports **243 applied migration records**, la
 
 **A filename match does not prove the migration SQL was identical, nor can old SQL scripts be safely replayed just because their names resemble recorded migrations.** This inventory does not modify or repair history.
 
+All **243 remote entries retain an original SQL statement array** (one statement per record); none has a stored rollback statement. The audit now records `md5(array_to_string(statements, E'\\n'))` for each remote migration. Those 243 non-sensitive checksums can detect drift without disclosing SQL bodies; they do **not** prove that a similarly named local file contains the same statements, and they do not constitute a reversible backup.
+
 The exact complete 243-entry remote history and possible local file paths are captured in [the metadata-only snapshot](data/c33_migration_history_snapshot_2026-11-08.json). Local-only validator `scripts/diagnostics/c33_migration_history_audit.mjs` verifies the snapshot still matches repository filenames. It never contacts Supabase.
 
 ## Unmatched recorded migration names (35)
