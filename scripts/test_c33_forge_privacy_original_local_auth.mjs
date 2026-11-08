@@ -5,6 +5,7 @@
 // a genuine signed source-RPC test, NOT the complete 31-trigger Forge graph.
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
+import fs from "node:fs";
 import { spawnSync } from "node:child_process";
 import { createClient } from "@supabase/supabase-js";
 
@@ -426,6 +427,44 @@ assert.equal(reject(oldChecksV3,"original signed v3 under old owner CHECK").code
 assert.equal(sql("SELECT count(*) FROM public.characters WHERE creation_request_id='"+id(7412)+"'"),"0");
 assert.equal(sql("SELECT count(*) FROM private.character_creator_attribution"),attrsBeforeBlocked);
 console.log("PASS C3I03: signed original v2 and nested v3 fail 23514 at deferred COMMIT; character/creator/account rollback");
+
+// C3R04/R05: actual combined inventory CHECK + all four RLS policy DDL
+// rehearsed pre-COMMIT on the SAME original-source signed Forge database.
+// This is not a committed-write downgrade or release rollback.
+const inventoryCandidateSource=fs.readFileSync(
+ "sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql","utf8");
+assert.equal((inventoryCandidateSource.match(/^BEGIN;$/gm)||[]).length,1);
+assert.equal((inventoryCandidateSource.match(/^COMMIT;$/gm)||[]).length,1);
+const inventoryPreviewBody=inventoryCandidateSource.replace(/^BEGIN;$/m,"").replace(/^COMMIT;$/m,"");
+const inventoryFingerprintSql="SELECT md5("+
+ "coalesce((SELECT string_agg(conname||'|'||convalidated::text||'|'||pg_get_constraintdef(oid,true),';' ORDER BY conname)"+
+ " FROM pg_constraint WHERE conrelid='public.inventory_items'::regclass"+
+ " AND conname IN ('inventory_items_owner_type_chk','inventory_items_owner_type_check')),'')"+
+ " || '|' ||"+
+ "coalesce((SELECT string_agg(polname||'|'||coalesce(pg_get_expr(polqual,polrelid),'')"+
+ " ||'|'||coalesce(pg_get_expr(polwithcheck,polrelid),''),';' ORDER BY polname)"+
+ " FROM pg_policy WHERE polrelid='public.inventory_items'::regclass),''))";
+const inventoryFingerprintBefore=sql(inventoryFingerprintSql);
+const inventoryPreCommitProbe="DO $c3r$ BEGIN "+
+ "IF EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid='public.inventory_items'::regclass"+
+ " AND conname='inventory_items_owner_type_chk')"+
+ " OR (SELECT count(*) FROM pg_policy WHERE polrelid='public.inventory_items'::regclass)<>4"+
+ " THEN RAISE EXCEPTION 'C3R inventory target missing before intended abort'; END IF; END $c3r$;";
+const inventoryExec=(suffix,expectFailure=false)=>{
+ const r=spawnSync("psql",["-X","-v","ON_ERROR_STOP=1","-qAt"],{
+  input:"BEGIN;\n"+inventoryPreviewBody+"\n"+inventoryPreCommitProbe+"\n"+suffix+"\n",
+  env:{...env,PGUSER:"postgres"},encoding:"utf8",timeout:30000});
+ if(r.error)throw r.error;
+ if(expectFailure){assert.notEqual(r.status,0,"C3R05 deliberately late SQL error did not abort");assert.match(r.stderr,/division by zero/i);}
+ else assert.equal(r.status,0,"C3R04 actual inventory candidate rollback failed: "+r.stderr);
+ assert.equal(sql(inventoryFingerprintSql),inventoryFingerprintBefore,"C3R inventory policy/CHECK precommit rollback drift");
+ assert.equal(sql("SELECT count(*) FROM pg_constraint WHERE conrelid='public.inventory_items'::regclass "+
+  "AND conname IN ('inventory_items_owner_type_check','inventory_items_owner_type_chk')"),"2");
+};
+inventoryExec("ROLLBACK;");
+console.log("PASS C3R04: actual inventory owner CHECK removal + four RLS policies abort together before commit with exact policy/constraint restoration");
+inventoryExec("SELECT 1 / 0;\nCOMMIT;",true);
+console.log("PASS C3R05: deliberate late SQL error aborts complete combined inventory candidate before commit");
 
 sqlFile("sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql");
 sql("NOTIFY pgrst,'reload schema'");

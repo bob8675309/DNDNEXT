@@ -59,3 +59,7 @@ Before any owner release vote, collect a **fresh source/DB snapshot** with opera
 - **ONE NEXT TASK:** close the missing original-catalog/31-trigger plus end-to-end rollback rehearsal gaps in a disposable environment and submit the versioned release decision packet for owner approval; **no execution of live SQL before that vote**.
 
 No live DB query/write, PR merge, Vercel production deployment, world map, tactical engine or paid agent change was performed in authoring this document.
+
+## 2026-11-08: source-only precommit transaction-abort test extension
+
+C3R01–03 (NPC stages 1–3) and C3R04–05 (joint inventory CHECK/RLS) are added to disposable exact-source signed workflow on draft PR #345. They remove each source candidate's single verified top-level transaction wrapper **in process memory only** to simulate a coordinated outer transaction and assert before/after original grants/functions/policies/checks and synthetic GM-secret retention on both explicit ROLLBACK and a deliberately late SQL error. C3M00–01 includes source-exact non-map `protect_mog_delete_v1` deletion behavior. CI pending at the authoring SHA. These checks are NOT a proof of reversing committed data or an approved SQL migration; real backup and client release/rollback remain independent owner-gated steps.
