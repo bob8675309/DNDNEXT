@@ -51,7 +51,8 @@ for(const role of ["CREATOR","COEDITOR","INV_ONLY","GM","OUTSIDER"]){
 }
 sql("INSERT INTO private.test_admins(id) VALUES ('"+roles.GM.id+"')");
 const payload={name:"C3B Browser Original Forge private story",creation_request_id:randomUUID(),
- secret:null,sheet:{classKey:"fighter",level:1,marker:"C33_BROWSER_COMPONENT"}};
+ secret:null,sheet:{classKey:"fighter",level:1,marker:"C33_BROWSER_COMPONENT",
+ startingEquipmentSelections:{mode:"package",classOption:"A",ruleset:"vanilla"}}};
 const initialSecret="C3B authored Story text, never a GM secret";
 const created=await roles.CREATOR.who.rpc("create_player_character_with_private_backstory_v1",{
  p_payload:payload,p_spell_choices:[],p_magic_selections:[],
