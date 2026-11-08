@@ -22,6 +22,7 @@ on:
       - 'scripts/browser/verify_c33_original_forge_full_dom.mjs'
       - 'scripts/fixtures/c33_forge_full_component_browser_catalog_pg17.sql'
       - 'components/CreatorBackstoryPanel.js'
+      - 'components/NpcPanel.js'
       - 'components/NewNpcModalV3.js'
       - 'components/NpcForgeStepContent.js'
       - 'scripts/validate_npc_profile_consumer_acl.mjs'

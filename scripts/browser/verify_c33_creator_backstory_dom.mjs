@@ -67,6 +67,31 @@ sql("INSERT INTO public.character_permissions (character_id,user_id,can_edit,can
 assert.equal(sql("SELECT secret IS NULL FROM public.characters WHERE id='"+charId+"'"),"t");
 assert.equal(sql("SELECT secret_text FROM public.character_backstory_secrets WHERE character_id='"+charId+"'"),initialSecret);
 console.log("PASS C3B00: original signed Forge v3 RPC creates private story; real co-editor/inventory/GM users seeded, GM secret remains NULL");
+ 
+// C3P: source-original GM NPC with a deliberately revealed public background,
+// an obsolete 'reveal secret' bit (which MUST NOT disclose GM Secrets), and a
+// sheet that should never be returned to inventory-only/outsider users.
+const gmOnly="C3P_GM_SECRET_NEVER_IN_PLAYER_PROFILE";
+const gmSheetNote="C3P_PRIVATE_SHEET_NOT_FOR_OUTSIDERS";
+const npcCreate=await roles.GM.who.rpc("create_character_v1",{p_payload:{
+ name:"C3P source NPC",kind:"npc",creation_request_id:randomUUID(),
+ description:"C3P_APPROVED_PUBLIC_DESCRIPTION",
+ background:"C3P_APPROVED_PUBLIC_BACKGROUND",
+ motivation:"C3P_GM_ONLY_MOTIVATION",
+ secret:gmOnly,
+ sheet:{classKey:"fighter",level:1,marker:"C3P_PROFILE_SHEET",
+  profileReveal:{background:true,secret:true},gmNotes:gmSheetNote}
+}});
+assert.ifError(npcCreate.error);
+const profileId=npcCreate.data;
+assert.match(profileId,/^[a-f0-9-]{36}$/i);
+sql("UPDATE public.characters SET is_hidden=false WHERE id='"+profileId+"'");
+sql("INSERT INTO public.character_permissions (character_id,user_id,can_edit,can_inventory,can_convert) VALUES "+
+ "('"+profileId+"','"+roles.COEDITOR.id+"',true,true,false),"+
+ "('"+profileId+"','"+roles.INV_ONLY.id+"',false,true,false)");
+assert.equal(sql("SELECT secret FROM public.characters WHERE id='"+profileId+"'"),gmOnly);
+console.log("PASS C3P00: original GM NPC, genuine role permissions and adversarial legacy secret reveal seeded in disposable DB");
+
 
 const dir=mkdtempSync(path.join(tmpdir(),"dndnext-c33-browser-")),bundle=path.join(dir,"bundle.js");
 const bundler=path.join(toolsRoot,"node_modules",".bin","esbuild");
@@ -84,7 +109,7 @@ try{
  server=createServer((req,res)=>{
   if(req.url==="/"){
    res.writeHead(200,{"Content-Type":"text/html; charset=utf-8","Cache-Control":"no-store"});
-   res.end('<!doctype html><html lang="en"><meta charset="utf-8"><title>C3.3 Creator Story Browser</title><body><div id="c33-browser-root"></div><script>window.__C33_CHARACTER_ID__='+JSON.stringify(charId)+'</script><script src="/bundle.js"></script></body></html>');
+   res.end('<!doctype html><html lang="en"><meta charset="utf-8"><title>C3.3 Creator Story Browser</title><body><div id="c33-browser-root"></div><script>window.__C33_CHARACTER_ID__='+JSON.stringify(charId)+';window.__C33_PROFILE_ID__='+JSON.stringify(profileId)+'</script><script src="/bundle.js"></script></body></html>');
   }else if(req.url==="/bundle.js"){
    res.writeHead(200,{"Content-Type":"application/javascript","Cache-Control":"no-store"});res.end(js);
   }else{res.writeHead(404,{"Content-Type":"text/plain"});res.end("Not found")}
@@ -166,6 +191,62 @@ try{
  assert.deepEqual(offsite,[],"C3B browser attempted off-site request");
  console.log("PASS C3B07: signed outsider denied, no page errors or offsite network requests");
  console.log("C3.3 REAL CHROMIUM CREATOR-BACKSTORY AUTH UI PASS (C3B00–C3B07). Original React component; genuine GoTrue, private RLS and Admin. Not a full NewNpcModalV3 form browser test.");
+
+ // C3P original NPC Profile is mounted, not an HTML stand-in. The localhost
+ // source/RLS data plane and signed role checks are unchanged from C3B.
+ await page.evaluate(()=>window.__C33_OPEN_NPC_PROFILE__());
+ const panel=page.locator(".npc-panel-inner");
+ await panel.waitFor({state:"visible",timeout:15000});
+ await panel.getByText("C3P_APPROVED_PUBLIC_DESCRIPTION",{exact:true}).waitFor({timeout:15000});
+ const outsiderText=await panel.innerText();
+ assert(outsiderText.includes("C3P_APPROVED_PUBLIC_BACKGROUND"),"Public reveal absent from NPC Profile");
+ for(const marker of [gmOnly,gmSheetNote,"C3P_GM_ONLY_MOTIVATION"]){
+   assert(!outsiderText.includes(marker),"Outsider NPC Profile leaked "+marker);
+ }
+ assert.match(outsiderText,/Known Lore/);
+ assert.equal(await panel.getByRole("button",{name:"Print Sheet"}).count(),0);
+ console.log("PASS C3P01: original outsider NPC Profile renders approved public lore; old reveal.secret bit does not expose GM secret or raw sheet");
+
+ await panel.getByRole("button",{name:"Sheet & Rolls"}).click();
+ await panel.getByText("No character sheet has been created for this character yet.").waitFor({timeout:15000});
+ assert.equal(await panel.getByRole("button",{name:"Print Sheet"}).count(),0);
+ const outsiderSheet=await roles.OUTSIDER.who.from("character_sheets")
+   .select("sheet").eq("character_id",profileId);
+ assert.ifError(outsiderSheet.error);
+ assert.deepEqual(outsiderSheet.data,[],"Outsider raw JSON sheet forbidden");
+ console.log("PASS C3P02: real outsider Sheet/Print path fails closed under stage1 full-sheet RLS");
+
+ await signOut();await signIn("INV_ONLY");
+ await panel.getByText("C3P_APPROVED_PUBLIC_DESCRIPTION",{exact:true}).waitFor({timeout:15000});
+ await panel.getByRole("button",{name:"Sheet & Rolls"}).click();
+ await panel.getByText("No character sheet has been created for this character yet.").waitFor({timeout:15000});
+ assert.equal(await panel.getByRole("button",{name:"Print Sheet"}).count(),0);
+ assert.deepEqual((await roles.INV_ONLY.who.from("character_sheets")
+   .select("sheet").eq("character_id",profileId)).data,[]);
+ console.log("PASS C3P03: inventory-only NPC Profile retains public lore but cannot mount printable canonical sheet");
+
+ await signOut();await signIn("COEDITOR");
+ await panel.getByText("C3P_APPROVED_PUBLIC_DESCRIPTION",{exact:true}).waitFor({timeout:15000});
+ assert(!((await panel.innerText()).includes(gmOnly)),"Co-editor Profile leaked GM secret");
+ await panel.getByRole("button",{name:"Sheet & Rolls"}).click();
+ await panel.getByRole("button",{name:"Print Sheet"}).waitFor({timeout:15000});
+ console.log("PASS C3P04: signed can_edit co-editor retains canonical sheet/Print entry without GM-only Profile secret");
+
+ await signOut();await signIn("GM");
+ await panel.getByText(gmOnly,{exact:true}).waitFor({timeout:15000});
+ assert.match(await panel.innerText(),/NPC Dossier & Player Reveals/);
+ await panel.getByRole("button",{name:"Sheet & Rolls"}).click();
+ await panel.getByRole("button",{name:"Print Sheet"}).waitFor({timeout:15000});
+ assert.equal(sql("SELECT secret FROM public.characters WHERE id='"+profileId+"'"),gmOnly);
+ console.log("PASS C3P05: signed GM original NpcPanel displays private dossier and canonical printable sheet affordance");
+
+ await signOut();
+ await page.waitForTimeout(300);
+ assert(!((await panel.innerText()).includes(gmOnly)),"GM secret persisted across logout and keyed profile remount");
+ assert.deepEqual(pageErrors,[],"Original NPC Profile emitted browser errors");
+ assert.deepEqual(offsite,[],"Original NPC Profile requested off-site data");
+ console.log("C3P genuine original NpcPanel signed-role browser gate PASS. Print button authorization only: PDF output, full Next route stack and merchant/town integrations are separate.");
+
 }finally{
  if(browser)await browser.close();
  if(server)await new Promise(resolve=>server.close(resolve));
