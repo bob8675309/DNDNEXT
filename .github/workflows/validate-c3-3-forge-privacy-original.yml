@@ -10,6 +10,8 @@ on:
       - 'scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql'
       - 'scripts/fixtures/c33_forge_original_mog_guard_local_pg17.sql'
       - 'scripts/browser/verify_c33_privacy_stage_abort_pg17.mjs'
+      - 'scripts/release/c33_compose_disposable_joint_sql.mjs'
+      - 'scripts/release/test_c33_compose_disposable_joint_sql.mjs'
       - 'scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql'
       - 'scripts/fixtures/forge_materializer_original_functions_pg17.sql'
       - 'scripts/fixtures/forge_owner_constraint_deferred_creation_local_auth_pg17.sql'
@@ -77,6 +79,8 @@ jobs:
         run: |
           node --check scripts/test_c33_forge_privacy_original_local_auth.mjs
           node --check scripts/browser/verify_c33_privacy_stage_abort_pg17.mjs
+          node scripts/release/test_c33_compose_disposable_joint_sql.mjs
+          node scripts/release/c33_compose_disposable_joint_sql.mjs --check
           node --check scripts/browser/verify_c33_creator_backstory_dom.mjs
           node --check scripts/browser/verify_c33_original_forge_full_dom.mjs
           node --check scripts/browser/verify_c33_next_town_route.mjs
