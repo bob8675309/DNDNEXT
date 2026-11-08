@@ -31,7 +31,8 @@ async function role(label){
  const u=await who.auth.getUser();assert.ifError(u.error);
  return {who,email,password,id:u.data.user.id}
 }
-const outsider=await role("outsider"),gm=await role("gm");
+const outsider=await role("outsider"),gm=await role("gm"),
+      coeditor=await role("coeditor"),inventoryOnly=await role("inventory-only");
 sql("INSERT INTO private.test_admins(id) VALUES ('"+gm.id+"')");
 const gmSecret="C3T_GM_ONLY_LEGACY_SECRET";
 const m=await gm.who.rpc("create_character_v1",{p_payload:{
@@ -49,6 +50,18 @@ const rosterRead=await outsider.who.from("characters")
 assert.ifError(rosterRead.error);
 assert.equal(rosterRead.data?.id,m.data,"Local signed outsider cannot SELECT visible merchant after creation");
 console.log("PASS C3T01A: true outsider PostgREST can read source-qualified merchant roster identity");
+const c3iSecret="C3I_GM_PRIVATE_SECRET";
+const c3iNpc=await gm.who.rpc("create_character_v1",{p_payload:{
+ name:"C3I route NPC",kind:"npc",creation_request_id:randomUUID(),
+ description:"C3I_PUBLIC_DESCRIPTION",secret:c3iSecret,
+ sheet:{classKey:"fighter",level:1,profileReveal:{secret:true}}
+}});
+assert.ifError(c3iNpc.error);assert.match(c3iNpc.data,/^[a-f0-9-]{36}$/i);
+sql("UPDATE public.characters SET location_id=99001,state='resting',is_hidden=false WHERE id='"+c3iNpc.data+"'");
+sql("INSERT INTO public.character_permissions (character_id,user_id,can_edit,can_inventory,can_convert) VALUES"+
+ "('"+c3iNpc.data+"','"+coeditor.id+"',true,true,false),"+
+ "('"+c3iNpc.data+"','"+inventoryOnly.id+"',false,true,false)");
+console.log("PASS C3I00: original signed NPC and four independent role accounts seeded");
 const origin="http://127.0.0.1:41820";
 let dev=null,browser=null,log="";
 try{
@@ -134,6 +147,63 @@ try{
    "C3T05: signed-out town still exposes GM map/admin controls");
  assert.deepEqual(errors,[],"Next route browser runtime exceptions");
  console.log("PASS C3T05: original Next town closes privileged Profile and revokes GM controls on real sign-out");
+
+ // C3I: ACTUAL Next inventory route, original global _app overlay, genuine
+ // NPC Profile/sheet readers, signed role authority and session invalidation.
+ async function inventoryProfile(roleUser,kind,id,expectedName){
+   await page.goto(origin+"/town/99001",{waitUntil:"domcontentloaded",timeout:85000});
+   await page.waitForFunction(()=>Boolean(window.__sb?.auth),null,{timeout:30000});
+   await login(roleUser);
+   await page.goto(origin+"/inventory?ownerType="+kind+"&ownerId="+id,
+     {waitUntil:"domcontentloaded",timeout:85000});
+   await page.getByRole("button",{name:"Open Profile",exact:true}).waitFor({timeout:40000});
+   await page.getByRole("button",{name:"Open Profile",exact:true}).click();
+   const panel=page.getByRole("dialog",{name:expectedName+" character profile"});
+   await panel.waitFor({state:"visible",timeout:25000});
+   return panel;
+ }
+ async function closeGlobal(panel){
+   await page.keyboard.press("Escape");
+   await panel.waitFor({state:"hidden",timeout:15000});
+ }
+ let inv=await inventoryProfile(outsider,"npc",c3iNpc.data,"C3I route NPC");
+ await inv.getByText("C3I_PUBLIC_DESCRIPTION",{exact:true}).waitFor({timeout:25000});
+ assert.equal(await inv.getByText(c3iSecret,{exact:true}).count(),0);
+ await inv.getByRole("button",{name:"Sheet & Rolls"}).click();
+ await inv.getByText("No character sheet has been created for this character yet.").waitFor({timeout:20000});
+ assert.equal(await inv.getByRole("button",{name:"Print Sheet"}).count(),0);
+ assert.equal(await page.getByText("You do not have permission to view this inventory.").count(),1);
+ await closeGlobal(inv);
+ console.log("PASS C3I01: signed outsider actual Next inventory NPC Profile public; inventory and Sheet/Print denied");
+ inv=await inventoryProfile(inventoryOnly,"npc",c3iNpc.data,"C3I route NPC");
+ await page.waitForFunction(()=>!document.body.innerText.includes("You do not have permission to view this inventory."),null,{timeout:20000});
+ await inv.getByRole("button",{name:"Sheet & Rolls"}).click();
+ await inv.getByText("No character sheet has been created for this character yet.").waitFor({timeout:20000});
+ assert.equal(await inv.getByRole("button",{name:"Print Sheet"}).count(),0);
+ assert.equal(await inv.getByText(c3iSecret,{exact:true}).count(),0);
+ await closeGlobal(inv);
+ console.log("PASS C3I02: signed inventory-only user granted inventory but denied canonical NPC Sheet/Print");
+ inv=await inventoryProfile(coeditor,"npc",c3iNpc.data,"C3I route NPC");
+ await inv.getByRole("button",{name:"Sheet & Rolls"}).click();
+ await inv.getByRole("button",{name:"Print Sheet"}).waitFor({timeout:25000});
+ assert.equal(await inv.getByText(c3iSecret,{exact:true}).count(),0);
+ await closeGlobal(inv);
+ console.log("PASS C3I03: real can_edit coeditor retains Sheet/Print via global Profile, no GM Secret");
+ inv=await inventoryProfile(gm,"merchant",m.data,"C3T town merchant");
+ await inv.getByText(gmSecret,{exact:true}).waitFor({timeout:25000});
+ await page.getByText("Inventory Browser",{exact:true}).waitFor({timeout:25000});
+ console.log("PASS C3I04: actual Next merchant inventory global Profile renders signed GM dossier");
+ await page.evaluate(async()=>{
+   const out=await window.__sb.auth.signOut();
+   if(out.error)throw Error(out.error.message);
+ });
+ await inv.waitFor({state:"hidden",timeout:15000});
+ assert.equal(await inv.getByText(gmSecret,{exact:true}).count(),0,
+   "C3I05: global GM private Profile still visible after signed logout");
+ assert.equal(await page.getByText("Inventory Browser",{exact:true}).count(),0,
+   "C3I05: stale inventory Admin browser remains after logout");
+ console.log("PASS C3I05: actual Next inventory signout clears global GM dossier and Admin browser");
+ assert.deepEqual(errors,[],"Real Next inventory browser JS exceptions");
 }finally{
  if(browser)await browser.close();
  if(dev){
