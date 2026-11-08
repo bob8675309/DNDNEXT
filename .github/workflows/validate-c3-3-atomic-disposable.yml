@@ -6,6 +6,8 @@ on:
       - '.github/workflows/validate-c3-3-atomic-disposable.yml'
       - 'scripts/release/c33_compose_disposable_joint_sql.mjs'
       - 'scripts/release/test_c33_compose_disposable_joint_sql.mjs'
+      - 'scripts/diagnostics/c33_migration_history_audit.mjs'
+      - 'docs/data/c33_migration_history_snapshot_2026-11-08.json'
       - 'scripts/fixtures/c33_atomic_preprivacy_inventory_pg17.sql'
       - 'scripts/fixtures/forge_creation_replay_local_auth_pg17.sql'
       - 'scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql'
@@ -45,6 +47,8 @@ jobs:
         run: |
           node --check scripts/release/c33_compose_disposable_joint_sql.mjs
           node scripts/release/test_c33_compose_disposable_joint_sql.mjs
+          node --check scripts/diagnostics/c33_migration_history_audit.mjs
+          node scripts/diagnostics/c33_migration_history_audit.mjs
       - name: Configure isolated Supabase PG17
         run: |
           mkdir -p "$RUNNER_TEMP/c33-atomic-db/supabase"
