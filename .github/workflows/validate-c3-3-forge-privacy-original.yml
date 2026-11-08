@@ -8,6 +8,8 @@ on:
       - 'scripts/fixtures/c33_forge_privacy_inventory_join_setup_pg17.sql'
       - 'scripts/fixtures/c33_forge_original_sprite_guard_local_pg17.sql'
       - 'scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql'
+      - 'scripts/fixtures/c33_forge_original_mog_guard_local_pg17.sql'
+      - 'scripts/browser/verify_c33_privacy_stage_abort_pg17.mjs'
       - 'scripts/fixtures/forge_materializer_local_auth_extension_pg17.sql'
       - 'scripts/fixtures/forge_materializer_original_functions_pg17.sql'
       - 'scripts/fixtures/forge_owner_constraint_deferred_creation_local_auth_pg17.sql'
@@ -74,6 +76,7 @@ jobs:
       - name: Check genuine JWT test and original staged SQL source guards
         run: |
           node --check scripts/test_c33_forge_privacy_original_local_auth.mjs
+          node --check scripts/browser/verify_c33_privacy_stage_abort_pg17.mjs
           node --check scripts/browser/verify_c33_creator_backstory_dom.mjs
           node --check scripts/browser/verify_c33_original_forge_full_dom.mjs
           node --check scripts/browser/verify_c33_next_town_route.mjs
@@ -118,6 +121,7 @@ jobs:
           export DNDNEXT_C33_FORGE_PRIVACY_LOCAL_ANON_KEY="$ANON_KEY"
           psql -X -v ON_ERROR_STOP=1 -v DNDNEXT_C33_PRIVACY_STAGE3_CREATOR=1 -f scripts/fixtures/forge_creation_replay_local_auth_pg17.sql
           psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/c33_forge_privacy_original_policy_join_pg17.sql
+          node scripts/browser/verify_c33_privacy_stage_abort_pg17.mjs
           node scripts/test_c33_forge_privacy_original_local_auth.mjs
           CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
           test -n "$CHROME" || { echo "Local Chromium missing; no remote browser fallback"; exit 1; }

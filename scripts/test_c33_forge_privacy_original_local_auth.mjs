@@ -62,6 +62,7 @@ for(const role of names){
 sql("INSERT INTO private.test_admins(id) VALUES ('"+people.ADMIN.id+"')");
 sqlFile("scripts/fixtures/c33_forge_original_sprite_guard_local_pg17.sql");
 sqlFile("scripts/fixtures/c33_forge_original_levelup_cancel_local_pg17.sql");
+sqlFile("scripts/fixtures/c33_forge_original_mog_guard_local_pg17.sql");
 const gmPayload={
  name:"C33 preexisting legacy GM NPC",kind:"npc",creation_request_id:id(7401),
  creator_user_id:people.CREATOR.id,secret:"C33_GM_SECRET_NEVER_PUBLIC",
@@ -501,6 +502,24 @@ const stillCreator=sql("SELECT creator_user_id FROM private.character_creator_at
  afterHardening+"'");
 assert.equal(stillCreator,people.CREATOR.id);
 console.log("PASS C3I08: revoked character access hides source-owned gear; Admin retains read, immutable creator receipt unchanged");
+
+// C3M01: source-original name/UUID Mog guard on the same joined DB.
+// Both protection branches fail with 42501; an unrelated row is deletable.
+const protectedName=id(7480), protectedUuid="c0a40081-9bab-402d-8437-62267e596c4f", regular=id(7482);
+sql("INSERT INTO public.characters(id,name,kind) VALUES ('"+protectedName+"',' MoG ','npc'),"+
+    "('"+protectedUuid+"','C3M different name','npc'),"+
+    "('"+regular+"','C3M disposable ordinary','npc')");
+for(const characterId of [protectedName,protectedUuid]){
+ const attempt=spawnSync("psql",["-X","-v","ON_ERROR_STOP=1","-v","VERBOSITY=verbose","-c",
+  "DELETE FROM public.characters WHERE id='"+characterId+"'"],
+  {env:{...env,PGUSER:"postgres"},encoding:"utf8",timeout:20000});
+ assert.notEqual(attempt.status,0,"Protected original character deleted");
+ assert.match(attempt.stderr,/42501.*Mog is protected and cannot be deleted/i);
+ assert.equal(sql("SELECT count(*) FROM public.characters WHERE id='"+characterId+"'"),"1");
+}
+sql("DELETE FROM public.characters WHERE id='"+regular+"'");
+assert.equal(sql("SELECT count(*) FROM public.characters WHERE id='"+regular+"'"),"0");
+console.log("PASS C3M01: original source prevents Mog name or immutable-id deletion and preserves normal delete");
 
 console.log("C3.3 ORIGINAL FORGE + PRIVACY + COMBINED INVENTORY CHECK/RLS JOINT TEST PASS (C3J00–C3J11, C3I00–C3I08, C3V00–C3V03, C3L00–C3L02). Source-original materializer/handlers, additional 8dir sprite guard and level-up cancel trigger; reduced helper/catalogues, NOT full 31-trigger/browser parity.");
 
