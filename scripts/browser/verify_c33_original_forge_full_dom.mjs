@@ -114,8 +114,11 @@ try{
   localStorage.setItem(key,JSON.stringify(draft));
  },{draft:storageValue});
  const page=await context.newPage();
- const pageErrors=[],offsite=[],requests=[];
+ const pageErrors=[],offsite=[],requests=[],httpErrors=[];
  page.on("pageerror",e=>pageErrors.push(String(e.message||e)));
+ page.on("response",response=>{if(response.status()>=400)httpErrors.push({
+   status:response.status(),url:response.url().split("?")[0]
+ });});
  page.on("requestfailed",req=>requests.push(req.url()+" "+req.failure()?.errorText));
  await page.route("**/*",async route=>{
   const address=new URL(route.request().url()),allow=address.origin===base||address.origin===origin;
@@ -141,6 +144,19 @@ try{
  const validation=async()=>modal.locator("[data-forge-validation-message]")
    .evaluateAll(nodes=>nodes.map(node=>({message:node.dataset.forgeValidationMessage,
      className:node.className})));
+ await page.evaluate(()=>{
+  window.__C33F_VALIDATION_TRACE__=[];
+  const root=document.querySelector(".npc-forge-modal-v2");
+  new MutationObserver(changes=>{
+   for(const change of changes){
+    if(change.type!=="attributes"||change.attributeName!=="data-forge-validation-message")continue;
+    const message=change.target.getAttribute("data-forge-validation-message");
+    if(message)window.__C33F_VALIDATION_TRACE__.push({
+      message,step:document.querySelector(".npc-forge-steps button.is-current")?.textContent
+    });
+   }
+  }).observe(root,{subtree:true,attributes:true,attributeFilter:["data-forge-validation-message"]});
+ });
  for(let n=0;n<9;n++){
   const current=(await getCurrent()).trim();
   assert.ok(current.includes(expected[n]),"Wrong original current step "+n+": "+current);
@@ -175,6 +191,14 @@ try{
   }
   if(n===2||n===5||n===6)await page.waitForTimeout(550);
   await modal.getByRole("button",{name:"Continue",exact:true}).click();
+  if(n===0){
+   await page.waitForTimeout(300);
+   const trace=await page.evaluate(()=>({
+    events:window.__C33F_VALIDATION_TRACE__,
+    current:document.querySelector(".npc-forge-steps button.is-current")?.textContent
+   }));
+   console.log("C3F first-step click trace",JSON.stringify({trace,httpErrors}));
+  }
   try{
    await page.waitForFunction(target=>{
     const selected=document.querySelector(".npc-forge-modal-v2 .npc-forge-steps button.is-current");
@@ -185,7 +209,9 @@ try{
      " (current="+(await getCurrent())+", errors="+JSON.stringify(await alert())+
      ", guidance="+JSON.stringify(await validation())+
      ", incomplete="+JSON.stringify(await modal.locator(".npc-forge-source-choice-group.is-required, .npc-forge-species-fact-choice.is-required").allTextContents())+
-     ", pageerrors="+JSON.stringify(pageErrors)+"): "+cause.message);
+     ", pageerrors="+JSON.stringify(pageErrors)+
+     ", httpErrors="+JSON.stringify(httpErrors)+
+     ", validationTrace="+JSON.stringify(await page.evaluate(()=>window.__C33F_VALIDATION_TRACE__))+"): "+cause.message);
   }
   console.log("PASS C3F_STEP_"+String(n+1).padStart(2,"0")+": original "+expected[n]+" → "+expected[n+1]+" via Continue");
  }
