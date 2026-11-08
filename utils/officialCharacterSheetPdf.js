@@ -296,7 +296,7 @@ function drawFeatureBlocks(page, features, box, {
   if (overflowSummary && remaining.length) {
     drawTextTop(page, `+${remaining.length} more features - see digital sheet`,
       box.x, box.top + box.height - 11, {
-        font: bold, size: 6.8, width: box.width,
+        font: boldFont, size: 6.8, width: box.width,
       });
   }
   return remaining;
