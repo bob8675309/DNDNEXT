@@ -25,3 +25,8 @@
 
 **HARD HOLD:** PR #345 is mergeable as Git but **not ready to merge into production**: stage RPCs are absent. Do not ship its client alone, apply candidate SQL directly to DnDWeb, close the original #320–#323 drafts, infer any actual production data leak, modify world-map simulation or touch the separate Forge inventory CHECK without its companion RLS correction.
 
+
+
+### 2026-11-07 C3.3 creator Story nonce replay preservation
+
+At draft source head `76e0740bb55e599f2b54cc8bdfb6f69e4d212b20`, [C3.3 signed GoTrue/Chromium run #42430648438](https://github.com/bob8675309/DNDNEXT/actions/runs/42430648438) and all **19/19 exact-code-head workflows** passed. Signed **C3S03** reproduces the stale completion-retry risk and confirms Stage3 `ON CONFLICT DO NOTHING` on the creator-private Story row; a replay of the original v3 nonce cannot overwrite newer text edited by the authorized creator/GM. Existing signed creator role matrix C3B00–07 and C3S01–02 remain green. No change to GM-only secrets or owner/RLS model. The full authored Forge UI browser/other panel flows, production staged cutover and rollback are still NOT accepted. This is research-only candidate work.
