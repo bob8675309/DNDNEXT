@@ -199,7 +199,9 @@ try{
      const node=document.querySelector('.npc-forge-species-fact-choice[data-icon-kind="languages"]');
      return node?.classList.contains("is-complete")===true;
    },null,{timeout:12000});
-   console.log("PASS C3F_ORIGIN_LANGUAGES: real Dwarf Species source-choice dropdowns accepted two distinct languages");
+   const openCompleted = await modal.locator("details.npc-forge-species-fact-choice.is-complete[open]").count();
+   assert.ok(openCompleted > 0,"C3F must click Continue while completed Species details remain open");
+   console.log("PASS C3F_ORIGIN_LANGUAGES: real Dwarf Species source-choice dropdowns accepted two distinct languages; completed detail is open before Continue");
   }
   if(n===8){
    const generate=modal.getByRole("button",{name:/Generate character story & world fit/i});
