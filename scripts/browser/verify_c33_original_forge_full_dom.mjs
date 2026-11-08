@@ -156,6 +156,13 @@ try{
     });
     return originalPrevent.apply(this,args);
   };
+  const originalBubbleStop=Event.prototype.stopPropagation;
+  Event.prototype.stopPropagation=function(...args){
+    if(matchContinue(this))window.__C33F_EVENT_TRACE__.push({
+      kind:"stopPropagation",stack:(new Error()).stack?.slice(0,750)
+    });
+    return originalBubbleStop.apply(this,args);
+  };
   const originalStop=Event.prototype.stopImmediatePropagation;
   Event.prototype.stopImmediatePropagation=function(...args){
     if(matchContinue(this))window.__C33F_EVENT_TRACE__.push({
@@ -210,11 +217,21 @@ try{
   await modal.getByRole("button",{name:"Continue",exact:true}).click();
   if(n===0){
    await page.waitForTimeout(300);
-   const trace=await page.evaluate(()=>({
-    events:window.__C33F_VALIDATION_TRACE__,
-    nativeEvents:window.__C33F_EVENT_TRACE__,
-    current:document.querySelector(".npc-forge-steps button.is-current")?.textContent
-   }));
+   const trace=await page.evaluate(()=>{
+    const button=document.querySelector(".npc-forge-modal-v2 .npc-forge-footer .btn-primary");
+    const reactKey=button&&Object.keys(button).find(k=>k.startsWith("__reactProps$"));
+    const fiberKey=button&&Object.keys(button).find(k=>k.startsWith("__reactFiber$"));
+    return {
+      events:window.__C33F_VALIDATION_TRACE__,
+      nativeEvents:window.__C33F_EVENT_TRACE__,
+      current:document.querySelector(".npc-forge-steps button.is-current")?.textContent,
+      button:button?.outerHTML.slice(0,400),
+      reactProps:reactKey?Object.keys(button[reactKey]):[],
+      reactClickType:reactKey?typeof button[reactKey]?.onClick:"missing",
+      hasFiber:Boolean(fiberKey),
+      localController:JSON.parse(localStorage.getItem("dndnext:player-character-forge:draft:v1:c33-full-original-form")||"{}")?.controller?.step,
+    };
+   });
    console.log("C3F first-step click trace",JSON.stringify({trace,httpErrors}));
   }
   try{
