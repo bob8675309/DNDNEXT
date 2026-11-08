@@ -43,6 +43,12 @@ const m=await gm.who.rpc("create_character_v1",{p_payload:{
 assert.ifError(m.error);assert.match(m.data,/^[0-9a-f-]{36}$/i);
 sql("UPDATE public.characters SET location_id=99001,home_location_id=99001,state='resting',is_hidden=false,storefront_enabled=true WHERE id='"+m.data+"'");
 console.log("PASS C3T01: genuine local signed GM merchant creation and town roster");
+const rosterRead=await outsider.who.from("characters")
+ .select("id,name,kind,location_id,home_location_id,is_hidden,storefront_enabled")
+ .eq("id",m.data).maybeSingle();
+assert.ifError(rosterRead.error);
+assert.equal(rosterRead.data?.id,m.data,"Local signed outsider cannot SELECT visible merchant after creation");
+console.log("PASS C3T01A: true outsider PostgREST can read source-qualified merchant roster identity");
 const origin="http://127.0.0.1:41820";
 let dev=null,browser=null,log="";
 try{
@@ -81,7 +87,23 @@ try{
  }
  async function openMerchant(){
    await page.getByRole("button",{name:"Bazaar / market",exact:true}).click();
-   await page.getByText("C3T town merchant",{exact:true}).first().waitFor();
+   const read=await page.evaluate(async id=>{
+     const fields="id,name,kind,race,role,affiliation,status,state,location_id,last_known_location_id,projected_destination_id,is_hidden,map_icon_id,tags,portrait_url,portrait_storage_path,portrait_thumb_url,portrait_shop_url,portrait_source,image_url";
+     const merchants="id,name,kind,race,role,affiliation,status,state,location_id,home_location_id,storefront_enabled,storefront_title,storefront_tagline,storefront_bg_url,storefront_bg_image_url,storefront_bg_video_url,portrait_url,portrait_storage_path,portrait_thumb_url,portrait_shop_url,image_url,tags";
+     const [roster,market]=await Promise.all([
+       window.__sb.from("characters").select(fields).eq("id",id),
+       window.__sb.from("characters").select(merchants).eq("id",id),
+     ]);
+     return {
+       rosterError:roster.error?.message||null,rosterCode:roster.error?.code||null,
+       marketError:market.error?.message||null,marketCode:market.error?.code||null,
+       rosterNames:(roster.data||[]).map(x=>x.name),
+       marketNames:(market.data||[]).map(x=>x.name),
+       body:document.body.innerText.slice(0,3400)
+     };
+   },m.data);
+   console.log("C3T_BROWSER_MARKET_DIAGNOSTIC",JSON.stringify(read));
+   await page.getByText("C3T town merchant",{exact:true}).first().waitFor({timeout:12000});
    await page.getByRole("button",{name:"Browse Wares",exact:true}).click();
    const d=page.getByRole("dialog",{name:"C3T town merchant profile"});
    await d.waitFor({state:"visible",timeout:25000});

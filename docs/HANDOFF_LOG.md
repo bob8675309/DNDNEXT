@@ -342,3 +342,9 @@
 - Fix narrowly passes serializable `{email,password}` to browser; the authenticated user ID is still compared against the server-signed user. No backend/UI/source migration changes. Previous C3P06 PDF, C3F original creation and C3B roles remain preserved.
 - **Status:** new exact-head CI PENDING. No production Supabase, main, Vercel release, world map or paid actions. **ONE NEXT TASK:** finish real Next C3T Market→Profile→Shop→GM logout, then inventory/PDF visual and separately authorized SQL/UI rollback.
 
+## 2026-11-07 — Actual Next town loaded and signed Bazaar opened; C3T market merchant not displayed (diagnostics pending)
+
+- **Previous #345 exact head** `28f21cece28d2a33c5fbadf0b3334496555b40be`, [joint #42445468629](https://github.com/bob8675309/DNDNEXT/actions/runs/42445468629): original C3F complete, signed C3T00 scratch town fixture and C3T01 original Admin merchant insert/assignment PASS. Actual Next `/town/99001` compiled and rendered, outsider was signed in, opened Bazaar; browser timed out waiting for `C3T town merchant` exact market text, so C3T02–05 were NOT executed. No proof yet of a production bug or a successful route-level Shop.
+- **New bounded diagnostic:** test-only added signed Node outsider safe-roster identity check, then original Next browser queries EXACT real `TownPage` roster and merchant column lists and logs any PostgREST errors plus visible text after Bazaar click. Security permissions unchanged; no fallback to unsafe SELECT * or fabricated market rows.
+- **Status:** NEW CI pending; 24/24 previous accepted Forge/NPC/actual PDF head `195ffc26` preserved. No production SQL, main, deployment, paid or world map changes. **ONE NEXT TASK:** use precise browser query diagnostics to fix only responsible scratch reader or original app behavior, then GM logout and true route acceptance.
+
