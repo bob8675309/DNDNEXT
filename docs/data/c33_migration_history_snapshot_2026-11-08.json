@@ -1,0 +1,1715 @@
+{
+  "notice": "Read-only metadata snapshot. A filename match does NOT establish migration SQL equivalence, presence in local supabase/migrations, or restore availability.",
+  "captured_on": "2026-11-08",
+  "project": "DnDWeb",
+  "project_ref": "ucggczovhmauhshvhusx",
+  "repository_ref": "62854da256854444d2b56fa711b2958d1c4e305e",
+  "remote_migration_history_count": 243,
+  "repository_sql_file_count": 270,
+  "status": {
+    "remoteTotal": 243,
+    "localSqlTotal": 270,
+    "remoteWithFilenameMatch": 208,
+    "remoteWithoutFilenameMatch": 35,
+    "ambiguousMatches": 1,
+    "unmatchedLocal": 62
+  },
+  "migrations": [
+    {
+      "version": "20260612151521",
+      "name": "patch0_crafting_authorization_hardening",
+      "possible_local_paths": [
+        "sql/20260612_90_patch0_crafting_authorization_hardening.sql"
+      ]
+    },
+    {
+      "version": "20260612151618",
+      "name": "patch0_authorization_guards",
+      "possible_local_paths": [
+        "sql/20260612_91_patch0_authorization_guards.sql"
+      ]
+    },
+    {
+      "version": "20260612154141",
+      "name": "player_signup_profiles",
+      "possible_local_paths": [
+        "sql/20260612_93_player_signup_profiles.sql"
+      ]
+    },
+    {
+      "version": "20260613022218",
+      "name": "crafting_materials_v2",
+      "possible_local_paths": [
+        "sql/20260612_95_crafting_materials_v2.sql"
+      ]
+    },
+    {
+      "version": "20260613055551",
+      "name": "smithing_temper_v3",
+      "possible_local_paths": [
+        "sql/20260613_96_smithing_temper_v3.sql"
+      ]
+    },
+    {
+      "version": "20260613153942",
+      "name": "smithing_card_polish_v4",
+      "possible_local_paths": [
+        "sql/20260613_97_smithing_card_polish_v4.sql"
+      ]
+    },
+    {
+      "version": "20260613193529",
+      "name": "smithing_material_quality_v5_functions",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20260613193640",
+      "name": "smithing_material_quality_v5_catalog",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20260614002009",
+      "name": "crafting_workflow_v6",
+      "possible_local_paths": [
+        "sql/20260613_99_crafting_workflow_v6.sql"
+      ]
+    },
+    {
+      "version": "20260614034425",
+      "name": "crafting_virtual_stock_hotfix_v3",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20260614192328",
+      "name": "phase_a_reference_table_rls",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20260614192358",
+      "name": "phase_a_inventory_ownership_rls",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20260614192453",
+      "name": "phase_a_rpc_accept_trade",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20260614192527",
+      "name": "phase_a_non_map_rpc_exposure_remaining",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20260614192755",
+      "name": "phase_a_rpc_reroll_merchant_inventory_overload",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20260614193004",
+      "name": "phase_a_inventory_transfer_compatibility",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20260614235248",
+      "name": "player_inventory_owner_alignment_v2",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20260615202924",
+      "name": "smithing_base_dice_scaling_v4",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20260616170936",
+      "name": "merchant_crafted_alchemy_stock_v1",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20260616172505",
+      "name": "merchant_stock_item_alchemy_v1",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20260616180519",
+      "name": "merchant_alchemy_stock_backfill_v2",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20260616221221",
+      "name": "merchant_alchemy_duration_qualifiers_v3",
+      "possible_local_paths": [
+        "sql/20260616_104_merchant_alchemy_duration_qualifiers_v3.sql"
+      ]
+    },
+    {
+      "version": "20260617211928",
+      "name": "enchanting_completion_v1",
+      "possible_local_paths": [
+        "sql/20260617_01_enchanting_completion_v1.sql"
+      ]
+    },
+    {
+      "version": "20260617230819",
+      "name": "npc_forge_foundation_v1",
+      "possible_local_paths": [
+        "sql/20260617_02_npc_forge_foundation_v1.sql"
+      ]
+    },
+    {
+      "version": "20260619160848",
+      "name": "npc_portrait_foundation_v1",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20260619175130",
+      "name": "npc_portrait_art_pack_v1",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20260630181719",
+      "name": "npc_known_recipes",
+      "possible_local_paths": [
+        "sql/20260630_01_npc_known_recipes.sql"
+      ]
+    },
+    {
+      "version": "20260630183725",
+      "name": "npc_known_recipes_recipe_key",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20260706215745",
+      "name": "spell_catalog_foundation",
+      "possible_local_paths": [
+        "sql/20260706_01_spell_catalog_foundation.sql"
+      ]
+    },
+    {
+      "version": "20260706235059",
+      "name": "spell_preview_import_rpc",
+      "possible_local_paths": [
+        "sql/20260706_02_spell_preview_import_rpc.sql"
+      ]
+    },
+    {
+      "version": "20260710175859",
+      "name": "mog_delete_session_override",
+      "possible_local_paths": [
+        "sql/20260710_01_mog_delete_session_override.sql"
+      ]
+    },
+    {
+      "version": "20260710181647",
+      "name": "character_progression_foundation",
+      "possible_local_paths": [
+        "sql/20260710_02_character_progression_foundation.sql"
+      ]
+    },
+    {
+      "version": "20260710182247",
+      "name": "character_progression_rpc_grants",
+      "possible_local_paths": [
+        "sql/20260710_03_character_progression_rpc_grants.sql"
+      ]
+    },
+    {
+      "version": "20260710233545",
+      "name": "character_xp_level_up_review",
+      "possible_local_paths": [
+        "sql/20260710_04_character_xp_level_up_review.sql"
+      ]
+    },
+    {
+      "version": "20260711034737",
+      "name": "player_character_creation_and_starting_spells",
+      "possible_local_paths": [
+        "sql/20260710_05_player_character_creation_and_starting_spells.sql"
+      ]
+    },
+    {
+      "version": "20260711035314",
+      "name": "player_creation_progression_trigger_guard",
+      "possible_local_paths": [
+        "sql/20260710_06_player_creation_progression_trigger_guard.sql"
+      ]
+    },
+    {
+      "version": "20260711035829",
+      "name": "transactional_level_up_completion",
+      "possible_local_paths": [
+        "sql/20260710_07_transactional_level_up_completion.sql"
+      ]
+    },
+    {
+      "version": "20260711053415",
+      "name": "canonical_spell_class_and_character_option_catalogs",
+      "possible_local_paths": [
+        "sql/20260711_01_canonical_spell_class_and_character_option_catalogs.sql"
+      ]
+    },
+    {
+      "version": "20260711053434",
+      "name": "prefer_canonical_spell_and_class_versions_in_progression",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20260711055253",
+      "name": "seed_character_feature_fallbacks",
+      "possible_local_paths": [
+        "sql/20260711_03_seed_character_feature_fallbacks.sql"
+      ]
+    },
+    {
+      "version": "20260712145335",
+      "name": "profile_sheet_class_refinements",
+      "possible_local_paths": [
+        "sql/20260712_01_profile_sheet_class_refinements.sql"
+      ]
+    },
+    {
+      "version": "20260721010525",
+      "name": "subclass_compatibility_and_selection",
+      "possible_local_paths": [
+        "sql/20260720_01_subclass_compatibility_and_selection.sql"
+      ]
+    },
+    {
+      "version": "20260721010711",
+      "name": "subclass_sheet_sync",
+      "possible_local_paths": [
+        "sql/20260720_02_subclass_sheet_sync.sql"
+      ]
+    },
+    {
+      "version": "20260721200343",
+      "name": "character_data_rls_phase_1",
+      "possible_local_paths": [
+        "sql/20260721_01_character_data_rls_phase_1.sql"
+      ]
+    },
+    {
+      "version": "20260721211641",
+      "name": "map_world_rls_phase_2",
+      "possible_local_paths": [
+        "sql/20260721_02_map_world_rls_phase_2.sql"
+      ]
+    },
+    {
+      "version": "20260721211850",
+      "name": "map_world_rls_phase_2_policy_cleanup",
+      "possible_local_paths": [
+        "sql/20260721_03_map_world_rls_phase_2_policy_cleanup.sql"
+      ]
+    },
+    {
+      "version": "20260721215225",
+      "name": "prefer_playable_species_sources",
+      "possible_local_paths": [
+        "sql/20260721_01_prefer_playable_species_sources.sql"
+      ]
+    },
+    {
+      "version": "20260725010330",
+      "name": "security_hardening_roadmap",
+      "possible_local_paths": [
+        "sql/20260724_01_security_hardening_roadmap.sql"
+      ]
+    },
+    {
+      "version": "20260725011010",
+      "name": "database_drift_followup",
+      "possible_local_paths": [
+        "sql/20260724_02_database_drift_followup.sql"
+      ]
+    },
+    {
+      "version": "20260725023327",
+      "name": "anonymous_helper_rpc_cleanup",
+      "possible_local_paths": [
+        "sql/20260724_03_anonymous_helper_rpc_cleanup.sql"
+      ]
+    },
+    {
+      "version": "20260725043245",
+      "name": "resolve_background_copy_catalog",
+      "possible_local_paths": [
+        "sql/20260724_04_resolve_background_copy_catalog.sql"
+      ]
+    },
+    {
+      "version": "20260725150530",
+      "name": "character_option_visibility",
+      "possible_local_paths": [
+        "sql/20260725_01_character_option_visibility.sql"
+      ]
+    },
+    {
+      "version": "20260726023008",
+      "name": "portrait_sprite_asset_foundation",
+      "possible_local_paths": [
+        "sql/20260725_02_portrait_sprite_asset_foundation.sql"
+      ]
+    },
+    {
+      "version": "20260726023024",
+      "name": "guard_unrendered_visual_assets",
+      "possible_local_paths": [
+        "sql/20260725_03_guard_unrendered_visual_assets.sql"
+      ]
+    },
+    {
+      "version": "20260726023719",
+      "name": "visual_asset_legacy_companion",
+      "possible_local_paths": [
+        "sql/20260725_04_visual_asset_legacy_companion.sql"
+      ]
+    },
+    {
+      "version": "20260726223826",
+      "name": "decouple_portrait_sprite_selection",
+      "possible_local_paths": [
+        "sql/20260726_01_decouple_portrait_sprite_selection.sql"
+      ]
+    },
+    {
+      "version": "20260726224319",
+      "name": "enforce_independent_sprite_registry",
+      "possible_local_paths": [
+        "sql/20260726_02_enforce_independent_sprite_registry.sql"
+      ]
+    },
+    {
+      "version": "20260726225333",
+      "name": "sprite_library_admin_rpc",
+      "possible_local_paths": [
+        "sql/20260726_03_sprite_library_admin_rpc.sql"
+      ]
+    },
+    {
+      "version": "20260726230051",
+      "name": "character_sprite_picker",
+      "possible_local_paths": [
+        "sql/20260726_04_character_sprite_picker.sql"
+      ]
+    },
+    {
+      "version": "20260726230421",
+      "name": "sync_portrait_library_identity",
+      "possible_local_paths": [
+        "sql/20260726_05_sync_portrait_library_identity.sql"
+      ]
+    },
+    {
+      "version": "20260727031311",
+      "name": "eight_direction_runtime_projection",
+      "possible_local_paths": [
+        "sql/20260726_06_eight_direction_runtime_projection.sql"
+      ]
+    },
+    {
+      "version": "20260727052128",
+      "name": "encounter_map_foundation",
+      "possible_local_paths": [
+        "sql/20260727_01_encounter_map_foundation.sql"
+      ]
+    },
+    {
+      "version": "20260727052251",
+      "name": "encounter_map_grant_hardening",
+      "possible_local_paths": [
+        "sql/20260727_02_encounter_map_grant_hardening.sql"
+      ]
+    },
+    {
+      "version": "20260727171754",
+      "name": "live_encounter_sessions",
+      "possible_local_paths": [
+        "sql/20260727_03_live_encounter_sessions.sql"
+      ]
+    },
+    {
+      "version": "20260727174406",
+      "name": "authoritative_encounter_turn_movement",
+      "possible_local_paths": [
+        "sql/20260727_04_authoritative_encounter_turn_movement.sql"
+      ]
+    },
+    {
+      "version": "20260727174711",
+      "name": "encounter_speed_helper_hardening",
+      "possible_local_paths": [
+        "sql/20260727_05_encounter_speed_helper_hardening.sql"
+      ]
+    },
+    {
+      "version": "20260727190121",
+      "name": "core_combat_actions",
+      "possible_local_paths": [
+        "sql/20260727_06_core_combat_actions.sql"
+      ]
+    },
+    {
+      "version": "20260727190157",
+      "name": "core_combat_hardening",
+      "possible_local_paths": [
+        "sql/20260727_07_core_combat_hardening.sql"
+      ]
+    },
+    {
+      "version": "20260727193800",
+      "name": "equipped_weapon_attacks",
+      "possible_local_paths": [
+        "sql/20260727_08_equipped_weapon_attacks.sql"
+      ]
+    },
+    {
+      "version": "20260727200224",
+      "name": "los_cover_saves_damage",
+      "possible_local_paths": [
+        "sql/20260727_09_los_cover_saves_damage.sql"
+      ]
+    },
+    {
+      "version": "20260727203456",
+      "name": "reaction_opportunity_windows",
+      "possible_local_paths": [
+        "sql/20260727_10_reaction_opportunity_windows.sql"
+      ]
+    },
+    {
+      "version": "20260727203620",
+      "name": "generic_effects_conditions",
+      "possible_local_paths": [
+        "sql/20260727_11_generic_effects_conditions.sql"
+      ]
+    },
+    {
+      "version": "20260727225258",
+      "name": "tactical_spell_foundation",
+      "possible_local_paths": [
+        "sql/20260727_12_tactical_spell_foundation.sql"
+      ]
+    },
+    {
+      "version": "20260727230924",
+      "name": "tactical_spell_casting_slice",
+      "possible_local_paths": [
+        "sql/20260727_13_tactical_spell_casting_slice.sql"
+      ]
+    },
+    {
+      "version": "20260728003957",
+      "name": "tactical_single_target_save_spell",
+      "possible_local_paths": [
+        "sql/20260727_14_tactical_single_target_save_spell.sql"
+      ]
+    },
+    {
+      "version": "20260728014526",
+      "name": "tactical_toll_the_dead",
+      "possible_local_paths": [
+        "sql/20260728_01_tactical_toll_the_dead.sql"
+      ]
+    },
+    {
+      "version": "20260728025432",
+      "name": "tactical_poison_spray",
+      "possible_local_paths": [
+        "sql/20260728_02_tactical_poison_spray.sql"
+      ]
+    },
+    {
+      "version": "20260728042006",
+      "name": "tactical_false_life",
+      "possible_local_paths": [
+        "sql/20260728_03_tactical_false_life.sql"
+      ]
+    },
+    {
+      "version": "20260728162036",
+      "name": "tactical_inflict_wounds",
+      "possible_local_paths": [
+        "sql/20260728_04_tactical_inflict_wounds.sql"
+      ]
+    },
+    {
+      "version": "20260728171920",
+      "name": "tactical_shocking_grasp",
+      "possible_local_paths": [
+        "sql/20260728_05_tactical_shocking_grasp.sql"
+      ]
+    },
+    {
+      "version": "20260728190908",
+      "name": "tactical_ray_of_frost",
+      "possible_local_paths": [
+        "sql/20260728_06_tactical_ray_of_frost.sql"
+      ]
+    },
+    {
+      "version": "20260728193929",
+      "name": "tactical_chill_touch",
+      "possible_local_paths": [
+        "sql/20260728_07_tactical_chill_touch.sql"
+      ]
+    },
+    {
+      "version": "20260729183810",
+      "name": "tactical_mind_sliver",
+      "possible_local_paths": [
+        "sql/20260728_08_tactical_mind_sliver.sql"
+      ]
+    },
+    {
+      "version": "20260729184616",
+      "name": "tactical_mind_sliver_save_profile_fix",
+      "possible_local_paths": [
+        "sql/20260729_01_tactical_mind_sliver_save_profile_fix.sql"
+      ]
+    },
+    {
+      "version": "20260729192806",
+      "name": "tactical_word_of_radiance",
+      "possible_local_paths": [
+        "sql/20260729_02_tactical_word_of_radiance.sql"
+      ]
+    },
+    {
+      "version": "20260730022432",
+      "name": "tactical_attack_roll_modifiers",
+      "possible_local_paths": [
+        "sql/20260729_03_tactical_attack_roll_modifiers.sql"
+      ]
+    },
+    {
+      "version": "20260730023411",
+      "name": "tactical_guiding_bolt",
+      "possible_local_paths": [
+        "sql/20260729_04_tactical_guiding_bolt.sql"
+      ]
+    },
+    {
+      "version": "20260730040717",
+      "name": "tactical_legacy_attack_spell_hardening",
+      "possible_local_paths": [
+        "sql/20260730_01_tactical_legacy_attack_spell_hardening.sql"
+      ]
+    },
+    {
+      "version": "20260730045806",
+      "name": "tactical_vicious_mockery",
+      "possible_local_paths": [
+        "sql/20260730_02_tactical_vicious_mockery.sql"
+      ]
+    },
+    {
+      "version": "20260730055827",
+      "name": "tactical_healing_word",
+      "possible_local_paths": [
+        "sql/20260730_03_tactical_healing_word.sql"
+      ]
+    },
+    {
+      "version": "20260730151224",
+      "name": "tactical_acid_splash",
+      "possible_local_paths": [
+        "sql/20260730_04_tactical_acid_splash.sql"
+      ]
+    },
+    {
+      "version": "20260730155810",
+      "name": "tactical_magic_missile",
+      "possible_local_paths": [
+        "sql/20260730_05_tactical_magic_missile.sql"
+      ]
+    },
+    {
+      "version": "20260730183119",
+      "name": "tactical_burning_hands",
+      "possible_local_paths": [
+        "sql/20260730_06_tactical_burning_hands.sql"
+      ]
+    },
+    {
+      "version": "20260730195028",
+      "name": "tactical_lightning_bolt",
+      "possible_local_paths": [
+        "sql/20260730_07_tactical_lightning_bolt.sql"
+      ]
+    },
+    {
+      "version": "20260731031421",
+      "name": "tactical_durable_encounter_start",
+      "possible_local_paths": [
+        "sql/20260730_08_tactical_durable_encounter_start.sql"
+      ]
+    },
+    {
+      "version": "20260731032917",
+      "name": "tactical_encounter_lifecycle_guard",
+      "possible_local_paths": [
+        "sql/20260730_09_tactical_encounter_lifecycle_guard.sql"
+      ]
+    },
+    {
+      "version": "20260801151436",
+      "name": "crafting_completion_normalization",
+      "possible_local_paths": [
+        "sql/20260801_01_crafting_completion_normalization.sql"
+      ]
+    },
+    {
+      "version": "20260801153400",
+      "name": "equipped_armor_canonical_ac",
+      "possible_local_paths": [
+        "sql/20260801_02_equipped_armor_canonical_ac.sql"
+      ]
+    },
+    {
+      "version": "20260801161928",
+      "name": "shared_equipment_effects_pipeline",
+      "possible_local_paths": [
+        "sql/20260801_03_shared_equipment_effects_pipeline.sql"
+      ]
+    },
+    {
+      "version": "20260801162503",
+      "name": "shared_equipment_effects_tactical_modifiers",
+      "possible_local_paths": [
+        "sql/20260801_04_shared_equipment_effects_tactical_modifiers.sql"
+      ]
+    },
+    {
+      "version": "20260802153954",
+      "name": "player_character_inventory_and_sheet_actions",
+      "possible_local_paths": [
+        "sql/20260802_01_player_character_inventory_and_sheet_actions.sql"
+      ]
+    },
+    {
+      "version": "20260802180158",
+      "name": "character_sheet_feature_actions",
+      "possible_local_paths": [
+        "sql/20260802_02_character_sheet_feature_actions.sql"
+      ]
+    },
+    {
+      "version": "20260803002309",
+      "name": "character_sheet_spell_resources",
+      "possible_local_paths": [
+        "sql/20260802_03_character_sheet_spell_resources.sql"
+      ]
+    },
+    {
+      "version": "20260803010011",
+      "name": "tactical_character_resource_bridge_core",
+      "possible_local_paths": [
+        "sql/20260802_04_tactical_character_resource_bridge_core.sql"
+      ]
+    },
+    {
+      "version": "20260803010138",
+      "name": "tactical_character_resource_bridge_profile_v2",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20260803010238",
+      "name": "character_resource_active_encounter_lock",
+      "possible_local_paths": [
+        "sql/20260802_06_character_resource_active_encounter_lock.sql"
+      ]
+    },
+    {
+      "version": "20260804192635",
+      "name": "multi_player_character_forge_v2",
+      "possible_local_paths": [
+        "sql/20260804_01_multi_player_character_forge_v2.sql"
+      ]
+    },
+    {
+      "version": "20260804193157",
+      "name": "player_forge_progression_upsert",
+      "possible_local_paths": [
+        "sql/20260804_02_player_forge_progression_upsert.sql"
+      ]
+    },
+    {
+      "version": "20260805003659",
+      "name": "character_forge_resilience_and_tags",
+      "possible_local_paths": [
+        "sql/20260804_03_character_forge_resilience_and_tags.sql"
+      ]
+    },
+    {
+      "version": "20260805175809",
+      "name": "character_forge_subclass_choice",
+      "possible_local_paths": [
+        "sql/20260805_01_character_forge_subclass_choice.sql"
+      ]
+    },
+    {
+      "version": "20260805212944",
+      "name": "player_forge_starting_spell_validation",
+      "possible_local_paths": [
+        "sql/20260805_02_player_forge_starting_spell_validation.sql"
+      ]
+    },
+    {
+      "version": "20260806002225",
+      "name": "player_character_authority_hardening",
+      "possible_local_paths": [
+        "sql/20260805_03_player_character_authority_hardening.sql"
+      ]
+    },
+    {
+      "version": "20260807005422",
+      "name": "player_forge_source_choice_foundation",
+      "possible_local_paths": [
+        "sql/20260806_00_player_forge_source_choice_foundation.sql"
+      ]
+    },
+    {
+      "version": "20260807005510",
+      "name": "player_forge_source_choice_validation",
+      "possible_local_paths": [
+        "sql/20260806_01_player_forge_source_choice_validation.sql"
+      ]
+    },
+    {
+      "version": "20260807010102",
+      "name": "player_forge_choice_normalization_fix",
+      "possible_local_paths": [
+        "sql/20260806_02_player_forge_choice_normalization_fix.sql"
+      ]
+    },
+    {
+      "version": "20260807030515",
+      "name": "player_forge_nested_choice_validation",
+      "possible_local_paths": [
+        "sql/20260806_03_player_forge_nested_choice_validation.sql"
+      ]
+    },
+    {
+      "version": "20260807231233",
+      "name": "player_forge_runtime_choice_cadence",
+      "possible_local_paths": [
+        "sql/20260807_01_player_forge_runtime_choice_cadence.sql"
+      ]
+    },
+    {
+      "version": "20260808022759",
+      "name": "character_option_grant_instances",
+      "possible_local_paths": [
+        "sql/20260808_01_character_option_grant_instances.sql"
+      ]
+    },
+    {
+      "version": "20260808023000",
+      "name": "player_forge_feat_instance_authority",
+      "possible_local_paths": [
+        "sql/20260808_02_player_forge_feat_instance_authority.sql"
+      ]
+    },
+    {
+      "version": "20260808024101",
+      "name": "player_forge_feat_instance_validation",
+      "possible_local_paths": [
+        "sql/20260808_03_player_forge_feat_instance_validation.sql"
+      ]
+    },
+    {
+      "version": "20260808030312",
+      "name": "player_forge_starting_magic_authority",
+      "possible_local_paths": [
+        "sql/20260808_04_player_forge_starting_magic_authority.sql"
+      ]
+    },
+    {
+      "version": "20260808034605",
+      "name": "player_forge_boon_instance_authority",
+      "possible_local_paths": [
+        "sql/20260808_05_player_forge_boon_instance_authority.sql"
+      ]
+    },
+    {
+      "version": "20260808034822",
+      "name": "character_progression_option_eligibility",
+      "possible_local_paths": [
+        "sql/20260808_06_character_progression_option_eligibility.sql"
+      ]
+    },
+    {
+      "version": "20260808035755",
+      "name": "starting_magic_progression_boundary",
+      "possible_local_paths": [
+        "sql/20260808_07_starting_magic_progression_boundary.sql"
+      ]
+    },
+    {
+      "version": "20260808035900",
+      "name": "character_spell_source_identity",
+      "possible_local_paths": [
+        "sql/20260808_08_character_spell_source_identity.sql"
+      ]
+    },
+    {
+      "version": "20260808040301",
+      "name": "level_up_advancement_authority_helpers",
+      "possible_local_paths": [
+        "sql/20260808_09_level_up_advancement_authority_helpers.sql"
+      ]
+    },
+    {
+      "version": "20260808040557",
+      "name": "level_up_advancement_effects",
+      "possible_local_paths": [
+        "sql/20260808_10_level_up_advancement_effects.sql"
+      ]
+    },
+    {
+      "version": "20260808041101",
+      "name": "character_level_up_v3",
+      "possible_local_paths": [
+        "sql/20260808_11_character_level_up_v3.sql"
+      ]
+    },
+    {
+      "version": "20260808041723",
+      "name": "level_up_review_progression_authority",
+      "possible_local_paths": [
+        "sql/20260808_12_level_up_review_progression_authority.sql"
+      ]
+    },
+    {
+      "version": "20260808042807",
+      "name": "level_up_persistent_choice_gap_guard",
+      "possible_local_paths": [
+        "sql/20260808_13_level_up_persistent_choice_gap_guard.sql"
+      ]
+    },
+    {
+      "version": "20260808042839",
+      "name": "level_up_v3_review_guard",
+      "possible_local_paths": [
+        "sql/20260808_14_level_up_v3_review_guard.sql"
+      ]
+    },
+    {
+      "version": "20260808043004",
+      "name": "level_up_review_fail_closed_choice_deltas",
+      "possible_local_paths": [
+        "sql/20260808_15_level_up_review_fail_closed_choice_deltas.sql"
+      ]
+    },
+    {
+      "version": "20260808043749",
+      "name": "simple_class_choice_delta_authority",
+      "possible_local_paths": [
+        "sql/20260808_16_simple_class_choice_delta_authority.sql"
+      ]
+    },
+    {
+      "version": "20260808043905",
+      "name": "enable_simple_class_choice_level_up",
+      "possible_local_paths": [
+        "sql/20260808_17_enable_simple_class_choice_level_up.sql"
+      ]
+    },
+    {
+      "version": "20260808045010",
+      "name": "metamagic_mystic_arcanum_progression",
+      "possible_local_paths": [
+        "sql/20260808_18_metamagic_mystic_arcanum_progression.sql"
+      ]
+    },
+    {
+      "version": "20260808051654",
+      "name": "source_aware_level_up_spell_access",
+      "possible_local_paths": [
+        "sql/20260808_19_source_aware_level_up_spell_access.sql"
+      ]
+    },
+    {
+      "version": "20260808053015",
+      "name": "class_feature_option_catalog",
+      "possible_local_paths": [
+        "sql/20260808_20_class_feature_option_catalog.sql"
+      ]
+    },
+    {
+      "version": "20260808055300",
+      "name": "player_forge_class_option_instance_authority",
+      "possible_local_paths": [
+        "sql/20260808_21_player_forge_class_option_instance_authority.sql"
+      ]
+    },
+    {
+      "version": "20260808055318",
+      "name": "tighten_player_forge_class_option_legacy_gate",
+      "possible_local_paths": [
+        "sql/20260808_22_tighten_player_forge_class_option_legacy_gate.sql"
+      ]
+    },
+    {
+      "version": "20260808055820",
+      "name": "fix_player_forge_spell_slot_json_validation",
+      "possible_local_paths": [
+        "sql/20260808_23_fix_player_forge_spell_slot_json_validation.sql"
+      ]
+    },
+    {
+      "version": "20260808061736",
+      "name": "source_owned_origin_feat_authority",
+      "possible_local_paths": [
+        "sql/20260808_24_source_owned_origin_feat_authority.sql"
+      ]
+    },
+    {
+      "version": "20260808062015",
+      "name": "tough_progression_bonus",
+      "possible_local_paths": [
+        "sql/20260808_25_tough_progression_bonus.sql"
+      ]
+    },
+    {
+      "version": "20260808063537",
+      "name": "earned_warlock_invocation_progression",
+      "possible_local_paths": [
+        "sql/20260808_26_earned_warlock_invocation_progression.sql"
+      ]
+    },
+    {
+      "version": "20260808064229",
+      "name": "earned_subclass_choice_progression",
+      "possible_local_paths": [
+        "sql/20260808_27_earned_subclass_choice_progression.sql"
+      ]
+    },
+    {
+      "version": "20260808151019",
+      "name": "legacy_warlock_invocation_recovery",
+      "possible_local_paths": [
+        "sql/20260808_28_legacy_warlock_invocation_recovery.sql"
+      ]
+    },
+    {
+      "version": "20260808152754",
+      "name": "normalize_xphb_metamagic_options",
+      "possible_local_paths": [
+        "sql/20260808_29_normalize_xphb_metamagic_options.sql"
+      ]
+    },
+    {
+      "version": "20260808152946",
+      "name": "safe_level_up_replacements",
+      "possible_local_paths": [
+        "sql/20260808_30_safe_level_up_replacements.sql"
+      ]
+    },
+    {
+      "version": "20260808153629",
+      "name": "fix_tough_progression_acquisition_level",
+      "possible_local_paths": [
+        "sql/20260808_31_fix_tough_progression_acquisition_level.sql"
+      ]
+    },
+    {
+      "version": "20260808154521",
+      "name": "repair_source_owned_origin_feat_grant_schema",
+      "possible_local_paths": [
+        "sql/20260808_32_repair_source_owned_origin_feat_grant_schema.sql"
+      ]
+    },
+    {
+      "version": "20260808155408",
+      "name": "magic_initiate_level_replacement",
+      "possible_local_paths": [
+        "sql/20260808_33_magic_initiate_level_replacement.sql"
+      ]
+    },
+    {
+      "version": "20260808161558",
+      "name": "reversible_source_owned_origin_feats",
+      "possible_local_paths": [
+        "sql/20260808_34_reversible_source_owned_origin_feats.sql"
+      ]
+    },
+    {
+      "version": "20260808163456",
+      "name": "eldritch_invocation_level_replacement",
+      "possible_local_paths": [
+        "sql/20260808_35_eldritch_invocation_level_replacement.sql"
+      ]
+    },
+    {
+      "version": "20260808164029",
+      "name": "fix_invocation_replacement_source_choices_parent",
+      "possible_local_paths": [
+        "sql/20260808_36_fix_invocation_replacement_source_choices_parent.sql"
+      ]
+    },
+    {
+      "version": "20260808165622",
+      "name": "sync_eldritch_invocation_sheet_projection",
+      "possible_local_paths": [
+        "sql/20260808_37_sync_eldritch_invocation_sheet_projection.sql"
+      ]
+    },
+    {
+      "version": "20260808173831",
+      "name": "normalize_xphb_battle_master_maneuvers",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20260808173951",
+      "name": "battle_master_maneuver_progression",
+      "possible_local_paths": [
+        "sql/20260808_39_battle_master_maneuver_progression.sql"
+      ]
+    },
+    {
+      "version": "20260808184623",
+      "name": "wizard_savant_spellbook_progression",
+      "possible_local_paths": [
+        "sql/20260808_40_wizard_savant_spellbook_progression.sql"
+      ]
+    },
+    {
+      "version": "20260808205651",
+      "name": "wizard_savant_forge_chronology",
+      "possible_local_paths": [
+        "sql/20260808_41_wizard_savant_forge_chronology.sql"
+      ]
+    },
+    {
+      "version": "20260808213723",
+      "name": "wizard_signature_spells_authority",
+      "possible_local_paths": [
+        "sql/20260808_42_wizard_signature_spells_authority.sql"
+      ]
+    },
+    {
+      "version": "20260808214147",
+      "name": "wizard_signature_spells_authority",
+      "possible_local_paths": [
+        "sql/20260808_42_wizard_signature_spells_authority.sql"
+      ]
+    },
+    {
+      "version": "20260808214208",
+      "name": "wizard_signature_resource_labels",
+      "possible_local_paths": [
+        "sql/20260808_43_wizard_signature_resource_labels.sql"
+      ]
+    },
+    {
+      "version": "20260808215848",
+      "name": "runtime_feature_choices_spell_mastery",
+      "possible_local_paths": [
+        "sql/20260808_44_runtime_feature_choices_spell_mastery.sql"
+      ]
+    },
+    {
+      "version": "20260808220519",
+      "name": "wizard_spell_mastery_runtime",
+      "possible_local_paths": [
+        "sql/20260808_43_wizard_spell_mastery_runtime.sql",
+        "sql/20260808_44_wizard_spell_mastery_runtime.sql"
+      ]
+    },
+    {
+      "version": "20260808220734",
+      "name": "runtime_weapon_mastery",
+      "possible_local_paths": [
+        "sql/20260808_45_runtime_weapon_mastery.sql"
+      ]
+    },
+    {
+      "version": "20260808221807",
+      "name": "weapon_master_feat_runtime",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20260808231719",
+      "name": "player_forge_starting_magic_v3_completion",
+      "possible_local_paths": [
+        "sql/20260808_47_player_forge_starting_magic_v3_completion.sql"
+      ]
+    },
+    {
+      "version": "20260808232240",
+      "name": "player_forge_v3_acl_cleanup",
+      "possible_local_paths": [
+        "sql/20260808_48_player_forge_v3_acl_cleanup.sql"
+      ]
+    },
+    {
+      "version": "20260809000651",
+      "name": "player_forge_starting_equipment_currency",
+      "possible_local_paths": [
+        "sql/20260808_49_player_forge_starting_equipment_currency.sql"
+      ]
+    },
+    {
+      "version": "20260809000709",
+      "name": "player_forge_starting_equipment_guard",
+      "possible_local_paths": [
+        "sql/20260808_50_player_forge_starting_equipment_guard.sql"
+      ]
+    },
+    {
+      "version": "20260809000732",
+      "name": "player_forge_character_scoped_equipment_projection",
+      "possible_local_paths": [
+        "sql/20260808_51_player_forge_character_scoped_equipment_projection.sql"
+      ]
+    },
+    {
+      "version": "20260809011234",
+      "name": "astral_trance_runtime",
+      "possible_local_paths": [
+        "sql/20260808_52_astral_trance_runtime.sql"
+      ]
+    },
+    {
+      "version": "20260809011509",
+      "name": "astral_trance_skill_key_correction",
+      "possible_local_paths": [
+        "sql/20260808_53_astral_trance_skill_key_correction.sql"
+      ]
+    },
+    {
+      "version": "20260809011946",
+      "name": "astral_trance_species_key_correction",
+      "possible_local_paths": [
+        "sql/20260808_54_astral_trance_species_key_correction.sql"
+      ]
+    },
+    {
+      "version": "20260809013318",
+      "name": "primal_companion_runtime",
+      "possible_local_paths": [
+        "sql/20260808_55_primal_companion_runtime.sql"
+      ]
+    },
+    {
+      "version": "20260809015156",
+      "name": "dread_allegiance_runtime",
+      "possible_local_paths": [
+        "sql/20260808_56_dread_allegiance_runtime.sql"
+      ]
+    },
+    {
+      "version": "20260809020313",
+      "name": "fiendish_resilience_runtime",
+      "possible_local_paths": [
+        "sql/20260808_57_fiendish_resilience_runtime.sql"
+      ]
+    },
+    {
+      "version": "20260809021828",
+      "name": "circle_land_runtime",
+      "possible_local_paths": [
+        "sql/20260808_58_circle_land_runtime.sql"
+      ]
+    },
+    {
+      "version": "20260809021853",
+      "name": "circle_land_source_matrix_correction",
+      "possible_local_paths": [
+        "sql/20260808_59_circle_land_source_matrix_correction.sql"
+      ]
+    },
+    {
+      "version": "20260809033247",
+      "name": "artificer_magic_item_plan_instances",
+      "possible_local_paths": [
+        "sql/20260808_60_artificer_magic_item_plan_instances.sql"
+      ]
+    },
+    {
+      "version": "20260809033304",
+      "name": "artificer_plan_projection_parent_fix",
+      "possible_local_paths": [
+        "sql/20260808_61_artificer_plan_projection_parent_fix.sql"
+      ]
+    },
+    {
+      "version": "20260809034315",
+      "name": "artificer_common_magic_item_identity",
+      "possible_local_paths": [
+        "sql/20260808_62_artificer_common_magic_item_identity.sql"
+      ]
+    },
+    {
+      "version": "20260809050755",
+      "name": "species_rest_proficiency_runtime",
+      "possible_local_paths": [
+        "sql/20260808_63_species_rest_proficiency_runtime.sql"
+      ]
+    },
+    {
+      "version": "20260809051128",
+      "name": "species_rest_proficiency_acl_cleanup",
+      "possible_local_paths": [
+        "sql/20260808_64_species_rest_proficiency_acl_cleanup.sql"
+      ]
+    },
+    {
+      "version": "20260809051658",
+      "name": "species_rest_proficiency_rest_key_correction",
+      "possible_local_paths": [
+        "sql/20260808_65_species_rest_proficiency_rest_key_correction.sql"
+      ]
+    },
+    {
+      "version": "20260809052150",
+      "name": "species_runtime_projection_parent_fix",
+      "possible_local_paths": [
+        "sql/20260808_66_species_runtime_projection_parent_fix.sql"
+      ]
+    },
+    {
+      "version": "20260809054619",
+      "name": "species_replaceable_cantrip_runtime",
+      "possible_local_paths": [
+        "sql/20260809_67_species_replaceable_cantrip_runtime.sql"
+      ]
+    },
+    {
+      "version": "20260809060351",
+      "name": "eladrin_season_trance_runtime",
+      "possible_local_paths": [
+        "sql/20260809_68_eladrin_season_trance_runtime.sql"
+      ]
+    },
+    {
+      "version": "20260809193647",
+      "name": "boon_energy_resistance_runtime",
+      "possible_local_paths": [
+        "sql/20260809_69_boon_energy_resistance_runtime.sql"
+      ]
+    },
+    {
+      "version": "20260809193714",
+      "name": "boon_energy_resistance_provenance_fix",
+      "possible_local_paths": [
+        "sql/20260809_70_boon_energy_resistance_provenance_fix.sql"
+      ]
+    },
+    {
+      "version": "20260809200937",
+      "name": "feat_runtime_expertise",
+      "possible_local_paths": [
+        "sql/20260809_71_feat_runtime_expertise.sql"
+      ]
+    },
+    {
+      "version": "20260809202921",
+      "name": "cartomancer_runtime",
+      "possible_local_paths": [
+        "sql/20260809_72_cartomancer_runtime.sql"
+      ]
+    },
+    {
+      "version": "20260809202946",
+      "name": "cartomancer_runtime_state_fix",
+      "possible_local_paths": [
+        "sql/20260809_73_cartomancer_runtime_state_fix.sql"
+      ]
+    },
+    {
+      "version": "20260809205137",
+      "name": "wizard_memorize_spell_runtime",
+      "possible_local_paths": [
+        "sql/20260809_74_wizard_memorize_spell_runtime.sql"
+      ]
+    },
+    {
+      "version": "20260809205156",
+      "name": "wizard_memorize_spell_state_fix",
+      "possible_local_paths": [
+        "sql/20260809_75_wizard_memorize_spell_state_fix.sql"
+      ]
+    },
+    {
+      "version": "20260809212319",
+      "name": "wizard_runtime_helper_repair",
+      "possible_local_paths": [
+        "sql/20260809_76_wizard_runtime_helper_repair.sql"
+      ]
+    },
+    {
+      "version": "20260809213738",
+      "name": "wizard_cantrip_formulas_runtime",
+      "possible_local_paths": [
+        "sql/20260809_77_wizard_cantrip_formulas_runtime.sql"
+      ]
+    },
+    {
+      "version": "20260809220732",
+      "name": "armorer_armor_model_runtime",
+      "possible_local_paths": [
+        "sql/20260809_78_armorer_armor_model_runtime.sql"
+      ]
+    },
+    {
+      "version": "20260809231431",
+      "name": "bestial_soul_runtime",
+      "possible_local_paths": [
+        "sql/20260809_79_bestial_soul_runtime.sql"
+      ]
+    },
+    {
+      "version": "20260809231912",
+      "name": "bestial_soul_option_resolver_fix",
+      "possible_local_paths": [
+        "sql/20260809_80_bestial_soul_option_resolver_fix.sql"
+      ]
+    },
+    {
+      "version": "20260809232923",
+      "name": "wild_heart_aspect_runtime",
+      "possible_local_paths": [
+        "sql/20260809_81_wild_heart_aspect_runtime.sql"
+      ]
+    },
+    {
+      "version": "20260809234244",
+      "name": "hunter_prey_runtime",
+      "possible_local_paths": [
+        "sql/20260809_82_hunter_prey_runtime.sql"
+      ]
+    },
+    {
+      "version": "20260809235754",
+      "name": "defensive_tactics_runtime",
+      "possible_local_paths": [
+        "sql/20260809_83_defensive_tactics_runtime.sql"
+      ]
+    },
+    {
+      "version": "20260810001351",
+      "name": "whispers_of_the_dead_runtime",
+      "possible_local_paths": [
+        "sql/20260810_84_whispers_of_the_dead_runtime.sql"
+      ]
+    },
+    {
+      "version": "20260810002421",
+      "name": "progression_rpc_acl_cleanup",
+      "possible_local_paths": [
+        "sql/20260810_85_progression_rpc_acl_cleanup.sql"
+      ]
+    },
+    {
+      "version": "20260810075628",
+      "name": "player_forge_source_magic_materialization",
+      "possible_local_paths": [
+        "sql/20260810_86_player_forge_source_magic_materialization.sql"
+      ]
+    },
+    {
+      "version": "20260810075645",
+      "name": "source_magic_level_parser_fix",
+      "possible_local_paths": [
+        "sql/20260810_87_source_magic_level_parser_fix.sql"
+      ]
+    },
+    {
+      "version": "20260810075724",
+      "name": "source_magic_feat_name_normalization_fix",
+      "possible_local_paths": [
+        "sql/20260810_88_source_magic_feat_name_normalization_fix.sql"
+      ]
+    },
+    {
+      "version": "20260810181530",
+      "name": "pending_rest_runtime_choices",
+      "possible_local_paths": [
+        "sql/20260810_89_pending_rest_runtime_choices.sql"
+      ]
+    },
+    {
+      "version": "20260810205646",
+      "name": "rest_class_feature_restoration",
+      "possible_local_paths": [
+        "sql/20260810_90_rest_class_feature_restoration.sql"
+      ]
+    },
+    {
+      "version": "20260811062025",
+      "name": "genasi_subrace_catalog",
+      "possible_local_paths": [
+        "sql/20260811_91_genasi_subrace_catalog.sql"
+      ]
+    },
+    {
+      "version": "20260812033649",
+      "name": "genasi_source_detail_restore",
+      "possible_local_paths": [
+        "sql/20260811_92_genasi_source_detail_restore.sql"
+      ]
+    },
+    {
+      "version": "20260812042950",
+      "name": "aven_subrace_catalog",
+      "possible_local_paths": [
+        "sql/20260812_93_aven_subrace_catalog.sql"
+      ]
+    },
+    {
+      "version": "20260814160725",
+      "name": "enable_http_for_grim_hollow_pg24_import",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20260814161314",
+      "name": "grim_hollow_heritage_catalog_support",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20260921152546",
+      "name": "admin_site_activity_v1",
+      "possible_local_paths": [
+        "sql/20260921_01_admin_site_activity_v1.sql"
+      ]
+    },
+    {
+      "version": "20260921153151",
+      "name": "admin_site_activity_acl_fix",
+      "possible_local_paths": [
+        "sql/20260921_02_admin_site_activity_acl_fix.sql"
+      ]
+    },
+    {
+      "version": "20260921153328",
+      "name": "admin_site_activity_retention_v1",
+      "possible_local_paths": [
+        "sql/20260921_03_admin_site_activity_retention_v1.sql"
+      ]
+    },
+    {
+      "version": "20260921185225",
+      "name": "admin_site_activity_hardening_v1",
+      "possible_local_paths": [
+        "sql/20260921_04_admin_site_activity_hardening_v1.sql"
+      ]
+    },
+    {
+      "version": "20261011060110",
+      "name": "fighting_initiate_2024_adaptation",
+      "possible_local_paths": [
+        "sql/20261011_01_fighting_initiate_2024_adaptation.sql"
+      ]
+    },
+    {
+      "version": "20261011142727",
+      "name": "player_forge_homebrew_starting_budget",
+      "possible_local_paths": [
+        "sql/20261011_02_player_forge_homebrew_starting_budget.sql"
+      ]
+    },
+    {
+      "version": "20261011164321",
+      "name": "starting_market_merchant_expansion_20261011",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20261011164440",
+      "name": "merchant_catalog_reroll_variety_20261011",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20261011232211",
+      "name": "dawn_storefront_metadata_20261011",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20261012044433",
+      "name": "dawn_whiteflame_media_20261012",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20261013022225",
+      "name": "merchant_stock_distribution_20261012",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20261013022332",
+      "name": "merchant_recipe_rarity_cap_20261012",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20261016160931",
+      "name": "campaign_item_pool_merchant_balance",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20261016161158",
+      "name": "campaign_item_pool_relic_repair_fix",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20261016161316",
+      "name": "merchant_high_rarity_ten_percent",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20261016161805",
+      "name": "merchant_theme_constraint_rebalance",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20261016164346",
+      "name": "campaign_item_pool_final_constraints",
+      "possible_local_paths": [
+        "sql/20261016_01_campaign_item_pool_final_constraints.sql"
+      ]
+    },
+    {
+      "version": "20261016164541",
+      "name": "merchant_theme_type_diversity_final",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20261016164734",
+      "name": "merchant_future_specialty_routing_final",
+      "possible_local_paths": []
+    },
+    {
+      "version": "20261016181713",
+      "name": "item_copy_successor_repair",
+      "possible_local_paths": [
+        "sql/20261016_02_item_copy_successor_repair.sql"
+      ]
+    },
+    {
+      "version": "20261016182025",
+      "name": "item_copy_description_correction",
+      "possible_local_paths": [
+        "sql/20261016_03_item_copy_description_correction.sql"
+      ]
+    },
+    {
+      "version": "20261016190813",
+      "name": "merchant_alchemy_final_stats_pricing",
+      "possible_local_paths": [
+        "sql/20261016_04_merchant_alchemy_final_stats_pricing.sql"
+      ]
+    },
+    {
+      "version": "20261016214734",
+      "name": "resistance_rings_petrification_rules",
+      "possible_local_paths": [
+        "sql/20261016_05_resistance_rings_petrification_rules.sql"
+      ]
+    },
+    {
+      "version": "20261016214808",
+      "name": "fix_resistance_ring_element_labels",
+      "possible_local_paths": [
+        "sql/20261016_06_fix_resistance_ring_element_labels.sql"
+      ]
+    },
+    {
+      "version": "20261016221354",
+      "name": "equipped_item_damage_mitigation",
+      "possible_local_paths": [
+        "sql/20261016_07_equipped_item_damage_mitigation.sql"
+      ]
+    },
+    {
+      "version": "20261016222247",
+      "name": "resistance_before_flat_reduction",
+      "possible_local_paths": [
+        "sql/20261016_08_resistance_before_flat_reduction.sql"
+      ]
+    },
+    {
+      "version": "20261017000915",
+      "name": "portrait_library_semantic_tags",
+      "possible_local_paths": [
+        "sql/20261016_09_portrait_library_semantic_tags.sql"
+      ]
+    },
+    {
+      "version": "20261017000951",
+      "name": "portrait_library_semantic_tags_fix",
+      "possible_local_paths": [
+        "sql/20261016_10_portrait_library_semantic_tags_fix.sql"
+      ]
+    },
+    {
+      "version": "20261019013551",
+      "name": "grim_hollow_pg24_species_catalog",
+      "possible_local_paths": [
+        "sql/20261018_01_grim_hollow_pg24_species_catalog.sql"
+      ]
+    }
+  ],
+  "unmatched_local_sql": [
+    "sql/20260605_alchemy_dice_count_duration_steps.sql",
+    "sql/20260605_alchemy_rollable_sections.sql",
+    "sql/20260605_fix_rollable_durations_regeneration.sql",
+    "sql/20260605_seed_alchemy_codex_v3.sql",
+    "sql/20260606_alchemy_brew_quality_and_formula_guide.sql",
+    "sql/20260607_alchemy_immunity_family_riders.sql",
+    "sql/20260608_alchemy_neutral_tags_individual_recipes.sql",
+    "sql/20260611_00_alchemy_v9_schema.sql",
+    "sql/20260611_10_alchemy_v9_breath_growth_heroism.sql",
+    "sql/20260611_20_alchemy_v9_bomb_area_save.sql",
+    "sql/20260611_30_alchemy_v9_catalog.sql",
+    "sql/20260611_99_alchemy_v9_verify.sql",
+    "sql/20260612_00_alchemy_v10_schema.sql",
+    "sql/20260612_10_alchemy_v10_renames.sql",
+    "sql/20260612_20_alchemy_v10_recipes.sql",
+    "sql/20260612_30_alchemy_v10_catalog.sql",
+    "sql/20260612_99_alchemy_v10_verify.sql",
+    "sql/20260612_99_patch0_verify.sql",
+    "sql/20260612_99_player_signup_verify.sql",
+    "sql/20260613_98_smithing_material_quality_v5.sql",
+    "sql/20260614_01_crafting_virtual_stock_hotfix.sql",
+    "sql/20260614_02_phase_a_non_map_security_hardening.sql",
+    "sql/20260614_100_player_inventory_owner_alignment.sql",
+    "sql/20260614_101_smithing_base_dice_scaling.sql",
+    "sql/20260616_102_merchant_alchemy_stock_backfill.sql",
+    "sql/20260618_02_alchemy_product_card_metadata.sql",
+    "sql/20260618_03_recipe_catalog_items.sql",
+    "sql/20260619_01_shop_catalog_enhancement_pass.sql",
+    "sql/20260619_02_recipe_purchase_unlocks_and_reroll.sql",
+    "sql/20260619_03_npc_portrait_foundation.sql",
+    "sql/20260619_04_npc_portrait_art_pack.sql",
+    "sql/20260621_01_character_portrait_picker.sql",
+    "sql/20260623_01_inventory_equipment_slots.sql",
+    "sql/20260624_01_inventory_item_send_rpc.sql",
+    "sql/20260630_02_npc_known_recipe_keys.sql",
+    "sql/20260711_02_prefer_canonical_spell_and_class_versions.sql",
+    "sql/20260723_01_consolidate_species_catalog.sql",
+    "sql/20260723_02_enrich_background_catalog.sql",
+    "sql/20260724_01_remove_gith_parent_species.sql",
+    "sql/20260802_05_tactical_character_resource_bridge_profile.sql",
+    "sql/20260808_38_normalize_battle_master_maneuvers_and_guard_gaps.sql",
+    "sql/20260814_01_custom_lineage_heritage_only.sql",
+    "sql/20260814_02_species_heritage_profiles.sql",
+    "sql/20260815_01_merfolk_playable_speed_override.sql",
+    "sql/20261009_01_enrich_class_feature_option_rules.sql",
+    "sql/20261009_02_backfill_referenced_optional_feature_rules.sql",
+    "sql/20261010_01_player_forge_starting_market.sql",
+    "sql/20261011_03_starting_market_merchant_expansion.sql",
+    "sql/20261011_04_merchant_catalog_reroll_variety.sql",
+    "sql/20261011_05_dawn_storefront_metadata.sql",
+    "sql/20261012_01_dawn_whiteflame_media.sql",
+    "sql/20261012_02_merchant_stock_distribution.sql",
+    "sql/20261012_03_merchant_recipe_rarity_cap.sql",
+    "sql/20261017_01_merchant_portrait_library_batch.sql",
+    "sql/20261023_01_player_species_portrait_library.sql",
+    "sql/candidates/20261104_gm_vs_player_backstory_secrets_stage3.sql",
+    "sql/candidates/20261104_npc_gm_dossier_column_acl_stage2.sql",
+    "sql/candidates/20261104_npc_player_safe_profile_rls_v1.sql",
+    "sql/candidates/20261104_player_forge_preserve_legacy_sheet.sql",
+    "sql/candidates/20261105_forge_progression_verified_creator_seed_v1.sql",
+    "sql/candidates/20261105_inventory_character_owner_constraint_and_dml_review_v1.sql",
+    "sql/candidates/20261105_player_creation_immutable_intent_v1.sql"
+  ]
+}
