@@ -233,6 +233,29 @@ export default function InventoryPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // This page stays mounted if Auth signs out elsewhere (e.g. navbar).
+  // Clear ALL privileged inventory/Admin views synchronously; PostgREST RLS
+  // cannot erase already-rendered client data. Do not await an auth call here.
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event !== "SIGNED_OUT") return;
+      setSession(null);
+      setIsAdmin(false);
+      setOwnerMeta(null);
+      setCanView(false);
+      setCanManage(false);
+      setRows([]);
+      setPlayers([]);
+      setNpcs([]);
+      setMerchants([]);
+      setSelectedIds([]);
+      setBulkTargetKey("");
+      setErrorMsg("");
+      setLoadingInv(false);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
   // Parse query params
   useEffect(() => {
     if (!isReady) return;

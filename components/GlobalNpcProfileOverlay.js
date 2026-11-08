@@ -29,6 +29,9 @@ export default function GlobalNpcProfileOverlay() {
   const requestRef = useRef(0);
   const surfaceRef = useRef(null);
   const focusBeforeRef = useRef(null);
+  // The global Profile outlives page navigation; remember session identity
+  // separately from its content so a new account never inherits a GM dossier.
+  const authUserIdRef = useRef(undefined);
 
   const close = useCallback(() => {
     requestRef.current += 1; // invalidate pending profile/role reads
@@ -37,6 +40,28 @@ export default function GlobalNpcProfileOverlay() {
     setError("");
     setLoading(false);
   }, []);
+
+  // Invalidate in-flight profile/role RPCs and remove cached GM contents
+  // synchronously on signed logout or an actual account switch. Never call
+  // Supabase APIs from an onAuthStateChange callback (auth lock/deadlock risk).
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      const nextUserId = session?.user?.id || null;
+      if (event === "INITIAL_SESSION") {
+        authUserIdRef.current = nextUserId;
+        return;
+      }
+      const switched = event === "SIGNED_IN" &&
+        authUserIdRef.current !== undefined &&
+        authUserIdRef.current !== nextUserId;
+      authUserIdRef.current = nextUserId;
+      if (event === "SIGNED_OUT" || switched) {
+        close();
+        setIsAdmin(false);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [close]);
 
   useEffect(() => {
     function onOpen(event) {
