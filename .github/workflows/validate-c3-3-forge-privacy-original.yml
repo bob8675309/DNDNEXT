@@ -22,6 +22,12 @@ on:
       - 'scripts/browser/verify_c33_creator_backstory_dom.mjs'
       - 'scripts/browser/c33_original_forge_full_dom.jsx'
       - 'scripts/browser/verify_c33_original_forge_full_dom.mjs'
+      - 'scripts/fixtures/c33_next_town_route_pg17.sql'
+      - 'scripts/browser/verify_c33_next_town_route.mjs'
+      - 'pages/town/[id].js'
+      - 'components/TownSheet.js'
+      - 'components/character/CharacterInteractionPanel.js'
+      - 'components/MerchantPanel.js'
       - 'scripts/fixtures/c33_forge_full_component_browser_catalog_pg17.sql'
       - 'components/CreatorBackstoryPanel.js'
       - 'components/NpcPanel.js'
@@ -67,6 +73,7 @@ jobs:
           node --check scripts/test_c33_forge_privacy_original_local_auth.mjs
           node --check scripts/browser/verify_c33_creator_backstory_dom.mjs
           node --check scripts/browser/verify_c33_original_forge_full_dom.mjs
+          node --check scripts/browser/verify_c33_next_town_route.mjs
           node scripts/validate_p1_3_npc_profile_rls_source.mjs
           node scripts/validate_forge_immutable_creation_replay.mjs
       - name: Install pinned dependencies
@@ -118,6 +125,10 @@ jobs:
           C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/c33-browser-tools" \
           C33_BROWSER_CHROME="$CHROME" \
             node scripts/browser/verify_c33_original_forge_full_dom.mjs
+          psql -X -v ON_ERROR_STOP=1 -f scripts/fixtures/c33_next_town_route_pg17.sql
+          C33_BROWSER_TOOL_ROOT="$RUNNER_TEMP/c33-browser-tools" \
+          C33_BROWSER_CHROME="$CHROME" \
+            node scripts/browser/verify_c33_next_town_route.mjs
       - name: Stop and remove disposable services
         if: always()
         run: |
