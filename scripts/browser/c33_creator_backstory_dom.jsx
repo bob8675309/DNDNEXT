@@ -18,16 +18,20 @@ function PrivateStoryBrowserHost() {
     window.__C33_AUTH_LOGIN__ = async (email,password) => {
       const r = await supabase.auth.signInWithPassword({ email, password });
       if (r.error) throw new Error("Local GoTrue login refused: " + r.error.message);
-      // Never accept a caller-supplied Admin flag; obtain GM status from
-      // the installed source-original, authenticated is_admin RPC.
+      // Never accept a caller-supplied Admin flag. The disposable is_admin
+      // RPC is a JWT-checked fixture adapter to private.test_admins.
       const adminResult = await supabase.rpc("is_admin", { uid: r.data?.user?.id });
-      setAdmin(!adminResult.error && adminResult.data === true);
+      if(adminResult.error) throw new Error("Signed local is_admin fixture RPC failed: "+adminResult.error.message);
+      const signedAdmin = adminResult.data === true;
+      window.__C33_SIGNED_ADMIN_VERIFIED__ = signedAdmin;
+      setAdmin(signedAdmin);
       setSessionVersion(x=>x+1);
       return r.data?.user?.id || null;
     };
     window.__C33_AUTH_LOGOUT__ = async () => {
       const r = await supabase.auth.signOut();
       if (r.error) throw new Error("Local GoTrue logout refused: " + r.error.message);
+      window.__C33_SIGNED_ADMIN_VERIFIED__ = false;
       setAdmin(false);
       setSessionVersion(x=>x+1);
     };

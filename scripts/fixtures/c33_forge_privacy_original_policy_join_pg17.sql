@@ -102,5 +102,22 @@ BEGIN
       <> '97b5e6b059e6467e24c4283fe420c83e'
  THEN RAISE EXCEPTION 'Original creation/privacy function source fingerprint drift'; END IF;
 END $verify$;
+-- Isolated C3P Chromium fixture ONLY. The actual app calls public.is_admin;
+-- this reduced local DB has private.test_admins but not production user_profiles
+-- or the production is_admin RPC. Never install this adapter on live Supabase.
+-- Its SECURITY DEFINER body reads current JWT identity, and may never check
+-- a different caller-supplied uid. This is test routing, not an Admin bypass.
+CREATE OR REPLACE FUNCTION public.is_admin(uid uuid DEFAULT NULL)
+RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path TO 'pg_catalog','private','auth'
+AS $c33p_fixture$
+ SELECT auth.uid() IS NOT NULL
+   AND (uid IS NULL OR uid=auth.uid())
+   AND private.current_user_is_admin()
+$c33p_fixture$;
+REVOKE ALL ON FUNCTION public.is_admin(uuid) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.is_admin(uuid) TO authenticated;
+
 NOTIFY pgrst,'reload schema';
 \echo 'PASS C3J00: original Forge v2/v3, original pre-stage privacy readers, current-role RLS installed in disposable PG17'

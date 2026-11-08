@@ -137,6 +137,8 @@ try{
      email:data.email,password
    });
    assert.equal(userId,data.id,role+" real browser GoTrue identity mismatch");
+  assert.equal(await page.evaluate(()=>window.__C33_SIGNED_ADMIN_VERIFIED__),role==="GM",
+    role+" signed is_admin fixture differs from expected current JWT authority");
  };
  const signOut=async()=>page.evaluate(()=>window.__C33_AUTH_LOGOUT__());
  const waitText=async value=>{
