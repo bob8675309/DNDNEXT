@@ -8,6 +8,8 @@ on:
       - 'scripts/release/test_c33_compose_disposable_joint_sql.mjs'
       - 'scripts/release/c33_compose_production_review_sql.mjs'
       - 'scripts/release/test_c33_compose_production_review_sql.mjs'
+      - 'scripts/release/c33_capture_sensitive_db_backup_windows.ps1'
+      - 'docs/C3_3_FREE_PLAN_MANUAL_BACKUP_2026-11-08.md'
       - 'scripts/diagnostics/c33_migration_history_audit.mjs'
       - 'docs/data/c33_migration_history_snapshot_2026-11-08.json'
       - 'scripts/fixtures/c33_atomic_preprivacy_inventory_pg17.sql'
@@ -51,6 +53,13 @@ jobs:
           node scripts/release/test_c33_compose_disposable_joint_sql.mjs
           node --check scripts/release/c33_compose_production_review_sql.mjs
           node scripts/release/test_c33_compose_production_review_sql.mjs
+          command -v pwsh
+          pwsh -NoProfile -NonInteractive -Command '
+            $tokens = $null; $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile("scripts/release/c33_capture_sensitive_db_backup_windows.ps1", [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count -ne 0) { $errors | ForEach-Object { Write-Error $_ }; exit 1 }
+            Write-Host "PASS C3BACKUP01: PowerShell backup script syntax parsed; no database touched"
+          '
           node scripts/release/c33_compose_production_review_sql.mjs --check
           node --check scripts/diagnostics/c33_migration_history_audit.mjs
           node scripts/diagnostics/c33_migration_history_audit.mjs
