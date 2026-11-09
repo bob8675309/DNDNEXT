@@ -1,0 +1,51 @@
+# DNDNext — Approved PR Integration-First Phased Plan
+
+**2026-11-09 owner priority override.** Integrate the approved open PR work **before returning to unrelated feature expansion**. This supersedes earlier instructions treating #312 delegated control, #317 tactical security, #318 Admin notices, #324 immutable Forge and #328–#335 regression assets as optional or expendable. Historical C0–C5 and P0–P6 definitions stay preserved as dated evidence; the S0–S7 safety process remains in force.
+
+**INTEGRATE means preserve behavior, source fixtures, original negative results, documentation and usable UI, then produce compatibility-tested bounded implementation branches.** It does NOT authorize a push/merge to main, live Supabase SQL/grants, destructive data work, map presentation release, paid agent or Vercel deployment. Main remains production authority until separate owner go/no-go. Follow [20 complete PR dossiers](pr-integration/README.md).
+
+## Owner-approved scope and protected rules
+
+- Spells #309/#312/#347: KEEP; source-qualified 2024 XPHB first, 19 currently deployed spell adapters as authoritative regression oracles, GM-assisted unsupported spells; no bulk speculative execution.
+- NPC shared control #312: multiple authorized human players may control the same creature, but exactly one creature Action/reaction/resource pool; one player may independently control several different actors. Direct encounter controller, editor and new can_control rights remain distinguishable.
+- Delegation-only tactical spell view: **known and currently available** spells only (known cantrips, prepared/otherwise actually available source spells), not full unprepared/unknown/GM list; filter v1 and v2 profile, no source sheet/inventory/GM/creator leak.
+- Global P1.3 security #317/#312: TC1 at most one active encounter per canonical character; R1 fail closed on historical unverifiable request, no replay/respend; R2 revalidate current controller/visibility before cached result, including revocation; hidden player event label Unknown Events. Do not invent undecided service-principal R3 or hidden-event timing rules.
+- Admin #318: player and alternate/underling creation without GM preapproval; existing committed event gives **informational** Admin notice; Admin independently manages edit/inventory/convert/control and private notes.
+- NPC #320–#323/#345: all NPC/merchant/crafter interactions Profile first; GM Secrets only GM, private player Story only immutable verified creator with active edit grant or GM, separate sanitized GM-published clues. Centered world-map overlay is retained as design but requires **visual review and owner signoff before release**.
+- Forge #324/#328–#335: same creation nonce+same complete intent returns canonical original without writes; altered original intent rejects. Preserve grants, original deferred validation, class/source spell counts, nested choices, serializers and Chromium; no starting inventory/currency/merchant stock duplication.
+- Research agent #325 is KEEP FOR LATER: preserve free tooling and opportunities, do not merge/activate paid automation now. Bootstrap+SCSS, Pages Router and world/town/tactical boundaries remain protected.
+
+## Dependency graph — do not turn stacked drafts into one giant merge
+
+1. #321 original safe NPC stage1/2 → **#322 revised** Stage3 private Story/GM role → #323 secure centered #320 UI → **#345** source-coordinated main-based C3.3. Older NpcPanel/Stage3 sources do not override the later secure implementation.
+2. #321 original parent → **#324 immutable request intent** → #328–#335 original Forge trigger/canonical source testing. This stack includes **older #321 Stage3**, so reconcile feature code with #345 rather than bulk cherry-picking terminal #335.
+3. #318 Admin inbox/legacy-rights editor + #312 separate can_control must become one coherent GM access surface, but none of their flags may inherit creator Story or GM Secret authority.
+4. #317 lock/replay/turn/weapon/reaction/progression/grant/merchant/slot suite + #312 typed request intent/E-first core action is a **coordinated global combat safety candidate**. An isolated core action RPC replacement can deadlock against older ledger-first routes.
+5. #347 P1 non-executing parser (five #309 blobs) → unique #309 Eldritch Blast/source/LOS and #312 P2 shadow parity → new executable Spell Engine only after the guarded command path is proven. No Arc/AI action execution from source metadata alone.
+
+## Strict order, one executable task at a time
+
+| Step | Integration deliverable | Proof required before advancing |
+| --- | --- | --- |
+| **I0 — preservation** | 20 full source-head PR dossiers, all 584 PR-scoped changed-file rows and original SHA/test/owner choices. **DOCUMENTATION DRAFT COMPLETED; no runtime merge.** | Verify the tree, source links and CI, no unique value implicitly discarded. |
+| **I1 — extract original tests** | Clean-main-based bounded source/test-only packages: first crosswalk **#324/#328–#335 vs #345**; then preserve #317 cross-command original and negative fixtures; retain #347 safe P1 draft and #309/#312 pure spell evidence. | Source MD5/blob pinning, original negative and positive tests, GoTrue mock-vs-real labels, no missing import/trigger, exact-head free CI. |
+| **I2 — coordinated Forge + NPC privacy + Admin candidate** | One compatible reviewed design using #345 Stage1–3 safe Profile/GM/Story, Stage4 inventory RLS+CHECK, #324 complete immutable nonce and verified feat-grant creator, #318 creation event notices and scoped rights; keep original v2/v3/alternate legacy sheet. | Actual original 31-trigger coverage with absent cases called out, Role Auth/Forge ten-step/print/town/inventory/Shop test matrix, migration ledger/source preflight, protected data hashes, signed browser, rollback. Owner separately approves any live rollout. |
+| **I3 — all-command tactical security** | Source-original #317 + #312 unified actor/encounter/ledger/trigger lock order, immutable typed request intent, controller/visibility-before-replay, TC1 active conflict denial, R1/R2, safe Unknown Events, equip/progression/grant/merchant and reaction races. | Two-session true Auth PG17 with original positive/negative function paths, no extra resource spend, no leaked hidden IDs, no unsafe mixed-version RPCs, safe DB rollback. No partial live cast/core-action install. |
+| **I4 — delegated NPC control and GM UI** | #312 explicit can_control per player+NPC; #318 effective permission panel; #345 safe NPC/profile; full v1/v2 known-ready tactical spell filter, preserved Admin/direct controller responses. | Signed two-user same-NPC one Action/log/version, live-current rights after revocation, separate editor/inventory/GM/Story restrictions, no ghost edit-grant backfill, hidden participant RLS. Requires compatible I2/I3 authority. |
+| **I5 — composable Spell Engine integration** | #347 closed P1, #309 Eldritch Blast/LOS, #312 source/P2 parity and future bounded versioned recipe registry; eventually one reviewed spell at a time through secure server command. | 2024 rules/source verified, known/prepared/source grants and cantrip total-character level correct, geometry/roll groups/reactions/conditions/slots source parity, 19 current adapters intact, real browser/RLS. Unsupported spells GM assisted. |
+| **I6 — resume feature roadmap** | Only after approved PRs have integrated, been explicitly deferred or accepted as preservation-complete, resume P3–P6 visual, content, merchant, AI and other feature work in owner priority order. #325 remains deferred. | No silent feature omissions, owner-approved release and stable existing systems. |
+
+**ONE NEXT EXECUTABLE TASK after this docs PR is verified:** create the exact **#324/#328–#335 Forge original-source vs #345 secure C3.3** overlap/trigger/RPC/fixture compatibility crosswalk from current main and source blobs. Then create the first bounded source-only CI extraction PR. Do NOT jump directly to SQL, PR retirement or a multi-branch cherry-pick.
+
+## Mandatory release, recovery and regression hard gates
+
+- The owner has **already completed the local capture**: PostgreSQL17 custom dump 16,704,002 bytes, four Storage buckets 340 files / 453,153,680 bytes; combined SHA256 inventory 341 files / 469,857,682 bytes in C:\PrivateDNDNextBackup. Do not redo or call unfinished. **An encrypted protected second copy and isolated PG17 + actual Storage byte recovery rehearsal are still not verified.** The payload is private workstation-only, not Git.
+- Preserve all spell/item/crafting and economy data: prior live read-only 1,037 spells, 2,739 items, 132 recipes, 23 inventory items, 240 merchant-stock rows and 340 Storage object records; no cascade-delete test accounts/characters or resetting data.
+- Live 243 Supabase migration entries with no corresponding supabase/migrations local ledger; no automatic db push or inference from similar filenames. Review full function identities, role/column ACL, SECURITY DEFINER paths, inventory CHECK and four-policy DML together.
+- SQL Stage1–4/private Story/Forge clients need a coordinated compatible cutover; a pre-migration UI rollback after SQL COMMIT can expose breakage. Prefer tested forward-compatible repair and data-aware isolated restore, not blind schema downgrade.
+- Do not modify world-map movement/sprite/roster logic. Centered map Profile CSS/backdrop is **not yet visually approved**; inspect desktop/mobile interaction and accessible overlays before any release.
+- Never merge PRs, apply production migrations/Storage changes, deploy Vercel, close research PRs or invoke paid/automatic agents without separate explicit owner approval. Preserve historical source tests/failed negative cases until a successor has verified them.
+
+## Source-level retirement gate
+
+For each original source file, fixture, workflow and doc path in the [20-dossier index](pr-integration/README.md), record one disposition: **copied same blob / behaviorally ported with source test / superseded with explicit parity evidence / deferred intact**. Keep original draft open until unique asset accounting is complete and owner approves closure. A passing check-run alone never means release accepted.
