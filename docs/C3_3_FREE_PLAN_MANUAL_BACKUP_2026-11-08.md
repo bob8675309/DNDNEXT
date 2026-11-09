@@ -1,6 +1,10 @@
 # C3.3 Free-plan manual database backup guide
 
-**2026-11-08 — operator instructions; not executed by ChatGPT.**
+**Originally prepared 2026-11-08 — script instructions retained; see newer actual-capture checkpoint below.**
+
+> **LATEST ACTUAL CAPTURE (2026-11-09):** The owner has now generated a native PostgreSQL 17 custom database dump on their Windows workstation, downloaded all four Supabase Storage buckets, and produced a local SHA-256 manifest. **This was done using native `pg_dump` and official Supabase CLI, NOT the unexecuted source-controlled script below.** The reported local inventory is **341 files / 469,857,682 bytes** (one DB dump 16,704,002 bytes; 340 Storage entries 453,153,680 bytes). See [2026-11-09 local backup capture, exact access paths and verification](BACKUP_RECOVERY_CHECKPOINT_2026-11-09.md) for **exact local paths, evidence, how to open/check the files, and incomplete encryption/restore gates**. This checkpoint verifies owner-reported local capture and archive TOC, not a successfully restored backup.
+
+
 
 The connected DnDWeb Supabase organization is on the **Free** plan. Supabase automatic daily database backups are described for paid Pro/Team/Enterprise plans; do NOT assume Free has a restorable snapshot.
 
@@ -27,7 +31,7 @@ The script verifies that pg_restore --list includes **27 required TABLE DATA ent
 3. **Independently copy and verify Storage object bytes.** As of the read-only census: 4 public buckets, 340 files total; 136 location icons, 18 map icons, 185 NPC portraits, 1 town map. The database archive contains Storage METADATA, not image/file bytes. Validate object paths, counts and hashes after a separate restore.
 4. Capture a private restore receipt with backup timestamp, archive SHA-256, full restore status, all 21 protected table hashes and Storage files. Then rerun the read-only diagnostics scripts before and after the separately authorized migration.
 
-**Current status:** The source-controlled backup script has NOT been run against DnDWeb or tested on the user's Windows workstation. No Supabase DDL/DML, Storage modifications, Vercel deployment or main merge has occurred.
+**Current status (2026-11-09):** The **source-controlled script described above still has NOT been run** against DnDWeb or tested on the owner's Windows workstation; however the owner successfully ran **native `pg_dump`**, created a 16,704,002-byte local archive with critical TABLE DATA entries, downloaded 340 Storage entries, and generated a 341-file SHA-256 manifest. See the [local backup receipt and access guide](BACKUP_RECOVERY_CHECKPOINT_2026-11-09.md) rather than treating the older script-status line as evidence that no backup exists. No independent restore, encryption/offsite copy, Supabase DDL/DML/Storage mutation, Vercel deployment or `main` merge is recorded.
 
 Official references:
 - https://supabase.com/docs/guides/platform/backups
